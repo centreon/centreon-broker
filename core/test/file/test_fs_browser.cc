@@ -43,7 +43,11 @@ file::fs_browser::entry_list test_fs_browser::read_directory(
   return (retval);
 }
 
+std::list<std::string> const& test_fs_browser::get_removed() const {
+  return (_removed);
+}
+
 void test_fs_browser::remove(std::string const& path) {
-  (void)path;
+  _removed.push_back(path);
   return ;
 }

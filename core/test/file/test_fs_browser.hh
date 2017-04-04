@@ -32,12 +32,16 @@ class              test_fs_browser : public com::centreon::broker::file::fs_brow
                    read_directory(
                      std::string const& path,
                      std::string const& filters = "");
+  std::list<std::string> const&
+                   get_removed() const;
   void             remove(std::string const& path);
 
  private:
                    test_fs_browser(test_fs_browser const& other);
   test_fs_browser& operator=(test_fs_browser const& other);
 
+  std::list<std::string>
+                   _removed;
   std::list<com::centreon::broker::file::fs_browser::entry_list>
                    _results;
 };

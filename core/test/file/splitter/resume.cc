@@ -18,6 +18,7 @@
 
 #include <gtest/gtest.h>
 #include "com/centreon/broker/file/splitter.hh"
+#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "../test_file.hh"
 #include "../test_fs_browser.hh"
 
@@ -95,7 +96,7 @@ TEST_F(FileSplitterResume, ResumeRead) {
 }
 
 // Given existing file parts, from 2 to 10
-// And a splitter objcet
+// And a splitter object
 // When write() is called
 // Then data is appended to file part 10
 TEST_F(FileSplitterResume, ResumeWrite) {
@@ -108,4 +109,25 @@ TEST_F(FileSplitterResume, ResumeWrite) {
   std::string last_file(_path);
   last_file.append("10");
   ASSERT_EQ(_file_factory->get(last_file).size(), 108u + 2000u);
+}
+
+// Given existing files parts, from 2 to 10
+// And a splitter object
+// When read() is called
+// Then files are deleted when they are entirely read back
+TEST_F(FileSplitterResume, AutoDelete) {
+  // When
+  char buffer[10000];
+  for (int i(2); i <= 10; ++i)
+    _file->read(buffer, sizeof(buffer));
+  ASSERT_THROW(_file->read(buffer, 1), io::exceptions::shutdown);
+
+  // Then
+  std::list<std::string> removed;
+  for (int i(2); i <= 10; ++i) {
+    std::ostringstream oss;
+    oss << _path << i;
+    removed.push_back(oss.str());
+  }
+  ASSERT_EQ(removed, _fs_browser->get_removed());
 }

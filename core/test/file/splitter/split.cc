@@ -71,8 +71,9 @@ TEST_F(FileSplitterSplit, MultipleFilesCreated) {
 
 // Given a splitter object configured with a max_size of 10008
 // And write() was called 10001 times with 10 bytes of data
-// When I read 100 times for a maximum of 10001 bytes
-// Then every time I read 10000 bytes
+// When I read 10 times for a maximum of 10001 bytes
+// Then every time 10000 bytes are read
+// And the last time 10 bytes are read
 TEST_F(FileSplitterSplit, EntireFilesReadBack) {
   // When
   char buffer[10001];
