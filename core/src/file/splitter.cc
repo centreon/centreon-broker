@@ -112,7 +112,8 @@ splitter::splitter(
     if (val > _wid)
       _wid = val;
   }
-  if (_rid == std::numeric_limits<int>::max())
+  if ((_rid == std::numeric_limits<int>::max())
+      || (_rid < 0))
     _rid = 0;
 
   // Initial write file opening to allow read file to be opened
