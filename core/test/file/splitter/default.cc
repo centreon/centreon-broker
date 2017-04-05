@@ -56,6 +56,17 @@ TEST_F(FileSplitterDefault, DefaultFile) {
 }
 
 // Given a splitter object
+// When write() is called with 1000 bytes
+// Then its return value is 1000
+TEST_F(FileSplitterDefault, WriteReturnsNumberOfBytes) {
+  // When
+  char buffer[1000];
+  memset(buffer, 42, sizeof(buffer));
+  long wb(_file->write(buffer, sizeof(buffer)));
+  ASSERT_EQ(wb, static_cast<long>(sizeof(buffer)));
+}
+
+// Given a splitter object
 // When read() is called
 // Then an io::exceptions::shutdown exception is thrown
 // And the on-disk file is deleted

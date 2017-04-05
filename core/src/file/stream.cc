@@ -213,7 +213,7 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
 
     // Write data.
     while (size > 0) {
-      unsigned long wb(_file->write(memory, size));
+      long wb(_file->write(memory, size));
       size -= wb;
       memory += wb;
     }

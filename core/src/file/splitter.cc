@@ -231,9 +231,10 @@ long splitter::write(void const* buffer, long size) {
     << size << " bytes for '" << _file_path(_wid) << "'";
 
   // Write data.
-  while (size > 0) {
-    unsigned long wb(_wfile->write(buffer, size));
-    size -= wb;
+  long remaining(size);
+  while (remaining > 0) {
+    long wb(_wfile->write(buffer, remaining));
+    remaining -= wb;
     _woffset += wb;
     buffer = static_cast<char const*>(buffer) + wb;
   }
