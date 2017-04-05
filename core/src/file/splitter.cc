@@ -17,6 +17,7 @@
 */
 
 #include <arpa/inet.h>
+#include <cstdlib>
 #include <limits>
 #include <memory>
 #include <sstream>
