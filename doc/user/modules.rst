@@ -50,63 +50,6 @@ Example
     <max_size>100000000</max_size> <!-- 100MB limit -->
   </input>
 
-Local
-=====
-
-The local module allow local domain (a.k.a. Unix domain) socket
-creation. Sockets can be created either as clients (type
-*local_client*) or server (type *local_server*).
-
-===================== ============================
-**Type**              local_client or local_server
-**Layer(s)**          1-3
-**Work on input**     Yes
-**Work on output**    Yes
-**Work on temporary** No
-===================== ============================
-
-Configuration
--------------
-
-======================= ================================================
-Tag                     Description
-======================= ================================================
-one_peer_retention_mode Allow only one connection for a specific output.
-                        This option allow to keep retention on a server
-                        output (socket on a listen mode).
-path                    Path of the local socket.
-protocol                Choose your protocol (bbdo or ndo).
-======================= ================================================
-
-Example
--------
-
-::
-
-  <output>
-    <type>local_client</type>
-    <path>/var/lib/centreon/broker.sock</path>
-    <protocol>bbdo</protocol>
-  </output>
-
-::
-
-  <output>
-    <type>local_server</type>
-    <path>/var/lib/centreon/broker.sock</path>
-    <protocol>bbdo</protocol>
-  </output>
-
-::
-
-  <output>
-    <type>local_server</type>
-    <path>/var/lib/centreon/broker.sock</path>
-    <protocol>bbdo</protocol>
-    <one_peer_retention_mode>1</one_peer_retention_mode>
-  </output>
-
-
 .. _user_modules_rrd:
 
 RRD
