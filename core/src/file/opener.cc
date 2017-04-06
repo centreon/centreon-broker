@@ -36,7 +36,7 @@ using namespace com::centreon::broker::file;
  *  Constructor.
  */
 opener::opener()
-  : io::endpoint(false), _auto_delete(true), _max_size(0) {}
+  : io::endpoint(false), _auto_delete(true), _max_size(100000000) {}
 
 /**
  *  Copy constructor.
