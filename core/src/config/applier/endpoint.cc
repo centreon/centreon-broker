@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012,2015 Centreon
+** Copyright 2011-2012,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -412,7 +412,6 @@ processing::failover* endpoint::_create_failover(
                          sbscrbr,
                          cfg.name));
   fo->set_buffering_timeout(cfg.buffering_timeout);
-  fo->set_read_timeout(cfg.read_timeout);
   fo->set_retry_interval(cfg.retry_interval);
   fo->set_failover(failovr);
   return (fo.release());

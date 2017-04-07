@@ -69,7 +69,6 @@ namespace           processing {
     void            set_buffering_timeout(time_t secs);
     void            set_failover(
                       misc::shared_ptr<processing::failover> fo);
-    void            set_read_timeout(time_t read_timeout);
     void            set_retry_interval(time_t retry_interval);
     void            update();
     bool            wait(unsigned long time = ULONG_MAX);
@@ -103,7 +102,6 @@ namespace           processing {
     bool            _failover_launched;
     volatile bool   _initialized;
     time_t          _next_timeout;
-    time_t          _read_timeout;
     volatile time_t _retry_interval;
     misc::shared_ptr<multiplexing::subscriber>
                     _subscriber;

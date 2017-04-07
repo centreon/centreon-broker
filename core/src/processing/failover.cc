@@ -51,8 +51,7 @@ failover::failover(
     _endpoint(endp),
     _failover_launched(false),
     _initialized(false),
-    _next_timeout((time_t)-1),
-    _read_timeout((time_t)-1),
+    _next_timeout(0),
     _retry_interval(30),
     _subscriber(sbscrbr),
     _update(false) {}
@@ -314,12 +313,12 @@ void failover::run() {
           int we(0);
           if (should_commit) {
             should_commit = false;
+            _next_timeout = now + 1;
             QMutexLocker stream_lock(&_streamm);
             we = _stream->flush();
           }
-          else if ((_next_timeout != (time_t)-1)
-                   && (now >= _next_timeout)) {
-            _next_timeout = now + _read_timeout;
+          else if (now >= _next_timeout) {
+            _next_timeout = now + 1;
             QMutexLocker stream_lock(&_streamm);
             we = _stream->flush();
           }
@@ -405,20 +404,6 @@ void failover::set_buffering_timeout(time_t secs) {
  */
 void failover::set_failover(misc::shared_ptr<failover> fo) {
   _failover = fo;
-  return ;
-}
-
-/**
- *  Set read timeout.
- *
- *  @param[in] read_timeout  Read timeout.
- */
-void failover::set_read_timeout(time_t read_timeout) {
-  _read_timeout = read_timeout;
-  if (_read_timeout != (time_t)-1)
-    _next_timeout = time(NULL) + _read_timeout;
-  else
-    _next_timeout = (time_t)-1;
   return ;
 }
 
