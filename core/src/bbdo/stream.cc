@@ -1,5 +1,5 @@
 /*
-** Copyright 2013,2015 Centreon
+** Copyright 2013,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/namespace.hh"
 
 using namespace com::centreon::broker;
@@ -92,6 +93,18 @@ stream& stream::operator=(stream const& other) {
     _events_received_since_last_ack = other._events_received_since_last_ack;
   }
   return (*this);
+}
+
+/**
+ *  Flush stream data.
+ *
+ *  @return Number of acknowledged events.
+ */
+int stream::flush() {
+  output::flush();
+  int retval(_acknowledged_events);
+  _acknowledged_events = 0;
+  return (retval);
 }
 
 /**
@@ -276,6 +289,16 @@ void stream::set_timeout(int timeout) {
  *  @param[out] tree Output tree.
  */
 void stream::statistics(io::properties& tree) const {
+  tree.add_property(
+         "bbdo_input_ack_limit",
+         io::property(
+               "bbdo_input_ack_limit",
+               misc::string::get(_ack_limit)));
+  tree.add_property(
+         "bbdo_unacknowledged_events",
+         io::property(
+               "bbdo_unacknowledged_events",
+               misc::string::get(_events_received_since_last_ack)));
   output::statistics(tree);
   return ;
 }

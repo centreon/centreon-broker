@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ namespace            bbdo {
                      stream(stream const& other);
                      ~stream();
     stream&          operator=(stream const& other);
+    int              flush();
     void             negociate(negociation_type neg);
     bool             read(
                        misc::shared_ptr<io::data>& d,
