@@ -135,7 +135,7 @@ void stream::statistics(io::properties& tree) const {
       oss << "unknown";
     }
     else {
-      oss << (roffset * 100.0) / (woffset + (wid - rid) * max_file_size)
+      oss << (roffset * 100.0 + rid * max_file_size) / (woffset + wid * max_file_size)
           << "%";
       write_time_expected = true;
     }
