@@ -111,21 +111,9 @@ io::endpoint* factory::new_endpoint(
     filename = *it;
   }
 
-  // Find max size of file.
-  unsigned long long max_size;
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("max_size"));
-    if (it != cfg.params.end())
-      max_size = it->toULongLong();
-    else
-      max_size = 0;
-  }
-
   // Generate opener.
   std::auto_ptr<opener> openr(new opener);
   openr->set_filename(filename.toStdString());
-  openr->set_max_size(max_size);
   is_acceptor = false;
   return (openr.release());
 }
