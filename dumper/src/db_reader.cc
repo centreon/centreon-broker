@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -29,9 +29,9 @@
 #include "com/centreon/broker/dumper/entries/organization.hh"
 #include "com/centreon/broker/dumper/entries/service.hh"
 #include "com/centreon/broker/dumper/entries/state.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -86,7 +86,7 @@ db_reader::db_reader(
 db_reader::~db_reader() {}
 
 /**
- *  Throws an io::shutdown exception.
+ *  Throws a shutdown exception.
  *
  *  @param[in] d         Unused.
  *  @param[in] deadline  Unused.
@@ -96,7 +96,7 @@ db_reader::~db_reader() {}
 bool db_reader::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)d;
   (void)deadline;
-  throw (io::exceptions::shutdown(true, false)
+  throw (exceptions::shutdown()
          << "cannot read from DB configuration reader");
   return (false);
 }

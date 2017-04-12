@@ -20,7 +20,7 @@
 #include <QTimer>
 #include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
@@ -231,7 +231,7 @@ void failover::run() {
             QMutexLocker stream_lock(&_streamm);
             timed_out_stream = !_stream->read(d, 0);
           }
-          catch (io::exceptions::shutdown const& e) {
+          catch (exceptions::shutdown const& e) {
             logging::debug(logging::medium)
               << "failover: stream of endpoint '" << _name
               << "' shutdown while reading: " << e.what();
@@ -262,7 +262,7 @@ void failover::run() {
             timed_out_muxer = !_subscriber->get_muxer().read(d, 0);
             should_commit = should_commit || !d.isNull();
           }
-          catch (io::exceptions::shutdown const& e) {
+          catch (exceptions::shutdown const& e) {
             logging::debug(logging::medium)
               << "failover: muxer of endpoint '" << _name
               << "' shutdown while reading: " << e.what();
@@ -278,7 +278,7 @@ void failover::run() {
               QMutexLocker stream_lock(&_streamm);
               we = _stream->write(d);
             }
-            catch (io::exceptions::shutdown const& e) {
+            catch (exceptions::shutdown const& e) {
               logging::debug(logging::medium)
                 << "failover: stream of endpoint '" << _name
                 << "' shutdown while writing: " << e.what();

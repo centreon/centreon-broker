@@ -18,7 +18,7 @@
 
 #include <cstring>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "test_file.hh"
 
 using namespace com::centreon::broker;
@@ -31,7 +31,7 @@ test_file::~test_file() {}
 long test_file::read(void* buffer, long max_size) {
   long size(_content->size() - _pos);
   if (!size)
-    throw (io::exceptions::shutdown(true, true) << "end of file");
+    throw (exceptions::shutdown() << "end of file");
   else if (max_size < size)
     size = max_size;
   memcpy(buffer, _content->data() + _pos, size);

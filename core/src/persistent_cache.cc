@@ -22,8 +22,8 @@
 #include <QFile>
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/opener.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/persistent_cache.hh"
 
 using namespace com::centreon::broker;
@@ -101,7 +101,7 @@ void persistent_cache::get(misc::shared_ptr<io::data>& d) {
   try {
     _read_file->read(d);
   }
-  catch (io::exceptions::shutdown const& e) {
+  catch (exceptions::shutdown const& e) {
     (void)e;
     d.clear();
   }

@@ -20,8 +20,8 @@
 #include <memory>
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
@@ -68,7 +68,7 @@ muxer::muxer(
         }
       }
     }
-    catch (io::exceptions::shutdown const& e) {
+    catch (exceptions::shutdown const& e) {
       // Memory file was properly read back in memory.
       (void)e;
     }
@@ -91,7 +91,7 @@ muxer::muxer(
       ++_events_size;
     } while (_events_size < event_queue_max_size());
   }
-  catch (io::exceptions::shutdown const& e) {
+  catch (exceptions::shutdown const& e) {
     // Queue file was entirely read back.
     (void)e;
   }
@@ -435,7 +435,7 @@ void muxer::_get_event_from_file(misc::shared_ptr<io::data>& event) {
         _file->read(event);
       } while (event.isNull());
     }
-    catch (io::exceptions::shutdown const& e) {
+    catch (exceptions::shutdown const& e) {
       // The file end was reach.
       (void)e;
       _file.reset();

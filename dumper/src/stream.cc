@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/dumper/stream.hh"
 #include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -81,7 +81,7 @@ stream::~stream() {}
 bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
-  throw (io::exceptions::shutdown(true, false)
+  throw (exceptions::shutdown()
          << "attempt to read from dumper '" << _path << "'");
   return (true);
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@
 #include <QHash>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/tokenizer.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -107,7 +107,7 @@ bool node_events_stream::read(
                            time_t deadline) {
   (void)deadline;
   d.clear();
-  throw (io::exceptions::shutdown(true, false)
+  throw (exceptions::shutdown()
          << "cannot read from a node events stream");
   return (true);
 }

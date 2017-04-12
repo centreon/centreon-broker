@@ -17,8 +17,8 @@
 */
 
 #include <gtest/gtest.h>
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/splitter.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "../test_file.hh"
 #include "../test_fs_browser.hh"
 
@@ -73,7 +73,7 @@ TEST_F(FileSplitterDefault, WriteReturnsNumberOfBytes) {
 TEST_F(FileSplitterDefault, FirstReadNoDataAndRemove) {
   // Then
   char buffer[10];
-  ASSERT_THROW(_file->read(buffer, sizeof(buffer)), io::exceptions::shutdown);
+  ASSERT_THROW(_file->read(buffer, sizeof(buffer)), exceptions::shutdown);
   std::list<std::string> removed;
   removed.push_back(_path);
   ASSERT_EQ(_fs_browser->get_removed(), removed);

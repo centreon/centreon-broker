@@ -30,8 +30,8 @@
 #include "com/centreon/broker/database_preparator.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
@@ -2411,8 +2411,7 @@ int stream::flush() {
 bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
-  throw (io::exceptions::shutdown(true, false)
-         << "cannot read from SQL database");
+  throw (exceptions::shutdown() << "cannot read from SQL database");
   return (true);
 }
 

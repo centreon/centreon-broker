@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@
 #include "com/centreon/broker/dumper/dump.hh"
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/dumper/fifo_dumper.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 #define BUF_SIZE 4096 * 4
@@ -110,7 +110,7 @@ bool fifo_dumper::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  */
 int fifo_dumper::write(misc::shared_ptr<io::data> const& d) {
   if (!d.isNull())
-    throw (io::exceptions::shutdown(false, true)
+    throw (exceptions::shutdown()
            << "cannot write to FIFO dumper '" << _path << "'");
   return (1);
 }

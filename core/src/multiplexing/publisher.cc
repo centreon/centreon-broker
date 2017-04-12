@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 */
 
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 
@@ -71,8 +71,7 @@ publisher& publisher::operator=(publisher const& other) {
 bool publisher::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
-  throw (io::exceptions::shutdown(true, false)
-         << "cannot read from publisher");
+  throw (exceptions::shutdown() << "cannot read from publisher");
   return (true);
 }
 

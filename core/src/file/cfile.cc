@@ -20,7 +20,7 @@
 #include <cstdlib>
 #include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 
 using namespace com::centreon::broker::file;
 
@@ -85,8 +85,7 @@ long cfile::read(void* buffer, long max_size) {
   size_t retval(fread(buffer, 1, max_size, _stream));
   if (retval == 0) {
     if (feof(_stream))
-      throw (io::exceptions::shutdown(true, true)
-             << "end of file reached");
+      throw (exceptions::shutdown() << "end of file reached");
     else if ((EAGAIN == errno) || (EINTR == errno))
       retval = 0;
     else {

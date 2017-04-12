@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -21,12 +21,12 @@
 #include <QMutexLocker>
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/extcmd/command_listener.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
 #include "com/centreon/broker/neb/engcmd/engine_command.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 
 using namespace com::centreon::broker::neb::engcmd;
 using namespace com::centreon::broker::extcmd;
@@ -63,8 +63,7 @@ bool engine_command::read(
        time_t deadline) {
   (void)deadline;
   d.clear();
-  throw (io::exceptions::shutdown(true, false)
-         << "cannot read from engine command");
+  throw (exceptions::shutdown() << "cannot read from engine command");
   return (true);
 }
 

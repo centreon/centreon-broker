@@ -17,7 +17,7 @@
 */
 
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/generator/dummy.hh"
 #include "com/centreon/broker/generator/receiver.hh"
 
@@ -45,7 +45,7 @@ receiver::~receiver() {}
 bool receiver::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
-  throw (io::exceptions::shutdown(true, false)
+  throw (exceptions::shutdown()
          << "cannot read from event receiver (generator)");
   return (true);
 }

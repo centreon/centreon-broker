@@ -16,7 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/generator/dummy.hh"
 #include "com/centreon/broker/generator/sender.hh"
 
@@ -56,7 +56,7 @@ bool sender::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  */
 int sender::write(misc::shared_ptr<io::data> const& d) {
   (void)d;
-  throw (io::exceptions::shutdown(false, true)
+  throw (exceptions::shutdown()
          << "cannot write to event sender (generator)");
   return (1);
 }

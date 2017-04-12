@@ -20,8 +20,8 @@
 #include <sstream>
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -111,7 +111,7 @@ int stream::flush() {
 bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
-  throw (com::centreon::broker::io::exceptions::shutdown(true, false)
+  throw (exceptions::shutdown()
          << "cannot read from InfluxDB database");
   return (true);
 }

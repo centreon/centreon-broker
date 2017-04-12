@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@
 #include <iomanip>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/cached.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
@@ -159,7 +159,7 @@ output::~output() {}
 bool output::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
-  throw (broker::io::exceptions::shutdown(true, false)
+  throw (com::centreon::broker::exceptions::shutdown()
          << "cannot read from RRD stream");
   return (true);
 }
