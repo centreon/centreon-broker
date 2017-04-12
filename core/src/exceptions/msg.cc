@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Centreon
+** Copyright 2009-2011,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,10 +34,10 @@ msg::msg()  {}
 /**
  *  Copy constructor.
  *
- *  @param[in] b Object to build from.
+ *  @param[in] other  Object to build from.
  */
-msg::msg(msg const& b)
-  : misc::stringifier(b), std::exception(b) {}
+msg::msg(msg const& other)
+  : misc::stringifier(other), std::exception(other) {}
 
 /**
  *  Destructor.
@@ -47,31 +47,14 @@ msg::~msg() throw () {}
 /**
  *  Assignment operator overload.
  *
- *  @param[in] b Object to copy from.
+ *  @param[in] other  Object to copy from.
  *
  *  @return This instance.
  */
-msg& msg::operator=(msg const& b)  {
-  misc::stringifier::operator=(b);
-  std::exception::operator=(b);
+msg& msg::operator=(msg const& other)  {
+  misc::stringifier::operator=(other);
+  std::exception::operator=(other);
   return (*this);
-}
-
-/**
- *  Clone the exception object.
- *
- *  @return Copy of this exception object.
- */
-msg* msg::clone() const {
-  return (new msg(*this));
-}
-
-/**
- *  Rethrow the exception.
- */
-void msg::rethrow() const {
-  throw (*this);
-  return ;
 }
 
 /**

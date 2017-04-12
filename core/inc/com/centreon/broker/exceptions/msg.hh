@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011,2015 Centreon
+** Copyright 2009-2011,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -36,12 +36,10 @@ namespace               exceptions {
   class                 msg : private misc::stringifier,
 			      public std::exception {
    public:
-                        msg() ;
-                        msg(msg const& b) ;
-    virtual             ~msg() throw() ;
-    msg&                operator=(msg const& b) ;
-    virtual msg*        clone() const;
-    virtual void        rethrow() const;
+                        msg();
+                        msg(msg const& other);
+    virtual             ~msg() throw ();
+    msg&                operator=(msg const& other);
     virtual char const* what() const throw ();
 
     /**
