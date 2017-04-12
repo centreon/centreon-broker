@@ -1,5 +1,5 @@
 /*
-** Copyright 2011 Centreon
+** Copyright 2011,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,53 +16,42 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_IO_EXCEPTIONS_SHUTDOWN_HH_
-# define CCB_IO_EXCEPTIONS_SHUTDOWN_HH_
+#ifndef CCB_EXCEPTIONS_SHUTDOWN_HH
+#  define CCB_EXCEPTIONS_SHUTDOWN_HH
 
-# include "com/centreon/broker/exceptions/msg.hh"
-# include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/exceptions/msg.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace       io {
-  namespace     exceptions {
+namespace     exceptions {
+  /**
+   *  @class shutdown shutdown.hh "com/centreon/broker/exceptions/shutdown.hh"
+   *  @brief Shutdown exception class.
+   *
+   *  This exception is thrown when someone attemps to read from a
+   *  stream that has been shutdown.
+   */
+  class       shutdown : public msg {
+  public:
+              shutdown();
+              shutdown(shutdown const& other);
+              ~shutdown() throw ();
+    shutdown& operator=(shutdown const& other);
+
     /**
-     *  @class shutdown shutdown.hh "com/centreon/broker/io/exceptions/shutdown.hh"
-     *  @brief Shutdown exception class.
+     *  Insert data in message.
      *
-     *  This exception is thrown when someone attemps to read from a
-     *  stream that has been shutdown.
+     *  @param[in] t Data to insert.
      */
-    class       shutdown : public com::centreon::broker::exceptions::msg {
-     private:
-      bool      _in_shutdown;
-      bool      _out_shutdown;
-      void      _internal_copy(shutdown const& s);
-
-     public:
-                shutdown(bool in_shutdown, bool out_shutdown);
-                shutdown(shutdown const& s);
-                ~shutdown() throw ();
-      shutdown& operator=(shutdown const& s);
-      msg*      clone() const;
-      bool      is_in_shutdown() const;
-      bool      is_out_shutdown() const;
-      void      rethrow() const;
-
-      /**
-       *  Insert data in message.
-       *
-       *  @param[in] t Data to insert.
-       */
-      template  <typename T>
-      shutdown& operator<<(T t) throw () {
-        com::centreon::broker::exceptions::msg::operator<<(t);
-        return (*this);
-      }
-    };
-  }
+    template  <typename T>
+    shutdown& operator<<(T t) throw () {
+      msg::operator<<(t);
+      return (*this);
+    }
+  };
 }
 
 CCB_END()
 
-#endif /* !CCB_IO_EXCEPTIONS_SHUTDOWN_HH_ */
+#endif // !CCB_EXCEPTIONS_SHUTDOWN_HH
