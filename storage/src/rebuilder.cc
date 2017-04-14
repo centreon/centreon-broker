@@ -226,9 +226,9 @@ void rebuilder::run() {
             metrics_to_rebuild.pop_front();
             _rebuild_metric(
               *db,
+              info.metric_id,
               host_id,
               service_id,
-              info.metric_id,
               info.metric_name,
               info.metric_type,
               check_interval,
