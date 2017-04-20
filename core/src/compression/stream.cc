@@ -39,7 +39,7 @@ using namespace com::centreon::broker::compression;
  *  @param[in] level Compression level.
  *  @param[in] size  Compression buffer size.
  */
-stream::stream(int level, unsigned int size)
+stream::stream(int level, int size)
   : _level(level), _shutdown(false), _size(size) {}
 
 /**
@@ -221,7 +221,7 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
       _wbuffer.append(r);
 
       // Send compressed data if size limit is reached.
-      if (static_cast<unsigned int>(_wbuffer.size()) >= _size)
+      if (_wbuffer.size() >= _size)
         _flush();
     }
   }

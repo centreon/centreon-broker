@@ -39,7 +39,7 @@ namespace        compression {
 
                  stream(
                    int level = -1,
-                   unsigned int size = 0);
+                   int size = 0);
                  stream(stream const& other);
                  ~stream();
     stream&      operator=(stream const& other);
@@ -60,7 +60,7 @@ namespace        compression {
     int          _level;
     QByteArray   _rbuffer;
     bool         _shutdown;
-    unsigned int _size;
+    int          _size;
     QByteArray   _wbuffer;
   };
 }
