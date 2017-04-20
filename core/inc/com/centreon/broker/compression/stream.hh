@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Centreon
+** Copyright 2011-2013,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -33,7 +33,10 @@ namespace        compression {
    *  Compress and uncompress data.
    */
   class          stream : public io::stream {
-  public:
+   public:
+    static int const
+                 max_data_size = 100000000;
+
                  stream(
                    int level = -1,
                    unsigned int size = 0);
@@ -47,15 +50,16 @@ namespace        compression {
     void         statistics(io::properties& tree) const;
     int          write(misc::shared_ptr<io::data> const& d);
 
-  private:
+   private:
     void         _flush();
-    bool         _get_data(
-                   unsigned int size,
+    void         _get_at_least(
+                   int size,
                    time_t timeout);
     void         _internal_copy(stream const& other);
 
     int          _level;
     QByteArray   _rbuffer;
+    bool         _shutdown;
     unsigned int _size;
     QByteArray   _wbuffer;
   };

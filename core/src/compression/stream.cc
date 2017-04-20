@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2016 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
 */
 
 #include "com/centreon/broker/compression/stream.hh"
+#include "com/centreon/broker/exceptions/interrupt.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/exceptions/timeout.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -39,7 +40,7 @@ using namespace com::centreon::broker::compression;
  *  @param[in] size  Compression buffer size.
  */
 stream::stream(int level, unsigned int size)
-  : _level(level), _size(size) {}
+  : _level(level), _shutdown(false), _size(size) {}
 
 /**
  *  Copy constructor.
@@ -91,41 +92,69 @@ bool stream::read(
   data.clear();
 
   try {
-    // Compute compressed data length.
-    if (_get_data(sizeof(qint32), deadline)) {
-      int size;
-      {
-        unsigned char* buff((unsigned char*)_rbuffer.data());
-        size = (buff[0] << 24)
-               | (buff[1] << 16)
-               | (buff[2] << 8)
-               | (buff[3]);
+    // Process buffer as long as data is corrupted
+    // or until an exception occurs.
+    bool corrupted(true);
+    int size(0);
+    while (corrupted) {
+      // Get compressed data length.
+      while (corrupted) {
+        _get_at_least(sizeof(qint32), deadline);
+        {
+          unsigned char* buff((unsigned char*)_rbuffer.data());
+          size = (buff[0] << 24)
+                  | (buff[1] << 16)
+                  | (buff[2] << 8)
+                  | (buff[3]);
+        }
+
+        // Check if size is within bounds.
+        if ((size <= 0) || (size > max_data_size)) {
+          // Skip corrupted data, one byte at a time.
+          logging::error(logging::low)
+            << "compression: " << this
+            << " got corrupted packet size of " << size
+            << " bytes, not in the 0-" << max_data_size
+            << " range, skipping next byte";
+          _rbuffer.remove(0, 1);
+        }
+        else
+          corrupted = false;
       }
 
       // Get compressed data.
-      if (_get_data(size + 4, deadline)) {
-        misc::shared_ptr<io::raw> r(new io::raw);
-        r->QByteArray::operator=(qUncompress(static_cast<uchar*>(
-                                   static_cast<void*>((_rbuffer.data()
-                                                       + 4))),
-                                   size));
-        logging::debug(logging::low) << "compression: " << this
-          << " uncompressed " << size + 4 << " bytes to " << r->size()
-          << " bytes";
-        data = r;
-        _rbuffer.remove(0, size + 4);
+      _get_at_least(size + sizeof(qint32), deadline);
+      misc::shared_ptr<io::raw> r(new io::raw);
+      r->QByteArray::operator=(qUncompress(
+        static_cast<uchar*>(static_cast<void*>((_rbuffer.data() + sizeof(qint32)))),
+        size));
+      if (!r->size()) { // Uncompressed size of 0 means corrupted input.
+        logging::error(logging::low)
+          << "compression: " << this
+          << " got corrupted compressed data, skipping next byte";
+        _rbuffer.remove(0, 1);
+        corrupted = true;
       }
-      else
-        _rbuffer.clear();
+      else {
+        logging::debug(logging::low) << "compression: " << this
+          << " uncompressed " << size + sizeof(qint32) << " bytes to "
+          << r->size() << " bytes";
+        data = r;
+        _rbuffer.remove(0, size + sizeof(qint32));
+        corrupted = false;
+      }
     }
-    else
-      _rbuffer.clear();
+  }
+  catch (exceptions::interrupt const& e) {
+    (void)e;
+    return (true);
   }
   catch (exceptions::timeout const& e) {
     (void)e;
     return (false);
   }
-  catch (io::exceptions::shutdown const& e) {
+  catch (exceptions::shutdown const& e) {
+    _shutdown = true;
     if (!_wbuffer.isEmpty()) {
       misc::shared_ptr<io::raw> r(new io::raw);
       *static_cast<QByteArray*>(r.data()) = _wbuffer;
@@ -157,7 +186,7 @@ void stream::statistics(io::properties& tree) const {
  */
 int stream::flush() {
   _flush();
-  return (-1);
+  return (0);
 }
 
 /**
@@ -167,24 +196,36 @@ int stream::flush() {
  *
  *  @param[in] d Data to send.
  *
- *  @return -1 due to buffering making it impossible to accurately
- *          acknowledge events.
+ *  @return 1.
  */
 int stream::write(misc::shared_ptr<io::data> const& d) {
   if (!validate(d, "compression"))
     return (1);
 
+  // Check if substream is shutdown.
+  if (_shutdown)
+    throw (exceptions::shutdown() << "cannot write to compression "
+           << "stream: sub-stream is already shutdown");
+
   // Process raw data only.
   if (d->type() == io::raw::static_type()) {
-    // Append data to write buffer.
-    misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
-    _wbuffer.append(*r);
+    io::raw const& r(d.ref_as<io::raw>());
 
-    // Send compressed data if size limit is reached.
-    if (static_cast<unsigned int>(_wbuffer.size()) >= _size)
-      _flush();
+    // Check length.
+    if (r.size() > max_data_size)
+      throw (exceptions::msg() << "cannot compress buffers longer than "
+             << max_data_size << " bytes: you should report this error "
+             << "to Centreon Broker developers");
+    else if (r.size() > 0) {
+      // Append data to write buffer.
+      _wbuffer.append(r);
+
+      // Send compressed data if size limit is reached.
+      if (static_cast<unsigned int>(_wbuffer.size()) >= _size)
+        _flush();
+    }
   }
-  return (-1);
+  return (1);
 }
 
 /**************************************
@@ -197,6 +238,11 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
  *  Flush data accumulated in write buffer.
  */
 void stream::_flush() {
+  // Check for shutdown stream.
+  if (_shutdown)
+    throw (exceptions::shutdown() << "cannot flush compression "
+           << "stream: sub-stream is already shutdown");
+
   if (_wbuffer.size() > 0) {
     // Compress data.
     misc::shared_ptr<io::raw> compressed(new io::raw);
@@ -229,37 +275,30 @@ void stream::_flush() {
  *  @param[in]  size       Data size to get.
  *  @param[in]  deadline   Timeout.
  */
-bool stream::_get_data(
-               unsigned int size,
-               time_t deadline) {
-  bool retval(false);
-  while (static_cast<unsigned int>(_rbuffer.size()) < size) {
+void stream::_get_at_least(int size, time_t deadline) {
+  while (_rbuffer.size() < size) {
     misc::shared_ptr<io::data> d;
     if (!_substream->read(d, deadline))
       throw (exceptions::timeout());
-    if (d.isNull())
-      break ;
-    if (d->type() == io::raw::static_type()) {
+    else if (d.isNull())
+      throw (exceptions::interrupt());
+    else if (d->type() == io::raw::static_type()) {
       misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
       _rbuffer.append(*r);
     }
   }
-
-  if (static_cast<unsigned int>(_rbuffer.size()) >= size)
-    retval = true;
-
-  return (retval);
+  return ;
 }
 
 /**
  *  Copy internal data members.
  *
- *  @param[in] s Object to copy.
+ *  @param[in] other  Object to copy.
  */
-void stream::_internal_copy(stream const& s) {
-  _level = s._level;
-  _rbuffer = s._rbuffer;
-  _size = s._size;
-  _wbuffer = s._wbuffer;
+void stream::_internal_copy(stream const& other) {
+  _level = other._level;
+  _rbuffer = other._rbuffer;
+  _size = other._size;
+  _wbuffer = other._wbuffer;
   return ;
 }
