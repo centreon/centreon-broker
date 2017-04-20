@@ -176,3 +176,26 @@ TEST_F(CompressionStreamWrite, WriteOnShutdown) {
   // When, Then
   ASSERT_THROW(_stream->write(new_data()), exceptions::shutdown);
 }
+
+// Given a compression stream
+// And write() was called with a data payload smaller than the buffer size
+// When flush() is called
+// Then the return value is 0
+// And compressed data is written to the substream
+TEST_F(CompressionStreamWrite, Flush) {
+  // Given
+  _stream = new compression::stream(-1, 20000);
+  _stream->set_substream(_substream);
+  _stream->write(new_data());
+  misc::shared_ptr<io::data> d;
+  _stream->read(d);
+  ASSERT_TRUE(d.isNull());
+
+  // When
+  int retval(_stream->flush());
+
+  // Then
+  ASSERT_EQ(retval, 0);
+  _stream->read(d);
+  ASSERT_TRUE(!d.isNull());
+}
