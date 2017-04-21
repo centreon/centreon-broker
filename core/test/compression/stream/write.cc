@@ -21,55 +21,15 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "memory_stream.hh"
 
 using namespace com::centreon::broker;
-
-class  CompressionStreamWriteMemoryStream : public io::stream {
- public:
-        CompressionStreamWriteMemoryStream()
-    : _shutdown(false) {}
-
-  bool read(
-         misc::shared_ptr<io::data>& d,
-         time_t deadline = (time_t)-1) {
-    (void)deadline;
-    if (_shutdown)
-      throw (exceptions::shutdown() << __FUNCTION__
-             << " is shutdown");
-
-    d = _buffer;
-    _buffer = misc::shared_ptr<io::raw>();
-    return (true);
-  }
-
-  int  write(misc::shared_ptr<io::data> const& d) {
-    if (d.isNull() || (d->type() != io::raw::static_type()))
-      throw (exceptions::msg()
-             << "invalid data sent to " << __FUNCTION__);
-    io::raw const& e(d.ref_as<io::raw>());
-    if (_buffer.isNull())
-      _buffer = new io::raw(e);
-    else
-      _buffer->append(e);
-    return (1);
-  }
-
-  void shutdown(bool shut_it_down = true) {
-    _shutdown = shut_it_down;
-    return ;
-  }
-
- private:
-  misc::shared_ptr<io::raw>
-       _buffer;
-  bool _shutdown;
-};
 
 class   CompressionStreamWrite : public ::testing::Test {
  public:
   void  SetUp() {
     _stream = new compression::stream(-1, 20000);
-    _substream = new CompressionStreamWriteMemoryStream();
+    _substream = new CompressionStreamMemoryStream();
     _stream->set_substream(_substream);
     return ;
   }
@@ -84,7 +44,7 @@ class   CompressionStreamWrite : public ::testing::Test {
  protected:
   misc::shared_ptr<compression::stream>
         _stream;
-  misc::shared_ptr<CompressionStreamWriteMemoryStream>
+  misc::shared_ptr<CompressionStreamMemoryStream>
         _substream;
 };
 

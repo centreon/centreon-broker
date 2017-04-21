@@ -29,6 +29,8 @@ add_executable("ut"
   # Core sources.
   "${TESTS_DIR}/main.cc"
   "${TESTS_DIR}/ceof/ceof_parser/parse.cc"
+  "${TESTS_DIR}/compression/stream/memory_stream.hh"
+  "${TESTS_DIR}/compression/stream/read.cc"
   "${TESTS_DIR}/compression/stream/write.cc"
   "${TESTS_DIR}/exceptions/msg/default.cc"
   "${TESTS_DIR}/file/splitter/default.cc"
