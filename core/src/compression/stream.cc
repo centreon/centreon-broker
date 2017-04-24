@@ -99,7 +99,14 @@ bool stream::read(
     while (corrupted) {
       // Get compressed data length.
       while (corrupted) {
-        _get_at_least(sizeof(qint32), deadline);
+        _get_data(sizeof(qint32), deadline);
+
+        // We do not have enough data to get the next chunk's size.
+        // Stream is shutdown.
+        if (_rbuffer.size() < static_cast<int>(sizeof(qint32)))
+          throw (exceptions::shutdown() << "no more data to uncompress");
+
+        // Extract next chunk's size.
         {
           unsigned char* buff((unsigned char*)_rbuffer.data());
           size = (buff[0] << 24)
@@ -123,12 +130,19 @@ bool stream::read(
       }
 
       // Get compressed data.
-      _get_at_least(size + sizeof(qint32), deadline);
+      _get_data(size + sizeof(qint32), deadline);
       misc::shared_ptr<io::raw> r(new io::raw);
-      r->QByteArray::operator=(qUncompress(
-        static_cast<uchar*>(static_cast<void*>((_rbuffer.data() + sizeof(qint32)))),
-        size));
-      if (!r->size()) { // Uncompressed size of 0 means corrupted input.
+
+      // The requested data size might have not been read entirely
+      // because of substream shutdown. This indicates that data is
+      // corrupted because the size is greater than the remaining
+      // payload size.
+      if (_rbuffer.size() >= static_cast<int>(size + sizeof(qint32))) {
+        r->QByteArray::operator=(qUncompress(
+          static_cast<uchar*>(static_cast<void*>((_rbuffer.data() + sizeof(qint32)))),
+          size));
+      }
+      if (!r->size()) { // No data or uncompressed size of 0 means corrupted input.
         logging::error(logging::low)
           << "compression: " << this
           << " got corrupted compressed data, skipping next byte";
@@ -270,22 +284,30 @@ void stream::_flush() {
 }
 
 /**
- *  Get data with a fixed size.
+ *  Get data with a size.
  *
  *  @param[in]  size       Data size to get.
  *  @param[in]  deadline   Timeout.
  */
-void stream::_get_at_least(int size, time_t deadline) {
-  while (_rbuffer.size() < size) {
-    misc::shared_ptr<io::data> d;
-    if (!_substream->read(d, deadline))
-      throw (exceptions::timeout());
-    else if (d.isNull())
-      throw (exceptions::interrupt());
-    else if (d->type() == io::raw::static_type()) {
-      misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
-      _rbuffer.append(*r);
+void stream::_get_data(int size, time_t deadline) {
+  try {
+    while (_rbuffer.size() < size) {
+      misc::shared_ptr<io::data> d;
+      if (!_substream->read(d, deadline))
+        throw (exceptions::timeout());
+      else if (d.isNull())
+        throw (exceptions::interrupt());
+      else if (d->type() == io::raw::static_type()) {
+        misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
+        _rbuffer.append(*r);
+      }
     }
+  }
+  // If the substream is shutdown, just indicates it and return already
+  // read data. Caller will handle missing data.
+  catch (exceptions::shutdown const& e) {
+    (void)e;
+    _shutdown = true;
   }
   return ;
 }

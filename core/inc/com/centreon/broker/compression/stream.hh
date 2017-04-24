@@ -52,7 +52,7 @@ namespace        compression {
 
    private:
     void         _flush();
-    void         _get_at_least(
+    void         _get_data(
                    int size,
                    time_t timeout);
     void         _internal_copy(stream const& other);
