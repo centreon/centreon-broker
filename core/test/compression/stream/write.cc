@@ -147,15 +147,14 @@ TEST_F(CompressionStreamWrite, Flush) {
   _stream = new compression::stream(-1, 20000);
   _stream->set_substream(_substream);
   _stream->write(new_data());
-  misc::shared_ptr<io::data> d;
-  _stream->read(d);
-  ASSERT_TRUE(d.isNull());
+  ASSERT_TRUE(_substream->get_buffer().isNull() || _substream->get_buffer()->isEmpty());
 
   // When
   int retval(_stream->flush());
 
   // Then
   ASSERT_EQ(retval, 0);
+  misc::shared_ptr<io::data> d;
   _stream->read(d);
   ASSERT_TRUE(!d.isNull());
 }

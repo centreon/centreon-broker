@@ -125,18 +125,18 @@ TEST_F(CompressionStreamRead, Shutdown) {
 }
 
 // Given a compression stream
-// And the substream has corrupted compressed data before valid data
+// And the substream has a corrupted compressed data chunk before a valid data chunk
 // When read() is called
 // Then the valid data is extracted
 TEST_F(CompressionStreamRead, CorruptedData) {
   // Given
   _stream->write(predefined_data());
+  _stream->flush();
   _stream->write(predefined_data());
   _stream->flush();
   misc::shared_ptr<io::raw>& buffer(_substream->get_buffer());
-  (*buffer)[42] = 42;
-  (*buffer)[100] = 1;
-  (*buffer)[101] = 36;
+  (*buffer)[4] = 42;
+  (*buffer)[5] = 42;
 
   // When
   misc::shared_ptr<io::data> d;
@@ -156,10 +156,11 @@ TEST_F(CompressionStreamRead, CorruptedData) {
 TEST_F(CompressionStreamRead, FragmentGreaterThanMaxSize) {
   // Given
   _stream->write(predefined_data());
+  _stream->flush();
   _stream->write(predefined_data());
   _stream->flush();
   misc::shared_ptr<io::raw>& buffer(_substream->get_buffer());
-  *static_cast<uint32_t*>(static_cast<void*>(buffer.data())) = htonl(0xFFFFFFFF);
+  *static_cast<uint32_t*>(static_cast<void*>(buffer->QByteArray::data())) = htonl(0xFFFFFFFF);
 
   // When
   misc::shared_ptr<io::data> d;

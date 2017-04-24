@@ -45,6 +45,9 @@ class  CompressionStreamMemoryStream : public com::centreon::broker::io::stream 
       return (false);
     d = _buffer;
     _buffer = misc::shared_ptr<io::raw>();
+    if (d.isNull())
+      throw (exceptions::shutdown() << __FUNCTION__
+             << " has no more data");
     return (true);
   }
 
