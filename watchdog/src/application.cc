@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ void application::handle_sighup() {
   config = parser.parse(_config_path);
   } catch (std::exception const& e) {
     logging::error(logging::medium)
-      << "watchdog: couldn't parse the new configuration: " << e.what();
+      << "watchdog: could not parse the new configuration: " << e.what();
     _sighup->setEnabled(true);
     return;
   }
@@ -94,10 +94,9 @@ void application::handle_sigterm() {
   _sigterm->setEnabled(false);
   char tmp;
   ::read(sigterm_fd[1], &tmp, sizeof(tmp));
-
   _quit();
-
   _sigterm->setEnabled(true);
+  return ;
 }
 
 /**
@@ -208,12 +207,15 @@ void application::_apply_new_configuration(configuration const& config) {
  */
 void application::_quit() {
   logging::info(logging::medium)
-    << "watchdog: exiting";
+    << "watchdog: initiating shutdown sequence";
   for (std::map<std::string, instance*>::iterator
          it = _instances.begin(),
          end = _instances.end();
        it != end;
        ++it)
     it->second->stop_instance();
+  logging::info(logging::medium)
+    << "watchdog: shutdown sequence completed, exiting watchdog";
   exit();
+  return ;
 }
