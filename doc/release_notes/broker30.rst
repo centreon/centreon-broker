@@ -13,6 +13,13 @@ The consequence of setting filters on inputs was that event loop could
 occur. In this release, inputs can only one way of filters, therefore
 preventing event loops.
 
+Retention file hardening
+========================
+
+Some users reported issues with retention files. In this release the
+most important classes managing retention files were refactored and unit
+tested.
+
 =====================
 Centreon Broker 3.0.5
 =====================
