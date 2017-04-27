@@ -20,6 +20,14 @@ Some users reported issues with retention files. In this release the
 most important classes managing retention files were refactored and unit
 tested.
 
+Fix inherited BA downtimes on non-default instance
+==================================================
+
+In previous versions BA downtime inheritance only worked with the
+default Centreon instance created during installation (with ID 1). In
+some cases (recreated instance, Poller Display) the instance ID was not
+1 and prevented BA downtime inheritance from working.
+
 =====================
 Centreon Broker 3.0.5
 =====================
