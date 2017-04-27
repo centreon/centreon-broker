@@ -30,6 +30,7 @@
 #include "com/centreon/broker/bam/rebuild.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/bam/monitoring_stream.hh"
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/timestamp.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -373,12 +374,14 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     timestamp now = timestamp::now();
     inherited_downtime const& dwn = data.ref_as<inherited_downtime const>();
     if (dwn.in_downtime)
-      oss << "[" << now << "] SCHEDULE_SVC_DOWNTIME;_Module_BAM_1;ba_"
+      oss << "[" << now << "] SCHEDULE_SVC_DOWNTIME;_Module_BAM_"
+          << config::applier::state::instance().poller_id() << ";ba_"
           << dwn.ba_id << ";" << now << ";" << timestamp::max()
           << ";1;0;0;Centreon Broker BAM Module;"
              "Automatic downtime triggered by BA downtime inheritance";
     else
-      oss << "[" << now << "] DEL_SVC_DOWNTIME_FULL;_Module_BAM_1;ba_"
+      oss << "[" << now << "] DEL_SVC_DOWNTIME_FULL;_Module_BAM_"
+          << config::applier::state::instance().poller_id() << ";ba_"
           << dwn.ba_id << ";;" << timestamp::max()
           << ";1;0;;Centreon Broker BAM Module;"
              "Automatic downtime triggered by BA downtime inheritance";

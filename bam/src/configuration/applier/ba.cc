@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2016 Centreon
+** Copyright 2014-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -233,11 +233,15 @@ void applier::ba::visit(io::stream* visitor) {
 misc::shared_ptr<neb::host> applier::ba::_ba_host(
                                            unsigned int host_id) {
   misc::shared_ptr<neb::host> h(new neb::host);
-  h->host_id = host_id;
-  h->host_name = "_Module_BAM_1";
-  h->last_update = time(NULL);
   h->poller_id
     = com::centreon::broker::config::applier::state::instance().poller_id();
+  h->host_id = host_id;
+  {
+    std::ostringstream oss;
+    oss << "_Module_BAM_" << h->poller_id;
+    h->host_name = oss.str().c_str();
+  }
+  h->last_update = time(NULL);
   return (h);
 }
 
