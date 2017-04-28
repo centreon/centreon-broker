@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2013,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -61,6 +61,20 @@ GCRY_THREAD_OPTION_PTHREAD_IMPL;
 
 /**************************************
 *                                     *
+*          Static Functions           *
+*                                     *
+**************************************/
+
+// Might be used below, when library logging is enabled.
+// static void log_gnutls_message(int level, char const* message) {
+//   (void)level;
+//   logging::debug(logging::low)
+//     << "TLS: GNU TLS debug: " << message;
+//   return ;
+// }
+
+/**************************************
+*                                     *
 *          Global Functions           *
 *                                     *
 **************************************/
@@ -105,11 +119,16 @@ void tls::initialize() {
   {
     logging::info(logging::medium)
       << "TLS: compiled with GNU TLS version " << GNUTLS_VERSION;
-    char const* v(gnutls_check_version(NULL));
+    char const* v(gnutls_check_version(GNUTLS_VERSION));
     if (!v)
-      v = "unknown";
+      throw (exceptions::msg() << "TLS: GNU TLS run-time version is "
+             << "incompatible with the compile-time version ("
+             << GNUTLS_VERSION
+             << "): please update your GNU TLS library");
     logging::info(logging::high)
       << "TLS: loading GNU TLS version " << v;
+    // gnutls_global_set_log_function(log_gnutls_message);
+    // gnutls_global_set_log_level(11);
   }
 
   // Load Diffie-Hellman parameters.
