@@ -179,12 +179,12 @@ void file::log_msg(char const* msg,
     }
     if (_with_thread_id) {
       _write("[");
-      // 2 characters for 0x
-      char buffer[integer_width<QThread*>::value + 2];
-      snprintf(buffer,
+      char buffer[integer_width<long long>::value + 1];
+      snprintf(
+        buffer,
         sizeof(buffer),
-        "0x%llx",
-        (unsigned long long)(QThread::currentThread()));
+        "0x%lli",
+        (long long)(pthread_self()));
       _write(buffer);
       _write("] ");
     }
