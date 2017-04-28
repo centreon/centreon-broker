@@ -179,7 +179,8 @@ void file::log_msg(char const* msg,
     }
     if (_with_thread_id) {
       _write("[");
-      char buffer[integer_width<unsigned long long>::value + 1];
+      // 2 characters for 0x
+      char buffer[integer_width<unsigned long long>::value + 2];
       snprintf(
         buffer,
         sizeof(buffer),
