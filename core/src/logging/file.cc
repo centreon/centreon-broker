@@ -179,12 +179,12 @@ void file::log_msg(char const* msg,
     }
     if (_with_thread_id) {
       _write("[");
-      char buffer[integer_width<long long>::value + 1];
+      char buffer[integer_width<unsigned long long>::value + 1];
       snprintf(
         buffer,
         sizeof(buffer),
-        "0x%lli",
-        (long long)(pthread_self()));
+        "0x%llx",
+        (unsigned long long)(pthread_self()));
       _write(buffer);
       _write("] ");
     }
