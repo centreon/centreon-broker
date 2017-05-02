@@ -18,11 +18,9 @@
 
 #include <cstring>
 #include <gnutls/gnutls.h>
-#if GNUTLS_VERSION_NUMBER <= 0x020B00
-#  include <cerrno>
-#  include <pthread.h>
-#  include <gcrypt.h>
-#endif // GNU TLS <= 2.11.0
+#include <cerrno>
+#include <pthread.h>
+#include <gcrypt.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/io/stream.hh"
@@ -55,9 +53,7 @@ unsigned char const tls::dh_params_2048[] =
 
 gnutls_dh_params_t tls::dh_params;
 
-#if GNUTLS_VERSION_NUMBER <= 0x020B00
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
-#endif // GNU TLS <= 2.11.0
 
 /**************************************
 *                                     *
@@ -103,12 +99,10 @@ void tls::initialize() {
       sizeof(dh_params_2048) };
   int ret;
 
-  // Eventually initialize libgcrypt.
-#if GNUTLS_VERSION_NUMBER <= 0x020B00
+  // Initialize libgcrypt.
   logging::info(logging::high)
     << "TLS: initializing libgcrypt (GNU TLS <= 2.11.0)";
   gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
-#endif // GNU TLS <= 2.11.0
 
   // Initialize GNU TLS library.
   if (gnutls_global_init() != GNUTLS_E_SUCCESS)
