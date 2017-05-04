@@ -19,7 +19,7 @@
 #include <cmath>
 #include <gtest/gtest.h>
 #include <QList>
-#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 
@@ -210,8 +210,8 @@ TEST(StorageParserParsePerfdata, Loop) {
 
 // Given a storage::parser object
 // When parse_perfdata() is called with an invalid string
-// Then it throws an exceptions::msg
-TEST(StorageParserParsePerfdata, Incorrect) {
+// Then it throws a storage::exceptions::perfdata
+TEST(StorageParserParsePerfdata, Incorrect1) {
   // Objects.
   QList<storage::perfdata> list;
   storage::parser p;
@@ -219,5 +219,19 @@ TEST(StorageParserParsePerfdata, Incorrect) {
   // Attempt to parse perfdata.
   ASSERT_THROW(
     { p.parse_perfdata("metric1= 10 metric2=42", list); },
-    com::centreon::broker::exceptions::msg);
+    com::centreon::broker::storage::exceptions::perfdata);
+}
+
+// Given a storage::parser object
+// When parse_perfdata() is called with a metric without value but with unit
+// Then it throws a storage::exceptions::perfdata
+TEST(StorageParserParsePerfdata, Incorrect2) {
+  // Given
+  QList<storage::perfdata> list;
+  storage::parser p;
+
+  // Then
+  ASSERT_THROW(
+    { p.parse_perfdata("metric=kb/s", list); },
+    com::centreon::broker::storage::exceptions::perfdata);
 }

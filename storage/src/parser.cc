@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -170,7 +170,7 @@ void parser::parse_perfdata(
   // to remember is that ASCII-compatible character encodings cannot
   // occur on multi-byte characters.
 
-  // PS : things seem to be working with with ASCII-compliant characters
+  // PS : things seem to be working with ASCII-compliant characters
   //      and multi-bytes Unicode characters. DO NOT TOUCH UNLESS YOU
   //      KNOW WHAT YOU'RE DOING.
 
@@ -231,14 +231,15 @@ void parser::parse_perfdata(
 
     // Check format.
     if (*ptr != '=')
-      throw (exceptions::perfdata() << "storage: invalid perfdata " \
-               "format: equal sign not present or misplaced");
+      throw (exceptions::perfdata() << "storage: invalid perfdata "
+             << "format: equal sign not present or misplaced");
     ++ptr;
 
     // Extract value.
     p.value(extract_double(&ptr, false));
     if (isnan(p.value()))
-      p.value(0.0);
+      throw (exceptions::perfdata() << "storage: invalid perfdata "
+             << "format: no numeric value after equal sign");
 
     // Extract unit.
     t = strcspn(ptr, " \t\n\r;");
