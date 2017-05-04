@@ -28,6 +28,12 @@ default Centreon instance created during installation (with ID 1). In
 some cases (recreated instance, Poller Display) the instance ID was not
 1 and prevented BA downtime inheritance from working.
 
+Detect metrics without valid value
+==================================
+
+Metrics without value, in improperly formatted performance data, were
+inserted in data_bin with a 0 value, polluting the table.
+
 =====================
 Centreon Broker 3.0.5
 =====================
