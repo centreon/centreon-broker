@@ -248,7 +248,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
             << "storage: error while parsing perfdata of service ("
             << ss->host_id << ", " << ss->service_id << "): "
             << e.what();
-          return (1);
+          return (0);
         }
 
         // Loop through all metrics.
