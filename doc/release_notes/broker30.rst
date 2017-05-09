@@ -34,6 +34,12 @@ Detect metrics without valid value
 Metrics without value, in improperly formatted performance data, were
 inserted in data_bin with a 0 value, polluting the table.
 
+Do not attempt to acknowledge more events than available
+========================================================
+
+The *storage* engine was sometimes generating error logs with the
+message "attempt to acknowledge more events than available".
+
 =====================
 Centreon Broker 3.0.5
 =====================
