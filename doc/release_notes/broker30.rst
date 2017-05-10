@@ -1,4 +1,25 @@
 =====================
+Centreon Broker 3.0.7
+=====================
+
+*********
+Bug fixes
+*********
+
+Fix file percent processed
+==========================
+
+The computation of file percent processed as provided in the statistics
+file was invalid.
+
+libgcrypt library issues when using GNU TLS 3
+=============================================
+
+Starting with its 3.0 version, GNU TLS does not use libgcrypt as
+cryptographic backend anymore. Therefore libgcrypt initialization was
+unnecessary in such cases.
+
+=====================
 Centreon Broker 3.0.6
 =====================
 
