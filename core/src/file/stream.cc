@@ -126,25 +126,25 @@ void stream::statistics(io::properties& tree) const {
 
   // Need computation.
   bool write_time_expected(false);
+  long long froffset(roffset + rid * static_cast<long long>(max_file_size));
+  long long fwoffset(woffset + wid * static_cast<long long>(max_file_size));
   {
     io::property& p(tree["file_percent_processed"]);
     p.set_name("file_percent_processed");
     oss.str("");
-    if (rid != wid
-        && max_file_size == std::numeric_limits<long>::max()) {
+    if (((rid != wid)
+         && max_file_size == std::numeric_limits<long>::max())
+        || !fwoffset) {
       oss << "unknown";
     }
     else {
-      oss << (roffset * 100.0 + rid * max_file_size) / (woffset + wid * max_file_size)
-          << "%";
+      oss << 100.0 * froffset / fwoffset << "%";
       write_time_expected = true;
     }
     p.set_value(oss.str());
   }
   if (write_time_expected) {
     time_t now(time(NULL));
-    long long froffset(roffset + rid * max_file_size);
-    long long fwoffset(woffset + wid * max_file_size);
 
     if (_last_time && (now != _last_time)) {
       time_t eta(0);
