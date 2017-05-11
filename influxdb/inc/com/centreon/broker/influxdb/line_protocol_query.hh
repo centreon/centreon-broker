@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2015-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_INFLUXDB_QUERY_HH
-#  define CCB_INFLUXDB_QUERY_HH
+#ifndef CCB_INFLUXDB_LINE_PROTOCOL_QUERY_HH
+#  define CCB_INFLUXDB_LINE_PROTOCOL_QUERY_HH
 
 #  include <utility>
 #  include <string>
@@ -33,13 +33,13 @@ CCB_BEGIN()
 
 namespace         influxdb {
   /**
-   *  @class query query.hh "com/centreon/broker/graphite/query.hh"
+   *  @class line_protocol_query line_protocol_query.hh "com/centreon/broker/graphite/line_protocol_query.hh"
    *  @brief Query compiling/generation.
    *
    *  This class compiles a query for further uses, generating
    *  the query fast.
    */
-  class           query {
+  class           line_protocol_query {
   public:
   public:
     enum          data_type {
@@ -47,15 +47,15 @@ namespace         influxdb {
                   metric,
                   status
     };
-                  query();
-                  query(
+                  line_protocol_query();
+                  line_protocol_query(
                     std::string const& naming_scheme,
                     data_type type,
                     macro_cache const& cache,
                     bool escape = false);
-                  query(query const& f);
-                  ~query();
-    query&        operator=(query const& f);
+                  line_protocol_query(line_protocol_query const& f);
+                  ~line_protocol_query();
+    line_protocol_query&        operator=(line_protocol_query const& f);
 
     std::string   generate_metric(storage::metric const& me);
     std::string   generate_status(storage::status const& st);
@@ -64,7 +64,7 @@ namespace         influxdb {
     // Compiled data.
     std::vector<std::string>
                   _compiled_naming_scheme;
-    std::vector<void (query::*)(io::data const&, std::ostream&)>
+    std::vector<void (line_protocol_query::*)(io::data const&, std::ostream&)>
                   _compiled_getters;
 
     // Used for generation.
@@ -100,4 +100,4 @@ namespace         influxdb {
 
 CCB_END()
 
-#endif // !CCB_INFLUXDB_QUERY_HH
+#endif // !CCB_INFLUXDB_LINE_PROTOCOL_QUERY_HH

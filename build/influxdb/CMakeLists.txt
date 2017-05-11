@@ -30,25 +30,25 @@ set(INFLUXDB "70-influxdb")
 set(INFLUXDB "${INFLUXDB}" PARENT_SCOPE)
 add_library("${INFLUXDB}" SHARED
   # Sources.
-  "${SRC_DIR}/main.cc"
-  "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/column.cc"
+  "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
-  "${SRC_DIR}/influxdb10.cc"
-  "${SRC_DIR}/stream.cc"
-  "${SRC_DIR}/macro_cache.cc"
+  "${SRC_DIR}/influxdb12.cc"
   "${SRC_DIR}/json_printer.cc"
-  "${SRC_DIR}/query.cc"
+  "${SRC_DIR}/line_protocol_query.cc"
+  "${SRC_DIR}/macro_cache.cc"
+  "${SRC_DIR}/main.cc"
+  "${SRC_DIR}/stream.cc"
   # Headers.
-  "${INC_DIR}/connector.hh"
   "${INC_DIR}/column.hh"
+  "${INC_DIR}/connector.hh"
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/influxdb.hh"
-  "${INC_DIR}/influxdb10.hh"
-  "${INC_DIR}/stream.hh"
-  "${INC_DIR}/macro_cache.hh"
+  "${INC_DIR}/influxdb12.hh"
   "${INC_DIR}/json_printer.hh"
-  "${INC_DIR}/query.hh"
+  "${INC_DIR}/line_protocol_query.hh"
+  "${INC_DIR}/macro_cache.hh"
+  "${INC_DIR}/stream.hh"
 )
 target_link_libraries("${INFLUXDB}" ${QT_LIBRARIES})
 set_target_properties("${INFLUXDB}" PROPERTIES PREFIX "")

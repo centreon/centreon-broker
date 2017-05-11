@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2015-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 #include <sstream>
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/influxdb/query.hh"
+#include "com/centreon/broker/influxdb/line_protocol_query.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -35,8 +35,8 @@ std::ostream& operator<<(std::ostream& in, QString const& string) {
 /**
  *  Create an empty query.
  */
-query::query()
-  : _type(query::unknown),
+line_protocol_query::line_protocol_query()
+  : _type(line_protocol_query::unknown),
     _cache(NULL) {}
 
 /**
@@ -44,7 +44,7 @@ query::query()
  *
  *  @param[in] naming_scheme  The naming scheme to use.
  */
-query::query(
+line_protocol_query::line_protocol_query(
         std::string const& naming_scheme,
         data_type type,
         macro_cache const& cache,
@@ -61,7 +61,7 @@ query::query(
  *
  *  @param[in] q  The object to copy.
  */
-query::query(query const& q)
+line_protocol_query::line_protocol_query(line_protocol_query const& q)
   : _compiled_naming_scheme(q._compiled_naming_scheme),
     _compiled_getters(q._compiled_getters),
     _type(q._type),
@@ -70,7 +70,7 @@ query::query(query const& q)
 /**
  *  Destructor
  */
-query::~query() {}
+line_protocol_query::~line_protocol_query() {}
 
 /**
  *  Assignment operator.
@@ -79,7 +79,7 @@ query::~query() {}
  *
  *  @return       A reference to this object.
  */
-query& query::operator=(query const& q) {
+line_protocol_query& line_protocol_query::operator=(line_protocol_query const& q) {
   if (this != &q) {
     _compiled_naming_scheme = q._compiled_naming_scheme;
     _compiled_getters = q._compiled_getters;
@@ -109,7 +109,7 @@ static std::string escape(std::string const& str) {
  *
  *  @return  The query for a metric.
  */
-std::string query::generate_metric(storage::metric const& me) {
+std::string line_protocol_query::generate_metric(storage::metric const& me) {
   if (_type != metric)
     throw (exceptions::msg()
            << "influxdb: attempt to generate metric"
@@ -117,12 +117,12 @@ std::string query::generate_metric(storage::metric const& me) {
   _naming_scheme_index = 0;
   std::ostringstream iss;
   try {
-    for (std::vector<void (query::*)(io::data const&, std::ostream&)>::const_iterator
+    for (std::vector<void (line_protocol_query::*)(io::data const&, std::ostream&)>::const_iterator
            it(_compiled_getters.begin()),
            end(_compiled_getters.end());
          it != end;
          ++it) {
-      if (!_escape || *it == &query::_get_string)
+      if (!_escape || *it == &line_protocol_query::_get_string)
         (this->**it)(me, iss);
       else {
         std::ostringstream escaped;
@@ -148,7 +148,7 @@ std::string query::generate_metric(storage::metric const& me) {
  *
  *  @return  The query for a status.
  */
-std::string query::generate_status(storage::status const& st) {
+std::string line_protocol_query::generate_status(storage::status const& st) {
   if (_type != status)
     throw (exceptions::msg()
            << "influxdb: attempt to generate status"
@@ -156,12 +156,12 @@ std::string query::generate_status(storage::status const& st) {
   _naming_scheme_index = 0;
   std::ostringstream iss;
   try {
-    for (std::vector<void (query::*)(io::data const&, std::ostream&)>::const_iterator
+    for (std::vector<void (line_protocol_query::*)(io::data const&, std::ostream&)>::const_iterator
            it(_compiled_getters.begin()),
            end(_compiled_getters.end());
          it != end;
          ++it) {
-      if (!_escape || *it == &query::_get_string)
+      if (!_escape || *it == &line_protocol_query::_get_string)
         (this->**it)(st, iss);
       else {
         std::ostringstream escaped;
@@ -185,7 +185,7 @@ std::string query::generate_status(storage::status const& st) {
  *  @param[in] naming_scheme  The naming scheme to compile.
  *  @param[in] type           The type of this query.
  */
-void query::_compile_naming_scheme(
+void line_protocol_query::_compile_naming_scheme(
               std::string const& naming_scheme,
               data_type type) {
   size_t found_macro = 0;
@@ -198,7 +198,7 @@ void query::_compile_naming_scheme(
                            found_macro - end_macro);
     if (!substr.empty()) {
       _compiled_naming_scheme.push_back(substr);
-      _compiled_getters.push_back(&query::_get_string);
+      _compiled_getters.push_back(&line_protocol_query::_get_string);
     }
 
     if ((end_macro = naming_scheme.find_first_of('$', found_macro + 1))
@@ -211,48 +211,48 @@ void query::_compile_naming_scheme(
                           found_macro,
                           end_macro + 1 - found_macro);
     if (macro == "")
-      _compiled_getters.push_back(&query::_get_dollar_sign);
+      _compiled_getters.push_back(&line_protocol_query::_get_dollar_sign);
     if (macro == "$METRICID$") {
       _throw_on_invalid(metric);
       _compiled_getters.push_back(
-        &query::_get_member<
+        &line_protocol_query::_get_member<
                   unsigned int,
                   storage::metric,
                   &storage::metric::metric_id>);
     }
     else if (macro == "$INSTANCE$")
       _compiled_getters.push_back(
-        &query::_get_instance);
+        &line_protocol_query::_get_instance);
     else if (macro == "$INSTANCEID$")
       _compiled_getters.push_back(
-        &query::_get_member<unsigned int, io::data, &io::data::source_id>);
+        &line_protocol_query::_get_member<unsigned int, io::data, &io::data::source_id>);
     else if (macro == "$HOST$")
-      _compiled_getters.push_back(&query::_get_host);
+      _compiled_getters.push_back(&line_protocol_query::_get_host);
     else if (macro == "$HOSTID$")
-      _compiled_getters.push_back(&query::_get_host_id);
+      _compiled_getters.push_back(&line_protocol_query::_get_host_id);
     else if (macro == "$SERVICE$")
-      _compiled_getters.push_back(&query::_get_service);
+      _compiled_getters.push_back(&line_protocol_query::_get_service);
     else if (macro == "$SERVICEID$")
-      _compiled_getters.push_back(&query::_get_service_id);
+      _compiled_getters.push_back(&line_protocol_query::_get_service_id);
     else if (macro == "$METRIC$") {
       _throw_on_invalid(metric);
       _compiled_getters.push_back(
-        &query::_get_member<QString, storage::metric, &storage::metric::name>);
+        &line_protocol_query::_get_member<QString, storage::metric, &storage::metric::name>);
     }
     else if (macro == "$INDEXID$") {
       _compiled_getters.push_back(
-        &query::_get_index_id);
+        &line_protocol_query::_get_index_id);
     }
     else if (macro == "$VALUE$") {
       if (type == metric)
         _compiled_getters.push_back(
-          &query::_get_member<
+          &line_protocol_query::_get_member<
                     double,
                     storage::metric,
                     &storage::metric::value>);
       else if (type == status)
         _compiled_getters.push_back(
-          &query::_get_member<
+          &line_protocol_query::_get_member<
                     short,
                     storage::status,
                     &storage::status::state>);
@@ -260,13 +260,13 @@ void query::_compile_naming_scheme(
     else if (macro == "$TIME$") {
       if (type == metric)
         _compiled_getters.push_back(
-          &query::_get_member<
+          &line_protocol_query::_get_member<
                     timestamp,
                     storage::metric,
                     &storage::metric::ctime>);
       else if (type == status)
         _compiled_getters.push_back(
-          &query::_get_member<
+          &line_protocol_query::_get_member<
                     timestamp,
                     storage::status,
                     &storage::status::ctime>);
@@ -281,7 +281,7 @@ void query::_compile_naming_scheme(
                          found_macro - end_macro);
   if (!substr.empty()) {
     _compiled_naming_scheme.push_back(substr);
-    _compiled_getters.push_back(&query::_get_string);
+    _compiled_getters.push_back(&line_protocol_query::_get_string);
   }
 }
 
@@ -290,7 +290,7 @@ void query::_compile_naming_scheme(
  *
  *  @param[in] macro_type  The macro type;
  */
-void query::_throw_on_invalid(data_type macro_type) {
+void line_protocol_query::_throw_on_invalid(data_type macro_type) {
   if (macro_type != _type)
     throw (exceptions::msg()
            << "graphite: macro of invalid type");
@@ -307,7 +307,7 @@ void query::_throw_on_invalid(data_type macro_type) {
  *  @param[out] is  The stream.
  */
 template <typename T, typename U, T (U::*member)>
-void query::_get_member(io::data const& d, std::ostream& is) {
+void line_protocol_query::_get_member(io::data const& d, std::ostream& is) {
   is << static_cast<U const&>(d).*member;
 }
 
@@ -317,7 +317,7 @@ void query::_get_member(io::data const& d, std::ostream& is) {
  *  @param[in] d     The data, unused.
  *  @param[out] is   The stream.
  */
-void query::_get_string(io::data const& d, std::ostream& is) {
+void line_protocol_query::_get_string(io::data const& d, std::ostream& is) {
   (void)d;
   is << _compiled_naming_scheme[_naming_scheme_index++];
 }
@@ -328,7 +328,7 @@ void query::_get_string(io::data const& d, std::ostream& is) {
  *  @param[in] d    The data, unused.
  *  @param[out] is  The stream, unused;
  */
-void query::_get_null(io::data const& d, std::ostream& is) {
+void line_protocol_query::_get_null(io::data const& d, std::ostream& is) {
   (void)d;
   (void)is;
 }
@@ -339,7 +339,7 @@ void query::_get_null(io::data const& d, std::ostream& is) {
  *  @param[in] d   Unused.
  *  @param[in] is  The stream.
  */
-void query::_get_dollar_sign(io::data const& d, std::ostream& is) {
+void line_protocol_query::_get_dollar_sign(io::data const& d, std::ostream& is) {
   (void)d;
   is << "$";
   return ;
@@ -351,7 +351,7 @@ void query::_get_dollar_sign(io::data const& d, std::ostream& is) {
  *
  *  @return       The index id.
  */
-unsigned int query::_get_index_id(io::data const& d) {
+unsigned int line_protocol_query::_get_index_id(io::data const& d) {
   if (_type == status)
     return (static_cast<storage::status const&>(d).index_id);
   else if (_type == metric)
@@ -366,7 +366,7 @@ unsigned int query::_get_index_id(io::data const& d) {
  *  @param[in] d    The data.
  *  @param[out] is  The stream.
  */
-void query::_get_index_id(io::data const& d, std::ostream& is) {
+void line_protocol_query::_get_index_id(io::data const& d, std::ostream& is) {
   is << _get_index_id(d);
 }
 
@@ -376,7 +376,7 @@ void query::_get_index_id(io::data const& d, std::ostream& is) {
  *  @param[in] d  The data.
  *  @param is     The stream.
  */
-void query::_get_host(io::data const& d, std::ostream& is) {
+void line_protocol_query::_get_host(io::data const& d, std::ostream& is) {
   unsigned int index_id = _get_index_id(d);
   is << _cache->get_host_name(_cache->get_index_mapping(index_id).host_id);
 }
@@ -387,7 +387,7 @@ void query::_get_host(io::data const& d, std::ostream& is) {
  *  @param[in] d  The data.
  *  @param is     The stream.
  */
-void query::_get_host_id(io::data const& d, std::ostream& is) {
+void line_protocol_query::_get_host_id(io::data const& d, std::ostream& is) {
   unsigned int index_id = _get_index_id(d);
   is << _cache->get_index_mapping(index_id).host_id;
 }
@@ -398,7 +398,7 @@ void query::_get_host_id(io::data const& d, std::ostream& is) {
  *  @param[in] d  The data.
  *  @param is     The stream.
  */
-void query::_get_service(io::data const& d, std::ostream& is) {
+void line_protocol_query::_get_service(io::data const& d, std::ostream& is) {
   unsigned int index_id = _get_index_id(d);
   storage::index_mapping const& stm = _cache->get_index_mapping(index_id);
   is << _cache->get_service_description(stm.host_id, stm.service_id);
@@ -410,7 +410,7 @@ void query::_get_service(io::data const& d, std::ostream& is) {
  *  @param[in] d  The data.
  *  @param is     The stream.
  */
-void query::_get_service_id(io::data const& d, std::ostream& is) {
+void line_protocol_query::_get_service_id(io::data const& d, std::ostream& is) {
   unsigned int index_id = _get_index_id(d);
   is << _cache->get_index_mapping(index_id).service_id;
 }
@@ -421,7 +421,6 @@ void query::_get_service_id(io::data const& d, std::ostream& is) {
  *  @param[in] d  The data.
  *  @param is     The stream.
  */
-void query::_get_instance(io::data const& d, std::ostream& is) {
+void line_protocol_query::_get_instance(io::data const& d, std::ostream& is) {
   is << _cache->get_instance(d.source_id);
 }
-

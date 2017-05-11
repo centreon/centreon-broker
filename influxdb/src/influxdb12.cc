@@ -23,7 +23,7 @@
 #include <QHostAddress>
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/influxdb/influxdb10.hh"
+#include "com/centreon/broker/influxdb/influxdb12.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/influxdb/json_printer.hh"
 
@@ -34,7 +34,7 @@ static const char* query_footer = "\n";
 /**
  *  Constructor.
  */
-influxdb10::influxdb10(
+influxdb12::influxdb12(
             std::string const& user,
             std::string const& passwd,
             std::string const& addr,
@@ -61,12 +61,12 @@ influxdb10::influxdb10(
 /**
  *  Destructor.
  */
-influxdb10::~influxdb10() {}
+influxdb12::~influxdb12() {}
 
 /**
  *  Clear the query.
  */
-void influxdb10::clear() {
+void influxdb12::clear() {
   _query.clear();
 }
 
@@ -75,7 +75,7 @@ void influxdb10::clear() {
  *
  *  @param[in] m  The metric to write.
  */
-void influxdb10::write(storage::metric const& m) {
+void influxdb12::write(storage::metric const& m) {
   _query.append(_metric_query.generate_metric(m));
 }
 
@@ -84,14 +84,14 @@ void influxdb10::write(storage::metric const& m) {
  *
  *  @param[in] s  The status to write.
  */
-void influxdb10::write(storage::status const& s) {
+void influxdb12::write(storage::status const& s) {
   _query.append(_status_query.generate_status(s));
 }
 
 /**
  *  Commit a query.
  */
-void influxdb10::commit() {
+void influxdb12::commit() {
   if (_query.empty())
     return ;
 
@@ -147,7 +147,7 @@ void influxdb10::commit() {
 /**
  *  Connect the socket to the endpoint.
  */
-void influxdb10::_connect_socket() {
+void influxdb12::_connect_socket() {
   _socket.reset(new QTcpSocket);
   _socket->connectToHost(QString::fromStdString(_host), _port);
   if (!_socket->waitForConnected())
@@ -163,7 +163,7 @@ void influxdb10::_connect_socket() {
  *
  *  @return         True of the answer was complete, false otherwise.
  */
-bool influxdb10::_check_answer_string(std::string const& ans) {
+bool influxdb12::_check_answer_string(std::string const& ans) {
   size_t first_line = ans.find_first_of('\n');
   if (first_line == std::string::npos)
     return (false);
@@ -203,7 +203,7 @@ bool influxdb10::_check_answer_string(std::string const& ans) {
 }
 
 /**
- *  Escape string for influxdb10
+ *  Escape string for influxdb12
  *
  *  @param str  The string.
  *  @return     The string, escaped.
@@ -223,7 +223,7 @@ static std::string escape(std::string const& str) {
  *  @param[in] metric_ts    Name of the timeseries metric.
  *  @param[in] metric_cols  Column for the metrics.
  */
-void influxdb10::_create_queries(
+void influxdb12::_create_queries(
                   std::string const& user,
                   std::string const& passwd,
                   std::string const& db,
@@ -282,7 +282,11 @@ void influxdb10::_create_queries(
   if (!first)
     query_str.append(" ");
   query_str.append("$TIME$\n");
-  _status_query = query(query_str, query::status, _cache, true);
+  _status_query = line_protocol_query(
+                    query_str,
+                    line_protocol_query::status,
+                    _cache,
+                    true);
 
    // Create metric query.
    query_str.clear();
@@ -326,5 +330,9 @@ void influxdb10::_create_queries(
    if (!first)
      query_str.append(" ");
     query_str.append("$TIME$\n");
-    _metric_query = query(query_str, query::metric, _cache, true);
+    _metric_query = line_protocol_query(
+                      query_str,
+                      line_protocol_query::metric,
+                      _cache,
+                      true);
 }

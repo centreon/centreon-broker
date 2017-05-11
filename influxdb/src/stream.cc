@@ -28,7 +28,7 @@
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/influxdb/stream.hh"
-#include "com/centreon/broker/influxdb/influxdb10.hh"
+#include "com/centreon/broker/influxdb/influxdb12.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
@@ -66,7 +66,7 @@ stream::stream(
     _actual_query(0),
     _commit(false),
     _cache(cache) {
-  _influx_db.reset(new influxdb10(
+  _influx_db.reset(new influxdb12(
                          user,
                          passwd,
                          addr,
