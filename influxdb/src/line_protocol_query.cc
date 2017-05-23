@@ -157,6 +157,51 @@ line_protocol_query& line_protocol_query::operator=(
 }
 
 /**
+ *  Escape a key.
+ *
+ *  @param[in] str  String to escape.
+ *
+ *  @return Escaped string.
+ */
+std::string line_protocol_query::escape_key(std::string const& str) {
+  std::string ret(str);
+  ::com::centreon::broker::misc::string::replace(ret, ",", "\\,");
+  ::com::centreon::broker::misc::string::replace(ret, "=", "\\=");
+  ::com::centreon::broker::misc::string::replace(ret, " ", "\\ ");
+  return (ret);
+}
+
+/**
+ *  Escape a measurement.
+ *
+ *  @param[in] str  String to escape.
+ *
+ *  @return Escaped string.
+ */
+std::string line_protocol_query::escape_measurement(
+                                   std::string const& str) {
+  std::string ret(str);
+  ::com::centreon::broker::misc::string::replace(ret, ",", "\\,");
+  ::com::centreon::broker::misc::string::replace(ret, " ", "\\ ");
+  return (ret);
+}
+
+/**
+ *  Escape a value.
+ *
+ *  @param[in] str  String to escape.
+ *
+ *  @return Escaped string.
+ */
+std::string line_protocol_query::escape_value(std::string const& str) {
+  std::string ret(str);
+  ::com::centreon::broker::misc::string::replace(ret, "\"", "\\\"");
+  ret.insert(0, "\"");
+  ret.append("\"");
+  return (ret);
+}
+
+/**
  *  Generate the query for a metric.
  *
  *  @param[in] me  The metric.
