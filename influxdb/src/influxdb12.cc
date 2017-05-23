@@ -283,10 +283,10 @@ void influxdb12::_create_queries(
     query_str.append(" ");
   query_str.append("$TIME$\n");
   _status_query = line_protocol_query(
-                    query_str,
+                    status_ts,
+                    status_cols,
                     line_protocol_query::status,
-                    _cache,
-                    true);
+                    _cache);
 
    // Create metric query.
    query_str.clear();
@@ -331,8 +331,8 @@ void influxdb12::_create_queries(
      query_str.append(" ");
     query_str.append("$TIME$\n");
     _metric_query = line_protocol_query(
-                      query_str,
+                      metric_ts,
+                      metric_cols,
                       line_protocol_query::metric,
-                      _cache,
-                      true);
+                      _cache);
 }
