@@ -1,4 +1,18 @@
 =====================
+Centreon Broker 3.0.8
+=====================
+
+*********
+Bug fixes
+*********
+
+InfluxDB Line Protocol escape schemes
+=====================================
+
+InfluxDB Line Protocol use various escaping schemes that depends on the
+query components. All escaping schemes are now implemented.
+
+=====================
 Centreon Broker 3.0.7
 =====================
 
