@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2015-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_INFLUXDB_INFLUXDB10_HH
-#  define CCB_INFLUXDB_INFLUXDB10_HH
+#ifndef CCB_INFLUXDB_INFLUXDB12_HH
+#  define CCB_INFLUXDB_INFLUXDB12_HH
 
 #  include <string>
 #  include <memory>
@@ -26,22 +26,22 @@
 #  include "com/centreon/broker/storage/metric.hh"
 #  include "com/centreon/broker/influxdb/influxdb.hh"
 #  include "com/centreon/broker/influxdb/column.hh"
-#  include "com/centreon/broker/influxdb/query.hh"
+#  include "com/centreon/broker/influxdb/line_protocol_query.hh"
 #  include "com/centreon/broker/influxdb/macro_cache.hh"
 
 CCB_BEGIN()
 
 namespace         influxdb {
   /**
-   *  @class influxdb influxdb10.hh "com/centreon/broker/influxdb/influxdb10.hh"
+   *  @class influxdb influxdb12.hh "com/centreon/broker/influxdb/influxdb12.hh"
    *  @brief Influxdb connection/query manager.
    *
    *  This object manage connection and query to influxdb through the Lina
    *  API.
    */
-  class           influxdb10 : public influxdb::influxdb {
+  class           influxdb12 : public influxdb::influxdb {
   public:
-                  influxdb10(
+                  influxdb12(
                     std::string const& user,
                     std::string const& passwd,
                     std::string const& addr,
@@ -52,7 +52,7 @@ namespace         influxdb {
                     std::string const& metric_ts,
                     std::vector<column> const& metric_cols,
                     macro_cache const& cache);
-                  ~influxdb10();
+                  ~influxdb12();
 
     void          clear();
     void          write(storage::metric const& m);
@@ -63,8 +63,8 @@ namespace         influxdb {
     std::string   _post_header;
     std::string   _url;
     std::string   _query;
-    query         _status_query;
-    query         _metric_query;
+    line_protocol_query         _status_query;
+    line_protocol_query         _metric_query;
 
     std::auto_ptr<QTcpSocket>
                   _socket;
@@ -87,11 +87,11 @@ namespace         influxdb {
                     std::string const& metric_ts,
                     std::vector<column> const& metric_cols);
 
-                  influxdb10(influxdb10 const& f);
-    influxdb10&   operator=(influxdb10 const& f);
+                  influxdb12(influxdb12 const& f);
+    influxdb12&   operator=(influxdb12 const& f);
   };
 }
 
 CCB_END()
 
-#endif // !CCB_INFLUXDB_INFLUXDB10_HH
+#endif // !CCB_INFLUXDB_INFLUXDB12_HH
