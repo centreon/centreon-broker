@@ -143,8 +143,14 @@ database::database(database_config const& db_cfg)
  *  Destructor.
  */
 database::~database() {
-  if (!_error)
-    _commit();
+  if (!_error) {
+    try {
+      _commit();
+    }
+    catch (std::exception const& e) {
+      (void)e;
+    }
+  }
   _db.reset();
   QSqlDatabase::removeDatabase(_connection_id);
 }
