@@ -20,6 +20,7 @@
 #  define CCB_COMPRESSION_STREAM_HH
 
 #  include <QByteArray>
+#  include "com/centreon/broker/compression/stack_array.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -58,7 +59,7 @@ namespace        compression {
     void         _internal_copy(stream const& other);
 
     int          _level;
-    QByteArray   _rbuffer;
+    stack_array  _rbuffer;
     bool         _shutdown;
     int          _size;
     QByteArray   _wbuffer;

@@ -108,7 +108,7 @@ bool stream::read(
 
         // Extract next chunk's size.
         {
-          unsigned char* buff((unsigned char*)_rbuffer.data());
+          unsigned char const* buff((unsigned char const*)_rbuffer.data());
           size = (buff[0] << 24)
                   | (buff[1] << 16)
                   | (buff[2] << 8)
@@ -123,7 +123,7 @@ bool stream::read(
             << " got corrupted packet size of " << size
             << " bytes, not in the 0-" << max_data_size
             << " range, skipping next byte";
-          _rbuffer.remove(0, 1);
+          _rbuffer.pop(1);
         }
         else
           corrupted = false;
@@ -139,14 +139,15 @@ bool stream::read(
       // payload size.
       if (_rbuffer.size() >= static_cast<int>(size + sizeof(qint32))) {
         r->QByteArray::operator=(qUncompress(
-          static_cast<uchar*>(static_cast<void*>((_rbuffer.data() + sizeof(qint32)))),
+          static_cast<uchar const*>(static_cast<void const*>((
+            _rbuffer.data() + sizeof(qint32)))),
           size));
       }
       if (!r->size()) { // No data or uncompressed size of 0 means corrupted input.
         logging::error(logging::low)
           << "compression: " << this
           << " got corrupted compressed data, skipping next byte";
-        _rbuffer.remove(0, 1);
+        _rbuffer.pop(1);
         corrupted = true;
       }
       else {
@@ -154,7 +155,7 @@ bool stream::read(
           << " uncompressed " << size + sizeof(qint32) << " bytes to "
           << r->size() << " bytes";
         data = r;
-        _rbuffer.remove(0, size + sizeof(qint32));
+        _rbuffer.pop(size + sizeof(qint32));
         corrupted = false;
       }
     }
@@ -299,7 +300,7 @@ void stream::_get_data(int size, time_t deadline) {
         throw (exceptions::interrupt());
       else if (d->type() == io::raw::static_type()) {
         misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
-        _rbuffer.append(*r);
+        _rbuffer.push(*r);
       }
     }
   }
