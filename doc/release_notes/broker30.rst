@@ -12,6 +12,14 @@ InfluxDB Line Protocol escape schemes
 InfluxDB Line Protocol use various escaping schemes that depends on the
 query components. All escaping schemes are now implemented.
 
+Improve decompression performance
+=================================
+
+Previously the decompression buffer was always modified after the
+successful decompression of a single event leading to many useless
+buffer reallocations. Data is now discarded only when the entire
+decompression buffer is processed.
+
 =====================
 Centreon Broker 3.0.7
 =====================
