@@ -1,5 +1,5 @@
 /*
-** Copyright 2012 Centreon
+** Copyright 2012,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,33 +20,50 @@
 #  define CCB_FILE_CFILE_HH
 
 #  include <cstdio>
+#  include "com/centreon/broker/file/fs_file.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace              file {
+namespace  file {
   /**
    *  @class cfile cfile.hh "com/centreon/broker/file/cfile.hh"
    *  @brief Wrapper for C-style FILE streams.
    *
    *  Wrap calls that work on C FILE streams.
    */
-  class                cfile {
-  public:
-                       cfile();
-                       ~cfile() throw ();
-    void               close() throw ();
-    void               open(char const* path, char const* mode);
-    unsigned long      read(void* buffer, unsigned long max_size);
-    void               seek(long offset, int whence = SEEK_SET);
-    long               tell();
-    unsigned long      write(void const* buffer, unsigned long size);
+  class    cfile : public fs_file {
+   public:
+           cfile(std::string const& path, fs_file::open_mode mode);
+           ~cfile();
+    long   read(void* buffer, long max_size);
+    void   seek(
+             long offset,
+             fs_file::seek_whence = fs_file::seek_start);
+    long   tell();
+    long   write(void const* buffer, long size);
 
-  private:
-                       cfile(cfile const& right);
-    cfile&             operator=(cfile const& right);
+   private:
+           cfile(cfile const& right);
+    cfile& operator=(cfile const& right);
 
-    FILE*              _stream;
+    FILE*  _stream;
+  };
+
+  /**
+   *  @class cfile_factory cfile.hh "com/centreon/broker/file/cfile.hh"
+   *  @brief Build a new cfile.
+   *
+   *  Build a new cfile.
+   */
+  class      cfile_factory : public fs_file_factory {
+   public:
+    cfile*   new_cfile(
+               std::string const& path,
+               fs_file::open_mode mode);
+    fs_file* new_fs_file(
+               std::string const& path,
+               fs_file::open_mode mode);
   };
 }
 

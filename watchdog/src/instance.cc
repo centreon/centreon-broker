@@ -1,5 +1,5 @@
 /*
-** Copyright 2015-2016 Centreon
+** Copyright 2015-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -59,14 +59,14 @@ void instance::merge_configuration(
       << "watchdog: attempting to merge an incompatible configuration "
          "for process '" << _config.get_name()
       << "': this is probably a software bug that should be reported "
-         "to centreon developpers";
+         "to Centreon Broker developpers";
     return ;
   }
   _config = new_config;
 }
 
 /**
- *  Start an instance broker.
+ *  Start an instance of cbd.
  */
 void instance::start_instance() {
   if (!_started && _config.should_run()) {
@@ -78,7 +78,11 @@ void instance::start_instance() {
       PREFIX_BIN "/cbd",
       QStringList(QString::fromStdString(_config.get_config_file())),
       QProcess::ReadOnly);
+    logging::info(logging::medium)
+      << "watchdog: process '" << _config.get_name()
+      << "' started (PID " << pid() << ")";
   }
+  return ;
 }
 
 /**
@@ -88,9 +92,10 @@ void instance::update_instance() {
   if (state() == QProcess::Running && _config.should_reload()) {
     logging::info(logging::medium)
       << "watchdog: sending update signal to process '"
-      << _config.get_name() << "'";
+      << _config.get_name() << "' (PID " << pid() << ")";
     ::kill(pid(), SIGHUP);
   }
+  return ;
 }
 
 /**
@@ -99,13 +104,14 @@ void instance::update_instance() {
 void instance::stop_instance() {
   if (_started) {
     logging::info(logging::medium)
-      << "watchdog: stopping process '" << _config.get_name() << "'";
+      << "watchdog: stopping process '" << _config.get_name()
+      << "' (PID " << pid() << ")";
     _started = false;
     terminate();
     if (!waitForFinished(_exit_timeout)) {
       logging::error(logging::medium)
-        << "watchdog: couldn't properly terminate the process '"
-        << _config.get_name() << "'(" << pid() << "): killing it";
+        << "watchdog: could npt gracefully terminate process '"
+        << _config.get_name() << "' (PID " << pid() << "): killing it";
       kill();
     }
     else {
@@ -114,6 +120,7 @@ void instance::stop_instance() {
        << "' stopped gracefully";
     }
   }
+  return ;
 }
 
 /**
@@ -134,14 +141,15 @@ void instance::on_exit() {
   if (time_to_restart == 0)
     logging::error(logging::medium)
       << "watchdog: process '" << _config.get_name()
-      << "' has terminated unexpectedly, restarting it immediately";
+      << "' terminated unexpectedly, restarting it immediately";
   else
     logging::error(logging::medium)
       << "watchdog: process '" << _config.get_name()
-      << "' has terminated unexpectedly, restarting it in "
+      << "' terminated unexpectedly, restarting it in "
       << _config.seconds_per_tentative() << " seconds";
   QTimer::singleShot(
     _config.seconds_per_tentative() * 1000,
     this,
     SLOT(start_instance()));
+  return ;
 }

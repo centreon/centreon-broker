@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -32,20 +32,18 @@ CCB_BEGIN()
  *  It uses BBDO, compression and file streams.
  */
 class              persistent_file : public io::stream {
-public:
+ public:
                    persistent_file(std::string const& path);
                    ~persistent_file();
   bool             read(
                      misc::shared_ptr<io::data>& d,
                      time_t deadline);
+  void             statistics(io::properties& tree) const;
   int              write(misc::shared_ptr<io::data> const& d);
 
-private:
+ private:
                    persistent_file(persistent_file const& other);
   persistent_file& operator=(persistent_file const& other);
-
-  misc::shared_ptr<io::stream>
-                   _file;
 };
 
 CCB_END()

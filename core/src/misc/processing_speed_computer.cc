@@ -1,5 +1,5 @@
 /*
-** Copyright 2013,2015 Centreon
+** Copyright 2013,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -69,22 +69,19 @@ processing_speed_computer& processing_speed_computer::operator=(
  *  @return  The event processing speed.
  */
 double processing_speed_computer::get_processing_speed() const {
-  timestamp now = timestamp::now();
-  int events = 0;
-  if (_first_event_time.is_null())
+  // If tick() was never called then no event was processed.
+  if (_last_tick.is_null())
     return (0.0);
 
-  timestamp seconds_since_first_time = now - _first_event_time;
-  int event_window_length((seconds_since_first_time >= window_length)
-                          ? window_length
-                          : static_cast<int>(seconds_since_first_time));
-
-  if (now >= _last_tick) {
-    int limit(event_window_length - now + _last_tick);
-    for (int i(0); i < limit; ++i)
-      events += _event_by_seconds[i];
-  }
-  return (static_cast<double>(events) / event_window_length);
+  // Compute event processing speed from the number of events processed
+  // in /event_window_length/ seconds in the past. The most recent time
+  // at which an event was computed is _last_tick. From then, no event
+  // was processed.
+  timestamp now(timestamp::now());
+  int events(0);
+  for (int i(0); i < window_length; ++i)
+    events += _event_by_seconds[i];
+  return (static_cast<double>(events) / (window_length + now - _last_tick));
 }
 
 /**
@@ -93,10 +90,9 @@ double processing_speed_computer::get_processing_speed() const {
  *  @param[in] events  The number of events to register.
  */
 void processing_speed_computer::tick(int events) {
-  timestamp now = timestamp::now();
-
   // New second(s)
-  if (!_last_tick.is_null() && now >= _last_tick) {
+  timestamp now(timestamp::now());
+  if (!_last_tick.is_null() && (now > _last_tick)) {
     int step(now - _last_tick);
     if ((step < window_length) && (step > 0))
       ::memmove(
@@ -111,12 +107,10 @@ void processing_speed_computer::tick(int events) {
   // Update the data of this second.
   _event_by_seconds[0] += events;
 
-  // Update the time of the first event.
-  if (_first_event_time.is_null())
-    _first_event_time = now;
-
   // Update the last tick.
   _last_tick = now;
+
+  return ;
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/compression/stream.hh"
-#include "com/centreon/broker/file/stream.hh"
+#include "com/centreon/broker/file/opener.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/persistent_file.hh"
 
@@ -31,8 +31,9 @@ using namespace com::centreon::broker;
  */
 persistent_file::persistent_file(std::string const& path) {
   // On-disk file.
-  misc::shared_ptr<file::stream>
-    fs(new file::stream(path, 100000000ll));
+  file::opener opnr;
+  opnr.set_filename(path);
+  misc::shared_ptr<io::stream> fs(opnr.open());
 
   // Compression layer.
   misc::shared_ptr<compression::stream> cs(new compression::stream);
@@ -45,7 +46,7 @@ persistent_file::persistent_file(std::string const& path) {
   bs->set_substream(cs);
 
   // Set stream.
-  _file = bs;
+  io::stream::set_substream(bs);
 }
 
 /**
@@ -64,7 +65,17 @@ persistent_file::~persistent_file() {}
 bool persistent_file::read(
                         misc::shared_ptr<io::data>& d,
                         time_t deadline) {
-  return (_file->read(d, deadline));
+  return (_substream->read(d, deadline));
+}
+
+/**
+ *  Generate statistics of persistent file.
+ *
+ *  @param[out] tree  Statistics tree.
+ */
+void persistent_file::statistics(io::properties& tree) const {
+  _substream->statistics(tree);
+  return ;
 }
 
 /**
@@ -73,5 +84,5 @@ bool persistent_file::read(
  *  @param[in] d  Input data.
  */
 int persistent_file::write(misc::shared_ptr<io::data> const& d) {
-  return (_file->write(d));
+  return (_substream->write(d));
 }

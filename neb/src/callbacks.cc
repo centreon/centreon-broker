@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2016 Centreon
+** Copyright 2009-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
 
 // Downtime list.
 struct   private_downtime_params {
+  bool   cancelled;
   time_t deletion_time;
   time_t end_time;
   bool   started;
@@ -639,6 +640,7 @@ int neb::callback_downtime(int callback_type, void* data) {
     private_downtime_params& params(downtimes[downtime->internal_id]);
     if ((NEBTYPE_DOWNTIME_ADD == downtime_data->type)
         || (NEBTYPE_DOWNTIME_LOAD == downtime_data->type)) {
+      params.cancelled = false;
       params.deletion_time = -1;
       params.end_time = -1;
       params.started = false;
@@ -650,13 +652,18 @@ int neb::callback_downtime(int callback_type, void* data) {
     }
     else if (NEBTYPE_DOWNTIME_STOP == downtime_data->type) {
       if (NEBATTR_DOWNTIME_STOP_CANCELLED == downtime_data->attr)
-        params.deletion_time = downtime_data->timestamp.tv_sec;
+        params.cancelled = true;
       params.end_time = downtime_data->timestamp.tv_sec;
+    }
+    else if (NEBTYPE_DOWNTIME_DELETE == downtime_data->type) {
+      if (!params.started)
+        params.cancelled = true;
+      params.deletion_time = downtime_data->timestamp.tv_sec;
     }
     downtime->actual_start_time = params.start_time;
     downtime->actual_end_time = params.end_time;
     downtime->deletion_time = params.deletion_time;
-    downtime->was_cancelled = (downtime->deletion_time > 0);
+    downtime->was_cancelled = params.cancelled;
     downtime->was_started = params.started;
     if (NEBTYPE_DOWNTIME_DELETE == downtime_data->type)
       downtimes.erase(downtime->internal_id);

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2016 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 #include <QTimer>
 #include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
@@ -51,8 +51,7 @@ failover::failover(
     _endpoint(endp),
     _failover_launched(false),
     _initialized(false),
-    _next_timeout((time_t)-1),
-    _read_timeout((time_t)-1),
+    _next_timeout(0),
     _retry_interval(30),
     _subscriber(sbscrbr),
     _update(false) {}
@@ -110,64 +109,6 @@ time_t failover::get_retry_interval() const throw () {
 }
 
 /**
- *  Read data.
- *
- *  @param[out] data      Data.
- *  @param[in]  deadline  Timeout.
- */
-bool failover::read(
-                 misc::shared_ptr<io::data>& data,
-                 time_t deadline) {
-  // The read() method is used by external objects to read from the main
-  // stream contained in this object. Typically this method is called
-  // by another failover object that uses this object as its failover
-  // endpoint.
-  data.clear();
-
-  // First we try to read from the main stream.
-  QMutexLocker stream_lock(&_streamm);
-  if (!_stream.isNull()) {
-    try {
-      return (_stream->read(data, deadline));
-    }
-    catch (std::exception const& e) {
-      // In the run() method, it is guaranteed that no more write will
-      // occur on the stream if thread exit was requested. It is
-      // important to unlock the stream lock only after setting the exit
-      // flag.
-      if (isRunning()) {
-        exit();
-        stream_lock.unlock();
-        wait();
-      }
-      else {
-        _stream.clear();
-        stream_lock.unlock();
-      }
-      logging::info(logging::high)
-        << "failover: endpoint '" << _name
-        << "' main stream cannot be read anymore, will try failover: "
-        << e.what();
-
-      // Now that the stream is cleared and mutex released, try to read
-      // from failover.
-      return (read(data, deadline));
-    }
-  }
-  // If the main stream was not ready to provide events, try the
-  // failover thread.
-  else {
-    stream_lock.unlock();
-    if (!_failover.isNull())
-      return (_failover->read(data, deadline));
-    else
-      throw (io::exceptions::shutdown(true, true)
-             << "failover: endpoint '" << _name
-             << "' does not have further events");
-  }
-}
-
-/**
  *  Thread core function.
  */
 void failover::run() {
@@ -183,13 +124,6 @@ void failover::run() {
       << " to Centreon Broker developers";
     return ;
   }
-
-  // Initial launch of failovers (to read retained data).
-  logging::debug(logging::medium)
-    << "failover: initializing failovers of endpoint '" << _name << "'";
-  _update_status("initializing failovers");
-  _launch_failover();
-  _update_status("");
 
   // Thread should be aware of external exit requests.
   do {
@@ -253,29 +187,8 @@ void failover::run() {
         }
       _update_status("");
 
-      // Recovery loop.
+      // Shutdown failover.
       if (_failover_launched) {
-        logging::debug(logging::medium)
-          << "failover: recovering data from failover";
-        _update_status("recovering data from failover");
-        try {
-          misc::shared_ptr<io::data> d;
-          while (!should_exit()) {
-            // XXX : event acknowledgement
-            bool timed_out(!_failover->read(d, 0));
-            if (timed_out)
-              break ;
-            if (!d.isNull()) {
-              _stream->write(d);
-              tick();
-            }
-          }
-        }
-        catch (io::exceptions::shutdown const& e) {
-          // Normal termination.
-          (void)e;
-        }
-        // Shutdown failover.
         logging::debug(logging::medium)
           << "failover: shutting down failover of endpoint '"
           << _name << "'";
@@ -290,6 +203,7 @@ void failover::run() {
       logging::debug(logging::medium)
         << "failover: launching event loop of endpoint '"
         << _name << "'";
+      _subscriber->get_muxer().nack_events();
       bool stream_can_read(true);
       bool muxer_can_read(true);
       bool should_commit(false);
@@ -309,7 +223,6 @@ void failover::run() {
         d.clear();
         bool timed_out_stream(true);
         if (stream_can_read) {
-          // XXX : event acknowledgement
           logging::debug(logging::low)
             << "failover: reading event from endpoint '"
             << _name << "'";
@@ -318,7 +231,7 @@ void failover::run() {
             QMutexLocker stream_lock(&_streamm);
             timed_out_stream = !_stream->read(d, 0);
           }
-          catch (io::exceptions::shutdown const& e) {
+          catch (exceptions::shutdown const& e) {
             logging::debug(logging::medium)
               << "failover: stream of endpoint '" << _name
               << "' shutdown while reading: " << e.what();
@@ -349,28 +262,29 @@ void failover::run() {
             timed_out_muxer = !_subscriber->get_muxer().read(d, 0);
             should_commit = should_commit || !d.isNull();
           }
-          catch (io::exceptions::shutdown const& e) {
+          catch (exceptions::shutdown const& e) {
             logging::debug(logging::medium)
               << "failover: muxer of endpoint '" << _name
               << "' shutdown while reading: " << e.what();
             muxer_can_read = false;
           }
           if (!d.isNull()) {
-            // XXX : event acknowledgement
             logging::debug(logging::low)
               << "failover: writing event of multiplexing engine to endpoint '"
               << _name << "'";
             _update_status("writing event to stream");
+            int we(0);
             try {
               QMutexLocker stream_lock(&_streamm);
-              _stream->write(d);
+              we = _stream->write(d);
             }
-            catch (io::exceptions::shutdown const& e) {
+            catch (exceptions::shutdown const& e) {
               logging::debug(logging::medium)
                 << "failover: stream of endpoint '" << _name
                 << "' shutdown while writing: " << e.what();
               muxer_can_read = false;
             }
+            _subscriber->get_muxer().ack_events(we);
             tick();
             for (std::vector<misc::shared_ptr<io::stream> >::iterator
                    it(secondaries.begin()),
@@ -396,17 +310,19 @@ void failover::run() {
         d.clear();
         if (timed_out_stream && timed_out_muxer) {
           time_t now(time(NULL));
+          int we(0);
           if (should_commit) {
             should_commit = false;
+            _next_timeout = now + 1;
             QMutexLocker stream_lock(&_streamm);
-            _stream->flush();
+            we = _stream->flush();
           }
-          else if ((_next_timeout != (time_t)-1)
-                   && (now >= _next_timeout)) {
-            _next_timeout = now + _read_timeout;
+          else if (now >= _next_timeout) {
+            _next_timeout = now + 1;
             QMutexLocker stream_lock(&_streamm);
-            _stream->flush();
+            we = _stream->flush();
           }
+          _subscriber->get_muxer().ack_events(we);
           ::usleep(100000);
         }
       }
@@ -492,20 +408,6 @@ void failover::set_failover(misc::shared_ptr<failover> fo) {
 }
 
 /**
- *  Set read timeout.
- *
- *  @param[in] read_timeout  Read timeout.
- */
-void failover::set_read_timeout(time_t read_timeout) {
-  _read_timeout = read_timeout;
-  if (_read_timeout != (time_t)-1)
-    _next_timeout = time(NULL) + _read_timeout;
-  else
-    _next_timeout = (time_t)-1;
-  return ;
-}
-
-/**
  *  Set the connection retry interval.
  *
  *  @param[in] retry_interval Time to wait between two connection
@@ -513,16 +415,6 @@ void failover::set_read_timeout(time_t read_timeout) {
  */
 void failover::set_retry_interval(time_t retry_interval) {
   _retry_interval = retry_interval;
-  return ;
-}
-
-/**
- *  Get statistics of the failover.
- *
- *  @param[out] tree  Properties tree.
- */
-void failover::statistics(io::properties& tree) const {
-  // XXX
   return ;
 }
 
@@ -557,21 +449,6 @@ bool failover::wait(unsigned long time) {
   else
     finished = false;
   return (finished);
-}
-
-/**
- *  Write data.
- *
- *  @param[in] d  Unused.
- *
- *  @return Does not return, throw an exception.
- */
-int failover::write(misc::shared_ptr<io::data> const& d) {
-  (void)d;
-  if (!d.isNull())
-    throw (exceptions::msg() << "cannot write to endpoint '"
-           << _name << "'");
-  return (1);
 }
 
 /**
@@ -652,6 +529,7 @@ void failover::_forward_statistic(io::properties& tree) {
  *  Launch failover of this endpoint.
  */
 void failover::_launch_failover() {
+  _subscriber->get_muxer().nack_events();
   if (!_failover.isNull() && !_failover_launched) {
     _failover_launched = true;
     _failover->start();

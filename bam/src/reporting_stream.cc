@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -37,8 +37,8 @@
 #include "com/centreon/broker/bam/reporting_stream.hh"
 #include "com/centreon/broker/time/timezone_manager.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 
@@ -126,7 +126,7 @@ reporting_stream::~reporting_stream() {
 bool reporting_stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
-  throw (io::exceptions::shutdown(true, false)
+  throw (exceptions::shutdown()
          << "cannot read from BAM reporting stream");
   return (true);
 }
@@ -163,11 +163,10 @@ int reporting_stream::flush() {
  *  @return Number of events acknowledged.
  */
 int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "BAM-BI"))
-    return (1);
-
   // Take this event into account.
   ++_pending_events;
+  if (!validate(data, "BAM-BI"))
+    return (0);
 
   if (data->type()
       == io::events::data_type<io::events::bam,
@@ -534,12 +533,15 @@ void reporting_stream::_prepare() {
   // BA duration event update.
   {
     std::string query;
-    query = "UPDATE mod_bam_reporting_ba_events_durations"
-            "  SET start_time=:start_time, end_time=:end_time, "
-            "      duration=:duration, sla_duration=:sla_duration,"
-            "      timeperiod_is_default=:timeperiod_is_default"
-            "  WHERE ba_event_id=:ba_event_id"
-            "    AND timeperiod_id=:timeperiod_id";
+    query = "UPDATE mod_bam_reporting_ba_events_durations AS d"
+            "  INNER JOIN mod_bam_reporting_ba_events AS e"
+            "    ON d.ba_event_id=e.ba_event_id"
+            "  SET d.start_time=:start_time, d.end_time=:end_time, "
+            "      d.duration=:duration, d.sla_duration=:sla_duration,"
+            "      d.timeperiod_is_default=:timeperiod_is_default"
+            "  WHERE e.ba_id=:ba_id"
+            "    AND e.start_time=:real_start_time"
+            "    AND d.timeperiod_id=:timeperiod_id";
     _ba_duration_event_update.prepare(
       query,
       "BAM-BI: could not prepare BA duration event update query");
@@ -1391,8 +1393,13 @@ void reporting_stream::_compute_event_durations(
   std::vector<std::pair<time::timeperiod::ptr, bool> >
     timeperiods = _timeperiods.get_timeperiods_by_ba_id(ev->ba_id);
 
-  if (timeperiods.empty())
+  if (timeperiods.empty()) {
+    logging::debug(logging::medium)
+      << "BAM-BI: no reporting period defined for event started at "
+      << ev->start_time << " and ended at " << ev->end_time
+      << " on BA " << ev->ba_id;
     return ;
+  }
 
   for (std::vector<std::pair<time::timeperiod::ptr, bool> >::const_iterator
          it(timeperiods.begin()),
@@ -1407,15 +1414,28 @@ void reporting_stream::_compute_event_durations(
     dur_ev->real_start_time = ev->start_time;
     dur_ev->start_time = tp->get_next_valid(ev->start_time);
     dur_ev->end_time = ev->end_time;
-    if (dur_ev->start_time < dur_ev->end_time) {
+    if ((dur_ev->start_time != (time_t)-1)
+        && (dur_ev->end_time != (time_t)-1)
+        && (dur_ev->start_time < dur_ev->end_time)) {
       dur_ev->duration = dur_ev->end_time - dur_ev->start_time;
       dur_ev->sla_duration = tp->duration_intersect(
                                    dur_ev->start_time,
                                    dur_ev->end_time);
       dur_ev->timeperiod_id = tp->get_id();
       dur_ev->timeperiod_is_default = is_default;
+      logging::debug(logging::low)
+        << "BAM-BI: durations of event started at " << ev->start_time
+        << " and ended at " << ev->end_time << " on BA " << ev->ba_id
+        << " were computed for timeperiod " << tp->get_name()
+        << ", duration is " << dur_ev->duration << "s, SLA duration is "
+        << dur_ev->sla_duration;
       visitor->write(dur_ev.staticCast<io::data>());
     }
+    else
+      logging::debug(logging::medium)
+        << "BAM-BI: event started at " << ev->start_time
+        << " and ended at " << ev->end_time << " on BA " << ev->ba_id
+        << " has no duration on timeperiod " << tp->get_name();
   }
 }
 

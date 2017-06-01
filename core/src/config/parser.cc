@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Centreon
+** Copyright 2011-2013,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -161,7 +161,10 @@ void parser::parse(QString const& file, state& s) {
       }
       else if (name == "log_timestamp") {
         QString val(elem.text());
-        s.log_timestamp((val == "yes") || val.toInt());
+        if (val == "nano")
+          s.log_timestamp(logging::nano_timestamp);
+        else if ((val == "yes") || (val == "second") || val.toInt())
+          s.log_timestamp(logging::second_timestamp);
       }
       else if (name == "log_human_readable_timestamp") {
         QString val(elem.text());
@@ -236,31 +239,22 @@ void parser::_parse_endpoint(QDomElement& elem, endpoint& e) {
         e.read_timeout = static_cast<time_t>(entry.text().toInt());
       else if (name == "retry_interval")
         e.retry_interval = static_cast<time_t>(entry.text().toUInt());
-      else if (name == "read_filters") {
-        e.read_filters.clear();
+      else if (name == "filters") {
+        std::set<std::string> (endpoint::* member);
+        if (e.write_filters.empty()) // Input.
+          member = &endpoint::read_filters;
+        else // Output.
+          member = &endpoint::write_filters;
+        (e.*member).clear();
         QDomNodeList nlist(entry.childNodes());
         for (int i(0), len(nlist.size()); i < len; ++i) {
           QDomElement entry(nlist.item(i).toElement());
           if (!entry.isNull()) {
             QString name(entry.tagName());
             if (name == "category")
-              e.read_filters.insert(entry.text().toStdString());
+              (e.*member).insert(entry.text().toStdString());
             else if (name == "all")
-              e.read_filters.insert("all");
-          }
-        }
-      }
-      else if ((name == "filters") || (name == "write_filters")) {
-        e.write_filters.clear();
-        QDomNodeList nlist(entry.childNodes());
-        for (int i(0), len(nlist.size()); i < len; ++i) {
-          QDomElement entry(nlist.item(i).toElement());
-          if (!entry.isNull()) {
-            QString name(entry.tagName());
-            if (name == "category")
-              e.write_filters.insert(entry.text().toStdString());
-            else if (name == "all")
-              e.write_filters.insert("all");
+              (e.*member).insert("all");
           }
         }
       }
@@ -294,6 +288,8 @@ void parser::_parse_logger(QDomElement& elem, logger& l) {
         l.error(parse_boolean(entry.text()));
       else if (name == "info")
         l.info(parse_boolean(entry.text()));
+      else if (name == "perf")
+        l.perf(parse_boolean(entry.text()));
       else if (name == "facility") {
         QString val(entry.text());
         if (!val.compare("kern", Qt::CaseInsensitive))

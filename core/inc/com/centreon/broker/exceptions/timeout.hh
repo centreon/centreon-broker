@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,13 +34,11 @@ namespace               exceptions {
    */
   class                 timeout : private misc::stringifier,
                                   public std::exception {
-  public:
+   public:
                         timeout();
                         timeout(timeout const& other);
     virtual             ~timeout() throw ();
     timeout&            operator=(timeout const& other);
-    virtual timeout*    clone() const;
-    virtual void        rethrow() const;
     virtual char const* what() const throw ();
 
     /**

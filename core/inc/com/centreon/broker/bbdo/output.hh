@@ -1,5 +1,5 @@
 /*
-** Copyright 2013,2015 Centreon
+** Copyright 2013,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -35,14 +35,14 @@ namespace        bbdo {
    *  (Broker Binary Data Objects) protocol.
    */
   class          output : virtual public io::stream {
-  public:
+   public:
                  output();
                  output(output const& other);
     virtual      ~output();
     output&      operator=(output const& other);
     int          flush();
     void         statistics(io::properties& tree) const;
-    int          write(misc::shared_ptr<io::data> const& e);
+    virtual int  write(misc::shared_ptr<io::data> const& e);
   };
 }
 

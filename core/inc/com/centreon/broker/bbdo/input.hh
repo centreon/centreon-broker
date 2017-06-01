@@ -41,7 +41,7 @@ namespace        bbdo {
                  input(input const& other);
     virtual      ~input();
     input&       operator=(input const& other);
-    bool         read(
+    virtual bool read(
                    misc::shared_ptr<io::data>& d,
                    time_t deadline = (time_t)-1);
     bool         read_any(

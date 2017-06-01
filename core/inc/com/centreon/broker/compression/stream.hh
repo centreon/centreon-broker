@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Centreon
+** Copyright 2011-2013,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #  define CCB_COMPRESSION_STREAM_HH
 
 #  include <QByteArray>
+#  include "com/centreon/broker/compression/stack_array.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -33,10 +34,13 @@ namespace        compression {
    *  Compress and uncompress data.
    */
   class          stream : public io::stream {
-  public:
+   public:
+    static int const
+                 max_data_size = 100000000;
+
                  stream(
                    int level = -1,
-                   unsigned int size = 0);
+                   int size = 0);
                  stream(stream const& other);
                  ~stream();
     stream&      operator=(stream const& other);
@@ -47,16 +51,17 @@ namespace        compression {
     void         statistics(io::properties& tree) const;
     int          write(misc::shared_ptr<io::data> const& d);
 
-  private:
+   private:
     void         _flush();
-    bool         _get_data(
-                   unsigned int size,
+    void         _get_data(
+                   int size,
                    time_t timeout);
     void         _internal_copy(stream const& other);
 
     int          _level;
-    QByteArray   _rbuffer;
-    unsigned int _size;
+    stack_array  _rbuffer;
+    bool         _shutdown;
+    int          _size;
     QByteArray   _wbuffer;
   };
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -54,7 +54,6 @@ namespace          influxdb {
                      unsigned short port,
                      std::string const& db,
                      unsigned int queries_per_transaction,
-                     std::string const& version,
                      std::string const& status_ts,
                      std::vector<column> const& status_cols,
                      std::string const& metric_ts,

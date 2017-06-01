@@ -64,6 +64,20 @@ add_library("${STORAGE}" SHARED
 target_link_libraries("${STORAGE}" ${QT_LIBRARIES})
 set_target_properties("${STORAGE}" PROPERTIES PREFIX "")
 
+# Testing.
+set(
+  TESTS_SOURCES
+  ${TESTS_SOURCES}
+  "${TEST_DIR}/parser/parse_perfdata.cc"
+  PARENT_SCOPE
+)
+set(
+  TESTS_LIBRARIES
+  ${TESTS_LIBRARIES}
+  "${STORAGE}"
+  PARENT_SCOPE
+)
+
 if (0) # WITH_TESTING)
   set(TEST_LIBRARIES "${STORAGE}" "10-neb" "rokerbase" "roker" "rokerbase")
 

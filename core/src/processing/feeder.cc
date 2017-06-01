@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012,2015 Centreon
+** Copyright 2011-2012,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 #include <QReadLocker>
 #include <QWriteLocker>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -78,21 +78,22 @@ void feeder::run() {
     while (!should_exit()) {
       // Read from stream.
       bool timed_out_stream(true);
-      if (stream_can_read)
+      if (stream_can_read) {
         try {
           QReadLocker lock(&_client_mutex);
           timed_out_stream = !_client->read(d, 0);
         }
-        catch (io::exceptions::shutdown const& e) {
+        catch (exceptions::shutdown const& e) {
           stream_can_read = false;
         }
-      if (!d.isNull()) {
-        {
-          QReadLocker lock(&_client_mutex);
-          _subscriber.get_muxer().write(d);
+        if (!d.isNull()) {
+          {
+            QReadLocker lock(&_client_mutex);
+            _subscriber.get_muxer().write(d);
+          }
+          tick();
+          continue ; // Stream read bias.
         }
-        tick();
-        continue ; // Stream read bias.
       }
 
       // Read from muxer.
@@ -102,7 +103,7 @@ void feeder::run() {
         try {
           timed_out_muxer = !_subscriber.get_muxer().read(d, 0);
         }
-        catch (io::exceptions::shutdown const& e) {
+        catch (exceptions::shutdown const& e) {
           muxer_can_read = false;
         }
       if (!d.isNull()) {
@@ -110,6 +111,7 @@ void feeder::run() {
           QReadLocker lock(&_client_mutex);
           _client->write(d);
         }
+        _subscriber.get_muxer().ack_events(1);
         tick();
       }
 
@@ -119,7 +121,7 @@ void feeder::run() {
         ::usleep(100000);
     }
   }
-  catch (io::exceptions::shutdown const& e) {
+  catch (exceptions::shutdown const& e) {
     // Normal termination.
     (void)e;
   }

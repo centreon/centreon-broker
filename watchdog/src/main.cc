@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@
 static com::centreon::broker::watchdog::application* p_app = NULL;
 
 static char const* help_msg =
-    "usage: cbwd configuration_file";
+  "USAGE: cbwd configuration_file";
 
 /**
  *  Print the help.
@@ -109,9 +109,10 @@ int main(int argc, char **argv) {
     p_app = &app;
     set_signal_handlers();
     app.exec();
-  } catch (std::exception const& e) {
+  }
+  catch (std::exception const& e) {
     std::cerr << "watchdog: " << e.what() << std::endl;
-    return (-1);
+    return (1);
   }
 
   return (0);

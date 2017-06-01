@@ -1,5 +1,5 @@
 /*
-** Copyright 2012,2016 Centreon
+** Copyright 2012,2016-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 #include <cstdlib>
 #include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 
 using namespace com::centreon::broker::file;
 
@@ -31,43 +31,46 @@ using namespace com::centreon::broker::file;
 **************************************/
 
 /**
- *  Default constructor.
+ *  Open a file.
+ *
+ *  @param[in] path  Path to file.
+ *  @param[in] mode  Open mode.
  */
-cfile::cfile() : _stream(NULL) {}
+cfile::cfile(std::string const& path, fs_file::open_mode mode)
+  : _stream(NULL) {
+  // Compute cfile's mode.
+  char const* cfile_mode(NULL);
+  switch (mode) {
+   case fs_file::open_write:
+    cfile_mode = "w";
+    break ;
+   case fs_file::open_read_write_truncate:
+    cfile_mode = "w+";
+    break ;
+   case fs_file::open_read_write_no_create:
+    cfile_mode = "r+";
+    break ;
+   default:
+    cfile_mode = "r";
+  };
+
+  // Open file.
+  _stream = fopen(path.c_str(), cfile_mode);
+  if (!_stream) {
+    char const* msg(strerror(errno));
+    throw (exceptions::msg() << "cannot open '" << path << "' (mode "
+           << cfile_mode << "): " << msg);
+  }
+}
 
 /**
  *  Destructor.
  */
-cfile::~cfile() throw () {
-  close();
-}
-
-/**
- *  Close file.
- */
-void cfile::close() throw () {
+cfile::~cfile() {
   if (_stream) {
     fclose(_stream);
     _stream = NULL;
   }
-  return ;
-}
-
-/**
- *  Open a file.
- *
- *  @param[in] path Path to the file.
- *  @param[in] mode Open mode.
- */
-void cfile::open(char const* path, char const* mode) {
-  close();
-  _stream = fopen(path, mode);
-  if (!_stream) {
-    char const* msg(strerror(errno));
-    throw (exceptions::msg() << "cannot open '" << path << "' (mode "
-           << mode << "): " << msg);
-  }
-  return ;
 }
 
 /**
@@ -76,14 +79,13 @@ void cfile::open(char const* path, char const* mode) {
  *  @param[out] buffer   Destination buffer.
  *  @param[in]  max_size Maximum size in bytes to read.
  *
- *  @return Number of bytes written.
+ *  @return Number of bytes read.
  */
-unsigned long cfile::read(void* buffer, unsigned long max_size) {
+long cfile::read(void* buffer, long max_size) {
   size_t retval(fread(buffer, 1, max_size, _stream));
   if (retval == 0) {
     if (feof(_stream))
-      throw (io::exceptions::shutdown(true, true)
-             << "end of file reached");
+      throw (exceptions::shutdown() << "end of file reached");
     else if ((EAGAIN == errno) || (EINTR == errno))
       retval = 0;
     else {
@@ -100,17 +102,32 @@ unsigned long cfile::read(void* buffer, unsigned long max_size) {
  *  @param[in] offset Offset.
  *  @param[in] whence Base position.
  */
-void cfile::seek(long offset, int whence) {
+void cfile::seek(long offset, fs_file::seek_whence whence) {
+  // Compute cfile's whence.
+  int seek_whence;
+  switch (whence) {
+   case fs_file::seek_current:
+    seek_whence = SEEK_CUR;
+    break ;
+   case fs_file::seek_end:
+    seek_whence = SEEK_END;
+    break ;
+   default:
+    seek_whence = SEEK_SET;
+  };
+
+  // Seek.
   int retval;
-  while ((retval = fseek(_stream, offset, whence))
+  while ((retval = fseek(_stream, offset, seek_whence))
          && (EAGAIN == errno)
          && (EINTR == errno))
     ;
   if (retval) {
     char const* msg(strerror(errno));
     throw (exceptions::msg() << "cannot seek in file to position ("
-           << whence << ", " << offset << "): " << msg);
+           << seek_whence << ", " << offset << "): " << msg);
   }
+
   return ;
 }
 
@@ -137,7 +154,7 @@ long cfile::tell() {
  *
  *  @return Number of bytes written.
  */
-unsigned long cfile::write(void const* buffer, unsigned long size) {
+long cfile::write(void const* buffer, long size) {
   size_t retval(fwrite(buffer, 1, size, _stream));
   if (ferror(_stream)) {
     char const* msg(strerror(errno));
@@ -145,4 +162,32 @@ unsigned long cfile::write(void const* buffer, unsigned long size) {
            << " bytes to file: " << msg);
   }
   return (retval);
+}
+
+/**
+ *  Create a new cfile.
+ *
+ *  @param[in] path  Path to file.
+ *  @param[in] mode  Open mode.
+ *
+ *  @return A new cfile object.
+ */
+cfile* cfile_factory::new_cfile(
+                        std::string const& path,
+                        fs_file::open_mode mode) {
+  return (new cfile(path, mode));
+}
+
+/**
+ *  Create a new cfile.
+ *
+ *  @param[in] path  Path to file.
+ *  @param[in] mode  Open mode.
+ *
+ *  @return A new cfile object.
+ */
+fs_file* cfile_factory::new_fs_file(
+                          std::string const& path,
+                          fs_file::open_mode mode) {
+  return (new_cfile(path, mode));
 }

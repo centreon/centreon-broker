@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,12 +20,12 @@
 #include <QCoreApplication>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/extcmd/command_client.hh"
 #include "com/centreon/broker/extcmd/command_listener.hh"
 #include "com/centreon/broker/extcmd/command_parser.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -83,7 +83,7 @@ bool command_client::read(
       char buffer[1000];
       int rb(_socket->read(buffer, sizeof(buffer)));
       if (rb == 0)
-        throw (io::exceptions::shutdown(true, true)
+        throw (exceptions::shutdown()
                << "command: client disconnected");
       else if (rb < 0)
         throw (exceptions::msg() << "command: error on client socket: "
@@ -132,7 +132,7 @@ bool command_client::read(
 int command_client::write(
                       misc::shared_ptr<io::data> const& d) {
   (void)d;
-  throw (io::exceptions::shutdown(false, true)
+  throw (exceptions::shutdown()
          << "command: cannot write event to command client");
   return (1);
 }

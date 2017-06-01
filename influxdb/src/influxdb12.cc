@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 #include <QHostAddress>
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/influxdb/influxdb10.hh"
+#include "com/centreon/broker/influxdb/influxdb12.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/influxdb/json_printer.hh"
 
@@ -34,7 +34,7 @@ static const char* query_footer = "\n";
 /**
  *  Constructor.
  */
-influxdb10::influxdb10(
+influxdb12::influxdb12(
             std::string const& user,
             std::string const& passwd,
             std::string const& addr,
@@ -48,26 +48,32 @@ influxdb10::influxdb10(
   : _host(addr),
     _port(port),
     _cache(cache){
-  logging::debug(logging::medium)
-    << "influxdb: connecting using 1.0 line protocol";
-
   // Try to connect to the server.
+  logging::debug(logging::medium)
+    << "influxdb: connecting using 1.2 Line Protocol";
   _connect_socket();
   _socket->close();
-
-  _create_queries(user, passwd, db, status_ts, status_cols, metric_ts, metric_cols);
+  _create_queries(
+    user,
+    passwd,
+    db,
+    status_ts,
+    status_cols,
+    metric_ts,
+    metric_cols);
 }
 
 /**
  *  Destructor.
  */
-influxdb10::~influxdb10() {}
+influxdb12::~influxdb12() {}
 
 /**
  *  Clear the query.
  */
-void influxdb10::clear() {
+void influxdb12::clear() {
   _query.clear();
+  return ;
 }
 
 /**
@@ -75,8 +81,9 @@ void influxdb10::clear() {
  *
  *  @param[in] m  The metric to write.
  */
-void influxdb10::write(storage::metric const& m) {
+void influxdb12::write(storage::metric const& m) {
   _query.append(_metric_query.generate_metric(m));
+  return ;
 }
 
 /**
@@ -84,14 +91,15 @@ void influxdb10::write(storage::metric const& m) {
  *
  *  @param[in] s  The status to write.
  */
-void influxdb10::write(storage::status const& s) {
+void influxdb12::write(storage::status const& s) {
   _query.append(_status_query.generate_status(s));
+  return ;
 }
 
 /**
  *  Commit a query.
  */
-void influxdb10::commit() {
+void influxdb12::commit() {
   if (_query.empty())
     return ;
 
@@ -111,7 +119,7 @@ void influxdb10::commit() {
   if (_socket->write(final_query.c_str(), final_query.size())
       != static_cast<int>(final_query.size()))
     throw (exceptions::msg()
-      << "influxdb: couldn't commit data to influxdb with address '"
+      << "influxdb: couldn't commit data to InfluxDB with address '"
       << _socket->peerAddress().toString()
       << "' and port '" << _socket->peerPort() << "': "
       << _socket->errorString());
@@ -119,7 +127,7 @@ void influxdb10::commit() {
   while (_socket->bytesToWrite() != 0) {
     if (_socket->waitForBytesWritten() == false)
       throw (exceptions::msg()
-        << "influxdb: couldn't send data to influxdb with address '"
+        << "influxdb: couldn't send data to InfluxDB with address '"
         << _socket->peerAddress().toString()
         << "' and port '" << _socket->peerPort() << "': "
         << _socket->errorString());
@@ -130,7 +138,7 @@ void influxdb10::commit() {
   while (true) {
     if (_socket->waitForReadyRead() == false)
       throw (exceptions::msg()
-        << "influxdb: couldn't receive influxdb answer with address '"
+        << "influxdb: couldn't receive InfluxDB answer with address '"
         << _socket->peerAddress().toString()
         << "' and port '" << _socket->peerPort() << "': "
         << _socket->errorString());
@@ -147,13 +155,14 @@ void influxdb10::commit() {
 /**
  *  Connect the socket to the endpoint.
  */
-void influxdb10::_connect_socket() {
+void influxdb12::_connect_socket() {
   _socket.reset(new QTcpSocket);
   _socket->connectToHost(QString::fromStdString(_host), _port);
   if (!_socket->waitForConnected())
     throw exceptions::msg()
-      << "influxdb: couldn't connect to influxdb with address '"
+      << "influxdb: couldn't connect to InfluxDB with address '"
       << _host << "' and port '" << _port << "': " << _socket->errorString();
+  return ;
 }
 
 /**
@@ -163,7 +172,7 @@ void influxdb10::_connect_socket() {
  *
  *  @return         True of the answer was complete, false otherwise.
  */
-bool influxdb10::_check_answer_string(std::string const& ans) {
+bool influxdb12::_check_answer_string(std::string const& ans) {
   size_t first_line = ans.find_first_of('\n');
   if (first_line == std::string::npos)
     return (false);
@@ -189,7 +198,10 @@ bool influxdb10::_check_answer_string(std::string const& ans) {
       << "' and port '" << _socket->peerPort() << "': got '"
       << first_line_str << "'");
 
-  if (split[0] == "HTTP/1.0" && split[1] == "200" && split[2] == "OK")
+  if ((split[0] == "HTTP/1.0")
+      && (split[1] == "204")
+      && (split[2] == "No")
+      && (split[3] == "Content"))
     return (true);
   else
     throw (exceptions::msg()
@@ -200,19 +212,6 @@ bool influxdb10::_check_answer_string(std::string const& ans) {
 }
 
 /**
- *  Escape string for influxdb10
- *
- *  @param str  The string.
- *  @return     The string, escaped.
- */
-static std::string escape(std::string const& str) {
-  std::string ret(str);
-  ::com::centreon::broker::misc::string::replace(ret, " ", "\\ ");
-  ::com::centreon::broker::misc::string::replace(ret, ",", "\\,");
-  return (ret);
-}
-
-/**
  *  Create the queries for influxdb.
  *
  *  @param[in] status_ts    Name of the timeseries status.
@@ -220,7 +219,7 @@ static std::string escape(std::string const& str) {
  *  @param[in] metric_ts    Name of the timeseries metric.
  *  @param[in] metric_cols  Column for the metrics.
  */
-void influxdb10::_create_queries(
+void influxdb12::_create_queries(
                   std::string const& user,
                   std::string const& passwd,
                   std::string const& db,
@@ -233,110 +232,20 @@ void influxdb10::_create_queries(
   base_url
     .append("/write?u=").append(user)
     .append("&p=").append(passwd)
-    .append("&db=").append(db);
+    .append("&db=").append(db)
+    .append("&precision=s");
   _post_header.append("POST ").append(base_url).append(" HTTP/1.0\n");
 
-  // Create status query.
-  std::string query_str;
-  query_str
-    .append(escape(status_ts));
-  for (std::vector<column>::const_iterator
-         it(status_cols.begin()),
-         end(status_cols.end());
-       it != end; ++it)
-    if (it->is_flag()) {
-      query_str.append(",");
-      if (it->get_type() == column::number)
-        query_str
-          .append(escape(it->get_name()))
-          .append("=")
-          .append(escape(it->get_value()));
-      else if (it->get_type() == column::string)
-        query_str
-          .append(escape(it->get_name()))
-          .append("=")
-          .append("\"")
-          .append(escape(it->get_value()))
-          .append("\"");
-    }
-  query_str.append(" ");
-  bool first = true;
-  for (std::vector<column>::const_iterator
-         it(status_cols.begin()),
-         end(status_cols.end());
-       it != end; ++it)
-    if (!it->is_flag()) {
-      if (first)
-        first = false;
-      else
-        query_str.append(",");
-      if (it->get_type() == column::number)
-        query_str
-          .append(escape(it->get_name()))
-          .append("=")
-          .append(escape(it->get_value()));
-      else if (it->get_type() == column::string)
-        query_str
-          .append(escape(it->get_name()))
-          .append("=")
-          .append("\"")
-          .append(escape(it->get_value()))
-          .append("\"");
-    }
-  if (!first)
-    query_str.append(" ");
-  query_str.append("$TIME$\n");
-  _status_query = query(query_str, query::status, _cache, true);
-
-   // Create metric query.
-   query_str.clear();
-   query_str
-     .append(escape(metric_ts));
-   for (std::vector<column>::const_iterator
-          it(metric_cols.begin()),
-          end(metric_cols.end());
-        it != end; ++it)
-     if (it->is_flag()) {
-       query_str.append(",");
-       if (it->get_type() == column::number)
-         query_str
-           .append(escape(it->get_name()))
-           .append("=")
-           .append(escape(it->get_value()));
-       else if (it->get_type() == column::string)
-         query_str
-           .append(escape(it->get_name()))
-           .append("=")
-           .append("\"")
-           .append(escape(it->get_value()))
-           .append("\"");
-     }
-   query_str.append(" ");
-   first = true;
-   for (std::vector<column>::const_iterator
-          it(metric_cols.begin()),
-          end(metric_cols.end());
-        it != end; ++it)
-     if (!it->is_flag()) {
-       if (first)
-         first = false;
-       else
-         query_str.append(",");
-       if (it->get_type() == column::number)
-         query_str
-           .append(escape(it->get_name()))
-           .append("=")
-           .append(escape(it->get_value()));
-       else if (it->get_type() == column::string)
-         query_str
-           .append(escape(it->get_name()))
-           .append("=")
-           .append("\"")
-           .append(escape(it->get_value()))
-           .append("\"");
-     }
-   if (!first)
-     query_str.append(" ");
-    query_str.append("$TIME$\n");
-    _metric_query = query(query_str, query::metric, _cache, true);
+  // Create protocol objects.
+  _status_query = line_protocol_query(
+                    status_ts,
+                    status_cols,
+                    line_protocol_query::status,
+                    _cache);
+  _metric_query = line_protocol_query(
+                    metric_ts,
+                    metric_cols,
+                    line_protocol_query::metric,
+                    _cache);
+  return ;
 }

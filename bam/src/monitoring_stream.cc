@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -30,10 +30,11 @@
 #include "com/centreon/broker/bam/rebuild.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/bam/monitoring_stream.hh"
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/timestamp.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -151,7 +152,7 @@ bool monitoring_stream::read(
                           time_t deadline) {
   (void)deadline;
   d.clear();
-  throw (io::exceptions::shutdown(true, false)
+  throw (exceptions::shutdown()
          << "cannot read from BAM monitoring stream");
   return (true);
 }
@@ -202,11 +203,10 @@ void monitoring_stream::update() {
  *  @return Number of events acknowledged.
  */
 int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "BAM"))
-    return (1);
-
   // Take this event into account.
   ++_pending_events;
+  if (!validate(data, "BAM"))
+    return (0);
 
   // Process service status events.
   if ((data->type() == neb::service_status::static_type())
@@ -374,12 +374,14 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     timestamp now = timestamp::now();
     inherited_downtime const& dwn = data.ref_as<inherited_downtime const>();
     if (dwn.in_downtime)
-      oss << "[" << now << "] SCHEDULE_SVC_DOWNTIME;_Module_BAM_1;ba_"
+      oss << "[" << now << "] SCHEDULE_SVC_DOWNTIME;_Module_BAM_"
+          << config::applier::state::instance().poller_id() << ";ba_"
           << dwn.ba_id << ";" << now << ";" << timestamp::max()
           << ";1;0;0;Centreon Broker BAM Module;"
              "Automatic downtime triggered by BA downtime inheritance";
     else
-      oss << "[" << now << "] DEL_SVC_DOWNTIME_FULL;_Module_BAM_1;ba_"
+      oss << "[" << now << "] DEL_SVC_DOWNTIME_FULL;_Module_BAM_"
+          << config::applier::state::instance().poller_id() << ";ba_"
           << dwn.ba_id << ";;" << timestamp::max()
           << ";1;0;;Centreon Broker BAM Module;"
              "Automatic downtime triggered by BA downtime inheritance";

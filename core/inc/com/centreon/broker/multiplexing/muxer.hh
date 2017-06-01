@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ namespace               multiplexing {
    *  @see engine
    */
   class                 muxer : public io::stream {
-  public:
+   public:
     typedef             uset<unsigned int>
                         filters;
 
@@ -50,6 +50,7 @@ namespace               multiplexing {
                           std::string const& name,
                           bool persistent = false);
                         ~muxer();
+    void                ack_events(int count);
     static void         event_queue_max_size(unsigned int max) throw ();
     static unsigned int event_queue_max_size() throw ();
     void                publish(misc::shared_ptr<io::data> const& d);
@@ -61,6 +62,7 @@ namespace               multiplexing {
     filters const&      get_read_filters() const;
     filters const&      get_write_filters() const;
     unsigned int        get_event_queue_size() const;
+    void                nack_events();
     void                statistics(io::properties& tree) const;
     void                wake();
     int                 write(misc::shared_ptr<io::data> const& d);
@@ -72,24 +74,26 @@ namespace               multiplexing {
                         muxer(muxer const& other);
     muxer&              operator=(muxer const& other);
     void                _clean();
-    bool                _get_event_from_temporary(
-                          misc::shared_ptr<io::data>& event);
-    void                _get_last_event(
+    void                _get_event_from_file(
                           misc::shared_ptr<io::data>& event);
     std::string         _memory_file() const;
+    void                _push_to_queue(
+                          misc::shared_ptr<io::data> const& event);
     std::string         _queue_file() const;
 
     QWaitCondition      _cv;
-    std::queue<misc::shared_ptr<io::data> >
+    std::list<misc::shared_ptr<io::data> >
                         _events;
+    unsigned int        _events_size;
     static unsigned int _event_queue_max_size;
+    std::auto_ptr<io::stream>
+                        _file;
     mutable QMutex      _mutex;
     std::string         _name;
     bool                _persistent;
+    std::list<misc::shared_ptr<io::data> >::iterator
+                        _pos;
     filters             _read_filters;
-    std::auto_ptr<io::stream>
-                        _temporary;
-    unsigned int        _total_events;
     filters             _write_filters;
   };
 }

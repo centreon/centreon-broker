@@ -1,4 +1,189 @@
 =====================
+Centreon Broker 3.0.8
+=====================
+
+*********
+Bug fixes
+*********
+
+InfluxDB Line Protocol escape schemes
+=====================================
+
+InfluxDB Line Protocol use various escaping schemes that depends on the
+query components. All escaping schemes are now implemented.
+
+Improve decompression performance
+=================================
+
+Previously the decompression buffer was always modified after the
+successful decompression of a single event leading to many useless
+buffer reallocations. Data is now discarded only when the entire
+decompression buffer is processed.
+
+=====================
+Centreon Broker 3.0.7
+=====================
+
+*********
+Bug fixes
+*********
+
+Fix file percent processed
+==========================
+
+The computation of file percent processed as provided in the statistics
+file was invalid.
+
+libgcrypt library issues when using GNU TLS 3
+=============================================
+
+Starting with its 3.0 version, GNU TLS does not use libgcrypt as
+cryptographic backend anymore. Therefore libgcrypt initialization was
+unnecessary in such cases.
+
+=====================
+Centreon Broker 3.0.6
+=====================
+
+*********
+Bug fixes
+*********
+
+Do not allow write filters on inputs
+====================================
+
+The consequence of setting filters on inputs was that event loop could
+occur. In this release, inputs can only one way of filters, therefore
+preventing event loops.
+
+Retention file hardening
+========================
+
+Some users reported issues with retention files. In this release the
+most important classes managing retention files were refactored and unit
+tested.
+
+Fix inherited BA downtimes on non-default instance
+==================================================
+
+In previous versions BA downtime inheritance only worked with the
+default Centreon instance created during installation (with ID 1). In
+some cases (recreated instance, Poller Display) the instance ID was not
+1 and prevented BA downtime inheritance from working.
+
+Detect metrics without valid value
+==================================
+
+Metrics without value, in improperly formatted performance data, were
+inserted in data_bin with a 0 value, polluting the table.
+
+Do not attempt to acknowledge more events than available
+========================================================
+
+The *storage* engine was sometimes generating error logs with the
+message "attempt to acknowledge more events than available".
+
+=====================
+Centreon Broker 3.0.5
+=====================
+
+*********
+Bug fixes
+*********
+
+Fix a crash by memory corruption
+================================
+
+In some cases, the current pointer to the next in-memory event to
+process can be corrupted. On high-volume platforms this usually leads
+to crashes within minutes.
+
+Print queue file statistics
+===========================
+
+Print queue file statistics (if available) for every endpoint.
+
+Correct duplicate BA event durations
+====================================
+
+This was caused by an invalid UPDATE query so the BA event durations
+were always inserted. The consequence was that UNIQUE keys were
+triggered and lead to duplicate errors.
+
+=====================
+Centreon Broker 3.0.4
+=====================
+
+*********
+Bug fixes
+*********
+
+BA availabilities with non-standard timeperiods
+===============================================
+
+Availabilities were improperly computed when linked to non-standard
+timeperiods (exceptions, exclusions, templates, ...).
+
+Use prepared statements on logs and data_bin
+============================================
+
+Starting with Centreon 2.8, the default storage engine for the logs and
+data_bin tables is now InnoDB. To improve performances with this storage
+engine, the query system now use prepared statements and transactions to
+insert data in these tables.
+
+Invalid event acknowledgement
+=============================
+
+Events read from cache/retention files were improperly acknowledged.
+This means that in case of failure following a successful reading of the
+file events could be lost. Now events are only acknowledged once
+processing is confirmed.
+
+Downtimes not deleted if not started
+====================================
+
+The cancellation flag of the downtimes table was not set if a downtime
+was deleted before it started.
+
+Fix data insertion in InfluxDB databases
+========================================
+
+The InfluxDB was incorrectly inserting data in database for at least
+three different reasons : invalid timestamp format, wrong HTTP status
+code check and quoted tags. This is now fixed.
+
+Reconnect when using one peer retention mode
+============================================
+
+A bug in the TCP layer prevented one peer retention mode connections to
+reconnect.
+
+=====================
+Centreon Broker 3.0.3
+=====================
+
+*********
+Bug fixes
+*********
+
+Non-OK statuses in BAM expressions were always considered as OK
+===============================================================
+
+Non-OK statuses in BAM expressions (such as {CRITICAL}) were always
+treated as OKs by the BAM computation engine. Therefore most
+expressions using non-OK stasuses were improperly evaluated and
+sometimes trigger BA impacts that were not justified.
+
+Use non-standard path in watchdog
+=================================
+
+The watchdog was always using */usr/sbin/cbd* to run the Centreon Broker
+daemon. This was not aligned with the build variable WITH_PREFIX_BIN.
+This should help users of Debian-based distributions in their manual
+installations.
+
+=====================
 Centreon Broker 3.0.2
 =====================
 

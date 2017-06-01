@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2016 Centreon
+** Copyright 2009-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@
 #include "com/centreon/broker/database_preparator.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
@@ -322,6 +322,23 @@ void stream::_clean_tables(unsigned int instance_id) {
   catch (std::exception const& e) {
     logging::error(logging::medium)
       << "SQL: could not clean modules table: " << e.what();
+  }
+
+  // Remove downtimes.
+  try {
+    std::ostringstream ss;
+    ss << "UPDATE downtimes AS d"
+          "  INNER JOIN hosts AS h"
+          "    ON d.host_id=h.host_id"
+          "  SET d.cancelled=1"
+          "  WHERE d.actual_end_time IS NULL"
+          "    AND d.cancelled=0"
+          "    AND h.instance_id=" << instance_id;
+    q.run_query(ss.str());
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "SQL: could not clean downtimes table: " << e.what();
   }
 
   // Remove comments.
@@ -758,9 +775,15 @@ void stream::_process_engine(
  */
 void stream::_process_event_handler(
                misc::shared_ptr<io::data> const& e) {
+  // Cast object.
+  neb::event_handler const&
+    eh(*static_cast<neb::event_handler const*>(e.data()));
+
   // Log message.
   logging::info(logging::medium)
-    << "SQL: processing event handler event";
+    << "SQL: processing event handler event (host: " << eh.host_id
+    << ", service: " << eh.service_id << ", start time "
+    << eh.start_time << ")";
 
   // Prepare queries.
   if (!_event_handler_insert.prepared()
@@ -780,7 +803,7 @@ void stream::_process_event_handler(
   _update_on_none_insert(
     _event_handler_insert,
     _event_handler_update,
-    *static_cast<neb::event_handler const*>(e.data()));
+    eh);
 
   return ;
 }
@@ -792,9 +815,15 @@ void stream::_process_event_handler(
  */
 void stream::_process_flapping_status(
                misc::shared_ptr<io::data> const& e) {
+  // Cast object.
+  neb::flapping_status const&
+    fs(*static_cast<neb::flapping_status const*>(e.data()));
+
   // Log message.
   logging::info(logging::medium)
-    << "SQL: processing flapping status event";
+    << "SQL: processing flapping status event (host: " << fs.host_id
+    << ", service: " << fs.service_id << ", entry time "
+    << fs.event_time << ")";
 
   // Prepare queries.
   if (!_flapping_status_insert.prepared()
@@ -814,7 +843,7 @@ void stream::_process_flapping_status(
   _update_on_none_insert(
     _flapping_status_insert,
     _flapping_status_update,
-    *static_cast<neb::flapping_status const*>(e.data()));
+    fs);
 
   return ;
 }
@@ -2382,8 +2411,7 @@ int stream::flush() {
 bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
-  throw (io::exceptions::shutdown(true, false)
-         << "cannot read from SQL database");
+  throw (exceptions::shutdown() << "cannot read from SQL database");
   return (true);
 }
 
@@ -2404,14 +2432,12 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "SQL"))
-    return (1);
-
   // Take this event into account.
   ++_pending_events;
+  if (!validate(data, "SQL"))
+    return (0);
 
-  // Check that data exists.
-    // Process event.
+  // Process event.
   unsigned int type(data->type());
   unsigned short cat(io::events::category_of_type(type));
   unsigned short elem(io::events::element_of_type(type));

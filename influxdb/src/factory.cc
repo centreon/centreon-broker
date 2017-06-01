@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2016 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -156,16 +156,6 @@ io::endpoint* factory::new_endpoint(
       queries_per_transaction = 1000;
   }
 
-  std::string version;
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("influxdb_version"));
-    if (it != cfg.params.end())
-      version = it.value().toStdString();
-    else
-      version = "1.0";
-  }
-
   // Get status query.
   std::string status_timeseries(find_param(cfg, "status_timeseries"));
   std::vector<column> status_column_list;
@@ -224,7 +214,6 @@ io::endpoint* factory::new_endpoint(
        port,
        db,
        queries_per_transaction,
-       version,
        status_timeseries,
        status_column_list,
        metric_timeseries,

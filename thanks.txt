@@ -3,8 +3,12 @@
 -----------------------------------------------------------------------
 
 Andrzej Augustynowicz
+Yann Beulque
 Jean-Baptiste Borrel
 Eric Coquard
 Kevin Defives
 David Du Serre-Telmon
+Alexandre Fouillé
+Dorian Guillois
+Andreas Iwanowski
 Raphael Troiano

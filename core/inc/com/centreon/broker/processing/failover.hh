@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015-2016 Centreon
+** Copyright 2011-2013,2015-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -50,10 +50,10 @@ namespace           processing {
    *
    *  Multiple failover can be forwarded.
    */
-  class             failover : public thread, public io::stream {
+  class             failover : public thread {
     friend class    stats::builder;
 
-  public:
+   public:
                     failover(
                       misc::shared_ptr<io::endpoint> endp,
                       misc::shared_ptr<multiplexing::subscriber> sbscrbr,
@@ -65,22 +65,15 @@ namespace           processing {
     time_t          get_buffering_timeout() const throw ();
     bool            get_initialized() const throw ();
     time_t          get_retry_interval() const throw ();
-    bool            read(
-                      misc::shared_ptr<io::data>& d,
-                      time_t deadline);
     void            run();
     void            set_buffering_timeout(time_t secs);
     void            set_failover(
                       misc::shared_ptr<processing::failover> fo);
-    void            set_read_timeout(time_t read_timeout);
     void            set_retry_interval(time_t retry_interval);
-    void            statistics(io::properties& tree) const;
     void            update();
     bool            wait(unsigned long time = ULONG_MAX);
-    int             write(misc::shared_ptr<io::data> const& d);
 
-
-  protected:
+   protected:
     // From stat_visitable
     virtual std::string
                     _get_state();
@@ -92,7 +85,7 @@ namespace           processing {
                     _get_write_filters();
     virtual void    _forward_statistic(io::properties& tree);
 
-  private:
+   private:
                     failover(failover const& other);
     failover&       operator=(failover const& other);
     void            _launch_failover();
@@ -109,7 +102,6 @@ namespace           processing {
     bool            _failover_launched;
     volatile bool   _initialized;
     time_t          _next_timeout;
-    time_t          _read_timeout;
     volatile time_t _retry_interval;
     misc::shared_ptr<multiplexing::subscriber>
                     _subscriber;

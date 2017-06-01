@@ -50,63 +50,6 @@ Example
     <max_size>100000000</max_size> <!-- 100MB limit -->
   </input>
 
-Local
-=====
-
-The local module allow local domain (a.k.a. Unix domain) socket
-creation. Sockets can be created either as clients (type
-*local_client*) or server (type *local_server*).
-
-===================== ============================
-**Type**              local_client or local_server
-**Layer(s)**          1-3
-**Work on input**     Yes
-**Work on output**    Yes
-**Work on temporary** No
-===================== ============================
-
-Configuration
--------------
-
-======================= ================================================
-Tag                     Description
-======================= ================================================
-one_peer_retention_mode Allow only one connection for a specific output.
-                        This option allow to keep retention on a server
-                        output (socket on a listen mode).
-path                    Path of the local socket.
-protocol                Choose your protocol (bbdo or ndo).
-======================= ================================================
-
-Example
--------
-
-::
-
-  <output>
-    <type>local_client</type>
-    <path>/var/lib/centreon/broker.sock</path>
-    <protocol>bbdo</protocol>
-  </output>
-
-::
-
-  <output>
-    <type>local_server</type>
-    <path>/var/lib/centreon/broker.sock</path>
-    <protocol>bbdo</protocol>
-  </output>
-
-::
-
-  <output>
-    <type>local_server</type>
-    <path>/var/lib/centreon/broker.sock</path>
-    <protocol>bbdo</protocol>
-    <one_peer_retention_mode>1</one_peer_retention_mode>
-  </output>
-
-
 .. _user_modules_rrd:
 
 RRD
@@ -575,6 +518,23 @@ is used by the BBDO protocol.
 **Work on output** Yes
 ================== ===
 
+Description
+-----------
+
+By default, TLS do not need to be explicitely enabled. It will be
+enabled automatically if BBDO's negociation succeeds.
+
+You will need to configure it manually if you wish to use certificates.
+In this case, you will need to explicitely enable TLS on both
+communicating endpoints (ie. the input endpoint and the output
+endpoint). You can use unsigned, signed or self-signed certificates
+as long as you do not use a Certificate Authority certificate.
+
+If you are using a Certificate Authority certificate to authenticate
+connections, then each peer's certificate will be checked against this
+CA certificate (ie. the peer's certificate must be signed by the CA
+you are using).
+
 Options
 -------
 
@@ -584,13 +544,16 @@ Tag            Description
 tls            Enable TLS protocol. It can either be used as anonymous
                (no public_cert nor private_key) or with appropriate
                settings (ca_certificate) used with certificate
-               authentication.
-private_key    Private key.
-public_cert    Public certificate associated with private_key.
-ca_certificate Trusted Certificate Authority certificate. If this
-               parameter is set, the CA’s certificate is used to
-               authenticate client connections which are denied
-               if the peer key could not be validated.
+               authentication. Note that if this option is set (to
+               either true or false), BBDO's TLS negociation won't be
+               possible.
+private_key    Private key, in PEM format.
+public_cert    Public certificate, in PEM format, associated with
+               private_key.
+ca_certificate Trusted Certificate Authority certificate, in PEM
+               format. If this parameter is set, the CA’s certificate
+               is used to authenticate client connections which are
+               denied if the peer key could not be validated.
 ============== =======================================================
 
 Example

@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2013 Centreon
+** Copyright 2012-2013,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -30,9 +30,6 @@ namespace               com {
       namespace         io {
         class           properties;
       }
-      namespace         processing {
-        class           failover;
-      }
 
       namespace         stats {
         /**
@@ -45,13 +42,13 @@ namespace               com {
         class           worker : public QThread {
           Q_OBJECT
 
-        public:
+         public:
                         worker();
                         ~worker() throw ();
           void          exit();
           void          run(QString const& fifo_file, config::fifo_type type);
 
-        private:
+         private:
                         worker(worker const& right);
           worker&       operator=(worker const& right);
           void          _close();

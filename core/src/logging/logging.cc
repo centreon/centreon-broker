@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011 Centreon
+** Copyright 2009-2011,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -30,3 +30,4 @@ logging::logger logging::config(logging::config_type);
 logging::logger logging::debug(logging::debug_type);
 logging::logger logging::error(logging::error_type);
 logging::logger logging::info(logging::info_type);
+logging::logger logging::perf(logging::perf_type);

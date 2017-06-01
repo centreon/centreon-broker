@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,16 +20,15 @@
 #include <sstream>
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/influxdb/stream.hh"
-#include "com/centreon/broker/influxdb/influxdb9.hh"
-#include "com/centreon/broker/influxdb/influxdb10.hh"
+#include "com/centreon/broker/influxdb/influxdb12.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
@@ -51,7 +50,6 @@ stream::stream(
           unsigned short port,
           std::string const& db,
           unsigned int queries_per_transaction,
-          std::string const& version,
           std::string const& status_ts,
           std::vector<column> const& status_cols,
           std::string const& metric_ts,
@@ -68,33 +66,17 @@ stream::stream(
     _actual_query(0),
     _commit(false),
     _cache(cache) {
-  if (version == "0.9")
-    _influx_db.reset(new influxdb9(
-                           user,
-                           passwd,
-                           addr,
-                           port,
-                           db,
-                           status_ts,
-                           status_cols,
-                           metric_ts,
-                           metric_cols,
-                           _cache));
-  else if (version == "1.0")
-    _influx_db.reset(new influxdb10(
-                           user,
-                           passwd,
-                           addr,
-                           port,
-                           db,
-                           status_ts,
-                           status_cols,
-                           metric_ts,
-                           metric_cols,
-                           _cache));
-  else
-    throw (exceptions::msg()
-           << "influxdb: unrecognized influxdb version '" << version << "'");
+  _influx_db.reset(new influxdb12(
+                         user,
+                         passwd,
+                         addr,
+                         port,
+                         db,
+                         status_ts,
+                         status_cols,
+                         metric_ts,
+                         metric_cols,
+                         _cache));
 }
 
 /**
@@ -129,7 +111,7 @@ int stream::flush() {
 bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
-  throw (com::centreon::broker::io::exceptions::shutdown(true, false)
+  throw (exceptions::shutdown()
          << "cannot read from InfluxDB database");
   return (true);
 }
@@ -161,10 +143,10 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "influxdb"))
-    return (1);
-
+  // Take this event into account.
   ++_pending_queries;
+  if (!validate(data, "influxdb"))
+    return (0);
 
   // Give data to cache.
   _cache.write(data);

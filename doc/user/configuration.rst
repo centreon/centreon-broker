@@ -83,9 +83,9 @@ Options
 The following options must be placed directly under the root of the
 XML file.
 
-==================== ======================================================== =============================================
-Option               Description                                              Example
-==================== ======================================================== =============================================
+============================ ======================================================== =============================================
+Option                       Description                                              Example
+============================ ======================================================== =============================================
 module_directory             Where Centreon Broker’s modules are stored.              ::
 
                                                                                         <module_directory>
@@ -117,6 +117,7 @@ include                      Include another Centreon Broker configuration file 
                                                                                           /etc/centreon-broker/common.xml
                                                                                         </include>
 cache_directory              Cache directory of Centreon Broker.                      ::
+
                                                                                         <cache_directory>
                                                                                           /var/lib/centreon-broker/cache
                                                                                         </cache_directory>
@@ -181,7 +182,7 @@ temporary                    Start an :ref:`temporary stream definition
                                                                                           <path>/tmp/brokertemp</path>
                                                                                           <protocol>bbdo</protocol>
                                                                                         </temporary>
-==================== ======================================================== =============================================
+============================ ======================================================== =============================================
 
 .. _user_configuration_logger:
 

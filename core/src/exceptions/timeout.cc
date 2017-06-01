@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -51,23 +51,6 @@ timeout& timeout::operator=(timeout const& other) {
     std::exception::operator=(other);
   }
   return (*this);
-}
-
-/**
- *  Clone the exception object.
- *
- *  @return Copy of this exception object.
- */
-timeout* timeout::clone() const {
-  return (new timeout(*this));
-}
-
-/**
- *  Rethrow the exception.
- */
-void timeout::rethrow() const {
-  throw (*this);
-  return ;
 }
 
 /**

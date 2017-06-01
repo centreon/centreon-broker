@@ -1,5 +1,5 @@
 ##
-## Copyright 2009-2016 Centreon
+## Copyright 2009-2017 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 
 # Version.
 set(CENTREON_BROKER_MAJOR 3)
-set(CENTREON_BROKER_MINOR 1)
-set(CENTREON_BROKER_PATCH 0)
+set(CENTREON_BROKER_MINOR 0)
+set(CENTREON_BROKER_PATCH 8)
 set(CENTREON_BROKER_VERSION "${CENTREON_BROKER_MAJOR}.${CENTREON_BROKER_MINOR}.${CENTREON_BROKER_PATCH}")
 add_definitions(-DCENTREON_BROKER_VERSION=\"${CENTREON_BROKER_VERSION}\")
 configure_file(
@@ -348,6 +348,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/compression/factory.cc"
   "${SRC_DIR}/compression/internal.cc"
   "${SRC_DIR}/compression/opener.cc"
+  "${SRC_DIR}/compression/stack_array.cc"
   "${SRC_DIR}/compression/stream.cc"
   "${SRC_DIR}/config/applier/endpoint.cc"
   "${SRC_DIR}/config/applier/modules.cc"
@@ -361,7 +362,9 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/database_preparator.cc"
   "${SRC_DIR}/database_query.cc"
   "${SRC_DIR}/exceptions/config.cc"
+  "${SRC_DIR}/exceptions/interrupt.cc"
   "${SRC_DIR}/exceptions/msg.cc"
+  "${SRC_DIR}/exceptions/shutdown.cc"
   "${SRC_DIR}/exceptions/timeout.cc"
   "${SRC_DIR}/extcmd/command_client.cc"
   "${SRC_DIR}/extcmd/command_parser.cc"
@@ -379,15 +382,18 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/file/directory_watcher.cc"
   "${SRC_DIR}/file/factory.cc"
   "${SRC_DIR}/file/fifo.cc"
+  "${SRC_DIR}/file/fs_browser.cc"
+  "${SRC_DIR}/file/fs_file.cc"
   "${SRC_DIR}/file/internal.cc"
   "${SRC_DIR}/file/opener.cc"
+  "${SRC_DIR}/file/qt_fs_browser.cc"
+  "${SRC_DIR}/file/splitter.cc"
   "${SRC_DIR}/file/stream.cc"
   "${SRC_DIR}/instance_broadcast.cc"
   "${SRC_DIR}/io/data.cc"
   "${SRC_DIR}/io/endpoint.cc"
   "${SRC_DIR}/io/event_info.cc"
   "${SRC_DIR}/io/events.cc"
-  "${SRC_DIR}/io/exceptions/shutdown.cc"
   "${SRC_DIR}/io/factory.cc"
   "${SRC_DIR}/io/properties.cc"
   "${SRC_DIR}/io/property.cc"
@@ -457,6 +463,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/compression/factory.hh"
   "${INC_DIR}/compression/internal.hh"
   "${INC_DIR}/compression/opener.hh"
+  "${INC_DIR}/compression/stack_array.hh"
   "${INC_DIR}/compression/stream.hh"
   "${INC_DIR}/config/applier/endpoint.hh"
   "${INC_DIR}/config/applier/init.hh"
@@ -472,7 +479,9 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/database_preparator.hh"
   "${INC_DIR}/database_query.hh"
   "${INC_DIR}/exceptions/config.hh"
+  "${INC_DIR}/exceptions/interrupt.hh"
   "${INC_DIR}/exceptions/msg.hh"
+  "${INC_DIR}/exceptions/shutdown.hh"
   "${INC_DIR}/exceptions/timeout.hh"
   "${INC_DIR}/extcmd/command_client.hh"
   "${INC_DIR}/extcmd/command_listener.hh"
@@ -490,15 +499,18 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/file/directory_watcher.hh"
   "${INC_DIR}/file/factory.hh"
   "${INC_DIR}/file/fifo.hh"
+  "${INC_DIR}/file/fs_browser.hh"
+  "${INC_DIR}/file/fs_file.hh"
   "${INC_DIR}/file/internal.hh"
   "${INC_DIR}/file/opener.hh"
+  "${INC_DIR}/file/qt_fs_browser.hh"
+  "${INC_DIR}/file/splitter.hh"
   "${INC_DIR}/file/stream.hh"
   "${INC_DIR}/instance_broadcast.hh"
   "${INC_DIR}/io/data.hh"
   "${INC_DIR}/io/endpoint.hh"
   "${INC_DIR}/io/event_info.hh"
   "${INC_DIR}/io/events.hh"
-  "${INC_DIR}/io/exceptions/shutdown.hh"
   "${INC_DIR}/io/factory.hh"
   "${INC_DIR}/io/properties.hh"
   "${INC_DIR}/io/property.hh"
@@ -602,6 +614,13 @@ endif()
 
 # Module list.
 unset(MODULE_LIST)
+
+# Generator module.
+option(WITH_MODULE_GENERATOR "Build generator module." OFF)
+if (WITH_MODULE_GENERATOR)
+  add_subdirectory("generator")
+  list(APPEND MODULE_LIST "generator")
+endif ()
 
 # Stats module.
 option(WITH_MODULE_STATS "Build stats module." ON)
@@ -715,10 +734,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   #   "${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml")
   # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/filtering_to_sql.xml.in"
   #   "${PROJECT_SOURCE_DIR}/test/cfg/filtering_to_sql.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_1.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_2.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/compression_to_sql_2.xml")
   # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml.in"
   #   "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml")
   # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml.in"
@@ -955,12 +970,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # # Protocols.
-  # set(TEST_NAME "running_compression_to_sql")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/compression_to_sql.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
   # # Encryption.
   # set(TEST_NAME "running_tls_to_sql")
   # add_executable("${TEST_NAME}"
@@ -1225,6 +1234,7 @@ install(CODE "
   mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_MODULES}\")
   mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_INC}\")
   mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_CONF}\")
+  mkdir_chown(\"${USER}\" \"${GROUP}\" \"${PREFIX_VAR}\")
   if (WITH_STARTUP_SCRIPT STREQUAL \"sysv\")
     mkdir_chown(\"${USER}\" \"${GROUP}\" \"${STARTUP_DIR}\")
   endif ()
@@ -1709,21 +1719,6 @@ if (WITH_TESTING)
   # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
   # add_test("${TEST_NAME}" "${TEST_NAME}")
 
-
-  # # compression namespace tests.
-  # # compression::stream tests.
-  # #   Compress/uncompress.
-  # set(TEST_NAME "compression_stream_io")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/compression/stream/io.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Buffer is read back.
-  # set(TEST_NAME "compression_buffer_is_read_back")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/compression/stream/buffer_is_read_back.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
 
   # # module namespace tests.
   # # module::loader tests.

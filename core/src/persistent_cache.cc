@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@
 #include <QFile>
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/file/stream.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
+#include "com/centreon/broker/file/opener.hh"
 #include "com/centreon/broker/persistent_cache.hh"
 
 using namespace com::centreon::broker;
@@ -101,7 +101,7 @@ void persistent_cache::get(misc::shared_ptr<io::data>& d) {
   try {
     _read_file->read(d);
   }
-  catch (io::exceptions::shutdown const& e) {
+  catch (exceptions::shutdown const& e) {
     (void)e;
     d.clear();
   }
@@ -126,7 +126,11 @@ void persistent_cache::transaction() {
   if (!_write_file.isNull())
     throw (exceptions::msg() << "core: cache file '"
            << _cache_file << "' is already open for writing");
-  misc::shared_ptr<file::stream> fs(new file::stream(_new_file()));
+  file::opener opnr;
+  opnr.set_filename(_new_file());
+  opnr.set_auto_delete(false);
+  opnr.set_max_size(0);
+  misc::shared_ptr<io::stream> fs(opnr.open());
   misc::shared_ptr<bbdo::stream> bs(new bbdo::stream);
   bs->set_substream(fs);
   bs->set_coarse(true);
@@ -176,9 +180,11 @@ void persistent_cache::_open() {
   }
 
   // Create file stream.
-  misc::shared_ptr<file::stream> fs(new file::stream(_cache_file));
-  fs->set_auto_delete(false);
-  fs->reset();
+  file::opener opnr;
+  opnr.set_filename(_cache_file);
+  opnr.set_auto_delete(false);
+  opnr.set_max_size(0);
+  misc::shared_ptr<io::stream> fs(opnr.open());
 
   // Create BBDO layer.
   misc::shared_ptr<bbdo::stream> bs(new bbdo::stream);

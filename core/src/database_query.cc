@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -456,6 +456,7 @@ void database_query::run_query(
                        std::string const& query,
                        char const* error_msg) {
   if (!_q.exec(query.c_str())) {
+    _db.set_error();
     exceptions::msg e;
     if (error_msg)
       e << error_msg << ": ";
@@ -474,6 +475,7 @@ void database_query::run_query(
  */
 void database_query::run_statement(char const* error_msg) {
   if (!_q.exec()) {
+    _db.set_error();
     exceptions::msg e;
     if (error_msg)
       e << error_msg << ": ";
@@ -506,6 +508,7 @@ void database_query::prepare(
   logging::debug(logging::medium)
     << "core: preparing query: " << query;
   if (!_q.prepare(query.c_str())) {
+    _db.set_error();
     exceptions::msg e;
     if (error_msg)
       e << error_msg << ": ";

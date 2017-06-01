@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ CCB_BEGIN()
  *  and *centreon_storage*.
  */
 class               database {
-public:
+ public:
   enum              version {
     v2 = 2,
     v3
@@ -52,8 +52,9 @@ public:
   static QString    qt_db_type(std::string const& broker_type);
   void              query_executed();
   version           schema_version() const;
+  void              set_error();
 
-private:
+ private:
                     database(database const& other);
   database&         operator=(database const& other);
   void              _commit();
@@ -63,6 +64,7 @@ private:
                     _db;
   QString           _connection_id;
   database_config   _db_cfg;
+  bool              _error;
   int               _pending_queries;
   bool              _committed;
   version           _version;

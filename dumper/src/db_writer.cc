@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@
 #include "com/centreon/broker/dumper/entries/kpi.hh"
 #include "com/centreon/broker/dumper/entries/organization.hh"
 #include "com/centreon/broker/dumper/entries/service.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 
@@ -63,13 +63,13 @@ db_writer::~db_writer() {}
  *  @param[in] d         Unused.
  *  @param[in] deadline  Unused.
  *
- *  @return This method will throw an io::exceptions::shutdown
+ *  @return This method will throw an exceptions::shutdown
  *          exception.
  */
 bool db_writer::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   (void)d;
   (void)deadline;
-  throw (io::exceptions::shutdown(true, false)
+  throw (exceptions::shutdown()
          << "cannot read from database configuration writer");
   return (true);
 }

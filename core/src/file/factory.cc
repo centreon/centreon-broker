@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2016-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -99,7 +99,6 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-  (void)is_acceptor;
   (void)cache;
 
   // Find path to the file.
@@ -112,20 +111,9 @@ io::endpoint* factory::new_endpoint(
     filename = *it;
   }
 
-  // Find max size of file.
-  unsigned long long max_size;
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("max_size"));
-    if (it != cfg.params.end())
-      max_size = it->toULongLong();
-    else
-      max_size = 0;
-  }
-
   // Generate opener.
   std::auto_ptr<opener> openr(new opener);
-  openr->set_filename(filename);
-  openr->set_max_size(max_size);
+  openr->set_filename(filename.toStdString());
+  is_acceptor = false;
   return (openr.release());
 }

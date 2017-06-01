@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2015 Centreon
+** Copyright 2013-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@
 #include "com/centreon/broker/bbdo/output.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/event_info.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mapping/entry.hh"
@@ -334,5 +333,5 @@ int output::write(misc::shared_ptr<io::data> const& e) {
     _substream->write(serialized);
 
   // Event acknowledgement is done in the higher level bbdo::stream.
-  return (-1);
+  return (0);
 }

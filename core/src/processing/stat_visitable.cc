@@ -89,39 +89,39 @@ void stat_visitable::stats(io::properties &tree) {
   QMutexLocker lock(&_stat_mutex);
   tree.add_property("state", io::property("state", _get_state()));
   tree.add_property(
-         "read filters",
+         "read_filters",
          io::property(
                "read_filters",
                dump_filters(_get_read_filters())));
   tree.add_property(
-         "write filters",
+         "write_filters",
          io::property(
                "write_filters",
                dump_filters(_get_write_filters())));
   tree.add_property(
-         "event processing speed",
+         "event_processing_speed",
          io::property(
                "event_processing_speed",
                misc::string::get(
                        _event_processing_speed.get_processing_speed())));
   tree.add_property(
-         "last connection attempt",
+         "last_connection_attempt",
          io::property(
            "last_connection_attempt",
            misc::string::get(_last_connection_attempt)));
   tree.add_property(
-         "last connection success",
+         "last_connection_success",
          io::property(
            "last_connection_success",
            misc::string::get(_last_connection_success)));
   tree.add_property(
-         "last event at",
+         "last_event_at",
          io::property(
               "last_event_at",
                misc::string::get(
                        _event_processing_speed.get_last_event_time())));
   tree.add_property(
-         "queued events",
+         "queued_events",
          io::property(
                "queued_events",
                misc::string::get(_get_queued_events())));

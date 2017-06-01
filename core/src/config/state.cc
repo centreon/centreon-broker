@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -268,21 +268,21 @@ bool state::log_thread_id() const throw () {
 }
 
 /**
- *  Set whether or not timestamp logging should be enabled.
+ *  Set if and how timestamp should be stored.
  *
- *  @param[in] log_time true to log timestamp.
+ *  @param[in] log_time  Any acceptable value.
  */
-void state::log_timestamp(bool log_time) throw () {
+void state::log_timestamp(com::centreon::broker::logging::timestamp_type log_time) throw () {
   _log_timestamp = log_time;
   return ;
 }
 
 /**
- *  Get whether or not to log timestamp.
+ *  Get if and how timestamp should be stored.
  *
- *  @return true if timestamp must be logged.
+ *  @return Any acceptable value.
  */
-bool state::log_timestamp() const throw () {
+com::centreon::broker::logging::timestamp_type state::log_timestamp() const throw () {
   return (_log_timestamp);
 }
 
