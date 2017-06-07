@@ -227,6 +227,12 @@ int output::write(misc::shared_ptr<io::data> const& d) {
           oss << static_cast<long long>(e->value);
         else
           oss << std::fixed << e->value;
+      
+        unsigned int modulo;
+        modulo = e->ctime % e->interval;
+        if (modulo > 0) {
+            e->ctime = e->ctime - modulo;
+        }
         _backend->update(e->ctime, oss.str());
       }
       else
@@ -276,6 +282,12 @@ int output::write(misc::shared_ptr<io::data> const& d) {
           oss << 75;
         else if (e->state == 2)
           oss << 0;
+      
+        unsigned int modulo;
+        modulo = e->ctime % e->interval;
+        if (modulo > 0) {
+            e->ctime = e->ctime - modulo;
+        }
         _backend->update(e->ctime, oss.str());
       }
       else
