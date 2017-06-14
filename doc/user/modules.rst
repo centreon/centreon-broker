@@ -441,7 +441,7 @@ data stringification. As its name suggests, BBDO is using raw binary
 data transfer which drastically reduce its CPU footprint on busy
 servers.
 
-BBDO also supports feature negociation and can automatically encrypt
+BBDO also supports feature negotiation and can automatically encrypt
 and/or compress transmitted data. No configuration is required, whereas
 possible, to use compression and TLS modules.
 
@@ -460,7 +460,7 @@ Configuration
 Tag         Description
 =========== =====================================================
 protocol    Must be set to *bbdo*.
-negociation Enable or disable BBDO automatic feature negociation.
+negotiation Enable or disable BBDO automatic feature negotiation.
 =========== =====================================================
 
 NDO
@@ -522,7 +522,7 @@ Description
 -----------
 
 By default, TLS do not need to be explicitely enabled. It will be
-enabled automatically if BBDO's negociation succeeds.
+enabled automatically if BBDO's negotiation succeeds.
 
 You will need to configure it manually if you wish to use certificates.
 In this case, you will need to explicitely enable TLS on both
@@ -545,7 +545,7 @@ tls            Enable TLS protocol. It can either be used as anonymous
                (no public_cert nor private_key) or with appropriate
                settings (ca_certificate) used with certificate
                authentication. Note that if this option is set (to
-               either true or false), BBDO's TLS negociation won't be
+               either true or false), BBDO's TLS negotiation won't be
                possible.
 private_key    Private key, in PEM format.
 public_cert    Public certificate, in PEM format, associated with

@@ -11,7 +11,7 @@ BBDO protocol
 
 The new *BBDO* (*Broker Binary Data Objects*) is a protocol especially
 designed for performance. It is a lightweight transmission protocol
-with feature negociation (encryption and/or compression).
+with feature negotiation (encryption and/or compression).
 
 Retention time per RRD
 ======================

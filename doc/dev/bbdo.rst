@@ -65,7 +65,7 @@ id             unsigned integer       ID of the event.
 source_id      unsigned integer       The id of the source instance of this
                                       event.
 destination_id unsigned integer       The id of the destination instance
-                                      for this event.       
+                                      for this event.
 data                                  Payload data.
 ============== ====================== =====================================
 
@@ -339,12 +339,12 @@ And gives the following packet with values in hexadecimal.
 Connection establishment
 ************************
 
-BBDO is a protocol which can negociate features. When establishing a
+BBDO is a protocol which can negotiate features. When establishing a
 connection, a *version_response* packet is sent by the client. It
 provides its supported BBDO protocol version and extensions. The server
 replies to this message with another *version_response* packet
 containing its own supported protocol version and extensions. If
-protocol versions match, then starts the extensions negociation.
+protocol versions match, then starts the extensions negotiation.
 
 Currently two extensions are supported : *TLS* and *compression*. Right
 after the *version_response* packet, each peer search in the other

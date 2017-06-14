@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2015 Centreon
+** Copyright 2013-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -40,14 +40,14 @@ using namespace com::centreon::broker::bbdo;
 /**
  *  Constructor.
  *
- *  @param[in] negociate  True if extension negociation is allowed.
+ *  @param[in] negotiate  True if extension negotiation is allowed.
  *  @param[in] extensions Available extensions.
  *  @param[in] timeout    Timeout.
  *  @param[in] coarse     Is this connection coarse?
  *  @param[in] ack_limit  The number of event received before an ack needs to be sent.
  */
 connector::connector(
-             bool negociate,
+             bool negotiate,
              QString const& extensions,
              time_t timeout,
              bool coarse,
@@ -55,7 +55,7 @@ connector::connector(
   : io::endpoint(false),
     _coarse(coarse),
     _extensions(extensions),
-    _negociate(negociate),
+    _negotiate(negotiate),
     _timeout(timeout),
     _ack_limit(ack_limit) {
   if ((_timeout == (time_t)-1) || (_timeout == 0))
@@ -71,7 +71,7 @@ connector::connector(connector const& other)
   : io::endpoint(other),
     _coarse(other._coarse),
     _extensions(other._extensions),
-    _negociate(other._negociate),
+    _negotiate(other._negotiate),
     _timeout(other._timeout),
     _ack_limit(other._ack_limit) {}
 
@@ -92,7 +92,7 @@ connector& connector::operator=(connector const& other) {
     io::endpoint::operator=(other);
     _coarse = other._coarse;
     _extensions = other._extensions;
-    _negociate = other._negociate;
+    _negotiate = other._negotiate;
     _timeout = other._timeout;
     _ack_limit = other._ack_limit;
   }
@@ -135,9 +135,9 @@ misc::shared_ptr<io::stream> connector::_open(
                           new bbdo::stream);
     bbdo_stream->set_substream(stream);
     bbdo_stream->set_coarse(_coarse);
-    bbdo_stream->set_negociate(_negociate, _extensions);
+    bbdo_stream->set_negotiate(_negotiate, _extensions);
     bbdo_stream->set_timeout(_timeout);
-    bbdo_stream->negociate(bbdo::stream::negociate_first);
+    bbdo_stream->negotiate(bbdo::stream::negotiate_first);
     bbdo_stream->set_ack_limit(_ack_limit);
   }
   return (bbdo_stream);

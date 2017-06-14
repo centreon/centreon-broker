@@ -38,7 +38,7 @@ have one input configured as follow.
   * buffering_timeout = 0
   * protocol = BBDO
   * tls = auto
-  * negociation = yes
+  * negotiation = yes
   * one_peer_retention_mode = no
   * filter category = *empty* (central-broker-master) / storage (central-rrd-master)
   * compression = auto
@@ -80,7 +80,7 @@ Pollers should output to the Centreon central.
   * buffering_timeout = 0
   * protocol = BBDO
   * tls = auto
-  * negociation = yes
+  * negotiation = yes
   * one_peer_retention_mode = no
   * filter category = *empty*
   * compression = auto
@@ -176,7 +176,7 @@ This is the output to central-rrd.
   * buffering_timeout = 0
   * protocol = BBDO
   * tls = auto
-  * negociation = yes
+  * negotiation = yes
   * one_peer_retention_mode = no
   * filter category = storage
   * compression = auto

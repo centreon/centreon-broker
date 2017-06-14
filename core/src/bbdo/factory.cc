@@ -1,5 +1,5 @@
 /*
-** Copyright 2013,2015 Centreon
+** Copyright 2013,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -111,17 +111,17 @@ io::endpoint* factory::new_endpoint(
       coarse = config::parser::parse_boolean(*it);
   }
 
-  // Negociation allowed ?
-  bool negociate(false);
+  // Negotiation allowed ?
+  bool negotiate(false);
   QString extensions;
   if (!coarse) {
     QMap<QString, QString>::const_iterator
-      it(cfg.params.find("negociation"));
+      it(cfg.params.find("negotiation"));
     if ((it != cfg.params.end())
         && (*it == "no"))
-      negociate = false;
+      negotiate = false;
     else {
-      negociate = true;
+      negotiate = true;
       extensions = _extensions(cfg);
     }
   }
@@ -147,7 +147,7 @@ io::endpoint* factory::new_endpoint(
       is_acceptor = false;
     retval = new bbdo::acceptor(
                          cfg.name,
-                         negociate,
+                         negotiate,
                          extensions,
                          cfg.read_timeout,
                          one_peer_retention_mode,
@@ -156,7 +156,7 @@ io::endpoint* factory::new_endpoint(
   }
   else
     retval = new bbdo::connector(
-                         negociate,
+                         negotiate,
                          extensions,
                          cfg.read_timeout,
                          coarse,

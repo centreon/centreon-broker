@@ -1,5 +1,5 @@
 /*
-** Copyright 2013,2015 Centreon
+** Copyright 2013,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ namespace         bbdo {
   class           connector : public io::endpoint {
   public:
                   connector(
-                    bool negociate,
+                    bool negotiate,
                     QString const& extensions,
                     time_t timeout,
                     bool coarse = false,
@@ -52,7 +52,7 @@ namespace         bbdo {
 
     bool          _coarse;
     QString       _extensions;
-    bool          _negociate;
+    bool          _negotiate;
     time_t        _timeout;
     unsigned int  _ack_limit;
   };

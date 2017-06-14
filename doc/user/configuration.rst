@@ -262,7 +262,7 @@ features). Also one layer can only be handled by one protocol maximum.
 
 Centreon recommands to use the *BBDO* protocol by default. This
 optimized protocol uses very low resources and provide feature
-negociation which usually enables encryption and compression without
+negotiation which usually enables encryption and compression without
 any configuration.
 
 Common Options

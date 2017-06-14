@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ bool factory::has_not_endpoint(config::endpoint& cfg) const {
  *  @brief Create a new stream.
  *
  *  This function is used to generate new streams after successful
- *  stream construction like for a feature negociation.
+ *  stream construction like for a feature negotiation.
  *
  *  @param[in] to          Stream on which the stream will work.
  *  @param[in] is_acceptor true if stream must be an accepting stream.
@@ -89,6 +89,6 @@ misc::shared_ptr<stream> factory::new_stream(
   (void)to;
   (void)is_acceptor;
   throw (exceptions::msg() << proto_name
-         << ": protocol does not support feature negociation");
+         << ": protocol does not support feature negotiation");
   return (misc::shared_ptr<stream>());
 }

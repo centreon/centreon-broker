@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2015 Centreon
+** Copyright 2013-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ using namespace com::centreon::broker::bbdo;
  *  Constructor.
  *
  *  @param[in] name                    The name to build temporary.
- *  @param[in] negociate               true if feature negociation is
+ *  @param[in] negotiate               true if feature negotiation is
  *                                     allowed.
  *  @param[in] extensions              List of extensions allowed by
  *                                     this endpoint.
@@ -55,7 +55,7 @@ using namespace com::centreon::broker::bbdo;
  */
 acceptor::acceptor(
             std::string const& name,
-            bool negociate,
+            bool negotiate,
             QString const& extensions,
             time_t timeout,
             bool one_peer_retention_mode,
@@ -65,7 +65,7 @@ acceptor::acceptor(
     _coarse(coarse),
     _extensions(extensions),
     _name(name),
-    _negociate(negociate),
+    _negotiate(negotiate),
     _one_peer_retention_mode(one_peer_retention_mode),
     _timeout(timeout),
     _ack_limit(ack_limit) {
@@ -83,7 +83,7 @@ acceptor::acceptor(acceptor const& other)
     _coarse(other._coarse),
     _extensions(other._extensions),
     _name(other._name),
-    _negociate(other._negociate),
+    _negotiate(other._negotiate),
     _one_peer_retention_mode(other._one_peer_retention_mode),
     _timeout(other._timeout),
     _ack_limit(other._ack_limit) {}
@@ -108,7 +108,7 @@ acceptor& acceptor::operator=(acceptor const& other) {
     _coarse = other._coarse;
     _extensions = other._extensions;
     _name = other._name;
-    _negociate = other._negociate;
+    _negotiate = other._negotiate;
     _one_peer_retention_mode = other._one_peer_retention_mode;
     _timeout = other._timeout;
     _ack_limit = other._ack_limit;
@@ -135,11 +135,11 @@ misc::shared_ptr<io::stream> acceptor::open() {
       misc::shared_ptr<bbdo::stream> my_bbdo(new bbdo::stream);
       my_bbdo->set_substream(s);
       my_bbdo->set_coarse(_coarse);
-      my_bbdo->set_negociate(_negociate, _extensions);
+      my_bbdo->set_negotiate(_negotiate, _extensions);
       my_bbdo->set_timeout(_timeout);
       my_bbdo->set_ack_limit(_ack_limit);
       if (_one_peer_retention_mode)
-        my_bbdo->negociate(bbdo::stream::negociate_second);
+        my_bbdo->negotiate(bbdo::stream::negotiate_second);
 
       return (my_bbdo);
     }
