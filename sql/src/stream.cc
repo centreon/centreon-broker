@@ -489,10 +489,19 @@ void stream::_process_acknowledgement(
     }
 
     // Process object.
-    _update_on_none_insert(
-      _acknowledgement_insert,
-      _acknowledgement_update,
-      ack);
+    try {
+      _update_on_none_insert(
+        _acknowledgement_insert,
+        _acknowledgement_update,
+        ack);
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not store acknowledgement (poller: "
+             << ack.poller_id << ", host: " << ack.host_id
+             << ", service: " << ack.service_id << ", entry time: "
+             << ack.entry_time << "): " << e.what());
+    }
 
     // XXX : probably useless as we're using Centreon Engine 1.x
     // // Update the associated host or service table.
@@ -539,7 +548,16 @@ void stream::_process_comment(misc::shared_ptr<io::data> const& e) {
   logging::info(logging::medium)
     << "SQL: processing comment of poller " << cmmnt.poller_id
     << " on (" << cmmnt.host_id << ", " << cmmnt.service_id << ")";
-  _update_on_none_insert(_comment_insert, _comment_update, cmmnt);
+  try {
+    _update_on_none_insert(_comment_insert, _comment_update, cmmnt);
+  }
+  catch (std::exception const& e) {
+    throw (exceptions::msg() << "SQL: could not store comment (poller: "
+           << cmmnt.poller_id << ", host: " << cmmnt.host_id
+           << ", service: " << cmmnt.service_id << ", entry time: "
+           << cmmnt.entry_time << ", internal ID: " << cmmnt.internal_id
+           << "): " << e.what());
+  }
 
   return ;
 }
@@ -576,10 +594,18 @@ void stream::_process_custom_variable(
     logging::info(logging::medium)
       << "SQL: enabling custom variable '" << cv.name << "' of ("
       << cv.host_id << ", " << cv.service_id << ")";
-    _update_on_none_insert(
-      _custom_variable_insert,
-      _custom_variable_update,
-      cv);
+    try {
+      _update_on_none_insert(
+        _custom_variable_insert,
+        _custom_variable_update,
+        cv);
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not store custom variable (name: "
+             << cv.name << ", host: " << cv.host_id << ", service: "
+             << cv.service_id<< "): " << e.what());
+    }
   }
   else {
     logging::info(logging::medium)
@@ -632,7 +658,15 @@ void stream::_process_custom_variable_status(
 
   // Processing.
   _custom_variable_status_update << cvs;
-  _custom_variable_status_update.run_statement("SQL");
+  try {
+    _custom_variable_status_update.run_statement();
+  }
+  catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "SQL: could not update custom variable (name: "
+           << cvs.name << ", host: " << cvs.host_id << ", service: "
+           << cvs.service_id << "): " << e.what());
+  }
   if (_custom_variable_status_update.num_rows_affected() != 1)
     logging::error(logging::medium) << "SQL: custom variable ("
       << cvs.host_id << ", " << cvs.service_id << ", " << cvs.name
@@ -695,10 +729,18 @@ void stream::_process_downtime(
     }
 
     // Process object.
-    _update_on_none_insert(
-      _downtime_insert,
-      _downtime_update,
-      d);
+    try {
+      _update_on_none_insert(
+        _downtime_insert,
+        _downtime_update,
+        d);
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not store downtime (poller: " << d.poller_id
+             << ", host: " << d.host_id << ", service: " << d.service_id
+             << "): " << e.what());
+    }
 
     // XXX : probably useless as we're using Centreon Engine 1.x
     // // Update the associated host or service table.
@@ -800,10 +842,18 @@ void stream::_process_event_handler(
   }
 
   // Processing.
-  _update_on_none_insert(
-    _event_handler_insert,
-    _event_handler_update,
-    eh);
+  try {
+    _update_on_none_insert(
+      _event_handler_insert,
+      _event_handler_update,
+      eh);
+  }
+  catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "SQL: could not store event handler (host: " << eh.host_id
+           << ", service: " << eh.service_id << ", start time: "
+           << eh.start_time << "): " << e.what());
+  }
 
   return ;
 }
@@ -840,10 +890,18 @@ void stream::_process_flapping_status(
   }
 
   // Processing.
-  _update_on_none_insert(
-    _flapping_status_insert,
-    _flapping_status_update,
-    fs);
+  try {
+    _update_on_none_insert(
+      _flapping_status_insert,
+      _flapping_status_update,
+      fs);
+  }
+  catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "SQL: could not store flapping status (host: "
+           << fs.host_id << ", service: " << fs.service_id
+           << ", event time: " << fs.event_time << "): " << e.what());
+  }
 
   return ;
 }
@@ -876,7 +934,14 @@ void stream::_process_host(
       }
 
       // Process object.
-      _update_on_none_insert(_host_insert, _host_update, h);
+      try {
+        _update_on_none_insert(_host_insert, _host_update, h);
+      }
+      catch (std::exception const& e) {
+        throw (exceptions::msg()
+               << "SQL: could not store host (poller: " << h.poller_id
+               << ", host: " << h.host_id << "): " << e.what());
+      }
     }
     else
       logging::error(logging::high) << "SQL: host '" << h.host_name
@@ -919,7 +984,14 @@ void stream::_process_host_check(
 
     // Processing.
     _host_check_update << hc;
-    _host_check_update.run_statement("SQL");
+    try {
+      _host_check_update.run_statement();
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not store host check (host: " << hc.host_id
+             << "): " << e.what());
+    }
     if (_host_check_update.num_rows_affected() != 1)
       logging::error(logging::medium) << "SQL: host check could not "
            "be updated because host " << hc.host_id
@@ -967,10 +1039,18 @@ void stream::_process_host_dependency(
     }
 
     // Process object.
-    _update_on_none_insert(
-      _host_dependency_insert,
-      _host_dependency_update,
-      hd);
+    try {
+      _update_on_none_insert(
+        _host_dependency_insert,
+        _host_dependency_update,
+        hd);
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not store host dependency (host: "
+             << hd.host_id << ", dependent host: "
+             << hd.dependent_host_id << "): " << e.what());
+    }
   }
   // Delete.
   else {
@@ -1020,10 +1100,18 @@ void stream::_process_host_group(
       dbp.prepare_insert(_host_group_insert);
       dbp.prepare_update(_host_group_update);
     }
-    _update_on_none_insert(
-      _host_group_insert,
-      _host_group_update,
-      hg);
+    try {
+      _update_on_none_insert(
+        _host_group_insert,
+        _host_group_update,
+        hg);
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not store host group (poller: "
+             << hg.poller_id << ", group: " << hg.id << "): "
+             << e.what());
+    }
   }
   // Delete group.
   else {
@@ -1104,10 +1192,10 @@ void stream::_process_host_group_member(
       }
     }
     catch (std::exception const& e) {
-      logging::info(logging::high)
-        << "SQL: discarding membership of host " << hgm.host_id
-        << " to host group " << hgm.group_id << " on instance "
-        << hgm.poller_id << ": " << e.what();
+      logging::error(logging::high)
+        << "SQL: could not store host group membership (poller: "
+        << hgm.poller_id << ", host: " << hgm.host_id << ", group: "
+        << hgm.group_id << "): " << e.what();
     }
   }
   // Delete.
@@ -1181,8 +1269,9 @@ void stream::_process_host_parent(
     }
     catch (std::exception const& e) {
       logging::error(logging::high)
-        << "SQL: could not process host parent declaration: "
-        << e.what();
+        << "SQL: could not store host parentship (child host: "
+        << hp.host_id << ", parent host: " << hp.parent_id << "): "
+        << e.what() << " (ignored)";
     }
   }
   // Disable parenting.
@@ -1254,10 +1343,18 @@ void stream::_process_host_state(
 
   // Processing.
   if (_with_state_events) {
-    _update_on_none_insert(
-      _host_state_insert,
-      _host_state_update,
-      s);
+    try {
+      _update_on_none_insert(
+        _host_state_insert,
+        _host_state_update,
+        s);
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not store host state event (host: "
+             << s.host_id << ", start time " << s.start_time << "): "
+             << e.what());
+    }
   }
 
   return ;
@@ -1297,7 +1394,14 @@ void stream::_process_host_status(
 
     // Processing.
     _host_status_update << hs;
-    _host_status_update.run_statement("SQL");
+    try {
+      _host_status_update.run_statement();
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not store host status (host: " << hs.host_id
+             << "): " << e.what());
+    }
     if (_host_status_update.num_rows_affected() != 1)
       logging::error(logging::medium) << "SQL: host could not be "
            "updated because host " << hs.host_id
@@ -1345,7 +1449,14 @@ void stream::_process_instance(
     }
 
     // Process object.
-    _update_on_none_insert(_instance_insert, _instance_update, i);
+    try {
+      _update_on_none_insert(_instance_insert, _instance_update, i);
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not store poller (poller: "
+             << i.poller_id << "): " << e.what());
+    }
   }
 
   return ;
@@ -1393,7 +1504,14 @@ void stream::_process_instance_status(
 
     // Process object.
     _instance_status_update << is;
-    _instance_status_update.run_statement("SQL");
+    try {
+      _instance_status_update.run_statement();
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not update poller (poller: " << is.poller_id
+             << "): " << e.what());
+    }
     if (_instance_status_update.num_rows_affected() != 1)
       logging::error(logging::medium) << "SQL: poller "
         << is.poller_id << " was not updated because no matching entry "
@@ -1434,7 +1552,14 @@ void stream::_process_issue(
   }
 
   // Processing.
-  _update_on_none_insert(_issue_insert, _issue_update, i);
+  try {
+    _update_on_none_insert(_issue_insert, _issue_update, i);
+  }
+  catch (std::exception const& e) {
+    throw (exceptions::msg() << "SQL: could not store issue (host: "
+           << i.host_id << ", service: " << i.service_id
+           << ", start time: " << i.start_time << "): " << e.what());
+  }
 
   return ;
 }
@@ -1651,7 +1776,14 @@ void stream::_process_module(
     // Process object.
     if (m.enabled) {
       _module_insert << m;
-      _module_insert.run_statement("SQL");
+      try {
+        _module_insert.run_statement();
+      }
+      catch (std::exception const& e) {
+        throw (exceptions::msg()
+               << "SQL: could not store module (poller: " << m.poller_id
+               << "): " << e.what());
+      }
     }
     else {
       std::ostringstream ss;
@@ -1721,10 +1853,17 @@ void stream::_process_service(
     }
 
     // Process object.
-    _update_on_none_insert(
-      _service_insert,
-      _service_update,
-      s);
+    try {
+      _update_on_none_insert(
+        _service_insert,
+        _service_update,
+        s);
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg() << "SQL: could not store service (host: "
+             << s.host_id << ", service: " << s.service_id << "): "
+             << e.what());
+    }
   }
   else
     logging::error(logging::high) << "SQL: service '"
@@ -1768,7 +1907,15 @@ void stream::_process_service_check(
 
     // Processing.
     _service_check_update << sc;
-    _service_check_update.run_statement("SQL");
+    try {
+      _service_check_update.run_statement();
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not store service check (host: "
+             << sc.host_id << ", service: " << sc.service_id << "): "
+             << e.what());
+    }
     if (_service_check_update.num_rows_affected() != 1)
       logging::error(logging::medium) << "SQL: service check could "
            "not be updated because service (" << sc.host_id << ", "
@@ -1819,10 +1966,20 @@ void stream::_process_service_dependency(
     }
 
     // Process object.
-    _update_on_none_insert(
-      _service_dependency_insert,
-      _service_dependency_update,
-      sd);
+    try {
+      _update_on_none_insert(
+        _service_dependency_insert,
+        _service_dependency_update,
+        sd);
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not store service dependency (host: "
+             << sd.host_id << ", service: " << sd.service_id
+             << ", dependent host: " << sd.dependent_host_id
+             << ", dependent service: " << sd.dependent_service_id
+             << "): " << e.what());
+    }
   }
   // Delete.
   else {
@@ -1875,10 +2032,18 @@ void stream::_process_service_group(
       dbp.prepare_insert(_service_group_insert);
       dbp.prepare_update(_service_group_update);
     }
-    _update_on_none_insert(
-      _service_group_insert,
-      _service_group_update,
-      sg);
+    try {
+      _update_on_none_insert(
+        _service_group_insert,
+        _service_group_update,
+        sg);
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not store service group (poller: "
+             << sg.poller_id << ", group: " << sg.id << "): "
+             << e.what());
+    }
   }
   // Delete group.
   else {
@@ -1960,10 +2125,10 @@ void stream::_process_service_group_member(
       }
     }
     catch (std::exception const& e) {
-      logging::info(logging::high)
-        << "SQL: discarding membership of service (" << sgm.host_id
-        << ", " << sgm.service_id << ") to service group "
-        << sgm.group_id << " on instance " << sgm.poller_id << ": "
+      logging::error(logging::high)
+        << "SQL: could not store service group membership (poller: "
+        << sgm.poller_id << ", host: " << sgm.host_id << ", service: "
+        << sgm.service_id << ", group: " << sgm.group_id << "): "
         << e.what();
     }
   }
@@ -2033,10 +2198,18 @@ void stream::_process_service_state(
     }
 
     // Process object.
-    _update_on_none_insert(
-      _service_state_insert,
-      _service_state_update,
-      s);
+    try {
+      _update_on_none_insert(
+        _service_state_insert,
+        _service_state_update,
+        s);
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not store service state event (host: "
+             << s.host_id << ", service: " << s.service_id
+             << ", start time: " << s.start_time << "): " << e.what());
+    }
   }
 
   return ;
@@ -2102,7 +2275,15 @@ void stream::_process_service_status(
 
     // Processing.
     _service_status_update << ss;
-    _service_status_update.run_statement("SQL");
+    try {
+      _service_status_update.run_statement();
+    }
+    catch (std::exception const& e) {
+      throw (exceptions::msg()
+             << "SQL: could not store service status (host: "
+             << ss.host_id << ", service: " << ss.service_id
+             << "): " << e.what());
+    }
     if (_service_status_update.num_rows_affected() != 1)
       logging::error(logging::medium) << "SQL: service could not be "
            "updated because service (" << ss.host_id << ", "
@@ -2128,12 +2309,12 @@ void stream::_update_on_none_insert(
                T& t) {
   // Try update.
   up << t;
-  up.run_statement("SQL");
+  up.run_statement();
 
   // Try insertion.
   if (up.num_rows_affected() != 1) {
     ins << t;
-    ins.run_statement("SQL");
+    ins.run_statement();
   }
 
   return ;
