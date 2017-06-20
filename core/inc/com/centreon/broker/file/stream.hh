@@ -38,6 +38,7 @@ namespace              file {
    public:
                        stream(splitter* file);
                        ~stream();
+    std::string        peer() const;
     bool               read(
                          misc::shared_ptr<io::data>& d,
                          time_t deadline);

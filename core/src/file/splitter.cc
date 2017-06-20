@@ -147,7 +147,7 @@ long splitter::read(void* buffer, long max_size) {
   try {
     long rb(_rfile->read(buffer, max_size));
     logging::debug(logging::low) << "file: read " << rb << " bytes from '"
-      << _file_path(_rid) << "'";
+      << get_file_path(_rid) << "'";
     _roffset += rb;
     return (rb);
   }
@@ -159,7 +159,7 @@ long splitter::read(void* buffer, long max_size) {
     _rfile.clear();
     if (reached_end)
       _wfile.clear();
-    std::string file_path(_file_path(_rid));
+    std::string file_path(get_file_path(_rid));
     if (_auto_delete) {
       logging::info(logging::high) << "file: end of file '"
         << file_path << "' reached, erasing file";
@@ -228,7 +228,7 @@ long splitter::write(void const* buffer, long size) {
 
   // Debug message.
   logging::debug(logging::low) << "file: write request of "
-    << size << " bytes for '" << _file_path(_wid) << "'";
+    << size << " bytes for '" << get_file_path(_wid) << "'";
 
   // Write data.
   long remaining(size);
@@ -240,6 +240,21 @@ long splitter::write(void const* buffer, long size) {
   }
 
   return (size);
+}
+
+/**
+ *  Get the file path matching the ID.
+ *
+ *  @param[in] id Current ID.
+ */
+std::string splitter::get_file_path(int id) const {
+  if (id) {
+    std::ostringstream oss;
+    oss << _base_path << id;
+    return (oss.str());
+  }
+  else
+    return (_base_path);
 }
 
 /**
@@ -288,21 +303,6 @@ long splitter::get_woffset() const {
 }
 
 /**
- *  Get the file path matching the ID.
- *
- *  @param[in] id Current ID.
- */
-std::string splitter::_file_path(int id) const {
-  if (id) {
-    std::ostringstream oss;
-    oss << _base_path << id;
-    return (oss.str());
-  }
-  else
-    return (_base_path);
-}
-
-/**
  *  Open the readable file.
  */
 void splitter::_open_read_file() {
@@ -313,7 +313,7 @@ void splitter::_open_read_file() {
     _rfile = _wfile;
   // Otherwise open next file.
   else {
-    std::string file_path(_file_path(_rid));
+    std::string file_path(get_file_path(_rid));
     misc::shared_ptr<fs_file>
       new_file(_file_factory->new_fs_file(
                                 file_path,
@@ -337,7 +337,7 @@ void splitter::_open_write_file() {
     _wfile = _rfile;
   // Otherwise open file.
   else {
-    std::string file_path(_file_path(_wid));
+    std::string file_path(get_file_path(_wid));
     logging::info(logging::high) << "file: opening new file '"
       << file_path.c_str() << "'";
     try {
