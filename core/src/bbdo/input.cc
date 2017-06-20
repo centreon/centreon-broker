@@ -350,6 +350,7 @@ bool input::read_any(
     unsigned int packet_size;
     unsigned int source_id;
     unsigned int destination_id;
+    int skipped(0);
     while (1) {
       // Read next packet header.
       _buffer_must_have_unprocessed(BBDO_HEADER_SIZE, deadline);
@@ -385,11 +386,15 @@ bool input::read_any(
         break ;
 
       // Mark data as processed.
-      logging::debug(logging::low)
-        << "BBDO: header integrity check failed (got " << chksum
-        << ", computed " << expected << ")";
+      if (!skipped)
+        logging::error(logging::high) << "BBDO: peer " << peer()
+          << " is sending corrupted data";
+      ++skipped;
       ++_processed;
     }
+    logging::info(logging::high) << "BBDO: peer " << peer()
+      << " sent " << skipped
+      << " corrupted bytes, resuming normal processing";
 
     // Log.
     logging::debug(logging::high)
