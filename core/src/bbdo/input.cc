@@ -392,9 +392,10 @@ bool input::read_any(
       ++skipped;
       ++_processed;
     }
-    logging::info(logging::high) << "BBDO: peer " << peer()
-      << " sent " << skipped
-      << " corrupted bytes, resuming normal processing";
+    if (skipped)
+      logging::info(logging::high) << "BBDO: peer " << peer()
+        << " sent " << skipped
+        << " corrupted payload bytes, resuming processing";
 
     // Log.
     logging::debug(logging::high)
