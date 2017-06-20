@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ namespace        tcp {
                  stream(QTcpSocket* sock, std::string const& name);
                  stream(int socket_descriptor);
                  ~stream();
+    std::string  peer() const;
     bool         read(
                    misc::shared_ptr<io::data>& d,
                    time_t deadline);
