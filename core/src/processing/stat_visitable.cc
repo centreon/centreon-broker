@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2011-2012,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -32,14 +32,12 @@ using namespace com::centreon::broker::processing;
  *  @param[in] name  The name of the thread.
  */
 stat_visitable::stat_visitable(std::string const& name)
-  : _name(name), _last_connection_attempt(-1) {}
+  : _name(name) {}
 
 /**
  *  Destructor.
  */
-stat_visitable::~stat_visitable() {
-
-}
+stat_visitable::~stat_visitable() {}
 
 /**
  *  Dump all the filters in a string.
