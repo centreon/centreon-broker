@@ -28,6 +28,7 @@ include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 add_executable("ut"
   # Core sources.
   "${TESTS_DIR}/main.cc"
+  "${TESTS_DIR}/bbdo/input_buffer/extract.cc"
   "${TESTS_DIR}/ceof/ceof_parser/parse.cc"
   "${TESTS_DIR}/compression/stream/memory_stream.hh"
   "${TESTS_DIR}/compression/stream/read.cc"
