@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -245,16 +245,17 @@ static io::data* unserialize(
 /**
  *  Default constructor.
  */
-input::input() : _processed(0) {}
+input::input() : _skipped(0) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-input::input(input const& other) : io::stream(other) {
-  _internal_copy(other);
-}
+input::input(input const& other)
+  : io::stream(other),
+    _buffer(other._buffer),
+    _skipped(other._skipped) {}
 
 /**
  *  Destructor.
@@ -269,8 +270,10 @@ input::~input() {}
  *  @return This object.
  */
 input& input::operator=(input const& other) {
-  if (this != &other)
-    _internal_copy(other);
+  if (this != &other) {
+    _buffer = other._buffer;
+    _skipped = other._skipped;
+  }
   return (*this);
 }
 
@@ -346,112 +349,105 @@ bool input::read_any(
     d.clear();
 
     // Get header informations.
-    unsigned int event_id;
-    unsigned int packet_size;
+    unsigned int event_id(0);
+    int packet_size;
     unsigned int source_id;
     unsigned int destination_id;
-    int skipped(0);
-    while (1) {
-      // Read next packet header.
-      _buffer_must_have_unprocessed(BBDO_HEADER_SIZE, deadline);
+    std::string packet;
+    int raw_size(0);
+    do {
+      // Extract header.
+      std::string header;
+      _buffer_must_have_unprocessed(
+        raw_size + BBDO_HEADER_SIZE,
+        deadline);
+      _buffer.extract(header, raw_size, BBDO_HEADER_SIZE);
 
-      // Packet size.
+      // Extract header info.
+      uint16_t chksum(ntohs(*static_cast<uint16_t const*>(
+                               static_cast<void const*>(
+                                 header.data()))));
       packet_size = ntohs(*static_cast<uint16_t const*>(
                              static_cast<void const*>(
-                               _buffer.c_str() + _processed + 2)));
-
-      // Get event ID.
-      event_id = ntohl(*static_cast<uint32_t const*>(
-                          static_cast<void const*>(
-                            _buffer.c_str() + _processed + 4)));
-
-      // Get source and destination.
-      source_id = ntohl(*static_cast<uint32_t const*>(
-                           static_cast<void const*>(
-                             _buffer.c_str() + _processed + 8)));
-
-      destination_id = ntohl(*static_cast<uint32_t const*>(
-                               static_cast<void const*>(
-                                 _buffer.c_str() + _processed + 12)));
-
-      // Get checksum.
-      unsigned chksum(ntohs(*static_cast<uint16_t const*>(
-                               static_cast<void const*>(
-                                 _buffer.c_str() + _processed))));
-
-      // Check header integrity.
+                               header.data() + 2)));
+      unsigned int current_event_id(
+                     ntohl(*static_cast<uint32_t const*>(
+                              static_cast<void const*>(
+                                header.data() + 4))));
+      unsigned int current_source_id(
+                     ntohl(*static_cast<uint32_t const*>(
+                              static_cast<void const*>(
+                                header.data() + 8))));
+      unsigned int current_dest_id(
+                     ntohl(*static_cast<uint32_t const*>(
+                              static_cast<void const*>(
+                                header.data() + 12))));
       uint16_t expected(
-        qChecksum(_buffer.c_str() + _processed + 2, BBDO_HEADER_SIZE - 2));
-      if (chksum == expected)
-        break ;
+        qChecksum(header.data() + 2, BBDO_HEADER_SIZE - 2));
 
-      // Mark data as processed.
-      if (!skipped)
-        logging::error(logging::high) << "BBDO: peer " << peer()
-          << " is sending corrupted data";
-      ++skipped;
-      ++_processed;
-    }
-    if (skipped)
+      // Initial packet, extract info.
+      if (!event_id) {
+        event_id = current_event_id;
+        source_id = current_source_id;
+        destination_id = current_dest_id;
+      }
+
+      // Checksum and for multi-packet, assert same event.
+      if ((chksum != expected)
+          || (event_id != current_event_id)
+          || (source_id != current_source_id)
+          || (destination_id != current_dest_id)) {
+        if (!_skipped) // First corrupted byte.
+          logging::error(logging::high) << "BBDO: peer " << peer()
+            << " is sending corrupted data: "
+            << ((chksum != expected)
+                ? "invalid CRC"
+                : "invalid multi-packet event");
+        ++_skipped;
+        _buffer.erase(1);
+        event_id = 0;
+        packet.clear();
+        raw_size = 0;
+        packet_size = 0xFFFF; // Keep the loop running.
+      }
+      // All good, extract packet payload.
+      else {
+        _buffer_must_have_unprocessed(
+           raw_size + BBDO_HEADER_SIZE + packet_size,
+           deadline);
+        _buffer.extract(packet, raw_size + BBDO_HEADER_SIZE, packet_size);
+        raw_size += BBDO_HEADER_SIZE + packet_size;
+      }
+    } while (packet_size == 0xFFFF);
+
+    // We now have a complete packet, print summary of corruption.
+    if (_skipped) {
       logging::info(logging::high) << "BBDO: peer " << peer()
-        << " sent " << skipped
+        << " sent " << _skipped
         << " corrupted payload bytes, resuming processing";
-
-    // Log.
-    logging::debug(logging::high)
-      << "BBDO: got new header with a size of " << packet_size
-      << ", source of " <<  source_id << ", destination of " << destination_id
-      << " and an ID of " << event_id;
-
-    // Read data payload.
-    _processed += BBDO_HEADER_SIZE;
-    _buffer_must_have_unprocessed(packet_size, deadline);
-
-    // Regroup packets.
-    unsigned int total_size(0);
-    while (packet_size == 0xFFFF) {
-      // Previous packet has been processed.
-      total_size += packet_size;
-
-      // Expect new BBDO header.
-      _buffer_must_have_unprocessed(
-        total_size + BBDO_HEADER_SIZE,
-        deadline);
-
-      // Next packet size.
-      packet_size = ntohs(*static_cast<uint16_t const*>(
-                      static_cast<void const*>(
-                        _buffer.c_str() + _processed + total_size + 2)));
-
-      // Remove header to regroup data payloads.
-      _buffer.erase(_processed + total_size, BBDO_HEADER_SIZE);
-
-      // Expect data payload.
-      _buffer_must_have_unprocessed(total_size + packet_size, deadline);
+      _skipped = 0;
     }
-    total_size += packet_size;
 
     // Unserialize event.
     d = unserialize(
           event_id,
           source_id,
           destination_id,
-          _buffer.c_str() + _processed,
-          total_size);
+          packet.data(),
+          packet.size());
     if (!d.isNull())
       logging::debug(logging::medium) << "BBDO: unserialized "
-        << total_size + BBDO_HEADER_SIZE << " bytes for event of type "
-        << event_id;
+        << raw_size << " bytes for event of type " << event_id;
     else {
       logging::error(logging::medium)
         << "BBDO: unknown event type " << event_id
         << ": event cannot be decoded";
       logging::debug(logging::medium) << "BBDO: discarded "
-        << total_size + BBDO_HEADER_SIZE << " bytes";
+        << raw_size << " bytes";
     }
 
     // Mark data as processed.
-    _processed += total_size;
+    _buffer.erase(raw_size);
 
     return (true);
   }
@@ -473,37 +469,18 @@ bool input::read_any(
  *  @param[in] bytes     Number of minimal buffer size.
  *  @param[in] deadline  Timeout in seconds.
  */
-void input::_buffer_must_have_unprocessed(
-              unsigned int bytes,
-              time_t deadline) {
-  // Erase processed data.
-  if (_buffer.size() < (_processed + bytes)) {
-    _buffer.erase(0, _processed);
-    _processed = 0;
-  }
-
+void input::_buffer_must_have_unprocessed(int bytes, time_t deadline) {
   // Read as much data as requested.
   bool timed_out(false);
-  while (!timed_out && _buffer.size() < (_processed + bytes)) {
+  while (!timed_out && (_buffer.size() < bytes)) {
     misc::shared_ptr<io::data> d;
     timed_out = !_substream->read(d, deadline);
     if (!d.isNull() && d->type() == io::raw::static_type()) {
       misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
-      _buffer.append(r->QByteArray::data(), r->size());
+      _buffer.append(r);
     }
   }
   if (timed_out)
     throw (exceptions::timeout());
-  return ;
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other Object to copy.
- */
-void input::_internal_copy(input const& other) {
-  _buffer = other._buffer;
-  _processed = other._processed;
   return ;
 }

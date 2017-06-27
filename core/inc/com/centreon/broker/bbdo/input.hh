@@ -1,5 +1,5 @@
 /*
-** Copyright 2013 Centreon
+** Copyright 2013,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #  define CCB_BBDO_INPUT_HH
 
 #  include <string>
+#  include "com/centreon/broker/bbdo/input_buffer.hh"
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -36,7 +37,7 @@ namespace        bbdo {
    *  (Broker Binary Data Objects) protocol.
    */
   class          input : virtual public io::stream {
-  public:
+   public:
                  input();
                  input(input const& other);
     virtual      ~input();
@@ -49,14 +50,13 @@ namespace        bbdo {
                    time_t deadline = (time_t)-1);
     virtual void acknowledge_events(unsigned int events) = 0;
 
-  private:
+   private:
     void         _buffer_must_have_unprocessed(
-                   unsigned int bytes,
+                   int bytes,
                    time_t deadline = (time_t)-1);
-    void         _internal_copy(input const& other);
 
-    std::string  _buffer;
-    unsigned int _processed;
+    input_buffer _buffer;
+    int          _skipped;
   };
 }
 
