@@ -115,7 +115,7 @@ static unsigned int set_string(
   unsigned int len(strlen(str));
   if (len >= size)
     throw (exceptions::msg() << "BBDO: cannot extract string value: "
-           << "no terminating '\0' in remaining " << size
+           << "no terminating '\\0' in remaining " << size
            << " bytes of packet");
   member.set_string(t, str);
   return (len + 1);
