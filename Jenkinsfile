@@ -66,6 +66,7 @@ try {
 
   if (env.BRANCH_NAME == 'master') {
     build job: 'centreon-web/master', wait: false
+    build job: 'centreon-web/2.8.x', wait: false
   }
 }
 finally {
