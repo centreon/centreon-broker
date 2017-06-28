@@ -72,6 +72,21 @@ TEST_F(BbdoInputBufferErase, EraseOne) {
 }
 
 // Given a bbdo::input_buffer object filled with data
+// When erase(100) is called
+// Then the buffer size is reduced by 100
+// And the 100 first bytes of the buffer are removed
+TEST_F(BbdoInputBufferErase, EraseHundred) {
+  // When
+  _buffer.erase(100);
+
+  // Then
+  ASSERT_EQ(_buffer.size(), static_cast<int>(_raw.size() - 100));
+  std::string output;
+  _buffer.extract(output, 0, _raw.size() - 100);
+  ASSERT_EQ(output, _raw.substr(100));
+}
+
+// Given a bbdo::input_buffer object filled with data
 // When erase() is called with the number of bytes in the buffer
 // Then the buffer size is 0
 // And no data can be extracted

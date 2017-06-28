@@ -113,7 +113,7 @@ void input_buffer::extract(std::string& output, int offset, int size) {
   for (int remaining(offset); it != end; ++it, it_offset = 0) {
     int available((*it)->size() - it_offset);
     if (remaining < available) {
-      it_offset = remaining;
+      it_offset += remaining;
       break ;
     }
     else
