@@ -20,6 +20,13 @@ successful decompression of a single event leading to many useless
 buffer reallocations. Data is now discarded only when the entire
 decompression buffer is processed.
 
+Fix random data corruption
+==========================
+
+BBDO streams poorly handled stream timeout, which could occured at any
+time due to network latency. This lead to random data corruption, most
+serious cases reporting real-time monitoring breakage.
+
 =====================
 Centreon Broker 3.0.7
 =====================
