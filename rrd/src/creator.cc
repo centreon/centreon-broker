@@ -268,14 +268,14 @@ void creator::_open(
   rra1_oss << "RRA:AVERAGE:0.5:1:" << length + 1;
   // RRA2 Calculating (pdp/length) for one hour, if the step is less.
   unsigned int pdp;
-  unsigned int lengthforhour;
+  unsigned int lengthbyhour;
   pdp = (int) (3600 / (float)step);
-  lengthforhour = (int) (((float)length / 3600) * (float)step);
+  lengthbyhour = (int) (((float)length / 3600) * (float)step);
   if (pdp < 1) {
 	pdp = 1;
-	lengthforhour = length;
+	lengthbyhour = length;
   }
-  rra2_oss << "RRA:AVERAGE:0.5:" << pdp << ":" << lengthforhour + 1;
+  rra2_oss << "RRA:AVERAGE:0.5:" << pdp << ":" << lengthbyhour + 1;
   std::string ds(ds_oss.str());
   std::string rra1(rra1_oss.str());
   std::string rra2(rra2_oss.str());
