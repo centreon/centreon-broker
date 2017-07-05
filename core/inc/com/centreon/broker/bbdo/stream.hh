@@ -35,10 +35,10 @@ namespace            bbdo {
    */
   class              stream : public input, public output {
   public:
-    enum             negociation_type {
-      negociate_first = 1,
-      negociate_second,
-      negociated
+    enum             negotiation_type {
+      negotiate_first = 1,
+      negotiate_second,
+      negotiated
     };
 
                      stream();
@@ -46,14 +46,14 @@ namespace            bbdo {
                      ~stream();
     stream&          operator=(stream const& other);
     int              flush();
-    void             negociate(negociation_type neg);
+    void             negotiate(negotiation_type neg);
     bool             read(
                        misc::shared_ptr<io::data>& d,
                        time_t deadline = (time_t)-1);
     void             set_ack_limit(unsigned int limit);
     void             set_coarse(bool coarse);
-    void             set_negociate(
-                       bool negociate,
+    void             set_negotiate(
+                       bool negotiate,
                        QString const& extensions = QString());
     void             set_timeout(int timeout);
     void             statistics(io::properties& tree) const;
@@ -64,8 +64,8 @@ namespace            bbdo {
   private:
     bool             _coarse;
     QString          _extensions;
-    bool             _negociate;
-    bool             _negociated;
+    bool             _negotiate;
+    bool             _negotiated;
     int              _timeout;
     unsigned int     _acknowledged_events;
     unsigned int     _ack_limit;

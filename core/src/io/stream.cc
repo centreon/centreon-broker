@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012,2015 Centreon
+** Copyright 2011-2012,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -67,6 +67,15 @@ stream& stream::operator=(stream const& other) {
  */
 int stream::flush() {
   return (0);
+}
+
+/**
+ *  Get peer name.
+ *
+ *  @return Peer name.
+ */
+std::string stream::peer() const {
+  return (_substream.isNull() ? "(unknown)" : _substream->peer());
 }
 
 /**

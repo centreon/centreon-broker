@@ -96,6 +96,7 @@ bool stream::read(
     // or until an exception occurs.
     bool corrupted(true);
     int size(0);
+    int skipped(0);
     while (corrupted) {
       // Get compressed data length.
       while (corrupted) {
@@ -123,6 +124,10 @@ bool stream::read(
             << " got corrupted packet size of " << size
             << " bytes, not in the 0-" << max_data_size
             << " range, skipping next byte";
+          if (!skipped)
+            logging::error(logging::high) << "compression: peer "
+              << peer() << " is sending corrupted data";
+          ++skipped;
           _rbuffer.pop(1);
         }
         else
@@ -147,6 +152,10 @@ bool stream::read(
         logging::error(logging::low)
           << "compression: " << this
           << " got corrupted compressed data, skipping next byte";
+        if (!skipped)
+          logging::error(logging::high) << "compression: peer "
+            << peer() << " is sending corrupted data";
+        ++skipped;
         _rbuffer.pop(1);
         corrupted = true;
       }
@@ -159,6 +168,10 @@ bool stream::read(
         corrupted = false;
       }
     }
+    if (skipped)
+      logging::info(logging::high) << "compression: peer " << peer()
+        << " sent " << skipped
+        << " corrupted compressed bytes, resuming processing";
   }
   catch (exceptions::interrupt const& e) {
     (void)e;

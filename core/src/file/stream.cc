@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <limits>
 #include <QMutexLocker>
+#include <sstream>
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/misc/string.hh"
@@ -47,6 +48,17 @@ stream::stream(splitter* file)
  *  Destructor.
  */
 stream::~stream() {}
+
+/**
+ *  Get peer name.
+ *
+ *  @return Peer name.
+ */
+std::string stream::peer() const {
+  std::ostringstream oss;
+  oss << "file://" << _file->get_file_path();
+  return (oss.str());
+}
 
 /**
  *  Read data from the file.

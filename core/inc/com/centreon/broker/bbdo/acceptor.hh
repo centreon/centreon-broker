@@ -1,5 +1,5 @@
 /*
-** Copyright 2013,2015 Centreon
+** Copyright 2013,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ namespace         bbdo {
   public:
                   acceptor(
                     std::string const& name,
-                    bool negociate,
+                    bool negotiate,
                     QString const& extensions,
                     time_t timeout,
                     bool one_peer_retention_mode = false,
@@ -63,7 +63,7 @@ namespace         bbdo {
     void          stats(io::properties& tree);
 
   private:
-    unsigned int  _negociate_features(
+    unsigned int  _negotiate_features(
                      misc::shared_ptr<io::stream> stream,
                      misc::shared_ptr<bbdo::stream> my_bbdo);
     void          _open(misc::shared_ptr<io::stream> stream);
@@ -71,7 +71,7 @@ namespace         bbdo {
     bool          _coarse;
     QString       _extensions;
     std::string   _name;
-    bool          _negociate;
+    bool          _negotiate;
     bool          _one_peer_retention_mode;
     time_t        _timeout;
     unsigned int  _ack_limit;

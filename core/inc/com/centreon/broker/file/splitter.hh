@@ -53,6 +53,7 @@ namespace       file {
     long        tell();
     long        write(void const* buffer, long size);
 
+    std::string get_file_path(int id = 0) const;
     long        get_max_file_size() const;
     int         get_rid() const;
     long        get_roffset() const;
@@ -62,7 +63,6 @@ namespace       file {
    private:
                 splitter(splitter const& other);
     splitter&   operator=(splitter const& other);
-    std::string _file_path(int id) const;
     void        _open_read_file();
     void        _open_write_file();
 

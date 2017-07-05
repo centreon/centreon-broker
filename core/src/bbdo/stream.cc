@@ -42,8 +42,8 @@ using namespace com::centreon::broker::bbdo;
  */
 stream::stream()
   : _coarse(false),
-    _negociate(true),
-    _negociated(false),
+    _negotiate(true),
+    _negotiated(false),
     _timeout(5),
     _acknowledged_events(0),
     _ack_limit(1000),
@@ -60,8 +60,8 @@ stream::stream(stream const& other)
     output(other),
     _coarse(other._coarse),
     _extensions(other._extensions),
-    _negociate(other._negociate),
-    _negociated(other._negociated),
+    _negotiate(other._negotiate),
+    _negotiated(other._negotiated),
     _timeout(other._timeout),
     _acknowledged_events(other._acknowledged_events),
     _ack_limit(other._ack_limit),
@@ -85,8 +85,8 @@ stream& stream::operator=(stream const& other) {
     output::operator=(other);
     _coarse = other._coarse;
     _extensions = other._extensions;
-    _negociate = other._negociate;
-    _negociated = other._negociated;
+    _negotiate = other._negotiate;
+    _negotiated = other._negotiated;
     _timeout = other._timeout;
     _acknowledged_events = other._acknowledged_events;
     _ack_limit = other._ack_limit;
@@ -108,27 +108,27 @@ int stream::flush() {
 }
 
 /**
- *  Negociate features with peer.
+ *  Negotiate features with peer.
  *
- *  @param[in] neg  Negociation type.
+ *  @param[in] neg  Negotiation type.
  */
-void stream::negociate(stream::negociation_type neg) {
+void stream::negotiate(stream::negotiation_type neg) {
   // Coarse peer don't expect any salutation either.
   if (_coarse) {
-    _negociated = true;
+    _negotiated = true;
     return ;
   }
-  else if (_negociated)
+  else if (_negotiated)
     return ;
 
   // Send our own packet if we should be first.
-  if (neg == negociate_first) {
+  if (neg == negotiate_first) {
     logging::debug(logging::medium)
       << "BBDO: sending welcome packet (available extensions: "
-      << (_negociate ? _extensions : "") << ")";
+      << (_negotiate ? _extensions : "") << ")";
     misc::shared_ptr<version_response>
       welcome_packet(new version_response);
-    if (_negociate)
+    if (_negotiate)
       welcome_packet->extensions = _extensions;
     output::write(welcome_packet);
     output::flush();
@@ -165,21 +165,21 @@ void stream::negociate(stream::negociation_type neg) {
     << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
 
   // Send our own packet if we should be second.
-  if (neg == negociate_second) {
+  if (neg == negotiate_second) {
     logging::debug(logging::medium)
       << "BBDO: sending welcome packet (available extensions: "
-      << (_negociate ? _extensions : "") << ")";
+      << (_negotiate ? _extensions : "") << ")";
     misc::shared_ptr<version_response>
       welcome_packet(new version_response);
-    if (_negociate)
+    if (_negotiate)
       welcome_packet->extensions = _extensions;
     output::write(welcome_packet);
     output::flush();
   }
 
-  // Negociation.
-  if (_negociate) {
-    // Apply negociated extensions.
+  // Negotiation.
+  if (_negotiate) {
+    // Apply negotiated extensions.
     logging::info(logging::medium)
       << "BBDO: we have extensions '"
       << _extensions << "' and peer has '" << v->extensions << "'";
@@ -206,7 +206,7 @@ void stream::negociate(stream::negociation_type neg) {
             misc::shared_ptr<io::stream>
               s(proto_it->endpntfactry->new_stream(
                                           _substream,
-                                          neg == negociate_second,
+                                          neg == negotiate_second,
                                           *it));
             set_substream(s);
             break ;
@@ -215,8 +215,8 @@ void stream::negociate(stream::negociation_type neg) {
     }
   }
 
-  // Stream has now negociated.
-  _negociated = true;
+  // Stream has now negotiated.
+  _negotiated = true;
   return ;
 }
 
@@ -232,8 +232,8 @@ void stream::negociate(stream::negociation_type neg) {
  */
 bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
   d.clear();
-  if (!_negociated)
-    negociate(negociate_second);
+  if (!_negotiated)
+    negotiate(negotiate_second);
   bool retval = input::read(d, deadline);
   if (retval && !d.isNull())
     ++_events_received_since_last_ack;
@@ -262,13 +262,13 @@ void stream::set_coarse(bool coarse) {
 }
 
 /**
- *  Set whether or not the stream should negociate features.
+ *  Set whether or not the stream should negotiate features.
  *
- *  @param[in] negociate   True if the stream should negociate features.
+ *  @param[in] negotiate   True if the stream should negotiate features.
  *  @param[in] extensions  Extensions supported by this stream.
  */
-void stream::set_negociate(bool negociate, QString const& extensions) {
-  _negociate = negociate;
+void stream::set_negotiate(bool negotiate, QString const& extensions) {
+  _negotiate = negotiate;
   _extensions = extensions;
   return ;
 }
@@ -311,8 +311,8 @@ void stream::statistics(io::properties& tree) const {
  *  @return Number of events acknowledged.
  */
 int stream::write(misc::shared_ptr<io::data> const& d) {
-  if (!_negociated)
-    negociate(negociate_second);
+  if (!_negotiated)
+    negotiate(negotiate_second);
   output::write(d);
   int retval(_acknowledged_events);
   _acknowledged_events = 0;

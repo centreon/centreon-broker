@@ -329,8 +329,11 @@ int output::write(misc::shared_ptr<io::data> const& e) {
 
   // Check if data exists.
   misc::shared_ptr<io::raw> serialized(serialize(*e));
-  if (serialized.data())
+  if (serialized.data()) {
+    logging::debug(logging::medium) << "BBDO: serialized event of type "
+      << e->type() << " to " << serialized->size() << " bytes";
     _substream->write(serialized);
+  }
 
   // Event acknowledgement is done in the higher level bbdo::stream.
   return (0);

@@ -1,5 +1,5 @@
 ##
-## Copyright 2016 Centreon
+## Copyright 2016-2017 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 add_executable("ut"
   # Core sources.
   "${TESTS_DIR}/main.cc"
+  "${TESTS_DIR}/bbdo/input_buffer/erase.cc"
+  "${TESTS_DIR}/bbdo/input_buffer/extract.cc"
   "${TESTS_DIR}/ceof/ceof_parser/parse.cc"
   "${TESTS_DIR}/compression/stream/memory_stream.hh"
   "${TESTS_DIR}/compression/stream/read.cc"

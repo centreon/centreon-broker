@@ -25,7 +25,13 @@ using namespace com::centreon::broker::misc;
 /**
  *  Default constructor.
  */
-processing_speed_computer::processing_speed_computer() {}
+processing_speed_computer::processing_speed_computer()
+  : _last_tick(timestamp::now()) {
+  ::memset(
+      _event_by_seconds,
+      0,
+      window_length * sizeof(*_event_by_seconds));
+}
 
 /**
  *  Copy constructor.

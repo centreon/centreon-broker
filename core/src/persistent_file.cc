@@ -42,7 +42,7 @@ persistent_file::persistent_file(std::string const& path) {
   // BBDO layer.
   misc::shared_ptr<bbdo::stream> bs(new bbdo::stream);
   bs->set_coarse(true);
-  bs->set_negociate(false);
+  bs->set_negotiate(false);
   bs->set_substream(cs);
 
   // Set stream.

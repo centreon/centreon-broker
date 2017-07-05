@@ -81,6 +81,18 @@ stream::~stream() {
 }
 
 /**
+ *  Get peer name.
+ *
+ *  @return Peer name.
+ */
+std::string stream::peer() const {
+  std::ostringstream oss;
+  oss << "tcp://" << _socket->peerAddress().toString().toStdString()
+      << ":" << _socket->peerPort();
+  return (oss.str());
+}
+
+/**
  *  Read data with timeout.
  *
  *  @param[out] d         Received event if any.
