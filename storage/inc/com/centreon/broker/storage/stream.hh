@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2016 Centreon
+** Copyright 2011-2015 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -118,6 +118,7 @@ namespace          storage {
                      double value,
                      unsigned int* type,
                      bool* locked);
+    void           _insert_perfdatas();
     void           _prepare();
     void           _rebuild_cache();
     void           _update_status(std::string const& status);
@@ -128,6 +129,8 @@ namespace          storage {
     std::map<std::pair<unsigned int, QString>, metric_info>
                    _metric_cache;
     unsigned int   _pending_events;
+    std::deque<metric_value>
+                   _perfdata_queue;
     rebuilder      _rebuild_thread;
     unsigned int   _rrd_len;
     std::string    _status;
