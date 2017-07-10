@@ -262,7 +262,6 @@ int output::write(misc::shared_ptr<io::data> const& d) {
         catch (exceptions::open const& b) {
           unsigned int
             length(e->rrd_len / (e->interval ? e->interval : 60));
-          ++length;
           _backend->open(
             status_path,
             length,

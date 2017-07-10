@@ -265,8 +265,22 @@ void creator::_open(
     ds_oss << "GAUGE";
   };
   ds_oss << ":"<< step * 10 << ":U:U";
-  rra1_oss << "RRA:AVERAGE:0.5:1:" << length + 1;
-  rra2_oss << "RRA:AVERAGE:0.5:12:" << length / 12 + 1;
+  // RRA1 for 3 months
+  unsigned int length_new;
+  length_new = (int) (((24 * 3600) / (float)step) * 90);
+  if (length < length_new){
+    length_new = length;
+  }
+  rra1_oss << "RRA:AVERAGE:0.5:1:" << length_new + 1;
+  // RRA2 pdp for 1 hour
+  unsigned int pdp;
+  pdp = (int) (3600 / (float)step);
+  length_new = (int) (((float)length / 3600) * (float)step);
+  if (pdp < 1) {
+	pdp = 1;
+	length_new = length;
+  }
+  rra2_oss << "RRA:AVERAGE:0.5:" << pdp << ":" << length_new + 1;
   std::string ds(ds_oss.str());
   std::string rra1(rra1_oss.str());
   std::string rra2(rra2_oss.str());
