@@ -1,4 +1,21 @@
 =====================
+Centreon Broker 3.0.9
+=====================
+
+*********
+Bug fixes
+*********
+
+Restore multi-value insertion in data_bin
+=========================================
+
+In the 3.0.4 release of Centreon Broker, we introduced prepared
+statements for insertion in the data_bin and logs table. In large setups
+this change significantly reduced performances. For this reason we
+reverted the changes for the data_bin table and we are now using
+multi-values insertions.
+
+=====================
 Centreon Broker 3.0.8
 =====================
 
