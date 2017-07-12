@@ -15,6 +15,16 @@ this change significantly reduced performances. For this reason we
 reverted the changes for the data_bin table and we are now using
 multi-values insertions.
 
+************
+Enhancements
+************
+
+Reduce RRD size
+===============
+
+The second RRA is now used to aggregate values by the hour, only if
+needed.
+
 =====================
 Centreon Broker 3.0.8
 =====================

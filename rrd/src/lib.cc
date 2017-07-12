@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -134,7 +134,8 @@ void lib::open(std::string const& filename) {
  *  Open a RRD file and create it if it does not exists.
  *
  *  @param[in] filename   Path to the RRD file.
- *  @param[in] length     Number of recording in the RRD file.
+ *  @param[in] length     Duration in seconds that the RRD file should
+ *                        retain.
  *  @param[in] from       Timestamp of the first record.
  *  @param[in] step       Time interval between each record.
  *  @param[in] value_type Type of the metric.

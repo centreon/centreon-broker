@@ -212,10 +212,9 @@ int output::write(misc::shared_ptr<io::data> const& d) {
         }
         catch (exceptions::open const& b) {
           time_t interval(e->interval ? e->interval : 60);
-          unsigned int length(e->rrd_len / interval);
           _backend->open(
             metric_path,
-            length,
+            e->rrd_len,
             e->ctime - 1,
             interval,
             e->value_type);
@@ -260,14 +259,12 @@ int output::write(misc::shared_ptr<io::data> const& d) {
           _backend->open(status_path);
         }
         catch (exceptions::open const& b) {
-          unsigned int
-            length(e->rrd_len / (e->interval ? e->interval : 60));
-          ++length;
+          time_t interval(e->interval ? e->interval : 60);
           _backend->open(
             status_path,
-            length,
+            e->rrd_len,
             e->ctime - 1,
-            e->interval);
+            interval);
         }
         std::ostringstream oss;
         if (e->state == 0)
