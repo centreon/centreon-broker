@@ -141,10 +141,17 @@ GnuTLS **(>= 2.8)**         gnutls-devel               Development files for gnu
 
    $ yum install gnutls-devel
 
-#. Add qt directory into the PATH environment variable ::
+#. Ensure that the qmake binary is in the PATH environment variable.
 
-   $ updatedb
-   $ export PATH="$PATH:$(dirname $(locate /bin/qmake | head -n 1))"
+   Depending on your Qt installation, qmake could already be available
+   or in a path like /usr/lib64/qt4/bin/.
+
+::
+
+   $ export PATH="$PATH:/usr/lib64/qt4/bin"
+   $ qmake --version # (or qmake-qt4 --version)
+   QMake version 2.01a
+   Using Qt version 4.8.7 in /usr/lib/x86_64-linux-gnu
 
 Debian/Ubuntu
 -------------
