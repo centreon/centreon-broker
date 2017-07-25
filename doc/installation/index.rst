@@ -372,17 +372,16 @@ some of the following files.
 File                                         Description
 ============================================ ===========================
 ``${WITH_PREFIX_BIN}/cbd``                   Centreon Broker daemon.
+``${WITH_PREFIX_BIN}/cbwd``                  Centreon Broker watchdog.
 ``${WITH_PREFIX_LIB}/cbmod.so``              Centreon Broker NEB module.
+``${WITH_PREFIX_MODULES}/05-dumper.so``      Dumper module.
 ``${WITH_PREFIX_MODULES}/10-neb.so``         NEB module.
-``${WITH_PREFIX_MODULES}/20-correlation.so`` Correlation module.
+``${WITH_PREFIX_MODULES}/15-stats.so``       Statistics module.
+``${WITH_PREFIX_MODULES}/20-bam.so``         Centreon Broker BAM module.
 ``${WITH_PREFIX_MODULES}/20-storage.so``     Storage module.
-``${WITH_PREFIX_MODULES}/50-file.so``        File module.
-``${WITH_PREFIX_MODULES}/50-local.so``       Local module.
+``${WITH_PREFIX_MODULES}/30-correlation.so`` Correlation module.
 ``${WITH_PREFIX_MODULES}/50-tcp.so``         TCP module.
-``${WITH_PREFIX_MODULES}/60-compression.so`` Compression module.
 ``${WITH_PREFIX_MODULES}/60-tls.so``         TLS (encryption) module.
 ``${WITH_PREFIX_MODULES}/70-rrd.so``         RRD module.
-``${WITH_PREFIX_MODULES}/80-bbdo.so``        BBDO module.
-``${WITH_PREFIX_MODULES}/80-ndo.so``         NDO module.
 ``${WITH_PREFIX_MODULES}/80-sql.so``         SQL module.
 ============================================ ===========================
