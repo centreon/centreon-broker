@@ -714,9 +714,9 @@ void stream::_process_downtime(
                "      actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
                "      author=:author, cancelled=:cancelled, comment_data=:comment_data,"
                "      deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
-               "      fixed=:fixed, start_time=:start_time,"
-               "      started=:started, triggered_by=:triggered_by,"
-               "      type=:type, host_id=:host_id, service_id=:service_id"
+               "      fixed=:fixed, host_id=:host_id, service_id=:service_id,"
+               "      start_time=:start_time, started=:started,"
+               "      triggered_by=:triggered_by, type=:type"
                "  WHERE entry_time=:entry_time"
                "    AND instance_id=:instance_id"
                "    AND internal_id=:internal_id";
