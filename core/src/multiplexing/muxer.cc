@@ -121,27 +121,29 @@ void muxer::ack_events(int count) {
   logging::debug(logging::low)
     << "multiplexing: acknowledging " << count << " events from "
     << _name << " event queue";
-  QMutexLocker lock(&_mutex);
-  for (int i(0); (i < count) && !_events.empty(); ++i) {
-    if (_events.begin() == _pos) {
-      logging::error(logging::high) << "multiplexing: attempt to "
-        << "acknowledge more events than available in " << _name
-        << " event queue: " << count << " requested, " << i
-        << " acknowledged";
-      break ;
+  if (count) {
+    QMutexLocker lock(&_mutex);
+    for (int i(0); (i < count) && !_events.empty(); ++i) {
+      if (_events.begin() == _pos) {
+        logging::error(logging::high) << "multiplexing: attempt to "
+          << "acknowledge more events than available in " << _name
+          << " event queue: " << count << " requested, " << i
+          << " acknowledged";
+        break ;
+      }
+      _events.pop_front();
+      --_events_size;
     }
-    _events.pop_front();
-    --_events_size;
-  }
 
-  // Fill memory from file.
-  misc::shared_ptr<io::data> e;
-  while (_events_size < event_queue_max_size()) {
-    e.clear();
-    _get_event_from_file(e);
-    if (e.isNull())
-      break ;
-    _push_to_queue(e);
+    // Fill memory from file.
+    misc::shared_ptr<io::data> e;
+    while (_events_size < event_queue_max_size()) {
+      e.clear();
+      _get_event_from_file(e);
+      if (e.isNull())
+        break ;
+      _push_to_queue(e);
+    }
   }
 
   return ;
