@@ -767,8 +767,10 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
          end = _impacts.end();
        it != end;
        ++it) {
-    if (!it->first->ok_state() && !it->first->in_downtime())
+    if (!it->first->ok_state() && !it->first->in_downtime()) {
       every_kpi_in_downtime = false;
+      break;
+    }
   }
 
   // Case 1: state not ok, every child in downtime, no actual downtime.
@@ -778,6 +780,8 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
     _inherited_downtime.reset(new inherited_downtime);
     _inherited_downtime->ba_id = _id;
     _inherited_downtime->in_downtime = true;
+    _in_downtime = true;
+
     if (visitor)
       visitor->write(
         misc::shared_ptr<inherited_downtime>(

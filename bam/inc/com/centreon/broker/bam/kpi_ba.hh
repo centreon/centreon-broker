@@ -58,6 +58,7 @@ namespace   bam {
     void    unlink_ba();
     void    visit(io::stream* visitor);
     bool    ok_state() const;
+    bool    in_downtime() const;
 
   private:
     void    _fill_impact(

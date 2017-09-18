@@ -1,3 +1,11 @@
+======================
+Centreon Broker 3.0.10
+======================
+
+*********
+Bug fixes
+*********
+
 =====================
 Centreon Broker 3.0.9
 =====================
@@ -14,6 +22,12 @@ statements for insertion in the data_bin and logs table. In large setups
 this change significantly reduced performances. For this reason we
 reverted the changes for the data_bin table and we are now using
 multi-values insertions.
+
+Fix downtime inheritance on multi-level BA trees
+================================================
+
+With the BAM module, downtime inheritance was not working properly on
+BA which had other BAs as KPIs.
 
 ************
 Enhancements

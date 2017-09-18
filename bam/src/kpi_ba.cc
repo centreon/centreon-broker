@@ -323,3 +323,12 @@ void kpi_ba::_open_new_event(
 bool kpi_ba::ok_state() const {
   return (_ba->get_state_hard() == 0);
 }
+
+/**
+ *  Is this KPI in downtime?
+ *
+ *  @return  True if this KPI is in downtime.
+ */
+bool kpi_ba::in_downtime() const {
+  return (_ba->get_in_downtime());
+}

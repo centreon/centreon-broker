@@ -714,12 +714,12 @@ void stream::_process_downtime(
                "      actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
                "      author=:author, cancelled=:cancelled, comment_data=:comment_data,"
                "      deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
-               "      fixed=:fixed, instance_id=:instance_id, internal_id=:internal_id,"
-               "      start_time=:start_time, started=:started, triggered_by=:triggered_by,"
-               "      type=:type"
+               "      fixed=:fixed, host_id=:host_id, service_id=:service_id,"
+               "      start_time=:start_time, started=:started,"
+               "      triggered_by=:triggered_by, type=:type"
                "  WHERE entry_time=:entry_time"
-               "    AND host_id=:host_id"
-               "    AND COALESCE(service_id, -1)=COALESCE(:service_id, -1)";
+               "    AND instance_id=:instance_id"
+               "    AND internal_id=:internal_id";
         if (_db.schema_version() != database::v2)
           oss << "    AND is_recurring=:is_recurring"
                  "    AND recurring_timeperiod=:recurring_timeperiod";
