@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2015 Centreon
+** Copyright 2012-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ namespace           storage {
    *  Check for graphs to be rebuild at fixed interval.
    */
   class             rebuilder : public QThread {
-  public:
+   public:
                     rebuilder(
                       database_config const& db_cfg,
                       unsigned int rebuild_check_interval = 600,
@@ -48,9 +48,26 @@ namespace           storage {
     unsigned int    get_rrd_length() const throw ();
     void            run();
 
-  private:
+   private:
+    // Local types.
+    struct index_info {
+      unsigned int index_id;
+      unsigned int host_id;
+      unsigned int service_id;
+      unsigned int rrd_retention;
+    };
+
+    struct metric_info {
+      unsigned int metric_id;
+      QString metric_name;
+      short metric_type;
+    };
+
                     rebuilder(rebuilder const& other);
     rebuilder&      operator=(rebuilder const& other);
+    void            _next_index_to_rebuild(
+                      index_info& info,
+                      database& db);
     void            _rebuild_metric(
                       database& db,
                       unsigned int metric_id,
