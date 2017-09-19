@@ -20,6 +20,19 @@ version each host and service is treated individually. Therefore upon
 cancellation rebuild will stop after the current host or service has
 been rebuilt.
 
+Properly process downtimes sent simultaneously on same host/service
+===================================================================
+
+Downtimes same at the same time on the same host/service where
+improperly processed and were not stored in database.
+
+Performance improvement for transaction-based endpoints
+=======================================================
+
+This fix reduce thread contention on a single mutex when using
+transactions. The two most typical cases are the real-time monitoring
+(SQL) and performance data graphing (storage) endpoints.
+
 =====================
 Centreon Broker 3.0.9
 =====================
