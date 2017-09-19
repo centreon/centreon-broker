@@ -6,6 +6,20 @@ Centreon Broker 3.0.10
 Bug fixes
 *********
 
+************
+Enhancements
+************
+
+Graph rebuild cancellation
+==========================
+
+In previous versions, Centreon Broker kept a cache of all hosts and
+services needed to be rebuilt. However such operations are slow and in
+some cases operators might want to cancel ongoing rebuild. In this
+version each host and service is treated individually. Therefore upon
+cancellation rebuild will stop after the current host or service has
+been rebuilt.
+
 =====================
 Centreon Broker 3.0.9
 =====================
