@@ -146,6 +146,15 @@ else ()
   set(GROUP "root")
 endif ()
 
+# Code coverage on unit tests
+option(WITH_COVERAGE "Add code coverage on unit tests." OFF)
+if (WITH_TESTING AND WITH_COVERAGE)
+  set(COVERAGE_CXXFLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
+  set(CMAKE_BUILD_TYPE "Debug")
+  include("CodeCoverage.cmake")
+  set(CMAKE_CXX_FLAGS "${COVERAGE_CXXFLAGS} ${CMAKE_CXX_FLAGS}")
+endif()
+
 # Set startup script to auto if not defined.
 if (NOT WITH_STARTUP_SCRIPT)
   set(WITH_STARTUP_SCRIPT "auto")
@@ -1750,6 +1759,9 @@ if (WITH_TESTING)
   # target_link_libraries("${TEST_NAME}" "roker")
   # add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  enable_testing()
+  add_test(tests tests/ut)
+
 endif ()
 
 #
@@ -1785,6 +1797,11 @@ if (WITH_TESTING)
     message(STATUS "      - DB type                  ${DB_TYPE}")
   else ()
     message(STATUS "      - DB type                  none")
+  endif ()
+  if (WITH_COVERAGE)
+    message(STATUS "      - Code coverage            enabled")
+  else ()
+    message(STATUS "      - Code coverage            disabled")
   endif ()
 else ()
   message(STATUS "    - Unit tests                 disabled")
