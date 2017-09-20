@@ -48,3 +48,9 @@ add_executable("ut"
   ${TESTS_SOURCES}
 )
 target_link_libraries("ut" "gtest" ${TESTS_LIBRARIES} ${NEB} "rokerbase" "roker")
+
+if (WITH_COVERAGE)
+  SETUP_TARGET_FOR_COVERAGE(test-coverage
+      "ut"
+      coverage)
+endif ()
