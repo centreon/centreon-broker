@@ -57,7 +57,9 @@ rebuilder::rebuilder(
   : _db_cfg(db_cfg),
     _interval(rebuild_check_interval),
     _rrd_len(rrd_length),
-    _should_exit(false) {}
+    _should_exit(false) {
+  _db_cfg.set_queries_per_transaction(1);
+}
 
 /**
  *  Destructor.
