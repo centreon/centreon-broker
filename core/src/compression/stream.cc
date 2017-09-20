@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <zlib.h>
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/exceptions/interrupt.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -26,6 +27,111 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::compression;
+
+/**
+ * Compression function
+ *
+ * @param data the data to compress.
+ * @param compression_level The compression level, by default -1.
+ *
+ * @return The same data compressed.
+ */
+static QByteArray _compress(QByteArray const& data, int compression_level) {
+  if (data.isEmpty())
+    return QByteArray(4, '\0');
+
+  int nbytes = data.size();
+
+  if (compression_level < -1 || compression_level > 9)
+    compression_level = -1;
+
+  unsigned long len = nbytes + nbytes / 100 + 13;
+  QByteArray retval;
+  int res;
+  do {
+    retval.resize(len + 4);
+    res = ::compress2(
+        (uchar*)retval.data() + 4,
+        &len,
+        (uchar*)data.constData(),
+        nbytes,
+        compression_level);
+
+    switch (res) {
+      case Z_OK:
+        retval.resize(len + 4);
+        retval[0] = (nbytes >> 24) & 0xff;
+        retval[1] = (nbytes >> 16) & 0xff;
+        retval[2] = (nbytes >> 8) & 0xff;
+        retval[3] = (nbytes & 0xff);
+        break;
+      case Z_MEM_ERROR:
+        logging::error(logging::medium)
+          << "compression : Z_MEM_ERROR: Not enough memory";
+        retval.resize(0);
+        break;
+      case Z_BUF_ERROR:
+        len <<= 1;
+        break;
+    }
+  } while (res == Z_BUF_ERROR);
+
+  return retval;
+}
+
+/**
+ * Uncompress function
+ *
+ * @param data The data to extract.
+ * @param nbytes The data size in bytes.
+ *
+ * @return the extract data
+ */
+static QByteArray _uncompress(const uchar* data, int nbytes) {
+  if (!data) {
+    logging::info(logging::medium)
+      << "compression: uncompress - Data is null";
+    return QByteArray();
+  }
+  if (nbytes <= 4) {
+    if (nbytes < 4 || (data[0] != 0 || data[1] != 0
+                   || data[2] != 0 || data[3] != 0))
+      logging::error(logging::medium)
+        << "compression: uncompress - Input data is corrupted";
+    return QByteArray();
+  }
+  ulong expected_size = (data[0] << 24) | (data[1] << 16)
+                     | (data[2] <<  8) | data[3];
+  ulong len = qMax(expected_size, 1ul);
+  QByteArray uncompressed_array(len, '\0');
+
+  forever {
+    ulong alloc = len;
+    uncompressed_array.resize(alloc);
+
+    int res = ::uncompress((uchar*)uncompressed_array.data(), &len,
+        (uchar*)data + 4, nbytes - 4);
+
+    switch (res) {
+      case Z_OK:
+        if (len != alloc)
+          uncompressed_array.resize(len);
+
+        return uncompressed_array;
+      case Z_MEM_ERROR:
+        logging::error(logging::medium)
+          << "compression: uncompress - Z_MEM_ERROR: Not enough memory";
+        return QByteArray();
+      case Z_BUF_ERROR:
+        len <<= 1;
+        continue;
+      case Z_DATA_ERROR:
+        logging::error(logging::medium)
+          << "compression: uncompress - Z_DATA_ERROR: Input data is corrupted";
+        return QByteArray();
+    }
+  }
+}
 
 /**************************************
 *                                     *
@@ -143,7 +249,7 @@ bool stream::read(
       // corrupted because the size is greater than the remaining
       // payload size.
       if (_rbuffer.size() >= static_cast<int>(size + sizeof(qint32))) {
-        r->QByteArray::operator=(qUncompress(
+        r->QByteArray::operator=(_uncompress(
           static_cast<uchar const*>(static_cast<void const*>((
             _rbuffer.data() + sizeof(qint32)))),
           size));
@@ -274,7 +380,7 @@ void stream::_flush() {
   if (_wbuffer.size() > 0) {
     // Compress data.
     misc::shared_ptr<io::raw> compressed(new io::raw);
-    compressed->QByteArray::operator=(qCompress(_wbuffer, _level));
+    compressed->QByteArray::operator=(_compress(_wbuffer, _level));
     logging::debug(logging::low) << "compression: " << this
       << " compressed " << _wbuffer.size() << " bytes to "
       << compressed->size() << " bytes (level " << _level << ")";
