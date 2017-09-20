@@ -20,6 +20,12 @@ version each host and service is treated individually. Therefore upon
 cancellation rebuild will stop after the current host or service has
 been rebuilt.
 
+Flag graphs when rebuilding
+===========================
+
+Flag graphs as rebuilding upon processing. This was caused by
+uncommitted SQL transactions.
+
 Properly process downtimes sent simultaneously on same host/service
 ===================================================================
 
