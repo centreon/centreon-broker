@@ -29,7 +29,7 @@ improperly processed and were not stored in database.
 Performance improvement for transaction-based endpoints
 =======================================================
 
-This fix reduce thread contention on a single mutex when using
+This fix reduces thread contention on a single mutex when using
 transactions. The two most typical cases are the real-time monitoring
 (SQL) and performance data graphing (storage) endpoints.
 
