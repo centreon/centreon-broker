@@ -17,6 +17,8 @@
 */
 
 #include "com/centreon/broker/compression/stream.hh"
+#include "com/centreon/broker/compression/zlib.hh"
+#include "com/centreon/broker/exceptions/corruption.hh"
 #include "com/centreon/broker/exceptions/interrupt.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/exceptions/timeout.hh"
@@ -143,10 +145,15 @@ bool stream::read(
       // corrupted because the size is greater than the remaining
       // payload size.
       if (_rbuffer.size() >= static_cast<int>(size + sizeof(qint32))) {
-        r->QByteArray::operator=(qUncompress(
-          static_cast<uchar const*>(static_cast<void const*>((
-            _rbuffer.data() + sizeof(qint32)))),
-          size));
+        try {
+          r->QByteArray::operator=(zlib::uncompress(
+            static_cast<unsigned char const*>(static_cast<void const*>((
+              _rbuffer.data() + sizeof(qint32)))),
+            size));
+        }
+        catch (exceptions::corruption const& e) {
+          logging::debug(logging::medium) << e.what();
+        }
       }
       if (!r->size()) { // No data or uncompressed size of 0 means corrupted input.
         logging::error(logging::low)
@@ -274,7 +281,7 @@ void stream::_flush() {
   if (_wbuffer.size() > 0) {
     // Compress data.
     misc::shared_ptr<io::raw> compressed(new io::raw);
-    compressed->QByteArray::operator=(qCompress(_wbuffer, _level));
+    compressed->QByteArray::operator=(zlib::compress(_wbuffer, _level));
     logging::debug(logging::low) << "compression: " << this
       << " compressed " << _wbuffer.size() << " bytes to "
       << compressed->size() << " bytes (level " << _level << ")";

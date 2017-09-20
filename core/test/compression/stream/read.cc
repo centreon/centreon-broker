@@ -150,6 +150,31 @@ TEST_F(CompressionStreamRead, CorruptedData) {
 }
 
 // Given a compression stream
+// And the substream has a corrupted compressed data chunk before a valid data chunk
+// When read() is called
+// Then the valid data is extracted
+TEST_F(CompressionStreamRead, CorruptedDataZippedPart) {
+  // Given
+  _stream->write(predefined_data());
+  _stream->flush();
+  _stream->write(predefined_data());
+  _stream->flush();
+  misc::shared_ptr<io::raw>& buffer(_substream->get_buffer());
+  (*buffer)[8] = 42;
+  (*buffer)[9] = 42;
+
+  // When
+  misc::shared_ptr<io::data> d;
+  bool retval(_stream->read(d));
+
+  // Then
+  ASSERT_TRUE(retval);
+  ASSERT_FALSE(d.isNull());
+  ASSERT_EQ(d->type(), io::raw::static_type());
+  ASSERT_EQ(d.ref_as<io::raw>(), *predefined_data());
+}
+
+// Given a compression stream
 // And the substream has data that indicates that the following fragment is greater than the allowed max size, followed by valid data
 // When read() is called
 // Then the valid data is extracted

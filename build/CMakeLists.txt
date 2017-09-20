@@ -48,6 +48,10 @@ configure_file(
 
 # Find Qt.
 find_package(Qt4 4.7.4 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
+
+# Find zlib.
+find_package(ZLIB REQUIRED)
+
 include(${QT_USE_FILE})
 set(QT_VERSION "${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 if (("${QT_VERSION}" VERSION_EQUAL "4.7.0")
@@ -359,6 +363,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/compression/opener.cc"
   "${SRC_DIR}/compression/stack_array.cc"
   "${SRC_DIR}/compression/stream.cc"
+  "${SRC_DIR}/compression/zlib.cc"
   "${SRC_DIR}/config/applier/endpoint.cc"
   "${SRC_DIR}/config/applier/modules.cc"
   "${SRC_DIR}/config/applier/state.cc"
@@ -371,6 +376,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/database_preparator.cc"
   "${SRC_DIR}/database_query.cc"
   "${SRC_DIR}/exceptions/config.cc"
+  "${SRC_DIR}/exceptions/corruption.cc"
   "${SRC_DIR}/exceptions/interrupt.cc"
   "${SRC_DIR}/exceptions/msg.cc"
   "${SRC_DIR}/exceptions/shutdown.cc"
@@ -596,7 +602,7 @@ if (COMPILER_HAS_FPIC)
   set_property(TARGET "rokerbase"
     PROPERTY COMPILE_FLAGS "${ROKER_CXXFLAGS}")
 endif ()
-target_link_libraries("rokerbase" ${QT_LIBRARIES})
+target_link_libraries("rokerbase" ${ZLIB_LIBRARIES} ${QT_LIBRARIES})
 add_library("roker" STATIC
   "${SRC_DIR}/config/applier/init.cc"
   "${SRC_DIR}/config/applier/logger.cc")
