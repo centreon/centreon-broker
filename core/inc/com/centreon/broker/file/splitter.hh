@@ -19,6 +19,7 @@
 #ifndef CCB_FILE_SPLITTER_HH
 #  define CCB_FILE_SPLITTER_HH
 
+#  include <QMutex>
 #  include <memory>
 #  include <string>
 #  include "com/centreon/broker/file/fs_browser.hh"
@@ -81,6 +82,8 @@ namespace       file {
                 _wfile;
     int         _wid;
     long        _woffset;
+    mutable QMutex
+                _mutex;
   };
 
   /**
