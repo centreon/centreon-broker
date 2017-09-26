@@ -30,6 +30,8 @@ set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc/com/centreon/broker")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/core/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98")
+
 # Version.
 set(CENTREON_BROKER_MAJOR 3)
 set(CENTREON_BROKER_MINOR 0)
@@ -48,6 +50,10 @@ configure_file(
 
 # Find Qt.
 find_package(Qt4 4.7.4 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
+
+# Find zlib.
+find_package(ZLIB REQUIRED)
+
 include(${QT_USE_FILE})
 set(QT_VERSION "${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 if (("${QT_VERSION}" VERSION_EQUAL "4.7.0")
@@ -139,6 +145,15 @@ if (WITH_GROUP)
 else ()
   set(GROUP "root")
 endif ()
+
+# Code coverage on unit tests
+option(WITH_COVERAGE "Add code coverage on unit tests." OFF)
+if (WITH_TESTING AND WITH_COVERAGE)
+  set(COVERAGE_CXXFLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
+  set(CMAKE_BUILD_TYPE "Debug")
+  include("CodeCoverage.cmake")
+  set(CMAKE_CXX_FLAGS "${COVERAGE_CXXFLAGS} ${CMAKE_CXX_FLAGS}")
+endif()
 
 # Set startup script to auto if not defined.
 if (NOT WITH_STARTUP_SCRIPT)
@@ -588,7 +603,7 @@ if (COMPILER_HAS_FPIC)
   set_property(TARGET "rokerbase"
     PROPERTY COMPILE_FLAGS "${ROKER_CXXFLAGS}")
 endif ()
-target_link_libraries("rokerbase" ${QT_LIBRARIES})
+target_link_libraries("rokerbase" ${ZLIB_LIBRARIES} ${QT_LIBRARIES})
 add_library("roker" STATIC
   "${SRC_DIR}/config/applier/init.cc"
   "${SRC_DIR}/config/applier/logger.cc")
@@ -1744,6 +1759,9 @@ if (WITH_TESTING)
   # target_link_libraries("${TEST_NAME}" "roker")
   # add_test("${TEST_NAME}" "${TEST_NAME}")
 
+  enable_testing()
+  add_test(tests tests/ut)
+
 endif ()
 
 #
@@ -1779,6 +1797,11 @@ if (WITH_TESTING)
     message(STATUS "      - DB type                  ${DB_TYPE}")
   else ()
     message(STATUS "      - DB type                  none")
+  endif ()
+  if (WITH_COVERAGE)
+    message(STATUS "      - Code coverage            enabled")
+  else ()
+    message(STATUS "      - Code coverage            disabled")
   endif ()
 else ()
   message(STATUS "    - Unit tests                 disabled")

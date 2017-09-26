@@ -36,6 +36,7 @@ add_executable("ut"
   "${TESTS_DIR}/compression/stream/write.cc"
   "${TESTS_DIR}/exceptions/msg/default.cc"
   "${TESTS_DIR}/file/splitter/default.cc"
+  "${TESTS_DIR}/file/splitter/concurrent.cc"
   "${TESTS_DIR}/file/splitter/more_than_max_size.cc"
   "${TESTS_DIR}/file/splitter/resume.cc"
   "${TESTS_DIR}/file/splitter/split.cc"
@@ -48,3 +49,9 @@ add_executable("ut"
   ${TESTS_SOURCES}
 )
 target_link_libraries("ut" "gtest" ${TESTS_LIBRARIES} ${NEB} "rokerbase" "roker")
+
+if (WITH_COVERAGE)
+  SETUP_TARGET_FOR_COVERAGE(test-coverage
+      "ut"
+      coverage)
+endif ()

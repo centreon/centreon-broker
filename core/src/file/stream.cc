@@ -18,7 +18,6 @@
 
 #include <cstdio>
 #include <limits>
-#include <QMutexLocker>
 #include <sstream>
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -73,9 +72,7 @@ bool stream::read(
                time_t deadline) {
   (void)deadline;
 
-  // Lock mutex.
   d.clear();
-  QMutexLocker lock(&_mutex);
 
   // Build data array.
   std::auto_ptr<io::raw> data(new io::raw);
@@ -211,9 +208,6 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
     return (1);
 
   if (d->type() == io::raw::static_type()) {
-    // Lock mutex.
-    QMutexLocker lock(&_mutex);
-
     // Get data.
     char const* memory;
     unsigned int size;
