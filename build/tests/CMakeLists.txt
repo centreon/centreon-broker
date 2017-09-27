@@ -50,7 +50,10 @@ add_executable("ut"
 target_link_libraries("ut" "gtest" ${TESTS_LIBRARIES} ${NEB} "rokerbase" "roker")
 
 if (WITH_COVERAGE)
-  SETUP_TARGET_FOR_COVERAGE(test-coverage
-      "ut"
-      coverage)
+  set(COVERAGE_EXCLUDES '${PROJECT_BINARY_DIR}/tests/*' '*/test/*')
+  SETUP_TARGET_FOR_COVERAGE(
+      NAME test-coverage
+      EXECUTABLE ut
+      DEPENDENCIES ut
+  )
 endif ()

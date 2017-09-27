@@ -143,10 +143,9 @@ endif ()
 # Code coverage on unit tests
 option(WITH_COVERAGE "Add code coverage on unit tests." OFF)
 if (WITH_TESTING AND WITH_COVERAGE)
-  set(COVERAGE_CXXFLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
   set(CMAKE_BUILD_TYPE "Debug")
   include("CodeCoverage.cmake")
-  set(CMAKE_CXX_FLAGS "${COVERAGE_CXXFLAGS} ${CMAKE_CXX_FLAGS}")
+  APPEND_COVERAGE_COMPILER_FLAGS()
 endif()
 
 # Set startup script to auto if not defined.
