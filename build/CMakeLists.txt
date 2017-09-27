@@ -1289,6 +1289,7 @@ include("package.cmake")
 # Enable testing.
 option(WITH_TESTING "Generate unit tests." OFF)
 if (WITH_TESTING)
+  enable_testing()
   add_subdirectory("tests")
 
   # Below are the older CTest-based unit tests.
@@ -1751,10 +1752,6 @@ if (WITH_TESTING)
   #   "${TEST_DIR}/bbdo/read.cc")
   # target_link_libraries("${TEST_NAME}" "roker")
   # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  enable_testing()
-  add_test(tests tests/ut)
-
 endif ()
 
 #
