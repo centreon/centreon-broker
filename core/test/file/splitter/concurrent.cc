@@ -19,6 +19,7 @@
 #include <QDir>
 #include <QThread>
 #include <QByteArray>
+#include <QMutexLocker>
 #include <cstdlib>
 #include <gtest/gtest.h>
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -32,6 +33,8 @@ using namespace com::centreon::broker::file;
 
 #define BIG 50000
 #define RETENTION "/tmp/test-concurrent-queue"
+
+static QMutex mutex;
 
 class read_thread: public QThread
 {
@@ -54,6 +57,7 @@ class read_thread: public QThread
 
     do {
       try {
+        QMutexLocker lock(&mutex);
         ret = _file->read(_buf.data() + _current, _size);
         _current += ret;
       }
@@ -80,6 +84,7 @@ class write_thread: public QThread
       buf[i] = i & 255;
 
     for (int j(0); j < _size; j += 100) {
+      QMutexLocker lock(&mutex);
       int wb(_file->write(buf + j, 100));
       usleep(rand() % 100);
     }

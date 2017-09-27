@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QMutexLocker>
 #include <arpa/inet.h>
 #include <cstdlib>
 #include <limits>
@@ -63,8 +62,6 @@ splitter::splitter(
     _woffset(0) {
   (void)mode;
 
-  // Lock mutex.
-  QMutexLocker lock(&_mutex);
   // Set max file size.
   static long min_file_size(10000);
   if (!_max_file_size)
@@ -139,9 +136,6 @@ splitter::~splitter() {}
  *  @return Number of bytes read.
  */
 long splitter::read(void* buffer, long max_size) {
-  // Lock mutex.
-  QMutexLocker locker(&_mutex);
-
   // Open next file if necessary.
   if (_rfile.isNull())
     _open_read_file();
@@ -184,7 +178,6 @@ long splitter::read(void* buffer, long max_size) {
     else {
       ++_rid;
       _open_read_file();
-      locker.unlock();
       return (read(buffer, max_size));
     }
   }
@@ -208,8 +201,6 @@ void splitter::seek(long offset, fs_file::seek_whence whence) {
  *  @return Current position in file.
  */
 long splitter::tell() {
-  // Lock mutex.
-  QMutexLocker locker(&_mutex);
   return (_roffset);
 }
 
@@ -222,8 +213,6 @@ long splitter::tell() {
  *  @return Number of bytes written.
  */
 long splitter::write(void const* buffer, long size) {
-  // Lock mutex.
-  QMutexLocker locker(&_mutex);
   // Open current write file if not already done.
   if (_wfile.isNull())
     _open_write_file();
@@ -283,8 +272,6 @@ long splitter::get_max_file_size() const {
  *  @return Current read ID.
  */
 int splitter::get_rid() const {
-  // Lock mutex.
-  QMutexLocker locker(&_mutex);
   return (_rid);
 }
 
@@ -294,8 +281,6 @@ int splitter::get_rid() const {
  *  @return Current read offset.
  */
 long splitter::get_roffset() const {
-  // Lock mutex.
-  QMutexLocker locker(&_mutex);
   return (_roffset);
 }
 
@@ -305,8 +290,6 @@ long splitter::get_roffset() const {
  *  @return Current write ID.
  */
 int splitter::get_wid() const {
-  // Lock mutex.
-  QMutexLocker locker(&_mutex);
   return (_wid);
 }
 
@@ -316,14 +299,11 @@ int splitter::get_wid() const {
  *  @return Current write offset.
  */
 long splitter::get_woffset() const {
-  // Lock mutex.
-  QMutexLocker locker(&_mutex);
   return (_woffset);
 }
 
 /**
  *  Open the readable file.
- *  The internal mutex is already locked.
  */
 void splitter::_open_read_file() {
   _rfile.clear();
@@ -348,7 +328,6 @@ void splitter::_open_read_file() {
 
 /**
  *  Open the writable file.
- *  The internal mutex is already locked.
  */
 void splitter::_open_write_file() {
   _wfile.clear();
