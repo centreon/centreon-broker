@@ -49,7 +49,7 @@ add_executable("ut"
 )
 target_link_libraries("ut" "gtest" ${TESTS_LIBRARIES} ${NEB} "rokerbase" "roker")
 
-add_test(tests ut)
+add_test(NAME tests COMMAND ut)
 
 if (WITH_COVERAGE)
   set(COVERAGE_EXCLUDES '${PROJECT_BINARY_DIR}/tests/*' '*/test/*')
