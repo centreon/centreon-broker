@@ -83,9 +83,11 @@ class write_thread: public QThread
     for (int i(0); i < _size; ++i)
       buf[i] = i & 255;
 
-    for (int j(0); j < _size; j += 100) {
+    int wb = 0;
+    for (int j(0); j < _size; j += wb) {
       QMutexLocker lock(&mutex);
-      int wb(_file->write(buf + j, 100));
+      wb = _file->write(buf + j, 100);
+      lock.unlock();
       usleep(rand() % 100);
     }
 
