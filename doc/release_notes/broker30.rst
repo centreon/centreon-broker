@@ -6,10 +6,6 @@ Centreon Broker 3.0.10
 Bug fixes
 *********
 
-************
-Enhancements
-************
-
 Graph rebuild cancellation
 ==========================
 
