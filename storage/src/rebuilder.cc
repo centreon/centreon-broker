@@ -55,7 +55,7 @@ rebuilder::rebuilder(
              unsigned int rebuild_check_interval,
              unsigned int rrd_length)
   : _db_cfg(db_cfg),
-    _interval(rebuild_check_interval),
+    _rebuild_check_interval(rebuild_check_interval),
     _rrd_len(rrd_length),
     _should_exit(false) {
   _db_cfg.set_queries_per_transaction(1);
@@ -79,8 +79,8 @@ void rebuilder::exit() throw () {
  *
  *  @return Rebuild check interval in seconds.
  */
-unsigned int rebuilder::get_interval() const throw () {
-  return (_interval);
+unsigned int rebuilder::get_rebuild_check_interval() const throw () {
+  return (_rebuild_check_interval);
 }
 
 /**
@@ -96,7 +96,7 @@ unsigned int rebuilder::get_rrd_length() const throw () {
  *  Thread entry point.
  */
 void rebuilder::run() {
-  while (!_should_exit && _interval) {
+  while (!_should_exit && _rebuild_check_interval) {
     try {
       // Open DB.
       std::auto_ptr<database> db;
@@ -227,7 +227,7 @@ void rebuilder::run() {
     }
 
     // Sleep a while.
-    time_t target(time(NULL) + _interval);
+    time_t target(time(NULL) + _rebuild_check_interval);
     while (!_should_exit && (target > time(NULL)))
       sleep(1);
   }
