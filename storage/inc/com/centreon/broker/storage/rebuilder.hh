@@ -44,7 +44,7 @@ namespace           storage {
                       unsigned int rrd_length = 15552000);
                     ~rebuilder() throw ();
     void            exit() throw ();
-    unsigned int    get_interval() const throw ();
+    unsigned int    get_rebuild_check_interval() const throw ();
     unsigned int    get_rrd_length() const throw ();
     void            run();
 
@@ -91,7 +91,7 @@ namespace           storage {
                       short state);
 
     database_config _db_cfg;
-    unsigned int    _interval;
+    unsigned int    _rebuild_check_interval;
     unsigned int    _rrd_len;
     volatile bool   _should_exit;
   };
