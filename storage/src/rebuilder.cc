@@ -49,12 +49,15 @@ using namespace com::centreon::broker::storage;
  *  @param[in] rebuild_check_interval  How often the rebuild thread will
  *                                     check for rebuild.
  *  @param[in] rrd_length              Length of RRD files.
+ *  @param[in] interval_length         Length in seconds of a time unit.
  */
 rebuilder::rebuilder(
              database_config const& db_cfg,
              unsigned int rebuild_check_interval,
-             unsigned int rrd_length)
+             unsigned int rrd_length,
+             unsigned int interval_length)
   : _db_cfg(db_cfg),
+    _interval_length(interval_length),
     _rebuild_check_interval(rebuild_check_interval),
     _rrd_len(rrd_length),
     _should_exit(false) {
@@ -143,7 +146,7 @@ void rebuilder::run() {
           if (query.next())
             check_interval = (query.value(0).isNull()
                               ? 0.0
-                              : query.value(0).toDouble()) * 60;
+                              : query.value(0).toDouble()) * _interval_length;
           if (!check_interval)
             check_interval = 5 * 60;
         }

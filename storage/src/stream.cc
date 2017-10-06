@@ -96,6 +96,7 @@ static inline bool double_equal(double a, double b) {
  *
  *  @param[in] db_cfg                  Database configuration.
  *  @param[in] rrd_len                 RRD length.
+ *  @param[in] interval_length         Length in seconds of a time unit.
  *  @param[in] rebuild_check_interval  How often the stream must check
  *                                     for graph rebuild.
  *  @param[in] store_in_db             Should we insert data in
@@ -106,15 +107,18 @@ static inline bool double_equal(double a, double b) {
 stream::stream(
           database_config const& db_cfg,
           unsigned int rrd_len,
+          unsigned int interval_length,
           unsigned int rebuild_check_interval,
           bool store_in_db,
           bool insert_in_index_data)
   : _insert_in_index_data(insert_in_index_data),
+    _interval_length(interval_length),
     _pending_events(0),
     _rebuild_thread(
       db_cfg,
       rebuild_check_interval,
-      rrd_len),
+      rrd_len,
+      interval_length),
     _rrd_len(rrd_len ? rrd_len : 15552000),
     _store_in_db(store_in_db),
     _db(db_cfg),
@@ -231,7 +235,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
       status->ctime = ss->last_check;
       status->index_id = index_id;
       status->interval
-        = static_cast<unsigned int>(ss->check_interval * 60);
+        = static_cast<unsigned int>(ss->check_interval * _interval_length);
       status->is_for_rebuild = false;
       status->rrd_len = rrd_len;
       status->state = ss->last_hard_state;
@@ -295,7 +299,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
               perf(new storage::metric);
             perf->ctime = ss->last_check;
             perf->interval
-              = static_cast<unsigned int>(ss->check_interval * 60);
+              = static_cast<unsigned int>(ss->check_interval * _interval_length);
             perf->is_for_rebuild = false;
             perf->metric_id = metric_id;
             perf->name = pd.name();
