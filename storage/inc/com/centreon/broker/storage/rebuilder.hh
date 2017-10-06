@@ -41,7 +41,8 @@ namespace           storage {
                     rebuilder(
                       database_config const& db_cfg,
                       unsigned int rebuild_check_interval = 600,
-                      unsigned int rrd_length = 15552000);
+                      unsigned int rrd_length = 15552000,
+                      unsigned int interval_length = 60);
                     ~rebuilder() throw ();
     void            exit() throw ();
     unsigned int    get_rebuild_check_interval() const throw ();
@@ -78,9 +79,9 @@ namespace           storage {
                       unsigned int interval,
                       unsigned length);
     void            _rebuild_status(
-                       database& db,
-                       unsigned int index_id,
-                       unsigned int interval);
+                      database& db,
+                      unsigned int index_id,
+                      unsigned int interval);
     void            _send_rebuild_event(
                       bool end,
                       unsigned int id,
@@ -91,6 +92,7 @@ namespace           storage {
                       short state);
 
     database_config _db_cfg;
+    unsigned int    _interval_length;
     unsigned int    _rebuild_check_interval;
     unsigned int    _rrd_len;
     volatile bool   _should_exit;

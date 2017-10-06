@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -124,8 +124,19 @@ io::endpoint* factory::new_endpoint(
                          misc::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
-  // Find lengths.
+  // Find RRD length.
   unsigned int rrd_length(find_param(cfg, "length").toUInt());
+
+  // Find interval length if set.
+  unsigned int interval_length(0);
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("interval"));
+    if (it != cfg.params.end())
+      interval_length = it.value().toUInt();
+    if (!interval_length)
+      interval_length = 60;
+  }
 
   // Find storage DB parameters.
   database_config db_cfg(cfg);
@@ -164,6 +175,7 @@ io::endpoint* factory::new_endpoint(
   c->connect_to(
        db_cfg,
        rrd_length,
+       interval_length,
        rebuild_check_interval,
        store_in_data_bin,
        insert_in_index_data);

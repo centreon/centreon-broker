@@ -6,6 +6,13 @@ Centreon Broker 3.0.11
 Bug fixes
 *********
 
+Properly build graphs when interval length is not default
+=========================================================
+
+The interval length property was always assumed to be 60 seconds. This
+prevented graphs to be correctly built when using the non-default
+interval length (usually 1 second).
+
 ======================
 Centreon Broker 3.0.10
 ======================

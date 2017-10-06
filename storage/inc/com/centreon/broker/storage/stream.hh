@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -46,10 +46,11 @@ namespace          storage {
    *  metrics table of a centstorage DB.
    */
   class            stream : public io::stream {
-  public:
+   public:
                    stream(
                      database_config const& db_cfg,
                      unsigned int rrd_len,
+                     unsigned int interval_length,
                      unsigned int rebuild_check_interval,
                      bool store_in_db = true,
                      bool insert_in_index_data = false);
@@ -60,7 +61,7 @@ namespace          storage {
     void           update();
     int            write(misc::shared_ptr<io::data> const& d);
 
-  private:
+   private:
     struct         index_info {
       QString      host_name;
       unsigned int index_id;
@@ -126,6 +127,7 @@ namespace          storage {
     std::map<std::pair<unsigned int, unsigned int>, index_info>
                    _index_cache;
     bool           _insert_in_index_data;
+    unsigned int   _interval_length;
     std::map<std::pair<unsigned int, QString>, metric_info>
                    _metric_cache;
     unsigned int   _pending_events;
