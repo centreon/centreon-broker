@@ -13,7 +13,7 @@ Set parameters in the *General* tab as follow.
 
   * log_timestamp = yes
   * log_thread_id = no
-  * event_queue_max_size = 50000
+  * event_queue_max_size = 100000
 
 ***********
 Correlation
