@@ -409,11 +409,9 @@ splitter* splitter_factory::new_cfile_splitter(
   splitter* s(new splitter(
                     path,
                     mode,
-                    f.get(),
-                    b.get(),
+                    f.release(),
+                    b.release(),
                     max_file_size,
                     auto_delete));
-  f.release();
-  b.release();
   return (s);
 }
