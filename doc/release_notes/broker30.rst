@@ -13,6 +13,18 @@ The interval length property was always assumed to be 60 seconds. This
 prevented graphs to be correctly built when using the non-default
 interval length (usually 1 second).
 
+Do not crash when log files does not have correct permissions
+=============================================================
+
+Self explanatory.
+
+Rewrite compression/decompression functions
+===========================================
+
+Instead of using Qt's interface to compress/uncompress, Centreon Broker
+now uses zlib directly. This notably prevents crashes on CentOS 6 when
+uncompressing corrupted files.
+
 ======================
 Centreon Broker 3.0.10
 ======================
