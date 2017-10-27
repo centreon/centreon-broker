@@ -37,10 +37,24 @@ using namespace com::centreon::broker::file;
  *  @param[in] mode  Open mode.
  */
 cfile::cfile(std::string const& path, fs_file::open_mode mode)
-  : _stream(NULL) {
+  : _stream(NULL), _path(path), _mode(mode) {
+  _open();
+}
+
+/**
+ *  Destructor.
+ */
+cfile::~cfile() {
+  close();
+}
+
+/**
+ *  Open the file following mode given in constructor.
+ */
+void cfile::_open() {
   // Compute cfile's mode.
-  char const* cfile_mode(NULL);
-  switch (mode) {
+  char const* cfile_mode;
+  switch (_mode) {
    case fs_file::open_write:
     cfile_mode = "w";
     break ;
@@ -55,18 +69,18 @@ cfile::cfile(std::string const& path, fs_file::open_mode mode)
   };
 
   // Open file.
-  _stream = fopen(path.c_str(), cfile_mode);
+  _stream = fopen(_path.c_str(), cfile_mode);
   if (!_stream) {
     char const* msg(strerror(errno));
-    throw (exceptions::msg() << "cannot open '" << path << "' (mode "
+    throw (exceptions::msg() << "cannot open '" << _path << "' (mode "
            << cfile_mode << "): " << msg);
   }
 }
 
 /**
- *  Destructor.
+ *  Close the file.
  */
-cfile::~cfile() {
+void cfile::close() {
   if (_stream) {
     fclose(_stream);
     _stream = NULL;
@@ -82,6 +96,8 @@ cfile::~cfile() {
  *  @return Number of bytes read.
  */
 long cfile::read(void* buffer, long max_size) {
+  if (!_stream)
+    _open();
   size_t retval(fread(buffer, 1, max_size, _stream));
   if (retval == 0) {
     if (feof(_stream))
@@ -103,6 +119,8 @@ long cfile::read(void* buffer, long max_size) {
  *  @param[in] whence Base position.
  */
 void cfile::seek(long offset, fs_file::seek_whence whence) {
+  if (!_stream)
+    _open();
   // Compute cfile's whence.
   int seek_whence;
   switch (whence) {
@@ -137,6 +155,8 @@ void cfile::seek(long offset, fs_file::seek_whence whence) {
  *  @return Current offset in the file.
  */
 long cfile::tell() {
+  if (!_stream)
+    _open();
   long retval(ftell(_stream));
   if (-1 == retval) {
     char const* msg(strerror(errno));
@@ -155,6 +175,8 @@ long cfile::tell() {
  *  @return Number of bytes written.
  */
 long cfile::write(void const* buffer, long size) {
+  if (!_stream)
+    _open();
   size_t retval(fwrite(buffer, 1, size, _stream));
   if (ferror(_stream)) {
     char const* msg(strerror(errno));

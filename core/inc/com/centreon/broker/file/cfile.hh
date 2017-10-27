@@ -36,6 +36,7 @@ namespace  file {
    public:
            cfile(std::string const& path, fs_file::open_mode mode);
            ~cfile();
+    void   close();
     long   read(void* buffer, long max_size);
     void   seek(
              long offset,
@@ -46,8 +47,13 @@ namespace  file {
    private:
            cfile(cfile const& right);
     cfile& operator=(cfile const& right);
+    void   _open();
 
     FILE*  _stream;
+    std::string
+           _path;
+    open_mode
+           _mode;
   };
 
   /**

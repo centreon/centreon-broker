@@ -128,6 +128,21 @@ splitter::splitter(
 splitter::~splitter() {}
 
 /**
+ *  Close files open by splitter.
+ *  If no files are open, nothing is done.
+ */
+void splitter::close() {
+  if (!_rfile.isNull()) {
+    _rfile->close();
+    _rfile.clear();
+  }
+  if (!_wfile.isNull()) {
+    _wfile->close();
+    _wfile.clear();
+  }
+}
+
+/**
  *  Read data.
  *
  *  @param[out] buffer    Output buffer.
@@ -300,6 +315,36 @@ int splitter::get_wid() const {
  */
 long splitter::get_woffset() const {
   return (_woffset);
+}
+
+/**
+ *  Remove all the files the splitter is concerned by.
+ */
+void splitter::remove_all_files() {
+  close();
+  std::string base_dir;
+  std::string base_name;
+  {
+    size_t last_slash(_base_path.find_last_of('/'));
+    if (last_slash == std::string::npos) {
+      base_dir = "./";
+      base_name = _base_path;
+    }
+    else {
+      base_dir = _base_path.substr(0, last_slash + 1).c_str();
+      base_name = _base_path.substr(last_slash + 1).c_str();
+    }
+  }
+  fs_browser::entry_list parts;
+  {
+    std::string name_pattern(base_name);
+    name_pattern.append("*");
+    parts = _fs->read_directory(base_dir, name_pattern);
+  }
+  for (fs_browser::entry_list::iterator it(parts.begin()), end(parts.end());
+       it != end;
+       ++it)
+    _fs->remove(base_dir + '/' + *it);
 }
 
 /**

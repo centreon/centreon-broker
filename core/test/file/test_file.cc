@@ -28,6 +28,8 @@ test_file::test_file(std::string* content)
 
 test_file::~test_file() {}
 
+void test_file::close() {}
+
 long test_file::read(void* buffer, long max_size) {
   long size(_content->size() - _pos);
   if (!size)

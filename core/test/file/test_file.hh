@@ -27,6 +27,7 @@ class          test_file : public com::centreon::broker::file::fs_file {
  public:
                test_file(std::string* content);
                ~test_file();
+  void         close();
   long         read(void* buffer, long max_size);
   void         seek(
                  long offset,

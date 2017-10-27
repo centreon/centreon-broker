@@ -19,6 +19,7 @@
 #ifndef CCB_PERSISTENT_FILE_HH
 #  define CCB_PERSISTENT_FILE_HH
 
+#  include "com/centreon/broker/file/stream.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -37,13 +38,17 @@ class              persistent_file : public io::stream {
                    ~persistent_file();
   bool             read(
                      misc::shared_ptr<io::data>& d,
-                     time_t deadline);
+                     time_t deadline = (time_t)-1);
+  void             remove_all_files();
   void             statistics(io::properties& tree) const;
   int              write(misc::shared_ptr<io::data> const& d);
 
  private:
                    persistent_file(persistent_file const& other);
   persistent_file& operator=(persistent_file const& other);
+
+  misc::shared_ptr<file::stream>
+                   _splitter;
 };
 
 CCB_END()

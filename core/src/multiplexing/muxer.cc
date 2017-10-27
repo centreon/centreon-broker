@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <QDir>
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -478,4 +479,16 @@ void muxer::_push_to_queue(misc::shared_ptr<io::data> const& event) {
  */
 std::string muxer::_queue_file() const {
   return (queue_file(_name));
+}
+
+/**
+ *  Remove all the queue files attached to this muxer.
+ */
+void muxer::remove_queue_files() {
+  logging::info(logging::low)
+    << "multiplexing: '" << _queue_file() << "' removed";
+
+  /* Here _file is already destroyed */
+  persistent_file file(_queue_file());
+  file.remove_all_files();
 }
