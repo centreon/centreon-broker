@@ -42,6 +42,7 @@ namespace              file {
     bool               read(
                          misc::shared_ptr<io::data>& d,
                          time_t deadline);
+    void               remove_all_files();
     void               statistics(io::properties& tree) const;
     int                write(misc::shared_ptr<io::data> const& d);
 

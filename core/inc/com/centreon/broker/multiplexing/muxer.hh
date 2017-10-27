@@ -23,7 +23,7 @@
 #  include <queue>
 #  include <QWaitCondition>
 #  include <string>
-#  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/persistent_file.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -63,6 +63,7 @@ namespace               multiplexing {
     filters const&      get_write_filters() const;
     unsigned int        get_event_queue_size() const;
     void                nack_events();
+    void                remove_queue_files();
     void                statistics(io::properties& tree) const;
     void                wake();
     int                 write(misc::shared_ptr<io::data> const& d);
@@ -86,7 +87,7 @@ namespace               multiplexing {
                         _events;
     unsigned int        _events_size;
     static unsigned int _event_queue_max_size;
-    std::auto_ptr<io::stream>
+    std::auto_ptr<persistent_file>
                         _file;
     mutable QMutex      _mutex;
     std::string         _name;

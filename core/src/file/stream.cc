@@ -233,3 +233,10 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
 
   return (1);
 }
+
+/**
+ *  Remove all the files this stream in concerned by.
+ */
+void stream::remove_all_files() {
+  _file->remove_all_files();
+}

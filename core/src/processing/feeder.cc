@@ -139,6 +139,7 @@ void feeder::run() {
   {
     QWriteLocker lock(&_client_mutex);
     _client.clear();
+    _subscriber.get_muxer().remove_queue_files();
   }
   logging::info(logging::medium)
     << "feeder: thread of client '" << _name << "' will exit";

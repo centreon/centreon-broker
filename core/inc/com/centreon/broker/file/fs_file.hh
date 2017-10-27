@@ -47,6 +47,7 @@ namespace        file {
 
                  fs_file();
     virtual      ~fs_file();
+    virtual void close() = 0;
     virtual long read(void* buffer, long max_size) = 0;
     virtual void seek(
                    long offset,

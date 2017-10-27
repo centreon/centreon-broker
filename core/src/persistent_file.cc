@@ -21,6 +21,7 @@
 #include "com/centreon/broker/file/opener.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/persistent_file.hh"
+#include "com/centreon/broker/file/stream.hh"
 
 using namespace com::centreon::broker;
 
@@ -34,6 +35,7 @@ persistent_file::persistent_file(std::string const& path) {
   file::opener opnr;
   opnr.set_filename(path);
   misc::shared_ptr<io::stream> fs(opnr.open());
+  _splitter = fs.staticCast<file::stream>();
 
   // Compression layer.
   misc::shared_ptr<compression::stream> cs(new compression::stream);
@@ -85,4 +87,11 @@ void persistent_file::statistics(io::properties& tree) const {
  */
 int persistent_file::write(misc::shared_ptr<io::data> const& d) {
   return (_substream->write(d));
+}
+
+/**
+ *  Remove persistent file.
+ */
+void persistent_file::remove_all_files() {
+  _splitter->remove_all_files();
 }

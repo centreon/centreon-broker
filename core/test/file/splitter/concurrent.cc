@@ -32,7 +32,8 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
 
 #define BIG 50000
-#define RETENTION "/tmp/test-concurrent-queue"
+#define RETENTION_DIR "/tmp/"
+#define RETENTION_FILE "test-concurrent-queue"
 
 static QMutex mutex;
 
@@ -99,7 +100,7 @@ class FileSplitterConcurrent : public ::testing::Test {
 
  public:
   void SetUp() {
-    _path = RETENTION;
+    _path = RETENTION_DIR RETENTION_FILE;
     _remove_files();
     _file_factory.reset(new cfile_factory());
     _fs_browser.reset(new qt_fs_browser());
@@ -164,6 +165,8 @@ TEST_F(FileSplitterConcurrent, DefaultFile) {
 // When we write and read at the same time the object while data are too
 // long to be store in a simple file
 // Then the read buffer contains the same content than the written buffer.
+// And when we call the remove_all_files() method
+// Then all the created files are removed.
 TEST_F(FileSplitterConcurrent, MultipleFilesCreated) {
   write_thread wt(_file.get(), BIG);
   read_thread rt(_file.get(), BIG);
@@ -182,5 +185,12 @@ TEST_F(FileSplitterConcurrent, MultipleFilesCreated) {
   // Then
   ASSERT_EQ(buffer.size(), result.size());
   ASSERT_EQ(buffer, result);
-}
 
+  // Then
+  _file->remove_all_files();
+  QDir dir(RETENTION_DIR);
+  QStringList filters_list;
+  filters_list << RETENTION_FILE;
+  QStringList entries(dir.entryList(filters_list));
+  ASSERT_EQ(entries.size(), 0);
+}
