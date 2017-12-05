@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2016 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -164,25 +164,27 @@ io::endpoint* factory::new_endpoint(
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
   std::string db_host(find_param(cfg, "db_host"));
-
-  std::string metric_naming(
-        get_string_param(cfg, "metric_naming", "centreon.metrics.$METRICID$"));
-  std::string status_naming(
-        get_string_param(cfg, "status_naming", "centreon.statuses.$INDEXID$"));
   unsigned short db_port(
-        get_uint_param(cfg, "db_port", 80));
+    get_uint_param(cfg, "db_port", 2003));
   std::string db_user(
-        get_string_param(cfg, "db_user", ""));
+    get_string_param(cfg, "db_user", ""));
   std::string db_password(
-        get_string_param(cfg, "db_password", ""));
+    get_string_param(cfg, "db_password", ""));
   unsigned int queries_per_transaction(
-                 get_uint_param(cfg, "queries_per_transaction", 1));
+    get_uint_param(cfg, "queries_per_transaction", 1));
+  std::string metric_naming(
+    get_string_param(cfg, "metric_naming", "centreon.metrics.$METRICID$"));
+  std::string status_naming(
+    get_string_param(cfg, "status_naming", "centreon.statuses.$INDEXID$"));
+  std::string escape_string(
+    get_string_param(cfg, "escape_string", "_"));
 
   // Connector.
   std::auto_ptr<graphite::connector> c(new graphite::connector);
   c->connect_to(
        metric_naming,
        status_naming,
+       escape_string,
        db_user,
        db_password,
        db_host,

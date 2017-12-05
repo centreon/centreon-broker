@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -33,13 +33,15 @@ namespace           graphite {
    *  @brief Connect to a graphite stream.
    */
   class             connector : public io::endpoint {
-  public:
+   public:
                     connector();
                     connector(connector const& other);
                     ~connector();
     connector&      operator=(connector const& other);
-    void            connect_to(std::string const& metric_naming,
+    void            connect_to(
+                      std::string const& metric_naming,
                       std::string const& status_naming,
+                      std::string const& escape_string,
                       std::string const& db_user,
                       std::string const& db_passwd,
                       std::string const& db_host,
@@ -50,6 +52,7 @@ namespace           graphite {
                     open();
 
    private:
+    std::string     _escape_string;
     std::string     _metric_naming;
     std::string     _status_naming;
     std::string     _user;

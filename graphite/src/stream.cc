@@ -47,6 +47,7 @@ using namespace com::centreon::broker::graphite;
 stream::stream(
           std::string const& metric_naming,
           std::string const& status_naming,
+          std::string const& escape_string,
           std::string const& db_user,
           std::string const& db_password,
           std::string const& db_host,
@@ -59,14 +60,24 @@ stream::stream(
     _db_password(db_password),
     _db_host(db_host),
     _db_port(db_port),
-    _queries_per_transaction(queries_per_transaction == 0 ?
-                               1 : queries_per_transaction),
+    _queries_per_transaction(
+      (queries_per_transaction == 0)
+      ? 1
+      : queries_per_transaction),
     _pending_queries(0),
     _actual_query(0),
     _commit_flag(false),
     _cache(cache),
-    _metric_query(_metric_naming, query::metric, _cache),
-    _status_query(_status_naming, query::status, _cache) {
+    _metric_query(
+      _metric_naming,
+      escape_string,
+      query::metric,
+      _cache),
+    _status_query(
+      _status_naming,
+      escape_string,
+      query::status,
+      _cache) {
   // Create the basic HTTP authentification header.
   if (!_db_user.empty() && !_db_password.empty()) {
     QByteArray auth;

@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -40,21 +40,25 @@ namespace         graphite {
    *  the query fast.
    */
   class           query {
-  public:
+   public:
     enum          data_type {
                   metric,
                   status
     };
 
-                  query(std::string const& naming_scheme, data_type type, macro_cache const& cache);
-                  query(query const& f);
+                  query(
+                    std::string const& naming_scheme,
+                    std::string const& escape_string,
+                    data_type type,
+                    macro_cache const& cache);
+                  query(query const& other);
                   ~query();
-    query&        operator=(query const& f);
+    query&        operator=(query const& other);
 
     std::string   generate_metric(storage::metric const& me);
     std::string   generate_status(storage::status const& st);
 
-  private:
+   private:
     // Compiled data.
     std::vector<std::string>
                   _compiled_naming_scheme;
@@ -62,6 +66,7 @@ namespace         graphite {
                   _compiled_getters;
 
     // Used for generation.
+    std::string   _escape_string;
     size_t        _naming_scheme_index;
     data_type     _type;
 
@@ -72,10 +77,13 @@ namespace         graphite {
     void          _compile_naming_scheme(
                     std::string const& naming_scheme,
                     data_type type);
+    QString       _escape(QString const& str);
     void          _throw_on_invalid(data_type macro_type);
 
     template <typename T, typename U, T (U::*member)>
     void          _get_member(io::data const& d, std::ostream& is);
+    template <typename U, QString (U::*member)>
+    void          _get_string_member(io::data const& d, std::ostream& is);
     void          _get_string(io::data const& d, std::ostream& is);
     void          _get_null(io::data const& d, std::ostream& is);
     void          _get_dollar_sign(io::data const& d, std::ostream& is);
