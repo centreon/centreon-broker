@@ -174,7 +174,8 @@ void cached::open(std::string const& filename) {
  *  Open a RRD file and create it if it does not exists.
  *
  *  @param[in] filename   Path to the RRD file.
- *  @param[in] length     Number of recording in the RRD file.
+ *  @param[in] length     Duration in seconds that the RRD file should
+ *                        retain.
  *  @param[in] from       Timestamp of the first record.
  *  @param[in] step       Time interval between each record.
  *  @param[in] value_type Type of the metric.

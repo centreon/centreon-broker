@@ -96,6 +96,7 @@ static inline bool double_equal(double a, double b) {
  *
  *  @param[in] db_cfg                  Database configuration.
  *  @param[in] rrd_len                 RRD length.
+ *  @param[in] interval_length         Length in seconds of a time unit.
  *  @param[in] rebuild_check_interval  How often the stream must check
  *                                     for graph rebuild.
  *  @param[in] store_in_db             Should we insert data in
@@ -106,15 +107,18 @@ static inline bool double_equal(double a, double b) {
 stream::stream(
           database_config const& db_cfg,
           unsigned int rrd_len,
+          unsigned int interval_length,
           unsigned int rebuild_check_interval,
           bool store_in_db,
           bool insert_in_index_data)
   : _insert_in_index_data(insert_in_index_data),
+    _interval_length(interval_length),
     _pending_events(0),
     _rebuild_thread(
       db_cfg,
       rebuild_check_interval,
-      rrd_len),
+      rrd_len,
+      interval_length),
     _rrd_len(rrd_len ? rrd_len : 15552000),
     _store_in_db(store_in_db),
     _db(db_cfg),
@@ -145,6 +149,7 @@ int stream::flush() {
   logging::info(logging::medium)
     << "storage: committing transaction";
   _update_status("status=committing current transaction\n");
+  _insert_perfdatas();
   _db.commit();
   _db.clear_committed_flag();
   int retval(_pending_events);
@@ -230,7 +235,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
       status->ctime = ss->last_check;
       status->index_id = index_id;
       status->interval
-        = static_cast<unsigned int>(ss->check_interval * 60);
+        = static_cast<unsigned int>(ss->check_interval * _interval_length);
       status->is_for_rebuild = false;
       status->rrd_len = rrd_len;
       status->state = ss->last_hard_state;
@@ -280,21 +285,12 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
 
           if (_store_in_db) {
             // Append perfdata to queue.
-            _data_bin_insert.bind_value(":metric_id", metric_id);
-            _data_bin_insert.bind_value(
-              ":ctime",
-              static_cast<long long>(ss->last_check.get_time_t()));
-            _data_bin_insert.bind_value(":status", ss->current_state + 1);
-            QVariant value;
-            if (isinf(pd.value()))
-              value = (pd.value() < 0.0) ? -FLT_MAX : FLT_MAX;
-            else if (isnan(pd.value()))
-              value= QVariant(QVariant::Double);
-            else
-              value = pd.value();
-            _data_bin_insert.bind_value(":value", pd.value());
-            _data_bin_insert.run_statement(
-              "storage: cannot insert performance data");
+            metric_value val;
+            val.c_time = ss->last_check;
+            val.metric_id = metric_id;
+            val.status = ss->current_state;
+            val.value = pd.value();
+            _perfdata_queue.push_back(val);
           }
 
           if (!index_locked && !metric_locked) {
@@ -303,7 +299,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
               perf(new storage::metric);
             perf->ctime = ss->last_check;
             perf->interval
-              = static_cast<unsigned int>(ss->check_interval * 60);
+              = static_cast<unsigned int>(ss->check_interval * _interval_length);
             perf->is_for_rebuild = false;
             perf->metric_id = metric_id;
             perf->name = pd.name();
@@ -329,6 +325,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
     << "storage: " << _pending_events << " have not yet been acknowledged";
   if (_db.committed()) {
     _db.clear_committed_flag();
+    _insert_perfdatas();
     int retval(_pending_events);
     _pending_events = 0;
     return (retval);
@@ -911,6 +908,64 @@ unsigned int stream::_find_metric_id(
 }
 
 /**
+ *  Insert performance data entries in the data_bin table.
+ */
+void stream::_insert_perfdatas() {
+  if (!_perfdata_queue.empty()) {
+    // Status.
+    _update_status("status=inserting performance data\n");
+
+    // Database schema version.
+    bool db_v2(_db.schema_version() == database::v2);
+
+    // Insert first entry.
+    std::ostringstream query;
+    {
+      metric_value& mv(_perfdata_queue.front());
+      query.precision(10);
+      query << std::scientific
+            << "INSERT INTO " << (db_v2 ? "data_bin" : "log_data_bin")
+            << "  (" << (db_v2 ? "id_metric" : "metric_id")
+            << "   , ctime, status, value)"
+               "  VALUES (" << mv.metric_id << ", " << mv.c_time << ", "
+            << mv.status << ", '";
+      if (isinf(mv.value))
+        query << ((mv.value < 0.0) ? -FLT_MAX : FLT_MAX);
+      else if (isnan(mv.value))
+        query << "NULL";
+      else
+        query << mv.value;
+      query << "')";
+      _perfdata_queue.pop_front();
+    }
+
+    // Insert perfdata in data_bin.
+    while (!_perfdata_queue.empty()) {
+      metric_value& mv(_perfdata_queue.front());
+      query << ", (" << mv.metric_id << ", " << mv.c_time << ", "
+            << mv.status << ", ";
+      if (isinf(mv.value))
+        query << ((mv.value < 0.0) ? -FLT_MAX : FLT_MAX);
+      else if (isnan(mv.value))
+        query << "NULL";
+      else
+        query << mv.value;
+      query << ")";
+      _perfdata_queue.pop_front();
+    }
+
+    // Execute query.
+    database_query q(_db);
+    q.run_query(
+        query.str(),
+        "storage: could not insert data in log_data_bin");
+    _update_status("");
+  }
+
+  return ;
+}
+
+/**
  *  Prepare queries.
  */
 void stream::_prepare() {
@@ -920,38 +975,24 @@ void stream::_prepare() {
   // Database schema version.
   bool db_v2(_db.schema_version() == database::v2);
 
-  // Prepare data_bin insertion query.
-  {
-    std::ostringstream query;
-    query << "INSERT INTO " << (db_v2 ? "data_bin" : "log_data_bin")
-          << "  (" << (db_v2 ? "id_metric" : "metric_id")
-          << "   , ctime, status, value)"
-          << "  VALUES (:metric_id, :ctime, :status, :value)";
-    _data_bin_insert.prepare(
-      query.str(),
-      "storage: could not prepare performance data insertion query");
-  }
-
   // Prepare metrics update query.
-  {
-    std::ostringstream query;
-    query << "UPDATE " << (db_v2 ? "metrics" : "rt_metrics")
-          << " SET unit_name=:unit_name,"
-             "     warn=:warn,"
-             "     warn_low=:warn_low,"
-             "     warn_threshold_mode=:warn_threshold_mode,"
-             "     crit=:crit,"
-             "     crit_low=:crit_low,"
-             "     crit_threshold_mode=:crit_threshold_mode,"
-             "     min=:min,"
-             "     max=:max,"
-             "     current_value=:current_value"
-             "  WHERE index_id=:index_id"
-             "    AND metric_name=:metric_name";
-    _update_metrics.prepare(
-      query.str(),
-      "storage: could not prepare metrics update query");
-  }
+  std::ostringstream query;
+  query << "UPDATE " << (db_v2 ? "metrics" : "rt_metrics")
+        << " SET unit_name=:unit_name,"
+           "     warn=:warn,"
+           "     warn_low=:warn_low,"
+           "     warn_threshold_mode=:warn_threshold_mode,"
+           "     crit=:crit,"
+           "     crit_low=:crit_low,"
+           "     crit_threshold_mode=:crit_threshold_mode,"
+           "     min=:min,"
+           "     max=:max,"
+           "     current_value=:current_value"
+           "  WHERE index_id=:index_id"
+           "    AND metric_name=:metric_name";
+  _update_metrics.prepare(
+    query.str(),
+    "storage: could not prepare metrics update query");
 
   return ;
 }

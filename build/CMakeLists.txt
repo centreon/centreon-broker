@@ -33,7 +33,7 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 # Version.
 set(CENTREON_BROKER_MAJOR 3)
 set(CENTREON_BROKER_MINOR 0)
-set(CENTREON_BROKER_PATCH 8)
+set(CENTREON_BROKER_PATCH 11)
 set(CENTREON_BROKER_VERSION "${CENTREON_BROKER_MAJOR}.${CENTREON_BROKER_MINOR}.${CENTREON_BROKER_PATCH}")
 add_definitions(-DCENTREON_BROKER_VERSION=\"${CENTREON_BROKER_VERSION}\")
 configure_file(
@@ -48,6 +48,10 @@ configure_file(
 
 # Find Qt.
 find_package(Qt4 4.7.4 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
+
+# Find zlib.
+find_package(ZLIB REQUIRED)
+
 include(${QT_USE_FILE})
 set(QT_VERSION "${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
 if (("${QT_VERSION}" VERSION_EQUAL "4.7.0")
@@ -139,6 +143,14 @@ if (WITH_GROUP)
 else ()
   set(GROUP "root")
 endif ()
+
+# Code coverage on unit tests
+option(WITH_COVERAGE "Add code coverage on unit tests." OFF)
+if (WITH_TESTING AND WITH_COVERAGE)
+  set(CMAKE_BUILD_TYPE "Debug")
+  include("CodeCoverage.cmake")
+  APPEND_COVERAGE_COMPILER_FLAGS()
+endif()
 
 # Set startup script to auto if not defined.
 if (NOT WITH_STARTUP_SCRIPT)
@@ -351,6 +363,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/compression/opener.cc"
   "${SRC_DIR}/compression/stack_array.cc"
   "${SRC_DIR}/compression/stream.cc"
+  "${SRC_DIR}/compression/zlib.cc"
   "${SRC_DIR}/config/applier/endpoint.cc"
   "${SRC_DIR}/config/applier/modules.cc"
   "${SRC_DIR}/config/applier/state.cc"
@@ -363,6 +376,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/database_preparator.cc"
   "${SRC_DIR}/database_query.cc"
   "${SRC_DIR}/exceptions/config.cc"
+  "${SRC_DIR}/exceptions/corruption.cc"
   "${SRC_DIR}/exceptions/interrupt.cc"
   "${SRC_DIR}/exceptions/msg.cc"
   "${SRC_DIR}/exceptions/shutdown.cc"
@@ -588,7 +602,7 @@ if (COMPILER_HAS_FPIC)
   set_property(TARGET "rokerbase"
     PROPERTY COMPILE_FLAGS "${ROKER_CXXFLAGS}")
 endif ()
-target_link_libraries("rokerbase" ${QT_LIBRARIES})
+target_link_libraries("rokerbase" ${ZLIB_LIBRARIES} ${QT_LIBRARIES})
 add_library("roker" STATIC
   "${SRC_DIR}/config/applier/init.cc"
   "${SRC_DIR}/config/applier/logger.cc")
@@ -1281,6 +1295,7 @@ include("package.cmake")
 # Enable testing.
 option(WITH_TESTING "Generate unit tests." OFF)
 if (WITH_TESTING)
+  enable_testing()
   add_subdirectory("tests")
 
   # Below are the older CTest-based unit tests.
@@ -1743,7 +1758,6 @@ if (WITH_TESTING)
   #   "${TEST_DIR}/bbdo/read.cc")
   # target_link_libraries("${TEST_NAME}" "roker")
   # add_test("${TEST_NAME}" "${TEST_NAME}")
-
 endif ()
 
 #
@@ -1779,6 +1793,11 @@ if (WITH_TESTING)
     message(STATUS "      - DB type                  ${DB_TYPE}")
   else ()
     message(STATUS "      - DB type                  none")
+  endif ()
+  if (WITH_COVERAGE)
+    message(STATUS "      - Code coverage            enabled")
+  else ()
+    message(STATUS "      - Code coverage            disabled")
   endif ()
 else ()
   message(STATUS "    - Unit tests                 disabled")

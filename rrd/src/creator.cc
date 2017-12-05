@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2016 Centreon
+** Copyright 2013-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -107,7 +107,8 @@ void creator::clear() {
  *  Create a RRD file if it does not exists.
  *
  *  @param[in] filename   Path to the RRD file.
- *  @param[in] length     Number of recording in the RRD file.
+ *  @param[in] length     Duration in seconds that the RRD file should
+ *                        retain.
  *  @param[in] from       Timestamp of the first record.
  *  @param[in] step       Specifies the base interval in seconds with
  *                        which data will be fed into the RRD.
@@ -123,7 +124,7 @@ void creator::create(
   if (!step)
     step = 5 * 60; // Default to every 5 minutes.
   if (!length)
-    length = 31 * 24 * 60 * 60 / step; // Default to one month long.
+    length = 31 * 24 * 60 * 60; // Default to one month long.
   tmpl_info info;
   info.length = length;
   info.step = step;
@@ -224,7 +225,8 @@ void creator::_duplicate(std::string const& filename, fd_info const& in_fd) {
  *  Open a RRD file and create it if it does not exists.
  *
  *  @param[in] filename   Path to the RRD file.
- *  @param[in] length     Number of recording in the RRD file.
+ *  @param[in] length     Duration in seconds that the RRD file should
+ *                        retain.
  *  @param[in] from       Timestamp of the first record.
  *  @param[in] step       Time interval between each record.
  *  @param[in] value_type Type of the metric.
@@ -246,48 +248,68 @@ void creator::_open(
   rrd_info_free(rrdinfo);
   */
 
-  // Set parameters.
-  std::ostringstream ds_oss;
-  std::ostringstream rra1_oss;
-  std::ostringstream rra2_oss;
-  ds_oss << "DS:value:";
-  switch (value_type) {
-  case storage::perfdata::absolute:
-    ds_oss << "ABSOLUTE";
-    break ;
-  case storage::perfdata::counter:
-    ds_oss << "COUNTER";
-    break ;
-  case storage::perfdata::derive:
-    ds_oss << "DERIVE";
-    break ;
-  default:
-    ds_oss << "GAUGE";
-  };
-  ds_oss << ":"<< step * 10 << ":U:U";
-  rra1_oss << "RRA:AVERAGE:0.5:1:" << length + 1;
-  rra2_oss << "RRA:AVERAGE:0.5:12:" << length / 12 + 1;
-  std::string ds(ds_oss.str());
-  std::string rra1(rra1_oss.str());
-  std::string rra2(rra2_oss.str());
+  //
+  // Set rrd_create_r() parameters array.
+  //
+
   char const* argv[5];
-  argv[0] = ds.c_str();
-  argv[1] = rra1.c_str();
-  argv[2] = rra2.c_str();
-  argv[3] = NULL;
+  int argc(0);
+
+  // DS.
+  std::string ds;
+  {
+    std::ostringstream oss;
+    oss << "DS:value:";
+    switch (value_type) {
+     case storage::perfdata::absolute:
+      oss << "ABSOLUTE";
+      break ;
+     case storage::perfdata::counter:
+      oss << "COUNTER";
+      break ;
+     case storage::perfdata::derive:
+      oss << "DERIVE";
+      break ;
+     default:
+      oss << "GAUGE";
+    };
+    oss << ":"<< step * 10 << ":U:U";
+    ds = oss.str();
+    argv[argc++] = ds.c_str();
+  }
+
+  // Base RRA.
+  std::string rra1;
+  {
+    std::ostringstream oss;
+    oss << "RRA:AVERAGE:0.5:" << step << ":" << length / step + 1;
+    rra1 = oss.str();
+    argv[argc++] = rra1.c_str();
+  }
+
+  // Aggregate RRA.
+  std::string rra2;
+  if (step < 3600) {
+    std::ostringstream oss;
+    oss << "RRA:AVERAGE:0.5:" << 3600 << ":" << length / 3600 + 1;
+    rra2 = oss.str();
+    argv[argc++] = rra2.c_str();
+  }
 
   // Debug message.
+  argv[argc] = NULL;
   logging::debug(logging::high) << "RRD: opening file '" << filename
-    << "' (" << argv[0] << ", " << argv[1] << ", " << argv[2]
-    << ", step " << step << ", from " << from << ")";
+    << "' (" << argv[0] << ", " << argv[1] << ", "
+    << (argv[2] ? argv[2] : "(null)") << ", step 1, from "
+    << from << ")";
 
   // Create RRD file.
   rrd_clear_error();
   if (rrd_create_r(
         filename.c_str(),
-        step,
+        1,
         from,
-        3,
+        argc,
         argv))
     throw (exceptions::open() << "RRD: could not create file '"
              << filename << "': " << rrd_get_error());

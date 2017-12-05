@@ -1,3 +1,100 @@
+======================
+Centreon Broker 3.0.11
+======================
+
+*********
+Bug fixes
+*********
+
+Properly build graphs when interval length is not default
+=========================================================
+
+The interval length property was always assumed to be 60 seconds. This
+prevented graphs to be correctly built when using the non-default
+interval length (usually 1 second).
+
+Do not crash when log files does not have correct permissions
+=============================================================
+
+Self explanatory.
+
+Rewrite compression/decompression functions
+===========================================
+
+Instead of using Qt's interface to compress/uncompress, Centreon Broker
+now uses zlib directly. This notably prevents crashes on CentOS 6 when
+uncompressing corrupted files.
+
+======================
+Centreon Broker 3.0.10
+======================
+
+*********
+Bug fixes
+*********
+
+Graph rebuild cancellation
+==========================
+
+In previous versions, Centreon Broker kept a cache of all hosts and
+services needed to be rebuilt. However such operations are slow and in
+some cases operators might want to cancel ongoing rebuild. In this
+version each host and service is treated individually. Therefore upon
+cancellation rebuild will stop after the current host or service has
+been rebuilt.
+
+Flag graphs when rebuilding
+===========================
+
+Flag graphs as rebuilding upon processing. This was caused by
+uncommitted SQL transactions.
+
+Properly process downtimes sent simultaneously on same host/service
+===================================================================
+
+Downtimes same at the same time on the same host/service where
+improperly processed and were not stored in database.
+
+Performance improvement for transaction-based endpoints
+=======================================================
+
+This fix reduces thread contention on a single mutex when using
+transactions. The two most typical cases are the real-time monitoring
+(SQL) and performance data graphing (storage) endpoints.
+
+=====================
+Centreon Broker 3.0.9
+=====================
+
+*********
+Bug fixes
+*********
+
+Restore multi-value insertion in data_bin
+=========================================
+
+In the 3.0.4 release of Centreon Broker, we introduced prepared
+statements for insertion in the data_bin and logs table. In large setups
+this change significantly reduced performances. For this reason we
+reverted the changes for the data_bin table and we are now using
+multi-values insertions.
+
+Fix downtime inheritance on multi-level BA trees
+================================================
+
+With the BAM module, downtime inheritance was not working properly on
+BA which had other BAs as KPIs.
+
+************
+Enhancements
+************
+
+Reduce RRD size
+===============
+
+The second RRA is now used to aggregate values by the hour, only if
+needed.
+
 =====================
 Centreon Broker 3.0.8
 =====================

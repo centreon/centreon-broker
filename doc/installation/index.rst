@@ -141,10 +141,17 @@ GnuTLS **(>= 2.8)**         gnutls-devel               Development files for gnu
 
    $ yum install gnutls-devel
 
-#. Add qt directory into the PATH environment variable ::
+#. Ensure that the qmake binary is in the PATH environment variable.
 
-   $ updatedb
-   $ export PATH="$PATH:$(dirname $(locate /bin/qmake | head -n 1))"
+   Depending on your Qt installation, qmake could already be available
+   or in a path like /usr/lib64/qt4/bin/.
+
+::
+
+   $ export PATH="$PATH:/usr/lib64/qt4/bin"
+   $ qmake --version # (or qmake-qt4 --version)
+   QMake version 2.01a
+   Using Qt version 4.8.7 in /usr/lib/x86_64-linux-gnu
 
 Debian/Ubuntu
 -------------
@@ -365,17 +372,16 @@ some of the following files.
 File                                         Description
 ============================================ ===========================
 ``${WITH_PREFIX_BIN}/cbd``                   Centreon Broker daemon.
+``${WITH_PREFIX_BIN}/cbwd``                  Centreon Broker watchdog.
 ``${WITH_PREFIX_LIB}/cbmod.so``              Centreon Broker NEB module.
+``${WITH_PREFIX_MODULES}/05-dumper.so``      Dumper module.
 ``${WITH_PREFIX_MODULES}/10-neb.so``         NEB module.
-``${WITH_PREFIX_MODULES}/20-correlation.so`` Correlation module.
+``${WITH_PREFIX_MODULES}/15-stats.so``       Statistics module.
+``${WITH_PREFIX_MODULES}/20-bam.so``         Centreon Broker BAM module.
 ``${WITH_PREFIX_MODULES}/20-storage.so``     Storage module.
-``${WITH_PREFIX_MODULES}/50-file.so``        File module.
-``${WITH_PREFIX_MODULES}/50-local.so``       Local module.
+``${WITH_PREFIX_MODULES}/30-correlation.so`` Correlation module.
 ``${WITH_PREFIX_MODULES}/50-tcp.so``         TCP module.
-``${WITH_PREFIX_MODULES}/60-compression.so`` Compression module.
 ``${WITH_PREFIX_MODULES}/60-tls.so``         TLS (encryption) module.
 ``${WITH_PREFIX_MODULES}/70-rrd.so``         RRD module.
-``${WITH_PREFIX_MODULES}/80-bbdo.so``        BBDO module.
-``${WITH_PREFIX_MODULES}/80-ndo.so``         NDO module.
 ``${WITH_PREFIX_MODULES}/80-sql.so``         SQL module.
 ============================================ ===========================

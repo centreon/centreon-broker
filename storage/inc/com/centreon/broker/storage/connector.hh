@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ namespace           storage {
     void            connect_to(
                       database_config const& db_cfg,
                       unsigned int rrd_len,
+                      unsigned int interval_length,
                       unsigned int rebuild_check_interval,
                       bool store_in_data_bin = true,
                       bool insert_in_index_data = false);
@@ -53,6 +54,7 @@ namespace           storage {
 
     database_config _db_cfg;
     bool            _insert_in_index_data;
+    unsigned int    _interval_length;
     unsigned int    _rebuild_check_interval;
     unsigned int    _rrd_len;
     bool            _store_in_data_bin;

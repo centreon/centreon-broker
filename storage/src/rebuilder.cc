@@ -1,5 +1,5 @@
 /*
-** Copyright 2012-2015 Centreon
+** Copyright 2012-2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -36,20 +36,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
-// Local types.
-struct index_info {
-  unsigned int index_id;
-  unsigned int host_id;
-  unsigned int service_id;
-  unsigned int rrd_retention;
-};
-
-struct metric_info {
-  unsigned int metric_id;
-  QString metric_name;
-  short metric_type;
-};
-
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -63,15 +49,20 @@ struct metric_info {
  *  @param[in] rebuild_check_interval  How often the rebuild thread will
  *                                     check for rebuild.
  *  @param[in] rrd_length              Length of RRD files.
+ *  @param[in] interval_length         Length in seconds of a time unit.
  */
 rebuilder::rebuilder(
              database_config const& db_cfg,
              unsigned int rebuild_check_interval,
-             unsigned int rrd_length)
+             unsigned int rrd_length,
+             unsigned int interval_length)
   : _db_cfg(db_cfg),
-    _interval(rebuild_check_interval),
+    _interval_length(interval_length),
+    _rebuild_check_interval(rebuild_check_interval),
     _rrd_len(rrd_length),
-    _should_exit(false) {}
+    _should_exit(false) {
+  _db_cfg.set_queries_per_transaction(1);
+}
 
 /**
  *  Destructor.
@@ -91,8 +82,8 @@ void rebuilder::exit() throw () {
  *
  *  @return Rebuild check interval in seconds.
  */
-unsigned int rebuilder::get_interval() const throw () {
-  return (_interval);
+unsigned int rebuilder::get_rebuild_check_interval() const throw () {
+  return (_rebuild_check_interval);
 }
 
 /**
@@ -108,7 +99,7 @@ unsigned int rebuilder::get_rrd_length() const throw () {
  *  Thread entry point.
  */
 void rebuilder::run() {
-  while (!_should_exit && _interval) {
+  while (!_should_exit && _rebuild_check_interval) {
     try {
       // Open DB.
       std::auto_ptr<database> db;
@@ -125,34 +116,9 @@ void rebuilder::run() {
       bool db_v2(db->schema_version() == database::v2);
 
       // Fetch index to rebuild.
-      std::list<index_info> index_to_rebuild;
-      {
-        std::ostringstream query;
-        query << "SELECT " << (db_v2 ? "id" : "index_id")
-              << "       , host_id, service_id, rrd_retention"
-                 "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
-              << "  WHERE must_be_rebuild=" << (db_v2 ? "'1'" : "1");
-        database_query index_to_rebuild_query(*db);
-        index_to_rebuild_query.run_query(
-          query.str(),
-          "storage: rebuilder: could not fetch index to rebuild");
-        while (!_should_exit && index_to_rebuild_query.next()) {
-          index_info info;
-          info.index_id = index_to_rebuild_query.value(0).toUInt();
-          info.host_id = index_to_rebuild_query.value(1).toUInt();
-          info.service_id = index_to_rebuild_query.value(2).toUInt();
-          info.rrd_retention
-            = (index_to_rebuild_query.value(3).isNull()
-               ? 0
-               : index_to_rebuild_query.value(3).toUInt());
-          if (!info.rrd_retention)
-            info.rrd_retention = _rrd_len;
-          index_to_rebuild.push_back(info);
-        }
-      }
-
-      // Browse list of index to rebuild.
-      while (!_should_exit && !index_to_rebuild.empty()) {
+      index_info info;
+      _next_index_to_rebuild(info, *db);
+      while (!_should_exit && info.index_id) {
         // Get check interval of host/service.
         unsigned int index_id;
         unsigned int host_id;
@@ -160,12 +126,10 @@ void rebuilder::run() {
         unsigned int check_interval(0);
         unsigned int rrd_len;
         {
-          index_info info(index_to_rebuild.front());
           index_id = info.index_id;
           host_id = info.host_id;
           service_id = info.service_id;
           rrd_len = info.rrd_retention;
-          index_to_rebuild.pop_front();
 
           std::ostringstream oss;
           if (!info.service_id)
@@ -182,7 +146,7 @@ void rebuilder::run() {
           if (query.next())
             check_interval = (query.value(0).isNull()
                               ? 0.0
-                              : query.value(0).toDouble()) * 60;
+                              : query.value(0).toDouble()) * _interval_length;
           if (!check_interval)
             check_interval = 5 * 60;
         }
@@ -252,6 +216,9 @@ void rebuilder::run() {
         // Set index as rebuilt or to-be-rebuild
         // if we were interrupted.
         _set_index_rebuild(*db, index_id, (_should_exit ? 1 : 0));
+
+        // Get next index to rebuild.
+        _next_index_to_rebuild(info, *db);
       }
     }
     catch (std::exception const& e) {
@@ -263,7 +230,7 @@ void rebuilder::run() {
     }
 
     // Sleep a while.
-    time_t target(time(NULL) + _interval);
+    time_t target(time(NULL) + _rebuild_check_interval);
     while (!_should_exit && (target > time(NULL)))
       sleep(1);
   }
@@ -275,6 +242,41 @@ void rebuilder::run() {
 *           Private Methods           *
 *                                     *
 **************************************/
+
+/**
+ *  Get next index to rebuild.
+ *
+ *  @param[out] info  Information about the next index to rebuild.
+ *                    Zero'd if no index is waiting for rebuild.
+ *  @param[in]  db    Database object.
+ */
+void rebuilder::_next_index_to_rebuild(index_info& info, database& db) {
+  bool db_v2(db.schema_version() == database::v2);
+  std::ostringstream query;
+  query << "SELECT " << (db_v2 ? "id" : "index_id")
+        << "       , host_id, service_id, rrd_retention"
+           "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
+        << "  WHERE must_be_rebuild=" << (db_v2 ? "'1'" : "1")
+        << "  LIMIT 1";
+  database_query index_to_rebuild_query(db);
+  index_to_rebuild_query.run_query(
+    query.str(),
+    "storage: rebuilder: could not fetch index to rebuild");
+  if (index_to_rebuild_query.next()) {
+    info.index_id = index_to_rebuild_query.value(0).toUInt();
+    info.host_id = index_to_rebuild_query.value(1).toUInt();
+    info.service_id = index_to_rebuild_query.value(2).toUInt();
+    info.rrd_retention
+      = (index_to_rebuild_query.value(3).isNull()
+         ? 0
+         : index_to_rebuild_query.value(3).toUInt());
+    if (!info.rrd_retention)
+      info.rrd_retention = _rrd_len;
+  }
+  else
+    memset(&info, 0, sizeof(info));
+  return ;
+}
 
 /**
  *  Rebuild a metric.

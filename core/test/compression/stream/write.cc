@@ -93,6 +93,23 @@ TEST_F(CompressionStreamWrite, Returns1WithInterleavedRead) {
   ASSERT_EQ(retval, 1);
 }
 
+// Given an compression stream
+// And write() is called with no data
+// When flush() is called
+// Then nothing is written
+TEST_F(CompressionStreamWrite, CompressNothing) {
+  // Given
+  misc::shared_ptr<io::raw> r(new io::raw);
+  _stream->write(r);
+
+  // When
+  _stream->flush();
+
+  // Then
+  misc::shared_ptr<io::data> d;
+  ASSERT_THROW(_substream->read(d), exceptions::msg);
+}
+
 // Given a compression stream
 // And write() is called with a data payload
 // When flush() is called

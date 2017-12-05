@@ -34,9 +34,12 @@ add_executable("ut"
   "${TESTS_DIR}/compression/stream/memory_stream.hh"
   "${TESTS_DIR}/compression/stream/read.cc"
   "${TESTS_DIR}/compression/stream/write.cc"
+  "${TESTS_DIR}/compression/zlib/zlib.cc"
   "${TESTS_DIR}/exceptions/msg/default.cc"
   "${TESTS_DIR}/file/splitter/default.cc"
+  "${TESTS_DIR}/file/splitter/concurrent.cc"
   "${TESTS_DIR}/file/splitter/more_than_max_size.cc"
+  "${TESTS_DIR}/file/splitter/permission_denied.cc"
   "${TESTS_DIR}/file/splitter/resume.cc"
   "${TESTS_DIR}/file/splitter/split.cc"
   "${TESTS_DIR}/file/test_file.hh"
@@ -48,3 +51,14 @@ add_executable("ut"
   ${TESTS_SOURCES}
 )
 target_link_libraries("ut" "gtest" ${TESTS_LIBRARIES} ${NEB} "rokerbase" "roker")
+
+add_test(NAME tests COMMAND ut)
+
+if (WITH_COVERAGE)
+  set(COVERAGE_EXCLUDES '${PROJECT_BINARY_DIR}/tests/*' '*/test/*')
+  SETUP_TARGET_FOR_COVERAGE(
+      NAME test-coverage
+      EXECUTABLE ut
+      DEPENDENCIES ut
+  )
+endif ()
