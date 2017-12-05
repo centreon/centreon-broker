@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <typeinfo>
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/influxdb/line_protocol_query.hh"
@@ -453,7 +454,15 @@ void line_protocol_query::_throw_on_invalid(data_type macro_type) {
  */
 template <typename T, typename U, T (U::*member)>
 void line_protocol_query::_get_member(io::data const& d, std::ostream& is) {
-  is << static_cast<U const&>(d).*member;
+  if (typeid(T) == typeid(double)) {
+    std::stringstream ss;
+    ss.precision(10);
+    ss << std::scientific;
+    ss << static_cast<U const&>(d).*member;
+    is << ss.str();
+  } else {
+    is << static_cast<U const&>(d).*member;
+  }
   return ;
 }
 
