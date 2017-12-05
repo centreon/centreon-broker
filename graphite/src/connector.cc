@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2015,2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -71,12 +71,14 @@ connector& connector::operator=(connector const& other) {
 void connector::connect_to(
                   std::string const& metric_naming,
                   std::string const& status_naming,
+                  std::string const& escape_string,
                   std::string const& db_user,
                   std::string const& db_passwd,
                   std::string const& db_addr,
                   unsigned short db_port,
                   unsigned int queries_per_transaction,
                   misc::shared_ptr<persistent_cache> const& cache) {
+  _escape_string = escape_string;
   _metric_naming = metric_naming;
   _status_naming = status_naming;
   _user = db_user;
@@ -98,6 +100,7 @@ misc::shared_ptr<io::stream> connector::open() {
             new stream(
                   _metric_naming,
                   _status_naming,
+                  _escape_string,
                   _user,
                   _password,
                   _addr,
@@ -118,6 +121,7 @@ misc::shared_ptr<io::stream> connector::open() {
  *  @param[in] other  Object to copy.
  */
 void connector::_internal_copy(connector const& other) {
+  _escape_string = other._escape_string;
   _metric_naming = other._metric_naming;
   _status_naming = other._status_naming;
   _user = other._user;

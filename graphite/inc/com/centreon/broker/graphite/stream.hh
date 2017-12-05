@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2015-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ namespace          graphite {
                    stream(
                      std::string const& metric_naming,
                      std::string const& status_naming,
+                     std::string const& escape_string,
                      std::string const& db_user,
                      std::string const& db_password,
                      std::string const& db_host,

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2015-2017 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -35,29 +35,35 @@ std::ostream& operator<<(std::ostream& in, QString const& string) {
  *  Constructor.
  *
  *  @param[in] naming_scheme  The naming scheme to use.
+ *  @param[in] escape_string  String used to escape special chars
+ *                            (especially dot).
  *  @param[in] type           The type of the query: metric or status.
  *  @param[in] cache          The macro cache.
  */
 query::query(
         std::string const& naming_scheme,
+        std::string const& escape_string,
         data_type type,
-        macro_cache const& cache) :
-  _naming_scheme_index(0),
-  _type(type),
-  _cache(&cache) {
+        macro_cache const& cache)
+  : _escape_string(escape_string),
+    _naming_scheme_index(0),
+    _type(type),
+    _cache(&cache) {
   _compile_naming_scheme(naming_scheme, type);
 }
 
 /**
  *  Copy operator.
  *
- *  @param[in] q  The object to copy.
+ *  @param[in] other  The object to copy.
  */
-query::query(query const& q)
-  : _compiled_naming_scheme(q._compiled_naming_scheme),
-    _compiled_getters(q._compiled_getters),
-    _type(q._type),
-    _cache(q._cache){}
+query::query(query const& other)
+  : _compiled_naming_scheme(other._compiled_naming_scheme),
+    _compiled_getters(other._compiled_getters),
+    _escape_string(other._escape_string),
+    _naming_scheme_index(other._naming_scheme_index),
+    _type(other._type),
+    _cache(other._cache){}
 
 /**
  *  Destructor
@@ -67,16 +73,18 @@ query::~query() {}
 /**
  *  Assignment operator.
  *
- *  @param[in] q  The object to copy.
+ *  @param[in] other  The object to copy.
  *
  *  @return       A reference to this object.
  */
-query& query::operator=(query const& q) {
-  if (this != &q) {
-    _compiled_naming_scheme = q._compiled_naming_scheme;
-    _compiled_getters = q._compiled_getters;
-    _type = q._type;
-    _cache = q._cache;
+query& query::operator=(query const& other) {
+  if (this != &other) {
+    _compiled_naming_scheme = other._compiled_naming_scheme;
+    _compiled_getters = other._compiled_getters;
+    _escape_string = other._escape_string;
+    _naming_scheme_index = other._naming_scheme_index;
+    _type = other._type;
+    _cache = other._cache;
   }
   return (*this);
 }
@@ -218,7 +226,7 @@ void query::_compile_naming_scheme(
     else if (macro == "$METRIC$") {
       _throw_on_invalid(metric);
       _compiled_getters.push_back(
-        &query::_get_member<QString, storage::metric, &storage::metric::name>);
+        &query::_get_string_member<storage::metric, &storage::metric::name>);
     }
     else if (macro == "$INDEXID$") {
       _compiled_getters.push_back(
@@ -239,6 +247,18 @@ void query::_compile_naming_scheme(
 }
 
 /**
+ *  Escape data string.
+ *
+ *  @param[in] str  Base string.
+ *
+ *  @return Escaped string.
+ */
+QString query::_escape(QString const& str) {
+  QString retval(str);
+  return (retval.replace('.', _escape_string.c_str()));
+}
+
+/**
  *  Throw on invalid macro type.
  *
  *  @param[in] macro_type  The macro type;
@@ -256,12 +276,25 @@ void query::_throw_on_invalid(data_type macro_type) {
 /**
  *  Get a member of the data.
  *
- *  @param[in] d    The data.
+ *  @param[in]  d   The data.
  *  @param[out] is  The stream.
  */
 template <typename T, typename U, T (U::*member)>
 void query::_get_member(io::data const& d, std::ostream& is) {
-  is << static_cast<U const&>(d).*member;
+  is << static_cast<U const*>(&d)->*member;
+  return ;
+}
+
+/**
+ *  Get a string data member.
+ *
+ *  @param[in]  d   The data.
+ *  @param[out] is  The stream.
+ */
+template <typename U, QString (U::*member)>
+void query::_get_string_member(io::data const& d, std::ostream& is) {
+  is << _escape(static_cast<U const*>(&d)->*member);
+  return ;
 }
 
 /**
@@ -284,6 +317,7 @@ void query::_get_string(io::data const& d, std::ostream& is) {
 void query::_get_null(io::data const& d, std::ostream& is) {
   (void)d;
   (void)is;
+  return ;
 }
 
 /**
@@ -322,6 +356,7 @@ unsigned int query::_get_index_id(io::data const& d) {
  */
 void query::_get_index_id(io::data const& d, std::ostream& is) {
   is << _get_index_id(d);
+  return ;
 }
 
 /**
@@ -331,8 +366,10 @@ void query::_get_index_id(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void query::_get_host(io::data const& d, std::ostream& is) {
-  unsigned int index_id = _get_index_id(d);
-  is << _cache->get_host_name(_cache->get_index_mapping(index_id).host_id);
+  unsigned int index_id(_get_index_id(d));
+  is << _escape(_cache->get_host_name(
+                  _cache->get_index_mapping(index_id).host_id));
+  return ;
 }
 
 /**
@@ -342,8 +379,9 @@ void query::_get_host(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void query::_get_host_id(io::data const& d, std::ostream& is) {
-  unsigned int index_id = _get_index_id(d);
+  unsigned int index_id(_get_index_id(d));
   is << _cache->get_index_mapping(index_id).host_id;
+  return ;
 }
 
 /**
@@ -355,7 +393,10 @@ void query::_get_host_id(io::data const& d, std::ostream& is) {
 void query::_get_service(io::data const& d, std::ostream& is) {
   unsigned int index_id = _get_index_id(d);
   storage::index_mapping const& stm = _cache->get_index_mapping(index_id);
-  is << _cache->get_service_description(stm.host_id, stm.service_id);
+  is << _escape(_cache->get_service_description(
+                  stm.host_id,
+                  stm.service_id));
+  return ;
 }
 
 /**
@@ -365,8 +406,9 @@ void query::_get_service(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void query::_get_service_id(io::data const& d, std::ostream& is) {
-  unsigned int index_id = _get_index_id(d);
+  unsigned int index_id(_get_index_id(d));
   is << _cache->get_index_mapping(index_id).service_id;
+  return ;
 }
 
 /**
@@ -376,5 +418,6 @@ void query::_get_service_id(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void query::_get_instance(io::data const& d, std::ostream& is) {
-  is << _cache->get_instance(d.source_id);
+  is << _escape(_cache->get_instance(d.source_id));
+  return ;
 }
