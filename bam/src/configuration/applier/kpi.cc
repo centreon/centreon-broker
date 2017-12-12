@@ -176,51 +176,84 @@ void applier::kpi::apply(
         << "BAM: could not create KPI " << it->first << ": "
         << e.what();
 
-      // Set KPI as invalid.
-      {
-        misc::shared_ptr<kpi_status> ks(new kpi_status);
-        ks->kpi_id = it->first;
-        ks->state_hard = 3;
-        ks->state_soft = 3;
-        ks->level_acknowledgement_hard = 0.0;
-        ks->level_acknowledgement_soft = 0.0;
-        ks->level_downtime_hard = 0.0;
-        ks->level_downtime_soft = 0.0;
-        ks->level_nominal_hard = 0.0;
-        ks->level_nominal_soft = 0.0;
-        ks->last_state_change = time(NULL);
-        ks->valid = false;
-        multiplexing::publisher().write(ks);
-      }
-
-      // Right now we have an invalid KPI targeting a BA. To avoid
-      // computation errors we now have to remove all KPIs that are
-      // targeting this same BA and that are already applied. Eventual
-      // remaining KPIs that are targeting the BA will be discarded
-      // because the BA won't be found. The BA object will remain
-      // applied.
-
-      // Remove KPIs linked to BA of this KPI.
-      for (std::map<unsigned int, applied>::const_iterator
-             kpi_it(_applied.begin()),
-             kpi_end(_applied.end());
-           kpi_it != kpi_end;) {
-        if (kpi_it->second.cfg.get_ba_id() == it->second.get_ba_id()) {
-          unsigned int kpi_id(kpi_it->first);
-          ++kpi_it;
-          _remove_kpi(kpi_id);
-        }
-        else
-          ++kpi_it;
-      }
-
-      // Set BA as invalid.
-      misc::shared_ptr<bam::ba>
-        my_ba(_bas->find_ba(it->second.get_ba_id()));
-      if (!my_ba.isNull())
-        my_ba->set_valid(false);
+      _invalidate_ba(it->second);
     }
   }
+
+  //
+  // OBJECT RESOLUTION
+  //
+  for (std::map<unsigned int, applied>::const_iterator
+         kpi_it(_applied.begin()),
+         kpi_end(_applied.end());
+       kpi_it != kpi_end; ++kpi_it) {
+    configuration::kpi const& cfg(kpi_it->second.cfg);
+    misc::shared_ptr<bam::kpi> my_kpi(kpi_it->second.obj);
+    try {
+      _resolve_kpi(cfg, my_kpi);
+    }
+    catch (exceptions::config const& e) {
+      // Log message.
+      logging::error(logging::high)
+        << "BAM: could not resolve KPI " << cfg.get_id() << ": "
+        << e.what();
+
+      _invalidate_ba(cfg);
+    }
+  }
+
+  return ;
+}
+
+/**
+ *  Invalidates the ba associated to the kpi and also removes this kpi.
+ *
+ *  @param kpi The Kpi configuration.
+ */
+void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
+  // Set KPI as invalid.
+  {
+    misc::shared_ptr<kpi_status> ks(new kpi_status);
+    ks->kpi_id = kpi.get_id();
+    ks->state_hard = 3;
+    ks->state_soft = 3;
+    ks->level_acknowledgement_hard = 0.0;
+    ks->level_acknowledgement_soft = 0.0;
+    ks->level_downtime_hard = 0.0;
+    ks->level_downtime_soft = 0.0;
+    ks->level_nominal_hard = 0.0;
+    ks->level_nominal_soft = 0.0;
+    ks->last_state_change = time(NULL);
+    ks->valid = false;
+    multiplexing::publisher().write(ks);
+  }
+
+  // Right now we have an invalid KPI targeting a BA. To avoid
+  // computation errors we now have to remove all KPIs that are
+  // targeting this same BA and that are already applied. Eventual
+  // remaining KPIs that are targeting the BA will be discarded
+  // because the BA won't be found. The BA object will remain
+  // applied.
+
+  // Remove KPIs linked to BA of this KPI.
+  for (std::map<unsigned int, applied>::const_iterator
+         kpi_it(_applied.begin()),
+         kpi_end(_applied.end());
+       kpi_it != kpi_end;) {
+    if (kpi_it->second.cfg.get_ba_id() == kpi.get_ba_id()) {
+      unsigned int kpi_id(kpi_it->first);
+      ++kpi_it;
+      _remove_kpi(kpi_id);
+    }
+    else
+      ++kpi_it;
+  }
+
+  // Set BA as invalid.
+  misc::shared_ptr<bam::ba>
+    my_ba(_bas->find_ba(kpi.get_ba_id()));
+  if (!my_ba.isNull())
+    my_ba->set_valid(false);
 
   return ;
 }
@@ -264,13 +297,6 @@ void applier::kpi::_internal_copy(applier::kpi const& other) {
  */
 misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
                                            configuration::kpi const& cfg) {
-  // Find target BA.
-  misc::shared_ptr<bam::ba>
-    my_ba(_bas->find_ba(cfg.get_ba_id()));
-  if (my_ba.isNull())
-    throw (exceptions::config()
-           << "target BA " << cfg.get_ba_id() << " does not exist");
-
   // Create KPI according to its type.
   misc::shared_ptr<bam::kpi> my_kpi;
   if (cfg.is_service()) {
@@ -288,8 +314,8 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     obj->set_service_id(cfg.get_service_id());
     obj->set_state_hard(cfg.get_status());
     obj->set_state_type(cfg.get_state_type());
-    my_kpi = obj.staticCast<bam::kpi>();
     _book->listen(cfg.get_host_id(), cfg.get_service_id(), obj.data());
+    my_kpi = obj.staticCast<bam::kpi>();
   }
   else if (cfg.is_ba()) {
     logging::config(logging::medium)
@@ -299,30 +325,15 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     misc::shared_ptr<bam::kpi_ba> obj(new bam::kpi_ba);
     obj->set_impact_critical(cfg.get_impact_critical());
     obj->set_impact_warning(cfg.get_impact_warning());
-    misc::shared_ptr<bam::ba>
-      target(_bas->find_ba(cfg.get_indicator_ba_id()));
-    if (target.isNull())
-      throw (exceptions::config() << "could not find source BA "
-             << cfg.get_indicator_ba_id());
-    obj->link_ba(target);
-    target->add_parent(obj.staticCast<bam::computable>());
     my_kpi = obj.staticCast<bam::kpi>();
   }
   else if (cfg.is_meta()) {
+    misc::shared_ptr<bam::kpi_meta> obj(new bam::kpi_meta);
     logging::config(logging::medium)
       << "BAM: creating new KPI " << cfg.get_id() << " of meta-service "
       << cfg.get_meta_id() << " impacting BA " << cfg.get_ba_id();
-    misc::shared_ptr<bam::kpi_meta> obj(new bam::kpi_meta);
     obj->set_impact_critical(cfg.get_impact_critical());
     obj->set_impact_warning(cfg.get_impact_warning());
-    misc::shared_ptr<bam::meta_service>
-      target(_metas->find_meta(cfg.get_meta_id()));
-    if (target.isNull())
-      throw (exceptions::config()
-             << "could not find source meta-service "
-             << cfg.get_meta_id());
-    obj->link_meta(target);
-    target->add_parent(obj.staticCast<bam::computable>());
     my_kpi = obj.staticCast<bam::kpi>();
   }
   else if (cfg.is_boolexp()) {
@@ -332,6 +343,62 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
       << " impacting BA " << cfg.get_ba_id();
     misc::shared_ptr<bam::kpi_boolexp> obj(new bam::kpi_boolexp);
     obj->set_impact(cfg.get_impact_critical());
+    my_kpi = obj.staticCast<bam::kpi>();
+  }
+  else
+    throw (exceptions::config() << "create KPI " << cfg.get_id()
+           << " is neither related to a service, nor a BA,"
+           << " nor a meta-service, nor a boolean expression");
+
+  my_kpi->set_id(cfg.get_id());
+
+  return (my_kpi);
+}
+
+/**
+ *  Associates the KPI to its targets (also BA)
+ *
+ * @param cfg The kpi configuration
+ * @param kpi The Kpi itself.
+ */
+void applier::kpi::_resolve_kpi(
+                     configuration::kpi const& cfg,
+                     misc::shared_ptr<bam::kpi> kpi) {
+
+  // Find target BA.
+  misc::shared_ptr<bam::ba>
+    my_ba(_bas->find_ba(cfg.get_ba_id()));
+  if (my_ba.isNull())
+    throw (exceptions::config()
+           << "target BA " << cfg.get_ba_id() << " does not exist");
+
+  if (cfg.is_ba()) {
+    misc::shared_ptr<bam::kpi_ba> obj(kpi.staticCast<bam::kpi_ba>());
+    misc::shared_ptr<bam::ba>
+      target(_bas->find_ba(cfg.get_indicator_ba_id()));
+    if (target.isNull())
+      throw (exceptions::config() << "could not find source BA "
+             << cfg.get_indicator_ba_id());
+    obj->link_ba(target);
+    target->add_parent(obj.staticCast<bam::computable>());
+    logging::config(logging::medium)
+      << "BAM: Resolve KPI " << kpi->get_id() << " connections to its BA";
+  }
+  else if (cfg.is_meta()) {
+    misc::shared_ptr<bam::kpi_meta> obj(kpi.staticCast<bam::kpi_meta>());
+    misc::shared_ptr<bam::meta_service>
+      target(_metas->find_meta(cfg.get_meta_id()));
+    if (target.isNull())
+      throw (exceptions::config()
+             << "could not find source meta-service "
+             << cfg.get_meta_id());
+    obj->link_meta(target);
+    target->add_parent(obj.staticCast<bam::computable>());
+    logging::config(logging::medium)
+      << "BAM: Resolve KPI " << kpi->get_id() << " connections to its meta-service";
+  }
+  else if (cfg.is_boolexp()) {
+    misc::shared_ptr<bam::kpi_boolexp> obj(kpi.staticCast<bam::kpi_boolexp>());
     misc::shared_ptr<bam::bool_expression>
       target(_boolexps->find_boolexp(cfg.get_boolexp_id()));
     if (target.isNull())
@@ -340,23 +407,16 @@ misc::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
              << cfg.get_boolexp_id());
     obj->link_boolexp(target);
     target->add_parent(obj.staticCast<bam::computable>());
-    my_kpi = obj.staticCast<bam::kpi>();
+    logging::config(logging::medium)
+      << "BAM: Resolve KPI " << kpi->get_id() << " connections to its boolean expression";
   }
-  else
-    throw (exceptions::config() << "create KPI " << cfg.get_id()
-           << " is neither related to a service, nor a BA,"
-           << " nor a meta-service, nor a boolean expression");
-
-  // Set common KPI parameters.
-  my_kpi->set_id(cfg.get_id());
-  if (cfg.get_opened_event().kpi_id != 0)
-    my_kpi->set_initial_event(cfg.get_opened_event());
 
   // Link KPI with BA.
-  my_ba->add_impact(my_kpi.staticCast<bam::kpi>());
-  my_kpi->add_parent(my_ba.staticCast<bam::computable>());
+  if (cfg.get_opened_event().kpi_id != 0)
+    kpi->set_initial_event(cfg.get_opened_event());
 
-  return (my_kpi);
+  my_ba->add_impact(kpi.staticCast<bam::kpi>());
+  kpi->add_parent(my_ba.staticCast<bam::computable>());
 }
 
 /**

@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/bam/kpi_event.hh"
 #include "com/centreon/broker/bam/internal.hh"
+#include "com/centreon/broker/bam/kpi_event.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
