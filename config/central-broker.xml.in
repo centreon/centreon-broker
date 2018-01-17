@@ -150,6 +150,7 @@
   <type>bam</type>
   <name>central-broker-bam-monitoring</name>
   <queries_per_transaction>1000</queries_per_transaction>
+  <command_file>/var/lib/centreon-engine/rw/centengine.cmd</command_file>
  </output>
 
  <!-- Compute and store reporting information on BAs and KPIs. -->
