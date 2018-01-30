@@ -1,4 +1,37 @@
 ======================
+Centreon Broker 3.0.12
+======================
+
+*********
+Bug fixes
+*********
+
+Escape dots in Graphite
+=======================
+
+Dot (.) is a special character in Graphite. For this reason it is now
+replaced by an underscore (_).
+
+Correct default connection port for InfluxDB
+============================================
+
+The default connection port used by InfluxDB endpoints was improperly
+set. Now its default value is set to 8086.
+
+Link checking in BAM boolean expressions
+========================================
+
+In some cases, BAM boolean expression can be improperly calculated
+because of missing links.
+
+Delete unused queue files
+=========================
+
+All TCP connections, even transient, use at least an (empty) queue file
+that remains on disk. Such files are now deleted on connection
+termination.
+
+======================
 Centreon Broker 3.0.11
 ======================
 
