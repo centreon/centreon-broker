@@ -21,6 +21,7 @@
 
 #  include <string>
 #  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 

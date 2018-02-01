@@ -694,6 +694,21 @@ if (WITH_MODULE_STORAGE)
   list(APPEND MODULE_LIST "storage")
 endif()
 
+# Lua module.
+option(WITH_MODULE_LUAGENERIC "Build luageneric module." ON)
+if (WITH_MODULE_LUAGENERIC)
+  foreach (vers "Lua" "Lua52" "Lua51")
+    find_package("${vers}")
+    if (DEFINED LUA_VERSION_STRING)
+      string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.[0-9]+" "\\1\\2" v "${LUA_VERSION_STRING}")
+      add_definitions("-DLUA${v}")
+      include_directories("${LUA_INCLUDE_DIR}")
+      add_subdirectory("luageneric")
+      break ()
+    endif ()
+  endforeach ()
+endif ()
+
 # Influxdb module.
 option(WITH_MODULE_INFLUXDB "Build influxdb module." ON)
 if (WITH_MODULE_INFLUXDB)

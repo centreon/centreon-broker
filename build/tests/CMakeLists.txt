@@ -23,6 +23,8 @@ add_subdirectory("googletest")
 # Include directories.
 include_directories("${PROJECT_SOURCE_DIR}/bam/inc")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
+include_directories("${PROJECT_SOURCE_DIR}/luageneric/inc")
+include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 
 # Unit test executable.
 add_executable("ut"
@@ -39,7 +41,6 @@ add_executable("ut"
   "${TESTS_DIR}/file/splitter/default.cc"
   "${TESTS_DIR}/file/splitter/concurrent.cc"
   "${TESTS_DIR}/file/splitter/more_than_max_size.cc"
-  # "${TESTS_DIR}/file/splitter/permission_denied.cc"
   "${TESTS_DIR}/file/splitter/resume.cc"
   "${TESTS_DIR}/file/splitter/split.cc"
   "${TESTS_DIR}/file/test_file.hh"
