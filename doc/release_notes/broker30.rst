@@ -1,4 +1,18 @@
 ======================
+Centreon Broker 3.0.13
+======================
+
+*********
+Bug fixes
+*********
+
+Fix default configuration file
+==============================
+
+Centreon Broker was not able to run right after its installation because
+of the sample configuration file being invalid.
+
+======================
 Centreon Broker 3.0.12
 ======================
 
