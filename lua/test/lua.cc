@@ -23,20 +23,20 @@
 #include <gtest/gtest.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/luageneric/luabinding.hh"
-#include "com/centreon/broker/luageneric/macro_cache.hh"
+#include "com/centreon/broker/lua/luabinding.hh"
+#include "com/centreon/broker/lua/macro_cache.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/persistent_cache.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::luageneric;
+using namespace com::centreon::broker::lua;
 
-#define FILE1 "luageneric/test1.lua"
-#define FILE2 "luageneric/test2.lua"
-#define FILE3 "luageneric/test3.lua"
-#define FILE4 "luageneric/socket.lua"
+#define FILE1 "lua/test1.lua"
+#define FILE2 "lua/test2.lua"
+#define FILE3 "lua/test3.lua"
+#define FILE4 "lua/socket.lua"
 
 class LuaGenericTest : public ::testing::Test {
  public:

@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_LUAGENERIC_BROKER_LOG_HH
-#  define CCB_LUAGENERIC_BROKER_LOG_HH
+#ifndef CCB_LUA_BROKER_LOG_HH
+#  define CCB_LUA_BROKER_LOG_HH
 
-#  include "com/centreon/broker/luageneric/luabinding.hh"
+#  include "com/centreon/broker/lua/luabinding.hh"
 
 extern "C" {
 #  include "lua.h"
@@ -29,9 +29,9 @@ extern "C" {
 
 CCB_BEGIN()
 
-namespace               luageneric {
+namespace               lua {
   /**
-   *  @class broker_log broker_log.hh "com/centreon/broker/luageneric/broker_log.hh"
+   *  @class broker_log broker_log.hh "com/centreon/broker/lua/broker_log.hh"
    *  @brief Class managing the Lua connector logs
    *
    *  This class manages the logs written from the Lua script.
@@ -59,4 +59,4 @@ namespace               luageneric {
 
 CCB_END()
 
-#endif // !CCB_LUAGENERIC_BROKER_LOG_HH
+#endif // !CCB_LUA_BROKER_LOG_HH

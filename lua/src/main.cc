@@ -19,8 +19,8 @@
 #include <iostream>
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/luageneric/factory.hh"
-#include "com/centreon/broker/luageneric/stream.hh"
+#include "com/centreon/broker/lua/factory.hh"
+#include "com/centreon/broker/lua/stream.hh"
 
 using namespace com::centreon::broker;
 
@@ -40,7 +40,7 @@ extern "C" {
     // Decrement instance number.
     if (!--instances) {
       // Unregister generic lua module.
-      io::protocols::instance().unreg("luageneric");
+      io::protocols::instance().unreg("lua");
     }
   }
 
@@ -56,12 +56,12 @@ extern "C" {
     if (!instances++) {
       // generic lua module.
       logging::info(logging::high)
-        << "luageneric: module for Centreon Broker "
+        << "lua: module for Centreon Broker "
         << CENTREON_BROKER_VERSION;
 
-      // Register luageneric layer.
-      io::protocols::instance().reg("luageneric",
-        luageneric::factory(),
+      // Register lua layer.
+      io::protocols::instance().reg("lua",
+        lua::factory(),
         1,
         7);
     }

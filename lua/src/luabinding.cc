@@ -19,14 +19,14 @@
 #include <fstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/luageneric/luabinding.hh"
-#include "com/centreon/broker/luageneric/broker_cache.hh"
-#include "com/centreon/broker/luageneric/broker_utils.hh"
-#include "com/centreon/broker/luageneric/broker_log.hh"
-#include "com/centreon/broker/luageneric/broker_socket.hh"
+#include "com/centreon/broker/lua/luabinding.hh"
+#include "com/centreon/broker/lua/broker_cache.hh"
+#include "com/centreon/broker/lua/broker_utils.hh"
+#include "com/centreon/broker/lua/broker_log.hh"
+#include "com/centreon/broker/lua/broker_socket.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::luageneric;
+using namespace com::centreon::broker::lua;
 
 /**
  *  Constructor.
@@ -45,7 +45,7 @@ luabinding::luabinding(
   _L = _load_interpreter();
 
   logging::debug(logging::medium)
-    << "luageneric: initializing the Lua virtual machine";
+    << "lua: initializing the Lua virtual machine";
 
   _load_script();
   _init_script(conf_params);
@@ -80,34 +80,34 @@ void luabinding::_load_script() {
   if (luaL_loadfile(_L, _lua_script.c_str()) != 0) {
     char const* error_msg(lua_tostring(_L, -1));
     throw exceptions::msg()
-      << "luageneric: '" << _lua_script << "' could not be loaded: "
+      << "lua: '" << _lua_script << "' could not be loaded: "
       << error_msg;
   }
 
   // Script compilation
   if (lua_pcall(_L, 0, 0, 0) != 0) {
     throw exceptions::msg()
-      << "luageneric: '" << _lua_script << "' could not be compiled";
+      << "lua: '" << _lua_script << "' could not be compiled";
   }
 
   // Checking for init() availability: this function is mandatory
   lua_getglobal(_L, "init");
   if (!lua_isfunction(_L, lua_gettop(_L)))
    throw exceptions::msg()
-     << "luageneric: '" << _lua_script << "' init() global function is missing";
+     << "lua: '" << _lua_script << "' init() global function is missing";
 
   // Checking for write() availability: this function is mandatory
   lua_getglobal(_L, "write");
   if (!lua_isfunction(_L, lua_gettop(_L)))
    throw exceptions::msg()
-     << "luageneric: '" << _lua_script
+     << "lua: '" << _lua_script
      << "' write() global function is missing";
 
   // Checking for filter() availability: this function is optional
   lua_getglobal(_L, "filter");
   if (!lua_isfunction(_L, lua_gettop(_L))) {
     logging::debug(logging::medium)
-      << "luageneric: filter() global function is missing, "
+      << "lua: filter() global function is missing, "
       << "the write() function will be called for each event";
     _filter = false;
   }
@@ -157,7 +157,7 @@ void luabinding::_init_script(QMap<QString, QVariant> const& conf_params) {
   }
   if (lua_pcall(_L, 1, 0, 0) != 0)
     throw exceptions::msg()
-      << "luageneric: error running function `init'"
+      << "lua: error running function `init'"
       << lua_tostring(_L, -1);
 }
 
@@ -186,15 +186,15 @@ int luabinding::write(misc::shared_ptr<io::data> const& data) {
 
     if (lua_pcall(_L, 2, 1, 0) != 0)
       throw exceptions::msg()
-        << "luageneric: error while running function `filter()': "
+        << "lua: error while running function `filter()': "
         << lua_tostring(_L, -1);
 
     if (!lua_isboolean(_L, -1))
       throw exceptions:: msg()
-        << "luageneric: `filter' must return a boolean";
+        << "lua: `filter' must return a boolean";
     execute_write = lua_toboolean(_L, -1);
     logging::debug(logging::medium)
-      << "luageneric: `filter' returned " << ((execute_write) ? "true" : "false");
+      << "lua: `filter' returned " << ((execute_write) ? "true" : "false");
     lua_pop(_L, -1);
   }
 
@@ -223,7 +223,7 @@ int luabinding::write(misc::shared_ptr<io::data> const& data) {
 
   if (lua_pcall(_L, 1, 1, 0) != 0)
     throw exceptions::msg()
-      << "luageneric: error running function `write'"
+      << "lua: error running function `write'"
       << lua_tostring(_L, -1);
 
 #if LUA51
@@ -232,7 +232,7 @@ int luabinding::write(misc::shared_ptr<io::data> const& data) {
   if (!lua_isinteger(_L, -1))
 #endif
     throw exceptions:: msg()
-      << "luageneric: `write' must return an integer";
+      << "lua: `write' must return an integer";
   int retval = lua_tointeger(_L, -1);
   lua_pop(_L, -1);
   return retval;

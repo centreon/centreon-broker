@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_LUAGENERIC_BROKER_UTILS_HH
-#  define CCB_LUAGENERIC_BROKER_UTILS_HH
+#ifndef CCB_LUA_BROKER_UTILS_HH
+#  define CCB_LUA_BROKER_UTILS_HH
 
 #include "com/centreon/broker/namespace.hh"
 
@@ -29,9 +29,9 @@ extern "C" {
 
 CCB_BEGIN()
 
-namespace               luageneric {
+namespace               lua {
   /**
-   *  @class broker_utils broker_utils.hh "com/centreon/broker/luageneric/broker_utils.hh"
+   *  @class broker_utils broker_utils.hh "com/centreon/broker/lua/broker_utils.hh"
    *  @brief Class providing several functions to the lua interpreter
    *
    *  This class provides a binding to Lua to several useful functions.
@@ -44,4 +44,4 @@ namespace               luageneric {
 
 CCB_END()
 
-#endif // !CCB_LUAGENERIC_BROKER_UTILS_HH
+#endif // !CCB_LUA_BROKER_UTILS_HH

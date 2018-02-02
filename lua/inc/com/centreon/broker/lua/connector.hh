@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_LUAGENERIC_CONNECTOR_HH
-#  define CCB_LUAGENERIC_CONNECTOR_HH
+#ifndef CCB_LUA_CONNECTOR_HH
+#  define CCB_LUA_CONNECTOR_HH
 
 #  include <QMap>
 #  include <QVariant>
@@ -25,12 +25,12 @@
 
 CCB_BEGIN()
 
-namespace                        luageneric {
+namespace                        lua {
   /**
-   *  @class connector connector.hh "com/centreon/broker/luageneric/connector.hh"
+   *  @class connector connector.hh "com/centreon/broker/lua/connector.hh"
    *  @brief Connect to a database.
    *
-   *  Send events to a luageneric database.
+   *  Send events to a lua database.
    */
   class                          connector : public io::endpoint {
   public:

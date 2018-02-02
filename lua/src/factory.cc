@@ -18,11 +18,11 @@
 
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/luageneric/connector.hh"
-#include "com/centreon/broker/luageneric/factory.hh"
+#include "com/centreon/broker/lua/connector.hh"
+#include "com/centreon/broker/lua/factory.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::luageneric;
+using namespace com::centreon::broker::lua;
 
 /**
  *  Find a parameter in configuration.
@@ -37,7 +37,7 @@ static std::string find_param(
                      QString const& key) {
   QMap<QString, QString>::const_iterator it(cfg.params.find(key));
   if (cfg.params.end() == it)
-    throw (exceptions::msg() << "luageneric: no '" << key
+    throw (exceptions::msg() << "lua: no '" << key
            << "' defined for endpoint '" << cfg.name << "'");
   return it.value().toStdString();
 }
@@ -88,12 +88,12 @@ io::factory* factory::clone() const {
  *  @return true if the endpoint match the configuration.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  bool is_luageneric(!cfg.type.compare("custom", Qt::CaseInsensitive));
-  if (is_luageneric) {
+  bool is_lua(!cfg.type.compare("custom", Qt::CaseInsensitive));
+  if (is_lua) {
     cfg.params["cache"] = "yes";
     cfg.cache_enabled = true;
   }
-  return is_luageneric;
+  return is_lua;
 }
 
 /**
@@ -120,11 +120,11 @@ io::endpoint* factory::new_endpoint(
     QDomNode value = conf.namedItem("value");
     if (name.isNull())
       throw (exceptions::msg())
-             << "luageneric: couldn't read a configuration field because"
+             << "lua: couldn't read a configuration field because"
              << " its name is empty";
     if (value.isNull())
       throw (exceptions::msg())
-             << "luageneric: couldn't read the '"
+             << "lua: couldn't read the '"
              << name.toElement().text().toStdString()
              << "' configuration field because its value is empty";
     std::string t((type.isNull())
@@ -142,7 +142,7 @@ io::endpoint* factory::new_endpoint(
           conf_map.insert(name.toElement().text(), QVariant(val));
         else {
           throw (exceptions::msg())
-                 << "luageneric: unable to read '"
+                 << "lua: unable to read '"
                  << name.toElement().text()
                  << "' content (" << value.toElement().text()
                  << ") as a number";
@@ -151,13 +151,13 @@ io::endpoint* factory::new_endpoint(
     }
     else {
       throw (exceptions::msg())
-        << "luageneric: unable to read '"
+        << "lua: unable to read '"
         << name.toElement().text()
         << "' content: type unrecognized (" << t << ")";
     }
   }
   // Connector.
-  std::auto_ptr<luageneric::connector> c(new luageneric::connector);
+  std::auto_ptr<lua::connector> c(new lua::connector);
   c->connect_to(filename, conf_map, cache);
   is_acceptor = false;
   return c.release();

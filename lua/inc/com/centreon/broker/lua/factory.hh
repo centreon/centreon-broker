@@ -16,19 +16,19 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_LUAGENERIC_FACTORY_HH
-#  define CCB_LUAGENERIC_FACTORY_HH
+#ifndef CCB_LUA_FACTORY_HH
+#  define CCB_LUA_FACTORY_HH
 
 #  include "com/centreon/broker/io/factory.hh"
 
 CCB_BEGIN()
 
-namespace         luageneric {
+namespace         lua {
   /**
-   *  @class factory factory.hh "com/centreon/broker/luageneric/factory.hh"
-   *  @brief lua generic layer factory.
+   *  @class factory factory.hh "com/centreon/broker/lua/factory.hh"
+   *  @brief lua  layer factory.
    *
-   *  Build luageneric layer objects.
+   *  Build lua layer objects.
    */
   class           factory : public io::factory {
    public:
@@ -48,4 +48,4 @@ namespace         luageneric {
 
 CCB_END()
 
-#endif // !CCB_LUAGENERIC_FACTORY_HH
+#endif // !CCB_LUA_FACTORY_HH

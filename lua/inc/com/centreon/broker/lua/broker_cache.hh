@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_LUAGENERIC_BROKER_CACHE_HH
-#  define CCB_LUAGENERIC_BROKER_CACHE_HH
+#ifndef CCB_LUA_BROKER_CACHE_HH
+#  define CCB_LUA_BROKER_CACHE_HH
 
 #include "com/centreon/broker/namespace.hh"
-#include "com/centreon/broker/luageneric/macro_cache.hh"
+#include "com/centreon/broker/lua/macro_cache.hh"
 
 extern "C" {
 #  include "lua.h"
@@ -30,9 +30,9 @@ extern "C" {
 
 CCB_BEGIN()
 
-namespace               luageneric {
+namespace               lua {
   /**
-   *  @class broker_cache broker_cache.hh "com/centreon/broker/luageneric/broker_cache.hh"
+   *  @class broker_cache broker_cache.hh "com/centreon/broker/lua/broker_cache.hh"
    *  @brief Class providing cache access to the lua interpreter
    *
    *  This class provides a binding to Lua to access cache.
@@ -46,4 +46,4 @@ namespace               luageneric {
 
 CCB_END()
 
-#endif // !CCB_LUAGENERIC_BROKER_CACHE_HH
+#endif // !CCB_LUA_BROKER_CACHE_HH

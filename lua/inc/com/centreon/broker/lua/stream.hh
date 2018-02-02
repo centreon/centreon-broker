@@ -16,24 +16,24 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_LUAGENERIC_STREAM_HH
-#  define CCB_LUAGENERIC_STREAM_HH
+#ifndef CCB_LUA_STREAM_HH
+#  define CCB_LUA_STREAM_HH
 
 #  include <memory>
-#  include "com/centreon/broker/luageneric/macro_cache.hh"
+#  include "com/centreon/broker/lua/macro_cache.hh"
 
 CCB_BEGIN()
 
-namespace          luageneric {
+namespace          lua {
 
   // Forward declaration.
   class luabinding;
 
   /**
-   *  @class stream stream.hh "com/centreon/broker/luageneric/stream.hh"
-   *  @brief luageneric stream.
+   *  @class stream stream.hh "com/centreon/broker/lua/stream.hh"
+   *  @brief lua stream.
    *
-   *  Stream events into luageneric database.
+   *  Stream events into lua database.
    */
   class             stream : public io::stream {
   public:
@@ -60,4 +60,4 @@ namespace          luageneric {
 
 CCB_END()
 
-#endif // !CCB_LUAGENERIC_STREAM_HH
+#endif // !CCB_LUA_STREAM_HH

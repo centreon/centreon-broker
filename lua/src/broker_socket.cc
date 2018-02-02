@@ -19,10 +19,10 @@
 #include <QTcpSocket>
 #include <QHostAddress>
 #include <sstream>
-#include "com/centreon/broker/luageneric/broker_socket.hh"
+#include "com/centreon/broker/lua/broker_socket.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::luageneric;
+using namespace com::centreon::broker::lua;
 
 /**
  *  The Lua broker_socket constructor

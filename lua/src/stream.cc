@@ -19,12 +19,12 @@
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/luageneric/luabinding.hh"
-#include "com/centreon/broker/luageneric/stream.hh"
+#include "com/centreon/broker/lua/luabinding.hh"
+#include "com/centreon/broker/lua/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
-using namespace com::centreon::broker::luageneric;
+using namespace com::centreon::broker::lua;
 
 /**************************************
 *                                     *
@@ -73,7 +73,7 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *  @return Number of events acknowledged.
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "luageneric"))
+  if (!validate(data, "lua"))
     return 0;
 
   // Give data to cache.

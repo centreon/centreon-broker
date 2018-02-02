@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_LUAGENERIC_MACRO_CACHE_HH
-#  define CCB_LUAGENERIC_MACRO_CACHE_HH
+#ifndef CCB_LUA_MACRO_CACHE_HH
+#  define CCB_LUA_MACRO_CACHE_HH
 
 #  include <QHash>
 #  include "com/centreon/broker/instance_broadcast.hh"
@@ -29,10 +29,10 @@
 #  include "com/centreon/broker/storage/metric_mapping.hh"
 CCB_BEGIN()
 
-namespace         luageneric {
+namespace         lua {
   /**
-   *  @class macro_cache macro_cache.hh "com/centreon/broker/luageneric/macro_cache.hh"
-   *  @brief Data cache for Luageneric macro.
+   *  @class macro_cache macro_cache.hh "com/centreon/broker/lua/macro_cache.hh"
+   *  @brief Data cache for Lua macro.
    */
   class            macro_cache {
   public:
@@ -79,4 +79,4 @@ namespace         luageneric {
 
 CCB_END()
 
-#endif // !CCB_LUAGENERIC_MACRO_CACHE_HH
+#endif // !CCB_LUA_MACRO_CACHE_HH

@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/luageneric/broker_cache.hh"
+#include "com/centreon/broker/lua/broker_cache.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::luageneric;
+using namespace com::centreon::broker::lua;
 
 /**
  *  broker_cache destructor

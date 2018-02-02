@@ -19,11 +19,11 @@
 #include <fstream>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/luageneric/connector.hh"
-#include "com/centreon/broker/luageneric/stream.hh"
+#include "com/centreon/broker/lua/connector.hh"
+#include "com/centreon/broker/lua/stream.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::luageneric;
+using namespace com::centreon::broker::lua;
 
 /**
  *  Default constructor.
@@ -78,9 +78,9 @@ void connector::connect_to(
 }
 
 /**
- *  Connect to the luageneric connector.
+ *  Connect to the lua connector.
  *
- *  @return a luageneric connection object.
+ *  @return a lua connection object.
  */
 misc::shared_ptr<io::stream> connector::open() {
   return (misc::shared_ptr<io::stream>(new stream(

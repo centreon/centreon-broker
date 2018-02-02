@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_LUAGENERIC_LUABINDING_HH
-#  define CCB_LUAGENERIC_LUABINDING_HH
+#ifndef CCB_LUA_LUABINDING_HH
+#  define CCB_LUA_LUABINDING_HH
 
 #  include <QMap>
 #  include <QVariant>
-#  include "com/centreon/broker/luageneric/macro_cache.hh"
+#  include "com/centreon/broker/lua/macro_cache.hh"
 
 extern "C" {
 #  include "lua.h"
@@ -31,7 +31,7 @@ extern "C" {
 
 CCB_BEGIN()
 
-namespace               luageneric {
+namespace               lua {
   /**
    *  @class luabinding luabinding.hh "com/centreon/broker/luabinding/luabinding.hh"
    *  @brief Class managing exchange with the the lua interpreter.
@@ -74,4 +74,4 @@ namespace               luageneric {
 
 CCB_END()
 
-#endif // !CCB_LUAGENERIC_LUAGENERIC_HH
+#endif // !CCB_LUA_LUA_HH

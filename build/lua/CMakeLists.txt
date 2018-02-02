@@ -18,19 +18,18 @@
 
 # Global options.
 
-set(INC_DIR "${PROJECT_SOURCE_DIR}/luageneric/inc")
-set(SRC_DIR "${PROJECT_SOURCE_DIR}/luageneric/src")
-set(TEST_DIR "${PROJECT_SOURCE_DIR}/luageneric/test")
+set(INC_DIR "${PROJECT_SOURCE_DIR}/lua/inc")
+set(SRC_DIR "${PROJECT_SOURCE_DIR}/lua/src")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/lua/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
-set(INC_DIR "${INC_DIR}/com/centreon/broker/luageneric")
+set(INC_DIR "${INC_DIR}/com/centreon/broker/lua")
 
-message("LUA INCLUDE DIR: ${LUA_INCLUDE_DIR}")
 # Storage module.
-set(LUAGENERIC "70-luageneric")
-set(LUAGENERIC "${LUAGENERIC}" PARENT_SCOPE)
-add_library("${LUAGENERIC}" SHARED
+set(LUA "70-lua")
+set(LUA "${LUA}" PARENT_SCOPE)
+add_library("${LUA}" SHARED
   # Sources.
   "${SRC_DIR}/broker_cache.cc"
   "${SRC_DIR}/broker_log.cc"
@@ -53,24 +52,24 @@ add_library("${LUAGENERIC}" SHARED
   "${INC_DIR}/macro_cache.hh"
   "${INC_DIR}/stream.hh"
 )
-target_link_libraries("${LUAGENERIC}" ${QT_LIBRARIES} ${LUA_LIBRARIES})
-set_target_properties("${LUAGENERIC}" PROPERTIES PREFIX "")
+target_link_libraries("${LUA}" ${QT_LIBRARIES} ${LUA_LIBRARIES})
+set_target_properties("${LUA}" PROPERTIES PREFIX "")
 
 # Testing.
 set(
   TESTS_SOURCES
   ${TESTS_SOURCES}
-  "${TEST_DIR}/luageneric.cc"
+  "${TEST_DIR}/lua.cc"
   PARENT_SCOPE
 )
 set(
   TESTS_LIBRARIES
   ${TESTS_LIBRARIES}
-  "${LUAGENERIC}"
+  "${LUA}"
   PARENT_SCOPE
 )
 
 # Install rule.
-install(TARGETS "${LUAGENERIC}"
+install(TARGETS "${LUA}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
 )

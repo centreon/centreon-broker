@@ -18,10 +18,10 @@
 
 #include <fstream>
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/luageneric/broker_log.hh"
+#include "com/centreon/broker/lua/broker_log.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::luageneric;
+using namespace com::centreon::broker::lua;
 
 /**
  *  The broker_log destructor

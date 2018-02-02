@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_LUAGENERIC_BROKER_SOCKET_HH
-#  define CCB_LUAGENERIC_BROKER_SOCKET_HH
+#ifndef CCB_LUA_BROKER_SOCKET_HH
+#  define CCB_LUA_BROKER_SOCKET_HH
 
 #  include "com/centreon/broker/namespace.hh"
 
@@ -29,9 +29,9 @@ extern "C" {
 
 CCB_BEGIN()
 
-namespace               luageneric {
+namespace               lua {
   /**
-   *  @class broker_socket broker_socket.hh "com/centreon/broker/luageneric/broker_socket.hh"
+   *  @class broker_socket broker_socket.hh "com/centreon/broker/lua/broker_socket.hh"
    *  @brief Class providing TCP socket to the lua interpreter
    *
    *  This class provides a binding to Lua to access TCP sockets.
@@ -45,5 +45,4 @@ namespace               luageneric {
 
 CCB_END()
 
-#endif // !CCB_LUAGENERIC_BROKER_SOCKET_HH
-
+#endif // !CCB_LUA_BROKER_SOCKET_HH

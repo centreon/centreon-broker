@@ -18,11 +18,11 @@
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/luageneric/macro_cache.hh"
+#include "com/centreon/broker/lua/macro_cache.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::logging;
-using namespace com::centreon::broker::luageneric;
+using namespace com::centreon::broker::lua;
 
 /**
  *  Construct a macro cache
@@ -49,7 +49,7 @@ macro_cache::~macro_cache() {
       _save_to_disk();
     } catch (std::exception e) {
       logging::error(logging::medium)
-        << "luageneric: macro cache couldn't save data to disk: '"
+        << "lua: macro cache couldn't save data to disk: '"
         << e.what() << "'";
     }
   }
@@ -68,7 +68,7 @@ storage::index_mapping const& macro_cache::get_index_mapping(
     found(_index_mappings.find(index_id));
   if (found == _index_mappings.end())
     throw (exceptions::msg()
-           << "luageneric: could not find host/service of index "
+           << "lua: could not find host/service of index "
            << index_id);
   return (*found);
 }
@@ -86,7 +86,7 @@ storage::metric_mapping const& macro_cache::get_metric_mapping(
     found(_metric_mappings.find(metric_id));
   if (found == _metric_mappings.end())
     throw (exceptions::msg()
-           << "luageneric: could not find index of metric " << metric_id);
+           << "lua: could not find index of metric " << metric_id);
   return (*found);
 }
 
@@ -103,7 +103,7 @@ QString const& macro_cache::get_host_name(unsigned int host_id) const {
 
   if (found == _hosts.end())
     throw (exceptions::msg()
-           << "luageneric: could not find information on host "
+           << "lua: could not find information on host "
            << host_id);
   return (found->host_name);
 }
@@ -123,7 +123,7 @@ QString const& macro_cache::get_service_description(
     found(_services.find(qMakePair(host_id, service_id)));
   if (found == _services.end())
     throw (exceptions::msg()
-           << "luageneric: could not find information on service ("
+           << "lua: could not find information on service ("
            << host_id << ", " << service_id << ")");
   return (found->service_description);
 }
@@ -140,7 +140,7 @@ QString const& macro_cache::get_instance(unsigned int instance_id) const {
     found(_instances.find(instance_id));
   if (found == _instances.end())
     throw (exceptions::msg()
-           << "luageneric: could not find information on instance "
+           << "lua: could not find information on instance "
            << instance_id);
   return (found->poller_name);
 }
