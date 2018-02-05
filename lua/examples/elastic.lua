@@ -1,5 +1,4 @@
 local elastic = {
-  total_row = 0,
   max_row   = 5,
   rows      = {}
 }
@@ -104,7 +103,7 @@ end
 --  Called when the data limit count is reached.
 --------------------------------------------------------------------------------
 local function flush()
-  local retval
+  local retval = true
   if #elastic.rows > 0 then
     elastic.socket:connect(elastic.address, elastic.port)
     local header = "POST /centreon/metrics/_bulk HTTP/1.1\r\nHost: "
@@ -131,10 +130,8 @@ local function flush()
     if ret then
       elastic.rows = {}
       elastic.socket:close()
-      retval = elastic.total_row
-      elastic.total_row = 0
     else
-      retval = 0
+      retval = false
     end
   end
   return retval
@@ -148,7 +145,6 @@ function write(d)
   local hostname = broker_cache:get_hostname(d.host_id)
   if not hostname then
     broker_log:error(1, "host name for id " .. d.host_id .. " unknown")
-    elastic.total_row = elastic.total_row + 1
   else
     broker_log:info(3, tostring(d.ctime)
                        .. ' --- ' .. hostname .. ' ; '
@@ -162,10 +158,10 @@ function write(d)
     }
   end
 
-  if elastic.total_row >= elastic.max_row then
+  if #elastic.rows >= elastic.max_row then
     return flush()
   end
-  return 0
+  return false
 end
 
 --------------------------------------------------------------------------------

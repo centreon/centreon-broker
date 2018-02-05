@@ -33,7 +33,7 @@ function write(d)
     broker.log_error(i .. " => " .. tostring(v))
   end
   broker.log_error("write() finished")
-  return 1
+  return true
 end
 
 -- Filter function

@@ -41,7 +41,7 @@ luabinding::luabinding(
               macro_cache const& cache)
   : _lua_script(lua_script),
     _cache(cache),
-    _rejected(0) {
+    _total(0) {
   _L = _load_interpreter();
 
   logging::debug(logging::medium)
@@ -168,14 +168,18 @@ void luabinding::_init_script(QMap<QString, QVariant> const& conf_params) {
  *  @return The number of events written.
  */
 int luabinding::write(misc::shared_ptr<io::data> const& data) {
-  logging::debug(logging::medium)
-    << "luabinding::write";
+  int retval(0);
+  logging::debug(logging::medium) << "lua: luabinding::write call";
+
   // Process event.
   unsigned int type(data->type());
   unsigned short cat(io::events::category_of_type(type));
   unsigned short elem(io::events::element_of_type(type));
 
   bool execute_write(true);
+
+  // Total to acknowledge incremented
+  ++_total;
 
   if (has_filter()) {
     // Let's get the function to call
@@ -197,10 +201,8 @@ int luabinding::write(misc::shared_ptr<io::data> const& data) {
     lua_pop(_L, -1);
   }
 
-  if (!execute_write) {
-    ++_rejected;
+  if (!execute_write)
     return 0;
-  }
 
   // Let's get the function to call
   lua_getglobal(_L, "write");
@@ -227,21 +229,19 @@ int luabinding::write(misc::shared_ptr<io::data> const& data) {
       << "lua: error running function `write'"
       << lua_tostring(_L, -1);
 
-#if LUA51
-  if (!lua_isnumber(_L, -1))
-#else
-  if (!lua_isinteger(_L, -1))
-#endif
+  if (!lua_isboolean(_L, -1))
     throw exceptions:: msg()
-      << "lua: `write' must return an integer";
-  int retval = lua_tointeger(_L, -1);
+      << "lua: `write' must return a boolean";
+  int acknowledge = lua_toboolean(_L, -1);
   lua_pop(_L, -1);
 
   // We have to acknowledge rejected events by the filter. It is only possible
   // when an acknowledgement is sent by the write function.
-  if (_rejected > 0 && retval > 0) {
-    retval += _rejected;
-    _rejected = 0;
+  if (acknowledge) {
+    retval = _total;
+    logging::debug(logging::medium)
+      << "lua: " << _total << " events acknowledged.";
+    _total = 0;
   }
   return retval;
 }

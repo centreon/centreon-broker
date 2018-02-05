@@ -50,4 +50,5 @@ function init(conf)
 end
 
 function write(d)
+  return true
 end

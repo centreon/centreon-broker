@@ -71,8 +71,8 @@ namespace               lua {
     // The cache.
     macro_cache const&  _cache;
 
-    // Count on events rejected
-    int                 _rejected;
+    // Count on events
+    int                 _total;
   };
 }
 

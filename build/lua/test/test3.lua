@@ -29,7 +29,7 @@ function write(d)
   for i,v in pairs(d) do
     broker_log:info(1, "write: " .. i .. " => " .. tostring(v))
   end
-  return 1
+  return true
 end
 
 -- Filter function
