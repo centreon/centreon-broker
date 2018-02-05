@@ -41,7 +41,12 @@ using namespace com::centreon::broker::lua;
 class LuaGenericTest : public ::testing::Test {
  public:
   void SetUp() {
-    config::applier::init();
+    try {
+      config::applier::init();
+    }
+    catch (std::exception const& e) {
+      (void) e;
+    }
     misc::shared_ptr<persistent_cache> pcache
       = new persistent_cache("/tmp/broker_test_cache");
     _cache.reset(new macro_cache(pcache));
