@@ -163,7 +163,6 @@ static int l_broker_socket_close(lua_State* L) {
  *  @return The Lua interpreter as a lua_State*
  */
 void broker_socket::broker_socket_reg(lua_State* L) {
-
   luaL_Reg s_broker_socket_regs[] = {
     { "new", l_broker_socket_constructor },
     { "__gc", l_broker_socket_destructor },

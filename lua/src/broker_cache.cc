@@ -65,7 +65,6 @@ static int l_broker_cache_get_hostname(lua_State* L) {
  *  @return The Lua interpreter as a lua_State*
  */
 void broker_cache::broker_cache_reg(lua_State* L, macro_cache const& cache) {
-
   macro_cache const** udata(
     static_cast<macro_cache const**>(lua_newuserdata(L, sizeof(macro_cache*))));
   *udata = &cache;
@@ -76,9 +75,8 @@ void broker_cache::broker_cache_reg(lua_State* L, macro_cache const& cache) {
     { NULL, NULL }
   };
 
-  // Create a metatable. It is not exposed to Lua. It is not
-  // exposed to Lua. The "lua_broker" label is used by Lua
-  // internally to identify things.
+  // Create a metatable. It is not exposed to Lua.
+  // The "lua_broker" label is used by Lua internally to identify things.
   luaL_newmetatable(L, "lua_broker_cache");
 
   // Register the C functions into the metatable we just created.

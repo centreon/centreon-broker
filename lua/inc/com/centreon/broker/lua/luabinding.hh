@@ -49,7 +49,8 @@ namespace               lua {
     int                 write(misc::shared_ptr<io::data> const& data);
 
    private:
-
+                        luabinding(luabinding const& other);
+    luabinding&         operator=(luabinding const& other);
     lua_State*          _load_interpreter();
     void                _load_script();
     void                _init_script(
@@ -69,6 +70,9 @@ namespace               lua {
 
     // The cache.
     macro_cache const&  _cache;
+
+    // Count on events rejected
+    int                 _rejected;
   };
 }
 

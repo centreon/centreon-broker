@@ -47,7 +47,6 @@ namespace               lua {
     std::string const&  get_file() const;
 
    private:
-
                         broker_log();
     luabinding const*   _binding;
 

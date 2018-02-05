@@ -33,10 +33,10 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
 
-#define FILE1 "lua/test1.lua"
-#define FILE2 "lua/test2.lua"
-#define FILE3 "lua/test3.lua"
-#define FILE4 "lua/socket.lua"
+#define FILE1 "lua/test/test1.lua"
+#define FILE2 "lua/test/test2.lua"
+#define FILE3 "lua/test/test3.lua"
+#define FILE4 "lua/test/socket.lua"
 
 class LuaGenericTest : public ::testing::Test {
  public:

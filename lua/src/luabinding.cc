@@ -40,8 +40,8 @@ luabinding::luabinding(
               QMap<QString, QVariant> const& conf_params,
               macro_cache const& cache)
   : _lua_script(lua_script),
-    _cache(cache) {
-
+    _cache(cache),
+    _rejected(0) {
   _L = _load_interpreter();
 
   logging::debug(logging::medium)
@@ -73,7 +73,6 @@ bool luabinding::has_filter() const {
  *   - filter()
  *  functions exist in the Lua script. The two first ones are
  *  mandatory whereas the third one is optional.
- *
  */
 void luabinding::_load_script() {
   // script loading
@@ -198,8 +197,10 @@ int luabinding::write(misc::shared_ptr<io::data> const& data) {
     lua_pop(_L, -1);
   }
 
-  if (!execute_write)
+  if (!execute_write) {
+    ++_rejected;
     return 0;
+  }
 
   // Let's get the function to call
   lua_getglobal(_L, "write");
@@ -235,6 +236,13 @@ int luabinding::write(misc::shared_ptr<io::data> const& data) {
       << "lua: `write' must return an integer";
   int retval = lua_tointeger(_L, -1);
   lua_pop(_L, -1);
+
+  // We have to acknowledge rejected events by the filter. It is only possible
+  // when an acknowledgement is sent by the write function.
+  if (_rejected > 0 && retval > 0) {
+    retval += _rejected;
+    _rejected = 0;
+  }
   return retval;
 }
 
@@ -369,7 +377,6 @@ void luabinding::_parse_entries(io::data const& d) {
  * @return The Lua interpreter
  */
 lua_State* luabinding::_load_interpreter() {
-
   lua_State* L = luaL_newstate();
 
   // Read common lua libraries

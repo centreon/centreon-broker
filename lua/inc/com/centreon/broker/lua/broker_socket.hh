@@ -39,7 +39,6 @@ namespace               lua {
   class                 broker_socket {
    public:
     static void         broker_socket_reg(lua_State* L);
-
   };
 }
 

@@ -88,7 +88,7 @@ io::factory* factory::clone() const {
  *  @return true if the endpoint match the configuration.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  bool is_lua(!cfg.type.compare("custom", Qt::CaseInsensitive));
+  bool is_lua(!cfg.type.compare("lua", Qt::CaseInsensitive));
   if (is_lua) {
     cfg.params["cache"] = "yes";
     cfg.cache_enabled = true;
@@ -109,10 +109,9 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
                          misc::shared_ptr<persistent_cache> cache) const {
-
   QMap<QString, QVariant> conf_map;
   std::string filename(find_param(cfg, "path"));
-  QDomNodeList config = cfg.cfg.elementsByTagName("metrics_lua");
+  QDomNodeList config = cfg.cfg.elementsByTagName("lua_parameters");
   for (int i(0); i < config.size(); ++i) {
     QDomNode conf(config.item(i));
     QDomNode name = conf.namedItem("name");

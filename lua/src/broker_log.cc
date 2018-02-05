@@ -56,21 +56,14 @@ static int l_broker_log_set_parameters(lua_State* L) {
   return 0;
 }
 
-/**
- *  The broker_log info method
- *
- *  @param L The Lua interpreter
- *
- *  @return 0
- */
-static int l_broker_log_info(lua_State* L) {
+int _log_func(logging::logger& log_func, lua_State* L, const char* header) {
   broker_log* bl(*static_cast<broker_log**>(
                    luaL_checkudata(L, 1, "lua_broker_log")));
   int level(lua_tointeger(L, 2));
   char const* text(lua_tostring(L, 3));
   if (level <= bl->get_level()) {
     if (bl->get_file().empty())
-      logging::info(static_cast<logging::level>(level)) << text;
+      log_func(static_cast<logging::level>(level)) << "lua: " << text;
     else {
       std::ofstream of;
       of.open(bl->get_file().c_str(), std::ios_base::app);
@@ -80,15 +73,26 @@ static int l_broker_log_info(lua_State* L) {
           << bl->get_file() << "'";
       else {
         time_t now(time(NULL));
-        struct tm *tmp;
-        tmp = localtime(&now);
+        struct tm tmp;
+        localtime_r(&now, &tmp);
         char buf[80];
-        strftime(buf, 80, "%c: INFO: ", tmp);
-        of << buf << text << std::endl;
+        strftime(buf, sizeof(buf), "%c: ", &tmp);
+        of << buf << header << text << std::endl;
       }
     }
   }
   return 0;
+}
+
+/**
+ *  The broker_log info method
+ *
+ *  @param L The Lua interpreter
+ *
+ *  @return 0
+ */
+static int l_broker_log_info(lua_State* L) {
+  return _log_func(logging::info, L, "INFO: ");
 }
 
 /**
@@ -99,31 +103,7 @@ static int l_broker_log_info(lua_State* L) {
  *  @return 0
  */
 static int l_broker_log_error(lua_State* L) {
-  broker_log* bl(*static_cast<broker_log**>(
-                   luaL_checkudata(L, 1, "lua_broker_log")));
-  int level(lua_tointeger(L, 2));
-  char const* text(lua_tostring(L, 3));
-  if (level >= bl->get_level()) {
-    if (bl->get_file().empty())
-      logging::error(static_cast<logging::level>(level)) << text;
-    else {
-      std::ofstream of;
-      of.open(bl->get_file().c_str(), std::ios_base::app);
-      if (of.fail())
-        logging::error(logging::medium)
-          << "Unable to open the log file '"
-          << bl->get_file() << "'";
-      else {
-        time_t now(time(NULL));
-        struct tm *tmp;
-        tmp = localtime(&now);
-        char buf[80];
-        strftime(buf, 80, "%c: ERROR: ", tmp);
-        of << buf << text << std::endl;
-      }
-    }
-  }
-  return 0;
+  return _log_func(logging::error, L, "ERROR: ");
 }
 
 /**
@@ -134,31 +114,7 @@ static int l_broker_log_error(lua_State* L) {
  *  @return 0
  */
 static int l_broker_log_warning(lua_State* L) {
-  broker_log* bl(*static_cast<broker_log**>(
-                   luaL_checkudata(L, 1, "lua_broker_log")));
-  int level(lua_tointeger(L, 2));
-  char const* text(lua_tostring(L, 3));
-  if (level >= bl->get_level()) {
-    if (bl->get_file().empty())
-      logging::info(logging::high) << text;
-    else {
-      std::ofstream of;
-      of.open(bl->get_file().c_str(), std::ios_base::app);
-      if (of.fail())
-        logging::error(logging::medium)
-          << "Unable to open the log file '"
-          << bl->get_file() << "'";
-      else {
-        time_t now(time(NULL));
-        struct tm *tmp;
-        tmp = localtime(&now);
-        char buf[80];
-        strftime(buf, 80, "%c: WARNING: ", tmp);
-        of << buf << text << std::endl;
-      }
-    }
-  }
-  return 0;
+  return _log_func(logging::error, L, "WARNING: ");
 }
 
 /**
@@ -168,7 +124,6 @@ static int l_broker_log_warning(lua_State* L) {
  *  @return The Lua interpreter as a lua_State*
  */
 void broker_log::broker_log_reg(lua_State* L) {
-
   broker_log **udata(
     static_cast<broker_log **>(lua_newuserdata(L, sizeof(broker_log*))));
   *udata = new broker_log();

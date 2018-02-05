@@ -1,6 +1,7 @@
 local elastic = {
-  max_row=5,
-  rows={}
+  total_row = 0,
+  max_row   = 5,
+  rows      = {}
 }
 
 --------------------------------------------------------------------------------
@@ -103,31 +104,39 @@ end
 --  Called when the data limit count is reached.
 --------------------------------------------------------------------------------
 local function flush()
-  elastic.socket:connect(elastic.address, elastic.port)
-  local header = "POST /centreon/metrics/_bulk HTTP/1.1\r\nHost: "
-          .. elastic.address .. ":" .. elastic.port .. "\r\n"
-          .. "Accept: */*\r\n"
-          .. "Content-Type: application/json\r\n"
-
-  local data = ''
-  for k,v in pairs(elastic.rows) do
-    data = data .. '{"index":{}}\n' .. broker.json_encode(v) .. '\n'
-  end
-
-  header = header .. 'Content-Length: '
-    .. data:len() .. "\r\n\r\n" .. data
-  elastic.socket:write(header)
-  local answer = elastic.socket:read()
   local retval
-  if answer:match("HTTP/1.1 200 OK") then
-    retval = true
-  else
-    broker_log:error(1, "Unable to write data on the server")
-    retval = false
+  if #elastic.rows > 0 then
+    elastic.socket:connect(elastic.address, elastic.port)
+    local header = "POST /centreon/metrics/_bulk HTTP/1.1\r\nHost: "
+            .. elastic.address .. ":" .. elastic.port .. "\r\n"
+            .. "Accept: */*\r\n"
+            .. "Content-Type: application/json\r\n"
+
+    local data = ''
+    for k,v in pairs(elastic.rows) do
+      data = data .. '{"index":{}}\n' .. broker.json_encode(v) .. '\n'
+    end
+
+    header = header .. 'Content-Length: '
+      .. data:len() .. "\r\n\r\n" .. data
+    elastic.socket:write(header)
+    local answer = elastic.socket:read()
+    local ret
+    if answer:match("HTTP/1.1 200 OK") then
+      ret = true
+    else
+      broker_log:error(1, "Unable to write data on the server")
+      ret = false
+    end
+    if ret then
+      elastic.rows = {}
+      elastic.socket:close()
+      retval = elastic.total_row
+      elastic.total_row = 0
+    else
+      retval = 0
+    end
   end
-  local retval = #elastic.rows
-  elastic.rows = {}
-  elastic.socket:close()
   return retval
 end
 
@@ -139,20 +148,21 @@ function write(d)
   local hostname = broker_cache:get_hostname(d.host_id)
   if not hostname then
     broker_log:error(1, "host name for id " .. d.host_id .. " unknown")
-    return 0
+    elastic.total_row = elastic.total_row + 1
+  else
+    broker_log:info(3, tostring(d.ctime)
+                       .. ' --- ' .. hostname .. ' ; '
+                       .. d.name .. ' ; ' .. tostring(d.value))
+
+    elastic.rows[#elastic.rows + 1] = {
+      timestamp = d.ctime * 1000,
+      host = hostname,
+      metric = d.name,
+      value = d.value
+    }
   end
 
-  broker_log:info(3, tostring(d.ctime)
-                     .. ' --- ' .. hostname .. ' ; '
-                     .. d.name .. ' ; ' .. tostring(d.value))
-
-  elastic.rows[#elastic.rows + 1] = {
-    timestamp = d.ctime * 1000,
-    host = hostname,
-    metric = d.name,
-    value = d.value
-  }
-  if #elastic.rows >= elastic.max_row then
+  if elastic.total_row >= elastic.max_row then
     return flush()
   end
   return 0

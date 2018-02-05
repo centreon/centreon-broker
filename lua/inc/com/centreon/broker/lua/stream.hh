@@ -42,16 +42,15 @@ namespace          lua {
                       QMap<QString, QVariant> const& conf_params,
                       misc::shared_ptr<persistent_cache> const& cache);
                     ~stream();
-    stream&         operator=(stream const& other);
     bool            read(misc::shared_ptr<io::data>& d, time_t deadline);
     int             write(misc::shared_ptr<io::data> const& d);
 
   private:
+    stream&         operator=(stream const& other);
                     stream(stream const& other);
 
     // Access to the Lua interpreter
-    std::auto_ptr<luabinding>
-                    _luabinding;
+    luabinding*     _luabinding;
 
     // Cache
     macro_cache     _cache;

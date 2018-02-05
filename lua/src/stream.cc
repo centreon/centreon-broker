@@ -43,13 +43,15 @@ stream::stream(
           QMap<QString, QVariant> const& conf_params,
           misc::shared_ptr<persistent_cache> const& cache)
   : _cache(cache) {
-  _luabinding.reset(new luabinding(lua_script, conf_params, _cache));
+  _luabinding = new luabinding(lua_script, conf_params, _cache);
 }
 
 /**
  *  Destructor.
  */
-stream::~stream() {}
+stream::~stream() {
+  delete _luabinding;
+}
 
 /**
  *  Read from the connector.
