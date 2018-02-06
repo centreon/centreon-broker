@@ -19,6 +19,7 @@
 #include <cmath>
 #include <gtest/gtest.h>
 #include <QList>
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
@@ -29,6 +30,7 @@ using namespace com::centreon::broker;
 // When parse_perfdata() is called with a valid perfdata string
 // Then perfdata are returned in a list
 TEST(StorageParserParsePerfdata, Simple1) {
+  config::applier::init();
   // Parse perfdata.
   QList<storage::perfdata> list;
   storage::parser p;
