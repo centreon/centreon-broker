@@ -38,7 +38,9 @@ connector::connector()
  */
 connector::connector(connector const& other)
   : io::endpoint(other),
-    _lua_script(other._lua_script) {}
+    _lua_script(other._lua_script),
+    _conf_params(other._conf_params),
+    _cache(other._cache) {}
 
 /**
  *  Destructor.
@@ -56,6 +58,8 @@ connector& connector::operator=(connector const& other) {
   if (this != &other) {
     io::endpoint::operator=(other);
     _lua_script = other._lua_script;
+    _conf_params = other._conf_params;
+    _cache = other._cache;
   }
   return (*this);
 }

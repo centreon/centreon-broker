@@ -21,12 +21,13 @@
 
 #  include <QHash>
 #  include "com/centreon/broker/instance_broadcast.hh"
-#  include "com/centreon/broker/persistent_cache.hh"
-#  include "com/centreon/broker/neb/instance.hh"
 #  include "com/centreon/broker/neb/host.hh"
+#  include "com/centreon/broker/neb/instance.hh"
 #  include "com/centreon/broker/neb/service.hh"
+#  include "com/centreon/broker/persistent_cache.hh"
 #  include "com/centreon/broker/storage/index_mapping.hh"
 #  include "com/centreon/broker/storage/metric_mapping.hh"
+
 CCB_BEGIN()
 
 namespace         lua {

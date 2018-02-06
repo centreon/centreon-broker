@@ -34,10 +34,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::lua;
 
-#define FILE1 "lua/test/test1.lua"
-#define FILE2 "lua/test/test2.lua"
-#define FILE3 "lua/test/test3.lua"
-#define FILE4 "lua/test/socket.lua"
+#define FILE1 CENTREON_BROKER_LUA_SCRIPT_PATH "/test1.lua"
+#define FILE2 CENTREON_BROKER_LUA_SCRIPT_PATH "/test2.lua"
+#define FILE3 CENTREON_BROKER_LUA_SCRIPT_PATH "/test3.lua"
+#define FILE4 CENTREON_BROKER_LUA_SCRIPT_PATH "/socket.lua"
 
 class LuaGenericTest : public ::testing::Test {
  public:

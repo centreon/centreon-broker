@@ -30,12 +30,7 @@ using namespace com::centreon::broker;
 // When parse_perfdata() is called with a valid perfdata string
 // Then perfdata are returned in a list
 TEST(StorageParserParsePerfdata, Simple1) {
-  try {
-    config::applier::init();
-  }
-  catch (std::exception const& e) {
-    (void) e;
-  }
+  config::applier::init();
   // Parse perfdata.
   QList<storage::perfdata> list;
   storage::parser p;

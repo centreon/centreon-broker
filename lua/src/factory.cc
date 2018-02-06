@@ -111,7 +111,7 @@ io::endpoint* factory::new_endpoint(
                          misc::shared_ptr<persistent_cache> cache) const {
   QMap<QString, QVariant> conf_map;
   std::string filename(find_param(cfg, "path"));
-  QDomNodeList config = cfg.cfg.elementsByTagName("lua_parameters");
+  QDomNodeList config = cfg.cfg.elementsByTagName("lua_parameter");
   for (int i(0); i < config.size(); ++i) {
     QDomNode conf(config.item(i));
     QDomNode name = conf.namedItem("name");
