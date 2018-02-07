@@ -195,7 +195,7 @@ static void broker_json_decode(lua_State* L, json::json_iterator& it) {
     case json_iterator::string:
       {
         std::string str(it.get_string());
-        int pos(str.find_first_of("\\"));
+        size_t pos(str.find_first_of("\\"));
         while (pos != std::string::npos) {
           switch (str[pos + 1]) {
             case '"':

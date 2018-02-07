@@ -92,7 +92,7 @@ static int l_broker_socket_write(lua_State* L) {
                   luaL_checkudata(L, 1, "lua_broker_tcp_socket")));
   size_t len;
   char const* content(lua_tolstring(L, 2, &len));
-  if (socket->write(content, len) != len) {
+  if (socket->write(content, len) != static_cast<qint64>(len)) {
     std::ostringstream ss;
     ss << "broker_socket::write: Couldn't write to "
        << socket->peerAddress().toString().toStdString()

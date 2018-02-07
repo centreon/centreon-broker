@@ -346,7 +346,7 @@ void luabinding::_parse_entries(io::data const& d) {
           case mapping::entry::invalid_on_minus_one:
             {
               unsigned int val = current_entry->get_uint(d);
-              if (val == -1)
+              if (val == static_cast<unsigned int>(-1))
                 lua_pushnil(_L);
               else
                 lua_pushinteger(_L, val);

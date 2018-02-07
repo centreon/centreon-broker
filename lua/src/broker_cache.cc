@@ -29,7 +29,8 @@ using namespace com::centreon::broker::lua;
  *  @return an integer, here always 0.
  */
 static int l_broker_cache_destructor(lua_State* L) {
-  return 0;
+  (void)L;
+  return (0);
 }
 
 /**
