@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2014 Centreon
+** Copyright 2014-2015,2018 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 #include "com/centreon/broker/notification/macro_getters.hh"
 
-using namespace com::centreon::broker::notification;
+using namespace com::centreon::broker;
 
 /**
  *  @brief Get the output of a host.
@@ -29,7 +29,7 @@ using namespace com::centreon::broker::notification;
  *
  *  @return  The value of the macro.
  */
-template <> std::string get_host_output<false>(
+template <> std::string notification::get_host_output<false>(
                           macro_context const& context) {
   std::string output =
     context.get_cache().get_host(
@@ -46,7 +46,7 @@ template <> std::string get_host_output<false>(
  *
  *  @return  The value of the macro.
  */
-template <> std::string get_host_output<true>(
+template <> std::string notification::get_host_output<true>(
                           macro_context const& context) {
   std::string output =
     context.get_cache().get_host(
@@ -66,7 +66,7 @@ template <> std::string get_host_output<true>(
  *
  *  @return  The value of the macro.
  */
-template <> std::string get_service_output<false>(
+template <> std::string notification::get_service_output<false>(
                           macro_context const& context) {
   std::string output =
     context.get_cache().get_service(
@@ -83,7 +83,7 @@ template <> std::string get_service_output<false>(
  *
  *  @return  The value of the macro.
  */
-template <> std::string get_service_output<true>(
+template <> std::string notification::get_service_output<true>(
                           macro_context const& context) {
   std::string output =
     context.get_cache().get_service(
