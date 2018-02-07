@@ -17,3 +17,5 @@ tags
 test-coverage
 ut
 doc/_build
+build
+test
