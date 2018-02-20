@@ -81,6 +81,41 @@ static int l_broker_cache_get_service_description(lua_State* L) {
 }
 
 /**
+ *  The get_index_mapping() method available in the Lua interpreter
+ *
+ *  @param L The Lua interpreter
+ *
+ *  @return a table with three keys: index_id, host_id and service_id.
+ */
+static int l_broker_cache_get_index_mapping(lua_State* L) {
+  macro_cache const* cache(
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  int index_id(luaL_checkinteger(L, 2));
+
+  try {
+    storage::index_mapping const& mapping(cache->get_index_mapping(index_id));
+    lua_createtable(L, 0, 2);
+
+    lua_pushstring(L, "index_id");
+    lua_pushinteger(L, mapping.index_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "host_id");
+    lua_pushinteger(L, mapping.host_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "service_id");
+    lua_pushinteger(L, mapping.service_id);
+    lua_settable(L, -3);
+  }
+  catch (std::exception const& e) {
+    (void) e;
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+/**
  *  Load the Lua interpreter with the standard libraries
  *  and the broker lua sdk.
  *
@@ -98,6 +133,7 @@ void broker_cache::broker_cache_reg(lua_State* L, macro_cache const& cache) {
     { "__gc", l_broker_cache_destructor },
     { "get_hostname", l_broker_cache_get_hostname },
     { "get_service_description", l_broker_cache_get_service_description },
+    { "get_index_mapping", l_broker_cache_get_index_mapping },
     { NULL, NULL }
   };
 

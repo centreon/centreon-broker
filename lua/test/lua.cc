@@ -29,6 +29,7 @@
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/persistent_cache.hh"
+#include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -421,6 +422,43 @@ TEST_F(LuaGenericTest, ServiceCacheTest) {
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("service description is description"));
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// When a query for a hostname is made
+// And the cache knows about it
+// Then the hostname is returned from the lua method.
+TEST_F(LuaGenericTest, IndexMetricCacheTest) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 1;
+  svc->service_id = 14;
+  svc->service_description = strdup("MyDescription");
+  _cache->write(svc);
+  shared_ptr<neb::host> hst(new neb::host);
+  hst->host_id = 1;
+  hst->host_name = strdup("host1");
+  _cache->write(hst);
+  shared_ptr<storage::index_mapping> im(new storage::index_mapping);
+  im->index_id = 7;
+  im->service_id = 14;
+  im->host_id = 1;
+  _cache->write(im);
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local index_mapping = broker_cache:get_index_mapping(7)\n"
+                         "  local svc = broker_cache:get_service_description(index_mapping.host_id, index_mapping.service_id)\n"
+                         "  broker_log:info(1, 'service description is ' .. tostring(svc))\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("service description is MyDescription"));
   RemoveFile(filename);
   RemoveFile("/tmp/log");
 }

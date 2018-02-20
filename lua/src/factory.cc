@@ -128,7 +128,7 @@ io::endpoint* factory::new_endpoint(
              << "' configuration field because its value is empty";
     std::string t((type.isNull())
                   ? "string" : type.toElement().text().toStdString());
-    if (t == "string")
+    if (t == "string" || t == "password")
       conf_map.insert(name.toElement().text(), QVariant(value.toElement().text()));
     else if (t == "number") {
       bool ok;
