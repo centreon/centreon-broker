@@ -1,4 +1,19 @@
 ======================
+Centreon Broker 3.0.13
+======================
+
+**********
+What's new
+**********
+
+New Lua module
+==============
+
+This module exposes a part of Centreon Broker API through the Lua interpreter
+and the user has just to fill it with his needs. Lua versions supported are
+5.1, 5.2 and 5.3.
+
+======================
 Centreon Broker 3.0.12
 ======================
 
