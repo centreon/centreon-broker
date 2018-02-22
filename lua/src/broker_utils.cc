@@ -39,10 +39,10 @@ static void broker_json_encode_table(lua_State* L, std::ostringstream& oss) {
   /* We must parse the table from the first key */
   lua_pushnil(L); /* this tells lua_next to start from the first key */
   if (lua_next(L, -2)) {
-#if LUA51
-    if (lua_isnumber(L, -2)) {
-#else
+#if LUA53
     if (lua_isinteger(L, -2)) {
+#else
+    if (lua_isnumber(L, -2)) {
 #endif
       int index(lua_tointeger(L, -2));
       if (index == 1) {
@@ -51,10 +51,10 @@ static void broker_json_encode_table(lua_State* L, std::ostringstream& oss) {
         broker_json_encode(L, oss);
         lua_pop(L, 1);
         while (lua_next(L, -2)) {
-#if LUA51
-          if (lua_isnumber(L, -2)) {
-#else
+#if LUA53
           if (lua_isinteger(L, -2)) {
+#else
+          if (lua_isnumber(L, -2)) {
 #endif
             oss << ',';
             broker_json_encode(L, oss);
