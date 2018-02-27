@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013,2015 Centreon
+** Copyright 2009-2013,2015,2018 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -232,7 +232,7 @@ int main(int argc, char* argv[]) {
         << "  -v  Print Centreon Broker version.";
       logging::info(logging::high) << "Centreon Broker "
         << CENTREON_BROKER_VERSION;
-      logging::info(logging::high) << "Copyright 2009-2015 Centreon";
+      logging::info(logging::high) << "Copyright 2009-2018 Centreon";
       logging::info(logging::high) << "License ASL 2.0 " \
         "<http://www.apache.org/licenses/LICENSE-2.0>";
       retval = 0;
@@ -252,11 +252,11 @@ int main(int argc, char* argv[]) {
 #if QT_VERSION >= 0x040400
       app.setApplicationVersion(CENTREON_BROKER_VERSION);
 #endif // Qt >= 4.4.0
-      app.setOrganizationDomain("merethis.com");
-      app.setOrganizationName("Merethis");
+      app.setOrganizationDomain("centreon.com");
+      app.setOrganizationName("Centreon");
       logging::info(logging::medium)
         << "Centreon Broker " << CENTREON_BROKER_VERSION;
-      logging::info(logging::medium) << "Copyright 2009-2015 Centreon";
+      logging::info(logging::medium) << "Copyright 2009-2018 Centreon";
       logging::info(logging::medium) << "License ASL 2.0 " \
         "<http://www.apache.org/licenses/LICENSE-2.0>";
 #if QT_VERSION >= 0x040400

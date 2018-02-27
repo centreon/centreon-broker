@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013,2015-2016 Centreon
+** Copyright 2009-2013,2015-2016,2018 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -186,7 +186,7 @@ extern "C" {
       neb_set_module_info(
         neb::gl_mod_handle,
         NEBMODULE_MODINFO_COPYRIGHT,
-        "Copyright 2009-2016 Centreon");
+        "Copyright 2009-2018 Centreon");
       neb_set_module_info(
         neb::gl_mod_handle,
         NEBMODULE_MODINFO_VERSION,
