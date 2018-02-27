@@ -23,12 +23,14 @@
 #include <gtest/gtest.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/lua/luabinding.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/persistent_cache.hh"
+#include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -421,6 +423,100 @@ TEST_F(LuaGenericTest, ServiceCacheTest) {
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("service description is description"));
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// When a query for a hostname is made
+// And the cache knows about it
+// Then the hostname is returned from the lua method.
+TEST_F(LuaGenericTest, IndexMetricCacheTest) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 1;
+  svc->service_id = 14;
+  svc->service_description = strdup("MyDescription");
+  _cache->write(svc);
+  shared_ptr<neb::host> hst(new neb::host);
+  hst->host_id = 1;
+  hst->host_name = strdup("host1");
+  _cache->write(hst);
+  shared_ptr<storage::index_mapping> im(new storage::index_mapping);
+  im->index_id = 7;
+  im->service_id = 14;
+  im->host_id = 1;
+  _cache->write(im);
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local index_mapping = broker_cache:get_index_mapping(7)\n"
+                         "  local svc = broker_cache:get_service_description(index_mapping.host_id, index_mapping.service_id)\n"
+                         "  broker_log:info(1, 'service description is ' .. tostring(svc))\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("service description is MyDescription"));
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// When a query for an instance is made
+// And the cache knows about it
+// Then the instance is returned from the lua method.
+TEST_F(LuaGenericTest, InstanceNameCacheTest) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  shared_ptr<instance_broadcast> ib(new instance_broadcast);
+  ib->broker_id = 42;
+  ib->broker_name = "broker name";
+  ib->enabled = true;
+  ib->poller_id = 18;
+  ib->poller_name = "MyPoller";
+  _cache->write(ib);
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local instance_name = broker_cache:get_instance_name(18)\n"
+                         "  broker_log:info(1, 'instance name is ' .. tostring(instance_name))\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("instance name is MyPoller"));
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// When a query for a metric mapping is made
+// And the cache knows about it
+// Then the metric mapping is returned from the lua method.
+TEST_F(LuaGenericTest, MetricMappingCacheTest) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  shared_ptr<storage::metric_mapping> mm(new storage::metric_mapping);
+  mm->index_id = 19;
+  mm->metric_id = 27;
+  _cache->write(mm);
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local mm = broker_cache:get_metric_mapping(27)\n"
+                         "  broker_log:info(1, 'metric id is ' .. mm.metric_id)\n"
+                         "  broker_log:info(1, 'index id is ' .. mm.index_id)\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("metric id is 27"));
+  ASSERT_TRUE(lst[1].contains("index id is 19"));
   RemoveFile(filename);
   RemoveFile("/tmp/log");
 }

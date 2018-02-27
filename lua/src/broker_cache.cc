@@ -35,10 +35,11 @@ static int l_broker_cache_destructor(lua_State* L) {
 
 /**
  *  The get_hostname() method available in the Lua interpreter
+ *  It returns a string.
  *
  *  @param L The Lua interpreter
  *
- *  @return an integer
+ *  @return 1
  */
 static int l_broker_cache_get_hostname(lua_State* L) {
   macro_cache const* cache(
@@ -46,7 +47,7 @@ static int l_broker_cache_get_hostname(lua_State* L) {
   int id(luaL_checkinteger(L, 2));
 
   try {
-    QString hst(cache->get_host_name(id));
+    QString const& hst(cache->get_host_name(id));
     lua_pushstring(L, hst.toStdString().c_str());
   }
   catch (std::exception const& e) {
@@ -57,11 +58,105 @@ static int l_broker_cache_get_hostname(lua_State* L) {
 }
 
 /**
- *  The get_service_description() method available in the Lua interpreter
+ *  The get_index_mapping() method available in the Lua interpreter.
+ *  It returns a table with three keys: index_id, host_id and service_id.
  *
  *  @param L The Lua interpreter
  *
- *  @return an integer
+ *  @return 1
+ */
+static int l_broker_cache_get_index_mapping(lua_State* L) {
+  macro_cache const* cache(
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  int index_id(luaL_checkinteger(L, 2));
+
+  try {
+    storage::index_mapping const& mapping(cache->get_index_mapping(index_id));
+    lua_createtable(L, 0, 3);
+
+    lua_pushstring(L, "index_id");
+    lua_pushinteger(L, mapping.index_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "host_id");
+    lua_pushinteger(L, mapping.host_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "service_id");
+    lua_pushinteger(L, mapping.service_id);
+    lua_settable(L, -3);
+  }
+  catch (std::exception const& e) {
+    (void) e;
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+/**
+ *  The get_instance_name() method available in the Lua interpreter.
+ *  It returns a string.
+ *
+ *  @param L The Lua interpreter
+ *
+ *  @return 1
+ */
+static int l_broker_cache_get_instance_name(lua_State* L) {
+  macro_cache const* cache(
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  int instance_id(luaL_checkinteger(L, 2));
+
+  try {
+    QString const& instance(cache->get_instance(instance_id));
+    lua_pushstring(L, instance.toStdString().c_str());
+  }
+  catch (std::exception const& e) {
+    (void) e;
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+/**
+ *  The get_metric_mapping() method available in the Lua interpreter.
+ *  It returns a table with two keys: metric_id, index_id.
+ *
+ *  @param L The Lua interpreter
+ *
+ *  @return 1
+ */
+static int l_broker_cache_get_metric_mapping(lua_State* L) {
+  macro_cache const* cache(
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  int metric_id(luaL_checkinteger(L, 2));
+
+  try {
+    storage::metric_mapping const& mapping(
+      cache->get_metric_mapping(metric_id));
+    lua_createtable(L, 0, 2);
+
+    lua_pushstring(L, "metric_id");
+    lua_pushinteger(L, mapping.metric_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "index_id");
+    lua_pushinteger(L, mapping.index_id);
+    lua_settable(L, -3);
+  }
+  catch (std::exception const& e) {
+    (void) e;
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+/**
+ *  The get_service_description() method available in the Lua interpreter.
+ *  It returns a string.
+ *
+ *  @param L The Lua interpreter
+ *
+ *  @return 1
  */
 static int l_broker_cache_get_service_description(lua_State* L) {
   macro_cache const* cache(
@@ -70,7 +165,7 @@ static int l_broker_cache_get_service_description(lua_State* L) {
   int service_id(luaL_checkinteger(L, 3));
 
   try {
-    QString svc(cache->get_service_description(host_id, service_id));
+    QString const& svc(cache->get_service_description(host_id, service_id));
     lua_pushstring(L, svc.toStdString().c_str());
   }
   catch (std::exception const& e) {
@@ -97,6 +192,9 @@ void broker_cache::broker_cache_reg(lua_State* L, macro_cache const& cache) {
   luaL_Reg s_broker_cache_regs[] = {
     { "__gc", l_broker_cache_destructor },
     { "get_hostname", l_broker_cache_get_hostname },
+    { "get_index_mapping", l_broker_cache_get_index_mapping },
+    { "get_instance_name", l_broker_cache_get_instance_name },
+    { "get_metric_mapping", l_broker_cache_get_metric_mapping },
     { "get_service_description", l_broker_cache_get_service_description },
     { NULL, NULL }
   };
