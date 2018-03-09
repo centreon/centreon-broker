@@ -108,6 +108,36 @@ QString const& macro_cache::get_host_name(unsigned int host_id) const {
   return (found->host_name);
 }
 
+
+/**
+ *  Get a list of the host groups containing a host.
+ *
+ *  @param[in] host_id  The id of the host.
+ *
+ *  @return             A QStringList.
+ */
+QMultiHash<unsigned int, neb::host_group_member> const&
+                                   macro_cache::get_host_group_members() const {
+  return _host_group_members;
+}
+
+/**
+ *  Get the name of a host group.
+ *
+ *  @param[in] id  The id of the host group.
+ *
+ *  @return             The name of the host group.
+ */
+QString const& macro_cache::get_host_group_name(unsigned int id) const {
+  QHash<unsigned int, neb::host_group>::const_iterator
+    found(_host_groups.find(id));
+
+  if (found == _host_groups.end())
+    throw (exceptions::msg()
+           << "lua: could not find information on host group " << id);
+  return (found->name);
+}
+
 /**
  *  Get the description of a service.
  *
@@ -160,6 +190,10 @@ void macro_cache::write(misc::shared_ptr<io::data> const& data) {
     _process_host(data.ref_as<neb::host const>());
   else if (data->type() == neb::service::static_type())
     _process_service(data.ref_as<neb::service const>());
+  else if (data->type() == neb::host_group::static_type())
+    _process_host_group(data.ref_as<neb::host_group const>());
+  else if (data->type() == neb::host_group_member::static_type())
+    _process_host_group_member(data.ref_as<neb::host_group_member const>());
   else if (data->type() == storage::index_mapping::static_type())
     _process_index_mapping(data.ref_as<storage::index_mapping const>());
   else if (data->type() == storage::metric_mapping::static_type())
@@ -186,6 +220,34 @@ void macro_cache::_process_host(neb::host const& h) {
     << "id = " << h.host_id
     << " ; name = " << h.host_name;
   _hosts[h.host_id] = h;
+}
+
+/**
+ *  Process a host group event.
+ *
+ *  @param hg  The event.
+ */
+void macro_cache::_process_host_group(neb::host_group const& hg) {
+  logging::debug(logging::medium)
+    << "macro_cache: process host group --- "
+    << "host group id = " << hg.id
+    << " ; name = " << hg.name;
+  _host_groups[hg.id] = hg;
+}
+
+/**
+ *  Process a host group member event.
+ *
+ *  @param hgm  The event.
+ */
+void macro_cache::_process_host_group_member(
+       neb::host_group_member const& hgm) {
+  logging::debug(logging::medium)
+    << "macro_cache: process host group member --- "
+    << "host id = " << hgm.host_id
+    << "host group id = " << hgm.group_id
+    << "host group name = " << hgm.group_name;
+  _host_group_members.insert(hgm.host_id, hgm);
 }
 
 /**

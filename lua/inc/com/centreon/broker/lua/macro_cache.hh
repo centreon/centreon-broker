@@ -22,6 +22,8 @@
 #  include <QHash>
 #  include "com/centreon/broker/instance_broadcast.hh"
 #  include "com/centreon/broker/neb/host.hh"
+#  include "com/centreon/broker/neb/host_group.hh"
+#  include "com/centreon/broker/neb/host_group_member.hh"
 #  include "com/centreon/broker/neb/instance.hh"
 #  include "com/centreon/broker/neb/service.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
@@ -47,6 +49,9 @@ namespace         lua {
     storage::metric_mapping const&
                    get_metric_mapping(unsigned int metric_id) const;
     QString const& get_host_name(unsigned int host_id) const;
+    QString const& get_host_group_name(unsigned int id) const;
+    QMultiHash<unsigned int, neb::host_group_member> const&
+                   get_host_group_members() const;
     QString const& get_service_description(
                      unsigned int host_id,
                      unsigned int service_id) const;
@@ -58,6 +63,8 @@ namespace         lua {
 
     void           _process_instance(instance_broadcast const& in);
     void           _process_host(neb::host const& h);
+    void           _process_host_group(neb::host_group const& hg);
+    void           _process_host_group_member(neb::host_group_member const& hgm);
     void           _process_service(neb::service const& s);
     void           _process_index_mapping(storage::index_mapping const& im);
     void           _process_metric_mapping(storage::metric_mapping const& mm);
@@ -69,6 +76,10 @@ namespace         lua {
                    _instances;
     QHash<unsigned int, neb::host>
                    _hosts;
+    QHash<unsigned int, neb::host_group>
+                   _host_groups;
+    QMultiHash<unsigned int, neb::host_group_member>
+                   _host_group_members;
     QHash<QPair<unsigned int, unsigned int>, neb::service>
                    _services;
     QHash<unsigned int, storage::index_mapping>
