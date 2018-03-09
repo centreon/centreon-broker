@@ -320,6 +320,27 @@ TEST_F(LuaGenericTest, JsonEncode) {
   RemoveFile("/tmp/log");
 }
 
+// Given an empty array,
+// Then json_encode() works well on it.
+TEST_F(LuaGenericTest, EmptyJsonEncode) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/json_encode.lua");
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local a = {}\n"
+                         "  local json = broker.json_encode(a)\n"
+                         "  broker_log:info(1, 'empty array: ' .. json)\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("INFO: empty array: []"));
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
 // When a script is loaded, a new socket is created
 // And a call to connect is made with a good adress/port
 // Then it succeeds.
