@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
@@ -159,6 +160,36 @@ QString const& macro_cache::get_service_description(
 }
 
 /**
+ *  Service group members accessor
+ *
+ *  @param[in] host_id  The id of the host.
+ *  @param[in] service_id  The id of the service.
+ *
+ *  @return             A QStringList.
+ */
+QMultiHash<QPair<unsigned int, unsigned int>, neb::service_group_member> const&
+                               macro_cache::get_service_group_members() const {
+  return _service_group_members;
+}
+
+/**
+ *  Get the name of a service group.
+ *
+ *  @param[in] id  The id of the service group.
+ *
+ *  @return            The name of the service group.
+ */
+QString const& macro_cache::get_service_group_name(unsigned int id) const {
+  QHash<unsigned int, neb::service_group>::const_iterator
+    found(_service_groups.find(id));
+
+  if (found == _service_groups.end())
+    throw (exceptions::msg()
+           << "lua: could not find information on service group " << id);
+  return (found->name);
+}
+
+/**
  *  Get the name of an instance.
  *
  *  @param[in] instance_id  The id of the instance.
@@ -188,12 +219,16 @@ void macro_cache::write(misc::shared_ptr<io::data> const& data) {
     _process_instance(data.ref_as<instance_broadcast const>());
   else if (data->type() == neb::host::static_type())
     _process_host(data.ref_as<neb::host const>());
-  else if (data->type() == neb::service::static_type())
-    _process_service(data.ref_as<neb::service const>());
   else if (data->type() == neb::host_group::static_type())
     _process_host_group(data.ref_as<neb::host_group const>());
   else if (data->type() == neb::host_group_member::static_type())
     _process_host_group_member(data.ref_as<neb::host_group_member const>());
+  else if (data->type() == neb::service::static_type())
+    _process_service(data.ref_as<neb::service const>());
+  else if (data->type() == neb::service_group::static_type())
+    _process_service_group(data.ref_as<neb::service_group const>());
+  else if (data->type() == neb::service_group_member::static_type())
+    _process_service_group_member(data.ref_as<neb::service_group_member const>());
   else if (data->type() == storage::index_mapping::static_type())
     _process_index_mapping(data.ref_as<storage::index_mapping const>());
   else if (data->type() == storage::metric_mapping::static_type())
@@ -262,6 +297,35 @@ void macro_cache::_process_service(neb::service const& s) {
     << " ; service id = " << s.service_id
     << " ; description = " << s.service_description;
   _services[qMakePair(s.host_id, s.service_id)] = s;
+}
+
+/**
+ *  Process a service group event.
+ *
+ *  @param sg  The event.
+ */
+void macro_cache::_process_service_group(neb::service_group const& sg) {
+  logging::debug(logging::medium)
+    << "macro_cache: process service group --- "
+    << "service group id = " << sg.id
+    << " ; name = " << sg.name;
+  _service_groups[sg.id] = sg;
+}
+
+/**
+ *  Process a service group member event.
+ *
+ *  @param sgm  The event.
+ */
+void macro_cache::_process_service_group_member(
+       neb::service_group_member const& sgm) {
+  logging::debug(logging::medium)
+    << "macro_cache: process service group member --- "
+    << "host id = " << sgm.host_id
+    << "service id = " << sgm.service_id
+    << "service group id = " << sgm.group_id
+    << "service group name = " << sgm.group_name;
+  _service_group_members.insert(qMakePair(sgm.host_id, sgm.service_id), sgm);
 }
 
 /**

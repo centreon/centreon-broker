@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <iostream>
 #include "com/centreon/broker/lua/broker_cache.hh"
 
 using namespace com::centreon::broker;
@@ -104,18 +105,18 @@ static int l_broker_cache_get_hostgroups(lua_State* L) {
   int i = 1;
   while (it != members.end() && it.key() == id) {
     neb::host_group_member const& hgm(it.value());
-    try {
-      QString const& hg_name(cache->get_host_group_name(hgm.group_id));
-      lua_pushstring(L, hg_name.toStdString().c_str());
-      lua_rawseti(L, -2, i);
-      ++i;
-    }
-    catch (std::exception const& e) {
-      (void) e;
-      lua_pop(L, 1);
-      lua_pushnil(L);
-      return 1;
-    }
+
+    lua_createtable(L, 0, 2);
+    lua_pushstring(L, "group_id");
+    lua_pushinteger(L, hgm.group_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "group_name");
+    lua_pushstring(L, hgm.group_name.toStdString().c_str());
+    lua_settable(L, -3);
+
+    lua_rawseti(L, -2, i);
+    ++i;
     ++it;
   }
   return 1;
@@ -240,6 +241,72 @@ static int l_broker_cache_get_service_description(lua_State* L) {
 }
 
 /**
+ *  The get_servicegroups() method available in the Lua interpreter
+ *  It returns a string.
+ *
+ *  @param L The Lua interpreter
+ *
+ *  @return 1
+ */
+static int l_broker_cache_get_servicegroups(lua_State* L) {
+  macro_cache const* cache(
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  unsigned int host_id(luaL_checkinteger(L, 2));
+  unsigned int service_id(luaL_checkinteger(L, 3));
+
+  QMultiHash<QPair<unsigned int, unsigned int>, neb::service_group_member> const& members(
+    cache->get_service_group_members());
+  QMultiHash<QPair<unsigned int, unsigned int>, neb::service_group_member>::const_iterator
+    it(members.find(qMakePair(host_id, service_id)));
+
+  lua_newtable(L);
+
+  int i = 1;
+  while (it != members.end() && it.key().first == host_id
+         && it.key().second == service_id) {
+    neb::service_group_member const& sgm(it.value());
+    lua_createtable(L, 0, 2);
+    lua_pushstring(L, "group_id");
+    lua_pushinteger(L, sgm.group_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "group_name");
+    lua_pushstring(L, sgm.group_name.toStdString().c_str());
+    lua_settable(L, -3);
+
+    lua_rawseti(L, -2, i);
+    ++i;
+    ++it;
+  }
+  return 1;
+}
+
+/**
+ *  The get_servicegroup_name() method available in the Lua interpreter
+ *  It returns a string.
+ *
+ *  @param L The Lua interpreter
+ *
+ *  @return 1
+ */
+static int l_broker_cache_get_servicegroup_name(lua_State* L) {
+  macro_cache const* cache(
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  int id(luaL_checkinteger(L, 2));
+
+  try {
+    QString const& sg(cache->get_service_group_name(id));
+    std::cout << "??? get_service_group_name: " << sg.toStdString() << "\n";
+    lua_pushstring(L, sg.toStdString().c_str());
+  }
+  catch (std::exception const& e) {
+    (void) e;
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+/**
  *  Load the Lua interpreter with the standard libraries
  *  and the broker lua sdk.
  *
@@ -262,6 +329,8 @@ void broker_cache::broker_cache_reg(lua_State* L, macro_cache const& cache) {
     { "get_instance_name", l_broker_cache_get_instance_name },
     { "get_metric_mapping", l_broker_cache_get_metric_mapping },
     { "get_service_description", l_broker_cache_get_service_description },
+    { "get_servicegroups", l_broker_cache_get_servicegroups },
+    { "get_servicegroup_name", l_broker_cache_get_servicegroup_name },
     { NULL, NULL }
   };
 

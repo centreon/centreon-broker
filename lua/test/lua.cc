@@ -633,17 +633,23 @@ TEST_F(LuaGenericTest, HostGroupCacheTest) {
   shared_ptr<neb::host_group_member> member(new neb::host_group_member);
   member->host_id = 22;
   member->group_id = 16;
+  member->group_name = "sixteen";
+  member->enabled = false;
+  member->poller_id = 14;
   _cache->write(member);
   member = new neb::host_group_member;
   member->host_id = 22;
   member->group_id = 17;
+  member->group_name = "seventeen";
+  member->enabled = true;
+  member->poller_id = 144;
   _cache->write(member);
 
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
                          "  local hg = broker_cache:get_hostgroups(22)\n"
                          "  for i,v in ipairs(hg) do\n"
-                         "    broker_log:info(1, 'member of ' .. v)\n"
+                         "    broker_log:info(1, 'member of ' .. broker.json_encode(v))\n"
                          "  end\n"
                          "end\n\n"
                          "function write(d)\n"
@@ -652,7 +658,7 @@ TEST_F(LuaGenericTest, HostGroupCacheTest) {
   QStringList lst(ReadFile("/tmp/log"));
 
   int first, second;
-  if (lst[0].contains("member of centreon1")) {
+  if (lst[0].contains("\"group_id\":16")) {
     first = 0;
     second = 1;
   }
@@ -660,48 +666,149 @@ TEST_F(LuaGenericTest, HostGroupCacheTest) {
     first = 1;
     second = 0;
   }
-  ASSERT_TRUE(lst[first].contains("member of centreon1"));
-  ASSERT_TRUE(lst[second].contains("member of centreon2"));
+  ASSERT_TRUE(lst[first].contains("\"group_id\":16"));
+  ASSERT_TRUE(lst[first].contains("\"group_name\":\"sixteen\""));
+
+  ASSERT_TRUE(lst[second].contains("\"group_id\":17"));
+  ASSERT_TRUE(lst[second].contains("\"group_name\":\"seventeen\""));
 
   RemoveFile(filename);
   RemoveFile("/tmp/log");
 }
 
-// When a query for host groups is made
-// And the cache does know about them
-// And a host group name is missing
-// Then nil is returned. It is a case where the cache is badly built.
-TEST_F(LuaGenericTest, HostGroupCacheTestFailure) {
+// When a query for a service group name is made
+// And the cache does not know about it
+// Then nil is returned by the lua method.
+TEST_F(LuaGenericTest, ServiceGroupCacheTestNameNotAvailable) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
-  shared_ptr<neb::host_group> hg(new neb::host_group);
-  hg->id = 16;
-  hg->name = strdup("centreon1");
-  _cache->write(hg);
-  shared_ptr<neb::host> hst(new neb::host);
-  hst->host_id = 22;
-  hst->host_name = strdup("host_centreon");
-  _cache->write(hst);
-  shared_ptr<neb::host_group_member> member(new neb::host_group_member);
-  member->host_id = 22;
-  member->group_id = 16;
-  _cache->write(member);
-  member = new neb::host_group_member;
-  member->host_id = 22;
-  member->group_id = 17;
-  _cache->write(member);
 
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local hg = broker_cache:get_hostgroups(22)\n"
-                         "  broker_log:info(1, 'member of ' .. tostring(hg))\n"
+                         "  local hg = broker_cache:get_servicegroup_name(28)\n"
+                         "  broker_log:info(1, 'service group is ' .. tostring(hg))\n"
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
   std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
-  ASSERT_TRUE(lst[0].contains("member of nil"));
+  ASSERT_TRUE(lst[0].contains("service group is nil"));
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// When a query for a service group name is made
+// And the cache does know about it
+// Then the name is returned by the lua method.
+TEST_F(LuaGenericTest, ServiceGroupCacheTestName) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  shared_ptr<neb::service_group> sg(new neb::service_group);
+  sg->id = 28;
+  sg->name = strdup("centreon");
+  _cache->write(sg);
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local sg = broker_cache:get_servicegroup_name(28)\n"
+                         "  broker_log:info(1, 'service group is ' .. tostring(sg))\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("service group is centreon"));
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// When a query for service groups is made
+// And the service is attached to no group
+// Then an empty array is returned.
+TEST_F(LuaGenericTest, ServiceGroupCacheTestEmpty) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local sg = broker_cache:get_servicegroups(1, 3)\n"
+                         "  broker_log:info(1, 'service group is ' .. broker.json_encode(sg))\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("service group is []"));
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// When a query for service groups is made
+// And the cache does know about them
+// Then an array is returned by the lua method.
+TEST_F(LuaGenericTest, ServiceGroupCacheTest) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  shared_ptr<neb::service_group> sg(new neb::service_group);
+  sg->id = 16;
+  sg->name = strdup("centreon1");
+  _cache->write(sg);
+  sg = new neb::service_group;
+  sg->id = 17;
+  sg->name = strdup("centreon2");
+  _cache->write(sg);
+  shared_ptr<neb::service> svc(new neb::service);
+  svc->service_id = 17;
+  svc->host_id = 22;
+  svc->host_name = strdup("host_centreon");
+  svc->service_description = strdup("service_description");
+  _cache->write(svc);
+  shared_ptr<neb::service_group_member> member(new neb::service_group_member);
+  member->host_id = 22;
+  member->service_id = 17;
+  member->poller_id = 3;
+  member->enabled = false;
+  member->group_id = 16;
+  member->group_name = "seize";
+  _cache->write(member);
+  member = new neb::service_group_member;
+  member->host_id = 22;
+  member->service_id = 17;
+  member->poller_id = 4;
+  member->enabled = true;
+  member->group_id = 17;
+  member->group_name = "dix-sept";
+  _cache->write(member);
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local sg = broker_cache:get_servicegroups(22, 17)\n"
+                         "  for i,v in ipairs(sg) do\n"
+                         "    broker_log:info(1, 'member of ' .. broker.json_encode(v))\n"
+                         "  end\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  int first, second;
+  if (lst[0].contains("\"group_id\":16")) {
+    first = 0;
+    second = 1;
+  }
+  else {
+    first = 1;
+    second = 0;
+  }
+  ASSERT_TRUE(lst[first].contains("\"group_id\":16"));
+  ASSERT_TRUE(lst[first].contains("\"group_name\":\"seize\""));
+
+  ASSERT_TRUE(lst[second].contains("\"group_id\":17"));
+  ASSERT_TRUE(lst[second].contains("\"group_name\":\"dix-sept\""));
 
   RemoveFile(filename);
   RemoveFile("/tmp/log");
