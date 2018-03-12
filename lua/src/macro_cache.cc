@@ -373,12 +373,41 @@ void macro_cache::_save_to_disk() {
        ++it)
     _cache->add(misc::shared_ptr<io::data>(new neb::host(*it)));
 
+  for (QHash<unsigned int, neb::host_group>::const_iterator
+         it(_host_groups.begin()),
+         end(_host_groups.end());
+       it != end;
+       ++it)
+    _cache->add(misc::shared_ptr<io::data>(new neb::host_group(*it)));
+
+  for (QMultiHash<unsigned int, neb::host_group_member>::const_iterator
+         it(_host_group_members.begin()),
+         end(_host_group_members.end());
+       it != end;
+       ++it)
+    _cache->add(misc::shared_ptr<io::data>(new neb::host_group_member(*it)));
+
   for (QHash<QPair<unsigned int, unsigned int>, neb::service>::const_iterator
          it(_services.begin()),
          end(_services.end());
        it != end;
        ++it)
     _cache->add(misc::shared_ptr<io::data>(new neb::service(*it)));
+
+  for (QHash<unsigned int, neb::service_group>::const_iterator
+         it(_service_groups.begin()),
+         end(_service_groups.end());
+       it != end;
+       ++it)
+    _cache->add(misc::shared_ptr<io::data>(new neb::service_group(*it)));
+
+  for (QMultiHash<QPair<unsigned int, unsigned int>,
+                  neb::service_group_member>::const_iterator
+         it(_service_group_members.begin()),
+         end(_service_group_members.end());
+       it != end;
+       ++it)
+    _cache->add(misc::shared_ptr<io::data>(new neb::service_group_member(*it)));
 
   for (QHash<unsigned int, storage::index_mapping>::const_iterator
          it(_index_mappings.begin()),
