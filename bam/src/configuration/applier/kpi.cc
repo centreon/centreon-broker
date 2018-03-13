@@ -185,8 +185,10 @@ void applier::kpi::apply(
   //
   for (std::map<unsigned int, applied>::const_iterator
          kpi_it(_applied.begin()),
+         next_kpi_it(_applied.begin()),
          kpi_end(_applied.end());
-       kpi_it != kpi_end; ++kpi_it) {
+       kpi_it != kpi_end; kpi_it = next_kpi_it) {
+    ++next_kpi_it;
     configuration::kpi const& cfg(kpi_it->second.cfg);
     misc::shared_ptr<bam::kpi> my_kpi(kpi_it->second.obj);
     try {
