@@ -34,6 +34,123 @@ static int l_broker_cache_destructor(lua_State* L) {
 }
 
 /**
+ *  The get_ba() method available in the Lua interpreter.
+ *  It returns a table containing the ba data.
+ *
+ * @param L The Lua interpreter
+ *
+ * @return 1
+ */
+static int l_broker_cache_get_ba(lua_State* L) {
+  macro_cache const* cache(
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  int ba_id(luaL_checkinteger(L, 2));
+
+  try {
+    bam::dimension_ba_event const& ba(cache->get_dimension_ba_event(ba_id));
+    lua_createtable(L, 0, 7);
+    lua_pushstring(L, "ba_id");
+    lua_pushinteger(L, ba.ba_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "ba_name");
+    lua_pushstring(L, ba.ba_name.toStdString().c_str());
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "ba_description");
+    lua_pushstring(L, ba.ba_description.toStdString().c_str());
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "sla_month_percent_crit");
+    lua_pushnumber(L, ba.sla_month_percent_crit);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "sla_month_percent_warn");
+    lua_pushnumber(L, ba.sla_month_percent_warn);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "sla_duration_crit");
+    lua_pushinteger(L, ba.sla_duration_crit);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "sla_duration_warn");
+    lua_pushinteger(L, ba.sla_duration_warn);
+    lua_settable(L, -3);
+  }
+  catch (std::exception const& e) {
+    (void) e;
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+/**
+ *  The get_bv() method available in the Lua interpreter.
+ *  It returns a table containing the bv data.
+ *
+ * @param L The Lua interpreter
+ *
+ * @return 1
+ */
+static int l_broker_cache_get_bv(lua_State* L) {
+  macro_cache const* cache(
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  int bv_id(luaL_checkinteger(L, 2));
+
+  try {
+    bam::dimension_bv_event const& bv(cache->get_dimension_bv_event(bv_id));
+    lua_createtable(L, 0, 3);
+    lua_pushstring(L, "bv_id");
+    lua_pushinteger(L, bv.bv_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "bv_name");
+    lua_pushstring(L, bv.bv_name.toStdString().c_str());
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "bv_description");
+    lua_pushstring(L, bv.bv_description.toStdString().c_str());
+    lua_settable(L, -3);
+  }
+  catch (std::exception const& e) {
+    (void) e;
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+/**
+ *  The get_bvs() method available in the Lua interpreter
+ *  It returns an array of bv ids.
+ *
+ * @param L The Lua interpreter
+ *
+ * @return 1
+ */
+static int l_broker_cache_get_bvs(lua_State* L) {
+  macro_cache const* cache(
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  int ba_id(luaL_checkinteger(L, 2));
+
+  QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event> const&
+    relations(cache->get_dimension_ba_bv_relation_events());
+  QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event>::const_iterator
+    it(relations.find(ba_id));
+
+  lua_newtable(L);
+
+  int i = 1;
+  while (it != relations.end() && it.key() == ba_id) {
+    bam::dimension_ba_bv_relation_event const& rel(it.value());
+    lua_pushinteger(L, it.value().bv_id);
+    lua_rawseti(L, -2, i);
+    ++i;
+    ++it;
+  }
+  return 1;
+}
+
+/**
  *  The get_hostgroup_name() method available in the Lua interpreter
  *  It returns a string.
  *
@@ -133,6 +250,93 @@ static int l_broker_cache_get_instance_name(lua_State* L) {
   try {
     QString const& instance(cache->get_instance(instance_id));
     lua_pushstring(L, instance.toStdString().c_str());
+  }
+  catch (std::exception const& e) {
+    (void) e;
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+/**
+ *  The get_kpi() method available in the Lua interpreter.
+ *  It returns a table containing the kpi data.
+ *
+ * @param L The Lua interpreter
+ *
+ * @return 1
+ */
+static int l_broker_cache_get_kpi(lua_State* L) {
+  macro_cache const* cache(
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  int kpi_id(luaL_checkinteger(L, 2));
+
+  try {
+    bam::dimension_kpi_event const& kpi(cache->get_dimension_kpi_event(kpi_id));
+    lua_createtable(L, 0, 16);
+    lua_pushstring(L, "kpi_id");
+    lua_pushinteger(L, kpi.kpi_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "ba_id");
+    lua_pushinteger(L, kpi.ba_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "ba_name");
+    lua_pushstring(L, kpi.ba_name.toStdString().c_str());
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "host_id");
+    lua_pushinteger(L, kpi.host_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "host_name");
+    lua_pushstring(L, kpi.host_name.toStdString().c_str());
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "service_id");
+    lua_pushinteger(L, kpi.service_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "service_description");
+    lua_pushstring(L, kpi.service_description.toStdString().c_str());
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "kpi_ba_id");
+    lua_pushinteger(L, kpi.kpi_ba_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "kpi_ba_name");
+    lua_pushstring(L, kpi.kpi_ba_name.toStdString().c_str());
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "meta_service_id");
+    lua_pushinteger(L, kpi.meta_service_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "meta_service_name");
+    lua_pushstring(L, kpi.meta_service_name.toStdString().c_str());
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "boolean_id");
+    lua_pushinteger(L, kpi.boolean_id);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "boolean_name");
+    lua_pushstring(L, kpi.boolean_name.toStdString().c_str());
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "impact_warning");
+    lua_pushnumber(L, kpi.impact_warning);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "impact_critical");
+    lua_pushnumber(L, kpi.impact_critical);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "impact_unknown");
+    lua_pushnumber(L, kpi.impact_unknown);
+    lua_settable(L, -3);
   }
   catch (std::exception const& e) {
     (void) e;
@@ -330,11 +534,15 @@ void broker_cache::broker_cache_reg(lua_State* L, macro_cache const& cache) {
 
   luaL_Reg s_broker_cache_regs[] = {
     { "__gc", l_broker_cache_destructor },
+    { "get_ba", l_broker_cache_get_ba },
+    { "get_bv", l_broker_cache_get_bv },
+    { "get_bvs", l_broker_cache_get_bvs },
     { "get_hostgroup_name", l_broker_cache_get_hostgroup_name },
     { "get_hostgroups", l_broker_cache_get_hostgroups },
     { "get_hostname", l_broker_cache_get_hostname },
     { "get_index_mapping", l_broker_cache_get_index_mapping },
     { "get_instance_name", l_broker_cache_get_instance_name },
+    { "get_kpi", l_broker_cache_get_kpi },
     { "get_metric_mapping", l_broker_cache_get_metric_mapping },
     { "get_service_description", l_broker_cache_get_service_description },
     { "get_servicegroup_name", l_broker_cache_get_servicegroup_name },

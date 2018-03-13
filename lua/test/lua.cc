@@ -866,3 +866,246 @@ TEST_F(LuaGenericTest, SetNewInstance) {
   RemoveFile(filename);
   RemoveFile("/tmp/log");
 }
+
+// When a query for bvs containing a ba is made
+// And the cache does know about them
+// Then an array with bvs id is returned by the lua method.
+TEST_F(LuaGenericTest, BamCacheTestBvBaRelation) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  shared_ptr<bam::dimension_ba_bv_relation_event> rel(
+    new bam::dimension_ba_bv_relation_event);
+  rel->ba_id = 10;
+  rel->bv_id = 18;
+  _cache->write(rel);
+
+  rel = new bam::dimension_ba_bv_relation_event;
+  rel->ba_id = 10;
+  rel->bv_id = 23;
+  _cache->write(rel);
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local rel = broker_cache:get_bvs(10)\n"
+                         "  for i,v in ipairs(rel) do\n"
+                         "    broker_log:info(1, 'member of bv ' .. v)\n"
+                         "  end\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  int first, second;
+  if (lst[0].contains("member of bv 18")) {
+    first = 0;
+    second = 1;
+  }
+  else {
+    first = 1;
+    second = 0;
+  }
+  ASSERT_TRUE(lst[first].contains("member of bv 18"));
+  ASSERT_TRUE(lst[second].contains("member of bv 23"));
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// Given a ba id,
+// When the Lua get_ba() function is called with it,
+// Then a table corresponding to this ba is returned.
+TEST_F(LuaGenericTest, BamCacheTestBa) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  shared_ptr<bam::dimension_ba_event> ba(
+    new bam::dimension_ba_event);
+  ba->ba_id = 10;
+  ba->ba_name = "ba name";
+  ba->ba_description = "ba description";
+  ba->sla_month_percent_crit = 1.25;
+  ba->sla_month_percent_warn = 1.18;
+  ba->sla_duration_crit = 19;
+  ba->sla_duration_warn = 23;
+  _cache->write(ba);
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local ba = broker_cache:get_ba(10)\n"
+                         "  broker_log:info(1, 'member of ba ' .. broker.json_encode(ba))\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("\"ba_name\":\"ba name\""));
+  ASSERT_TRUE(lst[0].contains("\"ba_description\":\"ba description\""));
+  ASSERT_TRUE(lst[0].contains("\"sla_month_percent_crit\":1.25"));
+  ASSERT_TRUE(lst[0].contains("\"sla_month_percent_warn\":1.18"));
+  ASSERT_TRUE(lst[0].contains("\"sla_duration_crit\":19"));
+  ASSERT_TRUE(lst[0].contains("\"sla_duration_warn\":23"));
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// Given a ba id,
+// When the Lua get_ba() function is called with it,
+// And the cache does not know about it,
+// Then nil is returned.
+TEST_F(LuaGenericTest, BamCacheTestBaNil) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local ba = broker_cache:get_ba(10)\n"
+                         "  broker_log:info(1, 'member of ba ' .. tostring(ba))\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("member of ba nil"));
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// Given a bv id,
+// When the Lua get_bv() function is called with it,
+// Then a table corresponding to this bv is returned.
+TEST_F(LuaGenericTest, BamCacheTestBv) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  shared_ptr<bam::dimension_bv_event> bv(
+    new bam::dimension_bv_event);
+  bv->bv_id = 10;
+  bv->bv_name = "bv name";
+  bv->bv_description = "bv description";
+  _cache->write(bv);
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local bv = broker_cache:get_bv(10)\n"
+                         "  broker_log:info(1, 'member of bv ' .. broker.json_encode(bv))\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("\"bv_id\":10"));
+  ASSERT_TRUE(lst[0].contains("\"bv_name\":\"bv name\""));
+  ASSERT_TRUE(lst[0].contains("\"bv_description\":\"bv description\""));
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// Given a bv id,
+// When the Lua get_bv() function is called with it,
+// And the cache does not know about it,
+// Then nil is returned.
+TEST_F(LuaGenericTest, BamCacheTestBvNil) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local bv = broker_cache:get_bv(10)\n"
+                         "  broker_log:info(1, 'member of bv ' .. tostring(bv))\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("member of bv nil"));
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// Given a kpi id,
+// When the Lua get_kpi() function is called with it,
+// Then a table corresponding to this kpi is returned.
+TEST_F(LuaGenericTest, BamCacheTestKpi) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  shared_ptr<bam::dimension_kpi_event> kpi(
+    new bam::dimension_kpi_event);
+  kpi->kpi_id = 10;
+  kpi->ba_id = 11;
+  kpi->ba_name = "ba name";
+  kpi->host_id = 12;
+  kpi->host_name = "host name";
+  kpi->service_id = 13;
+  kpi->service_description = "service description";
+  kpi->kpi_ba_id = 14;
+  kpi->kpi_ba_name = "kpi ba name";
+  kpi->meta_service_id = 15;
+  kpi->meta_service_name = "meta service name";
+  kpi->boolean_id = 16;
+  kpi->boolean_name = "boolean name";
+  kpi->impact_warning = 2.2;
+  kpi->impact_critical = 2.3;
+  kpi->impact_unknown = 2.4;
+  _cache->write(kpi);
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local kpi = broker_cache:get_kpi(10)\n"
+                         "  broker_log:info(1, 'member of kpi ' .. broker.json_encode(kpi))\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("\"kpi_id\":10"));
+  ASSERT_TRUE(lst[0].contains("\"ba_id\":11"));
+  ASSERT_TRUE(lst[0].contains("\"ba_name\":\"ba name\""));
+  ASSERT_TRUE(lst[0].contains("\"host_id\":12"));
+  ASSERT_TRUE(lst[0].contains("\"host_name\":\"host name\""));
+  ASSERT_TRUE(lst[0].contains("\"service_id\":13"));
+  ASSERT_TRUE(lst[0].contains("\"service_description\":\"service description\""));
+  ASSERT_TRUE(lst[0].contains("\"kpi_ba_id\":14"));
+  ASSERT_TRUE(lst[0].contains("\"kpi_ba_name\":\"kpi ba name\""));
+  ASSERT_TRUE(lst[0].contains("\"meta_service_id\":15"));
+  ASSERT_TRUE(lst[0].contains("\"meta_service_name\":\"meta service name\""));
+  ASSERT_TRUE(lst[0].contains("\"boolean_id\":16"));
+  ASSERT_TRUE(lst[0].contains("\"boolean_name\":\"boolean name\""));
+  ASSERT_TRUE(lst[0].contains("\"impact_warning\":2.2"));
+  ASSERT_TRUE(lst[0].contains("\"impact_critical\":2.3"));
+  ASSERT_TRUE(lst[0].contains("\"impact_unknown\":2.4"));
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// Given a kpi id,
+// When the Lua get_kpi() function is called with it,
+// And the cache does not know about it,
+// Then nil is returned.
+TEST_F(LuaGenericTest, BamCacheTestKpiNil) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local kpi = broker_cache:get_kpi(10)\n"
+                         "  broker_log:info(1, 'member of kpi ' .. tostring(kpi))\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("member of kpi nil"));
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
