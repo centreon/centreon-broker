@@ -75,6 +75,7 @@ namespace         lua {
     void           _process_service_group_member(neb::service_group_member const& sgm);
     void           _process_index_mapping(storage::index_mapping const& im);
     void           _process_metric_mapping(storage::metric_mapping const& mm);
+
     void           _save_to_disk();
 
     misc::shared_ptr<persistent_cache>

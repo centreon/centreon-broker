@@ -103,6 +103,15 @@ bool dimension_kpi_event::operator==(
  *  @return Event type.
  */
 unsigned int dimension_kpi_event::type() const {
+  return (dimension_kpi_event::static_type());
+}
+
+/**
+ *  Get the event type.
+ *
+ *  @return Event type.
+ */
+unsigned int dimension_kpi_event::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_dimension_kpi_event>::value);
 }
 

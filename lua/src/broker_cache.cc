@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <iostream>
 #include "com/centreon/broker/lua/broker_cache.hh"
 
 using namespace com::centreon::broker;
@@ -242,7 +241,7 @@ static int l_broker_cache_get_service_description(lua_State* L) {
 
 /**
  *  The get_servicegroups() method available in the Lua interpreter
- *  It returns a string.
+ *  It returns an array of objects, each one containing group_id and group_name.
  *
  *  @param L The Lua interpreter
  *
@@ -296,7 +295,6 @@ static int l_broker_cache_get_servicegroup_name(lua_State* L) {
 
   try {
     QString const& sg(cache->get_service_group_name(id));
-    std::cout << "??? get_service_group_name: " << sg.toStdString() << "\n";
     lua_pushstring(L, sg.toStdString().c_str());
   }
   catch (std::exception const& e) {
