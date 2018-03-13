@@ -1,4 +1,29 @@
 ======================
+Centreon Broker 3.0.14
+======================
+
+*********
+Bug fixes
+*********
+
+BAM segfault
+============
+
+Sometimes, it was possible that Broker crashes while it was applying a new
+BAM configuration. This could be seen particularly when the ressource attached
+to a kpi was disabled.
+
+************
+Enhancements
+************
+
+Lua module
+==========
+
+The Lua module provides new cache methods to access to index mappings, instance
+names and metric mappings.
+
+======================
 Centreon Broker 3.0.13
 ======================
 
