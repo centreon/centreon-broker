@@ -169,6 +169,15 @@ unsigned kpi::get_id() const {
 }
 
 /**
+ *  Set the id.
+ *
+ *  @param id The id to set to the kpi.
+ */
+void kpi::set_id(unsigned int id) {
+  _id = id;
+}
+
+/**
  *  Get the state type.
  *
  *  @return  The state type.

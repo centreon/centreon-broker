@@ -194,7 +194,7 @@ void applier::bool_expression::apply(
     }
     catch (std::exception const& e) {
       logging::error(logging::high)
-        << "BAM: could not create boolean expresion "
+        << "BAM: could not create boolean expression "
         << it->first << " so it will be discarded: " << e.what();
     }
     new_bool_exp->set_id(it->first);
