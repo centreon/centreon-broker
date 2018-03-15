@@ -237,36 +237,42 @@ static int l_broker_cache_get_servicegroups(lua_State* L) {
   unsigned int host_id(luaL_checkinteger(L, 2));
   unsigned int service_id(luaL_checkinteger(L, 3));
 
-  QMultiHash<QPair<unsigned int, unsigned int>, neb::service_group_member> const& members(
+  QHash<QPair<unsigned int, unsigned int>,
+        QHash<unsigned int, neb::service_group_member> > const& members(
     cache->get_service_group_members());
-  QMultiHash<QPair<unsigned int, unsigned int>, neb::service_group_member>::const_iterator
-    it(members.find(qMakePair(host_id, service_id)));
 
+  QHash<QPair<unsigned int, unsigned int>,
+        QHash<unsigned int, neb::service_group_member> >::const_iterator grp_it(
+    members.find(qMakePair(host_id, service_id)));
   lua_newtable(L);
 
-  int i = 1;
-  while (it != members.end() && it.key().first == host_id
-         && it.key().second == service_id) {
-    neb::service_group_member const& sgm(it.value());
-    lua_createtable(L, 0, 2);
-    lua_pushstring(L, "group_id");
-    lua_pushinteger(L, sgm.group_id);
-    lua_settable(L, -3);
+  if (grp_it != members.end()) {
+    int i = 1;
+    for (QHash<unsigned int, neb::service_group_member>::const_iterator
+           it(grp_it->begin()),
+           end(grp_it->end());
+           it != end;
+           ++it) {
+      neb::service_group_member const& sgm(it.value());
+      lua_createtable(L, 0, 2);
+      lua_pushstring(L, "group_id");
+      lua_pushinteger(L, sgm.group_id);
+      lua_settable(L, -3);
 
-    lua_pushstring(L, "group_name");
-    lua_pushstring(L, sgm.group_name.toStdString().c_str());
-    lua_settable(L, -3);
+      lua_pushstring(L, "group_name");
+      lua_pushstring(L, sgm.group_name.toStdString().c_str());
+      lua_settable(L, -3);
 
-    lua_rawseti(L, -2, i);
-    ++i;
-    ++it;
+      lua_rawseti(L, -2, i);
+      ++i;
+    }
   }
   return 1;
 }
 
 /**
- *  The get_hostgroup() method available in the Lua interpreter
- *  It returns a string.
+ *  The get_hostgroups() method available in the Lua interpreter
+ *  It returns an array of host groups from a host id.
  *
  *  @param L The Lua interpreter
  *
@@ -277,29 +283,33 @@ static int l_broker_cache_get_hostgroups(lua_State* L) {
     *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
   int id(luaL_checkinteger(L, 2));
 
-  QMultiHash<unsigned int, neb::host_group_member> const& members(
+  QHash<unsigned int, QHash<unsigned int, neb::host_group_member> > const& members(
     cache->get_host_group_members());
-  QMultiHash<unsigned int, neb::host_group_member>::const_iterator
-    it(members.find(id));
 
+  QHash<unsigned int, QHash<unsigned int, neb::host_group_member> >::const_iterator grp_it(
+    members.find(id));
   lua_newtable(L);
 
-  int i = 1;
-  while (it != members.end() && it.key() == id) {
-    neb::host_group_member const& hgm(it.value());
+  if (grp_it != members.end()) {
+    int i = 1;
+    for (QHash<unsigned int, neb::host_group_member>::const_iterator
+           it(grp_it->begin()),
+           end(grp_it->end());
+           it != end;
+           ++it) {
+      neb::host_group_member const& hgm(it.value());
+      lua_createtable(L, 0, 2);
+      lua_pushstring(L, "group_id");
+      lua_pushinteger(L, hgm.group_id);
+      lua_settable(L, -3);
 
-    lua_createtable(L, 0, 2);
-    lua_pushstring(L, "group_id");
-    lua_pushinteger(L, hgm.group_id);
-    lua_settable(L, -3);
+      lua_pushstring(L, "group_name");
+      lua_pushstring(L, hgm.group_name.toStdString().c_str());
+      lua_settable(L, -3);
 
-    lua_pushstring(L, "group_name");
-    lua_pushstring(L, hgm.group_name.toStdString().c_str());
-    lua_settable(L, -3);
-
-    lua_rawseti(L, -2, i);
-    ++i;
-    ++it;
+      lua_rawseti(L, -2, i);
+      ++i;
+    }
   }
   return 1;
 }

@@ -117,7 +117,7 @@ QString const& macro_cache::get_host_name(unsigned int host_id) const {
  *
  *  @return             A QStringList.
  */
-QMultiHash<unsigned int, neb::host_group_member> const&
+QHash<unsigned int, QHash<unsigned int, neb::host_group_member> > const&
                                    macro_cache::get_host_group_members() const {
   return _host_group_members;
 }
@@ -165,9 +165,10 @@ QString const& macro_cache::get_service_description(
  *  @param[in] host_id  The id of the host.
  *  @param[in] service_id  The id of the service.
  *
- *  @return             A QStringList.
+ *  @return             A QHash indexed by service group ids.
  */
-QMultiHash<QPair<unsigned int, unsigned int>, neb::service_group_member> const&
+QHash<QPair<unsigned int, unsigned int>,
+      QHash<unsigned int, neb::service_group_member> > const&
                                macro_cache::get_service_group_members() const {
   return _service_group_members;
 }
@@ -281,9 +282,9 @@ void macro_cache::_process_host_group_member(
     << " (group_name: '" << hgm.group_name << "', group_id: " << hgm.group_id
     << ", host_id: " << hgm.host_id << ")";
   if (hgm.enabled)
-    _host_group_members.insert(hgm.host_id, hgm);
+    _host_group_members[hgm.host_id].insert(hgm.group_id, hgm);
   else
-    _host_group_members.remove(hgm.host_id);
+    _host_group_members[hgm.host_id].remove(hgm.group_id);
 }
 
 /**
@@ -325,9 +326,11 @@ void macro_cache::_process_service_group_member(
     << ", host_id: " << sgm.host_id
     << ", service_id: " << sgm.service_id << ")";
   if (sgm.enabled)
-    _service_group_members.insert(qMakePair(sgm.host_id, sgm.service_id), sgm);
+    _service_group_members[qMakePair(sgm.host_id, sgm.service_id)].insert(
+      sgm.group_id, sgm);
   else
-    _service_group_members.remove(qMakePair(sgm.host_id, sgm.service_id));
+    _service_group_members[qMakePair(sgm.host_id, sgm.service_id)].remove(
+      sgm.group_id);
 }
 
 /**
@@ -379,12 +382,19 @@ void macro_cache::_save_to_disk() {
        ++it)
     _cache->add(misc::shared_ptr<io::data>(new neb::host_group(*it)));
 
-  for (QMultiHash<unsigned int, neb::host_group_member>::const_iterator
+  for (QHash<unsigned int, QHash<unsigned int, neb::host_group_member> >::const_iterator
          it(_host_group_members.begin()),
          end(_host_group_members.end());
        it != end;
-       ++it)
-    _cache->add(misc::shared_ptr<io::data>(new neb::host_group_member(*it)));
+       ++it) {
+    for (QHash<unsigned int, neb::host_group_member>::const_iterator
+           hit(it.value().begin()),
+           hend(it.value().end());
+         hit != hend;
+         ++hit) {
+      _cache->add(misc::shared_ptr<io::data>(new neb::host_group_member(*hit)));
+    }
+  }
 
   for (QHash<QPair<unsigned int, unsigned int>, neb::service>::const_iterator
          it(_services.begin()),
@@ -400,13 +410,20 @@ void macro_cache::_save_to_disk() {
        ++it)
     _cache->add(misc::shared_ptr<io::data>(new neb::service_group(*it)));
 
-  for (QMultiHash<QPair<unsigned int, unsigned int>,
-                  neb::service_group_member>::const_iterator
+  for (QHash<QPair<unsigned int, unsigned int>,
+             QHash<unsigned int, neb::service_group_member> >::const_iterator
          it(_service_group_members.begin()),
          end(_service_group_members.end());
        it != end;
-       ++it)
-    _cache->add(misc::shared_ptr<io::data>(new neb::service_group_member(*it)));
+       ++it) {
+    for (QHash<unsigned int, neb::service_group_member>::const_iterator
+           sit(it.value().begin()),
+           send(it.value().end());
+         sit != send;
+         ++sit) {
+      _cache->add(misc::shared_ptr<io::data>(new neb::service_group_member(*sit)));
+    }
+  }
 
   for (QHash<unsigned int, storage::index_mapping>::const_iterator
          it(_index_mappings.begin()),

@@ -52,13 +52,14 @@ namespace         lua {
                    get_metric_mapping(unsigned int metric_id) const;
     QString const& get_host_name(unsigned int host_id) const;
     QString const& get_host_group_name(unsigned int id) const;
-    QMultiHash<unsigned int, neb::host_group_member> const&
+    QHash<unsigned int, QHash<unsigned int, neb::host_group_member> > const&
                    get_host_group_members() const;
     QString const& get_service_description(
                      unsigned int host_id,
                      unsigned int service_id) const;
     QString const& get_service_group_name(unsigned int id) const;
-    QMultiHash<QPair<unsigned int, unsigned int>, neb::service_group_member> const&
+    QHash<QPair<unsigned int, unsigned int>,
+          QHash<unsigned int, neb::service_group_member> > const&
                    get_service_group_members() const;
     QString const& get_instance(unsigned int instance_id) const;
 
@@ -86,13 +87,14 @@ namespace         lua {
                    _hosts;
     QHash<unsigned int, neb::host_group>
                    _host_groups;
-    QMultiHash<unsigned int, neb::host_group_member>
+    QHash<unsigned int, QHash<unsigned int, neb::host_group_member> >
                    _host_group_members;
     QHash<QPair<unsigned int, unsigned int>, neb::service>
                    _services;
     QHash<unsigned int, neb::service_group>
                    _service_groups;
-    QMultiHash<QPair<unsigned int, unsigned int>, neb::service_group_member>
+    QHash<QPair<unsigned int, unsigned int>,
+          QHash<unsigned int, neb::service_group_member> >
                    _service_group_members;
     QHash<unsigned int, storage::index_mapping>
                    _index_mappings;
