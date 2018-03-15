@@ -251,9 +251,7 @@ void macro_cache::_process_instance(instance_broadcast const& in) {
  */
 void macro_cache::_process_host(neb::host const& h) {
   logging::debug(logging::medium)
-    << "macro_cache: process host --- "
-    << "id = " << h.host_id
-    << " ; name = " << h.host_name;
+    << "lua: processing host '" << h.host_name << "' of id " << h.host_id;
   _hosts[h.host_id] = h;
 }
 
@@ -264,10 +262,11 @@ void macro_cache::_process_host(neb::host const& h) {
  */
 void macro_cache::_process_host_group(neb::host_group const& hg) {
   logging::debug(logging::medium)
-    << "macro_cache: process host group --- "
-    << "host group id = " << hg.id
-    << " ; name = " << hg.name;
-  _host_groups[hg.id] = hg;
+    << "lua: processing host group '" << hg.name << "' of id " << hg.id;
+  if (hg.enabled)
+    _host_groups[hg.id] = hg;
+  else
+    _host_groups.remove(hg.id);
 }
 
 /**
@@ -278,11 +277,13 @@ void macro_cache::_process_host_group(neb::host_group const& hg) {
 void macro_cache::_process_host_group_member(
        neb::host_group_member const& hgm) {
   logging::debug(logging::medium)
-    << "macro_cache: process host group member --- "
-    << "host id = " << hgm.host_id
-    << "host group id = " << hgm.group_id
-    << "host group name = " << hgm.group_name;
-  _host_group_members.insert(hgm.host_id, hgm);
+    << "lua: processing host group member "
+    << " (group_name: '" << hgm.group_name << "', group_id: " << hgm.group_id
+    << ", host_id: " << hgm.host_id << ")";
+  if (hgm.enabled)
+    _host_group_members.insert(hgm.host_id, hgm);
+  else
+    _host_group_members.remove(hgm.host_id);
 }
 
 /**
@@ -292,10 +293,8 @@ void macro_cache::_process_host_group_member(
  */
 void macro_cache::_process_service(neb::service const& s) {
   logging::debug(logging::medium)
-    << "macro_cache: process service --- "
-    << "host id = " << s.host_id
-    << " ; service id = " << s.service_id
-    << " ; description = " << s.service_description;
+    << "lua: processing service (" << s.host_id << ", " << s.service_id << ") "
+    << "(description: " << s.service_description << ")";
   _services[qMakePair(s.host_id, s.service_id)] = s;
 }
 
@@ -306,10 +305,11 @@ void macro_cache::_process_service(neb::service const& s) {
  */
 void macro_cache::_process_service_group(neb::service_group const& sg) {
   logging::debug(logging::medium)
-    << "macro_cache: process service group --- "
-    << "service group id = " << sg.id
-    << " ; name = " << sg.name;
-  _service_groups[sg.id] = sg;
+    << "lua: processing service group '" << sg.name << "' of id " << sg.id;
+  if (sg.enabled)
+    _service_groups[sg.id] = sg;
+  else
+    _service_groups.remove(sg.id);
 }
 
 /**
@@ -320,12 +320,14 @@ void macro_cache::_process_service_group(neb::service_group const& sg) {
 void macro_cache::_process_service_group_member(
        neb::service_group_member const& sgm) {
   logging::debug(logging::medium)
-    << "macro_cache: process service group member --- "
-    << "host id = " << sgm.host_id
-    << "service id = " << sgm.service_id
-    << "service group id = " << sgm.group_id
-    << "service group name = " << sgm.group_name;
-  _service_group_members.insert(qMakePair(sgm.host_id, sgm.service_id), sgm);
+    << "lua: processing service group member "
+    << " (group_name: '" << sgm.group_name << "', group_id: " << sgm.group_id
+    << ", host_id: " << sgm.host_id
+    << ", service_id: " << sgm.service_id << ")";
+  if (sgm.enabled)
+    _service_group_members.insert(qMakePair(sgm.host_id, sgm.service_id), sgm);
+  else
+    _service_group_members.remove(qMakePair(sgm.host_id, sgm.service_id));
 }
 
 /**
@@ -335,10 +337,8 @@ void macro_cache::_process_service_group_member(
  */
 void macro_cache::_process_index_mapping(storage::index_mapping const& im) {
   logging::debug(logging::medium)
-    << "macro_cache: process index mapping --- "
-    << "index id = " << im.index_id;
+    << "lua: processing index mapping (index_id: " << im.index_id << ")";
   _index_mappings[im.index_id] = im;
-  return ;
 }
 
 /**
@@ -348,8 +348,7 @@ void macro_cache::_process_index_mapping(storage::index_mapping const& im) {
  */
 void macro_cache::_process_metric_mapping(storage::metric_mapping const& mm) {
   logging::debug(logging::medium)
-    << "macro_cache: process metric mapping --- "
-    << "index id = " << mm.index_id;
+    << "lua: processing metric mapping (index_id: " << mm.index_id << ")";
   _metric_mappings[mm.metric_id] = mm;
 }
 

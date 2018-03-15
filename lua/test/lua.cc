@@ -657,20 +657,8 @@ TEST_F(LuaGenericTest, HostGroupCacheTest) {
   std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
-  int first, second;
-  if (lst[0].contains("\"group_id\":16")) {
-    first = 0;
-    second = 1;
-  }
-  else {
-    first = 1;
-    second = 0;
-  }
-  ASSERT_TRUE(lst[first].contains("\"group_id\":16"));
-  ASSERT_TRUE(lst[first].contains("\"group_name\":\"sixteen\""));
-
-  ASSERT_TRUE(lst[second].contains("\"group_id\":17"));
-  ASSERT_TRUE(lst[second].contains("\"group_name\":\"seventeen\""));
+  ASSERT_TRUE(lst[0].contains("\"group_id\":17"));
+  ASSERT_TRUE(lst[0].contains("\"group_name\":\"seventeen\""));
 
   RemoveFile(filename);
   RemoveFile("/tmp/log");
@@ -795,20 +783,8 @@ TEST_F(LuaGenericTest, ServiceGroupCacheTest) {
   std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
-  int first, second;
-  if (lst[0].contains("\"group_id\":16")) {
-    first = 0;
-    second = 1;
-  }
-  else {
-    first = 1;
-    second = 0;
-  }
-  ASSERT_TRUE(lst[first].contains("\"group_id\":16"));
-  ASSERT_TRUE(lst[first].contains("\"group_name\":\"seize\""));
-
-  ASSERT_TRUE(lst[second].contains("\"group_id\":17"));
-  ASSERT_TRUE(lst[second].contains("\"group_name\":\"dix-sept\""));
+  ASSERT_TRUE(lst[0].contains("\"group_id\":17"));
+  ASSERT_TRUE(lst[0].contains("\"group_name\":\"dix-sept\""));
 
   RemoveFile(filename);
   RemoveFile("/tmp/log");
