@@ -708,6 +708,9 @@ if (WITH_MODULE_LUA)
       break ()
     endif ()
   endforeach ()
+  if (NOT DEFINED LUA_VERSION_STRING)
+    message(FATAL_ERROR "No Lua development package found.")
+  endif ()
 endif ()
 
 # Influxdb module.
