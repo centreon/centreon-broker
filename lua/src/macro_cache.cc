@@ -376,7 +376,9 @@ void macro_cache::_process_service_group_member(
  */
 void macro_cache::_process_index_mapping(storage::index_mapping const& im) {
   logging::debug(logging::medium)
-    << "lua: processing index mapping (index_id: " << im.index_id << ")";
+    << "lua: processing index mapping (index_id: " << im.index_id
+    << ", host_id: " << im.host_id
+    << ", service_id: " << im.service_id << ")";
   _index_mappings[im.index_id] = im;
 }
 
@@ -387,7 +389,8 @@ void macro_cache::_process_index_mapping(storage::index_mapping const& im) {
  */
 void macro_cache::_process_metric_mapping(storage::metric_mapping const& mm) {
   logging::debug(logging::medium)
-    << "lua: processing metric mapping (index_id: " << mm.index_id << ")";
+    << "lua: processing metric mapping (metric_id: " << mm.metric_id
+    << ", index_id: " << mm.index_id << ")";
   _metric_mappings[mm.metric_id] = mm;
 }
 
