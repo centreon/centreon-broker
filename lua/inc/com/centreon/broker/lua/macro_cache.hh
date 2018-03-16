@@ -23,7 +23,7 @@
 #  include "com/centreon/broker/bam/dimension_ba_bv_relation_event.hh"
 #  include "com/centreon/broker/bam/dimension_ba_event.hh"
 #  include "com/centreon/broker/bam/dimension_bv_event.hh"
-#  include "com/centreon/broker/bam/dimension_kpi_event.hh"
+#  include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
 #  include "com/centreon/broker/instance_broadcast.hh"
 #  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/host_group.hh"
@@ -73,8 +73,6 @@ namespace         lua {
                    get_dimension_ba_event(unsigned int id) const;
     bam::dimension_bv_event const&
                    get_dimension_bv_event(unsigned int id) const;
-    bam::dimension_kpi_event const&
-                   get_dimension_kpi_event(unsigned int id) const;
 
   private:
                    macro_cache(macro_cache const& f);
@@ -95,8 +93,8 @@ namespace         lua {
                      bam::dimension_ba_bv_relation_event const& rel);
     void           _process_dimension_bv_event(
                      bam::dimension_bv_event const& dbve);
-    void           _process_dimension_kpi_event(
-                     bam::dimension_kpi_event const& dke);
+    void           _process_dimension_truncate_table_signal(
+                     bam::dimension_truncate_table_signal const& trunc);
 
     void           _save_to_disk();
 
@@ -127,8 +125,6 @@ namespace         lua {
                    _dimension_ba_bv_relation_events;
     QHash<unsigned int, bam::dimension_bv_event>
                    _dimension_bv_events;
-    QHash<unsigned int, bam::dimension_kpi_event>
-                   _dimension_kpi_events;
   };
 }
 

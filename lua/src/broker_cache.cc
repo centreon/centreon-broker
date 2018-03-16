@@ -260,93 +260,6 @@ static int l_broker_cache_get_instance_name(lua_State* L) {
 }
 
 /**
- *  The get_kpi() method available in the Lua interpreter.
- *  It returns a table containing the kpi data.
- *
- * @param L The Lua interpreter
- *
- * @return 1
- */
-static int l_broker_cache_get_kpi(lua_State* L) {
-  macro_cache const* cache(
-    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
-  int kpi_id(luaL_checkinteger(L, 2));
-
-  try {
-    bam::dimension_kpi_event const& kpi(cache->get_dimension_kpi_event(kpi_id));
-    lua_createtable(L, 0, 16);
-    lua_pushstring(L, "kpi_id");
-    lua_pushinteger(L, kpi.kpi_id);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "ba_id");
-    lua_pushinteger(L, kpi.ba_id);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "ba_name");
-    lua_pushstring(L, kpi.ba_name.toStdString().c_str());
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "host_id");
-    lua_pushinteger(L, kpi.host_id);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "host_name");
-    lua_pushstring(L, kpi.host_name.toStdString().c_str());
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "service_id");
-    lua_pushinteger(L, kpi.service_id);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "service_description");
-    lua_pushstring(L, kpi.service_description.toStdString().c_str());
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "kpi_ba_id");
-    lua_pushinteger(L, kpi.kpi_ba_id);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "kpi_ba_name");
-    lua_pushstring(L, kpi.kpi_ba_name.toStdString().c_str());
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "meta_service_id");
-    lua_pushinteger(L, kpi.meta_service_id);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "meta_service_name");
-    lua_pushstring(L, kpi.meta_service_name.toStdString().c_str());
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "boolean_id");
-    lua_pushinteger(L, kpi.boolean_id);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "boolean_name");
-    lua_pushstring(L, kpi.boolean_name.toStdString().c_str());
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "impact_warning");
-    lua_pushnumber(L, kpi.impact_warning);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "impact_critical");
-    lua_pushnumber(L, kpi.impact_critical);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "impact_unknown");
-    lua_pushnumber(L, kpi.impact_unknown);
-    lua_settable(L, -3);
-  }
-  catch (std::exception const& e) {
-    (void) e;
-    lua_pushnil(L);
-  }
-  return 1;
-}
-
-/**
  *  The get_metric_mapping() method available in the Lua interpreter.
  *  It returns a table with two keys: metric_id, index_id.
  *
@@ -543,7 +456,6 @@ void broker_cache::broker_cache_reg(lua_State* L, macro_cache const& cache) {
     { "get_hostname", l_broker_cache_get_hostname },
     { "get_index_mapping", l_broker_cache_get_index_mapping },
     { "get_instance_name", l_broker_cache_get_instance_name },
-    { "get_kpi", l_broker_cache_get_kpi },
     { "get_metric_mapping", l_broker_cache_get_metric_mapping },
     { "get_service_description", l_broker_cache_get_service_description },
     { "get_servicegroup_name", l_broker_cache_get_servicegroup_name },

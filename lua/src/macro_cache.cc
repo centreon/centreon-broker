@@ -255,24 +255,6 @@ bam::dimension_bv_event const& macro_cache::get_dimension_bv_event(
 }
 
 /**
- *  Return a dimension_kpi_event from its id.
- *
- * @param kpi_id The id
- *
- * @return a reference to the dimension_kpi_event.
- */
-bam::dimension_kpi_event const& macro_cache::get_dimension_kpi_event(
-       unsigned int kpi_id) const {
-  QHash<unsigned int, bam::dimension_kpi_event>::const_iterator
-    found(_dimension_kpi_events.find(kpi_id));
-  if (found == _dimension_kpi_events.end())
-    throw (exceptions::msg()
-           << "lua: could not find information on dimension kpi event "
-           << kpi_id);
-  return found.value();
-}
-
-/**
  *  Write an event into the cache.
  *
  *  @param[in] data  The event to write.
@@ -294,7 +276,8 @@ void macro_cache::write(misc::shared_ptr<io::data> const& data) {
   else if (data->type() == neb::service_group::static_type())
     _process_service_group(data.ref_as<neb::service_group const>());
   else if (data->type() == neb::service_group_member::static_type())
-    _process_service_group_member(data.ref_as<neb::service_group_member const>());
+    _process_service_group_member(
+      data.ref_as<neb::service_group_member const>());
   else if (data->type() == storage::index_mapping::static_type())
     _process_index_mapping(data.ref_as<storage::index_mapping const>());
   else if (data->type() == storage::metric_mapping::static_type())
@@ -306,8 +289,9 @@ void macro_cache::write(misc::shared_ptr<io::data> const& data) {
       data.ref_as<bam::dimension_ba_bv_relation_event const>());
   else if (data->type() == bam::dimension_bv_event::static_type())
     _process_dimension_bv_event(data.ref_as<bam::dimension_bv_event const>());
-  else if (data->type() == bam::dimension_kpi_event::static_type())
-    _process_dimension_kpi_event(data.ref_as<bam::dimension_kpi_event const>());
+  else if (data->type() == bam::dimension_truncate_table_signal::static_type())
+    _process_dimension_truncate_table_signal(
+      data.ref_as<bam::dimension_truncate_table_signal const>());
 }
 
 /**
@@ -505,15 +489,18 @@ void macro_cache::_process_dimension_bv_event(
 }
 
 /**
- *  Process a dimension kpi event
+ *  Process a dimension truncate table signal
  *
- *  @param dke  The event.
+ * @param trunc  The event.
  */
-void macro_cache::_process_dimension_kpi_event(
-                    bam::dimension_kpi_event const& dke) {
+void macro_cache::_process_dimension_truncate_table_signal(
+                    bam::dimension_truncate_table_signal const& trunc) {
   logging::debug(logging::medium)
-    << "lua: processing dimension kpi event of id " << dke.kpi_id;
-  _dimension_kpi_events[dke.kpi_id] = dke;
+    << "lua: processing dimension truncate table signal";
+
+  _dimension_ba_events.clear();
+  _dimension_ba_bv_relation_events.clear();
+  _dimension_bv_events.clear();
 }
 
 /**
@@ -621,13 +608,6 @@ void macro_cache::_save_to_disk() {
        it != end;
        ++it)
     _cache->add(misc::shared_ptr<io::data>(new bam::dimension_bv_event(*it)));
-
-  for (QHash<unsigned int, bam::dimension_kpi_event>::const_iterator
-         it(_dimension_kpi_events.begin()),
-         end(_dimension_kpi_events.end());
-       it != end;
-       ++it)
-    _cache->add(misc::shared_ptr<io::data>(new bam::dimension_kpi_event(*it)));
 
   _cache->commit();
 }
