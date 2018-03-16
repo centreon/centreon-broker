@@ -258,16 +258,6 @@ void macro_cache::_process_instance(instance_broadcast const& in) {
       ++it;
   }
 
-  for (QHash<unsigned int, neb::host_group>::iterator
-         it(_host_groups.begin()),
-         end(_host_groups.end());
-       it != end; ) {
-    if (it->poller_id == poller_id)
-      it = _host_groups.erase(it);
-    else
-      ++it;
-  }
-
   for (QHash<unsigned int,
              QHash<unsigned int, neb::host_group_member> >::iterator
          it(_host_group_members.begin()),
@@ -288,17 +278,6 @@ void macro_cache::_process_instance(instance_broadcast const& in) {
       services_removed << it.key();
       it = _services.erase(it);
     }
-    else
-      ++it;
-  }
-
-  for (QHash<QPair<unsigned int, unsigned int>,
-             QHash<unsigned int, neb::service_group_member> >::iterator
-         it(_service_group_members.begin()),
-         end(_service_group_members.end());
-       it != end; ) {
-    if (services_removed.contains(it.key()))
-      it = _service_group_members.erase(it);
     else
       ++it;
   }
@@ -327,8 +306,6 @@ void macro_cache::_process_host_group(neb::host_group const& hg) {
     << "lua: processing host group '" << hg.name << "' of id " << hg.id;
   if (hg.enabled)
     _host_groups[hg.id] = hg;
-  else
-    _host_groups.remove(hg.id);
 }
 
 /**
@@ -370,8 +347,6 @@ void macro_cache::_process_service_group(neb::service_group const& sg) {
     << "lua: processing service group '" << sg.name << "' of id " << sg.id;
   if (sg.enabled)
     _service_groups[sg.id] = sg;
-  else
-    _service_groups.remove(sg.id);
 }
 
 /**
