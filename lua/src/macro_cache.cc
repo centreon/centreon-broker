@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <QSet>
 #include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -242,7 +243,67 @@ void macro_cache::write(misc::shared_ptr<io::data> const& data) {
  *  @param in  The event.
  */
 void macro_cache::_process_instance(instance_broadcast const& in) {
-  _instances[in.poller_id] = in;
+  unsigned int poller_id(in.poller_id);
+
+  QSet<unsigned int> hosts_removed;
+  for (QHash<unsigned int, neb::host>::iterator
+         it(_hosts.begin()),
+         end(_hosts.end());
+       it != end; ) {
+    if (it->poller_id == poller_id) {
+      hosts_removed << it->host_id;
+      it = _hosts.erase(it);
+    }
+    else
+      ++it;
+  }
+
+  for (QHash<unsigned int, neb::host_group>::iterator
+         it(_host_groups.begin()),
+         end(_host_groups.end());
+       it != end; ) {
+    if (it->poller_id == poller_id)
+      it = _host_groups.erase(it);
+    else
+      ++it;
+  }
+
+  for (QHash<unsigned int,
+             QHash<unsigned int, neb::host_group_member> >::iterator
+         it(_host_group_members.begin()),
+         end(_host_group_members.end());
+       it != end; ) {
+    if (hosts_removed.contains(it.key()))
+      it = _host_group_members.erase(it);
+    else
+      ++it;
+  }
+
+  QSet<QPair<unsigned int, unsigned int> > services_removed;
+  for (QHash<QPair<unsigned int, unsigned int>, neb::service>::iterator
+         it(_services.begin()),
+         end(_services.end());
+       it != end; ) {
+    if (hosts_removed.contains(it->host_id)) {
+      services_removed << it.key();
+      it = _services.erase(it);
+    }
+    else
+      ++it;
+  }
+
+  for (QHash<QPair<unsigned int, unsigned int>,
+             QHash<unsigned int, neb::service_group_member> >::iterator
+         it(_service_group_members.begin()),
+         end(_service_group_members.end());
+       it != end; ) {
+    if (services_removed.contains(it.key()))
+      it = _service_group_members.erase(it);
+    else
+      ++it;
+  }
+
+  _instances[poller_id] = in;
 }
 
 /**

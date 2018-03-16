@@ -789,3 +789,80 @@ TEST_F(LuaGenericTest, ServiceGroupCacheTest) {
   RemoveFile(filename);
   RemoveFile("/tmp/log");
 }
+
+// When a query for service groups is made
+// And the cache does know about them
+// Then an array is returned by the lua method.
+TEST_F(LuaGenericTest, SetNewInstance) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  shared_ptr<neb::service_group> sg(new neb::service_group);
+  sg->id = 16;
+  sg->name = strdup("centreon1");
+  _cache->write(sg);
+  sg = new neb::service_group;
+  sg->id = 17;
+  sg->name = strdup("centreon2");
+  _cache->write(sg);
+  shared_ptr<neb::host> hst(new neb::host);
+  hst->host_id = 22;
+  hst->host_name = strdup("host_centreon");
+  hst->poller_id = 3;
+  _cache->write(hst);
+  shared_ptr<neb::host_group> hg(new neb::host_group);
+  hg->id = 19;
+  hg->name = strdup("hg1");
+  _cache->write(hg);
+  shared_ptr<neb::service> svc(new neb::service);
+  svc->service_id = 17;
+  svc->host_id = 22;
+  svc->host_name = strdup("host_centreon");
+  svc->service_description = strdup("service_description");
+  _cache->write(svc);
+  shared_ptr<neb::host_group_member> hmember(new neb::host_group_member);
+  hmember->host_id = 22;
+  hmember->poller_id = 3;
+  hmember->enabled = true;
+  hmember->group_id = 19;
+  hmember->group_name = "hg1";
+  _cache->write(hmember);
+  shared_ptr<neb::service_group_member> member(new neb::service_group_member);
+  member->host_id = 22;
+  member->service_id = 17;
+  member->poller_id = 3;
+  member->enabled = false;
+  member->group_id = 16;
+  member->group_name = "seize";
+  _cache->write(member);
+  member = new neb::service_group_member;
+  member->host_id = 22;
+  member->service_id = 17;
+  member->poller_id = 3;
+  member->enabled = true;
+  member->group_id = 17;
+  member->group_name = "dix-sept";
+  _cache->write(member);
+
+  shared_ptr<instance_broadcast> ib(new instance_broadcast);
+  ib->broker_id = 42;
+  ib->broker_name = "broker name";
+  ib->enabled = true;
+  ib->poller_id = 3;
+  ib->poller_name = "MyPoller";
+  _cache->write(ib);
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local s = broker_cache:get_service_description(22, 17)\n"
+                         "  broker_log:info(1, 'service description ' .. tostring(s))\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("service description nil"));
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
