@@ -61,21 +61,22 @@ static int l_broker_cache_get_ba(lua_State* L) {
     lua_pushstring(L, ba.ba_description.toStdString().c_str());
     lua_settable(L, -3);
 
-    lua_pushstring(L, "sla_month_percent_crit");
-    lua_pushnumber(L, ba.sla_month_percent_crit);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "sla_month_percent_warn");
-    lua_pushnumber(L, ba.sla_month_percent_warn);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "sla_duration_crit");
-    lua_pushinteger(L, ba.sla_duration_crit);
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "sla_duration_warn");
-    lua_pushinteger(L, ba.sla_duration_warn);
-    lua_settable(L, -3);
+    // Not needed
+//    lua_pushstring(L, "sla_month_percent_crit");
+//    lua_pushnumber(L, ba.sla_month_percent_crit);
+//    lua_settable(L, -3);
+//
+//    lua_pushstring(L, "sla_month_percent_warn");
+//    lua_pushnumber(L, ba.sla_month_percent_warn);
+//    lua_settable(L, -3);
+//
+//    lua_pushstring(L, "sla_duration_crit");
+//    lua_pushinteger(L, ba.sla_duration_crit);
+//    lua_settable(L, -3);
+//
+//    lua_pushstring(L, "sla_duration_warn");
+//    lua_pushinteger(L, ba.sla_duration_warn);
+//    lua_settable(L, -3);
   }
   catch (std::exception const& e) {
     (void) e;
