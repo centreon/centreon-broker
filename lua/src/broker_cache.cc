@@ -34,6 +34,30 @@ static int l_broker_cache_destructor(lua_State* L) {
 }
 
 /**
+ *  The get_hostgroup_name() method available in the Lua interpreter
+ *  It returns a string.
+ *
+ *  @param L The Lua interpreter
+ *
+ *  @return 1
+ */
+static int l_broker_cache_get_hostgroup_name(lua_State* L) {
+  macro_cache const* cache(
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  int id(luaL_checkinteger(L, 2));
+
+  try {
+    QString const& hg(cache->get_host_group_name(id));
+    lua_pushstring(L, hg.toStdString().c_str());
+  }
+  catch (std::exception const& e) {
+    (void) e;
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+/**
  *  The get_hostname() method available in the Lua interpreter
  *  It returns a string.
  *
@@ -176,6 +200,121 @@ static int l_broker_cache_get_service_description(lua_State* L) {
 }
 
 /**
+ *  The get_servicegroup_name() method available in the Lua interpreter
+ *  It returns a string.
+ *
+ *  @param L The Lua interpreter
+ *
+ *  @return 1
+ */
+static int l_broker_cache_get_servicegroup_name(lua_State* L) {
+  macro_cache const* cache(
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  int id(luaL_checkinteger(L, 2));
+
+  try {
+    QString const& sg(cache->get_service_group_name(id));
+    lua_pushstring(L, sg.toStdString().c_str());
+  }
+  catch (std::exception const& e) {
+    (void) e;
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+/**
+ *  The get_servicegroups() method available in the Lua interpreter
+ *  It returns an array of objects, each one containing group_id and group_name.
+ *
+ *  @param L The Lua interpreter
+ *
+ *  @return 1
+ */
+static int l_broker_cache_get_servicegroups(lua_State* L) {
+  macro_cache const* cache(
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  unsigned int host_id(luaL_checkinteger(L, 2));
+  unsigned int service_id(luaL_checkinteger(L, 3));
+
+  QHash<QPair<unsigned int, unsigned int>,
+        QHash<unsigned int, neb::service_group_member> > const& members(
+    cache->get_service_group_members());
+
+  QHash<QPair<unsigned int, unsigned int>,
+        QHash<unsigned int, neb::service_group_member> >::const_iterator grp_it(
+    members.find(qMakePair(host_id, service_id)));
+  lua_newtable(L);
+
+  if (grp_it != members.end()) {
+    int i = 1;
+    for (QHash<unsigned int, neb::service_group_member>::const_iterator
+           it(grp_it->begin()),
+           end(grp_it->end());
+           it != end;
+           ++it) {
+      neb::service_group_member const& sgm(it.value());
+      lua_createtable(L, 0, 2);
+      lua_pushstring(L, "group_id");
+      lua_pushinteger(L, sgm.group_id);
+      lua_settable(L, -3);
+
+      lua_pushstring(L, "group_name");
+      lua_pushstring(L, sgm.group_name.toStdString().c_str());
+      lua_settable(L, -3);
+
+      lua_rawseti(L, -2, i);
+      ++i;
+    }
+  }
+  return 1;
+}
+
+/**
+ *  The get_hostgroups() method available in the Lua interpreter
+ *  It returns an array of host groups from a host id.
+ *
+ *  @param L The Lua interpreter
+ *
+ *  @return 1
+ */
+static int l_broker_cache_get_hostgroups(lua_State* L) {
+  macro_cache const* cache(
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  int id(luaL_checkinteger(L, 2));
+
+  QHash<unsigned int, QHash<unsigned int, neb::host_group_member> > const& members(
+    cache->get_host_group_members());
+
+  QHash<unsigned int, QHash<unsigned int, neb::host_group_member> >::const_iterator grp_it(
+    members.find(id));
+  lua_newtable(L);
+
+  if (grp_it != members.end()) {
+    int i = 1;
+    for (QHash<unsigned int, neb::host_group_member>::const_iterator
+           it(grp_it->begin()),
+           end(grp_it->end());
+           it != end;
+           ++it) {
+      neb::host_group_member const& hgm(it.value());
+      lua_createtable(L, 0, 2);
+      lua_pushstring(L, "group_id");
+      lua_pushinteger(L, hgm.group_id);
+      lua_settable(L, -3);
+
+      lua_pushstring(L, "group_name");
+      lua_pushstring(L, hgm.group_name.toStdString().c_str());
+      lua_settable(L, -3);
+
+      lua_rawseti(L, -2, i);
+      ++i;
+    }
+  }
+  return 1;
+}
+
+/**
  *  Load the Lua interpreter with the standard libraries
  *  and the broker lua sdk.
  *
@@ -191,11 +330,15 @@ void broker_cache::broker_cache_reg(lua_State* L, macro_cache const& cache) {
 
   luaL_Reg s_broker_cache_regs[] = {
     { "__gc", l_broker_cache_destructor },
+    { "get_hostgroup_name", l_broker_cache_get_hostgroup_name },
+    { "get_hostgroups", l_broker_cache_get_hostgroups },
     { "get_hostname", l_broker_cache_get_hostname },
     { "get_index_mapping", l_broker_cache_get_index_mapping },
     { "get_instance_name", l_broker_cache_get_instance_name },
     { "get_metric_mapping", l_broker_cache_get_metric_mapping },
     { "get_service_description", l_broker_cache_get_service_description },
+    { "get_servicegroup_name", l_broker_cache_get_servicegroup_name },
+    { "get_servicegroups", l_broker_cache_get_servicegroups },
     { NULL, NULL }
   };
 

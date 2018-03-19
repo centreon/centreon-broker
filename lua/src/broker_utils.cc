@@ -65,6 +65,12 @@ static void broker_json_encode_table(lua_State* L, std::ostringstream& oss) {
       }
     }
   }
+  else {
+    /* There are no key, the table is empty */
+    oss << "[]";
+    return ;
+  }
+
   if (!array) {
     oss << "{\"" << lua_tostring(L, -2) << "\":";
     broker_json_encode(L, oss);
