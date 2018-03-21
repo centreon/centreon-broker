@@ -694,6 +694,13 @@ if (WITH_MODULE_STORAGE)
   list(APPEND MODULE_LIST "storage")
 endif()
 
+# Redis module.
+option(WITH_MODULE_REDIS "Build Redis module." ON)
+if (WITH_MODULE_REDIS)
+  add_subdirectory("redis")
+  list(APPEND MODULE_LIST "redis")
+endif ()
+
 # Lua module.
 option(WITH_MODULE_LUA "Build lua module." ON)
 if (WITH_MODULE_LUA)
