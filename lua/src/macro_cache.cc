@@ -209,6 +209,52 @@ QString const& macro_cache::get_instance(unsigned int instance_id) const {
 }
 
 /**
+ *  Accessor to the multi hash containing ba bv relations.
+ *
+ * @return A reference to a QMultiHash.
+ */
+QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event> const&
+       macro_cache::get_dimension_ba_bv_relation_events() const {
+  return _dimension_ba_bv_relation_events;
+}
+
+/**
+ *  Return a dimension_ba_event from its id.
+ *
+ * @param ba_id The id
+ *
+ * @return a reference to the dimension_ba_event.
+ */
+bam::dimension_ba_event const& macro_cache::get_dimension_ba_event(
+       unsigned int ba_id) const {
+  QHash<unsigned int, bam::dimension_ba_event>::const_iterator
+    found(_dimension_ba_events.find(ba_id));
+  if (found == _dimension_ba_events.end())
+    throw (exceptions::msg()
+           << "lua: could not find information on dimension ba event "
+           << ba_id);
+  return found.value();
+}
+
+/**
+ *  Return a dimension_bv_event from its id.
+ *
+ * @param bv_id The id
+ *
+ * @return a reference to the dimension_bv_event.
+ */
+bam::dimension_bv_event const& macro_cache::get_dimension_bv_event(
+       unsigned int bv_id) const {
+  QHash<unsigned int, bam::dimension_bv_event>::const_iterator
+    found(_dimension_bv_events.find(bv_id));
+  if (found == _dimension_bv_events.end())
+    throw (exceptions::msg()
+           << "lua: could not find information on dimension bv event "
+           << bv_id);
+  return found.value();
+}
+
+/**
  *  Write an event into the cache.
  *
  *  @param[in] data  The event to write.
@@ -230,11 +276,22 @@ void macro_cache::write(misc::shared_ptr<io::data> const& data) {
   else if (data->type() == neb::service_group::static_type())
     _process_service_group(data.ref_as<neb::service_group const>());
   else if (data->type() == neb::service_group_member::static_type())
-    _process_service_group_member(data.ref_as<neb::service_group_member const>());
+    _process_service_group_member(
+      data.ref_as<neb::service_group_member const>());
   else if (data->type() == storage::index_mapping::static_type())
     _process_index_mapping(data.ref_as<storage::index_mapping const>());
   else if (data->type() == storage::metric_mapping::static_type())
     _process_metric_mapping(data.ref_as<storage::metric_mapping const>());
+  else if (data->type() == bam::dimension_ba_event::static_type())
+    _process_dimension_ba_event(data.ref_as<bam::dimension_ba_event const>());
+  else if (data->type() == bam::dimension_ba_bv_relation_event::static_type())
+    _process_dimension_ba_bv_relation_event(
+      data.ref_as<bam::dimension_ba_bv_relation_event const>());
+  else if (data->type() == bam::dimension_bv_event::static_type())
+    _process_dimension_bv_event(data.ref_as<bam::dimension_bv_event const>());
+  else if (data->type() == bam::dimension_truncate_table_signal::static_type())
+    _process_dimension_truncate_table_signal(
+      data.ref_as<bam::dimension_truncate_table_signal const>());
 }
 
 /**
@@ -395,6 +452,58 @@ void macro_cache::_process_metric_mapping(storage::metric_mapping const& mm) {
 }
 
 /**
+ *  Process a dimension ba event
+ *
+ *  @param dbae  The event.
+ */
+void macro_cache::_process_dimension_ba_event(
+                    bam::dimension_ba_event const& dbae) {
+  logging::debug(logging::medium)
+    << "lua: processing dimension ba event of id " << dbae.ba_id;
+  _dimension_ba_events[dbae.ba_id] = dbae;
+}
+
+/**
+ *  Process a dimension ba bv relation event
+ *
+ *  @param rel  The event.
+ */
+void macro_cache::_process_dimension_ba_bv_relation_event(
+                    bam::dimension_ba_bv_relation_event const& rel) {
+  logging::debug(logging::medium)
+    << "lua: processing dimension ba bv relation event "
+    << "(ba_id: " << rel.ba_id << ", " << "bv_id: " << rel.bv_id << ")";
+  _dimension_ba_bv_relation_events.insert(rel.ba_id, rel);
+}
+
+/**
+ *  Process a dimension bv event
+ *
+ *  @param rel  The event.
+ */
+void macro_cache::_process_dimension_bv_event(
+                    bam::dimension_bv_event const& dbve) {
+  logging::debug(logging::medium)
+    << "lua: processing dimension bv event of id " << dbve.bv_id;
+  _dimension_bv_events[dbve.bv_id] = dbve;
+}
+
+/**
+ *  Process a dimension truncate table signal
+ *
+ * @param trunc  The event.
+ */
+void macro_cache::_process_dimension_truncate_table_signal(
+                    bam::dimension_truncate_table_signal const& trunc) {
+  logging::debug(logging::medium)
+    << "lua: processing dimension truncate table signal";
+
+  _dimension_ba_events.clear();
+  _dimension_ba_bv_relation_events.clear();
+  _dimension_bv_events.clear();
+}
+
+/**
  *  Save all data to disk.
  */
 void macro_cache::_save_to_disk() {
@@ -477,6 +586,28 @@ void macro_cache::_save_to_disk() {
        it != end;
        ++it)
     _cache->add(misc::shared_ptr<io::data>(new storage::metric_mapping(*it)));
+
+  for (QHash<unsigned int, bam::dimension_ba_event>::const_iterator
+         it(_dimension_ba_events.begin()),
+         end(_dimension_ba_events.end());
+       it != end;
+       ++it)
+    _cache->add(misc::shared_ptr<io::data>(new bam::dimension_ba_event(*it)));
+
+  for (QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event>::const_iterator
+         it(_dimension_ba_bv_relation_events.begin()),
+         end(_dimension_ba_bv_relation_events.end());
+       it != end;
+       ++it)
+    _cache->add(misc::shared_ptr<io::data>(
+      new bam::dimension_ba_bv_relation_event(*it)));
+
+  for (QHash<unsigned int, bam::dimension_bv_event>::const_iterator
+         it(_dimension_bv_events.begin()),
+         end(_dimension_bv_events.end());
+       it != end;
+       ++it)
+    _cache->add(misc::shared_ptr<io::data>(new bam::dimension_bv_event(*it)));
 
   _cache->commit();
 }

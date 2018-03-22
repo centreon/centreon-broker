@@ -20,6 +20,10 @@
 #  define CCB_LUA_MACRO_CACHE_HH
 
 #  include <QHash>
+#  include "com/centreon/broker/bam/dimension_ba_bv_relation_event.hh"
+#  include "com/centreon/broker/bam/dimension_ba_event.hh"
+#  include "com/centreon/broker/bam/dimension_bv_event.hh"
+#  include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
 #  include "com/centreon/broker/instance_broadcast.hh"
 #  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/host_group.hh"
@@ -63,6 +67,13 @@ namespace         lua {
                    get_service_group_members() const;
     QString const& get_instance(unsigned int instance_id) const;
 
+    QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event> const&
+                   get_dimension_ba_bv_relation_events() const;
+    bam::dimension_ba_event const&
+                   get_dimension_ba_event(unsigned int id) const;
+    bam::dimension_bv_event const&
+                   get_dimension_bv_event(unsigned int id) const;
+
   private:
                    macro_cache(macro_cache const& f);
     macro_cache&   operator=(macro_cache const& f);
@@ -76,6 +87,14 @@ namespace         lua {
     void           _process_service_group_member(neb::service_group_member const& sgm);
     void           _process_index_mapping(storage::index_mapping const& im);
     void           _process_metric_mapping(storage::metric_mapping const& mm);
+    void           _process_dimension_ba_event(
+                     bam::dimension_ba_event const& dbae);
+    void           _process_dimension_ba_bv_relation_event(
+                     bam::dimension_ba_bv_relation_event const& rel);
+    void           _process_dimension_bv_event(
+                     bam::dimension_bv_event const& dbve);
+    void           _process_dimension_truncate_table_signal(
+                     bam::dimension_truncate_table_signal const& trunc);
 
     void           _save_to_disk();
 
@@ -100,6 +119,12 @@ namespace         lua {
                    _index_mappings;
     QHash<unsigned int, storage::metric_mapping>
                    _metric_mappings;
+    QHash<unsigned int, bam::dimension_ba_event>
+                   _dimension_ba_events;
+    QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event>
+                   _dimension_ba_bv_relation_events;
+    QHash<unsigned int, bam::dimension_bv_event>
+                   _dimension_bv_events;
   };
 }
 
