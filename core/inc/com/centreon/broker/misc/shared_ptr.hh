@@ -24,7 +24,7 @@
 
 CCB_BEGIN()
 
-namespace             misc {  
+namespace             misc {
   /**
    *  @class shared_ptr shared_ptr.hh "com/centreon/broker/misc/shared_ptr.hh"
    *  @brief Shared pointer.
