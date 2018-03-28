@@ -19,8 +19,12 @@
 #ifndef CCB_REDIS_REDISDB_HH
 #  define CCB_REDIS_REDISDB_HH
 
+#  include <QString>
+#  include <sstream>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/neb/service_status.hh"
+#  include "com/centreon/broker/neb/host_status.hh"
 
 // Forward declarations
 class QTcpSocket;
@@ -30,26 +34,30 @@ CCB_BEGIN()
 namespace               redis {
   class                 redisdb {
     public:
-                        redisdb();
                         redisdb(
                           std::string const& address,
-                          unsigned short port);
+                          unsigned short port,
+                          std::string const& user,
+                          std::string const& password);
                         ~redisdb();
-    void                set_parameters(
-                          std::string const& address,
-                          unsigned short port);
     void                clear();
     redisdb&            operator<<(std::string const& str);
     redisdb&            operator<<(int val);
-    std::string         str();
-    void                flush();
+    redisdb&            operator<<(neb::host_status const& status);
+    redisdb&            operator<<(neb::service_status const& status);
+    std::string         str(std::string const& cmd = "");
+    QString&            send_command(std::string const& cmd = "");
+    QString&            mset();
 
    private:
-    size_t              _size;
     QTcpSocket*         _socket;
     std::string         _address;
     unsigned short      _port;
-    std::string         _content;
+    std::string         _user;
+    std::string         _password;
+    unsigned int        _size;
+    std::ostringstream  _content;
+    QString             _result;
   };
 }
 

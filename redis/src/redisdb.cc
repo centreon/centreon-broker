@@ -28,15 +28,12 @@ using namespace com::centreon::broker::redis;
 /**
  *  Default constructor.
  */
-redisdb::redisdb()
-  : _size(0),
-    _socket(new QTcpSocket),
-    _address("127.0.0.1"),
-    _port(6379) {}
-
-redisdb::redisdb(std::string const& address, unsigned short port)
-  : _size(0),
-    _socket(new QTcpSocket),
+redisdb::redisdb(
+           std::string const& address,
+           unsigned short port,
+           std::string const& user,
+           std::string const& password)
+  : _socket(new QTcpSocket),
     _address(address),
     _port(port) {}
 
@@ -44,44 +41,17 @@ redisdb::~redisdb() {
   delete _socket;
 }
 
-void redisdb::set_parameters(std::string const& address, unsigned short port) {
-  _address = address;
-  _port = port;
-}
 
 /**
  *  Clear the redisdb object.
  */
 void redisdb::clear() {
+  _content.str("");
   _size = 0;
-  _content = "";
 }
 
 redisdb& redisdb::operator<<(std::string const& str) {
-  size_t first = 0;
-  size_t idx(str.find_first_of(" \n\r"));
-  while (idx != std::string::npos) {
-    std::ostringstream oss;
-    size_t size(idx - first);
-    oss << size;
-    _content += "$" + oss.str() + "\r\n"
-              + str.substr(first, idx - first) + "\r\n";
-    ++_size;
-    first = str.find_last_of(" \n\r") + 1;
-    idx = str.find_first_of(" \n\r", first);
-  }
-  if (first == 0) {
-    std::ostringstream oss;
-    oss << str.size();
-    _content += "$" + oss.str() + "\r\n"
-              + str + "\r\n";
-  }
-  else {
-    std::string tmp(str.substr(first));
-    std::ostringstream oss;
-    oss << tmp.size();
-    _content += "$" + oss.str() + "\r\n" + tmp + "\r\n";
-  }
+  _content << '$' << str.size() << "\r\n" << str << "\r\n";
   ++_size;
   return *this;
 }
@@ -89,20 +59,40 @@ redisdb& redisdb::operator<<(std::string const& str) {
 redisdb& redisdb::operator<<(int val) {
   std::ostringstream oss;
   oss << val;
-  _content += ":" + oss.str() + "\r\n";
+  std::string l(oss.str());
+  _content << '$' << l.size() << "\r\n" << l << "\r\n";
+  ++_size;
   return *this;
 }
 
-std::string redisdb::str() {
-  std::ostringstream oss;
-  if (_size >= 2)
-    oss << "*" << _size << "\r\n" << _content;
+std::string redisdb::str(std::string const& cmd) {
+  unsigned int size;
+  if (cmd.empty())
+    size = _size;
   else
-    return _content;
-  return oss.str();
+    size = _size + 1;
+  if (size >= 2) {
+    std::ostringstream oss;
+    oss << size;
+    std::string l(oss.str());
+    std::string retval("*");
+    retval.append(l).append("\r\n");
+    if (!cmd.empty())
+      retval.append(cmd);
+    retval.append(_content.str());
+    return retval;
+  }
+  else {
+    std::string retval(_content.str());
+    return retval;
+  }
 }
 
-void redisdb::flush() {
+QString& redisdb::mset() {
+  return send_command("$4\r\nmset\r\n");
+}
+
+QString& redisdb::send_command(std::string const& cmd) {
   _socket->connectToHost(_address.c_str(), _port);
   if (!_socket->waitForConnected())
     throw (exceptions::msg()
@@ -110,8 +100,8 @@ void redisdb::flush() {
       << _address << ":" << _port
       << ": " << _socket->errorString().toStdString());
 
-  std::string res(str());
-  if (_socket->write(res.c_str(), res.size()) != static_cast<qint64>(res.size()))
+  std::string res(str(cmd));
+  if (_socket->write(res.c_str()) != static_cast<qint64>(res.size()))
     throw (exceptions::msg()
       << "redis: Couldn't write content to "
       << _address << ":" << _port
@@ -125,5 +115,65 @@ void redisdb::flush() {
         << ":" << _socket->peerPort()
         << ": " << _socket->errorString().toStdString());
   }
+
+  if (!_socket->waitForReadyRead()) {
+    throw (exceptions::msg()
+      << "redis: Couldn't read data from "
+      << _socket->peerAddress().toString().toStdString()
+      << ":" << _socket->peerPort()
+      << ": " << _socket->errorString().toStdString());
+  }
+  _result.clear();
+  _result.append(_socket->readAll());
   clear();
+  _socket->close();
+  return _result;
+}
+
+redisdb& redisdb::operator<<(neb::host_status const& hs) {
+  // Values to push in redis:
+  // * host_id:current_state
+  // * host_id:check_type
+  // * host_id:next_check
+  // * host_id:state_type
+  std::ostringstream oss;
+  oss << hs.host_id;
+  std::string key;
+  key.reserve(64);
+  key.append(oss.str()).append(":current_state");
+  *this << key << hs.current_state;
+  key.clear();
+  key.append(oss.str()).append(":check_type");
+  *this << key << hs.check_type;
+  key.clear();
+  key.append(oss.str()).append(":next_check");
+  *this << key << hs.next_check;
+  key.clear();
+  key.append(oss.str()).append(":state_type");
+  *this << key << hs.state_type;
+  return *this;
+}
+
+redisdb& redisdb::operator<<(neb::service_status const& ss) {
+  // Values to push in redis:
+  // * host_id:service_id:current_state
+  // * host_id:service_id:check_type
+  // * host_id:service_id:next_check
+  // * host_id:service_id:state_type
+  std::ostringstream oss;
+  oss << ss.host_id << ':' << ss.service_id;
+  std::string key;
+  key.reserve(64);
+  key.append(oss.str()).append(":current_state");
+  *this << key << ss.current_state;
+  key.clear();
+  key.append(oss.str()).append(":check_type");
+  *this << key << ss.check_type;
+  key.clear();
+  key.append(oss.str()).append(":next_check");
+  *this << key << ss.next_check;
+  key.clear();
+  key.append(oss.str()).append(":state_type");
+  *this << key << ss.state_type;
+  return *this;
 }
