@@ -75,7 +75,7 @@ Pollers should output to the Centreon central.
   * name = central
   * port = 5669
   * host = *FQDN or IP address of the central*
-  * failover = central-failover
+  * failover = *empty*
   * retry_interval = 60
   * buffering_timeout = 0
   * protocol = BBDO
@@ -85,29 +85,16 @@ Pollers should output to the Centreon central.
   * filter category = *empty*
   * compression = auto
 
-The TCP output should have a failover file.
-
-  * type = file
-  * name = central-failover
-  * path = /var/lib/centreon-broker/central-failover.dat
-  * failover = *empty*
-  * protocol = BBDO
-  * buffering_timeout = 0
-  * max_file_size = 500000000
-  * filter category = *empty*
-  * compression = no
-
 Central Broker
 ==============
 
 The Central Broker is responsible for writing both real-time monitoring
-and performance data to the database. Each of these two outputs should
-have a failover file.
+and performance data to the database.
 
   * type = sql
   * name = central-broker-sql-master
   * db_type = mysql
-  * failover = central-broker-sql-master-failover
+  * failover = *empty*
   * retry_interval = 60
   * buffering_timeout = 0
   * db_host = localhost
@@ -120,24 +107,12 @@ have a failover file.
   * read_timeout = 10
   * filter category = correlation,neb
 
-The SQL output should have a failover file.
-
-  * type = file
-  * name = central-broker-sql-master-failover
-  * path = /var/lib/centreon-broker/central-broker-sql-master-failover.dat
-  * failover = *empty*
-  * protocol = BBDO
-  * buffering_timeout = 0
-  * max_file_size = 500000000
-  * filter category = *empty*
-  * compression = no
-
 This is the performance data output.
 
   * type = storage
   * name = central-broker-perfdata-master
   * db_type = mysql
-  * failover = central-broker-perfdata-master-failover
+  * failover = *empty*
   * retry_interval = 60
   * buffering_timeout = 0
   * db_host = localhost
@@ -153,25 +128,13 @@ This is the performance data output.
   * insert_in_index_data = no
   * filter category = neb
 
-The performance data output should have a failover file.
-
-  * type = file
-  * name = central-broker-perfdata-master-failover
-  * path = /var/lib/centreon-broker/central-broker-perfdata-master-failover.dat
-  * failover = *empty*
-  * protocol = BBDO
-  * buffering_timeout = 0
-  * max_file_size = 500000000
-  * filter category = *empty*
-  * compression = no
-
 This is the output to central-rrd.
 
   * type = tcp
   * name = central-broker-rrd-master
   * port = 5670
   * host = localhost
-  * failover = central-broker-rrd-master-failover
+  * failover = *empty*
   * retry_interval = 60
   * buffering_timeout = 0
   * protocol = BBDO
@@ -181,18 +144,6 @@ This is the output to central-rrd.
   * filter category = storage
   * compression = auto
 
-The central-rrd output should have a failover file.
-
-  * type = file
-  * name = central-broker-rrd-master-failover
-  * path = /var/lib/centreon-broker/central-broker-rrd-master-failover.dat
-  * failover = *empty*
-  * protocol = BBDO
-  * buffering_timeout = 0
-  * max_file_size = 500000000
-  * filter category = *empty*
-  * compression = no
-
 Central RRD
 ===========
 
@@ -200,7 +151,7 @@ The Central RRD is responsible for writing RRD files on disk.
 
   * type = rrd
   * name = central-rrd-master
-  * failover = central-rrd-master-failover
+  * failover = *empty*
   * retry_interval = 60
   * buffering_timeout = 0
   * port = *empty*
@@ -208,18 +159,6 @@ The Central RRD is responsible for writing RRD files on disk.
   * write_metrics = yes
   * write_status = yes
   * filter category = *empty*
-
-The RRD output should have a failover file.
-
-  * type = file
-  * name = central-rrd-master-failover
-  * path = /var/lib/centreon-broker/central-rrd-master-failover.dat
-  * failover = *empty*
-  * protocol = BBDO
-  * buffering_timeout = 0
-  * max_file_size = 500000000
-  * filter category = *empty*
-  * compression = no
 
 *****
 Stats
@@ -230,15 +169,3 @@ Statistics should be enabled.
   * type = stats
   * name = poller-stats / central-broker-stats-master / central-rrd-stats-master
   * fifo = /var/lib/centreon-broker/poller-stats.pipe (or /var/lib/centreon-broker-stats-master.pipe or something alike)
-
-*********
-Temporary
-*********
-
-Temporary must be enabled.
-
-  * type = file
-  * name = poller-temporary / central-broker-temporary-master / central-rrd-temporary-master
-  * protocol = BBDO
-  * compression = no
-  * max_file_size = 500000000
