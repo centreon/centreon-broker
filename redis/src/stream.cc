@@ -48,8 +48,7 @@ stream::stream(
   : _redisdb(new redisdb(address, port, user, password)),
     _pending_queries(0),
     _actual_query(0),
-    _queries_per_transaction(1),
-    _commit(false) {}
+    _queries_per_transaction(1) {}
 
 /**
  *  Read from the connector.
@@ -84,14 +83,24 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   // Process event.
   if (cat == io::events::neb) {
     switch (elem) {
+      case 12:
+        // Host
+        _redisdb->push(data.ref_as<neb::host const>());
+        ++_actual_query;
+        break;
       case 14:
         // Host status
-        *_redisdb << data.ref_as<neb::host_status const>();
+        _redisdb->push(data.ref_as<neb::host_status const>());
+        ++_actual_query;
+        break;
+      case 23:
+        // Service
+        _redisdb->push(data.ref_as<neb::service const>());
         ++_actual_query;
         break;
       case 24:
         // Service status
-        *_redisdb << data.ref_as<neb::host_status const>();
+        _redisdb->push(data.ref_as<neb::host_status const>());
         ++_actual_query;
         break;
       default:
@@ -100,17 +109,13 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
           << ", element " << elem);
     }
   }
-  if (_actual_query >= _queries_per_transaction)
-    _commit = true;
-
-  if (_commit) {
+  if (_actual_query >= _queries_per_transaction) {
     logging::debug(logging::medium)
       << "redis: commiting " << _actual_query << " queries";
     int retval(_pending_queries);
     _pending_queries = 0;
     _actual_query = 0;
-    _redisdb->mset();
-    _commit = false;
+    _redisdb->hmset();
     return retval;
   }
 

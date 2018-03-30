@@ -23,8 +23,10 @@
 #  include <sstream>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/service_status.hh"
+#  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/host_status.hh"
+#  include "com/centreon/broker/neb/service.hh"
+#  include "com/centreon/broker/neb/service_status.hh"
 
 // Forward declarations
 class QTcpSocket;
@@ -43,11 +45,16 @@ namespace               redis {
     void                clear();
     redisdb&            operator<<(std::string const& str);
     redisdb&            operator<<(int val);
-    redisdb&            operator<<(neb::host_status const& status);
-    redisdb&            operator<<(neb::service_status const& status);
+    void                push(neb::host const& h);
+    void                push(neb::host_status const& hs);
+    void                push(neb::service const& s);
+    void                push(neb::service_status const& ss);
     std::string         str(std::string const& cmd = "");
-    QString&            send_command(std::string const& cmd = "");
-    QString&            mset();
+    void                push_command(std::string const& cmd = "");
+    void                del();
+    void                hmset();
+    QString&            flush();
+    std::string const&  get_content() const;
 
    private:
     QTcpSocket*         _socket;
@@ -56,7 +63,8 @@ namespace               redis {
     std::string         _user;
     std::string         _password;
     unsigned int        _size;
-    std::ostringstream  _content;
+    std::ostringstream  _oss;
+    std::string         _content;
     QString             _result;
   };
 }

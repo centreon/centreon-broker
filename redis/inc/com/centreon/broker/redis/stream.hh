@@ -54,7 +54,6 @@ namespace          redis {
     unsigned int    _pending_queries;
     unsigned int    _actual_query;
     unsigned int    _queries_per_transaction;
-    bool            _commit;
   };
 }
 
