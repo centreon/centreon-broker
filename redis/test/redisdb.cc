@@ -27,7 +27,7 @@ using namespace com::centreon::broker::redis;
 class RedisdbTest : public ::testing::Test {
  public:
   RedisdbTest()
-    : _db("127.0.0.1", 6379, "user", "password") {}
+    : _db("127.0.0.1", 6379, "p@ssw0rd") {}
 
   void SetUp() {
     try {

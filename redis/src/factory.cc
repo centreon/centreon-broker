@@ -111,15 +111,14 @@ io::endpoint* factory::new_endpoint(
                          misc::shared_ptr<persistent_cache> cache) const {
   std::string address;
   unsigned short port;
-  std::string user;
   std::string password;
 
   // Redis server IP address.
   {
     QMap<QString, QString>::const_iterator
-      it(cfg.params.find("address"));
+      it(cfg.params.find("host"));
     if (it == cfg.params.end())
-      throw (exceptions::msg() << "redis: no 'address' defined "
+      throw (exceptions::msg() << "redis: no 'host' defined "
              << "for endpoint '" << cfg.name << "'");
     address = it.value().toStdString();
   }
@@ -134,16 +133,6 @@ io::endpoint* factory::new_endpoint(
     port = it.value().toUInt();
   }
 
-  // Redis server user.
-  {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("user"));
-    if (it == cfg.params.end())
-      throw (exceptions::msg() << "redis: no 'user' defined "
-             << "for endpoint '" << cfg.name << "'");
-    user = it.value().toStdString();
-  }
-
   // Redis server password.
   {
     QMap<QString, QString>::const_iterator
@@ -156,8 +145,7 @@ io::endpoint* factory::new_endpoint(
 
   // Connector.
   std::auto_ptr<redis::connector> c(new redis::connector);
-  c->connect_to(address, port, user, password);
+  c->connect_to(address, port, password);
   is_acceptor = false;
   return c.release();
 }
-

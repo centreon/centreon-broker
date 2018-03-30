@@ -41,7 +41,6 @@ namespace          redis {
                     stream(
                       std::string const& address,
                       unsigned short port,
-                      std::string const& user,
                       std::string const& password);
     bool            read(misc::shared_ptr<io::data>& d, time_t deadline);
     int             write(misc::shared_ptr<io::data> const& d);

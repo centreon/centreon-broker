@@ -38,7 +38,6 @@ connector::connector(connector const& other)
   : io::endpoint(other),
     _address(other._address),
     _port(other._port),
-    _user(other._user),
     _password(other._password) {}
 
 /**
@@ -58,7 +57,6 @@ connector& connector::operator=(connector const& other) {
     io::endpoint::operator=(other);
     _address = other._address;
     _port = other._port;
-    _user = other._user;
     _password = other._password;
   }
   return (*this);
@@ -69,17 +67,14 @@ connector& connector::operator=(connector const& other) {
  *
  * @param[in] address  The Redis server ip address
  * @param[in] port     The Redis server port
- * @param[in] user     The user to connect to the server
  * @param[in] password The user's password
  */
 void connector::connect_to(
                   std::string const& address,
                   unsigned short port,
-                  std::string const& user,
                   std::string const& password) {
   _address = address;
   _port = port;
-  _user = user;
   _password = password;
 }
 
@@ -92,6 +87,5 @@ misc::shared_ptr<io::stream> connector::open() {
   return (misc::shared_ptr<io::stream>(new stream(
             _address,
             _port,
-            _user,
             _password)));
 }

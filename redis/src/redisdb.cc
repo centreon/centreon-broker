@@ -31,11 +31,11 @@ using namespace com::centreon::broker::redis;
 redisdb::redisdb(
            std::string const& address,
            unsigned short port,
-           std::string const& user,
            std::string const& password)
   : _socket(new QTcpSocket),
     _address(address),
     _port(port),
+    _password(password),
     _size(0) {}
 
 redisdb::~redisdb() {
@@ -99,17 +99,13 @@ void redisdb::hmset() {
 }
 
 QString& redisdb::flush() {
+  if (!_socket->state() != QTcpSocket::ConnectedState)
+    _connect();
+
   if (_content.empty())
     throw (exceptions::msg()
       << "redis: Attempt to send empty data to "
       << _address << ":" << _port);
-
-  _socket->connectToHost(_address.c_str(), _port);
-  if (!_socket->waitForConnected())
-    throw (exceptions::msg()
-      << "redis: Couldn't connect to "
-      << _address << ":" << _port
-      << ": " << _socket->errorString().toStdString());
 
   if (_socket->write(_content.c_str()) != static_cast<qint64>(_content.size()))
     throw (exceptions::msg()
@@ -136,7 +132,6 @@ QString& redisdb::flush() {
   _result.clear();
   _result.append(_socket->readAll());
   clear();
-  _socket->close();
   return _result;
 }
 
@@ -204,4 +199,49 @@ void redisdb::push(neb::service const& s) {
 
 std::string const&  redisdb::get_content() const {
   return _content;
+}
+
+void redisdb::_connect() {
+  _socket->connectToHost(_address.c_str(), _port);
+  if (!_socket->waitForConnected())
+    throw (exceptions::msg()
+      << "redis: Couldn't connect to "
+      << _address << ":" << _port
+      << ": " << _socket->errorString().toStdString());
+
+  if (!_password.empty()) {
+    std::ostringstream oss;
+    oss << "*2\r\n$4\r\nauth\r\n"
+      << '$' << _password.size() << "\r\n" << _password << "\r\n";
+
+    std::string query(oss.str());
+    if (_socket->write(query.c_str()) != static_cast<qint64>(query.size()))
+      throw (exceptions::msg()
+        << "redis: Couldn't authenticate to "
+      << _address << ":" << _port
+      << ": " << _socket->errorString().toStdString());
+
+    while (_socket->bytesToWrite()) {
+      if (!_socket->waitForBytesWritten())
+        throw (exceptions::msg()
+          << "redis: Couldn't send authentication to "
+          << _socket->peerAddress().toString().toStdString()
+          << ":" << _socket->peerPort()
+          << ": " << _socket->errorString().toStdString());
+    }
+
+    if (!_socket->waitForReadyRead()) {
+      throw (exceptions::msg()
+        << "redis: Couldn't read data from "
+        << _socket->peerAddress().toString().toStdString()
+        << ":" << _socket->peerPort()
+        << ": " << _socket->errorString().toStdString());
+    }
+    if (_socket->readAll() != "+OK\r\n")
+      throw (exceptions::msg()
+        << "redis: Couldn't authenticate to "
+        << _socket->peerAddress().toString().toStdString()
+        << ":" << _socket->peerPort()
+        << ": bad password");
+  }
 }

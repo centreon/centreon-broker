@@ -43,9 +43,8 @@ using namespace com::centreon::broker::redis;
 stream::stream(
           std::string const& address,
           unsigned short port,
-          std::string const& user,
           std::string const& password)
-  : _redisdb(new redisdb(address, port, user, password)),
+  : _redisdb(new redisdb(address, port, password)),
     _pending_queries(0),
     _actual_query(0),
     _queries_per_transaction(1) {}
@@ -58,11 +57,7 @@ stream::stream(
  *
  *  @return This method will throw.
  */
-bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
-//  (void)deadline;
-//  d.clear();
-//  throw (exceptions::shutdown() << "cannot read from redis generic connector");
-}
+bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {}
 
 /**
  *  Write an event.
@@ -115,7 +110,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
     int retval(_pending_queries);
     _pending_queries = 0;
     _actual_query = 0;
-    _redisdb->hmset();
+    _redisdb->flush();
     return retval;
   }
 

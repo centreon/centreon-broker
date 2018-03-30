@@ -39,7 +39,6 @@ namespace               redis {
                         redisdb(
                           std::string const& address,
                           unsigned short port,
-                          std::string const& user,
                           std::string const& password);
                         ~redisdb();
     void                clear();
@@ -57,10 +56,11 @@ namespace               redis {
     std::string const&  get_content() const;
 
    private:
+    void                _connect();
+
     QTcpSocket*         _socket;
     std::string         _address;
     unsigned short      _port;
-    std::string         _user;
     std::string         _password;
     unsigned int        _size;
     std::ostringstream  _oss;
