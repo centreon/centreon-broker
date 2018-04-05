@@ -22,11 +22,12 @@
 #  include <QString>
 #  include <sstream>
 #  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/neb/custom_variable.hh"
 #  include "com/centreon/broker/neb/host.hh"
-#  include "com/centreon/broker/neb/host_status.hh"
+#  include "com/centreon/broker/neb/host_group_member.hh"
+#  include "com/centreon/broker/neb/instance.hh"
 #  include "com/centreon/broker/neb/service.hh"
-#  include "com/centreon/broker/neb/service_status.hh"
+#  include "com/centreon/broker/neb/service_group_member.hh"
 
 // Forward declarations
 class QTcpSocket;
@@ -44,8 +45,12 @@ namespace               redis {
     void                clear();
     redisdb&            operator<<(std::string const& str);
     redisdb&            operator<<(int val);
+    void                push(neb::custom_variable const& cv);
+    void                push(neb::host_group_member const& hgm);
     void                push(neb::host const& h);
     void                push(neb::host_status const& hs);
+    void                push(neb::instance const& inst);
+    void                push(neb::service_group_member const& sgm);
     void                push(neb::service const& s);
     void                push(neb::service_status const& ss);
     std::string         str(std::string const& cmd = "");

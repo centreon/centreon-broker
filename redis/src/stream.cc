@@ -78,6 +78,16 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   // Process event.
   if (cat == io::events::neb) {
     switch (elem) {
+      case 3:
+        // Custom variable
+        _redisdb->push(data.ref_as<neb::custom_variable const>());
+        ++_actual_query;
+        break;
+      case 11:
+        // Host group member
+        _redisdb->push(data.ref_as<neb::host_group_member const>());
+        ++_actual_query;
+        break;
       case 12:
         // Host
         _redisdb->push(data.ref_as<neb::host const>());
@@ -88,6 +98,16 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
         _redisdb->push(data.ref_as<neb::host_status const>());
         ++_actual_query;
         break;
+      case 15:
+        // Instance
+        _redisdb->push(data.ref_as<neb::instance const>());
+        ++_actual_query;
+        break;
+      case 22:
+        // Service group member
+        _redisdb->push(data.ref_as<neb::service_group_member const>());
+        ++_actual_query;
+        break;
       case 23:
         // Service
         _redisdb->push(data.ref_as<neb::service const>());
@@ -95,17 +115,17 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
         break;
       case 24:
         // Service status
-        _redisdb->push(data.ref_as<neb::host_status const>());
+        _redisdb->push(data.ref_as<neb::service_status const>());
         ++_actual_query;
         break;
       default:
-        throw (exceptions::msg() << "redis: Enable to treat event of "
+        logging::error(logging::high) << "redis: Unable to treat event of "
           << "category " << cat
-          << ", element " << elem);
+          << ", element " << elem;
     }
   }
   if (_actual_query >= _queries_per_transaction) {
-    logging::debug(logging::medium)
+    logging::info(logging::high)
       << "redis: commiting " << _actual_query << " queries";
     int retval(_pending_queries);
     _pending_queries = 0;

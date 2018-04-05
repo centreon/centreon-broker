@@ -130,13 +130,14 @@ TEST_F(RedisdbTest, HostWithNameStatus) {
   neb::host hst;
   hst.host_id = 28;
   hst.host_name = "host test";
+  hst.poller_id = 1;
   _db.push(hst);
   QString& res1(_db.flush());
-  ASSERT_TRUE(res1 == ":1\r\n");
+  ASSERT_TRUE(res1 == "+OK\r\n");
   _db << "hgetall" << "h:28";
   _db.push_command();
   QString& res2(_db.flush());
-  ASSERT_TRUE(res2 == "*8\r\n$5\r\nstate\r\n$1\r\n2\r\n$7\r\nenabled\r\n$1\r\n1\r\n$12\r\nacknowledged\r\n$1\r\n0\r\n$4\r\nname\r\n$9\r\nhost test\r\n");
+  ASSERT_TRUE(res2 == "*10\r\n$5\r\nstate\r\n$1\r\n2\r\n$7\r\nenabled\r\n$1\r\n1\r\n$12\r\nacknowledged\r\n$1\r\n0\r\n$4\r\nname\r\n$9\r\nhost test\r\n$9\r\npoller_id\r\n$1\r\n1\r\n");
 }
 
 TEST_F(RedisdbTest, ServiceStatus) {
