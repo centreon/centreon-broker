@@ -42,6 +42,7 @@ namespace          redis {
                       std::string const& address,
                       unsigned short port,
                       std::string const& password);
+
     bool            read(misc::shared_ptr<io::data>& d, time_t deadline);
     int             write(misc::shared_ptr<io::data> const& d);
 
@@ -50,9 +51,6 @@ namespace          redis {
                     stream(stream const& other);
 
     redis::redisdb* _redisdb;
-    unsigned int    _pending_queries;
-    unsigned int    _actual_query;
-    unsigned int    _queries_per_transaction;
   };
 }
 

@@ -44,10 +44,7 @@ stream::stream(
           std::string const& address,
           unsigned short port,
           std::string const& password)
-  : _redisdb(new redisdb(address, port, password)),
-    _pending_queries(0),
-    _actual_query(0),
-    _queries_per_transaction(1) {}
+  : _redisdb(new redisdb(address, port, password)) {}
 
 /**
  *  Read from the connector.
@@ -57,7 +54,9 @@ stream::stream(
  *
  *  @return This method will throw.
  */
-bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {}
+bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+  return false;
+}
 
 /**
  *  Write an event.
@@ -68,55 +67,50 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {}
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
   // Take this event into account.
-  ++_pending_queries;
   if (!validate(data, "redis"))
     return 0;
 
   unsigned int type(data->type());
   unsigned short cat(io::events::category_of_type(type));
   unsigned short elem(io::events::element_of_type(type));
+  QString res;
   // Process event.
-  if (cat == io::events::neb) {
+  if (type == instance_broadcast::static_type()) {
+    _redisdb->push(data.ref_as<instance_broadcast const>());
+  }
+  else if (cat == io::events::neb) {
     switch (elem) {
       case 3:
         // Custom variable
-        _redisdb->push(data.ref_as<neb::custom_variable const>());
-        ++_actual_query;
+        res = _redisdb->push(data.ref_as<neb::custom_variable const>());
         break;
       case 11:
         // Host group member
-        _redisdb->push(data.ref_as<neb::host_group_member const>());
-        ++_actual_query;
+        res = _redisdb->push(data.ref_as<neb::host_group_member const>());
         break;
       case 12:
         // Host
-        _redisdb->push(data.ref_as<neb::host const>());
-        ++_actual_query;
+        res = _redisdb->push(data.ref_as<neb::host const>());
         break;
       case 14:
         // Host status
-        _redisdb->push(data.ref_as<neb::host_status const>());
-        ++_actual_query;
+        res = _redisdb->push(data.ref_as<neb::host_status const>());
         break;
       case 15:
         // Instance
-        _redisdb->push(data.ref_as<neb::instance const>());
-        ++_actual_query;
+        res = _redisdb->push(data.ref_as<neb::instance const>());
         break;
       case 22:
         // Service group member
-        _redisdb->push(data.ref_as<neb::service_group_member const>());
-        ++_actual_query;
+        res = _redisdb->push(data.ref_as<neb::service_group_member const>());
         break;
       case 23:
         // Service
-        _redisdb->push(data.ref_as<neb::service const>());
-        ++_actual_query;
+        res = _redisdb->push(data.ref_as<neb::service const>());
         break;
       case 24:
         // Service status
-        _redisdb->push(data.ref_as<neb::service_status const>());
-        ++_actual_query;
+        res = _redisdb->push(data.ref_as<neb::service_status const>());
         break;
       default:
         logging::error(logging::high) << "redis: Unable to treat event of "
@@ -124,15 +118,11 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
           << ", element " << elem;
     }
   }
-  if (_actual_query >= _queries_per_transaction) {
-    logging::info(logging::high)
-      << "redis: commiting " << _actual_query << " queries";
-    int retval(_pending_queries);
-    _pending_queries = 0;
-    _actual_query = 0;
-    _redisdb->flush();
-    return retval;
-  }
 
-  return 0;
+  if (res != "+OK\r\n")
+    logging::error(logging::medium)
+      << "redis: Unable to write event on redis server "
+      << _redisdb->get_address() << ':' << _redisdb->get_port() << ".";
+
+  return 1;
 }

@@ -38,9 +38,7 @@ class RedisdbTest : public ::testing::Test {
     }
   }
 
-  void TearDown() {
-    config::applier::deinit();
-  }
+  void TearDown() {}
 
  protected:
   redisdb _db;
@@ -69,36 +67,30 @@ TEST_F(RedisdbTest, Integer) {
 TEST_F(RedisdbTest, SetKey) {
   _db.clear();
   _db << "set" << "toto" << 12;
-  _db.push_command();
-  QString& res1(_db.flush());
+  QString& res1(_db.push_command());
   ASSERT_TRUE(res1 == "+OK\r\n");
   _db << "incr" << "toto";
-  _db.push_command();
-  QString& res2(_db.flush());
+  QString& res2(_db.push_command());
   ASSERT_TRUE(res2 == ":13\r\n");
 }
 
 TEST_F(RedisdbTest, SetGetKey) {
   _db.clear();
   _db << "set" << "toto" << 14;
-  _db.push_command();
-  QString& res1(_db.flush());
+  QString& res1(_db.push_command());
   ASSERT_TRUE(res1.toStdString() == "+OK\r\n");
   _db << "get" << "toto";
-  _db.push_command();
-  QString& res2(_db.flush());
+  QString& res2(_db.push_command());
   ASSERT_TRUE(res2 == "$2\r\n14\r\n");
 }
 
 TEST_F(RedisdbTest, HMSetKey) {
   _db.clear();
   _db << "tete" << "titi" << 25 << "tata" << 12;
-  _db.hmset();
-  QString& res1(_db.flush());
+  QString& res1(_db.push_command("$5\r\nhmset\r\n"));
   ASSERT_TRUE(res1.toStdString() == "+OK\r\n");
   _db << "hget" << "tete" << "titi";
-  _db.push_command();
-  QString& res2(_db.flush());
+  QString& res2(_db.push_command());
   ASSERT_TRUE(res2 == "$2\r\n25\r\n");
 }
 
@@ -106,7 +98,6 @@ TEST_F(RedisdbTest, HostStatus) {
   _db.clear();
   _db << "h:28";
   _db.del();
-  _db.flush();
   neb::host_status hst;
   hst.host_id = 28;
   hst.current_state = 2;
@@ -115,36 +106,64 @@ TEST_F(RedisdbTest, HostStatus) {
   hst.check_type = 7;
   hst.next_check = 23;
   hst.state_type = 1;
-  _db.push(hst);
-  QString& res1(_db.flush());
+  QString& res1(_db.push(hst));
   ASSERT_TRUE(res1.toStdString() == "+OK\r\n");
   _db << "hgetall" << "h:28";
-  _db.push_command();
-  QString& res2(_db.flush());
-  ASSERT_TRUE(res2 == "*6\r\n$5\r\nstate\r\n$1\r\n2\r\n$7\r\nenabled\r\n$1\r\n1\r\n$12\r\nacknowledged\r\n$1\r\n0\r\n");
+  QString& vv(_db.push_command());
+  std::cout << "vv = " << vv.toStdString() << std::endl;
+  QVariant res2(redisdb::parse(vv));
+  QVariantList lst(res2.toList());
+  ASSERT_EQ(lst.size(), 14);
+  for (int i = 0; i < lst.size(); i += 2) {
+    if (lst[i] == "current_state") {
+      ASSERT_EQ(lst[i + 1], 2);
+    }
+    else if (lst[i] == "enabled") {
+      ASSERT_EQ(lst[i + 1], 1);
+    }
+    else if (lst[i] == "acknowledged") {
+      ASSERT_EQ(lst[i + 1], 0);
+    }
+    else if (lst[i] == "check_type") {
+      ASSERT_EQ(lst[i + 1], 7);
+    }
+    else if (lst[i] == "next_check") {
+      ASSERT_EQ(lst[i + 1], 23);
+    }
+    else if (lst[i] == "state_type") {
+      ASSERT_EQ(lst[i + 1], 1);
+    }
+  }
 }
 
 TEST_F(RedisdbTest, HostWithNameStatus) {
   _db.clear();
-  ASSERT_THROW(_db.flush(), std::exception);
   neb::host hst;
   hst.host_id = 28;
   hst.host_name = "host test";
-  hst.poller_id = 1;
-  _db.push(hst);
-  QString& res1(_db.flush());
+  hst.poller_id = 113;
+  QString& res1(_db.push(hst));
   ASSERT_TRUE(res1 == "+OK\r\n");
   _db << "hgetall" << "h:28";
-  _db.push_command();
-  QString& res2(_db.flush());
-  ASSERT_TRUE(res2 == "*10\r\n$5\r\nstate\r\n$1\r\n2\r\n$7\r\nenabled\r\n$1\r\n1\r\n$12\r\nacknowledged\r\n$1\r\n0\r\n$4\r\nname\r\n$9\r\nhost test\r\n$9\r\npoller_id\r\n$1\r\n1\r\n");
+  QString& res2(_db.push_command());
+  std::cout << "res2 = " << res2.toStdString() << std::endl;
+  QVariant var(redisdb::parse(res2));
+  QVariantList lst(var.toList());
+  ASSERT_EQ(lst.size(), 30);
+  for (int i = 0; i < lst.size(); i += 2) {
+    if (lst[i] == "name") {
+      ASSERT_EQ(lst[i + 1], "host test");
+    }
+    else if (lst[i] == "poller_id") {
+      ASSERT_EQ(lst[i + 1], 113);
+    }
+  }
 }
 
 TEST_F(RedisdbTest, ServiceStatus) {
   _db.clear();
   _db << "s:28:42";
   _db.del();
-  _db.flush();
   neb::service_status svc;
   svc.host_id = 28;
   svc.service_id = 42;
@@ -154,51 +173,20 @@ TEST_F(RedisdbTest, ServiceStatus) {
   svc.check_type = 7;
   svc.next_check = 23;
   svc.state_type = 1;
-  _db.push(svc);
-  QString& res1(_db.flush());
+  QString& res1(_db.push(svc));
+  std::cout << "res1 = " << res1.toStdString() << std::endl;
   ASSERT_TRUE(res1.toStdString() == "+OK\r\n");
   _db << "hgetall" << "s:28:42";
-  _db.push_command();
-  QString& res2(_db.flush());
-  ASSERT_TRUE(res2 == "*6\r\n$5\r\nstate\r\n$1\r\n3\r\n$7\r\nenabled\r\n$1\r\n1\r\n$12\r\nacknowledged\r\n$1\r\n1\r\n");
-}
+  QString& res2(_db.push_command());
+  QVariant var(redisdb::parse(res2));
+  QVariantList lst(var.toList());
 
-TEST_F(RedisdbTest, ServicesStatus) {
-  _db.clear();
-  neb::service svc;
-  svc.host_id = 28;
-  svc.service_id = 42;
-  svc.service_description = "service test";
-  _db.push(svc);
-  QString& res(_db.flush());
-  ASSERT_TRUE(res == ":1\r\n");
-
-  neb::service_status ssvc;
-  ssvc.host_id = 28;
-  ssvc.service_id = 42;
-  ssvc.current_state = 3;
-  ssvc.enabled = true;
-  ssvc.acknowledged = true;
-  ssvc.check_type = 7;
-  ssvc.next_check = 23;
-  ssvc.state_type = 1;
-  _db.push(ssvc);
-
-  ssvc.host_id = 30;
-  ssvc.service_id = 40;
-  ssvc.current_state = 1;
-  ssvc.enabled = true;
-  ssvc.acknowledged = false;
-  _db.push(ssvc);
-  QString& res1(_db.flush());
-  ASSERT_TRUE(res1.toStdString() == "+OK\r\n+OK\r\n");
-  _db << "hgetall" << "s:28:42";
-  _db.push_command();
-  QString& res2(_db.flush());
-  ASSERT_TRUE(res2 == "*8\r\n$5\r\nstate\r\n$1\r\n3\r\n$7\r\nenabled\r\n$1\r\n1\r\n$12\r\nacknowledged\r\n$1\r\n1\r\n$11\r\ndescription\r\n$12\r\nservice test\r\n");
-
-  _db << "hgetall" << "s:30:40";
-  _db.push_command();
-  res2 = _db.flush();
-  ASSERT_TRUE(res2 == "*6\r\n$5\r\nstate\r\n$1\r\n1\r\n$7\r\nenabled\r\n$1\r\n1\r\n$12\r\nacknowledged\r\n$1\r\n0\r\n");
+  for (int i = 0; i < lst.size(); i += 2) {
+    if (lst[i] == "name") {
+      ASSERT_EQ(lst[i + 1], "host test");
+    }
+    else if (lst[i] == "poller_id") {
+      ASSERT_EQ(lst[i + 1], 113);
+    }
+  }
 }

@@ -20,8 +20,10 @@
 #  define CCB_REDIS_REDISDB_HH
 
 #  include <QString>
+#  include <QVariant>
 #  include <sstream>
 #  include <string>
+#  include "com/centreon/broker/instance_broadcast.hh"
 #  include "com/centreon/broker/neb/custom_variable.hh"
 #  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/host_group_member.hh"
@@ -45,23 +47,33 @@ namespace               redis {
     void                clear();
     redisdb&            operator<<(std::string const& str);
     redisdb&            operator<<(int val);
-    void                push(neb::custom_variable const& cv);
-    void                push(neb::host_group_member const& hgm);
-    void                push(neb::host const& h);
-    void                push(neb::host_status const& hs);
-    void                push(neb::instance const& inst);
-    void                push(neb::service_group_member const& sgm);
-    void                push(neb::service const& s);
-    void                push(neb::service_status const& ss);
+    QString&            push(instance_broadcast const& ib);
+    QString&            push(neb::custom_variable const& cv);
+    QString&            push(neb::host_group_member const& hgm);
+    QString&            push(neb::host const& h);
+    QString&            push(neb::host_status const& hs);
+    QString&            push(neb::instance const& inst);
+    QString&            push(neb::service_group_member const& sgm);
+    QString&            push(neb::service const& s);
+    QString&            push(neb::service_status const& ss);
     std::string         str(std::string const& cmd = "");
-    void                push_command(std::string const& cmd = "");
-    void                del();
-    void                hmset();
-    QString&            flush();
+
+    QString&            push_command(std::string const& cmd = "");
+    QString&            del();
     std::string const&  get_content() const;
+    static QVariant     parse(QString const& str);
+    std::string const&  get_address() const;
+    unsigned short const
+                        get_port() const;
 
    private:
     void                _connect();
+    void                _check_redis_server();
+    void                _check_redis_documents();
+    static QVariant     _parse(QString const& str, QString::const_iterator& it);
+    static QVariant     _parse_array(QString const& str, QString::const_iterator& it);
+    static QVariant     _parse_int(QString const& str, QString::const_iterator& it);
+    static QVariant     _parse_str(QString const& str, QString::const_iterator& it);
 
     QTcpSocket*         _socket;
     std::string         _address;

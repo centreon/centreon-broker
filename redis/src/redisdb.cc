@@ -16,8 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include <iostream>
 #include <QHostAddress>
 #include <QTcpSocket>
+#include <QStringList>
+#include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -37,12 +40,138 @@ redisdb::redisdb(
     _address(address),
     _port(port),
     _password(password),
-    _size(0) {}
+    _size(0) {
+  _connect();
+  _check_redis_server();
+  _check_redis_documents();
+}
 
 redisdb::~redisdb() {
   delete _socket;
 }
 
+void redisdb::_check_redis_server() {
+  *this << "list";
+  QString& ret(push_command("$6\r\nmodule\r\n"));
+  QVariant lst(parse(ret));
+  QVariantList res(lst.toList());
+  bool module_found(false);
+  bool version_ok(false);
+
+  /* Checking if redisearch module is present */
+  if (res.size() >= 1) {
+    for (int i(0); i < res.size(); ++i) {
+      QVariantList module(res[i].toList());
+      for (int j(0); j < module.size(); j += 2) {
+        QString const& key(module[j].toString());
+        QVariant const& value(module[j + 1]);
+
+        if (key == "name" && value.toString() == "ft")
+          module_found = true;
+        else if (key == "ver" && value.toInt() >= 10007)
+          version_ok = true;
+      }
+      if (module_found)
+        break;
+    }
+  }
+  if (!module_found || !version_ok) {
+    throw (exceptions::msg()
+      << "redis: The redisearch module is not installed or its version "
+      << " is too old ( < 10007) on the redis server '"
+      << _address << ":" << _port << "'");
+  }
+}
+
+void redisdb::_check_redis_documents() {
+  // Check services index
+  *this << "idx:services";
+  QString ret(push_command("$4\r\ntype\r\n"));
+  if (ret == "+none\r\n") {
+    logging::info(logging::medium)
+      << "redis: initialization of services indexes";
+
+    *this << "services" << "SCHEMA"
+          << "criticality_id" << "NUMERIC" << "SORTABLE"
+          << "host_name" << "TEXT" << "SORTABLE"
+          << "service_description" << "TEXT" << "SORTABLE"
+          << "current_state" << "NUMERIC" << "SORTABLE"
+          << "last_state_change" << "NUMERIC" << "SORTABLE"
+          << "last_hard_state_change" << "NUMERIC" << "SORTABLE"
+          << "last_check" << "NUMERIC" << "SORTABLE"
+          << "current_check_attempt" << "NUMERIC" << "SORTABLE"
+          << "plugin_output" << "TEXT" << "SORTABLE"
+          << "state_type" << "NUMERIC" << "NOINDEX"
+          << "next_check" << "NUMERIC" << "NOINDEX"
+          << "max_check_attempts" << "NUMERIC" << "NOINDEX"
+          << "enabled" << "NUMERIC" << "NOINDEX"
+          << "scheduled_downtime_depth" << "NUMERIC" << "NOINDEX"
+          << "flap_detection" << "NUMERIC" << "NOINDEX"
+          << "active_checks" << "NUMERIC" << "NOINDEX"
+          << "passive_checks" << "NUMERIC" << "NOINDEX"
+          << "acknowledged" << "NUMERIC" << "NOINDEX"
+          << "notify" << "NUMERIC" << "NOINDEX"
+          << "action_url" << "TEXT" << "NOINDEX"
+          << "notes" << "TEXT" << "NOINDEX"
+          << "notes_url" << "TEXT" << "NOINDEX"
+          << "event_handler_enabled" << "NUMERIC" << "NOINDEX"
+          << "flapping" << "NUMERIC" << "NOINDEX"
+          << "icon_image" << "TEXT" << "NOINDEX"
+          << "criticality_level" << "NUMERIC" << "NOINDEX"
+          << "display_name" << "TEXT" << "NOINDEX";
+
+    ret = push_command("$9\r\nFT.CREATE\r\n");
+
+    if (ret != "+OK\r\n")
+      throw (exceptions::msg()
+        << "redis: Unexpected error while creating the idx:services type on "
+        << _address << ":" << _port << " (" << ret.toStdString() << ")");
+  }
+  else if (ret == "+ft_index0\r\n") {
+  }
+  else
+    throw (exceptions::msg()
+      << "redis: Unexpected error while checking the idx:services type on "
+      << _address << ":" << _port << "(" << ret.toStdString() << ")");
+
+  // Check hosts index
+  *this << "idx:hosts";
+  ret = push_command("$4\r\ntype\r\n");
+  if (ret == "+none\r\n") {
+    logging::info(logging::medium)
+      << "redis: initialization of hosts indexes";
+
+    *this << "hosts" << "SCHEMA"
+          << "criticality_id" << "NUMERIC" << "SORTABLE"
+          << "name" << "TEXT" << "SORTABLE"
+          << "alias" << "TEXT" << "NOINDEX"
+          << "address" << "TEXT" << "SORTABLE"
+          << "current_state" << "NUMERIC" << "SORTABLE"
+          << "plugin_output" << "TEXT" << "SORTABLE"
+          << "enabled" << "NUMERIC" << "NOINDEX"
+          << "scheduled_downtime_depth" << "NUMERIC" << "NOINDEX"
+          << "active_checks" << "NUMERIC" << "NOINDEX"
+          << "passive_checks" << "NUMERIC" << "NOINDEX"
+          << "acknowledged" << "NUMERIC" << "NOINDEX"
+          << "action_url" << "TEXT" << "NOINDEX"
+          << "notes" << "TEXT" << "NOINDEX"
+          << "notes_url" << "TEXT" << "NOINDEX"
+          << "icon_image" << "TEXT" << "NOINDEX"
+          << "criticality_level" << "NUMERIC" << "NOINDEX"
+          << "poller_id" << "NUMERIC" << "NOINDEX";
+    ret = push_command("$9\r\nFT.CREATE\r\n");
+    if (ret != "+OK\r\n")
+      throw (exceptions::msg()
+        << "redis: Unexpected error while creating the idx:hosts type on "
+        << _address << ":" << _port << " (" << ret.toStdString() << ")");
+  }
+  else if (ret == "+ft_index0\r\n") {
+  }
+  else
+    throw (exceptions::msg()
+      << "redis: Unexpected error while checking the idx:hosts type on "
+      << _address << ":" << _port << " (" << ret.toStdString() << ")");
+}
 
 /**
  *  Clear the redisdb object.
@@ -91,16 +220,16 @@ std::string redisdb::str(std::string const& cmd) {
   }
 }
 
-void redisdb::del() {
-  push_command("$3\r\ndel\r\n");
+QString& redisdb::del() {
+  return push_command("$3\r\ndel\r\n");
 }
 
-void redisdb::hmset() {
-  push_command("$5\r\nhmset\r\n");
-}
+QString& redisdb::push_command(std::string const& cmd) {
+  _content.append(str(cmd));
+  _oss.str("");
+  _size = 0;
 
-QString& redisdb::flush() {
-  if (!_socket->state() != QTcpSocket::ConnectedState)
+  if (_socket->state() != QTcpSocket::ConnectedState)
     _connect();
 
   if (_content.empty())
@@ -136,13 +265,7 @@ QString& redisdb::flush() {
   return _result;
 }
 
-void redisdb::push_command(std::string const& cmd) {
-  _content.append(str(cmd));
-  _oss.str("");
-  _size = 0;
-}
-
-void redisdb::push(neb::custom_variable const& cv) {
+QString& redisdb::push(neb::custom_variable const& cv) {
   // We only work with CRITICALITY_LEVEL and CRITICALITY_ID for now.
   // For a host:
   // * h:host_id
@@ -164,45 +287,48 @@ void redisdb::push(neb::custom_variable const& cv) {
     tag = "criticality_id";
   else if (cv.name == "CRITICALITY_LEVEL")
     tag = "criticality_level";
-  else
-    return ;
+  else {
+    _result.clear();
+    return _result;
+  }
 
   std::ostringstream oss;
   if (cv.service_id) {
-    oss << "s:" << cv.host_id
-      << ':' << cv.service_id;
+    oss << "s:" << cv.host_id << ':' << cv.service_id;
+    *this << "services" << oss.str();
   }
-  else
+  else {
     oss << "h:" << cv.host_id;
+    *this << "hosts" << oss.str();
+  }
 
-  *this << oss.str()
+  *this << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
         << tag << cv.value.toStdString();
-  push_command("$5\r\nhmset\r\n");
+  return push_command("$6\r\nFT.ADD\r\n");
 }
 
-void redisdb::push(neb::host_group_member const& hgm) {
+QString& redisdb::push(instance_broadcast const& ib) {
+  // Here, there are some cleanup to do...
+  // FIXME DBR
+  _result.clear();
+  return _result;
+}
+
+QString& redisdb::push(neb::host_group_member const& hgm) {
   // Values to push in redis:
   // * hgm:host_id : it is a set of hostgroup_id's
   std::ostringstream oss;
   oss << "hgm:" << hgm.host_id;
   *this << oss.str()
     << hgm.group_id;
-  push_command("$4\r\nsadd\r\n");
+  return push_command("$4\r\nsadd\r\n");
 }
 
-void redisdb::push(neb::host const& h) {
-  // Values to push in redis:
-  // * h:host_id
-  //    - name
-  //    - alias
-  //    - address
-  //    - action_url
-  //    - notes
-  //    - notes_url
-  //    - poller_id
+QString& redisdb::push(neb::host const& h) {
   std::ostringstream oss;
   oss << "h:" << h.host_id;
-  *this << oss.str()
+
+  *this << "hosts" << oss.str() << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
     << "name" << h.host_name.toStdString()
     << "alias" << h.alias.toStdString()
     << "address" << h.address.toStdString()
@@ -211,29 +337,25 @@ void redisdb::push(neb::host const& h) {
     << "notes_url" << h.notes_url.toStdString()
     << "icon_image" << h.icon_image.toStdString()
     << "poller_id" << h.poller_id;
-  push_command("$5\r\nhmset\r\n");
+  return push_command("$6\r\nFT.ADD\r\n");
 }
 
-void redisdb::push(neb::host_status const& hs) {
-  // Values to push in redis:
-  // * h:host_id
-  //    - state
-  //    - enabled
-  //    - acknowledged
+QString& redisdb::push(neb::host_status const& hs) {
   std::ostringstream oss;
   oss << "h:" << hs.host_id;
-  *this << oss.str()
-    << "state" << hs.current_state
+
+  *this << "hosts" << oss.str() << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
+    << "current_state" << hs.current_state
     << "enabled" << hs.enabled
     << "scheduled_downtime_depth" << hs.downtime_depth
     << "plugin_output" << hs.output.toStdString()
     << "active_checks" << hs.active_checks_enabled
     << "passive_checks" << hs.passive_checks_enabled
     << "acknowledged" << hs.acknowledged;
-  push_command("$5\r\nhmset\r\n");
+  return push_command("$6\r\nFT.ADD\r\n");
 }
 
-void redisdb::push(neb::instance const& inst) {
+QString& redisdb::push(neb::instance const& inst) {
   // Values to push in redis:
   // * i:poller_id
   //    - name
@@ -242,49 +364,26 @@ void redisdb::push(neb::instance const& inst) {
   std::string ist(oss.str());
   *this << oss.str()
     << "name" << inst.name.toStdString();
-  push_command("$5\r\nhmset\r\n");
+  return push_command("$5\r\nhmset\r\n");
 }
 
-void redisdb::push(neb::service_group_member const& sgm) {
+QString& redisdb::push(neb::service_group_member const& sgm) {
   // Values to push in redis:
   // * sgm:host_id:service_id : it is a set of servicegroup_id's
   std::ostringstream oss;
   oss << "sgm:" << sgm.host_id << ':' << sgm.service_id;
   *this << oss.str()
     << sgm.group_id;
-  push_command("$4\r\nsadd\r\n");
+  return push_command("$4\r\nsadd\r\n");
 }
 
-void redisdb::push(neb::service_status const& ss) {
-  // Values to push in redis:
-  // * s:host_id:service_id
-  //     - state
-  //     - last_state_change
-  //     - enabled
-  //     - acknowledged
+QString& redisdb::push(neb::service_status const& ss) {
   std::ostringstream oss;
   oss << "s:" << ss.host_id << ':' << ss.service_id;
   std::string svc(oss.str());
-  logging::info(logging::high)
-    << "redis: hmset " << svc
-    << " state " << ss.current_state
-    << " state_type " << ss.state_type
-    << " last_check " << ss.last_check
-    << " next_check " << ss.last_check
-    << " max_check_attempts " << ss.max_check_attempts
-    << " last_state_change " << ss.last_state_change
-    << " last_hard_state_change " << ss.last_hard_state_change
-    << " enabled " << ss.enabled
-    << " scheduled_downtime_depth " << ss.downtime_depth
-    << " plugin_output " << ss.output.toStdString()
-    << " current_check_attempt " << ss.current_check_attempt
-    << " flap_detection " << ss.flap_detection_enabled
-    << " active_checks " << ss.active_checks_enabled
-    << " passive_checks " << ss.passive_checks_enabled
-    << " acknowledged " << ss.acknowledged;
 
-  *this << svc
-    << "state" << ss.current_state
+  *this << "services" << svc << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
+    << "current_state" << ss.current_state
     << "state_type" << ss.state_type
     << "last_check" << ss.last_check
     << "next_check" << ss.next_check
@@ -299,21 +398,21 @@ void redisdb::push(neb::service_status const& ss) {
     << "active_checks" << ss.active_checks_enabled
     << "passive_checks" << ss.passive_checks_enabled
     << "acknowledged" << ss.acknowledged;
-  push_command("$5\r\nhmset\r\n");
+  return push_command("$6\r\nFT.ADD\r\n");
 }
 
-void redisdb::push(neb::service const& s) {
-  // Values to push in redis:
-  // * s:host_id:service_id
-  //     - description
-  //     - notes
-  //     - notes_url
-  //     - display_name
+QString& redisdb::push(neb::service const& s) {
   std::ostringstream oss;
+  oss << "h:" << s.host_id;
+
+  *this << oss.str() << "name";
+  push_command("$4\r\nhget\r\n");
+  oss.str("");
   oss << "s:" << s.host_id << ':' << s.service_id;
   std::string svc(oss.str());
-  *this << svc
-    << "description" << s.service_description.toStdString()
+
+  *this << "services" << svc << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
+    << "service_description" << s.service_description.toStdString()
     << "notify" << s.notifications_enabled
     << "action_url" << s.action_url.toStdString()
     << "notes" << s.notes.toStdString()
@@ -322,7 +421,17 @@ void redisdb::push(neb::service const& s) {
     << "flapping" << s.is_flapping
     << "icon_image" << s.icon_image.toStdString()
     << "display_name" << s.display_name.toStdString();
-  push_command("$5\r\nhmset\r\n");
+
+  try {
+    QString name(redisdb::parse(_result).toString());
+    *this << "host_name" << name.toStdString();
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::high)
+      << "redis: unable to get host name for host id " << s.host_id;
+  }
+
+  return push_command("$6\r\nFT.ADD\r\n");
 }
 
 std::string const&  redisdb::get_content() const {
@@ -372,4 +481,89 @@ void redisdb::_connect() {
         << ":" << _socket->peerPort()
         << ": bad password");
   }
+}
+
+QVariant redisdb::parse(QString const& str) {
+  QString::const_iterator it(str.begin());
+  return _parse(str, it);
+}
+
+QVariant redisdb::_parse(QString const& str, QString::const_iterator& it) {
+  switch (it->toAscii()) {
+    case '$':
+      return _parse_str(str, it);
+    case '*':
+      return _parse_array(str, it);
+    case ':':
+      return _parse_int(str, it);
+    default:
+      throw (exceptions::msg()
+        << "redis: Unable to parse the string '"
+        << str.toStdString() << "' that is nor a string, nor an array");
+  }
+  return QVariant();
+}
+
+QVariant redisdb::_parse_str(QString const& str, QString::const_iterator& it) {
+  size_t len(0);
+  if (*it != '$')
+    throw (exceptions::msg()
+      << "redis: Unable to parse '" << str.toStdString() << "' as a string");
+  ++it;
+  while (*it != '\r') {
+    len = len * 10 + it->digitValue();
+    ++it;
+  }
+
+  /* Now it points at '\r' */
+  it += 2;
+  QVariant retval (QVariant(QString(&(*it), len)));
+  it += len + 2;
+  return retval;
+}
+
+QVariant redisdb::_parse_int(QString const& str, QString::const_iterator& it) {
+  int value(0);
+  if (*it != ':')
+    throw (exceptions::msg()
+      << "redis: Unable to parse '" << str.toStdString() << "' as an integer");
+  ++it;
+  while (*it != '\r') {
+    value = value * 10 + it->digitValue();
+    ++it;
+  }
+
+  /* Now it points at '\r' */
+  it += 2;
+  return QVariant(value);
+}
+
+QVariant redisdb::_parse_array(QString const& str, QString::const_iterator& it) {
+  size_t array_size(0);
+  if (*it != '*')
+    throw (exceptions::msg()
+      << "redis: Unable to parse '" << str.toStdString() << "' as an array");
+  ++it;
+  while (*it != '\r') {
+    array_size = array_size * 10 + it->digitValue();
+    ++it;
+  }
+
+  /* Now it points at '\r' */
+  it += 2;
+  QVariantList retval;
+  while (array_size > 0) {
+    QVariant ret(_parse(str, it));
+    retval.append(ret);
+    --array_size;
+  }
+  return QVariant(retval);
+}
+
+std::string const& redisdb::get_address() const {
+  return _address;
+}
+
+unsigned short const redisdb::get_port() const {
+  return _port;
 }
