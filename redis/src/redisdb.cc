@@ -118,6 +118,9 @@ void redisdb::_check_redis_documents() {
           << "flapping" << "NUMERIC" << "NOINDEX"
           << "icon_image" << "TEXT" << "NOINDEX"
           << "criticality_level" << "NUMERIC" << "NOINDEX"
+          << "service_groups" << "TAG"
+          << "poller_id" << "TAG"
+          << "host_groups" << "TAG"
           << "display_name" << "TEXT" << "NOINDEX";
 
     ret = push_command("$9\r\nFT.CREATE\r\n");
@@ -157,8 +160,9 @@ void redisdb::_check_redis_documents() {
           << "notes" << "TEXT" << "NOINDEX"
           << "notes_url" << "TEXT" << "NOINDEX"
           << "icon_image" << "TEXT" << "NOINDEX"
-          << "criticality_level" << "NUMERIC" << "NOINDEX"
-          << "poller_id" << "NUMERIC" << "NOINDEX";
+          << "poller_id" << "TAG"
+          << "host_groups" << "TAG"
+          << "criticality_level" << "NUMERIC" << "NOINDEX";
     ret = push_command("$9\r\nFT.CREATE\r\n");
     if (ret != "+OK\r\n")
       throw (exceptions::msg()
@@ -316,28 +320,61 @@ QString& redisdb::push(instance_broadcast const& ib) {
 
 QString& redisdb::push(neb::host_group_member const& hgm) {
   // Values to push in redis:
-  // * hgm:host_id : it is a set of hostgroup_id's
+  // * hg:host_id : it is a bitfield of hostgroup_id
   std::ostringstream oss;
-  oss << "hgm:" << hgm.host_id;
-  *this << oss.str()
-    << hgm.group_id;
-  return push_command("$4\r\nsadd\r\n");
+  oss << "hg:" << hgm.host_id;
+  *this << oss.str() << hgm.group_id << 1;
+  return push_command("$6\r\nsetbit\r\n");
+}
+
+std::string redisdb::_parse_bitfield(QString const& bf) {
+  std::ostringstream oss;
+  int j(0);
+  for (int i(0); i < bf.size(); ++i) {
+    char c(bf[i].toLatin1());
+    if (c == 0) {
+      j += 8;
+      continue;
+    }
+    for (int k(128); k >= 1; k = k >> 1, j++) {
+      if (k & c)
+        oss << j << ',';
+    }
+  }
+  return oss.str();
 }
 
 QString& redisdb::push(neb::host const& h) {
   std::ostringstream oss;
   oss << "h:" << h.host_id;
+  std::string host_key(oss.str());
 
-  *this << "hosts" << oss.str() << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
+  oss.str("");
+  oss << "hg:" << h.host_id;
+  *this << oss.str();
+  QString hg(push_command("$3\r\nGET\r\n"));
+  QString hg_bf(parse(hg).toString());
+  std::string host_groups(_parse_bitfield(hg_bf));
+
+  *this << host_key << "name" << "poller_id";
+  push_command("$5\r\nhmget\r\n");
+
+  *this << "hosts" << host_key << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
     << "name" << h.host_name.toStdString()
     << "alias" << h.alias.toStdString()
     << "address" << h.address.toStdString()
     << "action_url" << h.action_url.toStdString()
     << "notes" << h.notes.toStdString()
     << "notes_url" << h.notes_url.toStdString()
-    << "icon_image" << h.icon_image.toStdString()
-    << "poller_id" << h.poller_id;
-  return push_command("$6\r\nFT.ADD\r\n");
+    << "host_groups" << host_groups
+    << "poller_id" << h.poller_id
+    << "icon_image" << h.icon_image.toStdString();
+  push_command("$6\r\nFT.ADD\r\n");
+
+  oss.str("");
+  oss << "p:" << h.poller_id;
+  *this << oss.str() << h.host_id << 1;
+  return push_command("$6\r\nSETBIT\r\n");
 }
 
 QString& redisdb::push(neb::host_status const& hs) {
@@ -362,19 +399,21 @@ QString& redisdb::push(neb::instance const& inst) {
   std::ostringstream oss;
   oss << "i:" << inst.poller_id;
   std::string ist(oss.str());
-  *this << oss.str()
-    << "name" << inst.name.toStdString();
-  return push_command("$5\r\nhmset\r\n");
+  *this << oss.str() << inst.name.toStdString();
+  return push_command("$3\r\nset\r\n");
 }
 
 QString& redisdb::push(neb::service_group_member const& sgm) {
   // Values to push in redis:
-  // * sgm:host_id:service_id : it is a set of servicegroup_id's
+  // sg:group_id { s:host_id:service_id } it is a set of service keys.
   std::ostringstream oss;
-  oss << "sgm:" << sgm.host_id << ':' << sgm.service_id;
+  oss << "sg:" << sgm.group_id;
+  *this << oss.str();
+  oss.str("");
+  oss << 's' << sgm.host_id << ':' << sgm.service_id;
   *this << oss.str()
     << sgm.group_id;
-  return push_command("$4\r\nsadd\r\n");
+  return push_command("$4\r\nSADD\r\n");
 }
 
 QString& redisdb::push(neb::service_status const& ss) {
@@ -405,14 +444,15 @@ QString& redisdb::push(neb::service const& s) {
   std::ostringstream oss;
   oss << "h:" << s.host_id;
 
-  *this << oss.str() << "name";
-  push_command("$4\r\nhget\r\n");
+  *this << oss.str() << "name" << "poller_id" << "host_groups";
+  push_command("$5\r\nhmget\r\n");
   oss.str("");
   oss << "s:" << s.host_id << ':' << s.service_id;
   std::string svc(oss.str());
 
   *this << "services" << svc << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
     << "service_description" << s.service_description.toStdString()
+    << "host_id" << s.host_id
     << "notify" << s.notifications_enabled
     << "action_url" << s.action_url.toStdString()
     << "notes" << s.notes.toStdString()
@@ -423,8 +463,11 @@ QString& redisdb::push(neb::service const& s) {
     << "display_name" << s.display_name.toStdString();
 
   try {
-    QString name(redisdb::parse(_result).toString());
-    *this << "host_name" << name.toStdString();
+    QVariant res(redisdb::parse(_result));
+    QVariantList lst(res.toList());
+    *this << "host_name" << lst[0].toString().toStdString()
+          << "poller_id" << lst[1].toInt()
+          << "host_groups" << lst[2].toString().toStdString();
   }
   catch (std::exception const& e) {
     logging::error(logging::high)

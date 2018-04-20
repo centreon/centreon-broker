@@ -75,6 +75,8 @@ namespace               redis {
     static QVariant     _parse_int(QString const& str, QString::const_iterator& it);
     static QVariant     _parse_str(QString const& str, QString::const_iterator& it);
 
+    static std::string  _parse_bitfield(QString const& bg);
+
     QTcpSocket*         _socket;
     std::string         _address;
     unsigned short      _port;
