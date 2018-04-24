@@ -47,35 +47,34 @@ namespace               redis {
     void                clear();
     redisdb&            operator<<(std::string const& str);
     redisdb&            operator<<(int val);
-    QString&            push(instance_broadcast const& ib);
-    QString&            push(neb::custom_variable const& cv);
-    QString&            push(neb::host_group_member const& hgm);
-    QString&            push(neb::host const& h);
-    QString&            push(neb::host_status const& hs);
-    QString&            push(neb::instance const& inst);
-    QString&            push(neb::service_group_member const& sgm);
-    QString&            push(neb::service const& s);
-    QString&            push(neb::service_status const& ss);
+    QByteArray&         push(instance_broadcast const& ib);
+    QByteArray&         push(neb::custom_variable const& cv);
+    QByteArray&         push(neb::host_group_member const& hgm);
+    QByteArray&         push(neb::host const& h);
+    QByteArray&         push(neb::host_status const& hs);
+    QByteArray&         push(neb::instance const& inst);
+    QByteArray&         push(neb::service_group_member const& sgm);
+    QByteArray&         push(neb::service const& s);
+    QByteArray&         push(neb::service_status const& ss);
     std::string         str(std::string const& cmd = "");
 
-    QString&            push_command(std::string const& cmd = "");
-    QString&            del();
+    QByteArray&         push_command(std::string const& cmd = "");
+    QByteArray&         del();
     std::string const&  get_content() const;
-    static QVariant     parse(QString const& str);
+    static QVariant     parse(QByteArray const& array);
     std::string const&  get_address() const;
     unsigned short const
                         get_port() const;
+    static std::string  parse_bitfield(QByteArray const& bf);
 
    private:
     void                _connect();
     void                _check_redis_server();
     void                _check_redis_documents();
-    static QVariant     _parse(QString const& str, QString::const_iterator& it);
-    static QVariant     _parse_array(QString const& str, QString::const_iterator& it);
-    static QVariant     _parse_int(QString const& str, QString::const_iterator& it);
-    static QVariant     _parse_str(QString const& str, QString::const_iterator& it);
-
-    static std::string  _parse_bitfield(QString const& bg);
+    static QVariant     _parse(QByteArray const& str, QByteArray::const_iterator& it);
+    static QVariant     _parse_array(QByteArray const& str, QByteArray::const_iterator& it);
+    static QVariant     _parse_int(QByteArray const& str, QByteArray::const_iterator& it);
+    static QVariant     _parse_str(QByteArray const& str, QByteArray::const_iterator& it);
 
     QTcpSocket*         _socket;
     std::string         _address;
@@ -84,7 +83,7 @@ namespace               redis {
     unsigned int        _size;
     std::ostringstream  _oss;
     std::string         _content;
-    QString             _result;
+    QByteArray          _result;
   };
 }
 

@@ -52,7 +52,7 @@ redisdb::~redisdb() {
 
 void redisdb::_check_redis_server() {
   *this << "list";
-  QString& ret(push_command("$6\r\nmodule\r\n"));
+  QByteArray& ret(push_command("$6\r\nmodule\r\n"));
   QVariant lst(parse(ret));
   QVariantList res(lst.toList());
   bool module_found(false);
@@ -109,7 +109,7 @@ void redisdb::_check_redis_documents() {
           << "flap_detection" << "NUMERIC" << "NOINDEX"
           << "active_checks" << "NUMERIC" << "NOINDEX"
           << "passive_checks" << "NUMERIC" << "NOINDEX"
-          << "acknowledged" << "NUMERIC" << "NOINDEX"
+          << "acknowledged" << "NUMERIC"
           << "notify" << "NUMERIC" << "NOINDEX"
           << "action_url" << "TEXT" << "NOINDEX"
           << "notes" << "TEXT" << "NOINDEX"
@@ -155,7 +155,7 @@ void redisdb::_check_redis_documents() {
           << "scheduled_downtime_depth" << "NUMERIC" << "NOINDEX"
           << "active_checks" << "NUMERIC" << "NOINDEX"
           << "passive_checks" << "NUMERIC" << "NOINDEX"
-          << "acknowledged" << "NUMERIC" << "NOINDEX"
+          << "acknowledged" << "NUMERIC"
           << "action_url" << "TEXT" << "NOINDEX"
           << "notes" << "TEXT" << "NOINDEX"
           << "notes_url" << "TEXT" << "NOINDEX"
@@ -224,11 +224,11 @@ std::string redisdb::str(std::string const& cmd) {
   }
 }
 
-QString& redisdb::del() {
+QByteArray& redisdb::del() {
   return push_command("$3\r\ndel\r\n");
 }
 
-QString& redisdb::push_command(std::string const& cmd) {
+QByteArray& redisdb::push_command(std::string const& cmd) {
   _content.append(str(cmd));
   _oss.str("");
   _size = 0;
@@ -269,7 +269,7 @@ QString& redisdb::push_command(std::string const& cmd) {
   return _result;
 }
 
-QString& redisdb::push(neb::custom_variable const& cv) {
+QByteArray& redisdb::push(neb::custom_variable const& cv) {
   // We only work with CRITICALITY_LEVEL and CRITICALITY_ID for now.
   // For a host:
   // * h:host_id
@@ -311,53 +311,69 @@ QString& redisdb::push(neb::custom_variable const& cv) {
   return push_command("$6\r\nFT.ADD\r\n");
 }
 
-QString& redisdb::push(instance_broadcast const& ib) {
+QByteArray& redisdb::push(instance_broadcast const& ib) {
   // Here, there are some cleanup to do...
   // FIXME DBR
   _result.clear();
   return _result;
 }
 
-QString& redisdb::push(neb::host_group_member const& hgm) {
+QByteArray& redisdb::push(neb::host_group_member const& hgm) {
   // Values to push in redis:
   // * hg:host_id : it is a bitfield of hostgroup_id
   std::ostringstream oss;
   oss << "hg:" << hgm.host_id;
-  *this << oss.str() << hgm.group_id << 1;
-  return push_command("$6\r\nsetbit\r\n");
+  std::string hg_key(oss.str());
+  *this << hg_key << hgm.group_id << 1;
+  QByteArray& orig_value(push_command("$6\r\nSETBIT\r\n"));
+
+  // If host was not member of the hostgroup
+  if (parse(orig_value).toInt() == 0) {
+    *this << hg_key;
+    QByteArray& hg(push_command("$3\r\nGET\r\n"));
+    QByteArray hg_bf(parse(hg).toByteArray());
+    std::string host_groups(parse_bitfield(hg_bf));
+
+    oss.str("");
+    oss << "h:" << hgm.host_id;
+
+    *this << "hosts" << oss.str() << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
+      << "host_groups" << host_groups;
+    push_command("$6\r\nFT.ADD\r\n");
+  }
+  return _result;
 }
 
-std::string redisdb::_parse_bitfield(QString const& bf) {
+std::string redisdb::parse_bitfield(QByteArray const& bf) {
   std::ostringstream oss;
   int j(0);
-  for (int i(0); i < bf.size(); ++i) {
-    char c(bf[i].toLatin1());
+  for (QByteArray::const_iterator
+         it(bf.begin()), end(bf.end());
+       it != end;
+       ++it) {
+    char c(*it);
     if (c == 0) {
       j += 8;
       continue;
     }
     for (int k(128); k >= 1; k = k >> 1, j++) {
-      if (k & c)
+      std::cout << "j = " << j << " ; k = " << k << std::endl;
+      if (k & c) {
         oss << j << ',';
+        std::cout << "=> j = " << j << " ; k = " << k << std::endl;
+      }
     }
   }
   return oss.str();
 }
 
-QString& redisdb::push(neb::host const& h) {
+QByteArray& redisdb::push(neb::host const& h) {
   std::ostringstream oss;
   oss << "h:" << h.host_id;
   std::string host_key(oss.str());
 
-  oss.str("");
-  oss << "hg:" << h.host_id;
-  *this << oss.str();
-  QString hg(push_command("$3\r\nGET\r\n"));
-  QString hg_bf(parse(hg).toString());
-  std::string host_groups(_parse_bitfield(hg_bf));
-
   *this << host_key << "name" << "poller_id";
-  push_command("$5\r\nhmget\r\n");
+  push_command("$5\r\nHMGET\r\n");
 
   *this << "hosts" << host_key << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
     << "name" << h.host_name.toStdString()
@@ -366,7 +382,6 @@ QString& redisdb::push(neb::host const& h) {
     << "action_url" << h.action_url.toStdString()
     << "notes" << h.notes.toStdString()
     << "notes_url" << h.notes_url.toStdString()
-    << "host_groups" << host_groups
     << "poller_id" << h.poller_id
     << "icon_image" << h.icon_image.toStdString();
   push_command("$6\r\nFT.ADD\r\n");
@@ -377,7 +392,7 @@ QString& redisdb::push(neb::host const& h) {
   return push_command("$6\r\nSETBIT\r\n");
 }
 
-QString& redisdb::push(neb::host_status const& hs) {
+QByteArray& redisdb::push(neb::host_status const& hs) {
   std::ostringstream oss;
   oss << "h:" << hs.host_id;
 
@@ -392,7 +407,7 @@ QString& redisdb::push(neb::host_status const& hs) {
   return push_command("$6\r\nFT.ADD\r\n");
 }
 
-QString& redisdb::push(neb::instance const& inst) {
+QByteArray& redisdb::push(neb::instance const& inst) {
   // Values to push in redis:
   // * i:poller_id
   //    - name
@@ -403,7 +418,7 @@ QString& redisdb::push(neb::instance const& inst) {
   return push_command("$3\r\nset\r\n");
 }
 
-QString& redisdb::push(neb::service_group_member const& sgm) {
+QByteArray& redisdb::push(neb::service_group_member const& sgm) {
   // Values to push in redis:
   // sg:group_id { s:host_id:service_id } it is a set of service keys.
   std::ostringstream oss;
@@ -416,7 +431,7 @@ QString& redisdb::push(neb::service_group_member const& sgm) {
   return push_command("$4\r\nSADD\r\n");
 }
 
-QString& redisdb::push(neb::service_status const& ss) {
+QByteArray& redisdb::push(neb::service_status const& ss) {
   std::ostringstream oss;
   oss << "s:" << ss.host_id << ':' << ss.service_id;
   std::string svc(oss.str());
@@ -440,7 +455,7 @@ QString& redisdb::push(neb::service_status const& ss) {
   return push_command("$6\r\nFT.ADD\r\n");
 }
 
-QString& redisdb::push(neb::service const& s) {
+QByteArray& redisdb::push(neb::service const& s) {
   std::ostringstream oss;
   oss << "h:" << s.host_id;
 
@@ -526,53 +541,54 @@ void redisdb::_connect() {
   }
 }
 
-QVariant redisdb::parse(QString const& str) {
-  QString::const_iterator it(str.begin());
-  return _parse(str, it);
+QVariant redisdb::parse(QByteArray const& array) {
+  QByteArray::const_iterator it(array.begin());
+  return _parse(array, it);
 }
 
-QVariant redisdb::_parse(QString const& str, QString::const_iterator& it) {
-  switch (it->toAscii()) {
+QVariant redisdb::_parse(QByteArray const& arr,
+                         QByteArray::const_iterator& it) {
+  switch (*it) {
     case '$':
-      return _parse_str(str, it);
+      return _parse_str(arr, it);
     case '*':
-      return _parse_array(str, it);
+      return _parse_array(arr, it);
     case ':':
-      return _parse_int(str, it);
+      return _parse_int(arr, it);
     default:
       throw (exceptions::msg()
         << "redis: Unable to parse the string '"
-        << str.toStdString() << "' that is nor a string, nor an array");
+        << arr.constData() << "' that is nor a string, nor an array");
   }
   return QVariant();
 }
 
-QVariant redisdb::_parse_str(QString const& str, QString::const_iterator& it) {
+QVariant redisdb::_parse_str(QByteArray const& arr, QByteArray::const_iterator& it) {
   size_t len(0);
   if (*it != '$')
     throw (exceptions::msg()
-      << "redis: Unable to parse '" << str.toStdString() << "' as a string");
+      << "redis: Unable to parse '" << arr.constData() << "' as a string");
   ++it;
   while (*it != '\r') {
-    len = len * 10 + it->digitValue();
+    len = len * 10 + (*it - '0');
     ++it;
   }
 
   /* Now it points at '\r' */
   it += 2;
-  QVariant retval (QVariant(QString(&(*it), len)));
+  QVariant retval (QVariant(QByteArray(it, len)));
   it += len + 2;
   return retval;
 }
 
-QVariant redisdb::_parse_int(QString const& str, QString::const_iterator& it) {
+QVariant redisdb::_parse_int(QByteArray const& arr, QByteArray::const_iterator& it) {
   int value(0);
   if (*it != ':')
     throw (exceptions::msg()
-      << "redis: Unable to parse '" << str.toStdString() << "' as an integer");
+      << "redis: Unable to parse '" << arr.constData() << "' as an integer");
   ++it;
   while (*it != '\r') {
-    value = value * 10 + it->digitValue();
+    value = value * 10 + *it;
     ++it;
   }
 
@@ -581,14 +597,14 @@ QVariant redisdb::_parse_int(QString const& str, QString::const_iterator& it) {
   return QVariant(value);
 }
 
-QVariant redisdb::_parse_array(QString const& str, QString::const_iterator& it) {
+QVariant redisdb::_parse_array(QByteArray const& arr, QByteArray::const_iterator& it) {
   size_t array_size(0);
   if (*it != '*')
     throw (exceptions::msg()
-      << "redis: Unable to parse '" << str.toStdString() << "' as an array");
+      << "redis: Unable to parse '" << arr.constData() << "' as an array");
   ++it;
   while (*it != '\r') {
-    array_size = array_size * 10 + it->digitValue();
+    array_size = array_size * 10 + (*it - '0');
     ++it;
   }
 
@@ -596,7 +612,7 @@ QVariant redisdb::_parse_array(QString const& str, QString::const_iterator& it) 
   it += 2;
   QVariantList retval;
   while (array_size > 0) {
-    QVariant ret(_parse(str, it));
+    QVariant ret(_parse(arr, it));
     retval.append(ret);
     --array_size;
   }
