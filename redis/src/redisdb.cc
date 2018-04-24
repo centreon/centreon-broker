@@ -321,26 +321,51 @@ QByteArray& redisdb::push(instance_broadcast const& ib) {
 QByteArray& redisdb::push(neb::host_group_member const& hgm) {
   // Values to push in redis:
   // * hg:host_id : it is a bitfield of hostgroup_id
+  logging::info(logging::high)
+    << "redis: push host_group_member "
+    << "(host_id: " << hgm.host_id << ", group_id: " << hgm.group_id << ")";
+
   std::ostringstream oss;
   oss << "hg:" << hgm.host_id;
   std::string hg_key(oss.str());
   *this << hg_key << hgm.group_id << 1;
-  QByteArray& orig_value(push_command("$6\r\nSETBIT\r\n"));
+  push_command("$6\r\nSETBIT\r\n");
 
-  // If host was not member of the hostgroup
-  if (parse(orig_value).toInt() == 0) {
-    *this << hg_key;
-    QByteArray& hg(push_command("$3\r\nGET\r\n"));
-    QByteArray hg_bf(parse(hg).toByteArray());
-    std::string host_groups(parse_bitfield(hg_bf));
+  *this << hg_key;
+  QByteArray& hg(push_command("$3\r\nGET\r\n"));
+  QByteArray hg_bf(parse(hg).toByteArray());
+  std::string host_groups(parse_bitfield(hg_bf));
 
-    oss.str("");
-    oss << "h:" << hgm.host_id;
+  oss.str("");
+  oss << "h:" << hgm.host_id;
 
-    *this << "hosts" << oss.str() << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
-      << "host_groups" << host_groups;
-    push_command("$6\r\nFT.ADD\r\n");
-  }
+  logging::info(logging::high)
+    << "redis: push host_group_member "
+    << "host_groups: " << host_groups;
+
+  *this << "hosts" << oss.str() << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
+    << "host_groups" << host_groups;
+  push_command("$6\r\nFT.ADD\r\n");
+
+  // Let's propagate to services attached to the host_id's host
+  oss.str("");
+  oss << "s:" << hgm.host_id << ":*";
+
+  int next(0);
+  do {
+    *this << "SCAN" << 0 << "MATCH" << oss.str() << "COUNT" << 1000;
+    push_command();
+    QVariantList lst(redisdb::parse(_result).toList());
+    next = lst[0].toInt();
+    QVariantList items(lst[1].toList());
+    for (int i = 0; i < items.size(); ++i) {
+      *this << "services" << items[i].toByteArray().constData()
+            << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
+            << "host_groups" << host_groups;
+      push_command("$6\r\nFT.ADD\r\n");
+    }
+  } while (next);
+
   return _result;
 }
 
@@ -368,6 +393,10 @@ std::string redisdb::parse_bitfield(QByteArray const& bf) {
 }
 
 QByteArray& redisdb::push(neb::host const& h) {
+  logging::info(logging::high)
+    << "redis: push host "
+    << "(host_id: " << h.host_id << ")";
+
   std::ostringstream oss;
   oss << "h:" << h.host_id;
   std::string host_key(oss.str());
@@ -393,6 +422,10 @@ QByteArray& redisdb::push(neb::host const& h) {
 }
 
 QByteArray& redisdb::push(neb::host_status const& hs) {
+  logging::info(logging::high)
+    << "redis: push host_status "
+    << "(host_id: " << hs.host_id << ")";
+
   std::ostringstream oss;
   oss << "h:" << hs.host_id;
 
@@ -419,6 +452,9 @@ QByteArray& redisdb::push(neb::instance const& inst) {
 }
 
 QByteArray& redisdb::push(neb::service_group_member const& sgm) {
+  logging::info(logging::high)
+    << "redis: push service_group_member "
+    << "(host_id: " << sgm.host_id << ", service_id: " << sgm.service_id << ")";
   // Values to push in redis:
   // sg:group_id { s:host_id:service_id } it is a set of service keys.
   std::ostringstream oss;
@@ -432,6 +468,10 @@ QByteArray& redisdb::push(neb::service_group_member const& sgm) {
 }
 
 QByteArray& redisdb::push(neb::service_status const& ss) {
+  logging::info(logging::high)
+    << "redis: push service_status "
+    << "(host_id: " << ss.host_id << ", service_id: " << ss.service_id << ")";
+
   std::ostringstream oss;
   oss << "s:" << ss.host_id << ':' << ss.service_id;
   std::string svc(oss.str());
@@ -456,6 +496,9 @@ QByteArray& redisdb::push(neb::service_status const& ss) {
 }
 
 QByteArray& redisdb::push(neb::service const& s) {
+  logging::info(logging::high)
+    << "redis: push service "
+    << "(host_id: " << s.host_id << ", service_id: " << s.service_id << ")";
   std::ostringstream oss;
   oss << "h:" << s.host_id;
 

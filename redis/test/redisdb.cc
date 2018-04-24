@@ -197,10 +197,14 @@ TEST_F(RedisdbTest, HostGroupMember) {
   hgm.host_id = 28;
   hgm.group_id = 37;
   _db.push(hgm);
-  _db << "hg:28";
-  QByteArray ret(_db.push_command("$3\r\nGET\r\n"));
+  _db << "GET" << "hg:28";
+  QByteArray ret(_db.push_command());
   QVariant res(redisdb::parse(ret));
   std::string str(redisdb::parse_bitfield(res.toByteArray()));
-  std::cout << "flags: " << str << std::endl;
   ASSERT_TRUE(str == "37,");
+
+  _db << "HGET" << "s:28:42" << "host_groups";
+  ret = _db.push_command();
+  res = redisdb::parse(ret);
+  ASSERT_TRUE(strcmp(res.toByteArray().constData(), "37,") == 0);
 }
