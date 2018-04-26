@@ -91,10 +91,13 @@ void redisdb::_check_redis_documents() {
     logging::info(logging::medium)
       << "redis: initialization of services indexes";
 
-    *this << "services" << "SCHEMA"
+    *this << "services" << "NOOFFSETS" << "NOFREQS" << "NOHL"
+          << "SCHEMA"
           << "criticality_id" << "NUMERIC" << "SORTABLE"
           << "host_name" << "TEXT" << "SORTABLE"
+          << "host_id" << "NUMERIC"
           << "service_description" << "TEXT" << "SORTABLE"
+          << "service_id" << "NUMERIC"
           << "current_state" << "NUMERIC" << "SORTABLE"
           << "last_state_change" << "NUMERIC" << "SORTABLE"
           << "last_hard_state_change" << "NUMERIC" << "SORTABLE"
@@ -144,7 +147,8 @@ void redisdb::_check_redis_documents() {
     logging::info(logging::medium)
       << "redis: initialization of hosts indexes";
 
-    *this << "hosts" << "SCHEMA"
+    *this << "hosts" << "NOOFFSETS" << "NOHL" << "NOFREQS"
+          << "SCHEMA"
           << "criticality_id" << "NUMERIC" << "SORTABLE"
           << "name" << "TEXT" << "SORTABLE"
           << "alias" << "TEXT" << "NOINDEX"
@@ -510,6 +514,7 @@ QByteArray& redisdb::push(neb::service const& s) {
 
   *this << "services" << svc << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
     << "service_description" << s.service_description.toStdString()
+    << "service_id" << s.service_id
     << "host_id" << s.host_id
     << "notify" << s.notifications_enabled
     << "action_url" << s.action_url.toStdString()
