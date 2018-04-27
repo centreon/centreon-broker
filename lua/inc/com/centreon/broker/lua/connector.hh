@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012,2015 Centreon
+** Copyright 2017-2018 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ CCB_BEGIN()
 namespace                        lua {
   /**
    *  @class connector connector.hh "com/centreon/broker/lua/connector.hh"
-   *  @brief Connect to a database.
+   *  @brief Connect to a lua interpreter.
    *
-   *  Send events to a lua database.
+   *  Send events to a lua interpreter.
    */
   class                          connector : public io::endpoint {
   public:
@@ -54,4 +54,4 @@ namespace                        lua {
 
 CCB_END()
 
-#endif // !CCB_LUAGENERIC_CONNECTOR_HH
+#endif // !CCB_LUA_CONNECTOR_HH
