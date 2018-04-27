@@ -2,6 +2,15 @@
 Centreon Broker 3.0.15
 ======================
 
+************
+Enhancements
+************
+
+Socket state retrieval in lua module
+====================================
+
+A new method get_state() is added to the broker_socket to check the connection
+state.
 
 ======================
 Centreon Broker 3.0.14
