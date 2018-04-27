@@ -16,8 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QTcpSocket>
+//#include <QAbstractSocket>
 #include <QHostAddress>
+#include <QTcpSocket>
 #include <sstream>
 #include "com/centreon/broker/lua/broker_socket.hh"
 
@@ -80,6 +81,31 @@ static int l_broker_socket_connect(lua_State* L) {
 }
 
 /**
+ *  The Lua broker_socket state method
+ *
+ *  @param L The Lua interpreter
+ *
+ *  @return 1
+ */
+static int l_broker_socket_state(lua_State* L) {
+  QTcpSocket* socket(
+                *static_cast<QTcpSocket**>(
+                  luaL_checkudata(L, 1, "lua_broker_tcp_socket")));
+  QAbstractSocket::SocketState state(socket->state());
+  char const* ans[] = {
+    "unconnected",
+    "hostLookup",
+    "connecting",
+    "connected",
+    "bound",
+    "listening",
+    "closing",
+  };
+  lua_pushstring(L, ans[state]);
+  return 1;
+}
+
+/**
  *  The Lua broker_socket write method
  *
  *  @param L The Lua interpreter
@@ -125,7 +151,7 @@ static int l_broker_socket_read(lua_State* L) {
   QTcpSocket* socket(
                 *static_cast<QTcpSocket**>(
                   luaL_checkudata(L, 1, "lua_broker_tcp_socket")));
-  QString answer;
+  QByteArray answer;
 
   if (!socket->waitForReadyRead()) {
     std::ostringstream ss;
@@ -136,7 +162,7 @@ static int l_broker_socket_read(lua_State* L) {
     luaL_error(L, ss.str().c_str());
   }
   answer.append(socket->readAll());
-  lua_pushstring(L, answer.toStdString().c_str());
+  lua_pushstring(L, answer.constData());
   return 1;
 }
 
@@ -167,6 +193,7 @@ void broker_socket::broker_socket_reg(lua_State* L) {
     { "new", l_broker_socket_constructor },
     { "__gc", l_broker_socket_destructor },
     { "connect", l_broker_socket_connect },
+    { "get_state", l_broker_socket_state },
     { "write", l_broker_socket_write },
     { "read", l_broker_socket_read },
     { "close", l_broker_socket_close },

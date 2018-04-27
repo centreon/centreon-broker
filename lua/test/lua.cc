@@ -278,6 +278,54 @@ TEST_F(LuaGenericTest, SocketConnectionOk) {
 }
 
 // When a script is loaded, a new socket is created
+// And a call to get_state is made
+// Then it succeeds, and the return value is Unconnected.
+TEST_F(LuaGenericTest, SocketUnconnectedState) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/socket.lua");
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local socket = broker_tcp_socket.new()\n"
+                         "  local state = socket:get_state()\n"
+                         "  broker_log:info(1, 'State: ' .. state)\n"
+                         "  socket:connect('127.0.0.1', 9200)\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n\n");
+  luabinding *binding (new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst.indexOf(QRegExp(".*State: unconnected")) != -1);
+  delete binding;
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// When a script is loaded, a new socket is created
+// And a call to get_state is made
+// Then it succeeds, and the return value is Unconnected.
+TEST_F(LuaGenericTest, SocketConnectedState) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/socket.lua");
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local socket = broker_tcp_socket.new()\n"
+                         "  socket:connect('127.0.0.1', 9200)\n"
+                         "  local state = socket:get_state()\n"
+                         "  broker_log:info(1, 'State: ' .. state)\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n\n");
+  luabinding *binding (new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst.indexOf(QRegExp(".*State: connected")) != -1);
+  delete binding;
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// When a script is loaded, a new socket is created
 // And a call to connect is made with a good adress/port
 // Then it succeeds.
 TEST_F(LuaGenericTest, SocketWrite) {
