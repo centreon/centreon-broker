@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-//#include <QAbstractSocket>
 #include <QHostAddress>
 #include <QTcpSocket>
 #include <sstream>
