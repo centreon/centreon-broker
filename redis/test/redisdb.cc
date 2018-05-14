@@ -108,10 +108,8 @@ TEST_F(RedisdbTest, HostStatus) {
   hst.state_type = 1;
   QByteArray& res1(_db.push(hst));
   ASSERT_TRUE(strcmp(res1.constData(), "+OK\r\n") == 0);
-  _db << "hgetall" << "h:28";
-  QByteArray& vv(_db.push_command());
-  std::cout << "vv = " << vv.constData() << std::endl;
-  QVariant res2(redisdb::parse(vv));
+  _db << "h:28";
+  QVariant res2(_db.hgetall());
   QVariantList lst(res2.toList());
   ASSERT_EQ(lst.size(), 14);
   for (int i = 0; i < lst.size(); i += 2) {
@@ -146,12 +144,10 @@ TEST_F(RedisdbTest, HostWithNameStatus) {
   std::cout << "res1 = " << res1.constData() << std::endl;
   ASSERT_TRUE(strcmp(res1.constData(), ":0\r\n") == 0
               || strcmp(res1.constData(), ":1\r\n") == 0);
-  _db << "hgetall" << "h:28";
-  QByteArray& res2(_db.push_command());
-  std::cout << "res2 = " << res2.constData() << std::endl;
-  QVariant var(redisdb::parse(res2));
+  _db << "h:28";
+  QVariant var(_db.hgetall());
   QVariantList lst(var.toList());
-  ASSERT_EQ(lst.size(), 30);
+  ASSERT_EQ(lst.size(), 32);
   for (int i = 0; i < lst.size(); i += 2) {
     if (lst[i] == "name") {
       ASSERT_EQ(lst[i + 1], "host test");
@@ -162,10 +158,19 @@ TEST_F(RedisdbTest, HostWithNameStatus) {
   }
 }
 
-TEST_F(RedisdbTest, ServiceStatus) {
+TEST_F(RedisdbTest, Service) {
   _db.clear();
   _db << "s:28:42";
   _db.del();
+  neb::service svc;
+  svc.host_id = 28;
+  svc.service_id = 42;
+  _db.push(svc);
+}
+
+TEST_F(RedisdbTest, ServiceStatus) {
+  _db.clear();
+  _db << "s:28:42";
   neb::service_status svc;
   svc.host_id = 28;
   svc.service_id = 42;
@@ -175,11 +180,9 @@ TEST_F(RedisdbTest, ServiceStatus) {
   svc.check_type = 7;
   svc.next_check = 23;
   svc.state_type = 1;
-  QByteArray& res1(_db.push(svc));
-  ASSERT_TRUE(strcmp(res1.constData(), "+OK\r\n") == 0);
-  _db << "hgetall" << "s:28:42";
-  QByteArray& res2(_db.push_command());
-  QVariant var(redisdb::parse(res2));
+  _db.push(svc);
+  _db << "s:28:42";
+  QVariant var(_db.hgetall());
   QVariantList lst(var.toList());
 
   for (int i = 0; i < lst.size(); i += 2) {
@@ -197,14 +200,30 @@ TEST_F(RedisdbTest, HostGroupMember) {
   hgm.host_id = 28;
   hgm.group_id = 37;
   _db.push(hgm);
-  _db << "GET" << "hg:28";
-  QByteArray ret(_db.push_command());
-  QVariant res(redisdb::parse(ret));
+  _db << "hg:28";
+  QVariant res(_db.get());
   std::string str(redisdb::parse_bitfield(res.toByteArray()));
   ASSERT_TRUE(str == "37,");
 
-  _db << "HGET" << "s:28:42" << "host_groups";
-  ret = _db.push_command();
-  res = redisdb::parse(ret);
+  _db << "s:28:42" << "host_groups";
+  res = _db.hget();
   ASSERT_TRUE(strcmp(res.toByteArray().constData(), "37,") == 0);
+}
+
+TEST_F(RedisdbTest, ServiceGroupMember) {
+  neb::service_group_member sgm;
+  sgm.host_id = 28;
+  sgm.service_id = 42;
+  sgm.group_id = 68;
+  _db.push(sgm);
+  _db << "SMEMBERS" << "sg:68";
+  QByteArray ret(_db.push_command());
+  QVariant res(redisdb::parse(ret));
+  ASSERT_TRUE(res.toList().size() == 1);
+  ASSERT_TRUE(strcmp(res.toList()[0].toByteArray().constData(), "s:28:42") == 0);
+
+  _db << "s:28:42" << "service_groups";
+  res = _db.hget();
+  std::cout << "SERVICE GROUP MEMBER: " << res.toByteArray().constData() << std::endl;
+  ASSERT_TRUE(strcmp(res.toByteArray().constData(), "68,") == 0);
 }

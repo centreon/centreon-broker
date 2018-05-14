@@ -60,6 +60,14 @@ namespace               redis {
 
     QByteArray&         push_command(std::string const& cmd = "");
     QByteArray&         del();
+    QVariant            get();
+    QVariant            hget();
+    QVariant            hgetall();
+    QVariant            hmget();
+    QVariant            hset();
+    QVariant            module();
+    QVariant            ft_addhash();
+    QVariant            ft_search();
     std::string const&  get_content() const;
     static QVariant     parse(QByteArray const& array);
     std::string const&  get_address() const;
@@ -75,6 +83,7 @@ namespace               redis {
     static QVariant     _parse_array(QByteArray const& str, QByteArray::const_iterator& it);
     static QVariant     _parse_int(QByteArray const& str, QByteArray::const_iterator& it);
     static QVariant     _parse_str(QByteArray const& str, QByteArray::const_iterator& it);
+    static QVariant     _parse_simple_str(QByteArray const& str, QByteArray::const_iterator& it);
 
     QTcpSocket*         _socket;
     std::string         _address;
