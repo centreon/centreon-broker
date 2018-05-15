@@ -61,9 +61,12 @@ namespace               redis {
     QByteArray&         push_command(std::string const& cmd = "");
     QByteArray&         del();
     QVariant            get();
+    QVariant            keys();
+    int                 getbit();
     QVariant            hget();
     QVariant            hgetall();
     QVariant            hmget();
+    QVariant            hmset();
     QVariant            hset();
     QVariant            module();
     QVariant            ft_addhash();

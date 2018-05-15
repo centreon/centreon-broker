@@ -29,6 +29,52 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::redis;
 
+static std::string build_key(std::string const& head, unsigned int id) {
+  /* We count one digit in radix 10 for 3 bits. Yes we are large... */
+  char buf[sizeof(unsigned int) * 8 / 3 + 2 + head.size()];
+  snprintf(buf, sizeof(buf), "%s:%d", head.c_str(), id);
+  return std::string(buf);
+}
+
+static std::string build_key(
+                     std::string const& head,
+                     unsigned int id1,
+                     unsigned id2) {
+  /* We count one digit in radix 10 for 3 bits. Yes we are large... */
+  char buf[2 * sizeof(unsigned int) * 8 / 3 + 3 + head.size()];
+  snprintf(buf, sizeof(buf), "%s:%d:%d", head.c_str(), id1, id2);
+  return std::string(buf);
+}
+
+static uset<unsigned int> parse_list(QByteArray arr) {
+  uset<unsigned int> retval;
+  QByteArray::const_iterator it(arr.begin());
+  while (it != arr.end()) {
+    while (*it == ',')
+      ++it;
+    int val = 0;
+    while (*it >= '0' && *it <= '9') {
+      val = val * 10 + (*it - '0');
+      ++it;
+    }
+    retval.insert(val);
+  }
+  return retval;
+}
+
+static int get_first_id(QByteArray arr) {
+  QByteArray::const_iterator it(arr.begin());
+  while (*it != ':')
+    ++it;
+  ++it;
+  int retval(0);
+  while (*it >= '0' && *it <= '9') {
+    retval = retval * 10 + (*it - '0');
+    ++it;
+  }
+  return retval;
+}
+
 /**
  *  Default constructor.
  */
@@ -246,6 +292,18 @@ QVariant redisdb::get() {
   return parse(_result);
 }
 
+QVariant redisdb::keys() {
+  push_command("$4\r\nKEYS\r\n");
+  return parse(_result);
+}
+
+int redisdb::getbit() {
+  push_command("$4\r\nHGET\r\n");
+  QByteArray::const_iterator it(_result.begin());
+  QVariant ret(_parse_int(_result, it));
+  return ret.toInt();
+}
+
 QVariant redisdb::hget() {
   push_command("$4\r\nHGET\r\n");
   return parse(_result);
@@ -258,6 +316,11 @@ QVariant redisdb::hgetall() {
 
 QVariant redisdb::hmget() {
   push_command("$5\r\nHMGET\r\n");
+  return parse(_result);
+}
+
+QVariant redisdb::hmset() {
+  push_command("$5\r\nHMSET\r\n");
   return parse(_result);
 }
 
@@ -440,16 +503,9 @@ QByteArray& redisdb::push(neb::host const& h) {
     << "redis: push host "
     << "(host_id: " << h.host_id << ")";
 
-  std::ostringstream oss;
-  oss << "h:" << h.host_id;
-  std::string host_key(oss.str());
-
-  oss.str("");
-  oss << "aclh:*";
-  *this << oss.str();
-  QByteArray& res(push_command("$4\r\nkeys\r\n"));
-  QVariant keys(parse(res));
-  QVariantList lst(keys.toList());
+  *this << "aclh:*";
+  QVariant kys(keys());
+  QVariantList lst(kys.toList());
 
   std::ostringstream acl_oss;
   for (QVariantList::const_iterator
@@ -470,6 +526,7 @@ QByteArray& redisdb::push(neb::host const& h) {
     }
   }
 
+  std::string host_key(build_key("h", h.host_id));
   *this << "hosts" << host_key << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
     << "name" << h.host_name.toStdString()
     << "alias" << h.alias.toStdString()
@@ -482,9 +539,7 @@ QByteArray& redisdb::push(neb::host const& h) {
     << "icon_image" << h.icon_image.toStdString();
   push_command("$6\r\nFT.ADD\r\n");
 
-  oss.str("");
-  oss << "p:" << h.poller_id;
-  *this << oss.str() << h.host_id << 1;
+  *this << build_key("p", h.poller_id) << h.host_id << 1;
   return push_command("$6\r\nSETBIT\r\n");
 }
 
@@ -518,58 +573,72 @@ QByteArray& redisdb::push(neb::instance const& inst) {
   return push_command("$3\r\nset\r\n");
 }
 
-static std::string build_key(std::string const& head, unsigned int id) {
-  /* We count one digit in radix 10 for 3 bits. Yes we are large... */
-  char buf[sizeof(unsigned int) * 8 / 3 + 2 + head.size()];
-  snprintf(buf, sizeof(buf), "%s:%d", head.c_str(), id);
-  return std::string(buf);
-}
-
-static std::string build_key(
-                     std::string const& head,
-                     unsigned int id1,
-                     unsigned id2) {
-  /* We count one digit in radix 10 for 3 bits. Yes we are large... */
-  char buf[2 * sizeof(unsigned int) * 8 / 3 + 3 + head.size()];
-  snprintf(buf, sizeof(buf), "%s:%d:%d", head.c_str(), id1, id2);
-  return std::string(buf);
-}
-
 QByteArray& redisdb::push(neb::service_group_member const& sgm) {
   logging::info(logging::high)
     << "redis: push service_group_member "
     << "(host_id: " << sgm.host_id << ", service_id: " << sgm.service_id << ")";
   // Values to push in redis:
   // sg:group_id { s:host_id:service_id } it is a set of service keys.
-  std::string sg(build_key("sg", sgm.group_id));
-  *this << sg;
+  std::string sgstr(build_key("sg", sgm.group_id));
   std::string svc(build_key("s", sgm.host_id, sgm.service_id));
 
-  char gid[sizeof(unsigned int) * 8 / 3 + 2];
-  snprintf(gid, sizeof(gid), "%d,", sgm.group_id);
-
-  *this << svc;
+  *this << sgstr << svc;
   push_command("$4\r\nSADD\r\n");
 
-  std::ostringstream oss;
-  oss << "@host_id:[" << sgm.host_id << ' ' << sgm.host_id
-      << "] @service_id:[" << sgm.service_id << ' ' << sgm.service_id
-      << "] @service_groups:{" << sgm.group_id << "}";
-  *this << "services" << oss.str()
-        << "RETURN" << 1 << "acl_groups";
-  QVariant res(ft_search());
-  QVariantList lst(res.toList());
+  *this << svc << "service_groups" << "acl_groups";
+  QVariant tmp(hmget());
+  QVariantList lst(tmp.toList());
+  QByteArray sg(lst[0].toByteArray());
+  QByteArray ag(lst[1].toByteArray());
 
-  if (lst[0].toInt() == 0) {
-    *this << svc << "service_groups";
-    QVariant res(hget());
-    QByteArray tmp(res.toByteArray());
-    tmp.append(gid);
-    *this << svc << "service_groups" << tmp.constData();
-    hset();
-    *this << "services" << svc << 1 << "REPLACE";
-    ft_addhash();
+  /* Here we have our service current acls */
+  uset<unsigned int> acls(parse_list(ag));
+
+  /* Here we have our service current service groups */
+  uset<unsigned int> sgs(parse_list(sg));
+  sgs.insert(sgm.group_id);
+
+  *this << "aclsg:*";
+  QVariant kys(keys());
+  lst = kys.toList();
+
+  for (QVariantList::const_iterator
+         it(lst.begin()),
+         end(lst.end());
+       it != end;
+       ++it) {
+    *this << it->toByteArray().constData() << sgm.group_id;
+    int val(getbit());
+    if (val)
+      acls.insert(get_first_id(it->toByteArray()));
   }
+
+  sg.clear();
+  for (uset<unsigned int>::const_iterator
+         it(sgs.begin()), end(sgs.end());
+       it != end;
+       ++it) {
+    char buf[sizeof(unsigned int) * 8 / 3 + 2];
+    snprintf(buf, sizeof(buf), "%d,", *it);
+    sg.append(buf);
+  }
+
+  ag.clear();
+  for (uset<unsigned int>::const_iterator
+         it(acls.begin()), end(acls.end());
+       it != end;
+       ++it) {
+    char buf[sizeof(unsigned int) * 8 / 3 + 2];
+    snprintf(buf, sizeof(buf), "%u,", *it);
+    ag.append(buf);
+  }
+
+  *this << svc
+        << "service_groups" << sg.constData()
+        << "acl_groups" << ag.constData();
+  hmset();
+  *this << "services" << svc << 1 << "REPLACE";
+  ft_addhash();
 
   return _result;
 }
