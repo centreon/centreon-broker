@@ -63,6 +63,7 @@ namespace               redis {
     QVariant            get();
     QVariant            keys();
     int                 getbit();
+    QVariant            setbit();
     QVariant            hget();
     QVariant            hgetall();
     QVariant            hmget();

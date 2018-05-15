@@ -50,14 +50,14 @@ static uset<unsigned int> parse_list(QByteArray arr) {
   uset<unsigned int> retval;
   QByteArray::const_iterator it(arr.begin());
   while (it != arr.end()) {
-    while (*it == ',')
-      ++it;
     int val = 0;
     while (*it >= '0' && *it <= '9') {
       val = val * 10 + (*it - '0');
       ++it;
     }
     retval.insert(val);
+    while (*it == ',')
+      ++it;
   }
   return retval;
 }
@@ -298,10 +298,15 @@ QVariant redisdb::keys() {
 }
 
 int redisdb::getbit() {
-  push_command("$4\r\nHGET\r\n");
+  push_command("$6\r\nGETBIT\r\n");
   QByteArray::const_iterator it(_result.begin());
   QVariant ret(_parse_int(_result, it));
   return ret.toInt();
+}
+
+QVariant redisdb::setbit() {
+  push_command("$6\r\nSETBIT\r\n");
+  return parse(_result);
 }
 
 QVariant redisdb::hget() {

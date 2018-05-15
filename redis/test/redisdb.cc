@@ -136,12 +136,19 @@ TEST_F(RedisdbTest, HostStatus) {
 
 TEST_F(RedisdbTest, HostWithNameStatus) {
   _db.clear();
+  // We define two acl groups containing the host 28 ; their ideas are 3 and 5.
+  _db << "aclh:3" << "aclh:5";
+  _db.del();
+
+  _db << "aclh:3" << 28 << 1;
+  _db.setbit();
+  _db << "aclh:5" << 28 << 1;
+  _db.setbit();
   neb::host hst;
   hst.host_id = 28;
   hst.host_name = "host test";
   hst.poller_id = 113;
   QByteArray& res1(_db.push(hst));
-  std::cout << "res1 = " << res1.constData() << std::endl;
   ASSERT_TRUE(strcmp(res1.constData(), ":0\r\n") == 0
               || strcmp(res1.constData(), ":1\r\n") == 0);
   _db << "h:28";
@@ -154,6 +161,9 @@ TEST_F(RedisdbTest, HostWithNameStatus) {
     }
     else if (lst[i] == "poller_id") {
       ASSERT_EQ(lst[i + 1], 113);
+    }
+    else if (lst[i] == "acl_groups") {
+      ASSERT_TRUE(strcmp(lst[i + 1].toByteArray().constData(), "5,3,") == 0);
     }
   }
 }
@@ -224,6 +234,33 @@ TEST_F(RedisdbTest, ServiceGroupMember) {
 
   _db << "s:28:42" << "service_groups";
   res = _db.hget();
-  std::cout << "SERVICE GROUP MEMBER: " << res.toByteArray().constData() << std::endl;
   ASSERT_TRUE(strcmp(res.toByteArray().constData(), "68,") == 0);
+  _db << "s:28:42" << "acl_groups";
+  res = _db.hget();
+  ASSERT_TRUE(strcmp(res.toByteArray().constData(), "3,5,") == 0);
+}
+
+TEST_F(RedisdbTest, ServiceGroupMemberAcl) {
+  // Let's add an acl on service group 71
+  _db << "aclsg:189" << 71 << 1;
+  _db.setbit();
+
+  // Let's create the service group 71
+  neb::service_group_member sgm;
+  sgm.host_id = 28;
+  sgm.service_id = 42;
+  sgm.group_id = 71;
+  _db.push(sgm);
+  _db << "SMEMBERS" << "sg:71";
+  QByteArray ret(_db.push_command());
+  QVariant res(redisdb::parse(ret));
+  ASSERT_TRUE(res.toList().size() == 1);
+  ASSERT_TRUE(strcmp(res.toList()[0].toByteArray().constData(), "s:28:42") == 0);
+
+  _db << "s:28:42" << "service_groups";
+  res = _db.hget();
+  ASSERT_TRUE(strcmp(res.toByteArray().constData(), "68,71,") == 0);
+  _db << "s:28:42" << "acl_groups";
+  res = _db.hget();
+  ASSERT_TRUE(strcmp(res.toByteArray().constData(), "189,3,5,") == 0);
 }
