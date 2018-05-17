@@ -131,8 +131,8 @@ void redisdb::_check_redis_server() {
 void redisdb::_check_redis_documents() {
   // Check services index
   *this << "idx:services";
-  QString ret(push_command("$4\r\ntype\r\n"));
-  if (ret == "+none\r\n") {
+  QByteArray ret(push_command("$4\r\ntype\r\n"));
+  if (strcmp(ret.constData(), "+none\r\n") == 0) {
     logging::info(logging::medium)
       << "redis: initialization of services indexes";
 
@@ -174,22 +174,23 @@ void redisdb::_check_redis_documents() {
 
     ret = push_command("$9\r\nFT.CREATE\r\n");
 
-    if (ret != "+OK\r\n")
+    if (strcmp(ret.constData(), "+OK\r\n") != 0) {
       throw (exceptions::msg()
         << "redis: Unexpected error while creating the idx:services type on "
-        << _address << ":" << _port << " (" << ret.toStdString() << ")");
+        << _address << ":" << _port << " (" << ret.constData() << ")");
+    }
   }
-  else if (ret == "+ft_index0\r\n") {
+  else if (strcmp(ret.constData(), "+ft_index0\r\n") == 0) {
   }
   else
     throw (exceptions::msg()
       << "redis: Unexpected error while checking the idx:services type on "
-      << _address << ":" << _port << "(" << ret.toStdString() << ")");
+      << _address << ":" << _port << "(" << ret.constData() << ")");
 
   // Check hosts index
   *this << "idx:hosts";
   ret = push_command("$4\r\ntype\r\n");
-  if (ret == "+none\r\n") {
+  if (strcmp(ret.constData(), "+none\r\n") == 0) {
     logging::info(logging::medium)
       << "redis: initialization of hosts indexes";
 
@@ -214,17 +215,17 @@ void redisdb::_check_redis_documents() {
           << "host_groups" << "TAG"
           << "criticality_level" << "NUMERIC" << "NOINDEX";
     ret = push_command("$9\r\nFT.CREATE\r\n");
-    if (ret != "+OK\r\n")
+    if (strcmp(ret, "+OK\r\n") != 0)
       throw (exceptions::msg()
         << "redis: Unexpected error while creating the idx:hosts type on "
-        << _address << ":" << _port << " (" << ret.toStdString() << ")");
+        << _address << ":" << _port << " (" << ret.constData() << ")");
   }
-  else if (ret == "+ft_index0\r\n") {
+  else if (strcmp(ret, "+ft_index0\r\n") == 0) {
   }
   else
     throw (exceptions::msg()
       << "redis: Unexpected error while checking the idx:hosts type on "
-      << _address << ":" << _port << " (" << ret.toStdString() << ")");
+      << _address << ":" << _port << " (" << ret.constData() << ")");
 }
 
 /**
@@ -568,6 +569,9 @@ QByteArray& redisdb::push(neb::host_status const& hs) {
 }
 
 QByteArray& redisdb::push(neb::instance const& inst) {
+  logging::info(logging::high)
+    << "redis: push instance "
+    << "(poller_id: " << inst.poller_id << ")";
   // Values to push in redis:
   // * i:poller_id
   //    - name

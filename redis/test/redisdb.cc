@@ -17,6 +17,7 @@
 */
 
 #include <gtest/gtest.h>
+#include <memory>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/redis/redisdb.hh"
@@ -26,8 +27,6 @@ using namespace com::centreon::broker::redis;
 
 class RedisdbTest : public ::testing::Test {
  public:
-  RedisdbTest()
-    : _db("127.0.0.1", 6379, "p@ssw0rd") {}
 
   void SetUp() {
     try {
@@ -36,68 +35,72 @@ class RedisdbTest : public ::testing::Test {
     catch (std::exception const& e) {
       (void) e;
     }
+    _db.reset(new redisdb("127.0.0.1", 6379, "p@ssw0rd"));
   }
 
-  void TearDown() {}
+  void TearDown() {
+    _db.reset();
+    config::applier::deinit();
+  }
 
  protected:
-  redisdb _db;
+  std::auto_ptr<redisdb> _db;
 };
 
 // When a one word string is append to the redisdb
 // Then the word is well understood and the str() method is able to return it.
 TEST_F(RedisdbTest, OneWordString) {
-  _db.clear();
-  _db << "test";
-  ASSERT_EQ(_db.str(), "$4\r\ntest\r\n");
+  _db->clear();
+  *_db << "test";
+  ASSERT_EQ(_db->str(), "$4\r\ntest\r\n");
 }
 
 TEST_F(RedisdbTest, MultiWordString2) {
-  _db.clear();
-  _db << "test1         test2";
-  ASSERT_EQ(_db.str(), "$19\r\ntest1         test2\r\n");
+  _db->clear();
+  *_db << "test1         test2";
+  ASSERT_EQ(_db->str(), "$19\r\ntest1         test2\r\n");
 }
 
 TEST_F(RedisdbTest, Integer) {
-  _db.clear();
-  _db << 12;
-  ASSERT_EQ(_db.str(), "$2\r\n12\r\n");
+  _db->clear();
+  *_db << 12;
+  ASSERT_EQ(_db->str(), "$2\r\n12\r\n");
 }
 
 TEST_F(RedisdbTest, SetKey) {
-  _db.clear();
-  _db << "set" << "toto" << 12;
-  QByteArray& res1(_db.push_command());
+  _db->clear();
+  *_db << "set" << "toto" << 12;
+  QByteArray& res1(_db->push_command());
   ASSERT_TRUE(res1 == "+OK\r\n");
-  _db << "incr" << "toto";
-  QByteArray& res2(_db.push_command());
+  *_db << "incr" << "toto";
+  QByteArray& res2(_db->push_command());
   ASSERT_TRUE(res2 == ":13\r\n");
 }
 
 TEST_F(RedisdbTest, SetGetKey) {
-  _db.clear();
-  _db << "set" << "toto" << 14;
-  QByteArray& res1(_db.push_command());
+  _db->clear();
+  *_db << "set" << "toto" << 14;
+  QByteArray& res1(_db->push_command());
   ASSERT_TRUE(strcmp(res1.constData(), "+OK\r\n") == 0);
-  _db << "get" << "toto";
-  QByteArray& res2(_db.push_command());
+  *_db << "get" << "toto";
+  QByteArray& res2(_db->push_command());
   ASSERT_TRUE(strcmp(res2.constData(), "$2\r\n14\r\n") == 0);
 }
 
 TEST_F(RedisdbTest, HMSetKey) {
-  _db.clear();
-  _db << "tete" << "titi" << 25 << "tata" << 12;
-  QByteArray& res1(_db.push_command("$5\r\nhmset\r\n"));
+  _db->clear();
+  *_db << "tete" << "titi" << 25 << "tata" << 12;
+  QByteArray& res1(_db->push_command("$5\r\nhmset\r\n"));
   ASSERT_TRUE(strcmp(res1.constData(), "+OK\r\n") == 0);
-  _db << "hget" << "tete" << "titi";
-  QByteArray& res2(_db.push_command());
+  *_db << "hget" << "tete" << "titi";
+  QByteArray& res2(_db->push_command());
   ASSERT_TRUE(strcmp(res2.constData(), "$2\r\n25\r\n") == 0);
 }
 
 TEST_F(RedisdbTest, HostStatus) {
-  _db.clear();
-  _db << "h:28";
-  _db.del();
+  _db->clear();
+  *_db << "h:28";
+  _db->del();
   neb::host_status hst;
   hst.host_id = 28;
   hst.current_state = 2;
@@ -106,10 +109,10 @@ TEST_F(RedisdbTest, HostStatus) {
   hst.check_type = 7;
   hst.next_check = 23;
   hst.state_type = 1;
-  QByteArray& res1(_db.push(hst));
+  QByteArray& res1(_db->push(hst));
   ASSERT_TRUE(strcmp(res1.constData(), "+OK\r\n") == 0);
-  _db << "h:28";
-  QVariant res2(_db.hgetall());
+  *_db << "h:28";
+  QVariant res2(_db->hgetall());
   QVariantList lst(res2.toList());
   ASSERT_EQ(lst.size(), 14);
   for (int i = 0; i < lst.size(); i += 2) {
@@ -135,24 +138,24 @@ TEST_F(RedisdbTest, HostStatus) {
 }
 
 TEST_F(RedisdbTest, HostWithNameStatus) {
-  _db.clear();
+  _db->clear();
   // We define two acl groups containing the host 28 ; their ideas are 3 and 5.
-  _db << "aclh:3" << "aclh:5";
-  _db.del();
+  *_db << "aclh:3" << "aclh:5";
+  _db->del();
 
-  _db << "aclh:3" << 28 << 1;
-  _db.setbit();
-  _db << "aclh:5" << 28 << 1;
-  _db.setbit();
+  *_db << "aclh:3" << 28 << 1;
+  _db->setbit();
+  *_db << "aclh:5" << 28 << 1;
+  _db->setbit();
   neb::host hst;
   hst.host_id = 28;
   hst.host_name = "host test";
   hst.poller_id = 113;
-  QByteArray& res1(_db.push(hst));
+  QByteArray& res1(_db->push(hst));
   ASSERT_TRUE(strcmp(res1.constData(), ":0\r\n") == 0
               || strcmp(res1.constData(), ":1\r\n") == 0);
-  _db << "h:28";
-  QVariant var(_db.hgetall());
+  *_db << "h:28";
+  QVariant var(_db->hgetall());
   QVariantList lst(var.toList());
   ASSERT_EQ(lst.size(), 32);
   for (int i = 0; i < lst.size(); i += 2) {
@@ -163,24 +166,26 @@ TEST_F(RedisdbTest, HostWithNameStatus) {
       ASSERT_EQ(lst[i + 1], 113);
     }
     else if (lst[i] == "acl_groups") {
-      ASSERT_TRUE(strcmp(lst[i + 1].toByteArray().constData(), "5,3,") == 0);
+      char const* content(lst[i + 1].toByteArray().constData());
+      ASSERT_TRUE(strcmp(content, "5,3,") == 0
+                  || strcmp(content, "3,5,") == 0);
     }
   }
 }
 
 TEST_F(RedisdbTest, Service) {
-  _db.clear();
-  _db << "s:28:42";
-  _db.del();
+  _db->clear();
+  *_db << "s:28:42";
+  _db->del();
   neb::service svc;
   svc.host_id = 28;
   svc.service_id = 42;
-  _db.push(svc);
+  _db->push(svc);
 }
 
 TEST_F(RedisdbTest, ServiceStatus) {
-  _db.clear();
-  _db << "s:28:42";
+  _db->clear();
+  *_db << "s:28:42";
   neb::service_status svc;
   svc.host_id = 28;
   svc.service_id = 42;
@@ -190,9 +195,9 @@ TEST_F(RedisdbTest, ServiceStatus) {
   svc.check_type = 7;
   svc.next_check = 23;
   svc.state_type = 1;
-  _db.push(svc);
-  _db << "s:28:42";
-  QVariant var(_db.hgetall());
+  _db->push(svc);
+  *_db << "s:28:42";
+  QVariant var(_db->hgetall());
   QVariantList lst(var.toList());
 
   for (int i = 0; i < lst.size(); i += 2) {
@@ -209,14 +214,14 @@ TEST_F(RedisdbTest, HostGroupMember) {
   neb::host_group_member hgm;
   hgm.host_id = 28;
   hgm.group_id = 37;
-  _db.push(hgm);
-  _db << "hg:28";
-  QVariant res(_db.get());
+  _db->push(hgm);
+  *_db << "hg:28";
+  QVariant res(_db->get());
   std::string str(redisdb::parse_bitfield(res.toByteArray()));
   ASSERT_TRUE(str == "37,");
 
-  _db << "s:28:42" << "host_groups";
-  res = _db.hget();
+  *_db << "s:28:42" << "host_groups";
+  res = _db->hget();
   ASSERT_TRUE(strcmp(res.toByteArray().constData(), "37,") == 0);
 }
 
@@ -225,42 +230,42 @@ TEST_F(RedisdbTest, ServiceGroupMember) {
   sgm.host_id = 28;
   sgm.service_id = 42;
   sgm.group_id = 68;
-  _db.push(sgm);
-  _db << "SMEMBERS" << "sg:68";
-  QByteArray ret(_db.push_command());
+  _db->push(sgm);
+  *_db << "SMEMBERS" << "sg:68";
+  QByteArray ret(_db->push_command());
   QVariant res(redisdb::parse(ret));
   ASSERT_TRUE(res.toList().size() == 1);
   ASSERT_TRUE(strcmp(res.toList()[0].toByteArray().constData(), "s:28:42") == 0);
 
-  _db << "s:28:42" << "service_groups";
-  res = _db.hget();
+  *_db << "s:28:42" << "service_groups";
+  res = _db->hget();
   ASSERT_TRUE(strcmp(res.toByteArray().constData(), "68,") == 0);
-  _db << "s:28:42" << "acl_groups";
-  res = _db.hget();
+  *_db << "s:28:42" << "acl_groups";
+  res = _db->hget();
   ASSERT_TRUE(strcmp(res.toByteArray().constData(), "3,5,") == 0);
 }
 
 TEST_F(RedisdbTest, ServiceGroupMemberAcl) {
   // Let's add an acl on service group 71
-  _db << "aclsg:189" << 71 << 1;
-  _db.setbit();
+  *_db << "aclsg:189" << 71 << 1;
+  _db->setbit();
 
   // Let's create the service group 71
   neb::service_group_member sgm;
   sgm.host_id = 28;
   sgm.service_id = 42;
   sgm.group_id = 71;
-  _db.push(sgm);
-  _db << "SMEMBERS" << "sg:71";
-  QByteArray ret(_db.push_command());
+  _db->push(sgm);
+  *_db << "SMEMBERS" << "sg:71";
+  QByteArray ret(_db->push_command());
   QVariant res(redisdb::parse(ret));
   ASSERT_TRUE(res.toList().size() == 1);
   ASSERT_TRUE(strcmp(res.toList()[0].toByteArray().constData(), "s:28:42") == 0);
 
-  _db << "s:28:42" << "service_groups";
-  res = _db.hget();
+  *_db << "s:28:42" << "service_groups";
+  res = _db->hget();
   ASSERT_TRUE(strcmp(res.toByteArray().constData(), "68,71,") == 0);
-  _db << "s:28:42" << "acl_groups";
-  res = _db.hget();
+  *_db << "s:28:42" << "acl_groups";
+  res = _db->hget();
   ASSERT_TRUE(strcmp(res.toByteArray().constData(), "189,3,5,") == 0);
 }
