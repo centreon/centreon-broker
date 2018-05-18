@@ -142,6 +142,7 @@ void redisdb::_check_redis_documents() {
           << "host_name" << "TEXT" << "SORTABLE"
           << "host_id" << "NUMERIC"
           << "service_description" << "TEXT" << "SORTABLE"
+          << "display_name" << "TEXT"
           << "service_id" << "NUMERIC"
           << "current_state" << "NUMERIC" << "SORTABLE"
           << "last_state_change" << "NUMERIC" << "SORTABLE"
@@ -169,8 +170,7 @@ void redisdb::_check_redis_documents() {
           << "service_groups" << "TAG"
           << "acl_groups" << "TAG"
           << "poller_id" << "TAG"
-          << "host_groups" << "TAG"
-          << "display_name" << "TEXT" << "NOINDEX";
+          << "host_groups" << "TAG";
 
     ret = push_command("$9\r\nFT.CREATE\r\n");
 
