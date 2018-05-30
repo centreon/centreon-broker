@@ -100,7 +100,7 @@ TEST_F(RedisdbTest, HMSetKey) {
 TEST_F(RedisdbTest, HostStatus) {
   _db->clear();
   *_db << "h:28";
-  _db->del();
+  _db->unlink();
   neb::host_status hst;
   hst.host_id = 28;
   hst.current_state = 2;
@@ -109,8 +109,9 @@ TEST_F(RedisdbTest, HostStatus) {
   hst.check_type = 7;
   hst.next_check = 23;
   hst.state_type = 1;
-  QByteArray& res1(_db->push(hst));
-  ASSERT_TRUE(strcmp(res1.constData(), "+OK\r\n") == 0);
+  QVariant res1(_db->push(hst));
+  std::cout << "HOST STATUS OUTPUT " << res1.toByteArray().constData() << std::endl;
+  ASSERT_TRUE(strcmp(res1.toByteArray().constData(), "+OK") == 0);
   *_db << "h:28";
   QVariant res2(_db->hgetall());
   QVariantList lst(res2.toList());
@@ -151,13 +152,12 @@ TEST_F(RedisdbTest, HostWithNameStatus) {
   hst.host_id = 28;
   hst.host_name = "host test";
   hst.poller_id = 113;
-  QByteArray& res1(_db->push(hst));
-  ASSERT_TRUE(strcmp(res1.constData(), ":0\r\n") == 0
-              || strcmp(res1.constData(), ":1\r\n") == 0);
+  int res1(_db->push(hst).toInt());
+  ASSERT_TRUE(res1 == 0 || res1 == 1);
   *_db << "h:28";
   QVariant var(_db->hgetall());
   QVariantList lst(var.toList());
-  ASSERT_EQ(lst.size(), 32);
+  ASSERT_EQ(lst.size(), 30);
   for (int i = 0; i < lst.size(); i += 2) {
     if (lst[i] == "name") {
       ASSERT_EQ(lst[i + 1], "host test");
@@ -176,11 +176,15 @@ TEST_F(RedisdbTest, HostWithNameStatus) {
 TEST_F(RedisdbTest, Service) {
   _db->clear();
   *_db << "s:28:42";
-  _db->del();
+  _db->unlink();
   neb::service svc;
   svc.host_id = 28;
   svc.service_id = 42;
   _db->push(svc);
+
+  *_db << "services:28" << "s:28:42";
+  int res(_db->sismember().toInt());
+  ASSERT_EQ(res, 1);
 }
 
 TEST_F(RedisdbTest, ServiceStatus) {
@@ -208,6 +212,10 @@ TEST_F(RedisdbTest, ServiceStatus) {
       ASSERT_EQ(lst[i + 1], 113);
     }
   }
+
+  *_db << "states:3" << "s:28:42";
+  int res(_db->sismember().toInt());
+  ASSERT_EQ(res, 1);
 }
 
 TEST_F(RedisdbTest, HostGroupMember) {
@@ -215,14 +223,10 @@ TEST_F(RedisdbTest, HostGroupMember) {
   hgm.host_id = 28;
   hgm.group_id = 37;
   _db->push(hgm);
-  *_db << "hg:28";
+  *_db << "hg:37";
   QVariant res(_db->get());
   std::string str(redisdb::parse_bitfield(res.toByteArray()));
-  ASSERT_TRUE(str == "37,");
-
-  *_db << "s:28:42" << "host_groups";
-  res = _db->hget();
-  ASSERT_TRUE(strcmp(res.toByteArray().constData(), "37,") == 0);
+  ASSERT_TRUE(str == "28,");
 }
 
 TEST_F(RedisdbTest, ServiceGroupMember) {
@@ -235,14 +239,9 @@ TEST_F(RedisdbTest, ServiceGroupMember) {
   QByteArray ret(_db->push_command());
   QVariant res(redisdb::parse(ret));
   ASSERT_TRUE(res.toList().size() == 1);
-  ASSERT_TRUE(strcmp(res.toList()[0].toByteArray().constData(), "s:28:42") == 0);
-
-  *_db << "s:28:42" << "service_groups";
-  res = _db->hget();
-  ASSERT_TRUE(strcmp(res.toByteArray().constData(), "68,") == 0);
-  *_db << "s:28:42" << "acl_groups";
-  res = _db->hget();
-  ASSERT_TRUE(strcmp(res.toByteArray().constData(), "3,5,") == 0);
+  ASSERT_TRUE(
+    strcmp(res.toList()[0].toByteArray().constData(),
+    "s:28:42") == 0);
 }
 
 TEST_F(RedisdbTest, ServiceGroupMemberAcl) {
@@ -265,7 +264,27 @@ TEST_F(RedisdbTest, ServiceGroupMemberAcl) {
   *_db << "s:28:42" << "service_groups";
   res = _db->hget();
   ASSERT_TRUE(strcmp(res.toByteArray().constData(), "68,71,") == 0);
-  *_db << "s:28:42" << "acl_groups";
-  res = _db->hget();
-  ASSERT_TRUE(strcmp(res.toByteArray().constData(), "189,3,5,") == 0);
+}
+
+TEST_F(RedisdbTest, ManyServices) {
+  int i;
+  // Let's create 10 hosts
+  for (i = 0; i < 10; ++i) {
+    neb::host h;
+    h.host_id = i + 1;
+    std::ostringstream oss;
+    oss << "Host" << h.host_id;
+    h.host_name = QString("Host%1").arg(h.host_id);
+    h.poller_id = 113;
+    int res(_db->push(h).toInt());
+    ASSERT_TRUE(res == 0 || res == 1);
+  }
+  for (i = 0; i < 10000; ++i) {
+    neb::service s;
+    s.host_id = (rand() % 10) + 1;
+    s.service_id = i + 1;
+    s.service_description = QString("Description%1").arg(s.service_id);
+    int res(_db->push(s).toInt());
+    ASSERT_TRUE(res == 0 || res == 1);
+  }
 }

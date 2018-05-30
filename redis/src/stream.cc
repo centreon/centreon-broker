@@ -73,7 +73,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   unsigned int type(data->type());
   unsigned short cat(io::events::category_of_type(type));
   unsigned short elem(io::events::element_of_type(type));
-  QString res;
+  QByteArray res;
   // Process event.
   if (type == instance_broadcast::static_type()) {
     _redisdb->push(data.ref_as<instance_broadcast const>());
@@ -86,15 +86,16 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
         break;
       case 11:
         // Host group member
-        res = _redisdb->push(data.ref_as<neb::host_group_member const>());
+        res = _redisdb->push(
+                data.ref_as<neb::host_group_member const>()).toByteArray();
         break;
       case 12:
         // Host
-        res = _redisdb->push(data.ref_as<neb::host const>());
+        res = _redisdb->push(data.ref_as<neb::host const>()).toByteArray();
         break;
       case 14:
         // Host status
-        res = _redisdb->push(data.ref_as<neb::host_status const>());
+        res = _redisdb->push(data.ref_as<neb::host_status const>()).toByteArray();
         break;
       case 15:
         // Instance
@@ -106,11 +107,12 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
         break;
       case 23:
         // Service
-        res = _redisdb->push(data.ref_as<neb::service const>());
+        res = _redisdb->push(data.ref_as<neb::service const>()).toByteArray();
         break;
       case 24:
         // Service status
-        res = _redisdb->push(data.ref_as<neb::service_status const>());
+        res = _redisdb->push(
+            data.ref_as<neb::service_status const>()).toByteArray();
         break;
       default:
         logging::error(logging::high) << "redis: Unable to treat event of "
