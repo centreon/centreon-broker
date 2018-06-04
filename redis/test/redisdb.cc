@@ -212,10 +212,6 @@ TEST_F(RedisdbTest, ServiceStatus) {
       ASSERT_EQ(lst[i + 1], 113);
     }
   }
-
-  *_db << "states:3" << "s:28:42";
-  int res(_db->sismember().toInt());
-  ASSERT_EQ(res, 1);
 }
 
 TEST_F(RedisdbTest, HostGroupMember) {

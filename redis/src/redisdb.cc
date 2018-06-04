@@ -456,12 +456,6 @@ QVariant redisdb::push(neb::host_status const& hs) {
 
   std::string hst(build_key("h", hs.host_id));
 
-  // Let's cancel the previous state
-  *this << hst << "current_state";
-  int state(hget().toInt());
-  *this << build_key("stateh", state) << hst;
-  srem();
-
   *this << hst
     << "current_state" << hs.current_state
     << "enabled" << hs.enabled
@@ -471,8 +465,6 @@ QVariant redisdb::push(neb::host_status const& hs) {
     << "passive_checks" << hs.passive_checks_enabled
     << "acknowledged" << hs.acknowledged;
   QVariant retval(hmset());
-  *this << build_key("stateh", hs.current_state) << hst;
-  sadd();
   return retval;
 }
 
@@ -565,12 +557,6 @@ QVariant redisdb::push(neb::service_status const& ss) {
 
   std::string svc(build_key("s", ss.host_id, ss.service_id));
 
-  // Let's cancel the previous state
-  *this << svc << "current_state";
-  int state(hget().toInt());
-  *this << build_key("states", state) << svc;
-  srem();
-
   *this << svc
     << "current_state" << ss.current_state
     << "state_type" << ss.state_type
@@ -588,8 +574,6 @@ QVariant redisdb::push(neb::service_status const& ss) {
     << "passive_checks" << ss.passive_checks_enabled
     << "acknowledged" << ss.acknowledged;
   QVariant retval(hmset());
-  *this << build_key("states", ss.current_state) << svc;
-  sadd();
   return retval;
 }
 
@@ -608,13 +592,17 @@ QVariant redisdb::push(neb::service const& s) {
   *this << build_key("services", s.host_id) << svc;
   sadd();
 
+  *this << "services" << svc;
+  sadd();
+
   *this << svc
-    << "key" << svc
     << "service_description" << s.service_description.toStdString()
+    << "host_id" << s.host_id
     << "service_id" << s.service_id
     << "notify" << s.notifications_enabled
     << "action_url" << s.action_url.toStdString()
     << "notes" << s.notes.toStdString()
+    << "last_state_change" << s.last_state_change
     << "notes_url" << s.notes_url.toStdString()
     << "event_handler_enabled" << s.event_handler_enabled
     << "flapping" << s.is_flapping
