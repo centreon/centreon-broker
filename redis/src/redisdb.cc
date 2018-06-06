@@ -137,22 +137,23 @@ void redisdb::_check_redis_server() {
 
 QVariant redisdb::_init() {
   // Stored procedures initialization
-  std::string lua_filter_fn(
-    "local idx = {}\n"
-
-    "while (#idx < #KEYS - 1) do\n"
-    "  local i = #idx + 1\n"
-    "  idx[i] = KEYS[i + 1]\n"
-    "end\n"
+//  std::string lua_filter_fn(
+//    "local idx = {}\n"
+//
+//    "while (#idx < #KEYS - 1) do\n"
+//    "  local i = #idx + 1\n"
+//    "  idx[i] = KEYS[i + 1]\n"
+//    "end\n"
 //
 //    "redis.call('UNLINK', 'tmp')\n"
 //    "redis.call('SINTERSTORE', 'tmp', #idx, unpack(idx))\n"
-    "return #idx");
-  *this << "SCRIPT" << "LOAD" << lua_filter_fn;
-  push_command("");
-  QVariant retval(parse(_result));
-  std::cout << "LOAD SCRIPT: " << retval.toByteArray().constData() << std::endl;
-  return retval;
+//    "return #idx");
+//  *this << "SCRIPT" << "LOAD" << lua_filter_fn;
+//  push_command("");
+//  QVariant retval(parse(_result));
+//  std::cout << "LOAD SCRIPT: " << retval.toByteArray().constData() << std::endl;
+//  return retval;
+  return QVariant();
 }
 
 /**
@@ -213,16 +214,22 @@ QVariant redisdb::info() {
 }
 
 QVariant redisdb::get() {
+  logging::debug(logging::low)
+    << "redis: get";
   push_command("$3\r\nGET\r\n");
   return parse(_result);
 }
 
 QVariant redisdb::keys() {
+  logging::debug(logging::low)
+    << "redis: keys";
   push_command("$4\r\nKEYS\r\n");
   return parse(_result);
 }
 
 int redisdb::getbit() {
+  logging::debug(logging::low)
+    << "redis: getbit";
   push_command("$6\r\nGETBIT\r\n");
   QByteArray::const_iterator it(_result.begin());
   QVariant ret(_parse_int(_result, it));
@@ -230,16 +237,22 @@ int redisdb::getbit() {
 }
 
 QVariant redisdb::setbit() {
+  logging::debug(logging::low)
+    << "redis: setbit";
   push_command("$6\r\nSETBIT\r\n");
   return parse(_result);
 }
 
 QVariant redisdb::hget() {
+  logging::debug(logging::low)
+    << "redis: hget";
   push_command("$4\r\nHGET\r\n");
   return parse(_result);
 }
 
 QVariant redisdb::hgetall() {
+  logging::debug(logging::low)
+    << "redis: hgetall";
   push_command("$7\r\nHGETALL\r\n");
   return parse(_result);
 }
@@ -250,11 +263,15 @@ QVariant redisdb::sismember() {
 }
 
 QVariant redisdb::hmget() {
+  logging::debug(logging::low)
+    << "redis: hmget";
   push_command("$5\r\nHMGET\r\n");
   return parse(_result);
 }
 
 QVariant redisdb::hmset() {
+  logging::debug(logging::low)
+    << "redis: hmset";
   push_command("$5\r\nHMSET\r\n");
   return parse(_result);
 }
@@ -279,7 +296,14 @@ QVariant redisdb::hset() {
   return parse(_result);
 }
 
+QVariant redisdb::hincrby() {
+  push_command("$7\r\nHINCRBY\r\n");
+  return parse(_result);
+}
+
 QByteArray& redisdb::push_command(std::string const& cmd) {
+  logging::debug(logging::low)
+    << "redis: push_command";
   _content.append(str(cmd));
   _oss.str("");
   _size = 0;
@@ -363,6 +387,8 @@ QByteArray& redisdb::push(neb::custom_variable const& cv) {
 }
 
 QByteArray& redisdb::push(instance_broadcast const& ib) {
+  logging::debug(logging::low)
+    << "redis: push";
   // Here, there are some cleanup to do...
   // FIXME DBR
   _result.clear();
@@ -377,32 +403,32 @@ QVariant redisdb::push(neb::host_group_member const& hgm) {
     << "(host_id: " << hgm.host_id << ", group_id: " << hgm.group_id << ")";
 
   std::string hg_key(build_key("hg", hgm.group_id));
+  std::string hgs_key(build_key("hgs", hgm.group_id));
   *this << hg_key << hgm.host_id << 1;
-  return setbit();
+  QVariant retval(setbit());
 
-//
-//  // Let's propagate to services attached to the host_id's host
-//  oss.str("");
-//  oss << "s:" << hgm.host_id << ":*";
-//
-//  int next(0);
-//  do {
-//    *this << "SCAN" << 0 << "MATCH" << oss.str() << "COUNT" << 1000;
-//    push_command();
-//    QVariantList lst(redisdb::parse(_result).toList());
-//    next = lst[0].toInt();
-//    QVariantList items(lst[1].toList());
-//    for (int i = 0; i < items.size(); ++i) {
-//      *this << "services" << items[i].toByteArray().constData()
-//            << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
-//            << "host_groups" << host_groups;
-//      push_command("$6\r\nFT.ADD\r\n");
-//    }
-//  } while (next);
-//
+  // Let's propagate to services attached to the host_id's host
+  std::ostringstream oss;
+  oss << "s:" << hgm.host_id << ":*";
+
+  int next(0);
+  do {
+    *this << "SCAN" << next << "MATCH" << oss.str() << "COUNT" << 1000;
+    push_command();
+    QVariantList lst(redisdb::parse(_result).toList());
+    next = lst[0].toInt();
+    QVariantList items(lst[1].toList());
+    for (int i = 0; i < items.size(); ++i) {
+      *this << hgs_key << items[i].toByteArray().constData();
+      sadd();
+    }
+  } while (next);
+  return retval;
 }
 
 std::string redisdb::parse_bitfield(QByteArray const& bf) {
+  logging::debug(logging::low)
+    << "redis: parse_bitfield";
   std::ostringstream oss;
   int j(0);
   for (QByteArray::const_iterator
@@ -434,7 +460,15 @@ QVariant redisdb::push(neb::host const& h) {
   QVariant kys(keys());
   QVariantList lst(kys.toList());
 
-  *this << build_key("h", h.host_id)
+  std::string hst(build_key("h", h.host_id));
+
+  *this << hst << "current_state";
+  int state(hget().toInt());
+
+  *this << "hosts" << hst;
+  sadd();
+
+  *this << hst
     << "name" << h.host_name.toStdString()
     << "alias" << h.alias.toStdString()
     << "address" << h.address.toStdString()
@@ -444,6 +478,14 @@ QVariant redisdb::push(neb::host const& h) {
     << "poller_id" << h.poller_id
     << "icon_image" << h.icon_image.toStdString();
   hmset();
+
+  std::string old_state(build_key("stateh", state));
+  std::string new_state(build_key("stateh", h.current_state));
+
+  *this << old_state << hst;
+  srem();
+  *this << new_state << hst;
+  sadd();
 
   *this << build_key("p", h.poller_id) << h.host_id << 1;
   return setbit();
@@ -456,6 +498,9 @@ QVariant redisdb::push(neb::host_status const& hs) {
 
   std::string hst(build_key("h", hs.host_id));
 
+  *this << hst << "current_state";
+  int state(hget().toInt());
+
   *this << hst
     << "current_state" << hs.current_state
     << "enabled" << hs.enabled
@@ -465,6 +510,16 @@ QVariant redisdb::push(neb::host_status const& hs) {
     << "passive_checks" << hs.passive_checks_enabled
     << "acknowledged" << hs.acknowledged;
   QVariant retval(hmset());
+
+  if (state != hs.current_state) {
+    std::string old_state(build_key("stateh", state));
+    std::string new_state(build_key("stateh", hs.current_state));
+
+    *this << old_state << hst;
+    srem();
+    *this << new_state << hst;
+    sadd();
+  }
   return retval;
 }
 
@@ -492,7 +547,7 @@ QByteArray& redisdb::push(neb::service_group_member const& sgm) {
   std::string svc(build_key("s", sgm.host_id, sgm.service_id));
 
   *this << sgstr << svc;
-  push_command("$4\r\nSADD\r\n");
+  sadd();
 
   *this << svc << "service_groups" << "acl_groups";
   QVariant tmp(hmget());
@@ -557,6 +612,9 @@ QVariant redisdb::push(neb::service_status const& ss) {
 
   std::string svc(build_key("s", ss.host_id, ss.service_id));
 
+  *this << svc << "current_state";
+  int state(hget().toInt());
+
   *this << svc
     << "current_state" << ss.current_state
     << "state_type" << ss.state_type
@@ -574,6 +632,16 @@ QVariant redisdb::push(neb::service_status const& ss) {
     << "passive_checks" << ss.passive_checks_enabled
     << "acknowledged" << ss.acknowledged;
   QVariant retval(hmset());
+
+  if (state != ss.current_state) {
+    std::string old_state(build_key("states", state));
+    std::string new_state(build_key("states", ss.current_state));
+
+    *this << old_state << svc;
+    srem();
+    *this << new_state << svc;
+    sadd();
+  }
   return retval;
 }
 
@@ -588,6 +656,9 @@ QVariant redisdb::push(neb::service const& s) {
   QVariantList lst(res.toList());
 
   std::string svc(build_key("s", s.host_id, s.service_id));
+
+  *this << svc << "current_state";
+  int state(hget().toInt());
 
   *this << build_key("services", s.host_id) << svc;
   sadd();
@@ -613,7 +684,16 @@ QVariant redisdb::push(neb::service const& s) {
     << "host_groups" << lst[2].toString().toStdString()
     << "acl_groups" << lst[3].toString().toStdString();
 
-  return hmset();
+  QVariant retval(hmset());
+
+  std::string old_state(build_key("states", state));
+  std::string new_state(build_key("states", s.current_state));
+
+  *this << old_state << svc;
+  srem();
+  *this << new_state << svc;
+  sadd();
+  return retval;
 }
 
 std::string const&  redisdb::get_content() const {
@@ -666,12 +746,17 @@ void redisdb::_connect() {
 }
 
 QVariant redisdb::parse(QByteArray const& array) {
+  logging::debug(logging::low)
+    << "redis: parse";
   QByteArray::const_iterator it(array.begin());
   return _parse(array, it);
 }
 
 QVariant redisdb::_parse(QByteArray const& arr,
                          QByteArray::const_iterator& it) {
+  logging::debug(logging::low)
+    << "redis: _parse";
+
   switch (*it) {
     case '$':
       return _parse_str(arr, it);
@@ -691,6 +776,8 @@ QVariant redisdb::_parse(QByteArray const& arr,
 }
 
 QVariant redisdb::_parse_str(QByteArray const& arr, QByteArray::const_iterator& it) {
+  logging::debug(logging::low)
+    << "redis: _parse_str";
   size_t len(0);
   if (*it != '$')
     throw (exceptions::msg()
@@ -713,6 +800,8 @@ QVariant redisdb::_parse_str(QByteArray const& arr, QByteArray::const_iterator& 
 }
 
 QVariant redisdb::_parse_simple_str(QByteArray const& arr, QByteArray::const_iterator& it) {
+  logging::debug(logging::low)
+    << "redis: _parse_simple_str";
   if (*it != '+' && *it != '-')
     throw (exceptions::msg()
       << "redis: Unable to parse '" << arr.constData() << "' as a string");
@@ -726,6 +815,8 @@ QVariant redisdb::_parse_simple_str(QByteArray const& arr, QByteArray::const_ite
 }
 
 QVariant redisdb::_parse_int(QByteArray const& arr, QByteArray::const_iterator& it) {
+  logging::debug(logging::low)
+    << "redis: _parse_int";
   int value(0);
   if (*it != ':')
     throw (exceptions::msg()
@@ -742,6 +833,8 @@ QVariant redisdb::_parse_int(QByteArray const& arr, QByteArray::const_iterator& 
 }
 
 QVariant redisdb::_parse_array(QByteArray const& arr, QByteArray::const_iterator& it) {
+  logging::debug(logging::low)
+    << "redis: _parse_array";
   size_t array_size(0);
   if (*it != '*')
     throw (exceptions::msg()

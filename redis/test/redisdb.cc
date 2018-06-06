@@ -283,4 +283,13 @@ TEST_F(RedisdbTest, ManyServices) {
     int res(_db->push(s).toInt());
     ASSERT_TRUE(res == 0 || res == 1);
   }
+  for (i = 0; i < 10000; ++i) {
+    neb::service_status ss;
+    ss.host_id = (rand() % 10) + 1;
+    ss.service_id = i + 1;
+    ss.service_description = QString("Description%1").arg(ss.service_id);
+    ss.current_state = rand() % 4;
+    int res(_db->push(ss).toInt());
+    ASSERT_TRUE(res == 0 || res == 1);
+  }
 }

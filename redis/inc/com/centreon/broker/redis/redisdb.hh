@@ -68,6 +68,7 @@ namespace               redis {
     QVariant            hmget();
     QVariant            hmset();
     QVariant            hset();
+    QVariant            hincrby();
     QVariant            info();
     QVariant            keys();
     QVariant            module();

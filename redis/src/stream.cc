@@ -115,16 +115,19 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
             data.ref_as<neb::service_status const>()).toByteArray();
         break;
       default:
-        logging::error(logging::high) << "redis: Unable to treat event of "
+        logging::info(logging::low) << "redis: Unable to treat event of "
           << "category " << cat
           << ", element " << elem;
     }
   }
 
-  if (res != "+OK\r\n")
+  logging::error(logging::high)
+    << "redis: RES = " << res.constData();
+
+  if (res != "+OK")
     logging::error(logging::medium)
       << "redis: Unable to write event on redis server "
-      << _redisdb->get_address() << ':' << _redisdb->get_port() << ".";
+      << _redisdb->get_address() << ":" << _redisdb->get_port() << ".";
 
   return 1;
 }
