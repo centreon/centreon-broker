@@ -97,16 +97,17 @@ redisdb::~redisdb() {
 }
 
 void redisdb::_check_redis_server() {
-  *this << "Server";
-  QVariant res(info());
-  QByteArray arr(res.toByteArray());
+  info("Server");
+  module("list");
+  send();
+  QVariantList res(parse(_result));
+  QByteArray res1(res[0].toByteArray());
+  QVariantList lst(res[1].toList());
 
-  if (!arr.contains("redis_version"))
+  if (!res1.contains("redis_version"))
     throw (exceptions::msg()
       << "redis: Unable to grab informations from Redis server");
-  *this << "list";
-  res = module();
-  QVariantList lst(res.toList());
+  _result.clear();
   bool module_found(false);
   bool version_ok(false);
 
@@ -129,7 +130,7 @@ void redisdb::_check_redis_server() {
   }
   if (!module_found || !version_ok) {
     throw (exceptions::msg()
-      << "redis: The redistabular module is not installed or its version "
+      << "redis: The redistabular module is not installed or its version"
       << " is too old ( < 1) on the redis server '"
       << _address << ":" << _port << "'");
   }
@@ -166,129 +167,178 @@ void redisdb::clear() {
 }
 
 redisdb& redisdb::operator<<(std::string const& str) {
-  _oss << '$' << str.size() << "\r\n" << str << "\r\n";
-  ++_size;
+  char buf[sizeof(unsigned long int) * 8 / 3 + 4];
+  snprintf(buf, sizeof(buf), "$%lu\r\n", str.size());
+  _content.append(buf).append(str).append("\r\n");
   return *this;
 }
 
 redisdb& redisdb::operator<<(int val) {
-  std::ostringstream oss;
-  oss << val;
-  std::string l(oss.str());
-  _oss << '$' << l.size() << "\r\n" << l << "\r\n";
-  ++_size;
+  char buf[sizeof(int) * 8 / 3 + 1];
+  snprintf(buf, sizeof(buf), "%d", val);
+  char buffer[sizeof(unsigned long int) * 8 / 3 + 4];
+  snprintf(buffer, sizeof(buffer), "$%lu\r\n", strlen(buf));
+  _content.append(buffer).append(buf).append("\r\n");
   return *this;
 }
 
 std::string redisdb::str(std::string const& cmd) {
-  unsigned int size;
-  if (cmd.empty())
-    size = _size;
-  else
-    size = _size + 1;
-  if (size >= 2) {
-    char buf[sizeof(unsigned int) * 8 / 3 + 4];
-    snprintf(buf, sizeof(buf), "*%d\r\n", size);
-    std::string retval(buf);
-    if (!cmd.empty())
-      retval.append(cmd);
-    retval.append(_oss.str());
-    return retval;
-  }
-  else {
-    std::string retval(_oss.str());
-    return retval;
-  }
+  return _content;
 }
 
-QByteArray& redisdb::del() {
-  return push_command("$3\r\nDEL\r\n");
+int redisdb::del(std::string const& key) {
+  push_array(2);
+  *this << "DEL" << key;
+  return _size++;
 }
 
-QByteArray& redisdb::unlink() {
-  return push_command("$6\r\nUNLINK\r\n");
+int redisdb::unlink(std::string const& key) {
+  push_array(2);
+  *this << "UNLINK" << key;
+  return _size++;
 }
 
-QVariant redisdb::info() {
-  return parse(push_command("$4\r\nINFO\r\n"));
+int redisdb::info(std::string const& arg) {
+  push_array(2);
+  *this << "INFO" << arg;
+  return _size++;
 }
 
-QVariant redisdb::get() {
+void redisdb::push_array(size_t size) {
+  char buf[sizeof(unsigned int) * 8 / 3 + 4];
+  snprintf(buf, sizeof(buf), "*%lu\r\n", size);
+  _content.append(buf);
+}
+
+int redisdb::get(std::string const& key) {
   logging::debug(logging::low)
-    << "redis: get";
-  push_command("$3\r\nGET\r\n");
-  return parse(_result);
+    << "redis: get " << key;
+  push_array(2);
+  *this << "GET" << key;
+  return _size++;
 }
 
-QVariant redisdb::keys() {
+int redisdb::keys(std::string const& pattern) {
   logging::debug(logging::low)
-    << "redis: keys";
-  push_command("$4\r\nKEYS\r\n");
-  return parse(_result);
+    << "redis: keys " << pattern;
+  push_array(2);
+  *this << "KEYS" << pattern;
+  return _size++;
 }
 
-int redisdb::getbit() {
+int redisdb::getbit(std::string const& key, long long index) {
   logging::debug(logging::low)
-    << "redis: getbit";
-  push_command("$6\r\nGETBIT\r\n");
-  QByteArray::const_iterator it(_result.begin());
-  QVariant ret(_parse_int(_result, it));
-  return ret.toInt();
+    << "redis: getbit " << key;
+  push_array(3);
+  *this << "GETBIT" << key << index;
+  return _size++;
 }
 
-QVariant redisdb::setbit() {
+int redisdb::setbit(std::string const& key, long int row, int value) {
   logging::debug(logging::low)
     << "redis: setbit";
-  push_command("$6\r\nSETBIT\r\n");
-  return parse(_result);
+  push_array(4);
+  *this << "SETBIT" << key << row << value;
+  return _size++;
 }
 
-QVariant redisdb::hget() {
-  logging::debug(logging::low)
-    << "redis: hget";
-  push_command("$4\r\nHGET\r\n");
-  return parse(_result);
-}
-
-QVariant redisdb::hgetall() {
+int redisdb::hgetall(std::string const& key) {
   logging::debug(logging::low)
     << "redis: hgetall";
-  push_command("$7\r\nHGETALL\r\n");
-  return parse(_result);
+  push_array(2);
+  *this << "HGETALL" << key;
+  return _size++;
 }
 
-QVariant redisdb::sismember() {
-  push_command("$9\r\nSISMEMBER\r\n");
-  return parse(_result);
+int redisdb::sismember(std::string const& key, std::string const& item) {
+  logging::debug(logging::low)
+    << "redis: hgetall";
+  push_array(3);
+  *this << "SISMEMBER" << key << item;
+  return _size++;
 }
 
-QVariant redisdb::hmget() {
+int redisdb::sadd(std::string const& key, std::string const& item) {
+  push_array(3);
+  *this << "SADD" << key << item;
+  return _size++;
+}
+
+int redisdb::smembers(std::string const& key) {
+  push_array(2);
+  *this << "SMEMBERS" << key;
+  return _size++;
+}
+
+int redisdb::srem(std::string const& key, std::string const& item) {
+  push_array(3);
+  *this << "SREM" << key << item;
+  return _size++;
+}
+
+int redisdb::hget(std::string const& key, std::string const& item) {
+  logging::debug(logging::low)
+    << "redis: hget " << key << " => " << item;
+  push_array(3);
+  *this << "HGET" << key << item;
+  return _size++;
+}
+
+int redisdb::hmget(std::string const& key, int count, ...) {
   logging::debug(logging::low)
     << "redis: hmget";
-  push_command("$5\r\nHMGET\r\n");
-  return parse(_result);
+  push_array(count + 2);
+  va_list list;
+  va_start(list, count);
+  *this << "HMGET" << key;
+  for (int i = 0; i < count; ++i)
+    *this << va_arg(list, char const*);
+  va_end(list);
+  return _size++;
 }
 
-QVariant redisdb::hmset() {
+/**
+ *  hmset binding to the redis hmset function
+ *
+ * @param key The hash key
+ * @param count The items count to affect
+ */
+int redisdb::hmset(std::string const& key, int count) {
   logging::debug(logging::low)
-    << "redis: hmset";
-  push_command("$5\r\nHMSET\r\n");
-  return parse(_result);
+    << "redis: hmset " << key;
+  push_array((count << 1) + 2);
+  *this << "HMSET" << key;
+  return _size++;
 }
 
-QVariant redisdb::sadd() {
-  push_command("$4\r\nSADD\r\n");
-  return parse(_result);
+int redisdb::set(std::string const& key, std::string const& value) {
+  logging::debug(logging::low)
+    << "redis: set " << key << " => " << value;
+  push_array(3);
+  *this << "SET" << key << value;
+  return _size++;
 }
 
-QVariant redisdb::srem() {
-  push_command("$4\r\nSREM\r\n");
-  return parse(_result);
+int redisdb::set(std::string const& key, int value) {
+  logging::debug(logging::low)
+    << "redis: set " << key << " => " << value;
+  push_array(3);
+  *this << "SET" << key << value;
+  return _size++;
 }
 
-QVariant redisdb::module() {
-  push_command("$6\r\nmodule\r\n");
-  return parse(_result);
+int redisdb::incr(std::string const& key) {
+  logging::debug(logging::low)
+    << "redis: incr " << key;
+  push_array(2);
+  *this << "INCR" << key;
+  return _size++;
+}
+
+int redisdb::module(std::string const& arg) {
+  push_array(2);
+  *this << "MODULE" << arg;
+  return _size++;
 }
 
 QVariant redisdb::hset() {
@@ -301,13 +351,27 @@ QVariant redisdb::hincrby() {
   return parse(_result);
 }
 
-QByteArray& redisdb::push_command(std::string const& cmd) {
+void redisdb::push_command(std::string const& cmd) {
   logging::debug(logging::low)
     << "redis: push_command";
-  _content.append(str(cmd));
+  unsigned int size;
+  if (cmd.empty())
+    size = _size;
+  else
+    size = _size + 1;
+  if (size >= 2) {
+    char buf[sizeof(unsigned int) * 8 / 3 + 4];
+    snprintf(buf, sizeof(buf), "*%d\r\n", size);
+    _content.append(buf);
+    if (!cmd.empty())
+      _content.append(cmd);
+  }
+  _content.append(_oss.str());
   _oss.str("");
   _size = 0;
+}
 
+QByteArray& redisdb::send() {
   if (_socket->state() != QTcpSocket::ConnectedState)
     _connect();
 
@@ -383,7 +447,8 @@ QByteArray& redisdb::push(neb::custom_variable const& cv) {
 
   *this << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
         << tag << cv.value.toStdString();
-  return push_command("$6\r\nFT.ADD\r\n");
+  push_command("$6\r\nFT.ADD\r\n");
+  return send();
 }
 
 QByteArray& redisdb::push(instance_broadcast const& ib) {
@@ -395,7 +460,13 @@ QByteArray& redisdb::push(instance_broadcast const& ib) {
   return _result;
 }
 
-QVariant redisdb::push(neb::host_group_member const& hgm) {
+int redisdb::scan(int next, std::string const& match, int count) {
+  push_array(6);
+  *this << "SCAN" << next << "MATCH" << match << "COUNT" << count;
+  return _size++;
+}
+
+void redisdb::push(neb::host_group_member const& hgm) {
   // Values to push in redis:
   // * hg:host_id : it is a bitfield of hostgroup_id
   logging::info(logging::high)
@@ -404,8 +475,7 @@ QVariant redisdb::push(neb::host_group_member const& hgm) {
 
   std::string hg_key(build_key("hg", hgm.group_id));
   std::string hgs_key(build_key("hgs", hgm.group_id));
-  *this << hg_key << hgm.host_id << 1;
-  QVariant retval(setbit());
+  setbit(hg_key, hgm.host_id, 1);
 
   // Let's propagate to services attached to the host_id's host
   std::ostringstream oss;
@@ -413,17 +483,18 @@ QVariant redisdb::push(neb::host_group_member const& hgm) {
 
   int next(0);
   do {
-    *this << "SCAN" << next << "MATCH" << oss.str() << "COUNT" << 1000;
-    push_command();
-    QVariantList lst(redisdb::parse(_result).toList());
+    int row(scan(next, oss.str(), 1000));
+    send();
+    QVariantList lst(redisdb::parse(_result)[row].toList());
     next = lst[0].toInt();
     QVariantList items(lst[1].toList());
     for (int i = 0; i < items.size(); ++i) {
-      *this << hgs_key << items[i].toByteArray().constData();
-      sadd();
+      sadd(hgs_key, items[i].toByteArray().constData());
     }
   } while (next);
-  return retval;
+  if (_size)
+    send();
+  _check_validity();
 }
 
 std::string redisdb::parse_bitfield(QByteArray const& bf) {
@@ -451,76 +522,73 @@ std::string redisdb::parse_bitfield(QByteArray const& bf) {
   return oss.str();
 }
 
-QVariant redisdb::push(neb::host const& h) {
+void redisdb::_check_validity() const {
+  char const* tmp(strstr(_result.constData(), "-ERR"));
+  if (tmp) {
+    throw (exceptions::msg()
+      << "redis: Error while sending data to Redis server - "
+      << tmp);
+  }
+}
+
+void redisdb::push(neb::host const& h) {
   logging::info(logging::high)
     << "redis: push host "
     << "(host_id: " << h.host_id << ")";
 
-  *this << "aclh:*";
-  QVariant kys(keys());
-  QVariantList lst(kys.toList());
-
   std::string hst(build_key("h", h.host_id));
+  hget(hst, "current_state");
+  QVariantList res(parse(send()));
+  int state(res[0].toInt());
 
-  *this << hst << "current_state";
-  int state(hget().toInt());
-
-  *this << "hosts" << hst;
-  sadd();
-
-  *this << hst
-    << "name" << h.host_name.toStdString()
-    << "alias" << h.alias.toStdString()
-    << "address" << h.address.toStdString()
-    << "action_url" << h.action_url.toStdString()
-    << "notes" << h.notes.toStdString()
-    << "notes_url" << h.notes_url.toStdString()
-    << "poller_id" << h.poller_id
-    << "icon_image" << h.icon_image.toStdString();
-  hmset();
+  sadd("hosts", hst);
+  hmset(hst, 8);
+  *this << "name" << h.host_name.toStdString()
+        << "alias" << h.alias.toStdString()
+        << "address" << h.address.toStdString()
+        << "action_url" << h.action_url.toStdString()
+        << "notes" << h.notes.toStdString()
+        << "notes_url" << h.notes_url.toStdString()
+        << "poller_id" << h.poller_id
+        << "icon_image" << h.icon_image.toStdString();
 
   std::string old_state(build_key("stateh", state));
   std::string new_state(build_key("stateh", h.current_state));
-
-  *this << old_state << hst;
-  srem();
-  *this << new_state << hst;
-  sadd();
-
-  *this << build_key("p", h.poller_id) << h.host_id << 1;
-  return setbit();
+  srem(old_state, hst);
+  sadd(new_state, hst);
+  setbit(build_key("p", h.poller_id), h.host_id, 1);
+  send();
+  _check_validity();
 }
 
-QVariant redisdb::push(neb::host_status const& hs) {
+void redisdb::push(neb::host_status const& hs) {
   logging::info(logging::high)
     << "redis: push host_status "
     << "(host_id: " << hs.host_id << ")";
 
   std::string hst(build_key("h", hs.host_id));
 
-  *this << hst << "current_state";
-  int state(hget().toInt());
+  hget(hst, "current_state");
+  int state(parse(send())[0].toInt());
 
-  *this << hst
-    << "current_state" << hs.current_state
-    << "enabled" << hs.enabled
-    << "scheduled_downtime_depth" << hs.downtime_depth
-    << "plugin_output" << hs.output.toStdString()
-    << "active_checks" << hs.active_checks_enabled
-    << "passive_checks" << hs.passive_checks_enabled
-    << "acknowledged" << hs.acknowledged;
-  QVariant retval(hmset());
+  hmset(hst, 7);
+  *this << "current_state" << hs.current_state
+        << "enabled" << hs.enabled
+        << "scheduled_downtime_depth" << hs.downtime_depth
+        << "plugin_output" << hs.output.toStdString()
+        << "active_checks" << hs.active_checks_enabled
+        << "passive_checks" << hs.passive_checks_enabled
+        << "acknowledged" << hs.acknowledged;
 
   if (state != hs.current_state) {
     std::string old_state(build_key("stateh", state));
     std::string new_state(build_key("stateh", hs.current_state));
 
-    *this << old_state << hst;
-    srem();
-    *this << new_state << hst;
-    sadd();
+    srem(old_state, hst);
+    sadd(new_state, hst);
   }
-  return retval;
+  send();
+  _check_validity();
 }
 
 QByteArray& redisdb::push(neb::instance const& inst) {
@@ -534,26 +602,30 @@ QByteArray& redisdb::push(neb::instance const& inst) {
   oss << "i:" << inst.poller_id;
   std::string ist(oss.str());
   *this << oss.str() << inst.name.toStdString();
-  return push_command("$3\r\nset\r\n");
+  push_command("$3\r\nset\r\n");
+  return send();
 }
 
-QByteArray& redisdb::push(neb::service_group_member const& sgm) {
+void redisdb::push(neb::service_group_member const& sgm) {
   logging::info(logging::high)
     << "redis: push service_group_member "
     << "(host_id: " << sgm.host_id << ", service_id: " << sgm.service_id << ")";
   // Values to push in redis:
   // sg:group_id { s:host_id:service_id } it is a set of service keys.
+
   std::string sgstr(build_key("sg", sgm.group_id));
   std::string svc(build_key("s", sgm.host_id, sgm.service_id));
 
-  *this << sgstr << svc;
-  sadd();
+  sadd(sgstr, svc);
 
-  *this << svc << "service_groups" << "acl_groups";
-  QVariant tmp(hmget());
-  QVariantList lst(tmp.toList());
+  int row1(hmget(svc, 2, "service_groups", "acl_groups"));
+  int row2(keys("aclsg:*"));
+  send();
+  QVariantList res(parse(_result));
+  QVariantList lst(res[row1].toList());
   QByteArray sg(lst[0].toByteArray());
   QByteArray ag(lst[1].toByteArray());
+  QVariantList kys(res[row2].toList());
 
   /* Here we have our service current acls */
   uset<unsigned int> acls(parse_list(ag));
@@ -562,17 +634,13 @@ QByteArray& redisdb::push(neb::service_group_member const& sgm) {
   uset<unsigned int> sgs(parse_list(sg));
   sgs.insert(sgm.group_id);
 
-  *this << "aclsg:*";
-  QVariant kys(keys());
-  lst = kys.toList();
-
   for (QVariantList::const_iterator
-         it(lst.begin()),
-         end(lst.end());
+         it(kys.begin()),
+         end(kys.end());
        it != end;
        ++it) {
-    *this << it->toByteArray().constData() << sgm.group_id;
-    int val(getbit());
+    int row(getbit(it->toByteArray().constData(), sgm.group_id));
+    int val(parse(send())[row].toInt());
     if (val)
       acls.insert(get_first_id(it->toByteArray()));
   }
@@ -597,103 +665,91 @@ QByteArray& redisdb::push(neb::service_group_member const& sgm) {
     ag.append(buf);
   }
 
-  *this << svc
-        << "service_groups" << sg.constData()
+  hmset(svc, 2);
+  *this << "service_groups" << sg.constData()
         << "acl_groups" << ag.constData();
-  hmset();
+  send();
 
-  return _result;
+  _check_validity();
 }
 
-QVariant redisdb::push(neb::service_status const& ss) {
+void redisdb::push(neb::service_status const& ss) {
   logging::info(logging::high)
     << "redis: push service_status "
     << "(host_id: " << ss.host_id << ", service_id: " << ss.service_id << ")";
 
   std::string svc(build_key("s", ss.host_id, ss.service_id));
+  int row = hget(svc, "current_state");
+  int state(parse(send())[row].toInt());
 
-  *this << svc << "current_state";
-  int state(hget().toInt());
-
-  *this << svc
-    << "current_state" << ss.current_state
-    << "state_type" << ss.state_type
-    << "last_check" << ss.last_check
-    << "next_check" << ss.next_check
-    << "max_check_attempts" << ss.max_check_attempts
-    << "last_state_change" << ss.last_state_change
-    << "last_hard_state_change" << ss.last_hard_state_change
-    << "enabled" << ss.enabled
-    << "scheduled_downtime_depth" << ss.downtime_depth
-    << "plugin_output" << ss.output.toStdString()
-    << "current_check_attempt" << ss.current_check_attempt
-    << "flap_detection" << ss.flap_detection_enabled
-    << "active_checks" << ss.active_checks_enabled
-    << "passive_checks" << ss.passive_checks_enabled
-    << "acknowledged" << ss.acknowledged;
-  QVariant retval(hmset());
+  hmset(svc, 15);
+  *this << "current_state" << ss.current_state
+        << "state_type" << ss.state_type
+        << "last_check" << ss.last_check
+        << "next_check" << ss.next_check
+        << "max_check_attempts" << ss.max_check_attempts
+        << "last_state_change" << ss.last_state_change
+        << "last_hard_state_change" << ss.last_hard_state_change
+        << "enabled" << ss.enabled
+        << "scheduled_downtime_depth" << ss.downtime_depth
+        << "plugin_output" << ss.output.toStdString()
+        << "current_check_attempt" << ss.current_check_attempt
+        << "flap_detection" << ss.flap_detection_enabled
+        << "active_checks" << ss.active_checks_enabled
+        << "passive_checks" << ss.passive_checks_enabled
+        << "acknowledged" << ss.acknowledged;
 
   if (state != ss.current_state) {
     std::string old_state(build_key("states", state));
     std::string new_state(build_key("states", ss.current_state));
 
-    *this << old_state << svc;
-    srem();
-    *this << new_state << svc;
-    sadd();
+    srem(old_state, svc);
+    sadd(new_state, svc);
   }
-  return retval;
+  _check_validity();
 }
 
-QVariant redisdb::push(neb::service const& s) {
+void redisdb::push(neb::service const& s) {
   logging::info(logging::high)
     << "redis: push service "
     << "(host_id: " << s.host_id << ", service_id: " << s.service_id << ")";
+
   std::string hst(build_key("h", s.host_id));
-
-  *this << hst << "name" << "poller_id" << "host_groups" << "acl_groups";
-  QVariant res(hmget());
-  QVariantList lst(res.toList());
-
+  int row1(hmget(hst, 4, "name", "poller_id", "host_groups", "acl_groups"));
   std::string svc(build_key("s", s.host_id, s.service_id));
+  int row2(hget(svc, "current_state"));
+  QVariantList res(parse(send()));
+  QVariantList lst(res[row1].toList());
+  int state(res[row2].toInt());
 
-  *this << svc << "current_state";
-  int state(hget().toInt());
+  sadd(build_key("services", s.host_id), svc);
+  sadd("services", svc);
 
-  *this << build_key("services", s.host_id) << svc;
-  sadd();
-
-  *this << "services" << svc;
-  sadd();
-
-  *this << svc
-    << "service_description" << s.service_description.toStdString()
-    << "host_id" << s.host_id
-    << "service_id" << s.service_id
-    << "notify" << s.notifications_enabled
-    << "action_url" << s.action_url.toStdString()
-    << "notes" << s.notes.toStdString()
-    << "last_state_change" << s.last_state_change
-    << "notes_url" << s.notes_url.toStdString()
-    << "event_handler_enabled" << s.event_handler_enabled
-    << "flapping" << s.is_flapping
-    << "icon_image" << s.icon_image.toStdString()
-    << "display_name" << s.display_name.toStdString()
-    << "host_name" << lst[0].toString().toStdString()
-    << "poller_id" << lst[1].toInt()
-    << "host_groups" << lst[2].toString().toStdString()
-    << "acl_groups" << lst[3].toString().toStdString();
-
-  QVariant retval(hmset());
+  hmset(svc, 16);
+  *this << "service_description" << s.service_description.toStdString()
+        << "host_id" << s.host_id
+        << "service_id" << s.service_id
+        << "notify" << s.notifications_enabled
+        << "action_url" << s.action_url.toStdString()
+        << "notes" << s.notes.toStdString()
+        << "last_state_change" << s.last_state_change
+        << "notes_url" << s.notes_url.toStdString()
+        << "event_handler_enabled" << s.event_handler_enabled
+        << "flapping" << s.is_flapping
+        << "icon_image" << s.icon_image.toStdString()
+        << "display_name" << s.display_name.toStdString()
+        << "host_name" << lst[0].toByteArray().constData()
+        << "poller_id" << lst[1].toInt()
+        << "host_groups" << lst[2].toByteArray().constData()
+        << "acl_groups" << lst[3].toByteArray().constData();
 
   std::string old_state(build_key("states", state));
   std::string new_state(build_key("states", s.current_state));
+  srem(old_state, svc);
+  sadd(new_state, svc);
 
-  *this << old_state << svc;
-  srem();
-  *this << new_state << svc;
-  sadd();
-  return retval;
+  send();
+  _check_validity();
 }
 
 std::string const&  redisdb::get_content() const {
@@ -745,11 +801,15 @@ void redisdb::_connect() {
   }
 }
 
-QVariant redisdb::parse(QByteArray const& array) {
+QVariantList redisdb::parse(QByteArray const& array) {
   logging::debug(logging::low)
     << "redis: parse";
   QByteArray::const_iterator it(array.begin());
-  return _parse(array, it);
+  QVariantList retval;
+  do {
+    retval.append(_parse(array, it));
+  } while (it != array.end());
+  return retval;
 }
 
 QVariant redisdb::_parse(QByteArray const& arr,

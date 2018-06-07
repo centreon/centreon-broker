@@ -79,55 +79,53 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
     _redisdb->push(data.ref_as<instance_broadcast const>());
   }
   else if (cat == io::events::neb) {
-    switch (elem) {
-      case 3:
-        // Custom variable
-        res = _redisdb->push(data.ref_as<neb::custom_variable const>());
-        break;
-      case 11:
-        // Host group member
-        res = _redisdb->push(
-                data.ref_as<neb::host_group_member const>()).toByteArray();
-        break;
-      case 12:
-        // Host
-        res = _redisdb->push(data.ref_as<neb::host const>()).toByteArray();
-        break;
-      case 14:
-        // Host status
-        res = _redisdb->push(data.ref_as<neb::host_status const>()).toByteArray();
-        break;
-      case 15:
-        // Instance
-        res = _redisdb->push(data.ref_as<neb::instance const>());
-        break;
-      case 22:
-        // Service group member
-        res = _redisdb->push(data.ref_as<neb::service_group_member const>());
-        break;
-      case 23:
-        // Service
-        res = _redisdb->push(data.ref_as<neb::service const>()).toByteArray();
-        break;
-      case 24:
-        // Service status
-        res = _redisdb->push(
-            data.ref_as<neb::service_status const>()).toByteArray();
-        break;
-      default:
-        logging::info(logging::low) << "redis: Unable to treat event of "
-          << "category " << cat
-          << ", element " << elem;
+    try {
+      switch (elem) {
+        case 3:
+          // Custom variable
+          res = _redisdb->push(data.ref_as<neb::custom_variable const>());
+          break;
+        case 11:
+          // Host group member
+          _redisdb->push(data.ref_as<neb::host_group_member const>());
+          break;
+        case 12:
+          // Host
+          _redisdb->push(data.ref_as<neb::host const>());
+          break;
+        case 14:
+          // Host status
+          _redisdb->push(data.ref_as<neb::host_status const>());
+          break;
+        case 15:
+          // Instance
+          res = _redisdb->push(data.ref_as<neb::instance const>());
+          break;
+        case 22:
+          // Service group member
+          _redisdb->push(data.ref_as<neb::service_group_member const>());
+          break;
+        case 23:
+          // Service
+          _redisdb->push(data.ref_as<neb::service const>());
+          break;
+        case 24:
+          // Service status
+          _redisdb->push(data.ref_as<neb::service_status const>());
+          break;
+        default:
+          logging::info(logging::low) << "redis: Unable to treat event of "
+            << "category " << cat
+            << ", element " << elem;
+      }
+    }
+    catch (std::exception const& e) {
+      logging::error(logging::medium)
+        << "redis: Error while sending data to Redis server "
+        << _redisdb->get_address() << ":" << _redisdb->get_port() << " - "
+        << e.what();
     }
   }
-
-  logging::error(logging::high)
-    << "redis: RES = " << res.constData();
-
-  if (res != "+OK")
-    logging::error(logging::medium)
-      << "redis: Unable to write event on redis server "
-      << _redisdb->get_address() << ":" << _redisdb->get_port() << ".";
 
   return 1;
 }

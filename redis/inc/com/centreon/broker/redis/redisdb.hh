@@ -47,43 +47,53 @@ namespace               redis {
     void                clear();
     redisdb&            operator<<(std::string const& str);
     redisdb&            operator<<(int val);
+    void                push_array(size_t size);
     QByteArray&         push(instance_broadcast const& ib);
     QByteArray&         push(neb::custom_variable const& cv);
-    QVariant            push(neb::host_group_member const& hgm);
-    QVariant            push(neb::host const& h);
-    QVariant            push(neb::host_status const& hs);
+    void                push(neb::host_group_member const& hgm);
+    void                push(neb::host const& h);
+    void                push(neb::host_status const& hs);
     QByteArray&         push(neb::instance const& inst);
-    QByteArray&         push(neb::service_group_member const& sgm);
-    QVariant            push(neb::service const& s);
-    QVariant            push(neb::service_status const& ss);
+    void                push(neb::service_group_member const& sgm);
+    void                push(neb::service const& s);
+    void                push(neb::service_status const& ss);
     std::string         str(std::string const& cmd = "");
 
-    QByteArray&         push_command(std::string const& cmd = "");
-    QByteArray&         del();
-    QByteArray&         unlink();
-    QVariant            get();
-    int                 getbit();
-    QVariant            hget();
-    QVariant            hgetall();
-    QVariant            hmget();
-    QVariant            hmset();
+    void                push_command(std::string const& cmd = "");
+    QByteArray&         send();
+    int                 del(std::string const& key);
+    int                 unlink(std::string const& key);
+    int                 get(std::string const& key);
+    int                 set(std::string const& key, std::string const& value);
+    int                 set(std::string const& key, int value);
+    int                 incr(std::string const& key);
+    int                 getbit(std::string const& key, long long index);
+    int                 hget(std::string const& key, std::string const& item);
+    int                 hgetall(std::string const& key);
+    int                 hmget(std::string const& key, int count, ...);
+    int                 hmset(std::string const& key, int count);
+    int                 scan(int next, std::string const& match, int count);
     QVariant            hset();
     QVariant            hincrby();
-    QVariant            info();
-    QVariant            keys();
-    QVariant            module();
-    QVariant            sadd();
-    QVariant            setbit();
-    QVariant            sismember();
-    QVariant            srem();
+    int                 info(std::string const& size);
+    int                 keys(std::string const& pattern);
+    int                 module(std::string const& arg);
+    int                 smembers(std::string const& key);
+    int                 sadd(std::string const& key, std::string const& item);
+    int                 setbit(std::string const& key,
+                               long int row, int value);
+    int                 sismember(std::string const& key,
+                                  std::string const& item);
+    int                 srem(std::string const& key, std::string const& item);
     std::string const&  get_content() const;
-    static QVariant     parse(QByteArray const& array);
+    static QVariantList parse(QByteArray const& array);
     std::string const&  get_address() const;
     unsigned short const
                         get_port() const;
     static std::string  parse_bitfield(QByteArray const& bf);
 
    private:
+    void                _check_validity() const;
     void                _connect();
     void                _check_redis_server();
     QVariant            _init();

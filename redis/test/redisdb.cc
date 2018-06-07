@@ -69,38 +69,32 @@ TEST_F(RedisdbTest, Integer) {
 
 TEST_F(RedisdbTest, SetKey) {
   _db->clear();
-  *_db << "set" << "toto" << 12;
-  QByteArray& res1(_db->push_command());
-  ASSERT_TRUE(res1 == "+OK\r\n");
-  *_db << "incr" << "toto";
-  QByteArray& res2(_db->push_command());
-  ASSERT_TRUE(res2 == ":13\r\n");
+  _db->set("toto", 12);
+  _db->incr("toto");
+  QByteArray& res(_db->send());
+  ASSERT_TRUE(res == "+OK\r\n:13\r\n");
 }
 
 TEST_F(RedisdbTest, SetGetKey) {
   _db->clear();
-  *_db << "set" << "toto" << 14;
-  QByteArray& res1(_db->push_command());
-  ASSERT_TRUE(strcmp(res1.constData(), "+OK\r\n") == 0);
-  *_db << "get" << "toto";
-  QByteArray& res2(_db->push_command());
-  ASSERT_TRUE(strcmp(res2.constData(), "$2\r\n14\r\n") == 0);
+  _db->set("toto", 14);
+  _db->get("toto");
+  QByteArray& res(_db->send());
+  ASSERT_TRUE(strcmp(res.constData(), "+OK\r\n$2\r\n14\r\n") == 0);
 }
 
 TEST_F(RedisdbTest, HMSetKey) {
   _db->clear();
-  *_db << "tete" << "titi" << 25 << "tata" << 12;
-  QByteArray& res1(_db->push_command("$5\r\nhmset\r\n"));
-  ASSERT_TRUE(strcmp(res1.constData(), "+OK\r\n") == 0);
-  *_db << "hget" << "tete" << "titi";
-  QByteArray& res2(_db->push_command());
-  ASSERT_TRUE(strcmp(res2.constData(), "$2\r\n25\r\n") == 0);
+  _db->hmset("tete", 2);
+  *_db << "titi" << 25 << "tata" << 12;
+  _db->hget("tete", "titi");
+  QByteArray& res(_db->send());
+  ASSERT_TRUE(strcmp(res.constData(), "+OK\r\n$2\r\n25\r\n") == 0);
 }
 
 TEST_F(RedisdbTest, HostStatus) {
   _db->clear();
-  *_db << "h:28";
-  _db->unlink();
+  _db->unlink("h:28");
   neb::host_status hst;
   hst.host_id = 28;
   hst.current_state = 2;
@@ -109,13 +103,11 @@ TEST_F(RedisdbTest, HostStatus) {
   hst.check_type = 7;
   hst.next_check = 23;
   hst.state_type = 1;
-  QVariant res1(_db->push(hst));
-  std::cout << "HOST STATUS OUTPUT " << res1.toByteArray().constData() << std::endl;
-  ASSERT_TRUE(strcmp(res1.toByteArray().constData(), "+OK") == 0);
-  *_db << "h:28";
-  QVariant res2(_db->hgetall());
-  QVariantList lst(res2.toList());
-  ASSERT_EQ(lst.size(), 14);
+  _db->push(hst);
+  _db->hgetall("h:28");
+  QVariantList res2(_db->parse(_db->send()));
+  QVariantList lst(res2[0].toList());
+  ASSERT_GE(lst.size(), 14);
   for (int i = 0; i < lst.size(); i += 2) {
     if (lst[i] == "current_state") {
       ASSERT_EQ(lst[i + 1], 2);
@@ -141,21 +133,18 @@ TEST_F(RedisdbTest, HostStatus) {
 TEST_F(RedisdbTest, HostWithNameStatus) {
   _db->clear();
   // We define two acl groups containing the host 28 ; their ideas are 3 and 5.
-  *_db << "aclh:3" << "aclh:5";
-  _db->del();
+  _db->del("aclh:3");
+  _db->del("aclh:5");
 
-  *_db << "aclh:3" << 28 << 1;
-  _db->setbit();
-  *_db << "aclh:5" << 28 << 1;
-  _db->setbit();
+  _db->setbit("aclh:3", 28, 1);
+  _db->setbit("aclh:5", 28, 1);
   neb::host hst;
   hst.host_id = 28;
   hst.host_name = "host test";
   hst.poller_id = 113;
-  int res1(_db->push(hst).toInt());
-  ASSERT_TRUE(res1 == 0 || res1 == 1);
-  *_db << "h:28";
-  QVariant var(_db->hgetall());
+  _db->push(hst);
+  _db->hgetall("h:28");
+  QVariant var(_db->parse(_db->send()).back());
   QVariantList lst(var.toList());
   ASSERT_EQ(lst.size(), 30);
   for (int i = 0; i < lst.size(); i += 2) {
@@ -175,21 +164,19 @@ TEST_F(RedisdbTest, HostWithNameStatus) {
 
 TEST_F(RedisdbTest, Service) {
   _db->clear();
-  *_db << "s:28:42";
-  _db->unlink();
+  _db->unlink("s:28:42");
   neb::service svc;
   svc.host_id = 28;
   svc.service_id = 42;
   _db->push(svc);
 
-  *_db << "services:28" << "s:28:42";
-  int res(_db->sismember().toInt());
+  _db->sismember("services:28", "s:28:42");
+  int res(_db->parse(_db->send())[0].toInt());
   ASSERT_EQ(res, 1);
 }
 
 TEST_F(RedisdbTest, ServiceStatus) {
   _db->clear();
-  *_db << "s:28:42";
   neb::service_status svc;
   svc.host_id = 28;
   svc.service_id = 42;
@@ -200,8 +187,8 @@ TEST_F(RedisdbTest, ServiceStatus) {
   svc.next_check = 23;
   svc.state_type = 1;
   _db->push(svc);
-  *_db << "s:28:42";
-  QVariant var(_db->hgetall());
+  _db->hgetall("s:28:42");
+  QVariant var(_db->send());
   QVariantList lst(var.toList());
 
   for (int i = 0; i < lst.size(); i += 2) {
@@ -219,8 +206,8 @@ TEST_F(RedisdbTest, HostGroupMember) {
   hgm.host_id = 28;
   hgm.group_id = 37;
   _db->push(hgm);
-  *_db << "hg:37";
-  QVariant res(_db->get());
+  _db->get("hg:37");
+  QVariant res(_db->parse(_db->send())[0]);
   std::string str(redisdb::parse_bitfield(res.toByteArray()));
   ASSERT_TRUE(str == "28,");
 }
@@ -231,19 +218,17 @@ TEST_F(RedisdbTest, ServiceGroupMember) {
   sgm.service_id = 42;
   sgm.group_id = 68;
   _db->push(sgm);
-  *_db << "SMEMBERS" << "sg:68";
-  QByteArray ret(_db->push_command());
-  QVariant res(redisdb::parse(ret));
-  ASSERT_TRUE(res.toList().size() == 1);
+  _db->smembers("sg:68");
+  QVariantList res(redisdb::parse(_db->send())[0].toList());
+  ASSERT_TRUE(res.size() == 1);
   ASSERT_TRUE(
-    strcmp(res.toList()[0].toByteArray().constData(),
+    strcmp(res[0].toByteArray().constData(),
     "s:28:42") == 0);
 }
 
 TEST_F(RedisdbTest, ServiceGroupMemberAcl) {
   // Let's add an acl on service group 71
-  *_db << "aclsg:189" << 71 << 1;
-  _db->setbit();
+  _db->setbit("aclsg:189", 71, 1);
 
   // Let's create the service group 71
   neb::service_group_member sgm;
@@ -251,20 +236,19 @@ TEST_F(RedisdbTest, ServiceGroupMemberAcl) {
   sgm.service_id = 42;
   sgm.group_id = 71;
   _db->push(sgm);
-  *_db << "SMEMBERS" << "sg:71";
-  QByteArray ret(_db->push_command());
-  QVariant res(redisdb::parse(ret));
-  ASSERT_TRUE(res.toList().size() == 1);
-  ASSERT_TRUE(strcmp(res.toList()[0].toByteArray().constData(), "s:28:42") == 0);
+  int row(_db->smembers("sg:71"));
+  QVariant ret(redisdb::parse(_db->send())[row]);
+  ASSERT_TRUE(ret.toList().size() == 1);
+  ASSERT_TRUE(strcmp(ret.toList()[0].toByteArray().constData(), "s:28:42") == 0);
 
-  *_db << "s:28:42" << "service_groups";
-  res = _db->hget();
-  ASSERT_TRUE(strcmp(res.toByteArray().constData(), "68,71,") == 0);
+  _db->hget("s:28:42", "service_groups");
+  ASSERT_TRUE(strcmp(redisdb::parse(_db->send())[0].toByteArray().constData(), "68,71,") == 0);
 }
 
 TEST_F(RedisdbTest, ManyServices) {
   int i;
   // Let's create 10 hosts
+  time_t start(time(NULL));
   for (i = 0; i < 10; ++i) {
     neb::host h;
     h.host_id = i + 1;
@@ -272,24 +256,23 @@ TEST_F(RedisdbTest, ManyServices) {
     oss << "Host" << h.host_id;
     h.host_name = QString("Host%1").arg(h.host_id);
     h.poller_id = 113;
-    int res(_db->push(h).toInt());
-    ASSERT_TRUE(res == 0 || res == 1);
+    _db->push(h);
   }
   for (i = 0; i < 10000; ++i) {
     neb::service s;
-    s.host_id = (rand() % 10) + 1;
+    s.host_id = (i % 10) + 1;
     s.service_id = i + 1;
     s.service_description = QString("Description%1").arg(s.service_id);
-    int res(_db->push(s).toInt());
-    ASSERT_TRUE(res == 0 || res == 1);
+    _db->push(s);
   }
   for (i = 0; i < 10000; ++i) {
     neb::service_status ss;
-    ss.host_id = (rand() % 10) + 1;
+    ss.host_id = (i % 10) + 1;
     ss.service_id = i + 1;
     ss.service_description = QString("Description%1").arg(ss.service_id);
     ss.current_state = rand() % 4;
-    int res(_db->push(ss).toInt());
-    ASSERT_TRUE(res == 0 || res == 1);
+    _db->push(ss);
   }
+  time_t end(time(NULL));
+  ASSERT_TRUE(end - start < 1);
 }
