@@ -38,7 +38,8 @@ connector::connector(connector const& other)
   : io::endpoint(other),
     _address(other._address),
     _port(other._port),
-    _password(other._password) {}
+    _password(other._password),
+    _queries_per_transaction(other._queries_per_transaction) {}
 
 /**
  *  Destructor.
@@ -58,6 +59,7 @@ connector& connector::operator=(connector const& other) {
     _address = other._address;
     _port = other._port;
     _password = other._password;
+    _queries_per_transaction = other._queries_per_transaction;
   }
   return (*this);
 }
@@ -68,14 +70,18 @@ connector& connector::operator=(connector const& other) {
  * @param[in] address  The Redis server ip address
  * @param[in] port     The Redis server port
  * @param[in] password The user's password
+ * @param[in] queries_per_transaction The max queries count to store
+ *            before sending them to the Redis server
  */
 void connector::connect_to(
                   std::string const& address,
                   unsigned short port,
-                  std::string const& password) {
+                  std::string const& password,
+                  unsigned int queries_per_transaction) {
   _address = address;
   _port = port;
   _password = password;
+  _queries_per_transaction = queries_per_transaction;
 }
 
 /**
@@ -87,5 +93,6 @@ misc::shared_ptr<io::stream> connector::open() {
   return (misc::shared_ptr<io::stream>(new stream(
             _address,
             _port,
-            _password)));
+            _password,
+            _queries_per_transaction)));
 }

@@ -25,24 +25,6 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::redis;
 
 /**
- *  Find a parameter in configuration.
- *
- *  @param[in] cfg Configuration object.
- *  @param[in] key Property to get.
- *
- *  @return Property value.
- */
-static std::string find_param(
-                     config::endpoint const& cfg,
-                     QString const& key) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
-  if (cfg.params.end() == it)
-    throw (exceptions::msg() << "redis: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'");
-  return it.value().toStdString();
-}
-
-/**
  *  Default constructor.
  */
 factory::factory() {}
@@ -111,6 +93,7 @@ io::endpoint* factory::new_endpoint(
                          misc::shared_ptr<persistent_cache> cache) const {
   std::string address;
   unsigned short port;
+  unsigned int queries_per_transaction;
   std::string password;
 
   // Redis server IP address.
@@ -143,9 +126,19 @@ io::endpoint* factory::new_endpoint(
     password = it.value().toStdString();
   }
 
+  // Queries per transaction.
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("queries_per_transaction"));
+    if (it == cfg.params.end())
+      queries_per_transaction = 1;
+    else
+      queries_per_transaction = it.value().toUInt();
+  }
+
   // Connector.
   std::auto_ptr<redis::connector> c(new redis::connector);
-  c->connect_to(address, port, password);
+  c->connect_to(address, port, password, queries_per_transaction);
   is_acceptor = false;
   return c.release();
 }

@@ -42,55 +42,58 @@ namespace               redis {
                         redisdb(
                           std::string const& address,
                           unsigned short port,
-                          std::string const& password);
+                          std::string const& password,
+                          unsigned int queries_per_transaction);
                         ~redisdb();
     void                clear();
     redisdb&            operator<<(std::string const& str);
     redisdb&            operator<<(int val);
     void                push_array(size_t size);
-    QByteArray&         push(instance_broadcast const& ib);
-    QByteArray&         push(neb::custom_variable const& cv);
-    void                push(neb::host_group_member const& hgm);
-    void                push(neb::host const& h);
-    void                push(neb::host_status const& hs);
-    QByteArray&         push(neb::instance const& inst);
-    void                push(neb::service_group_member const& sgm);
-    void                push(neb::service const& s);
-    void                push(neb::service_status const& ss);
     std::string         str(std::string const& cmd = "");
-
-    void                push_command(std::string const& cmd = "");
-    QByteArray&         send();
-    int                 del(std::string const& key);
-    int                 unlink(std::string const& key);
-    int                 get(std::string const& key);
-    int                 set(std::string const& key, std::string const& value);
-    int                 set(std::string const& key, int value);
-    int                 incr(std::string const& key);
-    int                 getbit(std::string const& key, long long index);
-    int                 hget(std::string const& key, std::string const& item);
-    int                 hgetall(std::string const& key);
-    int                 hmget(std::string const& key, int count, ...);
-    int                 hmset(std::string const& key, int count);
-    int                 scan(int next, std::string const& match, int count);
-    QVariant            hset();
-    QVariant            hincrby();
-    int                 info(std::string const& size);
-    int                 keys(std::string const& pattern);
-    int                 module(std::string const& arg);
-    int                 smembers(std::string const& key);
-    int                 sadd(std::string const& key, std::string const& item);
-    int                 setbit(std::string const& key,
-                               long int row, int value);
-    int                 sismember(std::string const& key,
-                                  std::string const& item);
-    int                 srem(std::string const& key, std::string const& item);
     std::string const&  get_content() const;
     static QVariantList parse(QByteArray const& array);
     std::string const&  get_address() const;
     unsigned short const
                         get_port() const;
-    static std::string  parse_bitfield(QByteArray const& bf);
+    QByteArray&         send(bool force);
+
+    // Redis Write commands
+    //QByteArray&         push(neb::custom_variable const& cv);
+    void                push(instance_broadcast const& ib);
+    void                push(neb::host_group_member const& hgm);
+    void                push(neb::host const& h);
+    void                push(neb::host_status const& hs);
+    void                push(neb::instance const& inst);
+    void                push(neb::service_group_member const& sgm);
+    void                push(neb::service const& s);
+    void                push(neb::service_status const& ss);
+
+    int                 del(std::string const& key);
+    int                 unlink(std::string const& key);
+    int                 hset(std::string const& key, std::string const& member,
+                             std::string const& value);
+    int                 set(std::string const& key, std::string const& value);
+    int                 set(std::string const& key, int value);
+    int                 incr(std::string const& key);
+    int                 hmset(std::string const& key, int count);
+    int                 sadd(std::string const& key, int item);
+    int                 sadd(std::string const& key, std::string const& item);
+    int                 setbit(std::string const& key,
+                               long int row, int value);
+    int                 srem(std::string const& key, std::string const& item);
+
+    // Redis Read commands
+    int                 get(std::string const& key);
+    int                 getbit(std::string const& key, long long index);
+    int                 hget(std::string const& key, std::string const& item);
+    int                 hgetall(std::string const& key);
+    int                 hmget(std::string const& key, int count, ...);
+    int                 info(std::string const& size);
+    int                 keys(std::string const& pattern);
+    int                 module(std::string const& arg);
+    int                 smembers(std::string const& key);
+    int                 sismember(std::string const& key,
+                                  std::string const& item);
 
    private:
     void                _check_validity() const;
@@ -107,6 +110,7 @@ namespace               redis {
     std::string         _address;
     unsigned short      _port;
     std::string         _password;
+    unsigned int        _queries_per_transaction;
     unsigned int        _size;
     std::ostringstream  _oss;
     std::string         _content;

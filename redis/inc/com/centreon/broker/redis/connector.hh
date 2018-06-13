@@ -39,13 +39,15 @@ namespace                        redis {
     void                         connect_to(
                                    std::string const& address,
                                    unsigned short port,
-                                   std::string const& password);
+                                   std::string const& password,
+                                   unsigned int queries_per_transaction);
     misc::shared_ptr<io::stream> open();
 
   private:
     std::string                  _address;
     unsigned short               _port;
     std::string                  _password;
+    unsigned int                 _queries_per_transaction;
   };
 }
 
