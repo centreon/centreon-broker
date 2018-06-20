@@ -4,7 +4,7 @@ stage('Source') {
     dir('centreon-broker') {
       checkout scm
     }
-    sh '/opt/centreon-build/jobs/broker/3.4/mon-broker-source.sh'
+    sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-source.sh'
     source = readProperties file: 'source.properties'
     env.VERSION = "${source.VERSION}"
     env.RELEASE = "${source.RELEASE}"
@@ -13,24 +13,10 @@ stage('Source') {
 
 try {
   stage('Unit tests') {
-    parallel 'centos6': {
+    parallel 'centos7': {
       node {
         sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/3.4/mon-broker-unittest.sh centos6'
-        step([
-          $class: 'XUnitBuilder',
-          thresholds: [
-            [$class: 'FailedThreshold', failureThreshold: '0'],
-            [$class: 'SkippedThreshold', failureThreshold: '0']
-          ],
-          tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
-        ])
-      }
-    },
-    'centos7': {
-      node {
-        sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/3.4/mon-broker-unittest.sh centos7'
+        sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-unittest.sh centos7'
         step([
           $class: 'XUnitBuilder',
           thresholds: [
@@ -44,7 +30,7 @@ try {
     'debian9': {
       node {
         sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/3.4/mon-broker-unittest.sh debian9'
+        sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-unittest.sh debian9'
         step([
           $class: 'XUnitBuilder',
           thresholds: [
@@ -61,28 +47,22 @@ try {
   }
 
   stage('Package') {
-    parallel 'centos6': {
+    parallel 'centos7': {
       node {
         sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/3.4/mon-broker-package.sh centos6'
-      }
-    },
-    'centos7': {
-      node {
-        sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/3.4/mon-broker-package.sh centos7'
+        sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-package.sh centos7'
       }
     },
     'debian9': {
       node {
         sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/3.4/mon-broker-package.sh debian9'
+        sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-package.sh debian9'
       }
     },
     'debian9-armhf': {
       node {
         sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/3.4/mon-broker-package.sh debian9-armhf'
+        sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-package.sh debian9-armhf'
       }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
