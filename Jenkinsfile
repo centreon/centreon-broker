@@ -90,14 +90,13 @@ try {
     }
   }
 
-  if (env.BRANCH_NAME == 'master') {
-    build job: 'centreon-web/master', wait: false
+  if (env.BRANCH_NAME == '3.0.x') {
     build job: 'centreon-web/2.8.x', wait: false
   }
 }
 finally {
   buildStatus = currentBuild.result ?: 'SUCCESS';
-  if ((buildStatus != 'SUCCESS') && (env.BRANCH_NAME == 'master')) {
+  if ((buildStatus != 'SUCCESS') && (env.BRANCH_NAME == '3.0.x')) {
     slackSend channel: '#monitoring-metrology', message: "@channel Centreon Broker build ${env.BUILD_NUMBER} of branch ${env.BRANCH_NAME} was broken by ${source.COMMITTER}. Please fix it ASAP."
   }
 }
