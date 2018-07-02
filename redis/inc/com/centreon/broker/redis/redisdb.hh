@@ -43,7 +43,8 @@ namespace               redis {
                           std::string const& address,
                           unsigned short port,
                           std::string const& password,
-                          unsigned int queries_per_transaction);
+                          unsigned int queries_per_transaction,
+                          std::string const& path);
                         ~redisdb();
     void                clear();
     redisdb&            operator<<(std::string const& str);
@@ -58,8 +59,9 @@ namespace               redis {
     QByteArray&         send(bool force);
 
     // Redis Write commands
-    //QByteArray&         push(neb::custom_variable const& cv);
     void                push(instance_broadcast const& ib);
+    void                push(neb::custom_variable const& cv);
+    void                push(neb::custom_variable_status const& cvs);
     void                push(neb::host_group_member const& hgm);
     void                push(neb::host const& h);
     void                push(neb::host_status const& hs);
@@ -67,7 +69,8 @@ namespace               redis {
     void                push(neb::service_group_member const& sgm);
     void                push(neb::service const& s);
     void                push(neb::service_status const& ss);
-
+    
+    std::string         script_load(std::string const& fname);
     int                 del(std::string const& key);
     int                 unlink(std::string const& key);
     int                 hset(std::string const& key, std::string const& member,
@@ -98,8 +101,8 @@ namespace               redis {
    private:
     void                _check_validity() const;
     void                _connect();
-    void                _check_redis_server();
-    QVariant            _init();
+    void                _check_redis_server(std::string const& path);
+    void                _init_redis_scripts(std::string const& path);
     static QVariant     _parse(QByteArray const& str, QByteArray::const_iterator& it);
     static QVariant     _parse_array(QByteArray const& str, QByteArray::const_iterator& it);
     static QVariant     _parse_int(QByteArray const& str, QByteArray::const_iterator& it);
@@ -112,9 +115,10 @@ namespace               redis {
     std::string         _password;
     unsigned int        _queries_per_transaction;
     unsigned int        _size;
-    std::ostringstream  _oss;
     std::string         _content;
     QByteArray          _result;
+    umap<std::string, std::string>
+                        _script;
   };
 }
 

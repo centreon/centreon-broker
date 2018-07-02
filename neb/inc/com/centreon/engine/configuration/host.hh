@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015-2016 Centreon
+** Copyright 2011-2013,2015-2017 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -37,7 +37,7 @@ namespace                  configuration {
   class                    hostextinfo;
 
   class                    host : public object {
-  public:
+   public:
     enum                   action_on {
       none = 0,
       up = (1 << 0),
@@ -74,6 +74,8 @@ namespace                  configuration {
     list_string const&     contacts() const throw ();
     point_2d const&        coords_2d() const throw ();
     point_3d const&        coords_3d() const throw ();
+    std::string const&     criticality_name() const throw ();
+    unsigned int           criticality_level() const throw ();
     map_customvar const&   customvariables() const throw ();
     std::string const&     display_name() const throw ();
     std::string const&     event_handler() const throw ();
@@ -115,7 +117,7 @@ namespace                  configuration {
     int                    get_acknowledgement_timeout() const throw ();
     bool                   set_acknowledgement_timeout(int value);
 
-  private:
+   private:
     struct                 setters {
       char const*          name;
       bool                 (*func)(host&, char const*);
@@ -134,6 +136,8 @@ namespace                  configuration {
     bool                   _set_contacts(std::string const& value);
     bool                   _set_coords_2d(std::string const& value);
     bool                   _set_coords_3d(std::string const& value);
+    bool                   _set_criticality_name(std::string const& value);
+    bool                   _set_criticality_level(unsigned int value);
     bool                   _set_display_name(std::string const& value);
     bool                   _set_event_handler(std::string const& value);
     bool                   _set_event_handler_enabled(bool value);
@@ -184,6 +188,8 @@ namespace                  configuration {
     group                  _contacts;
     opt<point_2d>          _coords_2d;
     opt<point_3d>          _coords_3d;
+    opt<std::string>       _criticality_name;
+    opt<unsigned int>      _criticality_level;
     map_customvar          _customvariables;
     std::string            _display_name;
     std::string            _event_handler;

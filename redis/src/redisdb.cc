@@ -16,12 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
-#include <iostream>
+#include <QDir>
 #include <QHostAddress>
-#include <QTcpSocket>
 #include <QStringList>
+#include <QTcpSocket>
 #include <QVariant>
+#include <iostream>
 #include <sstream>
+#include <fstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/redis/redisdb.hh"
@@ -53,7 +55,8 @@ redisdb::redisdb(
            std::string const& address,
            unsigned short port,
            std::string const& password,
-           unsigned int queries_per_transaction)
+           unsigned int queries_per_transaction,
+           std::string const& path)
   : _socket(new QTcpSocket),
     _address(address),
     _port(port),
@@ -61,7 +64,7 @@ redisdb::redisdb(
     _queries_per_transaction(queries_per_transaction),
     _size(0) {
   _connect();
-  _check_redis_server();
+  _check_redis_server(path);
 }
 
 redisdb::~redisdb() {
@@ -69,7 +72,7 @@ redisdb::~redisdb() {
   delete _socket;
 }
 
-void redisdb::_check_redis_server() {
+void redisdb::_check_redis_server(std::string const& path) {
   int row1 = info("Server");
   int row2 = module("list");
   send(true);
@@ -107,13 +110,39 @@ void redisdb::_check_redis_server() {
       << " is too old ( < 1) on the redis server '"
       << _address << ":" << _port << "'");
   }
+
+  _init_redis_scripts(path);
+}
+
+void redisdb::_init_redis_scripts(std::string const& path) {
+  QDir scripts_dir(path.c_str());
+  if (!scripts_dir.exists()) {
+    logging::info(logging::medium)
+      << "redis: No Lua scripts to send to the redis-server, "
+      << "the " << path << " directory does not exist.";
+    return ;
+  }
+
+  QStringList filters;
+  filters << "*.lua";
+  QStringList lst(scripts_dir.entryList(filters));
+  std::string fname;
+  for (QStringList::const_iterator
+         it(lst.begin()),
+         end(lst.end());
+       it != end;
+       ++it) {
+    fname = path;
+    fname.append("/");
+    fname.append(it->toStdString());
+    _script[it->toStdString()] = script_load(fname);
+  }
 }
 
 /**
  *  Clear the redisdb object.
  */
 void redisdb::clear() {
-  _oss.str("");
   _content.clear();
   _size = 0;
 }
@@ -197,7 +226,8 @@ void redisdb::push(neb::host_group_member const& hgm) {
     << "redis: push host_group_member "
     << "(host_id: " << hgm.host_id << ", group_id: " << hgm.group_id << ")";
 
-  sadd(build_key("hg", hgm.group_id), hgm.host_id);
+  std::string hkey(build_key("h", hgm.host_id));
+  sadd(build_key("hg", hgm.group_id), hkey);
   send();
   _check_validity();
 }
@@ -277,17 +307,18 @@ void redisdb::push(neb::service const& s) {
     << "(host_id: " << s.host_id << ", service_id: " << s.service_id << ")";
 
   std::string hst(build_key("h", s.host_id));
-  int row1(hmget(hst, 4, "name", "poller_id", "host_groups", "acl_groups"));
+  int row1(hmget(hst, 2, "name", "poller_id"));
   std::string svc(build_key("s", s.host_id, s.service_id));
   QVariantList res(parse(send(true)));
   QVariantList lst(res[row1].toList());
 
   sadd(build_key("services", s.host_id), svc);
   sadd("services", svc);
+  std::string hkey(build_key("h", s.host_id));
 
-  hmset(svc, 16);
+  hmset(svc, 14);
   *this << "service_description" << s.service_description.toStdString()
-        << "host_id" << s.host_id
+        << "host_key" << hkey
         << "service_id" << s.service_id
         << "notify" << s.notifications_enabled
         << "action_url" << s.action_url.toStdString()
@@ -299,9 +330,7 @@ void redisdb::push(neb::service const& s) {
         << "icon_image" << s.icon_image.toStdString()
         << "display_name" << s.display_name.toStdString()
         << "host_name" << lst[0].toByteArray().constData()
-        << "poller_id" << lst[1].toInt()
-        << "host_groups" << lst[2].toByteArray().constData()
-        << "acl_groups" << lst[3].toByteArray().constData();
+        << "poller_id" << lst[1].toInt();
 
   send();
   _check_validity();
@@ -333,6 +362,33 @@ void redisdb::push(neb::service_status const& ss) {
   send();
 
   _check_validity();
+}
+
+std::string redisdb::script_load(std::string const& fname) {
+  logging::debug(logging::low)
+    << "redis: script load " << fname;
+  push_array(3);
+
+  std::ifstream file(fname.c_str());
+  if (!file.is_open()) {
+    throw (exceptions::msg()
+      << "redis: Unable to read the " << fname << " Lua script");
+  }
+  file.seekg(0, file.end);
+  int len = file.tellg();
+  char* memblock = new char[len + 1];
+  memblock[len] = 0;
+  file.seekg(0, std::ios::beg);
+  file.read(memblock, len);
+  file.close();
+  *this << "SCRIPT" << "LOAD" << memblock;
+  int row = _size++;
+  send(true);
+  delete[] memblock;
+  QVariantList lst(parse(_result));
+  QVariant v(lst[row]);
+  std::string retval(v.toByteArray().constData());
+  return retval;
 }
 
 int redisdb::del(std::string const& key) {
@@ -499,7 +555,42 @@ int redisdb::sismember(std::string const& key, std::string const& item) {
   return _size++;
 }
 
-//QByteArray& redisdb::push(neb::custom_variable const& cv) {
+void redisdb::push(neb::custom_variable const& cv) {
+  // We only work with CRITICALITY_LEVEL and CRITICALITY_ID for now.
+  // For a host:
+  // * h:host_id
+  //     - criticality_id or criticality_level
+  //
+  // For a service:
+  // * s:host_id:service_id
+  //     - criticality_id or criticality_level
+  //
+  logging::info(logging::high)
+    << "redis: push custom var "
+    << " host_id " << cv.host_id
+    << " service_id " << cv.service_id
+    << " name " << cv.name.toStdString()
+    << " value " << cv.value.toStdString();
+
+  std::string hst(build_key("h", cv.host_id));
+  std::string key;
+  key.reserve(4 + cv.name.size());
+  key = "cv:";
+  key.append(cv.name.toStdString());
+  if (cv.service_id) {
+    int row(hget(hst, key));
+    QVariantList res(parse(_result));
+    QByteArray res1(res[row].toByteArray());
+    std::string svc(build_key("s", cv.host_id, cv.service_id));
+    hset(svc, key, cv.value.toStdString());
+  }
+  else
+    hset(hst, key, cv.value.toStdString());
+  send();
+  _check_validity();
+}
+
+void redisdb::push(neb::custom_variable_status const& cvs) {
 //  // We only work with CRITICALITY_LEVEL and CRITICALITY_ID for now.
 //  // For a host:
 //  // * h:host_id
@@ -509,38 +600,30 @@ int redisdb::sismember(std::string const& key, std::string const& item) {
 //  // * s:host_id:service_id
 //  //     - criticality_id or criticality_level
 //  //
-//  logging::info(logging::high)
-//    << "redis: push custom var "
-//    << " host_id " << cv.host_id
-//    << " service_id " << cv.service_id
-//    << " name " << cv.name.toStdString()
-//    << " value " << cv.value.toStdString();
-//
-//  std::string tag;
-//  if (cv.name == "CRITICALITY_ID")
-//    tag = "criticality_id";
-//  else if (cv.name == "CRITICALITY_LEVEL")
-//    tag = "criticality_level";
-//  else {
-//    _result.clear();
-//    return _result;
-//  }
-//
-//  std::ostringstream oss;
-//  if (cv.service_id) {
-//    oss << "s:" << cv.host_id << ':' << cv.service_id;
-//    *this << "services" << oss.str();
-//  }
-//  else {
-//    oss << "h:" << cv.host_id;
-//    *this << "hosts" << oss.str();
-//  }
-//
-//  *this << 1 << "REPLACE" << "PARTIAL" << "FIELDS"
-//        << tag << cv.value.toStdString();
-//  push_command("$6\r\nFT.ADD\r\n");
-//  return send();
-//}
+  logging::info(logging::high)
+    << "redis: push custom var status "
+    << " host_id " << cvs.host_id
+    << " service_id " << cvs.service_id
+    << " name " << cvs.name.toStdString()
+    << " value " << cvs.value.toStdString();
+
+  std::string hst(build_key("h", cvs.host_id));
+  std::string key;
+  key.reserve(4 + cvs.name.size());
+  key = "cv:";
+  key.append(cvs.name.toStdString());
+  if (cvs.service_id) {
+    int row(hget(hst, key));
+    QVariantList res(parse(_result));
+    QByteArray res1(res[row].toByteArray());
+    std::string svc(build_key("s", cvs.host_id, cvs.service_id));
+    hset(svc, key, cvs.value.toStdString());
+  }
+  else
+    hset(hst, key, cvs.value.toStdString());
+  send();
+  _check_validity();
+}
 
 void redisdb::_check_validity() const {
   char const* tmp(strstr(_result.constData(), "-ERR"));
@@ -551,7 +634,7 @@ void redisdb::_check_validity() const {
   }
 }
 
-std::string const&  redisdb::get_content() const {
+std::string const& redisdb::get_content() const {
   return _content;
 }
 

@@ -205,6 +205,12 @@ mapping::entry const host::entries[] = {
     &host::check_type,
     "check_type"),
   mapping::entry(
+    static_cast<int (host::*) >(&host::criticality_level),
+    "criticality_level"),
+  mapping::entry(
+    static_cast<QString (host::*) >(&host::criticality_name),
+    "criticality_name"),
+  mapping::entry(
     &host::current_check_attempt,
     "check_attempt"),
   mapping::entry(

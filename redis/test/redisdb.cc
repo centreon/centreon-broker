@@ -35,7 +35,12 @@ class RedisdbTest : public ::testing::Test {
     catch (std::exception const& e) {
       (void) e;
     }
-    _db.reset(new redisdb("127.0.0.1", 6379, "p@ssw0rd", 10));
+    _db.reset(new redisdb(
+          "172.17.0.1",
+          6379,
+          "p@ssw0rd",
+          10,
+          CENTREON_BROKER_REDIS_TEST_LUA_SCRIPTS));
   }
 
   void TearDown() {

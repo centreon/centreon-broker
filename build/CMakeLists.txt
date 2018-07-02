@@ -699,6 +699,9 @@ option(WITH_MODULE_REDIS "Build Redis module." ON)
 if (WITH_MODULE_REDIS)
   add_subdirectory("redis")
   list(APPEND MODULE_LIST "redis")
+  if (WITH_TESTING)
+    add_definitions(-DLUA${v} -DCENTREON_BROKER_REDIS_TEST_LUA_SCRIPTS="${PROJECT_SOURCE_DIR}/redis/lua")
+  endif ()
 endif ()
 
 # Lua module.

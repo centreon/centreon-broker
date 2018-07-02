@@ -33,6 +33,7 @@ using namespace com::centreon::broker::neb;
  */
 host_service::host_service()
   : check_freshness(false),
+    criticality_level(0),
     default_active_checks_enabled(false),
     default_event_handler_enabled(false),
     default_flap_detection_enabled(false),
@@ -97,6 +98,8 @@ host_service& host_service::operator=(host_service const& other) {
 void host_service::_internal_copy(host_service const& other) {
   action_url = other.action_url;
   check_freshness = other.check_freshness;
+  criticality_name = other.criticality_name;
+  criticality_level = other.criticality_level;
   default_active_checks_enabled = other.default_active_checks_enabled;
   default_event_handler_enabled = other.default_event_handler_enabled;
   default_flap_detection_enabled = other.default_flap_detection_enabled;

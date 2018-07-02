@@ -21,6 +21,10 @@
 set(INC_DIR "${PROJECT_SOURCE_DIR}/redis/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/redis/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/redis/test")
+set(LUA_DIR "${PROJECT_SOURCE_DIR}/redis/lua")
+set(LUA_SCRIPTS "${CMAKE_INSTALL_PREFIX}/share/centreon-broker/redis-lua")
+add_definitions(-DCENTREON_BROKER_REDIS_LUA_SCRIPTS="${LUA_SCRIPTS}")
+
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/redis")
@@ -61,4 +65,7 @@ set(
 # Install rule.
 install(TARGETS "${REDIS}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
+)
+
+install(PROGRAMS "${LUA_DIR}/criticity.lua" DESTINATION "${LUA_SCRIPTS}"
 )

@@ -47,7 +47,12 @@ stream::stream(
           unsigned short port,
           std::string const& password,
           unsigned int queries_per_transaction)
-  : _redisdb(new redisdb(address, port, password, queries_per_transaction)) {}
+  : _redisdb(new redisdb(
+                   address,
+                   port,
+                   password,
+                   queries_per_transaction,
+                   CENTREON_BROKER_REDIS_LUA_SCRIPTS)) {}
 
 /**
  *  Read from the connector.
@@ -83,10 +88,14 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   else if (cat == io::events::neb) {
     try {
       switch (elem) {
-//        case 3:
-//          // Custom variable
-//          res = _redisdb->push(data.ref_as<neb::custom_variable const>());
-//          break;
+        case 3:
+          // Custom variable
+          _redisdb->push(data.ref_as<neb::custom_variable const>());
+          break;
+        case 4:
+          // Custom variable
+          _redisdb->push(data.ref_as<neb::custom_variable_status const>());
+          break;
         case 11:
           // Host group member
           _redisdb->push(data.ref_as<neb::host_group_member const>());

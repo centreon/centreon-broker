@@ -44,6 +44,8 @@ namespace         neb {
 
     QString       action_url;
     bool          check_freshness;
+    QString       criticality_name;
+    int           criticality_level;
     bool          default_active_checks_enabled;
     bool          default_event_handler_enabled;
     bool          default_flap_detection_enabled;

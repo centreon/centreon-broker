@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015-2016 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -65,6 +65,7 @@ namespace                         retention {
     opt<bool> const&              has_been_checked() const throw ();
     std::string const&            host_name() const throw ();
     opt<bool> const&              is_flapping() const throw ();
+    opt<time_t> const&            last_acknowledgement() const throw ();
     opt<time_t> const&            last_check() const throw ();
     opt<unsigned long> const&     last_event_id() const throw ();
     opt<time_t> const&            last_hard_state() const throw ();
@@ -95,6 +96,7 @@ namespace                         retention {
     opt<unsigned int> const&      retry_check_interval() const throw ();
     opt<std::vector<int> > const& state_history() const throw ();
     opt<int> const&               state_type() const throw ();
+    opt<bool> const&              recovery_been_sent() const throw();
 
   private:
     struct                        setters {
@@ -111,6 +113,8 @@ namespace                         retention {
     bool                          _set_check_options(int value);
     bool                          _set_check_period(std::string const& value);
     bool                          _set_check_type(int value);
+    bool                          _set_criticality_level(int value);
+    bool                          _set_criticality_name(std::string const& value);
     bool                          _set_current_attempt(int value);
     bool                          _set_current_event_id(unsigned long value);
     bool                          _set_current_notification_id(unsigned long value);
@@ -124,6 +128,7 @@ namespace                         retention {
     bool                          _set_has_been_checked(bool value);
     bool                          _set_host_name(std::string const& value);
     bool                          _set_is_flapping(bool value);
+    bool                          _set_last_acknowledgement(time_t value);
     bool                          _set_last_check(time_t value);
     bool                          _set_last_event_id(unsigned long value);
     bool                          _set_last_hard_state(time_t value);
@@ -154,6 +159,7 @@ namespace                         retention {
     bool                          _set_retry_check_interval(unsigned int value);
     bool                          _set_state_history(std::string const& value);
     bool                          _set_state_type(int value);
+    bool                          _set_recovery_been_sent(bool value);
 
     opt<int>                      _acknowledgement_type;
     opt<bool>                     _active_checks_enabled;
@@ -164,6 +170,8 @@ namespace                         retention {
     opt<int>                      _check_options;
     opt<std::string>              _check_period;
     opt<int>                      _check_type;
+    opt<int>                      _criticality_level;
+    opt<std::string>              _criticality_name;
     opt<int>                      _current_attempt;
     opt<unsigned long>            _current_event_id;
     opt<unsigned long>            _current_notification_id;
@@ -178,6 +186,7 @@ namespace                         retention {
     opt<bool>                     _has_been_checked;
     std::string                   _host_name;
     opt<bool>                     _is_flapping;
+    opt<time_t>                   _last_acknowledgement;
     opt<time_t>                   _last_check;
     opt<unsigned long>            _last_event_id;
     opt<time_t>                   _last_hard_state;
@@ -205,6 +214,7 @@ namespace                         retention {
     opt<std::string>              _plugin_output;
     opt<bool>                     _problem_has_been_acknowledged;
     opt<int>                      _process_performance_data;
+    opt<bool>                     _recovery_been_sent;
     opt<unsigned int>             _retry_check_interval;
     static setters const          _setters[];
     opt<std::vector<int> >        _state_history;
@@ -218,4 +228,3 @@ namespace                         retention {
 CCE_END()
 
 #endif // !CCE_RETENTION_HOST_HH
-
