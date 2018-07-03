@@ -44,6 +44,7 @@ namespace         neb {
 
     QString       action_url;
     bool          check_freshness;
+    int           criticality_id;
     QString       criticality_name;
     int           criticality_level;
     bool          default_active_checks_enabled;

@@ -205,6 +205,9 @@ mapping::entry const host::entries[] = {
     &host::check_type,
     "check_type"),
   mapping::entry(
+    static_cast<int (host::*) >(&host::criticality_id),
+    "criticality_id"),
+  mapping::entry(
     static_cast<int (host::*) >(&host::criticality_level),
     "criticality_level"),
   mapping::entry(

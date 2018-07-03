@@ -200,6 +200,9 @@ mapping::entry const service::entries[] = {
     &service::check_type,
     "check_type"),
   mapping::entry(
+    static_cast<int (service::*) >(&service::criticality_id),
+    "criticality_id"),
+  mapping::entry(
     static_cast<int (service::*) >(&service::criticality_level),
     "criticality_level"),
   mapping::entry(

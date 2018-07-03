@@ -240,7 +240,7 @@ void redisdb::push(neb::host const& h) {
   std::string hst(build_key("h", h.host_id));
 
   sadd("hosts", hst);
-  hmset(hst, 8);
+  hmset(hst, 11);
   *this << "name" << h.host_name.toStdString()
         << "alias" << h.alias.toStdString()
         << "address" << h.address.toStdString()
@@ -248,7 +248,10 @@ void redisdb::push(neb::host const& h) {
         << "notes" << h.notes.toStdString()
         << "notes_url" << h.notes_url.toStdString()
         << "poller_id" << h.poller_id
-        << "icon_image" << h.icon_image.toStdString();
+        << "icon_image" << h.icon_image.toStdString()
+        << "criticality_id" << h.criticality_id
+        << "criticality_name" << h.criticality_name.toStdString()
+        << "criticality_level" << h.criticality_level;
 
   setbit(build_key("p", h.poller_id), h.host_id, 1);
   send();
@@ -316,7 +319,7 @@ void redisdb::push(neb::service const& s) {
   sadd("services", svc);
   std::string hkey(build_key("h", s.host_id));
 
-  hmset(svc, 14);
+  hmset(svc, 17);
   *this << "service_description" << s.service_description.toStdString()
         << "host_key" << hkey
         << "service_id" << s.service_id
@@ -330,7 +333,10 @@ void redisdb::push(neb::service const& s) {
         << "icon_image" << s.icon_image.toStdString()
         << "display_name" << s.display_name.toStdString()
         << "host_name" << lst[0].toByteArray().constData()
-        << "poller_id" << lst[1].toInt();
+        << "poller_id" << lst[1].toInt()
+        << "criticality_id" << s.criticality_id
+        << "criticality_name" << s.criticality_name.toStdString()
+        << "criticality_level" << s.criticality_level;
 
   send();
   _check_validity();
