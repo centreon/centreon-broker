@@ -1161,6 +1161,9 @@ int neb::callback_host(int callback_type, void* data) {
     if (h->check_period)
       my_host->check_period = h->check_period;
     my_host->check_type = h->check_type;
+    my_host->criticality_id = h->criticality_id;
+    my_host->criticality_name = h->criticality_name;
+    my_host->criticality_level = h->criticality_level;
     my_host->current_check_attempt = h->current_attempt;
     my_host->current_state = (h->has_been_checked
                               ? h->current_state
@@ -1847,6 +1850,9 @@ int neb::callback_service(int callback_type, void* data) {
     if (s->check_period)
       my_service->check_period = s->check_period;
     my_service->check_type = s->check_type;
+    my_service->criticality_id = s->criticality_id;
+    my_service->criticality_name = s->criticality_name;
+    my_service->criticality_level = s->criticality_level;
     my_service->current_check_attempt = s->current_attempt;
     my_service->current_state = (s->has_been_checked
                                  ? s->current_state

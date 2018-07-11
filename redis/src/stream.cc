@@ -104,6 +104,10 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
           // Host
           _redisdb->push(data.ref_as<neb::host const>());
           break;
+        case 13:
+          // Host parent
+          _redisdb->push(data.ref_as<neb::host_parent const>());
+          break;
         case 14:
           // Host status
           _redisdb->push(data.ref_as<neb::host_status const>());

@@ -27,6 +27,7 @@
 #  include "com/centreon/broker/neb/custom_variable.hh"
 #  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/host_group_member.hh"
+#  include "com/centreon/broker/neb/host_parent.hh"
 #  include "com/centreon/broker/neb/instance.hh"
 #  include "com/centreon/broker/neb/service.hh"
 #  include "com/centreon/broker/neb/service_group_member.hh"
@@ -64,12 +65,13 @@ namespace               redis {
     void                push(neb::custom_variable_status const& cvs);
     void                push(neb::host_group_member const& hgm);
     void                push(neb::host const& h);
+    void                push(neb::host_parent const& hp);
     void                push(neb::host_status const& hs);
     void                push(neb::instance const& inst);
     void                push(neb::service_group_member const& sgm);
     void                push(neb::service const& s);
     void                push(neb::service_status const& ss);
-    
+
     std::string         script_load(std::string const& fname);
     int                 del(std::string const& key);
     int                 unlink(std::string const& key);

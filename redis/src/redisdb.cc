@@ -215,8 +215,14 @@ QByteArray& redisdb::send(bool force = false) {
 void redisdb::push(instance_broadcast const& ib) {
   logging::debug(logging::low)
     << "redis: push instance_broadcast";
+
+  // Initialization of criticalities
+  unlink("host_criticalities");
+  unlink("service_criticalities");
   // Here, there are some cleanup to do...
   // FIXME DBR
+
+  send();
 }
 
 void redisdb::push(neb::host_group_member const& hgm) {
@@ -240,11 +246,17 @@ void redisdb::push(neb::host const& h) {
   std::string hst(build_key("h", h.host_id));
 
   sadd("hosts", hst);
-  hmset(hst, 11);
+  hmset(hst, 17);
   *this << "name" << h.host_name.toStdString()
         << "alias" << h.alias.toStdString()
+        << "key" << hst
+        << "host_id" << h.host_id
+        << "current_state" << h.current_state
+        << "state_type" << h.state_type
         << "address" << h.address.toStdString()
+        << "last_check" << h.last_check
         << "action_url" << h.action_url.toStdString()
+        << "flapping" << h.is_flapping
         << "notes" << h.notes.toStdString()
         << "notes_url" << h.notes_url.toStdString()
         << "poller_id" << h.poller_id
@@ -254,6 +266,23 @@ void redisdb::push(neb::host const& h) {
         << "criticality_level" << h.criticality_level;
 
   setbit(build_key("p", h.poller_id), h.host_id, 1);
+  if (h.criticality_id)
+    sadd("host_criticalities", h.criticality_id);
+  send();
+  _check_validity();
+}
+
+void redisdb::push(neb::host_parent const& hp) {
+  logging::info(logging::high)
+    << "redis: push host_parent "
+    << "(parent_id: " << hp.parent_id << ", "
+    << "(host_id: " << hp.host_id << ")";
+
+  /* We count one digit in radix 10 for 3 bits. Yes we are large... */
+  char parent[sizeof(unsigned int) * 8 / 3 + 12];
+  snprintf(parent, sizeof(parent), "h:%d:children", hp.parent_id);
+  std::string hst(build_key("h", hp.host_id));
+  sadd(parent, hst);
   send();
   _check_validity();
 }
@@ -265,9 +294,12 @@ void redisdb::push(neb::host_status const& hs) {
 
   std::string hst(build_key("h", hs.host_id));
 
-  hmset(hst, 7);
+  hmset(hst, 10);
   *this << "current_state" << hs.current_state
+        << "state_type" << hs.state_type
         << "enabled" << hs.enabled
+        << "last_check" << hs.last_check
+        << "flapping" << hs.is_flapping
         << "scheduled_downtime_depth" << hs.downtime_depth
         << "plugin_output" << hs.output.toStdString()
         << "active_checks" << hs.active_checks_enabled
@@ -338,6 +370,14 @@ void redisdb::push(neb::service const& s) {
         << "criticality_name" << s.criticality_name.toStdString()
         << "criticality_level" << s.criticality_level;
 
+  logging::info(logging::high)
+    << "redis: FIXME DBR: "
+    << "id = " << s.criticality_id
+    << "name = " << s.criticality_name.toStdString()
+    << "level = " << s.criticality_level;
+
+  if (s.criticality_id)
+    sadd("service_criticalities", s.criticality_id);
   send();
   _check_validity();
 }

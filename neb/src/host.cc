@@ -208,11 +208,11 @@ mapping::entry const host::entries[] = {
     static_cast<int (host::*) >(&host::criticality_id),
     "criticality_id"),
   mapping::entry(
-    static_cast<int (host::*) >(&host::criticality_level),
-    "criticality_level"),
-  mapping::entry(
     static_cast<QString (host::*) >(&host::criticality_name),
     "criticality_name"),
+  mapping::entry(
+    static_cast<int (host::*) >(&host::criticality_level),
+    "criticality_level"),
   mapping::entry(
     &host::current_check_attempt,
     "check_attempt"),

@@ -203,11 +203,11 @@ mapping::entry const service::entries[] = {
     static_cast<int (service::*) >(&service::criticality_id),
     "criticality_id"),
   mapping::entry(
-    static_cast<int (service::*) >(&service::criticality_level),
-    "criticality_level"),
-  mapping::entry(
     static_cast<QString (service::*) >(&service::criticality_name),
     "criticality_name"),
+  mapping::entry(
+    static_cast<int (service::*) >(&service::criticality_level),
+    "criticality_level"),
   mapping::entry(
     &service::current_check_attempt,
     "check_attempt"),
