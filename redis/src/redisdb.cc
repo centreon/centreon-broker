@@ -625,6 +625,7 @@ void redisdb::push(neb::custom_variable const& cv) {
   key.append(cv.name.toStdString());
   if (cv.service_id) {
     int row(hget(hst, key));
+    send(true);
     QVariantList res(parse(_result));
     QByteArray res1(res[row].toByteArray());
     std::string svc(build_key("s", cv.host_id, cv.service_id));
@@ -660,6 +661,7 @@ void redisdb::push(neb::custom_variable_status const& cvs) {
   key.append(cvs.name.toStdString());
   if (cvs.service_id) {
     int row(hget(hst, key));
+    send(true);
     QVariantList res(parse(_result));
     QByteArray res1(res[row].toByteArray());
     std::string svc(build_key("s", cvs.host_id, cvs.service_id));
