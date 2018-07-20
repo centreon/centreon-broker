@@ -66,6 +66,3 @@ set(
 install(TARGETS "${REDIS}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
 )
-
-install(PROGRAMS "${LUA_DIR}/criticity.lua" DESTINATION "${LUA_SCRIPTS}"
-)

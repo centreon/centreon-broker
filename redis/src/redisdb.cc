@@ -16,7 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QDir>
+//#include <QDir>
 #include <QHostAddress>
 #include <QStringList>
 #include <QTcpSocket>
@@ -115,28 +115,28 @@ void redisdb::_check_redis_server(std::string const& path) {
 }
 
 void redisdb::_init_redis_scripts(std::string const& path) {
-  QDir scripts_dir(path.c_str());
-  if (!scripts_dir.exists()) {
-    logging::info(logging::medium)
-      << "redis: No Lua scripts to send to the redis-server, "
-      << "the " << path << " directory does not exist.";
-    return ;
-  }
-
-  QStringList filters;
-  filters << "*.lua";
-  QStringList lst(scripts_dir.entryList(filters));
-  std::string fname;
-  for (QStringList::const_iterator
-         it(lst.begin()),
-         end(lst.end());
-       it != end;
-       ++it) {
-    fname = path;
-    fname.append("/");
-    fname.append(it->toStdString());
-    _script[it->toStdString()] = script_load(fname);
-  }
+//  QDir scripts_dir(path.c_str());
+//  if (!scripts_dir.exists()) {
+//    logging::info(logging::medium)
+//      << "redis: No Lua scripts to send to the redis-server, "
+//      << "the " << path << " directory does not exist.";
+//    return ;
+//  }
+//
+//  QStringList filters;
+//  filters << "*.lua";
+//  QStringList lst(scripts_dir.entryList(filters));
+//  std::string fname;
+//  for (QStringList::const_iterator
+//         it(lst.begin()),
+//         end(lst.end());
+//       it != end;
+//       ++it) {
+//    fname = path;
+//    fname.append("/");
+//    fname.append(it->toStdString());
+//    _script[it->toStdString()] = script_load(fname);
+//  }
 }
 
 /**
