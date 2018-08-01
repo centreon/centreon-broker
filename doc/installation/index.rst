@@ -4,8 +4,8 @@
 Installation
 ############
 
-Centreon recommends using its official packages from the Centreon
-Entreprise Server (CES) repository. Most of Centreon' endorsed
+Centreon recommends using its official packages from the Centreon Open Sources
+version available free of charge on our repository (ex CES). Most of Centreon endorsed
 software are available as RPM packages.
 
 Alternatively, you can build and install your own version of this
@@ -19,18 +19,18 @@ notably).
 Using packages
 **************
 
-Centreon provides RPM for its products through Centreon Entreprise
-Server (CES). Open source products are freely available from our
-repository.
+Centreon provides RPM for its products through Centreon Open Sources version
+available free of charge on our repository (ex CES), Open source products are
+freely available from our repository.
 
-These packages are available for CentOS 6.
+These packages are available for CentOS 6 and 7 version.
 
 .. _user_installation_packages_prerequisites:
 
 Prerequisites
 =============
 
-In order to use RPM from the CES repository, you have to install the
+In order to use RPM from the COS repository, you have to install the
 appropriate repository.
 
 CentOS 6
@@ -38,10 +38,22 @@ CentOS 6
 
 Run the following commands as privileged user ::
 
-  $ wget http://yum.centreon.com/standard/3.0/stable/noarch/RPMS/ces-release-3.0-1.noarch.rpm
-  $ yum install --nogpgcheck ces-release-3.0-1.noarch.rpm
-  $ rm -f ces-release-3.0-1.noarch.rpm
+  $ wget http://yum.centreon.com/standard/3.4/el6/stable/noarch/RPMS/centreon-release-3.4-4.el6.noarch.rpm
+  $ yum install --nogpgcheck -y centreon-release-3.4-4.el6.noarch.rpm
+  $ rm -f centreon-release-3.4-4.el6.noarch.rpm
   $ yum clean all
+
+
+CentOS 7
+--------
+
+Run the following commands as privileged user ::
+
+  $ wget http://yum.centreon.com/standard/3.4/el7/stable/noarch/RPMS/centreon-release-3.4-4.el7.centos.noarch.rpm
+  $ yum install --nogpgcheck -y centreon-release-3.4-4.el7.centos.noarch.rpm
+  $ rm -f centreon-release-3.4-4.el6.noarch.rpm
+  $ yum clean all
+
 
 Install
 =======
@@ -92,10 +104,8 @@ further steps too.
 CentOS
 ------
 
-In CentOS you need to add manually cmake. After that you can
-install binary packages. Either use the Package Manager or the
-yum tool to install them. You should check packages version when
-necessary.
+Either use the Package Manager or the yum tool to install them. You should check
+packages version when necessary.
 
 Package required to build:
 
@@ -121,17 +131,17 @@ GnuTLS **(>= 2.8)**         gnutls-devel               Development files for gnu
 
 #. Install Centreon repository
 
-   You need to install Centreon Entreprise Server (CES) repos file as
+   You need to install Centreon Open Sources (COS) repository file as
    explained :ref:`user_installation_packages_prerequisites` to use some
    specific package version.
+
+#. Install cmake and lua-devel ::
+
+  $ yum install cmake lua-devel
 
 #. Install RRDTool ::
 
    $ yum install rrdtool-devel
-
-#. Install cmake ::
-
-   $ yum install cmake
 
 #. Install Qt framework ::
 
@@ -181,7 +191,7 @@ GnuTLS **(>= 2.8)**         libgnutls28-dev  Development files for gnutls.
 
 #. Install compilation tools ::
 
-     $ apt-get install build-essential cmake
+     $ apt-get install build-essential cmake lua5.2-dev
 
 #. Install RRDTool ::
 
@@ -258,7 +268,7 @@ installed run this ::
   $ git clone https://github.com/centreon/centreon-broker
 
 Or You can get the latest Centreon Broker's sources from its
-`download website <http://www.centreon.com/Centreon-Extensions/centreon-broker-download.html>`_
+`download website <https://download.centreon.com/>`_
 Once downloaded, extract it ::
 
   $ tar xzf centreon-broker.tar.gz
