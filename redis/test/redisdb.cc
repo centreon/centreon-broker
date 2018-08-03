@@ -36,7 +36,7 @@ class RedisdbTest : public ::testing::Test {
       (void) e;
     }
     _db.reset(new redisdb(
-          "172.17.0.1",
+          "127.0.0.1",
           6379,
           "p@ssw0rd",
           10,
