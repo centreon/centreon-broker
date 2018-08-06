@@ -23,7 +23,6 @@
 #  include <QSqlDatabase>
 #  include <string>
 #  include "com/centreon/broker/database_config.hh"
-#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 

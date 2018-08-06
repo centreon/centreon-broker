@@ -31,6 +31,7 @@
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/storage/rebuilder.hh"
+#  include "com/centreon/broker/storage/mysql.hh"
 
 CCB_BEGIN()
 
@@ -141,6 +142,7 @@ namespace          storage {
     database       _db;
     database_query _data_bin_insert;
     database_query _update_metrics;
+    mysql          _mysql;
   };
 }
 

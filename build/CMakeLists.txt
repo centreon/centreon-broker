@@ -690,6 +690,16 @@ endif()
 # Storage module.
 option(WITH_MODULE_STORAGE "Build storage module." ON)
 if (WITH_MODULE_STORAGE)
+  find_program(MYSQL_CONFIG "mysql_config")
+  if (${MYSQL_CONFIG} STREQUAL "MYSQL_CONFIG-NOTFOUND")
+    find_program(MYSQL_CONFIG "mariadb_config")
+  endif()
+
+  execute_process(COMMAND ${MYSQL_CONFIG} --cflags
+    OUTPUT_VARIABLE MYSQL_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+  execute_process(COMMAND ${MYSQL_CONFIG} --libs
+    OUTPUT_VARIABLE MYSQL_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
+
   add_subdirectory("storage")
   list(APPEND MODULE_LIST "storage")
 endif()

@@ -123,7 +123,8 @@ stream::stream(
     _store_in_db(store_in_db),
     _db(db_cfg),
     _data_bin_insert(_db),
-    _update_metrics(_db) {
+    _update_metrics(_db),
+    _mysql(db_cfg) {
   // Prepare queries.
   _prepare();
 

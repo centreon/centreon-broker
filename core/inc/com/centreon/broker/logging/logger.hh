@@ -21,7 +21,6 @@
 
 #  include "com/centreon/broker/logging/defines.hh"
 #  include "com/centreon/broker/logging/temp_logger.hh"
-#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 

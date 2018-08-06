@@ -46,7 +46,8 @@ public:
                         std::string const& password,
                         std::string const& name,
                         int queries_per_transaction = 1,
-                        bool check_replication = true);
+                        bool check_replication = true,
+                        int connections_count = 1);
                       database_config(config::endpoint const& cfg);
                       database_config(database_config const& other);
                       ~database_config();
@@ -60,6 +61,7 @@ public:
   std::string const&  get_name() const;
   int                 get_queries_per_transaction() const;
   bool                get_check_replication() const;
+  int                 get_connections_count() const;
 
   void                set_type(std::string const& type);
   void                set_host(std::string const& host);
@@ -81,6 +83,7 @@ private:
   std::string         _name;
   int                 _queries_per_transaction;
   bool                _check_replication;
+  int                 _connections_count;
 };
 
 CCB_END()

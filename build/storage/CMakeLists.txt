@@ -37,6 +37,8 @@ add_library("${STORAGE}" SHARED
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/metric.cc"
   "${SRC_DIR}/metric_mapping.cc"
+  "${SRC_DIR}/mysql.cc"
+  "${SRC_DIR}/mysql_thread.cc"
   "${SRC_DIR}/parser.cc"
   "${SRC_DIR}/perfdata.cc"
   "${SRC_DIR}/rebuild.cc"
@@ -53,6 +55,8 @@ add_library("${STORAGE}" SHARED
   "${INC_DIR}/internal.hh"
   "${INC_DIR}/metric.hh"
   "${INC_DIR}/metric_mapping.hh"
+  "${INC_DIR}/mysql.hh"
+  "${INC_DIR}/mysql_thread.hh"
   "${INC_DIR}/parser.hh"
   "${INC_DIR}/perfdata.hh"
   "${INC_DIR}/rebuild.hh"
@@ -61,8 +65,10 @@ add_library("${STORAGE}" SHARED
   "${INC_DIR}/status.hh"
   "${INC_DIR}/stream.hh"
 )
-target_link_libraries("${STORAGE}" ${QT_LIBRARIES})
+#target_compile_options("${STORAGE}" "${MYSQL_CFLAGS}")
 set_target_properties("${STORAGE}" PROPERTIES PREFIX "")
+set_target_properties("${STORAGE}" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
+target_link_libraries("${STORAGE}" ${QT_LIBRARIES} ${MYSQL_LIBS})
 
 # Testing.
 set(
