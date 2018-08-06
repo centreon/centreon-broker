@@ -51,7 +51,7 @@ Run the following commands as privileged user ::
 
   $ wget http://yum.centreon.com/standard/3.4/el7/stable/noarch/RPMS/centreon-release-3.4-4.el7.centos.noarch.rpm
   $ yum install --nogpgcheck -y centreon-release-3.4-4.el7.centos.noarch.rpm
-  $ rm -f centreon-release-3.4-4.el6.noarch.rpm
+  $ rm -f centreon-release-3.4-4.el7.centos.noarch.rpm
   $ yum clean all
 
 
@@ -135,9 +135,13 @@ GnuTLS **(>= 2.8)**         gnutls-devel               Development files for gnu
    explained :ref:`user_installation_packages_prerequisites` to use some
    specific package version.
 
-#. Install cmake and lua-devel ::
+#. Install cmake ::
 
-  $ yum install cmake lua-devel
+   $ yum install cmake
+
+#. Install lua-devel ::
+
+   $ yum install lua-devel
 
 #. Install RRDTool ::
 
@@ -156,12 +160,12 @@ GnuTLS **(>= 2.8)**         gnutls-devel               Development files for gnu
    Depending on your Qt installation, qmake could already be available
    or in a path like /usr/lib64/qt4/bin/.
 
-::
+   ::
 
-   $ export PATH="$PATH:/usr/lib64/qt4/bin"
-   $ qmake --version # (or qmake-qt4 --version)
-   QMake version 2.01a
-   Using Qt version 4.8.7 in /usr/lib/x86_64-linux-gnu
+     $ export PATH="$PATH:/usr/lib64/qt4/bin"
+     $ qmake --version # (or qmake-qt4 --version)
+     QMake version 2.01a
+     Using Qt version 4.8.7 in /usr/lib/x86_64-linux-gnu
 
 Debian/Ubuntu
 -------------
@@ -191,19 +195,33 @@ GnuTLS **(>= 2.8)**         libgnutls28-dev  Development files for gnutls.
 
 #. Install compilation tools ::
 
-     $ apt-get install build-essential cmake lua5.2-dev
+   $ apt-get install build-essential
+
+#. Install cmake ::
+
+   $ apt-get install cmake
+
+#. Imstall lua-dev
+
+   For Debian Jessie / Ubuntu 14.04 ::
+
+      $ apt-get install lua5.2-dev
+
+   For Debian Stretch / Ubuntu Xenial ::
+
+      $ apt-get install lua5.3-dev
 
 #. Install RRDTool ::
 
-     $ apt-get install librrd-dev
+   $ apt-get install librrd-dev
 
 #. Install Qt framework ::
 
-     $ apt-get install libqt4-dev libqt4-sql-mysql
+   $ apt-get install libqt4-dev libqt4-sql-mysql
 
 #. Install GnuTLS ::
 
-     $ apt-get install libgnutls28-dev
+   $ apt-get install libgnutls28-dev
 
 OpenSUSE
 --------
@@ -233,19 +251,19 @@ GnuTLS **(>= 2.8)**         libgnutls-devel   Development files for gnutls.
 
 #. Install compilation tools ::
 
-     $ zypper install gcc gcc-c++ make cmake libqt4-devel rrdtool-devel
+   $ zypper install gcc gcc-c++ make cmake libqt4-devel rrdtool-devel
 
 #. Install RRDTool ::
 
-     $ zypper install rrdtool-devel
+   $ zypper install rrdtool-devel
 
 #. Install Qt framework ::
 
-     $ zypper install libqt4-devel libqt4-sql-mysql
+   $ zypper install libqt4-devel libqt4-sql-mysql
 
 #. Install GnuTls ::
 
-     $ zypper install libgnutls-devel
+   $ zypper install libgnutls-devel
 
 
 Raspberry Pi (Raspbian)
@@ -282,6 +300,13 @@ following commands ::
 
   $ cd /path_to_centreon_broker/build
   $ cmake .
+
+.. note::
+    If you are using Debian Strech or Ubuntu Xenial, you need to add the following
+    statement in the **CMakeLists.txt** file (directory `build`), use the command
+    bellow to add ::
+
+      $ sed -i '26iset(CMAKE_CXX_FLAGS "-std=c++98 -fpermissive")' CMakeLists.txt
 
 Your Centreon Broker can be tweaked to your particular needs using
 CMake's variable system. Variables can be set like this ::
