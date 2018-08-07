@@ -693,6 +693,9 @@ if (WITH_MODULE_STORAGE)
   find_program(MYSQL_CONFIG "mysql_config")
   if (${MYSQL_CONFIG} STREQUAL "MYSQL_CONFIG-NOTFOUND")
     find_program(MYSQL_CONFIG "mariadb_config")
+    if (${MYSQL_CONFIG} STREQUAL "MYSQL_CONFIG-NOTFOUND")
+      message(SEND_ERROR "MariaDB devel package is not installed")
+    endif()
   endif()
 
   execute_process(COMMAND ${MYSQL_CONFIG} --cflags
