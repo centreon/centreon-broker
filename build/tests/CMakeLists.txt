@@ -52,6 +52,7 @@ add_executable("ut"
   # Module sources.
   ${TESTS_SOURCES}
 )
+set_target_properties("ut" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 target_link_libraries("ut" "gtest" ${TESTS_LIBRARIES} ${NEB} "rokerbase" "roker")
 
 add_test(NAME tests COMMAND ut)

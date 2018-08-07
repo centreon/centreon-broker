@@ -20,6 +20,8 @@
 #  define CCB_STORAGE_MYSQL_THREAD_HH
 
 #include <QThread>
+#include <QMutex>
+#include <QWaitCondition>
 #include <mysql.h>
 #include "com/centreon/broker/namespace.hh"
 
@@ -40,11 +42,19 @@ namespace               storage {
                           std::string const& database,
                           int port);
                         ~mysql_thread();
+    void                run_query(std::string const& query);
+    void                finish();
 
    private:
     void                run();
 
     MYSQL*              _conn;
+    QMutex              _list_mutex;
+    QWaitCondition      _queries_or_finished;
+    bool                _finished;
+
+    std::list<std::string>
+                        _queries_list;
   };
 }
 

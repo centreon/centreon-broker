@@ -36,6 +36,8 @@ namespace           storage {
    public:
                         mysql(database_config const& db_cfg);
                         ~mysql();
+    void                run_query(std::string const& query, int thread = -1);
+
    private:
     database_config     _db_cfg;
 
@@ -44,6 +46,7 @@ namespace           storage {
     database::version   _version;
     std::vector<misc::shared_ptr<mysql_thread> >
                         _thread;
+    int                 _current_thread;
   };
 }
 

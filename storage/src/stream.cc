@@ -956,10 +956,11 @@ void stream::_insert_perfdatas() {
     }
 
     // Execute query.
-    database_query q(_db);
-    q.run_query(
-        query.str(),
-        "storage: could not insert data in log_data_bin");
+    _mysql.run_query(query.str());
+//    database_query q(_db);
+//    q.run_query(
+//        query.str(),
+//        "storage: could not insert data in log_data_bin");
     _update_status("");
   }
 

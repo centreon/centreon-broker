@@ -15,6 +15,8 @@
 **
 ** For more information : contact@centreon.com
 */
+#include <iostream>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/mysql_thread.hh"
 
@@ -22,6 +24,60 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 void mysql_thread::run() {
+  while (true) {
+    std::cout << "run mutex lock" << std::endl;
+    QMutexLocker locker(&_list_mutex);
+    std::cout << "run mutex locked" << std::endl;
+    if (_finished) {
+      if (!_queries_list.empty()) {
+        std::cout << "run new query" << std::endl;
+        std::string query(_queries_list.front());
+        _queries_list.pop_front();
+        if (mysql_query(_conn, query.c_str())) {
+          std::cout << "run query failed: " << mysql_error(_conn) << std::endl;
+          logging::error(logging::medium)
+            << "storage: Error while sending query '" << query << "'";
+        }
+        else
+          std::cout << "run query successed" << std::endl;
+      }
+      std::cout << "run finished1" << std::endl;
+      break;
+    }
+    std::cout << "run wait for condition on queries or finish" << std::endl;
+    _queries_or_finished.wait(locker.mutex());
+    std::cout << "run condition realized" << std::endl;
+    if (_finished) {
+      if (!_queries_list.empty()) {
+        std::cout << "run new query" << std::endl;
+        std::string query(_queries_list.front());
+        _queries_list.pop_front();
+        if (mysql_query(_conn, query.c_str())) {
+          std::cout << "run query failed: " << mysql_error(_conn) << std::endl;
+          logging::error(logging::medium)
+            << "storage: Error while sending query '" << query << "'";
+        }
+        else
+          std::cout << "run query successed" << std::endl;
+      }
+      std::cout << "run finished2" << std::endl;
+      break;
+    }
+    std::cout << "run new query" << std::endl;
+    std::string query(_queries_list.front());
+    _queries_list.pop_front();
+    locker.unlock();
+    std::cout << "run mutex unlocked" << std::endl;
+    std::cout << "run query execution" << std::endl;
+    if (mysql_query(_conn, query.c_str())) {
+      std::cout << "run query failed: " << mysql_error(_conn) << std::endl;
+      logging::error(logging::medium)
+        << "storage: Error while sending query '" << query << "'";
+    }
+    else
+      std::cout << "run query successed" << std::endl;
+  }
+  std::cout << "run return" << std::endl;
 }
 
 mysql_thread::mysql_thread(
@@ -30,13 +86,17 @@ mysql_thread::mysql_thread(
                 std::string const& password,
                 std::string const& database,
                 int port)
-  : _conn(mysql_init(NULL)) {
+  : _conn(mysql_init(NULL)),
+    _finished(false) {
+  std::cout << "mysql_thread constructor" << std::endl;
   if (!_conn) {
-    logging::error(logging::high)
-      << "storage: Unable to establish MySQL server connection";
-    return ;
+    std::cout << "mysql_thread throw exception" << std::endl;
+    throw exceptions::msg()
+      << "storage: Unable to initialize the MySQL client connector: "
+      << mysql_error(_conn);
   }
 
+  std::cout << "mysql_thread real connect..." << std::endl;
   if (!mysql_real_connect(
          _conn,
          address.c_str(),
@@ -46,13 +106,42 @@ mysql_thread::mysql_thread(
          port,
          NULL,
          0)) {
-    logging::error(logging::high)
-      << "storage: The connection to the MySQL database failed";
-    return ;
+    std::cout << "mysql_thread constructor real connect failed" << std::endl;
+    std::cout << "mysql_thread throw exception" << std::endl;
+    throw exceptions::msg()
+      << "storage: The connection to '"
+      << database << ":" << port << "' MySQL database failed: "
+      << mysql_error(_conn);
   }
+  std::cout << "mysql_thread start thread..." << std::endl;
+  start();
+  std::cout << "mysql_thread return" << std::endl;
 }
 
 mysql_thread::~mysql_thread() {
+  std::cout << "destructor" << std::endl;
   mysql_close(_conn);
   mysql_thread_end();
+  std::cout << "destructor return" << std::endl;
+}
+
+void mysql_thread::run_query(std::string const& query) {
+  std::cout << "run_query lock" << std::endl;
+  QMutexLocker locker(&_list_mutex);
+  std::cout << "run_query locked" << std::endl;
+  _queries_list.push_back(query);
+  std::cout << "run_query query pushed" << std::endl;
+  _queries_or_finished.wakeAll();
+  std::cout << "run_query thread woke up" << std::endl;
+}
+
+void mysql_thread::finish() {
+  std::cout << "finish mutex lock" << std::endl;
+  QMutexLocker locker(&_list_mutex);
+  std::cout << "finish mutex locked" << std::endl;
+  _finished = true;
+  std::cout << "finish set" << std::endl;
+  _queries_or_finished.wakeAll();
+  std::cout << "finish thread woke up" << std::endl;
+  std::cout << "finish mutex unlocked" << std::endl;
 }

@@ -15,8 +15,10 @@
 **
 ** For more information : contact@centreon.com
 */
-#include "com/centreon/broker/storage/mysql.hh"
+#include <iostream>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/storage/mysql.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
@@ -28,18 +30,50 @@ using namespace com::centreon::broker::storage;
  */
 mysql::mysql(database_config const& db_cfg)
   : _db_cfg(db_cfg),
-    _version(database::v3) {
-  if (mysql_library_init(0, NULL, NULL)) {
-    logging::error(logging::high)
+    _version(database::v3),
+    _current_thread(0) {
+  std::cout << "mysql constructor" << std::endl;
+  if (mysql_library_init(0, NULL, NULL))
+    throw exceptions::msg()
       << "storage: unable to initialize the MySQL connector";
-    return ;
-  }
 
-  for (int i(0); i < db_cfg.get_connections_count(); ++i)
+  for (int i(0); i < db_cfg.get_connections_count(); ++i) {
+    std::cout << "mysql constructor thread " << i << " construction" << std::endl;
     _thread.push_back(new mysql_thread(
                             db_cfg.get_host(),
                             db_cfg.get_user(),
                             db_cfg.get_password(),
                             db_cfg.get_name(),
                             db_cfg.get_port()));
+  }
+  std::cout << "mysql constructor return" << std::endl;
+}
+
+mysql::~mysql() {
+  std::cout << "mysql destructor" << std::endl;
+  bool retval(true);
+  for (std::vector<misc::shared_ptr<mysql_thread> >::const_iterator
+         it(_thread.begin()),
+         end(_thread.end());
+       it != end;
+       ++it) {
+    std::cout << "mysql destructor send finish to thread" << std::endl;
+    (*it)->finish();
+    std::cout << "mysql destructor wait for thread to finish" << std::endl;
+    retval &= (*it)->wait(20000);
+  }
+  if (!retval)
+    logging::error(logging::medium)
+      << "storage: A thread was forced to stop after a timeout of 20s";
+  std::cout << "mysql destructor return" << std::endl;
+}
+
+void mysql::run_query(std::string const& query, int thread) {
+  if (thread < 0) {
+    // Here, we use _current_thread
+    thread = _current_thread++;
+    if (_current_thread >= _thread.size())
+      _current_thread = 0;
+  }
+  _thread[thread]->run_query(query);
 }

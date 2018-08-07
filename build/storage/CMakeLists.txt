@@ -65,7 +65,6 @@ add_library("${STORAGE}" SHARED
   "${INC_DIR}/status.hh"
   "${INC_DIR}/stream.hh"
 )
-#target_compile_options("${STORAGE}" "${MYSQL_CFLAGS}")
 set_target_properties("${STORAGE}" PROPERTIES PREFIX "")
 set_target_properties("${STORAGE}" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 target_link_libraries("${STORAGE}" ${QT_LIBRARIES} ${MYSQL_LIBS})
@@ -75,6 +74,7 @@ set(
   TESTS_SOURCES
   ${TESTS_SOURCES}
   "${TEST_DIR}/parser/parse_perfdata.cc"
+  "${TEST_DIR}/database.cc"
   PARENT_SCOPE
 )
 set(
