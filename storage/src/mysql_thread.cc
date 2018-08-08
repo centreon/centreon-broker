@@ -31,15 +31,20 @@ void mysql_thread::run() {
     if (_finished) {
       if (!_queries_list.empty()) {
         std::cout << "run new query" << std::endl;
-        std::string query(_queries_list.front());
+        std::pair<std::string, void (*)(MYSQL* conn)> p(_queries_list.front());
         _queries_list.pop_front();
-        if (mysql_query(_conn, query.c_str())) {
+        if (mysql_query(_conn, p.first.c_str())) {
           std::cout << "run query failed: " << mysql_error(_conn) << std::endl;
           logging::error(logging::medium)
-            << "storage: Error while sending query '" << query << "'";
+            << "storage: Error while sending query '" << p.first << "'";
         }
-        else
+        else {
           std::cout << "run query successed" << std::endl;
+          if (p.second) {
+            std::cout << "run callback" << std::endl;
+            p.second(_conn);
+          }
+        }
       }
       std::cout << "run finished1" << std::endl;
       break;
@@ -50,32 +55,42 @@ void mysql_thread::run() {
     if (_finished) {
       if (!_queries_list.empty()) {
         std::cout << "run new query" << std::endl;
-        std::string query(_queries_list.front());
+        std::pair<std::string, void (*)(MYSQL* conn)> p(_queries_list.front());
         _queries_list.pop_front();
-        if (mysql_query(_conn, query.c_str())) {
+        if (mysql_query(_conn, p.first.c_str())) {
           std::cout << "run query failed: " << mysql_error(_conn) << std::endl;
           logging::error(logging::medium)
-            << "storage: Error while sending query '" << query << "'";
+            << "storage: Error while sending query '" << p.first << "'";
         }
-        else
+        else {
           std::cout << "run query successed" << std::endl;
+          if (p.second) {
+            std::cout << "run callback" << std::endl;
+            p.second(_conn);
+          }
+        }
       }
       std::cout << "run finished2" << std::endl;
       break;
     }
     std::cout << "run new query" << std::endl;
-    std::string query(_queries_list.front());
+    std::pair<std::string, void (*)(MYSQL* conn)> p(_queries_list.front());
     _queries_list.pop_front();
     locker.unlock();
     std::cout << "run mutex unlocked" << std::endl;
     std::cout << "run query execution" << std::endl;
-    if (mysql_query(_conn, query.c_str())) {
+    if (mysql_query(_conn, p.first.c_str())) {
       std::cout << "run query failed: " << mysql_error(_conn) << std::endl;
       logging::error(logging::medium)
-        << "storage: Error while sending query '" << query << "'";
+        << "storage: Error while sending query '" << p.first << "'";
     }
-    else
+    else {
       std::cout << "run query successed" << std::endl;
+      if (p.second) {
+        std::cout << "run callback" << std::endl;
+        p.second(_conn);
+      }
+    }
   }
   std::cout << "run return" << std::endl;
 }
@@ -129,10 +144,22 @@ void mysql_thread::run_query(std::string const& query) {
   std::cout << "run_query lock" << std::endl;
   QMutexLocker locker(&_list_mutex);
   std::cout << "run_query locked" << std::endl;
-  _queries_list.push_back(query);
+  _queries_list.push_back(make_pair(query, NULL));
   std::cout << "run_query query pushed" << std::endl;
   _queries_or_finished.wakeAll();
   std::cout << "run_query thread woke up" << std::endl;
+}
+
+void mysql_thread::run_query_with_callback(
+                     std::string const& query,
+                     void (*fn)(MYSQL* conn)) {
+  std::cout << "run_query_with_callback lock" << std::endl;
+  QMutexLocker locker(&_list_mutex);
+  std::cout << "run_query_with_callback locked" << std::endl;
+  _queries_list.push_back(make_pair(query, fn));
+  std::cout << "run_query_with_callback query pushed" << std::endl;
+  _queries_or_finished.wakeAll();
+  std::cout << "run_query_with_callback thread woke up" << std::endl;
 }
 
 void mysql_thread::finish() {

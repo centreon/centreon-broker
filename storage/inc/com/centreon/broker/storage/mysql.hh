@@ -37,6 +37,7 @@ namespace           storage {
                         mysql(database_config const& db_cfg);
                         ~mysql();
     void                run_query(std::string const& query, int thread = -1);
+    void                run_query_with_callback(std::string const& query, void (*fn)(MYSQL* conn), int thread = -1);
 
    private:
     database_config     _db_cfg;

@@ -67,3 +67,37 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
   ms->run_query("INSERT INTO data_bin (id_metric, ctime, status, value) VALUES " \
       "(1, 1533568152, '0', 2.5)");
 }
+
+static void callback_get_insert_id(MYSQL* conn) {
+  int id(mysql_insert_id(conn));
+
+  mysql_query(conn, "SELECT MAX(comment_id) FROM comments");
+  MYSQL_RES* result = mysql_store_result(conn);
+  int num_fields(mysql_num_fields(result));
+  ASSERT_TRUE(num_fields == 1);
+  MYSQL_ROW row(mysql_fetch_row(result));
+  ASSERT_TRUE(atoi(row[0]) == id);
+  mysql_free_result(result);
+  std::cout << "ID IS GOOD: " << id << std::endl;
+}
+
+TEST_F(DatabaseStorageTest, QueryWithCallback) {
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "centreon",
+    "centreon_storage",
+    1,
+    true,
+    5);
+  time_t now(time(NULL));
+  std::ostringstream oss;
+    oss << "INSERT INTO comments (internal_id, host_id, entry_time, author, data) "
+      << "VALUES (1, 1, " << now
+      << ", 'test-user', 'comment from InsertAndGetInsertId1')";
+
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  ms->run_query_with_callback(oss.str(), callback_get_insert_id);
+}

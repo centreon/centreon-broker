@@ -43,6 +43,9 @@ namespace               storage {
                           int port);
                         ~mysql_thread();
     void                run_query(std::string const& query);
+    void                run_query_with_callback(
+                          std::string const& query,
+                          void (*fn)(MYSQL* conn));
     void                finish();
 
    private:
@@ -53,7 +56,7 @@ namespace               storage {
     QWaitCondition      _queries_or_finished;
     bool                _finished;
 
-    std::list<std::string>
+    std::list<std::pair<std::string, void (*)(MYSQL* conn)> >
                         _queries_list;
   };
 }

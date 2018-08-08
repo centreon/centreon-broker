@@ -77,3 +77,14 @@ void mysql::run_query(std::string const& query, int thread) {
   }
   _thread[thread]->run_query(query);
 }
+
+void mysql::run_query_with_callback(std::string const& query,
+   void (*fn)(MYSQL* conn), int thread) {
+  if (thread < 0) {
+    // Here, we use _current_thread
+    thread = _current_thread++;
+    if (_current_thread >= _thread.size())
+      _current_thread = 0;
+  }
+  _thread[thread]->run_query_with_callback(query, fn);
+}
