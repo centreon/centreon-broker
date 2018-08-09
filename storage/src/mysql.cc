@@ -51,17 +51,7 @@ mysql::mysql(database_config const& db_cfg)
 
 mysql::~mysql() {
   std::cout << "mysql destructor" << std::endl;
-  bool retval(true);
-  for (std::vector<misc::shared_ptr<mysql_thread> >::const_iterator
-         it(_thread.begin()),
-         end(_thread.end());
-       it != end;
-       ++it) {
-    std::cout << "mysql destructor send finish to thread" << std::endl;
-    (*it)->finish();
-    std::cout << "mysql destructor wait for thread to finish" << std::endl;
-    retval &= (*it)->wait(20000);
-  }
+  bool retval(finish());
   if (!retval)
     logging::error(logging::medium)
       << "storage: A thread was forced to stop after a timeout of 20s";
@@ -90,8 +80,26 @@ void mysql::run_query_with_callback(std::string const& query,
 }
 
 void mysql::prepare_query(std::string const& query) {
-  for (int thread(0); thread < _thread.size(); ++thread) {
-    _thread[thread]->prepare_query(query);
+  for (std::vector<misc::shared_ptr<mysql_thread> >::const_iterator
+         it(_thread.begin()),
+         end(_thread.end());
+       it != end;
+       ++it) {
+    (*it)->prepare_query(query);
   }
 }
 
+bool mysql::finish() {
+  bool retval(true);
+  for (std::vector<misc::shared_ptr<mysql_thread> >::const_iterator
+         it(_thread.begin()),
+         end(_thread.end());
+       it != end;
+       ++it) {
+    std::cout << "mysql destructor send finish to thread" << std::endl;
+    (*it)->finish();
+    std::cout << "mysql destructor wait for thread to finish" << std::endl;
+    retval &= (*it)->wait(20000);
+  }
+  return retval;
+}

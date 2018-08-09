@@ -74,7 +74,6 @@ static int callback_get_insert_id(MYSQL* conn) {
   mysql_query(conn, "SELECT MAX(comment_id) FROM comments");
   MYSQL_RES* result = mysql_store_result(conn);
   int num_fields(mysql_num_fields(result));
-EXPECT_TRUE(false);
   EXPECT_EQ(num_fields, 1);
   MYSQL_ROW row(mysql_fetch_row(result));
   EXPECT_TRUE(atoi(row[0]) == id);

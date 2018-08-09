@@ -42,6 +42,7 @@ namespace           storage {
                           std::string const& query,
                           mysql_callback fn,
                           int thread = -1);
+    bool                finish();
 
    private:
     database_config     _db_cfg;

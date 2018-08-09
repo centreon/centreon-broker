@@ -77,7 +77,7 @@ namespace                  storage {
 
     MYSQL*                 _conn;
     QMutex                 _list_mutex;
-    QWaitCondition         _queries_or_finished;
+    QWaitCondition         _tasks_condition;
     bool                   _finished;
 
     std::list<mysql_task>  _queries_list;

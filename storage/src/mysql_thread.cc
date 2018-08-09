@@ -38,37 +38,22 @@ void mysql_thread::_run(mysql_task const& task) {
 }
 
 void mysql_thread::run() {
-  while (true) {
+  while (!_finished) {
     std::cout << "run mutex lock" << std::endl;
     QMutexLocker locker(&_list_mutex);
     std::cout << "run mutex locked" << std::endl;
-    if (_finished) {
-      while (!_queries_list.empty()) {
-        std::cout << "run new query" << std::endl;
-        mysql_task task(_queries_list.front());
-        _queries_list.pop_front();
-        switch (task.type) {
-         case mysql_task::RUN:
-          _run(task);
-          break;
-         default:
-          break;
-        }
-      }
-      break;
-    }
-    std::cout << "run wait for condition on queries or finish" << std::endl;
-    _queries_or_finished.wait(locker.mutex());
-    std::cout << "run condition realized" << std::endl;
     if (!_queries_list.empty()) {
-      std::cout << "run new query" << std::endl;
+      std::cout << "new task" << std::endl;
       mysql_task task(_queries_list.front());
       _queries_list.pop_front();
+      locker.unlock();
       switch (task.type) {
        case mysql_task::RUN:
+         std::cout << "run RUN2" << std::endl;
         _run(task);
         break;
        case mysql_task::FINISH:
+         std::cout << "run FINISH2" << std::endl;
         _finished = true;
         break;
        default:
@@ -76,6 +61,11 @@ void mysql_thread::run() {
           << "storage: Error type not managed...";
         break;
       }
+    }
+    else {
+      std::cout << "run wait for condition on queries or finish" << std::endl;
+      _tasks_condition.wait(locker.mutex());
+      std::cout << "run condition realized" << std::endl;
     }
   }
   std::cout << "run return" << std::endl;
@@ -107,7 +97,7 @@ void mysql_thread::run() {
 //      break;
 //    }
 //    std::cout << "run wait for condition on queries or finish" << std::endl;
-//    _queries_or_finished.wait(locker.mutex());
+//    _tasks_condition.wait(locker.mutex());
 //    std::cout << "run condition realized" << std::endl;
 //    if (_finished) {
 //      if (!_queries_list.empty()) {
@@ -202,7 +192,7 @@ mysql_thread::~mysql_thread() {
 void mysql_thread::_push(mysql_task const& q) {
   QMutexLocker locker(&_list_mutex);
   _queries_list.push_back(q);
-  _queries_or_finished.wakeAll();
+  _tasks_condition.wakeAll();
 }
 
 void mysql_thread::run_query(std::string const& query) {
@@ -220,13 +210,14 @@ void mysql_thread::run_query_with_callback(
 }
 
 void mysql_thread::finish() {
+  std::cout << "mysql_thread finish" << std::endl;
   _push(mysql_task(mysql_task::FINISH));
 //  std::cout << "finish mutex lock" << std::endl;
 //  QMutexLocker locker(&_list_mutex);
 //  std::cout << "finish mutex locked" << std::endl;
 //  _finished = true;
 //  std::cout << "finish set" << std::endl;
-//  _queries_or_finished.wakeAll();
+//  _tasks_condition.wakeAll();
 //  std::cout << "finish thread woke up" << std::endl;
 //  std::cout << "finish mutex unlocked" << std::endl;
 }
