@@ -122,7 +122,6 @@ stream::stream(
     _rrd_len(rrd_len ? rrd_len : 15552000),
     _store_in_db(store_in_db),
     _db(db_cfg),
-    _data_bin_insert(_db),
     _update_metrics(_db),
     _mysql(db_cfg) {
   // Prepare queries.
@@ -504,6 +503,25 @@ void stream::_delete_metrics(
 }
 
 /**
+ *  @brief Check that a row has well been inserted. It is used as callback on a run_query_with_callback
+ *
+ *  @param conn The connection used to make the previous insert.
+ *
+ *  @return 0 on success, 1 otherwise.
+ */
+static int _check_row_inserted(MYSQL* conn) {
+  int retval(0);
+  MYSQL_RES* result = mysql_store_result(conn);
+  if (result || mysql_field_count(conn) != 0
+      || mysql_insert_id(conn) == 0) {
+    retval = 1;
+  }
+  if (result)
+    mysql_free_result(result);
+  return retval;
+}
+
+/**
  *  @brief Find index ID.
  *
  *  Look through the index cache for the specified index. If it cannot
@@ -558,29 +576,31 @@ unsigned int stream::_find_index_id(
       // Update index_data table.
       std::ostringstream query;
       query << "UPDATE " << (db_v2 ? "index_data" : "rt_index_data")
-            << "  SET host_name=:host_name,"
-               "     service_description=:service_description,"
-               "     special=:special"
-               "  WHERE host_id=:host_id"
-               "    AND service_id=:service_id";
-      try {
-        database_query q(_db);
-        q.prepare(query.str());
-        q.bind_value(":host_name", host_name);
-        q.bind_value(":service_description", service_desc);
-        q.bind_value(":special", special);
-        q.bind_value(":host_id", host_id);
-        q.bind_value(":service_id", service_id);
-        q.run_statement();
-      }
-      catch (std::exception const& e) {
-        throw (broker::exceptions::msg() << "storage: could not update "
-                  "service information in rt_index_data (host_id "
-               << host_id << ", service_id " << service_id
-               << ", host_name " << host_name
-               << ", service_description " << service_desc
-               << "): " << e.what());
-      }
+            << "  SET host_name=" << host_name.toStdString() << ","
+               "     service_description=" << service_desc.toStdString() << ","
+               "     special=" << special << "  WHERE host_id=" << host_id <<
+               "    AND service_id=" << service_id;
+
+      _mysql.run_query(query.str());
+//    FIXME DBR: when query fails, should return an exception.
+//      try {
+//        database_query q(_db);
+//        q.prepare(query.str());
+//        q.bind_value(":host_name", host_name);
+//        q.bind_value(":service_description", service_desc);
+//        q.bind_value(":special", special);
+//        q.bind_value(":host_id", host_id);
+//        q.bind_value(":service_id", service_id);
+//        q.run_statement();
+//      }
+//      catch (std::exception const& e) {
+//        throw (broker::exceptions::msg() << "storage: could not update "
+//                  "service information in rt_index_data (host_id "
+//               << host_id << ", service_id " << service_id
+//               << ", host_name " << host_name
+//               << ", service_description " << service_desc
+//               << "): " << e.what());
+//      }
 
       // Update cache entry.
       it->second.host_name = host_name;
@@ -612,52 +632,54 @@ unsigned int stream::_find_index_id(
       oss << "INSERT INTO " << (db_v2 ? "index_data" : "rt_index_data")
           << "  (host_id, host_name, service_id, service_description,"
              "   must_be_rebuild, special)"
-             "  VALUES (" << host_id << ", :host_name, " << service_id
-          << ", :service_description, " << (db_v2 ? "'0'" : "0")
-          << ", :special)";
-      database_query q(_db);
-      try {
-        q.prepare(oss.str());
-        q.bind_value(":host_name", host_name);
-        q.bind_value(":service_description", service_desc);
-        q.bind_value(":special", special);
-
-        // Execute query.
-        q.run_statement();
-      }
-      catch (std::exception const& e) {
-        throw (broker::exceptions::msg() << "storage: insertion of "
-                  "index (" << host_id << ", " << service_id
-               << ") failed: " << e.what());
-      }
+             "  VALUES (" << host_id << ", " << host_name.toStdString() << ", " << service_id
+          << ", " << service_desc.toStdString() << ", " << (db_v2 ? "'0'" : "0")
+          << ", " << special << ")";
+      _mysql.run_query_with_callback(oss.str(), _check_row_inserted);
+//      database_query q(_db);
+//      try {
+//        q.prepare(oss.str());
+//        q.bind_value(":host_name", host_name);
+//        q.bind_value(":service_description", service_desc);
+//        q.bind_value(":special", special);
+//
+//        // Execute query.
+//        q.run_statement();
+//      }
+//      catch (std::exception const& e) {
+//        throw (broker::exceptions::msg() << "storage: insertion of "
+//                  "index (" << host_id << ", " << service_id
+//               << ") failed: " << e.what());
+//      }
 
       // Fetch insert ID with query if possible.
-      if (!_db.get_qt_driver()->hasFeature(QSqlDriver::LastInsertId)
-          || !(retval = q.last_insert_id().toUInt())) {
-        q.finish();
-        std::ostringstream oss2;
-        oss2 << "SELECT " << (db_v2 ? "id" : "index_id")
-             << "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
-             << "  WHERE host_id=" << host_id
-             << "    AND service_id=" << service_id;
-        database_query q(_db);
-        try {
-          q.run_query(oss2.str());
-          if (!q.next())
-            throw (broker::exceptions::msg()
-                   << "no ID was returned");
-        }
-        catch (std::exception const& e) {
-          throw (broker::exceptions::msg() << "storage: could not "
-                    "fetch index_id of newly inserted index ("
-                 << host_id << ", " << service_id << "): "
-                 << e.what());
-        }
-        retval = q.value(0).toUInt();
-        if (!retval)
-          throw (broker::exceptions::msg() << "storage: index_data " \
-                    "table is corrupted: got 0 as index_id");
-      }
+//      FIXME DBR: this should be done in the callback, but it is difficult to catch its result
+//      if (!_db.get_qt_driver()->hasFeature(QSqlDriver::LastInsertId)
+//          || !(retval = q.last_insert_id().toUInt())) {
+//        q.finish();
+//        std::ostringstream oss2;
+//        oss2 << "SELECT " << (db_v2 ? "id" : "index_id")
+//             << "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
+//             << "  WHERE host_id=" << host_id
+//             << "    AND service_id=" << service_id;
+//        database_query q(_db);
+//        try {
+//          q.run_query(oss2.str());
+//          if (!q.next())
+//            throw (broker::exceptions::msg()
+//                   << "no ID was returned");
+//        }
+//        catch (std::exception const& e) {
+//          throw (broker::exceptions::msg() << "storage: could not "
+//                    "fetch index_id of newly inserted index ("
+//                 << host_id << ", " << service_id << "): "
+//                 << e.what());
+//        }
+//        retval = q.value(0).toUInt();
+//        if (!retval)
+//          throw (broker::exceptions::msg() << "storage: index_data " \
+//                    "table is corrupted: got 0 as index_id");
+//      }
 
       // Insert index in cache.
       logging::info(logging::medium) << "storage: new index " << retval
@@ -979,24 +1001,36 @@ void stream::_prepare() {
 
   // Prepare metrics update query.
   std::ostringstream query;
+//  query << "UPDATE " << (db_v2 ? "metrics" : "rt_metrics")
+//        << " SET unit_name=:unit_name,"
+//           "     warn=:warn,"
+//           "     warn_low=:warn_low,"
+//           "     warn_threshold_mode=:warn_threshold_mode,"
+//           "     crit=:crit,"
+//           "     crit_low=:crit_low,"
+//           "     crit_threshold_mode=:crit_threshold_mode,"
+//           "     min=:min,"
+//           "     max=:max,"
+//           "     current_value=:current_value"
+//           "  WHERE index_id=:index_id"
+//           "    AND metric_name=:metric_name";
   query << "UPDATE " << (db_v2 ? "metrics" : "rt_metrics")
-        << " SET unit_name=:unit_name,"
-           "     warn=:warn,"
-           "     warn_low=:warn_low,"
-           "     warn_threshold_mode=:warn_threshold_mode,"
-           "     crit=:crit,"
-           "     crit_low=:crit_low,"
-           "     crit_threshold_mode=:crit_threshold_mode,"
-           "     min=:min,"
-           "     max=:max,"
-           "     current_value=:current_value"
-           "  WHERE index_id=:index_id"
-           "    AND metric_name=:metric_name";
-  _update_metrics.prepare(
-    query.str(),
-    "storage: could not prepare metrics update query");
-
-  return ;
+        << " SET unit_name=?,"
+           "     warn=?,"
+           "     warn_low=?,"
+           "     warn_threshold_mode=?,"
+           "     crit=?,"
+           "     crit_low=?,"
+           "     crit_threshold_mode=?,"
+           "     min=?,"
+           "     max=?,"
+           "     current_value=?"
+           "  WHERE index_id=?"
+           "    AND metric_name=?";
+  _mysql.prepare_query(query.str());
+//  _update_metrics.prepare(
+//    query.str(),
+//    "storage: could not prepare metrics update query");
 }
 
 /**

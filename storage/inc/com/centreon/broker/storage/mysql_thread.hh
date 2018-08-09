@@ -27,37 +27,60 @@
 
 CCB_BEGIN()
 
-namespace               storage {
+typedef int (*mysql_callback)(MYSQL* conn);
+
+namespace                  storage {
+  class                    mysql_task {
+   public:
+    enum                   mysql_type {
+                             RUN,
+                             PREPARE,
+                             FINISH
+    };
+
+                           mysql_task(
+                             mysql_type t,
+                             std::string const&q = "",
+                             mysql_callback fn = static_cast<mysql_callback>(0))
+                            : type(t), query(q), fn(fn) {}
+    std::string            query;
+    mysql_type             type;
+    mysql_callback         fn;
+  };
+
   /**
    *  @class mysql_thread mysql_thread.hh "com/centreon/broker/storage/mysql_thread.hh"
    *  @brief Class representing a thread connected to the mysql server
    *
    */
-  class                 mysql_thread : public QThread {
+  class                    mysql_thread : public QThread {
    public:
-                        mysql_thread(
-                          std::string const& address,
-                          std::string const& user,
-                          std::string const& password,
-                          std::string const& database,
-                          int port);
-                        ~mysql_thread();
-    void                run_query(std::string const& query);
-    void                run_query_with_callback(
-                          std::string const& query,
-                          void (*fn)(MYSQL* conn));
-    void                finish();
+                           mysql_thread(
+                             std::string const& address,
+                             std::string const& user,
+                             std::string const& password,
+                             std::string const& database,
+                             int port);
+                           ~mysql_thread();
+    void                   prepare_query(std::string const& query);
+    void                   run_query(std::string const& query);
+    void                   run_query_with_callback(
+                             std::string const& query,
+                             mysql_callback);
+    void                   finish();
 
    private:
-    void                run();
+    void                   run();
 
-    MYSQL*              _conn;
-    QMutex              _list_mutex;
-    QWaitCondition      _queries_or_finished;
-    bool                _finished;
+    void                   _run(mysql_task const& task);
+    void                   _push(mysql_task const& q);
 
-    std::list<std::pair<std::string, void (*)(MYSQL* conn)> >
-                        _queries_list;
+    MYSQL*                 _conn;
+    QMutex                 _list_mutex;
+    QWaitCondition         _queries_or_finished;
+    bool                   _finished;
+
+    std::list<mysql_task>  _queries_list;
   };
 }
 

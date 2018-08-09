@@ -68,17 +68,18 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
       "(1, 1533568152, '0', 2.5)");
 }
 
-static void callback_get_insert_id(MYSQL* conn) {
+static int callback_get_insert_id(MYSQL* conn) {
   int id(mysql_insert_id(conn));
 
   mysql_query(conn, "SELECT MAX(comment_id) FROM comments");
   MYSQL_RES* result = mysql_store_result(conn);
   int num_fields(mysql_num_fields(result));
-  ASSERT_TRUE(num_fields == 1);
+EXPECT_TRUE(false);
+  EXPECT_EQ(num_fields, 1);
   MYSQL_ROW row(mysql_fetch_row(result));
-  ASSERT_TRUE(atoi(row[0]) == id);
+  EXPECT_TRUE(atoi(row[0]) == id);
   mysql_free_result(result);
-  std::cout << "ID IS GOOD: " << id << std::endl;
+  return 0;
 }
 
 TEST_F(DatabaseStorageTest, QueryWithCallback) {
