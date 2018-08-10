@@ -127,7 +127,7 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
 
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
   int stmt_id(ms->prepare_query(oss.str()));
-  mysql_bind bind(stmt_id, 13);
+  mysql_bind bind(13);
   bind.set_int(0, 19);
   bind.set_string(1, "test_metric");
   bind.set_string(2, "test/s");

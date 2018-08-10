@@ -780,7 +780,7 @@ unsigned int stream::_find_metric_id(
         << warn_low << ":" << warn << ", critical: " << crit_low << ":"
         << crit << ", min: " << min << ", max: " << max << ")";
       // Update metrics table.
-      mysql_bind bind(_update_metrics_stmt, 12);
+      mysql_bind bind(12);
       bind.set_string(0, unit_name.toStdString());
       bind.set_float(1, warn);
       bind.set_float(2, warn_low);

@@ -29,7 +29,7 @@ CCB_BEGIN()
 namespace                     storage {
   class                       mysql_bind {
    public:
-                              mysql_bind(int prepare_id, int size);
+                              mysql_bind(int size);
                               ~mysql_bind();
     void                      set_size(int size);
     void                      set_int(int range, int value);
@@ -41,7 +41,6 @@ namespace                     storage {
     MYSQL_BIND const*         get_bind() const;
    private:
     static my_bool            _true;
-    int                       _prepare_id;
     std::vector<MYSQL_BIND>   _bind;
 
     // The buffers contained by _bind
