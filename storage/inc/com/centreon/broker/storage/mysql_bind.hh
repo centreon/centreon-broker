@@ -30,6 +30,7 @@ namespace                     storage {
   class                       mysql_bind {
    public:
                               mysql_bind(int size);
+                              mysql_bind(mysql_bind const& other);
                               ~mysql_bind();
     void                      set_size(int size);
     void                      set_int(int range, int value);

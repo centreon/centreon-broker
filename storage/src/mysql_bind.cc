@@ -32,6 +32,20 @@ mysql_bind::mysql_bind(int size) {
   _length.resize(size);
 }
 
+mysql_bind::mysql_bind(mysql_bind const& other)
+ : _buffer(other._buffer),
+   _length(other._length) {
+  int size(_length.size());
+  _bind.resize(size);
+  for (int i(0); i < size; ++i) {
+    memset(&_bind[i], 0, sizeof(MYSQL_BIND));
+    _bind[i].buffer_type = other._bind[i].buffer_type;
+    _bind[i].buffer = const_cast<char*>(_buffer[i].c_str());
+    if (_length[i])
+      _bind[i].length = &_length[i];
+  }
+}
+
 mysql_bind::~mysql_bind() {}
 
 void mysql_bind::set_size(int size) {
@@ -47,7 +61,6 @@ void mysql_bind::set_string(int range, std::string const& value) {
   _bind[range].buffer_type = MYSQL_TYPE_STRING;
   _buffer[range] = value;
   _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
-  _bind[range].is_null = 0;
   _length[range] = value.size();
   _bind[range].length = &_length[range];
 }
