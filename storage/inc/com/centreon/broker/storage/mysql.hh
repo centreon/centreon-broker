@@ -19,9 +19,10 @@
 #  define CCB_STORAGE_MYSQL_HH
 
 #include <vector>
-#include "com/centreon/broker/misc/shared_ptr.hh"
-#include "mysql_thread.hh"
 #include "com/centreon/broker/database.hh"
+#include "com/centreon/broker/misc/shared_ptr.hh"
+#include "com/centreon/broker/storage/mysql_bind.hh"
+#include "com/centreon/broker/storage/mysql_thread.hh"
 
 CCB_BEGIN()
 
@@ -36,8 +37,12 @@ namespace           storage {
    public:
                         mysql(database_config const& db_cfg);
                         ~mysql();
-    void                prepare_query(std::string const& query);
+    int                 prepare_query(std::string const& query);
     void                run_query(std::string const& query, int thread = -1);
+    void                run_statement(
+                          int statement_id,
+                          mysql_bind const& bind,
+                          int thread = -1);
     void                run_query_with_callback(
                           std::string const& query,
                           mysql_callback fn,
@@ -53,6 +58,7 @@ namespace           storage {
     std::vector<misc::shared_ptr<mysql_thread> >
                         _thread;
     int                 _current_thread;
+    int                 _prepare_count;
   };
 }
 

@@ -23,30 +23,14 @@
 #include <QMutex>
 #include <QWaitCondition>
 #include <mysql.h>
+#include "com/centreon/broker/storage/mysql_bind.hh"
+#include "com/centreon/broker/storage/mysql_task.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/misc/shared_ptr.hh"
 
 CCB_BEGIN()
 
-typedef int (*mysql_callback)(MYSQL* conn);
-
 namespace                  storage {
-  class                    mysql_task {
-   public:
-    enum                   mysql_type {
-                             RUN,
-                             PREPARE,
-                             FINISH
-    };
-
-                           mysql_task(
-                             mysql_type t,
-                             std::string const&q = "",
-                             mysql_callback fn = static_cast<mysql_callback>(0))
-                            : type(t), query(q), fn(fn) {}
-    std::string            query;
-    mysql_type             type;
-    mysql_callback         fn;
-  };
 
   /**
    *  @class mysql_thread mysql_thread.hh "com/centreon/broker/storage/mysql_thread.hh"
@@ -64,6 +48,7 @@ namespace                  storage {
                            ~mysql_thread();
     void                   prepare_query(std::string const& query);
     void                   run_query(std::string const& query);
+    void                   run_statement(int statement_id, mysql_bind const& bind);
     void                   run_query_with_callback(
                              std::string const& query,
                              mysql_callback);
@@ -72,18 +57,23 @@ namespace                  storage {
    private:
     void                   run();
 
-    void                   _run(mysql_task const& task);
-    void                   _push(mysql_task const& q);
+    void                   _run(mysql_task_run* task);
+    void                   _prepare(mysql_task_prepare* task);
+    void                   _statement(mysql_task_statement* task);
+    void                   _push(misc::shared_ptr<mysql_task> const& q);
 
     MYSQL*                 _conn;
     QMutex                 _list_mutex;
     QWaitCondition         _tasks_condition;
     bool                   _finished;
 
-    std::list<mysql_task>  _queries_list;
+    std::list<misc::shared_ptr<mysql_task> >
+                           _queries_list;
+    std::vector<misc::shared_ptr<MYSQL_STMT> >
+                           _stmt;
   };
 }
 
 CCB_END()
 
-#  endif  //CCB_STORAGE_MYSQL_THREAD_HH
+#endif  //CCB_STORAGE_MYSQL_THREAD_HH

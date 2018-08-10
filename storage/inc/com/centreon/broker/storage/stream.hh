@@ -140,7 +140,7 @@ namespace          storage {
     mutable QMutex _statusm;
     bool           _store_in_db;
     database       _db;
-    database_query _update_metrics;
+    int            _update_metrics_stmt;
     mysql          _mysql;
   };
 }

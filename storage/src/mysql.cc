@@ -31,7 +31,8 @@ using namespace com::centreon::broker::storage;
 mysql::mysql(database_config const& db_cfg)
   : _db_cfg(db_cfg),
     _version(database::v3),
-    _current_thread(0) {
+    _current_thread(0),
+    _prepare_count(0) {
   std::cout << "mysql constructor" << std::endl;
   if (mysql_library_init(0, NULL, NULL))
     throw exceptions::msg()
@@ -68,6 +69,16 @@ void mysql::run_query(std::string const& query, int thread) {
   _thread[thread]->run_query(query);
 }
 
+void mysql::run_statement(int statement_id, mysql_bind const& bind, int thread) {
+  if (thread < 0) {
+    // Here, we use _current_thread
+    thread = _current_thread++;
+    if (_current_thread >= _thread.size())
+      _current_thread = 0;
+  }
+  _thread[thread]->run_statement(statement_id, bind);
+}
+
 void mysql::run_query_with_callback(std::string const& query,
               mysql_callback fn, int thread) {
   if (thread < 0) {
@@ -79,7 +90,7 @@ void mysql::run_query_with_callback(std::string const& query,
   _thread[thread]->run_query_with_callback(query, fn);
 }
 
-void mysql::prepare_query(std::string const& query) {
+int mysql::prepare_query(std::string const& query) {
   for (std::vector<misc::shared_ptr<mysql_thread> >::const_iterator
          it(_thread.begin()),
          end(_thread.end());
@@ -87,6 +98,7 @@ void mysql::prepare_query(std::string const& query) {
        ++it) {
     (*it)->prepare_query(query);
   }
+  return _prepare_count++;
 }
 
 bool mysql::finish() {

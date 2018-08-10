@@ -41,6 +41,7 @@
 #include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
 #include "com/centreon/broker/storage/stream.hh"
+#include "com/centreon/broker/storage/mysql_bind.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -122,7 +123,7 @@ stream::stream(
     _rrd_len(rrd_len ? rrd_len : 15552000),
     _store_in_db(store_in_db),
     _db(db_cfg),
-    _update_metrics(_db),
+    _update_metrics_stmt(-1),
     _mysql(db_cfg) {
   // Prepare queries.
   _prepare();
@@ -779,24 +780,40 @@ unsigned int stream::_find_metric_id(
         << warn_low << ":" << warn << ", critical: " << crit_low << ":"
         << crit << ", min: " << min << ", max: " << max << ")";
       // Update metrics table.
-      _update_metrics.bind_value(":unit_name", unit_name);
-      _update_metrics.bind_value(":warn", check_double(warn));
-      _update_metrics.bind_value(":warn_low", check_double(warn_low));
-      _update_metrics.bind_value(":warn_threshold_mode", warn_mode);
-      _update_metrics.bind_value(":crit", check_double(crit));
-      _update_metrics.bind_value(":crit_low", check_double(crit_low));
-      _update_metrics.bind_value(":crit_threshold_mode", crit_mode);
-      _update_metrics.bind_value(":min", check_double(min));
-      _update_metrics.bind_value(":max", check_double(max));
-      _update_metrics.bind_value(":current_value", check_double(value));
-      _update_metrics.bind_value(":index_id", index_id);
-      _update_metrics.bind_value(":metric_name", metric_name);
-      try { _update_metrics.run_statement(); }
-      catch (std::exception const& e) {
-        throw (broker::exceptions::msg() << "storage: could not "
-                  "update metric (index_id " << index_id
-               << ", metric " << metric_name << "): " << e.what());
-      }
+      mysql_bind bind(_update_metrics_stmt, 12);
+      bind.set_string(0, unit_name.toStdString());
+      bind.set_float(1, warn);
+      bind.set_float(2, warn_low);
+      bind.set_tiny(3, warn_mode);
+      bind.set_float(4, crit);
+      bind.set_float(5, crit_low);
+      bind.set_tiny(6, crit_mode);
+      bind.set_float(7, min);
+      bind.set_float(8, max);
+      bind.set_float(9, value);
+      bind.set_int(10, index_id);
+      bind.set_string(11, metric_name.toStdString());
+
+      // FIXME DBR: Always the problem of throwing an exception if the query fails
+      _mysql.run_statement(_update_metrics_stmt, bind);
+//      _update_metrics.bind_value(":unit_name", unit_name);
+//      _update_metrics.bind_value(":warn", check_double(warn));
+//      _update_metrics.bind_value(":warn_low", check_double(warn_low));
+//      _update_metrics.bind_value(":warn_threshold_mode", warn_mode);
+//      _update_metrics.bind_value(":crit", check_double(crit));
+//      _update_metrics.bind_value(":crit_low", check_double(crit_low));
+//      _update_metrics.bind_value(":crit_threshold_mode", crit_mode);
+//      _update_metrics.bind_value(":min", check_double(min));
+//      _update_metrics.bind_value(":max", check_double(max));
+//      _update_metrics.bind_value(":current_value", check_double(value));
+//      _update_metrics.bind_value(":index_id", index_id);
+//      _update_metrics.bind_value(":metric_name", metric_name);
+//      try { _update_metrics.run_statement(); }
+//      catch (std::exception const& e) {
+//        throw (broker::exceptions::msg() << "storage: could not "
+//                  "update metric (index_id " << index_id
+//               << ", metric " << metric_name << "): " << e.what());
+//      }
 
       // Fill cache.
       it->second.value = value;
@@ -1027,7 +1044,7 @@ void stream::_prepare() {
            "     current_value=?"
            "  WHERE index_id=?"
            "    AND metric_name=?";
-  _mysql.prepare_query(query.str());
+  _update_metrics_stmt = _mysql.prepare_query(query.str());
 //  _update_metrics.prepare(
 //    query.str(),
 //    "storage: could not prepare metrics update query");
