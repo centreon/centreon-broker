@@ -302,11 +302,13 @@ following commands ::
   $ cmake .
 
 .. note::
-    If you are using Debian Strech or Ubuntu Xenial, you need to add the following
-    statement in the **CMakeLists.txt** file (directory `build`), use the command
-    bellow to add ::
-
-      $ sed -i '26iset(CMAKE_CXX_FLAGS "-std=c++98 -fpermissive")' CMakeLists.txt
+    If you are using Debian Strech or Ubuntu Xenial, you need set some flags to
+    build source compatible with the new compile tools. For this, set the variable
+    `CMAKE_CXX_FLAGS` and compile as show bellow ::
+      
+      $ cd /path_to_centreon_broker/build
+      $ export CXXFLAGS="-std=c++98 -Wno-long-long"
+      $ cmake .
 
 Your Centreon Broker can be tweaked to your particular needs using
 CMake's variable system. Variables can be set like this ::
