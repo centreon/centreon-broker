@@ -40,6 +40,20 @@ try {
           tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
         ])
       }
+    },
+    'debian10': {
+      node {
+        sh 'cd /opt/centreon-build && git pull && cd -'
+        sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-unittest.sh debian10'
+        step([
+          $class: 'XUnitBuilder',
+          thresholds: [
+            [$class: 'FailedThreshold', failureThreshold: '0'],
+            [$class: 'SkippedThreshold', failureThreshold: '0']
+          ],
+          tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
+        ])
+      }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
       error('Unit tests stage failure.');
@@ -63,6 +77,12 @@ try {
       node {
         sh 'cd /opt/centreon-build && git pull && cd -'
         sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-package.sh debian9-armhf'
+      }
+    },
+    'debian10': {
+      node {
+        sh 'cd /opt/centreon-build && git pull && cd -'
+        sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-package.sh debian10'
       }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
