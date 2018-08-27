@@ -27,9 +27,7 @@ using namespace com::centreon::broker::storage;
 my_bool mysql_bind::_true = 1;
 
 mysql_bind::mysql_bind(int size) {
-  _bind.resize(size);
-  _buffer.resize(size);
-  _length.resize(size);
+  set_size(size);
 }
 
 mysql_bind::mysql_bind(mysql_bind const& other)
