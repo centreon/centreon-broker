@@ -148,3 +148,29 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
 //  ms.run_query("SELECT * FROM metrics WHERE metric_name='test_metric'", 0);
 //  ms.fetch_result(0);
 }
+
+TEST_F(DatabaseStorageTest, QuerySync) {
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "centreon",
+    "centreon_storage",
+    1,
+    true,
+    5);
+  std::ostringstream oss;
+  oss << "SELECT comment_id FROM comments LIMIT 10";
+
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  int id(ms->run_query_sync(oss.str()));
+  misc::shared_ptr<mysql_result> res(ms->get_result(id));
+  int count(0);
+  while (res->next()) {
+    int v(res->value(0));
+    std::cout << "value " << v << std::endl;
+    ++count;
+  }
+  ASSERT_EQ(count, 10);
+}

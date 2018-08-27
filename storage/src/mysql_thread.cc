@@ -37,6 +37,21 @@ void mysql_thread::_run(mysql_task_run* task) {
   }
 }
 
+void mysql_thread::_run_sync(mysql_task_run_sync* task) {
+  QMutexLocker locker(&_result_mutex);
+  if (mysql_query(_conn, task->query.c_str())) {
+    std::cout << "run sync query failed: " << mysql_error(_conn) << std::endl;
+    logging::error(logging::medium)
+      << "storage: Error while sending query '" << task->query << "'";
+  }
+  _result = new mysql_result(mysql_store_result(_conn));
+  _result_condition.wakeAll();
+}
+
+misc::shared_ptr<mysql_result> mysql_thread::get_result() {
+  return _result;
+}
+
 void mysql_thread::_prepare(mysql_task_prepare* task) {
   misc::shared_ptr<MYSQL_STMT> stmt(mysql_stmt_init(_conn));
   if (!stmt.data()) {
@@ -80,6 +95,10 @@ void mysql_thread::run() {
         std::cout << "run RUN" << std::endl;
         _run(static_cast<mysql_task_run*>(task.data()));
         break;
+       case mysql_task::RUN_SYNC:
+        std::cout << "run RUN SYNC" << std::endl;
+        _run_sync(static_cast<mysql_task_run_sync*>(task.data()));
+        break;
        case mysql_task::PREPARE:
         std::cout << "run PREPARE" << std::endl;
         _prepare(static_cast<mysql_task_prepare*>(task.data()));
@@ -107,79 +126,6 @@ void mysql_thread::run() {
   }
   std::cout << "run return" << std::endl;
 }
-
-//void mysql_thread::run() {
-//  while (true) {
-//    std::cout << "run mutex lock" << std::endl;
-//    QMutexLocker locker(&_list_mutex);
-//    std::cout << "run mutex locked" << std::endl;
-//    if (_finished) {
-//      if (!_queries_list.empty()) {
-//        std::cout << "run new query" << std::endl;
-//        std::pair<std::string, mysql_callback> p(_queries_list.front());
-//        _queries_list.pop_front();
-//        if (mysql_query(_conn, p.first.c_str())) {
-//          std::cout << "run query failed: " << mysql_error(_conn) << std::endl;
-//          logging::error(logging::medium)
-//            << "storage: Error while sending query '" << p.first << "'";
-//        }
-//        else {
-//          if (p.second) {
-//            int ret(p.second(_conn));
-//            logging::info(logging::medium)
-//              << "storage: callback returned " << ret;
-//          }
-//        }
-//      }
-//      break;
-//    }
-//    std::cout << "run wait for condition on queries or finish" << std::endl;
-//    _tasks_condition.wait(locker.mutex());
-//    std::cout << "run condition realized" << std::endl;
-//    if (_finished) {
-//      if (!_queries_list.empty()) {
-//        std::cout << "run new query" << std::endl;
-//        std::pair<std::string, mysql_callback> p(_queries_list.front());
-//        _queries_list.pop_front();
-//        if (mysql_query(_conn, p.first.c_str())) {
-//          std::cout << "run query failed: " << mysql_error(_conn) << std::endl;
-//          logging::error(logging::medium)
-//            << "storage: Error while sending query '" << p.first << "'";
-//        }
-//        else {
-//          std::cout << "run query successed" << std::endl;
-//          if (p.second) {
-//            int ret(p.second(_conn));
-//            logging::info(logging::medium)
-//              << "storage: callback returned " << ret;
-//          }
-//        }
-//      }
-//      std::cout << "run finished2" << std::endl;
-//      break;
-//    }
-//    std::cout << "run new query" << std::endl;
-//    std::pair<std::string, mysql_callback> p(_queries_list.front());
-//    _queries_list.pop_front();
-//    locker.unlock();
-//    std::cout << "run mutex unlocked" << std::endl;
-//    std::cout << "run query execution" << std::endl;
-//    if (mysql_query(_conn, p.first.c_str())) {
-//      std::cout << "run query failed: " << mysql_error(_conn) << std::endl;
-//      logging::error(logging::medium)
-//        << "storage: Error while sending query '" << p.first << "'";
-//    }
-//    else {
-//      std::cout << "run query successed" << std::endl;
-//      if (p.second) {
-//        int ret(p.second(_conn));
-//        logging::info(logging::medium)
-//          << "storage: callback returned " << ret;
-//      }
-//    }
-//  }
-//  std::cout << "run return" << std::endl;
-//}
 
 mysql_thread::mysql_thread(
                 std::string const& address,
@@ -234,6 +180,12 @@ void mysql_thread::_push(misc::shared_ptr<mysql_task> const& q) {
 
 void mysql_thread::run_query(std::string const& query) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_run(query)));
+}
+
+void mysql_thread::run_query_sync(std::string const& query) {
+  QMutexLocker locker(&_result_mutex);
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_run_sync(query)));
+  _result_condition.wait(locker.mutex());
 }
 
 void mysql_thread::run_statement(int statement_id, mysql_bind const& bind) {

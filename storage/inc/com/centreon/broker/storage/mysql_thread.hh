@@ -25,6 +25,7 @@
 #include <mysql.h>
 #include "com/centreon/broker/storage/mysql_bind.hh"
 #include "com/centreon/broker/storage/mysql_task.hh"
+#include "com/centreon/broker/storage/mysql_result.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
 
@@ -48,16 +49,20 @@ namespace                  storage {
                            ~mysql_thread();
     void                   prepare_query(std::string const& query);
     void                   run_query(std::string const& query);
+    void                   run_query_sync(std::string const& query);
     void                   run_statement(int statement_id, mysql_bind const& bind);
     void                   run_query_with_callback(
                              std::string const& query,
                              mysql_callback);
     void                   finish();
+    misc::shared_ptr<mysql_result>
+                           get_result();
 
    private:
     void                   run();
 
     void                   _run(mysql_task_run* task);
+    void                   _run_sync(mysql_task_run_sync* task);
     void                   _prepare(mysql_task_prepare* task);
     void                   _statement(mysql_task_statement* task);
     void                   _push(misc::shared_ptr<mysql_task> const& q);
@@ -65,12 +70,16 @@ namespace                  storage {
     MYSQL*                 _conn;
     QMutex                 _list_mutex;
     QWaitCondition         _tasks_condition;
+    QMutex                 _result_mutex;
+    QWaitCondition         _result_condition;
     bool                   _finished;
 
     std::list<misc::shared_ptr<mysql_task> >
                            _queries_list;
     std::vector<misc::shared_ptr<MYSQL_STMT> >
                            _stmt;
+    misc::shared_ptr<mysql_result>
+                           _result;
   };
 }
 

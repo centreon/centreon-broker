@@ -39,6 +39,9 @@ namespace           storage {
                         ~mysql();
     int                 prepare_query(std::string const& query);
     void                run_query(std::string const& query, int thread = -1);
+    int                 run_query_sync(
+                          std::string const& query,
+                          int thread = -1);
     void                run_statement(
                           int statement_id,
                           mysql_bind const& bind,
@@ -47,6 +50,8 @@ namespace           storage {
                           std::string const& query,
                           mysql_callback fn,
                           int thread = -1);
+    misc::shared_ptr<mysql_result>
+                        get_result(int thread_id);
     bool                finish();
 
    private:

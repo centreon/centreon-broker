@@ -31,6 +31,7 @@ namespace                  storage {
    public:
     enum                   mysql_type {
                              RUN,
+                             RUN_SYNC,
                              PREPARE,
                              STATEMENT,
                              FINISH,
@@ -39,6 +40,13 @@ namespace                  storage {
                            mysql_task(mysql_type type)
                             : type(type) {}
     mysql_type             type;
+  };
+
+  class                    mysql_task_run_sync : public mysql_task {
+   public:
+                           mysql_task_run_sync(std::string const& q)
+                            : mysql_task(mysql_task::RUN_SYNC), query(q) {}
+    std::string            query;
   };
 
   class                    mysql_task_run : public mysql_task {
