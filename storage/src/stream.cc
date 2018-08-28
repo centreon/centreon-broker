@@ -1057,9 +1057,6 @@ void stream::_insert_perfdatas() {
  *  Prepare queries.
  */
 void stream::_prepare() {
-  // Build cache.
-  _rebuild_cache();
-
   // Database schema version.
   // FIXME DBR
   bool db_v2(true);    //_db.schema_version() == database::v2);
@@ -1105,6 +1102,10 @@ void stream::_prepare() {
            "         ?, ?, ?, ?, "
            "         ?, ?)";
   _insert_metrics_stmt = _mysql.prepare_query(query.str());
+
+  // Build cache.
+  _rebuild_cache();
+
 //  _update_metrics.prepare(
 //    query.str(),
 //    "storage: could not prepare metrics update query");

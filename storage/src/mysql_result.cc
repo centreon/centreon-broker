@@ -41,7 +41,7 @@ bool mysql_result::next() {
 }
 
 bool mysql_result::value_as_bool(int idx) {
-  bool retval(atoi(_row[idx]));
+  bool retval(_row[idx] ? atoi(_row[idx]) : false);
   return retval;
 }
 
@@ -51,22 +51,22 @@ std::string mysql_result::value_as_str(int idx) {
 }
 
 double mysql_result::value_as_f64(int idx) {
-  double retval(atof(_row[idx]));
+  double retval(_row[idx] ? atof(_row[idx]) : 0);
   return retval;
 }
 
 int mysql_result::value_as_i32(int idx) {
-  int retval(atoi(_row[idx]));
+  int retval(_row[idx] ? atoi(_row[idx]) : 0);
   return retval;
 }
 
 unsigned int mysql_result::value_as_u32(int idx) {
-  unsigned int retval(strtoul(_row[idx], 0, 10));
+  unsigned int retval(_row[idx] ? strtoul(_row[idx], 0, 10) : 0);
   return retval;
 }
 
 unsigned long long mysql_result::value_as_u64(int idx) {
-  int retval(atoll(_row[idx]));
+  unsigned long long retval(_row[idx] ? strtoull(_row[idx], 0, 10) : 0);
   return retval;
 }
 
