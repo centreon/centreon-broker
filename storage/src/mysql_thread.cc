@@ -44,37 +44,41 @@ void mysql_thread::_run_sync(mysql_task_run_sync* task) {
     logging::error(logging::medium)
       << "storage: Error while sending query '" << task->query << "'";
   }
-  _result = new mysql_result(mysql_store_result(_conn));
+  _result = mysql_store_result(_conn);
   _result_condition.wakeAll();
 }
 
-misc::shared_ptr<mysql_result> mysql_thread::get_result() {
-  return _result;
+mysql_result mysql_thread::get_result() {
+  mysql_result retval(_result);
+  _result = NULL;
+  return retval;
 }
 
 void mysql_thread::_prepare(mysql_task_prepare* task) {
-  misc::shared_ptr<MYSQL_STMT> stmt(mysql_stmt_init(_conn));
-  if (!stmt.data()) {
+  MYSQL_STMT* stmt(mysql_stmt_init(_conn));
+  if (!stmt) {
     logging::error(logging::medium)
       << "storage: Could not initialize statement";
   }
-  if (mysql_stmt_prepare(stmt.data(), task->query.c_str(), task->query.size())) {
-    logging::error(logging::medium)
-      << "storage: Could not prepare statement";
+  else {
+    if (mysql_stmt_prepare(stmt, task->query.c_str(), task->query.size())) {
+      logging::error(logging::medium)
+        << "storage: Could not prepare statement";
+    }
+    _stmt.push_back(stmt);
   }
-  _stmt.push_back(stmt);
 }
 
 void mysql_thread::_statement(mysql_task_statement* task) {
-  if (mysql_stmt_bind_param(_stmt[task->statement_id].data(), const_cast<MYSQL_BIND*>(task->bind.get_bind()))) {
+  if (mysql_stmt_bind_param(_stmt[task->statement_id], const_cast<MYSQL_BIND*>(task->bind.get_bind()))) {
     logging::error(logging::medium)
       << "storage: Error while binding values in statement: "
-      << mysql_stmt_error(_stmt[task->statement_id].data());
+      << mysql_stmt_error(_stmt[task->statement_id]);
   }
-  if (mysql_stmt_execute(_stmt[task->statement_id].data())) {
+  if (mysql_stmt_execute(_stmt[task->statement_id])) {
     logging::error(logging::medium)
       << "storage: Error while sending prepared query: "
-      << mysql_stmt_error(_stmt[task->statement_id].data());
+      << mysql_stmt_error(_stmt[task->statement_id]);
   }
 }
 
@@ -167,6 +171,13 @@ mysql_thread::mysql_thread(
 
 mysql_thread::~mysql_thread() {
   std::cout << "destructor" << std::endl;
+  for (std::vector<MYSQL_STMT*>::iterator
+         it(_stmt.begin()),
+         end(_stmt.end());
+       it != end;
+       ++it) {
+    mysql_stmt_close(*it);
+  }
   mysql_close(_conn);
   mysql_thread_end();
   std::cout << "destructor return" << std::endl;

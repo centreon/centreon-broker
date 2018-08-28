@@ -50,8 +50,7 @@ namespace           storage {
                           std::string const& query,
                           mysql_callback fn,
                           int thread = -1);
-    misc::shared_ptr<mysql_result>
-                        get_result(int thread_id);
+    mysql_result        get_result(int thread_id);
     bool                finish();
 
    private:

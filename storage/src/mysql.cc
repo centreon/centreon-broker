@@ -80,7 +80,7 @@ int mysql::run_query_sync(std::string const& query, int thread) {
   return thread;
 }
 
-misc::shared_ptr<mysql_result> mysql::get_result(int thread_id) {
+mysql_result mysql::get_result(int thread_id) {
   return _thread[thread_id]->get_result();
 }
 

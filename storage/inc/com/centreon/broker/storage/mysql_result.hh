@@ -19,6 +19,7 @@
 #  define CCB_STORAGE_MYSQL_RESULT_HH
 
 #include <mysql.h>
+#include <string>
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -37,7 +38,13 @@ namespace           storage {
                         ~mysql_result();
     bool                is_empty() const;
     bool                next();
-    int                 value(int idx);
+    bool                value_as_bool(int idx);
+    double              value_as_f64(int idx);
+    int                 value_as_i32(int idx);
+    std::string         value_as_str(int idx);
+    unsigned int        value_as_u32(int idx);
+    unsigned long long  value_as_u64(int idx);
+    bool                value_is_null(int idx);
 
    private:
     MYSQL_RES*          _result;

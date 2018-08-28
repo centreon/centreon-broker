@@ -23,11 +23,8 @@
 #  include <list>
 #  include <map>
 #  include <memory>
-#  include <QSqlDatabase>
 #  include <QString>
 #  include <utility>
-#  include "com/centreon/broker/database.hh"
-#  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/storage/rebuilder.hh"
@@ -139,8 +136,9 @@ namespace          storage {
     std::string    _status;
     mutable QMutex _statusm;
     bool           _store_in_db;
-    database       _db;
+    //database       _db;
     int            _update_metrics_stmt;
+    int            _insert_metrics_stmt;
     mysql          _mysql;
   };
 }

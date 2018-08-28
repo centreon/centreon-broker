@@ -19,11 +19,9 @@
 #include <cfloat>
 #include <cmath>
 #include <cstdlib>
-#include <QSqlDriver>
-#include <QThread>
-#include <QMutexLocker>
 #include <sstream>
-#include "com/centreon/broker/misc/global_lock.hh"
+#include <QMutexLocker>
+#include <QVariant>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -36,12 +34,12 @@
 #include "com/centreon/broker/storage/index_mapping.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/metric_mapping.hh"
+#include "com/centreon/broker/storage/mysql_bind.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
 #include "com/centreon/broker/storage/stream.hh"
-#include "com/centreon/broker/storage/mysql_bind.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -122,8 +120,8 @@ stream::stream(
       interval_length),
     _rrd_len(rrd_len ? rrd_len : 15552000),
     _store_in_db(store_in_db),
-    _db(db_cfg),
     _update_metrics_stmt(-1),
+    _insert_metrics_stmt(-1),
     _mysql(db_cfg) {
   // Prepare queries.
   _prepare();
@@ -151,8 +149,9 @@ int stream::flush() {
     << "storage: committing transaction";
   _update_status("status=committing current transaction\n");
   _insert_perfdatas();
-  _db.commit();
-  _db.clear_committed_flag();
+//  FIXME DBR
+//  _db.commit();
+//  _db.clear_committed_flag();
   int retval(_pending_events);
   _pending_events = 0;
   _update_status("");
@@ -324,15 +323,19 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   // Event acknowledgement.
   logging::debug(logging::low)
     << "storage: " << _pending_events << " have not yet been acknowledged";
-  if (_db.committed()) {
-    _db.clear_committed_flag();
-    _insert_perfdatas();
-    int retval(_pending_events);
-    _pending_events = 0;
-    return (retval);
-  }
-  else
-    return (0);
+//  FIXME DBR
+  int retval(_pending_events);
+  _pending_events = 0;
+  return retval;
+//  if (_db.committed()) {
+//    _db.clear_committed_flag();
+//    _insert_perfdatas();
+//    int retval(_pending_events);
+//    _pending_events = 0;
+//    return (retval);
+//  }
+//  else
+//    return (0);
 }
 
 /**************************************
@@ -353,7 +356,8 @@ void stream::_check_deleted_index() {
     "status=deleting old performance data (might take a while)\n");
 
   // Database schema version.
-  bool db_v2(_db.schema_version() == database::v2);
+  //FIXME DBR
+  bool db_v2(true);	//_db.schema_version() == database::v2);
 
   // Delete index.
   while (1) {
@@ -365,13 +369,15 @@ void stream::_check_deleted_index() {
             << "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
             << "  WHERE to_delete=1"
                "  LIMIT 1";
-      database_query q(_db);
-      q.run_query(
-          query.str(),
-          "storage: could not query index table to get index to delete");
-      if (!q.next())
+      int thread_id(_mysql.run_query_sync(query.str()));
+      mysql_result res(_mysql.get_result(thread_id));
+//      database_query q(_db);
+//      q.run_query(
+//          query.str(),
+//          "storage: could not query index table to get index to delete");
+      if (!res.next())
         break ;
-      index_id = q.value(0).toULongLong();
+      index_id = res.value_as_u64(0);
     }
 
     // Get associated metrics.
@@ -381,15 +387,22 @@ void stream::_check_deleted_index() {
       oss << "SELECT metric_id"
              "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
           << "  WHERE index_id=" << index_id;
-      database_query q(_db);
-      try { q.run_query(oss.str()); }
-      catch (std::exception const& e) {
-        throw (broker::exceptions::msg()
-               << "storage: could not get metrics of index "
-               << index_id << ": " << e.what());
-      }
-      while (q.next())
-        metrics_to_delete.push_back(q.value(0).toULongLong());
+
+      int thread_id(_mysql.run_query_sync(oss.str()));
+      mysql_result res(_mysql.get_result(thread_id));
+      while (res.next())
+        metrics_to_delete.push_back(res.value_as_u64(0));
+
+//      FIXME DBR
+//      database_query q(_db);
+//      try { q.run_query(oss.str()); }
+//      catch (std::exception const& e) {
+//        throw (broker::exceptions::msg()
+//               << "storage: could not get metrics of index "
+//               << index_id << ": " << e.what());
+//      }
+//      while (q.next())
+//        metrics_to_delete.push_back(q.value(0).toULongLong());
     }
 
     // Delete metrics.
@@ -402,12 +415,14 @@ void stream::_check_deleted_index() {
       oss << "DELETE FROM " << (db_v2 ? "index_data" : "rt_index_data")
           << "  WHERE " << (db_v2 ? "id" : "index_id")
           << "        =" << index_id;
-      database_query q(_db);
-      try { q.run_query(oss.str()); }
-      catch (std::exception const& e) {
-        logging::error(logging::low) << "storage: cannot delete index "
-          << index_id << ": " << e.what();
-      }
+      _mysql.run_query(oss.str());
+//      FIXME DBR
+//      database_query q(_db);
+//      try { q.run_query(oss.str()); }
+//      catch (std::exception const& e) {
+//        logging::error(logging::low) << "storage: cannot delete index "
+//          << index_id << ": " << e.what();
+//      }
     }
     ++deleted_index;
 
@@ -425,12 +440,17 @@ void stream::_check_deleted_index() {
     oss << "SELECT metric_id"
            "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
         << "  WHERE to_delete=1";
-    database_query q(_db);
-    q.run_query(
-        oss.str(),
-        "storage: could not get the list of metrics to delete");
-    while (q.next())
-      metrics_to_delete.push_back(q.value(0).toULongLong());
+    int thread_id(_mysql.run_query_sync(oss.str()));
+    mysql_result res(_mysql.get_result(thread_id));
+    while (res.next())
+      metrics_to_delete.push_back(res.value_as_u64(0));
+//    FIXME DBR
+//    database_query q(_db);
+//    q.run_query(
+//        oss.str(),
+//        "storage: could not get the list of metrics to delete");
+//    while (q.next())
+//      metrics_to_delete.push_back(q.value(0).toULongLong());
   }
 
   // Delete standalone metrics.
@@ -454,7 +474,8 @@ void stream::_check_deleted_index() {
 void stream::_delete_metrics(
                std::list<unsigned long long> const& metrics_to_delete) {
   // Database schema version.
-  bool db_v2(_db.schema_version() == database::v2);
+  // FIXME DBR
+  bool db_v2(true);    //_db.schema_version() == database::v2);
 
   // Delete metrics.
   for (std::list<unsigned long long>::const_iterator
@@ -484,13 +505,15 @@ void stream::_delete_metrics(
       std::ostringstream oss;
       oss << "DELETE FROM " << (db_v2 ? "metrics" : "rt_metrics")
           << "  WHERE metric_id=" << metric_id;
-      database_query q(_db);
-      try { q.run_query(oss.str()); }
-      catch (std::exception const& e) {
-        logging::error(logging::low)
-          << "storage: cannot remove metric " << metric_id << ": "
-          << e.what();
-      }
+      _mysql.run_query(oss.str());
+//      FIXME DBR
+//      database_query q(_db);
+//      try { q.run_query(oss.str()); }
+//      catch (std::exception const& e) {
+//        logging::error(logging::low)
+//          << "storage: cannot remove metric " << metric_id << ": "
+//          << e.what();
+//      }
     }
 
     // Remove associated graph.
@@ -547,7 +570,8 @@ unsigned int stream::_find_index_id(
   unsigned int retval;
 
   // Database schema version.
-  bool db_v2(_db.schema_version() == database::v2);
+  //FIXME DBR
+  bool db_v2(true);   //_db.schema_version() == database::v2);
 
   // Look in the cache.
   std::map<
@@ -842,78 +866,100 @@ unsigned int stream::_find_metric_id(
       << ", " << metric_name << ")";
 
     // Database schema version.
-    bool db_v2(_db.schema_version() == database::v2);
+    //FIXME DBR
+    bool db_v2(true);   //_db.schema_version() == database::v2);
 
     // Build query.
     if (*type == perfdata::automatic)
       *type = perfdata::gauge;
-    std::ostringstream query;
-    query << "INSERT INTO " << (db_v2 ? "metrics" : "rt_metrics")
-          << "  (index_id, metric_name, unit_name, warn, warn_low,"
-             "   warn_threshold_mode, crit, crit_low, "
-             "   crit_threshold_mode, min, max, current_value,"
-             "   data_source_type)"
-             " VALUES (:index_id, :metric_name, :unit_name, :warn, "
-             "         :warn_low, :warn_threshold_mode, :crit, "
-             "         :crit_low, :crit_threshold_mode, :min, :max, "
-             "         :current_value, :data_source_type)";
-    database_query q(_db);
-    q.prepare(
-        query.str(),
-        "storage: could not prepare metric insertion query");
-    q.bind_value(":index_id", index_id);
-    q.bind_value(":metric_name", metric_name);
-    q.bind_value(":unit_name", unit_name);
-    q.bind_value(":warn", check_double(warn));
-    q.bind_value(":warn_low", check_double(warn_low));
-    q.bind_value(":warn_threshold_mode", warn_mode);
-    q.bind_value(":crit", check_double(crit));
-    q.bind_value(":crit_low", check_double(crit_low));
-    q.bind_value(":crit_threshold_mode", crit_mode);
-    q.bind_value(":min", check_double(min));
-    q.bind_value(":max", check_double(max));
-    q.bind_value(":current_value", check_double(value));
-    q.bind_value(":data_source_type", *type + (db_v2 ? 1 : 0));
+    mysql_bind bind(13);
+    bind.set_int(0, index_id);
+    bind.set_string(1, metric_name.toStdString());
+    bind.set_string(2, unit_name.toStdString());
+    bind.set_float(3, warn);
+    bind.set_float(4, warn_low);
+    bind.set_tiny(5, warn_mode);
+    bind.set_float(6, crit);
+    bind.set_float(7, crit_low);
+    bind.set_tiny(8, crit_mode);
+    bind.set_float(9, min);
+    bind.set_float(10, max);
+    bind.set_float(11, value);
+    char t[2];
+    t[0] = *type + (db_v2 ? 1 : 0);
+    t[1] = 0;
+    bind.set_string(12, t);
+
+//    if (*type == perfdata::automatic)
+//      *type = perfdata::gauge;
+//    std::ostringstream query;
+//    query << "INSERT INTO " << (db_v2 ? "metrics" : "rt_metrics")
+//          << "  (index_id, metric_name, unit_name, warn, warn_low,"
+//             "   warn_threshold_mode, crit, crit_low, "
+//             "   crit_threshold_mode, min, max, current_value,"
+//             "   data_source_type)"
+//             " VALUES (:index_id, :metric_name, :unit_name, :warn, "
+//             "         :warn_low, :warn_threshold_mode, :crit, "
+//             "         :crit_low, :crit_threshold_mode, :min, :max, "
+//             "         :current_value, :data_source_type)";
+//    database_query q(_db);
+//    q.prepare(
+//        query.str(),
+//        "storage: could not prepare metric insertion query");
+//    q.bind_value(":index_id", index_id);
+//    q.bind_value(":metric_name", metric_name);
+//    q.bind_value(":unit_name", unit_name);
+//    q.bind_value(":warn", check_double(warn));
+//    q.bind_value(":warn_low", check_double(warn_low));
+//    q.bind_value(":warn_threshold_mode", warn_mode);
+//    q.bind_value(":crit", check_double(crit));
+//    q.bind_value(":crit_low", check_double(crit_low));
+//    q.bind_value(":crit_threshold_mode", crit_mode);
+//    q.bind_value(":min", check_double(min));
+//    q.bind_value(":max", check_double(max));
+//    q.bind_value(":current_value", check_double(value));
+//    q.bind_value(":data_source_type", *type + (db_v2 ? 1 : 0));
 
     // Execute query.
-    try { q.run_statement(); }
+    try { _mysql.run_statement(_insert_metrics_stmt, bind); }
     catch (std::exception const& e) {
       throw (broker::exceptions::msg() << "storage: insertion of "
                 "metric '" << metric_name << "' of index " << index_id
              << " failed: " << e.what());
     }
 
-    // Fetch insert ID with query if possible.
-    if (!_db.get_qt_driver()->hasFeature(QSqlDriver::LastInsertId)
-        || !(retval = q.last_insert_id().toUInt())) {
-      q.finish();
-      std::ostringstream query;
-      query << "SELECT metric_id"
-               "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
-            << "  WHERE index_id=:index_id"
-               "    AND metric_name=:metric_name";
-      database_query q2(_db);
-      q2.prepare(
-           query.str(),
-           "storage: could not prepare metric ID fetching query");
-      q2.bind_value(":index_id", index_id);
-      q2.bind_value(":metric_name", metric_name);
-      try {
-        q2.run_statement();
-        if (!q2.next())
-          throw (broker::exceptions::msg() << "no ID was returned");
-      }
-      catch (std::exception const& e) {
-        throw (broker::exceptions::msg() << "storage: could not fetch"
-                  " metric_id of newly inserted metric '"
-               << metric_name << "' of index " << index_id << ": "
-               << e.what());
-      }
-      retval = q2.value(0).toUInt();
-      if (!retval)
-        throw (broker::exceptions::msg() << "storage: metrics table "
-                 "is corrupted: got 0 as metric_id");
-    }
+    // FIXME DBR
+//    // Fetch insert ID with query if possible.
+//    if (!_db.get_qt_driver()->hasFeature(QSqlDriver::LastInsertId)
+//        || !(retval = q.last_insert_id().toUInt())) {
+//      q.finish();
+//      std::ostringstream query;
+//      query << "SELECT metric_id"
+//               "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
+//            << "  WHERE index_id=:index_id"
+//               "    AND metric_name=:metric_name";
+//      database_query q2(_db);
+//      q2.prepare(
+//           query.str(),
+//           "storage: could not prepare metric ID fetching query");
+//      q2.bind_value(":index_id", index_id);
+//      q2.bind_value(":metric_name", metric_name);
+//      try {
+//        q2.run_statement();
+//        if (!q2.next())
+//          throw (broker::exceptions::msg() << "no ID was returned");
+//      }
+//      catch (std::exception const& e) {
+//        throw (broker::exceptions::msg() << "storage: could not fetch"
+//                  " metric_id of newly inserted metric '"
+//               << metric_name << "' of index " << index_id << ": "
+//               << e.what());
+//      }
+//      retval = q2.value(0).toUInt();
+//      if (!retval)
+//        throw (broker::exceptions::msg() << "storage: metrics table "
+//                 "is corrupted: got 0 as metric_id");
+//    }
 
     // Insert metric in cache.
     logging::info(logging::medium) << "storage: new metric "
@@ -956,7 +1002,8 @@ void stream::_insert_perfdatas() {
     _update_status("status=inserting performance data\n");
 
     // Database schema version.
-    bool db_v2(_db.schema_version() == database::v2);
+    // FIXME DBR
+    bool db_v2(true);   //_db.schema_version() == database::v2);
 
     // Insert first entry.
     std::ostringstream query;
@@ -1014,7 +1061,8 @@ void stream::_prepare() {
   _rebuild_cache();
 
   // Database schema version.
-  bool db_v2(_db.schema_version() == database::v2);
+  // FIXME DBR
+  bool db_v2(true);    //_db.schema_version() == database::v2);
 
   // Prepare metrics update query.
   std::ostringstream query;
@@ -1045,6 +1093,18 @@ void stream::_prepare() {
            "  WHERE index_id=?"
            "    AND metric_name=?";
   _update_metrics_stmt = _mysql.prepare_query(query.str());
+
+  query.str("");
+  query << "INSERT INTO " << (db_v2 ? "metrics" : "rt_metrics")
+        << "  (index_id, metric_name, unit_name, warn, warn_low,"
+           "   warn_threshold_mode, crit, crit_low, "
+           "   crit_threshold_mode, min, max, current_value,"
+           "   data_source_type)"
+           " VALUES (?, ?, ?, ?, "
+           "         ?, ?, ?, "
+           "         ?, ?, ?, ?, "
+           "         ?, ?)";
+  _insert_metrics_stmt = _mysql.prepare_query(query.str());
 //  _update_metrics.prepare(
 //    query.str(),
 //    "storage: could not prepare metrics update query");
@@ -1065,7 +1125,8 @@ void stream::_rebuild_cache() {
   _metric_cache.clear();
 
   // Database schema version.
-  bool db_v2(_db.schema_version() == database::v2);
+  //FIXME DBR
+  bool db_v2(true);     //_db.schema_version() == database::v2);
 
   // Fill index cache.
   {
@@ -1076,27 +1137,30 @@ void stream::_rebuild_cache() {
              "       rrd_retention, service_description, special,"
              "       locked"
              " FROM " << (db_v2 ? "index_data" : "rt_index_data");
-    database_query q(_db);
-    q.run_query(
-        query.str(),
-        "storage: could not fetch index list from data DB");
+    int thread_id(_mysql.run_query_sync(query.str()));
+    mysql_result res(_mysql.get_result(thread_id));
+//    database_query q(_db);
+//    q.run_query(
+//        query.str(),
+//        "storage: could not fetch index list from data DB");
 
     // Loop through result set.
-    while (q.next()) {
+    while (res.next()) {
       index_info info;
-      info.index_id = q.value(0).toUInt();
-      unsigned int host_id(q.value(1).toUInt());
-      unsigned int service_id(q.value(2).toUInt());
-      info.host_name = q.value(3).toString();
-      info.rrd_retention = (q.value(4).isNull() ? 0 : q.value(4).toUInt());
+      info.index_id = res.value_as_u32(0);
+      unsigned int host_id(res.value_as_u32(1));
+      unsigned int service_id(res.value_as_u32(2));
+      info.host_name = QString(res.value_as_str(3).c_str());
+      // FIXME DBR
+      info.rrd_retention = res.value_as_u32(4);   //(q.value(4).isNull() ? 0 : q.value(4).toUInt());
       if (!info.rrd_retention)
         info.rrd_retention = _rrd_len;
-      info.service_description = q.value(5).toString();
+      info.service_description = QString(res.value_as_str(5).c_str());
       if (db_v2)
-        info.special = (q.value(6).toUInt() == 2);
+        info.special = (res.value_as_u32(6) == 2);
       else
-        info.special = q.value(6).toBool();
-      info.locked = q.value(7).toBool();
+        info.special = res.value_as_bool(6);
+      info.locked = res.value_as_bool(7);
       logging::debug(logging::high) << "storage: loaded index "
         << info.index_id << " of (" << host_id << ", "
         << service_id << ")";
@@ -1121,31 +1185,33 @@ void stream::_rebuild_cache() {
              "       warn_threshold_mode, crit, crit_low,"
              "       crit_threshold_mode, min, max"
              "  FROM " << (db_v2 ? "metrics" : "rt_metrics");
-    database_query q(_db);
-    q.run_query(
-        query.str(),
-        "storage: could not fetch metric list from data DB");
+    int thread_id(_mysql.run_query_sync(query.str()));
+    mysql_result res(_mysql.get_result(thread_id));
+//    database_query q(_db);
+//    q.run_query(
+//        query.str(),
+//        "storage: could not fetch metric list from data DB");
 
     // Loop through result set.
-    while (q.next()) {
+    while (res.next()) {
       metric_info info;
-      info.metric_id = q.value(0).toUInt();
-      unsigned int index_id(q.value(1).toUInt());
-      QString name(q.value(2).toString());
-      info.type = (q.value(3).isNull()
+      info.metric_id = res.value_as_u32(0);
+      unsigned int index_id(res.value_as_u32(1));
+      QString name(res.value_as_str(2).c_str());
+      info.type = (res.value_is_null(3)
                    ? static_cast<unsigned int>(perfdata::automatic)
-                   : q.value(3).toUInt());
-      info.locked = q.value(4).toBool();
-      info.value = (q.value(5).isNull() ? NAN : q.value(5).toDouble());
-      info.unit_name = q.value(6).toString();
-      info.warn = (q.value(7).isNull() ? NAN : q.value(7).toDouble());
-      info.warn_low = (q.value(8).isNull() ? NAN : q.value(8).toDouble());
-      info.warn_mode = q.value(9).toBool();
-      info.crit = (q.value(10).isNull() ? NAN : q.value(10).toDouble());
-      info.crit_low = (q.value(11).isNull() ? NAN : q.value(11).toDouble());
-      info.crit_mode = q.value(12).toBool();
-      info.min = (q.value(13).isNull() ? NAN : q.value(13).toDouble());
-      info.max = (q.value(14).isNull() ? NAN : q.value(14).toDouble());
+                   : res.value_as_u32(3));
+      info.locked = res.value_as_bool(4);
+      info.value = (res.value_is_null(5) ? NAN : res.value_as_f64(5));
+      info.unit_name = res.value_as_str(6).c_str();
+      info.warn = (res.value_is_null(7) ? NAN : res.value_as_f64(7));
+      info.warn_low = (res.value_is_null(8) ? NAN : res.value_as_f64(8));
+      info.warn_mode = res.value_as_bool(9);
+      info.crit = (res.value_is_null(10) ? NAN : res.value_as_f64(10));
+      info.crit_low = (res.value_is_null(11) ? NAN : res.value_as_f64(11));
+      info.crit_mode = res.value_as_bool(12);
+      info.min = (res.value_is_null(13) ? NAN : res.value_as_f64(13));
+      info.max = (res.value_is_null(14) ? NAN : res.value_as_f64(14));
       logging::debug(logging::high) << "storage: loaded metric "
         << info.metric_id << " of (" << index_id << ", " << name
         << "), type " << info.type;

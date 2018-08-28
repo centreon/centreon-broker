@@ -55,8 +55,7 @@ namespace                  storage {
                              std::string const& query,
                              mysql_callback);
     void                   finish();
-    misc::shared_ptr<mysql_result>
-                           get_result();
+    mysql_result           get_result();
 
    private:
     void                   run();
@@ -76,10 +75,9 @@ namespace                  storage {
 
     std::list<misc::shared_ptr<mysql_task> >
                            _queries_list;
-    std::vector<misc::shared_ptr<MYSQL_STMT> >
+    std::vector<MYSQL_STMT*>
                            _stmt;
-    misc::shared_ptr<mysql_result>
-                           _result;
+    MYSQL_RES*             _result;
   };
 }
 

@@ -165,10 +165,10 @@ TEST_F(DatabaseStorageTest, QuerySync) {
 
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
   int id(ms->run_query_sync(oss.str()));
-  misc::shared_ptr<mysql_result> res(ms->get_result(id));
+  mysql_result res(ms->get_result(id));
   int count(0);
-  while (res->next()) {
-    int v(res->value(0));
+  while (res.next()) {
+    int v(res.value_as_i32(0));
     std::cout << "value " << v << std::endl;
     ++count;
   }

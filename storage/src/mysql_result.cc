@@ -40,7 +40,36 @@ bool mysql_result::next() {
   return _row != 0;
 }
 
-int mysql_result::value(int idx) {
+bool mysql_result::value_as_bool(int idx) {
+  bool retval(atoi(_row[idx]));
+  return retval;
+}
+
+std::string mysql_result::value_as_str(int idx) {
+  std::string retval(_row[idx]);
+  return retval;
+}
+
+double mysql_result::value_as_f64(int idx) {
+  double retval(atof(_row[idx]));
+  return retval;
+}
+
+int mysql_result::value_as_i32(int idx) {
   int retval(atoi(_row[idx]));
   return retval;
+}
+
+unsigned int mysql_result::value_as_u32(int idx) {
+  unsigned int retval(strtoul(_row[idx], 0, 10));
+  return retval;
+}
+
+unsigned long long mysql_result::value_as_u64(int idx) {
+  int retval(atoll(_row[idx]));
+  return retval;
+}
+
+bool mysql_result::value_is_null(int idx) {
+  return _row[idx] == 0;
 }

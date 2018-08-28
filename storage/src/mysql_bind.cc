@@ -71,8 +71,6 @@ void mysql_bind::set_tiny(int range, char value) {
   char* tmp = reinterpret_cast<char*>(&value);
   _buffer[range].resize(sizeof(value));
   memcpy(&_buffer[range][0], tmp, sizeof(value));
-//  for (int i = 0; i < sizeof(value); ++i)
-//    _buffer[range][i] = tmp[i];
   _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
 }
 
@@ -84,8 +82,6 @@ void mysql_bind::set_int(int range, int value) {
   char* tmp = reinterpret_cast<char*>(&value);
   _buffer[range].resize(sizeof(value));
   memcpy(&_buffer[range][0], tmp, sizeof(value));
-//  for (int i = 0; i < sizeof(value); ++i)
-//    _buffer[range][i] = tmp[i];
   _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
 }
 
@@ -97,8 +93,6 @@ void mysql_bind::set_uint(int range, unsigned int value) {
   char* tmp = reinterpret_cast<char*>(&value);
   _buffer[range].resize(sizeof(value));
   memcpy(&_buffer[range][0], tmp, sizeof(value));
-//  for (int i = 0; i < sizeof(value); ++i)
-//    _buffer[range][i] = tmp[i];
   _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
   _bind[range].is_unsigned = true;
 }
@@ -111,8 +105,6 @@ void mysql_bind::set_float(int range, float value) {
   char* tmp = reinterpret_cast<char*>(&value);
   _buffer[range].resize(sizeof(value));
   memcpy(&_buffer[range][0], tmp, sizeof(value));
-//  for (int i = 0; i < sizeof(value); ++i)
-//    _buffer[range][i] = tmp[i];
   _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
   if (isnan(value))
     _bind[range].is_null = &_true;
