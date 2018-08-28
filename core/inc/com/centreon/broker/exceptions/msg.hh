@@ -21,7 +21,6 @@
 
 # include <exception>
 # include "com/centreon/broker/misc/stringifier.hh"
-# include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 

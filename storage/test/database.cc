@@ -17,6 +17,7 @@
 */
 
 #include <gtest/gtest.h>
+#include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/storage/mysql.hh"
 

@@ -20,14 +20,11 @@
 #  define CCB_STORAGE_MYSQL_THREAD_HH
 
 #include <QThread>
-#include <QMutex>
 #include <QWaitCondition>
-#include <mysql.h>
-#include "com/centreon/broker/storage/mysql_bind.hh"
-#include "com/centreon/broker/storage/mysql_task.hh"
-#include "com/centreon/broker/storage/mysql_result.hh"
-#include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
+#include "com/centreon/broker/storage/mysql_bind.hh"
+#include "com/centreon/broker/storage/mysql_result.hh"
+#include "com/centreon/broker/storage/mysql_task.hh"
 
 CCB_BEGIN()
 

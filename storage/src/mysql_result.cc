@@ -31,10 +31,6 @@ mysql_result::~mysql_result() {
   }
 }
 
-bool mysql_result::is_empty() const {
-  return _result == 0;
-}
-
 bool mysql_result::next() {
   _row = mysql_fetch_row(_result);
   return _row != 0;

@@ -36,7 +36,6 @@ namespace           storage {
    public:
                         mysql_result(MYSQL_RES* res);
                         ~mysql_result();
-    bool                is_empty() const;
     bool                next();
     bool                value_as_bool(int idx);
     double              value_as_f64(int idx);
