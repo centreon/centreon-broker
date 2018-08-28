@@ -33,6 +33,10 @@ namespace           storage {
    */
   class                 mysql {
    public:
+    enum                version {
+      v2 = 2,
+      v3
+    };
                         mysql(database_config const& db_cfg);
                         ~mysql();
     int                 prepare_query(std::string const& query);
@@ -51,13 +55,14 @@ namespace           storage {
                           int thread = -1);
     mysql_result        get_result(int thread_id);
     bool                finish();
+    version             schema_version() const;
 
    private:
     database_config     _db_cfg;
 
     std::vector<mysql_thread*>
                         _vector;
-    database::version   _version;
+    version             _version;
     std::vector<misc::shared_ptr<mysql_thread> >
                         _thread;
     int                 _current_thread;

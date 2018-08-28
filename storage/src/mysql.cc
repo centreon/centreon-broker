@@ -30,7 +30,7 @@ using namespace com::centreon::broker::storage;
  */
 mysql::mysql(database_config const& db_cfg)
   : _db_cfg(db_cfg),
-    _version(database::v3),
+    _version(mysql::v3),
     _current_thread(0),
     _prepare_count(0) {
   std::cout << "mysql constructor" << std::endl;
@@ -129,4 +129,8 @@ bool mysql::finish() {
     retval &= (*it)->wait(20000);
   }
   return retval;
+}
+
+mysql::version mysql::schema_version() const {
+  return _version;
 }

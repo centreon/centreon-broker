@@ -356,8 +356,7 @@ void stream::_check_deleted_index() {
     "status=deleting old performance data (might take a while)\n");
 
   // Database schema version.
-  //FIXME DBR
-  bool db_v2(true);	//_db.schema_version() == database::v2);
+  bool db_v2(_mysql.schema_version() == mysql::v2);
 
   // Delete index.
   while (1) {
@@ -482,8 +481,7 @@ void stream::_check_deleted_index() {
 void stream::_delete_metrics(
                std::list<unsigned long long> const& metrics_to_delete) {
   // Database schema version.
-  // FIXME DBR
-  bool db_v2(true);    //_db.schema_version() == database::v2);
+  bool db_v2(_mysql.schema_version() == mysql::v2);
 
   // Delete metrics.
   for (std::list<unsigned long long>::const_iterator
@@ -578,8 +576,7 @@ unsigned int stream::_find_index_id(
   unsigned int retval;
 
   // Database schema version.
-  //FIXME DBR
-  bool db_v2(true);   //_db.schema_version() == database::v2);
+  bool db_v2(_mysql.schema_version() == mysql::v2);
 
   // Look in the cache.
   std::map<
@@ -874,8 +871,7 @@ unsigned int stream::_find_metric_id(
       << ", " << metric_name << ")";
 
     // Database schema version.
-    //FIXME DBR
-    bool db_v2(true);   //_db.schema_version() == database::v2);
+    bool db_v2(_mysql.schema_version() == mysql::v2);
 
     // Build query.
     if (*type == perfdata::automatic)
@@ -1010,8 +1006,7 @@ void stream::_insert_perfdatas() {
     _update_status("status=inserting performance data\n");
 
     // Database schema version.
-    // FIXME DBR
-    bool db_v2(true);   //_db.schema_version() == database::v2);
+    bool db_v2(_mysql.schema_version() == mysql::v2);
 
     // Insert first entry.
     std::ostringstream query;
@@ -1066,8 +1061,7 @@ void stream::_insert_perfdatas() {
  */
 void stream::_prepare() {
   // Database schema version.
-  // FIXME DBR
-  bool db_v2(true);    //_db.schema_version() == database::v2);
+  bool db_v2(_mysql.schema_version() == mysql::v2);
 
   // Prepare metrics update query.
   std::ostringstream query;
@@ -1134,8 +1128,7 @@ void stream::_rebuild_cache() {
   _metric_cache.clear();
 
   // Database schema version.
-  //FIXME DBR
-  bool db_v2(true);     //_db.schema_version() == database::v2);
+  bool db_v2(_mysql.schema_version() == mysql::v2);
 
   // Fill index cache.
   {
