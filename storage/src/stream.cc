@@ -388,7 +388,15 @@ void stream::_check_deleted_index() {
              "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
           << "  WHERE index_id=" << index_id;
 
-      int thread_id(_mysql.run_query_sync(oss.str()));
+      int thread_id;
+      try {
+        thread_id = _mysql.run_query_sync(oss.str());
+      }
+      catch (std::exception const& e) {
+        throw broker::exceptions::msg()
+               << "storage: could not get metrics of index "
+               << index_id << ": " << e.what();
+      }
       mysql_result res(_mysql.get_result(thread_id));
       while (res.next())
         metrics_to_delete.push_back(res.value_as_u64(0));

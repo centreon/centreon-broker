@@ -69,14 +69,14 @@ void mysql::run_query(std::string const& query, int thread) {
   _thread[thread]->run_query(query);
 }
 
-int mysql::run_query_sync(std::string const& query, int thread) {
+int mysql::run_query_sync(std::string const& query, char const* error_msg, int thread) {
   if (thread < 0) {
     // Here, we use _current_thread
     thread = _current_thread++;
     if (_current_thread >= _thread.size())
       _current_thread = 0;
   }
-  _thread[thread]->run_query_sync(query);
+  _thread[thread]->run_query_sync(query, error_msg);
   return thread;
 }
 

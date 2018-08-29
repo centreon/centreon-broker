@@ -174,3 +174,21 @@ TEST_F(DatabaseStorageTest, QuerySync) {
   }
   ASSERT_EQ(count, 10);
 }
+
+TEST_F(DatabaseStorageTest, QuerySyncWithError) {
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "centreon",
+    "centreon_storage",
+    1,
+    true,
+    5);
+
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  ASSERT_THROW(
+    ms->run_query_sync("SELECT toto FROM bar LIMIT 1"),
+    exceptions::msg);
+}

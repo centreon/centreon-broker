@@ -23,6 +23,10 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
+/******************************************************************************/
+/*                      Methods executed by this thread                       */
+/******************************************************************************/
+
 void mysql_thread::_run(mysql_task_run* task) {
   if (mysql_query(_conn, task->query.c_str())) {
     std::cout << "run query failed: " << mysql_error(_conn) << std::endl;
@@ -37,21 +41,22 @@ void mysql_thread::_run(mysql_task_run* task) {
   }
 }
 
+/**
+ *  Run a query synchronously. The result is stored in _result and if an error
+ *  occurs, it is stored in _error_msg.
+ *  This function locks the _result_mutex and wakes up threads waiting on
+ *  _result_condition.
+ *
+ *  @param task         The task to realize, it contains a query.
+ */
 void mysql_thread::_run_sync(mysql_task_run_sync* task) {
   QMutexLocker locker(&_result_mutex);
-  if (mysql_query(_conn, task->query.c_str())) {
-    std::cout << "run sync query failed: " << mysql_error(_conn) << std::endl;
-    logging::error(logging::medium)
-      << "storage: Error while sending query '" << task->query << "'";
-  }
-  _result = mysql_store_result(_conn);
-  _result_condition.wakeAll();
-}
+  if (mysql_query(_conn, task->query.c_str()))
+    _error_msg = mysql_error(_conn);
+  else
+    _result = mysql_store_result(_conn);
 
-mysql_result mysql_thread::get_result() {
-  mysql_result retval(_result);
-  _result = NULL;
-  return retval;
+  _result_condition.wakeAll();
 }
 
 void mysql_thread::_prepare(mysql_task_prepare* task) {
@@ -87,10 +92,10 @@ void mysql_thread::run() {
     std::cout << "run mutex lock" << std::endl;
     QMutexLocker locker(&_list_mutex);
     std::cout << "run mutex locked" << std::endl;
-    if (!_queries_list.empty()) {
+    if (!_tasks_list.empty()) {
       std::cout << "new task" << std::endl;
-      misc::shared_ptr<mysql_task> task(_queries_list.front());
-      _queries_list.pop_front();
+      misc::shared_ptr<mysql_task> task(_tasks_list.front());
+      _tasks_list.pop_front();
       std::cout << "unlock mutex" << std::endl;
       locker.unlock();
       std::cout << "mutex unlocked" << std::endl;
@@ -130,6 +135,10 @@ void mysql_thread::run() {
   }
   std::cout << "run return" << std::endl;
 }
+
+/******************************************************************************/
+/*                    Methods executed by the main thread                     */
+/******************************************************************************/
 
 mysql_thread::mysql_thread(
                 std::string const& address,
@@ -185,7 +194,7 @@ mysql_thread::~mysql_thread() {
 
 void mysql_thread::_push(misc::shared_ptr<mysql_task> const& q) {
   QMutexLocker locker(&_list_mutex);
-  _queries_list.push_back(q);
+  _tasks_list.push_back(q);
   _tasks_condition.wakeAll();
 }
 
@@ -193,10 +202,18 @@ void mysql_thread::run_query(std::string const& query) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_run(query)));
 }
 
-void mysql_thread::run_query_sync(std::string const& query) {
+void mysql_thread::run_query_sync(std::string const& query, char const* error_msg) {
   QMutexLocker locker(&_result_mutex);
   _push(misc::shared_ptr<mysql_task>(new mysql_task_run_sync(query)));
   _result_condition.wait(locker.mutex());
+  if (!_error_msg.empty()) {
+    exceptions::msg e;
+    if (error_msg)
+      e << error_msg << ": ";
+    e << "could not execute query: "
+      << _error_msg << " (" << query << ")";
+    throw e;
+  }
 }
 
 void mysql_thread::run_statement(int statement_id, mysql_bind const& bind) {
@@ -217,3 +234,10 @@ void mysql_thread::finish() {
   std::cout << "mysql_thread finish" << std::endl;
   _push(misc::shared_ptr<mysql_task>(new mysql_task_finish()));
 }
+
+mysql_result mysql_thread::get_result() {
+  mysql_result retval(_result);
+  _result = NULL;
+  return retval;
+}
+

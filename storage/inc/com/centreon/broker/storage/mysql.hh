@@ -41,6 +41,7 @@ namespace           storage {
     void                run_query(std::string const& query, int thread = -1);
     int                 run_query_sync(
                           std::string const& query,
+                          char const* error_msg = NULL,
                           int thread = -1);
     void                run_statement(
                           int statement_id,

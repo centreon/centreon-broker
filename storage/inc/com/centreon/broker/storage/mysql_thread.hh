@@ -40,6 +40,11 @@ namespace                  storage {
    */
   class                    mysql_thread : public QThread {
    public:
+
+    /**************************************************************************/
+    /*                  Methods executed by the main thread                   */
+    /**************************************************************************/
+
                            mysql_thread(
                              std::string const& address,
                              std::string const& user,
@@ -47,9 +52,12 @@ namespace                  storage {
                              std::string const& database,
                              int port);
                            ~mysql_thread();
+
     void                   prepare_query(std::string const& query);
     void                   run_query(std::string const& query);
-    void                   run_query_sync(std::string const& query);
+    void                   run_query_sync(
+                             std::string const& query,
+                             char const* error_msg);
     void                   run_statement(int statement_id, mysql_bind const& bind);
     void                   run_query_with_callback(
                              std::string const& query,
@@ -58,6 +66,11 @@ namespace                  storage {
     mysql_result           get_result();
 
    private:
+
+    /**************************************************************************/
+    /*                    Methods executed by this thread                     */
+    /**************************************************************************/
+
     void                   run();
 
     void                   _run(mysql_task_run* task);
@@ -67,17 +80,25 @@ namespace                  storage {
     void                   _push(misc::shared_ptr<mysql_task> const& q);
 
     MYSQL*                 _conn;
+
+    // Mutex and condition working on _tasks_list.
     QMutex                 _list_mutex;
     QWaitCondition         _tasks_condition;
-    QMutex                 _result_mutex;
-    QWaitCondition         _result_condition;
     bool                   _finished;
-
     std::list<misc::shared_ptr<mysql_task> >
-                           _queries_list;
+                           _tasks_list;
     std::vector<MYSQL_STMT*>
                            _stmt;
+
+    // Mutex and condition working on _result and _error_msg.
+    QMutex                 _result_mutex;
+    QWaitCondition         _result_condition;
+
+    // Result of a mysql query. It is used in the case of _run_sync() calls.
     MYSQL_RES*             _result;
+
+    // Error message returned when the call to _run_sync() fails.
+    std::string            _error_msg;
   };
 }
 
