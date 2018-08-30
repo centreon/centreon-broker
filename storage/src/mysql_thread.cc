@@ -30,8 +30,8 @@ using namespace com::centreon::broker::storage;
 void mysql_thread::_run(mysql_task_run* task) {
   if (mysql_query(_conn, task->query.c_str())) {
     std::cout << "run query failed: " << mysql_error(_conn) << std::endl;
-    logging::error(logging::medium)
-      << "storage: Error while sending query '" << task->query << "'";
+    logging::error(logging::medium) << task->error_msg
+      << "could not execute query: " << mysql_error(_conn) << " (" << task->query << ")";
   }
   else if (task->fn) {
     // FIXME DBR: we need a way to send an error to the main thread
@@ -57,6 +57,17 @@ void mysql_thread::_run_sync(mysql_task_run_sync* task) {
     _result = mysql_store_result(_conn);
 
   _result_condition.wakeAll();
+}
+
+void mysql_thread::_commit(mysql_task_commit* task) {
+  if (mysql_commit(_conn)) {
+    std::cout << "commit queries: " << mysql_error(_conn) << std::endl;
+    logging::error(logging::medium)
+      << "could not commit queries: " << mysql_error(_conn);
+  }
+  task->count.fetchAndAddRelease(_queries_count);
+  _queries_count = 0;
+  task->sem.release();
 }
 
 void mysql_thread::_prepare(mysql_task_prepare* task) {
@@ -147,7 +158,8 @@ mysql_thread::mysql_thread(
                 std::string const& database,
                 int port)
   : _conn(mysql_init(NULL)),
-    _finished(false) {
+    _finished(false),
+    _queries_count(0) {
   std::cout << "mysql_thread constructor" << std::endl;
   if (!_conn) {
     std::cout << "mysql_thread throw exception" << std::endl;
@@ -173,6 +185,7 @@ mysql_thread::mysql_thread(
       << database << ":" << port << "' MySQL database failed: "
       << mysql_error(_conn);
   }
+  mysql_autocommit(_conn, 0);
   std::cout << "mysql_thread start thread..." << std::endl;
   start();
   std::cout << "mysql_thread return" << std::endl;
@@ -198,22 +211,50 @@ void mysql_thread::_push(misc::shared_ptr<mysql_task> const& q) {
   _tasks_condition.wakeAll();
 }
 
-void mysql_thread::run_query(std::string const& query) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_run(query)));
+/**
+ *  This method is used from the main thread to execute asynchronously a query.
+ *  No exception is thrown in case of error since this query is made asynchronously.
+ *
+ *  @param query The SQL query
+ *  @param error_msg The error message to return in case of error.
+ */
+void mysql_thread::run_query(std::string const& query, std::string const& error_msg) {
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_run(query, error_msg)));
 }
 
-void mysql_thread::run_query_sync(std::string const& query, char const* error_msg) {
+/**
+ *  This method is used from the main thread to execute synchronously a query.
+ *
+ *  @param query The SQL query
+ *  @param error_msg The error message to return in case of error.
+ *  @throw an exception in case of error.
+ */
+void mysql_thread::run_query_sync(std::string const& query, std::string const& error_msg) {
   QMutexLocker locker(&_result_mutex);
   _push(misc::shared_ptr<mysql_task>(new mysql_task_run_sync(query)));
   _result_condition.wait(locker.mutex());
   if (!_error_msg.empty()) {
     exceptions::msg e;
-    if (error_msg)
+    if (!error_msg.empty())
       e << error_msg << ": ";
     e << "could not execute query: "
       << _error_msg << " (" << query << ")";
     throw e;
   }
+}
+
+/**
+ *  This method finishes to send current tasks and then commits. The commited variable
+ *  is then incremented of the queries committed count.
+ *  This function is called by mysql::commit whom goal is to commit on each of the connections.
+ *  So, this last method waits all the commits to be done ; the semaphore is there for that
+ *  purpose.
+ *
+ *  @param sem The semaphore used to synchronize commits from various threads.
+ *  @param count The integer counting how many queries are committed.
+ */
+void mysql_thread::commit(QSemaphore& sem, QAtomicInt& count) {
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_commit(sem, count)));
 }
 
 void mysql_thread::run_statement(int statement_id, mysql_bind const& bind) {
@@ -226,8 +267,9 @@ void mysql_thread::prepare_query(std::string const& query) {
 
 void mysql_thread::run_query_with_callback(
                      std::string const& query,
+                     std::string const& error_msg,
                      mysql_callback fn) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_run(query, fn)));
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_run(query, error_msg, fn)));
 }
 
 void mysql_thread::finish() {
@@ -240,4 +282,3 @@ mysql_result mysql_thread::get_result() {
   _result = NULL;
   return retval;
 }
-

@@ -399,17 +399,6 @@ void stream::_check_deleted_index() {
       mysql_result res(_mysql.get_result(thread_id));
       while (res.next())
         metrics_to_delete.push_back(res.value_as_u64(0));
-
-//      FIXME DBR
-//      database_query q(_db);
-//      try { q.run_query(oss.str()); }
-//      catch (std::exception const& e) {
-//        throw (broker::exceptions::msg()
-//               << "storage: could not get metrics of index "
-//               << index_id << ": " << e.what());
-//      }
-//      while (q.next())
-//        metrics_to_delete.push_back(q.value(0).toULongLong());
     }
 
     // Delete metrics.
@@ -422,14 +411,9 @@ void stream::_check_deleted_index() {
       oss << "DELETE FROM " << (db_v2 ? "index_data" : "rt_index_data")
           << "  WHERE " << (db_v2 ? "id" : "index_id")
           << "        =" << index_id;
-      _mysql.run_query(oss.str());
-//      FIXME DBR
-//      database_query q(_db);
-//      try { q.run_query(oss.str()); }
-//      catch (std::exception const& e) {
-//        logging::error(logging::low) << "storage: cannot delete index "
-//          << index_id << ": " << e.what();
-//      }
+      std::ostringstream oss_error;
+      oss_error << "storage: cannot delete index " << index_id << ": ";
+      _mysql.run_query(oss.str(), oss_error.str());
     }
     ++deleted_index;
 
@@ -511,15 +495,9 @@ void stream::_delete_metrics(
       std::ostringstream oss;
       oss << "DELETE FROM " << (db_v2 ? "metrics" : "rt_metrics")
           << "  WHERE metric_id=" << metric_id;
-      _mysql.run_query(oss.str());
-//      FIXME DBR
-//      database_query q(_db);
-//      try { q.run_query(oss.str()); }
-//      catch (std::exception const& e) {
-//        logging::error(logging::low)
-//          << "storage: cannot remove metric " << metric_id << ": "
-//          << e.what();
-//      }
+      std::ostringstream oss_error;
+      oss_error << "storage: cannot remove metric " << metric_id << ": ";
+      _mysql.run_query(oss.str(), oss_error.str());
     }
 
     // Remove associated graph.
@@ -604,14 +582,21 @@ unsigned int stream::_find_index_id(
         << service_id << ") (host: " << host_name << ", service: "
         << service_desc << ", special: " << special << ")";
       // Update index_data table.
-      std::ostringstream query;
-      query << "UPDATE " << (db_v2 ? "index_data" : "rt_index_data")
-            << "  SET host_name=" << host_name.toStdString() << ","
-               "     service_description=" << service_desc.toStdString() << ","
-               "     special=" << special << "  WHERE host_id=" << host_id <<
-               "    AND service_id=" << service_id;
+      std::ostringstream oss_error;
+      oss_error << "storage: could not update "
+        << "service information in rt_index_data (host_id "
+	<< host_id << ", service_id " << service_id
+	<< ", host_name " << host_name.toStdString()
+	<< ", service_description " << service_desc.toStdString()
+	<< "): ";
 
-      _mysql.run_query(query.str());
+      mysql_bind bind(5);
+      bind.set_string(0, host_name.toStdString());
+      bind.set_string(1, service_desc.toStdString());
+      bind.set_string(2, special ? "1" : "0");
+      bind.set_int(3, host_id);
+      bind.set_int(4, service_id);
+      _mysql.run_statement(_update_index_data_stmt, bind);
 //    FIXME DBR: when query fails, should return an exception.
 //      try {
 //        database_query q(_db);
@@ -1105,6 +1090,15 @@ void stream::_prepare() {
            "         ?, ?)";
   _insert_metrics_stmt = _mysql.prepare_query(query.str());
 
+  query.str("");
+  query << "UPDATE " << (db_v2 ? "index_data" : "rt_index_data")
+        << "  SET host_name=?,"
+           "    service_description=?,"
+           "    special=?,"
+           "  WHERE host_id=?"
+           "    AND service_id=?";
+  _update_index_data_stmt = _mysql.prepare_query(query.str());
+  
   // Build cache.
   _rebuild_cache();
 

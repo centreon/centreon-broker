@@ -19,6 +19,8 @@
 #ifndef CCB_STORAGE_MYSQL_TASK_HH
 #  define CCB_STORAGE_MYSQL_TASK_HH
 
+#include <QAtomicInt>
+#include <QSemaphore>
 #include <mysql.h>
 #include "com/centreon/broker/namespace.hh"
 
@@ -32,6 +34,7 @@ namespace                  storage {
     enum                   mysql_type {
                              RUN,
                              RUN_SYNC,
+                             COMMIT,
                              PREPARE,
                              STATEMENT,
                              FINISH,
@@ -53,10 +56,27 @@ namespace                  storage {
    public:
                            mysql_task_run(
                              std::string const& q,
+                             std::string const& error_msg,
                              mysql_callback fn = static_cast<mysql_callback>(0))
-                            : mysql_task(mysql_task::RUN), query(q), fn(fn) {}
+                            : mysql_task(mysql_task::RUN),
+                              query(q),
+                              error_msg(error_msg),
+                              fn(fn) {}
     std::string            query;
+    std::string            error_msg;
     mysql_callback         fn;
+  };
+
+  class                    mysql_task_commit : public mysql_task {
+   public:
+                           mysql_task_commit(
+                             QSemaphore& sem,
+                             QAtomicInt& count)
+                            : mysql_task(mysql_task::COMMIT),
+                              sem(sem),
+                              count(count) {}
+    QSemaphore&            sem;
+    QAtomicInt&            count;
   };
 
   class                    mysql_task_finish : public mysql_task {

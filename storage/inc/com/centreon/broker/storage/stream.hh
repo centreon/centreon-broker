@@ -139,6 +139,7 @@ namespace          storage {
     //database       _db;
     int            _update_metrics_stmt;
     int            _insert_metrics_stmt;
+    int            _update_index_data_stmt;
     mysql          _mysql;
   };
 }

@@ -15,6 +15,7 @@
 **
 ** For more information : contact@centreon.com
 */
+#include <QSemaphore>
 #include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -56,20 +57,21 @@ mysql::~mysql() {
   if (!retval)
     logging::error(logging::medium)
       << "storage: A thread was forced to stop after a timeout of 20s";
+
   std::cout << "mysql destructor return" << std::endl;
 }
 
-void mysql::run_query(std::string const& query, int thread) {
+void mysql::run_query(std::string const& query, std::string const& error_msg, int thread) {
   if (thread < 0) {
     // Here, we use _current_thread
     thread = _current_thread++;
     if (_current_thread >= _thread.size())
       _current_thread = 0;
   }
-  _thread[thread]->run_query(query);
+  _thread[thread]->run_query(query, error_msg);
 }
 
-int mysql::run_query_sync(std::string const& query, char const* error_msg, int thread) {
+int mysql::run_query_sync(std::string const& query, std::string const& error_msg, int thread) {
   if (thread < 0) {
     // Here, we use _current_thread
     thread = _current_thread++;
@@ -80,6 +82,30 @@ int mysql::run_query_sync(std::string const& query, char const* error_msg, int t
   return thread;
 }
 
+int mysql::commit() {
+  QSemaphore sem;
+  QAtomicInt committed(0);
+  for (std::vector<mysql_thread*>::const_iterator
+         it(_thread.begin()),
+         end(_thread.end());
+       it != end;
+       ++it)
+    (*it)->commit(sem, committed);
+
+  // Let's wait for each thread to release the semaphore.
+  sem.acquire(_thread.size());
+  return int(committed);
+}
+
+/**
+ *  This function is used after a run_query_sync() to get its result. This
+ *  function gives the result only one time. After that, the result will
+ *  be empty.
+ *
+ * @param thread_id The thread number that made the query.
+ *
+ * @return a mysql_result.
+ */
 mysql_result mysql::get_result(int thread_id) {
   return _thread[thread_id]->get_result();
 }
@@ -95,30 +121,30 @@ void mysql::run_statement(int statement_id, mysql_bind const& bind, int thread) 
 }
 
 void mysql::run_query_with_callback(std::string const& query,
-              mysql_callback fn, int thread) {
+              mysql_callback fn, std::string const& error_msg, int thread) {
   if (thread < 0) {
     // Here, we use _current_thread
     thread = _current_thread++;
     if (_current_thread >= _thread.size())
       _current_thread = 0;
   }
-  _thread[thread]->run_query_with_callback(query, fn);
+  _thread[thread]->run_query_with_callback(query, error_msg, fn);
 }
 
 int mysql::prepare_query(std::string const& query) {
-  for (std::vector<misc::shared_ptr<mysql_thread> >::const_iterator
+  for (std::vector<mysql_thread*>::const_iterator
          it(_thread.begin()),
          end(_thread.end());
        it != end;
-       ++it) {
+       ++it)
     (*it)->prepare_query(query);
-  }
+
   return _prepare_count++;
 }
 
 bool mysql::finish() {
   bool retval(true);
-  for (std::vector<misc::shared_ptr<mysql_thread> >::const_iterator
+  for (std::vector<mysql_thread*>::const_iterator
          it(_thread.begin()),
          end(_thread.end());
        it != end;

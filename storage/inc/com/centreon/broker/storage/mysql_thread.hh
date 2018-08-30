@@ -51,13 +51,19 @@ namespace                  storage {
                            ~mysql_thread();
 
     void                   prepare_query(std::string const& query);
-    void                   run_query(std::string const& query);
+    void                   commit(
+                             QSemaphore& sem,
+                             QAtomicInt& count);
+    void                   run_query(
+                             std::string const& query,
+                             std::string const& error_msg);
     void                   run_query_sync(
                              std::string const& query,
-                             char const* error_msg);
+                             std::string const& error_msg);
     void                   run_statement(int statement_id, mysql_bind const& bind);
     void                   run_query_with_callback(
                              std::string const& query,
+                             std::string const& error_msg,
                              mysql_callback);
     void                   finish();
     mysql_result           get_result();
@@ -70,6 +76,7 @@ namespace                  storage {
 
     void                   run();
 
+    void                   _commit(mysql_task_commit* task);
     void                   _run(mysql_task_run* task);
     void                   _run_sync(mysql_task_run_sync* task);
     void                   _prepare(mysql_task_prepare* task);
@@ -77,6 +84,7 @@ namespace                  storage {
     void                   _push(misc::shared_ptr<mysql_task> const& q);
 
     MYSQL*                 _conn;
+    int                    _queries_count;
 
     // Mutex and condition working on _tasks_list.
     QMutex                 _list_mutex;
