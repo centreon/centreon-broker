@@ -22,17 +22,15 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 mysql_result::mysql_result(MYSQL_RES* result)
-  : _result(result) {}
+  : _result(result, mysql_free_result) {}
 
-mysql_result::~mysql_result() {
-  if (_result) {
-    mysql_free_result(_result);
-    _result = 0;
-  }
+mysql_result& mysql_result::operator=(mysql_result const& other) {
+  _result = other._result;
+  return *this;
 }
 
 bool mysql_result::next() {
-  _row = mysql_fetch_row(_result);
+  _row = mysql_fetch_row(_result.data());
   return _row != 0;
 }
 

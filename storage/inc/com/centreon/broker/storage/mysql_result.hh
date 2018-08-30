@@ -20,6 +20,7 @@
 
 #include <mysql.h>
 #include <string>
+#include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -35,7 +36,7 @@ namespace           storage {
   class                 mysql_result {
    public:
                         mysql_result(MYSQL_RES* res);
-                        ~mysql_result();
+    mysql_result&       operator=(mysql_result const& other);
     bool                next();
     bool                value_as_bool(int idx);
     double              value_as_f64(int idx);
@@ -46,7 +47,8 @@ namespace           storage {
     bool                value_is_null(int idx);
 
    private:
-    MYSQL_RES*          _result;
+    misc::shared_ptr<MYSQL_RES>
+                        _result;
     MYSQL_ROW           _row;
   };
 }

@@ -65,11 +65,22 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
     true,
     5);
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
-  ms->run_query("INSERT INTO data_bin (id_metric, ctime, status, value) VALUES " \
-      "(1, 1533568152, '0', 2.5)");
+  std::ostringstream oss;
+  int now(time(NULL));
+  oss << "INSERT INTO data_bin (id_metric, ctime, status, value) VALUES "
+      << "(1, " << now << ", '0', 2.5)";
+  ms->run_query(oss.str());
+  oss.str("");
+  oss << "SELECT id_metric, status FROM data_bin WHERE ctime=" << now;
+  int thread_id(ms->run_query_sync(oss.str()));
+  mysql_result res(ms->get_result(thread_id));
+  ASSERT_FALSE(res.next());
   std::cout << "COMMIT" << std::endl;
   ms->commit();
   std::cout << "COMMIT DONE" << std::endl;
+  thread_id = ms->run_query_sync(oss.str());
+  res = ms->get_result(thread_id);
+  ASSERT_TRUE(res.next());
 }
 
 static int callback_get_insert_id(MYSQL* conn) {
