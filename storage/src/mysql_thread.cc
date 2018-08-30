@@ -68,6 +68,7 @@ void mysql_thread::_commit(mysql_task_commit* task) {
   task->count.fetchAndAddRelease(_queries_count);
   _queries_count = 0;
   task->sem.release();
+  std::cout << "sem release from thread : available = " << task->sem.available() << std::endl;
 }
 
 void mysql_thread::_prepare(mysql_task_prepare* task) {
@@ -119,6 +120,10 @@ void mysql_thread::run() {
         std::cout << "run RUN SYNC" << std::endl;
         _run_sync(static_cast<mysql_task_run_sync*>(task.data()));
         break;
+       case mysql_task::COMMIT:
+        std::cout << "run COMMIT" << std::endl;
+        _commit(static_cast<mysql_task_commit*>(task.data()));
+        break;
        case mysql_task::PREPARE:
         std::cout << "run PREPARE" << std::endl;
         _prepare(static_cast<mysql_task_prepare*>(task.data()));
@@ -132,7 +137,7 @@ void mysql_thread::run() {
         _finished = true;
         break;
        default:
-        std::cout << "run DEFAULT SITUATION with type = " << task->type << std::endl;
+        std::cout << "ERROR: run DEFAULT SITUATION with type = " << task->type << std::endl;
         logging::error(logging::medium)
           << "storage: Error type not managed...";
         break;
@@ -239,6 +244,7 @@ void mysql_thread::run_query_sync(std::string const& query, std::string const& e
       e << error_msg << ": ";
     e << "could not execute query: "
       << _error_msg << " (" << query << ")";
+    _error_msg = "";
     throw e;
   }
 }

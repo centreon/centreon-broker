@@ -67,6 +67,9 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
   ms->run_query("INSERT INTO data_bin (id_metric, ctime, status, value) VALUES " \
       "(1, 1533568152, '0', 2.5)");
+  std::cout << "COMMIT" << std::endl;
+  ms->commit();
+  std::cout << "COMMIT DONE" << std::endl;
 }
 
 static int callback_get_insert_id(MYSQL* conn) {

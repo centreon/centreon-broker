@@ -84,16 +84,20 @@ int mysql::run_query_sync(std::string const& query, std::string const& error_msg
 
 int mysql::commit() {
   QSemaphore sem;
+  std::cout << "sem available : " << sem.available() << std::endl;
   QAtomicInt committed(0);
   for (std::vector<mysql_thread*>::const_iterator
          it(_thread.begin()),
          end(_thread.end());
        it != end;
-       ++it)
+       ++it) {
+    std::cout << "SEND COMMIT TO THREAD" << std::endl;
     (*it)->commit(sem, committed);
-
+    std::cout << "COMMIT SENT TO THREAD" << std::endl;
+  }
   // Let's wait for each thread to release the semaphore.
   sem.acquire(_thread.size());
+  std::cout << "ALL THE THREADS COMMITS DONE..." << std::endl;
   return int(committed);
 }
 
