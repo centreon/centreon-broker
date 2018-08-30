@@ -38,13 +38,16 @@ namespace             misc {
     template          <typename U>
     friend class      weak_ptr;
 
+    typedef void (*deleter)(T* obj);
+
   public:
     /**
      *  Construct shared pointer from a standalone pointer.
      *
      *  @param[in] ptr Pointer.
      */
-                      shared_ptr(T* ptr = NULL) {
+                      shared_ptr(T* ptr = NULL, deleter del = NULL)
+                       : _deleter(del) {
       if (ptr) {
         _mtx = new QMutex;
         try {
@@ -197,7 +200,10 @@ namespace             misc {
             delete weak_refs;
           }
           ref_lock.unlock();
-          delete ptr;
+          if (_deleter)
+            _deleter(ptr);
+          else
+            delete ptr;
         }
 
         // Reset pointers.
@@ -205,6 +211,7 @@ namespace             misc {
         _ptr = NULL;
         _refs = NULL;
         _weak_refs = NULL;
+        _deleter = NULL;
       }
       return ;
     }
@@ -282,6 +289,7 @@ namespace             misc {
       _ptr = right._ptr;
       _refs = right._refs;
       _weak_refs = right._weak_refs;
+      _deleter = reinterpret_cast<deleter>(right._deleter);
 
       // Increase reference count.
       if (_ptr) {
@@ -296,6 +304,7 @@ namespace             misc {
     T*                _ptr;
     unsigned int*     _refs;
     unsigned int*     _weak_refs;
+    deleter           _deleter;
   };
 
   /**
