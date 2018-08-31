@@ -29,6 +29,8 @@ class DatabaseStorageTest : public ::testing::Test {
   void SetUp() {}
 };
 
+// When there is no database
+// Then the mysql creation throws an exception
 TEST_F(DatabaseStorageTest, NoDatabase) {
   database_config db_cfg(
     "MySQL",
@@ -41,6 +43,9 @@ TEST_F(DatabaseStorageTest, NoDatabase) {
   ASSERT_THROW(ms.reset(new mysql(db_cfg)), exceptions::msg);
 }
 
+// When there is a database
+// And when the connection is well done
+// Then no exception is thrown and the mysql object is well built.
 TEST_F(DatabaseStorageTest, ConnectionOk) {
   database_config db_cfg(
     "MySQL",
@@ -53,6 +58,11 @@ TEST_F(DatabaseStorageTest, ConnectionOk) {
   ASSERT_NO_THROW(ms.reset(new mysql(db_cfg)));
 }
 
+// Given a mysql object
+// When an insert is done in database
+// Then nothing is inserted before the commit.
+// When the commit is done
+// Then the insert is available in the database.
 TEST_F(DatabaseStorageTest, SendDataBin) {
   database_config db_cfg(
     "MySQL",
@@ -61,7 +71,7 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
     "root",
     "centreon",
     "centreon_storage",
-    1,
+    5,
     true,
     5);
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
@@ -75,9 +85,7 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
   int thread_id(ms->run_query_sync(oss.str()));
   mysql_result res(ms->get_result(thread_id));
   ASSERT_FALSE(res.next());
-  std::cout << "COMMIT" << std::endl;
-  ms->commit();
-  std::cout << "COMMIT DONE" << std::endl;
+  ASSERT_NO_THROW(ms->commit());
   thread_id = ms->run_query_sync(oss.str());
   res = ms->get_result(thread_id);
   ASSERT_TRUE(res.next());
@@ -96,6 +104,9 @@ static int callback_get_insert_id(MYSQL* conn) {
   return 0;
 }
 
+// Given a mysql object
+// When a query is done with a callback
+// Then a thread is chosen to make the query and then it calls the callback function.
 TEST_F(DatabaseStorageTest, QueryWithCallback) {
   database_config db_cfg(
     "MySQL",
@@ -104,7 +115,7 @@ TEST_F(DatabaseStorageTest, QueryWithCallback) {
     "root",
     "centreon",
     "centreon_storage",
-    1,
+    5,
     true,
     5);
   time_t now(time(NULL));
@@ -117,6 +128,10 @@ TEST_F(DatabaseStorageTest, QueryWithCallback) {
   ms->run_query_with_callback(oss.str(), callback_get_insert_id);
 }
 
+// Given a mysql object
+// When a prepare statement is done
+// Then we can bind values to it and execute the statement.
+// Then a commit makes data available in the database.
 TEST_F(DatabaseStorageTest, PrepareQuery) {
   database_config db_cfg(
     "MySQL",
@@ -125,7 +140,7 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
     "root",
     "centreon",
     "centreon_storage",
-    1,
+    5,
     true,
     5);
   time_t now(time(NULL));
@@ -141,10 +156,12 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
          "         ?, ?)";
 
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::ostringstream nss;
+  nss << "metric_name - " << time(NULL);
   int stmt_id(ms->prepare_query(oss.str()));
   mysql_bind bind(13);
   bind.set_int(0, 19);
-  bind.set_string(1, "test_metric");
+  bind.set_string(1, nss.str());
   bind.set_string(2, "test/s");
   bind.set_float(3, 20.0);
   bind.set_float(4, 40.0);
@@ -158,10 +175,15 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
   bind.set_string(12, "2");
   // We force the thread 0
   ms->run_statement(stmt_id, bind, 0);
-  // We force the thread 0: it is the same as previous, this query will be
-  // done after...
-//  ms.run_query("SELECT * FROM metrics WHERE metric_name='test_metric'", 0);
-//  ms.fetch_result(0);
+  oss.str("");
+  oss << "SELECT metric_name FROM metrics WHERE metric_name='" << nss.str() << "'";
+  int thread_id(ms->run_query_sync(oss.str()));
+  mysql_result res(ms->get_result(thread_id));
+  ASSERT_FALSE(res.next());
+  ASSERT_NO_THROW(ms->commit());
+  thread_id = ms->run_query_sync(oss.str());
+  res = ms->get_result(thread_id);
+  ASSERT_TRUE(res.next());
 }
 
 TEST_F(DatabaseStorageTest, QuerySync) {
@@ -172,7 +194,7 @@ TEST_F(DatabaseStorageTest, QuerySync) {
     "root",
     "centreon",
     "centreon_storage",
-    1,
+    5,
     true,
     5);
   std::ostringstream oss;
@@ -198,7 +220,7 @@ TEST_F(DatabaseStorageTest, QuerySyncWithError) {
     "root",
     "centreon",
     "centreon_storage",
-    1,
+    5,
     true,
     5);
 

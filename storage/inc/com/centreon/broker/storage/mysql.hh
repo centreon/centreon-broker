@@ -40,7 +40,7 @@ namespace           storage {
                         mysql(database_config const& db_cfg);
                         ~mysql();
     int                 prepare_query(std::string const& query);
-    int                 commit();
+    void                commit();
     void                run_query(
                           std::string const& query,
                           std::string const& error_msg = "",
@@ -64,6 +64,7 @@ namespace           storage {
 
    private:
     database_config     _db_cfg;
+    int                 _pending_queries;
 
     std::vector<mysql_thread*>
                         _vector;

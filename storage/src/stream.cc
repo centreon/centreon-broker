@@ -149,13 +149,15 @@ int stream::flush() {
     << "storage: committing transaction";
   _update_status("status=committing current transaction\n");
   _insert_perfdatas();
+  _mysql.commit();
+
 //  FIXME DBR
 //  _db.commit();
 //  _db.clear_committed_flag();
   int retval(_pending_events);
   _pending_events = 0;
   _update_status("");
-  return (retval);
+  return retval;
 }
 
 /**
@@ -323,7 +325,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   // Event acknowledgement.
   logging::debug(logging::low)
     << "storage: " << _pending_events << " have not yet been acknowledged";
-//  FIXME DBR
+
   int retval(_pending_events);
   _pending_events = 0;
   return retval;
@@ -581,41 +583,25 @@ unsigned int stream::_find_index_id(
         << it->second.index_id << " of (" << host_id << ", "
         << service_id << ") (host: " << host_name << ", service: "
         << service_desc << ", special: " << special << ")";
-      // Update index_data table.
-      std::ostringstream oss_error;
-      oss_error << "storage: could not update "
-        << "service information in rt_index_data (host_id "
-	<< host_id << ", service_id " << service_id
-	<< ", host_name " << host_name.toStdString()
-	<< ", service_description " << service_desc.toStdString()
-	<< "): ";
 
+      // Update index_data table.
       mysql_bind bind(5);
       bind.set_string(0, host_name.toStdString());
       bind.set_string(1, service_desc.toStdString());
       bind.set_string(2, special ? "1" : "0");
       bind.set_int(3, host_id);
       bind.set_int(4, service_id);
-      _mysql.run_statement(_update_index_data_stmt, bind);
-//    FIXME DBR: when query fails, should return an exception.
-//      try {
-//        database_query q(_db);
-//        q.prepare(query.str());
-//        q.bind_value(":host_name", host_name);
-//        q.bind_value(":service_description", service_desc);
-//        q.bind_value(":special", special);
-//        q.bind_value(":host_id", host_id);
-//        q.bind_value(":service_id", service_id);
-//        q.run_statement();
-//      }
-//      catch (std::exception const& e) {
-//        throw (broker::exceptions::msg() << "storage: could not update "
-//                  "service information in rt_index_data (host_id "
-//               << host_id << ", service_id " << service_id
-//               << ", host_name " << host_name
-//               << ", service_description " << service_desc
-//               << "): " << e.what());
-//      }
+      try {
+        _mysql.run_statement(_update_index_data_stmt, bind);
+      }
+      catch (std::exception const& e) {
+        throw (broker::exceptions::msg() << "storage: could not update "
+                  "service information in rt_index_data (host_id "
+               << host_id << ", service_id " << service_id
+               << ", host_name " << host_name
+               << ", service_description " << service_desc
+               << "): " << e.what());
+      }
 
       // Update cache entry.
       it->second.host_name = host_name;
@@ -650,22 +636,14 @@ unsigned int stream::_find_index_id(
              "  VALUES (" << host_id << ", " << host_name.toStdString() << ", " << service_id
           << ", " << service_desc.toStdString() << ", " << (db_v2 ? "'0'" : "0")
           << ", " << special << ")";
-      _mysql.run_query_with_callback(oss.str(), _check_row_inserted);
-//      database_query q(_db);
-//      try {
-//        q.prepare(oss.str());
-//        q.bind_value(":host_name", host_name);
-//        q.bind_value(":service_description", service_desc);
-//        q.bind_value(":special", special);
-//
-//        // Execute query.
-//        q.run_statement();
-//      }
-//      catch (std::exception const& e) {
-//        throw (broker::exceptions::msg() << "storage: insertion of "
-//                  "index (" << host_id << ", " << service_id
-//               << ") failed: " << e.what());
-//      }
+      try {
+        _mysql.run_query_with_callback(oss.str(), _check_row_inserted);
+      }
+      catch (std::exception const& e) {
+        throw (broker::exceptions::msg() << "storage: insertion of "
+                  "index (" << host_id << ", " << service_id
+               << ") failed: " << e.what());
+      }
 
       // Fetch insert ID with query if possible.
 //      FIXME DBR: this should be done in the callback, but it is difficult to catch its result
@@ -809,25 +787,14 @@ unsigned int stream::_find_metric_id(
       bind.set_string(11, metric_name.toStdString());
 
       // FIXME DBR: Always the problem of throwing an exception if the query fails
-      _mysql.run_statement(_update_metrics_stmt, bind);
-//      _update_metrics.bind_value(":unit_name", unit_name);
-//      _update_metrics.bind_value(":warn", check_double(warn));
-//      _update_metrics.bind_value(":warn_low", check_double(warn_low));
-//      _update_metrics.bind_value(":warn_threshold_mode", warn_mode);
-//      _update_metrics.bind_value(":crit", check_double(crit));
-//      _update_metrics.bind_value(":crit_low", check_double(crit_low));
-//      _update_metrics.bind_value(":crit_threshold_mode", crit_mode);
-//      _update_metrics.bind_value(":min", check_double(min));
-//      _update_metrics.bind_value(":max", check_double(max));
-//      _update_metrics.bind_value(":current_value", check_double(value));
-//      _update_metrics.bind_value(":index_id", index_id);
-//      _update_metrics.bind_value(":metric_name", metric_name);
-//      try { _update_metrics.run_statement(); }
-//      catch (std::exception const& e) {
-//        throw (broker::exceptions::msg() << "storage: could not "
-//                  "update metric (index_id " << index_id
-//               << ", metric " << metric_name << "): " << e.what());
-//      }
+      try {
+        _mysql.run_statement(_update_metrics_stmt, bind);
+      }
+      catch (std::exception const& e) {
+        throw (broker::exceptions::msg() << "storage: could not "
+                  "update metric (index_id " << index_id
+               << ", metric " << metric_name << "): " << e.what());
+      }
 
       // Fill cache.
       it->second.value = value;

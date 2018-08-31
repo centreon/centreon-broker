@@ -21,6 +21,7 @@
 
 #include <QThread>
 #include <QWaitCondition>
+#include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/storage/mysql_bind.hh"
 #include "com/centreon/broker/storage/mysql_result.hh"
@@ -42,12 +43,7 @@ namespace                  storage {
     /*                  Methods executed by the main thread                   */
     /**************************************************************************/
 
-                           mysql_thread(
-                             std::string const& address,
-                             std::string const& user,
-                             std::string const& password,
-                             std::string const& database,
-                             int port);
+                           mysql_thread(database_config const& db_cfg);
                            ~mysql_thread();
 
     void                   prepare_query(std::string const& query);
@@ -84,7 +80,6 @@ namespace                  storage {
     void                   _push(misc::shared_ptr<mysql_task> const& q);
 
     MYSQL*                 _conn;
-    int                    _queries_count;
 
     // Mutex and condition working on _tasks_list.
     QMutex                 _list_mutex;

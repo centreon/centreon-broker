@@ -64,9 +64,8 @@ void mysql_thread::_commit(mysql_task_commit* task) {
     std::cout << "commit queries: " << mysql_error(_conn) << std::endl;
     logging::error(logging::medium)
       << "could not commit queries: " << mysql_error(_conn);
+    task->count.fetchAndAddRelease(1);
   }
-  task->count.fetchAndAddRelease(_queries_count);
-  _queries_count = 0;
   task->sem.release();
   std::cout << "sem release from thread : available = " << task->sem.available() << std::endl;
 }
@@ -156,15 +155,9 @@ void mysql_thread::run() {
 /*                    Methods executed by the main thread                     */
 /******************************************************************************/
 
-mysql_thread::mysql_thread(
-                std::string const& address,
-                std::string const& user,
-                std::string const& password,
-                std::string const& database,
-                int port)
+mysql_thread::mysql_thread(database_config const& db_cfg)
   : _conn(mysql_init(NULL)),
-    _finished(false),
-    _queries_count(0) {
+    _finished(false) {
   std::cout << "mysql_thread constructor" << std::endl;
   if (!_conn) {
     std::cout << "mysql_thread throw exception" << std::endl;
@@ -176,21 +169,26 @@ mysql_thread::mysql_thread(
   std::cout << "mysql_thread real connect..." << std::endl;
   if (!mysql_real_connect(
          _conn,
-         address.c_str(),
-         user.c_str(),
-         password.c_str(),
-         database.c_str(),
-         port,
+         db_cfg.get_host().c_str(),
+         db_cfg.get_user().c_str(),
+         db_cfg.get_password().c_str(),
+         db_cfg.get_name().c_str(),
+         db_cfg.get_port(),
          NULL,
          0)) {
     std::cout << "mysql_thread constructor real connect failed" << std::endl;
     std::cout << "mysql_thread throw exception" << std::endl;
     throw exceptions::msg()
       << "storage: The connection to '"
-      << database << ":" << port << "' MySQL database failed: "
+      << db_cfg.get_name() << ":" << db_cfg.get_port()
+      << "' MySQL database failed: "
       << mysql_error(_conn);
   }
-  mysql_autocommit(_conn, 0);
+  if (db_cfg.get_queries_per_transaction() > 1)
+    mysql_autocommit(_conn, 0);
+  else
+    mysql_autocommit(_conn, 1);
+
   std::cout << "mysql_thread start thread..." << std::endl;
   start();
   std::cout << "mysql_thread return" << std::endl;

@@ -31,6 +31,7 @@ using namespace com::centreon::broker::storage;
  */
 mysql::mysql(database_config const& db_cfg)
   : _db_cfg(db_cfg),
+    _pending_queries(0),
     _version(mysql::v3),
     _current_thread(0),
     _prepare_count(0) {
@@ -41,13 +42,11 @@ mysql::mysql(database_config const& db_cfg)
 
   for (int i(0); i < db_cfg.get_connections_count(); ++i) {
     std::cout << "mysql constructor thread " << i << " construction" << std::endl;
-    _thread.push_back(new mysql_thread(
-                            db_cfg.get_host(),
-                            db_cfg.get_user(),
-                            db_cfg.get_password(),
-                            db_cfg.get_name(),
-                            db_cfg.get_port()));
+    _thread.push_back(new mysql_thread(db_cfg));
   }
+  int thread_id(run_query_sync("SELECT instance_id FROM instances LIMIT 1"));
+  mysql_result res(get_result(thread_id));
+
   std::cout << "mysql constructor return" << std::endl;
 }
 
@@ -69,6 +68,12 @@ void mysql::run_query(std::string const& query, std::string const& error_msg, in
       _current_thread = 0;
   }
   _thread[thread]->run_query(query, error_msg);
+  int qpt(_db_cfg.get_queries_per_transaction());
+  if (qpt > 1) {
+    ++_pending_queries;
+    if (_pending_queries >= qpt)
+      commit();
+  }
 }
 
 int mysql::run_query_sync(std::string const& query, std::string const& error_msg, int thread) {
@@ -79,26 +84,35 @@ int mysql::run_query_sync(std::string const& query, std::string const& error_msg
       _current_thread = 0;
   }
   _thread[thread]->run_query_sync(query, error_msg);
+  int qpt(_db_cfg.get_queries_per_transaction());
+  if (qpt > 1) {
+    ++_pending_queries;
+    if (_pending_queries >= qpt)
+      commit();
+  }
   return thread;
 }
 
-int mysql::commit() {
+void mysql::commit() {
   QSemaphore sem;
   std::cout << "sem available : " << sem.available() << std::endl;
-  QAtomicInt committed(0);
+  QAtomicInt ko(0);
   for (std::vector<mysql_thread*>::const_iterator
          it(_thread.begin()),
          end(_thread.end());
        it != end;
        ++it) {
     std::cout << "SEND COMMIT TO THREAD" << std::endl;
-    (*it)->commit(sem, committed);
+    (*it)->commit(sem, ko);
     std::cout << "COMMIT SENT TO THREAD" << std::endl;
   }
   // Let's wait for each thread to release the semaphore.
   sem.acquire(_thread.size());
   std::cout << "ALL THE THREADS COMMITS DONE..." << std::endl;
-  return int(committed);
+  if (int(ko))
+    throw exceptions::msg()
+      << "storage: Unable to commit transactions";
+  _pending_queries = 0;
 }
 
 /**
