@@ -44,8 +44,17 @@ mysql::mysql(database_config const& db_cfg)
     std::cout << "mysql constructor thread " << i << " construction" << std::endl;
     _thread.push_back(new mysql_thread(db_cfg));
   }
-  int thread_id(run_query_sync("SELECT instance_id FROM instances LIMIT 1"));
-  mysql_result res(get_result(thread_id));
+  try {
+    run_query_sync("SELECT instance_id FROM instances LIMIT 1");
+    _version = v2;
+    logging::info(logging::low)
+      << "storage: database is using version 2 of Centreon schema";
+  }
+  catch (std::exception const& e) {
+    _version = v3;
+    logging::info(logging::low)
+      << "storage: database is using version 3 of Centreon schema";
+  }
 
   std::cout << "mysql constructor return" << std::endl;
 }
