@@ -302,10 +302,10 @@ following commands ::
   $ cmake .
 
 .. note::
-    If you are using Debian Strech or Ubuntu Xenial, you need set some flags to
+    If you are using Debian Stretch or Ubuntu Xenial, you need set some flags to
     build source compatible with the new compile tools. For this, set the variable
-    `CMAKE_CXX_FLAGS` and compile as show bellow ::
-      
+    `CXXFLAGS` and compile as show bellow ::
+
       $ cd /path_to_centreon_broker/build
       $ export CXXFLAGS="-std=c++98 -Wno-long-long"
       $ cmake .
