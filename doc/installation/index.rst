@@ -19,8 +19,8 @@ notably).
 Using packages
 **************
 
-Centreon provides RPM for its products through Centreon Open Sources version
-available free of charge on our repository (ex CES), Open source products are
+Centreon provides RPM for its products through Centreon Open Sources (COS) version
+available free of charge on our repository, Open source products are
 freely available from our repository.
 
 These packages are available for CentOS 6 and 7 version.
