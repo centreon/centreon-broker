@@ -4,7 +4,7 @@ stage('Source') {
     dir('centreon-broker') {
       checkout scm
     }
-    sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-source.sh'
+    sh '/opt/centreon-build/jobs/broker/18.10/mon-broker-source.sh'
     source = readProperties file: 'source.properties'
     env.VERSION = "${source.VERSION}"
     env.RELEASE = "${source.RELEASE}"
@@ -16,7 +16,7 @@ try {
     parallel 'centos7': {
       node {
         sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-unittest.sh centos7'
+        sh '/opt/centreon-build/jobs/broker/18.10/mon-broker-unittest.sh centos7'
         step([
           $class: 'XUnitBuilder',
           thresholds: [
@@ -30,7 +30,7 @@ try {
     'debian9': {
       node {
         sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-unittest.sh debian9'
+        sh '/opt/centreon-build/jobs/broker/18.10/mon-broker-unittest.sh debian9'
         step([
           $class: 'XUnitBuilder',
           thresholds: [
@@ -44,7 +44,7 @@ try {
     'debian10': {
       node {
         sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-unittest.sh debian10'
+        sh '/opt/centreon-build/jobs/broker/18.10/mon-broker-unittest.sh debian10'
         step([
           $class: 'XUnitBuilder',
           thresholds: [
@@ -64,25 +64,25 @@ try {
     parallel 'centos7': {
       node {
         sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-package.sh centos7'
+        sh '/opt/centreon-build/jobs/broker/18.10/mon-broker-package.sh centos7'
       }
     },
     'debian9': {
       node {
         sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-package.sh debian9'
+        sh '/opt/centreon-build/jobs/broker/18.10/mon-broker-package.sh debian9'
       }
     },
     'debian9-armhf': {
       node {
         sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-package.sh debian9-armhf'
+        sh '/opt/centreon-build/jobs/broker/18.10/mon-broker-package.sh debian9-armhf'
       }
     },
     'debian10': {
       node {
         sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/18.9/mon-broker-package.sh debian10'
+        sh '/opt/centreon-build/jobs/broker/18.10/mon-broker-package.sh debian10'
       }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
