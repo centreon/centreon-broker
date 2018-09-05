@@ -35,7 +35,7 @@ void mysql_thread::_run(mysql_task_run* task) {
   }
   else if (task->fn) {
     // FIXME DBR: we need a way to send an error to the main thread
-    int ret(task->fn(_conn));
+    int ret(task->fn(_conn, task->data));
     logging::info(logging::medium)
       << "storage: callback returned " << ret;
   }
@@ -90,6 +90,12 @@ void mysql_thread::_statement(mysql_task_statement* task) {
     logging::error(logging::medium)
       << "storage: Error while binding values in statement: "
       << mysql_stmt_error(_stmt[task->statement_id]);
+  }
+  else if (task->fn) {
+    // FIXME DBR: we need a way to send an error to the main thread
+    int ret(task->fn(_conn, task->data));
+    logging::info(logging::medium)
+      << "storage: callback returned " << ret;
   }
   if (mysql_stmt_execute(_stmt[task->statement_id])) {
     logging::error(logging::medium)
@@ -215,17 +221,6 @@ void mysql_thread::_push(misc::shared_ptr<mysql_task> const& q) {
 }
 
 /**
- *  This method is used from the main thread to execute asynchronously a query.
- *  No exception is thrown in case of error since this query is made asynchronously.
- *
- *  @param query The SQL query
- *  @param error_msg The error message to return in case of error.
- */
-void mysql_thread::run_query(std::string const& query, std::string const& error_msg) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_run(query, error_msg)));
-}
-
-/**
  *  This method is used from the main thread to execute synchronously a query.
  *
  *  @param query The SQL query
@@ -261,18 +256,26 @@ void mysql_thread::commit(QSemaphore& sem, QAtomicInt& count) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_commit(sem, count)));
 }
 
-void mysql_thread::run_statement(int statement_id, mysql_bind const& bind) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_statement(statement_id, bind)));
+void mysql_thread::run_statement(int statement_id, mysql_bind const& bind, mysql_callback fn, void* data) {
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_statement(statement_id, bind, fn, data)));
 }
 
 void mysql_thread::prepare_query(std::string const& query) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_prepare(query)));
 }
 
-void mysql_thread::run_query_with_callback(
+/**
+ *  This method is used from the main thread to execute asynchronously a query.
+ *  No exception is thrown in case of error since this query is made asynchronously.
+ *
+ *  @param query The SQL query
+ *  @param fn A callback executed by the same thread if not 0.
+ *  @param error_msg The error message to return in case of error.
+ */
+void mysql_thread::run_query(
                      std::string const& query,
-                     std::string const& error_msg,
-                     mysql_callback fn) {
+                     mysql_callback fn,
+                     std::string const& error_msg) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_run(query, error_msg, fn)));
 }
 

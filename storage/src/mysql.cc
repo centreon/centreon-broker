@@ -69,14 +69,15 @@ mysql::~mysql() {
   std::cout << "mysql destructor return" << std::endl;
 }
 
-void mysql::run_query(std::string const& query, std::string const& error_msg, int thread) {
+void mysql::run_query(std::string const& query, mysql_callback fn, void* data,
+              std::string const& error_msg, int thread) {
   if (thread < 0) {
     // Here, we use _current_thread
     thread = _current_thread++;
     if (_current_thread >= _thread.size())
       _current_thread = 0;
   }
-  _thread[thread]->run_query(query, error_msg);
+  _thread[thread]->run_query(query, fn, error_msg);
   int qpt(_db_cfg.get_queries_per_transaction());
   if (qpt > 1) {
     ++_pending_queries;
@@ -85,7 +86,8 @@ void mysql::run_query(std::string const& query, std::string const& error_msg, in
   }
 }
 
-int mysql::run_query_sync(std::string const& query, std::string const& error_msg, int thread) {
+int mysql::run_query_sync(std::string const& query,
+             std::string const& error_msg, int thread) {
   if (thread < 0) {
     // Here, we use _current_thread
     thread = _current_thread++;
@@ -137,25 +139,21 @@ mysql_result mysql::get_result(int thread_id) {
   return _thread[thread_id]->get_result();
 }
 
-void mysql::run_statement(int statement_id, mysql_bind const& bind, int thread) {
+void mysql::run_statement(int statement_id, mysql_bind const& bind,
+              mysql_callback fn, void* data, int thread) {
   if (thread < 0) {
     // Here, we use _current_thread
     thread = _current_thread++;
     if (_current_thread >= _thread.size())
       _current_thread = 0;
   }
-  _thread[thread]->run_statement(statement_id, bind);
-}
-
-void mysql::run_query_with_callback(std::string const& query,
-              mysql_callback fn, std::string const& error_msg, int thread) {
-  if (thread < 0) {
-    // Here, we use _current_thread
-    thread = _current_thread++;
-    if (_current_thread >= _thread.size())
-      _current_thread = 0;
+  _thread[thread]->run_statement(statement_id, bind, fn, data);
+  int qpt(_db_cfg.get_queries_per_transaction());
+  if (qpt > 1) {
+    ++_pending_queries;
+    if (_pending_queries >= qpt)
+      commit();
   }
-  _thread[thread]->run_query_with_callback(query, error_msg, fn);
 }
 
 int mysql::prepare_query(std::string const& query) {

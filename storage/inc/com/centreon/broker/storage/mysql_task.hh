@@ -26,7 +26,7 @@
 
 CCB_BEGIN()
 
-typedef int (*mysql_callback)(MYSQL* conn);
+typedef int (*mysql_callback)(MYSQL* conn, void* data);
 
 namespace                  storage {
   class                    mysql_task {
@@ -65,6 +65,7 @@ namespace                  storage {
     std::string            query;
     std::string            error_msg;
     mysql_callback         fn;
+    void*                  data;
   };
 
   class                    mysql_task_commit : public mysql_task {
@@ -94,10 +95,20 @@ namespace                  storage {
 
   class                    mysql_task_statement : public mysql_task {
    public:
-                           mysql_task_statement(int statement_id, mysql_bind const& bind)
-                            : mysql_task(mysql_task::STATEMENT), statement_id(statement_id), bind(bind) {}
+                           mysql_task_statement(
+                             int statement_id,
+                             mysql_bind const& bind,
+                             mysql_callback fn,
+                             void* data)
+                            : mysql_task(mysql_task::STATEMENT),
+                              statement_id(statement_id),
+                              bind(bind),
+                              fn(fn),
+                              data(data) {}
     int                    statement_id;
     mysql_bind             bind;
+    mysql_callback         fn;
+    void*                  data;
   };
 }
 

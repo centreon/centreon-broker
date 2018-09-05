@@ -58,6 +58,7 @@ namespace          storage {
     void           statistics(io::properties& tree) const;
     void           update();
     int            write(misc::shared_ptr<io::data> const& d);
+    void           remove_pending_events(int v);
 
    private:
     struct         index_info {
@@ -128,7 +129,7 @@ namespace          storage {
     unsigned int   _interval_length;
     std::map<std::pair<unsigned int, QString>, metric_info>
                    _metric_cache;
-    unsigned int   _pending_events;
+    QAtomicInt     _pending_events;
     std::deque<metric_value>
                    _perfdata_queue;
     rebuilder      _rebuild_thread;

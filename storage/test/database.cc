@@ -125,7 +125,7 @@ TEST_F(DatabaseStorageTest, QueryWithCallback) {
     << ", 'test-user', 'comment from InsertAndGetInsertId1')";
 
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
-  ms->run_query_with_callback(oss.str(), callback_get_insert_id);
+  ms->run_query(oss.str(), callback_get_insert_id);
 }
 
 // Given a mysql object

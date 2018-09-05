@@ -151,9 +151,6 @@ int stream::flush() {
   _insert_perfdatas();
   _mysql.commit();
 
-//  FIXME DBR
-//  _db.commit();
-//  _db.clear_committed_flag();
   int retval(_pending_events);
   _pending_events = 0;
   _update_status("");
@@ -205,8 +202,9 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
-  // Take this event into account.
-  ++_pending_events;
+  _pending_events.fetchAndAddRelease(1);
+  logging::info(logging::high)
+    << "storage: write pending_events = " << int(_pending_events);
   if (!validate(data, "storage"))
     return (0);
 
@@ -327,7 +325,8 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
     << "storage: " << _pending_events << " have not yet been acknowledged";
 
   int retval(_pending_events);
-  _pending_events = 0;
+  logging::info(logging::high)
+    << "storage: write end pending_events = " << retval;
   return retval;
 //  if (_db.committed()) {
 //    _db.clear_committed_flag();
@@ -415,7 +414,7 @@ void stream::_check_deleted_index() {
           << "        =" << index_id;
       std::ostringstream oss_error;
       oss_error << "storage: cannot delete index " << index_id << ": ";
-      _mysql.run_query(oss.str(), oss_error.str());
+      _mysql.run_query(oss.str(), 0, 0, oss_error.str());
     }
     ++deleted_index;
 
@@ -499,7 +498,7 @@ void stream::_delete_metrics(
           << "  WHERE metric_id=" << metric_id;
       std::ostringstream oss_error;
       oss_error << "storage: cannot remove metric " << metric_id << ": ";
-      _mysql.run_query(oss.str(), oss_error.str());
+      _mysql.run_query(oss.str(), 0, 0, oss_error.str());
     }
 
     // Remove associated graph.
@@ -519,7 +518,7 @@ void stream::_delete_metrics(
  *
  *  @return 0 on success, 1 otherwise.
  */
-static int _check_row_inserted(MYSQL* conn) {
+static int _check_row_inserted(MYSQL* conn, void* data) {
   int retval(0);
   MYSQL_RES* result = mysql_store_result(conn);
   if (result || mysql_field_count(conn) != 0
@@ -637,7 +636,7 @@ unsigned int stream::_find_index_id(
           << ", " << service_desc.toStdString() << ", " << (db_v2 ? "'0'" : "0")
           << ", " << special << ")";
       try {
-        _mysql.run_query_with_callback(oss.str(), _check_row_inserted);
+        _mysql.run_query(oss.str(), _check_row_inserted);
       }
       catch (std::exception const& e) {
         throw (broker::exceptions::msg() << "storage: insertion of "
@@ -702,6 +701,17 @@ unsigned int stream::_find_index_id(
   }
 
   return (retval);
+}
+
+static int validate_query(MYSQL* conn, void* data) {
+  stream* s(static_cast<stream*>(data));
+
+  s->remove_pending_events(1);
+  return 0;
+}
+
+void stream::remove_pending_events(int v) {
+  _pending_events.fetchAndAddRelease(-v);
 }
 
 /**
@@ -787,14 +797,7 @@ unsigned int stream::_find_metric_id(
       bind.set_string(11, metric_name.toStdString());
 
       // FIXME DBR: Always the problem of throwing an exception if the query fails
-      try {
-        _mysql.run_statement(_update_metrics_stmt, bind);
-      }
-      catch (std::exception const& e) {
-        throw (broker::exceptions::msg() << "storage: could not "
-                  "update metric (index_id " << index_id
-               << ", metric " << metric_name << "): " << e.what());
-      }
+      _mysql.run_statement(_update_metrics_stmt, bind, validate_query, this);
 
       // Fill cache.
       it->second.value = value;
@@ -946,7 +949,7 @@ unsigned int stream::_find_metric_id(
     *locked = info.locked;
   }
 
-  return (retval);
+  return retval;
 }
 
 /**
