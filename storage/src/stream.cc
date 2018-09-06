@@ -369,12 +369,16 @@ void stream::_check_deleted_index() {
             << "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
             << "  WHERE to_delete=1"
                "  LIMIT 1";
-      int thread_id(_mysql.run_query_sync(query.str()));
+      int thread_id;
+      try {
+        thread_id = _mysql.run_query_sync(query.str());
+      }
+      catch (std::exception const& e) {
+        logging::error(logging::medium)
+          << "storage: could not query index table to get index to delete ("
+          << e.what() << ")";
+      }
       mysql_result res(_mysql.get_result(thread_id));
-//      database_query q(_db);
-//      q.run_query(
-//          query.str(),
-//          "storage: could not query index table to get index to delete");
       if (!res.next())
         break ;
       index_id = res.value_as_u64(0);
@@ -590,17 +594,8 @@ unsigned int stream::_find_index_id(
       bind.set_string(2, special ? "1" : "0");
       bind.set_int(3, host_id);
       bind.set_int(4, service_id);
-      try {
-        _mysql.run_statement(_update_index_data_stmt, bind);
-      }
-      catch (std::exception const& e) {
-        throw (broker::exceptions::msg() << "storage: could not update "
-                  "service information in rt_index_data (host_id "
-               << host_id << ", service_id " << service_id
-               << ", host_name " << host_name
-               << ", service_description " << service_desc
-               << "): " << e.what());
-      }
+
+      _mysql.run_statement(_update_index_data_stmt, bind, 0, 0, "", true);
 
       // Update cache entry.
       it->second.host_name = host_name;

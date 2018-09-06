@@ -39,6 +39,7 @@ add_library("${STORAGE}" SHARED
   "${SRC_DIR}/metric_mapping.cc"
   "${SRC_DIR}/mysql.cc"
   "${SRC_DIR}/mysql_bind.cc"
+  "${SRC_DIR}/mysql_error.cc"
   "${SRC_DIR}/mysql_result.cc"
   "${SRC_DIR}/mysql_thread.cc"
   "${SRC_DIR}/parser.cc"
@@ -59,6 +60,7 @@ add_library("${STORAGE}" SHARED
   "${INC_DIR}/metric_mapping.hh"
   "${INC_DIR}/mysql.hh"
   "${INC_DIR}/mysql_bind.hh"
+  "${INC_DIR}/mysql_error.hh"
   "${INC_DIR}/mysql_result.hh"
   "${INC_DIR}/mysql_task.hh"
   "${INC_DIR}/mysql_thread.hh"
@@ -80,6 +82,7 @@ set(
   ${TESTS_SOURCES}
   "${TEST_DIR}/parser/parse_perfdata.cc"
   "${TEST_DIR}/database.cc"
+#"${TEST_DIR}/stream.cc"
   PARENT_SCOPE
 )
 set(

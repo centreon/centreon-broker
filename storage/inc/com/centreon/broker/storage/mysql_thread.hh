@@ -24,6 +24,7 @@
 #include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/storage/mysql_bind.hh"
+#include "com/centreon/broker/storage/mysql_error.hh"
 #include "com/centreon/broker/storage/mysql_result.hh"
 #include "com/centreon/broker/storage/mysql_task.hh"
 
@@ -52,18 +53,18 @@ namespace                  storage {
                              QAtomicInt& count);
     void                   run_query(
                              std::string const& query,
-                             mysql_callback fn,
-                             std::string const& error_msg);
+                             mysql_callback fn, void* data,
+                             std::string const& error_msg, bool fatal);
     void                   run_query_sync(
                              std::string const& query,
                              std::string const& error_msg);
     void                   run_statement(
-                             int statement_id,
-                             mysql_bind const& bind,
-                             mysql_callback fn,
-                             void* data);
+                             int statement_id, mysql_bind const& bind,
+                             mysql_callback fn, void* data,
+                             std::string const& error_msg, bool fatal);
     void                   finish();
     mysql_result           get_result();
+    mysql_error            get_error();
 
    private:
 
@@ -99,7 +100,7 @@ namespace                  storage {
     MYSQL_RES*             _result;
 
     // Error message returned when the call to _run_sync() fails.
-    std::string            _error_msg;
+    mysql_error            _error;
   };
 }
 

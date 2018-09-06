@@ -43,25 +43,26 @@ namespace           storage {
     void                commit();
     void                run_query(
                           std::string const& query,
-                          mysql_callback fn = 0,
-                          void* data = 0,
-                          std::string const& error_msg = "",
+                          mysql_callback fn = 0, void* data = 0,
+                          std::string const& error_msg = "", bool fatal = false,
                           int thread = -1);
     int                 run_query_sync(
                           std::string const& query,
                           std::string const& error_msg = "",
                           int thread = -1);
     void                run_statement(
-                          int statement_id,
-                          mysql_bind const& bind,
-                          mysql_callback fn = 0,
-                          void* data = 0,
+                          int statement_id, mysql_bind const& bind,
+                          mysql_callback fn = 0, void* data = 0,
+                          std::string const& error_msg = "", bool fatal = false,
                           int thread = -1);
     mysql_result        get_result(int thread_id);
     bool                finish();
     version             schema_version() const;
 
    private:
+    void                _commit_if_needed();
+    void                _check_errors(int thread_id);
+
     database_config     _db_cfg;
     int                 _pending_queries;
 

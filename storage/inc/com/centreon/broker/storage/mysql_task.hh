@@ -56,8 +56,8 @@ namespace                  storage {
    public:
                            mysql_task_run(
                              std::string const& q,
-                             std::string const& error_msg,
-                             mysql_callback fn = static_cast<mysql_callback>(0))
+                             mysql_callback fn, void* data,
+                             std::string const& error_msg, bool fatal)
                             : mysql_task(mysql_task::RUN),
                               query(q),
                               error_msg(error_msg),
@@ -99,16 +99,22 @@ namespace                  storage {
                              int statement_id,
                              mysql_bind const& bind,
                              mysql_callback fn,
-                             void* data)
+                             void* data,
+                             std::string const& error_msg,
+                             bool fatal)
                             : mysql_task(mysql_task::STATEMENT),
                               statement_id(statement_id),
                               bind(bind),
                               fn(fn),
-                              data(data) {}
+                              data(data),
+                              error_msg(error_msg),
+                              fatal(fatal) {}
     int                    statement_id;
     mysql_bind             bind;
     mysql_callback         fn;
     void*                  data;
+    std::string            error_msg;
+    bool                   fatal;
   };
 }
 

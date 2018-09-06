@@ -20,6 +20,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/mysql.hh"
+#include "com/centreon/broker/storage/mysql_error.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
@@ -69,41 +70,6 @@ mysql::~mysql() {
   std::cout << "mysql destructor return" << std::endl;
 }
 
-void mysql::run_query(std::string const& query, mysql_callback fn, void* data,
-              std::string const& error_msg, int thread) {
-  if (thread < 0) {
-    // Here, we use _current_thread
-    thread = _current_thread++;
-    if (_current_thread >= _thread.size())
-      _current_thread = 0;
-  }
-  _thread[thread]->run_query(query, fn, error_msg);
-  int qpt(_db_cfg.get_queries_per_transaction());
-  if (qpt > 1) {
-    ++_pending_queries;
-    if (_pending_queries >= qpt)
-      commit();
-  }
-}
-
-int mysql::run_query_sync(std::string const& query,
-             std::string const& error_msg, int thread) {
-  if (thread < 0) {
-    // Here, we use _current_thread
-    thread = _current_thread++;
-    if (_current_thread >= _thread.size())
-      _current_thread = 0;
-  }
-  _thread[thread]->run_query_sync(query, error_msg);
-  int qpt(_db_cfg.get_queries_per_transaction());
-  if (qpt > 1) {
-    ++_pending_queries;
-    if (_pending_queries >= qpt)
-      commit();
-  }
-  return thread;
-}
-
 void mysql::commit() {
   QSemaphore sem;
   std::cout << "sem available : " << sem.available() << std::endl;
@@ -139,21 +105,78 @@ mysql_result mysql::get_result(int thread_id) {
   return _thread[thread_id]->get_result();
 }
 
-void mysql::run_statement(int statement_id, mysql_bind const& bind,
-              mysql_callback fn, void* data, int thread) {
-  if (thread < 0) {
-    // Here, we use _current_thread
-    thread = _current_thread++;
-    if (_current_thread >= _thread.size())
-      _current_thread = 0;
-  }
-  _thread[thread]->run_statement(statement_id, bind, fn, data);
+void mysql::_commit_if_needed() {
   int qpt(_db_cfg.get_queries_per_transaction());
   if (qpt > 1) {
     ++_pending_queries;
     if (_pending_queries >= qpt)
       commit();
   }
+}
+
+void mysql::_check_errors(int thread_id) {
+  mysql_error err(_thread[thread_id]->get_error());
+  if (err.is_fatal())
+    throw exceptions::msg() << err.get_message();
+  else
+    logging::error(logging::medium)
+      << "storage: " << err.get_message();
+}
+
+void mysql::run_query(std::string const& query,
+              mysql_callback fn, void* data,
+              std::string const& error_msg, bool fatal,
+              int thread) {
+  if (thread < 0) {
+    // Here, we use _current_thread
+    thread = _current_thread++;
+    if (_current_thread >= _thread.size())
+      _current_thread = 0;
+  }
+  _check_errors(thread);
+  _thread[thread]->run_query(
+    query,
+    fn, data,
+    error_msg, fatal);
+  _commit_if_needed();
+}
+
+int mysql::run_query_sync(std::string const& query,
+             std::string const& error_msg,
+             int thread) {
+  if (thread < 0) {
+    // Here, we use _current_thread
+    thread = _current_thread++;
+    if (_current_thread >= _thread.size())
+      _current_thread = 0;
+  }
+  _check_errors(thread);
+  _thread[thread]->run_query_sync(
+    query,
+    error_msg);
+
+  // No common way with the code above. The goal here is just to check if
+  // the query limit is reached, and then send a commit command.
+  _commit_if_needed();
+  return thread;
+}
+
+void mysql::run_statement(int statement_id, mysql_bind const& bind,
+              mysql_callback fn, void* data,
+              std::string const& error_msg, bool fatal,
+              int thread) {
+  if (thread < 0) {
+    // Here, we use _current_thread
+    thread = _current_thread++;
+    if (_current_thread >= _thread.size())
+      _current_thread = 0;
+  }
+  _check_errors(thread);
+  _thread[thread]->run_statement(
+    statement_id, bind,
+    fn, data,
+    error_msg, fatal);
+  _commit_if_needed();
 }
 
 int mysql::prepare_query(std::string const& query) {

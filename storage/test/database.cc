@@ -91,7 +91,7 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
   ASSERT_TRUE(res.next());
 }
 
-static int callback_get_insert_id(MYSQL* conn) {
+static int callback_get_insert_id(MYSQL* conn, void* data) {
   int id(mysql_insert_id(conn));
 
   mysql_query(conn, "SELECT MAX(comment_id) FROM comments");
@@ -125,7 +125,7 @@ TEST_F(DatabaseStorageTest, QueryWithCallback) {
     << ", 'test-user', 'comment from InsertAndGetInsertId1')";
 
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
-  ms->run_query(oss.str(), callback_get_insert_id);
+  ms->run_query(oss.str(), callback_get_insert_id, NULL);
 }
 
 // Given a mysql object

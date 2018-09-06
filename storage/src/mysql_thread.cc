@@ -29,9 +29,9 @@ using namespace com::centreon::broker::storage;
 
 void mysql_thread::_run(mysql_task_run* task) {
   if (mysql_query(_conn, task->query.c_str())) {
-    std::cout << "run query failed: " << mysql_error(_conn) << std::endl;
+    std::cout << "run query failed: " << ::mysql_error(_conn) << std::endl;
     logging::error(logging::medium) << task->error_msg
-      << "could not execute query: " << mysql_error(_conn) << " (" << task->query << ")";
+      << "could not execute query: " << ::mysql_error(_conn) << " (" << task->query << ")";
   }
   else if (task->fn) {
     // FIXME DBR: we need a way to send an error to the main thread
@@ -52,7 +52,7 @@ void mysql_thread::_run(mysql_task_run* task) {
 void mysql_thread::_run_sync(mysql_task_run_sync* task) {
   QMutexLocker locker(&_result_mutex);
   if (mysql_query(_conn, task->query.c_str()))
-    _error_msg = mysql_error(_conn);
+    _error = ::mysql_error(_conn);
   else
     _result = mysql_store_result(_conn);
 
@@ -61,9 +61,9 @@ void mysql_thread::_run_sync(mysql_task_run_sync* task) {
 
 void mysql_thread::_commit(mysql_task_commit* task) {
   if (mysql_commit(_conn)) {
-    std::cout << "commit queries: " << mysql_error(_conn) << std::endl;
+    std::cout << "commit queries: " << ::mysql_error(_conn) << std::endl;
     logging::error(logging::medium)
-      << "could not commit queries: " << mysql_error(_conn);
+      << "could not commit queries: " << ::mysql_error(_conn);
     task->count.fetchAndAddRelease(1);
   }
   task->sem.release();
@@ -87,20 +87,30 @@ void mysql_thread::_prepare(mysql_task_prepare* task) {
 
 void mysql_thread::_statement(mysql_task_statement* task) {
   if (mysql_stmt_bind_param(_stmt[task->statement_id], const_cast<MYSQL_BIND*>(task->bind.get_bind()))) {
-    logging::error(logging::medium)
-      << "storage: Error while binding values in statement: "
-      << mysql_stmt_error(_stmt[task->statement_id]);
+    if (task->fatal && _error.is_empty()) {
+      _error = mysql_stmt_error(_stmt[task->statement_id]);
+    }
+    else {
+      logging::error(logging::medium)
+        << "storage: Error while binding values in statement: "
+        << mysql_stmt_error(_stmt[task->statement_id]);
+    }
+  }
+  else if (mysql_stmt_execute(_stmt[task->statement_id])) {
+    if (task->fatal && _error.is_empty()) {
+      _error = mysql_stmt_error(_stmt[task->statement_id]);
+    }
+    else {
+      logging::error(logging::medium)
+        << "storage: Error while sending prepared query: "
+        << mysql_stmt_error(_stmt[task->statement_id]);
+    }
   }
   else if (task->fn) {
     // FIXME DBR: we need a way to send an error to the main thread
     int ret(task->fn(_conn, task->data));
     logging::info(logging::medium)
       << "storage: callback returned " << ret;
-  }
-  if (mysql_stmt_execute(_stmt[task->statement_id])) {
-    logging::error(logging::medium)
-      << "storage: Error while sending prepared query: "
-      << mysql_stmt_error(_stmt[task->statement_id]);
   }
 }
 
@@ -169,7 +179,7 @@ mysql_thread::mysql_thread(database_config const& db_cfg)
     std::cout << "mysql_thread throw exception" << std::endl;
     throw exceptions::msg()
       << "storage: Unable to initialize the MySQL client connector: "
-      << mysql_error(_conn);
+      << ::mysql_error(_conn);
   }
 
   std::cout << "mysql_thread real connect..." << std::endl;
@@ -188,7 +198,7 @@ mysql_thread::mysql_thread(database_config const& db_cfg)
       << "storage: The connection to '"
       << db_cfg.get_name() << ":" << db_cfg.get_port()
       << "' MySQL database failed: "
-      << mysql_error(_conn);
+      << ::mysql_error(_conn);
   }
   if (db_cfg.get_queries_per_transaction() > 1)
     mysql_autocommit(_conn, 0);
@@ -231,13 +241,12 @@ void mysql_thread::run_query_sync(std::string const& query, std::string const& e
   QMutexLocker locker(&_result_mutex);
   _push(misc::shared_ptr<mysql_task>(new mysql_task_run_sync(query)));
   _result_condition.wait(locker.mutex());
-  if (!_error_msg.empty()) {
+  if (!_error.is_empty()) {
     exceptions::msg e;
     if (!error_msg.empty())
       e << error_msg << ": ";
     e << "could not execute query: "
-      << _error_msg << " (" << query << ")";
-    _error_msg = "";
+      << _error.get_message() << " (" << query << ")";
     throw e;
   }
 }
@@ -256,8 +265,9 @@ void mysql_thread::commit(QSemaphore& sem, QAtomicInt& count) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_commit(sem, count)));
 }
 
-void mysql_thread::run_statement(int statement_id, mysql_bind const& bind, mysql_callback fn, void* data) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_statement(statement_id, bind, fn, data)));
+void mysql_thread::run_statement(int statement_id, mysql_bind const& bind,
+       mysql_callback fn, void* data, std::string const& error_msg, bool fatal) {
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_statement(statement_id, bind, fn, data, error_msg, fatal)));
 }
 
 void mysql_thread::prepare_query(std::string const& query) {
@@ -274,9 +284,9 @@ void mysql_thread::prepare_query(std::string const& query) {
  */
 void mysql_thread::run_query(
                      std::string const& query,
-                     mysql_callback fn,
-                     std::string const& error_msg) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_run(query, error_msg, fn)));
+                     mysql_callback fn, void* data,
+                     std::string const& error_msg, bool fatal) {
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_run(query, fn, data, error_msg, fatal)));
 }
 
 void mysql_thread::finish() {
@@ -287,5 +297,12 @@ void mysql_thread::finish() {
 mysql_result mysql_thread::get_result() {
   mysql_result retval(_result);
   _result = NULL;
+  return retval;
+}
+
+storage::mysql_error mysql_thread::get_error() {
+  QMutexLocker locker(&_result_mutex);
+  mysql_error retval(_error);
+  _error.clear();
   return retval;
 }
