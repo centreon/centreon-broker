@@ -29,9 +29,16 @@ using namespace com::centreon::broker::storage;
 
 void mysql_thread::_run(mysql_task_run* task) {
   if (mysql_query(_conn, task->query.c_str())) {
-    std::cout << "run query failed: " << ::mysql_error(_conn) << std::endl;
-    logging::error(logging::medium) << task->error_msg
-      << "could not execute query: " << ::mysql_error(_conn) << " (" << task->query << ")";
+    std::cout << "run query in error..." << std::endl;
+    if (task->fatal) {
+      if (!_error.is_active())
+        std::cout << "FATAL" << std::endl;
+        _error = mysql_error(::mysql_error(_conn), true);
+    }
+    else {
+      logging::error(logging::medium) << task->error_msg
+        << "could not execute query: " << ::mysql_error(_conn) << " (" << task->query << ")";
+    }
   }
   else if (task->fn) {
     // FIXME DBR: we need a way to send an error to the main thread
@@ -52,7 +59,7 @@ void mysql_thread::_run(mysql_task_run* task) {
 void mysql_thread::_run_sync(mysql_task_run_sync* task) {
   QMutexLocker locker(&_result_mutex);
   if (mysql_query(_conn, task->query.c_str()))
-    _error = ::mysql_error(_conn);
+    _error = mysql_error(::mysql_error(_conn), true);
   else
     _result = mysql_store_result(_conn);
 
@@ -67,7 +74,6 @@ void mysql_thread::_commit(mysql_task_commit* task) {
     task->count.fetchAndAddRelease(1);
   }
   task->sem.release();
-  std::cout << "sem release from thread : available = " << task->sem.available() << std::endl;
 }
 
 void mysql_thread::_prepare(mysql_task_prepare* task) {
@@ -87,8 +93,8 @@ void mysql_thread::_prepare(mysql_task_prepare* task) {
 
 void mysql_thread::_statement(mysql_task_statement* task) {
   if (mysql_stmt_bind_param(_stmt[task->statement_id], const_cast<MYSQL_BIND*>(task->bind.get_bind()))) {
-    if (task->fatal && _error.is_empty()) {
-      _error = mysql_stmt_error(_stmt[task->statement_id]);
+    if (task->fatal && !_error.is_active()) {
+      _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), task->fatal);
     }
     else {
       logging::error(logging::medium)
@@ -97,8 +103,8 @@ void mysql_thread::_statement(mysql_task_statement* task) {
     }
   }
   else if (mysql_stmt_execute(_stmt[task->statement_id])) {
-    if (task->fatal && _error.is_empty()) {
-      _error = mysql_stmt_error(_stmt[task->statement_id]);
+    if (task->fatal && !_error.is_active()) {
+      _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), task->fatal);
     }
     else {
       logging::error(logging::medium)
@@ -241,7 +247,7 @@ void mysql_thread::run_query_sync(std::string const& query, std::string const& e
   QMutexLocker locker(&_result_mutex);
   _push(misc::shared_ptr<mysql_task>(new mysql_task_run_sync(query)));
   _result_condition.wait(locker.mutex());
-  if (!_error.is_empty()) {
+  if (_error.is_active()) {
     exceptions::msg e;
     if (!error_msg.empty())
       e << error_msg << ": ";

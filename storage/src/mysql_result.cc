@@ -35,7 +35,7 @@ bool mysql_result::next() {
 }
 
 bool mysql_result::value_as_bool(int idx) {
-  bool retval(_row[idx] ? atoi(_row[idx]) : false);
+  bool retval(_row[idx] ? strtol(_row[idx], 0, 10) : 0);
   return retval;
 }
 
@@ -50,7 +50,7 @@ double mysql_result::value_as_f64(int idx) {
 }
 
 int mysql_result::value_as_i32(int idx) {
-  int retval(_row[idx] ? atoi(_row[idx]) : 0);
+  int retval(_row[idx] ? strtol(_row[idx], 0, 10) : 0);
   return retval;
 }
 

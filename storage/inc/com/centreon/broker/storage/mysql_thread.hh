@@ -22,7 +22,6 @@
 #include <QThread>
 #include <QWaitCondition>
 #include "com/centreon/broker/database_config.hh"
-#include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/storage/mysql_bind.hh"
 #include "com/centreon/broker/storage/mysql_error.hh"
 #include "com/centreon/broker/storage/mysql_result.hh"

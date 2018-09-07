@@ -61,11 +61,13 @@ namespace                  storage {
                             : mysql_task(mysql_task::RUN),
                               query(q),
                               error_msg(error_msg),
+                              fatal(fatal),
                               fn(fn) {}
     std::string            query;
-    std::string            error_msg;
     mysql_callback         fn;
     void*                  data;
+    std::string            error_msg;
+    bool                   fatal;
   };
 
   class                    mysql_task_commit : public mysql_task {

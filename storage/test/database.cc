@@ -198,7 +198,7 @@ TEST_F(DatabaseStorageTest, QuerySync) {
     true,
     5);
   std::ostringstream oss;
-  oss << "SELECT comment_id FROM comments LIMIT 10";
+  oss << "SELECT comment_id, persistent, data FROM comments LIMIT 10";
 
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
   int id(ms->run_query_sync(oss.str()));
@@ -206,6 +206,11 @@ TEST_F(DatabaseStorageTest, QuerySync) {
   int count(0);
   while (res.next()) {
     int v(res.value_as_i32(0));
+    int t(res.value_as_bool(1));
+    std::string s(res.value_as_str(2));
+    ASSERT_GT(v, 0);
+    ASSERT_FALSE(t);
+    ASSERT_FALSE(s.empty());
     std::cout << "value " << v << std::endl;
     ++count;
   }
@@ -226,6 +231,28 @@ TEST_F(DatabaseStorageTest, QuerySyncWithError) {
 
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
   ASSERT_THROW(
-    ms->run_query_sync("SELECT toto FROM bar LIMIT 1"),
+    ms->run_query_sync("SELECT foo FROM bar LIMIT 1"),
     exceptions::msg);
+}
+
+TEST_F(DatabaseStorageTest, QueryWithError) {
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "centreon",
+    "centreon_storage",
+    5,
+    true,
+    5);
+
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  // The following insert fails
+  ms->run_query("INSERT INTO FOO (toto) VALUES (0)", 0, 0, "", true, 1);
+  ms->commit();
+
+  // The following is the same one, executed by the same thread but since the
+  // previous error, an exception should arrive.
+  ASSERT_THROW(ms->run_query("INSERT INTO FOO (toto) VALUES (0)", 0, 0, "", true, 1), std::exception);
 }

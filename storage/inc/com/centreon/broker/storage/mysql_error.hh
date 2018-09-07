@@ -34,14 +34,15 @@ namespace                 storage {
   class                   mysql_error {
    public:
                           mysql_error();
-                          mysql_error(char const* message, bool fatal = false);
+                          mysql_error(char const* message, bool fatal);
     mysql_error&          operator=(mysql_error const& other);
     bool                  is_fatal() const;
     std::string           get_message() const;
     void                  clear();
-    bool                  is_empty() const;
+    bool                  is_active() const;
 
    private:
+    bool                  _active;
     std::string           _message;
     bool                  _fatal;
   };

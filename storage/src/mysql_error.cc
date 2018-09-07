@@ -21,15 +21,16 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 mysql_error::mysql_error()
-  : _message(""), _fatal(false) {}
+  : _message(""), _fatal(false), _active(false) {}
 
 mysql_error::mysql_error(char const* message, bool fatal)
-  : _message(message), _fatal(fatal) {}
+  : _message(message), _fatal(fatal), _active(true) {}
 
 mysql_error& mysql_error::operator=(mysql_error const& other) {
   if (this != &other) {
     _message = other._message;
     _fatal = other._fatal;
+    _active = other._active;
   }
   return *this;
 }
@@ -43,10 +44,9 @@ bool mysql_error::is_fatal() const {
 }
 
 void mysql_error::clear() {
-  _message = "";
-  _fatal = false;
+  _active = false;
 }
 
-bool mysql_error::is_empty() const {
-  return _message.empty();
+bool mysql_error::is_active() const {
+  return _active;
 }

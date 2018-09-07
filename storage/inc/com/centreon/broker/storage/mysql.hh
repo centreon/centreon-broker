@@ -18,7 +18,6 @@
 #ifndef CCB_STORAGE_MYSQL_HH
 #  define CCB_STORAGE_MYSQL_HH
 
-#  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/storage/mysql_bind.hh"
 #  include "com/centreon/broker/storage/mysql_thread.hh"
 

@@ -116,11 +116,13 @@ void mysql::_commit_if_needed() {
 
 void mysql::_check_errors(int thread_id) {
   mysql_error err(_thread[thread_id]->get_error());
-  if (err.is_fatal())
-    throw exceptions::msg() << err.get_message();
-  else
-    logging::error(logging::medium)
-      << "storage: " << err.get_message();
+  if (err.is_active()) {
+    if (err.is_fatal())
+      throw exceptions::msg() << err.get_message();
+    else
+      logging::error(logging::medium)
+        << "storage: " << err.get_message();
+  }
 }
 
 void mysql::run_query(std::string const& query,
@@ -133,7 +135,9 @@ void mysql::run_query(std::string const& query,
     if (_current_thread >= _thread.size())
       _current_thread = 0;
   }
+  std::cout << "-> CHECK ERRORS FATAL" << std::endl;
   _check_errors(thread);
+  std::cout << "-> FATAL 1" << std::endl;
   _thread[thread]->run_query(
     query,
     fn, data,
@@ -202,6 +206,7 @@ bool mysql::finish() {
     std::cout << "mysql destructor wait for thread to finish" << std::endl;
     retval &= (*it)->wait(20000);
   }
+  std::cout << "mysql destructor thread just finished" << std::endl;
   return retval;
 }
 
