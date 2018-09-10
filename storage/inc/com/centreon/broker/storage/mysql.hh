@@ -57,6 +57,7 @@ namespace           storage {
     mysql_result        get_result(int thread_id);
     bool                finish();
     version             schema_version() const;
+    void                register_commit_callback(mysql_callback fn, void* data);
 
    private:
     void                _commit_if_needed();
@@ -72,6 +73,8 @@ namespace           storage {
                         _thread;
     int                 _current_thread;
     int                 _prepare_count;
+    mysql_callback      _commit_callback;
+    void*               _commit_data;
   };
 }
 

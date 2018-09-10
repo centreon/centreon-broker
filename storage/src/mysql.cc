@@ -35,7 +35,9 @@ mysql::mysql(database_config const& db_cfg)
     _pending_queries(0),
     _version(mysql::v3),
     _current_thread(0),
-    _prepare_count(0) {
+    _prepare_count(0),
+    _commit_callback(0),
+    _commit_data(0) {
   std::cout << "mysql constructor" << std::endl;
   if (mysql_library_init(0, NULL, NULL))
     throw exceptions::msg()
@@ -105,12 +107,21 @@ mysql_result mysql::get_result(int thread_id) {
   return _thread[thread_id]->get_result();
 }
 
+void mysql::register_commit_callback(mysql_callback fn, void* data) {
+  _commit_callback = fn;
+  _commit_data = data;
+}
+
 void mysql::_commit_if_needed() {
   int qpt(_db_cfg.get_queries_per_transaction());
   if (qpt > 1) {
     ++_pending_queries;
-    if (_pending_queries >= qpt)
+    if (_pending_queries >= qpt) {
       commit();
+      if (_commit_callback) {
+        _commit_callback(0, _commit_data);
+      }
+    }
   }
 }
 

@@ -84,6 +84,12 @@ static inline bool double_equal(double a, double b) {
               && !(fabs((a) - (b)) > (0.01 * fabs(a)))));
 }
 
+static int _set_ack_events(MYSQL* conn, void* data) {
+  stream* s(static_cast<stream*>(data));
+  s->set_ack_events();
+  return 0;
+}
+
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -112,6 +118,7 @@ stream::stream(
           bool insert_in_index_data)
   : _insert_in_index_data(insert_in_index_data),
     _interval_length(interval_length),
+    _ack_events(0),
     _pending_events(0),
     _rebuild_thread(
       db_cfg,
@@ -123,6 +130,7 @@ stream::stream(
     _update_metrics_stmt(-1),
     _insert_metrics_stmt(-1),
     _mysql(db_cfg) {
+  _mysql.register_commit_callback(_set_ack_events, this);
   // Prepare queries.
   _prepare();
 
@@ -145,14 +153,17 @@ stream::~stream() {
  *  @return Number of events acknowledged.
  */
 int stream::flush() {
-  logging::info(logging::medium)
+  logging::info(logging::low)
     << "storage: committing transaction";
   _update_status("status=committing current transaction\n");
   _insert_perfdatas();
   _mysql.commit();
 
-  int retval(_pending_events);
+  int ack(_ack_events.fetchAndStoreRelease(0));
+  int retval(_pending_events + ack);
   _pending_events = 0;
+  logging::debug(logging::medium)
+    << "storage: flush ack events count: " << retval;
   _update_status("");
   return retval;
 }
@@ -203,8 +214,8 @@ void stream::update() {
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
   _pending_events.fetchAndAddRelease(1);
-  logging::info(logging::high)
-    << "storage: write pending_events = " << int(_pending_events);
+  logging::info(logging::low)
+    << "storage: write pending_events = " << _pending_events;
   if (!validate(data, "storage"))
     return (0);
 
@@ -321,22 +332,13 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   }
 
   // Event acknowledgement.
-  logging::debug(logging::low)
+  logging::debug(logging::medium)
     << "storage: " << _pending_events << " have not yet been acknowledged";
 
-  int retval(_pending_events);
-  logging::info(logging::high)
-    << "storage: write end pending_events = " << retval;
+  int retval(_ack_events.fetchAndStoreRelease(0));
+  logging::debug(logging::medium)
+    << "storage: ack events count: " << retval;
   return retval;
-//  if (_db.committed()) {
-//    _db.clear_committed_flag();
-//    _insert_perfdatas();
-//    int retval(_pending_events);
-//    _pending_events = 0;
-//    return (retval);
-//  }
-//  else
-//    return (0);
 }
 
 /**************************************
@@ -698,17 +700,6 @@ unsigned int stream::_find_index_id(
   return (retval);
 }
 
-static int validate_query(MYSQL* conn, void* data) {
-  stream* s(static_cast<stream*>(data));
-
-  s->remove_pending_events(1);
-  return 0;
-}
-
-void stream::remove_pending_events(int v) {
-  _pending_events.fetchAndAddRelease(-v);
-}
-
 /**
  *  @brief Find metric ID.
  *
@@ -792,7 +783,9 @@ unsigned int stream::_find_metric_id(
       bind.set_string(11, metric_name.toStdString());
 
       // FIXME DBR: Always the problem of throwing an exception if the query fails
-      _mysql.run_statement(_update_metrics_stmt, bind, validate_query, this);
+      logging::info(logging::medium)
+        << "FIXME FIXME FIXME => statement then validation";
+      _mysql.run_statement(_update_metrics_stmt, bind);
 
       // Fill cache.
       it->second.value = value;
@@ -1201,4 +1194,9 @@ void stream::_update_status(std::string const& status) {
   QMutexLocker lock(&_statusm);
   _status = status;
   return ;
+}
+
+void stream::set_ack_events() {
+  int p(_pending_events.fetchAndStoreRelease(0));
+  _ack_events.fetchAndAddRelease(p);
 }
