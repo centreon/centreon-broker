@@ -84,12 +84,6 @@ static inline bool double_equal(double a, double b) {
               && !(fabs((a) - (b)) > (0.01 * fabs(a)))));
 }
 
-static int _set_ack_events(MYSQL* conn, void* data) {
-  stream* s(static_cast<stream*>(data));
-  s->set_ack_events();
-  return 0;
-}
-
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -130,7 +124,6 @@ stream::stream(
     _update_metrics_stmt(-1),
     _insert_metrics_stmt(-1),
     _mysql(db_cfg) {
-  _mysql.register_commit_callback(_set_ack_events, this);
   // Prepare queries.
   _prepare();
 
@@ -159,8 +152,8 @@ int stream::flush() {
   _insert_perfdatas();
   _mysql.commit();
 
-  int ack(_ack_events.fetchAndStoreRelease(0));
-  int retval(_pending_events + ack);
+  int retval(_ack_events + _pending_events);
+  _ack_events = 0;
   _pending_events = 0;
   logging::debug(logging::medium)
     << "storage: flush ack events count: " << retval;
@@ -213,7 +206,7 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
-  _pending_events.fetchAndAddRelease(1);
+  ++_pending_events;
   logging::info(logging::low)
     << "storage: write pending_events = " << _pending_events;
   if (!validate(data, "storage"))
@@ -335,7 +328,8 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   logging::debug(logging::medium)
     << "storage: " << _pending_events << " have not yet been acknowledged";
 
-  int retval(_ack_events.fetchAndStoreRelease(0));
+  int retval(_ack_events);
+  _ack_events = 0;
   logging::debug(logging::medium)
     << "storage: ack events count: " << retval;
   return retval;
@@ -420,7 +414,9 @@ void stream::_check_deleted_index() {
           << "        =" << index_id;
       std::ostringstream oss_error;
       oss_error << "storage: cannot delete index " << index_id << ": ";
-      _mysql.run_query(oss.str(), 0, 0, oss_error.str());
+      if (_mysql.run_query(oss.str(), 0, 0, oss_error.str())) {
+        _set_ack_events();
+      }
     }
     ++deleted_index;
 
@@ -504,7 +500,8 @@ void stream::_delete_metrics(
           << "  WHERE metric_id=" << metric_id;
       std::ostringstream oss_error;
       oss_error << "storage: cannot remove metric " << metric_id << ": ";
-      _mysql.run_query(oss.str(), 0, 0, oss_error.str());
+      if (_mysql.run_query(oss.str(), 0, 0, oss_error.str()))
+        _set_ack_events();
     }
 
     // Remove associated graph.
@@ -597,7 +594,8 @@ unsigned int stream::_find_index_id(
       bind.set_int(3, host_id);
       bind.set_int(4, service_id);
 
-      _mysql.run_statement(_update_index_data_stmt, bind, 0, 0, "", true);
+      if (_mysql.run_statement(_update_index_data_stmt, bind, 0, 0, "", true))
+        _set_ack_events();
 
       // Update cache entry.
       it->second.host_name = host_name;
@@ -633,7 +631,8 @@ unsigned int stream::_find_index_id(
           << ", " << service_desc.toStdString() << ", " << (db_v2 ? "'0'" : "0")
           << ", " << special << ")";
       try {
-        _mysql.run_query(oss.str(), _check_row_inserted);
+        if (_mysql.run_query(oss.str(), _check_row_inserted))
+          _set_ack_events();
       }
       catch (std::exception const& e) {
         throw (broker::exceptions::msg() << "storage: insertion of "
@@ -785,7 +784,8 @@ unsigned int stream::_find_metric_id(
       // FIXME DBR: Always the problem of throwing an exception if the query fails
       logging::info(logging::medium)
         << "FIXME FIXME FIXME => statement then validation";
-      _mysql.run_statement(_update_metrics_stmt, bind);
+      if (_mysql.run_statement(_update_metrics_stmt, bind))
+        _set_ack_events();
 
       // Fill cache.
       it->second.value = value;
@@ -868,7 +868,10 @@ unsigned int stream::_find_metric_id(
 //    q.bind_value(":data_source_type", *type + (db_v2 ? 1 : 0));
 
     // Execute query.
-    try { _mysql.run_statement(_insert_metrics_stmt, bind); }
+    try {
+      if (_mysql.run_statement(_insert_metrics_stmt, bind))
+        _set_ack_events();
+    }
     catch (std::exception const& e) {
       throw (broker::exceptions::msg() << "storage: insertion of "
                 "metric '" << metric_name << "' of index " << index_id
@@ -988,7 +991,9 @@ void stream::_insert_perfdatas() {
     }
 
     // Execute query.
-    _mysql.run_query(query.str());
+    if (_mysql.run_query(query.str()))
+      _set_ack_events();
+
 //    database_query q(_db);
 //    q.run_query(
 //        query.str(),
@@ -1196,7 +1201,7 @@ void stream::_update_status(std::string const& status) {
   return ;
 }
 
-void stream::set_ack_events() {
-  int p(_pending_events.fetchAndStoreRelease(0));
-  _ack_events.fetchAndAddRelease(p);
+void stream::_set_ack_events() {
+  _ack_events += _pending_events;
+  _pending_events = 0;
 }

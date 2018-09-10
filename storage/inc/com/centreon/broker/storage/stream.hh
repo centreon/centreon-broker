@@ -59,7 +59,6 @@ namespace          storage {
     void           update();
     int            write(misc::shared_ptr<io::data> const& d);
     void           ack_pending_events(int v);
-    void           set_ack_events();
 
    private:
     struct         index_info {
@@ -123,6 +122,7 @@ namespace          storage {
     void           _prepare();
     void           _rebuild_cache();
     void           _update_status(std::string const& status);
+    void            _set_ack_events();
 
     std::map<std::pair<unsigned int, unsigned int>, index_info>
                    _index_cache;
@@ -130,8 +130,8 @@ namespace          storage {
     unsigned int   _interval_length;
     std::map<std::pair<unsigned int, QString>, metric_info>
                    _metric_cache;
-    QAtomicInt     _pending_events;
-    QAtomicInt     _ack_events;
+    int            _pending_events;
+    int            _ack_events;
     std::deque<metric_value>
                    _perfdata_queue;
     rebuilder      _rebuild_thread;

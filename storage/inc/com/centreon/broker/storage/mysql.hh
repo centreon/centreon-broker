@@ -40,7 +40,7 @@ namespace           storage {
                         ~mysql();
     int                 prepare_query(std::string const& query);
     void                commit();
-    void                run_query(
+    bool                run_query(
                           std::string const& query,
                           mysql_callback fn = 0, void* data = 0,
                           std::string const& error_msg = "", bool fatal = false,
@@ -49,7 +49,7 @@ namespace           storage {
                           std::string const& query,
                           std::string const& error_msg = "",
                           int thread = -1);
-    void                run_statement(
+    bool                run_statement(
                           int statement_id, mysql_bind const& bind,
                           mysql_callback fn = 0, void* data = 0,
                           std::string const& error_msg = "", bool fatal = false,
@@ -57,10 +57,9 @@ namespace           storage {
     mysql_result        get_result(int thread_id);
     bool                finish();
     version             schema_version() const;
-    void                register_commit_callback(mysql_callback fn, void* data);
 
    private:
-    void                _commit_if_needed();
+    bool                _commit_if_needed();
     void                _check_errors(int thread_id);
 
     database_config     _db_cfg;
@@ -73,8 +72,6 @@ namespace           storage {
                         _thread;
     int                 _current_thread;
     int                 _prepare_count;
-    mysql_callback      _commit_callback;
-    void*               _commit_data;
   };
 }
 

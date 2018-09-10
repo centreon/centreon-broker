@@ -35,9 +35,7 @@ mysql::mysql(database_config const& db_cfg)
     _pending_queries(0),
     _version(mysql::v3),
     _current_thread(0),
-    _prepare_count(0),
-    _commit_callback(0),
-    _commit_data(0) {
+    _prepare_count(0) {
   std::cout << "mysql constructor" << std::endl;
   if (mysql_library_init(0, NULL, NULL))
     throw exceptions::msg()
@@ -107,22 +105,17 @@ mysql_result mysql::get_result(int thread_id) {
   return _thread[thread_id]->get_result();
 }
 
-void mysql::register_commit_callback(mysql_callback fn, void* data) {
-  _commit_callback = fn;
-  _commit_data = data;
-}
-
-void mysql::_commit_if_needed() {
+bool mysql::_commit_if_needed() {
+  bool retval(false);
   int qpt(_db_cfg.get_queries_per_transaction());
   if (qpt > 1) {
     ++_pending_queries;
     if (_pending_queries >= qpt) {
       commit();
-      if (_commit_callback) {
-        _commit_callback(0, _commit_data);
-      }
+      retval = true;
     }
   }
+  return retval;
 }
 
 void mysql::_check_errors(int thread_id) {
@@ -136,7 +129,7 @@ void mysql::_check_errors(int thread_id) {
   }
 }
 
-void mysql::run_query(std::string const& query,
+bool mysql::run_query(std::string const& query,
               mysql_callback fn, void* data,
               std::string const& error_msg, bool fatal,
               int thread) {
@@ -153,7 +146,7 @@ void mysql::run_query(std::string const& query,
     query,
     fn, data,
     error_msg, fatal);
-  _commit_if_needed();
+  return _commit_if_needed();
 }
 
 int mysql::run_query_sync(std::string const& query,
@@ -170,13 +163,10 @@ int mysql::run_query_sync(std::string const& query,
     query,
     error_msg);
 
-  // No common way with the code above. The goal here is just to check if
-  // the query limit is reached, and then send a commit command.
-  _commit_if_needed();
   return thread;
 }
 
-void mysql::run_statement(int statement_id, mysql_bind const& bind,
+bool mysql::run_statement(int statement_id, mysql_bind const& bind,
               mysql_callback fn, void* data,
               std::string const& error_msg, bool fatal,
               int thread) {
@@ -191,7 +181,7 @@ void mysql::run_statement(int statement_id, mysql_bind const& bind,
     statement_id, bind,
     fn, data,
     error_msg, fatal);
-  _commit_if_needed();
+  return _commit_if_needed();
 }
 
 int mysql::prepare_query(std::string const& query) {
