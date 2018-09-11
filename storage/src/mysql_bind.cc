@@ -101,13 +101,15 @@ void mysql_bind::set_float(int range, float value) {
   if (range >= _bind.size())
     _bind.resize(range + 1);
   memset(&_bind[range], 0, sizeof(MYSQL_BIND));
-  _bind[range].buffer_type = MYSQL_TYPE_FLOAT;
-  char* tmp = reinterpret_cast<char*>(&value);
-  _buffer[range].resize(sizeof(value));
-  memcpy(&_buffer[range][0], tmp, sizeof(value));
-  _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
-  if (isnan(value))
-    _bind[range].is_null = &_true;
+  if (isnan(value) || isinf(value))
+    _bind[range].buffer_type = MYSQL_TYPE_NULL;
+  else {
+    _bind[range].buffer_type = MYSQL_TYPE_FLOAT;
+    char* tmp = reinterpret_cast<char*>(&value);
+    _buffer[range].resize(sizeof(value));
+    memcpy(&_buffer[range][0], tmp, sizeof(value));
+    _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
+  }
 }
 
 MYSQL_BIND const* mysql_bind::get_bind() const {

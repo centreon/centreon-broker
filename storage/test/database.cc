@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cmath>
 #include <gtest/gtest.h>
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -163,8 +164,8 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
   bind.set_int(0, 19);
   bind.set_string(1, nss.str());
   bind.set_string(2, "test/s");
-  bind.set_float(3, 20.0);
-  bind.set_float(4, 40.0);
+  bind.set_float(3, NAN);
+  bind.set_float(4, INFINITY);
   bind.set_tiny(5, 1);
   bind.set_float(6, 10.0);
   bind.set_float(7, 20.0);
