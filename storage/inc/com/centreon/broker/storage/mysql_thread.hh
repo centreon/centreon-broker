@@ -64,6 +64,7 @@ namespace                  storage {
     void                   finish();
     mysql_result           get_result();
     mysql_error            get_error();
+    int                    get_last_insert_id();
 
    private:
 
@@ -76,6 +77,8 @@ namespace                  storage {
     void                   _commit(mysql_task_commit* task);
     void                   _run(mysql_task_run* task);
     void                   _run_sync(mysql_task_run_sync* task);
+    void                   _get_last_insert_id_sync(
+                             mysql_task_last_insert_id* task);
     void                   _prepare(mysql_task_prepare* task);
     void                   _statement(mysql_task_statement* task);
     void                   _push(misc::shared_ptr<mysql_task> const& q);

@@ -38,6 +38,7 @@ namespace                  storage {
                              PREPARE,
                              STATEMENT,
                              FINISH,
+                             LAST_INSERT_ID,
     };
 
                            mysql_task(mysql_type type)
@@ -80,6 +81,14 @@ namespace                  storage {
                               count(count) {}
     QSemaphore&            sem;
     QAtomicInt&            count;
+  };
+
+  class                    mysql_task_last_insert_id : public mysql_task {
+   public:
+                           mysql_task_last_insert_id(int* id)
+                            : mysql_task(mysql_task::LAST_INSERT_ID),
+                              id(id) {}
+    int*                   id;
   };
 
   class                    mysql_task_finish : public mysql_task {

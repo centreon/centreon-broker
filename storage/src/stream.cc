@@ -631,43 +631,20 @@ unsigned int stream::_find_index_id(
           << ", " << service_desc.toStdString() << ", " << (db_v2 ? "'0'" : "0")
           << ", " << special << ")";
       try {
-        if (_mysql.run_query(oss.str(), _check_row_inserted))
-          _set_ack_events();
+        int thread_id(_mysql.run_query_sync(oss.str()));
+        // Let's get the index id
+        retval = _mysql.get_last_insert_id(thread_id);
+        if (retval == 0) {
+          throw broker::exceptions::msg() << "storage: could not "
+                    "fetch index_id of newly inserted index ("
+                 << host_id << ", " << service_id << ")";
+        }
       }
       catch (std::exception const& e) {
         throw (broker::exceptions::msg() << "storage: insertion of "
                   "index (" << host_id << ", " << service_id
                << ") failed: " << e.what());
       }
-
-      // Fetch insert ID with query if possible.
-//      FIXME DBR: this should be done in the callback, but it is difficult to catch its result
-//      if (!_db.get_qt_driver()->hasFeature(QSqlDriver::LastInsertId)
-//          || !(retval = q.last_insert_id().toUInt())) {
-//        q.finish();
-//        std::ostringstream oss2;
-//        oss2 << "SELECT " << (db_v2 ? "id" : "index_id")
-//             << "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
-//             << "  WHERE host_id=" << host_id
-//             << "    AND service_id=" << service_id;
-//        database_query q(_db);
-//        try {
-//          q.run_query(oss2.str());
-//          if (!q.next())
-//            throw (broker::exceptions::msg()
-//                   << "no ID was returned");
-//        }
-//        catch (std::exception const& e) {
-//          throw (broker::exceptions::msg() << "storage: could not "
-//                    "fetch index_id of newly inserted index ("
-//                 << host_id << ", " << service_id << "): "
-//                 << e.what());
-//        }
-//        retval = q.value(0).toUInt();
-//        if (!retval)
-//          throw (broker::exceptions::msg() << "storage: index_data " \
-//                    "table is corrupted: got 0 as index_id");
-//      }
 
       // Insert index in cache.
       logging::info(logging::medium) << "storage: new index " << retval

@@ -18,7 +18,6 @@
 #ifndef CCB_STORAGE_MYSQL_HH
 #  define CCB_STORAGE_MYSQL_HH
 
-#  include "com/centreon/broker/storage/mysql_bind.hh"
 #  include "com/centreon/broker/storage/mysql_thread.hh"
 
 CCB_BEGIN()
@@ -55,6 +54,7 @@ namespace           storage {
                           std::string const& error_msg = "", bool fatal = false,
                           int thread = -1);
     mysql_result        get_result(int thread_id);
+    int                 get_last_insert_id(int thread_id);
     bool                finish();
     version             schema_version() const;
 

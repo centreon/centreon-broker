@@ -256,3 +256,53 @@ TEST_F(DatabaseStorageTest, QueryWithError) {
   // previous error, an exception should arrive.
   ASSERT_THROW(ms->run_query("INSERT INTO FOO (toto) VALUES (0)", 0, 0, "", true, 1), std::exception);
 }
+
+// Given a mysql object
+// When a prepare statement is done
+// Then we can bind values to it and execute the statement.
+// Then a commit makes data available in the database.
+TEST_F(DatabaseStorageTest, LastInsertId) {
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "centreon",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  time_t now(time(NULL));
+  std::ostringstream nss;
+  nss << "metric_name - " << time(NULL) << "bis";
+
+  std::ostringstream oss;
+  oss << "INSERT INTO metrics"
+      << " (index_id, metric_name, unit_name, warn, warn_low,"
+         " warn_threshold_mode, crit, crit_low,"
+         " crit_threshold_mode, min, max, current_value,"
+         " data_source_type)"
+         " VALUES (19, '" << nss.str()
+      << "', 'test/s', 20.0, 40.0, 1, 10.0, 20.0, 1, 0.0, 50.0, 18.0, '2')";
+
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  // We force the thread 0
+  std::cout << oss.str() << std::endl;
+  int thread_id(ms->run_query_sync(oss.str()));
+  int id(ms->get_last_insert_id(thread_id));
+
+  // Commit is needed to make the select later. But it is not needed to get
+  // the id. Moreover, if we commit before getting the last id, the result will
+  // be null.
+  ms->commit();
+  ASSERT_TRUE(id > 0);
+  std::cout << "id = " << id << std::endl;
+  oss.str("");
+  oss << "SELECT metric_id FROM metrics WHERE metric_name = '"
+    << nss.str() << "'";
+  std::cout << oss.str() << std::endl;
+  thread_id = ms->run_query_sync(oss.str());
+  mysql_result res(ms->get_result(thread_id));
+  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(res.value_as_i32(0) == id);
+}

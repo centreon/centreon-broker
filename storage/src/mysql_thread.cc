@@ -66,6 +66,12 @@ void mysql_thread::_run_sync(mysql_task_run_sync* task) {
   _result_condition.wakeAll();
 }
 
+void mysql_thread::_get_last_insert_id_sync(mysql_task_last_insert_id* task) {
+  QMutexLocker locker(&_result_mutex);
+  *task->id = mysql_insert_id(_conn);
+  _result_condition.wakeAll();
+}
+
 void mysql_thread::_commit(mysql_task_commit* task) {
   if (mysql_commit(_conn)) {
     std::cout << "commit queries: " << ::mysql_error(_conn) << std::endl;
@@ -140,6 +146,10 @@ void mysql_thread::run() {
        case mysql_task::RUN_SYNC:
         std::cout << "run RUN SYNC" << std::endl;
         _run_sync(static_cast<mysql_task_run_sync*>(task.data()));
+        break;
+       case mysql_task::LAST_INSERT_ID:
+        std::cout << "get LAST INSERT ID" << std::endl;
+        _get_last_insert_id_sync(static_cast<mysql_task_last_insert_id*>(task.data()));
         break;
        case mysql_task::COMMIT:
         std::cout << "run COMMIT" << std::endl;
@@ -255,6 +265,14 @@ void mysql_thread::run_query_sync(std::string const& query, std::string const& e
       << _error.get_message() << " (" << query << ")";
     throw e;
   }
+}
+
+int mysql_thread::get_last_insert_id() {
+  QMutexLocker locker(&_result_mutex);
+  int retval;
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_last_insert_id(&retval)));
+  _result_condition.wait(locker.mutex());
+  return retval;
 }
 
 /**

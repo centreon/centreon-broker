@@ -60,6 +60,9 @@ mysql::mysql(database_config const& db_cfg)
   std::cout << "mysql constructor return" << std::endl;
 }
 
+/**
+ *  Destructor
+ */
 mysql::~mysql() {
   std::cout << "mysql destructor" << std::endl;
   bool retval(finish());
@@ -70,6 +73,12 @@ mysql::~mysql() {
   std::cout << "mysql destructor return" << std::endl;
 }
 
+/**
+ *  Commit all pending queries of all the threads.
+ *  This function waits for all the threads to be committed.
+ *
+ *  If an error occures, an exception is thrown.
+ */
 void mysql::commit() {
   QSemaphore sem;
   std::cout << "sem available : " << sem.available() << std::endl;
@@ -105,6 +114,11 @@ mysql_result mysql::get_result(int thread_id) {
   return _thread[thread_id]->get_result();
 }
 
+/**
+ *  This method commits only if the max queries per transaction is reached.
+ *
+ * @return true if a commit has been done, false otherwise.
+ */
 bool mysql::_commit_if_needed() {
   bool retval(false);
   int qpt(_db_cfg.get_queries_per_transaction());
@@ -118,6 +132,13 @@ bool mysql::_commit_if_needed() {
   return retval;
 }
 
+/**
+ *  Checks for previous errors. As queries are made asynchronously, errors
+ *  may arise after the calls. This function is generally called just before
+ *  adding a new query and throw an exception if an error is active.
+ *
+ * @param thread_id The thread id to check.
+ */
 void mysql::_check_errors(int thread_id) {
   mysql_error err(_thread[thread_id]->get_error());
   if (err.is_active()) {
@@ -129,6 +150,20 @@ void mysql::_check_errors(int thread_id) {
   }
 }
 
+/**
+ *  The simplest way to execute a query. Only the first arg is needed.
+ *
+ * @param query The query to execute.
+ * @param fn A callback to execute when the query has been executed.
+ * @param data A data to give to the callback.
+ * @param error_msg An error message to complete the error message returned
+ *                  by the mysql connector.
+ * @param fatal A boolean telling if the error is fatal. In that case, an
+ *              exception will be thrown if the error occures.
+ * @param thread A thread id or 0 to keep the library choosing which one.
+ *
+ * @return A boolean telling if a commit has been done after the query.
+ */
 bool mysql::run_query(std::string const& query,
               mysql_callback fn, void* data,
               std::string const& error_msg, bool fatal,
@@ -149,6 +184,17 @@ bool mysql::run_query(std::string const& query,
   return _commit_if_needed();
 }
 
+/**
+ *  Execute a query synchronously, that is to say the method waits for the
+ *  query to be done before return.
+ *
+ * @param query The query to execute, generally a select.
+ * @param error_msg An error message to complete the one that could be returned
+ *                  by the library.
+ * @param thread A thread id or 0 to keep the library to choose the id.
+ *
+ * @return The thread id that executes the query.
+ */
 int mysql::run_query_sync(std::string const& query,
              std::string const& error_msg,
              int thread) {
@@ -164,6 +210,10 @@ int mysql::run_query_sync(std::string const& query,
     error_msg);
 
   return thread;
+}
+
+int mysql::get_last_insert_id(int thread_id) {
+  return _thread[thread_id]->get_last_insert_id();
 }
 
 bool mysql::run_statement(int statement_id, mysql_bind const& bind,
