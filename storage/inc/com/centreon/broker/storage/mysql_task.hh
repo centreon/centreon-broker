@@ -37,6 +37,7 @@ namespace                  storage {
                              COMMIT,
                              PREPARE,
                              STATEMENT,
+                             STATEMENT_SYNC,
                              FINISH,
                              LAST_INSERT_ID,
     };
@@ -126,6 +127,21 @@ namespace                  storage {
     void*                  data;
     std::string            error_msg;
     bool                   fatal;
+  };
+
+  class                    mysql_task_statement_sync : public mysql_task {
+   public:
+                           mysql_task_statement_sync(
+                             int statement_id,
+                             mysql_bind const& bind,
+                             std::string const& error_msg)
+                            : mysql_task(mysql_task::STATEMENT_SYNC),
+                              statement_id(statement_id),
+                              bind(bind),
+                              error_msg(error_msg) {}
+    int                    statement_id;
+    mysql_bind             bind;
+    std::string            error_msg;
   };
 }
 

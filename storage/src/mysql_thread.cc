@@ -118,12 +118,18 @@ void mysql_thread::_statement(mysql_task_statement* task) {
         << mysql_stmt_error(_stmt[task->statement_id]);
     }
   }
-  else if (task->fn) {
-    // FIXME DBR: we need a way to send an error to the main thread
-    int ret(task->fn(_conn, task->data));
-    logging::info(logging::medium)
-      << "storage: callback returned " << ret;
-  }
+}
+
+void mysql_thread::_statement_sync(mysql_task_statement_sync* task) {
+  QMutexLocker locker(&_result_mutex);
+  if (mysql_stmt_bind_param(_stmt[task->statement_id], const_cast<MYSQL_BIND*>(task->bind.get_bind())))
+    _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), true);
+  else if (mysql_stmt_execute(_stmt[task->statement_id]))
+    _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), true);
+  else
+    _result = mysql_store_result(_conn);
+
+  _result_condition.wakeAll();
 }
 
 void mysql_thread::run() {
@@ -162,6 +168,10 @@ void mysql_thread::run() {
        case mysql_task::STATEMENT:
         std::cout << "run STATEMENT" << std::endl;
         _statement(static_cast<mysql_task_statement*>(task.data()));
+        break;
+       case mysql_task::STATEMENT_SYNC:
+        std::cout << "run STATEMENT SYNC" << std::endl;
+        _statement_sync(static_cast<mysql_task_statement_sync*>(task.data()));
         break;
        case mysql_task::FINISH:
         std::cout << "run FINISH" << std::endl;
@@ -292,6 +302,21 @@ void mysql_thread::commit(QSemaphore& sem, QAtomicInt& count) {
 void mysql_thread::run_statement(int statement_id, mysql_bind const& bind,
        mysql_callback fn, void* data, std::string const& error_msg, bool fatal) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_statement(statement_id, bind, fn, data, error_msg, fatal)));
+}
+
+void mysql_thread::run_statement_sync(int statement_id, mysql_bind const& bind,
+       std::string const& error_msg) {
+  QMutexLocker locker(&_result_mutex);
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_statement_sync(statement_id, bind, error_msg)));
+  _result_condition.wait(locker.mutex());
+  if (_error.is_active()) {
+    exceptions::msg e;
+    if (!error_msg.empty())
+      e << error_msg << ": ";
+    e << "could not execute statement " << statement_id << ": "
+      << _error.get_message();
+    throw e;
+  }
 }
 
 void mysql_thread::prepare_query(std::string const& query) {

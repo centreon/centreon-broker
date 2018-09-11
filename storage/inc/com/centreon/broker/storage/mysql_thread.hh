@@ -61,6 +61,9 @@ namespace                  storage {
                              int statement_id, mysql_bind const& bind,
                              mysql_callback fn, void* data,
                              std::string const& error_msg, bool fatal);
+    void                   run_statement_sync(
+                             int statement_id, mysql_bind const& bind,
+                             std::string const& error_msg);
     void                   finish();
     mysql_result           get_result();
     mysql_error            get_error();
@@ -81,6 +84,7 @@ namespace                  storage {
                              mysql_task_last_insert_id* task);
     void                   _prepare(mysql_task_prepare* task);
     void                   _statement(mysql_task_statement* task);
+    void                   _statement_sync(mysql_task_statement_sync* task);
     void                   _push(misc::shared_ptr<mysql_task> const& q);
 
     MYSQL*                 _conn;

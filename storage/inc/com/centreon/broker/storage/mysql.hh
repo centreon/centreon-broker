@@ -53,6 +53,9 @@ namespace           storage {
                           mysql_callback fn = 0, void* data = 0,
                           std::string const& error_msg = "", bool fatal = false,
                           int thread = -1);
+    int                 run_statement_sync(
+                          int statement_id, mysql_bind const& bind,
+                          std::string const& error_msg = "", int thread = -1);
     mysql_result        get_result(int thread_id);
     int                 get_last_insert_id(int thread_id);
     bool                finish();

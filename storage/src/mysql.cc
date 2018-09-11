@@ -234,6 +234,22 @@ bool mysql::run_statement(int statement_id, mysql_bind const& bind,
   return _commit_if_needed();
 }
 
+int mysql::run_statement_sync(int statement_id, mysql_bind const& bind,
+             std::string const& error_msg, int thread) {
+  if (thread < 0) {
+    // Here, we use _current_thread
+    thread = _current_thread++;
+    if (_current_thread >= _thread.size())
+      _current_thread = 0;
+  }
+  _check_errors(thread);
+  _thread[thread]->run_statement_sync(
+    statement_id, bind,
+    error_msg);
+
+  return thread;
+}
+
 int mysql::prepare_query(std::string const& query) {
   for (std::vector<mysql_thread*>::const_iterator
          it(_thread.begin()),

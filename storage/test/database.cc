@@ -306,3 +306,62 @@ TEST_F(DatabaseStorageTest, LastInsertId) {
   ASSERT_TRUE(res.next());
   ASSERT_TRUE(res.value_as_i32(0) == id);
 }
+
+TEST_F(DatabaseStorageTest, PrepareQuerySync) {
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "centreon",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  time_t now(time(NULL));
+  std::ostringstream oss;
+  oss << "INSERT INTO metrics"
+      << "  (index_id, metric_name, unit_name, warn, warn_low,"
+         "   warn_threshold_mode, crit, crit_low, "
+         "   crit_threshold_mode, min, max, current_value,"
+         "   data_source_type)"
+         " VALUES (?, ?, ?, ?, "
+         "         ?, ?, ?, "
+         "         ?, ?, ?, ?, "
+         "         ?, ?)";
+
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::ostringstream nss;
+  nss << "metric_name - " << time(NULL) << "bis2";
+  int stmt_id(ms->prepare_query(oss.str()));
+  mysql_bind bind(13);
+  bind.set_int(0, 19);
+  bind.set_string(1, nss.str());
+  bind.set_string(2, "test/s");
+  bind.set_float(3, 20.0);
+  bind.set_float(4, 40.0);
+  bind.set_tiny(5, 1);
+  bind.set_float(6, 10.0);
+  bind.set_float(7, 20.0);
+  bind.set_tiny(8, 1);
+  bind.set_float(9, 0.0);
+  bind.set_float(10, 50.0);
+  bind.set_float(11, 18.0);
+  bind.set_string(12, "2");
+  // We force the thread 0
+  int thread_id(ms->run_statement_sync(stmt_id, bind, "", 0));
+  int id(ms->get_last_insert_id(thread_id));
+  ASSERT_TRUE(id > 0);
+  std::cout << "id = " << id << std::endl;
+  oss.str("");
+  oss << "SELECT metric_id FROM metrics WHERE metric_name='" << nss.str() << "'";
+  thread_id = ms->run_query_sync(oss.str());
+  mysql_result res(ms->get_result(thread_id));
+  ASSERT_FALSE(res.next());
+  ASSERT_NO_THROW(ms->commit());
+  thread_id = ms->run_query_sync(oss.str());
+  res = ms->get_result(thread_id);
+  ASSERT_TRUE(res.next());
+  std::cout << "id1 = " << res.value_as_i32(0) << std::endl;
+  ASSERT_TRUE(res.value_as_i32(0) == id);
+}
