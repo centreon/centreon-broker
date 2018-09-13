@@ -126,7 +126,7 @@ TEST_F(DatabaseStorageTest, QueryWithCallback) {
     << ", 'test-user', 'comment from InsertAndGetInsertId1')";
 
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
-  ms->run_query(oss.str(), callback_get_insert_id, NULL);
+  ms->run_query(oss.str(), "", false, callback_get_insert_id, NULL);
 }
 
 // Given a mysql object
@@ -250,12 +250,12 @@ TEST_F(DatabaseStorageTest, QueryWithError) {
 
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
   // The following insert fails
-  ms->run_query("INSERT INTO FOO (toto) VALUES (0)", 0, 0, "", true, 1);
+  ms->run_query("INSERT INTO FOO (toto) VALUES (0)", "", true, 0, 0, 1);
   ms->commit();
 
   // The following is the same one, executed by the same thread but since the
   // previous error, an exception should arrive.
-  ASSERT_THROW(ms->run_query("INSERT INTO FOO (toto) VALUES (0)", 0, 0, "", true, 1), std::exception);
+  ASSERT_THROW(ms->run_query("INSERT INTO FOO (toto) VALUES (0)", "", true, 0, 0, 1), std::exception);
 }
 
 // Given a mysql object

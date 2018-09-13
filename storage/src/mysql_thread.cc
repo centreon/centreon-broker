@@ -115,7 +115,8 @@ void mysql_thread::_statement(mysql_task_statement* task) {
     else {
       logging::error(logging::medium)
         << "storage: Error while sending prepared query: "
-        << mysql_stmt_error(_stmt[task->statement_id]);
+        << mysql_stmt_error(_stmt[task->statement_id])
+        << " (" << task->error_msg << ")";
     }
   }
 }
@@ -200,15 +201,12 @@ void mysql_thread::run() {
 mysql_thread::mysql_thread(database_config const& db_cfg)
   : _conn(mysql_init(NULL)),
     _finished(false) {
-  std::cout << "mysql_thread constructor" << std::endl;
   if (!_conn) {
-    std::cout << "mysql_thread throw exception" << std::endl;
     throw exceptions::msg()
       << "storage: Unable to initialize the MySQL client connector: "
       << ::mysql_error(_conn);
   }
 
-  std::cout << "mysql_thread real connect..." << std::endl;
   if (!mysql_real_connect(
          _conn,
          db_cfg.get_host().c_str(),
@@ -218,8 +216,6 @@ mysql_thread::mysql_thread(database_config const& db_cfg)
          db_cfg.get_port(),
          NULL,
          0)) {
-    std::cout << "mysql_thread constructor real connect failed" << std::endl;
-    std::cout << "mysql_thread throw exception" << std::endl;
     throw exceptions::msg()
       << "storage: The connection to '"
       << db_cfg.get_name() << ":" << db_cfg.get_port()
@@ -231,13 +227,10 @@ mysql_thread::mysql_thread(database_config const& db_cfg)
   else
     mysql_autocommit(_conn, 1);
 
-  std::cout << "mysql_thread start thread..." << std::endl;
   start();
-  std::cout << "mysql_thread return" << std::endl;
 }
 
 mysql_thread::~mysql_thread() {
-  std::cout << "destructor" << std::endl;
   for (std::vector<MYSQL_STMT*>::iterator
          it(_stmt.begin()),
          end(_stmt.end());
@@ -247,7 +240,6 @@ mysql_thread::~mysql_thread() {
   }
   mysql_close(_conn);
   mysql_thread_end();
-  std::cout << "destructor return" << std::endl;
 }
 
 void mysql_thread::_push(misc::shared_ptr<mysql_task> const& q) {
@@ -263,7 +255,8 @@ void mysql_thread::_push(misc::shared_ptr<mysql_task> const& q) {
  *  @param error_msg The error message to return in case of error.
  *  @throw an exception in case of error.
  */
-void mysql_thread::run_query_sync(std::string const& query, std::string const& error_msg) {
+void mysql_thread::run_query_sync(std::string const& query,
+                     std::string const& error_msg) {
   QMutexLocker locker(&_result_mutex);
   _push(misc::shared_ptr<mysql_task>(new mysql_task_run_sync(query)));
   _result_condition.wait(locker.mutex());
@@ -300,7 +293,8 @@ void mysql_thread::commit(QSemaphore& sem, QAtomicInt& count) {
 }
 
 void mysql_thread::run_statement(int statement_id, mysql_bind const& bind,
-       mysql_callback fn, void* data, std::string const& error_msg, bool fatal) {
+       std::string const& error_msg, bool fatal,
+       mysql_callback fn, void* data) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_statement(statement_id, bind, fn, data, error_msg, fatal)));
 }
 
@@ -333,8 +327,8 @@ void mysql_thread::prepare_query(std::string const& query) {
  */
 void mysql_thread::run_query(
                      std::string const& query,
-                     mysql_callback fn, void* data,
-                     std::string const& error_msg, bool fatal) {
+                     std::string const& error_msg, bool fatal,
+                     mysql_callback fn, void* data) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_run(query, fn, data, error_msg, fatal)));
 }
 

@@ -52,15 +52,15 @@ namespace                  storage {
                              QAtomicInt& count);
     void                   run_query(
                              std::string const& query,
-                             mysql_callback fn, void* data,
-                             std::string const& error_msg, bool fatal);
+                             std::string const& error_msg, bool fatal,
+                             mysql_callback fn, void* data);
     void                   run_query_sync(
                              std::string const& query,
                              std::string const& error_msg);
     void                   run_statement(
                              int statement_id, mysql_bind const& bind,
-                             mysql_callback fn, void* data,
-                             std::string const& error_msg, bool fatal);
+                             std::string const& error_msg, bool fatal,
+                             mysql_callback fn, void* data);
     void                   run_statement_sync(
                              int statement_id, mysql_bind const& bind,
                              std::string const& error_msg);

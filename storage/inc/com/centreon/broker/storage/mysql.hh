@@ -41,8 +41,8 @@ namespace           storage {
     void                commit();
     bool                run_query(
                           std::string const& query,
-                          mysql_callback fn = 0, void* data = 0,
                           std::string const& error_msg = "", bool fatal = false,
+                          mysql_callback fn = 0, void* data = 0,
                           int thread = -1);
     int                 run_query_sync(
                           std::string const& query,
@@ -50,8 +50,8 @@ namespace           storage {
                           int thread = -1);
     bool                run_statement(
                           int statement_id, mysql_bind const& bind,
-                          mysql_callback fn = 0, void* data = 0,
                           std::string const& error_msg = "", bool fatal = false,
+                          mysql_callback fn = 0, void* data = 0,
                           int thread = -1);
     int                 run_statement_sync(
                           int statement_id, mysql_bind const& bind,

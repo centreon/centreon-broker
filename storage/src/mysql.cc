@@ -165,8 +165,8 @@ void mysql::_check_errors(int thread_id) {
  * @return A boolean telling if a commit has been done after the query.
  */
 bool mysql::run_query(std::string const& query,
-              mysql_callback fn, void* data,
               std::string const& error_msg, bool fatal,
+              mysql_callback fn, void* data,
               int thread) {
   if (thread < 0) {
     // Here, we use _current_thread
@@ -179,8 +179,8 @@ bool mysql::run_query(std::string const& query,
   std::cout << "-> FATAL 1" << std::endl;
   _thread[thread]->run_query(
     query,
-    fn, data,
-    error_msg, fatal);
+    error_msg, fatal,
+    fn, data);
   return _commit_if_needed();
 }
 
@@ -217,8 +217,8 @@ int mysql::get_last_insert_id(int thread_id) {
 }
 
 bool mysql::run_statement(int statement_id, mysql_bind const& bind,
-              mysql_callback fn, void* data,
               std::string const& error_msg, bool fatal,
+              mysql_callback fn, void* data,
               int thread) {
   if (thread < 0) {
     // Here, we use _current_thread
@@ -229,8 +229,8 @@ bool mysql::run_statement(int statement_id, mysql_bind const& bind,
   _check_errors(thread);
   _thread[thread]->run_statement(
     statement_id, bind,
-    fn, data,
-    error_msg, fatal);
+    error_msg, fatal,
+    fn, data);
   return _commit_if_needed();
 }
 

@@ -123,6 +123,7 @@ stream::stream(
     _store_in_db(store_in_db),
     _update_metrics_stmt(-1),
     _insert_metrics_stmt(-1),
+    _update_index_data_stmt(-1),
     _mysql(db_cfg) {
   // Prepare queries.
   _prepare();
@@ -328,7 +329,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
 
   int retval(_ack_events);
   _ack_events = 0;
-  logging::debug(logging::medium)
+  logging::debug(logging::low)
     << "storage: ack events count: " << retval;
   return retval;
 }
@@ -394,7 +395,7 @@ void stream::_check_deleted_index() {
       }
       catch (std::exception const& e) {
         throw broker::exceptions::msg()
-               << "storage: could not get metrics of index "
+               << "storage: could not get metrics at index "
                << index_id << ": " << e.what();
       }
       mysql_result res(_mysql.get_result(thread_id));
@@ -414,7 +415,7 @@ void stream::_check_deleted_index() {
           << "        =" << index_id;
       std::ostringstream oss_error;
       oss_error << "storage: cannot delete index " << index_id << ": ";
-      if (_mysql.run_query(oss.str(), 0, 0, oss_error.str())) {
+      if (_mysql.run_query(oss.str(), oss_error.str())) {
         _set_ack_events();
       }
     }
@@ -492,7 +493,7 @@ void stream::_delete_metrics(
           << "  WHERE metric_id=" << metric_id;
       std::ostringstream oss_error;
       oss_error << "storage: cannot remove metric " << metric_id << ": ";
-      if (_mysql.run_query(oss.str(), 0, 0, oss_error.str()))
+      if (_mysql.run_query(oss.str(), oss_error.str()))
         _set_ack_events();
     }
 
@@ -565,7 +566,7 @@ unsigned int stream::_find_index_id(
       bind.set_int(3, host_id);
       bind.set_int(4, service_id);
 
-      if (_mysql.run_statement(_update_index_data_stmt, bind, 0, 0, "", true))
+      if (_mysql.run_statement(_update_index_data_stmt, bind, "UPDATE index_data", true))
         _set_ack_events();
 
       // Update cache entry.
@@ -729,7 +730,7 @@ unsigned int stream::_find_metric_id(
       bind.set_int(10, index_id);
       bind.set_string(11, metric_name.toStdString());
 
-      if (_mysql.run_statement(_update_metrics_stmt, bind, 0, 0, "", true))
+      if (_mysql.run_statement(_update_metrics_stmt, bind, "UPDATE metrics", true))
         _set_ack_events();
 
       // Fill cache.
@@ -784,7 +785,7 @@ unsigned int stream::_find_metric_id(
 
     // Execute query.
     try {
-      int thread_id(_mysql.run_statement_sync(_insert_metrics_stmt, bind));
+      int thread_id(_mysql.run_statement_sync(_insert_metrics_stmt, bind, "INSERT metrics"));
       retval = _mysql.get_last_insert_id(thread_id);
     }
     catch (std::exception const& e) {
@@ -873,13 +874,9 @@ void stream::_insert_perfdatas() {
     }
 
     // Execute query.
-    if (_mysql.run_query(query.str()))
+    if (_mysql.run_query(query.str(), "storage: could not insert data in data_bin"))
       _set_ack_events();
 
-//    database_query q(_db);
-//    q.run_query(
-//        query.str(),
-//        "storage: could not insert data in log_data_bin");
     _update_status("");
   }
 
@@ -895,19 +892,6 @@ void stream::_prepare() {
 
   // Prepare metrics update query.
   std::ostringstream query;
-//  query << "UPDATE " << (db_v2 ? "metrics" : "rt_metrics")
-//        << " SET unit_name=:unit_name,"
-//           "     warn=:warn,"
-//           "     warn_low=:warn_low,"
-//           "     warn_threshold_mode=:warn_threshold_mode,"
-//           "     crit=:crit,"
-//           "     crit_low=:crit_low,"
-//           "     crit_threshold_mode=:crit_threshold_mode,"
-//           "     min=:min,"
-//           "     max=:max,"
-//           "     current_value=:current_value"
-//           "  WHERE index_id=:index_id"
-//           "    AND metric_name=:metric_name";
   query << "UPDATE " << (db_v2 ? "metrics" : "rt_metrics")
         << " SET unit_name=?,"
            "     warn=?,"
@@ -939,17 +923,13 @@ void stream::_prepare() {
   query << "UPDATE " << (db_v2 ? "index_data" : "rt_index_data")
         << "  SET host_name=?,"
            "    service_description=?,"
-           "    special=?,"
+           "    special=?"
            "  WHERE host_id=?"
            "    AND service_id=?";
   _update_index_data_stmt = _mysql.prepare_query(query.str());
 
   // Build cache.
   _rebuild_cache();
-
-//  _update_metrics.prepare(
-//    query.str(),
-//    "storage: could not prepare metrics update query");
 }
 
 /**
@@ -978,12 +958,10 @@ void stream::_rebuild_cache() {
              "       rrd_retention, service_description, special,"
              "       locked"
              " FROM " << (db_v2 ? "index_data" : "rt_index_data");
-    int thread_id(_mysql.run_query_sync(query.str()));
+    int thread_id(_mysql.run_query_sync(
+                    query.str(),
+                    "storage: could not fetch index list from data DB"));
     mysql_result res(_mysql.get_result(thread_id));
-//    database_query q(_db);
-//    q.run_query(
-//        query.str(),
-//        "storage: could not fetch index list from data DB");
 
     // Loop through result set.
     while (res.next()) {
@@ -1026,12 +1004,10 @@ void stream::_rebuild_cache() {
              "       warn_threshold_mode, crit, crit_low,"
              "       crit_threshold_mode, min, max"
              "  FROM " << (db_v2 ? "metrics" : "rt_metrics");
-    int thread_id(_mysql.run_query_sync(query.str()));
+    int thread_id(_mysql.run_query_sync(
+                    query.str(),
+                    "storage: could not fetch metric list from data DB"));
     mysql_result res(_mysql.get_result(thread_id));
-//    database_query q(_db);
-//    q.run_query(
-//        query.str(),
-//        "storage: could not fetch metric list from data DB");
 
     // Loop through result set.
     while (res.next()) {
