@@ -44,6 +44,7 @@ mysql::mysql(database_config const& db_cfg)
   for (int i(0); i < db_cfg.get_connections_count(); ++i) {
     std::cout << "mysql constructor thread " << i << " construction" << std::endl;
     _thread.push_back(new mysql_thread(db_cfg));
+    std::cout << "mysql constructor next one" << std::endl;
   }
   try {
     run_query_sync("SELECT instance_id FROM instances LIMIT 1");
@@ -70,6 +71,7 @@ mysql::~mysql() {
     logging::error(logging::medium)
       << "storage: A thread was forced to stop after a timeout of 20s";
 
+  mysql_library_end();
   std::cout << "mysql destructor return" << std::endl;
 }
 

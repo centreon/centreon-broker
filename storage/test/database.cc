@@ -166,16 +166,16 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
   bind.set_string(2, "test/s");
   bind.set_float(3, NAN);
   bind.set_float(4, INFINITY);
-  bind.set_tiny(5, 1);
+  bind.set_tiny(5, true);
   bind.set_float(6, 10.0);
   bind.set_float(7, 20.0);
-  bind.set_tiny(8, 1);
+  bind.set_tiny(8, false);
   bind.set_float(9, 0.0);
   bind.set_float(10, 50.0);
   bind.set_float(11, 18.0);
   bind.set_string(12, "2");
   // We force the thread 0
-  ms->run_statement(stmt_id, bind, 0);
+  ms->run_statement(stmt_id, bind, "", false, 0, 0, 0);
   oss.str("");
   oss << "SELECT metric_name FROM metrics WHERE metric_name='" << nss.str() << "'";
   int thread_id(ms->run_query_sync(oss.str()));
@@ -366,3 +366,48 @@ TEST_F(DatabaseStorageTest, PrepareQuerySync) {
   std::cout << "id1 = " << res.value_as_i32(0) << std::endl;
   ASSERT_TRUE(res.value_as_i32(0) == id);
 }
+
+// Given a mysql object
+// When a prepare statement is done
+// Then we can bind values to it and execute the statement.
+// Then a commit makes data available in the database.
+TEST_F(DatabaseStorageTest, RepeatPrepareQuery) {
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "centreon",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  time_t now(time(NULL));
+  std::ostringstream oss;
+  oss << "UPDATE metrics"
+	 " SET unit_name=?, warn=?, warn_low=?, warn_threshold_mode=?,"
+	 " crit=?, crit_low=?, crit_threshold_mode=?,"
+	 " min=?, max=?, current_value=? "
+	 "WHERE metric_id=?";
+
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  int stmt_id(ms->prepare_query(oss.str()));
+  for (int i(1); i < 4000; ++i) {
+    mysql_bind bind(11);
+    bind.set_string(0, "test/s");
+    bind.set_float(1, NAN);
+    bind.set_float(2, NAN);
+    bind.set_tiny(3, 0);
+    bind.set_float(4, NAN);
+    bind.set_float(5, NAN);
+    bind.set_tiny(6, 0);
+    bind.set_float(7, 10.0);
+    bind.set_float(8, 20.0);
+    bind.set_float(9, 18.0);
+    bind.set_int(10, i);
+
+    ms->run_statement(stmt_id, bind);
+  }
+  ms->commit();
+}
+

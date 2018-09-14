@@ -98,6 +98,7 @@ void mysql_thread::_prepare(mysql_task_prepare* task) {
 }
 
 void mysql_thread::_statement(mysql_task_statement* task) {
+  std::cout << "##### thread::_statement..." << std::endl;
   if (mysql_stmt_bind_param(_stmt[task->statement_id], const_cast<MYSQL_BIND*>(task->bind.get_bind()))) {
     if (task->fatal && !_error.is_active()) {
       _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), task->fatal);
@@ -134,6 +135,44 @@ void mysql_thread::_statement_sync(mysql_task_statement_sync* task) {
 }
 
 void mysql_thread::run() {
+  QMutexLocker locker(&_result_mutex);
+  std::cout << "mysql_thread::run" << std::endl;
+  _conn = mysql_init(NULL);
+  std::cout << "mysql_thread::run 1" << std::endl;
+  if (!_conn) {
+    _error = mysql_error(::mysql_error(_conn), true);
+    _finished = true;
+    // FIXME DBR
+    // "storage: Unable to initialize the MySQL client connector: "
+  }
+  else if (!mysql_real_connect(
+         _conn,
+         _host.c_str(),
+         _user.c_str(),
+         _pwd.c_str(),
+         _name.c_str(),
+         _port,
+         NULL,
+         0)) {
+    std::cout << "mysql_thread::run real connect failed: "<< ::mysql_error(_conn) << std::endl;
+    _error = mysql_error(::mysql_error(_conn), true);
+    _finished = true;
+//    throw exceptions::msg()
+//      << "storage: The connection to '"
+//      << _db_cfg.get_name() << ":" << _db_cfg.get_port()
+//      << "' MySQL database failed: "
+//      << ::mysql_error(_conn);
+  }
+  std::cout << "mysql_thread::run 3" << std::endl;
+
+  if (_qps > 1)
+    mysql_autocommit(_conn, 0);
+  else
+    mysql_autocommit(_conn, 1);
+
+  locker.unlock();
+  _result_condition.wakeAll();
+
   while (!_finished) {
     std::cout << "run mutex lock" << std::endl;
     QMutexLocker locker(&_list_mutex);
@@ -199,35 +238,24 @@ void mysql_thread::run() {
 /******************************************************************************/
 
 mysql_thread::mysql_thread(database_config const& db_cfg)
-  : _conn(mysql_init(NULL)),
-    _finished(false) {
-  if (!_conn) {
-    throw exceptions::msg()
-      << "storage: Unable to initialize the MySQL client connector: "
-      << ::mysql_error(_conn);
-  }
+  : _conn(NULL),
+    _finished(false),
+    _host(db_cfg.get_host()),
+    _user(db_cfg.get_user()),
+    _pwd(db_cfg.get_password()),
+    _name(db_cfg.get_name()),
+    _port(db_cfg.get_port()),
+    _qps(db_cfg.get_queries_per_transaction()) {
 
-  if (!mysql_real_connect(
-         _conn,
-         db_cfg.get_host().c_str(),
-         db_cfg.get_user().c_str(),
-         db_cfg.get_password().c_str(),
-         db_cfg.get_name().c_str(),
-         db_cfg.get_port(),
-         NULL,
-         0)) {
-    throw exceptions::msg()
-      << "storage: The connection to '"
-      << db_cfg.get_name() << ":" << db_cfg.get_port()
-      << "' MySQL database failed: "
-      << ::mysql_error(_conn);
-  }
-  if (db_cfg.get_queries_per_transaction() > 1)
-    mysql_autocommit(_conn, 0);
-  else
-    mysql_autocommit(_conn, 1);
-
+  std::cout << "mysql_thread start thread" << std::endl;
+  QMutexLocker locker(&_result_mutex);
   start();
+  std::cout << "mysql_thread start WAIT thread" << std::endl;
+  _result_condition.wait(locker.mutex());
+  std::cout << "mysql_thread wait for start... => GO" << std::endl;
+  if (_error.is_active())
+    throw exceptions::msg()
+      << _error.get_message();
 }
 
 mysql_thread::~mysql_thread() {
@@ -243,7 +271,9 @@ mysql_thread::~mysql_thread() {
 }
 
 void mysql_thread::_push(misc::shared_ptr<mysql_task> const& q) {
+  std::cout << "mysql_thread::_push" << std::endl;
   QMutexLocker locker(&_list_mutex);
+  std::cout << "mysql_thread::_push locked" << std::endl;
   _tasks_list.push_back(q);
   _tasks_condition.wakeAll();
 }

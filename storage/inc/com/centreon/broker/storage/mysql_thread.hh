@@ -107,6 +107,12 @@ namespace                  storage {
 
     // Error message returned when the call to _run_sync() fails.
     mysql_error            _error;
+    std::string            _host;
+    std::string            _user;
+    std::string            _pwd;
+    std::string            _name;
+    int                    _port;
+    int                    _qps;
   };
 }
 

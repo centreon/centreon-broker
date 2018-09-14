@@ -391,7 +391,7 @@ void stream::_check_deleted_index() {
 
       int thread_id;
       try {
-        thread_id = _mysql.run_query_sync(oss.str());
+        thread_id = _mysql.run_query_sync(oss.str(), "", 0);
       }
       catch (std::exception const& e) {
         throw broker::exceptions::msg()
@@ -436,7 +436,7 @@ void stream::_check_deleted_index() {
            "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
         << "  WHERE to_delete=1";
     int thread_id(_mysql.run_query_sync(oss.str(),
-                    "storage: could not get the list of metrics to delete"));
+                    "storage: could not get the list of metrics to delete", 0));
     mysql_result res(_mysql.get_result(thread_id));
     while (res.next())
       metrics_to_delete.push_back(res.value_as_u64(0));
@@ -493,7 +493,7 @@ void stream::_delete_metrics(
           << "  WHERE metric_id=" << metric_id;
       std::ostringstream oss_error;
       oss_error << "storage: cannot remove metric " << metric_id << ": ";
-      if (_mysql.run_query(oss.str(), oss_error.str()))
+      if (_mysql.run_query(oss.str(), oss_error.str(), 0))
         _set_ack_events();
     }
 
@@ -716,7 +716,7 @@ unsigned int stream::_find_metric_id(
         << warn_low << ":" << warn << ", critical: " << crit_low << ":"
         << crit << ", min: " << min << ", max: " << max << ")";
       // Update metrics table.
-      mysql_bind bind(12);
+      mysql_bind bind(11);
       bind.set_string(0, unit_name.toStdString());
       bind.set_float(1, warn);
       bind.set_float(2, warn_low);
@@ -727,10 +727,23 @@ unsigned int stream::_find_metric_id(
       bind.set_float(7, min);
       bind.set_float(8, max);
       bind.set_float(9, value);
-      bind.set_int(10, index_id);
-      bind.set_string(11, metric_name.toStdString());
+      bind.set_int(10, it->second.metric_id);
 
-      if (_mysql.run_statement(_update_metrics_stmt, bind, "UPDATE metrics", true))
+      logging::info(logging::medium) << "FIXME DBR: UPDATE metrics "
+        << "SET unit_name='" << unit_name
+        << "', warn=" << warn
+        << ", warn_low=" << warn_low
+        << ", warn_threshold_mode='" << warn_mode
+        << "', crit=" << crit
+        << ", crit_low=" << crit_low
+        << ", crit_threshold_mode='" << crit_mode
+        << "', min=" << min
+        << ", max=" << max
+        << ", current_value=" << value
+        << " WHERE metric_id=" << it->second.metric_id;
+
+      // Only use the thread_id 0
+      if (_mysql.run_statement(_update_metrics_stmt, bind, "UPDATE metrics", true, 0, 0, 0))
         _set_ack_events();
 
       // Fill cache.
@@ -903,8 +916,7 @@ void stream::_prepare() {
            "     min=?,"
            "     max=?,"
            "     current_value=?"
-           "  WHERE index_id=?"
-           "    AND metric_name=?";
+           "  WHERE metric_id=?";
   _update_metrics_stmt = _mysql.prepare_query(query.str());
 
   query.str("");
@@ -1006,7 +1018,7 @@ void stream::_rebuild_cache() {
              "  FROM " << (db_v2 ? "metrics" : "rt_metrics");
     int thread_id(_mysql.run_query_sync(
                     query.str(),
-                    "storage: could not fetch metric list from data DB"));
+                    "storage: could not fetch metric list from data DB", 0));
     mysql_result res(_mysql.get_result(thread_id));
 
     // Loop through result set.
