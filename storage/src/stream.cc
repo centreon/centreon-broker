@@ -391,7 +391,7 @@ void stream::_check_deleted_index() {
 
       int thread_id;
       try {
-        thread_id = _mysql.run_query_sync(oss.str(), "", 0);
+        thread_id = _mysql.run_query_sync(oss.str(), "");
       }
       catch (std::exception const& e) {
         throw broker::exceptions::msg()
@@ -436,7 +436,7 @@ void stream::_check_deleted_index() {
            "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
         << "  WHERE to_delete=1";
     int thread_id(_mysql.run_query_sync(oss.str(),
-                    "storage: could not get the list of metrics to delete", 0));
+                    "storage: could not get the list of metrics to delete"));
     mysql_result res(_mysql.get_result(thread_id));
     while (res.next())
       metrics_to_delete.push_back(res.value_as_u64(0));
@@ -493,7 +493,7 @@ void stream::_delete_metrics(
           << "  WHERE metric_id=" << metric_id;
       std::ostringstream oss_error;
       oss_error << "storage: cannot remove metric " << metric_id << ": ";
-      if (_mysql.run_query(oss.str(), oss_error.str(), 0))
+      if (_mysql.run_query(oss.str(), oss_error.str()))
         _set_ack_events();
     }
 
@@ -743,7 +743,7 @@ unsigned int stream::_find_metric_id(
         << " WHERE metric_id=" << it->second.metric_id;
 
       // Only use the thread_id 0
-      if (_mysql.run_statement(_update_metrics_stmt, bind, "UPDATE metrics", true, 0, 0, 0))
+      if (_mysql.run_statement(_update_metrics_stmt, bind, "UPDATE metrics", true))
         _set_ack_events();
 
       // Fill cache.
@@ -792,7 +792,7 @@ unsigned int stream::_find_metric_id(
     bind.set_float(10, max);
     bind.set_float(11, value);
     char t[2];
-    t[0] = *type + (db_v2 ? 1 : 0);
+    t[0] = '0' + *type + (db_v2 ? 1 : 0);
     t[1] = 0;
     bind.set_string(12, t);
 
@@ -1018,7 +1018,7 @@ void stream::_rebuild_cache() {
              "  FROM " << (db_v2 ? "metrics" : "rt_metrics");
     int thread_id(_mysql.run_query_sync(
                     query.str(),
-                    "storage: could not fetch metric list from data DB", 0));
+                    "storage: could not fetch metric list from data DB"));
     mysql_result res(_mysql.get_result(thread_id));
 
     // Loop through result set.
