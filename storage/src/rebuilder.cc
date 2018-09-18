@@ -311,6 +311,9 @@ void rebuilder::_rebuild_metric(
   // Database schema version.
   bool db_v2(db.schema_version() == database::v2);
 
+  //FIXME DBR
+//  time_t start(time(NULL) - length);
+
   try {
     // Get data.
     std::ostringstream oss;
@@ -318,6 +321,7 @@ void rebuilder::_rebuild_metric(
         << " FROM " << (db_v2 ? "data_bin" : "log_data_bin")
         << " WHERE " << (db_v2 ? "id_metric" : "metric_id")
         << "=" << metric_id
+//        << " AND ctime >= " << start
         << " ORDER BY ctime ASC";
     database_query data_bin_query(db);
     bool caught(false);

@@ -18,10 +18,9 @@
 #include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/storage/mysql_thread.hh"
+#include "com/centreon/broker/mysql_thread.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::storage;
 
 /******************************************************************************/
 /*                      Methods executed by this thread                       */
@@ -44,7 +43,7 @@ void mysql_thread::_run(mysql_task_run* task) {
     // FIXME DBR: we need a way to send an error to the main thread
     int ret(task->fn(_conn, task->data));
     logging::info(logging::medium)
-      << "storage: callback returned " << ret;
+      << "mysql: callback returned " << ret;
   }
 }
 
@@ -87,12 +86,12 @@ void mysql_thread::_prepare(mysql_task_prepare* task) {
   MYSQL_STMT* stmt(mysql_stmt_init(_conn));
   if (!stmt) {
     logging::error(logging::medium)
-      << "storage: Could not initialize statement";
+      << "mysql: Could not initialize statement";
   }
   else {
     if (mysql_stmt_prepare(stmt, task->query.c_str(), task->query.size())) {
       logging::error(logging::medium)
-        << "storage: Could not prepare statement";
+        << "mysql: Could not prepare statement";
     }
     _stmt.push_back(stmt);
   }
@@ -106,7 +105,7 @@ void mysql_thread::_statement(mysql_task_statement* task) {
     }
     else {
       logging::error(logging::medium)
-        << "storage: Error while binding values in statement: "
+        << "mysql: Error while binding values in statement: "
         << mysql_stmt_error(_stmt[task->statement_id]);
     }
   }
@@ -116,7 +115,7 @@ void mysql_thread::_statement(mysql_task_statement* task) {
     }
     else {
       logging::error(logging::medium)
-        << "storage: Error while sending prepared query: "
+        << "mysql: Error while sending prepared query: "
         << mysql_stmt_error(_stmt[task->statement_id])
         << " (" << task->error_msg << ")";
     }
@@ -144,7 +143,7 @@ void mysql_thread::run() {
     _error = mysql_error(::mysql_error(_conn), true);
     _finished = true;
     // FIXME DBR
-    // "storage: Unable to initialize the MySQL client connector: "
+    // "mysql: Unable to initialize the MySQL client connector: "
   }
   else if (!mysql_real_connect(
          _conn,
@@ -159,7 +158,7 @@ void mysql_thread::run() {
     _error = mysql_error(::mysql_error(_conn), true);
     _finished = true;
 //    throw exceptions::msg()
-//      << "storage: The connection to '"
+//      << "mysql: The connection to '"
 //      << _db_cfg.get_name() << ":" << _db_cfg.get_port()
 //      << "' MySQL database failed: "
 //      << ::mysql_error(_conn);
@@ -221,7 +220,7 @@ void mysql_thread::run() {
        default:
         std::cout << "ERROR: run DEFAULT SITUATION with type = " << task->type << std::endl;
         logging::error(logging::medium)
-          << "storage: Error type not managed...";
+          << "mysql: Error type not managed...";
         break;
       }
     }
@@ -375,7 +374,7 @@ mysql_result mysql_thread::get_result() {
   return retval;
 }
 
-storage::mysql_error mysql_thread::get_error() {
+com::centreon::broker::mysql_error mysql_thread::get_error() {
   QMutexLocker locker(&_result_mutex);
   mysql_error retval(_error);
   _error.clear();

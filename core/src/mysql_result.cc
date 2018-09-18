@@ -16,10 +16,9 @@
 ** For more information : contact@centreon.com
 */
 #include <cstdlib>
-#include "com/centreon/broker/storage/mysql_result.hh"
+#include "com/centreon/broker/mysql_result.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::storage;
 
 mysql_result::mysql_result(MYSQL_RES* result)
   : _result(result, mysql_free_result) {}

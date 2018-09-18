@@ -19,10 +19,9 @@
 #include <cfloat>
 #include <cstring>
 #include <cmath>
-#include "com/centreon/broker/storage/mysql_bind.hh"
+#include "com/centreon/broker/mysql_bind.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::storage;
 
 my_bool mysql_bind::_true = 1;
 

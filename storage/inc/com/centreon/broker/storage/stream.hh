@@ -28,7 +28,7 @@
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/storage/rebuilder.hh"
-#  include "com/centreon/broker/storage/mysql.hh"
+#  include "com/centreon/broker/mysql.hh"
 
 CCB_BEGIN()
 

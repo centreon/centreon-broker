@@ -34,7 +34,7 @@
 #include "com/centreon/broker/storage/index_mapping.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/metric_mapping.hh"
-#include "com/centreon/broker/storage/mysql_bind.hh"
+#include "com/centreon/broker/mysql_bind.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"

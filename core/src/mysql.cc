@@ -19,11 +19,10 @@
 #include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/storage/mysql.hh"
-#include "com/centreon/broker/storage/mysql_error.hh"
+#include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/mysql_error.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::storage;
 
 /**
  *  Constructor.
@@ -39,7 +38,7 @@ mysql::mysql(database_config const& db_cfg)
   std::cout << "mysql constructor" << std::endl;
   if (mysql_library_init(0, NULL, NULL))
     throw exceptions::msg()
-      << "storage: unable to initialize the MySQL connector";
+      << "mysql: unable to initialize the MySQL connector";
 
   for (int i(0); i < db_cfg.get_connections_count(); ++i) {
     std::cout << "mysql constructor thread " << i << " construction" << std::endl;
@@ -50,12 +49,12 @@ mysql::mysql(database_config const& db_cfg)
     run_query_sync("SELECT instance_id FROM instances LIMIT 1");
     _version = v2;
     logging::info(logging::low)
-      << "storage: database is using version 2 of Centreon schema";
+      << "mysql: database is using version 2 of Centreon schema";
   }
   catch (std::exception const& e) {
     _version = v3;
     logging::info(logging::low)
-      << "storage: database is using version 3 of Centreon schema";
+      << "mysql: database is using version 3 of Centreon schema";
   }
 
   std::cout << "mysql constructor return" << std::endl;
@@ -69,7 +68,7 @@ mysql::~mysql() {
   bool retval(finish());
   if (!retval)
     logging::error(logging::medium)
-      << "storage: A thread was forced to stop after a timeout of 20s";
+      << "mysql: A thread was forced to stop after a timeout of 20s";
 
   for (std::vector<mysql_thread*>::const_iterator
          it(_thread.begin()),
@@ -106,7 +105,7 @@ void mysql::commit() {
   std::cout << "ALL THE THREADS COMMITS DONE..." << std::endl;
   if (int(ko))
     throw exceptions::msg()
-      << "storage: Unable to commit transactions";
+      << "mysql: Unable to commit transactions";
   _pending_queries = 0;
 }
 
@@ -155,7 +154,7 @@ void mysql::_check_errors(int thread_id) {
       throw exceptions::msg() << err.get_message();
     else
       logging::error(logging::medium)
-        << "storage: " << err.get_message();
+        << "mysql: " << err.get_message();
   }
 }
 

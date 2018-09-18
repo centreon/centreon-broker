@@ -59,6 +59,12 @@ if (("${QT_VERSION}" VERSION_EQUAL "4.7.0")
   message(WARNING "Qt versions 4.7.0 and 4.7.1 contain a bug that might prevent Centreon Broker from working properly.")
 endif ()
 
+# Find MySQL/Mariadb devel package
+execute_process(COMMAND ${MYSQL_CONFIG} --cflags
+  OUTPUT_VARIABLE MYSQL_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${MYSQL_CONFIG} --libs
+  OUTPUT_VARIABLE MYSQL_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 #
 # Get distributions name
 #
@@ -352,12 +358,12 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/bbdo/output.cc"
   "${SRC_DIR}/bbdo/stream.cc"
   "${SRC_DIR}/bbdo/version_response.cc"
-  "${SRC_DIR}/ceof/ceof_writer.cc"
-  "${SRC_DIR}/ceof/ceof_parser.cc"
-  "${SRC_DIR}/ceof/ceof_iterator.cc"
-  "${SRC_DIR}/ceof/ceof_token.cc"
-  "${SRC_DIR}/ceof/ceof_serializer.cc"
   "${SRC_DIR}/ceof/ceof_deserializer.cc"
+  "${SRC_DIR}/ceof/ceof_iterator.cc"
+  "${SRC_DIR}/ceof/ceof_parser.cc"
+  "${SRC_DIR}/ceof/ceof_serializer.cc"
+  "${SRC_DIR}/ceof/ceof_token.cc"
+  "${SRC_DIR}/ceof/ceof_writer.cc"
   "${SRC_DIR}/compression/factory.cc"
   "${SRC_DIR}/compression/internal.cc"
   "${SRC_DIR}/compression/opener.cc"
@@ -382,8 +388,8 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/exceptions/shutdown.cc"
   "${SRC_DIR}/exceptions/timeout.cc"
   "${SRC_DIR}/extcmd/command_client.cc"
-  "${SRC_DIR}/extcmd/command_parser.cc"
   "${SRC_DIR}/extcmd/command_listener.cc"
+  "${SRC_DIR}/extcmd/command_parser.cc"
   "${SRC_DIR}/extcmd/command_request.cc"
   "${SRC_DIR}/extcmd/command_result.cc"
   "${SRC_DIR}/extcmd/command_server.cc"
@@ -416,8 +422,8 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/io/raw.cc"
   "${SRC_DIR}/io/stream.cc"
   "${SRC_DIR}/json/jsmn.c"
-  "${SRC_DIR}/json/json_parser.cc"
   "${SRC_DIR}/json/json_iterator.cc"
+  "${SRC_DIR}/json/json_parser.cc"
   "${SRC_DIR}/json/json_writer.cc"
   "${SRC_DIR}/json/yajl_parser.cc"
   "${SRC_DIR}/logging/backend.cc"
@@ -430,13 +436,13 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/mapping/entry.cc"
   "${SRC_DIR}/mapping/source.cc"
   "${SRC_DIR}/misc/diagnostic.cc"
+  "${SRC_DIR}/misc/global_lock.cc"
+  "${SRC_DIR}/misc/json_writer.cc"
   "${SRC_DIR}/misc/misc.cc"
   "${SRC_DIR}/misc/processing_speed_computer.cc"
   "${SRC_DIR}/misc/string.cc"
   "${SRC_DIR}/misc/stringifier.cc"
-  "${SRC_DIR}/misc/json_writer.cc"
   "${SRC_DIR}/misc/tokenizer.cc"
-  "${SRC_DIR}/misc/global_lock.cc"
   "${SRC_DIR}/modules/handle.cc"
   "${SRC_DIR}/modules/loader.cc"
   "${SRC_DIR}/multiplexing/engine.cc"
@@ -444,18 +450,23 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/muxer.cc"
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
+  "${SRC_DIR}/mysql.cc"
+  "${SRC_DIR}/mysql_bind.cc"
+  "${SRC_DIR}/mysql_error.cc"
+  "${SRC_DIR}/mysql_result.cc"
+  "${SRC_DIR}/mysql_thread.cc"
   "${SRC_DIR}/persistent_cache.cc"
   "${SRC_DIR}/persistent_file.cc"
   "${SRC_DIR}/processing/acceptor.cc"
   "${SRC_DIR}/processing/failover.cc"
   "${SRC_DIR}/processing/feeder.cc"
-  "${SRC_DIR}/processing/thread.cc"
   "${SRC_DIR}/processing/stat_visitable.cc"
-  "${SRC_DIR}/time/timezone_manager.cc"
-  "${SRC_DIR}/time/timezone_locker.cc"
-  "${SRC_DIR}/time/timerange.cc"
-  "${SRC_DIR}/time/timeperiod.cc"
+  "${SRC_DIR}/processing/thread.cc"
   "${SRC_DIR}/time/daterange.cc"
+  "${SRC_DIR}/time/timeperiod.cc"
+  "${SRC_DIR}/time/timerange.cc"
+  "${SRC_DIR}/time/timezone_locker.cc"
+  "${SRC_DIR}/time/timezone_manager.cc"
   ${QT_WRAPPED_SOURCES}
   # Headers.
   "${INC_DIR}/bbdo/acceptor.hh"
@@ -468,14 +479,14 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/bbdo/output.hh"
   "${INC_DIR}/bbdo/stream.hh"
   "${INC_DIR}/bbdo/version_response.hh"
-  "${INC_DIR}/ceof/ceof_writer.hh"
   "${INC_DIR}/ceof/ceof_deserializer.hh"
+  "${INC_DIR}/ceof/ceof_iterator.hh"
   "${INC_DIR}/ceof/ceof_parser.hh"
   "${INC_DIR}/ceof/ceof_serializable.hh"
   "${INC_DIR}/ceof/ceof_serializer.hh"
-  "${INC_DIR}/ceof/ceof_iterator.hh"
   "${INC_DIR}/ceof/ceof_token.hh"
   "${INC_DIR}/ceof/ceof_visitor.hh"
+  "${INC_DIR}/ceof/ceof_writer.hh"
   "${INC_DIR}/compression/factory.hh"
   "${INC_DIR}/compression/internal.hh"
   "${INC_DIR}/compression/opener.hh"
@@ -534,8 +545,8 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/io/raw.hh"
   "${INC_DIR}/io/stream.hh"
   "${INC_DIR}/json/jsmn.h"
-  "${INC_DIR}/json/json_parser.hh"
   "${INC_DIR}/json/json_iterator.hh"
+  "${INC_DIR}/json/json_parser.hh"
   "${INC_DIR}/json/json_writer.hh"
   "${INC_DIR}/json/yajl_parser.hh"
   "${INC_DIR}/json/yajl_visitable.hh"
@@ -551,14 +562,14 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/mapping/property.hh"
   "${INC_DIR}/mapping/source.hh"
   "${INC_DIR}/misc/diagnostic.hh"
+  "${INC_DIR}/misc/global_lock.hh"
+  "${INC_DIR}/misc/json_writer.hh"
   "${INC_DIR}/misc/misc.hh"
   "${INC_DIR}/misc/processing_speed_computer.hh"
+  "${INC_DIR}/misc/shared_ptr.hh"
   "${INC_DIR}/misc/string.hh"
   "${INC_DIR}/misc/stringifier.hh"
-  "${INC_DIR}/misc/json_writer.hh"
   "${INC_DIR}/misc/tokenizer.hh"
-  "${INC_DIR}/misc/global_lock.hh"
-  "${INC_DIR}/misc/shared_ptr.hh"
   "${INC_DIR}/misc/weak_ptr.hh"
   "${INC_DIR}/modules/handle.hh"
   "${INC_DIR}/modules/loader.hh"
@@ -567,27 +578,34 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/multiplexing/muxer.hh"
   "${INC_DIR}/multiplexing/publisher.hh"
   "${INC_DIR}/multiplexing/subscriber.hh"
+  "${INC_DIR}/mysql.hh"
+  "${INC_DIR}/mysql_bind.hh"
+  "${INC_DIR}/mysql_error.hh"
+  "${INC_DIR}/mysql_result.hh"
+  "${INC_DIR}/mysql_task.hh"
+  "${INC_DIR}/mysql_thread.hh"
   "${INC_DIR}/persistent_cache.hh"
   "${INC_DIR}/persistent_file.hh"
   "${INC_DIR}/processing/acceptor.hh"
   "${INC_DIR}/processing/failover.hh"
   "${INC_DIR}/processing/feeder.hh"
-  "${INC_DIR}/processing/thread.hh"
   "${INC_DIR}/processing/stat_visitable.hh"
-  "${INC_DIR}/timestamp.hh"
-  "${INC_DIR}/time/timezone_manager.hh"
-  "${INC_DIR}/time/timezone_locker.hh"
-  "${INC_DIR}/time/timerange.hh"
-  "${INC_DIR}/time/timeperiod.hh"
-  "${INC_DIR}/time/time_info.hh"
-  "${INC_DIR}/time/ptr_typedef.hh"
+  "${INC_DIR}/processing/thread.hh"
   "${INC_DIR}/time/daterange.hh"
-  "${INC_DIR}/version.hh"
+  "${INC_DIR}/time/ptr_typedef.hh"
+  "${INC_DIR}/time/time_info.hh"
+  "${INC_DIR}/time/timeperiod.hh"
+  "${INC_DIR}/time/timerange.hh"
+  "${INC_DIR}/time/timezone_locker.hh"
+  "${INC_DIR}/time/timezone_manager.hh"
+  "${INC_DIR}/timestamp.hh"
   "${INC_DIR}/vars.hh"
+  "${INC_DIR}/version.hh"
 )
 
 # Static libraries.
 add_library("rokerbase" STATIC ${LIBROKER_SOURCES})
+set_target_properties("rokerbase" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-fPIC" COMPILER_HAS_FPIC)
 if (COMPILER_HAS_FPIC)
@@ -602,7 +620,8 @@ if (COMPILER_HAS_FPIC)
   set_property(TARGET "rokerbase"
     PROPERTY COMPILE_FLAGS "${ROKER_CXXFLAGS}")
 endif ()
-target_link_libraries("rokerbase" ${ZLIB_LIBRARIES} ${QT_LIBRARIES})
+
+target_link_libraries("rokerbase" ${ZLIB_LIBRARIES} ${QT_LIBRARIES} ${MYSQL_LIBS})
 add_library("roker" STATIC
   "${SRC_DIR}/config/applier/init.cc"
   "${SRC_DIR}/config/applier/logger.cc")
@@ -697,11 +716,6 @@ if (WITH_MODULE_STORAGE)
       message(SEND_ERROR "MariaDB devel package is not installed")
     endif()
   endif()
-
-  execute_process(COMMAND ${MYSQL_CONFIG} --cflags
-    OUTPUT_VARIABLE MYSQL_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-  execute_process(COMMAND ${MYSQL_CONFIG} --libs
-    OUTPUT_VARIABLE MYSQL_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   add_subdirectory("storage")
   list(APPEND MODULE_LIST "storage")

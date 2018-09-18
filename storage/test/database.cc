@@ -20,10 +20,9 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/storage/mysql.hh"
+#include "com/centreon/broker/mysql.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::storage;
 
 class DatabaseStorageTest : public ::testing::Test {
  public:

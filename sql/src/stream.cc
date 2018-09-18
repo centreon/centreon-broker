@@ -17,11 +17,6 @@
 */
 
 #include <ctime>
-#include <QSqlDriver>
-#include <QSqlField>
-#include <QTextStream>
-#include <QThread>
-#include <QMutexLocker>
 #include <sstream>
 #include <limits>
 #include "com/centreon/engine/common.hh"
