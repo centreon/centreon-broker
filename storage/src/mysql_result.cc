@@ -67,3 +67,7 @@ unsigned long long mysql_result::value_as_u64(int idx) {
 bool mysql_result::value_is_null(int idx) {
   return _row[idx] == 0;
 }
+
+bool mysql_result::is_empty() const {
+  return _result.data() == NULL;
+}

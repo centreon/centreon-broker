@@ -44,6 +44,7 @@ namespace           storage {
     unsigned int        value_as_u32(int idx);
     unsigned long long  value_as_u64(int idx);
     bool                value_is_null(int idx);
+    bool                is_empty() const;
 
    private:
     misc::shared_ptr<MYSQL_RES>

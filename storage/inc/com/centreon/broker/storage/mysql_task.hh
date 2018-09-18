@@ -41,6 +41,7 @@ namespace                  storage {
                              FINISH,
                              LAST_INSERT_ID,
     };
+    virtual                ~mysql_task() {}
 
                            mysql_task(mysql_type type)
                             : type(type) {}

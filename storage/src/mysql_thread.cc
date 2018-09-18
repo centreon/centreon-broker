@@ -60,8 +60,9 @@ void mysql_thread::_run_sync(mysql_task_run_sync* task) {
   QMutexLocker locker(&_result_mutex);
   if (mysql_query(_conn, task->query.c_str()))
     _error = mysql_error(::mysql_error(_conn), true);
-  else
+  else {
     _result = mysql_store_result(_conn);
+  }
 
   _result_condition.wakeAll();
 }
@@ -239,6 +240,7 @@ void mysql_thread::run() {
 
 mysql_thread::mysql_thread(database_config const& db_cfg)
   : _conn(NULL),
+    _result(NULL),
     _finished(false),
     _host(db_cfg.get_host()),
     _user(db_cfg.get_user()),

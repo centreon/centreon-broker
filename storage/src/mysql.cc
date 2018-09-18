@@ -71,6 +71,13 @@ mysql::~mysql() {
     logging::error(logging::medium)
       << "storage: A thread was forced to stop after a timeout of 20s";
 
+  for (std::vector<mysql_thread*>::const_iterator
+         it(_thread.begin()),
+         end(_thread.end());
+       it != end;
+       ++it)
+    delete *it;
+
   mysql_library_end();
   std::cout << "mysql destructor return" << std::endl;
 }

@@ -103,7 +103,7 @@ namespace                  storage {
     QWaitCondition         _result_condition;
 
     // Result of a mysql query. It is used in the case of _run_sync() calls.
-    MYSQL_RES*             _result;
+    mysql_result           _result;
 
     // Error message returned when the call to _run_sync() fails.
     mysql_error            _error;
