@@ -41,8 +41,10 @@ add_library("${SQL}" SHARED
   "${INC_DIR}/com/centreon/broker/sql/stream.hh"
   "${INC_DIR}/com/centreon/broker/sql/stored_timestamp.hh"
 )
+set_target_properties("${SQL}" PROPERTIES
+    PREFIX ""
+    COMPILE_FLAGS "${MYSQL_CFLAGS}")
 target_link_libraries("${SQL}" ${QT_LIBRARIES})
-set_target_properties("${SQL}" PROPERTIES PREFIX "")
 
 # Install rule.
 install(TARGETS "${SQL}"

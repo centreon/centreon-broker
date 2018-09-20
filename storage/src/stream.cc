@@ -325,7 +325,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
 
   // Event acknowledgement.
   logging::debug(logging::low)
-    << "storage: " << _pending_events << " have not yet been acknowledged";
+    << "storage: " << _pending_events << " events have not yet been acknowledged";
 
   int retval(_ack_events);
   _ack_events = 0;
@@ -560,11 +560,11 @@ unsigned int stream::_find_index_id(
 
       // Update index_data table.
       mysql_bind bind(5);
-      bind.set_string(0, host_name.toStdString());
-      bind.set_string(1, service_desc.toStdString());
-      bind.set_string(2, special ? "1" : "0");
-      bind.set_int(3, host_id);
-      bind.set_int(4, service_id);
+      bind.set_value_as_str(0, host_name.toStdString());
+      bind.set_value_as_str(1, service_desc.toStdString());
+      bind.set_value_as_str(2, special ? "1" : "0");
+      bind.set_value_as_i32(3, host_id);
+      bind.set_value_as_i32(4, service_id);
 
       if (_mysql.run_statement(_update_index_data_stmt, bind, "UPDATE index_data", true))
         _set_ack_events();
@@ -717,17 +717,17 @@ unsigned int stream::_find_metric_id(
         << crit << ", min: " << min << ", max: " << max << ")";
       // Update metrics table.
       mysql_bind bind(11);
-      bind.set_string(0, unit_name.toStdString());
-      bind.set_float(1, warn);
-      bind.set_float(2, warn_low);
-      bind.set_tiny(3, warn_mode);
-      bind.set_float(4, crit);
-      bind.set_float(5, crit_low);
-      bind.set_tiny(6, crit_mode);
-      bind.set_float(7, min);
-      bind.set_float(8, max);
-      bind.set_float(9, value);
-      bind.set_int(10, it->second.metric_id);
+      bind.set_value_as_str(0, unit_name.toStdString());
+      bind.set_value_as_f32(1, warn);
+      bind.set_value_as_f32(2, warn_low);
+      bind.set_value_as_tiny(3, warn_mode);
+      bind.set_value_as_f32(4, crit);
+      bind.set_value_as_f32(5, crit_low);
+      bind.set_value_as_tiny(6, crit_mode);
+      bind.set_value_as_f32(7, min);
+      bind.set_value_as_f32(8, max);
+      bind.set_value_as_f32(9, value);
+      bind.set_value_as_i32(10, it->second.metric_id);
 
       logging::info(logging::medium) << "FIXME DBR: UPDATE metrics "
         << "SET unit_name='" << unit_name
@@ -779,22 +779,22 @@ unsigned int stream::_find_metric_id(
     if (*type == perfdata::automatic)
       *type = perfdata::gauge;
     mysql_bind bind(13);
-    bind.set_int(0, index_id);
-    bind.set_string(1, metric_name.toStdString());
-    bind.set_string(2, unit_name.toStdString());
-    bind.set_float(3, warn);
-    bind.set_float(4, warn_low);
-    bind.set_tiny(5, warn_mode);
-    bind.set_float(6, crit);
-    bind.set_float(7, crit_low);
-    bind.set_tiny(8, crit_mode);
-    bind.set_float(9, min);
-    bind.set_float(10, max);
-    bind.set_float(11, value);
+    bind.set_value_as_i32(0, index_id);
+    bind.set_value_as_str(1, metric_name.toStdString());
+    bind.set_value_as_str(2, unit_name.toStdString());
+    bind.set_value_as_f32(3, warn);
+    bind.set_value_as_f32(4, warn_low);
+    bind.set_value_as_tiny(5, warn_mode);
+    bind.set_value_as_f32(6, crit);
+    bind.set_value_as_f32(7, crit_low);
+    bind.set_value_as_tiny(8, crit_mode);
+    bind.set_value_as_f32(9, min);
+    bind.set_value_as_f32(10, max);
+    bind.set_value_as_f32(11, value);
     char t[2];
     t[0] = '0' + *type + (db_v2 ? 1 : 0);
     t[1] = 0;
-    bind.set_string(12, t);
+    bind.set_value_as_str(12, t);
 
     // Execute query.
     try {

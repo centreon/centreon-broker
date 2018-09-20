@@ -70,3 +70,7 @@ bool mysql_result::value_is_null(int idx) {
 bool mysql_result::is_empty() const {
   return _result.data() == NULL;
 }
+
+int mysql_result::get_rows_count() const {
+  return mysql_num_rows(_result.data());
+}

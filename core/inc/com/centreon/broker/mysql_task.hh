@@ -39,6 +39,7 @@ class                    mysql_task {
                            STATEMENT_SYNC,
                            FINISH,
                            LAST_INSERT_ID,
+                           AFFECTED_ROWS,
   };
   virtual                ~mysql_task() {}
 
@@ -90,6 +91,14 @@ class                    mysql_task_last_insert_id : public mysql_task {
                           : mysql_task(mysql_task::LAST_INSERT_ID),
                             id(id) {}
   int*                   id;
+};
+
+class                    mysql_task_affected_rows : public mysql_task {
+ public:
+                         mysql_task_affected_rows(int* count)
+                          : mysql_task(mysql_task::AFFECTED_ROWS),
+                            count(count) {}
+  int*                   count;
 };
 
 class                    mysql_task_finish : public mysql_task {

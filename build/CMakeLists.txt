@@ -60,6 +60,14 @@ if (("${QT_VERSION}" VERSION_EQUAL "4.7.0")
 endif ()
 
 # Find MySQL/Mariadb devel package
+find_program(MYSQL_CONFIG "mysql_config")
+if (${MYSQL_CONFIG} STREQUAL "MYSQL_CONFIG-NOTFOUND")
+  find_program(MYSQL_CONFIG "mariadb_config")
+  if (${MYSQL_CONFIG} STREQUAL "MYSQL_CONFIG-NOTFOUND")
+    message(SEND_ERROR "MariaDB devel package is not installed")
+  endif()
+endif()
+
 execute_process(COMMAND ${MYSQL_CONFIG} --cflags
   OUTPUT_VARIABLE MYSQL_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${MYSQL_CONFIG} --libs
@@ -455,6 +463,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/mysql_error.cc"
   "${SRC_DIR}/mysql_result.cc"
   "${SRC_DIR}/mysql_thread.cc"
+  "${SRC_DIR}/query_preparator.cc"
   "${SRC_DIR}/persistent_cache.cc"
   "${SRC_DIR}/persistent_file.cc"
   "${SRC_DIR}/processing/acceptor.cc"
@@ -584,6 +593,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/mysql_result.hh"
   "${INC_DIR}/mysql_task.hh"
   "${INC_DIR}/mysql_thread.hh"
+  "${INC_DIR}/query_preparator.hh"
   "${INC_DIR}/persistent_cache.hh"
   "${INC_DIR}/persistent_file.hh"
   "${INC_DIR}/processing/acceptor.hh"
@@ -709,14 +719,6 @@ endif()
 # Storage module.
 option(WITH_MODULE_STORAGE "Build storage module." ON)
 if (WITH_MODULE_STORAGE)
-  find_program(MYSQL_CONFIG "mysql_config")
-  if (${MYSQL_CONFIG} STREQUAL "MYSQL_CONFIG-NOTFOUND")
-    find_program(MYSQL_CONFIG "mariadb_config")
-    if (${MYSQL_CONFIG} STREQUAL "MYSQL_CONFIG-NOTFOUND")
-      message(SEND_ERROR "MariaDB devel package is not installed")
-    endif()
-  endif()
-
   add_subdirectory("storage")
   list(APPEND MODULE_LIST "storage")
 endif()

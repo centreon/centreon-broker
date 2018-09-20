@@ -57,8 +57,10 @@ class                 mysql {
                         std::string const& error_msg = "", int thread = -1);
   mysql_result        get_result(int thread_id);
   int                 get_last_insert_id(int thread_id);
+  int                 get_affected_rows(int thread_id);
   bool                finish();
   version             schema_version() const;
+  int                 connections_count() const;
 
  private:
   bool                _commit_if_needed();

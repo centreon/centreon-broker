@@ -19,14 +19,10 @@
 #ifndef CCB_SQL_STREAM_HH
 #  define CCB_SQL_STREAM_HH
 
-#  include <deque>
 #  include <map>
-#  include <memory>
-#  include <QString>
 #  include <set>
-#  include <vector>
 #  include <string>
-#  include "com/centreon/broker/database.hh"
+#  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -65,8 +61,7 @@ namespace          sql {
     void           _clean_tables(unsigned int instance_id);
     bool           _is_valid_poller(unsigned int poller_id);
     template <typename T>
-    void           _prepare_select(
-                     database_query& st,
+    int            _prepare_select(
                      std::string const& table_name);
     void           _process_acknowledgement(misc::shared_ptr<io::data> const& e);
     void           _process_comment(misc::shared_ptr<io::data> const& e);
@@ -104,9 +99,10 @@ namespace          sql {
     void           _process_responsive_instance(misc::shared_ptr<io::data> const& e);
     template       <typename T>
     void           _update_on_none_insert(
-                     database_query& ins,
-                     database_query& up,
-                     T& t);
+                     int ins_stmt_id,
+                     int up_stmt_id,
+                     T& t,
+                     int thread_id = -1);
     void           _update_timestamp(unsigned int instance_id);
     void           _get_all_outdated_instances_from_db();
     void           _update_hosts_and_services_of_unresponsive_instances();
@@ -114,64 +110,62 @@ namespace          sql {
 
     static void (stream::* const _correlation_processing_table[])(misc::shared_ptr<io::data> const&);
     static void (stream::* const _neb_processing_table[])(misc::shared_ptr<io::data> const&);
-    database       _db;
-    database_query _acknowledgement_insert;
-    database_query _acknowledgement_update;
-    database_query _comment_insert;
-    database_query _comment_update;
-    database_query _custom_variable_insert;
-    database_query _custom_variable_update;
-    database_query _custom_variable_delete;
-    database_query _custom_variable_status_update;
-    database_query _downtime_insert;
-    database_query _downtime_update;
-    database_query _empty_host_groups_delete;
-    database_query _empty_service_groups_delete;
-    database_query _event_handler_insert;
-    database_query _event_handler_update;
-    database_query _flapping_status_insert;
-    database_query _flapping_status_update;
-    database_query _host_insert;
-    database_query _host_update;
-    database_query _host_check_update;
-    database_query _host_dependency_insert;
-    database_query _host_dependency_update;
-    database_query _host_group_insert;
-    database_query _host_group_update;
-    database_query _host_group_member_insert;
-    database_query _host_group_member_delete;
-    database_query _host_parent_insert;
-    database_query _host_parent_select;
-    database_query _host_parent_delete;
-    database_query _host_state_insert;
-    database_query _host_state_update;
-    database_query _host_status_update;
-    database_query _instance_insert;
-    database_query _instance_update;
-    database_query _instance_status_update;
-    database_query _issue_insert;
-    database_query _issue_select;
-    database_query _issue_update;
-    database_query _issue_parent_insert;
-    database_query _issue_parent_update;
-    database_query _log_insert;
-    database_query _module_insert;
-    database_query _notification_insert;
-    database_query _notification_update;
-    database_query _service_insert;
-    database_query _service_update;
-    database_query _service_check_update;
-    database_query _service_dependency_insert;
-    database_query _service_dependency_update;
-    database_query _service_group_insert;
-    database_query _service_group_update;
-    database_query _service_group_member_insert;
-    database_query _service_group_member_delete;
-    database_query _service_state_insert;
-    database_query _service_state_update;
-    database_query _service_status_update;
+    mysql          _mysql;
+    int            _acknowledgement_insert;
+    int            _acknowledgement_update;
+    int            _comment_insert;
+    int            _comment_update;
+    int            _custom_variable_insert;
+    int            _custom_variable_update;
+    int            _custom_variable_delete;
+    int            _custom_variable_status_update;
+    int            _downtime_insert;
+    int            _downtime_update;
+    int            _empty_host_groups_delete;
+    int            _empty_service_groups_delete;
+    int            _event_handler_insert;
+    int            _event_handler_update;
+    int            _flapping_status_insert;
+    int            _flapping_status_update;
+    int            _host_insert;
+    int            _host_update;
+    int            _host_check_update;
+    int            _host_dependency_insert;
+    int            _host_dependency_update;
+    int            _host_group_insert;
+    int            _host_group_update;
+    int            _host_group_member_insert;
+    int            _host_group_member_delete;
+    int            _host_parent_insert;
+    int            _host_parent_select;
+    int            _host_parent_delete;
+    int            _host_state_insert;
+    int            _host_state_update;
+    int            _host_status_update;
+    int            _instance_insert;
+    int            _instance_update;
+    int            _instance_status_update;
+    int            _issue_insert;
+    int            _issue_update;
+    int            _issue_parent_insert;
+    int            _issue_parent_update;
+    int            _log_insert;
+    int            _module_insert;
+    int            _service_insert;
+    int            _service_update;
+    int            _service_check_update;
+    int            _service_dependency_insert;
+    int            _service_dependency_update;
+    int            _service_group_insert;
+    int            _service_group_update;
+    int            _service_group_member_insert;
+    int            _service_group_member_delete;
+    int            _service_state_insert;
+    int            _service_state_update;
+    int            _service_status_update;
     std::set<unsigned int>      _cache_deleted_instance_id;
     cleanup                     _cleanup_thread;
+    int                         _ack_events;
     int                         _pending_events;
     bool                        _with_state_events;
     unsigned int                _instance_timeout;

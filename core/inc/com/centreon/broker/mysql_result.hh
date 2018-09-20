@@ -33,7 +33,7 @@ CCB_BEGIN()
  */
 class                 mysql_result {
  public:
-                      mysql_result(MYSQL_RES* res);
+                      mysql_result(MYSQL_RES* res = NULL);
   mysql_result&       operator=(mysql_result const& other);
   bool                next();
   bool                value_as_bool(int idx);
@@ -44,6 +44,7 @@ class                 mysql_result {
   unsigned long long  value_as_u64(int idx);
   bool                value_is_null(int idx);
   bool                is_empty() const;
+  int                 get_rows_count() const;
 
  private:
   misc::shared_ptr<MYSQL_RES>

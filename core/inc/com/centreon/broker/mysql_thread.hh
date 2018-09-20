@@ -66,6 +66,7 @@ class                    mysql_thread : public QThread {
   mysql_result           get_result();
   mysql_error            get_error();
   int                    get_last_insert_id();
+  int                    get_affected_rows();
 
  private:
 
@@ -80,6 +81,8 @@ class                    mysql_thread : public QThread {
   void                   _run_sync(mysql_task_run_sync* task);
   void                   _get_last_insert_id_sync(
                            mysql_task_last_insert_id* task);
+  void                   _get_affected_rows_sync(
+                           mysql_task_affected_rows* task);
   void                   _prepare(mysql_task_prepare* task);
   void                   _statement(mysql_task_statement* task);
   void                   _statement_sync(mysql_task_statement_sync* task);

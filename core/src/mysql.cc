@@ -122,6 +122,10 @@ mysql_result mysql::get_result(int thread_id) {
   return _thread[thread_id]->get_result();
 }
 
+int mysql::get_affected_rows(int thread_id) {
+  return _thread[thread_id]->get_affected_rows();
+}
+
 /**
  *  This method commits only if the max queries per transaction is reached.
  *
@@ -287,4 +291,8 @@ bool mysql::finish() {
 
 mysql::version mysql::schema_version() const {
   return _version;
+}
+
+int mysql::connections_count() const {
+  return _thread.size();
 }
