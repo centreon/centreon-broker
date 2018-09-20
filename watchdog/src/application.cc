@@ -214,8 +214,10 @@ void application::_quit() {
          it(_instances.begin()),
          end(_instances.end());
        it != end;
-       ++it)
+       ++it) {
     it->second->stop_instance();
+    it->second->waitForFinished();
+  }
   logging::info(logging::medium)
     << "watchdog: shutdown sequence completed, exiting watchdog";
   exit();
