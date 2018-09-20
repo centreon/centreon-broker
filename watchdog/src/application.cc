@@ -216,6 +216,12 @@ void application::_quit() {
        it != end;
        ++it)
     it->second->stop_instance();
+  for (std::map<std::string, instance*>::iterator
+         it(_instances.begin()),
+         end(_instances.end());
+       it != end;
+       ++it)
+    it->second->waitForFinished();
   logging::info(logging::medium)
     << "watchdog: shutdown sequence completed, exiting watchdog";
   exit();
