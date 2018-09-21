@@ -16,7 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include <QVariant>
 #include <fstream>
+#include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/simu/luabinding.hh"
@@ -45,7 +47,7 @@ luabinding::luabinding(
   _L = _load_interpreter();
 
   logging::debug(logging::medium)
-    << "lua: initializing the Lua virtual machine";
+    << "simu: initializing the Lua virtual machine";
 
   _load_script();
   _init_script(conf_params);
@@ -60,17 +62,9 @@ luabinding::~luabinding() {
 }
 
 /**
- *  Returns true if a filter was configured in the Lua script.
- */
-bool luabinding::has_filter() const {
-  return _filter;
-}
-
-/**
  *  Reads the Lua script, checks its syntax and checks if
  *   - init()
- *   - write()
- *   - filter()
+ *   - read()
  *  functions exist in the Lua script. The two first ones are
  *  mandatory whereas the third one is optional.
  */
@@ -79,39 +73,28 @@ void luabinding::_load_script() {
   if (luaL_loadfile(_L, _lua_script.c_str()) != 0) {
     char const* error_msg(lua_tostring(_L, -1));
     throw exceptions::msg()
-      << "lua: '" << _lua_script << "' could not be loaded: "
+      << "simu: '" << _lua_script << "' could not be loaded: "
       << error_msg;
   }
 
   // Script compilation
   if (lua_pcall(_L, 0, 0, 0) != 0) {
     throw exceptions::msg()
-      << "lua: '" << _lua_script << "' could not be compiled";
+      << "simu: '" << _lua_script << "' could not be compiled";
   }
 
   // Checking for init() availability: this function is mandatory
   lua_getglobal(_L, "init");
   if (!lua_isfunction(_L, lua_gettop(_L)))
    throw exceptions::msg()
-     << "lua: '" << _lua_script << "' init() global function is missing";
+     << "simu: '" << _lua_script << "' init() global function is missing";
 
-  // Checking for write() availability: this function is mandatory
-  lua_getglobal(_L, "write");
+  // Checking for read() availability: this function is mandatory
+  lua_getglobal(_L, "read");
   if (!lua_isfunction(_L, lua_gettop(_L)))
    throw exceptions::msg()
-     << "lua: '" << _lua_script
-     << "' write() global function is missing";
-
-  // Checking for filter() availability: this function is optional
-  lua_getglobal(_L, "filter");
-  if (!lua_isfunction(_L, lua_gettop(_L))) {
-    logging::debug(logging::medium)
-      << "lua: filter() global function is missing, "
-      << "the write() function will be called for each event";
-    _filter = false;
-  }
-  else
-    _filter = true;
+     << "simu: '" << _lua_script
+     << "' read() global function is missing";
 }
 
 /**
@@ -156,20 +139,20 @@ void luabinding::_init_script(QMap<QString, QVariant> const& conf_params) {
   }
   if (lua_pcall(_L, 1, 0, 0) != 0)
     throw exceptions::msg()
-      << "lua: error running function `init'"
+      << "simu: error running function `init'"
       << lua_tostring(_L, -1);
 }
 
 /**
- *  The write method called by the stream::write method.
+ *  The read method called by the stream::read method.
  *
- *  @param data The event to write.
+ *  @param d The event to read.
  *
  *  @return The number of events written.
  */
-int luabinding::write(misc::shared_ptr<io::data> const& data) {
-  int retval(0);
-  logging::debug(logging::medium) << "lua: luabinding::write call";
+bool luabinding::read(misc::shared_ptr<io::data>& data) {
+  bool retval(false);
+  logging::debug(logging::medium) << "simu: luabinding::write call";
 
   // Process event.
   unsigned int type(data->type());
@@ -181,68 +164,25 @@ int luabinding::write(misc::shared_ptr<io::data> const& data) {
   // Total to acknowledge incremented
   ++_total;
 
-  if (has_filter()) {
-    // Let's get the function to call
-    lua_getglobal(_L, "filter");
-    lua_pushinteger(_L, cat);
-    lua_pushinteger(_L, elem);
-
-    if (lua_pcall(_L, 2, 1, 0) != 0)
-      throw exceptions::msg()
-        << "lua: error while running function `filter()': "
-        << lua_tostring(_L, -1);
-
-    if (!lua_isboolean(_L, -1))
-      throw exceptions:: msg()
-        << "lua: `filter' must return a boolean";
-    execute_write = lua_toboolean(_L, -1);
-    logging::debug(logging::medium)
-      << "lua: `filter' returned " << ((execute_write) ? "true" : "false");
-    lua_pop(_L, -1);
-  }
-
-  if (!execute_write)
-    return 0;
-
   // Let's get the function to call
-  lua_getglobal(_L, "write");
+  lua_getglobal(_L, "read");
 
-  // Let's build the table from the event as argument to write()
-  lua_newtable(_L);
-  lua_pushstring(_L, "type");
-  lua_pushinteger(_L, type);
-  lua_rawset(_L, -3);
-
-  lua_pushstring(_L, "category");
-  lua_pushinteger(_L, cat);
-  lua_rawset(_L, -3);
-
-  lua_pushstring(_L, "element");
-  lua_pushinteger(_L, elem);
-  lua_rawset(_L, -3);
-
-  io::data const& d(*(data.data()));
-  _parse_entries(d);
-
-  if (lua_pcall(_L, 1, 1, 0) != 0)
+  if (lua_pcall(_L, 0, 1, 0) != 0)
     throw exceptions::msg()
-      << "lua: error running function `write'"
+      << "simu: error running function `read' "
       << lua_tostring(_L, -1);
 
-  if (!lua_isboolean(_L, -1))
-    throw exceptions:: msg()
-      << "lua: `write' must return a boolean";
-  int acknowledge = lua_toboolean(_L, -1);
-  lua_pop(_L, -1);
-
-  // We have to acknowledge rejected events by the filter. It is only possible
-  // when an acknowledgement is sent by the write function.
-  if (acknowledge) {
-    retval = _total;
-    logging::debug(logging::medium)
-      << "lua: " << _total << " events acknowledged.";
-    _total = 0;
+  if (lua_istable(_L, -1)) {
+    _parse_event(data);
+    retval = true;
   }
+  else if (lua_isnil(_L, -1))
+    lua_pop(_L, -1);
+  else {
+    throw exceptions:: msg()
+      << "simu: `read' must return a table or a nil value";
+  }
+
   return retval;
 }
 
@@ -252,123 +192,83 @@ int luabinding::write(misc::shared_ptr<io::data> const& data) {
  *
  *  @param d The event to convert.
  */
-void luabinding::_parse_entries(io::data const& d) {
-  io::event_info const*
-    info(io::events::instance().get_event_info(d.type()));
-  if (info) {
-    for (mapping::entry const* current_entry(info->get_mapping());
-         !current_entry->is_null();
-         ++current_entry) {
-      char const* entry_name(current_entry->get_name_v2());
-      if (entry_name && entry_name[0]) {
-        lua_pushstring(_L, entry_name);
-        switch (current_entry->get_type()) {
-        case mapping::source::BOOL:
-          lua_pushboolean(_L, current_entry->get_bool(d));
-          break ;
-        case mapping::source::DOUBLE:
-          lua_pushnumber(_L, current_entry->get_double(d));
-          break ;
-        case mapping::source::INT:
-          switch (current_entry->get_attribute()) {
-          case mapping::entry::invalid_on_zero:
-            {
-              int val(current_entry->get_int(d));
-              if (val == 0)
-                lua_pushnil(_L);
-              else
-                lua_pushinteger(_L, val);
-            }
-            break;
-          case mapping::entry::invalid_on_minus_one:
-            {
-              int val(current_entry->get_int(d));
-              if (val == -1)
-                lua_pushnil(_L);
-              else
-                lua_pushinteger(_L, val);
-            }
-            break;
-          default:
-            lua_pushinteger(_L, current_entry->get_int(d));
-          }
-          break ;
-        case mapping::source::SHORT:
-          lua_pushinteger(_L, current_entry->get_short(d));
-          break ;
-        case mapping::source::STRING:
-          if (current_entry->get_attribute()
-              == mapping::entry::invalid_on_zero) {
-            QString val(current_entry->get_string(d));
-            if (val.isEmpty() || val.isNull())
-              lua_pushnil(_L);
-            else
-              lua_pushstring(_L, val.toLatin1().data());
-          }
-          else
-            lua_pushstring(_L, current_entry->get_string(d).toLatin1().data());
-          break;
-        case mapping::source::TIME:
-          switch (current_entry->get_attribute()) {
-          case mapping::entry::invalid_on_zero:
-            {
-              time_t val = current_entry->get_time(d);
-              if (val == 0)
-                lua_pushnil(_L);
-              else
-                lua_pushinteger(_L, val);
-            }
-            break ;
-          case mapping::entry::invalid_on_minus_one:
-            {
-              time_t val = current_entry->get_time(d);
-              if (val == -1)
-                lua_pushnil(_L);
-              else
-                lua_pushinteger(_L, val);
-            }
-            break ;
-          default:
-            lua_pushinteger(_L, current_entry->get_time(d));
-          }
-          break ;
-        case mapping::source::UINT:
-          switch (current_entry->get_attribute()) {
-          case mapping::entry::invalid_on_zero:
-            {
-              unsigned int val = current_entry->get_uint(d);
-              if (val == 0)
-                lua_pushnil(_L);
-              else
-                lua_pushinteger(_L, val);
-            }
-            break ;
-          case mapping::entry::invalid_on_minus_one:
-            {
-              unsigned int val = current_entry->get_uint(d);
-              if (val == static_cast<unsigned int>(-1))
-                lua_pushnil(_L);
-              else
-                lua_pushinteger(_L, val);
-            }
-            break ;
-          default :
-            lua_pushinteger(_L, current_entry->get_uint(d));
-          }
-          break ;
-        default: // Error in one of the mappings.
-          throw (exceptions::msg() << "invalid mapping for object "
-                 << "of type '" << info->get_name() << "': "
-                 << current_entry->get_type()
-                 << " is not a known type ID");
-        }
-        lua_rawset(_L, -3);
-      }
+void luabinding::_parse_event(misc::shared_ptr<io::data>& d) {
+  d.clear();
+  lua_pushnil(_L);  // push nil, so lua_next removes it from stack and puts (k, v) on stack
+  QMap<QString, QVariant> map;
+  while (lua_next(_L, -2) != 0) { // -2, because we have table at -1
+    if (lua_isstring(_L, -2)) { // only store stuff with string keys
+      char const* key(lua_tostring(_L, -2));
+      if (lua_isinteger(_L, -1))
+        map[key] = QVariant(lua_tointeger(_L, -1));
+      else if (lua_isboolean(_L, -1))
+        map[key] = QVariant(lua_toboolean(_L, -1));
+      else if (lua_isnumber(_L, -1))
+        map[key] = QVariant(lua_tonumber(_L, -1));
+      else if (lua_isstring(_L, -1))
+        map[key] = QVariant(lua_tostring(_L, -1));
+      else
+        throw exceptions::msg() << "simu: item with key " << key
+          << " is not supported for a broker event";
     }
+    lua_pop(_L, 1); // remove value, keep key for lua_next
+  }
+
+  lua_pop(_L, 1); // pop table
+  io::event_info const*
+    info(io::events::instance().get_event_info(map["type"].toUInt()));
+  if (info) {
+    // Create event
+    std::auto_ptr<io::data> t(info->get_operations().constructor());
+    if (t.get()) {
+      // Browse all mapping to unserialize the object.
+      for (mapping::entry const* current_entry(info->get_mapping());
+           !current_entry->is_null();
+           ++current_entry)
+        // Skip entries that should not be serialized.
+        if (current_entry->get_serialize()) {
+          switch (current_entry->get_type()) {
+          case mapping::source::BOOL:
+            current_entry->set_bool(*t, map[current_entry->get_name_v2()].toBool());
+            break ;
+          case mapping::source::DOUBLE:
+            current_entry->set_double(*t, map[current_entry->get_name_v2()].toDouble());
+            break ;
+          case mapping::source::INT:
+            current_entry->set_int(*t, map[current_entry->get_name_v2()].toInt());
+            break ;
+          case mapping::source::SHORT:
+            current_entry->set_short(
+                             *t,
+                             static_cast<short>(
+                               map[current_entry->get_name_v2()].toInt()));
+            break ;
+          case mapping::source::STRING:
+            current_entry->set_string(*t, map[current_entry->get_name_v2()].toString());
+            break ;
+          case mapping::source::TIME:
+            current_entry->set_time(*t, map[current_entry->get_name_v2()].toULongLong());
+            break ;
+          case mapping::source::UINT:
+            current_entry->set_uint(*t, map[current_entry->get_name_v2()].toUInt());
+            break ;
+          default:
+            throw (exceptions::msg() << "simu: invalid mapping for "
+                   << "object of type '" << info->get_name() << "': "
+                   << current_entry->get_type()
+                   << " is not a known type ID");
+          }
+        }
+      d = t.release();
+    }
+    else
+      throw exceptions::msg() << "simu: cannot create object of ID "
+                          << map["type"].toInt() << " whereas it has been registered";
   }
   else
-    throw (exceptions::msg() << "cannot bind object of type "
-           << d.type() << " to database query: mapping does not exist");
+    logging::info(logging::high)
+      << "simu: cannot unserialize event of ID " << map["type"].toInt()
+      << ": event was not registered and will therefore be ignored";
 }
 
 /**

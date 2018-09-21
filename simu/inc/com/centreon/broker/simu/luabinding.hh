@@ -45,8 +45,7 @@ namespace               simu {
                           QMap<QString, QVariant> const& conf_params,
                           macro_cache const& cache);
                         ~luabinding();
-    bool                has_filter() const;
-    int                 write(misc::shared_ptr<io::data> const& data);
+    bool                read(misc::shared_ptr<io::data>& d);
 
    private:
                         luabinding(luabinding const& other);
@@ -55,6 +54,7 @@ namespace               simu {
     void                _load_script();
     void                _init_script(
                           QMap<QString, QVariant> const& conf_params);
+    void                _parse_event(misc::shared_ptr<io::data>& d);
 
     // Event conversion to Lua table.
     void                _parse_entries(io::data const& d);

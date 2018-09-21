@@ -54,6 +54,19 @@ stream::~stream() {
 }
 
 /**
+ *  Write to the connector.
+ *
+ *  @param[out] d         The data to write to the output.
+ *
+ *  @return The number of events to acknowledge.
+ */
+int stream::write(misc::shared_ptr<io::data> const& d) {
+  (void)d;
+  throw exceptions::shutdown() << "cannot write from simu connector";
+  return 0;
+}
+
+/**
  *  Read from the connector.
  *
  *  @param[out] d         Cleared.
@@ -62,24 +75,5 @@ stream::~stream() {
  *  @return This method will throw.
  */
 bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
-  (void)deadline;
-  d.clear();
-  throw (exceptions::shutdown() << "cannot read from simu generic connector");
-}
-
-/**
- *  Write an event.
- *
- *  @param[in] data Event pointer.
- *
- *  @return Number of events acknowledged.
- */
-int stream::write(misc::shared_ptr<io::data> const& data) {
-  if (!validate(data, "simu"))
-    return 0;
-
-  // Give data to cache.
-  _cache.write(data);
-
-  return _luabinding->write(data);
+  return _luabinding->read(d);
 }
