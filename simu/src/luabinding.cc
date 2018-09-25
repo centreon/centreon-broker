@@ -21,10 +21,10 @@
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/simu/broker_log.hh"
 #include "com/centreon/broker/simu/luabinding.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/io/event_info.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::simu;
@@ -276,6 +276,9 @@ lua_State* luabinding::_load_interpreter() {
 
   // Read common lua libraries
   luaL_openlibs(L);
+
+  // Registers the broker_log object
+  broker_log::broker_log_reg(L);
 
   return L;
 }
