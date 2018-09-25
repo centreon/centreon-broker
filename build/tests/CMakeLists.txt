@@ -22,9 +22,10 @@ add_subdirectory("googletest")
 
 # Include directories.
 include_directories("${PROJECT_SOURCE_DIR}/bam/inc")
-include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 include_directories("${PROJECT_SOURCE_DIR}/lua/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
+include_directories("${PROJECT_SOURCE_DIR}/simu/inc")
+include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 
 # Unit test executable.
 add_executable("ut"

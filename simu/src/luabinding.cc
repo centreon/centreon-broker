@@ -22,10 +22,6 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/simu/luabinding.hh"
-#include "com/centreon/broker/simu/broker_cache.hh"
-#include "com/centreon/broker/simu/broker_utils.hh"
-#include "com/centreon/broker/simu/broker_log.hh"
-#include "com/centreon/broker/simu/broker_socket.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::simu;
@@ -152,12 +148,7 @@ void luabinding::_init_script(QMap<QString, QVariant> const& conf_params) {
  */
 bool luabinding::read(misc::shared_ptr<io::data>& data) {
   bool retval(false);
-  logging::debug(logging::medium) << "simu: luabinding::write call";
-
-  // Process event.
-  unsigned int type(data->type());
-  unsigned short cat(io::events::category_of_type(type));
-  unsigned short elem(io::events::element_of_type(type));
+  logging::debug(logging::medium) << "simu: luabinding::read call";
 
   bool execute_write(true);
 
@@ -172,10 +163,8 @@ bool luabinding::read(misc::shared_ptr<io::data>& data) {
       << "simu: error running function `read' "
       << lua_tostring(_L, -1);
 
-  if (lua_istable(_L, -1)) {
-    _parse_event(data);
-    retval = true;
-  }
+  if (lua_istable(_L, -1))
+    retval = _parse_event(data);
   else if (lua_isnil(_L, -1))
     lua_pop(_L, -1);
   else {
@@ -191,18 +180,22 @@ bool luabinding::read(misc::shared_ptr<io::data>& data) {
  *  The result is stored on the Lua interpreter stack.
  *
  *  @param d The event to convert.
+ *  @return true if an object is correctly filled, false otherwise.
  */
-void luabinding::_parse_event(misc::shared_ptr<io::data>& d) {
+bool luabinding::_parse_event(misc::shared_ptr<io::data>& d) {
+  bool retval(true);
   d.clear();
   lua_pushnil(_L);  // push nil, so lua_next removes it from stack and puts (k, v) on stack
   QMap<QString, QVariant> map;
   while (lua_next(_L, -2) != 0) { // -2, because we have table at -1
     if (lua_isstring(_L, -2)) { // only store stuff with string keys
       char const* key(lua_tostring(_L, -2));
-      if (lua_isinteger(_L, -1))
-        map[key] = QVariant(lua_tointeger(_L, -1));
-      else if (lua_isboolean(_L, -1))
+      if (lua_isboolean(_L, -1))
         map[key] = QVariant(lua_toboolean(_L, -1));
+#if LUA53
+      else if (lua_isinteger(_L, -1))
+        map[key] = QVariant(lua_tointeger(_L, -1));
+#endif
       else if (lua_isnumber(_L, -1))
         map[key] = QVariant(lua_tonumber(_L, -1));
       else if (lua_isstring(_L, -1))
@@ -224,51 +217,53 @@ void luabinding::_parse_event(misc::shared_ptr<io::data>& d) {
       // Browse all mapping to unserialize the object.
       for (mapping::entry const* current_entry(info->get_mapping());
            !current_entry->is_null();
-           ++current_entry)
+           ++current_entry) {
         // Skip entries that should not be serialized.
-        if (current_entry->get_serialize()) {
-          switch (current_entry->get_type()) {
-          case mapping::source::BOOL:
-            current_entry->set_bool(*t, map[current_entry->get_name_v2()].toBool());
-            break ;
-          case mapping::source::DOUBLE:
-            current_entry->set_double(*t, map[current_entry->get_name_v2()].toDouble());
-            break ;
-          case mapping::source::INT:
-            current_entry->set_int(*t, map[current_entry->get_name_v2()].toInt());
-            break ;
-          case mapping::source::SHORT:
-            current_entry->set_short(
-                             *t,
-                             static_cast<short>(
-                               map[current_entry->get_name_v2()].toInt()));
-            break ;
-          case mapping::source::STRING:
-            current_entry->set_string(*t, map[current_entry->get_name_v2()].toString());
-            break ;
-          case mapping::source::TIME:
-            current_entry->set_time(*t, map[current_entry->get_name_v2()].toULongLong());
-            break ;
-          case mapping::source::UINT:
-            current_entry->set_uint(*t, map[current_entry->get_name_v2()].toUInt());
-            break ;
-          default:
-            throw (exceptions::msg() << "simu: invalid mapping for "
-                   << "object of type '" << info->get_name() << "': "
-                   << current_entry->get_type()
-                   << " is not a known type ID");
-          }
+        switch (current_entry->get_type()) {
+        case mapping::source::BOOL:
+          current_entry->set_bool(*t, map[current_entry->get_name_v2()].toBool());
+          break ;
+        case mapping::source::DOUBLE:
+          current_entry->set_double(*t, map[current_entry->get_name_v2()].toDouble());
+          break ;
+        case mapping::source::INT:
+          current_entry->set_int(*t, map[current_entry->get_name_v2()].toInt());
+          break ;
+        case mapping::source::SHORT:
+          current_entry->set_short(
+                           *t,
+                           static_cast<short>(
+                             map[current_entry->get_name_v2()].toInt()));
+          break ;
+        case mapping::source::STRING:
+          current_entry->set_string(*t, map[current_entry->get_name_v2()].toString());
+          break ;
+        case mapping::source::TIME:
+          current_entry->set_time(*t, map[current_entry->get_name_v2()].toULongLong());
+          break ;
+        case mapping::source::UINT:
+          current_entry->set_uint(*t, map[current_entry->get_name_v2()].toUInt());
+          break ;
+        default:
+          throw (exceptions::msg() << "simu: invalid mapping for "
+                 << "object of type '" << info->get_name() << "': "
+                 << current_entry->get_type()
+                 << " is not a known type ID");
         }
+      }
       d = t.release();
     }
     else
       throw exceptions::msg() << "simu: cannot create object of ID "
                           << map["type"].toInt() << " whereas it has been registered";
   }
-  else
+  else {
     logging::info(logging::high)
       << "simu: cannot unserialize event of ID " << map["type"].toInt()
       << ": event was not registered and will therefore be ignored";
+    retval = false;
+  }
+  return retval;
 }
 
 /**
@@ -281,18 +276,6 @@ lua_State* luabinding::_load_interpreter() {
 
   // Read common lua libraries
   luaL_openlibs(L);
-
-  // Registers the broker_log object
-  broker_log::broker_log_reg(L);
-
-  // Registers the broker socket object
-  broker_socket::broker_socket_reg(L);
-
-  // Registers the broker utils
-  broker_utils::broker_utils_reg(L);
-
-  // Registers the broker cache
-  broker_cache::broker_cache_reg(L, _cache);
 
   return L;
 }
