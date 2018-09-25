@@ -1,0 +1,25 @@
+FROM centos:latest as base
+MAINTAINER Centreon "support@centreon.com"
+
+RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.1.19/yum/centos7-amd64/rpms/MariaDB-10.1.19-centos7-x86_64-devel.rpm --output /tmp/MariaDB-10.1.19-centos7-x86_64-devel.rpm
+RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.1.19/yum/centos7-amd64/rpms/MariaDB-10.1.19-centos7-x86_64-common.rpm --output /tmp/MariaDB-10.1.19-centos7-x86_64-common.rpm
+RUN rpm -ivh /tmp/MariaDB-10.1.19-centos7-x86_64-*.rpm
+RUN yum -y install gcc-c++ cmake make lua-devel qt-devel gnutls-devel rrdtool-devel zlib-devel openssl-devel
+
+FROM base as centreon-broker
+COPY . /usr/src/centreon-broker
+WORKDIR /usr/src/centreon-broker/build
+RUN cmake -DCMAKE_BUILD_TYPE=Debug -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On .
+RUN make -j5
+RUN make install
+
+# Broker configuration installation
+COPY ./simu/test/central-broker.xml /etc/central-broker/
+
+# Broker simu/lua scripts installation
+RUN mkdir -p /usr/share/centreon-broker/lua
+COPY ./simu/test/test.lua /usr/share/centreon-broker/lua/
+COPY ./simu/test/output.lua /usr/share/centreon-broker/lua/
+
+RUN systemctl start cbd
+ENTRYPOINT ["/usr/bin/tail", "/var/log/centreon-broker.log"]
