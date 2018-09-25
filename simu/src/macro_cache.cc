@@ -20,7 +20,6 @@
 #include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/simu/macro_cache.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::logging;

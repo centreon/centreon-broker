@@ -21,7 +21,8 @@
 
 #  include <QMap>
 #  include <QVariant>
-#  include "com/centreon/broker/simu/macro_cache.hh"
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
 
 extern "C" {
 #  include "lua.h"
@@ -42,8 +43,7 @@ namespace               simu {
    public:
                         luabinding(
                           std::string const& lua_script,
-                          QMap<QString, QVariant> const& conf_params,
-                          macro_cache const& cache);
+                          QMap<QString, QVariant> const& conf_params);
                         ~luabinding();
     bool                read(misc::shared_ptr<io::data>& d);
 
@@ -67,9 +67,6 @@ namespace               simu {
 
     // The Lua script name.
     std::string const&  _lua_script;
-
-    // The cache.
-    macro_cache const&  _cache;
 
     // Count on events
     int                 _total;

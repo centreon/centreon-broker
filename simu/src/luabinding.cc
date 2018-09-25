@@ -22,6 +22,9 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/simu/luabinding.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/io/event_info.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::simu;
@@ -31,14 +34,11 @@ using namespace com::centreon::broker::simu;
  *
  *  @param[in] lua_script the json parameters file
  *  @param[in] conf_params A hash table with user parameters
- *  @param[in] cache the persistent cache.
  */
 luabinding::luabinding(
               std::string const& lua_script,
-              QMap<QString, QVariant> const& conf_params,
-              macro_cache const& cache)
+              QMap<QString, QVariant> const& conf_params)
   : _lua_script(lua_script),
-    _cache(cache),
     _total(0) {
   _L = _load_interpreter();
 

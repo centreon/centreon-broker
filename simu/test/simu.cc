@@ -25,11 +25,9 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/simu/luabinding.hh"
-#include "com/centreon/broker/simu/macro_cache.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/events.hh"
-#include "com/centreon/broker/persistent_cache.hh"
 #include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
@@ -45,13 +43,8 @@ class SimuGenericTest : public ::testing::Test {
     catch (std::exception const& e) {
       (void) e;
     }
-    misc::shared_ptr<persistent_cache> pcache
-      = new persistent_cache("/tmp/broker_test_cache");
-    _cache.reset(new macro_cache(pcache));
   }
   void TearDown() {
-    // The cache must be destroyed before the applier deinit() call.
-    _cache.reset();
     config::applier::deinit();
   }
 
@@ -82,9 +75,6 @@ class SimuGenericTest : public ::testing::Test {
     QFile file(filename.c_str());
     file.remove();
   }
-
- protected:
-  std::auto_ptr<macro_cache> _cache;
 };
 
 // When a lua script that does not exist is loaded
@@ -93,8 +83,7 @@ TEST_F(SimuGenericTest, MissingScript) {
   QMap<QString, QVariant> conf;
   ASSERT_THROW(
     new luabinding(
-      "/tmp/this_script_does_not_exist.lua",conf,
-		  *_cache.get()),
+      "/tmp/this_script_does_not_exist.lua",conf),
 		exceptions::msg);
 }
 
@@ -106,7 +95,7 @@ TEST_F(SimuGenericTest, FaultyScript) {
   CreateScript(filename, "local a = { 1, 2, 3 }\n"
                          "local b = 18 / a[4]");
   ASSERT_THROW(
-    new luabinding(filename, conf, *_cache.get()),
+    new luabinding(filename, conf),
     exceptions::msg);
   RemoveFile(filename);
 }
@@ -118,7 +107,7 @@ TEST_F(SimuGenericTest, WithoutInit) {
   std::string filename("/tmp/without_init.lua");
   CreateScript(filename, "local a = { 1, 2, 3 }\n");
   ASSERT_THROW(
-    new luabinding(filename, conf, *_cache.get()), exceptions::msg);
+    new luabinding(filename, conf), exceptions::msg);
   RemoveFile(filename);
 }
 
@@ -132,8 +121,7 @@ TEST_F(SimuGenericTest, IncompleteScript) {
   QMap<QString, QVariant> conf;
   ASSERT_THROW(new luabinding(
                      filename,
-                     conf,
-                     *_cache.get()),
+                     conf),
                   exceptions::msg);
   RemoveFile(filename);
 }
@@ -150,8 +138,7 @@ TEST_F(SimuGenericTest, ReadReturnValue1) {
   QMap<QString, QVariant> conf;
   std::auto_ptr<luabinding> lb(new luabinding(
                      filename,
-                     conf,
-                     *_cache.get()));
+                     conf));
   misc::shared_ptr<io::data> d;
   ASSERT_THROW(lb->read(d), exceptions::msg);
   RemoveFile(filename);
@@ -169,8 +156,7 @@ TEST_F(SimuGenericTest, ReadReturnValue2) {
   QMap<QString, QVariant> conf;
   std::auto_ptr<luabinding> lb(new luabinding(
                      filename,
-                     conf,
-                     *_cache.get()));
+                     conf));
   misc::shared_ptr<io::data> d;
   ASSERT_FALSE(lb->read(d));
   RemoveFile(filename);
@@ -190,8 +176,7 @@ TEST_F(SimuGenericTest, ReadReturnValue3) {
   QMap<QString, QVariant> conf;
   std::auto_ptr<luabinding> lb(new luabinding(
                      filename,
-                     conf,
-                     *_cache.get()));
+                     conf));
   misc::shared_ptr<io::data> d;
   ASSERT_FALSE(lb->read(d));
   RemoveFile(filename);
@@ -220,8 +205,7 @@ TEST_F(SimuGenericTest, ReadReturnValue4) {
   l.load_file("./neb/10-neb.so");
   std::auto_ptr<luabinding> lb(new luabinding(
                      filename,
-                     conf,
-                     *_cache.get()));
+                     conf));
   misc::shared_ptr<io::data> d;
   ASSERT_TRUE(lb->read(d));
   RemoveFile(filename);

@@ -89,6 +89,5 @@ void connector::connect_to(
 misc::shared_ptr<io::stream> connector::open() {
   return (misc::shared_ptr<io::stream>(new stream(
             _lua_script,
-            _conf_params,
-            _cache)));
+            _conf_params)));
 }
