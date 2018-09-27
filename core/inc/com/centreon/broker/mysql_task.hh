@@ -109,9 +109,14 @@ class                    mysql_task_finish : public mysql_task {
 
 class                    mysql_task_prepare : public mysql_task {
  public:
-                         mysql_task_prepare(std::string const& q)
-                          : mysql_task(mysql_task::PREPARE), query(q) {}
+                         mysql_task_prepare(std::string const& q,
+                                        std::map<std::string, int> bind_mapping)
+                          : mysql_task(mysql_task::PREPARE),
+                            query(q),
+                            bind_mapping(bind_mapping) {}
   std::string            query;
+  std::map<std::string, int>
+                         bind_mapping;
 };
 
 class                    mysql_task_statement : public mysql_task {

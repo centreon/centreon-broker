@@ -18,6 +18,7 @@
 #include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/mysql_stmt.hh"
 #include "com/centreon/broker/mysql_thread.hh"
 
 using namespace com::centreon::broker;
@@ -89,40 +90,38 @@ void mysql_thread::_commit(mysql_task_commit* task) {
 }
 
 void mysql_thread::_prepare(mysql_task_prepare* task) {
-  MYSQL_STMT* stmt(mysql_stmt_init(_conn));
-  if (!stmt) {
-    logging::error(logging::medium)
-      << "mysql: Could not initialize statement";
-  }
-  else {
-    if (mysql_stmt_prepare(stmt, task->query.c_str(), task->query.size())) {
-      logging::error(logging::medium)
-        << "mysql: Could not prepare statement";
-    }
+  try {
+    mysql_stmt stmt(_conn, task->query, task->bind_mapping);
     _stmt.push_back(stmt);
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "mysql: Error while preparing statement "
+      << task->query
+      << ": " << e.what();
   }
 }
 
 void mysql_thread::_statement(mysql_task_statement* task) {
   std::cout << "##### thread::_statement..." << std::endl;
-  if (mysql_stmt_bind_param(_stmt[task->statement_id], const_cast<MYSQL_BIND*>(task->bind.get_bind()))) {
+  if (_stmt[task->statement_id].bind(task->bind)) {
     if (task->fatal && !_error.is_active()) {
-      _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), task->fatal);
+      _error = mysql_error(_stmt[task->statement_id].get_error(), task->fatal);
     }
     else {
       logging::error(logging::medium)
         << "mysql: Error while binding values in statement: "
-        << mysql_stmt_error(_stmt[task->statement_id]);
+        << _stmt[task->statement_id].get_error();
     }
   }
-  else if (mysql_stmt_execute(_stmt[task->statement_id])) {
+  else if (_stmt[task->statement_id].execute()) {
     if (task->fatal && !_error.is_active()) {
-      _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), task->fatal);
+      _error = mysql_error(_stmt[task->statement_id].get_error(), task->fatal);
     }
     else {
       logging::error(logging::medium)
         << "mysql: Error while sending prepared query: "
-        << mysql_stmt_error(_stmt[task->statement_id])
+        << _stmt[task->statement_id].get_error()
         << " (" << task->error_msg << ")";
     }
   }
@@ -130,10 +129,10 @@ void mysql_thread::_statement(mysql_task_statement* task) {
 
 void mysql_thread::_statement_sync(mysql_task_statement_sync* task) {
   QMutexLocker locker(&_result_mutex);
-  if (mysql_stmt_bind_param(_stmt[task->statement_id], const_cast<MYSQL_BIND*>(task->bind.get_bind())))
-    _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), true);
-  else if (mysql_stmt_execute(_stmt[task->statement_id]))
-    _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), true);
+  if (_stmt[task->statement_id].bind(task->bind))
+    _error = mysql_error(_stmt[task->statement_id].get_error(), true);
+  else if (_stmt[task->statement_id].execute())
+    _error = mysql_error(_stmt[task->statement_id].get_error(), true);
   else
     _result = mysql_store_result(_conn);
 
@@ -270,13 +269,6 @@ mysql_thread::mysql_thread(database_config const& db_cfg)
 }
 
 mysql_thread::~mysql_thread() {
-  for (std::vector<MYSQL_STMT*>::iterator
-         it(_stmt.begin()),
-         end(_stmt.end());
-       it != end;
-       ++it) {
-    mysql_stmt_close(*it);
-  }
   mysql_close(_conn);
   mysql_thread_end();
 }
@@ -362,8 +354,10 @@ void mysql_thread::run_statement_sync(int statement_id, mysql_bind const& bind,
   }
 }
 
-void mysql_thread::prepare_query(std::string const& query) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_prepare(query)));
+void mysql_thread::prepare_query(std::string const& query,
+                               mysql_stmt_mapping const& bind_mapping) {
+  _push(misc::shared_ptr<mysql_task>(
+          new mysql_task_prepare(query, bind_mapping)));
 }
 
 /**
@@ -397,4 +391,12 @@ com::centreon::broker::mysql_error mysql_thread::get_error() {
   mysql_error retval(_error);
   _error.clear();
   return retval;
+}
+
+int mysql_thread::get_stmt_size() const {
+  return _stmt.size();
+}
+
+mysql_stmt_mapping mysql_thread::get_stmt_mapping(int stmt_id) const {
+  return _stmt[stmt_id].get_mapping();
 }

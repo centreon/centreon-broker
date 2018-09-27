@@ -19,6 +19,7 @@
 #ifndef CCB_QUERY_PREPARATOR_HH
 #  define CCB_QUERY_PREPARATOR_HH
 
+#  include <map>
 #  include <set>
 #  include <QSet>
 #  include <QString>
@@ -57,6 +58,8 @@ private:
   excluded_fields
                        _excluded;
   event_unique         _unique;
+  std::map<std::string, int>
+                       _bind_mapping;
 };
 
 CCB_END()

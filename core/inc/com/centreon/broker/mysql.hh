@@ -36,7 +36,8 @@ class                 mysql {
   };
                       mysql(database_config const& db_cfg);
                       ~mysql();
-  int                 prepare_query(std::string const& query);
+  int                 prepare_query(std::string const& query,
+                                    mysql_stmt_mapping const& bind_mapping = mysql_stmt_mapping());
   void                commit();
   bool                run_query(
                         std::string const& query,
@@ -61,6 +62,8 @@ class                 mysql {
   bool                finish();
   version             schema_version() const;
   int                 connections_count() const;
+  mysql_stmt_mapping  get_stmt_mapping(int stmt_id) const;
+  int                 get_stmt_size() const;
 
  private:
   bool                _commit_if_needed();

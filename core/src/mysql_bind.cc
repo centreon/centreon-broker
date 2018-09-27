@@ -24,16 +24,19 @@
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/mysql_bind.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/mysql.hh"
 
 using namespace com::centreon::broker;
 
-my_bool mysql_bind::_true = 1;
-
-mysql_bind::mysql_bind(int size) {
+mysql_bind::mysql_bind(mysql const& ms, int stmt_id)
+ : _bind_mapping(ms.get_stmt_mapping(stmt_id)) {
+  int size(_bind_mapping.size());
+  if (size == 0)
+    size = ms.get_stmt_size();
   set_size(size);
 }
 
-mysql_bind::mysql_bind(io::data const& d) {
+void mysql_bind::set_values(io::data const& d) {
   // Get event info.
   io::event_info const*
     info(io::events::instance().get_event_info(d.type()));
@@ -179,7 +182,7 @@ void mysql_bind::set_size(int size) {
 
 void mysql_bind::set_value_as_str(std::string const& name, std::string const& value) {
   int range(_bind.size());
-  _name_bind[name] = range;
+  _bind_mapping[name] = range;
   set_value_as_str(range, value);
 }
 
@@ -196,7 +199,7 @@ void mysql_bind::set_value_as_str(int range, std::string const& value) {
 
 void mysql_bind::set_value_as_tiny(std::string const& name, char value) {
   int range(_bind.size());
-  _name_bind[name] = range;
+  _bind_mapping[name] = range;
   set_value_as_tiny(range, value);
 }
 
@@ -213,7 +216,7 @@ void mysql_bind::set_value_as_tiny(int range, char value) {
 
 void mysql_bind::set_value_as_bool(std::string const& name, bool value) {
   int range(_bind.size());
-  _name_bind[name] = range;
+  _bind_mapping[name] = range;
   set_value_as_bool(range, value);
 }
 
@@ -230,7 +233,7 @@ void mysql_bind::set_value_as_bool(int range, bool value) {
 
 void mysql_bind::set_value_as_i32(std::string const& name, int value) {
   int range(_bind.size());
-  _name_bind[name] = range;
+  _bind_mapping[name] = range;
   set_value_as_i32(range, value);
 }
 
@@ -247,7 +250,7 @@ void mysql_bind::set_value_as_i32(int range, int value) {
 
 void mysql_bind::set_value_as_u32(std::string const& name, unsigned int value) {
   int range(_bind.size());
-  _name_bind[name] = range;
+  _bind_mapping[name] = range;
   set_value_as_u32(range, value);
 }
 
@@ -265,7 +268,7 @@ void mysql_bind::set_value_as_u32(int range, unsigned int value) {
 
 void mysql_bind::set_value_as_f32(std::string const& name, float value) {
   int range(_bind.size());
-  _name_bind[name] = range;
+  _bind_mapping[name] = range;
   set_value_as_f32(range, value);
 }
 
@@ -286,7 +289,7 @@ void mysql_bind::set_value_as_f32(int range, float value) {
 
 void mysql_bind::set_value_as_f64(std::string const& name, double value) {
   int range(_bind.size());
-  _name_bind[name] = range;
+  _bind_mapping[name] = range;
   set_value_as_f64(range, value);
 }
 
@@ -307,7 +310,7 @@ void mysql_bind::set_value_as_f64(int range, double value) {
 
 void mysql_bind::set_value_as_null(std::string const& name) {
   int range(_bind.size());
-  _name_bind[name] = range;
+  _bind_mapping[name] = range;
   set_value_as_null(range);
 }
 

@@ -19,14 +19,28 @@
 #include <cmath>
 #include <gtest/gtest.h>
 #include <memory>
+#include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/query_preparator.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/neb/host.hh"
+#include "com/centreon/broker/modules/loader.hh"
 
 using namespace com::centreon::broker;
 
 class DatabaseStorageTest : public ::testing::Test {
  public:
-  void SetUp() {}
+  void SetUp() {
+    try {
+      config::applier::init();
+    }
+    catch (std::exception const& e) {
+      (void) e;
+    }
+  }
+  void TearDown() {
+    config::applier::deinit();
+  }
 };
 
 // When there is no database
@@ -159,7 +173,7 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
   std::ostringstream nss;
   nss << "metric_name - " << time(NULL);
   int stmt_id(ms->prepare_query(oss.str()));
-  mysql_bind bind(13);
+  mysql_bind bind(*ms, stmt_id);
   bind.set_value_as_i32(0, 19);
   bind.set_value_as_str(1, nss.str());
   bind.set_value_as_str(2, "test/s");
@@ -334,7 +348,7 @@ TEST_F(DatabaseStorageTest, PrepareQuerySync) {
   std::ostringstream nss;
   nss << "metric_name - " << time(NULL) << "bis2";
   int stmt_id(ms->prepare_query(oss.str()));
-  mysql_bind bind(13);
+  mysql_bind bind(*ms, stmt_id);
   bind.set_value_as_i32(0, 19);
   bind.set_value_as_str(1, nss.str());
   bind.set_value_as_str(2, "test/s");
@@ -392,7 +406,7 @@ TEST_F(DatabaseStorageTest, RepeatPrepareQuery) {
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
   int stmt_id(ms->prepare_query(oss.str()));
   for (int i(1); i < 4000; ++i) {
-    mysql_bind bind(11);
+    mysql_bind bind(*ms, stmt_id);
     bind.set_value_as_str(0, "test/s");
     bind.set_value_as_f32(1, NAN);
     bind.set_value_as_f32(2, NAN);
@@ -410,3 +424,34 @@ TEST_F(DatabaseStorageTest, RepeatPrepareQuery) {
   ms->commit();
 }
 
+TEST_F(DatabaseStorageTest, StatementWithHostBind) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "centreon",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  query_preparator::event_unique unique;
+  unique.insert("host_id");
+  query_preparator qp(neb::host::static_type(), unique);
+  int host_insert(qp.prepare_insert(*ms));
+  int host_update(qp.prepare_update(*ms));
+
+  neb::host h;
+  h.address = "2.3.5.7";
+  h.alias = "host_alias";
+  h.flap_detection_on_down = true;
+  h.host_name = "host_name";
+  h.host_id = 19;
+  h.poller_id = 1;
+  mysql_bind bind(*ms, host_insert);
+  bind.set_values(h);
+  int th_id(ms->run_statement_sync(host_insert, bind, "", 0));
+}

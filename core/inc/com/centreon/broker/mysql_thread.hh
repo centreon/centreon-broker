@@ -25,6 +25,7 @@
 #include "com/centreon/broker/mysql_bind.hh"
 #include "com/centreon/broker/mysql_error.hh"
 #include "com/centreon/broker/mysql_result.hh"
+#include "com/centreon/broker/mysql_stmt.hh"
 #include "com/centreon/broker/mysql_task.hh"
 
 CCB_BEGIN()
@@ -44,7 +45,8 @@ class                    mysql_thread : public QThread {
                          mysql_thread(database_config const& db_cfg);
                          ~mysql_thread();
 
-  void                   prepare_query(std::string const& query);
+  void                   prepare_query(std::string const& query,
+                           mysql_stmt_mapping const& bind_mapping);
   void                   commit(
                            QSemaphore& sem,
                            QAtomicInt& count);
@@ -67,6 +69,8 @@ class                    mysql_thread : public QThread {
   mysql_error            get_error();
   int                    get_last_insert_id();
   int                    get_affected_rows();
+  mysql_stmt_mapping     get_stmt_mapping(int stmt_id) const;
+  int                    get_stmt_size() const;
 
  private:
 
@@ -96,7 +100,7 @@ class                    mysql_thread : public QThread {
   bool                   _finished;
   std::list<misc::shared_ptr<mysql_task> >
                          _tasks_list;
-  std::vector<MYSQL_STMT*>
+  std::vector<mysql_stmt>
                          _stmt;
 
   // Mutex and condition working on _result and _error_msg.

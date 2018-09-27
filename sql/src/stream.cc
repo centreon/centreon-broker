@@ -133,7 +133,7 @@ void stream::_clean_empty_host_groups() {
     //FIXME DBR : error management to add
     //"SQL: could not prepare empty host group deletion query");
   }
-  mysql_bind bind(0);
+  mysql_bind bind(_mysql, _empty_host_groups_delete);
   _mysql.run_statement(_empty_host_groups_delete, bind);
     //FIXME DBR : error management to add
     //"SQL: could not remove empty host groups");
@@ -151,7 +151,7 @@ void stream::_clean_empty_service_groups() {
     // FIXME DBR
     // "SQL: could not prepare empty service group deletion query");
   }
-  mysql_bind bind(0);
+  mysql_bind bind(_mysql, _empty_service_groups_delete);
   _mysql.run_statement(_empty_service_groups_delete, bind);
   //FIXME DBR: error management to ad
   //"SQL: could not remove empty service groups");
@@ -658,7 +658,7 @@ void stream::_process_custom_variable(
     logging::info(logging::medium)
       << "SQL: disabling custom variable '" << cv.name << "' of ("
       << cv.host_id << ", " << cv.service_id << ")";
-    mysql_bind bind(3);
+    mysql_bind bind(_mysql, _custom_variable_delete);
     bind.set_value_as_i32(":host_id", cv.host_id);
     bind.set_value_as_i32(":service_id", cv.service_id);
     //_custom_variable_delete.bind_value(":host_id", cv.host_id);
@@ -712,7 +712,8 @@ void stream::_process_custom_variable_status(
   }
 
   // Processing.
-  mysql_bind bind(cvs);
+  mysql_bind bind(_mysql, _custom_variable_status_update);
+  bind.set_values(cvs);
   //_custom_variable_status_update << cvs;
   int thread_id;
   try {
@@ -1036,7 +1037,8 @@ void stream::_process_host_check(
     }
 
     // Processing.
-    mysql_bind bind(hc);
+    mysql_bind bind(_mysql, _host_check_update);
+    bind.set_values(hc);
     //_host_check_update << hc;
     int thread_id;
     try {
@@ -1059,8 +1061,6 @@ void stream::_process_host_check(
       << ", command: " << hc.command_line << ", check type: "
       << hc.check_type << ", next check: " << hc.next_check << ", now: "
       << now << ")";
-
-  return ;
 }
 
 /**
@@ -1229,7 +1229,8 @@ void stream::_process_host_group_member(
             qp(neb::host_group_member::static_type(), unique);
           _host_group_member_insert = qp.prepare_insert(_mysql);
         }
-        mysql_bind bind(hgm);
+        mysql_bind bind(_mysql, _host_group_member_insert);
+        bind.set_values(hgm);
         _mysql.run_statement(_host_group_member_insert, bind);
       }
       // The insertion error could be caused by a missing group.
@@ -1240,7 +1241,8 @@ void stream::_process_host_group_member(
         hg->enabled = true;
         hg->poller_id = hgm.poller_id;
         _process_host_group(hg);
-        mysql_bind bind(hgm);
+        mysql_bind bind(_mysql, _host_group_member_insert);
+        bind.set_values(hgm);
         _mysql.run_statement(_host_group_member_insert, bind);
       }
     }
@@ -1268,7 +1270,8 @@ void stream::_process_host_group_member(
           qp(neb::host_group_member::static_type(), unique);
         _host_group_member_delete = qp.prepare_delete(_mysql);
       }
-      mysql_bind bind(hgm);
+      mysql_bind bind(_mysql, _host_group_member_delete);
+      bind.set_values(hgm);
       _mysql.run_statement(_host_group_member_delete, bind);
     }
     catch (std::exception const& e) {
@@ -1309,7 +1312,8 @@ void stream::_process_host_parent(
 
     // Insert.
     try {
-      mysql_bind bind(hp);
+      mysql_bind bind(_mysql, _host_parent_select);
+      bind.set_values(hp);
       int thread_id(_mysql.run_statement_sync(_host_parent_select, bind));
       mysql_result res(_mysql.get_result(thread_id));
       if (res.get_rows_count() == 1)
@@ -1340,11 +1344,10 @@ void stream::_process_host_parent(
     }
 
     // Delete.
-    mysql_bind bind(hp);
+    mysql_bind bind(_mysql, _host_parent_delete);
+    bind.set_values(hp);
     _mysql.run_statement(_host_parent_delete, bind, "SQL");
   }
-
-  return ;
 }
 
 /**
@@ -1444,7 +1447,8 @@ void stream::_process_host_status(
     }
 
     // Processing.
-    mysql_bind bind(hs);
+    mysql_bind bind(_mysql, _host_status_update);
+    bind.set_values(hs);
     //_host_status_update << hs;
     int thread_id;
     try {
@@ -1555,7 +1559,8 @@ void stream::_process_instance_status(
     }
 
     // Process object.
-    mysql_bind bind(is);
+    mysql_bind bind(_mysql, _instance_status_update);
+    bind.set_values(is);
     int thread_id;
     //_instance_status_update << is;
     try {
@@ -1732,7 +1737,7 @@ void stream::_process_issue_parent(
   }
 
   // End of parenting.
-  mysql_bind bind(4);
+  mysql_bind bind(_mysql, _issue_parent_update);
   if (ip.end_time != (time_t)-1) {
     bind.set_value_as_u32(
       ":end_time", 
@@ -1763,6 +1768,7 @@ void stream::_process_issue_parent(
       << "SQL: inserting issue parenting between child " << child_id
       << " and parent " << parent_id << " (start: " << ip.start_time
       << ", end: " << ip.end_time << ")";
+    //FIXME DBR: the bind is surely unordered
     _mysql.run_statement(_issue_parent_insert, bind,
                            "SQL: issue parent insert query failed");
   }
@@ -1791,7 +1797,8 @@ void stream::_process_log(
   }
 
   // Run query.
-  mysql_bind bind(le);
+  mysql_bind bind(_mysql, _log_insert);
+  bind.set_values(le);
   _mysql.run_statement(_log_insert, bind, "SQL");
 }
 
@@ -1821,7 +1828,8 @@ void stream::_process_module(
 
     // Process object.
     if (m.enabled) {
-      mysql_bind bind(m);
+      mysql_bind bind(_mysql, _module_insert);
+      bind.set_values(m);
       try {
         _mysql.run_statement(_module_insert, bind);
       }
@@ -1946,7 +1954,8 @@ void stream::_process_service_check(
     }
 
     // Processing.
-    mysql_bind bind(sc);
+    mysql_bind bind(_mysql, _service_check_update);
+    bind.set_values(sc);
     int thread_id;
     try {
       thread_id = _mysql.run_statement_sync(_service_check_update, bind);
@@ -2142,7 +2151,8 @@ void stream::_process_service_group_member(
             qp(neb::service_group_member::static_type(), unique);
           _service_group_member_insert = qp.prepare_insert(_mysql);
         }
-        mysql_bind bind(sgm);
+        mysql_bind bind(_mysql, _service_group_member_insert);
+        bind.set_values(sgm);
         _mysql.run_statement(_service_group_member_insert, bind);
       }
       // The insertion error could be caused by a missing group.
@@ -2153,7 +2163,8 @@ void stream::_process_service_group_member(
         sg->enabled = true;
         sg->poller_id = sgm.poller_id;
         _process_service_group(sg);
-        mysql_bind bind(sgm);
+        mysql_bind bind(_mysql, _service_group_member_insert);
+        bind.set_values(sgm);
         _mysql.run_statement(_service_group_member_insert, bind);
       }
     }
@@ -2183,7 +2194,8 @@ void stream::_process_service_group_member(
           qp(neb::service_group_member::static_type(), unique);
         _service_group_member_delete = qp.prepare_delete(_mysql);
       }
-      mysql_bind bind(sgm);
+      mysql_bind bind(_mysql, _service_group_member_delete);
+      bind.set_values(sgm);
       _mysql.run_statement(_service_group_member_delete, bind);
     }
     catch (std::exception const& e) {
@@ -2305,7 +2317,8 @@ void stream::_process_service_status(
     }
 
     // Processing.
-    mysql_bind bind(ss);
+    mysql_bind bind(_mysql, _service_status_update);
+    bind.set_values(ss);
     int thread_id;
     try {
       thread_id = _mysql.run_statement_sync(_service_status_update, bind);
@@ -2342,12 +2355,14 @@ void stream::_update_on_none_insert(
                T& t,
                int thread_id) {
   // Try update.
-  mysql_bind bind(t);
+  mysql_bind bind(_mysql, ins_stmt_id);
+  bind.set_values(t);
   int th_id(_mysql.run_statement_sync(ins_stmt_id, bind, "", thread_id));
   //up << t;
   //up.run_statement();
 
   // Try insertion.
+  // FIXME DBR: the binding should not work correctly because built for ins_stmt_id
   if (_mysql.get_affected_rows(th_id) != 1)
     _mysql.run_statement_sync(up_stmt_id, bind, "", th_id);
 }

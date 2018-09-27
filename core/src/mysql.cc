@@ -262,13 +262,14 @@ int mysql::run_statement_sync(int statement_id, mysql_bind const& bind,
   return thread;
 }
 
-int mysql::prepare_query(std::string const& query) {
+int mysql::prepare_query(std::string const& query,
+                         mysql_stmt_mapping const& bind_mapping) {
   for (std::vector<mysql_thread*>::const_iterator
          it(_thread.begin()),
          end(_thread.end());
        it != end;
        ++it)
-    (*it)->prepare_query(query);
+    (*it)->prepare_query(query, bind_mapping);
 
   return _prepare_count++;
 }
@@ -295,4 +296,12 @@ mysql::version mysql::schema_version() const {
 
 int mysql::connections_count() const {
   return _thread.size();
+}
+
+int mysql::get_stmt_size() const {
+  return _thread[0]->get_stmt_size();
+}
+
+mysql_stmt_mapping mysql::get_stmt_mapping(int stmt_id) const {
+  return _thread[0]->get_stmt_mapping(stmt_id);
 }

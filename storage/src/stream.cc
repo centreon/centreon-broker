@@ -559,7 +559,7 @@ unsigned int stream::_find_index_id(
         << service_desc << ", special: " << special << ")";
 
       // Update index_data table.
-      mysql_bind bind(5);
+      mysql_bind bind(_mysql, _update_index_data_stmt);
       bind.set_value_as_str(0, host_name.toStdString());
       bind.set_value_as_str(1, service_desc.toStdString());
       bind.set_value_as_str(2, special ? "1" : "0");
@@ -716,7 +716,7 @@ unsigned int stream::_find_metric_id(
         << warn_low << ":" << warn << ", critical: " << crit_low << ":"
         << crit << ", min: " << min << ", max: " << max << ")";
       // Update metrics table.
-      mysql_bind bind(11);
+      mysql_bind bind(_mysql, _update_metrics_stmt);
       bind.set_value_as_str(0, unit_name.toStdString());
       bind.set_value_as_f32(1, warn);
       bind.set_value_as_f32(2, warn_low);
@@ -778,7 +778,7 @@ unsigned int stream::_find_metric_id(
     // Build query.
     if (*type == perfdata::automatic)
       *type = perfdata::gauge;
-    mysql_bind bind(13);
+    mysql_bind bind(_mysql, _insert_metrics_stmt);
     bind.set_value_as_i32(0, index_id);
     bind.set_value_as_str(1, metric_name.toStdString());
     bind.set_value_as_str(2, unit_name.toStdString());

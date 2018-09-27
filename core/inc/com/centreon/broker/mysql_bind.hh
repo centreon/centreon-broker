@@ -24,17 +24,21 @@
 #  include <vector>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/mysql_stmt.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 
 CCB_BEGIN()
 
+// Forward declarations
+class                       mysql;
+
 class                       mysql_bind {
  public:
-                            mysql_bind(int size);
+                            mysql_bind(mysql const& ms, int stmt_id);
                             mysql_bind(mysql_bind const& other);
-                            mysql_bind(io::data const& d);
                             ~mysql_bind();
   void                      set_size(int size);
+  void                      set_values(io::data const& d);
   void                      set_value_as_i32(
                               std::string const& name,
                               int value);
@@ -82,9 +86,8 @@ class                       mysql_bind {
 
   MYSQL_BIND const*         get_bind() const;
  private:
-  static my_bool            _true;
   std::vector<MYSQL_BIND>   _bind;
-  umap<std::string, int>    _name_bind;
+  mysql_stmt_mapping        _bind_mapping;
 
   // The buffers contained by _bind
   std::vector<std::string>  _buffer;
