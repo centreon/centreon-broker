@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <iostream>
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/simu/factory.hh"

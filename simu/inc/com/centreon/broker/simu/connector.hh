@@ -40,15 +40,12 @@ namespace                        simu {
     connector&                   operator=(connector const& other);
     void                         connect_to(
                                    std::string const& lua_script,
-                                   QMap<QString, QVariant> const& cfg_params,
-                                   misc::shared_ptr<persistent_cache> const& cache);
+                                   QMap<QString, QVariant> const& cfg_params);
     misc::shared_ptr<io::stream> open();
 
   private:
     std::string                  _lua_script;
     QMap<QString, QVariant>      _conf_params;
-    misc::shared_ptr<persistent_cache>
-                                 _cache;
   };
 }
 

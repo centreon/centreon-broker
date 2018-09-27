@@ -39,8 +39,7 @@ connector::connector()
 connector::connector(connector const& other)
   : io::endpoint(other),
     _lua_script(other._lua_script),
-    _conf_params(other._conf_params),
-    _cache(other._cache) {}
+    _conf_params(other._conf_params) {}
 
 /**
  *  Destructor.
@@ -59,7 +58,6 @@ connector& connector::operator=(connector const& other) {
     io::endpoint::operator=(other);
     _lua_script = other._lua_script;
     _conf_params = other._conf_params;
-    _cache = other._cache;
   }
   return (*this);
 }
@@ -70,15 +68,12 @@ connector& connector::operator=(connector const& other) {
  *  @param[in] lua_script              The Lua script to load
  *  @param[in] cfg_params              A hash table containing the user
  *                                     parameters
- *  @param[in] cache                   The cache
  */
 void connector::connect_to(
                   std::string const& lua_script,
-                  QMap<QString, QVariant> const& cfg_params,
-                  misc::shared_ptr<persistent_cache> const& cache) {
+                  QMap<QString, QVariant> const& cfg_params) {
   _conf_params = cfg_params;
   _lua_script = lua_script;
-  _cache = cache;
 }
 
 /**

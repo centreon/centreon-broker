@@ -88,12 +88,12 @@ io::factory* factory::clone() const {
  *  @return true if the endpoint match the configuration.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  bool is_lua(!cfg.type.compare("lua", Qt::CaseInsensitive));
-  if (is_lua) {
+  bool is_simu(!cfg.type.compare("simu", Qt::CaseInsensitive));
+  if (is_simu) {
     cfg.params["cache"] = "yes";
     cfg.cache_enabled = true;
   }
-  return is_lua;
+  return is_simu;
 }
 
 /**
@@ -157,7 +157,7 @@ io::endpoint* factory::new_endpoint(
   }
   // Connector.
   std::auto_ptr<simu::connector> c(new simu::connector);
-  c->connect_to(filename, conf_map, cache);
+  c->connect_to(filename, conf_map);
   is_acceptor = false;
   return c.release();
 }
