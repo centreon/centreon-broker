@@ -66,7 +66,7 @@ TEST_F(DatabaseStorageTest, ConnectionOk) {
     "127.0.0.1",
     3306,
     "root",
-    "centreon",
+    "root",
     "centreon_storage");
   std::auto_ptr<mysql> ms;
   ASSERT_NO_THROW(ms.reset(new mysql(db_cfg)));
@@ -83,7 +83,7 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
     "127.0.0.1",
     3306,
     "root",
-    "centreon",
+    "root",
     "centreon_storage",
     5,
     true,
@@ -127,7 +127,7 @@ TEST_F(DatabaseStorageTest, QueryWithCallback) {
     "127.0.0.1",
     3306,
     "root",
-    "centreon",
+    "root",
     "centreon_storage",
     5,
     true,
@@ -152,7 +152,7 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
     "127.0.0.1",
     3306,
     "root",
-    "centreon",
+    "root",
     "centreon_storage",
     5,
     true,
@@ -172,23 +172,22 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
   std::ostringstream nss;
   nss << "metric_name - " << time(NULL);
-  int stmt_id(ms->prepare_query(oss.str()));
-  mysql_bind bind(*ms, stmt_id);
-  bind.set_value_as_i32(0, 19);
-  bind.set_value_as_str(1, nss.str());
-  bind.set_value_as_str(2, "test/s");
-  bind.set_value_as_f32(3, NAN);
-  bind.set_value_as_f32(4, INFINITY);
-  bind.set_value_as_tiny(5, true);
-  bind.set_value_as_f32(6, 10.0);
-  bind.set_value_as_f32(7, 20.0);
-  bind.set_value_as_tiny(8, false);
-  bind.set_value_as_f32(9, 0.0);
-  bind.set_value_as_f32(10, 50.0);
-  bind.set_value_as_f32(11, 18.0);
-  bind.set_value_as_str(12, "2");
+  mysql_stmt stmt(ms->prepare_query(oss.str()));
+  stmt.bind_value_as_i32(0, 19);
+  stmt.bind_value_as_str(1, nss.str());
+  stmt.bind_value_as_str(2, "test/s");
+  stmt.bind_value_as_f32(3, NAN);
+  stmt.bind_value_as_f32(4, INFINITY);
+  stmt.bind_value_as_tiny(5, true);
+  stmt.bind_value_as_f32(6, 10.0);
+  stmt.bind_value_as_f32(7, 20.0);
+  stmt.bind_value_as_tiny(8, false);
+  stmt.bind_value_as_f32(9, 0.0);
+  stmt.bind_value_as_f32(10, 50.0);
+  stmt.bind_value_as_f32(11, 18.0);
+  stmt.bind_value_as_str(12, "2");
   // We force the thread 0
-  ms->run_statement(stmt_id, bind, "", false, 0, 0, 0);
+  ms->run_statement(stmt, "", false, 0, 0, 0);
   oss.str("");
   oss << "SELECT metric_name FROM metrics WHERE metric_name='" << nss.str() << "'";
   int thread_id(ms->run_query_sync(oss.str()));
@@ -200,19 +199,69 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
   ASSERT_TRUE(res.next());
 }
 
-TEST_F(DatabaseStorageTest, QuerySync) {
+// Given a mysql object
+// When a prepare statement is done
+// Then we can bind values to it and execute the statement.
+// Then a commit makes data available in the database.
+TEST_F(DatabaseStorageTest, PrepareQueryBadQuery) {
   database_config db_cfg(
     "MySQL",
     "127.0.0.1",
     3306,
     "root",
-    "centreon",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  time_t now(time(NULL));
+  std::ostringstream oss;
+  oss << "INSERT INTO " << "metrics"
+      << "  (index_id, metric_name, unit_name, warn, warn_low,"
+         "   warn_threshold_mode, crit, crit_low, "
+         "   crit_threshold_mode, min, max, current_value,"
+         "   data_source_type)"
+         " VALUES (?, ?, ?, ?, "
+         "         ?, ?, ?, "
+         "         ?, ?, ?, ?, "
+         "         ?, ?";
+
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::ostringstream nss;
+  nss << "metric_name - " << time(NULL);
+  mysql_stmt stmt(ms->prepare_query(oss.str()));
+  stmt.bind_value_as_i32(0, 19);
+  stmt.bind_value_as_str(1, nss.str());
+  stmt.bind_value_as_str(2, "test/s");
+  stmt.bind_value_as_f32(3, NAN);
+  stmt.bind_value_as_f32(4, INFINITY);
+  stmt.bind_value_as_tiny(5, true);
+  stmt.bind_value_as_f32(6, 10.0);
+  stmt.bind_value_as_f32(7, 20.0);
+  stmt.bind_value_as_tiny(8, false);
+  stmt.bind_value_as_f32(9, 0.0);
+  stmt.bind_value_as_f32(10, 50.0);
+  stmt.bind_value_as_f32(11, 18.0);
+  stmt.bind_value_as_str(12, "2");
+  // The commit forces threads to empty their tasks stack
+  ms->commit();
+  // We are sure, the error is set.
+  ASSERT_THROW(ms->run_statement(stmt, "", false, 0, 0, 0), std::exception);
+}
+
+TEST_F(DatabaseStorageTest, SelectSync) {
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
     "centreon_storage",
     5,
     true,
     5);
   std::ostringstream oss;
-  oss << "SELECT comment_id, persistent, data FROM comments LIMIT 10";
+  oss << "SELECT metric_id, index_id, metric_name FROM metrics LIMIT 10";
 
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
   int id(ms->run_query_sync(oss.str()));
@@ -220,12 +269,10 @@ TEST_F(DatabaseStorageTest, QuerySync) {
   int count(0);
   while (res.next()) {
     int v(res.value_as_i32(0));
-    int t(res.value_as_bool(1));
     std::string s(res.value_as_str(2));
     ASSERT_GT(v, 0);
-    ASSERT_FALSE(t);
     ASSERT_FALSE(s.empty());
-    std::cout << "value " << v << std::endl;
+    std::cout << "metric name " << v << " content: " << s << std::endl;
     ++count;
   }
   ASSERT_EQ(count, 10);
@@ -237,7 +284,7 @@ TEST_F(DatabaseStorageTest, QuerySyncWithError) {
     "127.0.0.1",
     3306,
     "root",
-    "centreon",
+    "root",
     "centreon_storage",
     5,
     true,
@@ -255,7 +302,7 @@ TEST_F(DatabaseStorageTest, QueryWithError) {
     "127.0.0.1",
     3306,
     "root",
-    "centreon",
+    "root",
     "centreon_storage",
     5,
     true,
@@ -281,7 +328,7 @@ TEST_F(DatabaseStorageTest, LastInsertId) {
     "127.0.0.1",
     3306,
     "root",
-    "centreon",
+    "root",
     "centreon_storage",
     5,
     true,
@@ -327,7 +374,7 @@ TEST_F(DatabaseStorageTest, PrepareQuerySync) {
     "127.0.0.1",
     3306,
     "root",
-    "centreon",
+    "root",
     "centreon_storage",
     5,
     true,
@@ -347,23 +394,22 @@ TEST_F(DatabaseStorageTest, PrepareQuerySync) {
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
   std::ostringstream nss;
   nss << "metric_name - " << time(NULL) << "bis2";
-  int stmt_id(ms->prepare_query(oss.str()));
-  mysql_bind bind(*ms, stmt_id);
-  bind.set_value_as_i32(0, 19);
-  bind.set_value_as_str(1, nss.str());
-  bind.set_value_as_str(2, "test/s");
-  bind.set_value_as_f32(3, 20.0);
-  bind.set_value_as_f32(4, 40.0);
-  bind.set_value_as_tiny(5, 1);
-  bind.set_value_as_f32(6, 10.0);
-  bind.set_value_as_f32(7, 20.0);
-  bind.set_value_as_tiny(8, 1);
-  bind.set_value_as_f32(9, 0.0);
-  bind.set_value_as_f32(10, 50.0);
-  bind.set_value_as_f32(11, 18.0);
-  bind.set_value_as_str(12, "2");
+  mysql_stmt stmt(ms->prepare_query(oss.str()));
+  stmt.bind_value_as_i32(0, 19);
+  stmt.bind_value_as_str(1, nss.str());
+  stmt.bind_value_as_str(2, "test/s");
+  stmt.bind_value_as_f32(3, 20.0);
+  stmt.bind_value_as_f32(4, 40.0);
+  stmt.bind_value_as_tiny(5, 1);
+  stmt.bind_value_as_f32(6, 10.0);
+  stmt.bind_value_as_f32(7, 20.0);
+  stmt.bind_value_as_tiny(8, 1);
+  stmt.bind_value_as_f32(9, 0.0);
+  stmt.bind_value_as_f32(10, 50.0);
+  stmt.bind_value_as_f32(11, 18.0);
+  stmt.bind_value_as_str(12, "2");
   // We force the thread 0
-  int thread_id(ms->run_statement_sync(stmt_id, bind, "", 0));
+  int thread_id(ms->run_statement_sync(stmt, "", 0));
   int id(ms->get_last_insert_id(thread_id));
   ASSERT_TRUE(id > 0);
   std::cout << "id = " << id << std::endl;
@@ -378,6 +424,7 @@ TEST_F(DatabaseStorageTest, PrepareQuerySync) {
   ASSERT_TRUE(res.next());
   std::cout << "id1 = " << res.value_as_i32(0) << std::endl;
   ASSERT_TRUE(res.value_as_i32(0) == id);
+  ASSERT_TRUE(ms->get_affected_rows(thread_id) == 1);
 }
 
 // Given a mysql object
@@ -390,7 +437,7 @@ TEST_F(DatabaseStorageTest, RepeatPrepareQuery) {
     "127.0.0.1",
     3306,
     "root",
-    "centreon",
+    "root",
     "centreon_storage",
     5,
     true,
@@ -404,22 +451,21 @@ TEST_F(DatabaseStorageTest, RepeatPrepareQuery) {
 	 "WHERE metric_id=?";
 
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
-  int stmt_id(ms->prepare_query(oss.str()));
+  mysql_stmt stmt(ms->prepare_query(oss.str()));
   for (int i(1); i < 4000; ++i) {
-    mysql_bind bind(*ms, stmt_id);
-    bind.set_value_as_str(0, "test/s");
-    bind.set_value_as_f32(1, NAN);
-    bind.set_value_as_f32(2, NAN);
-    bind.set_value_as_tiny(3, 0);
-    bind.set_value_as_f32(4, NAN);
-    bind.set_value_as_f32(5, NAN);
-    bind.set_value_as_tiny(6, 0);
-    bind.set_value_as_f32(7, 10.0);
-    bind.set_value_as_f32(8, 20.0);
-    bind.set_value_as_f32(9, 18.0);
-    bind.set_value_as_i32(10, i);
+    stmt.bind_value_as_str(0, "test/s");
+    stmt.bind_value_as_f32(1, NAN);
+    stmt.bind_value_as_f32(2, NAN);
+    stmt.bind_value_as_tiny(3, 0);
+    stmt.bind_value_as_f32(4, NAN);
+    stmt.bind_value_as_f32(5, NAN);
+    stmt.bind_value_as_tiny(6, 0);
+    stmt.bind_value_as_f32(7, 10.0);
+    stmt.bind_value_as_f32(8, 20.0);
+    stmt.bind_value_as_f32(9, 18.0);
+    stmt.bind_value_as_i32(10, i);
 
-    ms->run_statement(stmt_id, bind);
+    ms->run_statement(stmt);
   }
   ms->commit();
 }
@@ -432,7 +478,7 @@ TEST_F(DatabaseStorageTest, StatementWithHostBind) {
     "127.0.0.1",
     3306,
     "root",
-    "centreon",
+    "root",
     "centreon_storage",
     5,
     true,
@@ -441,8 +487,8 @@ TEST_F(DatabaseStorageTest, StatementWithHostBind) {
   query_preparator::event_unique unique;
   unique.insert("host_id");
   query_preparator qp(neb::host::static_type(), unique);
-  int host_insert(qp.prepare_insert(*ms));
-  int host_update(qp.prepare_update(*ms));
+  mysql_stmt host_insert(qp.prepare_insert(*ms));
+  mysql_stmt host_update(qp.prepare_update(*ms));
 
   neb::host h;
   h.address = "2.3.5.7";
@@ -451,7 +497,13 @@ TEST_F(DatabaseStorageTest, StatementWithHostBind) {
   h.host_name = "host_name";
   h.host_id = 19;
   h.poller_id = 1;
-  mysql_bind bind(*ms, host_insert);
-  bind.set_values(h);
-  int th_id(ms->run_statement_sync(host_insert, bind, "", 0));
+  host_insert << h;
+  try {
+    ms->run_statement_sync(host_insert, "", 0);
+    ASSERT_FALSE("This code should not be executed...");
+  }
+  catch (std::exception const& e) {
+    std::cout << "Error: " << e.what() << std::endl;
+    ASSERT_TRUE(std::string(e.what()) == "could not execute statement 233054649: Cannot add or update a child row: a foreign key constraint fails (`centreon_storage`.`hosts`, CONSTRAINT `hosts_ibfk_1` FOREIGN KEY (`instance_id`) REFERENCES `instances` (`instance_id`) ON DELETE CASCADE)");
+  }
 }

@@ -228,7 +228,7 @@ int mysql::get_last_insert_id(int thread_id) {
   return _thread[thread_id]->get_last_insert_id();
 }
 
-bool mysql::run_statement(int statement_id, mysql_bind const& bind,
+bool mysql::run_statement(mysql_stmt& stmt,
               std::string const& error_msg, bool fatal,
               mysql_callback fn, void* data,
               int thread) {
@@ -240,13 +240,13 @@ bool mysql::run_statement(int statement_id, mysql_bind const& bind,
   }
   _check_errors(thread);
   _thread[thread]->run_statement(
-    statement_id, bind,
+    stmt.get_id(), stmt.get_bind(),
     error_msg, fatal,
     fn, data);
   return _commit_if_needed();
 }
 
-int mysql::run_statement_sync(int statement_id, mysql_bind const& bind,
+int mysql::run_statement_sync(mysql_stmt& stmt,
              std::string const& error_msg, int thread) {
   if (thread < 0) {
     // Here, we use _current_thread
@@ -256,22 +256,23 @@ int mysql::run_statement_sync(int statement_id, mysql_bind const& bind,
   }
   _check_errors(thread);
   _thread[thread]->run_statement_sync(
-    statement_id, bind,
+    stmt.get_id(), stmt.get_bind(),
     error_msg);
 
   return thread;
 }
 
-int mysql::prepare_query(std::string const& query,
-                         mysql_stmt_mapping const& bind_mapping) {
+mysql_stmt mysql::prepare_query(std::string const& query,
+                         mysql_bind_mapping const& bind_mapping) {
+  mysql_stmt retval(query, bind_mapping);
   for (std::vector<mysql_thread*>::const_iterator
          it(_thread.begin()),
          end(_thread.end());
        it != end;
        ++it)
-    (*it)->prepare_query(query, bind_mapping);
+    (*it)->prepare_query(retval.get_id(), query);
 
-  return _prepare_count++;
+  return retval;
 }
 
 bool mysql::finish() {
@@ -296,12 +297,4 @@ mysql::version mysql::schema_version() const {
 
 int mysql::connections_count() const {
   return _thread.size();
-}
-
-int mysql::get_stmt_size() const {
-  return _thread[0]->get_stmt_size();
-}
-
-mysql_stmt_mapping mysql::get_stmt_mapping(int stmt_id) const {
-  return _thread[0]->get_stmt_mapping(stmt_id);
 }

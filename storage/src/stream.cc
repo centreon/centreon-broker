@@ -121,9 +121,6 @@ stream::stream(
       interval_length),
     _rrd_len(rrd_len ? rrd_len : 15552000),
     _store_in_db(store_in_db),
-    _update_metrics_stmt(-1),
-    _insert_metrics_stmt(-1),
-    _update_index_data_stmt(-1),
     _mysql(db_cfg) {
   // Prepare queries.
   _prepare();
@@ -559,14 +556,13 @@ unsigned int stream::_find_index_id(
         << service_desc << ", special: " << special << ")";
 
       // Update index_data table.
-      mysql_bind bind(_mysql, _update_index_data_stmt);
-      bind.set_value_as_str(0, host_name.toStdString());
-      bind.set_value_as_str(1, service_desc.toStdString());
-      bind.set_value_as_str(2, special ? "1" : "0");
-      bind.set_value_as_i32(3, host_id);
-      bind.set_value_as_i32(4, service_id);
+      _update_index_data_stmt.bind_value_as_str(0, host_name.toStdString());
+      _update_index_data_stmt.bind_value_as_str(1, service_desc.toStdString());
+      _update_index_data_stmt.bind_value_as_str(2, special ? "1" : "0");
+      _update_index_data_stmt.bind_value_as_i32(3, host_id);
+      _update_index_data_stmt.bind_value_as_i32(4, service_id);
 
-      if (_mysql.run_statement(_update_index_data_stmt, bind, "UPDATE index_data", true))
+      if (_mysql.run_statement(_update_index_data_stmt, "UPDATE index_data", true))
         _set_ack_events();
 
       // Update cache entry.
@@ -716,18 +712,17 @@ unsigned int stream::_find_metric_id(
         << warn_low << ":" << warn << ", critical: " << crit_low << ":"
         << crit << ", min: " << min << ", max: " << max << ")";
       // Update metrics table.
-      mysql_bind bind(_mysql, _update_metrics_stmt);
-      bind.set_value_as_str(0, unit_name.toStdString());
-      bind.set_value_as_f32(1, warn);
-      bind.set_value_as_f32(2, warn_low);
-      bind.set_value_as_tiny(3, warn_mode);
-      bind.set_value_as_f32(4, crit);
-      bind.set_value_as_f32(5, crit_low);
-      bind.set_value_as_tiny(6, crit_mode);
-      bind.set_value_as_f32(7, min);
-      bind.set_value_as_f32(8, max);
-      bind.set_value_as_f32(9, value);
-      bind.set_value_as_i32(10, it->second.metric_id);
+      _update_metrics_stmt.bind_value_as_str(0, unit_name.toStdString());
+      _update_metrics_stmt.bind_value_as_f32(1, warn);
+      _update_metrics_stmt.bind_value_as_f32(2, warn_low);
+      _update_metrics_stmt.bind_value_as_tiny(3, warn_mode);
+      _update_metrics_stmt.bind_value_as_f32(4, crit);
+      _update_metrics_stmt.bind_value_as_f32(5, crit_low);
+      _update_metrics_stmt.bind_value_as_tiny(6, crit_mode);
+      _update_metrics_stmt.bind_value_as_f32(7, min);
+      _update_metrics_stmt.bind_value_as_f32(8, max);
+      _update_metrics_stmt.bind_value_as_f32(9, value);
+      _update_metrics_stmt.bind_value_as_i32(10, it->second.metric_id);
 
       logging::info(logging::medium) << "FIXME DBR: UPDATE metrics "
         << "SET unit_name='" << unit_name
@@ -743,7 +738,7 @@ unsigned int stream::_find_metric_id(
         << " WHERE metric_id=" << it->second.metric_id;
 
       // Only use the thread_id 0
-      if (_mysql.run_statement(_update_metrics_stmt, bind, "UPDATE metrics", true))
+      if (_mysql.run_statement(_update_metrics_stmt, "UPDATE metrics", true))
         _set_ack_events();
 
       // Fill cache.
@@ -778,27 +773,26 @@ unsigned int stream::_find_metric_id(
     // Build query.
     if (*type == perfdata::automatic)
       *type = perfdata::gauge;
-    mysql_bind bind(_mysql, _insert_metrics_stmt);
-    bind.set_value_as_i32(0, index_id);
-    bind.set_value_as_str(1, metric_name.toStdString());
-    bind.set_value_as_str(2, unit_name.toStdString());
-    bind.set_value_as_f32(3, warn);
-    bind.set_value_as_f32(4, warn_low);
-    bind.set_value_as_tiny(5, warn_mode);
-    bind.set_value_as_f32(6, crit);
-    bind.set_value_as_f32(7, crit_low);
-    bind.set_value_as_tiny(8, crit_mode);
-    bind.set_value_as_f32(9, min);
-    bind.set_value_as_f32(10, max);
-    bind.set_value_as_f32(11, value);
+    _insert_metrics_stmt.bind_value_as_i32(0, index_id);
+    _insert_metrics_stmt.bind_value_as_str(1, metric_name.toStdString());
+    _insert_metrics_stmt.bind_value_as_str(2, unit_name.toStdString());
+    _insert_metrics_stmt.bind_value_as_f32(3, warn);
+    _insert_metrics_stmt.bind_value_as_f32(4, warn_low);
+    _insert_metrics_stmt.bind_value_as_tiny(5, warn_mode);
+    _insert_metrics_stmt.bind_value_as_f32(6, crit);
+    _insert_metrics_stmt.bind_value_as_f32(7, crit_low);
+    _insert_metrics_stmt.bind_value_as_tiny(8, crit_mode);
+    _insert_metrics_stmt.bind_value_as_f32(9, min);
+    _insert_metrics_stmt.bind_value_as_f32(10, max);
+    _insert_metrics_stmt.bind_value_as_f32(11, value);
     char t[2];
     t[0] = '0' + *type + (db_v2 ? 1 : 0);
     t[1] = 0;
-    bind.set_value_as_str(12, t);
+    _insert_metrics_stmt.bind_value_as_str(12, t);
 
     // Execute query.
     try {
-      int thread_id(_mysql.run_statement_sync(_insert_metrics_stmt, bind, "INSERT metrics"));
+      int thread_id(_mysql.run_statement_sync(_insert_metrics_stmt, "INSERT metrics"));
       retval = _mysql.get_last_insert_id(thread_id);
     }
     catch (std::exception const& e) {

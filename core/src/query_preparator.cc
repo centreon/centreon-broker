@@ -77,8 +77,7 @@ query_preparator& query_preparator::operator=(
  *
  *  @param[out] q  Database query, prepared and ready to run.
  */
-int query_preparator::prepare_insert(mysql& ms) {
-  int retval;
+mysql_stmt query_preparator::prepare_insert(mysql& ms) {
   std::map<std::string, int> bind_mapping;
   // Find event info.
   io::event_info const*
@@ -131,10 +130,11 @@ int query_preparator::prepare_insert(mysql& ms) {
     bind_mapping[key] = bind_mapping.size();
     query.append("?,");
   }
-  query.resize(query.size() - 2);
+  query.resize(query.size() - 1);
   query.append(")");
 
   // Prepare statement.
+  mysql_stmt retval;
   try {
     retval = ms.prepare_query(query, bind_mapping);
   }
@@ -152,8 +152,8 @@ int query_preparator::prepare_insert(mysql& ms) {
  *
  *  @param[out] q  Database query, prepared and ready to run.
  */
-int query_preparator::prepare_update(mysql& ms) {
-  int retval;
+mysql_stmt query_preparator::prepare_update(mysql& ms) {
+  std::map<std::string, int> bind_mapping;
   // Find event info.
   io::event_info const*
     info(io::events::instance().get_event_info(_event_id));
@@ -193,7 +193,7 @@ int query_preparator::prepare_update(mysql& ms) {
       key = std::string(":");
       key.append(entry_name);
       query.append("=?,");
-      _bind_mapping[key] = _bind_mapping.size();
+      bind_mapping[key] = bind_mapping.size();
     }
     // Part of ID field.
     else {
@@ -210,7 +210,7 @@ int query_preparator::prepare_update(mysql& ms) {
       where.append("2 IS NULL)) AND ");
     }
   }
-  query.resize(query.size() - 2);
+  query.resize(query.size() - 1);
   query.append(where, 0, where.size() - 5);
 
   //FIXME DBR: idem here
@@ -226,6 +226,7 @@ int query_preparator::prepare_update(mysql& ms) {
   //q.set_doubled(doubled);
 
   // Prepare statement.
+  mysql_stmt retval;
   try {
     retval = ms.prepare_query(query);
   }
@@ -243,8 +244,7 @@ int query_preparator::prepare_update(mysql& ms) {
  *
  *  @param[out] q  Database query, prepared and ready to run.
  */
-int query_preparator::prepare_delete(mysql& ms) {
-  int retval;
+mysql_stmt query_preparator::prepare_delete(mysql& ms) {
   // Find event info.
   io::event_info const*
     info(io::events::instance().get_event_info(_event_id));
@@ -293,6 +293,7 @@ int query_preparator::prepare_delete(mysql& ms) {
   //q.set_doubled(doubled);
 
   // Prepare statement.
+  mysql_stmt retval;
   try {
     retval = ms.prepare_query(query);
   }

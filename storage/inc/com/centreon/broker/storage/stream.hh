@@ -139,10 +139,9 @@ namespace          storage {
     std::string    _status;
     mutable QMutex _statusm;
     bool           _store_in_db;
-    //database       _db;
-    int            _update_metrics_stmt;
-    int            _insert_metrics_stmt;
-    int            _update_index_data_stmt;
+    mysql_stmt     _update_metrics_stmt;
+    mysql_stmt     _insert_metrics_stmt;
+    mysql_stmt     _update_index_data_stmt;
     mysql          _mysql;
   };
 }

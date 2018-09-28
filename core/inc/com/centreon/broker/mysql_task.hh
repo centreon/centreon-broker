@@ -109,21 +109,21 @@ class                    mysql_task_finish : public mysql_task {
 
 class                    mysql_task_prepare : public mysql_task {
  public:
-                         mysql_task_prepare(std::string const& q,
-                                        std::map<std::string, int> bind_mapping)
+                         mysql_task_prepare(
+                           unsigned int id,
+                           std::string const& q)
                           : mysql_task(mysql_task::PREPARE),
-                            query(q),
-                            bind_mapping(bind_mapping) {}
+                            id(id),
+                            query(q) {}
+  unsigned int           id;
   std::string            query;
-  std::map<std::string, int>
-                         bind_mapping;
 };
 
 class                    mysql_task_statement : public mysql_task {
  public:
                          mysql_task_statement(
                            int statement_id,
-                           mysql_bind const& bind,
+                           std::auto_ptr<mysql_bind> bind,
                            mysql_callback fn,
                            void* data,
                            std::string const& error_msg,
@@ -136,7 +136,8 @@ class                    mysql_task_statement : public mysql_task {
                             error_msg(error_msg),
                             fatal(fatal) {}
   int                    statement_id;
-  mysql_bind             bind;
+  std::auto_ptr<mysql_bind>
+                         bind;
   mysql_callback         fn;
   void*                  data;
   std::string            error_msg;
@@ -147,14 +148,15 @@ class                    mysql_task_statement_sync : public mysql_task {
  public:
                          mysql_task_statement_sync(
                            int statement_id,
-                           mysql_bind const& bind,
+                           std::auto_ptr<mysql_bind> bind,
                            std::string const& error_msg)
                           : mysql_task(mysql_task::STATEMENT_SYNC),
                             statement_id(statement_id),
                             bind(bind),
                             error_msg(error_msg) {}
   int                    statement_id;
-  mysql_bind             bind;
+  std::auto_ptr<mysql_bind>
+                         bind;
   std::string            error_msg;
 };
 

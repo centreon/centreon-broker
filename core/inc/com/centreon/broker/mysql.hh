@@ -36,8 +36,8 @@ class                 mysql {
   };
                       mysql(database_config const& db_cfg);
                       ~mysql();
-  int                 prepare_query(std::string const& query,
-                                    mysql_stmt_mapping const& bind_mapping = mysql_stmt_mapping());
+  mysql_stmt          prepare_query(std::string const& query,
+                                    mysql_bind_mapping const& bind_mapping = mysql_bind_mapping());
   void                commit();
   bool                run_query(
                         std::string const& query,
@@ -49,12 +49,12 @@ class                 mysql {
                         std::string const& error_msg = "",
                         int thread = -1);
   bool                run_statement(
-                        int statement_id, mysql_bind const& bind,
+                        mysql_stmt& stmt,
                         std::string const& error_msg = "", bool fatal = false,
                         mysql_callback fn = 0, void* data = 0,
                         int thread = -1);
   int                 run_statement_sync(
-                        int statement_id, mysql_bind const& bind,
+                        mysql_stmt& stmt,
                         std::string const& error_msg = "", int thread = -1);
   mysql_result        get_result(int thread_id);
   int                 get_last_insert_id(int thread_id);
@@ -62,8 +62,6 @@ class                 mysql {
   bool                finish();
   version             schema_version() const;
   int                 connections_count() const;
-  mysql_stmt_mapping  get_stmt_mapping(int stmt_id) const;
-  int                 get_stmt_size() const;
 
  private:
   bool                _commit_if_needed();

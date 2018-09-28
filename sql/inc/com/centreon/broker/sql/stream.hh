@@ -61,7 +61,7 @@ namespace          sql {
     void           _clean_tables(unsigned int instance_id);
     bool           _is_valid_poller(unsigned int poller_id);
     template <typename T>
-    int            _prepare_select(
+    mysql_stmt     _prepare_select(
                      std::string const& table_name);
     void           _process_acknowledgement(misc::shared_ptr<io::data> const& e);
     void           _process_comment(misc::shared_ptr<io::data> const& e);
@@ -99,8 +99,8 @@ namespace          sql {
     void           _process_responsive_instance(misc::shared_ptr<io::data> const& e);
     template       <typename T>
     void           _update_on_none_insert(
-                     int ins_stmt_id,
-                     int up_stmt_id,
+                     mysql_stmt& ins_stmt,
+                     mysql_stmt& up_stmt,
                      T& t,
                      int thread_id = -1);
     void           _update_timestamp(unsigned int instance_id);
@@ -111,58 +111,58 @@ namespace          sql {
     static void (stream::* const _correlation_processing_table[])(misc::shared_ptr<io::data> const&);
     static void (stream::* const _neb_processing_table[])(misc::shared_ptr<io::data> const&);
     mysql          _mysql;
-    int            _acknowledgement_insert;
-    int            _acknowledgement_update;
-    int            _comment_insert;
-    int            _comment_update;
-    int            _custom_variable_insert;
-    int            _custom_variable_update;
-    int            _custom_variable_delete;
-    int            _custom_variable_status_update;
-    int            _downtime_insert;
-    int            _downtime_update;
-    int            _empty_host_groups_delete;
-    int            _empty_service_groups_delete;
-    int            _event_handler_insert;
-    int            _event_handler_update;
-    int            _flapping_status_insert;
-    int            _flapping_status_update;
-    int            _host_insert;
-    int            _host_update;
-    int            _host_check_update;
-    int            _host_dependency_insert;
-    int            _host_dependency_update;
-    int            _host_group_insert;
-    int            _host_group_update;
-    int            _host_group_member_insert;
-    int            _host_group_member_delete;
-    int            _host_parent_insert;
-    int            _host_parent_select;
-    int            _host_parent_delete;
-    int            _host_state_insert;
-    int            _host_state_update;
-    int            _host_status_update;
-    int            _instance_insert;
-    int            _instance_update;
-    int            _instance_status_update;
-    int            _issue_insert;
-    int            _issue_update;
-    int            _issue_parent_insert;
-    int            _issue_parent_update;
-    int            _log_insert;
-    int            _module_insert;
-    int            _service_insert;
-    int            _service_update;
-    int            _service_check_update;
-    int            _service_dependency_insert;
-    int            _service_dependency_update;
-    int            _service_group_insert;
-    int            _service_group_update;
-    int            _service_group_member_insert;
-    int            _service_group_member_delete;
-    int            _service_state_insert;
-    int            _service_state_update;
-    int            _service_status_update;
+    mysql_stmt  _acknowledgement_insert;
+    mysql_stmt  _acknowledgement_update;
+    mysql_stmt  _comment_insert;
+    mysql_stmt  _comment_update;
+    mysql_stmt  _custom_variable_insert;
+    mysql_stmt  _custom_variable_update;
+    mysql_stmt  _custom_variable_delete;
+    mysql_stmt  _custom_variable_status_update;
+    mysql_stmt  _downtime_insert;
+    mysql_stmt  _downtime_update;
+    mysql_stmt  _empty_host_groups_delete;
+    mysql_stmt  _empty_service_groups_delete;
+    mysql_stmt  _event_handler_insert;
+    mysql_stmt  _event_handler_update;
+    mysql_stmt  _flapping_status_insert;
+    mysql_stmt  _flapping_status_update;
+    mysql_stmt  _host_insert;
+    mysql_stmt  _host_update;
+    mysql_stmt  _host_check_update;
+    mysql_stmt  _host_dependency_insert;
+    mysql_stmt  _host_dependency_update;
+    mysql_stmt  _host_group_insert;
+    mysql_stmt  _host_group_update;
+    mysql_stmt  _host_group_member_insert;
+    mysql_stmt  _host_group_member_delete;
+    mysql_stmt  _host_parent_insert;
+    mysql_stmt  _host_parent_select;
+    mysql_stmt  _host_parent_delete;
+    mysql_stmt  _host_state_insert;
+    mysql_stmt  _host_state_update;
+    mysql_stmt  _host_status_update;
+    mysql_stmt  _instance_insert;
+    mysql_stmt  _instance_update;
+    mysql_stmt  _instance_status_update;
+    mysql_stmt  _issue_insert;
+    mysql_stmt  _issue_update;
+    mysql_stmt  _issue_parent_insert;
+    mysql_stmt  _issue_parent_update;
+    mysql_stmt  _log_insert;
+    mysql_stmt  _module_insert;
+    mysql_stmt  _service_insert;
+    mysql_stmt  _service_update;
+    mysql_stmt  _service_check_update;
+    mysql_stmt  _service_dependency_insert;
+    mysql_stmt  _service_dependency_update;
+    mysql_stmt  _service_group_insert;
+    mysql_stmt  _service_group_update;
+    mysql_stmt  _service_group_member_insert;
+    mysql_stmt  _service_group_member_delete;
+    mysql_stmt  _service_state_insert;
+    mysql_stmt  _service_state_update;
+    mysql_stmt  _service_status_update;
     std::set<unsigned int>      _cache_deleted_instance_id;
     cleanup                     _cleanup_thread;
     int                         _ack_events;

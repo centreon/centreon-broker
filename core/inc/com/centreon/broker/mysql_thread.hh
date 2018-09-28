@@ -21,6 +21,7 @@
 
 #include <QThread>
 #include <QWaitCondition>
+#include "com/centreon/broker/misc/unordered_hash.hh"
 #include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/mysql_bind.hh"
 #include "com/centreon/broker/mysql_error.hh"
@@ -45,8 +46,7 @@ class                    mysql_thread : public QThread {
                          mysql_thread(database_config const& db_cfg);
                          ~mysql_thread();
 
-  void                   prepare_query(std::string const& query,
-                           mysql_stmt_mapping const& bind_mapping);
+  void                   prepare_query(int id, std::string const& query);
   void                   commit(
                            QSemaphore& sem,
                            QAtomicInt& count);
@@ -58,18 +58,18 @@ class                    mysql_thread : public QThread {
                            std::string const& query,
                            std::string const& error_msg);
   void                   run_statement(
-                           int statement_id, mysql_bind const& bind,
+                           int statement_id, std::auto_ptr<mysql_bind> bind,
                            std::string const& error_msg, bool fatal,
                            mysql_callback fn, void* data);
   void                   run_statement_sync(
-                           int statement_id, mysql_bind const& bind,
+                           int statement_id, std::auto_ptr<mysql_bind> bind,
                            std::string const& error_msg);
   void                   finish();
   mysql_result           get_result();
   mysql_error            get_error();
   int                    get_last_insert_id();
   int                    get_affected_rows();
-  mysql_stmt_mapping     get_stmt_mapping(int stmt_id) const;
+  mysql_bind_mapping     get_stmt_mapping(int stmt_id) const;
   int                    get_stmt_size() const;
 
  private:
@@ -100,7 +100,7 @@ class                    mysql_thread : public QThread {
   bool                   _finished;
   std::list<misc::shared_ptr<mysql_task> >
                          _tasks_list;
-  std::vector<mysql_stmt>
+  umap<unsigned int, MYSQL_STMT*>
                          _stmt;
 
   // Mutex and condition working on _result and _error_msg.

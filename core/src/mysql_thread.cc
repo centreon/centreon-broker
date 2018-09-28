@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 #include <iostream>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql_stmt.hh"
@@ -90,38 +91,50 @@ void mysql_thread::_commit(mysql_task_commit* task) {
 }
 
 void mysql_thread::_prepare(mysql_task_prepare* task) {
-  try {
-    mysql_stmt stmt(_conn, task->query, task->bind_mapping);
-    _stmt.push_back(stmt);
-  }
-  catch (std::exception const& e) {
-    logging::error(logging::medium)
-      << "mysql: Error while preparing statement "
-      << task->query
-      << ": " << e.what();
+  MYSQL_STMT* stmt(mysql_stmt_init(_conn));
+  if (!stmt)
+    _error = mysql_error("statement initialization failed: insuffisant memory", true);
+  else {
+    if (mysql_stmt_prepare(stmt, task->query.c_str(), task->query.size())) {
+      std::ostringstream oss;
+      oss << "statement preparation failed ("
+          << mysql_stmt_error(stmt) << ")";
+      _error = mysql_error(oss.str().c_str(), true);
+    }
+    else
+      _stmt[task->id] = stmt;
   }
 }
 
 void mysql_thread::_statement(mysql_task_statement* task) {
   std::cout << "##### thread::_statement..." << std::endl;
-  if (_stmt[task->statement_id].bind(task->bind)) {
+  MYSQL_STMT* stmt(_stmt[task->statement_id]);
+  if (!stmt) {
+    if (!_error.is_active())
+      _error = mysql_error("statement not prepared", true);
+    return ;
+  }
+  if (mysql_stmt_bind_param(_stmt[task->statement_id], const_cast<MYSQL_BIND*>(task->bind->get_bind()))) {
+    std::cout << "ERROR in BINDING: " << mysql_stmt_error(_stmt[task->statement_id]) << std::endl;
     if (task->fatal && !_error.is_active()) {
-      _error = mysql_error(_stmt[task->statement_id].get_error(), task->fatal);
+      _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), task->fatal);
     }
     else {
       logging::error(logging::medium)
         << "mysql: Error while binding values in statement: "
-        << _stmt[task->statement_id].get_error();
+        << mysql_stmt_error(_stmt[task->statement_id]);
     }
   }
-  else if (_stmt[task->statement_id].execute()) {
+  else if (mysql_stmt_execute(_stmt[task->statement_id])) {
     if (task->fatal && !_error.is_active()) {
-      _error = mysql_error(_stmt[task->statement_id].get_error(), task->fatal);
+      std::cout << "FATAL ERROR: " << mysql_stmt_error(_stmt[task->statement_id]) << std::endl;
+      _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), task->fatal);
     }
     else {
+      std::cout << "ERROR in STATEMENT: " << mysql_stmt_error(_stmt[task->statement_id]) << std::endl;
       logging::error(logging::medium)
         << "mysql: Error while sending prepared query: "
-        << _stmt[task->statement_id].get_error()
+        << mysql_stmt_error(_stmt[task->statement_id])
         << " (" << task->error_msg << ")";
     }
   }
@@ -129,12 +142,18 @@ void mysql_thread::_statement(mysql_task_statement* task) {
 
 void mysql_thread::_statement_sync(mysql_task_statement_sync* task) {
   QMutexLocker locker(&_result_mutex);
-  if (_stmt[task->statement_id].bind(task->bind))
-    _error = mysql_error(_stmt[task->statement_id].get_error(), true);
-  else if (_stmt[task->statement_id].execute())
-    _error = mysql_error(_stmt[task->statement_id].get_error(), true);
-  else
+  if (mysql_stmt_bind_param(_stmt[task->statement_id], const_cast<MYSQL_BIND*>(task->bind->get_bind()))) {
+    _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), true);
+    std::cout << "ERROR IN BINDING..." << std::endl;
+  }
+  else if (mysql_stmt_execute(_stmt[task->statement_id])) {
+    _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), true);
+    std::cout << "ERROR IN EXECUTION..." << std::endl;
+  }
+  else {
+    std::cout << "GET THE RESULT..." << std::endl;
     _result = mysql_store_result(_conn);
+  }
 
   _result_condition.wakeAll();
 }
@@ -269,6 +288,13 @@ mysql_thread::mysql_thread(database_config const& db_cfg)
 }
 
 mysql_thread::~mysql_thread() {
+  for (umap<unsigned int, MYSQL_STMT*>::iterator
+         it(_stmt.begin()),
+         end(_stmt.end());
+       it != end;
+       ++it)
+    mysql_stmt_close(it->second);
+
   mysql_close(_conn);
   mysql_thread_end();
 }
@@ -333,14 +359,14 @@ void mysql_thread::commit(QSemaphore& sem, QAtomicInt& count) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_commit(sem, count)));
 }
 
-void mysql_thread::run_statement(int statement_id, mysql_bind const& bind,
-       std::string const& error_msg, bool fatal,
-       mysql_callback fn, void* data) {
+void mysql_thread::run_statement(int statement_id, std::auto_ptr<mysql_bind> bind,
+                     std::string const& error_msg, bool fatal,
+                     mysql_callback fn, void* data) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_statement(statement_id, bind, fn, data, error_msg, fatal)));
 }
 
-void mysql_thread::run_statement_sync(int statement_id, mysql_bind const& bind,
-       std::string const& error_msg) {
+void mysql_thread::run_statement_sync(int statement_id, std::auto_ptr<mysql_bind> bind,
+                     std::string const& error_msg) {
   QMutexLocker locker(&_result_mutex);
   _push(misc::shared_ptr<mysql_task>(new mysql_task_statement_sync(statement_id, bind, error_msg)));
   _result_condition.wait(locker.mutex());
@@ -354,10 +380,9 @@ void mysql_thread::run_statement_sync(int statement_id, mysql_bind const& bind,
   }
 }
 
-void mysql_thread::prepare_query(std::string const& query,
-                               mysql_stmt_mapping const& bind_mapping) {
+void mysql_thread::prepare_query(int stmt_id, std::string const& query) {
   _push(misc::shared_ptr<mysql_task>(
-          new mysql_task_prepare(query, bind_mapping)));
+          new mysql_task_prepare(stmt_id, query)));
 }
 
 /**
@@ -391,12 +416,4 @@ com::centreon::broker::mysql_error mysql_thread::get_error() {
   mysql_error retval(_error);
   _error.clear();
   return retval;
-}
-
-int mysql_thread::get_stmt_size() const {
-  return _stmt.size();
-}
-
-mysql_stmt_mapping mysql_thread::get_stmt_mapping(int stmt_id) const {
-  return _stmt[stmt_id].get_mapping();
 }

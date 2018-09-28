@@ -125,7 +125,7 @@ void stream::_cache_create() {
  *  Remove host groups with no members from host groups table.
  */
 void stream::_clean_empty_host_groups() {
-  if (_empty_host_groups_delete < 0) {
+  if (!_empty_host_groups_delete.prepared()) {
     _empty_host_groups_delete = _mysql.prepare_query(
       "DELETE FROM hostgroups"
       "  WHERE hostgroup_id"
@@ -133,8 +133,7 @@ void stream::_clean_empty_host_groups() {
     //FIXME DBR : error management to add
     //"SQL: could not prepare empty host group deletion query");
   }
-  mysql_bind bind(_mysql, _empty_host_groups_delete);
-  _mysql.run_statement(_empty_host_groups_delete, bind);
+  _mysql.run_statement(_empty_host_groups_delete);
     //FIXME DBR : error management to add
     //"SQL: could not remove empty host groups");
 }
@@ -143,7 +142,7 @@ void stream::_clean_empty_host_groups() {
  *  Remove service groups with no members from service groups table.
  */
 void stream::_clean_empty_service_groups() {
-  if (_empty_service_groups_delete < 0) {
+  if (!_empty_service_groups_delete.prepared()) {
     _empty_service_groups_delete = _mysql.prepare_query(
       "DELETE FROM servicegroups"
       "  WHERE servicegroup_id"
@@ -151,8 +150,7 @@ void stream::_clean_empty_service_groups() {
     // FIXME DBR
     // "SQL: could not prepare empty service group deletion query");
   }
-  mysql_bind bind(_mysql, _empty_service_groups_delete);
-  _mysql.run_statement(_empty_service_groups_delete, bind);
+  _mysql.run_statement(_empty_service_groups_delete);
   //FIXME DBR: error management to ad
   //"SQL: could not remove empty service groups");
 }
@@ -458,9 +456,8 @@ bool stream::_is_valid_poller(unsigned int poller_id) {
  *  @param[in]  table_name  The name of the table.
  */
 template <typename T>
-int stream::_prepare_select(
+mysql_stmt stream::_prepare_select(
                std::string const& table_name) {
-  int retval;
   // Database schema version.
   bool db_v2(_mysql.schema_version() == mysql::v2);
 
@@ -486,7 +483,17 @@ int stream::_prepare_select(
 
   query.resize(query.size() - 5);
 
+  mysql_stmt retval;
   // Prepare statement.
+  try {
+    //FIXME DBR
+    retval = _mysql.prepare_query(query);
+  }
+  catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "SQL: could not prepare selection query from table '"
+           << table_name << "': " << e.what());
+  }
   try {
     //FIXME DBR
     retval = _mysql.prepare_query(query);
@@ -521,8 +528,8 @@ void stream::_process_acknowledgement(
   // Processing.
   if (_is_valid_poller(ack.poller_id)) {
     // Prepare queries.
-    if (!_acknowledgement_insert < 0
-        || _acknowledgement_update < 0) {
+    if (!_acknowledgement_insert.prepared()
+        || !_acknowledgement_update.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("entry_time");
       unique.insert("host_id");
@@ -579,7 +586,7 @@ void stream::_process_comment(misc::shared_ptr<io::data> const& e) {
   neb::comment const& cmmnt(e.ref_as<neb::comment const>());
 
   // Prepare queries.
-  if (_comment_insert < 0 || _comment_update < 0) {
+  if (!_comment_insert.prepared() || !_comment_update.prepared()) {
     query_preparator::event_unique unique;
     unique.insert("host_id");
     unique.insert("service_id");
@@ -621,9 +628,9 @@ void stream::_process_custom_variable(
     cv(*static_cast<neb::custom_variable const*>(e.data()));
 
   // Prepare queries.
-  if (_custom_variable_insert < 0
-      || _custom_variable_update < -1
-      || _custom_variable_delete < -1) {
+  if (!_custom_variable_insert.prepared()
+      || !_custom_variable_update.prepared()
+      || !_custom_variable_delete.prepared()) {
     query_preparator::event_unique unique;
     unique.insert("host_id");
     unique.insert("name");
@@ -658,20 +665,19 @@ void stream::_process_custom_variable(
     logging::info(logging::medium)
       << "SQL: disabling custom variable '" << cv.name << "' of ("
       << cv.host_id << ", " << cv.service_id << ")";
-    mysql_bind bind(_mysql, _custom_variable_delete);
-    bind.set_value_as_i32(":host_id", cv.host_id);
-    bind.set_value_as_i32(":service_id", cv.service_id);
+    _custom_variable_delete.bind_value_as_i32(":host_id", cv.host_id);
+    _custom_variable_delete.bind_value_as_i32(":service_id", cv.service_id);
     //_custom_variable_delete.bind_value(":host_id", cv.host_id);
     //_custom_variable_delete.bind_value(
     //  ":service_id",
     //  (cv.service_id ? QVariant(cv.service_id) : QVariant(QVariant::Int)));
-    bind.set_value_as_str(":name", cv.name.toStdString());
+    _custom_variable_delete.bind_value_as_str(":name", cv.name.toStdString());
     //_custom_variable_delete.bind_value(":name", cv.name);
     //try { _custom_variable_delete.run_statement(); }
     try {
       // FIXME DBR: for now, no thread id forced to run the query
       // Not sure the try/catch to be necessary now.
-      _mysql.run_statement(_custom_variable_delete, bind);
+      _mysql.run_statement(_custom_variable_delete);
     }
     catch (std::exception const& e) {
       throw (exceptions::msg()
@@ -700,7 +706,7 @@ void stream::_process_custom_variable_status(
     << cvs.name << ", update time: " << cvs.update_time << ")";
 
   // Prepare queries.
-  if (_custom_variable_status_update < 0) {
+  if (!_custom_variable_status_update.prepared()) {
     query_preparator::event_unique unique;
     unique.insert("host_id");
     unique.insert("name");
@@ -712,12 +718,10 @@ void stream::_process_custom_variable_status(
   }
 
   // Processing.
-  mysql_bind bind(_mysql, _custom_variable_status_update);
-  bind.set_values(cvs);
-  //_custom_variable_status_update << cvs;
+  _custom_variable_status_update << cvs;
   int thread_id;
   try {
-    thread_id = _mysql.run_statement_sync(_custom_variable_status_update, bind);
+    thread_id = _mysql.run_statement_sync(_custom_variable_status_update);
     //_custom_variable_status_update.run_statement();
   }
   catch (std::exception const& e) {
@@ -756,8 +760,8 @@ void stream::_process_downtime(
   // Check if poller is valid.
   if (_is_valid_poller(d.poller_id)) {
     // Prepare queries.
-    if (_downtime_insert < 0
-        || _downtime_update < 0) {
+    if (!_downtime_insert.prepared()
+        || !_downtime_update.prepared()) {
       {
         query_preparator qp(neb::downtime::static_type());
         _downtime_insert = qp.prepare_insert(_mysql);
@@ -882,8 +886,8 @@ void stream::_process_event_handler(
     << eh.start_time << ")";
 
   // Prepare queries.
-  if (_event_handler_insert < 0
-      || _event_handler_update < 0) {
+  if (!_event_handler_insert.prepared()
+      || !_event_handler_update.prepared()) {
     query_preparator::event_unique unique;
     unique.insert("host_id");
     unique.insert("service_id");
@@ -930,8 +934,8 @@ void stream::_process_flapping_status(
     << fs.event_time << ")";
 
   // Prepare queries.
-  if (_flapping_status_insert < 0
-      || _flapping_status_update < 0) {
+  if (!_flapping_status_insert.prepared()
+      || !_flapping_status_update.prepared()) {
     query_preparator::event_unique unique;
     unique.insert("host_id");
     unique.insert("service_id");
@@ -979,7 +983,7 @@ void stream::_process_host(
   if (_is_valid_poller(h.poller_id)) {
     if (h.host_id) {
       // Prepare queries.
-      if (_host_insert < 0 || _host_update < 0) {
+      if (!_host_insert.prepared() || !_host_update.prepared()) {
         query_preparator::event_unique unique;
         unique.insert("host_id");
         query_preparator qp(neb::host::static_type(), unique);
@@ -1029,7 +1033,7 @@ void stream::_process_host_check(
       << ", command: " << hc.command_line << ")";
 
     // Prepare queries.
-    if (_host_check_update < 0) {
+    if (!_host_check_update.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("host_id");
       query_preparator qp(neb::host_check::static_type(), unique);
@@ -1037,12 +1041,10 @@ void stream::_process_host_check(
     }
 
     // Processing.
-    mysql_bind bind(_mysql, _host_check_update);
-    bind.set_values(hc);
-    //_host_check_update << hc;
+    _host_check_update << hc;
     int thread_id;
     try {
-      thread_id = _mysql.run_statement_sync(_host_check_update, bind);
+      thread_id = _mysql.run_statement_sync(_host_check_update);
     }
     catch (std::exception const& e) {
       throw (exceptions::msg()
@@ -1081,8 +1083,8 @@ void stream::_process_host_dependency(
       << " on " << hd.host_id;
 
     // Prepare queries.
-    if (_host_dependency_insert < 0
-        || _host_dependency_update < 0) {
+    if (!_host_dependency_insert.prepared()
+        || !_host_dependency_update.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("host_id");
       unique.insert("dependent_host_id");
@@ -1146,8 +1148,8 @@ void stream::_process_host_group(
     logging::info(logging::medium) << "SQL: enabling host group "
       << hg.id << " ('" << hg.name << "') on instance "
       << hg.poller_id;
-    if (_host_group_insert < 0
-        || _host_group_update < 0) {
+    if (!_host_group_insert.prepared()
+        || !_host_group_update.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("hostgroup_id");
       query_preparator qp(neb::host_group::static_type(), unique);
@@ -1221,7 +1223,7 @@ void stream::_process_host_group_member(
     // host_id/hostgroup_id should be UNIQUE.
     try {
       try {
-        if (_host_group_member_insert < 0) {
+        if (!_host_group_member_insert.prepared()) {
           query_preparator::event_unique unique;
           unique.insert("hostgroup_id");
           unique.insert("host_id");
@@ -1229,9 +1231,8 @@ void stream::_process_host_group_member(
             qp(neb::host_group_member::static_type(), unique);
           _host_group_member_insert = qp.prepare_insert(_mysql);
         }
-        mysql_bind bind(_mysql, _host_group_member_insert);
-        bind.set_values(hgm);
-        _mysql.run_statement(_host_group_member_insert, bind);
+        _host_group_member_insert << hgm;
+        _mysql.run_statement(_host_group_member_insert);
       }
       // The insertion error could be caused by a missing group.
       catch (std::exception const& e) {
@@ -1241,9 +1242,8 @@ void stream::_process_host_group_member(
         hg->enabled = true;
         hg->poller_id = hgm.poller_id;
         _process_host_group(hg);
-        mysql_bind bind(_mysql, _host_group_member_insert);
-        bind.set_values(hgm);
-        _mysql.run_statement(_host_group_member_insert, bind);
+        _host_group_member_insert << hgm;
+        _mysql.run_statement(_host_group_member_insert);
       }
     }
     catch (std::exception const& e) {
@@ -1262,7 +1262,7 @@ void stream::_process_host_group_member(
       << hgm.poller_id;
 
     try {
-      if (_host_group_member_delete < 0) {
+      if (!_host_group_member_delete.prepared()) {
         query_preparator::event_unique unique;
         unique.insert("hostgroup_id");
         unique.insert("host_id");
@@ -1270,9 +1270,8 @@ void stream::_process_host_group_member(
           qp(neb::host_group_member::static_type(), unique);
         _host_group_member_delete = qp.prepare_delete(_mysql);
       }
-      mysql_bind bind(_mysql, _host_group_member_delete);
-      bind.set_values(hgm);
-      _mysql.run_statement(_host_group_member_delete, bind);
+      _host_group_member_delete << hgm;
+      _mysql.run_statement(_host_group_member_delete);
     }
     catch (std::exception const& e) {
       throw (exceptions::msg()
@@ -1300,8 +1299,8 @@ void stream::_process_host_parent(
       << " is parent of host " << hp.host_id;
 
     // Prepare queries.
-    if (_host_parent_insert < 0
-        || _host_parent_select < 0) {
+    if (!_host_parent_insert.prepared()
+        || !_host_parent_select.prepared()) {
       query_preparator qp(neb::host_parent::static_type());
       _host_parent_insert = qp.prepare_insert(_mysql);
       _host_parent_select = _prepare_select<neb::host_parent>(
@@ -1312,14 +1311,14 @@ void stream::_process_host_parent(
 
     // Insert.
     try {
-      mysql_bind bind(_mysql, _host_parent_select);
-      bind.set_values(hp);
-      int thread_id(_mysql.run_statement_sync(_host_parent_select, bind));
+      _host_parent_select << hp;
+      int thread_id(_mysql.run_statement_sync(_host_parent_select));
       mysql_result res(_mysql.get_result(thread_id));
       if (res.get_rows_count() == 1)
         return ;
 
-      _mysql.run_statement(_host_parent_insert, bind);
+      _host_parent_insert << hp;
+      _mysql.run_statement(_host_parent_insert);
     }
     //FIXME DBR: error management...
     catch (std::exception const& e) {
@@ -1335,7 +1334,7 @@ void stream::_process_host_parent(
       << " is not parent of host " << hp.host_id << " anymore";
 
     // Prepare queries.
-    if (_host_parent_delete < 0) {
+    if (!_host_parent_delete.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("child_id");
       unique.insert("parent_id");
@@ -1344,9 +1343,8 @@ void stream::_process_host_parent(
     }
 
     // Delete.
-    mysql_bind bind(_mysql, _host_parent_delete);
-    bind.set_values(hp);
-    _mysql.run_statement(_host_parent_delete, bind, "SQL");
+    _host_parent_delete << hp;
+    _mysql.run_statement(_host_parent_delete, "SQL");
   }
 }
 
@@ -1366,8 +1364,8 @@ void stream::_process_host_state(
     << s.start_time << ", end time: " << s.end_time << ")";
 
   // Prepare queries.
-  if (_host_state_insert < 0
-      || _host_state_update < 0) {
+  if (!_host_state_insert.prepared()
+      || !_host_state_update.prepared()) {
     bool db_v2(_mysql.schema_version() == mysql::v2);
     //database_query::excluded_fields excluded;
     //excluded.insert("service_id");
@@ -1439,7 +1437,7 @@ void stream::_process_host_status(
       << hs.current_state << ", " << hs.state_type << "))";
 
     // Prepare queries.
-    if (_host_status_update < 0) {
+    if (!_host_status_update.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("host_id");
       query_preparator qp(neb::host_status::static_type(), unique);
@@ -1447,12 +1445,10 @@ void stream::_process_host_status(
     }
 
     // Processing.
-    mysql_bind bind(_mysql, _host_status_update);
-    bind.set_values(hs);
-    //_host_status_update << hs;
+    _host_status_update << hs;
     int thread_id;
     try {
-      thread_id = _mysql.run_statement_sync(_host_status_update, bind);
+      thread_id = _mysql.run_statement_sync(_host_status_update);
     }
     //FIXME DBR: error management...
     catch (std::exception const& e) {
@@ -1496,7 +1492,7 @@ void stream::_process_instance(
   // Processing.
   if (_is_valid_poller(i.poller_id)) {
     // Prepare queries.
-    if (_instance_insert < 0 || _instance_update < 0) {
+    if (!_instance_insert.prepared() || !_instance_update.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("instance_id");
       query_preparator qp(neb::instance::static_type(), unique);
@@ -1549,7 +1545,7 @@ void stream::_process_instance_status(
   // Processing.
   if (_is_valid_poller(is.poller_id)) {
     // Prepare queries.
-    if (_instance_status_update < 0) {
+    if (!_instance_status_update.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("instance_id");
       query_preparator qp(
@@ -1559,12 +1555,11 @@ void stream::_process_instance_status(
     }
 
     // Process object.
-    mysql_bind bind(_mysql, _instance_status_update);
-    bind.set_values(is);
+    _instance_status_update << is;
     int thread_id;
     //_instance_status_update << is;
     try {
-      thread_id = _mysql.run_statement_sync(_instance_status_update, bind);
+      thread_id = _mysql.run_statement_sync(_instance_status_update);
     }
     catch (std::exception const& e) {
       throw (exceptions::msg()
@@ -1597,7 +1592,7 @@ void stream::_process_issue(
     << ")";
 
   // Prepare queries.
-  if (_issue_insert < 0 || _issue_update < 0) {
+  if (!_issue_insert.prepared() || !_issue_update.prepared()) {
     query_preparator::event_unique unique;
     unique.insert("host_id");
     unique.insert("service_id");
@@ -1646,8 +1641,8 @@ void stream::_process_issue_parent(
   bool db_v2(_mysql.schema_version() == mysql::v2);
 
   // Prepare queries.
-  if (_issue_parent_insert < 0
-      || _issue_parent_update < 0) {
+  if (!_issue_parent_insert.prepared()
+      || !_issue_parent_update.prepared()) {
     {
       std::ostringstream ss;
       ss << "INSERT INTO "
@@ -1737,39 +1732,38 @@ void stream::_process_issue_parent(
   }
 
   // End of parenting.
-  mysql_bind bind(_mysql, _issue_parent_update);
   if (ip.end_time != (time_t)-1) {
-    bind.set_value_as_u32(
-      ":end_time", 
+    _issue_parent_update.bind_value_as_u32(
+      ":end_time",
       static_cast<long long>(ip.end_time));
   }
   else
-    bind.set_value_as_null(":end_time");
-  bind.set_value_as_i32(":child_id", child_id);
-  bind.set_value_as_u32(
+    _issue_parent_update.bind_value_as_null(":end_time");
+  _issue_parent_update.bind_value_as_i32(":child_id", child_id);
+  _issue_parent_update.bind_value_as_u32(
     ":start_time",
     static_cast<long long>(ip.start_time));
-  bind.set_value_as_i32(":parent_id", parent_id);
+  _issue_parent_update.bind_value_as_i32(":parent_id", parent_id);
   logging::debug(logging::low)
     << "SQL: updating issue parenting between child " << child_id
     << " and parent " << parent_id << " (start: " << ip.start_time
     << ", end: " << ip.end_time << ")";
-  int thread_id(_mysql.run_statement_sync(_issue_parent_update, bind,
+  int thread_id(_mysql.run_statement_sync(_issue_parent_update,
                          "SQL: issue parent update query failed"));
   if (_mysql.get_affected_rows(thread_id) <= 0) {
     if (ip.end_time != (time_t)-1)
-      bind.set_value_as_u32(
+      _issue_parent_insert.bind_value_as_u32(
         ":end_time",
         static_cast<long long>(ip.end_time));
     else
-      bind.set_value_as_null(
+      _issue_parent_insert.bind_value_as_null(
         ":end_time");
     logging::debug(logging::low)
       << "SQL: inserting issue parenting between child " << child_id
       << " and parent " << parent_id << " (start: " << ip.start_time
       << ", end: " << ip.end_time << ")";
-    //FIXME DBR: the bind is surely unordered
-    _mysql.run_statement(_issue_parent_insert, bind,
+    //FIXME DBR: the bind is surely incomplete
+    _mysql.run_statement(_issue_parent_insert,
                            "SQL: issue parent insert query failed");
   }
 }
@@ -1791,15 +1785,14 @@ void stream::_process_log(
     << le.msg_type << ")";
 
   // Prepare query.
-  if (_log_insert < 0) {
+  if (!_log_insert.prepared()) {
     query_preparator qp(neb::log_entry::static_type());
     _log_insert = qp.prepare_insert(_mysql);
   }
 
   // Run query.
-  mysql_bind bind(_mysql, _log_insert);
-  bind.set_values(le);
-  _mysql.run_statement(_log_insert, bind, "SQL");
+  _log_insert << le;
+  _mysql.run_statement(_log_insert, "SQL");
 }
 
 /**
@@ -1821,17 +1814,16 @@ void stream::_process_module(
   // Processing.
   if (_is_valid_poller(m.poller_id)) {
     // Prepare queries.
-    if (_module_insert < 0) {
+    if (!_module_insert.prepared()) {
       query_preparator qp(neb::module::static_type());
       _module_insert = qp.prepare_insert(_mysql);
     }
 
     // Process object.
     if (m.enabled) {
-      mysql_bind bind(_mysql, _module_insert);
-      bind.set_values(m);
+      _module_insert << m;
       try {
-        _mysql.run_statement(_module_insert, bind);
+        _mysql.run_statement(_module_insert);
       }
       catch (std::exception const& e) {
         throw (exceptions::msg()
@@ -1891,7 +1883,7 @@ void stream::_process_service(
   // Processing.
   if (s.host_id && s.service_id) {
     // Prepare queries.
-    if (_service_insert < 0|| _service_update < 0) {
+    if (!_service_insert.prepared() || !_service_update.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("host_id");
       unique.insert("service_id");
@@ -1945,7 +1937,7 @@ void stream::_process_service_check(
       << sc.command_line << ")";
 
     // Prepare queries.
-    if (_service_check_update < 0) {
+    if (!_service_check_update.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("host_id");
       unique.insert("service_id");
@@ -1954,11 +1946,10 @@ void stream::_process_service_check(
     }
 
     // Processing.
-    mysql_bind bind(_mysql, _service_check_update);
-    bind.set_values(sc);
+    _service_check_update << sc;
     int thread_id;
     try {
-      thread_id = _mysql.run_statement_sync(_service_check_update, bind);
+      thread_id = _mysql.run_statement_sync(_service_check_update);
     }
     catch (std::exception const& e) {
       throw (exceptions::msg()
@@ -1999,8 +1990,8 @@ void stream::_process_service_dependency(
       << ", " << sd.service_id << ")";
 
     // Prepare queries.
-    if (_service_dependency_insert < 0
-        || _service_dependency_update < 0) {
+    if (!_service_dependency_insert.prepared()
+        || !_service_dependency_update.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("dependent_host_id");
       unique.insert("dependent_service_id");
@@ -2068,8 +2059,8 @@ void stream::_process_service_group(
   else if (sg.enabled) {
     logging::info(logging::medium) << "SQL: enabling service group "
       << sg.id << " ('" << sg.name << "') on instance " << sg.poller_id;
-    if (_service_group_insert < 0
-        || _service_group_update < 0) {
+    if (!_service_group_insert.prepared()
+        || !_service_group_update.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("servicegroup_id");
       query_preparator
@@ -2142,7 +2133,7 @@ void stream::_process_service_group_member(
     // host_id/service_id/servicegroup_id combo should be UNIQUE.
     try {
       try {
-        if (_service_group_member_insert < 0) {
+        if (!_service_group_member_insert.prepared()) {
           query_preparator::event_unique unique;
           unique.insert("servicegroup_id");
           unique.insert("host_id");
@@ -2151,9 +2142,8 @@ void stream::_process_service_group_member(
             qp(neb::service_group_member::static_type(), unique);
           _service_group_member_insert = qp.prepare_insert(_mysql);
         }
-        mysql_bind bind(_mysql, _service_group_member_insert);
-        bind.set_values(sgm);
-        _mysql.run_statement(_service_group_member_insert, bind);
+        _service_group_member_insert << sgm;
+        _mysql.run_statement(_service_group_member_insert);
       }
       // The insertion error could be caused by a missing group.
       catch (std::exception const& e) {
@@ -2163,9 +2153,8 @@ void stream::_process_service_group_member(
         sg->enabled = true;
         sg->poller_id = sgm.poller_id;
         _process_service_group(sg);
-        mysql_bind bind(_mysql, _service_group_member_insert);
-        bind.set_values(sgm);
-        _mysql.run_statement(_service_group_member_insert, bind);
+        _service_group_member_insert << sgm;
+        _mysql.run_statement(_service_group_member_insert);
       }
     }
     catch (std::exception const& e) {
@@ -2185,7 +2174,7 @@ void stream::_process_service_group_member(
       << " on instance " << sgm.poller_id;
 
     try {
-      if (_service_group_member_delete < 0) {
+      if (!_service_group_member_delete.prepared()) {
         query_preparator::event_unique unique;
         unique.insert("servicegroup_id");
         unique.insert("host_id");
@@ -2194,9 +2183,8 @@ void stream::_process_service_group_member(
           qp(neb::service_group_member::static_type(), unique);
         _service_group_member_delete = qp.prepare_delete(_mysql);
       }
-      mysql_bind bind(_mysql, _service_group_member_delete);
-      bind.set_values(sgm);
-      _mysql.run_statement(_service_group_member_delete, bind);
+      _service_group_member_delete << sgm;
+      _mysql.run_statement(_service_group_member_delete);
     }
     catch (std::exception const& e) {
       throw (exceptions::msg()
@@ -2227,8 +2215,8 @@ void stream::_process_service_state(
   // Processing.
   if (_with_state_events) {
     // Prepare queries.
-    if (_service_state_insert < 0
-        || _service_state_update < 0) {
+    if (!_service_state_insert.prepared()
+        || !_service_state_update.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("host_id");
       unique.insert("service_id");
@@ -2306,7 +2294,7 @@ void stream::_process_service_status(
       << ss.current_state << ", " << ss.state_type << "))";
 
     // Prepare queries.
-    if (_service_status_update < 0) {
+    if (!_service_status_update.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("host_id");
       unique.insert("service_id");
@@ -2317,11 +2305,10 @@ void stream::_process_service_status(
     }
 
     // Processing.
-    mysql_bind bind(_mysql, _service_status_update);
-    bind.set_values(ss);
+    _service_status_update << ss;
     int thread_id;
     try {
-      thread_id = _mysql.run_statement_sync(_service_status_update, bind);
+      thread_id = _mysql.run_statement_sync(_service_status_update);
     }
     catch (std::exception const& e) {
       throw (exceptions::msg()
@@ -2350,21 +2337,21 @@ void stream::_process_responsive_instance(
 
 template <typename T>
 void stream::_update_on_none_insert(
-               int ins_stmt_id,
-               int up_stmt_id,
+               mysql_stmt& ins_stmt,
+               mysql_stmt& up_stmt,
                T& t,
                int thread_id) {
   // Try update.
-  mysql_bind bind(_mysql, ins_stmt_id);
-  bind.set_values(t);
-  int th_id(_mysql.run_statement_sync(ins_stmt_id, bind, "", thread_id));
+  ins_stmt << t;
+  int th_id(_mysql.run_statement_sync(ins_stmt, "", thread_id));
   //up << t;
   //up.run_statement();
 
   // Try insertion.
-  // FIXME DBR: the binding should not work correctly because built for ins_stmt_id
-  if (_mysql.get_affected_rows(th_id) != 1)
-    _mysql.run_statement_sync(up_stmt_id, bind, "", th_id);
+  if (_mysql.get_affected_rows(th_id) != 1) {
+    up_stmt << t;
+    _mysql.run_statement_sync(up_stmt, "", th_id);
+  }
 }
 
 /**
@@ -2527,58 +2514,6 @@ stream::stream(
           unsigned int instance_timeout,
           bool with_state_events)
   : _mysql(dbcfg),
-    _acknowledgement_insert(-1),
-    _acknowledgement_update(-1),
-    _comment_insert(-1),
-    _comment_update(-1),
-    _custom_variable_insert(-1),
-    _custom_variable_update(-1),
-    _custom_variable_delete(-1),
-    _custom_variable_status_update(-1),
-    _downtime_insert(-1),
-    _downtime_update(-1),
-    _empty_host_groups_delete(-1),
-    _empty_service_groups_delete(-1),
-    _event_handler_insert(-1),
-    _event_handler_update(-1),
-    _flapping_status_insert(-1),
-    _flapping_status_update(-1),
-    _host_insert(-1),
-    _host_update(-1),
-    _host_check_update(-1),
-    _host_dependency_insert(-1),
-    _host_dependency_update(-1),
-    _host_group_insert(-1),
-    _host_group_update(-1),
-    _host_group_member_insert(-1),
-    _host_group_member_delete(-1),
-    _host_parent_insert(-1),
-    _host_parent_select(-1),
-    _host_parent_delete(-1),
-    _host_state_insert(-1),
-    _host_state_update(-1),
-    _host_status_update(-1),
-    _instance_insert(-1),
-    _instance_update(-1),
-    _instance_status_update(-1),
-    _issue_insert(-1),
-    _issue_update(-1),
-    _issue_parent_insert(-1),
-    _issue_parent_update(-1),
-    _log_insert(-1),
-    _module_insert(-1),
-    _service_insert(-1),
-    _service_update(-1),
-    _service_check_update(-1),
-    _service_dependency_insert(-1),
-    _service_dependency_update(-1),
-    _service_group_insert(-1),
-    _service_group_update(-1),
-    _service_group_member_insert(-1),
-    _service_group_member_delete(-1),
-    _service_state_insert(-1),
-    _service_state_update(-1),
-    _service_status_update(-1),
     _cleanup_thread(
       dbcfg.get_type(),
       dbcfg.get_host(),

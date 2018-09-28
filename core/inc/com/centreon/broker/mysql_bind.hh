@@ -24,7 +24,6 @@
 #  include <vector>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/mysql_stmt.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 
 CCB_BEGIN()
@@ -34,23 +33,14 @@ class                       mysql;
 
 class                       mysql_bind {
  public:
-                            mysql_bind(mysql const& ms, int stmt_id);
+                            mysql_bind();
+                            mysql_bind(int size);
                             mysql_bind(mysql_bind const& other);
                             ~mysql_bind();
   void                      set_size(int size);
-  void                      set_values(io::data const& d);
-  void                      set_value_as_i32(
-                              std::string const& name,
-                              int value);
   void                      set_value_as_i32(
                               int range,
                               int value);
-  void                      set_value_as_u64(
-                              std::string const& name,
-                              unsigned long long value);
-  void                      set_value_as_u32(
-                              std::string const& name,
-                              unsigned int value);
   void                      set_value_as_u32(
                               int range,
                               unsigned int value);
@@ -58,36 +48,22 @@ class                       mysql_bind {
                               int range,
                               unsigned long long value);
   void                      set_value_as_bool(
-                              std::string const& name,
-                              bool value);
-  void                      set_value_as_bool(
                               int range,
                               bool value);
   void                      set_value_as_f64(
-                              std::string const& name,
-                              double value);
-  void                      set_value_as_f64(
                               int range,
                               double value);
-  void                      set_value_as_null(std::string const& name);
   void                      set_value_as_null(int range);
-  void                      set_value_as_tiny(std::string const& name, char value);
   void                      set_value_as_tiny(int range, char value);
   void                      set_value_as_str(
-                              std::string const& name,
-                              std::string const& value);
-  void                      set_value_as_str(
                               int range,
                               std::string const& value);
-  void                      set_value_as_f32(
-                              std::string const& name,
-                              float value);
   void                      set_value_as_f32(int range, float value);
+  int                       get_size() const;
 
   MYSQL_BIND const*         get_bind() const;
  private:
   std::vector<MYSQL_BIND>   _bind;
-  mysql_stmt_mapping        _bind_mapping;
 
   // The buffers contained by _bind
   std::vector<std::string>  _buffer;

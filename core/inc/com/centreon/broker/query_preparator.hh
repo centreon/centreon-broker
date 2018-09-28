@@ -49,17 +49,15 @@ public:
                          query_preparator const& other);
                        ~query_preparator();
   query_preparator& operator=(query_preparator const& other);
-  int                  prepare_insert(mysql& q);
-  int                  prepare_update(mysql& q);
-  int                  prepare_delete(mysql& q);
+  mysql_stmt           prepare_insert(mysql& q);
+  mysql_stmt           prepare_update(mysql& q);
+  mysql_stmt           prepare_delete(mysql& q);
 
 private:
   unsigned int         _event_id;
   excluded_fields
                        _excluded;
   event_unique         _unique;
-  std::map<std::string, int>
-                       _bind_mapping;
 };
 
 CCB_END()

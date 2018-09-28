@@ -19,37 +19,69 @@
 #ifndef CCB_MYSQL_STMT_HH
 #  define CCB_MYSQL_STMT_HH
 
-#include <string>
-#include <map>
-#include <mysql.h>
-#include "com/centreon/broker/misc/shared_ptr.hh"
-#include "com/centreon/broker/namespace.hh"
+#  include <map>
+#  include <memory>
+#  include <string>
+#  include <vector>
+#  include "com/centreon/broker/io/data.hh"
+#  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/mysql_bind.hh"
+#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-// Forward declaration
-class                           mysql_bind;
-
-typedef                         std::map<std::string, int> mysql_stmt_mapping;
+typedef                         std::map<std::string, int> mysql_bind_mapping;
 
 class                           mysql_stmt {
  public:
                                 mysql_stmt();
+                                mysql_stmt(
+                                  std::string const& query,
+                                  mysql_bind_mapping const& bind_mapping = mysql_bind_mapping());
                                 mysql_stmt(mysql_stmt const& other);
                                 ~mysql_stmt();
-                                mysql_stmt(
-                                  MYSQL* conn,
-                                  std::string const& query,
-                                  mysql_stmt_mapping const& mapping = mysql_stmt_mapping());
   mysql_stmt&                   operator=(mysql_stmt const& other);
-  int                           bind(mysql_bind const& bind);
   int                           execute();
   char const*                   get_error();
-  mysql_stmt_mapping            get_mapping() const;
+  mysql_bind_mapping            get_mapping() const;
+  bool                          prepared() const;
+  int                           get_id() const;
+  std::auto_ptr<mysql_bind>     get_bind();
+  void                          operator<<(io::data const& d);
+
+  void                          bind_value_as_i32(int range, int value);
+  void                          bind_value_as_i32(std::string const& key, int value);
+
+  void                          bind_value_as_u32(int range, unsigned int value);
+  void                          bind_value_as_u32(std::string const& key, unsigned int value);
+
+  void                          bind_value_as_u64(int range, unsigned long long value);
+  void                          bind_value_as_u64(std::string const& key, unsigned long long value);
+
+  void                          bind_value_as_f32(int range, float value);
+  void                          bind_value_as_f32(std::string const& key, float value);
+
+  void                          bind_value_as_f64(int range, double value);
+  void                          bind_value_as_f64(std::string const& key, double value);
+
+  void                          bind_value_as_tiny(int range, char value);
+  void                          bind_value_as_tiny(std::string const& key, char value);
+
+  void                          bind_value_as_bool(int range, bool value);
+  void                          bind_value_as_bool(std::string const& key, bool value);
+
+  void                          bind_value_as_str(int range, std::string const& value);
+  void                          bind_value_as_str(std::string const& key, std::string const& value);
+
+  void                          bind_value_as_null(int range);
+  void                          bind_value_as_null(std::string const& key);
 
  private:
-  misc::shared_ptr<MYSQL_STMT>  _stmt;
-  mysql_stmt_mapping            _bind_mapping;
+  int                           _id;
+  std::string                   _query;
+
+  std::auto_ptr<mysql_bind>     _bind;
+  mysql_bind_mapping            _bind_mapping;
 };
 
 CCB_END()
