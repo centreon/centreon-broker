@@ -1,10 +1,11 @@
 FROM centos:latest as base
 MAINTAINER Centreon "support@centreon.com"
 
+RUN yum -y install gcc-c++ cmake make lua-devel qt-devel gnutls-devel rrdtool-devel zlib-devel openssl-devel qt-mysql gdb
+
 RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.1.19/yum/centos7-amd64/rpms/MariaDB-10.1.19-centos7-x86_64-devel.rpm --output /tmp/MariaDB-10.1.19-centos7-x86_64-devel.rpm
 RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.1.19/yum/centos7-amd64/rpms/MariaDB-10.1.19-centos7-x86_64-common.rpm --output /tmp/MariaDB-10.1.19-centos7-x86_64-common.rpm
-RUN rpm -ivh /tmp/MariaDB-10.1.19-centos7-x86_64-*.rpm
-RUN yum -y install gcc-c++ cmake make lua-devel qt-devel gnutls-devel rrdtool-devel zlib-devel openssl-devel
+RUN rpm -ivh --nodeps --force /tmp/MariaDB-10.1.19-centos7-x86_64-*.rpm
 
 FROM base as centreon-broker
 COPY . /usr/src/centreon-broker
@@ -14,12 +15,18 @@ RUN make -j5
 RUN make install
 
 # Broker configuration installation
-COPY ./simu/test/central-broker.xml /etc/central-broker/
+COPY ./simu/test/central-broker.xml /etc/centreon-broker/
 
 # Broker simu/lua scripts installation
 RUN mkdir -p /usr/share/centreon-broker/lua
+RUN mkdir -p /var/log/centreon-broker
+RUN mkdir -p /var/lib/centreon-broker
+RUN mkdir -p /var/lib/centreon/metrics
+RUN mkdir -p /var/lib/centreon/status
+
 COPY ./simu/test/test.lua /usr/share/centreon-broker/lua/
 COPY ./simu/test/output.lua /usr/share/centreon-broker/lua/
 
-RUN systemctl start cbd
-ENTRYPOINT ["/usr/bin/tail", "/var/log/centreon-broker.log"]
+#RUN /usr/sbin/cbd /etc/centreon-broker/central-broker.xml
+
+ENTRYPOINT ["/usr/bin/tail", "-F", "/var/log/centreon-broker/central-broker-master.log"]
