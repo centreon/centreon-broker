@@ -20,10 +20,7 @@
 #  define CCB_MAPPING_ENTRY_HH
 
 #  include "com/centreon/broker/mapping/property.hh"
-#  include "com/centreon/broker/mapping/source.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
