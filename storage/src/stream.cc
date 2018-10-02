@@ -595,9 +595,9 @@ unsigned int stream::_find_index_id(
       oss << "INSERT INTO " << (db_v2 ? "index_data" : "rt_index_data")
           << "  (host_id, host_name, service_id, service_description,"
              "   must_be_rebuild, special)"
-             "  VALUES (" << host_id << ", " << host_name.toStdString() << ", " << service_id
-          << ", " << service_desc.toStdString() << ", " << (db_v2 ? "'0'" : "0")
-          << ", " << special << ")";
+             "  VALUES (" << host_id << ", '" << host_name.toStdString() << "', " << service_id
+          << ", '" << service_desc.toStdString() << "', " << (db_v2 ? "'0'" : "0")
+          << ", '" << special << "')";
       try {
         int thread_id(_mysql.run_query_sync(oss.str()));
         // Let's get the index id
