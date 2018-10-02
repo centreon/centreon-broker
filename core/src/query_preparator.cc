@@ -200,29 +200,21 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
       //possible values to manage.
       where.append("((");
       where.append(entry_name);
-      where.append("=:");
+      where.append("=?) OR (");
+      key = std::string(":");
+      key.append(entry_name);
+      key.append("1");
+      bind_mapping.insert(std::make_pair(key, size++));
       where.append(entry_name);
-      where.append("1) OR (");
-      where.append(entry_name);
-      where.append(" IS NULL AND :");
-      where.append(entry_name);
-      where.append("2 IS NULL)) AND ");
+      where.append(" IS NULL AND ?");
+      where.append(" IS NULL)) AND ");
+      key[key.size() - 1] = '2';
+      bind_mapping.insert(std::make_pair(key, size++));
     }
   }
   query.resize(query.size() - 1);
   query.append(where, 0, where.size() - 5);
 
-  //FIXME DBR: idem here
-  // Get doubled fields.
-  query_preparator::doubled_fields doubled;
-  for (event_unique::const_iterator
-         it = _unique.begin(),
-         end = _unique.end();
-       it != end;
-       ++it)
-    doubled.insert(QString(":") + QString::fromStdString(*it));
-  // FIXME DBR: What to do with that ?
-  //q.set_doubled(doubled);
 
   // Prepare statement.
   mysql_stmt retval;
@@ -270,26 +262,22 @@ mysql_stmt query_preparator::prepare_delete(mysql& ms) {
        ++it) {
     query.append("((");
     query.append(*it);
-    query.append("=:");
+    query.append("=?");
+    std::string key(":");
+    key.append(*it);
+    key.append("1");
+    bind_mapping.insert(std::make_pair(key, size++));
+
+    //query.append(*it);
+    query.append(") OR (");
     query.append(*it);
-    query.append("1) OR (");
-    query.append(*it);
-    query.append(" IS NULL AND :");
-    query.append(*it);
-    query.append("2 IS NULL)) AND ");
+    query.append(" IS NULL AND ?");
+    query.append(" IS NULL)) AND ");
+    key[key.size() - 1] = '2';
+    bind_mapping.insert(std::make_pair(key, size++));
   }
   query.resize(query.size() - 5);
 
-  // Get doubled fields.
-  query_preparator::doubled_fields doubled;
-  for (event_unique::const_iterator
-         it = _unique.begin(),
-         end = _unique.end();
-       it != end;
-       ++it)
-    doubled.insert(QString(":") + QString::fromStdString(*it));
-  // FIXME DBR: What to do with that ?
-  //q.set_doubled(doubled);
 
   // Prepare statement.
   mysql_stmt retval;
