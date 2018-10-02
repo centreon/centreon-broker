@@ -37,7 +37,7 @@ CCB_BEGIN()
 class                  query_preparator {
 public:
   typedef std::set<std::string> excluded_fields;
-  typedef QSet<QString> doubled_fields;
+  typedef std::set<std::string> doubled_fields;
   typedef std::set<std::string> event_unique;
 
                        query_preparator(

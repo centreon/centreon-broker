@@ -91,8 +91,7 @@ mysql_stmt query_preparator::prepare_insert(mysql& ms) {
   bool schema_v2(ms.schema_version() == mysql::v2);
 
   // Build query string.
-  std::string query;
-  query = "INSERT INTO ";
+  std::string query("INSERT INTO ");
   if (schema_v2)
     query.append(info->get_table_v2());
   else
