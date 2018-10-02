@@ -218,37 +218,39 @@ bool luabinding::_parse_event(misc::shared_ptr<io::data>& d) {
       for (mapping::entry const* current_entry(info->get_mapping());
            !current_entry->is_null();
            ++current_entry) {
-        // Skip entries that should not be serialized.
-        switch (current_entry->get_type()) {
-        case mapping::source::BOOL:
-          current_entry->set_bool(*t, map[current_entry->get_name_v2()].toBool());
-          break ;
-        case mapping::source::DOUBLE:
-          current_entry->set_double(*t, map[current_entry->get_name_v2()].toDouble());
-          break ;
-        case mapping::source::INT:
-          current_entry->set_int(*t, map[current_entry->get_name_v2()].toInt());
-          break ;
-        case mapping::source::SHORT:
-          current_entry->set_short(
-                           *t,
-                           static_cast<short>(
-                             map[current_entry->get_name_v2()].toInt()));
-          break ;
-        case mapping::source::STRING:
-          current_entry->set_string(*t, map[current_entry->get_name_v2()].toString());
-          break ;
-        case mapping::source::TIME:
-          current_entry->set_time(*t, map[current_entry->get_name_v2()].toULongLong());
-          break ;
-        case mapping::source::UINT:
-          current_entry->set_uint(*t, map[current_entry->get_name_v2()].toUInt());
-          break ;
-        default:
-          throw (exceptions::msg() << "simu: invalid mapping for "
-                 << "object of type '" << info->get_name() << "': "
-                 << current_entry->get_type()
-                 << " is not a known type ID");
+        if (map.contains(current_entry->get_name_v2())) {
+          // Skip entries that should not be serialized.
+          switch (current_entry->get_type()) {
+          case mapping::source::BOOL:
+            current_entry->set_bool(*t, map[current_entry->get_name_v2()].toBool());
+            break ;
+          case mapping::source::DOUBLE:
+            current_entry->set_double(*t, map[current_entry->get_name_v2()].toDouble());
+            break ;
+          case mapping::source::INT:
+            current_entry->set_int(*t, map[current_entry->get_name_v2()].toInt());
+            break ;
+          case mapping::source::SHORT:
+            current_entry->set_short(
+                             *t,
+                             static_cast<short>(
+                               map[current_entry->get_name_v2()].toInt()));
+            break ;
+          case mapping::source::STRING:
+            current_entry->set_string(*t, map[current_entry->get_name_v2()].toString());
+            break ;
+          case mapping::source::TIME:
+            current_entry->set_time(*t, map[current_entry->get_name_v2()].toULongLong());
+            break ;
+          case mapping::source::UINT:
+            current_entry->set_uint(*t, map[current_entry->get_name_v2()].toUInt());
+            break ;
+          default:
+            throw (exceptions::msg() << "simu: invalid mapping for "
+                   << "object of type '" << info->get_name() << "': "
+                   << current_entry->get_type()
+                   << " is not a known type ID");
+          }
         }
       }
       d = t.release();

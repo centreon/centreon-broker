@@ -215,3 +215,39 @@ TEST_F(SimuGenericTest, ReadReturnValue4) {
   std::cout << "service description: " << svc->service_description.toStdString();
   ASSERT_TRUE(svc->service_description == "Super description");
 }
+
+// When a script read() function returns a table
+// And the table is an event
+// Then no exception is thrown
+// And read() returns true
+TEST_F(SimuGenericTest, ReadReturnCustomVariable) {
+  std::string filename("/tmp/good_read.lua");
+  CreateScript(filename, "function init()\n"
+                         "end\n"
+                         "function read()\n"
+                         "  return {\n"
+                         "    service_id=498,\n"
+                         "    type=65539,\n"
+                         "    update_time=1538146454,\n"
+                         "    modified=false,\n"
+                         "    host_id=31,\n"
+                         "    element=3,\n"
+                         "    name=\"PROCESSNAME\",\n"
+                         "    category=1,\n"
+                         "    value=\"centengine\",\n"
+                         "    default_value=\"centengine\"}\n"
+                         "end\n");
+  QMap<QString, QVariant> conf;
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  std::auto_ptr<luabinding> lb(new luabinding(
+                     filename,
+                     conf));
+  misc::shared_ptr<io::data> d;
+  ASSERT_TRUE(lb->read(d));
+  RemoveFile(filename);
+  neb::custom_variable* cv(static_cast<neb::custom_variable*>(d.data()));
+  ASSERT_TRUE(cv->type() == 65539);
+  ASSERT_EQ(cv->host_id, 31);
+  ASSERT_TRUE(cv->enabled);
+}
