@@ -61,21 +61,6 @@ mysql_stmt& mysql_stmt::operator=(mysql_stmt const& other) {
   return *this;
 }
 
-char const* mysql_stmt::get_error() {
-  return "FIXME DBR";
-  //return mysql_stmt_error(_stmt.data());
-}
-
-int mysql_stmt::execute() {
-  //FIXME DBR
-  return 0;
-  //return mysql_stmt_execute(_stmt.data());
-}
-
-mysql_bind_mapping mysql_stmt::get_mapping() const {
-  return _bind_mapping;
-}
-
 bool mysql_stmt::prepared() const {
   return _id != 0;
 }

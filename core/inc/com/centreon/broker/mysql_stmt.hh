@@ -41,9 +41,6 @@ class                           mysql_stmt {
                                 mysql_stmt(mysql_stmt const& other);
                                 ~mysql_stmt();
   mysql_stmt&                   operator=(mysql_stmt const& other);
-  int                           execute();
-  char const*                   get_error();
-  mysql_bind_mapping            get_mapping() const;
   bool                          prepared() const;
   int                           get_id() const;
   std::auto_ptr<mysql_bind>     get_bind();
