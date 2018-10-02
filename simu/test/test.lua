@@ -17,7 +17,7 @@ end
 function read()
   local line = simu.f:read()
   if line == nil then
-    return false
+    return nil
   end
   local retval = broker.json_decode(line)
   broker_log:info(1, "send event: " .. line)
