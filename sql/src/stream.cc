@@ -2343,12 +2343,19 @@ void stream::_update_on_none_insert(
                int thread_id) {
   // Try update.
   ins_stmt << t;
-  int th_id(_mysql.run_statement_sync(ins_stmt, "", thread_id));
-  //up << t;
-  //up.run_statement();
+  int th_id;
+  int affected_rows(0);
+
+  try {
+    th_id = _mysql.run_statement_sync(ins_stmt, "", thread_id);
+    affected_rows = _mysql.get_affected_rows(th_id);
+  }
+  catch (std::exception const& e) {
+    th_id = thread_id;
+  }
 
   // Try insertion.
-  if (_mysql.get_affected_rows(th_id) != 1) {
+  if (affected_rows != 1) {
     up_stmt << t;
     _mysql.run_statement_sync(up_stmt, "", th_id);
   }
