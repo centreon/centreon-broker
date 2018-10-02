@@ -1888,6 +1888,8 @@ void stream::_process_service(
       unique.insert("host_id");
       unique.insert("service_id");
       query_preparator qp(neb::service::static_type(), unique);
+      logging::debug(logging::medium)
+        << "mysql: PREPARE INSERT ON SERVICES";
       _service_insert = qp.prepare_insert(_mysql);
       _service_update = qp.prepare_update(_mysql);
     }

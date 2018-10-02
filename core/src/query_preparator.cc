@@ -21,6 +21,7 @@
 #include "com/centreon/broker/query_preparator.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 
 using namespace com::centreon::broker;
@@ -114,6 +115,7 @@ mysql_stmt query_preparator::prepare_insert(mysql& ms) {
   query.resize(query.size() - 2);
   query.append(") VALUES(");
   std::string key;
+  int size(0);
   for (int i(0); !entries[i].is_null(); ++i) {
     char const* entry_name;
     if (schema_v2)
@@ -126,12 +128,15 @@ mysql_stmt query_preparator::prepare_insert(mysql& ms) {
       continue ;
     key = std::string(":");
     key.append(entry_name);
-    bind_mapping[key] = bind_mapping.size();
+    bind_mapping.insert(std::make_pair(key, size++));
     query.append("?,");
   }
   query.resize(query.size() - 1);
   query.append(")");
 
+  logging::debug(logging::low)
+    << "mysql: query_preparator: "
+    << query;
   // Prepare statement.
   mysql_stmt retval;
   try {
@@ -176,6 +181,7 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
   where = " WHERE ";
   mapping::entry const* entries(info->get_mapping());
   std::string key;
+  int size(0);
   for (int i(0); !entries[i].is_null(); ++i) {
     char const* entry_name;
     if (schema_v2)
@@ -192,7 +198,7 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
       key = std::string(":");
       key.append(entry_name);
       query.append("=?,");
-      bind_mapping[key] = bind_mapping.size();
+      bind_mapping.insert(std::make_pair(key, size++));
     }
     // Part of ID field.
     else {
@@ -219,7 +225,7 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
   // Prepare statement.
   mysql_stmt retval;
   try {
-    retval = ms.prepare_query(query);
+    retval = ms.prepare_query(query, bind_mapping);
   }
   catch (std::exception const& e) {
     throw (exceptions::msg()
@@ -236,6 +242,7 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
  *  @param[out] q  Database query, prepared and ready to run.
  */
 mysql_stmt query_preparator::prepare_delete(mysql& ms) {
+  std::map<std::string, int> bind_mapping;
   // Find event info.
   io::event_info const*
     info(io::events::instance().get_event_info(_event_id));
@@ -255,6 +262,7 @@ mysql_stmt query_preparator::prepare_delete(mysql& ms) {
   else
     query.append(info->get_table());
   query.append(" WHERE ");
+  int size(0);
   for (event_unique::const_iterator
          it(_unique.begin()),
          end(_unique.end());
@@ -282,7 +290,7 @@ mysql_stmt query_preparator::prepare_delete(mysql& ms) {
   // Prepare statement.
   mysql_stmt retval;
   try {
-    retval = ms.prepare_query(query);
+    retval = ms.prepare_query(query, bind_mapping);
   }
   catch (std::exception const& e) {
     //FIXME DBR

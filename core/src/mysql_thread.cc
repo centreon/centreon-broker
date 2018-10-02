@@ -29,7 +29,13 @@ using namespace com::centreon::broker;
 /******************************************************************************/
 
 void mysql_thread::_run(mysql_task_run* task) {
+  logging::debug(logging::low)
+    << "mysql: run query: "
+    << task->query.c_str();
   if (mysql_query(_conn, task->query.c_str())) {
+    logging::debug(logging::low)
+      << "mysql: run query failed: "
+      << ::mysql_error(_conn);
     std::cout << "run query in error..." << std::endl;
     if (task->fatal) {
       if (!_error.is_active())
@@ -58,9 +64,16 @@ void mysql_thread::_run(mysql_task_run* task) {
  *  @param task         The task to realize, it contains a query.
  */
 void mysql_thread::_run_sync(mysql_task_run_sync* task) {
+  logging::debug(logging::low)
+    << "mysql: run sync query: "
+    << task->query.c_str();
   QMutexLocker locker(&_result_mutex);
-  if (mysql_query(_conn, task->query.c_str()))
+  if (mysql_query(_conn, task->query.c_str())) {
+    logging::debug(logging::low)
+      << "mysql: run sync query failed: "
+      << ::mysql_error(_conn);
     _error = mysql_error(::mysql_error(_conn), true);
+  }
   else {
     _result = mysql_store_result(_conn);
   }
@@ -91,11 +104,17 @@ void mysql_thread::_commit(mysql_task_commit* task) {
 }
 
 void mysql_thread::_prepare(mysql_task_prepare* task) {
+  logging::debug(logging::low)
+    << "mysql: prepare query: "
+    << task->id << " ( " << task->query << " )";
   MYSQL_STMT* stmt(mysql_stmt_init(_conn));
   if (!stmt)
     _error = mysql_error("statement initialization failed: insuffisant memory", true);
   else {
     if (mysql_stmt_prepare(stmt, task->query.c_str(), task->query.size())) {
+      logging::debug(logging::low)
+        << "mysql: prepare failed ("
+        << ::mysql_stmt_error(stmt);
       std::ostringstream oss;
       oss << "statement preparation failed ("
           << mysql_stmt_error(stmt) << ")";
@@ -107,48 +126,69 @@ void mysql_thread::_prepare(mysql_task_prepare* task) {
 }
 
 void mysql_thread::_statement(mysql_task_statement* task) {
-  std::cout << "##### thread::_statement..." << std::endl;
+  logging::debug(logging::low)
+    << "mysql: execute statement: "
+    << task->statement_id;
   MYSQL_STMT* stmt(_stmt[task->statement_id]);
   if (!stmt) {
+    logging::debug(logging::low)
+      << "mysql: no statement to execute";
     if (!_error.is_active())
       _error = mysql_error("statement not prepared", true);
     return ;
   }
-  if (mysql_stmt_bind_param(_stmt[task->statement_id], const_cast<MYSQL_BIND*>(task->bind->get_bind()))) {
-    std::cout << "ERROR in BINDING: " << mysql_stmt_error(_stmt[task->statement_id]) << std::endl;
+  if (mysql_stmt_bind_param(stmt, const_cast<MYSQL_BIND*>(task->bind->get_bind()))) {
+    logging::debug(logging::low)
+      << "mysql: statement binding failed ("
+      << mysql_stmt_error(stmt) << ")";
+    std::cout << "ERROR in BINDING: " << mysql_stmt_error(stmt) << std::endl;
     if (task->fatal && !_error.is_active()) {
-      _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), task->fatal);
+      _error = mysql_error(mysql_stmt_error(stmt), task->fatal);
     }
     else {
       logging::error(logging::medium)
         << "mysql: Error while binding values in statement: "
-        << mysql_stmt_error(_stmt[task->statement_id]);
+        << mysql_stmt_error(stmt);
     }
   }
-  else if (mysql_stmt_execute(_stmt[task->statement_id])) {
+  else if (mysql_stmt_execute(stmt)) {
+    logging::debug(logging::low)
+      << "mysql: statement execution failed ("
+      << mysql_stmt_error(stmt) << ")";
     if (task->fatal && !_error.is_active()) {
-      std::cout << "FATAL ERROR: " << mysql_stmt_error(_stmt[task->statement_id]) << std::endl;
-      _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), task->fatal);
+      std::cout << "FATAL ERROR: " << mysql_stmt_error(stmt) << std::endl;
+      _error = mysql_error(mysql_stmt_error(stmt), task->fatal);
     }
     else {
-      std::cout << "ERROR in STATEMENT: " << mysql_stmt_error(_stmt[task->statement_id]) << std::endl;
+      std::cout << "ERROR in STATEMENT: " << mysql_stmt_error(stmt) << std::endl;
       logging::error(logging::medium)
         << "mysql: Error while sending prepared query: "
-        << mysql_stmt_error(_stmt[task->statement_id])
+        << mysql_stmt_error(stmt)
         << " (" << task->error_msg << ")";
     }
   }
 }
 
 void mysql_thread::_statement_sync(mysql_task_statement_sync* task) {
+  logging::debug(logging::low)
+    << "mysql: execute sync statement: "
+    << task->statement_id;
   QMutexLocker locker(&_result_mutex);
-  if (mysql_stmt_bind_param(_stmt[task->statement_id], const_cast<MYSQL_BIND*>(task->bind->get_bind()))) {
-    _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), true);
+  MYSQL_STMT* stmt(_stmt[task->statement_id]);
+  if (mysql_stmt_bind_param(stmt, const_cast<MYSQL_BIND*>(task->bind->get_bind()))) {
+    logging::debug(logging::low)
+      << "mysql: statement sync binding failed ("
+      << mysql_stmt_error(stmt) << ")";
+    _error = mysql_error(mysql_stmt_error(stmt), true);
     std::cout << "ERROR IN BINDING..." << std::endl;
   }
-  else if (mysql_stmt_execute(_stmt[task->statement_id])) {
-    _error = mysql_error(mysql_stmt_error(_stmt[task->statement_id]), true);
-    std::cout << "ERROR IN EXECUTION..." << std::endl;
+  else if (mysql_stmt_execute(stmt)) {
+    logging::debug(logging::low)
+      << "mysql: statement sync execution failed ("
+      << mysql_stmt_error(stmt) << ")";
+    _error = mysql_error(mysql_stmt_error(stmt), true);
+    std::cout << "ERROR IN EXECUTION... " << mysql_stmt_error(stmt)
+      << std::endl;
   }
   else {
     std::cout << "GET THE RESULT..." << std::endl;
