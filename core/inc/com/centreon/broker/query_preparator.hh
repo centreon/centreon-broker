@@ -51,6 +51,7 @@ public:
   query_preparator& operator=(query_preparator const& other);
   mysql_stmt           prepare_insert(mysql& q);
   mysql_stmt           prepare_update(mysql& q);
+  mysql_stmt           prepare_insert_or_update(mysql& ms);
   mysql_stmt           prepare_delete(mysql& q);
 
 private:

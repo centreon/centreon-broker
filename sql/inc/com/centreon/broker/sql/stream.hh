@@ -115,8 +115,7 @@ namespace          sql {
     mysql_stmt  _acknowledgement_update;
     mysql_stmt  _comment_insert;
     mysql_stmt  _comment_update;
-    mysql_stmt  _custom_variable_insert;
-    mysql_stmt  _custom_variable_update;
+    mysql_stmt  _custom_variable_insupdate;
     mysql_stmt  _custom_variable_delete;
     mysql_stmt  _custom_variable_status_update;
     mysql_stmt  _downtime_insert;
@@ -142,8 +141,7 @@ namespace          sql {
     mysql_stmt  _host_state_insert;
     mysql_stmt  _host_state_update;
     mysql_stmt  _host_status_update;
-    mysql_stmt  _instance_insert;
-    mysql_stmt  _instance_update;
+    mysql_stmt  _instance_insupdate;
     mysql_stmt  _instance_status_update;
     mysql_stmt  _issue_insert;
     mysql_stmt  _issue_update;

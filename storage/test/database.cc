@@ -23,7 +23,7 @@
 #include "com/centreon/broker/query_preparator.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/mysql.hh"
-#include "com/centreon/broker/neb/host.hh"
+#include "com/centreon/broker/neb/custom_variable.hh"
 #include "com/centreon/broker/modules/loader.hh"
 
 using namespace com::centreon::broker;
@@ -470,7 +470,7 @@ TEST_F(DatabaseStorageTest, RepeatPrepareQuery) {
   ms->commit();
 }
 
-TEST_F(DatabaseStorageTest, StatementWithHostBind) {
+TEST_F(DatabaseStorageTest, CustomVarStatement) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");
   database_config db_cfg(
@@ -486,24 +486,21 @@ TEST_F(DatabaseStorageTest, StatementWithHostBind) {
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
   query_preparator::event_unique unique;
   unique.insert("host_id");
-  query_preparator qp(neb::host::static_type(), unique);
-  mysql_stmt host_insert(qp.prepare_insert(*ms));
-  mysql_stmt host_update(qp.prepare_update(*ms));
+  unique.insert("name");
+  unique.insert("service_id");
+  query_preparator qp(neb::custom_variable::static_type(), unique);
+  mysql_stmt cv_insert_or_update(qp.prepare_insert_or_update(*ms));
 
-  neb::host h;
-  h.address = "2.3.5.7";
-  h.alias = "host_alias";
-  h.flap_detection_on_down = true;
-  h.host_name = "host_name";
-  h.host_id = 19;
-  h.poller_id = 1;
-  host_insert << h;
-  try {
-    ms->run_statement_sync(host_insert, "", 0);
-    ASSERT_FALSE("This code should not be executed...");
-  }
-  catch (std::exception const& e) {
-    std::cout << "Error: " << e.what() << std::endl;
-    ASSERT_TRUE(std::string(e.what()) == "could not execute statement 233054649: Cannot add or update a child row: a foreign key constraint fails (`centreon_storage`.`hosts`, CONSTRAINT `hosts_ibfk_1` FOREIGN KEY (`instance_id`) REFERENCES `instances` (`instance_id`) ON DELETE CASCADE)");
-  }
+  neb::custom_variable cv;
+  cv.service_id = 498;
+  cv.update_time = time(NULL);
+  cv.modified = false;
+  cv.host_id = 31;
+  cv.name = "PROCESSNAME";
+  cv.value = "centengine";
+  cv.default_value = "centengine";
+
+  cv_insert_or_update << cv;
+  ms->run_statement(cv_insert_or_update, "", false, 0, 0, 0);
+  ms->commit();
 }

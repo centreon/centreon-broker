@@ -151,13 +151,110 @@ mysql_stmt query_preparator::prepare_insert(mysql& ms) {
   return retval;
 }
 
+mysql_stmt query_preparator::prepare_insert_or_update(mysql& ms) {
+  std::map<std::string, int> insert_bind_mapping;
+  std::map<std::string, int> update_bind_mapping;
+  // Find event info.
+  io::event_info const*
+    info(io::events::instance().get_event_info(_event_id));
+  if (!info)
+    throw (exceptions::msg()
+           << "could not prepare insertion query for event of type "
+           << _event_id << ": event is not registered");
+
+  // Database schema version.
+  bool schema_v2(ms.schema_version() == mysql::v2);
+
+  // Build query string.
+  std::string insert("INSERT INTO ");
+  std::string update(" ON DUPLICATE KEY UPDATE ");
+  if (schema_v2)
+    insert.append(info->get_table_v2());
+  else
+    insert.append(info->get_table());
+  insert.append(" (");
+  mapping::entry const* entries(info->get_mapping());
+  for (int i(0); !entries[i].is_null(); ++i) {
+    char const* entry_name;
+    if (schema_v2)
+      entry_name = entries[i].get_name_v2();
+    else
+      entry_name = entries[i].get_name();
+    if (!entry_name
+        || !entry_name[0]
+        || (_excluded.find(entry_name) != _excluded.end()))
+      continue ;
+    insert.append(entry_name);
+    insert.append(",");
+  }
+  insert.resize(insert.size() - 1);
+  insert.append(") VALUES(");
+  std::string key;
+  int insert_size(0);
+  int update_size(0);
+  for (int i(0); !entries[i].is_null(); ++i) {
+    char const* entry_name;
+    if (schema_v2)
+      entry_name = entries[i].get_name_v2();
+    else
+      entry_name = entries[i].get_name();
+    if (!entry_name
+        || !entry_name[0]
+        || (_excluded.find(entry_name) != _excluded.end()))
+      continue ;
+    key = std::string(":");
+    key.append(entry_name);
+    if (_unique.find(entry_name) == _unique.end()) {
+      update.append(entry_name);
+      insert.append("?,");
+      update.append("=?,");
+      key.append("1");
+      insert_bind_mapping.insert(std::make_pair(key, insert_size++));
+      key[key.size() - 1] = '2';
+      update_bind_mapping.insert(std::make_pair(key, update_size++));
+    }
+    else {
+      insert.append("?,");
+      insert_bind_mapping.insert(std::make_pair(key, insert_size++));
+    }
+  }
+  insert.resize(insert.size() - 1);
+  update.resize(update.size() - 1);
+  insert.append(") ");
+  insert.append(update);
+
+  for (std::map<std::string, int>::const_iterator
+         it(update_bind_mapping.begin()),
+         end(update_bind_mapping.end());
+       it != end;
+       ++it)
+    insert_bind_mapping.insert(std::make_pair(it->first, it->second + insert_size));
+
+  logging::debug(logging::low)
+    << "mysql: query_preparator: "
+    << insert;
+  // Prepare statement.
+  mysql_stmt retval;
+  try {
+    retval = ms.prepare_query(insert, insert_bind_mapping);
+  }
+  catch (std::exception const& e) {
+    throw (exceptions::msg()
+           << "could not prepare insert or update query for event '"
+           << info->get_name() << "' in table '"
+           << info->get_table() << "': " << e.what());
+  }
+  return retval;
+}
+
 /**
  *  Prepare update query for specified event.
  *
  *  @param[out] q  Database query, prepared and ready to run.
  */
 mysql_stmt query_preparator::prepare_update(mysql& ms) {
-  std::map<std::string, int> bind_mapping;
+  std::map<std::string, int> query_bind_mapping;
+  std::map<std::string, int> where_bind_mapping;
   // Find event info.
   io::event_info const*
     info(io::events::instance().get_event_info(_event_id));
@@ -181,7 +278,8 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
   where = " WHERE ";
   mapping::entry const* entries(info->get_mapping());
   std::string key;
-  int size(0);
+  int query_size(0);
+  int where_size(0);
   for (int i(0); !entries[i].is_null(); ++i) {
     char const* entry_name;
     if (schema_v2)
@@ -198,7 +296,7 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
       key = std::string(":");
       key.append(entry_name);
       query.append("=?,");
-      bind_mapping.insert(std::make_pair(key, size++));
+      query_bind_mapping.insert(std::make_pair(key, query_size++));
     }
     // Part of ID field.
     else {
@@ -210,22 +308,28 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
       key = std::string(":");
       key.append(entry_name);
       key.append("1");
-      bind_mapping.insert(std::make_pair(key, size++));
+      where_bind_mapping.insert(std::make_pair(key, where_size++));
       where.append(entry_name);
       where.append(" IS NULL AND ?");
       where.append(" IS NULL)) AND ");
       key[key.size() - 1] = '2';
-      bind_mapping.insert(std::make_pair(key, size++));
+      where_bind_mapping.insert(std::make_pair(key, where_size++));
     }
   }
   query.resize(query.size() - 1);
   query.append(where, 0, where.size() - 5);
 
+  for (std::map<std::string, int>::iterator
+         it(where_bind_mapping.begin()),
+         end(where_bind_mapping.end());
+       it != end;
+       ++it)
+    query_bind_mapping.insert(std::make_pair(it->first, it->second + query_size));
 
   // Prepare statement.
   mysql_stmt retval;
   try {
-    retval = ms.prepare_query(query, bind_mapping);
+    retval = ms.prepare_query(query, query_bind_mapping);
   }
   catch (std::exception const& e) {
     throw (exceptions::msg()

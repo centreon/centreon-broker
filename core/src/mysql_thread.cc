@@ -137,7 +137,7 @@ void mysql_thread::_statement(mysql_task_statement* task) {
       _error = mysql_error("statement not prepared", true);
     return ;
   }
-  if (mysql_stmt_bind_param(stmt, const_cast<MYSQL_BIND*>(task->bind->get_bind()))) {
+  if (task->bind.get() && mysql_stmt_bind_param(stmt, const_cast<MYSQL_BIND*>(task->bind->get_bind()))) {
     logging::debug(logging::low)
       << "mysql: statement binding failed ("
       << mysql_stmt_error(stmt) << ")";

@@ -628,8 +628,7 @@ void stream::_process_custom_variable(
     cv(*static_cast<neb::custom_variable const*>(e.data()));
 
   // Prepare queries.
-  if (!_custom_variable_insert.prepared()
-      || !_custom_variable_update.prepared()
+  if (!_custom_variable_insupdate.prepared()
       || !_custom_variable_delete.prepared()) {
     query_preparator::event_unique unique;
     unique.insert("host_id");
@@ -638,8 +637,7 @@ void stream::_process_custom_variable(
     query_preparator qp(
                         neb::custom_variable::static_type(),
                         unique);
-    _custom_variable_insert = qp.prepare_insert(_mysql);
-    _custom_variable_update = qp.prepare_update(_mysql);
+    _custom_variable_insupdate = qp.prepare_insert_or_update(_mysql);
     _custom_variable_delete = qp.prepare_delete(_mysql);
   }
 
@@ -649,16 +647,14 @@ void stream::_process_custom_variable(
       << "SQL: enabling custom variable '" << cv.name << "' of ("
       << cv.host_id << ", " << cv.service_id << ")";
     try {
-      _update_on_none_insert(
-        _custom_variable_insert,
-        _custom_variable_update,
-        cv);
+      _custom_variable_insupdate << cv;
+      _mysql.run_statement_sync(_custom_variable_insupdate, "");
     }
     catch (std::exception const& e) {
       throw (exceptions::msg()
              << "SQL: could not store custom variable (name: "
              << cv.name << ", host: " << cv.host_id << ", service: "
-             << cv.service_id<< "): " << e.what());
+             << cv.service_id << "): " << e.what());
     }
   }
   else {
@@ -1492,17 +1488,17 @@ void stream::_process_instance(
   // Processing.
   if (_is_valid_poller(i.poller_id)) {
     // Prepare queries.
-    if (!_instance_insert.prepared() || !_instance_update.prepared()) {
+    if (!_instance_insupdate.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("instance_id");
       query_preparator qp(neb::instance::static_type(), unique);
-      _instance_insert = qp.prepare_insert(_mysql);
-      _instance_update = qp.prepare_update(_mysql);
+      _instance_insupdate = qp.prepare_insert_or_update(_mysql);
     }
 
     // Process object.
     try {
-      _update_on_none_insert(_instance_insert, _instance_update, i);
+      _instance_insupdate << i;
+      _mysql.run_statement_sync(_instance_insupdate, "");
     }
     catch (std::exception const& e) {
       throw (exceptions::msg()
@@ -1510,8 +1506,6 @@ void stream::_process_instance(
              << i.poller_id << "): " << e.what());
     }
   }
-
-  return ;
 }
 
 /**
