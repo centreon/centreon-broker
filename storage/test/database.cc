@@ -490,6 +490,7 @@ TEST_F(DatabaseStorageTest, CustomVarStatement) {
   unique.insert("service_id");
   query_preparator qp(neb::custom_variable::static_type(), unique);
   mysql_stmt cv_insert_or_update(qp.prepare_insert_or_update(*ms));
+  mysql_stmt cv_delete(qp.prepare_delete(*ms));
 
   neb::custom_variable cv;
   cv.service_id = 498;
@@ -502,5 +503,28 @@ TEST_F(DatabaseStorageTest, CustomVarStatement) {
 
   cv_insert_or_update << cv;
   ms->run_statement(cv_insert_or_update, "", false, 0, 0, 0);
+
+  // Deletion
+  cv_delete << cv;
+  ms->run_statement(cv_delete, "", false, 0, 0, 0);
+
+  // Insert
+  cv_insert_or_update << cv;
+  ms->run_statement(cv_insert_or_update, "", false, 0, 0, 0);
+
+  // Update
+  cv.update_time = time(NULL) + 1;
+  cv_insert_or_update << cv;
+  ms->run_statement(cv_insert_or_update, "", false, 0, 0, 0);
+
   ms->commit();
+
+  std::stringstream oss;
+  oss << "SELECT host_id FROM customvariables WHERE "
+    "host_id=31 AND service_id=498"
+    " AND name='PROCESSNAME'";
+  int thread_id(ms->run_query_sync(oss.str()));
+  mysql_result res(ms->get_result(thread_id));
+  ASSERT_TRUE(res.next());
+  ASSERT_FALSE(res.next());
 }

@@ -267,15 +267,13 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
   bool schema_v2(ms.schema_version() == mysql::v2);
 
   // Build query string.
-  std::string query;
-  std::string where;
-  query = "UPDATE ";
+  std::string query("UPDATE ");
+  std::string where(" WHERE ");
   if (schema_v2)
     query.append(info->get_table_v2());
   else
     query.append(info->get_table());
   query.append(" SET ");
-  where = " WHERE ";
   mapping::entry const* entries(info->get_mapping());
   std::string key;
   int query_size(0);
@@ -359,8 +357,7 @@ mysql_stmt query_preparator::prepare_delete(mysql& ms) {
   bool schema_v2(ms.schema_version() == mysql::v2);
 
   // Prepare query.
-  std::string query;
-  query = "DELETE FROM ";
+  std::string query("DELETE FROM ");
   if (schema_v2)
     query.append(info->get_table_v2());
   else

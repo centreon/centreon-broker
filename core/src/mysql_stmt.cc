@@ -23,6 +23,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/event_info.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/mysql_bind.hh"
 #include "com/centreon/broker/mysql_stmt.hh"
@@ -214,16 +215,18 @@ void mysql_stmt::bind_value_as_i32(std::string const& name, int value) {
     std::string key(name);
     key.append("1");
     it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
+    if (it != _bind_mapping.end()) {
       bind_value_as_i32(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
-    key[key.size() - 1] = '2';
-    it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
-      bind_value_as_i32(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
+      key[key.size() - 1] = '2';
+      it =_bind_mapping.find(key);
+      if (it != _bind_mapping.end()) {
+        bind_value_as_i32(it->second, value);
+        return ;
+      }
+    }
+    logging::debug(logging::low)
+      << "mysql: cannot bind object with name '" << name << "' in statement "
+      << get_id();
   }
 }
 
@@ -246,16 +249,18 @@ void mysql_stmt::bind_value_as_u32(std::string const& name, unsigned int value) 
     std::string key(name);
     key.append("1");
     it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
+    if (it != _bind_mapping.end()) {
       bind_value_as_u32(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
-    key[key.size() - 1] = '2';
-    it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
-      bind_value_as_u32(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
+      key[key.size() - 1] = '2';
+      it =_bind_mapping.find(key);
+      if (it != _bind_mapping.end()) {
+        bind_value_as_u32(it->second, value);
+        return ;
+      }
+    }
+    logging::debug(logging::low)
+      << "mysql: cannot bind object with name '" << name << "' in statement "
+      << get_id();
   }
 }
 
@@ -278,16 +283,18 @@ void mysql_stmt::bind_value_as_u64(std::string const& name, unsigned long long v
     std::string key(name);
     key.append("1");
     it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
+    if (it != _bind_mapping.end()) {
       bind_value_as_u64(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
-    key[key.size() - 1] = '2';
-    it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
-      bind_value_as_u64(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
+      key[key.size() - 1] = '2';
+      it =_bind_mapping.find(key);
+      if (it != _bind_mapping.end()) {
+        bind_value_as_u64(it->second, value);
+        return ;
+      }
+    }
+    logging::debug(logging::low)
+      << "mysql: cannot bind object with name '" << name << "' in statement "
+      << get_id();
   }
 }
 
@@ -310,16 +317,18 @@ void mysql_stmt::bind_value_as_f32(std::string const& name, float value) {
     std::string key(name);
     key.append("1");
     it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
+    if (it != _bind_mapping.end()) {
       bind_value_as_f32(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
-    key[key.size() - 1] = '2';
-    it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
-      bind_value_as_f32(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
+      key[key.size() - 1] = '2';
+      it =_bind_mapping.find(key);
+      if (it != _bind_mapping.end()) {
+        bind_value_as_f32(it->second, value);
+        return ;
+      }
+    }
+    logging::debug(logging::low)
+      << "mysql: cannot bind object with name '" << name << "' in statement "
+      << get_id();
   }
 }
 
@@ -342,16 +351,18 @@ void mysql_stmt::bind_value_as_f64(std::string const& name, double value) {
     std::string key(name);
     key.append("1");
     it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
+    if (it != _bind_mapping.end()) {
       bind_value_as_f64(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
-    key[key.size() - 1] = '2';
-    it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
-      bind_value_as_f64(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
+      key[key.size() - 1] = '2';
+      it =_bind_mapping.find(key);
+      if (it != _bind_mapping.end()) {
+        bind_value_as_f64(it->second, value);
+        return ;
+      }
+    }
+    logging::debug(logging::low)
+      << "mysql: cannot bind object with name '" << name << "' in statement "
+      << get_id();
   }
 }
 
@@ -374,16 +385,18 @@ void mysql_stmt::bind_value_as_tiny(std::string const& name, char value) {
     std::string key(name);
     key.append("1");
     it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
+    if (it != _bind_mapping.end()) {
       bind_value_as_tiny(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
-    key[key.size() - 1] = '2';
-    it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
-      bind_value_as_tiny(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
+      key[key.size() - 1] = '2';
+      it =_bind_mapping.find(key);
+      if (it != _bind_mapping.end()) {
+        bind_value_as_tiny(it->second, value);
+        return ;
+      }
+    }
+    logging::debug(logging::low)
+      << "mysql: cannot bind object with name '" << name << "' in statement "
+      << get_id();
   }
 }
 
@@ -406,16 +419,18 @@ void mysql_stmt::bind_value_as_bool(std::string const& name, bool value) {
     std::string key(name);
     key.append("1");
     it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
+    if (it != _bind_mapping.end()) {
       bind_value_as_bool(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
-    key[key.size() - 1] = '2';
-    it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
-      bind_value_as_bool(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
+      key[key.size() - 1] = '2';
+      it =_bind_mapping.find(key);
+      if (it != _bind_mapping.end()) {
+        bind_value_as_bool(it->second, value);
+        return ;
+      }
+    }
+    logging::debug(logging::low)
+      << "mysql: cannot bind object with name '" << name << "' in statement "
+      << get_id();
   }
 }
 
@@ -438,16 +453,18 @@ void mysql_stmt::bind_value_as_str(std::string const& name, std::string const& v
     std::string key(name);
     key.append("1");
     it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
+    if (it != _bind_mapping.end()) {
       bind_value_as_str(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
-    key[key.size() - 1] = '2';
-    it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
-      bind_value_as_str(it->second, value);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
+      key[key.size() - 1] = '2';
+      it =_bind_mapping.find(key);
+      if (it != _bind_mapping.end()) {
+        bind_value_as_str(it->second, value);
+        return ;
+      }
+    }
+    logging::debug(logging::low)
+      << "mysql: cannot bind object with name '" << name << "' in statement "
+      << get_id();
   }
 }
 
@@ -470,15 +487,17 @@ void mysql_stmt::bind_value_as_null(std::string const& name) {
     std::string key(name);
     key.append("1");
     it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
+    if (it != _bind_mapping.end()) {
       bind_value_as_null(it->second);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
-    key[key.size() - 1] = '2';
-    it =_bind_mapping.find(key);
-    if (it != _bind_mapping.end())
-      bind_value_as_null(it->second);
-    else
-      throw exceptions::msg() << "cannot bind object with name '" << name << "'";
+      key[key.size() - 1] = '2';
+      it =_bind_mapping.find(key);
+      if (it != _bind_mapping.end()) {
+        bind_value_as_null(it->second);
+        return ;
+      }
+    }
+    logging::debug(logging::low)
+      << "mysql: cannot bind object with name '" << name << "' in statement "
+      << get_id();
   }
 }
