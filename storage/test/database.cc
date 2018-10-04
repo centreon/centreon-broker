@@ -23,7 +23,10 @@
 #include "com/centreon/broker/query_preparator.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/neb/custom_variable.hh"
+#include "com/centreon/broker/neb/module.hh"
+#include "com/centreon/broker/neb/log_entry.hh"
 #include "com/centreon/broker/modules/loader.hh"
 
 using namespace com::centreon::broker;
@@ -470,6 +473,59 @@ TEST_F(DatabaseStorageTest, RepeatPrepareQuery) {
   ms->commit();
 }
 
+TEST_F(DatabaseStorageTest, InstanceStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  query_preparator::event_unique unique;
+  unique.insert("instance_id");
+  query_preparator qp(neb::instance::static_type(), unique);
+  mysql_stmt inst_insupdate(qp.prepare_insert_or_update(*ms));
+  mysql_stmt inst_delete(qp.prepare_delete(*ms));
+
+  neb::instance inst;
+  inst.poller_id = 1;
+  inst.name = "Central";
+  inst.program_start = time(NULL) - 100;
+  inst.program_end = time(NULL) - 1;
+  inst.version = "1.8.1";
+
+  inst_insupdate << inst;
+  ms->run_statement(inst_insupdate, "", false, 0, 0, 0);
+
+  // Deletion
+  inst_delete << inst;
+  ms->run_statement(inst_delete, "", false, 0, 0, 0);
+
+  // Insert
+  inst_insupdate << inst;
+  ms->run_statement(inst_insupdate, "", false, 0, 0, 0);
+
+  // Update
+  inst.program_end = time(NULL);
+  inst_insupdate << inst;
+  ms->run_statement(inst_insupdate, "", false, 0, 0, 0);
+
+  ms->commit();
+
+  std::stringstream oss;
+  oss << "SELECT instance_id FROM instances WHERE "
+    "instance_id=1";
+  int thread_id(ms->run_query_sync(oss.str()));
+  mysql_result res(ms->get_result(thread_id));
+  ASSERT_TRUE(res.next());
+}
+
 TEST_F(DatabaseStorageTest, CustomVarStatement) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");
@@ -527,4 +583,83 @@ TEST_F(DatabaseStorageTest, CustomVarStatement) {
   mysql_result res(ms->get_result(thread_id));
   ASSERT_TRUE(res.next());
   ASSERT_FALSE(res.next());
+}
+
+TEST_F(DatabaseStorageTest, ModuleStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  query_preparator qp(neb::module::static_type());
+  mysql_stmt module_insert(qp.prepare_insert(*ms));
+
+  neb::module m;
+  m.should_be_loaded = true;
+  m.filename = "/usr/lib64/nagios/cbmod.so";
+  m.loaded = true;
+  m.poller_id = 1;
+  m.args = "/etc/centreon-broker/central-module.xml";
+
+  // Deletion
+  ms->run_query_sync("DELETE FROM modules");
+
+  // Insert
+  module_insert << m;
+  ms->run_statement(module_insert, "", false);
+  ms->commit();
+
+  int thread_id(ms->run_query_sync("SELECT module_id FROM modules LIMIT 1"));
+  mysql_result res(ms->get_result(thread_id));
+  ASSERT_TRUE(res.next());
+}
+
+TEST_F(DatabaseStorageTest, LogStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  query_preparator qp(neb::log_entry::static_type());
+  mysql_stmt log_insert(qp.prepare_insert(*ms));
+
+  neb::log_entry le;
+  le.poller_name = "Central";
+  le.msg_type = 5;
+  le.output = "Event loop start at bar date";
+  le.notification_contact = "";
+  le.notification_cmd = "";
+  le.status = 0;
+  le.host_name = "";
+  le.c_time = time(NULL);
+
+  // Deletion
+  ms->run_query_sync("DELETE FROM logs");
+
+  // Insert
+  log_insert << le;
+  ms->run_statement(log_insert, "", false);
+  ms->commit();
+
+  int thread_id(ms->run_query_sync(
+        "SELECT log_id FROM logs "
+        "WHERE output = \"Event loop start at bar date\""));
+  mysql_result res(ms->get_result(thread_id));
+  ASSERT_TRUE(res.next());
 }

@@ -646,16 +646,13 @@ void stream::_process_custom_variable(
     logging::info(logging::medium)
       << "SQL: enabling custom variable '" << cv.name << "' of ("
       << cv.host_id << ", " << cv.service_id << ")";
-    try {
-      _custom_variable_insupdate << cv;
-      _mysql.run_statement_sync(_custom_variable_insupdate, "");
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store custom variable (name: "
-             << cv.name << ", host: " << cv.host_id << ", service: "
-             << cv.service_id << "): " << e.what());
-    }
+    std::ostringstream oss;
+    oss << "SQL: could not store custom variable (name: "
+        << cv.name.toStdString() << ", host: " << cv.host_id << ", service: "
+        << cv.service_id << "): ";
+
+    _custom_variable_insupdate << cv;
+    _mysql.run_statement(_custom_variable_insupdate, oss.str(), true);
   }
   else {
     logging::info(logging::medium)
@@ -663,24 +660,13 @@ void stream::_process_custom_variable(
       << cv.host_id << ", " << cv.service_id << ")";
     _custom_variable_delete.bind_value_as_i32(":host_id", cv.host_id);
     _custom_variable_delete.bind_value_as_i32(":service_id", cv.service_id);
-    //_custom_variable_delete.bind_value(":host_id", cv.host_id);
-    //_custom_variable_delete.bind_value(
-    //  ":service_id",
-    //  (cv.service_id ? QVariant(cv.service_id) : QVariant(QVariant::Int)));
     _custom_variable_delete.bind_value_as_str(":name", cv.name.toStdString());
-    //_custom_variable_delete.bind_value(":name", cv.name);
-    //try { _custom_variable_delete.run_statement(); }
-    try {
-      // FIXME DBR: for now, no thread id forced to run the query
-      // Not sure the try/catch to be necessary now.
-      _mysql.run_statement(_custom_variable_delete);
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not remove custom variable (host: "
-             << cv.host_id << ", service: " << cv.service_id
-             << ", name '" << cv.name << "'): " << e.what());
-    }
+
+    std::ostringstream oss;
+    oss << "SQL: could not remove custom variable (host: "
+        << cv.host_id << ", service: " << cv.service_id
+        << ", name '" << cv.name.toStdString() << "'): ";
+    _mysql.run_statement(_custom_variable_delete, oss.str(), true);
   }
 }
 
@@ -1468,7 +1454,8 @@ void stream::_process_host_status(
 }
 
 /**
- *  Process an instance event.
+ *  Process an instance event. The thread executing the command is controlled
+ *  so that queries depending on this one will be made by the same thread.
  *
  *  @param[in] e Uncasted instance.
  */
@@ -1496,15 +1483,18 @@ void stream::_process_instance(
     }
 
     // Process object.
-    try {
-      _instance_insupdate << i;
-      _mysql.run_statement_sync(_instance_insupdate, "");
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store poller (poller: "
-             << i.poller_id << "): " << e.what());
-    }
+    std::ostringstream oss;
+    oss << "SQL: could not store poller (poller: "
+        << i.poller_id << "): ";
+    _instance_insupdate << i;
+
+    // Here, we control the thread with
+    //      i.poller_id % _mysql.connections_count()
+    _mysql.run_statement(
+             _instance_insupdate,
+             oss.str(), true,
+             0, 0,
+             i.poller_id % _mysql.connections_count());
   }
 }
 
@@ -1786,11 +1776,12 @@ void stream::_process_log(
 
   // Run query.
   _log_insert << le;
-  _mysql.run_statement(_log_insert, "SQL");
+  _mysql.run_statement(_log_insert, "SQL: ");
 }
 
 /**
- *  Process a module event.
+ *  Process a module event. We must take care of the thread id sending the
+ *  query because the modules table has a constraint on instances.instance_id
  *
  *  @param[in] e Uncasted module.
  */
@@ -1813,27 +1804,25 @@ void stream::_process_module(
       _module_insert = qp.prepare_insert(_mysql);
     }
 
+    std::ostringstream oss;
     // Process object.
     if (m.enabled) {
+      oss << "SQL: could not store module (poller: "
+          << m.poller_id << "): ";
       _module_insert << m;
-      try {
-        _mysql.run_statement(_module_insert);
-      }
-      catch (std::exception const& e) {
-        throw (exceptions::msg()
-               << "SQL: could not store module (poller: " << m.poller_id
-               << "): " << e.what());
-      }
+      _mysql.run_statement(_module_insert,
+               oss.str(), true,
+               0, 0,
+               m.poller_id % _mysql.connections_count());
     }
     else {
-      std::ostringstream ss;
-      ss << "DELETE FROM "
+      oss << "DELETE FROM "
          << ((_mysql.schema_version() == mysql::v2)
              ? "modules"
              : "rt_modules")
          << "  WHERE instance_id=" << m.poller_id
          << "    AND filename='" << m.filename.toStdString() << "'";
-      _mysql.run_query(ss.str(), "SQL");
+      _mysql.run_query(oss.str(), "SQL: ");
     }
   }
 }
