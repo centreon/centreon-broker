@@ -108,8 +108,6 @@ void stream::_cache_create() {
   int thread_id;
   try {
     thread_id = _mysql.run_query_sync(ss.str());
-    //database_query q(_db);
-    //q.run_query(ss.str());
     mysql_result res(_mysql.get_result(thread_id));
     while (res.next())
       _cache_deleted_instance_id.insert(res.value_as_u32(0));
@@ -117,6 +115,21 @@ void stream::_cache_create() {
   catch (std::exception const& e) {
     logging::error(logging::high)
       << "SQL: could not get list of deleted instances: "
+      << e.what();
+  }
+}
+
+void stream::_host_instance_cache_create() {
+  _cache_host_instance.clear();
+  try {
+    int thread_id(_mysql.run_query_sync("SELECT host_id, instance_id FROM hosts"));
+    mysql_result res(_mysql.get_result(thread_id));
+    while (res.next())
+      _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::high)
+      << "SQL: could not get the list of host/instance pairs"
       << e.what();
   }
 }
@@ -965,30 +978,31 @@ void stream::_process_host(
   if (_is_valid_poller(h.poller_id)) {
     if (h.host_id) {
       // Prepare queries.
-      if (!_host_insert.prepared() || !_host_update.prepared()) {
+      if (!_host_insupdate.prepared()) {
         query_preparator::event_unique unique;
         unique.insert("host_id");
         query_preparator qp(neb::host::static_type(), unique);
-        _host_insert = qp.prepare_insert(_mysql);
-        _host_update = qp.prepare_update(_mysql);
+        _host_insupdate = qp.prepare_insert_or_update(_mysql);
       }
 
       // Process object.
-      try {
-        _update_on_none_insert(_host_insert, _host_update, h);
-      }
-      catch (std::exception const& e) {
-        throw (exceptions::msg()
-               << "SQL: could not store host (poller: " << h.poller_id
-               << ", host: " << h.host_id << "): " << e.what());
-      }
+      std::ostringstream oss;
+      oss << "SQL: could not store host (poller: "
+          << h.poller_id
+          << ", host: " << h.host_id << "): ";
+
+      _host_insupdate << h;
+      _mysql.run_statement(
+               _host_insupdate,
+               oss.str(), true,
+               0, 0,
+               h.poller_id % _mysql.connections_count());
+      _cache_host_instance[h.host_id] = h.poller_id;
     }
     else
       logging::error(logging::high) << "SQL: host '" << h.host_name
         << "' of poller " << h.poller_id << " has no ID";
   }
-
-  return ;
 }
 
 /**
@@ -1024,15 +1038,15 @@ void stream::_process_host_check(
 
     // Processing.
     _host_check_update << hc;
-    int thread_id;
-    try {
-      thread_id = _mysql.run_statement_sync(_host_check_update);
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store host check (host: " << hc.host_id
-             << "): " << e.what());
-    }
+    std::ostringstream oss;
+    oss << "SQL: could not store host check (host: " << hc.host_id << "): ";
+
+    int thread_id(
+          _cache_host_instance[hc.host_id] % _mysql.connections_count());
+    _mysql.run_statement(_host_check_update, oss.str(), true,
+        0, 0,
+        thread_id);
+
     if (_mysql.get_affected_rows(thread_id) != 1)
       logging::error(logging::medium) << "SQL: host check could not "
            "be updated because host " << hc.host_id
@@ -1511,7 +1525,9 @@ void stream::_process_instance_configuration(
 }
 
 /**
- *  Process an instance status event.
+ *  Process an instance status event. To work on an instance status, we must
+ *  be sure the instance already exists in the database. So this query must
+ *  be done by the same thread as the one that created the instance.
  *
  *  @param[in] e Uncasted instance status.
  */
@@ -1533,24 +1549,22 @@ void stream::_process_instance_status(
       query_preparator::event_unique unique;
       unique.insert("instance_id");
       query_preparator qp(
-                            neb::instance_status::static_type(),
-                            unique);
+                         neb::instance_status::static_type(),
+                         unique);
       _instance_status_update = qp.prepare_update(_mysql);
     }
 
     // Process object.
     _instance_status_update << is;
     int thread_id;
-    //_instance_status_update << is;
-    try {
-      thread_id = _mysql.run_statement_sync(_instance_status_update);
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not update poller (poller: " << is.poller_id
-             << "): " << e.what());
-    }
-    if (_mysql.get_affected_rows(thread_id) != 1)
+    std::ostringstream oss;
+    oss << "SQL: could not update poller (poller: " << is.poller_id << "): ";
+    _mysql.run_statement(
+             _instance_status_update,
+             oss.str(), true,
+             0, 0,
+             is.poller_id % _mysql.connections_count());
+    if (_mysql.get_affected_rows(is.poller_id % _mysql.connections_count()) != 1)
       logging::error(logging::medium) << "SQL: poller "
         << is.poller_id << " was not updated because no matching entry "
            "was found in database";
@@ -2575,7 +2589,7 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
 void stream::update() {
   _cache_clean();
   _cache_create();
-  return ;
+  _host_instance_cache_create();
 }
 
 /**

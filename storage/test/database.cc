@@ -24,7 +24,10 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/neb/instance.hh"
+#include "com/centreon/broker/neb/instance_status.hh"
 #include "com/centreon/broker/neb/custom_variable.hh"
+#include "com/centreon/broker/neb/host.hh"
+#include "com/centreon/broker/neb/host_check.hh"
 #include "com/centreon/broker/neb/module.hh"
 #include "com/centreon/broker/neb/log_entry.hh"
 #include "com/centreon/broker/modules/loader.hh"
@@ -473,6 +476,7 @@ TEST_F(DatabaseStorageTest, RepeatPrepareQuery) {
   ms->commit();
 }
 
+// Instance (15) statement
 TEST_F(DatabaseStorageTest, InstanceStatement) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");
@@ -524,6 +528,64 @@ TEST_F(DatabaseStorageTest, InstanceStatement) {
   int thread_id(ms->run_query_sync(oss.str()));
   mysql_result res(ms->get_result(thread_id));
   ASSERT_TRUE(res.next());
+}
+
+// Host (12) statement
+TEST_F(DatabaseStorageTest, HostStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  query_preparator::event_unique unique;
+  unique.insert("host_id");
+  query_preparator qp(neb::host::static_type(), unique);
+  mysql_stmt host_insupdate(qp.prepare_insert_or_update(*ms));
+
+  neb::host h;
+  h.host_id = 24;
+  h.address = "10.0.2.15";
+  h.alias = "central";
+  h.flap_detection_on_down = true;
+  h.flap_detection_on_unreachable = true;
+  h.flap_detection_on_up = true;
+  h.host_name = "central_9";
+  h.notify_on_down = true;
+  h.notify_on_unreachable = true;
+  h.poller_id = 1;
+  h.stalk_on_down = false;
+  h.stalk_on_unreachable = false;
+  h.stalk_on_up = false;
+  h.statusmap_image = "";
+  h.timezone = "Europe/Paris";
+
+  ms->run_query_sync("DELETE FROM hosts");
+
+  // Insert
+  host_insupdate << h;
+  ms->run_statement(host_insupdate, "", false, 0, 0, 0);
+
+  // Update
+  h.stalk_on_up = true;
+  host_insupdate << h;
+  ms->run_statement(host_insupdate, "", false, 0, 0, 0);
+
+  ms->commit();
+
+  int thread_id(ms->run_query_sync(
+        "SELECT stalk_on_up FROM hosts WHERE "
+        "host_id=24"));
+  mysql_result res(ms->get_result(thread_id));
+  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(res.value_as_bool(0));
 }
 
 TEST_F(DatabaseStorageTest, CustomVarStatement) {
@@ -622,6 +684,7 @@ TEST_F(DatabaseStorageTest, ModuleStatement) {
   ASSERT_TRUE(res.next());
 }
 
+// log_entry (17) statement queries
 TEST_F(DatabaseStorageTest, LogStatement) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");
@@ -660,6 +723,86 @@ TEST_F(DatabaseStorageTest, LogStatement) {
   int thread_id(ms->run_query_sync(
         "SELECT log_id FROM logs "
         "WHERE output = \"Event loop start at bar date\""));
+  mysql_result res(ms->get_result(thread_id));
+  ASSERT_TRUE(res.next());
+}
+
+TEST_F(DatabaseStorageTest, InstanceStatusStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  query_preparator::event_unique unique;
+  unique.insert("instance_id");
+  query_preparator qp(neb::instance_status::static_type(), unique);
+  mysql_stmt inst_status_insert(qp.prepare_update(*ms));
+
+  neb::instance_status is;
+  is.active_host_checks_enabled = true;
+  is.active_service_checks_enabled = true;
+  is.check_hosts_freshness = false;
+  is.check_services_freshness = true;
+  is.global_host_event_handler = "";
+  is.global_service_event_handler = "";
+  is.last_alive = time(NULL) - 5;
+  is.obsess_over_hosts = false;
+  is.obsess_over_services = false;
+  is.passive_host_checks_enabled = true;
+  is.passive_service_checks_enabled = true;
+  is.poller_id = 1;
+
+  // Insert
+  inst_status_insert << is;
+  ms->run_statement(inst_status_insert, "", false);
+  ms->commit();
+
+  int thread_id(ms->run_query_sync(
+        "SELECT active_host_checks FROM instances "
+        "WHERE instance_id=1"));
+  mysql_result res(ms->get_result(thread_id));
+  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(res.value_as_bool(0));
+}
+
+TEST_F(DatabaseStorageTest, HostCheckStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  query_preparator::event_unique unique;
+  unique.insert("host_id");
+  query_preparator qp(neb::host_check::static_type(), unique);
+  mysql_stmt host_check_update(qp.prepare_update(*ms));
+
+  neb::host_check hc;
+  hc.command_line = "/usr/lib/nagios/plugins/check_icmp -H 10.0.2.15 -w 3000.0,80% -c 5000.0,100% -p 1";
+  hc.host_id = 24;
+
+  // Update
+  host_check_update << hc;
+  ms->run_statement(host_check_update, "", false);
+  ms->commit();
+
+  int thread_id(ms->run_query_sync(
+        "SELECT host_id FROM hosts WHERE host_id=24"));
   mysql_result res(ms->get_result(thread_id));
   ASSERT_TRUE(res.next());
 }
