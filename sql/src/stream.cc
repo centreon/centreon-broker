@@ -480,8 +480,13 @@ void stream::_process_comment(misc::shared_ptr<io::data> const& e) {
   // Cast object.
   neb::comment const& cmmnt(e.ref_as<neb::comment const>());
 
+  // Log message.
+  logging::info(logging::medium)
+    << "SQL: processing comment of poller " << cmmnt.poller_id
+    << " on (" << cmmnt.host_id << ", " << cmmnt.service_id << ")";
+
   // Prepare queries.
-  if (!_comment_insert.prepared() || !_comment_update.prepared()) {
+  if (!_comment_insupdate.prepared()) {
     query_preparator::event_unique unique;
     unique.insert("host_id");
     unique.insert("service_id");
@@ -489,26 +494,23 @@ void stream::_process_comment(misc::shared_ptr<io::data> const& e) {
     unique.insert("instance_id");
     unique.insert("internal_id");
     query_preparator qp(neb::comment::static_type(), unique);
-    _comment_insert = qp.prepare_insert(_mysql);
-    _comment_update = qp.prepare_update(_mysql);
+    _comment_insupdate = qp.prepare_insert_or_update(_mysql);
   }
 
   // Processing.
-  logging::info(logging::medium)
-    << "SQL: processing comment of poller " << cmmnt.poller_id
-    << " on (" << cmmnt.host_id << ", " << cmmnt.service_id << ")";
-  try {
-    _update_on_none_insert(_comment_insert, _comment_update, cmmnt);
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg() << "SQL: could not store comment (poller: "
-           << cmmnt.poller_id << ", host: " << cmmnt.host_id
-           << ", service: " << cmmnt.service_id << ", entry time: "
-           << cmmnt.entry_time << ", internal ID: " << cmmnt.internal_id
-           << "): " << e.what());
-  }
+  std::ostringstream oss;
+  oss << "SQL: could not store comment (poller: "
+      << cmmnt.poller_id << ", host: " << cmmnt.host_id
+      << ", service: " << cmmnt.service_id << ", entry time: "
+      << cmmnt.entry_time << ", internal ID: " << cmmnt.internal_id
+      << "): ";
 
-  return ;
+  _comment_insupdate << cmmnt;
+  _mysql.run_statement(
+           _comment_insupdate,
+           oss.str(), true,
+           0, 0,
+           cmmnt.poller_id % _mysql.connections_count());
 }
 
 /**
@@ -595,19 +597,19 @@ void stream::_process_custom_variable_status(
   }
 
   // Processing.
+  std::ostringstream oss;
+  oss << "SQL: could not update custom variable (name: "
+      << cvs.name.toStdString() << ", host: " << cvs.host_id << ", service: "
+      << cvs.service_id << "): ";
+
   _custom_variable_status_update << cvs;
-  int thread_id;
-  try {
-    thread_id = _mysql.run_statement_sync(_custom_variable_status_update);
-    //_custom_variable_status_update.run_statement();
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg()
-           << "SQL: could not update custom variable (name: "
-           << cvs.name << ", host: " << cvs.host_id << ", service: "
-           << cvs.service_id << "): " << e.what());
-  }
-  if (_mysql.get_affected_rows(thread_id) != 1)
+  int thread_id(_mysql.run_statement(
+                         _custom_variable_status_update,
+                         oss.str(), true,
+                         0, 0,
+                         _cache_host_instance[cvs.host_id]
+                              % _mysql.connections_count()));
+  if (_mysql.get_affected_rows(thread_id, _custom_variable_status_update) != 1)
     logging::error(logging::medium) << "SQL: custom variable ("
       << cvs.host_id << ", " << cvs.service_id << ", " << cvs.name
       << ") was not updated because it was not found in database";
