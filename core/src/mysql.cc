@@ -114,6 +114,7 @@ mysql_result mysql::get_result(int thread_id) {
 }
 
 int mysql::get_affected_rows(int thread_id) {
+  _check_errors(thread_id);
   return _thread[thread_id]->get_affected_rows();
 }
 
