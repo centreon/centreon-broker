@@ -546,6 +546,8 @@ TEST_F(DatabaseStorageTest, HostStatement) {
     true,
     5);
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
+
+  ms->run_query("DELETE FROM hosts");
   query_preparator::event_unique unique;
   unique.insert("host_id");
   query_preparator qp(neb::host::static_type(), unique);
@@ -857,11 +859,13 @@ TEST_F(DatabaseStorageTest, HostStatusStatement) {
 
   // Update
   host_status_update << hs;
-  ms->run_statement(host_status_update, "", false);
-  ms->commit();
+  int thread_id(ms->run_statement(host_status_update, "", false));
 
-  int thread_id(ms->run_query_sync(
-        "SELECT execution_time FROM hosts WHERE host_id=24"));
+  ASSERT_TRUE(ms->get_affected_rows(thread_id, host_status_update) == 1);
+
+  ms->commit();
+  thread_id = ms->run_query_sync(
+                    "SELECT execution_time FROM hosts WHERE host_id=24");
   mysql_result res(ms->get_result(thread_id));
   ASSERT_TRUE(res.next());
   ASSERT_TRUE(res.value_as_f64(0) == 0.159834);

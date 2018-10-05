@@ -95,10 +95,14 @@ class                    mysql_task_last_insert_id : public mysql_task {
 
 class                    mysql_task_affected_rows : public mysql_task {
  public:
-                         mysql_task_affected_rows(int* count)
+                         mysql_task_affected_rows(
+                             int* count,
+                             int statement_id = 0)
                           : mysql_task(mysql_task::AFFECTED_ROWS),
-                            count(count) {}
+                            count(count),
+                            statement_id(statement_id) {}
   int*                   count;
+  int                    statement_id;
 };
 
 class                    mysql_task_finish : public mysql_task {

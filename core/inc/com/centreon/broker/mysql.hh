@@ -39,7 +39,7 @@ class                 mysql {
   mysql_stmt          prepare_query(std::string const& query,
                                     mysql_bind_mapping const& bind_mapping = mysql_bind_mapping());
   void                commit();
-  bool                run_query(
+  int                 run_query(
                         std::string const& query,
                         std::string const& error_msg = "", bool fatal = false,
                         mysql_callback fn = 0, void* data = 0,
@@ -48,7 +48,7 @@ class                 mysql {
                         std::string const& query,
                         std::string const& error_msg = "",
                         int thread = -1);
-  bool                run_statement(
+  int                 run_statement(
                         mysql_stmt& stmt,
                         std::string const& error_msg = "", bool fatal = false,
                         mysql_callback fn = 0, void* data = 0,
@@ -59,12 +59,13 @@ class                 mysql {
   mysql_result        get_result(int thread_id);
   int                 get_last_insert_id(int thread_id);
   int                 get_affected_rows(int thread_id);
+  int                 get_affected_rows(int thread_id, mysql_stmt const& stmt);
   bool                finish();
   version             schema_version() const;
   int                 connections_count() const;
+  bool                commit_if_needed();
 
  private:
-  bool                _commit_if_needed();
   void                _check_errors(int thread_id);
 
   database_config     _db_cfg;

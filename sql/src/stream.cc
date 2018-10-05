@@ -1442,16 +1442,16 @@ void stream::_process_host_status(
 
     // Processing.
     _host_status_update << hs;
-    int thread_id;
-    try {
-      thread_id = _mysql.run_statement_sync(_host_status_update);
-    }
-    //FIXME DBR: error management...
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store host status (host: " << hs.host_id
-             << "): " << e.what());
-    }
+    std::ostringstream oss;
+    oss << "SQL: could not store host status (host: " << hs.host_id << "): ";
+    int thread_id(_mysql.run_statement(
+                           _host_status_update,
+                           oss.str(), true,
+                           0, 0,
+                           _cache_host_instance[hs.host_id]
+                                % _mysql.connections_count()));
+    // FIXME DBR: this call could be asynchronous if the only result
+    // is to send an error.
     if (_mysql.get_affected_rows(thread_id) != 1)
       logging::error(logging::medium) << "SQL: host could not be "
            "updated because host " << hs.host_id

@@ -118,12 +118,17 @@ int mysql::get_affected_rows(int thread_id) {
   return _thread[thread_id]->get_affected_rows();
 }
 
+int mysql::get_affected_rows(int thread_id, mysql_stmt const& stmt) {
+  _check_errors(thread_id);
+  return _thread[thread_id]->get_affected_rows(stmt.get_id());
+}
+
 /**
  *  This method commits only if the max queries per transaction is reached.
  *
  * @return true if a commit has been done, false otherwise.
  */
-bool mysql::_commit_if_needed() {
+bool mysql::commit_if_needed() {
   bool retval(false);
   int qpt(_db_cfg.get_queries_per_transaction());
   if (qpt > 1) {
@@ -168,24 +173,24 @@ void mysql::_check_errors(int thread_id) {
  *
  * @return A boolean telling if a commit has been done after the query.
  */
-bool mysql::run_query(std::string const& query,
+int mysql::run_query(std::string const& query,
               std::string const& error_msg, bool fatal,
               mysql_callback fn, void* data,
-              int thread) {
-  if (thread < 0) {
+              int thread_id) {
+  if (thread_id < 0) {
     // Here, we use _current_thread
-    thread = _current_thread++;
+    thread_id = _current_thread++;
     if (_current_thread >= _thread.size())
       _current_thread = 0;
   }
   std::cout << "-> CHECK ERRORS FATAL" << std::endl;
-  _check_errors(thread);
+  _check_errors(thread_id);
   std::cout << "-> FATAL 1" << std::endl;
-  _thread[thread]->run_query(
+  _thread[thread_id]->run_query(
     query,
     error_msg, fatal,
     fn, data);
-  return _commit_if_needed();
+  return thread_id;
 }
 
 /**
@@ -220,22 +225,22 @@ int mysql::get_last_insert_id(int thread_id) {
   return _thread[thread_id]->get_last_insert_id();
 }
 
-bool mysql::run_statement(mysql_stmt& stmt,
+int mysql::run_statement(mysql_stmt& stmt,
               std::string const& error_msg, bool fatal,
               mysql_callback fn, void* data,
-              int thread) {
-  if (thread < 0) {
+              int thread_id) {
+  if (thread_id < 0) {
     // Here, we use _current_thread
-    thread = _current_thread++;
+    thread_id = _current_thread++;
     if (_current_thread >= _thread.size())
       _current_thread = 0;
   }
-  _check_errors(thread);
-  _thread[thread]->run_statement(
+  _check_errors(thread_id);
+  _thread[thread_id]->run_statement(
     stmt.get_id(), stmt.get_bind(),
     error_msg, fatal,
     fn, data);
-  return _commit_if_needed();
+  return thread_id;
 }
 
 int mysql::run_statement_sync(mysql_stmt& stmt,

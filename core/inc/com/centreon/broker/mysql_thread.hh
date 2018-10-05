@@ -68,7 +68,7 @@ class                    mysql_thread : public QThread {
   mysql_result           get_result();
   mysql_error            get_error();
   int                    get_last_insert_id();
-  int                    get_affected_rows();
+  int                    get_affected_rows(int statement_id = 0);
   mysql_bind_mapping     get_stmt_mapping(int stmt_id) const;
   int                    get_stmt_size() const;
 

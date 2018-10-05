@@ -89,7 +89,10 @@ void mysql_thread::_get_last_insert_id_sync(mysql_task_last_insert_id* task) {
 
 void mysql_thread::_get_affected_rows_sync(mysql_task_affected_rows* task) {
   QMutexLocker locker(&_result_mutex);
-  *task->count = mysql_affected_rows(_conn);
+  if (task->statement_id)
+    *task->count = mysql_stmt_affected_rows(_stmt[task->statement_id]);
+  else
+    *task->count = mysql_affected_rows(_conn);
   _result_condition.wakeAll();
 }
 
@@ -167,6 +170,8 @@ void mysql_thread::_statement(mysql_task_statement* task) {
         << " (" << task->error_msg << ")";
     }
   }
+  std::cout << "*** AFFECTED ROWS: " << mysql_stmt_affected_rows(stmt)
+    << " ***" << std::endl;
 }
 
 void mysql_thread::_statement_sync(mysql_task_statement_sync* task) {
@@ -369,10 +374,10 @@ void mysql_thread::run_query_sync(std::string const& query,
   }
 }
 
-int mysql_thread::get_affected_rows() {
+int mysql_thread::get_affected_rows(int statement_id) {
   QMutexLocker locker(&_result_mutex);
   int retval;
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_affected_rows(&retval)));
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_affected_rows(&retval, statement_id)));
   _result_condition.wait(locker.mutex());
   return retval;
 }
