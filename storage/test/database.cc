@@ -20,17 +20,18 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/query_preparator.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/mysql.hh"
-#include "com/centreon/broker/neb/instance.hh"
-#include "com/centreon/broker/neb/instance_status.hh"
 #include "com/centreon/broker/neb/custom_variable.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/host_check.hh"
-#include "com/centreon/broker/neb/module.hh"
+#include "com/centreon/broker/neb/host_status.hh"
+#include "com/centreon/broker/neb/instance.hh"
+#include "com/centreon/broker/neb/instance_status.hh"
 #include "com/centreon/broker/neb/log_entry.hh"
-#include "com/centreon/broker/modules/loader.hh"
+#include "com/centreon/broker/neb/module.hh"
+#include "com/centreon/broker/query_preparator.hh"
 
 using namespace com::centreon::broker;
 
@@ -773,6 +774,7 @@ TEST_F(DatabaseStorageTest, InstanceStatusStatement) {
   ASSERT_TRUE(res.value_as_bool(0));
 }
 
+// Host check (8) statement
 TEST_F(DatabaseStorageTest, HostCheckStatement) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");
@@ -805,4 +807,62 @@ TEST_F(DatabaseStorageTest, HostCheckStatement) {
         "SELECT host_id FROM hosts WHERE host_id=24"));
   mysql_result res(ms->get_result(thread_id));
   ASSERT_TRUE(res.next());
+}
+
+// Host status (14) statement
+TEST_F(DatabaseStorageTest, HostStatusStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  query_preparator::event_unique unique;
+  unique.insert("host_id");
+  query_preparator qp(neb::host_status::static_type(), unique);
+  mysql_stmt host_status_update(qp.prepare_update(*ms));
+
+  neb::host_status hs;
+  hs.active_checks_enabled = true;
+  hs.check_command = "base_host_alive";
+  hs.check_interval = 5;
+  hs.check_period = "24x7";
+  hs.check_type = 0;
+  hs.current_check_attempt = 1;
+  hs.current_state = 0;
+  hs.downtime_depth = 0;
+  hs.enabled = true;
+  hs.execution_time = 0.159834;
+  hs.has_been_checked = true;
+  hs.host_id = 24;
+  hs.last_check = time(NULL) - 3;
+  hs.last_hard_state = 0;
+  hs.last_update = time(NULL) - 300;
+  hs.latency = 0.001;
+  hs.max_check_attempts = 3;
+  hs.next_check = time(NULL) + 50;
+  hs.obsess_over = true;
+  hs.output = "OK - 10.0.2.15: rta 0,020ms, lost 0%\n";
+  hs.perf_data = "rta=0,020ms;3000,000;5000,000;0; pl=0%;80;100;; rtmax=0,020ms;;;; rtmin=0,020ms;;;;";
+  hs.retry_interval = 1;
+  hs.should_be_scheduled = true;
+  hs.state_type = 1;
+
+  // Update
+  host_status_update << hs;
+  ms->run_statement(host_status_update, "", false);
+  ms->commit();
+
+  int thread_id(ms->run_query_sync(
+        "SELECT execution_time FROM hosts WHERE host_id=24"));
+  mysql_result res(ms->get_result(thread_id));
+  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(res.value_as_f64(0) == 0.159834);
 }
