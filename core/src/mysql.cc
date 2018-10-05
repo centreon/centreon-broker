@@ -35,7 +35,6 @@ mysql::mysql(database_config const& db_cfg)
     _version(mysql::v3),
     _current_thread(0),
     _prepare_count(0) {
-  std::cout << "mysql constructor" << std::endl;
   if (mysql_library_init(0, NULL, NULL))
     throw exceptions::msg()
       << "mysql: unable to initialize the MySQL connector";
@@ -56,15 +55,12 @@ mysql::mysql(database_config const& db_cfg)
     logging::info(logging::low)
       << "mysql: database is using version 3 of Centreon schema";
   }
-
-  std::cout << "mysql constructor return" << std::endl;
 }
 
 /**
  *  Destructor
  */
 mysql::~mysql() {
-  std::cout << "mysql destructor" << std::endl;
   bool retval(finish());
   if (!retval)
     logging::error(logging::medium)
@@ -78,7 +74,6 @@ mysql::~mysql() {
     delete *it;
 
   mysql_library_end();
-  std::cout << "mysql destructor return" << std::endl;
 }
 
 /**
@@ -89,20 +84,16 @@ mysql::~mysql() {
  */
 void mysql::commit() {
   QSemaphore sem;
-  std::cout << "sem available : " << sem.available() << std::endl;
   QAtomicInt ko(0);
   for (std::vector<mysql_thread*>::const_iterator
          it(_thread.begin()),
          end(_thread.end());
        it != end;
        ++it) {
-    std::cout << "SEND COMMIT TO THREAD" << std::endl;
     (*it)->commit(sem, ko);
-    std::cout << "COMMIT SENT TO THREAD" << std::endl;
   }
   // Let's wait for each thread to release the semaphore.
   sem.acquire(_thread.size());
-  std::cout << "ALL THE THREADS COMMITS DONE..." << std::endl;
   if (int(ko))
     throw exceptions::msg()
       << "mysql: Unable to commit transactions";
