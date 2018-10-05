@@ -1452,7 +1452,7 @@ void stream::_process_host_status(
                                 % _mysql.connections_count()));
     // FIXME DBR: this call could be asynchronous if the only result
     // is to send an error.
-    if (_mysql.get_affected_rows(thread_id) != 1)
+    if (_mysql.get_affected_rows(thread_id, _host_status_update) != 1)
       logging::error(logging::medium) << "SQL: host could not be "
            "updated because host " << hs.host_id
         << " was not found in database";
@@ -1564,7 +1564,12 @@ void stream::_process_instance_status(
              oss.str(), true,
              0, 0,
              is.poller_id % _mysql.connections_count());
-    if (_mysql.get_affected_rows(is.poller_id % _mysql.connections_count()) != 1)
+
+    // FIXME DBR: The only action is to send a log error that could be sent
+    // asynchronously
+    if (_mysql.get_affected_rows(
+          is.poller_id % _mysql.connections_count(),
+          _instance_status_update) != 1)
       logging::error(logging::medium) << "SQL: poller "
         << is.poller_id << " was not updated because no matching entry "
            "was found in database";
@@ -1880,35 +1885,25 @@ void stream::_process_service(
   // Processing.
   if (s.host_id && s.service_id) {
     // Prepare queries.
-    if (!_service_insert.prepared() || !_service_update.prepared()) {
+    if (!_service_insupdate.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("host_id");
       unique.insert("service_id");
       query_preparator qp(neb::service::static_type(), unique);
       logging::debug(logging::medium)
         << "mysql: PREPARE INSERT ON SERVICES";
-      _service_insert = qp.prepare_insert(_mysql);
-      _service_update = qp.prepare_update(_mysql);
+      _service_insupdate = qp.prepare_insert_or_update(_mysql);
     }
 
-    // Process object.
-    try {
-      _update_on_none_insert(
-        _service_insert,
-        _service_update,
-        s);
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg() << "SQL: could not store service (host: "
-             << s.host_id << ", service: " << s.service_id << "): "
-             << e.what());
-    }
+    std::ostringstream oss;
+    oss << "SQL: could not store service (host: "
+        << s.host_id << ", service: " << s.service_id << "): ";
+    _service_insupdate << s;
+    _mysql.run_statement(_service_insupdate, oss.str(), true);
   }
   else
     logging::error(logging::high) << "SQL: service '"
       << s.service_description << "' has no host ID or no service ID";
-
-  return ;
 }
 
 /**
@@ -1946,17 +1941,17 @@ void stream::_process_service_check(
 
     // Processing.
     _service_check_update << sc;
-    int thread_id;
-    try {
-      thread_id = _mysql.run_statement_sync(_service_check_update);
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store service check (host: "
-             << sc.host_id << ", service: " << sc.service_id << "): "
-             << e.what());
-    }
-    if (_mysql.get_affected_rows(thread_id) != 1)
+    std::ostringstream oss;
+    oss << "SQL: could not store service check (host: "
+        << sc.host_id << ", service: " << sc.service_id << "): ";
+    int thread_id(_mysql.run_statement(
+          _service_check_update,
+          oss.str(), true,
+          0, 0,
+          _cache_host_instance[sc.host_id] % _mysql.connections_count()));
+
+    // FIXME DBR: always just an error log...
+    if (_mysql.get_affected_rows(thread_id, _service_check_update) != 1)
       logging::error(logging::medium) << "SQL: service check could "
            "not be updated because service (" << sc.host_id << ", "
         << sc.service_id << ") was not found in database";
@@ -2298,24 +2293,25 @@ void stream::_process_service_status(
       unique.insert("host_id");
       unique.insert("service_id");
       query_preparator qp(
-                            neb::service_status::static_type(),
-                            unique);
+                         neb::service_status::static_type(),
+                         unique);
       _service_status_update = qp.prepare_update(_mysql);
     }
 
     // Processing.
+    std::ostringstream oss;
+    oss << "SQL: could not store service status (host: "
+        << ss.host_id << ", service: " << ss.service_id
+        << "): ";
     _service_status_update << ss;
-    int thread_id;
-    try {
-      thread_id = _mysql.run_statement_sync(_service_status_update);
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store service status (host: "
-             << ss.host_id << ", service: " << ss.service_id
-             << "): " << e.what());
-    }
-    if (_mysql.get_affected_rows(thread_id) != 1)
+    int thread_id(_mysql.run_statement(
+                           _service_status_update,
+                           oss.str(), true,
+                           0, 0,
+                           _cache_host_instance[ss.host_id]
+                                % _mysql.connections_count()));
+
+    if (_mysql.get_affected_rows(thread_id, _service_status_update) != 1)
       logging::error(logging::medium) << "SQL: service could not be "
            "updated because service (" << ss.host_id << ", "
         << ss.service_id << ") was not found in database";

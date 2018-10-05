@@ -31,6 +31,8 @@
 #include "com/centreon/broker/neb/instance_status.hh"
 #include "com/centreon/broker/neb/log_entry.hh"
 #include "com/centreon/broker/neb/module.hh"
+#include "com/centreon/broker/neb/service.hh"
+#include "com/centreon/broker/neb/service_check.hh"
 #include "com/centreon/broker/query_preparator.hh"
 
 using namespace com::centreon::broker;
@@ -730,6 +732,7 @@ TEST_F(DatabaseStorageTest, LogStatement) {
   ASSERT_TRUE(res.next());
 }
 
+// Instance status (16) statement
 TEST_F(DatabaseStorageTest, InstanceStatusStatement) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");
@@ -747,7 +750,7 @@ TEST_F(DatabaseStorageTest, InstanceStatusStatement) {
   query_preparator::event_unique unique;
   unique.insert("instance_id");
   query_preparator qp(neb::instance_status::static_type(), unique);
-  mysql_stmt inst_status_insert(qp.prepare_update(*ms));
+  mysql_stmt inst_status_update(qp.prepare_update(*ms));
 
   neb::instance_status is;
   is.active_host_checks_enabled = true;
@@ -764,13 +767,14 @@ TEST_F(DatabaseStorageTest, InstanceStatusStatement) {
   is.poller_id = 1;
 
   // Insert
-  inst_status_insert << is;
-  ms->run_statement(inst_status_insert, "", false);
+  inst_status_update << is;
+  int thread_id(ms->run_statement(inst_status_update, "", false));
+  ASSERT_TRUE(ms->get_affected_rows(thread_id, inst_status_update) == 1);
   ms->commit();
 
-  int thread_id(ms->run_query_sync(
+  thread_id = ms->run_query_sync(
         "SELECT active_host_checks FROM instances "
-        "WHERE instance_id=1"));
+        "WHERE instance_id=1");
   mysql_result res(ms->get_result(thread_id));
   ASSERT_TRUE(res.next());
   ASSERT_TRUE(res.value_as_bool(0));
@@ -869,4 +873,136 @@ TEST_F(DatabaseStorageTest, HostStatusStatement) {
   mysql_result res(ms->get_result(thread_id));
   ASSERT_TRUE(res.next());
   ASSERT_TRUE(res.value_as_f64(0) == 0.159834);
+}
+
+// Service (23) statement
+TEST_F(DatabaseStorageTest, ServiceStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  query_preparator::event_unique unique;
+  unique.insert("host_id");
+  unique.insert("service_id");
+  query_preparator qp(neb::service::static_type(), unique);
+  mysql_stmt service_insupdate(qp.prepare_insert_or_update(*ms));
+
+  ms->run_query_sync("DELETE FROM services");
+
+  neb::service s;
+  s.host_id = 24;
+  s.service_id = 318;
+  s.default_active_checks_enabled = true;
+  s.default_event_handler_enabled = true;
+  s.default_flap_detection_enabled = true;
+  s.default_notifications_enabled = true;
+  s.default_passive_checks_enabled = true;
+  s.display_name = "test-dbr";
+  s.icon_image = "";
+  s.icon_image_alt = "";
+  s.notification_interval = 30;
+  s.notification_period = "";
+  s.notify_on_downtime = true;
+  s.notify_on_flapping = true;
+  s.notify_on_recovery = true;
+  s.retain_nonstatus_information = true;
+  s.retain_status_information = true;
+
+  // Update
+  service_insupdate << s;
+  int thread_id(ms->run_statement(service_insupdate, "", false));
+
+  ms->commit();
+  thread_id = ms->run_query_sync(
+                    "SELECT notification_interval FROM services WHERE host_id=24 AND service_id=318");
+  mysql_result res(ms->get_result(thread_id));
+  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(res.value_as_i32(0) == 30);
+}
+
+// Service Check (19) statement
+TEST_F(DatabaseStorageTest, ServiceCheckStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  query_preparator::event_unique unique;
+  unique.insert("host_id");
+  unique.insert("service_id");
+  query_preparator qp(neb::service_check::static_type(), unique);
+  mysql_stmt service_check_update(qp.prepare_update(*ms));
+
+  neb::service_check sc;
+  sc.service_id = 318;
+  sc.host_id = 24;
+  sc.command_line = "/usr/bin/bash /home/admin/test.sh";
+
+  // Update
+  service_check_update << sc;
+  int thread_id(ms->run_statement(service_check_update, "", false));
+
+  ASSERT_TRUE(ms->get_affected_rows(thread_id, service_check_update) == 1);
+
+  ms->commit();
+  thread_id = ms->run_query_sync(
+                    "SELECT command_line FROM services WHERE host_id=24 AND service_id=318");
+  mysql_result res(ms->get_result(thread_id));
+  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(res.value_as_str(0) == "/usr/bin/bash /home/admin/test.sh");
+}
+
+// Service Status (24) statement
+TEST_F(DatabaseStorageTest, ServiceStatusStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  query_preparator::event_unique unique;
+  unique.insert("host_id");
+  unique.insert("service_id");
+  query_preparator qp(neb::service_status::static_type(), unique);
+  mysql_stmt service_status_update(qp.prepare_update(*ms));
+
+  neb::service_status ss;
+  ss.last_time_critical = time(NULL) - 1000;
+  ss.last_time_ok = time(NULL) - 50;
+  ss.last_time_unknown = time(NULL) - 1500;
+  ss.last_time_warning = time(NULL) - 500;
+  ss.service_id = 318;
+  ss.host_id = 24;
+
+  // Update
+  service_status_update << ss;
+  int thread_id(ms->run_statement(service_status_update, "", false));
+
+  ASSERT_TRUE(ms->get_affected_rows(thread_id, service_status_update) == 1);
+
+  ms->commit();
 }

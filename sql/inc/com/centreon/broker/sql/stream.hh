@@ -151,8 +151,7 @@ namespace          sql {
     mysql_stmt     _issue_parent_update;
     mysql_stmt     _log_insert;
     mysql_stmt     _module_insert;
-    mysql_stmt     _service_insert;
-    mysql_stmt     _service_update;
+    mysql_stmt     _service_insupdate;
     mysql_stmt     _service_check_update;
     mysql_stmt     _service_dependency_insert;
     mysql_stmt     _service_dependency_update;
