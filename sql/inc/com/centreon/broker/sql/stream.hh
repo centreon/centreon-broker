@@ -114,8 +114,7 @@ namespace          sql {
     mysql          _mysql;
 
     // Cache
-    mysql_stmt     _acknowledgement_insert;
-    mysql_stmt     _acknowledgement_update;
+    mysql_stmt     _acknowledgement_insupdate;
     mysql_stmt     _comment_insert;
     mysql_stmt     _comment_update;
     mysql_stmt     _custom_variable_insupdate;

@@ -71,7 +71,6 @@ void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data
   &stream::_process_instance_status,
   &stream::_process_log,
   &stream::_process_module,
-  //&stream::_process_notification,
   &stream::_process_service_check,
   &stream::_process_service_dependency,
   &stream::_process_service_group,
@@ -119,6 +118,9 @@ void stream::_cache_create() {
   }
 }
 
+/**
+ * Create the cache to link host id to instance id.
+ */
 void stream::_host_instance_cache_create() {
   _cache_host_instance.clear();
   try {
@@ -141,14 +143,12 @@ void stream::_clean_empty_host_groups() {
   if (!_empty_host_groups_delete.prepared()) {
     _empty_host_groups_delete = _mysql.prepare_query(
       "DELETE FROM hostgroups"
-      "  WHERE hostgroup_id"
-      "    NOT IN (SELECT DISTINCT hostgroup_id FROM hosts_hostgroups)");
-    //FIXME DBR : error management to add
-    //"SQL: could not prepare empty host group deletion query");
+      " WHERE hostgroup_id"
+      " NOT IN (SELECT DISTINCT hostgroup_id FROM hosts_hostgroups)");
   }
-  _mysql.run_statement(_empty_host_groups_delete);
-    //FIXME DBR : error management to add
-    //"SQL: could not remove empty host groups");
+  _mysql.run_statement(
+           _empty_host_groups_delete,
+           "SQL: could not remove empty host groups", false);
 }
 
 /**
@@ -158,14 +158,12 @@ void stream::_clean_empty_service_groups() {
   if (!_empty_service_groups_delete.prepared()) {
     _empty_service_groups_delete = _mysql.prepare_query(
       "DELETE FROM servicegroups"
-      "  WHERE servicegroup_id"
-      "    NOT IN (SELECT DISTINCT servicegroup_id FROM services_servicegroups)");
-    // FIXME DBR
-    // "SQL: could not prepare empty service group deletion query");
+      " WHERE servicegroup_id"
+      " NOT IN (SELECT DISTINCT servicegroup_id FROM services_servicegroups)");
   }
-  _mysql.run_statement(_empty_service_groups_delete);
-  //FIXME DBR: error management to ad
-  //"SQL: could not remove empty service groups");
+  _mysql.run_statement(
+           _empty_service_groups_delete,
+           "SQL: could not remove empty service groups", false);
 }
 
 /**
@@ -181,259 +179,178 @@ void stream::_clean_tables(unsigned int instance_id) {
   bool db_v2(_mysql.schema_version() == mysql::v2);
 
   // Disable hosts and services.
-  try {
-    std::ostringstream ss;
-    ss << "UPDATE " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
-          "  LEFT JOIN " << (db_v2 ? "services" : "rt_services")
-       << "    AS s"
-          "    ON h.host_id = s.host_id"
-          "  SET h.enabled=0, s.enabled=0"
-          "  WHERE h.instance_id=" << instance_id;
+  std::ostringstream oss;
+  oss << "UPDATE " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
+        " LEFT JOIN " << (db_v2 ? "services" : "rt_services")
+     << " AS s"
+        " ON h.host_id = s.host_id"
+        " SET h.enabled=0, s.enabled=0"
+        " WHERE h.instance_id=" << instance_id;
+  _mysql.run_query(
+           oss.str(),
+           "SQL: could not clean hosts and services tables: ", false,
+           0, 0,
+           instance_id % _mysql.connections_count());
+
+  // Remove host group memberships.
+  if (db_v2) {
+    oss.str("");
+    oss << "DELETE hosts_hostgroups"
+        << " FROM hosts_hostgroups"
+        << " LEFT JOIN hosts"
+        << "   ON hosts_hostgroups.host_id=hosts.host_id"
+        << " WHERE hosts.instance_id=" << instance_id;
     _mysql.run_query(
-             ss.str(),
-             "", false,
+             oss.str(),
+             "SQL: could not clean host groups memberships table: ", false,
              0, 0,
              instance_id % _mysql.connections_count());
   }
-  catch (std::exception const& e) {
-    //FIXME DBR
-    logging::error(logging::medium)
-      << "SQL: could not clean hosts and services tables: " << e.what();
-  }
-
-  // Remove host group memberships.
-  if (db_v2)
-    try {
-      std::ostringstream ss;
-      ss << "DELETE hosts_hostgroups"
-         << " FROM hosts_hostgroups"
-         << " LEFT JOIN hosts"
-         << "   ON hosts_hostgroups.host_id=hosts.host_id"
-         << " WHERE hosts.instance_id=" << instance_id;
-      _mysql.run_query(
-               ss.str(),
-               "", false,
-               0, 0,
-               instance_id % _mysql.connections_count());
-    }
-    catch (std::exception const& e) {
-      //FIXME DBR
-      logging::error(logging::medium)
-        << "SQL: could not clean host groups memberships table: "
-        << e.what();
-    }
 
   // Remove service group memberships
-  if (db_v2)
-    try {
-      std::ostringstream ss;
-      ss << "DELETE services_servicegroups"
-         << " FROM services_servicegroups"
-         << " LEFT JOIN hosts"
-         << "   ON services_servicegroups.host_id=hosts.host_id"
-         << " WHERE hosts.instance_id=" << instance_id;
-      _mysql.run_query(
-               ss.str(),
-               "", false,
-               0, 0,
-               instance_id % _mysql.connections_count());
-    }
-    catch (std::exception const& e) {
-      // FIXME DBR
-      logging::error(logging::medium)
-        << "SQL: could not clean service groups memberships table: "
-        << e.what();
-    }
+  if (db_v2) {
+    oss.str("");
+    oss << "DELETE services_servicegroups"
+        << " FROM services_servicegroups"
+        << " LEFT JOIN hosts"
+        << "   ON services_servicegroups.host_id=hosts.host_id"
+        << " WHERE hosts.instance_id=" << instance_id;
+    _mysql.run_query(
+             oss.str(),
+             "SQL: could not clean service groups memberships table: ", false,
+             0, 0,
+             instance_id % _mysql.connections_count());
+  }
 
   // Remove host groups.
   if (db_v2)
-    try {
-      _clean_empty_host_groups();
-    }
-    catch (std::exception const& e) {
-      logging::error(logging::medium) << e.what();
-    }
+    _clean_empty_host_groups();
 
   // Remove service groups.
   if (db_v2)
-    try {
-      _clean_empty_service_groups();
-    }
-    catch (std::exception const& e) {
-      logging::error(logging::medium) << e.what();
-    }
+    _clean_empty_service_groups();
 
   // Remove host dependencies.
-  try {
-    std::ostringstream ss;
-    ss << "DELETE FROM " << (db_v2
-                             ? "hosts_hosts_dependencies"
-                             : "rt_hosts_hosts_dependencies")
-       << "  WHERE host_id IN ("
-          "    SELECT host_id"
-          "      FROM " << (db_v2 ? "hosts" : "rt_hosts")
-       << "      WHERE instance_id=" << instance_id << ")"
-          "    OR dependent_host_id IN ("
-          "      SELECT host_id"
-          "        FROM " << (db_v2 ? "hosts" : "rt_hosts")
-       << "        WHERE instance_id=" << instance_id << ")";
-    _mysql.run_query(ss.str(),
-        "", false,
-        0, 0,
-        instance_id % _mysql.connections_count());
-  }
-  catch (std::exception const& e) {
-    // FIXME DBR
-    logging::error(logging::medium)
-      << "SQL: could not clean host dependencies table: " << e.what();
-  }
+  oss.str("");
+  oss << "DELETE FROM " << (db_v2
+                            ? "hosts_hosts_dependencies"
+                            : "rt_hosts_hosts_dependencies")
+      << "  WHERE host_id IN ("
+         "    SELECT host_id"
+         "      FROM " << (db_v2 ? "hosts" : "rt_hosts")
+      << "      WHERE instance_id=" << instance_id << ")"
+         "    OR dependent_host_id IN ("
+         "      SELECT host_id"
+         "        FROM " << (db_v2 ? "hosts" : "rt_hosts")
+      << "        WHERE instance_id=" << instance_id << ")";
+  _mysql.run_query(oss.str(),
+      "SQL: could not clean host dependencies table: ", false,
+      0, 0,
+      instance_id % _mysql.connections_count());
 
   // Remove host parents.
-  try {
-    std::ostringstream ss;
-    ss << "DELETE FROM " << (db_v2
-                             ? "hosts_hosts_parents"
-                             : "rt_hosts_hosts_parents")
-       << "  WHERE child_id IN ("
-          "    SELECT host_id"
-          "     FROM " << (db_v2 ? "hosts" : "rt_hosts")
-       << "     WHERE instance_id=" << instance_id << ")"
-          "    OR parent_id IN ("
-          "      SELECT host_id"
-          "      FROM " << (db_v2 ? "hosts" : "rt_hosts")
-       << "      WHERE instance_id=" << instance_id << ")";
-    _mysql.run_query(
-             ss.str(),
-             "", false,
-             0, 0,
-             instance_id % _mysql.connections_count());
-  }
-  catch (std::exception const& e) {
-    // FIXME DBR
-    logging::error(logging::medium)
-      << "SQL: could not clean host parents table: " << e.what();
-  }
+  oss.str("");
+  oss << "DELETE FROM " << (db_v2
+                            ? "hosts_hosts_parents"
+                            : "rt_hosts_hosts_parents")
+      << "  WHERE child_id IN ("
+         "    SELECT host_id"
+         "     FROM " << (db_v2 ? "hosts" : "rt_hosts")
+      << "     WHERE instance_id=" << instance_id << ")"
+         "    OR parent_id IN ("
+         "      SELECT host_id"
+         "      FROM " << (db_v2 ? "hosts" : "rt_hosts")
+      << "      WHERE instance_id=" << instance_id << ")";
+  _mysql.run_query(
+           oss.str(),
+           "SQL: could not clean host parents table: ", false,
+           0, 0,
+           instance_id % _mysql.connections_count());
 
   // Remove service dependencies.
-  try {
-    std::ostringstream ss;
-    ss << "DELETE FROM "
-       << (db_v2
-           ? "services_services_dependencies"
-           : "rt_services_services_dependencies")
-       << "  WHERE service_id IN ("
-          "    SELECT s.service_id"
-          "      FROM " << (db_v2 ? "services" : "rt_services")
-       << "        AS s"
-          "        INNER JOIN " << (db_v2 ? "hosts" : "rt_hosts")
-       << "          AS h"
-          "          ON h.host_id=s.host_id"
-          "      WHERE h.instance_id=" << instance_id << ")"
-          "    OR dependent_service_id IN ("
-          "      SELECT s.service_id "
-          "        FROM " << (db_v2 ? "services" : "rt_services")
-       << "          AS s"
-          "          INNER JOIN " << (db_v2 ? "hosts" : "rt_hosts")
-       << "            AS h"
-          "            ON h.host_id=s.host_id"
-          "        WHERE h.instance_id=" << instance_id << ")";
-    _mysql.run_query(
-             ss.str(),
-             "", false,
-             0, 0,
-             instance_id % _mysql.connections_count());
-  }
-  catch (std::exception const& e) {
-    // FIXME DBR
-    logging::error(logging::medium)
-      << "SQL: could not clean service dependencies tables: "
-      << e.what();
-  }
+  oss.str("");
+  oss << "DELETE FROM "
+      << (db_v2
+          ? "services_services_dependencies"
+          : "rt_services_services_dependencies")
+      << "  WHERE service_id IN ("
+         "    SELECT s.service_id"
+         "      FROM " << (db_v2 ? "services" : "rt_services")
+      << "        AS s"
+         "        INNER JOIN " << (db_v2 ? "hosts" : "rt_hosts")
+      << "          AS h"
+         "          ON h.host_id=s.host_id"
+         "      WHERE h.instance_id=" << instance_id << ")"
+         "    OR dependent_service_id IN ("
+         "      SELECT s.service_id "
+         "        FROM " << (db_v2 ? "services" : "rt_services")
+      << "          AS s"
+         "          INNER JOIN " << (db_v2 ? "hosts" : "rt_hosts")
+      << "            AS h"
+         "            ON h.host_id=s.host_id"
+         "        WHERE h.instance_id=" << instance_id << ")";
+  _mysql.run_query(
+           oss.str(),
+           "SQL: could not clean service dependencies tables: ", false,
+           0, 0,
+           instance_id % _mysql.connections_count());
 
   // Remove list of modules.
-  try {
-    std::ostringstream ss;
-    ss << "DELETE FROM " << (db_v2 ? "modules" : "rt_modules")
-       << "  WHERE instance_id=" << instance_id;
-    _mysql.run_query(
-             ss.str(),
-             "", false,
-             0, 0,
-             instance_id % _mysql.connections_count());
-  }
-  catch (std::exception const& e) {
-    //FIXME DBR
-    logging::error(logging::medium)
-      << "SQL: could not clean modules table: " << e.what();
-  }
+  oss.str("");
+  oss << "DELETE FROM " << (db_v2 ? "modules" : "rt_modules")
+      << " WHERE instance_id=" << instance_id;
+  _mysql.run_query(
+           oss.str(),
+           "SQL: could not clean modules table: ", false,
+           0, 0,
+           instance_id % _mysql.connections_count());
 
-  // Remove downtimes.
-  try {
-    std::ostringstream ss;
-    ss << "UPDATE downtimes AS d"
-          "  INNER JOIN hosts AS h"
-          "    ON d.host_id=h.host_id"
-          "  SET d.cancelled=1"
-          "  WHERE d.actual_end_time IS NULL"
-          "    AND d.cancelled=0"
-          "    AND h.instance_id=" << instance_id;
-    _mysql.run_query(
-             ss.str(),
-             "", false,
-             0, 0,
-             instance_id % _mysql.connections_count());
-  }
-  catch (std::exception const& e) {
-    //FIXME DBR
-    logging::error(logging::medium)
-      << "SQL: could not clean downtimes table: " << e.what();
-  }
+  oss.str("");
+  oss << "UPDATE downtimes AS d"
+         " INNER JOIN hosts AS h"
+         "  ON d.host_id=h.host_id"
+         " SET d.cancelled=1"
+         " WHERE d.actual_end_time IS NULL"
+         "  AND d.cancelled=0"
+         "  AND h.instance_id=" << instance_id;
+  _mysql.run_query(
+           oss.str(),
+           "SQL: could not clean downtimes table: ", false,
+           0, 0,
+           instance_id % _mysql.connections_count());
 
   // Remove comments.
-  if (db_v2)
-    try {
-      std::ostringstream ss;
-      ss << "UPDATE comments AS c"
-            "  JOIN hosts AS h"
-            "    ON c.host_id=h.host_id"
-            "  SET c.deletion_time=" << time(NULL)
-         << "  WHERE h.instance_id=" << instance_id
-         << "    AND c.persistent=0"
-            "    AND (c.deletion_time IS NULL OR c.deletion_time=0)";
-      _mysql.run_query(
-               ss.str(),
-               "", false,
-               0, 0,
-               instance_id % _mysql.connections_count());
-    }
-    catch (std::exception const& e) {
-      //FIXME DBR
-      logging::error(logging::medium)
-        << "SQL: could not clean comments table: " << e.what();
-    }
-
-  // Remove custom variables.
-  try {
-    std::ostringstream ss;
-    ss << "DELETE cv"
-       << "  FROM " << (db_v2
-                        ? "customvariables"
-                        : "rt_customvariables")
-       << "    AS cv"
-          "  INNER JOIN " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
-          "    ON cv.host_id = h.host_id"
-          "  WHERE h.instance_id=" << instance_id;
+  if (db_v2) {
+    oss.str("");
+    oss << "UPDATE comments AS c"
+           " JOIN hosts AS h"
+           "  ON c.host_id=h.host_id"
+           " SET c.deletion_time=" << time(NULL)
+        << " WHERE h.instance_id=" << instance_id
+        << "  AND c.persistent=0"
+           "  AND (c.deletion_time IS NULL OR c.deletion_time=0)";
     _mysql.run_query(
-             ss.str(),
-             "", false,
+             oss.str(),
+             "SQL: could not clean comments table: ", false,
              0, 0,
              instance_id % _mysql.connections_count());
   }
-  catch (std::exception const& e) {
-    //FIXME DBR
-    logging::error(logging::medium)
-      << "SQL: could not clean custom variables table: " << e.what();
-  }
+
+  // Remove custom variables.
+  oss.str("");
+  oss << "DELETE cv"
+      << " FROM " << (db_v2
+                      ? "customvariables"
+                      : "rt_customvariables")
+      << "  AS cv"
+         " INNER JOIN " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
+         "  ON cv.host_id = h.host_id"
+         " WHERE h.instance_id=" << instance_id;
+  _mysql.run_query(
+           oss.str(),
+           "SQL: could not clean custom variables table: ", false,
+           0, 0,
+           instance_id % _mysql.connections_count());
 }
 
 /**
@@ -459,7 +376,7 @@ bool stream::_is_valid_poller(unsigned int poller_id) {
     _update_timestamp(poller_id);
 
   // Return whether poller is valid or not.
-  return (!deleted);
+  return !deleted;
 }
 
 /**
@@ -473,6 +390,8 @@ mysql_stmt stream::_prepare_select(
                std::string const& table_name) {
   // Database schema version.
   bool db_v2(_mysql.schema_version() == mysql::v2);
+  std::map<std::string, int> bind_mapping;
+  int size(0);
 
   // Build query string.
   std::string query;
@@ -480,6 +399,7 @@ mysql_stmt stream::_prepare_select(
   query.append(table_name);
   query.append(" WHERE ");
   mapping::entry const* entries = T::entries;
+  std::string key;
   for (size_t i(0); !entries[i].is_null(); ++i) {
     char const* entry_name;
     if (db_v2)
@@ -490,32 +410,15 @@ mysql_stmt stream::_prepare_select(
       continue ;
     query.append(entry_name);
     query.append(" = ? AND ");
-    //query.append(entry_name);
-    //query.append(" AND ");
+    key = ":";
+    key.append(entry_name);
+    bind_mapping.insert(std::make_pair(key, size++));
   }
 
   query.resize(query.size() - 5);
 
-  mysql_stmt retval;
   // Prepare statement.
-  try {
-    //FIXME DBR
-    retval = _mysql.prepare_query(query);
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg()
-           << "SQL: could not prepare selection query from table '"
-           << table_name << "': " << e.what());
-  }
-  try {
-    //FIXME DBR
-    retval = _mysql.prepare_query(query);
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg()
-           << "SQL: could not prepare selection query from table '"
-           << table_name << "': " << e.what());
-  }
+  mysql_stmt retval(_mysql.prepare_query(query, bind_mapping));
 
   return retval;
 }
@@ -541,8 +444,7 @@ void stream::_process_acknowledgement(
   // Processing.
   if (_is_valid_poller(ack.poller_id)) {
     // Prepare queries.
-    if (!_acknowledgement_insert.prepared()
-        || !_acknowledgement_update.prepared()) {
+    if (!_acknowledgement_insupdate.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("entry_time");
       unique.insert("host_id");
@@ -550,43 +452,23 @@ void stream::_process_acknowledgement(
       query_preparator qp(
                          neb::acknowledgement::static_type(),
                          unique);
-      _acknowledgement_insert = qp.prepare_insert(_mysql);
-      _acknowledgement_update = qp.prepare_update(_mysql);
+      _acknowledgement_insupdate = qp.prepare_insert_or_update(_mysql);
     }
 
     // Process object.
-    try {
-      _update_on_none_insert(
-        _acknowledgement_insert,
-        _acknowledgement_update,
-        ack,
-        ack.poller_id % _mysql.connections_count());
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store acknowledgement (poller: "
-             << ack.poller_id << ", host: " << ack.host_id
-             << ", service: " << ack.service_id << ", entry time: "
-             << ack.entry_time << "): " << e.what());
-    }
+    std::ostringstream oss;
+    oss << "SQL: could not store acknowledgement (poller: "
+        << ack.poller_id << ", host: " << ack.host_id
+        << ", service: " << ack.service_id << ", entry time: "
+        << ack.entry_time << "): ";
 
-    // XXX : probably useless as we're using Centreon Engine 1.x
-    // // Update the associated host or service table.
-    // std::ostringstream query;
-    // if (ack.service_id == 0)
-    //   query << "UPDATE rt_hosts SET acknowledged ="
-    //         << ack.deletion_time.is_null()
-    //         << "  WHERE host_id = " << ack.host_id;
-    // else
-    //   query << "UPDATE rt_services SET acknowledged ="
-    //         << ack.deletion_time.is_null()
-    //         << "  WHERE host_id = " << ack.host_id
-    //         << "   AND service_id = " << ack.service_id;
-    // database_query q(_db);
-    // q.run_query(query.str(), "SQL: couldn't update acknowledgement flags");
+    _acknowledgement_insupdate << ack;
+    _mysql.run_statement(
+             _acknowledgement_insupdate,
+             oss.str(), true,
+             0, 0,
+             ack.poller_id % _mysql.connections_count());
   }
-
-  return ;
 }
 
 /**
@@ -1285,12 +1167,12 @@ void stream::_process_host_group_member(
  */
 void stream::_process_host_parent(
                misc::shared_ptr<io::data> const& e) {
-  // Log message.
   neb::host_parent const&
     hp(*static_cast<neb::host_parent const*>(e.data()));
 
   // Enable parenting.
   if (hp.enabled) {
+    // Log message.
     logging::info(logging::medium) << "SQL: host " << hp.parent_id
       << " is parent of host " << hp.host_id;
 
