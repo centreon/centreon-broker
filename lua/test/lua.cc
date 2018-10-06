@@ -1072,3 +1072,47 @@ TEST_F(LuaGenericTest, BamCacheTestBvNil) {
   RemoveFile(filename);
   RemoveFile("/tmp/log");
 }
+
+TEST_F(LuaGenericTest, ParsePerfdata) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/parse_perfdata.lua");
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local perf = broker.parse_perfdata(' percent_packet_loss=0 rta=0.80')\n"
+                         "  broker_log:info(1, broker.json_encode(perf))\n"
+                         "  perf = broker.parse_perfdata(\" 'one value'=0 'another value'=0.89\")\n"
+                         "  broker_log:info(1, broker.json_encode(perf))\n"
+                         "  perf = broker.parse_perfdata(\" 'one value'=0;3;5 'another value'=0.89;0.8;1;;\")\n"
+                         "  broker_log:info(1, broker.json_encode(perf))\n"
+                         "  perf = broker.parse_perfdata(\" 'one value'=1;3;5;0;9 'another value'=10.89;0.8;1;0;20\")\n"
+                         "  broker_log:info(1, broker.json_encode(perf))\n"
+                         "  perf = broker.parse_perfdata(\" 'one value'=2s;3;5;0;9 'a b c'=3.14KB;0.8;1;0;10\")\n"
+                         "  broker_log:info(1, broker.json_encode(perf))\n"
+                         "  perf = broker.parse_perfdata(' percent_packet_loss=0 rta=0.80', true)\n"
+                         "  broker_log:info(1, broker.json_encode(perf))\n"
+                         "  perf = broker.parse_perfdata(\" 'one value'=12%;~:80;~:95 'another value'=78%;60;90;;\", true)\n"
+                         "  broker_log:info(1, broker.json_encode(perf))\n"
+                         "  perf = broker.parse_perfdata(\"                \")\n"
+                         "  broker_log:info(1, broker.json_encode(perf))\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("\"percent_packet_loss\":0.0"));
+  ASSERT_TRUE(lst[0].contains("\"rta\":0.8"));
+  ASSERT_TRUE(lst[1].contains("\"one value\":0"));
+  ASSERT_TRUE(lst[1].contains("\"another value\":0.89"));
+  ASSERT_TRUE(lst[2].contains("\"one value\":0"));
+  ASSERT_TRUE(lst[2].contains("\"another value\":0.89"));
+  ASSERT_TRUE(lst[3].contains("\"one value\":1"));
+  ASSERT_TRUE(lst[3].contains("\"another value\":10.89"));
+  ASSERT_TRUE(lst[4].contains("\"one value\":2"));
+  ASSERT_TRUE(lst[4].contains("\"a b c\":3.14"));
+  ASSERT_TRUE(lst[5].contains("\"a b c\":3.14"));
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
