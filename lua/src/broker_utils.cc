@@ -19,6 +19,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
+#include "com/centreon/broker/storage/parser.hh"
+#include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/json/json_parser.hh"
 #include "com/centreon/broker/lua/broker_utils.hh"
 
@@ -262,6 +264,68 @@ static int l_broker_json_decode(lua_State* L) {
 }
 
 /**
+ *  The Lua parse_perfdata function
+ *
+ * @param L The Lua interpreter
+ *
+ * @return 1
+ */
+static int l_broker_parse_perfdata(lua_State* L) {
+  char const* perf_data(lua_tostring(L, 1));
+  int full(lua_toboolean(L, 2));
+  storage::parser p;
+  QList<storage::perfdata> pds;
+  try {
+    p.parse_perfdata(perf_data, pds);
+  }
+  catch (storage::exceptions::perfdata const& e) {
+    std::stringstream oss;
+    oss << "storage: error while parsing perfdata << "
+            << perf_data << " >>: " << e.what();
+    luaL_error(L, oss.str().c_str());
+  }
+  lua_createtable(L, 0, pds.size());
+  for (QList<storage::perfdata>::iterator
+         it(pds.begin()),
+         end(pds.end());
+       it != end;
+       ++it) {
+    storage::perfdata& pd(*it);
+    lua_pushstring(L, pd.name().toStdString().c_str());
+    if (full) {
+      lua_createtable(L, 0, 3);
+      lua_pushnumber(L, pd.value());
+      lua_setfield(L, -2, "value");
+      lua_pushstring(L, pd.unit().toStdString().c_str());
+      lua_setfield(L, -2, "uom");
+      lua_pushnumber(L, pd.min());
+      lua_setfield(L, -2, "min");
+      lua_pushnumber(L, pd.max());
+      lua_setfield(L, -2, "max");
+      lua_pushnumber(L, pd.warning());
+      lua_setfield(L, -2, "warning_high");
+      lua_pushnumber(L, pd.warning_low());
+      lua_setfield(L, -2, "warning_low");
+      lua_pushboolean(L, pd.warning_mode());
+      lua_setfield(L, -2, "warning_mode");
+
+      lua_pushnumber(L, pd.critical());
+      lua_setfield(L, -2, "critical_high");
+      lua_pushnumber(L, pd.critical_low());
+      lua_setfield(L, -2, "critical_low");
+      lua_pushboolean(L, pd.critical_mode());
+      lua_setfield(L, -2, "critical_mode");
+      lua_settable(L, -3);
+    }
+    else {
+      lua_pushnumber(L, pd.value());
+      lua_settable(L, -3);
+    }
+  }
+  return 1;
+}
+
+/**
  *  Load the Lua interpreter with the standard libraries
  *  and the broker lua sdk.
  *
@@ -272,6 +336,7 @@ void broker_utils::broker_utils_reg(lua_State* L) {
   luaL_Reg s_broker_regs[] = {
     { "json_encode", l_broker_json_encode },
     { "json_decode", l_broker_json_decode },
+    { "parse_perfdata", l_broker_parse_perfdata },
     { NULL, NULL }
   };
 
