@@ -19,18 +19,18 @@
 #include <ctime>
 #include <sstream>
 #include <limits>
-#include "com/centreon/engine/common.hh"
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"
-#include "com/centreon/broker/query_preparator.hh"
-#include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/broker/query_preparator.hh"
 #include "com/centreon/broker/sql/stream.hh"
+#include "com/centreon/engine/common.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -106,7 +106,7 @@ void stream::_cache_create() {
      << " WHERE deleted=1";
   int thread_id;
   try {
-    thread_id = _mysql.run_query_sync(ss.str());
+    thread_id = _mysql.run_query(ss.str());
     mysql_result res(_mysql.get_result(thread_id));
     while (res.next())
       _cache_deleted_instance_id.insert(res.value_as_u32(0));
@@ -682,29 +682,7 @@ void stream::_process_downtime(
              << ", host: " << d.host_id << ", service: " << d.service_id
              << "): " << e.what());
     }
-
-    // XXX : probably useless as we're using Centreon Engine 1.x
-    // // Update the associated host or service table.
-    // if (!d.is_recurring && !d.actual_start_time.is_null()) {
-    //   std::string operation = d.actual_end_time.is_null() ? "+ 1" : "- 1";
-    //   std::ostringstream query;
-    //   if (d.service_id == 0)
-    //     query << "UPDATE rt_hosts"
-    //              "       SET scheduled_downtime_depth ="
-    //              "                    scheduled_downtime_depth " << operation
-    //           << "  WHERE host_id = " << d.host_id;
-    //   else
-    //     query << "UPDATE rt_services"
-    //              "       SET scheduled_downtime_depth ="
-    //              "                    scheduled_downtime_depth " << operation
-    //           << "  WHERE host_id = " << d.host_id
-    //           << "   AND service_id = " << d.service_id;
-    //   database_query q(_db);
-    //   q.run_query(query.str(), "SQL: couldn't update scheduled downtime depth");
-    // }
   }
-
-  return ;
 }
 
 /**
@@ -765,8 +743,7 @@ void stream::_process_event_handler(
     << eh.start_time << ")";
 
   // Prepare queries.
-  if (!_event_handler_insert.prepared()
-      || !_event_handler_update.prepared()) {
+  if (!_event_handler_insupdate.prepared()) {
     query_preparator::event_unique unique;
     unique.insert("host_id");
     unique.insert("service_id");
@@ -774,25 +751,21 @@ void stream::_process_event_handler(
     query_preparator qp(
                         neb::event_handler::static_type(),
                         unique);
-    _event_handler_insert = qp.prepare_insert(_mysql);
-    _event_handler_update = qp.prepare_update(_mysql);
+    _event_handler_insupdate = qp.prepare_insert_or_update(_mysql);
   }
 
   // Processing.
-  try {
-    _update_on_none_insert(
-      _event_handler_insert,
-      _event_handler_update,
-      eh);
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg()
-           << "SQL: could not store event handler (host: " << eh.host_id
-           << ", service: " << eh.service_id << ", start time: "
-           << eh.start_time << "): " << e.what());
-  }
+  std::ostringstream oss;
+  oss << "SQL: could not store event handler (host: " << eh.host_id
+      << ", service: " << eh.service_id << ", start time: "
+      << eh.start_time << "): ";
 
-  return ;
+  _event_handler_insupdate << eh;
+  _mysql.run_statement(
+           _event_handler_insupdate,
+           oss.str(), true,
+           0, 0,
+           _cache_host_instance[eh.host_id] % _mysql.connections_count());
 }
 
 /**
@@ -813,34 +786,29 @@ void stream::_process_flapping_status(
     << fs.event_time << ")";
 
   // Prepare queries.
-  if (!_flapping_status_insert.prepared()
-      || !_flapping_status_update.prepared()) {
+  if (!_flapping_status_insupdate.prepared()) {
     query_preparator::event_unique unique;
     unique.insert("host_id");
     unique.insert("service_id");
     unique.insert("event_time");
     query_preparator qp(
-                        neb::flapping_status::static_type(),
-                        unique);
-    _flapping_status_insert = qp.prepare_insert(_mysql);
-    _flapping_status_update = qp.prepare_update(_mysql);
+                       neb::flapping_status::static_type(),
+                       unique);
+    _flapping_status_insupdate = qp.prepare_insert_or_update(_mysql);
   }
 
   // Processing.
-  try {
-    _update_on_none_insert(
-      _flapping_status_insert,
-      _flapping_status_update,
-      fs);
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg()
-           << "SQL: could not store flapping status (host: "
+  std::ostringstream oss;
+  oss << "SQL: could not store flapping status (host: "
            << fs.host_id << ", service: " << fs.service_id
-           << ", event time: " << fs.event_time << "): " << e.what());
-  }
+           << ", event time: " << fs.event_time << "): ";
 
-  return ;
+  _flapping_status_insupdate << fs;
+  _mysql.run_statement(
+           _flapping_status_insupdate,
+           oss.str(), true,
+           0, 0,
+           _cache_host_instance[fs.host_id] % _mysql.connections_count());
 }
 
 /**
