@@ -80,20 +80,29 @@ mysql::~mysql() {
  *  Commit all pending queries of all the threads.
  *  This function waits for all the threads to be committed.
  *
+ *  @param thread_id: -1 to commit all the threads or the index of the thread to
+ *                    commit.
  *  If an error occures, an exception is thrown.
  */
-void mysql::commit() {
+void mysql::commit(int thread_id) {
   QSemaphore sem;
   QAtomicInt ko(0);
-  for (std::vector<mysql_thread*>::const_iterator
-         it(_thread.begin()),
-         end(_thread.end());
-       it != end;
-       ++it) {
-    (*it)->commit(sem, ko);
+  int commits;
+  if (thread_id < 0) {
+    for (std::vector<mysql_thread*>::const_iterator
+           it(_thread.begin()),
+           end(_thread.end());
+         it != end;
+         ++it) {
+      (*it)->commit(sem, ko);
+    }
+    commits = _thread.size();
   }
-  // Let's wait for each thread to release the semaphore.
-  sem.acquire(_thread.size());
+  else {
+    _thread[thread_id]->commit(sem, ko);
+    commits = 1;
+  }
+  sem.acquire(commits);
   if (int(ko))
     throw exceptions::msg()
       << "mysql: Unable to commit transactions";
@@ -183,9 +192,7 @@ int mysql::run_query(std::string const& query,
     if (_current_thread >= _thread.size())
       _current_thread = 0;
   }
-  std::cout << "-> CHECK ERRORS FATAL" << std::endl;
   _check_errors(thread_id);
-  std::cout << "-> FATAL 1" << std::endl;
   _thread[thread_id]->run_query(
     query,
     error_msg, fatal,

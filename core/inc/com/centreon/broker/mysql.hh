@@ -38,7 +38,7 @@ class                 mysql {
                       ~mysql();
   mysql_stmt          prepare_query(std::string const& query,
                                     mysql_bind_mapping const& bind_mapping = mysql_bind_mapping());
-  void                commit();
+  void                commit(int thread_id = -1);
   int                 run_query(
                         std::string const& query,
                         std::string const& error_msg = "", bool fatal = false,
