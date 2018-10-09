@@ -1599,7 +1599,7 @@ void stream::_process_issue_parent(
     << "SQL: updating issue parenting between child " << child_id
     << " and parent " << parent_id << " (start: " << ip.start_time
     << ", end: " << ip.end_time << ")";
-  int thread_id(_mysql.run_statement_sync(_issue_parent_update,
+  int thread_id(_mysql.run_statement(_issue_parent_update,
                          "SQL: issue parent update query failed"));
   if (_mysql.get_affected_rows(thread_id) <= 0) {
     if (ip.end_time != (time_t)-1)
@@ -2190,7 +2190,7 @@ void stream::_update_on_none_insert(
   int affected_rows(0);
 
   try {
-    th_id = _mysql.run_statement_sync(ins_stmt, "", thread_id);
+    th_id = _mysql.run_statement(ins_stmt, "", thread_id);
     affected_rows = _mysql.get_affected_rows(th_id);
   }
   catch (std::exception const& e) {
@@ -2200,7 +2200,7 @@ void stream::_update_on_none_insert(
   // Try insertion.
   if (affected_rows != 1) {
     up_stmt << t;
-    _mysql.run_statement_sync(up_stmt, "", th_id);
+    _mysql.run_statement(up_stmt, "", th_id);
   }
 }
 
@@ -2242,7 +2242,7 @@ void stream::_get_all_outdated_instances_from_db() {
                       ? "instances"
                       : "rt_instances")
      << " WHERE outdated=TRUE";
-  int thread_id(_mysql.run_query_sync(
+  int thread_id(_mysql.run_query(
       ss.str(),
       "SQL: could not get the list of outdated instances"));
   mysql_result res(_mysql.get_result(thread_id));

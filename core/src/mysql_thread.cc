@@ -91,32 +91,34 @@ void mysql_thread::_get_last_insert_id_sync(mysql_task_last_insert_id* task) {
 
 void mysql_thread::_get_result_sync(mysql_task_result* task) {
   QMutexLocker locker(&_result_mutex);
-  int stmt_id(task->result->get_statement_id());
-  if (stmt_id) {
-    MYSQL_STMT* stmt(_stmt[stmt_id]);
-    MYSQL_RES* prepare_meta_result(mysql_stmt_result_metadata(stmt));
-    if (prepare_meta_result == NULL) {
-      _error = mysql_error(mysql_stmt_error(stmt), true);
-    }
-    else {
-      int size(mysql_num_fields(prepare_meta_result));
-      std::auto_ptr<mysql_bind> bind(new mysql_bind(size, STR_SIZE));
-
-      if (mysql_stmt_bind_result(stmt, bind->get_bind()))
+  if (!_error.is_active() || !_error.is_fatal()) {
+    int stmt_id(task->result->get_statement_id());
+    if (stmt_id) {
+      MYSQL_STMT* stmt(_stmt[stmt_id]);
+      MYSQL_RES* prepare_meta_result(mysql_stmt_result_metadata(stmt));
+      if (prepare_meta_result == NULL) {
         _error = mysql_error(mysql_stmt_error(stmt), true);
-      else {
-        if (mysql_stmt_store_result(stmt))
-          _error = mysql_error(mysql_stmt_error(stmt), true);
-
-        // Here, we have the first row.
-        task->result->set(prepare_meta_result);
-        bind->set_empty(true);
       }
-      task->result->set_bind(bind);
+      else {
+        int size(mysql_num_fields(prepare_meta_result));
+        std::auto_ptr<mysql_bind> bind(new mysql_bind(size, STR_SIZE));
+
+        if (mysql_stmt_bind_result(stmt, bind->get_bind()))
+          _error = mysql_error(mysql_stmt_error(stmt), true);
+        else {
+          if (mysql_stmt_store_result(stmt))
+            _error = mysql_error(mysql_stmt_error(stmt), true);
+
+          // Here, we have the first row.
+          task->result->set(prepare_meta_result);
+          bind->set_empty(true);
+        }
+        task->result->set_bind(bind);
+      }
     }
+    else
+      task->result->set(mysql_store_result(_conn));
   }
-  else
-    task->result->set(mysql_store_result(_conn));
   _result_condition.wakeAll();
 }
 
@@ -492,6 +494,8 @@ mysql_result mysql_thread::get_result(int statement_id) {
   mysql_result retval(statement_id);
   _push(misc::shared_ptr<mysql_task>(new mysql_task_result(&retval)));
   _result_condition.wait(locker.mutex());
+  if (_error.is_active() && _error.is_fatal())
+    throw exceptions::msg() << _error.get_message();
   return retval;
 }
 

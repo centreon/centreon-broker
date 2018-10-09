@@ -44,18 +44,11 @@ class                 mysql {
                         std::string const& error_msg = "", bool fatal = false,
                         mysql_callback fn = 0, void* data = 0,
                         int thread = -1);
-  int                 run_query_sync(
-                        std::string const& query,
-                        std::string const& error_msg = "",
-                        int thread = -1);
   int                 run_statement(
                         mysql_stmt& stmt,
                         std::string const& error_msg = "", bool fatal = false,
                         mysql_callback fn = 0, void* data = 0,
                         int thread = -1);
-  int                 run_statement_sync(
-                        mysql_stmt& stmt,
-                        std::string const& error_msg = "", int thread = -1);
   mysql_result        get_result(int thread_id);
   mysql_result        get_result(int thread_id, mysql_stmt const& stmt);
   bool                fetch_row(int thread_id, mysql_result& res);

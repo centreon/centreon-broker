@@ -423,7 +423,7 @@ void stream::_check_deleted_index() {
     oss << "SELECT metric_id"
            "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
         << "  WHERE to_delete=1";
-    int thread_id(_mysql.run_query_sync(oss.str(),
+    int thread_id(_mysql.run_query(oss.str(),
                     "storage: could not get the list of metrics to delete"));
     mysql_result res(_mysql.get_result(thread_id));
     while (_mysql.fetch_row(thread_id, res))
@@ -592,7 +592,7 @@ unsigned int stream::_find_index_id(
           << ", '" << service_desc.toStdString() << "', " << (db_v2 ? "'0'" : "0")
           << ", '" << special << "')";
       try {
-        int thread_id(_mysql.run_query_sync(oss.str()));
+        int thread_id(_mysql.run_query(oss.str()));
         // Let's get the index id
         retval = _mysql.get_last_insert_id(thread_id);
         if (retval == 0) {
@@ -785,15 +785,15 @@ unsigned int stream::_find_metric_id(
     _insert_metrics_stmt.bind_value_as_str(12, t);
 
     // Execute query.
-    try {
-      int thread_id(_mysql.run_statement_sync(_insert_metrics_stmt, "INSERT metrics"));
-      retval = _mysql.get_last_insert_id(thread_id);
-    }
-    catch (std::exception const& e) {
-      throw (broker::exceptions::msg() << "storage: insertion of "
-                "metric '" << metric_name << "' of index " << index_id
-             << " failed: " << e.what());
-    }
+    std::ostringstream oss;
+    oss << "storage: insertion of "
+           "metric '" << metric_name.toStdString() << "' of index " << index_id
+        << " failed: ";
+
+    int thread_id(_mysql.run_statement(
+                           _insert_metrics_stmt,
+                           oss.str(), true));
+    retval = _mysql.get_last_insert_id(thread_id);
 
     // Insert metric in cache.
     logging::info(logging::medium) << "storage: new metric "
@@ -959,7 +959,7 @@ void stream::_rebuild_cache() {
              "       rrd_retention, service_description, special,"
              "       locked"
              " FROM " << (db_v2 ? "index_data" : "rt_index_data");
-    int thread_id(_mysql.run_query_sync(
+    int thread_id(_mysql.run_query(
                     query.str(),
                     "storage: could not fetch index list from data DB"));
     mysql_result res(_mysql.get_result(thread_id));
@@ -1005,7 +1005,7 @@ void stream::_rebuild_cache() {
              "       warn_threshold_mode, crit, crit_low,"
              "       crit_threshold_mode, min, max"
              "  FROM " << (db_v2 ? "metrics" : "rt_metrics");
-    int thread_id(_mysql.run_query_sync(
+    int thread_id(_mysql.run_query(
                     query.str(),
                     "storage: could not fetch metric list from data DB"));
     mysql_result res(_mysql.get_result(thread_id));

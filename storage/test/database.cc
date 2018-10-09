@@ -307,9 +307,8 @@ TEST_F(DatabaseStorageTest, QuerySyncWithError) {
     5);
 
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
-  ASSERT_THROW(
-    ms->run_query_sync("SELECT foo FROM bar LIMIT 1"),
-    exceptions::msg);
+  int thread_id(ms->run_query("SELECT foo FROM bar LIMIT 1", "ERROR", true));
+  ASSERT_THROW(ms->get_result(thread_id), exceptions::msg);
 }
 
 TEST_F(DatabaseStorageTest, QueryWithError) {
@@ -365,7 +364,7 @@ TEST_F(DatabaseStorageTest, LastInsertId) {
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
   // We force the thread 0
   std::cout << oss.str() << std::endl;
-  int thread_id(ms->run_query_sync(oss.str()));
+  int thread_id(ms->run_query(oss.str()));
   int id(ms->get_last_insert_id(thread_id));
 
   // Commit is needed to make the select later. But it is not needed to get
@@ -425,7 +424,7 @@ TEST_F(DatabaseStorageTest, PrepareQuerySync) {
   stmt.bind_value_as_f32(11, 18.0);
   stmt.bind_value_as_str(12, "2");
   // We force the thread 0
-  int thread_id(ms->run_statement_sync(stmt, "", 0));
+  int thread_id(ms->run_statement(stmt, "", 0));
   int id(ms->get_last_insert_id(thread_id));
   ASSERT_TRUE(id > 0);
   std::cout << "id = " << id << std::endl;
@@ -579,7 +578,8 @@ TEST_F(DatabaseStorageTest, HostStatement) {
   h.statusmap_image = "";
   h.timezone = "Europe/Paris";
 
-  ms->run_query_sync("DELETE FROM hosts");
+  int thread_id(ms->run_query("DELETE FROM hosts"));
+  ms->get_affected_rows(thread_id);
 
   // Insert
   host_insupdate << h;
@@ -592,9 +592,9 @@ TEST_F(DatabaseStorageTest, HostStatement) {
 
   ms->commit();
 
-  int thread_id(ms->run_query(
+  thread_id = ms->run_query(
         "SELECT stalk_on_up FROM hosts WHERE "
-        "host_id=24"));
+        "host_id=24");
   mysql_result res(ms->get_result(thread_id));
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_TRUE(res.value_as_bool(0));
@@ -684,14 +684,15 @@ TEST_F(DatabaseStorageTest, ModuleStatement) {
   m.args = "/etc/centreon-broker/central-module.xml";
 
   // Deletion
-  ms->run_query_sync("DELETE FROM modules");
+  int thread_id(ms->run_query("DELETE FROM modules"));
+  ms->get_affected_rows(thread_id);
 
   // Insert
   module_insert << m;
   ms->run_statement(module_insert, "", false);
   ms->commit();
 
-  int thread_id(ms->run_query("SELECT module_id FROM modules LIMIT 1"));
+  thread_id = ms->run_query("SELECT module_id FROM modules LIMIT 1");
   mysql_result res(ms->get_result(thread_id));
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
 }
@@ -725,16 +726,17 @@ TEST_F(DatabaseStorageTest, LogStatement) {
   le.c_time = time(NULL);
 
   // Deletion
-  ms->run_query_sync("DELETE FROM logs");
+  int thread_id(ms->run_query("DELETE FROM logs"));
+  ms->get_affected_rows(thread_id);
 
   // Insert
   log_insert << le;
   ms->run_statement(log_insert, "", false);
   ms->commit();
 
-  int thread_id(ms->run_query(
+  thread_id = ms->run_query(
         "SELECT log_id FROM logs "
-        "WHERE output = \"Event loop start at bar date\""));
+        "WHERE output = \"Event loop start at bar date\"");
   mysql_result res(ms->get_result(thread_id));
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
 }
@@ -903,7 +905,8 @@ TEST_F(DatabaseStorageTest, ServiceStatement) {
   query_preparator qp(neb::service::static_type(), unique);
   mysql_stmt service_insupdate(qp.prepare_insert_or_update(*ms));
 
-  ms->run_query_sync("DELETE FROM services");
+  int thread_id(ms->run_query("DELETE FROM services"));
+  ms->get_affected_rows(thread_id);
 
   neb::service s;
   s.host_id = 24;
@@ -926,7 +929,7 @@ TEST_F(DatabaseStorageTest, ServiceStatement) {
 
   // Update
   service_insupdate << s;
-  int thread_id(ms->run_statement(service_insupdate, "", false));
+  thread_id = ms->run_statement(service_insupdate, "", false);
 
   ms->commit();
   thread_id = ms->run_query(

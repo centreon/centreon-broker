@@ -111,9 +111,8 @@ void mysql::commit(int thread_id) {
 }
 
 /**
- *  This function is used after a run_query_sync() to get its result. This
- *  function gives the result only one time. After that, the result will
- *  be empty.
+ *  This function is used to get the result of a query. It
+ *  gives the result only one time. After that, the result will be empty.
  *
  * @param thread_id The thread number that made the query.
  *
@@ -125,11 +124,11 @@ mysql_result mysql::get_result(int thread_id) {
 }
 
 /**
- *  This function is used after a run_query_sync() to get its result. This
- *  function gives the result only one time. After that, the result will
- *  be empty.
+ *  This function is used to get the result of a statement. It
+ *  gives the result only one time. After that, the result will be empty.
  *
  * @param thread_id The thread number that made the query.
+ * @param stmt The statement used to execute the query.
  *
  * @return a mysql_result.
  */
@@ -221,34 +220,6 @@ int mysql::run_query(std::string const& query,
   return thread_id;
 }
 
-/**
- *  Execute a query synchronously, that is to say the method waits for the
- *  query to be done before return.
- *
- * @param query The query to execute, generally a select.
- * @param error_msg An error message to complete the one that could be returned
- *                  by the library.
- * @param thread A thread id or 0 to keep the library to choose the id.
- *
- * @return The thread id that executes the query.
- */
-int mysql::run_query_sync(std::string const& query,
-             std::string const& error_msg,
-             int thread) {
-  if (thread < 0) {
-    // Here, we use _current_thread
-    thread = _current_thread++;
-    if (_current_thread >= _thread.size())
-      _current_thread = 0;
-  }
-  _check_errors(thread);
-  _thread[thread]->run_query_sync(
-    query,
-    error_msg);
-
-  return thread;
-}
-
 int mysql::get_last_insert_id(int thread_id) {
   return _thread[thread_id]->get_last_insert_id();
 }
@@ -268,22 +239,6 @@ int mysql::run_statement(mysql_stmt& stmt,
     stmt.get_id(), stmt.get_bind(),
     error_msg, fatal,
     fn, data);
-  return thread_id;
-}
-
-int mysql::run_statement_sync(mysql_stmt& stmt,
-             std::string const& error_msg, int thread_id) {
-  if (thread_id < 0) {
-    // Here, we use _current_thread
-    thread_id = _current_thread++;
-    if (_current_thread >= _thread.size())
-      _current_thread = 0;
-  }
-  _check_errors(thread_id);
-  _thread[thread_id]->run_statement_sync(
-    stmt.get_id(), stmt.get_bind(),
-    error_msg);
-
   return thread_id;
 }
 
