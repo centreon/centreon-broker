@@ -102,16 +102,23 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
   int now(time(NULL));
   oss << "INSERT INTO data_bin (id_metric, ctime, status, value) VALUES "
       << "(1, " << now << ", '0', 2.5)";
-  ms->run_query(oss.str());
+  int thread_id(ms->run_query(oss.str()));
   oss.str("");
   oss << "SELECT id_metric, status FROM data_bin WHERE ctime=" << now;
-  int thread_id(ms->run_query_sync(oss.str()));
+  ms->run_query(
+        oss.str(),
+        "", false,
+        0, 0,
+        thread_id);
+  // The query is done from the same thread/connection
   mysql_result res(ms->get_result(thread_id));
-  ASSERT_FALSE(res.next());
-  ASSERT_NO_THROW(ms->commit());
-  thread_id = ms->run_query_sync(oss.str());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_FALSE(ms->fetch_row(thread_id, res));
+  ASSERT_NO_THROW(ms->commit(thread_id));
+
+  thread_id = ms->run_query(oss.str());
   res = ms->get_result(thread_id);
-  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
 }
 
 static int callback_get_insert_id(MYSQL* conn, void* data) {
@@ -199,13 +206,13 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
   ms->run_statement(stmt, "", false, 0, 0, 0);
   oss.str("");
   oss << "SELECT metric_name FROM metrics WHERE metric_name='" << nss.str() << "'";
-  int thread_id(ms->run_query_sync(oss.str()));
+  int thread_id(ms->run_query(oss.str()));
   mysql_result res(ms->get_result(thread_id));
-  ASSERT_FALSE(res.next());
+  ASSERT_FALSE(ms->fetch_row(thread_id, res));
   ASSERT_NO_THROW(ms->commit());
-  thread_id = ms->run_query_sync(oss.str());
+  thread_id = ms->run_query(oss.str());
   res = ms->get_result(thread_id);
-  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
 }
 
 // Given a mysql object
@@ -273,10 +280,10 @@ TEST_F(DatabaseStorageTest, SelectSync) {
   oss << "SELECT metric_id, index_id, metric_name FROM metrics LIMIT 10";
 
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
-  int id(ms->run_query_sync(oss.str()));
+  int id(ms->run_query(oss.str()));
   mysql_result res(ms->get_result(id));
   int count(0);
-  while (res.next()) {
+  while (ms->fetch_row(id, res)) {
     int v(res.value_as_i32(0));
     std::string s(res.value_as_str(2));
     ASSERT_GT(v, 0);
@@ -371,9 +378,9 @@ TEST_F(DatabaseStorageTest, LastInsertId) {
   oss << "SELECT metric_id FROM metrics WHERE metric_name = '"
     << nss.str() << "'";
   std::cout << oss.str() << std::endl;
-  thread_id = ms->run_query_sync(oss.str());
+  thread_id = ms->run_query(oss.str());
   mysql_result res(ms->get_result(thread_id));
-  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_TRUE(res.value_as_i32(0) == id);
 }
 
@@ -424,13 +431,13 @@ TEST_F(DatabaseStorageTest, PrepareQuerySync) {
   std::cout << "id = " << id << std::endl;
   oss.str("");
   oss << "SELECT metric_id FROM metrics WHERE metric_name='" << nss.str() << "'";
-  thread_id = ms->run_query_sync(oss.str());
+  thread_id = ms->run_query(oss.str());
   mysql_result res(ms->get_result(thread_id));
-  ASSERT_FALSE(res.next());
+  ASSERT_FALSE(ms->fetch_row(thread_id, res));
   ASSERT_NO_THROW(ms->commit());
-  thread_id = ms->run_query_sync(oss.str());
+  thread_id = ms->run_query(oss.str());
   res = ms->get_result(thread_id);
-  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
   std::cout << "id1 = " << res.value_as_i32(0) << std::endl;
   ASSERT_TRUE(res.value_as_i32(0) == id);
   ASSERT_TRUE(ms->get_affected_rows(thread_id) == 1);
@@ -528,9 +535,9 @@ TEST_F(DatabaseStorageTest, InstanceStatement) {
   std::stringstream oss;
   oss << "SELECT instance_id FROM instances WHERE "
     "instance_id=1";
-  int thread_id(ms->run_query_sync(oss.str()));
+  int thread_id(ms->run_query(oss.str()));
   mysql_result res(ms->get_result(thread_id));
-  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
 }
 
 // Host (12) statement
@@ -585,11 +592,11 @@ TEST_F(DatabaseStorageTest, HostStatement) {
 
   ms->commit();
 
-  int thread_id(ms->run_query_sync(
+  int thread_id(ms->run_query(
         "SELECT stalk_on_up FROM hosts WHERE "
         "host_id=24"));
   mysql_result res(ms->get_result(thread_id));
-  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_TRUE(res.value_as_bool(0));
 }
 
@@ -646,10 +653,10 @@ TEST_F(DatabaseStorageTest, CustomVarStatement) {
   oss << "SELECT host_id FROM customvariables WHERE "
     "host_id=31 AND service_id=498"
     " AND name='PROCESSNAME'";
-  int thread_id(ms->run_query_sync(oss.str()));
+  int thread_id(ms->run_query(oss.str()));
   mysql_result res(ms->get_result(thread_id));
-  ASSERT_TRUE(res.next());
-  ASSERT_FALSE(res.next());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_FALSE(ms->fetch_row(thread_id, res));
 }
 
 TEST_F(DatabaseStorageTest, ModuleStatement) {
@@ -684,9 +691,9 @@ TEST_F(DatabaseStorageTest, ModuleStatement) {
   ms->run_statement(module_insert, "", false);
   ms->commit();
 
-  int thread_id(ms->run_query_sync("SELECT module_id FROM modules LIMIT 1"));
+  int thread_id(ms->run_query("SELECT module_id FROM modules LIMIT 1"));
   mysql_result res(ms->get_result(thread_id));
-  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
 }
 
 // log_entry (17) statement queries
@@ -725,11 +732,11 @@ TEST_F(DatabaseStorageTest, LogStatement) {
   ms->run_statement(log_insert, "", false);
   ms->commit();
 
-  int thread_id(ms->run_query_sync(
+  int thread_id(ms->run_query(
         "SELECT log_id FROM logs "
         "WHERE output = \"Event loop start at bar date\""));
   mysql_result res(ms->get_result(thread_id));
-  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
 }
 
 // Instance status (16) statement
@@ -772,11 +779,11 @@ TEST_F(DatabaseStorageTest, InstanceStatusStatement) {
   ASSERT_TRUE(ms->get_affected_rows(thread_id, inst_status_update) == 1);
   ms->commit();
 
-  thread_id = ms->run_query_sync(
+  thread_id = ms->run_query(
         "SELECT active_host_checks FROM instances "
         "WHERE instance_id=1");
   mysql_result res(ms->get_result(thread_id));
-  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_TRUE(res.value_as_bool(0));
 }
 
@@ -809,10 +816,10 @@ TEST_F(DatabaseStorageTest, HostCheckStatement) {
   ms->run_statement(host_check_update, "", false);
   ms->commit();
 
-  int thread_id(ms->run_query_sync(
+  int thread_id(ms->run_query(
         "SELECT host_id FROM hosts WHERE host_id=24"));
   mysql_result res(ms->get_result(thread_id));
-  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
 }
 
 // Host status (14) statement
@@ -868,10 +875,10 @@ TEST_F(DatabaseStorageTest, HostStatusStatement) {
   ASSERT_TRUE(ms->get_affected_rows(thread_id, host_status_update) == 1);
 
   ms->commit();
-  thread_id = ms->run_query_sync(
+  thread_id = ms->run_query(
                     "SELECT execution_time FROM hosts WHERE host_id=24");
   mysql_result res(ms->get_result(thread_id));
-  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_TRUE(res.value_as_f64(0) == 0.159834);
 }
 
@@ -922,10 +929,10 @@ TEST_F(DatabaseStorageTest, ServiceStatement) {
   int thread_id(ms->run_statement(service_insupdate, "", false));
 
   ms->commit();
-  thread_id = ms->run_query_sync(
+  thread_id = ms->run_query(
                     "SELECT notification_interval FROM services WHERE host_id=24 AND service_id=318");
   mysql_result res(ms->get_result(thread_id));
-  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_TRUE(res.value_as_i32(0) == 30);
 }
 
@@ -962,10 +969,10 @@ TEST_F(DatabaseStorageTest, ServiceCheckStatement) {
   ASSERT_TRUE(ms->get_affected_rows(thread_id, service_check_update) == 1);
 
   ms->commit();
-  thread_id = ms->run_query_sync(
+  thread_id = ms->run_query(
                     "SELECT command_line FROM services WHERE host_id=24 AND service_id=318");
   mysql_result res(ms->get_result(thread_id));
-  ASSERT_TRUE(res.next());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_TRUE(res.value_as_str(0) == "/usr/bin/bash /home/admin/test.sh");
 }
 
@@ -1005,4 +1012,30 @@ TEST_F(DatabaseStorageTest, ServiceStatusStatement) {
   ASSERT_TRUE(ms->get_affected_rows(thread_id, service_status_update) == 1);
 
   ms->commit();
+}
+
+TEST_F(DatabaseStorageTest, SelectStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::string query("SELECT value,status FROM data_bin WHERE ctime >= ?");
+  mysql_stmt select_stmt(ms->prepare_query(query));
+  select_stmt.bind_value_as_u64(0, time(NULL) - 20);
+  int thread_id(ms->run_statement(select_stmt));
+  mysql_result res(ms->get_result(thread_id, select_stmt));
+
+  while (ms->fetch_row(thread_id, res)) {
+    ASSERT_TRUE(res.value_as_f64(0) == 2.5);
+    ASSERT_TRUE(res.value_as_i32(1) == 0);
+  }
 }

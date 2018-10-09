@@ -18,9 +18,11 @@
 #ifndef CCB_MYSQL_RESULT_HH
 #  define CCB_MYSQL_RESULT_HH
 
+#include <memory>
 #include <mysql.h>
 #include <string>
 #include "com/centreon/broker/misc/shared_ptr.hh"
+#include "com/centreon/broker/mysql_bind.hh"
 
 CCB_BEGIN()
 
@@ -31,25 +33,38 @@ CCB_BEGIN()
  *  Here is a binding to the C MYSQL_RES. This is useful because of the
  *  delete functionality that must call the mysql_free_result() function.
  */
-class                 mysql_result {
+class                         mysql_result {
  public:
-                      mysql_result(MYSQL_RES* res = NULL);
-  mysql_result&       operator=(mysql_result const& other);
-  bool                next();
-  bool                value_as_bool(int idx);
-  double              value_as_f64(int idx);
-  int                 value_as_i32(int idx);
-  std::string         value_as_str(int idx);
-  unsigned int        value_as_u32(int idx);
-  unsigned long long  value_as_u64(int idx);
-  bool                value_is_null(int idx);
-  bool                is_empty() const;
-  int                 get_rows_count() const;
+                              mysql_result(int statement = 0);
+                              mysql_result(MYSQL_RES* res);
+                              mysql_result(mysql_result const& other);
+                              ~mysql_result();
+  mysql_result&               operator=(mysql_result const& other);
+  bool                        value_as_bool(int idx);
+  double                      value_as_f64(int idx);
+  int                         value_as_i32(int idx);
+  std::string                 value_as_str(int idx);
+  unsigned int                value_as_u32(int idx);
+  unsigned long long          value_as_u64(int idx);
+  bool                        value_is_null(int idx);
+  bool                        is_empty() const;
+  int                         get_rows_count() const;
+  void                        set(MYSQL_RES* res);
+  MYSQL_RES*                  get();
+  void                        set_bind(std::auto_ptr<mysql_bind> bind);
+  mysql_bind*                 get_bind();
+  void                        set_row(MYSQL_ROW row);
+  int                         get_statement_id() const;
 
  private:
-  misc::shared_ptr<MYSQL_RES>
-                      _result;
-  MYSQL_ROW           _row;
+  misc::shared_ptr<MYSQL_RES> _result;
+
+  // The row contains the result for a simple query (no statement).
+  MYSQL_ROW                   _row;
+
+  // the bind and the statement_id are filled in both or empty both.
+  std::auto_ptr<mysql_bind>   _bind;
+  int                         _statement_id;
 };
 
 CCB_END()

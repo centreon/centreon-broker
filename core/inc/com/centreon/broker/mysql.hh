@@ -57,6 +57,8 @@ class                 mysql {
                         mysql_stmt& stmt,
                         std::string const& error_msg = "", int thread = -1);
   mysql_result        get_result(int thread_id);
+  mysql_result        get_result(int thread_id, mysql_stmt const& stmt);
+  bool                fetch_row(int thread_id, mysql_result& res);
   int                 get_last_insert_id(int thread_id);
   int                 get_affected_rows(int thread_id);
   int                 get_affected_rows(int thread_id, mysql_stmt const& stmt);

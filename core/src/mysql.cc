@@ -46,8 +46,8 @@ mysql::mysql(database_config const& db_cfg)
   }
   try {
     int thread_id(run_query("SELECT instance_id FROM instances LIMIT 1"));
-    mysql_result res(get_result(thread_id));
-    if (res.next())
+    mysql_result res = get_result(thread_id);
+    if (fetch_row(thread_id, res))
       _version = v2;
     logging::info(logging::low)
       << "mysql: database is using version 2 of Centreon schema";
@@ -120,7 +120,27 @@ void mysql::commit(int thread_id) {
  * @return a mysql_result.
  */
 mysql_result mysql::get_result(int thread_id) {
+  _check_errors(thread_id);
   return _thread[thread_id]->get_result();
+}
+
+/**
+ *  This function is used after a run_query_sync() to get its result. This
+ *  function gives the result only one time. After that, the result will
+ *  be empty.
+ *
+ * @param thread_id The thread number that made the query.
+ *
+ * @return a mysql_result.
+ */
+mysql_result mysql::get_result(int thread_id, mysql_stmt const& stmt) {
+  _check_errors(thread_id);
+  return _thread[thread_id]->get_result(stmt.get_id());
+}
+
+bool mysql::fetch_row(int thread_id, mysql_result& res) {
+  _check_errors(thread_id);
+  return _thread[thread_id]->fetch_row(res);
 }
 
 int mysql::get_affected_rows(int thread_id) {

@@ -363,17 +363,12 @@ void stream::_check_deleted_index() {
     // Fetch next index to delete.
     unsigned long long index_id;
     {
-      int thread_id;
-      try {
-        thread_id = _mysql.run_query_sync(query);
-      }
-      catch (std::exception const& e) {
-        logging::error(logging::medium)
-          << "storage: could not query index table to get index to delete ("
-          << e.what() << ")";
-      }
+      int thread_id(_mysql.run_query(
+            query,
+            "storage: could not query index table to get index to delete: ",
+            true));
       mysql_result res(_mysql.get_result(thread_id));
-      if (!res.next())
+      if (!_mysql.fetch_row(thread_id, res))
         break ;
       index_id = res.value_as_u64(0);
     }
@@ -386,17 +381,13 @@ void stream::_check_deleted_index() {
              "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
           << "  WHERE index_id=" << index_id;
 
-      int thread_id;
-      try {
-        thread_id = _mysql.run_query_sync(oss.str(), "");
-      }
-      catch (std::exception const& e) {
-        throw broker::exceptions::msg()
-               << "storage: could not get metrics at index "
-               << index_id << ": " << e.what();
-      }
+      std::ostringstream oss_err;
+      oss_err << "storage: could not get metrics at index "
+              << index_id << ": ";
+
+      int thread_id(_mysql.run_query(oss.str(), oss_err.str(), true));
       mysql_result res(_mysql.get_result(thread_id));
-      while (res.next())
+      while (_mysql.fetch_row(thread_id, res))
         metrics_to_delete.push_back(res.value_as_u64(0));
     }
 
@@ -435,7 +426,7 @@ void stream::_check_deleted_index() {
     int thread_id(_mysql.run_query_sync(oss.str(),
                     "storage: could not get the list of metrics to delete"));
     mysql_result res(_mysql.get_result(thread_id));
-    while (res.next())
+    while (_mysql.fetch_row(thread_id, res))
       metrics_to_delete.push_back(res.value_as_u64(0));
   }
 
@@ -974,7 +965,7 @@ void stream::_rebuild_cache() {
     mysql_result res(_mysql.get_result(thread_id));
 
     // Loop through result set.
-    while (res.next()) {
+    while (_mysql.fetch_row(thread_id, res)) {
       index_info info;
       info.index_id = res.value_as_u32(0);
       unsigned int host_id(res.value_as_u32(1));
@@ -1020,7 +1011,7 @@ void stream::_rebuild_cache() {
     mysql_result res(_mysql.get_result(thread_id));
 
     // Loop through result set.
-    while (res.next()) {
+    while (_mysql.fetch_row(thread_id, res)) {
       metric_info info;
       info.metric_id = res.value_as_u32(0);
       unsigned int index_id(res.value_as_u32(1));

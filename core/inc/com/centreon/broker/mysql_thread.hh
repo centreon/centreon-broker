@@ -65,9 +65,10 @@ class                    mysql_thread : public QThread {
                            int statement_id, std::auto_ptr<mysql_bind> bind,
                            std::string const& error_msg);
   void                   finish();
-  mysql_result           get_result();
   mysql_error            get_error();
   int                    get_last_insert_id();
+  mysql_result           get_result(int statement_id = 0);
+  bool                   fetch_row(mysql_result& result);
   int                    get_affected_rows(int statement_id = 0);
   mysql_bind_mapping     get_stmt_mapping(int stmt_id) const;
   int                    get_stmt_size() const;
@@ -85,6 +86,10 @@ class                    mysql_thread : public QThread {
   void                   _run_sync(mysql_task_run_sync* task);
   void                   _get_last_insert_id_sync(
                            mysql_task_last_insert_id* task);
+  void                   _get_result_sync(
+                           mysql_task_result* task);
+  void                   _fetch_row_sync(
+                           mysql_task_fetch* task);
   void                   _get_affected_rows_sync(
                            mysql_task_affected_rows* task);
   void                   _prepare(mysql_task_prepare* task);
@@ -103,12 +108,12 @@ class                    mysql_thread : public QThread {
   umap<unsigned int, MYSQL_STMT*>
                          _stmt;
 
-  // Mutex and condition working on _result and _error_msg.
+  // Mutex and condition working on result and error_msg.
   QMutex                 _result_mutex;
   QWaitCondition         _result_condition;
 
   // Result of a mysql query. It is used in the case of _run_sync() calls.
-  mysql_result           _result;
+  //mysql_result           _result;
 
   // Error message returned when the call to _run_sync() fails.
   mysql_error            _error;

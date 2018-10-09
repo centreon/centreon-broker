@@ -40,6 +40,8 @@ class                    mysql_task {
                            FINISH,
                            LAST_INSERT_ID,
                            AFFECTED_ROWS,
+                           RESULT,
+                           FETCH_ROW,
   };
   virtual                ~mysql_task() {}
 
@@ -91,6 +93,22 @@ class                    mysql_task_last_insert_id : public mysql_task {
                           : mysql_task(mysql_task::LAST_INSERT_ID),
                             id(id) {}
   int*                   id;
+};
+
+class                    mysql_task_result : public mysql_task {
+ public:
+                         mysql_task_result(mysql_result* result)
+                          : mysql_task(mysql_task::RESULT),
+                            result(result) {}
+  mysql_result*          result;
+};
+
+class                    mysql_task_fetch : public mysql_task {
+ public:
+                         mysql_task_fetch(mysql_result* result)
+                          : mysql_task(mysql_task::FETCH_ROW),
+                            result(result) {}
+  mysql_result*          result;
 };
 
 class                    mysql_task_affected_rows : public mysql_task {

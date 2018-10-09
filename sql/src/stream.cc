@@ -108,7 +108,7 @@ void stream::_cache_create() {
   try {
     thread_id = _mysql.run_query(ss.str());
     mysql_result res(_mysql.get_result(thread_id));
-    while (res.next())
+    while (_mysql.fetch_row(thread_id, res))
       _cache_deleted_instance_id.insert(res.value_as_u32(0));
   }
   catch (std::exception const& e) {
@@ -124,9 +124,9 @@ void stream::_cache_create() {
 void stream::_host_instance_cache_create() {
   _cache_host_instance.clear();
   try {
-    int thread_id(_mysql.run_query_sync("SELECT host_id, instance_id FROM hosts"));
+    int thread_id(_mysql.run_query("SELECT host_id, instance_id FROM hosts"));
     mysql_result res(_mysql.get_result(thread_id));
-    while (res.next())
+    while (_mysql.fetch_row(thread_id, res))
       _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
   }
   catch (std::exception const& e) {
@@ -636,6 +636,7 @@ void stream::_process_downtime(
     << d.duration << ", entry time: " << d.entry_time
     << ", deletion time: " << d.deletion_time << ")";
 
+  // FIXME DBR: Not like the others...
   // Check if poller is valid.
   if (_is_valid_poller(d.poller_id)) {
     // Prepare queries.
@@ -849,6 +850,8 @@ void stream::_process_host(
                oss.str(), true,
                0, 0,
                h.poller_id % _mysql.connections_count());
+
+      // Fill the cache...
       _cache_host_instance[h.host_id] = h.poller_id;
     }
     else
@@ -931,31 +934,28 @@ void stream::_process_host_dependency(
       << " on " << hd.host_id;
 
     // Prepare queries.
-    if (!_host_dependency_insert.prepared()
-        || !_host_dependency_update.prepared()) {
+    if (!_host_dependency_insupdate.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("host_id");
       unique.insert("dependent_host_id");
       query_preparator qp(
-                            neb::host_dependency::static_type(),
-                            unique);
-      _host_dependency_insert = qp.prepare_insert(_mysql);
-      _host_dependency_update = qp.prepare_update(_mysql);
+                          neb::host_dependency::static_type(),
+                          unique);
+      _host_dependency_insupdate = qp.prepare_insert_or_update(_mysql);
     }
 
     // Process object.
-    try {
-      _update_on_none_insert(
-        _host_dependency_insert,
-        _host_dependency_update,
-        hd);
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store host dependency (host: "
+    std::ostringstream oss;
+    oss << "SQL: could not store host dependency (host: "
              << hd.host_id << ", dependent host: "
-             << hd.dependent_host_id << "): " << e.what());
-    }
+             << hd.dependent_host_id << "): ";
+
+    _host_dependency_insupdate << hd;
+    _mysql.run_statement(
+             _host_dependency_insupdate,
+             oss.str(), true,
+             0, 0,
+             _cache_host_instance[hd.host_id] % _mysql.connections_count());
   }
   // Delete.
   else {
@@ -971,8 +971,6 @@ void stream::_process_host_dependency(
         << "    AND host_id=" << hd.host_id;
     _mysql.run_query(oss.str(), "SQL");
   }
-
-  return ;
 }
 
 /**
@@ -996,26 +994,23 @@ void stream::_process_host_group(
     logging::info(logging::medium) << "SQL: enabling host group "
       << hg.id << " ('" << hg.name << "') on instance "
       << hg.poller_id;
-    if (!_host_group_insert.prepared()
-        || !_host_group_update.prepared()) {
+    if (!_host_group_insupdate.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("hostgroup_id");
       query_preparator qp(neb::host_group::static_type(), unique);
-      _host_group_insert = qp.prepare_insert(_mysql);
-      _host_group_update = qp.prepare_update(_mysql);
+      _host_group_insupdate = qp.prepare_insert_or_update(_mysql);
     }
-    try {
-      _update_on_none_insert(
-        _host_group_insert,
-        _host_group_update,
-        hg);
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store host group (poller: "
-             << hg.poller_id << ", group: " << hg.id << "): "
-             << e.what());
-    }
+
+    std::ostringstream oss;
+    oss << "SQL: could not store host group (poller: "
+        << hg.poller_id << ", group: " << hg.id << "): ";
+
+    _host_group_insupdate << hg;
+    _mysql.run_statement(
+             _host_group_insupdate,
+             oss.str(), true,
+             0, 0,
+             hg.poller_id % _mysql.connections_count());
   }
   // Delete group.
   else {
@@ -1032,14 +1027,12 @@ void stream::_process_host_group(
           << "    ON hosts_hostgroups.host_id=hosts.host_id"
           << "  WHERE hosts_hostgroups.hostgroup_id=" << hg.id
           << "    AND hosts.instance_id=" << hg.poller_id;
-      _mysql.run_query(oss.str(), "SQL");
+      _mysql.run_query(oss.str(), "SQL: ");
     }
 
     // Delete empty group.
     _clean_empty_host_groups();
   }
-
-  return ;
 }
 
 /**
@@ -1158,23 +1151,22 @@ void stream::_process_host_parent(
     }
 
     // Insert.
-    try {
-      _host_parent_select << hp;
-      int thread_id(_mysql.run_statement_sync(_host_parent_select));
-      mysql_result res(_mysql.get_result(thread_id));
-      if (res.get_rows_count() == 1)
-        return ;
+    std::ostringstream oss;
+    oss << "SQL: could not store host parentship (child host: "
+        << hp.host_id << ", parent host: " << hp.parent_id << "): ";
+    _host_parent_select << hp;
+    int thread_id(_mysql.run_statement(_host_parent_select));
+    //FIXME DBR
+    //mysql_result res(_mysql.use_result(thread_id));
+    //if (res.get_num_rows())
+    //  return ;
 
-      _host_parent_insert << hp;
-      _mysql.run_statement(_host_parent_insert);
-    }
-    //FIXME DBR: error management...
-    catch (std::exception const& e) {
-      logging::error(logging::high)
-        << "SQL: could not store host parentship (child host: "
-        << hp.host_id << ", parent host: " << hp.parent_id << "): "
-        << e.what() << " (ignored)";
-    }
+    _host_parent_insert << hp;
+    _mysql.run_statement(
+             _host_parent_insert,
+             oss.str(), false,
+             0, 0,
+             _cache_host_instance[hp.host_id] % _mysql.connections_count());
   }
   // Disable parenting.
   else {
@@ -1192,7 +1184,11 @@ void stream::_process_host_parent(
 
     // Delete.
     _host_parent_delete << hp;
-    _mysql.run_statement(_host_parent_delete, "SQL");
+    _mysql.run_statement(
+             _host_parent_delete,
+             "SQL: ", false,
+             0, 0,
+             _cache_host_instance[hp.host_id] % _mysql.connections_count());
   }
 }
 
@@ -1535,9 +1531,9 @@ void stream::_process_issue_parent(
     query << " AND start_time=" << ip.child_start_time;
     mysql_result res;
     try {
-      int thread_id(_mysql.run_query_sync(query.str()));
+      int thread_id(_mysql.run_query(query.str()));
       res = _mysql.get_result(thread_id);
-      if (!res.next())
+      if (!_mysql.fetch_row(thread_id, res))
         throw (exceptions::msg() << "child issue does not exist");
     }
     //FIXME DBR : error management...
@@ -1568,9 +1564,9 @@ void stream::_process_issue_parent(
     query << " AND start_time=" << ip.parent_start_time;
     mysql_result res;
     try {
-      int thread_id(_mysql.run_query_sync(query.str()));
+      int thread_id(_mysql.run_query(query.str()));
       res = _mysql.get_result(thread_id);
-      if (!res.next())
+      if (!_mysql.fetch_row(thread_id, res))
         throw (exceptions::msg() << "parent issue does not exist");
     }
     catch (std::exception const& e) {
@@ -2250,7 +2246,7 @@ void stream::_get_all_outdated_instances_from_db() {
       ss.str(),
       "SQL: could not get the list of outdated instances"));
   mysql_result res(_mysql.get_result(thread_id));
-  while (res.next()) {
+  while (_mysql.fetch_row(thread_id, res)) {
     unsigned int instance_id = res.value_as_i32(0);
     stored_timestamp& ts = _stored_timestamps[instance_id];
     ts = stored_timestamp(instance_id, stored_timestamp::unresponsive);

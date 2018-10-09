@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -23,6 +24,8 @@
 #include "com/centreon/broker/mysql_thread.hh"
 
 using namespace com::centreon::broker;
+
+const int STR_SIZE = 200;
 
 /******************************************************************************/
 /*                      Methods executed by this thread                       */
@@ -32,11 +35,13 @@ void mysql_thread::_run(mysql_task_run* task) {
   logging::debug(logging::low)
     << "mysql: run query: "
     << task->query.c_str();
+  std::cout << "mysql: run query: "
+    << task->query.c_str();
   if (mysql_query(_conn, task->query.c_str())) {
     logging::debug(logging::low)
       << "mysql: run query failed: "
       << ::mysql_error(_conn);
-    std::cout << "run query in error..." << std::endl;
+    std::cout << "run query in error...: " << ::mysql_error(_conn) << std::endl;
     if (task->fatal) {
       if (!_error.is_active())
         std::cout << "FATAL" << std::endl;
@@ -74,9 +79,6 @@ void mysql_thread::_run_sync(mysql_task_run_sync* task) {
       << ::mysql_error(_conn);
     _error = mysql_error(::mysql_error(_conn), true);
   }
-  else {
-    _result = mysql_store_result(_conn);
-  }
 
   _result_condition.wakeAll();
 }
@@ -84,6 +86,49 @@ void mysql_thread::_run_sync(mysql_task_run_sync* task) {
 void mysql_thread::_get_last_insert_id_sync(mysql_task_last_insert_id* task) {
   QMutexLocker locker(&_result_mutex);
   *task->id = mysql_insert_id(_conn);
+  _result_condition.wakeAll();
+}
+
+void mysql_thread::_get_result_sync(mysql_task_result* task) {
+  QMutexLocker locker(&_result_mutex);
+  int stmt_id(task->result->get_statement_id());
+  if (stmt_id) {
+    MYSQL_STMT* stmt(_stmt[stmt_id]);
+    MYSQL_RES* prepare_meta_result(mysql_stmt_result_metadata(stmt));
+    if (prepare_meta_result == NULL) {
+      _error = mysql_error(mysql_stmt_error(stmt), true);
+    }
+    else {
+      int size(mysql_num_fields(prepare_meta_result));
+      std::auto_ptr<mysql_bind> bind(new mysql_bind(size, STR_SIZE));
+
+      if (mysql_stmt_bind_result(stmt, bind->get_bind()))
+        _error = mysql_error(mysql_stmt_error(stmt), true);
+      else {
+        if (mysql_stmt_store_result(stmt))
+          _error = mysql_error(mysql_stmt_error(stmt), true);
+
+        // Here, we have the first row.
+        task->result->set(prepare_meta_result);
+        bind->set_empty(true);
+      }
+      task->result->set_bind(bind);
+    }
+  }
+  else
+    task->result->set(mysql_store_result(_conn));
+  _result_condition.wakeAll();
+}
+
+void mysql_thread::_fetch_row_sync(mysql_task_fetch* task) {
+  QMutexLocker locker(&_result_mutex);
+  int stmt_id(task->result->get_statement_id());
+  if (stmt_id) {
+    MYSQL_STMT* stmt(_stmt[stmt_id]);
+    task->result->get_bind()->set_empty(mysql_stmt_fetch(stmt));
+  }
+  else
+    task->result->set_row(mysql_fetch_row(task->result->get()));
   _result_condition.wakeAll();
 }
 
@@ -170,8 +215,6 @@ void mysql_thread::_statement(mysql_task_statement* task) {
         << " (" << task->error_msg << ")";
     }
   }
-  std::cout << "*** AFFECTED ROWS: " << mysql_stmt_affected_rows(stmt)
-    << " ***" << std::endl;
 }
 
 void mysql_thread::_statement_sync(mysql_task_statement_sync* task) {
@@ -195,19 +238,17 @@ void mysql_thread::_statement_sync(mysql_task_statement_sync* task) {
     std::cout << "ERROR IN EXECUTION... " << mysql_stmt_error(stmt)
       << std::endl;
   }
-  else {
-    std::cout << "GET THE RESULT..." << std::endl;
-    _result = mysql_store_result(_conn);
-  }
+  //else {
+  //  std::cout << "GET THE RESULT..." << std::endl;
+  //  _result = mysql_store_result(_conn);
+  //}
 
   _result_condition.wakeAll();
 }
 
 void mysql_thread::run() {
   QMutexLocker locker(&_result_mutex);
-  std::cout << "mysql_thread::run" << std::endl;
   _conn = mysql_init(NULL);
-  std::cout << "mysql_thread::run 1" << std::endl;
   if (!_conn) {
     _error = mysql_error(::mysql_error(_conn), true);
     _finished = true;
@@ -232,7 +273,6 @@ void mysql_thread::run() {
 //      << "' MySQL database failed: "
 //      << ::mysql_error(_conn);
   }
-  std::cout << "mysql_thread::run 3" << std::endl;
 
   if (_qps > 1)
     mysql_autocommit(_conn, 0);
@@ -243,16 +283,11 @@ void mysql_thread::run() {
   _result_condition.wakeAll();
 
   while (!_finished) {
-    std::cout << "run mutex lock" << std::endl;
     QMutexLocker locker(&_list_mutex);
-    std::cout << "run mutex locked" << std::endl;
     if (!_tasks_list.empty()) {
-      std::cout << "new task" << std::endl;
       misc::shared_ptr<mysql_task> task(_tasks_list.front());
       _tasks_list.pop_front();
-      std::cout << "unlock mutex" << std::endl;
       locker.unlock();
-      std::cout << "mutex unlocked" << std::endl;
       switch (task->type) {
        case mysql_task::RUN:
         std::cout << "run RUN" << std::endl;
@@ -265,6 +300,14 @@ void mysql_thread::run() {
        case mysql_task::LAST_INSERT_ID:
         std::cout << "get LAST INSERT ID" << std::endl;
         _get_last_insert_id_sync(static_cast<mysql_task_last_insert_id*>(task.data()));
+        break;
+       case mysql_task::RESULT:
+        std::cout << "get RESULT" << std::endl;
+        _get_result_sync(static_cast<mysql_task_result*>(task.data()));
+        break;
+       case mysql_task::FETCH_ROW:
+        std::cout << "fetch ROW" << std::endl;
+        _fetch_row_sync(static_cast<mysql_task_fetch*>(task.data()));
         break;
        case mysql_task::AFFECTED_ROWS:
         std::cout << "get AFFECTED ROWS" << std::endl;
@@ -297,11 +340,8 @@ void mysql_thread::run() {
         break;
       }
     }
-    else {
-      std::cout << "run wait for condition on queries or finish" << std::endl;
+    else
       _tasks_condition.wait(locker.mutex());
-      std::cout << "run condition realized" << std::endl;
-    }
   }
   std::cout << "run return" << std::endl;
 }
@@ -312,7 +352,6 @@ void mysql_thread::run() {
 
 mysql_thread::mysql_thread(database_config const& db_cfg)
   : _conn(NULL),
-    _result(NULL),
     _finished(false),
     _host(db_cfg.get_host()),
     _user(db_cfg.get_user()),
@@ -345,9 +384,7 @@ mysql_thread::~mysql_thread() {
 }
 
 void mysql_thread::_push(misc::shared_ptr<mysql_task> const& q) {
-  std::cout << "mysql_thread::_push" << std::endl;
   QMutexLocker locker(&_list_mutex);
-  std::cout << "mysql_thread::_push locked" << std::endl;
   _tasks_list.push_back(q);
   _tasks_condition.wakeAll();
 }
@@ -450,10 +487,19 @@ void mysql_thread::finish() {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_finish()));
 }
 
-mysql_result mysql_thread::get_result() {
-  mysql_result retval(_result);
-  _result = NULL;
+mysql_result mysql_thread::get_result(int statement_id) {
+  QMutexLocker locker(&_result_mutex);
+  mysql_result retval(statement_id);
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_result(&retval)));
+  _result_condition.wait(locker.mutex());
   return retval;
+}
+
+bool mysql_thread::fetch_row(mysql_result& result) {
+  QMutexLocker locker(&_result_mutex);
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_fetch(&result)));
+  _result_condition.wait(locker.mutex());
+  return !result.is_empty();
 }
 
 com::centreon::broker::mysql_error mysql_thread::get_error() {
