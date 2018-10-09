@@ -52,12 +52,6 @@ void mysql_thread::_run(mysql_task_run* task) {
         << "could not execute query: " << ::mysql_error(_conn) << " (" << task->query << ")";
     }
   }
-  else if (task->fn) {
-    // FIXME DBR: we need a way to send an error to the main thread
-    int ret(task->fn(_conn, task->data));
-    logging::info(logging::medium)
-      << "mysql: callback returned " << ret;
-  }
 }
 
 /**
@@ -444,9 +438,8 @@ void mysql_thread::commit(QSemaphore& sem, QAtomicInt& count) {
 }
 
 void mysql_thread::run_statement(int statement_id, std::auto_ptr<mysql_bind> bind,
-                     std::string const& error_msg, bool fatal,
-                     mysql_callback fn, void* data) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_statement(statement_id, bind, fn, data, error_msg, fatal)));
+                     std::string const& error_msg, bool fatal) {
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_statement(statement_id, bind, error_msg, fatal)));
 }
 
 void mysql_thread::run_statement_sync(int statement_id, std::auto_ptr<mysql_bind> bind,
@@ -474,14 +467,12 @@ void mysql_thread::prepare_query(int stmt_id, std::string const& query) {
  *  No exception is thrown in case of error since this query is made asynchronously.
  *
  *  @param query The SQL query
- *  @param fn A callback executed by the same thread if not 0.
  *  @param error_msg The error message to return in case of error.
  */
 void mysql_thread::run_query(
                      std::string const& query,
-                     std::string const& error_msg, bool fatal,
-                     mysql_callback fn, void* data) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_run(query, fn, data, error_msg, fatal)));
+                     std::string const& error_msg, bool fatal) {
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_run(query, error_msg, fatal)));
 }
 
 void mysql_thread::finish() {

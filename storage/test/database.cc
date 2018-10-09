@@ -108,7 +108,6 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
   ms->run_query(
         oss.str(),
         "", false,
-        0, 0,
         thread_id);
   // The query is done from the same thread/connection
   mysql_result res(ms->get_result(thread_id));
@@ -119,43 +118,6 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
   thread_id = ms->run_query(oss.str());
   res = ms->get_result(thread_id);
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
-}
-
-static int callback_get_insert_id(MYSQL* conn, void* data) {
-  int id(mysql_insert_id(conn));
-
-  mysql_query(conn, "SELECT MAX(comment_id) FROM comments");
-  MYSQL_RES* result = mysql_store_result(conn);
-  int num_fields(mysql_num_fields(result));
-  EXPECT_EQ(num_fields, 1);
-  MYSQL_ROW row(mysql_fetch_row(result));
-  EXPECT_TRUE(atoi(row[0]) == id);
-  mysql_free_result(result);
-  return 0;
-}
-
-// Given a mysql object
-// When a query is done with a callback
-// Then a thread is chosen to make the query and then it calls the callback function.
-TEST_F(DatabaseStorageTest, QueryWithCallback) {
-  database_config db_cfg(
-    "MySQL",
-    "127.0.0.1",
-    3306,
-    "root",
-    "root",
-    "centreon_storage",
-    5,
-    true,
-    5);
-  time_t now(time(NULL));
-  std::ostringstream oss;
-  oss << "INSERT INTO comments (internal_id, host_id, entry_time, author, data) "
-    << "VALUES (1, 1, " << now
-    << ", 'test-user', 'comment from InsertAndGetInsertId1')";
-
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
-  ms->run_query(oss.str(), "", false, callback_get_insert_id, NULL);
 }
 
 // Given a mysql object
@@ -203,7 +165,7 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
   stmt.bind_value_as_f32(11, 18.0);
   stmt.bind_value_as_str(12, "2");
   // We force the thread 0
-  ms->run_statement(stmt, "", false, 0, 0, 0);
+  ms->run_statement(stmt, "", false, 0);
   oss.str("");
   oss << "SELECT metric_name FROM metrics WHERE metric_name='" << nss.str() << "'";
   int thread_id(ms->run_query(oss.str()));
@@ -262,7 +224,7 @@ TEST_F(DatabaseStorageTest, PrepareQueryBadQuery) {
   // The commit forces threads to empty their tasks stack
   ms->commit();
   // We are sure, the error is set.
-  ASSERT_THROW(ms->run_statement(stmt, "", false, 0, 0, 0), std::exception);
+  ASSERT_THROW(ms->run_statement(stmt, "", false, 0), std::exception);
 }
 
 TEST_F(DatabaseStorageTest, SelectSync) {
@@ -325,12 +287,12 @@ TEST_F(DatabaseStorageTest, QueryWithError) {
 
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
   // The following insert fails
-  ms->run_query("INSERT INTO FOO (toto) VALUES (0)", "", true, 0, 0, 1);
+  ms->run_query("INSERT INTO FOO (toto) VALUES (0)", "", true, 1);
   ms->commit();
 
   // The following is the same one, executed by the same thread but since the
   // previous error, an exception should arrive.
-  ASSERT_THROW(ms->run_query("INSERT INTO FOO (toto) VALUES (0)", "", true, 0, 0, 1), std::exception);
+  ASSERT_THROW(ms->run_query("INSERT INTO FOO (toto) VALUES (0)", "", true, 1), std::exception);
 }
 
 // Given a mysql object
@@ -514,20 +476,20 @@ TEST_F(DatabaseStorageTest, InstanceStatement) {
   inst.version = "1.8.1";
 
   inst_insupdate << inst;
-  ms->run_statement(inst_insupdate, "", false, 0, 0, 0);
+  ms->run_statement(inst_insupdate, "", false, 0);
 
   // Deletion
   inst_delete << inst;
-  ms->run_statement(inst_delete, "", false, 0, 0, 0);
+  ms->run_statement(inst_delete, "", false, 0);
 
   // Insert
   inst_insupdate << inst;
-  ms->run_statement(inst_insupdate, "", false, 0, 0, 0);
+  ms->run_statement(inst_insupdate, "", false, 0);
 
   // Update
   inst.program_end = time(NULL);
   inst_insupdate << inst;
-  ms->run_statement(inst_insupdate, "", false, 0, 0, 0);
+  ms->run_statement(inst_insupdate, "", false, 0);
 
   ms->commit();
 
@@ -583,12 +545,12 @@ TEST_F(DatabaseStorageTest, HostStatement) {
 
   // Insert
   host_insupdate << h;
-  ms->run_statement(host_insupdate, "", false, 0, 0, 0);
+  ms->run_statement(host_insupdate, "", false, 0);
 
   // Update
   h.stalk_on_up = true;
   host_insupdate << h;
-  ms->run_statement(host_insupdate, "", false, 0, 0, 0);
+  ms->run_statement(host_insupdate, "", false, 0);
 
   ms->commit();
 
@@ -632,20 +594,20 @@ TEST_F(DatabaseStorageTest, CustomVarStatement) {
   cv.default_value = "centengine";
 
   cv_insert_or_update << cv;
-  ms->run_statement(cv_insert_or_update, "", false, 0, 0, 0);
+  ms->run_statement(cv_insert_or_update, "", false, 0);
 
   // Deletion
   cv_delete << cv;
-  ms->run_statement(cv_delete, "", false, 0, 0, 0);
+  ms->run_statement(cv_delete, "", false, 0);
 
   // Insert
   cv_insert_or_update << cv;
-  ms->run_statement(cv_insert_or_update, "", false, 0, 0, 0);
+  ms->run_statement(cv_insert_or_update, "", false, 0);
 
   // Update
   cv.update_time = time(NULL) + 1;
   cv_insert_or_update << cv;
-  ms->run_statement(cv_insert_or_update, "", false, 0, 0, 0);
+  ms->run_statement(cv_insert_or_update, "", false, 0);
 
   ms->commit();
 

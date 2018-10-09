@@ -192,8 +192,6 @@ void mysql::_check_errors(int thread_id) {
  *  The simplest way to execute a query. Only the first arg is needed.
  *
  * @param query The query to execute.
- * @param fn A callback to execute when the query has been executed.
- * @param data A data to give to the callback.
  * @param error_msg An error message to complete the error message returned
  *                  by the mysql connector.
  * @param fatal A boolean telling if the error is fatal. In that case, an
@@ -204,7 +202,6 @@ void mysql::_check_errors(int thread_id) {
  */
 int mysql::run_query(std::string const& query,
               std::string const& error_msg, bool fatal,
-              mysql_callback fn, void* data,
               int thread_id) {
   if (thread_id < 0) {
     // Here, we use _current_thread
@@ -215,8 +212,7 @@ int mysql::run_query(std::string const& query,
   _check_errors(thread_id);
   _thread[thread_id]->run_query(
     query,
-    error_msg, fatal,
-    fn, data);
+    error_msg, fatal);
   return thread_id;
 }
 
@@ -226,7 +222,6 @@ int mysql::get_last_insert_id(int thread_id) {
 
 int mysql::run_statement(mysql_stmt& stmt,
               std::string const& error_msg, bool fatal,
-              mysql_callback fn, void* data,
               int thread_id) {
   if (thread_id < 0) {
     // Here, we use _current_thread
@@ -237,8 +232,7 @@ int mysql::run_statement(mysql_stmt& stmt,
   _check_errors(thread_id);
   _thread[thread_id]->run_statement(
     stmt.get_id(), stmt.get_bind(),
-    error_msg, fatal,
-    fn, data);
+    error_msg, fatal);
   return thread_id;
 }
 

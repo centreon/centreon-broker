@@ -61,16 +61,12 @@ class                    mysql_task_run : public mysql_task {
  public:
                          mysql_task_run(
                            std::string const& q,
-                           mysql_callback fn, void* data,
                            std::string const& error_msg, bool fatal)
                           : mysql_task(mysql_task::RUN),
                             query(q),
                             error_msg(error_msg),
-                            fatal(fatal),
-                            fn(fn) {}
+                            fatal(fatal) {}
   std::string            query;
-  mysql_callback         fn;
-  void*                  data;
   std::string            error_msg;
   bool                   fatal;
 };
@@ -146,22 +142,16 @@ class                    mysql_task_statement : public mysql_task {
                          mysql_task_statement(
                            int statement_id,
                            std::auto_ptr<mysql_bind> bind,
-                           mysql_callback fn,
-                           void* data,
                            std::string const& error_msg,
                            bool fatal)
                           : mysql_task(mysql_task::STATEMENT),
                             statement_id(statement_id),
                             bind(bind),
-                            fn(fn),
-                            data(data),
                             error_msg(error_msg),
                             fatal(fatal) {}
   int                    statement_id;
   std::auto_ptr<mysql_bind>
                          bind;
-  mysql_callback         fn;
-  void*                  data;
   std::string            error_msg;
   bool                   fatal;
 };

@@ -42,12 +42,10 @@ class                 mysql {
   int                 run_query(
                         std::string const& query,
                         std::string const& error_msg = "", bool fatal = false,
-                        mysql_callback fn = 0, void* data = 0,
                         int thread = -1);
   int                 run_statement(
                         mysql_stmt& stmt,
                         std::string const& error_msg = "", bool fatal = false,
-                        mysql_callback fn = 0, void* data = 0,
                         int thread = -1);
   mysql_result        get_result(int thread_id);
   mysql_result        get_result(int thread_id, mysql_stmt const& stmt);

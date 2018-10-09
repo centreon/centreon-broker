@@ -52,15 +52,13 @@ class                    mysql_thread : public QThread {
                            QAtomicInt& count);
   void                   run_query(
                            std::string const& query,
-                           std::string const& error_msg, bool fatal,
-                           mysql_callback fn, void* data);
+                           std::string const& error_msg, bool fatal);
   void                   run_query_sync(
                            std::string const& query,
                            std::string const& error_msg);
   void                   run_statement(
                            int statement_id, std::auto_ptr<mysql_bind> bind,
-                           std::string const& error_msg, bool fatal,
-                           mysql_callback fn, void* data);
+                           std::string const& error_msg, bool fatal);
   void                   run_statement_sync(
                            int statement_id, std::auto_ptr<mysql_bind> bind,
                            std::string const& error_msg);
