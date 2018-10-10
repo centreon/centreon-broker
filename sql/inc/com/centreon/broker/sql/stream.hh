@@ -119,8 +119,7 @@ namespace          sql {
     mysql_stmt     _custom_variable_insupdate;
     mysql_stmt     _custom_variable_delete;
     mysql_stmt     _custom_variable_status_update;
-    mysql_stmt     _downtime_insert;
-    mysql_stmt     _downtime_update;
+    mysql_stmt     _downtime_insupdate;
     mysql_stmt     _empty_host_groups_delete;
     mysql_stmt     _empty_service_groups_delete;
     mysql_stmt     _event_handler_insupdate;

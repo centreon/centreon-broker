@@ -28,6 +28,7 @@
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/query_preparator.hh"
 #include "com/centreon/broker/sql/stream.hh"
 #include "com/centreon/engine/common.hh"
@@ -627,49 +628,40 @@ void stream::_process_downtime(
   // Check if poller is valid.
   if (_is_valid_poller(d.poller_id)) {
     // Prepare queries.
-    if (!_downtime_insert.prepared()
-        || !_downtime_update.prepared()) {
-      {
-        query_preparator qp(neb::downtime::static_type());
-        _downtime_insert = qp.prepare_insert(_mysql);
-      }
-      {
-        std::ostringstream oss;
-        oss << "UPDATE " << ((_mysql.schema_version() == mysql::v2)
-                             ? "downtimes"
-                             : "rt_downtimes")
-            << "  SET actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
-               "      actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
-               "      author=:author, cancelled=:cancelled, comment_data=:comment_data,"
-               "      deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
-               "      fixed=:fixed, host_id=:host_id, service_id=:service_id,"
-               "      start_time=:start_time, started=:started,"
-               "      triggered_by=:triggered_by, type=:type"
-               "  WHERE entry_time=:entry_time"
-               "    AND instance_id=:instance_id"
-               "    AND internal_id=:internal_id";
-        if (_mysql.schema_version() != mysql::v2)
-          oss << "    AND is_recurring=:is_recurring"
-                 "    AND recurring_timeperiod=:recurring_timeperiod";
-        //FIXME DBR: error management to do...
-        _downtime_update = _mysql.prepare_query(oss.str());
-        //_downtime_update.prepare(query, "SQL: could not prepare query");
-      }
+    if (!_downtime_insupdate.prepared()) {
+      std::ostringstream oss;
+      oss << "INSERT INTO " << ((_mysql.schema_version() == mysql::v2)
+          ? "downtimes"
+          : "rt_downtimes")
+        << " (actual_end_time, "
+        "actual_start_time, "
+        "author, type, deletion_time, duration, end_time, entry_time, "
+        "fixed, host_id, instance_id, internal_id, service_id, "
+        "start_time, triggered_by, cancelled, started, comment_data) "
+        "VALUES(:actual_end_time,:actual_start_time,:author,:type,:deletion_time,:duration,:end_time,:entry_time,:fixed,:host_id,:instance_id,:internal_id,:service_id,:start_time,:triggered_by,:cancelled,:started,:comment_data) ON DUPLICATE KEY UPDATE "
+        "actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
+        "actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
+        "author=:author, cancelled=:cancelled, comment_data=:comment_data,"
+        "deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
+        "fixed=:fixed, host_id=:host_id, service_id=:service_id,"
+        "start_time=:start_time, started=:started,"
+        "triggered_by=:triggered_by, type=:type";
+      _downtime_insupdate = mysql_stmt(oss.str(), true);
+      _mysql.prepare_statement(_downtime_insupdate);
     }
 
     // Process object.
-    try {
-      _update_on_none_insert(
-        _downtime_insert,
-        _downtime_update,
-        d);
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store downtime (poller: " << d.poller_id
-             << ", host: " << d.host_id << ", service: " << d.service_id
-             << "): " << e.what());
-    }
+    std::ostringstream oss;
+    oss << "SQL: could not store downtime (poller: " << d.poller_id
+        << ", host: " << d.host_id << ", service: " << d.service_id
+        << "): ";
+
+    _downtime_insupdate << d;
+    int thread_id(_mysql.run_statement(
+                           _downtime_insupdate,
+                           oss.str(), true,
+                           _cache_host_instance[d.host_id]
+                                % _mysql.connections_count()));
   }
 }
 
@@ -951,7 +943,7 @@ void stream::_process_host_dependency(
             : "rt_hosts_hosts_dependencies")
         << "  WHERE dependent_host_id=" << hd.dependent_host_id
         << "    AND host_id=" << hd.host_id;
-    _mysql.run_query(oss.str(), "SQL");
+    _mysql.run_query(oss.str(), "SQL: ");
   }
 }
 
@@ -1008,7 +1000,8 @@ void stream::_process_host_group(
           << "    ON hosts_hostgroups.host_id=hosts.host_id"
           << "  WHERE hosts_hostgroups.hostgroup_id=" << hg.id
           << "    AND hosts.instance_id=" << hg.poller_id;
-      _mysql.run_query(oss.str(), "SQL: ");
+      _mysql.run_query(oss.str(), "SQL: ", false,
+          hg.poller_id % _mysql.connections_count());
     }
 
     // Delete empty group.

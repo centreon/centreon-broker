@@ -48,6 +48,10 @@ class                 mysql {
                         mysql_stmt& stmt,
                         std::string const& error_msg = "", bool fatal = false,
                         int thread = -1);
+  int                 run_statement_on_error(
+                        mysql_stmt& stmt,
+                        std::string const& error_msg, bool fatal,
+                        int thread);
   mysql_result        get_result(int thread_id);
   mysql_result        get_result(int thread_id, mysql_stmt const& stmt);
   bool                fetch_row(int thread_id, mysql_result& res);

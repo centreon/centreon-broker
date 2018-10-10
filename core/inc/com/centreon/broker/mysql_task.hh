@@ -35,6 +35,7 @@ class                    mysql_task {
                            COMMIT,
                            PREPARE,
                            STATEMENT,
+                           STATEMENT_ON_ERROR,
                            FINISH,
                            LAST_INSERT_ID,
                            AFFECTED_ROWS,
@@ -147,9 +148,16 @@ class                    mysql_task_statement : public mysql_task {
   bool                   fatal;
 };
 
+class                    mysql_task_statement_on_error : public mysql_task_statement {
  public:
+                         mysql_task_statement_on_error(
                            int statement_id,
                            std::auto_ptr<mysql_bind> bind,
+                           std::string const& error_msg,
+                           bool fatal)
+                          : mysql_task_statement(statement_id, bind, error_msg, fatal) {
+                             type = STATEMENT_ON_ERROR;
+                          }
 };
 
 CCB_END()

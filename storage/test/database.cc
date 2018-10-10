@@ -32,6 +32,8 @@
 #include "com/centreon/broker/neb/instance_status.hh"
 #include "com/centreon/broker/neb/log_entry.hh"
 #include "com/centreon/broker/neb/module.hh"
+#include "com/centreon/broker/neb/host_group.hh"
+#include "com/centreon/broker/neb/host_group_member.hh"
 #include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_check.hh"
 #include "com/centreon/broker/query_preparator.hh"
@@ -1020,10 +1022,6 @@ TEST_F(DatabaseStorageTest, DowntimeStatement) {
     true,
     5);
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
-  query_preparator::event_unique unique;
-  query_preparator qp(neb::downtime::static_type(), unique);
-
-  mysql_stmt downtime_insert(qp.prepare_insert(*ms));
 
   std::ostringstream oss;
   oss << "INSERT INTO " << ((ms->schema_version() == mysql::v2)
@@ -1069,4 +1067,70 @@ TEST_F(DatabaseStorageTest, DowntimeStatement) {
 
   ASSERT_TRUE(ms->get_affected_rows(thread_id, downtime_insupdate) == 1);
   ms->commit();
+}
+
+TEST_F(DatabaseStorageTest, HostGroupMemberStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+
+  int thread_id(ms->run_query("DELETE FROM host_groups"));
+  ms->commit(thread_id);
+
+  query_preparator::event_unique unique;
+  unique.insert("hostgroup_id");
+  unique.insert("host_id");
+  query_preparator
+    qp(neb::host_group_member::static_type(), unique);
+  mysql_stmt host_group_member_insert(qp.prepare_insert(*ms));
+
+  query_preparator::event_unique unique1;
+  unique1.insert("hostgroup_id");
+  query_preparator
+    qp1(neb::host_group::static_type(), unique1);
+  mysql_stmt host_group_insupdate(qp1.prepare_insert_or_update(*ms));
+
+  neb::host_group_member hgm;
+  hgm.enabled = true;
+  hgm.group_id = 8;
+  hgm.group_name = "Test host group";
+  hgm.host_id = 24;
+  hgm.poller_id = 1;
+
+  host_group_member_insert << hgm;
+  std::cout << host_group_member_insert.get_query() << std::endl;
+
+  thread_id = ms->run_statement(
+                      host_group_member_insert,
+                      "Error: host group not defined", true);
+
+  neb::host_group hg;
+  hg.id = 20;
+  hg.name = "Test hostgroup";
+  hg.enabled = true;
+  hg.poller_id = 1;
+
+  host_group_insupdate << hg;
+
+  std::cout << host_group_insupdate.get_query() << std::endl;
+
+  ms->run_statement_on_error(
+                 host_group_insupdate,
+                 "Error: Unable to create host group", true,
+                 thread_id);
+
+  ms->run_statement(
+        host_group_member_insert,
+        "Error: host group not defined", true, thread_id);
+
 }

@@ -54,7 +54,9 @@ class                    mysql_thread : public QThread {
   void                   run_statement(
                            int statement_id, std::auto_ptr<mysql_bind> bind,
                            std::string const& error_msg, bool fatal);
+  void                   run_statement_on_error(
                            int statement_id, std::auto_ptr<mysql_bind> bind,
+                           std::string const& error_msg, bool fatal);
   void                   finish();
   mysql_error            get_error();
   int                    get_last_insert_id();
@@ -84,6 +86,7 @@ class                    mysql_thread : public QThread {
                            mysql_task_affected_rows* task);
   void                   _prepare(mysql_task_prepare* task);
   void                   _statement(mysql_task_statement* task);
+  void                   _statement_on_error(mysql_task_statement_on_error* task);
   void                   _push(misc::shared_ptr<mysql_task> const& q);
 
   MYSQL*                 _conn;
