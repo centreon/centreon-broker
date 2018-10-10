@@ -133,7 +133,7 @@ class                    mysql_task_statement : public mysql_task {
  public:
                          mysql_task_statement(
                            int statement_id,
-                           std::auto_ptr<mysql_bind> bind,
+                           misc::shared_ptr<mysql_bind> bind,
                            std::string const& error_msg,
                            bool fatal)
                           : mysql_task(mysql_task::STATEMENT),
@@ -142,7 +142,7 @@ class                    mysql_task_statement : public mysql_task {
                             error_msg(error_msg),
                             fatal(fatal) {}
   int                    statement_id;
-  std::auto_ptr<mysql_bind>
+  misc::shared_ptr<mysql_bind>
                          bind;
   std::string            error_msg;
   bool                   fatal;
@@ -152,7 +152,7 @@ class                    mysql_task_statement_on_error : public mysql_task_state
  public:
                          mysql_task_statement_on_error(
                            int statement_id,
-                           std::auto_ptr<mysql_bind> bind,
+                           misc::shared_ptr<mysql_bind> bind,
                            std::string const& error_msg,
                            bool fatal)
                           : mysql_task_statement(statement_id, bind, error_msg, fatal) {

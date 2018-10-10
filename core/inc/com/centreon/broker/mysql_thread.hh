@@ -52,10 +52,10 @@ class                    mysql_thread : public QThread {
                            std::string const& query,
                            std::string const& error_msg, bool fatal);
   void                   run_statement(
-                           int statement_id, std::auto_ptr<mysql_bind> bind,
+                           int statement_id, misc::shared_ptr<mysql_bind> bind,
                            std::string const& error_msg, bool fatal);
   void                   run_statement_on_error(
-                           int statement_id, std::auto_ptr<mysql_bind> bind,
+                           int statement_id, misc::shared_ptr<mysql_bind> bind,
                            std::string const& error_msg, bool fatal);
   void                   finish();
   mysql_error            get_error();

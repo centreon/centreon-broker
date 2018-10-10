@@ -171,7 +171,7 @@ void mysql_thread::_statement(mysql_task_statement* task) {
       _error = mysql_error("statement not prepared", true);
     return ;
   }
-  if (task->bind.get() && mysql_stmt_bind_param(stmt, const_cast<MYSQL_BIND*>(task->bind->get_bind()))) {
+  if (task->bind.data() && mysql_stmt_bind_param(stmt, const_cast<MYSQL_BIND*>(task->bind->get_bind()))) {
     logging::debug(logging::low)
       << "mysql: statement binding failed ("
       << mysql_stmt_error(stmt) << ")";
@@ -379,13 +379,13 @@ void mysql_thread::commit(QSemaphore& sem, QAtomicInt& count) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_commit(sem, count)));
 }
 
-void mysql_thread::run_statement(int statement_id, std::auto_ptr<mysql_bind> bind,
+void mysql_thread::run_statement(int statement_id, misc::shared_ptr<mysql_bind> bind,
                      std::string const& error_msg, bool fatal) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_statement(statement_id, bind, error_msg, fatal)));
 }
 
 void mysql_thread::run_statement_on_error(int statement_id,
-                     std::auto_ptr<mysql_bind> bind,
+                     misc::shared_ptr<mysql_bind> bind,
                      std::string const& error_msg, bool fatal) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_statement_on_error(statement_id, bind, error_msg, fatal)));
 }

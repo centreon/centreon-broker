@@ -46,7 +46,7 @@ mysql_result::~mysql_result() {
 }
 
 void mysql_result::set(MYSQL_RES* result) {
-  _result = result;
+  _result = misc::shared_ptr<MYSQL_RES>(result, mysql_free_result);
 }
 
 MYSQL_RES* mysql_result::get() {
