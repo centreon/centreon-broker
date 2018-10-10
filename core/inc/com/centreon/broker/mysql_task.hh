@@ -32,11 +32,9 @@ class                    mysql_task {
  public:
   enum                   mysql_type {
                            RUN,
-                           RUN_SYNC,
                            COMMIT,
                            PREPARE,
                            STATEMENT,
-                           STATEMENT_SYNC,
                            FINISH,
                            LAST_INSERT_ID,
                            AFFECTED_ROWS,
@@ -48,13 +46,6 @@ class                    mysql_task {
                          mysql_task(mysql_type type)
                           : type(type) {}
   mysql_type             type;
-};
-
-class                    mysql_task_run_sync : public mysql_task {
- public:
-                         mysql_task_run_sync(std::string const& q)
-                          : mysql_task(mysql_task::RUN_SYNC), query(q) {}
-  std::string            query;
 };
 
 class                    mysql_task_run : public mysql_task {
@@ -156,20 +147,9 @@ class                    mysql_task_statement : public mysql_task {
   bool                   fatal;
 };
 
-class                    mysql_task_statement_sync : public mysql_task {
  public:
-                         mysql_task_statement_sync(
                            int statement_id,
                            std::auto_ptr<mysql_bind> bind,
-                           std::string const& error_msg)
-                          : mysql_task(mysql_task::STATEMENT_SYNC),
-                            statement_id(statement_id),
-                            bind(bind),
-                            error_msg(error_msg) {}
-  int                    statement_id;
-  std::auto_ptr<mysql_bind>
-                         bind;
-  std::string            error_msg;
 };
 
 CCB_END()

@@ -60,21 +60,6 @@ void mysql_thread::_run(mysql_task_run* task) {
  *
  *  @param task         The task to realize, it contains a query.
  */
-void mysql_thread::_run_sync(mysql_task_run_sync* task) {
-  logging::debug(logging::low)
-    << "mysql: run sync query: "
-    << task->query.c_str();
-  QMutexLocker locker(&_result_mutex);
-  if (mysql_query(_conn, task->query.c_str())) {
-    logging::debug(logging::low)
-      << "mysql: run sync query failed: "
-      << ::mysql_error(_conn);
-    _error = mysql_error(::mysql_error(_conn), true);
-  }
-
-  _result_condition.wakeAll();
-}
-
 void mysql_thread::_get_last_insert_id_sync(mysql_task_last_insert_id* task) {
   QMutexLocker locker(&_result_mutex);
   *task->id = mysql_insert_id(_conn);
@@ -211,35 +196,6 @@ void mysql_thread::_statement(mysql_task_statement* task) {
   }
 }
 
-void mysql_thread::_statement_sync(mysql_task_statement_sync* task) {
-  logging::debug(logging::low)
-    << "mysql: execute sync statement: "
-    << task->statement_id;
-  QMutexLocker locker(&_result_mutex);
-  MYSQL_STMT* stmt(_stmt[task->statement_id]);
-  if (mysql_stmt_bind_param(stmt, const_cast<MYSQL_BIND*>(task->bind->get_bind()))) {
-    logging::debug(logging::low)
-      << "mysql: statement sync binding failed ("
-      << mysql_stmt_error(stmt) << ")";
-    _error = mysql_error(mysql_stmt_error(stmt), true);
-    std::cout << "ERROR IN BINDING..." << std::endl;
-  }
-  else if (mysql_stmt_execute(stmt)) {
-    logging::debug(logging::low)
-      << "mysql: statement sync execution failed ("
-      << mysql_stmt_error(stmt) << ")";
-    _error = mysql_error(mysql_stmt_error(stmt), true);
-    std::cout << "ERROR IN EXECUTION... " << mysql_stmt_error(stmt)
-      << std::endl;
-  }
-  //else {
-  //  std::cout << "GET THE RESULT..." << std::endl;
-  //  _result = mysql_store_result(_conn);
-  //}
-
-  _result_condition.wakeAll();
-}
-
 void mysql_thread::run() {
   QMutexLocker locker(&_result_mutex);
   _conn = mysql_init(NULL);
@@ -287,10 +243,6 @@ void mysql_thread::run() {
         std::cout << "run RUN" << std::endl;
         _run(static_cast<mysql_task_run*>(task.data()));
         break;
-       case mysql_task::RUN_SYNC:
-        std::cout << "run RUN SYNC" << std::endl;
-        _run_sync(static_cast<mysql_task_run_sync*>(task.data()));
-        break;
        case mysql_task::LAST_INSERT_ID:
         std::cout << "get LAST INSERT ID" << std::endl;
         _get_last_insert_id_sync(static_cast<mysql_task_last_insert_id*>(task.data()));
@@ -319,9 +271,6 @@ void mysql_thread::run() {
         std::cout << "run STATEMENT" << std::endl;
         _statement(static_cast<mysql_task_statement*>(task.data()));
         break;
-       case mysql_task::STATEMENT_SYNC:
-        std::cout << "run STATEMENT SYNC" << std::endl;
-        _statement_sync(static_cast<mysql_task_statement_sync*>(task.data()));
         break;
        case mysql_task::FINISH:
         std::cout << "run FINISH" << std::endl;
@@ -390,21 +339,6 @@ void mysql_thread::_push(misc::shared_ptr<mysql_task> const& q) {
  *  @param error_msg The error message to return in case of error.
  *  @throw an exception in case of error.
  */
-void mysql_thread::run_query_sync(std::string const& query,
-                     std::string const& error_msg) {
-  QMutexLocker locker(&_result_mutex);
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_run_sync(query)));
-  _result_condition.wait(locker.mutex());
-  if (_error.is_active()) {
-    exceptions::msg e;
-    if (!error_msg.empty())
-      e << error_msg << ": ";
-    e << "could not execute query: "
-      << _error.get_message() << " (" << query << ")";
-    throw e;
-  }
-}
-
 int mysql_thread::get_affected_rows(int statement_id) {
   QMutexLocker locker(&_result_mutex);
   int retval;
@@ -440,19 +374,6 @@ void mysql_thread::run_statement(int statement_id, std::auto_ptr<mysql_bind> bin
   _push(misc::shared_ptr<mysql_task>(new mysql_task_statement(statement_id, bind, error_msg, fatal)));
 }
 
-void mysql_thread::run_statement_sync(int statement_id, std::auto_ptr<mysql_bind> bind,
-                     std::string const& error_msg) {
-  QMutexLocker locker(&_result_mutex);
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_statement_sync(statement_id, bind, error_msg)));
-  _result_condition.wait(locker.mutex());
-  if (_error.is_active()) {
-    exceptions::msg e;
-    if (!error_msg.empty())
-      e << error_msg << ": ";
-    e << "could not execute statement " << statement_id << ": "
-      << _error.get_message();
-    throw e;
-  }
 }
 
 void mysql_thread::prepare_query(int stmt_id, std::string const& query) {

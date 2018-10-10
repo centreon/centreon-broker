@@ -221,8 +221,8 @@ int mysql::get_last_insert_id(int thread_id) {
 }
 
 int mysql::run_statement(mysql_stmt& stmt,
-              std::string const& error_msg, bool fatal,
-              int thread_id) {
+             std::string const& error_msg, bool fatal,
+             int thread_id) {
   if (thread_id < 0) {
     // Here, we use _current_thread
     thread_id = _current_thread++;

@@ -51,15 +51,10 @@ class                    mysql_thread : public QThread {
   void                   run_query(
                            std::string const& query,
                            std::string const& error_msg, bool fatal);
-  void                   run_query_sync(
-                           std::string const& query,
-                           std::string const& error_msg);
   void                   run_statement(
                            int statement_id, std::auto_ptr<mysql_bind> bind,
                            std::string const& error_msg, bool fatal);
-  void                   run_statement_sync(
                            int statement_id, std::auto_ptr<mysql_bind> bind,
-                           std::string const& error_msg);
   void                   finish();
   mysql_error            get_error();
   int                    get_last_insert_id();
@@ -79,7 +74,6 @@ class                    mysql_thread : public QThread {
 
   void                   _commit(mysql_task_commit* task);
   void                   _run(mysql_task_run* task);
-  void                   _run_sync(mysql_task_run_sync* task);
   void                   _get_last_insert_id_sync(
                            mysql_task_last_insert_id* task);
   void                   _get_result_sync(
@@ -90,7 +84,6 @@ class                    mysql_thread : public QThread {
                            mysql_task_affected_rows* task);
   void                   _prepare(mysql_task_prepare* task);
   void                   _statement(mysql_task_statement* task);
-  void                   _statement_sync(mysql_task_statement_sync* task);
   void                   _push(misc::shared_ptr<mysql_task> const& q);
 
   MYSQL*                 _conn;
@@ -108,7 +101,6 @@ class                    mysql_thread : public QThread {
   QMutex                 _result_mutex;
   QWaitCondition         _result_condition;
 
-  // Error message returned when the call to _run_sync() fails.
   mysql_error            _error;
   std::string            _host;
   std::string            _user;
