@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <iostream>
 #include <QHash>
 #include <cfloat>
 #include <cmath>
@@ -29,6 +30,77 @@ using namespace com::centreon::broker;
 
 mysql_stmt::mysql_stmt()
  : _id(0) {
+}
+
+mysql_stmt::mysql_stmt(std::string const& query, bool named) {
+  mysql_bind_mapping bind_mapping;
+  if (named) {
+    std::string q;
+    q.reserve(query.size());
+    bool in_string(false);
+    char open(0);
+    int size(0);
+    for (std::string::const_iterator it(query.begin()), end(query.end());
+         it != end;
+         ++it) {
+      if (in_string) {
+        if (*it == '\\') {
+          q.push_back(*it);
+          it++;
+          q.push_back(*it);
+        }
+        else {
+          q.push_back(*it);
+          if (*it == open)
+            in_string = false;
+        }
+      }
+      else {
+        if (*it == ':') {
+          std::string::const_iterator itt(it + 1);
+          while (itt != end && (isalnum(*itt) || *itt == '_'))
+            ++itt;
+          std::string key(it, itt);
+          mysql_bind_mapping::iterator fkit(bind_mapping.find(key));
+          if (fkit != bind_mapping.end()) {
+            int value(fkit->second);
+            bind_mapping.erase(fkit);
+            key.push_back('1');
+            bind_mapping.insert(std::make_pair(key, value));
+            key[key.size() - 1] = '2';
+            bind_mapping.insert(std::make_pair(key, size));
+          }
+          else
+            bind_mapping.insert(std::make_pair(std::string(it, itt), size));
+
+          ++size;
+          it = itt - 1;
+          q.push_back('?');
+        }
+        else {
+          if (*it == '\'' || *it == '"') {
+            in_string = true;
+            open = *it;
+          }
+          q.push_back(*it);
+        }
+      }
+    }
+    _id = qHash(QString(q.c_str()));
+    _query = q;
+    _bind_mapping = bind_mapping;
+  }
+  else {
+    _id = qHash(QString(query.c_str()));
+    _query = query;
+  }
+  for (mysql_bind_mapping::const_iterator
+         it(_bind_mapping.begin()),
+         end(_bind_mapping.end());
+       it != end;
+       ++it) {
+    std::cout << it->first << " => " << it->second << std::endl;
+  }
 }
 
 mysql_stmt::mysql_stmt(std::string const& query,
@@ -454,4 +526,8 @@ void mysql_stmt::bind_value_as_null(std::string const& name) {
       << "mysql: cannot bind object with name '" << name << "' in statement "
       << get_id();
   }
+}
+
+std::string const& mysql_stmt::get_query() const {
+  return _query;
 }

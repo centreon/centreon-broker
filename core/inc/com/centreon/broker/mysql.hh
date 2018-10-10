@@ -36,6 +36,7 @@ class                 mysql {
   };
                       mysql(database_config const& db_cfg);
                       ~mysql();
+  void                prepare_statement(mysql_stmt const& stmt);
   mysql_stmt          prepare_query(std::string const& query,
                                     mysql_bind_mapping const& bind_mapping = mysql_bind_mapping());
   void                commit(int thread_id = -1);

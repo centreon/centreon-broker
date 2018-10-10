@@ -24,6 +24,7 @@
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/neb/custom_variable.hh"
+#include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/host_check.hh"
 #include "com/centreon/broker/neb/host_status.hh"
@@ -1003,4 +1004,69 @@ TEST_F(DatabaseStorageTest, SelectStatement) {
     ASSERT_TRUE(res.value_as_f64(0) == 2.5);
     ASSERT_TRUE(res.value_as_i32(1) == 0);
   }
+}
+
+TEST_F(DatabaseStorageTest, DowntimeStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  query_preparator::event_unique unique;
+  query_preparator qp(neb::downtime::static_type(), unique);
+
+  mysql_stmt downtime_insert(qp.prepare_insert(*ms));
+
+  std::ostringstream oss;
+  oss << "INSERT INTO " << ((ms->schema_version() == mysql::v2)
+                            ? "downtimes"
+                            : "rt_downtimes")
+      << " (actual_end_time, "
+         "actual_start_time, "
+         "author, type, deletion_time, duration, end_time, entry_time, "
+         "fixed, host_id, instance_id, internal_id, service_id, "
+         "start_time, triggered_by, cancelled, started, comment_data) "
+         "VALUES(:actual_end_time,:actual_start_time,:author,:type,:deletion_time,:duration,:end_time,:entry_time,:fixed,:host_id,:instance_id,:internal_id,:service_id,:start_time,:triggered_by,:cancelled,:started,:comment_data) ON DUPLICATE KEY UPDATE "
+         "actual_end_time=GREATEST(COALESCE(actual_end_time, -1), :actual_end_time),"
+         "actual_start_time=COALESCE(actual_start_time, :actual_start_time),"
+         "author=:author, cancelled=:cancelled, comment_data=:comment_data,"
+         "deletion_time=:deletion_time, duration=:duration, end_time=:end_time,"
+         "fixed=:fixed, host_id=:host_id, service_id=:service_id,"
+         "start_time=:start_time, started=:started,"
+         "triggered_by=:triggered_by, type=:type";
+  mysql_stmt downtime_insupdate(mysql_stmt(oss.str(), true));
+  ms->prepare_statement(downtime_insupdate);
+
+  time_t now(time(NULL));
+
+  neb::downtime d;
+  d.actual_end_time = now;
+  d.actual_start_time = now - 30;
+  d.comment = "downtime test";
+  d.downtime_type = 1;
+  d.duration = 30;
+  d.end_time = now;
+  d.entry_time = now - 30;
+  d.fixed = true;
+  d.host_id = 24;
+  d.poller_id = 1;
+  d.service_id = 318;
+  d.start_time = now - 30;
+  d.was_started = true;
+
+  downtime_insupdate << d;
+  int thread_id(ms->run_statement(downtime_insupdate));
+
+  std::cout << "downtime_insupdate: " << downtime_insupdate.get_query() << std::endl;
+
+  ASSERT_TRUE(ms->get_affected_rows(thread_id, downtime_insupdate) == 1);
+  ms->commit();
 }

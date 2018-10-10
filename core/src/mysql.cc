@@ -236,15 +236,19 @@ int mysql::run_statement(mysql_stmt& stmt,
   return thread_id;
 }
 
-mysql_stmt mysql::prepare_query(std::string const& query,
-                         mysql_bind_mapping const& bind_mapping) {
-  mysql_stmt retval(query, bind_mapping);
+void mysql::prepare_statement(mysql_stmt const& stmt) {
   for (std::vector<mysql_thread*>::const_iterator
          it(_thread.begin()),
          end(_thread.end());
        it != end;
        ++it)
-    (*it)->prepare_query(retval.get_id(), query);
+    (*it)->prepare_query(stmt.get_id(), stmt.get_query());
+}
+
+mysql_stmt mysql::prepare_query(std::string const& query,
+                         mysql_bind_mapping const& bind_mapping) {
+  mysql_stmt retval(query, bind_mapping);
+  prepare_statement(retval);
 
   return retval;
 }
