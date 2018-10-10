@@ -19,20 +19,16 @@
 #include <QHash>
 #include <cfloat>
 #include <cmath>
-#include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/event_info.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mapping/entry.hh"
-#include "com/centreon/broker/mysql_bind.hh"
 #include "com/centreon/broker/mysql_stmt.hh"
 
 using namespace com::centreon::broker;
 
 mysql_stmt::mysql_stmt()
  : _id(0) {
-  std::cout << "mysql_stmt: empty constructor..." << std::endl;
 }
 
 mysql_stmt::mysql_stmt(std::string const& query,
@@ -45,15 +41,9 @@ mysql_stmt::mysql_stmt(mysql_stmt const& other)
  : _id(other._id),
    _query(other._query),
    _bind_mapping(other._bind_mapping) {
-  std::cout << "mysql_stmt: constructor by copy..." << std::endl;
-}
-
-mysql_stmt::~mysql_stmt() {
-  std::cout << "mysql_stmt: destructor" << std::endl;
 }
 
 mysql_stmt& mysql_stmt::operator=(mysql_stmt const& other) {
-  std::cout << "mysql_stmt: operator=..." << std::endl;
   if (this != &other) {
     _id = other._id;
     _query = other._query;
@@ -205,10 +195,6 @@ void mysql_stmt::bind_value_as_i32(int range, int value) {
 void mysql_stmt::bind_value_as_i32(std::string const& name, int value) {
   mysql_bind_mapping::iterator it(_bind_mapping.find(name));
   if (it != _bind_mapping.end()) {
-    std::cout << "Statement " << get_id() << " : "
-      << "name = " << name << "; value = " << value
-      << std::endl;
-
     bind_value_as_i32(it->second, value);
   }
   else {
@@ -239,10 +225,6 @@ void mysql_stmt::bind_value_as_u32(int range, unsigned int value) {
 void mysql_stmt::bind_value_as_u32(std::string const& name, unsigned int value) {
   mysql_bind_mapping::iterator it(_bind_mapping.find(name));
   if (it != _bind_mapping.end()) {
-    std::cout << "Statement " << get_id() << " : "
-      << "name = " << name << "; value = " << value
-      << std::endl;
-
     bind_value_as_u32(it->second, value);
   }
   else {
@@ -273,10 +255,6 @@ void mysql_stmt::bind_value_as_u64(int range, unsigned long long value) {
 void mysql_stmt::bind_value_as_u64(std::string const& name, unsigned long long value) {
   mysql_bind_mapping::iterator it(_bind_mapping.find(name));
   if (it != _bind_mapping.end()) {
-    std::cout << "Statement " << get_id() << " : "
-      << "name = " << name << "; value = " << value
-      << std::endl;
-
     bind_value_as_u64(it->second, value);
   }
   else {
@@ -307,10 +285,6 @@ void mysql_stmt::bind_value_as_f32(int range, float value) {
 void mysql_stmt::bind_value_as_f32(std::string const& name, float value) {
   mysql_bind_mapping::iterator it(_bind_mapping.find(name));
   if (it != _bind_mapping.end()) {
-    std::cout << "Statement " << get_id() << " : "
-      << "name = " << name << "; value = " << value
-      << std::endl;
-
     bind_value_as_f32(it->second, value);
   }
   else {
@@ -341,10 +315,6 @@ void mysql_stmt::bind_value_as_f64(int range, double value) {
 void mysql_stmt::bind_value_as_f64(std::string const& name, double value) {
   mysql_bind_mapping::iterator it(_bind_mapping.find(name));
   if (it != _bind_mapping.end()) {
-    std::cout << "Statement " << get_id() << " : "
-      << "name = " << name << "; value = " << value
-      << std::endl;
-
     bind_value_as_f64(it->second, value);
   }
   else {
@@ -375,10 +345,6 @@ void mysql_stmt::bind_value_as_tiny(int range, char value) {
 void mysql_stmt::bind_value_as_tiny(std::string const& name, char value) {
   mysql_bind_mapping::iterator it(_bind_mapping.find(name));
   if (it != _bind_mapping.end()) {
-    std::cout << "Statement " << get_id() << " : "
-      << "name = " << name << "; value = " << value
-      << std::endl;
-
     bind_value_as_tiny(it->second, value);
   }
   else {
@@ -409,10 +375,6 @@ void mysql_stmt::bind_value_as_bool(int range, bool value) {
 void mysql_stmt::bind_value_as_bool(std::string const& name, bool value) {
   mysql_bind_mapping::iterator it(_bind_mapping.find(name));
   if (it != _bind_mapping.end()) {
-    std::cout << "Statement " << get_id() << " : "
-      << "name = " << name << "; value = " << value
-      << std::endl;
-
     bind_value_as_bool(it->second, value);
   }
   else {
@@ -443,10 +405,6 @@ void mysql_stmt::bind_value_as_str(int range, std::string const& value) {
 void mysql_stmt::bind_value_as_str(std::string const& name, std::string const& value) {
   mysql_bind_mapping::iterator it(_bind_mapping.find(name));
   if (it != _bind_mapping.end()) {
-    std::cout << "Statement " << get_id() << " : "
-      << "name = " << name << "; value = " << value
-      << std::endl;
-
     bind_value_as_str(it->second, value);
   }
   else {
@@ -477,10 +435,6 @@ void mysql_stmt::bind_value_as_null(int range) {
 void mysql_stmt::bind_value_as_null(std::string const& name) {
   mysql_bind_mapping::iterator it(_bind_mapping.find(name));
   if (it != _bind_mapping.end()) {
-    std::cout << "Statement " << get_id() << " : "
-      << "name = " << name << "; value = null"
-      << std::endl;
-
     bind_value_as_null(it->second);
   }
   else {

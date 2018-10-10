@@ -21,9 +21,7 @@
 
 #include <QThread>
 #include <QWaitCondition>
-#include "com/centreon/broker/misc/unordered_hash.hh"
 #include "com/centreon/broker/database_config.hh"
-#include "com/centreon/broker/mysql_bind.hh"
 #include "com/centreon/broker/mysql_error.hh"
 #include "com/centreon/broker/mysql_result.hh"
 #include "com/centreon/broker/mysql_stmt.hh"
@@ -109,9 +107,6 @@ class                    mysql_thread : public QThread {
   // Mutex and condition working on result and error_msg.
   QMutex                 _result_mutex;
   QWaitCondition         _result_condition;
-
-  // Result of a mysql query. It is used in the case of _run_sync() calls.
-  //mysql_result           _result;
 
   // Error message returned when the call to _run_sync() fails.
   mysql_error            _error;

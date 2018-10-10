@@ -19,14 +19,10 @@
 #ifndef CCB_MYSQL_STMT_HH
 #  define CCB_MYSQL_STMT_HH
 
-#  include <map>
 #  include <memory>
-#  include <string>
-#  include <vector>
 #  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/mysql_bind.hh"
-#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -39,7 +35,6 @@ class                           mysql_stmt {
                                   std::string const& query,
                                   mysql_bind_mapping const& bind_mapping = mysql_bind_mapping());
                                 mysql_stmt(mysql_stmt const& other);
-                                ~mysql_stmt();
   mysql_stmt&                   operator=(mysql_stmt const& other);
   bool                          prepared() const;
   int                           get_id() const;

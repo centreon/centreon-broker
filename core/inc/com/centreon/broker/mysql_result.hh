@@ -19,8 +19,6 @@
 #  define CCB_MYSQL_RESULT_HH
 
 #include <memory>
-#include <mysql.h>
-#include <string>
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/mysql_bind.hh"
 

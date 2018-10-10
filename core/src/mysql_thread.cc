@@ -16,11 +16,9 @@
 ** For more information : contact@centreon.com
 */
 #include <iostream>
-#include <memory>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/mysql_stmt.hh"
 #include "com/centreon/broker/mysql_thread.hh"
 
 using namespace com::centreon::broker;

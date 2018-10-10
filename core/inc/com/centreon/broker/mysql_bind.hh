@@ -22,9 +22,6 @@
 #  include <mysql.h>
 #  include <string>
 #  include <vector>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/misc/unordered_hash.hh"
 
 CCB_BEGIN()
 
