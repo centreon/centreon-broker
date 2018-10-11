@@ -77,8 +77,10 @@ query_preparator& query_preparator::operator=(
  *  Prepare insertion query for specified event.
  *
  *  @param[out] q  Database query, prepared and ready to run.
+ *  @param[in] ignore  A boolean telling if the query ignores errors
+ *                      (default value is false).
  */
-mysql_stmt query_preparator::prepare_insert(mysql& ms) {
+mysql_stmt query_preparator::prepare_insert(mysql& ms, bool ignore) {
   std::map<std::string, int> bind_mapping;
   // Find event info.
   io::event_info const*
@@ -92,7 +94,12 @@ mysql_stmt query_preparator::prepare_insert(mysql& ms) {
   bool schema_v2(ms.schema_version() == mysql::v2);
 
   // Build query string.
-  std::string query("INSERT INTO ");
+  std::string query;
+  if (ignore)
+    query = "INSERT IGNORE INTO ";
+  else
+    query = "INSERT INTO ";
+
   if (schema_v2)
     query.append(info->get_table_v2());
   else

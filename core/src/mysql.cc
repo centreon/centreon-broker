@@ -45,10 +45,10 @@ mysql::mysql(database_config const& db_cfg)
     std::cout << "mysql constructor next one" << std::endl;
   }
   try {
-    int thread_id(run_query("SELECT instance_id FROM instances LIMIT 1"));
-    mysql_result res = get_result(thread_id);
-    if (fetch_row(thread_id, res))
-      _version = v2;
+    int thread_id(run_query("SELECT instance_id FROM instances LIMIT 1",
+                    "", true));
+    get_result(thread_id);
+    _version = v2;
     logging::info(logging::low)
       << "mysql: database is using version 2 of Centreon schema";
   }

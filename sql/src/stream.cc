@@ -371,50 +371,6 @@ bool stream::_is_valid_poller(unsigned int poller_id) {
 }
 
 /**
- *  Prepare a select statement for later execution.
- *
- *  @param[out] st          Query object.
- *  @param[in]  table_name  The name of the table.
- */
-template <typename T>
-mysql_stmt stream::_prepare_select(
-               std::string const& table_name) {
-  // Database schema version.
-  bool db_v2(_mysql.schema_version() == mysql::v2);
-  std::map<std::string, int> bind_mapping;
-  int size(0);
-
-  // Build query string.
-  std::string query;
-  query = "SELECT * FROM ";
-  query.append(table_name);
-  query.append(" WHERE ");
-  mapping::entry const* entries = T::entries;
-  std::string key;
-  for (size_t i(0); !entries[i].is_null(); ++i) {
-    char const* entry_name;
-    if (db_v2)
-      entry_name = entries[i].get_name_v2();
-    else
-      entry_name = entries[i].get_name();
-    if (!entry_name || !entry_name[0])
-      continue ;
-    query.append(entry_name);
-    query.append(" = ? AND ");
-    key = ":";
-    key.append(entry_name);
-    bind_mapping.insert(std::make_pair(key, size++));
-  }
-
-  query.resize(query.size() - 5);
-
-  // Prepare statement.
-  mysql_stmt retval(_mysql.prepare_query(query, bind_mapping));
-
-  return retval;
-}
-
-/**
  *  Process an acknowledgement event.
  *
  *  @param[in] e Uncasted acknowledgement.
@@ -1128,26 +1084,15 @@ void stream::_process_host_parent(
       << " is parent of host " << hp.host_id;
 
     // Prepare queries.
-    if (!_host_parent_insert.prepared()
-        || !_host_parent_select.prepared()) {
+    if (!_host_parent_insert.prepared()) {
       query_preparator qp(neb::host_parent::static_type());
-      _host_parent_insert = qp.prepare_insert(_mysql);
-      _host_parent_select = _prepare_select<neb::host_parent>(
-        ((_mysql.schema_version() == mysql::v2)
-         ? "hosts_hosts_parents"
-         : "rt_hosts_hosts_parents"));
+      _host_parent_insert = qp.prepare_insert(_mysql, true);
     }
 
     // Insert.
     std::ostringstream oss;
     oss << "SQL: could not store host parentship (child host: "
         << hp.host_id << ", parent host: " << hp.parent_id << "): ";
-    _host_parent_select << hp;
-    int thread_id(_mysql.run_statement(_host_parent_select));
-    //FIXME DBR
-    //mysql_result res(_mysql.use_result(thread_id));
-    //if (res.get_num_rows())
-    //  return ;
 
     _host_parent_insert << hp;
     _mysql.run_statement(

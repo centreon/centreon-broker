@@ -27,13 +27,14 @@
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/host_check.hh"
+#include "com/centreon/broker/neb/host_group.hh"
+#include "com/centreon/broker/neb/host_group_member.hh"
+#include "com/centreon/broker/neb/host_parent.hh"
 #include "com/centreon/broker/neb/host_status.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/neb/instance_status.hh"
 #include "com/centreon/broker/neb/log_entry.hh"
 #include "com/centreon/broker/neb/module.hh"
-#include "com/centreon/broker/neb/host_group.hh"
-#include "com/centreon/broker/neb/host_group_member.hh"
 #include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_check.hh"
 #include "com/centreon/broker/query_preparator.hh"
@@ -256,7 +257,7 @@ TEST_F(DatabaseStorageTest, SelectSync) {
     std::cout << "metric name " << v << " content: " << s << std::endl;
     ++count;
   }
-  ASSERT_EQ(count, 10);
+  ASSERT_TRUE(count > 0 && count <= 10);
 }
 
 TEST_F(DatabaseStorageTest, QuerySyncWithError) {
@@ -520,7 +521,6 @@ TEST_F(DatabaseStorageTest, HostStatement) {
     5);
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
 
-  ms->run_query("DELETE FROM hosts");
   query_preparator::event_unique unique;
   unique.insert("host_id");
   query_preparator qp(neb::host::static_type(), unique);
@@ -563,6 +563,34 @@ TEST_F(DatabaseStorageTest, HostStatement) {
   mysql_result res(ms->get_result(thread_id));
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_TRUE(res.value_as_bool(0));
+
+  h.host_id = 1;
+  h.address = "10.0.2.16";
+  h.alias = "central1";
+  h.flap_detection_on_down = true;
+  h.flap_detection_on_unreachable = true;
+  h.flap_detection_on_up = true;
+  h.host_name = "central_1";
+  h.notify_on_down = true;
+  h.notify_on_unreachable = true;
+  h.poller_id = 1;
+  h.stalk_on_down = false;
+  h.stalk_on_unreachable = false;
+  h.stalk_on_up = false;
+  h.statusmap_image = "";
+  h.timezone = "Europe/Paris";
+
+  host_insupdate << h;
+  ms->run_statement(host_insupdate, "", false, 0);
+  ms->commit();
+  thread_id = ms->run_query(
+        "SELECT host_id FROM hosts");
+  res = ms->get_result(thread_id);
+  for (int i(0); i < 2; ++i) {
+    ASSERT_TRUE(ms->fetch_row(thread_id, res));
+    int v(res.value_as_i32(0));
+    ASSERT_TRUE(v == 1 || v == 24);
+  }
 }
 
 TEST_F(DatabaseStorageTest, CustomVarStatement) {
@@ -1134,5 +1162,67 @@ TEST_F(DatabaseStorageTest, HostGroupMemberStatement) {
                  host_group_member_insert, mysql_task::IF_PREVIOUS,
                  "Error: host group not defined", true,
                  thread_id);
+  ms->commit();
+}
+
+TEST_F(DatabaseStorageTest, HostParentStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+
+  query_preparator
+    qp(neb::host_parent::static_type());
+  mysql_stmt host_parent_insert(qp.prepare_insert(*ms, true));
+  query_preparator::event_unique unique;
+  unique.insert("child_id");
+  unique.insert("parent_id");
+  query_preparator qp_del(neb::host_parent::static_type(), unique);
+  mysql_stmt host_parent_delete = qp_del.prepare_delete(*ms);
+
+  neb::host_parent hp;
+  hp.enabled = true;
+  hp.host_id = 24;
+  hp.parent_id = 1;
+
+  // Insert.
+  std::ostringstream oss;
+  oss << "SQL: could not store host parentship (child host: "
+      << hp.host_id << ", parent host: " << hp.parent_id << "): ";
+
+  host_parent_insert << hp;
+  int thread_id(ms->run_statement(
+        host_parent_insert,
+        oss.str(), false));
+
+  ASSERT_TRUE(ms->get_affected_rows(thread_id, host_parent_insert) == 1);
+
+  // Second insert attempted just for the check
+  ms->run_statement(
+        host_parent_insert,
+        oss.str(), false,
+        thread_id);
+
+  ASSERT_TRUE(ms->get_affected_rows(thread_id, host_parent_insert) == 0);
+
+  // Disable parenting.
+  hp.enabled = false;
+
+  host_parent_delete << hp;
+  ms->run_statement(
+        host_parent_delete,
+        "SQL: ", false,
+        thread_id);
+
+  ASSERT_TRUE(ms->get_affected_rows(thread_id, host_parent_delete) == 1);
   ms->commit();
 }
