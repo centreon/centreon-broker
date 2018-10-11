@@ -30,7 +30,7 @@ typedef int (*mysql_callback)(MYSQL* conn, void* data);
 
 class                    mysql_task {
  public:
-  enum                   mysql_type {
+  enum                   type {
                            RUN,
                            COMMIT,
                            PREPARE,
@@ -44,9 +44,9 @@ class                    mysql_task {
   };
   virtual                ~mysql_task() {}
 
-                         mysql_task(mysql_type type)
+                         mysql_task(type type)
                           : type(type) {}
-  mysql_type             type;
+  type                   type;
 };
 
 class                    mysql_task_run : public mysql_task {
