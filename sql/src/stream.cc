@@ -947,6 +947,15 @@ void stream::_process_host_dependency(
   }
 }
 
+void stream::_check_host_group_statement() {
+  if (!_host_group_insupdate.prepared()) {
+    query_preparator::event_unique unique;
+    unique.insert("hostgroup_id");
+    query_preparator qp(neb::host_group::static_type(), unique);
+    _host_group_insupdate = qp.prepare_insert_or_update(_mysql);
+  }
+}
+
 /**
  *  Process a host group event.
  *
@@ -968,12 +977,7 @@ void stream::_process_host_group(
     logging::info(logging::medium) << "SQL: enabling host group "
       << hg.id << " ('" << hg.name << "') on instance "
       << hg.poller_id;
-    if (!_host_group_insupdate.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("hostgroup_id");
-      query_preparator qp(neb::host_group::static_type(), unique);
-      _host_group_insupdate = qp.prepare_insert_or_update(_mysql);
-    }
+    _check_host_group_statement();
 
     std::ostringstream oss;
     oss << "SQL: could not store host group (poller: "
@@ -1036,37 +1040,48 @@ void stream::_process_host_group_member(
 
     // We only need to try to insert in this table as the
     // host_id/hostgroup_id should be UNIQUE.
-    try {
-      try {
-        if (!_host_group_member_insert.prepared()) {
-          query_preparator::event_unique unique;
-          unique.insert("hostgroup_id");
-          unique.insert("host_id");
-          query_preparator
-            qp(neb::host_group_member::static_type(), unique);
-          _host_group_member_insert = qp.prepare_insert(_mysql);
-        }
-        _host_group_member_insert << hgm;
-        _mysql.run_statement(_host_group_member_insert);
-      }
-      // The insertion error could be caused by a missing group.
-      catch (std::exception const& e) {
-        misc::shared_ptr<neb::host_group> hg(new neb::host_group);
-        hg->id = hgm.group_id;
-        hg->name = hgm.group_name;
-        hg->enabled = true;
-        hg->poller_id = hgm.poller_id;
-        _process_host_group(hg);
-        _host_group_member_insert << hgm;
-        _mysql.run_statement(_host_group_member_insert);
-      }
+    if (!_host_group_member_insert.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("hostgroup_id");
+      unique.insert("host_id");
+      query_preparator
+        qp(neb::host_group_member::static_type(), unique);
+      _host_group_member_insert = qp.prepare_insert(_mysql);
     }
-    catch (std::exception const& e) {
-      logging::error(logging::high)
-        << "SQL: could not store host group membership (poller: "
+    _host_group_member_insert << hgm;
+    int thread_id(hgm.poller_id % _mysql.connections_count());
+
+    _mysql.run_statement(
+             _host_group_member_insert,
+             "SQL: host group not defined", false,
+             thread_id);
+
+    _check_host_group_statement();
+
+    neb::host_group hg;
+    hg.id = hgm.group_id;
+    hg.name = hgm.group_name;
+    hg.enabled = true;
+    hg.poller_id = hgm.poller_id;
+
+    std::ostringstream oss;
+    oss << "SQL: could not store host group (poller: "
+        << hg.poller_id << ", group: " << hg.id << "): ";
+
+    _host_group_insupdate << hg;
+    _mysql.run_statement_on_condition(
+              _host_group_insupdate, mysql_task::ON_ERROR,
+              oss.str(), true,
+              thread_id);
+
+    oss.str("");
+    oss << "SQL: could not store host group membership (poller: "
         << hgm.poller_id << ", host: " << hgm.host_id << ", group: "
-        << hgm.group_id << "): " << e.what();
-    }
+        << hgm.group_id << "): ";
+    _mysql.run_statement_on_condition(
+              _host_group_member_insert, mysql_task::IF_PREVIOUS,
+              oss.str(), false,
+              thread_id);
   }
   // Delete.
   else {
@@ -1076,24 +1091,23 @@ void stream::_process_host_group_member(
       << " to host group " << hgm.group_id << " on instance "
       << hgm.poller_id;
 
-    try {
-      if (!_host_group_member_delete.prepared()) {
-        query_preparator::event_unique unique;
-        unique.insert("hostgroup_id");
-        unique.insert("host_id");
-        query_preparator
-          qp(neb::host_group_member::static_type(), unique);
-        _host_group_member_delete = qp.prepare_delete(_mysql);
-      }
-      _host_group_member_delete << hgm;
-      _mysql.run_statement(_host_group_member_delete);
+    if (!_host_group_member_delete.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("hostgroup_id");
+      unique.insert("host_id");
+      query_preparator
+        qp(neb::host_group_member::static_type(), unique);
+      _host_group_member_delete = qp.prepare_delete(_mysql);
     }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: cannot delete membership of host " << hgm.host_id
-             << " to host group " << hgm.group_id << " on instance "
-             << hgm.poller_id << ": " << e.what());
-    }
+    std::ostringstream oss;
+    oss << "SQL: cannot delete membership of host " << hgm.host_id
+        << " to host group " << hgm.group_id << " on instance "
+        << hgm.poller_id << ": ";
+
+    _host_group_member_delete << hgm;
+    _mysql.run_statement(_host_group_member_delete,
+             oss.str(), true,
+             hgm.poller_id % _mysql.connections_count());
   }
 }
 

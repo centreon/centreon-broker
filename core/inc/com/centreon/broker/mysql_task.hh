@@ -42,6 +42,13 @@ class                    mysql_task {
                            RESULT,
                            FETCH_ROW,
   };
+
+  enum                   condition {
+                           ON_ERROR,
+                           IF_PREVIOUS,
+                           IF_NOT_PREVIOUS,
+  };
+
   virtual                ~mysql_task() {}
 
                          mysql_task(type type)
@@ -132,13 +139,12 @@ class                    mysql_task_prepare : public mysql_task {
 class                    mysql_task_statement : public mysql_task {
  public:
                          mysql_task_statement(
-                           int statement_id,
-                           misc::shared_ptr<mysql_bind> bind,
+                           mysql_stmt& stmt,
                            std::string const& error_msg,
                            bool fatal)
                           : mysql_task(mysql_task::STATEMENT),
-                            statement_id(statement_id),
-                            bind(bind),
+                            statement_id(stmt.get_id()),
+                            bind(stmt.get_bind()),
                             error_msg(error_msg),
                             fatal(fatal) {}
   int                    statement_id;
@@ -148,16 +154,17 @@ class                    mysql_task_statement : public mysql_task {
   bool                   fatal;
 };
 
-class                    mysql_task_statement_on_error : public mysql_task_statement {
+class                    mysql_task_statement_on_condition : public mysql_task_statement {
  public:
-                         mysql_task_statement_on_error(
-                           int statement_id,
-                           misc::shared_ptr<mysql_bind> bind,
+                         mysql_task_statement_on_condition(
+                           mysql_stmt& stmt, condition condition,
                            std::string const& error_msg,
                            bool fatal)
-                          : mysql_task_statement(statement_id, bind, error_msg, fatal) {
+                          : mysql_task_statement(stmt, error_msg, fatal),
+                            condition(condition) {
                              type = STATEMENT_ON_ERROR;
                           }
+  condition               condition;
 };
 
 CCB_END()

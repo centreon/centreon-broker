@@ -220,12 +220,12 @@ int mysql::get_last_insert_id(int thread_id) {
   return _thread[thread_id]->get_last_insert_id();
 }
 
-int mysql::run_statement_on_error(mysql_stmt& stmt,
+int mysql::run_statement_on_condition(
+             mysql_stmt& stmt,
+             mysql_task::condition condition,
              std::string const& error_msg, bool fatal,
              int thread_id) {
-  _thread[thread_id]->run_statement_on_error(
-    stmt.get_id(), stmt.get_bind(),
-    error_msg, fatal);
+  _thread[thread_id]->run_statement_on_condition(stmt, condition, error_msg, fatal);
   return thread_id;
 }
 
@@ -239,9 +239,7 @@ int mysql::run_statement(mysql_stmt& stmt,
       _current_thread = 0;
   }
   _check_errors(thread_id);
-  _thread[thread_id]->run_statement(
-    stmt.get_id(), stmt.get_bind(),
-    error_msg, fatal);
+  _thread[thread_id]->run_statement(stmt, error_msg, fatal);
   return thread_id;
 }
 

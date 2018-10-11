@@ -1084,8 +1084,9 @@ TEST_F(DatabaseStorageTest, HostGroupMemberStatement) {
     5);
   std::auto_ptr<mysql> ms(new mysql(db_cfg));
 
-  int thread_id(ms->run_query("DELETE FROM host_groups"));
-  ms->commit(thread_id);
+  ms->run_query("DELETE FROM hostgroups");
+  ms->run_query("DELETE FROM hosts_hostgroups");
+  ms->commit();
 
   query_preparator::event_unique unique;
   unique.insert("hostgroup_id");
@@ -1110,12 +1111,12 @@ TEST_F(DatabaseStorageTest, HostGroupMemberStatement) {
   host_group_member_insert << hgm;
   std::cout << host_group_member_insert.get_query() << std::endl;
 
-  thread_id = ms->run_statement(
+  int thread_id(ms->run_statement(
                       host_group_member_insert,
-                      "Error: host group not defined", true);
+                      "Error: host group not defined", true));
 
   neb::host_group hg;
-  hg.id = 20;
+  hg.id = 8;
   hg.name = "Test hostgroup";
   hg.enabled = true;
   hg.poller_id = 1;
@@ -1124,13 +1125,14 @@ TEST_F(DatabaseStorageTest, HostGroupMemberStatement) {
 
   std::cout << host_group_insupdate.get_query() << std::endl;
 
-  ms->run_statement_on_error(
-                 host_group_insupdate,
+  ms->run_statement_on_condition(
+                 host_group_insupdate, mysql_task::ON_ERROR,
                  "Error: Unable to create host group", true,
                  thread_id);
 
-  ms->run_statement(
-        host_group_member_insert,
-        "Error: host group not defined", true, thread_id);
-
+  ms->run_statement_on_condition(
+                 host_group_member_insert, mysql_task::IF_PREVIOUS,
+                 "Error: host group not defined", true,
+                 thread_id);
+  ms->commit();
 }

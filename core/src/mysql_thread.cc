@@ -152,14 +152,29 @@ void mysql_thread::_prepare(mysql_task_prepare* task) {
   }
 }
 
-void mysql_thread::_statement_on_error(mysql_task_statement_on_error* task) {
-  if (_error.is_active()) {
-    _error.clear();
-    _statement(static_cast<mysql_task_statement*>(task));
+void mysql_thread::_statement_on_condition(mysql_task_statement_on_condition* task) {
+  switch (task->condition) {
+    case mysql_task::ON_ERROR:
+      if (_error.is_active()) {
+        _error.clear();
+        _statement(static_cast<mysql_task_statement*>(task));
+      }
+      break;
+    case mysql_task::IF_PREVIOUS:
+      if (_previous) {
+        _statement(static_cast<mysql_task_statement*>(task));
+      }
+      break;
+    case mysql_task::IF_NOT_PREVIOUS:
+      if (!_previous) {
+        _statement(static_cast<mysql_task_statement*>(task));
+      }
+      break;
   }
 }
 
 void mysql_thread::_statement(mysql_task_statement* task) {
+  _previous = false;
   logging::debug(logging::low)
     << "mysql: execute statement: "
     << task->statement_id;
@@ -201,6 +216,8 @@ void mysql_thread::_statement(mysql_task_statement* task) {
         << " (" << task->error_msg << ")";
     }
   }
+  else
+    _previous = true;
 }
 
 void mysql_thread::run() {
@@ -280,7 +297,7 @@ void mysql_thread::run() {
         break;
        case mysql_task::STATEMENT_ON_ERROR:
         std::cout << "run STATEMENT ON ERROR" << std::endl;
-        _statement_on_error(static_cast<mysql_task_statement_on_error*>(task.data()));
+        _statement_on_condition(static_cast<mysql_task_statement_on_condition*>(task.data()));
         break;
        case mysql_task::FINISH:
         std::cout << "run FINISH" << std::endl;
@@ -306,6 +323,7 @@ void mysql_thread::run() {
 mysql_thread::mysql_thread(database_config const& db_cfg)
   : _conn(NULL),
     _finished(false),
+    _previous(false),
     _host(db_cfg.get_host()),
     _user(db_cfg.get_user()),
     _pwd(db_cfg.get_password()),
@@ -379,15 +397,20 @@ void mysql_thread::commit(QSemaphore& sem, QAtomicInt& count) {
   _push(misc::shared_ptr<mysql_task>(new mysql_task_commit(sem, count)));
 }
 
-void mysql_thread::run_statement(int statement_id, misc::shared_ptr<mysql_bind> bind,
+void mysql_thread::run_statement(mysql_stmt& stmt,
                      std::string const& error_msg, bool fatal) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_statement(statement_id, bind, error_msg, fatal)));
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_statement(stmt, error_msg, fatal)));
 }
 
-void mysql_thread::run_statement_on_error(int statement_id,
-                     misc::shared_ptr<mysql_bind> bind,
+void mysql_thread::run_statement_on_condition(
+                     mysql_stmt& stmt,
+                     mysql_task::condition condition,
                      std::string const& error_msg, bool fatal) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_statement_on_error(statement_id, bind, error_msg, fatal)));
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_statement_on_condition(
+                                           stmt,
+                                           condition,
+                                           error_msg,
+                                           fatal)));
 }
 
 void mysql_thread::prepare_query(int stmt_id, std::string const& query) {

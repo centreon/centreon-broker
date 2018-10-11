@@ -52,10 +52,10 @@ class                    mysql_thread : public QThread {
                            std::string const& query,
                            std::string const& error_msg, bool fatal);
   void                   run_statement(
-                           int statement_id, misc::shared_ptr<mysql_bind> bind,
+                           mysql_stmt& stmt,
                            std::string const& error_msg, bool fatal);
-  void                   run_statement_on_error(
-                           int statement_id, misc::shared_ptr<mysql_bind> bind,
+  void                   run_statement_on_condition(
+                           mysql_stmt& stmt, mysql_task::condition conditiond,
                            std::string const& error_msg, bool fatal);
   void                   finish();
   mysql_error            get_error();
@@ -86,7 +86,7 @@ class                    mysql_thread : public QThread {
                            mysql_task_affected_rows* task);
   void                   _prepare(mysql_task_prepare* task);
   void                   _statement(mysql_task_statement* task);
-  void                   _statement_on_error(mysql_task_statement_on_error* task);
+  void                   _statement_on_condition(mysql_task_statement_on_condition* task);
   void                   _push(misc::shared_ptr<mysql_task> const& q);
 
   MYSQL*                 _conn;
@@ -105,6 +105,7 @@ class                    mysql_thread : public QThread {
   QWaitCondition         _result_condition;
 
   mysql_error            _error;
+  bool                   _previous;
   std::string            _host;
   std::string            _user;
   std::string            _pwd;
