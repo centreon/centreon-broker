@@ -134,8 +134,7 @@ namespace          sql {
     mysql_stmt     _host_parent_insert;
     mysql_stmt     _host_parent_select;
     mysql_stmt     _host_parent_delete;
-    mysql_stmt     _host_state_insert;
-    mysql_stmt     _host_state_update;
+    mysql_stmt     _host_state_insupdate;
     mysql_stmt     _host_status_update;
     mysql_stmt     _instance_insupdate;
     mysql_stmt     _instance_status_update;

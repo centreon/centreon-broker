@@ -19,6 +19,7 @@
 #ifndef CCB_MYSQL_STMT_HH
 #  define CCB_MYSQL_STMT_HH
 
+#  include <map>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/mysql_bind.hh"
