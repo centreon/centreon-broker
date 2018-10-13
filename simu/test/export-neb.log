@@ -1,3 +1,4 @@
+{"category":1,"element":15,"type":65551,"instance_id":1,"name":"Central","active_host_checks":1,"active_service_checks":1,"check_hosts_freshness":0,"check_services_freshness":1,"engine":"Centreon Engine","event_handlers":1,"flap_detection":0,"last_alive":1538411952,"notifications":1,"passive_host_checks":1,"passive_service_checks":1,"pid":603,"running":1,"start_time":1538398913,"version":"1.8.1"}
 {"service_id":498,"type":65539,"update_time":1538146454,"modified":false,"host_id":31,"element":3,"name":"PROCESSNAME","category":1,"value":"centengine","default_value":"centengine"}
 {"service_id":498,"type":65539,"update_time":1538146454,"modified":false,"host_id":31,"element":3,"name":"PROCESSARGS","category":1,"value":"","default_value":""}
 {"service_id":498,"type":65539,"update_time":1538146454,"modified":false,"host_id":31,"element":3,"name":"EXTRAOPTIONS","category":1,"value":"","default_value":""}
