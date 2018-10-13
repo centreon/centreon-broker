@@ -111,6 +111,17 @@ void mysql_thread::_fetch_row_sync(mysql_task_fetch* task) {
   _result_condition.wakeAll();
 }
 
+void mysql_thread::_check_affected_rows_sync(mysql_task_check_affected_rows* task) {
+  int count;
+  if (task->statement_id)
+    count = mysql_stmt_affected_rows(_stmt[task->statement_id]);
+  else
+    count = mysql_affected_rows(_conn);
+  if (count == 0)
+    logging::error(logging::medium)
+      << task->message;
+}
+
 void mysql_thread::_get_affected_rows_sync(mysql_task_affected_rows* task) {
   QMutexLocker locker(&_result_mutex);
   if (task->statement_id)
@@ -279,6 +290,10 @@ void mysql_thread::run() {
         std::cout << "fetch ROW" << std::endl;
         _fetch_row_sync(static_cast<mysql_task_fetch*>(task.data()));
         break;
+       case mysql_task::CHECK_AFFECTED_ROWS:
+        std::cout << "check AFFECTED ROWS" << std::endl;
+        _check_affected_rows_sync(static_cast<mysql_task_check_affected_rows*>(task.data()));
+        break;
        case mysql_task::AFFECTED_ROWS:
         std::cout << "get AFFECTED ROWS" << std::endl;
         _get_affected_rows_sync(static_cast<mysql_task_affected_rows*>(task.data()));
@@ -358,6 +373,14 @@ void mysql_thread::_push(misc::shared_ptr<mysql_task> const& q) {
   QMutexLocker locker(&_list_mutex);
   _tasks_list.push_back(q);
   _tasks_condition.wakeAll();
+}
+
+void mysql_thread::check_affected_rows(
+                     std::string const& message,
+                     int statement_id) {
+  _push(misc::shared_ptr<mysql_task>(new mysql_task_check_affected_rows(
+                                           message,
+                                           statement_id)));
 }
 
 /**

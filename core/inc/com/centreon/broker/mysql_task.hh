@@ -38,6 +38,7 @@ class                    mysql_task {
                            STATEMENT_ON_ERROR,
                            FINISH,
                            LAST_INSERT_ID,
+                           CHECK_AFFECTED_ROWS,
                            AFFECTED_ROWS,
                            RESULT,
                            FETCH_ROW,
@@ -104,6 +105,18 @@ class                    mysql_task_fetch : public mysql_task {
                           : mysql_task(mysql_task::FETCH_ROW),
                             result(result) {}
   mysql_result*          result;
+};
+
+class                    mysql_task_check_affected_rows : public mysql_task {
+ public:
+                         mysql_task_check_affected_rows(
+                             std::string const& message,
+                             int statement_id = 0)
+                          : mysql_task(mysql_task::CHECK_AFFECTED_ROWS),
+                            message(message),
+                            statement_id(statement_id) {}
+  std::string            message;
+  int                    statement_id;
 };
 
 class                    mysql_task_affected_rows : public mysql_task {

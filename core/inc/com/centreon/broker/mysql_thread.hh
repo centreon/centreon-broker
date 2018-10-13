@@ -63,6 +63,9 @@ class                    mysql_thread : public QThread {
   mysql_result           get_result(int statement_id = 0);
   bool                   fetch_row(mysql_result& result);
   int                    get_affected_rows(int statement_id = 0);
+  void                   check_affected_rows(
+                           std::string const& message,
+                           int statement_id = 0);
   mysql_bind_mapping     get_stmt_mapping(int stmt_id) const;
   int                    get_stmt_size() const;
 
@@ -82,6 +85,8 @@ class                    mysql_thread : public QThread {
                            mysql_task_result* task);
   void                   _fetch_row_sync(
                            mysql_task_fetch* task);
+  void                   _check_affected_rows_sync(
+                           mysql_task_check_affected_rows* task);
   void                   _get_affected_rows_sync(
                            mysql_task_affected_rows* task);
   void                   _prepare(mysql_task_prepare* task);

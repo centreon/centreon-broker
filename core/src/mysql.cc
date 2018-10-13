@@ -142,6 +142,21 @@ bool mysql::fetch_row(int thread_id, mysql_result& res) {
   return _thread[thread_id]->fetch_row(res);
 }
 
+void mysql::check_affected_rows(
+             int thread_id,
+             std::string const& message) {
+  _check_errors(thread_id);
+  _thread[thread_id]->check_affected_rows(message);
+}
+
+void mysql::check_affected_rows(
+             int thread_id,
+             mysql_stmt const& stmt,
+             std::string const& message) {
+  _check_errors(thread_id);
+  _thread[thread_id]->check_affected_rows(message, stmt.get_id());
+}
+
 int mysql::get_affected_rows(int thread_id) {
   _check_errors(thread_id);
   return _thread[thread_id]->get_affected_rows();

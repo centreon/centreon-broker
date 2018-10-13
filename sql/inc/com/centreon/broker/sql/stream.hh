@@ -138,16 +138,14 @@ namespace          sql {
     mysql_stmt     _host_status_update;
     mysql_stmt     _instance_insupdate;
     mysql_stmt     _instance_status_update;
-    mysql_stmt     _issue_insert;
-    mysql_stmt     _issue_update;
+    mysql_stmt     _issue_insupdate;
     mysql_stmt     _issue_parent_insert;
     mysql_stmt     _issue_parent_update;
     mysql_stmt     _log_insert;
     mysql_stmt     _module_insert;
     mysql_stmt     _service_insupdate;
     mysql_stmt     _service_check_update;
-    mysql_stmt     _service_dependency_insert;
-    mysql_stmt     _service_dependency_update;
+    mysql_stmt     _service_dependency_insupdate;
     mysql_stmt     _service_group_insert;
     mysql_stmt     _service_group_update;
     mysql_stmt     _service_group_member_insert;

@@ -1174,7 +1174,6 @@ void stream::_process_host_state(
  *
  *  @param[in] e Uncasted host status.
  */
-//FIXME DBR
 void stream::_process_host_status(
                misc::shared_ptr<io::data> const& e) {
   // Processed object.
@@ -1211,12 +1210,12 @@ void stream::_process_host_status(
                            oss.str(), true,
                            _cache_host_instance[hs.host_id]
                                 % _mysql.connections_count()));
-    // FIXME DBR: this call could be asynchronous if the only result
-    // is to send an error.
-    if (_mysql.get_affected_rows(thread_id, _host_status_update) != 1)
-      logging::error(logging::medium) << "SQL: host could not be "
+    oss.str("");
+    oss << "SQL: host could not be "
            "updated because host " << hs.host_id
         << " was not found in database";
+    _mysql.check_affected_rows(thread_id, _host_status_update,
+        oss.str());
   }
   else
     // Do nothing.
@@ -1324,14 +1323,14 @@ void stream::_process_instance_status(
              oss.str(), true,
              is.poller_id % _mysql.connections_count());
 
-    // FIXME DBR: The only action is to send a log error that could be sent
-    // asynchronously
-    if (_mysql.get_affected_rows(
-          is.poller_id % _mysql.connections_count(),
-          _instance_status_update) != 1)
-      logging::error(logging::medium) << "SQL: poller "
+    oss.str("");
+    oss << "SQL: poller "
         << is.poller_id << " was not updated because no matching entry "
            "was found in database";
+    _mysql.check_affected_rows(
+             is.poller_id % _mysql.connections_count(),
+             _instance_status_update,
+             oss.str());
   }
 }
 
@@ -1354,29 +1353,28 @@ void stream::_process_issue(
     << ")";
 
   // Prepare queries.
-  if (!_issue_insert.prepared() || !_issue_update.prepared()) {
+  if (!_issue_insupdate.prepared()) {
     query_preparator::event_unique unique;
     unique.insert("host_id");
     unique.insert("service_id");
     unique.insert("start_time");
     query_preparator qp(
-                          correlation::issue::static_type(),
-                          unique);
-    _issue_insert = qp.prepare_insert(_mysql);
-    _issue_update = qp.prepare_update(_mysql);
+                       correlation::issue::static_type(),
+                       unique);
+    _issue_insupdate = qp.prepare_insert_or_update(_mysql);
   }
 
   // Processing.
-  try {
-    _update_on_none_insert(_issue_insert, _issue_update, i);
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg() << "SQL: could not store issue (host: "
-           << i.host_id << ", service: " << i.service_id
-           << ", start time: " << i.start_time << "): " << e.what());
-  }
+  std::ostringstream oss;
+  oss << "SQL: could not store issue (host: "
+      << i.host_id << ", service: " << i.service_id
+      << ", start time: " << i.start_time << "): ";
 
-  return ;
+  _issue_insupdate << i;
+  _mysql.run_statement(
+           _issue_insupdate,
+           oss.str(), true,
+           _cache_host_instance[i.host_id] % _mysql.connections_count());
 }
 
 /**
@@ -1384,6 +1382,7 @@ void stream::_process_issue(
  *
  *  @param[in] e Uncasted issue parent.
  */
+//FIXME DBR
 void stream::_process_issue_parent(
                misc::shared_ptr<io::data> const& e) {
   // Issue parent object.
@@ -1599,7 +1598,8 @@ void stream::_process_module(
              : "rt_modules")
          << "  WHERE instance_id=" << m.poller_id
          << "    AND filename='" << m.filename.toStdString() << "'";
-      _mysql.run_query(oss.str(), "SQL: ");
+      _mysql.run_query(oss.str(), "SQL: ", false,
+                       m.poller_id % _mysql.connections_count());
     }
   }
 }
@@ -1621,8 +1621,6 @@ void stream::_process_notification(
   //   _notification_insert,
   //   _notification_update,
   //   *static_cast<neb::notification const*>(e.data()));
-
-  return ;
 }
 
 /**
@@ -1657,7 +1655,8 @@ void stream::_process_service(
     oss << "SQL: could not store service (host: "
         << s.host_id << ", service: " << s.service_id << "): ";
     _service_insupdate << s;
-    _mysql.run_statement(_service_insupdate, oss.str(), true);
+    _mysql.run_statement(_service_insupdate, oss.str(), true,
+        _cache_host_instance[s.host_id] % _mysql.connections_count());
   }
   else
     logging::error(logging::high) << "SQL: service '"
@@ -1707,11 +1706,11 @@ void stream::_process_service_check(
           oss.str(), true,
           _cache_host_instance[sc.host_id] % _mysql.connections_count()));
 
-    // FIXME DBR: always just an error log...
-    if (_mysql.get_affected_rows(thread_id, _service_check_update) != 1)
-      logging::error(logging::medium) << "SQL: service check could "
+    oss.str("");
+    oss << "SQL: service check could "
            "not be updated because service (" << sc.host_id << ", "
         << sc.service_id << ") was not found in database";
+    _mysql.check_affected_rows(thread_id, _service_check_update, oss.str());
   }
   else
     // Do nothing.
@@ -1741,35 +1740,30 @@ void stream::_process_service_dependency(
       << ", " << sd.service_id << ")";
 
     // Prepare queries.
-    if (!_service_dependency_insert.prepared()
-        || !_service_dependency_update.prepared()) {
+    if (!_service_dependency_insupdate.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("dependent_host_id");
       unique.insert("dependent_service_id");
       unique.insert("host_id");
       unique.insert("service_id");
       query_preparator qp(
-                            neb::service_dependency::static_type(),
-                            unique);
-      _service_dependency_insert = qp.prepare_insert(_mysql);
-      _service_dependency_update = qp.prepare_update(_mysql);
+                         neb::service_dependency::static_type(),
+                         unique);
+      _service_dependency_insupdate = qp.prepare_insert_or_update(_mysql);
     }
 
     // Process object.
-    try {
-      _update_on_none_insert(
-        _service_dependency_insert,
-        _service_dependency_update,
-        sd);
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store service dependency (host: "
-             << sd.host_id << ", service: " << sd.service_id
-             << ", dependent host: " << sd.dependent_host_id
-             << ", dependent service: " << sd.dependent_service_id
-             << "): " << e.what());
-    }
+    std::ostringstream oss;
+    oss << "SQL: could not store service dependency (host: "
+        << sd.host_id << ", service: " << sd.service_id
+        << ", dependent host: " << sd.dependent_host_id
+        << ", dependent service: " << sd.dependent_service_id
+        << "): ";
+    _service_dependency_insupdate << sd;
+    _mysql.run_statement(
+             _service_dependency_insupdate,
+             oss.str(), true,
+             _cache_host_instance[sd.host_id] % _mysql.connections_count());
   }
   // Delete.
   else {
@@ -1786,7 +1780,10 @@ void stream::_process_service_dependency(
         << "    AND dependent_service_id=" << sd.dependent_service_id
         << "    AND host_id=" << sd.host_id
         << "    AND service_id=" << sd.service_id;
-    _mysql.run_query(oss.str(), "SQL");
+    _mysql.run_query(
+             oss.str(),
+             "SQL: ", false,
+             _cache_host_instance[sd.host_id] % _mysql.connections_count());
   }
 }
 
@@ -2215,7 +2212,11 @@ void stream::_update_hosts_and_services_of_instance(
     ss << "UPDATE " << (db_v2 ? "instances" : "rt_instances")
        << "  SET outdated=FALSE"
        << "  WHERE instance_id=" << id;
-    _mysql.run_query(ss.str(), "SQL: could not restore outdated instance");
+    _mysql.run_query(
+             ss.str(),
+             "SQL: could not restore outdated instance",
+             false,
+             id % _mysql.connections_count());
     ss.str("");
     ss.clear();
     ss << "UPDATE " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
@@ -2225,13 +2226,20 @@ void stream::_update_hosts_and_services_of_instance(
        << "  SET h.state=h.real_state,"
        << "      s.state=s.real_state"
        << "  WHERE h.instance_id = " << id;
-    _mysql.run_query(ss.str(), "SQL: could not restore outdated instance");
+    _mysql.run_query(
+             ss.str(),
+             "SQL: could not restore outdated instance",
+             false,
+             id % _mysql.connections_count());
   }
   else {
     ss << "UPDATE " << (db_v2 ? "instances" : "rt_instances")
        << "  SET outdated=TRUE"
        << "  WHERE instance_id=" << id;
-    _mysql.run_query(ss.str(), "SQL: could not outdate instance");
+    _mysql.run_query(
+             ss.str(),
+             "SQL: could not outdate instance", false,
+             id % _mysql.connections_count());
     ss.str("");
     ss.clear();
     ss << "UPDATE " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
@@ -2243,7 +2251,10 @@ void stream::_update_hosts_and_services_of_instance(
        << "      h.state=" << HOST_UNREACHABLE << ","
        << "      s.state=" << STATE_UNKNOWN
        << "  WHERE h.instance_id=" << id;
-    _mysql.run_query(ss.str(), "SQL: could not outdate instance");
+    _mysql.run_query(
+             ss.str(),
+             "SQL: could not outdate instance", false,
+             id % _mysql.connections_count());
   }
   misc::shared_ptr<neb::responsive_instance> ri(new neb::responsive_instance);
   ri->poller_id = id;
