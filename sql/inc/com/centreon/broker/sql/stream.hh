@@ -57,6 +57,7 @@ namespace          sql {
     void           _cache_clean();
     void           _cache_create();
     void           _check_host_group_statement();
+    void           _check_service_group_statement();
     void           _clean_empty_host_groups();
     void           _clean_empty_service_groups();
     void           _clean_tables(unsigned int instance_id);
@@ -146,12 +147,10 @@ namespace          sql {
     mysql_stmt     _service_insupdate;
     mysql_stmt     _service_check_update;
     mysql_stmt     _service_dependency_insupdate;
-    mysql_stmt     _service_group_insert;
-    mysql_stmt     _service_group_update;
+    mysql_stmt     _service_group_insupdate;
     mysql_stmt     _service_group_member_insert;
     mysql_stmt     _service_group_member_delete;
-    mysql_stmt     _service_state_insert;
-    mysql_stmt     _service_state_update;
+    mysql_stmt     _service_state_insupdate;
     mysql_stmt     _service_status_update;
     std::set<unsigned int>      _cache_deleted_instance_id;
     cleanup                     _cleanup_thread;

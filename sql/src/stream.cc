@@ -105,18 +105,14 @@ void stream::_cache_create() {
                       ? "instances"
                       : "rt_instances")
      << " WHERE deleted=1";
-  int thread_id;
-  try {
-    thread_id = _mysql.run_query(ss.str());
-    mysql_result res(_mysql.get_result(thread_id));
-    while (_mysql.fetch_row(thread_id, res))
-      _cache_deleted_instance_id.insert(res.value_as_u32(0));
-  }
-  catch (std::exception const& e) {
-    logging::error(logging::high)
-      << "SQL: could not get list of deleted instances: "
-      << e.what();
-  }
+
+  int thread_id(_mysql.run_query(
+                         ss.str(),
+                         "SQL: could not get list of deleted instances",
+                         false));
+  mysql_result res(_mysql.get_result(thread_id));
+  while (_mysql.fetch_row(thread_id, res))
+    _cache_deleted_instance_id.insert(res.value_as_u32(0));
 }
 
 /**
@@ -124,17 +120,13 @@ void stream::_cache_create() {
  */
 void stream::_host_instance_cache_create() {
   _cache_host_instance.clear();
-  try {
-    int thread_id(_mysql.run_query("SELECT host_id, instance_id FROM hosts"));
-    mysql_result res(_mysql.get_result(thread_id));
-    while (_mysql.fetch_row(thread_id, res))
-      _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
-  }
-  catch (std::exception const& e) {
-    logging::error(logging::high)
-      << "SQL: could not get the list of host/instance pairs"
-      << e.what();
-  }
+  std::ostringstream oss;
+
+  int thread_id(_mysql.run_query("SELECT host_id, instance_id FROM hosts",
+        "SQL: could not get the list of host/instance pairs", false));
+  mysql_result res(_mysql.get_result(thread_id));
+  while (_mysql.fetch_row(thread_id, res))
+    _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
 }
 
 /**
@@ -911,6 +903,16 @@ void stream::_check_host_group_statement() {
   }
 }
 
+void stream::_check_service_group_statement() {
+  if (!_service_group_insupdate.prepared()) {
+    query_preparator::event_unique unique;
+    unique.insert("servicegroup_id");
+    query_preparator qp(
+        neb::service_group::static_type(), unique);
+    _service_group_insupdate = qp.prepare_insert_or_update(_mysql);
+  }
+}
+
 /**
  *  Process a host group event.
  *
@@ -978,6 +980,7 @@ void stream::_process_host_group_member(
   // Cast object.
   neb::host_group_member const&
     hgm(*static_cast<neb::host_group_member const*>(e.data()));
+  int thread_id(hgm.poller_id % _mysql.connections_count());
 
   // Only process groups for v2 schema.
   if (_mysql.schema_version() != mysql::v2)
@@ -1004,7 +1007,6 @@ void stream::_process_host_group_member(
       _host_group_member_insert = qp.prepare_insert(_mysql);
     }
     _host_group_member_insert << hgm;
-    int thread_id(hgm.poller_id % _mysql.connections_count());
 
     _mysql.run_statement(
              _host_group_member_insert,
@@ -1062,7 +1064,7 @@ void stream::_process_host_group_member(
     _host_group_member_delete << hgm;
     _mysql.run_statement(_host_group_member_delete,
              oss.str(), true,
-             hgm.poller_id % _mysql.connections_count());
+             thread_id);
   }
 }
 
@@ -1439,20 +1441,21 @@ void stream::_process_issue_parent(
     else
       query << " IS NULL";
     query << " AND start_time=" << ip.child_start_time;
-    mysql_result res;
-    try {
-      int thread_id(_mysql.run_query(query.str()));
-      res = _mysql.get_result(thread_id);
-      if (!_mysql.fetch_row(thread_id, res))
-        throw (exceptions::msg() << "child issue does not exist");
-    }
-    //FIXME DBR : error management...
-    catch (std::exception const& e) {
-      throw (exceptions::msg() << "SQL: could not fetch child issue "
-                "ID (host: " << ip.child_host_id << ", service: "
-             << ip.child_service_id << ", start: "
-             << ip.child_start_time << "): " << e.what());
-    }
+
+    std::ostringstream oss;
+    oss << "SQL: could not fetch child issue "
+           "ID (host: " << ip.child_host_id << ", service: "
+        << ip.child_service_id << ", start: "
+        << ip.child_start_time << "): ";
+    int thread_id(_mysql.run_query(
+                           query.str(),
+                           oss.str(), true,
+                           _cache_host_instance[ip.child_host_id]
+                                   % _mysql.connections_count()));
+    mysql_result res(_mysql.get_result(thread_id));
+    if (!_mysql.fetch_row(thread_id, res))
+      throw exceptions::msg() << "child issue does not exist";
+
     child_id = res.value_as_i32(0);
     logging::debug(logging::low)
       << "SQL: child issue ID of (" << ip.child_host_id << ", "
@@ -1472,19 +1475,22 @@ void stream::_process_issue_parent(
     else
       query << " IS NULL";
     query << " AND start_time=" << ip.parent_start_time;
-    mysql_result res;
-    try {
-      int thread_id(_mysql.run_query(query.str()));
-      res = _mysql.get_result(thread_id);
-      if (!_mysql.fetch_row(thread_id, res))
-        throw (exceptions::msg() << "parent issue does not exist");
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg() << "SQL: could not fetch parent issue "
-                "ID (host: " << ip.parent_host_id << ", service: "
-             << ip.parent_service_id << ", start: "
-             << ip.parent_start_time << "): " << e.what());
-    }
+
+    std::ostringstream oss;
+    oss << "SQL: could not fetch parent issue "
+           "ID (host: " << ip.parent_host_id << ", service: "
+        << ip.parent_service_id << ", start: "
+        << ip.parent_start_time << "): ";
+
+    int thread_id(_mysql.run_query(
+                           query.str(),
+                           oss.str(), true,
+                           _cache_host_instance[ip.parent_host_id]
+                                % _mysql.connections_count()));
+    mysql_result res(_mysql.get_result(thread_id));
+    if (!_mysql.fetch_row(thread_id, res))
+      throw (exceptions::msg() << "parent issue does not exist");
+
     parent_id = res.value_as_i32(0);
     logging::debug(logging::low)
       << "SQL: parent issue ID of (" << ip.parent_host_id << ", "
@@ -1807,27 +1813,17 @@ void stream::_process_service_group(
   else if (sg.enabled) {
     logging::info(logging::medium) << "SQL: enabling service group "
       << sg.id << " ('" << sg.name << "') on instance " << sg.poller_id;
-    if (!_service_group_insert.prepared()
-        || !_service_group_update.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("servicegroup_id");
-      query_preparator
-        qp(neb::service_group::static_type(), unique);
-      _service_group_insert = qp.prepare_insert(_mysql);
-      _service_group_update = qp.prepare_update(_mysql);
-    }
-    try {
-      _update_on_none_insert(
-        _service_group_insert,
-        _service_group_update,
-        sg);
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store service group (poller: "
-             << sg.poller_id << ", group: " << sg.id << "): "
-             << e.what());
-    }
+    _check_service_group_statement();
+
+    std::stringstream oss;
+    oss << "SQL: could not store service group (poller: "
+        << sg.poller_id << ", group: " << sg.id << "): ";
+
+    _service_group_insupdate << sg;
+    _mysql.run_statement(
+             _service_group_insupdate,
+             oss.str(), true,
+             sg.poller_id % _mysql.connections_count());
   }
   // Delete group.
   else {
@@ -1844,7 +1840,10 @@ void stream::_process_service_group(
           << "    ON services_servicegroups.host_id=hosts.host_id"
           << "  WHERE services_servicegroups.servicegroup_id=" << sg.id
           << "    AND hosts.instance_id=" << sg.poller_id;
-      _mysql.run_query(oss.str(), "SQL");
+      _mysql.run_query(
+               oss.str(),
+               "SQL: ", false,
+               sg.poller_id % _mysql.connections_count());
     }
 
     // Delete empty groups.
@@ -1862,6 +1861,7 @@ void stream::_process_service_group_member(
   // Cast object.
   neb::service_group_member const&
     sgm(*static_cast<neb::service_group_member const*>(e.data()));
+  int thread_id(sgm.poller_id % _mysql.connections_count());
 
   // Only process groups for v2 schema.
   if (_mysql.schema_version() != mysql::v2)
@@ -1879,39 +1879,48 @@ void stream::_process_service_group_member(
 
     // We only need to try to insert in this table as the
     // host_id/service_id/servicegroup_id combo should be UNIQUE.
-    try {
-      try {
-        if (!_service_group_member_insert.prepared()) {
-          query_preparator::event_unique unique;
-          unique.insert("servicegroup_id");
-          unique.insert("host_id");
-          unique.insert("service_id");
-          query_preparator
-            qp(neb::service_group_member::static_type(), unique);
-          _service_group_member_insert = qp.prepare_insert(_mysql);
-        }
-        _service_group_member_insert << sgm;
-        _mysql.run_statement(_service_group_member_insert);
-      }
-      // The insertion error could be caused by a missing group.
-      catch (std::exception const& e) {
-        misc::shared_ptr<neb::service_group> sg(new neb::service_group);
-        sg->id = sgm.group_id;
-        sg->name = sgm.group_name;
-        sg->enabled = true;
-        sg->poller_id = sgm.poller_id;
-        _process_service_group(sg);
-        _service_group_member_insert << sgm;
-        _mysql.run_statement(_service_group_member_insert);
-      }
+    if (!_service_group_member_insert.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("servicegroup_id");
+      unique.insert("host_id");
+      unique.insert("service_id");
+      query_preparator
+        qp(neb::service_group_member::static_type(), unique);
+      _service_group_member_insert = qp.prepare_insert(_mysql);
     }
-    catch (std::exception const& e) {
-      logging::error(logging::high)
-        << "SQL: could not store service group membership (poller: "
+    _service_group_member_insert << sgm;
+
+    _mysql.run_statement(
+             _service_group_member_insert,
+             "SQL: service group not defined", false,
+             thread_id);
+
+    _check_service_group_statement();
+
+    neb::service_group sg;
+    sg.id = sgm.group_id;
+    sg.name = sgm.group_name;
+    sg.enabled = true;
+    sg.poller_id = sgm.poller_id;
+
+    std::ostringstream oss;
+    oss << "SQL: could not store service group (poller: "
+        << sg.poller_id << ", group: " << sg.id << "): ";
+
+    _service_group_insupdate << sg;
+    _mysql.run_statement_on_condition(
+             _service_group_insupdate, mysql_task::ON_ERROR,
+             oss.str(), true,
+             thread_id);
+
+    oss.str("");
+    oss << "SQL: could not store service group membership (poller: "
         << sgm.poller_id << ", host: " << sgm.host_id << ", service: "
-        << sgm.service_id << ", group: " << sgm.group_id << "): "
-        << e.what();
-    }
+        << sgm.service_id << ", group: " << sgm.group_id << "): ";
+    _mysql.run_statement_on_condition(
+             _service_group_member_insert, mysql_task::IF_PREVIOUS,
+             oss.str(), false,
+             thread_id);
   }
   // Delete.
   else {
@@ -1921,26 +1930,25 @@ void stream::_process_service_group_member(
       << sgm.service_id << ") to service group " << sgm.group_id
       << " on instance " << sgm.poller_id;
 
-    try {
-      if (!_service_group_member_delete.prepared()) {
-        query_preparator::event_unique unique;
-        unique.insert("servicegroup_id");
-        unique.insert("host_id");
-        unique.insert("service_id");
-        query_preparator
-          qp(neb::service_group_member::static_type(), unique);
-        _service_group_member_delete = qp.prepare_delete(_mysql);
-      }
-      _service_group_member_delete << sgm;
-      _mysql.run_statement(_service_group_member_delete);
+    if (!_service_group_member_delete.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("servicegroup_id");
+      unique.insert("host_id");
+      unique.insert("service_id");
+      query_preparator
+        qp(neb::service_group_member::static_type(), unique);
+      _service_group_member_delete = qp.prepare_delete(_mysql);
     }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: cannot delete membership of service ("
-             << sgm.host_id << ", " << sgm.service_id
-             << ") to service group " << sgm.group_id << " on instance "
-             << sgm.poller_id << ": " << e.what());
-    }
+    std::ostringstream oss;
+    oss << "SQL: cannot delete membership of service ("
+        << sgm.host_id << ", " << sgm.service_id
+        << ") to service group " << sgm.group_id << " on instance "
+        << sgm.poller_id << ": ";
+
+    _service_group_member_delete << sgm;
+    _mysql.run_statement(_service_group_member_delete,
+        oss.str(), true,
+        thread_id);
   }
 }
 
@@ -1963,35 +1971,29 @@ void stream::_process_service_state(
   // Processing.
   if (_with_state_events) {
     // Prepare queries.
-    if (!_service_state_insert.prepared()
-        || !_service_state_update.prepared()) {
+    if (!_service_state_insupdate.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("host_id");
       unique.insert("service_id");
       unique.insert("start_time");
       query_preparator qp(
-                            correlation::state::static_type(),
-                            unique);
-      _service_state_insert = qp.prepare_insert(_mysql);
-      _service_state_update = qp.prepare_update(_mysql);
+                         correlation::state::static_type(),
+                         unique);
+      _service_state_insupdate = qp.prepare_insert_or_update(_mysql);
     }
 
     // Process object.
-    try {
-      _update_on_none_insert(
-        _service_state_insert,
-        _service_state_update,
-        s);
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store service state event (host: "
-             << s.host_id << ", service: " << s.service_id
-             << ", start time: " << s.start_time << "): " << e.what());
-    }
-  }
+    std::ostringstream oss;
+    oss << "SQL: could not store service state event (host: "
+        << s.host_id << ", service: " << s.service_id
+        << ", start time: " << s.start_time << "): ";
 
-  return ;
+    _service_state_insupdate << s;
+    _mysql.run_statement(
+             _service_state_insupdate,
+             oss.str(), true,
+             _cache_host_instance[s.host_id] % _mysql.connections_count());
+  }
 }
 
 /**
