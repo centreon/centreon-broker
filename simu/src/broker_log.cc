@@ -31,7 +31,7 @@ using namespace com::centreon::broker::simu;
  *  @return An integer
  */
 static int l_broker_log_destructor(lua_State* L) {
-  delete *static_cast<broker_log**>(luaL_checkudata(L, 1, "simu_broker_log"));
+  delete *static_cast<broker_log**>(luaL_checkudata(L, 1, "lua_broker_log"));
   return 0;
 }
 
@@ -44,7 +44,7 @@ static int l_broker_log_destructor(lua_State* L) {
  */
 static int l_broker_log_set_parameters(lua_State* L) {
   broker_log* bl(
-    *static_cast<broker_log**>(luaL_checkudata(L, 1, "simu_broker_log")));
+    *static_cast<broker_log**>(luaL_checkudata(L, 1, "lua_broker_log")));
   int level(lua_tointeger(L, 2));
   char const* text(lua_tostring(L, 3));
   if (level < 0 || level > 3)
@@ -58,7 +58,7 @@ static int l_broker_log_set_parameters(lua_State* L) {
 
 int _log_func(logging::logger& log_func, lua_State* L, const char* header) {
   broker_log* bl(*static_cast<broker_log**>(
-                   luaL_checkudata(L, 1, "simu_broker_log")));
+                   luaL_checkudata(L, 1, "lua_broker_log")));
   int level(lua_tointeger(L, 2));
   char const* text(lua_tostring(L, 3));
   if (level <= bl->get_level()) {
@@ -140,7 +140,7 @@ void broker_log::broker_log_reg(lua_State* L) {
   // Create a metatable. It is not exposed to Lua. It is not
   // exposed to Lua. The "simu_broker" label is used by Lua
   // internally to identify things.
-  luaL_newmetatable(L, "simu_broker_log");
+  luaL_newmetatable(L, "lua_broker_log");
 
   // Register the C functions into the metatable we just created.
 #ifdef LUA51

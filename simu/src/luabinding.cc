@@ -151,8 +151,6 @@ bool luabinding::read(misc::shared_ptr<io::data>& data) {
   bool retval(false);
   logging::debug(logging::medium) << "simu: luabinding::read call";
 
-  bool execute_write(true);
-
   // Total to acknowledge incremented
   ++_total;
 
@@ -169,8 +167,9 @@ bool luabinding::read(misc::shared_ptr<io::data>& data) {
   else if (lua_isnil(_L, -1))
     lua_pop(_L, -1);
   else {
-    throw exceptions:: msg()
-      << "simu: `read' must return a table or a nil value";
+    throw exceptions::msg()
+      << "simu: `read' must return a table or a nil value ("
+      << lua_type(_L, -1) << " type return)";
   }
 
   return retval;

@@ -20,11 +20,11 @@
 #include <cstring>
 #include <sstream>
 #include "com/centreon/broker/json/json_parser.hh"
-#include "com/centreon/broker/lua/broker_utils.hh"
+#include "com/centreon/broker/simu/broker_utils.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::json;
-using namespace com::centreon::broker::lua;
+using namespace com::centreon::broker::simu;
 
 static void broker_json_encode(lua_State* L, std::ostringstream& oss);
 

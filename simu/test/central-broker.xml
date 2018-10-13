@@ -13,10 +13,10 @@
  <logger>
   <name><![CDATA[/var/log/centreon-broker/central-broker-master.log]]></name>
   <config><![CDATA[yes]]></config>
-  <debug><![CDATA[no]]></debug>
+  <debug><![CDATA[yes]]></debug>
   <error><![CDATA[yes]]></error>
   <info><![CDATA[no]]></info>
-  <level><![CDATA[low]]></level>
+  <level><![CDATA[high]]></level>
   <type><![CDATA[file]]></type>
  </logger>
  <input>
