@@ -15,18 +15,18 @@ RUN make -j5
 RUN make install
 
 # Broker configuration installation
-COPY ./simu/test/central-broker.xml /etc/centreon-broker/
+COPY ./simu/docker/conf/central-broker.xml /etc/centreon-broker/
 
-# Broker simu/lua scripts installation
+# Broker simu lua scripts installation
 RUN mkdir -p /usr/share/centreon-broker/lua
 RUN mkdir -p /var/log/centreon-broker
 RUN mkdir -p /var/lib/centreon-broker
 RUN mkdir -p /var/lib/centreon/metrics
 RUN mkdir -p /var/lib/centreon/status
 
-COPY ./simu/test/test.lua /usr/share/centreon-broker/lua/
-COPY ./simu/test/output.lua /usr/share/centreon-broker/lua/
+COPY ./simu/docker/lua/test.lua /usr/share/centreon-broker/lua/
+COPY ./simu/docker/lua/output.lua /usr/share/centreon-broker/lua/
 
 #RUN /usr/sbin/cbd /etc/centreon-broker/central-broker.xml
 
-ENTRYPOINT ["/usr/bin/tail", "-F", "/var/log/centreon-broker/central-broker-master.log"]
+ENTRYPOINT ["/usr/sbin/cbd", "/etc/centreon-broker/central-broker.xml"]
