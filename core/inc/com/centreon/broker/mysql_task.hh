@@ -35,13 +35,13 @@ class                    mysql_task {
                            COMMIT,
                            PREPARE,
                            STATEMENT,
-                           STATEMENT_ON_ERROR,
-                           FINISH,
+                           STATEMENT_ON_CONDITION,
                            LAST_INSERT_ID,
                            CHECK_AFFECTED_ROWS,
                            AFFECTED_ROWS,
                            RESULT,
                            FETCH_ROW,
+                           FINISH,
   };
 
   enum                   condition {
@@ -175,7 +175,7 @@ class                    mysql_task_statement_on_condition : public mysql_task_s
                            bool fatal)
                           : mysql_task_statement(stmt, error_msg, fatal),
                             condition(condition) {
-                             type = STATEMENT_ON_ERROR;
+                             type = STATEMENT_ON_CONDITION;
                           }
   condition               condition;
 };

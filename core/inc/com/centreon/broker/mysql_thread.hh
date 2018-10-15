@@ -77,22 +77,20 @@ class                    mysql_thread : public QThread {
 
   void                   run();
 
-  void                   _commit(mysql_task_commit* task);
-  void                   _run(mysql_task_run* task);
-  void                   _get_last_insert_id_sync(
-                           mysql_task_last_insert_id* task);
-  void                   _get_result_sync(
-                           mysql_task_result* task);
-  void                   _fetch_row_sync(
-                           mysql_task_fetch* task);
-  void                   _check_affected_rows_sync(
-                           mysql_task_check_affected_rows* task);
-  void                   _get_affected_rows_sync(
-                           mysql_task_affected_rows* task);
-  void                   _prepare(mysql_task_prepare* task);
-  void                   _statement(mysql_task_statement* task);
-  void                   _statement_on_condition(mysql_task_statement_on_condition* task);
+  void                   _run(mysql_task* t);
+  void                   _commit(mysql_task* t);
+  void                   _prepare(mysql_task* t);
+  void                   _statement(mysql_task* t);
+  void                   _statement_on_condition(mysql_task* t);
+  void                   _get_last_insert_id_sync(mysql_task* task);
+  void                   _check_affected_rows(mysql_task* task);
+  void                   _get_affected_rows_sync(mysql_task* task);
+  void                   _get_result_sync(mysql_task* task);
+  void                   _fetch_row_sync(mysql_task* task);
+  void                   _finish(mysql_task* task);
   void                   _push(misc::shared_ptr<mysql_task> const& q);
+
+  static void (mysql_thread::* const _task_processing_table[])(mysql_task* task);
 
   MYSQL*                 _conn;
 
