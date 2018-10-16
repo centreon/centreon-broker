@@ -118,6 +118,7 @@ namespace          storage {
                      double value,
                      unsigned int* type,
                      bool* locked);
+    void           _insert_perfdatas_new();
     void           _insert_perfdatas();
     void           _prepare();
     void           _rebuild_cache();
@@ -142,6 +143,7 @@ namespace          storage {
     mysql_stmt     _update_metrics_stmt;
     mysql_stmt     _insert_metrics_stmt;
     mysql_stmt     _update_index_data_stmt;
+    mysql_stmt     _data_bin_insert;
     mysql          _mysql;
   };
 }

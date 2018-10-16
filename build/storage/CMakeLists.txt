@@ -71,7 +71,6 @@ set(
   TESTS_SOURCES
   ${TESTS_SOURCES}
   "${TEST_DIR}/parser/parse_perfdata.cc"
-  "${TEST_DIR}/database.cc"
   PARENT_SCOPE
 )
 set(

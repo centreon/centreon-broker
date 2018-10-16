@@ -77,6 +77,18 @@ std::string mysql_result::value_as_str(int idx) {
   return retval;
 }
 
+float mysql_result::value_as_f32(int idx) {
+  float retval;
+  if (_bind.get())
+    retval = _bind->value_as_f32(idx);
+  else if (_row)
+    retval = _row[idx] ? atof(_row[idx]) : 0;
+  else
+    throw exceptions::msg()
+      << "mysql: No row fetched in result";
+  return retval;
+}
+
 double mysql_result::value_as_f64(int idx) {
   double retval;
   if (_bind.get())

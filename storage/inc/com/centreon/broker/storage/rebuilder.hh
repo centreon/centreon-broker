@@ -21,6 +21,7 @@
 
 #  include <memory>
 #  include <QThread>
+#  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -60,7 +61,7 @@ namespace           storage {
 
     struct metric_info {
       unsigned int metric_id;
-      QString metric_name;
+      std::string metric_name;
       short metric_type;
     };
 
@@ -68,18 +69,18 @@ namespace           storage {
     rebuilder&      operator=(rebuilder const& other);
     void            _next_index_to_rebuild(
                       index_info& info,
-                      database& db);
+                      mysql& ms);
     void            _rebuild_metric(
-                      database& db,
+                      mysql& ms,
                       unsigned int metric_id,
                       unsigned int host_id,
                       unsigned int service_id,
-                      QString const& metric_name,
+                      std::string const& metric_name,
                       short metric_type,
                       unsigned int interval,
                       unsigned length);
     void            _rebuild_status(
-                      database& db,
+                      mysql& ms,
                       unsigned int index_id,
                       unsigned int interval);
     void            _send_rebuild_event(
@@ -87,7 +88,7 @@ namespace           storage {
                       unsigned int id,
                       bool is_index);
     void            _set_index_rebuild(
-                      database& db,
+                      mysql& db,
                       unsigned int index_id,
                       short state);
 

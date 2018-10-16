@@ -20,10 +20,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
-#include <QVariant>
 #include <sstream>
-#include "com/centreon/broker/database.hh"
-#include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
@@ -102,22 +99,22 @@ void rebuilder::run() {
   while (!_should_exit && _rebuild_check_interval) {
     try {
       // Open DB.
-      std::auto_ptr<database> db;
+      std::auto_ptr<mysql> ms;
       try {
-        db.reset(new database(_db_cfg));
+        ms.reset(new mysql(_db_cfg));
       }
       catch (std::exception const& e) {
-        throw (broker::exceptions::msg() << "storage: rebuilder: could "
-               "not connect to Centreon Storage database: "
-               << e.what());
+        throw broker::exceptions::msg() << "storage: rebuilder: could "
+              "not connect to Centreon Storage database: "
+              << e.what();
       }
 
       // Database schema version.
-      bool db_v2(db->schema_version() == database::v2);
+      bool db_v2(ms->schema_version() == mysql::v2);
 
       // Fetch index to rebuild.
       index_info info;
-      _next_index_to_rebuild(info, *db);
+      _next_index_to_rebuild(info, *ms);
       while (!_should_exit && info.index_id) {
         // Get check interval of host/service.
         unsigned int index_id;
@@ -141,12 +138,10 @@ void rebuilder::run() {
                 << " FROM " << (db_v2 ? "services" : "rt_services")
                 << " WHERE host_id=" << info.host_id
                 << "  AND service_id=" << info.service_id;
-          database_query query(*db);
-          query.run_query(oss.str());
-          if (query.next())
-            check_interval = (query.value(0).isNull()
-                              ? 0.0
-                              : query.value(0).toDouble()) * _interval_length;
+          int thread_id(ms->run_query(oss.str()));
+          mysql_result res(ms->get_result(thread_id));
+          if (ms->fetch_row(thread_id, res))
+            check_interval = res.value_as_f64(0) * _interval_length;
           if (!check_interval)
             check_interval = 5 * 60;
         }
@@ -155,8 +150,9 @@ void rebuilder::run() {
           << ") will be rebuild";
 
         // Set index as being rebuilt.
-        _set_index_rebuild(*db, index_id, 2);
+        _set_index_rebuild(*ms, index_id, 2);
 
+        // FIXME DBR: is this try/catch always needed ?
         try {
           // Fetch metrics to rebuild.
           std::list<metric_info> metrics_to_rebuild;
@@ -165,21 +161,18 @@ void rebuilder::run() {
             oss << "SELECT metric_id, metric_name, data_source_type"
                 << " FROM " << (db_v2 ? "metrics" : "rt_metrics")
                 << " WHERE index_id=" << index_id;
-            database_query metrics_to_rebuild_query(*db);
-            try { metrics_to_rebuild_query.run_query(oss.str()); }
-            catch (std::exception const& e) {
-              throw (exceptions::msg()
-                     << "storage: rebuilder: could not fetch "
-                     << "metrics of index " << index_id);
-            }
-            while (!_should_exit && metrics_to_rebuild_query.next()) {
+
+            std::ostringstream oss_err;
+            oss_err << "storage: rebuilder: could not fetch metrics of index "
+                    << index_id;
+            int thread_id(ms->run_query(oss.str(), oss_err.str(), true));
+            mysql_result res(ms->get_result(thread_id));
+
+            while (!_should_exit && ms->fetch_row(thread_id, res)) {
               metric_info info;
-              info.metric_id
-                = metrics_to_rebuild_query.value(0).toUInt();
-              info.metric_name
-                = metrics_to_rebuild_query.value(1).toString();
-              info.metric_type
-                = metrics_to_rebuild_query.value(2).toInt();
+              info.metric_id = res.value_as_u32(0);
+              info.metric_name = res.value_as_str(1);
+              info.metric_type = res.value_as_i32(2);
               metrics_to_rebuild.push_back(info);
             }
           }
@@ -189,7 +182,7 @@ void rebuilder::run() {
             metric_info info(metrics_to_rebuild.front());
             metrics_to_rebuild.pop_front();
             _rebuild_metric(
-              *db,
+              *ms,
               info.metric_id,
               host_id,
               service_id,
@@ -201,13 +194,13 @@ void rebuilder::run() {
 
           // Rebuild status.
           _rebuild_status(
-            *db,
+            *ms,
             index_id,
             check_interval);
         }
         catch (...) {
           // Set index as to-be-rebuilt.
-          _set_index_rebuild(*db, index_id, 1);
+          _set_index_rebuild(*ms, index_id, 1);
 
           // Rethrow exception.
           throw ;
@@ -215,10 +208,10 @@ void rebuilder::run() {
 
         // Set index as rebuilt or to-be-rebuild
         // if we were interrupted.
-        _set_index_rebuild(*db, index_id, (_should_exit ? 1 : 0));
+        _set_index_rebuild(*ms, index_id, (_should_exit ? 1 : 0));
 
         // Get next index to rebuild.
-        _next_index_to_rebuild(info, *db);
+        _next_index_to_rebuild(info, *ms);
       }
     }
     catch (std::exception const& e) {
@@ -234,7 +227,6 @@ void rebuilder::run() {
     while (!_should_exit && (target > time(NULL)))
       sleep(1);
   }
-  return ;
 }
 
 /**************************************
@@ -250,32 +242,30 @@ void rebuilder::run() {
  *                    Zero'd if no index is waiting for rebuild.
  *  @param[in]  db    Database object.
  */
-void rebuilder::_next_index_to_rebuild(index_info& info, database& db) {
-  bool db_v2(db.schema_version() == database::v2);
+void rebuilder::_next_index_to_rebuild(index_info& info, mysql& ms) {
+  bool db_v2(ms.schema_version() == mysql::v2);
   std::ostringstream query;
   query << "SELECT " << (db_v2 ? "id" : "index_id")
         << "       , host_id, service_id, rrd_retention"
            "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
         << "  WHERE must_be_rebuild=" << (db_v2 ? "'1'" : "1")
         << "  LIMIT 1";
-  database_query index_to_rebuild_query(db);
-  index_to_rebuild_query.run_query(
+  int thread_id(ms.run_query(
     query.str(),
-    "storage: rebuilder: could not fetch index to rebuild");
-  if (index_to_rebuild_query.next()) {
-    info.index_id = index_to_rebuild_query.value(0).toUInt();
-    info.host_id = index_to_rebuild_query.value(1).toUInt();
-    info.service_id = index_to_rebuild_query.value(2).toUInt();
-    info.rrd_retention
-      = (index_to_rebuild_query.value(3).isNull()
-         ? 0
-         : index_to_rebuild_query.value(3).toUInt());
+    "storage: rebuilder: could not fetch index to rebuild",
+    true));
+
+  mysql_result res(thread_id);
+  if (ms.fetch_row(thread_id, res)) {
+    info.index_id = res.value_as_u32(0);
+    info.host_id = res.value_as_u32(1);
+    info.service_id = res.value_as_u32(2);
+    info.rrd_retention = res.value_as_u32(3);
     if (!info.rrd_retention)
       info.rrd_retention = _rrd_len;
   }
   else
     memset(&info, 0, sizeof(info));
-  return ;
 }
 
 /**
@@ -291,11 +281,11 @@ void rebuilder::_next_index_to_rebuild(index_info& info, database& db) {
  *  @param[in] length       Metric RRD length in seconds.
  */
 void rebuilder::_rebuild_metric(
-                  database& db,
+                  mysql& ms,
                   unsigned int metric_id,
                   unsigned int host_id,
                   unsigned int service_id,
-                  QString const& metric_name,
+                  std::string const& metric_name,
                   short metric_type,
                   unsigned int interval,
                   unsigned int length) {
@@ -309,10 +299,9 @@ void rebuilder::_rebuild_metric(
   _send_rebuild_event(false, metric_id, false);
 
   // Database schema version.
-  bool db_v2(db.schema_version() == database::v2);
+  bool db_v2(ms.schema_version() == mysql::v2);
 
-  //FIXME DBR
-//  time_t start(time(NULL) - length);
+  time_t start(time(NULL) - length);
 
   try {
     // Get data.
@@ -321,28 +310,26 @@ void rebuilder::_rebuild_metric(
         << " FROM " << (db_v2 ? "data_bin" : "log_data_bin")
         << " WHERE " << (db_v2 ? "id_metric" : "metric_id")
         << "=" << metric_id
-//        << " AND ctime >= " << start
+        << " AND ctime >= " << start
         << " ORDER BY ctime ASC";
-    database_query data_bin_query(db);
     bool caught(false);
-    try { data_bin_query.run_query(oss.str()); }
-    catch (std::exception const& e) {
-      caught = true;
-      logging::error(logging::medium) << "storage: rebuilder: "
-        << "cannot fetch data of metric " << metric_id << ": "
-        << e.what();
-    }
-    if (!caught)
-      while (!_should_exit && data_bin_query.next()) {
+    std::ostringstream oss_err;
+    oss_err << "storage: rebuilder: "
+        << "cannot fetch data of metric " << metric_id << ": ";
+    int thread_id(ms.run_query(oss.str(), oss_err.str(), true));
+
+    if (!caught) {
+      mysql_result res(ms.get_result(thread_id));
+      while (!_should_exit && ms.fetch_row(thread_id, res)) {
         misc::shared_ptr<storage::metric> entry(new storage::metric);
-        entry->ctime = data_bin_query.value(0).toUInt();
+        entry->ctime = res.value_as_u32(0);
         entry->interval = interval;
         entry->is_for_rebuild = true;
         entry->metric_id = metric_id;
-        entry->name = metric_name;
+        entry->name = metric_name.c_str();
         entry->rrd_len = length;
         entry->value_type = metric_type;
-        entry->value = data_bin_query.value(1).toDouble();
+        entry->value = res.value_as_f64(1);
         entry->host_id = host_id;
         entry->service_id = service_id;
         if (entry->value > FLT_MAX * 0.999)
@@ -351,6 +338,7 @@ void rebuilder::_rebuild_metric(
           entry->value = -INFINITY;
         multiplexing::publisher().write(entry);
       }
+    }
   }
   catch (...) {
     // Send rebuild end event.
@@ -374,7 +362,7 @@ void rebuilder::_rebuild_metric(
  *  @param[in] interval  Host/service check interval.
  */
 void rebuilder::_rebuild_status(
-                  database& db,
+                  mysql& ms,
                   unsigned int index_id,
                   unsigned int interval) {
   // Log.
@@ -386,7 +374,7 @@ void rebuilder::_rebuild_status(
   _send_rebuild_event(false, index_id, true);
 
   // Database schema version.
-  bool db_v2(db.schema_version() == database::v2);
+  bool db_v2(ms.schema_version() == mysql::v2);
 
   try {
     // Get data.
@@ -397,26 +385,25 @@ void rebuilder::_rebuild_status(
         << "   ON m.metric_id=d." << (db_v2 ? "id_metric" : "metric_id")
         << " WHERE m.index_id=" << index_id
         << " ORDER BY d.ctime ASC";
-    database_query data_bin_query(db);
     bool caught(false);
-    try { data_bin_query.run_query(oss.str()); }
-    catch (std::exception const& e) {
-      caught = true;
-      logging::error(logging::medium) << "storage: rebuilder: "
-        << "cannot fetch data of index " << index_id << ": "
-        << e.what();
-    }
-    if (!caught)
-      while (!_should_exit && data_bin_query.next()) {
+    std::ostringstream oss_err;
+    oss_err << "storage: rebuilder: "
+            << "cannot fetch data of index " << index_id << ": ";
+    int thread_id(ms.run_query(oss.str(), oss_err.str(), false));
+    //FIXME DBR: caught is set to true in case of error
+    if (!caught) {
+      mysql_result res(ms.get_result(thread_id));
+      while (!_should_exit && ms.fetch_row(thread_id, res)) {
         misc::shared_ptr<storage::status> entry(new storage::status);
-        entry->ctime = data_bin_query.value(0).toUInt();
+        entry->ctime = res.value_as_u32(0);
         entry->index_id = index_id;
         entry->interval = interval;
         entry->is_for_rebuild = true;
         entry->rrd_len = _rrd_len;
-        entry->state = data_bin_query.value(1).toInt();
+        entry->state = res.value_as_i32(1);
         multiplexing::publisher().write(entry);
       }
+    }
   }
   catch (...) {
     // Send rebuild end event.
@@ -428,8 +415,6 @@ void rebuilder::_rebuild_status(
 
   // Send rebuild end event.
   _send_rebuild_event(true, index_id, true);
-
-  return ;
 }
 
 /**
@@ -459,21 +444,17 @@ void rebuilder::_send_rebuild_event(
  *  @param[in] state     Rebuild state (0, 1 or 2).
  */
 void rebuilder::_set_index_rebuild(
-                  database& db,
+                  mysql& ms,
                   unsigned int index_id,
                   short state) {
-  bool db_v2(db.schema_version() == database::v2);
+  bool db_v2(ms.schema_version() == mysql::v2);
   std::ostringstream oss;
   oss << "UPDATE " << (db_v2 ? "index_data" : "rt_index_data")
       << " SET must_be_rebuild="
       << (db_v2 ? "'" : "") << state << (db_v2 ? "'" : "")
       << " WHERE " << (db_v2 ? "id" : "index_id") << "=" << index_id;
-  database_query update_index_query(db);
-  try { update_index_query.run_query(oss.str()); }
-  catch (std::exception const& e) {
-    logging::error(logging::low)
-      << "storage: rebuilder: cannot update state of index "
-      << index_id << ": " << e.what();
-  }
-  return ;
+  std::ostringstream oss_err;
+  oss_err << "storage: rebuilder: cannot update state of index "
+      << index_id << ": ";
+  ms.run_query(oss.str(), oss_err.str(), false);
 }

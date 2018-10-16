@@ -186,6 +186,11 @@ void mysql_bind::set_value_as_f32(int range, float value) {
   }
 }
 
+float mysql_bind::value_as_f32(int range) const {
+  float retval(_buffer[range].c_str() ? atof(_buffer[range].c_str()) : 0);
+  return retval;
+}
+
 double mysql_bind::value_as_f64(int range) const {
   double retval(_buffer[range].c_str() ? atof(_buffer[range].c_str()) : 0);
   return retval;

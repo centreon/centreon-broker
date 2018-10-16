@@ -39,6 +39,7 @@ class                         mysql_result {
                               ~mysql_result();
   mysql_result&               operator=(mysql_result const& other);
   bool                        value_as_bool(int idx);
+  float                       value_as_f32(int idx);
   double                      value_as_f64(int idx);
   int                         value_as_i32(int idx);
   std::string                 value_as_str(int idx);

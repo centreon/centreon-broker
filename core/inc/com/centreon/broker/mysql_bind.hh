@@ -51,6 +51,10 @@ class                       mysql_bind {
   void                      set_value_as_bool(
                               int range,
                               bool value);
+  float                     value_as_f32(int range) const;
+  void                      set_value_as_f32(
+                              int range,
+                              float value);
   double                    value_as_f64(int range) const;
   void                      set_value_as_f64(
                               int range,
@@ -61,7 +65,6 @@ class                       mysql_bind {
   void                      set_value_as_str(
                               int range,
                               std::string const& value);
-  void                      set_value_as_f32(int range, float value);
   int                       get_size() const;
   bool                      value_is_null(int range) const;
   bool                      is_empty() const;

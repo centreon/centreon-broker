@@ -32,8 +32,7 @@
 #include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
 #include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/database.hh"
-#include "com/centreon/broker/database_query.hh"
+#include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -49,9 +48,9 @@ using namespace com::centreon::broker::bam::configuration;
  *  @param[in] storage_cfg  Storage database configuration.
  */
 reader_v2::reader_v2(
-          database& centreon_db,
+          mysql& centreon_db,
           database_config const& storage_cfg)
-  : _db(centreon_db), _storage_cfg(storage_cfg) {}
+  : _mysql(centreon_db), _storage_cfg(storage_cfg) {}
 
 /**
  *  Destructor.
@@ -117,41 +116,41 @@ void reader_v2::_load(state::kpis& kpis) {
            "    AND mb.activate='1'"
            "    AND pr.poller_id="
         << config::applier::state::instance().poller_id();
-    database_query query(_db);
-    query.run_query(oss.str());
-    while (query.next()) {
+    int thread_id(_mysql.run_query(oss.str()));
+    mysql_result res(_mysql.get_result(thread_id));
+    while (_mysql.fetch_row(thread_id, res)) {
       // KPI object.
-      unsigned int kpi_id(query.value(0).toUInt());
+      unsigned int kpi_id(res.value_as_u32(0));
       kpis[kpi_id] =
         kpi(
           kpi_id, // ID.
-          query.value(1).toInt(), // State type.
-          query.value(2).toUInt(), // Host ID.
-          query.value(3).toUInt(), // Service ID.
-          query.value(4).toUInt(), // BA ID.
-          query.value(5).toUInt(), // BA indicator ID.
-          query.value(6).toUInt(), // Meta-service ID.
-          query.value(7).toUInt(), // Boolean expression ID.
-          query.value(8).toInt(), // Status.
-          query.value(9).toInt(), // Last level.
-          query.value(10).toFloat(), // Downtimed.
-          query.value(11).toFloat(), // Acknowledged.
-          query.value(12).toBool(), // Ignore downtime.
-          query.value(13).toBool(), // Ignore acknowledgement.
-          query.value(14).toDouble(), // Warning.
-          query.value(15).toDouble(), // Critical.
-          query.value(16).toDouble()); // Unknown.
+          res.value_as_i32(1), // State type.
+          res.value_as_u32(2), // Host ID.
+          res.value_as_u32(3), // Service ID.
+          res.value_as_u32(4), // BA ID.
+          res.value_as_u32(5), // BA indicator ID.
+          res.value_as_u32(6), // Meta-service ID.
+          res.value_as_u32(7), // Boolean expression ID.
+          res.value_as_i32(8), // Status.
+          res.value_as_i32(9), // Last level.
+          res.value_as_f32(10), // Downtimed.
+          res.value_as_f32(11), // Acknowledged.
+          res.value_as_bool(12), // Ignore downtime.
+          res.value_as_bool(13), // Ignore acknowledgement.
+          res.value_as_f64(14), // Warning.
+          res.value_as_f64(15), // Critical.
+          res.value_as_f64(16)); // Unknown.
 
       // KPI state.
-      if (!query.value(17).isNull()) {
+      if (!res.value_is_null(17)) {
         kpi_event e;
         e.kpi_id = kpi_id;
-        e.status = query.value(8).toInt();
-        e.start_time = query.value(17).toLongLong();
-        e.in_downtime = query.value(18).toBool();
-        e.impact_level = query.value(19).isNull()
+        e.status = res.value_as_i32(8);
+        e.start_time = res.value_as_u64(17);
+        e.in_downtime = res.value_as_bool(18);
+        e.impact_level = res.value_is_null(19)
                          ? -1
-                         : query.value(19).toDouble();
+                         : res.value_as_f64(19);
         kpis[kpi_id].set_opened_event(e);
       }
     }
@@ -170,14 +169,15 @@ void reader_v2::_load(state::kpis& kpis) {
                "    ON s.service_id=hsr.service_service_id"
                "  WHERE s.service_description='meta_" << it->second.get_meta_id()
             << "'";
-        query.run_query(
+        int thread_id(_mysql.run_query(
                 oss.str(),
-                "could not virtual meta-service's service");
-        if (!query.next())
+                "could not virtual meta-service's service"));
+        mysql_result res(_mysql.get_result(thread_id));
+        if (!_mysql.fetch_row(thread_id, res))
           throw (exceptions::msg() << "virtual service of meta-service "
                  << it->first << " does not exist");
-        it->second.set_host_id(query.value(0).toUInt());
-        it->second.set_service_id(query.value(1).toUInt());
+        it->second.set_host_id(res.value_as_u32(0));
+        it->second.set_service_id(res.value_as_u32(1));
       }
     }
   }
@@ -190,7 +190,6 @@ void reader_v2::_load(state::kpis& kpis) {
            << "BAM: could not retrieve KPI configuration from DB: "
            << e.what());
   }
-  return ;
 }
 
 /**
@@ -202,7 +201,6 @@ void reader_v2::_load(state::kpis& kpis) {
  */
 void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
   try {
-    database_query query(_db);
     {
       std::ostringstream oss;
       oss << "SELECT b.ba_id, b.name, b.level_w, b.level_c,"
@@ -214,27 +212,28 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
              "  WHERE b.activate='1'"
              "    AND pr.poller_id="
           << config::applier::state::instance().poller_id();
-      query.run_query(oss.str());
-    }
-    while (query.next()) {
-      // BA object.
-      unsigned int ba_id(query.value(0).toUInt());
-      bas[ba_id] =
-        ba(
-          ba_id, // ID.
-          query.value(1).toString().toStdString(), // Name.
-          query.value(2).toFloat(), // Warning level.
-          query.value(3).toFloat(), // Critical level.
-          query.value(7).toBool()); // Downtime inheritance.
+      int thread_id(_mysql.run_query(oss.str(), "BAM: ", true));
+      mysql_result res(_mysql.get_result(thread_id));
+      while (_mysql.fetch_row(thread_id, res)) {
+        // BA object.
+        unsigned int ba_id(res.value_as_u32(0));
+        bas[ba_id] =
+          ba(
+            ba_id, // ID.
+            res.value_as_str(1), // Name.
+            res.value_as_f32(2), // Warning level.
+            res.value_as_f32(3), // Critical level.
+            res.value_as_bool(7)); // Downtime inheritance.
 
-      // BA state.
-      if (!query.value(4).isNull()) {
-        ba_event e;
-        e.ba_id = ba_id;
-        e.start_time = query.value(4).toLongLong();
-        e.status = query.value(5).toInt();
-        e.in_downtime = query.value(6).toBool();
-        bas[ba_id].set_opened_event(e);
+        // BA state.
+        if (!res.value_is_null(4)) {
+          ba_event e;
+          e.ba_id = ba_id;
+          e.start_time = res.value_as_u64(4);
+          e.status = res.value_as_i32(5);
+          e.in_downtime = res.value_as_bool(6);
+          bas[ba_id].set_opened_event(e);
+        }
       }
     }
   }
@@ -251,8 +250,7 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
   // Load host_id/service_id of virtual BA services. All the associated
   // services have for description 'ba_[id]'.
   try {
-    database_query query(_db);
-    query.run_query(
+    int thread_id(_mysql.run_query(
             "SELECT h.host_name, s.service_description,"
             "       hsr.host_host_id, hsr.service_service_id"
             "  FROM service AS s"
@@ -260,11 +258,12 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
             "    ON s.service_id=hsr.service_service_id"
             "  INNER JOIN host AS h"
             "    ON hsr.host_host_id=h.host_id"
-            "  WHERE s.service_description LIKE 'ba_%'");
-    while (query.next()) {
-      unsigned int host_id = query.value(2).toUInt();
-      unsigned int service_id = query.value(3).toUInt();
-      std::string service_description = query.value(1).toString().toStdString();
+            "  WHERE s.service_description LIKE 'ba_%'"));
+    mysql_result res(_mysql.get_result(thread_id));
+    while (_mysql.fetch_row(thread_id, res)) {
+      unsigned int host_id = res.value_as_u32(2);
+      unsigned int service_id = res.value_as_u32(3);
+      std::string service_description = res.value_as_str(1);
       service_description.erase(0, strlen("ba_"));
 
       if (!service_description.empty()) {
@@ -272,16 +271,16 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
         unsigned int ba_id = QString(service_description.c_str()).toUInt(&ok);
         if (!ok) {
           logging::info(logging::medium)
-            << "BAM: service '" << query.value(1).toString() << "' of host '"
-            << query.value(0).toString()
+            << "BAM: service '" << res.value_as_str(1) << "' of host '"
+            << res.value_as_str(0)
             << "' is not a valid virtual BA service";
           continue ;
         }
         state::bas::iterator found = bas.find(ba_id);
         if (found == bas.end()) {
           logging::info(logging::medium) << "BAM: virtual BA service '"
-            << query.value(1).toString() << "' of host '"
-            << query.value(0).toString() << "' references an unknown BA ("
+            << res.value_as_str(1) << "' of host '"
+            << res.value_as_str(0) << "' references an unknown BA ("
             << ba_id << ")";
           continue;
         }
@@ -289,8 +288,8 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
         found->second.set_service_id(service_id);
         mapping.set(
                   ba_id,
-                  query.value(0).toString().toStdString(),
-                  query.value(1).toString().toStdString());
+                  res.value_as_str(0),
+                  res.value_as_str(1));
       }
     }
   }
@@ -334,15 +333,15 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
          "  WHERE b.activate=1"
          "    AND pr.poller_id="
       << config::applier::state::instance().poller_id();
-    database_query query(_db);
-    query.run_query(q.str());
-    while (query.next()) {
-      bool_exps[query.value(0).toUInt()] =
+    int thread_id(_mysql.run_query(q.str()));
+    mysql_result res(_mysql.get_result(thread_id));
+    while (_mysql.fetch_row(thread_id, res)) {
+      bool_exps[res.value_as_u32(0)] =
                   bool_expression(
-                    query.value(0).toUInt(), // ID.
-                    query.value(1).toString().toStdString(), // Name.
-                    query.value(2).toString().toStdString(), // Expression.
-                    query.value(3).toBool()); // Impact if.
+                    res.value_as_u32(0), // ID.
+                    res.value_as_str(1), // Name.
+                    res.value_as_str(2), // Expression.
+                    res.value_as_bool(3)); // Impact if.
     }
   }
   catch (reader_exception const& e) {
@@ -354,8 +353,6 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
            << "BAM: could not retrieve boolean expression "
            << "configuration from DB: " << e.what());
   }
-
-  return ;
 }
 
 /**
@@ -366,26 +363,26 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
 void reader_v2::_load(state::meta_services& meta_services) {
   // Load meta-services.
   try {
-    database_query q(_db);
-    q.run_query(
+    int thread_id(_mysql.run_query(
       "SELECT meta_id, meta_name, calcul_type, warning, critical,"
       "       meta_select_mode, regexp_str, metric"
       "  FROM meta_service"
-      "  WHERE meta_activate='1'");
-    while (q.next()) {
-      unsigned int meta_id(q.value(0).toUInt());
+      "  WHERE meta_activate='1'"));
+    mysql_result res(_mysql.get_result(thread_id));
+    while (_mysql.fetch_row(thread_id, res)) {
+      unsigned int meta_id(res.value_as_u32(0));
       meta_services[meta_id] =
         meta_service(
-          q.value(0).toUInt(),
-          q.value(1).toString().toStdString(),
-          q.value(2).toString().toStdString(),
-          q.value(3).toDouble(),
-          q.value(4).toDouble(),
-          (q.value(5).toInt() == 2
-           ? q.value(6).toString().toStdString()
+          res.value_as_u32(0),
+          res.value_as_str(1),
+          res.value_as_str(2),
+          res.value_as_f64(3),
+          res.value_as_f64(4),
+          (res.value_as_i32(5) == 2
+           ? res.value_as_str(6)
            : ""),
-          (q.value(5).toInt() == 2
-           ? q.value(7).toString().toStdString()
+          (res.value_as_i32(5) == 2
+           ? res.value_as_str(7)
            : ""));
     }
   }
@@ -402,24 +399,24 @@ void reader_v2::_load(state::meta_services& meta_services) {
   // Load host_id/service_id of virtual meta-service services. All
   // associated services have for description 'meta_[id]'.
   try {
-    database_query q(_db);
-    q.run_query(
+    int thread_id(_mysql.run_query(
       "SELECT h.host_name, s.service_description"
       "  FROM service AS s"
       "  INNER JOIN host_service_relation AS hsr"
       "    ON s.service_id=hsr.service_service_id"
       "  INNER JOIN host AS h"
       "    ON hsr.host_host_id=h.host_id"
-      "  WHERE s.service_description LIKE 'meta_%'");
-    while (q.next()) {
-      std::string service_description(q.value(1).toString().toStdString());
+      "  WHERE s.service_description LIKE 'meta_%'"));
+    mysql_result res(_mysql.get_result(thread_id));
+    while (_mysql.fetch_row(thread_id, res)) {
+      std::string service_description(res.value_as_str(1));
       service_description.erase(0, strlen("meta_"));
       bool ok(false);
       unsigned int meta_id(QString(service_description.c_str()).toUInt(&ok));
       if (!ok) {
         logging::info(logging::medium)
-          << "BAM: service '" << q.value(1).toString() << "' of host '"
-          << q.value(0).toString()
+          << "BAM: service '" << res.value_as_str(1) << "' of host '"
+          << res.value_as_str(0)
           << "' is not a valid virtual meta-service service";
         continue ;
       }
@@ -427,8 +424,8 @@ void reader_v2::_load(state::meta_services& meta_services) {
       if (found == meta_services.end()) {
         logging::info(logging::medium)
           << "BAM: virtual meta-service service '"
-          << q.value(1).toString() << "' of host '"
-          << q.value(0).toString()
+          << res.value_as_str(1) << "' of host '"
+          << res.value_as_str(0)
           << "' references an unknown meta-service (" << meta_id << ")";
         continue ;
       }
@@ -458,7 +455,7 @@ void reader_v2::_load(state::meta_services& meta_services) {
   }
 
   // Load metrics of meta-services.
-  std::auto_ptr<database> storage_db;
+  std::auto_ptr<mysql> storage_mysql;
   for (state::meta_services::iterator
          it(meta_services.begin()),
          end(meta_services.end());
@@ -478,23 +475,24 @@ void reader_v2::_load(state::meta_services& meta_services) {
             << it->second.get_service_filter() << "'"
             << "    AND m.metric_name='"
             << it->second.get_metric_name() << "'";
-      if (!storage_db.get())
-        try { storage_db.reset(new database(_storage_cfg)); }
+      if (!storage_mysql.get())
+        try { storage_mysql.reset(new mysql(_storage_cfg)); }
         catch (std::exception const& e) {
           throw (reader_exception()
                  << "BAM: could not initialize storage database to "
                     "retrieve metrics associated with some "
                     "meta-service: " << e.what());
         }
-      database_query q(*storage_db);
-      try { q.run_query(query.str()); }
+      int thread_id;
+      try { thread_id = storage_mysql->run_query(query.str()); }
       catch (std::exception const& e) {
         throw (reader_exception()
                << "BAM: could not retrieve members of meta-service '"
                << it->second.get_name() << "': " << e.what());
       }
-      while (q.next())
-        it->second.add_metric(q.value(0).toUInt());
+      mysql_result res(storage_mysql->get_result(thread_id));
+      while (storage_mysql->fetch_row(thread_id, res))
+        it->second.add_metric(res.value_as_u32(0));
     }
     // Service list mode.
     else {
@@ -504,10 +502,10 @@ void reader_v2::_load(state::meta_services& meta_services) {
               << "  FROM meta_service_relation"
               << "  WHERE meta_id=" << it->second.get_id()
               << "    AND activate='1'";
-        database_query q(_db);
-        q.run_query(query.str());
-        while (q.next())
-          it->second.add_metric(q.value(0).toUInt());
+        int thread_id(_mysql.run_query(query.str()));
+        mysql_result res(thread_id);
+        while (_mysql.fetch_row(thread_id, res))
+          it->second.add_metric(res.value_as_u32(0));
       }
       catch (reader_exception const& e) {
         (void)e;
@@ -520,7 +518,6 @@ void reader_v2::_load(state::meta_services& meta_services) {
       }
     }
   }
-  return ;
 }
 
 /**
@@ -531,22 +528,22 @@ void reader_v2::_load(state::meta_services& meta_services) {
 void reader_v2::_load(bam::hst_svc_mapping& mapping) {
   try {
     // XXX : expand hostgroups and servicegroups
-    database_query q(_db);
-    q.run_query(
+    int thread_id(_mysql.run_query(
       "SELECT h.host_id, s.service_id, h.host_name, s.service_description,"
           "   service_activate"
       "  FROM service AS s"
       "  LEFT JOIN host_service_relation AS hsr"
       "    ON s.service_id=hsr.service_service_id"
       "  LEFT JOIN host AS h"
-      "    ON hsr.host_host_id=h.host_id");
-    while (q.next())
+      "    ON hsr.host_host_id=h.host_id"));
+    mysql_result res(_mysql.get_result(thread_id));
+    while (_mysql.fetch_row(thread_id, res))
       mapping.set_service(
-                q.value(2).toString().toStdString(),
-                q.value(3).toString().toStdString(),
-                q.value(0).toUInt(),
-                q.value(1).toUInt(),
-                q.value(4).toString() == "1");
+                res.value_as_str(2),
+                res.value_as_str(3),
+                res.value_as_u32(0),
+                res.value_as_u32(1),
+                res.value_as_str(4) == "1");
   }
   catch (reader_exception const& e) {
     (void)e;
@@ -568,23 +565,21 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
           << "    ON m.index_id=i.id"
           << "    INNER JOIN services AS s"
           << "    ON i.host_id=s.host_id AND i.service_id=s.service_id";
-    std::auto_ptr<database> storage_db(new database(_storage_cfg));
-    database_query q(*storage_db);
-    q.run_query(query.str());
-    while (q.next()) {
+    mysql storage_mysql(_storage_cfg);
+    int thread_id(storage_mysql.run_query(query.str()));
+    mysql_result res(storage_mysql.get_result(thread_id));
+    while (storage_mysql.fetch_row(thread_id, res)) {
       mapping.register_metric(
-                q.value(0).toUInt(),
-                q.value(1).toString().toStdString(),
-                q.value(2).toUInt(),
-                q.value(3).toUInt());
+                res.value_as_u32(0),
+                res.value_as_str(1),
+                res.value_as_u32(2),
+                res.value_as_u32(3));
     }
   } catch (std::exception const& e) {
     throw (reader_exception()
            << "BAM: could not retrieve known metrics: "
            << e.what());
   }
-
-  return ;
 }
 
 /**
@@ -601,42 +596,40 @@ void reader_v2::_load_dimensions() {
   dtts->update_started = true;
   datas.push_back(dtts);
 
-  // Get the data from the DB.
-  database_query q(_db);
-
   // Load the dimensions.
   std::map<unsigned int, time::timeperiod::ptr> timeperiods;
   std::map<unsigned int, misc::shared_ptr<dimension_ba_event> > bas;
   try {
     // Load the timeperiods themselves.
-    q.run_query(
+    int thread_id(_mysql.run_query(
       "SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
       "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
       "  FROM timeperiod",
-      "could not load timeperiods from the database");
-    while (q.next()) {
-      timeperiods[q.value(0).toUInt()] = time::timeperiod::ptr(
+      "could not load timeperiods from the database"));
+    mysql_result res(_mysql.get_result(thread_id));
+    while (_mysql.fetch_row(thread_id, res)) {
+      timeperiods[res.value_as_u32(0)] = time::timeperiod::ptr(
         new time::timeperiod(
-              q.value(0).toUInt(),                   // id
-              q.value(1).toString().toStdString(),   // name
-              q.value(2).toString().toStdString(),   // alias
-              q.value(3).toString().toStdString(),   // sunday
-              q.value(4).toString().toStdString(),   // monday
-              q.value(5).toString().toStdString(),   // tuesday
-              q.value(6).toString().toStdString(),   // wednesday
-              q.value(7).toString().toStdString(),   // thursday
-              q.value(8).toString().toStdString(),   // friday
-              q.value(9).toString().toStdString())); // saturday
+              res.value_as_u32(0),   // id
+              res.value_as_str(1),   // name
+              res.value_as_str(2),   // alias
+              res.value_as_str(3),   // sunday
+              res.value_as_str(4),   // monday
+              res.value_as_str(5),   // tuesday
+              res.value_as_str(6),   // wednesday
+              res.value_as_str(7),   // thursday
+              res.value_as_str(8),   // friday
+              res.value_as_str(9))); // saturday
       misc::shared_ptr<dimension_timeperiod> tp(new dimension_timeperiod);
-      tp->id = q.value(0).toUInt();
-      tp->name = q.value(1).toString();
-      tp->sunday = q.value(3).toString();
-      tp->monday = q.value(4).toString();
-      tp->tuesday = q.value(5).toString();
-      tp->wednesday = q.value(6).toString();
-      tp->thursday = q.value(7).toString();
-      tp->friday = q.value(8).toString();
-      tp->saturday = q.value(9).toString();
+      tp->id = res.value_as_u32(0);
+      tp->name = res.value_as_str(1).c_str();
+      tp->sunday = res.value_as_str(3).c_str();
+      tp->monday = res.value_as_str(4).c_str();
+      tp->tuesday = res.value_as_str(5).c_str();
+      tp->wednesday = res.value_as_str(6).c_str();
+      tp->thursday = res.value_as_str(7).c_str();
+      tp->friday = res.value_as_str(8).c_str();
+      tp->saturday = res.value_as_str(9).c_str();
       datas.push_back(tp.staticCast<io::data>());
     }
 
@@ -706,41 +699,43 @@ void reader_v2::_load_dimensions() {
            "  WHERE b.activate='1'"
            "    AND pr.poller_id="
         << config::applier::state::instance().poller_id();
-    q.run_query(
+    thread_id = _mysql.run_query(
         oss.str(),
         "could not retrieve BAs from the database");
-    while (q.next()) {
+    res = _mysql.get_result(thread_id);
+    while (_mysql.fetch_row(thread_id, res)) {
       misc::shared_ptr<dimension_ba_event> ba(new dimension_ba_event);
-      ba->ba_id = q.value(0).toUInt();
-      ba->ba_name = q.value(1).toString();
-      ba->ba_description = q.value(2).toString();
-      ba->sla_month_percent_warn = q.value(3).toDouble();
-      ba->sla_month_percent_crit = q.value(4).toDouble();
-      ba->sla_duration_warn = q.value(5).toInt();
-      ba->sla_duration_crit = q.value(6).toInt();
+      ba->ba_id = res.value_as_u32(0);
+      ba->ba_name = res.value_as_str(1).c_str();
+      ba->ba_description = res.value_as_str(2).c_str();
+      ba->sla_month_percent_warn = res.value_as_f64(3);
+      ba->sla_month_percent_crit = res.value_as_f64(4);
+      ba->sla_duration_warn = res.value_as_i32(5);
+      ba->sla_duration_crit = res.value_as_i32(6);
       datas.push_back(ba.staticCast<io::data>());
       bas[ba->ba_id] = ba;
-      if (!q.value(7).isNull()) {
+      if (!res.value_is_null(7)) {
         misc::shared_ptr<dimension_ba_timeperiod_relation>
           dbtr(new dimension_ba_timeperiod_relation);
-        dbtr->ba_id = q.value(0).toUInt();
-        dbtr->timeperiod_id = q.value(7).toUInt();
+        dbtr->ba_id = res.value_as_u32(0);
+        dbtr->timeperiod_id = res.value_as_u32(7);
         dbtr->is_default = true;
         datas.push_back(dbtr);
       }
     }
 
     // Load the BVs.
-    q.run_query(
+    thread_id = _mysql.run_query(
       "SELECT id_ba_group, ba_group_name, ba_group_description"
       "  FROM mod_bam_ba_groups",
       "could not retrieve BVs from the database");
-    while (q.next()) {
+    res = _mysql.get_result(thread_id);
+    while (_mysql.fetch_row(thread_id, res)) {
       misc::shared_ptr<dimension_bv_event>
           bv(new dimension_bv_event);
-      bv->bv_id = q.value(0).toUInt();
-      bv->bv_name = q.value(1).toString();
-      bv->bv_description = q.value(2).toString();
+      bv->bv_id = res.value_as_u32(0);
+      bv->bv_name = res.value_as_str(1).c_str();
+      bv->bv_description = res.value_as_str(2).c_str();
       datas.push_back(bv.staticCast<io::data>());
     }
 
@@ -756,15 +751,16 @@ void reader_v2::_load_dimensions() {
              "  WHERE b.activate='1'"
              "    AND pr.poller_id="
           << config::applier::state::instance().poller_id();
-      q.run_query(
+      thread_id = _mysql.run_query(
           oss.str(),
           "could not retrieve BV memberships of BAs");
     }
-    while (q.next()) {
+    res = _mysql.get_result(thread_id);
+    while (_mysql.fetch_row(thread_id, res)) {
       misc::shared_ptr<dimension_ba_bv_relation_event>
           babv(new dimension_ba_bv_relation_event);
-      babv->ba_id = q.value(0).toUInt();
-      babv->bv_id = q.value(1).toUInt();
+      babv->ba_id = res.value_as_u32(0);
+      babv->bv_id = res.value_as_u32(1);
       datas.push_back(babv.staticCast<io::data>());
     }
 
@@ -884,6 +880,4 @@ void reader_v2::_load_dimensions() {
     throw (reader_exception()
            << "BAM: could not load some dimension table: " << e.what());
   }
-
-  return ;
 }

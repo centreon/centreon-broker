@@ -80,6 +80,12 @@ void mysql_thread::_commit(mysql_task* t) {
 
 void mysql_thread::_prepare(mysql_task* t) {
   mysql_task_prepare* task(static_cast<mysql_task_prepare*>(t));
+  if (_stmt[task->id]) {
+    logging::info(logging::low)
+      << "mysql: Statement already prepared: "
+      << task->id << " ( " << task->query << " )";
+    return ;
+  }
   logging::debug(logging::low)
     << "mysql: prepare query: "
     << task->id << " ( " << task->query << " )";

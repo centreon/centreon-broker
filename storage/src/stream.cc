@@ -34,7 +34,6 @@
 #include "com/centreon/broker/storage/index_mapping.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/metric_mapping.hh"
-#include "com/centreon/broker/mysql_bind.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
@@ -591,20 +590,19 @@ unsigned int stream::_find_index_id(
              "  VALUES (" << host_id << ", '" << host_name.toStdString() << "', " << service_id
           << ", '" << service_desc.toStdString() << "', " << (db_v2 ? "'0'" : "0")
           << ", '" << special << "')";
-      try {
-        int thread_id(_mysql.run_query(oss.str()));
-        // Let's get the index id
-        retval = _mysql.get_last_insert_id(thread_id);
-        if (retval == 0) {
-          throw broker::exceptions::msg() << "storage: could not "
-                    "fetch index_id of newly inserted index ("
-                 << host_id << ", " << service_id << ")";
-        }
-      }
-      catch (std::exception const& e) {
-        throw (broker::exceptions::msg() << "storage: insertion of "
-                  "index (" << host_id << ", " << service_id
-               << ") failed: " << e.what());
+
+      std::stringstream err_oss;
+      err_oss << "storage: insertion of "
+                 "index (" << host_id << ", " << service_id
+              << ") failed: ";
+
+      int thread_id(_mysql.run_query(oss.str(), err_oss.str(), true));
+      // Let's get the index id
+      retval = _mysql.get_last_insert_id(thread_id);
+      if (retval == 0) {
+        throw broker::exceptions::msg() << "storage: could not "
+                  "fetch index_id of newly inserted index ("
+               << host_id << ", " << service_id << ")";
       }
 
       // Insert index in cache.
@@ -827,6 +825,70 @@ unsigned int stream::_find_metric_id(
   return retval;
 }
 
+void stream::_insert_perfdatas_new() {
+  if (!_perfdata_queue.empty()) {
+    // Status.
+    _update_status("status=inserting performance data\n");
+
+    // Database schema version.
+    bool db_v2(_mysql.schema_version() == mysql::v2);
+
+    if (!_data_bin_insert.prepared()) {
+      std::ostringstream oss;
+      oss << "INSERT INTO " << (db_v2 ? "data_bin" : "log_data_bin")
+          << "  (" << (db_v2 ? "id_metric" : "metric_id")
+          << ", ctime, status, value)"
+             "  VALUES (?, ?, ?, ?)";
+      _data_bin_insert = mysql_stmt(oss.str(), false);
+      _mysql.prepare_statement(_data_bin_insert);
+    }
+
+
+    // Insert first entry.
+    std::ostringstream query;
+    {
+      metric_value& mv(_perfdata_queue.front());
+      query.precision(10);
+      query << std::scientific
+            << "INSERT INTO " << (db_v2 ? "data_bin" : "log_data_bin")
+            << "  (" << (db_v2 ? "id_metric" : "metric_id")
+            << "   , ctime, status, value)"
+               "  VALUES (" << mv.metric_id << ", " << mv.c_time << ", '"
+            << mv.status << "', ";
+      if (isinf(mv.value))
+        query << ((mv.value < 0.0) ? -FLT_MAX : FLT_MAX);
+      else if (isnan(mv.value))
+        query << "NULL";
+      else
+        query << mv.value;
+      query << ")";
+      _perfdata_queue.pop_front();
+    }
+
+    // Insert perfdata in data_bin.
+    while (!_perfdata_queue.empty()) {
+      metric_value& mv(_perfdata_queue.front());
+      query << ", (" << mv.metric_id << ", " << mv.c_time << ", '"
+            << mv.status << "', ";
+      if (isinf(mv.value))
+        query << ((mv.value < 0.0) ? -FLT_MAX : FLT_MAX);
+      else if (isnan(mv.value))
+        query << "NULL";
+      else
+        query << mv.value;
+      query << ")";
+      _perfdata_queue.pop_front();
+    }
+
+    // Execute query.
+    _mysql.run_query(query.str(), "storage: could not insert data in data_bin");
+    if (_mysql.commit_if_needed())
+      _set_ack_events();
+
+    _update_status("");
+  }
+}
+
 /**
  *  Insert performance data entries in the data_bin table.
  */
@@ -881,8 +943,6 @@ void stream::_insert_perfdatas() {
 
     _update_status("");
   }
-
-  return ;
 }
 
 /**
