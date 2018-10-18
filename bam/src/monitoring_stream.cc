@@ -71,10 +71,7 @@ monitoring_stream::monitoring_stream(
                      database_config const& storage_db_cfg,
                      misc::shared_ptr<persistent_cache> cache)
   : _ext_cmd_file(ext_cmd_file),
-    _db(db_cfg),
-    _ba_update(_db),
-    _kpi_update(_db),
-    _meta_service_update(_db),
+    _mysql(db_cfg),
     _pending_events(0),
     _storage_db_cfg(storage_db_cfg),
     _cache(cache) {
@@ -82,9 +79,9 @@ monitoring_stream::monitoring_stream(
   // because it is connected to the centreon DB (not centreon_storage)
   // and therefore auto-detection does not work.
   {
-    database_query q(_db);
     try {
-      q.run_query("SELECT ba_id FROM mod_bam LIMIT 1");
+      int thread_id(_mysql.run_query("SELECT ba_id FROM mod_bam LIMIT 1", "", true));
+      _mysql.get_result(thread_id);
       _db_v2 = true;
     }
     catch (...) {
@@ -120,11 +117,11 @@ monitoring_stream::~monitoring_stream() {
  *  @return Number of acknowledged events.
  */
 int monitoring_stream::flush() {
-  _db.commit();
-  _db.clear_committed_flag();
-  int retval(_pending_events);
+  _mysql.commit();
+  int retval(_ack_events + _pending_events);
+  _ack_events = 0;
   _pending_events = 0;
-  return (retval);
+  return retval;
 }
 
 /**
@@ -175,11 +172,11 @@ void monitoring_stream::update() {
   try {
     configuration::state s;
     if (_db_v2) {
-      configuration::reader_v2 r(_db, _storage_db_cfg);
+      configuration::reader_v2 r(_mysql, _storage_db_cfg);
       r.read(s);
     }
     else {
-      configuration::reader r(_db);
+      configuration::reader r(_mysql);
       r.read(s);
     }
     _applier.apply(s);
@@ -262,25 +259,27 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       << status->ba_id << ", level " << status->level_nominal
       << ", acknowledgement " << status->level_acknowledgement
       << ", downtime " << status->level_downtime << ")";
-    _ba_update.bind_value(":level_nominal", status->level_nominal);
-    _ba_update.bind_value(
+    _ba_update.bind_value_as_f64(":level_nominal", status->level_nominal);
+    _ba_update.bind_value_as_f64(
                  ":level_acknowledgement",
                  status->level_acknowledgement);
-    _ba_update.bind_value(":level_downtime", status->level_downtime);
-    _ba_update.bind_value(":ba_id", status->ba_id);
-    _ba_update.bind_value(
-      ":last_state_change",
-      (((status->last_state_change == (time_t)-1)
-        || (status->last_state_change == 0))
-       ? QVariant(QVariant::LongLong)
-       : QVariant(static_cast<qlonglong>(status->last_state_change.get_time_t()))));
-    _ba_update.bind_value(":state", status->state);
-    _ba_update.bind_value(":in_downtime", status->in_downtime);
-    try { _ba_update.run_statement(); }
-    catch (std::exception const& e) {
-      throw (exceptions::msg() << "BAM: could not update BA "
-             << status->ba_id << ": " << e.what());
-    }
+    _ba_update.bind_value_as_f64(":level_downtime", status->level_downtime);
+    _ba_update.bind_value_as_u32(":ba_id", status->ba_id);
+    if (status->last_state_change == (time_t)-1
+        || status->last_state_change == 0)
+      _ba_update.bind_value_as_null(":last_state_change");
+    else
+      _ba_update.bind_value_as_u64(
+                   ":last_state_change",
+                   status->last_state_change.get_time_t());
+    _ba_update.bind_value_as_i32(":state", status->state);
+    _ba_update.bind_value_as_bool(":in_downtime", status->in_downtime);
+    std::ostringstream oss_err;
+    oss_err << "BAM: could not update BA "
+            << status->ba_id << ": ";
+    _mysql.run_statement(
+             _ba_update,
+             oss_err.str(), true);
 
     if (status->state_changed) {
       std::pair<std::string, std::string>
@@ -307,32 +306,29 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
       << status->kpi_id << ", level " << status->level_nominal_hard
       << ", acknowledgement " << status->level_acknowledgement_hard
       << ", downtime " << status->level_downtime_hard << ")";
-    _kpi_update.bind_value(
+    _kpi_update.bind_value_as_f64(
                   ":level_nominal",
                   status->level_nominal_hard);
-    _kpi_update.bind_value(
+    _kpi_update.bind_value_as_f64(
                   ":level_acknowledgement",
                   status->level_acknowledgement_hard);
-    _kpi_update.bind_value(
+    _kpi_update.bind_value_as_f64(
                   ":level_downtime",
                   status->level_downtime_hard);
-    _kpi_update.bind_value(":state", status->state_hard);
-    _kpi_update.bind_value(":state_type", 1 + 1);
-    _kpi_update.bind_value(":kpi_id", status->kpi_id);
-    _kpi_update.bind_value(
-      ":last_state_change",
-      (((status->last_state_change == (time_t)-1)
-        || (status->last_state_change == 0))
-       ? QVariant(QVariant::LongLong)
-       : QVariant(static_cast<qlonglong>(status->last_state_change.get_time_t()))));
-    _kpi_update.bind_value(":last_impact", status->last_impact);
-    _kpi_update.bind_value(":valid", status->valid);
-    _kpi_update.bind_value(":in_downtime", status->in_downtime);
-    try { _kpi_update.run_statement(); }
-    catch (std::exception const& e) {
-      throw (exceptions::msg() << "BAM: could not update KPI "
-             << status->kpi_id << ": " << e.what());
-    }
+    _kpi_update.bind_value_as_i32(":state", status->state_hard);
+    _kpi_update.bind_value_as_i32(":state_type", 1 + 1);
+    _kpi_update.bind_value_as_u32(":kpi_id", status->kpi_id);
+    if (status->last_state_change == (time_t)-1
+        || status->last_state_change == 0)
+      _kpi_update.bind_value_as_null(":last_state_change");
+    else
+      _kpi_update.bind_value_as_u64(":last_state_change", status->last_state_change.get_time_t());
+    _kpi_update.bind_value_as_f64(":last_impact", status->last_impact);
+    _kpi_update.bind_value_as_bool(":valid", status->valid);
+    _kpi_update.bind_value_as_bool(":in_downtime", status->in_downtime);
+    std::ostringstream oss_err;
+    oss_err << "BAM: could not update KPI " << status->kpi_id << ": ";
+    _mysql.run_statement(_kpi_update, oss_err.str(), true);
   }
   // else if (data->type() == bam::meta_service_status::static_type()) {
   //   meta_service_status* status(static_cast<meta_service_status*>(data.data()));
@@ -389,14 +385,9 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
   }
 
   // Event acknowledgement.
-  if (_db.committed()) {
-    int retval(_pending_events);
-    _db.clear_committed_flag();
-    _pending_events = 0;
-    return (retval);
-  }
-  else
-    return (0);
+  int retval(_ack_events);
+  _ack_events = 0;
+  return retval;
 }
 
 /**************************************
@@ -420,14 +411,8 @@ void monitoring_stream::_prepare() {
              "      in_downtime=:in_downtime,"
              "      current_status=:state"
              "  WHERE ba_id=:ba_id";
-    try {
-      _ba_update.prepare(query.str());
-    }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "BAM: could not prepare BA update query: "
-             << e.what());
-    }
+    mysql_stmt stmt(query.str());
+    _mysql.prepare_statement(stmt);
   }
 
   // KPI status.
@@ -442,9 +427,8 @@ void monitoring_stream::_prepare() {
              "      last_impact=:last_impact, valid=:valid,"
              "      in_downtime=:in_downtime"
              "  WHERE kpi_id=:kpi_id";
-    _kpi_update.prepare(
-                  query.str(),
-                  "BAM: could not prepare KPI update query");
+    mysql_stmt stmt(query.str());
+    _mysql.prepare_statement(stmt);
   }
 
   // Meta-service status.
@@ -457,8 +441,6 @@ void monitoring_stream::_prepare() {
   //     query.str(),
   //     "BAM: could not prepare meta-service update query");
   // }
-
-  return ;
 }
 
 /**
@@ -472,12 +454,12 @@ void monitoring_stream::_rebuild() {
     query << "SELECT ba_id"
           << "  FROM " << (_db_v2 ? "mod_bam" : "cfg_bam")
           << "  WHERE must_be_rebuild='1'";
-    database_query q(_db);
-    q.run_query(
+    int thread_id(_mysql.run_query(
         query.str(),
-        "BAM: could not select the list of BAs to rebuild");
-    while (q.next())
-      bas_to_rebuild.push_back(q.value(0).toUInt());
+        "BAM: could not select the list of BAs to rebuild"));
+    mysql_result res(_mysql.get_result(thread_id));
+    while (_mysql.fetch_row(thread_id, res))
+      bas_to_rebuild.push_back(res.value_as_u32(0));
   }
 
   // Nothing to rebuild.
@@ -507,8 +489,7 @@ void monitoring_stream::_rebuild() {
     std::ostringstream query;
     query << "UPDATE " << (_db_v2 ? "mod_bam" : "cfg_bam")
           << "  SET must_be_rebuild='0'";
-    database_query q(_db);
-    q.run_query(
+    _mysql.run_query(
         query.str(),
         "BAM: could not update the list of BAs to rebuild");
   }

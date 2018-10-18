@@ -76,7 +76,6 @@ void reader_v2::read(state& st) {
     st.clear();
     throw ;
   }
-  return ;
 }
 
 /**
@@ -116,7 +115,10 @@ void reader_v2::_load(state::kpis& kpis) {
            "    AND mb.activate='1'"
            "    AND pr.poller_id="
         << config::applier::state::instance().poller_id();
-    int thread_id(_mysql.run_query(oss.str()));
+    int thread_id(_mysql.run_query(
+                    oss.str(),
+                    "BAM: could not retrieve KPI configuration from DB: ",
+                    true));
     mysql_result res(_mysql.get_result(thread_id));
     while (_mysql.fetch_row(thread_id, res)) {
       // KPI object.
@@ -124,21 +126,21 @@ void reader_v2::_load(state::kpis& kpis) {
       kpis[kpi_id] =
         kpi(
           kpi_id, // ID.
-          res.value_as_i32(1), // State type.
-          res.value_as_u32(2), // Host ID.
-          res.value_as_u32(3), // Service ID.
-          res.value_as_u32(4), // BA ID.
-          res.value_as_u32(5), // BA indicator ID.
-          res.value_as_u32(6), // Meta-service ID.
-          res.value_as_u32(7), // Boolean expression ID.
-          res.value_as_i32(8), // Status.
-          res.value_as_i32(9), // Last level.
-          res.value_as_f32(10), // Downtimed.
-          res.value_as_f32(11), // Acknowledged.
+          res.value_as_i32(1),   // State type.
+          res.value_as_u32(2),   // Host ID.
+          res.value_as_u32(3),   // Service ID.
+          res.value_as_u32(4),   // BA ID.
+          res.value_as_u32(5),   // BA indicator ID.
+          res.value_as_u32(6),   // Meta-service ID.
+          res.value_as_u32(7),   // Boolean expression ID.
+          res.value_as_i32(8),   // Status.
+          res.value_as_i32(9),   // Last level.
+          res.value_as_f32(10),  // Downtimed.
+          res.value_as_f32(11),  // Acknowledged.
           res.value_as_bool(12), // Ignore downtime.
           res.value_as_bool(13), // Ignore acknowledgement.
-          res.value_as_f64(14), // Warning.
-          res.value_as_f64(15), // Critical.
+          res.value_as_f64(14),  // Warning.
+          res.value_as_f64(15),  // Critical.
           res.value_as_f64(16)); // Unknown.
 
       // KPI state.
@@ -171,7 +173,8 @@ void reader_v2::_load(state::kpis& kpis) {
             << "'";
         int thread_id(_mysql.run_query(
                 oss.str(),
-                "could not virtual meta-service's service"));
+                "could not retrieve virtual meta-service's service",
+                true));
         mysql_result res(_mysql.get_result(thread_id));
         if (!_mysql.fetch_row(thread_id, res))
           throw (exceptions::msg() << "virtual service of meta-service "
@@ -220,9 +223,9 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
         bas[ba_id] =
           ba(
             ba_id, // ID.
-            res.value_as_str(1), // Name.
-            res.value_as_f32(2), // Warning level.
-            res.value_as_f32(3), // Critical level.
+            res.value_as_str(1),   // Name.
+            res.value_as_f32(2),   // Warning level.
+            res.value_as_f32(3),   // Critical level.
             res.value_as_bool(7)); // Downtime inheritance.
 
         // BA state.
@@ -806,27 +809,28 @@ void reader_v2::_load_dimensions() {
              "    AND b.activate='1'"
              "    AND pr.poller_id="
           << config::applier::state::instance().poller_id();
-      q.run_query(
+      thread_id = _mysql.run_query(
           oss.str(),
           "could not retrieve KPI dimensions");
     }
-    while (q.next()) {
+    res = _mysql.get_result(thread_id);
+    while (_mysql.fetch_row(thread_id, res)) {
       misc::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
-      k->kpi_id = q.value(0).toUInt();
-      k->host_id = q.value(2).toUInt();
-      k->service_id = q.value(3).toUInt();
-      k->ba_id = q.value(4).toUInt();
-      k->kpi_ba_id = q.value(5).toUInt();
-      k->meta_service_id = q.value(6).toUInt();
-      k->boolean_id = q.value(7).toUInt();
-      k->impact_warning = q.value(8).toDouble();
-      k->impact_critical = q.value(9).toDouble();
-      k->impact_unknown = q.value(10).toDouble();
-      k->host_name = q.value(11).toString();
-      k->service_description = q.value(12).toString();
-      k->ba_name = q.value(13).toString();
-      k->meta_service_name = q.value(14).toString();
-      k->boolean_name = q.value(15).toString();
+      k->kpi_id = res.value_as_u32(0);
+      k->host_id = res.value_as_u32(2);
+      k->service_id = res.value_as_u32(3);
+      k->ba_id = res.value_as_u32(4);
+      k->kpi_ba_id = res.value_as_u32(5);
+      k->meta_service_id = res.value_as_u32(6);
+      k->boolean_id = res.value_as_u32(7);
+      k->impact_warning = res.value_as_f64(8);
+      k->impact_critical = res.value_as_f64(9);
+      k->impact_unknown = res.value_as_f64(10);
+      k->host_name = res.value_as_str(11).c_str();
+      k->service_description = res.value_as_str(12).c_str();
+      k->ba_name = res.value_as_str(13).c_str();
+      k->meta_service_name = res.value_as_str(14).c_str();
+      k->boolean_name = res.value_as_str(15).c_str();
 
       // Resolve the id_indicator_ba.
       if (k->kpi_ba_id) {
@@ -846,14 +850,15 @@ void reader_v2::_load_dimensions() {
     }
 
     // Load the ba-timeperiods relations.
-    q.run_query(
+    thread_id = _mysql.run_query(
       "SELECT ba_id, tp_id FROM mod_bam_relations_ba_timeperiods",
       "could not retrieve the timeperiods associated with the BAs");
-    while (q.next()) {
+    res = _mysql.get_result(thread_id);
+    while (_mysql.fetch_row(thread_id, res)) {
       misc::shared_ptr<dimension_ba_timeperiod_relation>
         dbtr(new dimension_ba_timeperiod_relation);
-      dbtr->ba_id = q.value(0).toUInt();
-      dbtr->timeperiod_id = q.value(1).toUInt();
+      dbtr->ba_id = res.value_as_u32(0);
+      dbtr->timeperiod_id = res.value_as_u32(1);
       dbtr->is_default = false;
       datas.push_back(dbtr);
     }
