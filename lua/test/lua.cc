@@ -418,6 +418,35 @@ TEST_F(LuaTest, JsonEncodeEscape) {
   RemoveFile("/tmp/log");
 }
 
+// When a script is loaded with a lua table containing three keys
+// "category" with 1, "element": with 4 and "type" that is the concatenation
+// of the two previous ones.
+// And a call to json_encode is made on that table
+// Then it succeeds.
+TEST_F(LuaGenericTest, JsonEncodeEvent) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/json_encode.lua");
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local a = { category = 1, element = 4, type = 65540 }\n"
+                         "  local json = broker.json_encode(a)\n"
+                         "  local b = broker.json_decode(json)\n"
+                         "  for i,v in pairs(b) do\n"
+                         "    broker_log:info(1, i .. '=>' .. tostring(v))\n"
+                         "  end\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: category=>1")) != -1);
+  ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: element=>4")) != -1);
+  ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: type=>65540")) != -1);
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
 // When a query for a hostname is made
 // And the cache does not know about it
 // Then nil is returned from the lua method.
