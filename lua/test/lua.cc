@@ -41,7 +41,7 @@ using namespace com::centreon::broker::lua;
 #define FILE3 CENTREON_BROKER_LUA_SCRIPT_PATH "/test3.lua"
 #define FILE4 CENTREON_BROKER_LUA_SCRIPT_PATH "/socket.lua"
 
-class LuaGenericTest : public ::testing::Test {
+class LuaTest : public ::testing::Test {
  public:
   void SetUp() {
     try {
@@ -94,14 +94,14 @@ class LuaGenericTest : public ::testing::Test {
 
 // When a lua script that does not exist is loaded
 // Then an exception is thrown
-TEST_F(LuaGenericTest, MissingScript) {
+TEST_F(LuaTest, MissingScript) {
   QMap<QString, QVariant> conf;
   ASSERT_THROW(new luabinding(FILE1, conf, *_cache.get()), exceptions::msg);
 }
 
 // When a lua script with error such as number divided by nil is loaded
 // Then an exception is thrown
-TEST_F(LuaGenericTest, FaultyScript) {
+TEST_F(LuaTest, FaultyScript) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/faulty.lua");
   CreateScript(filename, "local a = { 1, 2, 3 }\n"
@@ -114,7 +114,7 @@ TEST_F(LuaGenericTest, FaultyScript) {
 
 // When a lua script that does not contain an init() function is loaded
 // Then an exception is thrown
-TEST_F(LuaGenericTest, WithoutInit) {
+TEST_F(LuaTest, WithoutInit) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/without_init.lua");
   CreateScript(filename, "local a = { 1, 2, 3 }\n");
@@ -125,7 +125,7 @@ TEST_F(LuaGenericTest, WithoutInit) {
 
 // When a lua script that does not contain a filter() function is loaded
 // Then has_filter() method returns false
-TEST_F(LuaGenericTest, WithoutFilter) {
+TEST_F(LuaTest, WithoutFilter) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/without_filter.lua");
   CreateScript(filename, "function init()\n"
@@ -141,7 +141,7 @@ TEST_F(LuaGenericTest, WithoutFilter) {
 
 // When a json parameters file exists but the lua script is incomplete
 // Then an exception is thrown
-TEST_F(LuaGenericTest, IncompleteScript) {
+TEST_F(LuaTest, IncompleteScript) {
   QMap<QString, QVariant> conf;
   ASSERT_THROW(new luabinding(FILE2, conf, *_cache.get()), exceptions::msg);
 }
@@ -149,7 +149,7 @@ TEST_F(LuaGenericTest, IncompleteScript) {
 // When a script is correctly loaded and a neb event has to be sent
 // Then this event is translated into a Lua table and sent to the lua write()
 // function.
-TEST_F(LuaGenericTest, SimpleScript) {
+TEST_F(LuaTest, SimpleScript) {
   RemoveFile("/tmp/test.log");
   QMap<QString, QVariant> conf;
   conf["address"] = "127.0.0.1";
@@ -180,7 +180,7 @@ TEST_F(LuaGenericTest, SimpleScript) {
 // When a script is correctly loaded and a neb event has to be sent
 // Then this event is translated into a Lua table and sent to the lua write()
 // function.
-TEST_F(LuaGenericTest, WriteAcknowledgement) {
+TEST_F(LuaTest, WriteAcknowledgement) {
   RemoveFile("/tmp/test.log");
   QMap<QString, QVariant> conf;
   conf["address"] = "127.0.0.1";
@@ -214,7 +214,7 @@ TEST_F(LuaGenericTest, WriteAcknowledgement) {
 
 // When a script is loaded and a new socket is created
 // Then it is created.
-TEST_F(LuaGenericTest, SocketCreation) {
+TEST_F(LuaTest, SocketCreation) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
@@ -229,7 +229,7 @@ TEST_F(LuaGenericTest, SocketCreation) {
 // When a script is loaded, a new socket is created
 // And a call to connect is made without argument
 // Then it fails.
-TEST_F(LuaGenericTest, SocketConnectionWithoutArg) {
+TEST_F(LuaTest, SocketConnectionWithoutArg) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
@@ -245,7 +245,7 @@ TEST_F(LuaGenericTest, SocketConnectionWithoutArg) {
 // When a script is loaded, a new socket is created
 // And a call to connect is made without argument
 // Then it fails.
-TEST_F(LuaGenericTest, SocketConnectionWithNoPort) {
+TEST_F(LuaTest, SocketConnectionWithNoPort) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
@@ -264,7 +264,7 @@ TEST_F(LuaGenericTest, SocketConnectionWithNoPort) {
 // When a script is loaded, a new socket is created
 // And a call to connect is made with a good adress/port
 // Then it succeeds.
-TEST_F(LuaGenericTest, SocketConnectionOk) {
+TEST_F(LuaTest, SocketConnectionOk) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
@@ -280,7 +280,7 @@ TEST_F(LuaGenericTest, SocketConnectionOk) {
 // When a script is loaded, a new socket is created
 // And a call to get_state is made
 // Then it succeeds, and the return value is Unconnected.
-TEST_F(LuaGenericTest, SocketUnconnectedState) {
+TEST_F(LuaTest, SocketUnconnectedState) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
@@ -304,7 +304,7 @@ TEST_F(LuaGenericTest, SocketUnconnectedState) {
 // When a script is loaded, a new socket is created
 // And a call to get_state is made
 // Then it succeeds, and the return value is Unconnected.
-TEST_F(LuaGenericTest, SocketConnectedState) {
+TEST_F(LuaTest, SocketConnectedState) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
@@ -328,7 +328,7 @@ TEST_F(LuaGenericTest, SocketConnectedState) {
 // When a script is loaded, a new socket is created
 // And a call to connect is made with a good adress/port
 // Then it succeeds.
-TEST_F(LuaGenericTest, SocketWrite) {
+TEST_F(LuaTest, SocketWrite) {
   QMap<QString, QVariant> conf;
   std::string filename(FILE4);
   ASSERT_NO_THROW(new luabinding(filename, conf, *_cache.get()));
@@ -341,7 +341,7 @@ TEST_F(LuaGenericTest, SocketWrite) {
 // When a script is loaded, a new socket is created
 // And a call to connect is made with a good adress/port
 // Then it succeeds.
-TEST_F(LuaGenericTest, JsonEncode) {
+TEST_F(LuaTest, JsonEncode) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/json_encode.lua");
   CreateScript(filename, "function init(conf)\n"
@@ -370,7 +370,7 @@ TEST_F(LuaGenericTest, JsonEncode) {
 
 // Given an empty array,
 // Then json_encode() works well on it.
-TEST_F(LuaGenericTest, EmptyJsonEncode) {
+TEST_F(LuaTest, EmptyJsonEncode) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/json_encode.lua");
   CreateScript(filename, "function init(conf)\n"
@@ -392,7 +392,7 @@ TEST_F(LuaGenericTest, EmptyJsonEncode) {
 // When a script is loaded, a new socket is created
 // And a call to connect is made with a good adress/port
 // Then it succeeds.
-TEST_F(LuaGenericTest, JsonEncodeEscape) {
+TEST_F(LuaTest, JsonEncodeEscape) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/json_encode.lua");
   CreateScript(filename, "function init(conf)\n"
@@ -423,7 +423,7 @@ TEST_F(LuaGenericTest, JsonEncodeEscape) {
 // When a query for a hostname is made
 // And the cache does not know about it
 // Then nil is returned from the lua method.
-TEST_F(LuaGenericTest, CacheTest) {
+TEST_F(LuaTest, CacheTest) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
   CreateScript(filename, "function init(conf)\n"
@@ -446,7 +446,7 @@ TEST_F(LuaGenericTest, CacheTest) {
 // When a query for a hostname is made
 // And the cache knows about it
 // Then the hostname is returned from the lua method.
-TEST_F(LuaGenericTest, HostCacheTest) {
+TEST_F(LuaTest, HostCacheTest) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
   shared_ptr<neb::host> hst(new neb::host);
@@ -472,7 +472,7 @@ TEST_F(LuaGenericTest, HostCacheTest) {
 // When a query for a hostname is made
 // And the cache knows about it
 // Then the hostname is returned from the lua method.
-TEST_F(LuaGenericTest, ServiceCacheTest) {
+TEST_F(LuaTest, ServiceCacheTest) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
   shared_ptr<neb::service> svc(new neb::service);
@@ -499,7 +499,7 @@ TEST_F(LuaGenericTest, ServiceCacheTest) {
 // When a query for a hostname is made
 // And the cache knows about it
 // Then the hostname is returned from the lua method.
-TEST_F(LuaGenericTest, IndexMetricCacheTest) {
+TEST_F(LuaTest, IndexMetricCacheTest) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
   shared_ptr<neb::service> svc(new neb::service);
@@ -536,7 +536,7 @@ TEST_F(LuaGenericTest, IndexMetricCacheTest) {
 // When a query for an instance is made
 // And the cache knows about it
 // Then the instance is returned from the lua method.
-TEST_F(LuaGenericTest, InstanceNameCacheTest) {
+TEST_F(LuaTest, InstanceNameCacheTest) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
   shared_ptr<instance_broadcast> ib(new instance_broadcast);
@@ -565,7 +565,7 @@ TEST_F(LuaGenericTest, InstanceNameCacheTest) {
 // When a query for a metric mapping is made
 // And the cache knows about it
 // Then the metric mapping is returned from the lua method.
-TEST_F(LuaGenericTest, MetricMappingCacheTest) {
+TEST_F(LuaTest, MetricMappingCacheTest) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
   shared_ptr<storage::metric_mapping> mm(new storage::metric_mapping);
@@ -593,7 +593,7 @@ TEST_F(LuaGenericTest, MetricMappingCacheTest) {
 // When a query for a host group name is made
 // And the cache does not know about it
 // Then nil is returned by the lua method.
-TEST_F(LuaGenericTest, HostGroupCacheTestNameNotAvailable) {
+TEST_F(LuaTest, HostGroupCacheTestNameNotAvailable) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
 
@@ -615,7 +615,7 @@ TEST_F(LuaGenericTest, HostGroupCacheTestNameNotAvailable) {
 // When a query for a host group name is made
 // And the cache does know about it
 // Then the name is returned by the lua method.
-TEST_F(LuaGenericTest, HostGroupCacheTestName) {
+TEST_F(LuaTest, HostGroupCacheTestName) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
   shared_ptr<neb::host_group> hg(new neb::host_group);
@@ -641,7 +641,7 @@ TEST_F(LuaGenericTest, HostGroupCacheTestName) {
 // When a query for host groups is made
 // And the host is attached to no group
 // Then an empty array is returned.
-TEST_F(LuaGenericTest, HostGroupCacheTestEmpty) {
+TEST_F(LuaTest, HostGroupCacheTestEmpty) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
 
@@ -663,7 +663,7 @@ TEST_F(LuaGenericTest, HostGroupCacheTestEmpty) {
 // When a query for host groups is made
 // And the cache does know about them
 // Then an array is returned by the lua method.
-TEST_F(LuaGenericTest, HostGroupCacheTest) {
+TEST_F(LuaTest, HostGroupCacheTest) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
   shared_ptr<neb::host_group> hg(new neb::host_group);
@@ -715,7 +715,7 @@ TEST_F(LuaGenericTest, HostGroupCacheTest) {
 // When a query for a service group name is made
 // And the cache does not know about it
 // Then nil is returned by the lua method.
-TEST_F(LuaGenericTest, ServiceGroupCacheTestNameNotAvailable) {
+TEST_F(LuaTest, ServiceGroupCacheTestNameNotAvailable) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
 
@@ -737,7 +737,7 @@ TEST_F(LuaGenericTest, ServiceGroupCacheTestNameNotAvailable) {
 // When a query for a service group name is made
 // And the cache does know about it
 // Then the name is returned by the lua method.
-TEST_F(LuaGenericTest, ServiceGroupCacheTestName) {
+TEST_F(LuaTest, ServiceGroupCacheTestName) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
   shared_ptr<neb::service_group> sg(new neb::service_group);
@@ -763,7 +763,7 @@ TEST_F(LuaGenericTest, ServiceGroupCacheTestName) {
 // When a query for service groups is made
 // And the service is attached to no group
 // Then an empty array is returned.
-TEST_F(LuaGenericTest, ServiceGroupCacheTestEmpty) {
+TEST_F(LuaTest, ServiceGroupCacheTestEmpty) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
 
@@ -785,7 +785,7 @@ TEST_F(LuaGenericTest, ServiceGroupCacheTestEmpty) {
 // When a query for service groups is made
 // And the cache does know about them
 // Then an array is returned by the lua method.
-TEST_F(LuaGenericTest, ServiceGroupCacheTest) {
+TEST_F(LuaTest, ServiceGroupCacheTest) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
   shared_ptr<neb::service_group> sg(new neb::service_group);
@@ -841,7 +841,7 @@ TEST_F(LuaGenericTest, ServiceGroupCacheTest) {
 // When a query for service groups is made
 // And the cache does know about them
 // Then an array is returned by the lua method.
-TEST_F(LuaGenericTest, SetNewInstance) {
+TEST_F(LuaTest, SetNewInstance) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
   shared_ptr<neb::service_group> sg(new neb::service_group);
@@ -918,7 +918,7 @@ TEST_F(LuaGenericTest, SetNewInstance) {
 // When a query for bvs containing a ba is made
 // And the cache does know about them
 // Then an array with bvs id is returned by the lua method.
-TEST_F(LuaGenericTest, BamCacheTestBvBaRelation) {
+TEST_F(LuaTest, BamCacheTestBvBaRelation) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
   shared_ptr<bam::dimension_ba_bv_relation_event> rel(
@@ -963,7 +963,7 @@ TEST_F(LuaGenericTest, BamCacheTestBvBaRelation) {
 // Given a ba id,
 // When the Lua get_ba() function is called with it,
 // Then a table corresponding to this ba is returned.
-TEST_F(LuaGenericTest, BamCacheTestBa) {
+TEST_F(LuaTest, BamCacheTestBa) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
   shared_ptr<bam::dimension_ba_event> ba(
@@ -998,7 +998,7 @@ TEST_F(LuaGenericTest, BamCacheTestBa) {
 // When the Lua get_ba() function is called with it,
 // And the cache does not know about it,
 // Then nil is returned.
-TEST_F(LuaGenericTest, BamCacheTestBaNil) {
+TEST_F(LuaTest, BamCacheTestBaNil) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
 
@@ -1021,7 +1021,7 @@ TEST_F(LuaGenericTest, BamCacheTestBaNil) {
 // Given a bv id,
 // When the Lua get_bv() function is called with it,
 // Then a table corresponding to this bv is returned.
-TEST_F(LuaGenericTest, BamCacheTestBv) {
+TEST_F(LuaTest, BamCacheTestBv) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
   shared_ptr<bam::dimension_bv_event> bv(
@@ -1053,7 +1053,7 @@ TEST_F(LuaGenericTest, BamCacheTestBv) {
 // When the Lua get_bv() function is called with it,
 // And the cache does not know about it,
 // Then nil is returned.
-TEST_F(LuaGenericTest, BamCacheTestBvNil) {
+TEST_F(LuaTest, BamCacheTestBvNil) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
 
@@ -1073,7 +1073,7 @@ TEST_F(LuaGenericTest, BamCacheTestBvNil) {
   RemoveFile("/tmp/log");
 }
 
-TEST_F(LuaGenericTest, ParsePerfdata) {
+TEST_F(LuaTest, ParsePerfdata) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/parse_perfdata.lua");
 
@@ -1089,9 +1089,9 @@ TEST_F(LuaGenericTest, ParsePerfdata) {
                          "  broker_log:info(1, broker.json_encode(perf))\n"
                          "  perf = broker.parse_perfdata(\" 'one value'=2s;3;5;0;9 'a b c'=3.14KB;0.8;1;0;10\")\n"
                          "  broker_log:info(1, broker.json_encode(perf))\n"
-                         "  perf = broker.parse_perfdata(' percent_packet_loss=0 rta=0.80', true)\n"
+                         "  perf = broker.parse_perfdata(' percent_packet_loss=1.74;50;80;0;100 rta=0.80', true)\n"
                          "  broker_log:info(1, broker.json_encode(perf))\n"
-                         "  perf = broker.parse_perfdata(\" 'one value'=12%;~:80;~:95 'another value'=78%;60;90;;\", true)\n"
+                         "  perf = broker.parse_perfdata(\" 'one value'=12%;25:80;81:95 'another value'=78%;60;90;;\", true)\n"
                          "  broker_log:info(1, broker.json_encode(perf))\n"
                          "  perf = broker.parse_perfdata(\"                \")\n"
                          "  broker_log:info(1, broker.json_encode(perf))\n"
@@ -1111,7 +1111,67 @@ TEST_F(LuaGenericTest, ParsePerfdata) {
   ASSERT_TRUE(lst[3].contains("\"another value\":10.89"));
   ASSERT_TRUE(lst[4].contains("\"one value\":2"));
   ASSERT_TRUE(lst[4].contains("\"a b c\":3.14"));
-  ASSERT_TRUE(lst[5].contains("\"a b c\":3.14"));
+  ASSERT_TRUE(lst[5].contains("\"value\":1.74"));
+  ASSERT_TRUE(lst[5].contains("\"warning_high\":50"));
+  ASSERT_TRUE(lst[5].contains("\"critical_high\":80"));
+  ASSERT_TRUE(lst[6].contains("\"value\":12"));
+  ASSERT_TRUE(lst[6].contains("\"warning_low\":25"));
+  ASSERT_TRUE(lst[6].contains("\"warning_high\":80"));
+  ASSERT_TRUE(lst[6].contains("\"critical_low\":81"));
+  ASSERT_TRUE(lst[6].contains("\"critical_high\":95"));
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// Given a script requiring another one with the same path.
+// When the first script call a function defined in the second one
+// Then the call works.
+TEST_F(LuaTest, UpdatePath) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/test.lua");
+  std::string module("/tmp/module.lua");
+
+  CreateScript(module, "local my_module = {}\n"
+                       "function my_module.test()\n"
+                       "  return 'foo bar'\n"
+                       "end\n\n"
+                       "return my_module");
+  CreateScript(filename, "local my_module = require('module')\n"
+                         "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  broker_log:info(0, my_module.test())\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "  return true\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("foo bar"));
+
+  RemoveFile(module);
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+TEST_F(LuaTest, CheckPath) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/test.lua");
+
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  broker_log:info(0, package.path)\n"
+                         "  broker_log:info(0, package.cpath)\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "  return true\n"
+                         "end\n");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst[0].contains("/tmp/?.lua"));
+  ASSERT_TRUE(lst[1].contains("/tmp/lib/?.so"));
 
   RemoveFile(filename);
   RemoveFile("/tmp/log");
