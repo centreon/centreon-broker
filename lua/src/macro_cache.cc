@@ -17,7 +17,6 @@
 */
 
 #include <QSet>
-#include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
