@@ -42,7 +42,10 @@ luabinding::luabinding(
   : _lua_script(lua_script),
     _cache(cache),
     _total(0) {
+  size_t pos(lua_script.find_last_of('/'));
+  std::string path(lua_script.substr(0, pos));
   _L = _load_interpreter();
+  _update_lua_path(path);
 
   logging::debug(logging::medium)
     << "lua: initializing the Lua virtual machine";
@@ -57,6 +60,36 @@ luabinding::luabinding(
 luabinding::~luabinding() {
   if (_L)
     lua_close(_L);
+}
+
+/**
+ *  This function updates the Lua variables package.path and package.cpath so
+ *  that a script in that directory can be called without difficulty.
+ *
+ * @param path A directory to add to the Lua paths
+ */
+void luabinding::_update_lua_path(std::string const& path) {
+  /* Working on path: lua scripts */
+  lua_getglobal(_L, "package");
+  lua_getfield(_L, -1, "path");
+  std::string current_path(lua_tostring(_L, -1));
+  current_path.append(";");
+  current_path.append(path);
+  current_path.append("/?.lua");
+  lua_pop(_L, 1);
+  lua_pushstring(_L, current_path.c_str());
+  lua_setfield(_L, -2, "path");
+
+  /* Working on cpath: so libraries */
+  lua_getfield(_L, -1, "cpath");
+  current_path = lua_tostring(_L, -1);
+  current_path.append(";");
+  current_path.append(path);
+  current_path.append("/lib/?.so");
+  lua_pop(_L, 1);
+  lua_pushstring(_L, current_path.c_str());
+  lua_setfield(_L, -2, "cpath");
+  lua_pop(_L, 1);
 }
 
 /**

@@ -55,6 +55,7 @@ namespace               lua {
     void                _load_script();
     void                _init_script(
                           QMap<QString, QVariant> const& conf_params);
+    void                _update_lua_path(std::string const& path);
 
     // Event conversion to Lua table.
     void                _parse_entries(io::data const& d);
