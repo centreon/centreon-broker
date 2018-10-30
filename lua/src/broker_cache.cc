@@ -49,17 +49,14 @@ static int l_broker_cache_get_ba(lua_State* L) {
   try {
     bam::dimension_ba_event const& ba(cache->get_dimension_ba_event(ba_id));
     lua_createtable(L, 0, 7);
-    lua_pushstring(L, "ba_id");
     lua_pushinteger(L, ba.ba_id);
-    lua_settable(L, -3);
+    lua_setfield(L, -2, "ba_id");
 
-    lua_pushstring(L, "ba_name");
     lua_pushstring(L, ba.ba_name.toStdString().c_str());
-    lua_settable(L, -3);
+    lua_setfield(L, -2, "ba_name");
 
-    lua_pushstring(L, "ba_description");
     lua_pushstring(L, ba.ba_description.toStdString().c_str());
-    lua_settable(L, -3);
+    lua_setfield(L, -2, "ba_description");
   }
   catch (std::exception const& e) {
     (void) e;
@@ -84,17 +81,14 @@ static int l_broker_cache_get_bv(lua_State* L) {
   try {
     bam::dimension_bv_event const& bv(cache->get_dimension_bv_event(bv_id));
     lua_createtable(L, 0, 3);
-    lua_pushstring(L, "bv_id");
     lua_pushinteger(L, bv.bv_id);
-    lua_settable(L, -3);
+    lua_setfield(L, -2, "bv_id");
 
-    lua_pushstring(L, "bv_name");
     lua_pushstring(L, bv.bv_name.toStdString().c_str());
-    lua_settable(L, -3);
+    lua_setfield(L, -2, "bv_name");
 
-    lua_pushstring(L, "bv_description");
     lua_pushstring(L, bv.bv_description.toStdString().c_str());
-    lua_settable(L, -3);
+    lua_setfield(L, -2, "bv_description");
   }
   catch (std::exception const& e) {
     (void) e;
@@ -199,17 +193,14 @@ static int l_broker_cache_get_index_mapping(lua_State* L) {
     storage::index_mapping const& mapping(cache->get_index_mapping(index_id));
     lua_createtable(L, 0, 3);
 
-    lua_pushstring(L, "index_id");
     lua_pushinteger(L, mapping.index_id);
-    lua_settable(L, -3);
+    lua_setfield(L, -2, "index_id");
 
-    lua_pushstring(L, "host_id");
     lua_pushinteger(L, mapping.host_id);
-    lua_settable(L, -3);
+    lua_setfield(L, -2, "host_id");
 
-    lua_pushstring(L, "service_id");
     lua_pushinteger(L, mapping.service_id);
-    lua_settable(L, -3);
+    lua_setfield(L, -2, "service_id");
   }
   catch (std::exception const& e) {
     (void) e;
@@ -260,13 +251,11 @@ static int l_broker_cache_get_metric_mapping(lua_State* L) {
       cache->get_metric_mapping(metric_id));
     lua_createtable(L, 0, 2);
 
-    lua_pushstring(L, "metric_id");
     lua_pushinteger(L, mapping.metric_id);
-    lua_settable(L, -3);
+    lua_setfield(L, -2, "metric_id");
 
-    lua_pushstring(L, "index_id");
     lua_pushinteger(L, mapping.index_id);
-    lua_settable(L, -3);
+    lua_setfield(L, -2, "index_id");
   }
   catch (std::exception const& e) {
     (void) e;
@@ -356,13 +345,11 @@ static int l_broker_cache_get_servicegroups(lua_State* L) {
            ++it) {
       neb::service_group_member const& sgm(it.value());
       lua_createtable(L, 0, 2);
-      lua_pushstring(L, "group_id");
       lua_pushinteger(L, sgm.group_id);
-      lua_settable(L, -3);
+      lua_setfield(L, -2, "group_id");
 
-      lua_pushstring(L, "group_name");
       lua_pushstring(L, sgm.group_name.toStdString().c_str());
-      lua_settable(L, -3);
+      lua_setfield(L, -2, "group_name");
 
       lua_rawseti(L, -2, i);
       ++i;
@@ -400,13 +387,11 @@ static int l_broker_cache_get_hostgroups(lua_State* L) {
            ++it) {
       neb::host_group_member const& hgm(it.value());
       lua_createtable(L, 0, 2);
-      lua_pushstring(L, "group_id");
       lua_pushinteger(L, hgm.group_id);
-      lua_settable(L, -3);
+      lua_setfield(L, -2, "group_id");
 
-      lua_pushstring(L, "group_name");
       lua_pushstring(L, hgm.group_name.toStdString().c_str());
-      lua_settable(L, -3);
+      lua_setfield(L, -2, "group_name");
 
       lua_rawseti(L, -2, i);
       ++i;
