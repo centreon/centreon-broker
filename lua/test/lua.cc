@@ -26,10 +26,8 @@
 #include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/lua/luabinding.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
-#include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/events.hh"
-#include "com/centreon/broker/persistent_cache.hh"
 #include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;

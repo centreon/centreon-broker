@@ -21,12 +21,6 @@
 
 #  include "com/centreon/broker/lua/luabinding.hh"
 
-extern "C" {
-#  include "lua.h"
-#  include "lauxlib.h"
-#  include "lualib.h"
-}
-
 CCB_BEGIN()
 
 namespace               lua {
