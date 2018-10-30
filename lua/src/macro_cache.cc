@@ -498,9 +498,11 @@ void macro_cache::_process_dimension_truncate_table_signal(
   logging::debug(logging::medium)
     << "lua: processing dimension truncate table signal";
 
-  _dimension_ba_events.clear();
-  _dimension_ba_bv_relation_events.clear();
-  _dimension_bv_events.clear();
+  if (trunc.update_started) {
+    _dimension_ba_events.clear();
+    _dimension_ba_bv_relation_events.clear();
+    _dimension_bv_events.clear();
+  }
 }
 
 /**
