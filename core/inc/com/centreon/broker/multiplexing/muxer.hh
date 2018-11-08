@@ -87,7 +87,7 @@ namespace               multiplexing {
                         _events;
     unsigned int        _events_size;
     static unsigned int _event_queue_max_size;
-    std::auto_ptr<persistent_file>
+    std::unique_ptr<persistent_file>
                         _file;
     mutable QMutex      _mutex;
     std::string         _name;

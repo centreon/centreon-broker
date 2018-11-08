@@ -449,8 +449,8 @@ splitter* splitter_factory::new_cfile_splitter(
                               fs_file::open_mode mode,
                               long max_file_size,
                               bool auto_delete) {
-  std::auto_ptr<fs_file_factory> f(new cfile_factory());
-  std::auto_ptr<fs_browser> b(new qt_fs_browser());
+  std::unique_ptr<fs_file_factory> f(new cfile_factory());
+  std::unique_ptr<fs_browser> b(new qt_fs_browser());
   splitter* s(new splitter(
                     path,
                     mode,

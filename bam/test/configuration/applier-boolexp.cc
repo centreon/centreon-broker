@@ -39,8 +39,8 @@ class  ApplierBoolexp : public ::testing::Test {
     config::applier::deinit();
   }
  protected:
-  std::auto_ptr<bam::configuration::applier::state> _aply_state;
-  std::auto_ptr<bam::configuration::state> _state;
+  std::unique_ptr<bam::configuration::applier::state> _aply_state;
+  std::unique_ptr<bam::configuration::state> _state;
 };
 
 // Given an empty boolexp with its kpi

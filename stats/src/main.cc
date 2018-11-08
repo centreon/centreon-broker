@@ -37,7 +37,7 @@ using namespace com::centreon::broker;
 static unsigned int instances(0);
 
 // Worker.
-static std::auto_ptr<stats::generator> worker_dumper;
+static std::unique_ptr<stats::generator> worker_dumper;
 static std::vector<misc::shared_ptr<stats::worker> > workers_fifo;
 
 /**

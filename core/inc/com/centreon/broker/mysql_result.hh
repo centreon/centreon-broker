@@ -50,7 +50,7 @@ class                         mysql_result {
   int                         get_rows_count() const;
   void                        set(MYSQL_RES* res);
   MYSQL_RES*                  get();
-  void                        set_bind(std::auto_ptr<mysql_bind> bind);
+  void                        set_bind(std::unique_ptr<mysql_bind>& bind);
   mysql_bind*                 get_bind();
   void                        set_row(MYSQL_ROW row);
   int                         get_statement_id() const;
@@ -62,7 +62,7 @@ class                         mysql_result {
   MYSQL_ROW                   _row;
 
   // the bind and the statement_id are filled in both or empty both.
-  std::auto_ptr<mysql_bind>   _bind;
+  std::unique_ptr<mysql_bind>   _bind;
   int                         _statement_id;
 };
 

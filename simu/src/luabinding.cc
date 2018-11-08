@@ -245,7 +245,7 @@ bool luabinding::_parse_event(misc::shared_ptr<io::data>& d) {
     info(io::events::instance().get_event_info(map["_type"].toUInt()));
   if (info) {
     // Create event
-    std::auto_ptr<io::data> t(info->get_operations().constructor());
+    std::unique_ptr<io::data> t(info->get_operations().constructor());
     if (t.get()) {
       // Browse all mapping to unserialize the object.
       for (mapping::entry const* current_entry(info->get_mapping());

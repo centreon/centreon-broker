@@ -78,7 +78,7 @@ namespace                    rrd {
                                output(output const& o);
     output&                    operator=(output const& o);
 
-    std::auto_ptr<backend>     _backend;
+    std::unique_ptr<backend>     _backend;
     bool                       _ignore_update_errors;
     std::string                _metrics_path;
     rebuild_cache              _metrics_rebuild;

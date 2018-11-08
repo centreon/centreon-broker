@@ -70,9 +70,9 @@ namespace       file {
 
     bool        _auto_delete;
     std::string _base_path;
-    std::auto_ptr<fs_file_factory>
+    std::unique_ptr<fs_file_factory>
                 _file_factory;
-    std::auto_ptr<fs_browser>
+    std::unique_ptr<fs_browser>
                 _fs;
     long        _max_file_size;
     misc::shared_ptr<fs_file>

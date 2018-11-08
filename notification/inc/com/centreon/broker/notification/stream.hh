@@ -70,7 +70,7 @@ namespace        notification {
   private:
     stream&      operator=(stream const& s);
     void         _open_db(
-                   std::auto_ptr<QSqlDatabase>& db,
+                   std::unique_ptr<QSqlDatabase>& db,
                    QString const& t,
                    QString const& host,
                    unsigned short port,
@@ -80,8 +80,8 @@ namespace        notification {
                    QString const& id,
                    bool check_replication);
     void         _clone_db(
-                   std::auto_ptr<QSqlDatabase>& db,
-                   std::auto_ptr<QSqlDatabase> const& db_to_clone,
+                   std::unique_ptr<QSqlDatabase>& db,
+                   std::unique_ptr<QSqlDatabase> const& db_to_clone,
                    QString const& id);
     void         _update_objects_from_db();
     void         _process_service_status_event(
@@ -95,9 +95,9 @@ namespace        notification {
     void         _process_downtime(
                    neb::downtime const& event);
 
-    std::auto_ptr<QSqlDatabase>
+    std::unique_ptr<QSqlDatabase>
                  _centreon_db;
-    std::auto_ptr<notification_scheduler>
+    std::unique_ptr<notification_scheduler>
                  _notif_scheduler;
 
     state        _state;

@@ -180,7 +180,7 @@ static io::data* unserialize(
     info(io::events::instance().get_event_info(event_type));
   if (info) {
     // Create object.
-    std::auto_ptr<io::data> t(info->get_operations().constructor());
+    std::unique_ptr<io::data> t(info->get_operations().constructor());
     if (t.get()) {
       t->source_id = source_id;
       t->destination_id = destination_id;
@@ -345,7 +345,7 @@ bool input::read_any(
               time_t deadline) {
   try {
     // Return value.
-    std::auto_ptr<io::data> e;
+    std::unique_ptr<io::data> e;
     d.clear();
 
     // Get header informations.

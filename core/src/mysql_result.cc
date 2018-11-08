@@ -163,8 +163,8 @@ int mysql_result::get_rows_count() const {
     return mysql_num_rows(_result.data());
 }
 
-void mysql_result::set_bind(std::auto_ptr<mysql_bind> bind) {
-  _bind = bind;
+void mysql_result::set_bind(std::unique_ptr<mysql_bind>& bind) {
+  _bind = std::move(bind);
 }
 
 void mysql_result::set_row(MYSQL_ROW row) {

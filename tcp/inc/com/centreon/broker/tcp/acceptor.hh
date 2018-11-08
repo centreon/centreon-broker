@@ -58,7 +58,7 @@ namespace          tcp {
     QMutex         _mutex;
     unsigned short _port;
     int            _read_timeout;
-    std::auto_ptr<server_socket>
+    std::unique_ptr<server_socket>
                    _socket;
     int            _write_timeout;
   };

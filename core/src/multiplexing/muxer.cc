@@ -57,7 +57,7 @@ muxer::muxer(
   // Load head queue file back in memory.
   if (_persistent) {
     try {
-      std::auto_ptr<io::stream>
+      std::unique_ptr<io::stream>
         mf(new persistent_file(_memory_file()));
       misc::shared_ptr<io::data> e;
       while (true) {
@@ -404,7 +404,7 @@ void muxer::_clean() {
   _file.reset();
   if (_persistent && !_events.empty()) {
     try {
-      std::auto_ptr<io::stream>
+      std::unique_ptr<io::stream>
         mf(new persistent_file(_memory_file()));
       while (!_events.empty()) {
         mf->write(_events.front());

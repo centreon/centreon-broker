@@ -78,7 +78,7 @@ namespace   rrd {
     std::string
             _filename;
     lib     _lib;
-    std::auto_ptr<QIODevice>
+    std::unique_ptr<QIODevice>
             _socket;
   };
 }

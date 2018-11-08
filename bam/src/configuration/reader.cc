@@ -709,7 +709,7 @@ void reader::_load(bam::hst_svc_mapping& mapping) {
  *  Load the dimensions from the database.
  */
 void reader::_load_dimensions() {
-  std::auto_ptr<io::stream> out(new multiplexing::publisher);
+  std::unique_ptr<io::stream> out(new multiplexing::publisher);
   // As this operation is destructive (it truncates the database),
   // we cache the data until we are sure we have all the data
   // needed from the database.

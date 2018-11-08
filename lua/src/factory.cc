@@ -156,7 +156,7 @@ io::endpoint* factory::new_endpoint(
     }
   }
   // Connector.
-  std::auto_ptr<lua::connector> c(new lua::connector);
+  std::unique_ptr<lua::connector> c(new lua::connector);
   c->connect_to(filename, conf_map, cache);
   is_acceptor = false;
   return c.release();

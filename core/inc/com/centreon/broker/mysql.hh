@@ -82,7 +82,6 @@ class                 mysql {
   std::vector<mysql_thread*>
                       _thread;
   int                 _current_thread;
-  int                 _prepare_count;
 };
 
 CCB_END()

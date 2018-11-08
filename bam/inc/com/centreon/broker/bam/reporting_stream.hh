@@ -117,7 +117,7 @@ namespace          bam {
     mysql_stmt     _dimension_kpi_insert;
     std::vector<mysql_stmt>
                    _dimension_truncate_tables;
-    std::auto_ptr<availability_thread>
+    std::unique_ptr<availability_thread>
                    _availabilities;
 
     // Timeperiods by BAs, with an option is default timeperiod.

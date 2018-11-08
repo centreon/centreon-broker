@@ -206,7 +206,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Connector.
-  std::auto_ptr<influxdb::connector> c(new influxdb::connector);
+  std::unique_ptr<influxdb::connector> c(new influxdb::connector);
   c->connect_to(
        user,
        passwd,

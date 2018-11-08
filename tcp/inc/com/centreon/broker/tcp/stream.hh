@@ -60,7 +60,7 @@ namespace        tcp {
     std::string  _name;
     acceptor*    _parent;
     int          _read_timeout;
-    std::auto_ptr<QTcpSocket>
+    std::unique_ptr<QTcpSocket>
                  _socket;
     int          _socket_descriptor;
     int          _write_timeout;

@@ -151,7 +151,7 @@ static io::raw* serialize(io::data const& e) {
     info(io::events::instance().get_event_info(e.type()));
   if (info) {
     // Serialization buffer.
-    std::auto_ptr<io::raw> buffer(new io::raw);
+    std::unique_ptr<io::raw> buffer(new io::raw);
     QByteArray& data(*buffer);
 
     // Reserve space for the BBDO header.

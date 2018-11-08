@@ -64,7 +64,7 @@ namespace                          com {
           QMutex                   _process_list_mutex;
           std::set<process*>       _process_list;
 
-          std::auto_ptr<QThread>   _thread;
+          std::unique_ptr<QThread>   _thread;
         };
       }
     }

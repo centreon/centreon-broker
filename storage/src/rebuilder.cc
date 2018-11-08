@@ -71,7 +71,6 @@ rebuilder::~rebuilder() throw () {}
  */
 void rebuilder::exit() throw () {
   _should_exit = true;
-  return ;
 }
 
 /**
@@ -99,7 +98,7 @@ void rebuilder::run() {
   while (!_should_exit && _rebuild_check_interval) {
     try {
       // Open DB.
-      std::auto_ptr<mysql> ms;
+      std::unique_ptr<mysql> ms;
       try {
         ms.reset(new mysql(_db_cfg));
       }

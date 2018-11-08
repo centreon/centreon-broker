@@ -132,7 +132,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Connector.
-  std::auto_ptr<sql::connector> c(new sql::connector);
+  std::unique_ptr<sql::connector> c(new sql::connector);
   c->connect_to(
        dbcfg,
        cleanup_check_interval,

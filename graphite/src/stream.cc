@@ -91,7 +91,7 @@ stream::stream(
       .append("\n");
     _query.append(_auth_query);
   }
-  _socket = std::auto_ptr<QTcpSocket>(new QTcpSocket);
+  _socket = std::unique_ptr<QTcpSocket>(new QTcpSocket);
   _socket->connectToHost(QString::fromStdString(_db_host), _db_port);
   if (!_socket->waitForConnected())
     throw exceptions::msg()

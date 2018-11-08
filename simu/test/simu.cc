@@ -136,7 +136,7 @@ TEST_F(SimuGenericTest, ReadReturnValue1) {
                          "return 2\n"
                          "end\n");
   QMap<QString, QVariant> conf;
-  std::auto_ptr<luabinding> lb(new luabinding(
+  std::unique_ptr<luabinding> lb(new luabinding(
                      filename,
                      conf));
   misc::shared_ptr<io::data> d;
@@ -154,7 +154,7 @@ TEST_F(SimuGenericTest, ReadReturnValue2) {
                          "return nil\n"
                          "end\n");
   QMap<QString, QVariant> conf;
-  std::auto_ptr<luabinding> lb(new luabinding(
+  std::unique_ptr<luabinding> lb(new luabinding(
                      filename,
                      conf));
   misc::shared_ptr<io::data> d;
@@ -174,7 +174,7 @@ TEST_F(SimuGenericTest, ReadReturnValue3) {
                          "return { a='toto' }\n"
                          "end\n");
   QMap<QString, QVariant> conf;
-  std::auto_ptr<luabinding> lb(new luabinding(
+  std::unique_ptr<luabinding> lb(new luabinding(
                      filename,
                      conf));
   misc::shared_ptr<io::data> d;
@@ -203,7 +203,7 @@ TEST_F(SimuGenericTest, ReadReturnValue4) {
   QMap<QString, QVariant> conf;
   modules::loader l;
   l.load_file("./neb/10-neb.so");
-  std::auto_ptr<luabinding> lb(new luabinding(
+  std::unique_ptr<luabinding> lb(new luabinding(
                      filename,
                      conf));
   misc::shared_ptr<io::data> d;
@@ -240,7 +240,7 @@ TEST_F(SimuGenericTest, ReadReturnCustomVariable) {
   QMap<QString, QVariant> conf;
   modules::loader l;
   l.load_file("./neb/10-neb.so");
-  std::auto_ptr<luabinding> lb(new luabinding(
+  std::unique_ptr<luabinding> lb(new luabinding(
                      filename,
                      conf));
   misc::shared_ptr<io::data> d;

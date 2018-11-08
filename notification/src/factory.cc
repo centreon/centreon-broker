@@ -150,7 +150,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Connector.
-  std::auto_ptr<notification::connector> c(new notification::connector(cache));
+  std::unique_ptr<notification::connector> c(new notification::connector(cache));
   c->connect_to(
        type,
        host,

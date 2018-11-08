@@ -101,8 +101,8 @@ namespace                correlation {
 
     void                 serialize(persistent_cache& cache) const;
 
-    std::auto_ptr<issue> my_issue;
-    std::auto_ptr<neb::acknowledgement>
+    std::unique_ptr<issue> my_issue;
+    std::unique_ptr<neb::acknowledgement>
                          acknowledgement;
     std::map<unsigned int, neb::downtime>
                          downtimes;

@@ -481,7 +481,7 @@ void monitoring_stream::_rebuild() {
     r->bas_to_rebuild = oss.str().c_str();
     r->bas_to_rebuild.resize(r->bas_to_rebuild.size() - 2);
   }
-  std::auto_ptr<io::stream> out(new multiplexing::publisher);
+  std::unique_ptr<io::stream> out(new multiplexing::publisher);
   out->write(r);
 
   // Set all the BAs to should not be rebuild.

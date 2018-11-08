@@ -156,7 +156,7 @@ io::endpoint* factory::new_endpoint(
     }
   }
   // Connector.
-  std::auto_ptr<simu::connector> c(new simu::connector);
+  std::unique_ptr<simu::connector> c(new simu::connector);
   c->connect_to(filename, conf_map);
   is_acceptor = false;
   return c.release();

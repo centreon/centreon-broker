@@ -227,7 +227,7 @@ void mysql_thread::_get_result_sync(mysql_task* t) {
       }
       else {
         int size(mysql_num_fields(prepare_meta_result));
-        std::auto_ptr<mysql_bind> bind(new mysql_bind(size, STR_SIZE));
+        std::unique_ptr<mysql_bind> bind(new mysql_bind(size, STR_SIZE));
 
         if (mysql_stmt_bind_result(stmt, bind->get_bind()))
           _error = mysql_error(mysql_stmt_error(stmt), true);

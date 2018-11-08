@@ -64,7 +64,7 @@ namespace               com {
           configuration _config;
 
           // Log backend.
-          std::auto_ptr<com::centreon::broker::logging::file>
+          std::unique_ptr<com::centreon::broker::logging::file>
                         _log;
 
           // Processes.
@@ -75,9 +75,9 @@ namespace               com {
           // We convert signals into write to a pipe, because signals can't be
           // meaningfully processed by QT otherwhise. This is the canon way
           // to handle signals in a QT application.
-          std::auto_ptr<QSocketNotifier>
+          std::unique_ptr<QSocketNotifier>
                         _sighup;
-          std::auto_ptr<QSocketNotifier>
+          std::unique_ptr<QSocketNotifier>
                         _sigterm;
         };
       }

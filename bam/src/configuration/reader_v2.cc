@@ -458,7 +458,7 @@ void reader_v2::_load(state::meta_services& meta_services) {
   }
 
   // Load metrics of meta-services.
-  std::auto_ptr<mysql> storage_mysql;
+  std::unique_ptr<mysql> storage_mysql;
   for (state::meta_services::iterator
          it(meta_services.begin()),
          end(meta_services.end());
@@ -589,7 +589,7 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
  *  Load the dimensions from the database.
  */
 void reader_v2::_load_dimensions() {
-  std::auto_ptr<io::stream> out(new multiplexing::publisher);
+  std::unique_ptr<io::stream> out(new multiplexing::publisher);
   // As this operation is destructive (it truncates the database),
   // we cache the data until we are sure we have all the data
   // needed from the database.

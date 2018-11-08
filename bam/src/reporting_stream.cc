@@ -1009,7 +1009,7 @@ void reporting_stream::_process_dimension(
 
     if (!dtts.update_started) {
       // Lock the availability thread.
-      std::auto_ptr<QMutexLocker> lock(_availabilities->lock());
+      std::unique_ptr<QMutexLocker> lock(_availabilities->lock());
 
       // XXX : dimension event acknowledgement might not work !!!
       //       For this reason, ignore any db error. We wouldn't
@@ -1456,7 +1456,7 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
   // We block the availability thread to prevent it waking
   // up on truncated event durations.
   try {
-    std::auto_ptr<QMutexLocker> lock(_availabilities->lock());
+    std::unique_ptr<QMutexLocker> lock(_availabilities->lock());
 
     // Delete obsolete ba events durations.
     {

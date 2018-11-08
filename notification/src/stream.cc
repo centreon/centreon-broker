@@ -257,7 +257,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
  *  @param[in]  check_replication  True if we need to check the replication.
  */
 void stream::_open_db(
-               std::auto_ptr<QSqlDatabase>& db,
+               std::unique_ptr<QSqlDatabase>& db,
                QString const& t,
                QString const& host,
                unsigned short port,
@@ -346,8 +346,8 @@ void stream::_open_db(
  *  @param[in] id           An unique id identifiying the new connection.
  */
 void stream::_clone_db(
-               std::auto_ptr<QSqlDatabase>& db,
-               std::auto_ptr<QSqlDatabase> const& db_to_clone,
+               std::unique_ptr<QSqlDatabase>& db,
+               std::unique_ptr<QSqlDatabase> const& db_to_clone,
                QString const& id) {
   // Clone database.
   db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*db_to_clone, id)));
@@ -404,7 +404,7 @@ void stream::_process_service_status_event(neb::service_status const& event) {
     // Get the state lock.
     // TODO: The write lock here kills the perf. Use a read lock instead.
     //       and lock on an individual node level.
-    std::auto_ptr<QWriteLocker> lock(_state.write_lock());
+    std::unique_ptr<QWriteLocker> lock(_state.write_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
       throw (exceptions::msg()
@@ -462,7 +462,7 @@ void stream::_process_host_status_event(neb::host_status const& event) {
     // Get the state lock.
     // TODO: The write lock here kills the perf. Use a read lock instead.
     //       and lock on an individual node level.
-    std::auto_ptr<QWriteLocker> lock(_state.write_lock());
+    std::unique_ptr<QWriteLocker> lock(_state.write_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
       throw (exceptions::msg()
@@ -511,7 +511,7 @@ void stream::_process_issue_parent_event(
   // Get the state lock.
   // TODO: The write lock here kills the perf. Use a read lock instead.
   //       and lock on an individual node level.
-  std::auto_ptr<QWriteLocker> lock(_state.write_lock());
+  std::unique_ptr<QWriteLocker> lock(_state.write_lock());
   node::ptr n = _state.get_node_by_id(child_id);
   if (!n)
     throw (exceptions::msg()

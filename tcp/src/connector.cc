@@ -95,7 +95,7 @@ misc::shared_ptr<io::stream> connector::open() {
     oss << _host.toStdString() << ":" << _port;
     connection_name = oss.str();
   }
-  std::auto_ptr<QTcpSocket> sock(new QTcpSocket);
+  std::unique_ptr<QTcpSocket> sock(new QTcpSocket);
   sock->connectToHost(_host, _port);
 
   // Wait for connection result.

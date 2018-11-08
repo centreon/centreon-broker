@@ -167,7 +167,7 @@ misc::shared_ptr<logging::backend> logger::_new_backend(config::logger const& cf
       if (cfg.name().isEmpty())
         throw (exceptions::msg()
                << "log applier: attempt to log on an empty file");
-      std::auto_ptr<logging::file>
+      std::unique_ptr<logging::file>
         file(new logging::file(cfg.name(), cfg.max_size()));
       back = misc::shared_ptr<logging::backend>(file.get());
       file.release();
@@ -176,7 +176,7 @@ misc::shared_ptr<logging::backend> logger::_new_backend(config::logger const& cf
   case config::logger::monitoring:
     {
 #ifdef CBMOD
-      std::auto_ptr<neb::monitoring_logger>
+      std::unique_ptr<neb::monitoring_logger>
         monitoring(new neb::monitoring_logger);
       back = misc::shared_ptr<logging::backend>(monitoring.get());
       monitoring.release();

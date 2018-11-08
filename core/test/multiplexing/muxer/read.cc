@@ -63,7 +63,7 @@ class                  MultiplexingMuxerRead : public ::testing::Test {
   }
 
  protected:
-  std::auto_ptr<multiplexing::muxer> _m;
+  std::unique_ptr<multiplexing::muxer> _m;
 };
 
 // Given a muxer object with all filters

@@ -72,7 +72,7 @@ namespace        correlation {
     QString      _correlation_file;
     bool         _passive;
 
-    std::auto_ptr<io::stream>
+    std::unique_ptr<io::stream>
                  _pblsh;
 
     QMap<QPair<unsigned int, unsigned int>, node>

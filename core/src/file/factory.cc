@@ -112,7 +112,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Generate opener.
-  std::auto_ptr<opener> openr(new opener);
+  std::unique_ptr<opener> openr(new opener);
   openr->set_filename(filename.toStdString());
   is_acceptor = false;
   return (openr.release());

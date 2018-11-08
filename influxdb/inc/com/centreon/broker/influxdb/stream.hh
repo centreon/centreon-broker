@@ -74,7 +74,7 @@ namespace          influxdb {
     unsigned short _port;
     std::string    _db;
     unsigned int   _queries_per_transaction;
-    std::auto_ptr<influxdb>
+    std::unique_ptr<influxdb>
                    _influx_db;
 
     // Internal working members

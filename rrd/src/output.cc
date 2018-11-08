@@ -100,7 +100,7 @@ output::output(
     _write_metrics(write_metrics),
     _write_status(write_status) {
 #if QT_VERSION >= 0x040400
-  std::auto_ptr<cached>
+  std::unique_ptr<cached>
     rrdcached(new cached(metrics_path.toStdString(), cache_size));
   rrdcached->connect_local(local);
   _backend.reset(rrdcached.release());
@@ -137,7 +137,7 @@ output::output(
     _status_path(status_path.toStdString()),
     _write_metrics(write_metrics),
     _write_status(write_status) {
-  std::auto_ptr<cached>
+  std::unique_ptr<cached>
     rrdcached(new cached(metrics_path.toStdString(), cache_size));
   rrdcached->connect_remote("localhost", port);
   _backend.reset(rrdcached.release());

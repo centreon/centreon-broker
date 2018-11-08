@@ -291,8 +291,8 @@ objects::command::ptr state::get_command_by_id(unsigned int id) const {
  *
  *  @return  A QReadLocker locking this state.
  */
-std::auto_ptr<QReadLocker> state::read_lock() {
-  return (std::auto_ptr<QReadLocker>(new QReadLocker(&_state_mutex)));
+std::unique_ptr<QReadLocker> state::read_lock() {
+  return (std::unique_ptr<QReadLocker>(new QReadLocker(&_state_mutex)));
 }
 
 
@@ -301,8 +301,8 @@ std::auto_ptr<QReadLocker> state::read_lock() {
  *
  *  @return  A QWriteLocker locking this state.
  */
-std::auto_ptr<QWriteLocker> state::write_lock() {
-  return (std::auto_ptr<QWriteLocker>(new QWriteLocker(&_state_mutex)));
+std::unique_ptr<QWriteLocker> state::write_lock() {
+  return (std::unique_ptr<QWriteLocker>(new QWriteLocker(&_state_mutex)));
 
 }
 

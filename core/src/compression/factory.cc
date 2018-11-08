@@ -131,7 +131,7 @@ io::endpoint* factory::new_endpoint(
     size = it.value().toUInt();
 
   // Create compression object.
-  std::auto_ptr<compression::opener> openr(new compression::opener);
+  std::unique_ptr<compression::opener> openr(new compression::opener);
   openr->set_level(level);
   openr->set_size(size);
   return (openr.release());

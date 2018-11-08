@@ -55,9 +55,9 @@ namespace             notification {
 
     void              update_objects_from_db(QSqlDatabase& centreon_db);
 
-    std::auto_ptr<QReadLocker>
+    std::unique_ptr<QReadLocker>
                       read_lock();
-    std::auto_ptr<QWriteLocker>
+    std::unique_ptr<QWriteLocker>
                       write_lock();
 
     objects::node::ptr

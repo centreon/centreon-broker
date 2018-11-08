@@ -69,7 +69,7 @@ namespace           multiplexing {
     static engine*  _instance;
     void (engine::* _write_func)(
                       misc::shared_ptr<io::data> const&);
-    std::auto_ptr<persistent_cache>
+    std::unique_ptr<persistent_cache>
                     _cache_file;
   };
 }

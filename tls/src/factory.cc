@@ -146,7 +146,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Acceptor.
-  std::auto_ptr<io::endpoint> endp;
+  std::unique_ptr<io::endpoint> endp;
   if (is_acceptor)
     endp.reset(new acceptor(public_cert, private_key, ca_cert));
   // Connector.

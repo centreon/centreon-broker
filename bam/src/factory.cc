@@ -131,7 +131,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Connector.
-  std::auto_ptr<bam::connector> c(new bam::connector);
+  std::unique_ptr<bam::connector> c(new bam::connector);
   if (is_bam_bi)
     c->connect_reporting(db_cfg);
   else

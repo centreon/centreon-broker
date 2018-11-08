@@ -171,7 +171,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Connector.
-  std::auto_ptr<storage::connector> c(new storage::connector);
+  std::unique_ptr<storage::connector> c(new storage::connector);
   c->connect_to(
        db_cfg,
        rrd_length,

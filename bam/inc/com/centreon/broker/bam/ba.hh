@@ -133,7 +133,7 @@ namespace        bam {
     unsigned int _service_id;
     bool         _valid;
     bool         _inherit_kpi_downtime;
-    std::auto_ptr<inherited_downtime>
+    std::unique_ptr<inherited_downtime>
                  _inherited_downtime;
 
     void         _commit_initial_events(io::stream* visitor);

@@ -32,7 +32,7 @@ class FileSplitterResume : public ::testing::Test {
     _file_factory = new test_file_factory();
 
     // Create 7 files.
-    std::auto_ptr<file::fs_file> f;
+    std::unique_ptr<file::fs_file> f;
     char buffer[10008];
     for (int i(2); i < 10; ++i) {
       memset(buffer, i, sizeof(buffer));
@@ -74,7 +74,7 @@ class FileSplitterResume : public ::testing::Test {
   }
 
  protected:
-  std::auto_ptr<file::splitter> _file;
+  std::unique_ptr<file::splitter> _file;
   test_file_factory*            _file_factory;
   test_fs_browser*              _fs_browser;
   std::string                   _path;

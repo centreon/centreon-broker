@@ -47,7 +47,7 @@ namespace                multiplexing {
                          subscriber(subscriber const& other);
     subscriber&          operator=(subscriber const& other);
 
-    std::auto_ptr<muxer> _muxer;
+    std::unique_ptr<muxer> _muxer;
   };
 }
 

@@ -78,7 +78,7 @@ bool stream::read(
   QMutexLocker lock(&_mutex);
 
   // Build data array.
-  std::auto_ptr<io::raw> data(new io::raw);
+  std::unique_ptr<io::raw> data(new io::raw);
   data->resize(BUFSIZ);
 
   // Read data.

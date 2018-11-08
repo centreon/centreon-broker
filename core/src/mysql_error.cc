@@ -20,10 +20,10 @@
 using namespace com::centreon::broker;
 
 mysql_error::mysql_error()
-  : _message(""), _fatal(false), _active(false) {}
+  : _message(""), _active(false), _fatal(false) {}
 
 mysql_error::mysql_error(char const* message, bool fatal)
-  : _message(message), _fatal(fatal), _active(true) {}
+  : _message(message), _active(true), _fatal(fatal) {}
 
 mysql_error& mysql_error::operator=(mysql_error const& other) {
   if (this != &other) {

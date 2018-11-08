@@ -33,8 +33,7 @@ mysql::mysql(database_config const& db_cfg)
   : _db_cfg(db_cfg),
     _pending_queries(0),
     _version(mysql::v3),
-    _current_thread(0),
-    _prepare_count(0) {
+    _current_thread(0) {
   if (mysql_library_init(0, NULL, NULL))
     throw exceptions::msg()
       << "mysql: unable to initialize the MySQL connector";

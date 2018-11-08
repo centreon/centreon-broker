@@ -175,7 +175,7 @@ void mysql_bind::set_value_as_f32(int range, float value) {
   if (range >= _bind.size())
     set_size(range + 1);
   memset(&_bind[range], 0, sizeof(MYSQL_BIND));
-  if (isnan(value) || isinf(value))
+  if (std::isnan(value) || std::isinf(value))
     _bind[range].buffer_type = MYSQL_TYPE_NULL;
   else {
     _bind[range].buffer_type = MYSQL_TYPE_FLOAT;
@@ -200,7 +200,7 @@ void mysql_bind::set_value_as_f64(int range, double value) {
   if (range >= _bind.size())
     set_size(range + 1);
   memset(&_bind[range], 0, sizeof(MYSQL_BIND));
-  if (isnan(value) || isinf(value))
+  if (std::isnan(value) || std::isinf(value))
     _bind[range].buffer_type = MYSQL_TYPE_NULL;
   else {
     _bind[range].buffer_type = MYSQL_TYPE_DOUBLE;

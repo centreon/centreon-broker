@@ -185,7 +185,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Create endpoint.
-  std::auto_ptr<rrd::connector> endp(new rrd::connector);
+  std::unique_ptr<rrd::connector> endp(new rrd::connector);
   if (write_metrics)
     endp->set_metrics_path(metrics_path);
   if (write_status)

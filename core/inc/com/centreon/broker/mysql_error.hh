@@ -40,8 +40,8 @@ class                   mysql_error {
   bool                  is_active() const;
 
  private:
-  bool                  _active;
   std::string           _message;
+  bool                  _active;
   bool                  _fatal;
 };
 

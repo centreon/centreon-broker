@@ -855,9 +855,9 @@ void stream::_insert_perfdatas_new() {
             << "   , ctime, status, value)"
                "  VALUES (" << mv.metric_id << ", " << mv.c_time << ", '"
             << mv.status << "', ";
-      if (isinf(mv.value))
+      if (std::isinf(mv.value))
         query << ((mv.value < 0.0) ? -FLT_MAX : FLT_MAX);
-      else if (isnan(mv.value))
+      else if (std::isnan(mv.value))
         query << "NULL";
       else
         query << mv.value;
@@ -870,9 +870,9 @@ void stream::_insert_perfdatas_new() {
       metric_value& mv(_perfdata_queue.front());
       query << ", (" << mv.metric_id << ", " << mv.c_time << ", '"
             << mv.status << "', ";
-      if (isinf(mv.value))
+      if (std::isinf(mv.value))
         query << ((mv.value < 0.0) ? -FLT_MAX : FLT_MAX);
-      else if (isnan(mv.value))
+      else if (std::isnan(mv.value))
         query << "NULL";
       else
         query << mv.value;

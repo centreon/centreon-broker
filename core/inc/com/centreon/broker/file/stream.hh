@@ -50,7 +50,7 @@ namespace              file {
                        stream(stream const& other);
     stream&            operator=(stream const& other);
 
-    std::auto_ptr<splitter>
+    std::unique_ptr<splitter>
                        _file;
     QMutex             _mutex;
     mutable long long  _last_read_offset;

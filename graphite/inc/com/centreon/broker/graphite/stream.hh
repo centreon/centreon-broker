@@ -93,7 +93,7 @@ namespace          graphite {
     query          _status_query;
     std::string    _query;
     std::string    _auth_query;
-    std::auto_ptr<QTcpSocket>
+    std::unique_ptr<QTcpSocket>
                    _socket;
 
     // Process metric/status and generate query.

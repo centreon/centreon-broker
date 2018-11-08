@@ -33,7 +33,7 @@ int main() {
   s << "foo" << 42 << 77454654249841ull << -1 << "bar";
 
   // Clone object.
-  std::auto_ptr<exceptions::msg> clone(s.clone());
+  std::unique_ptr<exceptions::msg> clone(s.clone());
 
   // Check that clone was properly constructed.
   int retval(!clone.get());

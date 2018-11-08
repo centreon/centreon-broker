@@ -70,7 +70,7 @@ namespace               extcmd {
                         _parser;
     processing::thread* _listener_thread;
     protocol            _protocol;
-    std::auto_ptr<server_socket>
+    std::unique_ptr<server_socket>
                         _socket;
     std::string         _socket_file;
   };

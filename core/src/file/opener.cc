@@ -79,7 +79,7 @@ opener& opener::operator=(opener const& other) {
 misc::shared_ptr<io::stream> opener::open() {
   // Open splitted file.
   splitter_factory f;
-  std::auto_ptr<splitter> file(f.new_cfile_splitter(
+  std::unique_ptr<splitter> file(f.new_cfile_splitter(
                                    _filename,
                                    fs_file::open_read_write_truncate,
                                    _max_size,

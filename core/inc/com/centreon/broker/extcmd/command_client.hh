@@ -56,7 +56,7 @@ namespace             extcmd {
 
     std::string       _buffer;
     command_parser&   _parser;
-    std::auto_ptr<QLocalSocket>
+    std::unique_ptr<QLocalSocket>
                       _socket;
     int               _socket_native;
   };
