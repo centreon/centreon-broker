@@ -19,6 +19,7 @@
 #ifndef CCB_MYSQL_THREAD_HH
 #  define CCB_MYSQL_THREAD_HH
 
+#include <QMutex>
 #include <QThread>
 #include <QWaitCondition>
 #include "com/centreon/broker/database_config.hh"
@@ -88,7 +89,7 @@ class                    mysql_thread : public QThread {
   void                   _get_result_sync(mysql_task* task);
   void                   _fetch_row_sync(mysql_task* task);
   void                   _finish(mysql_task* task);
-  void                   _push(misc::shared_ptr<mysql_task> const& q);
+  void                   _push(std::shared_ptr<mysql_task> const& q);
 
   static void (mysql_thread::* const _task_processing_table[])(mysql_task* task);
 
@@ -98,7 +99,7 @@ class                    mysql_thread : public QThread {
   QMutex                 _list_mutex;
   QWaitCondition         _tasks_condition;
   bool                   _finished;
-  std::list<misc::shared_ptr<mysql_task> >
+  std::list<std::shared_ptr<mysql_task> >
                          _tasks_list;
   umap<unsigned int, MYSQL_STMT*>
                          _stmt;

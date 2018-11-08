@@ -121,7 +121,7 @@ void mysql_thread::_statement(mysql_task* t) {
       _error = mysql_error("statement not prepared", true);
     return ;
   }
-  if (task->bind.data() && mysql_stmt_bind_param(stmt, const_cast<MYSQL_BIND*>(task->bind->get_bind()))) {
+  if (task->bind.get() && mysql_stmt_bind_param(stmt, const_cast<MYSQL_BIND*>(task->bind->get_bind()))) {
     logging::debug(logging::low)
       << "mysql: statement binding failed ("
       << mysql_stmt_error(stmt) << ")";
@@ -304,11 +304,11 @@ void mysql_thread::run() {
   while (!_finished) {
     QMutexLocker locker(&_list_mutex);
     if (!_tasks_list.empty()) {
-      misc::shared_ptr<mysql_task> task(_tasks_list.front());
+      std::shared_ptr<mysql_task> task(_tasks_list.front());
       _tasks_list.pop_front();
       locker.unlock();
       if (_task_processing_table[task->type])
-        (this->*(_task_processing_table[task->type]))(task.data());
+        (this->*(_task_processing_table[task->type]))(task.get());
       else {
         std::cout << "ERROR: run DEFAULT SITUATION with type = " << task->type << std::endl;
         logging::error(logging::medium)
@@ -359,7 +359,7 @@ mysql_thread::~mysql_thread() {
   mysql_thread_end();
 }
 
-void mysql_thread::_push(misc::shared_ptr<mysql_task> const& q) {
+void mysql_thread::_push(std::shared_ptr<mysql_task> const& q) {
   QMutexLocker locker(&_list_mutex);
   _tasks_list.push_back(q);
   _tasks_condition.wakeAll();
@@ -368,9 +368,7 @@ void mysql_thread::_push(misc::shared_ptr<mysql_task> const& q) {
 void mysql_thread::check_affected_rows(
                      std::string const& message,
                      int statement_id) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_check_affected_rows(
-                                           message,
-                                           statement_id)));
+  _push(std::make_shared<mysql_task_check_affected_rows>(message, statement_id));
 }
 
 /**
@@ -383,7 +381,7 @@ void mysql_thread::check_affected_rows(
 int mysql_thread::get_affected_rows(int statement_id) {
   QMutexLocker locker(&_result_mutex);
   int retval;
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_affected_rows(&retval, statement_id)));
+  _push(std::make_shared<mysql_task_affected_rows>(&retval, statement_id));
   _result_condition.wait(locker.mutex());
   return retval;
 }
@@ -391,7 +389,7 @@ int mysql_thread::get_affected_rows(int statement_id) {
 int mysql_thread::get_last_insert_id() {
   QMutexLocker locker(&_result_mutex);
   int retval;
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_last_insert_id(&retval)));
+  _push(std::make_shared<mysql_task_last_insert_id>(&retval));
   _result_condition.wait(locker.mutex());
   return retval;
 }
@@ -407,28 +405,27 @@ int mysql_thread::get_last_insert_id() {
  *  @param count The integer counting how many queries are committed.
  */
 void mysql_thread::commit(QSemaphore& sem, QAtomicInt& count) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_commit(sem, count)));
+  _push(std::make_shared<mysql_task_commit>(sem, count));
 }
 
 void mysql_thread::run_statement(mysql_stmt& stmt,
                      std::string const& error_msg, bool fatal) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_statement(stmt, error_msg, fatal)));
+  _push(std::make_shared<mysql_task_statement>(stmt, error_msg, fatal));
 }
 
 void mysql_thread::run_statement_on_condition(
                      mysql_stmt& stmt,
                      mysql_task::condition condition,
                      std::string const& error_msg, bool fatal) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_statement_on_condition(
-                                           stmt,
-                                           condition,
-                                           error_msg,
-                                           fatal)));
+  _push(std::make_shared<mysql_task_statement_on_condition>(
+               stmt,
+               condition,
+               error_msg,
+               fatal));
 }
 
 void mysql_thread::prepare_query(int stmt_id, std::string const& query) {
-  _push(misc::shared_ptr<mysql_task>(
-          new mysql_task_prepare(stmt_id, query)));
+  _push(std::make_shared<mysql_task_prepare>(stmt_id, query));
 }
 
 /**
@@ -441,18 +438,18 @@ void mysql_thread::prepare_query(int stmt_id, std::string const& query) {
 void mysql_thread::run_query(
                      std::string const& query,
                      std::string const& error_msg, bool fatal) {
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_run(query, error_msg, fatal)));
+  _push(std::make_shared<mysql_task_run>(query, error_msg, fatal));
 }
 
 void mysql_thread::finish() {
   std::cout << "mysql_thread finish" << std::endl;
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_finish()));
+  _push(std::make_shared<mysql_task_finish>());
 }
 
 mysql_result mysql_thread::get_result(int statement_id) {
   QMutexLocker locker(&_result_mutex);
   mysql_result retval(statement_id);
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_result(&retval)));
+  _push(std::make_shared<mysql_task_result>(&retval));
   _result_condition.wait(locker.mutex());
   if (_error.is_active() && _error.is_fatal())
     throw exceptions::msg() << _error.get_message();
@@ -461,7 +458,7 @@ mysql_result mysql_thread::get_result(int statement_id) {
 
 bool mysql_thread::fetch_row(mysql_result& result) {
   QMutexLocker locker(&_result_mutex);
-  _push(misc::shared_ptr<mysql_task>(new mysql_task_fetch(&result)));
+  _push(std::make_shared<mysql_task_fetch>(&result));
   _result_condition.wait(locker.mutex());
   return !result.is_empty();
 }

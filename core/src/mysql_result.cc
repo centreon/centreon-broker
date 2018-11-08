@@ -46,11 +46,11 @@ mysql_result::~mysql_result() {
 }
 
 void mysql_result::set(MYSQL_RES* result) {
-  _result = misc::shared_ptr<MYSQL_RES>(result, mysql_free_result);
+  _result = std::shared_ptr<MYSQL_RES>(result, mysql_free_result);
 }
 
 MYSQL_RES* mysql_result::get() {
-  return _result.data();
+  return _result.get();
 }
 
 bool mysql_result::value_as_bool(int idx) {
@@ -160,7 +160,7 @@ int mysql_result::get_rows_count() const {
   if (_bind.get())
     return _bind->get_rows_count();
   else
-    return mysql_num_rows(_result.data());
+    return mysql_num_rows(_result.get());
 }
 
 void mysql_result::set_bind(std::unique_ptr<mysql_bind>& bind) {

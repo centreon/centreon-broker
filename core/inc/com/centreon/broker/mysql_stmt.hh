@@ -20,6 +20,7 @@
 #  define CCB_MYSQL_STMT_HH
 
 #  include <map>
+#  include <memory>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/mysql_bind.hh"
@@ -41,7 +42,7 @@ class                           mysql_stmt {
   mysql_stmt&                   operator=(mysql_stmt const& other);
   bool                          prepared() const;
   int                           get_id() const;
-  misc::shared_ptr<mysql_bind>  get_bind();
+  std::shared_ptr<mysql_bind>   get_bind();
   void                          operator<<(io::data const& d);
 
   void                          bind_value_as_i32(int range, int value);
@@ -76,7 +77,7 @@ class                           mysql_stmt {
   int                           _id;
   std::string                   _query;
 
-  misc::shared_ptr<mysql_bind>  _bind;
+  std::shared_ptr<mysql_bind>   _bind;
   mysql_bind_mapping            _bind_mapping;
 };
 

@@ -19,7 +19,6 @@
 #  define CCB_MYSQL_RESULT_HH
 
 #include <memory>
-#include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/mysql_bind.hh"
 
 CCB_BEGIN()
@@ -56,7 +55,7 @@ class                         mysql_result {
   int                         get_statement_id() const;
 
  private:
-  misc::shared_ptr<MYSQL_RES> _result;
+  std::shared_ptr<MYSQL_RES>  _result;
 
   // The row contains the result for a simple query (no statement).
   MYSQL_ROW                   _row;

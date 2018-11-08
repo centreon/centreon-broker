@@ -161,7 +161,7 @@ class                    mysql_task_statement : public mysql_task {
                             error_msg(error_msg),
                             fatal(fatal) {}
   int                    statement_id;
-  misc::shared_ptr<mysql_bind>
+  std::shared_ptr<mysql_bind>
                          bind;
   std::string            error_msg;
   bool                   fatal;

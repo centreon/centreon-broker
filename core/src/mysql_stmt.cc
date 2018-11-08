@@ -17,7 +17,7 @@
 */
 
 #include <iostream>
-#include <QHash>
+#include <functional>
 #include <cfloat>
 #include <cmath>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -34,6 +34,7 @@ mysql_stmt::mysql_stmt()
 
 mysql_stmt::mysql_stmt(std::string const& query, bool named) {
   mysql_bind_mapping bind_mapping;
+  std::hash<std::string> hash_fn;
   if (named) {
     std::string q;
     q.reserve(query.size());
@@ -86,12 +87,12 @@ mysql_stmt::mysql_stmt(std::string const& query, bool named) {
         }
       }
     }
-    _id = qHash(QString(q.c_str()));
+    _id = hash_fn(q);
     _query = q;
     _bind_mapping = bind_mapping;
   }
   else {
-    _id = qHash(QString(query.c_str()));
+    _id = hash_fn(query);
     _query = query;
   }
   for (mysql_bind_mapping::const_iterator
@@ -105,7 +106,7 @@ mysql_stmt::mysql_stmt(std::string const& query, bool named) {
 
 mysql_stmt::mysql_stmt(std::string const& query,
                        mysql_bind_mapping const& bind_mapping)
- : _id(qHash(QString(query.c_str()))),
+ : _id(std::hash<std::string>{}(query)),
    _query(query),
    _bind_mapping(bind_mapping) {}
 
@@ -132,7 +133,7 @@ int mysql_stmt::get_id() const {
   return _id;
 }
 
-misc::shared_ptr<mysql_bind> mysql_stmt::get_bind() {
+std::shared_ptr<mysql_bind> mysql_stmt::get_bind() {
   return _bind;
 }
 
@@ -259,8 +260,8 @@ void mysql_stmt::operator<<(io::data const& d) {
 }
 
 void mysql_stmt::bind_value_as_i32(int range, int value) {
-  if (!_bind.data())
-    _bind = (new mysql_bind);
+  if (!_bind.get())
+    _bind.reset(new mysql_bind());
   _bind->set_value_as_i32(range, value);
 }
 
@@ -289,8 +290,8 @@ void mysql_stmt::bind_value_as_i32(std::string const& name, int value) {
 }
 
 void mysql_stmt::bind_value_as_u32(int range, unsigned int value) {
-  if (!_bind.data())
-    _bind = new mysql_bind;
+  if (!_bind.get())
+    _bind.reset(new mysql_bind());
   _bind->set_value_as_u32(range, value);
 }
 
@@ -319,8 +320,8 @@ void mysql_stmt::bind_value_as_u32(std::string const& name, unsigned int value) 
 }
 
 void mysql_stmt::bind_value_as_u64(int range, unsigned long long value) {
-  if (!_bind.data())
-    _bind = new mysql_bind;
+  if (!_bind.get())
+    _bind.reset(new mysql_bind());
   _bind->set_value_as_u64(range, value);
 }
 
@@ -349,8 +350,8 @@ void mysql_stmt::bind_value_as_u64(std::string const& name, unsigned long long v
 }
 
 void mysql_stmt::bind_value_as_f32(int range, float value) {
-  if (!_bind.data())
-    _bind = new mysql_bind;
+  if (!_bind.get())
+    _bind.reset(new mysql_bind());
   _bind->set_value_as_f32(range, value);
 }
 
@@ -379,8 +380,8 @@ void mysql_stmt::bind_value_as_f32(std::string const& name, float value) {
 }
 
 void mysql_stmt::bind_value_as_f64(int range, double value) {
-  if (!_bind.data())
-    _bind = new mysql_bind;
+  if (!_bind.get())
+    _bind.reset(new mysql_bind);
   _bind->set_value_as_f64(range, value);
 }
 
@@ -409,8 +410,8 @@ void mysql_stmt::bind_value_as_f64(std::string const& name, double value) {
 }
 
 void mysql_stmt::bind_value_as_tiny(int range, char value) {
-  if (!_bind.data())
-    _bind = new mysql_bind;
+  if (!_bind.get())
+    _bind.reset(new mysql_bind);
   _bind->set_value_as_tiny(range, value);
 }
 
@@ -439,8 +440,8 @@ void mysql_stmt::bind_value_as_tiny(std::string const& name, char value) {
 }
 
 void mysql_stmt::bind_value_as_bool(int range, bool value) {
-  if (!_bind.data())
-    _bind = new mysql_bind;
+  if (!_bind.get())
+    _bind.reset(new mysql_bind);
   _bind->set_value_as_bool(range, value);
 }
 
@@ -469,8 +470,8 @@ void mysql_stmt::bind_value_as_bool(std::string const& name, bool value) {
 }
 
 void mysql_stmt::bind_value_as_str(int range, std::string const& value) {
-  if (!_bind.data())
-    _bind = new mysql_bind;
+  if (!_bind.get())
+    _bind.reset(new mysql_bind);
   _bind->set_value_as_str(range, value);
 }
 
@@ -499,8 +500,8 @@ void mysql_stmt::bind_value_as_str(std::string const& name, std::string const& v
 }
 
 void mysql_stmt::bind_value_as_null(int range) {
-  if (!_bind.data())
-    _bind = new mysql_bind;
+  if (!_bind.get())
+    _bind.reset(new mysql_bind);
   _bind->set_value_as_null(range);
 }
 
