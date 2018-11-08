@@ -84,8 +84,10 @@ add_library("${DUMPER}" SHARED
   "${INC_DIR}/stream.hh"
   "${INC_DIR}/timestamp_cache.hh"
 )
+set_target_properties("${DUMPER}" PROPERTIES
+    PREFIX ""
+    COMPILE_FLAGS "${MYSQL_CFLAGS}")
 target_link_libraries("${DUMPER}" ${QT_LIBRARIES})
-set_target_properties("${DUMPER}" PROPERTIES PREFIX "")
 
 if (WITH_TESTING)
   set(TEST_LIBRARIES "${DUMPER}" "roker")

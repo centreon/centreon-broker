@@ -28,8 +28,8 @@
 #  include <QMutexLocker>
 #  include <QWaitCondition>
 #  include <QSemaphore>
+#  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/database_config.hh"
-#  include "com/centreon/broker/database.hh"
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
@@ -72,11 +72,11 @@ namespace           bam {
     void            _delete_all_availabilities();
     void            _build_availabilities(time_t midnight);
     void            _build_daily_availabilities(
-                      database_query& q,
+                      int thread_id,
                       time_t day_start,
                       time_t day_end);
-    static void     _write_availability(
-                      database_query& q,
+    void            _write_availability(
+                      int thread_id,
                       availability_builder const& builder,
                       unsigned int ba_id,
                       time_t day_start,
@@ -88,8 +88,8 @@ namespace           bam {
     void            _open_database();
     void            _close_database();
 
-    std::auto_ptr<database>
-                    _db;
+    std::auto_ptr<mysql>
+                    _mysql;
     database_config _db_cfg;
     timeperiod_map& _shared_tps;
 

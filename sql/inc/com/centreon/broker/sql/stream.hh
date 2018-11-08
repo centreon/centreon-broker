@@ -23,7 +23,6 @@
 #  include <set>
 #  include <string>
 #  include "com/centreon/broker/mysql.hh"
-#  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/sql/cleanup.hh"

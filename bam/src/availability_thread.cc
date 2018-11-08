@@ -18,10 +18,9 @@
 
 #include <ctime>
 #include <QMutexLocker>
-#include <QVariant>
+//#include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/bam/availability_thread.hh"
-#include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
@@ -154,8 +153,7 @@ void availability_thread::_delete_all_availabilities() {
   query << "DELETE FROM mod_bam_reporting_ba_availabilities WHERE ba_id IN ("
         << _bas_to_rebuild.toStdString() << ")";
 
-  database_query q(*_db);
-  q.run_query(
+  _mysql->run_query(
       query.str(),
       "BAM-BI: availability thread could not delete the "
       "BA availabilities from the reporting database");
@@ -171,8 +169,8 @@ void availability_thread::_delete_all_availabilities() {
 void availability_thread::_build_availabilities(time_t midnight) {
   time_t first_day = 0;
   time_t last_day = midnight;
-  database_query q(*_db);
   std::stringstream query;
+  int thread_id;
 
   // Get the first day of rebuilding. If a complete rebuilding was asked,
   // it's the day of the chronogically first event to rebuild.
@@ -182,9 +180,20 @@ void availability_thread::_build_availabilities(time_t midnight) {
              "  FROM mod_bam_reporting_ba_events"
              "  WHERE ba_id IN (" << _bas_to_rebuild.toStdString() << ")";
     try {
-      q.run_query(query.str());
-      if (!q.next())
+      thread_id = _mysql->run_query(query.str());
+      mysql_result res(_mysql->get_result(thread_id));
+      if (!_mysql->fetch_row(thread_id, res))
         throw (exceptions::msg() << "no events matching BAs to rebuild");
+      first_day = res.value_as_i32(0);
+      first_day = _compute_start_of_day(first_day);
+      // If there is opened events, rebuild until midnight of this day.
+      // If not, rebuild until the last closed events.
+      if (res.value_as_i32(2) != 0)
+        last_day = _compute_start_of_day(res.value_as_f64(1));
+
+      //FIXME DBR: why this line?
+      _mysql->fetch_row(thread_id, res);
+      _delete_all_availabilities();
     }
     catch (std::exception const& e) {
       throw (exceptions::msg()
@@ -192,22 +201,20 @@ void availability_thread::_build_availabilities(time_t midnight) {
                 "from the reporting database: " << e.what());
     }
 
-    first_day = q.value(0).toInt();
-    first_day = _compute_start_of_day(first_day);
-    // If there is opened events, rebuild until midnight of this day.
-    // If not, rebuild until the last closed events.
-    if (q.value(2).toInt() != 0)
-      last_day = _compute_start_of_day(q.value(1).toDouble());
-    q.next();
-    _delete_all_availabilities();
   }
   else {
     query << "SELECT MAX(time_id)"
              "  FROM mod_bam_reporting_ba_availabilities";
     try {
-      q.run_query(query.str());
-      if (!q.next())
+      thread_id = _mysql->run_query(query.str());
+      //FIXME DBR: to finish...
+      mysql_result res(_mysql->get_result(thread_id));
+      if (!_mysql->fetch_row(thread_id, res))
         throw (exceptions::msg() << "no availability in table");
+      first_day = res.value_as_i32(0);
+      first_day = time::timeperiod::add_round_days_to_midnight(
+                                      first_day, 3600 * 24);
+      _mysql->fetch_row(thread_id, res);
     }
     catch (std::exception const& e) {
       throw (exceptions::msg()
@@ -215,11 +222,6 @@ void availability_thread::_build_availabilities(time_t midnight) {
                 "could not select the BA availabilities "
                 "from the reporting database: " << e.what());
     }
-
-    first_day = q.value(0).toInt();
-    first_day = time::timeperiod::add_round_days_to_midnight(
-                                    first_day, 3600 * 24);
-    q.next();
   }
 
   logging::debug(logging::medium)
@@ -230,7 +232,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
   while (first_day < last_day) {
     time_t next_day =
       time::timeperiod::add_round_days_to_midnight(first_day, 3600 * 24);
-    _build_daily_availabilities(q, first_day, next_day);
+    _build_daily_availabilities(thread_id, first_day, next_day);
     first_day = next_day;
   }
 }
@@ -245,7 +247,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
  *  @param[in] day_end   The first second of the next day.
  */
 void availability_thread::_build_daily_availabilities(
-                            database_query& q,
+                            int thread_id,
                             time_t day_start,
                             time_t day_end) {
   logging::info(logging::medium)
@@ -267,16 +269,17 @@ void availability_thread::_build_daily_availabilities(
         << ") OR (a.end_time BETWEEN " << day_start << " AND " << day_end - 1
         << ") OR (" << day_start << " BETWEEN a.start_time AND a.end_time))";
 
-  q.run_query(
+  _mysql->run_query(
       query.str(),
-      "BAM-BI: availability thread could not build the data");
+      "BAM-BI: availability thread could not build the data", true, thread_id);
 
   // Create a builder for each ba_id and associated timeperiod_id.
   std::map<std::pair<unsigned int, unsigned int>,
             availability_builder> builders;
-  while (q.next()) {
-    unsigned int ba_id = q.value(1).toInt();
-    unsigned int timeperiod_id = q.value(6).toInt();
+  mysql_result res(_mysql->get_result(thread_id));
+  while (_mysql->fetch_row(thread_id, res)) {
+    unsigned int ba_id = res.value_as_i32(1);
+    unsigned int timeperiod_id = res.value_as_i32(6);
     // Find the timeperiod.
     time::timeperiod::ptr tp = _shared_tps.get_timeperiod(timeperiod_id);
     // No timeperiod found, skip.
@@ -294,13 +297,13 @@ void availability_thread::_build_daily_availabilities(
                   availability_builder(day_end, day_start))).first;
     // Add the event to the builder.
     found->second.add_event(
-      q.value(8).toInt(), // Status
-      q.value(2).toInt(), // Start time
-      q.value(3).toInt(), // End time
-      q.value(9).toBool(), // Was in downtime
+      res.value_as_i32(8),  // Status
+      res.value_as_i32(2),  // Start time
+      res.value_as_i32(3),  // End time
+      res.value_as_bool(9), // Was in downtime
       tp);
     // Add the timeperiod is default flag.
-    found->second.set_timeperiod_is_default(q.value(7).toBool());
+    found->second.set_timeperiod_is_default(res.value_as_bool(7));
   }
 
   // Build the availabilities tied to event not finished.
@@ -313,12 +316,15 @@ void availability_thread::_build_daily_availabilities(
     query << "(ba_id IN (" << _bas_to_rebuild.toStdString() << ")) AND ";
   query << "(start_time < " << day_end << " AND end_time IS NULL)";
 
-  q.run_query(
+  _mysql->run_query(
       query.str(),
-      "BAM-BI: availability thread could not build the data: ");
+      "BAM-BI: availability thread could not build the data: ",
+      true,
+      thread_id);
 
-  while (q.next()) {
-    unsigned int ba_id = q.value(1).toInt();
+  res = _mysql->get_result(thread_id);
+  while (_mysql->fetch_row(thread_id, res)) {
+    unsigned int ba_id = res.value_as_i32(1);
     // Get all the timeperiods associated with the ba of this event.
     std::vector<std::pair<time::timeperiod::ptr, bool> >
       tps = _shared_tps.get_timeperiods_by_ba_id(ba_id);
@@ -340,10 +346,10 @@ void availability_thread::_build_daily_availabilities(
                     availability_builder(day_end, day_start))).first;
       // Add the event to the builder.
       found->second.add_event(
-        q.value(4).toInt(), // Status
-        q.value(2).toInt(), // Start time
-        q.value(3).toInt(), // End time
-        q.value(5).toBool(), // Was in downtime
+        res.value_as_i32(4),  // Status
+        res.value_as_i32(2),  // Start time
+        res.value_as_i32(3),  // End time
+        res.value_as_bool(5), // Was in downtime
         it->first);
       // Add the timeperiod is default flag.
       found->second.set_timeperiod_is_default(it->second);
@@ -357,7 +363,7 @@ void availability_thread::_build_daily_availabilities(
          end = builders.end();
        it != end;
        ++it)
-    _write_availability(q, it->second, it->first.first, day_start, it->first.second);
+    _write_availability(thread_id, it->second, it->first.first, day_start, it->first.second);
 }
 
 /**
@@ -370,7 +376,7 @@ void availability_thread::_build_daily_availabilities(
  *  @param[in] timeperiod_id          The id of the timeperiod.
  */
 void availability_thread::_write_availability(
-                            database_query& q,
+                            int thread_id,
                             availability_builder const& builder,
                             unsigned int ba_id,
                             time_t day_start,
@@ -394,9 +400,11 @@ void availability_thread::_write_availability(
         << builder.get_unavailable_opened() << ", "
         << builder.get_degraded_opened() << ", " << builder.get_unknown_opened()
         << ", " << builder.get_downtime_opened() << ")";
-  q.run_query(
+  _mysql->run_query(
       query.str(),
-      "BAM-BI: availability thread could not insert an availability: ");
+      "BAM-BI: availability thread could not insert an availability: ",
+      true,
+      thread_id);
 }
 
 /**
@@ -437,7 +445,7 @@ void availability_thread::_open_database() {
 
   // Add database connection.
   try {
-  _db.reset(new database(_db_cfg));
+    _mysql.reset(new mysql(_db_cfg));
   }
   catch (std::exception const& e) {
     throw (exceptions::msg()
@@ -450,7 +458,7 @@ void availability_thread::_open_database() {
  *  Close the database.
  */
 void availability_thread::_close_database() {
-  if (_db.get()) {
-    _db.reset();
+  if (_mysql.get()) {
+    _mysql.reset();
   }
 }

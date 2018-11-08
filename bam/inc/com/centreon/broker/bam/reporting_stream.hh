@@ -22,9 +22,6 @@
 #  include <map>
 #  include <memory>
 #  include <vector>
-#  include <QMutexLocker>
-#  include "com/centreon/broker/database.hh"
-#  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
@@ -96,28 +93,29 @@ namespace          bam {
     void           _compute_event_durations(misc::shared_ptr<ba_event> const& ev,
                                             io::stream* visitor);
 
+    unsigned int   _ack_events;
     unsigned int   _pending_events;
     unsigned int   _queries_per_transaction;
     std::string    _status;
     mutable QMutex _statusm;
     unsigned int   _transaction_queries;
-    database       _db;
-    database_query _ba_full_event_insert;
-    database_query _ba_event_update;
-    database_query _ba_duration_event_insert;
-    database_query _ba_duration_event_update;
-    database_query _kpi_full_event_insert;
-    database_query _kpi_event_update;
-    database_query _kpi_event_link;
-    database_query _dimension_ba_insert;
-    database_query _dimension_bv_insert;
-    database_query _dimension_ba_bv_relation_insert;
-    database_query _dimension_timeperiod_insert;
-    database_query _dimension_timeperiod_exception_insert;
-    database_query _dimension_timeperiod_exclusion_insert;
-    database_query _dimension_ba_timeperiod_insert;
-    database_query _dimension_kpi_insert;
-    std::vector<misc::shared_ptr<database_query> >
+    mysql          _mysql;
+    mysql_stmt     _ba_full_event_insert;
+    mysql_stmt     _ba_event_update;
+    mysql_stmt     _ba_duration_event_insert;
+    mysql_stmt     _ba_duration_event_update;
+    mysql_stmt     _kpi_full_event_insert;
+    mysql_stmt     _kpi_event_update;
+    mysql_stmt     _kpi_event_link;
+    mysql_stmt     _dimension_ba_insert;
+    mysql_stmt     _dimension_bv_insert;
+    mysql_stmt     _dimension_ba_bv_relation_insert;
+    mysql_stmt     _dimension_timeperiod_insert;
+    mysql_stmt     _dimension_timeperiod_exception_insert;
+    mysql_stmt     _dimension_timeperiod_exclusion_insert;
+    mysql_stmt     _dimension_ba_timeperiod_insert;
+    mysql_stmt     _dimension_kpi_insert;
+    std::vector<mysql_stmt>
                    _dimension_truncate_tables;
     std::auto_ptr<availability_thread>
                    _availabilities;
