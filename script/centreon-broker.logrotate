@@ -1,9 +1,10 @@
 /var/log/centreon-broker/*log {
+    copytruncate
+    weekly
+    rotate 52
     compress
-    daily
+    delaycompress
     notifempty
     missingok
-    rotate 7
-    size 100M
-    copytruncate
+    su root root
 }
