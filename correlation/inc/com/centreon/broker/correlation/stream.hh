@@ -45,8 +45,8 @@ namespace        correlation {
   public:
                  stream(
                    QString const& correlation_file,
-                   misc::shared_ptr<persistent_cache> cache
-                   = misc::shared_ptr<persistent_cache>(),
+                   std::shared_ptr<persistent_cache> cache
+                   = std::shared_ptr<persistent_cache>(),
                    bool load_correlation = true,
                    bool passive = false);
                  ~stream();
@@ -67,7 +67,7 @@ namespace        correlation {
     void         _load_correlation_event(misc::shared_ptr<io::data> const& d);
     void         _save_persistent_cache();
 
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                  _cache;
     QString      _correlation_file;
     bool         _passive;

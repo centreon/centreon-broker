@@ -49,7 +49,7 @@ int main() {
   try {
     // Create correlator.
     {
-      correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);
+      correlation::stream c("", std::shared_ptr<persistent_cache>(), false);
     }
 
     // Check correlation content.

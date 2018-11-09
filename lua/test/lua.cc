@@ -48,8 +48,8 @@ class LuaTest : public ::testing::Test {
     catch (std::exception const& e) {
       (void) e;
     }
-    misc::shared_ptr<persistent_cache> pcache
-      = new persistent_cache("/tmp/broker_test_cache");
+    std::shared_ptr<persistent_cache> pcache(
+        std::make_shared<persistent_cache>("/tmp/broker_test_cache"));
     _cache.reset(new macro_cache(pcache));
   }
   void TearDown() {

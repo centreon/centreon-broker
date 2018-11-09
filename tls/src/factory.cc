@@ -113,7 +113,7 @@ bool factory::has_not_endpoint(config::endpoint& cfg) const {
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
-                         misc::shared_ptr<persistent_cache> cache) const {
+                         std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
   // Find TLS parameters (optional).

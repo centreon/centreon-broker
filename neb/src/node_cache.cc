@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <memory>
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/node_cache.hh"
 
@@ -91,8 +92,8 @@ void node_cache::write(misc::shared_ptr<io::data> const& d) {
  *
  *  @param[in] cache  The cache.
  */
-void node_cache::serialize(misc::shared_ptr<persistent_cache> cache) {
-  if (cache.isNull())
+void node_cache::serialize(std::shared_ptr<persistent_cache> cache) {
+  if (cache.get() == NULL)
     return ;
   for (QHash<node_id, neb::host>::const_iterator
          it = _hosts.begin(),

@@ -55,7 +55,7 @@ namespace               extcmd {
                         command_server(
                           protocol prot,
                           std::string const& socket_file,
-                          misc::shared_ptr<persistent_cache> cache);
+                          std::shared_ptr<persistent_cache> cache);
                         ~command_server();
     misc::shared_ptr<io::stream>
                         open();

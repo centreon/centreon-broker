@@ -31,7 +31,7 @@ using namespace com::centreon::broker::notification;
 /**
  *  Constructor.
  */
-connector::connector(misc::shared_ptr<persistent_cache> cache)
+connector::connector(std::shared_ptr<persistent_cache> cache)
   : io::endpoint(false),
     _cache(cache),
     _node_cache(_cache) {}

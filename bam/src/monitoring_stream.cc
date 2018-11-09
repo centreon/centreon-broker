@@ -69,7 +69,7 @@ monitoring_stream::monitoring_stream(
                      std::string const& ext_cmd_file,
                      database_config const& db_cfg,
                      database_config const& storage_db_cfg,
-                     misc::shared_ptr<persistent_cache> cache)
+                     std::shared_ptr<persistent_cache> cache)
   : _ext_cmd_file(ext_cmd_file),
     _mysql(db_cfg),
     _pending_events(0),
@@ -539,7 +539,7 @@ void monitoring_stream::_write_external_command(
  *  Get inherited downtime from the cache.
  */
 void monitoring_stream::_read_cache() {
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   _applier.load_from_cache(*_cache);
@@ -549,7 +549,7 @@ void monitoring_stream::_read_cache() {
  *  Save inherited downtime to the cache.
  */
 void monitoring_stream::_write_cache() {
-  if (_cache.isNull()) {
+  if (_cache.get() == NULL) {
     logging::debug(logging::medium)
       << "BAM: no cache configured";
     return ;

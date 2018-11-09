@@ -58,7 +58,7 @@ namespace          graphite {
                      std::string const& db_host,
                      unsigned short db_port,
                      unsigned int queries_per_transaction,
-                     misc::shared_ptr<persistent_cache> const& cache);
+                     std::shared_ptr<persistent_cache> const& cache);
                    ~stream();
     int            flush();
     bool           read(misc::shared_ptr<io::data>& d, time_t deadline);

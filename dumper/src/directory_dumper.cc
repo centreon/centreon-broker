@@ -58,7 +58,7 @@ directory_dumper::directory_dumper(
           std::string const& name,
           std::string const& path,
           std::string const& tagname,
-          misc::shared_ptr<persistent_cache> cache)
+          std::shared_ptr<persistent_cache> cache)
   : _name(name.c_str()),
     _path(path),
     _tagname(tagname),
@@ -254,7 +254,7 @@ void directory_dumper::_dump_dir(
  */
 void directory_dumper::_load_cache() {
   // No cache, nothing to do.
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   misc::shared_ptr<io::data> d;
@@ -274,7 +274,7 @@ void directory_dumper::_load_cache() {
  */
 void directory_dumper::_save_cache() {
   // No cache, nothing to do.
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   _cache->transaction();

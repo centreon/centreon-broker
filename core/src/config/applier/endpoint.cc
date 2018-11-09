@@ -438,13 +438,13 @@ misc::shared_ptr<io::endpoint> endpoint::_create_endpoint(
        ++it) {
     if ((it.value().osi_from == 1)
         && it.value().endpntfactry->has_endpoint(cfg)) {
-      misc::shared_ptr<persistent_cache> cache;
+      std::shared_ptr<persistent_cache> cache;
       if (cfg.cache_enabled) {
         std::string
           cache_path(config::applier::state::instance().cache_dir());
         cache_path.append(".cache.");
         cache_path.append(cfg.name);
-        cache = misc::shared_ptr<persistent_cache>(
+        cache = std::shared_ptr<persistent_cache>(
                         new persistent_cache(cache_path));
       }
       endp = misc::shared_ptr<io::endpoint>(

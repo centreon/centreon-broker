@@ -47,7 +47,7 @@ namespace                        neb {
 
     void                         write(misc::shared_ptr<io::data> const& d);
     void                         serialize(
-                                   misc::shared_ptr<persistent_cache> cache);
+                                   std::shared_ptr<persistent_cache> cache);
     node_id                      get_node_by_names(
                                   std::string const& host_name,
                                   std::string const& service_description);

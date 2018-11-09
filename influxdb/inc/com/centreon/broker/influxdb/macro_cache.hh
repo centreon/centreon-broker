@@ -41,7 +41,7 @@ namespace         influxdb {
    */
   class            macro_cache {
   public:
-                   macro_cache(misc::shared_ptr<persistent_cache> const& cache);
+                   macro_cache(std::shared_ptr<persistent_cache> const& cache);
                    ~macro_cache();
 
     void           write(misc::shared_ptr<io::data> const& data);
@@ -67,7 +67,7 @@ namespace         influxdb {
     void           _process_metric_mapping(storage::metric_mapping const& mm);
     void           _save_to_disk();
 
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                    _cache;
     QHash<unsigned int, instance_broadcast>
                    _instances;

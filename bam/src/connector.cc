@@ -77,7 +77,7 @@ void connector::connect_monitoring(
                   std::string const& ext_cmd_file,
                   database_config const& db_cfg,
                   std::string const& storage_db_name,
-                  misc::shared_ptr<persistent_cache> cache) {
+                  std::shared_ptr<persistent_cache> cache) {
   _type = bam_monitoring_type;
   _ext_cmd_file = ext_cmd_file;
   _db_cfg = db_cfg;

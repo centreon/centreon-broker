@@ -58,7 +58,7 @@ namespace          influxdb {
                      std::vector<column> const& status_cols,
                      std::string const& metric_ts,
                      std::vector<column> const& metric_cols,
-                     misc::shared_ptr<persistent_cache> const& cache);
+                     std::shared_ptr<persistent_cache> const& cache);
                    ~stream();
     int            flush();
     bool           read(misc::shared_ptr<io::data>& d, time_t deadline);

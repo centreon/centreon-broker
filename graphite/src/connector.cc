@@ -77,7 +77,7 @@ void connector::connect_to(
                   std::string const& db_addr,
                   unsigned short db_port,
                   unsigned int queries_per_transaction,
-                  misc::shared_ptr<persistent_cache> const& cache) {
+                  std::shared_ptr<persistent_cache> const& cache) {
   _escape_string = escape_string;
   _metric_naming = metric_naming;
   _status_naming = status_naming;

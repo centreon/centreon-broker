@@ -19,6 +19,7 @@
 #ifndef CCB_NEB_NODE_EVENTS_STREAM_HH
 #  define CCB_NEB_NODE_EVENTS_STREAM_HH
 
+#  include <memory>
 #  include <vector>
 #  include <QString>
 #  include <QHash>
@@ -51,7 +52,7 @@ namespace        neb {
   public:
                  node_events_stream(
                    std::string const& name,
-                   misc::shared_ptr<persistent_cache> cache,
+                   std::shared_ptr<persistent_cache> cache,
                    std::string const& config_file);
                  ~node_events_stream();
     bool         read(misc::shared_ptr<io::data>& d, time_t deadline);
@@ -68,7 +69,7 @@ namespace        neb {
     node_events_stream&
                  operator=(node_events_stream const& other);
 
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                  _cache;
     std::string  _config_file;
     QString      _name;

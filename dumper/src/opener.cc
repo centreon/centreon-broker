@@ -151,6 +151,6 @@ void opener::set_name(std::string const& name) {
  *
  *  @param[in] cache  The persistent cache.
  */
-void opener::set_cache(misc::shared_ptr<persistent_cache> cache) {
+void opener::set_cache(std::shared_ptr<persistent_cache> cache) {
   _cache = cache;
 }

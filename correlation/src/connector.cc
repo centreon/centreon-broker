@@ -34,7 +34,7 @@ using namespace com::centreon::broker::correlation;
 connector::connector(
              QString const& correlation_file,
              bool passive,
-             misc::shared_ptr<persistent_cache> cache)
+             std::shared_ptr<persistent_cache> cache)
   : io::endpoint(false),
     _cache(cache),
     _correlation_file(correlation_file),

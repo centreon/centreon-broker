@@ -48,7 +48,7 @@ int main() {
   multiplexing::engine::instance().start();
 
   try {
-    correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);
+    correlation::stream c("", std::shared_ptr<persistent_cache>(), false);
     {
       // Create state.
       QMap<QPair<unsigned int, unsigned int>, node> state;

@@ -38,7 +38,7 @@ using namespace com::centreon::broker::notification;
  *
  *  @param[in] cache  The persistent cache used by the node cache.
  */
-node_cache::node_cache(misc::shared_ptr<persistent_cache> cache)
+node_cache::node_cache(std::shared_ptr<persistent_cache> cache)
   : _mutex(QMutex::NonRecursive),
     _cache(cache) {
   multiplexing::engine::instance().hook(*this);
@@ -82,7 +82,7 @@ node_cache& node_cache::operator=(node_cache const& obj) {
  */
 void node_cache::starting() {
   // No cache, nothing to do.
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   logging::debug(logging::low)
@@ -115,7 +115,7 @@ void node_cache::starting() {
  */
 void node_cache::stopping() {
   // No cache, nothing to do.
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   logging::debug(logging::low)

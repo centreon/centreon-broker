@@ -57,7 +57,7 @@ int main() {
     n.start_time = 0;
 
     // Create correlator and apply state.
-    correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);
+    correlation::stream c("", std::shared_ptr<persistent_cache>(), false);
     c.set_state(state);
 
     // Send node status.

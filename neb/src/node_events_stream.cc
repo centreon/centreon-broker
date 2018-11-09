@@ -53,7 +53,7 @@ using namespace com::centreon::broker::ceof;
  */
 node_events_stream::node_events_stream(
                       std::string const& name,
-                      misc::shared_ptr<persistent_cache> cache,
+                      std::shared_ptr<persistent_cache> cache,
                       std::string const& config_file)
   : _cache(cache),
     _config_file(config_file),
@@ -805,7 +805,7 @@ void node_events_stream::_load_config_file() {
  */
 void node_events_stream::_load_cache() {
   // No cache, nothing to do.
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   logging::info(logging::medium) << "node events: loading cache";
@@ -914,7 +914,7 @@ void node_events_stream::_apply_config_downtimes() {
  */
 void node_events_stream::_save_cache() {
   // No cache, nothing to do.
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   logging::info(logging::medium) << "node events: saving cache";

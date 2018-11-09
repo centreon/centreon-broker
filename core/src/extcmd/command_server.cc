@@ -41,7 +41,7 @@ using namespace com::centreon::broker::extcmd;
 command_server::command_server(
                   protocol prot,
                   std::string const& socket_file,
-                  misc::shared_ptr<persistent_cache> cache)
+                  std::shared_ptr<persistent_cache> cache)
   : io::endpoint(true),
     _listener_thread(NULL),
     _protocol(prot),

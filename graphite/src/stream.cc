@@ -53,7 +53,7 @@ stream::stream(
           std::string const& db_host,
           unsigned short db_port,
           unsigned int queries_per_transaction,
-          misc::shared_ptr<persistent_cache> const& cache)
+          std::shared_ptr<persistent_cache> const& cache)
   : _metric_naming(metric_naming),
     _status_naming(status_naming),
     _db_user(db_user),

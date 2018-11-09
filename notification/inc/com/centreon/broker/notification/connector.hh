@@ -37,7 +37,7 @@ namespace                        notification {
    */
   class                          connector : public io::endpoint {
   public:
-                                 connector(misc::shared_ptr<persistent_cache> cache);
+                                 connector(std::shared_ptr<persistent_cache> cache);
                                  connector(connector const& c);
                                  ~connector();
     connector&                   operator=(connector const& c);
@@ -59,7 +59,7 @@ namespace                        notification {
     unsigned short               _port;
     QString                      _type;
     QString                      _user;
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                                  _cache;
     node_cache                   _node_cache;
   };

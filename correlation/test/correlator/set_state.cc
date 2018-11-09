@@ -65,7 +65,7 @@ int main() {
     n1.add_parent(&n2);
 
     // Set state to correlator.
-    correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);
+    correlation::stream c("", std::shared_ptr<persistent_cache>(), false);
     c.set_state(state);
 
     // Compare states.

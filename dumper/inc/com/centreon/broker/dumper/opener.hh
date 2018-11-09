@@ -54,7 +54,7 @@ namespace                        dumper {
     void                         set_tagname(std::string const& tagname);
     void                         set_type(dumper_type type);
     void                         set_cache(
-                                   misc::shared_ptr<persistent_cache> cache);
+                                   std::shared_ptr<persistent_cache> cache);
     void                         set_name(std::string const& name);
 
    private:
@@ -63,7 +63,7 @@ namespace                        dumper {
     std::string                  _path;
     std::string                  _tagname;
     dumper_type                  _type;
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                                  _cache;
   };
 }

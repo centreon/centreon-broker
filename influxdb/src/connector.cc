@@ -80,7 +80,7 @@ void connector::connect_to(
                   std::vector<column> const& status_cols,
                   std::string const& metric_ts,
                   std::vector<column> const& metric_cols,
-                  misc::shared_ptr<persistent_cache> const& cache) {
+                  std::shared_ptr<persistent_cache> const& cache) {
   _user = user;
   _password = passwd;
   _addr = addr;

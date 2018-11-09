@@ -28,9 +28,9 @@ using namespace com::centreon::broker::graphite;
  *
  *  @param[in] cache  Persistent cache used by the macro cache.
  */
-macro_cache::macro_cache(misc::shared_ptr<persistent_cache> const& cache)
+macro_cache::macro_cache(std::shared_ptr<persistent_cache> const& cache)
   : _cache(cache) {
-  if (!_cache.isNull()) {
+  if (_cache.get() != NULL) {
     misc::shared_ptr<io::data> d;
     do {
       _cache->get(d);
@@ -43,7 +43,7 @@ macro_cache::macro_cache(misc::shared_ptr<persistent_cache> const& cache)
  *  Destructor.
  */
 macro_cache::~macro_cache() {
-  if (!_cache.isNull()) {
+  if (_cache.get() != NULL) {
     try {
       _save_to_disk();
     } catch (std::exception e) {

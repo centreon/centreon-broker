@@ -93,7 +93,7 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
-                         misc::shared_ptr<persistent_cache> cache) const {
+                         std::shared_ptr<persistent_cache> cache) const {
   is_acceptor = true;
   // Find the protocol to use.
   command_server::protocol prot = command_server::json;

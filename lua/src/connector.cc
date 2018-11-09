@@ -75,7 +75,7 @@ connector& connector::operator=(connector const& other) {
 void connector::connect_to(
                   std::string const& lua_script,
                   QMap<QString, QVariant> const& cfg_params,
-                  misc::shared_ptr<persistent_cache> const& cache) {
+                  std::shared_ptr<persistent_cache> const& cache) {
   _conf_params = cfg_params;
   _lua_script = lua_script;
   _cache = cache;

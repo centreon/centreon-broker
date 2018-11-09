@@ -95,7 +95,7 @@ int main() {
   multiplexing::engine::instance().start();
 
   try {
-    misc::shared_ptr<persistent_cache> cache(
+    std::shared_ptr<persistent_cache> cache(
       new persistent_cache(persistent_cache_file));
 
     {

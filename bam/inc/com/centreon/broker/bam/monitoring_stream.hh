@@ -43,7 +43,7 @@ namespace           bam {
                       std::string const& ext_cmd_file,
                       database_config const& db_cfg,
                       database_config const& storage_db_cfg,
-                      misc::shared_ptr<persistent_cache> cache);
+                      std::shared_ptr<persistent_cache> cache);
                     ~monitoring_stream();
     int             flush();
     void            initialize();
@@ -82,7 +82,7 @@ namespace           bam {
     int             _ack_events;
     int             _pending_events;
     database_config _storage_db_cfg;
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                     _cache;
   };
 }

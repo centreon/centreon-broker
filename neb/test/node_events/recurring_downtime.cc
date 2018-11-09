@@ -65,7 +65,7 @@ int main() {
     // Create node event stream.
     node_events_stream test(
       "1",
-      misc::shared_ptr<persistent_cache>(NULL),
+      std::shared_ptr<persistent_cache>(NULL),
       PROJECT_SOURCE_DIR "/neb/test/node_events/cfg/downtime.cfg");
 
     time::timeperiod::ptr tp(new time::timeperiod(

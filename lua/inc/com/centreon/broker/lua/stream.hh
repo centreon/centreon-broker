@@ -40,7 +40,7 @@ namespace          lua {
                     stream(
                       std::string const& lua_script,
                       QMap<QString, QVariant> const& conf_params,
-                      misc::shared_ptr<persistent_cache> const& cache);
+                      std::shared_ptr<persistent_cache> const& cache);
                     ~stream();
     bool            read(misc::shared_ptr<io::data>& d, time_t deadline);
     int             write(misc::shared_ptr<io::data> const& d);

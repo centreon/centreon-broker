@@ -43,8 +43,8 @@ namespace          tls {
     io::endpoint*  new_endpoint(
                      config::endpoint& cfg,
                      bool& is_acceptor,
-                     misc::shared_ptr<persistent_cache> cache
-                     = misc::shared_ptr<persistent_cache>()) const;
+                     std::shared_ptr<persistent_cache> cache
+                     = std::shared_ptr<persistent_cache>()) const;
     misc::shared_ptr<io::stream>
                    new_stream(
                      misc::shared_ptr<io::stream> to,

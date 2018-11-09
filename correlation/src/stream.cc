@@ -49,7 +49,7 @@ using namespace com::centreon::broker::correlation;
  */
 stream::stream(
           QString const& correlation_file,
-          misc::shared_ptr<persistent_cache> cache,
+          std::shared_ptr<persistent_cache> cache,
           bool load_correlation,
           bool passive)
   : _cache(cache),
@@ -250,7 +250,7 @@ void stream::_load_correlation() {
   p.parse(_correlation_file, _nodes);
 
   // Load the cache.
-  if (!_cache.isNull()) {
+  if (_cache.get() != NULL) {
     misc::shared_ptr<io::data> d;
     while (true) {
       _cache->get(d);
@@ -323,7 +323,7 @@ void stream::_load_correlation_event(misc::shared_ptr<io::data> const& d) {
  */
 void stream::_save_persistent_cache() {
   // No cache, nothing to do.
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   // Serialize to the cache.

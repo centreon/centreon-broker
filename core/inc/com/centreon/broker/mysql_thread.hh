@@ -101,7 +101,7 @@ class                    mysql_thread : public QThread {
   bool                   _finished;
   std::list<std::shared_ptr<mysql_task> >
                          _tasks_list;
-  umap<unsigned int, MYSQL_STMT*>
+  std::unordered_map<unsigned int, MYSQL_STMT*>
                          _stmt;
 
   // Mutex and condition working on result and error_msg.

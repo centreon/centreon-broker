@@ -349,8 +349,6 @@ void rebuilder::_rebuild_metric(
 
   // Send rebuild end event.
   _send_rebuild_event(true, metric_id, false);
-
-  return ;
 }
 
 /**

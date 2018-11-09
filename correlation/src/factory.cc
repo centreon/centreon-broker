@@ -93,7 +93,7 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
 			 bool& is_acceptor,
-			 misc::shared_ptr<persistent_cache> cache) const {
+			 std::shared_ptr<persistent_cache> cache) const {
   // Find correlation file.
   QString correlation_file;
   {

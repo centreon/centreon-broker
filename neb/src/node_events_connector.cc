@@ -34,7 +34,7 @@ using namespace com::centreon::broker::neb;
  */
 node_events_connector::node_events_connector(
                          std::string const& name,
-                         misc::shared_ptr<persistent_cache> cache,
+                         std::shared_ptr<persistent_cache> cache,
                          std::string const& config_file)
   : io::endpoint(false),
     _cache(cache),

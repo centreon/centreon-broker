@@ -41,7 +41,7 @@ using namespace com::centreon::broker::lua;
 stream::stream(
           std::string const& lua_script,
           QMap<QString, QVariant> const& conf_params,
-          misc::shared_ptr<persistent_cache> const& cache)
+          std::shared_ptr<persistent_cache> const& cache)
   : _cache(cache) {
   _luabinding = new luabinding(lua_script, conf_params, _cache);
 }
