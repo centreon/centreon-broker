@@ -1099,7 +1099,7 @@ TEST_F(LuaTest, ParsePerfdata) {
   std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
-  ASSERT_TRUE(lst[0].contains("\"percent_packet_loss\":0.0"));
+  ASSERT_TRUE(lst[0].contains("\"percent_packet_loss\":0"));
   ASSERT_TRUE(lst[0].contains("\"rta\":0.8"));
   ASSERT_TRUE(lst[1].contains("\"one value\":0"));
   ASSERT_TRUE(lst[1].contains("\"another value\":0.89"));
