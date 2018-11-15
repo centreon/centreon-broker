@@ -18,6 +18,7 @@
 
 #include <cmath>
 #include <gtest/gtest.h>
+#include <future>
 #include <memory>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -66,7 +67,7 @@ TEST_F(DatabaseStorageTest, NoDatabase) {
     "admin",
     "centreon",
     "centreon_storage");
-  std::auto_ptr<mysql> ms;
+  std::unique_ptr<mysql> ms;
   ASSERT_THROW(ms.reset(new mysql(db_cfg)), exceptions::msg);
 }
 
@@ -81,7 +82,7 @@ TEST_F(DatabaseStorageTest, ConnectionOk) {
     "root",
     "root",
     "centreon_storage");
-  std::auto_ptr<mysql> ms;
+  std::unique_ptr<mysql> ms;
   ASSERT_NO_THROW(ms.reset(new mysql(db_cfg)));
 }
 
@@ -101,7 +102,7 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   std::ostringstream oss;
   int now(time(NULL));
   oss << "INSERT INTO data_bin (id_metric, ctime, status, value) VALUES "
@@ -109,23 +110,23 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
   int thread_id(ms->run_query(oss.str()));
   oss.str("");
   oss << "SELECT id_metric, status FROM data_bin WHERE ctime=" << now;
-  std::promise<mysql_result> p;
-  std::future fut(p.get_future());
-  ms->run_query_promise(
+  std::promise<mysql_result> promise;
+  ms->run_query(
         oss.str(),
+        &promise,
         "", false,
-        &p,
         thread_id);
 
   // The query is done from the same thread/connection
-  mysql_result res(fut.get());
+  mysql_result res(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_FALSE(ms->fetch_row(thread_id, res));
   ASSERT_NO_THROW(ms->commit(thread_id));
 
-  thread_id = ms->run_query(oss.str());
-  res = ms->get_future_result(thread_id);
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  promise = std::promise<mysql_result>();
+  thread_id = ms->run_query(oss.str(), &promise, "", false, thread_id);
+  mysql_result res1(promise.get_future().get());
+  ASSERT_TRUE(ms->fetch_row(thread_id, res1));
 }
 
 // Given a mysql object
@@ -155,7 +156,7 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
          "         ?, ?, ?, ?, "
          "         ?, ?)";
 
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   std::ostringstream nss;
   nss << "metric_name - " << time(NULL);
   mysql_stmt stmt(ms->prepare_query(oss.str()));
@@ -173,15 +174,17 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
   stmt.bind_value_as_f32(11, 18.0);
   stmt.bind_value_as_str(12, "2");
   // We force the thread 0
-  ms->run_statement(stmt, "", false, 0);
+  ms->run_statement(stmt, NULL, "", false, 0);
   oss.str("");
   oss << "SELECT metric_name FROM metrics WHERE metric_name='" << nss.str() << "'";
-  int thread_id(ms->run_query(oss.str()));
-  mysql_result res(ms->get_result(thread_id));
+  std::promise<mysql_result> promise;
+  int thread_id(ms->run_query(oss.str(), &promise));
+  mysql_result res(promise.get_future().get());
   ASSERT_FALSE(ms->fetch_row(thread_id, res));
   ASSERT_NO_THROW(ms->commit());
-  thread_id = ms->run_query(oss.str());
-  res = ms->get_result(thread_id);
+  promise = std::promise<mysql_result>();
+  thread_id = ms->run_query(oss.str(), &promise);
+  res = promise.get_future().get();
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
 }
 
@@ -212,7 +215,7 @@ TEST_F(DatabaseStorageTest, PrepareQueryBadQuery) {
          "         ?, ?, ?, ?, "
          "         ?, ?";
 
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   std::ostringstream nss;
   nss << "metric_name - " << time(NULL);
   mysql_stmt stmt(ms->prepare_query(oss.str()));
@@ -232,7 +235,7 @@ TEST_F(DatabaseStorageTest, PrepareQueryBadQuery) {
   // The commit forces threads to empty their tasks stack
   ms->commit();
   // We are sure, the error is set.
-  ASSERT_THROW(ms->run_statement(stmt, "", false, 0), std::exception);
+  ASSERT_THROW(ms->run_statement(stmt, NULL, "", false, 0), std::exception);
 }
 
 TEST_F(DatabaseStorageTest, SelectSync) {
@@ -249,9 +252,10 @@ TEST_F(DatabaseStorageTest, SelectSync) {
   std::ostringstream oss;
   oss << "SELECT metric_id, index_id, metric_name FROM metrics LIMIT 10";
 
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
-  int id(ms->run_query(oss.str()));
-  mysql_result res(ms->get_result(id));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
+  std::promise<mysql_result> promise;
+  int id(ms->run_query(oss.str(), &promise));
+  mysql_result res(promise.get_future().get());
   int count(0);
   while (ms->fetch_row(id, res)) {
     int v(res.value_as_i32(0));
@@ -276,9 +280,14 @@ TEST_F(DatabaseStorageTest, QuerySyncWithError) {
     true,
     5);
 
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
-  int thread_id(ms->run_query("SELECT foo FROM bar LIMIT 1", "ERROR", true));
-  ASSERT_THROW(ms->get_result(thread_id), exceptions::msg);
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
+  std::promise<mysql_result> promise;
+  int thread_id(ms->run_query(
+        "SELECT foo FROM bar LIMIT 1",
+        &promise,
+        "ERROR",
+        true));
+  ASSERT_THROW(promise.get_future().get(), exceptions::msg);
 }
 
 TEST_F(DatabaseStorageTest, QueryWithError) {
@@ -293,14 +302,14 @@ TEST_F(DatabaseStorageTest, QueryWithError) {
     true,
     5);
 
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   // The following insert fails
-  ms->run_query("INSERT INTO FOO (toto) VALUES (0)", "", true, 1);
+  ms->run_query("INSERT INTO FOO (toto) VALUES (0)", NULL, "", true, 1);
   ms->commit();
 
   // The following is the same one, executed by the same thread but since the
   // previous error, an exception should arrive.
-  ASSERT_THROW(ms->run_query("INSERT INTO FOO (toto) VALUES (0)", "", true, 1), std::exception);
+  ASSERT_THROW(ms->run_query("INSERT INTO FOO (toto) VALUES (0)", NULL, "", true, 1), std::exception);
 }
 
 // Given a mysql object
@@ -331,7 +340,7 @@ TEST_F(DatabaseStorageTest, LastInsertId) {
          " VALUES (19, '" << nss.str()
       << "', 'test/s', 20.0, 40.0, 1, 10.0, 20.0, 1, 0.0, 50.0, 18.0, '2')";
 
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   // We force the thread 0
   std::cout << oss.str() << std::endl;
   int thread_id(ms->run_query(oss.str()));
@@ -347,8 +356,9 @@ TEST_F(DatabaseStorageTest, LastInsertId) {
   oss << "SELECT metric_id FROM metrics WHERE metric_name = '"
     << nss.str() << "'";
   std::cout << oss.str() << std::endl;
-  thread_id = ms->run_query(oss.str());
-  mysql_result res(ms->get_result(thread_id));
+  std::promise<mysql_result> promise;
+  thread_id = ms->run_query(oss.str(), &promise);
+  mysql_result res(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_TRUE(res.value_as_i32(0) == id);
 }
@@ -376,7 +386,7 @@ TEST_F(DatabaseStorageTest, PrepareQuerySync) {
          "         ?, ?, ?, ?, "
          "         ?, ?)";
 
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   std::ostringstream nss;
   nss << "metric_name - " << time(NULL) << "bis2";
   mysql_stmt stmt(ms->prepare_query(oss.str()));
@@ -394,18 +404,20 @@ TEST_F(DatabaseStorageTest, PrepareQuerySync) {
   stmt.bind_value_as_f32(11, 18.0);
   stmt.bind_value_as_str(12, "2");
   // We force the thread 0
-  int thread_id(ms->run_statement(stmt, "", 0));
+  int thread_id(ms->run_statement(stmt, NULL, "", 0));
   int id(ms->get_last_insert_id(thread_id));
   ASSERT_TRUE(id > 0);
   std::cout << "id = " << id << std::endl;
   oss.str("");
   oss << "SELECT metric_id FROM metrics WHERE metric_name='" << nss.str() << "'";
-  thread_id = ms->run_query(oss.str());
-  mysql_result res(ms->get_result(thread_id));
+  std::promise<mysql_result> promise;
+  thread_id = ms->run_query(oss.str(), &promise);
+  mysql_result res(promise.get_future().get());
   ASSERT_FALSE(ms->fetch_row(thread_id, res));
   ASSERT_NO_THROW(ms->commit());
-  thread_id = ms->run_query(oss.str());
-  res = ms->get_result(thread_id);
+  promise = std::promise<mysql_result>();
+  thread_id = ms->run_query(oss.str(), &promise);
+  res = promise.get_future().get();
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
   std::cout << "id1 = " << res.value_as_i32(0) << std::endl;
   ASSERT_TRUE(res.value_as_i32(0) == id);
@@ -435,7 +447,7 @@ TEST_F(DatabaseStorageTest, RepeatPrepareQuery) {
 	 " min=?, max=?, current_value=? "
 	 "WHERE metric_id=?";
 
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   mysql_stmt stmt(ms->prepare_query(oss.str()));
   for (int i(1); i < 4000; ++i) {
     stmt.bind_value_as_str(0, "test/s");
@@ -469,7 +481,7 @@ TEST_F(DatabaseStorageTest, InstanceStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   query_preparator::event_unique unique;
   unique.insert("instance_id");
   query_preparator qp(neb::instance::static_type(), unique);
@@ -484,28 +496,29 @@ TEST_F(DatabaseStorageTest, InstanceStatement) {
   inst.version = "1.8.1";
 
   inst_insupdate << inst;
-  ms->run_statement(inst_insupdate, "", false, 0);
+  ms->run_statement(inst_insupdate, NULL, "", false, 0);
 
   // Deletion
   inst_delete << inst;
-  ms->run_statement(inst_delete, "", false, 0);
+  ms->run_statement(inst_delete, NULL, "", false, 0);
 
   // Insert
   inst_insupdate << inst;
-  ms->run_statement(inst_insupdate, "", false, 0);
+  ms->run_statement(inst_insupdate, NULL, "", false, 0);
 
   // Update
   inst.program_end = time(NULL);
   inst_insupdate << inst;
-  ms->run_statement(inst_insupdate, "", false, 0);
+  ms->run_statement(inst_insupdate, NULL, "", false, 0);
 
   ms->commit();
 
   std::stringstream oss;
   oss << "SELECT instance_id FROM instances WHERE "
     "instance_id=1";
-  int thread_id(ms->run_query(oss.str()));
-  mysql_result res(ms->get_result(thread_id));
+  std::promise<mysql_result> promise;
+  int thread_id(ms->run_query(oss.str(), &promise));
+  mysql_result res(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
 }
 
@@ -523,7 +536,7 @@ TEST_F(DatabaseStorageTest, HostStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
 
   query_preparator::event_unique unique;
   unique.insert("host_id");
@@ -552,19 +565,21 @@ TEST_F(DatabaseStorageTest, HostStatement) {
 
   // Insert
   host_insupdate << h;
-  ms->run_statement(host_insupdate, "", false, 0);
+  ms->run_statement(host_insupdate, NULL, "", false, 0);
 
   // Update
   h.stalk_on_up = true;
   host_insupdate << h;
-  ms->run_statement(host_insupdate, "", false, 0);
+  ms->run_statement(host_insupdate, NULL, "", false, 0);
 
   ms->commit();
 
+  std::promise<mysql_result> promise;
   thread_id = ms->run_query(
         "SELECT stalk_on_up FROM hosts WHERE "
-        "host_id=24");
-  mysql_result res(ms->get_result(thread_id));
+        "host_id=24",
+        &promise);
+  mysql_result res(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_TRUE(res.value_as_bool(0));
 
@@ -585,11 +600,12 @@ TEST_F(DatabaseStorageTest, HostStatement) {
   h.timezone = "Europe/Paris";
 
   host_insupdate << h;
-  ms->run_statement(host_insupdate, "", false, 0);
+  ms->run_statement(host_insupdate, NULL, "", false, 0);
   ms->commit();
+  promise = std::promise<mysql_result>();
   thread_id = ms->run_query(
-        "SELECT host_id FROM hosts");
-  res = ms->get_result(thread_id);
+        "SELECT host_id FROM hosts", &promise);
+  res = promise.get_future().get();
   for (int i(0); i < 2; ++i) {
     ASSERT_TRUE(ms->fetch_row(thread_id, res));
     int v(res.value_as_i32(0));
@@ -610,7 +626,7 @@ TEST_F(DatabaseStorageTest, CustomVarStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   query_preparator::event_unique unique;
   unique.insert("host_id");
   unique.insert("name");
@@ -629,20 +645,20 @@ TEST_F(DatabaseStorageTest, CustomVarStatement) {
   cv.default_value = "centengine";
 
   cv_insert_or_update << cv;
-  ms->run_statement(cv_insert_or_update, "", false, 0);
+  ms->run_statement(cv_insert_or_update, NULL, "", false, 0);
 
   // Deletion
   cv_delete << cv;
-  ms->run_statement(cv_delete, "", false, 0);
+  ms->run_statement(cv_delete, NULL, "", false, 0);
 
   // Insert
   cv_insert_or_update << cv;
-  ms->run_statement(cv_insert_or_update, "", false, 0);
+  ms->run_statement(cv_insert_or_update, NULL, "", false, 0);
 
   // Update
   cv.update_time = time(NULL) + 1;
   cv_insert_or_update << cv;
-  ms->run_statement(cv_insert_or_update, "", false, 0);
+  ms->run_statement(cv_insert_or_update, NULL, "", false, 0);
 
   ms->commit();
 
@@ -650,8 +666,9 @@ TEST_F(DatabaseStorageTest, CustomVarStatement) {
   oss << "SELECT host_id FROM customvariables WHERE "
     "host_id=31 AND service_id=498"
     " AND name='PROCESSNAME'";
-  int thread_id(ms->run_query(oss.str()));
-  mysql_result res(ms->get_result(thread_id));
+  std::promise<mysql_result> promise;
+  int thread_id(ms->run_query(oss.str(), &promise));
+  mysql_result res(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_FALSE(ms->fetch_row(thread_id, res));
 }
@@ -669,7 +686,7 @@ TEST_F(DatabaseStorageTest, ModuleStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   query_preparator qp(neb::module::static_type());
   mysql_stmt module_insert(qp.prepare_insert(*ms));
 
@@ -686,11 +703,12 @@ TEST_F(DatabaseStorageTest, ModuleStatement) {
 
   // Insert
   module_insert << m;
-  ms->run_statement(module_insert, "", false);
+  ms->run_statement(module_insert, NULL, "", false);
   ms->commit();
 
-  thread_id = ms->run_query("SELECT module_id FROM modules LIMIT 1");
-  mysql_result res(ms->get_result(thread_id));
+  std::promise<mysql_result> promise;
+  thread_id = ms->run_query("SELECT module_id FROM modules LIMIT 1", &promise);
+  mysql_result res(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
 }
 
@@ -708,7 +726,7 @@ TEST_F(DatabaseStorageTest, LogStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   query_preparator qp(neb::log_entry::static_type());
   mysql_stmt log_insert(qp.prepare_insert(*ms));
 
@@ -728,13 +746,15 @@ TEST_F(DatabaseStorageTest, LogStatement) {
 
   // Insert
   log_insert << le;
-  ms->run_statement(log_insert, "", false);
+  ms->run_statement(log_insert, NULL, "", false);
   ms->commit();
 
+  std::promise<mysql_result> promise;
   thread_id = ms->run_query(
         "SELECT log_id FROM logs "
-        "WHERE output = \"Event loop start at bar date\"");
-  mysql_result res(ms->get_result(thread_id));
+        "WHERE output = \"Event loop start at bar date\"",
+        &promise);
+  mysql_result res(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
 }
 
@@ -752,7 +772,7 @@ TEST_F(DatabaseStorageTest, InstanceStatusStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   query_preparator::event_unique unique;
   unique.insert("instance_id");
   query_preparator qp(neb::instance_status::static_type(), unique);
@@ -774,14 +794,16 @@ TEST_F(DatabaseStorageTest, InstanceStatusStatement) {
 
   // Insert
   inst_status_update << is;
-  int thread_id(ms->run_statement(inst_status_update, "", false));
+  int thread_id(ms->run_statement(inst_status_update, NULL, "", false));
   ASSERT_TRUE(ms->get_affected_rows(thread_id, inst_status_update) == 1);
   ms->commit();
 
+  std::promise<mysql_result> promise;
   thread_id = ms->run_query(
         "SELECT active_host_checks FROM instances "
-        "WHERE instance_id=1");
-  mysql_result res(ms->get_result(thread_id));
+        "WHERE instance_id=1",
+        &promise);
+  mysql_result res(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_TRUE(res.value_as_bool(0));
 }
@@ -800,7 +822,7 @@ TEST_F(DatabaseStorageTest, HostCheckStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   query_preparator::event_unique unique;
   unique.insert("host_id");
   query_preparator qp(neb::host_check::static_type(), unique);
@@ -812,12 +834,14 @@ TEST_F(DatabaseStorageTest, HostCheckStatement) {
 
   // Update
   host_check_update << hc;
-  ms->run_statement(host_check_update, "", false);
+  ms->run_statement(host_check_update, NULL, "", false);
   ms->commit();
 
+  std::promise<mysql_result> promise;
   int thread_id(ms->run_query(
-        "SELECT host_id FROM hosts WHERE host_id=24"));
-  mysql_result res(ms->get_result(thread_id));
+        "SELECT host_id FROM hosts WHERE host_id=24",
+        &promise));
+  mysql_result res(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
 }
 
@@ -835,7 +859,7 @@ TEST_F(DatabaseStorageTest, HostStatusStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   query_preparator::event_unique unique;
   unique.insert("host_id");
   query_preparator qp(neb::host_status::static_type(), unique);
@@ -869,14 +893,16 @@ TEST_F(DatabaseStorageTest, HostStatusStatement) {
 
   // Update
   host_status_update << hs;
-  int thread_id(ms->run_statement(host_status_update, "", false));
+  int thread_id(ms->run_statement(host_status_update, NULL, "", false));
 
   ASSERT_TRUE(ms->get_affected_rows(thread_id, host_status_update) == 1);
 
   ms->commit();
+  std::promise<mysql_result> promise;
   thread_id = ms->run_query(
-                    "SELECT execution_time FROM hosts WHERE host_id=24");
-  mysql_result res(ms->get_result(thread_id));
+                    "SELECT execution_time FROM hosts WHERE host_id=24",
+                    &promise);
+  mysql_result res(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_TRUE(res.value_as_f64(0) == 0.159834);
 }
@@ -895,7 +921,7 @@ TEST_F(DatabaseStorageTest, ServiceStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   query_preparator::event_unique unique;
   unique.insert("host_id");
   unique.insert("service_id");
@@ -926,12 +952,14 @@ TEST_F(DatabaseStorageTest, ServiceStatement) {
 
   // Update
   service_insupdate << s;
-  thread_id = ms->run_statement(service_insupdate, "", false);
+  thread_id = ms->run_statement(service_insupdate, NULL, "", false);
 
   ms->commit();
+  std::promise<mysql_result> promise;
   thread_id = ms->run_query(
-                    "SELECT notification_interval FROM services WHERE host_id=24 AND service_id=318");
-  mysql_result res(ms->get_result(thread_id));
+                    "SELECT notification_interval FROM services WHERE host_id=24 AND service_id=318",
+                    &promise);
+  mysql_result res(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_TRUE(res.value_as_i32(0) == 30);
 }
@@ -950,7 +978,7 @@ TEST_F(DatabaseStorageTest, ServiceCheckStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   query_preparator::event_unique unique;
   unique.insert("host_id");
   unique.insert("service_id");
@@ -964,14 +992,16 @@ TEST_F(DatabaseStorageTest, ServiceCheckStatement) {
 
   // Update
   service_check_update << sc;
-  int thread_id(ms->run_statement(service_check_update, "", false));
+  int thread_id(ms->run_statement(service_check_update, NULL, "", false));
 
   ASSERT_TRUE(ms->get_affected_rows(thread_id, service_check_update) == 1);
 
   ms->commit();
+  std::promise<mysql_result> promise;
   thread_id = ms->run_query(
-                    "SELECT command_line FROM services WHERE host_id=24 AND service_id=318");
-  mysql_result res(ms->get_result(thread_id));
+                    "SELECT command_line FROM services WHERE host_id=24 AND service_id=318",
+                    &promise);
+  mysql_result res(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
   ASSERT_TRUE(res.value_as_str(0) == "/usr/bin/bash /home/admin/test.sh");
 }
@@ -990,7 +1020,7 @@ TEST_F(DatabaseStorageTest, ServiceStatusStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   query_preparator::event_unique unique;
   unique.insert("host_id");
   unique.insert("service_id");
@@ -1007,7 +1037,7 @@ TEST_F(DatabaseStorageTest, ServiceStatusStatement) {
 
   // Update
   service_status_update << ss;
-  int thread_id(ms->run_statement(service_status_update, "", false));
+  int thread_id(ms->run_statement(service_status_update, NULL, "", false));
 
   ASSERT_TRUE(ms->get_affected_rows(thread_id, service_status_update) == 1);
 
@@ -1027,12 +1057,14 @@ TEST_F(DatabaseStorageTest, SelectStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
   std::string query("SELECT value,status FROM data_bin WHERE ctime >= ?");
   mysql_stmt select_stmt(ms->prepare_query(query));
   select_stmt.bind_value_as_u64(0, time(NULL) - 20);
-  int thread_id(ms->run_statement(select_stmt));
-  mysql_result res(ms->get_result(thread_id, select_stmt));
+  std::promise<mysql_result> promise;
+  int thread_id(ms->run_statement(select_stmt, &promise));
+  mysql_result res(promise.get_future().get());
+  //mysql_result res(ms->get_result(thread_id, select_stmt));
 
   while (ms->fetch_row(thread_id, res)) {
     ASSERT_TRUE(res.value_as_f64(0) == 2.5);
@@ -1053,7 +1085,7 @@ TEST_F(DatabaseStorageTest, DowntimeStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
 
   std::ostringstream oss;
   oss << "INSERT INTO " << ((ms->schema_version() == mysql::v2)
@@ -1114,7 +1146,7 @@ TEST_F(DatabaseStorageTest, HostGroupMemberStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
 
   ms->run_query("DELETE FROM hostgroups");
   ms->run_query("DELETE FROM hosts_hostgroups");
@@ -1145,6 +1177,7 @@ TEST_F(DatabaseStorageTest, HostGroupMemberStatement) {
 
   int thread_id(ms->run_statement(
                       host_group_member_insert,
+                      NULL,
                       "Error: host group not defined", true));
 
   neb::host_group hg;
@@ -1158,12 +1191,14 @@ TEST_F(DatabaseStorageTest, HostGroupMemberStatement) {
   std::cout << host_group_insupdate.get_query() << std::endl;
 
   ms->run_statement_on_condition(
-                 host_group_insupdate, mysql_task::ON_ERROR,
+                 host_group_insupdate, NULL, mysql_task::ON_ERROR,
                  "Error: Unable to create host group", true,
                  thread_id);
 
   ms->run_statement_on_condition(
-                 host_group_member_insert, mysql_task::IF_PREVIOUS,
+                 host_group_member_insert,
+                 NULL,
+                 mysql_task::IF_PREVIOUS,
                  "Error: host group not defined", true,
                  thread_id);
   ms->commit();
@@ -1182,7 +1217,7 @@ TEST_F(DatabaseStorageTest, HostParentStatement) {
     5,
     true,
     5);
-  std::auto_ptr<mysql> ms(new mysql(db_cfg));
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
 
   query_preparator
     qp(neb::host_parent::static_type());
@@ -1206,6 +1241,7 @@ TEST_F(DatabaseStorageTest, HostParentStatement) {
   host_parent_insert << hp;
   int thread_id(ms->run_statement(
         host_parent_insert,
+        NULL,
         oss.str(), false));
 
   ASSERT_TRUE(ms->get_affected_rows(thread_id, host_parent_insert) == 1);
@@ -1213,6 +1249,7 @@ TEST_F(DatabaseStorageTest, HostParentStatement) {
   // Second insert attempted just for the check
   ms->run_statement(
         host_parent_insert,
+        NULL,
         oss.str(), false,
         thread_id);
 
@@ -1224,6 +1261,7 @@ TEST_F(DatabaseStorageTest, HostParentStatement) {
   host_parent_delete << hp;
   ms->run_statement(
         host_parent_delete,
+        NULL,
         "SQL: ", false,
         thread_id);
 

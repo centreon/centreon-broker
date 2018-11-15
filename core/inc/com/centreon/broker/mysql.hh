@@ -18,6 +18,8 @@
 #ifndef CCB_MYSQL_HH
 #  define CCB_MYSQL_HH
 
+#  include <atomic>
+#  include <future>
 #  include "com/centreon/broker/mysql_thread.hh"
 
 CCB_BEGIN()
@@ -42,18 +44,21 @@ class                 mysql {
   void                commit(int thread_id = -1);
   int                 run_query(
                         std::string const& query,
+                        std::promise<mysql_result>* p = NULL,
                         std::string const& error_msg = "", bool fatal = false,
                         int thread = -1);
   int                 run_statement(
                         mysql_stmt& stmt,
+                        std::promise<mysql_result>* p = NULL,
                         std::string const& error_msg = "", bool fatal = false,
                         int thread = -1);
   int                 run_statement_on_condition(
-                        mysql_stmt& stmt, mysql_task::condition condition,
+                        mysql_stmt& stmt,
+                        std::promise<mysql_result>* p,
+                        mysql_task::condition condition,
                         std::string const& error_msg, bool fatal,
                         int thread);
-  mysql_result        get_result(int thread_id);
-  mysql_result        get_result(int thread_id, mysql_stmt const& stmt);
+  //mysql_result        get_result(int thread_id, mysql_stmt const& stmt);
   bool                fetch_row(int thread_id, mysql_result& res);
   int                 get_last_insert_id(int thread_id);
   void                check_affected_rows(
@@ -71,7 +76,10 @@ class                 mysql {
   bool                commit_if_needed();
 
  private:
+  static void         _initialize_mysql();
   void                _check_errors(int thread_id);
+  static std::atomic_int
+                      _count_ref;
 
   database_config     _db_cfg;
   int                 _pending_queries;

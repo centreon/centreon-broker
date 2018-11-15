@@ -80,8 +80,12 @@ monitoring_stream::monitoring_stream(
   // and therefore auto-detection does not work.
   {
     try {
-      int thread_id(_mysql.run_query("SELECT ba_id FROM mod_bam LIMIT 1", "", true));
-      _mysql.get_result(thread_id);
+      std::promise<mysql_result> promise;
+      int thread_id(_mysql.run_query(
+            "SELECT ba_id FROM mod_bam LIMIT 1",
+            &promise,
+            "", true));
+      promise.get_future().get();
       _db_v2 = true;
     }
     catch (...) {
@@ -279,6 +283,7 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
             << status->ba_id << ": ";
     _mysql.run_statement(
              _ba_update,
+             NULL,
              oss_err.str(), true);
 
     if (status->state_changed) {
@@ -328,7 +333,7 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     _kpi_update.bind_value_as_bool(":in_downtime", status->in_downtime);
     std::ostringstream oss_err;
     oss_err << "BAM: could not update KPI " << status->kpi_id << ": ";
-    _mysql.run_statement(_kpi_update, oss_err.str(), true);
+    _mysql.run_statement(_kpi_update, NULL, oss_err.str(), true);
   }
   // else if (data->type() == bam::meta_service_status::static_type()) {
   //   meta_service_status* status(static_cast<meta_service_status*>(data.data()));
@@ -454,10 +459,11 @@ void monitoring_stream::_rebuild() {
     query << "SELECT ba_id"
           << "  FROM " << (_db_v2 ? "mod_bam" : "cfg_bam")
           << "  WHERE must_be_rebuild='1'";
+    std::promise<mysql_result> promise;
     int thread_id(_mysql.run_query(
-        query.str(),
+        query.str(), &promise,
         "BAM: could not select the list of BAs to rebuild"));
-    mysql_result res(_mysql.get_result(thread_id));
+    mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(thread_id, res))
       bas_to_rebuild.push_back(res.value_as_u32(0));
   }
@@ -490,7 +496,7 @@ void monitoring_stream::_rebuild() {
     query << "UPDATE " << (_db_v2 ? "mod_bam" : "cfg_bam")
           << "  SET must_be_rebuild='0'";
     _mysql.run_query(
-        query.str(),
+        query.str(), NULL,
         "BAM: could not update the list of BAs to rebuild");
   }
 }

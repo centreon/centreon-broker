@@ -16,13 +16,18 @@
 ** For more information : contact@centreon.com
 */
 #include <QSemaphore>
+#include <atomic>
 #include <iostream>
+#include <mutex>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/mysql_error.hh"
 
 using namespace com::centreon::broker;
+
+std::atomic_int mysql::_count_ref(0);
+std::once_flag init_flag;
 
 /**
  *  Constructor.
@@ -34,9 +39,12 @@ mysql::mysql(database_config const& db_cfg)
     _pending_queries(0),
     _version(mysql::v3),
     _current_thread(0) {
-  if (mysql_library_init(0, NULL, NULL))
-    throw exceptions::msg()
-      << "mysql: unable to initialize the MySQL connector";
+
+  ++_count_ref;
+
+  // Mysql initialization must be done only one time. But it must be done
+  // before follo<ing code to be executed.
+  std::call_once(init_flag, mysql::_initialize_mysql);
 
   for (int i(0); i < db_cfg.get_connections_count(); ++i) {
     std::cout << "mysql constructor thread " << i << " construction" << std::endl;
@@ -44,10 +52,13 @@ mysql::mysql(database_config const& db_cfg)
     std::cout << "mysql constructor next one" << std::endl;
   }
   try {
-    int thread_id(run_query("SELECT instance_id FROM instances LIMIT 1",
+    std::promise<mysql_result> promise;
+    int thread_id(run_query(
+                    "SELECT instance_id FROM instances LIMIT 1",
+                    &promise,
                     "", true));
-    get_result(thread_id);
     _version = v2;
+    promise.get_future().get();
     logging::info(logging::low)
       << "mysql: database is using version 2 of Centreon schema";
   }
@@ -55,6 +66,12 @@ mysql::mysql(database_config const& db_cfg)
     logging::info(logging::low)
       << "mysql: database is using version 3 of Centreon schema";
   }
+}
+
+void mysql::_initialize_mysql() {
+  if (mysql_library_init(0, NULL, NULL))
+    throw exceptions::msg()
+      << "mysql: unable to initialize the MySQL connector";
 }
 
 /**
@@ -73,7 +90,8 @@ mysql::~mysql() {
        ++it)
     delete *it;
 
-  mysql_library_end();
+  if (--_count_ref == 0)
+    mysql_library_end();
 }
 
 /**
@@ -86,7 +104,7 @@ mysql::~mysql() {
  */
 void mysql::commit(int thread_id) {
   QSemaphore sem;
-  QAtomicInt ko(0);
+  std::atomic_int ko(0);
   int commits;
   if (thread_id < 0) {
     for (std::vector<mysql_thread*>::const_iterator
@@ -110,19 +128,6 @@ void mysql::commit(int thread_id) {
 }
 
 /**
- *  This function is used to get the result of a query. It
- *  gives the result only one time. After that, the result will be empty.
- *
- * @param thread_id The thread number that made the query.
- *
- * @return a mysql_result.
- */
-mysql_result mysql::get_result(int thread_id) {
-  _check_errors(thread_id);
-  return _thread[thread_id]->get_result();
-}
-
-/**
  *  This function is used to get the result of a statement. It
  *  gives the result only one time. After that, the result will be empty.
  *
@@ -131,10 +136,10 @@ mysql_result mysql::get_result(int thread_id) {
  *
  * @return a mysql_result.
  */
-mysql_result mysql::get_result(int thread_id, mysql_stmt const& stmt) {
-  _check_errors(thread_id);
-  return _thread[thread_id]->get_result(stmt.get_id());
-}
+//mysql_result mysql::get_result(int thread_id, mysql_stmt const& stmt) {
+//  _check_errors(thread_id);
+//  return _thread[thread_id]->get_result(stmt.get_id());
+//}
 
 bool mysql::fetch_row(int thread_id, mysql_result& res) {
   _check_errors(thread_id);
@@ -211,10 +216,13 @@ void mysql::_check_errors(int thread_id) {
  * @param fatal A boolean telling if the error is fatal. In that case, an
  *              exception will be thrown if the error occures.
  * @param thread A thread id or 0 to keep the library choosing which one.
+ * @param p A pointer to a promise or NULL. If it exists, it will be filled
+ *        with the result of the query.
  *
- * @return A boolean telling if a commit has been done after the query.
+ * @return The thread id that executed the query.
  */
 int mysql::run_query(std::string const& query,
+              std::promise<mysql_result>* p,
               std::string const& error_msg, bool fatal,
               int thread_id) {
   if (thread_id < 0) {
@@ -226,6 +234,7 @@ int mysql::run_query(std::string const& query,
   _check_errors(thread_id);
   _thread[thread_id]->run_query(
     query,
+    p,
     error_msg, fatal);
   return thread_id;
 }
@@ -236,14 +245,21 @@ int mysql::get_last_insert_id(int thread_id) {
 
 int mysql::run_statement_on_condition(
              mysql_stmt& stmt,
+             std::promise<mysql_result>* p,
              mysql_task::condition condition,
              std::string const& error_msg, bool fatal,
              int thread_id) {
-  _thread[thread_id]->run_statement_on_condition(stmt, condition, error_msg, fatal);
+  _thread[thread_id]->run_statement_on_condition(
+                        stmt,
+                        p,
+                        condition,
+                        error_msg,
+                        fatal);
   return thread_id;
 }
 
 int mysql::run_statement(mysql_stmt& stmt,
+             std::promise<mysql_result>* promise,
              std::string const& error_msg, bool fatal,
              int thread_id) {
   if (thread_id < 0) {
@@ -253,7 +269,7 @@ int mysql::run_statement(mysql_stmt& stmt,
       _current_thread = 0;
   }
   _check_errors(thread_id);
-  _thread[thread_id]->run_statement(stmt, error_msg, fatal);
+  _thread[thread_id]->run_statement(stmt, promise, error_msg, fatal);
   return thread_id;
 }
 

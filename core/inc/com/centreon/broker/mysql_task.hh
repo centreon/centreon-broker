@@ -19,7 +19,7 @@
 #ifndef CCB_MYSQL_TASK_HH
 #  define CCB_MYSQL_TASK_HH
 
-#include <QAtomicInt>
+#include <atomic>
 #include <QSemaphore>
 #include <mysql.h>
 #include "com/centreon/broker/namespace.hh"
@@ -39,7 +39,6 @@ class                    mysql_task {
                            LAST_INSERT_ID,
                            CHECK_AFFECTED_ROWS,
                            AFFECTED_ROWS,
-                           RESULT,
                            FETCH_ROW,
                            FINISH,
   };
@@ -65,22 +64,34 @@ class                    mysql_task_run : public mysql_task {
                           : mysql_task(mysql_task::RUN),
                             query(q),
                             error_msg(error_msg),
-                            fatal(fatal) {}
+                            fatal(fatal),
+                            promise(NULL) {}
+                         mysql_task_run(
+                           std::string const& q,
+                           std::string const& error_msg, bool fatal,
+                           std::promise<mysql_result>* p)
+                          : mysql_task(mysql_task::RUN),
+                            query(q),
+                            error_msg(error_msg),
+                            fatal(fatal),
+                            promise(p) {}
   std::string            query;
   std::string            error_msg;
   bool                   fatal;
+  std::promise<mysql_result>*
+                         promise;
 };
 
 class                    mysql_task_commit : public mysql_task {
  public:
                          mysql_task_commit(
                            QSemaphore& sem,
-                           QAtomicInt& count)
+                           std::atomic_int& count)
                           : mysql_task(mysql_task::COMMIT),
                             sem(sem),
                             count(count) {}
   QSemaphore&            sem;
-  QAtomicInt&            count;
+  std::atomic_int&       count;
 };
 
 class                    mysql_task_last_insert_id : public mysql_task {
@@ -89,14 +100,6 @@ class                    mysql_task_last_insert_id : public mysql_task {
                           : mysql_task(mysql_task::LAST_INSERT_ID),
                             id(id) {}
   int*                   id;
-};
-
-class                    mysql_task_result : public mysql_task {
- public:
-                         mysql_task_result(mysql_result* result)
-                          : mysql_task(mysql_task::RESULT),
-                            result(result) {}
-  mysql_result*          result;
 };
 
 class                    mysql_task_fetch : public mysql_task {
@@ -153,14 +156,18 @@ class                    mysql_task_statement : public mysql_task {
  public:
                          mysql_task_statement(
                            mysql_stmt& stmt,
+                           std::promise<mysql_result>* promise,
                            std::string const& error_msg,
                            bool fatal)
                           : mysql_task(mysql_task::STATEMENT),
+                            promise(promise),
                             statement_id(stmt.get_id()),
                             bind(stmt.get_bind()),
                             error_msg(error_msg),
                             fatal(fatal) {}
   int                    statement_id;
+  std::promise<mysql_result>*
+                         promise;
   std::shared_ptr<mysql_bind>
                          bind;
   std::string            error_msg;
@@ -170,10 +177,12 @@ class                    mysql_task_statement : public mysql_task {
 class                    mysql_task_statement_on_condition : public mysql_task_statement {
  public:
                          mysql_task_statement_on_condition(
-                           mysql_stmt& stmt, condition condition,
+                           mysql_stmt& stmt,
+                           std::promise<mysql_result>* promise,
+                           condition condition,
                            std::string const& error_msg,
                            bool fatal)
-                          : mysql_task_statement(stmt, error_msg, fatal),
+                          : mysql_task_statement(stmt, promise, error_msg, fatal),
                             condition(condition) {
                              type = STATEMENT_ON_CONDITION;
                           }

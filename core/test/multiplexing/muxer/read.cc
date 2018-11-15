@@ -18,6 +18,7 @@
 
 #include <gtest/gtest.h>
 #include <memory>
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
@@ -26,6 +27,14 @@ using namespace com::centreon::broker;
 
 class                  MultiplexingMuxerRead : public ::testing::Test {
  public:
+  void                 SetUp() {
+      config::applier::init();
+  }
+
+  void TearDown() {
+    config::applier::deinit();
+  }
+
   void                 setup(std::string const& name) {
     _m.reset(new multiplexing::muxer(name, false));
     multiplexing::muxer::filters f;

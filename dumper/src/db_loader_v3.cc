@@ -80,11 +80,13 @@ void db_loader_v3::load(entries::state& state, unsigned int poller_id) {
  *  Load BA types.
  */
 void db_loader_v3::_load_ba_types() {
+  std::promise<mysql_result> promise;
   int thread_id(_mysql.run_query(
       "SELECT ba_type_id, name, slug, description"
       "  FROM cfg_bam_ba_types",
+      &promise,
       "db_reader: could not load BA types from DB"));
-  mysql_result res(_mysql.get_result(thread_id));
+  mysql_result res(promise.get_future().get());
   while (_mysql.fetch_row(thread_id, res)) {
     entries::ba_type b;
     b.ba_type_id = res.value_as_u32(0);
@@ -93,7 +95,6 @@ void db_loader_v3::_load_ba_types() {
     b.description = res.value_as_str(3).c_str();
     _state->get_ba_types().push_back(b);
   }
-  return ;
 }
 
 /**
@@ -108,10 +109,12 @@ void db_loader_v3::_load_bas() {
            "    ON b.ba_id=pr.ba_id"
            "  WHERE b.activate='1'"
            "    AND pr.poller_id=" << _poller_id;
+  std::promise<mysql_result> promise;
   int thread_id(_mysql.run_query(
       query.str(),
+      &promise,
       "db_reader: could not load configuration of BAs from DB"));
-  mysql_result res(_mysql.get_result(thread_id));
+  mysql_result res(promise.get_future().get());
   while (_mysql.fetch_row(thread_id, res)) {
     entries::ba b;
     b.enable = true;
@@ -148,10 +151,12 @@ void db_loader_v3::_load_kpis() {
            "    ON k.drop_unknown_impact_id=iu.id_impact"
            "  WHERE k.activate='1'"
            "    AND pr.poller_id=" << _poller_id;
+  std::promise<mysql_result> promise;
   int thread_id(_mysql.run_query(
       query.str(),
+      &promise,
       "db_reader: could not load configuration of KPIs from DB"));
-  mysql_result res(_mysql.get_result(thread_id));
+  mysql_result res(promise.get_future().get());
   while (_mysql.fetch_row(thread_id, res)) {
     entries::kpi k;
     k.enable = true;
@@ -181,10 +186,12 @@ void db_loader_v3::_load_organizations() {
            "  INNER JOIN cfg_organizations AS o"
            "    ON p.organization_id=o.organization_id"
            "  WHERE p.poller_id=" << _poller_id;
+  std::promise<mysql_result> promise;
   int thread_id(_mysql.run_query(
       query.str(),
+      &promise,
       "db_reader: could not load organization from DB"));
-  mysql_result res(_mysql.get_result(thread_id));
+  mysql_result res(promise.get_future().get());
   if (!_mysql.fetch_row(thread_id, res))
     throw (exceptions::msg() << "db_reader: poller " << _poller_id
            << " has no organization: cannot load remaining tables");

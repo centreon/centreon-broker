@@ -137,8 +137,9 @@ void rebuilder::run() {
                 << " FROM " << (db_v2 ? "services" : "rt_services")
                 << " WHERE host_id=" << info.host_id
                 << "  AND service_id=" << info.service_id;
-          int thread_id(ms->run_query(oss.str()));
-          mysql_result res(ms->get_result(thread_id));
+          std::promise<mysql_result> promise;
+          int thread_id(ms->run_query(oss.str(), &promise));
+          mysql_result res(promise.get_future().get());
           if (ms->fetch_row(thread_id, res))
             check_interval = res.value_as_f64(0) * _interval_length;
           if (!check_interval)
@@ -164,8 +165,12 @@ void rebuilder::run() {
             std::ostringstream oss_err;
             oss_err << "storage: rebuilder: could not fetch metrics of index "
                     << index_id;
-            int thread_id(ms->run_query(oss.str(), oss_err.str(), true));
-            mysql_result res(ms->get_result(thread_id));
+            std::promise<mysql_result> promise;
+            int thread_id(ms->run_query(
+                  oss.str(),
+                  &promise,
+                  oss_err.str(), true));
+            mysql_result res(promise.get_future().get());
 
             while (!_should_exit && ms->fetch_row(thread_id, res)) {
               metric_info info;
@@ -249,12 +254,13 @@ void rebuilder::_next_index_to_rebuild(index_info& info, mysql& ms) {
            "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
         << "  WHERE must_be_rebuild=" << (db_v2 ? "'1'" : "1")
         << "  LIMIT 1";
+  std::promise<mysql_result> promise;
   int thread_id(ms.run_query(
-    query.str(),
+    query.str(), &promise,
     "storage: rebuilder: could not fetch index to rebuild",
     true));
 
-  mysql_result res(thread_id);
+  mysql_result res(promise.get_future().get());
   if (ms.fetch_row(thread_id, res)) {
     info.index_id = res.value_as_u32(0);
     info.host_id = res.value_as_u32(1);
@@ -315,10 +321,11 @@ void rebuilder::_rebuild_metric(
     std::ostringstream oss_err;
     oss_err << "storage: rebuilder: "
         << "cannot fetch data of metric " << metric_id << ": ";
-    int thread_id(ms.run_query(oss.str(), oss_err.str(), true));
+    std::promise<mysql_result> promise;
+    int thread_id(ms.run_query(oss.str(), &promise, oss_err.str(), true));
 
     if (!caught) {
-      mysql_result res(ms.get_result(thread_id));
+      mysql_result res(promise.get_future().get());
       while (!_should_exit && ms.fetch_row(thread_id, res)) {
         misc::shared_ptr<storage::metric> entry(new storage::metric);
         entry->ctime = res.value_as_u32(0);
@@ -386,10 +393,11 @@ void rebuilder::_rebuild_status(
     std::ostringstream oss_err;
     oss_err << "storage: rebuilder: "
             << "cannot fetch data of index " << index_id << ": ";
-    int thread_id(ms.run_query(oss.str(), oss_err.str(), false));
+    std::promise<mysql_result> promise;
+    int thread_id(ms.run_query(oss.str(), &promise, oss_err.str(), false));
     //FIXME DBR: caught is set to true in case of error
     if (!caught) {
-      mysql_result res(ms.get_result(thread_id));
+      mysql_result res(promise.get_future().get());
       while (!_should_exit && ms.fetch_row(thread_id, res)) {
         misc::shared_ptr<storage::status> entry(new storage::status);
         entry->ctime = res.value_as_u32(0);
@@ -453,5 +461,5 @@ void rebuilder::_set_index_rebuild(
   std::ostringstream oss_err;
   oss_err << "storage: rebuilder: cannot update state of index "
       << index_id << ": ";
-  ms.run_query(oss.str(), oss_err.str(), false);
+  ms.run_query(oss.str(), NULL, oss_err.str(), false);
 }

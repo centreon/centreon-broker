@@ -48,6 +48,7 @@ add_executable("ut"
   "${TESTS_DIR}/file/test_file.cc"
   "${TESTS_DIR}/file/test_fs_browser.hh"
   "${TESTS_DIR}/file/test_fs_browser.cc"
+  "${TESTS_DIR}/mysql/mysql.cc"
   "${TESTS_DIR}/multiplexing/muxer/read.cc"
   # Module sources.
   ${TESTS_SOURCES}

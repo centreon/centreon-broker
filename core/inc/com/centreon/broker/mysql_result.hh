@@ -34,7 +34,7 @@ class                         mysql_result {
  public:
                               mysql_result(int statement = 0);
                               mysql_result(MYSQL_RES* res);
-                              mysql_result(mysql_result const& other);
+                              mysql_result(mysql_result&& other);
                               ~mysql_result();
   mysql_result&               operator=(mysql_result const& other);
   bool                        value_as_bool(int idx);

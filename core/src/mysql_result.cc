@@ -31,9 +31,14 @@ mysql_result::mysql_result(MYSQL_RES* result)
   : _result(result, mysql_free_result),
     _statement_id(0) {}
 
-mysql_result::mysql_result(mysql_result const& other)
+mysql_result::mysql_result(mysql_result&& other)
   : _result(other._result),
-    _statement_id(other._statement_id) {}
+    _row(other._row),
+    _statement_id(other._statement_id) {
+  other._row = NULL;
+  other._result = NULL;
+  _bind = move(other._bind);
+}
 
 mysql_result& mysql_result::operator=(mysql_result const& other) {
   _result = other._result;
@@ -42,7 +47,7 @@ mysql_result& mysql_result::operator=(mysql_result const& other) {
 }
 
 mysql_result::~mysql_result() {
-  std::cout << "END OF MYSQL_RESULT";
+  std::cout << "END OF MYSQL_RESULT" << std::endl;
 }
 
 void mysql_result::set(MYSQL_RES* result) {

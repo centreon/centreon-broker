@@ -106,11 +106,13 @@ void stream::_cache_create() {
                       : "rt_instances")
      << " WHERE deleted=1";
 
+  std::promise<mysql_result> promise;
   int thread_id(_mysql.run_query(
                          ss.str(),
+                         &promise,
                          "SQL: could not get list of deleted instances",
                          false));
-  mysql_result res(_mysql.get_result(thread_id));
+  mysql_result res(promise.get_future().get());
   while (_mysql.fetch_row(thread_id, res))
     _cache_deleted_instance_id.insert(res.value_as_u32(0));
 }
@@ -122,9 +124,11 @@ void stream::_host_instance_cache_create() {
   _cache_host_instance.clear();
   std::ostringstream oss;
 
+  std::promise<mysql_result> promise;
   int thread_id(_mysql.run_query("SELECT host_id, instance_id FROM hosts",
+        &promise,
         "SQL: could not get the list of host/instance pairs", false));
-  mysql_result res(_mysql.get_result(thread_id));
+  mysql_result res(promise.get_future().get());
   while (_mysql.fetch_row(thread_id, res))
     _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
 }
@@ -141,6 +145,7 @@ void stream::_clean_empty_host_groups() {
   }
   _mysql.run_statement(
            _empty_host_groups_delete,
+           NULL,
            "SQL: could not remove empty host groups", false);
 }
 
@@ -156,6 +161,7 @@ void stream::_clean_empty_service_groups() {
   }
   _mysql.run_statement(
            _empty_service_groups_delete,
+           NULL,
            "SQL: could not remove empty service groups", false);
 }
 
@@ -180,7 +186,7 @@ void stream::_clean_tables(unsigned int instance_id) {
         " SET h.enabled=0, s.enabled=0"
         " WHERE h.instance_id=" << instance_id;
   _mysql.run_query(
-           oss.str(),
+           oss.str(), NULL,
            "SQL: could not clean hosts and services tables: ", false,
            instance_id % _mysql.connections_count());
 
@@ -193,7 +199,7 @@ void stream::_clean_tables(unsigned int instance_id) {
         << "   ON hosts_hostgroups.host_id=hosts.host_id"
         << " WHERE hosts.instance_id=" << instance_id;
     _mysql.run_query(
-             oss.str(),
+             oss.str(), NULL,
              "SQL: could not clean host groups memberships table: ", false,
              instance_id % _mysql.connections_count());
   }
@@ -207,7 +213,7 @@ void stream::_clean_tables(unsigned int instance_id) {
         << "   ON services_servicegroups.host_id=hosts.host_id"
         << " WHERE hosts.instance_id=" << instance_id;
     _mysql.run_query(
-             oss.str(),
+             oss.str(), NULL,
              "SQL: could not clean service groups memberships table: ", false,
              instance_id % _mysql.connections_count());
   }
@@ -233,7 +239,8 @@ void stream::_clean_tables(unsigned int instance_id) {
          "      SELECT host_id"
          "        FROM " << (db_v2 ? "hosts" : "rt_hosts")
       << "        WHERE instance_id=" << instance_id << ")";
-  _mysql.run_query(oss.str(),
+  _mysql.run_query(
+      oss.str(), NULL,
       "SQL: could not clean host dependencies table: ", false,
       instance_id % _mysql.connections_count());
 
@@ -251,7 +258,7 @@ void stream::_clean_tables(unsigned int instance_id) {
          "      FROM " << (db_v2 ? "hosts" : "rt_hosts")
       << "      WHERE instance_id=" << instance_id << ")";
   _mysql.run_query(
-           oss.str(),
+           oss.str(), NULL,
            "SQL: could not clean host parents table: ", false,
            instance_id % _mysql.connections_count());
 
@@ -278,7 +285,7 @@ void stream::_clean_tables(unsigned int instance_id) {
          "            ON h.host_id=s.host_id"
          "        WHERE h.instance_id=" << instance_id << ")";
   _mysql.run_query(
-           oss.str(),
+           oss.str(), NULL,
            "SQL: could not clean service dependencies tables: ", false,
            instance_id % _mysql.connections_count());
 
@@ -287,7 +294,7 @@ void stream::_clean_tables(unsigned int instance_id) {
   oss << "DELETE FROM " << (db_v2 ? "modules" : "rt_modules")
       << " WHERE instance_id=" << instance_id;
   _mysql.run_query(
-           oss.str(),
+           oss.str(), NULL,
            "SQL: could not clean modules table: ", false,
            instance_id % _mysql.connections_count());
 
@@ -300,7 +307,7 @@ void stream::_clean_tables(unsigned int instance_id) {
          "  AND d.cancelled=0"
          "  AND h.instance_id=" << instance_id;
   _mysql.run_query(
-           oss.str(),
+           oss.str(), NULL,
            "SQL: could not clean downtimes table: ", false,
            instance_id % _mysql.connections_count());
 
@@ -315,7 +322,7 @@ void stream::_clean_tables(unsigned int instance_id) {
         << "  AND c.persistent=0"
            "  AND (c.deletion_time IS NULL OR c.deletion_time=0)";
     _mysql.run_query(
-             oss.str(),
+             oss.str(), NULL,
              "SQL: could not clean comments table: ", false,
              instance_id % _mysql.connections_count());
   }
@@ -331,7 +338,7 @@ void stream::_clean_tables(unsigned int instance_id) {
          "  ON cv.host_id = h.host_id"
          " WHERE h.instance_id=" << instance_id;
   _mysql.run_query(
-           oss.str(),
+           oss.str(), NULL,
            "SQL: could not clean custom variables table: ", false,
            instance_id % _mysql.connections_count());
 }
@@ -404,6 +411,7 @@ void stream::_process_acknowledgement(
     _acknowledgement_insupdate << ack;
     _mysql.run_statement(
              _acknowledgement_insupdate,
+             NULL,
              oss.str(), true,
              ack.poller_id % _mysql.connections_count());
   }
@@ -446,6 +454,7 @@ void stream::_process_comment(misc::shared_ptr<io::data> const& e) {
   _comment_insupdate << cmmnt;
   _mysql.run_statement(
            _comment_insupdate,
+           NULL,
            oss.str(), true,
            cmmnt.poller_id % _mysql.connections_count());
 }
@@ -486,7 +495,7 @@ void stream::_process_custom_variable(
         << cv.service_id << "): ";
 
     _custom_variable_insupdate << cv;
-    _mysql.run_statement(_custom_variable_insupdate, oss.str(), true);
+    _mysql.run_statement(_custom_variable_insupdate, NULL, oss.str(), true);
   }
   else {
     logging::info(logging::medium)
@@ -500,7 +509,7 @@ void stream::_process_custom_variable(
     oss << "SQL: could not remove custom variable (host: "
         << cv.host_id << ", service: " << cv.service_id
         << ", name '" << cv.name.toStdString() << "'): ";
-    _mysql.run_statement(_custom_variable_delete, oss.str(), true);
+    _mysql.run_statement(_custom_variable_delete, NULL, oss.str(), true);
   }
 }
 
@@ -542,6 +551,7 @@ void stream::_process_custom_variable_status(
   _custom_variable_status_update << cvs;
   int thread_id(_mysql.run_statement(
                          _custom_variable_status_update,
+                         NULL,
                          oss.str(), true,
                          _cache_host_instance[cvs.host_id]
                               % _mysql.connections_count()));
@@ -606,6 +616,7 @@ void stream::_process_downtime(
     _downtime_insupdate << d;
     int thread_id(_mysql.run_statement(
                            _downtime_insupdate,
+                           NULL,
                            oss.str(), true,
                            _cache_host_instance[d.host_id]
                                 % _mysql.connections_count()));
@@ -690,6 +701,7 @@ void stream::_process_event_handler(
   _event_handler_insupdate << eh;
   _mysql.run_statement(
            _event_handler_insupdate,
+           NULL,
            oss.str(), true,
            _cache_host_instance[eh.host_id] % _mysql.connections_count());
 }
@@ -732,6 +744,7 @@ void stream::_process_flapping_status(
   _flapping_status_insupdate << fs;
   _mysql.run_statement(
            _flapping_status_insupdate,
+           NULL,
            oss.str(), true,
            _cache_host_instance[fs.host_id] % _mysql.connections_count());
 }
@@ -771,6 +784,7 @@ void stream::_process_host(
       _host_insupdate << h;
       _mysql.run_statement(
                _host_insupdate,
+               NULL,
                oss.str(), true,
                h.poller_id % _mysql.connections_count());
 
@@ -821,7 +835,7 @@ void stream::_process_host_check(
 
     int thread_id(
           _cache_host_instance[hc.host_id] % _mysql.connections_count());
-    _mysql.run_statement(_host_check_update, oss.str(), true,
+    _mysql.run_statement(_host_check_update, NULL, oss.str(), true,
         thread_id);
 
     if (_mysql.get_affected_rows(thread_id) != 1)
@@ -875,6 +889,7 @@ void stream::_process_host_dependency(
     _host_dependency_insupdate << hd;
     _mysql.run_statement(
              _host_dependency_insupdate,
+             NULL,
              oss.str(), true,
              _cache_host_instance[hd.host_id] % _mysql.connections_count());
   }
@@ -890,7 +905,7 @@ void stream::_process_host_dependency(
             : "rt_hosts_hosts_dependencies")
         << "  WHERE dependent_host_id=" << hd.dependent_host_id
         << "    AND host_id=" << hd.host_id;
-    _mysql.run_query(oss.str(), "SQL: ");
+    _mysql.run_query(oss.str(), NULL, "SQL: ");
   }
 }
 
@@ -943,6 +958,7 @@ void stream::_process_host_group(
     _host_group_insupdate << hg;
     _mysql.run_statement(
              _host_group_insupdate,
+             NULL,
              oss.str(), true,
              hg.poller_id % _mysql.connections_count());
   }
@@ -961,7 +977,7 @@ void stream::_process_host_group(
           << "    ON hosts_hostgroups.host_id=hosts.host_id"
           << "  WHERE hosts_hostgroups.hostgroup_id=" << hg.id
           << "    AND hosts.instance_id=" << hg.poller_id;
-      _mysql.run_query(oss.str(), "SQL: ", false,
+      _mysql.run_query(oss.str(), NULL, "SQL: ", false,
           hg.poller_id % _mysql.connections_count());
     }
 
@@ -1010,6 +1026,7 @@ void stream::_process_host_group_member(
 
     _mysql.run_statement(
              _host_group_member_insert,
+             NULL,
              "SQL: host group not defined", false,
              thread_id);
 
@@ -1027,7 +1044,9 @@ void stream::_process_host_group_member(
 
     _host_group_insupdate << hg;
     _mysql.run_statement_on_condition(
-              _host_group_insupdate, mysql_task::ON_ERROR,
+              _host_group_insupdate,
+              NULL,
+              mysql_task::ON_ERROR,
               oss.str(), true,
               thread_id);
 
@@ -1036,7 +1055,9 @@ void stream::_process_host_group_member(
         << hgm.poller_id << ", host: " << hgm.host_id << ", group: "
         << hgm.group_id << "): ";
     _mysql.run_statement_on_condition(
-              _host_group_member_insert, mysql_task::IF_PREVIOUS,
+              _host_group_member_insert,
+              NULL,
+              mysql_task::IF_PREVIOUS,
               oss.str(), false,
               thread_id);
   }
@@ -1062,7 +1083,9 @@ void stream::_process_host_group_member(
         << hgm.poller_id << ": ";
 
     _host_group_member_delete << hgm;
-    _mysql.run_statement(_host_group_member_delete,
+    _mysql.run_statement(
+             _host_group_member_delete,
+             NULL,
              oss.str(), true,
              thread_id);
   }
@@ -1098,6 +1121,7 @@ void stream::_process_host_parent(
     _host_parent_insert << hp;
     _mysql.run_statement(
              _host_parent_insert,
+             NULL,
              oss.str(), false,
              _cache_host_instance[hp.host_id] % _mysql.connections_count());
   }
@@ -1119,6 +1143,7 @@ void stream::_process_host_parent(
     _host_parent_delete << hp;
     _mysql.run_statement(
              _host_parent_delete,
+             NULL,
              "SQL: ", false,
              _cache_host_instance[hp.host_id] % _mysql.connections_count());
   }
@@ -1166,6 +1191,7 @@ void stream::_process_host_state(
     _host_state_insupdate << s;
     _mysql.run_statement(
              _host_state_insupdate,
+             NULL,
              oss.str(), true,
              s.poller_id % _mysql.connections_count());
   }
@@ -1209,6 +1235,7 @@ void stream::_process_host_status(
     oss << "SQL: could not store host status (host: " << hs.host_id << "): ";
     int thread_id(_mysql.run_statement(
                            _host_status_update,
+                           NULL,
                            oss.str(), true,
                            _cache_host_instance[hs.host_id]
                                 % _mysql.connections_count()));
@@ -1268,6 +1295,7 @@ void stream::_process_instance(
     //      i.poller_id % _mysql.connections_count()
     _mysql.run_statement(
              _instance_insupdate,
+             NULL,
              oss.str(), true,
              i.poller_id % _mysql.connections_count());
   }
@@ -1322,6 +1350,7 @@ void stream::_process_instance_status(
     oss << "SQL: could not update poller (poller: " << is.poller_id << "): ";
     _mysql.run_statement(
              _instance_status_update,
+             NULL,
              oss.str(), true,
              is.poller_id % _mysql.connections_count());
 
@@ -1375,6 +1404,7 @@ void stream::_process_issue(
   _issue_insupdate << i;
   _mysql.run_statement(
            _issue_insupdate,
+           NULL,
            oss.str(), true,
            _cache_host_instance[i.host_id] % _mysql.connections_count());
 }
@@ -1447,12 +1477,13 @@ void stream::_process_issue_parent(
            "ID (host: " << ip.child_host_id << ", service: "
         << ip.child_service_id << ", start: "
         << ip.child_start_time << "): ";
+    std::promise<mysql_result> promise;
     int thread_id(_mysql.run_query(
-                           query.str(),
+                           query.str(), &promise,
                            oss.str(), true,
                            _cache_host_instance[ip.child_host_id]
                                    % _mysql.connections_count()));
-    mysql_result res(_mysql.get_result(thread_id));
+    mysql_result res(promise.get_future().get());
     if (!_mysql.fetch_row(thread_id, res))
       throw exceptions::msg() << "child issue does not exist";
 
@@ -1482,12 +1513,13 @@ void stream::_process_issue_parent(
         << ip.parent_service_id << ", start: "
         << ip.parent_start_time << "): ";
 
+    std::promise<mysql_result> promise;
     int thread_id(_mysql.run_query(
-                           query.str(),
+                           query.str(), &promise,
                            oss.str(), true,
                            _cache_host_instance[ip.parent_host_id]
                                 % _mysql.connections_count()));
-    mysql_result res(_mysql.get_result(thread_id));
+    mysql_result res(promise.get_future().get());
     if (!_mysql.fetch_row(thread_id, res))
       throw (exceptions::msg() << "parent issue does not exist");
 
@@ -1515,7 +1547,9 @@ void stream::_process_issue_parent(
     << "SQL: updating issue parenting between child " << child_id
     << " and parent " << parent_id << " (start: " << ip.start_time
     << ", end: " << ip.end_time << ")";
-  int thread_id(_mysql.run_statement(_issue_parent_update,
+  int thread_id(_mysql.run_statement(
+                         _issue_parent_update,
+                         NULL,
                          "SQL: issue parent update query failed"));
   if (_mysql.get_affected_rows(thread_id) <= 0) {
     if (ip.end_time != (time_t)-1)
@@ -1530,8 +1564,10 @@ void stream::_process_issue_parent(
       << " and parent " << parent_id << " (start: " << ip.start_time
       << ", end: " << ip.end_time << ")";
     //FIXME DBR: the bind is surely incomplete
-    _mysql.run_statement(_issue_parent_insert,
-                           "SQL: issue parent insert query failed");
+    _mysql.run_statement(
+             _issue_parent_insert,
+             NULL,
+             "SQL: issue parent insert query failed");
   }
 }
 
@@ -1559,7 +1595,7 @@ void stream::_process_log(
 
   // Run query.
   _log_insert << le;
-  _mysql.run_statement(_log_insert, "SQL: ");
+  _mysql.run_statement(_log_insert, NULL, "SQL: ");
 }
 
 /**
@@ -1593,7 +1629,9 @@ void stream::_process_module(
       oss << "SQL: could not store module (poller: "
           << m.poller_id << "): ";
       _module_insert << m;
-      _mysql.run_statement(_module_insert,
+      _mysql.run_statement(
+               _module_insert,
+               NULL,
                oss.str(), true,
                m.poller_id % _mysql.connections_count());
     }
@@ -1604,7 +1642,7 @@ void stream::_process_module(
              : "rt_modules")
          << "  WHERE instance_id=" << m.poller_id
          << "    AND filename='" << m.filename.toStdString() << "'";
-      _mysql.run_query(oss.str(), "SQL: ", false,
+      _mysql.run_query(oss.str(), NULL, "SQL: ", false,
                        m.poller_id % _mysql.connections_count());
     }
   }
@@ -1661,7 +1699,7 @@ void stream::_process_service(
     oss << "SQL: could not store service (host: "
         << s.host_id << ", service: " << s.service_id << "): ";
     _service_insupdate << s;
-    _mysql.run_statement(_service_insupdate, oss.str(), true,
+    _mysql.run_statement(_service_insupdate, NULL, oss.str(), true,
         _cache_host_instance[s.host_id] % _mysql.connections_count());
   }
   else
@@ -1709,6 +1747,7 @@ void stream::_process_service_check(
         << sc.host_id << ", service: " << sc.service_id << "): ";
     int thread_id(_mysql.run_statement(
           _service_check_update,
+          NULL,
           oss.str(), true,
           _cache_host_instance[sc.host_id] % _mysql.connections_count()));
 
@@ -1768,6 +1807,7 @@ void stream::_process_service_dependency(
     _service_dependency_insupdate << sd;
     _mysql.run_statement(
              _service_dependency_insupdate,
+             NULL,
              oss.str(), true,
              _cache_host_instance[sd.host_id] % _mysql.connections_count());
   }
@@ -1787,7 +1827,7 @@ void stream::_process_service_dependency(
         << "    AND host_id=" << sd.host_id
         << "    AND service_id=" << sd.service_id;
     _mysql.run_query(
-             oss.str(),
+             oss.str(), NULL,
              "SQL: ", false,
              _cache_host_instance[sd.host_id] % _mysql.connections_count());
   }
@@ -1822,6 +1862,7 @@ void stream::_process_service_group(
     _service_group_insupdate << sg;
     _mysql.run_statement(
              _service_group_insupdate,
+             NULL,
              oss.str(), true,
              sg.poller_id % _mysql.connections_count());
   }
@@ -1841,7 +1882,7 @@ void stream::_process_service_group(
           << "  WHERE services_servicegroups.servicegroup_id=" << sg.id
           << "    AND hosts.instance_id=" << sg.poller_id;
       _mysql.run_query(
-               oss.str(),
+               oss.str(), NULL,
                "SQL: ", false,
                sg.poller_id % _mysql.connections_count());
     }
@@ -1892,6 +1933,7 @@ void stream::_process_service_group_member(
 
     _mysql.run_statement(
              _service_group_member_insert,
+             NULL,
              "SQL: service group not defined", false,
              thread_id);
 
@@ -1909,7 +1951,9 @@ void stream::_process_service_group_member(
 
     _service_group_insupdate << sg;
     _mysql.run_statement_on_condition(
-             _service_group_insupdate, mysql_task::ON_ERROR,
+             _service_group_insupdate,
+             NULL,
+             mysql_task::ON_ERROR,
              oss.str(), true,
              thread_id);
 
@@ -1918,7 +1962,9 @@ void stream::_process_service_group_member(
         << sgm.poller_id << ", host: " << sgm.host_id << ", service: "
         << sgm.service_id << ", group: " << sgm.group_id << "): ";
     _mysql.run_statement_on_condition(
-             _service_group_member_insert, mysql_task::IF_PREVIOUS,
+             _service_group_member_insert,
+             NULL,
+             mysql_task::IF_PREVIOUS,
              oss.str(), false,
              thread_id);
   }
@@ -1946,9 +1992,11 @@ void stream::_process_service_group_member(
         << sgm.poller_id << ": ";
 
     _service_group_member_delete << sgm;
-    _mysql.run_statement(_service_group_member_delete,
-        oss.str(), true,
-        thread_id);
+    _mysql.run_statement(
+             _service_group_member_delete,
+             NULL,
+             oss.str(), true,
+             thread_id);
   }
 }
 
@@ -1991,6 +2039,7 @@ void stream::_process_service_state(
     _service_state_insupdate << s;
     _mysql.run_statement(
              _service_state_insupdate,
+             NULL,
              oss.str(), true,
              _cache_host_instance[s.host_id] % _mysql.connections_count());
   }
@@ -2062,6 +2111,7 @@ void stream::_process_service_status(
     _service_status_update << ss;
     int thread_id(_mysql.run_statement(
                            _service_status_update,
+                           NULL,
                            oss.str(), true,
                            _cache_host_instance[ss.host_id]
                                 % _mysql.connections_count()));
@@ -2149,10 +2199,11 @@ void stream::_get_all_outdated_instances_from_db() {
                       ? "instances"
                       : "rt_instances")
      << " WHERE outdated=TRUE";
+  std::promise<mysql_result> promise;
   int thread_id(_mysql.run_query(
-      ss.str(),
+      ss.str(), &promise,
       "SQL: could not get the list of outdated instances"));
-  mysql_result res(_mysql.get_result(thread_id));
+  mysql_result res(promise.get_future().get());
   while (_mysql.fetch_row(thread_id, res)) {
     unsigned int instance_id = res.value_as_i32(0);
     stored_timestamp& ts = _stored_timestamps[instance_id];
@@ -2215,7 +2266,7 @@ void stream::_update_hosts_and_services_of_instance(
        << "  SET outdated=FALSE"
        << "  WHERE instance_id=" << id;
     _mysql.run_query(
-             ss.str(),
+             ss.str(), NULL,
              "SQL: could not restore outdated instance",
              false,
              id % _mysql.connections_count());
@@ -2229,7 +2280,7 @@ void stream::_update_hosts_and_services_of_instance(
        << "      s.state=s.real_state"
        << "  WHERE h.instance_id = " << id;
     _mysql.run_query(
-             ss.str(),
+             ss.str(), NULL,
              "SQL: could not restore outdated instance",
              false,
              id % _mysql.connections_count());
@@ -2239,7 +2290,7 @@ void stream::_update_hosts_and_services_of_instance(
        << "  SET outdated=TRUE"
        << "  WHERE instance_id=" << id;
     _mysql.run_query(
-             ss.str(),
+             ss.str(), NULL,
              "SQL: could not outdate instance", false,
              id % _mysql.connections_count());
     ss.str("");
@@ -2254,7 +2305,7 @@ void stream::_update_hosts_and_services_of_instance(
        << "      s.state=" << STATE_UNKNOWN
        << "  WHERE h.instance_id=" << id;
     _mysql.run_query(
-             ss.str(),
+             ss.str(), NULL,
              "SQL: could not outdate instance", false,
              id % _mysql.connections_count());
   }

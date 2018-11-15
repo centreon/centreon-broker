@@ -154,7 +154,7 @@ void availability_thread::_delete_all_availabilities() {
         << _bas_to_rebuild.toStdString() << ")";
 
   _mysql->run_query(
-      query.str(),
+      query.str(), NULL,
       "BAM-BI: availability thread could not delete the "
       "BA availabilities from the reporting database");
 }
@@ -180,8 +180,9 @@ void availability_thread::_build_availabilities(time_t midnight) {
              "  FROM mod_bam_reporting_ba_events"
              "  WHERE ba_id IN (" << _bas_to_rebuild.toStdString() << ")";
     try {
-      thread_id = _mysql->run_query(query.str());
-      mysql_result res(_mysql->get_result(thread_id));
+      std::promise<mysql_result> promise;
+      thread_id = _mysql->run_query(query.str(), &promise);
+      mysql_result res(promise.get_future().get());
       if (!_mysql->fetch_row(thread_id, res))
         throw (exceptions::msg() << "no events matching BAs to rebuild");
       first_day = res.value_as_i32(0);
@@ -206,9 +207,10 @@ void availability_thread::_build_availabilities(time_t midnight) {
     query << "SELECT MAX(time_id)"
              "  FROM mod_bam_reporting_ba_availabilities";
     try {
-      thread_id = _mysql->run_query(query.str());
+      std::promise<mysql_result> promise;
+      thread_id = _mysql->run_query(query.str(), &promise);
       //FIXME DBR: to finish...
-      mysql_result res(_mysql->get_result(thread_id));
+      mysql_result res(promise.get_future().get());
       if (!_mysql->fetch_row(thread_id, res))
         throw (exceptions::msg() << "no availability in table");
       first_day = res.value_as_i32(0);
@@ -269,14 +271,16 @@ void availability_thread::_build_daily_availabilities(
         << ") OR (a.end_time BETWEEN " << day_start << " AND " << day_end - 1
         << ") OR (" << day_start << " BETWEEN a.start_time AND a.end_time))";
 
+  std::promise<mysql_result> promise;
   _mysql->run_query(
       query.str(),
+      &promise,
       "BAM-BI: availability thread could not build the data", true, thread_id);
 
   // Create a builder for each ba_id and associated timeperiod_id.
   std::map<std::pair<unsigned int, unsigned int>,
             availability_builder> builders;
-  mysql_result res(_mysql->get_result(thread_id));
+  mysql_result res(promise.get_future().get());
   while (_mysql->fetch_row(thread_id, res)) {
     unsigned int ba_id = res.value_as_i32(1);
     unsigned int timeperiod_id = res.value_as_i32(6);
@@ -316,13 +320,15 @@ void availability_thread::_build_daily_availabilities(
     query << "(ba_id IN (" << _bas_to_rebuild.toStdString() << ")) AND ";
   query << "(start_time < " << day_end << " AND end_time IS NULL)";
 
+  promise = std::promise<mysql_result>();
   _mysql->run_query(
       query.str(),
+      &promise,
       "BAM-BI: availability thread could not build the data: ",
       true,
       thread_id);
 
-  res = _mysql->get_result(thread_id);
+  res = promise.get_future().get();
   while (_mysql->fetch_row(thread_id, res)) {
     unsigned int ba_id = res.value_as_i32(1);
     // Get all the timeperiods associated with the ba of this event.
@@ -401,7 +407,7 @@ void availability_thread::_write_availability(
         << builder.get_degraded_opened() << ", " << builder.get_unknown_opened()
         << ", " << builder.get_downtime_opened() << ")";
   _mysql->run_query(
-      query.str(),
+      query.str(), NULL,
       "BAM-BI: availability thread could not insert an availability: ",
       true,
       thread_id);

@@ -34,7 +34,6 @@ void (mysql_thread::* const mysql_thread::_task_processing_table[])(mysql_task* 
   &mysql_thread::_get_last_insert_id_sync,
   &mysql_thread::_check_affected_rows,
   &mysql_thread::_get_affected_rows_sync,
-  &mysql_thread::_get_result_sync,
   &mysql_thread::_fetch_row_sync,
   &mysql_thread::_finish,
 };
@@ -56,14 +55,24 @@ void mysql_thread::_run(mysql_task* t) {
       << ::mysql_error(_conn);
     std::cout << "run query in error...: " << ::mysql_error(_conn) << std::endl;
     if (task->fatal) {
-      if (!_error.is_active())
-        std::cout << "FATAL" << std::endl;
+      if (task->promise) {
+        exceptions::msg e;
+        e << ::mysql_error(_conn);
+        task->promise->set_exception(
+                         std::make_exception_ptr<exceptions::msg>(e));
+      }
+      else if (!_error.is_active()) {
         _error = mysql_error(::mysql_error(_conn), true);
+      }
     }
     else {
       logging::error(logging::medium) << task->error_msg
         << "could not execute query: " << ::mysql_error(_conn) << " (" << task->query << ")";
     }
+  }
+  else if (task->promise) {
+    /* All is good here */
+    task->promise->set_value(mysql_result(mysql_store_result(_conn)));
   }
 }
 
@@ -73,7 +82,7 @@ void mysql_thread::_commit(mysql_task* t) {
     std::cout << "commit queries: " << ::mysql_error(_conn) << std::endl;
     logging::error(logging::medium)
       << "could not commit queries: " << ::mysql_error(_conn);
-    task->count.fetchAndAddRelease(1);
+    ++task->count;
   }
   task->sem.release();
 }
@@ -126,7 +135,14 @@ void mysql_thread::_statement(mysql_task* t) {
       << "mysql: statement binding failed ("
       << mysql_stmt_error(stmt) << ")";
     std::cout << "ERROR in BINDING: " << mysql_stmt_error(stmt) << std::endl;
-    if (task->fatal && !_error.is_active()) {
+    if (task->fatal) {
+      if (task->promise) {
+        exceptions::msg e;
+        e << mysql_stmt_error(stmt);
+        task->promise->set_exception(
+                         std::make_exception_ptr<exceptions::msg>(e));
+      }
+      else if (!_error.is_active())
       _error = mysql_error(mysql_stmt_error(stmt), task->fatal);
     }
     else {
@@ -139,9 +155,17 @@ void mysql_thread::_statement(mysql_task* t) {
     logging::debug(logging::low)
       << "mysql: statement execution failed ("
       << mysql_stmt_error(stmt) << ")";
-    if (task->fatal && !_error.is_active()) {
-      std::cout << "FATAL ERROR: " << mysql_stmt_error(stmt) << std::endl;
-      _error = mysql_error(mysql_stmt_error(stmt), task->fatal);
+    if (task->fatal) {
+      if (task->promise) {
+        exceptions::msg e;
+        e << mysql_stmt_error(stmt);
+        task->promise->set_exception(
+                         std::make_exception_ptr<exceptions::msg>(e));
+      }
+      else if (!_error.is_active()) {
+        std::cout << "FATAL ERROR: " << mysql_stmt_error(stmt) << std::endl;
+        _error = mysql_error(mysql_stmt_error(stmt), task->fatal);
+      }
     }
     else {
       std::cout << "ERROR in STATEMENT: " << mysql_stmt_error(stmt) << std::endl;
@@ -151,8 +175,45 @@ void mysql_thread::_statement(mysql_task* t) {
         << " (" << task->error_msg << ")";
     }
   }
-  else
+  else {
     _previous = true;
+
+    if (task->promise) {
+      mysql_result res(task->statement_id);
+      MYSQL_STMT* stmt(_stmt[task->statement_id]);
+      MYSQL_RES* prepare_meta_result(mysql_stmt_result_metadata(stmt));
+      if (prepare_meta_result == NULL) {
+        exceptions::msg e;
+        e << mysql_stmt_error(stmt);
+        task->promise->set_exception(
+                         std::make_exception_ptr<exceptions::msg>(e));
+      }
+      else {
+        int size(mysql_num_fields(prepare_meta_result));
+        std::unique_ptr<mysql_bind> bind(new mysql_bind(size, STR_SIZE));
+
+        if (mysql_stmt_bind_result(stmt, bind->get_bind())) {
+          exceptions::msg e;
+          e << mysql_stmt_error(stmt);
+          task->promise->set_exception(
+                           std::make_exception_ptr<exceptions::msg>(e));
+        }
+        else {
+          if (mysql_stmt_store_result(stmt)) {
+            exceptions::msg e;
+            e << mysql_stmt_error(stmt);
+            task->promise->set_exception(
+                             std::make_exception_ptr<exceptions::msg>(e));
+          }
+          // Here, we have the first row.
+          res.set(prepare_meta_result);
+          bind->set_empty(true);
+        }
+        res.set_bind(bind);
+        task->promise->set_value(std::move(res));
+      }
+    }
+  }
 }
 
 void mysql_thread::_statement_on_condition(mysql_task* t) {
@@ -214,39 +275,39 @@ void mysql_thread::_get_affected_rows_sync(mysql_task* t) {
   _result_condition.wakeAll();
 }
 
-void mysql_thread::_get_result_sync(mysql_task* t) {
-  mysql_task_result* task(static_cast<mysql_task_result*>(t));
-  QMutexLocker locker(&_result_mutex);
-  if (!_error.is_active() || !_error.is_fatal()) {
-    int stmt_id(task->result->get_statement_id());
-    if (stmt_id) {
-      MYSQL_STMT* stmt(_stmt[stmt_id]);
-      MYSQL_RES* prepare_meta_result(mysql_stmt_result_metadata(stmt));
-      if (prepare_meta_result == NULL) {
-        _error = mysql_error(mysql_stmt_error(stmt), true);
-      }
-      else {
-        int size(mysql_num_fields(prepare_meta_result));
-        std::unique_ptr<mysql_bind> bind(new mysql_bind(size, STR_SIZE));
-
-        if (mysql_stmt_bind_result(stmt, bind->get_bind()))
-          _error = mysql_error(mysql_stmt_error(stmt), true);
-        else {
-          if (mysql_stmt_store_result(stmt))
-            _error = mysql_error(mysql_stmt_error(stmt), true);
-
-          // Here, we have the first row.
-          task->result->set(prepare_meta_result);
-          bind->set_empty(true);
-        }
-        task->result->set_bind(bind);
-      }
-    }
-    else
-      task->result->set(mysql_store_result(_conn));
-  }
-  _result_condition.wakeAll();
-}
+//void mysql_thread::_get_result_sync(mysql_task* t) {
+//  mysql_task_result* task(static_cast<mysql_task_result*>(t));
+//  QMutexLocker locker(&_result_mutex);
+//  if (!_error.is_active() || !_error.is_fatal()) {
+//    int stmt_id(task->result->get_statement_id());
+//    if (stmt_id) {
+//      MYSQL_STMT* stmt(_stmt[stmt_id]);
+//      MYSQL_RES* prepare_meta_result(mysql_stmt_result_metadata(stmt));
+//      if (prepare_meta_result == NULL) {
+//        _error = mysql_error(mysql_stmt_error(stmt), true);
+//      }
+//      else {
+//        int size(mysql_num_fields(prepare_meta_result));
+//        std::unique_ptr<mysql_bind> bind(new mysql_bind(size, STR_SIZE));
+//
+//        if (mysql_stmt_bind_result(stmt, bind->get_bind()))
+//          _error = mysql_error(mysql_stmt_error(stmt), true);
+//        else {
+//          if (mysql_stmt_store_result(stmt))
+//            _error = mysql_error(mysql_stmt_error(stmt), true);
+//
+//          // Here, we have the first row.
+//          task->result->set(prepare_meta_result);
+//          bind->set_empty(true);
+//        }
+//        task->result->set_bind(bind);
+//      }
+//    }
+//    else
+//      task->result->set(mysql_store_result(_conn));
+//  }
+//  _result_condition.wakeAll();
+//}
 
 void mysql_thread::_fetch_row_sync(mysql_task* t) {
   mysql_task_fetch* task(static_cast<mysql_task_fetch*>(t));
@@ -404,21 +465,24 @@ int mysql_thread::get_last_insert_id() {
  *  @param sem The semaphore used to synchronize commits from various threads.
  *  @param count The integer counting how many queries are committed.
  */
-void mysql_thread::commit(QSemaphore& sem, QAtomicInt& count) {
+void mysql_thread::commit(QSemaphore& sem, std::atomic_int& count) {
   _push(std::make_shared<mysql_task_commit>(sem, count));
 }
 
 void mysql_thread::run_statement(mysql_stmt& stmt,
+                     std::promise<mysql_result>* p,
                      std::string const& error_msg, bool fatal) {
-  _push(std::make_shared<mysql_task_statement>(stmt, error_msg, fatal));
+  _push(std::make_shared<mysql_task_statement>(stmt, p, error_msg, fatal));
 }
 
 void mysql_thread::run_statement_on_condition(
                      mysql_stmt& stmt,
+                     std::promise<mysql_result>* promise,
                      mysql_task::condition condition,
                      std::string const& error_msg, bool fatal) {
   _push(std::make_shared<mysql_task_statement_on_condition>(
                stmt,
+               promise,
                condition,
                error_msg,
                fatal));
@@ -434,11 +498,13 @@ void mysql_thread::prepare_query(int stmt_id, std::string const& query) {
  *
  *  @param query The SQL query
  *  @param error_msg The error message to return in case of error.
+ *  @param p A pointer to a promise.
  */
 void mysql_thread::run_query(
                      std::string const& query,
+                     std::promise<mysql_result>* p,
                      std::string const& error_msg, bool fatal) {
-  _push(std::make_shared<mysql_task_run>(query, error_msg, fatal));
+  _push(std::make_shared<mysql_task_run>(query, error_msg, fatal, p));
 }
 
 void mysql_thread::finish() {
@@ -446,15 +512,15 @@ void mysql_thread::finish() {
   _push(std::make_shared<mysql_task_finish>());
 }
 
-mysql_result mysql_thread::get_result(int statement_id) {
-  QMutexLocker locker(&_result_mutex);
-  mysql_result retval(statement_id);
-  _push(std::make_shared<mysql_task_result>(&retval));
-  _result_condition.wait(locker.mutex());
-  if (_error.is_active() && _error.is_fatal())
-    throw exceptions::msg() << _error.get_message();
-  return retval;
-}
+//mysql_result mysql_thread::get_result(int statement_id) {
+//  QMutexLocker locker(&_result_mutex);
+//  mysql_result retval(statement_id);
+//  _push(std::make_shared<mysql_task_result>(&retval));
+//  _result_condition.wait(locker.mutex());
+//  if (_error.is_active() && _error.is_fatal())
+//    throw exceptions::msg() << _error.get_message();
+//  return retval;
+//}
 
 bool mysql_thread::fetch_row(mysql_result& result) {
   QMutexLocker locker(&_result_mutex);

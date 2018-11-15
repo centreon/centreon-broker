@@ -19,9 +19,11 @@
 #ifndef CCB_MYSQL_THREAD_HH
 #  define CCB_MYSQL_THREAD_HH
 
+#include <future>
 #include <QMutex>
 #include <QThread>
 #include <QWaitCondition>
+#include <atomic>
 #include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/mysql_error.hh"
 #include "com/centreon/broker/mysql_result.hh"
@@ -48,20 +50,24 @@ class                    mysql_thread : public QThread {
   void                   prepare_query(int id, std::string const& query);
   void                   commit(
                            QSemaphore& sem,
-                           QAtomicInt& count);
+                           std::atomic_int& count);
   void                   run_query(
                            std::string const& query,
+                           std::promise<mysql_result>* p,
                            std::string const& error_msg, bool fatal);
   void                   run_statement(
                            mysql_stmt& stmt,
+                           std::promise<mysql_result>* p,
                            std::string const& error_msg, bool fatal);
   void                   run_statement_on_condition(
-                           mysql_stmt& stmt, mysql_task::condition conditiond,
+                           mysql_stmt& stmt,
+                           std::promise<mysql_result>* p,
+                           mysql_task::condition conditiond,
                            std::string const& error_msg, bool fatal);
   void                   finish();
   mysql_error            get_error();
   int                    get_last_insert_id();
-  mysql_result           get_result(int statement_id = 0);
+  //mysql_result           get_result(int statement_id = 0);
   bool                   fetch_row(mysql_result& result);
   int                    get_affected_rows(int statement_id = 0);
   void                   check_affected_rows(

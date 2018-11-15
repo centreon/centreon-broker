@@ -362,11 +362,12 @@ void stream::_check_deleted_index() {
     // Fetch next index to delete.
     unsigned long long index_id;
     {
+      std::promise<mysql_result> promise;
       int thread_id(_mysql.run_query(
-            query,
+            query, &promise,
             "storage: could not query index table to get index to delete: ",
             true));
-      mysql_result res(_mysql.get_result(thread_id));
+      mysql_result res(promise.get_future().get());
       if (!_mysql.fetch_row(thread_id, res))
         break ;
       index_id = res.value_as_u64(0);
@@ -384,8 +385,9 @@ void stream::_check_deleted_index() {
       oss_err << "storage: could not get metrics at index "
               << index_id << ": ";
 
-      int thread_id(_mysql.run_query(oss.str(), oss_err.str(), true));
-      mysql_result res(_mysql.get_result(thread_id));
+      std::promise<mysql_result> promise;
+      int thread_id(_mysql.run_query(oss.str(), &promise, oss_err.str(), true));
+      mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(thread_id, res))
         metrics_to_delete.push_back(res.value_as_u64(0));
     }
@@ -402,7 +404,7 @@ void stream::_check_deleted_index() {
           << "        =" << index_id;
       std::ostringstream oss_error;
       oss_error << "storage: cannot delete index " << index_id << ": ";
-      _mysql.run_query(oss.str(), oss_error.str());
+      _mysql.run_query(oss.str(), NULL, oss_error.str());
       if (_mysql.commit_if_needed())
         _set_ack_events();
     }
@@ -422,9 +424,12 @@ void stream::_check_deleted_index() {
     oss << "SELECT metric_id"
            "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
         << "  WHERE to_delete=1";
-    int thread_id(_mysql.run_query(oss.str(),
+    std::promise<mysql_result> promise;
+    int thread_id(_mysql.run_query(
+                    oss.str(),
+                    &promise,
                     "storage: could not get the list of metrics to delete"));
-    mysql_result res(_mysql.get_result(thread_id));
+    mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(thread_id, res))
       metrics_to_delete.push_back(res.value_as_u64(0));
   }
@@ -480,7 +485,7 @@ void stream::_delete_metrics(
           << "  WHERE metric_id=" << metric_id;
       std::ostringstream oss_error;
       oss_error << "storage: cannot remove metric " << metric_id << ": ";
-      _mysql.run_query(oss.str(), oss_error.str());
+      _mysql.run_query(oss.str(), NULL, oss_error.str());
       if (_mysql.commit_if_needed())
         _set_ack_events();
     }
@@ -553,7 +558,11 @@ unsigned int stream::_find_index_id(
       _update_index_data_stmt.bind_value_as_i32(3, host_id);
       _update_index_data_stmt.bind_value_as_i32(4, service_id);
 
-      _mysql.run_statement(_update_index_data_stmt, "UPDATE index_data", true);
+      _mysql.run_statement(
+               _update_index_data_stmt,
+               NULL,
+               "UPDATE index_data",
+               true);
       if (_mysql.commit_if_needed())
         _set_ack_events();
 
@@ -596,7 +605,7 @@ unsigned int stream::_find_index_id(
                  "index (" << host_id << ", " << service_id
               << ") failed: ";
 
-      int thread_id(_mysql.run_query(oss.str(), err_oss.str(), true));
+      int thread_id(_mysql.run_query(oss.str(), NULL, err_oss.str(), true));
       // Let's get the index id
       retval = _mysql.get_last_insert_id(thread_id);
       if (retval == 0) {
@@ -729,7 +738,7 @@ unsigned int stream::_find_metric_id(
         << " WHERE metric_id=" << it->second.metric_id;
 
       // Only use the thread_id 0
-      _mysql.run_statement(_update_metrics_stmt, "UPDATE metrics", true);
+      _mysql.run_statement(_update_metrics_stmt, NULL, "UPDATE metrics", true);
       if (_mysql.commit_if_needed())
         _set_ack_events();
 
@@ -790,6 +799,7 @@ unsigned int stream::_find_metric_id(
 
     int thread_id(_mysql.run_statement(
                            _insert_metrics_stmt,
+                           NULL,
                            oss.str(), true));
     retval = _mysql.get_last_insert_id(thread_id);
 
@@ -881,7 +891,10 @@ void stream::_insert_perfdatas_new() {
     }
 
     // Execute query.
-    _mysql.run_query(query.str(), "storage: could not insert data in data_bin");
+    _mysql.run_query(
+             query.str(),
+             NULL,
+             "storage: could not insert data in data_bin");
     if (_mysql.commit_if_needed())
       _set_ack_events();
 
@@ -937,7 +950,10 @@ void stream::_insert_perfdatas() {
     }
 
     // Execute query.
-    _mysql.run_query(query.str(), "storage: could not insert data in data_bin");
+    _mysql.run_query(
+             query.str(),
+             NULL,
+             "storage: could not insert data in data_bin");
     if (_mysql.commit_if_needed())
       _set_ack_events();
 
@@ -1019,10 +1035,12 @@ void stream::_rebuild_cache() {
              "       rrd_retention, service_description, special,"
              "       locked"
              " FROM " << (db_v2 ? "index_data" : "rt_index_data");
+    std::promise<mysql_result> promise;
     int thread_id(_mysql.run_query(
                     query.str(),
+                    &promise,
                     "storage: could not fetch index list from data DB"));
-    mysql_result res(_mysql.get_result(thread_id));
+    mysql_result res(promise.get_future().get());
 
     // Loop through result set.
     while (_mysql.fetch_row(thread_id, res)) {
@@ -1065,10 +1083,12 @@ void stream::_rebuild_cache() {
              "       warn_threshold_mode, crit, crit_low,"
              "       crit_threshold_mode, min, max"
              "  FROM " << (db_v2 ? "metrics" : "rt_metrics");
+    std::promise<mysql_result> promise;
     int thread_id(_mysql.run_query(
                     query.str(),
+                    &promise,
                     "storage: could not fetch metric list from data DB"));
-    mysql_result res(_mysql.get_result(thread_id));
+    mysql_result res(promise.get_future().get());
 
     // Loop through result set.
     while (_mysql.fetch_row(thread_id, res)) {

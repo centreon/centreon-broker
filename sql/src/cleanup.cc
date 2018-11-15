@@ -103,17 +103,18 @@ void cleanup::run() {
           "    ON hosts.instance_id=instances.instance_id"
           "  SET index_data.to_delete=1"
           "  WHERE instances.deleted=1",
+          NULL,
           "SQL: could not flag the index_data table"
           " to delete outdated entries", false);
       ms.run_query(
           "DELETE hosts FROM hosts INNER JOIN instances"
           "  ON hosts.instance_id=instances.instance_id"
-          "  WHERE instances.deleted=1",
+          "  WHERE instances.deleted=1", NULL,
           "SQL: could not delete outdated entries from the hosts table", false);
       ms.run_query(
           "DELETE modules FROM modules INNER JOIN instances"
           "  ON modules.instance_id=instances.instance_id"
-          "  WHERE instances.deleted=1",
+          "  WHERE instances.deleted=1", NULL,
           "SQL: could not delete outdated entries"
           " from the modules tables", false);
     }
@@ -125,19 +126,19 @@ void cleanup::run() {
           "  INNER JOIN rt_instances"
           "    ON rt_hosts.instance_id=rt_instances.instance_id"
           "  SET rt_index_data.to_delete=1"
-          "  WHERE rt_instances.deleted=1",
+          "  WHERE rt_instances.deleted=1", NULL,
           "SQL: could not flag the rt_index_data table"
           " to delete outdated entries", false);
       ms.run_query(
           "DELETE rt_hosts FROM rt_hosts INNER JOIN rt_instances"
           "  ON rt_hosts.instance_id=rt_instances.instance_id"
-          "  WHERE rt_instances.deleted=1",
+          "  WHERE rt_instances.deleted=1", NULL,
           "SQL: could not delete outdated entries"
           " from the rt_hosts table", false);
       ms.run_query(
           "DELETE rt_modules FROM rt_modules INNER JOIN rt_instances"
           "  ON rt_modules.instance_id=rt_instances.instance_id"
-          "  WHERE rt_instances.deleted=1",
+          "  WHERE rt_instances.deleted=1", NULL,
           "SQL: could not delete outdated entries"
           " from the rt_modules table", false);
     }
