@@ -83,7 +83,8 @@ void (stream::* const stream::_neb_processing_table[])(misc::shared_ptr<io::data
   &stream::_process_service_group_member,
   &stream::_process_service,
   &stream::_process_service_status,
-  &stream::_process_instance_configuration
+  &stream::_process_instance_configuration,
+  &stream::_process_responsive_instance,
 };
 
 /**************************************
@@ -2302,6 +2303,9 @@ void stream::_process_service_status(
   return ;
 }
 
+void stream::_process_responsive_instance(
+               misc::shared_ptr<io::data> const& e) {}
+
 template <typename T>
 void stream::_update_on_none_insert(
                database_query& ins,
@@ -2456,6 +2460,10 @@ void stream::_update_hosts_and_services_of_instance(
        << "  WHERE h.instance_id=" << id;
     q.run_query(ss.str(), "SQL: could not outdate instance");
   }
+  misc::shared_ptr<neb::responsive_instance> ri(new neb::responsive_instance);
+  ri->poller_id = id;
+  ri->responsive = responsive;
+  multiplexing::publisher().write(ri);
 }
 
 /**************************************
