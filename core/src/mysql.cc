@@ -15,7 +15,6 @@
 **
 ** For more information : contact@centreon.com
 */
-#include <QSemaphore>
 #include <atomic>
 #include <iostream>
 #include <mutex>
@@ -81,27 +80,31 @@ mysql::~mysql() {
  *  If an error occures, an exception is thrown.
  */
 void mysql::commit(int thread_id) {
-  QSemaphore sem;
-  std::atomic_int ko(0);
+  std::promise<bool> promise;
+  std::future<bool> future(promise.get_future());
+  std::atomic_int ko;
   int commits;
   if (thread_id < 0) {
+    ko = _connection.size();
     for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
            it(_connection.begin()),
            end(_connection.end());
          it != end;
          ++it) {
-      (*it)->commit(sem, ko);
+      (*it)->commit(&promise, ko);
     }
     commits = _connection.size();
   }
   else {
-    _connection[thread_id]->commit(sem, ko);
+    ko = 1;
+    _connection[thread_id]->commit(&promise, ko);
     commits = 1;
   }
-  sem.acquire(commits);
-  if (int(ko))
+
+  if (!future.get() || ko)
     throw exceptions::msg()
       << "mysql: Unable to commit transactions";
+
   _pending_queries = 0;
 }
 

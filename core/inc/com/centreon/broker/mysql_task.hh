@@ -20,7 +20,6 @@
 #  define CCB_MYSQL_TASK_HH
 
 #include <atomic>
-#include <QSemaphore>
 #include <mysql.h>
 #include "com/centreon/broker/namespace.hh"
 
@@ -85,12 +84,12 @@ class                    mysql_task_run : public mysql_task {
 class                    mysql_task_commit : public mysql_task {
  public:
                          mysql_task_commit(
-                           QSemaphore& sem,
+                           std::promise<bool>* promise,
                            std::atomic_int& count)
                           : mysql_task(mysql_task::COMMIT),
-                            sem(sem),
+                            promise(promise),
                             count(count) {}
-  QSemaphore&            sem;
+  std::promise<bool>*    promise;
   std::atomic_int&       count;
 };
 

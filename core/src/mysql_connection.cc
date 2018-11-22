@@ -81,9 +81,10 @@ void mysql_connection::_commit(mysql_task* t) {
     std::cout << "commit queries: " << ::mysql_error(_conn) << std::endl;
     logging::error(logging::medium)
       << "could not commit queries: " << ::mysql_error(_conn);
-    ++task->count;
   }
-  task->sem.release();
+  if (--task->count == 0)
+    task->promise->set_value(true);
+  std::cout << "COMMIT: count = " << task->count << std::endl;
 }
 
 void mysql_connection::_prepare(mysql_task* t) {
@@ -426,11 +427,11 @@ int mysql_connection::get_last_insert_id() {
  *  So, this last method waits all the commits to be done ; the semaphore is there for that
  *  purpose.
  *
- *  @param sem The semaphore used to synchronize commits from various threads.
+ *  @param[out] promise This promise is set when count == 0
  *  @param count The integer counting how many queries are committed.
  */
-void mysql_connection::commit(QSemaphore& sem, std::atomic_int& count) {
-  _push(std::make_shared<mysql_task_commit>(sem, count));
+void mysql_connection::commit(std::promise<bool>* promise, std::atomic_int& count) {
+  _push(std::make_shared<mysql_task_commit>(promise, count));
 }
 
 void mysql_connection::run_statement(mysql_stmt& stmt,

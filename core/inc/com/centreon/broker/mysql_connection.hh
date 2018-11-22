@@ -49,7 +49,7 @@ class                    mysql_connection {
 
   void                    prepare_query(int id, std::string const& query);
   void                    commit(
-                            QSemaphore& sem,
+                            std::promise<bool>* promise,
                             std::atomic_int& count);
   void                    run_query(
                             std::string const& query,
