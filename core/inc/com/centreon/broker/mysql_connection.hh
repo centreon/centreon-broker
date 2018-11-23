@@ -25,7 +25,6 @@
 #  include <list>
 #  include <mutex>
 #  include "com/centreon/broker/database_config.hh"
-//#  include "com/centreon/broker/mysql_error.hh"
 #  include "com/centreon/broker/mysql_result.hh"
 #  include "com/centreon/broker/mysql_stmt.hh"
 #  include "com/centreon/broker/mysql_task.hh"
@@ -74,6 +73,7 @@ class                    mysql_connection {
   mysql_bind_mapping      get_stmt_mapping(int stmt_id) const;
   int                     get_stmt_size() const;
   bool                    match_config(database_config const& db_cfg) const;
+  int                     get_tasks_count() const;
 
  private:
 
@@ -107,6 +107,8 @@ class                    mysql_connection {
   bool                    _finished;
   std::list<std::shared_ptr<mysql_task> >
                           _tasks_list;
+  std::atomic_int         _tasks_count;
+
   std::unordered_map<unsigned int, MYSQL_STMT*>
                           _stmt;
 

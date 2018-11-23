@@ -92,8 +92,19 @@ std::map<std::string, std::string> mysql_manager::get_stats() const {
   std::map<std::string, std::string> retval;
 
   std::lock_guard<std::mutex> locker(_cfg_mutex);
-  retval.insert(std::make_pair(
-                       "connections count",
-                       std::to_string(_connection.size())));
+  int connection_count(_connection.size());
+  std::string key("connection ");
+  int key_len(key.size());
+  std::string value;
+  for (int i(0); i < connection_count; ++i) {
+    key.replace(key_len, std::string::npos, std::to_string(i));
+    int count(_connection[i]->get_tasks_count());
+    value = std::to_string(_connection[i]->get_tasks_count())
+              + " waiting tasks";
+    if (count == 0)
+      retval.insert(std::make_pair(key, "no task"));
+    else
+      retval.insert(std::make_pair(key, value));
+  }
   return retval;
 }

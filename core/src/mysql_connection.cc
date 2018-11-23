@@ -325,6 +325,7 @@ void mysql_connection::_run() {
     if (!_tasks_list.empty()) {
       std::shared_ptr<mysql_task> task(_tasks_list.front());
       _tasks_list.pop_front();
+      --_tasks_count;
       locker.unlock();
       if (_task_processing_table[task->type])
         (this->*(_task_processing_table[task->type]))(task.get());
@@ -334,8 +335,10 @@ void mysql_connection::_run() {
           << "mysql: Error type not managed...";
       }
     }
-    else
+    else {
+      _tasks_count = 0;
       _tasks_condition.wait(locker);
+    }
   }
   std::cout << "run return" << std::endl;
 }
@@ -388,6 +391,7 @@ mysql_connection::~mysql_connection() {
 void mysql_connection::_push(std::shared_ptr<mysql_task> const& q) {
   std::lock_guard<std::mutex> locker(_list_mutex);
   _tasks_list.push_back(q);
+  ++_tasks_count;
   _tasks_condition.notify_all();
 }
 
@@ -492,4 +496,8 @@ bool mysql_connection::match_config(database_config const& db_cfg) const {
          && db_cfg.get_name() == _name
          && db_cfg.get_port() == _port
          && db_cfg.get_queries_per_transaction() == _qps;
+}
+
+int mysql_connection::get_tasks_count() const {
+  return _tasks_count;
 }
