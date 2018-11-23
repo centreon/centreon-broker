@@ -17,8 +17,9 @@
 */
 
 #include <ctime>
-#include <sstream>
+#include <iostream>
 #include <limits>
+#include <sstream>
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -26,9 +27,9 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
+#include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/query_preparator.hh"
 #include "com/centreon/broker/sql/stream.hh"
 #include "com/centreon/engine/common.hh"
@@ -1264,6 +1265,7 @@ void stream::_process_host_status(
  */
 void stream::_process_instance(
                misc::shared_ptr<io::data> const& e) {
+  std::cout << "PROCESS INSTANCE..." << std::endl;
   // Cast object.
   neb::instance const& i(*static_cast<neb::instance const*>(e.data()));
 
@@ -2361,8 +2363,11 @@ stream::stream(
  */
 stream::~stream() {
   // Stop cleanup thread.
+  std::cout << "sql stream destructor 1" << std::endl;
   _cleanup_thread.exit();
+  std::cout << "sql stream destructor 2" << std::endl;
   _cleanup_thread.wait(-1);
+  std::cout << "sql stream destructor 3" << std::endl;
 }
 
 /**
@@ -2417,6 +2422,7 @@ void stream::update() {
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
   // Take this event into account.
+  std::cout << "SQL STREAM WRITE..." << std::endl;
   ++_pending_events;
   if (!validate(data, "SQL"))
     return 0;

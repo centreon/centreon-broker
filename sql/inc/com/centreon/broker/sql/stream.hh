@@ -163,6 +163,7 @@ namespace          sql {
     timestamp                   _oldest_timestamp;
     std::map<unsigned int, unsigned int>
                                 _cache_host_instance;
+    mutable std::mutex          _stat_mutex;
   };
 }
 

@@ -1,3 +1,20 @@
+/*
+** Copyright 2018 Centreon
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+**     http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+**
+** For more information : contact@centreon.com
+*/
 #include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/mysql_manager.hh"
@@ -12,8 +29,7 @@ mysql_manager& mysql_manager::instance() {
 
 mysql_manager::mysql_manager()
   : _current_thread(0),
-    _version(mysql::v2),
-    _count_ref(0) {
+    _version(mysql::v2) {   // FIXME DBR
   if (mysql_library_init(0, nullptr, nullptr))
     throw exceptions::msg()
       << "mysql_manager: unable to initialize the MySQL connector";
@@ -29,7 +45,7 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
   int connection_count(db_cfg.get_connections_count());
   int current_connection(0);
 
-  //std::lock_guard<std::mutex> lock(_cfg_mutex);
+  std::lock_guard<std::mutex> lock(_cfg_mutex);
   for (std::shared_ptr<mysql_connection> c : _connection) {
     // Is this thread matching what the configuration needs?
     if (c->match_config(db_cfg)) {
@@ -70,4 +86,14 @@ void mysql_manager::set_error(std::string const& message, bool fatal) {
 void mysql_manager::clear_error() {
   std::lock_guard<std::mutex> locker(_err_mutex);
   _error.clear();
+}
+
+std::map<std::string, std::string> mysql_manager::get_stats() const {
+  std::map<std::string, std::string> retval;
+
+  std::lock_guard<std::mutex> locker(_cfg_mutex);
+  retval.insert(std::make_pair(
+                       "connections count",
+                       std::to_string(_connection.size())));
+  return retval;
 }

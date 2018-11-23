@@ -46,20 +46,20 @@ class                   mysql_manager {
   void                  clear_error();
   mysql_error           get_error();
   void                  set_error(std::string const& message, bool fatal);
+  std::map<std::string, std::string>
+                        get_stats() const;
 
  private:
                         mysql_manager();
                         ~mysql_manager();
   static mysql_manager  _singleton;
+  mutable std::mutex    _cfg_mutex;
   std::vector<std::shared_ptr<mysql_connection>>
                         _connection;
 
   int                   _current_thread;
   std::atomic<mysql::version>
                         _version;
-  std::atomic_int       _count_ref;
-  std::mutex            _cfg_mutex;
-  database_config       _db_cfg;
 
   mutable std::mutex    _err_mutex;
   mysql_error           _error;
