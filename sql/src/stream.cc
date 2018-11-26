@@ -2166,32 +2166,6 @@ void stream::_process_service_status(
 void stream::_process_responsive_instance(
                misc::shared_ptr<io::data> const& e) {}
 
-template <typename T>
-void stream::_update_on_none_insert(
-               mysql_stmt& ins_stmt,
-               mysql_stmt& up_stmt,
-               T& t,
-               int thread_id) {
-  // Try update.
-  ins_stmt << t;
-  int th_id;
-  int affected_rows(0);
-
-  try {
-    th_id = _mysql.run_statement(ins_stmt, "", thread_id);
-    affected_rows = _mysql.get_affected_rows(th_id);
-  }
-  catch (std::exception const& e) {
-    th_id = thread_id;
-  }
-
-  // Try insertion.
-  if (affected_rows != 1) {
-    up_stmt << t;
-    _mysql.run_statement(up_stmt, "", th_id);
-  }
-}
-
 /**
  *  Update the store of living instance timestamps.
  *
