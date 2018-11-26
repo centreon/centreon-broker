@@ -42,7 +42,7 @@ class                           mysql_stmt {
   mysql_stmt&                   operator=(mysql_stmt const& other);
   bool                          prepared() const;
   int                           get_id() const;
-  std::shared_ptr<mysql_bind>   get_bind();
+  std::unique_ptr<mysql_bind>   get_bind();
   void                          operator<<(io::data const& d);
 
   void                          bind_value_as_i32(int range, int value);
@@ -77,7 +77,7 @@ class                           mysql_stmt {
   int                           _id;
   std::string                   _query;
 
-  std::shared_ptr<mysql_bind>   _bind;
+  std::unique_ptr<mysql_bind>   _bind;
   mysql_bind_mapping            _bind_mapping;
 };
 

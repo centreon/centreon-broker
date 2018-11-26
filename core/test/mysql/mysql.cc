@@ -404,7 +404,7 @@ TEST_F(DatabaseStorageTest, PrepareQuerySync) {
   stmt.bind_value_as_f32(11, 18.0);
   stmt.bind_value_as_str(12, "2");
   // We force the thread 0
-  int thread_id(ms->run_statement(stmt, NULL, "", 0));
+  int thread_id(ms->run_statement(stmt, NULL, "", true, 0));
   int id(ms->get_last_insert_id(thread_id));
   ASSERT_TRUE(id > 0);
   std::cout << "id = " << id << std::endl;
@@ -511,15 +511,23 @@ TEST_F(DatabaseStorageTest, InstanceStatement) {
   inst_insupdate << inst;
   ms->run_statement(inst_insupdate, NULL, "", false, 0);
 
+  // Second instance
+  inst.poller_id = 2;
+  inst.name = "Central2";
+  inst_insupdate << inst;
+  ms->run_statement(inst_insupdate, NULL, "", false, 0);
+
   ms->commit();
 
   std::stringstream oss;
-  oss << "SELECT instance_id FROM instances WHERE "
-    "instance_id=1";
+  oss << "SELECT instance_id FROM instances ORDER BY instance_id";
   std::promise<mysql_result> promise;
   int thread_id(ms->run_query(oss.str(), &promise));
   mysql_result res(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(res.value_as_i32(0) == 1);
+  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(res.value_as_i32(0) == 2);
 }
 
 // Host (12) statement

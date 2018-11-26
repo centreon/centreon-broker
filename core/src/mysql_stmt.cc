@@ -133,8 +133,8 @@ int mysql_stmt::get_id() const {
   return _id;
 }
 
-std::shared_ptr<mysql_bind> mysql_stmt::get_bind() {
-  return _bind;
+std::unique_ptr<mysql_bind> mysql_stmt::get_bind() {
+  return std::move(_bind);
 }
 
 void mysql_stmt::operator<<(io::data const& d) {
