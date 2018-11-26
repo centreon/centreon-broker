@@ -1274,13 +1274,19 @@ void stream::_process_instance(
     << "(id: " << i.poller_id << ", name: " << i.name << ", running: "
     << (i.is_running ? "yes" : "no") << ")";
 
+  std::cout << "SQL: processing poller event "
+    << "(id: " << i.poller_id << ", name: " << i.name.toStdString() << ", running: "
+    << (i.is_running ? "yes" : "no") << ")" << std::endl;
+
   // Clean tables.
   _clean_tables(i.poller_id);
 
   // Processing.
   if (_is_valid_poller(i.poller_id)) {
+    std::cout << "SQL: instance " << i.poller_id << " is valid" << std::endl;
     // Prepare queries.
     if (!_instance_insupdate.prepared()) {
+      std::cout << "Preparation of instance_insupdate" << std::endl;
       query_preparator::event_unique unique;
       unique.insert("instance_id");
       query_preparator qp(neb::instance::static_type(), unique);

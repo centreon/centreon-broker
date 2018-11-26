@@ -33,7 +33,7 @@ mysql::mysql(database_config const& db_cfg)
   : _db_cfg(db_cfg),
     _pending_queries(0),
     _version(mysql::v2),
-    _current_thread(0) {
+    _current_connection(0) {
 
   mysql_manager& mgr(mysql_manager::instance());
   _connection = mgr.get_connections(db_cfg);
@@ -171,6 +171,24 @@ void mysql::_check_errors(int thread_id) {
   }
 }
 
+int mysql::_get_best_connection() {
+  /* We work with _current_connection to avoid always working with the same
+   * connections. */
+  int retval(_current_connection);
+  int task_count(std::numeric_limits<int>::max());
+  int count(_connection.size());
+  for (int i(0); i < count; i++) {
+    ++_current_connection;
+    if (_current_connection >= count)
+      _current_connection = 0;
+    if (_connection[_current_connection]->get_tasks_count() < task_count) {
+      retval = _current_connection;
+      task_count = _connection[_current_connection]->get_tasks_count();
+    }
+  }
+  return retval;
+}
+
 /**
  *  The simplest way to execute a query. Only the first arg is needed.
  *
@@ -189,12 +207,10 @@ int mysql::run_query(std::string const& query,
               std::promise<mysql_result>* p,
               std::string const& error_msg, bool fatal,
               int thread_id) {
-  if (thread_id < 0) {
+  if (thread_id < 0)
     // Here, we use _current_thread
-    thread_id = _current_thread++;
-    if (_current_thread >= _connection.size())
-      _current_thread = 0;
-  }
+    thread_id = _get_best_connection();
+
   _check_errors(thread_id);
   _connection[thread_id]->run_query(
     query,
@@ -226,12 +242,10 @@ int mysql::run_statement(mysql_stmt& stmt,
              std::promise<mysql_result>* promise,
              std::string const& error_msg, bool fatal,
              int thread_id) {
-  if (thread_id < 0) {
+  if (thread_id < 0)
     // Here, we use _current_thread
-    thread_id = _current_thread++;
-    if (_current_thread >= _connection.size())
-      _current_thread = 0;
-  }
+    thread_id = _get_best_connection();
+
   _check_errors(thread_id);
   _connection[thread_id]->run_statement(stmt, promise, error_msg, fatal);
   return thread_id;

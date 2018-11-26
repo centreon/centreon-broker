@@ -76,7 +76,7 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
   }
 
   // If connections are still active but unique here, we can remove them
-  for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
+  for (std::vector<std::shared_ptr<mysql_connection>>::iterator
        it(_connection.begin()), end(_connection.end());
        it != end;
        ++it) {

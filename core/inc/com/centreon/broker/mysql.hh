@@ -76,6 +76,8 @@ class                 mysql {
  private:
   static void         _initialize_mysql();
   void                _check_errors(int thread_id);
+  int                 _get_best_connection();
+
   static std::atomic_int
                       _count_ref;
 
@@ -85,7 +87,7 @@ class                 mysql {
   std::vector<std::shared_ptr<mysql_connection>>
                       _connection;
   version             _version;
-  int                 _current_thread;
+  int                 _current_connection;
 };
 
 CCB_END()
