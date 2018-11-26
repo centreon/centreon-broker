@@ -38,6 +38,7 @@
 #  include "com/centreon/broker/neb/instance_status.hh"
 #  include "com/centreon/broker/neb/log_entry.hh"
 #  include "com/centreon/broker/neb/module.hh"
+#  include "com/centreon/broker/neb/responsive_instance.hh"
 #  include "com/centreon/broker/neb/service.hh"
 #  include "com/centreon/broker/neb/service_check.hh"
 #  include "com/centreon/broker/neb/service_dependency.hh"

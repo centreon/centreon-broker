@@ -296,6 +296,13 @@ extern "C" {
                   "instance_configuration",
                   &neb::instance_configuration::operations,
                   neb::instance_configuration::entries));
+        e.register_event(
+            io::events::neb,
+            neb::de_responsive_instance,
+            io::event_info(
+                  "responsive_instance",
+                  &neb::responsive_instance::operations,
+                  neb::responsive_instance::entries));
       }
 
       // Register neb layer.
