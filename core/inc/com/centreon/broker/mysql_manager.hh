@@ -18,15 +18,12 @@
 #ifndef CCB_MYSQL_MANAGER_HH
 #  define CCB_MYSQL_MANAGER_HH
 
-#  include <atomic>
-#  include <memory>
 #  include <mutex>
 #  include <thread>
 #  include <unordered_map>
 #  include <vector>
 #  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/mysql_error.hh"
-#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 

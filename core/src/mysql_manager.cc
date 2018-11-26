@@ -15,8 +15,10 @@
 **
 ** For more information : contact@centreon.com
 */
+#include <chrono>
 #include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql_manager.hh"
 
 using namespace com::centreon::broker;
@@ -36,6 +38,15 @@ mysql_manager::mysql_manager()
 }
 
 mysql_manager::~mysql_manager() {
+  // If connections are still active but unique here, we can remove them
+  for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
+       it(_connection.begin()), end(_connection.end());
+       it != end;
+       ++it) {
+    while (!it->unique()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+  }
   mysql_library_end();
 }
 
@@ -64,6 +75,17 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
     retval.push_back(c);
   }
 
+  // If connections are still active but unique here, we can remove them
+  for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
+       it(_connection.begin()), end(_connection.end());
+       it != end;
+       ++it) {
+    if (it->unique()) {
+      logging::info(logging::low)
+        << "mysql_manager: one connection removed";
+      _connection.erase(it);
+    }
+  }
   return retval;
 }
 

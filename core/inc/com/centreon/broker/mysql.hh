@@ -19,7 +19,6 @@
 #  define CCB_MYSQL_HH
 
 #  include <atomic>
-#  include <future>
 #  include "com/centreon/broker/mysql_connection.hh"
 
 CCB_BEGIN()

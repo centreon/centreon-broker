@@ -15,13 +15,9 @@
 **
 ** For more information : contact@centreon.com
 */
-#include <atomic>
 #include <iostream>
-#include <mutex>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/mysql.hh"
-#include "com/centreon/broker/mysql_error.hh"
 #include "com/centreon/broker/mysql_manager.hh"
 
 using namespace com::centreon::broker;
@@ -69,6 +65,7 @@ mysql::~mysql() {
   //if (!retval)
   //  logging::error(logging::medium)
   //    << "mysql: A thread was forced to stop after a timeout of 20s";
+  std::cout << "MYSQL DESTRUCTOR...\n";
 }
 
 /**

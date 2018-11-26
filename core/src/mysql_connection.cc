@@ -19,7 +19,6 @@
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/mysql_connection.hh"
 #include "com/centreon/broker/mysql_manager.hh"
 
 using namespace com::centreon::broker;
@@ -374,7 +373,7 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
 }
 
 mysql_connection::~mysql_connection() {
-  std::cout << "mysql_connection DESTROYED..." << std::endl;
+  std::cout << "MYSQL_CONNECTION DESTROYED..." << std::endl;
   for (umap<unsigned int, MYSQL_STMT*>::iterator
          it(_stmt.begin()),
          end(_stmt.end());
