@@ -119,14 +119,14 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
 
   // The query is done from the same thread/connection
   mysql_result res(promise.get_future().get());
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
-  ASSERT_FALSE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
+  ASSERT_FALSE(ms->fetch_row(res));
   ASSERT_NO_THROW(ms->commit(thread_id));
 
   promise = std::promise<mysql_result>();
-  thread_id = ms->run_query(oss.str(), &promise, "", false, thread_id);
+  ms->run_query(oss.str(), &promise, "", false, thread_id);
   mysql_result res1(promise.get_future().get());
-  ASSERT_TRUE(ms->fetch_row(thread_id, res1));
+  ASSERT_TRUE(ms->fetch_row(res1));
 }
 
 // Given a mysql object
@@ -178,14 +178,14 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
   oss.str("");
   oss << "SELECT metric_name FROM metrics WHERE metric_name='" << nss.str() << "'";
   std::promise<mysql_result> promise;
-  int thread_id(ms->run_query(oss.str(), &promise));
+  ms->run_query(oss.str(), &promise);
   mysql_result res(promise.get_future().get());
-  ASSERT_FALSE(ms->fetch_row(thread_id, res));
+  ASSERT_FALSE(ms->fetch_row(res));
   ASSERT_NO_THROW(ms->commit());
   promise = std::promise<mysql_result>();
-  thread_id = ms->run_query(oss.str(), &promise);
+  ms->run_query(oss.str(), &promise);
   res = promise.get_future().get();
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
 }
 
 // Given a mysql object
@@ -257,7 +257,7 @@ TEST_F(DatabaseStorageTest, SelectSync) {
   int id(ms->run_query(oss.str(), &promise));
   mysql_result res(promise.get_future().get());
   int count(0);
-  while (ms->fetch_row(id, res)) {
+  while (ms->fetch_row(res)) {
     int v(res.value_as_i32(0));
     std::string s(res.value_as_str(2));
     ASSERT_GT(v, 0);
@@ -282,11 +282,11 @@ TEST_F(DatabaseStorageTest, QuerySyncWithError) {
 
   std::unique_ptr<mysql> ms(new mysql(db_cfg));
   std::promise<mysql_result> promise;
-  int thread_id(ms->run_query(
+  ms->run_query(
         "SELECT foo FROM bar LIMIT 1",
         &promise,
         "ERROR",
-        true));
+        true);
   ASSERT_THROW(promise.get_future().get(), exceptions::msg);
 }
 
@@ -357,9 +357,9 @@ TEST_F(DatabaseStorageTest, LastInsertId) {
     << nss.str() << "'";
   std::cout << oss.str() << std::endl;
   std::promise<mysql_result> promise;
-  thread_id = ms->run_query(oss.str(), &promise);
+  ms->run_query(oss.str(), &promise);
   mysql_result res(promise.get_future().get());
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
   ASSERT_TRUE(res.value_as_i32(0) == id);
 }
 
@@ -411,14 +411,14 @@ TEST_F(DatabaseStorageTest, PrepareQuerySync) {
   oss.str("");
   oss << "SELECT metric_id FROM metrics WHERE metric_name='" << nss.str() << "'";
   std::promise<mysql_result> promise;
-  thread_id = ms->run_query(oss.str(), &promise);
+  ms->run_query(oss.str(), &promise);
   mysql_result res(promise.get_future().get());
-  ASSERT_FALSE(ms->fetch_row(thread_id, res));
+  ASSERT_FALSE(ms->fetch_row(res));
   ASSERT_NO_THROW(ms->commit());
   promise = std::promise<mysql_result>();
   thread_id = ms->run_query(oss.str(), &promise);
   res = promise.get_future().get();
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
   std::cout << "id1 = " << res.value_as_i32(0) << std::endl;
   ASSERT_TRUE(res.value_as_i32(0) == id);
   ASSERT_TRUE(ms->get_affected_rows(thread_id) == 1);
@@ -522,11 +522,11 @@ TEST_F(DatabaseStorageTest, InstanceStatement) {
   std::stringstream oss;
   oss << "SELECT instance_id FROM instances ORDER BY instance_id";
   std::promise<mysql_result> promise;
-  int thread_id(ms->run_query(oss.str(), &promise));
+  ms->run_query(oss.str(), &promise);
   mysql_result res(promise.get_future().get());
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
   ASSERT_TRUE(res.value_as_i32(0) == 1);
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
   ASSERT_TRUE(res.value_as_i32(0) == 2);
 }
 
@@ -583,12 +583,12 @@ TEST_F(DatabaseStorageTest, HostStatement) {
   ms->commit();
 
   std::promise<mysql_result> promise;
-  thread_id = ms->run_query(
+  ms->run_query(
         "SELECT stalk_on_up FROM hosts WHERE "
         "host_id=24",
         &promise);
   mysql_result res(promise.get_future().get());
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
   ASSERT_TRUE(res.value_as_bool(0));
 
   h.host_id = 1;
@@ -611,11 +611,11 @@ TEST_F(DatabaseStorageTest, HostStatement) {
   ms->run_statement(host_insupdate, NULL, "", false, 0);
   ms->commit();
   promise = std::promise<mysql_result>();
-  thread_id = ms->run_query(
+  ms->run_query(
         "SELECT host_id FROM hosts", &promise);
   res = promise.get_future().get();
   for (int i(0); i < 2; ++i) {
-    ASSERT_TRUE(ms->fetch_row(thread_id, res));
+    ASSERT_TRUE(ms->fetch_row(res));
     int v(res.value_as_i32(0));
     ASSERT_TRUE(v == 1 || v == 24);
   }
@@ -675,10 +675,10 @@ TEST_F(DatabaseStorageTest, CustomVarStatement) {
     "host_id=31 AND service_id=498"
     " AND name='PROCESSNAME'";
   std::promise<mysql_result> promise;
-  int thread_id(ms->run_query(oss.str(), &promise));
+  ms->run_query(oss.str(), &promise);
   mysql_result res(promise.get_future().get());
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
-  ASSERT_FALSE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
+  ASSERT_FALSE(ms->fetch_row(res));
 }
 
 TEST_F(DatabaseStorageTest, ModuleStatement) {
@@ -715,9 +715,9 @@ TEST_F(DatabaseStorageTest, ModuleStatement) {
   ms->commit();
 
   std::promise<mysql_result> promise;
-  thread_id = ms->run_query("SELECT module_id FROM modules LIMIT 1", &promise);
+  ms->run_query("SELECT module_id FROM modules LIMIT 1", &promise);
   mysql_result res(promise.get_future().get());
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
 }
 
 // log_entry (17) statement queries
@@ -758,12 +758,12 @@ TEST_F(DatabaseStorageTest, LogStatement) {
   ms->commit();
 
   std::promise<mysql_result> promise;
-  thread_id = ms->run_query(
+  ms->run_query(
         "SELECT log_id FROM logs "
         "WHERE output = \"Event loop start at bar date\"",
         &promise);
   mysql_result res(promise.get_future().get());
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
 }
 
 // Instance status (16) statement
@@ -807,12 +807,12 @@ TEST_F(DatabaseStorageTest, InstanceStatusStatement) {
   ms->commit();
 
   std::promise<mysql_result> promise;
-  thread_id = ms->run_query(
+  ms->run_query(
         "SELECT active_host_checks FROM instances "
         "WHERE instance_id=1",
         &promise);
   mysql_result res(promise.get_future().get());
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
   ASSERT_TRUE(res.value_as_bool(0));
 }
 
@@ -846,11 +846,11 @@ TEST_F(DatabaseStorageTest, HostCheckStatement) {
   ms->commit();
 
   std::promise<mysql_result> promise;
-  int thread_id(ms->run_query(
+  ms->run_query(
         "SELECT host_id FROM hosts WHERE host_id=24",
-        &promise));
+        &promise);
   mysql_result res(promise.get_future().get());
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
 }
 
 // Host status (14) statement
@@ -907,11 +907,11 @@ TEST_F(DatabaseStorageTest, HostStatusStatement) {
 
   ms->commit();
   std::promise<mysql_result> promise;
-  thread_id = ms->run_query(
-                    "SELECT execution_time FROM hosts WHERE host_id=24",
-                    &promise);
+  ms->run_query(
+        "SELECT execution_time FROM hosts WHERE host_id=24",
+        &promise);
   mysql_result res(promise.get_future().get());
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
   ASSERT_TRUE(res.value_as_f64(0) == 0.159834);
 }
 
@@ -960,15 +960,15 @@ TEST_F(DatabaseStorageTest, ServiceStatement) {
 
   // Update
   service_insupdate << s;
-  thread_id = ms->run_statement(service_insupdate, NULL, "", false);
+  ms->run_statement(service_insupdate, NULL, "", false);
 
   ms->commit();
   std::promise<mysql_result> promise;
-  thread_id = ms->run_query(
-                    "SELECT notification_interval FROM services WHERE host_id=24 AND service_id=318",
-                    &promise);
+  ms->run_query(
+        "SELECT notification_interval FROM services WHERE host_id=24 AND service_id=318",
+        &promise);
   mysql_result res(promise.get_future().get());
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
   ASSERT_TRUE(res.value_as_i32(0) == 30);
 }
 
@@ -1006,11 +1006,11 @@ TEST_F(DatabaseStorageTest, ServiceCheckStatement) {
 
   ms->commit();
   std::promise<mysql_result> promise;
-  thread_id = ms->run_query(
-                    "SELECT command_line FROM services WHERE host_id=24 AND service_id=318",
-                    &promise);
+  ms->run_query(
+        "SELECT command_line FROM services WHERE host_id=24 AND service_id=318",
+        &promise);
   mysql_result res(promise.get_future().get());
-  ASSERT_TRUE(ms->fetch_row(thread_id, res));
+  ASSERT_TRUE(ms->fetch_row(res));
   ASSERT_TRUE(res.value_as_str(0) == "/usr/bin/bash /home/admin/test.sh");
 }
 
@@ -1070,11 +1070,10 @@ TEST_F(DatabaseStorageTest, SelectStatement) {
   mysql_stmt select_stmt(ms->prepare_query(query));
   select_stmt.bind_value_as_u64(0, time(NULL) - 20);
   std::promise<mysql_result> promise;
-  int thread_id(ms->run_statement(select_stmt, &promise));
+  ms->run_statement(select_stmt, &promise);
   mysql_result res(promise.get_future().get());
-  //mysql_result res(ms->get_result(thread_id, select_stmt));
 
-  while (ms->fetch_row(thread_id, res)) {
+  while (ms->fetch_row(res)) {
     ASSERT_TRUE(res.value_as_f64(0) == 2.5);
     ASSERT_TRUE(res.value_as_i32(1) == 0);
   }

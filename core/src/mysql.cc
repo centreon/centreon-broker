@@ -40,10 +40,10 @@ mysql::mysql(database_config const& db_cfg)
 
   try {
     std::promise<mysql_result> promise;
-    int thread_id(run_query(
-                    "SELECT instance_id FROM instances LIMIT 1",
-                    &promise,
-                    "", true));
+    run_query(
+      "SELECT instance_id FROM instances LIMIT 1",
+      &promise,
+      "", true);
     _version = v2;
     promise.get_future().get();
     logging::info(logging::low)
@@ -105,15 +105,15 @@ void mysql::commit(int thread_id) {
   _pending_queries = 0;
 }
 
-bool mysql::fetch_row(int thread_id, mysql_result& res) {
-  _check_errors(thread_id);
-  return _connection[thread_id]->fetch_row(res);
+bool mysql::fetch_row(mysql_result& res) {
+  _check_errors();
+  return res.get_connection()->fetch_row(res);
 }
 
 void mysql::check_affected_rows(
              int thread_id,
              std::string const& message) {
-  _check_errors(thread_id);
+  _check_errors();
   _connection[thread_id]->check_affected_rows(message);
 }
 
@@ -121,17 +121,17 @@ void mysql::check_affected_rows(
              int thread_id,
              mysql_stmt const& stmt,
              std::string const& message) {
-  _check_errors(thread_id);
+  _check_errors();
   _connection[thread_id]->check_affected_rows(message, stmt.get_id());
 }
 
 int mysql::get_affected_rows(int thread_id) {
-  _check_errors(thread_id);
+  _check_errors();
   return _connection[thread_id]->get_affected_rows();
 }
 
 int mysql::get_affected_rows(int thread_id, mysql_stmt const& stmt) {
-  _check_errors(thread_id);
+  _check_errors();
   return _connection[thread_id]->get_affected_rows(stmt.get_id());
 }
 
@@ -158,9 +158,8 @@ bool mysql::commit_if_needed() {
  *  may arise after the calls. This function is generally called just before
  *  adding a new query and throw an exception if an error is active.
  *
- * @param thread_id The thread id to check.
  */
-void mysql::_check_errors(int thread_id) {
+void mysql::_check_errors() {
   if (mysql_manager::instance().is_in_error()) {
     mysql_error err(mysql_manager::instance().get_error());
     if (err.is_fatal())
@@ -207,11 +206,11 @@ int mysql::run_query(std::string const& query,
               std::promise<mysql_result>* p,
               std::string const& error_msg, bool fatal,
               int thread_id) {
+  _check_errors();
   if (thread_id < 0)
     // Here, we use _current_thread
     thread_id = _get_best_connection();
 
-  _check_errors(thread_id);
   _connection[thread_id]->run_query(
     query,
     p,
@@ -242,11 +241,11 @@ int mysql::run_statement(mysql_stmt& stmt,
              std::promise<mysql_result>* promise,
              std::string const& error_msg, bool fatal,
              int thread_id) {
+  _check_errors();
   if (thread_id < 0)
     // Here, we use _current_thread
     thread_id = _get_best_connection();
 
-  _check_errors(thread_id);
   _connection[thread_id]->run_statement(stmt, promise, error_msg, fatal);
   return thread_id;
 }

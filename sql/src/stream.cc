@@ -108,13 +108,13 @@ void stream::_cache_create() {
      << " WHERE deleted=1";
 
   std::promise<mysql_result> promise;
-  int thread_id(_mysql.run_query(
-                         ss.str(),
-                         &promise,
-                         "SQL: could not get list of deleted instances",
-                         false));
+  _mysql.run_query(
+           ss.str(),
+           &promise,
+           "SQL: could not get list of deleted instances",
+           false);
   mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(thread_id, res))
+  while (_mysql.fetch_row(res))
     _cache_deleted_instance_id.insert(res.value_as_u32(0));
 }
 
@@ -126,11 +126,11 @@ void stream::_host_instance_cache_create() {
   std::ostringstream oss;
 
   std::promise<mysql_result> promise;
-  int thread_id(_mysql.run_query("SELECT host_id, instance_id FROM hosts",
-        &promise,
-        "SQL: could not get the list of host/instance pairs", false));
+  _mysql.run_query("SELECT host_id, instance_id FROM hosts",
+           &promise,
+           "SQL: could not get the list of host/instance pairs", false);
   mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(thread_id, res))
+  while (_mysql.fetch_row(res))
     _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
 }
 
@@ -615,12 +615,11 @@ void stream::_process_downtime(
         << "): ";
 
     _downtime_insupdate << d;
-    int thread_id(_mysql.run_statement(
-                           _downtime_insupdate,
-                           NULL,
-                           oss.str(), true,
-                           _cache_host_instance[d.host_id]
-                                % _mysql.connections_count()));
+    _mysql.run_statement(
+             _downtime_insupdate,
+             NULL,
+             oss.str(), true,
+             _cache_host_instance[d.host_id] % _mysql.connections_count());
   }
 }
 
@@ -1353,7 +1352,6 @@ void stream::_process_instance_status(
 
     // Process object.
     _instance_status_update << is;
-    int thread_id;
     std::ostringstream oss;
     oss << "SQL: could not update poller (poller: " << is.poller_id << "): ";
     _mysql.run_statement(
@@ -1486,13 +1484,13 @@ void stream::_process_issue_parent(
         << ip.child_service_id << ", start: "
         << ip.child_start_time << "): ";
     std::promise<mysql_result> promise;
-    int thread_id(_mysql.run_query(
-                           query.str(), &promise,
-                           oss.str(), true,
-                           _cache_host_instance[ip.child_host_id]
-                                   % _mysql.connections_count()));
+    _mysql.run_query(
+             query.str(), &promise,
+             oss.str(), true,
+             _cache_host_instance[ip.child_host_id]
+                     % _mysql.connections_count());
     mysql_result res(promise.get_future().get());
-    if (!_mysql.fetch_row(thread_id, res))
+    if (!_mysql.fetch_row(res))
       throw exceptions::msg() << "child issue does not exist";
 
     child_id = res.value_as_i32(0);
@@ -1522,13 +1520,13 @@ void stream::_process_issue_parent(
         << ip.parent_start_time << "): ";
 
     std::promise<mysql_result> promise;
-    int thread_id(_mysql.run_query(
-                           query.str(), &promise,
-                           oss.str(), true,
-                           _cache_host_instance[ip.parent_host_id]
-                                % _mysql.connections_count()));
+    _mysql.run_query(
+             query.str(), &promise,
+             oss.str(), true,
+             _cache_host_instance[ip.parent_host_id]
+                  % _mysql.connections_count());
     mysql_result res(promise.get_future().get());
-    if (!_mysql.fetch_row(thread_id, res))
+    if (!_mysql.fetch_row(res))
       throw (exceptions::msg() << "parent issue does not exist");
 
     parent_id = res.value_as_i32(0);
@@ -2208,11 +2206,11 @@ void stream::_get_all_outdated_instances_from_db() {
                       : "rt_instances")
      << " WHERE outdated=TRUE";
   std::promise<mysql_result> promise;
-  int thread_id(_mysql.run_query(
-      ss.str(), &promise,
-      "SQL: could not get the list of outdated instances"));
+  _mysql.run_query(
+           ss.str(), &promise,
+           "SQL: could not get the list of outdated instances");
   mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(thread_id, res)) {
+  while (_mysql.fetch_row(res)) {
     unsigned int instance_id = res.value_as_i32(0);
     stored_timestamp& ts = _stored_timestamps[instance_id];
     ts = stored_timestamp(instance_id, stored_timestamp::unresponsive);

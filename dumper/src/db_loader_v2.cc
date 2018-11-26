@@ -92,11 +92,11 @@ void db_loader_v2::_load_bas() {
            "  WHERE b.activate='1'"
            "    AND pr.poller_id=" << _poller_id;
   std::promise<mysql_result> promise;
-  int thread_id(_mysql.run_query(
-      query.str(), &promise,
-      "db_reader: could not load configuration of BAs from DB"));
+  _mysql.run_query(
+           query.str(), &promise,
+           "db_reader: could not load configuration of BAs from DB");
   mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(thread_id, res)) {
+  while (_mysql.fetch_row(res)) {
     entries::ba b;
     b.enable = true;
     b.poller_id = _poller_id;
@@ -124,12 +124,12 @@ void db_loader_v2::_load_booleans() {
            "  WHERE b.activate='1'"
            "    AND pr.poller_id=" << _poller_id;
   std::promise<mysql_result> promise;
-  int thread_id(_mysql.run_query(
-      query.str(),
-      &promise,
-      "db_reader: could not load configuration of boolean rules from DB"));
+  _mysql.run_query(
+           query.str(),
+           &promise,
+           "db_reader: could not load configuration of boolean rules from DB");
   mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(thread_id, res)) {
+  while (_mysql.fetch_row(res)) {
     entries::boolean b;
     b.enable = true;
     b.poller_id = _poller_id;
@@ -164,12 +164,12 @@ void db_loader_v2::_load_kpis() {
            "  WHERE k.activate='1'"
            "    AND pr.poller_id=" << _poller_id;
   std::promise<mysql_result> promise;
-  int thread_id(_mysql.run_query(
-      query.str(),
-      &promise,
-      "db_reader: could not load configuration of KPIs from DB"));
+  _mysql.run_query(
+           query.str(),
+           &promise,
+           "db_reader: could not load configuration of KPIs from DB");
   mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(thread_id, res)) {
+  while (_mysql.fetch_row(res)) {
     entries::kpi k;
     k.enable = true;
     k.poller_id = _poller_id;
@@ -197,12 +197,12 @@ void db_loader_v2::_load_hosts() {
            "  FROM host AS h"
            "  WHERE host_name = '_Module_BAM_" << _poller_id << "'";
   std::promise<mysql_result> promise;
-  int thread_id(_mysql.run_query(
-      query.str(),
-      &promise,
-      "db_reader: could not load configuration of hosts from DB"));
+  _mysql.run_query(
+           query.str(),
+           &promise,
+           "db_reader: could not load configuration of hosts from DB");
   mysql_result res(promise.get_future().get());
-  if (!_mysql.fetch_row(thread_id, res))
+  if (!_mysql.fetch_row(res))
     throw (exceptions::msg()
            << "db_reader: expected virtual host '_Module_BAM_"
            << _poller_id << "'");
@@ -231,16 +231,16 @@ void db_loader_v2::_load_services() {
   }
 
   std::promise<mysql_result> promise;
-  int thread_id(_mysql.run_query(
-          "SELECT s.service_description,"
-          "       hsr.host_host_id, hsr.service_service_id"
-          "  FROM service AS s"
-          "  INNER JOIN host_service_relation AS hsr"
-          "    ON s.service_id=hsr.service_service_id"
-          "  WHERE s.service_description LIKE 'ba_%'",
-          &promise));
+  _mysql.run_query(
+           "SELECT s.service_description,"
+           "       hsr.host_host_id, hsr.service_service_id"
+           "  FROM service AS s"
+           "  INNER JOIN host_service_relation AS hsr"
+           "    ON s.service_id=hsr.service_service_id"
+           "  WHERE s.service_description LIKE 'ba_%'",
+           &promise);
   mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(thread_id, res)) {
+  while (_mysql.fetch_row(res)) {
     unsigned int host_id = res.value_as_u32(1);
     unsigned int service_id = res.value_as_u32(2);
     std::string service_description = res.value_as_str(0).c_str();

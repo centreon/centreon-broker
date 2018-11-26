@@ -58,7 +58,7 @@ class                 mysql {
                         std::string const& error_msg, bool fatal,
                         int thread);
   //mysql_result        get_result(int thread_id, mysql_stmt const& stmt);
-  bool                fetch_row(int thread_id, mysql_result& res);
+  bool                fetch_row(mysql_result& res);
   int                 get_last_insert_id(int thread_id);
   void                check_affected_rows(
                         int thread_id,
@@ -75,7 +75,7 @@ class                 mysql {
 
  private:
   static void         _initialize_mysql();
-  void                _check_errors(int thread_id);
+  void                _check_errors();
   int                 _get_best_connection();
 
   static std::atomic_int

@@ -70,7 +70,7 @@ void mysql_connection::_query(mysql_task* t) {
   }
   else if (task->promise) {
     /* All is good here */
-    task->promise->set_value(mysql_result(mysql_store_result(_conn)));
+    task->promise->set_value(mysql_result(this, mysql_store_result(_conn)));
   }
 }
 
@@ -176,7 +176,7 @@ void mysql_connection::_statement(mysql_task* t) {
     _previous = true;
 
     if (task->promise) {
-      mysql_result res(task->statement_id);
+      mysql_result res(this, task->statement_id);
       MYSQL_STMT* stmt(_stmt[task->statement_id]);
       MYSQL_RES* prepare_meta_result(mysql_stmt_result_metadata(stmt));
       if (prepare_meta_result == NULL) {

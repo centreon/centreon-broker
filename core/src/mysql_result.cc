@@ -22,26 +22,30 @@
 
 using namespace com::centreon::broker;
 
-mysql_result::mysql_result(int statement_id)
-  : _result(NULL, mysql_free_result),
+mysql_result::mysql_result(mysql_connection* parent, int statement_id)
+  : _parent(parent),
+    _result(nullptr, mysql_free_result),
     _statement_id(statement_id),
-    _row(NULL) {
+    _row(nullptr) {
   std::cout << "NEW 1 MYSQL_RESULT " << this << std::endl;
 }
 
-mysql_result::mysql_result(MYSQL_RES* result)
-  : _result(result, mysql_free_result),
+mysql_result::mysql_result(mysql_connection* parent, MYSQL_RES* result)
+  : _parent(parent),
+    _result(result, mysql_free_result),
     _statement_id(0) {
   std::cout << "NEW 2 MYSQL_RESULT " << this << std::endl;
   std::cout << "BIND = " << _bind.get() << std::endl;
 }
 
 mysql_result::mysql_result(mysql_result&& other)
-  : _result(other._result),
+  : _parent(other._parent),
+    _result(other._result),
     _row(other._row),
     _statement_id(other._statement_id) {
-  other._row = NULL;
-  other._result = NULL;
+  other._row = nullptr;
+  other._result = nullptr;
+  other._parent = nullptr;
   _bind = move(other._bind);
   std::cout << "NEW 3 MYSQL_RESULT " << this << std::endl;
 }
@@ -188,4 +192,8 @@ mysql_bind* mysql_result::get_bind() {
 
 int mysql_result::get_statement_id() const {
   return _statement_id;
+}
+
+mysql_connection* mysql_result::get_connection() {
+  return _parent;
 }

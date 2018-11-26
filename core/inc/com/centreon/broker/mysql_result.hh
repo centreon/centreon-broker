@@ -23,6 +23,8 @@
 
 CCB_BEGIN()
 
+class mysql_connection;
+
 /**
  *  @class mysql mysql.hh "com/centreon/broker/storage/mysql.hh"
  *  @brief Class managing the mysql connection
@@ -32,8 +34,12 @@ CCB_BEGIN()
  */
 class                         mysql_result {
  public:
-                              mysql_result(int statement = 0);
-                              mysql_result(MYSQL_RES* res);
+                              mysql_result(
+                                mysql_connection* parent,
+                                int statement = 0);
+                              mysql_result(
+                                mysql_connection* parent,
+                                MYSQL_RES* res);
                               mysql_result(mysql_result&& other);
                               ~mysql_result();
   mysql_result&               operator=(mysql_result const& other);
@@ -53,8 +59,10 @@ class                         mysql_result {
   mysql_bind*                 get_bind();
   void                        set_row(MYSQL_ROW row);
   int                         get_statement_id() const;
+  mysql_connection*           get_connection();
 
  private:
+  mysql_connection*           _parent;
   std::shared_ptr<MYSQL_RES>  _result;
 
   // The row contains the result for a simple query (no statement).

@@ -81,10 +81,10 @@ monitoring_stream::monitoring_stream(
   {
     try {
       std::promise<mysql_result> promise;
-      int thread_id(_mysql.run_query(
-            "SELECT ba_id FROM mod_bam LIMIT 1",
-            &promise,
-            "", true));
+      _mysql.run_query(
+               "SELECT ba_id FROM mod_bam LIMIT 1",
+               &promise,
+               "", true);
       promise.get_future().get();
       _db_v2 = true;
     }
@@ -460,11 +460,11 @@ void monitoring_stream::_rebuild() {
           << "  FROM " << (_db_v2 ? "mod_bam" : "cfg_bam")
           << "  WHERE must_be_rebuild='1'";
     std::promise<mysql_result> promise;
-    int thread_id(_mysql.run_query(
-        query.str(), &promise,
-        "BAM: could not select the list of BAs to rebuild"));
+    _mysql.run_query(
+             query.str(), &promise,
+             "BAM: could not select the list of BAs to rebuild");
     mysql_result res(promise.get_future().get());
-    while (_mysql.fetch_row(thread_id, res))
+    while (_mysql.fetch_row(res))
       bas_to_rebuild.push_back(res.value_as_u32(0));
   }
 

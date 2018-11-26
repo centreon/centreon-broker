@@ -183,7 +183,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
       std::promise<mysql_result> promise;
       thread_id = _mysql->run_query(query.str(), &promise);
       mysql_result res(promise.get_future().get());
-      if (!_mysql->fetch_row(thread_id, res))
+      if (!_mysql->fetch_row(res))
         throw (exceptions::msg() << "no events matching BAs to rebuild");
       first_day = res.value_as_i32(0);
       first_day = _compute_start_of_day(first_day);
@@ -193,7 +193,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
         last_day = _compute_start_of_day(res.value_as_f64(1));
 
       //FIXME DBR: why this line?
-      _mysql->fetch_row(thread_id, res);
+      _mysql->fetch_row(res);
       _delete_all_availabilities();
     }
     catch (std::exception const& e) {
@@ -211,12 +211,12 @@ void availability_thread::_build_availabilities(time_t midnight) {
       thread_id = _mysql->run_query(query.str(), &promise);
       //FIXME DBR: to finish...
       mysql_result res(promise.get_future().get());
-      if (!_mysql->fetch_row(thread_id, res))
+      if (!_mysql->fetch_row(res))
         throw (exceptions::msg() << "no availability in table");
       first_day = res.value_as_i32(0);
       first_day = time::timeperiod::add_round_days_to_midnight(
                                       first_day, 3600 * 24);
-      _mysql->fetch_row(thread_id, res);
+      _mysql->fetch_row(res);
     }
     catch (std::exception const& e) {
       throw (exceptions::msg()
@@ -281,7 +281,7 @@ void availability_thread::_build_daily_availabilities(
   std::map<std::pair<unsigned int, unsigned int>,
             availability_builder> builders;
   mysql_result res(promise.get_future().get());
-  while (_mysql->fetch_row(thread_id, res)) {
+  while (_mysql->fetch_row(res)) {
     unsigned int ba_id = res.value_as_i32(1);
     unsigned int timeperiod_id = res.value_as_i32(6);
     // Find the timeperiod.
@@ -329,7 +329,7 @@ void availability_thread::_build_daily_availabilities(
       thread_id);
 
   res = promise.get_future().get();
-  while (_mysql->fetch_row(thread_id, res)) {
+  while (_mysql->fetch_row(res)) {
     unsigned int ba_id = res.value_as_i32(1);
     // Get all the timeperiods associated with the ba of this event.
     std::vector<std::pair<time::timeperiod::ptr, bool> >
