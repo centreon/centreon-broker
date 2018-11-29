@@ -317,8 +317,9 @@ void mysql_connection::_run() {
   else
     mysql_autocommit(_conn, 1);
 
-  locker.unlock();
+  _started = true;
   _result_condition.notify_all();
+  locker.unlock();
 
   while (!_finished) {
     std::unique_lock<std::mutex> locker(_list_mutex);
@@ -356,13 +357,15 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
     _pwd(db_cfg.get_password()),
     _name(db_cfg.get_name()),
     _port(db_cfg.get_port()),
+    _started(false),
     _qps(db_cfg.get_queries_per_transaction()) {
 
   std::cout << "mysql_connection start thread" << std::endl;
   std::unique_lock<std::mutex> locker(_result_mutex);
   _thread.reset(new std::thread(&mysql_connection::_run, this));
   std::cout << "mysql_connection start WAIT thread" << std::endl;
-  _result_condition.wait(locker);
+  while (!_started)
+    _result_condition.wait(locker);
   std::cout << "mysql_connection wait for start... => GO" << std::endl;
   if (mysql_manager::instance().is_in_error()) {
     std::cout << "mysql_connection: throw exception" << std::endl;

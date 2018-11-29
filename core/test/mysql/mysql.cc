@@ -552,7 +552,6 @@ TEST_F(DatabaseStorageTest, HostStatement) {
   mysql_stmt host_insupdate(qp.prepare_insert_or_update(*ms));
 
   neb::host h;
-  h.host_id = 24;
   h.address = "10.0.2.15";
   h.alias = "central";
   h.flap_detection_on_down = true;
@@ -572,13 +571,19 @@ TEST_F(DatabaseStorageTest, HostStatement) {
   ms->get_affected_rows(thread_id);
 
   // Insert
-  host_insupdate << h;
-  ms->run_statement(host_insupdate, NULL, "", false, 0);
+  for (int i(0); i < 50; ++i) {
+    h.host_id = 24 + i;
+    host_insupdate << h;
+    ms->run_statement(host_insupdate, NULL, "", false, i % 5);
+  }
 
   // Update
-  h.stalk_on_up = true;
-  host_insupdate << h;
-  ms->run_statement(host_insupdate, NULL, "", false, 0);
+  for (int i(0); i < 50; ++i) {
+    h.host_id = 24 + i;
+    h.stalk_on_up = true;
+    host_insupdate << h;
+    ms->run_statement(host_insupdate, NULL, "", false, i % 5);
+  }
 
   ms->commit();
 
