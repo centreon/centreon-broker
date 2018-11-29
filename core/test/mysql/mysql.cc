@@ -1101,7 +1101,7 @@ TEST_F(DatabaseStorageTest, CustomvariableStatement) {
       ms->run_statement(
             custom_variable_insupdate,
             NULL,
-            "ERROR CV STATEMENT", false);
+            "ERROR CV STATEMENT", true);
     }
   }
   std::cout << "SEND CUSTOM VARIABLES => DONE" << std::endl;

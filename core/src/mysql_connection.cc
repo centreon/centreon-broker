@@ -151,7 +151,7 @@ void mysql_connection::_statement(mysql_task* t) {
     }
   }
   else {
-    int const max_attempts(10);
+    int const max_attempts(5);
     int attempts(0);
     while (true) {
       if (mysql_stmt_execute(stmt)) {
@@ -163,6 +163,7 @@ void mysql_connection::_statement(mysql_task* t) {
           std::cout << "COMMIT OK" << std::endl;
 
         if (++attempts >= max_attempts) {
+          std::cout << "TOO MANY ATTEMPTS..." << std::endl;
           if (task->fatal) {
             if (task->promise) {
               exceptions::msg e;
@@ -179,6 +180,7 @@ void mysql_connection::_statement(mysql_task* t) {
               << mysql_stmt_error(stmt)
               << " (" << task->error_msg << ")";
           }
+          break;
         }
       }
       else {
