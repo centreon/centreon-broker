@@ -82,6 +82,7 @@ class                    mysql_connection {
   /**************************************************************************/
 
   void                    _run();
+  std::string             _get_stack();
   void                    _query(mysql_task* t);
   void                    _commit(mysql_task* t);
   void                    _prepare(mysql_task* t);
@@ -111,6 +112,10 @@ class                    mysql_connection {
 
   std::unordered_map<unsigned int, MYSQL_STMT*>
                           _stmt;
+
+  // FIXME DBR: to debug
+  std::unordered_map<unsigned int, std::string>
+                          _stmt_query;
 
   // Mutex and condition working on result and error_msg.
   std::mutex              _result_mutex;

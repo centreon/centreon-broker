@@ -94,6 +94,10 @@ void mysql_connection::_prepare(mysql_task* t) {
       << task->id << " ( " << task->query << " )";
     return ;
   }
+
+  // FIXME DBR: to debug
+  _stmt_query[task->id] = task->query;
+
   logging::debug(logging::low)
     << "mysql: prepare query: "
     << task->id << " ( " << task->query << " )";
@@ -151,11 +155,13 @@ void mysql_connection::_statement(mysql_task* t) {
     }
   }
   else {
-    int const max_attempts(5);
+    int const max_attempts(10);
     int attempts(0);
     while (true) {
       if (mysql_stmt_execute(stmt)) {
-        std::cout << "ERROR in STATEMENT: " << mysql_stmt_error(stmt) << std::endl;
+        std::cout << "ERROR IN STATEMENT " << task->statement_id
+          << " : " << _stmt_query[task->statement_id] << " : "
+          << mysql_stmt_error(stmt) << std::endl;
         std::cout << "ATTEMPT TO COMMIT BEFORE RETRYING" << std::endl;
         if (mysql_commit(_conn))
           std::cout << "COMMIT FAILED" << std::endl;
@@ -306,6 +312,45 @@ void mysql_connection::_fetch_row_sync(mysql_task* t) {
 void mysql_connection::_finish(mysql_task* t) {
   std::cout << "MYSQL CONNECTION: FINISH = true ; tasks_count = " << _tasks_count << std::endl;
   _finished = true;
+}
+
+std::string mysql_connection::_get_stack() {
+  std::string retval;
+  for (std::shared_ptr<mysql_task> t : _tasks_list) {
+    switch (t->type) {
+      case mysql_task::RUN:
+        retval += "RUN ; ";
+        break;
+      case mysql_task::COMMIT:
+        retval += "COMMIT ; ";
+        break;
+      case mysql_task::PREPARE:
+        retval += "PREPARE ; ";
+        break;
+      case mysql_task::STATEMENT:
+        retval += "STATEMENT ; ";
+        break;
+      case mysql_task::STATEMENT_ON_CONDITION:
+        retval += "STATEMENT_ON_CONDITION ; ";
+        break;
+      case mysql_task::LAST_INSERT_ID:
+        retval += "LAST_INSERT_ID ; ";
+        break;
+      case mysql_task::CHECK_AFFECTED_ROWS:
+        retval += "CHECK_AFFECTED_ROWS ; ";
+        break;
+      case mysql_task::AFFECTED_ROWS:
+        retval += "AFFECTED_ROWS ; ";
+        break;
+      case mysql_task::FETCH_ROW:
+        retval += "FETCH_ROW ; ";
+        break;
+      case mysql_task::FINISH:
+        retval += "FINISH ; ";
+        break;
+    }
+  }
+  return retval;
 }
 
 void mysql_connection::_run() {
