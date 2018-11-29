@@ -83,7 +83,7 @@ void mysql_connection::_commit(mysql_task* t) {
   }
   if (--task->count == 0)
     task->promise->set_value(true);
-  std::cout << "COMMIT: count = " << task->count << std::endl;
+  std::cout << "COMMIT: connection still not committed = " << task->count << std::endl;
 }
 
 void mysql_connection::_prepare(mysql_task* t) {
@@ -150,65 +150,78 @@ void mysql_connection::_statement(mysql_task* t) {
         << mysql_stmt_error(stmt);
     }
   }
-  else if (mysql_stmt_execute(stmt)) {
-    logging::debug(logging::low)
-      << "mysql: statement execution failed ("
-      << mysql_stmt_error(stmt) << ")";
-    if (task->fatal) {
-      if (task->promise) {
-        exceptions::msg e;
-        e << mysql_stmt_error(stmt);
-        task->promise->set_exception(
-                         std::make_exception_ptr<exceptions::msg>(e));
-      }
-      else
-        mysql_manager::instance().set_error(mysql_stmt_error(stmt), task->fatal);
-    }
-    else {
-      std::cout << "ERROR in STATEMENT: " << mysql_stmt_error(stmt) << std::endl;
-      logging::error(logging::medium)
-        << "mysql: Error while sending prepared query: "
-        << mysql_stmt_error(stmt)
-        << " (" << task->error_msg << ")";
-    }
-  }
   else {
-    _previous = true;
+    int const max_attempts(10);
+    int attempts(0);
+    while (true) {
+      if (mysql_stmt_execute(stmt)) {
+        std::cout << "ERROR in STATEMENT: " << mysql_stmt_error(stmt) << std::endl;
+        std::cout << "ATTEMPT TO COMMIT BEFORE RETRYING" << std::endl;
+        if (mysql_commit(_conn))
+          std::cout << "COMMIT FAILED" << std::endl;
+        else
+          std::cout << "COMMIT OK" << std::endl;
 
-    if (task->promise) {
-      mysql_result res(this, task->statement_id);
-      MYSQL_STMT* stmt(_stmt[task->statement_id]);
-      MYSQL_RES* prepare_meta_result(mysql_stmt_result_metadata(stmt));
-      if (prepare_meta_result == NULL) {
-        exceptions::msg e;
-        e << mysql_stmt_error(stmt);
-        task->promise->set_exception(
-                         std::make_exception_ptr<exceptions::msg>(e));
+        if (++attempts >= max_attempts) {
+          if (task->fatal) {
+            if (task->promise) {
+              exceptions::msg e;
+              e << mysql_stmt_error(stmt);
+              task->promise->set_exception(
+                  std::make_exception_ptr<exceptions::msg>(e));
+            }
+            else
+              mysql_manager::instance().set_error(mysql_stmt_error(stmt), task->fatal);
+          }
+          else {
+            logging::error(logging::medium)
+              << "mysql: Error while sending prepared query: "
+              << mysql_stmt_error(stmt)
+              << " (" << task->error_msg << ")";
+          }
+        }
       }
       else {
-        int size(mysql_num_fields(prepare_meta_result));
-        std::unique_ptr<mysql_bind> bind(new mysql_bind(size, STR_SIZE));
+        _previous = true;
 
-        if (mysql_stmt_bind_result(stmt, bind->get_bind())) {
-          exceptions::msg e;
-          e << mysql_stmt_error(stmt);
-          task->promise->set_exception(
-                           std::make_exception_ptr<exceptions::msg>(e));
-        }
-        else {
-          if (mysql_stmt_store_result(stmt)) {
+        if (task->promise) {
+          mysql_result res(this, task->statement_id);
+          MYSQL_STMT* stmt(_stmt[task->statement_id]);
+          MYSQL_RES* prepare_meta_result(mysql_stmt_result_metadata(stmt));
+          if (prepare_meta_result == NULL) {
             exceptions::msg e;
             e << mysql_stmt_error(stmt);
             task->promise->set_exception(
-                             std::make_exception_ptr<exceptions::msg>(e));
+                std::make_exception_ptr<exceptions::msg>(e));
           }
-          // Here, we have the first row.
-          res.set(prepare_meta_result);
-          bind->set_empty(true);
+          else {
+            int size(mysql_num_fields(prepare_meta_result));
+            std::unique_ptr<mysql_bind> bind(new mysql_bind(size, STR_SIZE));
+
+            if (mysql_stmt_bind_result(stmt, bind->get_bind())) {
+              exceptions::msg e;
+              e << mysql_stmt_error(stmt);
+              task->promise->set_exception(
+                  std::make_exception_ptr<exceptions::msg>(e));
+            }
+            else {
+              if (mysql_stmt_store_result(stmt)) {
+                exceptions::msg e;
+                e << mysql_stmt_error(stmt);
+                task->promise->set_exception(
+                    std::make_exception_ptr<exceptions::msg>(e));
+              }
+              // Here, we have the first row.
+              res.set(prepare_meta_result);
+              bind->set_empty(true);
+            }
+            res.set_bind(bind);
+            task->promise->set_value(std::move(res));
+          }
         }
-        res.set_bind(bind);
-        task->promise->set_value(std::move(res));
+        break;
       }
+      std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
   }
 }

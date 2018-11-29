@@ -39,8 +39,10 @@ mysql_manager::mysql_manager()
 
 mysql_manager::~mysql_manager() {
   // If connections are still active but unique here, we can remove them
-  std::lock_guard<std::mutex> lock(_cfg_mutex);
+  std::lock_guard<std::mutex> cfg_lock(_cfg_mutex);
+  std::lock_guard<std::mutex> err_lock(_err_mutex);
   std::cout << "MANAGER DESTROYED..." << std::endl;
+  int i = 0;
   for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
        it(_connection.begin()), end(_connection.end());
        it != end;
@@ -48,7 +50,9 @@ mysql_manager::~mysql_manager() {
     while (!it->unique()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+    std::cout << "CONNECTION " << i++ << " STOPPED" << std::endl;
   }
+  std::cout << "MYSQL LIBRARY END" << std::endl;
   mysql_library_end();
   std::cout << "MANAGER DESTROYED...DONE" << std::endl;
 }

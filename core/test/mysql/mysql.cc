@@ -1057,6 +1057,66 @@ TEST_F(DatabaseStorageTest, ServiceStatusStatement) {
   ms->commit();
 }
 
+TEST_F(DatabaseStorageTest, CustomvariableStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
+
+  query_preparator::event_unique unique;
+  unique.insert("host_id");
+  unique.insert("name");
+  unique.insert("service_id");
+  query_preparator qp(neb::custom_variable::static_type(),
+                      unique);
+  mysql_stmt custom_variable_insupdate(qp.prepare_insert_or_update(*ms));
+
+  neb::custom_variable cv;
+  cv.default_value = "empty";
+  cv.modified = false;
+  cv.var_type = 1;
+  cv.update_time = 0;
+
+  std::cout << "SEND CUSTOM VARIABLES" << std::endl;
+  for (int j = 1; j <= 20; j++) {
+    for (int i = 1; i <= 30; i++) {
+      cv.host_id = j;
+      std::ostringstream oss;
+      oss << "cv_" << i << "_" << j;
+      cv.name = oss.str().c_str();
+      oss.str("");
+      oss << "v" << i << "_" << j;
+      cv.value = oss.str().c_str();
+
+      custom_variable_insupdate << cv;
+      ms->run_statement(
+            custom_variable_insupdate,
+            NULL,
+            "ERROR CV STATEMENT", false);
+    }
+  }
+  std::cout << "SEND CUSTOM VARIABLES => DONE" << std::endl;
+  ms->commit();
+  std::cout << "COMMIT => DONE" << std::endl;
+  std::string query("SELECT count(*) FROM customvariables WHERE service_id = 0");
+  std::promise<mysql_result> promise;
+  ms->run_query(query, &promise);
+  mysql_result res(promise.get_future().get());
+
+  ASSERT_TRUE(ms->fetch_row(res));
+  std::cout << "***** count = " << res.value_as_i32(0) << std::endl;
+  ASSERT_TRUE(res.value_as_i32(0) == 600);
+}
+
 TEST_F(DatabaseStorageTest, SelectStatement) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");

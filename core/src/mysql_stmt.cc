@@ -229,11 +229,11 @@ void mysql_stmt::operator<<(io::data const& d) {
             unsigned int v(current_entry->get_uint(d));
             switch (current_entry->get_attribute()) {
             case mapping::entry::invalid_on_zero:
-              if (v == 0)
-                bind_value_as_null(field);
-              else
+//              if (v == 0)
+//                bind_value_as_null(field);
+//              else
                 bind_value_as_u32(field, v);
-              break;
+//              break;
             case mapping::entry::invalid_on_minus_one:
               if (v == (unsigned int)-1)
                 bind_value_as_null(field);
