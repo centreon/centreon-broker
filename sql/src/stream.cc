@@ -328,7 +328,8 @@ void stream::_clean_tables(unsigned int instance_id) {
              instance_id % _mysql.connections_count());
   }
 
-  // Remove custom variables.
+  // Remove custom variables. No need to choose the good instance, there are
+  // no constraint between custom variables and instances.
   oss.str("");
   oss << "DELETE cv"
       << " FROM " << (db_v2
@@ -338,10 +339,12 @@ void stream::_clean_tables(unsigned int instance_id) {
          " INNER JOIN " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
          "  ON cv.host_id = h.host_id"
          " WHERE h.instance_id=" << instance_id;
+
   _mysql.run_query(
-           oss.str(), NULL,
-           "SQL: could not clean custom variables table: ", false,
-           instance_id % _mysql.connections_count());
+           oss.str(), nullptr,
+           "SQL: could not clean custom variables table: ", false);
+  // This is just to wait the deletions to finish
+  _mysql.commit();
 }
 
 /**
@@ -487,6 +490,8 @@ void stream::_process_custom_variable(
 
   // Processing.
   if (cv.enabled) {
+    std::cout << "SQL: Process CUSTOM VARIABLE '" << cv.name.toStdString() << "' of ("
+      << cv.host_id << ", " << cv.service_id << ")" << std::endl;
     logging::info(logging::medium)
       << "SQL: enabling custom variable '" << cv.name << "' of ("
       << cv.host_id << ", " << cv.service_id << ")";
