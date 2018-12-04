@@ -24,6 +24,7 @@
 using namespace com::centreon::broker;
 
 const int STR_SIZE = 200;
+const int MAX_ATTEMPTS = 10;
 
 void (mysql_connection::* const mysql_connection::_task_processing_table[])(mysql_task* task) = {
   &mysql_connection::_query,
@@ -76,7 +77,8 @@ void mysql_connection::_query(mysql_task* t) {
 
 void mysql_connection::_commit(mysql_task* t) {
   mysql_task_commit* task(static_cast<mysql_task_commit*>(t));
-  if (mysql_commit(_conn)) {
+  int attempts(0);
+  while (attempts++ < MAX_ATTEMPTS && mysql_commit(_conn)) {
     std::cout << "commit queries: " << ::mysql_error(_conn) << std::endl;
     logging::error(logging::medium)
       << "could not commit queries: " << ::mysql_error(_conn);
@@ -155,7 +157,6 @@ void mysql_connection::_statement(mysql_task* t) {
     }
   }
   else {
-    int const max_attempts(10);
     int attempts(0);
     while (true) {
       if (mysql_stmt_execute(stmt)) {
@@ -168,7 +169,7 @@ void mysql_connection::_statement(mysql_task* t) {
         else
           std::cout << "COMMIT OK" << std::endl;
 
-        if (++attempts >= max_attempts) {
+        if (++attempts >= MAX_ATTEMPTS) {
           std::cout << "TOO MANY ATTEMPTS..." << std::endl;
           if (task->fatal) {
             if (task->promise) {

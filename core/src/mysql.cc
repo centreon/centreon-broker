@@ -82,7 +82,6 @@ void mysql::commit(int thread_id) {
   std::promise<bool> promise;
   std::future<bool> future(promise.get_future());
   std::atomic_int ko;
-  int commits;
   if (thread_id < 0) {
     ko = _connection.size();
     for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
@@ -92,18 +91,17 @@ void mysql::commit(int thread_id) {
          ++it) {
       (*it)->commit(&promise, ko);
     }
-    commits = _connection.size();
   }
   else {
     ko = 1;
     _connection[thread_id]->commit(&promise, ko);
-    commits = 1;
   }
 
-  if (!future.get() || ko)
-    throw exceptions::msg()
-      << "mysql: Unable to commit transactions";
-
+  if (!future.get()) {
+    if (ko != 0)
+      throw exceptions::msg()
+        << "mysql: Unable to commit transactions";
+  }
   _pending_queries = 0;
 }
 
