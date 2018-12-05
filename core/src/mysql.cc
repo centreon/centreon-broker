@@ -98,9 +98,11 @@ void mysql::commit(int thread_id) {
   }
 
   if (!future.get()) {
-    if (ko != 0)
+    if (ko != 0) {
+      std::cout << "Unable to commit the transaction..." << std::endl;
       throw exceptions::msg()
         << "mysql: Unable to commit transactions";
+    }
   }
   _pending_queries = 0;
 }

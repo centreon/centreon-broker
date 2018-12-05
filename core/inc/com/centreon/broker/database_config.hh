@@ -69,6 +69,7 @@ public:
   void                set_user(std::string const& user);
   void                set_password(std::string const& password);
   void                set_name(std::string const& name);
+  void                set_connections_count(int count);
   void                set_queries_per_transaction(int qpt);
   void                set_check_replication(bool check_replication);
 

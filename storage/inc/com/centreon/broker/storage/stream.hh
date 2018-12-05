@@ -135,7 +135,7 @@ namespace          storage {
     int            _ack_events;
     std::deque<metric_value>
                    _perfdata_queue;
-    rebuilder      _rebuild_thread;
+    rebuilder      _rebuilder;
     unsigned int   _rrd_len;
     std::string    _status;
     mutable QMutex _statusm;

@@ -20,6 +20,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -58,19 +59,22 @@ rebuilder::rebuilder(
     _rebuild_check_interval(rebuild_check_interval),
     _rrd_len(rrd_length),
     _should_exit(false) {
+  _db_cfg.set_connections_count(1);
   _db_cfg.set_queries_per_transaction(1);
+  _thread.reset(new std::thread(&rebuilder::_run, this));
 }
 
 /**
  *  Destructor.
  */
-rebuilder::~rebuilder() throw () {}
-
-/**
- *  Set the exit flag.
- */
-void rebuilder::exit() throw () {
+rebuilder::~rebuilder() {
+  std::cout << "rebuilder destroy..........\n";
+  std::unique_lock<std::mutex> lock(_mutex_should_exit);
+  std::cout << "rebuilder destroy.locked...\n";
   _should_exit = true;
+  lock.unlock();
+  _cond_should_exit.notify_all();
+  _thread->join();
 }
 
 /**
@@ -94,8 +98,12 @@ unsigned int rebuilder::get_rrd_length() const throw () {
 /**
  *  Thread entry point.
  */
-void rebuilder::run() {
+void rebuilder::_run() {
+    std::cout << "rebuilder _run... 1\n";
+  std::unique_lock<std::mutex> locker(_mutex_should_exit);
+    std::cout << "rebuilder _run... 2\n";
   while (!_should_exit && _rebuild_check_interval) {
+    std::cout << "rebuilder loop... 1\n";
     try {
       // Open DB.
       std::unique_ptr<mysql> ms;
@@ -115,6 +123,7 @@ void rebuilder::run() {
       index_info info;
       _next_index_to_rebuild(info, *ms);
       while (!_should_exit && info.index_id) {
+        std::cout << "rebuilder loop... 2\n";
         // Get check interval of host/service.
         unsigned int index_id;
         unsigned int host_id;
@@ -226,11 +235,12 @@ void rebuilder::run() {
         << "storage: rebuilder: unknown error";
     }
 
+    std::cout << "rebuilder wait...\n";
     // Sleep a while.
-    time_t target(time(NULL) + _rebuild_check_interval);
-    while (!_should_exit && (target > time(NULL)))
-      sleep(1);
+    _cond_should_exit.wait_for(locker, std::chrono::seconds(_rebuild_check_interval));
+    std::cout << "rebuilder loop...2\n";
   }
+  std::cout << "rebuilder loop finished\n";
 }
 
 /**************************************

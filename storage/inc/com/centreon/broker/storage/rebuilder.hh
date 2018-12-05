@@ -20,7 +20,6 @@
 #  define CCB_STORAGE_REBUILDER_HH
 
 #  include <memory>
-#  include <QThread>
 #  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -37,18 +36,16 @@ namespace           storage {
    *
    *  Check for graphs to be rebuild at fixed interval.
    */
-  class             rebuilder : public QThread {
+  class             rebuilder {
    public:
                     rebuilder(
                       database_config const& db_cfg,
                       unsigned int rebuild_check_interval = 600,
                       unsigned int rrd_length = 15552000,
                       unsigned int interval_length = 60);
-                    ~rebuilder() throw ();
-    void            exit() throw ();
+                    ~rebuilder();
     unsigned int    get_rebuild_check_interval() const throw ();
     unsigned int    get_rrd_length() const throw ();
-    void            run();
 
    private:
     // Local types.
@@ -91,11 +88,19 @@ namespace           storage {
                       mysql& db,
                       unsigned int index_id,
                       short state);
+    void            _run();
 
+    std::unique_ptr<std::thread>
+                    _thread;
     database_config _db_cfg;
+    std::shared_ptr<mysql_connection>
+                    _connection;
     unsigned int    _interval_length;
     unsigned int    _rebuild_check_interval;
     unsigned int    _rrd_len;
+    std::condition_variable
+                    _cond_should_exit;
+    std::mutex      _mutex_should_exit;
     volatile bool   _should_exit;
   };
 }

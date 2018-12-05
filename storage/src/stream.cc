@@ -114,7 +114,7 @@ stream::stream(
     _interval_length(interval_length),
     _ack_events(0),
     _pending_events(0),
-    _rebuild_thread(
+    _rebuilder(
       db_cfg,
       rebuild_check_interval,
       rrd_len,
@@ -124,21 +124,13 @@ stream::stream(
     _mysql(db_cfg) {
   // Prepare queries.
   _prepare();
-
-  // Run rebuild thread.
-  _rebuild_thread.start();
 }
 
 /**
  *  Destructor.
  */
 stream::~stream() {
-  std::cout << "STORAGE STREAM DESTRUCTOR 1" << std::endl;
-  // Stop rebuild thread.
-  _rebuild_thread.exit();
-  std::cout << "STORAGE STREAM DESTRUCTOR 2" << std::endl;
-  _rebuild_thread.wait(-1);
-  std::cout << "STORAGE STREAM DESTRUCTOR 3" << std::endl;
+  std::cout << "STORAGE STREAM DESTRUCTOR" << std::endl;
 }
 
 /**
@@ -205,6 +197,7 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
+  std::cout << "STORAGE stream::write" << std::endl;
   ++_pending_events;
   logging::info(logging::low)
     << "storage: write pending_events = " << _pending_events;
@@ -331,6 +324,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   _ack_events = 0;
   logging::debug(logging::low)
     << "storage: ack events count: " << retval;
+  std::cout << "STORAGE stream::write END" << std::endl;
   return retval;
 }
 
@@ -546,10 +540,10 @@ unsigned int stream::_find_index_id(
     logging::debug(logging::low) << "storage: found index "
       << it->second.index_id << " of (" << host_id << ", "
       << service_id << ") in cache";
-    // Should we update index_data ?
-    if ((it->second.host_name != host_name)
-        || (it->second.service_description != service_desc)
-        || (it->second.special != special)) {
+    // Should we update index_data?
+    if (it->second.host_name != host_name
+        || it->second.service_description != service_desc
+        || it->second.special != special) {
       logging::info(logging::medium) << "storage: updating index "
         << it->second.index_id << " of (" << host_id << ", "
         << service_id << ") (host: " << host_name << ", service: "
@@ -743,6 +737,7 @@ unsigned int stream::_find_metric_id(
 
       // Only use the thread_id 0
       _mysql.run_statement(_update_metrics_stmt, NULL, "UPDATE metrics", true);
+      logging::info(logging::medium) << "FIXME DBR: UPDATE metrics DONE";
       if (_mysql.commit_if_needed())
         _set_ack_events();
 

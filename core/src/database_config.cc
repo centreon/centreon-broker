@@ -313,6 +313,15 @@ void database_config::set_queries_per_transaction(int qpt) {
 }
 
 /**
+ *  Set the number of connections.
+ *
+ *  @param[in] qpt  Number of connections.
+ */
+void database_config::set_connections_count(int count) {
+  _connections_count = count;
+}
+
+/**
  *  Set whether or not database replication should be checked.
  *
  *  @param[in] check_replication  Replication check flag.
