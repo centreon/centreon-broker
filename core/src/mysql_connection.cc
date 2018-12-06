@@ -123,7 +123,6 @@ void mysql_connection::_prepare(mysql_task* t) {
 
 void mysql_connection::_statement(mysql_task* t) {
   mysql_task_statement* task(static_cast<mysql_task_statement*>(t));
-  _previous = false;
   logging::debug(logging::low)
     << "mysql: execute statement: "
     << task->statement_id;
@@ -160,8 +159,13 @@ void mysql_connection::_statement(mysql_task* t) {
     while (true) {
       if (mysql_stmt_execute(stmt)) {
         std::cout << "ERROR IN STATEMENT " << task->statement_id
+          << " : Errno " << mysql_stmt_errno(stmt)
           << " : " << _stmt_query[task->statement_id] << " : "
           << mysql_stmt_error(stmt) << std::endl;
+        //FIXME DBR: bad value but it is for a test
+        if (mysql_stmt_errno(stmt) == 1452)
+          attempts = MAX_ATTEMPTS;
+
         std::cout << "ATTEMPT TO COMMIT BEFORE RETRYING" << std::endl;
         if (mysql_commit(_conn))
           std::cout << "COMMIT FAILED" << std::endl;
@@ -190,8 +194,6 @@ void mysql_connection::_statement(mysql_task* t) {
         }
       }
       else {
-        _previous = true;
-
         if (task->promise) {
           mysql_result res(this, task->statement_id);
           MYSQL_STMT* stmt(_stmt[task->statement_id]);
@@ -383,7 +385,6 @@ void mysql_connection::_run() {
 mysql_connection::mysql_connection(database_config const& db_cfg)
   : _conn(NULL),
     _finished(false),
-    _previous(false),
     _host(db_cfg.get_host()),
     _user(db_cfg.get_user()),
     _pwd(db_cfg.get_password()),

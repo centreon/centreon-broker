@@ -1251,7 +1251,7 @@ TEST_F(DatabaseStorageTest, HostGroupMemberStatement) {
 
   int thread_id(ms->run_statement(
                       host_group_member_insert,
-                      NULL,
+                      &promise,
                       "Error: host group not defined", true));
   try {
     promise.get_future().get();

@@ -121,8 +121,6 @@ class                    mysql_connection {
   std::mutex              _result_mutex;
   std::condition_variable _result_condition;
 
-  bool                    _previous;
-
   // Mutex to access the configuration
   mutable std::mutex      _cfg_mutex;
   std::string             _host;
