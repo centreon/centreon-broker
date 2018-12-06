@@ -55,8 +55,8 @@ namespace          sql {
     stream&        operator=(stream const& other);
     void           _cache_clean();
     void           _cache_create();
-    void           _check_host_group_statement();
-    void           _check_service_group_statement();
+    void           _prepare_hg_insupdate_statement();
+    void           _prepare_sg_insupdate_statement();
     void           _clean_empty_host_groups();
     void           _clean_empty_service_groups();
     void           _clean_tables(unsigned int instance_id);

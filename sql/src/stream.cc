@@ -914,7 +914,7 @@ void stream::_process_host_dependency(
   }
 }
 
-void stream::_check_host_group_statement() {
+void stream::_prepare_hg_insupdate_statement() {
   if (!_host_group_insupdate.prepared()) {
     query_preparator::event_unique unique;
     unique.insert("hostgroup_id");
@@ -923,7 +923,7 @@ void stream::_check_host_group_statement() {
   }
 }
 
-void stream::_check_service_group_statement() {
+void stream::_prepare_sg_insupdate_statement() {
   if (!_service_group_insupdate.prepared()) {
     query_preparator::event_unique unique;
     unique.insert("servicegroup_id");
@@ -954,7 +954,7 @@ void stream::_process_host_group(
     logging::info(logging::medium) << "SQL: enabling host group "
       << hg.id << " ('" << hg.name << "') on instance "
       << hg.poller_id;
-    _check_host_group_statement();
+    _prepare_hg_insupdate_statement();
 
     std::ostringstream oss;
     oss << "SQL: could not store host group (poller: "
@@ -1001,7 +1001,7 @@ void stream::_process_host_group_member(
   // Cast object.
   neb::host_group_member const&
     hgm(*static_cast<neb::host_group_member const*>(e.data()));
-  int thread_id(hgm.poller_id % _mysql.connections_count());
+  int thread_id(_cache_host_instance[hgm.host_id] % _mysql.connections_count());
 
   // Only process groups for v2 schema.
   if (_mysql.schema_version() != mysql::v2)
@@ -1035,7 +1035,7 @@ void stream::_process_host_group_member(
              "SQL: host group not defined", false,
              thread_id);
 
-    _check_host_group_statement();
+    _prepare_hg_insupdate_statement();
 
     neb::host_group hg;
     hg.id = hgm.group_id;
@@ -1047,24 +1047,24 @@ void stream::_process_host_group_member(
     oss << "SQL: could not store host group (poller: "
         << hg.poller_id << ", group: " << hg.id << "): ";
 
-    _host_group_insupdate << hg;
-    _mysql.run_statement_on_condition(
-              _host_group_insupdate,
-              NULL,
-              mysql_task::ON_ERROR,
-              oss.str(), true,
-              thread_id);
-
-    oss.str("");
-    oss << "SQL: could not store host group membership (poller: "
-        << hgm.poller_id << ", host: " << hgm.host_id << ", group: "
-        << hgm.group_id << "): ";
-    _mysql.run_statement_on_condition(
-              _host_group_member_insert,
-              NULL,
-              mysql_task::IF_PREVIOUS,
-              oss.str(), false,
-              thread_id);
+//    _host_group_insupdate << hg;
+//    _mysql.run_statement_on_condition(
+//              _host_group_insupdate,
+//              NULL,
+//              mysql_task::ON_ERROR,
+//              oss.str(), true,
+//              thread_id);
+//
+//    oss.str("");
+//    oss << "SQL: could not store host group membership (poller: "
+//        << hgm.poller_id << ", host: " << hgm.host_id << ", group: "
+//        << hgm.group_id << "): ";
+//    _mysql.run_statement_on_condition(
+//              _host_group_member_insert,
+//              NULL,
+//              mysql_task::IF_PREVIOUS,
+//              oss.str(), false,
+//              thread_id);
   }
   // Delete.
   else {
@@ -1864,7 +1864,7 @@ void stream::_process_service_group(
   else if (sg.enabled) {
     logging::info(logging::medium) << "SQL: enabling service group "
       << sg.id << " ('" << sg.name << "') on instance " << sg.poller_id;
-    _check_service_group_statement();
+    _prepare_sg_insupdate_statement();
 
     std::stringstream oss;
     oss << "SQL: could not store service group (poller: "
@@ -1948,7 +1948,7 @@ void stream::_process_service_group_member(
              "SQL: service group not defined", false,
              thread_id);
 
-    _check_service_group_statement();
+    _prepare_sg_insupdate_statement();
 
     neb::service_group sg;
     sg.id = sgm.group_id;
