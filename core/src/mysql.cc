@@ -224,21 +224,6 @@ int mysql::get_last_insert_id(int thread_id) {
   return _connection[thread_id]->get_last_insert_id();
 }
 
-int mysql::run_statement_on_condition(
-             mysql_stmt& stmt,
-             std::promise<mysql_result>* p,
-             mysql_task::condition condition,
-             std::string const& error_msg, bool fatal,
-             int thread_id) {
-  _connection[thread_id]->run_statement_on_condition(
-                        stmt,
-                        p,
-                        condition,
-                        error_msg,
-                        fatal);
-  return thread_id;
-}
-
 int mysql::run_statement(mysql_stmt& stmt,
              std::promise<mysql_result>* promise,
              std::string const& error_msg, bool fatal,

@@ -1247,32 +1247,37 @@ TEST_F(DatabaseStorageTest, HostGroupMemberStatement) {
   host_group_member_insert << hgm;
   std::cout << host_group_member_insert.get_query() << std::endl;
 
+  std::promise<mysql_result> promise;
+
   int thread_id(ms->run_statement(
                       host_group_member_insert,
                       NULL,
                       "Error: host group not defined", true));
+  try {
+    promise.get_future().get();
+  }
+  catch (std::exception const& e) {
+    neb::host_group hg;
+    hg.id = 8;
+    hg.name = "Test hostgroup";
+    hg.enabled = true;
+    hg.poller_id = 1;
 
-  neb::host_group hg;
-  hg.id = 8;
-  hg.name = "Test hostgroup";
-  hg.enabled = true;
-  hg.poller_id = 1;
+    host_group_insupdate << hg;
 
-  host_group_insupdate << hg;
+    std::cout << host_group_insupdate.get_query() << std::endl;
 
-  std::cout << host_group_insupdate.get_query() << std::endl;
+    ms->run_statement(
+                   host_group_insupdate, NULL,
+                   "Error: Unable to create host group", true,
+                   thread_id);
 
-  ms->run_statement_on_condition(
-                 host_group_insupdate, NULL, mysql_task::ON_ERROR,
-                 "Error: Unable to create host group", true,
-                 thread_id);
-
-  ms->run_statement_on_condition(
-                 host_group_member_insert,
-                 NULL,
-                 mysql_task::IF_PREVIOUS,
-                 "Error: host group not defined", true,
-                 thread_id);
+    ms->run_statement(
+                   host_group_member_insert,
+                   NULL,
+                   "Error: host group not defined", true,
+                   thread_id);
+  }
   ms->commit();
 }
 

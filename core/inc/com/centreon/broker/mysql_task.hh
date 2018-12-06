@@ -34,7 +34,6 @@ class                    mysql_task {
                            COMMIT,
                            PREPARE,
                            STATEMENT,
-                           STATEMENT_ON_CONDITION,
                            LAST_INSERT_ID,
                            CHECK_AFFECTED_ROWS,
                            AFFECTED_ROWS,
@@ -171,21 +170,6 @@ class                    mysql_task_statement : public mysql_task {
                          bind;
   std::string            error_msg;
   bool                   fatal;
-};
-
-class                    mysql_task_statement_on_condition : public mysql_task_statement {
- public:
-                         mysql_task_statement_on_condition(
-                           mysql_stmt& stmt,
-                           std::promise<mysql_result>* promise,
-                           condition condition,
-                           std::string const& error_msg,
-                           bool fatal)
-                          : mysql_task_statement(stmt, promise, error_msg, fatal),
-                            condition(condition) {
-                             type = STATEMENT_ON_CONDITION;
-                          }
-  condition               condition;
 };
 
 CCB_END()

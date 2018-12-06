@@ -31,7 +31,6 @@ void (mysql_connection::* const mysql_connection::_task_processing_table[])(mysq
   &mysql_connection::_commit,
   &mysql_connection::_prepare,
   &mysql_connection::_statement,
-  &mysql_connection::_statement_on_condition,
   &mysql_connection::_get_last_insert_id_sync,
   &mysql_connection::_check_affected_rows,
   &mysql_connection::_get_affected_rows_sync,
@@ -235,31 +234,6 @@ void mysql_connection::_statement(mysql_task* t) {
   }
 }
 
-void mysql_connection::_statement_on_condition(mysql_task* t) {
-  mysql_task_statement_on_condition* task(static_cast<mysql_task_statement_on_condition*>(t));
-  switch (task->condition) {
-    case mysql_task::ON_ERROR:
-      {
-        mysql_manager& mgr = mysql_manager::instance();
-        if (mgr.is_in_error()) {
-          mgr.clear_error();
-          _statement(t);
-        }
-      }
-      break;
-    case mysql_task::IF_PREVIOUS:
-      if (_previous) {
-        _statement(t);
-      }
-      break;
-    case mysql_task::IF_NOT_PREVIOUS:
-      if (!_previous) {
-        _statement(t);
-      }
-      break;
-  }
-}
-
 /**
  *  Run a query synchronously. The result is stored in _result and if an error
  *  occurs, it is stored in _error_msg.
@@ -330,9 +304,6 @@ std::string mysql_connection::_get_stack() {
         break;
       case mysql_task::STATEMENT:
         retval += "STATEMENT ; ";
-        break;
-      case mysql_task::STATEMENT_ON_CONDITION:
-        retval += "STATEMENT_ON_CONDITION ; ";
         break;
       case mysql_task::LAST_INSERT_ID:
         retval += "LAST_INSERT_ID ; ";
@@ -506,19 +477,6 @@ void mysql_connection::run_statement(mysql_stmt& stmt,
                      std::promise<mysql_result>* p,
                      std::string const& error_msg, bool fatal) {
   _push(std::make_shared<mysql_task_statement>(stmt, p, error_msg, fatal));
-}
-
-void mysql_connection::run_statement_on_condition(
-                     mysql_stmt& stmt,
-                     std::promise<mysql_result>* promise,
-                     mysql_task::condition condition,
-                     std::string const& error_msg, bool fatal) {
-  _push(std::make_shared<mysql_task_statement_on_condition>(
-               stmt,
-               promise,
-               condition,
-               error_msg,
-               fatal));
 }
 
 void mysql_connection::prepare_query(int stmt_id, std::string const& query) {

@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include <ctime>
 #include <iostream>
 #include <limits>
@@ -1029,42 +1030,54 @@ void stream::_process_host_group_member(
     }
     _host_group_member_insert << hgm;
 
+    // FIXME DBR: We could do better to avoid this promise that waits for
+    // the insertion to be finished.
+    std::promise<mysql_result> promise;
+
+      std::cout << "INSERT HOST GROUP MEMBER "
+        << " : " << hgm.host_id << " ; " << hgm.group_id << std::endl;
     _mysql.run_statement(
              _host_group_member_insert,
-             NULL,
-             "SQL: host group not defined", false,
+             &promise,
+             "SQL: host group not defined", true,
              thread_id);
+    try {
+      promise.get_future().get();
+    }
+    catch (std::exception const& e) {
+      std::cout << "EXCEPTION !!!!! "
+        << e.what() << " : " << hgm.host_id << " ; " << hgm.group_id << std::endl;
+      _prepare_hg_insupdate_statement();
 
-    _prepare_hg_insupdate_statement();
+      neb::host_group hg;
+      hg.id = hgm.group_id;
+      hg.name = hgm.group_name;
+      hg.enabled = true;
+      hg.poller_id = _cache_host_instance[hgm.host_id];
 
-    neb::host_group hg;
-    hg.id = hgm.group_id;
-    hg.name = hgm.group_name;
-    hg.enabled = true;
-    hg.poller_id = hgm.poller_id;
+      std::ostringstream oss;
+      oss << "SQL: could not store host group (poller: "
+          << hg.poller_id << ", group: " << hg.id << "): ";
 
-    std::ostringstream oss;
-    oss << "SQL: could not store host group (poller: "
-        << hg.poller_id << ", group: " << hg.id << "): ";
+      _host_group_insupdate << hg;
+      _mysql.run_statement(
+                _host_group_insupdate,
+                NULL,
+                oss.str(), false,
+                thread_id);
 
-//    _host_group_insupdate << hg;
-//    _mysql.run_statement_on_condition(
-//              _host_group_insupdate,
-//              NULL,
-//              mysql_task::ON_ERROR,
-//              oss.str(), true,
-//              thread_id);
-//
-//    oss.str("");
-//    oss << "SQL: could not store host group membership (poller: "
-//        << hgm.poller_id << ", host: " << hgm.host_id << ", group: "
-//        << hgm.group_id << "): ";
-//    _mysql.run_statement_on_condition(
-//              _host_group_member_insert,
-//              NULL,
-//              mysql_task::IF_PREVIOUS,
-//              oss.str(), false,
-//              thread_id);
+      oss.str("");
+      oss << "SQL: could not store host group membership (poller: "
+          << hgm.poller_id << ", host: " << hgm.host_id << ", group: "
+          << hgm.group_id << "): ";
+      assert(hgm.host_id != 0);
+      assert(hgm.group_id != 0);
+      _mysql.run_statement(
+                _host_group_member_insert,
+                NULL,
+                oss.str(), false,
+                thread_id);
+    }
   }
   // Delete.
   else {
@@ -1942,42 +1955,46 @@ void stream::_process_service_group_member(
     }
     _service_group_member_insert << sgm;
 
+    std::promise<mysql_result> promise;
+
     _mysql.run_statement(
              _service_group_member_insert,
-             NULL,
-             "SQL: service group not defined", false,
+             &promise,
+             "SQL: service group not defined", true,
              thread_id);
+    try {
+      promise.get_future().get();
+    }
+    catch (std::exception const& e) {
+      _prepare_sg_insupdate_statement();
 
-    _prepare_sg_insupdate_statement();
+      neb::service_group sg;
+      sg.id = sgm.group_id;
+      sg.name = sgm.group_name;
+      sg.enabled = true;
+      sg.poller_id = sgm.poller_id;
 
-    neb::service_group sg;
-    sg.id = sgm.group_id;
-    sg.name = sgm.group_name;
-    sg.enabled = true;
-    sg.poller_id = sgm.poller_id;
+      std::ostringstream oss;
+      oss << "SQL: could not store service group (poller: "
+          << sg.poller_id << ", group: " << sg.id << "): ";
 
-    std::ostringstream oss;
-    oss << "SQL: could not store service group (poller: "
-        << sg.poller_id << ", group: " << sg.id << "): ";
+      _service_group_insupdate << sg;
+      _mysql.run_statement(
+               _service_group_insupdate,
+               NULL,
+               oss.str(), false,
+               thread_id);
 
-    _service_group_insupdate << sg;
-    _mysql.run_statement_on_condition(
-             _service_group_insupdate,
-             NULL,
-             mysql_task::ON_ERROR,
-             oss.str(), true,
-             thread_id);
-
-    oss.str("");
-    oss << "SQL: could not store service group membership (poller: "
-        << sgm.poller_id << ", host: " << sgm.host_id << ", service: "
-        << sgm.service_id << ", group: " << sgm.group_id << "): ";
-    _mysql.run_statement_on_condition(
-             _service_group_member_insert,
-             NULL,
-             mysql_task::IF_PREVIOUS,
-             oss.str(), false,
-             thread_id);
+      oss.str("");
+      oss << "SQL: could not store service group membership (poller: "
+          << sgm.poller_id << ", host: " << sgm.host_id << ", service: "
+          << sgm.service_id << ", group: " << sgm.group_id << "): ";
+      _mysql.run_statement(
+               _service_group_member_insert,
+               NULL,
+               oss.str(), false,
+               thread_id);
+    }
   }
   // Delete.
   else {
