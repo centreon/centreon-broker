@@ -33,7 +33,6 @@ class                       mysql_bind {
  public:
                             mysql_bind();
                             mysql_bind(int size, int length = 0);
-                            mysql_bind(mysql_bind const& other);
                             ~mysql_bind();
   void                      set_size(int size, int length = 0);
   int                       value_as_i32(int range) const;

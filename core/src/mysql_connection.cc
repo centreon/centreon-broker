@@ -87,6 +87,36 @@ void mysql_connection::_commit(mysql_task* t) {
   std::cout << "COMMIT: connection still not committed = " << task->count << std::endl;
 }
 
+void mysql_connection::_debug(MYSQL_BIND* bind, unsigned int size) {
+  for (int i(0); i < size; ++i) {
+    switch (bind[i].buffer_type) {
+      case MYSQL_TYPE_LONG:
+        std::cout << "LONG : L:" << *bind[i].length << " : ";
+        break;
+      case MYSQL_TYPE_TINY:
+        std::cout << "TINY : L:" << *bind[i].length << " : ";
+        break;
+      case MYSQL_TYPE_NULL:
+        std::cout << "NULL : L:" << *bind[i].length << " : ";
+        break;
+      case MYSQL_TYPE_ENUM:
+        std::cout << "ENUM : L:" << *bind[i].length << " : ";
+        break;
+      case MYSQL_TYPE_STRING:
+        std::cout << "STRING : L:" << *bind[i].length << " : ";
+        break;
+      case MYSQL_TYPE_DOUBLE:
+      case MYSQL_TYPE_FLOAT:
+        std::cout << "DOUBLE/FLOAT : L:" << *bind[i].length << " : ";
+        break;
+      default:
+        std::cout << bind[i].buffer_type << " : L:" << *bind[i].length << " : ";
+        break;
+    }
+    std::cout << std::endl;
+  }
+}
+
 void mysql_connection::_prepare(mysql_task* t) {
   mysql_task_prepare* task(static_cast<mysql_task_prepare*>(t));
   if (_stmt[task->id]) {
@@ -133,7 +163,10 @@ void mysql_connection::_statement(mysql_task* t) {
     mysql_manager::instance().set_error("statement not prepared", true);
     return ;
   }
-  if (task->bind.get() && mysql_stmt_bind_param(stmt, const_cast<MYSQL_BIND*>(task->bind->get_bind()))) {
+  MYSQL_BIND* bb(NULL);
+  if (task->bind.get())
+    bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
+  if (bb && mysql_stmt_bind_param(stmt, bb)) {
     logging::debug(logging::low)
       << "mysql: statement binding failed ("
       << mysql_stmt_error(stmt) << ")";
@@ -155,6 +188,9 @@ void mysql_connection::_statement(mysql_task* t) {
     }
   }
   else {
+    std::cout << "Statement: " << _stmt_query[task->statement_id] << std::endl;
+    unsigned int param_count(mysql_stmt_param_count(stmt));
+    _debug(bb, param_count);
     int attempts(0);
     while (true) {
       if (mysql_stmt_execute(stmt)) {
@@ -162,8 +198,7 @@ void mysql_connection::_statement(mysql_task* t) {
           << " : Errno " << mysql_stmt_errno(stmt)
           << " : " << _stmt_query[task->statement_id] << " : "
           << mysql_stmt_error(stmt) << std::endl;
-        //FIXME DBR: bad value but it is for a test
-        if (mysql_stmt_errno(stmt) == 1452)
+        if (mysql_stmt_errno(stmt) != 1213)  // Dead Lock error
           attempts = MAX_ATTEMPTS;
 
         std::cout << "ATTEMPT TO COMMIT BEFORE RETRYING" << std::endl;

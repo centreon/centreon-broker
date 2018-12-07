@@ -254,22 +254,6 @@ mysql_stmt mysql::prepare_query(std::string const& query,
   return retval;
 }
 
-//bool mysql::finish() {
-//  bool retval(true);
-//  for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
-//         it(_connection.begin()),
-//         end(_connection.end());
-//       it != end;
-//       ++it) {
-//    std::cout << "mysql destructor send finish to thread" << std::endl;
-//    (*it)->finish();
-//    std::cout << "mysql destructor wait for thread to finish" << std::endl;
-//    retval &= (*it)->wait(20000);
-//  }
-//  std::cout << "mysql destructor thread just finished" << std::endl;
-//  return retval;
-//}
-
 mysql::version mysql::schema_version() const {
   return _version;
 }

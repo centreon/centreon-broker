@@ -95,6 +95,7 @@ class                    mysql_connection {
   void                    _fetch_row_sync(mysql_task* task);
   void                    _finish(mysql_task* task);
   void                    _push(std::shared_ptr<mysql_task> const& q);
+  void                    _debug(MYSQL_BIND* bind, unsigned int size);
 
   static void (mysql_connection::* const _task_processing_table[])(mysql_task* task);
 
