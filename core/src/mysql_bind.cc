@@ -225,7 +225,6 @@ bool mysql_bind::is_empty() const {
 void mysql_bind::set_value_as_null(int range) {
   if (range >= _bind.size())
     set_size(range + 1);
-  memset(&_bind[range], 0, sizeof(MYSQL_BIND));
   _bind[range].buffer_type = MYSQL_TYPE_NULL;
   _is_null[range] = 0;
   _length[range] = 0;

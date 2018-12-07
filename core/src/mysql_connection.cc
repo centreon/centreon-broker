@@ -88,6 +88,7 @@ void mysql_connection::_commit(mysql_task* t) {
 }
 
 void mysql_connection::_debug(MYSQL_BIND* bind, unsigned int size) {
+  std::cout << "bind " << bind << std::endl;
   for (int i(0); i < size; ++i) {
     switch (bind[i].buffer_type) {
       case MYSQL_TYPE_LONG:
@@ -190,7 +191,10 @@ void mysql_connection::_statement(mysql_task* t) {
   else {
     std::cout << "Statement: " << _stmt_query[task->statement_id] << std::endl;
     unsigned int param_count(mysql_stmt_param_count(stmt));
-    _debug(bb, param_count);
+    if (bb) {
+      std::cout << "bb " << bb << std::endl;
+      _debug(bb, param_count);
+    }
     int attempts(0);
     while (true) {
       if (mysql_stmt_execute(stmt)) {
