@@ -27,7 +27,7 @@ try {
         ])
         if (env.BRANCH_NAME == 'master') {
           withSonarQubeEnv('SonarQube') {
-            sh './centreon-build/jobs/broker/18.10/mon-broker-analysis.sh'
+            sh './centreon-build/jobs/broker/19.4/mon-broker-analysis.sh'
           }
         }
       }
