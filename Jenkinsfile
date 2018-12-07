@@ -1,10 +1,10 @@
 stage('Source') {
   node {
-    sh 'cd /opt/centreon-build && git pull && cd -'
+    sh 'setup_centreon_build.sh'
     dir('centreon-broker') {
       checkout scm
     }
-    sh '/opt/centreon-build/jobs/broker/3.4/mon-broker-source.sh'
+    sh './centreon-build/jobs/broker/3.4/mon-broker-source.sh'
     source = readProperties file: 'source.properties'
     env.VERSION = "${source.VERSION}"
     env.RELEASE = "${source.RELEASE}"
@@ -15,8 +15,8 @@ try {
   stage('Unit tests') {
     parallel 'centos6': {
       node {
-        sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/3.4/mon-broker-unittest.sh centos6'
+        sh 'setup_centreon_build.sh'
+        sh './centreon-build/jobs/broker/3.4/mon-broker-unittest.sh centos6'
         step([
           $class: 'XUnitBuilder',
           thresholds: [
@@ -29,8 +29,8 @@ try {
     },
     'centos7': {
       node {
-        sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/3.4/mon-broker-unittest.sh centos7'
+        sh 'setup_centreon_build.sh'
+        sh './centreon-build/jobs/broker/3.4/mon-broker-unittest.sh centos7'
         step([
           $class: 'XUnitBuilder',
           thresholds: [
@@ -54,14 +54,14 @@ try {
   stage('Package') {
     parallel 'centos6': {
       node {
-        sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/3.4/mon-broker-package.sh centos6'
+        sh 'setup_centreon_build.sh'
+        sh './centreon-build/jobs/broker/3.4/mon-broker-package.sh centos6'
       }
     },
     'centos7': {
       node {
-        sh 'cd /opt/centreon-build && git pull && cd -'
-        sh '/opt/centreon-build/jobs/broker/3.4/mon-broker-package.sh centos7'
+        sh 'setup_centreon_build.sh'
+        sh './centreon-build/jobs/broker/3.4/mon-broker-package.sh centos7'
       }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
