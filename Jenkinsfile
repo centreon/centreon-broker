@@ -25,6 +25,11 @@ try {
           ],
           tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
         ])
+        if (env.BRANCH_NAME == '18.10.x') {
+          withSonarQubeEnv('SonarQube') {
+            sh './centreon-build/jobs/broker/18.10/mon-broker-analysis.sh'
+          }
+        }
       }
     },
     'debian9': {
