@@ -39,6 +39,11 @@ try {
           ],
           tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
         ])
+        if (env.BRANCH_NAME == '3.0.x') {
+          withSonarQubeEnv('SonarQube') {
+            sh './centreon-build/jobs/broker/3.4/mon-broker-analysis.sh'
+          }
+        }
       }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
