@@ -74,11 +74,23 @@ class                       mysql_bind {
   MYSQL_BIND const*         get_bind() const;
   MYSQL_BIND*               get_bind();
 
+  void                      debug();
+
  private:
+  union field {
+    std::string*            str;
+    char                    c;
+    short                   s;
+    int                     i32;
+    long long               i64;
+    float                   f32;
+    double                  f64;
+  };
+
   std::vector<MYSQL_BIND>   _bind;
 
   // The buffers contained by _bind
-  std::vector<std::string>  _buffer;
+  std::vector<field>        _buffer;
 
   // The buffers lengths contained by _bind
   std::vector<unsigned long> _length;

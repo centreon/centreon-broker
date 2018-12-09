@@ -16,6 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cassert>
+#include <iostream>
 #include <cfloat>
 #include <cstring>
 #include <cmath>
@@ -52,14 +54,21 @@ void mysql_bind::set_size(int size, int length) {
   _is_null.resize(size);
   _error.resize(size);
   for (int i(0); i < size; ++i) {
-    if (length) {
-      _buffer[i].reserve(length);
-      _bind[i].buffer_length = length;
+    if (_bind[i].buffer_type == MYSQL_TYPE_STRING) {
+      if (length) {
+        if (length > _buffer[i].str->capacity()) {
+          _buffer[i].str->reserve(length);
+          _bind[i].buffer_length = length;
+        }
+      }
+      else
+        _bind[i].buffer_length = _buffer[i].str->capacity();
+
+      _bind[i].buffer = &_buffer[i].str->at(0);
     }
     else
-      _bind[i].buffer_length = _buffer[i].capacity();
+      _bind[i].buffer = &_buffer[i];
 
-    _bind[i].buffer = const_cast<char*>(_buffer[i].c_str());
     _bind[i].length = &_length[i];
     _bind[i].is_null = &_is_null[i];
     _bind[i].error = &_error[i];
@@ -67,17 +76,23 @@ void mysql_bind::set_size(int size, int length) {
 }
 
 std::string const& mysql_bind::value_as_str(int range) const {
-  return _buffer[range];
+  assert(_bind[range].buffer_type == MYSQL_TYPE_STRING);
+  return *_buffer[range].str;
 }
 
 void mysql_bind::set_value_as_str(int range, std::string const& value) {
   if (range >= _bind.size())
     set_size(range + 1);
-  _bind[range].buffer_type = MYSQL_TYPE_STRING;
-  _buffer[range] = value;
-  _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
-  _bind[range].buffer_length = value.capacity();
+  if (_bind[range].buffer_type == MYSQL_TYPE_STRING)
+    *_buffer[range].str = value;
+  else {
+    _buffer[range].str = new std::string(value);
+    _bind[range].buffer_type = MYSQL_TYPE_STRING;
+  }
+  _bind[range].buffer = &_buffer[range].str->at(0);
+  _bind[range].buffer_length = _buffer[range].str->capacity();
   _length[range] = value.size();
+  _bind[range].length = &_length[range];
   _is_null[range] = 0;
   _error[range] = 0;
 }
@@ -85,98 +100,200 @@ void mysql_bind::set_value_as_str(int range, std::string const& value) {
 void mysql_bind::set_value_as_tiny(int range, char value) {
   if (range >= _bind.size())
     set_size(range + 1);
+  if (_bind[range].buffer_type == MYSQL_TYPE_STRING)
+    delete _buffer[range].str;
   _bind[range].buffer_type = MYSQL_TYPE_TINY;
-  char* tmp = reinterpret_cast<char*>(&value);
-  _buffer[range].resize(sizeof(value));
-  _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
-  memcpy(&_buffer[range][0], tmp, sizeof(value));
-  _bind[range].buffer_length = 1;
-  _is_null[range] = 0;
-  _length[range] = 1;
-  _error[range] = 0;
-}
-
-bool mysql_bind::value_as_bool(int range) const {
-  return _buffer[range].c_str() ? strtol(_buffer[range].c_str(), 0, 10) : 0;
-}
-
-void mysql_bind::set_value_as_bool(int range, bool value) {
-  if (range >= _bind.size())
-    set_size(range + 1);
-  _bind[range].buffer_type = MYSQL_TYPE_TINY;
-  char* tmp = reinterpret_cast<char*>(&value);
-  _buffer[range].resize(sizeof(value));
-  _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
-  memcpy(&_buffer[range][0], tmp, sizeof(value));
+  _buffer[range].c = value;
+  _bind[range].buffer_length = sizeof(char);
   _is_null[range] = 0;
   _length[range] = 0;
   _error[range] = 0;
 }
 
+bool mysql_bind::value_as_bool(int range) const {
+  bool retval;
+  switch (_bind[range].buffer_type) {
+    case MYSQL_TYPE_TINY:
+      retval =  _buffer[range].c;
+      break;
+    case MYSQL_TYPE_STRING:
+      retval =  *_buffer[range].str->c_str()
+        ? strtol(_buffer[range].str->c_str(), 0, 10) : 0;
+      break;
+    default:
+      assert(1 == 0); // This line should ne be reached
+  }
+  return retval;
+}
+
+void mysql_bind::set_value_as_bool(int range, bool value) {
+  set_value_as_tiny(range, value ? 1 : 0);
+}
+
 int mysql_bind::value_as_i32(int range) const {
-  return _buffer[range].c_str() ? strtol(_buffer[range].c_str(), 0, 10) : 0;
+  int retval;
+  switch (_bind[range].buffer_type) {
+    case MYSQL_TYPE_TINY:
+      retval =  _buffer[range].c;
+      break;
+    case MYSQL_TYPE_LONG:
+      retval =  _buffer[range].i32;
+      break;
+    case MYSQL_TYPE_STRING:
+      retval =  _buffer[range].str->c_str()
+        ? strtol(_buffer[range].str->c_str(), 0, 10) : 0;
+      break;
+    default:
+      assert(1 == 0); // This line should not be reached
+  }
+  return retval;
 }
 
 void mysql_bind::set_value_as_i32(int range, int value) {
   if (range >= _bind.size())
     set_size(range + 1);
+  if (_bind[range].buffer_type == MYSQL_TYPE_STRING)
+    delete _buffer[range].str;
   _bind[range].buffer_type = MYSQL_TYPE_LONG;
-  char* tmp = reinterpret_cast<char*>(&value);
-  _buffer[range].resize(sizeof(value));
-  _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
-  memcpy(&_buffer[range][0], tmp, sizeof(value));
+  _buffer[range].i32 = value;
+  _bind[range].buffer_length = sizeof(int);
+  _bind[range].is_unsigned = false;
   _is_null[range] = 0;
   _length[range] = 0;
   _error[range] = 0;
 }
 
 unsigned int mysql_bind::value_as_u32(int range) const {
-  return _buffer[range].c_str() ? strtoul(_buffer[range].c_str(), 0, 10) : 0;
+  unsigned int retval;
+  switch (_bind[range].buffer_type) {
+    case MYSQL_TYPE_TINY:
+      retval =  _buffer[range].c;
+      break;
+    case MYSQL_TYPE_LONG:
+      retval = _buffer[range].i32;
+      break;
+    case MYSQL_TYPE_STRING:
+      retval =  _buffer[range].str->c_str()
+        ? strtoul(_buffer[range].str->c_str(), 0, 10) : 0;
+    default:
+      assert(1 == 0); // This line should not be reached
+  }
+  return retval;
 }
 
 void mysql_bind::set_value_as_u32(int range, unsigned int value) {
   if (range >= _bind.size())
     set_size(range + 1);
+  if (_bind[range].buffer_type == MYSQL_TYPE_STRING)
+    delete _buffer[range].str;
   _bind[range].buffer_type = MYSQL_TYPE_LONG;
-  char* tmp = reinterpret_cast<char*>(&value);
-  _buffer[range].resize(sizeof(value));
-  _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
-  memcpy(&_buffer[range][0], tmp, sizeof(value));
+  _buffer[range].i32 = value;
+  _bind[range].buffer_length = sizeof(int);
+  _bind[range].is_unsigned = true;
   _is_null[range] = 0;
   _length[range] = 0;
   _error[range] = 0;
-  _bind[range].is_unsigned = true;
+}
+
+void mysql_bind::debug() {
+  std::cout << "DEBUG BIND " << this << std::endl;
+  int size(_bind.size());
+  for (int i(0); i < size; ++i) {
+    switch (_bind[i].buffer_type) {
+      case MYSQL_TYPE_LONGLONG:
+        {
+          std::cout << "LONGLONG : L:" << *_bind[i].length
+            << " : " << "BL: " << _bind[i].buffer_length
+            << " : " << _buffer[i].i64 << std::endl;
+        }
+        break;
+      case MYSQL_TYPE_LONG:
+        {
+          std::cout << "LONG : L:" << *_bind[i].length
+            << " : " << "BL: " << _bind[i].buffer_length
+            << " : " << _buffer[i].i32 << std::endl;
+        }
+        break;
+      case MYSQL_TYPE_TINY:
+        {
+          std::cout << "TINY : L:" << *_bind[i].length
+            << " : " << "BL: " << _bind[i].buffer_length
+            << " : " << _buffer[i].c << std::endl;
+        }
+        break;
+      case MYSQL_TYPE_NULL:
+        std::cout << "NULL : L:" << *_bind[i].length << " : "
+            << " : " << "BL: " << _bind[i].buffer_length;
+        break;
+      case MYSQL_TYPE_ENUM:
+        std::cout << "ENUM : L:" << *_bind[i].length << " : "
+            << " : " << "BL: " << _buffer[i].str->size() << "/" << _bind[i].buffer_length
+            << " : " << "BL: " << _buffer[i].str->size();
+        break;
+      case MYSQL_TYPE_STRING:
+        std::cout << "STRING : L:" << *_bind[i].length << " : "
+            << " : " << "BL: " << _buffer[i].str->size() << "/" << _bind[i].buffer_length
+            << " : " << "BL: " << _buffer[i].str->size();
+        break;
+      case MYSQL_TYPE_DOUBLE:
+        {
+          std::cout << "DOUBLE : L:" << *_bind[i].length
+            << " : " << "BL: " << _bind[i].buffer_length
+            << " : " << _buffer[i].f64 << std::endl;
+        }
+        break;
+      case MYSQL_TYPE_FLOAT:
+        {
+          std::cout << "FLOAT : L:" << *_bind[i].length
+            << " : " << "BL: " << _bind[i].buffer_length
+            << " : " << _buffer[i].f32 << std::endl;
+        }
+        break;
+      default:
+        std::cout << _bind[i].buffer_type << " : L:" << *_bind[i].length << " : " << "TYPE NOT MANAGED...\n";
+        break;
+    }
+    std::cout << std::endl;
+  }
 }
 
 unsigned long long mysql_bind::value_as_u64(int range) const {
-  return _buffer[range].c_str() ? strtoull(_buffer[range].c_str(), 0, 10) : 0;
+  unsigned long long retval;
+  switch (_bind[range].buffer_type) {
+    case MYSQL_TYPE_STRING:
+      retval =  _buffer[range].str->c_str()
+        ? strtoull(_buffer[range].str->c_str(), 0, 10) : 0;
+      break;
+    case MYSQL_TYPE_LONGLONG:
+      retval = _buffer[range].i64;
+      break;
+    default:
+      assert(1 == 0); // This line should not be reached
+  }
+  return retval;
 }
 
 void mysql_bind::set_value_as_u64(int range, unsigned long long value) {
   if (range >= _bind.size())
     set_size(range + 1);
-  _bind[range].buffer_type = MYSQL_TYPE_LONG;
-  char* tmp = reinterpret_cast<char*>(&value);
-  _buffer[range].resize(sizeof(value));
-  _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
-  memcpy(&_buffer[range][0], tmp, sizeof(value));
+  _bind[range].buffer_type = MYSQL_TYPE_LONGLONG;
+  _buffer[range].i64 = value;
+  _bind[range].buffer_length = sizeof(unsigned long long);
+  _bind[range].is_unsigned = true;
   _is_null[range] = 0;
   _length[range] = 0;
   _error[range] = 0;
-  _bind[range].is_unsigned = true;
 }
 
 void mysql_bind::set_value_as_f32(int range, float value) {
   if (range >= _bind.size())
     set_size(range + 1);
   if (std::isnan(value) || std::isinf(value))
-    _bind[range].buffer_type = MYSQL_TYPE_NULL;
+    set_value_as_null(range);
   else {
     _bind[range].buffer_type = MYSQL_TYPE_FLOAT;
-    char* tmp = reinterpret_cast<char*>(&value);
-    _buffer[range].resize(sizeof(value));
-    _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
-    memcpy(&_buffer[range][0], tmp, sizeof(value));
+    _buffer[range].f32 = value;
+    _bind[range].buffer_length = sizeof(float);
     _is_null[range] = 0;
     _length[range] = 0;
     _error[range] = 0;
@@ -184,26 +301,45 @@ void mysql_bind::set_value_as_f32(int range, float value) {
 }
 
 float mysql_bind::value_as_f32(int range) const {
-  float retval(_buffer[range].c_str() ? atof(_buffer[range].c_str()) : 0);
+  float retval;
+  switch (_bind[range].buffer_type) {
+    case MYSQL_TYPE_STRING:
+      retval =  _buffer[range].str->c_str()
+        ? atof(_buffer[range].str->c_str()) : 0;
+      break;
+    case MYSQL_TYPE_FLOAT:
+      retval = _buffer[range].f32;
+      break;
+    default:
+      assert(1 == 0); // This line should not be reached
+  }
   return retval;
 }
 
 double mysql_bind::value_as_f64(int range) const {
-  double retval(_buffer[range].c_str() ? atof(_buffer[range].c_str()) : 0);
-  return retval;
+  double retval;
+  switch (_bind[range].buffer_type) {
+    case MYSQL_TYPE_STRING:
+      retval =  _buffer[range].str->c_str()
+        ? atof(_buffer[range].str->c_str()) : 0;
+      break;
+    case MYSQL_TYPE_DOUBLE:
+      retval = _buffer[range].f64;
+      break;
+    default:
+      assert(1 == 0); // This line should not be reached
+  }
 }
 
 void mysql_bind::set_value_as_f64(int range, double value) {
   if (range >= _bind.size())
     set_size(range + 1);
   if (std::isnan(value) || std::isinf(value))
-    _bind[range].buffer_type = MYSQL_TYPE_NULL;
+    set_value_as_null(range);
   else {
     _bind[range].buffer_type = MYSQL_TYPE_DOUBLE;
-    char* tmp = reinterpret_cast<char*>(&value);
-    _buffer[range].resize(sizeof(value));
-    _bind[range].buffer = const_cast<char*>(_buffer[range].c_str());
-    memcpy(&_buffer[range][0], tmp, sizeof(value));
+    _buffer[range].f64 = value;
+    _bind[range].buffer_length = sizeof(double);
     _is_null[range] = 0;
     _length[range] = 0;
     _error[range] = 0;
@@ -213,7 +349,9 @@ void mysql_bind::set_value_as_f64(int range, double value) {
 bool mysql_bind::value_is_null(int idx) const {
   if (_is_null[idx])
     return true;
-  else if (_buffer[idx].c_str() == 0)
+  else if (_bind[idx].buffer_type == MYSQL_TYPE_NULL)
+    return true;
+  else if (_buffer[idx].str->at(0) == 0)
     return true;
   return false;
 }
