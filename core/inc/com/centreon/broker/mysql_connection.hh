@@ -58,11 +58,6 @@ class                    mysql_connection {
                             mysql_stmt& stmt,
                             std::promise<mysql_result>* p,
                             std::string const& error_msg, bool fatal);
-  void                    run_statement_on_condition(
-                            mysql_stmt& stmt,
-                            std::promise<mysql_result>* p,
-                            mysql_task::condition conditiond,
-                            std::string const& error_msg, bool fatal);
   void                    finish();
   int                     get_last_insert_id();
   bool                    fetch_row(mysql_result& result);
@@ -87,7 +82,6 @@ class                    mysql_connection {
   void                    _commit(mysql_task* t);
   void                    _prepare(mysql_task* t);
   void                    _statement(mysql_task* t);
-  void                    _statement_on_condition(mysql_task* t);
   void                    _get_last_insert_id_sync(mysql_task* task);
   void                    _check_affected_rows(mysql_task* task);
   void                    _get_affected_rows_sync(mysql_task* task);

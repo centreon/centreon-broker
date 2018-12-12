@@ -51,13 +51,6 @@ class                 mysql {
                         std::promise<mysql_result>* p = NULL,
                         std::string const& error_msg = "", bool fatal = false,
                         int thread = -1);
-  int                 run_statement_on_condition(
-                        mysql_stmt& stmt,
-                        std::promise<mysql_result>* p,
-                        mysql_task::condition condition,
-                        std::string const& error_msg, bool fatal,
-                        int thread);
-  //mysql_result        get_result(int thread_id, mysql_stmt const& stmt);
   bool                fetch_row(mysql_result& res);
   int                 get_last_insert_id(int thread_id);
   void                check_affected_rows(

@@ -41,12 +41,6 @@ class                    mysql_task {
                            FINISH,
   };
 
-  enum                   condition {
-                           ON_ERROR,
-                           IF_PREVIOUS,
-                           IF_NOT_PREVIOUS,
-  };
-
   virtual                ~mysql_task() {}
 
                          mysql_task(type type)

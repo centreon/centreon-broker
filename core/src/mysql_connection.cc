@@ -358,8 +358,8 @@ void mysql_connection::_run() {
     mysql_autocommit(_conn, 1);
 
   _started = true;
-  _result_condition.notify_all();
   locker.unlock();
+  _result_condition.notify_all();
 
   while (!_finished) {
     std::unique_lock<std::mutex> locker(_list_mutex);
