@@ -160,7 +160,6 @@ void mysql_connection::_statement(mysql_task* t) {
   }
   else {
     std::cout << "Statement: " << _stmt_query[task->statement_id] << std::endl;
-    unsigned int param_count(mysql_stmt_param_count(stmt));
     if (bb) {
       std::cout << "bb " << bb << std::endl;
       task->bind->debug();
@@ -248,16 +247,12 @@ void mysql_connection::_statement(mysql_task* t) {
 /**
  *  Run a query synchronously. The result is stored in _result and if an error
  *  occurs, it is stored in _error_msg.
- *  This function locks the _result_mutex and wakes up threads waiting on
- *  _result_condition.
  *
  *  @param task         The task to realize, it contains a query.
  */
 void mysql_connection::_get_last_insert_id_sync(mysql_task* t) {
   mysql_task_last_insert_id* task(static_cast<mysql_task_last_insert_id*>(t));
-  std::lock_guard<std::mutex> locker(_result_mutex);
-  *task->id = mysql_insert_id(_conn);
-  _result_condition.notify_all();
+  task->promise->set_value(mysql_insert_id(_conn));
 }
 
 void mysql_connection::_check_affected_rows(mysql_task* t) {
@@ -274,25 +269,27 @@ void mysql_connection::_check_affected_rows(mysql_task* t) {
 
 void mysql_connection::_get_affected_rows_sync(mysql_task* t) {
   mysql_task_affected_rows* task(static_cast<mysql_task_affected_rows*>(t));
-  std::lock_guard<std::mutex> locker(_result_mutex);
   if (task->statement_id)
-    *task->count = mysql_stmt_affected_rows(_stmt[task->statement_id]);
+    task->promise->set_value(mysql_stmt_affected_rows(_stmt[task->statement_id]));
   else
-    *task->count = mysql_affected_rows(_conn);
-  _result_condition.notify_all();
+    task->promise->set_value(mysql_affected_rows(_conn));
 }
 
 void mysql_connection::_fetch_row_sync(mysql_task* t) {
   mysql_task_fetch* task(static_cast<mysql_task_fetch*>(t));
-  std::lock_guard<std::mutex> locker(_result_mutex);
   int stmt_id(task->result->get_statement_id());
   if (stmt_id) {
     MYSQL_STMT* stmt(_stmt[stmt_id]);
-    task->result->get_bind()->set_empty(mysql_stmt_fetch(stmt));
+    int res(mysql_stmt_fetch(stmt));
+    if (res != 0)
+      task->result->get_bind()->set_empty(true);
+    task->promise->set_value(res == 0);
   }
-  else
-    task->result->set_row(mysql_fetch_row(task->result->get()));
-  _result_condition.notify_all();
+  else {
+    MYSQL_ROW r(mysql_fetch_row(task->result->get()));
+    task->result->set_row(r);
+    task->promise->set_value(r != nullptr);
+  }
 }
 
 void mysql_connection::_finish(mysql_task* t) {
@@ -454,19 +451,15 @@ void mysql_connection::check_affected_rows(
  *  @throw an exception in case of error.
  */
 int mysql_connection::get_affected_rows(int statement_id) {
-  std::unique_lock<std::mutex> locker(_result_mutex);
-  int retval;
-  _push(std::make_shared<mysql_task_affected_rows>(&retval, statement_id));
-  _result_condition.wait(locker);
-  return retval;
+  std::promise<int> promise;
+  _push(std::make_shared<mysql_task_affected_rows>(&promise, statement_id));
+  return promise.get_future().get();
 }
 
 int mysql_connection::get_last_insert_id() {
-  std::unique_lock<std::mutex> locker(_result_mutex);
-  int retval;
-  _push(std::make_shared<mysql_task_last_insert_id>(&retval));
-  _result_condition.wait(locker);
-  return retval;
+  std::promise<int> promise;
+  _push(std::make_shared<mysql_task_last_insert_id>(&promise));
+  return promise.get_future().get();;
 }
 
 /**
@@ -516,10 +509,9 @@ void mysql_connection::finish() {
 }
 
 bool mysql_connection::fetch_row(mysql_result& result) {
-  std::unique_lock<std::mutex> locker(_result_mutex);
-  _push(std::make_shared<mysql_task_fetch>(&result));
-  _result_condition.wait(locker);
-  return !result.is_empty();
+  std::promise<bool> promise;
+  _push(std::make_shared<mysql_task_fetch>(&result, &promise));
+  return promise.get_future().get();
 }
 
 bool mysql_connection::match_config(database_config const& db_cfg) const {

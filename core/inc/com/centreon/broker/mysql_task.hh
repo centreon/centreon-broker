@@ -94,18 +94,20 @@ class                    mysql_task_commit : public mysql_task {
 
 class                    mysql_task_last_insert_id : public mysql_task {
  public:
-                         mysql_task_last_insert_id(int* id)
+                         mysql_task_last_insert_id(std::promise<int>* promise)
                           : mysql_task(mysql_task::LAST_INSERT_ID),
-                            id(id) {}
-  int*                   id;
+                            promise(promise) {}
+  std::promise<int>*     promise;
 };
 
 class                    mysql_task_fetch : public mysql_task {
  public:
-                         mysql_task_fetch(mysql_result* result)
+                         mysql_task_fetch(mysql_result* result, std::promise<bool>* promise)
                           : mysql_task(mysql_task::FETCH_ROW),
-                            result(result) {}
+                            result(result),
+                            promise(promise) {}
   mysql_result*          result;
+  std::promise<bool>*    promise;
 };
 
 class                    mysql_task_check_affected_rows : public mysql_task {
@@ -123,12 +125,12 @@ class                    mysql_task_check_affected_rows : public mysql_task {
 class                    mysql_task_affected_rows : public mysql_task {
  public:
                          mysql_task_affected_rows(
-                             int* count,
+                             std::promise<int>* promise,
                              int statement_id = 0)
                           : mysql_task(mysql_task::AFFECTED_ROWS),
-                            count(count),
+                            promise(promise),
                             statement_id(statement_id) {}
-  int*                   count;
+  std::promise<int>*     promise;
   int                    statement_id;
 };
 

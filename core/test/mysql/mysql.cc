@@ -107,7 +107,8 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
   int now(time(NULL));
   oss << "INSERT INTO data_bin (id_metric, ctime, status, value) VALUES "
       << "(1, " << now << ", '0', 2.5)";
-  int thread_id(ms->run_query(oss.str()));
+  int thread_id(ms->run_query(oss.str(), NULL,
+      "PROBLEME", true));
   oss.str("");
   oss << "SELECT id_metric, status FROM data_bin WHERE ctime=" << now;
   std::promise<mysql_result> promise;
