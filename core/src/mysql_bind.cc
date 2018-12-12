@@ -47,10 +47,14 @@ mysql_bind::mysql_bind(int size, int length) {
   _is_null.resize(size);
   _error.resize(size);
   for (int i(0); i < size; ++i) {
-    _bind[i].buffer_type = MYSQL_TYPE_STRING;
-    _buffer[i].str = new std::string();
-    _buffer[i].str->reserve(length);
-    _bind[i].buffer = const_cast<char*>(_buffer[i].str->c_str());
+    if (length) {
+      _bind[i].buffer_type = MYSQL_TYPE_STRING;
+      _buffer[i].str = new std::string();
+      _buffer[i].str->reserve(length);
+      _bind[i].buffer = const_cast<char*>(_buffer[i].str->c_str());
+    }
+    else
+      _bind[i].buffer = &_buffer[i];
     _bind[i].buffer_length = length;
     _bind[i].length = &_length[i];
     _bind[i].is_null = &_is_null[i];

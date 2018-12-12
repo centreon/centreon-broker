@@ -74,7 +74,10 @@ class                           mysql_stmt {
   std::string const&            get_query() const;
 
  private:
+  int                           _compute_param_count(std::string const& query);
+
   int                           _id;
+  int                           _param_count;
   std::string                   _query;
 
   std::unique_ptr<mysql_bind>   _bind;
