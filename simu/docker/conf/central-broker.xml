@@ -13,15 +13,15 @@
  <logger>
   <name><![CDATA[/var/log/centreon-broker/central-broker-master.log]]></name>
   <config><![CDATA[yes]]></config>
-  <debug><![CDATA[yes]]></debug>
+  <debug><![CDATA[no]]></debug>
   <error><![CDATA[yes]]></error>
-  <info><![CDATA[no]]></info>
-  <level><![CDATA[high]]></level>
+  <info><![CDATA[yes]]></info>
+  <level><![CDATA[medium]]></level>
   <type><![CDATA[file]]></type>
  </logger>
  <input>
   <name><![CDATA[test-simu]]></name>
-  <path><![CDATA[/usr/share/centreon-broker/lua/test.lua]]></path>
+  <path><![CDATA[/usr/share/centreon-broker/lua/test-full.lua]]></path>
   <type><![CDATA[simu]]></type>
   <lua_parameter>
    <type><![CDATA[number]]></type>
@@ -41,6 +41,7 @@
   <db_name><![CDATA[centreon_storage]]></db_name>
   <check_replication><![CDATA[no]]></check_replication>
   <type><![CDATA[sql]]></type>
+  <connections_count><![CDATA[3]]></connections_count>
  </output>
  <output>
   <name><![CDATA[central-rrd-master-output]]></name>
@@ -68,6 +69,7 @@
   <check_replication><![CDATA[no]]></check_replication>
   <store_in_data_bin><![CDATA[yes]]></store_in_data_bin>
   <insert_in_index_data><![CDATA[1]]></insert_in_index_data>
+  <connections_count><![CDATA[3]]></connections_count>
   <type><![CDATA[storage]]></type>
  </output>
  <output>
