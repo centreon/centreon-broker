@@ -84,7 +84,6 @@ void mysql_connection::_commit(mysql_task* t) {
   }
   if (--task->count == 0)
     task->promise->set_value(true);
-  std::cout << "COMMIT: connection still not committed = " << task->count << std::endl;
 }
 
 void mysql_connection::_prepare(mysql_task* t) {
@@ -136,6 +135,11 @@ void mysql_connection::_statement(mysql_task* t) {
   MYSQL_BIND* bb(NULL);
   if (task->bind.get())
     bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
+
+  int row_size = 0;
+  if (task->array_size) {
+    mysql_stmt_attr_set(stmt, STMT_ATTR_ARRAY_SIZE, &task->array_size);
+  }
 
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
     logging::debug(logging::low)
@@ -214,7 +218,7 @@ void mysql_connection::_statement(mysql_task* t) {
           }
           else {
             int size(mysql_num_fields(prepare_meta_result));
-            std::unique_ptr<mysql_bind> bind(new mysql_bind(size, STR_SIZE));
+            std::unique_ptr<database::mysql_bind> bind(new database::mysql_bind(size, STR_SIZE));
 
             if (mysql_stmt_bind_result(stmt, bind->get_bind())) {
               exceptions::msg e;
@@ -233,7 +237,7 @@ void mysql_connection::_statement(mysql_task* t) {
               res.set(prepare_meta_result);
               bind->set_empty(true);
             }
-            res.set_bind(bind);
+            res.set_bind(move(bind));
             task->promise->set_value(std::move(res));
           }
         }

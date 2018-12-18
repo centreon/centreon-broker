@@ -1346,3 +1346,68 @@ TEST_F(DatabaseStorageTest, HostParentStatement) {
   ASSERT_TRUE(ms->get_affected_rows(thread_id, host_parent_delete) == 1);
   ms->commit();
 }
+
+//// Given a mysql object
+//// When a prepare statement is done
+//// Then we can bind several rows of values to it and execute the statement.
+//// Then a commit makes data available in the database.
+//TEST_F(DatabaseStorageTest, PrepareBulkQuery) {
+//  database_config db_cfg(
+//    "MySQL",
+//    "127.0.0.1",
+//    3306,
+//    "root",
+//    "root",
+//    "centreon_storage",
+//    5,
+//    true,
+//    5);
+//  time_t now(time(NULL));
+//  std::ostringstream oss;
+//  oss << "INSERT INTO " << "metrics"
+//      << "  (index_id, metric_name, unit_name, warn, warn_low,"
+//         "   warn_threshold_mode, crit, crit_low, "
+//         "   crit_threshold_mode, min, max, current_value,"
+//         "   data_source_type)"
+//         " VALUES (?, ?, ?, ?, "
+//         "         ?, ?, ?, "
+//         "         ?, ?, ?, ?, "
+//         "         ?, ?)";
+//
+//  std::unique_ptr<mysql> ms(new mysql(db_cfg));
+//  std::ostringstream nss;
+//  nss << "metric_name - " << time(NULL);
+//  mysql_stmt stmt(ms->prepare_query(oss.str()));
+//
+//  // Rows are just put on the same row one after the other. The important thing
+//  // is to know the length of a row in bytes.
+//  stmt.set_array_size(2);
+//  for (int i(0); i < 2; ++i) {
+//    stmt.bind_value_as_i32(0 + i * 13, 19);
+//    stmt.bind_value_as_str(1 + i * 13, nss.str());
+//    stmt.bind_value_as_str(2 + i * 13, "test/s");
+//    stmt.bind_value_as_f32(3 + i * 13, NAN);
+//    stmt.bind_value_as_f32(4 + i * 13, INFINITY);
+//    stmt.bind_value_as_tiny(5 + i * 13, true);
+//    stmt.bind_value_as_f32(6 + i * 13, 10.0);
+//    stmt.bind_value_as_f32(7 + i * 13, 20.0);
+//    stmt.bind_value_as_tiny(8 + i * 13, false);
+//    stmt.bind_value_as_f32(9 + i * 13, 0.0);
+//    stmt.bind_value_as_f32(10 + i * 13, 50.0);
+//    stmt.bind_value_as_f32(11 + i * 13, 1 + 2 * i);
+//    stmt.bind_value_as_str(12 + i * 13, "2");
+//  }
+//  // We force the thread 0
+//  ms->run_statement(stmt, NULL, "", false, 0);
+//  oss.str("");
+//  oss << "SELECT metric_name FROM metrics WHERE metric_name='" << nss.str() << "'";
+//  std::promise<mysql_result> promise;
+//  ms->run_query(oss.str(), &promise);
+//  mysql_result res(promise.get_future().get());
+//  ASSERT_FALSE(ms->fetch_row(res));
+//  ASSERT_NO_THROW(ms->commit());
+//  promise = std::promise<mysql_result>();
+//  ms->run_query(oss.str(), &promise);
+//  res = promise.get_future().get();
+//  ASSERT_TRUE(ms->fetch_row(res));
+//}

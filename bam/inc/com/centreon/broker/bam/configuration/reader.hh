@@ -27,9 +27,6 @@
 
 CCB_BEGIN()
 
-// Forward declaration.
-class                   database;
-
 namespace               bam {
   namespace             configuration {
     /**

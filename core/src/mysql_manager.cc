@@ -94,15 +94,16 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
 void mysql_manager::update_connections() {
   std::lock_guard<std::mutex> lock(_cfg_mutex);
   // If connections are still active but unique here, we can remove them
-  for (std::vector<std::shared_ptr<mysql_connection>>::iterator
-       it(_connection.begin()), end(_connection.end());
-       it != end;
-       ++it) {
+  std::vector<std::shared_ptr<mysql_connection>>::iterator
+       it(_connection.begin());
+  while (it != _connection.end()) {
     if (it->unique()) {
       logging::info(logging::low)
         << "mysql_manager: one connection removed";
-      _connection.erase(it);
+      it = _connection.erase(it);
     }
+    else
+      ++it;
   }
   std::cout << "UPDATE CONNECTION MANAGER: retval size = " << _connection.size() << std::endl;
 }

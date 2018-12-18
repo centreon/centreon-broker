@@ -28,7 +28,6 @@
 CCB_BEGIN()
 
 // Forward declarations.
-class               database;
 namespace           dumper {
   namespace         entries {
     class           ba;

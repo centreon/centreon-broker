@@ -39,8 +39,6 @@
 
 CCB_BEGIN()
 
-// Forward declarations.
-class               database;
 class               database_query;
 
 namespace           bam {

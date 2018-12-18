@@ -26,9 +26,6 @@
 
 CCB_BEGIN()
 
-// Forward declaration.
-class               database;
-
 namespace           storage {
   /**
    *  @class rebuilder rebuilder.hh "com/centreon/broker/storage/rebuilder.hh"
