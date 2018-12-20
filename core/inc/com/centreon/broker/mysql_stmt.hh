@@ -38,7 +38,7 @@ class                           mysql_stmt {
                                 mysql_stmt(
                                   std::string const& query,
                                   mysql_bind_mapping const& bind_mapping = mysql_bind_mapping());
-                                mysql_stmt(mysql_stmt const& other);
+                                mysql_stmt(mysql_stmt&& other);
   mysql_stmt&                   operator=(mysql_stmt const& other);
   bool                          prepared() const;
   int                           get_id() const;

@@ -39,6 +39,8 @@ mysql_manager::mysql_manager()
 
 mysql_manager::~mysql_manager() {
   // If connections are still active but unique here, we can remove them
+  std::lock_guard<std::mutex> lock(_cfg_mutex);
+  std::cout << "MANAGER DESTROYED..." << std::endl;
   for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
        it(_connection.begin()), end(_connection.end());
        it != end;
@@ -48,33 +50,45 @@ mysql_manager::~mysql_manager() {
     }
   }
   mysql_library_end();
+  std::cout << "MANAGER DESTROYED...DONE" << std::endl;
 }
 
 std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
                       database_config const& db_cfg) {
   std::vector<std::shared_ptr<mysql_connection>> retval;
   int connection_count(db_cfg.get_connections_count());
-  int current_connection(0);
+  std::cout << "MYSQL MANAGER GET CONNECTIONS WITH COUNT = " << connection_count << std::endl;
 
-  std::lock_guard<std::mutex> lock(_cfg_mutex);
-  for (std::shared_ptr<mysql_connection> c : _connection) {
-    // Is this thread matching what the configuration needs?
-    if (c->match_config(db_cfg)) {
-      // Yes
+  {
+    int current_connection(0);
+    std::lock_guard<std::mutex> lock(_cfg_mutex);
+    for (std::shared_ptr<mysql_connection> c : _connection) {
+      // Is this thread matching what the configuration needs?
+      if (c->match_config(db_cfg)) {
+        // Yes
+        retval.push_back(c);
+        ++current_connection;
+        if (current_connection >= connection_count)
+          return retval;
+        std::cout << "MYSQL MANAGER GET CONNECTIONS WITH CURRENT = " << current_connection << std::endl;
+      }
+    }
+
+    std::cout << "MYSQL MANAGER GET CONNECTIONS WITH CURRENT1 = " << current_connection << std::endl;
+    // We are still missing threads in the configuration to return
+    while (retval.size() < connection_count) {
+      std::shared_ptr<mysql_connection> c(std::make_shared<mysql_connection>(db_cfg));
+      _connection.push_back(c);
       retval.push_back(c);
-      ++current_connection;
-      if (current_connection > connection_count)
-        return retval;
     }
   }
+  update_connections();
+  std::cout << "GET CONNECTION MANAGER: retval size = " << retval.size() << std::endl;
+  return retval;
+}
 
-  // We are still missing threads in the configuration to return
-  for ( ; current_connection < connection_count; ++current_connection) {
-    std::shared_ptr<mysql_connection> c(std::make_shared<mysql_connection>(db_cfg));
-    _connection.push_back(c);
-    retval.push_back(c);
-  }
-
+void mysql_manager::update_connections() {
+  std::lock_guard<std::mutex> lock(_cfg_mutex);
   // If connections are still active but unique here, we can remove them
   for (std::vector<std::shared_ptr<mysql_connection>>::iterator
        it(_connection.begin()), end(_connection.end());
@@ -86,7 +100,7 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
       _connection.erase(it);
     }
   }
-  return retval;
+  std::cout << "UPDATE CONNECTION MANAGER: retval size = " << _connection.size() << std::endl;
 }
 
 bool mysql_manager::is_in_error() const {

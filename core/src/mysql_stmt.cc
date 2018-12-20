@@ -110,11 +110,11 @@ mysql_stmt::mysql_stmt(std::string const& query,
    _query(query),
    _bind_mapping(bind_mapping) {}
 
-mysql_stmt::mysql_stmt(mysql_stmt const& other)
+mysql_stmt::mysql_stmt(mysql_stmt&& other)
  : _id(other._id),
    _query(other._query),
-   _bind_mapping(other._bind_mapping) {
-}
+   _bind_mapping(other._bind_mapping),
+   _bind(std::move(other._bind)) {}
 
 mysql_stmt& mysql_stmt::operator=(mysql_stmt const& other) {
   if (this != &other) {

@@ -66,6 +66,8 @@ mysql::~mysql() {
   //  logging::error(logging::medium)
   //    << "mysql: A thread was forced to stop after a timeout of 20s";
   std::cout << "MYSQL DESTRUCTOR...\n";
+  std::cout << "MYSQL MANAGER UPDATES CONNECTIONS...\n";
+  mysql_manager::instance().update_connections();
 }
 
 /**

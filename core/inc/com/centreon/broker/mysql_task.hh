@@ -167,7 +167,7 @@ class                    mysql_task_statement : public mysql_task {
   int                    statement_id;
   std::promise<mysql_result>*
                          promise;
-  std::shared_ptr<mysql_bind>
+  std::unique_ptr<mysql_bind>
                          bind;
   std::string            error_msg;
   bool                   fatal;

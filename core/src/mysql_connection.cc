@@ -289,6 +289,7 @@ void mysql_connection::_fetch_row_sync(mysql_task* t) {
 }
 
 void mysql_connection::_finish(mysql_task* t) {
+  std::cout << "MYSQL CONNECTION: FINISH = true ; tasks_count = " << _tasks_count << std::endl;
   _finished = true;
 }
 
@@ -324,8 +325,8 @@ void mysql_connection::_run() {
     if (!_tasks_list.empty()) {
       std::shared_ptr<mysql_task> task(_tasks_list.front());
       _tasks_list.pop_front();
-      --_tasks_count;
       locker.unlock();
+      --_tasks_count;
       if (_task_processing_table[task->type])
         (this->*(_task_processing_table[task->type]))(task.get());
       else {
@@ -476,7 +477,9 @@ void mysql_connection::run_query(
 }
 
 void mysql_connection::finish() {
+  std::cout << "************************" << std::endl;
   std::cout << "mysql_connection finish" << std::endl;
+  std::cout << "************************" << std::endl;
   _push(std::make_shared<mysql_task_finish>());
 }
 
