@@ -177,7 +177,8 @@ void mysql_connection::_statement(mysql_task* t) {
           << " : Errno " << mysql_stmt_errno(stmt)
           << " : " << _stmt_query[task->statement_id] << " : "
           << mysql_stmt_error(stmt) << std::endl;
-        if (mysql_stmt_errno(stmt) != 1213)  // Dead Lock error
+        if (mysql_stmt_errno(stmt) != 1213
+            && mysql_stmt_errno(stmt) != 1205)  // Dead Lock error
           attempts = MAX_ATTEMPTS;
 
         std::cout << "ATTEMPT TO COMMIT BEFORE RETRYING" << std::endl;

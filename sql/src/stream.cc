@@ -966,7 +966,7 @@ void stream::_process_host_group(
              _host_group_insupdate,
              NULL,
              oss.str(), true,
-             hg.poller_id % _mysql.connections_count());
+             0);
   }
   // Delete group.
   else {
@@ -1002,7 +1002,11 @@ void stream::_process_host_group_member(
   // Cast object.
   neb::host_group_member const&
     hgm(*static_cast<neb::host_group_member const*>(e.data()));
-  int thread_id(_cache_host_instance[hgm.host_id] % _mysql.connections_count());
+  // Host groups are defined across pollers and if we use instances id to
+  // choose the thread, we are lead to Mysql db dead locks.
+  // The simpler solution is to force the thread id for that event and host
+  // groups events to the same value, here 0.
+  int thread_id(0);
 
   // Only process groups for v2 schema.
   if (_mysql.schema_version() != mysql::v2)
@@ -1034,7 +1038,7 @@ void stream::_process_host_group_member(
     // the insertion to be finished.
     std::promise<mysql_result> promise;
 
-    std::cout << "INSERT HOST GROUP MEMBER "
+    std::cout << "THREAD " << thread_id << ": INSERT HOST GROUP MEMBER "
       << " : " << hgm.host_id << " ; " << hgm.group_id << std::endl;
     _mysql.run_statement(
              _host_group_member_insert,
