@@ -1,4 +1,5 @@
 function init(conf)
+  os.remove("/tmp/output.log")
   broker_log:set_parameters(3, "/tmp/output.log")
 end
 

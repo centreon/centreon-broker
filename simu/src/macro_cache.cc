@@ -30,7 +30,7 @@ using namespace com::centreon::broker::simu;
  *
  *  @param[in] cache  Persistent cache used by the macro cache.
  */
-macro_cache::macro_cache(misc::shared_ptr<persistent_cache> const& cache)
+macro_cache::macro_cache(std::shared_ptr<persistent_cache> const& cache)
   : _cache(cache) {
   if (!_cache.isNull()) {
     misc::shared_ptr<io::data> d;

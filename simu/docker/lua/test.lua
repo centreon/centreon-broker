@@ -1,7 +1,7 @@
 --package.path = package.path .. ";/home/admin/?.lua"
 
 local simu = {
-  input_file = "/usr/src/centreon-broker/simu/docker/data/export-neb.log",
+  input_file = "/usr/src/centreon-broker/simu/docker/data/export-all.log",
 }
 
 function init(conf)

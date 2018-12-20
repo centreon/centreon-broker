@@ -54,6 +54,7 @@ namespace               simu {
     void                _load_script();
     void                _init_script(
                           QMap<QString, QVariant> const& conf_params);
+    void                _update_lua_path(std::string const& path);
     bool                _parse_event(misc::shared_ptr<io::data>& d);
 
     // Event conversion to Lua table.
