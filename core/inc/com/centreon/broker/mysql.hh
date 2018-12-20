@@ -20,7 +20,7 @@
 
 #  include <atomic>
 #  include <future>
-#  include "com/centreon/broker/mysql_thread.hh"
+#  include "com/centreon/broker/mysql_connection.hh"
 
 CCB_BEGIN()
 
@@ -70,7 +70,6 @@ class                 mysql {
                         std::string const& message);
   int                 get_affected_rows(int thread_id);
   int                 get_affected_rows(int thread_id, mysql_stmt const& stmt);
-  bool                finish();
   version             schema_version() const;
   int                 connections_count() const;
   bool                commit_if_needed();
@@ -84,11 +83,9 @@ class                 mysql {
   database_config     _db_cfg;
   int                 _pending_queries;
 
-  std::vector<mysql_thread*>
-                      _vector;
+  std::vector<std::shared_ptr<mysql_connection>>
+                      _connection;
   version             _version;
-  std::vector<mysql_thread*>
-                      _thread;
   int                 _current_thread;
 };
 

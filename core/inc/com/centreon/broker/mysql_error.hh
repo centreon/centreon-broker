@@ -32,6 +32,7 @@ CCB_BEGIN()
 class                   mysql_error {
  public:
                         mysql_error();
+                        mysql_error(mysql_error&& other);
                         mysql_error(char const* message, bool fatal);
   mysql_error&          operator=(mysql_error const& other);
   bool                  is_fatal() const;

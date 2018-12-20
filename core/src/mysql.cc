@@ -23,10 +23,10 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/mysql_error.hh"
+#include "com/centreon/broker/mysql_manager.hh"
 
 using namespace com::centreon::broker;
 
-std::atomic_int mysql::_count_ref(0);
 std::once_flag init_flag;
 
 /**
@@ -37,20 +37,12 @@ std::once_flag init_flag;
 mysql::mysql(database_config const& db_cfg)
   : _db_cfg(db_cfg),
     _pending_queries(0),
-    _version(mysql::v3),
+    _version(mysql::v2),
     _current_thread(0) {
 
-  ++_count_ref;
+  mysql_manager& mgr(mysql_manager::instance());
+  _connection = mgr.get_connections(db_cfg);
 
-  // Mysql initialization must be done only one time. But it must be done
-  // before follo<ing code to be executed.
-  std::call_once(init_flag, mysql::_initialize_mysql);
-
-  for (int i(0); i < db_cfg.get_connections_count(); ++i) {
-    std::cout << "mysql constructor thread " << i << " construction" << std::endl;
-    _thread.push_back(new mysql_thread(db_cfg));
-    std::cout << "mysql constructor next one" << std::endl;
-  }
   try {
     std::promise<mysql_result> promise;
     int thread_id(run_query(
@@ -61,37 +53,23 @@ mysql::mysql(database_config const& db_cfg)
     promise.get_future().get();
     logging::info(logging::low)
       << "mysql: database is using version 2 of Centreon schema";
+    std::cout << "mysql: database in version 2..." << std::endl;
   }
   catch (std::exception const& e) {
     logging::info(logging::low)
       << "mysql: database is using version 3 of Centreon schema";
+    std::cout << "mysql: database in version 3..." << std::endl;
   }
-}
-
-void mysql::_initialize_mysql() {
-  if (mysql_library_init(0, NULL, NULL))
-    throw exceptions::msg()
-      << "mysql: unable to initialize the MySQL connector";
 }
 
 /**
  *  Destructor
  */
 mysql::~mysql() {
-  bool retval(finish());
-  if (!retval)
-    logging::error(logging::medium)
-      << "mysql: A thread was forced to stop after a timeout of 20s";
-
-  for (std::vector<mysql_thread*>::const_iterator
-         it(_thread.begin()),
-         end(_thread.end());
-       it != end;
-       ++it)
-    delete *it;
-
-  if (--_count_ref == 0)
-    mysql_library_end();
+  //bool retval(finish());
+  //if (!retval)
+  //  logging::error(logging::medium)
+  //    << "mysql: A thread was forced to stop after a timeout of 20s";
 }
 
 /**
@@ -107,17 +85,17 @@ void mysql::commit(int thread_id) {
   std::atomic_int ko(0);
   int commits;
   if (thread_id < 0) {
-    for (std::vector<mysql_thread*>::const_iterator
-           it(_thread.begin()),
-           end(_thread.end());
+    for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
+           it(_connection.begin()),
+           end(_connection.end());
          it != end;
          ++it) {
       (*it)->commit(sem, ko);
     }
-    commits = _thread.size();
+    commits = _connection.size();
   }
   else {
-    _thread[thread_id]->commit(sem, ko);
+    _connection[thread_id]->commit(sem, ko);
     commits = 1;
   }
   sem.acquire(commits);
@@ -127,30 +105,16 @@ void mysql::commit(int thread_id) {
   _pending_queries = 0;
 }
 
-/**
- *  This function is used to get the result of a statement. It
- *  gives the result only one time. After that, the result will be empty.
- *
- * @param thread_id The thread number that made the query.
- * @param stmt The statement used to execute the query.
- *
- * @return a mysql_result.
- */
-//mysql_result mysql::get_result(int thread_id, mysql_stmt const& stmt) {
-//  _check_errors(thread_id);
-//  return _thread[thread_id]->get_result(stmt.get_id());
-//}
-
 bool mysql::fetch_row(int thread_id, mysql_result& res) {
   _check_errors(thread_id);
-  return _thread[thread_id]->fetch_row(res);
+  return _connection[thread_id]->fetch_row(res);
 }
 
 void mysql::check_affected_rows(
              int thread_id,
              std::string const& message) {
   _check_errors(thread_id);
-  _thread[thread_id]->check_affected_rows(message);
+  _connection[thread_id]->check_affected_rows(message);
 }
 
 void mysql::check_affected_rows(
@@ -158,17 +122,17 @@ void mysql::check_affected_rows(
              mysql_stmt const& stmt,
              std::string const& message) {
   _check_errors(thread_id);
-  _thread[thread_id]->check_affected_rows(message, stmt.get_id());
+  _connection[thread_id]->check_affected_rows(message, stmt.get_id());
 }
 
 int mysql::get_affected_rows(int thread_id) {
   _check_errors(thread_id);
-  return _thread[thread_id]->get_affected_rows();
+  return _connection[thread_id]->get_affected_rows();
 }
 
 int mysql::get_affected_rows(int thread_id, mysql_stmt const& stmt) {
   _check_errors(thread_id);
-  return _thread[thread_id]->get_affected_rows(stmt.get_id());
+  return _connection[thread_id]->get_affected_rows(stmt.get_id());
 }
 
 /**
@@ -197,8 +161,8 @@ bool mysql::commit_if_needed() {
  * @param thread_id The thread id to check.
  */
 void mysql::_check_errors(int thread_id) {
-  mysql_error err(_thread[thread_id]->get_error());
-  if (err.is_active()) {
+  if (mysql_manager::instance().is_in_error()) {
+    mysql_error err(mysql_manager::instance().get_error());
     if (err.is_fatal())
       throw exceptions::msg() << err.get_message();
     else
@@ -228,11 +192,11 @@ int mysql::run_query(std::string const& query,
   if (thread_id < 0) {
     // Here, we use _current_thread
     thread_id = _current_thread++;
-    if (_current_thread >= _thread.size())
+    if (_current_thread >= _connection.size())
       _current_thread = 0;
   }
   _check_errors(thread_id);
-  _thread[thread_id]->run_query(
+  _connection[thread_id]->run_query(
     query,
     p,
     error_msg, fatal);
@@ -240,7 +204,7 @@ int mysql::run_query(std::string const& query,
 }
 
 int mysql::get_last_insert_id(int thread_id) {
-  return _thread[thread_id]->get_last_insert_id();
+  return _connection[thread_id]->get_last_insert_id();
 }
 
 int mysql::run_statement_on_condition(
@@ -249,7 +213,7 @@ int mysql::run_statement_on_condition(
              mysql_task::condition condition,
              std::string const& error_msg, bool fatal,
              int thread_id) {
-  _thread[thread_id]->run_statement_on_condition(
+  _connection[thread_id]->run_statement_on_condition(
                         stmt,
                         p,
                         condition,
@@ -265,18 +229,18 @@ int mysql::run_statement(mysql_stmt& stmt,
   if (thread_id < 0) {
     // Here, we use _current_thread
     thread_id = _current_thread++;
-    if (_current_thread >= _thread.size())
+    if (_current_thread >= _connection.size())
       _current_thread = 0;
   }
   _check_errors(thread_id);
-  _thread[thread_id]->run_statement(stmt, promise, error_msg, fatal);
+  _connection[thread_id]->run_statement(stmt, promise, error_msg, fatal);
   return thread_id;
 }
 
 void mysql::prepare_statement(mysql_stmt const& stmt) {
-  for (std::vector<mysql_thread*>::const_iterator
-         it(_thread.begin()),
-         end(_thread.end());
+  for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
+         it(_connection.begin()),
+         end(_connection.end());
        it != end;
        ++it)
     (*it)->prepare_query(stmt.get_id(), stmt.get_query());
@@ -290,26 +254,26 @@ mysql_stmt mysql::prepare_query(std::string const& query,
   return retval;
 }
 
-bool mysql::finish() {
-  bool retval(true);
-  for (std::vector<mysql_thread*>::const_iterator
-         it(_thread.begin()),
-         end(_thread.end());
-       it != end;
-       ++it) {
-    std::cout << "mysql destructor send finish to thread" << std::endl;
-    (*it)->finish();
-    std::cout << "mysql destructor wait for thread to finish" << std::endl;
-    retval &= (*it)->wait(20000);
-  }
-  std::cout << "mysql destructor thread just finished" << std::endl;
-  return retval;
-}
+//bool mysql::finish() {
+//  bool retval(true);
+//  for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
+//         it(_connection.begin()),
+//         end(_connection.end());
+//       it != end;
+//       ++it) {
+//    std::cout << "mysql destructor send finish to thread" << std::endl;
+//    (*it)->finish();
+//    std::cout << "mysql destructor wait for thread to finish" << std::endl;
+//    retval &= (*it)->wait(20000);
+//  }
+//  std::cout << "mysql destructor thread just finished" << std::endl;
+//  return retval;
+//}
 
 mysql::version mysql::schema_version() const {
   return _version;
 }
 
 int mysql::connections_count() const {
-  return _thread.size();
+  return _connection.size();
 }

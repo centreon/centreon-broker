@@ -25,6 +25,14 @@ mysql_error::mysql_error()
 mysql_error::mysql_error(char const* message, bool fatal)
   : _message(message), _active(true), _fatal(fatal) {}
 
+mysql_error::mysql_error(mysql_error&& other) {
+  _message = move(other._message);
+  _active = other._active;
+  other._active = false;
+  _fatal = other._fatal;
+  other._fatal = false;
+}
+
 mysql_error& mysql_error::operator=(mysql_error const& other) {
   if (this != &other) {
     _message = other._message;
