@@ -927,23 +927,23 @@ void stream::_insert_perfdatas() {
             << "INSERT INTO " << (db_v2 ? "data_bin" : "log_data_bin")
             << "  (" << (db_v2 ? "id_metric" : "metric_id")
             << "   , ctime, status, value)"
-               "  VALUES (" << mv.metric_id << ", " << mv.c_time << ", "
-            << mv.status << ", '";
+               "  VALUES (" << mv.metric_id << ", " << mv.c_time << ", '"
+            << mv.status << "', ";
       if (std::isinf(mv.value))
         query << ((mv.value < 0.0) ? -FLT_MAX : FLT_MAX);
       else if (std::isnan(mv.value))
         query << "NULL";
       else
         query << mv.value;
-      query << "')";
+      query << ")";
       _perfdata_queue.pop_front();
     }
 
     // Insert perfdata in data_bin.
     while (!_perfdata_queue.empty()) {
       metric_value& mv(_perfdata_queue.front());
-      query << ", (" << mv.metric_id << ", " << mv.c_time << ", "
-            << mv.status << ", ";
+      query << ", (" << mv.metric_id << ", " << mv.c_time << ", '"
+            << mv.status << "', ";
       if (std::isinf(mv.value))
         query << ((mv.value < 0.0) ? -FLT_MAX : FLT_MAX);
       else if (std::isnan(mv.value))
