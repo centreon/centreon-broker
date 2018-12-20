@@ -198,7 +198,9 @@ TEST_F(LuaTest, WriteAcknowledgement) {
   bnd->write(svc);
 
   QStringList result(ReadFile("/tmp/test.log"));
-  ASSERT_EQ(result.size(), 15);
+  ASSERT_EQ(result.size(), 16);
+  ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: write: _type => 65537")) >= 0);
+  ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: write: type => 0")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: init: address => 127\\.0\\.0\\.1")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: init: double => 3.1415926535898")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: init: port => 8857")) >= 0);
