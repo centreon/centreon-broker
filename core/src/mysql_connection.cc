@@ -57,6 +57,7 @@ void mysql_connection::_query(mysql_task* t) {
       if (task->promise) {
         exceptions::msg e;
         e << ::mysql_error(_conn);
+        std::cout << "EXCEPTION: QUERY " << e.what() << std::endl;;
         task->promise->set_exception(
                          std::make_exception_ptr<exceptions::msg>(e));
       }
@@ -150,6 +151,7 @@ void mysql_connection::_statement(mysql_task* t) {
       if (task->promise) {
         exceptions::msg e;
         e << mysql_stmt_error(stmt);
+        std::cout << "EXCEPTION: STATEMENT " << e.what() << std::endl;;
         task->promise->set_exception(
                          std::make_exception_ptr<exceptions::msg>(e));
       }
@@ -190,6 +192,7 @@ void mysql_connection::_statement(mysql_task* t) {
             if (task->promise) {
               exceptions::msg e;
               e << mysql_stmt_error(stmt);
+              std::cout << "EXCEPTION: STATEMENT " << e.what() << std::endl;;
               task->promise->set_exception(
                   std::make_exception_ptr<exceptions::msg>(e));
             }
@@ -206,15 +209,21 @@ void mysql_connection::_statement(mysql_task* t) {
         }
       }
       else {
+        std::cout << "EXECUTE STATEMENT OK !!!!!!!" << std::endl;
         if (task->promise) {
           mysql_result res(this, task->statement_id);
           MYSQL_STMT* stmt(_stmt[task->statement_id]);
           MYSQL_RES* prepare_meta_result(mysql_stmt_result_metadata(stmt));
           if (prepare_meta_result == NULL) {
-            exceptions::msg e;
-            e << mysql_stmt_error(stmt);
-            task->promise->set_exception(
-                std::make_exception_ptr<exceptions::msg>(e));
+            if (mysql_stmt_errno(stmt)) {
+              exceptions::msg e;
+              e << mysql_stmt_error(stmt);
+              std::cout << "EXCEPTION: STATEMENT " << e.what() << std::endl;;
+              task->promise->set_exception(
+                  std::make_exception_ptr<exceptions::msg>(e));
+            }
+            else
+              task->promise->set_value(nullptr);
           }
           else {
             int size(mysql_num_fields(prepare_meta_result));
@@ -223,6 +232,7 @@ void mysql_connection::_statement(mysql_task* t) {
             if (mysql_stmt_bind_result(stmt, bind->get_bind())) {
               exceptions::msg e;
               e << mysql_stmt_error(stmt);
+              std::cout << "EXCEPTION: STATEMENT " << e.what() << std::endl;;
               task->promise->set_exception(
                   std::make_exception_ptr<exceptions::msg>(e));
             }
@@ -230,6 +240,7 @@ void mysql_connection::_statement(mysql_task* t) {
               if (mysql_stmt_store_result(stmt)) {
                 exceptions::msg e;
                 e << mysql_stmt_error(stmt);
+                std::cout << "EXCEPTION: STATEMENT " << e.what() << std::endl;;
                 task->promise->set_exception(
                     std::make_exception_ptr<exceptions::msg>(e));
               }

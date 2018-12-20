@@ -1034,13 +1034,14 @@ void stream::_process_host_group_member(
     // the insertion to be finished.
     std::promise<mysql_result> promise;
 
-      std::cout << "INSERT HOST GROUP MEMBER "
-        << " : " << hgm.host_id << " ; " << hgm.group_id << std::endl;
+    std::cout << "INSERT HOST GROUP MEMBER "
+      << " : " << hgm.host_id << " ; " << hgm.group_id << std::endl;
     _mysql.run_statement(
              _host_group_member_insert,
              &promise,
              "SQL: host group not defined", true,
              thread_id);
+    std::cout << "STATEMENT DONE..." << std::endl;
     try {
       promise.get_future().get();
     }
@@ -1072,6 +1073,9 @@ void stream::_process_host_group_member(
           << hgm.group_id << "): ";
       assert(hgm.host_id != 0);
       assert(hgm.group_id != 0);
+      _host_group_member_insert << hgm;
+      std::cout << "INSERT HOST GROUP MEMBER2 "
+        << " : " << hgm.host_id << " ; " << hgm.group_id << std::endl;
       _mysql.run_statement(
                 _host_group_member_insert,
                 NULL,

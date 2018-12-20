@@ -43,7 +43,6 @@ mysql_column::mysql_column(int type, int row_count, int size)
 }
 
 mysql_column::~mysql_column() {
-  std::cout << "MYSQL COLUMN..." << std::endl;
   if (_vector) {
     if (_type == MYSQL_TYPE_STRING) {
       char** vector = static_cast<char**>(_vector);

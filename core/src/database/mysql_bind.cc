@@ -309,6 +309,7 @@ void mysql_bind::debug() {
       case MYSQL_TYPE_STRING:
         std::cout << "STRING : "
             << " : " << "BL: " << _bind[i].buffer_length
+            << " NULL: " << (*_bind[i].is_null ? "1" : "0")
             << " : " << *static_cast<char**>(_column[i].get_buffer()) << std::endl;
         break;
       case MYSQL_TYPE_DOUBLE:

@@ -197,7 +197,6 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
-  std::cout << "STORAGE stream::write" << std::endl;
   ++_pending_events;
   logging::info(logging::low)
     << "storage: write pending_events = " << _pending_events;
@@ -324,7 +323,6 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   _ack_events = 0;
   logging::debug(logging::low)
     << "storage: ack events count: " << retval;
-  std::cout << "STORAGE stream::write END" << std::endl;
   return retval;
 }
 
