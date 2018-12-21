@@ -1,5 +1,7 @@
 #!/bin/bash
 
+rm -rf /var/lib/centreon/metrics/*
+rm -rf /var/lib/centreon/status/*
 mkdir -p /usr/share/centreon-broker/lua/neb
 mkdir -p /etc/centreon-broker
 mkdir -p /var/log/centreon-broker
