@@ -2,7 +2,6 @@
 local mysql = require "luasql.mysql"
 
 local simu = {
-  input_file = "/usr/share/centreon-broker/lua/export-all.log",
   log_file = "/tmp/simu.log",
   host_count = 1,
   poller_count = 1,
@@ -80,6 +79,7 @@ step[9].count = {
   service = 50,
   host = step[2].count.host,
   instance = step[2].count.instance,
+  metric = 10,
 }
 
 -- Downtimes per host
@@ -115,11 +115,9 @@ function init(conf)
     error("No connection to database")
   end
 
---  -- We are waiting for a string here
---  if conf.input_file then
---    simu.input_file = conf.input_file
---  end
---  simu.f = io.open(simu.input_file, "r")
+  -- Some clean up
+  local cursor, error_str = simu.conn:execute("DELETE FROM data_bin;")
+  cursor, error_str = simu.conn:execute("DELETE FROM metrics;")
 end
 
 function read()

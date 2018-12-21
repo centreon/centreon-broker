@@ -1,8 +1,11 @@
 local _service_status = {}
 
-local function build(service_id, host_id)
-  local now = os.time()
-  _service_status.now = now
+local function build(service_id, host_id, metric)
+  if not _service_status.now then
+    local now = os.time() - 5000
+    _service_status.now = os.time() - 5000
+  end
+  local now = _service_status.now + metric
   local info = "_" .. service_id .. "_" .. host_id
   local d1 = math.random(0, 100)
   local d2 = math.random(0, 100)
@@ -68,15 +71,18 @@ local service_status = {
   --
   -- return: a neb::instance event
   build = function (stack, count)
+    local metric_count = count.metric
     local service_count = count.service
     local host_count = count.host * count.instance
     broker_log:info(0, "BUILD SERVICE STATUS ; service_count = "
                  .. service_count .. " ; host_count = " .. host_count)
-    for j = 1,host_count do
-      for i = 1,service_count do
-        table.insert(
-                stack,
-                build(i + (j - 1) * service_count, j))
+    for metric = 1,metric_count do
+      for j = 1,host_count do
+        for i = 1,service_count do
+          table.insert(
+                  stack,
+                  build(i + (j - 1) * service_count, j, metric))
+        end
       end
     end
     broker_log:info(0, "BUILD SERVICE STATUS => FINISHED")
@@ -88,11 +94,11 @@ local service_status = {
     local now = _service_status.now
     broker_log:info(0, "CHECK SERVICE STATUS")
     local retval = true
-    broker_log:info(0, "SELECT count(*) from data_bin where ctime=" .. now)
-    local cursor, error_str = conn:execute("SELECT count(*) from data_bin where ctime=" .. now)
+    broker_log:info(0, "SELECT count(*) from data_bin where ctime>=" .. now .. " and ctime <= " .. (now + count.metric))
+    local cursor, error_str = conn:execute("SELECT count(*) from data_bin where ctime >=" .. now .. " and ctime <= " .. (now + count.metric))
     local row = cursor:fetch({}, "a")
     if row then
-      if tonumber(row['count(*)']) ~= 5 * service_count * host_count then
+      if tonumber(row['count(*)']) ~= 5 * service_count * host_count * count.metric then
         broker_log:error(0, "index_data not complete")
         retval = false
       end

@@ -72,16 +72,6 @@
   <connections_count><![CDATA[3]]></connections_count>
   <type><![CDATA[storage]]></type>
  </output>
- <output>
-  <name><![CDATA[result]]></name>
-  <path><![CDATA[/usr/share/centreon-broker/lua/output.lua]]></path>
-  <type><![CDATA[lua]]></type>
-  <lua_parameter>
-   <type><![CDATA[number]]></type>
-   <name><![CDATA[count]]></name>
-   <value><![CDATA[100]]></value>
-  </lua_parameter>
- </output>
  <stats>
   <type><![CDATA[stats]]></type>
   <name><![CDATA[central-broker-master-stats]]></name>
