@@ -19,7 +19,6 @@
 #include <cfloat>
 #include <cmath>
 #include <cstdlib>
-#include <iostream>
 #include <sstream>
 #include <QMutexLocker>
 #include <QVariant>
@@ -129,9 +128,7 @@ stream::stream(
 /**
  *  Destructor.
  */
-stream::~stream() {
-  std::cout << "STORAGE STREAM DESTRUCTOR" << std::endl;
-}
+stream::~stream() {}
 
 /**
  *  Flush the stream.

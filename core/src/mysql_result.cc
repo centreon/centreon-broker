@@ -27,15 +27,12 @@ mysql_result::mysql_result(mysql_connection* parent, int statement_id)
     _result(nullptr, mysql_free_result),
     _statement_id(statement_id),
     _row(nullptr) {
-  std::cout << "NEW 1 MYSQL_RESULT " << this << std::endl;
 }
 
 mysql_result::mysql_result(mysql_connection* parent, MYSQL_RES* result)
   : _parent(parent),
     _result(result, mysql_free_result),
     _statement_id(0) {
-  std::cout << "NEW 2 MYSQL_RESULT " << this << std::endl;
-  std::cout << "BIND = " << _bind.get() << std::endl;
 }
 
 mysql_result::mysql_result(mysql_result&& other)
@@ -47,7 +44,6 @@ mysql_result::mysql_result(mysql_result&& other)
   other._result = nullptr;
   other._parent = nullptr;
   _bind = move(other._bind);
-  std::cout << "NEW 3 MYSQL_RESULT " << this << std::endl;
 }
 
 mysql_result& mysql_result::operator=(mysql_result const& other) {
@@ -57,7 +53,6 @@ mysql_result& mysql_result::operator=(mysql_result const& other) {
 }
 
 mysql_result::~mysql_result() {
-  std::cout << "END OF MYSQL_RESULT " << this << std::endl;
 }
 
 void mysql_result::set(MYSQL_RES* result) {

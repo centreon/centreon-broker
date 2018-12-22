@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <iostream>
 #include <functional>
 #include <cfloat>
 #include <cmath>
@@ -35,7 +34,6 @@ mysql_stmt::mysql_stmt()
 
 mysql_stmt::mysql_stmt(std::string const& query, bool named)
  : _array_size(0) {
-  std::cout << "mysql_stmt named ? " << named << std::endl;
   mysql_bind_mapping bind_mapping;
   std::hash<std::string> hash_fn;
   if (named) {
@@ -103,8 +101,6 @@ mysql_stmt::mysql_stmt(std::string const& query, bool named)
     // How many '?' in the query, we don't count '?' in strings.
     _param_count = _compute_param_count(query);
   }
-  std::cout << "Query " << query << " added to the statement with "
-    << _param_count << " '?'" << std::endl;
 }
 
 mysql_stmt::mysql_stmt(std::string const& query,
@@ -118,9 +114,6 @@ mysql_stmt::mysql_stmt(std::string const& query,
   else
     _param_count = bind_mapping.size();
 
-  std::cout << "Query1 " << query << " added to the statement with "
-    << _param_count << " '?'" << std::endl;
-  std::cout << "bind_mapping size = " << bind_mapping.size() << std::endl;
 }
 
 mysql_stmt::mysql_stmt(mysql_stmt&& other)

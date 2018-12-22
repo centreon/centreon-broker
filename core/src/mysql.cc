@@ -15,7 +15,6 @@
 **
 ** For more information : contact@centreon.com
 */
-#include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql_manager.hh"
@@ -48,12 +47,10 @@ mysql::mysql(database_config const& db_cfg)
     promise.get_future().get();
     logging::info(logging::low)
       << "mysql: database is using version 2 of Centreon schema";
-    std::cout << "mysql: database in version 2..." << std::endl;
   }
   catch (std::exception const& e) {
     logging::info(logging::low)
       << "mysql: database is using version 3 of Centreon schema";
-    std::cout << "mysql: database in version 3..." << std::endl;
   }
 }
 
@@ -65,8 +62,6 @@ mysql::~mysql() {
   //if (!retval)
   //  logging::error(logging::medium)
   //    << "mysql: A thread was forced to stop after a timeout of 20s";
-  std::cout << "MYSQL DESTRUCTOR...\n";
-  std::cout << "MYSQL MANAGER UPDATES CONNECTIONS...\n";
   mysql_manager::instance().update_connections();
 }
 
@@ -99,7 +94,6 @@ void mysql::commit(int thread_id) {
 
   if (!future.get()) {
     if (ko != 0) {
-      std::cout << "Unable to commit the transaction..." << std::endl;
       throw exceptions::msg()
         << "mysql: Unable to commit transactions";
     }

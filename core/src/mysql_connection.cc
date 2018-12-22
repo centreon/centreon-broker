@@ -15,7 +15,6 @@
 **
 ** For more information : contact@centreon.com
 */
-#include <iostream>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -47,8 +46,6 @@ void mysql_connection::_query(mysql_task* t) {
   logging::debug(logging::low)
     << "mysql: run query: "
     << task->query.c_str();
-  std::cout << "mysql: run query: "
-    << task->query.c_str() << std::endl;
   if (mysql_query(_conn, task->query.c_str())) {
     logging::debug(logging::low)
       << "mysql: run query failed: "
@@ -57,7 +54,6 @@ void mysql_connection::_query(mysql_task* t) {
       if (task->promise) {
         exceptions::msg e;
         e << ::mysql_error(_conn);
-        std::cout << "EXCEPTION: QUERY " << e.what() << std::endl;;
         task->promise->set_exception(
                          std::make_exception_ptr<exceptions::msg>(e));
       }
@@ -79,7 +75,6 @@ void mysql_connection::_commit(mysql_task* t) {
   mysql_task_commit* task(static_cast<mysql_task_commit*>(t));
   int attempts(0);
   while (attempts++ < MAX_ATTEMPTS && mysql_commit(_conn)) {
-    std::cout << "commit queries: " << ::mysql_error(_conn) << std::endl;
     logging::error(logging::medium)
       << "could not commit queries: " << ::mysql_error(_conn);
   }
@@ -146,12 +141,10 @@ void mysql_connection::_statement(mysql_task* t) {
     logging::debug(logging::low)
       << "mysql: statement binding failed ("
       << mysql_stmt_error(stmt) << ")";
-    std::cout << "ERROR in BINDING: " << mysql_stmt_error(stmt) << std::endl;
     if (task->fatal) {
       if (task->promise) {
         exceptions::msg e;
         e << mysql_stmt_error(stmt);
-        std::cout << "EXCEPTION: STATEMENT " << e.what() << std::endl;;
         task->promise->set_exception(
                          std::make_exception_ptr<exceptions::msg>(e));
       }
@@ -165,35 +158,20 @@ void mysql_connection::_statement(mysql_task* t) {
     }
   }
   else {
-    std::cout << "Statement: " << _stmt_query[task->statement_id] << std::endl;
-    if (bb) {
-      std::cout << "bb " << bb << std::endl;
-      task->bind->debug();
-    }
     int attempts(0);
     while (true) {
       if (mysql_stmt_execute(stmt)) {
-        std::cout << "ERROR IN STATEMENT " << task->statement_id
-          << " : Errno " << mysql_stmt_errno(stmt)
-          << " : " << _stmt_query[task->statement_id] << " : "
-          << mysql_stmt_error(stmt) << std::endl;
         if (mysql_stmt_errno(stmt) != 1213
             && mysql_stmt_errno(stmt) != 1205)  // Dead Lock error
           attempts = MAX_ATTEMPTS;
 
-        std::cout << "ATTEMPT TO COMMIT BEFORE RETRYING" << std::endl;
-        if (mysql_commit(_conn))
-          std::cout << "COMMIT FAILED" << std::endl;
-        else
-          std::cout << "COMMIT OK" << std::endl;
+        mysql_commit(_conn);
 
         if (++attempts >= MAX_ATTEMPTS) {
-          std::cout << "TOO MANY ATTEMPTS..." << std::endl;
           if (task->fatal) {
             if (task->promise) {
               exceptions::msg e;
               e << mysql_stmt_error(stmt);
-              std::cout << "EXCEPTION: STATEMENT " << e.what() << std::endl;;
               task->promise->set_exception(
                   std::make_exception_ptr<exceptions::msg>(e));
             }
@@ -210,7 +188,6 @@ void mysql_connection::_statement(mysql_task* t) {
         }
       }
       else {
-        std::cout << "EXECUTE STATEMENT OK !!!!!!!" << std::endl;
         if (task->promise) {
           mysql_result res(this, task->statement_id);
           MYSQL_STMT* stmt(_stmt[task->statement_id]);
@@ -219,7 +196,6 @@ void mysql_connection::_statement(mysql_task* t) {
             if (mysql_stmt_errno(stmt)) {
               exceptions::msg e;
               e << mysql_stmt_error(stmt);
-              std::cout << "EXCEPTION: STATEMENT " << e.what() << std::endl;;
               task->promise->set_exception(
                   std::make_exception_ptr<exceptions::msg>(e));
             }
@@ -233,7 +209,6 @@ void mysql_connection::_statement(mysql_task* t) {
             if (mysql_stmt_bind_result(stmt, bind->get_bind())) {
               exceptions::msg e;
               e << mysql_stmt_error(stmt);
-              std::cout << "EXCEPTION: STATEMENT " << e.what() << std::endl;;
               task->promise->set_exception(
                   std::make_exception_ptr<exceptions::msg>(e));
             }
@@ -241,7 +216,6 @@ void mysql_connection::_statement(mysql_task* t) {
               if (mysql_stmt_store_result(stmt)) {
                 exceptions::msg e;
                 e << mysql_stmt_error(stmt);
-                std::cout << "EXCEPTION: STATEMENT " << e.what() << std::endl;;
                 task->promise->set_exception(
                     std::make_exception_ptr<exceptions::msg>(e));
               }
@@ -309,7 +283,6 @@ void mysql_connection::_fetch_row_sync(mysql_task* t) {
 }
 
 void mysql_connection::_finish(mysql_task* t) {
-  std::cout << "MYSQL CONNECTION: FINISH = true ; tasks_count = " << _tasks_count << std::endl;
   _finished = true;
 }
 
@@ -364,7 +337,6 @@ void mysql_connection::_run() {
          _port,
          NULL,
          0)) {
-    std::cout << "mysql_connection::run real connect failed: "<< ::mysql_error(_conn) << std::endl;
     mysql_manager::instance().set_error(::mysql_error(_conn), true);
   }
 
@@ -387,7 +359,6 @@ void mysql_connection::_run() {
       if (_task_processing_table[task->type])
         (this->*(_task_processing_table[task->type]))(task.get());
       else {
-        std::cout << "ERROR: run DEFAULT SITUATION with type = " << task->type << std::endl;
         logging::error(logging::medium)
           << "mysql: Error type not managed...";
       }
@@ -397,7 +368,6 @@ void mysql_connection::_run() {
       _tasks_condition.wait(locker);
     }
   }
-  std::cout << "run return" << std::endl;
 }
 
 /******************************************************************************/
@@ -415,15 +385,11 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
     _started(false),
     _qps(db_cfg.get_queries_per_transaction()) {
 
-  std::cout << "mysql_connection start thread" << std::endl;
   std::unique_lock<std::mutex> locker(_result_mutex);
   _thread.reset(new std::thread(&mysql_connection::_run, this));
-  std::cout << "mysql_connection start WAIT thread" << std::endl;
   while (!_started)
     _result_condition.wait(locker);
-  std::cout << "mysql_connection wait for start... => GO" << std::endl;
   if (mysql_manager::instance().is_in_error()) {
-    std::cout << "mysql_connection: throw exception" << std::endl;
     finish();
     _thread->join();
     mysql_error err(mysql_manager::instance().get_error());
@@ -432,7 +398,6 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
 }
 
 mysql_connection::~mysql_connection() {
-  std::cout << "MYSQL_CONNECTION DESTROYED..." << std::endl;
   for (umap<unsigned int, MYSQL_STMT*>::iterator
          it(_stmt.begin()),
          end(_stmt.end());
@@ -518,9 +483,6 @@ void mysql_connection::run_query(
 }
 
 void mysql_connection::finish() {
-  std::cout << "************************" << std::endl;
-  std::cout << "mysql_connection finish" << std::endl;
-  std::cout << "************************" << std::endl;
   _push(std::make_shared<mysql_task_finish>());
 }
 

@@ -59,9 +59,7 @@ mysql_bind::mysql_bind(int size, int length)
   }
 }
 
-mysql_bind::~mysql_bind() {
-  std::cout << "MYSQL BIND DESTROY..." << std::endl;
-}
+mysql_bind::~mysql_bind() {}
 
 void mysql_bind::set_size(int size, int length) {
   _bind.resize(size);
@@ -141,7 +139,6 @@ int mysql_bind::value_as_i32(int range) const {
     return *static_cast<int*>(_bind[range].buffer);
   else if (_bind[range].buffer_type == MYSQL_TYPE_STRING) {
     int retval(strtol(static_cast<char*>(_bind[range].buffer), nullptr, 10));
-    std::cout << "value = " << retval << std::endl;
     return retval;
   }
   else
@@ -167,7 +164,6 @@ unsigned int mysql_bind::value_as_u32(int range) const {
     return *static_cast<unsigned int*>(_bind[range].buffer);
   else if (_bind[range].buffer_type == MYSQL_TYPE_STRING) {
     unsigned int retval(strtoul(static_cast<char*>(_bind[range].buffer), nullptr, 10));
-    std::cout << "value = " << retval << std::endl;
     return retval;
   }
   else
@@ -193,7 +189,6 @@ unsigned long long mysql_bind::value_as_u64(int range) const {
     return *static_cast<unsigned int*>(_bind[range].buffer);
   else if (_bind[range].buffer_type == MYSQL_TYPE_STRING) {
     unsigned long long retval(strtoul(static_cast<char*>(_bind[range].buffer), nullptr, 10));
-    std::cout << "value = " << retval << std::endl;
     return retval;
   }
   else
@@ -218,7 +213,6 @@ float mysql_bind::value_as_f32(int range) const {
     return *static_cast<float*>(_bind[range].buffer);
   else if (_bind[range].buffer_type == MYSQL_TYPE_STRING) {
     double retval(strtof(static_cast<char*>(_bind[range].buffer), nullptr));
-    std::cout << "value = " << retval << std::endl;
     return retval;
   }
   else
@@ -243,7 +237,6 @@ double mysql_bind::value_as_f64(int range) const {
     return *static_cast<double*>(_bind[range].buffer);
   else if (_bind[range].buffer_type == MYSQL_TYPE_STRING) {
     double retval(strtod(static_cast<char*>(_bind[range].buffer), nullptr));
-    std::cout << "value = " << retval << std::endl;
     return retval;
   }
   else

@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 #include <chrono>
-#include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql_manager.hh"
@@ -41,7 +40,6 @@ mysql_manager::~mysql_manager() {
   // If connections are still active but unique here, we can remove them
   std::lock_guard<std::mutex> cfg_lock(_cfg_mutex);
   std::lock_guard<std::mutex> err_lock(_err_mutex);
-  std::cout << "MANAGER DESTROYED..." << std::endl;
   int i = 0;
   for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
        it(_connection.begin()), end(_connection.end());
@@ -50,18 +48,14 @@ mysql_manager::~mysql_manager() {
     while (!it->unique()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    std::cout << "CONNECTION " << i++ << " STOPPED" << std::endl;
   }
-  std::cout << "MYSQL LIBRARY END" << std::endl;
   mysql_library_end();
-  std::cout << "MANAGER DESTROYED...DONE" << std::endl;
 }
 
 std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
                       database_config const& db_cfg) {
   std::vector<std::shared_ptr<mysql_connection>> retval;
   int connection_count(db_cfg.get_connections_count());
-  std::cout << "MYSQL MANAGER GET CONNECTIONS WITH COUNT = " << connection_count << std::endl;
 
   {
     int current_connection(0);
@@ -74,11 +68,9 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
         ++current_connection;
         if (current_connection >= connection_count)
           return retval;
-        std::cout << "MYSQL MANAGER GET CONNECTIONS WITH CURRENT = " << current_connection << std::endl;
       }
     }
 
-    std::cout << "MYSQL MANAGER GET CONNECTIONS WITH CURRENT1 = " << current_connection << std::endl;
     // We are still missing threads in the configuration to return
     while (retval.size() < connection_count) {
       std::shared_ptr<mysql_connection> c(std::make_shared<mysql_connection>(db_cfg));
@@ -87,7 +79,6 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
     }
   }
   update_connections();
-  std::cout << "GET CONNECTION MANAGER: retval size = " << retval.size() << std::endl;
   return retval;
 }
 
@@ -105,7 +96,6 @@ void mysql_manager::update_connections() {
     else
       ++it;
   }
-  std::cout << "UPDATE CONNECTION MANAGER: retval size = " << _connection.size() << std::endl;
 }
 
 bool mysql_manager::is_in_error() const {

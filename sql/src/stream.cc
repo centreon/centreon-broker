@@ -18,7 +18,6 @@
 
 #include <cassert>
 #include <ctime>
-#include <iostream>
 #include <limits>
 #include <sstream>
 #include "com/centreon/broker/correlation/events.hh"
@@ -491,8 +490,6 @@ void stream::_process_custom_variable(
 
   // Processing.
   if (cv.enabled) {
-    std::cout << "SQL: Process CUSTOM VARIABLE '" << cv.name.toStdString() << "' of ("
-      << cv.host_id << ", " << cv.service_id << ")" << std::endl;
     logging::info(logging::medium)
       << "SQL: enabling custom variable '" << cv.name << "' of ("
       << cv.host_id << ", " << cv.service_id << ")";
@@ -1038,20 +1035,15 @@ void stream::_process_host_group_member(
     // the insertion to be finished.
     std::promise<mysql_result> promise;
 
-    std::cout << "THREAD " << thread_id << ": INSERT HOST GROUP MEMBER "
-      << " : " << hgm.host_id << " ; " << hgm.group_id << std::endl;
     _mysql.run_statement(
              _host_group_member_insert,
              &promise,
              "SQL: host group not defined", true,
              thread_id);
-    std::cout << "STATEMENT DONE..." << std::endl;
     try {
       promise.get_future().get();
     }
     catch (std::exception const& e) {
-      std::cout << "EXCEPTION !!!!! "
-        << e.what() << " : " << hgm.host_id << " ; " << hgm.group_id << std::endl;
       _prepare_hg_insupdate_statement();
 
       neb::host_group hg;
@@ -1078,8 +1070,6 @@ void stream::_process_host_group_member(
       assert(hgm.host_id != 0);
       assert(hgm.group_id != 0);
       _host_group_member_insert << hgm;
-      std::cout << "INSERT HOST GROUP MEMBER2 "
-        << " : " << hgm.host_id << " ; " << hgm.group_id << std::endl;
       _mysql.run_statement(
                 _host_group_member_insert,
                 NULL,
@@ -1290,7 +1280,6 @@ void stream::_process_host_status(
  */
 void stream::_process_instance(
                misc::shared_ptr<io::data> const& e) {
-  std::cout << "PROCESS INSTANCE..." << std::endl;
   // Cast object.
   neb::instance const& i(*static_cast<neb::instance const*>(e.data()));
 
@@ -1299,19 +1288,13 @@ void stream::_process_instance(
     << "(id: " << i.poller_id << ", name: " << i.name << ", running: "
     << (i.is_running ? "yes" : "no") << ")";
 
-  std::cout << "SQL: processing poller event "
-    << "(id: " << i.poller_id << ", name: " << i.name.toStdString() << ", running: "
-    << (i.is_running ? "yes" : "no") << ")" << std::endl;
-
   // Clean tables.
   _clean_tables(i.poller_id);
 
   // Processing.
   if (_is_valid_poller(i.poller_id)) {
-    std::cout << "SQL: instance " << i.poller_id << " is valid" << std::endl;
     // Prepare queries.
     if (!_instance_insupdate.prepared()) {
-      std::cout << "Preparation of instance_insupdate" << std::endl;
       query_preparator::event_unique unique;
       unique.insert("instance_id");
       query_preparator qp(neb::instance::static_type(), unique);
@@ -2397,11 +2380,8 @@ stream::stream(
  */
 stream::~stream() {
   // Stop cleanup thread.
-  std::cout << "sql stream destructor 1" << std::endl;
   _cleanup_thread.exit();
-  std::cout << "sql stream destructor 2" << std::endl;
   _cleanup_thread.wait(-1);
-  std::cout << "sql stream destructor 3" << std::endl;
 }
 
 /**
@@ -2456,7 +2436,6 @@ void stream::update() {
  */
 int stream::write(misc::shared_ptr<io::data> const& data) {
   // Take this event into account.
-  std::cout << "SQL STREAM WRITE..." << std::endl;
   ++_pending_events;
   if (!validate(data, "SQL"))
     return 0;
