@@ -17,10 +17,10 @@
 */
 
 #include <cassert>
-#include <iostream>
 #include <cfloat>
-#include <cstring>
 #include <cmath>
+#include <cstring>
+#include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
