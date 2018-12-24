@@ -1,13 +1,21 @@
 FROM centos:latest as base
 MAINTAINER Centreon "support@centreon.com"
 
-RUN yum -y install gcc-c++ cmake make lua-devel qt-devel gnutls-devel rrdtool-devel zlib-devel openssl-devel qt-mysql gdb zip unzip
+RUN yum -y update
+RUN yum -y install gcc-c++ cmake make lua-devel qt-devel gnutls-devel rrdtool-devel zlib-devel openssl-devel qt-mysql gdb zip unzip rsync
 
-RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.1.19/yum/centos7-amd64/rpms/MariaDB-10.1.19-centos7-x86_64-devel.rpm --output /tmp/MariaDB-10.1.19-centos7-x86_64-devel.rpm
-RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.1.19/yum/centos7-amd64/rpms/MariaDB-10.1.19-centos7-x86_64-common.rpm --output /tmp/MariaDB-10.1.19-centos7-x86_64-common.rpm
-RUN curl http://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/l/luarocks-2.3.0-1.el7.x86_64.rpm --output luarocks-2.3.0-1.el7.x86_64.rpm
-RUN rpm -ivh --nodeps --force /tmp/MariaDB-10.1.19-centos7-x86_64-*.rpm /tmp/luarocks-2.3.0-1.el7.x86_64.rpm
-RUN luarocks install luasql-mysql MYSQL_INCDIR=/usr/include/mysql
+RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.3.10/yum/centos7-amd64/rpms/MariaDB-10.3.10-centos73-x86_64-devel.rpm --output /tmp/MariaDB-10.3.10-centos73-x86_64-devel.rpm
+RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.3.10/yum/centos7-amd64/rpms/MariaDB-10.3.10-centos73-x86_64-client.rpm --output /tmp/MariaDB-10.3.10-centos73-x86_64-client.rpm
+RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.3.10/yum/centos7-amd64/rpms/MariaDB-10.3.10-centos73-x86_64-shared.rpm --output /tmp/MariaDB-10.3.10-centos73-x86_64-shared.rpm
+RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.3.10/yum/centos7-amd64/rpms/MariaDB-10.3.10-centos73-x86_64-common.rpm --output /tmp/MariaDB-10.3.10-centos73-x86_64-common.rpm
+RUN curl https://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/l/luarocks-2.3.0-1.el7.x86_64.rpm --output /tmp/luarocks-2.3.0-1.el7.x86_64.rpm
+RUN rpm -ivh --nodeps --force /tmp/MariaDB-10.3.10-centos73-x86_64-*.rpm /tmp/luarocks-2.3.0-1.el7.x86_64.rpm
+RUN luarocks download luasql-mysql
+RUN unzip luasql-mysql-2.4.0-1.src.rock
+RUN sed -i "s/LUA_SYS_VER ?= .*/LUA_SYS_VER ?= 5.1/" luasql/config
+RUN sed -i "s/DRIVER_LIBS_mysql ?= .*/DRIVER_LIBS_mysql ?= -L\/usr\/lib64 -lmysqlclient -lz/" luasql/config
+RUN sed -i "s/LUA_LIBDIR ?= .*/LUA_LIBDIR ?= \$(PREFIX)\/lib64\/lua\/\$(LUA_SYS_VER)/" luasql/config
+RUN cd luasql && make mysql && make install
 
 FROM base as centreon-broker
 COPY . /usr/src/centreon-broker
@@ -16,9 +24,6 @@ RUN cmake -DCMAKE_BUILD_TYPE=Debug -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbi
 RUN make -j5
 RUN make install
 
-# Broker configuration installation
-COPY ./simu/docker/conf/central-broker.xml /etc/centreon-broker/
-
 # Broker simu lua scripts installation
 RUN mkdir -p /usr/share/centreon-broker/lua
 RUN mkdir -p /var/log/centreon-broker
@@ -26,7 +31,8 @@ RUN mkdir -p /var/lib/centreon-broker
 RUN mkdir -p /var/lib/centreon/metrics
 RUN mkdir -p /var/lib/centreon/status
 
-RUN ./simu/docker/install.sh
+# Broker configuration installation
+RUN /usr/src/centreon-broker/simu/docker/install.sh
 
 #RUN /usr/sbin/cbd /etc/centreon-broker/central-broker.xml
 
