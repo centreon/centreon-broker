@@ -10,6 +10,7 @@ local function build(id, name)
 end
 
 local servicegroups = {
+  name = "Service groups",
   -- id: instance id
   -- name: instance name
   -- engine: Monitoring engine name in this instance

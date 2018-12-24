@@ -25,6 +25,7 @@ local function build(internal_id, comment_id, host_id, instance_id)
 end
 
 local comments = {
+  name = "Comments",
   build = function (stack, count)
     local host_count = count.host
     local instance_count = count.instance

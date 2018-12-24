@@ -1,4 +1,5 @@
 local finish = {
+  name = "Finish",
   check = function(conn)
     broker_log:info(0, "No more step")
     local output = os.capture("ps ax | grep \"sbin.cbd\" | grep -v grep | awk '{print $1}' ", 1)

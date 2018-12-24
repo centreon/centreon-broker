@@ -16,6 +16,7 @@ local function build(name, value, host_id)
 end
 
 local custom_variables = {
+  name = "Custom variables",
   build = function (stack, count)
     local cv_count = count.cv
     local host_count = count.host * count.instance

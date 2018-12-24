@@ -11,6 +11,7 @@ local function build(id, name)
 end
 
 local hostgroups_del = {
+  name = "Host groups deletion",
   -- id: instance id
   -- name: instance name
   -- engine: Monitoring engine name in this instance

@@ -33,6 +33,7 @@ local function build_log(id, instance_id, name, address)
 end
 
 local hosts = {
+  name = "Hosts checks",
   -- id: instance id
   -- name: instance name
   -- engine: Monitoring engine name in this instance

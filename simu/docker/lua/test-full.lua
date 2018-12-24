@@ -19,6 +19,7 @@ local step = {
   require('neb.hostgroups'),
   require('neb.hostgroup_members'),
   require('neb.servicegroups'),
+  require('neb.service_checks'),
   require('neb.service_status'),
   require('neb.downtimes'),
   require('neb.host_checks'),
@@ -74,8 +75,15 @@ step[8].count = {
   servicegroup = 20,
 }
 
--- Services per host          => 20
+-- Service checks
 step[9].count = {
+  service = 50,
+  host = step[2].count.host,
+  instance = step[2].count.instance,
+}
+
+-- Services per host          => 20
+step[10].count = {
   service = 50,
   host = step[2].count.host,
   instance = step[2].count.instance,
@@ -83,12 +91,12 @@ step[9].count = {
 }
 
 -- Downtimes per host
-step[10].count = {
+step[11].count = {
   host = 5,
 }
 
 -- Host checks and logs per instance
-step[11].count = {
+step[12].count = {
   host = step[2].count.host,
   instance = step[1].count.instance
 }
@@ -123,6 +131,7 @@ end
 function read()
   if #simu.stack == 0 then
     if not simu.started then
+      print("=> " .. step[simu.step].name)
       broker_log:info(0, "Step " .. simu.step)
       if step[simu.step] then
         broker_log:info(1, "First build")
@@ -133,6 +142,7 @@ function read()
       -- Check of instance in db
       if step[simu.step].check(simu.conn, step[simu.step].count) then
         simu.step = simu.step + 1
+        print("=> " .. step[simu.step].name)
         broker_log:info(0, "Step " .. simu.step)
         if step[simu.step] then
           step[simu.step].build(simu.stack, step[simu.step].count)

@@ -27,6 +27,7 @@ local function build(id)
 end
 
 local downtimes = {
+  name = "Downtimes",
   -- id: instance id
   -- name: instance name
   -- engine: Monitoring engine name in this instance

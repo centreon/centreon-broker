@@ -26,6 +26,7 @@ local function build(id, name, engine, pid)
 end
 
 local instances = {
+  name = "Instances",
   -- id: instance id
   -- name: instance name
   -- engine: Monitoring engine name in this instance

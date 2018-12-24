@@ -10,6 +10,7 @@ local function build(id, name)
 end
 
 local hostgroups = {
+  name = "Host groups",
   -- id: instance id
   -- name: instance name
   -- engine: Monitoring engine name in this instance

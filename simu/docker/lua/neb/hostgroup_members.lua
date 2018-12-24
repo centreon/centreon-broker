@@ -1,5 +1,4 @@
 local function build(group_id, host_id, instance_id)
-  print ("BUILD: GROUP_ID = ", group_id, " HOST_ID = ", host_id, "INST ID = ", instance_id)
   local retval = {
     category = 1,
     element = 11,
@@ -12,6 +11,7 @@ local function build(group_id, host_id, instance_id)
 end
 
 local hostgroup_members = {
+  name = "Host groups members",
   -- id: instance id
   -- name: instance name
   -- engine: Monitoring engine name in this instance

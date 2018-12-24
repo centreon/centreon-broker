@@ -64,6 +64,7 @@ local function build(service_id, host_id, metric)
 end
 
 local service_status = {
+  name = "Service status",
   -- id: instance id
   -- name: instance name
   -- engine: Monitoring engine name in this instance

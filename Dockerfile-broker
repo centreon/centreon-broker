@@ -1,11 +1,13 @@
 FROM centos:latest as base
 MAINTAINER Centreon "support@centreon.com"
 
-RUN yum -y install gcc-c++ cmake make lua-devel qt-devel gnutls-devel rrdtool-devel zlib-devel openssl-devel qt-mysql gdb
+RUN yum -y install gcc-c++ cmake make lua-devel qt-devel gnutls-devel rrdtool-devel zlib-devel openssl-devel qt-mysql gdb zip unzip
 
 RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.1.19/yum/centos7-amd64/rpms/MariaDB-10.1.19-centos7-x86_64-devel.rpm --output /tmp/MariaDB-10.1.19-centos7-x86_64-devel.rpm
 RUN curl https://downloads.mariadb.com/MariaDB/mariadb-10.1.19/yum/centos7-amd64/rpms/MariaDB-10.1.19-centos7-x86_64-common.rpm --output /tmp/MariaDB-10.1.19-centos7-x86_64-common.rpm
-RUN rpm -ivh --nodeps --force /tmp/MariaDB-10.1.19-centos7-x86_64-*.rpm
+RUN curl http://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/l/luarocks-2.3.0-1.el7.x86_64.rpm --output luarocks-2.3.0-1.el7.x86_64.rpm
+RUN rpm -ivh --nodeps --force /tmp/MariaDB-10.1.19-centos7-x86_64-*.rpm /tmp/luarocks-2.3.0-1.el7.x86_64.rpm
+RUN luarocks install luasql-mysql MYSQL_INCDIR=/usr/include/mysql
 
 FROM base as centreon-broker
 COPY . /usr/src/centreon-broker
@@ -24,9 +26,9 @@ RUN mkdir -p /var/lib/centreon-broker
 RUN mkdir -p /var/lib/centreon/metrics
 RUN mkdir -p /var/lib/centreon/status
 
-COPY ./simu/docker/lua/test.lua /usr/share/centreon-broker/lua/
-COPY ./simu/docker/lua/output.lua /usr/share/centreon-broker/lua/
+RUN ./simu/docker/install.sh
 
 #RUN /usr/sbin/cbd /etc/centreon-broker/central-broker.xml
 
 ENTRYPOINT ["/usr/sbin/cbd", "/etc/centreon-broker/central-broker.xml"]
+#ENTRYPOINT ["/usr/bin/tail", "-F", "/var/log/centreon-broker/central-broker-master.log"]

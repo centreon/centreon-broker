@@ -84,6 +84,7 @@ local function build(id, instance_id, name, address)
 end
 
 local hosts = {
+  name = "Hosts",
   -- id: instance id
   -- name: instance name
   -- engine: Monitoring engine name in this instance

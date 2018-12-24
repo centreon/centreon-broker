@@ -79,6 +79,7 @@ local function build(id, host_id, description, dname)
 end
 
 local services = {
+  name = "Services",
   -- id: instance id
   -- name: instance name
   -- engine: Monitoring engine name in this instance
