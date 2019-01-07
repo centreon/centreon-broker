@@ -132,10 +132,10 @@ void mysql_connection::_statement(mysql_task* t) {
   if (task->bind.get())
     bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
 
-  int row_size = 0;
-  if (task->array_size) {
-    mysql_stmt_attr_set(stmt, STMT_ATTR_ARRAY_SIZE, &task->array_size);
-  }
+//  int row_size = 0;
+//  if (task->array_size) {
+//    mysql_stmt_attr_set(stmt, STMT_ATTR_ARRAY_SIZE, &task->array_size);
+//  }
 
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
     logging::debug(logging::low)
