@@ -1980,6 +1980,7 @@ void stream::_process_service_group_member(
       oss << "SQL: could not store service group membership (poller: "
           << sgm.poller_id << ", host: " << sgm.host_id << ", service: "
           << sgm.service_id << ", group: " << sgm.group_id << "): ";
+      _service_group_member_insert << sgm;
       _mysql.run_statement(
                _service_group_member_insert,
                NULL,

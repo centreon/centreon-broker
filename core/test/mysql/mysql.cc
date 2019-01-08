@@ -38,6 +38,8 @@
 #include "com/centreon/broker/neb/module.hh"
 #include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_check.hh"
+#include "com/centreon/broker/neb/service_group.hh"
+#include "com/centreon/broker/neb/service_group_member.hh"
 #include "com/centreon/broker/query_preparator.hh"
 
 using namespace com::centreon::broker;
@@ -1344,6 +1346,80 @@ TEST_F(DatabaseStorageTest, HostParentStatement) {
         thread_id);
 
   ASSERT_TRUE(ms->get_affected_rows(thread_id, host_parent_delete) == 1);
+  ms->commit();
+}
+
+TEST_F(DatabaseStorageTest, ServiceGroupMemberStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  database_config db_cfg(
+    "MySQL",
+    "127.0.0.1",
+    3306,
+    "root",
+    "root",
+    "centreon_storage",
+    5,
+    true,
+    5);
+  std::unique_ptr<mysql> ms(new mysql(db_cfg));
+
+  ms->run_query("DELETE FROM servicegroups");
+  ms->run_query("DELETE FROM services_servicegroups");
+  ms->commit();
+
+  query_preparator::event_unique unique;
+  unique.insert("servicegroup_id");
+  unique.insert("host_id");
+  unique.insert("service_id");
+  query_preparator
+    qp(neb::service_group_member::static_type(), unique);
+  mysql_stmt service_group_member_insert(qp.prepare_insert(*ms));
+
+  query_preparator::event_unique unique1;
+  unique1.insert("servicegroup_id");
+  query_preparator
+    qp1(neb::service_group::static_type(), unique1);
+  mysql_stmt service_group_insupdate(qp1.prepare_insert_or_update(*ms));
+
+  neb::service_group_member sgm;
+  sgm.enabled = false;
+  sgm.group_id = 8;
+  sgm.group_name = "Test service group";
+  sgm.host_id = 24;
+  sgm.service_id = 78;
+  sgm.poller_id = 1;
+
+  service_group_member_insert << sgm;
+
+  std::promise<mysql_result> promise;
+
+  int thread_id(ms->run_statement(
+                      service_group_member_insert,
+                      &promise,
+                      "Error: service group not defined", true));
+  ASSERT_THROW(promise.get_future().get(), std::exception);
+  neb::service_group sg;
+  sg.id = 8;
+  sg.name = "Test servicegroup";
+  sg.enabled = true;
+  sg.poller_id = 1;
+
+  service_group_insupdate << sg;
+
+  ms->run_statement(
+                 service_group_insupdate, NULL,
+                 "Error: Unable to create service group", true,
+                 thread_id);
+
+  promise = std::promise<mysql_result>();
+  service_group_member_insert << sgm;
+  ms->run_statement(
+                 service_group_member_insert,
+                 &promise,
+                 "Error: service group not defined", true,
+                 thread_id);
+  ASSERT_NO_THROW(promise.get_future().get());
   ms->commit();
 }
 
