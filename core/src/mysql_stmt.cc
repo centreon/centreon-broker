@@ -29,11 +29,9 @@ using namespace com::centreon::broker;
 
 mysql_stmt::mysql_stmt()
  : _id(0),
-   _param_count(0),
-   _array_size(0) {}
+   _param_count(0) {}
 
-mysql_stmt::mysql_stmt(std::string const& query, bool named)
- : _array_size(0) {
+mysql_stmt::mysql_stmt(std::string const& query, bool named) {
   mysql_bind_mapping bind_mapping;
   std::hash<std::string> hash_fn;
   if (named) {
@@ -107,8 +105,7 @@ mysql_stmt::mysql_stmt(std::string const& query,
                        mysql_bind_mapping const& bind_mapping)
  : _id(std::hash<std::string>{}(query)),
    _query(query),
-   _bind_mapping(bind_mapping),
-   _array_size(0) {
+   _bind_mapping(bind_mapping) {
   if (bind_mapping.empty())
     _param_count = _compute_param_count(query);
   else
@@ -119,7 +116,6 @@ mysql_stmt::mysql_stmt(std::string const& query,
 mysql_stmt::mysql_stmt(mysql_stmt&& other)
  : _id(other._id),
    _param_count(other._param_count),
-   _array_size(other._array_size),
    _query(other._query),
    _bind_mapping(other._bind_mapping),
    _bind(std::move(other._bind)) {}
@@ -128,7 +124,6 @@ mysql_stmt& mysql_stmt::operator=(mysql_stmt const& other) {
   if (this != &other) {
     _id = other._id;
     _param_count = other._param_count;
-    _array_size = other._array_size;
     _query = other._query;
     _bind_mapping = other._bind_mapping;
   }
@@ -565,18 +560,6 @@ void mysql_stmt::bind_value_as_null(std::string const& name) {
 
 std::string const& mysql_stmt::get_query() const {
   return _query;
-}
-
-void mysql_stmt::set_array_size(int size) {
-  _array_size = size;
-  if (_bind.get())
-    _bind->set_size(_array_size * _param_count);
-  else
-    _bind.reset(new database::mysql_bind(_array_size * _param_count));
-}
-
-int mysql_stmt::get_array_size() const {
-  return _array_size;
 }
 
 int mysql_stmt::get_param_count() const {

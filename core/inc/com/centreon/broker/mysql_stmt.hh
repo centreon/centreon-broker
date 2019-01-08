@@ -73,8 +73,6 @@ class                           mysql_stmt {
   void                          bind_value_as_null(int range);
   void                          bind_value_as_null(std::string const& key);
   std::string const&            get_query() const;
-  int                           get_array_size() const;
-  void                          set_array_size(int size);
   int                           get_param_count() const;
 
  private:
@@ -82,7 +80,6 @@ class                           mysql_stmt {
 
   int                           _id;
   int                           _param_count;
-  int                           _array_size;
   std::string                   _query;
 
   std::unique_ptr<database::mysql_bind>

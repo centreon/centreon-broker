@@ -157,7 +157,6 @@ class                    mysql_task_statement : public mysql_task {
                             promise(promise),
                             statement_id(stmt.get_id()),
                             param_count(stmt.get_param_count()),
-                            array_size(stmt.get_array_size()),
                             bind(stmt.get_bind()),
                             error_msg(error_msg),
                             fatal(fatal) {}
@@ -165,7 +164,6 @@ class                    mysql_task_statement : public mysql_task {
   std::promise<mysql_result>*
                          promise;
   int                    param_count;
-  int                    array_size;
   std::unique_ptr<database::mysql_bind>
                          bind;
   std::string            error_msg;
