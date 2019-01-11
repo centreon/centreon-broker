@@ -23,6 +23,7 @@ local step = {
   require('neb.service_status'),
   require('neb.downtimes'),
   require('neb.host_checks'),
+  require('bam.truncate'),
   require('neb.finish'),
 }
 
@@ -99,6 +100,11 @@ step[11].count = {
 step[12].count = {
   host = step[2].count.host,
   instance = step[1].count.instance
+}
+
+-- Table truncate signal
+step[13].count = {
+  update_started = true,
 }
 
 function os.capture(cmd, raw)
