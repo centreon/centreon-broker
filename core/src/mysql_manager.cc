@@ -133,7 +133,7 @@ std::map<std::string, std::string> mysql_manager::get_stats() const {
     value = std::to_string(_connection[i]->get_tasks_count())
               + " waiting tasks";
     if (count == 0)
-      retval.insert(std::make_pair(key, "no task"));
+      retval.insert(std::make_pair(key, "0 waiting task"));
     else
       retval.insert(std::make_pair(key, value));
   }
