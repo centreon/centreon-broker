@@ -1266,7 +1266,8 @@ int neb::callback_host(int callback_type, void* data) {
       for (customvariablesmember* cvar(h->custom_variables);
            cvar;
            cvar = cvar->next)
-        if (cvar->variable_name
+        if (cvar->is_sent
+            && cvar->variable_name
             && strcmp(cvar->variable_name, "HOST_ID")) {
           nebstruct_custom_variable_data data;
           memset(&data, 0, sizeof(data));
@@ -1960,7 +1961,8 @@ int neb::callback_service(int callback_type, void* data) {
       for (customvariablesmember* cvar(s->custom_variables);
            cvar;
            cvar = cvar->next)
-        if (cvar->variable_name
+        if (cvar->is_sent
+            && cvar->variable_name
             && strcmp(cvar->variable_name, "HOST_ID")
             && strcmp(cvar->variable_name, "SERVICE_ID")) {
           nebstruct_custom_variable_data data;
