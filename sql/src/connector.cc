@@ -81,12 +81,13 @@ void connector::connect_to(
                   database_config const& dbcfg,
                   unsigned int cleanup_check_interval,
                   unsigned int instance_timeout,
-                  bool with_state_events) {
+                  bool with_state_events,
+                  bool enable_cmd_cache) {
   _cleanup_check_interval = cleanup_check_interval;
   _dbcfg = dbcfg;
   _instance_timeout = instance_timeout;
   _with_state_events = with_state_events;
-  return ;
+  _enable_cmd_cache = enable_cmd_cache;
 }
 
 /**
@@ -99,5 +100,6 @@ misc::shared_ptr<io::stream> connector::open() {
                                              _dbcfg,
                                              _cleanup_check_interval,
                                              _instance_timeout,
-                                             _with_state_events)));
+                                             _with_state_events,
+                                             _enable_cmd_cache)));
 }

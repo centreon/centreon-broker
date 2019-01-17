@@ -43,7 +43,8 @@ namespace          sql {
                      database_config const& dbcfg,
                      unsigned int cleanup_check_interval,
                      unsigned int instance_timeout,
-                     bool with_state_events);
+                     bool with_state_events,
+                     bool enable_cmd_cache);
                    ~stream();
     int            flush();
     bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
@@ -163,7 +164,12 @@ namespace          sql {
     timestamp                   _oldest_timestamp;
     std::map<unsigned int, unsigned int>
                                 _cache_host_instance;
+    std::map<unsigned int, size_t>
+                                _cache_hst_cmd;
+    std::map<std::pair<unsigned int, unsigned int>, size_t>
+                                _cache_svc_cmd;
     mutable std::mutex          _stat_mutex;
+    bool                        _enable_cmd_cache;
   };
 }
 

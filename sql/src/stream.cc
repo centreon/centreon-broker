@@ -832,19 +832,31 @@ void stream::_process_host_check(
     }
 
     // Processing.
-    _host_check_update << hc;
-    std::ostringstream oss;
-    oss << "SQL: could not store host check (host: " << hc.host_id << "): ";
+    size_t str_hash;
+    bool store(true);
+    if (_enable_cmd_cache) {
+      size_t str_hash = std::hash<std::string>{}(hc.command_line.toStdString());
+      // Did the command changed since last time?
+      if (_cache_hst_cmd[hc.host_id] != str_hash)
+        _cache_hst_cmd[hc.host_id] = str_hash;
+      else
+        store = false;
+    }
+    if (store) {
+      _host_check_update << hc;
+      std::ostringstream oss;
+      oss << "SQL: could not store host check (host: " << hc.host_id << "): ";
 
-    int thread_id(
-          _cache_host_instance[hc.host_id] % _mysql.connections_count());
-    _mysql.run_statement(_host_check_update, NULL, oss.str(), true,
-        thread_id);
+      int thread_id(
+            _cache_host_instance[hc.host_id] % _mysql.connections_count());
+      _mysql.run_statement(_host_check_update, NULL, oss.str(), true,
+          thread_id);
 
-    if (_mysql.get_affected_rows(thread_id) != 1)
-      logging::error(logging::medium) << "SQL: host check could not "
-           "be updated because host " << hc.host_id
-        << " was not found in database";
+      if (_mysql.get_affected_rows(thread_id) != 1)
+        logging::error(logging::medium) << "SQL: host check could not "
+             "be updated because host " << hc.host_id
+          << " was not found in database";
+    }
   }
   else
     // Do nothing.
@@ -1756,21 +1768,33 @@ void stream::_process_service_check(
     }
 
     // Processing.
-    _service_check_update << sc;
-    std::ostringstream oss;
-    oss << "SQL: could not store service check (host: "
-        << sc.host_id << ", service: " << sc.service_id << "): ";
-    int thread_id(_mysql.run_statement(
+    size_t str_hash;
+    bool store(true);
+    if (_enable_cmd_cache) {
+      str_hash = std::hash<std::string>{}(sc.command_line.toStdString());
+      // Did the command changed since last time?
+      if (_cache_svc_cmd[std::make_pair(sc.host_id, sc.service_id)] != str_hash)
+        _cache_svc_cmd[std::make_pair(sc.host_id, sc.service_id)] = str_hash;
+      else
+        store = false;
+    }
+    if (store) {
+      std::ostringstream oss;
+      oss << "SQL: could not store service check (host: "
+          << sc.host_id << ", service: " << sc.service_id << "): ";
+      _service_check_update << sc;
+      int thread_id(_mysql.run_statement(
           _service_check_update,
           NULL,
           oss.str(), true,
           _cache_host_instance[sc.host_id] % _mysql.connections_count()));
 
-    oss.str("");
-    oss << "SQL: service check could "
-           "not be updated because service (" << sc.host_id << ", "
-        << sc.service_id << ") was not found in database";
-    _mysql.check_affected_rows(thread_id, _service_check_update, oss.str());
+      oss.str("");
+      oss << "SQL: service check could "
+             "not be updated because service (" << sc.host_id << ", "
+          << sc.service_id << ") was not found in database";
+      _mysql.check_affected_rows(thread_id, _service_check_update, oss.str());
+    }
   }
   else
     // Do nothing.
@@ -2354,7 +2378,8 @@ stream::stream(
           database_config const& dbcfg,
           unsigned int cleanup_check_interval,
           unsigned int instance_timeout,
-          bool with_state_events)
+          bool with_state_events,
+          bool enable_cmd_cache)
   : _mysql(dbcfg),
     _cleanup_thread(
       dbcfg.get_type(),
@@ -2368,7 +2393,8 @@ stream::stream(
     _pending_events(0),
     _with_state_events(with_state_events),
     _instance_timeout(instance_timeout),
-    _oldest_timestamp(std::numeric_limits<time_t>::max()) {
+    _oldest_timestamp(std::numeric_limits<time_t>::max()),
+    _enable_cmd_cache(enable_cmd_cache) {
   // Get oudated instances.
   _get_all_outdated_instances_from_db();
 
@@ -2426,6 +2452,8 @@ void stream::update() {
   _cache_clean();
   _cache_create();
   _host_instance_cache_create();
+  _cache_svc_cmd.clear();
+  _cache_hst_cmd.clear();
 }
 
 /**

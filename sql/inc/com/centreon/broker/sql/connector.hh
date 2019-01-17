@@ -43,7 +43,8 @@ namespace                        sql {
                                    database_config const& dbcfg,
                                    unsigned int cleanup_check_interval = 0,
                                    unsigned int instance_timeout = 15,
-                                   bool with_state_events = false);
+                                   bool with_state_events = false,
+                                   bool enable_command_cache = false);
     misc::shared_ptr<io::stream> open();
 
   private:
@@ -51,6 +52,7 @@ namespace                        sql {
     database_config              _dbcfg;
     unsigned int                 _instance_timeout;
     bool                         _with_state_events;
+    bool                         _enable_cmd_cache;
   };
 }
 
