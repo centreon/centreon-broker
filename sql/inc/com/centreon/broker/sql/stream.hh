@@ -179,6 +179,10 @@ namespace          sql {
     std::map<unsigned int, stored_timestamp>
                                 _stored_timestamps;
     timestamp                   _oldest_timestamp;
+    std::map<unsigned int, unsigned int>
+                                _cache_hst_cmd;
+    std::map<std::pair<unsigned int, unsigned int>, unsigned int>
+                                _cache_svc_cmd;
   };
 }
 

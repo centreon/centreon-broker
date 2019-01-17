@@ -984,19 +984,32 @@ void stream::_process_host_check(
     }
 
     // Processing.
-    _host_check_update << hc;
-    try {
-      _host_check_update.run_statement();
+    unsigned int str_hash(qHash(hc.command_line));
+    // Did the command changed since last time?
+    if (_cache_hst_cmd[hc.host_id] != str_hash) {
+      logging::debug(logging::low)
+        << "SQL: host check command (host: " << hc.host_id
+        << ", command: " << hc.command_line << ") changed - database updated";
+      _cache_hst_cmd[hc.host_id] = str_hash;
+      _host_check_update << hc;
+      try {
+        _host_check_update.run_statement();
+      }
+      catch (std::exception const& e) {
+        throw (exceptions::msg()
+               << "SQL: could not store host check (host: " << hc.host_id
+               << "): " << e.what());
+      }
+      if (_host_check_update.num_rows_affected() != 1)
+        logging::error(logging::medium) << "SQL: host check could not "
+             "be updated because host " << hc.host_id
+          << " was not found in database";
     }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store host check (host: " << hc.host_id
-             << "): " << e.what());
+    else {
+      logging::debug(logging::low)
+        << "SQL: host check command (host: " << hc.host_id
+        << ", command: " << hc.command_line << ") did not changed";
     }
-    if (_host_check_update.num_rows_affected() != 1)
-      logging::error(logging::medium) << "SQL: host check could not "
-           "be updated because host " << hc.host_id
-        << " was not found in database";
   }
   else
     // Do nothing.
@@ -1907,20 +1920,35 @@ void stream::_process_service_check(
     }
 
     // Processing.
-    _service_check_update << sc;
-    try {
-      _service_check_update.run_statement();
+    unsigned int str_hash(qHash(sc.command_line));
+    // Did the command changed since last time?
+    if (_cache_svc_cmd[std::make_pair(sc.host_id, sc.service_id)] != str_hash) {
+      logging::debug(logging::low)
+        << "SQL: service check command (host: " << sc.host_id
+        << ", service: " << sc.service_id << ", command: "
+        << sc.command_line << ") changed - database updated";
+      _cache_svc_cmd[std::make_pair(sc.host_id, sc.service_id)] = str_hash;
+      _service_check_update << sc;
+      try {
+        _service_check_update.run_statement();
+      }
+      catch (std::exception const& e) {
+        throw (exceptions::msg()
+               << "SQL: could not store service check (host: "
+               << sc.host_id << ", service: " << sc.service_id << "): "
+               << e.what());
+      }
+      if (_service_check_update.num_rows_affected() != 1)
+        logging::error(logging::medium) << "SQL: service check could "
+             "not be updated because service (" << sc.host_id << ", "
+          << sc.service_id << ") was not found in database";
     }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not store service check (host: "
-             << sc.host_id << ", service: " << sc.service_id << "): "
-             << e.what());
+    else {
+      logging::debug(logging::low)
+        << "SQL: service check command (host: " << sc.host_id
+        << ", service: " << sc.service_id << ", command: "
+        << sc.command_line << ") did not changed";
     }
-    if (_service_check_update.num_rows_affected() != 1)
-      logging::error(logging::medium) << "SQL: service check could "
-           "not be updated because service (" << sc.host_id << ", "
-        << sc.service_id << ") was not found in database";
   }
   else
     // Do nothing.
