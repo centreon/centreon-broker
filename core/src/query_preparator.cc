@@ -305,8 +305,6 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
     }
     // Part of ID field.
     else {
-      //FIXME DBR Here, I don't know how to do things since we have two
-      //possible values to manage.
       where.append("((");
       where.append(entry_name);
       where.append("=?) OR (");
