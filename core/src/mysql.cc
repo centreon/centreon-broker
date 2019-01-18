@@ -218,19 +218,6 @@ int mysql::get_last_insert_id(int thread_id) {
   return _connection[thread_id]->get_last_insert_id();
 }
 
-int mysql::run_statement(mysql_stmt& stmt,
-             std::promise<mysql_result>* promise,
-             std::string const& error_msg, bool fatal,
-             int thread_id) {
-  _check_errors();
-  if (thread_id < 0)
-    // Here, we use _current_thread
-    thread_id = _get_best_connection();
-
-  _connection[thread_id]->run_statement(stmt, promise, error_msg, fatal);
-  return thread_id;
-}
-
 void mysql::prepare_statement(mysql_stmt const& stmt) {
   for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
          it(_connection.begin()),

@@ -465,7 +465,7 @@ TEST_F(DatabaseStorageTest, RepeatPrepareQuery) {
     stmt.bind_value_as_f32(9, 18.0);
     stmt.bind_value_as_i32(10, i);
 
-    ms->run_statement(stmt);
+    ms->run_statement(stmt, nullptr);
   }
   ms->commit();
 }
@@ -1200,11 +1200,12 @@ TEST_F(DatabaseStorageTest, DowntimeStatement) {
   d.was_started = true;
 
   downtime_insupdate << d;
-  int thread_id(ms->run_statement(downtime_insupdate));
+  std::promise<int> promise;
+  ms->run_statement(downtime_insupdate, &promise);
 
   std::cout << "downtime_insupdate: " << downtime_insupdate.get_query() << std::endl;
 
-  ASSERT_TRUE(ms->get_affected_rows(thread_id, downtime_insupdate) == 1);
+  ASSERT_TRUE(promise.get_future().get() == 1);
   ms->commit();
 }
 

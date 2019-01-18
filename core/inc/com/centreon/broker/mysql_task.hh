@@ -34,6 +34,8 @@ class                    mysql_task {
                            COMMIT,
                            PREPARE,
                            STATEMENT,
+                           STATEMENT_RES,
+                           STATEMENT_AR,
                            LAST_INSERT_ID,
                            CHECK_AFFECTED_ROWS,
                            AFFECTED_ROWS,
@@ -146,23 +148,85 @@ class                    mysql_task_prepare : public mysql_task {
   std::string            query;
 };
 
+template<typename Promise>
+class                    mysql_task_statement_cb : public mysql_task {
+ public:
+                         mysql_task_statement_cb(
+                           mysql_stmt& stmt,
+                           Promise* promise,
+                           std::string const& error_msg,
+                           bool fatal);
+  int                    statement_id;
+  int                    param_count;
+  Promise*               promise;
+  std::unique_ptr<database::mysql_bind>
+                         bind;
+  std::string            error_msg;
+  bool                   fatal;
+};
+
 class                    mysql_task_statement : public mysql_task {
  public:
                          mysql_task_statement(
                            mysql_stmt& stmt,
-                           std::promise<mysql_result>* promise,
                            std::string const& error_msg,
                            bool fatal)
                           : mysql_task(mysql_task::STATEMENT),
-                            promise(promise),
                             statement_id(stmt.get_id()),
                             param_count(stmt.get_param_count()),
                             bind(stmt.get_bind()),
                             error_msg(error_msg),
                             fatal(fatal) {}
   int                    statement_id;
+  int                    param_count;
+  std::unique_ptr<database::mysql_bind>
+                         bind;
+  std::string            error_msg;
+  bool                   fatal;
+};
+
+template<>
+class                    mysql_task_statement_cb <std::promise<mysql_result> > : public mysql_task {
+ public:
+                         mysql_task_statement_cb(
+                           mysql_stmt& stmt,
+                           std::promise<mysql_result>* promise,
+                           std::string const& error_msg,
+                           bool fatal)
+                          : mysql_task(mysql_task::STATEMENT_RES),
+                            promise(promise),
+                            statement_id(stmt.get_id()),
+                            param_count(stmt.get_param_count()),
+                            bind(stmt.get_bind()),
+                            error_msg(error_msg),
+                            fatal(fatal) {}
   std::promise<mysql_result>*
                          promise;
+  int                    statement_id;
+  int                    param_count;
+  std::unique_ptr<database::mysql_bind>
+                         bind;
+  std::string            error_msg;
+  bool                   fatal;
+};
+
+template<>
+class                    mysql_task_statement_cb <std::promise<int> > : public mysql_task {
+ public:
+                         mysql_task_statement_cb(
+                           mysql_stmt& stmt,
+                           std::promise<int>* promise,
+                           std::string const& error_msg,
+                           bool fatal)
+                          : mysql_task(mysql_task::STATEMENT_AR),
+                            promise(promise),
+                            statement_id(stmt.get_id()),
+                            param_count(stmt.get_param_count()),
+                            bind(stmt.get_bind()),
+                            error_msg(error_msg),
+                            fatal(fatal) {}
+  std::promise<int>*     promise;
+  int                    statement_id;
   int                    param_count;
   std::unique_ptr<database::mysql_bind>
                          bind;

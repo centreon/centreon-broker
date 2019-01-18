@@ -30,6 +30,8 @@ void (mysql_connection::* const mysql_connection::_task_processing_table[])(mysq
   &mysql_connection::_commit,
   &mysql_connection::_prepare,
   &mysql_connection::_statement,
+  &mysql_connection::_statement_res,
+  &mysql_connection::_statement_ar,
   &mysql_connection::_get_last_insert_id_sync,
   &mysql_connection::_check_affected_rows,
   &mysql_connection::_get_affected_rows_sync,
@@ -117,7 +119,8 @@ void mysql_connection::_prepare(mysql_task* t) {
 }
 
 void mysql_connection::_statement(mysql_task* t) {
-  mysql_task_statement* task(static_cast<mysql_task_statement*>(t));
+  mysql_task_statement* task(
+      static_cast<mysql_task_statement*>(t));
   logging::debug(logging::low)
     << "mysql: execute statement: "
     << task->statement_id;
@@ -132,24 +135,73 @@ void mysql_connection::_statement(mysql_task* t) {
   if (task->bind.get())
     bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
 
-//  int row_size = 0;
-//  if (task->array_size) {
-//    mysql_stmt_attr_set(stmt, STMT_ATTR_ARRAY_SIZE, &task->array_size);
-//  }
+  if (bb && mysql_stmt_bind_param(stmt, bb)) {
+    logging::debug(logging::low)
+      << "mysql: statement binding failed ("
+      << mysql_stmt_error(stmt) << ")";
+    if (task->fatal)
+      mysql_manager::instance().set_error(mysql_stmt_error(stmt), task->fatal);
+    else {
+      logging::error(logging::medium)
+        << "mysql: Error while binding values in statement: "
+        << mysql_stmt_error(stmt);
+    }
+  }
+  else {
+    int attempts(0);
+    while (true) {
+      if (mysql_stmt_execute(stmt)) {
+        if (mysql_stmt_errno(stmt) != 1213
+            && mysql_stmt_errno(stmt) != 1205)  // Dead Lock error
+          attempts = MAX_ATTEMPTS;
+
+        mysql_commit(_conn);
+
+        if (++attempts >= MAX_ATTEMPTS) {
+          if (task->fatal)
+            mysql_manager::instance().set_error(mysql_stmt_error(stmt), task->fatal);
+          else {
+            logging::error(logging::medium)
+              << "mysql: Error while sending prepared query: "
+              << mysql_stmt_error(stmt)
+              << " (" << task->error_msg << ")";
+          }
+          break;
+        }
+      }
+      else
+        break;
+      std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+  }
+}
+
+void mysql_connection::_statement_res(mysql_task* t) {
+  mysql_task_statement_cb<std::promise<mysql_result>>* task(
+      static_cast<mysql_task_statement_cb<std::promise<mysql_result>>*>(t));
+  logging::debug(logging::low)
+    << "mysql: execute statement: "
+    << task->statement_id;
+  MYSQL_STMT* stmt(_stmt[task->statement_id]);
+  if (!stmt) {
+    logging::debug(logging::low)
+      << "mysql: no statement to execute";
+    mysql_manager::instance().set_error("statement not prepared", true);
+    return ;
+  }
+  MYSQL_BIND* bb(NULL);
+  if (task->bind.get())
+    bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
 
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
     logging::debug(logging::low)
       << "mysql: statement binding failed ("
       << mysql_stmt_error(stmt) << ")";
     if (task->fatal) {
-      if (task->promise) {
-        exceptions::msg e;
-        e << mysql_stmt_error(stmt);
-        task->promise->set_exception(
-                         std::make_exception_ptr<exceptions::msg>(e));
-      }
-      else
-        mysql_manager::instance().set_error(mysql_stmt_error(stmt), task->fatal);
+      exceptions::msg e;
+      e << mysql_stmt_error(stmt);
+      task->promise->set_exception(
+                       std::make_exception_ptr<exceptions::msg>(e));
     }
     else {
       logging::error(logging::medium)
@@ -169,14 +221,10 @@ void mysql_connection::_statement(mysql_task* t) {
 
         if (++attempts >= MAX_ATTEMPTS) {
           if (task->fatal) {
-            if (task->promise) {
-              exceptions::msg e;
-              e << mysql_stmt_error(stmt);
-              task->promise->set_exception(
-                  std::make_exception_ptr<exceptions::msg>(e));
-            }
-            else
-              mysql_manager::instance().set_error(mysql_stmt_error(stmt), task->fatal);
+            exceptions::msg e;
+            e << mysql_stmt_error(stmt);
+            task->promise->set_exception(
+                std::make_exception_ptr<exceptions::msg>(e));
           }
           else {
             logging::error(logging::medium)
@@ -188,45 +236,111 @@ void mysql_connection::_statement(mysql_task* t) {
         }
       }
       else {
-        if (task->promise) {
-          mysql_result res(this, task->statement_id);
-          MYSQL_STMT* stmt(_stmt[task->statement_id]);
-          MYSQL_RES* prepare_meta_result(mysql_stmt_result_metadata(stmt));
-          if (prepare_meta_result == NULL) {
-            if (mysql_stmt_errno(stmt)) {
-              exceptions::msg e;
-              e << mysql_stmt_error(stmt);
-              task->promise->set_exception(
-                  std::make_exception_ptr<exceptions::msg>(e));
-            }
-            else
-              task->promise->set_value(nullptr);
+        mysql_result res(this, task->statement_id);
+        MYSQL_STMT* stmt(_stmt[task->statement_id]);
+        MYSQL_RES* prepare_meta_result(mysql_stmt_result_metadata(stmt));
+        if (prepare_meta_result == NULL) {
+          if (mysql_stmt_errno(stmt)) {
+            exceptions::msg e;
+            e << mysql_stmt_error(stmt);
+            task->promise->set_exception(
+                std::make_exception_ptr<exceptions::msg>(e));
+          }
+          else
+            task->promise->set_value(nullptr);
+        }
+        else {
+          int size(mysql_num_fields(prepare_meta_result));
+          std::unique_ptr<database::mysql_bind> bind(new database::mysql_bind(size, STR_SIZE));
+
+          if (mysql_stmt_bind_result(stmt, bind->get_bind())) {
+            exceptions::msg e;
+            e << mysql_stmt_error(stmt);
+            task->promise->set_exception(
+                std::make_exception_ptr<exceptions::msg>(e));
           }
           else {
-            int size(mysql_num_fields(prepare_meta_result));
-            std::unique_ptr<database::mysql_bind> bind(new database::mysql_bind(size, STR_SIZE));
-
-            if (mysql_stmt_bind_result(stmt, bind->get_bind())) {
+            if (mysql_stmt_store_result(stmt)) {
               exceptions::msg e;
               e << mysql_stmt_error(stmt);
               task->promise->set_exception(
                   std::make_exception_ptr<exceptions::msg>(e));
             }
-            else {
-              if (mysql_stmt_store_result(stmt)) {
-                exceptions::msg e;
-                e << mysql_stmt_error(stmt);
-                task->promise->set_exception(
-                    std::make_exception_ptr<exceptions::msg>(e));
-              }
-              // Here, we have the first row.
-              res.set(prepare_meta_result);
-              bind->set_empty(true);
-            }
-            res.set_bind(move(bind));
-            task->promise->set_value(std::move(res));
+            // Here, we have the first row.
+            res.set(prepare_meta_result);
+            bind->set_empty(true);
           }
+          res.set_bind(move(bind));
+          task->promise->set_value(std::move(res));
         }
+        break;
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+  }
+}
+
+void mysql_connection::_statement_ar(mysql_task* t) {
+  mysql_task_statement_cb<std::promise<int>>* task(
+      static_cast<mysql_task_statement_cb<std::promise<int>>*>(t));
+  logging::debug(logging::low)
+    << "mysql: execute statement: "
+    << task->statement_id;
+  MYSQL_STMT* stmt(_stmt[task->statement_id]);
+  if (!stmt) {
+    logging::debug(logging::low)
+      << "mysql: no statement to execute";
+    mysql_manager::instance().set_error("statement not prepared", true);
+    return ;
+  }
+  MYSQL_BIND* bb(NULL);
+  if (task->bind.get())
+    bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
+
+  if (bb && mysql_stmt_bind_param(stmt, bb)) {
+    logging::debug(logging::low)
+      << "mysql: statement binding failed ("
+      << mysql_stmt_error(stmt) << ")";
+    if (task->fatal) {
+        exceptions::msg e;
+        e << mysql_stmt_error(stmt);
+        task->promise->set_exception(
+                         std::make_exception_ptr<exceptions::msg>(e));
+    }
+    else {
+      logging::error(logging::medium)
+        << "mysql: Error while binding values in statement: "
+        << mysql_stmt_error(stmt);
+    }
+  }
+  else {
+    int attempts(0);
+    while (true) {
+      if (mysql_stmt_execute(stmt)) {
+        if (mysql_stmt_errno(stmt) != 1213
+            && mysql_stmt_errno(stmt) != 1205)  // Dead Lock error
+          attempts = MAX_ATTEMPTS;
+
+        mysql_commit(_conn);
+
+        if (++attempts >= MAX_ATTEMPTS) {
+          if (task->fatal) {
+            exceptions::msg e;
+            e << mysql_stmt_error(stmt);
+            task->promise->set_exception(
+                std::make_exception_ptr<exceptions::msg>(e));
+          }
+          else {
+            logging::error(logging::medium)
+              << "mysql: Error while sending prepared query: "
+              << mysql_stmt_error(stmt)
+              << " (" << task->error_msg << ")";
+          }
+          break;
+        }
+      }
+      else {
+        task->promise->set_value(mysql_stmt_affected_rows(_stmt[task->statement_id]));
         break;
       }
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -455,12 +569,6 @@ int mysql_connection::get_last_insert_id() {
  */
 void mysql_connection::commit(std::promise<bool>* promise, std::atomic_int& count) {
   _push(std::make_shared<mysql_task_commit>(promise, count));
-}
-
-void mysql_connection::run_statement(mysql_stmt& stmt,
-                     std::promise<mysql_result>* p,
-                     std::string const& error_msg, bool fatal) {
-  _push(std::make_shared<mysql_task_statement>(stmt, p, error_msg, fatal));
 }
 
 void mysql_connection::prepare_query(int stmt_id, std::string const& query) {

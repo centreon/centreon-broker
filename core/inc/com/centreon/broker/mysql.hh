@@ -43,14 +43,39 @@ class                 mysql {
   void                commit(int thread_id = -1);
   int                 run_query(
                         std::string const& query,
-                        std::promise<mysql_result>* p = NULL,
+                        std::promise<mysql_result>* p = nullptr,
                         std::string const& error_msg = "", bool fatal = false,
                         int thread = -1);
+
   int                 run_statement(
                         mysql_stmt& stmt,
-                        std::promise<mysql_result>* p = NULL,
+                        std::nullptr_t,
                         std::string const& error_msg = "", bool fatal = false,
-                        int thread = -1);
+                        int thread_id = -1) {
+    _check_errors();
+    if (thread_id < 0)
+      // Here, we use _current_thread
+      thread_id = _get_best_connection();
+
+    _connection[thread_id]->run_statement(stmt, error_msg, fatal);
+    return thread_id;
+  }
+
+  template<typename Promise>
+  int                 run_statement(
+                        mysql_stmt& stmt,
+                        Promise* promise,
+                        std::string const& error_msg = "", bool fatal = false,
+                        int thread_id = -1) {
+    _check_errors();
+    if (thread_id < 0)
+      // Here, we use _current_thread
+      thread_id = _get_best_connection();
+
+    _connection[thread_id]->run_statement<Promise>(stmt, promise, error_msg, fatal);
+    return thread_id;
+  }
+
   bool                fetch_row(mysql_result& res);
   int                 get_last_insert_id(int thread_id);
   void                check_affected_rows(

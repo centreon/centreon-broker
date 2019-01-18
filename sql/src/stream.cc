@@ -553,13 +553,14 @@ void stream::_process_custom_variable_status(
       << cvs.service_id << "): ";
 
   _custom_variable_status_update << cvs;
-  int thread_id(_mysql.run_statement(
-                         _custom_variable_status_update,
-                         NULL,
-                         oss.str(), true,
-                         _cache_host_instance[cvs.host_id]
-                              % _mysql.connections_count()));
-  if (_mysql.get_affected_rows(thread_id, _custom_variable_status_update) != 1)
+  std::promise<int> promise;
+  _mysql.run_statement(
+      _custom_variable_status_update,
+      &promise,
+      oss.str(), true,
+      _cache_host_instance[cvs.host_id]
+      % _mysql.connections_count());
+  if (promise.get_future().get() != 1)
     logging::error(logging::medium) << "SQL: custom variable ("
       << cvs.host_id << ", " << cvs.service_id << ", " << cvs.name
       << ") was not updated because it was not found in database";
@@ -849,10 +850,11 @@ void stream::_process_host_check(
 
       int thread_id(
             _cache_host_instance[hc.host_id] % _mysql.connections_count());
-      _mysql.run_statement(_host_check_update, NULL, oss.str(), true,
+      std::promise<int> promise;
+      _mysql.run_statement(_host_check_update, &promise, oss.str(), true,
           thread_id);
 
-      if (_mysql.get_affected_rows(thread_id) != 1)
+      if (promise.get_future().get() != 1)
         logging::error(logging::medium) << "SQL: host check could not "
              "be updated because host " << hc.host_id
           << " was not found in database";
@@ -1441,7 +1443,6 @@ void stream::_process_issue(
  *
  *  @param[in] e Uncasted issue parent.
  */
-//FIXME DBR
 void stream::_process_issue_parent(
                misc::shared_ptr<io::data> const& e) {
   // Issue parent object.
@@ -1574,11 +1575,12 @@ void stream::_process_issue_parent(
     << "SQL: updating issue parenting between child " << child_id
     << " and parent " << parent_id << " (start: " << ip.start_time
     << ", end: " << ip.end_time << ")";
-  int thread_id(_mysql.run_statement(
-                         _issue_parent_update,
-                         NULL,
-                         "SQL: issue parent update query failed"));
-  if (_mysql.get_affected_rows(thread_id) <= 0) {
+  std::promise<int> promise;
+  _mysql.run_statement(
+      _issue_parent_update,
+      &promise,
+      "SQL: issue parent update query failed");
+  if (promise.get_future().get() <= 0) {
     if (ip.end_time != (time_t)-1)
       _issue_parent_insert.bind_value_as_u32(
         ":end_time",
@@ -2153,14 +2155,15 @@ void stream::_process_service_status(
         << ss.host_id << ", service: " << ss.service_id
         << "): ";
     _service_status_update << ss;
-    int thread_id(_mysql.run_statement(
-                           _service_status_update,
-                           NULL,
-                           oss.str(), true,
-                           _cache_host_instance[ss.host_id]
-                                % _mysql.connections_count()));
+    std::promise<int> promise;
+    _mysql.run_statement(
+        _service_status_update,
+        &promise,
+        oss.str(), true,
+        _cache_host_instance[ss.host_id]
+        % _mysql.connections_count());
 
-    if (_mysql.get_affected_rows(thread_id, _service_status_update) != 1)
+    if (promise.get_future().get() != 1)
       logging::error(logging::medium) << "SQL: service could not be "
            "updated because service (" << ss.host_id << ", "
         << ss.service_id << ") was not found in database";

@@ -220,7 +220,7 @@ void db_writer::_commit() {
         if (it->enable) {
           stmt.bind_value_as_u32(":ba_id", it->ba_id);
           stmt.bind_value_as_u32(":poller_id", it->poller_id);
-          ms.run_statement(stmt);
+          ms.run_statement(stmt, nullptr);
         }
 
       // Enable BAs.
@@ -304,7 +304,7 @@ void db_writer::_commit() {
       if (it->enable) {
         stmt.bind_value_as_i32(":host_id", it->host_id);
         stmt.bind_value_as_i32(":service_id", it->service_id);
-        ms.run_statement(stmt);
+        ms.run_statement(stmt, nullptr);
       }
   }
 }
@@ -343,16 +343,17 @@ void db_writer::_store_objects(
     // INSERT / UPDATE.
     if (it->enable) {
       update_query << *it;
-      int thread_id(ms.run_statement(update_query));
-      if (!ms.get_affected_rows(thread_id, update_query)) {
+      std::promise<int> promise;
+      ms.run_statement(update_query, &promise);
+      if (promise.get_future().get() == 0) {
         insert_query << *it;
-        ms.run_statement(insert_query);
+        ms.run_statement(insert_query, nullptr);
       }
     }
     // DELETE.
     else {
       delete_query.bind_value_as_i32(placeholder.c_str(), (*it).*id_member);
-      ms.run_statement(delete_query);
+      ms.run_statement(delete_query, nullptr);
     }
   }
 }

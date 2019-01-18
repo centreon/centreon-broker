@@ -752,13 +752,14 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
   oss_err << "BAM-BI: could not update event of BA "
           << be.ba_id << " starting at " << be.start_time
           << " and ending at " << be.end_time << ": ";
-  int thread_id(_mysql.run_statement(
+  std::promise<int> promise;
+  _mysql.run_statement(
                          _ba_event_update,
-                         NULL,
+                         &promise,
                          oss_err.str(),
-                         true));
+                         true);
   // Event was not found, insert one.
-  if (_mysql.get_affected_rows(thread_id, _ba_event_update) == 0) {
+  if (promise.get_future().get() == 0) {
     _ba_full_event_insert.bind_value_as_i32(":ba_id", be.ba_id);
     _ba_full_event_insert.bind_value_as_i32(":first_level", be.first_level);
     _ba_full_event_insert.bind_value_as_u64(
@@ -819,10 +820,11 @@ void reporting_stream::_process_ba_duration_event(
   _ba_duration_event_update.bind_value_as_i32(
     ":timeperiod_is_default",
     bde.timeperiod_is_default);
-  int thread_id(_mysql.run_statement(_ba_duration_event_update));
+  std::promise<int> promise;
+  int thread_id(_mysql.run_statement(_ba_duration_event_update, &promise));
   try {
     // Insert if no rows was updated.
-    if (_mysql.get_affected_rows(thread_id, _ba_duration_event_update) == 0) {
+    if (promise.get_future().get() == 0) {
       _ba_duration_event_insert.bind_value_as_i32(":ba_id", bde.ba_id);
       _ba_duration_event_insert.bind_value_as_u64(
         ":real_start_time",
@@ -889,12 +891,13 @@ void reporting_stream::_process_kpi_event(
   oss_err << "BAM-BI: could not update KPI "
           << ke.kpi_id << " starting at " << ke.start_time
           << " and ending at " << ke.end_time << ": ";
+  std::promise<int> promise;
   int thread_id(_mysql.run_statement(
                          _kpi_event_update,
-                         NULL,
+                         &promise,
                          oss_err.str(), true));
   // No kpis were updated, insert one.
-  if (_mysql.get_affected_rows(thread_id, _kpi_event_update) == 0) {
+  if (promise.get_future().get() == 0) {
     _kpi_full_event_insert.bind_value_as_i32(":kpi_id", ke.kpi_id);
     _kpi_full_event_insert.bind_value_as_u64(
       ":start_time",
