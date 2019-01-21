@@ -36,6 +36,7 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::dumper;
+using namespace com::centreon::broker::database;
 
 /**************************************
 *                                     *
@@ -173,7 +174,7 @@ void db_writer::_commit() {
     else
       cleanup_queries = cleanup_v3;
     for (int i(0); cleanup_queries[i]; ++i)
-      ms.run_query(cleanup_queries[i]);
+      ms.run_query(cleanup_queries[i], nullptr);
   }
 
   // Process organizations.
@@ -234,7 +235,7 @@ void db_writer::_commit() {
           query << "UPDATE " << (db_v2 ? "mod_bam" : "cfg_bam")
                 << "  SET activate='1' WHERE ba_id="
                 << it->ba_id;
-          ms.run_query(query.str());
+          ms.run_query(query.str(), nullptr);
         }
     }
   }
@@ -267,7 +268,7 @@ void db_writer::_commit() {
           std::ostringstream query;
           query << "UPDATE cfg_bam_kpi SET activate='1' WHERE kpi_id="
                 << it->kpi_id;
-          ms.run_query(query.str().c_str());
+          ms.run_query(query.str(), nullptr);
         }
     }
   }
@@ -344,7 +345,9 @@ void db_writer::_store_objects(
     if (it->enable) {
       update_query << *it;
       std::promise<int> promise;
-      ms.run_statement(update_query, &promise);
+      ms.run_statement_and_get_int(
+           update_query,
+           &promise, mysql_task::int_type::AFFECTED_ROWS);
       if (promise.get_future().get() == 0) {
         insert_query << *it;
         ms.run_statement(insert_query, nullptr);

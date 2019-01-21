@@ -92,7 +92,7 @@ void db_loader_v2::_load_bas() {
            "  WHERE b.activate='1'"
            "    AND pr.poller_id=" << _poller_id;
   std::promise<mysql_result> promise;
-  _mysql.run_query(
+  _mysql.run_query_and_get_result(
            query.str(), &promise,
            "db_reader: could not load configuration of BAs from DB");
   mysql_result res(promise.get_future().get());
@@ -124,7 +124,7 @@ void db_loader_v2::_load_booleans() {
            "  WHERE b.activate='1'"
            "    AND pr.poller_id=" << _poller_id;
   std::promise<mysql_result> promise;
-  _mysql.run_query(
+  _mysql.run_query_and_get_result(
            query.str(),
            &promise,
            "db_reader: could not load configuration of boolean rules from DB");
@@ -164,7 +164,7 @@ void db_loader_v2::_load_kpis() {
            "  WHERE k.activate='1'"
            "    AND pr.poller_id=" << _poller_id;
   std::promise<mysql_result> promise;
-  _mysql.run_query(
+  _mysql.run_query_and_get_result(
            query.str(),
            &promise,
            "db_reader: could not load configuration of KPIs from DB");
@@ -197,7 +197,7 @@ void db_loader_v2::_load_hosts() {
            "  FROM host AS h"
            "  WHERE host_name = '_Module_BAM_" << _poller_id << "'";
   std::promise<mysql_result> promise;
-  _mysql.run_query(
+  _mysql.run_query_and_get_result(
            query.str(),
            &promise,
            "db_reader: could not load configuration of hosts from DB");
@@ -231,7 +231,7 @@ void db_loader_v2::_load_services() {
   }
 
   std::promise<mysql_result> promise;
-  _mysql.run_query(
+  _mysql.run_query_and_get_result(
            "SELECT s.service_description,"
            "       hsr.host_host_id, hsr.service_service_id"
            "  FROM service AS s"

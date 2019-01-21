@@ -140,7 +140,7 @@ void rebuilder::_run() {
                 << " WHERE host_id=" << info.host_id
                 << "  AND service_id=" << info.service_id;
           std::promise<mysql_result> promise;
-          ms->run_query(oss.str(), &promise);
+          ms->run_query_and_get_result(oss.str(), &promise);
           mysql_result res(promise.get_future().get());
           if (ms->fetch_row(res))
             check_interval = res.value_as_f64(0) * _interval_length;
@@ -168,7 +168,7 @@ void rebuilder::_run() {
             oss_err << "storage: rebuilder: could not fetch metrics of index "
                     << index_id;
             std::promise<mysql_result> promise;
-            ms->run_query(
+            ms->run_query_and_get_result(
                   oss.str(),
                   &promise,
                   oss_err.str(), true);
@@ -255,7 +255,7 @@ void rebuilder::_next_index_to_rebuild(index_info& info, mysql& ms) {
         << "  WHERE must_be_rebuild=" << (db_v2 ? "'1'" : "1")
         << "  LIMIT 1";
   std::promise<mysql_result> promise;
-  ms.run_query(
+  ms.run_query_and_get_result(
        query.str(), &promise,
        "storage: rebuilder: could not fetch index to rebuild",
        true);
@@ -322,7 +322,7 @@ void rebuilder::_rebuild_metric(
     oss_err << "storage: rebuilder: "
         << "cannot fetch data of metric " << metric_id << ": ";
     std::promise<mysql_result> promise;
-    ms.run_query(oss.str(), &promise, oss_err.str(), true);
+    ms.run_query_and_get_result(oss.str(), &promise, oss_err.str(), true);
 
     if (!caught) {
       mysql_result res(promise.get_future().get());
@@ -394,7 +394,7 @@ void rebuilder::_rebuild_status(
     oss_err << "storage: rebuilder: "
             << "cannot fetch data of index " << index_id << ": ";
     std::promise<mysql_result> promise;
-    ms.run_query(oss.str(), &promise, oss_err.str(), false);
+    ms.run_query_and_get_result(oss.str(), &promise, oss_err.str(), false);
     //FIXME DBR: caught is set to true in case of error
     if (!caught) {
       mysql_result res(promise.get_future().get());
@@ -461,5 +461,5 @@ void rebuilder::_set_index_rebuild(
   std::ostringstream oss_err;
   oss_err << "storage: rebuilder: cannot update state of index "
       << index_id << ": ";
-  ms.run_query(oss.str(), NULL, oss_err.str(), false);
+  ms.run_query(oss.str(), oss_err.str(), false);
 }

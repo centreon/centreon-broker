@@ -23,9 +23,10 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mapping/entry.hh"
-#include "com/centreon/broker/mysql_stmt.hh"
+#include "com/centreon/broker/database/mysql_stmt.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::broker::database;
 
 mysql_stmt::mysql_stmt()
  : _id(0),

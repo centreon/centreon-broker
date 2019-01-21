@@ -44,6 +44,7 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
+using namespace com::centreon::broker::database;
 
 /**************************************
 *                                     *
@@ -298,7 +299,7 @@ void reporting_stream::_close_inconsistent_events(
           << "  WHERE e1.end_time IS NULL"
           << "    AND e1.start_time!=e2.max_start_time";
     std::promise<mysql_result> promise;
-    _mysql.run_query(
+    _mysql.run_query_and_get_result(
              query.str(), &promise,
              "BAM-BI: could not get inconsistent events");
     mysql_result res(promise.get_future().get());
@@ -329,7 +330,7 @@ void reporting_stream::_close_inconsistent_events(
               << event_type << " " << it->first << " starting at "
               << it->second << ": ";
       std::promise<mysql_result> promise;
-      _mysql.run_query(oss.str(), &promise, oss_err.str(), true);
+      _mysql.run_query_and_get_result(oss.str(), &promise, oss_err.str(), true);
       mysql_result res(promise.get_future().get());
       if (!_mysql.fetch_row(res))
         throw (exceptions::msg() << "no event following this one");
@@ -346,7 +347,7 @@ void reporting_stream::_close_inconsistent_events(
       oss_err << "BAM-BI: could not close inconsistent event of "
               << event_type << it->first << " starting at "
               << it->second << ": ";
-      _mysql.run_query(oss.str(), NULL, oss_err.str(), true);
+      _mysql.run_query(oss.str(), oss_err.str(), true);
     }
   }
 }
@@ -381,7 +382,7 @@ void reporting_stream::_load_timeperiods() {
       "       wednesday, thursday, friday, saturday"
       "  FROM mod_bam_reporting_timeperiods");
     std::promise<mysql_result> promise;
-    _mysql.run_query(
+    _mysql.run_query_and_get_result(
              query,
              &promise,
              "BAM-BI: could not load timeperiods from DB");
@@ -409,7 +410,7 @@ void reporting_stream::_load_timeperiods() {
       "SELECT timeperiod_id, daterange, timerange"
       "  FROM mod_bam_reporting_timeperiods_exceptions");
     std::promise<mysql_result> promise;
-    _mysql.run_query(
+    _mysql.run_query_and_get_result(
              query,
              &promise,
              "BAM-BI: could not load timeperiods exceptions from DB");
@@ -433,7 +434,7 @@ void reporting_stream::_load_timeperiods() {
       "SELECT timeperiod_id, excluded_timeperiod_id"
       "  FROM mod_bam_reporting_timeperiods_exclusions");
     std::promise<mysql_result> promise;
-    _mysql.run_query(
+    _mysql.run_query_and_get_result(
              query,
              &promise,
              "BAM-BI: could not load exclusions from DB");
@@ -460,7 +461,7 @@ void reporting_stream::_load_timeperiods() {
       "SELECT ba_id, timeperiod_id, is_default"
       "  FROM mod_bam_reporting_relations_ba_timeperiods");
     std::promise<mysql_result> promise;
-    _mysql.run_query(
+    _mysql.run_query_and_get_result(
              query,
              &promise,
              "BAM-BI: could not load BA/timeperiods relations");
@@ -753,9 +754,9 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
           << be.ba_id << " starting at " << be.start_time
           << " and ending at " << be.end_time << ": ";
   std::promise<int> promise;
-  _mysql.run_statement(
+  _mysql.run_statement_and_get_int(
                          _ba_event_update,
-                         &promise,
+                         &promise, mysql_task::int_type::AFFECTED_ROWS,
                          oss_err.str(),
                          true);
   // Event was not found, insert one.
@@ -777,7 +778,6 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
             << ": ";
     _mysql.run_statement(
              _ba_full_event_insert,
-             NULL,
              oss_err.str(),
              true);
   }
@@ -821,7 +821,9 @@ void reporting_stream::_process_ba_duration_event(
     ":timeperiod_is_default",
     bde.timeperiod_is_default);
   std::promise<int> promise;
-  int thread_id(_mysql.run_statement(_ba_duration_event_update, &promise));
+  int thread_id(_mysql.run_statement_and_get_int(
+                  _ba_duration_event_update,
+                  &promise, mysql_task::int_type::AFFECTED_ROWS));
   try {
     // Insert if no rows was updated.
     if (promise.get_future().get() == 0) {
@@ -847,7 +849,6 @@ void reporting_stream::_process_ba_duration_event(
         bde.timeperiod_is_default);
       _mysql.run_statement(
                _ba_duration_event_insert,
-               NULL,
                "Insertion failed", true, thread_id);
     }
   }
@@ -892,9 +893,9 @@ void reporting_stream::_process_kpi_event(
           << ke.kpi_id << " starting at " << ke.start_time
           << " and ending at " << ke.end_time << ": ";
   std::promise<int> promise;
-  int thread_id(_mysql.run_statement(
+  int thread_id(_mysql.run_statement_and_get_int(
                          _kpi_event_update,
-                         &promise,
+                         &promise, mysql_task::int_type::AFFECTED_ROWS,
                          oss_err.str(), true));
   // No kpis were updated, insert one.
   if (promise.get_future().get() == 0) {
@@ -919,7 +920,6 @@ void reporting_stream::_process_kpi_event(
             << " and ending at " << ke.end_time << ": ";
     _mysql.run_statement(
              _kpi_full_event_insert,
-             NULL,
              oss_err.str(), true,
              thread_id);
 
@@ -934,7 +934,6 @@ void reporting_stream::_process_kpi_event(
             << " to its associated BA event: ";
     _mysql.run_statement(
              _kpi_event_link,
-             NULL,
              oss_err.str(), true,
              thread_id);
 
@@ -972,7 +971,7 @@ void reporting_stream::_process_dimension_ba(
   std::ostringstream oss_err;
   oss_err << "BAM-BI: could not insert BA "
           << dba.ba_id << ": ";
-  _mysql.run_statement(_dimension_ba_insert, NULL, oss_err.str(), true);
+  _mysql.run_statement(_dimension_ba_insert, oss_err.str(), true);
 }
 
 /**
@@ -996,7 +995,6 @@ void reporting_stream::_process_dimension_bv(
   oss << "BAM-BI: could not insert BV " << dbv.bv_id << ": ";
   _mysql.run_statement(
            _dimension_bv_insert,
-           NULL,
            oss.str(),
            true);
 }
@@ -1020,7 +1018,6 @@ void reporting_stream::_process_dimension_ba_bv_relation(
            << dbabv.ba_id << "-"<< dbabv.bv_id << ": ";
   _mysql.run_statement(
            _dimension_ba_bv_relation_insert,
-           NULL,
            oss.str(),
            true);
 }
@@ -1266,7 +1263,6 @@ void reporting_stream::_process_dimension_kpi(
       << dk.kpi_id << ": ";
   _mysql.run_statement(
            _dimension_kpi_insert,
-           NULL,
            oss.str(), true);
 }
 
@@ -1313,7 +1309,6 @@ void reporting_stream::_process_dimension_timeperiod(
       << tp.id << " ('" << tp.name.toStdString() << "'): ";
   _mysql.run_statement(
            _dimension_timeperiod_insert,
-           NULL,
            oss.str(),
            true);
   _apply(tp);
@@ -1345,7 +1340,6 @@ void reporting_stream::_process_dimension_timeperiod_exception(
       << tpe.timeperiod_id << ": ";
   _mysql.run_statement(
            _dimension_timeperiod_exception_insert,
-           NULL,
            oss.str(), true);
   _apply(tpe);
 }
@@ -1376,7 +1370,6 @@ void reporting_stream::_process_dimension_timeperiod_exclusion(
       << tpe.timeperiod_id << ": ";
   _mysql.run_statement(
            _dimension_timeperiod_exclusion_insert,
-           NULL,
            oss.str(), true);
   _apply(tpe);
 }
@@ -1406,7 +1399,6 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
       << r.ba_id << " to timeperiod " << r.timeperiod_id << ": ";
   _mysql.run_statement(
            _dimension_ba_timeperiod_insert,
-           NULL,
            oss.str(), true);
   _timeperiods.add_relation(
                  r.ba_id,
@@ -1516,7 +1508,7 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
       std::ostringstream oss;
       oss << "BAM-BI: could not delete BA durations "
           << r.bas_to_rebuild.toStdString() << ": ";
-      _mysql.run_query(query, NULL, oss.str(), true);
+      _mysql.run_query(query, oss.str(), true);
     }
 
     // Get the ba events.
@@ -1534,7 +1526,7 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
       oss << "BAM-BI: could not get BA events of "
           << r.bas_to_rebuild.toStdString() << " :";
       std::promise<mysql_result> promise;
-      _mysql.run_query(query, &promise, oss.str(), true);
+      _mysql.run_query_and_get_result(query, &promise, oss.str(), true);
       mysql_result res(promise.get_future().get());
 
       while (_mysql.fetch_row(res)) {

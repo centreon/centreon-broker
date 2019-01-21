@@ -21,6 +21,7 @@
 #include "com/centreon/broker/mysql_manager.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::broker::database;
 
 mysql_manager mysql_manager::_singleton;
 
@@ -103,7 +104,7 @@ bool mysql_manager::is_in_error() const {
   return _error.is_active();
 }
 
-com::centreon::broker::mysql_error mysql_manager::get_error() {
+database::mysql_error mysql_manager::get_error() {
   std::lock_guard<std::mutex> locker(_err_mutex);
   return std::move(_error);
 }
@@ -111,7 +112,7 @@ com::centreon::broker::mysql_error mysql_manager::get_error() {
 void mysql_manager::set_error(std::string const& message, bool fatal) {
   std::lock_guard<std::mutex> locker(_err_mutex);
   if (!_error.is_active())
-    _error = mysql_error(message.c_str(), fatal);
+    _error = database::mysql_error(message.c_str(), fatal);
 }
 
 void mysql_manager::clear_error() {

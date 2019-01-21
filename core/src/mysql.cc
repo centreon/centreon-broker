@@ -20,6 +20,7 @@
 #include "com/centreon/broker/mysql_manager.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::broker::database;
 
 std::once_flag init_flag;
 
@@ -39,7 +40,7 @@ mysql::mysql(database_config const& db_cfg)
 
   try {
     std::promise<mysql_result> promise;
-    run_query(
+    run_query_and_get_result(
       "SELECT instance_id FROM instances LIMIT 1",
       &promise,
       "", true);
@@ -106,31 +107,6 @@ bool mysql::fetch_row(mysql_result& res) {
   return res.get_connection()->fetch_row(res);
 }
 
-void mysql::check_affected_rows(
-             int thread_id,
-             std::string const& message) {
-  _check_errors();
-  _connection[thread_id]->check_affected_rows(message);
-}
-
-void mysql::check_affected_rows(
-             int thread_id,
-             mysql_stmt const& stmt,
-             std::string const& message) {
-  _check_errors();
-  _connection[thread_id]->check_affected_rows(message, stmt.get_id());
-}
-
-int mysql::get_affected_rows(int thread_id) {
-  _check_errors();
-  return _connection[thread_id]->get_affected_rows();
-}
-
-int mysql::get_affected_rows(int thread_id, mysql_stmt const& stmt) {
-  _check_errors();
-  return _connection[thread_id]->get_affected_rows(stmt.get_id());
-}
-
 /**
  *  This method commits only if the max queries per transaction is reached.
  *
@@ -157,7 +133,7 @@ bool mysql::commit_if_needed() {
  */
 void mysql::_check_errors() {
   if (mysql_manager::instance().is_in_error()) {
-    mysql_error err(mysql_manager::instance().get_error());
+    database::mysql_error err(mysql_manager::instance().get_error());
     if (err.is_fatal())
       throw exceptions::msg() << err.get_message();
     else
@@ -199,9 +175,8 @@ int mysql::_get_best_connection() {
  * @return The thread id that executed the query.
  */
 int mysql::run_query(std::string const& query,
-              std::promise<mysql_result>* p,
-              std::string const& error_msg, bool fatal,
-              int thread_id) {
+             std::string const& error_msg, bool fatal,
+             int thread_id) {
   _check_errors();
   if (thread_id < 0)
     // Here, we use _current_thread
@@ -209,13 +184,92 @@ int mysql::run_query(std::string const& query,
 
   _connection[thread_id]->run_query(
     query,
-    p,
     error_msg, fatal);
   return thread_id;
 }
 
-int mysql::get_last_insert_id(int thread_id) {
-  return _connection[thread_id]->get_last_insert_id();
+int mysql::run_query_and_get_result(
+             std::string const& query,
+             std::promise<mysql_result>* promise,
+             std::string const& error_msg, bool fatal,
+             int thread_id) {
+  _check_errors();
+  if (thread_id < 0)
+    // Here, we use _current_thread
+    thread_id = _get_best_connection();
+
+  _connection[thread_id]->run_query_and_get_result(
+                            query,
+                            promise,
+                            error_msg, fatal);
+  return thread_id;
+}
+
+int mysql::run_query_and_get_int(
+             std::string const& query,
+             std::promise<int>* promise, mysql_task::int_type type,
+             std::string const& error_msg, bool fatal,
+             int thread_id) {
+  _check_errors();
+  if (thread_id < 0)
+    // Here, we use _current_thread
+    thread_id = _get_best_connection();
+
+  _connection[thread_id]->run_query_and_get_int(
+                            query,
+                            promise, type,
+                            error_msg, fatal);
+  return thread_id;
+}
+
+int mysql::run_statement(
+             database::mysql_stmt& stmt,
+             std::string const& error_msg, bool fatal,
+             int thread_id) {
+  _check_errors();
+  if (thread_id < 0)
+    // Here, we use _current_thread
+    thread_id = _get_best_connection();
+
+  _connection[thread_id]->run_statement(stmt, error_msg, fatal);
+  return thread_id;
+}
+
+int mysql::run_statement_and_get_result(
+             database::mysql_stmt& stmt,
+             std::promise<mysql_result>* promise,
+             std::string const& error_msg, bool fatal,
+             int thread_id) {
+  _check_errors();
+  if (thread_id < 0)
+    // Here, we use _current_thread
+    thread_id = _get_best_connection();
+
+  _connection[thread_id]->run_statement_and_get_result(
+                            stmt,
+                            promise,
+                            error_msg,
+                            fatal);
+  return thread_id;
+}
+
+int mysql::run_statement_and_get_int(
+             database::mysql_stmt& stmt,
+             std::promise<int>* promise, mysql_task::int_type type,
+             std::string const& error_msg, bool fatal,
+             int thread_id) {
+  _check_errors();
+  if (thread_id < 0)
+    // Here, we use _current_thread
+    thread_id = _get_best_connection();
+
+  _connection[thread_id]->run_statement_and_get_int(
+                            stmt,
+                            promise,
+                            type,
+                            error_msg,
+                            fatal);
+  return thread_id;
 }
 
 void mysql::prepare_statement(mysql_stmt const& stmt) {

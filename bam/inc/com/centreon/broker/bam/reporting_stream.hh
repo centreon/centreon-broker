@@ -100,22 +100,37 @@ namespace          bam {
     mutable QMutex _statusm;
     unsigned int   _transaction_queries;
     mysql          _mysql;
-    mysql_stmt     _ba_full_event_insert;
-    mysql_stmt     _ba_event_update;
-    mysql_stmt     _ba_duration_event_insert;
-    mysql_stmt     _ba_duration_event_update;
-    mysql_stmt     _kpi_full_event_insert;
-    mysql_stmt     _kpi_event_update;
-    mysql_stmt     _kpi_event_link;
-    mysql_stmt     _dimension_ba_insert;
-    mysql_stmt     _dimension_bv_insert;
-    mysql_stmt     _dimension_ba_bv_relation_insert;
-    mysql_stmt     _dimension_timeperiod_insert;
-    mysql_stmt     _dimension_timeperiod_exception_insert;
-    mysql_stmt     _dimension_timeperiod_exclusion_insert;
-    mysql_stmt     _dimension_ba_timeperiod_insert;
-    mysql_stmt     _dimension_kpi_insert;
-    std::vector<mysql_stmt>
+    database::mysql_stmt
+                   _ba_full_event_insert;
+    database::mysql_stmt
+                   _ba_event_update;
+    database::mysql_stmt
+                   _ba_duration_event_insert;
+    database::mysql_stmt
+                   _ba_duration_event_update;
+    database::mysql_stmt
+                   _kpi_full_event_insert;
+    database::mysql_stmt
+                   _kpi_event_update;
+    database::mysql_stmt
+                   _kpi_event_link;
+    database::mysql_stmt
+                   _dimension_ba_insert;
+    database::mysql_stmt
+                   _dimension_bv_insert;
+    database::mysql_stmt
+                   _dimension_ba_bv_relation_insert;
+    database::mysql_stmt
+                   _dimension_timeperiod_insert;
+    database::mysql_stmt
+                   _dimension_timeperiod_exception_insert;
+    database::mysql_stmt
+                   _dimension_timeperiod_exclusion_insert;
+    database::mysql_stmt
+                   _dimension_ba_timeperiod_insert;
+    database::mysql_stmt
+                   _dimension_kpi_insert;
+    std::vector<database::mysql_stmt>
                    _dimension_truncate_tables;
     std::unique_ptr<availability_thread>
                    _availabilities;

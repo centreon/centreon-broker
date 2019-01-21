@@ -49,6 +49,7 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
+using namespace com::centreon::broker::database;
 
 /**************************************
 *                                     *
@@ -81,7 +82,7 @@ monitoring_stream::monitoring_stream(
   {
     try {
       std::promise<mysql_result> promise;
-      _mysql.run_query(
+      _mysql.run_query_and_get_result(
                "SELECT ba_id FROM mod_bam LIMIT 1",
                &promise,
                "", true);
@@ -283,7 +284,6 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
             << status->ba_id << ": ";
     _mysql.run_statement(
              _ba_update,
-             NULL,
              oss_err.str(), true);
 
     if (status->state_changed) {
@@ -333,7 +333,7 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     _kpi_update.bind_value_as_bool(":in_downtime", status->in_downtime);
     std::ostringstream oss_err;
     oss_err << "BAM: could not update KPI " << status->kpi_id << ": ";
-    _mysql.run_statement(_kpi_update, NULL, oss_err.str(), true);
+    _mysql.run_statement(_kpi_update, oss_err.str(), true);
   }
   // else if (data->type() == bam::meta_service_status::static_type()) {
   //   meta_service_status* status(static_cast<meta_service_status*>(data.data()));
@@ -460,7 +460,7 @@ void monitoring_stream::_rebuild() {
           << "  FROM " << (_db_v2 ? "mod_bam" : "cfg_bam")
           << "  WHERE must_be_rebuild='1'";
     std::promise<mysql_result> promise;
-    _mysql.run_query(
+    _mysql.run_query_and_get_result(
              query.str(), &promise,
              "BAM: could not select the list of BAs to rebuild");
     mysql_result res(promise.get_future().get());

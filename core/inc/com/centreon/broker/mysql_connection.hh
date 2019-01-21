@@ -26,7 +26,7 @@
 #  include <mutex>
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/mysql_result.hh"
-#  include "com/centreon/broker/mysql_stmt.hh"
+#  include "com/centreon/broker/database/mysql_stmt.hh"
 #  include "com/centreon/broker/mysql_task.hh"
 
 CCB_BEGIN()
@@ -52,30 +52,32 @@ class                    mysql_connection {
                             std::atomic_int& count);
   void                    run_query(
                             std::string const& query,
-                            std::promise<mysql_result>* p,
+                            std::string const& error_msg, bool fatal);
+  void                    run_query_and_get_result(
+                            std::string const& query,
+                            std::promise<mysql_result>* promise,
+                            std::string const& error_msg, bool fatal);
+  void                    run_query_and_get_int(
+                            std::string const& query,
+                            std::promise<int>* promise,
+                            mysql_task::int_type type,
                             std::string const& error_msg, bool fatal);
 
   void                    run_statement(
-                            mysql_stmt& stmt,
-                            std::string const& error_msg, bool fatal) {
-    _push(std::make_shared<mysql_task_statement>(stmt, error_msg, fatal));
-  }
-
-  template<typename Promise>
-  void                    run_statement(
-                            mysql_stmt& stmt,
-                            Promise* p,
-                            std::string const& error_msg, bool fatal) {
-    _push(std::make_shared<mysql_task_statement_cb<Promise>>(stmt, p, error_msg, fatal));
-  }
+                            database::mysql_stmt& stmt,
+                            std::string const& error_msg, bool fatal);
+  void                    run_statement_and_get_result(
+                            database::mysql_stmt& stmt,
+                            std::promise<mysql_result>* promise,
+                            std::string const& error_msg, bool fatal);
+  void                    run_statement_and_get_int(
+                            database::mysql_stmt& stmt,
+                            std::promise<int>* promise,
+                            mysql_task::int_type type,
+                            std::string const& error_msg, bool fatal);
 
   void                    finish();
-  int                     get_last_insert_id();
   bool                    fetch_row(mysql_result& result);
-  int                     get_affected_rows(int statement_id = 0);
-  void                    check_affected_rows(
-                            std::string const& message,
-                            int statement_id = 0);
   mysql_bind_mapping      get_stmt_mapping(int stmt_id) const;
   int                     get_stmt_size() const;
   bool                    match_config(database_config const& db_cfg) const;
@@ -90,14 +92,13 @@ class                    mysql_connection {
   void                    _run();
   std::string             _get_stack();
   void                    _query(mysql_task* t);
+  void                    _query_res(mysql_task* t);
+  void                    _query_int(mysql_task* t);
   void                    _commit(mysql_task* t);
   void                    _prepare(mysql_task* t);
   void                    _statement(mysql_task* t);
   void                    _statement_res(mysql_task* t);
-  void                    _statement_ar(mysql_task* t);
-  void                    _get_last_insert_id_sync(mysql_task* task);
-  void                    _check_affected_rows(mysql_task* task);
-  void                    _get_affected_rows_sync(mysql_task* task);
+  void                    _statement_int(mysql_task* t);
   void                    _get_result_sync(mysql_task* task);
   void                    _fetch_row_sync(mysql_task* task);
   void                    _finish(mysql_task* task);

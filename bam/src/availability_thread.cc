@@ -181,7 +181,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
              "  WHERE ba_id IN (" << _bas_to_rebuild.toStdString() << ")";
     try {
       std::promise<mysql_result> promise;
-      thread_id = _mysql->run_query(query.str(), &promise);
+      thread_id = _mysql->run_query_and_get_result(query.str(), &promise);
       mysql_result res(promise.get_future().get());
       if (!_mysql->fetch_row(res))
         throw (exceptions::msg() << "no events matching BAs to rebuild");
@@ -208,7 +208,7 @@ void availability_thread::_build_availabilities(time_t midnight) {
              "  FROM mod_bam_reporting_ba_availabilities";
     try {
       std::promise<mysql_result> promise;
-      thread_id = _mysql->run_query(query.str(), &promise);
+      thread_id = _mysql->run_query_and_get_result(query.str(), &promise);
       //FIXME DBR: to finish...
       mysql_result res(promise.get_future().get());
       if (!_mysql->fetch_row(res))
@@ -272,7 +272,7 @@ void availability_thread::_build_daily_availabilities(
         << ") OR (" << day_start << " BETWEEN a.start_time AND a.end_time))";
 
   std::promise<mysql_result> promise;
-  _mysql->run_query(
+  _mysql->run_query_and_get_result(
       query.str(),
       &promise,
       "BAM-BI: availability thread could not build the data", true, thread_id);
@@ -321,7 +321,7 @@ void availability_thread::_build_daily_availabilities(
   query << "(start_time < " << day_end << " AND end_time IS NULL)";
 
   promise = std::promise<mysql_result>();
-  _mysql->run_query(
+  _mysql->run_query_and_get_result(
       query.str(),
       &promise,
       "BAM-BI: availability thread could not build the data: ",
@@ -407,7 +407,7 @@ void availability_thread::_write_availability(
         << builder.get_degraded_opened() << ", " << builder.get_unknown_opened()
         << ", " << builder.get_downtime_opened() << ")";
   _mysql->run_query(
-      query.str(), NULL,
+      query.str(),
       "BAM-BI: availability thread could not insert an availability: ",
       true,
       thread_id);

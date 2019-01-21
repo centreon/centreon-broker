@@ -22,7 +22,7 @@
 #  include <string>
 #  include "com/centreon/broker/bam/configuration/applier/state.hh"
 #  include "com/centreon/broker/mysql.hh"
-#  include "com/centreon/broker/mysql_stmt.hh"
+#  include "com/centreon/broker/database/mysql_stmt.hh"
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -76,9 +76,12 @@ namespace           bam {
     mutable QMutex  _statusm;
     mysql           _mysql;
     bool            _db_v2;
-    mysql_stmt      _ba_update;
-    mysql_stmt      _kpi_update;
-    mysql_stmt      _meta_service_update;
+    database::mysql_stmt
+                    _ba_update;
+    database::mysql_stmt
+                    _kpi_update;
+    database::mysql_stmt
+                    _meta_service_update;
     int             _ack_events;
     int             _pending_events;
     database_config _storage_db_cfg;

@@ -15,9 +15,10 @@
 **
 ** For more information : contact@centreon.com
 */
-#include "com/centreon/broker/mysql_error.hh"
+#include "com/centreon/broker/database/mysql_error.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::broker::database;
 
 mysql_error::mysql_error()
   : _message(""), _active(false), _fatal(false) {}

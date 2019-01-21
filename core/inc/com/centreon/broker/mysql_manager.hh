@@ -23,7 +23,7 @@
 #  include <unordered_map>
 #  include <vector>
 #  include "com/centreon/broker/mysql.hh"
-#  include "com/centreon/broker/mysql_error.hh"
+#  include "com/centreon/broker/database/mysql_error.hh"
 
 CCB_BEGIN()
 
@@ -42,7 +42,7 @@ class                   mysql_manager {
   bool                  commit_if_needed();
   bool                  is_in_error() const;
   void                  clear_error();
-  mysql_error           get_error();
+  database::mysql_error get_error();
   void                  set_error(std::string const& message, bool fatal);
   std::map<std::string, std::string>
                         get_stats() const;
@@ -60,7 +60,7 @@ class                   mysql_manager {
                         _version;
 
   mutable std::mutex    _err_mutex;
-  mysql_error           _error;
+  database::mysql_error _error;
 };
 
 CCB_END()

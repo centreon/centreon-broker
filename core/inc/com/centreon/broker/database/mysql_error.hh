@@ -24,27 +24,29 @@
 
 CCB_BEGIN()
 
-/**
- *  @class mysql_thread mysql_thread.hh "com/centreon/broker/storage/mysql_thread.hh"
- *  @brief Class representing a thread connected to the mysql server
- *
- */
-class                   mysql_error {
- public:
-                        mysql_error();
-                        mysql_error(mysql_error&& other);
-                        mysql_error(char const* message, bool fatal);
-  mysql_error&          operator=(mysql_error const& other);
-  bool                  is_fatal() const;
-  std::string           get_message() const;
-  void                  clear();
-  bool                  is_active() const;
+namespace               database {
+  /**
+   *  @class mysql_thread mysql_thread.hh "com/centreon/broker/storage/mysql_thread.hh"
+   *  @brief Class representing a thread connected to the mysql server
+   *
+   */
+  class                   mysql_error {
+   public:
+                          mysql_error();
+                          mysql_error(mysql_error&& other);
+                          mysql_error(char const* message, bool fatal);
+    mysql_error&          operator=(mysql_error const& other);
+    bool                  is_fatal() const;
+    std::string           get_message() const;
+    void                  clear();
+    bool                  is_active() const;
 
- private:
-  std::string           _message;
-  bool                  _active;
-  bool                  _fatal;
-};
+   private:
+    std::string           _message;
+    bool                  _active;
+    bool                  _fatal;
+  };
+}
 
 CCB_END()
 

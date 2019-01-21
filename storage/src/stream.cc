@@ -356,7 +356,7 @@ void stream::_check_deleted_index() {
     unsigned long long index_id;
     {
       std::promise<mysql_result> promise;
-      _mysql.run_query(
+      _mysql.run_query_and_get_result(
                query, &promise,
                "storage: could not query index table to get index to delete: ",
                true);
@@ -379,7 +379,7 @@ void stream::_check_deleted_index() {
               << index_id << ": ";
 
       std::promise<mysql_result> promise;
-      _mysql.run_query(oss.str(), &promise, oss_err.str(), true);
+      _mysql.run_query_and_get_result(oss.str(), &promise, oss_err.str(), true);
       mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res))
         metrics_to_delete.push_back(res.value_as_u64(0));
@@ -397,7 +397,7 @@ void stream::_check_deleted_index() {
           << "        =" << index_id;
       std::ostringstream oss_error;
       oss_error << "storage: cannot delete index " << index_id << ": ";
-      _mysql.run_query(oss.str(), NULL, oss_error.str());
+      _mysql.run_query(oss.str(), oss_error.str());
       if (_mysql.commit_if_needed())
         _set_ack_events();
     }
@@ -418,7 +418,7 @@ void stream::_check_deleted_index() {
            "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
         << "  WHERE to_delete=1";
     std::promise<mysql_result> promise;
-    _mysql.run_query(
+    _mysql.run_query_and_get_result(
              oss.str(),
              &promise,
              "storage: could not get the list of metrics to delete");
@@ -478,7 +478,7 @@ void stream::_delete_metrics(
           << "  WHERE metric_id=" << metric_id;
       std::ostringstream oss_error;
       oss_error << "storage: cannot remove metric " << metric_id << ": ";
-      _mysql.run_query(oss.str(), NULL, oss_error.str());
+      _mysql.run_query(oss.str(), oss_error.str());
       if (_mysql.commit_if_needed())
         _set_ack_events();
     }
@@ -598,9 +598,14 @@ unsigned int stream::_find_index_id(
                  "index (" << host_id << ", " << service_id
               << ") failed: ";
 
-      int thread_id(_mysql.run_query(oss.str(), NULL, err_oss.str(), true));
+      std::promise<int> promise;
+      int thread_id(_mysql.run_query_and_get_int(
+                      oss.str(),
+                      &promise,
+                      mysql_task::LAST_INSERT_ID,
+                      err_oss.str(), true));
       // Let's get the index id
-      retval = _mysql.get_last_insert_id(thread_id);
+      retval = promise.get_future().get();
       if (retval == 0) {
         throw broker::exceptions::msg() << "storage: could not "
                   "fetch index_id of newly inserted index ("
@@ -791,11 +796,13 @@ unsigned int stream::_find_metric_id(
            "metric '" << metric_name.toStdString() << "' of index " << index_id
         << " failed: ";
 
-    int thread_id(_mysql.run_statement(
+    std::promise<int> promise;
+    int thread_id(_mysql.run_statement_and_get_int(
                            _insert_metrics_stmt,
-                           NULL,
+                           &promise,
+                           mysql_task::LAST_INSERT_ID,
                            oss.str(), true));
-    retval = _mysql.get_last_insert_id(thread_id);
+    retval = promise.get_future().get();
 
     // Insert metric in cache.
     logging::info(logging::medium) << "storage: new metric "
@@ -963,7 +970,7 @@ void stream::_rebuild_cache() {
              "       locked"
              " FROM " << (db_v2 ? "index_data" : "rt_index_data");
     std::promise<mysql_result> promise;
-    _mysql.run_query(
+    _mysql.run_query_and_get_result(
              query.str(),
              &promise,
              "storage: could not fetch index list from data DB");
@@ -1011,7 +1018,7 @@ void stream::_rebuild_cache() {
              "       crit_threshold_mode, min, max"
              "  FROM " << (db_v2 ? "metrics" : "rt_metrics");
     std::promise<mysql_result> promise;
-    _mysql.run_query(
+    _mysql.run_query_and_get_result(
              query.str(),
              &promise,
              "storage: could not fetch metric list from data DB");

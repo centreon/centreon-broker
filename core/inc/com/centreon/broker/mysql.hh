@@ -29,83 +29,71 @@ CCB_BEGIN()
  *
  *  Here is a binding to the C MySQL connector.
  */
-class                 mysql {
+class                   mysql {
  public:
-  enum                version {
+  enum                  version {
     v2 = 2,
     v3
   };
-                      mysql(database_config const& db_cfg);
-                      ~mysql();
-  void                prepare_statement(mysql_stmt const& stmt);
-  mysql_stmt          prepare_query(std::string const& query,
-                                    mysql_bind_mapping const& bind_mapping = mysql_bind_mapping());
-  void                commit(int thread_id = -1);
-  int                 run_query(
-                        std::string const& query,
-                        std::promise<mysql_result>* p = nullptr,
-                        std::string const& error_msg = "", bool fatal = false,
-                        int thread = -1);
+                        mysql(database_config const& db_cfg);
+                        ~mysql();
+  void                  prepare_statement(database::mysql_stmt const& stmt);
+  database::mysql_stmt  prepare_query(std::string const& query,
+                          mysql_bind_mapping const& bind_mapping = mysql_bind_mapping());
+  void                  commit(int thread_id = -1);
+  int                   run_query(
+                          std::string const& query,
+                          std::string const& error_msg = "", bool fatal = false,
+                          int thread = -1);
+  int                   run_query_and_get_result(
+                          std::string const& query,
+                          std::promise<mysql_result>* promise,
+                          std::string const& error_msg = "", bool fatal = false,
+                          int thread = -1);
+  int                   run_query_and_get_int(
+                          std::string const& query,
+                          std::promise<int>* promise, mysql_task::int_type type,
+                          std::string const& error_msg = "", bool fatal = false,
+                          int thread = -1);
 
-  int                 run_statement(
-                        mysql_stmt& stmt,
-                        std::nullptr_t,
-                        std::string const& error_msg = "", bool fatal = false,
-                        int thread_id = -1) {
-    _check_errors();
-    if (thread_id < 0)
-      // Here, we use _current_thread
-      thread_id = _get_best_connection();
+  int                   run_statement(
+                          database::mysql_stmt& stmt,
+                          std::string const& error_msg = "", bool fatal = false,
+                          int thread_id = -1);
 
-    _connection[thread_id]->run_statement(stmt, error_msg, fatal);
-    return thread_id;
-  }
+  int                   run_statement_and_get_result(
+                          database::mysql_stmt& stmt,
+                          std::promise<mysql_result>* promise,
+                          std::string const& error_msg = "", bool fatal = false,
+                          int thread_id = -1);
 
-  template<typename Promise>
-  int                 run_statement(
-                        mysql_stmt& stmt,
-                        Promise* promise,
-                        std::string const& error_msg = "", bool fatal = false,
-                        int thread_id = -1) {
-    _check_errors();
-    if (thread_id < 0)
-      // Here, we use _current_thread
-      thread_id = _get_best_connection();
+  int                   run_statement_and_get_int(
+                          database::mysql_stmt& stmt,
+                          std::promise<int>* promise, mysql_task::int_type type,
+                          std::string const& error_msg = "", bool fatal = false,
+                          int thread_id = -1);
 
-    _connection[thread_id]->run_statement<Promise>(stmt, promise, error_msg, fatal);
-    return thread_id;
-  }
-
-  bool                fetch_row(mysql_result& res);
-  int                 get_last_insert_id(int thread_id);
-  void                check_affected_rows(
-                        int thread_id,
-                        std::string const& message);
-  void                check_affected_rows(
-                        int thread_id,
-                        mysql_stmt const& stmt,
-                        std::string const& message);
-  int                 get_affected_rows(int thread_id);
-  int                 get_affected_rows(int thread_id, mysql_stmt const& stmt);
-  version             schema_version() const;
-  int                 connections_count() const;
-  bool                commit_if_needed();
+  bool                  fetch_row(mysql_result& res);
+  int                   get_last_insert_id(int thread_id);
+  version               schema_version() const;
+  int                   connections_count() const;
+  bool                  commit_if_needed();
 
  private:
-  static void         _initialize_mysql();
-  void                _check_errors();
-  int                 _get_best_connection();
+  static void           _initialize_mysql();
+  void                  _check_errors();
+  int                   _get_best_connection();
 
   static std::atomic_int
-                      _count_ref;
+                        _count_ref;
 
-  database_config     _db_cfg;
-  int                 _pending_queries;
+  database_config       _db_cfg;
+  int                   _pending_queries;
 
   std::vector<std::shared_ptr<mysql_connection>>
-                      _connection;
-  version             _version;
-  int                 _current_connection;
+                        _connection;
+  version               _version;
+  int                   _current_connection;
 };
 
 CCB_END()

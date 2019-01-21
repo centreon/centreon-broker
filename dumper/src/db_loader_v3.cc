@@ -81,7 +81,7 @@ void db_loader_v3::load(entries::state& state, unsigned int poller_id) {
  */
 void db_loader_v3::_load_ba_types() {
   std::promise<mysql_result> promise;
-  _mysql.run_query(
+  _mysql.run_query_and_get_result(
            "SELECT ba_type_id, name, slug, description"
            "  FROM cfg_bam_ba_types",
            &promise,
@@ -110,7 +110,7 @@ void db_loader_v3::_load_bas() {
            "  WHERE b.activate='1'"
            "    AND pr.poller_id=" << _poller_id;
   std::promise<mysql_result> promise;
-  _mysql.run_query(
+  _mysql.run_query_and_get_result(
            query.str(),
            &promise,
            "db_reader: could not load configuration of BAs from DB");
@@ -152,7 +152,7 @@ void db_loader_v3::_load_kpis() {
            "  WHERE k.activate='1'"
            "    AND pr.poller_id=" << _poller_id;
   std::promise<mysql_result> promise;
-  _mysql.run_query(
+  _mysql.run_query_and_get_result(
            query.str(),
            &promise,
            "db_reader: could not load configuration of KPIs from DB");
@@ -187,7 +187,7 @@ void db_loader_v3::_load_organizations() {
            "    ON p.organization_id=o.organization_id"
            "  WHERE p.poller_id=" << _poller_id;
   std::promise<mysql_result> promise;
-  _mysql.run_query(
+  _mysql.run_query_and_get_result(
            query.str(),
            &promise,
            "db_reader: could not load organization from DB");

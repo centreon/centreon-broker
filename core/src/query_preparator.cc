@@ -25,6 +25,7 @@
 #include "com/centreon/broker/mapping/entry.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::broker::database;
 
 /**
  *  Constructor.
