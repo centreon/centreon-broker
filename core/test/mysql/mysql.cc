@@ -110,7 +110,7 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
   int now(time(NULL));
   oss << "INSERT INTO data_bin (id_metric, ctime, status, value) VALUES "
       << "(1, " << now << ", '0', 2.5)";
-  int thread_id(ms->run_query(oss.str(), NULL,
+  int thread_id(ms->run_query(oss.str(),
       "PROBLEME", true));
   oss.str("");
   oss << "SELECT id_metric, status FROM data_bin WHERE ctime=" << now;
@@ -474,7 +474,7 @@ TEST_F(DatabaseStorageTest, RepeatPrepareQuery) {
     stmt.bind_value_as_f32(9, 18.0);
     stmt.bind_value_as_i32(10, i);
 
-    ms->run_statement(stmt, nullptr);
+    ms->run_statement(stmt);
   }
   ms->commit();
 }
@@ -732,13 +732,13 @@ TEST_F(DatabaseStorageTest, ModuleStatement) {
   int thread_id(ms->run_query_and_get_int(
                       "DELETE FROM modules",
                       &promise,
-                      mysql_task::int_type::AFFECTED_ROWS));
+                      mysql_task::AFFECTED_ROWS));
   // We wait for the deletion to be done
   promise.get_future().get();
 
   // Insert
   module_insert << m;
-  ms->run_statement(module_insert, NULL, "", false);
+  ms->run_statement(module_insert, "", false);
   ms->commit();
 
   std::promise<mysql_result> promise_r;
@@ -788,7 +788,7 @@ TEST_F(DatabaseStorageTest, LogStatement) {
 
   // Insert
   log_insert << le;
-  ms->run_statement(log_insert, NULL, "", false);
+  ms->run_statement(log_insert, "", false);
   ms->commit();
 
   std::promise<mysql_result> promise_r;
@@ -881,7 +881,7 @@ TEST_F(DatabaseStorageTest, HostCheckStatement) {
 
   // Update
   host_check_update << hc;
-  ms->run_statement(host_check_update, NULL, "", false);
+  ms->run_statement(host_check_update, "", false);
   ms->commit();
 
   std::promise<mysql_result> promise;
@@ -1008,7 +1008,7 @@ TEST_F(DatabaseStorageTest, ServiceStatement) {
 
   // Update
   service_insupdate << s;
-  ms->run_statement(service_insupdate, NULL, "", false);
+  ms->run_statement(service_insupdate, "", false);
 
   ms->commit();
   std::promise<mysql_result> promise_r;
@@ -1153,7 +1153,6 @@ TEST_F(DatabaseStorageTest, CustomvariableStatement) {
       custom_variable_insupdate << cv;
       ms->run_statement(
             custom_variable_insupdate,
-            NULL,
             "ERROR CV STATEMENT", true);
     }
   }
@@ -1277,8 +1276,8 @@ TEST_F(DatabaseStorageTest, HostGroupMemberStatement) {
     5);
   std::unique_ptr<mysql> ms(new mysql(db_cfg));
 
-  ms->run_query("DELETE FROM hostgroups", nullptr);
-  ms->run_query("DELETE FROM hosts_hostgroups", nullptr);
+  ms->run_query("DELETE FROM hostgroups");
+  ms->run_query("DELETE FROM hosts_hostgroups");
   ms->commit();
 
   query_preparator::event_unique unique;
@@ -1423,8 +1422,8 @@ TEST_F(DatabaseStorageTest, ServiceGroupMemberStatement) {
     5);
   std::unique_ptr<mysql> ms(new mysql(db_cfg));
 
-  ms->run_query("DELETE FROM servicegroups", nullptr);
-  ms->run_query("DELETE FROM services_servicegroups", nullptr);
+  ms->run_query("DELETE FROM servicegroups");
+  ms->run_query("DELETE FROM services_servicegroups");
   ms->commit();
 
   query_preparator::event_unique unique;
