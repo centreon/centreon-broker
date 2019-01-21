@@ -174,7 +174,7 @@ void db_writer::_commit() {
     else
       cleanup_queries = cleanup_v3;
     for (int i(0); cleanup_queries[i]; ++i)
-      ms.run_query(cleanup_queries[i], nullptr);
+      ms.run_query(cleanup_queries[i]);
   }
 
   // Process organizations.
@@ -221,7 +221,7 @@ void db_writer::_commit() {
         if (it->enable) {
           stmt.bind_value_as_u32(":ba_id", it->ba_id);
           stmt.bind_value_as_u32(":poller_id", it->poller_id);
-          ms.run_statement(stmt, nullptr);
+          ms.run_statement(stmt);
         }
 
       // Enable BAs.
@@ -235,7 +235,7 @@ void db_writer::_commit() {
           query << "UPDATE " << (db_v2 ? "mod_bam" : "cfg_bam")
                 << "  SET activate='1' WHERE ba_id="
                 << it->ba_id;
-          ms.run_query(query.str(), nullptr);
+          ms.run_query(query.str());
         }
     }
   }
@@ -268,7 +268,7 @@ void db_writer::_commit() {
           std::ostringstream query;
           query << "UPDATE cfg_bam_kpi SET activate='1' WHERE kpi_id="
                 << it->kpi_id;
-          ms.run_query(query.str(), nullptr);
+          ms.run_query(query.str());
         }
     }
   }
@@ -305,7 +305,7 @@ void db_writer::_commit() {
       if (it->enable) {
         stmt.bind_value_as_i32(":host_id", it->host_id);
         stmt.bind_value_as_i32(":service_id", it->service_id);
-        ms.run_statement(stmt, nullptr);
+        ms.run_statement(stmt);
       }
   }
 }
@@ -350,13 +350,13 @@ void db_writer::_store_objects(
            &promise, mysql_task::int_type::AFFECTED_ROWS);
       if (promise.get_future().get() == 0) {
         insert_query << *it;
-        ms.run_statement(insert_query, nullptr);
+        ms.run_statement(insert_query);
       }
     }
     // DELETE.
     else {
       delete_query.bind_value_as_i32(placeholder.c_str(), (*it).*id_member);
-      ms.run_statement(delete_query, nullptr);
+      ms.run_statement(delete_query);
     }
   }
 }

@@ -496,7 +496,7 @@ void monitoring_stream::_rebuild() {
     query << "UPDATE " << (_db_v2 ? "mod_bam" : "cfg_bam")
           << "  SET must_be_rebuild='0'";
     _mysql.run_query(
-        query.str(), NULL,
+        query.str(),
         "BAM: could not update the list of BAs to rebuild");
   }
 }

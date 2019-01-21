@@ -359,13 +359,13 @@ void reporting_stream::_close_all_events() {
   query << "UPDATE mod_bam_reporting_ba_events"
            " SET end_time=" << now
         << " WHERE end_time IS NULL";
-  _mysql.run_query(query.str(), NULL, "BAM-BI: could not close all ba events");
+  _mysql.run_query(query.str(), "BAM-BI: could not close all ba events");
 
   query.str("");
   query << "UPDATE mod_bam_reporting_kpi_events"
            "  SET end_time=" << now
         << "  WHERE end_time IS NULL";
-  _mysql.run_query(query.str(), NULL, "BAM-BI, could not close all kpi events");
+  _mysql.run_query(query.str(), "BAM-BI, could not close all kpi events");
 }
 
 /**
@@ -1193,7 +1193,6 @@ void reporting_stream::_process_dimension_truncate_signal(
          ++it)
       _mysql.run_statement(
                *it,
-               NULL,
                "BAM-BI: could not truncate some dimension table");
 
     _timeperiods.clear();

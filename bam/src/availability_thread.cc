@@ -154,7 +154,7 @@ void availability_thread::_delete_all_availabilities() {
         << _bas_to_rebuild.toStdString() << ")";
 
   _mysql->run_query(
-      query.str(), NULL,
+      query.str(),
       "BAM-BI: availability thread could not delete the "
       "BA availabilities from the reporting database");
 }
