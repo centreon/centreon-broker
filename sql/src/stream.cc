@@ -340,7 +340,7 @@ void stream::_clean_tables(unsigned int instance_id) {
          " WHERE h.instance_id=" << instance_id;
 
   _mysql.run_query(
-           oss.str(), nullptr,
+           oss.str(),
            "SQL: could not clean custom variables table: ", false);
   // This is just to wait the deletions to finish
   _mysql.commit();
@@ -553,7 +553,7 @@ void stream::_process_custom_variable_status(
   std::promise<int> promise;
   _mysql.run_statement_and_get_int(
       _custom_variable_status_update,
-      &promise, mysql_task::int_type::AFFECTED_ROWS,
+      &promise, mysql_task::AFFECTED_ROWS,
       oss.str(), true,
       _cache_host_instance[cvs.host_id]
       % _mysql.connections_count());
@@ -649,7 +649,7 @@ void stream::_process_engine(
       ss << "UPDATE " << (db_v2 ? "issues" : "rt_issues")
          << "  SET end_time=" << now
          << "  WHERE end_time=0 OR end_time IS NULL";
-      _mysql.run_query(ss.str(), nullptr);
+      _mysql.run_query(ss.str());
     }
     {
       std::ostringstream ss;
@@ -658,7 +658,7 @@ void stream::_process_engine(
                           : "rt_issues_issues_parents")
          << "  SET end_time=" << now
          << "  WHERE end_time=0 OR end_time IS NULL";
-      _mysql.run_query(ss.str(), nullptr);
+      _mysql.run_query(ss.str());
     }
   }
 }
@@ -846,7 +846,7 @@ void stream::_process_host_check(
       std::promise<int> promise;
       _mysql.run_statement_and_get_int(
                _host_check_update,
-               &promise, mysql_task::int_type::AFFECTED_ROWS,
+               &promise, mysql_task::AFFECTED_ROWS,
                oss.str(), true,
           thread_id);
 
@@ -917,7 +917,7 @@ void stream::_process_host_dependency(
             : "rt_hosts_hosts_dependencies")
         << "  WHERE dependent_host_id=" << hd.dependent_host_id
         << "    AND host_id=" << hd.host_id;
-    _mysql.run_query(oss.str(), NULL, "SQL: ");
+    _mysql.run_query(oss.str(), "SQL: ");
   }
 }
 
@@ -1254,7 +1254,7 @@ void stream::_process_host_status(
     std::promise<int> promise;
     _mysql.run_statement_and_get_int(
              _host_status_update,
-             &promise, mysql_task::int_type::AFFECTED_ROWS,
+             &promise, mysql_task::AFFECTED_ROWS,
              oss.str(), true,
              _cache_host_instance[hs.host_id]
                   % _mysql.connections_count());
@@ -1369,7 +1369,7 @@ void stream::_process_instance_status(
     std::promise<int> promise;
     _mysql.run_statement_and_get_int(
              _instance_status_update,
-             &promise, mysql_task::int_type::AFFECTED_ROWS,
+             &promise, mysql_task::AFFECTED_ROWS,
              oss.str(), true,
              is.poller_id % _mysql.connections_count());
 
@@ -1566,7 +1566,7 @@ void stream::_process_issue_parent(
   std::promise<int> promise;
   _mysql.run_statement_and_get_int(
       _issue_parent_update,
-      &promise, mysql_task::int_type::AFFECTED_ROWS,
+      &promise, mysql_task::AFFECTED_ROWS,
       "SQL: issue parent update query failed");
   if (promise.get_future().get() <= 0) {
     if (ip.end_time != (time_t)-1)
@@ -1756,10 +1756,9 @@ void stream::_process_service_check(
     }
 
     // Processing.
-    size_t str_hash;
     bool store(true);
     if (_enable_cmd_cache) {
-      str_hash = std::hash<std::string>{}(sc.command_line.toStdString());
+      size_t str_hash(std::hash<std::string>{}(sc.command_line.toStdString()));
       // Did the command changed since last time?
       if (_cache_svc_cmd[std::make_pair(sc.host_id, sc.service_id)] != str_hash)
         _cache_svc_cmd[std::make_pair(sc.host_id, sc.service_id)] = str_hash;
@@ -1774,7 +1773,7 @@ void stream::_process_service_check(
       std::promise<int> promise;
       _mysql.run_statement_and_get_int(
           _service_check_update,
-          &promise, mysql_task::int_type::AFFECTED_ROWS,
+          &promise, mysql_task::AFFECTED_ROWS,
           oss.str(), true,
           _cache_host_instance[sc.host_id] % _mysql.connections_count());
 
@@ -2141,7 +2140,7 @@ void stream::_process_service_status(
     std::promise<int> promise;
     _mysql.run_statement_and_get_int(
         _service_status_update,
-        &promise, mysql_task::int_type::AFFECTED_ROWS,
+        &promise, mysql_task::AFFECTED_ROWS,
         oss.str(), true,
         _cache_host_instance[ss.host_id]
         % _mysql.connections_count());

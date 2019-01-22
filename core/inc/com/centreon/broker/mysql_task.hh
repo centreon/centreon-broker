@@ -197,7 +197,7 @@ class                    mysql_task_statement_int : public mysql_task {
                            int_type type,
                            std::string const& error_msg,
                            bool fatal)
-                          : mysql_task(mysql_task::STATEMENT_RES),
+                          : mysql_task(mysql_task::STATEMENT_INT),
                             promise(promise),
                             return_type(type),
                             statement_id(stmt.get_id()),

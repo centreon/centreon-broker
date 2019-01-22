@@ -553,7 +553,6 @@ unsigned int stream::_find_index_id(
 
       _mysql.run_statement(
                _update_index_data_stmt,
-               NULL,
                "UPDATE index_data",
                true);
       if (_mysql.commit_if_needed())
@@ -736,7 +735,7 @@ unsigned int stream::_find_metric_id(
         << " WHERE metric_id=" << it->second.metric_id;
 
       // Only use the thread_id 0
-      _mysql.run_statement(_update_metrics_stmt, NULL, "UPDATE metrics", true);
+      _mysql.run_statement(_update_metrics_stmt, "UPDATE metrics", true);
       logging::info(logging::medium) << "FIXME DBR: UPDATE metrics DONE";
       if (_mysql.commit_if_needed())
         _set_ack_events();
@@ -886,7 +885,6 @@ void stream::_insert_perfdatas() {
     // Execute query.
     _mysql.run_query(
              query.str(),
-             NULL,
              "storage: could not insert data in data_bin");
     if (_mysql.commit_if_needed())
       _set_ack_events();

@@ -109,7 +109,7 @@ void mysql_connection::_query_int(mysql_task* t) {
   }
   else {
     /* All is good here */
-    if (task->return_type == mysql_task::int_type::AFFECTED_ROWS)
+    if (task->return_type == mysql_task::AFFECTED_ROWS)
       task->promise->set_value(mysql_affected_rows(_conn));
     else /* LAST_INSERT_ID */
       task->promise->set_value(mysql_insert_id(_conn));
@@ -381,7 +381,7 @@ void mysql_connection::_statement_int(mysql_task* t) {
         }
       }
       else {
-        if (task->return_type == mysql_task::int_type::AFFECTED_ROWS)
+        if (task->return_type == mysql_task::AFFECTED_ROWS)
           task->promise->set_value(mysql_stmt_affected_rows(_stmt[task->statement_id]));
         else /* LAST_INSERT_ID */
           task->promise->set_value(mysql_stmt_insert_id(_stmt[task->statement_id]));
