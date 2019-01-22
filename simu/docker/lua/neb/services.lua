@@ -71,7 +71,7 @@ local function build(id, host_id, description, dname)
     stalk_on_ok = false,
     stalk_on_unknown = false,
     stalk_on_warning = false,
-    state = 4,
+    state = 3,
     state_type = 0,
     volatile = false,
   }
