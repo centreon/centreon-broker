@@ -18,6 +18,9 @@
 
 [Unit]
 Description=Centreon Broker watchdog
+PartOf=centreon.service
+After=centreon.service
+ReloadPropagatedFrom=centreon.service
 
 [Service]
 ExecStart=@PREFIX_BIN@/cbwd @PREFIX_CONF@/watchdog.xml
@@ -27,4 +30,5 @@ User=centreon-broker
 UMask=0002
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=centreon.service
+
