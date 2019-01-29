@@ -18,11 +18,12 @@
 
 #include <fstream>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/broker_cache.hh"
-#include "com/centreon/broker/lua/broker_utils.hh"
 #include "com/centreon/broker/lua/broker_log.hh"
 #include "com/centreon/broker/lua/broker_socket.hh"
+#include "com/centreon/broker/lua/broker_utils.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
