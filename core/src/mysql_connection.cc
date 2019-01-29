@@ -498,6 +498,15 @@ void mysql_connection::_run() {
       _tasks_condition.wait(locker);
     }
   }
+  for (umap<unsigned int, MYSQL_STMT*>::iterator
+         it(_stmt.begin()),
+         end(_stmt.end());
+       it != end;
+       ++it)
+    mysql_stmt_close(it->second);
+
+  mysql_close(_conn);
+  mysql_thread_end();
 }
 
 /******************************************************************************/
@@ -528,15 +537,6 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
 }
 
 mysql_connection::~mysql_connection() {
-  for (umap<unsigned int, MYSQL_STMT*>::iterator
-         it(_stmt.begin()),
-         end(_stmt.end());
-       it != end;
-       ++it)
-    mysql_stmt_close(it->second);
-
-  mysql_close(_conn);
-  mysql_thread_end();
   finish();
   _thread->join();
 }
