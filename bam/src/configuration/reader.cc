@@ -214,7 +214,7 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
              "    AND pr.poller_id="
           << config::applier::state::instance().poller_id();
       std::promise<mysql_result> promise;
-      _mysql.run_query_and_get_result(oss.str(), &promise, "BAM: ", true);
+      _mysql.run_query_and_get_result(oss.str(), &promise, "BAM: ");
       mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res)) {
         // BA object.
@@ -631,7 +631,7 @@ void reader::_load(state::meta_services& meta_services) {
       std::promise<mysql_result> promise;
       _mysql.run_query_and_get_result(query.str(),
             &promise,
-            oss_err.str(), true);
+            oss_err.str());
       mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res)) {
         it->second.add_metric(res.value_as_u32(0));

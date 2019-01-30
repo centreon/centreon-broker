@@ -56,12 +56,12 @@ class                    mysql_connection {
   void                    run_query_and_get_result(
                             std::string const& query,
                             std::promise<mysql_result>* promise,
-                            std::string const& error_msg, bool fatal);
+                            std::string const& error_msg);
   void                    run_query_and_get_int(
                             std::string const& query,
                             std::promise<int>* promise,
                             mysql_task::int_type type,
-                            std::string const& error_msg, bool fatal);
+                            std::string const& error_msg);
 
   void                    run_statement(
                             database::mysql_stmt& stmt,
@@ -69,12 +69,12 @@ class                    mysql_connection {
   void                    run_statement_and_get_result(
                             database::mysql_stmt& stmt,
                             std::promise<mysql_result>* promise,
-                            std::string const& error_msg, bool fatal);
+                            std::string const& error_msg);
   void                    run_statement_and_get_int(
                             database::mysql_stmt& stmt,
                             std::promise<int>* promise,
                             mysql_task::int_type type,
-                            std::string const& error_msg, bool fatal);
+                            std::string const& error_msg);
 
   void                    finish();
   bool                    fetch_row(mysql_result& result);

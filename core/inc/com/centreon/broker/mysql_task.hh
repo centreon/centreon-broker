@@ -113,17 +113,15 @@ class                    mysql_task_run_res : public mysql_task {
                          mysql_task_run_res(
                            std::string const& q,
                            std::promise<mysql_result>* promise,
-                           std::string const& error_msg, bool fatal)
+                           std::string const& error_msg)
                           : mysql_task(mysql_task::RUN_RES),
                             promise(promise),
                             query(q),
-                            error_msg(error_msg),
-                            fatal(fatal) {}
+                            error_msg(error_msg) {}
   std::string            query;
   std::promise<mysql_result>*
                          promise;
   std::string            error_msg;
-  bool                   fatal;
 };
 
 class                    mysql_task_run_int : public mysql_task {
@@ -131,18 +129,16 @@ class                    mysql_task_run_int : public mysql_task {
                          mysql_task_run_int(
                            std::string const& q,
                            std::promise<int>* promise, int_type type,
-                           std::string const& error_msg, bool fatal)
+                           std::string const& error_msg)
                           : mysql_task(mysql_task::RUN_INT),
                             query(q),
                             promise(promise),
                             return_type(type),
-                            error_msg(error_msg),
-                            fatal(fatal) {}
+                            error_msg(error_msg) {}
   std::string            query;
   std::promise<int>*     promise;
   int_type               return_type;
   std::string            error_msg;
-  bool                   fatal;
 };
 
 class                    mysql_task_statement : public mysql_task {
@@ -170,15 +166,13 @@ class                    mysql_task_statement_res : public mysql_task {
                          mysql_task_statement_res(
                            database::mysql_stmt& stmt,
                            std::promise<mysql_result>* promise,
-                           std::string const& error_msg,
-                           bool fatal)
+                           std::string const& error_msg)
                           : mysql_task(mysql_task::STATEMENT_RES),
                             promise(promise),
                             statement_id(stmt.get_id()),
                             param_count(stmt.get_param_count()),
                             bind(stmt.get_bind()),
-                            error_msg(error_msg),
-                            fatal(fatal) {}
+                            error_msg(error_msg) {}
   std::promise<mysql_result>*
                          promise;
   int                    statement_id;
@@ -186,7 +180,6 @@ class                    mysql_task_statement_res : public mysql_task {
   std::unique_ptr<database::mysql_bind>
                          bind;
   std::string            error_msg;
-  bool                   fatal;
 };
 
 class                    mysql_task_statement_int : public mysql_task {
@@ -195,16 +188,14 @@ class                    mysql_task_statement_int : public mysql_task {
                            database::mysql_stmt& stmt,
                            std::promise<int>* promise,
                            int_type type,
-                           std::string const& error_msg,
-                           bool fatal)
+                           std::string const& error_msg)
                           : mysql_task(mysql_task::STATEMENT_INT),
                             promise(promise),
                             return_type(type),
                             statement_id(stmt.get_id()),
                             param_count(stmt.get_param_count()),
                             bind(stmt.get_bind()),
-                            error_msg(error_msg),
-                            fatal(fatal) {}
+                            error_msg(error_msg) {}
   std::promise<int>*     promise;
   int_type               return_type;
   int                    statement_id;
@@ -212,7 +203,6 @@ class                    mysql_task_statement_int : public mysql_task {
   std::unique_ptr<database::mysql_bind>
                          bind;
   std::string            error_msg;
-  bool                   fatal;
 };
 
 CCB_END()

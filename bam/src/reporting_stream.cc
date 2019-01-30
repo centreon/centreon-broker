@@ -330,7 +330,7 @@ void reporting_stream::_close_inconsistent_events(
               << event_type << " " << it->first << " starting at "
               << it->second << ": ";
       std::promise<mysql_result> promise;
-      _mysql.run_query_and_get_result(oss.str(), &promise, oss_err.str(), true);
+      _mysql.run_query_and_get_result(oss.str(), &promise, oss_err.str());
       mysql_result res(promise.get_future().get());
       if (!_mysql.fetch_row(res))
         throw (exceptions::msg() << "no event following this one");
@@ -757,8 +757,7 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
   _mysql.run_statement_and_get_int(
                          _ba_event_update,
                          &promise, mysql_task::int_type::AFFECTED_ROWS,
-                         oss_err.str(),
-                         true);
+                         oss_err.str());
   // Event was not found, insert one.
   if (promise.get_future().get() == 0) {
     _ba_full_event_insert.bind_value_as_i32(":ba_id", be.ba_id);
@@ -896,7 +895,7 @@ void reporting_stream::_process_kpi_event(
   int thread_id(_mysql.run_statement_and_get_int(
                          _kpi_event_update,
                          &promise, mysql_task::int_type::AFFECTED_ROWS,
-                         oss_err.str(), true));
+                         oss_err.str()));
   // No kpis were updated, insert one.
   if (promise.get_future().get() == 0) {
     _kpi_full_event_insert.bind_value_as_i32(":kpi_id", ke.kpi_id);
@@ -1525,7 +1524,7 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
       oss << "BAM-BI: could not get BA events of "
           << r.bas_to_rebuild.toStdString() << " :";
       std::promise<mysql_result> promise;
-      _mysql.run_query_and_get_result(query, &promise, oss.str(), true);
+      _mysql.run_query_and_get_result(query, &promise, oss.str());
       mysql_result res(promise.get_future().get());
 
       while (_mysql.fetch_row(res)) {

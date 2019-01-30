@@ -118,8 +118,7 @@ void reader_v2::_load(state::kpis& kpis) {
     std::promise<mysql_result> promise;
     _mysql.run_query_and_get_result(
              oss.str(), &promise,
-             "BAM: could not retrieve KPI configuration from DB: ",
-             true);
+             "BAM: could not retrieve KPI configuration from DB: ");
     mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
       // KPI object.
@@ -175,8 +174,7 @@ void reader_v2::_load(state::kpis& kpis) {
         std::promise<mysql_result> promise;
         _mysql.run_query_and_get_result(
                  oss.str(), &promise,
-                 "could not retrieve virtual meta-service's service",
-                 true);
+                 "could not retrieve virtual meta-service's service");
         mysql_result res(promise.get_future().get());
         if (!_mysql.fetch_row(res))
           throw (exceptions::msg() << "virtual service of meta-service "
@@ -218,7 +216,7 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
              "    AND pr.poller_id="
           << config::applier::state::instance().poller_id();
       std::promise<mysql_result> promise;
-      _mysql.run_query_and_get_result(oss.str(), &promise, "BAM: ", true);
+      _mysql.run_query_and_get_result(oss.str(), &promise, "BAM: ");
       mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res)) {
         // BA object.

@@ -70,16 +70,10 @@ void mysql_connection::_query_res(mysql_task* t) {
     logging::debug(logging::low)
       << "mysql: run query failed: "
       << ::mysql_error(_conn);
-    if (task->fatal) {
-      exceptions::msg e;
-      e << ::mysql_error(_conn);
-      task->promise->set_exception(
-                       std::make_exception_ptr<exceptions::msg>(e));
-    }
-    else {
-      logging::error(logging::medium) << task->error_msg
-        << "could not execute query: " << ::mysql_error(_conn) << " (" << task->query << ")";
-    }
+    exceptions::msg e;
+    e << ::mysql_error(_conn);
+    task->promise->set_exception(
+                     std::make_exception_ptr<exceptions::msg>(e));
   }
   else {
     /* All is good here */
@@ -96,16 +90,10 @@ void mysql_connection::_query_int(mysql_task* t) {
     logging::debug(logging::low)
       << "mysql: run query failed: "
       << ::mysql_error(_conn);
-    if (task->fatal) {
-      exceptions::msg e;
-      e << ::mysql_error(_conn);
-      task->promise->set_exception(
-                       std::make_exception_ptr<exceptions::msg>(e));
-    }
-    else {
-      logging::error(logging::medium) << task->error_msg
-        << "could not execute query: " << ::mysql_error(_conn) << " (" << task->query << ")";
-    }
+    exceptions::msg e;
+    e << ::mysql_error(_conn);
+    task->promise->set_exception(
+                     std::make_exception_ptr<exceptions::msg>(e));
   }
   else {
     /* All is good here */
@@ -119,11 +107,19 @@ void mysql_connection::_query_int(mysql_task* t) {
 void mysql_connection::_commit(mysql_task* t) {
   mysql_task_commit* task(static_cast<mysql_task_commit*>(t));
   int attempts(0);
-  while (attempts++ < MAX_ATTEMPTS && mysql_commit(_conn)) {
+  int res;
+  while (attempts++ < MAX_ATTEMPTS && (res = mysql_commit(_conn))) {
     logging::error(logging::medium)
       << "could not commit queries: " << ::mysql_error(_conn);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
   }
-  if (--task->count == 0)
+  if (res) {
+    exceptions::msg e;
+    e << ::mysql_error(_conn);
+    task->promise->set_exception(
+                     std::make_exception_ptr<exceptions::msg>(e));
+  }
+  else if (--task->count == 0)
     task->promise->set_value(true);
 }
 
@@ -239,17 +235,10 @@ void mysql_connection::_statement_res(mysql_task* t) {
     logging::debug(logging::low)
       << "mysql: statement binding failed ("
       << mysql_stmt_error(stmt) << ")";
-    if (task->fatal) {
-      exceptions::msg e;
-      e << mysql_stmt_error(stmt);
-      task->promise->set_exception(
-                       std::make_exception_ptr<exceptions::msg>(e));
-    }
-    else {
-      logging::error(logging::medium)
-        << "mysql: Error while binding values in statement: "
-        << mysql_stmt_error(stmt);
-    }
+    exceptions::msg e;
+    e << mysql_stmt_error(stmt);
+    task->promise->set_exception(
+                     std::make_exception_ptr<exceptions::msg>(e));
   }
   else {
     int attempts(0);
@@ -262,18 +251,10 @@ void mysql_connection::_statement_res(mysql_task* t) {
         mysql_commit(_conn);
 
         if (++attempts >= MAX_ATTEMPTS) {
-          if (task->fatal) {
-            exceptions::msg e;
-            e << mysql_stmt_error(stmt);
-            task->promise->set_exception(
-                std::make_exception_ptr<exceptions::msg>(e));
-          }
-          else {
-            logging::error(logging::medium)
-              << "mysql: Error while sending prepared query: "
-              << mysql_stmt_error(stmt)
-              << " (" << task->error_msg << ")";
-          }
+          exceptions::msg e;
+          e << mysql_stmt_error(stmt);
+          task->promise->set_exception(
+              std::make_exception_ptr<exceptions::msg>(e));
           break;
         }
       }
@@ -342,17 +323,10 @@ void mysql_connection::_statement_int(mysql_task* t) {
     logging::debug(logging::low)
       << "mysql: statement binding failed ("
       << mysql_stmt_error(stmt) << ")";
-    if (task->fatal) {
-        exceptions::msg e;
-        e << mysql_stmt_error(stmt);
-        task->promise->set_exception(
-                         std::make_exception_ptr<exceptions::msg>(e));
-    }
-    else {
-      logging::error(logging::medium)
-        << "mysql: Error while binding values in statement: "
-        << mysql_stmt_error(stmt);
-    }
+      exceptions::msg e;
+      e << mysql_stmt_error(stmt);
+      task->promise->set_exception(
+                       std::make_exception_ptr<exceptions::msg>(e));
   }
   else {
     int attempts(0);
@@ -365,18 +339,10 @@ void mysql_connection::_statement_int(mysql_task* t) {
         mysql_commit(_conn);
 
         if (++attempts >= MAX_ATTEMPTS) {
-          if (task->fatal) {
-            exceptions::msg e;
-            e << mysql_stmt_error(stmt);
-            task->promise->set_exception(
-                std::make_exception_ptr<exceptions::msg>(e));
-          }
-          else {
-            logging::error(logging::medium)
-              << "mysql: Error while sending prepared query: "
-              << mysql_stmt_error(stmt)
-              << " (" << task->error_msg << ")";
-          }
+          exceptions::msg e;
+          e << mysql_stmt_error(stmt);
+          task->promise->set_exception(
+              std::make_exception_ptr<exceptions::msg>(e));
           break;
         }
       }
@@ -583,21 +549,20 @@ void mysql_connection::run_query(
 void mysql_connection::run_query_and_get_result(
                          std::string const& query,
                          std::promise<mysql_result>* promise,
-                         std::string const& error_msg, bool fatal) {
-  _push(std::make_shared<mysql_task_run_res>(query, promise, error_msg, fatal));
+                         std::string const& error_msg) {
+  _push(std::make_shared<mysql_task_run_res>(query, promise, error_msg));
 }
 
 void mysql_connection::run_query_and_get_int(
                          std::string const& query,
                          std::promise<int>* promise,
                          mysql_task::int_type type,
-                         std::string const& error_msg, bool fatal) {
+                         std::string const& error_msg) {
   _push(std::make_shared<mysql_task_run_int>(
                            query,
                            promise,
                            type,
-                           error_msg,
-                           fatal));
+                           error_msg));
 }
 
 void mysql_connection::run_statement(
@@ -613,26 +578,22 @@ void mysql_connection::run_statement(
 void mysql_connection::run_statement_and_get_result(
                          database::mysql_stmt& stmt,
                          std::promise<mysql_result>* promise,
-                         std::string const& error_msg,
-                         bool fatal) {
+                         std::string const& error_msg) {
   _push(std::make_shared<mysql_task_statement_res>(
                stmt,
                promise,
-               error_msg,
-               fatal));
+               error_msg));
 }
 
 void mysql_connection::run_statement_and_get_int(
                          database::mysql_stmt& stmt,
                          std::promise<int>* promise, mysql_task::int_type type,
-                         std::string const& error_msg,
-                         bool fatal) {
+                         std::string const& error_msg) {
   _push(std::make_shared<mysql_task_statement_int>(
                stmt,
                promise,
                type,
-               error_msg,
-               fatal));
+               error_msg));
 }
 
 void mysql_connection::finish() {

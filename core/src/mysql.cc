@@ -43,7 +43,7 @@ mysql::mysql(database_config const& db_cfg)
     run_query_and_get_result(
       "SELECT instance_id FROM instances LIMIT 1",
       &promise,
-      "", true);
+      "");
     _version = v2;
     promise.get_future().get();
     logging::info(logging::low)
@@ -93,13 +93,14 @@ void mysql::commit(int thread_id) {
     _connection[thread_id]->commit(&promise, ko);
   }
 
-  if (!future.get()) {
-    if (ko != 0) {
-      throw exceptions::msg()
-        << "mysql: Unable to commit transactions";
-    }
+  try {
+    if (future.get())
+      _pending_queries = 0;
   }
-  _pending_queries = 0;
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "mysql: Unable to commit transactions: " << e.what();
+  }
 }
 
 bool mysql::fetch_row(mysql_result& res) {
@@ -191,7 +192,7 @@ int mysql::run_query(std::string const& query,
 int mysql::run_query_and_get_result(
              std::string const& query,
              std::promise<mysql_result>* promise,
-             std::string const& error_msg, bool fatal,
+             std::string const& error_msg,
              int thread_id) {
   _check_errors();
   if (thread_id < 0)
@@ -201,14 +202,14 @@ int mysql::run_query_and_get_result(
   _connection[thread_id]->run_query_and_get_result(
                             query,
                             promise,
-                            error_msg, fatal);
+                            error_msg);
   return thread_id;
 }
 
 int mysql::run_query_and_get_int(
              std::string const& query,
              std::promise<int>* promise, mysql_task::int_type type,
-             std::string const& error_msg, bool fatal,
+             std::string const& error_msg,
              int thread_id) {
   _check_errors();
   if (thread_id < 0)
@@ -218,7 +219,7 @@ int mysql::run_query_and_get_int(
   _connection[thread_id]->run_query_and_get_int(
                             query,
                             promise, type,
-                            error_msg, fatal);
+                            error_msg);
   return thread_id;
 }
 
@@ -238,7 +239,7 @@ int mysql::run_statement(
 int mysql::run_statement_and_get_result(
              database::mysql_stmt& stmt,
              std::promise<mysql_result>* promise,
-             std::string const& error_msg, bool fatal,
+             std::string const& error_msg,
              int thread_id) {
   _check_errors();
   if (thread_id < 0)
@@ -248,15 +249,14 @@ int mysql::run_statement_and_get_result(
   _connection[thread_id]->run_statement_and_get_result(
                             stmt,
                             promise,
-                            error_msg,
-                            fatal);
+                            error_msg);
   return thread_id;
 }
 
 int mysql::run_statement_and_get_int(
              database::mysql_stmt& stmt,
              std::promise<int>* promise, mysql_task::int_type type,
-             std::string const& error_msg, bool fatal,
+             std::string const& error_msg,
              int thread_id) {
   _check_errors();
   if (thread_id < 0)
@@ -267,8 +267,7 @@ int mysql::run_statement_and_get_int(
                             stmt,
                             promise,
                             type,
-                            error_msg,
-                            fatal);
+                            error_msg);
   return thread_id;
 }
 

@@ -85,7 +85,7 @@ monitoring_stream::monitoring_stream(
       _mysql.run_query_and_get_result(
                "SELECT ba_id FROM mod_bam LIMIT 1",
                &promise,
-               "", true);
+               "");
       promise.get_future().get();
       _db_v2 = true;
     }

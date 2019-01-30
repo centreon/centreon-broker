@@ -171,7 +171,7 @@ void rebuilder::_run() {
             ms->run_query_and_get_result(
                   oss.str(),
                   &promise,
-                  oss_err.str(), true);
+                  oss_err.str());
             mysql_result res(promise.get_future().get());
 
             while (!_should_exit && ms->fetch_row(res)) {
@@ -257,8 +257,7 @@ void rebuilder::_next_index_to_rebuild(index_info& info, mysql& ms) {
   std::promise<mysql_result> promise;
   ms.run_query_and_get_result(
        query.str(), &promise,
-       "storage: rebuilder: could not fetch index to rebuild",
-       true);
+       "storage: rebuilder: could not fetch index to rebuild");
 
   mysql_result res(promise.get_future().get());
   if (ms.fetch_row(res)) {
@@ -322,7 +321,7 @@ void rebuilder::_rebuild_metric(
     oss_err << "storage: rebuilder: "
         << "cannot fetch data of metric " << metric_id << ": ";
     std::promise<mysql_result> promise;
-    ms.run_query_and_get_result(oss.str(), &promise, oss_err.str(), true);
+    ms.run_query_and_get_result(oss.str(), &promise, oss_err.str());
 
     if (!caught) {
       mysql_result res(promise.get_future().get());
@@ -394,7 +393,7 @@ void rebuilder::_rebuild_status(
     oss_err << "storage: rebuilder: "
             << "cannot fetch data of index " << index_id << ": ";
     std::promise<mysql_result> promise;
-    ms.run_query_and_get_result(oss.str(), &promise, oss_err.str(), false);
+    ms.run_query_and_get_result(oss.str(), &promise, oss_err.str());
     //FIXME DBR: caught is set to true in case of error
     if (!caught) {
       mysql_result res(promise.get_future().get());

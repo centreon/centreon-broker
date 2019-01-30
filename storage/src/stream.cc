@@ -358,8 +358,7 @@ void stream::_check_deleted_index() {
       std::promise<mysql_result> promise;
       _mysql.run_query_and_get_result(
                query, &promise,
-               "storage: could not query index table to get index to delete: ",
-               true);
+               "storage: could not query index table to get index to delete: ");
       mysql_result res(promise.get_future().get());
       if (!_mysql.fetch_row(res))
         break ;
@@ -379,7 +378,7 @@ void stream::_check_deleted_index() {
               << index_id << ": ";
 
       std::promise<mysql_result> promise;
-      _mysql.run_query_and_get_result(oss.str(), &promise, oss_err.str(), true);
+      _mysql.run_query_and_get_result(oss.str(), &promise, oss_err.str());
       mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res))
         metrics_to_delete.push_back(res.value_as_u64(0));
@@ -602,7 +601,7 @@ unsigned int stream::_find_index_id(
                       oss.str(),
                       &promise,
                       mysql_task::LAST_INSERT_ID,
-                      err_oss.str(), true));
+                      err_oss.str()));
       // Let's get the index id
       retval = promise.get_future().get();
       if (retval == 0) {
@@ -800,7 +799,7 @@ unsigned int stream::_find_metric_id(
                            _insert_metrics_stmt,
                            &promise,
                            mysql_task::LAST_INSERT_ID,
-                           oss.str(), true));
+                           oss.str()));
     retval = promise.get_future().get();
 
     // Insert metric in cache.

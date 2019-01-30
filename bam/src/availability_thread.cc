@@ -275,7 +275,7 @@ void availability_thread::_build_daily_availabilities(
   _mysql->run_query_and_get_result(
       query.str(),
       &promise,
-      "BAM-BI: availability thread could not build the data", true, thread_id);
+      "BAM-BI: availability thread could not build the data", thread_id);
 
   // Create a builder for each ba_id and associated timeperiod_id.
   std::map<std::pair<unsigned int, unsigned int>,
@@ -325,7 +325,6 @@ void availability_thread::_build_daily_availabilities(
       query.str(),
       &promise,
       "BAM-BI: availability thread could not build the data: ",
-      true,
       thread_id);
 
   res = promise.get_future().get();

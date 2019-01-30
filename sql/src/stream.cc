@@ -112,8 +112,7 @@ void stream::_cache_create() {
   _mysql.run_query_and_get_result(
            ss.str(),
            &promise,
-           "SQL: could not get list of deleted instances",
-           false);
+           "SQL: could not get list of deleted instances");
   mysql_result res(promise.get_future().get());
   while (_mysql.fetch_row(res))
     _cache_deleted_instance_id.insert(res.value_as_u32(0));
@@ -129,7 +128,7 @@ void stream::_host_instance_cache_create() {
   std::promise<mysql_result> promise;
   _mysql.run_query_and_get_result("SELECT host_id, instance_id FROM hosts",
            &promise,
-           "SQL: could not get the list of host/instance pairs", false);
+           "SQL: could not get the list of host/instance pairs");
   mysql_result res(promise.get_future().get());
   while (_mysql.fetch_row(res))
     _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
@@ -554,7 +553,7 @@ void stream::_process_custom_variable_status(
   _mysql.run_statement_and_get_int(
       _custom_variable_status_update,
       &promise, mysql_task::AFFECTED_ROWS,
-      oss.str(), true,
+      oss.str(),
       _cache_host_instance[cvs.host_id]
       % _mysql.connections_count());
   if (promise.get_future().get() != 1)
@@ -847,7 +846,7 @@ void stream::_process_host_check(
       _mysql.run_statement_and_get_int(
                _host_check_update,
                &promise, mysql_task::AFFECTED_ROWS,
-               oss.str(), true,
+               oss.str(),
           thread_id);
 
       if (promise.get_future().get() != 1)
@@ -1046,7 +1045,7 @@ void stream::_process_host_group_member(
     _mysql.run_statement_and_get_result(
              _host_group_member_insert,
              &promise,
-             "SQL: host group not defined", true,
+             "SQL: host group not defined",
              thread_id);
     try {
       promise.get_future().get();
@@ -1255,7 +1254,7 @@ void stream::_process_host_status(
     _mysql.run_statement_and_get_int(
              _host_status_update,
              &promise, mysql_task::AFFECTED_ROWS,
-             oss.str(), true,
+             oss.str(),
              _cache_host_instance[hs.host_id]
                   % _mysql.connections_count());
     if (promise.get_future().get() == 0) {
@@ -1370,7 +1369,7 @@ void stream::_process_instance_status(
     _mysql.run_statement_and_get_int(
              _instance_status_update,
              &promise, mysql_task::AFFECTED_ROWS,
-             oss.str(), true,
+             oss.str(),
              is.poller_id % _mysql.connections_count());
 
     if (promise.get_future().get() == 0) {
@@ -1496,7 +1495,7 @@ void stream::_process_issue_parent(
     std::promise<mysql_result> promise;
     _mysql.run_query_and_get_result(
              query.str(), &promise,
-             oss.str(), true,
+             oss.str(),
              _cache_host_instance[ip.child_host_id]
                      % _mysql.connections_count());
     mysql_result res(promise.get_future().get());
@@ -1532,7 +1531,7 @@ void stream::_process_issue_parent(
     std::promise<mysql_result> promise;
     _mysql.run_query_and_get_result(
              query.str(), &promise,
-             oss.str(), true,
+             oss.str(),
              _cache_host_instance[ip.parent_host_id]
                   % _mysql.connections_count());
     mysql_result res(promise.get_future().get());
@@ -1774,7 +1773,7 @@ void stream::_process_service_check(
       _mysql.run_statement_and_get_int(
           _service_check_update,
           &promise, mysql_task::AFFECTED_ROWS,
-          oss.str(), true,
+          oss.str(),
           _cache_host_instance[sc.host_id] % _mysql.connections_count());
 
       if (promise.get_future().get() == 0) {
@@ -1963,7 +1962,7 @@ void stream::_process_service_group_member(
     _mysql.run_statement_and_get_result(
              _service_group_member_insert,
              &promise,
-             "SQL: service group not defined", true,
+             "SQL: service group not defined",
              thread_id);
     try {
       promise.get_future().get();
@@ -2141,7 +2140,7 @@ void stream::_process_service_status(
     _mysql.run_statement_and_get_int(
         _service_status_update,
         &promise, mysql_task::AFFECTED_ROWS,
-        oss.str(), true,
+        oss.str(),
         _cache_host_instance[ss.host_id]
         % _mysql.connections_count());
 

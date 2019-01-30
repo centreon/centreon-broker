@@ -118,7 +118,7 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
   ms->run_query_and_get_result(
         oss.str(),
         &promise,
-        "", false,
+        "",
         thread_id);
 
   // The query is done from the same thread/connection
@@ -128,7 +128,7 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
   ASSERT_NO_THROW(ms->commit(thread_id));
 
   promise = std::promise<mysql_result>();
-  ms->run_query_and_get_result(oss.str(), &promise, "", false, thread_id);
+  ms->run_query_and_get_result(oss.str(), &promise, "", thread_id);
   mysql_result res1(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(res1));
 }
@@ -289,8 +289,7 @@ TEST_F(DatabaseStorageTest, QuerySyncWithError) {
   ms->run_query_and_get_result(
         "SELECT foo FROM bar LIMIT 1",
         &promise,
-        "ERROR",
-        true);
+        "ERROR");
   ASSERT_THROW(promise.get_future().get(), exceptions::msg);
 }
 
@@ -417,7 +416,7 @@ TEST_F(DatabaseStorageTest, PrepareQuerySync) {
                       stmt,
                       &promise,
                       mysql_task::LAST_INSERT_ID,
-                      "", true, 0));
+                      "", 0));
   int id(promise.get_future().get());
   ASSERT_TRUE(id > 0);
   std::cout << "id = " << id << std::endl;
@@ -841,7 +840,7 @@ TEST_F(DatabaseStorageTest, InstanceStatusStatement) {
                       inst_status_update,
                       &promise,
                       mysql_task::int_type::AFFECTED_ROWS,
-                      "", false));
+                      ""));
   ASSERT_TRUE(promise.get_future().get() == 1);
   ms->commit();
 
@@ -945,7 +944,7 @@ TEST_F(DatabaseStorageTest, HostStatusStatement) {
                       host_status_update,
                       &promise,
                       mysql_task::int_type::AFFECTED_ROWS,
-                      "", false));
+                      ""));
 
   ASSERT_TRUE(promise.get_future().get() == 1);
 
@@ -1053,7 +1052,7 @@ TEST_F(DatabaseStorageTest, ServiceCheckStatement) {
                       service_check_update,
                       &promise,
                       mysql_task::int_type::AFFECTED_ROWS,
-                      "", false));
+                      ""));
 
   ASSERT_TRUE(promise.get_future().get() == 1);
 
@@ -1103,7 +1102,7 @@ TEST_F(DatabaseStorageTest, ServiceStatusStatement) {
                       service_status_update,
                       &promise,
                       mysql_task::int_type::AFFECTED_ROWS,
-                      "", false));
+                      ""));
 
   ASSERT_TRUE(promise.get_future().get() == 1);
 
@@ -1308,7 +1307,7 @@ TEST_F(DatabaseStorageTest, HostGroupMemberStatement) {
   int thread_id(ms->run_statement_and_get_result(
                       host_group_member_insert,
                       &promise,
-                      "Error: host group not defined", true));
+                      "Error: host group not defined"));
   try {
     promise.get_future().get();
   }
@@ -1376,7 +1375,7 @@ TEST_F(DatabaseStorageTest, HostParentStatement) {
         host_parent_insert,
         &promise,
         mysql_task::int_type::AFFECTED_ROWS,
-        oss.str(), false));
+        oss.str()));
 
   ASSERT_TRUE(promise.get_future().get() == 1);
 
@@ -1386,7 +1385,7 @@ TEST_F(DatabaseStorageTest, HostParentStatement) {
         host_parent_insert,
         &promise,
         mysql_task::int_type::AFFECTED_ROWS,
-        oss.str(), false,
+        oss.str(),
         thread_id);
 
   ASSERT_TRUE(promise.get_future().get() == 0);
@@ -1400,7 +1399,7 @@ TEST_F(DatabaseStorageTest, HostParentStatement) {
         host_parent_delete,
         &promise,
         mysql_task::int_type::AFFECTED_ROWS,
-        "SQL: ", false,
+        "SQL: ",
         thread_id);
 
   ASSERT_TRUE(promise.get_future().get() == 1);
@@ -1455,7 +1454,7 @@ TEST_F(DatabaseStorageTest, ServiceGroupMemberStatement) {
   int thread_id(ms->run_statement_and_get_result(
                       service_group_member_insert,
                       &promise,
-                      "Error: service group not defined", true));
+                      "Error: service group not defined"));
   ASSERT_THROW(promise.get_future().get(), std::exception);
   neb::service_group sg;
   sg.id = 8;
@@ -1475,7 +1474,7 @@ TEST_F(DatabaseStorageTest, ServiceGroupMemberStatement) {
   ms->run_statement_and_get_result(
                  service_group_member_insert,
                  &promise,
-                 "Error: service group not defined", true,
+                 "Error: service group not defined",
                  thread_id);
   ASSERT_NO_THROW(promise.get_future().get());
   ms->commit();

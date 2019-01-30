@@ -48,12 +48,12 @@ class                   mysql {
   int                   run_query_and_get_result(
                           std::string const& query,
                           std::promise<mysql_result>* promise,
-                          std::string const& error_msg = "", bool fatal = false,
+                          std::string const& error_msg = "",
                           int thread = -1);
   int                   run_query_and_get_int(
                           std::string const& query,
                           std::promise<int>* promise, mysql_task::int_type type,
-                          std::string const& error_msg = "", bool fatal = false,
+                          std::string const& error_msg = "",
                           int thread = -1);
 
   int                   run_statement(
@@ -64,13 +64,13 @@ class                   mysql {
   int                   run_statement_and_get_result(
                           database::mysql_stmt& stmt,
                           std::promise<mysql_result>* promise,
-                          std::string const& error_msg = "", bool fatal = false,
+                          std::string const& error_msg = "",
                           int thread_id = -1);
 
   int                   run_statement_and_get_int(
                           database::mysql_stmt& stmt,
                           std::promise<int>* promise, mysql_task::int_type type,
-                          std::string const& error_msg = "", bool fatal = false,
+                          std::string const& error_msg = "",
                           int thread_id = -1);
 
   bool                  fetch_row(mysql_result& res);
