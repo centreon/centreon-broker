@@ -600,7 +600,7 @@ unsigned int stream::_find_index_id(
       int thread_id(_mysql.run_query_and_get_int(
                       oss.str(),
                       &promise,
-                      mysql_task::LAST_INSERT_ID,
+                      database::mysql_task::LAST_INSERT_ID,
                       err_oss.str()));
       // Let's get the index id
       retval = promise.get_future().get();
@@ -798,7 +798,7 @@ unsigned int stream::_find_metric_id(
     int thread_id(_mysql.run_statement_and_get_int(
                            _insert_metrics_stmt,
                            &promise,
-                           mysql_task::LAST_INSERT_ID,
+                           database::mysql_task::LAST_INSERT_ID,
                            oss.str()));
     retval = promise.get_future().get();
 

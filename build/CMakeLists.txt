@@ -592,7 +592,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/mysql_manager.hh"
   "${INC_DIR}/mysql_result.hh"
   "${INC_DIR}/database/mysql_stmt.hh"
-  "${INC_DIR}/mysql_task.hh"
+  "${INC_DIR}/database/mysql_task.hh"
   "${INC_DIR}/mysql_connection.hh"
   "${INC_DIR}/query_preparator.hh"
   "${INC_DIR}/persistent_cache.hh"

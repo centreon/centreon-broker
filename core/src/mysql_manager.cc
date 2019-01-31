@@ -109,10 +109,10 @@ database::mysql_error mysql_manager::get_error() {
   return std::move(_error);
 }
 
-void mysql_manager::set_error(std::string const& message, bool fatal) {
+void mysql_manager::set_error(std::string const& message) {
   std::lock_guard<std::mutex> locker(_err_mutex);
   if (!_error.is_active())
-    _error = database::mysql_error(message.c_str(), fatal);
+    _error = database::mysql_error(message.c_str(), true);
 }
 
 void mysql_manager::clear_error() {

@@ -53,7 +53,7 @@ void mysql_connection::_query(mysql_task* t) {
       << "mysql: run query failed: "
       << ::mysql_error(_conn);
     if (task->fatal)
-      mysql_manager::instance().set_error(::mysql_error(_conn), true);
+      mysql_manager::instance().set_error(::mysql_error(_conn));
     else {
       logging::error(logging::medium) << task->error_msg
         << "could not execute query: " << ::mysql_error(_conn) << " (" << task->query << ")";
@@ -141,7 +141,7 @@ void mysql_connection::_prepare(mysql_task* t) {
   MYSQL_STMT* stmt(mysql_stmt_init(_conn));
   if (!stmt)
     mysql_manager::instance().set_error(
-      "statement initialization failed: insuffisant memory", true);
+      "statement initialization failed: insuffisant memory");
   else {
     if (mysql_stmt_prepare(stmt, task->query.c_str(), task->query.size())) {
       logging::debug(logging::low)
@@ -150,7 +150,7 @@ void mysql_connection::_prepare(mysql_task* t) {
       std::ostringstream oss;
       oss << "statement preparation failed ("
           << mysql_stmt_error(stmt) << ")";
-      mysql_manager::instance().set_error(oss.str(), true);
+      mysql_manager::instance().set_error(oss.str());
     }
     else
       _stmt[task->id] = stmt;
@@ -167,7 +167,7 @@ void mysql_connection::_statement(mysql_task* t) {
   if (!stmt) {
     logging::debug(logging::low)
       << "mysql: no statement to execute";
-    mysql_manager::instance().set_error("statement not prepared", true);
+    mysql_manager::instance().set_error("statement not prepared");
     return ;
   }
   MYSQL_BIND* bb(NULL);
@@ -179,7 +179,7 @@ void mysql_connection::_statement(mysql_task* t) {
       << "mysql: statement binding failed ("
       << mysql_stmt_error(stmt) << ")";
     if (task->fatal)
-      mysql_manager::instance().set_error(mysql_stmt_error(stmt), task->fatal);
+      mysql_manager::instance().set_error(mysql_stmt_error(stmt));
     else {
       logging::error(logging::medium)
         << "mysql: Error while binding values in statement: "
@@ -198,7 +198,7 @@ void mysql_connection::_statement(mysql_task* t) {
 
         if (++attempts >= MAX_ATTEMPTS) {
           if (task->fatal)
-            mysql_manager::instance().set_error(mysql_stmt_error(stmt), task->fatal);
+            mysql_manager::instance().set_error(mysql_stmt_error(stmt));
           else {
             logging::error(logging::medium)
               << "mysql: Error while sending prepared query: "
@@ -224,7 +224,7 @@ void mysql_connection::_statement_res(mysql_task* t) {
   if (!stmt) {
     logging::debug(logging::low)
       << "mysql: no statement to execute";
-    mysql_manager::instance().set_error("statement not prepared", true);
+    mysql_manager::instance().set_error("statement not prepared");
     return ;
   }
   MYSQL_BIND* bb(NULL);
@@ -312,7 +312,7 @@ void mysql_connection::_statement_int(mysql_task* t) {
   if (!stmt) {
     logging::debug(logging::low)
       << "mysql: no statement to execute";
-    mysql_manager::instance().set_error("statement not prepared", true);
+    mysql_manager::instance().set_error("statement not prepared");
     return ;
   }
   MYSQL_BIND* bb(NULL);
@@ -421,9 +421,8 @@ std::string mysql_connection::_get_stack() {
 void mysql_connection::_run() {
   std::unique_lock<std::mutex> locker(_result_mutex);
   _conn = mysql_init(NULL);
-  if (!_conn) {
-    mysql_manager::instance().set_error(::mysql_error(_conn), true);
-  }
+  if (!_conn)
+    mysql_manager::instance().set_error(::mysql_error(_conn));
   else if (!mysql_real_connect(
          _conn,
          _host.c_str(),
@@ -432,9 +431,8 @@ void mysql_connection::_run() {
          _name.c_str(),
          _port,
          NULL,
-         0)) {
-    mysql_manager::instance().set_error(::mysql_error(_conn), true);
-  }
+         0))
+    mysql_manager::instance().set_error(::mysql_error(_conn));
 
   if (_qps > 1)
     mysql_autocommit(_conn, 0);

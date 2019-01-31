@@ -43,7 +43,7 @@ class                   mysql_manager {
   bool                  is_in_error() const;
   void                  clear_error();
   database::mysql_error get_error();
-  void                  set_error(std::string const& message, bool fatal);
+  void                  set_error(std::string const& message);
   std::map<std::string, std::string>
                         get_stats() const;
 
