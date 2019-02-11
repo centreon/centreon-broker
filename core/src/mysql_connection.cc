@@ -228,7 +228,10 @@ void mysql_connection::_statement_res(mysql_task* t) {
   if (!stmt) {
     logging::debug(logging::low)
       << "mysql: no statement to execute";
-    mysql_manager::instance().set_error("statement not prepared");
+    exceptions::msg e;
+    e << "statement not prepared";
+    task->promise->set_exception(
+                     std::make_exception_ptr<exceptions::msg>(e));
     return ;
   }
   MYSQL_BIND* bb(NULL);
@@ -316,7 +319,10 @@ void mysql_connection::_statement_int(mysql_task* t) {
   if (!stmt) {
     logging::debug(logging::low)
       << "mysql: no statement to execute";
-    mysql_manager::instance().set_error("statement not prepared");
+      exceptions::msg e;
+      e << "statement not prepared";
+      task->promise->set_exception(
+                       std::make_exception_ptr<exceptions::msg>(e));
     return ;
   }
   MYSQL_BIND* bb(NULL);

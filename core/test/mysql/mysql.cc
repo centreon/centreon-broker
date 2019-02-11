@@ -1322,6 +1322,7 @@ TEST_F(DatabaseStorageTest, HostGroupMemberStatement) {
                    "Error: Unable to create host group", true,
                    thread_id);
 
+    host_group_member_insert << hgm;
     ms->run_statement(
                    host_group_member_insert,
                    "Error: host group not defined", true,
