@@ -27,6 +27,7 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
@@ -128,7 +129,11 @@ stream::stream(
 /**
  *  Destructor.
  */
-stream::~stream() {}
+stream::~stream() {
+  mysql_manager::instance().clear();
+  logging::error(logging::medium)
+    << "storage: ~stream";
+}
 
 /**
  *  Flush the stream.
@@ -597,11 +602,11 @@ unsigned int stream::_find_index_id(
               << ") failed: ";
 
       std::promise<int> promise;
-      int thread_id(_mysql.run_query_and_get_int(
+      _mysql.run_query_and_get_int(
                       oss.str(),
                       &promise,
                       database::mysql_task::LAST_INSERT_ID,
-                      err_oss.str()));
+                      err_oss.str());
       // Let's get the index id
       retval = promise.get_future().get();
       if (retval == 0) {
@@ -720,22 +725,8 @@ unsigned int stream::_find_metric_id(
       _update_metrics_stmt.bind_value_as_f32(9, value);
       _update_metrics_stmt.bind_value_as_i32(10, it->second.metric_id);
 
-      logging::info(logging::medium) << "FIXME DBR: UPDATE metrics "
-        << "SET unit_name='" << unit_name
-        << "', warn=" << warn
-        << ", warn_low=" << warn_low
-        << ", warn_threshold_mode='" << warn_mode
-        << "', crit=" << crit
-        << ", crit_low=" << crit_low
-        << ", crit_threshold_mode='" << crit_mode
-        << "', min=" << min
-        << ", max=" << max
-        << ", current_value=" << value
-        << " WHERE metric_id=" << it->second.metric_id;
-
       // Only use the thread_id 0
       _mysql.run_statement(_update_metrics_stmt, "UPDATE metrics", true);
-      logging::info(logging::medium) << "FIXME DBR: UPDATE metrics DONE";
       if (_mysql.commit_if_needed())
         _set_ack_events();
 
@@ -795,11 +786,11 @@ unsigned int stream::_find_metric_id(
         << " failed: ";
 
     std::promise<int> promise;
-    int thread_id(_mysql.run_statement_and_get_int(
-                           _insert_metrics_stmt,
-                           &promise,
-                           database::mysql_task::LAST_INSERT_ID,
-                           oss.str()));
+    _mysql.run_statement_and_get_int(
+             _insert_metrics_stmt,
+             &promise,
+             database::mysql_task::LAST_INSERT_ID,
+             oss.str());
     retval = promise.get_future().get();
 
     // Insert metric in cache.
@@ -980,8 +971,7 @@ void stream::_rebuild_cache() {
       unsigned int host_id(res.value_as_u32(1));
       unsigned int service_id(res.value_as_u32(2));
       info.host_name = QString(res.value_as_str(3).c_str());
-      // FIXME DBR
-      info.rrd_retention = res.value_as_u32(4);   //(q.value(4).isNull() ? 0 : q.value(4).toUInt());
+      info.rrd_retention = res.value_as_u32(4);
       if (!info.rrd_retention)
         info.rrd_retention = _rrd_len;
       info.service_description = QString(res.value_as_str(5).c_str());

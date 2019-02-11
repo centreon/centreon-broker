@@ -116,8 +116,8 @@ namespace database {
                              std::promise<mysql_result>* promise,
                              std::string const& error_msg)
                             : mysql_task(mysql_task::RUN_RES),
-                              promise(promise),
                               query(q),
+                              promise(promise),
                               error_msg(error_msg) {}
     std::string            query;
     std::promise<mysql_result>*

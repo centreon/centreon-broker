@@ -29,14 +29,16 @@ mysql_manager& mysql_manager::instance() {
   return _singleton;
 }
 
+/**
+ *  Constructor
+ */
 mysql_manager::mysql_manager()
   : _current_thread(0),
-    _version(mysql::v2) {   // FIXME DBR
-  if (mysql_library_init(0, nullptr, nullptr))
-    throw exceptions::msg()
-      << "mysql_manager: unable to initialize the MySQL connector";
-}
+    _version(mysql::v2) {}
 
+/**
+ *  Destructor
+ */
 mysql_manager::~mysql_manager() {
   // If connections are still active but unique here, we can remove them
   std::lock_guard<std::mutex> cfg_lock(_cfg_mutex);
@@ -56,14 +58,20 @@ mysql_manager::~mysql_manager() {
 std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
                       database_config const& db_cfg) {
   std::vector<std::shared_ptr<mysql_connection>> retval;
-  int connection_count(db_cfg.get_connections_count());
+  unsigned int connection_count(db_cfg.get_connections_count());
+
+  if (_connection.size() == 0) {
+    if (mysql_library_init(0, nullptr, nullptr))
+      throw exceptions::msg()
+        << "mysql_manager: unable to initialize the MySQL connector";
+  }
 
   {
-    int current_connection(0);
+    unsigned int current_connection(0);
     std::lock_guard<std::mutex> lock(_cfg_mutex);
     for (std::shared_ptr<mysql_connection> c : _connection) {
       // Is this thread matching what the configuration needs?
-      if (c->match_config(db_cfg)) {
+      if (c->match_config(db_cfg) && !c->is_finished()) {
         // Yes
         retval.push_back(c);
         ++current_connection;
@@ -83,13 +91,30 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
   return retval;
 }
 
+void mysql_manager::clear() {
+  std::lock_guard<std::mutex> lock(_cfg_mutex);
+  // If connections are still active but unique here, we can remove them
+  for (std::shared_ptr<mysql_connection>& conn : _connection) {
+    if (!conn.unique() && !conn->is_finished())
+      try {
+        conn->finish();
+      }
+      catch (std::exception const& e) {
+        logging::info(logging::low)
+          << "mysql_manager: Unable to stop a connection: " << e.what();
+      }
+  }
+  logging::error(logging::high)
+    << "mysql_manager: clear finished";
+}
+
 void mysql_manager::update_connections() {
   std::lock_guard<std::mutex> lock(_cfg_mutex);
   // If connections are still active but unique here, we can remove them
   std::vector<std::shared_ptr<mysql_connection>>::iterator
        it(_connection.begin());
   while (it != _connection.end()) {
-    if (it->unique()) {
+    if (it->unique() || (*it)->is_finished()) {
       logging::info(logging::low)
         << "mysql_manager: one connection removed";
       it = _connection.erase(it);
@@ -97,6 +122,11 @@ void mysql_manager::update_connections() {
     else
       ++it;
   }
+  logging::error(logging::high)
+    << "mysql_manager: active connections: " << _connection.size();
+
+  if (_connection.size() == 0)
+    mysql_library_end();
 }
 
 bool mysql_manager::is_in_error() const {

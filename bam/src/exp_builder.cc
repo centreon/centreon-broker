@@ -186,9 +186,6 @@ exp_builder::exp_builder(
         throw (exceptions::msg() << "internal expression parsing "
                << "error: no arity placed after function name in "
                << "postfix notation");
-      int arity(std::strtol(it->c_str(), NULL, 0));
-
-      // XXX
     }
     // Operand (will be evaluated when poped).
     else {

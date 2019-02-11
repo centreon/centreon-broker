@@ -25,15 +25,13 @@ using namespace com::centreon::broker;
 mysql_result::mysql_result(mysql_connection* parent, int statement_id)
   : _parent(parent),
     _result(nullptr, mysql_free_result),
-    _statement_id(statement_id),
-    _row(nullptr) {
-}
+    _row(nullptr),
+    _statement_id(statement_id) {}
 
 mysql_result::mysql_result(mysql_connection* parent, MYSQL_RES* result)
   : _parent(parent),
     _result(result, mysql_free_result),
-    _statement_id(0) {
-}
+    _statement_id(0) {}
 
 mysql_result::mysql_result(mysql_result&& other)
   : _parent(other._parent),

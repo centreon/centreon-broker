@@ -22,7 +22,6 @@
 #  include <map>
 #  include <memory>
 #  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/database/mysql_bind.hh"
 
 CCB_BEGIN()

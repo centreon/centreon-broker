@@ -89,7 +89,7 @@ char* const mysql_bind::value_as_str(int range) const {
 }
 
 void mysql_bind::set_value_as_str(int range, std::string const& value) {
-  assert(range < _bind.size());
+  assert(static_cast<unsigned int>(range) < _bind.size());
   if (!_prepared(range))
     _prepare_type(range, MYSQL_TYPE_STRING);
   _column[range].set_value(value);
@@ -99,7 +99,7 @@ void mysql_bind::set_value_as_str(int range, std::string const& value) {
 }
 
 void mysql_bind::set_value_as_tiny(int range, char value) {
-  assert(range < _bind.size());
+  assert(static_cast<unsigned int>(range) < _bind.size());
   //if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
@@ -121,7 +121,7 @@ void mysql_bind::set_value_as_bool(int range, bool value) {
 }
 
 void mysql_bind::set_value_as_i32(int range, int value) {
-  assert(range < _bind.size());
+  assert(static_cast<unsigned int>(range) < _bind.size());
   //if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
@@ -146,7 +146,7 @@ int mysql_bind::value_as_i32(int range) const {
 }
 
 void mysql_bind::set_value_as_u32(int range, unsigned int value) {
-  assert(range < _bind.size());
+  assert(static_cast<unsigned int>(range) < _bind.size());
   //if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
@@ -171,7 +171,7 @@ unsigned int mysql_bind::value_as_u32(int range) const {
 }
 
 void mysql_bind::set_value_as_u64(int range, unsigned long long value) {
-  assert(range < _bind.size());
+  assert(static_cast<unsigned int>(range) < _bind.size());
   //if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
@@ -196,7 +196,7 @@ unsigned long long mysql_bind::value_as_u64(int range) const {
 }
 
 void mysql_bind::set_value_as_f32(int range, float value) {
-  assert(range < _bind.size());
+  assert(static_cast<unsigned int>(range) < _bind.size());
   //if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
@@ -220,7 +220,7 @@ float mysql_bind::value_as_f32(int range) const {
 }
 
 void mysql_bind::set_value_as_f64(int range, double value) {
-  assert(range < _bind.size());
+  assert(static_cast<unsigned int>(range) < _bind.size());
   //if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
@@ -244,7 +244,7 @@ double mysql_bind::value_as_f64(int range) const {
 }
 
 void mysql_bind::set_value_as_null(int range) {
-  assert(range < _bind.size());
+  assert(static_cast<unsigned int>(range) < _bind.size());
   //if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))

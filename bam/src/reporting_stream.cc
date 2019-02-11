@@ -65,8 +65,8 @@ using namespace com::centreon::broker::database;
  *  @param[in] check_replication       true to check replication status.
  */
 reporting_stream::reporting_stream(database_config const& db_cfg)
-  : _pending_events(0),
-    _ack_events(0),
+  : _ack_events(0),
+    _pending_events(0),
     _mysql(db_cfg) {
   // Prepare queries.
   _prepare();

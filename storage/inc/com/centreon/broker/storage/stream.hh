@@ -129,10 +129,10 @@ namespace          storage {
                    _index_cache;
     bool           _insert_in_index_data;
     unsigned int   _interval_length;
+    int            _ack_events;
+    int            _pending_events;
     std::map<std::pair<unsigned int, QString>, metric_info>
                    _metric_cache;
-    int            _pending_events;
-    int            _ack_events;
     std::deque<metric_value>
                    _perfdata_queue;
     rebuilder      _rebuilder;

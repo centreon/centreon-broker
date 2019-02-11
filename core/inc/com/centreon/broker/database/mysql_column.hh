@@ -54,7 +54,7 @@ namespace             database {
    private:
     int                 _type;
     int                 _row_count;
-    int                 _str_size;
+    unsigned int        _str_size;
     void*               _vector;
     std::vector<my_bool>
                         _is_null;

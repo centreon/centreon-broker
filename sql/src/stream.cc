@@ -27,6 +27,7 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
+#include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
@@ -825,7 +826,6 @@ void stream::_process_host_check(
     }
 
     // Processing.
-    size_t str_hash;
     bool store(true);
     if (_enable_cmd_cache) {
       size_t str_hash = std::hash<std::string>{}(hc.command_line.toStdString());
@@ -1038,16 +1038,13 @@ void stream::_process_host_group_member(
     }
     _host_group_member_insert << hgm;
 
-    // FIXME DBR: We could do better to avoid this promise that waits for
-    // the insertion to be finished.
-    std::promise<mysql_result> promise;
-
-    _mysql.run_statement_and_get_result(
-             _host_group_member_insert,
-             &promise,
-             "SQL: host group not defined",
-             thread_id);
     try {
+      std::promise<mysql_result> promise;
+      _mysql.run_statement_and_get_result(
+               _host_group_member_insert,
+               &promise,
+               "SQL: host group not defined",
+               thread_id);
       promise.get_future().get();
     }
     catch (std::exception const& e) {
@@ -1579,7 +1576,6 @@ void stream::_process_issue_parent(
       << "SQL: inserting issue parenting between child " << child_id
       << " and parent " << parent_id << " (start: " << ip.start_time
       << ", end: " << ip.end_time << ")";
-    //FIXME DBR: the bind is surely incomplete
     _mysql.run_statement(
              _issue_parent_insert,
              "SQL: issue parent insert query failed");
@@ -2393,6 +2389,9 @@ stream::~stream() {
   // Stop cleanup thread.
   _cleanup_thread.exit();
   _cleanup_thread.wait(-1);
+  logging::error(logging::medium)
+    << "SQL: ~stream";
+  mysql_manager::instance().clear();
 }
 
 /**

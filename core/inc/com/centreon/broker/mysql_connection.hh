@@ -24,6 +24,7 @@
 #  include <future>
 #  include <list>
 #  include <mutex>
+#  include <unordered_map>
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/mysql_result.hh"
 #  include "com/centreon/broker/database/mysql_stmt.hh"
@@ -82,6 +83,7 @@ class                    mysql_connection {
   int                     get_stmt_size() const;
   bool                    match_config(database_config const& db_cfg) const;
   int                     get_tasks_count() const;
+  bool                    is_finished() const;
 
  private:
 
@@ -114,7 +116,7 @@ class                    mysql_connection {
   // Mutex and condition working on _tasks_list.
   std::mutex              _list_mutex;
   std::condition_variable _tasks_condition;
-  bool                    _finished;
+  std::atomic<bool>       _finished;
   std::list<std::shared_ptr<database::mysql_task> >
                           _tasks_list;
   std::atomic_int         _tasks_count;

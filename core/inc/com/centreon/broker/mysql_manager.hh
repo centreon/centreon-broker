@@ -38,7 +38,6 @@ class                   mysql_manager {
   static mysql_manager& instance();
   std::vector<std::shared_ptr<mysql_connection>>
                         get_connections(database_config const& db_cfg);
-  void                  update_connections();
   bool                  commit_if_needed();
   bool                  is_in_error() const;
   void                  clear_error();
@@ -46,6 +45,8 @@ class                   mysql_manager {
   void                  set_error(std::string const& message);
   std::map<std::string, std::string>
                         get_stats() const;
+  void                  update_connections();
+  void                  clear();
 
  private:
                         mysql_manager();

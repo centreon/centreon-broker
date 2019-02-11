@@ -108,7 +108,7 @@ static int l_broker_cache_get_bv(lua_State* L) {
 static int l_broker_cache_get_bvs(lua_State* L) {
   macro_cache const* cache(
     *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
-  int ba_id(luaL_checkinteger(L, 2));
+  unsigned int ba_id(luaL_checkinteger(L, 2));
 
   QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event> const&
     relations(cache->get_dimension_ba_bv_relation_events());
@@ -120,7 +120,7 @@ static int l_broker_cache_get_bvs(lua_State* L) {
   int i = 1;
   while (it != relations.end() && it.key() == ba_id) {
     bam::dimension_ba_bv_relation_event const& rel(it.value());
-    lua_pushinteger(L, it.value().bv_id);
+    lua_pushinteger(L, rel.bv_id);
     lua_rawseti(L, -2, i);
     ++i;
     ++it;

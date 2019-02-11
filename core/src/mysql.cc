@@ -59,11 +59,10 @@ mysql::mysql(database_config const& db_cfg)
  *  Destructor
  */
 mysql::~mysql() {
-  //bool retval(finish());
-  //if (!retval)
-  //  logging::error(logging::medium)
-  //    << "mysql: A thread was forced to stop after a timeout of 20s";
+  _connection.clear();
   mysql_manager::instance().update_connections();
+  logging::error(logging::high)
+    << "mysql::~mysql";
 }
 
 /**
@@ -103,6 +102,14 @@ void mysql::commit(int thread_id) {
   }
 }
 
+/**
+ *  fetch_row
+ *
+ * @param[out] res A mysql_result reference that will get the next row of
+ *                 a result.
+ *
+ * @return A boolean telling if there are another row after.
+ */
 bool mysql::fetch_row(mysql_result& res) {
   _check_errors();
   return res.get_connection()->fetch_row(res);
@@ -143,6 +150,14 @@ void mysql::_check_errors() {
   }
 }
 
+/**
+ *  _get_best_connection
+ *
+ * This method compares the connections activity and returns the index of
+ * the best one to execute a new query.
+ *
+ * @return an integer.
+ */
 int mysql::_get_best_connection() {
   /* We work with _current_connection to avoid always working with the same
    * connections. */
@@ -162,16 +177,14 @@ int mysql::_get_best_connection() {
 }
 
 /**
- *  The simplest way to execute a query. Only the first arg is needed.
+ *  The simplest way to execute a query. Only the first arg is mandatory.
  *
  * @param query The query to execute.
  * @param error_msg An error message to complete the error message returned
  *                  by the mysql connector.
  * @param fatal A boolean telling if the error is fatal. In that case, an
- *              exception will be thrown if the error occures.
+ *              exception will be thrown if an error occures.
  * @param thread A thread id or 0 to keep the library choosing which one.
- * @param p A pointer to a promise or NULL. If it exists, it will be filled
- *        with the result of the query.
  *
  * @return The thread id that executed the query.
  */
@@ -189,6 +202,22 @@ int mysql::run_query(std::string const& query,
   return thread_id;
 }
 
+/**
+ * This method looks like run_query but it is used when we need a result given
+ * by the query.
+ *
+ * @param query The query to execute.
+ * @param promise A promise that will contain the result when it will be
+ *                available.
+ * @param error_msg An error message to complete the error message returned
+ *                  by the mysql connector.
+ * @param thread A thread id or 0 to keep the library choosing which one.
+ *
+ * With this function, the query is done. The promise will provide the result
+ * if available and it will contain an exception if the query failed.
+ *
+ * @return The thread id that executed the query.
+ */
 int mysql::run_query_and_get_result(
              std::string const& query,
              std::promise<mysql_result>* promise,
@@ -206,6 +235,24 @@ int mysql::run_query_and_get_result(
   return thread_id;
 }
 
+/**
+ * This method looks like run_query but it is used when we need to get back
+ * an integer such as an inserted id or a number of rows.
+ *
+ * @param query The query to execute.
+ * @param promise A promise that will contain the integer when it will be
+ *                available.
+ * @param type An int_type to tell what kind of integer the promise will
+ *             contain.
+ * @param error_msg An error message to complete the error message returned
+ *                  by the mysql connector.
+ * @param thread_id A thread id or 0 to keep the library choosing which one.
+ *
+ * With this function, the query is done. The promise will provide an integer
+ * corresponding to the type given in parameter.
+ *
+ * @return The thread id that executed the query.
+ */
 int mysql::run_query_and_get_int(
              std::string const& query,
              std::promise<int>* promise, mysql_task::int_type type,
@@ -223,6 +270,19 @@ int mysql::run_query_and_get_int(
   return thread_id;
 }
 
+/**
+ * This method executes a previously prepared statement. It works almost
+ * like the run_query() method.
+ *
+ * @param stmt The statement to execute.
+ * @param error_msg An error message to complete the error message returned
+ *                  by the mysql connector.
+ * @param fatal A boolean telling if the error is fatal. In that case, an
+ *              exception will be thrown if an error occures.
+ * @param thread A thread id or 0 to keep the library choosing which one.
+ *
+ * @return The thread id that executed the query.
+ */
 int mysql::run_statement(
              database::mysql_stmt& stmt,
              std::string const& error_msg, bool fatal,
@@ -236,6 +296,22 @@ int mysql::run_statement(
   return thread_id;
 }
 
+/**
+ * This method looks like run_query_and_get_result but it is used to execute a
+ * prepared statement.
+ *
+ * @param stmt The statement to execute.
+ * @param promise A promise that will contain the result when it will be
+ *                available.
+ * @param error_msg An error message to complete the error message returned
+ *                  by the mysql connector.
+ * @param thread_id A thread id or 0 to keep the library choosing which one.
+ *
+ * With this function, the query is done. The promise will provide the result
+ * if available and it will contain an exception if the query failed.
+ *
+ * @return The thread id that executed the query.
+ */
 int mysql::run_statement_and_get_result(
              database::mysql_stmt& stmt,
              std::promise<mysql_result>* promise,
@@ -253,6 +329,22 @@ int mysql::run_statement_and_get_result(
   return thread_id;
 }
 
+/**
+ * This method looks like run_query_and_get_int but it is used to execute a
+ * prepared statement.
+ *
+ * @param stmt The statement to execute.
+ * @param promise A promise that will contain the result when it will be
+ *                available.
+ * @param error_msg An error message to complete the error message returned
+ *                  by the mysql connector.
+ * @param thread_id A thread id or 0 to keep the library choosing which one.
+ *
+ * With this function, the query is done. The promise will provide the result
+ * if available and it will contain an exception if the query failed.
+ *
+ * @return The thread id that executed the query.
+ */
 int mysql::run_statement_and_get_int(
              database::mysql_stmt& stmt,
              std::promise<int>* promise, mysql_task::int_type type,
@@ -271,6 +363,11 @@ int mysql::run_statement_and_get_int(
   return thread_id;
 }
 
+/**
+ *  This method prepares a statement.
+ *
+ * @param stmt The statement to prepare.
+ */
 void mysql::prepare_statement(mysql_stmt const& stmt) {
   for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
          it(_connection.begin()),
@@ -280,6 +377,17 @@ void mysql::prepare_statement(mysql_stmt const& stmt) {
     (*it)->prepare_query(stmt.get_id(), stmt.get_query());
 }
 
+/**
+ *  This method prepares a statement from a query string and a bind mapping.
+ *  The bind_mapping is not mandatory, it is almost a correspondance between
+ *  positions and column names. If the query is made with only positions,
+ *  it is not needed.
+ *
+ * @param query The query string.
+ * @param bind_mapping The bind mapping.
+ *
+ * @return A mysql_stmt prepared and ready to use.
+ */
 mysql_stmt mysql::prepare_query(std::string const& query,
                          mysql_bind_mapping const& bind_mapping) {
   mysql_stmt retval(query, bind_mapping);
@@ -288,10 +396,20 @@ mysql_stmt mysql::prepare_query(std::string const& query,
   return retval;
 }
 
+/**
+ *  Returns the version of the database schema.
+ *
+ *  @return  A version as mysql::version.
+ */
 mysql::version mysql::schema_version() const {
   return _version;
 }
 
+/**
+ *  Returns the connections count used by this mysql object.
+ *
+ * @return an integer.
+ */
 int mysql::connections_count() const {
   return _connection.size();
 }

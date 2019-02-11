@@ -94,7 +94,6 @@ mysql_stmt::mysql_stmt(std::string const& query, bool named) {
   }
   else {
     _id = hash_fn(query);
-    bool in_string(false), jocker(false);
     _query = query;
 
     // How many '?' in the query, we don't count '?' in strings.
@@ -114,12 +113,15 @@ mysql_stmt::mysql_stmt(std::string const& query,
 
 }
 
+/**
+ *  Move constructor
+ */
 mysql_stmt::mysql_stmt(mysql_stmt&& other)
  : _id(other._id),
    _param_count(other._param_count),
    _query(other._query),
-   _bind_mapping(other._bind_mapping),
-   _bind(std::move(other._bind)) {}
+   _bind(std::move(other._bind)),
+   _bind_mapping(other._bind_mapping) {}
 
 mysql_stmt& mysql_stmt::operator=(mysql_stmt const& other) {
   if (this != &other) {
@@ -184,8 +186,6 @@ void mysql_stmt::operator<<(io::data const& d) {
         entry_name = current_entry->get_name();
       if (entry_name
           && entry_name[0]) {
-          //          FIXME DBR
-//          && (_excluded.find(entry_name) == _excluded.end())) {
         std::string field(":");
         field.append(entry_name);
         switch (current_entry->get_type()) {

@@ -109,6 +109,9 @@ void mysql_connection::_commit(mysql_task* t) {
   int attempts(0);
   int res;
   while (attempts++ < MAX_ATTEMPTS && (res = mysql_commit(_conn))) {
+    char const* err(::mysql_error(_conn));
+    if (strcmp(err, "MySQL server has gone away") == 0)
+      attempts = MAX_ATTEMPTS;
     logging::error(logging::medium)
       << "could not commit queries: " << ::mysql_error(_conn);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -139,9 +142,10 @@ void mysql_connection::_prepare(mysql_task* t) {
     << "mysql: prepare query: "
     << task->id << " ( " << task->query << " )";
   MYSQL_STMT* stmt(mysql_stmt_init(_conn));
-  if (!stmt)
+  if (!stmt) {
     mysql_manager::instance().set_error(
       "statement initialization failed: insuffisant memory");
+  }
   else {
     if (mysql_stmt_prepare(stmt, task->query.c_str(), task->query.size())) {
       logging::debug(logging::low)
@@ -379,6 +383,10 @@ void mysql_connection::_finish(mysql_task* t) {
   _finished = true;
 }
 
+bool mysql_connection::is_finished() const {
+  return _finished;
+}
+
 std::string mysql_connection::_get_stack() {
   std::string retval;
   for (std::shared_ptr<mysql_task> t : _tasks_list) {
@@ -421,8 +429,9 @@ std::string mysql_connection::_get_stack() {
 void mysql_connection::_run() {
   std::unique_lock<std::mutex> locker(_result_mutex);
   _conn = mysql_init(NULL);
-  if (!_conn)
+  if (!_conn) {
     mysql_manager::instance().set_error(::mysql_error(_conn));
+  }
   else if (!mysql_real_connect(
          _conn,
          _host.c_str(),
@@ -431,8 +440,9 @@ void mysql_connection::_run() {
          _name.c_str(),
          _port,
          NULL,
-         0))
+         CLIENT_FOUND_ROWS)) {
     mysql_manager::instance().set_error(::mysql_error(_conn));
+  }
 
   if (_qps > 1)
     mysql_autocommit(_conn, 0);
@@ -454,7 +464,7 @@ void mysql_connection::_run() {
         (this->*(_task_processing_table[task->type]))(task.get());
       else {
         logging::error(logging::medium)
-          << "mysql: Error type not managed...";
+          << "mysql_connection: Error type not managed...";
       }
     }
     else {
@@ -462,7 +472,9 @@ void mysql_connection::_run() {
       _tasks_condition.wait(locker);
     }
   }
-  for (umap<unsigned int, MYSQL_STMT*>::iterator
+  logging::debug(logging::low)
+    << "mysql_connection::_run finished";
+  for (std::unordered_map<unsigned int, MYSQL_STMT*>::iterator
          it(_stmt.begin()),
          end(_stmt.end());
        it != end;
@@ -501,11 +513,16 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
 }
 
 mysql_connection::~mysql_connection() {
+  logging::error(logging::high)
+    << "mysql_connection::~mysql_connection";
   finish();
   _thread->join();
 }
 
 void mysql_connection::_push(std::shared_ptr<mysql_task> const& q) {
+  if (_finished)
+    throw exceptions::msg() << "This connection is closed and does not accept any query";
+
   std::lock_guard<std::mutex> locker(_list_mutex);
   _tasks_list.push_back(q);
   ++_tasks_count;

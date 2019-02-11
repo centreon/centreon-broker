@@ -28,10 +28,10 @@ mysql_column::mysql_column(int type, int row_count, int size)
  : _type(type),
   _row_count(row_count),
   _str_size(size),
-  _length(row_count),
+  _vector(nullptr),
   _is_null(row_count),
   _error(row_count),
-  _vector(nullptr) {
+  _length(row_count) {
   if (type == MYSQL_TYPE_STRING && row_count && size) {
     char** vector(static_cast<char**>(malloc(_row_count * sizeof(char*))));
     for (int i = 0; i < _row_count; ++i) {
@@ -58,14 +58,13 @@ mysql_column::~mysql_column() {
 
 mysql_column::mysql_column(mysql_column&& other)
  : _type(other._type),
-   _str_size(other._str_size),
    _row_count(other._row_count),
-   _length(other._length),
-   _error(other._error),
+   _str_size(other._str_size),
+   _vector(other._vector),
    _is_null(other._is_null),
-   _vector(other._vector) {
+   _error(other._error),
+   _length(other._length) {
   other._vector = nullptr;
-
 }
 
 mysql_column& mysql_column::operator=(mysql_column const& other) {
