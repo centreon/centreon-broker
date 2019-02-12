@@ -25,10 +25,10 @@
 #  include <list>
 #  include <mutex>
 #  include <unordered_map>
-#  include "com/centreon/broker/database_config.hh"
-#  include "com/centreon/broker/mysql_result.hh"
+#  include "com/centreon/broker/database/mysql_result.hh"
 #  include "com/centreon/broker/database/mysql_stmt.hh"
 #  include "com/centreon/broker/database/mysql_task.hh"
+#  include "com/centreon/broker/database_config.hh"
 
 CCB_BEGIN()
 
@@ -56,7 +56,7 @@ class                    mysql_connection {
                             std::string const& error_msg, bool fatal);
   void                    run_query_and_get_result(
                             std::string const& query,
-                            std::promise<mysql_result>* promise,
+                            std::promise<database::mysql_result>* promise,
                             std::string const& error_msg);
   void                    run_query_and_get_int(
                             std::string const& query,
@@ -69,7 +69,7 @@ class                    mysql_connection {
                             std::string const& error_msg, bool fatal);
   void                    run_statement_and_get_result(
                             database::mysql_stmt& stmt,
-                            std::promise<mysql_result>* promise,
+                            std::promise<database::mysql_result>* promise,
                             std::string const& error_msg);
   void                    run_statement_and_get_int(
                             database::mysql_stmt& stmt,
@@ -78,7 +78,7 @@ class                    mysql_connection {
                             std::string const& error_msg);
 
   void                    finish();
-  bool                    fetch_row(mysql_result& result);
+  bool                    fetch_row(database::mysql_result& result);
   mysql_bind_mapping      get_stmt_mapping(int stmt_id) const;
   int                     get_stmt_size() const;
   bool                    match_config(database_config const& db_cfg) const;

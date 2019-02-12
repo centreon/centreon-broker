@@ -115,11 +115,11 @@ void reader_v2::_load(state::kpis& kpis) {
            "    AND mb.activate='1'"
            "    AND pr.poller_id="
         << config::applier::state::instance().poller_id();
-    std::promise<mysql_result> promise;
+    std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
              oss.str(), &promise,
              "BAM: could not retrieve KPI configuration from DB: ");
-    mysql_result res(promise.get_future().get());
+    database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
       // KPI object.
       unsigned int kpi_id(res.value_as_u32(0));
@@ -171,11 +171,11 @@ void reader_v2::_load(state::kpis& kpis) {
                "    ON s.service_id=hsr.service_service_id"
                "  WHERE s.service_description='meta_" << it->second.get_meta_id()
             << "'";
-        std::promise<mysql_result> promise;
+        std::promise<database::mysql_result> promise;
         _mysql.run_query_and_get_result(
                  oss.str(), &promise,
                  "could not retrieve virtual meta-service's service");
-        mysql_result res(promise.get_future().get());
+        database::mysql_result res(promise.get_future().get());
         if (!_mysql.fetch_row(res))
           throw (exceptions::msg() << "virtual service of meta-service "
                  << it->first << " does not exist");
@@ -215,9 +215,9 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
              "  WHERE b.activate='1'"
              "    AND pr.poller_id="
           << config::applier::state::instance().poller_id();
-      std::promise<mysql_result> promise;
+      std::promise<database::mysql_result> promise;
       _mysql.run_query_and_get_result(oss.str(), &promise, "BAM: ");
-      mysql_result res(promise.get_future().get());
+      database::mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res)) {
         // BA object.
         unsigned int ba_id(res.value_as_u32(0));
@@ -254,7 +254,7 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
   // Load host_id/service_id of virtual BA services. All the associated
   // services have for description 'ba_[id]'.
   try {
-    std::promise<mysql_result> promise;
+    std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
              "SELECT h.host_name, s.service_description,"
              "       hsr.host_host_id, hsr.service_service_id"
@@ -265,7 +265,7 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
              "    ON hsr.host_host_id=h.host_id"
              "  WHERE s.service_description LIKE 'ba_%'",
              &promise);
-    mysql_result res(promise.get_future().get());
+    database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
       unsigned int host_id = res.value_as_u32(2);
       unsigned int service_id = res.value_as_u32(3);
@@ -339,9 +339,9 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
          "  WHERE b.activate=1"
          "    AND pr.poller_id="
       << config::applier::state::instance().poller_id();
-    std::promise<mysql_result> promise;
+    std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(q.str(), &promise);
-    mysql_result res(promise.get_future().get());
+    database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
       bool_exps[res.value_as_u32(0)] =
                   bool_expression(
@@ -370,14 +370,14 @@ void reader_v2::_load(state::bool_exps& bool_exps) {
 void reader_v2::_load(state::meta_services& meta_services) {
   // Load meta-services.
   try {
-    std::promise<mysql_result> promise;
+    std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
       "SELECT meta_id, meta_name, calcul_type, warning, critical,"
       "       meta_select_mode, regexp_str, metric"
       "  FROM meta_service"
       "  WHERE meta_activate='1'",
       &promise);
-    mysql_result res(promise.get_future().get());
+    database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
       unsigned int meta_id(res.value_as_u32(0));
       meta_services[meta_id] =
@@ -408,7 +408,7 @@ void reader_v2::_load(state::meta_services& meta_services) {
   // Load host_id/service_id of virtual meta-service services. All
   // associated services have for description 'meta_[id]'.
   try {
-    std::promise<mysql_result> promise;
+    std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
       "SELECT h.host_name, s.service_description"
       "  FROM service AS s"
@@ -417,7 +417,7 @@ void reader_v2::_load(state::meta_services& meta_services) {
       "  INNER JOIN host AS h"
       "    ON hsr.host_host_id=h.host_id"
       "  WHERE s.service_description LIKE 'meta_%'", &promise);
-    mysql_result res(promise.get_future().get());
+    database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
       std::string service_description(res.value_as_str(1));
       service_description.erase(0, strlen("meta_"));
@@ -493,14 +493,14 @@ void reader_v2::_load(state::meta_services& meta_services) {
                     "retrieve metrics associated with some "
                     "meta-service: " << e.what());
         }
-      std::promise<mysql_result> promise;
+      std::promise<database::mysql_result> promise;
       try { storage_mysql->run_query_and_get_result(query.str(), &promise); }
       catch (std::exception const& e) {
         throw (reader_exception()
                << "BAM: could not retrieve members of meta-service '"
                << it->second.get_name() << "': " << e.what());
       }
-      mysql_result res(promise.get_future().get());
+      database::mysql_result res(promise.get_future().get());
       while (storage_mysql->fetch_row(res))
         it->second.add_metric(res.value_as_u32(0));
     }
@@ -512,9 +512,9 @@ void reader_v2::_load(state::meta_services& meta_services) {
               << "  FROM meta_service_relation"
               << "  WHERE meta_id=" << it->second.get_id()
               << "    AND activate='1'";
-        std::promise<mysql_result> promise;
+        std::promise<database::mysql_result> promise;
         _mysql.run_query_and_get_result(query.str(), &promise);
-        mysql_result res(promise.get_future().get());
+        database::mysql_result res(promise.get_future().get());
         while (_mysql.fetch_row(res))
           it->second.add_metric(res.value_as_u32(0));
       }
@@ -539,7 +539,7 @@ void reader_v2::_load(state::meta_services& meta_services) {
 void reader_v2::_load(bam::hst_svc_mapping& mapping) {
   try {
     // XXX : expand hostgroups and servicegroups
-    std::promise<mysql_result> promise;
+    std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
              "SELECT h.host_id, s.service_id, h.host_name, s.service_description,"
                  "   service_activate"
@@ -549,7 +549,7 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
              "  LEFT JOIN host AS h"
              "    ON hsr.host_host_id=h.host_id",
              &promise);
-    mysql_result res(promise.get_future().get());
+    database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res))
       mapping.set_service(
                 res.value_as_str(2),
@@ -579,9 +579,9 @@ void reader_v2::_load(bam::hst_svc_mapping& mapping) {
           << "    INNER JOIN services AS s"
           << "    ON i.host_id=s.host_id AND i.service_id=s.service_id";
     mysql storage_mysql(_storage_cfg);
-    std::promise<mysql_result> promise;
+    std::promise<database::mysql_result> promise;
     storage_mysql.run_query_and_get_result(query.str(), &promise);
-    mysql_result res(promise.get_future().get());
+    database::mysql_result res(promise.get_future().get());
     while (storage_mysql.fetch_row(res)) {
       mapping.register_metric(
                 res.value_as_u32(0),
@@ -615,14 +615,14 @@ void reader_v2::_load_dimensions() {
   std::map<unsigned int, misc::shared_ptr<dimension_ba_event> > bas;
   try {
     // Load the timeperiods themselves.
-    std::promise<mysql_result> promise;
+    std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
       "SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
       "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
       "  FROM timeperiod",
       &promise,
       "could not load timeperiods from the database");
-    mysql_result res(promise.get_future().get());
+    database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
       timeperiods[res.value_as_u32(0)] = time::timeperiod::ptr(
         new time::timeperiod(
@@ -715,7 +715,7 @@ void reader_v2::_load_dimensions() {
            "  WHERE b.activate='1'"
            "    AND pr.poller_id="
         << config::applier::state::instance().poller_id();
-    promise = std::promise<mysql_result>();
+    promise = std::promise<database::mysql_result>();
     _mysql.run_query_and_get_result(
              oss.str(), &promise,
              "could not retrieve BAs from the database");
@@ -742,7 +742,7 @@ void reader_v2::_load_dimensions() {
     }
 
     // Load the BVs.
-    promise = std::promise<mysql_result>();
+    promise = std::promise<database::mysql_result>();
     _mysql.run_query_and_get_result(
              "SELECT id_ba_group, ba_group_name, ba_group_description"
              "  FROM mod_bam_ba_groups",
@@ -770,7 +770,7 @@ void reader_v2::_load_dimensions() {
              "  WHERE b.activate='1'"
              "    AND pr.poller_id="
           << config::applier::state::instance().poller_id();
-      std::promise<mysql_result> promise;
+      std::promise<database::mysql_result> promise;
       _mysql.run_query_and_get_result(
                oss.str(), &promise,
                "could not retrieve BV memberships of BAs");
@@ -826,7 +826,7 @@ void reader_v2::_load_dimensions() {
              "    AND b.activate='1'"
              "    AND pr.poller_id="
           << config::applier::state::instance().poller_id();
-      std::promise<mysql_result> promise;
+      std::promise<database::mysql_result> promise;
       _mysql.run_query_and_get_result(
                oss.str(), &promise,
                "could not retrieve KPI dimensions");
@@ -868,7 +868,7 @@ void reader_v2::_load_dimensions() {
     }
 
     // Load the ba-timeperiods relations.
-    promise = std::promise<mysql_result>();
+    promise = std::promise<database::mysql_result>();
     _mysql.run_query_and_get_result(
              "SELECT ba_id, tp_id FROM mod_bam_relations_ba_timeperiods",
              &promise,

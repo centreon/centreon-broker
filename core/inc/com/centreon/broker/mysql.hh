@@ -47,7 +47,7 @@ class                   mysql {
                           int thread = -1);
   int                   run_query_and_get_result(
                           std::string const& query,
-                          std::promise<mysql_result>* promise,
+                          std::promise<database::mysql_result>* promise,
                           std::string const& error_msg = "",
                           int thread = -1);
   int                   run_query_and_get_int(
@@ -63,7 +63,7 @@ class                   mysql {
 
   int                   run_statement_and_get_result(
                           database::mysql_stmt& stmt,
-                          std::promise<mysql_result>* promise,
+                          std::promise<database::mysql_result>* promise,
                           std::string const& error_msg = "",
                           int thread_id = -1);
 
@@ -73,7 +73,7 @@ class                   mysql {
                           std::string const& error_msg = "",
                           int thread_id = -1);
 
-  bool                  fetch_row(mysql_result& res);
+  bool                  fetch_row(database::mysql_result& res);
   int                   get_last_insert_id(int thread_id);
   version               schema_version() const;
   int                   connections_count() const;

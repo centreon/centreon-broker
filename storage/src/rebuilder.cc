@@ -139,9 +139,9 @@ void rebuilder::_run() {
                 << " FROM " << (db_v2 ? "services" : "rt_services")
                 << " WHERE host_id=" << info.host_id
                 << "  AND service_id=" << info.service_id;
-          std::promise<mysql_result> promise;
+          std::promise<database::mysql_result> promise;
           ms->run_query_and_get_result(oss.str(), &promise);
-          mysql_result res(promise.get_future().get());
+          database::mysql_result res(promise.get_future().get());
           if (ms->fetch_row(res))
             check_interval = res.value_as_f64(0) * _interval_length;
           if (!check_interval)
@@ -166,12 +166,12 @@ void rebuilder::_run() {
             std::ostringstream oss_err;
             oss_err << "storage: rebuilder: could not fetch metrics of index "
                     << index_id;
-            std::promise<mysql_result> promise;
+            std::promise<database::mysql_result> promise;
             ms->run_query_and_get_result(
                   oss.str(),
                   &promise,
                   oss_err.str());
-            mysql_result res(promise.get_future().get());
+            database::mysql_result res(promise.get_future().get());
 
             while (!_should_exit && ms->fetch_row(res)) {
               metric_info info;
@@ -253,12 +253,12 @@ void rebuilder::_next_index_to_rebuild(index_info& info, mysql& ms) {
            "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
         << "  WHERE must_be_rebuild=" << (db_v2 ? "'1'" : "1")
         << "  LIMIT 1";
-  std::promise<mysql_result> promise;
+  std::promise<database::mysql_result> promise;
   ms.run_query_and_get_result(
        query.str(), &promise,
        "storage: rebuilder: could not fetch index to rebuild");
 
-  mysql_result res(promise.get_future().get());
+  database::mysql_result res(promise.get_future().get());
   if (ms.fetch_row(res)) {
     info.index_id = res.value_as_u32(0);
     info.host_id = res.value_as_u32(1);
@@ -318,10 +318,10 @@ void rebuilder::_rebuild_metric(
     std::ostringstream oss_err;
     oss_err << "storage: rebuilder: "
         << "cannot fetch data of metric " << metric_id << ": ";
-    std::promise<mysql_result> promise;
+    std::promise<database::mysql_result> promise;
     ms.run_query_and_get_result(oss.str(), &promise, oss_err.str());
 
-    mysql_result res(promise.get_future().get());
+    database::mysql_result res(promise.get_future().get());
     while (!_should_exit && ms.fetch_row(res)) {
       misc::shared_ptr<storage::metric> entry(new storage::metric);
       entry->ctime = res.value_as_u32(0);
@@ -387,9 +387,9 @@ void rebuilder::_rebuild_status(
     std::ostringstream oss_err;
     oss_err << "storage: rebuilder: "
             << "cannot fetch data of index " << index_id << ": ";
-    std::promise<mysql_result> promise;
+    std::promise<database::mysql_result> promise;
     ms.run_query_and_get_result(oss.str(), &promise, oss_err.str());
-    mysql_result res(promise.get_future().get());
+    database::mysql_result res(promise.get_future().get());
     while (!_should_exit && ms.fetch_row(res)) {
       misc::shared_ptr<storage::status> entry(new storage::status);
       entry->ctime = res.value_as_u32(0);

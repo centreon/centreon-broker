@@ -360,11 +360,11 @@ void stream::_check_deleted_index() {
     // Fetch next index to delete.
     unsigned long long index_id;
     {
-      std::promise<mysql_result> promise;
+      std::promise<database::mysql_result> promise;
       _mysql.run_query_and_get_result(
                query, &promise,
                "storage: could not query index table to get index to delete: ");
-      mysql_result res(promise.get_future().get());
+      database::mysql_result res(promise.get_future().get());
       if (!_mysql.fetch_row(res))
         break ;
       index_id = res.value_as_u64(0);
@@ -382,9 +382,9 @@ void stream::_check_deleted_index() {
       oss_err << "storage: could not get metrics at index "
               << index_id << ": ";
 
-      std::promise<mysql_result> promise;
+      std::promise<database::mysql_result> promise;
       _mysql.run_query_and_get_result(oss.str(), &promise, oss_err.str());
-      mysql_result res(promise.get_future().get());
+      database::mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res))
         metrics_to_delete.push_back(res.value_as_u64(0));
     }
@@ -421,12 +421,12 @@ void stream::_check_deleted_index() {
     oss << "SELECT metric_id"
            "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
         << "  WHERE to_delete=1";
-    std::promise<mysql_result> promise;
+    std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
              oss.str(),
              &promise,
              "storage: could not get the list of metrics to delete");
-    mysql_result res(promise.get_future().get());
+    database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res))
       metrics_to_delete.push_back(res.value_as_u64(0));
   }
@@ -957,12 +957,12 @@ void stream::_rebuild_cache() {
              "       rrd_retention, service_description, special,"
              "       locked"
              " FROM " << (db_v2 ? "index_data" : "rt_index_data");
-    std::promise<mysql_result> promise;
+    std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
              query.str(),
              &promise,
              "storage: could not fetch index list from data DB");
-    mysql_result res(promise.get_future().get());
+    database::mysql_result res(promise.get_future().get());
 
     // Loop through result set.
     while (_mysql.fetch_row(res)) {
@@ -1004,12 +1004,12 @@ void stream::_rebuild_cache() {
              "       warn_threshold_mode, crit, crit_low,"
              "       crit_threshold_mode, min, max"
              "  FROM " << (db_v2 ? "metrics" : "rt_metrics");
-    std::promise<mysql_result> promise;
+    std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
              query.str(),
              &promise,
              "storage: could not fetch metric list from data DB");
-    mysql_result res(promise.get_future().get());
+    database::mysql_result res(promise.get_future().get());
 
     // Loop through result set.
     while (_mysql.fetch_row(res)) {

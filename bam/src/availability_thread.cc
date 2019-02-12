@@ -180,9 +180,9 @@ void availability_thread::_build_availabilities(time_t midnight) {
              "  FROM mod_bam_reporting_ba_events"
              "  WHERE ba_id IN (" << _bas_to_rebuild.toStdString() << ")";
     try {
-      std::promise<mysql_result> promise;
+      std::promise<database::mysql_result> promise;
       thread_id = _mysql->run_query_and_get_result(query.str(), &promise);
-      mysql_result res(promise.get_future().get());
+      database::mysql_result res(promise.get_future().get());
       if (!_mysql->fetch_row(res))
         throw (exceptions::msg() << "no events matching BAs to rebuild");
       first_day = res.value_as_i32(0);
@@ -207,10 +207,10 @@ void availability_thread::_build_availabilities(time_t midnight) {
     query << "SELECT MAX(time_id)"
              "  FROM mod_bam_reporting_ba_availabilities";
     try {
-      std::promise<mysql_result> promise;
+      std::promise<database::mysql_result> promise;
       thread_id = _mysql->run_query_and_get_result(query.str(), &promise);
       //FIXME DBR: to finish...
-      mysql_result res(promise.get_future().get());
+      database::mysql_result res(promise.get_future().get());
       if (!_mysql->fetch_row(res))
         throw (exceptions::msg() << "no availability in table");
       first_day = res.value_as_i32(0);
@@ -271,7 +271,7 @@ void availability_thread::_build_daily_availabilities(
         << ") OR (a.end_time BETWEEN " << day_start << " AND " << day_end - 1
         << ") OR (" << day_start << " BETWEEN a.start_time AND a.end_time))";
 
-  std::promise<mysql_result> promise;
+  std::promise<database::mysql_result> promise;
   _mysql->run_query_and_get_result(
       query.str(),
       &promise,
@@ -280,7 +280,7 @@ void availability_thread::_build_daily_availabilities(
   // Create a builder for each ba_id and associated timeperiod_id.
   std::map<std::pair<unsigned int, unsigned int>,
             availability_builder> builders;
-  mysql_result res(promise.get_future().get());
+  database::mysql_result res(promise.get_future().get());
   while (_mysql->fetch_row(res)) {
     unsigned int ba_id = res.value_as_i32(1);
     unsigned int timeperiod_id = res.value_as_i32(6);
@@ -320,7 +320,7 @@ void availability_thread::_build_daily_availabilities(
     query << "(ba_id IN (" << _bas_to_rebuild.toStdString() << ")) AND ";
   query << "(start_time < " << day_end << " AND end_time IS NULL)";
 
-  promise = std::promise<mysql_result>();
+  promise = std::promise<database::mysql_result>();
   _mysql->run_query_and_get_result(
       query.str(),
       &promise,
