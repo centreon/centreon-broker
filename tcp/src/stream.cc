@@ -19,6 +19,7 @@
 #include <QWaitCondition>
 #include <sstream>
 #include <sys/socket.h>
+#include <sys/timer.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
