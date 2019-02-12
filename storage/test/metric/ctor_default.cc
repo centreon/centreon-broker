@@ -40,7 +40,7 @@ int main() {
           || (m.metric_id != 0)
           || !m.name.isEmpty()
           || (m.rrd_len != 0)
-          || !isnan(m.value)
+          || !std::isnan(m.value)
           || (m.value_type != storage::perfdata::gauge)
           || (m.type()
               != io::events::data_type<io::events::storage, storage::de_metric>::value));

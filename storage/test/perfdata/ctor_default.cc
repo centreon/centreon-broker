@@ -31,16 +31,16 @@ int main() {
   storage::perfdata p;
 
   // Check properties values.
-  return (!isnan(p.critical())
-          || !isnan(p.critical_low())
+  return (!std::isnan(p.critical())
+          || !std::isnan(p.critical_low())
           || p.critical_mode()
-          || !isnan(p.max())
-          || !isnan(p.min())
+          || !std::isnan(p.max())
+          || !std::isnan(p.min())
           || !p.name().isEmpty()
           || !p.unit().isEmpty()
-          || !isnan(p.value())
+          || !std::isnan(p.value())
           || (p.value_type() != storage::perfdata::gauge)
-          || !isnan(p.warning())
-          || !isnan(p.warning_low())
+          || !std::isnan(p.warning())
+          || !std::isnan(p.warning_low())
           || p.warning_mode());
 }

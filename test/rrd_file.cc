@@ -154,7 +154,7 @@ void rrd_file::_process_line(char const* line) {
       line = ptr;
       line += strlen("--> <row><v>");
       double v(strtod(line, NULL));
-      if (!isnan(v))
+      if (!std::isnan(v))
         _rras.back()[t] = v;
     }
   }
