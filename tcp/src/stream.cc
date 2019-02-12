@@ -19,7 +19,7 @@
 #include <QWaitCondition>
 #include <sstream>
 #include <sys/socket.h>
-#if defined(HAVE_SYS_TIME_H) || defined(WOLF_C99)
+#if defined(HAVE_SYS_TIME_H)
 #include <sys/timer.h>
 #endif
 #include "com/centreon/broker/exceptions/msg.hh"
