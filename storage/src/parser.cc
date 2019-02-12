@@ -96,14 +96,14 @@ static inline void extract_range(
   double high_value;
   if (**str != ':') {
     high_value = low_value;
-    if (!isnan(low_value))
+    if (!std::isnan(low_value))
       low_value = 0.0;
   }
   else {
     ++*str;
     char const* ptr(*str);
     high_value = extract_double(str);
-    if (isnan(high_value)
+    if (std::isnan(high_value)
         && ((*str == ptr) || (*str == (ptr + 1))))
       high_value = INFINITY;
   }
@@ -237,7 +237,7 @@ void parser::parse_perfdata(
 
     // Extract value.
     p.value(extract_double(&ptr, false));
-    if (isnan(p.value()))
+    if (std::isnan(p.value()))
       throw (exceptions::perfdata() << "storage: invalid perfdata "
              << "format: no numeric value after equal sign");
 

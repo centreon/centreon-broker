@@ -319,9 +319,9 @@ void perfdata::warning_mode(bool m) throw () {
  *  @return true if a and b are equal.
  */
 static inline bool double_equal(double a, double b) {
-  return ((isnan(a) && isnan(b))
-          || (isinf(a)
-              && isinf(b)
+  return ((std::isnan(a) && std::isnan(b))
+          || (std::isinf(a)
+              && std::isinf(b)
               && (std::signbit(a) == std::signbit(b)))
           || (std::isfinite(a)
               && std::isfinite(b)

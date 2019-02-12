@@ -164,7 +164,7 @@ short meta_service::get_state() const {
   else if ((less_than && (_value >= _level_warning))
            || (!less_than && (_value <= _level_warning)))
     state = 1;
-  else if (isnan(_value))
+  else if (std::isnan(_value))
     state = 3;
   else
     state = 0;
