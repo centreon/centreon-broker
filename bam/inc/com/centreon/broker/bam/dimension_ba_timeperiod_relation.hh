@@ -21,8 +21,6 @@
 
 #  include <memory>
 #  include <vector>
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
 #  include <QThread>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
