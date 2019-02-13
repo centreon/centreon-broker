@@ -48,7 +48,7 @@ configure_file(
 #
 
 # Find Qt.
-find_package(Qt4 4.7.4 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
+find_package(Qt4 4.7.4 COMPONENTS QtCore QtNetwork QtXml REQUIRED)
 
 # Find zlib.
 find_package(ZLIB REQUIRED)
