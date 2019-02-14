@@ -152,12 +152,12 @@ io::endpoint* factory::new_endpoint(
   // Connector.
   std::unique_ptr<notification::connector> c(new notification::connector(cache));
   c->connect_to(
-       type,
-       host,
+       type.toStdString(),
+       host.toStdString(),
        port,
-       user,
-       password,
-       db_name,
+       user.toStdString(),
+       password.toStdString(),
+       db_name.toStdString(),
        check_replication);
   is_acceptor = false;
   return (c.release());

@@ -19,8 +19,7 @@
 #ifndef CCB_NOTIFICATION_LOADERS_TIMEPERIOD_LOADER_HH
 #  define CCB_NOTIFICATION_LOADERS_TIMEPERIOD_LOADER_HH
 
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
+#  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
 
@@ -37,7 +36,7 @@ namespace       notification {
   public:
                 timeperiod_loader();
 
-    void        load(QSqlDatabase* db, timeperiod_builder* output);
+    void        load(mysql* ms, timeperiod_builder* output);
 
   private:
   };

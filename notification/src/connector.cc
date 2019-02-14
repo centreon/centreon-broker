@@ -93,12 +93,12 @@ connector& connector::operator=(connector const& c) {
  *  @param[in] check_replication       true to check replication status.
  */
 void connector::connect_to(
-                  QString const& type,
-                  QString const& host,
+                  std::string const& type,
+                  std::string const& host,
                   unsigned short port,
-                  QString const& user,
-                  QString const& password,
-                  QString const& centreon_db,
+                  std::string const& user,
+                  std::string const& password,
+                  std::string const& centreon_db,
                   bool check_replication) {
   _check_replication = check_replication;
   _centreon_db = centreon_db;
