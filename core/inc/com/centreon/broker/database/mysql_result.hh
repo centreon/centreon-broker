@@ -62,6 +62,8 @@ namespace                       database {
     void                        set_row(MYSQL_ROW row);
     int                         get_statement_id() const;
     mysql_connection*           get_connection();
+    int                         get_num_fields() const;
+    char const*                 get_field_name(int idx) const;
 
    private:
     mysql_connection*           _parent;

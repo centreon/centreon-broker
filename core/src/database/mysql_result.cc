@@ -318,3 +318,12 @@ int mysql_result::get_statement_id() const {
 mysql_connection* mysql_result::get_connection() {
   return _parent;
 }
+
+int mysql_result::get_num_fields() const {
+  return mysql_num_fields(_result.get());
+}
+
+char const* mysql_result::get_field_name(int idx) const {
+  MYSQL_FIELD* fields = mysql_fetch_fields(_result.get());
+  return fields[idx].name;
+}
