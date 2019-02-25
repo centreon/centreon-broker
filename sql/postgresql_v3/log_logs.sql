@@ -2,8 +2,6 @@
 -- Centreon Engine logs.
 --
 CREATE TABLE log_logs (
-  log_id serial,
-
   ctime int default NULL,
   host_id int default NULL,
   host_name varchar(255) default NULL,
@@ -19,7 +17,6 @@ CREATE TABLE log_logs (
   status smallint default NULL,
   type smallint default NULL,
 
-  PRIMARY KEY (log_id),
   INDEX (host_name),
   INDEX (service_description),
   INDEX (status),
