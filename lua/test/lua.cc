@@ -345,7 +345,7 @@ TEST_F(LuaTest, JsonEncode) {
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
                          "  broker_log:info('coucou')\n"
-                         "  local a = { aa='bonjour',bb=12,cc={'a', 'b', 'c', 4},dd=true}\n"
+                         "  local a = { aa='C:\\\\bonjour',bb=12,cc={'a', 'b', 'c', 4},dd=true}\n"
                          "  local json = broker.json_encode(a)\n"
                          "  local b = broker.json_decode(json)\n"
                          "  for i,v in pairs(b) do\n"
@@ -358,7 +358,7 @@ TEST_F(LuaTest, JsonEncode) {
   std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
-  ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: aa=>bonjour")) != -1);
+  ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: aa=>C:\\\\bonjour")) != -1);
   ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: bb=>12")) != -1);
   ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: cc=>table: .*")) != -1);
   ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: dd=>true")) != -1);
@@ -395,7 +395,7 @@ TEST_F(LuaTest, JsonEncodeEscape) {
   std::string filename("/tmp/json_encode.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local a = { 'bonjour le \"monde\"', 12, true, 27.1, {a=1, b=2, c=3, d=4}, 'une tabulation\\t...'}\n"
+                         "  local a = { 'd:\\\\bonjour le \"monde\"', 12, true, 27.1, {a=1, b=2, c=3, d=4}, 'une tabulation\\t...'}\n"
                          "  local json = broker.json_encode(a)\n"
                          "  local b = broker.json_decode(json)\n"
                          "  for i,v in ipairs(b) do\n"
@@ -408,7 +408,7 @@ TEST_F(LuaTest, JsonEncodeEscape) {
   std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
-  ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: 1=>bonjour le \"monde\"")) != -1);
+  ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: 1=>d:\\\\bonjour le \"monde\"")) != -1);
   ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: 2=>12")) != -1);
   ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: 3=>true")) != -1);
   ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: 4=>27.1")) != -1);
