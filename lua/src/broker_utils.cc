@@ -101,12 +101,15 @@ static void broker_json_encode(lua_State* L, std::ostringstream& oss) {
       {
         /* If the string contains '"', we must escape it */
         char const* content(lua_tostring(L, -1));
-        size_t pos(strcspn(content, "\"\t\r\n"));
+        size_t pos(strcspn(content, "\\\"\t\r\n"));
         if (content[pos] != 0) {
           std::string str(content);
           char replacement[3] = "\\\\";
           do {
             switch (str[pos]) {
+              case '\\':
+                replacement[1] = '\\';
+                break;
               case '"':
                 replacement[1] = '"';
                 break;
@@ -122,7 +125,7 @@ static void broker_json_encode(lua_State* L, std::ostringstream& oss) {
             }
             str.replace(pos, 1, replacement);
             pos += 2;
-          } while ((pos = str.find_first_of("\"\t\r\n", pos))
+          } while ((pos = str.find_first_of("\\\"\t\r\n", pos))
                     != std::string::npos);
           oss << '"' << str << '"';
         }
@@ -206,6 +209,9 @@ static void broker_json_decode(lua_State* L, json::json_iterator& it) {
         size_t pos(str.find_first_of("\\"));
         while (pos != std::string::npos) {
           switch (str[pos + 1]) {
+            case '\\':
+              str.replace(pos, 2, "\\");
+              break;
             case '"':
               str.replace(pos, 2, "\"");
               break;
