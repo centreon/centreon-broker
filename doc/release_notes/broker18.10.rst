@@ -1,4 +1,33 @@
 =======================
+Centreon Broker 18.10.2
+=======================
+
+*********
+Bug fixes
+*********
+
+Escape backslash in JSON encoding/decoding functions
+====================================================
+
+In previous versions backslash was not handled as a special character
+leading to invalid JSON encoding and decoding.
+
+************
+Enhancements
+************
+
+Send event when poller is unresponsive
+======================================
+
+A new event named responsive_instance was added. This is especially
+useful for Centreon Map.
+
+Support *centreon* systemd service
+==================================
+
+The *cbd* service is now wanted by the *centreon* service.
+
+=======================
 Centreon Broker 18.10.1
 =======================
 
