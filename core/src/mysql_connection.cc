@@ -200,15 +200,13 @@ void mysql_connection::_statement(mysql_task* t) {
 
         mysql_commit(_conn);
 
+        logging::error(logging::medium)
+          << "mysql: Error while sending prepared query: "
+          << mysql_stmt_error(stmt)
+          << " (" << task->error_msg << ")";
         if (++attempts >= MAX_ATTEMPTS) {
           if (task->fatal)
             mysql_manager::instance().set_error(mysql_stmt_error(stmt));
-          else {
-            logging::error(logging::medium)
-              << "mysql: Error while sending prepared query: "
-              << mysql_stmt_error(stmt)
-              << " (" << task->error_msg << ")";
-          }
           break;
         }
       }
@@ -257,6 +255,10 @@ void mysql_connection::_statement_res(mysql_task* t) {
 
         mysql_commit(_conn);
 
+        logging::error(logging::medium)
+          << "mysql: Error while sending prepared query: "
+          << mysql_stmt_error(stmt)
+          << " (" << task->error_msg << ")";
         if (++attempts >= MAX_ATTEMPTS) {
           exceptions::msg e;
           e << mysql_stmt_error(stmt);
@@ -348,6 +350,10 @@ void mysql_connection::_statement_int(mysql_task* t) {
 
         mysql_commit(_conn);
 
+        logging::error(logging::medium)
+          << "mysql: Error while sending prepared query: "
+          << mysql_stmt_error(stmt)
+          << " (" << task->error_msg << ")";
         if (++attempts >= MAX_ATTEMPTS) {
           exceptions::msg e;
           e << mysql_stmt_error(stmt);

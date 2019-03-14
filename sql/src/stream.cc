@@ -148,6 +148,7 @@ void stream::_clean_empty_host_groups() {
   _mysql.run_statement(
            _empty_host_groups_delete,
            "SQL: could not remove empty host groups", false);
+  _mysql.commit();
 }
 
 /**
@@ -163,6 +164,7 @@ void stream::_clean_empty_service_groups() {
   _mysql.run_statement(
            _empty_service_groups_delete,
            "SQL: could not remove empty service groups", false);
+  _mysql.commit();
 }
 
 /**
