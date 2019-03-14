@@ -285,10 +285,9 @@ static int l_broker_parse_perfdata(lua_State* L) {
     p.parse_perfdata(perf_data, pds);
   }
   catch (storage::exceptions::perfdata const& e) {
-    std::stringstream oss;
-    oss << "storage: error while parsing perfdata << "
-            << perf_data << " >>: " << e.what();
-    luaL_error(L, oss.str().c_str());
+    lua_pushnil(L);
+    lua_pushstring(L, e.what());
+    return 2;
   }
   lua_createtable(L, 0, pds.size());
   for (QList<storage::perfdata>::iterator
