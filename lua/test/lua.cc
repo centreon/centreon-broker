@@ -1075,24 +1075,26 @@ TEST_F(LuaTest, ParsePerfdata) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/parse_perfdata.lua");
 
-  CreateScript(filename, "function init(conf)\n"
+  CreateScript(filename, "local function test_perf(value, full)\n"
+                         "  perf, err_msg = broker.parse_perfdata(value, full)\n"
+                         "  if perf then\n"
+                         "    broker_log:info(1, broker.json_encode(perf))\n"
+                         "  else\n"
+                         "    broker_log:info(1, err_msg)\n"
+                         "  end \n"
+                         "end\n\n"
+                         "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local perf = broker.parse_perfdata(' percent_packet_loss=0 rta=0.80')\n"
-                         "  broker_log:info(1, broker.json_encode(perf))\n"
-                         "  perf = broker.parse_perfdata(\" 'one value'=0 'another value'=0.89\")\n"
-                         "  broker_log:info(1, broker.json_encode(perf))\n"
-                         "  perf = broker.parse_perfdata(\" 'one value'=0;3;5 'another value'=0.89;0.8;1;;\")\n"
-                         "  broker_log:info(1, broker.json_encode(perf))\n"
-                         "  perf = broker.parse_perfdata(\" 'one value'=1;3;5;0;9 'another value'=10.89;0.8;1;0;20\")\n"
-                         "  broker_log:info(1, broker.json_encode(perf))\n"
-                         "  perf = broker.parse_perfdata(\" 'one value'=2s;3;5;0;9 'a b c'=3.14KB;0.8;1;0;10\")\n"
-                         "  broker_log:info(1, broker.json_encode(perf))\n"
-                         "  perf = broker.parse_perfdata(' percent_packet_loss=1.74;50;80;0;100 rta=0.80', true)\n"
-                         "  broker_log:info(1, broker.json_encode(perf))\n"
-                         "  perf = broker.parse_perfdata(\" 'one value'=12%;25:80;81:95 'another value'=78%;60;90;;\", true)\n"
-                         "  broker_log:info(1, broker.json_encode(perf))\n"
-                         "  perf = broker.parse_perfdata(\"                \")\n"
-                         "  broker_log:info(1, broker.json_encode(perf))\n"
+                         "  test_perf(' percent_packet_loss=0 rta=0.80')\n"
+                         "  test_perf(\" 'one value'=0 'another value'=0.89\")\n"
+                         "  test_perf(\" 'one value'=0;3;5 'another value'=0.89;0.8;1;;\")\n"
+                         "  test_perf(\" 'one value'=1;3;5;0;9 'another value'=10.89;0.8;1;0;20\")\n"
+                         "  test_perf(\" 'one value'=2s;3;5;0;9 'a b c'=3.14KB;0.8;1;0;10\")\n"
+                         "  test_perf(' percent_packet_loss=1.74;50;80;0;100 rta=0.80', true)\n"
+                         "  test_perf(\" 'one value'=12%;25:80;81:95 'another value'=78%;60;90;;\", true)\n"
+                         "  test_perf(\"                \")\n"
+                         "  test_perf(\" 'one value' 0;3;5\")\n"
+                         "  test_perf(\" 'events'=;;;0;\")\n"
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
@@ -1117,6 +1119,8 @@ TEST_F(LuaTest, ParsePerfdata) {
   ASSERT_TRUE(lst[6].contains("\"warning_high\":80"));
   ASSERT_TRUE(lst[6].contains("\"critical_low\":81"));
   ASSERT_TRUE(lst[6].contains("\"critical_high\":95"));
+  ASSERT_TRUE(lst[8].contains("storage: invalid perfdata format: equal sign not present or misplaced"));
+  ASSERT_TRUE(lst[9].contains("storage: invalid perfdata format: no numeric value after equal sign"));
 
   RemoveFile(filename);
   RemoveFile("/tmp/log");

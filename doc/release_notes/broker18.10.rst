@@ -12,6 +12,12 @@ Escape backslash in JSON encoding/decoding functions
 In previous versions backslash was not handled as a special character
 leading to invalid JSON encoding and decoding.
 
+Return an error in Lua perfdata parsing function
+================================================
+
+Before this fix when we were calling parse_perfdata with an invalid
+perf string, the lua was not working.
+
 ************
 Enhancements
 ************
