@@ -34,7 +34,8 @@ mysql_manager& mysql_manager::instance() {
  */
 mysql_manager::mysql_manager()
   : _current_thread(0),
-    _version(mysql::v2) {}
+    _version(mysql::v2),
+    _stats_connections_timestamp(time(nullptr)) {}
 
 /**
  *  Destructor
@@ -69,7 +70,7 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
   {
     unsigned int current_connection(0);
     std::lock_guard<std::mutex> lock(_cfg_mutex);
-    for (std::shared_ptr<mysql_connection> c : _connection) {
+    for (std::shared_ptr<mysql_connection>& c : _connection) {
       // Is this thread matching what the configuration needs?
       if (c->match_config(db_cfg) && !c->is_finished()) {
         // Yes
@@ -150,23 +151,27 @@ void mysql_manager::clear_error() {
   _error.clear();
 }
 
-std::map<std::string, std::string> mysql_manager::get_stats() const {
-  std::map<std::string, std::string> retval;
+std::map<std::string, std::string> mysql_manager::get_stats() {
+  int delay(0);
+  std::unique_lock<std::mutex> locker(_cfg_mutex, std::defer_lock);
+  int stats_connections_count(_stats_counts.size());
+  if (locker.try_lock()) {
+    _stats_connections_timestamp = time(nullptr);
+    stats_connections_count = _connection.size();
+    _stats_counts.resize(stats_connections_count);
+    for (int i(0); i < stats_connections_count; ++i)
+      _stats_counts[i] = _connection[i]->get_tasks_count();
+  }
+  else
+    delay = time(nullptr) - _stats_connections_timestamp;
 
-  std::lock_guard<std::mutex> locker(_cfg_mutex);
-  int connection_count(_connection.size());
-  std::string key("connection ");
+  std::map<std::string, std::string> retval;
+  retval.insert(std::make_pair("delay since last check", std::to_string(delay)));
+  std::string key("waiting tasks in connection ");
   int key_len(key.size());
-  std::string value;
-  for (int i(0); i < connection_count; ++i) {
+  for (int i(0); i < stats_connections_count; ++i) {
     key.replace(key_len, std::string::npos, std::to_string(i));
-    int count(_connection[i]->get_tasks_count());
-    value = std::to_string(_connection[i]->get_tasks_count())
-              + " waiting tasks";
-    if (count == 0)
-      retval.insert(std::make_pair(key, "0 waiting task"));
-    else
-      retval.insert(std::make_pair(key, value));
+    retval.insert(std::make_pair(key, std::to_string(_stats_counts[i])));
   }
   return retval;
 }

@@ -124,7 +124,7 @@ class                    mysql_connection {
   std::unordered_map<unsigned int, MYSQL_STMT*>
                           _stmt;
 
-  // FIXME DBR: to debug
+  // FIXME DBR: to debug: Logs must be well implemented
   std::unordered_map<unsigned int, std::string>
                           _stmt_query;
 

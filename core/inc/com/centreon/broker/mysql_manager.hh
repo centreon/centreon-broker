@@ -44,7 +44,7 @@ class                   mysql_manager {
   database::mysql_error get_error();
   void                  set_error(std::string const& message);
   std::map<std::string, std::string>
-                        get_stats() const;
+                        get_stats();
   void                  update_connections();
   void                  clear();
 
@@ -62,6 +62,11 @@ class                   mysql_manager {
 
   mutable std::mutex    _err_mutex;
   database::mysql_error _error;
+
+  // last stats update timestamp
+  time_t                _stats_connections_timestamp;
+  // Number of tasks per connection
+  std::vector<int>      _stats_counts;
 };
 
 CCB_END()
