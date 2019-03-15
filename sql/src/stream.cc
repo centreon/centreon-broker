@@ -138,7 +138,7 @@ void stream::_host_instance_cache_create() {
 /**
  *  Remove host groups with no members from host groups table.
  */
-void stream::_clean_empty_host_groups() {
+void stream::_clean_empty_host_groups(int poller_id) {
   if (!_empty_host_groups_delete.prepared()) {
     _empty_host_groups_delete = _mysql.prepare_query(
       "DELETE FROM hostgroups"
@@ -147,14 +147,14 @@ void stream::_clean_empty_host_groups() {
   }
   _mysql.run_statement(
            _empty_host_groups_delete,
-           "SQL: could not remove empty host groups", false);
-  _mysql.commit();
+           "SQL: could not remove empty host groups", false,
+           poller_id % _mysql.connections_count());
 }
 
 /**
  *  Remove service groups with no members from service groups table.
  */
-void stream::_clean_empty_service_groups() {
+void stream::_clean_empty_service_groups(int poller_id) {
   if (!_empty_service_groups_delete.prepared()) {
     _empty_service_groups_delete = _mysql.prepare_query(
       "DELETE FROM servicegroups"
@@ -163,8 +163,8 @@ void stream::_clean_empty_service_groups() {
   }
   _mysql.run_statement(
            _empty_service_groups_delete,
-           "SQL: could not remove empty service groups", false);
-  _mysql.commit();
+           "SQL: could not remove empty service groups", false,
+           poller_id % _mysql.connections_count());
 }
 
 /**
@@ -222,11 +222,11 @@ void stream::_clean_tables(unsigned int instance_id) {
 
   // Remove host groups.
   if (db_v2)
-    _clean_empty_host_groups();
+    _clean_empty_host_groups(instance_id);
 
   // Remove service groups.
   if (db_v2)
-    _clean_empty_service_groups();
+    _clean_empty_service_groups(instance_id);
 
   // Remove host dependencies.
   oss.str("");
@@ -343,7 +343,8 @@ void stream::_clean_tables(unsigned int instance_id) {
 
   _mysql.run_query(
            oss.str(),
-           "SQL: could not clean custom variables table: ", false);
+           "SQL: could not clean custom variables table: ", false,
+           instance_id % _mysql.connections_count());
   // This is just to wait the deletions to finish
   _mysql.commit();
 }
@@ -994,7 +995,7 @@ void stream::_process_host_group(
     }
 
     // Delete empty group.
-    _clean_empty_host_groups();
+    _clean_empty_host_groups(hg.poller_id);
   }
 }
 
@@ -1290,8 +1291,10 @@ void stream::_process_instance(
     << "(id: " << i.poller_id << ", name: " << i.name << ", running: "
     << (i.is_running ? "yes" : "no") << ")";
 
-  // Clean tables.
-  _clean_tables(i.poller_id);
+  if (i.is_running) {
+    // Clean tables.
+    _clean_tables(i.poller_id);
+  }
 
   // Processing.
   if (_is_valid_poller(i.poller_id)) {
@@ -1912,7 +1915,7 @@ void stream::_process_service_group(
     }
 
     // Delete empty groups.
-    _clean_empty_service_groups();
+    _clean_empty_service_groups(sg.poller_id);
   }
 }
 

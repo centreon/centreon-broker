@@ -58,8 +58,8 @@ namespace          sql {
     void                        _cache_create();
     void                        _prepare_hg_insupdate_statement();
     void                        _prepare_sg_insupdate_statement();
-    void                        _clean_empty_host_groups();
-    void                        _clean_empty_service_groups();
+    void                        _clean_empty_host_groups(int poller_id);
+    void                        _clean_empty_service_groups(int poller_id);
     void                        _clean_tables(unsigned int instance_id);
     void                        _host_instance_cache_create();
     bool                        _is_valid_poller(unsigned int poller_id);
