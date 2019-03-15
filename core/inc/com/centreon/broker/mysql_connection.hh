@@ -141,6 +141,7 @@ class                    mysql_connection {
   int                     _port;
   bool                    _started;
   int                     _qps;
+  bool                    _need_commit;
 };
 
 CCB_END()

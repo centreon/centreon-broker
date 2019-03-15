@@ -59,6 +59,8 @@ void mysql_connection::_query(mysql_task* t) {
         << "could not execute query: " << ::mysql_error(_conn) << " (" << task->query << ")";
     }
   }
+  else
+    _need_commit = true;
 }
 
 void mysql_connection::_query_res(mysql_task* t) {
@@ -77,6 +79,7 @@ void mysql_connection::_query_res(mysql_task* t) {
   }
   else {
     /* All is good here */
+    _need_commit = true;
     task->promise->set_value(mysql_result(this, mysql_store_result(_conn)));
   }
 }
@@ -96,6 +99,7 @@ void mysql_connection::_query_int(mysql_task* t) {
                      std::make_exception_ptr<exceptions::msg>(e));
   }
   else {
+    _need_commit = true;
     /* All is good here */
     if (task->return_type == mysql_task::AFFECTED_ROWS)
       task->promise->set_value(mysql_affected_rows(_conn));
@@ -108,22 +112,30 @@ void mysql_connection::_commit(mysql_task* t) {
   mysql_task_commit* task(static_cast<mysql_task_commit*>(t));
   int attempts(0);
   int res;
-  while (attempts++ < MAX_ATTEMPTS && (res = mysql_commit(_conn))) {
-    char const* err(::mysql_error(_conn));
-    if (strcmp(err, "MySQL server has gone away") == 0)
-      attempts = MAX_ATTEMPTS;
-    logging::error(logging::medium)
-      << "could not commit queries: " << ::mysql_error(_conn);
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  if (_need_commit) {
+    while (attempts++ < MAX_ATTEMPTS && (res = mysql_commit(_conn))) {
+      char const* err(::mysql_error(_conn));
+      if (strcmp(err, "MySQL server has gone away") == 0)
+        attempts = MAX_ATTEMPTS;
+      logging::error(logging::medium)
+        << "could not commit queries: " << ::mysql_error(_conn);
+      std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
   }
+  else
+    res = 0;
+
   if (res) {
     exceptions::msg e;
     e << ::mysql_error(_conn);
     task->promise->set_exception(
                      std::make_exception_ptr<exceptions::msg>(e));
   }
-  else if (--task->count == 0)
-    task->promise->set_value(true);
+  else {
+    _need_commit = false;
+    if (--task->count == 0)
+      task->promise->set_value(true);
+  }
 }
 
 void mysql_connection::_prepare(mysql_task* t) {
@@ -135,7 +147,7 @@ void mysql_connection::_prepare(mysql_task* t) {
     return ;
   }
 
-  // FIXME DBR: to debug
+  // FIXME DBR: to debug: Interesting to keep to see the query
   _stmt_query[task->id] = task->query;
 
   logging::debug(logging::low)
@@ -210,8 +222,10 @@ void mysql_connection::_statement(mysql_task* t) {
           break;
         }
       }
-      else
+      else {
+        _need_commit = true;
         break;
+      }
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
   }
@@ -268,6 +282,7 @@ void mysql_connection::_statement_res(mysql_task* t) {
         }
       }
       else {
+        _need_commit = true;
         mysql_result res(this, task->statement_id);
         MYSQL_STMT* stmt(_stmt[task->statement_id]);
         MYSQL_RES* prepare_meta_result(mysql_stmt_result_metadata(stmt));
@@ -363,6 +378,7 @@ void mysql_connection::_statement_int(mysql_task* t) {
         }
       }
       else {
+        _need_commit = true;
         if (task->return_type == mysql_task::AFFECTED_ROWS)
           task->promise->set_value(mysql_stmt_affected_rows(_stmt[task->statement_id]));
         else /* LAST_INSERT_ID */
@@ -510,7 +526,8 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
     _name(db_cfg.get_name()),
     _port(db_cfg.get_port()),
     _started(false),
-    _qps(db_cfg.get_queries_per_transaction()) {
+    _qps(db_cfg.get_queries_per_transaction()),
+    _need_commit(false) {
 
   std::unique_lock<std::mutex> locker(_result_mutex);
   _thread.reset(new std::thread(&mysql_connection::_run, this));
