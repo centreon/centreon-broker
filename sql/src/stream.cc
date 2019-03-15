@@ -1009,8 +1009,9 @@ void stream::_process_host_group_member(
   // Cast object.
   neb::host_group_member const&
     hgm(*static_cast<neb::host_group_member const*>(e.data()));
-  int thread_id(hgm.poller_id % _mysql.connections_count());
-  assert(hgm.poller_id);
+  int poller_id(_cache_host_instance[hgm.host_id]);
+  int thread_id(poller_id % _mysql.connections_count());
+  assert(poller_id);
 
   // Only process groups for v2 schema.
   if (_mysql.schema_version() != mysql::v2)
