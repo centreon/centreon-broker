@@ -499,7 +499,9 @@ void stream::_process_custom_variable(
         << cv.service_id << "): ";
 
     _custom_variable_insupdate << cv;
-    _mysql.run_statement(_custom_variable_insupdate, oss.str(), true);
+    _mysql.run_statement(_custom_variable_insupdate, oss.str(), true,
+    _cache_host_instance[cv.host_id]
+      % _mysql.connections_count());
   }
   else {
     logging::info(logging::medium)
@@ -513,7 +515,9 @@ void stream::_process_custom_variable(
     oss << "SQL: could not remove custom variable (host: "
         << cv.host_id << ", service: " << cv.service_id
         << ", name '" << cv.name.toStdString() << "'): ";
-    _mysql.run_statement(_custom_variable_delete, oss.str(), true);
+    _mysql.run_statement(_custom_variable_delete, oss.str(), true,
+    _cache_host_instance[cv.host_id]
+      % _mysql.connections_count());
   }
 }
 
