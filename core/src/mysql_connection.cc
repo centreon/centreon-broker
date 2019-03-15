@@ -46,18 +46,14 @@ void (mysql_connection::* const mysql_connection::_task_processing_table[])(mysq
 void mysql_connection::_query(mysql_task* t) {
   mysql_task_run* task(static_cast<mysql_task_run*>(t));
   logging::debug(logging::low)
-    << "mysql: run query: "
-    << task->query.c_str();
+    << "mysql_connection: run query: "
+    << task->query;
   if (mysql_query(_conn, task->query.c_str())) {
-    logging::debug(logging::low)
-      << "mysql: run query failed: "
-      << ::mysql_error(_conn);
+    logging::error(logging::medium) << task->error_msg
+      << "could not execute query: "
+      << ::mysql_error(_conn) << " (" << task->query << ")";
     if (task->fatal)
       mysql_manager::instance().set_error(::mysql_error(_conn));
-    else {
-      logging::error(logging::medium) << task->error_msg
-        << "could not execute query: " << ::mysql_error(_conn) << " (" << task->query << ")";
-    }
   }
   else
     _need_commit = true;
@@ -66,12 +62,12 @@ void mysql_connection::_query(mysql_task* t) {
 void mysql_connection::_query_res(mysql_task* t) {
   mysql_task_run_res* task(static_cast<mysql_task_run_res*>(t));
   logging::debug(logging::low)
-    << "mysql: run query: "
-    << task->query.c_str();
+    << "mysql_connection: run query: "
+    << task->query;
   if (mysql_query(_conn, task->query.c_str())) {
-    logging::debug(logging::low)
-      << "mysql: run query failed: "
-      << ::mysql_error(_conn);
+    logging::error(logging::medium)
+      << "mysql_connection: run query failed: "
+      << ::mysql_error(_conn) << " (" << task->query << ")";
     exceptions::msg e;
     e << ::mysql_error(_conn);
     task->promise->set_exception(
@@ -87,12 +83,12 @@ void mysql_connection::_query_res(mysql_task* t) {
 void mysql_connection::_query_int(mysql_task* t) {
   mysql_task_run_int* task(static_cast<mysql_task_run_int*>(t));
   logging::debug(logging::low)
-    << "mysql: run query: "
-    << task->query.c_str();
+    << "mysql_connection: run query: "
+    << task->query;
   if (mysql_query(_conn, task->query.c_str())) {
-    logging::debug(logging::low)
-      << "mysql: run query failed: "
-      << ::mysql_error(_conn);
+    logging::error(logging::medium)
+      << "mysql_connection: run query failed: "
+      << ::mysql_error(_conn) << " (" << task->query << ")";
     exceptions::msg e;
     e << ::mysql_error(_conn);
     task->promise->set_exception(
@@ -142,8 +138,8 @@ void mysql_connection::_prepare(mysql_task* t) {
   mysql_task_prepare* task(static_cast<mysql_task_prepare*>(t));
   if (_stmt[task->id]) {
     logging::info(logging::low)
-      << "mysql: Statement already prepared: "
-      << task->id << " ( " << task->query << " )";
+      << "mysql_connection: Statement already prepared: "
+      << task->id << " (" << task->query << ")";
     return ;
   }
 
@@ -152,7 +148,7 @@ void mysql_connection::_prepare(mysql_task* t) {
 
   logging::debug(logging::low)
     << "mysql: prepare query: "
-    << task->id << " ( " << task->query << " )";
+    << task->id << " (" << task->query << ")";
   MYSQL_STMT* stmt(mysql_stmt_init(_conn));
   if (!stmt) {
     mysql_manager::instance().set_error(
@@ -161,8 +157,9 @@ void mysql_connection::_prepare(mysql_task* t) {
   else {
     if (mysql_stmt_prepare(stmt, task->query.c_str(), task->query.size())) {
       logging::debug(logging::low)
-        << "mysql: prepare failed ("
-        << ::mysql_stmt_error(stmt);
+        << "mysql_connection: prepare failed: "
+        << ::mysql_stmt_error(stmt)
+        << " (" << task->query << ")";
       std::ostringstream oss;
       oss << "statement preparation failed ("
           << mysql_stmt_error(stmt) << ")";
@@ -334,8 +331,8 @@ void mysql_connection::_statement_int(mysql_task* t) {
     << task->statement_id;
   MYSQL_STMT* stmt(_stmt[task->statement_id]);
   if (!stmt) {
-    logging::debug(logging::low)
-      << "mysql: no statement to execute";
+    logging::error(logging::medium)
+      << "mysql: no statement to execute (" << task->statement_id << ")";
       exceptions::msg e;
       e << "statement not prepared";
       task->promise->set_exception(
@@ -367,8 +364,8 @@ void mysql_connection::_statement_int(mysql_task* t) {
 
         logging::error(logging::medium)
           << "mysql: Error while sending prepared query: "
-          << mysql_stmt_error(stmt)
-          << " (" << task->error_msg << ")";
+          << task->error_msg << ": " << mysql_stmt_error(stmt)
+          << " (" << task->statement_id << ")";
         if (++attempts >= MAX_ATTEMPTS) {
           exceptions::msg e;
           e << mysql_stmt_error(stmt);

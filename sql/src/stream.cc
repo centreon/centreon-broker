@@ -1009,11 +1009,8 @@ void stream::_process_host_group_member(
   // Cast object.
   neb::host_group_member const&
     hgm(*static_cast<neb::host_group_member const*>(e.data()));
-  // Host groups are defined across pollers and if we use instances id to
-  // choose the thread, we are lead to Mysql db dead locks.
-  // The simpler solution is to force the thread id for that event and host
-  // groups events to the same value, here 0.
-  int thread_id(0);
+  int thread_id(hgm.poller_id % _mysql.connections_count());
+  assert(hgm.poller_id);
 
   // Only process groups for v2 schema.
   if (_mysql.schema_version() != mysql::v2)
