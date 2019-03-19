@@ -254,7 +254,8 @@ void kpi_ba::_fill_impact(impact_values& impact,
   else if (downtime > 100.0)
     downtime = 100.0;
   impact.set_downtime(downtime * nominal / 100.0);
-  return;
+  impact.set_state(state);
+  return ;
 }
 
 /**

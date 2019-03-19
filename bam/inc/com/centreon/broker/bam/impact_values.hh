@@ -36,7 +36,8 @@ class impact_values {
  public:
   impact_values(double nominal = 0.0,
                 double acknowledgement = 0.0,
-                double downtime = 0.0);
+                double downtime = 0.0,
+                short state = 0);
   impact_values(impact_values const& other);
   ~impact_values();
   impact_values& operator=(impact_values const& other);
@@ -44,9 +45,11 @@ class impact_values {
   double get_acknowledgement() const;
   double get_downtime() const;
   double get_nominal() const;
+  short get_state() const;
   void set_acknowledgement(double acknowledgement);
   void set_downtime(double downtime);
   void set_nominal(double nominal);
+  void set_state(short state);
 
  private:
   void _internal_copy(impact_values const& other);
@@ -54,6 +57,7 @@ class impact_values {
   double _acknowledgement;
   double _downtime;
   double _nominal;
+  short _state;
 };
 }  // namespace bam
 

@@ -37,8 +37,15 @@ namespace configuration {
  */
 class ba {
  public:
+  typedef enum {
+    state_source_impact,
+    state_source_best,
+    state_source_worst
+  }state_source;
+
   ba(uint32_t id = 0,
      std::string const& name = "",
+     ba::state_source source = state_source_impact,
      double warning_level = 0.0,
      double critical_level = 0.0,
      bool inherit_kpi_downtime = false);
@@ -52,6 +59,7 @@ class ba {
   uint32_t get_host_id() const;
   uint32_t get_service_id() const;
   std::string const& get_name() const;
+  ba::state_source get_state_source() const;
   double get_warning_level() const;
   double get_critical_level() const;
   bam::ba_event const& get_opened_event() const;
@@ -63,6 +71,7 @@ class ba {
   void set_host_id(uint32_t host_id);
   void set_service_id(uint32_t service_id);
   void set_name(std::string const& name);
+  void set_state_source(ba::state_source state);
   void set_warning_level(double warning_level);
   void set_critical_level(double critical_level);
   void set_opened_event(bam::ba_event const& e);
@@ -73,6 +82,7 @@ class ba {
   uint32_t _host_id;
   uint32_t _service_id;
   std::string _name;
+  ba::state_source _state_source;
   double _warning_level;
   double _critical_level;
   bam::ba_event _event;

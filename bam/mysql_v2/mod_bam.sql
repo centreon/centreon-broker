@@ -4,6 +4,7 @@
 CREATE TABLE mod_bam (
   ba_id int NOT NULL auto_increment,
   name varchar(254) default NULL,
+  state_source int default NULL,
 
   description varchar(254) default NULL,
   level_w float default NULL,

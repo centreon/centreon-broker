@@ -161,7 +161,7 @@ TEST_F(BamBA, ImpactState) {
   std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
   kpis.push_back(s3);
 
-  for (size_t i = 0; i < kpis.size(); i++) {
+  for(int i = 0; i < kpis.size(); i++) {
     kpis[i]->set_host_id(i + 1);
     kpis[i]->set_service_id(1);
     kpis[i]->set_impact_warning(10);
@@ -184,7 +184,7 @@ TEST_F(BamBA, ImpactState) {
   ss->service_id = 1;
 
   for (int i = 0; i < 2; i++) {
-    for (size_t j = 0; j < kpis.size(); j++) {
+    for (int j = 0; j < kpis.size(); j++) {
       ss->last_check = now + 1;
       ss->host_id = j + 1;
       ss->last_hard_state = i + 1;
@@ -198,3 +198,142 @@ TEST_F(BamBA, ImpactState) {
     }
   }
 }
+
+/**
+ *  Check that a KPI change at BA recompute does not mess with the BA
+ *  value.
+ *
+ *                 ----------------
+ *         ________| BA(BEST)     |___________
+ *        /        ----------------           \
+ *       |                  |                 |
+ *  KPI1(C20%:W10%)   KPI2(C20%:W10%)  KPI3(C20%:W10%)
+ *       |                  |                 |
+ *      H1S1               H2S1             H3S1
+ *
+ *  @return EXIT_SUCCESS on success.
+ */
+TEST_F(BamBA, BestState) {
+  // Build BAM objects.
+  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  test_ba->set_state_source(bam::configuration::ba::state_source_best);
+
+  std::vector<std::shared_ptr<bam::kpi_service> > kpis;
+  std::stack<short> results;
+
+  results.push(2);
+  results.push(1);
+  results.push(1);
+  results.push(1);
+  results.push(0);
+  results.push(0);
+
+  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
+  kpis.push_back(s1);
+  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
+  kpis.push_back(s2);
+  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
+  kpis.push_back(s3);
+
+  for(int i = 0; i < kpis.size(); i++) {
+    kpis[i]->set_host_id(i + 1);
+    kpis[i]->set_service_id(1);
+    kpis[i]->set_state_hard(0);
+    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
+    test_ba->add_impact(kpis[i]);
+    kpis[i]->add_parent(test_ba);
+  }
+
+  // Change KPI state as much time as needed to trigger a
+  // recomputation. Note that the loop must terminate on a odd number
+  // for the test to be correct.
+  time_t now(time(nullptr));
+
+  std::shared_ptr<neb::service_status> ss(new neb::service_status);
+  ss->service_id = 1;
+
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < kpis.size(); j++) {
+      ss->last_check = now + 1;
+      ss->host_id = j + 1;
+      ss->last_hard_state = i + 1;
+      ss->current_state = ss->last_hard_state;
+      kpis[j]->service_update(ss);
+
+      short val = results.top();
+      ASSERT_EQ(test_ba->get_state_soft(), val);
+      ASSERT_EQ(test_ba->get_state_hard(), val);
+      results.pop();
+    }
+  }
+}
+
+/**
+ *  Check that a KPI change at BA recompute does not mess with the BA
+ *  value.
+ *
+ *                 ----------------
+ *         ________| BA(WORST)     |___________
+ *        /        ----------------           \
+ *       |                  |                 |
+ *  KPI1(C20%:W10%)   KPI2(C20%:W10%)  KPI3(C20%:W10%)
+ *       |                  |                 |
+ *      H1S1               H2S1             H3S1
+ *
+ *  @return EXIT_SUCCESS on success.
+ */
+TEST_F(BamBA, WorstState) {
+  // Build BAM objects.
+  std::shared_ptr<bam::ba> test_ba(new bam::ba);
+  test_ba->set_state_source(bam::configuration::ba::state_source_worst);
+
+  std::vector<std::shared_ptr<bam::kpi_service> > kpis;
+  std::stack<short> results;
+
+  results.push(2);
+  results.push(2);
+  results.push(2);
+  results.push(1);
+  results.push(1);
+  results.push(1);
+
+  std::shared_ptr<bam::kpi_service> s1{new bam::kpi_service};
+  kpis.push_back(s1);
+  std::shared_ptr<bam::kpi_service> s2{new bam::kpi_service};
+  kpis.push_back(s2);
+  std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
+  kpis.push_back(s3);
+
+  for(int i = 0; i < kpis.size(); i++) {
+    kpis[i]->set_host_id(i + 1);
+    kpis[i]->set_service_id(1);
+    kpis[i]->set_state_hard(0);
+    kpis[i]->set_state_soft(kpis[i]->get_state_hard());
+    test_ba->add_impact(kpis[i]);
+    kpis[i]->add_parent(test_ba);
+  }
+
+  // Change KPI state as much time as needed to trigger a
+  // recomputation. Note that the loop must terminate on a odd number
+  // for the test to be correct.
+  time_t now(time(NULL));
+
+  std::shared_ptr<neb::service_status> ss(new neb::service_status);
+  ss->service_id = 1;
+
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < kpis.size(); j++) {
+      ss->last_check = now + 1;
+      ss->host_id = j + 1;
+      ss->last_hard_state = i + 1;
+      ss->current_state = ss->last_hard_state;
+      kpis[j]->service_update(ss);
+
+      short val = results.top();
+      ASSERT_EQ(test_ba->get_state_soft(), val);
+      ASSERT_EQ(test_ba->get_state_hard(), val);
+      results.pop();
+    }
+  }
+}
+

@@ -214,7 +214,8 @@ void kpi_boolexp::_fill_impact(impact_values& impact) {
   impact.set_nominal(nominal);
   impact.set_acknowledgement(0.0);
   impact.set_downtime(0.0);
-  return;
+  impact.set_state(state);
+  return ;
 }
 
 /**

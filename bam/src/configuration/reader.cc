@@ -201,7 +201,7 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
   try {
     {
       std::ostringstream oss;
-      oss << "SELECT b.ba_id, b.name, b.level_w, b.level_c,"
+      oss << "SELECT b.ba_id, b.name, b.state_source, b.level_w, b.level_c,"
              "       b.last_state_change, b.current_status, b.in_downtime,"
              "       b.inherit_kpi_downtimes"
              "  FROM cfg_bam AS b"
@@ -217,19 +217,21 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
         while (_mysql.fetch_row(res)) {
           // BA object.
           uint32_t ba_id(res.value_as_u32(0));
-          bas[ba_id] = ba(ba_id,                  // ID.
-                          res.value_as_str(1),    // Name.
-                          res.value_as_f32(2),    // Warning level.
-                          res.value_as_f32(3),    // Critical level.
-                          res.value_as_bool(7));  // Downtime inheritance.
+          bas[ba_id] = ba(ba_id,                // ID.
+                          res.value_as_str(1),  // Name.
+                          static_cast<configuration::ba::state_source>(
+                              res.value_as_u32(2)),  // State source.
+                          res.value_as_f32(3),       // Warning level.
+                          res.value_as_f32(4),       // Critical level.
+                          res.value_as_bool(8));     // Downtime inheritance.
 
           // BA state.
-          if (!res.value_is_null(4)) {
+          if (!res.value_is_null(5)) {
             ba_event e;
             e.ba_id = ba_id;
-            e.start_time = res.value_as_u64(4);
-            e.status = res.value_as_i32(5);
-            e.in_downtime = res.value_as_bool(6);
+            e.start_time = res.value_as_u64(5);
+            e.status = res.value_as_i32(6);
+            e.in_downtime = res.value_as_bool(7);
             bas[ba_id].set_opened_event(e);
           }
         }

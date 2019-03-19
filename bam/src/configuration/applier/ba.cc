@@ -149,6 +149,7 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
     if (pos != _applied.end()) {
       logging::config(logging::medium) << "BAM: modifying BA " << it->get_id();
       pos->second.obj->set_name(it->get_name());
+      pos->second.obj->set_state_source(it->get_state_source());
       pos->second.obj->set_level_warning(it->get_warning_level());
       pos->second.obj->set_level_critical(it->get_critical_level());
       pos->second.cfg = *it;
@@ -265,6 +266,7 @@ std::shared_ptr<bam::ba> applier::ba::_new_ba(configuration::ba const& cfg,
   obj->set_host_id(cfg.get_host_id());
   obj->set_service_id(cfg.get_service_id());
   obj->set_name(cfg.get_name());
+  obj->set_state_source(cfg.get_state_source());
   obj->set_level_warning(cfg.get_warning_level());
   obj->set_level_critical(cfg.get_critical_level());
   obj->set_inherit_kpi_downtime(cfg.get_inherit_kpi_downtime());
