@@ -42,8 +42,8 @@ TEST(BamExpTokenizerNext, Valid1) {
 // When it is constructed with a valid expression
 // Then next() returns the tokens one after the other
 TEST(BamExpTokenizerNext, Valid2) {
-  bam::exp_tokenizer
-    toknzr("AVERAGE(METRICS(trafficin), METRIC(traffic_in, Host, \\Service) + 42)");
+  bam::exp_tokenizer toknzr("AVERAGE(METRICS(trafficin), METRIC(traffic_in, "
+      "Host, \\Service) + 42)");
   ASSERT_EQ(toknzr.next(), "AVERAGE");
   ASSERT_EQ(toknzr.next(), "(");
   ASSERT_EQ(toknzr.next(), "METRICS");
@@ -69,7 +69,8 @@ TEST(BamExpTokenizerNext, Valid2) {
 // When it is constructed with a valid expression
 // Then next() returns the tokens one after the other
 TEST(BamExpTokenizerNext, Valid3) {
-  bam::exp_tokenizer toknzr("METRIC(\"my 'out\' \\\"METR:C\\\"\", 'Host', 'Serv\\ice')");
+  bam::exp_tokenizer toknzr("METRIC(\"my 'out\' \\\"METR:C\\\"\", 'Host', "
+    "'Serv\\ice')");
   ASSERT_EQ(toknzr.next(), "METRIC");
   ASSERT_EQ(toknzr.next(), "(");
   ASSERT_EQ(toknzr.next(), "my 'out' \"METR:C\"");
@@ -85,7 +86,8 @@ TEST(BamExpTokenizerNext, Valid3) {
 // When it is constructed with a valid expression
 // Then next() returns the tokens one after the other
 TEST(BamExpTokenizerNext, NoSpaces1) {
-  bam::exp_tokenizer toknzr("!HOSTSTATUS('MyHost1')!=HOSTSTATUS('MyHost2')||HOSTSTATUS(\"MyHost3\")");
+  bam::exp_tokenizer toknzr("!HOSTSTATUS('MyHost1')!=HOSTSTATUS('MyHost2')||"
+    "HOSTSTATUS(\"MyHost3\")");
   ASSERT_EQ(toknzr.next(), "!");
   ASSERT_EQ(toknzr.next(), "HOSTSTATUS");
   ASSERT_EQ(toknzr.next(), "(");
@@ -108,7 +110,8 @@ TEST(BamExpTokenizerNext, NoSpaces1) {
 // When it is constructed with a valid expression
 // Then next() returns the tokens one after the other
 TEST(BamExpTokenizerNext, NoSpaces2) {
-  bam::exp_tokenizer toknzr("SERVICESTATUS('MyHost1','MyService1')!=OK||(42+36==SERVICESTATUS('MyHost2',\"MyService2\"))");
+  bam::exp_tokenizer toknzr("SERVICESTATUS('MyHost1','MyService1')!=OK||"
+    "(42+36==SERVICESTATUS('MyHost2',\"MyService2\"))");
   ASSERT_EQ(toknzr.next(), "SERVICESTATUS");
   ASSERT_EQ(toknzr.next(), "(");
   ASSERT_EQ(toknzr.next(), "MyHost1");
@@ -137,7 +140,8 @@ TEST(BamExpTokenizerNext, NoSpaces2) {
 // When it is constructed with a valid expression of the old syntax
 // Then next() returns the tokens one after the other
 TEST(BamExpTokenizerNext, OldSyntax1) {
-  bam::exp_tokenizer toknzr("{Host1 Service1} {IS} {OK} AND ({Host2} {NOT} {DOWN} OR {Host3} {IS} {UNREACHABLE})");
+  bam::exp_tokenizer toknzr("{Host1 Service1} {IS} {OK} AND ({Host2} {NOT} "
+    "{DOWN} OR {Host3} {IS} {UNREACHABLE})");
   ASSERT_EQ(toknzr.next(), "SERVICESTATUS");
   ASSERT_EQ(toknzr.next(), "(");
   ASSERT_EQ(toknzr.next(), "Host1");
@@ -163,6 +167,56 @@ TEST(BamExpTokenizerNext, OldSyntax1) {
   ASSERT_EQ(toknzr.next(), "UNREACHABLE");
   ASSERT_EQ(toknzr.next(), ")");
   ASSERT_EQ(toknzr.next(), "");
+}
+
+TEST(BamExpTokenizerNext, OldSyntax2) {
+  bam::exp_tokenizer toknzr("{Host1 Service1} {IS} {OK} AND ({Host2} {NOT} "
+    "{DOWN} XOR {Host3} {IS} {UNREACHABLE})");
+  ASSERT_EQ(toknzr.next(), "SERVICESTATUS");
+  ASSERT_EQ(toknzr.next(), "(");
+  ASSERT_EQ(toknzr.next(), "Host1");
+  ASSERT_EQ(toknzr.next(), ",");
+  ASSERT_EQ(toknzr.next(), "Service1");
+  ASSERT_EQ(toknzr.next(), ")");
+  ASSERT_EQ(toknzr.next(), "IS");
+  ASSERT_EQ(toknzr.next(), "OK");
+  ASSERT_EQ(toknzr.next(), "AND");
+  ASSERT_EQ(toknzr.next(), "(");
+  ASSERT_EQ(toknzr.next(), "HOSTSTATUS");
+  ASSERT_EQ(toknzr.next(), "(");
+  ASSERT_EQ(toknzr.next(), "Host2");
+  ASSERT_EQ(toknzr.next(), ")");
+  ASSERT_EQ(toknzr.next(), "NOT");
+  ASSERT_EQ(toknzr.next(), "DOWN");
+  ASSERT_EQ(toknzr.next(), "XOR");
+  ASSERT_EQ(toknzr.next(), "HOSTSTATUS");
+  ASSERT_EQ(toknzr.next(), "(");
+  ASSERT_EQ(toknzr.next(), "Host3");
+  ASSERT_EQ(toknzr.next(), ")");
+  ASSERT_EQ(toknzr.next(), "IS");
+  ASSERT_EQ(toknzr.next(), "UNREACHABLE");
+  ASSERT_EQ(toknzr.next(), ")");
+  ASSERT_EQ(toknzr.next(), "");
+}
+
+// Given an exp_tokenizer object
+// When it is constructed with a valid expression
+// Then next() returns the tokens one after the other
+TEST(BamExpTokenizerNext, Copy) {
+  bam::exp_tokenizer toknzr("{Host Service} {IS} {OK}");
+  bam::exp_tokenizer toknzr_copy(toknzr);
+  bam::exp_tokenizer toknzr_assign("");
+
+  toknzr_assign = toknzr_copy;
+  ASSERT_EQ(toknzr_assign.next(), "SERVICESTATUS");
+  ASSERT_EQ(toknzr_assign.next(), "(");
+  ASSERT_EQ(toknzr_assign.next(), "Host");
+  ASSERT_EQ(toknzr_assign.next(), ",");
+  ASSERT_EQ(toknzr_assign.next(), "Service");
+  ASSERT_EQ(toknzr_assign.next(), ")");
+  ASSERT_EQ(toknzr_assign.next(), "IS");
+  ASSERT_EQ(toknzr_assign.next(), "OK");
+  ASSERT_EQ(toknzr_assign.next(), "");
 }
 
 // Given an exp_tokenizer object

@@ -38,6 +38,8 @@ exp_parser::exp_parser(std::string const& expression)
   _precedence["||"] = 2;
   _precedence["OR"] = 2;
   _precedence["IS"] = 3;
+  _precedence["^"] = 2;
+  _precedence["XOR"] = 2;
   _precedence["NOT"] = 3;
   _precedence[">"] = 3;
   _precedence[">="] = 3;
@@ -250,17 +252,6 @@ bool exp_parser::is_function(std::string const& token) {
 }
 
 /**
- *  Check if token is a valid number.
- *
- *  @return True if token is a valid number.
- */
-bool exp_parser::is_number(std::string const& token) {
-  char* ptr(NULL);
-  std::strtol(token.c_str(), &ptr, 0);
-  return (ptr == NULL);
-}
-
-/**
  *  Check if token is a valid operator.
  *
  *  @return True if token is a valid operator.
@@ -282,6 +273,8 @@ bool exp_parser::is_operator(std::string const& token) {
           || (token == "!=")
           || (token == "!")
           || (token == "AND")
+          || (token == "^")
+          || (token == "XOR")
           || (token == "&&")
           || (token == "OR")
           || (token == "||"));

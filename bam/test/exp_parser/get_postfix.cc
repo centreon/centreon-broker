@@ -55,7 +55,8 @@ TEST(BamExpParserGetPostfix, Valid1) {
 // When it is constructed with a valid expression
 // Then get_postfix() return its postfix notation
 TEST(BamExpParserGetPostfix, Valid2) {
-  bam::exp_parser p("AVERAGE(METRICS('ping'), METRIC(\"my_ping\", Host, Service)) >= (SUM(METRICS('limit'), METRICS('limit_offset')) + 42)");
+  bam::exp_parser p("AVERAGE(METRICS('ping'), METRIC(\"my_ping\", Host, "
+    "Service)) >= (SUM(METRICS('limit'), METRICS('limit_offset')) + 42)");
   char const* expected[] = {
     "ping",
     "METRICS",
@@ -167,4 +168,167 @@ TEST(BamExpParserGetPostfix, Valid5) {
     NULL
   };
   ASSERT_EQ(p.get_postfix(), array_to_list(expected));
+}
+
+// Given an exp_parser object
+// When it is constructed with a valid expression
+// Then get_postfix() return its postfix notation
+TEST(BamExpParserGetPostfix, Valid6) {
+  bam::exp_parser p("{Host1 Service1} {IS} {OK} {XOR} {Host2 Service2} {IS} "
+    "{OK}");
+  char const* expected[] = {
+    "Host1",
+    "Service1",
+    "SERVICESTATUS",
+    "2",
+    "OK",
+    "IS",
+    "Host2",
+    "Service2",
+    "SERVICESTATUS",
+    "2",
+    "OK",
+    "IS",
+    "XOR",
+    NULL
+  };
+  ASSERT_EQ(p.get_postfix(), array_to_list(expected));
+}
+
+// Given an exp_parser object
+// When it is constructed with a valid expression
+// Then get_postfix() return its postfix notation
+TEST(BamExpParserGetPostfix, UnaryNot) {
+  bam::exp_parser p("HOSTSTATUS(Host, Service) IS NOT OK");
+  char const* expected[] = {
+    "Host",
+    "Service",
+    "HOSTSTATUS",
+    "2",
+    "OK",
+    "!",
+    "IS",
+    NULL
+  };
+  ASSERT_EQ(p.get_postfix(), array_to_list(expected));
+}
+
+// Given an exp_parser object
+// When it is constructed with a valid expression
+// Then get_postfix() return its postfix notation
+TEST(BamExpParserGetPostfix, UnaryMinus) {
+  bam::exp_parser p("HOSTSTATUS(Host, Service) IS - OK");
+  char const* expected[] = {
+    "Host",
+    "Service",
+    "HOSTSTATUS",
+    "2",
+    "OK",
+    "-u",
+    "IS",
+    NULL
+  };
+  ASSERT_EQ(p.get_postfix(), array_to_list(expected));
+}
+
+// Given an exp_parser object
+// When it is constructed with a valid expression
+// Then get_postfix() return its postfix notation
+// Here we test copy constructor and operator=
+TEST(BamExpParserGetPostfix, Copy) {
+  bam::exp_parser p("HOSTSTATUS(Host, Service) IS OK");
+  bam::exp_parser p_copy(p);
+  bam::exp_parser p_assign("");
+  p_assign = p_copy;
+  char const* expected[] = {
+    "Host",
+    "Service",
+    "HOSTSTATUS",
+    "2",
+    "OK",
+    "IS",
+    NULL
+  };
+  ASSERT_EQ(p_copy.get_postfix(), array_to_list(expected));
+  ASSERT_EQ(p_assign.get_postfix(), array_to_list(expected));
+}
+
+// Given an exp_parser object
+// When a parenthesis is missing
+// Then get_postfix() throw an exception
+TEST(BamExpParserGetPostfix, MissingParenthesis1) {
+  bam::exp_parser p("HOSTSTATUS(Host, Service) IS OK(");
+  char const* expected[] = {
+    "Host",
+    "Service",
+    "HOSTSTATUS",
+    "2",
+    "OK",
+    "IS",
+    NULL
+  };
+  ASSERT_THROW(p.get_postfix(), exceptions::msg);
+}
+
+// Given an exp_parser object
+// When a parenthesis is missing
+// Then get_postfix() throw an exception
+TEST(BamExpParserGetPostfix, MissingParenthesis2) {
+  bam::exp_parser p("HOSTSTATUS(Host, Service)) IS OK");
+  char const* expected[] = {
+    "Host",
+    "Service",
+    "HOSTSTATUS",
+    "2",
+    "OK",
+    "IS",
+    NULL
+  };
+  ASSERT_THROW(p.get_postfix(), exceptions::msg);
+}
+
+// Given an exp_parser object
+// When a comma is not right
+// Then get_postfix() throw an exception
+TEST(BamExpParserGetPostfix, BadComma1) {
+  bam::exp_parser p("HOSTSTATUS(Host, Service), IS OK");
+  char const* expected[] = {
+    "Host",
+    "Service",
+    "HOSTSTATUS",
+    "2",
+    "OK",
+    "IS",
+    NULL
+  };
+  ASSERT_THROW(p.get_postfix(), exceptions::msg);
+}
+
+// Given an exp_parser object
+// When a comma is not right
+// Then get_postfix() throw an exception
+TEST(BamExpParserGetPostfix, BadComma2) {
+  bam::exp_parser p("HOSTSTATUS(Host, Service) IS OK,");
+  char const* expected[] = {
+    "Host",
+    "Service",
+    "HOSTSTATUS",
+    "2",
+    "OK",
+    "IS",
+    NULL
+  };
+  ASSERT_THROW(p.get_postfix(), exceptions::msg);
+}
+
+// Given an exp_parser object
+// When a comma is not right
+// Then get_postfix() throw an exception
+TEST(BamExpParserGetPostfix, BadComma3) {
+  bam::exp_parser p("(OK,OK)");
+  char const* expected[] = {
+    ",",
+    NULL
+  };
+  ASSERT_THROW(p.get_postfix(), exceptions::msg);
 }
