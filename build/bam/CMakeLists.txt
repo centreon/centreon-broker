@@ -190,6 +190,7 @@ set(
   ${TESTS_SOURCES}
   "${TEST_DIR}/exp_parser/get_postfix.cc"
   "${TEST_DIR}/exp_tokenizer/next.cc"
+  "${TEST_DIR}/exp_builder/exp_builder.cc"
   "${TEST_DIR}/configuration/applier-boolexp.cc"
   PARENT_SCOPE
 )
