@@ -29,6 +29,7 @@
 #include "com/centreon/broker/bam/bool_operation.hh"
 #include "com/centreon/broker/bam/bool_or.hh"
 #include "com/centreon/broker/bam/bool_service.hh"
+#include "com/centreon/broker/bam/bool_xor.hh"
 #include "com/centreon/broker/bam/exp_builder.hh"
 #include "com/centreon/broker/bam/exp_parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -74,6 +75,8 @@ exp_builder::exp_builder(
           binary = new bool_and();
         else if ((*it == "||") || (*it == "OR"))
           binary = new bool_or();
+        else if ((*it == "^") || (*it == "XOR"))
+          binary = new bool_xor();
         else if ((*it == "==") || (*it == "IS"))
           binary = new bool_equal();
         else if ((*it == "!=") || (*it == "NOT"))

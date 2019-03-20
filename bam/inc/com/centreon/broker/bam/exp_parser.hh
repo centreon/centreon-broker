@@ -49,7 +49,6 @@ namespace           bam {
     exp_parser&     operator=(exp_parser const& other);
     notation const& get_postfix();
     static bool     is_function(std::string const& token);
-    static bool     is_number(std::string const& token);
     static bool     is_operator(std::string const& token);
 
   private:
