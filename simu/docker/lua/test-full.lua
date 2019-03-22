@@ -13,11 +13,11 @@ local simu = {
 local step = {
   require('neb.instances'),
   require('neb.hosts'),
+  require('neb.hostgroups'),
+  require('neb.hostgroup_members'),
   require('neb.custom_variables'),
   require('neb.comments'),
   require('neb.services'),
-  require('neb.hostgroups'),
-  require('neb.hostgroup_members'),
   require('neb.servicegroups'),
   require('neb.service_checks'),
   require('neb.service_status'),
@@ -40,37 +40,37 @@ step[2].count = {
   instance = step[1].count.instance
 }
 
--- Custom variables per host  =>
+-- Hostgroups
 step[3].count = {
+  group = 10,
+}
+
+-- Hostgroups members
+step[4].count = {
+  host = step[2].count.host,
+  instance = step[2].count.instance,
+  hostgroup = 1,
+}
+
+-- Custom variables per host  =>
+step[5].count = {
   cv = 30,
   host = step[2].count.host,
   instance = step[1].count.instance
 }
 
 -- Comments per host
-step[4].count = {
+step[6].count = {
   comment = 50,
   host = step[2].count.host,
   instance = step[2].count.instance,
 }
 
 -- Services per host          => 20
-step[5].count = {
+step[7].count = {
   service = 50,
   host = step[2].count.host,
   instance = step[2].count.instance,
-}
-
--- Hostgroups
-step[6].count = {
-  group = 10,
-}
-
--- Hostgroups members
-step[7].count = {
-  host = step[2].count.host,
-  instance = step[2].count.instance,
-  hostgroup = 1,
 }
 
 -- Servicegroups
