@@ -83,3 +83,13 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
 
   return _luabinding->write(data);
 }
+
+/**
+ *  Flush events.
+ *
+ *  @return Number of events acknowledged.
+ */
+int stream::flush() {
+  return _luabinding->flush();
+}
+

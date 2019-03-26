@@ -23,6 +23,7 @@
 #include "com/centreon/broker/lua/broker_utils.hh"
 #include "com/centreon/broker/lua/broker_log.hh"
 #include "com/centreon/broker/lua/broker_socket.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
@@ -99,6 +100,13 @@ bool luabinding::has_filter() const {
 }
 
 /**
+ *  Returns true if a filter was configured in the Lua script.
+ */
+bool luabinding::has_flush() const {
+  return _flush;
+}
+
+/**
  *  Reads the Lua script, checks its syntax and checks if
  *   - init()
  *   - write()
@@ -144,6 +152,16 @@ void luabinding::_load_script() {
   }
   else
     _filter = true;
+
+  // Checking for flush() availability: this function is optional
+  lua_getglobal(_L, "flush");
+  if (!lua_isfunction(_L, lua_gettop(_L))) {
+    logging::debug(logging::medium)
+      << "lua: flush() global function is missing, ";
+    _flush = false;
+  }
+  else
+    _flush = true;
 }
 
 /**
@@ -274,6 +292,38 @@ int luabinding::write(misc::shared_ptr<io::data> const& data) {
     logging::debug(logging::medium)
       << "lua: " << _total << " events acknowledged.";
     _total = 0;
+  }
+  return retval;
+}
+
+int luabinding::flush() {
+  int retval(0);
+
+  logging::debug(logging::medium) << "lua: luabinding::flush call";
+
+  //For the lua stream connector we only call flush when the queue is full
+  //of unacknowledge events
+  if (has_flush() && multiplexing::muxer::event_queue_max_size() <= _total) {
+    // Let's get the function to call
+    lua_getglobal(_L, "flush");
+
+    if (lua_pcall(_L, 0, 1, 0) != 0)
+      throw exceptions::msg()
+        << "lua: error running function `flush'"
+        << lua_tostring(_L, -1);
+
+    if (!lua_isboolean(_L, -1))
+      throw exceptions:: msg()
+        << "lua: `flush' must return a boolean";
+    int acknowledge = lua_toboolean(_L, -1);
+    lua_pop(_L, -1);
+
+    if (acknowledge) {
+      retval = _total;
+      logging::debug(logging::medium)
+        << "lua: " << retval << " events acknowledged by flush.";
+      _total = 0;
+    }
   }
   return retval;
 }

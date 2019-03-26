@@ -46,7 +46,9 @@ namespace               lua {
                           macro_cache const& cache);
                         ~luabinding();
     bool                has_filter() const;
+    bool                has_flush() const;
     int                 write(misc::shared_ptr<io::data> const& data);
+    int                 flush();
 
    private:
                         luabinding(luabinding const& other);
@@ -65,6 +67,7 @@ namespace               lua {
 
     // True if there is a filter() function in the Lua script.
     bool                _filter;
+    bool                _flush;
 
     // The Lua script name.
     std::string const&  _lua_script;

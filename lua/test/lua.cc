@@ -27,6 +27,7 @@
 #include "com/centreon/broker/lua/luabinding.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
 #include "com/centreon/broker/modules/loader.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/status.hh"
 
@@ -37,7 +38,8 @@ using namespace com::centreon::broker::lua;
 #define FILE1 CENTREON_BROKER_LUA_SCRIPT_PATH "/test1.lua"
 #define FILE2 CENTREON_BROKER_LUA_SCRIPT_PATH "/test2.lua"
 #define FILE3 CENTREON_BROKER_LUA_SCRIPT_PATH "/test3.lua"
-#define FILE4 CENTREON_BROKER_LUA_SCRIPT_PATH "/socket.lua"
+#define FILE4 CENTREON_BROKER_LUA_SCRIPT_PATH "/test4.lua"
+#define FILE5 CENTREON_BROKER_LUA_SCRIPT_PATH "/socket.lua"
 
 class LuaTest : public ::testing::Test {
  public:
@@ -166,10 +168,12 @@ TEST_F(LuaTest, SimpleScript) {
 
   QStringList result(ReadFile("/tmp/test.log"));
   ASSERT_EQ(result.size(), 74);
-  ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: init: address => 127\\.0\\.0\\.1")) >= 0);
+  ASSERT_TRUE(result.indexOf(
+    QRegExp(".*INFO: init: address => 127\\.0\\.0\\.1")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: init: port => 8857")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: write: host_id => 12")) >= 0);
-  ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: write: output => Bonjour")) >= 0);
+  ASSERT_TRUE(result.indexOf(
+    QRegExp(".*INFO: write: output => Bonjour")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: write: service_id => 18")) >= 0);
 
   l.unload();
@@ -199,12 +203,16 @@ TEST_F(LuaTest, WriteAcknowledgement) {
 
   QStringList result(ReadFile("/tmp/test.log"));
   ASSERT_EQ(result.size(), 15);
-  ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: init: address => 127\\.0\\.0\\.1")) >= 0);
-  ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: init: double => 3.1415926535898")) >= 0);
+  ASSERT_TRUE(result.indexOf(
+    QRegExp(".*INFO: init: address => 127\\.0\\.0\\.1")) >= 0);
+  ASSERT_TRUE(result.indexOf(
+    QRegExp(".*INFO: init: double => 3.1415926535898")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: init: port => 8857")) >= 0);
-  ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: init: name => test-centreon")) >= 0);
+  ASSERT_TRUE(result.indexOf(
+    QRegExp(".*INFO: init: name => test-centreon")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: write: host_id => 13")) >= 0);
-  ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: write: author => testAck")) >= 0);
+  ASSERT_TRUE(result.indexOf(
+    QRegExp(".*INFO: write: author => testAck")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: write: service_id => 21")) >= 0);
 
   l.unload();
@@ -328,7 +336,7 @@ TEST_F(LuaTest, SocketConnectedState) {
 // Then it succeeds.
 TEST_F(LuaTest, SocketWrite) {
   QMap<QString, QVariant> conf;
-  std::string filename(FILE4);
+  std::string filename(FILE5);
   ASSERT_NO_THROW(new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
   ASSERT_TRUE(lst.size() > 0);
@@ -355,7 +363,8 @@ TEST_F(LuaTest, JsonEncode) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: aa=>C:\\\\bonjour")) != -1);
@@ -379,7 +388,8 @@ TEST_F(LuaTest, EmptyJsonEncode) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("INFO: empty array: []"));
@@ -405,10 +415,12 @@ TEST_F(LuaTest, JsonEncodeEscape) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
-  ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: 1=>d:\\\\bonjour le \"monde\"")) != -1);
+  ASSERT_TRUE(lst.indexOf(
+    QRegExp(".*INFO: 1=>d:\\\\bonjour le \"monde\"")) != -1);
   ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: 2=>12")) != -1);
   ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: 3=>true")) != -1);
   ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: 4=>27.1")) != -1);
@@ -433,7 +445,8 @@ TEST_F(LuaTest, CacheTest) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("host does not exist"));
@@ -459,7 +472,8 @@ TEST_F(LuaTest, HostCacheTest) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("host is centreon"));
@@ -486,7 +500,8 @@ TEST_F(LuaTest, ServiceCacheTest) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("service description is description"));
@@ -523,7 +538,8 @@ TEST_F(LuaTest, IndexMetricCacheTest) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("service description is MyDescription"));
@@ -552,7 +568,8 @@ TEST_F(LuaTest, InstanceNameCacheTest) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("instance name is MyPoller"));
@@ -579,7 +596,8 @@ TEST_F(LuaTest, MetricMappingCacheTest) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("metric id is 27"));
@@ -602,7 +620,8 @@ TEST_F(LuaTest, HostGroupCacheTestNameNotAvailable) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("host group is nil"));
@@ -628,7 +647,8 @@ TEST_F(LuaTest, HostGroupCacheTestName) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("host group is centreon"));
@@ -650,7 +670,8 @@ TEST_F(LuaTest, HostGroupCacheTestEmpty) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("host group is []"));
@@ -700,7 +721,8 @@ TEST_F(LuaTest, HostGroupCacheTest) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("\"group_id\":17"));
@@ -724,7 +746,8 @@ TEST_F(LuaTest, ServiceGroupCacheTestNameNotAvailable) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("service group is nil"));
@@ -750,7 +773,8 @@ TEST_F(LuaTest, ServiceGroupCacheTestName) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("service group is centreon"));
@@ -772,7 +796,8 @@ TEST_F(LuaTest, ServiceGroupCacheTestEmpty) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("service group is []"));
@@ -826,7 +851,8 @@ TEST_F(LuaTest, ServiceGroupCacheTest) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("\"group_id\":17"));
@@ -904,7 +930,8 @@ TEST_F(LuaTest, SetNewInstance) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("service description nil"));
@@ -939,7 +966,8 @@ TEST_F(LuaTest, BamCacheTestBvBaRelation) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   int first, second;
@@ -982,7 +1010,8 @@ TEST_F(LuaTest, BamCacheTestBa) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("\"ba_name\":\"ba name\""));
@@ -1007,7 +1036,8 @@ TEST_F(LuaTest, BamCacheTestBaNil) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("member of ba nil"));
@@ -1036,7 +1066,8 @@ TEST_F(LuaTest, BamCacheTestBv) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("\"bv_id\":10"));
@@ -1062,7 +1093,8 @@ TEST_F(LuaTest, BamCacheTestBvNil) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("member of bv nil"));
@@ -1098,7 +1130,8 @@ TEST_F(LuaTest, ParsePerfdata) {
                          "end\n\n"
                          "function write(d)\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("\"percent_packet_loss\":0"));
@@ -1119,8 +1152,10 @@ TEST_F(LuaTest, ParsePerfdata) {
   ASSERT_TRUE(lst[6].contains("\"warning_high\":80"));
   ASSERT_TRUE(lst[6].contains("\"critical_low\":81"));
   ASSERT_TRUE(lst[6].contains("\"critical_high\":95"));
-  ASSERT_TRUE(lst[8].contains("storage: invalid perfdata format: equal sign not present or misplaced"));
-  ASSERT_TRUE(lst[9].contains("storage: invalid perfdata format: no numeric value after equal sign"));
+  ASSERT_TRUE(lst[8].contains("storage: invalid perfdata format: "
+    "equal sign not present or misplaced"));
+  ASSERT_TRUE(lst[9].contains("storage: invalid perfdata format: "
+    "no numeric value after equal sign"));
 
   RemoveFile(filename);
   RemoveFile("/tmp/log");
@@ -1147,7 +1182,8 @@ TEST_F(LuaTest, UpdatePath) {
                          "function write(d)\n"
                          "  return true\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("foo bar"));
@@ -1169,7 +1205,8 @@ TEST_F(LuaTest, CheckPath) {
                          "function write(d)\n"
                          "  return true\n"
                          "end\n");
-  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst[0].contains("/tmp/?.lua"));
@@ -1177,4 +1214,230 @@ TEST_F(LuaTest, CheckPath) {
 
   RemoveFile(filename);
   RemoveFile("/tmp/log");
+}
+
+// Try to send queue_max_event to trigger the lua flush function
+TEST_F(LuaTest, Flush) {
+  RemoveFile("/tmp/test.log");
+  QMap<QString, QVariant> conf;
+  conf["address"] = "127.0.0.1";
+  conf["double"] = 3.14159265358979323846;
+  conf["port"] = 8857;
+  conf["name"] = "test-centreon";
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+
+  multiplexing::muxer::event_queue_max_size(100);
+
+  std::auto_ptr<luabinding> bnd(new luabinding(FILE4, conf, *_cache.get()));
+  bnd.get();
+
+  ASSERT_EQ(bnd->has_flush(), true);
+  std::auto_ptr<neb::acknowledgement> s(new neb::acknowledgement);
+  s->host_id = 13;
+  s->author = "testAck";
+  s->service_id = 21;
+  misc::shared_ptr<io::data> svc(s.release());
+  for(int i=0; i < 100; i++) {
+    bnd->write(svc);
+    bnd->flush();
+  }
+
+  QStringList result(ReadFile("/tmp/test.log"));
+  ASSERT_EQ(result.size(), 1105);
+  ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: flush")) >= 0);
+  l.unload();
+}
+
+// Test filter error cases
+TEST_F(LuaTest, FilterException1) {
+  QMap<QString, QVariant> conf;
+  conf["address"] = "127.0.0.1";
+  conf["double"] = 3.14159265358979323846;
+  conf["port"] = 8857;
+  conf["name"] = "test-centreon";
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+
+  std::string filename("/tmp/json_encode.lua");
+  CreateScript(filename, "function init(conf)\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "  return true\n"
+                         "end\n\n"
+                         "function filter()\n"
+                         " error(\"filter\")\n"
+                         "end");
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
+
+  std::auto_ptr<neb::acknowledgement> s(new neb::acknowledgement);
+  s->host_id = 13;
+  s->author = "testAck";
+  s->service_id = 21;
+  misc::shared_ptr<io::data> svc(s.release());
+  ASSERT_THROW(binding->write(svc), exceptions::msg);
+
+  l.unload();
+  RemoveFile(filename);
+}
+
+// Test filter error cases
+TEST_F(LuaTest, FilterException2) {
+  QMap<QString, QVariant> conf;
+  conf["address"] = "127.0.0.1";
+  conf["double"] = 3.14159265358979323846;
+  conf["port"] = 8857;
+  conf["name"] = "test-centreon";
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+
+  std::string filename("/tmp/json_encode.lua");
+  CreateScript(filename, "function init(conf)\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "  return true\n"
+                         "end\n\n"
+                         "function filter()\n"
+                         " return 42\n"
+                         "end");
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
+
+  std::auto_ptr<neb::acknowledgement> s(new neb::acknowledgement);
+  s->host_id = 13;
+  s->author = "testAck";
+  s->service_id = 21;
+  misc::shared_ptr<io::data> svc(s.release());
+  ASSERT_THROW(binding->write(svc), exceptions::msg);
+
+  l.unload();
+  RemoveFile(filename);
+}
+
+// Test write error cases
+TEST_F(LuaTest, WriteException1) {
+  QMap<QString, QVariant> conf;
+  conf["address"] = "127.0.0.1";
+  conf["double"] = 3.14159265358979323846;
+  conf["port"] = 8857;
+  conf["name"] = "test-centreon";
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+
+  std::string filename("/tmp/json_encode.lua");
+  CreateScript(filename, "function init(conf)\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "  error(\"write\")\n"
+                         "end");
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
+
+  std::auto_ptr<neb::acknowledgement> s(new neb::acknowledgement);
+  s->host_id = 13;
+  s->author = "testAck";
+  s->service_id = 21;
+  misc::shared_ptr<io::data> svc(s.release());
+  ASSERT_THROW(binding->write(svc), exceptions::msg);
+
+  l.unload();
+  RemoveFile(filename);
+}
+
+// Test write error cases
+TEST_F(LuaTest, WriteException2) {
+  QMap<QString, QVariant> conf;
+  conf["address"] = "127.0.0.1";
+  conf["double"] = 3.14159265358979323846;
+  conf["port"] = 8857;
+  conf["name"] = "test-centreon";
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+
+  std::string filename("/tmp/json_encode.lua");
+  CreateScript(filename, "function init(conf)\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "  return 42\n"
+                         "end");
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
+
+  std::auto_ptr<neb::acknowledgement> s(new neb::acknowledgement);
+  s->host_id = 13;
+  s->author = "testAck";
+  s->service_id = 21;
+  misc::shared_ptr<io::data> svc(s.release());
+  ASSERT_THROW(binding->write(svc), exceptions::msg);
+
+  l.unload();
+  RemoveFile(filename);
+}
+
+// Test write error cases
+TEST_F(LuaTest, FlushException1) {
+  QMap<QString, QVariant> conf;
+  conf["address"] = "127.0.0.1";
+  conf["double"] = 3.14159265358979323846;
+  conf["port"] = 8857;
+  conf["name"] = "test-centreon";
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+
+  std::string filename("/tmp/json_encode.lua");
+  CreateScript(filename, "function init(conf)\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "  return false\n"
+                         "end\n\n"
+                         "function flush()\n"
+                         "  error(\"flush\")\n"
+                         "end");
+  std::auto_ptr<luabinding> binding(
+    new luabinding(filename, conf, *_cache.get()));
+
+  std::auto_ptr<neb::acknowledgement> s(new neb::acknowledgement);
+  s->host_id = 13;
+  s->author = "testAck";
+  s->service_id = 21;
+  misc::shared_ptr<io::data> svc(s.release());
+  multiplexing::muxer::event_queue_max_size(1);
+  binding->write(svc);
+  ASSERT_THROW(binding->flush(), exceptions::msg);
+  l.unload();
+  RemoveFile(filename);
+}
+
+// Test write error cases
+TEST_F(LuaTest, FlushException2) {
+  QMap<QString, QVariant> conf;
+  conf["address"] = "127.0.0.1";
+  conf["double"] = 3.14159265358979323846;
+  conf["port"] = 8857;
+  conf["name"] = "test-centreon";
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+
+  std::string filename("/tmp/json_encode.lua");
+  CreateScript(filename, "function init(conf)\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "  return false\n"
+                         "end\n\n"
+                         "function flush()\n"
+                         "  return 42\n"
+                         "end");
+  std::auto_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+
+  std::auto_ptr<neb::acknowledgement> s(new neb::acknowledgement);
+  s->host_id = 13;
+  s->author = "testAck";
+  s->service_id = 21;
+  misc::shared_ptr<io::data> svc(s.release());
+  multiplexing::muxer::event_queue_max_size(1);
+  binding->write(svc);
+  ASSERT_THROW(binding->flush(), exceptions::msg);
+  l.unload();
+  RemoveFile(filename);
 }
