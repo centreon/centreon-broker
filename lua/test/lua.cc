@@ -23,7 +23,7 @@
 #include <gtest/gtest.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/instance_broadcast.hh"
+#include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/lua/luabinding.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
 #include "com/centreon/broker/modules/loader.hh"
@@ -537,13 +537,13 @@ TEST_F(LuaTest, IndexMetricCacheTest) {
 TEST_F(LuaTest, InstanceNameCacheTest) {
   QMap<QString, QVariant> conf;
   std::string filename("/tmp/cache_test.lua");
-  shared_ptr<instance_broadcast> ib(new instance_broadcast);
-  ib->broker_id = 42;
-  ib->broker_name = "broker name";
-  ib->enabled = true;
-  ib->poller_id = 18;
-  ib->poller_name = "MyPoller";
-  _cache->write(ib);
+  shared_ptr<neb::instance> inst(new neb::instance);
+  inst->broker_id = 42;
+  inst->engine = "engine name";
+  inst->is_running = true;
+  inst->poller_id = 18;
+  inst->name = "MyPoller";
+  _cache->write(inst);
 
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
@@ -889,12 +889,12 @@ TEST_F(LuaTest, SetNewInstance) {
   member->group_name = "dix-sept";
   _cache->write(member);
 
-  shared_ptr<instance_broadcast> ib(new instance_broadcast);
+  shared_ptr<neb::instance> ib(new neb::instance);
   ib->broker_id = 42;
-  ib->broker_name = "broker name";
-  ib->enabled = true;
+  ib->engine = "engine name";
+  ib->is_running = true;
   ib->poller_id = 3;
-  ib->poller_name = "MyPoller";
+  ib->name = "MyPoller";
   _cache->write(ib);
 
   CreateScript(filename, "function init(conf)\n"
