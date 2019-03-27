@@ -198,13 +198,13 @@ QString const& macro_cache::get_service_group_name(unsigned int id) const {
  *  @return   The name of the instance.
  */
 QString const& macro_cache::get_instance(unsigned int instance_id) const {
-  QHash<unsigned int, instance_broadcast>::const_iterator
+  QHash<unsigned int, neb::instance>::const_iterator
     found(_instances.find(instance_id));
   if (found == _instances.end())
     throw (exceptions::msg()
            << "lua: could not find information on instance "
            << instance_id);
-  return (found->poller_name);
+  return (found->name);
 }
 
 /**
@@ -262,8 +262,8 @@ void macro_cache::write(misc::shared_ptr<io::data> const& data) {
   if (data.isNull())
     return ;
 
-  if (data->type() == instance_broadcast::static_type())
-    _process_instance(data.ref_as<instance_broadcast const>());
+  if (data->type() == neb::instance::static_type())
+    _process_instance(data.ref_as<neb::instance const>());
   else if (data->type() == neb::host::static_type())
     _process_host(data.ref_as<neb::host const>());
   else if (data->type() == neb::host_group::static_type())
@@ -298,7 +298,7 @@ void macro_cache::write(misc::shared_ptr<io::data> const& data) {
  *
  *  @param in  The event.
  */
-void macro_cache::_process_instance(instance_broadcast const& in) {
+void macro_cache::_process_instance(neb::instance const& in) {
   unsigned int poller_id(in.poller_id);
 
   QSet<unsigned int> hosts_removed;
@@ -510,12 +510,12 @@ void macro_cache::_process_dimension_truncate_table_signal(
 void macro_cache::_save_to_disk() {
   _cache->transaction();
 
-  for (QHash<unsigned int, instance_broadcast>::const_iterator
+  for (QHash<unsigned int, neb::instance>::const_iterator
          it(_instances.begin()),
          end(_instances.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new instance_broadcast(*it)));
+    _cache->add(misc::shared_ptr<io::data>(new neb::instance(*it)));
 
   for (QHash<unsigned int, neb::host>::const_iterator
          it(_hosts.begin()),
