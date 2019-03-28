@@ -1,6 +1,6 @@
 /*
-** Copyright 1999-2010 Ethan Galstad
-** Copyright 2011-2013 Merethis
+** Copyright 1999-2010      Ethan Galstad
+** Copyright 2011-2013,2016 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -35,7 +35,6 @@
 // Macro Definitions
 # define MACRO_ENV_VAR_PREFIX                   "NAGIOS_"
 # define MAX_USER_MACROS                        256  // maximum number of $USERx$ macros
-# define MACRO_X_COUNT                          155  // size of macro_x[] array
 
 # define MACRO_HOSTNAME                         0
 # define MACRO_HOSTALIAS                        1
@@ -192,6 +191,12 @@
 # define MACRO_LASTSERVICESTATEID               152
 # define MACRO_HOSTPARENTS                      153
 # define MACRO_HOSTCHILDREN                     154
+# define MACRO_HOSTID                           155
+# define MACRO_SERVICEID                        156
+# define MACRO_HOSTTIMEZONE                     157
+# define MACRO_SERVICETIMEZONE                  158
+# define MACRO_CONTACTTIMEZONE                  159
+# define MACRO_X_COUNT                          160  // size of macro_x[] array
 
 // Macro Cleaning Options
 # define STRIP_ILLEGAL_MACRO_CHARS              1

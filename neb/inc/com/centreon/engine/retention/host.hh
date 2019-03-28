@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2015-2016 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -60,11 +60,11 @@ namespace                         retention {
     map_customvar const&          customvariables() const throw ();
     opt<std::string> const&       event_handler() const throw ();
     opt<bool> const&              event_handler_enabled() const throw ();
-    opt<bool> const&              failure_prediction_enabled() const throw ();
     opt<bool> const&              flap_detection_enabled() const throw ();
     opt<bool> const&              has_been_checked() const throw ();
     std::string const&            host_name() const throw ();
     opt<bool> const&              is_flapping() const throw ();
+    opt<time_t> const&            last_acknowledgement() const throw ();
     opt<time_t> const&            last_check() const throw ();
     opt<unsigned long> const&     last_event_id() const throw ();
     opt<time_t> const&            last_hard_state() const throw ();
@@ -95,6 +95,7 @@ namespace                         retention {
     opt<unsigned int> const&      retry_check_interval() const throw ();
     opt<std::vector<int> > const& state_history() const throw ();
     opt<int> const&               state_type() const throw ();
+    opt<bool> const&              recovery_been_sent() const throw();
 
   private:
     struct                        setters {
@@ -124,6 +125,7 @@ namespace                         retention {
     bool                          _set_has_been_checked(bool value);
     bool                          _set_host_name(std::string const& value);
     bool                          _set_is_flapping(bool value);
+    bool                          _set_last_acknowledgement(time_t value);
     bool                          _set_last_check(time_t value);
     bool                          _set_last_event_id(unsigned long value);
     bool                          _set_last_hard_state(time_t value);
@@ -154,6 +156,7 @@ namespace                         retention {
     bool                          _set_retry_check_interval(unsigned int value);
     bool                          _set_state_history(std::string const& value);
     bool                          _set_state_type(int value);
+    bool                          _set_recovery_been_sent(bool value);
 
     opt<int>                      _acknowledgement_type;
     opt<bool>                     _active_checks_enabled;
@@ -173,11 +176,11 @@ namespace                         retention {
     map_customvar                 _customvariables;
     opt<std::string>              _event_handler;
     opt<bool>                     _event_handler_enabled;
-    opt<bool>                     _failure_prediction_enabled;
     opt<bool>                     _flap_detection_enabled;
     opt<bool>                     _has_been_checked;
     std::string                   _host_name;
     opt<bool>                     _is_flapping;
+    opt<time_t>                   _last_acknowledgement;
     opt<time_t>                   _last_check;
     opt<unsigned long>            _last_event_id;
     opt<time_t>                   _last_hard_state;
@@ -205,6 +208,7 @@ namespace                         retention {
     opt<std::string>              _plugin_output;
     opt<bool>                     _problem_has_been_acknowledged;
     opt<int>                      _process_performance_data;
+    opt<bool>                     _recovery_been_sent;
     opt<unsigned int>             _retry_check_interval;
     static setters const          _setters[];
     opt<std::vector<int> >        _state_history;
@@ -218,4 +222,3 @@ namespace                         retention {
 CCE_END()
 
 #endif // !CCE_RETENTION_HOST_HH
-

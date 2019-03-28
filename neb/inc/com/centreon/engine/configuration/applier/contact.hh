@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2017 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -21,7 +21,6 @@
 #  define CCE_CONFIGURATION_APPLIER_CONTACT_HH
 
 #  include "com/centreon/engine/namespace.hh"
-#  include "com/centreon/shared_ptr.hh"
 
 CCE_BEGIN()
 
@@ -32,22 +31,16 @@ namespace             configuration {
 
   namespace           applier {
     class             contact {
-    public:
+     public:
                       contact();
                       contact(contact const& right);
                       ~contact() throw ();
       contact&        operator=(contact const& right);
-      void            add_object(
-                        shared_ptr<configuration::contact> obj);
-      void            expand_object(
-                        shared_ptr<configuration::contact> obj,
-                        configuration::state& s);
-      void            modify_object(
-                        shared_ptr<configuration::contact> obj);
-      void            remove_object(
-                        shared_ptr<configuration::contact> obj);
-      void            resolve_object(
-                        shared_ptr<configuration::contact> obj);
+      void            add_object(configuration::contact const& obj);
+      void            expand_objects(configuration::state& s);
+      void            modify_object(configuration::contact const& obj);
+      void            remove_object(configuration::contact const& obj);
+      void            resolve_object(configuration::contact const& obj);
     };
   }
 }

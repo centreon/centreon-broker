@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2013,2017 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -179,6 +179,12 @@ namespace           configuration {
                     timeperiods_find(configuration::timeperiod::key_type const& k) const;
       umap<std::string, shared_ptr<timeperiod_struct> >::iterator
                     timeperiods_find(configuration::timeperiod::key_type const& k);
+      umap<std::string, std::string>&
+                    user_macros();
+      umap<std::string, std::string> const&
+                    user_macros() const;
+      umap<std::string, std::string>::const_iterator
+                    user_macros_find(std::string const& key) const;
       void          try_lock();
 
     private:
@@ -196,16 +202,12 @@ namespace           configuration {
       void          _apply(configuration::state const& new_cfg);
       template      <typename ConfigurationType, typename ApplierType>
       void          _apply(
-                      difference<std::set<shared_ptr<ConfigurationType> > > const& diff);
+                      difference<std::set<ConfigurationType> > const& diff);
       void          _apply(
                       configuration::state& new_cfg,
                       retention::state& state);
+      template      <typename ConfigurationType, typename ApplierType>
       void          _expand(configuration::state& new_state);
-      template      <typename ConfigurationType,
-                     typename ApplierType>
-      void          _expand(
-                      configuration::state& new_state,
-                      std::set<shared_ptr<ConfigurationType> >& cfg);
       void          _processing(
                       configuration::state& new_cfg,
                       bool waiting_thread,
@@ -213,7 +215,7 @@ namespace           configuration {
       template      <typename ConfigurationType,
                      typename ApplierType>
       void          _resolve(
-                      std::set<shared_ptr<ConfigurationType> >& cfg);
+                      std::set<ConfigurationType>& cfg);
 
       state*        _config;
 
@@ -249,6 +251,8 @@ namespace           configuration {
                     _servicegroups;
       umap<std::string, shared_ptr<timeperiod_struct> >
                     _timeperiods;
+      umap<std::string, std::string>
+                    _user_macros;
     };
   }
 }
@@ -256,4 +260,3 @@ namespace           configuration {
 CCE_END()
 
 #endif // !CCE_CONFIGURATION_APPLIER_STATE_HH
-
