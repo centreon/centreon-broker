@@ -1,7 +1,7 @@
 /*
 ** Copyright 1999-2009      Ethan Galstad
 ** Copyright 2009-2010      Nagios Core Development Team and Community Contributors
-** Copyright 2011-2013,2015 Merethis
+** Copyright 2011-2013,2017 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -89,8 +89,6 @@ extern int                       restarting;
 extern int                       verify_config;
 extern int                       verify_circular_paths;
 extern int                       test_scheduling;
-extern int                       precache_objects;
-extern int                       use_precached_objects;
 
 extern unsigned int              currently_running_service_checks;
 extern unsigned int              currently_running_host_checks;
@@ -129,6 +127,8 @@ extern hostdependency*           hostdependency_list;
 extern hostdependency*           hostdependency_list_tail;
 extern hostescalation*           hostescalation_list;
 extern hostescalation*           hostescalation_list_tail;
+
+extern skiplist*                 object_skiplists[];
 
 extern int                       __nagios_object_structure_version;
 
@@ -181,7 +181,6 @@ extern unsigned int log_service_retries;
 extern unsigned int log_event_handlers;
 extern unsigned int log_external_commands;
 extern unsigned int log_passive_checks;
-extern unsigned int log_initial_states;
 extern int log_host_retries;
 extern int allow_empty_hostgroup_assignment;
 extern unsigned int retain_state_information;

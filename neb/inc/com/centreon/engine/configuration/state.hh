@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2016 Centreon
+** Copyright 2011-2017 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -194,6 +194,8 @@ namespace               configuration {
     void                enable_event_handlers(bool value);
     bool                enable_flap_detection() const throw ();
     void                enable_flap_detection(bool value);
+    bool                enable_macros_filter() const throw ();
+    void                enable_macros_filter(bool value);
     bool                enable_notifications() const throw ();
     void                enable_notifications(bool value);
     bool                enable_predictive_host_dependency_checks() const throw ();
@@ -268,8 +270,6 @@ namespace               configuration {
     void                log_file(std::string const& value);
     bool                log_host_retries() const throw ();
     void                log_host_retries(bool value);
-    bool                log_initial_states() const throw ();
-    void                log_initial_states(bool value);
     bool                log_notifications() const throw ();
     void                log_notifications(bool value);
     bool                log_passive_checks() const throw ();
@@ -282,6 +282,9 @@ namespace               configuration {
     void                low_host_flap_threshold(float value);
     float               low_service_flap_threshold() const throw ();
     void                low_service_flap_threshold(float value);
+    void                macros_filter(std::string const& value);
+    std::set<std::string> const&
+                        macros_filter() const;
     unsigned int        max_check_reaper_time() const throw ();
     void                max_check_reaper_time(unsigned int value);
     unsigned long       max_check_result_file_age() const throw ();
@@ -450,6 +453,7 @@ namespace               configuration {
     void                _set_host_perfdata_file_mode(std::string const& value);
     void                _set_lock_file(std::string const& value);
     void                _set_log_archive_path(std::string const& value);
+    void                _set_log_initial_states(std::string const& value);
     void                _set_log_rotation_method(std::string const& value);
     void                _set_nagios_group(std::string const& value);
     void                _set_nagios_user(std::string const& value);
@@ -539,6 +543,7 @@ namespace               configuration {
     bool                _enable_environment_macros;
     bool                _enable_event_handlers;
     bool                _enable_flap_detection;
+    bool                _enable_macros_filter;
     bool                _enable_notifications;
     bool                _enable_predictive_host_dependency_checks;
     bool                _enable_predictive_service_dependency_checks;
@@ -571,13 +576,14 @@ namespace               configuration {
     bool                _log_external_commands;
     std::string         _log_file;
     bool                _log_host_retries;
-    bool                _log_initial_states;
     bool                _log_notifications;
     bool                _log_passive_checks;
     bool                _log_pid;
     bool                _log_service_retries;
     float               _low_host_flap_threshold;
     float               _low_service_flap_threshold;
+    std::set<std::string>
+                        _macros_filter;
     unsigned int        _max_check_reaper_time;
     unsigned long       _max_check_result_file_age;
     unsigned long       _max_debug_file_size;
