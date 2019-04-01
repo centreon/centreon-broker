@@ -9,7 +9,7 @@ ENV MYSQL_ROOT_PASSWORD=root
 MAINTAINER Centreon "support@centreon.com"
 
 WORKDIR /usr/sql
-COPY simu/test/centreon_storage.sql /docker-entrypoint-initdb.d/
+COPY simu/docker/centreon_storage.sql /docker-entrypoint-initdb.d/
 
 # Need to change the datadir to something else that /var/lib/mysql because the parent docker file defines it as a volume.
 # httpd://docs.docker.com/engine/reference/builder/#volume :
