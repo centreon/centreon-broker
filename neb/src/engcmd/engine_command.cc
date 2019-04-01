@@ -59,10 +59,10 @@ engine_command::~engine_command() {}
  *  @return              True.
  */
 bool engine_command::read(
-       misc::shared_ptr<io::data>& d,
+       std::shared_ptr<io::data>& d,
        time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (exceptions::shutdown() << "cannot read from engine command");
   return (true);
 }
@@ -74,17 +74,17 @@ bool engine_command::read(
  *
  *  @return  See io::stream::read().
  */
-int engine_command::write(misc::shared_ptr<io::data> const& d) {
+int engine_command::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "engine command"))
     return (1);
 
   if (d->type() == command_request::static_type()) {
-    command_request const& request = d.ref_as<command_request const>();
+    command_request const& request = *std::static_pointer_cast<command_request const>(d);
 
     if (request.destination_id == config::applier::state::instance().poller_id()
         && request.endp == QString::fromStdString(_name)) {
       _execute_command(request.endp.toStdString());
-      misc::shared_ptr<command_result> result(new command_result);
+      std::shared_ptr<command_result> result(new command_result);
       result->code = 1;
       result->uuid = request.uuid;
       result->msg = "\"Command successfully sent to engine\"";

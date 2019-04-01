@@ -37,12 +37,12 @@ public:
                     ~temporary_stream();
   temporary_stream& operator=(temporary_stream const& ss);
   bool              read(
-                      misc::shared_ptr<io::data>& d,
+                      std::shared_ptr<io::data>& d,
                       time_t deadline);
-  int               write(misc::shared_ptr<io::data> const& d);
+  int               write(std::shared_ptr<io::data> const& d);
 
 private:
-  QQueue<misc::shared_ptr<io::data> >
+  QQueue<std::shared_ptr<io::data> >
                     _events;
   mutable QMutex    _eventsm;
   QString           _id;

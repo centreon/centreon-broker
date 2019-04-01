@@ -119,7 +119,7 @@ void applier::ba::apply(
        ++it) {
     logging::config(logging::medium)
       << "BAM: removing BA " << it->first;
-    misc::shared_ptr<neb::service>
+    std::shared_ptr<neb::service>
       s(_ba_service(
           it->first,
           it->second.cfg.get_host_id(),
@@ -128,7 +128,7 @@ void applier::ba::apply(
     book.unlisten(
            it->second.cfg.get_host_id(),
            it->second.cfg.get_service_id(),
-           static_cast<bam::ba*>(it->second.obj.data()));
+           static_cast<bam::ba*>(it->second.obj.get()));
     _applied.erase(it->first);
     multiplexing::publisher().write(s);
   }
@@ -142,14 +142,14 @@ void applier::ba::apply(
        ++it) {
     logging::config(logging::medium) << "BAM: creating BA "
       << it->first << " ('" << it->second.get_name() << "')";
-    misc::shared_ptr<bam::ba> new_ba(_new_ba(it->second, book));
+    std::shared_ptr<bam::ba> new_ba(_new_ba(it->second, book));
     applied& content(_applied[it->first]);
     content.cfg = it->second;
     content.obj = new_ba;
-    misc::shared_ptr<neb::host>
+    std::shared_ptr<neb::host>
       h(_ba_host(it->second.get_host_id()));
     multiplexing::publisher().write(h);
-    misc::shared_ptr<neb::service>
+    std::shared_ptr<neb::service>
       s(_ba_service(
           it->first,
           it->second.get_host_id(),
@@ -200,12 +200,12 @@ void applier::ba::apply(
  *
  *  @return Shared pointer to the applied BA object.
  */
-misc::shared_ptr<bam::ba> applier::ba::find_ba(unsigned int id) {
+std::shared_ptr<bam::ba> applier::ba::find_ba(unsigned int id) {
   std::map<unsigned int, applied>::iterator
     it(_applied.find(id));
   return ((it != _applied.end())
           ? it->second.obj
-          : misc::shared_ptr<bam::ba>());
+          : std::shared_ptr<bam::ba>());
 }
 
 /**
@@ -230,9 +230,9 @@ void applier::ba::visit(io::stream* visitor) {
  *
  *  @return Virtual BA host.
  */
-misc::shared_ptr<neb::host> applier::ba::_ba_host(
+std::shared_ptr<neb::host> applier::ba::_ba_host(
                                            unsigned int host_id) {
-  misc::shared_ptr<neb::host> h(new neb::host);
+  std::shared_ptr<neb::host> h(new neb::host);
   h->poller_id
     = com::centreon::broker::config::applier::state::instance().poller_id();
   h->host_id = host_id;
@@ -254,11 +254,11 @@ misc::shared_ptr<neb::host> applier::ba::_ba_host(
  *
  *  @return Virtual BA service.
  */
-misc::shared_ptr<neb::service> applier::ba::_ba_service(
+std::shared_ptr<neb::service> applier::ba::_ba_service(
                                               unsigned int ba_id,
                                               unsigned int host_id,
                                               unsigned int service_id) {
-  misc::shared_ptr<neb::service> s(new neb::service);
+  std::shared_ptr<neb::service> s(new neb::service);
   s->host_id = host_id;
   s->service_id = service_id;
   {
@@ -287,10 +287,10 @@ void applier::ba::_internal_copy(applier::ba const& other) {
  *
  *  @return New BA object.
  */
-misc::shared_ptr<bam::ba> applier::ba::_new_ba(
+std::shared_ptr<bam::ba> applier::ba::_new_ba(
                                          configuration::ba const& cfg,
                                          service_book& book) {
-  misc::shared_ptr<bam::ba> obj(new bam::ba(false));
+  std::shared_ptr<bam::ba> obj(new bam::ba(false));
   obj->set_id(cfg.get_id());
   obj->set_host_id(cfg.get_host_id());
   obj->set_service_id(cfg.get_service_id());
@@ -300,7 +300,7 @@ misc::shared_ptr<bam::ba> applier::ba::_new_ba(
   obj->set_inherit_kpi_downtime(cfg.get_inherit_kpi_downtime());
   if (cfg.get_opened_event().ba_id)
     obj->set_initial_event(cfg.get_opened_event());
-  book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.data());
+  book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.get());
   return (obj);
 }
 
@@ -327,12 +327,12 @@ void applier::ba::save_to_cache(persistent_cache& cache) {
  *  @param[in] cache  The cache.
  */
 void applier::ba::load_from_cache(persistent_cache& cache) {
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   cache.get(d);
-  while (!d.isNull()) {
+  while (d) {
     if (d->type() != inherited_downtime::static_type())
       continue ;
-    inherited_downtime const& dwn = d.ref_as<inherited_downtime const>();
+    inherited_downtime const& dwn = *std::static_pointer_cast<inherited_downtime const>(d);
     std::map<unsigned int, applied>::iterator found = _applied.find(dwn.ba_id);
     if (found != _applied.end()) {
       logging::debug(logging::medium)

@@ -20,12 +20,12 @@
 #  define CCB_GRAPHITE_MACRO_CACHE_HH
 
 #  include <map>
+#  include <memory>
 #  include <string>
 #  include <QHash>
 #  include "com/centreon/broker/instance_broadcast.hh"
 #  include "com/centreon/broker/io/factory.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
 #  include "com/centreon/broker/neb/instance.hh"
 #  include "com/centreon/broker/neb/host.hh"
@@ -45,7 +45,7 @@ namespace         graphite {
                    macro_cache(std::shared_ptr<persistent_cache> const& cache);
                    ~macro_cache();
 
-    void           write(misc::shared_ptr<io::data> const& data);
+    void           write(std::shared_ptr<io::data> const& data);
 
     storage::index_mapping const&
                    get_index_mapping(unsigned int index_id) const;

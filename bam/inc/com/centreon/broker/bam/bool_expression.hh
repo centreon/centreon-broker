@@ -48,8 +48,8 @@ namespace            bam {
     short            get_state() const;
     bool             state_known() const;
     void             set_expression(
-                       misc::shared_ptr<bool_value> const& expression);
-    misc::shared_ptr<bool_value>
+                       std::shared_ptr<bool_value> const& expression);
+    std::shared_ptr<bool_value>
                      get_expression() const;
     void             set_id(unsigned int id);
     void             set_impact_if(bool impact_if);
@@ -58,7 +58,7 @@ namespace            bam {
   private:
     void             _internal_copy(bool_expression const& right);
 
-    misc::shared_ptr<bool_value>
+    std::shared_ptr<bool_value>
                      _expression;
     unsigned int     _id;
     bool             _impact_if;

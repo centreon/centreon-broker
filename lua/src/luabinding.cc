@@ -200,7 +200,7 @@ void luabinding::_init_script(QMap<QString, QVariant> const& conf_params) {
  *
  *  @return The number of events written.
  */
-int luabinding::write(misc::shared_ptr<io::data> const& data) {
+int luabinding::write(std::shared_ptr<io::data> const& data) {
   int retval(0);
   logging::debug(logging::medium) << "lua: luabinding::write call";
 
@@ -254,7 +254,7 @@ int luabinding::write(misc::shared_ptr<io::data> const& data) {
   lua_pushinteger(_L, elem);
   lua_rawset(_L, -3);
 
-  io::data const& d(*(data.data()));
+  io::data const& d(*data);
   _parse_entries(d);
 
   if (lua_pcall(_L, 1, 1, 0) != 0)

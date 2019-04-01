@@ -27,39 +27,38 @@ class  CompressionStreamMemoryStream : public com::centreon::broker::io::stream 
         CompressionStreamMemoryStream()
     : _shutdown(false), _timeout(false) {}
 
-  com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::raw>&
+  std::shared_ptr<com::centreon::broker::io::raw>&
        get_buffer() {
     return (_buffer);
   }
 
   bool read(
-         com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d,
+         std::shared_ptr<com::centreon::broker::io::data>& d,
          time_t deadline = (time_t)-1) {
     using namespace com::centreon::broker;
     (void)deadline;
-    d.clear();
+    d.reset();
     if (_shutdown)
       throw (exceptions::shutdown() << __FUNCTION__
              << " is shutdown");
     else if (_timeout)
       return (false);
     d = _buffer;
-    _buffer = misc::shared_ptr<io::raw>();
-    if (d.isNull())
+    _buffer = std::shared_ptr<io::raw>();
+    if (!d)
       throw (exceptions::shutdown() << __FUNCTION__
              << " has no more data");
     return (true);
   }
 
-  int  write(
-         com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d) {
+  int  write(std::shared_ptr<com::centreon::broker::io::data> const& d) {
     using namespace com::centreon::broker;
-    if (d.isNull() || (d->type() != io::raw::static_type()))
+    if (!d || d->type() != io::raw::static_type())
       throw (exceptions::msg()
              << "invalid data sent to " << __FUNCTION__);
-    io::raw const& e(d.ref_as<io::raw>());
-    if (_buffer.isNull())
-      _buffer = new io::raw(e);
+    io::raw const& e(*std::static_pointer_cast<io::raw>(d));
+    if (!_buffer)
+      _buffer.reset(new io::raw(e));
     else
       _buffer->append(e);
     return (1);
@@ -76,7 +75,7 @@ class  CompressionStreamMemoryStream : public com::centreon::broker::io::stream 
   }
 
  private:
-  com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::raw>
+  std::shared_ptr<com::centreon::broker::io::raw>
        _buffer;
   bool _shutdown;
   bool _timeout;

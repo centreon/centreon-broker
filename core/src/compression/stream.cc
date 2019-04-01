@@ -88,10 +88,10 @@ stream& stream::operator=(stream const& other) {
  *  @return Respect io::stream::read()'s return value.
  */
 bool stream::read(
-               misc::shared_ptr<io::data>& data,
+               std::shared_ptr<io::data>& data,
                time_t deadline) {
   // Clear existing content.
-  data.clear();
+  data.reset();
 
   try {
     // Process buffer as long as data is corrupted
@@ -138,7 +138,7 @@ bool stream::read(
 
       // Get compressed data.
       _get_data(size + sizeof(qint32), deadline);
-      misc::shared_ptr<io::raw> r(new io::raw);
+      std::shared_ptr<io::raw> r(new io::raw);
 
       // The requested data size might have not been read entirely
       // because of substream shutdown. This indicates that data is
@@ -191,8 +191,8 @@ bool stream::read(
   catch (exceptions::shutdown const& e) {
     _shutdown = true;
     if (!_wbuffer.isEmpty()) {
-      misc::shared_ptr<io::raw> r(new io::raw);
-      *static_cast<QByteArray*>(r.data()) = _wbuffer;
+      std::shared_ptr<io::raw> r(new io::raw);
+      *static_cast<QByteArray*>(r.get()) = _wbuffer;
       data = r;
       _wbuffer.clear();
     }
@@ -209,7 +209,7 @@ bool stream::read(
  *  @param[out] buffer Output buffer.
  */
 void stream::statistics(io::properties& tree) const {
-  if (!_substream.isNull())
+  if (_substream)
     _substream->statistics(tree);
   return ;
 }
@@ -233,7 +233,7 @@ int stream::flush() {
  *
  *  @return 1.
  */
-int stream::write(misc::shared_ptr<io::data> const& d) {
+int stream::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "compression"))
     return (1);
 
@@ -244,7 +244,7 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
 
   // Process raw data only.
   if (d->type() == io::raw::static_type()) {
-    io::raw const& r(d.ref_as<io::raw>());
+    io::raw const& r(*std::static_pointer_cast<io::raw>(d));
 
     // Check length.
     if (r.size() > max_data_size)
@@ -280,7 +280,7 @@ void stream::_flush() {
 
   if (_wbuffer.size() > 0) {
     // Compress data.
-    misc::shared_ptr<io::raw> compressed(new io::raw);
+    std::shared_ptr<io::raw> compressed(new io::raw);
     compressed->QByteArray::operator=(zlib::compress(_wbuffer, _level));
     logging::debug(logging::low) << "compression: " << this
       << " compressed " << _wbuffer.size() << " bytes to "
@@ -313,13 +313,13 @@ void stream::_flush() {
 void stream::_get_data(int size, time_t deadline) {
   try {
     while (_rbuffer.size() < size) {
-      misc::shared_ptr<io::data> d;
+      std::shared_ptr<io::data> d;
       if (!_substream->read(d, deadline))
         throw (exceptions::timeout());
-      else if (d.isNull())
+      else if (!d)
         throw (exceptions::interrupt());
       else if (d->type() == io::raw::static_type()) {
-        misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
+        std::shared_ptr<io::raw> r(std::static_pointer_cast<io::raw>(d));
         _rbuffer.push(*r);
       }
     }

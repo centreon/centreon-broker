@@ -102,7 +102,7 @@ void service_book::unlisten(
  *  @param[out] visitor  Object that will receive events.
  */
 void service_book::update(
-                     misc::shared_ptr<neb::service_status> const& ss,
+                     std::shared_ptr<neb::service_status> const& ss,
                      io::stream* visitor) {
   std::pair<multimap::iterator, multimap::iterator>
     range(_book.equal_range(std::make_pair(
@@ -123,7 +123,7 @@ void service_book::update(
  *  @param[out] visitor  Object that will receive events.
  */
 void service_book::update(
-                     misc::shared_ptr<neb::acknowledgement> const& ack,
+                     std::shared_ptr<neb::acknowledgement> const& ack,
                      io::stream* visitor) {
   std::pair<multimap::iterator, multimap::iterator>
     range(_book.equal_range(std::make_pair(
@@ -144,7 +144,7 @@ void service_book::update(
  *  @param[out] visitor  Object that will receive events.
  */
 void service_book::update(
-                     misc::shared_ptr<neb::downtime> const& dt,
+                     std::shared_ptr<neb::downtime> const& dt,
                      io::stream* visitor) {
   std::pair<multimap::iterator, multimap::iterator>
     range(_book.equal_range(std::make_pair(

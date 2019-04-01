@@ -67,16 +67,16 @@ command_client::~command_client() {
  *  @return Respect io::stream's read() return value.
  */
 bool command_client::read(
-                       misc::shared_ptr<io::data>& d,
+                       std::shared_ptr<io::data>& d,
                        time_t deadline) {
   // Check that socket exist.
   if (!_socket.get())
     _initialize_socket();
 
   // Read commands from socket.
-  d.clear();
+  d.reset();
   command_result res;
-  misc::shared_ptr<command_request> req;
+  std::shared_ptr<command_request> req;
   size_t parsed = 0;
   while ((parsed = _parser.parse(_buffer, res, req)) == 0) {
     if (_socket->waitForReadyRead(0)) {
@@ -130,7 +130,7 @@ bool command_client::read(
  *  @return This method will throw.
  */
 int command_client::write(
-                      misc::shared_ptr<io::data> const& d) {
+                      std::shared_ptr<io::data> const& d) {
   (void)d;
   throw (exceptions::shutdown()
          << "command: cannot write event to command client");

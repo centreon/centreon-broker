@@ -59,8 +59,8 @@ computable& computable::operator=(computable const& right) {
  *  @param[in] parent Parent node.
  */
 void computable::add_parent(
-                   misc::shared_ptr<computable> const& parent) {
-  _parents.push_back(misc::weak_ptr<computable>(parent));
+                   std::shared_ptr<computable> const& parent) {
+  _parents.push_back(std::weak_ptr<computable>(parent));
   return ;
 }
 
@@ -76,27 +76,27 @@ void computable::propagate_update(io::stream* visitor) {
   std::vector<bool> filter;
   filter.resize(_parents.size());
   unsigned int i = 0;
-  for (std::list<misc::weak_ptr<computable> >::iterator
+  for (std::list<std::weak_ptr<computable> >::iterator
          it(_parents.begin()),
          end(_parents.end());
        it != end;
        ++it) {
-    misc::shared_ptr<computable> ptr = it->lock();
-    if (!ptr.isNull())
+    std::shared_ptr<computable> ptr = it->lock();
+    if (ptr)
       filter[i++] = ptr->child_has_update(this, visitor);
     else
       ++i;
   }
   i = 0;
-  for (std::list<misc::weak_ptr<computable> >::iterator
+  for (std::list<std::weak_ptr<computable> >::iterator
          it(_parents.begin()),
          end(_parents.end());
        it != end;
        ++it)
     if (filter[i++] == true) {
-      misc::shared_ptr<computable> ptr = it->lock();
-      if (!ptr.isNull())
-        (ptr)->propagate_update(visitor);
+      std::shared_ptr<computable> ptr = it->lock();
+      if (ptr)
+        ptr->propagate_update(visitor);
     }
   return ;
 }
@@ -107,13 +107,13 @@ void computable::propagate_update(io::stream* visitor) {
  *  @param[in] parent Parent node.
  */
 void computable::remove_parent(
-                   misc::shared_ptr<computable> const& parent) {
-  for (std::list<misc::weak_ptr<computable> >::iterator
+                   std::shared_ptr<computable> const& parent) {
+  for (std::list<std::weak_ptr<computable> >::iterator
          it(_parents.begin()),
          end(_parents.end());
        it != end;
        ++it)
-    if (it->lock().data() == parent.data()) {
+    if (it->lock().get() == parent.get()) {
       _parents.erase(it);
       break ;
     }

@@ -190,9 +190,9 @@ void stream::initialize() {
  *
  *  @return This method will throw.
  */
-bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (exceptions::shutdown()
          << "attempt to read from a notification stream");
   return (true);
@@ -213,7 +213,7 @@ void stream::update() {
  *
  *  @return Number of events acknowledged.
  */
-int stream::write(misc::shared_ptr<io::data> const& data) {
+int stream::write(std::shared_ptr<io::data> const& data) {
   // Check that data exists.
   if (!validate(data, "notification"))
     return (1);
@@ -225,15 +225,15 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
 
   // Process events.
   if (data->type() == neb::host_status::static_type())
-    _process_host_status_event(*data.staticCast<neb::host_status>());
+    _process_host_status_event(*std::static_pointer_cast<neb::host_status>(data));
   else if (data->type() == neb::service_status::static_type())
-    _process_service_status_event(*data.staticCast<neb::service_status>());
+    _process_service_status_event(*std::static_pointer_cast<neb::service_status>(data));
   else if (data->type() == correlation::issue_parent::static_type())
-    _process_issue_parent_event(*data.staticCast<correlation::issue_parent>());
+    _process_issue_parent_event(*std::static_pointer_cast<correlation::issue_parent>(data));
   else if (data->type() == neb::acknowledgement::static_type())
-    _process_ack(data.ref_as<neb::acknowledgement>());
+    _process_ack(*std::static_pointer_cast<neb::acknowledgement>(data));
   else if (data->type() == neb::downtime::static_type())
-    _process_downtime(data.ref_as<neb::downtime>());
+    _process_downtime(*std::static_pointer_cast<neb::downtime>(data));
 
   return (retval);
 }

@@ -146,13 +146,13 @@ io::endpoint* factory::new_endpoint(
  *
  *  @return New compression stream.
  */
-misc::shared_ptr<io::stream> factory::new_stream(
-                                        misc::shared_ptr<io::stream> to,
+std::shared_ptr<io::stream> factory::new_stream(
+                                        std::shared_ptr<io::stream> to,
                                         bool is_acceptor,
                                         QString const& proto_name) {
   (void)is_acceptor;
   (void)proto_name;
-  misc::shared_ptr<io::stream> s(new stream);
+  std::shared_ptr<io::stream> s(std::make_shared<stream>());
   s->set_substream(to);
   return (s);
 }

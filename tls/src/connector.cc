@@ -79,11 +79,11 @@ connector& connector::operator=(connector const& right) {
  *
  *  @return New connected stream.
  */
-misc::shared_ptr<io::stream> connector::open() {
+std::shared_ptr<io::stream> connector::open() {
   // First connect the lower layer.
-  misc::shared_ptr<io::stream> lower(_from->open());
-  misc::shared_ptr<io::stream> new_stream;
-  if (!lower.isNull())
+  std::shared_ptr<io::stream> lower(_from->open());
+  std::shared_ptr<io::stream> new_stream;
+  if (lower)
     new_stream = open(lower);
   return (new_stream);
 }
@@ -95,10 +95,10 @@ misc::shared_ptr<io::stream> connector::open() {
  *
  *  @return Encrypted stream.
  */
-misc::shared_ptr<io::stream> connector::open(
-                                          misc::shared_ptr<io::stream> lower) {
-  misc::shared_ptr<io::stream> s;
-  if (!lower.isNull()) {
+std::shared_ptr<io::stream> connector::open(
+                                          std::shared_ptr<io::stream> lower) {
+  std::shared_ptr<io::stream> s;
+  if (lower) {
     int ret;
     // Load parameters.
     params p(params::CLIENT);
@@ -124,7 +124,7 @@ misc::shared_ptr<io::stream> connector::open(
       p.apply(*session);
 
       // Create stream object.
-      s = misc::shared_ptr<io::stream>(new stream(session));
+      s = std::shared_ptr<io::stream>(new stream(session));
     }
     catch (...) {
       gnutls_deinit(*session);
@@ -139,7 +139,7 @@ misc::shared_ptr<io::stream> connector::open(
 #endif // GNU TLS < 2.12.0
     gnutls_transport_set_pull_function(*session, pull_helper);
     gnutls_transport_set_push_function(*session, push_helper);
-    gnutls_transport_set_ptr(*session, s.data());
+    gnutls_transport_set_ptr(*session, s.get());
 
     // Perform the TLS handshake.
     logging::debug(logging::medium) << "TLS: performing handshake";

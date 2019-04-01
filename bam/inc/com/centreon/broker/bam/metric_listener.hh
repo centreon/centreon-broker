@@ -19,8 +19,8 @@
 #ifndef CCB_BAM_METRIC_LISTENER_HH
 #  define CCB_BAM_METRIC_LISTENER_HH
 
+#  include <memory>
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -51,7 +51,7 @@ namespace             bam {
      *  @param[in] status Metric status.
      */
     virtual void      metric_update(
-                        misc::shared_ptr<storage::metric> const& m,
+                        std::shared_ptr<storage::metric> const& m,
                         io::stream* visitor = NULL) = 0;
   };
 }

@@ -78,10 +78,10 @@ command_result command_listener::command_status(
  *  @return This method will throw.
  */
 bool command_listener::read(
-                         misc::shared_ptr<io::data>& d,
+                         std::shared_ptr<io::data>& d,
                          time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (exceptions::shutdown() << "cannot read from command listener");
   return (true);
 }
@@ -92,13 +92,13 @@ bool command_listener::read(
  *  @param[in] d  Command listener only process command requests and
  *                command results.
  */
-int command_listener::write(misc::shared_ptr<io::data> const& d) {
+int command_listener::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "command"))
     return (1);
 
   // Command request, store it in the cache.
   if (d->type() == command_request::static_type()) {
-    command_request const& req(d.ref_as<command_request const>());
+    command_request const& req(*std::static_pointer_cast<command_request const>(d));
     QMutexLocker lock(&_pendingm);
     std::map<std::string, pending_command>::iterator
       it(_pending.find(req.uuid.toStdString()));
@@ -115,7 +115,7 @@ int command_listener::write(misc::shared_ptr<io::data> const& d) {
   }
   // Command result, store it in the cache.
   else if (d->type() == command_result::static_type()) {
-    command_result const& res(d.ref_as<command_result const>());
+    command_result const& res(*std::static_pointer_cast<command_result const>(d));
     QMutexLocker lock(&_pendingm);
     pending_command&
       p(_pending[res.uuid.toStdString()]);

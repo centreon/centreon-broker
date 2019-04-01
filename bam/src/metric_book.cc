@@ -94,7 +94,7 @@ void metric_book::unlisten(
  *  @param[out] visitor  Object that will receive events.
  */
 void metric_book::update(
-                    misc::shared_ptr<storage::metric> const& m,
+                    std::shared_ptr<storage::metric> const& m,
                     io::stream* visitor) {
   std::pair<multimap::iterator, multimap::iterator>
     range(_book.equal_range(m->metric_id));

@@ -41,10 +41,10 @@ namespace             tls {
                       stream(gnutls_session_t* session);
                       ~stream();
     bool              read(
-                        misc::shared_ptr<io::data>& d,
+                        std::shared_ptr<io::data>& d,
                         time_t deadline);
     long long         read_encrypted(void* buffer, long long size);
-    int               write(misc::shared_ptr<io::data> const& d);
+    int               write(std::shared_ptr<io::data> const& d);
     long long         write_encrypted(
                         void const* buffer,
                         long long size);

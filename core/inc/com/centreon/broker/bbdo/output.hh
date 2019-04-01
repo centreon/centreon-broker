@@ -19,9 +19,9 @@
 #ifndef CCB_BBDO_OUTPUT_HH
 #  define CCB_BBDO_OUTPUT_HH
 
+#  include <memory>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -42,7 +42,7 @@ namespace        bbdo {
     output&      operator=(output const& other);
     int          flush();
     void         statistics(io::properties& tree) const;
-    virtual int  write(misc::shared_ptr<io::data> const& e);
+    virtual int  write(std::shared_ptr<io::data> const& e);
   };
 }
 

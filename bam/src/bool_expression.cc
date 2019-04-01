@@ -77,7 +77,7 @@ bool bool_expression::child_has_update(
   (void)visitor;
   // It is useless to maintain a cache of expression values in this
   // class, as the bool_* classes already cache most of them.
-  if (child == _expression.data()) {
+  if (child == _expression.get()) {
     // Logging.
     logging::debug(logging::low) << "BAM: boolean expression " << _id
       << " is getting notified of child update";
@@ -119,7 +119,7 @@ bool bool_expression::in_downtime() const {
  *
  *  @return  The expression.
  */
-misc::shared_ptr<bool_value> bool_expression::get_expression() const {
+std::shared_ptr<bool_value> bool_expression::get_expression() const {
   return (_expression);
 }
 
@@ -129,7 +129,7 @@ misc::shared_ptr<bool_value> bool_expression::get_expression() const {
  *  @param[in] expression Boolean expression.
  */
 void bool_expression::set_expression(
-                        misc::shared_ptr<bool_value> const& expression) {
+                        std::shared_ptr<bool_value> const& expression) {
   _expression = expression;
   return ;
 }

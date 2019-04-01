@@ -36,7 +36,7 @@ namespace                       io {
   class                         protocols {
   public:
     struct                      protocol {
-      misc::shared_ptr<factory> endpntfactry;
+      std::shared_ptr<factory> endpntfactry;
       unsigned short            osi_from;
       unsigned short            osi_to;
     };

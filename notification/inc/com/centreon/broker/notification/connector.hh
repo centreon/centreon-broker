@@ -24,7 +24,6 @@
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/node_cache.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 
 CCB_BEGIN()
 
@@ -49,7 +48,7 @@ namespace                        notification {
                                    std::string const& password,
                                    std::string const& centreon_db,
                                    bool check_replication = true);
-    misc::shared_ptr<io::stream> open();
+    std::shared_ptr<io::stream> open();
 
   private:
     bool                         _check_replication;

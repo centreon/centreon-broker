@@ -43,7 +43,7 @@ namespace                        lua {
                                    std::string const& lua_script,
                                    QMap<QString, QVariant> const& cfg_params,
                                    std::shared_ptr<persistent_cache> const& cache);
-    misc::shared_ptr<io::stream> open();
+    std::shared_ptr<io::stream> open();
 
   private:
     std::string                  _lua_script;

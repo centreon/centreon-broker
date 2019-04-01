@@ -20,11 +20,11 @@
 #  define CCB_BAM_CONFIGURATION_APPLIER_KPI_HH
 
 #  include <map>
+#  include <memory>
 #  include "com/centreon/broker/bam/kpi.hh"
 #  include "com/centreon/broker/bam/configuration/kpi.hh"
 #  include "com/centreon/broker/bam/configuration/state.hh"
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -64,17 +64,17 @@ namespace     bam {
       private:
         struct applied {
           configuration::kpi         cfg;
-          misc::shared_ptr<bam::kpi> obj;
+          std::shared_ptr<bam::kpi> obj;
         };
 
         void  _internal_copy(kpi const& other);
-        misc::shared_ptr<bam::kpi>
+        std::shared_ptr<bam::kpi>
               _new_kpi(configuration::kpi const& cfg);
         void  _invalidate_ba(configuration::kpi const& cfg);
         void  _remove_kpi(unsigned int kpi_id);
         void  _resolve_kpi(
                 configuration::kpi const& cfg,
-                misc::shared_ptr<bam::kpi>);
+                std::shared_ptr<bam::kpi>);
 
         std::map<unsigned int, applied>
               _applied;

@@ -68,9 +68,9 @@ publisher& publisher::operator=(publisher const& other) {
  *  @param[out] d         Unused.
  *  @param[in]  deadline  Timeout.
  */
-bool publisher::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool publisher::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (exceptions::shutdown() << "cannot read from publisher");
   return (true);
 }
@@ -84,7 +84,7 @@ bool publisher::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @return Number of elements acknowledged (1).
  */
-int publisher::write(misc::shared_ptr<io::data> const& d) {
+int publisher::write(std::shared_ptr<io::data> const& d) {
   engine::instance().publish(d);
   return (1);
 }

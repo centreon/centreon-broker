@@ -108,9 +108,9 @@ int stream::flush() {
  *
  *  @return This method will throw.
  */
-bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (exceptions::shutdown()
          << "cannot read from InfluxDB database");
   return (true);
@@ -142,7 +142,7 @@ void stream::update() {
  *
  *  @return Number of events acknowledged.
  */
-int stream::write(misc::shared_ptr<io::data> const& data) {
+int stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_queries;
   if (!validate(data, "influxdb"))
@@ -155,13 +155,13 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   if (data->type()
         == io::events::data_type<io::events::storage,
                                  storage::de_metric>::value) {
-    _influx_db->write(data.ref_as<storage::metric const>());
+    _influx_db->write(*std::static_pointer_cast<storage::metric const>(data));
     ++_actual_query;
   }
   else if (data->type()
            == io::events::data_type<io::events::storage,
                                     storage::de_status>::value) {
-    _influx_db->write(data.ref_as<storage::status const>());
+    _influx_db->write(*std::static_pointer_cast<storage::status const>(data));
     ++_actual_query;
   }
   if (_actual_query >= _queries_per_transaction)

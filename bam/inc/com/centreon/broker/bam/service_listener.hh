@@ -19,8 +19,8 @@
 #ifndef CCB_BAM_SERVICE_LISTENER_HH
 #  define CCB_BAM_SERVICE_LISTENER_HH
 
+#  include <memory>
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -47,13 +47,13 @@ namespace             bam {
     virtual           ~service_listener();
     service_listener& operator=(service_listener const& other);
     virtual void      service_update(
-                        misc::shared_ptr<neb::service_status> const& status,
+                        std::shared_ptr<neb::service_status> const& status,
                         io::stream* visitor = NULL);
     virtual void      service_update(
-                        misc::shared_ptr<neb::acknowledgement> const& ack,
+                        std::shared_ptr<neb::acknowledgement> const& ack,
                         io::stream* visitor = NULL);
     virtual void      service_update(
-                        misc::shared_ptr<neb::downtime> const& dt,
+                        std::shared_ptr<neb::downtime> const& dt,
                         io::stream* visitor = NULL);
   };
 }

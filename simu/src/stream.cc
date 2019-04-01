@@ -58,7 +58,7 @@ stream::~stream() {
  *
  *  @return The number of events to acknowledge.
  */
-int stream::write(misc::shared_ptr<io::data> const& d) {
+int stream::write(std::shared_ptr<io::data> const& d) {
   (void)d;
   throw exceptions::shutdown() << "cannot write from simu connector";
   return 0;
@@ -72,6 +72,6 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
  *
  *  @return This method will throw.
  */
-bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   return _luabinding->read(d);
 }

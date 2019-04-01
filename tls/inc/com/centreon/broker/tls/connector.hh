@@ -41,10 +41,10 @@ namespace         tls {
                   connector(connector const& right);
                   ~connector();
     connector&    operator=(connector const& right);
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                   open();
-    misc::shared_ptr<io::stream>
-                  open(misc::shared_ptr<io::stream> lower);
+    std::shared_ptr<io::stream>
+                  open(std::shared_ptr<io::stream> lower);
 
   private:
     void          _internal_copy(connector const& right);

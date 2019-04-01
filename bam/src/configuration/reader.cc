@@ -737,15 +737,15 @@ void reader::_load_dimensions() {
   // As this operation is destructive (it truncates the database),
   // we cache the data until we are sure we have all the data
   // needed from the database.
-  std::vector<misc::shared_ptr<io::data> > datas;
-  misc::shared_ptr<dimension_truncate_table_signal> dtts(
+  std::vector<std::shared_ptr<io::data> > datas;
+  std::shared_ptr<dimension_truncate_table_signal> dtts(
                       new dimension_truncate_table_signal);
   dtts->update_started = true;
   datas.push_back(dtts);
 
   // Load the dimensions.
   std::map<unsigned int, time::timeperiod::ptr> timeperiods;
-  std::map<unsigned int, misc::shared_ptr<dimension_ba_event> > bas;
+  std::map<unsigned int, std::shared_ptr<dimension_ba_event> > bas;
   try {
     // Load the timeperiods themselves.
     std::promise<database::mysql_result> promise;
@@ -769,7 +769,7 @@ void reader::_load_dimensions() {
               res.value_as_str(7),   // thursday
               res.value_as_str(8),   // friday
               res.value_as_str(9))); // saturday
-      misc::shared_ptr<dimension_timeperiod> tp(new dimension_timeperiod);
+      std::shared_ptr<dimension_timeperiod> tp(new dimension_timeperiod);
       tp->id = res.value_as_u32(0);
       tp->name = res.value_as_str(1).c_str();
       tp->sunday = res.value_as_str(3).c_str();
@@ -779,7 +779,7 @@ void reader::_load_dimensions() {
       tp->thursday = res.value_as_str(7).c_str();
       tp->friday = res.value_as_str(8).c_str();
       tp->saturday = res.value_as_str(9).c_str();
-      datas.push_back(tp.staticCast<io::data>());
+      datas.push_back(std::static_pointer_cast<io::data>(tp));
     }
 
     // // Load the timeperiod exceptions.
@@ -799,7 +799,7 @@ void reader::_load_dimensions() {
     //   found->second->add_exception(
     //                    q.value(1).toString().toStdString(),
     //                    q.value(2).toString().toStdString());
-    //   misc::shared_ptr<dimension_timeperiod_exception>
+    //   std::shared_ptr<dimension_timeperiod_exception>
     //     exception(new dimension_timeperiod_exception);
     //   exception->timeperiod_id = timeperiod_id;
     //   exception->daterange = q.value(1).toString();
@@ -829,7 +829,7 @@ void reader::_load_dimensions() {
     //               "excluded timeperiod (excluded timeperiod has ID "
     //            << timeperiod_exclude_id << ")");
     //   found->second->add_excluded(found_excluded->second);
-    //   misc::shared_ptr<dimension_timeperiod_exclusion>
+    //   std::shared_ptr<dimension_timeperiod_exclusion>
     //     exclusion(new dimension_timeperiod_exclusion);
     //   exclusion->timeperiod_id = timeperiod_id;
     //   exclusion->excluded_timeperiod_id = timeperiod_exclude_id;
@@ -854,7 +854,7 @@ void reader::_load_dimensions() {
         "could not retrieve BAs from the database");
     res = promise.get_future().get();
     while (_mysql.fetch_row(res)) {
-      misc::shared_ptr<dimension_ba_event> ba(new dimension_ba_event);
+      std::shared_ptr<dimension_ba_event> ba(new dimension_ba_event);
       ba->ba_id = res.value_as_u32(0);
       ba->ba_name = res.value_as_str(1).c_str();
       ba->ba_description = res.value_as_str(2).c_str();
@@ -862,10 +862,10 @@ void reader::_load_dimensions() {
       ba->sla_month_percent_crit = res.value_as_f64(4);
       ba->sla_duration_warn = res.value_as_i32(5);
       ba->sla_duration_crit = res.value_as_i32(6);
-      datas.push_back(ba.staticCast<io::data>());
+      datas.push_back(std::static_pointer_cast<io::data>(ba));
       bas[ba->ba_id] = ba;
       if (!res.value_is_null(7)) {
-        misc::shared_ptr<dimension_ba_timeperiod_relation>
+        std::shared_ptr<dimension_ba_timeperiod_relation>
           dbtr(new dimension_ba_timeperiod_relation);
         dbtr->ba_id = res.value_as_u32(0);
         dbtr->timeperiod_id = res.value_as_u32(7);
@@ -883,12 +883,12 @@ void reader::_load_dimensions() {
       "could not retrieve BVs from the database");
     res = promise.get_future().get();
     while (_mysql.fetch_row(res)) {
-      misc::shared_ptr<dimension_bv_event>
+      std::shared_ptr<dimension_bv_event>
           bv(new dimension_bv_event);
       bv->bv_id = res.value_as_u32(0);
       bv->bv_name = res.value_as_str(1).c_str();
       bv->bv_description = res.value_as_str(2).c_str();
-      datas.push_back(bv.staticCast<io::data>());
+      datas.push_back(std::static_pointer_cast<io::data>(bv));
     }
 
     // Load the BA BV relations.
@@ -910,11 +910,11 @@ void reader::_load_dimensions() {
     }
     res = promise.get_future().get();
     while (_mysql.fetch_row(res)) {
-      misc::shared_ptr<dimension_ba_bv_relation_event>
+      std::shared_ptr<dimension_ba_bv_relation_event>
           babv(new dimension_ba_bv_relation_event);
       babv->ba_id = res.value_as_u32(0);
       babv->bv_id = res.value_as_u32(1);
-      datas.push_back(babv.staticCast<io::data>());
+      datas.push_back(std::static_pointer_cast<io::data>(babv));
     }
 
     // Load the KPIs
@@ -966,7 +966,7 @@ void reader::_load_dimensions() {
     }
     res = promise.get_future().get();
     while (_mysql.fetch_row(res)) {
-      misc::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
+      std::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
       k->kpi_id = res.value_as_u32(0);
       k->host_id = res.value_as_u32(2);
       k->service_id = res.value_as_u32(3);
@@ -986,7 +986,7 @@ void reader::_load_dimensions() {
       // Resolve the id_indicator_ba.
       if (k->kpi_ba_id) {
         std::map<unsigned int,
-                 misc::shared_ptr<dimension_ba_event> >::const_iterator
+                 std::shared_ptr<dimension_ba_event> >::const_iterator
             found = bas.find(k->kpi_ba_id);
         if (found == bas.end()) {
           logging::error(logging::high)
@@ -997,7 +997,7 @@ void reader::_load_dimensions() {
         }
         k->kpi_ba_name = found->second->ba_name;
       }
-      datas.push_back(k.staticCast<io::data>());
+      datas.push_back(std::static_pointer_cast<io::data>(k));
     }
 
     // Load the ba-timeperiods relations.
@@ -1016,7 +1016,7 @@ void reader::_load_dimensions() {
     }
     res = promise.get_future().get();
     while (_mysql.fetch_row(res)) {
-      misc::shared_ptr<dimension_ba_timeperiod_relation>
+      std::shared_ptr<dimension_ba_timeperiod_relation>
         dbtr(new dimension_ba_timeperiod_relation);
       dbtr->ba_id = res.value_as_u32(0);
       dbtr->timeperiod_id = res.value_as_u32(1);
@@ -1025,13 +1025,13 @@ void reader::_load_dimensions() {
     }
 
     // End the update.
-    dtts = misc::shared_ptr<dimension_truncate_table_signal>(
+    dtts = std::shared_ptr<dimension_truncate_table_signal>(
              new dimension_truncate_table_signal);
     dtts->update_started = false;
     datas.push_back(dtts);
 
     // Write all the cached data to the publisher.
-    for (std::vector<misc::shared_ptr<io::data> >::iterator
+    for (std::vector<std::shared_ptr<io::data> >::iterator
            it(datas.begin()),
            end(datas.end());
          it != end;

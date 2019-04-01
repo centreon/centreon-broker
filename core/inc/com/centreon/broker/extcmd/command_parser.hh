@@ -20,7 +20,6 @@
 #  define CCB_EXTCMD_COMMAND_PARSER_HH
 
 #  include <string>
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/extcmd/command_request.hh"
 #  include "com/centreon/broker/extcmd/command_result.hh"
 #  include "com/centreon/broker/extcmd/command_listener.hh"
@@ -52,7 +51,7 @@ namespace         extcmd {
                    parse(
                      std::string const& buffer,
                      command_result& res,
-                     misc::shared_ptr<command_request>& request) = 0;
+                     std::shared_ptr<command_request>& request) = 0;
     /**
      *  Write a command result into a string.
      *

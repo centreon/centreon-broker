@@ -121,13 +121,13 @@ void applier::meta_service::apply(
        ++it) {
     logging::config(logging::medium)
       << "BAM: removing meta-service " << it->second.cfg.get_id();
-    misc::shared_ptr<neb::service>
+    std::shared_ptr<neb::service>
       s(_meta_service(
           it->first,
           it->second.cfg.get_host_id(),
           it->second.cfg.get_service_id()));
     s->enabled = false;
-    book.unlisten(it->second.cfg.get_id(), it->second.obj.data());
+    book.unlisten(it->second.cfg.get_id(), it->second.obj.get());
     _applied.erase(it->first);
     multiplexing::publisher().write(s);
   }
@@ -141,15 +141,15 @@ void applier::meta_service::apply(
        ++it) {
     logging::config(logging::medium)
       << "BAM: creating meta-service " << it->first;
-    misc::shared_ptr<bam::meta_service>
+    std::shared_ptr<bam::meta_service>
       new_meta(_new_meta(it->second, book));
     applied& content(_applied[it->first]);
     content.cfg = it->second;
     content.obj = new_meta;
-    misc::shared_ptr<neb::host>
+    std::shared_ptr<neb::host>
       h(_meta_host(it->second.get_host_id()));
     multiplexing::publisher().write(h);
-    misc::shared_ptr<neb::service>
+    std::shared_ptr<neb::service>
       s(_meta_service(
           it->first,
           it->second.get_host_id(),
@@ -189,13 +189,13 @@ void applier::meta_service::apply(
  *
  *  @return Shared pointer to the applied meta-service object.
  */
-misc::shared_ptr<bam::meta_service> applier::meta_service::find_meta(
+std::shared_ptr<bam::meta_service> applier::meta_service::find_meta(
                                                              unsigned int id) {
   std::map<unsigned int, applied>::iterator
     it(_applied.find(id));
   return ((it != _applied.end())
           ? it->second.obj
-          : misc::shared_ptr<bam::meta_service>());
+          : std::shared_ptr<bam::meta_service>());
 }
 
 /**
@@ -216,9 +216,9 @@ void applier::meta_service::_internal_copy(
  *
  *  @return Virtual meta-service host.
  */
-misc::shared_ptr<neb::host> applier::meta_service::_meta_host(
+std::shared_ptr<neb::host> applier::meta_service::_meta_host(
                                                      unsigned int host_id) {
-  misc::shared_ptr<neb::host> h(new neb::host);
+  std::shared_ptr<neb::host> h(new neb::host);
   h->host_id = host_id;
   h->host_name = "_Module_Meta";
   h->last_update = time(NULL);
@@ -236,11 +236,11 @@ misc::shared_ptr<neb::host> applier::meta_service::_meta_host(
  *
  *  @return Virtual BA service.
  */
-misc::shared_ptr<neb::service> applier::meta_service::_meta_service(
+std::shared_ptr<neb::service> applier::meta_service::_meta_service(
                                                         unsigned int meta_id,
                                                         unsigned int host_id,
                                                         unsigned int service_id) {
-  misc::shared_ptr<neb::service> s(new neb::service);
+  std::shared_ptr<neb::service> s(new neb::service);
   s->host_id = host_id;
   s->service_id = service_id;
   {
@@ -317,10 +317,10 @@ void applier::meta_service::_modify_meta(
  *  @param[in]  cfg   Meta-service configuration.
  *  @param[out] book  Metric listener book.
  */
-misc::shared_ptr<bam::meta_service> applier::meta_service::_new_meta(
+std::shared_ptr<bam::meta_service> applier::meta_service::_new_meta(
                                                              configuration::meta_service const& cfg,
                                                              metric_book& book) {
-  misc::shared_ptr<bam::meta_service> meta(new bam::meta_service);
+  std::shared_ptr<bam::meta_service> meta(new bam::meta_service);
   _modify_meta(*meta, book, configuration::meta_service(), cfg);
   return (meta);
 }

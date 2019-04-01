@@ -25,7 +25,6 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/instance_broadcast.hh"
 #include "com/centreon/broker/simu/luabinding.hh"
-#include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/status.hh"
@@ -139,7 +138,7 @@ TEST_F(SimuGenericTest, ReadReturnValue1) {
   std::unique_ptr<luabinding> lb(new luabinding(
                      filename,
                      conf));
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   ASSERT_THROW(lb->read(d), exceptions::msg);
   RemoveFile(filename);
 }
@@ -157,7 +156,7 @@ TEST_F(SimuGenericTest, ReadReturnValue2) {
   std::unique_ptr<luabinding> lb(new luabinding(
                      filename,
                      conf));
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   ASSERT_FALSE(lb->read(d));
   RemoveFile(filename);
 }
@@ -177,7 +176,7 @@ TEST_F(SimuGenericTest, ReadReturnValue3) {
   std::unique_ptr<luabinding> lb(new luabinding(
                      filename,
                      conf));
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   ASSERT_FALSE(lb->read(d));
   RemoveFile(filename);
 }
@@ -206,10 +205,10 @@ TEST_F(SimuGenericTest, ReadReturnValue4) {
   std::unique_ptr<luabinding> lb(new luabinding(
                      filename,
                      conf));
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   ASSERT_TRUE(lb->read(d));
   RemoveFile(filename);
-  neb::service* svc(static_cast<neb::service*>(d.data()));
+  neb::service* svc(static_cast<neb::service*>(d.get()));
   ASSERT_TRUE(svc->type() == 65559);
   ASSERT_EQ(svc->host_id, 2);
   std::cout << "service description: " << svc->service_description.toStdString();
@@ -243,10 +242,10 @@ TEST_F(SimuGenericTest, ReadReturnCustomVariable) {
   std::unique_ptr<luabinding> lb(new luabinding(
                      filename,
                      conf));
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   ASSERT_TRUE(lb->read(d));
   RemoveFile(filename);
-  neb::custom_variable* cv(static_cast<neb::custom_variable*>(d.data()));
+  neb::custom_variable* cv(static_cast<neb::custom_variable*>(d.get()));
   ASSERT_TRUE(cv->type() == 65539);
   ASSERT_EQ(cv->host_id, 31);
   ASSERT_TRUE(cv->enabled);

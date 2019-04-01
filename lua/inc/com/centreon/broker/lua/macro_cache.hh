@@ -48,7 +48,7 @@ namespace         lua {
                    macro_cache(std::shared_ptr<persistent_cache> const& cache);
                    ~macro_cache();
 
-    void           write(misc::shared_ptr<io::data> const& data);
+    void           write(std::shared_ptr<io::data> const& data);
 
     storage::index_mapping const&
                    get_index_mapping(unsigned int index_id) const;

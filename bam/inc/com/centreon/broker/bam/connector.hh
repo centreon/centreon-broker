@@ -21,7 +21,6 @@
 
 #  include <memory>
 #  include <string>
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -48,7 +47,7 @@ namespace           bam {
                       std::shared_ptr<persistent_cache> cache);
     void            connect_reporting(
                       database_config const& db_cfg);
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                     open();
 
    private:

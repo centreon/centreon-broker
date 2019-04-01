@@ -24,7 +24,6 @@
 #  include <string>
 #  include <utility>
 #  include "com/centreon/broker/logging/backend.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/multiplexing/publisher.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -73,7 +72,7 @@ namespace neb {
   extern multiplexing::publisher gl_publisher;
 
   // Registered callbacks.
-  extern std::list<misc::shared_ptr<neb::callback> >
+  extern std::list<std::shared_ptr<neb::callback> >
     gl_registered_callbacks;
 
   // Acknowledgement list.

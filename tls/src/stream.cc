@@ -79,13 +79,13 @@ stream::~stream() {
  *
  *  @return Respect io::stream::read()'s return value.
  */
-bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   // Clear existing content.
-  d.clear();
+  d.reset();
 
   // Read data.
   _deadline = deadline;
-  misc::shared_ptr<io::raw> buffer(new io::raw);
+  std::shared_ptr<io::raw> buffer(new io::raw);
   buffer->resize(BUFSIZ);
   int ret(gnutls_record_recv(
             *_session,
@@ -120,10 +120,10 @@ long long stream::read_encrypted(void* buffer, long long size) {
   // Read some data.
   bool timed_out(false);
   while (_buffer.isEmpty()) {
-    misc::shared_ptr<io::data> d;
+    std::shared_ptr<io::data> d;
     timed_out = !_substream->read(d, _deadline);
-    if (!d.isNull() && (d->type() == io::raw::static_type())) {
-      io::raw* r(static_cast<io::raw*>(d.data()));
+    if (d && d->type() == io::raw::static_type()) {
+      io::raw* r(static_cast<io::raw*>(d.get()));
       _buffer.append(r->QByteArray::data(), r->size());
     }
     else if (timed_out)
@@ -162,13 +162,13 @@ long long stream::read_encrypted(void* buffer, long long size) {
  *
  *  @return Number of events acknowledged.
  */
-int stream::write(misc::shared_ptr<io::data> const& d) {
+int stream::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "TLS"))
     return (1);
 
   // Send data.
   if (d->type() == io::raw::static_type()) {
-    io::raw const* packet(static_cast<io::raw const*>(d.data()));
+    io::raw const* packet(static_cast<io::raw const*>(d.get()));
     char const* ptr(packet->QByteArray::data());
     int size(packet->size());
     while (size > 0) {
@@ -198,7 +198,7 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
 long long stream::write_encrypted(
                     void const* buffer,
                     long long size) {
-  misc::shared_ptr<io::raw> r(new io::raw);
+  std::shared_ptr<io::raw> r(new io::raw);
   r->append(static_cast<char const*>(buffer), size);
   _substream->write(r);
   _substream->flush();

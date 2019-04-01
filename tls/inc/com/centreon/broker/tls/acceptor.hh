@@ -46,10 +46,10 @@ namespace         tls {
                   acceptor(acceptor const& right);
                   ~acceptor();
     acceptor&     operator=(acceptor const& right);
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                   open();
-    misc::shared_ptr<io::stream>
-                  open(misc::shared_ptr<io::stream> lower);
+    std::shared_ptr<io::stream>
+                  open(std::shared_ptr<io::stream> lower);
 
   private:
     void          _internal_copy(acceptor const& right);

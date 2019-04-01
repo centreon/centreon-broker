@@ -38,7 +38,7 @@ public:
   temporary_endpoint& operator=(temporary_endpoint const& se);
   io::endpoint*       clone() const;
   void                close();
-  misc::shared_ptr<io::stream>
+  std::shared_ptr<io::stream>
                       open();
 
 private:

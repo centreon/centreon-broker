@@ -164,9 +164,9 @@ int stream::flush() {
  *
  *  @return This method will throw.
  */
-bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (broker::exceptions::shutdown()
          << "cannot read from a storage stream");
   return true;
@@ -198,7 +198,7 @@ void stream::update() {
  *
  *  @return Number of events acknowledged.
  */
-int stream::write(misc::shared_ptr<io::data> const& data) {
+int stream::write(std::shared_ptr<io::data> const& data) {
   ++_pending_events;
   logging::info(logging::low)
     << "storage: write pending_events = " << _pending_events;
@@ -207,8 +207,8 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
 
   // Process service status events.
   if (data->type() == neb::service_status::static_type()) {
-    misc::shared_ptr<neb::service_status>
-      ss(data.staticCast<neb::service_status>());
+    std::shared_ptr<neb::service_status>
+      ss(std::static_pointer_cast<neb::service_status>(data));
     logging::debug(logging::high)
       << "storage: processing service status event of service "
       << ss->service_id << " of host " << ss->host_id
@@ -228,7 +228,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
       logging::debug(logging::low)
         << "storage: generating status event for (" << ss->host_id
         << ", " << ss->service_id << ") of index " << index_id;
-      misc::shared_ptr<storage::status> status(new storage::status);
+      std::shared_ptr<storage::status> status(new storage::status);
       status->ctime = ss->last_check;
       status->index_id = index_id;
       status->interval
@@ -292,7 +292,7 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
 
           if (!index_locked && !metric_locked) {
             // Send perfdata event to processing.
-            misc::shared_ptr<storage::metric>
+            std::shared_ptr<storage::metric>
               perf(new storage::metric);
             perf->ctime = ss->last_check;
             perf->interval
@@ -408,7 +408,7 @@ void stream::_check_deleted_index() {
     ++deleted_index;
 
     // Remove associated graph.
-    misc::shared_ptr<remove_graph> rg(new remove_graph);
+    std::shared_ptr<remove_graph> rg(new remove_graph);
     rg->id = index_id;
     rg->is_index = true;
     multiplexing::publisher().write(rg);
@@ -488,7 +488,7 @@ void stream::_delete_metrics(
     }
 
     // Remove associated graph.
-    misc::shared_ptr<remove_graph> rg(new remove_graph);
+    std::shared_ptr<remove_graph> rg(new remove_graph);
     rg->id = metric_id;
     rg->is_index = false;
     multiplexing::publisher().write(rg);
@@ -628,7 +628,7 @@ unsigned int stream::_find_index_id(
       _index_cache[std::make_pair(host_id, service_id)] = info;
 
       // Create the metric mapping.
-      misc::shared_ptr<index_mapping> im(new index_mapping);
+      std::shared_ptr<index_mapping> im(new index_mapping);
       im->index_id = retval;
       im->host_id = host_id;
       im->service_id = service_id;
@@ -813,7 +813,7 @@ unsigned int stream::_find_metric_id(
     _metric_cache[std::make_pair(index_id, metric_name)] = info;
 
     // Create the metric mapping.
-    misc::shared_ptr<metric_mapping> mm(new metric_mapping);
+    std::shared_ptr<metric_mapping> mm(new metric_mapping);
     mm->index_id = index_id;
     mm->metric_id = info.metric_id;
     multiplexing::publisher pblshr;
@@ -986,7 +986,7 @@ void stream::_rebuild_cache() {
       _index_cache[std::make_pair(host_id, service_id)] = info;
 
       // Create the metric mapping.
-      misc::shared_ptr<index_mapping> im(new index_mapping);
+      std::shared_ptr<index_mapping> im(new index_mapping);
       im->index_id = info.index_id;
       im->host_id = host_id;
       im->service_id = service_id;
@@ -1037,7 +1037,7 @@ void stream::_rebuild_cache() {
       _metric_cache[std::make_pair(index_id, name)] = info;
 
       // Create the metric mapping.
-      misc::shared_ptr<metric_mapping> mm(new metric_mapping);
+      std::shared_ptr<metric_mapping> mm(new metric_mapping);
       mm->index_id = index_id;
       mm->metric_id = info.metric_id;
       pblshr.write(mm);

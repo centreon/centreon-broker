@@ -80,7 +80,7 @@ downtime_serializable::downtime_serializable(downtime_serializable const& other)
 downtime_serializable& downtime_serializable::operator=(
                          downtime_serializable const& other) {
   if (this != &other)
-    _downtime = misc::make_shared(new downtime(*other._downtime));
+    _downtime.reset(new downtime(*other._downtime));
   return (*this);
 }
 
@@ -110,9 +110,9 @@ void downtime_serializable::set_downtime_member(std::string const& val) {
  *
  *  @return  Return the downtime.
  */
-com::centreon::broker::misc::shared_ptr<downtime>
+std::shared_ptr<downtime>
   downtime_serializable::get_downtime() const {
-  return (_downtime);
+  return _downtime;
 }
 
 /**

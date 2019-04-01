@@ -52,7 +52,7 @@ namespace           influxdb {
                       std::string const& metric_ts,
                       std::vector<column> const& metric_cols,
                       std::shared_ptr<persistent_cache> const& cache);
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                     open();
 
    private:

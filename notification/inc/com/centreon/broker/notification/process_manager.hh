@@ -27,7 +27,6 @@
 #  include <QMutexLocker>
 #  include <QThread>
 #  include <QTimer>
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/notification/process.hh"
 
 namespace                          com {

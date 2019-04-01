@@ -100,8 +100,8 @@ void connector::connect_to(
  *
  *  @return Influxdb connection object.
  */
-misc::shared_ptr<io::stream> connector::open() {
-  return (misc::shared_ptr<io::stream>(
+std::shared_ptr<io::stream> connector::open() {
+  return (std::shared_ptr<io::stream>(
             new stream(
                   _user,
                   _password,

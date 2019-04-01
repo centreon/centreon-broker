@@ -24,7 +24,6 @@
 #  include "com/centreon/broker/extcmd/command_listener.hh"
 #  include "com/centreon/broker/extcmd/command_parser.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -57,16 +56,16 @@ namespace               extcmd {
                           std::string const& socket_file,
                           std::shared_ptr<persistent_cache> cache);
                         ~command_server();
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                         open();
 
   private:
                         command_server(command_server const& other);
     command_server&     operator=(command_server const& other);
 
-    misc::shared_ptr<command_listener>
+    std::shared_ptr<command_listener>
                         _listener;
-    misc::shared_ptr<command_parser>
+    std::shared_ptr<command_parser>
                         _parser;
     processing::thread* _listener_thread;
     protocol            _protocol;

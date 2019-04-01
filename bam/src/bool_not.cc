@@ -80,7 +80,7 @@ bool bool_not::child_has_update(
  *
  *  @param[in] value Value object whose value will be negated.
  */
-void bool_not::set_value(misc::shared_ptr<bool_value>& value) {
+void bool_not::set_value(std::shared_ptr<bool_value>& value) {
   _value = value;
   return ;
 }
@@ -119,7 +119,7 @@ void bool_not::_internal_copy(bool_not const& right) {
  *  @return  True if the state is known.
  */
 bool bool_not::state_known() const {
-  return (!_value.isNull() && _value->state_known());
+  return (_value && _value->state_known());
 }
 
 /**
@@ -128,5 +128,5 @@ bool bool_not::state_known() const {
  *  @return  True if this expression is in downtime.
  */
 bool bool_not::in_downtime() const {
-  return (!_value.isNull() && _value->in_downtime());
+  return (_value && _value->in_downtime());
 }

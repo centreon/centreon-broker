@@ -36,7 +36,7 @@ using namespace com::centreon::broker::processing;
  *  @param[in] name       Name of the endpoint.
  */
 acceptor::acceptor(
-            misc::shared_ptr<io::endpoint> endp,
+            std::shared_ptr<io::endpoint> endp,
             std::string const& name)
   : thread(name),
     _endp(endp),
@@ -56,8 +56,8 @@ void acceptor::accept() {
   static unsigned int connection_id(0);
 
   // Try to accept connection.
-  misc::shared_ptr<io::stream> s(_endp->open());
-  if (!s.isNull()) {
+  std::shared_ptr<io::stream> s(_endp->open());
+  if (s) {
     // Create feeder thread.
     std::string name;
     {
@@ -65,7 +65,7 @@ void acceptor::accept() {
       oss << _name << "-" << ++connection_id;
       name = oss.str();
     }
-    misc::shared_ptr<processing::feeder>
+    std::shared_ptr<processing::feeder>
       f(new processing::feeder(
                           name,
                           s,
@@ -122,7 +122,7 @@ void acceptor::run() {
     // Check for terminated feeders.
     {
       QMutexLocker lock(&_stat_mutex);
-      for (std::list<misc::shared_ptr<processing::feeder> >::iterator
+      for (std::list<std::shared_ptr<processing::feeder> >::iterator
              it(_feeders.begin()),
              end(_feeders.end());
            it != end;)
@@ -228,7 +228,7 @@ void acceptor::_forward_statistic(io::properties& tree) {
   // Get statistic of acceptor.
   _endp->stats(tree);
   // Get statistics of feeders
-  for (std::list<misc::shared_ptr<processing::feeder> >::iterator
+  for (std::list<std::shared_ptr<processing::feeder> >::iterator
          it(_feeders.begin()),
          end(_feeders.end());
        it != end;
@@ -244,13 +244,13 @@ void acceptor::_forward_statistic(io::properties& tree) {
  */
 void acceptor::_wait_feeders() {
   // Wait for all launched feeders.
-  for (std::list<misc::shared_ptr<processing::feeder> >::iterator
+  for (std::list<std::shared_ptr<processing::feeder> >::iterator
          it(_feeders.begin()),
          end(_feeders.end());
        it != end;
        ++it)
     (*it)->exit();
-  for (std::list<misc::shared_ptr<processing::feeder> >::iterator
+  for (std::list<std::shared_ptr<processing::feeder> >::iterator
          it(_feeders.begin()),
          end(_feeders.end());
        it != end;

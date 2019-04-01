@@ -422,7 +422,7 @@ void node::manage_status(
     _visit_linked_nodes(last_state_change, true, stream);
     _visit_parent_of_child_nodes(last_state_change, true, stream);
     if (stream)
-      stream->write(misc::make_shared(new issue(*my_issue)));
+      stream->write(std::make_shared<issue>(*my_issue));
     my_issue.reset();
   }
   // Problem
@@ -437,7 +437,7 @@ void node::manage_status(
     if (acknowledgement.get())
       my_issue->ack_time = last_state_change;
     if (stream)
-      stream->write(misc::make_shared(new issue(*my_issue)));
+      stream->write(std::make_shared<issue>(*my_issue));
     _visit_linked_nodes(last_state_change, false, stream);
     _visit_parent_of_child_nodes(last_state_change, false, stream);
   }
@@ -464,13 +464,13 @@ void node::manage_ack(
     if (my_issue.get()) {
       my_issue->ack_time = ack.entry_time;
       if (stream)
-        stream->write(misc::make_shared(new issue(*my_issue)));
+        stream->write(std::make_shared<issue>(*my_issue));
     }
     
     // Update state event.
     ack_time = ack.entry_time;
     if (stream)
-      stream->write(misc::make_shared(new state(*this)));
+      stream->write(std::make_shared<state>(*this));
   }
   // Acknowledgement was deleted.
   else {
@@ -535,7 +535,7 @@ void node::manage_log(
        neb::log_entry const& entry,
        io::stream* stream) {
   if (my_issue.get() && stream) {
-    misc::shared_ptr<log_issue> log(new log_issue);
+    std::shared_ptr<log_issue> log(new log_issue);
     log->host_id = host_id;
     log->service_id = service_id;
     log->issue_start_time = my_issue->start_time;
@@ -562,7 +562,7 @@ void node::linked_node_updated(
   // Dependencies.
   if ((type == depended_by || type == depends_on)
         && my_issue.get() && n.my_issue.get()) {
-    misc::shared_ptr<issue_parent> ip(new issue_parent);
+    std::shared_ptr<issue_parent> ip(new issue_parent);
     node& child_node = (type == depended_by ? n : *this);
     node& parent_node = (type == depended_by ? *this : n);
     ip->child_host_id = child_node.host_id;
@@ -592,7 +592,7 @@ void node::linked_node_updated(
       = child_node.my_issue->start_time;
     if (child_node.all_parents_with_issues_and_get_start_time(
                      start_time_of_the_issue_parenting)) {
-      misc::shared_ptr<issue_parent> ip(new issue_parent);
+      std::shared_ptr<issue_parent> ip(new issue_parent);
       ip->child_host_id = child_node.host_id;
       ip->child_service_id = child_node.service_id;
       ip->child_start_time = child_node.my_issue->start_time;
@@ -616,16 +616,16 @@ void node::linked_node_updated(
  */
 void node::serialize(persistent_cache& cache) const {
   if (my_issue.get())
-    cache.add(misc::make_shared(new issue(*my_issue)));
-  cache.add(misc::make_shared(new correlation::state(*this)));
+    cache.add(std::make_shared<issue>(*my_issue));
+  cache.add(std::make_shared<correlation::state>(*this));
   for (std::map<unsigned int, neb::downtime>::const_iterator
          it = downtimes.begin(),
          end = downtimes.end();
        it != end;
        ++it)
-    cache.add(misc::make_shared(new neb::downtime(it->second)));
+    cache.add(std::make_shared<neb::downtime>(it->second));
   if (acknowledgement.get())
-    cache.add(misc::make_shared(new neb::acknowledgement(*acknowledgement)));
+    cache.add(std::make_shared<neb::acknowledgement>(*acknowledgement));
 }
 
 /**************************************
@@ -705,7 +705,7 @@ void node::_generate_state_event(
       << "correlation: node (" << host_id << ", " << service_id
       << ") closing state event";
     end_time = start_time;
-    stream->write(misc::make_shared(new correlation::state(*this)));
+    stream->write(std::make_shared<correlation::state>(*this));
   }
 
   // Open new state event.
@@ -726,7 +726,7 @@ void node::_generate_state_event(
   current_state = new_status;
   in_downtime = new_in_downtime;
   if (stream)
-    stream->write(misc::make_shared(new correlation::state(*this)));
+    stream->write(std::make_shared<correlation::state>(*this));
   return ;
 }
 

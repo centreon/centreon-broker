@@ -92,7 +92,7 @@ acceptor::acceptor(acceptor const& other)
  *  Destructor.
  */
 acceptor::~acceptor() {
-  _from.clear();
+  _from.reset();
 }
 
 /**
@@ -122,17 +122,17 @@ acceptor& acceptor::operator=(acceptor const& other) {
  *  @return Always return null stream. A new thread will be launched to
  *          process the incoming connection.
  */
-misc::shared_ptr<io::stream> acceptor::open() {
+std::shared_ptr<io::stream> acceptor::open() {
   // Wait for client from the lower layer.
-  if (!_from.isNull()) {
-    misc::shared_ptr<io::stream> s;
+  if (_from) {
+    std::shared_ptr<io::stream> s;
     do {
       s = _from->open();
-    } while (_one_peer_retention_mode && s.isNull());
+    } while (_one_peer_retention_mode && !s);
 
     // Add BBDO layer.
-    if (!s.isNull()) {
-      misc::shared_ptr<bbdo::stream> my_bbdo(new bbdo::stream);
+    if (s) {
+      std::shared_ptr<bbdo::stream> my_bbdo(std::make_shared<bbdo::stream>());
       my_bbdo->set_substream(s);
       my_bbdo->set_coarse(_coarse);
       my_bbdo->set_negotiate(_negotiate, _extensions);
@@ -145,7 +145,7 @@ misc::shared_ptr<io::stream> acceptor::open() {
     }
   }
 
-  return (misc::shared_ptr<io::stream>());
+  return (std::shared_ptr<io::stream>());
 }
 
 /**
@@ -158,7 +158,7 @@ void acceptor::stats(io::properties& tree) {
   p.set_name("one_peer_retention_mode");
   p.set_value(_one_peer_retention_mode ? "true" : "false");
   p.set_graphable(false);
-  if (!_from.isNull())
+  if (_from)
     _from->stats(tree);
   return ;
 }

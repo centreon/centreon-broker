@@ -29,7 +29,7 @@ class BbdoInputBufferExtract : public ::testing::Test {
       for (int j(0); j < i; ++j)
         buffer[j] = j;
       _raw.append(buffer, i);
-      misc::shared_ptr<io::raw> r(new io::raw);
+      std::shared_ptr<io::raw> r(new io::raw);
       r->append(buffer, i);
       _buffer.append(r);
     }

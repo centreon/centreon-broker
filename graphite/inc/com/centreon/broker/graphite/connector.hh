@@ -49,7 +49,7 @@ namespace           graphite {
                       unsigned short db_port,
                       unsigned int queries_per_transaction,
                       std::shared_ptr<persistent_cache> const& cache);
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                     open();
 
    private:

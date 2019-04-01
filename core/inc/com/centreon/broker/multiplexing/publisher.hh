@@ -41,9 +41,9 @@ namespace        multiplexing {
                  ~publisher() throw ();
     publisher&   operator=(publisher const& other);
     bool         read(
-                   misc::shared_ptr<io::data>& d,
+                   std::shared_ptr<io::data>& d,
                    time_t deadline = (time_t)-1);
-    int          write(misc::shared_ptr<io::data> const& d);
+    int          write(std::shared_ptr<io::data> const& d);
   };
 }
 

@@ -36,9 +36,9 @@ namespace              generator {
                        sender();
                        ~sender();
     bool               read(
-                         misc::shared_ptr<io::data>& d,
+                         std::shared_ptr<io::data>& d,
                          time_t deadline);
-    int                write(misc::shared_ptr<io::data> const& d);
+    int                write(std::shared_ptr<io::data> const& d);
 
    private:
                        sender(sender const& other);

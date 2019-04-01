@@ -23,7 +23,6 @@
 #  include <string>
 #  include "com/centreon/broker/file/fs_browser.hh"
 #  include "com/centreon/broker/file/fs_file.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -75,11 +74,11 @@ namespace       file {
     std::unique_ptr<fs_browser>
                 _fs;
     long        _max_file_size;
-    misc::shared_ptr<fs_file>
+    std::shared_ptr<fs_file>
                 _rfile;
     int         _rid;
     long        _roffset;
-    misc::shared_ptr<fs_file>
+    std::shared_ptr<fs_file>
                 _wfile;
     int         _wid;
     long        _woffset;

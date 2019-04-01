@@ -110,12 +110,12 @@ reporting_stream::~reporting_stream() {
  *
  *  @return This method will throw.
  */
-bool reporting_stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool reporting_stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (exceptions::shutdown()
          << "cannot read from BAM reporting stream");
-  return (true);
+  return true;
 }
 /**
  *  Get endpoint statistics.
@@ -149,7 +149,7 @@ int reporting_stream::flush() {
  *
  *  @return Number of events acknowledged.
  */
-int reporting_stream::write(misc::shared_ptr<io::data> const& data) {
+int reporting_stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_events;
   if (!validate(data, "BAM-BI"))
@@ -730,8 +730,8 @@ void reporting_stream::_prepare() {
  *
  *  @param[in] e The event.
  */
-void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
-  bam::ba_event const& be = e.ref_as<bam::ba_event const>();
+void reporting_stream::_process_ba_event(std::shared_ptr<io::data> const& e) {
+  bam::ba_event const& be = *std::static_pointer_cast<bam::ba_event const>(e);
   logging::debug(logging::low) << "BAM-BI: processing event of BA "
     << be.ba_id << " (start time " << be.start_time << ", end time "
     << be.end_time << ", status " << be.status << ", in downtime "
@@ -782,7 +782,7 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
   }
   // Compute the associated event durations.
   if (!be.end_time.is_null() && be.start_time != be.end_time)
-    _compute_event_durations(e.staticCast<bam::ba_event>(), this);
+    _compute_event_durations(std::static_pointer_cast<bam::ba_event>(e), this);
 }
 
 /**
@@ -791,8 +791,8 @@ void reporting_stream::_process_ba_event(misc::shared_ptr<io::data> const& e) {
  *  @param[in] e  The event.
  */
 void reporting_stream::_process_ba_duration_event(
-    misc::shared_ptr<io::data> const& e) {
-  bam::ba_duration_event const& bde = e.ref_as<bam::ba_duration_event const>();
+    std::shared_ptr<io::data> const& e) {
+  bam::ba_duration_event const& bde = *std::static_pointer_cast<bam::ba_duration_event const>(e);
   logging::debug(logging::low) << "BAM-BI: processing BA duration event of BA "
     << bde.ba_id << " (start time " << bde.start_time << ", end time "
     << bde.end_time << ", duration " << bde.duration << ", sla duration "
@@ -865,8 +865,8 @@ void reporting_stream::_process_ba_duration_event(
  *  @param[in] e The event.
  */
 void reporting_stream::_process_kpi_event(
-    misc::shared_ptr<io::data> const& e) {
-  bam::kpi_event const& ke = e.ref_as<bam::kpi_event const>();
+    std::shared_ptr<io::data> const& e) {
+  bam::kpi_event const& ke = *std::static_pointer_cast<bam::kpi_event const>(e);
   logging::debug(logging::low) << "BAM-BI: processing event of KPI "
     << ke.kpi_id << " (start time " << ke.start_time << ", end time "
     << ke.end_time << ", state " << ke.status << ", in downtime "
@@ -945,8 +945,8 @@ void reporting_stream::_process_kpi_event(
  *  @param[in] e The event.
  */
 void reporting_stream::_process_dimension_ba(
-    misc::shared_ptr<io::data> const& e) {
-  bam::dimension_ba_event const& dba = e.ref_as<bam::dimension_ba_event const>();
+    std::shared_ptr<io::data> const& e) {
+  bam::dimension_ba_event const& dba = *std::static_pointer_cast<bam::dimension_ba_event const>(e);
   logging::debug(logging::low)
     << "BAM-BI: processing declaration of BA "
     << dba.ba_id << " ('" << dba.ba_description << "')";
@@ -979,9 +979,9 @@ void reporting_stream::_process_dimension_ba(
  *  @param[in] e The event.
  */
 void reporting_stream::_process_dimension_bv(
-    misc::shared_ptr<io::data> const& e) {
+    std::shared_ptr<io::data> const& e) {
   bam::dimension_bv_event const& dbv =
-      e.ref_as<bam::dimension_bv_event const>();
+      *std::static_pointer_cast<bam::dimension_bv_event const>(e);
   logging::debug(logging::low)
     << "BAM-BI: processing declaration of BV "
     << dbv.bv_id << " ('" << dbv.bv_name << "')";
@@ -1004,9 +1004,9 @@ void reporting_stream::_process_dimension_bv(
  *  @param[in] e The event.
  */
 void reporting_stream::_process_dimension_ba_bv_relation(
-    misc::shared_ptr<io::data> const& e) {
+    std::shared_ptr<io::data> const& e) {
   bam::dimension_ba_bv_relation_event const& dbabv =
-    e.ref_as<bam::dimension_ba_bv_relation_event const>();
+    *std::static_pointer_cast<bam::dimension_ba_bv_relation_event const>(e);
   logging::debug(logging::low)
     << "BAM-BI: processing relation between BA "
     << dbabv.ba_id << " and BV " << dbabv.bv_id;
@@ -1027,7 +1027,7 @@ void reporting_stream::_process_dimension_ba_bv_relation(
  *  @param e  The event to process.
  */
 void reporting_stream::_process_dimension(
-        misc::shared_ptr<io::data> const& e) {
+        std::shared_ptr<io::data> const& e) {
   // Cache the event until the end of the dimensions dump.
   _dimension_data_cache.push_back(_dimension_copy(e));
 
@@ -1037,7 +1037,7 @@ void reporting_stream::_process_dimension(
       == io::events::data_type<io::events::bam,
                                bam::de_dimension_truncate_table_signal>::value) {
     dimension_truncate_table_signal const& dtts
-        = e.ref_as<dimension_truncate_table_signal const>();
+        = *std::static_pointer_cast<dimension_truncate_table_signal const>(e);
 
     if (!dtts.update_started) {
       // Lock the availability thread.
@@ -1047,7 +1047,7 @@ void reporting_stream::_process_dimension(
       //       For this reason, ignore any db error. We wouldn't
       //       be able to manage it on a stream level.
       try {
-      for (std::vector<misc::shared_ptr<io::data> >::const_iterator
+      for (std::vector<std::shared_ptr<io::data> >::const_iterator
              it(_dimension_data_cache.begin()),
              end(_dimension_data_cache.end());
            it != end;
@@ -1075,7 +1075,7 @@ void reporting_stream::_process_dimension(
  *  @param[in] data  The dimension event.
  */
 void reporting_stream::_dimension_dispatch(
-       misc::shared_ptr<io::data> const& data) {
+       std::shared_ptr<io::data> const& data) {
   if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_ba_event>::value)
@@ -1121,54 +1121,54 @@ void reporting_stream::_dimension_dispatch(
  *
  *  @return  The dimension event copied.
  */
-misc::shared_ptr<io::data> reporting_stream::_dimension_copy(
-                             misc::shared_ptr<io::data> const& data) {
+std::shared_ptr<io::data> reporting_stream::_dimension_copy(
+                             std::shared_ptr<io::data> const& data) {
   if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_ba_event>::value)
-    return (new bam::dimension_ba_event(
-                       data.ref_as<bam::dimension_ba_event>()));
+    return std::make_shared<bam::dimension_ba_event>(
+                      *std::static_pointer_cast<bam::dimension_ba_event>(data));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_bv_event>::value)
-    return (new bam::dimension_bv_event(
-                       data.ref_as<bam::dimension_bv_event>()));
+    return std::make_shared<bam::dimension_bv_event>(
+                      *std::static_pointer_cast<bam::dimension_bv_event>(data));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_ba_bv_relation_event>::value)
-    return (new bam::dimension_ba_bv_relation_event(
-                       data.ref_as<bam::dimension_ba_bv_relation_event>()));
+    return std::make_shared<bam::dimension_ba_bv_relation_event>(
+                       *std::static_pointer_cast<bam::dimension_ba_bv_relation_event>(data));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_kpi_event>::value)
-    return (new bam::dimension_kpi_event(
-                       data.ref_as<bam::dimension_kpi_event>()));
+    return std::make_shared<bam::dimension_kpi_event>(
+                       *std::static_pointer_cast<bam::dimension_kpi_event>(data));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_truncate_table_signal>::value)
-    return (new bam::dimension_truncate_table_signal(
-                       data.ref_as<bam::dimension_truncate_table_signal>()));
+    return std::make_shared<bam::dimension_truncate_table_signal>(
+                       *std::static_pointer_cast<bam::dimension_truncate_table_signal>(data));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_timeperiod>::value)
-    return (new bam::dimension_timeperiod(
-                       data.ref_as<bam::dimension_timeperiod>()));
+    return std::make_shared<bam::dimension_timeperiod>(
+                       *std::static_pointer_cast<bam::dimension_timeperiod>(data));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_timeperiod_exception>::value)
-    return (new bam::dimension_timeperiod_exception(
-                       data.ref_as<bam::dimension_timeperiod_exception>()));
+    return std::make_shared<bam::dimension_timeperiod_exception>(
+                       *std::static_pointer_cast<bam::dimension_timeperiod_exception>(data));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_timeperiod_exclusion>::value)
-    return (new bam::dimension_timeperiod_exclusion(
-                       data.ref_as<bam::dimension_timeperiod_exclusion>()));
+    return std::make_shared<bam::dimension_timeperiod_exclusion>(
+                       *std::static_pointer_cast<bam::dimension_timeperiod_exclusion>(data));
   else if (data->type()
            == io::events::data_type<io::events::bam,
                                     bam::de_dimension_ba_timeperiod_relation>::value)
-    return (new bam::dimension_ba_timeperiod_relation(
-                       data.ref_as<bam::dimension_ba_timeperiod_relation>()));
-  return (misc::shared_ptr<io::data>());
+    return std::make_shared<bam::dimension_ba_timeperiod_relation>(
+                       *std::static_pointer_cast<bam::dimension_ba_timeperiod_relation>(data));
+  return std::shared_ptr<io::data>();
 }
 
 /**
@@ -1177,9 +1177,9 @@ misc::shared_ptr<io::data> reporting_stream::_dimension_copy(
  *  @param[in] e The event.
  */
 void reporting_stream::_process_dimension_truncate_signal(
-    misc::shared_ptr<io::data> const& e) {
+    std::shared_ptr<io::data> const& e) {
   dimension_truncate_table_signal const& dtts
-      = e.ref_as<dimension_truncate_table_signal const>();
+      = *std::static_pointer_cast<dimension_truncate_table_signal const>(e);
 
   if (dtts.update_started) {
     logging::debug(logging::low)
@@ -1204,9 +1204,9 @@ void reporting_stream::_process_dimension_truncate_signal(
  *  @param[in] e The event.
  */
 void reporting_stream::_process_dimension_kpi(
-    misc::shared_ptr<io::data> const& e) {
+    std::shared_ptr<io::data> const& e) {
   bam::dimension_kpi_event const& dk =
-      e.ref_as<bam::dimension_kpi_event const>();
+      *std::static_pointer_cast<bam::dimension_kpi_event const>(e);
   QString kpi_name;
   if (!dk.service_description.isEmpty())
     kpi_name = dk.host_name + " " + dk.service_description;
@@ -1271,9 +1271,9 @@ void reporting_stream::_process_dimension_kpi(
  *  @param[in] e  The event.
  */
 void reporting_stream::_process_dimension_timeperiod(
-                         misc::shared_ptr<io::data> const& e) {
+                         std::shared_ptr<io::data> const& e) {
   bam::dimension_timeperiod const& tp =
-      e.ref_as<bam::dimension_timeperiod const>();
+      *std::static_pointer_cast<bam::dimension_timeperiod const>(e);
   logging::debug(logging::low)
     << "BAM-BI: processing declaration of timeperiod "
     << tp.id << " ('" << tp.name << "')";
@@ -1319,9 +1319,9 @@ void reporting_stream::_process_dimension_timeperiod(
  *  @param[in] e  The event.
  */
 void reporting_stream::_process_dimension_timeperiod_exception(
-                         misc::shared_ptr<io::data> const& e) {
+                         std::shared_ptr<io::data> const& e) {
   bam::dimension_timeperiod_exception const& tpe =
-    e.ref_as<bam::dimension_timeperiod_exception const>();
+    *std::static_pointer_cast<bam::dimension_timeperiod_exception const>(e);
   logging::debug(logging::low)
     << "BAM-BI: processing exception of timeperiod " << tpe.timeperiod_id;
   _dimension_timeperiod_exception_insert.bind_value_as_i32(
@@ -1349,9 +1349,9 @@ void reporting_stream::_process_dimension_timeperiod_exception(
  *  @param[in] e  The event.
  */
 void reporting_stream::_process_dimension_timeperiod_exclusion(
-                         misc::shared_ptr<io::data> const& e) {
+                         std::shared_ptr<io::data> const& e) {
   bam::dimension_timeperiod_exclusion const& tpe =
-    e.ref_as<bam::dimension_timeperiod_exclusion const>();
+    *std::static_pointer_cast<bam::dimension_timeperiod_exclusion const>(e);
   logging::debug(logging::low)
     << "BAM-BI: processing exclusion of timeperiod "
     << tpe.excluded_timeperiod_id << " by timeperiod "
@@ -1379,9 +1379,9 @@ void reporting_stream::_process_dimension_timeperiod_exclusion(
  *  @param[in] e  The event.
  */
 void reporting_stream::_process_dimension_ba_timeperiod_relation(
-        misc::shared_ptr<io::data> const& e) {
+        std::shared_ptr<io::data> const& e) {
   bam::dimension_ba_timeperiod_relation const& r =
-     e.ref_as<bam::dimension_ba_timeperiod_relation const>();
+     *std::static_pointer_cast<bam::dimension_ba_timeperiod_relation const>(e);
   logging::debug(logging::low)
     << "BAM-BI: processing relation of BA " << r.ba_id
     << " to timeperiod " << r.timeperiod_id;
@@ -1413,9 +1413,9 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
  *  @param[in] visitor  A visitor stream.
  */
 void reporting_stream::_compute_event_durations(
-                         misc::shared_ptr<ba_event> const& ev,
+                         std::shared_ptr<ba_event> const& ev,
                          io::stream* visitor) {
-  if (ev.isNull() || !visitor)
+  if (!ev || !visitor)
     return ;
 
   logging::info(logging::medium)
@@ -1443,7 +1443,7 @@ void reporting_stream::_compute_event_durations(
     time::timeperiod::ptr tp = it->first;
     bool is_default = it->second;
 
-    misc::shared_ptr<ba_duration_event> dur_ev(new ba_duration_event);
+    std::shared_ptr<ba_duration_event> dur_ev(new ba_duration_event);
     dur_ev->ba_id = ev->ba_id;
     dur_ev->real_start_time = ev->start_time;
     dur_ev->start_time = tp->get_next_valid(ev->start_time);
@@ -1463,7 +1463,7 @@ void reporting_stream::_compute_event_durations(
         << " were computed for timeperiod " << tp->get_name()
         << ", duration is " << dur_ev->duration << "s, SLA duration is "
         << dur_ev->sla_duration;
-      visitor->write(dur_ev.staticCast<io::data>());
+      visitor->write(std::static_pointer_cast<io::data>(dur_ev));
     }
     else
       logging::debug(logging::medium)
@@ -1479,8 +1479,8 @@ void reporting_stream::_compute_event_durations(
  *
  *  @param[in] e  The event.
  */
-void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
-  rebuild const& r = e.ref_as<rebuild const>();
+void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
+  rebuild const& r = *std::static_pointer_cast<rebuild const>(e);
   if (r.bas_to_rebuild.isEmpty())
     return ;
   logging::debug(logging::low)
@@ -1510,7 +1510,7 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
     }
 
     // Get the ba events.
-    std::vector<misc::shared_ptr<ba_event> > ba_events;
+    std::vector<std::shared_ptr<ba_event> > ba_events;
     {
       std::string query(
               "SELECT ba_id, start_time, end_time, "
@@ -1528,7 +1528,7 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
       mysql_result res(promise.get_future().get());
 
       while (_mysql.fetch_row(res)) {
-        misc::shared_ptr<ba_event> baev(new ba_event);
+        std::shared_ptr<ba_event> baev(new ba_event);
         baev->ba_id = res.value_as_i32(0);
         baev->start_time = res.value_as_i32(1);
         baev->end_time = res.value_as_i32(2);
@@ -1549,7 +1549,7 @@ void reporting_stream::_process_rebuild(misc::shared_ptr<io::data> const& e) {
 
     // Generate new ba events durations for each ba events.
     {
-      for (std::vector<misc::shared_ptr<ba_event> >::const_iterator
+      for (std::vector<std::shared_ptr<ba_event> >::const_iterator
              it(ba_events.begin()),
              end(ba_events.end());
           it != end;

@@ -78,7 +78,7 @@ connector& connector::operator=(connector const& other) {
  *
  *  @return A newly opened stream.
  */
-misc::shared_ptr<io::stream> connector::open() {
+std::shared_ptr<io::stream> connector::open() {
   // XXX : passive stream
-  return (new stream(_correlation_file, _cache, true, _passive));
+  return std::make_shared<stream>(_correlation_file, _cache, true, _passive);
 }

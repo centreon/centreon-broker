@@ -58,15 +58,15 @@ namespace         bbdo {
                   acceptor(acceptor const& other);
                   ~acceptor();
     acceptor&     operator=(acceptor const& other);
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                   open();
     void          stats(io::properties& tree);
 
   private:
     unsigned int  _negotiate_features(
-                     misc::shared_ptr<io::stream> stream,
-                     misc::shared_ptr<bbdo::stream> my_bbdo);
-    void          _open(misc::shared_ptr<io::stream> stream);
+                     std::shared_ptr<io::stream> stream,
+                     std::shared_ptr<bbdo::stream> my_bbdo);
+    void          _open(std::shared_ptr<io::stream> stream);
 
     bool          _coarse;
     QString       _extensions;

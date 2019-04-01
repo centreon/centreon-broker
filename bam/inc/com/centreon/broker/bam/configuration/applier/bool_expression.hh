@@ -21,9 +21,9 @@
 
 #  include <list>
 #  include <map>
+#  include <memory>
 #  include "com/centreon/broker/bam/configuration/bool_expression.hh"
 #  include "com/centreon/broker/bam/configuration/state.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -59,20 +59,20 @@ namespace                bam {
                            hst_svc_mapping const& mapping,
                            service_book& book,
                            metric_book& metric_book);
-        misc::shared_ptr<bam::bool_expression>
+        std::shared_ptr<bam::bool_expression>
                          find_boolexp(unsigned int id);
 
       private:
         struct applied {
           configuration::bool_expression                  cfg;
-          misc::shared_ptr<bam::bool_expression>          obj;
-          std::list<misc::shared_ptr<bam::bool_service> > svc;
-          std::list<misc::shared_ptr<bam::bool_call> >    call;
-          std::list<misc::shared_ptr<bam::bool_metric> >   mtrc;
+          std::shared_ptr<bam::bool_expression>           obj;
+          std::list<std::shared_ptr<bam::bool_service>>   svc;
+          std::list<std::shared_ptr<bam::bool_call>>      call;
+          std::list<std::shared_ptr<bam::bool_metric>>    mtrc;
         };
 
         void             _internal_copy(bool_expression const& other);
-        misc::shared_ptr<bam::bool_expression>
+        std::shared_ptr<bam::bool_expression>
                          _new_bool_exp(
                            configuration::bool_expression const& cfg);
         void             _resolve_expression_calls();

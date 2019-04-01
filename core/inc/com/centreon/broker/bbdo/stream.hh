@@ -48,7 +48,7 @@ namespace            bbdo {
     int              flush();
     void             negotiate(negotiation_type neg);
     bool             read(
-                       misc::shared_ptr<io::data>& d,
+                       std::shared_ptr<io::data>& d,
                        time_t deadline = (time_t)-1);
     void             set_ack_limit(unsigned int limit);
     void             set_coarse(bool coarse);
@@ -57,7 +57,7 @@ namespace            bbdo {
                        QString const& extensions = QString());
     void             set_timeout(int timeout);
     void             statistics(io::properties& tree) const;
-    int              write(misc::shared_ptr<io::data> const& d);
+    int              write(std::shared_ptr<io::data> const& d);
     void             acknowledge_events(unsigned int events);
     void             send_event_acknowledgement();
 

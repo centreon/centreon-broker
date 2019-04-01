@@ -69,6 +69,6 @@ endpoint& endpoint::operator=(endpoint const& other) {
  *
  *  @return  A new stream.
  */
-misc::shared_ptr<io::stream> endpoint::open() {
-  return (misc::make_shared(new engine_command(_name, _command_module_path)));
+std::shared_ptr<io::stream> endpoint::open() {
+  return (std::make_shared<engine_command>(_name, _command_module_path));
 }

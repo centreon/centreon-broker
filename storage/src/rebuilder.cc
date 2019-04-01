@@ -23,7 +23,6 @@
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/rebuild.hh"
@@ -323,7 +322,7 @@ void rebuilder::_rebuild_metric(
 
     database::mysql_result res(promise.get_future().get());
     while (!_should_exit && ms.fetch_row(res)) {
-      misc::shared_ptr<storage::metric> entry(new storage::metric);
+      std::shared_ptr<storage::metric> entry(new storage::metric);
       entry->ctime = res.value_as_u32(0);
       entry->interval = interval;
       entry->is_for_rebuild = true;
@@ -391,7 +390,7 @@ void rebuilder::_rebuild_status(
     ms.run_query_and_get_result(oss.str(), &promise, oss_err.str());
     database::mysql_result res(promise.get_future().get());
     while (!_should_exit && ms.fetch_row(res)) {
-      misc::shared_ptr<storage::status> entry(new storage::status);
+      std::shared_ptr<storage::status> entry(new storage::status);
       entry->ctime = res.value_as_u32(0);
       entry->index_id = index_id;
       entry->interval = interval;
@@ -424,7 +423,7 @@ void rebuilder::_send_rebuild_event(
                   bool end,
                   unsigned int id,
                   bool is_index) {
-  misc::shared_ptr<storage::rebuild> rb(new storage::rebuild);
+  std::shared_ptr<storage::rebuild> rb(new storage::rebuild);
   rb->end = end;
   rb->id = id;
   rb->is_index = is_index;

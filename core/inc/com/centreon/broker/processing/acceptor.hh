@@ -20,8 +20,8 @@
 #  define CCB_PROCESSING_ACCEPTOR_HH
 
 #  include <ctime>
+#  include <memory>
 #  include <string>
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/processing/thread.hh"
@@ -46,7 +46,7 @@ namespace       processing {
   class         acceptor : public thread {
   public:
                 acceptor(
-                  misc::shared_ptr<io::endpoint> endp,
+                  std::shared_ptr<io::endpoint> endp,
                   std::string const& name);
                 ~acceptor();
     void        accept();
@@ -76,9 +76,9 @@ namespace       processing {
     void        _set_listening(bool val);
     bool        _get_listening() const throw();
 
-    misc::shared_ptr<io::endpoint>
+    std::shared_ptr<io::endpoint>
                 _endp;
-    std::list<misc::shared_ptr<processing::feeder> >
+    std::list<std::shared_ptr<processing::feeder> >
                 _feeders;
     uset<unsigned int>
                 _read_filters;

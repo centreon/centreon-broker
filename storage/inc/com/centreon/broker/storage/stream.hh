@@ -23,6 +23,7 @@
 #  include <list>
 #  include <map>
 #  include <memory>
+#  include <QMutex>
 #  include <QString>
 #  include <utility>
 #  include "com/centreon/broker/io/stream.hh"
@@ -54,10 +55,10 @@ namespace          storage {
                      bool insert_in_index_data = false);
                    ~stream();
     int            flush();
-    bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
+    bool           read(std::shared_ptr<io::data>& d, time_t deadline);
     void           statistics(io::properties& tree) const;
     void           update();
-    int            write(misc::shared_ptr<io::data> const& d);
+    int            write(std::shared_ptr<io::data> const& d);
     void           ack_pending_events(int v);
 
    private:

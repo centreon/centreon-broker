@@ -44,7 +44,7 @@ namespace                        neb {
                                  node_events_connector(node_events_connector const& other);
                                  ~node_events_connector();
     node_events_connector&       operator=(node_events_connector const& other);
-    misc::shared_ptr<io::stream> open();
+    std::shared_ptr<io::stream>  open();
 
   private:
     std::shared_ptr<persistent_cache>

@@ -55,7 +55,7 @@ public:
     for (unsigned int i(0); i < _requests_per_service; ++i) {
       now += 300;
       for (unsigned int j(0); j < _services; ++j) {
-        misc::shared_ptr<storage::metric>
+        std::shared_ptr<storage::metric>
           m(new storage::metric);
         m->ctime = now;
         m->interval = 300;

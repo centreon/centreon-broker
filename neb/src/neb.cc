@@ -33,7 +33,6 @@
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/manager.hh"
-#include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/instance_configuration.hh"
@@ -297,13 +296,13 @@ extern "C" {
 
       // Register process and log callback.
       neb::gl_registered_callbacks.push_back(
-             misc::shared_ptr<neb::callback>(
+             std::shared_ptr<neb::callback>(
                new neb::callback(
                           NEBCALLBACK_PROCESS_DATA,
                           neb::gl_mod_handle,
                           &neb::callback_process)));
       neb::gl_registered_callbacks.push_back(
-             misc::shared_ptr<neb::callback>(
+             std::shared_ptr<neb::callback>(
                new neb::callback(
                           NEBCALLBACK_LOG_DATA,
                           neb::gl_mod_handle,
@@ -354,7 +353,7 @@ extern "C" {
    *  @return OK.
    */
   int nebmodule_reload() {
-    misc::shared_ptr<neb::instance_configuration>
+    std::shared_ptr<neb::instance_configuration>
       ic(new neb::instance_configuration);
     ic->loaded = true;
     ic->poller_id = config::applier::state::instance().poller_id();

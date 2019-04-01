@@ -68,7 +68,7 @@ namespace            bam {
     std::string      get_perfdata() const;
     short            get_state() const;
     void             metric_update(
-                       misc::shared_ptr<storage::metric> const& m,
+                       std::shared_ptr<storage::metric> const& m,
                        io::stream* visitor = NULL);
     void             remove_metric(unsigned int metric_id);
     void             recompute();

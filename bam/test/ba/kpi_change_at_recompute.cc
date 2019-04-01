@@ -41,9 +41,9 @@ int main() {
   bool error(true);
   try {
     // Build BAM objects.
-    misc::shared_ptr<bam::ba>
+    std::shared_ptr<bam::ba>
       my_ba(new bam::ba);
-    misc::shared_ptr<bam::kpi_service>
+    std::shared_ptr<bam::kpi_service>
       my_kpi(new bam::kpi_service);
     my_kpi->set_host_id(1);
     my_kpi->set_service_id(1);
@@ -58,7 +58,7 @@ int main() {
     // for the test to be correct.
     time_t now(time(NULL));
     for (int i(0); i < RECOMPUTE_LIMIT + 2; ++i) {
-      misc::shared_ptr<neb::service_status>
+      std::shared_ptr<neb::service_status>
         ss(new neb::service_status);
       ss->host_id = 1;
       ss->service_id = 1;

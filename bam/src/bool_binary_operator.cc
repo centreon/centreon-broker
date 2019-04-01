@@ -79,7 +79,7 @@ bool bool_binary_operator::child_has_update(
 
   // Check operation members values.
   if (child) {
-    if (child == _left.data()) {
+    if (child == _left.get()) {
       double value_hard(_left->value_hard());
       double value_soft(_left->value_soft());
       if ((_left_hard != value_hard) || (_left_soft != value_soft)) {
@@ -88,7 +88,7 @@ bool bool_binary_operator::child_has_update(
         retval = true;
       }
     }
-    else if (child == _right.data()) {
+    else if (child == _right.get()) {
       double value_hard(_right->value_hard());
       double value_soft(_right->value_soft());
       if ((_right_hard != value_hard) || (_right_soft == value_soft)) {
@@ -122,7 +122,7 @@ bool bool_binary_operator::child_has_update(
  *  @param[in] left Left member of the boolean operator.
  */
 void bool_binary_operator::set_left(
-                             misc::shared_ptr<bool_value> const& left) {
+                             std::shared_ptr<bool_value> const& left) {
   _left = left;
   _left_hard = _left->value_hard();
   _left_soft = _left->value_soft();
@@ -137,7 +137,7 @@ void bool_binary_operator::set_left(
  *  @param[in] right Right member of the boolean operator.
  */
 void bool_binary_operator::set_right(
-                             misc::shared_ptr<bool_value> const& right) {
+                             std::shared_ptr<bool_value> const& right) {
   _right = right;
   _right_hard = _right->value_hard();
   _right_soft = _right->value_soft();
@@ -170,8 +170,8 @@ void bool_binary_operator::_internal_copy(
  *  @return  True if the state is known.
  */
 bool bool_binary_operator::state_known() const {
-  return (!_left.isNull()
-          && !_right.isNull()
+  return (_left
+          && _right
           && _left->state_known()
           && _right->state_known());
 }
@@ -182,6 +182,6 @@ bool bool_binary_operator::state_known() const {
  *  @return  True if this expression is in downtime.
  */
 bool bool_binary_operator::in_downtime() const {
-  return ((!_left.isNull() && _left->in_downtime())
-          || (!_right.isNull() && _right->in_downtime()));
+  return ((_left && _left->in_downtime())
+          || (_right && _right->in_downtime()));
 }

@@ -71,7 +71,7 @@ bool kpi_ba::child_has_update(
                io::stream* visitor) {
   // It is useless to maintain a cache of BA values in this class, as
   // the ba class already cache most of them.
-  if (child == _ba.data()) {
+  if (child == _ba.get()) {
     // Logging.
     logging::debug(logging::low) << "BAM: BA KPI " << _id
       << " is getting notified of child update";
@@ -133,7 +133,7 @@ void kpi_ba::impact_soft(impact_values& soft_impact) {
  *
  *  @param[in] my_ba Linked BA.
  */
-void kpi_ba::link_ba(misc::shared_ptr<ba>& my_ba) {
+void kpi_ba::link_ba(std::shared_ptr<ba>& my_ba) {
   _ba = my_ba;
   return ;
 }
@@ -162,8 +162,7 @@ void kpi_ba::set_impact_warning(double impact) {
  *  Unlink from BA.
  */
 void kpi_ba::unlink_ba() {
-  _ba.clear();
-  return ;
+  _ba.reset();
 }
 
 /**
@@ -190,7 +189,7 @@ void kpi_ba::visit(io::stream* visitor) {
       timestamp last_ba_update(bae ? bae->start_time : timestamp(time(NULL)));
 
       // If no event was cached, create one.
-      if (_event.isNull()) {
+      if (!_event) {
         if ((last_ba_update.get_time_t() != (time_t)-1)
             && (last_ba_update.get_time_t() != (time_t)0))
           _open_new_event(
@@ -203,8 +202,8 @@ void kpi_ba::visit(io::stream* visitor) {
       else if ((_ba->get_in_downtime() != _event->in_downtime)
                || (ba_state != _event->status)) {
         _event->end_time = last_ba_update;
-        visitor->write(_event.staticCast<io::data>());
-        _event.clear();
+        visitor->write(std::static_pointer_cast<io::data>(_event));
+        _event.reset();
         _open_new_event(
           visitor,
           hard_values.get_nominal(),
@@ -215,7 +214,7 @@ void kpi_ba::visit(io::stream* visitor) {
 
     // Generate status event.
     {
-      misc::shared_ptr<kpi_status> status(new kpi_status);
+      std::shared_ptr<kpi_status> status(new kpi_status);
       status->kpi_id = _id;
       status->level_acknowledgement_hard = hard_values.get_acknowledgement();
       status->level_acknowledgement_soft = soft_values.get_acknowledgement();
@@ -227,7 +226,7 @@ void kpi_ba::visit(io::stream* visitor) {
       status->state_soft = _ba->get_state_soft();
       status->last_state_change = get_last_state_change();
       status->last_impact = hard_values.get_nominal();
-      visitor->write(status.staticCast<io::data>());
+      visitor->write(std::static_pointer_cast<io::data>(status));
     }
 
   }
@@ -300,7 +299,7 @@ void kpi_ba::_open_new_event(
                int impact,
                short ba_state,
                timestamp event_start_time) {
-  _event = new kpi_event;
+  _event.reset(new kpi_event);
   _event->kpi_id = _id;
   _event->impact_level = impact;
   _event->in_downtime = _ba->get_in_downtime();
@@ -309,7 +308,7 @@ void kpi_ba::_open_new_event(
   _event->start_time = event_start_time;
   _event->status = ba_state;
   if (visitor) {
-    misc::shared_ptr<io::data> ke(new kpi_event(*_event));
+    std::shared_ptr<io::data> ke(new kpi_event(*_event));
     visitor->write(ke);
   }
   return ;

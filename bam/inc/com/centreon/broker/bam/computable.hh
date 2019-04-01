@@ -20,8 +20,7 @@
 #  define CCB_BAM_COMPUTABLE_HH
 
 #  include <list>
-#  include "com/centreon/broker/misc/shared_ptr.hh"
-#  include "com/centreon/broker/misc/weak_ptr.hh"
+#  include <memory>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
@@ -42,9 +41,9 @@ namespace        bam {
                  computable(computable const& right);
     virtual      ~computable();
     computable&  operator=(computable const& right);
-    void         add_parent(misc::shared_ptr<computable> const& parent);
+    void         add_parent(std::shared_ptr<computable> const& parent);
     void         propagate_update(io::stream* visitor = NULL);
-    void         remove_parent(misc::shared_ptr<computable> const& parent);
+    void         remove_parent(std::shared_ptr<computable> const& parent);
 
     /**
      *  @brief Notify node of the change of a child node.
@@ -65,7 +64,7 @@ namespace        bam {
   private:
     void         _internal_copy(computable const& right);
 
-    std::list<misc::weak_ptr<computable> >
+    std::list<std::weak_ptr<computable>>
                  _parents;
   };
 }

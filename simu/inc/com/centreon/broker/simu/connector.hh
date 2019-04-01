@@ -41,7 +41,7 @@ namespace                        simu {
     void                         connect_to(
                                    std::string const& lua_script,
                                    QMap<QString, QVariant> const& cfg_params);
-    misc::shared_ptr<io::stream> open();
+    std::shared_ptr<io::stream> open();
 
   private:
     std::string                  _lua_script;

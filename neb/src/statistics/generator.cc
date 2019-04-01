@@ -62,35 +62,35 @@ using namespace com::centreon::broker::neb::statistics;
  */
 generator::generator()
   : _interval(0) {
-  _plugins["active_host_execution_time"] = misc::shared_ptr<plugin>(new active_host_execution_time);
-  _plugins["active_host_latency"] = misc::shared_ptr<plugin>(new active_host_latency);
-  _plugins["active_hosts_last"] = misc::shared_ptr<plugin>(new active_hosts_last);
-  _plugins["active_host_state_change"] = misc::shared_ptr<plugin>(new active_host_state_change);
-  _plugins["active_service_execution_time"] = misc::shared_ptr<plugin>(new active_service_execution_time);
-  _plugins["active_service_latency"] = misc::shared_ptr<plugin>(new active_service_latency);
-  _plugins["active_services_last"] = misc::shared_ptr<plugin>(new active_services_last);
-  _plugins["active_service_state_change"] = misc::shared_ptr<plugin>(new active_service_state_change);
-  _plugins["command_buffers"] = misc::shared_ptr<plugin>(new command_buffers);
-  _plugins["hosts_actively_checked"] = misc::shared_ptr<plugin>(new hosts_actively_checked);
-  _plugins["hosts_checked"] = misc::shared_ptr<plugin>(new hosts_checked);
-  _plugins["hosts_flapping"] = misc::shared_ptr<plugin>(new hosts_flapping);
-  _plugins["hosts"] = misc::shared_ptr<plugin>(new hosts);
-  _plugins["hosts_scheduled"] = misc::shared_ptr<plugin>(new hosts_scheduled);
-  _plugins["passive_host_latency"] = misc::shared_ptr<plugin>(new passive_host_latency);
-  _plugins["passive_hosts_last"] = misc::shared_ptr<plugin>(new passive_hosts_last);
-  _plugins["passive_host_state_change"] = misc::shared_ptr<plugin>(new passive_host_state_change);
-  _plugins["passive_service_latency"] = misc::shared_ptr<plugin>(new passive_service_latency);
-  _plugins["passive_services_last"] = misc::shared_ptr<plugin>(new passive_services_last);
-  _plugins["passive_service_state_change"] = misc::shared_ptr<plugin>(new passive_service_state_change);
-  _plugins["services_actively_checked"] = misc::shared_ptr<plugin>(new services_actively_checked);
-  _plugins["services_checked"] = misc::shared_ptr<plugin>(new services_checked);
-  _plugins["services_flapping"] = misc::shared_ptr<plugin>(new services_flapping);
-  _plugins["services"] = misc::shared_ptr<plugin>(new services);
-  _plugins["services_scheduled"] = misc::shared_ptr<plugin>(new services_scheduled);
-  _plugins["total_hosts"] = misc::shared_ptr<plugin>(new total_hosts);
-  _plugins["total_host_state_change"] = misc::shared_ptr<plugin>(new total_host_state_change);
-  _plugins["total_services"] = misc::shared_ptr<plugin>(new total_services);
-  _plugins["total_service_state_change"] = misc::shared_ptr<plugin>(new total_service_state_change);
+  _plugins["active_host_execution_time"].reset(new active_host_execution_time);
+  _plugins["active_host_latency"] = std::shared_ptr<plugin>(new active_host_latency);
+  _plugins["active_hosts_last"] = std::shared_ptr<plugin>(new active_hosts_last);
+  _plugins["active_host_state_change"] = std::shared_ptr<plugin>(new active_host_state_change);
+  _plugins["active_service_execution_time"] = std::shared_ptr<plugin>(new active_service_execution_time);
+  _plugins["active_service_latency"] = std::shared_ptr<plugin>(new active_service_latency);
+  _plugins["active_services_last"] = std::shared_ptr<plugin>(new active_services_last);
+  _plugins["active_service_state_change"] = std::shared_ptr<plugin>(new active_service_state_change);
+  _plugins["command_buffers"] = std::shared_ptr<plugin>(new command_buffers);
+  _plugins["hosts_actively_checked"] = std::shared_ptr<plugin>(new hosts_actively_checked);
+  _plugins["hosts_checked"] = std::shared_ptr<plugin>(new hosts_checked);
+  _plugins["hosts_flapping"] = std::shared_ptr<plugin>(new hosts_flapping);
+  _plugins["hosts"] = std::shared_ptr<plugin>(new hosts);
+  _plugins["hosts_scheduled"] = std::shared_ptr<plugin>(new hosts_scheduled);
+  _plugins["passive_host_latency"] = std::shared_ptr<plugin>(new passive_host_latency);
+  _plugins["passive_hosts_last"] = std::shared_ptr<plugin>(new passive_hosts_last);
+  _plugins["passive_host_state_change"] = std::shared_ptr<plugin>(new passive_host_state_change);
+  _plugins["passive_service_latency"] = std::shared_ptr<plugin>(new passive_service_latency);
+  _plugins["passive_services_last"] = std::shared_ptr<plugin>(new passive_services_last);
+  _plugins["passive_service_state_change"] = std::shared_ptr<plugin>(new passive_service_state_change);
+  _plugins["services_actively_checked"] = std::shared_ptr<plugin>(new services_actively_checked);
+  _plugins["services_checked"] = std::shared_ptr<plugin>(new services_checked);
+  _plugins["services_flapping"] = std::shared_ptr<plugin>(new services_flapping);
+  _plugins["services"] = std::shared_ptr<plugin>(new services);
+  _plugins["services_scheduled"] = std::shared_ptr<plugin>(new services_scheduled);
+  _plugins["total_hosts"] = std::shared_ptr<plugin>(new total_hosts);
+  _plugins["total_host_state_change"] = std::shared_ptr<plugin>(new total_host_state_change);
+  _plugins["total_services"] = std::shared_ptr<plugin>(new total_services);
+  _plugins["total_service_state_change"] = std::shared_ptr<plugin>(new total_service_state_change);
 }
 
 /**
@@ -134,7 +134,7 @@ generator& generator::operator=(generator const& right) {
 void generator::add(
                   unsigned int host_id,
                   unsigned int service_id,
-                  misc::shared_ptr<plugin> plugin) {
+                  std::shared_ptr<plugin> plugin) {
   if (!host_id)
     throw (exceptions::msg() << "stats: invalid plugin host id");
   if (!service_id)
@@ -157,7 +157,7 @@ void generator::add(
                   unsigned int host_id,
                   unsigned int service_id,
                   std::string const& name) {
-  std::map<std::string, misc::shared_ptr<plugin> >::const_iterator
+  std::map<std::string, std::shared_ptr<plugin> >::const_iterator
     it(_plugins.find(name));
   if (it == _plugins.end())
     throw (exceptions::msg() << "stats: invalid plugin name");
@@ -202,7 +202,7 @@ void generator::remove(
                   unsigned int service_id) {
   std::map<
          std::pair<unsigned int, unsigned int>,
-         misc::shared_ptr<plugin> >::iterator
+         std::shared_ptr<plugin> >::iterator
     it(_registers.find(std::make_pair(host_id, service_id)));
   if (it != _registers.end())
     _registers.erase(it);
@@ -214,11 +214,11 @@ void generator::remove(
  */
 void generator::run() {
   time_t now(time(NULL));
-  for (std::map<std::pair<unsigned int, unsigned int>, misc::shared_ptr<plugin> >::const_iterator
+  for (std::map<std::pair<unsigned int, unsigned int>, std::shared_ptr<plugin> >::const_iterator
          it(_registers.begin()), end(_registers.end());
        it != end;
        ++it) {
-    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+    std::shared_ptr<neb::service_status> ss(new neb::service_status);
     ss->check_interval = _interval;
     ss->last_check = now;
     ss->last_update = now;

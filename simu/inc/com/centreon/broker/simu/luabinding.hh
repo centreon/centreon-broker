@@ -19,10 +19,10 @@
 #ifndef CCB_SIMU_SIMUBINDING_HH
 #  define CCB_SIMU_SIMUBINDING_HH
 
+#  include <memory>
 #  include <QMap>
 #  include <QVariant>
 #  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 
 extern "C" {
 #  include "lua.h"
@@ -45,7 +45,7 @@ namespace               simu {
                           std::string const& lua_script,
                           QMap<QString, QVariant> const& conf_params);
                         ~luabinding();
-    bool                read(misc::shared_ptr<io::data>& d);
+    bool                read(std::shared_ptr<io::data>& d);
 
    private:
                         luabinding(luabinding const& other);
@@ -55,7 +55,7 @@ namespace               simu {
     void                _init_script(
                           QMap<QString, QVariant> const& conf_params);
     void                _update_lua_path(std::string const& path);
-    bool                _parse_event(misc::shared_ptr<io::data>& d);
+    bool                _parse_event(std::shared_ptr<io::data>& d);
 
     // Event conversion to Lua table.
     void                _parse_entries(io::data const& d);

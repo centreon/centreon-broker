@@ -209,11 +209,11 @@ bool kpi_service::is_acknowledged() const {
  *  @param[out] visitor  Object that will receive events.
  */
 void kpi_service::service_update(
-                    misc::shared_ptr<neb::service_status> const& status,
+                    std::shared_ptr<neb::service_status> const& status,
                     io::stream* visitor) {
-  if (!status.isNull()
-      && (status->host_id == _host_id)
-      && (status->service_id == _service_id)) {
+  if (status
+      && status->host_id == _host_id
+      && status->service_id == _service_id) {
     // Log message.
     logging::debug(logging::low) << "BAM: KPI " << _id
       << " is getting notified of service (" << _host_id << ", "
@@ -250,11 +250,11 @@ void kpi_service::service_update(
  *  @param[out] visitor  Object that will receive events.
  */
 void kpi_service::service_update(
-                    misc::shared_ptr<neb::acknowledgement> const& ack,
+                    std::shared_ptr<neb::acknowledgement> const& ack,
                     io::stream* visitor) {
-  if (!ack.isNull()
-      && (ack->host_id == _host_id)
-      && (ack->service_id == _service_id)) {
+  if (ack
+      && ack->host_id == _host_id
+      && ack->service_id == _service_id) {
     // Log message.
     logging::debug(logging::low) << "BAM: KPI " << _id
       << " is getting an acknowledgement event for service ("
@@ -279,11 +279,11 @@ void kpi_service::service_update(
  *  @param[out] visitor  Object that will receive events.
  */
 void kpi_service::service_update(
-                    misc::shared_ptr<neb::downtime> const& dt,
+                    std::shared_ptr<neb::downtime> const& dt,
                     io::stream* visitor) {
-  if (!dt.isNull()
-      && (dt->host_id == _host_id)
-      && (dt->service_id == _service_id)) {
+  if (dt
+      && dt->host_id == _host_id
+      && dt->service_id == _service_id) {
     // Log message.
     logging::debug(logging::low) << "BAM: KPI " << _id
       << " is getting a downtime event for service ("
@@ -420,7 +420,7 @@ void kpi_service::visit(io::stream* visitor) {
     // Generate BI events.
     {
       // If no event was cached, create one.
-      if (_event.isNull()) {
+      if (!_event) {
         if ((_last_check.get_time_t() != (time_t)-1)
             && (_last_check.get_time_t() != (time_t)0))
         _open_new_event(visitor, hard_values);
@@ -430,15 +430,15 @@ void kpi_service::visit(io::stream* visitor) {
                && ((_downtimed != _event->in_downtime)
                    || (_state_hard != _event->status))) {
         _event->end_time = _last_check;
-        visitor->write(_event.staticCast<io::data>());
-        _event.clear();
+        visitor->write(std::static_pointer_cast<io::data>(_event));
+        _event.reset();
         _open_new_event(visitor, hard_values);
       }
     }
 
     // Generate status event.
     {
-      misc::shared_ptr<kpi_status> status(new kpi_status);
+      std::shared_ptr<kpi_status> status(new kpi_status);
       status->kpi_id = _id;
       status->in_downtime = this->in_downtime();
       status->level_acknowledgement_hard = hard_values.get_acknowledgement();
@@ -453,7 +453,7 @@ void kpi_service::visit(io::stream* visitor) {
       status->last_impact = _downtimed
                              ? hard_values.get_downtime()
                              : hard_values.get_nominal();
-      visitor->write(status.staticCast<io::data>());
+      visitor->write(std::static_pointer_cast<io::data>(status));
     }
   }
 }
@@ -508,7 +508,7 @@ void kpi_service::_internal_copy(kpi_service const& right) {
 void kpi_service::_open_new_event(
                     io::stream* visitor,
                     impact_values const& impacts) {
-  _event = new kpi_event;
+  _event.reset(new kpi_event);
   _event->kpi_id = _id;
   _event->impact_level = _event->in_downtime
                          ? impacts.get_downtime()
@@ -519,7 +519,7 @@ void kpi_service::_open_new_event(
   _event->start_time = _last_check;
   _event->status = _state_hard;
   if (visitor) {
-    misc::shared_ptr<io::data> ke(new kpi_event(*_event));
+    std::shared_ptr<io::data> ke(new kpi_event(*_event));
     visitor->write(ke);
   }
   return ;

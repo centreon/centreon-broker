@@ -126,8 +126,8 @@ void stream::negotiate(stream::negotiation_type neg) {
     logging::debug(logging::medium)
       << "BBDO: sending welcome packet (available extensions: "
       << (_negotiate ? _extensions : "") << ")";
-    misc::shared_ptr<version_response>
-      welcome_packet(new version_response);
+    std::shared_ptr<version_response>
+      welcome_packet(std::make_shared<version_response>());
     if (_negotiate)
       welcome_packet->extensions = _extensions;
     output::write(welcome_packet);
@@ -137,20 +137,20 @@ void stream::negotiate(stream::negotiation_type neg) {
   // Read peer packet.
   logging::debug(logging::medium)
     << "BBDO: retrieving welcome packet of peer";
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   time_t deadline;
   if (_timeout == (time_t)-1)
     deadline = (time_t)-1;
   else
     deadline = time(NULL) + _timeout;
   read_any(d, deadline);
-  if (d.isNull() || (d->type() != version_response::static_type()))
+  if (!d || (d->type() != version_response::static_type()))
     throw (exceptions::msg()
            << "BBDO: invalid protocol header, aborting connection");
 
   // Handle protocol version.
-  misc::shared_ptr<version_response>
-    v(d.staticCast<version_response>());
+  std::shared_ptr<version_response>
+    v(std::static_pointer_cast<version_response>(d));
   if (v->bbdo_major != BBDO_VERSION_MAJOR)
     throw (exceptions::msg()
            << "BBDO: peer is using protocol version " << v->bbdo_major
@@ -169,8 +169,8 @@ void stream::negotiate(stream::negotiation_type neg) {
     logging::debug(logging::medium)
       << "BBDO: sending welcome packet (available extensions: "
       << (_negotiate ? _extensions : "") << ")";
-    misc::shared_ptr<version_response>
-      welcome_packet(new version_response);
+    std::shared_ptr<version_response>
+      welcome_packet(std::make_shared<version_response>());
     if (_negotiate)
       welcome_packet->extensions = _extensions;
     output::write(welcome_packet);
@@ -203,7 +203,7 @@ void stream::negotiate(stream::negotiation_type neg) {
              proto_it != proto_end;
              ++proto_it)
           if (proto_it.key() == *it) {
-            misc::shared_ptr<io::stream>
+            std::shared_ptr<io::stream>
               s(proto_it->endpntfactry->new_stream(
                                           _substream,
                                           neg == negotiate_second,
@@ -230,12 +230,12 @@ void stream::negotiate(stream::negotiation_type neg) {
  *
  *  @see input::read()
  */
-bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
-  d.clear();
+bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
+  d.reset();
   if (!_negotiated)
     negotiate(negotiate_second);
   bool retval = input::read(d, deadline);
-  if (retval && !d.isNull())
+  if (retval && d)
     ++_events_received_since_last_ack;
   if (_events_received_since_last_ack >= _ack_limit)
     send_event_acknowledgement();
@@ -310,7 +310,7 @@ void stream::statistics(io::properties& tree) const {
  *
  *  @return Number of events acknowledged.
  */
-int stream::write(misc::shared_ptr<io::data> const& d) {
+int stream::write(std::shared_ptr<io::data> const& d) {
   if (!_negotiated)
     negotiate(negotiate_second);
   output::write(d);
@@ -333,7 +333,7 @@ void stream::acknowledge_events(unsigned int events) {
  */
 void stream::send_event_acknowledgement() {
   if (!_coarse) {
-    misc::shared_ptr<ack> acknowledgement(new ack);
+    std::shared_ptr<ack> acknowledgement(std::make_shared<ack>());
     acknowledgement->acknowledged_events = _events_received_since_last_ack;
     output::write(acknowledgement);
     _events_received_since_last_ack = 0;

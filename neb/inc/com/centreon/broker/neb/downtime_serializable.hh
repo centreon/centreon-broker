@@ -19,12 +19,12 @@
 #ifndef CCB_NEB_DOWNTIME_SERIALIZABLE_HH
 #  define CCB_NEB_DOWNTIME_SERIALIZABLE_HH
 
-#  include <string>
-#  include <istream>
-#  include <ostream>
 #  include <QString>
+#  include <istream>
+#  include <memory>
+#  include <ostream>
+#  include <string>
 #  include "com/centreon/broker/neb/downtime.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/ceof/ceof_serializable.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -51,13 +51,13 @@ namespace   neb {
     template <typename U, U (downtime::* member)>
     void         set_downtime_member(std::string const& val);
 
-    misc::shared_ptr<downtime>
+    std::shared_ptr<downtime>
                  get_downtime() const;
 
     virtual void visit(ceof::ceof_visitor& visitor);
 
   private:
-    misc::shared_ptr<downtime>
+    std::shared_ptr<downtime>
                 _downtime;
   };
 

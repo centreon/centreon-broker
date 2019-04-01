@@ -46,7 +46,7 @@ using namespace com::centreon::broker::processing;
  */
 feeder::feeder(
           std::string const& name,
-          misc::shared_ptr<io::stream> client,
+          std::shared_ptr<io::stream> client,
           uset<unsigned int> const& read_filters,
           uset<unsigned int> const& write_filters)
   : thread(name), _client(client), _subscriber(name, false) {
@@ -69,12 +69,12 @@ void feeder::run() {
   logging::info(logging::medium)
     << "feeder: thread of client '" << _name << "' is starting";
   try {
-    if (_client.isNull())
+    if (!_client)
       throw (exceptions::msg() << "could not process '"
              << _name << "' with no client stream");
     bool stream_can_read(true);
     bool muxer_can_read(true);
-    misc::shared_ptr<io::data> d;
+    std::shared_ptr<io::data> d;
     while (!should_exit()) {
       // Read from stream.
       bool timed_out_stream(true);
@@ -86,7 +86,7 @@ void feeder::run() {
         catch (exceptions::shutdown const& e) {
           stream_can_read = false;
         }
-        if (!d.isNull()) {
+        if (d) {
           {
             QReadLocker lock(&_client_mutex);
             _subscriber.get_muxer().write(d);
@@ -97,7 +97,7 @@ void feeder::run() {
       }
 
       // Read from muxer.
-      d.clear();
+      d.reset();
       bool timed_out_muxer(true);
       if (muxer_can_read)
         try {
@@ -106,7 +106,7 @@ void feeder::run() {
         catch (exceptions::shutdown const& e) {
           muxer_can_read = false;
         }
-      if (!d.isNull()) {
+      if (d) {
         {
           QReadLocker lock(&_client_mutex);
           _client->write(d);
@@ -116,7 +116,7 @@ void feeder::run() {
       }
 
       // If both timed out, sleep a while.
-      d.clear();
+      d.reset();
       if (timed_out_stream && timed_out_muxer)
         ::usleep(100000);
     }
@@ -138,12 +138,11 @@ void feeder::run() {
   }
   {
     QWriteLocker lock(&_client_mutex);
-    _client.clear();
+    _client.reset();
     _subscriber.get_muxer().remove_queue_files();
   }
   logging::info(logging::medium)
     << "feeder: thread of client '" << _name << "' will exit";
-  return ;
 }
 
 /**
@@ -154,7 +153,7 @@ void feeder::run() {
 std::string feeder::_get_state() {
   char const* ret;
   if (_client_mutex.tryLockForRead(300)) {
-    if (_client.isNull())
+    if (!_client)
       ret = "disconnected";
     else
       ret = "connected";
@@ -199,7 +198,7 @@ uset<unsigned int> feeder::_get_write_filters() {
  */
 void feeder::_forward_statistic(io::properties& tree) {
   if (_client_mutex.tryLockForRead(300)) {
-    if (!_client.isNull())
+    if (_client)
       _client->statistics(tree);
     _client_mutex.unlock();
   }

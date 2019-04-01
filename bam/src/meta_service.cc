@@ -178,9 +178,9 @@ short meta_service::get_state() const {
  *  @param[out] visitor  Visitor that will receive meta-service status.
  */
 void meta_service::metric_update(
-                     misc::shared_ptr<storage::metric> const& m,
+                     std::shared_ptr<storage::metric> const& m,
                      io::stream* visitor) {
-  if (!m.isNull()) {
+  if (m) {
     bool state_has_changed = false;
     umap<unsigned int, double>::iterator
       it(_metrics.find(m->metric_id));
@@ -345,7 +345,7 @@ void meta_service::visit(io::stream* visitor, bool& changed_state) {
 
     // Send meta-service status.
     {
-      misc::shared_ptr<meta_service_status>
+      std::shared_ptr<meta_service_status>
         status(new meta_service_status);
       status->meta_service_id = _id;
       status->value = _value;
@@ -355,10 +355,9 @@ void meta_service::visit(io::stream* visitor, bool& changed_state) {
         << "BAM: generating status of meta-service "
         << status->meta_service_id << " (value " << status->value
         << ")";
-      visitor->write(status.staticCast<io::data>());
+      visitor->write(std::static_pointer_cast<io::data>(status));
     }
   }
-  return ;
 }
 
 /**
@@ -431,7 +430,7 @@ void meta_service::_send_service_status(io::stream* visitor, bool state_has_chan
       || _last_service_status_sent.is_null()
       || std::difftime(_last_service_status_sent.get_time_t(), now) >= 60) {
     short new_state = get_state();
-    misc::shared_ptr<neb::service_status>
+    std::shared_ptr<neb::service_status>
       status(new neb::service_status);
     status->active_checks_enabled = false;
     status->check_interval = 0.0;

@@ -70,11 +70,11 @@ opener& opener::operator=(opener const& o) {
  *
  *  @return New compression object.
  */
-misc::shared_ptr<io::stream> opener::open() {
-  misc::shared_ptr<io::stream> retval;
-  if (!_from.isNull())
+std::shared_ptr<io::stream> opener::open() {
+  std::shared_ptr<io::stream> retval;
+  if (_from)
     retval = _open(_from->open());
-  return (retval);
+  return retval;
 }
 
 /**
@@ -109,12 +109,12 @@ void opener::set_size(unsigned int size) {
  *
  *  @return New compression object.
  */
-misc::shared_ptr<io::stream> opener::_open(
-  misc::shared_ptr<io::stream> base) {
-  misc::shared_ptr<io::stream> retval;
-  if (!base.isNull()) {
-    retval = misc::shared_ptr<io::stream>(new stream(_level, _size));
+std::shared_ptr<io::stream> opener::_open(
+  std::shared_ptr<io::stream> base) {
+  std::shared_ptr<io::stream> retval;
+  if (base) {
+    retval.reset(new stream(_level, _size));
     retval->set_substream(base);
   }
-  return (retval);
+  return retval;
 }

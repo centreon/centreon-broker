@@ -20,8 +20,8 @@
 #  define CCB_TCP_SERVER_SOCKET_HH
 
 #  include <QTcpServer>
+#  include <memory>
 #  include <queue>
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/tcp/stream.hh"
 
@@ -45,7 +45,7 @@ namespace          tcp {
     void           close();
     QString        error_string() const;
     bool           has_pending_connections() const;
-    misc::shared_ptr<stream>
+    std::shared_ptr<stream>
                    next_pending_connection();
     bool           wait_for_new_connection(
                      int timeout = -1,
@@ -56,7 +56,7 @@ namespace          tcp {
     server_socket& operator=(server_socket const& other);
     void           incomingConnection(int socket_descriptor);
 
-    std::queue<misc::shared_ptr<stream> >
+    std::queue<std::shared_ptr<stream> >
                    _pending;
   };
 }

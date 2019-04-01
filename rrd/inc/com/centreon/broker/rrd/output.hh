@@ -41,7 +41,7 @@ namespace                    rrd {
   public:
     typedef                    QHash<
                                  QString,
-                                 std::list<misc::shared_ptr<io::data> > >
+                                 std::list<std::shared_ptr<io::data> > >
                                rebuild_cache;
 
                                output(
@@ -69,10 +69,10 @@ namespace                    rrd {
                                  bool write_status = true);
                                ~output();
     bool                       read(
-                                 misc::shared_ptr<io::data>& d,
+                                 std::shared_ptr<io::data>& d,
                                  time_t deadline);
     void                       update();
-    int                        write(misc::shared_ptr<io::data> const& d);
+    int                        write(std::shared_ptr<io::data> const& d);
 
   private:
                                output(output const& o);

@@ -21,8 +21,8 @@
 
 #  include <QMutex>
 #  include <fstream>
+#  include <memory>
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/file/fifo.hh"
 
@@ -42,9 +42,9 @@ namespace              dumper {
                          std::string const& tagname);
                        ~fifo_dumper();
     bool               read(
-                         misc::shared_ptr<io::data>& d,
+                         std::shared_ptr<io::data>& d,
                          time_t deadline);
-    int                write(misc::shared_ptr<io::data> const& d);
+    int                write(std::shared_ptr<io::data> const& d);
 
   private:
                        fifo_dumper(fifo_dumper const& s);

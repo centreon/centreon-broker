@@ -45,9 +45,9 @@ namespace          tls {
                      bool& is_acceptor,
                      std::shared_ptr<persistent_cache> cache
                      = std::shared_ptr<persistent_cache>()) const;
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                    new_stream(
-                     misc::shared_ptr<io::stream> to,
+                     std::shared_ptr<io::stream> to,
                      bool is_acceptor,
                      QString const& proto_name);
   };

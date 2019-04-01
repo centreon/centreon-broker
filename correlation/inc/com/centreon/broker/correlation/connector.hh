@@ -44,7 +44,7 @@ namespace                        correlation {
                                  connector(connector const& other);
                                  ~connector();
     connector&                   operator=(connector const& other);
-    misc::shared_ptr<io::stream> open();
+    std::shared_ptr<io::stream> open();
 
   private:
     std::shared_ptr<persistent_cache>

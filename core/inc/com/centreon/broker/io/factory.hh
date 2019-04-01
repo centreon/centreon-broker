@@ -22,7 +22,6 @@
 #  include <memory>
 #  include "com/centreon/broker/config/endpoint.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
 
@@ -50,9 +49,9 @@ namespace             io {
                         com::centreon::broker::config::endpoint& cfg,
                         bool& is_acceptor,
                         std::shared_ptr<persistent_cache> cache = std::shared_ptr<persistent_cache>()) const = 0;
-    virtual misc::shared_ptr<stream>
+    virtual std::shared_ptr<stream>
                       new_stream(
-                        misc::shared_ptr<stream> substream,
+                        std::shared_ptr<stream> substream,
                         bool is_acceptor,
                         QString const& proto_name);
   };

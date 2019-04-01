@@ -60,8 +60,8 @@ plaintext_command_parser::~plaintext_command_parser() {}
 unsigned int plaintext_command_parser::parse(
                std::string const& buffer,
                command_result& res,
-               misc::shared_ptr<command_request>& request) {
-  request.clear();
+               std::shared_ptr<command_request>& request) {
+  request.reset();
   size_t delimiter(buffer.find_first_of('\n'));
   if (delimiter != std::string::npos) {
     std::string cmd(buffer.substr(0, delimiter));
@@ -79,7 +79,7 @@ unsigned int plaintext_command_parser::parse(
       // Store command in result listener and let
       // it be processed by multiplexing engine.
       else if (cmd.substr(0, ::strlen(execute_cmd)) == execute_cmd) {
-        request = misc::make_shared(new command_request);
+        request.reset(new command_request);
         request->parse(cmd.substr(::strlen(execute_cmd)));
         logging::debug(logging::high)
           << "command: sending request " << request->uuid << " ('" << request->cmd

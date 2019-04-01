@@ -98,7 +98,7 @@ bool bool_metric::child_has_update(
  *  @param[in]visitor   A visitor.
  */
 void bool_metric::metric_update(
-                    misc::shared_ptr<storage::metric> const& m,
+                    std::shared_ptr<storage::metric> const& m,
                     io::stream* visitor) {
   if (!_metric_matches(*m))
     return;

@@ -23,6 +23,7 @@
 #  include <list>
 #  include <map>
 #  include <memory>
+#  include <QMutex>
 #  include <QString>
 #  include <QTcpSocket>
 #  include <utility>
@@ -60,10 +61,10 @@ namespace          graphite {
                      std::shared_ptr<persistent_cache> const& cache);
                    ~stream();
     int            flush();
-    bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
+    bool           read(std::shared_ptr<io::data>& d, time_t deadline);
     void           statistics(io::properties& tree) const;
     void           update();
-    int            write(misc::shared_ptr<io::data> const& d);
+    int            write(std::shared_ptr<io::data> const& d);
 
   private:
     // Database parameters

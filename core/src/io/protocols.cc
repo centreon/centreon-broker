@@ -92,7 +92,7 @@ void protocols::reg(
                   unsigned short osi_to) {
   // Set protocol structure.
   protocol p;
-  p.endpntfactry = misc::shared_ptr<factory>(fac.clone());
+  p.endpntfactry = std::shared_ptr<factory>(fac.clone());
   p.osi_from = osi_from;
   p.osi_to = osi_to;
 

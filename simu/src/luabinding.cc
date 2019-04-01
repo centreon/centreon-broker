@@ -180,7 +180,7 @@ void luabinding::_init_script(QMap<QString, QVariant> const& conf_params) {
  *
  *  @return The number of events written.
  */
-bool luabinding::read(misc::shared_ptr<io::data>& data) {
+bool luabinding::read(std::shared_ptr<io::data>& data) {
   bool retval(false);
   logging::debug(logging::medium) << "simu: luabinding::read call";
 
@@ -215,9 +215,9 @@ bool luabinding::read(misc::shared_ptr<io::data>& data) {
  *  @param d The event to convert.
  *  @return true if an object is correctly filled, false otherwise.
  */
-bool luabinding::_parse_event(misc::shared_ptr<io::data>& d) {
+bool luabinding::_parse_event(std::shared_ptr<io::data>& d) {
   bool retval(true);
-  d.clear();
+  d.reset();
   lua_pushnil(_L);  // push nil, so lua_next removes it from stack and puts (k, v) on stack
   QMap<QString, QVariant> map;
   while (lua_next(_L, -2) != 0) { // -2, because we have table at -1
@@ -286,7 +286,7 @@ bool luabinding::_parse_event(misc::shared_ptr<io::data>& d) {
           }
         }
       }
-      d = t.release();
+      d.reset(t.release());
     }
     else
       throw exceptions::msg() << "simu: cannot create object of ID "

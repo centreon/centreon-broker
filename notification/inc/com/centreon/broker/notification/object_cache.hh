@@ -22,9 +22,9 @@
 #  include <string>
 #  include <deque>
 #  include <map>
+#  include <memory>
 #  include <QHash>
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/logging/logging.hh"
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/neb/custom_variable_status.hh"
@@ -76,11 +76,11 @@ namespace             notification {
      *
      *  @param[in] out  The vector to fill.
      */
-    void serialize(std::deque<misc::shared_ptr<io::data> >& out) const {
-      out.push_back(misc::shared_ptr<io::data>(new FullType(_node)));
-      out.push_back(misc::shared_ptr<io::data>(
+    void serialize(std::deque<std::shared_ptr<io::data> >& out) const {
+      out.push_back(std::shared_ptr<io::data>(new FullType(_node)));
+      out.push_back(std::shared_ptr<io::data>(
                       new StatusType(_prev_status)));
-      out.push_back(misc::shared_ptr<io::data>(
+      out.push_back(std::shared_ptr<io::data>(
                       new StatusType(_current_status)));
       for (QHash<std::string, neb::custom_variable_status>::const_iterator
              it(_custom_variables.begin()),
@@ -88,7 +88,7 @@ namespace             notification {
            it != end;
            ++it)
         out.push_back(
-              misc::shared_ptr<io::data>(new neb::custom_variable_status(*it)));
+              std::shared_ptr<io::data>(new neb::custom_variable_status(*it)));
     }
 
     /**

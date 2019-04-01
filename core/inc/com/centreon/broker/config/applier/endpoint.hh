@@ -21,11 +21,11 @@
 
 #  include <list>
 #  include <map>
+#  include <memory>
 #  include <QMutex>
 #  include <QObject>
 #  include <set>
 #  include <string>
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -77,10 +77,10 @@ namespace              config {
       processing::failover*
                        _create_failover(
                          config::endpoint& cfg,
-                         misc::shared_ptr<multiplexing::subscriber> sbscrbr,
-                         misc::shared_ptr<io::endpoint> endp,
+                         std::shared_ptr<multiplexing::subscriber> sbscrbr,
+                         std::shared_ptr<io::endpoint> endp,
                          std::list<config::endpoint>& l);
-      misc::shared_ptr<io::endpoint>
+      std::shared_ptr<io::endpoint>
                        _create_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor);

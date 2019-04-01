@@ -24,7 +24,6 @@
 #  include <vector>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/bam/availability_thread.hh"
 #  include "com/centreon/broker/bam/timeperiod_map.hh"
@@ -53,9 +52,9 @@ namespace          bam {
                    reporting_stream(database_config const& db_cfg);
                    ~reporting_stream();
     int            flush();
-    bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
+    bool           read(std::shared_ptr<io::data>& d, time_t deadline);
     void           statistics(io::properties& tree) const;
-    int            write(misc::shared_ptr<io::data> const& d);
+    int            write(std::shared_ptr<io::data> const& d);
 
   private:
                    reporting_stream(reporting_stream const& other);
@@ -71,26 +70,26 @@ namespace          bam {
     void           _close_all_events();
     void           _load_timeperiods();
     void           _prepare();
-    void           _process_ba_event(misc::shared_ptr<io::data> const& e);
+    void           _process_ba_event(std::shared_ptr<io::data> const& e);
     void           _process_ba_duration_event(
-                     misc::shared_ptr<io::data> const& e);
-    void           _process_kpi_event(misc::shared_ptr<io::data> const& e);
-    void           _process_dimension(misc::shared_ptr<io::data> const& e);
-    void           _dimension_dispatch(misc::shared_ptr<io::data> const& e);
-    misc::shared_ptr<io::data>
-                   _dimension_copy(misc::shared_ptr<io::data> const& e);
-    void           _process_dimension_ba(misc::shared_ptr<io::data> const& e);
-    void           _process_dimension_bv(misc::shared_ptr<io::data> const& e);
-    void           _process_dimension_ba_bv_relation(misc::shared_ptr<io::data> const& e);
-    void           _process_dimension_truncate_signal(misc::shared_ptr<io::data> const& e);
-    void           _process_dimension_kpi(misc::shared_ptr<io::data> const& e);
-    void           _process_dimension_timeperiod(misc::shared_ptr<io::data> const& e);
-    void           _process_dimension_timeperiod_exception(misc::shared_ptr<io::data> const& e);
-    void           _process_dimension_timeperiod_exclusion(misc::shared_ptr<io::data> const& e);
-    void           _process_dimension_ba_timeperiod_relation(misc::shared_ptr<io::data> const& e);
-    void           _process_rebuild(misc::shared_ptr<io::data> const& e);
+                     std::shared_ptr<io::data> const& e);
+    void           _process_kpi_event(std::shared_ptr<io::data> const& e);
+    void           _process_dimension(std::shared_ptr<io::data> const& e);
+    void           _dimension_dispatch(std::shared_ptr<io::data> const& e);
+    std::shared_ptr<io::data>
+                   _dimension_copy(std::shared_ptr<io::data> const& e);
+    void           _process_dimension_ba(std::shared_ptr<io::data> const& e);
+    void           _process_dimension_bv(std::shared_ptr<io::data> const& e);
+    void           _process_dimension_ba_bv_relation(std::shared_ptr<io::data> const& e);
+    void           _process_dimension_truncate_signal(std::shared_ptr<io::data> const& e);
+    void           _process_dimension_kpi(std::shared_ptr<io::data> const& e);
+    void           _process_dimension_timeperiod(std::shared_ptr<io::data> const& e);
+    void           _process_dimension_timeperiod_exception(std::shared_ptr<io::data> const& e);
+    void           _process_dimension_timeperiod_exclusion(std::shared_ptr<io::data> const& e);
+    void           _process_dimension_ba_timeperiod_relation(std::shared_ptr<io::data> const& e);
+    void           _process_rebuild(std::shared_ptr<io::data> const& e);
     void           _update_status(std::string const& status);
-    void           _compute_event_durations(misc::shared_ptr<ba_event> const& ev,
+    void           _compute_event_durations(std::shared_ptr<ba_event> const& ev,
                                             io::stream* visitor);
 
     unsigned int   _ack_events;
@@ -138,7 +137,7 @@ namespace          bam {
     // Timeperiods by BAs, with an option is default timeperiod.
     timeperiod_map _timeperiods;
 
-    std::vector<misc::shared_ptr<io::data> >
+    std::vector<std::shared_ptr<io::data> >
                    _dimension_data_cache;
   };
 }
