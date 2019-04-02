@@ -62,6 +62,7 @@ namespace                    broker {
     void                     open(
                                std::string const& filename,
                                std::string const& args);
+    void                     reload();
     void                     set_author(
                                std::string const& author);
     void                     set_copyright(

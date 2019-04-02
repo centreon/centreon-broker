@@ -1,5 +1,6 @@
 /*
-** Copyright 2012-2013 Merethis
+** Copyright 1999-2009      Ethan Galstad
+** Copyright 2011-2014,2016 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -17,13 +18,23 @@
 ** <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CCE_VERSION_HH
-#  define CCE_VERSION_HH
+#ifndef CCE_TIMEPERIOD_HH
+#  define CCE_TIMEPERIOD_HH
 
-// Compile-time values.
-#  define CENTREON_ENGINE_VERSION_MAJOR  19
-#  define CENTREON_ENGINE_VERSION_MINOR  10
-#  define CENTREON_ENGINE_VERSION_PATCH  0
-#  define CENTREON_ENGINE_VERSION_STRING "19.10.0"
+#  ifdef __cplusplus
+extern "C" {
+#  endif // C++
 
-#endif // !CCE_VERSION_HH
+int  check_time_against_period(
+       time_t test_time,
+       timeperiod* tperiod);
+void get_next_valid_time(
+       time_t pref_time,
+       time_t* valid_time,
+       timeperiod* tperiod);
+
+#  ifdef __cplusplus
+}
+#  endif // C++
+
+#endif // !CCE_TIMEPERIOD_HH
