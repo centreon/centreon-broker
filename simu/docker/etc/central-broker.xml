@@ -28,6 +28,21 @@
    <name><![CDATA[count]]></name>
    <value><![CDATA[5]]></value>
   </lua_parameter>
+  <lua_parameter>
+   <type><![CDATA[string]]></type>
+   <name><![CDATA[db_addr]]></name>
+   <value><![CDATA[172.17.0.1]]></value>
+  </lua_parameter>
+  <lua_parameter>
+   <type><![CDATA[string]]></type>
+   <name><![CDATA[login]]></name>
+   <value><![CDATA[root]]></value>
+  </lua_parameter>
+  <lua_parameter>
+   <type><![CDATA[string]]></type>
+   <name><![CDATA[password]]></name>
+   <value><![CDATA[root]]></value>
+  </lua_parameter>
  </input>
  <output>
   <name><![CDATA[central-broker-master-sql]]></name>

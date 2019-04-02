@@ -138,7 +138,7 @@ function init(conf)
   os.remove("/tmp/simu.log")
   broker_log:set_parameters(0, simu.log_file)
   local env = mysql.mysql()
-  simu.conn = env:connect('centreon_storage', 'root', 'root', '172.17.0.1', 3306)
+  simu.conn = env:connect('centreon_storage', conf['login'], conf['password'], conf['db_addr'], 3306)
   if not simu.conn then
     broker_log:error(0, "No connection to database")
     error("No connection to database")
