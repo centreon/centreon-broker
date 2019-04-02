@@ -264,21 +264,18 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       << status->ba_id << ", level " << status->level_nominal
       << ", acknowledgement " << status->level_acknowledgement
       << ", downtime " << status->level_downtime << ")";
-    _ba_update.bind_value_as_f64(":level_nominal", status->level_nominal);
-    _ba_update.bind_value_as_f64(
-                 ":level_acknowledgement",
-                 status->level_acknowledgement);
-    _ba_update.bind_value_as_f64(":level_downtime", status->level_downtime);
-    _ba_update.bind_value_as_u32(":ba_id", status->ba_id);
+    _ba_update.bind_value_as_f64(0, status->level_nominal);
+    _ba_update.bind_value_as_f64(1, status->level_acknowledgement);
+    _ba_update.bind_value_as_f64(2, status->level_downtime);
+    _ba_update.bind_value_as_u32(6, status->ba_id);
     if (status->last_state_change == (time_t)-1
         || status->last_state_change == 0)
-      _ba_update.bind_value_as_null(":last_state_change");
+      _ba_update.bind_value_as_null(3);
     else
-      _ba_update.bind_value_as_u64(
-                   ":last_state_change",
-                   status->last_state_change.get_time_t());
-    _ba_update.bind_value_as_i32(":state", status->state);
-    _ba_update.bind_value_as_bool(":in_downtime", status->in_downtime);
+      _ba_update.bind_value_as_u64(3, status->last_state_change.get_time_t());
+    _ba_update.bind_value_as_bool(4, status->in_downtime);
+    _ba_update.bind_value_as_i32(5, status->state);
+
     std::ostringstream oss_err;
     oss_err << "BAM: could not update BA "
             << status->ba_id << ": ";
@@ -311,66 +308,26 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
       << status->kpi_id << ", level " << status->level_nominal_hard
       << ", acknowledgement " << status->level_acknowledgement_hard
       << ", downtime " << status->level_downtime_hard << ")";
-    _kpi_update.bind_value_as_f64(
-                  ":level_nominal",
-                  status->level_nominal_hard);
-    _kpi_update.bind_value_as_f64(
-                  ":level_acknowledgement",
-                  status->level_acknowledgement_hard);
-    _kpi_update.bind_value_as_f64(
-                  ":level_downtime",
-                  status->level_downtime_hard);
-    _kpi_update.bind_value_as_i32(":state", status->state_hard);
-    _kpi_update.bind_value_as_i32(":state_type", 1 + 1);
-    _kpi_update.bind_value_as_u32(":kpi_id", status->kpi_id);
+
+    _kpi_update.bind_value_as_f64(0, status->level_acknowledgement_hard);
+    _kpi_update.bind_value_as_i32(1, status->state_hard);
+    _kpi_update.bind_value_as_f64(2, status->level_downtime_hard);
+    _kpi_update.bind_value_as_f64(3, status->level_nominal_hard);
+    _kpi_update.bind_value_as_i32(4, 1 + 1);
     if (status->last_state_change == (time_t)-1
         || status->last_state_change == 0)
-      _kpi_update.bind_value_as_null(":last_state_change");
+      _kpi_update.bind_value_as_null(5);
     else
-      _kpi_update.bind_value_as_u64(":last_state_change", status->last_state_change.get_time_t());
-    _kpi_update.bind_value_as_f64(":last_impact", status->last_impact);
-    _kpi_update.bind_value_as_bool(":valid", status->valid);
-    _kpi_update.bind_value_as_bool(":in_downtime", status->in_downtime);
+      _kpi_update.bind_value_as_u64(5, status->last_state_change.get_time_t());
+    _kpi_update.bind_value_as_f64(6, status->last_impact);
+    _kpi_update.bind_value_as_bool(7, status->valid);
+    _kpi_update.bind_value_as_bool(8, status->in_downtime);
+    _kpi_update.bind_value_as_u32(9, status->kpi_id);
+    
     std::ostringstream oss_err;
     oss_err << "BAM: could not update KPI " << status->kpi_id << ": ";
     _mysql.run_statement(_kpi_update, oss_err.str(), true);
-  }
-  // else if (data->type() == bam::meta_service_status::static_type()) {
-  //   meta_service_status* status(static_cast<meta_service_status*>(data.data()));
-  //   logging::debug(logging::low)
-  //     << "BAM: processing meta-service status (id "
-  //     << status->meta_service_id << ", value " << status->value
-  //     << ")";
-  //   _meta_service_update.bind_value(
-  //                           ":meta_service_id",
-  //                           status->meta_service_id);
-  //   _meta_service_update.bind_value(":value", status->value);
-  //   try { _meta_service_update.run_statement(); }
-  //   catch (std::exception const& e) {
-  //     throw (exceptions::msg()
-  //            << "BAM: could not update meta-service "
-  //            << status->meta_service_id << ": " << e.what());
-  //   }
-  //   if (status->state_changed) {
-  //     std::pair<std::string, std::string>
-  //       meta_svc_name(_meta_mapping.get_service(status->meta_service_id));
-  //     if (meta_svc_name.first.empty() || meta_svc_name.second.empty()) {
-  //       logging::error(logging::high)
-  //         << "BAM: could not trigger check of virtual service of meta-service "
-  //         << status->meta_service_id
-  //         << ": host name and service description were not found";
-  //     }
-  //     else {
-  //       std::ostringstream oss;
-  //       time_t now(time(NULL));
-  //       oss << "[" << now << "] SCHEDULE_FORCED_SVC_CHECK;"
-  //           << meta_svc_name.first << ";" << meta_svc_name.second
-  //           << ";" << now;
-  //       _write_external_command(oss.str());
-  //     }
-  //   }
-  // }
-  else if (data->type() == inherited_downtime::static_type()) {
+  } else if (data->type() == inherited_downtime::static_type()) {
     std::ostringstream oss;
     timestamp now = timestamp::now();
     inherited_downtime const& dwn = *std::static_pointer_cast<inherited_downtime const>(data);
@@ -409,43 +366,30 @@ void monitoring_stream::_prepare() {
   {
     std::ostringstream query;
     query << "UPDATE " << (_db_v2 ? "mod_bam" : "cfg_bam")
-          << "  SET current_level=:level_nominal,"
-             "      acknowledged=:level_acknowledgement,"
-             "      downtime=:level_downtime,"
-             "      last_state_change=:last_state_change,"
-             "      in_downtime=:in_downtime,"
-             "      current_status=:state"
-             "  WHERE ba_id=:ba_id";
-    mysql_stmt stmt(query.str());
-    _mysql.prepare_statement(stmt);
+          << "  SET current_level=?,"
+             "      acknowledged=?,"
+             "      downtime=?,"
+             "      last_state_change=?,"
+             "      in_downtime=?,"
+             "      current_status=?"
+             "  WHERE ba_id=?";
+    _ba_update = _mysql.prepare_query(query.str());
   }
 
   // KPI status.
   {
     std::ostringstream query;
     query << "UPDATE " << (_db_v2 ? "mod_bam_kpi" : "cfg_bam_kpi")
-          << "  SET acknowledged=:level_acknowledgement,"
-             "      current_status=:state,"
-             "      downtime=:level_downtime, last_level=:level_nominal,"
-             "      state_type=:state_type,"
-             "      last_state_change=:last_state_change,"
-             "      last_impact=:last_impact, valid=:valid,"
-             "      in_downtime=:in_downtime"
-             "  WHERE kpi_id=:kpi_id";
-    mysql_stmt stmt(query.str());
-    _mysql.prepare_statement(stmt);
+          << "  SET acknowledged=?,"
+             "      current_status=?,"
+             "      downtime=?, last_level=?,"
+             "      state_type=?,"
+             "      last_state_change=?,"
+             "      last_impact=?, valid=?,"
+             "      in_downtime=?"
+             "  WHERE kpi_id=?";
+    _kpi_update = _mysql.prepare_query(query.str());
   }
-
-  // Meta-service status.
-  // {
-  //   std::ostringstream query;
-  //   query << "UPDATE " << (_db_v2 ? "meta_service" : "cfg_meta_services")
-  //         << "  SET value=:value"
-  //            "  WHERE meta_id=:meta_service_id";
-  //   _meta_service_update.prepare(
-  //     query.str(),
-  //     "BAM: could not prepare meta-service update query");
-  // }
 }
 
 /**
