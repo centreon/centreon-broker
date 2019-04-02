@@ -539,8 +539,8 @@ mysql_connection::mysql_connection(database_config const& db_cfg)
 }
 
 mysql_connection::~mysql_connection() {
-  logging::error(logging::high)
-    << "mysql_connection::~mysql_connection";
+  logging::info(logging::low)
+    << "mysql_connection: finished";
   finish();
   _thread->join();
 }

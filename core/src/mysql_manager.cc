@@ -105,7 +105,7 @@ void mysql_manager::clear() {
           << "mysql_manager: Unable to stop a connection: " << e.what();
       }
   }
-  logging::error(logging::high)
+  logging::debug(logging::low)
     << "mysql_manager: clear finished";
 }
 
@@ -123,7 +123,7 @@ void mysql_manager::update_connections() {
     else
       ++it;
   }
-  logging::error(logging::high)
+  logging::info(logging::medium)
     << "mysql_manager: active connections: " << _connection.size();
 
   if (_connection.size() == 0)

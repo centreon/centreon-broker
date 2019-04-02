@@ -61,8 +61,8 @@ mysql::mysql(database_config const& db_cfg)
 mysql::~mysql() {
   _connection.clear();
   mysql_manager::instance().update_connections();
-  logging::error(logging::high)
-    << "mysql::~mysql";
+  logging::info(logging::low)
+    << "mysql: mysql library closed.";
 }
 
 /**
