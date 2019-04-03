@@ -934,6 +934,9 @@ void stream::_process_host(
         dbp.prepare_update(_host_update);
       }
 
+      if (!h.enabled)
+        _cache_hst_cmd.erase(h.host_id);
+
       // Process object.
       try {
         _update_on_none_insert(_host_insert, _host_update, h);
@@ -1008,7 +1011,7 @@ void stream::_process_host_check(
     else {
       logging::debug(logging::low)
         << "SQL: host check command (host: " << hc.host_id
-        << ", command: " << hc.command_line << ") did not changed";
+        << ", command: " << hc.command_line << ") did not change";
     }
   }
   else
@@ -1451,6 +1454,10 @@ void stream::_process_instance(
   // Clean tables.
   _clean_tables(i.poller_id);
 
+  // Clean host/service commands caches
+  _cache_hst_cmd.clear();
+  _cache_svc_cmd.clear();
+
   // Processing.
   if (_is_valid_poller(i.poller_id)) {
     // Prepare queries.
@@ -1866,6 +1873,9 @@ void stream::_process_service(
       dbp.prepare_update(_service_update);
     }
 
+    if (!s.enabled)
+      _cache_svc_cmd.erase(std::make_pair(s.host_id, s.service_id));
+
     // Process object.
     try {
       _update_on_none_insert(
@@ -1947,7 +1957,7 @@ void stream::_process_service_check(
       logging::debug(logging::low)
         << "SQL: service check command (host: " << sc.host_id
         << ", service: " << sc.service_id << ", command: "
-        << sc.command_line << ") did not changed";
+        << sc.command_line << ") did not change";
     }
   }
   else
