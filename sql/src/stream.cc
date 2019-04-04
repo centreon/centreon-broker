@@ -989,11 +989,12 @@ void stream::_process_host_check(
     // Processing.
     unsigned int str_hash(qHash(hc.command_line));
     // Did the command changed since last time?
-    if (_cache_hst_cmd[hc.host_id] != str_hash) {
+    unsigned int& stored_hash(_cache_hst_cmd[hc.host_id]);
+    if (stored_hash != str_hash) {
       logging::debug(logging::low)
         << "SQL: host check command (host: " << hc.host_id
         << ", command: " << hc.command_line << ") changed - database updated";
-      _cache_hst_cmd[hc.host_id] = str_hash;
+      stored_hash = str_hash;
       _host_check_update << hc;
       try {
         _host_check_update.run_statement();
@@ -1932,12 +1933,14 @@ void stream::_process_service_check(
     // Processing.
     unsigned int str_hash(qHash(sc.command_line));
     // Did the command changed since last time?
-    if (_cache_svc_cmd[std::make_pair(sc.host_id, sc.service_id)] != str_hash) {
+    unsigned int& stored_hash(
+                    _cache_svc_cmd[std::make_pair(sc.host_id, sc.service_id)]);
+    if (stored_hash != str_hash) {
       logging::debug(logging::low)
         << "SQL: service check command (host: " << sc.host_id
         << ", service: " << sc.service_id << ", command: "
         << sc.command_line << ") changed - database updated";
-      _cache_svc_cmd[std::make_pair(sc.host_id, sc.service_id)] = str_hash;
+      stored_hash = str_hash;
       _service_check_update << sc;
       try {
         _service_check_update.run_statement();
