@@ -125,6 +125,60 @@ void stream::_cache_create() {
 }
 
 /**
+ * Create the cache to link host ids to instance ids.
+ */
+void stream::_cache_host_instance_create() {
+  _cache_host_instance.clear();
+  std::ostringstream oss;
+  oss << "SELECT host_id, instance_id"
+      << " FROM " << ((_db.schema_version() == database::v2)
+                      ? "hosts"
+                      : "rt_hosts");
+  try {
+    database_query q(_db);
+    q.run_query(oss.str());
+    while (q.next())
+      _cache_host_instance.insert(
+        std::make_pair(q.value(0).toUInt(), q.value(1).toUInt()));
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::high)
+      << "SQL: could not get list of hosts/instances relations: "
+      << e.what();
+  }
+}
+
+void stream::_cache_host_instance_clean(unsigned int instance_id) {
+  for (std::map<unsigned int, unsigned int>::iterator
+         it(_cache_host_instance.begin()),
+         end(_cache_host_instance.end());
+       it != end ; ) {
+    if (it->second == instance_id) {
+      // We found a host to remove from the cache
+
+      // Let's remove service commands associated with this host.
+      for (std::map<std::pair<unsigned int, unsigned int>, unsigned int>::iterator
+             sit(_cache_svc_cmd.begin()),
+             send(_cache_svc_cmd.end());
+           sit != send ; ) {
+        if (sit->first.first == it->first)
+          _cache_svc_cmd.erase(sit++);
+        else
+          ++sit;
+      }
+
+      // Let's remove the host command.
+      _cache_hst_cmd.erase(it->first);
+
+      // Let's remove host_id / instance_id association.
+      _cache_host_instance.erase(it++);
+    }
+    else
+      ++it;
+  }
+}
+
+/**
  *  Remove host groups with no members from host groups table.
  */
 void stream::_clean_empty_host_groups() {
@@ -978,41 +1032,61 @@ void stream::_process_host_check(
       << "SQL: processing host check event (host: " << hc.host_id
       << ", command: " << hc.command_line << ")";
 
-    // Prepare queries.
-    if (!_host_check_update.prepared()) {
-      database_preparator::event_unique unique;
-      unique.insert("host_id");
-      database_preparator dbp(neb::host_check::static_type(), unique);
-      dbp.prepare_update(_host_check_update);
-    }
-
     // Processing.
+    // Compute the command hash
+    bool execute_query(true);
     unsigned int str_hash(qHash(hc.command_line));
-    // Did the command changed since last time?
-    unsigned int& stored_hash(_cache_hst_cmd[hc.host_id]);
-    if (stored_hash != str_hash) {
+    std::map<unsigned int, unsigned int>::iterator it(
+      _cache_hst_cmd.find(hc.host_id));
+
+    if (it != _cache_hst_cmd.end()) {
+      // The command is already stored. Has it changed?
+      if (it->second != str_hash) {
+        logging::debug(logging::low)
+          << "SQL: host check command (host: " << hc.host_id
+          << ", command: " << hc.command_line << ") changed - database updated";
+        it->second = str_hash;
+      }
+      else {
+        logging::debug(logging::low)
+          << "SQL: host check command (host: " << hc.host_id
+          << ", command: " << hc.command_line << ") did not change";
+        execute_query = false;
+      }
+    }
+    else {
       logging::debug(logging::low)
         << "SQL: host check command (host: " << hc.host_id
-        << ", command: " << hc.command_line << ") changed - database updated";
-      stored_hash = str_hash;
+        << ", command: " << hc.command_line
+        << ") not stored - insert it into database";
+      _cache_hst_cmd.insert(std::make_pair(hc.host_id, str_hash));
+    }
+
+    if (execute_query) {
+      // Prepare queries.
+      if (!_host_check_update.prepared()) {
+        database_preparator::event_unique unique;
+        unique.insert("host_id");
+        database_preparator dbp(neb::host_check::static_type(), unique);
+        dbp.prepare_update(_host_check_update);
+      }
+
       _host_check_update << hc;
       try {
         _host_check_update.run_statement();
       }
       catch (std::exception const& e) {
+        _cache_hst_cmd.erase(hc.host_id);
         throw (exceptions::msg()
                << "SQL: could not store host check (host: " << hc.host_id
                << "): " << e.what());
       }
-      if (_host_check_update.num_rows_affected() != 1)
+      if (_host_check_update.num_rows_affected() != 1) {
+        _cache_hst_cmd.erase(hc.host_id);
         logging::error(logging::medium) << "SQL: host check could not "
              "be updated because host " << hc.host_id
           << " was not found in database";
-    }
-    else {
-      logging::debug(logging::low)
-        << "SQL: host check command (host: " << hc.host_id
-        << ", command: " << hc.command_line << ") did not change";
+      }
     }
   }
   else
@@ -1022,8 +1096,6 @@ void stream::_process_host_check(
       << ", command: " << hc.command_line << ", check type: "
       << hc.check_type << ", next check: " << hc.next_check << ", now: "
       << now << ")";
-
-  return ;
 }
 
 /**
@@ -1456,8 +1528,7 @@ void stream::_process_instance(
   _clean_tables(i.poller_id);
 
   // Clean host/service commands caches
-  _cache_hst_cmd.clear();
-  _cache_svc_cmd.clear();
+  _cache_host_instance_clean(i.poller_id);
 
   // Processing.
   if (_is_valid_poller(i.poller_id)) {
@@ -1921,46 +1992,67 @@ void stream::_process_service_check(
       << ", service: " << sc.service_id << ", command: "
       << sc.command_line << ")";
 
-    // Prepare queries.
-    if (!_service_check_update.prepared()) {
-      database_preparator::event_unique unique;
-      unique.insert("host_id");
-      unique.insert("service_id");
-      database_preparator dbp(neb::service_check::static_type(), unique);
-      dbp.prepare_update(_service_check_update);
-    }
-
     // Processing.
+    // Compute the command hash
+    bool execute_query(true);
     unsigned int str_hash(qHash(sc.command_line));
-    // Did the command changed since last time?
-    unsigned int& stored_hash(
-                    _cache_svc_cmd[std::make_pair(sc.host_id, sc.service_id)]);
-    if (stored_hash != str_hash) {
+    std::map<std::pair<unsigned int, unsigned int>, unsigned int>::iterator it(
+      _cache_svc_cmd.find(std::make_pair(sc.host_id, sc.service_id)));
+
+    if (it != _cache_svc_cmd.end()) {
+      // The command is already stored. Has it changed?
+      if (it->second != str_hash) {
+        logging::debug(logging::low)
+          << "SQL: service check command (host: " << sc.host_id
+          << ", service: " << sc.service_id
+          << ", command: " << sc.command_line << ") changed - database updated";
+        it->second = str_hash;
+      }
+      else {
+        logging::debug(logging::low)
+          << "SQL: service check command (host: " << sc.host_id
+          << ", service: " << sc.service_id
+          << ", command: " << sc.command_line << ") did not change";
+        execute_query = false;
+      }
+    }
+    else {
       logging::debug(logging::low)
         << "SQL: service check command (host: " << sc.host_id
-        << ", service: " << sc.service_id << ", command: "
-        << sc.command_line << ") changed - database updated";
-      stored_hash = str_hash;
+        << ", service: " << sc.service_id
+        << ", command: " << sc.command_line
+        << ") not stored - insert it into database";
+      _cache_svc_cmd.insert(
+        std::make_pair(std::make_pair(sc.host_id, sc.service_id), str_hash));
+    }
+
+    if (execute_query) {
+      // Prepare queries.
+      if (!_service_check_update.prepared()) {
+        database_preparator::event_unique unique;
+        unique.insert("host_id");
+        unique.insert("service_id");
+        database_preparator dbp(neb::service_check::static_type(), unique);
+        dbp.prepare_update(_service_check_update);
+      }
+
       _service_check_update << sc;
       try {
         _service_check_update.run_statement();
       }
       catch (std::exception const& e) {
+        _cache_svc_cmd.erase(std::make_pair(sc.host_id, sc.service_id));
         throw (exceptions::msg()
                << "SQL: could not store service check (host: "
                << sc.host_id << ", service: " << sc.service_id << "): "
                << e.what());
       }
-      if (_service_check_update.num_rows_affected() != 1)
+      if (_service_check_update.num_rows_affected() != 1) {
         logging::error(logging::medium) << "SQL: service check could "
              "not be updated because service (" << sc.host_id << ", "
           << sc.service_id << ") was not found in database";
-    }
-    else {
-      logging::debug(logging::low)
-        << "SQL: service check command (host: " << sc.host_id
-        << ", service: " << sc.service_id << ", command: "
-        << sc.command_line << ") did not change";
+        _cache_svc_cmd.erase(std::make_pair(sc.host_id, sc.service_id));
+      }
     }
   }
   else
@@ -1970,8 +2062,6 @@ void stream::_process_service_check(
       << ", service: " << sc.service_id << ", command: "
       << sc.command_line << ", check_type: " << sc.check_type
       << ", next_check: " << sc.next_check << ", now: " << now << ")";
-
-  return ;
 }
 
 /**
@@ -2651,7 +2741,7 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
 void stream::update() {
   _cache_clean();
   _cache_create();
-  return ;
+  _cache_host_instance_create();
 }
 
 /**
