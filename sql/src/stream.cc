@@ -127,10 +127,10 @@ void stream::_cache_create() {
 /**
  * Create the cache to link host ids to instance ids.
  */
-void stream::_cache_host_instance_create() {
-  _cache_host_instance.clear();
+void stream::_cache_instance_host_create() {
+  _cache_instance_host.clear();
   std::ostringstream oss;
-  oss << "SELECT host_id, instance_id"
+  oss << "SELECT instance_id, host_id"
       << " FROM " << ((_db.schema_version() == database::v2)
                       ? "hosts"
                       : "rt_hosts");
@@ -138,44 +138,48 @@ void stream::_cache_host_instance_create() {
     database_query q(_db);
     q.run_query(oss.str());
     while (q.next())
-      _cache_host_instance.insert(
+      _cache_instance_host.insert(
         std::make_pair(q.value(0).toUInt(), q.value(1).toUInt()));
   }
   catch (std::exception const& e) {
     logging::error(logging::high)
-      << "SQL: could not get list of hosts/instances relations: "
+      << "SQL: could not get list of instances/hosts relations: "
       << e.what();
   }
 }
 
-void stream::_cache_host_instance_clean(unsigned int instance_id) {
-  for (std::map<unsigned int, unsigned int>::iterator
-         it(_cache_host_instance.begin()),
-         end(_cache_host_instance.end());
-       it != end ; ) {
-    if (it->second == instance_id) {
-      // We found a host to remove from the cache
+/**
+ *  Remove instances / hosts relations from cache and dependent commands
+ *  from _cache_svc_cmd and _cache_hst_cmd.
+ *
+ *  @param instance_id The instance id to work with.
+ */
+void stream::_cache_instance_host_clean(unsigned int instance_id) {
+  std::pair<std::multimap<unsigned int, unsigned int>::iterator,
+            std::multimap<unsigned int, unsigned int>::iterator>
+    range(_cache_instance_host.equal_range(instance_id));
 
-      // Let's remove service commands associated with this host.
-      for (std::map<std::pair<unsigned int, unsigned int>, unsigned int>::iterator
-             sit(_cache_svc_cmd.begin()),
-             send(_cache_svc_cmd.end());
-           sit != send ; ) {
-        if (sit->first.first == it->first)
-          _cache_svc_cmd.erase(sit++);
-        else
-          ++sit;
-      }
-
-      // Let's remove the host command.
-      _cache_hst_cmd.erase(it->first);
-
-      // Let's remove host_id / instance_id association.
-      _cache_host_instance.erase(it++);
+  for (std::multimap<unsigned int, unsigned int>::iterator
+         it(range.first),
+         end(range.second);
+       it != end;
+       ++it) {
+    // Let's remove service commands associated with host_id it->second
+    for (std::map<std::pair<unsigned int, unsigned int>, unsigned int>::iterator
+           sit(_cache_svc_cmd.begin()),
+           send(_cache_svc_cmd.end());
+         sit != send ; ) {
+      if (sit->first.first == it->second)
+        _cache_svc_cmd.erase(sit++);
+      else
+        ++sit;
     }
-    else
-      ++it;
+
+    // Let's remove the host command.
+    _cache_hst_cmd.erase(it->second);
   }
+  // Let's remove instance_id / host_id association.
+  _cache_instance_host.erase(instance_id);
 }
 
 /**
@@ -1528,7 +1532,7 @@ void stream::_process_instance(
   _clean_tables(i.poller_id);
 
   // Clean host/service commands caches
-  _cache_host_instance_clean(i.poller_id);
+  _cache_instance_host_clean(i.poller_id);
 
   // Processing.
   if (_is_valid_poller(i.poller_id)) {
@@ -2741,7 +2745,7 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
 void stream::update() {
   _cache_clean();
   _cache_create();
-  _cache_host_instance_create();
+  _cache_instance_host_create();
 }
 
 /**
