@@ -86,7 +86,6 @@ void connector::connect_to(
   _dbcfg = dbcfg;
   _instance_timeout = instance_timeout;
   _with_state_events = with_state_events;
-  return ;
 }
 
 /**
