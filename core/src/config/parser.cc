@@ -105,6 +105,9 @@ void parser::parse(QString const& file, state& s) {
       else if (name == "broker_name") {
 	s.broker_name(elem.text().toStdString());
       }
+      else if (name == "custom_variable_filter") {
+        _parse_custom_variable_filter(elem, s);
+      }
       else if ((name == "poller_id")
 	  || (name == "instance")) {
         s.poller_id(elem.text().toUInt());
@@ -214,6 +217,39 @@ bool parser::parse_boolean(QString const& value) {
 *           Private Methods           *
 *                                     *
 **************************************/
+
+/**
+ *  Parse the custom variable filter.
+ *
+ *  @param[in]  elem XML element that have the filter configuration.
+ *  @param[out] e    Element object.
+ */
+void parser::_parse_custom_variable_filter(QDomElement& elem, config::state& s) {
+  QDomNodeList level(elem.childNodes());
+  for (int i = 0, len = level.size(); i < len; ++i) {
+    QDomElement elem(level.item(i).toElement());
+    if (!elem.isNull()) {
+      QString name(elem.tagName());
+      if (name == "active") {
+        QString val(elem.text());
+        s.custom_variable_filter_active(val == "yes" || val == "1");
+      }
+      else if (name == "white_list") {
+        QDomNodeList level2(elem.childNodes());
+        for (int j = 0, len2 = level2.size(); j < len2; ++j) {
+          QDomElement elem2(level2.item(j).toElement());
+          if (!elem2.isNull()) {
+            QString name2(elem2.tagName());
+            if (name2 == "cv") {
+              QString val(elem2.text());
+              s.custom_variable_filter().insert(val.toStdString());
+            }
+          }
+        }
+      }
+    }
+  }
+}
 
 /**
  *  Parse the configuration of an endpoint.

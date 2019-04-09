@@ -70,6 +70,8 @@ void state::clear() {
   _cache_directory.clear();
   _command_file.clear();
   _command_protocol = "json";
+  _custom_variable_filter_active = false;
+  _custom_variable_filter.clear();
   _endpoints.clear();
   _event_queue_max_size = 10000;
   _flush_logs = true;
@@ -84,7 +86,6 @@ void state::clear() {
   _params.clear();
   _poller_id = 0;
   _poller_name.clear();
-  return ;
 }
 
 /**
@@ -182,6 +183,42 @@ void state::command_protocol(std::string const& prot) {
  */
 std::string const& state::command_protocol() const throw() {
   return (_command_protocol);
+}
+
+/**
+ *  Activate or not the custom variable filter.
+ *
+ *  @param[in] active  A boolean to activate the filter.
+ */
+void state::custom_variable_filter_active(bool active) {
+  _custom_variable_filter_active = active;
+}
+
+/**
+ *  Get the custom variable filter activation.
+ *
+ *  @return a boolean telling if the filter is active or not.
+ */
+bool state::custom_variable_filter_active() const {
+  return _custom_variable_filter_active;
+}
+
+/**
+ *  Get the white list of custom variables.
+ *
+ *  @return A map indexed by the custom variables names.
+ */
+std::set<std::string>& state::custom_variable_filter() {
+  return _custom_variable_filter;
+}
+
+/**
+ *  Get the white list of custom variables.
+ *
+ *  @return A map indexed by the custom variables names.
+ */
+std::set<std::string> const& state::custom_variable_filter() const {
+  return _custom_variable_filter;
 }
 
 /**

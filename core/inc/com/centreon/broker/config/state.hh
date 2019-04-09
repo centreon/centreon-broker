@@ -53,6 +53,10 @@ namespace                         config {
     std::string const&            command_file() const throw();
     void                          command_protocol(std::string const& prot);
     std::string const&            command_protocol() const throw();
+    void                          custom_variable_filter_active(bool active);
+    bool                          custom_variable_filter_active() const;
+    std::set<std::string>&        custom_variable_filter();
+    std::set<std::string> const&  custom_variable_filter() const;
     void                          clear();
     std::list<endpoint>&          endpoints() throw ();
     std::list<endpoint> const&    endpoints() const throw ();
@@ -92,6 +96,8 @@ namespace                         config {
     std::string                   _cache_directory;
     std::string                   _command_file;
     std::string                   _command_protocol;
+    bool                          _custom_variable_filter_active;
+    std::set<std::string>         _custom_variable_filter;
     std::list<endpoint>           _endpoints;
     unsigned int                  _event_queue_max_size;
     bool                          _flush_logs;

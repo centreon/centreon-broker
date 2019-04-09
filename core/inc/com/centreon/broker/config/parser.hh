@@ -45,6 +45,7 @@ namespace       config {
     static bool parse_boolean(QString const& value);
 
   private:
+    void        _parse_custom_variable_filter(QDomElement& elem, state& s);
     void        _parse_endpoint(QDomElement& elem, endpoint& e);
     void        _parse_logger(QDomElement& elem, logger& l);
   };
