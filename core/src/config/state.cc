@@ -70,7 +70,7 @@ void state::clear() {
   _cache_directory.clear();
   _command_file.clear();
   _command_protocol = "json";
-  _custom_variable_filter_active = false;
+  _custom_variable_filter_enabled = false;
   _custom_variable_filter.clear();
   _endpoints.clear();
   _event_queue_max_size = 10000;
@@ -188,19 +188,19 @@ std::string const& state::command_protocol() const throw() {
 /**
  *  Activate or not the custom variable filter.
  *
- *  @param[in] active  A boolean to activate the filter.
+ *  @param[in] enabled  A boolean to enable the filter.
  */
-void state::custom_variable_filter_active(bool active) {
-  _custom_variable_filter_active = active;
+void state::custom_variable_filter_enabled(bool enabled) {
+  _custom_variable_filter_enabled = enabled;
 }
 
 /**
  *  Get the custom variable filter activation.
  *
- *  @return a boolean telling if the filter is active or not.
+ *  @return a boolean telling if the filter is enabled or not.
  */
-bool state::custom_variable_filter_active() const {
-  return _custom_variable_filter_active;
+bool state::custom_variable_filter_enabled() const {
+  return _custom_variable_filter_enabled;
 }
 
 /**
@@ -462,6 +462,8 @@ void state::_internal_copy(state const& other) {
   _cache_directory = other._cache_directory;
   _command_file = other._command_file;
   _command_protocol = other._command_protocol;
+  _custom_variable_filter_enabled = other._custom_variable_filter_enabled;
+  _custom_variable_filter = other._custom_variable_filter;
   _endpoints = other._endpoints;
   _event_queue_max_size = other._event_queue_max_size;
   _log_thread_id = other._log_thread_id;

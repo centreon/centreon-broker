@@ -65,25 +65,31 @@ static void send_custom_variables_list() {
   logging::info(logging::medium)
     << "init: beginning custom variables dump";
 
+  config::applier::state& conf(config::applier::state::instance());
+  std::set<std::string> const& custvar(conf.custom_variable_filter());
+  bool filter_enabled(conf.custom_variable_filter_enabled());
+
   // Iterate through all hosts.
   for (host* h(host_list); h; h = h->next)
     // Send all custom variables.
     for (customvariablesmember* cv(h->custom_variables);
          cv;
          cv = cv->next) {
-      // Fill callback struct.
-      nebstruct_custom_variable_data nscvd;
-      memset(&nscvd, 0, sizeof(nscvd));
-      nscvd.type = NEBTYPE_HOSTCUSTOMVARIABLE_ADD;
-      nscvd.timestamp.tv_sec = time(NULL);
-      nscvd.var_name = cv->variable_name;
-      nscvd.var_value = cv->variable_value;
-      nscvd.object_ptr = h;
+      if (!filter_enabled || custvar.find(cv->variable_name) != custvar.end()) {
+        // Fill callback struct.
+        nebstruct_custom_variable_data nscvd;
+        memset(&nscvd, 0, sizeof(nscvd));
+        nscvd.type = NEBTYPE_HOSTCUSTOMVARIABLE_ADD;
+        nscvd.timestamp.tv_sec = time(NULL);
+        nscvd.var_name = cv->variable_name;
+        nscvd.var_value = cv->variable_value;
+        nscvd.object_ptr = h;
 
-      // Callback.
-      neb::callback_custom_variable(
-             NEBCALLBACK_CUSTOM_VARIABLE_DATA,
-             &nscvd);
+        // Callback.
+        neb::callback_custom_variable(
+               NEBCALLBACK_CUSTOM_VARIABLE_DATA,
+               &nscvd);
+      }
     }
 
   // Iterate through all services.
@@ -92,19 +98,21 @@ static void send_custom_variables_list() {
     for (customvariablesmember* cv(s->custom_variables);
          cv;
          cv = cv->next) {
-      // Fill callback struct.
-      nebstruct_custom_variable_data nscvd;
-      memset(&nscvd, 0, sizeof(nscvd));
-      nscvd.type = NEBTYPE_SERVICECUSTOMVARIABLE_ADD;
-      nscvd.timestamp.tv_sec = time(NULL);
-      nscvd.var_name = cv->variable_name;
-      nscvd.var_value = cv->variable_value;
-      nscvd.object_ptr = s;
+      if (!filter_enabled || custvar.find(cv->variable_name) != custvar.end()) {
+        // Fill callback struct.
+        nebstruct_custom_variable_data nscvd;
+        memset(&nscvd, 0, sizeof(nscvd));
+        nscvd.type = NEBTYPE_SERVICECUSTOMVARIABLE_ADD;
+        nscvd.timestamp.tv_sec = time(NULL);
+        nscvd.var_name = cv->variable_name;
+        nscvd.var_value = cv->variable_value;
+        nscvd.object_ptr = s;
 
-      // Callback.
-      neb::callback_custom_variable(
-             NEBCALLBACK_CUSTOM_VARIABLE_DATA,
-             &nscvd);
+        // Callback.
+        neb::callback_custom_variable(
+               NEBCALLBACK_CUSTOM_VARIABLE_DATA,
+               &nscvd);
+      }
     }
 
   // End log message.

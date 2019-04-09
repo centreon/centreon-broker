@@ -230,9 +230,9 @@ void parser::_parse_custom_variable_filter(QDomElement& elem, config::state& s) 
     QDomElement elem(level.item(i).toElement());
     if (!elem.isNull()) {
       QString name(elem.tagName());
-      if (name == "active") {
+      if (name == "enabled") {
         QString val(elem.text());
-        s.custom_variable_filter_active(val == "yes" || val == "1");
+        s.custom_variable_filter_enabled(val == "yes" || val == "1");
       }
       else if (name == "white_list") {
         QDomNodeList level2(elem.childNodes());

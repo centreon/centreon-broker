@@ -111,6 +111,10 @@ void state::apply(
   _cache_dir.append("/");
   _cache_dir.append(s.broker_name());
 
+  // Set the custom variables filter
+  _custom_variable_filter_enabled = s.custom_variable_filter_enabled();
+  _custom_variable_filter = s.custom_variable_filter();
+
   // Apply logging configuration.
   logger::instance().apply(s.loggers());
 
@@ -200,6 +204,24 @@ void state::apply(
  */
 std::string const& state::cache_dir() const throw () {
   return (_cache_dir);
+}
+
+/**
+ *  Return if the custom variable filter is enabled or not
+ *
+ *  @return A boolean.
+ */
+bool state::custom_variable_filter_enabled() const {
+  return _custom_variable_filter_enabled;
+}
+
+/**
+ *  Get the custom variable filter.
+ *
+ *  @return A set containing custom variables names.
+ */
+std::set<std::string> const& state::custom_variable_filter() const {
+  return _custom_variable_filter;
 }
 
 /**

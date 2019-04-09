@@ -54,7 +54,7 @@ class ConfigParser : public ::testing::Test {
         " <broker_id><![CDATA[3]]></broker_id>\n"
         " <broker_name><![CDATA[central-module-master]]></broker_name>\n"
         "  <custom_variable_filter>\n"
-        "   <active><![CDATA[yes]]></active>\n"
+        "   <enabled><![CDATA[yes]]></enabled>\n"
         "   <white_list>\n"
         "    <cv><![CDATA[WARNING]]></cv>\n"
         "    <cv><![CDATA[CRITICAL]]></cv>\n"
@@ -192,7 +192,7 @@ TEST_F(ConfigParser, CentreonSecondaryFailover2) {
 }
 
 TEST_F(ConfigParser, CustomVariableFilterActive) {
-  ASSERT_TRUE(_state.custom_variable_filter_active());
+  ASSERT_TRUE(_state.custom_variable_filter_enabled());
 }
 
 TEST_F(ConfigParser, CustomVariableFilter) {

@@ -40,6 +40,9 @@ namespace                config {
                            config::state const& s,
                            bool run_mux = true);
       std::string const& cache_dir() const throw ();
+      bool               custom_variable_filter_enabled() const;
+      std::set<std::string> const&
+                         custom_variable_filter() const;
       static state&      instance();
       static void        load();
       unsigned int       poller_id() const throw ();
@@ -52,6 +55,9 @@ namespace                config {
       state&             operator=(state const& other);
 
       std::string        _cache_dir;
+      bool               _custom_variable_filter_enabled;
+      std::set<std::string>
+                         _custom_variable_filter;
       unsigned int       _poller_id;
       std::string        _poller_name;
     };
