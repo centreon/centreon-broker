@@ -60,6 +60,8 @@ namespace          sql {
     stream&        operator=(stream const& other);
     void           _cache_clean();
     void           _cache_create();
+    void           _cache_instance_host_clean(unsigned int instance_id);
+    void           _cache_instance_host_create();
     void           _clean_empty_host_groups();
     void           _clean_empty_service_groups();
     void           _clean_tables(unsigned int instance_id);
@@ -179,6 +181,12 @@ namespace          sql {
     std::map<unsigned int, stored_timestamp>
                                 _stored_timestamps;
     timestamp                   _oldest_timestamp;
+    std::multimap<unsigned int, unsigned int>
+                                _cache_instance_host;
+    std::map<unsigned int, unsigned int>
+                                _cache_hst_cmd;
+    std::map<std::pair<unsigned int, unsigned int>, unsigned int>
+                                _cache_svc_cmd;
   };
 }
 
