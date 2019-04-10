@@ -76,6 +76,9 @@ static void send_custom_variables_list() {
          cv;
          cv = cv->next) {
       if (!filter_enabled || custvar.find(cv->variable_name) != custvar.end()) {
+        logging::debug(logging::low)
+          << "init: custom variable "
+          << cv->variable_name << " sent";
         // Fill callback struct.
         nebstruct_custom_variable_data nscvd;
         memset(&nscvd, 0, sizeof(nscvd));
@@ -99,6 +102,9 @@ static void send_custom_variables_list() {
          cv;
          cv = cv->next) {
       if (!filter_enabled || custvar.find(cv->variable_name) != custvar.end()) {
+        logging::debug(logging::low)
+          << "init: custom variable "
+          << cv->variable_name << " sent";
         // Fill callback struct.
         nebstruct_custom_variable_data nscvd;
         memset(&nscvd, 0, sizeof(nscvd));

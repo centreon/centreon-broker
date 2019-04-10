@@ -1273,8 +1273,9 @@ int neb::callback_host(int callback_type, void* data) {
         if (cvar->variable_name
             && strcmp(cvar->variable_name, "HOST_ID")) {
           if (!filter_enabled || cv.find(cvar->variable_name) != cv.end()) {
-            logging::error(logging::high)
-              << "CV host " << cvar->variable_name;
+            logging::debug(logging::low)
+              << "callbacks: custom variable "
+              << cvar->variable_name << " sent";
             nebstruct_custom_variable_data data;
             memset(&data, 0, sizeof(data));
             data.type = NEBTYPE_HOSTCUSTOMVARIABLE_ADD;
@@ -1976,8 +1977,9 @@ int neb::callback_service(int callback_type, void* data) {
             && strcmp(cvar->variable_name, "HOST_ID")
             && strcmp(cvar->variable_name, "SERVICE_ID")) {
           if (!filter_enabled || cv.find(cvar->variable_name) != cv.end()) {
-            logging::error(logging::high)
-              << "CV service " << cvar->variable_name;
+            logging::debug(logging::low)
+              << "callbacks: custom variable "
+              << cvar->variable_name << " sent";
             nebstruct_custom_variable_data data;
             memset(&data, 0, sizeof(data));
             data.type = NEBTYPE_SERVICECUSTOMVARIABLE_ADD;
