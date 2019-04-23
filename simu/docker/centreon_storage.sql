@@ -1,0 +1,2634 @@
+CREATE DATABASE `centreon_storage`;
+
+USE centreon_storage;
+
+SET FOREIGN_KEY_CHECKS=0;
+--
+-- Holds acknowledgedments information.
+--
+CREATE TABLE acknowledgements (
+  acknowledgement_id int NOT NULL auto_increment,
+  entry_time int NOT NULL,
+  host_id int NOT NULL,
+  service_id int default NULL,
+
+  author varchar(64) default NULL,
+  comment_data varchar(255) default NULL,
+  deletion_time int default NULL,
+  instance_id int default NULL,
+  notify_contacts boolean default NULL,
+  persistent_comment boolean default NULL,
+  state smallint default NULL,
+  sticky boolean default NULL,
+  type smallint default NULL,
+
+  PRIMARY KEY (acknowledgement_id),
+  INDEX (host_id),
+  INDEX (instance_id),
+  INDEX (entry_time),
+  UNIQUE (entry_time, host_id, service_id),
+  FOREIGN KEY (host_id) REFERENCES hosts (host_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (instance_id) REFERENCES instances (instance_id)
+    ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+--
+-- Table structure for table `centreon_acl`
+--
+CREATE TABLE `centreon_acl` (
+  `group_id` int(11) NOT NULL,
+  `host_id` int(11) NOT NULL,
+  `service_id` int(11) DEFAULT NULL,
+  UNIQUE KEY `group_id` (`group_id`,`host_id`,`service_id`),
+  KEY `index1` (`host_id`,`service_id`,`group_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `comments`
+--
+CREATE TABLE `comments` (
+  `comment_id` int(11) NOT NULL AUTO_INCREMENT,
+  `entry_time` int(11) NOT NULL,
+  `host_id` int(11) NOT NULL,
+  `service_id` int(11) DEFAULT NULL,
+  `author` varchar(64) DEFAULT NULL,
+  `data` text,
+  `deletion_time` int(11) DEFAULT NULL,
+  `entry_type` smallint(6) DEFAULT NULL,
+  `expire_time` int(11) DEFAULT NULL,
+  `expires` tinyint(1) DEFAULT NULL,
+  `instance_id` int(11) DEFAULT NULL,
+  `internal_id` int(11) NOT NULL,
+  `persistent` tinyint(1) DEFAULT NULL,
+  `source` smallint(6) DEFAULT NULL,
+  `type` smallint(6) DEFAULT NULL,
+  PRIMARY KEY (`comment_id`),
+  UNIQUE KEY `entry_time` (`entry_time`,`host_id`,`service_id`,`instance_id`,`internal_id`),
+  KEY `internal_id` (`internal_id`),
+  KEY `host_id` (`host_id`),
+  KEY `instance_id` (`instance_id`),
+  CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`host_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE,
+  CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`instance_id`) REFERENCES `instances` (`instance_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `config`
+--
+CREATE TABLE `config` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `RRDdatabase_path` varchar(255) DEFAULT NULL,
+  `RRDdatabase_status_path` varchar(255) DEFAULT NULL,
+  `RRDdatabase_nagios_stats_path` varchar(255) DEFAULT NULL,
+  `len_storage_rrd` int(11) DEFAULT NULL,
+  `len_storage_mysql` int(11) DEFAULT NULL,
+  `autodelete_rrd_db` enum('0','1') DEFAULT NULL,
+  `sleep_time` int(11) DEFAULT '10',
+  `purge_interval` int(11) DEFAULT '2',
+  `storage_type` int(11) DEFAULT '2',
+  `average` int(11) DEFAULT NULL,
+  `archive_log` enum('0','1') NOT NULL DEFAULT '0',
+  `archive_retention` int(11) DEFAULT '31',
+  `reporting_retention` int(11) DEFAULT '365',
+  `nagios_log_file` varchar(255) DEFAULT NULL,
+  `last_line_read` int(11) DEFAULT '31',
+  `audit_log_option` enum('0','1') NOT NULL DEFAULT '1',
+  `len_storage_downtimes` int(11) DEFAULT NULL,
+  `len_storage_comments` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `customvariables`
+--
+
+CREATE TABLE `customvariables` (
+  `customvariable_id` int(11) NOT NULL AUTO_INCREMENT,
+  `host_id` int(11) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `service_id` int(11) DEFAULT NULL,
+  `default_value` varchar(255) DEFAULT NULL,
+  `modified` tinyint(1) DEFAULT NULL,
+  `type` smallint(6) DEFAULT NULL,
+  `update_time` int(11) DEFAULT NULL,
+  `value` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`customvariable_id`),
+  UNIQUE KEY `host_id` (`host_id`,`name`,`service_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=926242 DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `data_bin`
+--
+
+CREATE TABLE `data_bin` (
+  `id_metric` int(11) DEFAULT NULL,
+  `ctime` int(11) DEFAULT NULL,
+  `value` float DEFAULT NULL,
+  `status` enum('0','1','2','3','4') DEFAULT NULL,
+  KEY `index_metric` (`id_metric`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `data_stats_daily`
+--
+
+CREATE TABLE `data_stats_daily` (
+  `data_stats_daily_id` int(11) NOT NULL AUTO_INCREMENT,
+  `metric_id` int(11) DEFAULT NULL,
+  `min` int(11) DEFAULT NULL,
+  `max` int(11) DEFAULT NULL,
+  `average` int(11) DEFAULT NULL,
+  `count` int(11) DEFAULT NULL,
+  `day_time` int(11) DEFAULT NULL,
+  PRIMARY KEY (`data_stats_daily_id`),
+  KEY `metric_id` (`metric_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `data_stats_monthly`
+--
+
+CREATE TABLE `data_stats_monthly` (
+  `data_stats_monthly_id` int(11) NOT NULL AUTO_INCREMENT,
+  `metric_id` int(11) DEFAULT NULL,
+  `min` int(11) DEFAULT NULL,
+  `max` int(11) DEFAULT NULL,
+  `average` int(11) DEFAULT NULL,
+  `count` int(11) DEFAULT NULL,
+  `month_time` int(11) DEFAULT NULL,
+  PRIMARY KEY (`data_stats_monthly_id`),
+  KEY `metric_id` (`metric_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `data_stats_yearly`
+--
+
+CREATE TABLE `data_stats_yearly` (
+  `data_stats_yearly_id` int(11) NOT NULL AUTO_INCREMENT,
+  `metric_id` int(11) DEFAULT NULL,
+  `min` int(11) DEFAULT NULL,
+  `max` int(11) DEFAULT NULL,
+  `average` int(11) DEFAULT NULL,
+  `count` int(11) DEFAULT NULL,
+  `year_time` int(11) DEFAULT NULL,
+  PRIMARY KEY (`data_stats_yearly_id`),
+  KEY `metric_id` (`metric_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `downtimes`
+--
+
+
+
+CREATE TABLE `downtimes` (
+  `downtime_id` int(11) NOT NULL AUTO_INCREMENT,
+  `entry_time` int(11) DEFAULT NULL,
+  `host_id` int(11) NOT NULL,
+  `service_id` int(11) DEFAULT NULL,
+  `author` varchar(64) DEFAULT NULL,
+  `cancelled` tinyint(1) DEFAULT NULL,
+  `comment_data` text,
+  `deletion_time` int(11) DEFAULT NULL,
+  `duration` int(11) DEFAULT NULL,
+  `end_time` int(11) DEFAULT NULL,
+  `fixed` tinyint(1) DEFAULT NULL,
+  `instance_id` int(11) DEFAULT NULL,
+  `internal_id` int(11) DEFAULT NULL,
+  `start_time` int(11) DEFAULT NULL,
+  `actual_start_time` int(11) DEFAULT NULL,
+  `actual_end_time` int(11) DEFAULT NULL,
+  `started` tinyint(1) DEFAULT NULL,
+  `triggered_by` int(11) DEFAULT NULL,
+  `type` smallint(6) DEFAULT NULL,
+  PRIMARY KEY (`downtime_id`),
+  UNIQUE KEY `entry_time` (`entry_time`,`instance_id`,`internal_id`),
+  KEY `host_id` (`host_id`),
+  KEY `instance_id` (`instance_id`),
+  KEY `entry_time_2` (`entry_time`),
+  KEY `downtimeManager_hostList` (`host_id`,`start_time`),
+  CONSTRAINT `downtimes_ibfk_1` FOREIGN KEY (`host_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE,
+  CONSTRAINT `downtimes_ibfk_2` FOREIGN KEY (`instance_id`) REFERENCES `instances` (`instance_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `eventhandlers`
+--
+
+CREATE TABLE `eventhandlers` (
+  `eventhandler_id` int(11) NOT NULL AUTO_INCREMENT,
+  `host_id` int(11) DEFAULT NULL,
+  `service_id` int(11) DEFAULT NULL,
+  `start_time` int(11) DEFAULT NULL,
+  `command_args` varchar(255) DEFAULT NULL,
+  `command_line` varchar(255) DEFAULT NULL,
+  `early_timeout` smallint(6) DEFAULT NULL,
+  `end_time` int(11) DEFAULT NULL,
+  `execution_time` double DEFAULT NULL,
+  `output` varchar(255) DEFAULT NULL,
+  `return_code` smallint(6) DEFAULT NULL,
+  `state` smallint(6) DEFAULT NULL,
+  `state_type` smallint(6) DEFAULT NULL,
+  `timeout` smallint(6) DEFAULT NULL,
+  `type` smallint(6) DEFAULT NULL,
+  PRIMARY KEY (`eventhandler_id`),
+  UNIQUE KEY `host_id` (`host_id`,`service_id`,`start_time`),
+  CONSTRAINT `eventhandlers_ibfk_1` FOREIGN KEY (`host_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `flappingstatuses`
+--
+
+CREATE TABLE `flappingstatuses` (
+  `flappingstatus_id` int(11) NOT NULL AUTO_INCREMENT,
+  `host_id` int(11) DEFAULT NULL,
+  `service_id` int(11) DEFAULT NULL,
+  `event_time` int(11) DEFAULT NULL,
+  `comment_time` int(11) DEFAULT NULL,
+  `event_type` smallint(6) DEFAULT NULL,
+  `high_threshold` double DEFAULT NULL,
+  `internal_comment_id` int(11) DEFAULT NULL,
+  `low_threshold` double DEFAULT NULL,
+  `percent_state_change` double DEFAULT NULL,
+  `reason_type` smallint(6) DEFAULT NULL,
+  `type` smallint(6) DEFAULT NULL,
+  PRIMARY KEY (`flappingstatus_id`),
+  UNIQUE KEY `host_id` (`host_id`,`service_id`,`event_time`),
+  CONSTRAINT `flappingstatuses_ibfk_1` FOREIGN KEY (`host_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `hostgroups`
+--
+
+CREATE TABLE `hostgroups` (
+  `hostgroup_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  PRIMARY KEY (`hostgroup_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `hosts`
+--
+
+CREATE TABLE `hosts` (
+  `host_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `instance_id` int(11) NOT NULL,
+  `acknowledged` tinyint(1) DEFAULT NULL,
+  `acknowledgement_type` smallint(6) DEFAULT NULL,
+  `action_url` varchar(255) DEFAULT NULL,
+  `active_checks` tinyint(1) DEFAULT NULL,
+  `address` varchar(75) DEFAULT NULL,
+  `alias` varchar(100) DEFAULT NULL,
+  `check_attempt` smallint(6) DEFAULT NULL,
+  `check_command` text,
+  `check_freshness` tinyint(1) DEFAULT NULL,
+  `check_interval` double DEFAULT NULL,
+  `check_period` varchar(75) DEFAULT NULL,
+  `check_type` smallint(6) DEFAULT NULL,
+  `checked` tinyint(1) DEFAULT NULL,
+  `command_line` text,
+  `default_active_checks` tinyint(1) DEFAULT NULL,
+  `default_event_handler_enabled` tinyint(1) DEFAULT NULL,
+  `default_failure_prediction` tinyint(1) DEFAULT NULL,
+  `default_flap_detection` tinyint(1) DEFAULT NULL,
+  `default_notify` tinyint(1) DEFAULT NULL,
+  `default_passive_checks` tinyint(1) DEFAULT NULL,
+  `default_process_perfdata` tinyint(1) DEFAULT NULL,
+  `display_name` varchar(100) DEFAULT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `event_handler` varchar(255) DEFAULT NULL,
+  `event_handler_enabled` tinyint(1) DEFAULT NULL,
+  `execution_time` double DEFAULT NULL,
+  `failure_prediction` tinyint(1) DEFAULT NULL,
+  `first_notification_delay` double DEFAULT NULL,
+  `flap_detection` tinyint(1) DEFAULT NULL,
+  `flap_detection_on_down` tinyint(1) DEFAULT NULL,
+  `flap_detection_on_unreachable` tinyint(1) DEFAULT NULL,
+  `flap_detection_on_up` tinyint(1) DEFAULT NULL,
+  `flapping` tinyint(1) DEFAULT NULL,
+  `freshness_threshold` double DEFAULT NULL,
+  `high_flap_threshold` double DEFAULT NULL,
+  `icon_image` varchar(255) DEFAULT NULL,
+  `icon_image_alt` varchar(255) DEFAULT NULL,
+  `last_check` int(11) DEFAULT NULL,
+  `last_hard_state` smallint(6) DEFAULT NULL,
+  `last_hard_state_change` int(11) DEFAULT NULL,
+  `last_notification` int(11) DEFAULT NULL,
+  `last_state_change` int(11) DEFAULT NULL,
+  `last_time_down` int(11) DEFAULT NULL,
+  `last_time_unreachable` int(11) DEFAULT NULL,
+  `last_time_up` int(11) DEFAULT NULL,
+  `last_update` int(11) DEFAULT NULL,
+  `latency` double DEFAULT NULL,
+  `low_flap_threshold` double DEFAULT NULL,
+  `max_check_attempts` smallint(6) DEFAULT NULL,
+  `modified_attributes` int(11) DEFAULT NULL,
+  `next_check` int(11) DEFAULT NULL,
+  `next_host_notification` int(11) DEFAULT NULL,
+  `no_more_notifications` tinyint(1) DEFAULT NULL,
+  `notes` varchar(255) DEFAULT NULL,
+  `notes_url` varchar(255) DEFAULT NULL,
+  `notification_interval` double DEFAULT NULL,
+  `notification_number` smallint(6) DEFAULT NULL,
+  `notification_period` varchar(75) DEFAULT NULL,
+  `notify` tinyint(1) DEFAULT NULL,
+  `notify_on_down` tinyint(1) DEFAULT NULL,
+  `notify_on_downtime` tinyint(1) DEFAULT NULL,
+  `notify_on_flapping` tinyint(1) DEFAULT NULL,
+  `notify_on_recovery` tinyint(1) DEFAULT NULL,
+  `notify_on_unreachable` tinyint(1) DEFAULT NULL,
+  `obsess_over_host` tinyint(1) DEFAULT NULL,
+  `output` text,
+  `passive_checks` tinyint(1) DEFAULT NULL,
+  `percent_state_change` double DEFAULT NULL,
+  `perfdata` text,
+  `process_perfdata` tinyint(1) DEFAULT NULL,
+  `retain_nonstatus_information` tinyint(1) DEFAULT NULL,
+  `retain_status_information` tinyint(1) DEFAULT NULL,
+  `retry_interval` double DEFAULT NULL,
+  `scheduled_downtime_depth` smallint(6) DEFAULT NULL,
+  `should_be_scheduled` tinyint(1) DEFAULT NULL,
+  `stalk_on_down` tinyint(1) DEFAULT NULL,
+  `stalk_on_unreachable` tinyint(1) DEFAULT NULL,
+  `stalk_on_up` tinyint(1) DEFAULT NULL,
+  `state` smallint(6) DEFAULT NULL,
+  `state_type` smallint(6) DEFAULT NULL,
+  `statusmap_image` varchar(255) DEFAULT NULL,
+  `timezone` varchar(64) DEFAULT NULL,
+  `real_state` smallint(6) DEFAULT NULL,
+  UNIQUE KEY `host_id` (`host_id`),
+  KEY `instance_id` (`instance_id`),
+  KEY `host_name` (`name`),
+  CONSTRAINT `hosts_ibfk_1` FOREIGN KEY (`instance_id`) REFERENCES `instances` (`instance_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `hosts_hostgroups`
+--
+
+CREATE TABLE `hosts_hostgroups` (
+  `host_id` int(11) NOT NULL,
+  `hostgroup_id` int(11) NOT NULL,
+  UNIQUE KEY `host_id` (`host_id`,`hostgroup_id`),
+  KEY `hostgroup_id` (`hostgroup_id`),
+  CONSTRAINT `hosts_hostgroups_ibfk_1` FOREIGN KEY (`host_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE,
+  CONSTRAINT `hosts_hostgroups_ibfk_2` FOREIGN KEY (`hostgroup_id`) REFERENCES `hostgroups` (`hostgroup_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `hosts_hosts_dependencies`
+--
+
+CREATE TABLE `hosts_hosts_dependencies` (
+  `dependent_host_id` int(11) NOT NULL,
+  `host_id` int(11) NOT NULL,
+  `dependency_period` varchar(75) DEFAULT NULL,
+  `execution_failure_options` varchar(15) DEFAULT NULL,
+  `inherits_parent` tinyint(1) DEFAULT NULL,
+  `notification_failure_options` varchar(15) DEFAULT NULL,
+  UNIQUE KEY `dependent_host_id` (`dependent_host_id`,`host_id`),
+  KEY `host_id` (`host_id`),
+  CONSTRAINT `hosts_hosts_dependencies_ibfk_1` FOREIGN KEY (`dependent_host_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE,
+  CONSTRAINT `hosts_hosts_dependencies_ibfk_2` FOREIGN KEY (`host_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `hosts_hosts_parents`
+--
+
+CREATE TABLE `hosts_hosts_parents` (
+  `child_id` int(11) NOT NULL,
+  `parent_id` int(11) NOT NULL,
+  UNIQUE KEY `child_id` (`child_id`,`parent_id`),
+  KEY `parent_id` (`parent_id`),
+  CONSTRAINT `hosts_hosts_parents_ibfk_1` FOREIGN KEY (`child_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE,
+  CONSTRAINT `hosts_hosts_parents_ibfk_2` FOREIGN KEY (`parent_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `hoststateevents`
+--
+
+CREATE TABLE `hoststateevents` (
+  `hoststateevent_id` int(11) NOT NULL AUTO_INCREMENT,
+  `end_time` int(11) DEFAULT NULL,
+  `host_id` int(11) NOT NULL,
+  `start_time` int(11) NOT NULL,
+  `state` tinyint(11) NOT NULL,
+  `last_update` tinyint(4) NOT NULL DEFAULT '0',
+  `in_downtime` tinyint(4) NOT NULL,
+  `ack_time` int(11) DEFAULT NULL,
+  `in_ack` tinyint(4) DEFAULT '0',
+  PRIMARY KEY (`hoststateevent_id`),
+  UNIQUE KEY `host_id` (`host_id`,`start_time`),
+  KEY `start_time` (`start_time`),
+  KEY `end_time` (`end_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `index_data`
+--
+
+CREATE TABLE `index_data` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `host_name` varchar(255) DEFAULT NULL,
+  `host_id` int(11) DEFAULT NULL,
+  `service_description` varchar(255) DEFAULT NULL,
+  `service_id` int(11) DEFAULT NULL,
+  `check_interval` int(11) DEFAULT NULL,
+  `special` enum('0','1') DEFAULT '0',
+  `hidden` enum('0','1') DEFAULT '0',
+  `locked` enum('0','1') DEFAULT '0',
+  `trashed` enum('0','1') DEFAULT '0',
+  `must_be_rebuild` enum('0','1','2') DEFAULT '0',
+  `storage_type` enum('0','1','2') DEFAULT '2',
+  `to_delete` int(1) DEFAULT '0',
+  `rrd_retention` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `host_service_unique_id` (`host_id`,`service_id`),
+  KEY `host_name` (`host_name`),
+  KEY `service_description` (`service_description`),
+  KEY `host_id` (`host_id`),
+  KEY `service_id` (`service_id`),
+  KEY `must_be_rebuild` (`must_be_rebuild`),
+  KEY `trashed` (`trashed`)
+) ENGINE=InnoDB AUTO_INCREMENT=6223 DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `instances`
+--
+
+CREATE TABLE `instances` (
+  `instance_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL DEFAULT 'localhost',
+  `active_host_checks` tinyint(1) DEFAULT NULL,
+  `active_service_checks` tinyint(1) DEFAULT NULL,
+  `address` varchar(128) DEFAULT NULL,
+  `check_hosts_freshness` tinyint(1) DEFAULT NULL,
+  `check_services_freshness` tinyint(1) DEFAULT NULL,
+  `daemon_mode` tinyint(1) DEFAULT NULL,
+  `description` varchar(128) DEFAULT NULL,
+  `end_time` int(11) DEFAULT NULL,
+  `engine` varchar(64) DEFAULT NULL,
+  `event_handlers` tinyint(1) DEFAULT NULL,
+  `failure_prediction` tinyint(1) DEFAULT NULL,
+  `flap_detection` tinyint(1) DEFAULT NULL,
+  `global_host_event_handler` text,
+  `global_service_event_handler` text,
+  `last_alive` int(11) DEFAULT NULL,
+  `last_command_check` int(11) DEFAULT NULL,
+  `last_log_rotation` int(11) DEFAULT NULL,
+  `modified_host_attributes` int(11) DEFAULT NULL,
+  `modified_service_attributes` int(11) DEFAULT NULL,
+  `notifications` tinyint(1) DEFAULT NULL,
+  `obsess_over_hosts` tinyint(1) DEFAULT NULL,
+  `obsess_over_services` tinyint(1) DEFAULT NULL,
+  `passive_host_checks` tinyint(1) DEFAULT NULL,
+  `passive_service_checks` tinyint(1) DEFAULT NULL,
+  `pid` int(11) DEFAULT NULL,
+  `process_perfdata` tinyint(1) DEFAULT NULL,
+  `running` tinyint(1) DEFAULT NULL,
+  `start_time` int(11) DEFAULT NULL,
+  `version` varchar(16) DEFAULT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT '0',
+  `outdated` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`instance_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `issues`
+--
+
+CREATE TABLE `issues` (
+  `issue_id` int(11) NOT NULL AUTO_INCREMENT,
+  `host_id` int(11) DEFAULT NULL,
+  `service_id` int(11) DEFAULT NULL,
+  `start_time` int(11) NOT NULL,
+  `ack_time` int(11) DEFAULT NULL,
+  `end_time` int(11) DEFAULT NULL,
+  PRIMARY KEY (`issue_id`),
+  UNIQUE KEY `host_id` (`host_id`,`service_id`,`start_time`),
+  KEY `start_time` (`start_time`),
+  CONSTRAINT `issues_ibfk_1` FOREIGN KEY (`host_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `issues_issues_parents`
+--
+
+CREATE TABLE `issues_issues_parents` (
+  `child_id` int(11) NOT NULL,
+  `end_time` int(11) DEFAULT NULL,
+  `start_time` int(11) NOT NULL,
+  `parent_id` int(11) NOT NULL,
+  KEY `child_id` (`child_id`),
+  KEY `parent_id` (`parent_id`),
+  CONSTRAINT `issues_issues_parents_ibfk_1` FOREIGN KEY (`child_id`) REFERENCES `issues` (`issue_id`) ON DELETE CASCADE,
+  CONSTRAINT `issues_issues_parents_ibfk_2` FOREIGN KEY (`parent_id`) REFERENCES `issues` (`issue_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `log_action`
+--
+
+CREATE TABLE `log_action` (
+  `action_log_id` int(11) NOT NULL AUTO_INCREMENT,
+  `action_log_date` int(11) NOT NULL,
+  `object_type` varchar(255) NOT NULL,
+  `object_id` int(11) NOT NULL,
+  `object_name` varchar(255) NOT NULL,
+  `action_type` varchar(255) NOT NULL,
+  `log_contact_id` int(11) NOT NULL,
+  PRIMARY KEY (`action_log_id`),
+  KEY `log_contact_id` (`log_contact_id`),
+  KEY `action_log_date` (`action_log_date`)
+) ENGINE=InnoDB AUTO_INCREMENT=2894 DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `log_action_modification`
+--
+
+CREATE TABLE `log_action_modification` (
+  `modification_id` int(11) NOT NULL AUTO_INCREMENT,
+  `field_name` varchar(255) NOT NULL,
+  `field_value` varchar(255) NOT NULL,
+  `action_log_id` int(11) NOT NULL,
+  PRIMARY KEY (`modification_id`),
+  KEY `action_log_id` (`action_log_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=134198 DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `log_archive_host`
+--
+
+CREATE TABLE `log_archive_host` (
+  `log_id` int(11) NOT NULL AUTO_INCREMENT,
+  `host_id` int(11) DEFAULT NULL,
+  `UPTimeScheduled` int(11) DEFAULT NULL,
+  `UPnbEvent` int(11) DEFAULT NULL,
+  `UPTimeAverageAck` int(11) NOT NULL,
+  `UPTimeAverageRecovery` int(11) NOT NULL,
+  `DOWNTimeScheduled` int(11) DEFAULT NULL,
+  `DOWNnbEvent` int(11) DEFAULT NULL,
+  `DOWNTimeAverageAck` int(11) NOT NULL,
+  `DOWNTimeAverageRecovery` int(11) NOT NULL,
+  `UNREACHABLETimeScheduled` int(11) DEFAULT NULL,
+  `UNREACHABLEnbEvent` int(11) DEFAULT NULL,
+  `UNREACHABLETimeAverageAck` int(11) NOT NULL,
+  `UNREACHABLETimeAverageRecovery` int(11) NOT NULL,
+  `UNDETERMINEDTimeScheduled` int(11) DEFAULT NULL,
+  `MaintenanceTime` int(11) DEFAULT '0',
+  `date_end` int(11) DEFAULT NULL,
+  `date_start` int(11) DEFAULT NULL,
+  KEY `log_id` (`log_id`),
+  KEY `host_index` (`host_id`),
+  KEY `date_end_index` (`date_end`),
+  KEY `date_start_index` (`date_start`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+/*!50100 PARTITION BY RANGE (date_end)
+(PARTITION p20170730 VALUES LESS THAN (1501365600) ENGINE = InnoDB,
+ PARTITION p20170731 VALUES LESS THAN (1501452000) ENGINE = InnoDB,
+ PARTITION p20170801 VALUES LESS THAN (1501538400) ENGINE = InnoDB,
+ PARTITION p20170802 VALUES LESS THAN (1501624800) ENGINE = InnoDB,
+ PARTITION p20170803 VALUES LESS THAN (1501711200) ENGINE = InnoDB,
+ PARTITION p20170804 VALUES LESS THAN (1501797600) ENGINE = InnoDB,
+ PARTITION p20170805 VALUES LESS THAN (1501884000) ENGINE = InnoDB,
+ PARTITION p20170806 VALUES LESS THAN (1501970400) ENGINE = InnoDB,
+ PARTITION p20170807 VALUES LESS THAN (1502056800) ENGINE = InnoDB,
+ PARTITION p20170808 VALUES LESS THAN (1502143200) ENGINE = InnoDB,
+ PARTITION p20170809 VALUES LESS THAN (1502229600) ENGINE = InnoDB,
+ PARTITION p20170810 VALUES LESS THAN (1502316000) ENGINE = InnoDB,
+ PARTITION p20170811 VALUES LESS THAN (1502402400) ENGINE = InnoDB,
+ PARTITION p20170812 VALUES LESS THAN (1502488800) ENGINE = InnoDB,
+ PARTITION p20170813 VALUES LESS THAN (1502575200) ENGINE = InnoDB,
+ PARTITION p20170814 VALUES LESS THAN (1502661600) ENGINE = InnoDB,
+ PARTITION p20170815 VALUES LESS THAN (1502748000) ENGINE = InnoDB,
+ PARTITION p20170816 VALUES LESS THAN (1502834400) ENGINE = InnoDB,
+ PARTITION p20170817 VALUES LESS THAN (1502920800) ENGINE = InnoDB,
+ PARTITION p20170818 VALUES LESS THAN (1503007200) ENGINE = InnoDB,
+ PARTITION p20170819 VALUES LESS THAN (1503093600) ENGINE = InnoDB,
+ PARTITION p20170820 VALUES LESS THAN (1503180000) ENGINE = InnoDB,
+ PARTITION p20170821 VALUES LESS THAN (1503266400) ENGINE = InnoDB,
+ PARTITION p20170822 VALUES LESS THAN (1503352800) ENGINE = InnoDB,
+ PARTITION p20170823 VALUES LESS THAN (1503439200) ENGINE = InnoDB,
+ PARTITION p20170824 VALUES LESS THAN (1503525600) ENGINE = InnoDB,
+ PARTITION p20170825 VALUES LESS THAN (1503612000) ENGINE = InnoDB,
+ PARTITION p20170826 VALUES LESS THAN (1503698400) ENGINE = InnoDB,
+ PARTITION p20170827 VALUES LESS THAN (1503784800) ENGINE = InnoDB,
+ PARTITION p20170828 VALUES LESS THAN (1503871200) ENGINE = InnoDB,
+ PARTITION p20170829 VALUES LESS THAN (1503957600) ENGINE = InnoDB,
+ PARTITION p20170830 VALUES LESS THAN (1504044000) ENGINE = InnoDB,
+ PARTITION p20170831 VALUES LESS THAN (1504130400) ENGINE = InnoDB,
+ PARTITION p20170901 VALUES LESS THAN (1504216800) ENGINE = InnoDB,
+ PARTITION p20170902 VALUES LESS THAN (1504303200) ENGINE = InnoDB,
+ PARTITION p20170903 VALUES LESS THAN (1504389600) ENGINE = InnoDB,
+ PARTITION p20170904 VALUES LESS THAN (1504476000) ENGINE = InnoDB,
+ PARTITION p20170905 VALUES LESS THAN (1504562400) ENGINE = InnoDB,
+ PARTITION p20170906 VALUES LESS THAN (1504648800) ENGINE = InnoDB,
+ PARTITION p20170907 VALUES LESS THAN (1504735200) ENGINE = InnoDB,
+ PARTITION p20170908 VALUES LESS THAN (1504821600) ENGINE = InnoDB,
+ PARTITION p20170909 VALUES LESS THAN (1504908000) ENGINE = InnoDB,
+ PARTITION p20170910 VALUES LESS THAN (1504994400) ENGINE = InnoDB,
+ PARTITION p20170911 VALUES LESS THAN (1505080800) ENGINE = InnoDB,
+ PARTITION p20170912 VALUES LESS THAN (1505167200) ENGINE = InnoDB,
+ PARTITION p20170913 VALUES LESS THAN (1505253600) ENGINE = InnoDB,
+ PARTITION p20170914 VALUES LESS THAN (1505340000) ENGINE = InnoDB,
+ PARTITION p20170915 VALUES LESS THAN (1505426400) ENGINE = InnoDB,
+ PARTITION p20170916 VALUES LESS THAN (1505512800) ENGINE = InnoDB,
+ PARTITION p20170917 VALUES LESS THAN (1505599200) ENGINE = InnoDB,
+ PARTITION p20170918 VALUES LESS THAN (1505685600) ENGINE = InnoDB,
+ PARTITION p20170919 VALUES LESS THAN (1505772000) ENGINE = InnoDB,
+ PARTITION p20170920 VALUES LESS THAN (1505858400) ENGINE = InnoDB,
+ PARTITION p20170921 VALUES LESS THAN (1505944800) ENGINE = InnoDB,
+ PARTITION p20170922 VALUES LESS THAN (1506031200) ENGINE = InnoDB,
+ PARTITION p20170923 VALUES LESS THAN (1506117600) ENGINE = InnoDB,
+ PARTITION p20170924 VALUES LESS THAN (1506204000) ENGINE = InnoDB,
+ PARTITION p20170925 VALUES LESS THAN (1506290400) ENGINE = InnoDB,
+ PARTITION p20170926 VALUES LESS THAN (1506376800) ENGINE = InnoDB,
+ PARTITION p20170927 VALUES LESS THAN (1506463200) ENGINE = InnoDB,
+ PARTITION p20170928 VALUES LESS THAN (1506549600) ENGINE = InnoDB,
+ PARTITION p20170929 VALUES LESS THAN (1506636000) ENGINE = InnoDB,
+ PARTITION p20170930 VALUES LESS THAN (1506722400) ENGINE = InnoDB,
+ PARTITION p20171001 VALUES LESS THAN (1506808800) ENGINE = InnoDB,
+ PARTITION p20171002 VALUES LESS THAN (1506895200) ENGINE = InnoDB,
+ PARTITION p20171003 VALUES LESS THAN (1506981600) ENGINE = InnoDB,
+ PARTITION p20171004 VALUES LESS THAN (1507068000) ENGINE = InnoDB,
+ PARTITION p20171005 VALUES LESS THAN (1507154400) ENGINE = InnoDB,
+ PARTITION p20171006 VALUES LESS THAN (1507240800) ENGINE = InnoDB,
+ PARTITION p20171007 VALUES LESS THAN (1507327200) ENGINE = InnoDB,
+ PARTITION p20171008 VALUES LESS THAN (1507413600) ENGINE = InnoDB,
+ PARTITION p20171009 VALUES LESS THAN (1507500000) ENGINE = InnoDB,
+ PARTITION p20171010 VALUES LESS THAN (1507586400) ENGINE = InnoDB,
+ PARTITION p20171011 VALUES LESS THAN (1507672800) ENGINE = InnoDB,
+ PARTITION p20171012 VALUES LESS THAN (1507759200) ENGINE = InnoDB,
+ PARTITION p20171013 VALUES LESS THAN (1507845600) ENGINE = InnoDB,
+ PARTITION p20171014 VALUES LESS THAN (1507932000) ENGINE = InnoDB,
+ PARTITION p20171015 VALUES LESS THAN (1508018400) ENGINE = InnoDB,
+ PARTITION p20171016 VALUES LESS THAN (1508104800) ENGINE = InnoDB,
+ PARTITION p20171017 VALUES LESS THAN (1508191200) ENGINE = InnoDB,
+ PARTITION p20171018 VALUES LESS THAN (1508277600) ENGINE = InnoDB,
+ PARTITION p20171019 VALUES LESS THAN (1508364000) ENGINE = InnoDB,
+ PARTITION p20171020 VALUES LESS THAN (1508450400) ENGINE = InnoDB,
+ PARTITION p20171021 VALUES LESS THAN (1508536800) ENGINE = InnoDB,
+ PARTITION p20171022 VALUES LESS THAN (1508623200) ENGINE = InnoDB,
+ PARTITION p20171023 VALUES LESS THAN (1508709600) ENGINE = InnoDB,
+ PARTITION p20171024 VALUES LESS THAN (1508796000) ENGINE = InnoDB,
+ PARTITION p20171025 VALUES LESS THAN (1508882400) ENGINE = InnoDB,
+ PARTITION p20171026 VALUES LESS THAN (1508968800) ENGINE = InnoDB,
+ PARTITION p20171027 VALUES LESS THAN (1509055200) ENGINE = InnoDB,
+ PARTITION p20171028 VALUES LESS THAN (1509141600) ENGINE = InnoDB,
+ PARTITION p20171029 VALUES LESS THAN (1509228000) ENGINE = InnoDB,
+ PARTITION p20171030 VALUES LESS THAN (1509318000) ENGINE = InnoDB,
+ PARTITION p20171031 VALUES LESS THAN (1509404400) ENGINE = InnoDB,
+ PARTITION p20171101 VALUES LESS THAN (1509490800) ENGINE = InnoDB,
+ PARTITION p20171102 VALUES LESS THAN (1509577200) ENGINE = InnoDB,
+ PARTITION p20171103 VALUES LESS THAN (1509663600) ENGINE = InnoDB,
+ PARTITION p20171104 VALUES LESS THAN (1509750000) ENGINE = InnoDB,
+ PARTITION p20171105 VALUES LESS THAN (1509836400) ENGINE = InnoDB,
+ PARTITION p20171106 VALUES LESS THAN (1509922800) ENGINE = InnoDB,
+ PARTITION p20171107 VALUES LESS THAN (1510009200) ENGINE = InnoDB,
+ PARTITION p20171108 VALUES LESS THAN (1510095600) ENGINE = InnoDB,
+ PARTITION p20171109 VALUES LESS THAN (1510182000) ENGINE = InnoDB,
+ PARTITION p20171110 VALUES LESS THAN (1510268400) ENGINE = InnoDB,
+ PARTITION p20171111 VALUES LESS THAN (1510354800) ENGINE = InnoDB,
+ PARTITION p20171112 VALUES LESS THAN (1510441200) ENGINE = InnoDB,
+ PARTITION p20171113 VALUES LESS THAN (1510527600) ENGINE = InnoDB,
+ PARTITION p20171114 VALUES LESS THAN (1510614000) ENGINE = InnoDB,
+ PARTITION p20171115 VALUES LESS THAN (1510700400) ENGINE = InnoDB,
+ PARTITION p20171116 VALUES LESS THAN (1510786800) ENGINE = InnoDB,
+ PARTITION p20171117 VALUES LESS THAN (1510873200) ENGINE = InnoDB,
+ PARTITION p20171118 VALUES LESS THAN (1510959600) ENGINE = InnoDB,
+ PARTITION p20171119 VALUES LESS THAN (1511046000) ENGINE = InnoDB,
+ PARTITION p20171120 VALUES LESS THAN (1511132400) ENGINE = InnoDB,
+ PARTITION p20171121 VALUES LESS THAN (1511218800) ENGINE = InnoDB,
+ PARTITION p20171122 VALUES LESS THAN (1511305200) ENGINE = InnoDB,
+ PARTITION p20171123 VALUES LESS THAN (1511391600) ENGINE = InnoDB,
+ PARTITION p20171124 VALUES LESS THAN (1511478000) ENGINE = InnoDB,
+ PARTITION p20171125 VALUES LESS THAN (1511564400) ENGINE = InnoDB,
+ PARTITION p20171126 VALUES LESS THAN (1511650800) ENGINE = InnoDB,
+ PARTITION p20171127 VALUES LESS THAN (1511737200) ENGINE = InnoDB,
+ PARTITION p20171128 VALUES LESS THAN (1511823600) ENGINE = InnoDB,
+ PARTITION p20171129 VALUES LESS THAN (1511910000) ENGINE = InnoDB,
+ PARTITION p20171130 VALUES LESS THAN (1511996400) ENGINE = InnoDB,
+ PARTITION p20171201 VALUES LESS THAN (1512082800) ENGINE = InnoDB,
+ PARTITION p20171202 VALUES LESS THAN (1512169200) ENGINE = InnoDB,
+ PARTITION p20171203 VALUES LESS THAN (1512255600) ENGINE = InnoDB,
+ PARTITION p20171204 VALUES LESS THAN (1512342000) ENGINE = InnoDB,
+ PARTITION p20171205 VALUES LESS THAN (1512428400) ENGINE = InnoDB,
+ PARTITION p20171206 VALUES LESS THAN (1512514800) ENGINE = InnoDB,
+ PARTITION p20171207 VALUES LESS THAN (1512601200) ENGINE = InnoDB,
+ PARTITION p20171208 VALUES LESS THAN (1512687600) ENGINE = InnoDB,
+ PARTITION p20171209 VALUES LESS THAN (1512774000) ENGINE = InnoDB,
+ PARTITION p20171210 VALUES LESS THAN (1512860400) ENGINE = InnoDB,
+ PARTITION p20171211 VALUES LESS THAN (1512946800) ENGINE = InnoDB,
+ PARTITION p20171212 VALUES LESS THAN (1513033200) ENGINE = InnoDB,
+ PARTITION p20171213 VALUES LESS THAN (1513119600) ENGINE = InnoDB,
+ PARTITION p20171214 VALUES LESS THAN (1513206000) ENGINE = InnoDB,
+ PARTITION p20171215 VALUES LESS THAN (1513292400) ENGINE = InnoDB,
+ PARTITION p20171216 VALUES LESS THAN (1513378800) ENGINE = InnoDB,
+ PARTITION p20171217 VALUES LESS THAN (1513465200) ENGINE = InnoDB,
+ PARTITION p20171218 VALUES LESS THAN (1513551600) ENGINE = InnoDB,
+ PARTITION p20171219 VALUES LESS THAN (1513638000) ENGINE = InnoDB,
+ PARTITION p20171220 VALUES LESS THAN (1513724400) ENGINE = InnoDB,
+ PARTITION p20171221 VALUES LESS THAN (1513810800) ENGINE = InnoDB,
+ PARTITION p20171222 VALUES LESS THAN (1513897200) ENGINE = InnoDB,
+ PARTITION p20171223 VALUES LESS THAN (1513983600) ENGINE = InnoDB,
+ PARTITION p20171224 VALUES LESS THAN (1514070000) ENGINE = InnoDB,
+ PARTITION p20171225 VALUES LESS THAN (1514156400) ENGINE = InnoDB,
+ PARTITION p20171226 VALUES LESS THAN (1514242800) ENGINE = InnoDB,
+ PARTITION p20171227 VALUES LESS THAN (1514329200) ENGINE = InnoDB,
+ PARTITION p20171228 VALUES LESS THAN (1514415600) ENGINE = InnoDB,
+ PARTITION p20171229 VALUES LESS THAN (1514502000) ENGINE = InnoDB,
+ PARTITION p20171230 VALUES LESS THAN (1514588400) ENGINE = InnoDB,
+ PARTITION p20171231 VALUES LESS THAN (1514674800) ENGINE = InnoDB,
+ PARTITION p20180101 VALUES LESS THAN (1514761200) ENGINE = InnoDB,
+ PARTITION p20180102 VALUES LESS THAN (1514847600) ENGINE = InnoDB,
+ PARTITION p20180103 VALUES LESS THAN (1514934000) ENGINE = InnoDB,
+ PARTITION p20180104 VALUES LESS THAN (1515020400) ENGINE = InnoDB,
+ PARTITION p20180105 VALUES LESS THAN (1515106800) ENGINE = InnoDB,
+ PARTITION p20180106 VALUES LESS THAN (1515193200) ENGINE = InnoDB,
+ PARTITION p20180107 VALUES LESS THAN (1515279600) ENGINE = InnoDB,
+ PARTITION p20180108 VALUES LESS THAN (1515366000) ENGINE = InnoDB,
+ PARTITION p20180109 VALUES LESS THAN (1515452400) ENGINE = InnoDB,
+ PARTITION p20180110 VALUES LESS THAN (1515538800) ENGINE = InnoDB,
+ PARTITION p20180111 VALUES LESS THAN (1515625200) ENGINE = InnoDB,
+ PARTITION p20180112 VALUES LESS THAN (1515711600) ENGINE = InnoDB,
+ PARTITION p20180113 VALUES LESS THAN (1515798000) ENGINE = InnoDB,
+ PARTITION p20180114 VALUES LESS THAN (1515884400) ENGINE = InnoDB,
+ PARTITION p20180115 VALUES LESS THAN (1515970800) ENGINE = InnoDB,
+ PARTITION p20180116 VALUES LESS THAN (1516057200) ENGINE = InnoDB,
+ PARTITION p20180117 VALUES LESS THAN (1516143600) ENGINE = InnoDB,
+ PARTITION p20180118 VALUES LESS THAN (1516230000) ENGINE = InnoDB,
+ PARTITION p20180119 VALUES LESS THAN (1516316400) ENGINE = InnoDB,
+ PARTITION p20180120 VALUES LESS THAN (1516402800) ENGINE = InnoDB,
+ PARTITION p20180121 VALUES LESS THAN (1516489200) ENGINE = InnoDB,
+ PARTITION p20180122 VALUES LESS THAN (1516575600) ENGINE = InnoDB,
+ PARTITION p20180123 VALUES LESS THAN (1516662000) ENGINE = InnoDB,
+ PARTITION p20180124 VALUES LESS THAN (1516748400) ENGINE = InnoDB,
+ PARTITION p20180125 VALUES LESS THAN (1516834800) ENGINE = InnoDB,
+ PARTITION p20180126 VALUES LESS THAN (1516921200) ENGINE = InnoDB,
+ PARTITION p20180127 VALUES LESS THAN (1517007600) ENGINE = InnoDB,
+ PARTITION p20180128 VALUES LESS THAN (1517094000) ENGINE = InnoDB,
+ PARTITION p20180129 VALUES LESS THAN (1517180400) ENGINE = InnoDB,
+ PARTITION p20180130 VALUES LESS THAN (1517266800) ENGINE = InnoDB,
+ PARTITION p20180131 VALUES LESS THAN (1517353200) ENGINE = InnoDB,
+ PARTITION p20180201 VALUES LESS THAN (1517439600) ENGINE = InnoDB,
+ PARTITION p20180202 VALUES LESS THAN (1517526000) ENGINE = InnoDB,
+ PARTITION p20180203 VALUES LESS THAN (1517612400) ENGINE = InnoDB,
+ PARTITION p20180204 VALUES LESS THAN (1517698800) ENGINE = InnoDB,
+ PARTITION p20180205 VALUES LESS THAN (1517785200) ENGINE = InnoDB,
+ PARTITION p20180206 VALUES LESS THAN (1517871600) ENGINE = InnoDB,
+ PARTITION p20180207 VALUES LESS THAN (1517958000) ENGINE = InnoDB,
+ PARTITION p20180208 VALUES LESS THAN (1518044400) ENGINE = InnoDB,
+ PARTITION p20180209 VALUES LESS THAN (1518130800) ENGINE = InnoDB,
+ PARTITION p20180210 VALUES LESS THAN (1518217200) ENGINE = InnoDB,
+ PARTITION p20180211 VALUES LESS THAN (1518303600) ENGINE = InnoDB,
+ PARTITION p20180212 VALUES LESS THAN (1518390000) ENGINE = InnoDB,
+ PARTITION p20180213 VALUES LESS THAN (1518476400) ENGINE = InnoDB,
+ PARTITION p20180214 VALUES LESS THAN (1518562800) ENGINE = InnoDB,
+ PARTITION p20180215 VALUES LESS THAN (1518649200) ENGINE = InnoDB,
+ PARTITION p20180216 VALUES LESS THAN (1518735600) ENGINE = InnoDB,
+ PARTITION p20180217 VALUES LESS THAN (1518822000) ENGINE = InnoDB,
+ PARTITION p20180218 VALUES LESS THAN (1518908400) ENGINE = InnoDB,
+ PARTITION p20180219 VALUES LESS THAN (1518994800) ENGINE = InnoDB,
+ PARTITION p20180220 VALUES LESS THAN (1519081200) ENGINE = InnoDB,
+ PARTITION p20180221 VALUES LESS THAN (1519167600) ENGINE = InnoDB,
+ PARTITION p20180222 VALUES LESS THAN (1519254000) ENGINE = InnoDB,
+ PARTITION p20180223 VALUES LESS THAN (1519340400) ENGINE = InnoDB,
+ PARTITION p20180224 VALUES LESS THAN (1519426800) ENGINE = InnoDB,
+ PARTITION p20180225 VALUES LESS THAN (1519513200) ENGINE = InnoDB,
+ PARTITION p20180226 VALUES LESS THAN (1519599600) ENGINE = InnoDB,
+ PARTITION p20180227 VALUES LESS THAN (1519686000) ENGINE = InnoDB,
+ PARTITION p20180228 VALUES LESS THAN (1519772400) ENGINE = InnoDB,
+ PARTITION p20180301 VALUES LESS THAN (1519858800) ENGINE = InnoDB,
+ PARTITION p20180302 VALUES LESS THAN (1519945200) ENGINE = InnoDB,
+ PARTITION p20180303 VALUES LESS THAN (1520031600) ENGINE = InnoDB,
+ PARTITION p20180304 VALUES LESS THAN (1520118000) ENGINE = InnoDB,
+ PARTITION p20180305 VALUES LESS THAN (1520204400) ENGINE = InnoDB,
+ PARTITION p20180306 VALUES LESS THAN (1520290800) ENGINE = InnoDB,
+ PARTITION p20180307 VALUES LESS THAN (1520377200) ENGINE = InnoDB,
+ PARTITION p20180308 VALUES LESS THAN (1520463600) ENGINE = InnoDB,
+ PARTITION p20180309 VALUES LESS THAN (1520550000) ENGINE = InnoDB,
+ PARTITION p20180310 VALUES LESS THAN (1520636400) ENGINE = InnoDB,
+ PARTITION p20180311 VALUES LESS THAN (1520722800) ENGINE = InnoDB,
+ PARTITION p20180312 VALUES LESS THAN (1520809200) ENGINE = InnoDB,
+ PARTITION p20180313 VALUES LESS THAN (1520895600) ENGINE = InnoDB,
+ PARTITION p20180314 VALUES LESS THAN (1520982000) ENGINE = InnoDB,
+ PARTITION p20180315 VALUES LESS THAN (1521068400) ENGINE = InnoDB,
+ PARTITION p20180316 VALUES LESS THAN (1521154800) ENGINE = InnoDB,
+ PARTITION p20180317 VALUES LESS THAN (1521241200) ENGINE = InnoDB,
+ PARTITION p20180318 VALUES LESS THAN (1521327600) ENGINE = InnoDB,
+ PARTITION p20180319 VALUES LESS THAN (1521414000) ENGINE = InnoDB,
+ PARTITION p20180320 VALUES LESS THAN (1521500400) ENGINE = InnoDB,
+ PARTITION p20180321 VALUES LESS THAN (1521586800) ENGINE = InnoDB,
+ PARTITION p20180322 VALUES LESS THAN (1521673200) ENGINE = InnoDB,
+ PARTITION p20180323 VALUES LESS THAN (1521759600) ENGINE = InnoDB,
+ PARTITION p20180324 VALUES LESS THAN (1521846000) ENGINE = InnoDB,
+ PARTITION p20180325 VALUES LESS THAN (1521932400) ENGINE = InnoDB,
+ PARTITION p20180326 VALUES LESS THAN (1522015200) ENGINE = InnoDB,
+ PARTITION p20180327 VALUES LESS THAN (1522101600) ENGINE = InnoDB,
+ PARTITION p20180328 VALUES LESS THAN (1522188000) ENGINE = InnoDB,
+ PARTITION p20180329 VALUES LESS THAN (1522274400) ENGINE = InnoDB,
+ PARTITION p20180330 VALUES LESS THAN (1522360800) ENGINE = InnoDB,
+ PARTITION p20180331 VALUES LESS THAN (1522447200) ENGINE = InnoDB,
+ PARTITION p20180401 VALUES LESS THAN (1522533600) ENGINE = InnoDB,
+ PARTITION p20180402 VALUES LESS THAN (1522620000) ENGINE = InnoDB,
+ PARTITION p20180403 VALUES LESS THAN (1522706400) ENGINE = InnoDB,
+ PARTITION p20180404 VALUES LESS THAN (1522792800) ENGINE = InnoDB,
+ PARTITION p20180405 VALUES LESS THAN (1522879200) ENGINE = InnoDB,
+ PARTITION p20180406 VALUES LESS THAN (1522965600) ENGINE = InnoDB,
+ PARTITION p20180407 VALUES LESS THAN (1523052000) ENGINE = InnoDB,
+ PARTITION p20180408 VALUES LESS THAN (1523138400) ENGINE = InnoDB,
+ PARTITION p20180409 VALUES LESS THAN (1523224800) ENGINE = InnoDB,
+ PARTITION p20180410 VALUES LESS THAN (1523311200) ENGINE = InnoDB,
+ PARTITION p20180411 VALUES LESS THAN (1523397600) ENGINE = InnoDB,
+ PARTITION p20180412 VALUES LESS THAN (1523484000) ENGINE = InnoDB,
+ PARTITION p20180413 VALUES LESS THAN (1523570400) ENGINE = InnoDB,
+ PARTITION p20180414 VALUES LESS THAN (1523656800) ENGINE = InnoDB,
+ PARTITION p20180415 VALUES LESS THAN (1523743200) ENGINE = InnoDB,
+ PARTITION p20180416 VALUES LESS THAN (1523829600) ENGINE = InnoDB,
+ PARTITION p20180417 VALUES LESS THAN (1523916000) ENGINE = InnoDB,
+ PARTITION p20180418 VALUES LESS THAN (1524002400) ENGINE = InnoDB,
+ PARTITION p20180419 VALUES LESS THAN (1524088800) ENGINE = InnoDB,
+ PARTITION p20180420 VALUES LESS THAN (1524175200) ENGINE = InnoDB,
+ PARTITION p20180421 VALUES LESS THAN (1524261600) ENGINE = InnoDB,
+ PARTITION p20180422 VALUES LESS THAN (1524348000) ENGINE = InnoDB,
+ PARTITION p20180423 VALUES LESS THAN (1524434400) ENGINE = InnoDB,
+ PARTITION p20180424 VALUES LESS THAN (1524520800) ENGINE = InnoDB,
+ PARTITION p20180425 VALUES LESS THAN (1524607200) ENGINE = InnoDB,
+ PARTITION p20180426 VALUES LESS THAN (1524693600) ENGINE = InnoDB,
+ PARTITION p20180427 VALUES LESS THAN (1524780000) ENGINE = InnoDB,
+ PARTITION p20180428 VALUES LESS THAN (1524866400) ENGINE = InnoDB,
+ PARTITION p20180429 VALUES LESS THAN (1524952800) ENGINE = InnoDB,
+ PARTITION p20180430 VALUES LESS THAN (1525039200) ENGINE = InnoDB,
+ PARTITION p20180501 VALUES LESS THAN (1525125600) ENGINE = InnoDB,
+ PARTITION p20180502 VALUES LESS THAN (1525212000) ENGINE = InnoDB,
+ PARTITION p20180503 VALUES LESS THAN (1525298400) ENGINE = InnoDB,
+ PARTITION p20180504 VALUES LESS THAN (1525384800) ENGINE = InnoDB,
+ PARTITION p20180505 VALUES LESS THAN (1525471200) ENGINE = InnoDB,
+ PARTITION p20180506 VALUES LESS THAN (1525557600) ENGINE = InnoDB,
+ PARTITION p20180507 VALUES LESS THAN (1525644000) ENGINE = InnoDB,
+ PARTITION p20180508 VALUES LESS THAN (1525730400) ENGINE = InnoDB,
+ PARTITION p20180509 VALUES LESS THAN (1525816800) ENGINE = InnoDB,
+ PARTITION p20180510 VALUES LESS THAN (1525903200) ENGINE = InnoDB,
+ PARTITION p20180511 VALUES LESS THAN (1525989600) ENGINE = InnoDB,
+ PARTITION p20180512 VALUES LESS THAN (1526076000) ENGINE = InnoDB,
+ PARTITION p20180513 VALUES LESS THAN (1526162400) ENGINE = InnoDB,
+ PARTITION p20180514 VALUES LESS THAN (1526248800) ENGINE = InnoDB,
+ PARTITION p20180515 VALUES LESS THAN (1526335200) ENGINE = InnoDB,
+ PARTITION p20180516 VALUES LESS THAN (1526421600) ENGINE = InnoDB,
+ PARTITION p20180517 VALUES LESS THAN (1526508000) ENGINE = InnoDB,
+ PARTITION p20180518 VALUES LESS THAN (1526594400) ENGINE = InnoDB,
+ PARTITION p20180519 VALUES LESS THAN (1526680800) ENGINE = InnoDB,
+ PARTITION p20180520 VALUES LESS THAN (1526767200) ENGINE = InnoDB,
+ PARTITION p20180521 VALUES LESS THAN (1526853600) ENGINE = InnoDB,
+ PARTITION p20180522 VALUES LESS THAN (1526940000) ENGINE = InnoDB,
+ PARTITION p20180523 VALUES LESS THAN (1527026400) ENGINE = InnoDB,
+ PARTITION p20180524 VALUES LESS THAN (1527112800) ENGINE = InnoDB,
+ PARTITION p20180525 VALUES LESS THAN (1527199200) ENGINE = InnoDB,
+ PARTITION p20180526 VALUES LESS THAN (1527285600) ENGINE = InnoDB,
+ PARTITION p20180527 VALUES LESS THAN (1527372000) ENGINE = InnoDB,
+ PARTITION p20180528 VALUES LESS THAN (1527458400) ENGINE = InnoDB,
+ PARTITION p20180529 VALUES LESS THAN (1527544800) ENGINE = InnoDB,
+ PARTITION p20180530 VALUES LESS THAN (1527631200) ENGINE = InnoDB,
+ PARTITION p20180531 VALUES LESS THAN (1527717600) ENGINE = InnoDB,
+ PARTITION p20180601 VALUES LESS THAN (1527804000) ENGINE = InnoDB,
+ PARTITION p20180602 VALUES LESS THAN (1527890400) ENGINE = InnoDB,
+ PARTITION p20180603 VALUES LESS THAN (1527976800) ENGINE = InnoDB,
+ PARTITION p20180604 VALUES LESS THAN (1528063200) ENGINE = InnoDB,
+ PARTITION p20180605 VALUES LESS THAN (1528149600) ENGINE = InnoDB,
+ PARTITION p20180606 VALUES LESS THAN (1528236000) ENGINE = InnoDB,
+ PARTITION p20180607 VALUES LESS THAN (1528322400) ENGINE = InnoDB,
+ PARTITION p20180608 VALUES LESS THAN (1528408800) ENGINE = InnoDB,
+ PARTITION p20180609 VALUES LESS THAN (1528495200) ENGINE = InnoDB,
+ PARTITION p20180610 VALUES LESS THAN (1528581600) ENGINE = InnoDB,
+ PARTITION p20180611 VALUES LESS THAN (1528668000) ENGINE = InnoDB,
+ PARTITION p20180612 VALUES LESS THAN (1528754400) ENGINE = InnoDB,
+ PARTITION p20180613 VALUES LESS THAN (1528840800) ENGINE = InnoDB,
+ PARTITION p20180614 VALUES LESS THAN (1528927200) ENGINE = InnoDB,
+ PARTITION p20180615 VALUES LESS THAN (1529013600) ENGINE = InnoDB,
+ PARTITION p20180616 VALUES LESS THAN (1529100000) ENGINE = InnoDB,
+ PARTITION p20180617 VALUES LESS THAN (1529186400) ENGINE = InnoDB,
+ PARTITION p20180618 VALUES LESS THAN (1529272800) ENGINE = InnoDB,
+ PARTITION p20180619 VALUES LESS THAN (1529359200) ENGINE = InnoDB,
+ PARTITION p20180620 VALUES LESS THAN (1529445600) ENGINE = InnoDB,
+ PARTITION p20180621 VALUES LESS THAN (1529532000) ENGINE = InnoDB,
+ PARTITION p20180622 VALUES LESS THAN (1529618400) ENGINE = InnoDB,
+ PARTITION p20180623 VALUES LESS THAN (1529704800) ENGINE = InnoDB,
+ PARTITION p20180624 VALUES LESS THAN (1529791200) ENGINE = InnoDB,
+ PARTITION p20180625 VALUES LESS THAN (1529877600) ENGINE = InnoDB,
+ PARTITION p20180626 VALUES LESS THAN (1529964000) ENGINE = InnoDB,
+ PARTITION p20180627 VALUES LESS THAN (1530050400) ENGINE = InnoDB,
+ PARTITION p20180628 VALUES LESS THAN (1530136800) ENGINE = InnoDB,
+ PARTITION p20180629 VALUES LESS THAN (1530223200) ENGINE = InnoDB,
+ PARTITION p20180630 VALUES LESS THAN (1530309600) ENGINE = InnoDB,
+ PARTITION p20180701 VALUES LESS THAN (1530396000) ENGINE = InnoDB,
+ PARTITION p20180702 VALUES LESS THAN (1530482400) ENGINE = InnoDB,
+ PARTITION p20180703 VALUES LESS THAN (1530568800) ENGINE = InnoDB,
+ PARTITION p20180704 VALUES LESS THAN (1530655200) ENGINE = InnoDB,
+ PARTITION p20180705 VALUES LESS THAN (1530741600) ENGINE = InnoDB,
+ PARTITION p20180706 VALUES LESS THAN (1530828000) ENGINE = InnoDB,
+ PARTITION p20180707 VALUES LESS THAN (1530914400) ENGINE = InnoDB,
+ PARTITION p20180708 VALUES LESS THAN (1531000800) ENGINE = InnoDB,
+ PARTITION p20180709 VALUES LESS THAN (1531087200) ENGINE = InnoDB,
+ PARTITION p20180710 VALUES LESS THAN (1531173600) ENGINE = InnoDB,
+ PARTITION p20180711 VALUES LESS THAN (1531260000) ENGINE = InnoDB,
+ PARTITION p20180712 VALUES LESS THAN (1531346400) ENGINE = InnoDB,
+ PARTITION p20180713 VALUES LESS THAN (1531432800) ENGINE = InnoDB,
+ PARTITION p20180714 VALUES LESS THAN (1531519200) ENGINE = InnoDB,
+ PARTITION p20180715 VALUES LESS THAN (1531605600) ENGINE = InnoDB,
+ PARTITION p20180716 VALUES LESS THAN (1531692000) ENGINE = InnoDB,
+ PARTITION p20180717 VALUES LESS THAN (1531778400) ENGINE = InnoDB,
+ PARTITION p20180718 VALUES LESS THAN (1531864800) ENGINE = InnoDB,
+ PARTITION p20180719 VALUES LESS THAN (1531951200) ENGINE = InnoDB,
+ PARTITION p20180720 VALUES LESS THAN (1532037600) ENGINE = InnoDB,
+ PARTITION p20180721 VALUES LESS THAN (1532124000) ENGINE = InnoDB,
+ PARTITION p20180722 VALUES LESS THAN (1532210400) ENGINE = InnoDB,
+ PARTITION p20180723 VALUES LESS THAN (1532296800) ENGINE = InnoDB,
+ PARTITION p20180724 VALUES LESS THAN (1532383200) ENGINE = InnoDB,
+ PARTITION p20180725 VALUES LESS THAN (1532469600) ENGINE = InnoDB,
+ PARTITION p20180726 VALUES LESS THAN (1532556000) ENGINE = InnoDB,
+ PARTITION p20180727 VALUES LESS THAN (1532642400) ENGINE = InnoDB,
+ PARTITION p20180728 VALUES LESS THAN (1532728800) ENGINE = InnoDB,
+ PARTITION p20180729 VALUES LESS THAN (1532815200) ENGINE = InnoDB,
+ PARTITION p20180730 VALUES LESS THAN (1532901600) ENGINE = InnoDB,
+ PARTITION p20180731 VALUES LESS THAN (1532988000) ENGINE = InnoDB,
+ PARTITION p20180801 VALUES LESS THAN (1533074400) ENGINE = InnoDB,
+ PARTITION p20180802 VALUES LESS THAN (1533160800) ENGINE = InnoDB,
+ PARTITION p20180803 VALUES LESS THAN (1533247200) ENGINE = InnoDB,
+ PARTITION p20180804 VALUES LESS THAN (1533333600) ENGINE = InnoDB,
+ PARTITION p20180805 VALUES LESS THAN (1533420000) ENGINE = InnoDB,
+ PARTITION p20180806 VALUES LESS THAN (1533506400) ENGINE = InnoDB,
+ PARTITION p20180807 VALUES LESS THAN (1533592800) ENGINE = InnoDB,
+ PARTITION p20180808 VALUES LESS THAN (1533679200) ENGINE = InnoDB,
+ PARTITION p20180809 VALUES LESS THAN (1533765600) ENGINE = InnoDB,
+ PARTITION p20180810 VALUES LESS THAN (1533852000) ENGINE = InnoDB,
+ PARTITION p20180811 VALUES LESS THAN (1533938400) ENGINE = InnoDB,
+ PARTITION p20180812 VALUES LESS THAN (1534024800) ENGINE = InnoDB,
+ PARTITION p20180813 VALUES LESS THAN (1534111200) ENGINE = InnoDB,
+ PARTITION p20180814 VALUES LESS THAN (1534197600) ENGINE = InnoDB,
+ PARTITION p20180815 VALUES LESS THAN (1534284000) ENGINE = InnoDB,
+ PARTITION p20180816 VALUES LESS THAN (1534370400) ENGINE = InnoDB,
+ PARTITION p20180817 VALUES LESS THAN (1534456800) ENGINE = InnoDB,
+ PARTITION p20180818 VALUES LESS THAN (1534543200) ENGINE = InnoDB,
+ PARTITION p20180819 VALUES LESS THAN (1534629600) ENGINE = InnoDB,
+ PARTITION p20180820 VALUES LESS THAN (1534716000) ENGINE = InnoDB,
+ PARTITION p20180821 VALUES LESS THAN (1534802400) ENGINE = InnoDB,
+ PARTITION p20180822 VALUES LESS THAN (1534888800) ENGINE = InnoDB,
+ PARTITION p20180823 VALUES LESS THAN (1534975200) ENGINE = InnoDB,
+ PARTITION p20180824 VALUES LESS THAN (1535061600) ENGINE = InnoDB,
+ PARTITION p20180825 VALUES LESS THAN (1535148000) ENGINE = InnoDB,
+ PARTITION p20180826 VALUES LESS THAN (1535234400) ENGINE = InnoDB,
+ PARTITION p20180827 VALUES LESS THAN (1535320800) ENGINE = InnoDB,
+ PARTITION p20180828 VALUES LESS THAN (1535407200) ENGINE = InnoDB,
+ PARTITION p20180829 VALUES LESS THAN (1535493600) ENGINE = InnoDB,
+ PARTITION p20180830 VALUES LESS THAN (1535580000) ENGINE = InnoDB,
+ PARTITION p20180831 VALUES LESS THAN (1535666400) ENGINE = InnoDB,
+ PARTITION p20180901 VALUES LESS THAN (1535752800) ENGINE = InnoDB,
+ PARTITION p20180902 VALUES LESS THAN (1535839200) ENGINE = InnoDB,
+ PARTITION p20180903 VALUES LESS THAN (1535925600) ENGINE = InnoDB,
+ PARTITION p20180904 VALUES LESS THAN (1536012000) ENGINE = InnoDB,
+ PARTITION p20180905 VALUES LESS THAN (1536098400) ENGINE = InnoDB,
+ PARTITION p20180906 VALUES LESS THAN (1536184800) ENGINE = InnoDB,
+ PARTITION p20180907 VALUES LESS THAN (1536271200) ENGINE = InnoDB,
+ PARTITION p20180908 VALUES LESS THAN (1536357600) ENGINE = InnoDB,
+ PARTITION p20180909 VALUES LESS THAN (1536444000) ENGINE = InnoDB,
+ PARTITION p20180910 VALUES LESS THAN (1536530400) ENGINE = InnoDB,
+ PARTITION p20180911 VALUES LESS THAN (1536616800) ENGINE = InnoDB,
+ PARTITION p20180912 VALUES LESS THAN (1536703200) ENGINE = InnoDB,
+ PARTITION p20180913 VALUES LESS THAN (1536789600) ENGINE = InnoDB,
+ PARTITION p20180914 VALUES LESS THAN (1536876000) ENGINE = InnoDB,
+ PARTITION p20180915 VALUES LESS THAN (1536962400) ENGINE = InnoDB,
+ PARTITION p20180916 VALUES LESS THAN (1537048800) ENGINE = InnoDB,
+ PARTITION p20180917 VALUES LESS THAN (1537135200) ENGINE = InnoDB,
+ PARTITION p20180918 VALUES LESS THAN (1537221600) ENGINE = InnoDB,
+ PARTITION p20180919 VALUES LESS THAN (1537308000) ENGINE = InnoDB,
+ PARTITION p20180920 VALUES LESS THAN (1537394400) ENGINE = InnoDB,
+ PARTITION p20180921 VALUES LESS THAN (1537480800) ENGINE = InnoDB,
+ PARTITION p20180922 VALUES LESS THAN (1537567200) ENGINE = InnoDB,
+ PARTITION p20180923 VALUES LESS THAN (1537653600) ENGINE = InnoDB,
+ PARTITION pmax VALUES LESS THAN MAXVALUE ENGINE = InnoDB) */;
+
+
+--
+-- Table structure for table `log_archive_last_status`
+--
+
+CREATE TABLE `log_archive_last_status` (
+  `host_id` int(11) DEFAULT NULL,
+  `service_id` int(11) DEFAULT NULL,
+  `host_name` varchar(255) DEFAULT NULL,
+  `service_description` varchar(255) DEFAULT NULL,
+  `status` varchar(255) DEFAULT NULL,
+  `ctime` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `log_archive_service`
+--
+
+CREATE TABLE `log_archive_service` (
+  `log_id` int(11) NOT NULL AUTO_INCREMENT,
+  `host_id` int(11) NOT NULL DEFAULT '0',
+  `service_id` int(11) NOT NULL DEFAULT '0',
+  `OKTimeScheduled` int(11) NOT NULL DEFAULT '0',
+  `OKnbEvent` int(11) NOT NULL DEFAULT '0',
+  `OKTimeAverageAck` int(11) NOT NULL,
+  `OKTimeAverageRecovery` int(11) NOT NULL,
+  `WARNINGTimeScheduled` int(11) NOT NULL DEFAULT '0',
+  `WARNINGnbEvent` int(11) NOT NULL DEFAULT '0',
+  `WARNINGTimeAverageAck` int(11) NOT NULL,
+  `WARNINGTimeAverageRecovery` int(11) NOT NULL,
+  `UNKNOWNTimeScheduled` int(11) NOT NULL DEFAULT '0',
+  `UNKNOWNnbEvent` int(11) NOT NULL DEFAULT '0',
+  `UNKNOWNTimeAverageAck` int(11) NOT NULL,
+  `UNKNOWNTimeAverageRecovery` int(11) NOT NULL,
+  `CRITICALTimeScheduled` int(11) NOT NULL DEFAULT '0',
+  `CRITICALnbEvent` int(11) NOT NULL DEFAULT '0',
+  `CRITICALTimeAverageAck` int(11) NOT NULL,
+  `CRITICALTimeAverageRecovery` int(11) NOT NULL,
+  `UNDETERMINEDTimeScheduled` int(11) NOT NULL DEFAULT '0',
+  `MaintenanceTime` int(11) DEFAULT '0',
+  `date_start` int(11) DEFAULT NULL,
+  `date_end` int(11) DEFAULT NULL,
+  KEY `log_id` (`log_id`),
+  KEY `host_index` (`host_id`),
+  KEY `service_index` (`service_id`),
+  KEY `date_end_index` (`date_end`),
+  KEY `date_start_index` (`date_start`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+/*!50100 PARTITION BY RANGE (date_end)
+(PARTITION p20170730 VALUES LESS THAN (1501365600) ENGINE = InnoDB,
+ PARTITION p20170731 VALUES LESS THAN (1501452000) ENGINE = InnoDB,
+ PARTITION p20170801 VALUES LESS THAN (1501538400) ENGINE = InnoDB,
+ PARTITION p20170802 VALUES LESS THAN (1501624800) ENGINE = InnoDB,
+ PARTITION p20170803 VALUES LESS THAN (1501711200) ENGINE = InnoDB,
+ PARTITION p20170804 VALUES LESS THAN (1501797600) ENGINE = InnoDB,
+ PARTITION p20170805 VALUES LESS THAN (1501884000) ENGINE = InnoDB,
+ PARTITION p20170806 VALUES LESS THAN (1501970400) ENGINE = InnoDB,
+ PARTITION p20170807 VALUES LESS THAN (1502056800) ENGINE = InnoDB,
+ PARTITION p20170808 VALUES LESS THAN (1502143200) ENGINE = InnoDB,
+ PARTITION p20170809 VALUES LESS THAN (1502229600) ENGINE = InnoDB,
+ PARTITION p20170810 VALUES LESS THAN (1502316000) ENGINE = InnoDB,
+ PARTITION p20170811 VALUES LESS THAN (1502402400) ENGINE = InnoDB,
+ PARTITION p20170812 VALUES LESS THAN (1502488800) ENGINE = InnoDB,
+ PARTITION p20170813 VALUES LESS THAN (1502575200) ENGINE = InnoDB,
+ PARTITION p20170814 VALUES LESS THAN (1502661600) ENGINE = InnoDB,
+ PARTITION p20170815 VALUES LESS THAN (1502748000) ENGINE = InnoDB,
+ PARTITION p20170816 VALUES LESS THAN (1502834400) ENGINE = InnoDB,
+ PARTITION p20170817 VALUES LESS THAN (1502920800) ENGINE = InnoDB,
+ PARTITION p20170818 VALUES LESS THAN (1503007200) ENGINE = InnoDB,
+ PARTITION p20170819 VALUES LESS THAN (1503093600) ENGINE = InnoDB,
+ PARTITION p20170820 VALUES LESS THAN (1503180000) ENGINE = InnoDB,
+ PARTITION p20170821 VALUES LESS THAN (1503266400) ENGINE = InnoDB,
+ PARTITION p20170822 VALUES LESS THAN (1503352800) ENGINE = InnoDB,
+ PARTITION p20170823 VALUES LESS THAN (1503439200) ENGINE = InnoDB,
+ PARTITION p20170824 VALUES LESS THAN (1503525600) ENGINE = InnoDB,
+ PARTITION p20170825 VALUES LESS THAN (1503612000) ENGINE = InnoDB,
+ PARTITION p20170826 VALUES LESS THAN (1503698400) ENGINE = InnoDB,
+ PARTITION p20170827 VALUES LESS THAN (1503784800) ENGINE = InnoDB,
+ PARTITION p20170828 VALUES LESS THAN (1503871200) ENGINE = InnoDB,
+ PARTITION p20170829 VALUES LESS THAN (1503957600) ENGINE = InnoDB,
+ PARTITION p20170830 VALUES LESS THAN (1504044000) ENGINE = InnoDB,
+ PARTITION p20170831 VALUES LESS THAN (1504130400) ENGINE = InnoDB,
+ PARTITION p20170901 VALUES LESS THAN (1504216800) ENGINE = InnoDB,
+ PARTITION p20170902 VALUES LESS THAN (1504303200) ENGINE = InnoDB,
+ PARTITION p20170903 VALUES LESS THAN (1504389600) ENGINE = InnoDB,
+ PARTITION p20170904 VALUES LESS THAN (1504476000) ENGINE = InnoDB,
+ PARTITION p20170905 VALUES LESS THAN (1504562400) ENGINE = InnoDB,
+ PARTITION p20170906 VALUES LESS THAN (1504648800) ENGINE = InnoDB,
+ PARTITION p20170907 VALUES LESS THAN (1504735200) ENGINE = InnoDB,
+ PARTITION p20170908 VALUES LESS THAN (1504821600) ENGINE = InnoDB,
+ PARTITION p20170909 VALUES LESS THAN (1504908000) ENGINE = InnoDB,
+ PARTITION p20170910 VALUES LESS THAN (1504994400) ENGINE = InnoDB,
+ PARTITION p20170911 VALUES LESS THAN (1505080800) ENGINE = InnoDB,
+ PARTITION p20170912 VALUES LESS THAN (1505167200) ENGINE = InnoDB,
+ PARTITION p20170913 VALUES LESS THAN (1505253600) ENGINE = InnoDB,
+ PARTITION p20170914 VALUES LESS THAN (1505340000) ENGINE = InnoDB,
+ PARTITION p20170915 VALUES LESS THAN (1505426400) ENGINE = InnoDB,
+ PARTITION p20170916 VALUES LESS THAN (1505512800) ENGINE = InnoDB,
+ PARTITION p20170917 VALUES LESS THAN (1505599200) ENGINE = InnoDB,
+ PARTITION p20170918 VALUES LESS THAN (1505685600) ENGINE = InnoDB,
+ PARTITION p20170919 VALUES LESS THAN (1505772000) ENGINE = InnoDB,
+ PARTITION p20170920 VALUES LESS THAN (1505858400) ENGINE = InnoDB,
+ PARTITION p20170921 VALUES LESS THAN (1505944800) ENGINE = InnoDB,
+ PARTITION p20170922 VALUES LESS THAN (1506031200) ENGINE = InnoDB,
+ PARTITION p20170923 VALUES LESS THAN (1506117600) ENGINE = InnoDB,
+ PARTITION p20170924 VALUES LESS THAN (1506204000) ENGINE = InnoDB,
+ PARTITION p20170925 VALUES LESS THAN (1506290400) ENGINE = InnoDB,
+ PARTITION p20170926 VALUES LESS THAN (1506376800) ENGINE = InnoDB,
+ PARTITION p20170927 VALUES LESS THAN (1506463200) ENGINE = InnoDB,
+ PARTITION p20170928 VALUES LESS THAN (1506549600) ENGINE = InnoDB,
+ PARTITION p20170929 VALUES LESS THAN (1506636000) ENGINE = InnoDB,
+ PARTITION p20170930 VALUES LESS THAN (1506722400) ENGINE = InnoDB,
+ PARTITION p20171001 VALUES LESS THAN (1506808800) ENGINE = InnoDB,
+ PARTITION p20171002 VALUES LESS THAN (1506895200) ENGINE = InnoDB,
+ PARTITION p20171003 VALUES LESS THAN (1506981600) ENGINE = InnoDB,
+ PARTITION p20171004 VALUES LESS THAN (1507068000) ENGINE = InnoDB,
+ PARTITION p20171005 VALUES LESS THAN (1507154400) ENGINE = InnoDB,
+ PARTITION p20171006 VALUES LESS THAN (1507240800) ENGINE = InnoDB,
+ PARTITION p20171007 VALUES LESS THAN (1507327200) ENGINE = InnoDB,
+ PARTITION p20171008 VALUES LESS THAN (1507413600) ENGINE = InnoDB,
+ PARTITION p20171009 VALUES LESS THAN (1507500000) ENGINE = InnoDB,
+ PARTITION p20171010 VALUES LESS THAN (1507586400) ENGINE = InnoDB,
+ PARTITION p20171011 VALUES LESS THAN (1507672800) ENGINE = InnoDB,
+ PARTITION p20171012 VALUES LESS THAN (1507759200) ENGINE = InnoDB,
+ PARTITION p20171013 VALUES LESS THAN (1507845600) ENGINE = InnoDB,
+ PARTITION p20171014 VALUES LESS THAN (1507932000) ENGINE = InnoDB,
+ PARTITION p20171015 VALUES LESS THAN (1508018400) ENGINE = InnoDB,
+ PARTITION p20171016 VALUES LESS THAN (1508104800) ENGINE = InnoDB,
+ PARTITION p20171017 VALUES LESS THAN (1508191200) ENGINE = InnoDB,
+ PARTITION p20171018 VALUES LESS THAN (1508277600) ENGINE = InnoDB,
+ PARTITION p20171019 VALUES LESS THAN (1508364000) ENGINE = InnoDB,
+ PARTITION p20171020 VALUES LESS THAN (1508450400) ENGINE = InnoDB,
+ PARTITION p20171021 VALUES LESS THAN (1508536800) ENGINE = InnoDB,
+ PARTITION p20171022 VALUES LESS THAN (1508623200) ENGINE = InnoDB,
+ PARTITION p20171023 VALUES LESS THAN (1508709600) ENGINE = InnoDB,
+ PARTITION p20171024 VALUES LESS THAN (1508796000) ENGINE = InnoDB,
+ PARTITION p20171025 VALUES LESS THAN (1508882400) ENGINE = InnoDB,
+ PARTITION p20171026 VALUES LESS THAN (1508968800) ENGINE = InnoDB,
+ PARTITION p20171027 VALUES LESS THAN (1509055200) ENGINE = InnoDB,
+ PARTITION p20171028 VALUES LESS THAN (1509141600) ENGINE = InnoDB,
+ PARTITION p20171029 VALUES LESS THAN (1509228000) ENGINE = InnoDB,
+ PARTITION p20171030 VALUES LESS THAN (1509318000) ENGINE = InnoDB,
+ PARTITION p20171031 VALUES LESS THAN (1509404400) ENGINE = InnoDB,
+ PARTITION p20171101 VALUES LESS THAN (1509490800) ENGINE = InnoDB,
+ PARTITION p20171102 VALUES LESS THAN (1509577200) ENGINE = InnoDB,
+ PARTITION p20171103 VALUES LESS THAN (1509663600) ENGINE = InnoDB,
+ PARTITION p20171104 VALUES LESS THAN (1509750000) ENGINE = InnoDB,
+ PARTITION p20171105 VALUES LESS THAN (1509836400) ENGINE = InnoDB,
+ PARTITION p20171106 VALUES LESS THAN (1509922800) ENGINE = InnoDB,
+ PARTITION p20171107 VALUES LESS THAN (1510009200) ENGINE = InnoDB,
+ PARTITION p20171108 VALUES LESS THAN (1510095600) ENGINE = InnoDB,
+ PARTITION p20171109 VALUES LESS THAN (1510182000) ENGINE = InnoDB,
+ PARTITION p20171110 VALUES LESS THAN (1510268400) ENGINE = InnoDB,
+ PARTITION p20171111 VALUES LESS THAN (1510354800) ENGINE = InnoDB,
+ PARTITION p20171112 VALUES LESS THAN (1510441200) ENGINE = InnoDB,
+ PARTITION p20171113 VALUES LESS THAN (1510527600) ENGINE = InnoDB,
+ PARTITION p20171114 VALUES LESS THAN (1510614000) ENGINE = InnoDB,
+ PARTITION p20171115 VALUES LESS THAN (1510700400) ENGINE = InnoDB,
+ PARTITION p20171116 VALUES LESS THAN (1510786800) ENGINE = InnoDB,
+ PARTITION p20171117 VALUES LESS THAN (1510873200) ENGINE = InnoDB,
+ PARTITION p20171118 VALUES LESS THAN (1510959600) ENGINE = InnoDB,
+ PARTITION p20171119 VALUES LESS THAN (1511046000) ENGINE = InnoDB,
+ PARTITION p20171120 VALUES LESS THAN (1511132400) ENGINE = InnoDB,
+ PARTITION p20171121 VALUES LESS THAN (1511218800) ENGINE = InnoDB,
+ PARTITION p20171122 VALUES LESS THAN (1511305200) ENGINE = InnoDB,
+ PARTITION p20171123 VALUES LESS THAN (1511391600) ENGINE = InnoDB,
+ PARTITION p20171124 VALUES LESS THAN (1511478000) ENGINE = InnoDB,
+ PARTITION p20171125 VALUES LESS THAN (1511564400) ENGINE = InnoDB,
+ PARTITION p20171126 VALUES LESS THAN (1511650800) ENGINE = InnoDB,
+ PARTITION p20171127 VALUES LESS THAN (1511737200) ENGINE = InnoDB,
+ PARTITION p20171128 VALUES LESS THAN (1511823600) ENGINE = InnoDB,
+ PARTITION p20171129 VALUES LESS THAN (1511910000) ENGINE = InnoDB,
+ PARTITION p20171130 VALUES LESS THAN (1511996400) ENGINE = InnoDB,
+ PARTITION p20171201 VALUES LESS THAN (1512082800) ENGINE = InnoDB,
+ PARTITION p20171202 VALUES LESS THAN (1512169200) ENGINE = InnoDB,
+ PARTITION p20171203 VALUES LESS THAN (1512255600) ENGINE = InnoDB,
+ PARTITION p20171204 VALUES LESS THAN (1512342000) ENGINE = InnoDB,
+ PARTITION p20171205 VALUES LESS THAN (1512428400) ENGINE = InnoDB,
+ PARTITION p20171206 VALUES LESS THAN (1512514800) ENGINE = InnoDB,
+ PARTITION p20171207 VALUES LESS THAN (1512601200) ENGINE = InnoDB,
+ PARTITION p20171208 VALUES LESS THAN (1512687600) ENGINE = InnoDB,
+ PARTITION p20171209 VALUES LESS THAN (1512774000) ENGINE = InnoDB,
+ PARTITION p20171210 VALUES LESS THAN (1512860400) ENGINE = InnoDB,
+ PARTITION p20171211 VALUES LESS THAN (1512946800) ENGINE = InnoDB,
+ PARTITION p20171212 VALUES LESS THAN (1513033200) ENGINE = InnoDB,
+ PARTITION p20171213 VALUES LESS THAN (1513119600) ENGINE = InnoDB,
+ PARTITION p20171214 VALUES LESS THAN (1513206000) ENGINE = InnoDB,
+ PARTITION p20171215 VALUES LESS THAN (1513292400) ENGINE = InnoDB,
+ PARTITION p20171216 VALUES LESS THAN (1513378800) ENGINE = InnoDB,
+ PARTITION p20171217 VALUES LESS THAN (1513465200) ENGINE = InnoDB,
+ PARTITION p20171218 VALUES LESS THAN (1513551600) ENGINE = InnoDB,
+ PARTITION p20171219 VALUES LESS THAN (1513638000) ENGINE = InnoDB,
+ PARTITION p20171220 VALUES LESS THAN (1513724400) ENGINE = InnoDB,
+ PARTITION p20171221 VALUES LESS THAN (1513810800) ENGINE = InnoDB,
+ PARTITION p20171222 VALUES LESS THAN (1513897200) ENGINE = InnoDB,
+ PARTITION p20171223 VALUES LESS THAN (1513983600) ENGINE = InnoDB,
+ PARTITION p20171224 VALUES LESS THAN (1514070000) ENGINE = InnoDB,
+ PARTITION p20171225 VALUES LESS THAN (1514156400) ENGINE = InnoDB,
+ PARTITION p20171226 VALUES LESS THAN (1514242800) ENGINE = InnoDB,
+ PARTITION p20171227 VALUES LESS THAN (1514329200) ENGINE = InnoDB,
+ PARTITION p20171228 VALUES LESS THAN (1514415600) ENGINE = InnoDB,
+ PARTITION p20171229 VALUES LESS THAN (1514502000) ENGINE = InnoDB,
+ PARTITION p20171230 VALUES LESS THAN (1514588400) ENGINE = InnoDB,
+ PARTITION p20171231 VALUES LESS THAN (1514674800) ENGINE = InnoDB,
+ PARTITION p20180101 VALUES LESS THAN (1514761200) ENGINE = InnoDB,
+ PARTITION p20180102 VALUES LESS THAN (1514847600) ENGINE = InnoDB,
+ PARTITION p20180103 VALUES LESS THAN (1514934000) ENGINE = InnoDB,
+ PARTITION p20180104 VALUES LESS THAN (1515020400) ENGINE = InnoDB,
+ PARTITION p20180105 VALUES LESS THAN (1515106800) ENGINE = InnoDB,
+ PARTITION p20180106 VALUES LESS THAN (1515193200) ENGINE = InnoDB,
+ PARTITION p20180107 VALUES LESS THAN (1515279600) ENGINE = InnoDB,
+ PARTITION p20180108 VALUES LESS THAN (1515366000) ENGINE = InnoDB,
+ PARTITION p20180109 VALUES LESS THAN (1515452400) ENGINE = InnoDB,
+ PARTITION p20180110 VALUES LESS THAN (1515538800) ENGINE = InnoDB,
+ PARTITION p20180111 VALUES LESS THAN (1515625200) ENGINE = InnoDB,
+ PARTITION p20180112 VALUES LESS THAN (1515711600) ENGINE = InnoDB,
+ PARTITION p20180113 VALUES LESS THAN (1515798000) ENGINE = InnoDB,
+ PARTITION p20180114 VALUES LESS THAN (1515884400) ENGINE = InnoDB,
+ PARTITION p20180115 VALUES LESS THAN (1515970800) ENGINE = InnoDB,
+ PARTITION p20180116 VALUES LESS THAN (1516057200) ENGINE = InnoDB,
+ PARTITION p20180117 VALUES LESS THAN (1516143600) ENGINE = InnoDB,
+ PARTITION p20180118 VALUES LESS THAN (1516230000) ENGINE = InnoDB,
+ PARTITION p20180119 VALUES LESS THAN (1516316400) ENGINE = InnoDB,
+ PARTITION p20180120 VALUES LESS THAN (1516402800) ENGINE = InnoDB,
+ PARTITION p20180121 VALUES LESS THAN (1516489200) ENGINE = InnoDB,
+ PARTITION p20180122 VALUES LESS THAN (1516575600) ENGINE = InnoDB,
+ PARTITION p20180123 VALUES LESS THAN (1516662000) ENGINE = InnoDB,
+ PARTITION p20180124 VALUES LESS THAN (1516748400) ENGINE = InnoDB,
+ PARTITION p20180125 VALUES LESS THAN (1516834800) ENGINE = InnoDB,
+ PARTITION p20180126 VALUES LESS THAN (1516921200) ENGINE = InnoDB,
+ PARTITION p20180127 VALUES LESS THAN (1517007600) ENGINE = InnoDB,
+ PARTITION p20180128 VALUES LESS THAN (1517094000) ENGINE = InnoDB,
+ PARTITION p20180129 VALUES LESS THAN (1517180400) ENGINE = InnoDB,
+ PARTITION p20180130 VALUES LESS THAN (1517266800) ENGINE = InnoDB,
+ PARTITION p20180131 VALUES LESS THAN (1517353200) ENGINE = InnoDB,
+ PARTITION p20180201 VALUES LESS THAN (1517439600) ENGINE = InnoDB,
+ PARTITION p20180202 VALUES LESS THAN (1517526000) ENGINE = InnoDB,
+ PARTITION p20180203 VALUES LESS THAN (1517612400) ENGINE = InnoDB,
+ PARTITION p20180204 VALUES LESS THAN (1517698800) ENGINE = InnoDB,
+ PARTITION p20180205 VALUES LESS THAN (1517785200) ENGINE = InnoDB,
+ PARTITION p20180206 VALUES LESS THAN (1517871600) ENGINE = InnoDB,
+ PARTITION p20180207 VALUES LESS THAN (1517958000) ENGINE = InnoDB,
+ PARTITION p20180208 VALUES LESS THAN (1518044400) ENGINE = InnoDB,
+ PARTITION p20180209 VALUES LESS THAN (1518130800) ENGINE = InnoDB,
+ PARTITION p20180210 VALUES LESS THAN (1518217200) ENGINE = InnoDB,
+ PARTITION p20180211 VALUES LESS THAN (1518303600) ENGINE = InnoDB,
+ PARTITION p20180212 VALUES LESS THAN (1518390000) ENGINE = InnoDB,
+ PARTITION p20180213 VALUES LESS THAN (1518476400) ENGINE = InnoDB,
+ PARTITION p20180214 VALUES LESS THAN (1518562800) ENGINE = InnoDB,
+ PARTITION p20180215 VALUES LESS THAN (1518649200) ENGINE = InnoDB,
+ PARTITION p20180216 VALUES LESS THAN (1518735600) ENGINE = InnoDB,
+ PARTITION p20180217 VALUES LESS THAN (1518822000) ENGINE = InnoDB,
+ PARTITION p20180218 VALUES LESS THAN (1518908400) ENGINE = InnoDB,
+ PARTITION p20180219 VALUES LESS THAN (1518994800) ENGINE = InnoDB,
+ PARTITION p20180220 VALUES LESS THAN (1519081200) ENGINE = InnoDB,
+ PARTITION p20180221 VALUES LESS THAN (1519167600) ENGINE = InnoDB,
+ PARTITION p20180222 VALUES LESS THAN (1519254000) ENGINE = InnoDB,
+ PARTITION p20180223 VALUES LESS THAN (1519340400) ENGINE = InnoDB,
+ PARTITION p20180224 VALUES LESS THAN (1519426800) ENGINE = InnoDB,
+ PARTITION p20180225 VALUES LESS THAN (1519513200) ENGINE = InnoDB,
+ PARTITION p20180226 VALUES LESS THAN (1519599600) ENGINE = InnoDB,
+ PARTITION p20180227 VALUES LESS THAN (1519686000) ENGINE = InnoDB,
+ PARTITION p20180228 VALUES LESS THAN (1519772400) ENGINE = InnoDB,
+ PARTITION p20180301 VALUES LESS THAN (1519858800) ENGINE = InnoDB,
+ PARTITION p20180302 VALUES LESS THAN (1519945200) ENGINE = InnoDB,
+ PARTITION p20180303 VALUES LESS THAN (1520031600) ENGINE = InnoDB,
+ PARTITION p20180304 VALUES LESS THAN (1520118000) ENGINE = InnoDB,
+ PARTITION p20180305 VALUES LESS THAN (1520204400) ENGINE = InnoDB,
+ PARTITION p20180306 VALUES LESS THAN (1520290800) ENGINE = InnoDB,
+ PARTITION p20180307 VALUES LESS THAN (1520377200) ENGINE = InnoDB,
+ PARTITION p20180308 VALUES LESS THAN (1520463600) ENGINE = InnoDB,
+ PARTITION p20180309 VALUES LESS THAN (1520550000) ENGINE = InnoDB,
+ PARTITION p20180310 VALUES LESS THAN (1520636400) ENGINE = InnoDB,
+ PARTITION p20180311 VALUES LESS THAN (1520722800) ENGINE = InnoDB,
+ PARTITION p20180312 VALUES LESS THAN (1520809200) ENGINE = InnoDB,
+ PARTITION p20180313 VALUES LESS THAN (1520895600) ENGINE = InnoDB,
+ PARTITION p20180314 VALUES LESS THAN (1520982000) ENGINE = InnoDB,
+ PARTITION p20180315 VALUES LESS THAN (1521068400) ENGINE = InnoDB,
+ PARTITION p20180316 VALUES LESS THAN (1521154800) ENGINE = InnoDB,
+ PARTITION p20180317 VALUES LESS THAN (1521241200) ENGINE = InnoDB,
+ PARTITION p20180318 VALUES LESS THAN (1521327600) ENGINE = InnoDB,
+ PARTITION p20180319 VALUES LESS THAN (1521414000) ENGINE = InnoDB,
+ PARTITION p20180320 VALUES LESS THAN (1521500400) ENGINE = InnoDB,
+ PARTITION p20180321 VALUES LESS THAN (1521586800) ENGINE = InnoDB,
+ PARTITION p20180322 VALUES LESS THAN (1521673200) ENGINE = InnoDB,
+ PARTITION p20180323 VALUES LESS THAN (1521759600) ENGINE = InnoDB,
+ PARTITION p20180324 VALUES LESS THAN (1521846000) ENGINE = InnoDB,
+ PARTITION p20180325 VALUES LESS THAN (1521932400) ENGINE = InnoDB,
+ PARTITION p20180326 VALUES LESS THAN (1522015200) ENGINE = InnoDB,
+ PARTITION p20180327 VALUES LESS THAN (1522101600) ENGINE = InnoDB,
+ PARTITION p20180328 VALUES LESS THAN (1522188000) ENGINE = InnoDB,
+ PARTITION p20180329 VALUES LESS THAN (1522274400) ENGINE = InnoDB,
+ PARTITION p20180330 VALUES LESS THAN (1522360800) ENGINE = InnoDB,
+ PARTITION p20180331 VALUES LESS THAN (1522447200) ENGINE = InnoDB,
+ PARTITION p20180401 VALUES LESS THAN (1522533600) ENGINE = InnoDB,
+ PARTITION p20180402 VALUES LESS THAN (1522620000) ENGINE = InnoDB,
+ PARTITION p20180403 VALUES LESS THAN (1522706400) ENGINE = InnoDB,
+ PARTITION p20180404 VALUES LESS THAN (1522792800) ENGINE = InnoDB,
+ PARTITION p20180405 VALUES LESS THAN (1522879200) ENGINE = InnoDB,
+ PARTITION p20180406 VALUES LESS THAN (1522965600) ENGINE = InnoDB,
+ PARTITION p20180407 VALUES LESS THAN (1523052000) ENGINE = InnoDB,
+ PARTITION p20180408 VALUES LESS THAN (1523138400) ENGINE = InnoDB,
+ PARTITION p20180409 VALUES LESS THAN (1523224800) ENGINE = InnoDB,
+ PARTITION p20180410 VALUES LESS THAN (1523311200) ENGINE = InnoDB,
+ PARTITION p20180411 VALUES LESS THAN (1523397600) ENGINE = InnoDB,
+ PARTITION p20180412 VALUES LESS THAN (1523484000) ENGINE = InnoDB,
+ PARTITION p20180413 VALUES LESS THAN (1523570400) ENGINE = InnoDB,
+ PARTITION p20180414 VALUES LESS THAN (1523656800) ENGINE = InnoDB,
+ PARTITION p20180415 VALUES LESS THAN (1523743200) ENGINE = InnoDB,
+ PARTITION p20180416 VALUES LESS THAN (1523829600) ENGINE = InnoDB,
+ PARTITION p20180417 VALUES LESS THAN (1523916000) ENGINE = InnoDB,
+ PARTITION p20180418 VALUES LESS THAN (1524002400) ENGINE = InnoDB,
+ PARTITION p20180419 VALUES LESS THAN (1524088800) ENGINE = InnoDB,
+ PARTITION p20180420 VALUES LESS THAN (1524175200) ENGINE = InnoDB,
+ PARTITION p20180421 VALUES LESS THAN (1524261600) ENGINE = InnoDB,
+ PARTITION p20180422 VALUES LESS THAN (1524348000) ENGINE = InnoDB,
+ PARTITION p20180423 VALUES LESS THAN (1524434400) ENGINE = InnoDB,
+ PARTITION p20180424 VALUES LESS THAN (1524520800) ENGINE = InnoDB,
+ PARTITION p20180425 VALUES LESS THAN (1524607200) ENGINE = InnoDB,
+ PARTITION p20180426 VALUES LESS THAN (1524693600) ENGINE = InnoDB,
+ PARTITION p20180427 VALUES LESS THAN (1524780000) ENGINE = InnoDB,
+ PARTITION p20180428 VALUES LESS THAN (1524866400) ENGINE = InnoDB,
+ PARTITION p20180429 VALUES LESS THAN (1524952800) ENGINE = InnoDB,
+ PARTITION p20180430 VALUES LESS THAN (1525039200) ENGINE = InnoDB,
+ PARTITION p20180501 VALUES LESS THAN (1525125600) ENGINE = InnoDB,
+ PARTITION p20180502 VALUES LESS THAN (1525212000) ENGINE = InnoDB,
+ PARTITION p20180503 VALUES LESS THAN (1525298400) ENGINE = InnoDB,
+ PARTITION p20180504 VALUES LESS THAN (1525384800) ENGINE = InnoDB,
+ PARTITION p20180505 VALUES LESS THAN (1525471200) ENGINE = InnoDB,
+ PARTITION p20180506 VALUES LESS THAN (1525557600) ENGINE = InnoDB,
+ PARTITION p20180507 VALUES LESS THAN (1525644000) ENGINE = InnoDB,
+ PARTITION p20180508 VALUES LESS THAN (1525730400) ENGINE = InnoDB,
+ PARTITION p20180509 VALUES LESS THAN (1525816800) ENGINE = InnoDB,
+ PARTITION p20180510 VALUES LESS THAN (1525903200) ENGINE = InnoDB,
+ PARTITION p20180511 VALUES LESS THAN (1525989600) ENGINE = InnoDB,
+ PARTITION p20180512 VALUES LESS THAN (1526076000) ENGINE = InnoDB,
+ PARTITION p20180513 VALUES LESS THAN (1526162400) ENGINE = InnoDB,
+ PARTITION p20180514 VALUES LESS THAN (1526248800) ENGINE = InnoDB,
+ PARTITION p20180515 VALUES LESS THAN (1526335200) ENGINE = InnoDB,
+ PARTITION p20180516 VALUES LESS THAN (1526421600) ENGINE = InnoDB,
+ PARTITION p20180517 VALUES LESS THAN (1526508000) ENGINE = InnoDB,
+ PARTITION p20180518 VALUES LESS THAN (1526594400) ENGINE = InnoDB,
+ PARTITION p20180519 VALUES LESS THAN (1526680800) ENGINE = InnoDB,
+ PARTITION p20180520 VALUES LESS THAN (1526767200) ENGINE = InnoDB,
+ PARTITION p20180521 VALUES LESS THAN (1526853600) ENGINE = InnoDB,
+ PARTITION p20180522 VALUES LESS THAN (1526940000) ENGINE = InnoDB,
+ PARTITION p20180523 VALUES LESS THAN (1527026400) ENGINE = InnoDB,
+ PARTITION p20180524 VALUES LESS THAN (1527112800) ENGINE = InnoDB,
+ PARTITION p20180525 VALUES LESS THAN (1527199200) ENGINE = InnoDB,
+ PARTITION p20180526 VALUES LESS THAN (1527285600) ENGINE = InnoDB,
+ PARTITION p20180527 VALUES LESS THAN (1527372000) ENGINE = InnoDB,
+ PARTITION p20180528 VALUES LESS THAN (1527458400) ENGINE = InnoDB,
+ PARTITION p20180529 VALUES LESS THAN (1527544800) ENGINE = InnoDB,
+ PARTITION p20180530 VALUES LESS THAN (1527631200) ENGINE = InnoDB,
+ PARTITION p20180531 VALUES LESS THAN (1527717600) ENGINE = InnoDB,
+ PARTITION p20180601 VALUES LESS THAN (1527804000) ENGINE = InnoDB,
+ PARTITION p20180602 VALUES LESS THAN (1527890400) ENGINE = InnoDB,
+ PARTITION p20180603 VALUES LESS THAN (1527976800) ENGINE = InnoDB,
+ PARTITION p20180604 VALUES LESS THAN (1528063200) ENGINE = InnoDB,
+ PARTITION p20180605 VALUES LESS THAN (1528149600) ENGINE = InnoDB,
+ PARTITION p20180606 VALUES LESS THAN (1528236000) ENGINE = InnoDB,
+ PARTITION p20180607 VALUES LESS THAN (1528322400) ENGINE = InnoDB,
+ PARTITION p20180608 VALUES LESS THAN (1528408800) ENGINE = InnoDB,
+ PARTITION p20180609 VALUES LESS THAN (1528495200) ENGINE = InnoDB,
+ PARTITION p20180610 VALUES LESS THAN (1528581600) ENGINE = InnoDB,
+ PARTITION p20180611 VALUES LESS THAN (1528668000) ENGINE = InnoDB,
+ PARTITION p20180612 VALUES LESS THAN (1528754400) ENGINE = InnoDB,
+ PARTITION p20180613 VALUES LESS THAN (1528840800) ENGINE = InnoDB,
+ PARTITION p20180614 VALUES LESS THAN (1528927200) ENGINE = InnoDB,
+ PARTITION p20180615 VALUES LESS THAN (1529013600) ENGINE = InnoDB,
+ PARTITION p20180616 VALUES LESS THAN (1529100000) ENGINE = InnoDB,
+ PARTITION p20180617 VALUES LESS THAN (1529186400) ENGINE = InnoDB,
+ PARTITION p20180618 VALUES LESS THAN (1529272800) ENGINE = InnoDB,
+ PARTITION p20180619 VALUES LESS THAN (1529359200) ENGINE = InnoDB,
+ PARTITION p20180620 VALUES LESS THAN (1529445600) ENGINE = InnoDB,
+ PARTITION p20180621 VALUES LESS THAN (1529532000) ENGINE = InnoDB,
+ PARTITION p20180622 VALUES LESS THAN (1529618400) ENGINE = InnoDB,
+ PARTITION p20180623 VALUES LESS THAN (1529704800) ENGINE = InnoDB,
+ PARTITION p20180624 VALUES LESS THAN (1529791200) ENGINE = InnoDB,
+ PARTITION p20180625 VALUES LESS THAN (1529877600) ENGINE = InnoDB,
+ PARTITION p20180626 VALUES LESS THAN (1529964000) ENGINE = InnoDB,
+ PARTITION p20180627 VALUES LESS THAN (1530050400) ENGINE = InnoDB,
+ PARTITION p20180628 VALUES LESS THAN (1530136800) ENGINE = InnoDB,
+ PARTITION p20180629 VALUES LESS THAN (1530223200) ENGINE = InnoDB,
+ PARTITION p20180630 VALUES LESS THAN (1530309600) ENGINE = InnoDB,
+ PARTITION p20180701 VALUES LESS THAN (1530396000) ENGINE = InnoDB,
+ PARTITION p20180702 VALUES LESS THAN (1530482400) ENGINE = InnoDB,
+ PARTITION p20180703 VALUES LESS THAN (1530568800) ENGINE = InnoDB,
+ PARTITION p20180704 VALUES LESS THAN (1530655200) ENGINE = InnoDB,
+ PARTITION p20180705 VALUES LESS THAN (1530741600) ENGINE = InnoDB,
+ PARTITION p20180706 VALUES LESS THAN (1530828000) ENGINE = InnoDB,
+ PARTITION p20180707 VALUES LESS THAN (1530914400) ENGINE = InnoDB,
+ PARTITION p20180708 VALUES LESS THAN (1531000800) ENGINE = InnoDB,
+ PARTITION p20180709 VALUES LESS THAN (1531087200) ENGINE = InnoDB,
+ PARTITION p20180710 VALUES LESS THAN (1531173600) ENGINE = InnoDB,
+ PARTITION p20180711 VALUES LESS THAN (1531260000) ENGINE = InnoDB,
+ PARTITION p20180712 VALUES LESS THAN (1531346400) ENGINE = InnoDB,
+ PARTITION p20180713 VALUES LESS THAN (1531432800) ENGINE = InnoDB,
+ PARTITION p20180714 VALUES LESS THAN (1531519200) ENGINE = InnoDB,
+ PARTITION p20180715 VALUES LESS THAN (1531605600) ENGINE = InnoDB,
+ PARTITION p20180716 VALUES LESS THAN (1531692000) ENGINE = InnoDB,
+ PARTITION p20180717 VALUES LESS THAN (1531778400) ENGINE = InnoDB,
+ PARTITION p20180718 VALUES LESS THAN (1531864800) ENGINE = InnoDB,
+ PARTITION p20180719 VALUES LESS THAN (1531951200) ENGINE = InnoDB,
+ PARTITION p20180720 VALUES LESS THAN (1532037600) ENGINE = InnoDB,
+ PARTITION p20180721 VALUES LESS THAN (1532124000) ENGINE = InnoDB,
+ PARTITION p20180722 VALUES LESS THAN (1532210400) ENGINE = InnoDB,
+ PARTITION p20180723 VALUES LESS THAN (1532296800) ENGINE = InnoDB,
+ PARTITION p20180724 VALUES LESS THAN (1532383200) ENGINE = InnoDB,
+ PARTITION p20180725 VALUES LESS THAN (1532469600) ENGINE = InnoDB,
+ PARTITION p20180726 VALUES LESS THAN (1532556000) ENGINE = InnoDB,
+ PARTITION p20180727 VALUES LESS THAN (1532642400) ENGINE = InnoDB,
+ PARTITION p20180728 VALUES LESS THAN (1532728800) ENGINE = InnoDB,
+ PARTITION p20180729 VALUES LESS THAN (1532815200) ENGINE = InnoDB,
+ PARTITION p20180730 VALUES LESS THAN (1532901600) ENGINE = InnoDB,
+ PARTITION p20180731 VALUES LESS THAN (1532988000) ENGINE = InnoDB,
+ PARTITION p20180801 VALUES LESS THAN (1533074400) ENGINE = InnoDB,
+ PARTITION p20180802 VALUES LESS THAN (1533160800) ENGINE = InnoDB,
+ PARTITION p20180803 VALUES LESS THAN (1533247200) ENGINE = InnoDB,
+ PARTITION p20180804 VALUES LESS THAN (1533333600) ENGINE = InnoDB,
+ PARTITION p20180805 VALUES LESS THAN (1533420000) ENGINE = InnoDB,
+ PARTITION p20180806 VALUES LESS THAN (1533506400) ENGINE = InnoDB,
+ PARTITION p20180807 VALUES LESS THAN (1533592800) ENGINE = InnoDB,
+ PARTITION p20180808 VALUES LESS THAN (1533679200) ENGINE = InnoDB,
+ PARTITION p20180809 VALUES LESS THAN (1533765600) ENGINE = InnoDB,
+ PARTITION p20180810 VALUES LESS THAN (1533852000) ENGINE = InnoDB,
+ PARTITION p20180811 VALUES LESS THAN (1533938400) ENGINE = InnoDB,
+ PARTITION p20180812 VALUES LESS THAN (1534024800) ENGINE = InnoDB,
+ PARTITION p20180813 VALUES LESS THAN (1534111200) ENGINE = InnoDB,
+ PARTITION p20180814 VALUES LESS THAN (1534197600) ENGINE = InnoDB,
+ PARTITION p20180815 VALUES LESS THAN (1534284000) ENGINE = InnoDB,
+ PARTITION p20180816 VALUES LESS THAN (1534370400) ENGINE = InnoDB,
+ PARTITION p20180817 VALUES LESS THAN (1534456800) ENGINE = InnoDB,
+ PARTITION p20180818 VALUES LESS THAN (1534543200) ENGINE = InnoDB,
+ PARTITION p20180819 VALUES LESS THAN (1534629600) ENGINE = InnoDB,
+ PARTITION p20180820 VALUES LESS THAN (1534716000) ENGINE = InnoDB,
+ PARTITION p20180821 VALUES LESS THAN (1534802400) ENGINE = InnoDB,
+ PARTITION p20180822 VALUES LESS THAN (1534888800) ENGINE = InnoDB,
+ PARTITION p20180823 VALUES LESS THAN (1534975200) ENGINE = InnoDB,
+ PARTITION p20180824 VALUES LESS THAN (1535061600) ENGINE = InnoDB,
+ PARTITION p20180825 VALUES LESS THAN (1535148000) ENGINE = InnoDB,
+ PARTITION p20180826 VALUES LESS THAN (1535234400) ENGINE = InnoDB,
+ PARTITION p20180827 VALUES LESS THAN (1535320800) ENGINE = InnoDB,
+ PARTITION p20180828 VALUES LESS THAN (1535407200) ENGINE = InnoDB,
+ PARTITION p20180829 VALUES LESS THAN (1535493600) ENGINE = InnoDB,
+ PARTITION p20180830 VALUES LESS THAN (1535580000) ENGINE = InnoDB,
+ PARTITION p20180831 VALUES LESS THAN (1535666400) ENGINE = InnoDB,
+ PARTITION p20180901 VALUES LESS THAN (1535752800) ENGINE = InnoDB,
+ PARTITION p20180902 VALUES LESS THAN (1535839200) ENGINE = InnoDB,
+ PARTITION p20180903 VALUES LESS THAN (1535925600) ENGINE = InnoDB,
+ PARTITION p20180904 VALUES LESS THAN (1536012000) ENGINE = InnoDB,
+ PARTITION p20180905 VALUES LESS THAN (1536098400) ENGINE = InnoDB,
+ PARTITION p20180906 VALUES LESS THAN (1536184800) ENGINE = InnoDB,
+ PARTITION p20180907 VALUES LESS THAN (1536271200) ENGINE = InnoDB,
+ PARTITION p20180908 VALUES LESS THAN (1536357600) ENGINE = InnoDB,
+ PARTITION p20180909 VALUES LESS THAN (1536444000) ENGINE = InnoDB,
+ PARTITION p20180910 VALUES LESS THAN (1536530400) ENGINE = InnoDB,
+ PARTITION p20180911 VALUES LESS THAN (1536616800) ENGINE = InnoDB,
+ PARTITION p20180912 VALUES LESS THAN (1536703200) ENGINE = InnoDB,
+ PARTITION p20180913 VALUES LESS THAN (1536789600) ENGINE = InnoDB,
+ PARTITION p20180914 VALUES LESS THAN (1536876000) ENGINE = InnoDB,
+ PARTITION p20180915 VALUES LESS THAN (1536962400) ENGINE = InnoDB,
+ PARTITION p20180916 VALUES LESS THAN (1537048800) ENGINE = InnoDB,
+ PARTITION p20180917 VALUES LESS THAN (1537135200) ENGINE = InnoDB,
+ PARTITION p20180918 VALUES LESS THAN (1537221600) ENGINE = InnoDB,
+ PARTITION p20180919 VALUES LESS THAN (1537308000) ENGINE = InnoDB,
+ PARTITION p20180920 VALUES LESS THAN (1537394400) ENGINE = InnoDB,
+ PARTITION p20180921 VALUES LESS THAN (1537480800) ENGINE = InnoDB,
+ PARTITION p20180922 VALUES LESS THAN (1537567200) ENGINE = InnoDB,
+ PARTITION p20180923 VALUES LESS THAN (1537653600) ENGINE = InnoDB,
+ PARTITION pmax VALUES LESS THAN MAXVALUE ENGINE = InnoDB) */;
+
+
+--
+-- Table structure for table `log_traps`
+--
+
+DROP TABLE IF EXISTS `log_traps`;
+
+
+CREATE TABLE `log_traps` (
+  `trap_id` int(11) NOT NULL AUTO_INCREMENT,
+  `trap_time` int(11) DEFAULT NULL,
+  `timeout` enum('0','1') DEFAULT NULL,
+  `host_name` varchar(255) DEFAULT NULL,
+  `ip_address` varchar(255) DEFAULT NULL,
+  `agent_host_name` varchar(255) DEFAULT NULL,
+  `agent_ip_address` varchar(255) DEFAULT NULL,
+  `trap_oid` varchar(512) DEFAULT NULL,
+  `trap_name` varchar(255) DEFAULT NULL,
+  `vendor` varchar(255) DEFAULT NULL,
+  `status` int(11) DEFAULT NULL,
+  `severity_id` int(11) DEFAULT NULL,
+  `severity_name` varchar(255) DEFAULT NULL,
+  `output_message` varchar(2048) DEFAULT NULL,
+  KEY `trap_id` (`trap_id`),
+  KEY `trap_time` (`trap_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `log_traps_args`
+--
+
+DROP TABLE IF EXISTS `log_traps_args`;
+
+
+CREATE TABLE `log_traps_args` (
+  `fk_log_traps` int(11) NOT NULL,
+  `arg_number` int(11) DEFAULT NULL,
+  `arg_oid` varchar(255) DEFAULT NULL,
+  `arg_value` varchar(255) DEFAULT NULL,
+  `trap_time` int(11) DEFAULT NULL,
+  KEY `fk_log_traps` (`fk_log_traps`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `logs`
+--
+
+DROP TABLE IF EXISTS `logs`;
+
+
+CREATE TABLE `logs` (
+  `log_id` int(11) NOT NULL AUTO_INCREMENT,
+  `ctime` int(11) DEFAULT NULL,
+  `host_id` int(11) DEFAULT NULL,
+  `host_name` varchar(255) DEFAULT NULL,
+  `instance_name` varchar(255) NOT NULL,
+  `issue_id` int(11) DEFAULT NULL,
+  `msg_type` tinyint(4) DEFAULT NULL,
+  `notification_cmd` varchar(255) DEFAULT NULL,
+  `notification_contact` varchar(255) DEFAULT NULL,
+  `output` text,
+  `retry` int(11) DEFAULT NULL,
+  `service_description` varchar(255) DEFAULT NULL,
+  `service_id` int(11) DEFAULT NULL,
+  `status` tinyint(4) DEFAULT NULL,
+  `type` smallint(6) DEFAULT NULL,
+  KEY `log_id` (`log_id`),
+  KEY `host_name` (`host_name`(64)),
+  KEY `service_description` (`service_description`(64)),
+  KEY `status` (`status`),
+  KEY `instance_name` (`instance_name`),
+  KEY `ctime` (`ctime`),
+  KEY `rq1` (`host_id`,`service_id`,`msg_type`,`status`,`ctime`),
+  KEY `rq2` (`host_id`,`msg_type`,`status`,`ctime`)
+) ENGINE=InnoDB AUTO_INCREMENT=1129214 DEFAULT CHARSET=utf8
+/*!50100 PARTITION BY RANGE (ctime)
+(PARTITION p20170730 VALUES LESS THAN (1501365600) ENGINE = InnoDB,
+ PARTITION p20170731 VALUES LESS THAN (1501452000) ENGINE = InnoDB,
+ PARTITION p20170801 VALUES LESS THAN (1501538400) ENGINE = InnoDB,
+ PARTITION p20170802 VALUES LESS THAN (1501624800) ENGINE = InnoDB,
+ PARTITION p20170803 VALUES LESS THAN (1501711200) ENGINE = InnoDB,
+ PARTITION p20170804 VALUES LESS THAN (1501797600) ENGINE = InnoDB,
+ PARTITION p20170805 VALUES LESS THAN (1501884000) ENGINE = InnoDB,
+ PARTITION p20170806 VALUES LESS THAN (1501970400) ENGINE = InnoDB,
+ PARTITION p20170807 VALUES LESS THAN (1502056800) ENGINE = InnoDB,
+ PARTITION p20170808 VALUES LESS THAN (1502143200) ENGINE = InnoDB,
+ PARTITION p20170809 VALUES LESS THAN (1502229600) ENGINE = InnoDB,
+ PARTITION p20170810 VALUES LESS THAN (1502316000) ENGINE = InnoDB,
+ PARTITION p20170811 VALUES LESS THAN (1502402400) ENGINE = InnoDB,
+ PARTITION p20170812 VALUES LESS THAN (1502488800) ENGINE = InnoDB,
+ PARTITION p20170813 VALUES LESS THAN (1502575200) ENGINE = InnoDB,
+ PARTITION p20170814 VALUES LESS THAN (1502661600) ENGINE = InnoDB,
+ PARTITION p20170815 VALUES LESS THAN (1502748000) ENGINE = InnoDB,
+ PARTITION p20170816 VALUES LESS THAN (1502834400) ENGINE = InnoDB,
+ PARTITION p20170817 VALUES LESS THAN (1502920800) ENGINE = InnoDB,
+ PARTITION p20170818 VALUES LESS THAN (1503007200) ENGINE = InnoDB,
+ PARTITION p20170819 VALUES LESS THAN (1503093600) ENGINE = InnoDB,
+ PARTITION p20170820 VALUES LESS THAN (1503180000) ENGINE = InnoDB,
+ PARTITION p20170821 VALUES LESS THAN (1503266400) ENGINE = InnoDB,
+ PARTITION p20170822 VALUES LESS THAN (1503352800) ENGINE = InnoDB,
+ PARTITION p20170823 VALUES LESS THAN (1503439200) ENGINE = InnoDB,
+ PARTITION p20170824 VALUES LESS THAN (1503525600) ENGINE = InnoDB,
+ PARTITION p20170825 VALUES LESS THAN (1503612000) ENGINE = InnoDB,
+ PARTITION p20170826 VALUES LESS THAN (1503698400) ENGINE = InnoDB,
+ PARTITION p20170827 VALUES LESS THAN (1503784800) ENGINE = InnoDB,
+ PARTITION p20170828 VALUES LESS THAN (1503871200) ENGINE = InnoDB,
+ PARTITION p20170829 VALUES LESS THAN (1503957600) ENGINE = InnoDB,
+ PARTITION p20170830 VALUES LESS THAN (1504044000) ENGINE = InnoDB,
+ PARTITION p20170831 VALUES LESS THAN (1504130400) ENGINE = InnoDB,
+ PARTITION p20170901 VALUES LESS THAN (1504216800) ENGINE = InnoDB,
+ PARTITION p20170902 VALUES LESS THAN (1504303200) ENGINE = InnoDB,
+ PARTITION p20170903 VALUES LESS THAN (1504389600) ENGINE = InnoDB,
+ PARTITION p20170904 VALUES LESS THAN (1504476000) ENGINE = InnoDB,
+ PARTITION p20170905 VALUES LESS THAN (1504562400) ENGINE = InnoDB,
+ PARTITION p20170906 VALUES LESS THAN (1504648800) ENGINE = InnoDB,
+ PARTITION p20170907 VALUES LESS THAN (1504735200) ENGINE = InnoDB,
+ PARTITION p20170908 VALUES LESS THAN (1504821600) ENGINE = InnoDB,
+ PARTITION p20170909 VALUES LESS THAN (1504908000) ENGINE = InnoDB,
+ PARTITION p20170910 VALUES LESS THAN (1504994400) ENGINE = InnoDB,
+ PARTITION p20170911 VALUES LESS THAN (1505080800) ENGINE = InnoDB,
+ PARTITION p20170912 VALUES LESS THAN (1505167200) ENGINE = InnoDB,
+ PARTITION p20170913 VALUES LESS THAN (1505253600) ENGINE = InnoDB,
+ PARTITION p20170914 VALUES LESS THAN (1505340000) ENGINE = InnoDB,
+ PARTITION p20170915 VALUES LESS THAN (1505426400) ENGINE = InnoDB,
+ PARTITION p20170916 VALUES LESS THAN (1505512800) ENGINE = InnoDB,
+ PARTITION p20170917 VALUES LESS THAN (1505599200) ENGINE = InnoDB,
+ PARTITION p20170918 VALUES LESS THAN (1505685600) ENGINE = InnoDB,
+ PARTITION p20170919 VALUES LESS THAN (1505772000) ENGINE = InnoDB,
+ PARTITION p20170920 VALUES LESS THAN (1505858400) ENGINE = InnoDB,
+ PARTITION p20170921 VALUES LESS THAN (1505944800) ENGINE = InnoDB,
+ PARTITION p20170922 VALUES LESS THAN (1506031200) ENGINE = InnoDB,
+ PARTITION p20170923 VALUES LESS THAN (1506117600) ENGINE = InnoDB,
+ PARTITION p20170924 VALUES LESS THAN (1506204000) ENGINE = InnoDB,
+ PARTITION p20170925 VALUES LESS THAN (1506290400) ENGINE = InnoDB,
+ PARTITION p20170926 VALUES LESS THAN (1506376800) ENGINE = InnoDB,
+ PARTITION p20170927 VALUES LESS THAN (1506463200) ENGINE = InnoDB,
+ PARTITION p20170928 VALUES LESS THAN (1506549600) ENGINE = InnoDB,
+ PARTITION p20170929 VALUES LESS THAN (1506636000) ENGINE = InnoDB,
+ PARTITION p20170930 VALUES LESS THAN (1506722400) ENGINE = InnoDB,
+ PARTITION p20171001 VALUES LESS THAN (1506808800) ENGINE = InnoDB,
+ PARTITION p20171002 VALUES LESS THAN (1506895200) ENGINE = InnoDB,
+ PARTITION p20171003 VALUES LESS THAN (1506981600) ENGINE = InnoDB,
+ PARTITION p20171004 VALUES LESS THAN (1507068000) ENGINE = InnoDB,
+ PARTITION p20171005 VALUES LESS THAN (1507154400) ENGINE = InnoDB,
+ PARTITION p20171006 VALUES LESS THAN (1507240800) ENGINE = InnoDB,
+ PARTITION p20171007 VALUES LESS THAN (1507327200) ENGINE = InnoDB,
+ PARTITION p20171008 VALUES LESS THAN (1507413600) ENGINE = InnoDB,
+ PARTITION p20171009 VALUES LESS THAN (1507500000) ENGINE = InnoDB,
+ PARTITION p20171010 VALUES LESS THAN (1507586400) ENGINE = InnoDB,
+ PARTITION p20171011 VALUES LESS THAN (1507672800) ENGINE = InnoDB,
+ PARTITION p20171012 VALUES LESS THAN (1507759200) ENGINE = InnoDB,
+ PARTITION p20171013 VALUES LESS THAN (1507845600) ENGINE = InnoDB,
+ PARTITION p20171014 VALUES LESS THAN (1507932000) ENGINE = InnoDB,
+ PARTITION p20171015 VALUES LESS THAN (1508018400) ENGINE = InnoDB,
+ PARTITION p20171016 VALUES LESS THAN (1508104800) ENGINE = InnoDB,
+ PARTITION p20171017 VALUES LESS THAN (1508191200) ENGINE = InnoDB,
+ PARTITION p20171018 VALUES LESS THAN (1508277600) ENGINE = InnoDB,
+ PARTITION p20171019 VALUES LESS THAN (1508364000) ENGINE = InnoDB,
+ PARTITION p20171020 VALUES LESS THAN (1508450400) ENGINE = InnoDB,
+ PARTITION p20171021 VALUES LESS THAN (1508536800) ENGINE = InnoDB,
+ PARTITION p20171022 VALUES LESS THAN (1508623200) ENGINE = InnoDB,
+ PARTITION p20171023 VALUES LESS THAN (1508709600) ENGINE = InnoDB,
+ PARTITION p20171024 VALUES LESS THAN (1508796000) ENGINE = InnoDB,
+ PARTITION p20171025 VALUES LESS THAN (1508882400) ENGINE = InnoDB,
+ PARTITION p20171026 VALUES LESS THAN (1508968800) ENGINE = InnoDB,
+ PARTITION p20171027 VALUES LESS THAN (1509055200) ENGINE = InnoDB,
+ PARTITION p20171028 VALUES LESS THAN (1509141600) ENGINE = InnoDB,
+ PARTITION p20171029 VALUES LESS THAN (1509228000) ENGINE = InnoDB,
+ PARTITION p20171030 VALUES LESS THAN (1509318000) ENGINE = InnoDB,
+ PARTITION p20171031 VALUES LESS THAN (1509404400) ENGINE = InnoDB,
+ PARTITION p20171101 VALUES LESS THAN (1509490800) ENGINE = InnoDB,
+ PARTITION p20171102 VALUES LESS THAN (1509577200) ENGINE = InnoDB,
+ PARTITION p20171103 VALUES LESS THAN (1509663600) ENGINE = InnoDB,
+ PARTITION p20171104 VALUES LESS THAN (1509750000) ENGINE = InnoDB,
+ PARTITION p20171105 VALUES LESS THAN (1509836400) ENGINE = InnoDB,
+ PARTITION p20171106 VALUES LESS THAN (1509922800) ENGINE = InnoDB,
+ PARTITION p20171107 VALUES LESS THAN (1510009200) ENGINE = InnoDB,
+ PARTITION p20171108 VALUES LESS THAN (1510095600) ENGINE = InnoDB,
+ PARTITION p20171109 VALUES LESS THAN (1510182000) ENGINE = InnoDB,
+ PARTITION p20171110 VALUES LESS THAN (1510268400) ENGINE = InnoDB,
+ PARTITION p20171111 VALUES LESS THAN (1510354800) ENGINE = InnoDB,
+ PARTITION p20171112 VALUES LESS THAN (1510441200) ENGINE = InnoDB,
+ PARTITION p20171113 VALUES LESS THAN (1510527600) ENGINE = InnoDB,
+ PARTITION p20171114 VALUES LESS THAN (1510614000) ENGINE = InnoDB,
+ PARTITION p20171115 VALUES LESS THAN (1510700400) ENGINE = InnoDB,
+ PARTITION p20171116 VALUES LESS THAN (1510786800) ENGINE = InnoDB,
+ PARTITION p20171117 VALUES LESS THAN (1510873200) ENGINE = InnoDB,
+ PARTITION p20171118 VALUES LESS THAN (1510959600) ENGINE = InnoDB,
+ PARTITION p20171119 VALUES LESS THAN (1511046000) ENGINE = InnoDB,
+ PARTITION p20171120 VALUES LESS THAN (1511132400) ENGINE = InnoDB,
+ PARTITION p20171121 VALUES LESS THAN (1511218800) ENGINE = InnoDB,
+ PARTITION p20171122 VALUES LESS THAN (1511305200) ENGINE = InnoDB,
+ PARTITION p20171123 VALUES LESS THAN (1511391600) ENGINE = InnoDB,
+ PARTITION p20171124 VALUES LESS THAN (1511478000) ENGINE = InnoDB,
+ PARTITION p20171125 VALUES LESS THAN (1511564400) ENGINE = InnoDB,
+ PARTITION p20171126 VALUES LESS THAN (1511650800) ENGINE = InnoDB,
+ PARTITION p20171127 VALUES LESS THAN (1511737200) ENGINE = InnoDB,
+ PARTITION p20171128 VALUES LESS THAN (1511823600) ENGINE = InnoDB,
+ PARTITION p20171129 VALUES LESS THAN (1511910000) ENGINE = InnoDB,
+ PARTITION p20171130 VALUES LESS THAN (1511996400) ENGINE = InnoDB,
+ PARTITION p20171201 VALUES LESS THAN (1512082800) ENGINE = InnoDB,
+ PARTITION p20171202 VALUES LESS THAN (1512169200) ENGINE = InnoDB,
+ PARTITION p20171203 VALUES LESS THAN (1512255600) ENGINE = InnoDB,
+ PARTITION p20171204 VALUES LESS THAN (1512342000) ENGINE = InnoDB,
+ PARTITION p20171205 VALUES LESS THAN (1512428400) ENGINE = InnoDB,
+ PARTITION p20171206 VALUES LESS THAN (1512514800) ENGINE = InnoDB,
+ PARTITION p20171207 VALUES LESS THAN (1512601200) ENGINE = InnoDB,
+ PARTITION p20171208 VALUES LESS THAN (1512687600) ENGINE = InnoDB,
+ PARTITION p20171209 VALUES LESS THAN (1512774000) ENGINE = InnoDB,
+ PARTITION p20171210 VALUES LESS THAN (1512860400) ENGINE = InnoDB,
+ PARTITION p20171211 VALUES LESS THAN (1512946800) ENGINE = InnoDB,
+ PARTITION p20171212 VALUES LESS THAN (1513033200) ENGINE = InnoDB,
+ PARTITION p20171213 VALUES LESS THAN (1513119600) ENGINE = InnoDB,
+ PARTITION p20171214 VALUES LESS THAN (1513206000) ENGINE = InnoDB,
+ PARTITION p20171215 VALUES LESS THAN (1513292400) ENGINE = InnoDB,
+ PARTITION p20171216 VALUES LESS THAN (1513378800) ENGINE = InnoDB,
+ PARTITION p20171217 VALUES LESS THAN (1513465200) ENGINE = InnoDB,
+ PARTITION p20171218 VALUES LESS THAN (1513551600) ENGINE = InnoDB,
+ PARTITION p20171219 VALUES LESS THAN (1513638000) ENGINE = InnoDB,
+ PARTITION p20171220 VALUES LESS THAN (1513724400) ENGINE = InnoDB,
+ PARTITION p20171221 VALUES LESS THAN (1513810800) ENGINE = InnoDB,
+ PARTITION p20171222 VALUES LESS THAN (1513897200) ENGINE = InnoDB,
+ PARTITION p20171223 VALUES LESS THAN (1513983600) ENGINE = InnoDB,
+ PARTITION p20171224 VALUES LESS THAN (1514070000) ENGINE = InnoDB,
+ PARTITION p20171225 VALUES LESS THAN (1514156400) ENGINE = InnoDB,
+ PARTITION p20171226 VALUES LESS THAN (1514242800) ENGINE = InnoDB,
+ PARTITION p20171227 VALUES LESS THAN (1514329200) ENGINE = InnoDB,
+ PARTITION p20171228 VALUES LESS THAN (1514415600) ENGINE = InnoDB,
+ PARTITION p20171229 VALUES LESS THAN (1514502000) ENGINE = InnoDB,
+ PARTITION p20171230 VALUES LESS THAN (1514588400) ENGINE = InnoDB,
+ PARTITION p20171231 VALUES LESS THAN (1514674800) ENGINE = InnoDB,
+ PARTITION p20180101 VALUES LESS THAN (1514761200) ENGINE = InnoDB,
+ PARTITION p20180102 VALUES LESS THAN (1514847600) ENGINE = InnoDB,
+ PARTITION p20180103 VALUES LESS THAN (1514934000) ENGINE = InnoDB,
+ PARTITION p20180104 VALUES LESS THAN (1515020400) ENGINE = InnoDB,
+ PARTITION p20180105 VALUES LESS THAN (1515106800) ENGINE = InnoDB,
+ PARTITION p20180106 VALUES LESS THAN (1515193200) ENGINE = InnoDB,
+ PARTITION p20180107 VALUES LESS THAN (1515279600) ENGINE = InnoDB,
+ PARTITION p20180108 VALUES LESS THAN (1515366000) ENGINE = InnoDB,
+ PARTITION p20180109 VALUES LESS THAN (1515452400) ENGINE = InnoDB,
+ PARTITION p20180110 VALUES LESS THAN (1515538800) ENGINE = InnoDB,
+ PARTITION p20180111 VALUES LESS THAN (1515625200) ENGINE = InnoDB,
+ PARTITION p20180112 VALUES LESS THAN (1515711600) ENGINE = InnoDB,
+ PARTITION p20180113 VALUES LESS THAN (1515798000) ENGINE = InnoDB,
+ PARTITION p20180114 VALUES LESS THAN (1515884400) ENGINE = InnoDB,
+ PARTITION p20180115 VALUES LESS THAN (1515970800) ENGINE = InnoDB,
+ PARTITION p20180116 VALUES LESS THAN (1516057200) ENGINE = InnoDB,
+ PARTITION p20180117 VALUES LESS THAN (1516143600) ENGINE = InnoDB,
+ PARTITION p20180118 VALUES LESS THAN (1516230000) ENGINE = InnoDB,
+ PARTITION p20180119 VALUES LESS THAN (1516316400) ENGINE = InnoDB,
+ PARTITION p20180120 VALUES LESS THAN (1516402800) ENGINE = InnoDB,
+ PARTITION p20180121 VALUES LESS THAN (1516489200) ENGINE = InnoDB,
+ PARTITION p20180122 VALUES LESS THAN (1516575600) ENGINE = InnoDB,
+ PARTITION p20180123 VALUES LESS THAN (1516662000) ENGINE = InnoDB,
+ PARTITION p20180124 VALUES LESS THAN (1516748400) ENGINE = InnoDB,
+ PARTITION p20180125 VALUES LESS THAN (1516834800) ENGINE = InnoDB,
+ PARTITION p20180126 VALUES LESS THAN (1516921200) ENGINE = InnoDB,
+ PARTITION p20180127 VALUES LESS THAN (1517007600) ENGINE = InnoDB,
+ PARTITION p20180128 VALUES LESS THAN (1517094000) ENGINE = InnoDB,
+ PARTITION p20180129 VALUES LESS THAN (1517180400) ENGINE = InnoDB,
+ PARTITION p20180130 VALUES LESS THAN (1517266800) ENGINE = InnoDB,
+ PARTITION p20180131 VALUES LESS THAN (1517353200) ENGINE = InnoDB,
+ PARTITION p20180201 VALUES LESS THAN (1517439600) ENGINE = InnoDB,
+ PARTITION p20180202 VALUES LESS THAN (1517526000) ENGINE = InnoDB,
+ PARTITION p20180203 VALUES LESS THAN (1517612400) ENGINE = InnoDB,
+ PARTITION p20180204 VALUES LESS THAN (1517698800) ENGINE = InnoDB,
+ PARTITION p20180205 VALUES LESS THAN (1517785200) ENGINE = InnoDB,
+ PARTITION p20180206 VALUES LESS THAN (1517871600) ENGINE = InnoDB,
+ PARTITION p20180207 VALUES LESS THAN (1517958000) ENGINE = InnoDB,
+ PARTITION p20180208 VALUES LESS THAN (1518044400) ENGINE = InnoDB,
+ PARTITION p20180209 VALUES LESS THAN (1518130800) ENGINE = InnoDB,
+ PARTITION p20180210 VALUES LESS THAN (1518217200) ENGINE = InnoDB,
+ PARTITION p20180211 VALUES LESS THAN (1518303600) ENGINE = InnoDB,
+ PARTITION p20180212 VALUES LESS THAN (1518390000) ENGINE = InnoDB,
+ PARTITION p20180213 VALUES LESS THAN (1518476400) ENGINE = InnoDB,
+ PARTITION p20180214 VALUES LESS THAN (1518562800) ENGINE = InnoDB,
+ PARTITION p20180215 VALUES LESS THAN (1518649200) ENGINE = InnoDB,
+ PARTITION p20180216 VALUES LESS THAN (1518735600) ENGINE = InnoDB,
+ PARTITION p20180217 VALUES LESS THAN (1518822000) ENGINE = InnoDB,
+ PARTITION p20180218 VALUES LESS THAN (1518908400) ENGINE = InnoDB,
+ PARTITION p20180219 VALUES LESS THAN (1518994800) ENGINE = InnoDB,
+ PARTITION p20180220 VALUES LESS THAN (1519081200) ENGINE = InnoDB,
+ PARTITION p20180221 VALUES LESS THAN (1519167600) ENGINE = InnoDB,
+ PARTITION p20180222 VALUES LESS THAN (1519254000) ENGINE = InnoDB,
+ PARTITION p20180223 VALUES LESS THAN (1519340400) ENGINE = InnoDB,
+ PARTITION p20180224 VALUES LESS THAN (1519426800) ENGINE = InnoDB,
+ PARTITION p20180225 VALUES LESS THAN (1519513200) ENGINE = InnoDB,
+ PARTITION p20180226 VALUES LESS THAN (1519599600) ENGINE = InnoDB,
+ PARTITION p20180227 VALUES LESS THAN (1519686000) ENGINE = InnoDB,
+ PARTITION p20180228 VALUES LESS THAN (1519772400) ENGINE = InnoDB,
+ PARTITION p20180301 VALUES LESS THAN (1519858800) ENGINE = InnoDB,
+ PARTITION p20180302 VALUES LESS THAN (1519945200) ENGINE = InnoDB,
+ PARTITION p20180303 VALUES LESS THAN (1520031600) ENGINE = InnoDB,
+ PARTITION p20180304 VALUES LESS THAN (1520118000) ENGINE = InnoDB,
+ PARTITION p20180305 VALUES LESS THAN (1520204400) ENGINE = InnoDB,
+ PARTITION p20180306 VALUES LESS THAN (1520290800) ENGINE = InnoDB,
+ PARTITION p20180307 VALUES LESS THAN (1520377200) ENGINE = InnoDB,
+ PARTITION p20180308 VALUES LESS THAN (1520463600) ENGINE = InnoDB,
+ PARTITION p20180309 VALUES LESS THAN (1520550000) ENGINE = InnoDB,
+ PARTITION p20180310 VALUES LESS THAN (1520636400) ENGINE = InnoDB,
+ PARTITION p20180311 VALUES LESS THAN (1520722800) ENGINE = InnoDB,
+ PARTITION p20180312 VALUES LESS THAN (1520809200) ENGINE = InnoDB,
+ PARTITION p20180313 VALUES LESS THAN (1520895600) ENGINE = InnoDB,
+ PARTITION p20180314 VALUES LESS THAN (1520982000) ENGINE = InnoDB,
+ PARTITION p20180315 VALUES LESS THAN (1521068400) ENGINE = InnoDB,
+ PARTITION p20180316 VALUES LESS THAN (1521154800) ENGINE = InnoDB,
+ PARTITION p20180317 VALUES LESS THAN (1521241200) ENGINE = InnoDB,
+ PARTITION p20180318 VALUES LESS THAN (1521327600) ENGINE = InnoDB,
+ PARTITION p20180319 VALUES LESS THAN (1521414000) ENGINE = InnoDB,
+ PARTITION p20180320 VALUES LESS THAN (1521500400) ENGINE = InnoDB,
+ PARTITION p20180321 VALUES LESS THAN (1521586800) ENGINE = InnoDB,
+ PARTITION p20180322 VALUES LESS THAN (1521673200) ENGINE = InnoDB,
+ PARTITION p20180323 VALUES LESS THAN (1521759600) ENGINE = InnoDB,
+ PARTITION p20180324 VALUES LESS THAN (1521846000) ENGINE = InnoDB,
+ PARTITION p20180325 VALUES LESS THAN (1521932400) ENGINE = InnoDB,
+ PARTITION p20180326 VALUES LESS THAN (1522015200) ENGINE = InnoDB,
+ PARTITION p20180327 VALUES LESS THAN (1522101600) ENGINE = InnoDB,
+ PARTITION p20180328 VALUES LESS THAN (1522188000) ENGINE = InnoDB,
+ PARTITION p20180329 VALUES LESS THAN (1522274400) ENGINE = InnoDB,
+ PARTITION p20180330 VALUES LESS THAN (1522360800) ENGINE = InnoDB,
+ PARTITION p20180331 VALUES LESS THAN (1522447200) ENGINE = InnoDB,
+ PARTITION p20180401 VALUES LESS THAN (1522533600) ENGINE = InnoDB,
+ PARTITION p20180402 VALUES LESS THAN (1522620000) ENGINE = InnoDB,
+ PARTITION p20180403 VALUES LESS THAN (1522706400) ENGINE = InnoDB,
+ PARTITION p20180404 VALUES LESS THAN (1522792800) ENGINE = InnoDB,
+ PARTITION p20180405 VALUES LESS THAN (1522879200) ENGINE = InnoDB,
+ PARTITION p20180406 VALUES LESS THAN (1522965600) ENGINE = InnoDB,
+ PARTITION p20180407 VALUES LESS THAN (1523052000) ENGINE = InnoDB,
+ PARTITION p20180408 VALUES LESS THAN (1523138400) ENGINE = InnoDB,
+ PARTITION p20180409 VALUES LESS THAN (1523224800) ENGINE = InnoDB,
+ PARTITION p20180410 VALUES LESS THAN (1523311200) ENGINE = InnoDB,
+ PARTITION p20180411 VALUES LESS THAN (1523397600) ENGINE = InnoDB,
+ PARTITION p20180412 VALUES LESS THAN (1523484000) ENGINE = InnoDB,
+ PARTITION p20180413 VALUES LESS THAN (1523570400) ENGINE = InnoDB,
+ PARTITION p20180414 VALUES LESS THAN (1523656800) ENGINE = InnoDB,
+ PARTITION p20180415 VALUES LESS THAN (1523743200) ENGINE = InnoDB,
+ PARTITION p20180416 VALUES LESS THAN (1523829600) ENGINE = InnoDB,
+ PARTITION p20180417 VALUES LESS THAN (1523916000) ENGINE = InnoDB,
+ PARTITION p20180418 VALUES LESS THAN (1524002400) ENGINE = InnoDB,
+ PARTITION p20180419 VALUES LESS THAN (1524088800) ENGINE = InnoDB,
+ PARTITION p20180420 VALUES LESS THAN (1524175200) ENGINE = InnoDB,
+ PARTITION p20180421 VALUES LESS THAN (1524261600) ENGINE = InnoDB,
+ PARTITION p20180422 VALUES LESS THAN (1524348000) ENGINE = InnoDB,
+ PARTITION p20180423 VALUES LESS THAN (1524434400) ENGINE = InnoDB,
+ PARTITION p20180424 VALUES LESS THAN (1524520800) ENGINE = InnoDB,
+ PARTITION p20180425 VALUES LESS THAN (1524607200) ENGINE = InnoDB,
+ PARTITION p20180426 VALUES LESS THAN (1524693600) ENGINE = InnoDB,
+ PARTITION p20180427 VALUES LESS THAN (1524780000) ENGINE = InnoDB,
+ PARTITION p20180428 VALUES LESS THAN (1524866400) ENGINE = InnoDB,
+ PARTITION p20180429 VALUES LESS THAN (1524952800) ENGINE = InnoDB,
+ PARTITION p20180430 VALUES LESS THAN (1525039200) ENGINE = InnoDB,
+ PARTITION p20180501 VALUES LESS THAN (1525125600) ENGINE = InnoDB,
+ PARTITION p20180502 VALUES LESS THAN (1525212000) ENGINE = InnoDB,
+ PARTITION p20180503 VALUES LESS THAN (1525298400) ENGINE = InnoDB,
+ PARTITION p20180504 VALUES LESS THAN (1525384800) ENGINE = InnoDB,
+ PARTITION p20180505 VALUES LESS THAN (1525471200) ENGINE = InnoDB,
+ PARTITION p20180506 VALUES LESS THAN (1525557600) ENGINE = InnoDB,
+ PARTITION p20180507 VALUES LESS THAN (1525644000) ENGINE = InnoDB,
+ PARTITION p20180508 VALUES LESS THAN (1525730400) ENGINE = InnoDB,
+ PARTITION p20180509 VALUES LESS THAN (1525816800) ENGINE = InnoDB,
+ PARTITION p20180510 VALUES LESS THAN (1525903200) ENGINE = InnoDB,
+ PARTITION p20180511 VALUES LESS THAN (1525989600) ENGINE = InnoDB,
+ PARTITION p20180512 VALUES LESS THAN (1526076000) ENGINE = InnoDB,
+ PARTITION p20180513 VALUES LESS THAN (1526162400) ENGINE = InnoDB,
+ PARTITION p20180514 VALUES LESS THAN (1526248800) ENGINE = InnoDB,
+ PARTITION p20180515 VALUES LESS THAN (1526335200) ENGINE = InnoDB,
+ PARTITION p20180516 VALUES LESS THAN (1526421600) ENGINE = InnoDB,
+ PARTITION p20180517 VALUES LESS THAN (1526508000) ENGINE = InnoDB,
+ PARTITION p20180518 VALUES LESS THAN (1526594400) ENGINE = InnoDB,
+ PARTITION p20180519 VALUES LESS THAN (1526680800) ENGINE = InnoDB,
+ PARTITION p20180520 VALUES LESS THAN (1526767200) ENGINE = InnoDB,
+ PARTITION p20180521 VALUES LESS THAN (1526853600) ENGINE = InnoDB,
+ PARTITION p20180522 VALUES LESS THAN (1526940000) ENGINE = InnoDB,
+ PARTITION p20180523 VALUES LESS THAN (1527026400) ENGINE = InnoDB,
+ PARTITION p20180524 VALUES LESS THAN (1527112800) ENGINE = InnoDB,
+ PARTITION p20180525 VALUES LESS THAN (1527199200) ENGINE = InnoDB,
+ PARTITION p20180526 VALUES LESS THAN (1527285600) ENGINE = InnoDB,
+ PARTITION p20180527 VALUES LESS THAN (1527372000) ENGINE = InnoDB,
+ PARTITION p20180528 VALUES LESS THAN (1527458400) ENGINE = InnoDB,
+ PARTITION p20180529 VALUES LESS THAN (1527544800) ENGINE = InnoDB,
+ PARTITION p20180530 VALUES LESS THAN (1527631200) ENGINE = InnoDB,
+ PARTITION p20180531 VALUES LESS THAN (1527717600) ENGINE = InnoDB,
+ PARTITION p20180601 VALUES LESS THAN (1527804000) ENGINE = InnoDB,
+ PARTITION p20180602 VALUES LESS THAN (1527890400) ENGINE = InnoDB,
+ PARTITION p20180603 VALUES LESS THAN (1527976800) ENGINE = InnoDB,
+ PARTITION p20180604 VALUES LESS THAN (1528063200) ENGINE = InnoDB,
+ PARTITION p20180605 VALUES LESS THAN (1528149600) ENGINE = InnoDB,
+ PARTITION p20180606 VALUES LESS THAN (1528236000) ENGINE = InnoDB,
+ PARTITION p20180607 VALUES LESS THAN (1528322400) ENGINE = InnoDB,
+ PARTITION p20180608 VALUES LESS THAN (1528408800) ENGINE = InnoDB,
+ PARTITION p20180609 VALUES LESS THAN (1528495200) ENGINE = InnoDB,
+ PARTITION p20180610 VALUES LESS THAN (1528581600) ENGINE = InnoDB,
+ PARTITION p20180611 VALUES LESS THAN (1528668000) ENGINE = InnoDB,
+ PARTITION p20180612 VALUES LESS THAN (1528754400) ENGINE = InnoDB,
+ PARTITION p20180613 VALUES LESS THAN (1528840800) ENGINE = InnoDB,
+ PARTITION p20180614 VALUES LESS THAN (1528927200) ENGINE = InnoDB,
+ PARTITION p20180615 VALUES LESS THAN (1529013600) ENGINE = InnoDB,
+ PARTITION p20180616 VALUES LESS THAN (1529100000) ENGINE = InnoDB,
+ PARTITION p20180617 VALUES LESS THAN (1529186400) ENGINE = InnoDB,
+ PARTITION p20180618 VALUES LESS THAN (1529272800) ENGINE = InnoDB,
+ PARTITION p20180619 VALUES LESS THAN (1529359200) ENGINE = InnoDB,
+ PARTITION p20180620 VALUES LESS THAN (1529445600) ENGINE = InnoDB,
+ PARTITION p20180621 VALUES LESS THAN (1529532000) ENGINE = InnoDB,
+ PARTITION p20180622 VALUES LESS THAN (1529618400) ENGINE = InnoDB,
+ PARTITION p20180623 VALUES LESS THAN (1529704800) ENGINE = InnoDB,
+ PARTITION p20180624 VALUES LESS THAN (1529791200) ENGINE = InnoDB,
+ PARTITION p20180625 VALUES LESS THAN (1529877600) ENGINE = InnoDB,
+ PARTITION p20180626 VALUES LESS THAN (1529964000) ENGINE = InnoDB,
+ PARTITION p20180627 VALUES LESS THAN (1530050400) ENGINE = InnoDB,
+ PARTITION p20180628 VALUES LESS THAN (1530136800) ENGINE = InnoDB,
+ PARTITION p20180629 VALUES LESS THAN (1530223200) ENGINE = InnoDB,
+ PARTITION p20180630 VALUES LESS THAN (1530309600) ENGINE = InnoDB,
+ PARTITION p20180701 VALUES LESS THAN (1530396000) ENGINE = InnoDB,
+ PARTITION p20180702 VALUES LESS THAN (1530482400) ENGINE = InnoDB,
+ PARTITION p20180703 VALUES LESS THAN (1530568800) ENGINE = InnoDB,
+ PARTITION p20180704 VALUES LESS THAN (1530655200) ENGINE = InnoDB,
+ PARTITION p20180705 VALUES LESS THAN (1530741600) ENGINE = InnoDB,
+ PARTITION p20180706 VALUES LESS THAN (1530828000) ENGINE = InnoDB,
+ PARTITION p20180707 VALUES LESS THAN (1530914400) ENGINE = InnoDB,
+ PARTITION p20180708 VALUES LESS THAN (1531000800) ENGINE = InnoDB,
+ PARTITION p20180709 VALUES LESS THAN (1531087200) ENGINE = InnoDB,
+ PARTITION p20180710 VALUES LESS THAN (1531173600) ENGINE = InnoDB,
+ PARTITION p20180711 VALUES LESS THAN (1531260000) ENGINE = InnoDB,
+ PARTITION p20180712 VALUES LESS THAN (1531346400) ENGINE = InnoDB,
+ PARTITION p20180713 VALUES LESS THAN (1531432800) ENGINE = InnoDB,
+ PARTITION p20180714 VALUES LESS THAN (1531519200) ENGINE = InnoDB,
+ PARTITION p20180715 VALUES LESS THAN (1531605600) ENGINE = InnoDB,
+ PARTITION p20180716 VALUES LESS THAN (1531692000) ENGINE = InnoDB,
+ PARTITION p20180717 VALUES LESS THAN (1531778400) ENGINE = InnoDB,
+ PARTITION p20180718 VALUES LESS THAN (1531864800) ENGINE = InnoDB,
+ PARTITION p20180719 VALUES LESS THAN (1531951200) ENGINE = InnoDB,
+ PARTITION p20180720 VALUES LESS THAN (1532037600) ENGINE = InnoDB,
+ PARTITION p20180721 VALUES LESS THAN (1532124000) ENGINE = InnoDB,
+ PARTITION p20180722 VALUES LESS THAN (1532210400) ENGINE = InnoDB,
+ PARTITION p20180723 VALUES LESS THAN (1532296800) ENGINE = InnoDB,
+ PARTITION p20180724 VALUES LESS THAN (1532383200) ENGINE = InnoDB,
+ PARTITION p20180725 VALUES LESS THAN (1532469600) ENGINE = InnoDB,
+ PARTITION p20180726 VALUES LESS THAN (1532556000) ENGINE = InnoDB,
+ PARTITION p20180727 VALUES LESS THAN (1532642400) ENGINE = InnoDB,
+ PARTITION p20180728 VALUES LESS THAN (1532728800) ENGINE = InnoDB,
+ PARTITION p20180729 VALUES LESS THAN (1532815200) ENGINE = InnoDB,
+ PARTITION p20180730 VALUES LESS THAN (1532901600) ENGINE = InnoDB,
+ PARTITION p20180731 VALUES LESS THAN (1532988000) ENGINE = InnoDB,
+ PARTITION p20180801 VALUES LESS THAN (1533074400) ENGINE = InnoDB,
+ PARTITION p20180802 VALUES LESS THAN (1533160800) ENGINE = InnoDB,
+ PARTITION p20180803 VALUES LESS THAN (1533247200) ENGINE = InnoDB,
+ PARTITION p20180804 VALUES LESS THAN (1533333600) ENGINE = InnoDB,
+ PARTITION p20180805 VALUES LESS THAN (1533420000) ENGINE = InnoDB,
+ PARTITION p20180806 VALUES LESS THAN (1533506400) ENGINE = InnoDB,
+ PARTITION p20180807 VALUES LESS THAN (1533592800) ENGINE = InnoDB,
+ PARTITION p20180808 VALUES LESS THAN (1533679200) ENGINE = InnoDB,
+ PARTITION p20180809 VALUES LESS THAN (1533765600) ENGINE = InnoDB,
+ PARTITION p20180810 VALUES LESS THAN (1533852000) ENGINE = InnoDB,
+ PARTITION p20180811 VALUES LESS THAN (1533938400) ENGINE = InnoDB,
+ PARTITION p20180812 VALUES LESS THAN (1534024800) ENGINE = InnoDB,
+ PARTITION p20180813 VALUES LESS THAN (1534111200) ENGINE = InnoDB,
+ PARTITION p20180814 VALUES LESS THAN (1534197600) ENGINE = InnoDB,
+ PARTITION p20180815 VALUES LESS THAN (1534284000) ENGINE = InnoDB,
+ PARTITION p20180816 VALUES LESS THAN (1534370400) ENGINE = InnoDB,
+ PARTITION p20180817 VALUES LESS THAN (1534456800) ENGINE = InnoDB,
+ PARTITION p20180818 VALUES LESS THAN (1534543200) ENGINE = InnoDB,
+ PARTITION p20180819 VALUES LESS THAN (1534629600) ENGINE = InnoDB,
+ PARTITION p20180820 VALUES LESS THAN (1534716000) ENGINE = InnoDB,
+ PARTITION p20180821 VALUES LESS THAN (1534802400) ENGINE = InnoDB,
+ PARTITION p20180822 VALUES LESS THAN (1534888800) ENGINE = InnoDB,
+ PARTITION p20180823 VALUES LESS THAN (1534975200) ENGINE = InnoDB,
+ PARTITION p20180824 VALUES LESS THAN (1535061600) ENGINE = InnoDB,
+ PARTITION p20180825 VALUES LESS THAN (1535148000) ENGINE = InnoDB,
+ PARTITION p20180826 VALUES LESS THAN (1535234400) ENGINE = InnoDB,
+ PARTITION p20180827 VALUES LESS THAN (1535320800) ENGINE = InnoDB,
+ PARTITION p20180828 VALUES LESS THAN (1535407200) ENGINE = InnoDB,
+ PARTITION p20180829 VALUES LESS THAN (1535493600) ENGINE = InnoDB,
+ PARTITION p20180830 VALUES LESS THAN (1535580000) ENGINE = InnoDB,
+ PARTITION p20180831 VALUES LESS THAN (1535666400) ENGINE = InnoDB,
+ PARTITION p20180901 VALUES LESS THAN (1535752800) ENGINE = InnoDB,
+ PARTITION p20180902 VALUES LESS THAN (1535839200) ENGINE = InnoDB,
+ PARTITION p20180903 VALUES LESS THAN (1535925600) ENGINE = InnoDB,
+ PARTITION p20180904 VALUES LESS THAN (1536012000) ENGINE = InnoDB,
+ PARTITION p20180905 VALUES LESS THAN (1536098400) ENGINE = InnoDB,
+ PARTITION p20180906 VALUES LESS THAN (1536184800) ENGINE = InnoDB,
+ PARTITION p20180907 VALUES LESS THAN (1536271200) ENGINE = InnoDB,
+ PARTITION p20180908 VALUES LESS THAN (1536357600) ENGINE = InnoDB,
+ PARTITION p20180909 VALUES LESS THAN (1536444000) ENGINE = InnoDB,
+ PARTITION p20180910 VALUES LESS THAN (1536530400) ENGINE = InnoDB,
+ PARTITION p20180911 VALUES LESS THAN (1536616800) ENGINE = InnoDB,
+ PARTITION p20180912 VALUES LESS THAN (1536703200) ENGINE = InnoDB,
+ PARTITION p20180913 VALUES LESS THAN (1536789600) ENGINE = InnoDB,
+ PARTITION p20180914 VALUES LESS THAN (1536876000) ENGINE = InnoDB,
+ PARTITION p20180915 VALUES LESS THAN (1536962400) ENGINE = InnoDB,
+ PARTITION p20180916 VALUES LESS THAN (1537048800) ENGINE = InnoDB,
+ PARTITION p20180917 VALUES LESS THAN (1537135200) ENGINE = InnoDB,
+ PARTITION p20180918 VALUES LESS THAN (1537221600) ENGINE = InnoDB,
+ PARTITION p20180919 VALUES LESS THAN (1537308000) ENGINE = InnoDB,
+ PARTITION p20180920 VALUES LESS THAN (1537394400) ENGINE = InnoDB,
+ PARTITION p20180921 VALUES LESS THAN (1537480800) ENGINE = InnoDB,
+ PARTITION p20180922 VALUES LESS THAN (1537567200) ENGINE = InnoDB,
+ PARTITION p20180923 VALUES LESS THAN (1537653600) ENGINE = InnoDB,
+ PARTITION pmax VALUES LESS THAN MAXVALUE ENGINE = InnoDB) */;
+
+
+--
+-- Table structure for table `metrics`
+--
+
+DROP TABLE IF EXISTS `metrics`;
+
+
+CREATE TABLE `metrics` (
+  `metric_id` int(11) NOT NULL AUTO_INCREMENT,
+  `index_id` int(11) DEFAULT NULL,
+  `metric_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `data_source_type` enum('0','1','2','3') DEFAULT NULL,
+  `unit_name` varchar(32) DEFAULT NULL,
+  `current_value` float DEFAULT NULL,
+  `warn` float DEFAULT NULL,
+  `warn_low` float DEFAULT NULL,
+  `warn_threshold_mode` tinyint(1) DEFAULT NULL,
+  `crit` float DEFAULT NULL,
+  `crit_low` float DEFAULT NULL,
+  `crit_threshold_mode` tinyint(1) DEFAULT NULL,
+  `hidden` enum('0','1') DEFAULT '0',
+  `min` float DEFAULT NULL,
+  `max` float DEFAULT NULL,
+  `locked` enum('0','1') DEFAULT NULL,
+  `to_delete` int(1) DEFAULT '0',
+  PRIMARY KEY (`metric_id`),
+  UNIQUE KEY `index_id` (`index_id`,`metric_name`),
+  KEY `index` (`index_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5426 DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `modules`
+--
+
+DROP TABLE IF EXISTS `modules`;
+
+
+CREATE TABLE `modules` (
+  `module_id` int(11) NOT NULL AUTO_INCREMENT,
+  `instance_id` int(11) NOT NULL,
+  `args` varchar(255) DEFAULT NULL,
+  `filename` varchar(255) DEFAULT NULL,
+  `loaded` tinyint(1) DEFAULT NULL,
+  `should_be_loaded` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`module_id`),
+  KEY `instance_id` (`instance_id`),
+  CONSTRAINT `modules_ibfk_1` FOREIGN KEY (`instance_id`) REFERENCES `instances` (`instance_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=297 DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `nagios_stats`
+--
+
+DROP TABLE IF EXISTS `nagios_stats`;
+CREATE TABLE `nagios_stats` (
+  `instance_id` int(11) NOT NULL,
+  `stat_key` varchar(255) NOT NULL,
+  `stat_value` varchar(255) NOT NULL,
+  `stat_label` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `notifications`
+--
+
+DROP TABLE IF EXISTS `notifications`;
+CREATE TABLE `notifications` (
+  `notification_id` int(11) NOT NULL AUTO_INCREMENT,
+  `host_id` int(11) DEFAULT NULL,
+  `service_id` int(11) DEFAULT NULL,
+  `start_time` int(11) DEFAULT NULL,
+  `ack_author` varchar(255) DEFAULT NULL,
+  `ack_data` text,
+  `command_name` varchar(255) DEFAULT NULL,
+  `contact_name` varchar(255) DEFAULT NULL,
+  `contacts_notified` tinyint(1) DEFAULT NULL,
+  `end_time` int(11) DEFAULT NULL,
+  `escalated` tinyint(1) DEFAULT NULL,
+  `output` text,
+  `reason_type` int(11) DEFAULT NULL,
+  `state` int(11) DEFAULT NULL,
+  `type` int(11) DEFAULT NULL,
+  PRIMARY KEY (`notification_id`),
+  UNIQUE KEY `host_id` (`host_id`,`service_id`,`start_time`),
+  CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`host_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `schemaversion`
+--
+
+DROP TABLE IF EXISTS `schemaversion`;
+CREATE TABLE `schemaversion` (
+  `software` varchar(128) NOT NULL,
+  `version` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `servicegroups`
+--
+
+DROP TABLE IF EXISTS `servicegroups`;
+
+CREATE TABLE `servicegroups` (
+  `servicegroup_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  PRIMARY KEY (`servicegroup_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `services`
+--
+
+DROP TABLE IF EXISTS `services`;
+
+CREATE TABLE `services` (
+  `host_id` int(11) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `service_id` int(11) NOT NULL,
+  `acknowledged` tinyint(1) DEFAULT NULL,
+  `acknowledgement_type` smallint(6) DEFAULT NULL,
+  `action_url` varchar(255) DEFAULT NULL,
+  `active_checks` tinyint(1) DEFAULT NULL,
+  `check_attempt` smallint(6) DEFAULT NULL,
+  `check_command` text,
+  `check_freshness` tinyint(1) DEFAULT NULL,
+  `check_interval` double DEFAULT NULL,
+  `check_period` varchar(75) DEFAULT NULL,
+  `check_type` smallint(6) DEFAULT NULL,
+  `checked` tinyint(1) DEFAULT NULL,
+  `command_line` text,
+  `default_active_checks` tinyint(1) DEFAULT NULL,
+  `default_event_handler_enabled` tinyint(1) DEFAULT NULL,
+  `default_failure_prediction` tinyint(1) DEFAULT NULL,
+  `default_flap_detection` tinyint(1) DEFAULT NULL,
+  `default_notify` tinyint(1) DEFAULT NULL,
+  `default_passive_checks` tinyint(1) DEFAULT NULL,
+  `default_process_perfdata` tinyint(1) DEFAULT NULL,
+  `display_name` varchar(160) DEFAULT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `event_handler` varchar(255) DEFAULT NULL,
+  `event_handler_enabled` tinyint(1) DEFAULT NULL,
+  `execution_time` double DEFAULT NULL,
+  `failure_prediction` tinyint(1) DEFAULT NULL,
+  `failure_prediction_options` varchar(64) DEFAULT NULL,
+  `first_notification_delay` double DEFAULT NULL,
+  `flap_detection` tinyint(1) DEFAULT NULL,
+  `flap_detection_on_critical` tinyint(1) DEFAULT NULL,
+  `flap_detection_on_ok` tinyint(1) DEFAULT NULL,
+  `flap_detection_on_unknown` tinyint(1) DEFAULT NULL,
+  `flap_detection_on_warning` tinyint(1) DEFAULT NULL,
+  `flapping` tinyint(1) DEFAULT NULL,
+  `freshness_threshold` double DEFAULT NULL,
+  `high_flap_threshold` double DEFAULT NULL,
+  `icon_image` varchar(255) DEFAULT NULL,
+  `icon_image_alt` varchar(255) DEFAULT NULL,
+  `last_check` int(11) DEFAULT NULL,
+  `last_hard_state` smallint(6) DEFAULT NULL,
+  `last_hard_state_change` int(11) DEFAULT NULL,
+  `last_notification` int(11) DEFAULT NULL,
+  `last_state_change` int(11) DEFAULT NULL,
+  `last_time_critical` int(11) DEFAULT NULL,
+  `last_time_ok` int(11) DEFAULT NULL,
+  `last_time_unknown` int(11) DEFAULT NULL,
+  `last_time_warning` int(11) DEFAULT NULL,
+  `last_update` int(11) DEFAULT NULL,
+  `latency` double DEFAULT NULL,
+  `low_flap_threshold` double DEFAULT NULL,
+  `max_check_attempts` smallint(6) DEFAULT NULL,
+  `modified_attributes` int(11) DEFAULT NULL,
+  `next_check` int(11) DEFAULT NULL,
+  `next_notification` int(11) DEFAULT NULL,
+  `no_more_notifications` tinyint(1) DEFAULT NULL,
+  `notes` varchar(255) DEFAULT NULL,
+  `notes_url` varchar(255) DEFAULT NULL,
+  `notification_interval` double DEFAULT NULL,
+  `notification_number` smallint(6) DEFAULT NULL,
+  `notification_period` varchar(75) DEFAULT NULL,
+  `notify` tinyint(1) DEFAULT NULL,
+  `notify_on_critical` tinyint(1) DEFAULT NULL,
+  `notify_on_downtime` tinyint(1) DEFAULT NULL,
+  `notify_on_flapping` tinyint(1) DEFAULT NULL,
+  `notify_on_recovery` tinyint(1) DEFAULT NULL,
+  `notify_on_unknown` tinyint(1) DEFAULT NULL,
+  `notify_on_warning` tinyint(1) DEFAULT NULL,
+  `obsess_over_service` tinyint(1) DEFAULT NULL,
+  `output` text,
+  `passive_checks` tinyint(1) DEFAULT NULL,
+  `percent_state_change` double DEFAULT NULL,
+  `perfdata` text,
+  `process_perfdata` tinyint(1) DEFAULT NULL,
+  `retain_nonstatus_information` tinyint(1) DEFAULT NULL,
+  `retain_status_information` tinyint(1) DEFAULT NULL,
+  `retry_interval` double DEFAULT NULL,
+  `scheduled_downtime_depth` smallint(6) DEFAULT NULL,
+  `should_be_scheduled` tinyint(1) DEFAULT NULL,
+  `stalk_on_critical` tinyint(1) DEFAULT NULL,
+  `stalk_on_ok` tinyint(1) DEFAULT NULL,
+  `stalk_on_unknown` tinyint(1) DEFAULT NULL,
+  `stalk_on_warning` tinyint(1) DEFAULT NULL,
+  `state` smallint(6) DEFAULT NULL,
+  `state_type` smallint(6) DEFAULT NULL,
+  `volatile` tinyint(1) DEFAULT NULL,
+  `real_state` smallint(6) DEFAULT NULL,
+  UNIQUE KEY `host_id` (`host_id`,`service_id`),
+  KEY `service_id` (`service_id`),
+  KEY `service_description` (`description`),
+  KEY `last_hard_state_change` (`last_hard_state_change`),
+  CONSTRAINT `services_ibfk_1` FOREIGN KEY (`host_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `services_servicegroups`
+--
+
+DROP TABLE IF EXISTS `services_servicegroups`;
+CREATE TABLE `services_servicegroups` (
+  `host_id` int(11) NOT NULL,
+  `service_id` int(11) NOT NULL,
+  `servicegroup_id` int(11) NOT NULL,
+  UNIQUE KEY `host_id` (`host_id`,`service_id`,`servicegroup_id`),
+  KEY `servicegroup_id` (`servicegroup_id`),
+  CONSTRAINT `services_servicegroups_ibfk_1` FOREIGN KEY (`host_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE,
+  CONSTRAINT `services_servicegroups_ibfk_2` FOREIGN KEY (`servicegroup_id`) REFERENCES `servicegroups` (`servicegroup_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `services_services_dependencies`
+--
+
+DROP TABLE IF EXISTS `services_services_dependencies`;
+CREATE TABLE `services_services_dependencies` (
+  `dependent_host_id` int(11) NOT NULL,
+  `dependent_service_id` int(11) NOT NULL,
+  `host_id` int(11) NOT NULL,
+  `service_id` int(11) NOT NULL,
+  `dependency_period` varchar(75) DEFAULT NULL,
+  `execution_failure_options` varchar(15) DEFAULT NULL,
+  `inherits_parent` tinyint(1) DEFAULT NULL,
+  `notification_failure_options` varchar(15) DEFAULT NULL,
+  UNIQUE KEY `dependent_host_id` (`dependent_host_id`,`dependent_service_id`,`host_id`,`service_id`),
+  KEY `host_id` (`host_id`),
+  CONSTRAINT `services_services_dependencies_ibfk_1` FOREIGN KEY (`dependent_host_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE,
+  CONSTRAINT `services_services_dependencies_ibfk_2` FOREIGN KEY (`host_id`) REFERENCES `hosts` (`host_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `servicestateevents`
+--
+
+DROP TABLE IF EXISTS `servicestateevents`;
+
+CREATE TABLE `servicestateevents` (
+  `servicestateevent_id` int(11) NOT NULL AUTO_INCREMENT,
+  `end_time` int(11) DEFAULT NULL,
+  `host_id` int(11) NOT NULL,
+  `service_id` int(11) DEFAULT NULL,
+  `start_time` int(11) NOT NULL,
+  `state` tinyint(11) NOT NULL,
+  `last_update` tinyint(4) NOT NULL DEFAULT '0',
+  `in_downtime` tinyint(4) NOT NULL,
+  `ack_time` int(11) DEFAULT NULL,
+  `in_ack` tinyint(4) DEFAULT '0',
+  PRIMARY KEY (`servicestateevent_id`),
+  UNIQUE KEY `host_id` (`host_id`,`service_id`,`start_time`),
+  KEY `start_time` (`start_time`),
+  KEY `end_time` (`end_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- BA / Group relations.
+--
+CREATE TABLE mod_bam_bagroup_ba_relation (
+  id_bgr int NOT NULL auto_increment,
+  id_ba int NOT NULL,
+  id_ba_group int NOT NULL,
+
+  PRIMARY KEY (id_bgr),
+  FOREIGN KEY (id_ba) REFERENCES mod_bam (ba_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (id_ba_group) REFERENCES mod_bam_ba_groups (id_ba_group)
+    ON DELETE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- BA Groups (aka BV).
+--
+CREATE TABLE mod_bam_ba_groups (
+  id_ba_group int NOT NULL auto_increment,
+
+  ba_group_name varchar(255) default NULL,
+  ba_group_description varchar(255) default NULL,
+  visible enum('0', '1') NOT NULL default '1',
+
+  PRIMARY KEY (id_ba_group)
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- BAM boolean expressions.
+--
+CREATE TABLE mod_bam_boolean (
+  boolean_id int NOT NULL auto_increment,
+  name varchar(255) NOT NULL,
+
+  expression text NOT NULL,
+  bool_state boolean NOT NULL default 1,
+  comments text default NULL,
+  activate boolean NOT NULL default 0,
+
+  PRIMARY KEY (boolean_id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- Impacts of KPI / boolean expressions.
+--
+CREATE TABLE mod_bam_impacts (
+  id_impact int NOT NULL auto_increment,
+  impact float NOT NULL,
+
+  PRIMARY KEY (id_impact)
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- Key Performance Indicators.
+--
+CREATE TABLE mod_bam_kpi (
+  kpi_id int NOT NULL auto_increment,
+
+  state_type enum('0','1') default NULL,
+  kpi_type enum('0','1','2','3') NOT NULL default '0',
+  host_id int default NULL,
+  service_id int default NULL,
+  id_indicator_ba int default NULL,
+  id_ba int default NULL,
+  meta_id int default NULL,
+  boolean_id int default NULL,
+  current_status smallint default NULL,
+  last_level float default NULL,
+  downtime float default NULL,
+  acknowledged float default NULL,
+  config_type enum('0', '1'),
+  drop_warning float default NULL,
+  drop_warning_impact_id int default NULL,
+  drop_critical float default NULL,
+  drop_critical_impact_id int default NULL,
+  drop_unknown float default NULL,
+  drop_unknown_impact_id int default NULL,
+  activate enum('0','1') default '0',
+  ignore_downtime enum('0','1') default '0',
+  ignore_acknowledged enum('0','1') default '0',
+  last_state_change int default NULL,
+  in_downtime boolean default NULL,
+  last_impact float default NULL,
+  valid boolean NOT NULL default 1,
+
+  PRIMARY KEY (kpi_id),
+  FOREIGN KEY (id_indicator_ba) REFERENCES mod_bam (ba_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (id_ba) REFERENCES mod_bam (ba_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (drop_warning_impact_id) REFERENCES mod_bam_impacts (id_impact)
+    ON DELETE RESTRICT,
+  FOREIGN KEY (drop_critical_impact_id) REFERENCES mod_bam_impacts (id_impact)
+    ON DELETE RESTRICT,
+  FOREIGN KEY (drop_unknown_impact_id) REFERENCES mod_bam_impacts (id_impact)
+    ON DELETE RESTRICT
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- BA/poller relation table.
+--
+CREATE TABLE mod_bam_poller_relations (
+  ba_id int NOT NULL,
+  poller_id int NOT NULL,
+
+  FOREIGN KEY (ba_id) REFERENCES mod_bam (ba_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- BA / Timeperiod relations.
+--
+CREATE TABLE mod_bam_relations_ba_timeperiods (
+  ba_id int NOT NULL,
+  tp_id int NOT NULL,
+
+  FOREIGN KEY (ba_id) REFERENCES mod_bam (ba_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (tp_id) REFERENCES timeperiod (tp_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- BA availabilities.
+--
+CREATE TABLE mod_bam_reporting_ba_availabilities (
+  ba_id int NOT NULL,
+  time_id int NOT NULL,
+  timeperiod_id int NOT NULL,
+
+  available int default NULL,
+  unavailable int default NULL,
+  degraded int default NULL,
+  unknown int default NULL,
+  downtime int default NULL,
+  alert_unavailable_opened int default NULL,
+  alert_degraded_opened int default NULL,
+  alert_unknown_opened int default NULL,
+  nb_downtime int default NULL,
+  timeperiod_is_default boolean default NULL,
+
+  UNIQUE (ba_id, time_id, timeperiod_id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- BA events durations.
+--
+CREATE TABLE mod_bam_reporting_ba_events_durations (
+  ba_event_id int NOT NULL,
+  timeperiod_id int NOT NULL,
+
+  start_time int default NULL,
+  end_time int default NULL,
+  duration int default NULL,
+  sla_duration int default NULL,
+  timeperiod_is_default boolean default NULL,
+
+  UNIQUE (ba_event_id, timeperiod_id),
+  FOREIGN KEY (ba_event_id) REFERENCES mod_bam_reporting_ba_events (ba_event_id)
+    ON DELETE CASCADE,
+  KEY (end_time, start_time)
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- BA events.
+--
+CREATE TABLE mod_bam_reporting_ba_events (
+  ba_event_id int NOT NULL auto_increment,
+  ba_id int NOT NULL,
+  start_time int NOT NULL,
+
+  first_level double default NULL,
+  end_time int default NULL,
+  status tinyint default NULL,
+  in_downtime boolean default NULL,
+
+  PRIMARY KEY (ba_event_id),
+  KEY (ba_id, start_time),
+  KEY (ba_id, end_time)
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- Business Activities.
+--
+CREATE TABLE mod_bam_reporting_ba (
+  ba_id int NOT NULL,
+  ba_name varchar(45) default NULL,
+
+  ba_description text default NULL,
+  sla_month_percent_crit float default NULL,
+  sla_month_percent_warn float default NULL,
+  sla_month_duration_crit int default NULL,
+  sla_month_duration_warn int default NULL,
+
+  PRIMARY KEY (ba_id),
+  UNIQUE (ba_name)
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- Business Views.
+--
+CREATE TABLE mod_bam_reporting_bv (
+  bv_id int NOT NULL auto_increment,
+  bv_name varchar(45) default NULL,
+
+  bv_description text default NULL,
+
+  PRIMARY KEY (bv_id),
+  UNIQUE (bv_name)
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- KPI events.
+--
+CREATE TABLE mod_bam_reporting_kpi_events (
+  kpi_event_id int NOT NULL auto_increment,
+  kpi_id int NOT NULL,
+  start_time int NOT NULL,
+
+  end_time int default NULL,
+  status tinyint default NULL,
+  in_downtime boolean default NULL,
+  impact_level tinyint default NULL,
+  first_output text default NULL,
+  first_perfdata varchar(45) default NULL,
+
+  PRIMARY KEY (kpi_event_id),
+  KEY (kpi_id, start_time)
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- Key Performance Indicators.
+--
+CREATE TABLE mod_bam_reporting_kpi (
+  kpi_id int NOT NULL,
+  kpi_name varchar(45) default NULL,
+
+  ba_id int default NULL,
+  ba_name varchar(45) default NULL,
+  host_id int default NULL,
+  host_name varchar(45) default NULL,
+  service_id int default NULL,
+  service_description varchar(45) default NULL,
+  kpi_ba_id int default NULL,
+  kpi_ba_name varchar(45) default NULL,
+  meta_service_id int default NULL,
+  meta_service_name varchar(45),
+  boolean_id int default NULL,
+  boolean_name varchar(45),
+  impact_warning float default NULL,
+  impact_critical float default NULL,
+  impact_unknown float default NULL,
+
+  PRIMARY KEY (kpi_id),
+  FOREIGN KEY (ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (kpi_ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- Relations between BA and BV.
+--
+CREATE TABLE mod_bam_reporting_relations_ba_bv (
+  ba_bv_id int NOT NULL auto_increment,
+  bv_id int NOT NULL,
+  ba_id int NOT NULL,
+
+  PRIMARY KEY (ba_bv_id),
+  FOREIGN KEY (bv_id) REFERENCES mod_bam_reporting_bv (bv_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- Relations between BA events and KPI events.
+--
+CREATE TABLE mod_bam_reporting_relations_ba_kpi_events (
+  ba_event_id int NOT NULL,
+  kpi_event_id int NOT NULL,
+
+  FOREIGN KEY (ba_event_id) REFERENCES mod_bam_reporting_ba_events (ba_event_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (kpi_event_id) REFERENCES mod_bam_reporting_kpi_events (kpi_event_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- BA/timeperiods relations.
+--
+CREATE TABLE mod_bam_reporting_relations_ba_timeperiods (
+  ba_id int default NULL,
+  timeperiod_id int default NULL,
+  is_default boolean default NULL,
+
+  FOREIGN KEY (ba_id) REFERENCES mod_bam_reporting_ba (ba_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (timeperiod_id) REFERENCES mod_bam_reporting_timeperiods (timeperiod_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- Timeperiods exceptions.
+--
+CREATE TABLE mod_bam_reporting_timeperiods_exceptions (
+  timeperiod_id int NOT NULL,
+  daterange varchar(255) NOT NULL,
+  timerange varchar(255) NOT NULL,
+
+  FOREIGN KEY (timeperiod_id) REFERENCES mod_bam_reporting_timeperiods (timeperiod_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- Timeperiods exclusions.
+--
+CREATE TABLE mod_bam_reporting_timeperiods_exclusions (
+  timeperiod_id int NOT NULL,
+  excluded_timeperiod_id int NOT NULL,
+
+  FOREIGN KEY (timeperiod_id) REFERENCES mod_bam_reporting_timeperiods (timeperiod_id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (excluded_timeperiod_id) REFERENCES mod_bam_reporting_timeperiods (timeperiod_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- Timeperiods.
+--
+CREATE TABLE mod_bam_reporting_timeperiods (
+  timeperiod_id int NOT NULL,
+  name varchar(200) default NULL,
+  sunday varchar(200) default NULL,
+  monday varchar(200) default NULL,
+  tuesday varchar(200) default NULL,
+  wednesday varchar(200) default NULL,
+  thursday varchar(200) default NULL,
+  friday varchar(200) default NULL,
+  saturday varchar(200) default NULL,
+
+  PRIMARY KEY (timeperiod_id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+--
+-- Business Activities.
+--
+CREATE TABLE mod_bam (
+  ba_id int NOT NULL auto_increment,
+  name varchar(254) default NULL,
+  description varchar(254) default NULL,
+  level_w float default NULL,
+  level_c float default NULL,
+  sla_month_percent_warn float default NULL,
+  sla_month_percent_crit float default NULL,
+  sla_month_duration_warn int default NULL,
+  sla_month_duration_crit int default NULL,
+  current_level float default NULL,
+  downtime float default NULL,
+  acknowledged float default NULL,
+  activate enum('1','0') NOT NULL default '0',
+  last_state_change int default NULL,
+  current_status tinyint default NULL,
+  in_downtime boolean default NULL,
+  must_be_rebuild enum('0', '1', '2') NOT NULL default '0',
+  id_reporting_period int default NULL,
+
+  PRIMARY KEY (ba_id),
+  UNIQUE (name),
+  FOREIGN KEY (id_reporting_period) REFERENCES timeperiod (tp_id)
+    ON DELETE SET NULL
+) ENGINE=InnoDB CHARACTER SET utf8;
+
+SET FOREIGN_KEY_CHECKS=1;

@@ -1,0 +1,5 @@
+.git
+build/CMakeCache.txt
+**/CMakeFiles
+**/*.a
+**/*.so

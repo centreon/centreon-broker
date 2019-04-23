@@ -200,7 +200,9 @@ TEST_F(LuaTest, WriteAcknowledgement) {
   bnd->write(svc);
 
   QStringList result(ReadFile("/tmp/test.log"));
-  ASSERT_EQ(result.size(), 15);
+  ASSERT_EQ(result.size(), 16);
+  ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: write: _type => 65537")) >= 0);
+  ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: write: type => 0")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: init: address => 127\\.0\\.0\\.1")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: init: double => 3.1415926535898")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: init: port => 8857")) >= 0);
@@ -416,6 +418,35 @@ TEST_F(LuaTest, JsonEncodeEscape) {
   ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: 4=>27.1")) != -1);
   ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: 5=>table: .*")) != -1);
   ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: 6=>une tabulation\t...")) != -1);
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// When a script is loaded with a lua table containing three keys
+// "category" with 1, "element": with 4 and "type" that is the concatenation
+// of the two previous ones.
+// And a call to json_encode is made on that table
+// Then it succeeds.
+TEST_F(LuaTest, JsonEncodeEvent) {
+  QMap<QString, QVariant> conf;
+  std::string filename("/tmp/json_encode.lua");
+  CreateScript(filename, "function init(conf)\n"
+                         "  broker_log:set_parameters(3, '/tmp/log')\n"
+                         "  local a = { category = 1, element = 4, type = 65540 }\n"
+                         "  local json = broker.json_encode(a)\n"
+                         "  local b = broker.json_decode(json)\n"
+                         "  for i,v in pairs(b) do\n"
+                         "    broker_log:info(1, i .. '=>' .. tostring(v))\n"
+                         "  end\n"
+                         "end\n\n"
+                         "function write(d)\n"
+                         "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  QStringList lst(ReadFile("/tmp/log"));
+
+  ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: category=>1")) != -1);
+  ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: element=>4")) != -1);
+  ASSERT_TRUE(lst.indexOf(QRegExp(".*INFO: type=>65540")) != -1);
   RemoveFile(filename);
   RemoveFile("/tmp/log");
 }
