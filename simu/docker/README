@@ -1,0 +1,2 @@
+docker run -it -d --rm -p 3306:3306 centreon-mariadb
+mariadb -u root -proot -h 127.0.0.1 centreon_storage

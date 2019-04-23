@@ -246,7 +246,7 @@ int luabinding::write(std::shared_ptr<io::data> const& data) {
 
   // Let's build the table from the event as argument to write()
   lua_newtable(_L);
-  lua_pushstring(_L, "type");
+  lua_pushstring(_L, "_type");
   lua_pushinteger(_L, type);
   lua_rawset(_L, -3);
 
