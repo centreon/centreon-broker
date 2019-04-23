@@ -912,7 +912,7 @@ void stream::_insert_perfdatas() {
         query << "NULL";
       else
         query << mv.value;
-      query << "')";
+      query << ")";
       _perfdata_queue.pop_front();
     }
 
