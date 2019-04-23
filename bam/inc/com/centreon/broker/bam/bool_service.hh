@@ -19,9 +19,9 @@
 #ifndef CCB_BAM_BOOL_SERVICE_HH
 #  define CCB_BAM_BOOL_SERVICE_HH
 
+#  include <memory>
 #  include "com/centreon/broker/bam/bool_value.hh"
 #  include "com/centreon/broker/bam/service_listener.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -38,7 +38,7 @@ namespace         bam {
   class           bool_service : public bool_value,
                                  public service_listener {
   public:
-    typedef misc::shared_ptr<bool_service> ptr;
+    typedef std::shared_ptr<bool_service> ptr;
 
                   bool_service();
                   bool_service(bool_service const& right);
@@ -52,7 +52,7 @@ namespace         bam {
     void          set_host_id(unsigned int host_id);
     void          set_service_id(unsigned int service_id);
     void          service_update(
-                    misc::shared_ptr<neb::service_status> const& status,
+                    std::shared_ptr<neb::service_status> const& status,
                     io::stream* visitor = NULL);
     double        value_hard();
     double        value_soft();

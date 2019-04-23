@@ -460,7 +460,7 @@ static void send_service_list() {
 static void send_instance_configuration() {
   logging::info(logging::medium)
     << "init: sending initial instance configuration loading event";
-  misc::shared_ptr<neb::instance_configuration>
+  std::shared_ptr<neb::instance_configuration>
     ic(new neb::instance_configuration);
   ic->loaded = true;
   ic->poller_id = config::applier::state::instance().poller_id();

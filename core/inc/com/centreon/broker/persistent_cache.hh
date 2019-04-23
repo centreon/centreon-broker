@@ -22,7 +22,6 @@
 #  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -38,9 +37,9 @@ class               persistent_cache {
 public:
                     persistent_cache(std::string const& cache_file);
                     ~persistent_cache();
-  void              add(misc::shared_ptr<io::data> const& d);
+  void              add(std::shared_ptr<io::data> const& d);
   void              commit();
-  void              get(misc::shared_ptr<io::data>& d);
+  void              get(std::shared_ptr<io::data>& d);
   void              rollback();
   void              transaction();
 
@@ -55,9 +54,9 @@ private:
   void              _open();
 
   std::string       _cache_file;
-  misc::shared_ptr<io::stream>
+  std::shared_ptr<io::stream>
                     _read_file;
-  misc::shared_ptr<io::stream>
+  std::shared_ptr<io::stream>
                     _write_file;
 };
 

@@ -20,10 +20,10 @@
 #  define CCB_BAM_CONFIGURATION_APPLIER_META_SERVICE_HH
 
 #  include <map>
+#  include <memory>
 #  include "com/centreon/broker/bam/configuration/meta_service.hh"
 #  include "com/centreon/broker/bam/configuration/state.hh"
 #  include "com/centreon/broker/bam/meta_service.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -54,19 +54,19 @@ namespace             bam {
         void          apply(
                         configuration::state::meta_services const& my_meta,
                         metric_book& book);
-        misc::shared_ptr<bam::meta_service>
+        std::shared_ptr<bam::meta_service>
                       find_meta(unsigned int id);
 
       private:
         struct applied {
           configuration::meta_service         cfg;
-          misc::shared_ptr<bam::meta_service> obj;
+          std::shared_ptr<bam::meta_service> obj;
         };
 
         void          _internal_copy(meta_service const& other);
-        misc::shared_ptr<neb::host>
+        std::shared_ptr<neb::host>
                       _meta_host(unsigned int host_id);
-        misc::shared_ptr<neb::service>
+        std::shared_ptr<neb::service>
                       _meta_service(
                          unsigned int meta_id,
                          unsigned int host_id,
@@ -76,7 +76,7 @@ namespace             bam {
                         metric_book& book,
                         configuration::meta_service const& old_cfg,
                         configuration::meta_service const& new_cfg);
-        misc::shared_ptr<bam::meta_service>
+        std::shared_ptr<bam::meta_service>
                       _new_meta(
                         configuration::meta_service const& cfg,
                         metric_book& book);

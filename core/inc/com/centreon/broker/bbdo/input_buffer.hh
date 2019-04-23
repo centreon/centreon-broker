@@ -20,9 +20,9 @@
 #  define CCB_BBDO_INPUT_BUFFER_HH
 
 #  include <list>
+#  include <memory>
 #  include <string>
 #  include "com/centreon/broker/io/raw.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -42,7 +42,7 @@ namespace         bbdo {
                   input_buffer(input_buffer const& other);
                   ~input_buffer();
     input_buffer& operator=(input_buffer const& other);
-    void          append(misc::shared_ptr<io::raw> const& d);
+    void          append(std::shared_ptr<io::raw> const& d);
     void          erase(int bytes);
     void          extract(
                     std::string& output,
@@ -53,7 +53,7 @@ namespace         bbdo {
    private:
     void          _internal_copy(input_buffer const& other);
 
-    std::list<misc::shared_ptr<io::raw> >
+    std::list<std::shared_ptr<io::raw> >
                   _data;
     int           _first_offset;
     int           _size;

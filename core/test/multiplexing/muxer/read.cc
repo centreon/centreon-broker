@@ -18,14 +18,22 @@
 
 #include <gtest/gtest.h>
 #include <memory>
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/raw.hh"
-#include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 
 using namespace com::centreon::broker;
 
 class                  MultiplexingMuxerRead : public ::testing::Test {
  public:
+  void                 SetUp() {
+      config::applier::init();
+  }
+
+  void TearDown() {
+    config::applier::deinit();
+  }
+
   void                 setup(std::string const& name) {
     _m.reset(new multiplexing::muxer(name, false));
     multiplexing::muxer::filters f;
@@ -37,7 +45,7 @@ class                  MultiplexingMuxerRead : public ::testing::Test {
 
   void                 publish_events(int count = 10000) {
     for (int i(0); i < count; ++i) {
-      misc::shared_ptr<io::raw> r(new io::raw());
+      std::shared_ptr<io::raw> r(new io::raw());
       r->resize(sizeof(i));
       memcpy(r->QByteArray::data(), &i, sizeof(i));
       _m->publish(r);
@@ -46,16 +54,16 @@ class                  MultiplexingMuxerRead : public ::testing::Test {
   }
 
   void                 reread_events(int from = 0, int to = 10000) {
-    misc::shared_ptr<io::data> d;
+    std::shared_ptr<io::data> d;
     for (int i(from); i < to; ++i) {
-      d.clear();
+      d.reset();
       _m->read(d, 0);
-      ASSERT_FALSE(d.isNull());
+      ASSERT_FALSE(!d);
       ASSERT_EQ(d->type(), io::raw::static_type());
       int reread;
       memcpy(
         &reread,
-        d.staticCast<io::raw>()->QByteArray::data(),
+        std::static_pointer_cast<io::raw>(d)->QByteArray::data(),
         sizeof(reread));
       ASSERT_EQ(reread, i);
     }
@@ -63,7 +71,7 @@ class                  MultiplexingMuxerRead : public ::testing::Test {
   }
 
  protected:
-  std::auto_ptr<multiplexing::muxer> _m;
+  std::unique_ptr<multiplexing::muxer> _m;
 };
 
 // Given a muxer object with all filters
@@ -73,9 +81,9 @@ TEST_F(MultiplexingMuxerRead, Read) {
   setup("MultiplexingMuxerRead_Read");
   publish_events();
   reread_events();
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   _m->read(d, 0);
-  ASSERT_TRUE(d.isNull());
+  ASSERT_TRUE(!d);
 }
 
 // Given a muxer object with all filters
@@ -87,13 +95,13 @@ TEST_F(MultiplexingMuxerRead, NackEvents) {
   setup("MultiplexingMuxerRead_NackEvents");
   publish_events();
   reread_events();
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   _m->read(d, 0);
-  ASSERT_TRUE(d.isNull());
+  ASSERT_TRUE(!d);
   _m->nack_events();
   reread_events();
   _m->read(d, 0);
-  ASSERT_TRUE(d.isNull());
+  ASSERT_TRUE(!d);
 }
 
 // Given a muxer object with all filters
@@ -106,9 +114,9 @@ TEST_F(MultiplexingMuxerRead, AckEventsAll) {
   publish_events();
   reread_events();
   _m->ack_events(10000);
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   _m->read(d, 0);
-  ASSERT_TRUE(d.isNull());
+  ASSERT_TRUE(!d);
 }
 
 // Given a muxer object with all filters
@@ -124,7 +132,7 @@ TEST_F(MultiplexingMuxerRead, AckEventsPartial) {
   _m->ack_events(5000);
   _m->nack_events();
   reread_events(5000);
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   _m->read(d, 0);
-  ASSERT_TRUE(d.isNull());
+  ASSERT_TRUE(!d);
 }

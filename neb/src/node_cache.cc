@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <memory>
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/node_cache.hh"
 
@@ -68,21 +69,21 @@ node_cache& node_cache::operator=(
  *
  *  @param[in] d  The data.
  */
-void node_cache::write(misc::shared_ptr<io::data> const& d) {
-  if (d.isNull())
+void node_cache::write(std::shared_ptr<io::data> const& d) {
+  if (!d)
     return ;
 
   if (d->type() == neb::host::static_type()) {
-    _process_host(d.ref_as<neb::host const>());
+    _process_host(*std::static_pointer_cast<neb::host const>(d));
   }
   else if (d->type() == neb::service::static_type()) {
-    _process_service(d.ref_as<neb::service const>());
+    _process_service(*std::static_pointer_cast<neb::service const>(d));
   }
   else if (d->type() == neb::host_status::static_type()) {
-    _process_host_status(d.ref_as<neb::host_status const>());
+    _process_host_status(*std::static_pointer_cast<neb::host_status const>(d));
   }
   else if (d->type() == neb::service_status::static_type()) {
-    _process_service_status(d.ref_as<neb::service_status const>());
+    _process_service_status(*std::static_pointer_cast<neb::service_status const>(d));
   }
 }
 
@@ -91,33 +92,33 @@ void node_cache::write(misc::shared_ptr<io::data> const& d) {
  *
  *  @param[in] cache  The cache.
  */
-void node_cache::serialize(misc::shared_ptr<persistent_cache> cache) {
-  if (cache.isNull())
+void node_cache::serialize(std::shared_ptr<persistent_cache> cache) {
+  if (cache.get() == NULL)
     return ;
   for (QHash<node_id, neb::host>::const_iterator
          it = _hosts.begin(),
          end = _hosts.end();
        it != end;
        ++it)
-    cache->add(misc::make_shared(new neb::host(*it)));
+    cache->add(std::make_shared<neb::host>(*it));
   for (QHash<node_id, neb::service>::const_iterator
          it = _services.begin(),
          end = _services.end();
        it != end;
        ++it)
-    cache->add(misc::make_shared(new neb::service(*it)));
+    cache->add(std::make_shared<neb::service>(*it));
   for (QHash<node_id, neb::host_status>::const_iterator
          it = _host_statuses.begin(),
          end = _host_statuses.end();
        it != end;
        ++it)
-    cache->add(misc::make_shared(new neb::host_status(*it)));
+    cache->add(std::make_shared<neb::host_status>(*it));
   for (QHash<node_id, neb::service_status>::const_iterator
          it = _service_statuses.begin(),
          end = _service_statuses.end();
        it != end;
        ++it)
-    cache->add(misc::make_shared(new neb::service_status(*it)));
+    cache->add(std::make_shared<neb::service_status>(*it));
 }
 
 /**

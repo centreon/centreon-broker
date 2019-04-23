@@ -19,11 +19,11 @@
 #ifndef CCB_BBDO_INPUT_HH
 #  define CCB_BBDO_INPUT_HH
 
+#  include <memory>
 #  include <string>
 #  include "com/centreon/broker/bbdo/input_buffer.hh"
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -43,10 +43,10 @@ namespace        bbdo {
     virtual      ~input();
     input&       operator=(input const& other);
     virtual bool read(
-                   misc::shared_ptr<io::data>& d,
+                   std::shared_ptr<io::data>& d,
                    time_t deadline = (time_t)-1);
     bool         read_any(
-                   misc::shared_ptr<io::data>& d,
+                   std::shared_ptr<io::data>& d,
                    time_t deadline = (time_t)-1);
     virtual void acknowledge_events(unsigned int events) = 0;
 

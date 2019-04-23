@@ -26,7 +26,6 @@
 #include "com/centreon/broker/database_query.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/rebuild.hh"
@@ -102,7 +101,7 @@ void rebuilder::run() {
   while (!_should_exit && _rebuild_check_interval) {
     try {
       // Open DB.
-      std::auto_ptr<database> db;
+      std::unique_ptr<database> db;
       try {
         db.reset(new database(_db_cfg));
       }
@@ -275,7 +274,6 @@ void rebuilder::_next_index_to_rebuild(index_info& info, database& db) {
   }
   else
     memset(&info, 0, sizeof(info));
-  return ;
 }
 
 /**
@@ -330,7 +328,7 @@ void rebuilder::_rebuild_metric(
     }
     if (!caught)
       while (!_should_exit && data_bin_query.next()) {
-        misc::shared_ptr<storage::metric> entry(new storage::metric);
+        std::shared_ptr<storage::metric> entry(new storage::metric);
         entry->ctime = data_bin_query.value(0).toUInt();
         entry->interval = interval;
         entry->is_for_rebuild = true;
@@ -358,8 +356,6 @@ void rebuilder::_rebuild_metric(
 
   // Send rebuild end event.
   _send_rebuild_event(true, metric_id, false);
-
-  return ;
 }
 
 /**
@@ -404,7 +400,7 @@ void rebuilder::_rebuild_status(
     }
     if (!caught)
       while (!_should_exit && data_bin_query.next()) {
-        misc::shared_ptr<storage::status> entry(new storage::status);
+        std::shared_ptr<storage::status> entry(new storage::status);
         entry->ctime = data_bin_query.value(0).toUInt();
         entry->index_id = index_id;
         entry->interval = interval;
@@ -424,8 +420,6 @@ void rebuilder::_rebuild_status(
 
   // Send rebuild end event.
   _send_rebuild_event(true, index_id, true);
-
-  return ;
 }
 
 /**
@@ -439,7 +433,7 @@ void rebuilder::_send_rebuild_event(
                   bool end,
                   unsigned int id,
                   bool is_index) {
-  misc::shared_ptr<storage::rebuild> rb(new storage::rebuild);
+  std::shared_ptr<storage::rebuild> rb(new storage::rebuild);
   rb->end = end;
   rb->id = id;
   rb->is_index = is_index;
@@ -471,5 +465,4 @@ void rebuilder::_set_index_rebuild(
       << "storage: rebuilder: cannot update state of index "
       << index_id << ": " << e.what();
   }
-  return ;
 }

@@ -50,7 +50,7 @@ static QMutex              _muxersm;
 engine* engine::_instance(NULL);
 
 // Data queue.
-static std::queue<misc::shared_ptr<io::data> > _kiew;
+static std::queue<std::shared_ptr<io::data> > _kiew;
 
 // Processing flag.
 static bool _processing(false);
@@ -112,7 +112,7 @@ void engine::load() {
  *
  *  @param[in] e  Event to publish.
  */
-void engine::publish(misc::shared_ptr<io::data> const& e) {
+void engine::publish(std::shared_ptr<io::data> const& e) {
   // Lock mutex.
   QMutexLocker lock(this);
 
@@ -136,14 +136,14 @@ void engine::start() {
 
     QMutexLocker lock(this);
     // Local queue.
-    std::queue<misc::shared_ptr<io::data> > kiew;
+    std::queue<std::shared_ptr<io::data> > kiew;
     // Get events from the cache file to the local queue.
     try {
       persistent_cache cache(_cache_file_path());
-      misc::shared_ptr<io::data> d;
+      std::shared_ptr<io::data> d;
       while (true) {
         cache.get(d);
-        if (d.isNull())
+        if (!d)
           break ;
         kiew.push(d);
       }
@@ -168,9 +168,9 @@ void engine::start() {
 
       // Read events from hook.
       try {
-        misc::shared_ptr<io::data> d;
+        std::shared_ptr<io::data> d;
         it->first->read(d);
-        while (!d.isNull()) {
+        while (d) {
           _kiew.push(d);
           it->first->read(d, 0);
         }
@@ -210,9 +210,9 @@ void engine::stop() {
 
       // Read events from hook.
       try {
-        misc::shared_ptr<io::data> d;
+        std::shared_ptr<io::data> d;
         it->first->read(d);
-        while (!d.isNull()) {
+        while (d) {
           _kiew.push(d);
           it->first->read(d);
         }
@@ -343,7 +343,7 @@ std::string engine::_cache_file_path() const {
  *
  *  @param[in] d  Unused.
  */
-void engine::_nop(misc::shared_ptr<io::data> const& d) {
+void engine::_nop(std::shared_ptr<io::data> const& d) {
   (void)d;
   return ;
 }
@@ -372,7 +372,7 @@ void engine::_send_to_subscribers() {
  *
  *  @param[in] d  Data to publish.
  */
-void engine::_write(misc::shared_ptr<io::data> const& e) {
+void engine::_write(std::shared_ptr<io::data> const& e) {
   if (!_processing) {
     // Set processing flag.
     _processing = true;
@@ -386,9 +386,9 @@ void engine::_write(misc::shared_ptr<io::data> const& e) {
            ++it)
         if (it->second) {
           it->first->write(e);
-          misc::shared_ptr<io::data> d;
+          std::shared_ptr<io::data> d;
           it->first->read(d);
-          while (!d.isNull()) {
+          while (d) {
             _kiew.push(d);
             it->first->read(d);
           }
@@ -415,7 +415,7 @@ void engine::_write(misc::shared_ptr<io::data> const& e) {
  *
  *  @param[in] d  Data to write.
  */
-void engine::_write_to_cache_file(misc::shared_ptr<io::data> const& d) {
+void engine::_write_to_cache_file(std::shared_ptr<io::data> const& d) {
   try {
     if (_cache_file.get())
       _cache_file->add(d);

@@ -28,23 +28,22 @@ using namespace com::centreon::broker;
 class   CompressionStreamWrite : public ::testing::Test {
  public:
   void  SetUp() {
-    _stream = new compression::stream(-1, 20000);
-    _substream = new CompressionStreamMemoryStream();
+    _stream.reset(new compression::stream(-1, 20000));
+    _substream.reset(new CompressionStreamMemoryStream());
     _stream->set_substream(_substream);
-    return ;
   }
 
-  misc::shared_ptr<io::data> new_data() {
-    misc::shared_ptr<io::raw> r(new io::raw);
+  std::shared_ptr<io::data> new_data() {
+    std::shared_ptr<io::raw> r(new io::raw);
     for (int i(0); i < 1000; ++i)
       r->append(static_cast<char*>(static_cast<void*>(&i)), sizeof(i));
     return (r);
   }
 
  protected:
-  misc::shared_ptr<compression::stream>
+  std::shared_ptr<compression::stream>
         _stream;
-  misc::shared_ptr<CompressionStreamMemoryStream>
+  std::shared_ptr<CompressionStreamMemoryStream>
         _substream;
 };
 
@@ -82,7 +81,7 @@ TEST_F(CompressionStreamWrite, Returns1WithInterleavedRead) {
   for (int i(0); i < 10; ++i) {
     for (int j(0); j < 10; ++j)
       _stream->write(new_data());
-    misc::shared_ptr<io::data> d;
+    std::shared_ptr<io::data> d;
     _stream->read(d);
   }
 
@@ -99,14 +98,14 @@ TEST_F(CompressionStreamWrite, Returns1WithInterleavedRead) {
 // Then nothing is written
 TEST_F(CompressionStreamWrite, CompressNothing) {
   // Given
-  misc::shared_ptr<io::raw> r(new io::raw);
+  std::shared_ptr<io::raw> r(new io::raw);
   _stream->write(r);
 
   // When
   _stream->flush();
 
   // Then
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   ASSERT_THROW(_substream->read(d), exceptions::msg);
 }
 
@@ -116,16 +115,16 @@ TEST_F(CompressionStreamWrite, CompressNothing) {
 // Then the data written to the substream is smaller than the original size
 TEST_F(CompressionStreamWrite, Compress) {
   // Given
-  misc::shared_ptr<io::raw> r(new_data().staticCast<io::raw>());
+  std::shared_ptr<io::raw> r(std::static_pointer_cast<io::raw>(new_data()));
   _stream->write(r);
 
   // When
   _stream->flush();
 
   // Then
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   _substream->read(d);
-  ASSERT_LT(d.staticCast<io::raw>()->size(), r->size());
+  ASSERT_LT(std::static_pointer_cast<io::raw>(d)->size(), r->size());
 }
 
 // Given a compression stream
@@ -133,7 +132,7 @@ TEST_F(CompressionStreamWrite, Compress) {
 // Then the method throws
 TEST_F(CompressionStreamWrite, TooMuchData) {
   // When
-  misc::shared_ptr<io::raw> r(new io::raw);
+  std::shared_ptr<io::raw> r(new io::raw);
   r->resize(compression::stream::max_data_size + 10);
 
   // Then
@@ -147,7 +146,7 @@ TEST_F(CompressionStreamWrite, TooMuchData) {
 TEST_F(CompressionStreamWrite, WriteOnShutdown) {
   // Given
   _substream->shutdown(true);
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   ASSERT_THROW(_stream->read(d), exceptions::shutdown);
 
   // When, Then
@@ -161,17 +160,17 @@ TEST_F(CompressionStreamWrite, WriteOnShutdown) {
 // And compressed data is written to the substream
 TEST_F(CompressionStreamWrite, Flush) {
   // Given
-  _stream = new compression::stream(-1, 20000);
+  _stream.reset(new compression::stream(-1, 20000));
   _stream->set_substream(_substream);
   _stream->write(new_data());
-  ASSERT_TRUE(_substream->get_buffer().isNull() || _substream->get_buffer()->isEmpty());
+  ASSERT_TRUE(!_substream->get_buffer() || _substream->get_buffer()->isEmpty());
 
   // When
   int retval(_stream->flush());
 
   // Then
   ASSERT_EQ(retval, 0);
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   _stream->read(d);
-  ASSERT_TRUE(!d.isNull());
+  ASSERT_TRUE(d);
 }

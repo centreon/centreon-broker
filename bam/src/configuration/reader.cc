@@ -189,7 +189,6 @@ void reader::_load(state::kpis& kpis) {
            << "BAM: could not retrieve KPI configuration from DB: "
            << e.what());
   }
-  return ;
 }
 
 /**
@@ -709,20 +708,18 @@ void reader::_load(bam::hst_svc_mapping& mapping) {
            << "BAM: could not retrieve known metrics: "
            << e.what());
   }
-
-  return ;
 }
 
 /**
  *  Load the dimensions from the database.
  */
 void reader::_load_dimensions() {
-  std::auto_ptr<io::stream> out(new multiplexing::publisher);
+  std::unique_ptr<io::stream> out(new multiplexing::publisher);
   // As this operation is destructive (it truncates the database),
   // we cache the data until we are sure we have all the data
   // needed from the database.
-  std::vector<misc::shared_ptr<io::data> > datas;
-  misc::shared_ptr<dimension_truncate_table_signal> dtts(
+  std::vector<std::shared_ptr<io::data> > datas;
+  std::shared_ptr<dimension_truncate_table_signal> dtts(
                       new dimension_truncate_table_signal);
   dtts->update_started = true;
   datas.push_back(dtts);
@@ -732,7 +729,7 @@ void reader::_load_dimensions() {
 
   // Load the dimensions.
   std::map<unsigned int, time::timeperiod::ptr> timeperiods;
-  std::map<unsigned int, misc::shared_ptr<dimension_ba_event> > bas;
+  std::map<unsigned int, std::shared_ptr<dimension_ba_event> > bas;
   try {
     // Load the timeperiods themselves.
     q.run_query(
@@ -753,7 +750,7 @@ void reader::_load_dimensions() {
               q.value(7).toString().toStdString(),   // thursday
               q.value(8).toString().toStdString(),   // friday
               q.value(9).toString().toStdString())); // saturday
-      misc::shared_ptr<dimension_timeperiod> tp(new dimension_timeperiod);
+      std::shared_ptr<dimension_timeperiod> tp(new dimension_timeperiod);
       tp->id = q.value(0).toUInt();
       tp->name = q.value(1).toString();
       tp->sunday = q.value(3).toString();
@@ -763,7 +760,7 @@ void reader::_load_dimensions() {
       tp->thursday = q.value(7).toString();
       tp->friday = q.value(8).toString();
       tp->saturday = q.value(9).toString();
-      datas.push_back(tp.staticCast<io::data>());
+      datas.push_back(std::static_pointer_cast<io::data>(tp));
     }
 
     // // Load the timeperiod exceptions.
@@ -783,7 +780,7 @@ void reader::_load_dimensions() {
     //   found->second->add_exception(
     //                    q.value(1).toString().toStdString(),
     //                    q.value(2).toString().toStdString());
-    //   misc::shared_ptr<dimension_timeperiod_exception>
+    //   std::shared_ptr<dimension_timeperiod_exception>
     //     exception(new dimension_timeperiod_exception);
     //   exception->timeperiod_id = timeperiod_id;
     //   exception->daterange = q.value(1).toString();
@@ -813,7 +810,7 @@ void reader::_load_dimensions() {
     //               "excluded timeperiod (excluded timeperiod has ID "
     //            << timeperiod_exclude_id << ")");
     //   found->second->add_excluded(found_excluded->second);
-    //   misc::shared_ptr<dimension_timeperiod_exclusion>
+    //   std::shared_ptr<dimension_timeperiod_exclusion>
     //     exclusion(new dimension_timeperiod_exclusion);
     //   exclusion->timeperiod_id = timeperiod_id;
     //   exclusion->excluded_timeperiod_id = timeperiod_exclude_id;
@@ -836,7 +833,7 @@ void reader::_load_dimensions() {
         oss.str(),
         "could not retrieve BAs from the database");
     while (q.next()) {
-      misc::shared_ptr<dimension_ba_event> ba(new dimension_ba_event);
+      std::shared_ptr<dimension_ba_event> ba(new dimension_ba_event);
       ba->ba_id = q.value(0).toUInt();
       ba->ba_name = q.value(1).toString();
       ba->ba_description = q.value(2).toString();
@@ -844,10 +841,10 @@ void reader::_load_dimensions() {
       ba->sla_month_percent_crit = q.value(4).toDouble();
       ba->sla_duration_warn = q.value(5).toInt();
       ba->sla_duration_crit = q.value(6).toInt();
-      datas.push_back(ba.staticCast<io::data>());
+      datas.push_back(std::static_pointer_cast<io::data>(ba));
       bas[ba->ba_id] = ba;
       if (!q.value(7).isNull()) {
-        misc::shared_ptr<dimension_ba_timeperiod_relation>
+        std::shared_ptr<dimension_ba_timeperiod_relation>
           dbtr(new dimension_ba_timeperiod_relation);
         dbtr->ba_id = q.value(0).toUInt();
         dbtr->timeperiod_id = q.value(7).toUInt();
@@ -862,12 +859,12 @@ void reader::_load_dimensions() {
       "  FROM cfg_bam_ba_groups",
       "could not retrieve BVs from the database");
     while (q.next()) {
-      misc::shared_ptr<dimension_bv_event>
+      std::shared_ptr<dimension_bv_event>
           bv(new dimension_bv_event);
       bv->bv_id = q.value(0).toUInt();
       bv->bv_name = q.value(1).toString();
       bv->bv_description = q.value(2).toString();
-      datas.push_back(bv.staticCast<io::data>());
+      datas.push_back(std::static_pointer_cast<io::data>(bv));
     }
 
     // Load the BA BV relations.
@@ -887,11 +884,11 @@ void reader::_load_dimensions() {
           "could not retrieve BV memberships of BAs");
     }
     while (q.next()) {
-      misc::shared_ptr<dimension_ba_bv_relation_event>
+      std::shared_ptr<dimension_ba_bv_relation_event>
           babv(new dimension_ba_bv_relation_event);
       babv->ba_id = q.value(0).toUInt();
       babv->bv_id = q.value(1).toUInt();
-      datas.push_back(babv.staticCast<io::data>());
+      datas.push_back(std::static_pointer_cast<io::data>(babv));
     }
 
     // Load the KPIs
@@ -941,7 +938,7 @@ void reader::_load_dimensions() {
           "could not retrieve KPI dimensions");
     }
     while (q.next()) {
-      misc::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
+      std::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
       k->kpi_id = q.value(0).toUInt();
       k->host_id = q.value(2).toUInt();
       k->service_id = q.value(3).toUInt();
@@ -961,7 +958,7 @@ void reader::_load_dimensions() {
       // Resolve the id_indicator_ba.
       if (k->kpi_ba_id) {
         std::map<unsigned int,
-                 misc::shared_ptr<dimension_ba_event> >::const_iterator
+                 std::shared_ptr<dimension_ba_event> >::const_iterator
             found = bas.find(k->kpi_ba_id);
         if (found == bas.end()) {
           logging::error(logging::high)
@@ -972,7 +969,7 @@ void reader::_load_dimensions() {
         }
         k->kpi_ba_name = found->second->ba_name;
       }
-      datas.push_back(k.staticCast<io::data>());
+      datas.push_back(std::static_pointer_cast<io::data>(k));
     }
 
     // Load the ba-timeperiods relations.
@@ -989,7 +986,7 @@ void reader::_load_dimensions() {
           "could not retrieve the timeperiods associated with the BAs");
     }
     while (q.next()) {
-      misc::shared_ptr<dimension_ba_timeperiod_relation>
+      std::shared_ptr<dimension_ba_timeperiod_relation>
         dbtr(new dimension_ba_timeperiod_relation);
       dbtr->ba_id = q.value(0).toUInt();
       dbtr->timeperiod_id = q.value(1).toUInt();
@@ -998,13 +995,13 @@ void reader::_load_dimensions() {
     }
 
     // End the update.
-    dtts = misc::shared_ptr<dimension_truncate_table_signal>(
+    dtts = std::shared_ptr<dimension_truncate_table_signal>(
              new dimension_truncate_table_signal);
     dtts->update_started = false;
     datas.push_back(dtts);
 
     // Write all the cached data to the publisher.
-    for (std::vector<misc::shared_ptr<io::data> >::iterator
+    for (std::vector<std::shared_ptr<io::data> >::iterator
            it(datas.begin()),
            end(datas.end());
          it != end;

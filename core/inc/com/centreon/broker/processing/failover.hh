@@ -21,7 +21,7 @@
 
 #  include <climits>
 #  include <ctime>
-#  include <QMutex>
+#  include <mutex>
 #  include <QVector>
 #  include <string>
 #  include "com/centreon/broker/io/endpoint.hh"
@@ -55,12 +55,12 @@ namespace           processing {
 
    public:
                     failover(
-                      misc::shared_ptr<io::endpoint> endp,
-                      misc::shared_ptr<multiplexing::subscriber> sbscrbr,
+                      std::shared_ptr<io::endpoint> endp,
+                      std::shared_ptr<multiplexing::subscriber> sbscrbr,
                       std::string const& name);
                     ~failover();
     void            add_secondary_endpoint(
-                      misc::shared_ptr<io::endpoint> endp);
+                      std::shared_ptr<io::endpoint> endp);
     void            exit();
     time_t          get_buffering_timeout() const throw ();
     bool            get_initialized() const throw ();
@@ -68,7 +68,7 @@ namespace           processing {
     void            run();
     void            set_buffering_timeout(time_t secs);
     void            set_failover(
-                      misc::shared_ptr<processing::failover> fo);
+                      std::shared_ptr<processing::failover> fo);
     void            set_retry_interval(time_t retry_interval);
     void            update();
     bool            wait(unsigned long time = ULONG_MAX);
@@ -93,28 +93,30 @@ namespace           processing {
 
     // Data that doesn't require locking.
     volatile time_t _buffering_timeout;
-    misc::shared_ptr<io::endpoint>
+    std::shared_ptr<io::endpoint>
                     _endpoint;
-    std::vector<misc::shared_ptr<io::endpoint> >
+    std::vector<std::shared_ptr<io::endpoint> >
                     _secondary_endpoints;
-    misc::shared_ptr<failover>
+    std::shared_ptr<failover>
                     _failover;
     bool            _failover_launched;
     volatile bool   _initialized;
     time_t          _next_timeout;
     volatile time_t _retry_interval;
-    misc::shared_ptr<multiplexing::subscriber>
+    std::shared_ptr<multiplexing::subscriber>
                     _subscriber;
     volatile bool   _update;
 
     // Status.
     std::string     _status;
-    mutable QMutex  _statusm;
+    mutable std::mutex
+                    _statusm;
 
     // Stream.
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                     _stream;
-    mutable QMutex  _streamm;
+    mutable std::timed_mutex
+                    _streamm;
   };
 }
 

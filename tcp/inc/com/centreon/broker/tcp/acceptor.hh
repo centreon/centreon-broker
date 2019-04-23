@@ -41,7 +41,7 @@ namespace          tcp {
                    ~acceptor();
     void           add_child(std::string const& child);
     void           listen_on(unsigned short port);
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                    open();
     void           remove_child(std::string const& child);
     void           set_read_timeout(int secs);
@@ -58,7 +58,7 @@ namespace          tcp {
     QMutex         _mutex;
     unsigned short _port;
     int            _read_timeout;
-    std::auto_ptr<server_socket>
+    std::unique_ptr<server_socket>
                    _socket;
     int            _write_timeout;
   };

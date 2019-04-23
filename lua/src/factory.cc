@@ -108,7 +108,7 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
-                         misc::shared_ptr<persistent_cache> cache) const {
+                         std::shared_ptr<persistent_cache> cache) const {
   QMap<QString, QVariant> conf_map;
   std::string filename(find_param(cfg, "path"));
   QDomNodeList config = cfg.cfg.elementsByTagName("lua_parameter");
@@ -156,7 +156,7 @@ io::endpoint* factory::new_endpoint(
     }
   }
   // Connector.
-  std::auto_ptr<lua::connector> c(new lua::connector);
+  std::unique_ptr<lua::connector> c(new lua::connector);
   c->connect_to(filename, conf_map, cache);
   is_acceptor = false;
   return c.release();

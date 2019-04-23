@@ -113,11 +113,11 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
-                         misc::shared_ptr<persistent_cache> cache) const {
+                         std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
   std::string command_module_path(
     find_param(cfg, "command_module_path").toStdString());
-  std::auto_ptr<io::endpoint>
+  std::unique_ptr<io::endpoint>
     end(new endpoint(cfg.name, command_module_path));
   is_acceptor = false;
   return (end.release());

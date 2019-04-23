@@ -42,7 +42,7 @@ receiver::~receiver() {}
  *
  *  @return This method will throw.
  */
-bool receiver::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool receiver::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
   throw (exceptions::shutdown()
@@ -57,7 +57,7 @@ bool receiver::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @return 1.
  */
-int receiver::write(misc::shared_ptr<io::data> const& d) {
+int receiver::write(std::shared_ptr<io::data> const& d) {
   if (!d.isNull() && (d->type() == dummy::static_type())) {
     dummy const& e(d.ref_as<dummy>());
 

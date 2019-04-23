@@ -41,8 +41,8 @@ endpoint::~endpoint() {}
  *
  *  @return A new receiver or sender object.
  */
-misc::shared_ptr<io::stream> endpoint::open() {
-  misc::shared_ptr<io::stream> s;
+std::shared_ptr<io::stream> endpoint::open() {
+  std::shared_ptr<io::stream> s;
   if (_type == type_receiver)
     s = new receiver();
   else if (_type == type_sender)

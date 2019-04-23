@@ -44,7 +44,7 @@ namespace                        sql {
                                    unsigned int cleanup_check_interval = 0,
                                    unsigned int instance_timeout = 15,
                                    bool with_state_events = false);
-    misc::shared_ptr<io::stream> open();
+    std::shared_ptr<io::stream>  open();
 
   private:
     unsigned int                 _cleanup_check_interval;

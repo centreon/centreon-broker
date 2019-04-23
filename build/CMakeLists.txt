@@ -23,6 +23,7 @@
 # Set necessary settings.
 cmake_minimum_required(VERSION 2.8)
 project("Centreon Broker" C CXX)
+set(CMAKE_CXX_FLAGS "-std=c++11")
 set(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/..")
 set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc")
 include_directories("${INC_DIR}")
@@ -558,8 +559,6 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/misc/json_writer.hh"
   "${INC_DIR}/misc/tokenizer.hh"
   "${INC_DIR}/misc/global_lock.hh"
-  "${INC_DIR}/misc/shared_ptr.hh"
-  "${INC_DIR}/misc/weak_ptr.hh"
   "${INC_DIR}/modules/handle.hh"
   "${INC_DIR}/modules/loader.hh"
   "${INC_DIR}/multiplexing/engine.hh"

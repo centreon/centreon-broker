@@ -23,7 +23,7 @@
 #  include <list>
 #  include <map>
 #  include <memory>
-#  include <QSqlDatabase>
+#  include <QMutex>
 #  include <QString>
 #  include <utility>
 #  include "com/centreon/broker/io/stream.hh"
@@ -58,13 +58,13 @@ namespace          influxdb {
                      std::vector<column> const& status_cols,
                      std::string const& metric_ts,
                      std::vector<column> const& metric_cols,
-                     misc::shared_ptr<persistent_cache> const& cache);
+                     std::shared_ptr<persistent_cache> const& cache);
                    ~stream();
     int            flush();
-    bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
+    bool           read(std::shared_ptr<io::data>& d, time_t deadline);
     void           statistics(io::properties& tree) const;
     void           update();
-    int            write(misc::shared_ptr<io::data> const& d);
+    int            write(std::shared_ptr<io::data> const& d);
 
   private:
     // Database parameters
@@ -74,7 +74,7 @@ namespace          influxdb {
     unsigned short _port;
     std::string    _db;
     unsigned int   _queries_per_transaction;
-    std::auto_ptr<influxdb>
+    std::unique_ptr<influxdb>
                    _influx_db;
 
     // Internal working members

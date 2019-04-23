@@ -132,13 +132,13 @@ splitter::~splitter() {}
  *  If no files are open, nothing is done.
  */
 void splitter::close() {
-  if (!_rfile.isNull()) {
+  if (_rfile) {
     _rfile->close();
-    _rfile.clear();
+    _rfile.reset();
   }
-  if (!_wfile.isNull()) {
+  if (_wfile) {
     _wfile->close();
-    _wfile.clear();
+    _wfile.reset();
   }
 }
 
@@ -152,7 +152,7 @@ void splitter::close() {
  */
 long splitter::read(void* buffer, long max_size) {
   // Open next file if necessary.
-  if (_rfile.isNull())
+  if (!_rfile)
     _open_read_file();
   // Otherwise seek to current read position.
   else
@@ -171,9 +171,9 @@ long splitter::read(void* buffer, long max_size) {
 
     // Erase file that just got read.
     bool reached_end(_wid == _rid);
-    _rfile.clear();
+    _rfile.reset();
     if (reached_end)
-      _wfile.clear();
+      _wfile.reset();
     std::string file_path(get_file_path(_rid));
     if (_auto_delete) {
       logging::info(logging::high) << "file: end of file '"
@@ -229,11 +229,11 @@ long splitter::tell() {
  */
 long splitter::write(void const* buffer, long size) {
   // Open current write file if not already done.
-  if (_wfile.isNull())
+  if (!_wfile)
     _open_write_file();
   // Open next write file is max file size is reached.
   else if ((_woffset + size) > _max_file_size) {
-    _wfile.clear();
+    _wfile.reset();
     ++_wid;
     _open_write_file();
   }
@@ -351,15 +351,15 @@ void splitter::remove_all_files() {
  *  Open the readable file.
  */
 void splitter::_open_read_file() {
-  _rfile.clear();
+  _rfile.reset();
 
   // If we reached write-ID and wfile is open, use it.
-  if ((_rid == _wid) && !_wfile.isNull())
+  if ((_rid == _wid) && _wfile)
     _rfile = _wfile;
   // Otherwise open next file.
   else {
     std::string file_path(get_file_path(_rid));
-    misc::shared_ptr<fs_file>
+    std::shared_ptr<fs_file>
       new_file(_file_factory->new_fs_file(
                                 file_path,
                                 fs_file::open_read_write_no_create));
@@ -375,10 +375,10 @@ void splitter::_open_read_file() {
  *  Open the writable file.
  */
 void splitter::_open_write_file() {
-  _wfile.clear();
+  _wfile.reset();
 
   // If we are already reading the latest file, use it.
-  if ((_rid == _wid) && !_rfile.isNull())
+  if (_rid == _wid && _rfile)
     _wfile = _rfile;
   // Otherwise open file.
   else {
@@ -386,14 +386,14 @@ void splitter::_open_write_file() {
     logging::info(logging::high) << "file: opening new file '"
       << file_path.c_str() << "'";
     try {
-      _wfile = _file_factory->new_fs_file(
+      _wfile.reset(_file_factory->new_fs_file(
                                 file_path,
-                                fs_file::open_read_write_no_create);
+                                fs_file::open_read_write_no_create));
     }
     catch (exceptions::msg const& e) {
-      _wfile = _file_factory->new_fs_file(
+      _wfile.reset(_file_factory->new_fs_file(
                                 file_path,
-                                fs_file::open_read_write_truncate);
+                                fs_file::open_read_write_truncate));
     }
   }
 
@@ -449,8 +449,8 @@ splitter* splitter_factory::new_cfile_splitter(
                               fs_file::open_mode mode,
                               long max_file_size,
                               bool auto_delete) {
-  std::auto_ptr<fs_file_factory> f(new cfile_factory());
-  std::auto_ptr<fs_browser> b(new qt_fs_browser());
+  std::unique_ptr<fs_file_factory> f(new cfile_factory());
+  std::unique_ptr<fs_browser> b(new qt_fs_browser());
   splitter* s(new splitter(
                     path,
                     mode,

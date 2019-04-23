@@ -62,15 +62,15 @@ void logger::apply(std::list<config::logger> const& loggers) {
   // which should be created
   // and which should be deleted.
   std::list<config::logger> to_create;
-  std::map<config::logger, misc::shared_ptr<logging::backend> >
+  std::map<config::logger, std::shared_ptr<logging::backend> >
     to_delete(_backends);
-  std::map<config::logger, misc::shared_ptr<logging::backend> >
+  std::map<config::logger, std::shared_ptr<logging::backend> >
     to_keep;
   for (std::list<config::logger>::const_iterator it = loggers.begin(),
          end = loggers.end();
        it != end;
        ++it) {
-    std::map<config::logger, misc::shared_ptr<logging::backend> >::iterator
+    std::map<config::logger, std::shared_ptr<logging::backend> >::iterator
       backend(to_delete.find(*it));
     if (backend != to_delete.end()) {
       to_keep.insert(*backend);
@@ -84,7 +84,7 @@ void logger::apply(std::list<config::logger> const& loggers) {
   _backends = to_keep;
 
   // Remove loggers that do not exist anymore.
-  for (std::map<config::logger, misc::shared_ptr<logging::backend> >::const_iterator
+  for (std::map<config::logger, std::shared_ptr<logging::backend> >::const_iterator
          it(to_delete.begin()),
          end(to_delete.end());
        it != end;
@@ -103,7 +103,7 @@ void logger::apply(std::list<config::logger> const& loggers) {
        ++it) {
     logging::config(logging::medium)
       << "log applier: creating new logger";
-    misc::shared_ptr<logging::backend> backend(_new_backend(*it));
+    std::shared_ptr<logging::backend> backend(_new_backend(*it));
     _backends[*it] = backend;
     logging::manager::instance().log_on(
       *backend,
@@ -159,26 +159,26 @@ logger::logger() {}
  *
  *  @return New logging backend.
  */
-misc::shared_ptr<logging::backend> logger::_new_backend(config::logger const& cfg) {
-  misc::shared_ptr<logging::backend> back;
+std::shared_ptr<logging::backend> logger::_new_backend(config::logger const& cfg) {
+  std::shared_ptr<logging::backend> back;
   switch (cfg.type()) {
   case config::logger::file:
     {
       if (cfg.name().isEmpty())
         throw (exceptions::msg()
                << "log applier: attempt to log on an empty file");
-      std::auto_ptr<logging::file>
+      std::unique_ptr<logging::file>
         file(new logging::file(cfg.name(), cfg.max_size()));
-      back = misc::shared_ptr<logging::backend>(file.get());
+      back.reset(file.get());
       file.release();
     }
     break ;
   case config::logger::monitoring:
     {
 #ifdef CBMOD
-      std::auto_ptr<neb::monitoring_logger>
+      std::unique_ptr<neb::monitoring_logger>
         monitoring(new neb::monitoring_logger);
-      back = misc::shared_ptr<logging::backend>(monitoring.get());
+      back.reset(monitoring.get());
       monitoring.release();
 #else
       logging::info(logging::high) << "log applier: monitoring"
@@ -196,17 +196,16 @@ misc::shared_ptr<logging::backend> logger::_new_backend(config::logger const& cf
       else
         throw (exceptions::msg() << "log applier: attempt to log on " \
                  "an undefined output object");
-      back = misc::shared_ptr<logging::backend>(new logging::file(out));
+      back.reset(new logging::file(out));
     }
     break ;
   case config::logger::syslog:
-    back = misc::shared_ptr<logging::backend>(
-                   new logging::syslogger(cfg.facility()));
+    back.reset(new logging::syslogger(cfg.facility()));
     break ;
   default:
     throw (exceptions::msg() << "log applier: attempt to create a " \
              "logging object of unknown type");
   }
 
-  return (back);
+  return back;
 }

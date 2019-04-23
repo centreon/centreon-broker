@@ -122,7 +122,7 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
-                         misc::shared_ptr<persistent_cache> cache) const {
+                         std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
   // Local socket path.
@@ -185,7 +185,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Create endpoint.
-  std::auto_ptr<rrd::connector> endp(new rrd::connector);
+  std::unique_ptr<rrd::connector> endp(new rrd::connector);
   if (write_metrics)
     endp->set_metrics_path(metrics_path);
   if (write_status)

@@ -47,7 +47,7 @@ using namespace com::centreon::broker;
 struct    options {
           options()
   : preferred_time(0), ref_time(0) {}
-  std::vector<misc::shared_ptr<time::timeperiod> >
+  std::vector<std::shared_ptr<time::timeperiod> >
           period;
   time_t  current_time;
   time_t  preferred_time;
@@ -80,7 +80,7 @@ static void parse_file(char const* filename, options& opt) {
            << filename << "'");
   std::vector<std::string> range;
   std::vector<std::string> exclude;
-  misc::shared_ptr<time::timeperiod>
+  std::shared_ptr<time::timeperiod>
     current_tp(new time::timeperiod);
   while (stream.good()) {
     std::string line;
@@ -127,7 +127,7 @@ static void parse_file(char const* filename, options& opt) {
                     QString(value.substr(pos).c_str()).trimmed().toStdString());
     }
     else if (key == "exclusion") {
-      for (std::vector<misc::shared_ptr<time::timeperiod> >::iterator
+      for (std::vector<std::shared_ptr<time::timeperiod> >::iterator
              it(opt.period.begin()),
              end(opt.period.end());
            it != end;
@@ -142,7 +142,7 @@ static void parse_file(char const* filename, options& opt) {
     else if (key == "timeperiod") {
       current_tp->set_name(value);
       opt.period.push_back(current_tp);
-      current_tp = misc::shared_ptr<time::timeperiod>(
+      current_tp = std::shared_ptr<time::timeperiod>(
                      new time::timeperiod);
     }
     else

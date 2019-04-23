@@ -19,8 +19,8 @@
 #ifndef CCB_MODULES_LOADER_HH
 #  define CCB_MODULES_LOADER_HH
 
+#  include <memory>
 #  include <string>
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/modules/handle.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -37,7 +37,7 @@ namespace    modules {
    */
   class      loader {
   public:
-    typedef  umap<std::string, misc::shared_ptr<handle> >::iterator
+    typedef  umap<std::string, std::shared_ptr<handle> >::iterator
              iterator;
 
              loader();
@@ -55,7 +55,7 @@ namespace    modules {
     void     unload();
 
   private:
-    umap<std::string, misc::shared_ptr<handle> >
+    umap<std::string, std::shared_ptr<handle> >
              _handles;
   };
 }

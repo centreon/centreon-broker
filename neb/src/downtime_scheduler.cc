@@ -228,8 +228,7 @@ void downtime_scheduler::_start_downtime(downtime& dwn, io::stream* stream) {
     << dwn.service_id << ") at " << dwn.actual_start_time;
   dwn.was_started = true;
   if (stream)
-    stream->write(misc::make_shared(new downtime(dwn)));
-  return ;
+    stream->write(std::make_shared<downtime>(dwn));
 }
 
 /**
@@ -245,6 +244,5 @@ void downtime_scheduler::_end_downtime(downtime& dwn, io::stream* stream) {
     << dwn.end_time << ") on node (" << dwn.host_id << ", "
     << dwn.service_id << ") at " << dwn.actual_end_time;
   if (stream)
-    stream->write(misc::make_shared(new downtime(dwn)));
-  return ;
+    stream->write(std::make_shared<downtime>(dwn));
 }

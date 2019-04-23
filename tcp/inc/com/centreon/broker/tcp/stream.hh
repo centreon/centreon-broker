@@ -44,12 +44,12 @@ namespace        tcp {
                  ~stream();
     std::string  peer() const;
     bool         read(
-                   misc::shared_ptr<io::data>& d,
+                   std::shared_ptr<io::data>& d,
                    time_t deadline);
     void         set_parent(acceptor* parent);
     void         set_read_timeout(int secs);
     void         set_write_timeout(int secs);
-    int          write(misc::shared_ptr<io::data> const& d);
+    int          write(std::shared_ptr<io::data> const& d);
 
   private:
                  stream(stream const& other);
@@ -60,7 +60,7 @@ namespace        tcp {
     std::string  _name;
     acceptor*    _parent;
     int          _read_timeout;
-    std::auto_ptr<QTcpSocket>
+    std::unique_ptr<QTcpSocket>
                  _socket;
     int          _socket_descriptor;
     int          _write_timeout;

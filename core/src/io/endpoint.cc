@@ -66,11 +66,10 @@ endpoint& endpoint::operator=(endpoint const& other) {
  *
  *  @param[in] endp Lower layer endpoint object.
  */
-void endpoint::from(misc::shared_ptr<endpoint> endp) {
+void endpoint::from(std::shared_ptr<endpoint> endp) {
   _from = endp;
-  if (!_from.isNull())
+  if (_from)
     _from->set_filter(_filter);
-  return ;
 }
 
 /**
@@ -97,9 +96,8 @@ bool endpoint::is_connector() const throw () {
  *  @param[out] tree Properties tree.
  */
 void endpoint::stats(io::properties& tree) {
-  if (!_from.isNull())
+  if (_from)
     _from->stats(tree);
-  return ;
 }
 
 /**
@@ -113,7 +111,7 @@ void endpoint::stats(io::properties& tree) {
  */
 void endpoint::set_filter(std::set<unsigned int> const& filter) {
   _filter = filter;
-  if (!_from.isNull())
+  if (_from)
     _from->set_filter(filter);
 }
 

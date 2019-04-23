@@ -21,7 +21,6 @@
 
 #  include <memory>
 #  include <QMutex>
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
@@ -48,7 +47,7 @@ namespace           multiplexing {
     void            hook(hooker& h, bool with_data = true);
     static engine&  instance();
     static void     load();
-    void            publish(misc::shared_ptr<io::data> const& d);
+    void            publish(std::shared_ptr<io::data> const& d);
     void            start();
     void            stop();
     void            subscribe(muxer* subscriber);
@@ -61,15 +60,15 @@ namespace           multiplexing {
                     engine(engine const& other);
     engine&         operator=(engine const& other);
     std::string     _cache_file_path() const;
-    void            _nop(misc::shared_ptr<io::data> const& d);
+    void            _nop(std::shared_ptr<io::data> const& d);
     void            _send_to_subscribers();
-    void            _write(misc::shared_ptr<io::data> const& d);
-    void            _write_to_cache_file(misc::shared_ptr<io::data> const& d);
+    void            _write(std::shared_ptr<io::data> const& d);
+    void            _write_to_cache_file(std::shared_ptr<io::data> const& d);
 
     static engine*  _instance;
     void (engine::* _write_func)(
-                      misc::shared_ptr<io::data> const&);
-    std::auto_ptr<persistent_cache>
+                      std::shared_ptr<io::data> const&);
+    std::unique_ptr<persistent_cache>
                     _cache_file;
   };
 }

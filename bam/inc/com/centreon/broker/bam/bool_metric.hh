@@ -22,10 +22,10 @@
 #  include <set>
 #  include <string>
 #  include <map>
+#  include <memory>
 #  include "com/centreon/broker/bam/bool_value.hh"
 #  include "com/centreon/broker/bam/metric_listener.hh"
 #  include "com/centreon/broker/bam/hst_svc_mapping.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -42,7 +42,7 @@ namespace         bam {
   class           bool_metric : public bool_value,
                                  public metric_listener {
   public:
-    typedef misc::shared_ptr<bool_metric> ptr;
+    typedef std::shared_ptr<bool_metric> ptr;
 
                   bool_metric(
                     std::string const& metric_name,
@@ -55,7 +55,7 @@ namespace         bam {
                     computable* child,
                     io::stream* visitor = NULL);
     void          metric_update(
-                    misc::shared_ptr<storage::metric> const& m,
+                    std::shared_ptr<storage::metric> const& m,
                     io::stream* visitor = NULL);
     double        value_hard();
     double        value_soft();

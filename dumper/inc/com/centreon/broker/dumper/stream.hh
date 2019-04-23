@@ -20,10 +20,10 @@
 #  define CCB_DUMPER_STREAM_HH
 
 #  include <map>
+#  include <memory>
 #  include <vector>
 #  include <QMutex>
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -47,9 +47,9 @@ namespace              dumper {
                          std::string const& tagname);
                        ~stream();
     bool               read(
-                         misc::shared_ptr<io::data>& d,
+                         std::shared_ptr<io::data>& d,
                          time_t deadline);
-    int                write(misc::shared_ptr<io::data> const& d);
+    int                write(std::shared_ptr<io::data> const& d);
 
   private:
                        stream(stream const& s);
@@ -60,7 +60,7 @@ namespace              dumper {
     void               _process_directory_dump_event(directory_dump const& dd);
     void               _add_to_directory_cache(
                          QString const& req_id,
-                         misc::shared_ptr<io::data> event);
+                         std::shared_ptr<io::data> event);
 
     QMutex             _mutex;
     std::string        _path;
@@ -68,7 +68,7 @@ namespace              dumper {
 
     typedef std::map<
                    std::string,
-                   std::vector<misc::shared_ptr<io::data> > >
+                   std::vector<std::shared_ptr<io::data> > >
       directory_dump_cache;
       directory_dump_cache
                        _cached_directory_dump;

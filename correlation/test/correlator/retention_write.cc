@@ -83,7 +83,7 @@ int main() {
 
     // Submit state change.
     {
-      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 13;
       ss->service_id = 21;
       ss->state_type = 1;
@@ -91,14 +91,14 @@ int main() {
       c.write(ss);
     }
     {
-      misc::shared_ptr<neb::host_status> hs(new neb::host_status);
+      std::shared_ptr<neb::host_status> hs(new neb::host_status);
       hs->host_id = 42;
       hs->state_type = 1;
       hs->current_state = 2;
       c.write(hs);
     }
     {
-      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 12;
       ss->state_type = 1;

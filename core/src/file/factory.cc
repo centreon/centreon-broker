@@ -98,7 +98,7 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
-                         misc::shared_ptr<persistent_cache> cache) const {
+                         std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
   // Find path to the file.
@@ -112,7 +112,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Generate opener.
-  std::auto_ptr<opener> openr(new opener);
+  std::unique_ptr<opener> openr(new opener);
   openr->set_filename(filename.toStdString());
   is_acceptor = false;
   return (openr.release());

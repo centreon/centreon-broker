@@ -37,7 +37,7 @@ namespace         extcmd {
     unsigned int  parse(
       std::string const& buffer,
       command_result& res,
-      misc::shared_ptr<command_request>& request);
+      std::shared_ptr<command_request>& request);
 
     std::string    write(command_result const& res);
 

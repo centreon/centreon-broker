@@ -51,7 +51,7 @@ int main() {
   multiplexing::engine::instance().start();
 
   try {
-    correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);
+    correlation::stream c("", std::shared_ptr<persistent_cache>(), false);
     {
       // Create state.
       QMap<QPair<unsigned int, unsigned int>, node> state;
@@ -79,7 +79,7 @@ int main() {
 
     // Send node status.
     { // #1
-      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 56;
       ss->service_id = 13;
       ss->state_type = 1;
@@ -88,7 +88,7 @@ int main() {
       c.write(ss);
     }
     { // #2
-      misc::shared_ptr<neb::host_status> hs(new neb::host_status);
+      std::shared_ptr<neb::host_status> hs(new neb::host_status);
       hs->host_id = 90;
       hs->state_type = 1;
       hs->last_hard_state = 1;
@@ -96,7 +96,7 @@ int main() {
       c.write(hs);
     }
     { // #3
-      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
@@ -105,7 +105,7 @@ int main() {
       c.write(ss);
     }
     { // #4
-      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 56;
       ss->service_id = 13;
       ss->state_type = 1;
@@ -114,7 +114,7 @@ int main() {
       c.write(ss);
     }
     { // #5
-      misc::shared_ptr<neb::host_status> hs(new neb::host_status);
+      std::shared_ptr<neb::host_status> hs(new neb::host_status);
       hs->host_id = 90;
       hs->state_type = 1;
       hs->last_hard_state = 2;
@@ -122,7 +122,7 @@ int main() {
       c.write(hs);
     }
     { // #6
-      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
       ss->state_type = 1;
@@ -134,7 +134,7 @@ int main() {
     // Check correlation content.
     multiplexing::engine::instance().stop();
     t.finalize();
-    QList<misc::shared_ptr<io::data> > content;
+    QList<std::shared_ptr<io::data> > content;
     // #1
     add_state(content, -1, 0, 123456789, 56, false, 13, 0);
     add_state(content, -1, 2, -1, 56, false, 13, 123456789);

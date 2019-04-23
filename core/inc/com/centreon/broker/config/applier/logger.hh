@@ -21,9 +21,9 @@
 
 #  include <list>
 #  include <map>
+#  include <memory>
 #  include "com/centreon/broker/config/logger.hh"
 #  include "com/centreon/broker/logging/backend.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -49,10 +49,10 @@ namespace            config {
                      logger();
                      logger(logger const& l);
       logger&        operator=(logger const& l);
-      misc::shared_ptr<logging::backend>
+      std::shared_ptr<logging::backend>
                      _new_backend(config::logger const& cfg);
 
-      std::map<config::logger, misc::shared_ptr<logging::backend> >
+      std::map<config::logger, std::shared_ptr<logging::backend>>
                      _backends;
     };
   }

@@ -19,8 +19,8 @@
 #ifndef CCB_BAM_BOOL_BINARY_OPERATOR_HH
 #  define CCB_BAM_BOOL_BINARY_OPERATOR_HH
 
+#  include <memory>
 #  include "com/centreon/broker/bam/bool_value.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -37,7 +37,7 @@ namespace                 bam {
    */
   class                   bool_binary_operator : public bool_value {
   public:
-    typedef misc::shared_ptr<bool_binary_operator> ptr;
+    typedef std::shared_ptr<bool_binary_operator> ptr;
 
                           bool_binary_operator();
                           bool_binary_operator(
@@ -48,18 +48,18 @@ namespace                 bam {
                             computable* child,
                             io::stream* visitor = NULL);
     void                  set_left(
-                            misc::shared_ptr<bool_value> const& left);
+                            std::shared_ptr<bool_value> const& left);
     void                  set_right(
-                            misc::shared_ptr<bool_value> const& right);
+                            std::shared_ptr<bool_value> const& right);
     bool                  state_known() const;
     bool                  in_downtime() const;
 
   protected:
-    misc::shared_ptr<bool_value>
+    std::shared_ptr<bool_value>
                           _left;
     double                _left_hard;
     double                _left_soft;
-    misc::shared_ptr<bool_value>
+    std::shared_ptr<bool_value>
                           _right;
     double                _right_hard;
     double                _right_soft;

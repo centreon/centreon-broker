@@ -69,26 +69,26 @@ std::string stream::peer() const {
  *  @return Always true as file never times out.
  */
 bool stream::read(
-               misc::shared_ptr<io::data>& d,
+               std::shared_ptr<io::data>& d,
                time_t deadline) {
   (void)deadline;
 
   // Lock mutex.
-  d.clear();
+  d.reset();
   QMutexLocker lock(&_mutex);
 
   // Build data array.
-  std::auto_ptr<io::raw> data(new io::raw);
+  std::unique_ptr<io::raw> data(new io::raw);
   data->resize(BUFSIZ);
 
   // Read data.
   long rb(_file->read(data->QByteArray::data(), data->size()));
   if (rb) {
     data->resize(rb);
-    d = misc::shared_ptr<io::data>(data.release());
+    d.reset(data.release());
   }
 
-  return (true);
+  return true;
 }
 
 /**
@@ -205,7 +205,7 @@ void stream::statistics(io::properties& tree) const {
  *
  *  @return Number of events acknowledged (1).
  */
-int stream::write(misc::shared_ptr<io::data> const& d) {
+int stream::write(std::shared_ptr<io::data> const& d) {
   // Check that data exists.
   if (!validate(d, "file"))
     return (1);
@@ -218,7 +218,7 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
     char const* memory;
     unsigned int size;
     {
-      io::raw* data(static_cast<io::raw*>(d.data()));
+      io::raw* data(static_cast<io::raw*>(d.get()));
       memory = data->QByteArray::data();
       size = data->size();
     }

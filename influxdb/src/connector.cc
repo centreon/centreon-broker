@@ -80,7 +80,7 @@ void connector::connect_to(
                   std::vector<column> const& status_cols,
                   std::string const& metric_ts,
                   std::vector<column> const& metric_cols,
-                  misc::shared_ptr<persistent_cache> const& cache) {
+                  std::shared_ptr<persistent_cache> const& cache) {
   _user = user;
   _password = passwd;
   _addr = addr;
@@ -100,8 +100,8 @@ void connector::connect_to(
  *
  *  @return Influxdb connection object.
  */
-misc::shared_ptr<io::stream> connector::open() {
-  return (misc::shared_ptr<io::stream>(
+std::shared_ptr<io::stream> connector::open() {
+  return (std::shared_ptr<io::stream>(
             new stream(
                   _user,
                   _password,

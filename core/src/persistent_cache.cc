@@ -50,8 +50,8 @@ persistent_cache::~persistent_cache() {}
  *
  *  @param[in] d  Object to store.
  */
-void persistent_cache::add(misc::shared_ptr<io::data> const& d) {
-  if (_write_file.isNull())
+void persistent_cache::add(std::shared_ptr<io::data> const& d) {
+  if (!_write_file)
     throw (exceptions::msg() << "core: cache file '"
            << _cache_file << "' is not open for writing");
   _write_file->write(d);
@@ -67,9 +67,9 @@ void persistent_cache::add(misc::shared_ptr<io::data> const& d) {
  */
 void persistent_cache::commit() {
   // Perform changes only if a transaction was started.
-  if (!_write_file.isNull()) {
-    _write_file.clear();
-    _read_file.clear();
+  if (_write_file) {
+    _write_file.reset();
+    _read_file.reset();
     if (::rename(_cache_file.c_str(), _old_file().c_str())) {
       char const* msg(strerror(errno));
       throw (exceptions::msg() << "core: cache file '"
@@ -95,15 +95,15 @@ void persistent_cache::commit() {
  *  @param[out] d  Pointer to the next event of the persistent cache. A
  *                 NULL pointer is provided on EOF.
  */
-void persistent_cache::get(misc::shared_ptr<io::data>& d) {
-  if (_read_file.isNull())
+void persistent_cache::get(std::shared_ptr<io::data>& d) {
+  if (!_read_file)
     _open();
   try {
     _read_file->read(d);
   }
   catch (exceptions::shutdown const& e) {
     (void)e;
-    d.clear();
+    d.reset();
   }
   return ;
 }
@@ -112,7 +112,7 @@ void persistent_cache::get(misc::shared_ptr<io::data>& d) {
  *  Rollback a transaction.
  */
 void persistent_cache::rollback() {
-  _write_file.clear();
+  _write_file.reset();
   ::remove(_new_file().c_str());
   return ;
 }
@@ -123,18 +123,18 @@ void persistent_cache::rollback() {
  *  The old cache won't be erased until commit() is called.
  */
 void persistent_cache::transaction() {
-  if (!_write_file.isNull())
+  if (_write_file)
     throw (exceptions::msg() << "core: cache file '"
            << _cache_file << "' is already open for writing");
   file::opener opnr;
   opnr.set_filename(_new_file());
   opnr.set_auto_delete(false);
   opnr.set_max_size(0);
-  misc::shared_ptr<io::stream> fs(opnr.open());
-  misc::shared_ptr<bbdo::stream> bs(new bbdo::stream);
+  std::shared_ptr<io::stream> fs(opnr.open());
+  std::shared_ptr<bbdo::stream> bs(new bbdo::stream);
   bs->set_substream(fs);
   bs->set_coarse(true);
-  _write_file = bs.staticCast<io::stream>();
+  _write_file = std::static_pointer_cast<io::stream>(bs);
   return ;
 }
 
@@ -184,15 +184,13 @@ void persistent_cache::_open() {
   opnr.set_filename(_cache_file);
   opnr.set_auto_delete(false);
   opnr.set_max_size(0);
-  misc::shared_ptr<io::stream> fs(opnr.open());
+  std::shared_ptr<io::stream> fs(opnr.open());
 
   // Create BBDO layer.
-  misc::shared_ptr<bbdo::stream> bs(new bbdo::stream);
+  std::shared_ptr<bbdo::stream> bs(new bbdo::stream);
   bs->set_substream(fs);
   bs->set_coarse(true);
 
   // We will access only the BBDO layer.
-  _read_file = bs.staticCast<io::stream>();
-
-  return ;
+  _read_file = std::static_pointer_cast<io::stream>(bs);
 }

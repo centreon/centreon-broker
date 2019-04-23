@@ -19,6 +19,7 @@
 #ifndef CCB_BAM_MONITORING_STREAM_HH
 #  define CCB_BAM_MONITORING_STREAM_HH
 
+#  include <QMutex>
 #  include <string>
 #  include "com/centreon/broker/bam/configuration/applier/state.hh"
 #  include "com/centreon/broker/database.hh"
@@ -43,16 +44,16 @@ namespace           bam {
                       std::string const& ext_cmd_file,
                       database_config const& db_cfg,
                       database_config const& storage_db_cfg,
-                      misc::shared_ptr<persistent_cache> cache);
+                      std::shared_ptr<persistent_cache> cache);
                     ~monitoring_stream();
     int             flush();
     void            initialize();
     bool            read(
-                      misc::shared_ptr<io::data>& d,
+                      std::shared_ptr<io::data>& d,
                       time_t deadline);
     void            statistics(io::properties& tree) const;
     void            update();
-    int             write(misc::shared_ptr<io::data> const& d);
+    int             write(std::shared_ptr<io::data> const& d);
 
   private:
                     monitoring_stream(monitoring_stream const& other);
@@ -81,7 +82,7 @@ namespace           bam {
     database_query  _meta_service_update;
     int             _pending_events;
     database_config _storage_db_cfg;
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                     _cache;
   };
 }

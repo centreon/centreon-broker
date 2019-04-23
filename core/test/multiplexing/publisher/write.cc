@@ -52,7 +52,7 @@ int main() {
 
   // Publish event.
   {
-    misc::shared_ptr<io::raw> raw(new io::raw);
+    std::shared_ptr<io::raw> raw(new io::raw);
     raw->append(MSG1);
     p.write(raw.staticCast<io::data>());
   }
@@ -62,7 +62,7 @@ int main() {
 
   // Publish another event.
   {
-    misc::shared_ptr<io::raw> raw(new io::raw);
+    std::shared_ptr<io::raw> raw(new io::raw);
     raw->append(MSG2);
     p.write(raw.staticCast<io::data>());
   }
@@ -71,13 +71,13 @@ int main() {
   int retval(0);
   char const* messages[] = { MSG1, MSG2, NULL };
   for (unsigned int i = 0; messages[i]; ++i) {
-    misc::shared_ptr<io::data> data;
+    std::shared_ptr<io::data> data;
     s.get_muxer().read(data, 0);
     if (data.isNull()
         || (data->type() != io::raw::static_type()))
       retval |= 1;
     else {
-      misc::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
+      std::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
       retval |= strncmp(
         raw->QByteArray::data(),
         messages[i],

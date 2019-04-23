@@ -85,7 +85,7 @@ void connector::connect_to(QString const& host, unsigned short port) {
 /**
  *  Connect to the remote host.
  */
-misc::shared_ptr<io::stream> connector::open() {
+std::shared_ptr<io::stream> connector::open() {
   // Launch connection process.
   logging::info(logging::medium) << "TCP: connecting to "
     << _host << ":" << _port;
@@ -95,7 +95,7 @@ misc::shared_ptr<io::stream> connector::open() {
     oss << _host.toStdString() << ":" << _port;
     connection_name = oss.str();
   }
-  std::auto_ptr<QTcpSocket> sock(new QTcpSocket);
+  std::unique_ptr<QTcpSocket> sock(new QTcpSocket);
   sock->connectToHost(_host, _port);
 
   // Wait for connection result.
@@ -106,7 +106,7 @@ misc::shared_ptr<io::stream> connector::open() {
     << "TCP: successfully connected to " << connection_name;
 
   // Return stream.
-  misc::shared_ptr<stream> s(new stream(sock.get(), connection_name));
+  std::shared_ptr<stream> s(new stream(sock.get(), connection_name));
   sock.release();
   s->set_read_timeout(_read_timeout);
   s->set_write_timeout(_write_timeout);

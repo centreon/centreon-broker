@@ -19,9 +19,9 @@
 #ifndef CCB_NOTIFICATION_UTILITIES_PTR_TYPEDEF_HH
 #  define CCB_NOTIFICATION_UTILITIES_PTR_TYPEDEF_HH
 
-#  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include <memory>
 
 #define DECLARE_SHARED_PTR(klass)\
-  typedef ::com::centreon::broker::misc::shared_ptr<klass> ptr
+  typedef std::shared_ptr<klass> ptr
 
 #endif //!CCB_NOTIFICATION_UTILITIES_PTR_TYPEDEF_HH

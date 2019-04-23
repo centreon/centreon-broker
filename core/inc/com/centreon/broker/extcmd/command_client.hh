@@ -45,9 +45,9 @@ namespace             extcmd {
                         command_parser& parser);
                       ~command_client();
     bool              read(
-                        misc::shared_ptr<io::data>& d,
+                        std::shared_ptr<io::data>& d,
                         time_t deadline = (time_t)-1);
-    int               write(misc::shared_ptr<io::data> const& d);
+    int               write(std::shared_ptr<io::data> const& d);
 
   private:
                       command_client(command_client const& other);
@@ -56,7 +56,7 @@ namespace             extcmd {
 
     std::string       _buffer;
     command_parser&   _parser;
-    std::auto_ptr<QLocalSocket>
+    std::unique_ptr<QLocalSocket>
                       _socket;
     int               _socket_native;
   };

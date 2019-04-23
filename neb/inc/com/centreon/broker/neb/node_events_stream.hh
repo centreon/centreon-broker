@@ -19,12 +19,12 @@
 #ifndef CCB_NEB_NODE_EVENTS_STREAM_HH
 #  define CCB_NEB_NODE_EVENTS_STREAM_HH
 
+#  include <memory>
 #  include <vector>
 #  include <QString>
 #  include <QHash>
 #  include <QPair>
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
 #  include "com/centreon/broker/extcmd/command_request.hh"
@@ -51,12 +51,12 @@ namespace        neb {
   public:
                  node_events_stream(
                    std::string const& name,
-                   misc::shared_ptr<persistent_cache> cache,
+                   std::shared_ptr<persistent_cache> cache,
                    std::string const& config_file);
                  ~node_events_stream();
-    bool         read(misc::shared_ptr<io::data>& d, time_t deadline);
+    bool         read(std::shared_ptr<io::data>& d, time_t deadline);
     void         update();
-    int          write(misc::shared_ptr<io::data> const& d);
+    int          write(std::shared_ptr<io::data> const& d);
     void         parse_command(
                    extcmd::command_request const& exc,
                    io::stream& stream);
@@ -68,7 +68,7 @@ namespace        neb {
     node_events_stream&
                  operator=(node_events_stream const& other);
 
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                  _cache;
     std::string  _config_file;
     QString      _name;
@@ -143,7 +143,7 @@ namespace        neb {
     void         _check_downtime_timeperiod_consistency();
     void         _load_config_file();
     void         _load_cache();
-    void         _process_loaded_event(misc::shared_ptr<io::data> const& d);
+    void         _process_loaded_event(std::shared_ptr<io::data> const& d);
     void         _apply_config_downtimes();
     void         _save_cache();
   };

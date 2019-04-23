@@ -151,7 +151,7 @@ static io::raw* serialize(io::data const& e) {
     info(io::events::instance().get_event_info(e.type()));
   if (info) {
     // Serialization buffer.
-    std::auto_ptr<io::raw> buffer(new io::raw);
+    std::unique_ptr<io::raw> buffer(new io::raw);
     QByteArray& data(*buffer);
 
     // Reserve space for the BBDO header.
@@ -311,7 +311,7 @@ int output::flush() {
  *  @param[out] tree Output tree.
  */
 void output::statistics(io::properties& tree) const {
-  if (!_substream.isNull())
+  if (_substream)
     _substream->statistics(tree);
   return ;
 }
@@ -323,13 +323,13 @@ void output::statistics(io::properties& tree) const {
  *
  *  @return Number of events acknowledged.
  */
-int output::write(misc::shared_ptr<io::data> const& e) {
+int output::write(std::shared_ptr<io::data> const& e) {
   if (!validate(e, "BBDO"))
     return (1);
 
   // Check if data exists.
-  misc::shared_ptr<io::raw> serialized(serialize(*e));
-  if (serialized.data()) {
+  std::shared_ptr<io::raw> serialized(serialize(*e));
+  if (serialized) {
     logging::debug(logging::medium) << "BBDO: serialized event of type "
       << e->type() << " to " << serialized->size() << " bytes";
     _substream->write(serialized);

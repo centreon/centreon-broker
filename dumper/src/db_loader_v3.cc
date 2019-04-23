@@ -69,8 +69,6 @@ void db_loader_v3::load(entries::state& state, unsigned int poller_id) {
   // Cleanup.
   _state = NULL;
   _poller_id = 0;
-
-  return ;
 }
 
 /**************************************
@@ -96,7 +94,6 @@ void db_loader_v3::_load_ba_types() {
     b.description = q.value(3).toString();
     _state->get_ba_types().push_back(b);
   }
-  return ;
 }
 
 /**
@@ -128,7 +125,6 @@ void db_loader_v3::_load_bas() {
     b.type_id = q.value(6).toUInt();
     _state->get_bas().push_back(b);
   }
-  return ;
 }
 
 /**
@@ -173,7 +169,6 @@ void db_loader_v3::_load_kpis() {
     k.drop_unknown = q.value(10).toDouble();
     _state->get_kpis().push_back(k);
   }
-  return ;
 }
 
 /**
@@ -199,5 +194,4 @@ void db_loader_v3::_load_organizations() {
   o.name = q.value(1).toString();
   o.shortname = q.value(2).toString();
   _state->get_organizations().push_back(o);
-  return ;
 }

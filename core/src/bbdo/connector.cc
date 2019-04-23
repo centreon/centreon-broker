@@ -104,12 +104,12 @@ connector& connector::operator=(connector const& other) {
  *
  *  @return Open stream.
  */
-misc::shared_ptr<io::stream> connector::open() {
+std::shared_ptr<io::stream> connector::open() {
   // Return value.
-  misc::shared_ptr<io::stream> retval;
+  std::shared_ptr<io::stream> retval;
 
   // We must have a lower layer.
-  if (!_from.isNull()) {
+  if (_from) {
     // Open lower layer connection and add our own layer.
     retval = _open(_from->open());
   }
@@ -127,12 +127,11 @@ misc::shared_ptr<io::stream> connector::open() {
  *
  *  @return Open stream.
  */
-misc::shared_ptr<io::stream> connector::_open(
-                               misc::shared_ptr<io::stream> stream) {
-  misc::shared_ptr<bbdo::stream> bbdo_stream;
-  if (!stream.isNull()) {
-    bbdo_stream = misc::shared_ptr<bbdo::stream>(
-                          new bbdo::stream);
+std::shared_ptr<io::stream> connector::_open(
+                               std::shared_ptr<io::stream> stream) {
+  std::shared_ptr<bbdo::stream> bbdo_stream;
+  if (stream) {
+    bbdo_stream = std::make_shared<bbdo::stream>();
     bbdo_stream->set_substream(stream);
     bbdo_stream->set_coarse(_coarse);
     bbdo_stream->set_negotiate(_negotiate, _extensions);

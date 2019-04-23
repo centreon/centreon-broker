@@ -74,7 +74,7 @@ unsigned int kpi::get_id() const {
  *  @return Last state change.
  */
 timestamp kpi::get_last_state_change() const {
-  return (!_event.isNull() ? _event->start_time : timestamp(time(NULL)));
+  return (_event ? _event->start_time : timestamp(time(NULL)));
 }
 
 /**
@@ -93,8 +93,8 @@ void kpi::set_id(unsigned int id) {
  *  @param[in] e  The kpi event.
  */
 void kpi::set_initial_event(kpi_event const& e) {
-  if (_event.isNull()) {
-    _event = misc::shared_ptr<kpi_event>(new kpi_event(e));
+  if (!_event) {
+    _event.reset(new kpi_event(e));
     impact_values impacts;
     impact_hard(impacts);
     double new_impact_level =
@@ -106,10 +106,10 @@ void kpi::set_initial_event(kpi_event const& e) {
     if (new_impact_level != _event->impact_level
           && _event->impact_level != -1) {
       time_t now = ::time(NULL);
-      misc::shared_ptr<kpi_event> new_event(new kpi_event(e));
+      std::shared_ptr<kpi_event> new_event(new kpi_event(e));
       new_event->end_time = now;
       _initial_events.push_back(new_event);
-      new_event = misc::shared_ptr<kpi_event> (new kpi_event(e));
+      new_event = std::shared_ptr<kpi_event> (new kpi_event(e));
       new_event->start_time = now;
       _initial_events.push_back(new_event);
       _event = new_event;
@@ -130,12 +130,12 @@ void kpi::commit_initial_events(io::stream* visitor) {
     return ;
 
   if (visitor) {
-    for (std::vector<misc::shared_ptr<kpi_event> >::const_iterator
+    for (std::vector<std::shared_ptr<kpi_event> >::const_iterator
            it(_initial_events.begin()),
            end(_initial_events.end());
          it != end;
          ++it)
-      visitor->write(misc::shared_ptr<io::data>(new kpi_event(**it)));
+      visitor->write(std::shared_ptr<io::data>(new kpi_event(**it)));
   }
   _initial_events.clear();
 }

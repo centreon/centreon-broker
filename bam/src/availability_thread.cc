@@ -123,8 +123,8 @@ void availability_thread::start_and_wait() {
  *
  *  @return  A QMutexLocker locking the main mutex.
  */
-std::auto_ptr<QMutexLocker> availability_thread::lock() {
-  return (std::auto_ptr<QMutexLocker>(new QMutexLocker(&_mutex)));
+std::unique_ptr<QMutexLocker> availability_thread::lock() {
+  return (std::unique_ptr<QMutexLocker>(new QMutexLocker(&_mutex)));
 }
 
 /**

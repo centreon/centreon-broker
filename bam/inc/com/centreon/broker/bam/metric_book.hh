@@ -20,7 +20,7 @@
 #  define CCB_BAM_METRIC_BOOK_HH
 
 #  include <map>
-#  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include <memory>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -54,7 +54,7 @@ namespace         bam {
                     unsigned int metric_id,
                     metric_listener* listnr);
     void          update(
-                    misc::shared_ptr<storage::metric> const& m,
+                    std::shared_ptr<storage::metric> const& m,
                     io::stream* visitor = NULL);
 
   private:

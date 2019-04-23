@@ -121,7 +121,7 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
-                         misc::shared_ptr<persistent_cache> cache) const {
+                         std::shared_ptr<persistent_cache> cache) const {
   // Find DB type.
   QString type(find_param(cfg, "db_type"));
 
@@ -150,14 +150,14 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Connector.
-  std::auto_ptr<notification::connector> c(new notification::connector(cache));
+  std::unique_ptr<notification::connector> c(new notification::connector(cache));
   c->connect_to(
-       type,
-       host,
+       type.toStdString(),
+       host.toStdString(),
        port,
-       user,
-       password,
-       db_name,
+       user.toStdString(),
+       password.toStdString(),
+       db_name.toStdString(),
        check_replication);
   is_acceptor = false;
   return (c.release());

@@ -19,12 +19,12 @@
 #ifndef CCB_CORRELATION_STREAM_HH
 #  define CCB_CORRELATION_STREAM_HH
 
+#  include <memory>
 #  include <QString>
 #  include <QMap>
 #  include <QPair>
 #  include "com/centreon/broker/correlation/node.hh"
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -45,16 +45,16 @@ namespace        correlation {
   public:
                  stream(
                    QString const& correlation_file,
-                   misc::shared_ptr<persistent_cache> cache
-                   = misc::shared_ptr<persistent_cache>(),
+                   std::shared_ptr<persistent_cache> cache
+                   = std::shared_ptr<persistent_cache>(),
                    bool load_correlation = true,
                    bool passive = false);
                  ~stream();
     bool         read(
-                   misc::shared_ptr<io::data>& d,
+                   std::shared_ptr<io::data>& d,
                    time_t deadline);
     void         update();
-    int          write(misc::shared_ptr<io::data> const& d);
+    int          write(std::shared_ptr<io::data> const& d);
     void         set_state(
                    QMap<QPair<unsigned int, unsigned int>, node> const& st);
     QMap<QPair<unsigned int, unsigned int>, node> const&
@@ -64,15 +64,15 @@ namespace        correlation {
                  stream(stream const& other);
     stream&      operator=(stream const& other);
     void         _load_correlation();
-    void         _load_correlation_event(misc::shared_ptr<io::data> const& d);
+    void         _load_correlation_event(std::shared_ptr<io::data> const& d);
     void         _save_persistent_cache();
 
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                  _cache;
     QString      _correlation_file;
     bool         _passive;
 
-    std::auto_ptr<io::stream>
+    std::unique_ptr<io::stream>
                  _pblsh;
 
     QMap<QPair<unsigned int, unsigned int>, node>

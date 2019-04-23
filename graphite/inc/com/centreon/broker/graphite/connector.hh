@@ -20,6 +20,7 @@
 #  define CCB_GRAPHITE_CONNECTOR_HH
 
 #  include <ctime>
+#  include <memory>
 #  include <QString>
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
@@ -47,8 +48,8 @@ namespace           graphite {
                       std::string const& db_host,
                       unsigned short db_port,
                       unsigned int queries_per_transaction,
-                      misc::shared_ptr<persistent_cache> const& cache);
-    misc::shared_ptr<io::stream>
+                      std::shared_ptr<persistent_cache> const& cache);
+    std::shared_ptr<io::stream>
                     open();
 
    private:
@@ -60,7 +61,7 @@ namespace           graphite {
     std::string     _addr;
     unsigned short  _port;
     unsigned int    _queries_per_transaction;
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                     _persistent_cache;
 
     void            _internal_copy(connector const& other);

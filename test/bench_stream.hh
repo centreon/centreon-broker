@@ -31,11 +31,11 @@ public:
   unsigned long get_write_events() const;
   unsigned long get_write_size() const;
   bool          read(
-                  com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d,
+                  std::shared_ptr<com::centreon::broker::io::data>& d,
                   time_t deadline);
   void          reset_bench();
   int           write(
-                  com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d);
+                  std::shared_ptr<com::centreon::broker::io::data> const& d);
 
 private:
                 bench_stream(bench_stream const& other);

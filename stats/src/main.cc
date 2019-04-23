@@ -29,7 +29,6 @@
 #include "com/centreon/broker/stats/generator.hh"
 #include "com/centreon/broker/stats/parser.hh"
 #include "com/centreon/broker/stats/worker.hh"
-#include "com/centreon/broker/misc/shared_ptr.hh"
 
 using namespace com::centreon::broker;
 
@@ -37,21 +36,21 @@ using namespace com::centreon::broker;
 static unsigned int instances(0);
 
 // Worker.
-static std::auto_ptr<stats::generator> worker_dumper;
-static std::vector<misc::shared_ptr<stats::worker> > workers_fifo;
+static std::unique_ptr<stats::generator> worker_dumper;
+static std::vector<std::shared_ptr<stats::worker> > workers_fifo;
 
 /**
  *  Unload current statistics workers.
  */
 static void unload_workers() {
-  for (std::vector<misc::shared_ptr<stats::worker> >::iterator
+  for (std::vector<std::shared_ptr<stats::worker> >::iterator
          it = workers_fifo.begin(),
          end = workers_fifo.end();
        it != end;
        ++it) {
     (*it)->exit();
     (*it)->wait();
-    it->clear();
+    it->reset();
   }
   if (worker_dumper.get()) {
     // Terminate thread.
@@ -143,7 +142,7 @@ extern "C" {
                      << "' exists but is not a FIFO");
 
             // Create thread.
-            workers_fifo.push_back(misc::make_shared(new stats::worker));
+            workers_fifo.push_back(std::make_shared<stats::worker>());
             workers_fifo.back()->run(QString::fromStdString(fifo_path), it->second);
           }
           loaded = true;

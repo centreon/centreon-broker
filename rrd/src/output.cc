@@ -100,7 +100,7 @@ output::output(
     _write_metrics(write_metrics),
     _write_status(write_status) {
 #if QT_VERSION >= 0x040400
-  std::auto_ptr<cached>
+  std::unique_ptr<cached>
     rrdcached(new cached(metrics_path.toStdString(), cache_size));
   rrdcached->connect_local(local);
   _backend.reset(rrdcached.release());
@@ -137,7 +137,7 @@ output::output(
     _status_path(status_path.toStdString()),
     _write_metrics(write_metrics),
     _write_status(write_status) {
-  std::auto_ptr<cached>
+  std::unique_ptr<cached>
     rrdcached(new cached(metrics_path.toStdString(), cache_size));
   rrdcached->connect_remote("localhost", port);
   _backend.reset(rrdcached.release());
@@ -156,9 +156,9 @@ output::~output() {}
  *
  *  @return This method throws.
  */
-bool output::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool output::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (com::centreon::broker::exceptions::shutdown()
          << "cannot read from RRD stream");
   return (true);
@@ -180,7 +180,7 @@ void output::update() {
  *
  *  @return Number of events acknowledged.
  */
-int output::write(misc::shared_ptr<io::data> const& d) {
+int output::write(std::shared_ptr<io::data> const& d) {
   // Check that data exists.
   if (!validate(d, "RRD"))
     return (1);
@@ -188,8 +188,8 @@ int output::write(misc::shared_ptr<io::data> const& d) {
   if (d->type() == storage::metric::static_type()) {
     if (_write_metrics) {
       // Debug message.
-      misc::shared_ptr<storage::metric>
-        e(d.staticCast<storage::metric>());
+      std::shared_ptr<storage::metric>
+        e(std::static_pointer_cast<storage::metric>(d));
       logging::debug(logging::medium) << "RRD: new data for metric "
         << e->metric_id << " (time " << e->ctime << ") "
         << (e->is_for_rebuild ? " for rebuild" : "");
@@ -236,8 +236,8 @@ int output::write(misc::shared_ptr<io::data> const& d) {
   else if (d->type() == storage::status::static_type()) {
     if (_write_status) {
       // Debug message.
-      misc::shared_ptr<storage::status>
-        e(d.staticCast<storage::status>());
+      std::shared_ptr<storage::status>
+        e(std::static_pointer_cast<storage::status>(d));
       logging::debug(logging::medium)
         << "RRD: new status data for index " << e->index_id << " ("
         << e->state << ") " << (e->is_for_rebuild ? "for rebuild" : "");
@@ -282,8 +282,8 @@ int output::write(misc::shared_ptr<io::data> const& d) {
   }
   else if (d->type() == storage::rebuild::static_type()) {
     // Debug message.
-    misc::shared_ptr<storage::rebuild>
-      e(d.staticCast<storage::rebuild>());
+    std::shared_ptr<storage::rebuild>
+      e(std::static_pointer_cast<storage::rebuild>(d));
     logging::debug(logging::medium) << "RRD: rebuild request for "
       << (e->is_index ? "index " : "metric ") << e->id
       << (e->end ? "(end)" : "(start)");
@@ -308,7 +308,7 @@ int output::write(misc::shared_ptr<io::data> const& d) {
     // Rebuild is ending.
     else {
       // Find cache.
-      std::list<misc::shared_ptr<io::data> > l;
+      std::list<std::shared_ptr<io::data> > l;
       {
         rebuild_cache::iterator it;
         if (e->is_index) {
@@ -336,8 +336,8 @@ int output::write(misc::shared_ptr<io::data> const& d) {
   }
   else if (d->type() == storage::remove_graph::static_type()) {
     // Debug message.
-    misc::shared_ptr<storage::remove_graph>
-      e(d.staticCast<storage::remove_graph>());
+    std::shared_ptr<storage::remove_graph>
+      e(std::static_pointer_cast<storage::remove_graph>(d));
     logging::debug(logging::medium) << "RRD: remove graph request for "
       << (e->is_index ? "index " : "metric ") << e->id;
 

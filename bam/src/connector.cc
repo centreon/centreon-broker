@@ -77,7 +77,7 @@ void connector::connect_monitoring(
                   std::string const& ext_cmd_file,
                   database_config const& db_cfg,
                   std::string const& storage_db_name,
-                  misc::shared_ptr<persistent_cache> cache) {
+                  std::shared_ptr<persistent_cache> cache) {
   _type = bam_monitoring_type;
   _ext_cmd_file = ext_cmd_file;
   _db_cfg = db_cfg;
@@ -106,19 +106,19 @@ void connector::connect_reporting(database_config const& db_cfg) {
  *
  *  @return BAM connection object.
  */
-misc::shared_ptr<io::stream> connector::open() {
+std::shared_ptr<io::stream> connector::open() {
   if (_type == bam_reporting_type) {
-    misc::shared_ptr<reporting_stream>
+    std::shared_ptr<reporting_stream>
       s(new reporting_stream(_db_cfg));
-    return (s.staticCast<io::stream>());
+    return (std::static_pointer_cast<io::stream>(s));
   }
   else {
     database_config storage_db_cfg(_db_cfg);
     storage_db_cfg.set_name(_storage_db_name);
-    misc::shared_ptr<monitoring_stream>
+    std::shared_ptr<monitoring_stream>
       s(new monitoring_stream(_ext_cmd_file, _db_cfg, storage_db_cfg, _cache));
     s->initialize();
-    return (s.staticCast<io::stream>());
+    return (std::static_pointer_cast<io::stream>(s));
   }
 }
 

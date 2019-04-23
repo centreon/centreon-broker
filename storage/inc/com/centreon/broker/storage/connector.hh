@@ -46,7 +46,7 @@ namespace           storage {
                       unsigned int rebuild_check_interval,
                       bool store_in_data_bin = true,
                       bool insert_in_index_data = false);
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                     open();
 
    private:

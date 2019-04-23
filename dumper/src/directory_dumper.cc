@@ -58,7 +58,7 @@ directory_dumper::directory_dumper(
           std::string const& name,
           std::string const& path,
           std::string const& tagname,
-          misc::shared_ptr<persistent_cache> cache)
+          std::shared_ptr<persistent_cache> cache)
   : _name(name.c_str()),
     _path(path),
     _tagname(tagname),
@@ -97,7 +97,7 @@ directory_dumper::~directory_dumper() {
  *  @return Respect io::stream::read()'s return value.
  */
 bool directory_dumper::read(
-                         misc::shared_ptr<io::data>& d,
+                         std::shared_ptr<io::data>& d,
                          time_t deadline) {
   (void)d;
   (void)deadline;
@@ -112,13 +112,13 @@ bool directory_dumper::read(
  *
  *  @return Always return 1, or throw exceptions.
  */
-int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
+int directory_dumper::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "directory dumper"))
     return  (1);
 
   if (d->type() == extcmd::command_request::static_type()) {
     extcmd::command_request const&
-      req(d.ref_as<extcmd::command_request const>());
+      req(*std::static_pointer_cast<extcmd::command_request const>(d));
     if (req.is_addressed_to(_name)) {
       _command_to_poller_id[req.uuid.toStdString()] = req.source_id;
       try {
@@ -136,7 +136,7 @@ int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
           << req.cmd << "': " << e.what();
 
         // Send error result.
-        misc::shared_ptr<extcmd::command_result>
+        std::shared_ptr<extcmd::command_result>
           res(new extcmd::command_result);
         res->uuid = req.uuid;
         res->msg = QString("\"") + e.what() + "\"";
@@ -147,10 +147,10 @@ int directory_dumper::write(misc::shared_ptr<io::data> const& d) {
     }
   }
   else if (d->type() == directory_dump_committed::static_type()) {
-    directory_dump_committed const& ddc = d.ref_as<directory_dump_committed>();
+    directory_dump_committed const& ddc = *std::static_pointer_cast<directory_dump_committed>(d);
     if (_command_to_poller_id.find(ddc.req_id.toStdString()) != _command_to_poller_id.end()) {
       // Send successful result.
-      misc::shared_ptr<extcmd::command_result>
+      std::shared_ptr<extcmd::command_result>
         res(new extcmd::command_result);
       res->uuid = ddc.req_id;
       res->msg = "\"Command successfully executed.\"";
@@ -187,7 +187,7 @@ void directory_dumper::_dump_dir(
 
   // Start the dump.
   {
-    misc::shared_ptr<directory_dump> dmp(new directory_dump);
+    std::shared_ptr<directory_dump> dmp(new directory_dump);
     dmp->req_id = req_id;
     dmp->tag = QString::fromStdString(_tagname);
     dmp->started = true;
@@ -204,7 +204,7 @@ void directory_dumper::_dump_dir(
       logging::error(logging::medium)
         << "directory_dumper: can't read file '" << path << "'";
     QByteArray content = file.readAll();
-    misc::shared_ptr<dump> dmp(new dump);
+    std::shared_ptr<dump> dmp(new dump);
     dmp->filename = root_dir.relativeFilePath(path);
     dmp->content = QString(content);
     dmp->tag = QString::fromStdString(_tagname);
@@ -220,7 +220,7 @@ void directory_dumper::_dump_dir(
        it != end;
        ++it)
     if (found.find(it->first) == found.end()) {
-      misc::shared_ptr<remove> rm(new remove);
+      std::shared_ptr<remove> rm(new remove);
       rm->tag = QString::fromStdString(_tagname);
       rm->filename = QString::fromStdString(it->first);
       rm->req_id = req_id;
@@ -241,7 +241,7 @@ void directory_dumper::_dump_dir(
 
   // End the dump.
   {
-    misc::shared_ptr<directory_dump> dmp(new directory_dump);
+    std::shared_ptr<directory_dump> dmp(new directory_dump);
     dmp->req_id = req_id;
     dmp->tag = QString::fromStdString(_tagname);
     dmp->started = false;
@@ -254,16 +254,16 @@ void directory_dumper::_dump_dir(
  */
 void directory_dumper::_load_cache() {
   // No cache, nothing to do.
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   while (true) {
     _cache->get(d);
-    if (d.isNull())
+    if (!d)
       return ;
     if (d->type() == timestamp_cache::static_type()) {
-     timestamp_cache const& tc  = d.ref_as<timestamp_cache const>();
+     timestamp_cache const& tc  = *std::static_pointer_cast<timestamp_cache const>(d);
       _files_cache[tc.filename.toStdString()] = tc;
     }
   }
@@ -274,7 +274,7 @@ void directory_dumper::_load_cache() {
  */
 void directory_dumper::_save_cache() {
   // No cache, nothing to do.
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   _cache->transaction();
@@ -283,6 +283,6 @@ void directory_dumper::_save_cache() {
          end = _files_cache.end();
        it != end;
        ++it)
-    _cache->add(misc::make_shared(new timestamp_cache(it->second)));
+    _cache->add(std::make_shared<timestamp_cache>(it->second));
   _cache->commit();
 }

@@ -21,7 +21,6 @@
 
 #  include <deque>
 #  include <map>
-#  include <memory>
 #  include <QString>
 #  include <set>
 #  include <vector>
@@ -51,9 +50,9 @@ namespace          sql {
                      bool with_state_events);
                    ~stream();
     int            flush();
-    bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
+    bool           read(std::shared_ptr<io::data>& d, time_t deadline);
     void           update();
-    int            write(misc::shared_ptr<io::data> const& d);
+    int            write(std::shared_ptr<io::data> const& d);
 
   private:
                    stream(stream const& other);
@@ -70,40 +69,40 @@ namespace          sql {
     void           _prepare_select(
                      database_query& st,
                      std::string const& table_name);
-    void           _process_acknowledgement(misc::shared_ptr<io::data> const& e);
-    void           _process_comment(misc::shared_ptr<io::data> const& e);
-    void           _process_custom_variable(misc::shared_ptr<io::data> const& e);
-    void           _process_custom_variable_status(misc::shared_ptr<io::data> const& e);
-    void           _process_downtime(misc::shared_ptr<io::data> const& e);
-    void           _process_engine(misc::shared_ptr<io::data> const& e);
-    void           _process_event_handler(misc::shared_ptr<io::data> const& e);
-    void           _process_flapping_status(misc::shared_ptr<io::data> const& e);
-    void           _process_host(misc::shared_ptr<io::data> const& e);
-    void           _process_host_check(misc::shared_ptr<io::data> const& e);
-    void           _process_host_dependency(misc::shared_ptr<io::data> const& e);
-    void           _process_host_group(misc::shared_ptr<io::data> const& e);
-    void           _process_host_group_member(misc::shared_ptr<io::data> const& e);
-    void           _process_host_parent(misc::shared_ptr<io::data> const& e);
-    void           _process_host_state(misc::shared_ptr<io::data> const& e);
-    void           _process_host_status(misc::shared_ptr<io::data> const& e);
-    void           _process_instance(misc::shared_ptr<io::data> const& e);
-    void           _process_instance_configuration(misc::shared_ptr<io::data> const& e);
-    void           _process_instance_status(misc::shared_ptr<io::data> const& e);
-    void           _process_issue(misc::shared_ptr<io::data> const& e);
-    void           _process_issue_parent(misc::shared_ptr<io::data> const& e);
-    void           _process_log(misc::shared_ptr<io::data> const& e);
-    void           _process_module(misc::shared_ptr<io::data> const& e);
-    void           _process_notification(misc::shared_ptr<io::data> const& e);
-    void           _process_service(misc::shared_ptr<io::data> const& e);
-    void           _process_service_check(misc::shared_ptr<io::data> const& e);
-    void           _process_service_dependency(misc::shared_ptr<io::data> const& e);
-    void           _process_service_group(misc::shared_ptr<io::data> const& e);
-    void           _process_service_group_member(misc::shared_ptr<io::data> const& e);
-    void           _process_service_state(misc::shared_ptr<io::data> const& e);
-    void           _process_service_status(misc::shared_ptr<io::data> const& e);
-    void           _process_state(misc::shared_ptr<io::data> const& e);
-    void           _process_log_issue(misc::shared_ptr<io::data> const& e);
-    void           _process_responsive_instance(misc::shared_ptr<io::data> const& e);
+    void           _process_acknowledgement(std::shared_ptr<io::data> const& e);
+    void           _process_comment(std::shared_ptr<io::data> const& e);
+    void           _process_custom_variable(std::shared_ptr<io::data> const& e);
+    void           _process_custom_variable_status(std::shared_ptr<io::data> const& e);
+    void           _process_downtime(std::shared_ptr<io::data> const& e);
+    void           _process_engine(std::shared_ptr<io::data> const& e);
+    void           _process_event_handler(std::shared_ptr<io::data> const& e);
+    void           _process_flapping_status(std::shared_ptr<io::data> const& e);
+    void           _process_host(std::shared_ptr<io::data> const& e);
+    void           _process_host_check(std::shared_ptr<io::data> const& e);
+    void           _process_host_dependency(std::shared_ptr<io::data> const& e);
+    void           _process_host_group(std::shared_ptr<io::data> const& e);
+    void           _process_host_group_member(std::shared_ptr<io::data> const& e);
+    void           _process_host_parent(std::shared_ptr<io::data> const& e);
+    void           _process_host_state(std::shared_ptr<io::data> const& e);
+    void           _process_host_status(std::shared_ptr<io::data> const& e);
+    void           _process_instance(std::shared_ptr<io::data> const& e);
+    void           _process_instance_configuration(std::shared_ptr<io::data> const& e);
+    void           _process_instance_status(std::shared_ptr<io::data> const& e);
+    void           _process_issue(std::shared_ptr<io::data> const& e);
+    void           _process_issue_parent(std::shared_ptr<io::data> const& e);
+    void           _process_log(std::shared_ptr<io::data> const& e);
+    void           _process_module(std::shared_ptr<io::data> const& e);
+    void           _process_notification(std::shared_ptr<io::data> const& e);
+    void           _process_service(std::shared_ptr<io::data> const& e);
+    void           _process_service_check(std::shared_ptr<io::data> const& e);
+    void           _process_service_dependency(std::shared_ptr<io::data> const& e);
+    void           _process_service_group(std::shared_ptr<io::data> const& e);
+    void           _process_service_group_member(std::shared_ptr<io::data> const& e);
+    void           _process_service_state(std::shared_ptr<io::data> const& e);
+    void           _process_service_status(std::shared_ptr<io::data> const& e);
+    void           _process_state(std::shared_ptr<io::data> const& e);
+    void           _process_log_issue(std::shared_ptr<io::data> const& e);
+    void           _process_responsive_instance(std::shared_ptr<io::data> const& e);
     template       <typename T>
     void           _update_on_none_insert(
                      database_query& ins,
@@ -114,8 +113,8 @@ namespace          sql {
     void           _update_hosts_and_services_of_unresponsive_instances();
     void           _update_hosts_and_services_of_instance(unsigned int id, bool responsive);
 
-    static void (stream::* const _correlation_processing_table[])(misc::shared_ptr<io::data> const&);
-    static void (stream::* const _neb_processing_table[])(misc::shared_ptr<io::data> const&);
+    static void (stream::* const _correlation_processing_table[])(std::shared_ptr<io::data> const&);
+    static void (stream::* const _neb_processing_table[])(std::shared_ptr<io::data> const&);
     database       _db;
     database_query _acknowledgement_insert;
     database_query _acknowledgement_update;

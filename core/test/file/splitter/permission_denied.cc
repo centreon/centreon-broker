@@ -39,7 +39,7 @@ class FileSplitterPermissionDenied : public ::testing::Test {
   }
 
  protected:
-  std::auto_ptr<splitter_factory>  _file_factory;
+  std::unique_ptr<splitter_factory>  _file_factory;
   std::string                   _path;
 
 };

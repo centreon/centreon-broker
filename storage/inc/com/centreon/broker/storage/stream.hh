@@ -21,6 +21,7 @@
 
 #  include <deque>
 #  include <list>
+#  include <mutex>
 #  include <map>
 #  include <memory>
 #  include <QSqlDatabase>
@@ -56,10 +57,10 @@ namespace          storage {
                      bool insert_in_index_data = false);
                    ~stream();
     int            flush();
-    bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
+    bool           read(std::shared_ptr<io::data>& d, time_t deadline);
     void           statistics(io::properties& tree) const;
     void           update();
-    int            write(misc::shared_ptr<io::data> const& d);
+    int            write(std::shared_ptr<io::data> const& d);
 
    private:
     struct         index_info {
@@ -136,7 +137,8 @@ namespace          storage {
     rebuilder      _rebuild_thread;
     unsigned int   _rrd_len;
     std::string    _status;
-    mutable QMutex _statusm;
+    mutable std::mutex
+                   _statusm;
     bool           _store_in_db;
     database       _db;
     database_query _data_bin_insert;

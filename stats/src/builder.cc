@@ -26,10 +26,10 @@
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/endpoint.hh"
 #include "com/centreon/broker/io/properties.hh"
+#include "com/centreon/broker/misc/string.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/processing/thread.hh"
 #include "com/centreon/broker/stats/builder.hh"
-#include "com/centreon/broker/multiplexing/muxer.hh"
-#include "com/centreon/broker/misc/string.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::stats;
@@ -155,8 +155,6 @@ void builder::build(serializer const& srz) {
   std::string buffer;
   srz.serialize(buffer, _root);
   _data.insert(0, buffer);
-
-  return ;
 }
 
 /**

@@ -49,7 +49,7 @@ using namespace com::centreon::broker::correlation;
  */
 stream::stream(
           QString const& correlation_file,
-          misc::shared_ptr<persistent_cache> cache,
+          std::shared_ptr<persistent_cache> cache,
           bool load_correlation,
           bool passive)
   : _cache(cache),
@@ -59,7 +59,7 @@ stream::stream(
     _pblsh.reset(new multiplexing::publisher);
 
     // Create the engine started event.
-    misc::shared_ptr<engine_state> es(new engine_state);
+    std::shared_ptr<engine_state> es(new engine_state);
     es->poller_id = config::applier::state::instance().poller_id();
     es->started = true;
     _pblsh->write(es);
@@ -76,7 +76,7 @@ stream::stream(
 stream::~stream() {
   try {
     if (_pblsh.get()) {
-      misc::shared_ptr<engine_state> es(new engine_state);
+      std::shared_ptr<engine_state> es(new engine_state);
       es->poller_id = config::applier::state::instance().poller_id();
       _pblsh->write(es);
     }
@@ -96,9 +96,9 @@ stream::~stream() {
  *
  *  @return This method throws.
  */
-bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (exceptions::shutdown()
          << "cannot read from correlation stream");
   return (true);
@@ -118,13 +118,13 @@ void stream::update() {
  *
  *  @param[in] d  Multiplexed data.
  */
-int stream::write(misc::shared_ptr<io::data> const& d) {
+int stream::write(std::shared_ptr<io::data> const& d) {
   // Check that data can be processed.
   if (!validate(d, "correlation"))
     return (1);
 
   if (d->type() == neb::host_status::static_type()) {
-    neb::host_status const& hs = d.ref_as<neb::host_status>();
+    neb::host_status const& hs = *std::static_pointer_cast<neb::host_status>(d);
     QPair<unsigned int, unsigned int> id(hs.host_id, 0);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(id);
@@ -139,7 +139,7 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
     }
   }
   else if (d->type() == neb::service_status::static_type()) {
-    neb::service_status const& ss = d.ref_as<neb::service_status>();
+    neb::service_status const& ss = *std::static_pointer_cast<neb::service_status>(d);
     QPair<unsigned int, unsigned int> id(ss.host_id, ss.service_id);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(id);
@@ -154,7 +154,7 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
     }
   }
   else if (d->type() == neb::host::static_type()) {
-    neb::host const& h(d.ref_as<neb::host>());
+    neb::host const& h(*std::static_pointer_cast<neb::host>(d));
     QPair<unsigned int, unsigned int> id(h.host_id, 0);
     QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
       it(_nodes.find(id));
@@ -162,11 +162,11 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
       logging::debug(logging::medium)
         << "correlation: generating state event for host "
         << h.host_id << " following its (re)declaration";
-      _pblsh->write(new state(*it));
+      _pblsh->write(std::make_shared<state>(*it));
     }
   }
   else if (d->type() == neb::service::static_type()) {
-    neb::service const& s(d.ref_as<neb::service>());
+    neb::service const& s(*std::static_pointer_cast<neb::service>(d));
     QPair<unsigned int, unsigned int> id(s.host_id, s.service_id);
     QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
       it(_nodes.find(id));
@@ -175,12 +175,12 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
         << "correlation: generating state event for service ("
         << s.host_id << ", " << s.service_id
         << ") following its (re)declaration";
-      _pblsh->write(new state(*it));
+      _pblsh->write(std::make_shared<state>(*it));
     }
   }
   else if (d->type() == neb::acknowledgement::static_type()) {
     neb::acknowledgement const& ack
-      = d.ref_as<neb::acknowledgement>();
+      = *std::static_pointer_cast<neb::acknowledgement>(d);
     QPair<unsigned int, unsigned int> id(ack.host_id, ack.service_id);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(id);
@@ -192,7 +192,7 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
     }
   }
   else if (d->type() == neb::downtime::static_type()) {
-    neb::downtime const& dwn = d.ref_as<neb::downtime>();
+    neb::downtime const& dwn = *std::static_pointer_cast<neb::downtime>(d);
     QPair<unsigned int, unsigned int> id(dwn.host_id, dwn.service_id);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(id);
@@ -206,7 +206,7 @@ int stream::write(misc::shared_ptr<io::data> const& d) {
     }
   }
   else if (d->type() == neb::log_entry::static_type()) {
-    neb::log_entry const& entry = d.ref_as<neb::log_entry>();
+    neb::log_entry const& entry = *std::static_pointer_cast<neb::log_entry>(d);
     QPair<unsigned int, unsigned int> id(entry.host_id, entry.service_id);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(id);
@@ -250,11 +250,11 @@ void stream::_load_correlation() {
   p.parse(_correlation_file, _nodes);
 
   // Load the cache.
-  if (!_cache.isNull()) {
-    misc::shared_ptr<io::data> d;
+  if (_cache.get() != NULL) {
+    std::shared_ptr<io::data> d;
     while (true) {
       _cache->get(d);
-      if (d.isNull())
+      if (!d)
         break ;
       _load_correlation_event(d);
     }
@@ -268,12 +268,12 @@ void stream::_load_correlation() {
  *
  *  @param[in] d  The event.
  */
-void stream::_load_correlation_event(misc::shared_ptr<io::data> const& d) {
-  if (d.isNull())
+void stream::_load_correlation_event(std::shared_ptr<io::data> const& d) {
+  if (!d)
     return ;
 
   if (d->type() == issue::static_type()) {
-    issue const& iss = d.ref_as<issue>();
+    issue const& iss = *std::static_pointer_cast<issue>(d);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(qMakePair(iss.host_id, iss.service_id));
     if (found != _nodes.end()) {
@@ -284,7 +284,7 @@ void stream::_load_correlation_event(misc::shared_ptr<io::data> const& d) {
     }
   }
   else if (d->type() == state::static_type()) {
-    state const& st = d.ref_as<state>();
+    state const& st = *std::static_pointer_cast<state>(d);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(qMakePair(st.host_id, st.service_id));
     if (found != _nodes.end()) {
@@ -295,7 +295,7 @@ void stream::_load_correlation_event(misc::shared_ptr<io::data> const& d) {
     }
   }
   else if (d->type() == neb::downtime::static_type()) {
-    neb::downtime const& dwn = d.ref_as<neb::downtime>();
+    neb::downtime const& dwn = *std::static_pointer_cast<neb::downtime>(d);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(qMakePair(dwn.host_id, dwn.service_id));
     if (found != _nodes.end()) {
@@ -306,7 +306,7 @@ void stream::_load_correlation_event(misc::shared_ptr<io::data> const& d) {
     }
   }
   else if (d->type() == neb::acknowledgement::static_type()) {
-    neb::acknowledgement const& ack = d.ref_as<neb::acknowledgement>();
+    neb::acknowledgement const& ack = *std::static_pointer_cast<neb::acknowledgement>(d);
     QMap<QPair<unsigned int, unsigned int>, node>::iterator found
       = _nodes.find(qMakePair(ack.host_id, ack.service_id));
     if (found != _nodes.end()) {
@@ -323,7 +323,7 @@ void stream::_load_correlation_event(misc::shared_ptr<io::data> const& d) {
  */
 void stream::_save_persistent_cache() {
   // No cache, nothing to do.
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   // Serialize to the cache.

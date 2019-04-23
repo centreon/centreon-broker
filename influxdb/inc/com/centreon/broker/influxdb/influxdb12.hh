@@ -66,7 +66,7 @@ namespace         influxdb {
     line_protocol_query         _status_query;
     line_protocol_query         _metric_query;
 
-    std::auto_ptr<QTcpSocket>
+    std::unique_ptr<QTcpSocket>
                   _socket;
 
     std::string   _host;

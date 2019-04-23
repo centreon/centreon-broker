@@ -48,19 +48,19 @@ public:
   ~from_memory() {}
 
   bool read(
-         misc::shared_ptr<io::data>& d,
+         std::shared_ptr<io::data>& d,
          time_t deadline = (time_t)-1) {
     (void)deadline;
     if (sent_data)
       throw (io::exceptions::shutdown(true, true));
-    misc::shared_ptr<io::raw> raw(new io::raw);
+    std::shared_ptr<io::raw> raw(new io::raw);
     raw.ref_as<QByteArray>() = _memory;
     d = raw;
     sent_data = true;
     return (true);
   }
 
-  int write(misc::shared_ptr<io::data> const& d) {
+  int write(std::shared_ptr<io::data> const& d) {
     (void)d;
     throw (io::exceptions::shutdown(false, true));
     return (-1);
@@ -99,12 +99,12 @@ void test_not_enough_data() {
   try {
     QByteArray packet = QByteArray::fromHex(NOT_ENOUGH_DATA_EVENT);
     prepend_checksum(packet);
-    misc::shared_ptr<from_memory> memory_stream(new from_memory(packet));
+    std::shared_ptr<from_memory> memory_stream(new from_memory(packet));
     bbdo::stream stream;
     stream.set_substream(memory_stream);
     // We should be throwing.
     try {
-      misc::shared_ptr<io::data> d;
+      std::shared_ptr<io::data> d;
       stream.read(d);
     } catch (io::exceptions::shutdown const& e) {}
       catch (std::exception const& e) {
@@ -126,11 +126,11 @@ void test_invalid_event() {
     QByteArray packet = QByteArray::fromHex(INVALID_EVENT_TYPE);
     prepend_checksum(packet);
     append_empty_valid_event(packet);
-    misc::shared_ptr<from_memory> memory_stream(new from_memory(packet));
+    std::shared_ptr<from_memory> memory_stream(new from_memory(packet));
     bbdo::stream stream;
     stream.set_coarse(true);
     stream.set_substream(memory_stream);
-    misc::shared_ptr<io::data> d;
+    std::shared_ptr<io::data> d;
     // The first is null.
     stream.read(d);
     // The second is an extcmd.
@@ -153,11 +153,11 @@ void test_invalid_checksum() {
     packet.prepend(42);
     packet.prepend(42);
     append_empty_valid_event(packet);
-    misc::shared_ptr<from_memory> memory_stream(new from_memory(packet));
+    std::shared_ptr<from_memory> memory_stream(new from_memory(packet));
     bbdo::stream stream;
     stream.set_coarse(true);
     stream.set_substream(memory_stream);
-    misc::shared_ptr<io::data> d;
+    std::shared_ptr<io::data> d;
     stream.read(d);
     if (d.isNull() || d->type() != extcmd::command_request::static_type())
       throw (exceptions::msg() << "expected a command request event");

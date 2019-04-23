@@ -23,6 +23,7 @@
 #  include <list>
 #  include <map>
 #  include <memory>
+#  include <mutex>
 #  include <QSqlDatabase>
 #  include <QString>
 #  include <QTcpSocket>
@@ -58,13 +59,13 @@ namespace          graphite {
                      std::string const& db_host,
                      unsigned short db_port,
                      unsigned int queries_per_transaction,
-                     misc::shared_ptr<persistent_cache> const& cache);
+                     std::shared_ptr<persistent_cache> const& cache);
                    ~stream();
     int            flush();
-    bool           read(misc::shared_ptr<io::data>& d, time_t deadline);
+    bool           read(std::shared_ptr<io::data>& d, time_t deadline);
     void           statistics(io::properties& tree) const;
     void           update();
-    int            write(misc::shared_ptr<io::data> const& d);
+    int            write(std::shared_ptr<io::data> const& d);
 
   private:
     // Database parameters
@@ -83,7 +84,8 @@ namespace          graphite {
 
     // Status members
     std::string    _status;
-    mutable QMutex _statusm;
+    mutable std::mutex
+                   _statusm;
 
     // Cache
     macro_cache    _cache;
@@ -93,7 +95,7 @@ namespace          graphite {
     query          _status_query;
     std::string    _query;
     std::string    _auth_query;
-    std::auto_ptr<QTcpSocket>
+    std::unique_ptr<QTcpSocket>
                    _socket;
 
     // Process metric/status and generate query.

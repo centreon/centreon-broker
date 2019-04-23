@@ -28,14 +28,14 @@ using namespace com::centreon::broker::graphite;
  *
  *  @param[in] cache  Persistent cache used by the macro cache.
  */
-macro_cache::macro_cache(misc::shared_ptr<persistent_cache> const& cache)
+macro_cache::macro_cache(std::shared_ptr<persistent_cache> const& cache)
   : _cache(cache) {
-  if (!_cache.isNull()) {
-    misc::shared_ptr<io::data> d;
+  if (_cache.get() != NULL) {
+    std::shared_ptr<io::data> d;
     do {
       _cache->get(d);
       write(d);
-    } while (!d.isNull());
+    } while (d);
   }
 }
 
@@ -43,7 +43,7 @@ macro_cache::macro_cache(misc::shared_ptr<persistent_cache> const& cache)
  *  Destructor.
  */
 macro_cache::~macro_cache() {
-  if (!_cache.isNull()) {
+  if (_cache.get() != NULL) {
     try {
       _save_to_disk();
     } catch (std::exception e) {
@@ -148,20 +148,20 @@ QString const& macro_cache::get_instance(unsigned int instance_id) const {
  *
  *  @param[in] data  The event to write.
  */
-void macro_cache::write(misc::shared_ptr<io::data> const& data) {
-  if (data.isNull())
+void macro_cache::write(std::shared_ptr<io::data> const& data) {
+  if (!data)
     return ;
 
   if (data->type() == neb::instance::static_type())
-    _process_instance(data.ref_as<neb::instance const>());
+    _process_instance(*std::static_pointer_cast<neb::instance const>(data));
   else if (data->type() == neb::host::static_type())
-    _process_host(data.ref_as<neb::host const>());
+    _process_host(*std::static_pointer_cast<neb::host const>(data));
   else if (data->type() == neb::service::static_type())
-    _process_service(data.ref_as<neb::service const>());
+    _process_service(*std::static_pointer_cast<neb::service const>(data));
   else if (data->type() == storage::index_mapping::static_type())
-    _process_index_mapping(data.ref_as<storage::index_mapping const>());
+    _process_index_mapping(*std::static_pointer_cast<storage::index_mapping const>(data));
   else if (data->type() == storage::metric_mapping::static_type())
-    _process_metric_mapping(data.ref_as<storage::metric_mapping const>());
+    _process_metric_mapping(*std::static_pointer_cast<storage::metric_mapping const>(data));
 }
 
 /**
@@ -221,35 +221,35 @@ void macro_cache::_save_to_disk() {
          end(_instances.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new neb::instance(*it)));
+    _cache->add(std::shared_ptr<io::data>(new neb::instance(*it)));
 
   for (QHash<unsigned int, neb::host>::const_iterator
          it(_hosts.begin()),
          end(_hosts.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new neb::host(*it)));
+    _cache->add(std::shared_ptr<io::data>(new neb::host(*it)));
 
   for (QHash<QPair<unsigned int, unsigned int>, neb::service>::const_iterator
          it(_services.begin()),
          end(_services.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new neb::service(*it)));
+    _cache->add(std::shared_ptr<io::data>(new neb::service(*it)));
 
   for (QHash<unsigned int, storage::index_mapping>::const_iterator
          it(_index_mappings.begin()),
          end(_index_mappings.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new storage::index_mapping(*it)));
+    _cache->add(std::shared_ptr<io::data>(new storage::index_mapping(*it)));
 
   for (QHash<unsigned int, storage::metric_mapping>::const_iterator
          it(_metric_mappings.begin()),
          end(_metric_mappings.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new storage::metric_mapping(*it)));
+    _cache->add(std::shared_ptr<io::data>(new storage::metric_mapping(*it)));
 
   _cache->commit();
 }

@@ -42,7 +42,7 @@ namespace         influxdb {
     io::endpoint* new_endpoint(
                     config::endpoint& cfg,
                     bool& is_acceptor,
-                    misc::shared_ptr<persistent_cache> cache) const;
+                    std::shared_ptr<persistent_cache> cache) const;
   };
 }
 

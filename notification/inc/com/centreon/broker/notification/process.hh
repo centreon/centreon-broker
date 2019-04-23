@@ -71,7 +71,7 @@ namespace                          com {
 
         unsigned int      _timeout;
         time_t            _start_time;
-        std::auto_ptr<QProcess>
+        std::unique_ptr<QProcess>
                           _process;
 
         bool              _in_error;

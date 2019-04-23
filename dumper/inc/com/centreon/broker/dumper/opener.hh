@@ -48,13 +48,13 @@ namespace                        dumper {
                                  opener(opener const& o);
                                  ~opener();
     opener&                      operator=(opener const& o);
-    misc::shared_ptr<io::stream> open();
+    std::shared_ptr<io::stream> open();
     void                         set_db(database_config const& db_cfg);
     void                         set_path(std::string const& path);
     void                         set_tagname(std::string const& tagname);
     void                         set_type(dumper_type type);
     void                         set_cache(
-                                   misc::shared_ptr<persistent_cache> cache);
+                                   std::shared_ptr<persistent_cache> cache);
     void                         set_name(std::string const& name);
 
    private:
@@ -63,7 +63,7 @@ namespace                        dumper {
     std::string                  _path;
     std::string                  _tagname;
     dumper_type                  _type;
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                                  _cache;
   };
 }

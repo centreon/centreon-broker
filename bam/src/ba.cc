@@ -104,11 +104,11 @@ ba& ba::operator=(ba const& other) {
  *
  *  @param[in] impact KPI that will impact BA.
  */
-void ba::add_impact(misc::shared_ptr<kpi> const& impact) {
+void ba::add_impact(std::shared_ptr<kpi> const& impact) {
   umap<kpi*, impact_info>::iterator
-    it(_impacts.find(impact.data()));
+    it(_impacts.find(impact.get()));
   if (it == _impacts.end()) {
-    impact_info& ii(_impacts[impact.data()]);
+    impact_info& ii(_impacts[impact.get()]);
     ii.kpi_ptr = impact;
     impact->impact_hard(ii.hard_impact);
     impact->impact_soft(ii.soft_impact);
@@ -206,7 +206,7 @@ double ba::get_ack_impact_soft() {
  *  @return Current BA event, NULL if none is declared.
  */
 ba_event* ba::get_ba_event() {
-  return (_event.data());
+  return (_event.get());
 }
 
 /**
@@ -350,9 +350,9 @@ short ba::get_state_soft() {
  *
  *  @param[in] impact Impact to remove.
  */
-void ba::remove_impact(misc::shared_ptr<kpi> const& impact) {
+void ba::remove_impact(std::shared_ptr<kpi> const& impact) {
   umap<kpi*, impact_info>::iterator
-    it(_impacts.find(impact.data()));
+    it(_impacts.find(impact.get()));
   if (it != _impacts.end()) {
     _unapply_impact(it->second);
     _impacts.erase(it);
@@ -416,8 +416,8 @@ void ba::set_level_warning(double level) {
  *  @param[in] event  The event to set.
  */
 void ba::set_initial_event(ba_event const& event) {
-  if (_event.isNull()) {
-    _event = misc::shared_ptr<ba_event>(new ba_event(event));
+  if (!_event) {
+    _event.reset(new ba_event(event));
     _in_downtime = event.in_downtime;
     _last_kpi_update = _event->start_time;
     _initial_events.push_back(_event);
@@ -468,7 +468,7 @@ void ba::visit(io::stream* visitor) {
     // If no event was cached, create one if necessary.
     short hard_state(get_state_hard());
     bool state_changed(false);
-    if (_event.isNull()) {
+    if (!_event) {
       if ((_last_kpi_update.get_time_t() == (time_t)-1)
           || (_last_kpi_update.get_time_t() == (time_t)0))
         _last_kpi_update = time(NULL);
@@ -479,17 +479,17 @@ void ba::visit(io::stream* visitor) {
              || (hard_state != _event->status)) {
       state_changed = true;
       _event->end_time = _last_kpi_update;
-      visitor->write(_event.staticCast<io::data>());
-      _event.clear();
+      visitor->write(std::static_pointer_cast<io::data>(_event));
+      _event.reset();
       _open_new_event(visitor, hard_state);
     }
 
     // Generate BA status event.
     {
-      misc::shared_ptr<ba_status> status(new ba_status);
+      std::shared_ptr<ba_status> status(new ba_status);
       status->ba_id = _id;
       status->in_downtime = _in_downtime;
-      if (!_event.isNull())
+      if (_event)
         status->last_state_change = _event->start_time;
       else
         status->last_state_change = _last_kpi_update;
@@ -507,7 +507,7 @@ void ba::visit(io::stream* visitor) {
 
     // Generate virtual service status event.
     if (_generate_virtual_status) {
-      misc::shared_ptr<neb::service_status> status(new neb::service_status);
+      std::shared_ptr<neb::service_status> status(new neb::service_status);
       status->active_checks_enabled = false;
       status->check_interval = 0.0;
       status->check_type = 1; // Passive.
@@ -521,7 +521,7 @@ void ba::visit(io::stream* visitor) {
       status->host_id = _host_id;
       // status->host_name = XXX;
       status->is_flapping = false;
-      if (!_event.isNull())
+      if (_event)
         status->last_check = _event->start_time;
       else
         status->last_check = _last_kpi_update;
@@ -569,7 +569,7 @@ void ba::visit(io::stream* visitor) {
  *  @param visitor  Visitor that will receive events.
  */
 void ba::service_update(
-          misc::shared_ptr<neb::downtime> const& dt,
+          std::shared_ptr<neb::downtime> const& dt,
           io::stream* visitor) {
   (void)visitor;
   if ((dt->host_id == _host_id)
@@ -608,7 +608,7 @@ void ba::service_update(
  */
 void ba::save_inherited_downtime(persistent_cache& cache) const {
   if (_inherited_downtime.get())
-    cache.add(misc::shared_ptr<inherited_downtime>(
+    cache.add(std::shared_ptr<inherited_downtime>(
                 new inherited_downtime(*_inherited_downtime)));
 }
 
@@ -674,14 +674,14 @@ void ba::_internal_copy(ba const& other) {
 void ba::_open_new_event(
            io::stream* visitor,
            short service_hard_state) {
-  _event = new ba_event;
+  _event.reset(new ba_event);
   _event->ba_id = _id;
   _event->first_level = _level_hard < 0 ? 0 : _level_hard;
   _event->in_downtime = _in_downtime;
   _event->status = service_hard_state;
   _event->start_time = _last_kpi_update;
   if (visitor) {
-    misc::shared_ptr<io::data> be(new ba_event(*_event));
+    std::shared_ptr<io::data> be(new ba_event(*_event));
     visitor->write(be);
   }
   return ;
@@ -742,12 +742,12 @@ void ba::_commit_initial_events(io::stream* visitor) {
     return ;
 
   if (visitor) {
-    for (std::vector<misc::shared_ptr<ba_event> >::const_iterator
+    for (std::vector<std::shared_ptr<ba_event> >::const_iterator
            it(_initial_events.begin()),
            end(_initial_events.end());
          it != end;
          ++it)
-      visitor->write(misc::shared_ptr<io::data>(new ba_event(**it)));
+      visitor->write(std::shared_ptr<io::data>(new ba_event(**it)));
   }
   _initial_events.clear();
 }
@@ -784,7 +784,7 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
 
     if (visitor)
       visitor->write(
-        misc::shared_ptr<inherited_downtime>(
+        std::shared_ptr<inherited_downtime>(
                 new inherited_downtime(*_inherited_downtime)));
   }
   // Case 2: state ok or not every kpi in downtime, actual downtime.
@@ -793,7 +793,7 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
            && _inherited_downtime.get()) {
     _inherited_downtime.reset();
     if (visitor) {
-      misc::shared_ptr<inherited_downtime> dwn(new inherited_downtime);
+      std::shared_ptr<inherited_downtime> dwn(new inherited_downtime);
       dwn->ba_id = _id;
       dwn->in_downtime = false;
       visitor->write(dwn);

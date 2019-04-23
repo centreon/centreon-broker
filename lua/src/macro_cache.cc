@@ -30,14 +30,14 @@ using namespace com::centreon::broker::lua;
  *
  *  @param[in] cache  Persistent cache used by the macro cache.
  */
-macro_cache::macro_cache(misc::shared_ptr<persistent_cache> const& cache)
+macro_cache::macro_cache(std::shared_ptr<persistent_cache> const& cache)
   : _cache(cache) {
-  if (!_cache.isNull()) {
-    misc::shared_ptr<io::data> d;
+  if (_cache.get() != NULL) {
+    std::shared_ptr<io::data> d;
     do {
       _cache->get(d);
       write(d);
-    } while (!d.isNull());
+    } while (d);
   }
 }
 
@@ -45,7 +45,7 @@ macro_cache::macro_cache(misc::shared_ptr<persistent_cache> const& cache)
  *  Destructor.
  */
 macro_cache::~macro_cache() {
-  if (!_cache.isNull()) {
+  if (_cache.get() != NULL) {
     try {
       _save_to_disk();
     } catch (std::exception e) {
@@ -258,39 +258,39 @@ bam::dimension_bv_event const& macro_cache::get_dimension_bv_event(
  *
  *  @param[in] data  The event to write.
  */
-void macro_cache::write(misc::shared_ptr<io::data> const& data) {
-  if (data.isNull())
+void macro_cache::write(std::shared_ptr<io::data> const& data) {
+  if (!data)
     return ;
 
   if (data->type() == neb::instance::static_type())
-    _process_instance(data.ref_as<neb::instance const>());
+    _process_instance(*std::static_pointer_cast<neb::instance const>(data));
   else if (data->type() == neb::host::static_type())
-    _process_host(data.ref_as<neb::host const>());
+    _process_host(*std::static_pointer_cast<neb::host const>(data));
   else if (data->type() == neb::host_group::static_type())
-    _process_host_group(data.ref_as<neb::host_group const>());
+    _process_host_group(*std::static_pointer_cast<neb::host_group const>(data));
   else if (data->type() == neb::host_group_member::static_type())
-    _process_host_group_member(data.ref_as<neb::host_group_member const>());
+    _process_host_group_member(*std::static_pointer_cast<neb::host_group_member const>(data));
   else if (data->type() == neb::service::static_type())
-    _process_service(data.ref_as<neb::service const>());
+    _process_service(*std::static_pointer_cast<neb::service const>(data));
   else if (data->type() == neb::service_group::static_type())
-    _process_service_group(data.ref_as<neb::service_group const>());
+    _process_service_group(*std::static_pointer_cast<neb::service_group const>(data));
   else if (data->type() == neb::service_group_member::static_type())
     _process_service_group_member(
-      data.ref_as<neb::service_group_member const>());
+      *std::static_pointer_cast<neb::service_group_member const>(data));
   else if (data->type() == storage::index_mapping::static_type())
-    _process_index_mapping(data.ref_as<storage::index_mapping const>());
+    _process_index_mapping(*std::static_pointer_cast<storage::index_mapping const>(data));
   else if (data->type() == storage::metric_mapping::static_type())
-    _process_metric_mapping(data.ref_as<storage::metric_mapping const>());
+    _process_metric_mapping(*std::static_pointer_cast<storage::metric_mapping const>(data));
   else if (data->type() == bam::dimension_ba_event::static_type())
-    _process_dimension_ba_event(data.ref_as<bam::dimension_ba_event const>());
+    _process_dimension_ba_event(*std::static_pointer_cast<bam::dimension_ba_event const>(data));
   else if (data->type() == bam::dimension_ba_bv_relation_event::static_type())
     _process_dimension_ba_bv_relation_event(
-      data.ref_as<bam::dimension_ba_bv_relation_event const>());
+      *std::static_pointer_cast<bam::dimension_ba_bv_relation_event const>(data));
   else if (data->type() == bam::dimension_bv_event::static_type())
-    _process_dimension_bv_event(data.ref_as<bam::dimension_bv_event const>());
+    _process_dimension_bv_event(*std::static_pointer_cast<bam::dimension_bv_event const>(data));
   else if (data->type() == bam::dimension_truncate_table_signal::static_type())
     _process_dimension_truncate_table_signal(
-      data.ref_as<bam::dimension_truncate_table_signal const>());
+      *std::static_pointer_cast<bam::dimension_truncate_table_signal const>(data));
 }
 
 /**
@@ -515,21 +515,21 @@ void macro_cache::_save_to_disk() {
          end(_instances.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new neb::instance(*it)));
+    _cache->add(std::shared_ptr<io::data>(new neb::instance(*it)));
 
   for (QHash<unsigned int, neb::host>::const_iterator
          it(_hosts.begin()),
          end(_hosts.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new neb::host(*it)));
+    _cache->add(std::shared_ptr<io::data>(new neb::host(*it)));
 
   for (QHash<unsigned int, neb::host_group>::const_iterator
          it(_host_groups.begin()),
          end(_host_groups.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new neb::host_group(*it)));
+    _cache->add(std::shared_ptr<io::data>(new neb::host_group(*it)));
 
   for (QHash<unsigned int, QHash<unsigned int, neb::host_group_member> >::const_iterator
          it(_host_group_members.begin()),
@@ -541,7 +541,7 @@ void macro_cache::_save_to_disk() {
            hend(it.value().end());
          hit != hend;
          ++hit) {
-      _cache->add(misc::shared_ptr<io::data>(new neb::host_group_member(*hit)));
+      _cache->add(std::shared_ptr<io::data>(new neb::host_group_member(*hit)));
     }
   }
 
@@ -550,14 +550,14 @@ void macro_cache::_save_to_disk() {
          end(_services.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new neb::service(*it)));
+    _cache->add(std::shared_ptr<io::data>(new neb::service(*it)));
 
   for (QHash<unsigned int, neb::service_group>::const_iterator
          it(_service_groups.begin()),
          end(_service_groups.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new neb::service_group(*it)));
+    _cache->add(std::shared_ptr<io::data>(new neb::service_group(*it)));
 
   for (QHash<QPair<unsigned int, unsigned int>,
              QHash<unsigned int, neb::service_group_member> >::const_iterator
@@ -570,7 +570,7 @@ void macro_cache::_save_to_disk() {
            send(it.value().end());
          sit != send;
          ++sit) {
-      _cache->add(misc::shared_ptr<io::data>(new neb::service_group_member(*sit)));
+      _cache->add(std::shared_ptr<io::data>(new neb::service_group_member(*sit)));
     }
   }
 
@@ -579,28 +579,28 @@ void macro_cache::_save_to_disk() {
          end(_index_mappings.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new storage::index_mapping(*it)));
+    _cache->add(std::shared_ptr<io::data>(new storage::index_mapping(*it)));
 
   for (QHash<unsigned int, storage::metric_mapping>::const_iterator
          it(_metric_mappings.begin()),
          end(_metric_mappings.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new storage::metric_mapping(*it)));
+    _cache->add(std::shared_ptr<io::data>(new storage::metric_mapping(*it)));
 
   for (QHash<unsigned int, bam::dimension_ba_event>::const_iterator
          it(_dimension_ba_events.begin()),
          end(_dimension_ba_events.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new bam::dimension_ba_event(*it)));
+    _cache->add(std::shared_ptr<io::data>(new bam::dimension_ba_event(*it)));
 
   for (QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event>::const_iterator
          it(_dimension_ba_bv_relation_events.begin()),
          end(_dimension_ba_bv_relation_events.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(
+    _cache->add(std::shared_ptr<io::data>(
       new bam::dimension_ba_bv_relation_event(*it)));
 
   for (QHash<unsigned int, bam::dimension_bv_event>::const_iterator
@@ -608,7 +608,7 @@ void macro_cache::_save_to_disk() {
          end(_dimension_bv_events.end());
        it != end;
        ++it)
-    _cache->add(misc::shared_ptr<io::data>(new bam::dimension_bv_event(*it)));
+    _cache->add(std::shared_ptr<io::data>(new bam::dimension_bv_event(*it)));
 
   _cache->commit();
 }

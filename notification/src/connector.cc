@@ -31,7 +31,7 @@ using namespace com::centreon::broker::notification;
 /**
  *  Constructor.
  */
-connector::connector(misc::shared_ptr<persistent_cache> cache)
+connector::connector(std::shared_ptr<persistent_cache> cache)
   : io::endpoint(false),
     _cache(cache),
     _node_cache(_cache) {}
@@ -93,12 +93,12 @@ connector& connector::operator=(connector const& c) {
  *  @param[in] check_replication       true to check replication status.
  */
 void connector::connect_to(
-                  QString const& type,
-                  QString const& host,
+                  std::string const& type,
+                  std::string const& host,
                   unsigned short port,
-                  QString const& user,
-                  QString const& password,
-                  QString const& centreon_db,
+                  std::string const& user,
+                  std::string const& password,
+                  std::string const& centreon_db,
                   bool check_replication) {
   _check_replication = check_replication;
   _centreon_db = centreon_db;
@@ -115,8 +115,8 @@ void connector::connect_to(
  *
  *  @return Notification stream object.
  */
-misc::shared_ptr<io::stream> connector::open() {
-  return (misc::shared_ptr<io::stream>(new stream(
+std::shared_ptr<io::stream> connector::open() {
+  return (std::shared_ptr<io::stream>(new stream(
                                              _type,
                                              _host,
                                              _port,

@@ -69,7 +69,7 @@ monitoring_stream::monitoring_stream(
                      std::string const& ext_cmd_file,
                      database_config const& db_cfg,
                      database_config const& storage_db_cfg,
-                     misc::shared_ptr<persistent_cache> cache)
+                     std::shared_ptr<persistent_cache> cache)
   : _ext_cmd_file(ext_cmd_file),
     _db(db_cfg),
     _ba_update(_db),
@@ -124,7 +124,7 @@ int monitoring_stream::flush() {
   _db.clear_committed_flag();
   int retval(_pending_events);
   _pending_events = 0;
-  return (retval);
+  return retval;
 }
 
 /**
@@ -148,10 +148,10 @@ void monitoring_stream::initialize() {
  *  @return This method will throw.
  */
 bool monitoring_stream::read(
-                          misc::shared_ptr<io::data>& d,
+                          std::shared_ptr<io::data>& d,
                           time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (exceptions::shutdown()
          << "cannot read from BAM monitoring stream");
   return (true);
@@ -202,7 +202,7 @@ void monitoring_stream::update() {
  *
  *  @return Number of events acknowledged.
  */
-int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
+int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_events;
   if (!validate(data, "BAM"))
@@ -211,8 +211,8 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
   // Process service status events.
   if ((data->type() == neb::service_status::static_type())
       || (data->type() == neb::service::static_type())) {
-    misc::shared_ptr<neb::service_status>
-      ss(data.staticCast<neb::service_status>());
+    std::shared_ptr<neb::service_status>
+      ss(std::static_pointer_cast<neb::service_status>(data));
     logging::debug(logging::low)
       << "BAM: processing service status (host "
       << ss->host_id << ", service " << ss->service_id
@@ -224,8 +224,8 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     ev_cache.commit_to(pblshr);
   }
   else if (data->type() == neb::acknowledgement::static_type()) {
-    misc::shared_ptr<neb::acknowledgement>
-      ack(data.staticCast<neb::acknowledgement>());
+    std::shared_ptr<neb::acknowledgement>
+      ack(std::static_pointer_cast<neb::acknowledgement>(data));
     logging::debug(logging::low)
       << "BAM: processing acknowledgement (host "
       << ack->host_id << ", service " << ack->service_id << ")";
@@ -235,8 +235,8 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     ev_cache.commit_to(pblshr);
   }
   else if (data->type() == neb::downtime::static_type()) {
-    misc::shared_ptr<neb::downtime>
-      dt(data.staticCast<neb::downtime>());
+    std::shared_ptr<neb::downtime>
+      dt(std::static_pointer_cast<neb::downtime>(data));
     logging::debug(logging::low)
       << "BAM: processing downtime (host " << dt->host_id
       << ", service " << dt->service_id << ")";
@@ -246,8 +246,8 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     ev_cache.commit_to(pblshr);
   }
   else if (data->type() == storage::metric::static_type()) {
-    misc::shared_ptr<storage::metric>
-      m(data.staticCast<storage::metric>());
+    std::shared_ptr<storage::metric>
+      m(std::static_pointer_cast<storage::metric>(data));
     logging::debug(logging::low)
       << "BAM: processing metric (id " << m->metric_id << ", time "
       << m->ctime << ", value " << m->value << ")";
@@ -257,7 +257,7 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     ev_cache.commit_to(pblshr);
   }
   else if (data->type() == bam::ba_status::static_type()) {
-    ba_status* status(static_cast<ba_status*>(data.data()));
+    ba_status* status(static_cast<ba_status*>(data.get()));
     logging::debug(logging::low) << "BAM: processing BA status (id "
       << status->ba_id << ", level " << status->level_nominal
       << ", acknowledgement " << status->level_acknowledgement
@@ -302,7 +302,7 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
     }
   }
   else if (data->type() == bam::kpi_status::static_type()) {
-    kpi_status* status(static_cast<kpi_status*>(data.data()));
+    kpi_status* status(static_cast<kpi_status*>(data.get()));
     logging::debug(logging::low) << "BAM: processing KPI status (id "
       << status->kpi_id << ", level " << status->level_nominal_hard
       << ", acknowledgement " << status->level_acknowledgement_hard
@@ -372,7 +372,7 @@ int monitoring_stream::write(misc::shared_ptr<io::data> const& data) {
   else if (data->type() == inherited_downtime::static_type()) {
     std::ostringstream oss;
     timestamp now = timestamp::now();
-    inherited_downtime const& dwn = data.ref_as<inherited_downtime const>();
+    inherited_downtime const& dwn = *std::static_pointer_cast<inherited_downtime const>(data);
     if (dwn.in_downtime)
       oss << "[" << now << "] SCHEDULE_SVC_DOWNTIME;_Module_BAM_"
           << config::applier::state::instance().poller_id() << ";ba_"
@@ -487,7 +487,7 @@ void monitoring_stream::_rebuild() {
   logging::debug(logging::medium)
     << "BAM: rebuild asked, sending the rebuild signal";
 
-  misc::shared_ptr<rebuild> r(new rebuild);
+  std::shared_ptr<rebuild> r(new rebuild);
   {
     std::ostringstream oss;
     for (std::vector<unsigned int>::const_iterator
@@ -499,7 +499,7 @@ void monitoring_stream::_rebuild() {
     r->bas_to_rebuild = oss.str().c_str();
     r->bas_to_rebuild.resize(r->bas_to_rebuild.size() - 2);
   }
-  std::auto_ptr<io::stream> out(new multiplexing::publisher);
+  std::unique_ptr<io::stream> out(new multiplexing::publisher);
   out->write(r);
 
   // Set all the BAs to should not be rebuild.
@@ -558,7 +558,7 @@ void monitoring_stream::_write_external_command(
  *  Get inherited downtime from the cache.
  */
 void monitoring_stream::_read_cache() {
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   _applier.load_from_cache(*_cache);
@@ -568,7 +568,7 @@ void monitoring_stream::_read_cache() {
  *  Save inherited downtime to the cache.
  */
 void monitoring_stream::_write_cache() {
-  if (_cache.isNull()) {
+  if (_cache.get() == NULL) {
     logging::debug(logging::medium)
       << "BAM: no cache configured";
     return ;

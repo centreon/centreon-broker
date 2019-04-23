@@ -59,14 +59,13 @@ input_buffer& input_buffer::operator=(input_buffer const& other) {
  *
  *  @param[in] d  Data.
  */
-void input_buffer::append(misc::shared_ptr<io::raw> const& d) {
-  if (!d.isNull() && d->size()) {
+void input_buffer::append(std::shared_ptr<io::raw> const& d) {
+  if (d && d->size()) {
     if (_data.empty())
       _first_offset = 0;
     _data.push_back(d);
     _size += d->size();
   }
-  return ;
 }
 
 /**
@@ -107,7 +106,7 @@ void input_buffer::erase(int bytes) {
  */
 void input_buffer::extract(std::string& output, int offset, int size) {
   // Find initial position.
-  std::list<misc::shared_ptr<io::raw> >::const_iterator
+  std::list<std::shared_ptr<io::raw> >::const_iterator
     it(_data.begin()), end(_data.end());
   int it_offset(_first_offset);
   for (int remaining(offset); it != end; ++it, it_offset = 0) {

@@ -93,10 +93,10 @@ void connector::connect_to(
  *
  *  @return SQL connection object.
  */
-misc::shared_ptr<io::stream> connector::open() {
-  return (misc::shared_ptr<io::stream>(new stream(
-                                             _dbcfg,
-                                             _cleanup_check_interval,
-                                             _instance_timeout,
-                                             _with_state_events)));
+std::shared_ptr<io::stream> connector::open() {
+  return std::shared_ptr<io::stream>(new stream(
+                                       _dbcfg,
+                                       _cleanup_check_interval,
+                                       _instance_timeout,
+                                       _with_state_events));
 }

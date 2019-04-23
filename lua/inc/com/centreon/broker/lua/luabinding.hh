@@ -46,7 +46,7 @@ namespace               lua {
                           macro_cache const& cache);
                         ~luabinding();
     bool                has_filter() const;
-    int                 write(misc::shared_ptr<io::data> const& data);
+    int                 write(std::shared_ptr<io::data> const& data);
 
    private:
                         luabinding(luabinding const& other);

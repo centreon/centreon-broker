@@ -54,7 +54,7 @@ timeperiod_serializable& timeperiod_serializable::operator=(
                            timeperiod_serializable const& other) {
   if (this != &other) {
     _tps = other._tps;
-    _tp = misc::make_shared(new time::timeperiod(*other._tp));
+    _tp.reset(new time::timeperiod(*other._tp));
   }
   return (*this);
 }
@@ -331,7 +331,7 @@ void timeperiod_serializable::set_excluded(std::string const& val) {
        it != end;
        ++it) {
     time::timeperiod::ptr tp = _tps->value(QString::fromStdString(*it));
-    if (tp.isNull())
+    if (!tp)
       throw (exceptions::msg()
              << "couldn't find the excluded timeperiod '" << *it << "'");
     _tp->add_excluded(tp);
@@ -352,7 +352,7 @@ void timeperiod_serializable::set_included(std::string const& val) {
        it != end;
        ++it) {
     time::timeperiod::ptr tp = _tps->value(QString::fromStdString(*it));
-    if (tp.isNull())
+    if (!tp)
       throw (exceptions::msg()
              << "couldn't find the included timeperiod '" << *it << "'");
     _tp->add_included(tp);

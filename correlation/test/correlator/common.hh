@@ -21,24 +21,24 @@
 
 #  include <vector>
 #  include <ctime>
+#  include <memory>
 #  include <QList>
 #  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 
 void add_engine_state(
-       QList<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> >& content,
+       QList<std::shared_ptr<com::centreon::broker::io::data> >& content,
        bool started);
 void add_issue(
-       QList<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> >& content,
+       QList<std::shared_ptr<com::centreon::broker::io::data> >& content,
        time_t ack_time,
        time_t end_time,
        unsigned int host_id,
        unsigned int service_id,
        time_t start_time);
 void add_issue_parent(
-       QList<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> >& content,
+       QList<std::shared_ptr<com::centreon::broker::io::data> >& content,
        unsigned int child_host_id,
        unsigned int child_service_id,
        time_t child_start_time,
@@ -48,7 +48,7 @@ void add_issue_parent(
        time_t parent_start_time,
        time_t start_time);
 void add_state(
-       QList<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> >& content,
+       QList<std::shared_ptr<com::centreon::broker::io::data> >& content,
        time_t ack_time,
        int current_state,
        time_t end_time,
@@ -58,23 +58,23 @@ void add_state(
        time_t start_time);
 void check_content(
        com::centreon::broker::io::stream& s,
-       QList<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> > const& content);
+       QList<std::shared_ptr<com::centreon::broker::io::data> > const& content);
 
 class test_stream : public com::centreon::broker::multiplexing::hooker {
 public:
   virtual bool             read(
-    com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d,
+    std::shared_ptr<com::centreon::broker::io::data>& d,
     time_t deadline);
   virtual int              write(
-    com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d);
-  std::vector<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> > const&
+    std::shared_ptr<com::centreon::broker::io::data> const& d);
+  std::vector<std::shared_ptr<com::centreon::broker::io::data> > const&
                            get_events() const;
   virtual void             starting();
   virtual void             stopping();
   void                     finalize();
 public:
   bool                     _finalized;
-  std::vector<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> >
+  std::vector<std::shared_ptr<com::centreon::broker::io::data> >
                            _events;
 };
 

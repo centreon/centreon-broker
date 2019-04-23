@@ -19,9 +19,9 @@
 #ifndef CCB_IO_FACTORY_HH
 #  define CCB_IO_FACTORY_HH
 
+#  include <memory>
 #  include "com/centreon/broker/config/endpoint.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
 
@@ -48,10 +48,10 @@ namespace             io {
     virtual endpoint* new_endpoint(
                         com::centreon::broker::config::endpoint& cfg,
                         bool& is_acceptor,
-                        misc::shared_ptr<persistent_cache> cache = misc::shared_ptr<persistent_cache>()) const = 0;
-    virtual misc::shared_ptr<stream>
+                        std::shared_ptr<persistent_cache> cache = std::shared_ptr<persistent_cache>()) const = 0;
+    virtual std::shared_ptr<stream>
                       new_stream(
-                        misc::shared_ptr<stream> substream,
+                        std::shared_ptr<stream> substream,
                         bool is_acceptor,
                         QString const& proto_name);
   };

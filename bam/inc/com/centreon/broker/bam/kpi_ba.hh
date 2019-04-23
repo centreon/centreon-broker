@@ -19,10 +19,10 @@
 #ifndef CCB_BAM_KPI_BA_HH
 #  define CCB_BAM_KPI_BA_HH
 
+#  include <memory>
 #  include "com/centreon/broker/bam/kpi.hh"
 #  include "com/centreon/broker/bam/kpi_event.hh"
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -52,7 +52,7 @@ namespace   bam {
     double  get_impact_warning() const;
     void    impact_hard(impact_values& hard_impact);
     void    impact_soft(impact_values& soft_impact);
-    void    link_ba(misc::shared_ptr<ba>& my_ba);
+    void    link_ba(std::shared_ptr<ba>& my_ba);
     void    set_impact_critical(double impact);
     void    set_impact_warning(double impact);
     void    unlink_ba();
@@ -73,7 +73,7 @@ namespace   bam {
               short ba_state,
               timestamp event_start_time);
 
-    misc::shared_ptr<ba>
+    std::shared_ptr<ba>
             _ba;
     double  _impact_critical;
     double  _impact_warning;

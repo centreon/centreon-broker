@@ -49,13 +49,13 @@ int main() {
   try {
     // Create correlator.
     {
-      correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);
+      correlation::stream c("", std::shared_ptr<persistent_cache>(), false);
     }
 
     // Check correlation content.
     multiplexing::engine::instance().stop();
     t.finalize();
-    QList<misc::shared_ptr<io::data> > content;
+    QList<std::shared_ptr<io::data> > content;
     add_engine_state(content, true);
     add_engine_state(content, false);
 

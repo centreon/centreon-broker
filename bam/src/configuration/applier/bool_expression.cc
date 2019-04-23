@@ -135,7 +135,7 @@ void applier::bool_expression::apply(
       book.unlisten(
              (*it2)->get_host_id(),
              (*it2)->get_service_id(),
-             it2->data());
+             it2->get());
     _applied.erase(it->first);
   }
   to_delete.clear();
@@ -148,15 +148,15 @@ void applier::bool_expression::apply(
        ++it) {
     logging::config(logging::medium)
       << "BAM: creating new boolean expression " << it->first;
-    misc::shared_ptr<bam::bool_expression>
+    std::shared_ptr<bam::bool_expression>
       new_bool_exp(new bam::bool_expression);
     try {
       bam::exp_parser p(it->second.get_expression());
       bam::exp_builder b(p.get_postfix(), mapping);
       bam::bool_value::ptr tree(b.get_tree());
       new_bool_exp->set_expression(tree);
-      if (!tree.isNull())
-        tree->add_parent(new_bool_exp.staticCast<bam::computable>());
+      if (tree)
+        tree->add_parent(std::static_pointer_cast<bam::computable>(new_bool_exp));
       applied& content(_applied[it->first]);
       content.cfg = it->second;
       content.obj = new_bool_exp;
@@ -172,7 +172,7 @@ void applier::bool_expression::apply(
         book.listen(
                (*it2)->get_host_id(),
                (*it2)->get_service_id(),
-               it2->data());
+               it2->get());
       // Resolve boolean metric.
       for (std::list<bool_metric::ptr>::const_iterator
              it2 = content.mtrc.begin(),
@@ -189,7 +189,7 @@ void applier::bool_expression::apply(
              ++metrics_it)
           metric_book.listen(
                       *metrics_it,
-                      it2->data());
+                      it2->get());
       }
     }
     catch (std::exception const& e) {
@@ -212,13 +212,13 @@ void applier::bool_expression::apply(
  *
  *  @return Shared pointer to the applied boolean expression object.
  */
-misc::shared_ptr<bam::bool_expression> applier::bool_expression::find_boolexp(
+std::shared_ptr<bam::bool_expression> applier::bool_expression::find_boolexp(
                                                                    unsigned int id) {
   std::map<unsigned int, applied>::iterator
     it(_applied.find(id));
   return ((it != _applied.end())
           ? it->second.obj
-          : misc::shared_ptr<bam::bool_expression>());
+          : std::shared_ptr<bam::bool_expression>());
 }
 
 /**
@@ -252,7 +252,7 @@ void applier::bool_expression::_resolve_expression_calls() {
        it != end;
        it = tmp) {
     ++tmp;
-    for (std::list<misc::shared_ptr<bam::bool_call> >::iterator
+    for (std::list<std::shared_ptr<bam::bool_call> >::iterator
            call_it = it->second.call.begin(),
            call_end = it->second.call.end();
          call_it != call_end;

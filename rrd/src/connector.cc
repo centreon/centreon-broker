@@ -78,10 +78,10 @@ connector& connector::operator=(connector const& right) {
  *
  *  @return Stream object.
  */
-misc::shared_ptr<io::stream> connector::open() {
-  misc::shared_ptr<io::stream> retval;
+std::shared_ptr<io::stream> connector::open() {
+  std::shared_ptr<io::stream> retval;
   if (!_cached_local.isEmpty())
-    retval = misc::shared_ptr<io::stream>(new output(
+    retval = std::shared_ptr<io::stream>(new output(
                                                 _metrics_path,
                                                 _status_path,
                                                 _cache_size,
@@ -90,7 +90,7 @@ misc::shared_ptr<io::stream> connector::open() {
                                                 _write_metrics,
                                                 _write_status));
   else if (_cached_port)
-    retval = misc::shared_ptr<io::stream>(new output(
+    retval = std::shared_ptr<io::stream>(new output(
                                                 _metrics_path,
                                                 _status_path,
                                                 _cache_size,
@@ -99,7 +99,7 @@ misc::shared_ptr<io::stream> connector::open() {
                                                 _write_metrics,
                                                 _write_status));
   else
-    retval = misc::shared_ptr<io::stream>(new output(
+    retval = std::shared_ptr<io::stream>(new output(
                                                 _metrics_path,
                                                 _status_path,
                                                 _cache_size,

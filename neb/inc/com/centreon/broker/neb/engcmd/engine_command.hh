@@ -42,9 +42,9 @@ namespace                 engcmd {
                             std::string const& command_module_path);
                           ~engine_command();
     bool                  read(
-                            misc::shared_ptr<io::data>& d,
+                            std::shared_ptr<io::data>& d,
                             time_t deadline = (time_t)-1);
-    int                   write(misc::shared_ptr<io::data> const& d);
+    int                   write(std::shared_ptr<io::data> const& d);
 
   private:
                           engine_command(engine_command const& other);

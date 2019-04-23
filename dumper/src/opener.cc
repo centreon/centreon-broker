@@ -81,20 +81,20 @@ opener& opener::operator=(opener const& other) {
  *
  *  @return Opened stream.
  */
-misc::shared_ptr<io::stream> opener::open() {
+std::shared_ptr<io::stream> opener::open() {
   switch (_type) {
   case dump:
-    return (new stream(_path, _tagname));
+    return (std::make_shared<stream>(_path, _tagname));
   case dump_dir:
-    return (new directory_dumper(_name, _path, _tagname, _cache));
+    return (std::make_shared<directory_dumper>(_name, _path, _tagname, _cache));
   case dump_fifo:
-    return (new fifo_dumper(_path, _tagname));
+    return (std::make_shared<fifo_dumper>(_path, _tagname));
   case db_cfg_reader:
-    return (new db_reader(_name, _db));
+    return (std::make_shared<db_reader>(_name, _db));
   case db_cfg_writer:
-    return (new db_writer(_db));
+    return (std::make_shared<db_writer>(_db));
   default:
-    return (misc::shared_ptr<io::stream>());
+    return (std::shared_ptr<io::stream>());
   }
 }
 
@@ -151,6 +151,6 @@ void opener::set_name(std::string const& name) {
  *
  *  @param[in] cache  The persistent cache.
  */
-void opener::set_cache(misc::shared_ptr<persistent_cache> cache) {
+void opener::set_cache(std::shared_ptr<persistent_cache> cache) {
   _cache = cache;
 }

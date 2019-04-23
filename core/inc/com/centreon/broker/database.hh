@@ -60,7 +60,7 @@ class               database {
   void              _commit();
   void              _new_transaction();
 
-  std::auto_ptr<QSqlDatabase>
+  std::unique_ptr<QSqlDatabase>
                     _db;
   QString           _connection_id;
   database_config   _db_cfg;

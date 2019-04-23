@@ -50,38 +50,38 @@ namespace        notification {
   class          stream : public io::stream {
   public:
                  stream(
-                   QString const& type,
-                   QString const& host,
+                   std::string const& type,
+                   std::string const& host,
                    unsigned short port,
-                   QString const& user,
-                   QString const& password,
-                   QString const& centreon_db,
+                   std::string const& user,
+                   std::string const& password,
+                   std::string const& centreon_db,
                    bool check_replication,
                    node_cache& cache);
                  stream(stream const& s);
                  ~stream();
     static void  initialize();
     bool         read(
-                   misc::shared_ptr<io::data>& d,
+                   std::shared_ptr<io::data>& d,
                    time_t deadline);
     void         update();
-    int          write(misc::shared_ptr<io::data> const& d);
+    int          write(std::shared_ptr<io::data> const& d);
 
   private:
     stream&      operator=(stream const& s);
     void         _open_db(
-                   std::auto_ptr<QSqlDatabase>& db,
-                   QString const& t,
-                   QString const& host,
+                   std::unique_ptr<QSqlDatabase>& db,
+                   std::string const& t,
+                   std::string const& host,
                    unsigned short port,
-                   QString const& user,
-                   QString const& password,
-                   QString const& db_name,
-                   QString const& id,
+                   std::string const& user,
+                   std::string const& password,
+                   std::string const& db_name,
+                   std::string const& id,
                    bool check_replication);
     void         _clone_db(
-                   std::auto_ptr<QSqlDatabase>& db,
-                   std::auto_ptr<QSqlDatabase> const& db_to_clone,
+                   std::unique_ptr<QSqlDatabase>& db,
+                   std::unique_ptr<QSqlDatabase> const& db_to_clone,
                    QString const& id);
     void         _update_objects_from_db();
     void         _process_service_status_event(
@@ -95,9 +95,9 @@ namespace        notification {
     void         _process_downtime(
                    neb::downtime const& event);
 
-    std::auto_ptr<QSqlDatabase>
+    std::unique_ptr<QSqlDatabase>
                  _centreon_db;
-    std::auto_ptr<notification_scheduler>
+    std::unique_ptr<notification_scheduler>
                  _notif_scheduler;
 
     state        _state;

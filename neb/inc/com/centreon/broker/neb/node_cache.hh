@@ -19,6 +19,7 @@
 #ifndef CCB_NEB_NODE_CACHE_HH
 #  define CCB_NEB_NODE_CACHE_HH
 
+#  include <memory>
 #  include <QHash>
 #  include <QString>
 #  include "com/centreon/broker/io/endpoint.hh"
@@ -29,7 +30,6 @@
 #  include "com/centreon/broker/neb/service_status.hh"
 #  include "com/centreon/broker/neb/node_id.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 
 CCB_BEGIN()
 
@@ -45,9 +45,9 @@ namespace                        neb {
                                  ~node_cache();
     node_cache&                  operator=(node_cache const& other);
 
-    void                         write(misc::shared_ptr<io::data> const& d);
+    void                         write(std::shared_ptr<io::data> const& d);
     void                         serialize(
-                                   misc::shared_ptr<persistent_cache> cache);
+                                   std::shared_ptr<persistent_cache> cache);
     node_id                      get_node_by_names(
                                   std::string const& host_name,
                                   std::string const& service_description);

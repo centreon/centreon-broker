@@ -40,7 +40,7 @@ namespace                        generator {
 
                                  endpoint(endpoint_type type);
                                  ~endpoint();
-    misc::shared_ptr<io::stream> open();
+    std::shared_ptr<io::stream> open();
 
    private:
                                  endpoint(endpoint const& other);

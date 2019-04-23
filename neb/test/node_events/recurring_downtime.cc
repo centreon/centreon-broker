@@ -65,7 +65,7 @@ int main() {
     // Create node event stream.
     node_events_stream test(
       "1",
-      misc::shared_ptr<persistent_cache>(NULL),
+      std::shared_ptr<persistent_cache>(NULL),
       PROJECT_SOURCE_DIR "/neb/test/node_events/cfg/downtime.cfg");
 
     time::timeperiod::ptr tp(new time::timeperiod(
@@ -85,7 +85,7 @@ int main() {
 
     // Send initial service status.
     {
-      misc::shared_ptr<neb::service> sst(new neb::service);
+      std::shared_ptr<neb::service> sst(new neb::service);
       sst->host_id = 42;
       sst->service_id = 24;
       sst->last_hard_state = 1;
@@ -95,7 +95,7 @@ int main() {
       test.write(sst);
     }
     {
-      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
       ss->last_hard_state = 1;
@@ -105,7 +105,7 @@ int main() {
 
     // Send external command.
     {
-      misc::shared_ptr<extcmd::command_request>
+      std::shared_ptr<extcmd::command_request>
         cmd(new extcmd::command_request);
       cmd->cmd = format_command(
         "SCHEDULE_SVC_DOWNTIME;42;24;$TIMESTAMP$;$TIMESTAMP2$;1;0;3;TEST;A test for you;24x7",
@@ -117,7 +117,7 @@ int main() {
     // Fake event loop.
     for (unsigned int i = 0; i < 10; ++i) {
       ::sleep(1);
-      misc::shared_ptr<io::data> d;
+      std::shared_ptr<io::data> d;
       sbc.get_muxer().read(d, ::time(NULL) + 1);
       test.write(d);
     }
@@ -126,7 +126,7 @@ int main() {
     multiplexing::engine::instance().stop();
     t.finalize();
 
-    QList<misc::shared_ptr<io::data> > content;
+    QList<std::shared_ptr<io::data> > content;
     add_downtime(content, now, now + 3, 3, true, 42, 24, 1, 1, -1, -1);
     add_downtime(content, now, now + 3, 3, true, 42, 24, 2, 1, -1, -1);
     add_downtime(content, now, now + 3, 3, true, 42, 24, 2, 1, now, -1);

@@ -78,7 +78,7 @@ temporary_stream& temporary_stream::operator=(temporary_stream const& ss) {
  *  @return Always return true.
  */
 bool temporary_stream::read(
-                         misc::shared_ptr<io::data>& data,
+                         std::shared_ptr<io::data>& data,
                          time_t deadline) {
   (void)deadline;
   QMutexLocker lock(&_eventsm);
@@ -97,7 +97,7 @@ bool temporary_stream::read(
  *
  *  @return Number of elements acknowledged (1).
  */
-int temporary_stream::write(misc::shared_ptr<io::data> const& d) {
+int temporary_stream::write(std::shared_ptr<io::data> const& d) {
   QMutexLocker lock(&_eventsm);
   _events.enqueue(d);
   return (1);

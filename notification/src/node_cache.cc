@@ -38,7 +38,7 @@ using namespace com::centreon::broker::notification;
  *
  *  @param[in] cache  The persistent cache used by the node cache.
  */
-node_cache::node_cache(misc::shared_ptr<persistent_cache> cache)
+node_cache::node_cache(std::shared_ptr<persistent_cache> cache)
   : _mutex(QMutex::NonRecursive),
     _cache(cache) {
   multiplexing::engine::instance().hook(*this);
@@ -82,17 +82,17 @@ node_cache& node_cache::operator=(node_cache const& obj) {
  */
 void node_cache::starting() {
   // No cache, nothing to do.
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   logging::debug(logging::low)
     << "notification: loading the node cache " << _cache->get_cache_file();
 
-  misc::shared_ptr<io::data> data;
+  std::shared_ptr<io::data> data;
   try {
     while (true) {
       _cache->get(data);
-      if (data.isNull())
+      if (!data)
         break ;
       write(data);
     }
@@ -115,7 +115,7 @@ void node_cache::starting() {
  */
 void node_cache::stopping() {
   // No cache, nothing to do.
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   logging::debug(logging::low)
@@ -166,10 +166,10 @@ void node_cache::stopping() {
  *
  *  @return Always return true.
  */
-bool node_cache::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool node_cache::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
-  d.clear();
-  return (true);
+  d.reset();
+  return true;
 }
 
 /**
@@ -179,29 +179,29 @@ bool node_cache::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @return          Number of event acknowledged.
  */
-int node_cache::write(misc::shared_ptr<io::data> const& data) {
+int node_cache::write(std::shared_ptr<io::data> const& data) {
   // Check that data exists.
   if (!validate(data, "node_cache"))
     return (1);
 
   unsigned int type = data->type();
   if (type == neb::host::static_type())
-    update(*data.staticCast<neb::host>());
+    update(*std::static_pointer_cast<neb::host>(data));
   else if (type == neb::host_status::static_type())
-    update(*data.staticCast<neb::host_status>());
+    update(*std::static_pointer_cast<neb::host_status>(data));
   else if (type == neb::service::static_type())
-    update(*data.staticCast<neb::service>());
+    update(*std::static_pointer_cast<neb::service>(data));
   else if (type == neb::service_status::static_type())
-    update(*data.staticCast<neb::service_status>());
+    update(*std::static_pointer_cast<neb::service_status>(data));
   else if (type == neb::custom_variable::static_type()
            || type == neb::custom_variable_status::static_type())
-    update(*data.staticCast<neb::custom_variable_status>());
+    update(*std::static_pointer_cast<neb::custom_variable_status>(data));
   else if (type == neb::acknowledgement::static_type())
-    update(data.ref_as<neb::acknowledgement const>());
+    update(*std::static_pointer_cast<neb::acknowledgement const>(data));
   else if (type == neb::downtime::static_type())
-    update(data.ref_as<neb::downtime const>());
+    update(*std::static_pointer_cast<neb::downtime const>(data));
 
-  return (1);
+  return 1;
 }
 
 /**
@@ -372,7 +372,7 @@ bool node_cache::node_acknowledged(objects::node_id node) const {
  *  Prepare the serialization of all the data.
  */
 void node_cache::_save_cache() {
-  std::deque<misc::shared_ptr<io::data> > serialized_data;
+  std::deque<std::shared_ptr<io::data> > serialized_data;
 
   for (QHash<objects::node_id, host_node_state>::const_iterator
          it = _host_node_states.begin(),
@@ -392,15 +392,15 @@ void node_cache::_save_cache() {
        it != end;
        ++it)
     serialized_data.push_back(
-      misc::make_shared(new neb::acknowledgement(*it)));
+      std::make_shared<neb::acknowledgement>(*it));
   for (QHash<unsigned int, neb::downtime>::const_iterator
          it = _downtimes.begin(),
          end = _downtimes.end();
        it != end;
        ++it)
-    serialized_data.push_back(misc::make_shared(new neb::downtime(*it)));
+    serialized_data.push_back(std::make_shared<neb::downtime>(*it));
 
-  for (std::deque<misc::shared_ptr<io::data> >::const_iterator
+  for (std::deque<std::shared_ptr<io::data> >::const_iterator
          it = serialized_data.begin(),
          end = serialized_data.end();
        it != end;

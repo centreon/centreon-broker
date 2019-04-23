@@ -19,10 +19,10 @@
 #ifndef CCB_BAM_BOOL_CALL_HH
 #  define CCB_BAM_BOOL_CALL_HH
 
+#  include <memory>
 #  include <string>
 #  include "com/centreon/broker/bam/bool_value.hh"
 #  include "com/centreon/broker/bam/bool_expression.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -37,7 +37,7 @@ namespace     bam {
    */
   class       bool_call : public bool_value {
   public:
-    typedef misc::shared_ptr<bool_call>
+    typedef std::shared_ptr<bool_call>
               ptr;
 
               bool_call(std::string const& name);
@@ -50,7 +50,7 @@ namespace     bam {
     bool      state_known() const;
     std::string const&
               get_name() const;
-    void      set_expression(misc::shared_ptr<bool_value> expression);
+    void      set_expression(std::shared_ptr<bool_value> expression);
     bool      child_has_update(
                 computable* child,
                 io::stream* visitor = NULL);
@@ -58,7 +58,7 @@ namespace     bam {
   private:
     std::string
               _name;
-    misc::shared_ptr<bool_value>
+    std::shared_ptr<bool_value>
               _expression;
 
   };

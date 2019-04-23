@@ -55,7 +55,7 @@ int main() {
     // Send events through engine.
     char const* messages[] = { MSG1, MSG2, NULL };
     for (unsigned int i = 0; messages[i]; ++i) {
-      misc::shared_ptr<io::raw> data(new io::raw);
+      std::shared_ptr<io::raw> data(new io::raw);
       data->append(messages[i]);
       multiplexing::engine::instance().publish(
       data.staticCast<io::data>());
@@ -63,7 +63,7 @@ int main() {
 
     // Should read no events from subscriber.
     {
-      misc::shared_ptr<io::data> data;
+      std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
       if (!data.isNull())
         throw (exceptions::msg() << "error at step #1");
@@ -74,13 +74,13 @@ int main() {
 
     // Read retained events.
     for (unsigned int i(0); messages[i]; ++i) {
-      misc::shared_ptr<io::data> data;
+      std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
       if (data.isNull()
           || (data->type() != io::raw::static_type()))
         throw (exceptions::msg() << "error at step #2");
       else {
-        misc::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
+        std::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
         if (strncmp(
               raw->QByteArray::data(),
               messages[i],
@@ -91,7 +91,7 @@ int main() {
 
     // Publish a new event.
     {
-      misc::shared_ptr<io::raw> data(new io::raw);
+      std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG3);
       multiplexing::engine::instance().publish(
         data.staticCast<io::data>());
@@ -99,13 +99,13 @@ int main() {
 
     // Read event.
     {
-      misc::shared_ptr<io::data> data;
+      std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
       if (data.isNull()
           || (data->type() != io::raw::static_type()))
         throw (exceptions::msg() << "error at step #4");
       else {
-        misc::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
+        std::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
         if (strncmp(
               raw->QByteArray::data(),
               MSG3,
@@ -119,7 +119,7 @@ int main() {
 
     // Publish a new event.
     {
-      misc::shared_ptr<io::raw> data(new io::raw);
+      std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG4);
       multiplexing::engine::instance().publish(
         data.staticCast<io::data>());
@@ -127,7 +127,7 @@ int main() {
 
     // Read no event.
     {
-      misc::shared_ptr<io::data> data;
+      std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
       if (!data.isNull())
         throw (exceptions::msg() << "error at step #6");

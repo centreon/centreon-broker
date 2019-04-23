@@ -20,6 +20,7 @@
 #  define CCB_INFLUXDB_CONNECTOR_HH
 
 #  include <ctime>
+#  include <memory>
 #  include <QString>
 #  include <vector>
 #  include "com/centreon/broker/database_config.hh"
@@ -50,8 +51,8 @@ namespace           influxdb {
                       std::vector<column> const& status_cols,
                       std::string const& metric_ts,
                       std::vector<column> const& metric_cols,
-                      misc::shared_ptr<persistent_cache> const& cache);
-    misc::shared_ptr<io::stream>
+                      std::shared_ptr<persistent_cache> const& cache);
+    std::shared_ptr<io::stream>
                     open();
 
    private:
@@ -67,7 +68,7 @@ namespace           influxdb {
     std::string     _metric_ts;
     std::vector<column>
                     _metric_cols;
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                     _cache;
 
     void            _internal_copy(connector const& other);

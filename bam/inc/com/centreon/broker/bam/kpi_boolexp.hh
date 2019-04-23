@@ -19,9 +19,9 @@
 #ifndef CCB_BAM_KPI_BOOLEXP_HH
 #  define CCB_BAM_KPI_BOOLEXP_HH
 
+#  include <memory>
 #  include "com/centreon/broker/bam/kpi.hh"
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -52,7 +52,7 @@ namespace        bam {
     void         impact_hard(impact_values& hard_impact);
     void         impact_soft(impact_values& soft_impact);
     void         link_boolexp(
-                   misc::shared_ptr<bool_expression>& my_boolexp);
+                   std::shared_ptr<bool_expression>& my_boolexp);
     void         set_impact(double impact);
     void         unlink_boolexp();
     void         visit(io::stream* visitor);
@@ -67,7 +67,7 @@ namespace        bam {
                    short state);
     short        _get_state() const;
 
-    misc::shared_ptr<bool_expression>
+    std::shared_ptr<bool_expression>
                  _boolexp;
     double       _impact;
   };

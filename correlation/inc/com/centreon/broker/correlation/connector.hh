@@ -19,6 +19,7 @@
 #ifndef CCB_CORRELATION_CONNECTOR_HH
 #  define CCB_CORRELATION_CONNECTOR_HH
 
+#  include <memory>
 #  include <QString>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -38,15 +39,15 @@ namespace                        correlation {
                                  connector(
                                    QString const& correlation_file,
                                    bool passive = false,
-                                   misc::shared_ptr<persistent_cache> cache
-                                   = misc::shared_ptr<persistent_cache>());
+                                   std::shared_ptr<persistent_cache> cache
+                                   = std::shared_ptr<persistent_cache>());
                                  connector(connector const& other);
                                  ~connector();
     connector&                   operator=(connector const& other);
-    misc::shared_ptr<io::stream> open();
+    std::shared_ptr<io::stream> open();
 
   private:
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                                  _cache;
     QString                      _correlation_file;
     bool                         _passive;

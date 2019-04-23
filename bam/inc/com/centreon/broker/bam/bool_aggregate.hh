@@ -19,12 +19,12 @@
 #ifndef CCB_BAM_BOOL_AGGREGATE_HH
 #  define CCB_BAM_BOOL_AGGREGATE_HH
 
-#  include <vector>
+#  include <memory>
 #  include <string>
+#  include <vector>
 #  include "com/centreon/broker/bam/bool_value.hh"
 #  include "com/centreon/broker/bam/metric_listener.hh"
 #  include "com/centreon/broker/bam/bool_metric.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -37,7 +37,7 @@ namespace         bam {
    */
   class           bool_aggregate : public bool_value {
   public:
-    typedef misc::shared_ptr<bool_aggregate> ptr;
+    typedef std::shared_ptr<bool_aggregate> ptr;
 
     static double min(std::vector<bool_metric::ptr> const& metrics);
     static double max(std::vector<bool_metric::ptr> const& metrics);

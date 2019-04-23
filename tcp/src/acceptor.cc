@@ -72,7 +72,7 @@ void acceptor::listen_on(unsigned short port) {
  *  Start connection acception.
  *
  */
-misc::shared_ptr<io::stream> acceptor::open() {
+std::shared_ptr<io::stream> acceptor::open() {
   // Listen on port.
   QMutexLocker lock(&_mutex);
   if (!_socket.get())
@@ -84,7 +84,7 @@ misc::shared_ptr<io::stream> acceptor::open() {
     _socket->wait_for_new_connection(1000, &timedout);
     if (!_socket->has_pending_connections()) {
       if (timedout)
-        return (misc::shared_ptr<io::stream>());
+        return (std::shared_ptr<io::stream>());
       else
         throw (exceptions::msg()
                << "TCP: error while waiting client on port: " << _port
@@ -93,9 +93,9 @@ misc::shared_ptr<io::stream> acceptor::open() {
   }
 
   // Accept client.
-  misc::shared_ptr<stream>
+  std::shared_ptr<stream>
     incoming(_socket->next_pending_connection());
-  if (incoming.isNull())
+  if (!incoming)
     throw (exceptions::msg() << "TCP: could not accept client: "
            << _socket->error_string());
   logging::info(logging::medium) << "TCP: new client connected";

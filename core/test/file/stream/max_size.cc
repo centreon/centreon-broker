@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     ::remove(qPrintable(filename[i]));
 
   // Generate data packet.
-  misc::shared_ptr<io::raw> data(new io::raw);
+  std::shared_ptr<io::raw> data(new io::raw);
   data->append("0123456789abcdefghijklmnopqrstuvwxyz");
 
   {

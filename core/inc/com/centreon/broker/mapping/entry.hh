@@ -19,9 +19,9 @@
 #ifndef CCB_MAPPING_ENTRY_HH
 #  define CCB_MAPPING_ENTRY_HH
 
+#  include <memory>
 #  include "com/centreon/broker/mapping/property.hh"
 #  include "com/centreon/broker/mapping/source.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
 
@@ -63,8 +63,8 @@ namespace                    mapping {
       _name_v2 = name_v2;
       if (!_name_v2 && !(attr & invalid_on_v2))
         _name_v2 = _name;
-      _source = misc::shared_ptr<source>(new property<T>(prop, &_type));
-      _ptr = _source.data();
+      _source.reset(new property<T>(prop, &_type));
+      _ptr = _source.get();
       _serialize = serialize;
       _attribute = attr;
     }
@@ -112,7 +112,7 @@ namespace                    mapping {
     char const*              _name_v2;
     source*                  _ptr;
     bool                     _serialize;
-    misc::shared_ptr<source> _source;
+    std::shared_ptr<source>  _source;
     source::source_type      _type;
   };
 }

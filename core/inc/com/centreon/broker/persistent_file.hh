@@ -37,17 +37,17 @@ class              persistent_file : public io::stream {
                    persistent_file(std::string const& path);
                    ~persistent_file();
   bool             read(
-                     misc::shared_ptr<io::data>& d,
+                     std::shared_ptr<io::data>& d,
                      time_t deadline = (time_t)-1);
   void             remove_all_files();
   void             statistics(io::properties& tree) const;
-  int              write(misc::shared_ptr<io::data> const& d);
+  int              write(std::shared_ptr<io::data> const& d);
 
  private:
                    persistent_file(persistent_file const& other);
   persistent_file& operator=(persistent_file const& other);
 
-  misc::shared_ptr<file::stream>
+  std::shared_ptr<file::stream>
                    _splitter;
 };
 

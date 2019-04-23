@@ -130,10 +130,10 @@ void loader::load_dir(std::string const& dirname, void const* arg) {
  *  @param[in] arg      Module argument.
  */
 void loader::load_file(std::string const& filename, void const* arg) {
-  umap<std::string, misc::shared_ptr<handle> >::iterator
+  umap<std::string, std::shared_ptr<handle> >::iterator
     it(_handles.find(filename));
   if (it == _handles.end()) {
-    misc::shared_ptr<handle> handl(new handle);
+    std::shared_ptr<handle> handl(new handle);
     handl->open(filename, arg);
     _handles[filename] = handl;
   }
@@ -151,10 +151,10 @@ void loader::load_file(std::string const& filename, void const* arg) {
 void loader::unload() {
   std::string key;
   while (!_handles.empty()) {
-    umap<std::string, misc::shared_ptr<handle> >::iterator
+    umap<std::string, std::shared_ptr<handle> >::iterator
       it(_handles.begin());
     key = it->first;
-    umap<std::string, misc::shared_ptr<handle> >::iterator
+    umap<std::string, std::shared_ptr<handle> >::iterator
       end(_handles.end());
     while (++it != end)
       if (it->first > key)

@@ -40,17 +40,17 @@ namespace              file {
                        ~stream();
     std::string        peer() const;
     bool               read(
-                         misc::shared_ptr<io::data>& d,
+                         std::shared_ptr<io::data>& d,
                          time_t deadline);
     void               remove_all_files();
     void               statistics(io::properties& tree) const;
-    int                write(misc::shared_ptr<io::data> const& d);
+    int                write(std::shared_ptr<io::data> const& d);
 
    private:
                        stream(stream const& other);
     stream&            operator=(stream const& other);
 
-    std::auto_ptr<splitter>
+    std::unique_ptr<splitter>
                        _file;
     QMutex             _mutex;
     mutable long long  _last_read_offset;

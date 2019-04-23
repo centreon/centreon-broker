@@ -24,7 +24,6 @@
 #  include "com/centreon/broker/ceof/ceof_iterator.hh"
 #  include "com/centreon/broker/ceof/ceof_writer.hh"
 #  include "com/centreon/broker/ceof/ceof_visitor.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()

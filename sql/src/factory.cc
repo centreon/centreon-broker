@@ -97,7 +97,7 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
-                         misc::shared_ptr<persistent_cache> cache) const {
+                         std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
   // Database configuration.
@@ -132,7 +132,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Connector.
-  std::auto_ptr<sql::connector> c(new sql::connector);
+  std::unique_ptr<sql::connector> c(new sql::connector);
   c->connect_to(
        dbcfg,
        cleanup_check_interval,

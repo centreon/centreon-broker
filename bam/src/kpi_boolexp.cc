@@ -72,7 +72,7 @@ bool kpi_boolexp::child_has_update(
                     io::stream* visitor) {
   // It is useless to maintain a cache of boolean expression values in
   // this class, as the bool_expression class already cache most of them.
-  if (child == _boolexp.data()) {
+  if (child == _boolexp.get()) {
     // Logging.
     logging::debug(logging::low) << "BAM: boolean expression KPI "
       << _id << " is getting notified of child update";
@@ -89,7 +89,7 @@ bool kpi_boolexp::child_has_update(
  *  @return  True or false.
  */
 bool kpi_boolexp::in_downtime() const {
-  if (!_boolexp.isNull())
+  if (_boolexp)
     return (_boolexp->in_downtime());
   return (false);
 }
@@ -130,7 +130,7 @@ void kpi_boolexp::impact_soft(impact_values& soft_impact) {
  *  @param[in] my_boolexp  Linked boolean expression.
  */
 void kpi_boolexp::link_boolexp(
-                    misc::shared_ptr<bool_expression>& my_boolexp) {
+                    std::shared_ptr<bool_expression>& my_boolexp) {
   _boolexp = my_boolexp;
   return ;
 }
@@ -149,8 +149,7 @@ void kpi_boolexp::set_impact(double impact) {
  *  Unlink from boolean expression.
  */
 void kpi_boolexp::unlink_boolexp() {
-  _boolexp.clear();
-  return ;
+  _boolexp.reset();
 }
 
 /**
@@ -171,20 +170,20 @@ void kpi_boolexp::visit(io::stream* visitor) {
     // Generate BI events.
     {
       // If no event was cached, create one.
-      if (_event.isNull())
+      if (!_event)
         _open_new_event(visitor, values.get_nominal(), state);
       // If state changed, close event and open a new one.
       else if (state != _event->status) {
         _event->end_time = ::time(NULL);
-        visitor->write(_event.staticCast<io::data>());
-        _event.clear();
+        visitor->write(std::static_pointer_cast<io::data>(_event));
+        _event.reset();
         _open_new_event(visitor, values.get_nominal(), state);
       }
     }
 
     // Generate status event.
     {
-      misc::shared_ptr<kpi_status> status(new kpi_status);
+      std::shared_ptr<kpi_status> status(new kpi_status);
       status->kpi_id = _id;
       status->in_downtime = in_downtime();
       status->level_acknowledgement_hard = values.get_acknowledgement();
@@ -197,10 +196,9 @@ void kpi_boolexp::visit(io::stream* visitor) {
       status->state_soft = state;
       status->last_state_change = get_last_state_change();
       status->last_impact = values.get_nominal();
-      visitor->write(status.staticCast<io::data>());
+      visitor->write(std::static_pointer_cast<io::data>(status));
     }
   }
-  return ;
 }
 
 /**
@@ -245,7 +243,7 @@ void kpi_boolexp::_open_new_event(
                     io::stream* visitor,
                     int impact,
                     short state) {
-  _event = new kpi_event;
+  _event.reset(new kpi_event);
   _event->kpi_id = _id;
   _event->impact_level = impact;
   _event->in_downtime = false;
@@ -254,7 +252,7 @@ void kpi_boolexp::_open_new_event(
   _event->start_time = time(NULL);
   _event->status = state;
   if (visitor) {
-    misc::shared_ptr<io::data> ke(new kpi_event(*_event));
+    std::shared_ptr<io::data> ke(new kpi_event(*_event));
     visitor->write(ke);
   }
   return ;
@@ -273,7 +271,7 @@ short kpi_boolexp::_get_state() const {
   if (_boolexp->state_known())
     return (_boolexp->get_state());
   else {
-    if (!_event.isNull())
+    if (_event)
       return (_event->status);
     else
       return (_boolexp->get_state());

@@ -20,10 +20,10 @@
 #  define CCB_DUMPER_DIRECTORY_DUMPER_HH
 
 #  include <map>
+#  include <memory>
 #  include <QMutex>
 #  include <QString>
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
 #  include "com/centreon/broker/dumper/dump.hh"
@@ -45,12 +45,12 @@ namespace              dumper {
                          std::string const& name,
                          std::string const& path,
                          std::string const& tagname,
-                         misc::shared_ptr<persistent_cache> cache);
+                         std::shared_ptr<persistent_cache> cache);
                        ~directory_dumper();
     bool               read(
-                         misc::shared_ptr<io::data>& d,
+                         std::shared_ptr<io::data>& d,
                          time_t deadline);
-    int                write(misc::shared_ptr<io::data> const& d);
+    int                write(std::shared_ptr<io::data> const& d);
 
   private:
                        directory_dumper(directory_dumper const& s);
@@ -60,7 +60,7 @@ namespace              dumper {
     QString            _name;
     std::string        _path;
     std::string        _tagname;
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                        _cache;
 
     std::map<std::string, timestamp_cache>

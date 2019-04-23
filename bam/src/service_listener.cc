@@ -59,7 +59,7 @@ service_listener& service_listener::operator=(
  *  @param[out] visitor  Visitor.
  */
 void service_listener::service_update(
-                         misc::shared_ptr<neb::service_status> const& status,
+                         std::shared_ptr<neb::service_status> const& status,
                          io::stream* visitor) {
   (void)status;
   (void)visitor;
@@ -73,7 +73,7 @@ void service_listener::service_update(
  *  @param[out] visitor  Visitor.
  */
 void service_listener::service_update(
-                         misc::shared_ptr<neb::acknowledgement> const& ack,
+                         std::shared_ptr<neb::acknowledgement> const& ack,
                          io::stream* visitor) {
   (void)ack;
   (void)visitor;
@@ -87,7 +87,7 @@ void service_listener::service_update(
  *  @param[out] visitor  Visitor.
  */
 void service_listener::service_update(
-                         misc::shared_ptr<neb::downtime> const& dt,
+                         std::shared_ptr<neb::downtime> const& dt,
                          io::stream* visitor) {
   (void)dt;
   (void)visitor;

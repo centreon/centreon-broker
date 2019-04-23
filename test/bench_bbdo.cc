@@ -45,7 +45,7 @@ static void send_events(io::stream* s) {
   // Loop.
   do {
     // Send event.
-    misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+    std::shared_ptr<neb::service_status> ss(new neb::service_status);
     s->write(ss);
 
     // Compute current time.
@@ -55,7 +55,7 @@ static void send_events(io::stream* s) {
                && (ts.tv_nsec < limit.tv_nsec)));
 
   // Forced commit (might be needed by the compression).
-  s->write(misc::shared_ptr<io::data>());
+  s->write(std::shared_ptr<io::data>());
 
   return ;
 }
@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
   std::cout << "Bench #1 (default streams)\n";
   {
     bbdo::stream bbdos;
-    misc::shared_ptr<bench_stream> bbdob(new bench_stream);
+    std::shared_ptr<bench_stream> bbdob(new bench_stream);
     bbdos.set_substream(bbdob);
     benchmark_stream(bbdos, *bbdob);
   }
@@ -103,8 +103,8 @@ int main(int argc, char* argv[]) {
   std::cout << "\nBench #2 (default compression)\n";
   {
     bbdo::stream bbdos;
-    misc::shared_ptr<compression::stream> bbdoc(new compression::stream);
-    misc::shared_ptr<bench_stream> bbdob(new bench_stream);
+    std::shared_ptr<compression::stream> bbdoc(new compression::stream);
+    std::shared_ptr<bench_stream> bbdob(new bench_stream);
     bbdos.set_substream(bbdoc);
     bbdoc->set_substream(bbdob);
     benchmark_stream(bbdos, *bbdob);
@@ -114,9 +114,9 @@ int main(int argc, char* argv[]) {
   std::cout << "\nBench #3 (optimized compression)\n";
   {
     bbdo::stream bbdos;
-    misc::shared_ptr<compression::stream>
+    std::shared_ptr<compression::stream>
       bbdoc(new compression::stream(9, 1000000));
-    misc::shared_ptr<bench_stream> bbdob(new bench_stream);
+    std::shared_ptr<bench_stream> bbdob(new bench_stream);
     bbdos.set_substream(bbdoc);
     bbdoc->set_substream(bbdob);
     benchmark_stream(bbdos, *bbdob);

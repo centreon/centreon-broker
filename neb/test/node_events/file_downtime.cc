@@ -95,7 +95,7 @@ int main() {
   multiplexing::engine::instance().start();
 
   try {
-    misc::shared_ptr<persistent_cache> cache(
+    std::shared_ptr<persistent_cache> cache(
       new persistent_cache(persistent_cache_file));
 
     {
@@ -107,7 +107,7 @@ int main() {
 
       // Send initial service status.
       {
-        misc::shared_ptr<neb::service> sst(new neb::service);
+        std::shared_ptr<neb::service> sst(new neb::service);
         sst->host_id = 42;
         sst->service_id = 24;
         sst->last_hard_state = 0;
@@ -117,7 +117,7 @@ int main() {
         test.write(sst);
       }
       {
-        misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+        std::shared_ptr<neb::service_status> ss(new neb::service_status);
         ss->host_id = 42;
         ss->service_id = 24;
         ss->last_hard_state = 0;
@@ -147,7 +147,7 @@ int main() {
     multiplexing::engine::instance().stop();
     t.finalize();
 
-    QList<misc::shared_ptr<io::data> > content;
+    QList<std::shared_ptr<io::data> > content;
     add_downtime(content, now, now + 3, 3, true, 42, 24, 1, 1, -1, -1);
     add_downtime(content, now, now + 3, 3, true, 42, 24, 1, 1, now, -1);
     add_downtime(content, now, now + 3, 3, true, 42, 24, 1, 1, now, now + 3);

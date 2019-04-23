@@ -58,7 +58,7 @@ QString format_command(
  *  Add a downtime.
  */
 void add_downtime(
-       QList<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> >& content,
+       QList<com::centreon::broker::std::shared_ptr<com::centreon::broker::io::data> >& content,
        time_t start_time,
        time_t end_time,
        time_t duration,
@@ -69,7 +69,7 @@ void add_downtime(
        short downtime_type,
        time_t real_start_time,
        time_t real_end_time) {
-  misc::shared_ptr<neb::downtime> dwn(new neb::downtime);
+  std::shared_ptr<neb::downtime> dwn(new neb::downtime);
   dwn->start_time = start_time;
   dwn->end_time = end_time;
   dwn->duration = duration;
@@ -87,14 +87,14 @@ void add_downtime(
  *  Add an acknowledgement.
  */
 void add_acknowledgement(
-       QList<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> >& content,
+       QList<com::centreon::broker::std::shared_ptr<com::centreon::broker::io::data> >& content,
        time_t entry_time,
        time_t deletion_time,
        unsigned int host_id,
        unsigned int service_id,
        bool is_sticky,
        short state) {
-  misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement);
+  std::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement);
   ack->entry_time = entry_time;
   ack->deletion_time = deletion_time;
   ack->host_id = host_id;
@@ -114,13 +114,13 @@ void add_acknowledgement(
  */
 void check_content(
        io::stream& s,
-       QList<misc::shared_ptr<io::data> > const& content) {
+       QList<std::shared_ptr<io::data> > const& content) {
   unsigned int i(0);
-  for (QList<misc::shared_ptr<io::data> >::const_iterator
+  for (QList<std::shared_ptr<io::data> >::const_iterator
          it(content.begin()),
          end(content.end());
        it != end;) {
-    misc::shared_ptr<io::data> d;
+    std::shared_ptr<io::data> d;
     s.read(d);
     if (d.isNull())
       throw (exceptions::msg() << "entry #" << i << " is null");
@@ -186,9 +186,9 @@ void check_content(
                  << ")");
       }
       /*if (d->type() == 0) {
-        misc::shared_ptr<correlation::engine_state>
+        std::shared_ptr<correlation::engine_state>
           es1(d.staticCast<correlation::engine_state>());
-        misc::shared_ptr<correlation::engine_state>
+        std::shared_ptr<correlation::engine_state>
           es2(it->staticCast<correlation::engine_state>());
         if (es1->started != es2->started)
           throw (exceptions::msg() << "entry #" << i
@@ -212,7 +212,7 @@ void check_content(
  *  @return True.
  */
 bool test_stream::read(
-       com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d,
+       com::centreon::broker::std::shared_ptr<com::centreon::broker::io::data>& d,
        time_t deadline){
   (void)deadline;
   d.clear();
@@ -231,7 +231,7 @@ bool test_stream::read(
  *  @return       1.
  */
 int test_stream::write(
-      com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d) {
+      com::centreon::broker::std::shared_ptr<com::centreon::broker::io::data> const& d) {
   if (!d.isNull())
     _events.push_back(d);
 
@@ -243,7 +243,7 @@ int test_stream::write(
  *
  *  @return  The written events.
  */
-std::vector<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> > const&
+std::vector<com::centreon::broker::std::shared_ptr<com::centreon::broker::io::data> > const&
   test_stream::get_events() const {
   return (_events);
 }

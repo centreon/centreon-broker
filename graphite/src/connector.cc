@@ -77,7 +77,7 @@ void connector::connect_to(
                   std::string const& db_addr,
                   unsigned short db_port,
                   unsigned int queries_per_transaction,
-                  misc::shared_ptr<persistent_cache> const& cache) {
+                  std::shared_ptr<persistent_cache> const& cache) {
   _escape_string = escape_string;
   _metric_naming = metric_naming;
   _status_naming = status_naming;
@@ -95,8 +95,8 @@ void connector::connect_to(
  *
  *  @return Graphite connection object.
  */
-misc::shared_ptr<io::stream> connector::open() {
-  return (misc::shared_ptr<io::stream>(
+std::shared_ptr<io::stream> connector::open() {
+  return (std::shared_ptr<io::stream>(
             new stream(
                   _metric_naming,
                   _status_naming,

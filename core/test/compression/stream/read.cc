@@ -28,23 +28,23 @@ using namespace com::centreon::broker;
 class  CompressionStreamRead : public ::testing::Test {
  public:
   void SetUp() {
-    _stream = new compression::stream(-1, 20000);
-    _substream = new CompressionStreamMemoryStream();
+    _stream.reset(new compression::stream(-1, 20000));
+    _substream.reset(new CompressionStreamMemoryStream());
     _stream->set_substream(_substream);
     return ;
   }
 
-  misc::shared_ptr<io::raw> predefined_data() {
-    misc::shared_ptr<io::raw> r(new io::raw);
+  std::shared_ptr<io::raw> predefined_data() {
+    std::shared_ptr<io::raw> r(new io::raw);
     for (int i(0); i < 1000; ++i)
       r->append(static_cast<char*>(static_cast<void*>(&i)), sizeof(i));
     return (r);
   }
 
  protected:
-  misc::shared_ptr<compression::stream>
+  std::shared_ptr<compression::stream>
        _stream;
-  misc::shared_ptr<CompressionStreamMemoryStream>
+  std::shared_ptr<CompressionStreamMemoryStream>
        _substream;
 };
 
@@ -58,12 +58,12 @@ TEST_F(CompressionStreamRead, NoData) {
   _substream->timeout(true);
 
   // When
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   bool retval(_stream->read(d, 0));
 
   // Then
   ASSERT_FALSE(retval);
-  ASSERT_TRUE(d.isNull());
+  ASSERT_TRUE(!d);
 }
 
 // Given a compression stream
@@ -78,14 +78,14 @@ TEST_F(CompressionStreamRead, NormalRead) {
   _stream->flush();
 
   // When
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   bool retval(_stream->read(d));
 
   // Then
   ASSERT_TRUE(retval);
-  ASSERT_TRUE(!d.isNull());
+  ASSERT_TRUE(d);
   ASSERT_EQ(d->type(), io::raw::static_type());
-  ASSERT_EQ(d.ref_as<io::raw>(), *predefined_data());
+  ASSERT_EQ(*std::static_pointer_cast<io::raw>(d), *predefined_data());
 }
 
 // Given a compression stream
@@ -100,12 +100,12 @@ TEST_F(CompressionStreamRead, BufferIsReadBack) {
   _substream->shutdown(true);
 
   // When
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   bool retval(_stream->read(d));
 
   // Then
   ASSERT_TRUE(retval);
-  ASSERT_EQ(d.ref_as<io::raw>(), *predefined_data());
+  ASSERT_EQ(*std::static_pointer_cast<io::raw>(d), *predefined_data());
 }
 
 // Given a compression stream
@@ -117,7 +117,7 @@ TEST_F(CompressionStreamRead, Shutdown) {
   // Given
   _stream->write(predefined_data());
   _substream->shutdown(true);
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   _stream->read(d);
 
   // When, Then
@@ -134,19 +134,19 @@ TEST_F(CompressionStreamRead, CorruptedData) {
   _stream->flush();
   _stream->write(predefined_data());
   _stream->flush();
-  misc::shared_ptr<io::raw>& buffer(_substream->get_buffer());
+  std::shared_ptr<io::raw>& buffer(_substream->get_buffer());
   (*buffer)[4] = 42;
   (*buffer)[5] = 42;
 
   // When
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   bool retval(_stream->read(d));
 
   // Then
   ASSERT_TRUE(retval);
-  ASSERT_FALSE(d.isNull());
+  ASSERT_FALSE(!d);
   ASSERT_EQ(d->type(), io::raw::static_type());
-  ASSERT_EQ(d.ref_as<io::raw>(), *predefined_data());
+  ASSERT_EQ(*std::static_pointer_cast<io::raw>(d), *predefined_data());
 }
 
 // Given a compression stream
@@ -159,19 +159,19 @@ TEST_F(CompressionStreamRead, CorruptedDataZippedPart) {
   _stream->flush();
   _stream->write(predefined_data());
   _stream->flush();
-  misc::shared_ptr<io::raw>& buffer(_substream->get_buffer());
+  std::shared_ptr<io::raw>& buffer(_substream->get_buffer());
   (*buffer)[8] = 42;
   (*buffer)[9] = 42;
 
   // When
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   bool retval(_stream->read(d));
 
   // Then
   ASSERT_TRUE(retval);
-  ASSERT_FALSE(d.isNull());
+  ASSERT_FALSE(!d);
   ASSERT_EQ(d->type(), io::raw::static_type());
-  ASSERT_EQ(d.ref_as<io::raw>(), *predefined_data());
+  ASSERT_EQ(*std::static_pointer_cast<io::raw>(d), *predefined_data());
 }
 
 // Given a compression stream
@@ -184,16 +184,16 @@ TEST_F(CompressionStreamRead, FragmentGreaterThanMaxSize) {
   _stream->flush();
   _stream->write(predefined_data());
   _stream->flush();
-  misc::shared_ptr<io::raw>& buffer(_substream->get_buffer());
+  std::shared_ptr<io::raw>& buffer(_substream->get_buffer());
   *static_cast<uint32_t*>(static_cast<void*>(buffer->QByteArray::data())) = htonl(0xFFFFFFFF);
 
   // When
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   bool retval(_stream->read(d));
 
   // Then
   ASSERT_TRUE(retval);
-  ASSERT_FALSE(d.isNull());
+  ASSERT_FALSE(!d);
   ASSERT_EQ(d->type(), io::raw::static_type());
-  ASSERT_EQ(d.ref_as<io::raw>(), *predefined_data());
+  ASSERT_EQ(*std::static_pointer_cast<io::raw>(d), *predefined_data());
 }

@@ -41,7 +41,7 @@ sender::~sender() {}
  *
  *  @return True.
  */
-bool sender::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool sender::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d = new dummy(++_number);
   return (true);
@@ -54,7 +54,7 @@ bool sender::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @return This method will throw.
  */
-int sender::write(misc::shared_ptr<io::data> const& d) {
+int sender::write(std::shared_ptr<io::data> const& d) {
   (void)d;
   throw (exceptions::shutdown()
          << "cannot write to event sender (generator)");

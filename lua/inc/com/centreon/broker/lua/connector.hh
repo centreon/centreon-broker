@@ -21,6 +21,7 @@
 
 #  include <QMap>
 #  include <QVariant>
+#  include <memory>
 #  include "com/centreon/broker/io/endpoint.hh"
 
 CCB_BEGIN()
@@ -41,13 +42,13 @@ namespace                        lua {
     void                         connect_to(
                                    std::string const& lua_script,
                                    QMap<QString, QVariant> const& cfg_params,
-                                   misc::shared_ptr<persistent_cache> const& cache);
-    misc::shared_ptr<io::stream> open();
+                                   std::shared_ptr<persistent_cache> const& cache);
+    std::shared_ptr<io::stream> open();
 
   private:
     std::string                  _lua_script;
     QMap<QString, QVariant>      _conf_params;
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                                  _cache;
   };
 }

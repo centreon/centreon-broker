@@ -39,19 +39,19 @@ event_cache_visitor::~event_cache_visitor() {}
  *  @param[out] to  The stream to commit to.
  */
 void event_cache_visitor::commit_to(io::stream& to) {
-  for (std::vector<misc::shared_ptr<io::data> >::const_iterator
+  for (std::vector<std::shared_ptr<io::data> >::const_iterator
          it(_others.begin()),
          end(_others.end());
        it != end;
        ++it)
     to.write(*it);
-  for (std::vector<misc::shared_ptr<io::data> >::const_iterator
+  for (std::vector<std::shared_ptr<io::data> >::const_iterator
          it(_ba_events.begin()),
          end(_ba_events.end());
        it != end;
        ++it)
     to.write(*it);
-  for (std::vector<misc::shared_ptr<io::data> >::const_iterator
+  for (std::vector<std::shared_ptr<io::data> >::const_iterator
          it(_kpi_events.begin()),
          end(_kpi_events.end());
        it != end;
@@ -71,11 +71,11 @@ void event_cache_visitor::commit_to(io::stream& to) {
  *  @return This method will throw.
  */
 bool event_cache_visitor::read(
-                            misc::shared_ptr<io::data>& d,
+                            std::shared_ptr<io::data>& d,
                             time_t deadline) {
   (void)deadline;
-  d.clear();
-  return (true);
+  d.reset();
+  return true;
 }
 
 /**
@@ -85,7 +85,7 @@ bool event_cache_visitor::read(
  *
  *  @return       Number of event acknowledged.
  */
-int event_cache_visitor::write(misc::shared_ptr<io::data> const& d) {
+int event_cache_visitor::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "event_cache_visitor"))
     return (1);
 

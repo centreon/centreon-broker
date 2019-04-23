@@ -43,12 +43,12 @@ namespace         bbdo {
                   connector(connector const& other);
                   ~connector();
     connector&    operator=(connector const& other);
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                   open();
 
   private:
-    misc::shared_ptr<io::stream>
-                  _open(misc::shared_ptr<io::stream> stream);
+    std::shared_ptr<io::stream>
+                  _open(std::shared_ptr<io::stream> stream);
 
     bool          _coarse;
     QString       _extensions;

@@ -43,8 +43,8 @@ using namespace com::centreon::broker::processing;
  *  @param[in] name      The failover name.
  */
 failover::failover(
-            misc::shared_ptr<io::endpoint> endp,
-            misc::shared_ptr<multiplexing::subscriber> sbscrbr,
+            std::shared_ptr<io::endpoint> endp,
+            std::shared_ptr<multiplexing::subscriber> sbscrbr,
             std::string const& name)
   : thread(name),
     _buffering_timeout(0),
@@ -67,7 +67,7 @@ failover::~failover() {}
  *  @param[in] endp  New secondary endpoint.
  */
 void failover::add_secondary_endpoint(
-                 misc::shared_ptr<io::endpoint> endp) {
+                 std::shared_ptr<io::endpoint> endp) {
   _secondary_endpoints.push_back(endp);
   return ;
 }
@@ -117,7 +117,7 @@ void failover::run() {
     << "failover: thread of endpoint '" << _name << "' is starting";
 
   // Check endpoint.
-  if (_endpoint.isNull()) {
+  if (!_endpoint) {
     logging::error(logging::high)
       << "failover: thread of endpoint '" << _name << "' has no endpoint"
       << " object, this is likely a software bug that should be reported"
@@ -135,9 +135,9 @@ void failover::run() {
       _update_status("opening endpoint");
       set_last_connection_attempt(timestamp::now());
       {
-        misc::shared_ptr<io::stream> s(_endpoint->open());
+        std::shared_ptr<io::stream> s(_endpoint->open());
         {
-          QMutexLocker stream_lock(&_streamm);
+          std::lock_guard<std::timed_mutex> stream_lock(_streamm);
           _stream = s;
         }
         _initialized = true;
@@ -165,15 +165,15 @@ void failover::run() {
 
       // Open secondaries.
       _update_status("initializing secondaries");
-      std::vector<misc::shared_ptr<io::stream> > secondaries;
-      for (std::vector<misc::shared_ptr<io::endpoint> >::iterator
+      std::vector<std::shared_ptr<io::stream> > secondaries;
+      for (std::vector<std::shared_ptr<io::endpoint> >::iterator
              it(_secondary_endpoints.begin()),
              end(_secondary_endpoints.end());
            it != end;
            ++it)
         try {
-          misc::shared_ptr<io::stream> s((*it)->open());
-          if (!s.isNull())
+          std::shared_ptr<io::stream> s((*it)->open());
+          if (s)
             secondaries.push_back(s);
           else
             logging::error(logging::medium)
@@ -207,20 +207,20 @@ void failover::run() {
       bool stream_can_read(true);
       bool muxer_can_read(true);
       bool should_commit(false);
-      misc::shared_ptr<io::data> d;
+      std::shared_ptr<io::data> d;
       while (!should_exit()) {
         // Process events.
         QCoreApplication::processEvents();
 
         // Check for update.
         if (_update) {
-          QMutexLocker stream_lock(&_streamm);
+          std::lock_guard<std::timed_mutex> stream_lock(_streamm);
           _stream->update();
           _update = false;
         }
 
         // Read from endpoint stream.
-        d.clear();
+        d.reset();
         bool timed_out_stream(true);
         if (stream_can_read) {
           logging::debug(logging::low)
@@ -228,7 +228,7 @@ void failover::run() {
             << _name << "'";
           _update_status("reading event from stream");
           try {
-            QMutexLocker stream_lock(&_streamm);
+            std::lock_guard<std::timed_mutex> stream_lock(_streamm);
             timed_out_stream = !_stream->read(d, 0);
           }
           catch (exceptions::shutdown const& e) {
@@ -237,7 +237,7 @@ void failover::run() {
               << "' shutdown while reading: " << e.what();
             stream_can_read = false;
           }
-          if (!d.isNull()) {
+          if (d) {
             logging::debug(logging::low)
               << "failover: writing event of endpoint '" << _name
               << "' to multiplexing engine";
@@ -251,7 +251,7 @@ void failover::run() {
         }
 
         // Read from muxer stream.
-        d.clear();
+        d.reset();
         bool timed_out_muxer(true);
         if (muxer_can_read) {
           logging::debug(logging::low)
@@ -260,7 +260,7 @@ void failover::run() {
           _update_status("reading event from multiplexing engine");
           try {
             timed_out_muxer = !_subscriber->get_muxer().read(d, 0);
-            should_commit = should_commit || !d.isNull();
+            should_commit = should_commit || d;
           }
           catch (exceptions::shutdown const& e) {
             logging::debug(logging::medium)
@@ -268,14 +268,14 @@ void failover::run() {
               << "' shutdown while reading: " << e.what();
             muxer_can_read = false;
           }
-          if (!d.isNull()) {
+          if (d) {
             logging::debug(logging::low)
               << "failover: writing event of multiplexing engine to endpoint '"
               << _name << "'";
             _update_status("writing event to stream");
             int we(0);
             try {
-              QMutexLocker stream_lock(&_streamm);
+              std::lock_guard<std::timed_mutex> stream_lock(_streamm);
               we = _stream->write(d);
             }
             catch (exceptions::shutdown const& e) {
@@ -286,7 +286,7 @@ void failover::run() {
             }
             _subscriber->get_muxer().ack_events(we);
             tick();
-            for (std::vector<misc::shared_ptr<io::stream> >::iterator
+            for (std::vector<std::shared_ptr<io::stream> >::iterator
                    it(secondaries.begin()),
                    end(secondaries.end());
                  it != end;) {
@@ -307,19 +307,19 @@ void failover::run() {
         }
 
         // If both timed out, sleep a while.
-        d.clear();
+        d.reset();
         if (timed_out_stream && timed_out_muxer) {
           time_t now(time(NULL));
           int we(0);
           if (should_commit) {
             should_commit = false;
             _next_timeout = now + 1;
-            QMutexLocker stream_lock(&_streamm);
+            std::lock_guard<std::timed_mutex> stream_lock(_streamm);
             we = _stream->flush();
           }
           else if (now >= _next_timeout) {
             _next_timeout = now + 1;
-            QMutexLocker stream_lock(&_streamm);
+            std::lock_guard<std::timed_mutex> stream_lock(_streamm);
             we = _stream->flush();
           }
           _subscriber->get_muxer().ack_events(we);
@@ -331,8 +331,8 @@ void failover::run() {
     catch (std::exception const& e) {
       logging::error(logging::high) << e.what();
       {
-        QMutexLocker stream_lock(&_streamm);
-        _stream.clear();
+        std::lock_guard<std::timed_mutex> stream_lock(_streamm);
+        _stream.reset();
       }
       _launch_failover();
       _initialized = true;
@@ -342,8 +342,8 @@ void failover::run() {
         << "' encountered an unknown exception, this is likely a "
         << "software bug that should be reported to Centreon Broker developers";
       {
-        QMutexLocker stream_lock(&_streamm);
-        _stream.clear();
+        std::lock_guard<std::timed_mutex> stream_lock(_streamm);
+        _stream.reset();
       }
       _launch_failover();
       _initialized = true;
@@ -351,8 +351,8 @@ void failover::run() {
 
     // Clear stream.
     {
-      QMutexLocker stream_lock(&_streamm);
-      _stream.clear();
+      std::lock_guard<std::timed_mutex> stream_lock(_streamm);
+      _stream.reset();
     }
 
     // Sleep a while before attempting a reconnection.
@@ -368,12 +368,12 @@ void failover::run() {
 
   // Clear stream.
   {
-    QMutexLocker stream_lock(&_streamm);
-    _stream.clear();
+    std::lock_guard<std::timed_mutex> stream_lock(_streamm);
+    _stream.reset();
   }
 
   // Exit failover thread if necessary.
-  if (_failover.data()) {
+  if (_failover) {
     logging::info(logging::medium)
       << "failover: requesting termination of failover of endpoint '"
       << _name << "'";
@@ -402,7 +402,7 @@ void failover::set_buffering_timeout(time_t secs) {
  *
  *  @param[in] fo Thread's failover.
  */
-void failover::set_failover(misc::shared_ptr<failover> fo) {
+void failover::set_failover(std::shared_ptr<failover> fo) {
   _failover = fo;
   return ;
 }
@@ -436,7 +436,7 @@ void failover::update() {
 bool failover::wait(unsigned long time) {
   // Check that failover finished.
   bool finished;
-  if (!_failover.isNull())
+  if (_failover)
     finished = _failover->wait(time);
   else
     finished = true;
@@ -458,8 +458,8 @@ bool failover::wait(unsigned long time) {
  */
 std::string failover::_get_state() {
   char const* ret = NULL;
-  if (_streamm.tryLock()) {
-    if (_stream.isNull())
+  if (_streamm.try_lock_for(std::chrono::milliseconds(10))) {
+    if (!_stream)
       ret = "connecting";
     else
       ret = "connected";
@@ -467,7 +467,7 @@ std::string failover::_get_state() {
   }
   else
     ret = "blocked";
-  return (ret);
+  return ret;
 }
 
 /**
@@ -504,17 +504,21 @@ uset<unsigned int> failover::_get_write_filters() {
  */
 void failover::_forward_statistic(io::properties& tree) {
   {
-    QMutexLocker lock(&_statusm);
+    std::lock_guard<std::mutex> lock(_statusm);
     tree.add_property("status", io::property("status", _status));
   }
   {
-    QMutexLocker lock(&_streamm);
-    if (!_stream.isNull())
-      _stream->statistics(tree);
+    std::unique_lock<std::timed_mutex> stream_lock(_streamm, std::defer_lock);
+    if (stream_lock.try_lock_for(std::chrono::milliseconds(100))) {
+      if (_stream)
+        _stream->statistics(tree);
+    }
+    else
+      tree.add_property("status", io::property("status", "busy"));
   }
   _subscriber->get_muxer().statistics(tree);
   io::properties subtree;
-  if (!_failover.isNull())
+  if (_failover)
     _failover->stats(subtree);
   tree.add_child(subtree, "failover");
 }
@@ -530,7 +534,7 @@ void failover::_forward_statistic(io::properties& tree) {
  */
 void failover::_launch_failover() {
   _subscriber->get_muxer().nack_events();
-  if (!_failover.isNull() && !_failover_launched) {
+  if (_failover && !_failover_launched) {
     _failover_launched = true;
     _failover->start();
     while (!_failover->get_initialized() && !_failover->wait(10))
@@ -545,7 +549,6 @@ void failover::_launch_failover() {
  *  @param[in] status New status.
  */
 void failover::_update_status(std::string const& status) {
-  QMutexLocker lock(&_statusm);
+  std::lock_guard<std::mutex> lock(_statusm);
   _status = status;
-  return ;
 }

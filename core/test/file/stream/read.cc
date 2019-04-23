@@ -93,12 +93,12 @@ int main(int argc, char* argv[]) {
 
   // Read data.
   unsigned int bufferc(0);
-  misc::shared_ptr<io::raw> raw;
+  std::shared_ptr<io::raw> raw;
   unsigned int rawc(0);
   for (unsigned int count = 0; !retval && (count < 10000);) {
     // Read data.
     if (raw.isNull()) {
-      misc::shared_ptr<io::data> d;
+      std::shared_ptr<io::data> d;
       fs.read(d, (time_t)-1);
       if (d.isNull() || (io::raw::static_type() != d->type()))
         retval |= 1;
@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
   }
   // EOF must be reached.
   try {
-    misc::shared_ptr<io::data> d;
+    std::shared_ptr<io::data> d;
     fs.read(d, (time_t)-1);
     retval |= 1;
   }

@@ -76,8 +76,8 @@ bool server_socket::has_pending_connections() const {
  *
  *  @return Next pending connection.
  */
-misc::shared_ptr<stream> server_socket::next_pending_connection() {
-  misc::shared_ptr<stream> next;
+std::shared_ptr<stream> server_socket::next_pending_connection() {
+  std::shared_ptr<stream> next;
   if (!_pending.empty()) {
     next = _pending.front();
     _pending.pop();
@@ -117,7 +117,7 @@ bool server_socket::wait_for_new_connection(
  *  @param[in] socket_descriptor  Native socket descriptor.
 */
 void server_socket::incomingConnection(int socket_descriptor) {
-  misc::shared_ptr<stream> s(new stream(socket_descriptor));
+  std::shared_ptr<stream> s(new stream(socket_descriptor));
   _pending.push(s);
   return ;
 }

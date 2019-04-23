@@ -72,8 +72,6 @@ void db_loader_v2::load(entries::state& state, unsigned int poller_id) {
   // Cleanup.
   _state = NULL;
   _poller_id = 0;
-
-  return ;
 }
 
 /**************************************
@@ -109,7 +107,6 @@ void db_loader_v2::_load_bas() {
     b.level_critical = q.value(4).toDouble();
     _state->get_bas().push_back(b);
   }
-  return ;
 }
 
 /**
@@ -141,7 +138,6 @@ void db_loader_v2::_load_booleans() {
     b.comment = q.value(4).toString();
     _state->get_booleans().push_back(b);
   }
-  return ;
 }
 
 /**
@@ -186,7 +182,6 @@ void db_loader_v2::_load_kpis() {
     k.drop_unknown = q.value(10).toDouble();
     _state->get_kpis().push_back(k);
   }
-  return ;
 }
 
 /**

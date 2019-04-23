@@ -57,7 +57,7 @@ static void send_objects(std::list<T> const& t) {
          end(t.end());
        it != end;
        ++it) {
-    misc::shared_ptr<T> e(new T(*it));
+    std::shared_ptr<T> e(new T(*it));
     pblshr.write(e);
   }
   return ;
@@ -93,7 +93,7 @@ db_reader::~db_reader() {}
  *
  *  @return This method will throw.
  */
-bool db_reader::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool db_reader::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)d;
   (void)deadline;
   throw (exceptions::shutdown()
@@ -108,14 +108,14 @@ bool db_reader::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @return Always return 1.
  */
-int db_reader::write(misc::shared_ptr<io::data> const& d) {
+int db_reader::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "db_reader"))
     return (1);
 
   // Process only external commands addressed to us.
   if (d->type() == extcmd::command_request::static_type()) {
     extcmd::command_request const&
-      req(d.ref_as<extcmd::command_request const>());
+      req(*std::static_pointer_cast<extcmd::command_request const>(d));
     if (req.is_addressed_to(_name)) {
       logging::info(logging::medium)
         << "db_reader: processing command: " << req.cmd;
@@ -151,7 +151,7 @@ int db_reader::write(misc::shared_ptr<io::data> const& d) {
           << req.cmd << "': " << e.what();
 
         // Send error result.
-        misc::shared_ptr<extcmd::command_result>
+        std::shared_ptr<extcmd::command_result>
           res(new extcmd::command_result);
         res->uuid = req.uuid;
         res->msg = QString("\"") + e.what() + "\"";
@@ -163,12 +163,12 @@ int db_reader::write(misc::shared_ptr<io::data> const& d) {
   }
   else if (d->type() == dumper::db_dump_committed::static_type()) {
     // Send successful result.
-    misc::shared_ptr<extcmd::command_result>
+    std::shared_ptr<extcmd::command_result>
       res(new extcmd::command_result);
     if (_req_id_to_source_id.find(
-          d.ref_as<dumper::db_dump_committed>().req_id.toStdString())
+          std::static_pointer_cast<dumper::db_dump_committed>(d)->req_id.toStdString())
         != _req_id_to_source_id.end()) {
-      res->uuid = d.ref_as<dumper::db_dump_committed>().req_id;
+      res->uuid = std::static_pointer_cast<dumper::db_dump_committed>(d)->req_id;
       res->msg = "\"Command successfully executed.\"";
       res->code = 0;
       res->destination_id = _req_id_to_source_id[res->uuid.toStdString()];
@@ -209,7 +209,7 @@ void db_reader::_sync_cfg_db(
     // Send events.
     multiplexing::publisher pblshr;
     {
-      misc::shared_ptr<db_dump> start(new db_dump);
+      std::shared_ptr<db_dump> start(new db_dump);
       start->full = true;
       start->commit = false;
       start->poller_id = poller_id;
@@ -221,7 +221,7 @@ void db_reader::_sync_cfg_db(
     send_objects(state.get_bas());
     send_objects(state.get_kpis());
     {
-      misc::shared_ptr<db_dump> end(new db_dump);
+      std::shared_ptr<db_dump> end(new db_dump);
       end->full = true;
       end->commit = true;
       end->poller_id = poller_id;
@@ -258,7 +258,7 @@ void db_reader::_update_cfg_db(unsigned int poller_id, QString const& req_id) {
     // Send events.
     multiplexing::publisher pblshr;
     {
-      misc::shared_ptr<db_dump> start(new db_dump);
+      std::shared_ptr<db_dump> start(new db_dump);
       start->full = false;
       start->commit = false;
       start->poller_id = poller_id;
@@ -287,7 +287,7 @@ void db_reader::_update_cfg_db(unsigned int poller_id, QString const& req_id) {
     send_objects(d.services_to_update());
     send_objects(d.services_to_create());
     {
-      misc::shared_ptr<db_dump> end(new db_dump);
+      std::shared_ptr<db_dump> end(new db_dump);
       end->full = false;
       end->commit = true;
       end->poller_id = poller_id;

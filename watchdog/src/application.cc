@@ -195,7 +195,7 @@ void application::_apply_new_configuration(configuration const& config) {
          end(to_create.end());
        it != end;
        ++it) {
-    std::auto_ptr<instance> ins(
+    std::unique_ptr<instance> ins(
       new instance(config.get_instance_configuration(*it), *this));
     _instances.insert(std::make_pair(*it, ins.release()));
   }

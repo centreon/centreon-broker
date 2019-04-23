@@ -61,7 +61,7 @@ unsigned long bench_stream::get_write_size() const {
  *  @return True.
  */
 bool bench_stream::read(
-                     misc::shared_ptr<io::data>& d,
+                     std::shared_ptr<io::data>& d,
                      time_t deadline) {
   (void)deadline;
   d.clear();
@@ -84,10 +84,10 @@ void bench_stream::reset_bench() {
  *
  *  @return Number of events processed (1).
  */
-int bench_stream::write(misc::shared_ptr<io::data> const& d) {
+int bench_stream::write(std::shared_ptr<io::data> const& d) {
   if (!d.isNull()
       && (d->type() == io::raw::static_type())) {
-    misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
+    std::shared_ptr<io::raw> r(d.staticCast<io::raw>());
     ++_write_events;
     _write_size += r->size();
   }

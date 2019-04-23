@@ -78,12 +78,12 @@ stream::~stream() {}
  *
  *  @return This method will throw.
  */
-bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (exceptions::shutdown()
          << "attempt to read from dumper '" << _path << "'");
-  return (true);
+  return true;
 }
 
 /**
@@ -93,40 +93,40 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @return Always return 1, or throw exceptions.
  */
-int stream::write(misc::shared_ptr<io::data> const& d) {
+int stream::write(std::shared_ptr<io::data> const& d) {
   // Check that data exists.
   if (!validate(d, "dumper"))
     return (1);
 
   // Check if the event is a dumper event.
   if (d->type() == dump::static_type()) {
-    dump const& data = d.ref_as<dump const>();
+    dump const& data = *std::static_pointer_cast<dump const>(d);
     if (data.tag.toStdString() == _tagname) {
       if (data.req_id == 0)
         _process_dump_event(data);
       else
         _add_to_directory_cache(
           data.req_id,
-          misc::make_shared(new dump(data)));
+          std::make_shared<dump>(data));
     }
   }
   else if (d->type() == dumper::remove::static_type()) {
-    dumper::remove const& data = d.ref_as<dumper::remove const>();
+    dumper::remove const& data = *std::static_pointer_cast<dumper::remove const>(d);
     if (data.tag.toStdString() == _tagname) {
       if (data.req_id == 0)
-        _process_remove_event(d.ref_as<dumper::remove const>());
+        _process_remove_event(*std::static_pointer_cast<dumper::remove const>(d));
       else
         _add_to_directory_cache(
           data.req_id,
-          misc::make_shared(new dumper::remove(data)));
+          std::make_shared<dumper::remove>(data));
     }
   }
   else if (d->type() == dumper::directory_dump::static_type()
-           && d.ref_as<dumper::directory_dump const>().tag.toStdString()
+           && std::static_pointer_cast<dumper::directory_dump const>(d)->tag.toStdString()
                  == _tagname) {
-    _process_directory_dump_event(d.ref_as<dumper::directory_dump const>());
+    _process_directory_dump_event(*std::static_pointer_cast<dumper::directory_dump const>(d));
   }
-  return (1);
+  return 1;
 }
 
 /**
@@ -230,18 +230,18 @@ void stream::_process_directory_dump_event(directory_dump const& dd) {
     directory_dump_cache::iterator found;
     if (found == _cached_directory_dump.end())
       return ;
-    std::vector<misc::shared_ptr<io::data> > const& events
+    std::vector<std::shared_ptr<io::data> > const& events
       = found->second;
     try {
-      for (std::vector<misc::shared_ptr<io::data> >::const_iterator
+      for (std::vector<std::shared_ptr<io::data> >::const_iterator
              it = events.begin(),
              end = events.end();
            it != end;
            ++it) {
         if ((*it)->type() == dump::static_type())
-          _process_dump_event(it->ref_as<dump const>());
+          _process_dump_event(*std::static_pointer_cast<dump const>(*it));
         else if ((*it)->type() == dumper::remove::static_type())
-          _process_remove_event(it->ref_as<dumper::remove const>());
+          _process_remove_event(*std::static_pointer_cast<dumper::remove const>(*it));
       }
     } catch (std::exception const& e) {
       success = false;
@@ -253,7 +253,7 @@ void stream::_process_directory_dump_event(directory_dump const& dd) {
 
     // Send acknowledgement event.
     {
-      misc::shared_ptr<directory_dump_committed> ddc(
+      std::shared_ptr<directory_dump_committed> ddc(
         new directory_dump_committed);
       ddc->success = success;
       ddc->req_id = dd.req_id;
@@ -277,7 +277,7 @@ void stream::_process_directory_dump_event(directory_dump const& dd) {
  */
 void stream::_add_to_directory_cache(
                QString const& req_id,
-               misc::shared_ptr<io::data> event) {
+               std::shared_ptr<io::data> event) {
   directory_dump_cache::iterator found
     = _cached_directory_dump.find(req_id.toStdString());
   if (found == _cached_directory_dump.end())

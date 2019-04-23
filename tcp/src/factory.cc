@@ -97,7 +97,7 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
-                         misc::shared_ptr<persistent_cache> cache) const {
+                         std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
   // Find host (if exist).
@@ -135,10 +135,10 @@ io::endpoint* factory::new_endpoint(
 
 
   // Acceptor.
-  std::auto_ptr<io::endpoint> endp;
+  std::unique_ptr<io::endpoint> endp;
   if (host.isEmpty()) {
     is_acceptor = true;
-    std::auto_ptr<tcp::acceptor> a(new tcp::acceptor);
+    std::unique_ptr<tcp::acceptor> a(new tcp::acceptor);
     a->set_read_timeout(read_timeout);
     a->set_write_timeout(write_timeout);
     a->listen_on(port);
@@ -147,7 +147,7 @@ io::endpoint* factory::new_endpoint(
   // Connector.
   else {
     is_acceptor = false;
-    std::auto_ptr<tcp::connector> c(new tcp::connector);
+    std::unique_ptr<tcp::connector> c(new tcp::connector);
     c->set_read_timeout(read_timeout);
     c->connect_to(host, port);
     c->set_write_timeout(write_timeout);

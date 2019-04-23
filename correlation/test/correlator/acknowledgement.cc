@@ -62,12 +62,12 @@ int main() {
     n.start_time = 0;
 
     // Create correlator and apply state.
-    correlation::stream c("", misc::shared_ptr<persistent_cache>(), false);
+    correlation::stream c("", std::shared_ptr<persistent_cache>(), false);
     c.set_state(state);
 
     // Send node status.
     { // #1
-      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
       ss->last_hard_state = 2;
@@ -75,7 +75,7 @@ int main() {
       c.write(ss);
     }
     { // #2
-      misc::shared_ptr<neb::acknowledgement>
+      std::shared_ptr<neb::acknowledgement>
         ack(new neb::acknowledgement);
       ack->host_id = 42;
       ack->service_id = 24;
@@ -84,7 +84,7 @@ int main() {
       c.write(ack);
     }
     { // #3
-      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
       ss->last_hard_state = 1;
@@ -92,7 +92,7 @@ int main() {
       c.write(ss);
     }
     { // #4
-      misc::shared_ptr<neb::acknowledgement>
+      std::shared_ptr<neb::acknowledgement>
         ack(new neb::acknowledgement);
       ack->host_id = 42;
       ack->service_id = 24;
@@ -101,7 +101,7 @@ int main() {
       c.write(ack);
     }
     { // #5
-      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
       ss->last_hard_state = 2;
@@ -109,7 +109,7 @@ int main() {
       c.write(ss);
     }
     { // #6
-      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
       ss->last_hard_state = 0;
@@ -117,7 +117,7 @@ int main() {
       c.write(ss);
     }
     { // #7
-      misc::shared_ptr<neb::acknowledgement>
+      std::shared_ptr<neb::acknowledgement>
         ack(new neb::acknowledgement);
       ack->host_id = 42;
       ack->service_id = 24;
@@ -125,7 +125,7 @@ int main() {
       c.write(ack);
     }
     { // #8
-      misc::shared_ptr<neb::service_status> ss(new neb::service_status);
+      std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
       ss->last_hard_state = 1;
@@ -136,7 +136,7 @@ int main() {
     // Check correlation content.
     multiplexing::engine::instance().stop();
     t.finalize();
-    QList<misc::shared_ptr<io::data> > content;
+    QList<std::shared_ptr<io::data> > content;
     // #1
     add_state(content, -1, 0, 123456789, 42, false, 24, 0);
     add_state(content, -1, 2, -1, 42, false, 24, 123456789);

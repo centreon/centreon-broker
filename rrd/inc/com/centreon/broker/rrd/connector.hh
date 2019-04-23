@@ -38,7 +38,7 @@ namespace          rrd {
                    connector(connector const& right);
                    ~connector();
     connector&     operator=(connector const& right);
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                    open();
     void           set_cache_size(unsigned int cache_size);
     void           set_cached_local(QString const& local_socket);

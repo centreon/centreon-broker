@@ -66,7 +66,7 @@ db_writer::~db_writer() {}
  *  @return This method will throw an exceptions::shutdown
  *          exception.
  */
-bool db_writer::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool db_writer::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)d;
   (void)deadline;
   throw (exceptions::shutdown()
@@ -79,12 +79,12 @@ bool db_writer::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @param[in] d  Event to write.
  */
-int db_writer::write(misc::shared_ptr<io::data> const& d) {
+int db_writer::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "db writer"))
     return (1);
 
   if (d->type() == db_dump::static_type()) {
-    db_dump const& dbd(d.ref_as<db_dump const>());
+    db_dump const& dbd(*std::static_pointer_cast<db_dump const>(d));
     if (dbd.poller_id
         == config::applier::state::instance().poller_id()) {
       if (dbd.commit)
@@ -99,46 +99,46 @@ int db_writer::write(misc::shared_ptr<io::data> const& d) {
       _hosts.clear();
       _services.clear();
       multiplexing::publisher pblshr;
-      misc::shared_ptr<db_dump_committed> ddc(new db_dump_committed);
+      std::shared_ptr<db_dump_committed> ddc(new db_dump_committed);
       ddc->req_id = dbd.req_id;
       pblshr.write(ddc);
     }
   }
   else if (d->type() == entries::service::static_type()) {
-    entries::service const& s(d.ref_as<entries::service const>());
+    entries::service const& s(*std::static_pointer_cast<entries::service const>(d));
     if (s.poller_id == config::applier::state::instance().poller_id())
       _services.push_back(s);
   }
   else if (d->type() == entries::ba::static_type()) {
-    entries::ba const& b(d.ref_as<entries::ba const>());
+    entries::ba const& b(*std::static_pointer_cast<entries::ba const>(d));
     if (b.poller_id == config::applier::state::instance().poller_id())
       _bas.push_back(b);
   }
   else if (d->type() == entries::ba_type::static_type()) {
-    entries::ba_type const& b(d.ref_as<entries::ba_type const>());
+    entries::ba_type const& b(*std::static_pointer_cast<entries::ba_type const>(d));
     _ba_types.push_back(b);
   }
   else if (d->type() == entries::boolean::static_type()) {
-    entries::boolean const& b(d.ref_as<entries::boolean const>());
+    entries::boolean const& b(*std::static_pointer_cast<entries::boolean const>(d));
     if (b.poller_id == config::applier::state::instance().poller_id())
       _booleans.push_back(b);
   }
   else if (d->type() == entries::host::static_type()) {
-    entries::host const& h(d.ref_as<entries::host const>());
+    entries::host const& h(*std::static_pointer_cast<entries::host const>(d));
     if (h.poller_id == config::applier::state::instance().poller_id())
       _hosts.push_back(h);
   }
   else if (d->type() == entries::kpi::static_type()) {
-    entries::kpi const& k(d.ref_as<entries::kpi const>());
+    entries::kpi const& k(*std::static_pointer_cast<entries::kpi const>(d));
     if (k.poller_id == config::applier::state::instance().poller_id())
       _kpis.push_back(k);
   }
   else if (d->type() == entries::organization::static_type()) {
     entries::organization const&
-      o(d.ref_as<entries::organization const>());
+      o(*std::static_pointer_cast<entries::organization const>(d));
     _organizations.push_back(o);
   }
-  return (1);
+  return 1;
 }
 
 /**************************************

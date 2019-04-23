@@ -58,7 +58,7 @@ namespace         notification {
     typedef object_cache<neb::service, neb::service_status>
                   service_node_state;
 
-                  node_cache(misc::shared_ptr<persistent_cache> cache);
+                  node_cache(std::shared_ptr<persistent_cache> cache);
                   ~node_cache();
                   node_cache(node_cache const& f);
     node_cache&   operator=(node_cache const& f);
@@ -66,9 +66,9 @@ namespace         notification {
     virtual void  starting();
     virtual void  stopping();
     virtual bool  read(
-                    misc::shared_ptr<io::data>& d,
+                    std::shared_ptr<io::data>& d,
                     time_t deadline);
-    virtual int   write(misc::shared_ptr<io::data> const& d);
+    virtual int   write(std::shared_ptr<io::data> const& d);
 
     void          update(neb::host const& hst);
     void          update(neb::host_status const& hs);
@@ -102,7 +102,7 @@ namespace         notification {
                   _downtime_id_by_nodes;
     QMutex        _mutex;
 
-    misc::shared_ptr<persistent_cache>
+    std::shared_ptr<persistent_cache>
                   _cache;
   };
 }

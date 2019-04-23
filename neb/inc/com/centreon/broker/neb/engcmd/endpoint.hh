@@ -41,7 +41,7 @@ namespace         engcmd {
                   endpoint(endpoint const& other);
                   ~endpoint();
     endpoint&     operator=(endpoint const& other);
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                   open();
   private:
     std::string   _name;

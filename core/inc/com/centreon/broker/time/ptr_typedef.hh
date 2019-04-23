@@ -19,9 +19,9 @@
 #ifndef CCB_CORE_TIME_PTR_TYPEDEF_HH
 #  define CCB_CORE_TIME_PTR_TYPEDEF_HH
 
-#  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include <memory>
 
 #  define DECLARE_SHARED_PTR(klass)\
-  typedef ::com::centreon::broker::misc::shared_ptr<klass> ptr
+  typedef std::shared_ptr<klass> ptr
 
 #endif // !CCB_CORE_TIME_PTR_TYPEDEF_HH

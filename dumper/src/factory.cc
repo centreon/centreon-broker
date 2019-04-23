@@ -129,7 +129,7 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
-                         misc::shared_ptr<persistent_cache> cache) const {
+                         std::shared_ptr<persistent_cache> cache) const {
   // Set acceptor flag.
   is_acceptor = false;
 
@@ -147,7 +147,7 @@ io::endpoint* factory::new_endpoint(
     type = opener::db_cfg_writer;
 
   // Opener that should be set.
-  std::auto_ptr<opener> openr(new opener);
+  std::unique_ptr<opener> openr(new opener);
   openr->set_name(cfg.name);
   openr->set_type(type);
   openr->set_cache(cache);

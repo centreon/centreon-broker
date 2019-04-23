@@ -34,7 +34,7 @@ using namespace com::centreon::broker::neb;
  */
 node_events_connector::node_events_connector(
                          std::string const& name,
-                         misc::shared_ptr<persistent_cache> cache,
+                         std::shared_ptr<persistent_cache> cache,
                          std::string const& config_file)
   : io::endpoint(false),
     _cache(cache),
@@ -80,6 +80,6 @@ node_events_connector& node_events_connector::operator=(
  *
  *  @return A newly opened stream.
  */
-misc::shared_ptr<io::stream> node_events_connector::open() {
-  return (new node_events_stream(_name.c_str(), _cache, _config_file));
+std::shared_ptr<io::stream> node_events_connector::open() {
+  return std::make_shared<node_events_stream>(_name.c_str(), _cache, _config_file);
 }

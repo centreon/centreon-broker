@@ -36,9 +36,9 @@ using namespace com::centreon::broker;
  *                      otherwise.
  */
 void add_engine_state(
-       QList<misc::shared_ptr<io::data> >& content,
+       QList<std::shared_ptr<io::data> >& content,
        bool started) {
-  misc::shared_ptr<correlation::engine_state>
+  std::shared_ptr<correlation::engine_state>
     es(new correlation::engine_state);
   es->started = started;
   content.push_back(es);
@@ -56,13 +56,13 @@ void add_engine_state(
  *  @param[in]  start_time  Issue start time.
  */
 void add_issue(
-       QList<misc::shared_ptr<io::data> >& content,
+       QList<std::shared_ptr<io::data> >& content,
        time_t ack_time,
        time_t end_time,
        unsigned int host_id,
        unsigned int service_id,
        time_t start_time) {
-  misc::shared_ptr<correlation::issue> i(new correlation::issue);
+  std::shared_ptr<correlation::issue> i(new correlation::issue);
   i->ack_time = ack_time;
   i->end_time = end_time;
   i->host_id = host_id;
@@ -86,7 +86,7 @@ void add_issue(
  *  @param[in]  start_time         Parenting start time.
  */
 void add_issue_parent(
-       QList<misc::shared_ptr<io::data> >& content,
+       QList<std::shared_ptr<io::data> >& content,
        unsigned int child_host_id,
        unsigned int child_service_id,
        time_t child_start_time,
@@ -95,7 +95,7 @@ void add_issue_parent(
        unsigned int parent_service_id,
        time_t parent_start_time,
        time_t start_time) {
-  misc::shared_ptr<correlation::issue_parent>
+  std::shared_ptr<correlation::issue_parent>
     ip(new correlation::issue_parent);
   ip->child_host_id = child_host_id;
   ip->child_service_id = child_service_id;
@@ -121,7 +121,7 @@ void add_issue_parent(
  *  @param[in]  start_time    State start time.
  */
 void add_state(
-       QList<misc::shared_ptr<io::data> >& content,
+       QList<std::shared_ptr<io::data> >& content,
        time_t ack_time,
        int current_state,
        time_t end_time,
@@ -129,7 +129,7 @@ void add_state(
        bool in_downtime,
        unsigned int service_id,
        time_t start_time) {
-  misc::shared_ptr<correlation::state>
+  std::shared_ptr<correlation::state>
     s(new correlation::state);
   s->ack_time = ack_time;
   s->current_state = current_state;
@@ -152,22 +152,22 @@ void add_state(
  */
 void check_content(
        io::stream& s,
-       QList<misc::shared_ptr<io::data> > const& content) {
+       QList<std::shared_ptr<io::data> > const& content) {
   unsigned int i(0);
-  for (QList<misc::shared_ptr<io::data> >::const_iterator
+  for (QList<std::shared_ptr<io::data> >::const_iterator
          it(content.begin()),
          end(content.end());
        it != end;) {
-    misc::shared_ptr<io::data> d;
+    std::shared_ptr<io::data> d;
     s.read(d);
     if (d.isNull())
       throw (exceptions::msg() << "entry #" << i << " is null");
     else if (d->type() == (*it)->type()) {
       if (d->type()
           == io::events::data_type<io::events::correlation, correlation::de_engine_state>::value) {
-        misc::shared_ptr<correlation::engine_state>
+        std::shared_ptr<correlation::engine_state>
           es1(d.staticCast<correlation::engine_state>());
-        misc::shared_ptr<correlation::engine_state>
+        std::shared_ptr<correlation::engine_state>
           es2(it->staticCast<correlation::engine_state>());
         if (es1->started != es2->started)
           throw (exceptions::msg() << "entry #" << i
@@ -177,9 +177,9 @@ void check_content(
       }
       else if (d->type()
                == io::events::data_type<io::events::correlation, correlation::de_issue>::value) {
-        misc::shared_ptr<correlation::issue>
+        std::shared_ptr<correlation::issue>
           i1(d.staticCast<correlation::issue>());
-        misc::shared_ptr<correlation::issue>
+        std::shared_ptr<correlation::issue>
           i2(it->staticCast<correlation::issue>());
         if ((i1->ack_time != i2->ack_time)
             || (i1->end_time != i2->end_time)
@@ -198,9 +198,9 @@ void check_content(
       }
       else if (d->type()
                == io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value) {
-        misc::shared_ptr<correlation::issue_parent>
+        std::shared_ptr<correlation::issue_parent>
           ip1(d.staticCast<correlation::issue_parent>());
-        misc::shared_ptr<correlation::issue_parent>
+        std::shared_ptr<correlation::issue_parent>
           ip2(it->staticCast<correlation::issue_parent>());
         if ((ip1->child_host_id != ip2->child_host_id)
             || (ip1->child_service_id != ip2->child_service_id)
@@ -229,9 +229,9 @@ void check_content(
       }
       else if (d->type()
                == io::events::data_type<io::events::correlation, correlation::de_state>::value) {
-        misc::shared_ptr<correlation::state>
+        std::shared_ptr<correlation::state>
           s1(d.staticCast<correlation::state>());
-        misc::shared_ptr<correlation::state>
+        std::shared_ptr<correlation::state>
           s2(it->staticCast<correlation::state>());
         if ((s1->ack_time != s2->ack_time)
             || (s1->current_state != s2->current_state)
@@ -268,7 +268,7 @@ void check_content(
  *  @return True.
  */
 bool test_stream::read(
-       com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data>& d,
+       com::centreon::broker::std::shared_ptr<com::centreon::broker::io::data>& d,
        time_t deadline) {
   (void)deadline;
   d.clear();
@@ -287,7 +287,7 @@ bool test_stream::read(
  *  @return       1.
  */
 int test_stream::write(
-      com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> const& d) {
+      com::centreon::broker::std::shared_ptr<com::centreon::broker::io::data> const& d) {
   if (!d.isNull())
     _events.push_back(d);
 
@@ -299,7 +299,7 @@ int test_stream::write(
  *
  *  @return  The written events.
  */
-std::vector<com::centreon::broker::misc::shared_ptr<com::centreon::broker::io::data> > const&
+std::vector<com::centreon::broker::std::shared_ptr<com::centreon::broker::io::data> > const&
   test_stream::get_events() const {
   return (_events);
 }

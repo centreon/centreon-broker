@@ -162,7 +162,7 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
-                         misc::shared_ptr<persistent_cache> cache) const {
+                         std::shared_ptr<persistent_cache> cache) const {
   std::string db_host(find_param(cfg, "db_host"));
   unsigned short db_port(
     get_uint_param(cfg, "db_port", 2003));
@@ -180,7 +180,7 @@ io::endpoint* factory::new_endpoint(
     get_string_param(cfg, "escape_string", "_"));
 
   // Connector.
-  std::auto_ptr<graphite::connector> c(new graphite::connector);
+  std::unique_ptr<graphite::connector> c(new graphite::connector);
   c->connect_to(
        metric_naming,
        status_naming,

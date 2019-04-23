@@ -113,7 +113,7 @@ bool factory::has_not_endpoint(config::endpoint& cfg) const {
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
-                         misc::shared_ptr<persistent_cache> cache) const {
+                         std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
   // Find TLS parameters (optional).
@@ -146,7 +146,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Acceptor.
-  std::auto_ptr<io::endpoint> endp;
+  std::unique_ptr<io::endpoint> endp;
   if (is_acceptor)
     endp.reset(new acceptor(public_cert, private_key, ca_cert));
   // Connector.
@@ -164,8 +164,8 @@ io::endpoint* factory::new_endpoint(
  *
  *  @return New stream.
  */
-misc::shared_ptr<io::stream> factory::new_stream(
-                                        misc::shared_ptr<io::stream> to,
+std::shared_ptr<io::stream> factory::new_stream(
+                                        std::shared_ptr<io::stream> to,
                                         bool is_acceptor,
                                         QString const& proto_name) {
   (void)proto_name;

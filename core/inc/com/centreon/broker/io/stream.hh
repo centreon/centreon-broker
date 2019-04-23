@@ -20,10 +20,10 @@
 #  define CCB_IO_STREAM_HH
 
 #  include <ctime>
+#  include <memory>
 #  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/properties.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -57,19 +57,19 @@ namespace                    io {
     virtual int              flush();
     virtual std::string      peer() const;
     virtual bool             read(
-                               misc::shared_ptr<io::data>& d,
+                               std::shared_ptr<io::data>& d,
                                time_t deadline = (time_t)-1) = 0;
     virtual void             set_substream(
-                               misc::shared_ptr<stream> substream);
+                               std::shared_ptr<stream> substream);
     virtual void             statistics(io::properties& tree) const;
     virtual void             update();
     bool                     validate(
-                               misc::shared_ptr<io::data> const& d,
+                               std::shared_ptr<io::data> const& d,
                                std::string const& error);
-    virtual int              write(misc::shared_ptr<data> const& d) = 0;
+    virtual int              write(std::shared_ptr<data> const& d) = 0;
 
    protected:
-    misc::shared_ptr<stream> _substream;
+    std::shared_ptr<stream> _substream;
   };
 }
 

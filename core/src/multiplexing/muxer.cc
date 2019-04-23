@@ -57,13 +57,13 @@ muxer::muxer(
   // Load head queue file back in memory.
   if (_persistent) {
     try {
-      std::auto_ptr<io::stream>
+      std::unique_ptr<io::stream>
         mf(new persistent_file(_memory_file()));
-      misc::shared_ptr<io::data> e;
+      std::shared_ptr<io::data> e;
       while (true) {
-        e.clear();
+        e.reset();
         mf->read(e, 0);
-        if (!e.isNull()) {
+        if (e) {
           _events.push_back(e);
           ++_events_size;
         }
@@ -78,15 +78,15 @@ muxer::muxer(
   // Load queue file back in memory.
   try {
     _file.reset(new persistent_file(_queue_file()));
-    misc::shared_ptr<io::data> e;
+    std::shared_ptr<io::data> e;
     // The following do-while might read an extra event from the queue
     // file back in memory. However this is necessary to ensure that a
     // read() operation was done on the queue file and prevent it from
     // being open in case it is empty.
     do {
-      e.clear();
+      e.reset();
       _get_event_from_file(e);
-      if (e.isNull())
+      if (!e)
         break ;
       _events.push_back(e);
       ++_events_size;
@@ -137,11 +137,11 @@ void muxer::ack_events(int count) {
     }
 
     // Fill memory from file.
-    misc::shared_ptr<io::data> e;
+    std::shared_ptr<io::data> e;
     while (_events_size < event_queue_max_size()) {
-      e.clear();
+      e.reset();
       _get_event_from_file(e);
-      if (e.isNull())
+      if (!e)
         break ;
       _push_to_queue(e);
     }
@@ -176,8 +176,8 @@ unsigned int muxer::event_queue_max_size() throw () {
  *
  *  @param[in] event Event to add.
  */
-void muxer::publish(misc::shared_ptr<io::data> const& event) {
-  if (!event.isNull()) {
+void muxer::publish(std::shared_ptr<io::data> const& event) {
+  if (event) {
     QMutexLocker lock(&_mutex);
     // Check if we should process this event.
     if (_write_filters.find(event->type()) == _write_filters.end())
@@ -204,7 +204,7 @@ void muxer::publish(misc::shared_ptr<io::data> const& event) {
  *  @return Respect io::stream::read()'s return value.
  */
 bool muxer::read(
-              misc::shared_ptr<io::data>& event,
+              std::shared_ptr<io::data>& event,
               time_t deadline) {
   bool timed_out(false);
   QMutexLocker lock(&_mutex);
@@ -225,11 +225,11 @@ bool muxer::read(
       event = *_pos;
       ++_pos;
       lock.unlock();
-      if (!event.isNull())
+      if (event)
         timed_out = false;
     }
     else
-      event.clear();
+      event.reset();
   }
   // Data is available, no need to wait.
   else {
@@ -327,7 +327,7 @@ void muxer::statistics(io::properties& tree) const {
 
   // Unacknowledged events count.
   int unacknowledged(0);
-  for (std::list<misc::shared_ptr<io::data> >::const_iterator
+  for (std::list<std::shared_ptr<io::data> >::const_iterator
          it(_events.begin());
        it != _pos;
        ++it)
@@ -355,9 +355,8 @@ void muxer::wake() {
  *
  *  @param[in] d  Event to multiplex.
  */
-int muxer::write(misc::shared_ptr<io::data> const& d) {
-  if (!d.isNull()
-      && (_read_filters.find(d->type()) != _read_filters.end()))
+int muxer::write(std::shared_ptr<io::data> const& d) {
+  if (d && _read_filters.find(d->type()) != _read_filters.end())
     engine::instance().publish(d);
   return (1);
 }
@@ -404,7 +403,7 @@ void muxer::_clean() {
   _file.reset();
   if (_persistent && !_events.empty()) {
     try {
-      std::auto_ptr<io::stream>
+      std::unique_ptr<io::stream>
         mf(new persistent_file(_memory_file()));
       while (!_events.empty()) {
         mf->write(_events.front());
@@ -429,14 +428,14 @@ void muxer::_clean() {
  *
  *  @param[out] event  Last event available. Null if none is available.
  */
-void muxer::_get_event_from_file(misc::shared_ptr<io::data>& event) {
-  event.clear();
+void muxer::_get_event_from_file(std::shared_ptr<io::data>& event) {
+  event.reset();
   // If file exist, try to get the last event.
   if (_file.get()) {
     try {
       do {
         _file->read(event);
-      } while (event.isNull());
+      } while (!event);
     }
     catch (exceptions::shutdown const& e) {
       // The file end was reach.
@@ -461,7 +460,7 @@ std::string muxer::_memory_file() const {
  *
  *  @param[in] event  New event.
  */
-void muxer::_push_to_queue(misc::shared_ptr<io::data> const& event) {
+void muxer::_push_to_queue(std::shared_ptr<io::data> const& event) {
   bool pos_has_no_more_to_read(_pos == _events.end());
   _events.push_back(event);
   ++_events_size;

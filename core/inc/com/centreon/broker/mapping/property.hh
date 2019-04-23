@@ -20,7 +20,6 @@
 #  define CCB_MAPPING_PROPERTY_HH
 
 #  include "com/centreon/broker/mapping/source.hh"
-#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 

@@ -19,9 +19,9 @@
 #ifndef CCB_BAM_BA_HH
 #  define CCB_BAM_BA_HH
 
+#  include <memory>
 #  include <string>
 #  include <vector>
-#  include <memory>
 #  include "com/centreon/broker/bam/ba_event.hh"
 #  include "com/centreon/broker/bam/ba_duration_event.hh"
 #  include "com/centreon/broker/bam/computable.hh"
@@ -30,7 +30,6 @@
 #  include "com/centreon/broker/bam/inherited_downtime.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -53,7 +52,7 @@ namespace        bam {
                  ba(ba const& other);
                  ~ba();
     ba&          operator=(ba const& other);
-    void         add_impact(misc::shared_ptr<kpi> const& impact);
+    void         add_impact(std::shared_ptr<kpi> const& impact);
     bool         child_has_update(
                    computable* child,
                    io::stream* visitor = NULL);
@@ -73,7 +72,7 @@ namespace        bam {
     std::string  get_perfdata() const;
     short        get_state_hard();
     short        get_state_soft();
-    void         remove_impact(misc::shared_ptr<kpi> const& impact);
+    void         remove_impact(std::shared_ptr<kpi> const& impact);
     void         set_id(unsigned int id);
     void         set_host_id(unsigned int host_id);
     void         set_service_id(unsigned int service_id);
@@ -85,7 +84,7 @@ namespace        bam {
     void         set_inherit_kpi_downtime(bool value);
     void         visit(io::stream* visitor);
     void         service_update(
-                   misc::shared_ptr<neb::downtime> const& dt,
+                   std::shared_ptr<neb::downtime> const& dt,
                    io::stream* visitor);
     void         save_inherited_downtime(
                    persistent_cache& cache) const;
@@ -96,7 +95,7 @@ namespace        bam {
     static int const        _recompute_limit = 100;
 
     struct impact_info {
-      misc::shared_ptr<kpi> kpi_ptr;
+      std::shared_ptr<kpi> kpi_ptr;
       impact_values         hard_impact;
       impact_values         soft_impact;
       bool                  in_downtime;
@@ -115,7 +114,7 @@ namespace        bam {
     double       _acknowledgement_soft;
     double       _downtime_hard;
     double       _downtime_soft;
-    misc::shared_ptr<ba_event>
+    std::shared_ptr<ba_event>
                  _event;
     bool         _generate_virtual_status;
     unsigned int _host_id;
@@ -133,12 +132,12 @@ namespace        bam {
     unsigned int _service_id;
     bool         _valid;
     bool         _inherit_kpi_downtime;
-    std::auto_ptr<inherited_downtime>
+    std::unique_ptr<inherited_downtime>
                  _inherited_downtime;
 
     void         _commit_initial_events(io::stream* visitor);
 
-    std::vector<misc::shared_ptr<ba_event> >
+    std::vector<std::shared_ptr<ba_event> >
                  _initial_events;
   };
 }

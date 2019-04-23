@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include <memory>
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/file/opener.hh"
-#include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/persistent_file.hh"
 #include "com/centreon/broker/file/stream.hh"
 
@@ -34,15 +34,15 @@ persistent_file::persistent_file(std::string const& path) {
   // On-disk file.
   file::opener opnr;
   opnr.set_filename(path);
-  misc::shared_ptr<io::stream> fs(opnr.open());
-  _splitter = fs.staticCast<file::stream>();
+  std::shared_ptr<io::stream> fs(opnr.open());
+  _splitter = std::static_pointer_cast<file::stream>(fs);
 
   // Compression layer.
-  misc::shared_ptr<compression::stream> cs(new compression::stream);
+  std::shared_ptr<compression::stream> cs(new compression::stream);
   cs->set_substream(fs);
 
   // BBDO layer.
-  misc::shared_ptr<bbdo::stream> bs(new bbdo::stream);
+  std::shared_ptr<bbdo::stream> bs(new bbdo::stream);
   bs->set_coarse(true);
   bs->set_negotiate(false);
   bs->set_substream(cs);
@@ -65,7 +65,7 @@ persistent_file::~persistent_file() {}
  *  @return Always return true, as file never times out.
  */
 bool persistent_file::read(
-                        misc::shared_ptr<io::data>& d,
+                        std::shared_ptr<io::data>& d,
                         time_t deadline) {
   return (_substream->read(d, deadline));
 }
@@ -85,7 +85,7 @@ void persistent_file::statistics(io::properties& tree) const {
  *
  *  @param[in] d  Input data.
  */
-int persistent_file::write(misc::shared_ptr<io::data> const& d) {
+int persistent_file::write(std::shared_ptr<io::data> const& d) {
   return (_substream->write(d));
 }
 

@@ -19,11 +19,11 @@
 #ifndef CCB_BAM_KPI_HH
 #  define CCB_BAM_KPI_HH
 
+#  include <memory>
 #  include <vector>
 #  include "com/centreon/broker/bam/computable.hh"
 #  include "com/centreon/broker/bam/kpi_event.hh"
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -60,9 +60,9 @@ namespace        bam {
 
   protected:
     unsigned int _id;
-    misc::shared_ptr<kpi_event>
+    std::shared_ptr<kpi_event>
                  _event;
-    std::vector<misc::shared_ptr<kpi_event> >
+    std::vector<std::shared_ptr<kpi_event> >
                  _initial_events;
   };
 }

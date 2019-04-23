@@ -19,8 +19,8 @@
 #ifndef CCB_BAM_BOOL_NOT_HH
 #  define CCB_BAM_BOOL_NOT_HH
 
+#  include <memory>
 #  include "com/centreon/broker/bam/bool_value.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -46,7 +46,7 @@ namespace     bam {
     bool      child_has_update(
                 computable* child,
                 io::stream* visitor = NULL);
-    void      set_value(misc::shared_ptr<bool_value>& value);
+    void      set_value(std::shared_ptr<bool_value>& value);
     double    value_hard();
     double    value_soft();
     bool      state_known() const;

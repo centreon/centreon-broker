@@ -61,7 +61,7 @@ int main() {
     {
       char const* messages[] = { MSG1, MSG2, NULL };
       for (unsigned int i = 0; messages[i]; ++i) {
-        misc::shared_ptr<io::raw> data(new io::raw);
+        std::shared_ptr<io::raw> data(new io::raw);
         data->append(messages[i]);
         multiplexing::engine::instance().publish(
           data.staticCast<io::data>());
@@ -70,7 +70,7 @@ int main() {
 
     // Should read no events from subscriber.
     {
-      misc::shared_ptr<io::data> data;
+      std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
       if (!data.isNull())
         throw (exceptions::msg() << "error at step #1");
@@ -81,7 +81,7 @@ int main() {
 
     // Publish a new event.
     {
-      misc::shared_ptr<io::raw> data(new io::raw);
+      std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG3);
       multiplexing::engine::instance().publish(
         data.staticCast<io::data>());
@@ -92,7 +92,7 @@ int main() {
 
     // Publish a new event.
     {
-      misc::shared_ptr<io::raw> data(new io::raw);
+      std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG4);
       multiplexing::engine::instance().publish(
         data.staticCast<io::data>());
@@ -103,13 +103,13 @@ int main() {
       char const* messages[] =
         { HOOKMSG1, MSG1, HOOKMSG2, MSG2, HOOKMSG2, MSG3, HOOKMSG2, HOOKMSG3, NULL };
       for (unsigned int i = 0; messages[i]; ++i) {
-        misc::shared_ptr<io::data> d;
+        std::shared_ptr<io::data> d;
         s.get_muxer().read(d, 0);
         if (d.isNull()
             || (d->type() != io::raw::static_type()))
           throw (exceptions::msg() << "error at step #2");
         else {
-          misc::shared_ptr<io::raw> raw(d.staticCast<io::raw>());
+          std::shared_ptr<io::raw> raw(d.staticCast<io::raw>());
           if (strncmp(
                 raw->QByteArray::data(),
                 messages[i],
@@ -117,7 +117,7 @@ int main() {
             throw (exceptions::msg() << "error at step #3");
         }
       }
-      misc::shared_ptr<io::data> d;
+      std::shared_ptr<io::data> d;
       s.get_muxer().read(d, 0);
       if (!d.isNull())
         throw (exceptions::msg() << "error at step #4");

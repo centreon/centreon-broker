@@ -180,7 +180,7 @@ static io::data* unserialize(
     info(io::events::instance().get_event_info(event_type));
   if (info) {
     // Create object.
-    std::auto_ptr<io::data> t(info->get_operations().constructor());
+    std::unique_ptr<io::data> t(info->get_operations().constructor());
     if (t.get()) {
       t->source_id = source_id;
       t->destination_id = destination_id;
@@ -288,17 +288,17 @@ input& input::operator=(input const& other) {
  *
  *  @return Respect io::stream::read()'s return value.
  */
-bool input::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool input::read(std::shared_ptr<io::data>& d, time_t deadline) {
   // Read event.
-  d.clear();
+  d.reset();
   bool timed_out(!read_any(d, deadline));
-  unsigned int event_id(d.isNull() ? 0 : d->type());
+  unsigned int event_id(!d ? 0 : d->type());
   while (!timed_out
          && ((event_id >> 16) == io::events::bbdo)) {
     // Version response.
     if ((event_id & 0xFFFF) == 1) {
-      misc::shared_ptr<version_response>
-        version(d.staticCast<version_response>());
+      std::shared_ptr<version_response>
+        version(std::static_pointer_cast<version_response>(d));
       if (version->bbdo_major != BBDO_VERSION_MAJOR)
         throw (exceptions::msg()
                << "BBDO: peer is using protocol version "
@@ -316,15 +316,15 @@ bool input::read(misc::shared_ptr<io::data>& d, time_t deadline) {
     else if ((event_id & 0xFFFF) == 2) {
       logging::info(logging::medium)
         << "BBDO: received acknowledgement for "
-        << d.ref_as<ack const>().acknowledged_events << " events";
-      acknowledge_events(d.ref_as<ack const>().acknowledged_events);
+        << std::static_pointer_cast<ack const>(d)->acknowledged_events << " events";
+      acknowledge_events(std::static_pointer_cast<ack const>(d)->acknowledged_events);
     }
 
     // Control messages.
     logging::debug(logging::medium) << "BBDO: event with ID "
       << event_id << " was a control message, launching recursive read";
     timed_out = !read_any(d, deadline);
-    event_id = d.isNull() ? 0 : d->type();
+    event_id = !d ? 0 : d->type();
   }
   return (!timed_out);
 }
@@ -341,12 +341,12 @@ bool input::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *  @return Respect io::stream::read()'s return value.
  */
 bool input::read_any(
-              misc::shared_ptr<io::data>& d,
+              std::shared_ptr<io::data>& d,
               time_t deadline) {
   try {
     // Return value.
-    std::auto_ptr<io::data> e;
-    d.clear();
+    std::unique_ptr<io::data> e;
+    d.reset();
 
     // Get header informations.
     unsigned int event_id(0);
@@ -429,13 +429,13 @@ bool input::read_any(
     }
 
     // Unserialize event.
-    d = unserialize(
+    d.reset(unserialize(
           event_id,
           source_id,
           destination_id,
           packet.data(),
-          packet.size());
-    if (!d.isNull())
+          packet.size()));
+    if (d)
       logging::debug(logging::medium) << "BBDO: unserialized "
         << raw_size << " bytes for event of type " << event_id;
     else {
@@ -473,12 +473,10 @@ void input::_buffer_must_have_unprocessed(int bytes, time_t deadline) {
   // Read as much data as requested.
   bool timed_out(false);
   while (!timed_out && (_buffer.size() < bytes)) {
-    misc::shared_ptr<io::data> d;
+    std::shared_ptr<io::data> d;
     timed_out = !_substream->read(d, deadline);
-    if (!d.isNull() && d->type() == io::raw::static_type()) {
-      misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
-      _buffer.append(r);
-    }
+    if (d && d->type() == io::raw::static_type())
+      _buffer.append(std::static_pointer_cast<io::raw>(d));
   }
   if (timed_out)
     throw (exceptions::timeout());

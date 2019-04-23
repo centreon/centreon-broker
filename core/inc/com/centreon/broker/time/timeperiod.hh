@@ -21,11 +21,11 @@
 
 #  include <string>
 #  include <vector>
+#  include <memory>
 #  include <list>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/time/timerange.hh"
 #  include "com/centreon/broker/time/daterange.hh"
-#  include "com/centreon/broker/time/ptr_typedef.hh"
 
 CCB_BEGIN()
 

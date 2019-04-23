@@ -24,7 +24,6 @@
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/node_cache.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 
 CCB_BEGIN()
 
@@ -37,29 +36,29 @@ namespace                        notification {
    */
   class                          connector : public io::endpoint {
   public:
-                                 connector(misc::shared_ptr<persistent_cache> cache);
+                                 connector(std::shared_ptr<persistent_cache> cache);
                                  connector(connector const& c);
                                  ~connector();
     connector&                   operator=(connector const& c);
     void                         connect_to(
-                                   QString const& type,
-                                   QString const& host,
+                                   std::string const& type,
+                                   std::string const& host,
                                    unsigned short port,
-                                   QString const& user,
-                                   QString const& password,
-                                   QString const& centreon_db,
+                                   std::string const& user,
+                                   std::string const& password,
+                                   std::string const& centreon_db,
                                    bool check_replication = true);
-    misc::shared_ptr<io::stream> open();
+    std::shared_ptr<io::stream> open();
 
   private:
     bool                         _check_replication;
-    QString                      _centreon_db;
-    QString                      _host;
-    QString                      _password;
+    std::string                  _centreon_db;
+    std::string                  _host;
+    std::string                  _password;
     unsigned short               _port;
-    QString                      _type;
-    QString                      _user;
-    misc::shared_ptr<persistent_cache>
+    std::string                  _type;
+    std::string                  _user;
+    std::shared_ptr<persistent_cache>
                                  _cache;
     node_cache                   _node_cache;
   };

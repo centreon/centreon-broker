@@ -91,6 +91,6 @@ void temporary_endpoint::close() {
  *
  *  @return New temporary_stream.
  */
-misc::shared_ptr<io::stream> temporary_endpoint::open() {
-  return (misc::shared_ptr<io::stream>(new temporary_stream));
+std::shared_ptr<io::stream> temporary_endpoint::open() {
+  return (std::shared_ptr<io::stream>(new temporary_stream));
 }

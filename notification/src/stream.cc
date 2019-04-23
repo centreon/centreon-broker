@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <clocale>
 #include <ctime>
 #include <QPair>
 #include <QSqlDriver>
@@ -64,37 +65,37 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in] node_cache              A loaded node event cache.
  */
 stream::stream(
-          QString const& type,
-          QString const& host,
+          std::string const& type,
+          std::string const& host,
           unsigned short port,
-          QString const& user,
-          QString const& password,
-          QString const& centreon_db,
+          std::string const& user,
+          std::string const& password,
+          std::string const& centreon_db,
           bool check_replication,
           node_cache& cache)
   : _node_cache(cache) {
   // Get the driver ID.
-  QString t;
-  if (!type.compare("db2", Qt::CaseInsensitive))
+  std::string t;
+  if (!strcasecmp(type.c_str(), "db2"))
     t = "QDB2";
-  else if (!type.compare("ibase", Qt::CaseInsensitive)
-           || !type.compare("interbase", Qt::CaseInsensitive))
+  else if (!strcasecmp(type.c_str(), "ibase")
+           || !strcasecmp(type.c_str(), "interbase"))
     t = "QIBASE";
-  else if (!type.compare("mysql", Qt::CaseInsensitive))
+  else if (!strcasecmp(type.c_str(), "mysql"))
     t = "QMYSQL";
-  else if (!type.compare("oci", Qt::CaseInsensitive)
-           || !type.compare("oracle", Qt::CaseInsensitive))
+  else if (!strcasecmp(type.c_str(), "oci")
+           || !strcasecmp(type.c_str(), "oracle"))
     t = "QOCI";
-  else if (!type.compare("odbc", Qt::CaseInsensitive))
+  else if (!strcasecmp(type.c_str(), "odbc"))
     t = "QODBC";
-  else if (!type.compare("psql", Qt::CaseInsensitive)
-           || !type.compare("postgres", Qt::CaseInsensitive)
-           || !type.compare("postgresql", Qt::CaseInsensitive))
+  else if (!strcasecmp(type.c_str(), "psql")
+           || !strcasecmp(type.c_str(), "postgres")
+           || !strcasecmp(type.c_str(), "postgresql"))
     t = "QPSQL";
-  else if (!type.compare("sqlite", Qt::CaseInsensitive))
+  else if (!strcasecmp(type.c_str(), "sqlite"))
     t = "QSQLITE";
-  else if (!type.compare("tds", Qt::CaseInsensitive)
-           || !type.compare("sybase", Qt::CaseInsensitive))
+  else if (!strcasecmp(type.c_str(), "tds")
+           || !strcasecmp(type.c_str(), "sybase"))
     t = "QTDS";
   else
     t = type;
@@ -112,7 +113,7 @@ stream::stream(
     user,
     password,
     centreon_db,
-    id,
+    id.toStdString(),
     check_replication);
 
   // Create the process manager.
@@ -189,9 +190,9 @@ void stream::initialize() {
  *
  *  @return This method will throw.
  */
-bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (exceptions::shutdown()
          << "attempt to read from a notification stream");
   return (true);
@@ -212,7 +213,7 @@ void stream::update() {
  *
  *  @return Number of events acknowledged.
  */
-int stream::write(misc::shared_ptr<io::data> const& data) {
+int stream::write(std::shared_ptr<io::data> const& data) {
   // Check that data exists.
   if (!validate(data, "notification"))
     return (1);
@@ -224,15 +225,15 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
 
   // Process events.
   if (data->type() == neb::host_status::static_type())
-    _process_host_status_event(*data.staticCast<neb::host_status>());
+    _process_host_status_event(*std::static_pointer_cast<neb::host_status>(data));
   else if (data->type() == neb::service_status::static_type())
-    _process_service_status_event(*data.staticCast<neb::service_status>());
+    _process_service_status_event(*std::static_pointer_cast<neb::service_status>(data));
   else if (data->type() == correlation::issue_parent::static_type())
-    _process_issue_parent_event(*data.staticCast<correlation::issue_parent>());
+    _process_issue_parent_event(*std::static_pointer_cast<correlation::issue_parent>(data));
   else if (data->type() == neb::acknowledgement::static_type())
-    _process_ack(data.ref_as<neb::acknowledgement>());
+    _process_ack(*std::static_pointer_cast<neb::acknowledgement>(data));
   else if (data->type() == neb::downtime::static_type())
-    _process_downtime(data.ref_as<neb::downtime>());
+    _process_downtime(*std::static_pointer_cast<neb::downtime>(data));
 
   return (retval);
 }
@@ -257,27 +258,27 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
  *  @param[in]  check_replication  True if we need to check the replication.
  */
 void stream::_open_db(
-               std::auto_ptr<QSqlDatabase>& db,
-               QString const& t,
-               QString const& host,
+               std::unique_ptr<QSqlDatabase>& db,
+               std::string const& t,
+               std::string const& host,
                unsigned short port,
-               QString const& user,
-               QString const& password,
-               QString const& db_name,
-               QString const& id,
+               std::string const& user,
+               std::string const& password,
+               std::string const& db_name,
+               std::string const& id,
                bool check_replication) {
    // Add database connection.
-  db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(t, id)));
+  db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(t.c_str(), id.c_str())));
   try {
     if (t == "QMYSQL")
       db->setConnectOptions("CLIENT_FOUND_ROWS");
 
     // Open database.
-    db->setHostName(host);
+    db->setHostName(host.c_str());
     db->setPort(port);
-    db->setUserName(user);
-    db->setPassword(password);
-    db->setDatabaseName(db_name);
+    db->setUserName(user.c_str());
+    db->setPassword(password.c_str());
+    db->setDatabaseName(db_name.c_str());
 
     {
       QMutexLocker lock(&global_lock);
@@ -333,7 +334,7 @@ void stream::_open_db(
     }
 
     // Add this connection to the connections to be deleted.
-    QSqlDatabase::removeDatabase(id);
+    QSqlDatabase::removeDatabase(id.c_str());
     throw ;
   }
 }
@@ -346,8 +347,8 @@ void stream::_open_db(
  *  @param[in] id           An unique id identifiying the new connection.
  */
 void stream::_clone_db(
-               std::auto_ptr<QSqlDatabase>& db,
-               std::auto_ptr<QSqlDatabase> const& db_to_clone,
+               std::unique_ptr<QSqlDatabase>& db,
+               std::unique_ptr<QSqlDatabase> const& db_to_clone,
                QString const& id) {
   // Clone database.
   db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*db_to_clone, id)));
@@ -404,7 +405,7 @@ void stream::_process_service_status_event(neb::service_status const& event) {
     // Get the state lock.
     // TODO: The write lock here kills the perf. Use a read lock instead.
     //       and lock on an individual node level.
-    std::auto_ptr<QWriteLocker> lock(_state.write_lock());
+    std::unique_ptr<QWriteLocker> lock(_state.write_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
       throw (exceptions::msg()
@@ -462,7 +463,7 @@ void stream::_process_host_status_event(neb::host_status const& event) {
     // Get the state lock.
     // TODO: The write lock here kills the perf. Use a read lock instead.
     //       and lock on an individual node level.
-    std::auto_ptr<QWriteLocker> lock(_state.write_lock());
+    std::unique_ptr<QWriteLocker> lock(_state.write_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
       throw (exceptions::msg()
@@ -511,7 +512,7 @@ void stream::_process_issue_parent_event(
   // Get the state lock.
   // TODO: The write lock here kills the perf. Use a read lock instead.
   //       and lock on an individual node level.
-  std::auto_ptr<QWriteLocker> lock(_state.write_lock());
+  std::unique_ptr<QWriteLocker> lock(_state.write_lock());
   node::ptr n = _state.get_node_by_id(child_id);
   if (!n)
     throw (exceptions::msg()

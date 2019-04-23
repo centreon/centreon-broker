@@ -104,7 +104,7 @@ void generator::run() {
 
       // Send dumper events.
       {
-        misc::shared_ptr<dumper::dump> d(new dumper::dump);
+        std::shared_ptr<dumper::dump> d(new dumper::dump);
         d->source_id = _instance_id;
         d->content = b.data().c_str();
         d->tag = _tag.c_str();
@@ -132,7 +132,7 @@ void generator::run() {
               << "stats: generating update for graphable service '"
               << it3->first << "' (host " << it3->second.first
               << ", service " << it3->second.second << ")";
-            misc::shared_ptr<neb::service_status>
+            std::shared_ptr<neb::service_status>
               ss(new neb::service_status);
             ss->host_id = it3->second.first;
             ss->service_id = it3->second.second;

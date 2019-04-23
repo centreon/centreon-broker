@@ -116,9 +116,9 @@ class FileSplitterConcurrent : public ::testing::Test {
   }
 
  protected:
-  std::auto_ptr<file::splitter> _file;
-  std::auto_ptr<cfile_factory>  _file_factory;
-  std::auto_ptr<qt_fs_browser>  _fs_browser;
+  std::unique_ptr<file::splitter> _file;
+  std::unique_ptr<cfile_factory>  _file_factory;
+  std::unique_ptr<qt_fs_browser>  _fs_browser;
   std::string                   _path;
 
   void _remove_files() {

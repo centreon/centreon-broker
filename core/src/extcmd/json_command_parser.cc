@@ -78,9 +78,9 @@ json_command_parser::~json_command_parser() {}
 unsigned int json_command_parser::parse(
                std::string const& buffer,
                command_result& res,
-               misc::shared_ptr<command_request>& request) {
+               std::shared_ptr<command_request>& request) {
   res = command_result();
-  request.clear();
+  request.reset();
 
   // Try to find a valid json snippet.
   size_t parsed = 0;
@@ -118,7 +118,7 @@ unsigned int json_command_parser::parse(
                         QString::fromStdString(find_or_except("command_id", it)));
     }
     else if (command_type == "execute") {
-      request = misc::make_shared(new command_request);
+      request.reset(new command_request);
       request->cmd = QString::fromStdString(find_or_except("command", it));
       request->destination_id =
         QString::fromStdString(find_or_except("broker_id", it)).toUInt();

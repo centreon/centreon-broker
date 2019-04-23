@@ -179,7 +179,7 @@ void state::apply(
   endpoint::instance().apply(st.endpoints());
 
   // Create instance broadcast event.
-  misc::shared_ptr<instance_broadcast> ib(new instance_broadcast);
+  std::shared_ptr<instance_broadcast> ib(new instance_broadcast);
   ib->broker_id = io::data::broker_id;
   ib->poller_id = _poller_id;
   ib->poller_name = _poller_name.c_str();

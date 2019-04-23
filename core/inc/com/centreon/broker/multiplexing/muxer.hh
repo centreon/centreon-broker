@@ -53,9 +53,9 @@ namespace               multiplexing {
     void                ack_events(int count);
     static void         event_queue_max_size(unsigned int max) throw ();
     static unsigned int event_queue_max_size() throw ();
-    void                publish(misc::shared_ptr<io::data> const& d);
+    void                publish(std::shared_ptr<io::data> const& d);
     bool                read(
-                          misc::shared_ptr<io::data>& d,
+                          std::shared_ptr<io::data>& d,
                           time_t deadline);
     void                set_read_filters(filters const& fltrs);
     void                set_write_filters(filters const& fltrs);
@@ -66,7 +66,7 @@ namespace               multiplexing {
     void                remove_queue_files();
     void                statistics(io::properties& tree) const;
     void                wake();
-    int                 write(misc::shared_ptr<io::data> const& d);
+    int                 write(std::shared_ptr<io::data> const& d);
 
     static std::string  memory_file(std::string const& name);
     static std::string  queue_file(std::string const& name);
@@ -76,23 +76,23 @@ namespace               multiplexing {
     muxer&              operator=(muxer const& other);
     void                _clean();
     void                _get_event_from_file(
-                          misc::shared_ptr<io::data>& event);
+                          std::shared_ptr<io::data>& event);
     std::string         _memory_file() const;
     void                _push_to_queue(
-                          misc::shared_ptr<io::data> const& event);
+                          std::shared_ptr<io::data> const& event);
     std::string         _queue_file() const;
 
     QWaitCondition      _cv;
-    std::list<misc::shared_ptr<io::data> >
+    std::list<std::shared_ptr<io::data> >
                         _events;
     unsigned int        _events_size;
     static unsigned int _event_queue_max_size;
-    std::auto_ptr<persistent_file>
+    std::unique_ptr<persistent_file>
                         _file;
     mutable QMutex      _mutex;
     std::string         _name;
     bool                _persistent;
-    std::list<misc::shared_ptr<io::data> >::iterator
+    std::list<std::shared_ptr<io::data>>::iterator
                         _pos;
     filters             _read_filters;
     filters             _write_filters;

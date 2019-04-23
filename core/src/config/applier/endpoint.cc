@@ -167,14 +167,14 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
               name_match_failover(it->name))
             == endp_to_create.end())) {
       // Create subscriber and endpoint.
-      misc::shared_ptr<multiplexing::subscriber>
+      std::shared_ptr<multiplexing::subscriber>
         s(_create_subscriber(*it));
       bool is_acceptor;
-      misc::shared_ptr<io::endpoint>
+      std::shared_ptr<io::endpoint>
         e(_create_endpoint(*it, is_acceptor));
-      std::auto_ptr<processing::thread> endp;
+      std::unique_ptr<processing::thread> endp;
       if (is_acceptor) {
-        std::auto_ptr<processing::acceptor>
+        std::unique_ptr<processing::acceptor>
           acceptr(new processing::acceptor(e, it->name));
         acceptr->set_read_filters(_filters(it->read_filters));
         acceptr->set_write_filters(_filters(it->write_filters));
@@ -329,7 +329,7 @@ multiplexing::subscriber* endpoint::_create_subscriber(config::endpoint& cfg) {
   uset<unsigned int> write_elements(_filters(cfg.write_filters));
 
   // Create subscriber.
-  std::auto_ptr<multiplexing::subscriber>
+  std::unique_ptr<multiplexing::subscriber>
     s(new multiplexing::subscriber(cfg.name, true));
   s->get_muxer().set_read_filters(read_elements);
   s->get_muxer().set_write_filters(write_elements);
@@ -346,15 +346,15 @@ multiplexing::subscriber* endpoint::_create_subscriber(config::endpoint& cfg) {
  */
 processing::failover* endpoint::_create_failover(
                                   config::endpoint& cfg,
-                                  misc::shared_ptr<multiplexing::subscriber> sbscrbr,
-                                  misc::shared_ptr<io::endpoint> endp,
+                                  std::shared_ptr<multiplexing::subscriber> sbscrbr,
+                                  std::shared_ptr<io::endpoint> endp,
                                   std::list<config::endpoint>& l) {
   // Debug message.
   logging::config(logging::medium)
     << "endpoint applier: creating new endpoint '" << cfg.name << "'";
 
   // Check that failover is configured.
-  misc::shared_ptr<processing::failover> failovr;
+  std::shared_ptr<processing::failover> failovr;
   if (!cfg.failovers.empty()) {
     std::string front_failover(cfg.failovers.front());
     std::list<config::endpoint>::iterator
@@ -364,14 +364,14 @@ processing::failover* endpoint::_create_failover(
                 "failover '" << front_failover << "' for endpoint '"
              << cfg.name << "'");
     bool is_acceptor;
-    misc::shared_ptr<io::endpoint>
+    std::shared_ptr<io::endpoint>
       e(_create_endpoint(*it, is_acceptor));
     if (is_acceptor)
       throw (exceptions::msg()
              << "endpoint applier: cannot allow acceptor '"
              << front_failover << "' as failover for endpoint '"
              << cfg.name << "'");
-    failovr = misc::shared_ptr<processing::failover>(
+    failovr = std::shared_ptr<processing::failover>(
                 _create_failover(
                   *it,
                   sbscrbr,
@@ -391,7 +391,7 @@ processing::failover* endpoint::_create_failover(
                   "secondary failover '" << *failover_it << "' for endpoint '"
                << cfg.name << "'");
       bool is_acceptor(false);
-      misc::shared_ptr<io::endpoint> endp(
+      std::shared_ptr<io::endpoint> endp(
                                        _create_endpoint(
                                          *it,
                                          is_acceptor));
@@ -406,7 +406,7 @@ processing::failover* endpoint::_create_failover(
   }
 
   // Return failover thread.
-  std::auto_ptr<processing::failover>
+  std::unique_ptr<processing::failover>
     fo(new processing::failover(
                          endp,
                          sbscrbr,
@@ -425,11 +425,11 @@ processing::failover* endpoint::_create_failover(
  *
  *  @return A new endpoint.
  */
-misc::shared_ptr<io::endpoint> endpoint::_create_endpoint(
+std::shared_ptr<io::endpoint> endpoint::_create_endpoint(
                                            config::endpoint& cfg,
                                            bool& is_acceptor) {
   // Create endpoint object.
-  misc::shared_ptr<io::endpoint> endp;
+  std::shared_ptr<io::endpoint> endp;
   int level(0);
   for (QMap<QString, io::protocols::protocol>::const_iterator
          it(io::protocols::instance().begin()),
@@ -438,16 +438,16 @@ misc::shared_ptr<io::endpoint> endpoint::_create_endpoint(
        ++it) {
     if ((it.value().osi_from == 1)
         && it.value().endpntfactry->has_endpoint(cfg)) {
-      misc::shared_ptr<persistent_cache> cache;
+      std::shared_ptr<persistent_cache> cache;
       if (cfg.cache_enabled) {
         std::string
           cache_path(config::applier::state::instance().cache_dir());
         cache_path.append(".cache.");
         cache_path.append(cfg.name);
-        cache = misc::shared_ptr<persistent_cache>(
+        cache = std::shared_ptr<persistent_cache>(
                         new persistent_cache(cache_path));
       }
-      endp = misc::shared_ptr<io::endpoint>(
+      endp = std::shared_ptr<io::endpoint>(
                      it.value().endpntfactry->new_endpoint(
                                                 cfg,
                                                 is_acceptor,
@@ -456,7 +456,7 @@ misc::shared_ptr<io::endpoint> endpoint::_create_endpoint(
       break ;
     }
   }
-  if (endp.isNull())
+  if (!endp)
     throw (exceptions::msg() << "endpoint applier: no matching " \
              "type found for endpoint '" << cfg.name << "'");
 
@@ -468,7 +468,7 @@ misc::shared_ptr<io::endpoint> endpoint::_create_endpoint(
     while (it != end) {
       if ((it.value().osi_from == level)
           && (it.value().endpntfactry->has_endpoint(cfg))) {
-        misc::shared_ptr<io::endpoint>
+        std::shared_ptr<io::endpoint>
           current(it.value().endpntfactry->new_endpoint(
                                              cfg,
                                              is_acceptor));

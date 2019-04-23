@@ -75,7 +75,7 @@ int stream::flush() {
  *  @return Peer name.
  */
 std::string stream::peer() const {
-  return (_substream.isNull() ? "(unknown)" : _substream->peer());
+  return (!_substream ? "(unknown)" : _substream->peer());
 }
 
 /**
@@ -84,9 +84,8 @@ std::string stream::peer() const {
  *  @param[in,out] substream  Stream on which this stream will read and
  *                            write.
  */
-void stream::set_substream(misc::shared_ptr<stream> substream) {
+void stream::set_substream(std::shared_ptr<stream> substream) {
   _substream = substream;
-  return ;
 }
 
 /**
@@ -115,14 +114,14 @@ void stream::update() {
  *  @return           True if event is valid.
  */
 bool stream::validate(
-               misc::shared_ptr<io::data> const& d,
+               std::shared_ptr<io::data> const& d,
                std::string const& error) {
-  if (d.isNull()) {
+  if (!d) {
     logging::error(logging::medium)
       << error << ": received a null event. This should never happen. "
                    "This is likely a software bug that you should report "
                    "to Centreon Broker developers.";
-    return (false);
+    return false;
   }
-  return (true);
+  return true;
 }

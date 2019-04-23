@@ -39,19 +39,19 @@ namespace                bam {
                          ~event_cache_visitor();
     void                 commit_to(io::stream& to);
     virtual bool         read(
-                           misc::shared_ptr<io::data>& d,
+                           std::shared_ptr<io::data>& d,
                            time_t deadline);
-    virtual int          write(misc::shared_ptr<io::data> const& d);
+    virtual int          write(std::shared_ptr<io::data> const& d);
 
   private:
                          event_cache_visitor(event_cache_visitor const& other);
     event_cache_visitor& operator=(event_cache_visitor const& other);
 
-    std::vector<misc::shared_ptr<io::data> >
+    std::vector<std::shared_ptr<io::data> >
                          _others;
-    std::vector<misc::shared_ptr<io::data> >
+    std::vector<std::shared_ptr<io::data> >
                          _ba_events;
-    std::vector<misc::shared_ptr<io::data> >
+    std::vector<std::shared_ptr<io::data> >
                          _kpi_events;
   };
 }

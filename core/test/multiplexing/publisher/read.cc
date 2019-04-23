@@ -40,7 +40,7 @@ int main() {
 
   // Read from publisher.
   try {
-    misc::shared_ptr<io::data> d;
+    std::shared_ptr<io::data> d;
     p.read(d);
     error = true;
   }

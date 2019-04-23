@@ -48,11 +48,11 @@ static int read_some(file::stream& f, unsigned int count) {
     // Find carriage return.
     int index(buffer.indexOf('\n'));
     while (-1 == index) {
-      misc::shared_ptr<io::data> d;
+      std::shared_ptr<io::data> d;
       f.read(d, (time_t)-1);
       if (d->type() != io::raw::static_type())
         return (1);
-      misc::shared_ptr<io::raw> r(d.staticCast<io::raw>());
+      std::shared_ptr<io::raw> r(d.staticCast<io::raw>());
       buffer.append(*r);
       index = buffer.indexOf('\n');
     }
@@ -85,7 +85,7 @@ static int write_some(file::stream& f, unsigned int count) {
     char buffer[32];
     ++written;
     snprintf(buffer, sizeof(buffer) - 1, "%u\n", written);
-    misc::shared_ptr<io::raw> data(new io::raw);
+    std::shared_ptr<io::raw> data(new io::raw);
     data->append(buffer);
     f.write(data);
   }
@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
 
   // No more data is available.
   try {
-    misc::shared_ptr<io::data> d;
+    std::shared_ptr<io::data> d;
     fs.read(d, (time_t)-1);
     retval |= 1;
   }

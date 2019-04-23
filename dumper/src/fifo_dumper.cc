@@ -73,8 +73,8 @@ fifo_dumper::~fifo_dumper() {}
  *
  *  @return Respect io::stream::read()'s return value.
  */
-bool fifo_dumper::read(misc::shared_ptr<io::data>& d, time_t deadline) {
-  d.clear();
+bool fifo_dumper::read(std::shared_ptr<io::data>& d, time_t deadline) {
+  d.reset();
   std::string line;
   try {
     time_t now(time(NULL));
@@ -87,7 +87,7 @@ bool fifo_dumper::read(misc::shared_ptr<io::data>& d, time_t deadline) {
       timeout = (deadline - now) * 1000000;
     line = _fifo.read_line(timeout);
     if (!line.empty()) {
-      misc::shared_ptr<dumper::dump> dmp(new dumper::dump);
+      std::shared_ptr<dumper::dump> dmp(new dumper::dump);
       dmp->content = QString::fromStdString(line);
       dmp->filename = QString::fromStdString(_path);
       dmp->tag = QString::fromStdString(_tagname);
@@ -108,9 +108,9 @@ bool fifo_dumper::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @return Always return 1, or throw exceptions.
  */
-int fifo_dumper::write(misc::shared_ptr<io::data> const& d) {
-  if (!d.isNull())
+int fifo_dumper::write(std::shared_ptr<io::data> const& d) {
+  if (d)
     throw (exceptions::shutdown()
            << "cannot write to FIFO dumper '" << _path << "'");
-  return (1);
+  return 1;
 }

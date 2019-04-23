@@ -53,7 +53,7 @@ using namespace com::centreon::broker::ceof;
  */
 node_events_stream::node_events_stream(
                       std::string const& name,
-                      misc::shared_ptr<persistent_cache> cache,
+                      std::shared_ptr<persistent_cache> cache,
                       std::string const& config_file)
   : _cache(cache),
     _config_file(config_file),
@@ -103,13 +103,13 @@ node_events_stream::~node_events_stream() {
  *  @return Always throw.
  */
 bool node_events_stream::read(
-                           misc::shared_ptr<io::data>& d,
+                           std::shared_ptr<io::data>& d,
                            time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (exceptions::shutdown()
          << "cannot read from a node events stream");
-  return (true);
+  return true;
 }
 
 /**
@@ -137,24 +137,24 @@ void node_events_stream::update() {
  *
  *  @param[in] d  Multiplexed data.
  */
-int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
+int node_events_stream::write(std::shared_ptr<io::data> const& d) {
   // Check that data can be processed.
   if (!validate(d, "node events"))
     return (1);
 
   // Manage data.
   if (d->type() == neb::host_status::static_type()) {
-    _process_host_status(d.ref_as<neb::host_status const>());
+    _process_host_status(*std::static_pointer_cast<neb::host_status const>(d));
   }
   else if (d->type() == neb::service_status::static_type()) {
-    _process_service_status(d.ref_as<neb::service_status const>());
+    _process_service_status(*std::static_pointer_cast<neb::service_status const>(d));
   }
   else if (d->type() == neb::downtime::static_type()) {
-    _update_downtime(d.ref_as<neb::downtime const>());
+    _update_downtime(*std::static_pointer_cast<neb::downtime const>(d));
   }
   else if (d->type() == extcmd::command_request::static_type()) {
     extcmd::command_request const&
-      req(d.ref_as<extcmd::command_request const>());
+      req(*std::static_pointer_cast<extcmd::command_request const>(d));
     if (req.is_addressed_to(_name)) {
       multiplexing::publisher pblsh;
       try {
@@ -162,7 +162,7 @@ int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
         parse_command(req, pblsh);
 
         // Send successful result.
-        misc::shared_ptr<extcmd::command_result>
+        std::shared_ptr<extcmd::command_result>
           res(new extcmd::command_result);
         res->uuid = req.uuid;
         res->msg = "\"Command successfully executed.\"";
@@ -177,7 +177,7 @@ int node_events_stream::write(misc::shared_ptr<io::data> const& d) {
           << req.cmd << "': " << e.what();
 
         // Send error result.
-        misc::shared_ptr<extcmd::command_result>
+        std::shared_ptr<extcmd::command_result>
           res(new extcmd::command_result);
         res->uuid = req.uuid;
         res->msg = QString("\"") + e.what() + "\"";
@@ -394,7 +394,7 @@ void node_events_stream::_remove_expired_acknowledgement(
     // Close the ack.
     found->deletion_time = check_time;
     multiplexing::publisher pblsh;
-    pblsh.write(misc::make_shared(new neb::acknowledgement(*found)));
+    pblsh.write(std::make_shared<neb::acknowledgement>(*found));
     _acknowledgements.erase(found);
   }
 }
@@ -479,7 +479,7 @@ void node_events_stream::_parse_ack(
       t = _acknowledgements[id].entry_time;
 
 
-    misc::shared_ptr<neb::acknowledgement>
+    std::shared_ptr<neb::acknowledgement>
       ack(new neb::acknowledgement);
     ack->acknowledgement_type = is_host;
     ack->comment = QString::fromStdString(comment);
@@ -546,7 +546,7 @@ void node_events_stream::_parse_remove_ack(
              << id.get_host_id() << ", " << id.get_service_id() << ")");
 
     // Close the ack.
-    misc::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement(*found));
+    std::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement(*found));
     ack->deletion_time = ::time(NULL);
 
     // Erase the ack.
@@ -605,7 +605,7 @@ void node_events_stream::_parse_downtime(
       throw (exceptions::msg() << "couldn't find node "
              << host_name << ", " << service_description);
 
-    misc::shared_ptr<neb::downtime>
+    std::shared_ptr<neb::downtime>
       d(new neb::downtime);
     d->author = QString::fromStdString(author);
     d->comment = QString::fromStdString(comment);
@@ -685,7 +685,7 @@ void node_events_stream::_register_downtime(downtime const& dwn, io::stream* str
 
   // Write the downtime.
   if (stream)
-    stream->write(misc::make_shared(new downtime(dwn)));
+    stream->write(std::make_shared<downtime>(dwn));
 
   // Schedule the downtime.
   if (!dwn.is_recurring)
@@ -709,7 +709,7 @@ void node_events_stream::_delete_downtime(
   node_id node(dwn.host_id, dwn.service_id);
 
   // Close the downtime.
-  misc::shared_ptr<neb::downtime> d(new neb::downtime(dwn));
+  std::shared_ptr<neb::downtime> d(new neb::downtime(dwn));
   d->actual_end_time = ts;
   d->deletion_time = ts;
   d->was_cancelled = true;
@@ -805,15 +805,15 @@ void node_events_stream::_load_config_file() {
  */
 void node_events_stream::_load_cache() {
   // No cache, nothing to do.
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   logging::info(logging::medium) << "node events: loading cache";
 
-  misc::shared_ptr<io::data> d;
+  std::shared_ptr<io::data> d;
   while (true) {
     _cache->get(d);
-    if (d.isNull())
+    if (!d)
       break ;
     _process_loaded_event(d);
   }
@@ -825,13 +825,13 @@ void node_events_stream::_load_cache() {
  *  @param[in] d  The event.
  */
 void node_events_stream::_process_loaded_event(
-                           misc::shared_ptr<io::data> const& d) {
+                           std::shared_ptr<io::data> const& d) {
   // Write to the node cache.
   _node_cache.write(d);
 
   // Managed internally.
   if (d->type() == neb::acknowledgement::static_type()) {
-    neb::acknowledgement const& ack = d.ref_as<neb::acknowledgement const>();
+    neb::acknowledgement const& ack = *std::static_pointer_cast<neb::acknowledgement const>(d);
     logging::debug(logging::medium)
       << "node events: loading acknowledgement for ("
       << ack.host_id << ", " << ack.service_id << ")"
@@ -839,12 +839,12 @@ void node_events_stream::_process_loaded_event(
     _acknowledgements[node_id(ack.host_id, ack.service_id)] = ack;
   }
   else if (d->type() == neb::downtime::static_type()) {
-    neb::downtime const& dwn = d.ref_as<neb::downtime const>();
+    neb::downtime const& dwn = *std::static_pointer_cast<neb::downtime const>(d);
     logging::debug(logging::medium)
       << "node events: loading downtime for ("
       << dwn.host_id << ", " << dwn.service_id << ")"
       << ", starting at " << dwn.start_time;
-    _register_downtime(d.ref_as<downtime const>(), NULL);
+    _register_downtime(*std::static_pointer_cast<downtime const>(d), NULL);
   }
 }
 
@@ -914,7 +914,7 @@ void node_events_stream::_apply_config_downtimes() {
  */
 void node_events_stream::_save_cache() {
   // No cache, nothing to do.
-  if (_cache.isNull())
+  if (_cache.get() == NULL)
     return ;
 
   logging::info(logging::medium) << "node events: saving cache";
@@ -928,14 +928,14 @@ void node_events_stream::_save_cache() {
          end = _acknowledgements.end();
        it != end;
        ++it)
-    _cache->add(misc::make_shared(new neb::acknowledgement(*it)));
+    _cache->add(std::make_shared<neb::acknowledgement>(*it));
   QList<downtime> downtimes = _downtimes.get_all_downtimes();
   for (QList<downtime>::const_iterator
          it = downtimes.begin(),
          end = downtimes.end();
        it != end;
        ++it)
-    _cache->add(misc::make_shared(new neb::downtime(*it)));
+    _cache->add(std::make_shared<neb::downtime>(*it));
   _cache->commit();
 }
 
@@ -1031,7 +1031,7 @@ void node_events_stream::_spawn_recurring_downtime(
 
   // Send the downtime.
   multiplexing::publisher pblsh;
-  pblsh.write(misc::make_shared(new neb::downtime(spawned)));
+  pblsh.write(std::make_shared<neb::downtime>(spawned));
 
   // Schedule the downtime.
   _schedule_downtime(spawned);

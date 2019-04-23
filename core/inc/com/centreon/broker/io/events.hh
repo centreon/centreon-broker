@@ -21,7 +21,6 @@
 
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
-#  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 

@@ -178,7 +178,7 @@ void notification_scheduler::_process_actions() {
     std::vector<std::pair<time_t, action> > spawned_actions;
     {
       // Lock the state mutex.
-      std::auto_ptr<QReadLocker> lock(_state.read_lock());
+      std::unique_ptr<QReadLocker> lock(_state.read_lock());
       // Process the action.
       it->second->process_action(_state, _cache, spawned_actions);
     }

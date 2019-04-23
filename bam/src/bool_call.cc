@@ -66,10 +66,10 @@ bool_call& bool_call::operator=(bool_call const& right) {
  *  @return Evaluation of the expression with hard values.
  */
 double bool_call::value_hard() {
-  if (_expression.isNull())
-    return (0);
+  if (!_expression)
+    return 0;
   else
-    return (_expression->value_hard());
+    return _expression->value_hard();
 }
 
 /**
@@ -78,10 +78,10 @@ double bool_call::value_hard() {
  *  @return Evaluation of the expression with soft values.
  */
 double bool_call::value_soft() {
-  if (_expression.isNull())
-    return (0);
+  if (!_expression)
+    return 0;
   else
-    return (_expression->value_hard());
+    return _expression->value_hard();
 }
 
 /**
@@ -90,10 +90,10 @@ double bool_call::value_soft() {
  *  @return  True if the state is known.
  */
 bool bool_call::state_known() const {
-  if (_expression.isNull())
-    return (false);
+  if (!_expression)
+    return false;
   else
-    return (_expression->state_known());
+    return _expression->state_known();
 }
 
 /**
@@ -110,7 +110,7 @@ std::string const& bool_call::get_name() const {
  *
  *  @param[in] expression  The expression.
  */
-void bool_call::set_expression(misc::shared_ptr<bool_value> expression) {
+void bool_call::set_expression(std::shared_ptr<bool_value> expression) {
   _expression = expression;
 }
 

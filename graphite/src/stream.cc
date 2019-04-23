@@ -53,7 +53,7 @@ stream::stream(
           std::string const& db_host,
           unsigned short db_port,
           unsigned int queries_per_transaction,
-          misc::shared_ptr<persistent_cache> const& cache)
+          std::shared_ptr<persistent_cache> const& cache)
   : _metric_naming(metric_naming),
     _status_naming(status_naming),
     _db_user(db_user),
@@ -91,7 +91,7 @@ stream::stream(
       .append("\n");
     _query.append(_auth_query);
   }
-  _socket = std::auto_ptr<QTcpSocket>(new QTcpSocket);
+  _socket = std::unique_ptr<QTcpSocket>(new QTcpSocket);
   _socket->connectToHost(QString::fromStdString(_db_host), _db_port);
   if (!_socket->waitForConnected())
     throw exceptions::msg()
@@ -135,9 +135,9 @@ int stream::flush() {
  *
  *  @return This method will throw.
  */
-bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (exceptions::shutdown()
          << "cannot read from Graphite database");
   return (true);
@@ -149,7 +149,7 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *  @param[out] tree Output tree.
  */
 void stream::statistics(io::properties& tree) const {
-  QMutexLocker lock(&_statusm);
+  std::lock_guard<std::mutex> lock(_statusm);
   if (!_status.empty())
     tree.add_property("status", io::property("status", _status));
   return ;
@@ -169,7 +169,7 @@ void stream::update() {
  *
  *  @return Number of events acknowledged.
  */
-int stream::write(misc::shared_ptr<io::data> const& data) {
+int stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_queries;
   if (!validate(data, "graphite"))
@@ -182,13 +182,13 @@ int stream::write(misc::shared_ptr<io::data> const& data) {
   if (data->type()
         == io::events::data_type<io::events::storage,
                                  storage::de_metric>::value) {
-    if (_process_metric(data.ref_as<storage::metric const>()))
+    if (_process_metric(*std::static_pointer_cast<storage::metric const>(data)))
       ++_actual_query;
   }
   else if (data->type()
              == io::events::data_type<io::events::storage,
                                       storage::de_status>::value) {
-    if (_process_status(data.ref_as<storage::status const>()))
+    if (_process_status(*std::static_pointer_cast<storage::status const>(data)))
       ++_actual_query;
   }
   if (_actual_query >= _queries_per_transaction)

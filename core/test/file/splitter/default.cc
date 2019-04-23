@@ -41,7 +41,7 @@ class FileSplitterDefault : public ::testing::Test {
   }
 
  protected:
-  std::auto_ptr<file::splitter> _file;
+  std::unique_ptr<file::splitter> _file;
   test_file_factory*            _file_factory;
   test_fs_browser*              _fs_browser;
   std::string                   _path;

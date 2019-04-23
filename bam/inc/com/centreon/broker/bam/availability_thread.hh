@@ -59,7 +59,7 @@ namespace           bam {
     void            terminate();
     void            start_and_wait();
 
-    std::auto_ptr<QMutexLocker>
+    std::unique_ptr<QMutexLocker>
                     lock();
 
     void            rebuild_availabilities(QString const& bas_to_rebuild);
@@ -88,7 +88,7 @@ namespace           bam {
     void            _open_database();
     void            _close_database();
 
-    std::auto_ptr<database>
+    std::unique_ptr<database>
                     _db;
     database_config _db_cfg;
     timeperiod_map& _shared_tps;

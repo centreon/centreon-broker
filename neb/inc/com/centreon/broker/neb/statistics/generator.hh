@@ -20,12 +20,12 @@
 #  define CCB_NEB_STATISTICS_GENERATOR_HH
 
 #  include <map>
+#  include <memory>
 #  include <string>
 #  include <utility>
 #  include "com/centreon/broker/config/state.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/statistics/plugin.hh"
-#  include "com/centreon/broker/misc/shared_ptr.hh"
 
 CCB_BEGIN()
 
@@ -44,7 +44,7 @@ namespace          neb {
       void         add(
                      unsigned int host_id,
                      unsigned int service_id,
-                     misc::shared_ptr<plugin> plugin);
+                     std::shared_ptr<plugin> plugin);
       void         add(
                      unsigned int host_id,
                      unsigned int service_id,
@@ -60,11 +60,11 @@ namespace          neb {
 
     private:
       unsigned int _interval;
-      std::map<std::string, misc::shared_ptr<plugin> >
+      std::map<std::string, std::shared_ptr<plugin> >
                    _plugins;
       std::map<
              std::pair<unsigned int, unsigned int>,
-             misc::shared_ptr<plugin> >
+             std::shared_ptr<plugin> >
                    _registers;
     };
   }

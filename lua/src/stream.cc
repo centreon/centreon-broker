@@ -41,7 +41,7 @@ using namespace com::centreon::broker::lua;
 stream::stream(
           std::string const& lua_script,
           QMap<QString, QVariant> const& conf_params,
-          misc::shared_ptr<persistent_cache> const& cache)
+          std::shared_ptr<persistent_cache> const& cache)
   : _cache(cache) {
   _luabinding = new luabinding(lua_script, conf_params, _cache);
 }
@@ -61,9 +61,9 @@ stream::~stream() {
  *
  *  @return This method will throw.
  */
-bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (exceptions::shutdown() << "cannot read from lua generic connector");
 }
 
@@ -74,7 +74,7 @@ bool stream::read(misc::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @return Number of events acknowledged.
  */
-int stream::write(misc::shared_ptr<io::data> const& data) {
+int stream::write(std::shared_ptr<io::data> const& data) {
   if (!validate(data, "lua"))
     return 0;
 

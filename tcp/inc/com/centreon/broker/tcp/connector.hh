@@ -41,7 +41,7 @@ namespace          tcp {
                    ~connector();
     connector&     operator=(connector const& other);
     void           connect_to(QString const& host, unsigned short port);
-    misc::shared_ptr<io::stream>
+    std::shared_ptr<io::stream>
                    open();
     void           set_read_timeout(int secs);
     void           set_write_timeout(int secs);

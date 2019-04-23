@@ -82,13 +82,13 @@ bool factory::has_not_endpoint(config::endpoint& cfg) const {
  *
  *  @return New stream.
  */
-misc::shared_ptr<stream> factory::new_stream(
-                                    misc::shared_ptr<stream> to,
-                                    bool is_acceptor,
-                                    QString const& proto_name) {
+std::shared_ptr<stream> factory::new_stream(
+                                   std::shared_ptr<stream> to,
+                                   bool is_acceptor,
+                                   QString const& proto_name) {
   (void)to;
   (void)is_acceptor;
   throw (exceptions::msg() << proto_name
          << ": protocol does not support feature negotiation");
-  return (misc::shared_ptr<stream>());
+  return std::shared_ptr<stream>();
 }

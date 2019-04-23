@@ -113,7 +113,7 @@ bool factory::has_not_endpoint(config::endpoint& cfg) const {
 io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
-                         misc::shared_ptr<persistent_cache> cache) const {
+                         std::shared_ptr<persistent_cache> cache) const {
   (void)is_acceptor;
   (void)cache;
 
@@ -131,7 +131,7 @@ io::endpoint* factory::new_endpoint(
     size = it.value().toUInt();
 
   // Create compression object.
-  std::auto_ptr<compression::opener> openr(new compression::opener);
+  std::unique_ptr<compression::opener> openr(new compression::opener);
   openr->set_level(level);
   openr->set_size(size);
   return (openr.release());
@@ -146,13 +146,13 @@ io::endpoint* factory::new_endpoint(
  *
  *  @return New compression stream.
  */
-misc::shared_ptr<io::stream> factory::new_stream(
-                                        misc::shared_ptr<io::stream> to,
+std::shared_ptr<io::stream> factory::new_stream(
+                                        std::shared_ptr<io::stream> to,
                                         bool is_acceptor,
                                         QString const& proto_name) {
   (void)is_acceptor;
   (void)proto_name;
-  misc::shared_ptr<io::stream> s(new stream);
+  std::shared_ptr<io::stream> s(std::make_shared<stream>());
   s->set_substream(to);
   return (s);
 }

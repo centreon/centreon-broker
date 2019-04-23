@@ -70,7 +70,7 @@ hooker& hooker::operator=(hooker const& other) {
  *  @return Respect io::stream::read()'s return value.
  */
 bool hooker::read(
-               misc::shared_ptr<io::data>& d,
+               std::shared_ptr<io::data>& d,
                time_t deadline) {
   (void)deadline;
   d.clear();
@@ -88,7 +88,7 @@ bool hooker::read(
  *  Multiplexing engine is starting.
  */
 void hooker::starting() {
-  misc::shared_ptr<io::raw> raw(new io::raw);
+  std::shared_ptr<io::raw> raw(new io::raw);
   raw->append(HOOKMSG1);
   _queue.enqueue(raw.staticCast<io::data>());
   return ;
@@ -98,7 +98,7 @@ void hooker::starting() {
  *  Multiplexing engine is stopping.
  */
 void hooker::stopping() {
-  misc::shared_ptr<io::raw> raw(new io::raw);
+  std::shared_ptr<io::raw> raw(new io::raw);
   raw->append(HOOKMSG3);
   _queue.enqueue(raw.staticCast<io::data>());
   return ;
@@ -111,10 +111,10 @@ void hooker::stopping() {
  *
  *  @return Number of elements acknowledged (1).
  */
-int hooker::write(misc::shared_ptr<io::data> const& d) {
+int hooker::write(std::shared_ptr<io::data> const& d) {
   (void)d;
   if (_registered) {
-    misc::shared_ptr<io::raw> raw(new io::raw);
+    std::shared_ptr<io::raw> raw(new io::raw);
     raw->append(HOOKMSG2);
     _queue.enqueue(raw.staticCast<io::data>());
   }

@@ -41,7 +41,7 @@ using namespace com::centreon::broker::extcmd;
 command_server::command_server(
                   protocol prot,
                   std::string const& socket_file,
-                  misc::shared_ptr<persistent_cache> cache)
+                  std::shared_ptr<persistent_cache> cache)
   : io::endpoint(true),
     _listener_thread(NULL),
     _protocol(prot),
@@ -65,7 +65,7 @@ command_server::~command_server() {
  *
  *  @return New client object if available, null pointer otherwise.
  */
-misc::shared_ptr<io::stream> command_server::open() {
+std::shared_ptr<io::stream> command_server::open() {
   // Initialization.
   if (!_socket.get()) {
     // Listen on socket.
@@ -73,12 +73,12 @@ misc::shared_ptr<io::stream> command_server::open() {
     _socket.reset(new server_socket(_socket_file));
 
     // Create command listener.
-    _listener = new command_listener;
+    _listener.reset(new command_listener);
     // Create command parser.
     if (_protocol == json)
-      _parser = new json_command_parser(*_listener);
+      _parser.reset(new json_command_parser(*_listener));
     else
-      _parser = new plaintext_command_parser(*_listener);
+      _parser.reset(new plaintext_command_parser(*_listener));
     // Create listener thread.
     uset<unsigned int> write_filters;
     write_filters.insert(command_request::static_type());
@@ -99,7 +99,7 @@ misc::shared_ptr<io::stream> command_server::open() {
     _socket->wait_for_new_connection(1000, &timedout);
     if (!_socket->has_pending_connections()) {
       if (timedout)
-        return (misc::shared_ptr<io::stream>());
+        return (std::shared_ptr<io::stream>());
       else
         throw (exceptions::msg()
                << "command: error while waiting on client on file '"
@@ -113,7 +113,7 @@ misc::shared_ptr<io::stream> command_server::open() {
     throw (exceptions::msg() << "command: could not accept client: "
            << _socket->error_string());
   logging::info(logging::medium) << "command: new client connected";
-  misc::shared_ptr<io::stream>
-    new_client(new command_client(incoming, *_parser.data()));
-  return (new_client);
+  std::shared_ptr<io::stream>
+    new_client(std::make_shared<command_client>(incoming, *_parser.get()));
+  return new_client;
 }

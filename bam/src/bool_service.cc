@@ -128,18 +128,17 @@ void bool_service::set_service_id(unsigned int service_id) {
  *  @param[out] visitor  Object that will receive events.
  */
 void bool_service::service_update(
-                     misc::shared_ptr<neb::service_status> const& status,
+                     std::shared_ptr<neb::service_status> const& status,
                      io::stream* visitor) {
-  if (!status.isNull()
-      && (status->host_id == _host_id)
-      && (status->service_id == _service_id)) {
+  if (status
+      && status->host_id == _host_id
+      && status->service_id == _service_id) {
     _state_hard = status->last_hard_state;
     _state_soft = status->current_state;
     _state_known = true;
     _in_downtime = (status->downtime_depth > 0);
     propagate_update(visitor);
   }
-  return ;
 }
 
 /**
