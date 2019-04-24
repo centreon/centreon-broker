@@ -1,4 +1,27 @@
 ======================
+Centreon Broker 3.0.17
+======================
+
+*********
+Bug fixes
+*********
+
+Stream connector cache
+======================
+
+The cache was lost each time an engine was restarted.
+
+Influxdb cache
+======================
+
+The cache was lost each time an engine was restarted.
+
+Graphite cache
+======================
+
+The cache was lost each time an engine was restarted.
+
+======================
 Centreon Broker 3.0.16
 ======================
 
