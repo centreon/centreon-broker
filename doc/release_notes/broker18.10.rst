@@ -6,6 +6,21 @@ Centreon Broker 18.10.2
 Bug fixes
 *********
 
+Stream connector cache
+======================
+
+The cache was lost each time an engine was restarted.
+
+Influxdb cache
+======================
+
+The cache was lost each time an engine was restarted.
+
+Graphite cache
+======================
+
+The cache was lost each time an engine was restarted.
+
 Escape backslash in JSON encoding/decoding functions
 ====================================================
 
@@ -21,6 +36,12 @@ perf string, the lua was not working.
 ************
 Enhancements
 ************
+
+Check commands are stored in database only when they change
+===========================================================
+
+A cache is added in Broker to store hosts/services checks commands.
+This provides a way to know if check commands changed.
 
 Send event when poller is unresponsive
 ======================================
