@@ -20,6 +20,7 @@
 #  define CCB_DUMPER_DB_WRITER_HH
 
 #  include <list>
+#  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -27,7 +28,6 @@
 CCB_BEGIN()
 
 // Forward declarations.
-class               database;
 namespace           dumper {
   namespace         entries {
     class           ba;
@@ -59,7 +59,7 @@ namespace           dumper {
     void            _commit();
     template        <typename T>
     void            _store_objects(
-                      database& db,
+                      mysql& ms,
                       std::list<T> const& l,
                       char const* id_name,
                       unsigned int (T::* id_member));

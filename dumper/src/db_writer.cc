@@ -18,9 +18,8 @@
 
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
-#include "com/centreon/broker/database.hh"
-#include "com/centreon/broker/database_preparator.hh"
-#include "com/centreon/broker/database_query.hh"
+#include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/query_preparator.hh"
 #include "com/centreon/broker/dumper/db_dump.hh"
 #include "com/centreon/broker/dumper/db_dump_committed.hh"
 #include "com/centreon/broker/dumper/db_writer.hh"
@@ -37,6 +36,7 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::dumper;
+using namespace com::centreon::broker::database;
 
 /**************************************
 *                                     *
@@ -152,8 +152,8 @@ int db_writer::write(std::shared_ptr<io::data> const& d) {
  */
 void db_writer::_commit() {
   // Open DB connection.
-  database db(_db_cfg);
-  bool db_v2(db.schema_version() == database::v2);
+  mysql ms(_db_cfg);
+  bool db_v2(ms.schema_version() == mysql::v2);
 
   // Clean database if necessary.
   if (_full_dump) {
@@ -173,15 +173,14 @@ void db_writer::_commit() {
       cleanup_queries = cleanup_v2;
     else
       cleanup_queries = cleanup_v3;
-    database_query q(db);
     for (int i(0); cleanup_queries[i]; ++i)
-      q.run_query(cleanup_queries[i]);
+      ms.run_query(cleanup_queries[i]);
   }
 
   // Process organizations.
   if (!db_v2)
     _store_objects(
-      db,
+      ms,
       _organizations,
       "organization_id",
       &entries::organization::organization_id);
@@ -189,7 +188,7 @@ void db_writer::_commit() {
   // Process BA types.
   if (!db_v2)
     _store_objects(
-      db,
+      ms,
       _ba_types,
       "ba_type_id",
       &entries::ba_type::ba_type_id);
@@ -198,43 +197,34 @@ void db_writer::_commit() {
   {
     // Store BAs in their own table.
     _store_objects(
-      db,
+      ms,
       _bas,
       "ba_id",
       &entries::ba::ba_id);
 
     // Link BAs to a poller.
     {
-      database_query q(db);
-      {
-        std::ostringstream query;
-        query << "INSERT INTO " << (db_v2
-                                    ? "mod_bam_poller_relations"
-                                    : "cfg_bam_poller_relations")
-              << "  (ba_id, poller_id)"
-                 "  VALUES (:ba_id, :poller_id)";
-        q.prepare(query.str());
-      }
+      std::ostringstream query;
+      query << "INSERT INTO " << (db_v2
+                                  ? "mod_bam_poller_relations"
+                                  : "cfg_bam_poller_relations")
+            << "  (ba_id, poller_id)"
+               "  VALUES (:ba_id, :poller_id)";
+      mysql_stmt stmt(query.str());
+      ms.prepare_statement(stmt);
+
       for (std::list<entries::ba>::const_iterator
              it(_bas.begin()),
              end(_bas.end());
            it != end;
            ++it)
         if (it->enable) {
-          q.bind_value(":ba_id", it->ba_id);
-          q.bind_value(":poller_id", it->poller_id);
-          try {
-            q.run_statement();
-          }
-          catch (std::exception const& e) {
-            (void)e;
-          }
+          stmt.bind_value_as_u32(":ba_id", it->ba_id);
+          stmt.bind_value_as_u32(":poller_id", it->poller_id);
+          ms.run_statement(stmt);
         }
-    }
 
-    // Enable BAs.
-    {
-      database_query q(db);
+      // Enable BAs.
       for (std::list<entries::ba>::const_iterator
              it(_bas.begin()),
              end(_bas.end());
@@ -245,7 +235,7 @@ void db_writer::_commit() {
           query << "UPDATE " << (db_v2 ? "mod_bam" : "cfg_bam")
                 << "  SET activate='1' WHERE ba_id="
                 << it->ba_id;
-          q.run_query(query.str().c_str());
+          ms.run_query(query.str());
         }
     }
   }
@@ -253,7 +243,7 @@ void db_writer::_commit() {
   // Process booleans.
   if (db_v2)
     _store_objects(
-      db,
+      ms,
       _booleans,
       "boolean_id",
       &entries::boolean::boolean_id);
@@ -262,14 +252,13 @@ void db_writer::_commit() {
   {
     // Store KPIs in their own table.
     _store_objects(
-      db,
+      ms,
       _kpis,
       "kpi_id",
       &entries::kpi::kpi_id);
 
     // Enable KPIs.
     {
-      database_query q(db);
       for (std::list<entries::kpi>::const_iterator
              it(_kpis.begin()),
              end(_kpis.end());
@@ -279,7 +268,7 @@ void db_writer::_commit() {
           std::ostringstream query;
           query << "UPDATE cfg_bam_kpi SET activate='1' WHERE kpi_id="
                 << it->kpi_id;
-          q.run_query(query.str().c_str());
+          ms.run_query(query.str());
         }
     }
   }
@@ -287,7 +276,7 @@ void db_writer::_commit() {
   // Process virtual hosts.
   if (db_v2)
     _store_objects(
-      db,
+      ms,
       _hosts,
       "host_id",
       &entries::host::host_id);
@@ -296,38 +285,29 @@ void db_writer::_commit() {
   if (db_v2) {
     // Store services in their own table.
     _store_objects(
-      db,
+      ms,
       _services,
       "service_id",
       &entries::service::service_id);
 
     // Link services to their host.
-    database_query q(db);
-    {
-      std::ostringstream query;
-      query << "INSERT INTO host_service_relation"
-               "  (host_host_id, service_service_id)"
-               "  VALUES (:host_id, :service_id)";
-      q.prepare(query.str());
-    }
+    std::ostringstream query;
+    query << "INSERT INTO host_service_relation"
+             "  (host_host_id, service_service_id)"
+             "  VALUES (:host_id, :service_id)";
+    mysql_stmt stmt(query.str());
+    ms.prepare_statement(stmt);
     for (std::list<entries::service>::const_iterator
            it(_services.begin()),
            end(_services.end());
          it != end;
          ++it)
       if (it->enable) {
-        q.bind_value(":host_id", it->host_id);
-        q.bind_value(":service_id", it->service_id);
-        try {
-          q.run_statement();
-        }
-        catch (std::exception const& e) {
-          (void)e;
-        }
+        stmt.bind_value_as_i32(":host_id", it->host_id);
+        stmt.bind_value_as_i32(":service_id", it->service_id);
+        ms.run_statement(stmt);
       }
   }
-
-  return ;
 }
 
 /**
@@ -339,22 +319,18 @@ void db_writer::_commit() {
  */
 template <typename T>
 void db_writer::_store_objects(
-                  database& db,
+                  mysql& ms,
                   std::list<T> const& l,
                   char const* id_name,
                   unsigned int (T::* id_member)) {
   // Prepare queries.
-  database_query insert_query(db);
-  database_query update_query(db);
-  database_query delete_query(db);
-  {
-    database_preparator::event_unique ids;
-    ids.insert(id_name);
-    database_preparator dbp(T::static_type(), ids);
-    dbp.prepare_insert(insert_query);
-    dbp.prepare_update(update_query);
-    dbp.prepare_delete(delete_query);
-  }
+  query_preparator::event_unique ids;
+  ids.insert(id_name);
+  query_preparator dbp(T::static_type(), ids);
+  mysql_stmt insert_query(dbp.prepare_insert(ms));
+  mysql_stmt update_query(dbp.prepare_update(ms));
+  mysql_stmt delete_query(dbp.prepare_delete(ms));
+
   std::string placeholder;
   placeholder = ":";
   placeholder.append(id_name);
@@ -368,18 +344,19 @@ void db_writer::_store_objects(
     // INSERT / UPDATE.
     if (it->enable) {
       update_query << *it;
-      update_query.run_statement();
-      if (!update_query.num_rows_affected()) {
+      std::promise<int> promise;
+      ms.run_statement_and_get_int(
+           update_query,
+           &promise, mysql_task::int_type::AFFECTED_ROWS);
+      if (promise.get_future().get() == 0) {
         insert_query << *it;
-        insert_query.run_statement();
+        ms.run_statement(insert_query);
       }
     }
     // DELETE.
     else {
-      delete_query.bind_value(placeholder.c_str(), (*it).*id_member);
-      delete_query.run_statement();
+      delete_query.bind_value_as_i32(placeholder.c_str(), (*it).*id_member);
+      ms.run_statement(delete_query);
     }
   }
-
-  return ;
 }
