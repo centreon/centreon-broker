@@ -152,8 +152,10 @@ add_library("${NOTIFICATION}" SHARED
   "${INC_DIR}/utilities/qhash_func.hh"
   "${INC_DIR}/utilities/get_datetime_string.hh"
 )
+set_target_properties("${NOTIFICATION}" PROPERTIES
+    PREFIX ""
+    COMPILE_FLAGS "${MYSQL_CFLAGS}")
 target_link_libraries("${NOTIFICATION}" ${QT_LIBRARIES})
-set_target_properties("${NOTIFICATION}" PROPERTIES PREFIX "")
 
 # Install rule.
 install(TARGETS "${NOTIFICATION}"

@@ -18,8 +18,6 @@
 
 #include <sstream>
 #include <QSet>
-#include <QSqlError>
-#include <QVariant>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/notification_method.hh"
@@ -31,39 +29,39 @@ using namespace com::centreon::broker::notification::objects;
 notification_method_loader::notification_method_loader() {}
 
 void notification_method_loader::load(
-                                   QSqlDatabase *db,
+                                   mysql *ms,
                                    notification_method_builder *output) {
   // If we don't have any db or output, don't do anything.
-  if (!db || !output)
+  if (!ms || !output)
     return;
 
   logging::debug(logging::medium)
     << "notification: loading notification methods from the database";
 
-  QSqlQuery query(*db);
-
   // Performance improvement, as we never go back.
-  query.setForwardOnly(true);
+  //query.setForwardOnly(true);
 
-  if (!query.exec("SELECT method_id, name, command_id, `interval`, status, "
-                  "       types, start, end "
-                  "  FROM cfg_notification_methods"))
-    throw (exceptions::msg()
-           << "notification: cannot load notification methods from database: "
-           << query.lastError().text());
+  std::promise<database::mysql_result> promise;
+  ms->run_query_and_get_result(
+        "SELECT method_id, name, command_id, `interval`, status, "
+        "       types, start, end "
+        "  FROM cfg_notification_methods",
+        &promise,
+        "notification: cannot load notification methods from database: ");
 
-  while (query.next()) {
+  database::mysql_result res(promise.get_future().get());
+  while (ms->fetch_row(res)) {
     notification_method::ptr nm(new notification_method);
-    nm->set_name(query.value(1).toString().toStdString());
-    nm->set_command_id(query.value(2).toUInt());
-    nm->set_interval(query.value(3).toUInt());
-    nm->set_status(query.value(4).toString().toStdString());
-    nm->set_types(query.value(5).toString().toStdString());
-    nm->set_start(query.value(6).toUInt());
-    nm->set_end(query.value(7).toUInt());
+    nm->set_name(res.value_as_str(1));
+    nm->set_command_id(res.value_as_u32(2));
+    nm->set_interval(res.value_as_u32(3));
+    nm->set_status(res.value_as_str(4));
+    nm->set_types(res.value_as_str(5));
+    nm->set_start(res.value_as_u32(6));
+    nm->set_end(res.value_as_u32(7));
     logging::debug(logging::low)
-      << "notification: new method " << query.value(0).toUInt()
+      << "notification: new method " << res.value_as_u32(0)
       << " ('" << nm->get_name() << "')";
-    output->add_notification_method(query.value(0).toUInt(), nm);
+    output->add_notification_method(res.value_as_u32(0), nm);
   }
 }

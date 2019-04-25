@@ -20,8 +20,7 @@
 #  define CCB_NOTIFICATION_LOADERS_NODE_LOADER_HH
 
 #  include <string>
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
+#  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/builders/node_builder.hh"
 
@@ -38,7 +37,7 @@ namespace       notification {
   public:
                 node_loader();
 
-    void        load(QSqlDatabase* db, node_builder* output);
+    void        load(mysql* db, node_builder* output);
   };
 
 }

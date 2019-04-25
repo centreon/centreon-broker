@@ -18,8 +18,6 @@
 
 #include <sstream>
 #include <QSet>
-#include <QVariant> // Needed because of QSql
-#include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/loaders/node_loader.hh"
@@ -32,29 +30,30 @@ node_loader::node_loader() {}
 /**
  *  Load the nodes from the database.
  *
- *  @param[in] db       An open connection to the database.
+ *  @param[in] ms       An open connection to the database.
  *  @param[out] output  A node builder object to register the nodes.
  */
-void node_loader::load(QSqlDatabase* db, node_builder* output) {
+void node_loader::load(mysql* ms, node_builder* output) {
   // If we don't have any db or output, don't do anything.
-  if (!db || !output)
+  if (!ms || !output)
     return;
 
   logging::debug(logging::medium)
     << "notification: loading nodes from the database";
 
-  QSqlQuery query(*db);
-
   // Performance improvement, as we never go back.
-  query.setForwardOnly(true);
+//  query.setForwardOnly(true);
 
   // Load hosts.
-  if (!query.exec("SELECT host_id FROM cfg_hosts"))
-    throw (exceptions::msg()
-           << "notification: cannot load hosts from database: "
-           << query.lastError().text());
-  while (query.next()) {
-    unsigned int host_id = query.value(0).toUInt();
+  std::promise<database::mysql_result> promise;
+  ms->run_query_and_get_result(
+        "SELECT host_id FROM cfg_hosts",
+        &promise,
+        "notification: cannot load hosts from database: ");
+
+  database::mysql_result res(promise.get_future().get());
+  while (ms->fetch_row(res)) {
+    unsigned int host_id = res.value_as_u32(0);
     node::ptr n(new node);
     n->set_node_id(node_id(host_id));
     logging::config(logging::low)
@@ -62,17 +61,20 @@ void node_loader::load(QSqlDatabase* db, node_builder* output) {
     output->add_node(n);
   }
 
+  promise = std::promise<database::mysql_result>();
   // Load services.
-  if (!query.exec("SELECT hsr.host_host_id, hsr.service_service_id"
-                  "  FROM cfg_hosts_services_relations AS hsr"
-                  "  LEFT JOIN cfg_services AS s"
-                  "    ON hsr.service_service_id=s.service_id"))
-    throw (exceptions::msg()
-           << "notification: cannot load services from database: "
-           << query.lastError().text());
-  while (query.next()) {
-    unsigned int host_id = query.value(0).toUInt();
-    unsigned int service_id = query.value(1).toUInt();
+  ms->run_query_and_get_result(
+        "SELECT hsr.host_host_id, hsr.service_service_id"
+        "  FROM cfg_hosts_services_relations AS hsr"
+        "  LEFT JOIN cfg_services AS s"
+        "    ON hsr.service_service_id=s.service_id",
+        &promise,
+        "notification: cannot load services from database: ");
+
+  res = promise.get_future().get();
+  while (ms->fetch_row(res)) {
+    unsigned int host_id = res.value_as_u32(0);
+    unsigned int service_id = res.value_as_u32(1);
     node::ptr n(new node);
     n->set_node_id(node_id(host_id, service_id));
     logging::config(logging::low) << "notification: loading service ("

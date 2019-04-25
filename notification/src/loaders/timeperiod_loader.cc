@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QSqlError>
 #include <QVariant>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -34,43 +33,43 @@ timeperiod_loader::timeperiod_loader() {
 /**
  *  Load the timeperiods from the database.
  *
- *  @param[in] db       An open connection to the database.
+ *  @param[in] ms       An open connection to the database.
  *  @param[out] output   A timeperiod builder object to register the timeperiods.
  */
-void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
+void timeperiod_loader::load(mysql* ms, timeperiod_builder* output) {
   // If we don't have any db or output, don't do anything.
-  if (!db || !output)
+  if (!ms || !output)
     return;
 
   logging::debug(logging::medium)
     << "notification: loading timeperiods from the database";
 
-  QSqlQuery query(*db);
-
   // Performance improvement, as we never go back.
-  query.setForwardOnly(true);
+//  query.setForwardOnly(true);
 
   // Load the timeperiods.
-  if (!query.exec("SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday,"
-                  "       tp_tuesday, tp_wednesday, tp_thursday, tp_friday,"
-                  "       tp_saturday sunday"
-                  " FROM cfg_timeperiods"))
-    throw (exceptions::msg()
-           << "notification: cannot load timeperiods from database: "
-           << query.lastError().text());
+  std::promise<database::mysql_result> promise;
+  ms->run_query_and_get_result(
+        "SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday,"
+        "       tp_tuesday, tp_wednesday, tp_thursday, tp_friday,"
+        "       tp_saturday sunday"
+        " FROM cfg_timeperiods",
+        &promise,
+        "notification: cannot load timeperiods from database: ");
 
-  while(query.next()) {
+  database::mysql_result res(promise.get_future().get());
+  while (ms->fetch_row(res)) {
     timeperiod::ptr tperiod(new timeperiod);
-    unsigned int timeperiod_id = query.value(0).toUInt();
-    tperiod->set_name(query.value(1).toString().toStdString());
-    tperiod->set_alias(query.value(2).toString().toStdString());
-    tperiod->set_timerange(query.value(3).toString().toStdString(), 0);
-    tperiod->set_timerange(query.value(4).toString().toStdString(), 1);
-    tperiod->set_timerange(query.value(5).toString().toStdString(), 2);
-    tperiod->set_timerange(query.value(6).toString().toStdString(), 3);
-    tperiod->set_timerange(query.value(7).toString().toStdString(), 4);
-    tperiod->set_timerange(query.value(8).toString().toStdString(), 5);
-    tperiod->set_timerange(query.value(9).toString().toStdString(), 6);
+    unsigned int timeperiod_id = res.value_as_u32(0);
+    tperiod->set_name(res.value_as_str(1));
+    tperiod->set_alias(res.value_as_str(2));
+    tperiod->set_timerange(res.value_as_str(3), 0);
+    tperiod->set_timerange(res.value_as_str(4), 1);
+    tperiod->set_timerange(res.value_as_str(5), 2);
+    tperiod->set_timerange(res.value_as_str(6), 3);
+    tperiod->set_timerange(res.value_as_str(7), 4);
+    tperiod->set_timerange(res.value_as_str(8), 5);
+    tperiod->set_timerange(res.value_as_str(9), 6);
 
     output->add_timeperiod(
               timeperiod_id,
@@ -78,37 +77,46 @@ void timeperiod_loader::load(QSqlDatabase* db, timeperiod_builder* output) {
   }
 
   // Load the timeperiod exceptions.
-  if (!query.exec("SELECT exception_id, timeperiod_id, days, timerange"
-                  " FROM cfg_timeperiods_exceptions"))
-    throw (exceptions::msg()
-           << "notification: cannot load timeperiods exceptions from database: "
-           << query.lastError().text());
-  while (query.next()) {
-    unsigned int timeperiod_id = query.value(1).toUInt();
-    std::string days = query.value(2).toString().toStdString();
-    std::string timerange = query.value(3).toString().toStdString();
+  promise = std::promise<database::mysql_result>();
+  ms->run_query_and_get_result(
+        "SELECT exception_id, timeperiod_id, days, timerange"
+        " FROM cfg_timeperiods_exceptions",
+        &promise,
+        "notification: cannot load timeperiods exceptions from database: ");
+
+  res = promise.get_future().get();
+  while (ms->fetch_row(res)) {
+    unsigned int timeperiod_id = res.value_as_u32(1);
+    std::string days = res.value_as_str(2);
+    std::string timerange = res.value_as_str(3);
     output->add_timeperiod_exception(timeperiod_id, days, timerange);
   }
 
   // Load the timeperiod exclude relations.
-  if (!query.exec("SELECT exclude_id, timeperiod_id, timeperiod_exclude_id"
-                  " FROM cfg_timeperiods_exclude_relations"))
-    throw (exceptions::msg()
-           << "notification: cannot load timeperiods exclusions from database: "
-           << query.lastError().text());
-  while (query.next())
+  promise = std::promise<database::mysql_result>();
+  ms->run_query_and_get_result(
+        "SELECT exclude_id, timeperiod_id, timeperiod_exclude_id"
+        " FROM cfg_timeperiods_exclude_relations",
+        &promise,
+        "notification: cannot load timeperiods exclusions from database: ");
+
+  res = promise.get_future().get();
+  while (ms->fetch_row(res))
     output->add_timeperiod_exclude_relation(
-              query.value(1).toUInt(),
-              query.value(0).toUInt());
+              res.value_as_u32(1),
+              res.value_as_u32(0));
 
   // Load the timeperiod include relations.
-  if (!query.exec("SELECT include_id, timeperiod_id, timeperiod_include_id"
-                  " FROM cfg_timeperiods_include_relations"))
-    throw (exceptions::msg()
-           << "notification: cannot load timeperiods inclusions from database: "
-           << query.lastError().text());
-  while (query.next())
+  promise = std::promise<database::mysql_result>();
+  ms->run_query_and_get_result(
+        "SELECT include_id, timeperiod_id, timeperiod_include_id"
+        " FROM cfg_timeperiods_include_relations",
+        &promise,
+        "notification: cannot load timeperiods inclusions from database: ");
+
+  res = promise.get_future().get();
+  while (ms->fetch_row(res))
     output->add_timeperiod_include_relation(
-              query.value(1).toUInt(),
-              query.value(0).toUInt());
+              res.value_as_u32(1),
+              res.value_as_u32(0));
 }

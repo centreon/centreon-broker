@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QSqlError>
 #include <QVariant>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -31,36 +30,36 @@ command_loader::command_loader() {}
 /**
  *  Load the commands from the database.
  *
- *  @param[in] db       An open connection to the database.
+ *  @param[in] ms       An open connection to the database.
  * @param[out] output   A command builder object to register the commands.
  */
-void command_loader::load(QSqlDatabase* db, command_builder* output) {
+void command_loader::load(mysql* ms, command_builder* output) {
   // If we don't have any db or output, don't do anything.
-  if (!db || !output)
+  if (!ms || !output)
     return;
 
   logging::debug(logging::medium)
     << "notification: loading commands from the database";
 
-  QSqlQuery query(*db);
-
   // Performance improvement, as we never go back.
-  query.setForwardOnly(true);
+  //query.setForwardOnly(true);
 
   // Load the commands
-  if (!query.exec("SELECT command_id, connector_id, command_name, command_line,"
-                  "       command_type, enable_shell"
-                  "  FROM cfg_commands"))
-    throw (exceptions::msg()
-           << "notification: cannot load commands from database: "
-           << query.lastError().text());
+  std::promise<database::mysql_result> promise;
+  ms->run_query_and_get_result(
+        "SELECT command_id, connector_id, command_name, command_line,"
+        "       command_type, enable_shell"
+        "  FROM cfg_commands",
+        &promise,
+        "notification: cannot load commands from database: ");
 
-  while (query.next()) {
-    unsigned int id = query.value(0).toUInt();
-    std::string base_command = query.value(3).toString().toStdString();
+  database::mysql_result res(promise.get_future().get());
+  while (ms->fetch_row(res)) {
+    unsigned int id = res.value_as_u32(0);
+    std::string base_command = res.value_as_str(3);
     command::ptr com(new command(base_command));
-    com->set_name(query.value(2).toString().toStdString());
-    com->set_enable_shell(query.value(5).toBool());
+    com->set_name(res.value_as_str(2));
+    com->set_enable_shell(res.value_as_bool(5));
 
     output->add_command(id, com);
   }

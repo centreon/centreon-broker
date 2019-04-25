@@ -19,7 +19,6 @@
 #include <utility>
 #include <vector>
 #include <sstream>
-#include <QSqlError>
 #include <QVariant>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -36,21 +35,19 @@ macro_loader::macro_loader() {}
 /**
  *  Load the macros from the database.
  *
- *  @param[in] db       An open connection to the database.
+ *  @param[in] ms       An open connection to the database.
  *  @param[out] output  A macro builder object to register the macros.
  */
-void macro_loader::load(QSqlDatabase *db, macro_builder *output) {
+void macro_loader::load(mysql* ms, macro_builder* output) {
   // If we don't have any db or output, don't do anything.
-  if (!db || !output)
+  if (!ms || !output)
     return;
 
   logging::debug(logging::medium)
     << "notification: loading macros from the database";
 
-  QSqlQuery query(*db);
-
   // Performance improvement, as we never go back.
-  query.setForwardOnly(true);
+  //query.setForwardOnly(true);
 
   // Load global, constant macro.
   /*if (!query.exec(
@@ -117,24 +114,26 @@ void macro_loader::load(QSqlDatabase *db, macro_builder *output) {
   }*/
 
   // Load global resource macros.
-  if (!query.exec(
-               "SELECT resource_name, resource_line"
-                "  FROM cfg_resources"
-                "  WHERE resource_activate = '1'"))
-    throw (exceptions::msg()
-           << "notification: cannot load resource macros from database: "
-           << query.lastError().text());
-  while (query.next()) {
+  std::promise<database::mysql_result> promise;
+  ms->run_query_and_get_result(
+        "SELECT resource_name, resource_line"
+        "  FROM cfg_resources"
+        "  WHERE resource_activate = '1'",
+        &promise,
+        "notification: cannot load resource macros from database: ");
+
+  database::mysql_result res(promise.get_future().get());
+  while (ms->fetch_row(res)) {
     // Remove leading and trailing $$
-    QString macro_name = query.value(0).toString();
+    std::string macro_name = res.value_as_str(0);
     // Remove leading and trailing $$
-    macro_name.remove(0, 1);
-    macro_name.remove(macro_name.size() - 1, 1);
+    macro_name.erase(0, 1);
+    macro_name.erase(macro_name.size() - 1);
     logging::config(logging::low) << "notification: loading resource macro ("
       << macro_name << ") from database";
     output->add_resource_macro(
-              macro_name.toStdString(),
-              query.value(1).toString().toStdString());
+              macro_name,
+              res.value_as_str(1));
   }
   return ;
 }
