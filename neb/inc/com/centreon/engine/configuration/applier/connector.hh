@@ -20,6 +20,7 @@
 #ifndef CCE_CONFIGURATION_APPLIER_CONNECTOR_HH
 #  define CCE_CONFIGURATION_APPLIER_CONNECTOR_HH
 
+#  include <set>
 #  include "com/centreon/engine/namespace.hh"
 
 CCE_BEGIN()
