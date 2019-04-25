@@ -135,7 +135,7 @@ step[12].count = {
   service = step[8].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
-  metric = 2,
+  metric = 5,
   continue = true,
 }
 
