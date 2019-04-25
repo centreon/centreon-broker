@@ -61,8 +61,10 @@ add_library("${STORAGE}" SHARED
   "${INC_DIR}/status.hh"
   "${INC_DIR}/stream.hh"
 )
+set_target_properties("${STORAGE}" PROPERTIES
+    PREFIX ""
+    COMPILE_FLAGS "${MYSQL_CFLAGS}")
 target_link_libraries("${STORAGE}" ${QT_LIBRARIES})
-set_target_properties("${STORAGE}" PROPERTIES PREFIX "")
 
 # Testing.
 set(

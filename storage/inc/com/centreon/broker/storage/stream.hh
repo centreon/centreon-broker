@@ -21,17 +21,14 @@
 
 #  include <deque>
 #  include <list>
-#  include <mutex>
 #  include <map>
 #  include <memory>
-#  include <QSqlDatabase>
 #  include <string>
 #  include <utility>
-#  include "com/centreon/broker/database.hh"
-#  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/storage/rebuilder.hh"
+#  include "com/centreon/broker/mysql.hh"
 
 CCB_BEGIN()
 
@@ -61,6 +58,7 @@ namespace          storage {
     void           statistics(io::properties& tree) const;
     void           update();
     int            write(std::shared_ptr<io::data> const& d);
+    void           ack_pending_events(int v);
 
    private:
     struct         index_info {
@@ -119,31 +117,42 @@ namespace          storage {
                              double value,
                              unsigned int* type,
                              bool* locked);
+    void           _host_instance_cache_create();
+    void           _insert_perfdatas_new();
     void           _insert_perfdatas();
     void           _prepare();
+    void           _process_host(std::shared_ptr<io::data> const& e);
+    void           _process_instance(std::shared_ptr<io::data> const& e);
     void           _rebuild_cache();
     void           _update_status(std::string const& status);
+    void            _set_ack_events();
 
     std::map<std::pair<uint64_t, uint64_t>, index_info>
                    _index_cache;
     bool           _insert_in_index_data;
     unsigned int   _interval_length;
+    int            _ack_events;
+    int            _pending_events;
     std::map<std::pair<uint64_t, std::string>, metric_info>
                    _metric_cache;
-    unsigned int   _pending_events;
     std::deque<metric_value>
                    _perfdata_queue;
-    rebuilder      _rebuild_thread;
+    std::map<unsigned int, unsigned int>
+                   _cache_host_instance;
+    rebuilder      _rebuilder;
     unsigned int   _rrd_len;
     std::string    _status;
-    mutable std::mutex
-                   _statusm;
+    mutable QMutex _statusm;
     bool           _store_in_db;
-    database       _db;
-    database_query _data_bin_insert;
-    database_query _update_metrics;
-    database_query _index_data_insert;
-    database_query _index_data_update;
+    database::mysql_stmt
+                   _update_metrics_stmt;
+    database::mysql_stmt
+                   _insert_metrics_stmt;
+    database::mysql_stmt
+                   _update_index_data_stmt;
+    database::mysql_stmt
+                   _data_bin_insert;
+    mysql          _mysql;
   };
 }
 
