@@ -19,7 +19,7 @@
 #ifndef CCB_DUMPER_DB_LOADER_V2_HH
 #  define CCB_DUMPER_DB_LOADER_V2_HH
 
-#  include "com/centreon/broker/database.hh"
+#  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -38,7 +38,7 @@ namespace           dumper {
    */
   class             db_loader_v2 {
   public:
-                    db_loader_v2(database& db);
+                    db_loader_v2(mysql& ms);
                     ~db_loader_v2();
     void            load(entries::state& state, unsigned int poller_id);
 
@@ -51,7 +51,7 @@ namespace           dumper {
     void            _load_hosts();
     void            _load_services();
 
-    database&       _db;
+    mysql&          _mysql;
     unsigned int    _poller_id;
     entries::state* _state;
   };

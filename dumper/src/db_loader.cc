@@ -16,7 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/database.hh"
+#include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/dumper/db_loader.hh"
 #include "com/centreon/broker/dumper/db_loader_v2.hh"
 #include "com/centreon/broker/dumper/db_loader_v3.hh"
@@ -43,14 +43,13 @@ db_loader::~db_loader() {}
  *  @param[in]  poller_id  Poller ID.
  */
 void db_loader::load(entries::state& state, unsigned int poller_id) {
-  database db(_db_cfg);
-  if (db.schema_version() == database::v2) {
-    db_loader_v2 dblv2(db);
+  mysql ms(_db_cfg);
+  if (ms.schema_version() == mysql::v2) {
+    db_loader_v2 dblv2(ms);
     dblv2.load(state, poller_id);
   }
   else {
-    db_loader_v3 dblv3(db);
+    db_loader_v3 dblv3(ms);
     dblv3.load(state, poller_id);
   }
-  return ;
 }
