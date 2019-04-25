@@ -27,7 +27,7 @@
 CCB_BEGIN()
 
 // Forward declaration.
-class                   database;
+class                   mysql;
 
 namespace               bam {
   namespace             configuration {
@@ -42,7 +42,7 @@ namespace               bam {
     class               reader_v2 {
     public:
                         reader_v2(
-                          database& centreon_db,
+                          mysql& centreon_db,
                           database_config const& storage_cfg);
                         ~reader_v2();
       void              read(state& state_obj);
@@ -57,7 +57,7 @@ namespace               bam {
       void              _load(bam::hst_svc_mapping& mapping);
       void              _load_dimensions();
 
-      database&         _db;
+      mysql&            _mysql;
       database_config   _storage_cfg;
     };
   }

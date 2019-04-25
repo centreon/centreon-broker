@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QSqlDatabase>
 #include "com/centreon/broker/bam/factory.hh"
 #include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/io/protocols.hh"
@@ -76,10 +75,6 @@ extern "C" {
       io::protocols::instance().unreg(bam_module);
       // Deregister bam events.
       io::events::instance().unregister_category(io::events::bam);
-
-      // Remove the workaround connection.
-      if (QSqlDatabase::contains())
-        QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
     }
     return ;
   }
@@ -98,10 +93,6 @@ extern "C" {
       logging::info(logging::high)
         << "BAM: module for Centreon Broker "
         << CENTREON_BROKER_VERSION;
-
-      // This is a workaround to keep a mysql driver open.
-      if (!QSqlDatabase::contains())
-        QSqlDatabase::addDatabase("QMYSQL");
 
       // Register storage layer.
       io::protocols::instance().reg(
