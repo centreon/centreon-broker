@@ -27,7 +27,9 @@ using namespace com::centreon::broker;
  *  Default constructor.
  */
 database_config::database_config()
-  : _queries_per_transaction(1), _check_replication(true) {}
+  : _queries_per_transaction(1),
+    _check_replication(true),
+    _connections_count(1) {}
 
 /**
  *  Constructor.
@@ -54,7 +56,8 @@ database_config::database_config(
                    std::string const& password,
                    std::string const& name,
                    int queries_per_transaction,
-                   bool check_replication)
+                   bool check_replication,
+                   int connections_count)
   : _type(type),
     _host(host),
     _port(port),
@@ -62,7 +65,8 @@ database_config::database_config(
     _password(password),
     _name(name),
     _queries_per_transaction(queries_per_transaction),
-    _check_replication(check_replication) {}
+    _check_replication(check_replication),
+    _connections_count(connections_count) {}
 
 /**
  *  Build a database configuration from a configuration set.
@@ -126,6 +130,14 @@ database_config::database_config(config::endpoint const& cfg) {
     _check_replication = config::parser::parse_boolean(it->second);
   else
     _check_replication = true;
+
+  // connections_count
+  it = cfg.params.find("connections_count");
+  if (it != end)
+    _connections_count = it->toUInt();
+  else
+    _connections_count = 1;
+
 }
 
 /**
@@ -229,6 +241,15 @@ bool database_config::get_check_replication() const {
 }
 
 /**
+ *  Get the number of connections to open to the database server.
+ *
+ *  @return Number of connections.
+ */
+int database_config::get_connections_count() const {
+  return (_connections_count);
+}
+
+/**
  *  Set type.
  *
  *  @param[in] type  The database type.
@@ -292,6 +313,15 @@ void database_config::set_queries_per_transaction(int qpt) {
 }
 
 /**
+ *  Set the number of connections.
+ *
+ *  @param[in] qpt  Number of connections.
+ */
+void database_config::set_connections_count(int count) {
+  _connections_count = count;
+}
+
+/**
  *  Set whether or not database replication should be checked.
  *
  *  @param[in] check_replication  Replication check flag.
@@ -314,4 +344,5 @@ void database_config::_internal_copy(database_config const& other) {
   _name = other._name;
   _queries_per_transaction = other._queries_per_transaction;
   _check_replication = other._check_replication;
+  _connections_count = other._connections_count;
 }
