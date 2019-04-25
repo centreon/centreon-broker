@@ -22,9 +22,9 @@
 #  include <QMutex>
 #  include <string>
 #  include "com/centreon/broker/bam/configuration/applier/state.hh"
-#  include "com/centreon/broker/database.hh"
+#  include "com/centreon/broker/mysql.hh"
+#  include "com/centreon/broker/database/mysql_stmt.hh"
 #  include "com/centreon/broker/database_config.hh"
-#  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -75,11 +75,15 @@ namespace           bam {
     ba_svc_mapping  _ba_mapping;
     ba_svc_mapping  _meta_mapping;
     mutable QMutex  _statusm;
-    database        _db;
+    mysql           _mysql;
     bool            _db_v2;
-    database_query  _ba_update;
-    database_query  _kpi_update;
-    database_query  _meta_service_update;
+    database::mysql_stmt
+                    _ba_update;
+    database::mysql_stmt
+                    _kpi_update;
+    database::mysql_stmt
+                    _meta_service_update;
+    int             _ack_events;
     int             _pending_events;
     database_config _storage_db_cfg;
     std::shared_ptr<persistent_cache>

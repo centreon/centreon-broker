@@ -181,8 +181,10 @@ add_library("${BAM}" SHARED
   "${INC_DIR}/service_listener.hh"
   "${INC_DIR}/timeperiod_map.hh"
 )
+set_target_properties("${BAM}" PROPERTIES
+    PREFIX ""
+    COMPILE_FLAGS "${MYSQL_CFLAGS}")
 target_link_libraries("${BAM}" ${QT_LIBRARIES})
-set_target_properties("${BAM}" PROPERTIES PREFIX "")
 
 # Testing.
 set(

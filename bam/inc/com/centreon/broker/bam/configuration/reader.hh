@@ -22,12 +22,10 @@
 #  include <string>
 #  include "com/centreon/broker/bam/configuration/state.hh"
 #  include "com/centreon/broker/database_config.hh"
+#  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
-
-// Forward declaration.
-class                   database;
 
 namespace               bam {
   namespace             configuration {
@@ -41,7 +39,7 @@ namespace               bam {
      */
     class               reader {
     public:
-                        reader(database& centreon_db);
+                        reader(mysql& centreon_db);
                         ~reader();
       void              read(state& state_obj);
 
@@ -55,7 +53,7 @@ namespace               bam {
       void              _load(bam::hst_svc_mapping& mapping);
       void              _load_dimensions();
 
-      database&         _db;
+      mysql&            _mysql;
       unsigned int      _poller_organization_id;
     };
   }
