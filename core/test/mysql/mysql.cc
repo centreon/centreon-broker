@@ -118,7 +118,6 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
   ms->run_query_and_get_result(
         oss.str(),
         &promise,
-        "",
         thread_id);
 
   // The query is done from the same thread/connection
@@ -128,7 +127,7 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
   ASSERT_NO_THROW(ms->commit(thread_id));
 
   promise = std::promise<mysql_result>();
-  ms->run_query_and_get_result(oss.str(), &promise, "", thread_id);
+  ms->run_query_and_get_result(oss.str(), &promise, thread_id);
   mysql_result res1(promise.get_future().get());
   ASSERT_TRUE(ms->fetch_row(res1));
 }
@@ -286,8 +285,7 @@ TEST_F(DatabaseStorageTest, QuerySyncWithError) {
   std::promise<mysql_result> promise;
   ms->run_query_and_get_result(
         "SELECT foo FROM bar LIMIT 1",
-        &promise,
-        "ERROR");
+        &promise);
   ASSERT_THROW(promise.get_future().get(), exceptions::msg);
 }
 
