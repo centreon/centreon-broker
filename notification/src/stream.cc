@@ -16,13 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
-#include <clocale>
 #include <ctime>
 #include <QPair>
-#include <QSqlDriver>
-#include <QSqlError>
-#include <QSqlField>
-#include <QSqlRecord>
+//#include <QSqlDriver>
+//#include <QSqlError>
+//#include <QSqlField>
+//#include <QSqlRecord>
 #include <QTextStream>
 #include <QThread>
 #include <QVector>
@@ -74,34 +73,34 @@ stream::stream(
           node_cache& cache)
   : _node_cache(cache) {
   // Get the driver ID.
-  std::string t;
-  if (!strcasecmp(type.c_str(), "db2"))
-    t = "QDB2";
-  else if (!strcasecmp(type.c_str(), "ibase")
-           || !strcasecmp(type.c_str(), "interbase"))
-    t = "QIBASE";
-  else if (!strcasecmp(type.c_str(), "mysql"))
-    t = "QMYSQL";
-  else if (!strcasecmp(type.c_str(), "oci")
-           || !strcasecmp(type.c_str(), "oracle"))
-    t = "QOCI";
-  else if (!strcasecmp(type.c_str(), "odbc"))
-    t = "QODBC";
-  else if (!strcasecmp(type.c_str(), "psql")
-           || !strcasecmp(type.c_str(), "postgres")
-           || !strcasecmp(type.c_str(), "postgresql"))
-    t = "QPSQL";
-  else if (!strcasecmp(type.c_str(), "sqlite"))
-    t = "QSQLITE";
-  else if (!strcasecmp(type.c_str(), "tds")
-           || !strcasecmp(type.c_str(), "sybase"))
-    t = "QTDS";
-  else
-    t = type;
+    std::string t("QMYSQL");
+//  if (!type.compare("db2", Qt::CaseInsensitive))
+//    t = "QDB2";
+//  else if (!type.compare("ibase", Qt::CaseInsensitive)
+//           || !type.compare("interbase", Qt::CaseInsensitive))
+//    t = "QIBASE";
+//  else if (!type.compare("mysql", Qt::CaseInsensitive))
+//    t = "QMYSQL";
+//  else if (!type.compare("oci", Qt::CaseInsensitive)
+//           || !type.compare("oracle", Qt::CaseInsensitive))
+//    t = "QOCI";
+//  else if (!type.compare("odbc", Qt::CaseInsensitive))
+//    t = "QODBC";
+//  else if (!type.compare("psql", Qt::CaseInsensitive)
+//           || !type.compare("postgres", Qt::CaseInsensitive)
+//           || !type.compare("postgresql", Qt::CaseInsensitive))
+//    t = "QPSQL";
+//  else if (!type.compare("sqlite", Qt::CaseInsensitive))
+//    t = "QSQLITE";
+//  else if (!type.compare("tds", Qt::CaseInsensitive)
+//           || !type.compare("sybase", Qt::CaseInsensitive))
+//    t = "QTDS";
+//  else
+//    t = type;
 
   // Connection ID.
-  QString id;
-  id.setNum((qulonglong)this, 16);
+//  QString id;
+//  id.setNum((qulonglong)this, 16);
 
   // Open centreon database.
   _open_db(
@@ -112,7 +111,7 @@ stream::stream(
     user,
     password,
     centreon_db,
-    id.toStdString(),
+//    id,
     check_replication);
 
   // Create the process manager.
@@ -130,12 +129,13 @@ stream::stream(
  */
 stream::stream(stream const& other) : io::stream(other),
   _node_cache(other._node_cache) {
+  _centreon_db = std::move(const_cast<stream&>(other)._centreon_db);
   // Connection ID.
-  QString id;
-  id.setNum((qulonglong)this, 16);
-
-  // Clone centreon database.
-  _clone_db(_centreon_db, other._centreon_db, id);
+//  QString id;
+//  id.setNum((qulonglong)this, 16);
+//
+//  // Clone centreon database.
+//  _clone_db(_centreon_db, other._centreon_db, id);
 
   // Create the process manager.
   process_manager::instance();
@@ -151,19 +151,19 @@ stream::stream(stream const& other) : io::stream(other),
  */
 stream::~stream() {
   // Connection ID.
-  QString id;
-  id.setNum((qulonglong)this, 16);
-
-  {
-    QMutexLocker lock(&global_lock);
-    // Close database.
-    if (_centreon_db->isOpen())
-      _centreon_db->close();
-    _centreon_db.reset();
-  }
-
-  // Add this connection to the connections to be deleted.
-  QSqlDatabase::removeDatabase(id);
+//  QString id;
+//  id.setNum((qulonglong)this, 16);
+//
+//  {
+//    QMutexLocker lock(&global_lock);
+//    // Close database.
+//    if (_centreon_db->isOpen())
+//      _centreon_db->close();
+//    _centreon_db.reset();
+//  }
+//
+//  // Add this connection to the connections to be deleted.
+//  QSqlDatabase::removeDatabase(id);
 
   // Wait for the termination of the thread.
   _notif_scheduler->exit();
@@ -257,85 +257,100 @@ int stream::write(std::shared_ptr<io::data> const& data) {
  *  @param[in]  check_replication  True if we need to check the replication.
  */
 void stream::_open_db(
-               std::unique_ptr<QSqlDatabase>& db,
+               std::unique_ptr<mysql>& ms,
                std::string const& t,
                std::string const& host,
                unsigned short port,
                std::string const& user,
                std::string const& password,
                std::string const& db_name,
-               std::string const& id,
+               //QString const& id,
                bool check_replication) {
-   // Add database connection.
-  db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(t.c_str(), id.c_str())));
-  try {
-    if (t == "QMYSQL")
-      db->setConnectOptions("CLIENT_FOUND_ROWS");
+  int queries_per_transaction(1);
+  // Add database connection.
+  ms.reset(new mysql(database_config(
+                   t,
+                   host,
+                   port,
+                   user,
+                   password,
+                   db_name,
+                   queries_per_transaction,
+                   check_replication,
+                   1)));
+//  try {
+//    if (t == "QMYSQL")
+//      db->setConnectOptions("CLIENT_FOUND_ROWS");
+//
+//    // Open database.
+//    db->setHostName(host);
+//    db->setPort(port);
+//    db->setUserName(user);
+//    db->setPassword(password);
+//    db->setDatabaseName(db_name);
 
-    // Open database.
-    db->setHostName(host.c_str());
-    db->setPort(port);
-    db->setUserName(user.c_str());
-    db->setPassword(password.c_str());
-    db->setDatabaseName(db_name.c_str());
-
-    {
-      QMutexLocker lock(&global_lock);
-      if (!db->open())
-        throw (exceptions::msg()
-          << "notification: could not open SQL database: "
-          << db->lastError().text());
-    }
+//    {
+//      QMutexLocker lock(&global_lock);
+//      if (!db->open())
+//        throw (exceptions::msg()
+//          << "notification: could not open SQL database: "
+//          << db->lastError().text());
+//    }
 
     // Check that replication is OK.
-    if (check_replication) {
-      logging::debug(logging::medium)
-        << "notification: checking replication status";
-      QSqlQuery q(*db);
-      if (!q.exec("SHOW SLAVE STATUS"))
-        logging::info(logging::medium)
-          << "notification: could not check replication status";
-      else {
-        if (!q.next())
-          logging::info(logging::medium)
-            << "notification: database is not under replication";
-        else {
-          QSqlRecord record(q.record());
-          unsigned int i(0);
-          for (QString field = record.fieldName(i);
-               !field.isEmpty();
-               field = record.fieldName(++i))
-            if (((field == "Slave_IO_Running")
-                 && (q.value(i).toString() != "Yes"))
-                || ((field == "Slave_SQL_Running")
-                    && (q.value(i).toString() != "Yes"))
-                || ((field == "Seconds_Behind_Master")
-                    && (q.value(i).toInt() != 0)))
-              throw (exceptions::msg() << "notification: replication is not "
-                          "complete: " << field << "="
-                       << q.value(i).toString());
-          logging::info(logging::medium)
-            << "notification: database replication is complete, "
-               "connection granted";
-        }
+  if (check_replication) {
+    logging::debug(logging::medium)
+      << "notification: checking replication status";
+    std::promise<database::mysql_result> promise;
+    try {
+      ms->run_query_and_get_result(
+              "SHOW SLAVE STATUS",
+              &promise,
+              "");
+    }
+    catch (std::exception const& e) {
+      logging::info(logging::medium)
+        << "notification: could not check replication status";
+    }
+    database::mysql_result res(promise.get_future().get());
+    if (ms->fetch_row(res)) {
+      for (int i(0); i < res.get_num_fields(); ++i) {
+        std::string field(res.get_field_name(i));
+        if ((field == "Slave_IO_Running"
+             && res.value_as_str(i) != "Yes")
+            || (field == "Slave_SQL_Running"
+                && res.value_as_str(i) != "Yes")
+            || (field == "Seconds_Behind_Master"
+                && res.value_as_i32(i) != 0))
+          throw exceptions::msg() << "notification: replication is not "
+                        "complete: " << field << "="
+                     << res.value_as_str(i);
       }
+      logging::info(logging::medium)
+        << "notification: database replication is complete, "
+           "connection granted";
     }
-    else
-      logging::debug(logging::medium)
-        << "notification: NOT checking replication status";  }
-  catch (...) {
-    {
-      QMutexLocker lock(&global_lock);
-      // Close database if open.
-      if (db->isOpen())
-        db->close();
-      db.reset();
+    else {
+      logging::info(logging::medium)
+        << "notification: database is not under replication";
     }
-
-    // Add this connection to the connections to be deleted.
-    QSqlDatabase::removeDatabase(id.c_str());
-    throw ;
   }
+  else
+    logging::debug(logging::medium)
+      << "notification: NOT checking replication status";
+//  catch (...) {
+//    {
+//      QMutexLocker lock(&global_lock);
+//      // Close database if open.
+//      if (db->isOpen())
+//        db->close();
+//      db.reset();
+//    }
+//
+//    // Add this connection to the connections to be deleted.
+//    QSqlDatabase::removeDatabase(id);
+//    throw ;
+//  }
 }
 
 /**
@@ -345,36 +360,36 @@ void stream::_open_db(
  *  @param[in] db_to_clone  A pointer to the db connection to clone.
  *  @param[in] id           An unique id identifiying the new connection.
  */
-void stream::_clone_db(
-               std::unique_ptr<QSqlDatabase>& db,
-               std::unique_ptr<QSqlDatabase> const& db_to_clone,
-               QString const& id) {
-  // Clone database.
-  db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*db_to_clone, id)));
-
-  try {
-    QMutexLocker lock(&global_lock);
-    // Open database.
-    if (!db->open())
-      throw (exceptions::msg()
-             << "notification: could not open SQL database: "
-             << db->lastError().text());
-  }
-  catch (...) {
-
-    {
-      QMutexLocker lock(&global_lock);
-      // Close database if open.
-      if (db->isOpen())
-        db->close();
-      db.reset();
-    }
-
-    // Add this connection to the connections to be deleted.
-    QSqlDatabase::removeDatabase(id);
-    throw ;
-  }
-}
+//void stream::_clone_db(
+//               std::unique_ptr<QSqlDatabase>& db,
+//               std::unique_ptr<QSqlDatabase> const& db_to_clone,
+//               QString const& id) {
+//  // Clone database.
+//  db.reset(new QSqlDatabase(QSqlDatabase::cloneDatabase(*db_to_clone, id)));
+//
+//  try {
+//    QMutexLocker lock(&global_lock);
+//    // Open database.
+//    if (!db->open())
+//      throw (exceptions::msg()
+//             << "notification: could not open SQL database: "
+//             << db->lastError().text());
+//  }
+//  catch (...) {
+//
+//    {
+//      QMutexLocker lock(&global_lock);
+//      // Close database if open.
+//      if (db->isOpen())
+//        db->close();
+//      db.reset();
+//    }
+//
+//    // Add this connection to the connections to be deleted.
+//    QSqlDatabase::removeDatabase(id);
+//    throw ;
+//  }
+//}
 
 /**
  *  Get the objects from the db.
