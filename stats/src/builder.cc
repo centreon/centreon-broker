@@ -28,6 +28,7 @@
 #include "com/centreon/broker/io/properties.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
+#include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/processing/thread.hh"
 #include "com/centreon/broker/stats/builder.hh"
 
@@ -101,6 +102,16 @@ void builder::build(serializer const& srz) {
     _root.add_property(
             "running with qt",
             io::property("running with qt", qVersion()));
+  }
+
+  // Mysql manager.
+  {
+    std::map<std::string, std::string>
+      stats(mysql_manager::instance().get_stats());
+    io::properties subtree;
+    for (std::pair<std::string, std::string> const& p: stats)
+      subtree.add_property(p.first, io::property(p.first, p.second));
+    _root.add_child(subtree, std::string("mysql manager"));
   }
 
   // Modules.
