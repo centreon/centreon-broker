@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QSqlDatabase>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -43,10 +42,6 @@ extern "C" {
     if (!--instances) {
       // Deregister storage layer.
       io::protocols::instance().unreg("influxdb");
-
-      // Remove the workaround connection.
-      if (QSqlDatabase::contains())
-        QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
     }
     return ;
   }
