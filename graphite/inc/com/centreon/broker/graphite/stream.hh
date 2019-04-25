@@ -25,7 +25,6 @@
 #  include <map>
 #  include <memory>
 #  include <mutex>
-#  include <QSqlDatabase>
 #  include <QString>
 #  include <utility>
 #  include "com/centreon/broker/io/stream.hh"
