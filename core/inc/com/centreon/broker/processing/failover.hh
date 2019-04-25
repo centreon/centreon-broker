@@ -22,7 +22,6 @@
 #  include <climits>
 #  include <ctime>
 #  include <mutex>
-#  include <QVector>
 #  include <string>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/io/stream.hh"

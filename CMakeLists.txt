@@ -80,9 +80,10 @@ include_directories(${source_dir})
 
 # Find Qt.
 list(APPEND CMAKE_MODULE_PATH  "${CMAKE_CURRENT_LIST_DIR}")
-find_package(Qt4 4.7.4 COMPONENTS QtCore QtSql REQUIRED)
+find_package(Qt4 4.7.4 COMPONENTS QtCore REQUIRED)
 find_package(Asio REQUIRED)
 add_definitions("-DASIO_STANDALONE")
+
 
 # Find zlib.
 find_package(ZLIB REQUIRED)
@@ -93,6 +94,20 @@ if (("${QT_VERSION}" VERSION_EQUAL "4.7.0")
     OR ("${QT_VERSION}" VERSION_EQUAL "4.7.1"))
   message(WARNING "Qt versions 4.7.0 and 4.7.1 contain a bug that might prevent Centreon Broker from working properly.")
 endif ()
+
+# Find MySQL/Mariadb devel package
+find_program(MYSQL_CONFIG "mysql_config")
+if (${MYSQL_CONFIG} STREQUAL "MYSQL_CONFIG-NOTFOUND")
+  find_program(MYSQL_CONFIG "mariadb_config")
+  if (${MYSQL_CONFIG} STREQUAL "MYSQL_CONFIG-NOTFOUND")
+    message(SEND_ERROR "MariaDB devel package is not installed")
+  endif()
+endif()
+
+execute_process(COMMAND ${MYSQL_CONFIG} --cflags
+  OUTPUT_VARIABLE MYSQL_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${MYSQL_CONFIG} --libs
+  OUTPUT_VARIABLE MYSQL_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 #
 # Get distributions name
@@ -354,12 +369,12 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/bbdo/output.cc"
   "${SRC_DIR}/bbdo/stream.cc"
   "${SRC_DIR}/bbdo/version_response.cc"
-  "${SRC_DIR}/ceof/ceof_writer.cc"
-  "${SRC_DIR}/ceof/ceof_parser.cc"
-  "${SRC_DIR}/ceof/ceof_iterator.cc"
-  "${SRC_DIR}/ceof/ceof_token.cc"
-  "${SRC_DIR}/ceof/ceof_serializer.cc"
   "${SRC_DIR}/ceof/ceof_deserializer.cc"
+  "${SRC_DIR}/ceof/ceof_iterator.cc"
+  "${SRC_DIR}/ceof/ceof_parser.cc"
+  "${SRC_DIR}/ceof/ceof_serializer.cc"
+  "${SRC_DIR}/ceof/ceof_token.cc"
+  "${SRC_DIR}/ceof/ceof_writer.cc"
   "${SRC_DIR}/compression/factory.cc"
   "${SRC_DIR}/compression/internal.cc"
   "${SRC_DIR}/compression/opener.cc"
@@ -373,10 +388,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/config/logger.cc"
   "${SRC_DIR}/config/parser.cc"
   "${SRC_DIR}/config/state.cc"
-  "${SRC_DIR}/database.cc"
   "${SRC_DIR}/database_config.cc"
-  "${SRC_DIR}/database_preparator.cc"
-  "${SRC_DIR}/database_query.cc"
   "${SRC_DIR}/exceptions/config.cc"
   "${SRC_DIR}/exceptions/corruption.cc"
   "${SRC_DIR}/exceptions/interrupt.cc"
@@ -384,8 +396,8 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/exceptions/shutdown.cc"
   "${SRC_DIR}/exceptions/timeout.cc"
   "${SRC_DIR}/extcmd/command_client.cc"
-  "${SRC_DIR}/extcmd/command_parser.cc"
   "${SRC_DIR}/extcmd/command_listener.cc"
+  "${SRC_DIR}/extcmd/command_parser.cc"
   "${SRC_DIR}/extcmd/command_request.cc"
   "${SRC_DIR}/extcmd/command_result.cc"
   "${SRC_DIR}/extcmd/command_server.cc"
@@ -441,18 +453,27 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/multiplexing/muxer.cc"
   "${SRC_DIR}/multiplexing/publisher.cc"
   "${SRC_DIR}/multiplexing/subscriber.cc"
+  "${SRC_DIR}/mysql.cc"
+  "${SRC_DIR}/database/mysql_bind.cc"
+  "${SRC_DIR}/database/mysql_column.cc"
+  "${SRC_DIR}/database/mysql_error.cc"
+  "${SRC_DIR}/mysql_manager.cc"
+  "${SRC_DIR}/database/mysql_result.cc"
+  "${SRC_DIR}/database/mysql_stmt.cc"
+  "${SRC_DIR}/mysql_connection.cc"
+  "${SRC_DIR}/query_preparator.cc"
   "${SRC_DIR}/persistent_cache.cc"
   "${SRC_DIR}/persistent_file.cc"
   "${SRC_DIR}/processing/acceptor.cc"
   "${SRC_DIR}/processing/failover.cc"
   "${SRC_DIR}/processing/feeder.cc"
-  "${SRC_DIR}/processing/thread.cc"
   "${SRC_DIR}/processing/stat_visitable.cc"
-  "${SRC_DIR}/time/timezone_manager.cc"
-  "${SRC_DIR}/time/timezone_locker.cc"
-  "${SRC_DIR}/time/timerange.cc"
-  "${SRC_DIR}/time/timeperiod.cc"
+  "${SRC_DIR}/processing/thread.cc"
   "${SRC_DIR}/time/daterange.cc"
+  "${SRC_DIR}/time/timeperiod.cc"
+  "${SRC_DIR}/time/timerange.cc"
+  "${SRC_DIR}/time/timezone_locker.cc"
+  "${SRC_DIR}/time/timezone_manager.cc"
   ${QT_WRAPPED_SOURCES}
   # Headers.
   "${INC_DIR}/bbdo/acceptor.hh"
@@ -465,14 +486,14 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/bbdo/output.hh"
   "${INC_DIR}/bbdo/stream.hh"
   "${INC_DIR}/bbdo/version_response.hh"
-  "${INC_DIR}/ceof/ceof_writer.hh"
   "${INC_DIR}/ceof/ceof_deserializer.hh"
+  "${INC_DIR}/ceof/ceof_iterator.hh"
   "${INC_DIR}/ceof/ceof_parser.hh"
   "${INC_DIR}/ceof/ceof_serializable.hh"
   "${INC_DIR}/ceof/ceof_serializer.hh"
-  "${INC_DIR}/ceof/ceof_iterator.hh"
   "${INC_DIR}/ceof/ceof_token.hh"
   "${INC_DIR}/ceof/ceof_visitor.hh"
+  "${INC_DIR}/ceof/ceof_writer.hh"
   "${INC_DIR}/compression/factory.hh"
   "${INC_DIR}/compression/internal.hh"
   "${INC_DIR}/compression/opener.hh"
@@ -487,10 +508,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/config/logger.hh"
   "${INC_DIR}/config/parser.hh"
   "${INC_DIR}/config/state.hh"
-  "${INC_DIR}/database.hh"
   "${INC_DIR}/database_config.hh"
-  "${INC_DIR}/database_preparator.hh"
-  "${INC_DIR}/database_query.hh"
   "${INC_DIR}/exceptions/config.hh"
   "${INC_DIR}/exceptions/interrupt.hh"
   "${INC_DIR}/exceptions/msg.hh"
@@ -557,28 +575,39 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/multiplexing/muxer.hh"
   "${INC_DIR}/multiplexing/publisher.hh"
   "${INC_DIR}/multiplexing/subscriber.hh"
+  "${INC_DIR}/mysql.hh"
+  "${INC_DIR}/database/mysql_bind.hh"
+  "${INC_DIR}/database/mysql_column.hh"
+  "${INC_DIR}/database/mysql_error.hh"
+  "${INC_DIR}/mysql_manager.hh"
+  "${INC_DIR}/database/mysql_result.hh"
+  "${INC_DIR}/database/mysql_stmt.hh"
+  "${INC_DIR}/database/mysql_task.hh"
+  "${INC_DIR}/mysql_connection.hh"
+  "${INC_DIR}/query_preparator.hh"
   "${INC_DIR}/persistent_cache.hh"
   "${INC_DIR}/persistent_file.hh"
   "${INC_DIR}/processing/acceptor.hh"
   "${INC_DIR}/processing/failover.hh"
   "${INC_DIR}/processing/feeder.hh"
-  "${INC_DIR}/processing/thread.hh"
   "${INC_DIR}/processing/stat_visitable.hh"
-  "${INC_DIR}/timestamp.hh"
-  "${INC_DIR}/time/timezone_manager.hh"
-  "${INC_DIR}/time/timezone_locker.hh"
-  "${INC_DIR}/time/timerange.hh"
-  "${INC_DIR}/time/timeperiod.hh"
-  "${INC_DIR}/time/time_info.hh"
-  "${INC_DIR}/time/ptr_typedef.hh"
+  "${INC_DIR}/processing/thread.hh"
   "${INC_DIR}/time/daterange.hh"
-  "${INC_DIR}/version.hh"
+  "${INC_DIR}/time/ptr_typedef.hh"
+  "${INC_DIR}/time/time_info.hh"
+  "${INC_DIR}/time/timeperiod.hh"
+  "${INC_DIR}/time/timerange.hh"
+  "${INC_DIR}/time/timezone_locker.hh"
+  "${INC_DIR}/time/timezone_manager.hh"
+  "${INC_DIR}/timestamp.hh"
   "${INC_DIR}/vars.hh"
+  "${INC_DIR}/version.hh"
 )
 
 # Static libraries.
 add_library("rokerbase" STATIC ${LIBROKER_SOURCES})
 add_dependencies(rokerbase json11_lib)
+set_target_properties("rokerbase" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-fPIC" COMPILER_HAS_FPIC)
 if (COMPILER_HAS_FPIC)
@@ -593,7 +622,7 @@ if (COMPILER_HAS_FPIC)
   set_property(TARGET "rokerbase"
     PROPERTY COMPILE_FLAGS "${ROKER_CXXFLAGS}")
 endif ()
-target_link_libraries("rokerbase" json11 ${ZLIB_LIBRARIES} ${QT_LIBRARIES} pthread)
+target_link_libraries("rokerbase" json11 ${ZLIB_LIBRARIES} ${QT_LIBRARIES} ${MYSQL_LIBS} pthread)
 add_library("roker" STATIC
   "${SRC_DIR}/config/applier/init.cc"
   "${SRC_DIR}/config/applier/logger.cc")

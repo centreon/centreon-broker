@@ -21,9 +21,6 @@
 
 #  include <memory>
 #  include "com/centreon/broker/mapping/property.hh"
-#  include "com/centreon/broker/mapping/source.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
