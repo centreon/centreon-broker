@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QSqlDatabase>
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/sql/factory.hh"
@@ -42,9 +41,6 @@ extern "C" {
       // Deregister SQL layer.
       io::protocols::instance().unreg("SQL");
 
-      // Remove the workaround connection.
-      if (QSqlDatabase::contains())
-        QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
     }
     return ;
   }
@@ -63,10 +59,6 @@ extern "C" {
       logging::info(logging::high)
         << "SQL: module for Centreon Broker "
         << CENTREON_BROKER_VERSION;
-
-      // This is a workaround to keep a mysql driver open.
-      if (!QSqlDatabase::contains())
-        QSqlDatabase::addDatabase("QMYSQL");
 
       // Register SQL layer.
       io::protocols::instance().reg("SQL",
