@@ -16,44 +16,51 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_DATABASE_PREPARATOR_HH
-#  define CCB_DATABASE_PREPARATOR_HH
+#ifndef CCB_QUERY_PREPARATOR_HH
+#  define CCB_QUERY_PREPARATOR_HH
 
-#  include "com/centreon/broker/database_query.hh"
+#  include <map>
+#  include <set>
+#  include <QSet>
+#  include <QString>
+#  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 /**
- *  @class database_preparator database_preparator.hh "com/centreon/broker/database_preparator.hh"
+ *  @class query_preparator query_preparator.hh "com/centreon/broker/query_preparator.hh"
  *  @brief Prepare database queries.
  *
  *  Prepare queries using event mappings.
  */
-class                  database_preparator {
+class                  query_preparator {
 public:
+  typedef std::set<std::string> excluded_fields;
+  typedef std::set<std::string> doubled_fields;
   typedef std::set<std::string> event_unique;
 
-                       database_preparator(
+                       query_preparator(
                          unsigned int event_id,
                          event_unique const& unique = event_unique(),
-                         database_query::excluded_fields const& excluded
-                         = database_query::excluded_fields());
-                       database_preparator(
-                         database_preparator const& other);
-                       ~database_preparator();
-  database_preparator& operator=(database_preparator const& other);
-  void                 prepare_insert(database_query& q);
-  void                 prepare_update(database_query& q);
-  void                 prepare_delete(database_query& q);
+                         excluded_fields const& excluded
+                         = excluded_fields());
+                       query_preparator(
+                         query_preparator const& other);
+                       ~query_preparator();
+  query_preparator& operator=(query_preparator const& other);
+  database::mysql_stmt prepare_insert(mysql& q, bool ignore = false);
+  database::mysql_stmt prepare_update(mysql& q);
+  database::mysql_stmt prepare_insert_or_update(mysql& ms);
+  database::mysql_stmt prepare_delete(mysql& q);
 
 private:
   unsigned int         _event_id;
-  database_query::excluded_fields
+  excluded_fields
                        _excluded;
   event_unique         _unique;
 };
 
 CCB_END()
 
-#endif // !CCB_DATABASE_PREPARATOR_HH
+#endif // !CCB_QUERY_PREPARATOR_HH
