@@ -54,8 +54,10 @@ add_library("${STATS}" SHARED
   "${INC_DIR}/json_serializer.hh"
   "${INC_DIR}/worker.hh"
 )
+set_target_properties("${STATS}" PROPERTIES
+    PREFIX ""
+    COMPILE_FLAGS "${MYSQL_CFLAGS}")
 target_link_libraries("${STATS}" ${QT_LIBRARIES})
-set_target_properties("${STATS}" PROPERTIES PREFIX "")
 
 # Install rule.
 install(TARGETS "${STATS}"
