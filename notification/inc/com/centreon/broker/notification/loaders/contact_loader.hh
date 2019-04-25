@@ -20,9 +20,8 @@
 #  define CCB_NOTIFICATION_LOADERS_CONTACT_LOADER_HH
 
 #  include <string>
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
 #  include "com/centreon/broker/notification/builders/contact_builder.hh"
+#  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -38,7 +37,7 @@ namespace  notification {
   public:
            contact_loader();
 
-    void   load(QSqlDatabase* db, contact_builder* output);
+    void   load(mysql* db, contact_builder* output);
   };
 
 }

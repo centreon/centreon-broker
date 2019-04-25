@@ -23,11 +23,10 @@
 #  include <memory>
 #  include <QSet>
 #  include <QPair>
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
 #  include <QString>
 #  include <QVector>
 #  include <QReadWriteLock>
+#  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/loaders/command_loader.hh"
 #  include "com/centreon/broker/notification/loaders/contact_loader.hh"
@@ -53,7 +52,7 @@ namespace             notification {
                       state(state const& obj);
     state&            operator=(state const& obj);
 
-    void              update_objects_from_db(QSqlDatabase& centreon_db);
+    void              update_objects_from_db(mysql& centreon_db);
 
     std::unique_ptr<QReadLocker>
                       read_lock();

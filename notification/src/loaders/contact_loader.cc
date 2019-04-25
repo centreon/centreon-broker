@@ -18,8 +18,6 @@
 
 #include <sstream>
 #include <QSet>
-#include <QVariant> // Needed because of QSql
-#include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/contact.hh"
@@ -37,42 +35,43 @@ contact_loader::contact_loader() {}
  *  @param[in] db       An open connection to the database.
  * @param[out] output   A contact builder object to register the contacts.
  */
-void contact_loader::load(QSqlDatabase* db, contact_builder* output) {
+void contact_loader::load(mysql* ms, contact_builder* output) {
   // If we don't have any db or output, don't do anything.
-  if (!db || !output)
+  if (!ms || !output)
     return;
 
   logging::debug(logging::medium)
     << "notification: loading contacts from the database";
 
-  QSqlQuery query(*db);
-
   // Load the contacts.
-  if (!query.exec("SELECT contact_id, description"
-                  "  FROM cfg_contacts"))
-    throw (exceptions::msg()
-           << "notification: cannot load contacts from database: "
-           << query.lastError().text());
+  std::promise<database::mysql_result> promise;
+  ms->run_query_and_get_result(
+        "SELECT contact_id, description FROM cfg_contacts",
+        &promise,
+        "notification: cannot load contacts from database: ");
 
-  while (query.next()) {
+  database::mysql_result res(promise.get_future().get());
+  while (ms->fetch_row(res)) {
     contact::ptr cont(new contact);
-    unsigned int id = query.value(0).toUInt();
+    unsigned int id = res.value_as_u32(0);
     cont->set_id(id);
-    cont->set_description(query.value(1).toString().toStdString());
+    cont->set_description(res.value_as_str(1));
     output->add_contact(id, cont);
   }
 
   // Load the infos of this contact.
-  if (!query.exec("SELECT contact_id, info_key, info_value "
-                  "  FROM cfg_contacts_infos"))
-    throw (exceptions::msg()
-           << "notification: cannot load contacts infos from database: "
-           << query.lastError().text());
+  promise = std::promise<database::mysql_result>();
+  ms->run_query_and_get_result(
+        "SELECT contact_id, info_key, info_value FROM cfg_contacts_infos",
+        &promise,
+        "notification: cannot load contacts infos from database: ");
 
-  while (query.next()) {
+  res = promise.get_future().get();
+
+  while (ms->fetch_row(res)) {
     output->add_contact_info(
-              query.value(0).toUInt(),
-              query.value(1).toString().toStdString(),
-              query.value(2).toString().toStdString());
+              res.value_as_u32(0),
+              res.value_as_str(1),
+              res.value_as_str(2));
   }
 }

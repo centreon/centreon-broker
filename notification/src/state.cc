@@ -87,7 +87,7 @@ state& state::operator=(state const& obj) {
 /**
  *  Get the objects from the db.
  */
-void state::update_objects_from_db(QSqlDatabase& centreon_db) {
+void state::update_objects_from_db(mysql& centreon_db) {
   // Acquire mutex.
   QWriteLocker lock(&_state_mutex);
 

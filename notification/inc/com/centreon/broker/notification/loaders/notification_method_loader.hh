@@ -20,8 +20,7 @@
 #  define CCB_NOTIFICATION_LOADERS_NOTIFICATION_METHOD_LOADER_HH
 
 #  include <string>
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
+#  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/builders/notification_method_builder.hh"
 
@@ -38,7 +37,7 @@ namespace       notification {
   public:
                 notification_method_loader();
 
-    void        load(QSqlDatabase* db, notification_method_builder* output);
+    void        load(mysql* db, notification_method_builder* output);
   };
 
 }

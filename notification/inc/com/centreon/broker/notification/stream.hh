@@ -24,8 +24,8 @@
 #  include <memory>
 #  include <QSet>
 #  include <QPair>
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
+//#  include <QSqlDatabase>
+//#  include <QSqlQuery>
 #  include <QString>
 #  include <QVector>
 #  include <set>
@@ -70,19 +70,18 @@ namespace        notification {
   private:
     stream&      operator=(stream const& s);
     void         _open_db(
-                   std::unique_ptr<QSqlDatabase>& db,
+                   std::unique_ptr<mysql>& db,
                    std::string const& t,
                    std::string const& host,
                    unsigned short port,
                    std::string const& user,
                    std::string const& password,
                    std::string const& db_name,
-                   std::string const& id,
                    bool check_replication);
-    void         _clone_db(
-                   std::unique_ptr<QSqlDatabase>& db,
-                   std::unique_ptr<QSqlDatabase> const& db_to_clone,
-                   QString const& id);
+//    void         _clone_db(
+//                   std::unique_ptr<mysql>& db,
+//                   std::unique_ptr<mysql> const& db_to_clone,
+//                   QString const& id);
     void         _update_objects_from_db();
     void         _process_service_status_event(
                    neb::service_status const& event);
@@ -95,7 +94,7 @@ namespace        notification {
     void         _process_downtime(
                    neb::downtime const& event);
 
-    std::unique_ptr<QSqlDatabase>
+    std::unique_ptr<mysql>
                  _centreon_db;
     std::unique_ptr<notification_scheduler>
                  _notif_scheduler;

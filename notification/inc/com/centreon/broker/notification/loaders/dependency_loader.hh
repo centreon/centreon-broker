@@ -19,9 +19,8 @@
 #ifndef CCB_NOTIFICATION_LOADERS_DEPENDENCY_LOADER_HH
 #  define CCB_NOTIFICATION_LOADERS_DEPENDENCY_LOADER_HH
 
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/notification/builders/dependency_builder.hh"
 
 CCB_BEGIN()
@@ -37,16 +36,16 @@ namespace  notification {
   public:
            dependency_loader();
 
-    void   load(QSqlDatabase* db, dependency_builder* output);
+    void   load(mysql* db, dependency_builder* output);
 
   private:
-    void   _load_relations(QSqlQuery& query, dependency_builder& output);
-    void   _load_relation(
-             QSqlQuery& query, dependency_builder& output,
-             std::string const& relation_id_name,
-             std::string const& table,
-             void (dependency_builder::*register_method)
-                    (unsigned int, unsigned int));
+    void   _load_relations(mysql* ms, dependency_builder& output);
+//    void   _load_relation(
+//             QSqlQuery& query, dependency_builder& output,
+//             std::string const& relation_id_name,
+//             std::string const& table,
+//             void (dependency_builder::*register_method)
+//                    (unsigned int, unsigned int));
   };
 
 }
