@@ -174,7 +174,6 @@ void stream::statistics(io::properties& tree) const {
   std::lock_guard<std::mutex> lock(_statusm);
   if (!_status.empty())
     tree.add_property("status", io::property("status", _status));
-  return ;
 }
 
 /*
