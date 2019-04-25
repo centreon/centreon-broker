@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QSqlDatabase>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
@@ -52,10 +51,6 @@ extern "C" {
       // Remove events.
       io::events::instance().unregister_category(io::events::storage);
       io::protocols::instance().unreg("storage");
-
-      // Remove the workaround connection.
-      if (QSqlDatabase::contains())
-        QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
     }
     return ;
   }
@@ -133,11 +128,6 @@ extern "C" {
                   &storage::metric_mapping::operations,
                   storage::metric_mapping::entries));
       }
-
-
-      // This is a workaround to keep a mysql driver open.
-      if (!QSqlDatabase::contains())
-        QSqlDatabase::addDatabase("QMYSQL");
 
       // Register storage layer.
       io::protocols::instance().reg(
