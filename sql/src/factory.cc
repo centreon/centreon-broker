@@ -112,6 +112,14 @@ io::endpoint* factory::new_endpoint(
       cleanup_check_interval = std::stoul(it->second);
   }
 
+  bool enable_cmd_cache(false);
+  {
+    QMap<QString, QString>::const_iterator
+      it(cfg.params.find("enable_command_cache"));
+    if (it != cfg.params.end())
+      enable_cmd_cache = it.value().toInt();
+  }
+
   // Instance timeout
   // By default, 5 minutes.
   unsigned int instance_timeout(5 * 60);
@@ -137,7 +145,8 @@ io::endpoint* factory::new_endpoint(
        dbcfg,
        cleanup_check_interval,
        instance_timeout,
-       wse);
+       wse,
+       enable_cmd_cache);
   is_acceptor = false;
   return c.release();
 }
