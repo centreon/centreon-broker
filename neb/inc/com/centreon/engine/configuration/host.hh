@@ -221,7 +221,8 @@ namespace                  configuration {
     std::string            _vrml_image;
   };
 
-  typedef shared_ptr<host>  host_ptr;
+  typedef std::shared_ptr<host>
+                            host_ptr;
   typedef std::list<host>   list_host;
   typedef std::set<host>    set_host;
 }

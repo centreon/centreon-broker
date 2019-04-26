@@ -108,8 +108,8 @@ namespace                  configuration {
     static setters const   _setters[];
   };
 
-  typedef shared_ptr<hostdependency>  hostdependency_ptr;
-  typedef std::set<hostdependency>    set_hostdependency;
+  typedef std::shared_ptr<hostdependency>  hostdependency_ptr;
+  typedef std::set<hostdependency>         set_hostdependency;
 }
 
 CCE_END()

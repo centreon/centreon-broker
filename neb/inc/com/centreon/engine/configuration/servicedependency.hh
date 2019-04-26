@@ -128,8 +128,8 @@ namespace                  configuration {
     static setters const   _setters[];
   };
 
-  typedef shared_ptr<servicedependency>  servicedependency_ptr;
-  typedef std::set<servicedependency>    set_servicedependency;
+  typedef std::shared_ptr<servicedependency>  servicedependency_ptr;
+  typedef std::set<servicedependency>         set_servicedependency;
 }
 
 CCE_END()

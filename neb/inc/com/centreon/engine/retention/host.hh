@@ -27,7 +27,6 @@
 #  include "com/centreon/engine/objects/customvariable.hh"
 #  include "com/centreon/engine/opt.hh"
 #  include "com/centreon/engine/retention/object.hh"
-#  include "com/centreon/shared_ptr.hh"
 
 CCE_BEGIN()
 

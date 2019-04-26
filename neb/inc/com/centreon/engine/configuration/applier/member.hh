@@ -23,7 +23,6 @@
 #  include <list>
 #  include <string>
 #  include "com/centreon/engine/namespace.hh"
-#  include "com/centreon/shared_ptr.hh"
 #  include "com/centreon/unordered_hash.hh"
 
 struct command_struct;

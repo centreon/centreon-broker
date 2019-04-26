@@ -66,8 +66,8 @@ namespace                  configuration {
     static setters const   _setters[];
   };
 
-  typedef shared_ptr<command> command_ptr;
-  typedef std::set<command>   set_command;
+  typedef std::shared_ptr<command> command_ptr;
+  typedef std::set<command>        set_command;
 }
 
 CCE_END()
