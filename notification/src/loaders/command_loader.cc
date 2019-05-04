@@ -50,17 +50,22 @@ void command_loader::load(mysql* ms, command_builder* output) {
         "SELECT command_id, connector_id, command_name, command_line,"
         "       command_type, enable_shell"
         "  FROM cfg_commands",
-        &promise,
-        "notification: cannot load commands from database: ");
+        &promise);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res)) {
+      unsigned int id = res.value_as_u32(0);
+      std::string base_command = res.value_as_str(3);
+      command::ptr com(new command(base_command));
+      com->set_name(res.value_as_str(2));
+      com->set_enable_shell(res.value_as_bool(5));
 
-  database::mysql_result res(promise.get_future().get());
-  while (ms->fetch_row(res)) {
-    unsigned int id = res.value_as_u32(0);
-    std::string base_command = res.value_as_str(3);
-    command::ptr com(new command(base_command));
-    com->set_name(res.value_as_str(2));
-    com->set_enable_shell(res.value_as_bool(5));
-
-    output->add_command(id, com);
+      output->add_command(id, com);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load commands from database: "
+      << e.what();
   }
 }

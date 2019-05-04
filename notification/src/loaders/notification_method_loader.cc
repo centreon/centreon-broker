@@ -46,22 +46,28 @@ void notification_method_loader::load(
         "SELECT method_id, name, command_id, `interval`, status, "
         "       types, start, end "
         "  FROM cfg_notification_methods",
-        &promise,
-        "notification: cannot load notification methods from database: ");
+        &promise);
 
-  database::mysql_result res(promise.get_future().get());
-  while (ms->fetch_row(res)) {
-    notification_method::ptr nm(new notification_method);
-    nm->set_name(res.value_as_str(1));
-    nm->set_command_id(res.value_as_u32(2));
-    nm->set_interval(res.value_as_u32(3));
-    nm->set_status(res.value_as_str(4));
-    nm->set_types(res.value_as_str(5));
-    nm->set_start(res.value_as_u32(6));
-    nm->set_end(res.value_as_u32(7));
-    logging::debug(logging::low)
-      << "notification: new method " << res.value_as_u32(0)
-      << " ('" << nm->get_name() << "')";
-    output->add_notification_method(res.value_as_u32(0), nm);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res)) {
+      notification_method::ptr nm(new notification_method);
+      nm->set_name(res.value_as_str(1));
+      nm->set_command_id(res.value_as_u32(2));
+      nm->set_interval(res.value_as_u32(3));
+      nm->set_status(res.value_as_str(4));
+      nm->set_types(res.value_as_str(5));
+      nm->set_start(res.value_as_u32(6));
+      nm->set_end(res.value_as_u32(7));
+      logging::debug(logging::low)
+        << "notification: new method " << res.value_as_u32(0)
+        << " ('" << nm->get_name() << "')";
+      output->add_notification_method(res.value_as_u32(0), nm);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load notification methods from database: "
+      << e.what();
   }
 }

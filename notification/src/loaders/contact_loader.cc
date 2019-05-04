@@ -47,31 +47,43 @@ void contact_loader::load(mysql* ms, contact_builder* output) {
   std::promise<database::mysql_result> promise;
   ms->run_query_and_get_result(
         "SELECT contact_id, description FROM cfg_contacts",
-        &promise,
-        "notification: cannot load contacts from database: ");
+        &promise);
 
-  database::mysql_result res(promise.get_future().get());
-  while (ms->fetch_row(res)) {
-    contact::ptr cont(new contact);
-    unsigned int id = res.value_as_u32(0);
-    cont->set_id(id);
-    cont->set_description(res.value_as_str(1));
-    output->add_contact(id, cont);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res)) {
+      contact::ptr cont(new contact);
+      unsigned int id = res.value_as_u32(0);
+      cont->set_id(id);
+      cont->set_description(res.value_as_str(1));
+      output->add_contact(id, cont);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load contacts from database: "
+      << e.what();
   }
 
   // Load the infos of this contact.
   promise = std::promise<database::mysql_result>();
   ms->run_query_and_get_result(
         "SELECT contact_id, info_key, info_value FROM cfg_contacts_infos",
-        &promise,
-        "notification: cannot load contacts infos from database: ");
+        &promise);
 
-  res = promise.get_future().get();
+  try {
+    database::mysql_result res(promise.get_future().get());
 
-  while (ms->fetch_row(res)) {
-    output->add_contact_info(
-              res.value_as_u32(0),
-              res.value_as_str(1),
-              res.value_as_str(2));
+    while (ms->fetch_row(res)) {
+      output->add_contact_info(
+                res.value_as_u32(0),
+                res.value_as_str(1),
+                res.value_as_str(2));
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load contacts infos from database: "
+      << e.what();
   }
 }

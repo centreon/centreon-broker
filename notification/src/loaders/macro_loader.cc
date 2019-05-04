@@ -119,21 +119,26 @@ void macro_loader::load(mysql* ms, macro_builder* output) {
         "SELECT resource_name, resource_line"
         "  FROM cfg_resources"
         "  WHERE resource_activate = '1'",
-        &promise,
-        "notification: cannot load resource macros from database: ");
+        &promise);
 
-  database::mysql_result res(promise.get_future().get());
-  while (ms->fetch_row(res)) {
-    // Remove leading and trailing $$
-    std::string macro_name = res.value_as_str(0);
-    // Remove leading and trailing $$
-    macro_name.erase(0, 1);
-    macro_name.erase(macro_name.size() - 1);
-    logging::config(logging::low) << "notification: loading resource macro ("
-      << macro_name << ") from database";
-    output->add_resource_macro(
-              macro_name,
-              res.value_as_str(1));
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res)) {
+      // Remove leading and trailing $$
+      std::string macro_name = res.value_as_str(0);
+      // Remove leading and trailing $$
+      macro_name.erase(0, 1);
+      macro_name.erase(macro_name.size() - 1);
+      logging::config(logging::low) << "notification: loading resource macro ("
+        << macro_name << ") from database";
+      output->add_resource_macro(
+                macro_name,
+                res.value_as_str(1));
+    }
   }
-  return ;
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load resource macros from database: "
+      << e.what();
+  }
 }

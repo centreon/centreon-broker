@@ -48,17 +48,23 @@ void node_loader::load(mysql* ms, node_builder* output) {
   std::promise<database::mysql_result> promise;
   ms->run_query_and_get_result(
         "SELECT host_id FROM cfg_hosts",
-        &promise,
-        "notification: cannot load hosts from database: ");
+        &promise);
 
-  database::mysql_result res(promise.get_future().get());
-  while (ms->fetch_row(res)) {
-    unsigned int host_id = res.value_as_u32(0);
-    node::ptr n(new node);
-    n->set_node_id(node_id(host_id));
-    logging::config(logging::low)
-      << "notification: loading host " << host_id << " from database";
-    output->add_node(n);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res)) {
+      unsigned int host_id = res.value_as_u32(0);
+      node::ptr n(new node);
+      n->set_node_id(node_id(host_id));
+      logging::config(logging::low)
+        << "notification: loading host " << host_id << " from database";
+      output->add_node(n);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load hosts from database: "
+      << e.what();
   }
 
   promise = std::promise<database::mysql_result>();
@@ -68,17 +74,23 @@ void node_loader::load(mysql* ms, node_builder* output) {
         "  FROM cfg_hosts_services_relations AS hsr"
         "  LEFT JOIN cfg_services AS s"
         "    ON hsr.service_service_id=s.service_id",
-        &promise,
-        "notification: cannot load services from database: ");
+        &promise);
 
-  res = promise.get_future().get();
-  while (ms->fetch_row(res)) {
-    unsigned int host_id = res.value_as_u32(0);
-    unsigned int service_id = res.value_as_u32(1);
-    node::ptr n(new node);
-    n->set_node_id(node_id(host_id, service_id));
-    logging::config(logging::low) << "notification: loading service ("
-      << host_id << ", " << service_id << ") from database";
-    output->add_node(n);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res)) {
+      unsigned int host_id = res.value_as_u32(0);
+      unsigned int service_id = res.value_as_u32(1);
+      node::ptr n(new node);
+      n->set_node_id(node_id(host_id, service_id));
+      logging::config(logging::low) << "notification: loading service ("
+        << host_id << ", " << service_id << ") from database";
+      output->add_node(n);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load services from database: "
+      << e.what();
   }
 }
