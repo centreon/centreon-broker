@@ -112,11 +112,17 @@ void stream::_cache_create() {
   std::promise<mysql_result> promise;
   _mysql.run_query_and_get_result(
            ss.str(),
-           &promise,
-           "SQL: could not get list of deleted instances");
-  mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(res))
-    _cache_deleted_instance_id.insert(res.value_as_u32(0));
+           &promise);
+  try {
+    mysql_result res(promise.get_future().get());
+    while (_mysql.fetch_row(res))
+      _cache_deleted_instance_id.insert(res.value_as_u32(0));
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "SQL: could not get list of deleted instances: "
+      << e.what();
+  }
 }
 
 /**
@@ -128,11 +134,18 @@ void stream::_host_instance_cache_create() {
 
   std::promise<mysql_result> promise;
   _mysql.run_query_and_get_result("SELECT host_id, instance_id FROM hosts",
-           &promise,
-           "SQL: could not get the list of host/instance pairs");
-  mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(res))
-    _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
+           &promise);
+
+  try {
+    mysql_result res(promise.get_future().get());
+    while (_mysql.fetch_row(res))
+      _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "SQL: could not get the list of host/instance pairs: "
+      << e.what();
+  }
 }
 
 /**
@@ -1510,26 +1523,30 @@ void stream::_process_issue_parent(
       query << " IS NULL";
     query << " AND start_time=" << ip.child_start_time;
 
-    std::ostringstream oss;
-    oss << "SQL: could not fetch child issue "
-           "ID (host: " << ip.child_host_id << ", service: "
-        << ip.child_service_id << ", start: "
-        << ip.child_start_time << "): ";
     std::promise<mysql_result> promise;
     _mysql.run_query_and_get_result(
              query.str(), &promise,
-             oss.str(),
              _mysql.choose_connection_by_instance(
                       _cache_host_instance[ip.child_host_id]));
-    mysql_result res(promise.get_future().get());
-    if (!_mysql.fetch_row(res))
-      throw exceptions::msg() << "child issue does not exist";
+    try {
+      mysql_result res(promise.get_future().get());
+      if (!_mysql.fetch_row(res))
+        throw exceptions::msg() << "child issue does not exist";
 
-    child_id = res.value_as_i32(0);
-    logging::debug(logging::low)
-      << "SQL: child issue ID of (" << ip.child_host_id << ", "
-      << ip.child_service_id << ", " << ip.child_start_time << ") is "
-      << child_id;
+      child_id = res.value_as_i32(0);
+      logging::debug(logging::low)
+        << "SQL: child issue ID of (" << ip.child_host_id << ", "
+        << ip.child_service_id << ", " << ip.child_start_time << ") is "
+        << child_id;
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+          << "SQL: could not fetch child issue "
+             "ID (host: " << ip.child_host_id << ", service: "
+          << ip.child_service_id << ", start: "
+          << ip.child_start_time << "): "
+          << e.what();
+    }
   }
 
   // Get parent ID.
@@ -1545,27 +1562,30 @@ void stream::_process_issue_parent(
       query << " IS NULL";
     query << " AND start_time=" << ip.parent_start_time;
 
-    std::ostringstream oss;
-    oss << "SQL: could not fetch parent issue "
-           "ID (host: " << ip.parent_host_id << ", service: "
-        << ip.parent_service_id << ", start: "
-        << ip.parent_start_time << "): ";
-
     std::promise<mysql_result> promise;
     _mysql.run_query_and_get_result(
              query.str(), &promise,
-             oss.str(),
              _mysql.choose_connection_by_instance(
                       _cache_host_instance[ip.parent_host_id]));
-    mysql_result res(promise.get_future().get());
-    if (!_mysql.fetch_row(res))
-      throw (exceptions::msg() << "parent issue does not exist");
+    try {
+      mysql_result res(promise.get_future().get());
+      if (!_mysql.fetch_row(res))
+        throw (exceptions::msg() << "parent issue does not exist");
 
-    parent_id = res.value_as_i32(0);
-    logging::debug(logging::low)
-      << "SQL: parent issue ID of (" << ip.parent_host_id << ", "
-      << ip.parent_service_id << ", " << ip.parent_start_time << ") is "
-      << parent_id;
+      parent_id = res.value_as_i32(0);
+      logging::debug(logging::low)
+        << "SQL: parent issue ID of (" << ip.parent_host_id << ", "
+        << ip.parent_service_id << ", " << ip.parent_start_time << ") is "
+        << parent_id;
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+          << "SQL: could not fetch parent issue "
+             "ID (host: " << ip.parent_host_id << ", service: "
+          << ip.parent_service_id << ", start: "
+          << ip.parent_start_time << "): "
+          << e.what();
+    }
   }
 
   // End of parenting.
@@ -2257,14 +2277,20 @@ void stream::_get_all_outdated_instances_from_db() {
      << " WHERE outdated=TRUE";
   std::promise<mysql_result> promise;
   _mysql.run_query_and_get_result(
-           ss.str(), &promise,
-           "SQL: could not get the list of outdated instances");
-  mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(res)) {
-    unsigned int instance_id = res.value_as_i32(0);
-    stored_timestamp& ts = _stored_timestamps[instance_id];
-    ts = stored_timestamp(instance_id, stored_timestamp::unresponsive);
-    ts.set_timestamp(timestamp(std::numeric_limits<time_t>::max()));
+           ss.str(), &promise);
+  try {
+    mysql_result res(promise.get_future().get());
+    while (_mysql.fetch_row(res)) {
+      unsigned int instance_id = res.value_as_i32(0);
+      stored_timestamp& ts = _stored_timestamps[instance_id];
+      ts = stored_timestamp(instance_id, stored_timestamp::unresponsive);
+      ts.set_timestamp(timestamp(std::numeric_limits<time_t>::max()));
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "SQL: could not get the list of outdated instances: "
+      << e.what();
   }
 }
 
