@@ -285,7 +285,6 @@ int mysql::run_statement(
 int mysql::run_statement_and_get_result(
              database::mysql_stmt& stmt,
              std::promise<mysql_result>* promise,
-             std::string const& error_msg,
              int thread_id) {
   _check_errors();
   if (thread_id < 0)
@@ -294,8 +293,7 @@ int mysql::run_statement_and_get_result(
 
   _connection[thread_id]->run_statement_and_get_result(
                             stmt,
-                            promise,
-                            error_msg);
+                            promise);
   return thread_id;
 }
 

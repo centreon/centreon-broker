@@ -1299,8 +1299,7 @@ TEST_F(DatabaseStorageTest, HostGroupMemberStatement) {
 
   int thread_id(ms->run_statement_and_get_result(
                       host_group_member_insert,
-                      &promise,
-                      "Error: host group not defined"));
+                      &promise));
   try {
     promise.get_future().get();
   }
@@ -1447,8 +1446,7 @@ TEST_F(DatabaseStorageTest, ServiceGroupMemberStatement) {
 
   int thread_id(ms->run_statement_and_get_result(
                       service_group_member_insert,
-                      &promise,
-                      "Error: service group not defined"));
+                      &promise));
   ASSERT_THROW(promise.get_future().get(), std::exception);
   neb::service_group sg;
   sg.id = 8;
@@ -1468,7 +1466,6 @@ TEST_F(DatabaseStorageTest, ServiceGroupMemberStatement) {
   ms->run_statement_and_get_result(
                  service_group_member_insert,
                  &promise,
-                 "Error: service group not defined",
                  thread_id);
   ASSERT_NO_THROW(promise.get_future().get());
   ms->commit();
