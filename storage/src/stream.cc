@@ -187,11 +187,17 @@ void stream::_host_instance_cache_create() {
 
   std::promise<database::mysql_result> promise;
   _mysql.run_query_and_get_result("SELECT host_id, instance_id FROM hosts",
-           &promise,
-           "SQL: could not get the list of host/instance pairs");
-  database::mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(res))
-    _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
+           &promise);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (_mysql.fetch_row(res))
+      _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::medium)
+      << "SQL: could not get the list of host/instance pairs: "
+      << e.what();
+  }
 }
 
 void stream::_process_instance(
@@ -418,12 +424,18 @@ void stream::_check_deleted_index() {
     {
       std::promise<database::mysql_result> promise;
       _mysql.run_query_and_get_result(
-               query, &promise,
-               "storage: could not query index table to get index to delete: ");
-      database::mysql_result res(promise.get_future().get());
-      if (!_mysql.fetch_row(res))
-        break ;
-      index_id = res.value_as_u64(0);
+               query, &promise);
+      try {
+        database::mysql_result res(promise.get_future().get());
+        if (!_mysql.fetch_row(res))
+          break ;
+        index_id = res.value_as_u64(0);
+      }
+      catch (std::exception const& e) {
+        throw broker::exceptions::msg()
+          << "storage: could not query index table to get index to delete: "
+          << e.what();
+      }
     }
 
     // Get associated metrics.
@@ -434,15 +446,19 @@ void stream::_check_deleted_index() {
              "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
           << "  WHERE index_id=" << index_id;
 
-      std::ostringstream oss_err;
-      oss_err << "storage: could not get metrics at index "
-              << index_id << ": ";
-
       std::promise<database::mysql_result> promise;
-      _mysql.run_query_and_get_result(oss.str(), &promise, oss_err.str());
-      database::mysql_result res(promise.get_future().get());
-      while (_mysql.fetch_row(res))
-        metrics_to_delete.push_back(res.value_as_u64(0));
+      _mysql.run_query_and_get_result(oss.str(), &promise);
+      try {
+        database::mysql_result res(promise.get_future().get());
+        while (_mysql.fetch_row(res))
+          metrics_to_delete.push_back(res.value_as_u64(0));
+      }
+      catch (std::exception const& e) {
+        throw broker::exceptions::msg()
+          << "storage: could not get metrics at index "
+          << index_id << ": "
+          << e.what();
+      }
     }
 
     // Delete metrics.
@@ -480,11 +496,17 @@ void stream::_check_deleted_index() {
     std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
              oss.str(),
-             &promise,
-             "storage: could not get the list of metrics to delete");
-    database::mysql_result res(promise.get_future().get());
-    while (_mysql.fetch_row(res))
-      metrics_to_delete.push_back(res.value_as_u64(0));
+             &promise);
+    try {
+      database::mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res))
+        metrics_to_delete.push_back(res.value_as_u64(0));
+    }
+    catch (std::exception const& e) {
+      throw broker::exceptions::msg()
+        << "storage: could not get the list of metrics to delete: "
+        << e.what();
+    }
   }
 
   // Delete standalone metrics.
@@ -1016,38 +1038,43 @@ void stream::_rebuild_cache() {
     std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
              query.str(),
-             &promise,
-             "storage: could not fetch index list from data DB");
-    database::mysql_result res(promise.get_future().get());
+          &promise);
+    try {
+      database::mysql_result res(promise.get_future().get());
 
-    // Loop through result set.
-    while (_mysql.fetch_row(res)) {
-      index_info info;
+      // Loop through result set.
+      while (_mysql.fetch_row(res)) {
+        index_info info;
+        info.index_id = res.value_as_u32(0);
+        unsigned int host_id(res.value_as_u32(1));
+        unsigned int service_id(res.value_as_u32(2));
+        info.host_name = QString(res.value_as_str(3).c_str());
+        info.rrd_retention = res.value_as_u32(4);
+        if (!info.rrd_retention)
+          info.rrd_retention = _rrd_len;
+        info.service_description = QString(res.value_as_str(5).c_str());
+        if (db_v2)
+          info.special = (res.value_as_u32(6) == 2);
+        else
+          info.special = res.value_as_bool(6);
+        info.locked = res.value_as_bool(7);
+        logging::debug(logging::high) << "storage: loaded index "
+          << info.index_id << " of (" << host_id << ", "
+          << service_id << ")";
+        _index_cache[std::make_pair(host_id, service_id)] = info;
 
-      info.index_id = res.value_as_u32(0);
-      unsigned int host_id(res.value_as_u32(1));
-      unsigned int service_id(res.value_as_u32(2));
-      info.host_name = QString(res.value_as_str(3).c_str());
-      info.rrd_retention = res.value_as_u32(4);
-      if (!info.rrd_retention)
-        info.rrd_retention = _rrd_len;
-      info.service_description = QString(res.value_as_str(5).c_str());
-      if (db_v2)
-        info.special = (res.value_as_u32(6) == 2);
-      else
-        info.special = res.value_as_bool(6);
-      info.locked = res.value_as_bool(7);
-      logging::debug(logging::high) << "storage: loaded index "
-        << info.index_id << " of (" << host_id << ", "
-        << service_id << ")";
-      _index_cache[std::make_pair(host_id, service_id)] = info;
-
-      // Create the metric mapping.
-      std::shared_ptr<index_mapping> im(new index_mapping);
-      im->index_id = info.index_id;
-      im->host_id = host_id;
-      im->service_id = service_id;
-      pblshr.write(im);
+        // Create the metric mapping.
+        std::shared_ptr<index_mapping> im(new index_mapping);
+        im->index_id = info.index_id;
+        im->host_id = host_id;
+        im->service_id = service_id;
+        pblshr.write(im);
+      }
+    }
+    catch (std::exception const& e) {
+      throw broker::exceptions::msg()
+        << "storage: could not fetch index list from data DB: "
+        << e.what();
     }
   }
 
@@ -1064,41 +1091,46 @@ void stream::_rebuild_cache() {
     std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
              query.str(),
-             &promise,
-             "storage: could not fetch metric list from data DB");
-    database::mysql_result res(promise.get_future().get());
+          &promise);
+    try {
+      database::mysql_result res(promise.get_future().get());
 
-    // Loop through result set.
-    while (_mysql.fetch_row(res)) {
-      metric_info info;
+      // Loop through result set.
+      while (_mysql.fetch_row(res)) {
+        metric_info info;
+        info.metric_id = res.value_as_u32(0);
+        unsigned int index_id(res.value_as_u32(1));
+        QString name(res.value_as_str(2).c_str());
+        info.type = (res.value_is_null(3)
+                     ? static_cast<unsigned int>(perfdata::automatic)
+                     : res.value_as_u32(3));
+        info.locked = res.value_as_bool(4);
+        info.value = (res.value_is_null(5) ? NAN : res.value_as_f64(5));
+        info.unit_name = res.value_as_str(6).c_str();
+        info.warn = (res.value_is_null(7) ? NAN : res.value_as_f64(7));
+        info.warn_low = (res.value_is_null(8) ? NAN : res.value_as_f64(8));
+        info.warn_mode = res.value_as_bool(9);
+        info.crit = (res.value_is_null(10) ? NAN : res.value_as_f64(10));
+        info.crit_low = (res.value_is_null(11) ? NAN : res.value_as_f64(11));
+        info.crit_mode = res.value_as_bool(12);
+        info.min = (res.value_is_null(13) ? NAN : res.value_as_f64(13));
+        info.max = (res.value_is_null(14) ? NAN : res.value_as_f64(14));
+        logging::debug(logging::high) << "storage: loaded metric "
+          << info.metric_id << " of (" << index_id << ", " << name
+          << "), type " << info.type;
+        _metric_cache[std::make_pair(index_id, name)] = info;
 
-      info.metric_id = res.value_as_u32(0);
-      uint64_t index_id(res.value_as_u32(1));
-      std::string name(res.value_as_str(2).c_str());
-      info.type = (res.value_is_null(3)
-                   ? static_cast<unsigned int>(perfdata::automatic)
-                   : res.value_as_u32(3));
-      info.locked = res.value_as_bool(4);
-      info.value = (res.value_is_null(5) ? NAN : res.value_as_f64(5));
-      info.unit_name = res.value_as_str(6).c_str();
-      info.warn = (res.value_is_null(7) ? NAN : res.value_as_f64(7));
-      info.warn_low = (res.value_is_null(8) ? NAN : res.value_as_f64(8));
-      info.warn_mode = res.value_as_bool(9);
-      info.crit = (res.value_is_null(10) ? NAN : res.value_as_f64(10));
-      info.crit_low = (res.value_is_null(11) ? NAN : res.value_as_f64(11));
-      info.crit_mode = res.value_as_bool(12);
-      info.min = (res.value_is_null(13) ? NAN : res.value_as_f64(13));
-      info.max = (res.value_is_null(14) ? NAN : res.value_as_f64(14));
-      logging::debug(logging::high) << "storage: loaded metric "
-        << info.metric_id << " of (" << index_id << ", " << name
-        << "), type " << info.type;
-      _metric_cache[{index_id, name}] = info;
-
-      // Create the metric mapping.
-      std::shared_ptr<metric_mapping> mm(new metric_mapping);
-      mm->index_id = index_id;
-      mm->metric_id = info.metric_id;
-      pblshr.write(mm);
+        // Create the metric mapping.
+        std::shared_ptr<metric_mapping> mm(new metric_mapping);
+        mm->index_id = index_id;
+        mm->metric_id = info.metric_id;
+        pblshr.write(mm);
+      }
+    }
+    catch (std::exception const& e) {
+      throw broker::exceptions::msg()
+        << "storage: could not fetch metric list from data DB: "
+        << e.what();
     }
   }
 
