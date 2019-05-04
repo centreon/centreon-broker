@@ -294,14 +294,19 @@ void reporting_stream::_close_inconsistent_events(
           << "  WHERE e1.end_time IS NULL"
           << "    AND e1.start_time!=e2.max_start_time";
     std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result(
-             query.str(), &promise,
-             "BAM-BI: could not get inconsistent events");
+    _mysql.run_query_and_get_result(query.str(), &promise);
+    try {
     mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res))
       events.push_back(std::make_pair(
                res.value_as_u32(0),
                static_cast<time_t>(res.value_as_i32(1))));
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "BAM-BI: could not get inconsistent events: "
+        << e.what();
+    }
   }
 
   // Close each event.
@@ -321,16 +326,21 @@ void reporting_stream::_close_inconsistent_events(
           << "  LIMIT 1";
 
       std::ostringstream oss_err;
-      oss_err << "BAM-BI: could not get end time of inconsistent event of "
-              << event_type << " " << it->first << " starting at "
-              << it->second << ": ";
       std::promise<mysql_result> promise;
-      _mysql.run_query_and_get_result(oss.str(), &promise, oss_err.str());
-      mysql_result res(promise.get_future().get());
-      if (!_mysql.fetch_row(res))
-        throw (exceptions::msg() << "no event following this one");
+      _mysql.run_query_and_get_result(oss.str(), &promise);
+      try {
+        mysql_result res(promise.get_future().get());
+        if (!_mysql.fetch_row(res))
+          throw (exceptions::msg() << "no event following this one");
 
-      end_time = res.value_as_i32(0);
+        end_time = res.value_as_i32(0);
+      }
+      catch (std::exception const& e) {
+        throw exceptions::msg()
+          << "BAM-BI: could not get end time of inconsistent event of "
+          << event_type << " " << it->first << " starting at "
+          << it->second << ": " << e.what();
+      }
     }
     {
       std::ostringstream oss;
@@ -380,23 +390,29 @@ void reporting_stream::_load_timeperiods() {
     std::promise<mysql_result> promise;
     _mysql.run_query_and_get_result(
              query,
-             &promise,
-             "BAM-BI: could not load timeperiods from DB");
-    mysql_result res(promise.get_future().get());
-    while (_mysql.fetch_row(res)) {
-      _timeperiods.add_timeperiod(res.value_as_u32(0),
-                                  time::timeperiod::ptr(
-                                            new time::timeperiod(
-        res.value_as_u32(0),
-        res.value_as_str(1),
-        "",
-        res.value_as_str(2),
-        res.value_as_str(3),
-        res.value_as_str(4),
-        res.value_as_str(5),
-        res.value_as_str(6),
-        res.value_as_str(7),
-        res.value_as_str(8))));
+             &promise);
+    try {
+      mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res)) {
+        _timeperiods.add_timeperiod(res.value_as_u32(0),
+                                    time::timeperiod::ptr(
+                                              new time::timeperiod(
+          res.value_as_u32(0),
+          res.value_as_str(1),
+          "",
+          res.value_as_str(2),
+          res.value_as_str(3),
+          res.value_as_str(4),
+          res.value_as_str(5),
+          res.value_as_str(6),
+          res.value_as_str(7),
+          res.value_as_str(8))));
+      }
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "BAM-BI: could not load timeperiods from DB: "
+        << e.what();
     }
   }
 
@@ -406,21 +422,25 @@ void reporting_stream::_load_timeperiods() {
       "SELECT timeperiod_id, daterange, timerange"
       "  FROM mod_bam_reporting_timeperiods_exceptions");
     std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result(
-             query,
-             &promise,
-             "BAM-BI: could not load timeperiods exceptions from DB");
-    mysql_result res(promise.get_future().get());
-    while (_mysql.fetch_row(res)) {
-      time::timeperiod::ptr tp = _timeperiods.get_timeperiod(res.value_as_u32(0));
-      if (!tp)
-        logging::error(logging::high)
-          << "BAM-BI: could not apply exception to non-existing timeperiod "
-          << res.value_as_u32(0);
-      else
-        tp->add_exception(
-              res.value_as_str(1),
-              res.value_as_str(2));
+    _mysql.run_query_and_get_result(query, &promise);
+    try {
+      mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res)) {
+        time::timeperiod::ptr tp = _timeperiods.get_timeperiod(res.value_as_u32(0));
+        if (!tp)
+          logging::error(logging::high)
+            << "BAM-BI: could not apply exception to non-existing timeperiod "
+            << res.value_as_u32(0);
+        else
+          tp->add_exception(
+                res.value_as_str(1),
+                res.value_as_str(2));
+      }
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "BAM-BI: could not load timeperiods exceptions from DB: "
+        << e.what();
     }
   }
 
@@ -430,24 +450,28 @@ void reporting_stream::_load_timeperiods() {
       "SELECT timeperiod_id, excluded_timeperiod_id"
       "  FROM mod_bam_reporting_timeperiods_exclusions");
     std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result(
-             query,
-             &promise,
-             "BAM-BI: could not load exclusions from DB");
-    mysql_result res(promise.get_future().get());
-    while (_mysql.fetch_row(res)) {
-      time::timeperiod::ptr tp =
-          _timeperiods.get_timeperiod(res.value_as_u32(0));
-      time::timeperiod::ptr excluded_tp =
-          _timeperiods.get_timeperiod(res.value_as_u32(1));
-      if (!tp || !excluded_tp)
-        logging::error(logging::high)
-          << "BAM-BI: could not apply exclusion of timeperiod "
-          << res.value_as_u32(1) << " by timeperiod "
-          << res.value_as_u32(0)
-          << ": at least one timeperiod does not exist";
-      else
-        tp->add_excluded(excluded_tp);
+    _mysql.run_query_and_get_result(query, &promise);
+    try {
+      mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res)) {
+        time::timeperiod::ptr tp =
+            _timeperiods.get_timeperiod(res.value_as_u32(0));
+        time::timeperiod::ptr excluded_tp =
+            _timeperiods.get_timeperiod(res.value_as_u32(1));
+        if (!tp || !excluded_tp)
+          logging::error(logging::high)
+            << "BAM-BI: could not apply exclusion of timeperiod "
+            << res.value_as_u32(1) << " by timeperiod "
+            << res.value_as_u32(0)
+            << ": at least one timeperiod does not exist";
+        else
+          tp->add_excluded(excluded_tp);
+      }
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "BAM-BI: could not load exclusions from DB: "
+        << e.what();
     }
   }
 
@@ -457,16 +481,20 @@ void reporting_stream::_load_timeperiods() {
       "SELECT ba_id, timeperiod_id, is_default"
       "  FROM mod_bam_reporting_relations_ba_timeperiods");
     std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result(
-             query,
-             &promise,
-             "BAM-BI: could not load BA/timeperiods relations");
-    mysql_result res(promise.get_future().get());
-    while (_mysql.fetch_row(res))
-      _timeperiods.add_relation(
-        res.value_as_u32(0),
-        res.value_as_u32(1),
-        res.value_as_bool(2));
+    _mysql.run_query_and_get_result(query, &promise);
+    try {
+      mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res))
+        _timeperiods.add_relation(
+          res.value_as_u32(0),
+          res.value_as_u32(1),
+          res.value_as_bool(2));
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "BAM-BI: could not load BA/timeperiods relations: "
+        << e.what();
+    }
   }
 }
 
@@ -1324,24 +1352,28 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
               "    AND ba_id IN (");
       query.append(r.bas_to_rebuild);
       query.append(")");
-
-      std::ostringstream oss;
-      oss << "BAM-BI: could not get BA events of "
-          << r.bas_to_rebuild << " :";
       std::promise<mysql_result> promise;
-      _mysql.run_query_and_get_result(query, &promise, oss.str());
-      mysql_result res(promise.get_future().get());
+      _mysql.run_query_and_get_result(query, &promise);
+      try {
+        mysql_result res(promise.get_future().get());
 
-      while (_mysql.fetch_row(res)) {
-        std::shared_ptr<ba_event> baev(new ba_event);
-        baev->ba_id = res.value_as_i32(0);
-        baev->start_time = res.value_as_i32(1);
-        baev->end_time = res.value_as_i32(2);
-        baev->status = res.value_as_i32(3);
-        baev->in_downtime = res.value_as_bool(4);
-        ba_events.push_back(baev);
-        logging::debug(logging::low)
-          << "BAM-BI: got events of BA " << baev->ba_id;
+        while (_mysql.fetch_row(res)) {
+          std::shared_ptr<ba_event> baev(new ba_event);
+          baev->ba_id = res.value_as_i32(0);
+          baev->start_time = res.value_as_i32(1);
+          baev->end_time = res.value_as_i32(2);
+          baev->status = res.value_as_i32(3);
+          baev->in_downtime = res.value_as_bool(4);
+          ba_events.push_back(baev);
+          logging::debug(logging::low)
+            << "BAM-BI: got events of BA " << baev->ba_id;
+        }
+      }
+      catch (std::exception const& e) {
+        throw exceptions::msg()
+          << "BAM-BI: could not get BA events of "
+          << r.bas_to_rebuild.toStdString() << ": "
+          << e.what();
       }
     }
 

@@ -85,8 +85,7 @@ monitoring_stream::monitoring_stream(
       std::promise<mysql_result> promise;
       _mysql.run_query_and_get_result(
                "SELECT ba_id FROM mod_bam LIMIT 1",
-               &promise,
-               "");
+               &promise);
       promise.get_future().get();
       _db_v2 = true;
     }
@@ -403,12 +402,17 @@ void monitoring_stream::_rebuild() {
           << "  FROM " << (_db_v2 ? "mod_bam" : "cfg_bam")
           << "  WHERE must_be_rebuild='1'";
     std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result(
-             query.str(), &promise,
-             "BAM: could not select the list of BAs to rebuild");
-    mysql_result res(promise.get_future().get());
-    while (_mysql.fetch_row(res))
-      bas_to_rebuild.push_back(res.value_as_u32(0));
+    _mysql.run_query_and_get_result(query.str(), &promise);
+    try {
+      mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res))
+        bas_to_rebuild.push_back(res.value_as_u32(0));
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "BAM: could not select the list of BAs to rebuild: "
+        << e.what();
+    }
   }
 
   // Nothing to rebuild.
