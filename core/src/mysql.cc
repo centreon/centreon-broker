@@ -316,7 +316,6 @@ int mysql::run_statement_and_get_result(
 int mysql::run_statement_and_get_int(
              database::mysql_stmt& stmt,
              std::promise<int>* promise, mysql_task::int_type type,
-             std::string const& error_msg,
              int thread_id) {
   _check_errors();
   if (thread_id < 0)
@@ -326,8 +325,7 @@ int mysql::run_statement_and_get_int(
   _connection[thread_id]->run_statement_and_get_int(
                             stmt,
                             promise,
-                            type,
-                            error_msg);
+                            type);
   return thread_id;
 }
 

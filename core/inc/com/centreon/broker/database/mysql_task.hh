@@ -182,22 +182,19 @@ namespace database {
                            mysql_task_statement_int(
                              database::mysql_stmt& stmt,
                              std::promise<int>* promise,
-                             int_type type,
-                             std::string const& error_msg)
+                             int_type type)
                             : mysql_task(mysql_task::STATEMENT_INT),
                               promise(promise),
                               return_type(type),
                               statement_id(stmt.get_id()),
                               param_count(stmt.get_param_count()),
-                              bind(stmt.get_bind()),
-                              error_msg(error_msg) {}
+                              bind(stmt.get_bind()) {}
     std::promise<int>*     promise;
     int_type               return_type;
     int                    statement_id;
     int                    param_count;
     std::unique_ptr<database::mysql_bind>
                            bind;
-    std::string            error_msg;
   };
 }
 
