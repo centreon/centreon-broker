@@ -656,36 +656,42 @@ void reporting_stream::_process_ba_event(std::shared_ptr<io::data> const& e) {
   _ba_event_update.bind_value_as_u64(5,
     static_cast<qlonglong>(be.start_time.get_time_t()));
 
-  std::ostringstream oss_err;
-  oss_err << "BAM-BI: could not update event of BA "
-          << be.ba_id << " starting at " << be.start_time
-          << " and ending at " << be.end_time << ": ";
   std::promise<int> promise;
   _mysql.run_statement_and_get_int(
                          _ba_event_update,
-                         &promise, mysql_task::int_type::AFFECTED_ROWS,
-                         oss_err.str());
+                         &promise, mysql_task::int_type::AFFECTED_ROWS);
+
   // Event was not found, insert one.
-  if (promise.get_future().get() == 0) {
-    _ba_full_event_insert.bind_value_as_i32(0, be.ba_id);
-    _ba_full_event_insert.bind_value_as_i32(1, be.first_level);
-    _ba_full_event_insert.bind_value_as_u64(2,
-      static_cast<qlonglong>(be.start_time.get_time_t()));
+  try {
+    if (promise.get_future().get() == 0) {
+      _ba_full_event_insert.bind_value_as_i32(0, be.ba_id);
+      _ba_full_event_insert.bind_value_as_i32(1, be.first_level);
+      _ba_full_event_insert.bind_value_as_u64(2,
+        static_cast<qlonglong>(be.start_time.get_time_t()));
 
-    if (be.end_time.is_null())
-      _ba_full_event_insert.bind_value_as_null(3);
-    else
-      _ba_full_event_insert.bind_value_as_u64(3,
-        static_cast<qlonglong>(be.end_time.get_time_t()));
-    _ba_full_event_insert.bind_value_as_tiny(4, be.status);
-    _ba_full_event_insert.bind_value_as_bool(5, be.in_downtime);
+      if (be.end_time.is_null())
+        _ba_full_event_insert.bind_value_as_null(3);
+      else
+        _ba_full_event_insert.bind_value_as_u64(3,
+          static_cast<qlonglong>(be.end_time.get_time_t()));
+      _ba_full_event_insert.bind_value_as_tiny(4, be.status);
+      _ba_full_event_insert.bind_value_as_bool(5, be.in_downtime);
 
-    std::ostringstream oss_err;
-    oss_err << "BAM-BI: could not insert event of BA "
-            << be.ba_id << " starting at " << be.start_time
-            << ": ";
-    _mysql.run_statement(_ba_full_event_insert, oss_err.str(), true);
+      std::ostringstream oss_err;
+      oss_err << "BAM-BI: could not insert event of BA "
+              << be.ba_id << " starting at " << be.start_time
+              << ": ";
+      _mysql.run_statement(_ba_full_event_insert, oss_err.str(), true);
+    }
   }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "BAM-BI: could not update event of BA "
+      << be.ba_id << " starting at " << be.start_time
+      << " and ending at " << be.end_time << ": "
+      << e.what();
+  }
+
   // Compute the associated event durations.
   if (!be.end_time.is_null() && be.start_time != be.end_time)
     _compute_event_durations(std::static_pointer_cast<bam::ba_event>(e), this);
@@ -776,49 +782,53 @@ void reporting_stream::_process_kpi_event(
   _kpi_event_update.bind_value_as_u64(7,
     static_cast<qlonglong>(ke.start_time.get_time_t()));
 
-  std::ostringstream oss_err;
-  oss_err << "BAM-BI: could not update KPI "
-          << ke.kpi_id << " starting at " << ke.start_time
-          << " and ending at " << ke.end_time << ": ";
   std::promise<int> promise;
   int thread_id(_mysql.run_statement_and_get_int(
                          _kpi_event_update,
-                         &promise, mysql_task::int_type::AFFECTED_ROWS,
-                         oss_err.str()));
+                         &promise, mysql_task::int_type::AFFECTED_ROWS));
   // No kpis were updated, insert one.
-  if (promise.get_future().get() == 0) {
-    _kpi_full_event_insert.bind_value_as_i32(0, ke.kpi_id);
-    _kpi_full_event_insert.bind_value_as_u64(1,
-      static_cast<qlonglong>(ke.start_time.get_time_t()));
-    if (ke.end_time.is_null())
-      _kpi_full_event_insert.bind_value_as_null(2);
-    else
-      _kpi_full_event_insert.bind_value_as_u64(2,
-        static_cast<qlonglong>(ke.end_time.get_time_t()));
-    _kpi_full_event_insert.bind_value_as_tiny(3, ke.status);
-    _kpi_full_event_insert.bind_value_as_bool(4, ke.in_downtime);
-    _kpi_full_event_insert.bind_value_as_i32(5, ke.impact_level);
-    _kpi_full_event_insert.bind_value_as_str(6, ke.output);
-    _kpi_full_event_insert.bind_value_as_str(7, ke.perfdata);
+  try {
+    if (promise.get_future().get() == 0) {
+      _kpi_full_event_insert.bind_value_as_i32(0, ke.kpi_id);
+      _kpi_full_event_insert.bind_value_as_u64(1,
+        static_cast<qlonglong>(ke.start_time.get_time_t()));
+      if (ke.end_time.is_null())
+        _kpi_full_event_insert.bind_value_as_null(2);
+      else
+        _kpi_full_event_insert.bind_value_as_u64(2,
+          static_cast<qlonglong>(ke.end_time.get_time_t()));
+      _kpi_full_event_insert.bind_value_as_tiny(3, ke.status);
+      _kpi_full_event_insert.bind_value_as_bool(4, ke.in_downtime);
+      _kpi_full_event_insert.bind_value_as_i32(5, ke.impact_level);
+      _kpi_full_event_insert.bind_value_as_str(6, ke.output);
+      _kpi_full_event_insert.bind_value_as_str(7, ke.perfdata);
 
-    oss_err.str("");
-    oss_err << "BAM-BI: could not insert event of KPI "
-            << ke.kpi_id << " starting at " << ke.start_time
-            << " and ending at " << ke.end_time << ": ";
-    _mysql.run_statement(
-             _kpi_full_event_insert,
-             oss_err.str(), true,
-             thread_id);
+      std::ostringstream oss_err;
+      oss_err << "BAM-BI: could not insert event of KPI "
+              << ke.kpi_id << " starting at " << ke.start_time
+              << " and ending at " << ke.end_time << ": ";
+      _mysql.run_statement(
+               _kpi_full_event_insert,
+               oss_err.str(), true,
+               thread_id);
 
-    // Insert kpi event link.
-    _kpi_event_link.bind_value_as_i32(0, ke.kpi_id);
-    _kpi_event_link.bind_value_as_u64(1,
-      static_cast<qlonglong>(ke.start_time.get_time_t()));
-    oss_err.str("");
-    oss_err << "BAM-BI: could not create link from event of KPI "
-            << ke.kpi_id << " starting at " << ke.start_time
-            << " to its associated BA event: ";
-    _mysql.run_statement(_kpi_event_link, oss_err.str(), true, thread_id);
+      // Insert kpi event link.
+      _kpi_event_link.bind_value_as_i32(0, ke.kpi_id);
+      _kpi_event_link.bind_value_as_u64(1,
+        static_cast<qlonglong>(ke.start_time.get_time_t()));
+      oss_err.str("");
+      oss_err << "BAM-BI: could not create link from event of KPI "
+              << ke.kpi_id << " starting at " << ke.start_time
+              << " to its associated BA event: ";
+      _mysql.run_statement(_kpi_event_link, oss_err.str(), true, thread_id);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "BAM-BI: could not update KPI "
+      << ke.kpi_id << " starting at " << ke.start_time
+      << " and ending at " << ke.end_time << ": "
+      << e.what();
   }
 }
 
