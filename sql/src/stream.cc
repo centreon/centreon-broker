@@ -1085,15 +1085,17 @@ void stream::_process_host_group_member(
     }
     _host_group_member_insert << hgm;
 
+    std::promise<mysql_result> promise;
+    _transversal_mysql.run_statement_and_get_result(
+             _host_group_member_insert,
+             &promise);
     try {
-      std::promise<mysql_result> promise;
-      _transversal_mysql.run_statement_and_get_result(
-               _host_group_member_insert,
-               &promise,
-               "SQL: host group not defined");
       promise.get_future().get();
     }
     catch (std::exception const& e) {
+      logging::error(logging::low)
+        << "SQL: host group member insertion failed: "
+        << e.what();
       _prepare_hg_insupdate_statement();
 
       neb::host_group hg;
@@ -2040,12 +2042,14 @@ void stream::_process_service_group_member(
 
     _transversal_mysql.run_statement_and_get_result(
              _service_group_member_insert,
-             &promise,
-             "SQL: service group not defined");
+             &promise);
     try {
       promise.get_future().get();
     }
     catch (std::exception const& e) {
+      logging::error(logging::low)
+        << "SQL: host group not defined: " << e.what();
+
       _prepare_sg_insupdate_statement();
 
       neb::service_group sg;
