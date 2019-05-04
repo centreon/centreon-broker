@@ -410,7 +410,7 @@ TEST_F(DatabaseStorageTest, PrepareQuerySync) {
         stmt,
         &promise,
         mysql_task::LAST_INSERT_ID,
-        "", 0);
+        0);
   int id(promise.get_future().get());
   ASSERT_TRUE(id > 0);
   std::cout << "id = " << id << std::endl;
@@ -832,8 +832,7 @@ TEST_F(DatabaseStorageTest, InstanceStatusStatement) {
   ms->run_statement_and_get_int(
         inst_status_update,
         &promise,
-        mysql_task::int_type::AFFECTED_ROWS,
-        "");
+        mysql_task::int_type::AFFECTED_ROWS);
   ASSERT_TRUE(promise.get_future().get() == 1);
   ms->commit();
 
@@ -936,8 +935,7 @@ TEST_F(DatabaseStorageTest, HostStatusStatement) {
   ms->run_statement_and_get_int(
         host_status_update,
         &promise,
-        mysql_task::int_type::AFFECTED_ROWS,
-        "");
+        mysql_task::int_type::AFFECTED_ROWS);
 
   ASSERT_TRUE(promise.get_future().get() == 1);
 
@@ -1044,8 +1042,7 @@ TEST_F(DatabaseStorageTest, ServiceCheckStatement) {
   ms->run_statement_and_get_int(
         service_check_update,
         &promise,
-        mysql_task::int_type::AFFECTED_ROWS,
-        "");
+        mysql_task::int_type::AFFECTED_ROWS);
 
   ASSERT_TRUE(promise.get_future().get() == 1);
 
@@ -1094,8 +1091,7 @@ TEST_F(DatabaseStorageTest, ServiceStatusStatement) {
   ms->run_statement_and_get_int(
         service_status_update,
         &promise,
-        mysql_task::int_type::AFFECTED_ROWS,
-        "");
+        mysql_task::int_type::AFFECTED_ROWS);
 
   ASSERT_TRUE(promise.get_future().get() == 1);
 
@@ -1358,17 +1354,12 @@ TEST_F(DatabaseStorageTest, HostParentStatement) {
   hp.parent_id = 1;
 
   // Insert.
-  std::ostringstream oss;
-  oss << "SQL: could not store host parentship (child host: "
-      << hp.host_id << ", parent host: " << hp.parent_id << "): ";
-
   host_parent_insert << hp;
   std::promise<int> promise;
   int thread_id(ms->run_statement_and_get_int(
         host_parent_insert,
         &promise,
-        mysql_task::int_type::AFFECTED_ROWS,
-        oss.str()));
+        mysql_task::int_type::AFFECTED_ROWS));
 
   ASSERT_TRUE(promise.get_future().get() == 1);
 
@@ -1378,7 +1369,6 @@ TEST_F(DatabaseStorageTest, HostParentStatement) {
         host_parent_insert,
         &promise,
         mysql_task::int_type::AFFECTED_ROWS,
-        oss.str(),
         thread_id);
 
   ASSERT_TRUE(promise.get_future().get() == 0);
@@ -1392,7 +1382,6 @@ TEST_F(DatabaseStorageTest, HostParentStatement) {
         host_parent_delete,
         &promise,
         mysql_task::int_type::AFFECTED_ROWS,
-        "SQL: ",
         thread_id);
 
   ASSERT_TRUE(promise.get_future().get() == 1);

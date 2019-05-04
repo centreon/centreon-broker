@@ -236,7 +236,7 @@ void mysql_connection::_statement_res(mysql_task* t) {
   MYSQL_STMT* stmt(_stmt[task->statement_id]);
   if (!stmt) {
     logging::debug(logging::low)
-      << "mysql: no statement to execute";
+      << "mysql: no statement to execute (" << task->statement_id << ")";
     exceptions::msg e;
     e << "statement not prepared";
     task->promise->set_exception(
@@ -270,7 +270,7 @@ void mysql_connection::_statement_res(mysql_task* t) {
         logging::error(logging::medium)
           << "mysql: Error while executing prepared statement <<"
           << _stmt_query[task->statement_id] << ">> : "
-          << mysql_stmt_error(stmt);
+          << mysql_stmt_error(stmt) << " (" << task->statement_id << ")";
         if (++attempts >= MAX_ATTEMPTS) {
           exceptions::msg e;
           e << mysql_stmt_error(stmt);
@@ -346,8 +346,9 @@ void mysql_connection::_statement_int(mysql_task* t) {
 
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
     logging::debug(logging::low)
-      << "mysql: statement binding failed ("
-      << mysql_stmt_error(stmt) << ")";
+      << "mysql: statement <<" << _stmt_query[task->statement_id]
+      << ">> binding failed: "
+      << mysql_stmt_error(stmt);
       exceptions::msg e;
       e << mysql_stmt_error(stmt);
       task->promise->set_exception(
@@ -364,9 +365,9 @@ void mysql_connection::_statement_int(mysql_task* t) {
         mysql_commit(_conn);
 
         logging::error(logging::medium)
-          << "mysql: Error while sending prepared query: "
-          << task->error_msg << ": " << mysql_stmt_error(stmt)
-          << " (" << task->statement_id << ")";
+          << "mysql: Error while sending prepared statement <<"
+          << _stmt_query[task->statement_id] << ">> : "
+          << mysql_stmt_error(stmt) << " (" << task->statement_id << ")";
         if (++attempts >= MAX_ATTEMPTS) {
           exceptions::msg e;
           e << mysql_stmt_error(stmt);
@@ -625,13 +626,11 @@ void mysql_connection::run_statement_and_get_result(
 
 void mysql_connection::run_statement_and_get_int(
                          database::mysql_stmt& stmt,
-                         std::promise<int>* promise, mysql_task::int_type type,
-                         std::string const& error_msg) {
+                         std::promise<int>* promise, mysql_task::int_type type) {
   _push(std::make_shared<mysql_task_statement_int>(
                stmt,
                promise,
-               type,
-               error_msg));
+               type));
 }
 
 void mysql_connection::finish() {
