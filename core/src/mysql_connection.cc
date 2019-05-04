@@ -591,9 +591,8 @@ void mysql_connection::run_query(
 
 void mysql_connection::run_query_and_get_result(
                          std::string const& query,
-                         std::promise<mysql_result>* promise,
-                         std::string const& error_msg) {
-  _push(std::make_shared<mysql_task_run_res>(query, promise, error_msg));
+                         std::promise<mysql_result>* promise) {
+  _push(std::make_shared<mysql_task_run_res>(query, promise));
 }
 
 void mysql_connection::run_query_and_get_int(

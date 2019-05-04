@@ -56,8 +56,7 @@ class                    mysql_connection {
                             std::string const& error_msg, bool fatal);
   void                    run_query_and_get_result(
                             std::string const& query,
-                            std::promise<database::mysql_result>* promise,
-                            std::string const& error_msg);
+                            std::promise<database::mysql_result>* promise);
   void                    run_query_and_get_int(
                             std::string const& query,
                             std::promise<int>* promise,

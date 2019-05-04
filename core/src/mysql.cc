@@ -42,8 +42,7 @@ mysql::mysql(database_config const& db_cfg)
     std::promise<mysql_result> promise;
     run_query_and_get_result(
       "SELECT instance_id FROM instances LIMIT 1",
-      &promise,
-      "");
+      &promise);
     _version = v2;
     promise.get_future().get();
     logging::info(logging::low)
@@ -183,8 +182,6 @@ int mysql::run_query(std::string const& query,
  * @param query The query to execute.
  * @param promise A promise that will contain the result when it will be
  *                available.
- * @param error_msg An error message to complete the error message returned
- *                  by the mysql connector.
  * @param thread A thread id or 0 to keep the library choosing which one.
  *
  * With this function, the query is done. The promise will provide the result
@@ -195,7 +192,6 @@ int mysql::run_query(std::string const& query,
 int mysql::run_query_and_get_result(
              std::string const& query,
              std::promise<mysql_result>* promise,
-             std::string const& error_msg,
              int thread_id) {
   _check_errors();
   if (thread_id < 0)
@@ -204,8 +200,7 @@ int mysql::run_query_and_get_result(
 
   _connection[thread_id]->run_query_and_get_result(
                             query,
-                            promise,
-                            error_msg);
+                            promise);
   return thread_id;
 }
 
