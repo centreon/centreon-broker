@@ -249,8 +249,9 @@ void mysql_connection::_statement_res(mysql_task* t) {
 
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
     logging::debug(logging::low)
-      << "mysql: statement binding failed ("
-      << mysql_stmt_error(stmt) << ")";
+      << "mysql: statement <<" << _stmt_query[task->statement_id]
+      << ">> binding failed: "
+      << mysql_stmt_error(stmt);
     exceptions::msg e;
     e << mysql_stmt_error(stmt);
     task->promise->set_exception(
@@ -267,9 +268,9 @@ void mysql_connection::_statement_res(mysql_task* t) {
         mysql_commit(_conn);
 
         logging::error(logging::medium)
-          << "mysql: Error while sending prepared query: "
-          << mysql_stmt_error(stmt)
-          << " (" << task->error_msg << ")";
+          << "mysql: Error while executing prepared statement <<"
+          << _stmt_query[task->statement_id] << ">> : "
+          << mysql_stmt_error(stmt);
         if (++attempts >= MAX_ATTEMPTS) {
           exceptions::msg e;
           e << mysql_stmt_error(stmt);
@@ -616,12 +617,10 @@ void mysql_connection::run_statement(
 
 void mysql_connection::run_statement_and_get_result(
                          database::mysql_stmt& stmt,
-                         std::promise<mysql_result>* promise,
-                         std::string const& error_msg) {
+                         std::promise<mysql_result>* promise) {
   _push(std::make_shared<mysql_task_statement_res>(
                stmt,
-               promise,
-               error_msg));
+               promise));
 }
 
 void mysql_connection::run_statement_and_get_int(

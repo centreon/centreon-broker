@@ -63,7 +63,6 @@ class                   mysql {
   int                   run_statement_and_get_result(
                           database::mysql_stmt& stmt,
                           std::promise<database::mysql_result>* promise,
-                          std::string const& error_msg = "",
                           int thread_id = -1);
 
   int                   run_statement_and_get_int(
