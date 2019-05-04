@@ -171,14 +171,20 @@ void reader::_load(state::kpis& kpis) {
             << "'";
         std::promise<database::mysql_result> promise;
         _mysql.run_query_and_get_result(
-                 oss.str(), &promise,
-                 "could not virtual meta-service's service");
-        database::mysql_result res(promise.get_future().get());
-        if (!_mysql.fetch_row(res))
-          throw (exceptions::msg() << "virtual service of meta-service "
-                 << it->first << " does not exist");
-        it->second.set_host_id(res.value_as_u32(0));
-        it->second.set_service_id(res.value_as_u32(1));
+                 oss.str(), &promise);
+        try {
+          database::mysql_result res(promise.get_future().get());
+          if (!_mysql.fetch_row(res))
+            throw (exceptions::msg() << "virtual service of meta-service "
+                   << it->first << " does not exist");
+          it->second.set_host_id(res.value_as_u32(0));
+          it->second.set_service_id(res.value_as_u32(1));
+        }
+        catch (std::exception const& e) {
+          throw exceptions::msg()
+            << "could not virtual meta-service's service: "
+            << e.what();
+        }
       }
     }
   }
@@ -214,28 +220,35 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
              "    AND pr.poller_id="
           << config::applier::state::instance().poller_id();
       std::promise<database::mysql_result> promise;
-      _mysql.run_query_and_get_result(oss.str(), &promise, "BAM: ");
-      database::mysql_result res(promise.get_future().get());
-      while (_mysql.fetch_row(res)) {
-        // BA object.
-        unsigned int ba_id(res.value_as_u32(0));
-        bas[ba_id] =
-          ba(
-            ba_id, // ID.
-            res.value_as_str(1),   // Name.
-            res.value_as_f32(2),   // Warning level.
-            res.value_as_f32(3),   // Critical level.
-            res.value_as_bool(7)); // Downtime inheritance.
+      _mysql.run_query_and_get_result(oss.str(), &promise);
+      try {
+        database::mysql_result res(promise.get_future().get());
+        while (_mysql.fetch_row(res)) {
+          // BA object.
+          unsigned int ba_id(res.value_as_u32(0));
+          bas[ba_id] =
+            ba(
+              ba_id, // ID.
+              res.value_as_str(1),   // Name.
+              res.value_as_f32(2),   // Warning level.
+              res.value_as_f32(3),   // Critical level.
+              res.value_as_bool(7)); // Downtime inheritance.
 
-        // BA state.
-        if (!res.value_is_null(4)) {
-          ba_event e;
-          e.ba_id = ba_id;
-          e.start_time = res.value_as_u64(4);
-          e.status = res.value_as_i32(5);
-          e.in_downtime = res.value_as_bool(6);
-          bas[ba_id].set_opened_event(e);
+          // BA state.
+          if (!res.value_is_null(4)) {
+            ba_event e;
+            e.ba_id = ba_id;
+            e.start_time = res.value_as_u64(4);
+            e.status = res.value_as_i32(5);
+            e.in_downtime = res.value_as_bool(6);
+            bas[ba_id].set_opened_event(e);
+          }
         }
+      }
+      catch (std::exception const& e) {
+        throw exceptions::msg()
+          << "BAM: "
+          << e.what();
       }
     }
 
@@ -255,7 +268,7 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
       if (_mysql.fetch_row(res))
         organization_id = res.value_as_u32(0);
       else {
-        while (1) {
+        while (true) {
           std::promise<database::mysql_result> promise;
           _mysql.run_query_and_get_result(
                 "SELECT organization_id FROM cfg_organizations",
@@ -277,7 +290,7 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
 
     // Get host ID.
     unsigned int host_id;
-    while (1) {
+    while (true) {
       {
         std::ostringstream query;
         query << "SELECT host_id"
@@ -305,7 +318,7 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
          it != end;
          ++it) {
       unsigned int service_id;
-      while (1) {
+      while (true) {
         {
           std::ostringstream query;
           query << "SELECT service_id"
@@ -402,8 +415,6 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
            << "BAM: could not retrieve BA service IDs from DB: "
            << e.what());
   }
-
-  return ;
 }
 
 /**
@@ -625,19 +636,23 @@ void reader::_load(state::meta_services& meta_services) {
             << it->second.get_service_filter() << "'"
             << "    AND m.metric_name='"
             << it->second.get_metric_name() << "'";
-      std::ostringstream oss_err;
-      oss_err << "BAM: could not retrieve members of meta-service '"
-               << it->second.get_name() << "': ";
       std::promise<database::mysql_result> promise;
       _mysql.run_query_and_get_result(query.str(),
-            &promise,
-            oss_err.str());
-      database::mysql_result res(promise.get_future().get());
-      while (_mysql.fetch_row(res)) {
-        it->second.add_metric(res.value_as_u32(0));
-        it->second.add_service(
-                     res.value_as_u32(1),
-                     res.value_as_u32(2));
+            &promise);
+      try {
+        database::mysql_result res(promise.get_future().get());
+        while (_mysql.fetch_row(res)) {
+          it->second.add_metric(res.value_as_u32(0));
+          it->second.add_service(
+                       res.value_as_u32(1),
+                       res.value_as_u32(2));
+        }
+      }
+      catch (std::exception const& e) {
+        throw exceptions::msg()
+          << "BAM: could not retrieve members of meta-service '"
+          << it->second.get_name() << "': "
+          << e.what();
       }
     }
     // Service list mode.
@@ -753,33 +768,39 @@ void reader::_load_dimensions() {
       "SELECT tp_id, tp_name, tp_alias, tp_sunday, tp_monday, tp_tuesday, "
       "tp_wednesday, tp_thursday, tp_friday, tp_saturday"
       "  FROM cfg_timeperiods",
-      &promise,
-      "could not load timeperiods from the database");
-    database::mysql_result res(promise.get_future().get());
-    while (_mysql.fetch_row(res)) {
-      timeperiods[res.value_as_u32(0)] = time::timeperiod::ptr(
-        new time::timeperiod(
-              res.value_as_u32(0),   // id
-              res.value_as_str(1),   // name
-              res.value_as_str(2),   // alias
-              res.value_as_str(3),   // sunday
-              res.value_as_str(4),   // monday
-              res.value_as_str(5),   // tuesday
-              res.value_as_str(6),   // wednesday
-              res.value_as_str(7),   // thursday
-              res.value_as_str(8),   // friday
-              res.value_as_str(9))); // saturday
-      std::shared_ptr<dimension_timeperiod> tp(new dimension_timeperiod);
-      tp->id = res.value_as_u32(0);
-      tp->name = res.value_as_str(1).c_str();
-      tp->sunday = res.value_as_str(3).c_str();
-      tp->monday = res.value_as_str(4).c_str();
-      tp->tuesday = res.value_as_str(5).c_str();
-      tp->wednesday = res.value_as_str(6).c_str();
-      tp->thursday = res.value_as_str(7).c_str();
-      tp->friday = res.value_as_str(8).c_str();
-      tp->saturday = res.value_as_str(9).c_str();
-      datas.push_back(std::static_pointer_cast<io::data>(tp));
+      &promise);
+    try {
+      database::mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res)) {
+        timeperiods[res.value_as_u32(0)] = time::timeperiod::ptr(
+          new time::timeperiod(
+                res.value_as_u32(0),   // id
+                res.value_as_str(1),   // name
+                res.value_as_str(2),   // alias
+                res.value_as_str(3),   // sunday
+                res.value_as_str(4),   // monday
+                res.value_as_str(5),   // tuesday
+                res.value_as_str(6),   // wednesday
+                res.value_as_str(7),   // thursday
+                res.value_as_str(8),   // friday
+                res.value_as_str(9))); // saturday
+        std::shared_ptr<dimension_timeperiod> tp(new dimension_timeperiod);
+        tp->id = res.value_as_u32(0);
+        tp->name = res.value_as_str(1).c_str();
+        tp->sunday = res.value_as_str(3).c_str();
+        tp->monday = res.value_as_str(4).c_str();
+        tp->tuesday = res.value_as_str(5).c_str();
+        tp->wednesday = res.value_as_str(6).c_str();
+        tp->thursday = res.value_as_str(7).c_str();
+        tp->friday = res.value_as_str(8).c_str();
+        tp->saturday = res.value_as_str(9).c_str();
+        datas.push_back(std::static_pointer_cast<io::data>(tp));
+      }
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "could not load timeperiods from the database: "
+        << e.what();
     }
 
     // // Load the timeperiod exceptions.
@@ -850,28 +871,34 @@ void reader::_load_dimensions() {
         << config::applier::state::instance().poller_id();
     promise = std::promise<database::mysql_result>();
     _mysql.run_query_and_get_result(
-        oss.str(), &promise,
-        "could not retrieve BAs from the database");
-    res = promise.get_future().get();
-    while (_mysql.fetch_row(res)) {
-      std::shared_ptr<dimension_ba_event> ba(new dimension_ba_event);
-      ba->ba_id = res.value_as_u32(0);
-      ba->ba_name = res.value_as_str(1).c_str();
-      ba->ba_description = res.value_as_str(2).c_str();
-      ba->sla_month_percent_warn = res.value_as_f64(3);
-      ba->sla_month_percent_crit = res.value_as_f64(4);
-      ba->sla_duration_warn = res.value_as_i32(5);
-      ba->sla_duration_crit = res.value_as_i32(6);
-      datas.push_back(std::static_pointer_cast<io::data>(ba));
-      bas[ba->ba_id] = ba;
-      if (!res.value_is_null(7)) {
-        std::shared_ptr<dimension_ba_timeperiod_relation>
-          dbtr(new dimension_ba_timeperiod_relation);
-        dbtr->ba_id = res.value_as_u32(0);
-        dbtr->timeperiod_id = res.value_as_u32(7);
-        dbtr->is_default = true;
-        datas.push_back(dbtr);
+        oss.str(), &promise);
+    try {
+      database::mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res)) {
+        std::shared_ptr<dimension_ba_event> ba(new dimension_ba_event);
+        ba->ba_id = res.value_as_u32(0);
+        ba->ba_name = res.value_as_str(1).c_str();
+        ba->ba_description = res.value_as_str(2).c_str();
+        ba->sla_month_percent_warn = res.value_as_f64(3);
+        ba->sla_month_percent_crit = res.value_as_f64(4);
+        ba->sla_duration_warn = res.value_as_i32(5);
+        ba->sla_duration_crit = res.value_as_i32(6);
+        datas.push_back(std::static_pointer_cast<io::data>(ba));
+        bas[ba->ba_id] = ba;
+        if (!res.value_is_null(7)) {
+          std::shared_ptr<dimension_ba_timeperiod_relation>
+            dbtr(new dimension_ba_timeperiod_relation);
+          dbtr->ba_id = res.value_as_u32(0);
+          dbtr->timeperiod_id = res.value_as_u32(7);
+          dbtr->is_default = true;
+          datas.push_back(dbtr);
+        }
       }
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "could not retrieve BAs from the database: "
+        << e.what();
     }
 
     // Load the BVs.
@@ -879,16 +906,22 @@ void reader::_load_dimensions() {
     _mysql.run_query_and_get_result(
       "SELECT id_ba_group, ba_group_name, ba_group_description"
       "  FROM cfg_bam_ba_groups",
-      &promise,
-      "could not retrieve BVs from the database");
-    res = promise.get_future().get();
-    while (_mysql.fetch_row(res)) {
-      std::shared_ptr<dimension_bv_event>
-          bv(new dimension_bv_event);
-      bv->bv_id = res.value_as_u32(0);
-      bv->bv_name = res.value_as_str(1).c_str();
-      bv->bv_description = res.value_as_str(2).c_str();
-      datas.push_back(std::static_pointer_cast<io::data>(bv));
+      &promise);
+    try {
+      database::mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res)) {
+        std::shared_ptr<dimension_bv_event>
+            bv(new dimension_bv_event);
+        bv->bv_id = res.value_as_u32(0);
+        bv->bv_name = res.value_as_str(1).c_str();
+        bv->bv_description = res.value_as_str(2).c_str();
+        datas.push_back(std::static_pointer_cast<io::data>(bv));
+      }
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "could not retrieve BVs from the database: "
+        << e.what();
     }
 
     // Load the BA BV relations.
@@ -905,16 +938,22 @@ void reader::_load_dimensions() {
           << config::applier::state::instance().poller_id();
       std::promise<database::mysql_result> promise;
       _mysql.run_query_and_get_result(
-          oss.str(), &promise,
-          "could not retrieve BV memberships of BAs");
+          oss.str(), &promise);
     }
-    res = promise.get_future().get();
-    while (_mysql.fetch_row(res)) {
-      std::shared_ptr<dimension_ba_bv_relation_event>
-          babv(new dimension_ba_bv_relation_event);
-      babv->ba_id = res.value_as_u32(0);
-      babv->bv_id = res.value_as_u32(1);
-      datas.push_back(std::static_pointer_cast<io::data>(babv));
+    try {
+      database::mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res)) {
+        std::shared_ptr<dimension_ba_bv_relation_event>
+            babv(new dimension_ba_bv_relation_event);
+        babv->ba_id = res.value_as_u32(0);
+        babv->bv_id = res.value_as_u32(1);
+        datas.push_back(std::static_pointer_cast<io::data>(babv));
+      }
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "could not retrieve BV memberships of BAs: "
+        << e.what();
     }
 
     // Load the KPIs
@@ -960,44 +999,49 @@ void reader::_load_dimensions() {
              "    AND pr.poller_id="
           << config::applier::state::instance().poller_id();
       std::promise<database::mysql_result> promise;
-      _mysql.run_query_and_get_result(
-          oss.str(), &promise,
-          "could not retrieve KPI dimensions");
+      _mysql.run_query_and_get_result(oss.str(), &promise);
     }
-    res = promise.get_future().get();
-    while (_mysql.fetch_row(res)) {
-      std::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
-      k->kpi_id = res.value_as_u32(0);
-      k->host_id = res.value_as_u32(2);
-      k->service_id = res.value_as_u32(3);
-      k->ba_id = res.value_as_u32(4);
-      k->kpi_ba_id = res.value_as_u32(5);
-      k->meta_service_id = res.value_as_u32(6);
-      k->boolean_id = res.value_as_u32(7);
-      k->impact_warning = res.value_as_f64(8);
-      k->impact_critical = res.value_as_f64(9);
-      k->impact_unknown = res.value_as_f64(10);
-      k->host_name = res.value_as_str(11).c_str();
-      k->service_description = res.value_as_str(12).c_str();
-      k->ba_name = res.value_as_str(13).c_str();
-      k->meta_service_name = res.value_as_str(14).c_str();
-      k->boolean_name = res.value_as_str(15).c_str();
+    try {
+      database::mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res)) {
+        std::shared_ptr<dimension_kpi_event> k(new dimension_kpi_event);
+        k->kpi_id = res.value_as_u32(0);
+        k->host_id = res.value_as_u32(2);
+        k->service_id = res.value_as_u32(3);
+        k->ba_id = res.value_as_u32(4);
+        k->kpi_ba_id = res.value_as_u32(5);
+        k->meta_service_id = res.value_as_u32(6);
+        k->boolean_id = res.value_as_u32(7);
+        k->impact_warning = res.value_as_f64(8);
+        k->impact_critical = res.value_as_f64(9);
+        k->impact_unknown = res.value_as_f64(10);
+        k->host_name = res.value_as_str(11).c_str();
+        k->service_description = res.value_as_str(12).c_str();
+        k->ba_name = res.value_as_str(13).c_str();
+        k->meta_service_name = res.value_as_str(14).c_str();
+        k->boolean_name = res.value_as_str(15).c_str();
 
-      // Resolve the id_indicator_ba.
-      if (k->kpi_ba_id) {
-        std::map<unsigned int,
-                 std::shared_ptr<dimension_ba_event> >::const_iterator
-            found = bas.find(k->kpi_ba_id);
-        if (found == bas.end()) {
-          logging::error(logging::high)
-                 << "BAM: could not retrieve BA " << k->kpi_ba_id
-                 << " used as KPI " << k->kpi_id
-                 << " in dimension table: ignoring this KPI";
-          continue;
+        // Resolve the id_indicator_ba.
+        if (k->kpi_ba_id) {
+          std::map<unsigned int,
+                   std::shared_ptr<dimension_ba_event> >::const_iterator
+              found = bas.find(k->kpi_ba_id);
+          if (found == bas.end()) {
+            logging::error(logging::high)
+                   << "BAM: could not retrieve BA " << k->kpi_ba_id
+                   << " used as KPI " << k->kpi_id
+                   << " in dimension table: ignoring this KPI";
+            continue;
+          }
+          k->kpi_ba_name = found->second->ba_name;
         }
-        k->kpi_ba_name = found->second->ba_name;
+        datas.push_back(std::static_pointer_cast<io::data>(k));
       }
-      datas.push_back(std::static_pointer_cast<io::data>(k));
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "could not retrieve KPI dimensions: "
+        << e.what();
     }
 
     // Load the ba-timeperiods relations.
@@ -1011,17 +1055,23 @@ void reader::_load_dimensions() {
           << config::applier::state::instance().poller_id();
       std::promise<database::mysql_result> promise;
       _mysql.run_query_and_get_result(
-          oss.str(), &promise,
-          "could not retrieve the timeperiods associated with the BAs");
+          oss.str(), &promise);
     }
-    res = promise.get_future().get();
-    while (_mysql.fetch_row(res)) {
-      std::shared_ptr<dimension_ba_timeperiod_relation>
-        dbtr(new dimension_ba_timeperiod_relation);
-      dbtr->ba_id = res.value_as_u32(0);
-      dbtr->timeperiod_id = res.value_as_u32(1);
-      dbtr->is_default = false;
-      datas.push_back(dbtr);
+    try {
+      database::mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res)) {
+        std::shared_ptr<dimension_ba_timeperiod_relation>
+          dbtr(new dimension_ba_timeperiod_relation);
+        dbtr->ba_id = res.value_as_u32(0);
+        dbtr->timeperiod_id = res.value_as_u32(1);
+        dbtr->is_default = false;
+        datas.push_back(dbtr);
+      }
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "could not retrieve the timeperiods associated with the BAs: "
+        << e.what();
     }
 
     // End the update.

@@ -274,39 +274,46 @@ void availability_thread::_build_daily_availabilities(
   _mysql->run_query_and_get_result(
       query.str(),
       &promise,
-      "BAM-BI: availability thread could not build the data", thread_id);
+      thread_id);
 
   // Create a builder for each ba_id and associated timeperiod_id.
   std::map<std::pair<unsigned int, unsigned int>,
             availability_builder> builders;
-  database::mysql_result res(promise.get_future().get());
-  while (_mysql->fetch_row(res)) {
-    unsigned int ba_id = res.value_as_i32(1);
-    unsigned int timeperiod_id = res.value_as_i32(6);
-    // Find the timeperiod.
-    time::timeperiod::ptr tp = _shared_tps.get_timeperiod(timeperiod_id);
-    // No timeperiod found, skip.
-    if (!tp)
-      continue ;
-    // Find the builder.
-    std::map<std::pair<unsigned int, unsigned int>,
-              availability_builder>::iterator found
-        = builders.find(std::make_pair(ba_id, timeperiod_id));
-    // No builders found, create one.
-    if (found == builders.end())
-      found = builders.insert(
-                std::make_pair(
-                  std::make_pair(ba_id, timeperiod_id),
-                  availability_builder(day_end, day_start))).first;
-    // Add the event to the builder.
-    found->second.add_event(
-      res.value_as_i32(8),  // Status
-      res.value_as_i32(2),  // Start time
-      res.value_as_i32(3),  // End time
-      res.value_as_bool(9), // Was in downtime
-      tp);
-    // Add the timeperiod is default flag.
-    found->second.set_timeperiod_is_default(res.value_as_bool(7));
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (_mysql->fetch_row(res)) {
+      unsigned int ba_id = res.value_as_i32(1);
+      unsigned int timeperiod_id = res.value_as_i32(6);
+      // Find the timeperiod.
+      time::timeperiod::ptr tp = _shared_tps.get_timeperiod(timeperiod_id);
+      // No timeperiod found, skip.
+      if (!tp)
+        continue ;
+      // Find the builder.
+      std::map<std::pair<unsigned int, unsigned int>,
+                availability_builder>::iterator found
+          = builders.find(std::make_pair(ba_id, timeperiod_id));
+      // No builders found, create one.
+      if (found == builders.end())
+        found = builders.insert(
+                  std::make_pair(
+                    std::make_pair(ba_id, timeperiod_id),
+                    availability_builder(day_end, day_start))).first;
+      // Add the event to the builder.
+      found->second.add_event(
+        res.value_as_i32(8),  // Status
+        res.value_as_i32(2),  // Start time
+        res.value_as_i32(3),  // End time
+        res.value_as_bool(9), // Was in downtime
+        tp);
+      // Add the timeperiod is default flag.
+      found->second.set_timeperiod_is_default(res.value_as_bool(7));
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "BAM-BI: availability thread could not build the data"
+      << e.what();
   }
 
   // Build the availabilities tied to event not finished.
@@ -323,41 +330,47 @@ void availability_thread::_build_daily_availabilities(
   _mysql->run_query_and_get_result(
       query.str(),
       &promise,
-      "BAM-BI: availability thread could not build the data: ",
       thread_id);
 
-  res = promise.get_future().get();
-  while (_mysql->fetch_row(res)) {
-    unsigned int ba_id = res.value_as_i32(1);
-    // Get all the timeperiods associated with the ba of this event.
-    std::vector<std::pair<time::timeperiod::ptr, bool> >
-      tps = _shared_tps.get_timeperiods_by_ba_id(ba_id);
-    for (std::vector<std::pair<time::timeperiod::ptr, bool> >::const_iterator
-           it(tps.begin()),
-           end(tps.end());
-         it != end;
-         ++it) {
-      unsigned int tp_id = it->first->get_id();
-      // Find the builder.
-      std::map<std::pair<unsigned int, unsigned int>,
-                availability_builder>::iterator found
-          = builders.find(std::make_pair(ba_id, tp_id));
-      // No builders found, create one.
-      if (found == builders.end())
-        found = builders.insert(
-                  std::make_pair(
-                    std::make_pair(ba_id, tp_id),
-                    availability_builder(day_end, day_start))).first;
-      // Add the event to the builder.
-      found->second.add_event(
-        res.value_as_i32(4),  // Status
-        res.value_as_i32(2),  // Start time
-        res.value_as_i32(3),  // End time
-        res.value_as_bool(5), // Was in downtime
-        it->first);
-      // Add the timeperiod is default flag.
-      found->second.set_timeperiod_is_default(it->second);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (_mysql->fetch_row(res)) {
+      unsigned int ba_id = res.value_as_i32(1);
+      // Get all the timeperiods associated with the ba of this event.
+      std::vector<std::pair<time::timeperiod::ptr, bool> >
+        tps = _shared_tps.get_timeperiods_by_ba_id(ba_id);
+      for (std::vector<std::pair<time::timeperiod::ptr, bool> >::const_iterator
+             it(tps.begin()),
+             end(tps.end());
+           it != end;
+           ++it) {
+        unsigned int tp_id = it->first->get_id();
+        // Find the builder.
+        std::map<std::pair<unsigned int, unsigned int>,
+                  availability_builder>::iterator found
+            = builders.find(std::make_pair(ba_id, tp_id));
+        // No builders found, create one.
+        if (found == builders.end())
+          found = builders.insert(
+                    std::make_pair(
+                      std::make_pair(ba_id, tp_id),
+                      availability_builder(day_end, day_start))).first;
+        // Add the event to the builder.
+        found->second.add_event(
+          res.value_as_i32(4),  // Status
+          res.value_as_i32(2),  // Start time
+          res.value_as_i32(3),  // End time
+          res.value_as_bool(5), // Was in downtime
+          it->first);
+        // Add the timeperiod is default flag.
+        found->second.set_timeperiod_is_default(it->second);
+      }
     }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "BAM-BI: availability thread could not build the data: "
+      << e.what();
   }
 
   // For each builder, write the availabilities.
