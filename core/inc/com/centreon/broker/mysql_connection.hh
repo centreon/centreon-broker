@@ -72,8 +72,7 @@ class                    mysql_connection {
   void                    run_statement_and_get_int(
                             database::mysql_stmt& stmt,
                             std::promise<int>* promise,
-                            database::mysql_task::int_type type,
-                            std::string const& error_msg);
+                            database::mysql_task::int_type type);
 
   void                    finish();
   bool                    fetch_row(database::mysql_result& result);
