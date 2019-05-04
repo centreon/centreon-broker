@@ -54,26 +54,32 @@ void timeperiod_loader::load(mysql* ms, timeperiod_builder* output) {
         "       tp_tuesday, tp_wednesday, tp_thursday, tp_friday,"
         "       tp_saturday sunday"
         " FROM cfg_timeperiods",
-        &promise,
-        "notification: cannot load timeperiods from database: ");
+        &promise);
 
-  database::mysql_result res(promise.get_future().get());
-  while (ms->fetch_row(res)) {
-    timeperiod::ptr tperiod(new timeperiod);
-    unsigned int timeperiod_id = res.value_as_u32(0);
-    tperiod->set_name(res.value_as_str(1));
-    tperiod->set_alias(res.value_as_str(2));
-    tperiod->set_timerange(res.value_as_str(3), 0);
-    tperiod->set_timerange(res.value_as_str(4), 1);
-    tperiod->set_timerange(res.value_as_str(5), 2);
-    tperiod->set_timerange(res.value_as_str(6), 3);
-    tperiod->set_timerange(res.value_as_str(7), 4);
-    tperiod->set_timerange(res.value_as_str(8), 5);
-    tperiod->set_timerange(res.value_as_str(9), 6);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res)) {
+      timeperiod::ptr tperiod(new timeperiod);
+      unsigned int timeperiod_id = res.value_as_u32(0);
+      tperiod->set_name(res.value_as_str(1));
+      tperiod->set_alias(res.value_as_str(2));
+      tperiod->set_timerange(res.value_as_str(3), 0);
+      tperiod->set_timerange(res.value_as_str(4), 1);
+      tperiod->set_timerange(res.value_as_str(5), 2);
+      tperiod->set_timerange(res.value_as_str(6), 3);
+      tperiod->set_timerange(res.value_as_str(7), 4);
+      tperiod->set_timerange(res.value_as_str(8), 5);
+      tperiod->set_timerange(res.value_as_str(9), 6);
 
-    output->add_timeperiod(
-              timeperiod_id,
-              tperiod);
+      output->add_timeperiod(
+                timeperiod_id,
+                tperiod);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load timeperiods from database: "
+      << e.what();
   }
 
   // Load the timeperiod exceptions.
@@ -81,15 +87,21 @@ void timeperiod_loader::load(mysql* ms, timeperiod_builder* output) {
   ms->run_query_and_get_result(
         "SELECT exception_id, timeperiod_id, days, timerange"
         " FROM cfg_timeperiods_exceptions",
-        &promise,
-        "notification: cannot load timeperiods exceptions from database: ");
+        &promise);
 
-  res = promise.get_future().get();
-  while (ms->fetch_row(res)) {
-    unsigned int timeperiod_id = res.value_as_u32(1);
-    std::string days = res.value_as_str(2);
-    std::string timerange = res.value_as_str(3);
-    output->add_timeperiod_exception(timeperiod_id, days, timerange);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res)) {
+      unsigned int timeperiod_id = res.value_as_u32(1);
+      std::string days = res.value_as_str(2);
+      std::string timerange = res.value_as_str(3);
+      output->add_timeperiod_exception(timeperiod_id, days, timerange);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load timeperiods exceptions from database: "
+      << e.what();
   }
 
   // Load the timeperiod exclude relations.
@@ -97,26 +109,38 @@ void timeperiod_loader::load(mysql* ms, timeperiod_builder* output) {
   ms->run_query_and_get_result(
         "SELECT exclude_id, timeperiod_id, timeperiod_exclude_id"
         " FROM cfg_timeperiods_exclude_relations",
-        &promise,
-        "notification: cannot load timeperiods exclusions from database: ");
+        &promise);
 
-  res = promise.get_future().get();
-  while (ms->fetch_row(res))
-    output->add_timeperiod_exclude_relation(
-              res.value_as_u32(1),
-              res.value_as_u32(0));
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res))
+      output->add_timeperiod_exclude_relation(
+                res.value_as_u32(1),
+                res.value_as_u32(0));
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load timeperiods exclusions from database: "
+      << e.what();
+  }
 
   // Load the timeperiod include relations.
   promise = std::promise<database::mysql_result>();
   ms->run_query_and_get_result(
         "SELECT include_id, timeperiod_id, timeperiod_include_id"
         " FROM cfg_timeperiods_include_relations",
-        &promise,
-        "notification: cannot load timeperiods inclusions from database: ");
+        &promise);
 
-  res = promise.get_future().get();
-  while (ms->fetch_row(res))
-    output->add_timeperiod_include_relation(
-              res.value_as_u32(1),
-              res.value_as_u32(0));
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res))
+      output->add_timeperiod_include_relation(
+                res.value_as_u32(1),
+                res.value_as_u32(0));
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load timeperiods inclusions from database: "
+      << e.what();
+  }
 }
