@@ -673,49 +673,52 @@ unsigned int stream::_find_index_id(
           << ", '" << service_desc << "', " << (db_v2 ? "'0'" : "0")
           << ", '" << special << "')";
 
-      std::stringstream err_oss;
-      err_oss << "storage: insertion of "
-                 "index (" << host_id << ", " << service_id
-              << ") failed: ";
-
       std::promise<int> promise;
       _mysql.run_query_and_get_int(
                       oss.str(),
                       &promise,
-                      database::mysql_task::LAST_INSERT_ID,
-                      err_oss.str());
-      // Let's get the index id
-      retval = promise.get_future().get();
-      if (retval == 0) {
-        throw broker::exceptions::msg() << "storage: could not "
-                  "fetch index_id of newly inserted index ("
-               << host_id << ", " << service_id << ")";
+                      database::mysql_task::LAST_INSERT_ID);
+      try {
+        // Let's get the index id
+        retval = promise.get_future().get();
+        if (retval == 0) {
+          throw broker::exceptions::msg() << "storage: could not "
+                    "fetch index_id of newly inserted index ("
+                 << host_id << ", " << service_id << ")";
+        }
+
+        // Insert index in cache.
+        logging::info(logging::medium) << "storage: new index " << retval
+          << " for (" << host_id << ", " << service_id << ")";
+        index_info info;
+        info.host_name = host_name;
+        info.index_id = retval;
+        info.locked = false;
+        info.service_description = service_desc;
+        info.special = special;
+        info.rrd_retention = _rrd_len;
+        _index_cache[std::make_pair(host_id, service_id)] = info;
+
+        // Create the metric mapping.
+        std::shared_ptr<index_mapping> im(new index_mapping);
+        im->index_id = retval;
+        im->host_id = host_id;
+        im->service_id = service_id;
+        multiplexing::publisher pblshr;
+        pblshr.write(im);
+
+        // Provide RRD retention.
+        if (rrd_len)
+          *rrd_len = info.rrd_retention;
+        *locked = info.locked;
       }
-
-      // Insert index in cache.
-      logging::info(logging::medium) << "storage: new index " << retval
-        << " for (" << host_id << ", " << service_id << ")";
-      index_info info;
-      info.host_name = host_name;
-      info.index_id = retval;
-      info.locked = false;
-      info.service_description = service_desc;
-      info.special = special;
-      info.rrd_retention = _rrd_len;
-      _index_cache[std::make_pair(host_id, service_id)] = info;
-
-      // Create the metric mapping.
-      std::shared_ptr<index_mapping> im(new index_mapping);
-      im->index_id = retval;
-      im->host_id = host_id;
-      im->service_id = service_id;
-      multiplexing::publisher pblshr;
-      pblshr.write(im);
-
-      // Provide RRD retention.
-      if (rrd_len)
-        *rrd_len = info.rrd_retention;
-      *locked = info.locked;
+      catch (std::exception const& e) {
+        throw broker::exceptions::msg()
+          << "storage: insertion of "
+             "index (" << host_id << ", " << service_id
+          << ") failed: "
+          << e.what();
+      }
     }
   }
 
