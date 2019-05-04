@@ -573,21 +573,24 @@ void stream::_process_custom_variable_status(
   }
 
   // Processing.
-  std::ostringstream oss;
-  oss << "SQL: could not update custom variable (name: "
-      << cvs.name.toStdString() << ", host: " << cvs.host_id << ", service: "
-      << cvs.service_id << "): ";
-
   _custom_variable_status_update << cvs;
   std::promise<int> promise;
   _transversal_mysql.run_statement_and_get_int(
       _custom_variable_status_update,
-      &promise, mysql_task::AFFECTED_ROWS,
-      oss.str());
-  if (promise.get_future().get() != 1)
-    logging::error(logging::medium) << "SQL: custom variable ("
-      << cvs.host_id << ", " << cvs.service_id << ", " << cvs.name
-      << ") was not updated because it was not found in database";
+      &promise, mysql_task::AFFECTED_ROWS);
+  try {
+    if (promise.get_future().get() != 1)
+      logging::error(logging::medium) << "SQL: custom variable ("
+        << cvs.host_id << ", " << cvs.service_id << ", " << cvs.name
+        << ") was not updated because it was not found in database";
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "SQL: could not update custom variable (name: "
+      << cvs.name.toStdString() << ", host: " << cvs.host_id << ", service: "
+      << cvs.service_id << "): "
+      << e.what();
+  }
 }
 
 /**
@@ -893,8 +896,6 @@ void stream::_process_host_check(
     }
     if (store) {
       _host_check_update << hc;
-      std::ostringstream oss;
-      oss << "SQL: could not store host check (host: " << hc.host_id << "): ";
 
       int thread_id(_mysql.choose_connection_by_instance(
                             _cache_host_instance[hc.host_id]));
@@ -902,13 +903,19 @@ void stream::_process_host_check(
       _mysql.run_statement_and_get_int(
                _host_check_update,
                &promise, mysql_task::AFFECTED_ROWS,
-               oss.str(),
-          thread_id);
+               thread_id);
 
-      if (promise.get_future().get() != 1)
-        logging::error(logging::medium) << "SQL: host check could not "
-             "be updated because host " << hc.host_id
-          << " was not found in database";
+      try {
+        if (promise.get_future().get() != 1)
+          logging::error(logging::medium) << "SQL: host check could not "
+               "be updated because host " << hc.host_id
+            << " was not found in database";
+      }
+      catch (std::exception const& e) {
+        throw exceptions::msg()
+          << "SQL: could not store host check (host: " << hc.host_id << "): "
+          << e.what();
+      }
     }
   }
   else
@@ -1286,21 +1293,25 @@ void stream::_process_host_status(
 
     // Processing.
     _host_status_update << hs;
-    std::ostringstream oss;
-    oss << "SQL: could not store host status (host: " << hs.host_id << "): ";
     std::promise<int> promise;
     _mysql.run_statement_and_get_int(
              _host_status_update,
              &promise, mysql_task::AFFECTED_ROWS,
-             oss.str(),
              _mysql.choose_connection_by_instance(
                       _cache_host_instance[hs.host_id]));
-    if (promise.get_future().get() == 0) {
-      oss.str("");
-      oss << "SQL: host could not be "
-             "updated because host " << hs.host_id
-          << " was not found in database";
-      logging::error(logging::medium) << oss.str();
+    try {
+      if (promise.get_future().get() == 0) {
+        std::ostringstream oss;
+        oss << "SQL: host could not be "
+               "updated because host " << hs.host_id
+            << " was not found in database";
+        logging::error(logging::medium) << oss.str();
+      }
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "SQL: could not store host status (host: " << hs.host_id << "): "
+        << e.what();
     }
   }
   else
@@ -1401,21 +1412,25 @@ void stream::_process_instance_status(
 
     // Process object.
     _instance_status_update << is;
-    std::ostringstream oss;
-    oss << "SQL: could not update poller (poller: " << is.poller_id << "): ";
     std::promise<int> promise;
     _mysql.run_statement_and_get_int(
              _instance_status_update,
              &promise, mysql_task::AFFECTED_ROWS,
-             oss.str(),
              _mysql.choose_connection_by_instance(is.poller_id));
 
-    if (promise.get_future().get() == 0) {
-      oss.str("");
-      oss << "SQL: poller "
-          << is.poller_id << " was not updated because no matching entry "
-             "was found in database";
-      logging::error(logging::medium) << oss.str();
+    try {
+      if (promise.get_future().get() == 0) {
+        std::ostringstream oss;
+        oss << "SQL: poller "
+            << is.poller_id << " was not updated because no matching entry "
+               "was found in database";
+        logging::error(logging::medium) << oss.str();
+      }
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "SQL: could not update poller (poller: " << is.poller_id << "): "
+        << e.what();
     }
   }
 }
@@ -1610,23 +1625,29 @@ void stream::_process_issue_parent(
   std::promise<int> promise;
   _mysql.run_statement_and_get_int(
       _issue_parent_update,
-      &promise, mysql_task::AFFECTED_ROWS,
-      "SQL: issue parent update query failed");
-  if (promise.get_future().get() <= 0) {
-    if (ip.end_time != (time_t)-1)
-      _issue_parent_insert.bind_value_as_u32(
-        ":end_time",
-        static_cast<long long>(ip.end_time));
-    else
-      _issue_parent_insert.bind_value_as_null(
-        ":end_time");
-    logging::debug(logging::low)
-      << "SQL: inserting issue parenting between child " << child_id
-      << " and parent " << parent_id << " (start: " << ip.start_time
-      << ", end: " << ip.end_time << ")";
-    _mysql.run_statement(
-             _issue_parent_insert,
-             "SQL: issue parent insert query failed");
+      &promise, mysql_task::AFFECTED_ROWS);
+  try {
+    if (promise.get_future().get() <= 0) {
+      if (ip.end_time != (time_t)-1)
+        _issue_parent_insert.bind_value_as_u32(
+          ":end_time",
+          static_cast<long long>(ip.end_time));
+      else
+        _issue_parent_insert.bind_value_as_null(
+          ":end_time");
+      logging::debug(logging::low)
+        << "SQL: inserting issue parenting between child " << child_id
+        << " and parent " << parent_id << " (start: " << ip.start_time
+        << ", end: " << ip.end_time << ")";
+      _mysql.run_statement(
+               _issue_parent_insert,
+               "SQL: issue parent insert query failed");
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "SQL: issue parent update query failed: "
+      << e.what();
   }
 }
 
@@ -1854,23 +1875,27 @@ void stream::_process_service_check(
         store = false;
     }
     if (store) {
-      std::ostringstream oss;
-      oss << "SQL: could not store service check (host: "
-          << sc.host_id << ", service: " << sc.service_id << "): ";
       _service_check_update << sc;
       std::promise<int> promise;
       _mysql.run_statement_and_get_int(
           _service_check_update,
           &promise, mysql_task::AFFECTED_ROWS,
-          oss.str(),
           _mysql.choose_connection_by_instance(_cache_host_instance[sc.host_id]));
 
-      if (promise.get_future().get() == 0) {
-        oss.str("");
-        oss << "SQL: service check could "
-               "not be updated because service (" << sc.host_id << ", "
-            << sc.service_id << ") was not found in database";
-        logging::error(logging::medium) << oss.str();
+      try {
+        if (promise.get_future().get() == 0) {
+          std::ostringstream oss;
+          oss << "SQL: service check could "
+                 "not be updated because service (" << sc.host_id << ", "
+              << sc.service_id << ") was not found in database";
+          logging::error(logging::medium) << oss.str();
+        }
+      }
+      catch (std::exception const& e) {
+        throw exceptions::msg()
+          << "SQL: could not store service check (host: "
+          << sc.host_id << ", service: " << sc.service_id << "): "
+          << e.what();
       }
     }
   }
@@ -2210,22 +2235,25 @@ void stream::_process_service_status(
     }
 
     // Processing.
-    std::ostringstream oss;
-    oss << "SQL: could not store service status (host: "
-        << ss.host_id << ", service: " << ss.service_id
-        << "): ";
     _service_status_update << ss;
     std::promise<int> promise;
     _mysql.run_statement_and_get_int(
         _service_status_update,
         &promise, mysql_task::AFFECTED_ROWS,
-        oss.str(),
        _mysql.choose_connection_by_instance( _cache_host_instance[ss.host_id]));
 
-    if (promise.get_future().get() != 1)
-      logging::error(logging::medium) << "SQL: service could not be "
-           "updated because service (" << ss.host_id << ", "
-        << ss.service_id << ") was not found in database";
+    try {
+      if (promise.get_future().get() != 1)
+        logging::error(logging::medium) << "SQL: service could not be "
+             "updated because service (" << ss.host_id << ", "
+          << ss.service_id << ") was not found in database";
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "SQL: could not store service status (host: "
+        << ss.host_id << ", service: " << ss.service_id
+        << "): " << e.what();
+    }
   }
   else
     // Do nothing.
