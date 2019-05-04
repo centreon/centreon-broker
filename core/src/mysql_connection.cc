@@ -597,13 +597,11 @@ void mysql_connection::run_query_and_get_result(
 void mysql_connection::run_query_and_get_int(
                          std::string const& query,
                          std::promise<int>* promise,
-                         mysql_task::int_type type,
-                         std::string const& error_msg) {
+                         mysql_task::int_type type) {
   _push(std::make_shared<mysql_task_run_int>(
                            query,
                            promise,
-                           type,
-                           error_msg));
+                           type));
 }
 
 void mysql_connection::run_statement(

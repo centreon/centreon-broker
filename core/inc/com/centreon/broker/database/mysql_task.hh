@@ -129,17 +129,14 @@ namespace database {
    public:
                            mysql_task_run_int(
                              std::string const& q,
-                             std::promise<int>* promise, int_type type,
-                             std::string const& error_msg)
+                             std::promise<int>* promise, int_type type)
                             : mysql_task(mysql_task::RUN_INT),
                               query(q),
                               promise(promise),
-                              return_type(type),
-                              error_msg(error_msg) {}
+                              return_type(type) {}
     std::string            query;
     std::promise<int>*     promise;
     int_type               return_type;
-    std::string            error_msg;
   };
 
   class                    mysql_task_statement : public mysql_task {

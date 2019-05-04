@@ -218,8 +218,6 @@ int mysql::run_query_and_get_result(
  *                available.
  * @param type An int_type to tell what kind of integer the promise will
  *             contain.
- * @param error_msg An error message to complete the error message returned
- *                  by the mysql connector.
  * @param thread_id A thread id or 0 to keep the library choosing which one.
  *
  * With this function, the query is done. The promise will provide an integer
@@ -230,7 +228,6 @@ int mysql::run_query_and_get_result(
 int mysql::run_query_and_get_int(
              std::string const& query,
              std::promise<int>* promise, mysql_task::int_type type,
-             std::string const& error_msg,
              int thread_id) {
   _check_errors();
   if (thread_id < 0)
@@ -239,8 +236,7 @@ int mysql::run_query_and_get_int(
 
   _connection[thread_id]->run_query_and_get_int(
                             query,
-                            promise, type,
-                            error_msg);
+                            promise, type);
   return thread_id;
 }
 
