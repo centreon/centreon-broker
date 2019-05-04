@@ -45,23 +45,29 @@ void notification_rule_loader::load(
         "SELECT rule_id, method_id, timeperiod_id, contact_id, "
         "       host_id, service_id"
         "  FROM rt_notification_rules",
-        &promise,
-        "notification: cannot load notification rules from database: ");
+        &promise);
 
-  database::mysql_result res(promise.get_future().get());
-  while (ms->fetch_row(res)) {
-    notification_rule::ptr rule(new notification_rule);
-    rule->set_id(res.value_as_u32(0));
-    rule->set_method_id(res.value_as_u32(1));
-    rule->set_timeperiod_id(res.value_as_u32(2));
-    rule->set_contact_id(res.value_as_u32(3));
-    rule->set_node_id(node_id(res.value_as_u32(4),
-                              res.value_as_u32(5)));
-    logging::debug(logging::low)
-      << "notification: new rule " << rule->get_id()
-      << " affecting node (" << rule->get_node_id().get_host_id()
-      << ", " << rule->get_node_id().get_service_id()
-      << ") using method " << rule->get_method_id();
-    output->add_rule(res.value_as_u32(0), rule);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res)) {
+      notification_rule::ptr rule(new notification_rule);
+      rule->set_id(res.value_as_u32(0));
+      rule->set_method_id(res.value_as_u32(1));
+      rule->set_timeperiod_id(res.value_as_u32(2));
+      rule->set_contact_id(res.value_as_u32(3));
+      rule->set_node_id(node_id(res.value_as_u32(4),
+                                res.value_as_u32(5)));
+      logging::debug(logging::low)
+        << "notification: new rule " << rule->get_id()
+        << " affecting node (" << rule->get_node_id().get_host_id()
+        << ", " << rule->get_node_id().get_service_id()
+        << ") using method " << rule->get_method_id();
+      output->add_rule(res.value_as_u32(0), rule);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load notification rules from database: "
+      << e.what();
   }
 }

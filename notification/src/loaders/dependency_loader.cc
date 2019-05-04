@@ -59,20 +59,26 @@ void dependency_loader::load(mysql* ms, dependency_builder* output) {
         "       execution_failure_criteria,"
         "       notification_failure_criteria"
         "  FROM cfg_dependencies",
-        &promise,
-        "notification: cannot load dependencies from database: ");
+        &promise);
 
-  database::mysql_result res(promise.get_future().get());
-  while (ms->fetch_row(res)) {
-    dependency::ptr dep(new dependency);
-    unsigned int id = res.value_as_u32(0);
-    dep->set_inherits_parent(res.value_as_bool(1));
-    dep_execution_failure_options.push_back(
-      std::make_pair(id, res.value_as_str(2)));
-    dep_notification_failure_options.push_back(
-      std::make_pair(id, res.value_as_str(3)));
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res)) {
+      dependency::ptr dep(new dependency);
+      unsigned int id = res.value_as_u32(0);
+      dep->set_inherits_parent(res.value_as_bool(1));
+      dep_execution_failure_options.push_back(
+        std::make_pair(id, res.value_as_str(2)));
+      dep_notification_failure_options.push_back(
+        std::make_pair(id, res.value_as_str(3)));
 
-    output->add_dependency(id, dep);
+      output->add_dependency(id, dep);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+           << "notification: cannot load dependencies from database: "
+           << e.what();
   }
 
   // Get the relations of the dependencies. It will also give us their type.
@@ -105,56 +111,79 @@ void dependency_loader::_load_relations(
   ms->run_query_and_get_result(
         "SELECT dependency_dep_id, host_host_id"
         "  FROM cfg_dependencies_hostchildren_relations",
-        &promise,
-        "notification: cannot load host/child dependencies from database: ");
+        &promise);
 
-  database::mysql_result res(promise.get_future().get());
-  while (ms->fetch_row(res))
-    output.dependency_node_id_child_relation(
-             res.value_as_u32(0),
-             node_id(res.value_as_u32(1)));
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res))
+      output.dependency_node_id_child_relation(
+               res.value_as_u32(0),
+               node_id(res.value_as_u32(1)));
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load host/child dependencies from database: "
+      << e.what();
+  }
 
   promise = std::promise<database::mysql_result>();
   ms->run_query_and_get_result(
         "SELECT dependency_dep_id, host_host_id"
         "  FROM cfg_dependencies_hostparents_relations",
-        &promise,
-        "notification: cannot load host/parent dependencies from database: ");
-
-  res = promise.get_future().get();
-  while (ms->fetch_row(res))
-    output.dependency_node_id_parent_relation(
-             res.value_as_u32(0),
-             node_id(res.value_as_u32(1)));
+        &promise);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res))
+      output.dependency_node_id_parent_relation(
+               res.value_as_u32(0),
+               node_id(res.value_as_u32(1)));
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load host/parent dependencies from database: "
+      << e.what();
+  }
 
   promise = std::promise<database::mysql_result>();
   ms->run_query_and_get_result(
         "SELECT dependency_dep_id, service_service_id, host_host_id"
         "  FROM cfg_dependencies_servicechildren_relations",
-        &promise,
-        "notification: cannot load service/child dependencies from database: ");
+        &promise);
 
-  res = promise.get_future().get();
-  while (ms->fetch_row(res))
-    output.dependency_node_id_child_relation(
-             res.value_as_u32(0),
-             node_id(res.value_as_u32(2),
-             res.value_as_u32(1)));
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res))
+      output.dependency_node_id_child_relation(
+               res.value_as_u32(0),
+               node_id(res.value_as_u32(2),
+               res.value_as_u32(1)));
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load service/child dependencies from database: "
+      << e.what();
+  }
 
   promise = std::promise<database::mysql_result>();
   ms->run_query_and_get_result(
         "SELECT dependency_dep_id, service_service_id, host_host_id"
         "  FROM cfg_dependencies_serviceparents_relations",
-        &promise,
-        "notification: cannot load service/parent dependencies"
-        " from database: ");
+        &promise);
 
-  res = promise.get_future().get();
-  while (ms->fetch_row(res))
-    output.dependency_node_id_parent_relation(
-             res.value_as_u32(0),
-             node_id(res.value_as_u32(2),
-             res.value_as_u32(1)));
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (ms->fetch_row(res))
+      output.dependency_node_id_parent_relation(
+               res.value_as_u32(0),
+               node_id(res.value_as_u32(2),
+               res.value_as_u32(1)));
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "notification: cannot load service/parent dependencies"
+         " from database: "
+      << e.what();
+  }
 }
 
 /**

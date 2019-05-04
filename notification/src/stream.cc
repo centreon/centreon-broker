@@ -302,37 +302,36 @@ void stream::_open_db(
     logging::debug(logging::medium)
       << "notification: checking replication status";
     std::promise<database::mysql_result> promise;
+    ms->run_query_and_get_result(
+            "SHOW SLAVE STATUS",
+            &promise);
     try {
-      ms->run_query_and_get_result(
-              "SHOW SLAVE STATUS",
-              &promise,
-              "");
+      database::mysql_result res(promise.get_future().get());
+      if (ms->fetch_row(res)) {
+        for (int i(0); i < res.get_num_fields(); ++i) {
+          std::string field(res.get_field_name(i));
+          if ((field == "Slave_IO_Running"
+               && res.value_as_str(i) != "Yes")
+              || (field == "Slave_SQL_Running"
+                  && res.value_as_str(i) != "Yes")
+              || (field == "Seconds_Behind_Master"
+                  && res.value_as_i32(i) != 0))
+            throw exceptions::msg() << "notification: replication is not "
+                          "complete: " << field << "="
+                       << res.value_as_str(i);
+        }
+        logging::info(logging::medium)
+          << "notification: database replication is complete, "
+             "connection granted";
+      }
+      else {
+        logging::info(logging::medium)
+          << "notification: database is not under replication";
+      }
     }
     catch (std::exception const& e) {
       logging::info(logging::medium)
         << "notification: could not check replication status";
-    }
-    database::mysql_result res(promise.get_future().get());
-    if (ms->fetch_row(res)) {
-      for (int i(0); i < res.get_num_fields(); ++i) {
-        std::string field(res.get_field_name(i));
-        if ((field == "Slave_IO_Running"
-             && res.value_as_str(i) != "Yes")
-            || (field == "Slave_SQL_Running"
-                && res.value_as_str(i) != "Yes")
-            || (field == "Seconds_Behind_Master"
-                && res.value_as_i32(i) != 0))
-          throw exceptions::msg() << "notification: replication is not "
-                        "complete: " << field << "="
-                     << res.value_as_str(i);
-      }
-      logging::info(logging::medium)
-        << "notification: database replication is complete, "
-           "connection granted";
-    }
-    else {
-      logging::info(logging::medium)
-        << "notification: database is not under replication";
     }
   }
   else
