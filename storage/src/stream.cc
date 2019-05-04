@@ -861,46 +861,48 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
     _insert_metrics_stmt.bind_value_as_str(12, t);
 
     // Execute query.
-    std::ostringstream oss;
-    oss << "storage: insertion of "
-           "metric '" << mtc_name.toStdString() << "' of index " << index_id
-        << " failed: ";
-
     std::promise<int> promise;
     _mysql.run_statement_and_get_int(
              _insert_metrics_stmt,
              &promise,
-             database::mysql_task::LAST_INSERT_ID,
-             oss.str());
-    retval = promise.get_future().get();
+             database::mysql_task::LAST_INSERT_ID);
+    try {
+      retval = promise.get_future().get();
 
-    // Insert metric in cache.
-    logging::info(logging::medium) << "storage: new metric "
-      << retval << " for (" << index_id << ", " << mtc_name << ")";
-    metric_info info;
-    info.locked = false;
-    info.metric_id = retval;
-    info.type = *type;
-    info.value = value;
-    info.unit_name = unit_name;
-    info.warn = warn;
-    info.warn_low = warn_low;
-    info.warn_mode = warn_mode;
-    info.crit = crit;
-    info.crit_low = crit_low;
-    info.crit_mode = crit_mode;
-    info.min = min;
-    info.max = max;
-    _metric_cache[std::make_pair(index_id, mtc_name)] = info;
+      // Insert metric in cache.
+      logging::info(logging::medium) << "storage: new metric "
+        << retval << " for (" << index_id << ", " << mtc_name << ")";
+      metric_info info;
+      info.locked = false;
+      info.metric_id = retval;
+      info.type = *type;
+      info.value = value;
+      info.unit_name = unit_name;
+      info.warn = warn;
+      info.warn_low = warn_low;
+      info.warn_mode = warn_mode;
+      info.crit = crit;
+      info.crit_low = crit_low;
+      info.crit_mode = crit_mode;
+      info.min = min;
+      info.max = max;
+      _metric_cache[std::make_pair(index_id, mtc_name)] = info;
 
-    // Create the metric mapping.
-    std::shared_ptr<metric_mapping> mm(new metric_mapping);
-    mm->index_id = index_id;
-    mm->metric_id = info.metric_id;
-    multiplexing::publisher pblshr;
-    pblshr.write(mm);
+      // Create the metric mapping.
+      std::shared_ptr<metric_mapping> mm(new metric_mapping);
+      mm->index_id = index_id;
+      mm->metric_id = info.metric_id;
+      multiplexing::publisher pblshr;
+      pblshr.write(mm);
 
-    *locked = info.locked;
+      *locked = info.locked;
+    }
+    catch (std::exception const& e) {
+      throw broker::exceptions::msg()
+        << "storage: insertion of "
+           "metric '" << mtc_name.toStdString() << "' of index " << index_id
+        << " failed: " << e.what();
+    }
   }
 
   return retval;
