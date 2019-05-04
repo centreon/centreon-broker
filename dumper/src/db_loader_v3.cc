@@ -84,16 +84,22 @@ void db_loader_v3::_load_ba_types() {
   _mysql.run_query_and_get_result(
            "SELECT ba_type_id, name, slug, description"
            "  FROM cfg_bam_ba_types",
-           &promise,
-           "db_reader: could not load BA types from DB");
-  database::mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(res)) {
-    entries::ba_type b;
-    b.ba_type_id = res.value_as_u32(0);
-    b.name = res.value_as_str(1).c_str();
-    b.slug = res.value_as_str(2).c_str();
-    b.description = res.value_as_str(3).c_str();
-    _state->get_ba_types().push_back(b);
+           &promise);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (_mysql.fetch_row(res)) {
+      entries::ba_type b;
+      b.ba_type_id = res.value_as_u32(0);
+      b.name = res.value_as_str(1).c_str();
+      b.slug = res.value_as_str(2).c_str();
+      b.description = res.value_as_str(3).c_str();
+      _state->get_ba_types().push_back(b);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "db_reader: could not load BA types from DB"
+      << e.what();
   }
 }
 
@@ -112,21 +118,27 @@ void db_loader_v3::_load_bas() {
   std::promise<database::mysql_result> promise;
   _mysql.run_query_and_get_result(
            query.str(),
-           &promise,
-           "db_reader: could not load configuration of BAs from DB");
-  database::mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(res)) {
-    entries::ba b;
-    b.enable = true;
-    b.poller_id = _poller_id;
-    b.ba_id = res.value_as_u32(0);
-    b.name = res.value_as_str(1).c_str();
-    b.description = res.value_as_str(2).c_str();
-    b.level_warning = res.value_as_f64(3);
-    b.level_critical = res.value_as_f64(4);
-    b.organization_id = res.value_as_u32(5);
-    b.type_id = res.value_as_u32(6);
-    _state->get_bas().push_back(b);
+           &promise);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (_mysql.fetch_row(res)) {
+      entries::ba b;
+      b.enable = true;
+      b.poller_id = _poller_id;
+      b.ba_id = res.value_as_u32(0);
+      b.name = res.value_as_str(1).c_str();
+      b.description = res.value_as_str(2).c_str();
+      b.level_warning = res.value_as_f64(3);
+      b.level_critical = res.value_as_f64(4);
+      b.organization_id = res.value_as_u32(5);
+      b.type_id = res.value_as_u32(6);
+      _state->get_bas().push_back(b);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "db_reader: could not load configuration of BAs from DB"
+      << e.what();
   }
 }
 
@@ -154,25 +166,31 @@ void db_loader_v3::_load_kpis() {
   std::promise<database::mysql_result> promise;
   _mysql.run_query_and_get_result(
            query.str(),
-           &promise,
-           "db_reader: could not load configuration of KPIs from DB");
-  database::mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(res)) {
-    entries::kpi k;
-    k.enable = true;
-    k.poller_id = _poller_id;
-    k.kpi_id = res.value_as_u32(0);
-    k.kpi_type = res.value_as_i32(1) + 1;
-    k.host_id = res.value_as_u32(2);
-    k.service_id = res.value_as_u32(3);
-    k.ba_indicator_id = res.value_as_u32(4);
-    k.ba_id = res.value_as_u32(5);
-    k.meta_id = res.value_as_u32(6);
-    k.boolean_id = res.value_as_u32(7);
-    k.drop_warning = res.value_as_f64(8);
-    k.drop_critical = res.value_as_f64(9);
-    k.drop_unknown = res.value_as_f64(10);
-    _state->get_kpis().push_back(k);
+           &promise);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (_mysql.fetch_row(res)) {
+      entries::kpi k;
+      k.enable = true;
+      k.poller_id = _poller_id;
+      k.kpi_id = res.value_as_u32(0);
+      k.kpi_type = res.value_as_i32(1) + 1;
+      k.host_id = res.value_as_u32(2);
+      k.service_id = res.value_as_u32(3);
+      k.ba_indicator_id = res.value_as_u32(4);
+      k.ba_id = res.value_as_u32(5);
+      k.meta_id = res.value_as_u32(6);
+      k.boolean_id = res.value_as_u32(7);
+      k.drop_warning = res.value_as_f64(8);
+      k.drop_critical = res.value_as_f64(9);
+      k.drop_unknown = res.value_as_f64(10);
+      _state->get_kpis().push_back(k);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "db_reader: could not load configuration of KPIs from DB"
+      << e.what();
   }
 }
 
@@ -189,16 +207,22 @@ void db_loader_v3::_load_organizations() {
   std::promise<database::mysql_result> promise;
   _mysql.run_query_and_get_result(
            query.str(),
-           &promise,
-           "db_reader: could not load organization from DB");
-  database::mysql_result res(promise.get_future().get());
-  if (!_mysql.fetch_row(res))
-    throw (exceptions::msg() << "db_reader: poller " << _poller_id
-           << " has no organization: cannot load remaining tables");
-  entries::organization o;
-  o.enable = true;
-  o.organization_id = res.value_as_u32(0);
-  o.name = res.value_as_str(1).c_str();
-  o.shortname = res.value_as_str(2).c_str();
-  _state->get_organizations().push_back(o);
+           &promise);
+  try {
+    database::mysql_result res(promise.get_future().get());
+    if (!_mysql.fetch_row(res))
+      throw (exceptions::msg() << "db_reader: poller " << _poller_id
+             << " has no organization: cannot load remaining tables");
+    entries::organization o;
+    o.enable = true;
+    o.organization_id = res.value_as_u32(0);
+    o.name = res.value_as_str(1).c_str();
+    o.shortname = res.value_as_str(2).c_str();
+    _state->get_organizations().push_back(o);
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "db_reader: could not load organization from DB"
+      << e.what();
+  }
 }

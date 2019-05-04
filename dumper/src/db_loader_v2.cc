@@ -93,19 +93,25 @@ void db_loader_v2::_load_bas() {
            "    AND pr.poller_id=" << _poller_id;
   std::promise<database::mysql_result> promise;
   _mysql.run_query_and_get_result(
-           query.str(), &promise,
-           "db_reader: could not load configuration of BAs from DB");
-  database::mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(res)) {
-    entries::ba b;
-    b.enable = true;
-    b.poller_id = _poller_id;
-    b.ba_id = res.value_as_u32(0);
-    b.name = res.value_as_str(1).c_str();
-    b.description = res.value_as_str(2).c_str();
-    b.level_warning = res.value_as_f64(3);
-    b.level_critical = res.value_as_f64(4);
-    _state->get_bas().push_back(b);
+           query.str(), &promise);
+
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (_mysql.fetch_row(res)) {
+      entries::ba b;
+      b.enable = true;
+      b.poller_id = _poller_id;
+      b.ba_id = res.value_as_u32(0);
+      b.name = res.value_as_str(1).c_str();
+      b.description = res.value_as_str(2).c_str();
+      b.level_warning = res.value_as_f64(3);
+      b.level_critical = res.value_as_f64(4);
+      _state->get_bas().push_back(b);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "db_reader: could not load configuration of BAs from DB";
   }
 }
 
@@ -126,19 +132,25 @@ void db_loader_v2::_load_booleans() {
   std::promise<database::mysql_result> promise;
   _mysql.run_query_and_get_result(
            query.str(),
-           &promise,
-           "db_reader: could not load configuration of boolean rules from DB");
-  database::mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(res)) {
-    entries::boolean b;
-    b.enable = true;
-    b.poller_id = _poller_id;
-    b.boolean_id = res.value_as_u32(0);
-    b.name = res.value_as_str(1).c_str();
-    b.expression = res.value_as_str(2).c_str();
-    b.bool_state = res.value_as_i32(3);
-    b.comment = res.value_as_str(4).c_str();
-    _state->get_booleans().push_back(b);
+           &promise);
+
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (_mysql.fetch_row(res)) {
+      entries::boolean b;
+      b.enable = true;
+      b.poller_id = _poller_id;
+      b.boolean_id = res.value_as_u32(0);
+      b.name = res.value_as_str(1).c_str();
+      b.expression = res.value_as_str(2).c_str();
+      b.bool_state = res.value_as_i32(3);
+      b.comment = res.value_as_str(4).c_str();
+      _state->get_booleans().push_back(b);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "db_reader: could not load configuration of boolean rules from DB";
   }
 }
 
@@ -166,25 +178,32 @@ void db_loader_v2::_load_kpis() {
   std::promise<database::mysql_result> promise;
   _mysql.run_query_and_get_result(
            query.str(),
-           &promise,
-           "db_reader: could not load configuration of KPIs from DB");
-  database::mysql_result res(promise.get_future().get());
-  while (_mysql.fetch_row(res)) {
-    entries::kpi k;
-    k.enable = true;
-    k.poller_id = _poller_id;
-    k.kpi_id = res.value_as_u32(0);
-    k.kpi_type = res.value_as_i32(1) + 1;
-    k.host_id = res.value_as_u32(2);
-    k.service_id = res.value_as_u32(3);
-    k.ba_indicator_id = res.value_as_u32(4);
-    k.ba_id = res.value_as_u32(5);
-    k.meta_id = res.value_as_u32(6);
-    k.boolean_id = res.value_as_u32(7);
-    k.drop_warning = res.value_as_f64(8);
-    k.drop_critical = res.value_as_f64(9);
-    k.drop_unknown = res.value_as_f64(10);
-    _state->get_kpis().push_back(k);
+           &promise);
+
+  try {
+    database::mysql_result res(promise.get_future().get());
+    while (_mysql.fetch_row(res)) {
+      entries::kpi k;
+      k.enable = true;
+      k.poller_id = _poller_id;
+      k.kpi_id = res.value_as_u32(0);
+      k.kpi_type = res.value_as_i32(1) + 1;
+      k.host_id = res.value_as_u32(2);
+      k.service_id = res.value_as_u32(3);
+      k.ba_indicator_id = res.value_as_u32(4);
+      k.ba_id = res.value_as_u32(5);
+      k.meta_id = res.value_as_u32(6);
+      k.boolean_id = res.value_as_u32(7);
+      k.drop_warning = res.value_as_f64(8);
+      k.drop_critical = res.value_as_f64(9);
+      k.drop_unknown = res.value_as_f64(10);
+      _state->get_kpis().push_back(k);
+    }
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "db_reader: could not load configuration of KPIs from DB"
+      << e.what();
   }
 }
 
@@ -199,19 +218,25 @@ void db_loader_v2::_load_hosts() {
   std::promise<database::mysql_result> promise;
   _mysql.run_query_and_get_result(
            query.str(),
-           &promise,
-           "db_reader: could not load configuration of hosts from DB");
-  database::mysql_result res(promise.get_future().get());
-  if (!_mysql.fetch_row(res))
-    throw (exceptions::msg()
-           << "db_reader: expected virtual host '_Module_BAM_"
-           << _poller_id << "'");
-  entries::host h;
-  h.enable = true;
-  h.poller_id = _poller_id;
-  h.host_id = res.value_as_u32(0);
-  h.name = res.value_as_str(1).c_str();
-  _state->get_hosts().push_back(h);
+           &promise);
+
+  try {
+    database::mysql_result res(promise.get_future().get());
+    if (!_mysql.fetch_row(res))
+      throw (exceptions::msg()
+             << "db_reader: expected virtual host '_Module_BAM_"
+             << _poller_id << "'");
+    entries::host h;
+    h.enable = true;
+    h.poller_id = _poller_id;
+    h.host_id = res.value_as_u32(0);
+    h.name = res.value_as_str(1).c_str();
+    _state->get_hosts().push_back(h);
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+      << "db_reader: could not load configuration of hosts from DB";
+  }
 }
 
 /**
