@@ -82,7 +82,7 @@ CentOS
 ------
 
 Either use the Package Manager or the yum tool to install them. You
-should checkpackages version when necessary.
+should check packages version when necessary.
 
 Package required to build:
 
