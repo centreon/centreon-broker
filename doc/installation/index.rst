@@ -1,12 +1,13 @@
 .. _user_installation:
 
-############
 Installation
 ############
 
-Centreon recommends using its official packages from the Centreon Open Sources
-version available free of charge on our repository (ex CES). Most of Centreon endorsed
-software are available as RPM packages.
+Centreon provides RPM packages for its products through the Centreon
+open source version available free of charge in our repository.
+
+These packages have been successfully tested in version 7.x CentOS and
+Red Hat environments.
 
 Alternatively, you can build and install your own version of this
 software by following the :ref:`user_installation_using_sources`.
@@ -15,44 +16,20 @@ Before installing the software, please make sure that your platform is
 up to date, especially when using virtualization tools (VMware drivers
 notably).
 
-**************
+
 Using packages
-**************
+==============
 
-Centreon provides RPM for its products through Centreon Open Sources (COS) version
-available free of charge on our repository, Open source products are
-freely available from our repository.
+To install Centreon software from the repository, you should first install the
+centreon-release package, which will provide the repository file.
 
-These packages are available for CentOS 6 and 7 version.
+Install the Centreon repository using this command::
+
+    # yum install -y http://yum.centreon.com/standard/19.04/el7/stable/noarch/RPMS/centreon-release-19.04-1.el7.centos.noarch.rpm
+
+The repository is now installed.
 
 .. _user_installation_packages_prerequisites:
-
-Prerequisites
-=============
-
-In order to use RPM from the COS repository, you have to install the
-appropriate repository.
-
-CentOS 6
---------
-
-Run the following commands as privileged user ::
-
-  $ wget http://yum.centreon.com/standard/3.4/el6/stable/noarch/RPMS/centreon-release-3.4-4.el6.noarch.rpm
-  $ yum install --nogpgcheck -y centreon-release-3.4-4.el6.noarch.rpm
-  $ rm -f centreon-release-3.4-4.el6.noarch.rpm
-  $ yum clean all
-
-
-CentOS 7
---------
-
-Run the following commands as privileged user ::
-
-  $ wget http://yum.centreon.com/standard/3.4/el7/stable/noarch/RPMS/centreon-release-3.4-4.el7.centos.noarch.rpm
-  $ yum install --nogpgcheck -y centreon-release-3.4-4.el7.centos.noarch.rpm
-  $ rm -f centreon-release-3.4-4.el7.centos.noarch.rpm
-  $ yum clean all
 
 
 Install
@@ -104,8 +81,8 @@ further steps too.
 CentOS
 ------
 
-Either use the Package Manager or the yum tool to install them. You should check
-packages version when necessary.
+Either use the Package Manager or the yum tool to install them. You
+should checkpackages version when necessary.
 
 Package required to build:
 
