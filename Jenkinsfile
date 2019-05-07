@@ -47,34 +47,6 @@ try {
           }
         }
       }
-    },
-    'debian9': {
-      node {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh debian9"
-        step([
-          $class: 'XUnitBuilder',
-          thresholds: [
-            [$class: 'FailedThreshold', failureThreshold: '0'],
-            [$class: 'SkippedThreshold', failureThreshold: '0']
-          ],
-          tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
-        ])
-      }
-    },
-    'debian10': {
-      node {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-unittest.sh debian10"
-        step([
-          $class: 'XUnitBuilder',
-          thresholds: [
-            [$class: 'FailedThreshold', failureThreshold: '0'],
-            [$class: 'SkippedThreshold', failureThreshold: '0']
-          ],
-          tools: [[$class: 'GoogleTestType', pattern: 'ut.xml']]
-        ])
-      }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
       error('Unit tests stage failure.');
@@ -86,24 +58,6 @@ try {
       node {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh centos7"
-      }
-    },
-    'debian9': {
-      node {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian9"
-      }
-    },
-    'debian9-armhf': {
-      node {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian9-armhf"
-      }
-    },
-    'debian10': {
-      node {
-        sh 'setup_centreon_build.sh'
-        sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10"
       }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
