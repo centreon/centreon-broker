@@ -67,28 +67,30 @@ void services::run(
 	      std::string& perfdata) {
   // Count services ok / warning / unknown / critical.
   unsigned int total[4] = { 0, 0, 0, 0 };
-  for (service* s(service_list); s; s = s->next)
-    ++total[s->current_state];
+  for (service_map::const_iterator
+         it{com::centreon::engine::service::services.begin()},
+         end{com::centreon::engine::service::services.end()};
+       it != end;
+       ++it)
+    ++total[it->second->get_current_state()];
 
-  unsigned int not_ok(
-                 total[STATE_WARNING]
-                 + total[STATE_CRITICAL]
-                 + total[STATE_UNKNOWN]);
+  unsigned int not_ok{
+                 total[com::centreon::engine::service::state_warning]
+                 + total[com::centreon::engine::service::state_critical]
+                 + total[com::centreon::engine::service::state_unknown]};
 
   // Output.
   std::ostringstream oss;
   oss << "Engine " << config::applier::state::instance().poller_name()
-      << " has " << total[STATE_OK] << " services on status OK and "
+      << " has " << total[com::centreon::engine::service::state_ok] << " services on status OK and "
       << not_ok << " services on non-OK status";
   output = oss.str();
 
   // Perfdata.
   oss.str("");
-  oss << "ok=" << total[STATE_OK]
-      << " warning=" << total[STATE_WARNING]
-      << " critical=" << total[STATE_CRITICAL]
-      << " unknown=" << total[STATE_UNKNOWN];
+  oss << "ok=" << total[com::centreon::engine::service::state_ok]
+      << " warning=" << total[com::centreon::engine::service::state_warning]
+      << " critical=" << total[com::centreon::engine::service::state_critical]
+      << " unknown=" << total[com::centreon::engine::service::state_unknown];
   perfdata = oss.str();
-
-  return ;
 }

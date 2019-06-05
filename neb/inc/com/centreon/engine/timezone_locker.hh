@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Merethis
+** Copyright 2014-2019 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,6 +20,7 @@
 #ifndef CCE_TIMEZONE_LOCKER_HH
 #  define CCE_TIMEZONE_LOCKER_HH
 
+#  include <string>
 #  include "com/centreon/engine/namespace.hh"
 
 CCE_BEGIN()
@@ -33,12 +34,10 @@ CCE_BEGIN()
  */
 class                 timezone_locker {
 public:
-                      timezone_locker(char const* tz);
+                      timezone_locker(std::string const& tz);
                       ~timezone_locker();
-
-private:
-                      timezone_locker(timezone_locker const& other);
-  timezone_locker&    operator=(timezone_locker const& other);
+                      timezone_locker(timezone_locker const& other) = delete;
+  timezone_locker&    operator=(timezone_locker const& other) = delete;
 };
 
 CCE_END()

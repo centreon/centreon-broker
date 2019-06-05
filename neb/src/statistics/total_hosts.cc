@@ -66,9 +66,7 @@ void total_hosts::run(
               std::string& output,
 	      std::string& perfdata) {
   // Count hosts.
-  unsigned int total(0);
-  for (host* h(host_list); h; h = h->next)
-    ++total;
+  unsigned int total(com::centreon::engine::host::hosts.size());
 
   // Output.
   std::ostringstream oss;
@@ -80,6 +78,4 @@ void total_hosts::run(
   oss.str("");
   oss << "total_hosts=" << total;
   perfdata = oss.str();
-
-  return ;
 }

@@ -42,22 +42,23 @@ public:
                  char const* function,
                  int line) throw ();
                error(error const& e) throw ();
-               ~error() throw ();
+               ~error() throw () override;
   error&       operator=(error const& e) throw ();
   error&       operator<<(char c) throw ();
   error&       operator<<(char const* str) throw ();
   error&       operator<<(int i) throw ();
+  error&       operator<<(unsigned long u) throw ();
   error&       operator<<(unsigned int u) throw ();
   error&       operator<<(long l) throw ();
   error&       operator<<(long long ll) throw ();
   error&       operator<<(unsigned long long ull) throw ();
   error&       operator<<(double d) throw ();
   error&       operator<<(std::string const& str) throw ();
-  char const*  what() const throw ();
+  char const*  what() const throw () override;
 
 private:
   template     <typename T>
-  void         _insert_with_snprintf(T t, char const* format);
+  void         _insert_with_snprintf(T& t, char const* format);
 
   mutable char _buffer[4096];
   unsigned int _current;

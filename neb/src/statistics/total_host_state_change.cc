@@ -70,10 +70,14 @@ total_host_state_change& total_host_state_change::operator=(total_host_state_cha
 void total_host_state_change::run(
               std::string& output,
 	      std::string& perfdata) {
-  if (host_list) {
+  if (!com::centreon::engine::host::hosts.empty()) {
     compute_value<double> cv;
-    for (host* h(host_list); h; h = h->next)
-      cv << h->percent_state_change;
+    for (host_map::const_iterator
+           it{com::centreon::engine::host::hosts.begin()},
+           end{com::centreon::engine::host::hosts.end()};
+         it != end;
+         ++it)
+      cv << it->second->get_percent_state_change();
 
     // Output.
     std::ostringstream oss;

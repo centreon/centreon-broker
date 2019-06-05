@@ -35,7 +35,7 @@ namespace                  configuration {
 
                            contactgroup(key_type const& key = "");
                            contactgroup(contactgroup const& right);
-                           ~contactgroup() throw ();
+                           ~contactgroup() throw () override;
     contactgroup&          operator=(contactgroup const& right);
     bool                   operator==(
                              contactgroup const& right) const throw ();
@@ -43,10 +43,10 @@ namespace                  configuration {
                              contactgroup const& right) const throw ();
     bool                   operator<(
                              contactgroup const& right) const throw ();
-    void                   check_validity() const;
+    void                   check_validity() const override;
     key_type const&        key() const throw ();
-    void                   merge(object const& obj);
-    bool                   parse(char const* key, char const* value);
+    void                   merge(object const& obj) override;
+    bool                   parse(char const* key, char const* value) override;
 
     std::string const&     alias() const throw ();
     set_string&            contactgroup_members() throw ();
@@ -56,10 +56,7 @@ namespace                  configuration {
     set_string const&      members() const throw ();
 
    private:
-    struct                 setters {
-      char const*          name;
-      bool                 (*func)(contactgroup&, char const*);
-    };
+    typedef bool (*setter_func)(contactgroup&, char const*);
 
     bool                   _set_alias(std::string const& value);
     bool                   _set_contactgroup_members(std::string const& value);
@@ -70,7 +67,7 @@ namespace                  configuration {
     group<set_string>      _contactgroup_members;
     std::string            _contactgroup_name;
     group<set_string>      _members;
-    static setters const   _setters[];
+    static std::unordered_map<std::string, setter_func> const _setters;
   };
 
   typedef std::shared_ptr<contactgroup> contactgroup_ptr;

@@ -20,12 +20,19 @@
 #ifndef CCE_COMMANDS_COMMAND_HH
 #  define CCE_COMMANDS_COMMAND_HH
 
-#  include <string>
 #  include "com/centreon/concurrency/mutex.hh"
 #  include "com/centreon/engine/commands/command_listener.hh"
 #  include "com/centreon/engine/commands/result.hh"
 #  include "com/centreon/engine/macros/defines.hh"
-#  include "com/centreon/engine/namespace.hh"
+
+CCE_BEGIN()
+namespace commands {
+  class command;
+}
+CCE_END()
+
+typedef std::unordered_map<std::string,
+  std::shared_ptr<com::centreon::engine::commands::command>> command_map;
 
 CCE_BEGIN()
 
@@ -50,7 +57,6 @@ namespace                      commands {
                                  command const& right) const throw ();
     virtual command*           clone() const = 0;
     virtual std::string const& get_command_line() const throw ();
-    command_listener*          get_listener() const throw ();
     virtual std::string const& get_name() const throw ();
     virtual std::string        process_cmd(nagios_macros* macros) const;
     virtual unsigned long      run(
@@ -66,6 +72,7 @@ namespace                      commands {
                                  std::string const& command_line);
     void                       set_listener(
                                  command_listener* listener) throw ();
+    static command_map         commands;
 
   protected:
                                command(command const& right);

@@ -20,6 +20,7 @@
 #ifndef CCE_CONFIGURATION_SERVICEDEPENDENCY_HH
 #  define CCE_CONFIGURATION_SERVICEDEPENDENCY_HH
 
+#  include <memory>
 #  include <set>
 #  include "com/centreon/engine/configuration/group.hh"
 #  include "com/centreon/engine/configuration/object.hh"
@@ -50,7 +51,7 @@ namespace                  configuration {
                            servicedependency();
                            servicedependency(
                              servicedependency const& right);
-                           ~servicedependency() throw ();
+                           ~servicedependency() throw () override;
     servicedependency&     operator=(servicedependency const& right);
     bool                   operator==(
                              servicedependency const& right) const throw ();
@@ -58,10 +59,10 @@ namespace                  configuration {
                              servicedependency const& right) const throw ();
     bool                   operator<(
                              servicedependency const& right) const;
-    void                   check_validity() const;
+    void                   check_validity() const override;
     key_type const&        key() const throw ();
-    void                   merge(object const& obj);
-    bool                   parse(char const* key, char const* value);
+    void                   merge(object const& obj) override;
+    bool                   parse(char const* key, char const* value) override;
 
     void                   dependency_period(std::string const& period);
     std::string const&     dependency_period() const throw ();
@@ -94,10 +95,7 @@ namespace                  configuration {
     list_string const&     service_description() const throw ();
 
    private:
-    struct                 setters {
-      char const*          name;
-      bool                 (*func)(servicedependency&, char const*);
-    };
+    typedef bool (*setter_func)(servicedependency&, char const*);
 
     bool                   _set_dependency_period(std::string const& value);
     bool                   _set_dependent_hostgroups(std::string const& value);
@@ -125,11 +123,11 @@ namespace                  configuration {
     opt<unsigned int>      _notification_failure_options;
     group<list_string>     _servicegroups;
     group<list_string>     _service_description;
-    static setters const   _setters[];
+    static std::unordered_map<std::string, setter_func> const _setters;
   };
 
-  typedef std::shared_ptr<servicedependency>  servicedependency_ptr;
-  typedef std::set<servicedependency>         set_servicedependency;
+  typedef std::shared_ptr<servicedependency> servicedependency_ptr;
+  typedef std::set<servicedependency>        set_servicedependency;
 }
 
 CCE_END()

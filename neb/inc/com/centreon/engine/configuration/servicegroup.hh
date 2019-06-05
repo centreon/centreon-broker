@@ -38,7 +38,7 @@ namespace                   configuration {
 
                             servicegroup(key_type const& key = "");
                             servicegroup(servicegroup const& right);
-                            ~servicegroup() throw ();
+                            ~servicegroup() throw () override;
     servicegroup&           operator=(servicegroup const& right);
     bool                    operator==(
                               servicegroup const& right) const throw ();
@@ -46,10 +46,10 @@ namespace                   configuration {
                               servicegroup const& right) const throw ();
     bool                    operator<(
                               servicegroup const& right) const throw();
-    void                    check_validity() const;
+    void                    check_validity() const override;
     key_type const&         key() const throw ();
-    void                    merge(object const& obj);
-    bool                    parse(char const* key, char const* value);
+    void                    merge(object const& obj) override;
+    bool                    parse(char const* key, char const* value) override;
 
     std::string const&      action_url() const throw ();
     std::string const&      alias() const throw ();
@@ -63,10 +63,7 @@ namespace                   configuration {
     std::string const&      servicegroup_name() const throw ();
 
    private:
-    struct                  setters {
-      char const*           name;
-      bool                  (*func)(servicegroup&, char const*);
-    };
+    typedef bool (*setter_func)(servicegroup&, char const*);
 
     bool                    _set_action_url(std::string const& value);
     bool                    _set_alias(std::string const& value);
@@ -85,11 +82,11 @@ namespace                   configuration {
     unsigned int            _servicegroup_id;
     group<set_string>       _servicegroup_members;
     std::string             _servicegroup_name;
-    static setters const    _setters[];
+    static std::unordered_map<std::string, setter_func> const _setters;
   };
 
-  typedef std::shared_ptr<servicegroup>  servicegroup_ptr;
-  typedef std::set<servicegroup>         set_servicegroup;
+  typedef std::shared_ptr<servicegroup> servicegroup_ptr;
+  typedef std::set<servicegroup>        set_servicegroup;
 }
 
 CCE_END()

@@ -70,8 +70,12 @@ void hosts_scheduled::run(
 	      std::string& perfdata) {
   // Count hosts scheduled.
   unsigned int total(0);
-  for (host* h(host_list); h; h = h->next)
-    if (h->should_be_scheduled)
+  for (host_map::const_iterator
+         it{com::centreon::engine::host::hosts.begin()},
+         end{com::centreon::engine::host::hosts.end()};
+       it != end;
+       ++it)
+    if (it->second->get_should_be_scheduled())
       ++total;
 
   // Output.

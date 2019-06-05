@@ -66,9 +66,13 @@ void services_flapping::run(
               std::string& output,
 	      std::string& perfdata) {
   // Count services are flapping.
-  unsigned int total(0);
-  for (service* s(service_list); s; s = s->next)
-    if (s->is_flapping)
+  unsigned int total{0};
+  for (service_map::const_iterator
+         it{com::centreon::engine::service::services.begin()},
+         end{com::centreon::engine::service::services.end()};
+       it != end;
+       ++it)
+    if (it->second->get_is_flapping())
       ++total;
 
   // Output.

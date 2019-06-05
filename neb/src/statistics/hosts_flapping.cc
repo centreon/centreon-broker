@@ -54,7 +54,7 @@ hosts_flapping::~hosts_flapping() {}
  */
 hosts_flapping& hosts_flapping::operator=(hosts_flapping const& right) {
   plugin::operator=(right);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -67,9 +67,13 @@ void hosts_flapping::run(
               std::string& output,
 	      std::string& perfdata) {
   // Count hosts are flapping.
-  unsigned int total(0);
-  for (host* h(host_list); h; h = h->next)
-    if (h->is_flapping)
+  unsigned int total{0};
+  for (host_map::const_iterator
+         it{com::centreon::engine::host::hosts.begin()},
+         end{com::centreon::engine::host::hosts.end()};
+       it != end;
+       ++it)
+    if (it->second->get_is_flapping())
       ++total;
 
   // Output.
@@ -82,6 +86,4 @@ void hosts_flapping::run(
   oss.str("");
   oss << "hosts_flapping=" << total;
   perfdata = oss.str();
-
-  return ;
 }

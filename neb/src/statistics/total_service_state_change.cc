@@ -70,10 +70,14 @@ total_service_state_change& total_service_state_change::operator=(total_service_
 void total_service_state_change::run(
               std::string& output,
 	      std::string& perfdata) {
-  if (service_list) {
+  if (!com::centreon::engine::service::services.empty()) {
     compute_value<double> cv;
-    for (service* s(service_list); s; s = s->next)
-      cv << s->percent_state_change;
+    for (service_map::const_iterator
+           it{com::centreon::engine::service::services.begin()},
+           end{com::centreon::engine::service::services.end()};
+         it != end;
+         ++it)
+      cv << it->second->get_percent_state_change();
 
     // Output.
     std::ostringstream oss;

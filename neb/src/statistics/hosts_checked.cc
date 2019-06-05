@@ -54,7 +54,7 @@ hosts_checked::~hosts_checked() {}
  */
 hosts_checked& hosts_checked::operator=(hosts_checked const& right) {
   plugin::operator=(right);
-  return (*this);
+  return  *this;
 }
 
 /**
@@ -67,9 +67,13 @@ void hosts_checked::run(
               std::string& output,
 	      std::string& perfdata) {
   // Count hosts checked.
-  unsigned int total(0);
-  for (host* h(host_list); h; h = h->next)
-    if (h->has_been_checked)
+  unsigned int total{0};
+  for (host_map::const_iterator
+         it{com::centreon::engine::host::hosts.begin()},
+         end{com::centreon::engine::host::hosts.end()};
+       it != end;
+       ++it)
+    if (it->second->get_has_been_checked())
       ++total;
 
   // Output.
@@ -82,6 +86,4 @@ void hosts_checked::run(
   oss.str("");
   oss << "hosts_checked=" << total;
   perfdata = oss.str();
-
-  return ;
 }

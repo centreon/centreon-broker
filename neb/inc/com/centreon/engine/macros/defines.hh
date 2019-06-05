@@ -1,6 +1,6 @@
 /*
-** Copyright 1999-2010      Ethan Galstad
-** Copyright 2011-2013,2016 Centreon
+** Copyright 1999-2010 Ethan Galstad
+** Copyright 2011-2019 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -21,13 +21,13 @@
 #ifndef CCE_MACROS_DEFINES_HH_
 # define CCE_MACROS_DEFINES_HH_
 
-# include "com/centreon/engine/objects/contact.hh"
-# include "com/centreon/engine/objects/contactgroup.hh"
-# include "com/centreon/engine/objects/customvariablesmember.hh"
-# include "com/centreon/engine/objects/host.hh"
-# include "com/centreon/engine/objects/hostgroup.hh"
-# include "com/centreon/engine/objects/service.hh"
-# include "com/centreon/engine/objects/servicegroup.hh"
+# include "com/centreon/engine/contact.hh"
+# include "com/centreon/engine/contactgroup.hh"
+# include "com/centreon/engine/customvariable.hh"
+# include "com/centreon/engine/host.hh"
+# include "com/centreon/engine/hostgroup.hh"
+# include "com/centreon/engine/service.hh"
+# include "com/centreon/engine/servicegroup.hh"
 
 // Length Limitations
 # define MAX_COMMAND_ARGUMENTS                  32   // maximum number of $ARGx$ macros
@@ -204,22 +204,29 @@
 # define URL_ENCODE_MACRO_CHARS                 4
 
 // NAGIOS_MACROS structure
-struct                   nagios_macros {
-  char*                  x[MACRO_X_COUNT];
-  char*                  argv[MAX_COMMAND_ARGUMENTS];
-  char*                  contactaddress[MAX_CONTACT_ADDRESSES];
-  char*                  ondemand;
-  host*                  host_ptr;
-  hostgroup*             hostgroup_ptr;
-  service*               service_ptr;
-  servicegroup*          servicegroup_ptr;
-  contact*               contact_ptr;
-  contactgroup*          contactgroup_ptr;
-  customvariablesmember* custom_host_vars;
-  customvariablesmember* custom_service_vars;
-  customvariablesmember* custom_contact_vars;
-};
+class nagios_macros {
+ public:
+  nagios_macros()
+      : host_ptr{nullptr},
+        hostgroup_ptr{nullptr},
+        service_ptr{nullptr},
+        servicegroup_ptr{nullptr},
+        contact_ptr{nullptr},
+        contactgroup_ptr{nullptr} {};
 
-typedef struct nagios_macros nagios_macros;
+  std::array<std::string, MACRO_X_COUNT> x;
+  std::array<std::string, MAX_COMMAND_ARGUMENTS> argv;
+  std::array<std::string, MAX_CONTACT_ADDRESSES> contactaddress;
+  std::string ondemand;
+  com::centreon::engine::host* host_ptr;
+  com::centreon::engine::hostgroup* hostgroup_ptr;
+  com::centreon::engine::service* service_ptr;
+  com::centreon::engine::servicegroup* servicegroup_ptr;
+  com::centreon::engine::contact* contact_ptr;
+  com::centreon::engine::contactgroup* contactgroup_ptr;
+  com::centreon::engine::map_customvar custom_host_vars;
+  com::centreon::engine::map_customvar custom_service_vars;
+  com::centreon::engine::map_customvar custom_contact_vars;
+};
 
 #endif /* !CCE_MACROS_DEFINES_HH_ */

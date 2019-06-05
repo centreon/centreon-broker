@@ -29,12 +29,8 @@ extern "C" {
 
 int process_macros_r(
       nagios_macros* mac,
-      char const* input_buffer,
-      char** output_buffer,
-      int options);
-int process_macros(
-      char const* input_buffer,
-      char** output_buffer,
+      std::string const& input_buffer,
+      std::string & output_buffer,
       int options);
 
 #  ifdef __cplusplus

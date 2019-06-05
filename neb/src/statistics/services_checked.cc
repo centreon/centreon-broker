@@ -68,9 +68,13 @@ void services_checked::run(
               std::string& output,
 	      std::string& perfdata) {
   // Count services checked.
-  unsigned int total(0);
-  for (service* s(service_list); s; s = s->next)
-    if (s->has_been_checked)
+  unsigned int total{0};
+  for (service_map::const_iterator
+         it{com::centreon::engine::service::services.begin()},
+         end{com::centreon::engine::service::services.end()};
+       it != end;
+       ++it)
+    if (it->second->get_has_been_checked())
       ++total;
 
   // Output.

@@ -21,34 +21,38 @@
 #  define CCE_RETENTION_DUMP_HH
 
 #  include <ostream>
+#  include <unordered_map>
+#  include "com/centreon/engine/customvariable.hh"
 #  include "com/centreon/engine/namespace.hh"
 
 // Forward declaration.
-struct comment_struct;
-struct contact_struct;
-struct customvariablesmember_struct;
-struct host_struct;
-struct scheduled_downtime_struct;
-struct service_struct;
 
 CCE_BEGIN()
+class comment;
+class contact;
+class customvariable;
+class service;
+namespace downtimes {
+  class downtime;
+}
+class host;
 
 namespace         retention {
   namespace       dump {
-    std::ostream& comment(std::ostream& os, comment_struct const& obj);
+    std::ostream& comment(std::ostream& os, comment const& obj);
     std::ostream& comments(std::ostream& os);
-    std::ostream& contact(std::ostream& os, contact_struct const& obj);
+    std::ostream& contact(std::ostream& os, contact const& obj);
     std::ostream& contacts(std::ostream& os);
-    std::ostream& customvariables(std::ostream& os, customvariablesmember_struct const& obj);
-    std::ostream& downtime(std::ostream& os, scheduled_downtime_struct const& obj);
+    std::ostream& customvariables(std::ostream& os, com::centreon::engine::map_customvar const& obj);
+    std::ostream& scheduled_downtime(std::ostream& os, downtimes::downtime const& obj);
     std::ostream& downtimes(std::ostream& os);
     std::ostream& header(std::ostream& os);
-    std::ostream& host(std::ostream& os, host_struct const& obj);
+    std::ostream& host(std::ostream& os, com::centreon::engine::host const& obj);
     std::ostream& hosts(std::ostream& os);
     std::ostream& info(std::ostream& os);
     std::ostream& program(std::ostream& os);
     bool          save(std::string const& path);
-    std::ostream& service(std::ostream& os, service_struct const& obj);
+    std::ostream& service(std::ostream& os, com::centreon::engine::service const& obj);
     std::ostream& services(std::ostream& os);
   }
 }
