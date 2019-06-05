@@ -24,7 +24,6 @@
 #  include <string>
 #  include "com/centreon/engine/broker/handle.hh"
 #  include "com/centreon/engine/namespace.hh"
-#  include "com/centreon/shared_ptr.hh"
 
 CCE_BEGIN()
 

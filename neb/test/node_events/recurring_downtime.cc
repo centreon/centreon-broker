@@ -25,7 +25,6 @@
 #include <QThread>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
-#include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"

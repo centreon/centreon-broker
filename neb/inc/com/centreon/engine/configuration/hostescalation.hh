@@ -106,8 +106,8 @@ namespace                  configuration {
     static setters const   _setters[];
   };
 
-  typedef shared_ptr<hostescalation> hostescalation_ptr;
-  typedef std::set<hostescalation>   set_hostescalation;
+  typedef std::shared_ptr<hostescalation> hostescalation_ptr;
+  typedef std::set<hostescalation>        set_hostescalation;
 }
 
 CCE_END()

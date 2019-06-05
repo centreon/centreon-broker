@@ -27,7 +27,6 @@
 #include "com/centreon/broker/time/timezone_manager.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/misc/shared_ptr.hh"
 
 #ifndef __THROW
 #  define __THROW
