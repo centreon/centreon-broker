@@ -25,6 +25,7 @@
 #include <sstream>
 #include <limits>
 #include "com/centreon/engine/common.hh"
+#include "com/centreon/engine/host.hh"
 #include "com/centreon/broker/correlation/events.hh"
 #include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/database_preparator.hh"
@@ -2576,8 +2577,8 @@ void stream::_update_hosts_and_services_of_instance(
        << "    ON h.host_id=s.host_id"
        << "  SET h.real_state=h.state,"
        << "      s.real_state=s.state,"
-       << "      h.state=" << HOST_UNREACHABLE << ","
-       << "      s.state=" << STATE_UNKNOWN
+       << "      h.state=" << com::centreon::engine::host::state_unreachable << ","
+       << "      s.state=" << com::centreon::engine::service::state_unknown
        << "  WHERE h.instance_id=" << id;
     q.run_query(ss.str(), "SQL: could not outdate instance");
   }

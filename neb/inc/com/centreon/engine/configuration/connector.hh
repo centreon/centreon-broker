@@ -20,6 +20,7 @@
 #ifndef CCE_CONFIGURATION_CONNECTOR_HH
 #  define CCE_CONFIGURATION_CONNECTOR_HH
 
+#  include <memory>
 #  include <set>
 #  include <string>
 #  include "com/centreon/engine/commands/connector.hh"
@@ -35,7 +36,7 @@ namespace                  configuration {
 
                            connector(key_type const& key = "");
                            connector(connector const& right);
-                           ~connector() throw ();
+                           ~connector() throw () override;
     connector&             operator=(connector const& right);
     bool                   operator==(
                              connector const& right) const throw ();
@@ -43,26 +44,23 @@ namespace                  configuration {
                              connector const& right) const throw ();
     bool                   operator<(
                              connector const& right) const throw ();
-    void                   check_validity() const;
+    void                   check_validity() const override;
     key_type const&        key() const throw ();
-    void                   merge(object const& obj);
-    bool                   parse(char const* key, char const* value);
+    void                   merge(object const& obj) override;
+    bool                   parse(char const* key, char const* value) override;
 
     std::string const&     connector_line() const throw ();
     std::string const&     connector_name() const throw ();
 
    private:
-    struct                 setters {
-      char const*          name;
-      bool                 (*func)(connector&, char const*);
-    };
+    typedef bool (*setter_func)(connector&, char const*);
 
     bool                   _set_connector_line(std::string const& value);
     bool                   _set_connector_name(std::string const& value);
 
     std::string            _connector_line;
     std::string            _connector_name;
-    static setters const   _setters[];
+    static std::unordered_map<std::string, setter_func> const _setters;
   };
 
   typedef std::shared_ptr<connector> connector_ptr;

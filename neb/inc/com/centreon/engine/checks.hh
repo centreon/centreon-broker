@@ -21,171 +21,91 @@
 #ifndef CCE_CHECKS_HH
 #  define CCE_CHECKS_HH
 
+#  include <cstdio>
 #  include <sys/time.h>
-#  include "com/centreon/engine/objects/contact.hh"
-#  include "com/centreon/engine/objects/host.hh"
-#  include "com/centreon/engine/objects/service.hh"
+#  include "com/centreon/engine/checkable.hh"
+#  include "com/centreon/engine/namespace.hh"
+#  include "com/centreon/engine/notifier.hh"
 
-// Service dependency values
-#  define DEPENDENCIES_OK     0
-#  define DEPENDENCIES_FAILED 1
+enum check_source {
+  service_check,
+  host_check
+};
+CCE_BEGIN()
+class check_result;
+CCE_END()
 
-// Object check types
-#  define SERVICE_CHECK       0
-#  define HOST_CHECK          1
+typedef std::list<com::centreon::engine::check_result> check_result_list;
 
 // CHECK_RESULT structure
-typedef struct                check_result_struct {
-  unsigned int                object_check_type;    // is this a service or a host check?
-  char*                       host_name;            // host name
-  char*                       service_description;  // service description
-  int                         check_type;           // was this an active or passive service check?
-  int                         check_options;
-  int                         scheduled_check;      // was this a scheduled or an on-demand check?
-  int                         reschedule_check;     // should we reschedule the next check
-  char*                       output_file;          // what file is the output stored in?
-  FILE*                       output_file_fp;
-  int                         output_file_fd;
-  double                      latency;
-  struct timeval              start_time;           // time the service check was initiated
-  struct timeval              finish_time;          // time the service check was completed
-  int                         early_timeout;        // did the service check timeout?
-  int                         exited_ok;            // did the plugin check return okay?
-  int                         return_code;          // plugin return code
-  char*                       output;               // plugin output
-  struct check_result_struct* next;
-}                             check_result;
+CCE_BEGIN()
+class check_result {
+ public:
+  check_result();
+  check_result(enum check_source object_check_type,
+               uint64_t host_id,
+               uint64_t service_id,
+               enum checkable::check_type check_type,
+               int check_options,
+               bool reschedule_check,
+               double latency,
+               struct timeval start_time,
+               struct timeval finish_time,
+               bool early_timeout,
+               bool exited_ok,
+               int return_code,
+               std::string const& output);
+  check_result(check_result const& other);
+  check_result(check_result&& other);
+  check_result& operator=(check_result const& other);
 
-#  ifdef __cplusplus
-extern "C" {
-#  endif // C++
+  enum check_source get_object_check_type() const;
+  void set_object_check_type(enum check_source object_check_type);
+  uint64_t get_host_id() const;
+  void set_host_id(uint64_t host_id);
+  uint64_t get_service_id() const;
+  void set_service_id(uint64_t service_id);
+  struct timeval get_finish_time() const;
+  void set_finish_time(struct timeval finish_time);
+  struct timeval get_start_time() const;
+  void set_start_time(struct timeval start_time);
+  int get_return_code() const;
+  void set_return_code(int return_code);
+  bool get_early_timeout() const;
+  void set_early_timeout(bool early_timeout);
+  std::string const& get_output() const;
+  void set_output(std::string const& output);
+  bool get_exited_ok() const;
+  void set_exited_ok(bool exited_ok);
+  bool get_reschedule_check() const;
+  void set_reschedule_check(bool reschedule_check);
+  enum checkable::check_type get_check_type() const;
+  void set_check_type(enum checkable::check_type check_type);
+  double get_latency() const;
+  void set_latency(double latency);
+  int get_check_options() const;
+  void set_check_options(int check_options);
 
-// Common Check Fucntions
+  static bool process_check_result_queue(std::string const& dirname);
+  static bool process_check_result_file(std::string const& fname);
+  static check_result_list results;
 
-int reap_check_results();
-
-// Service Check Functions
-
-int run_scheduled_service_check(
-      service* svc,
-      int check_options,
-      double latency);
-int run_async_service_check(
-      service* svc,
-      int check_options,
-      double latency,
-      int scheduled_check,
-      int reschedule_check,
-      int* time_is_valid,
-      time_t* preferred_time);
-int handle_async_service_check_result(
-      service* temp_service,
-      check_result* queued_check_result);
-int check_service_check_viability(
-      service* svc,
-      int check_options,
-      int* time_is_valid,
-      time_t* new_time);
-
-// Internal Command Implementations
-
-// schedules an immediate or delayed service check
-void schedule_service_check(
-       service* svc,
-       time_t check_time,
-       int options);
-// schedules an immediate or delayed host check
-void schedule_host_check(
-       host* hst,
-       time_t check_time,
-       int options);
-
-// Monitoring/Event Handler Functions
-
-// checks service dependencies
-unsigned int check_service_dependencies(
-               service* svc,
-               int dependency_type);
-// checks for orphaned services
-void check_for_orphaned_services();
-// checks the "freshness" of service check results
-void check_service_result_freshness();
-// determines if a service's check results are fresh
-int is_service_result_fresh(
-      service* temp_service,
-      time_t current_time,
-      int log_this);
-// checks host dependencie
-unsigned int check_host_dependencies(
-               host* hst,
-               int dependency_type);
-// checks for orphaned hosts
-void check_for_orphaned_hosts();
-// checks the "freshness" of host check results
-void check_host_result_freshness();
-// determines if a host's check results are fresh
-int is_host_result_fresh(
-      host* temp_host,
-      time_t current_time,
-      int log_this);
-
-// Route/Host Check Functions
-int perform_on_demand_host_check(
-      host* hst,
-      int* check_return_code,
-      int check_options,
-      int use_cached_result,
-      unsigned long check_timestamp_horizon);
-int perform_scheduled_host_check(
-      host* hst,
-      int check_options,
-      double latency);
-int perform_on_demand_host_check_3x(
-      host* hst,
-      int* check_result_code,
-      int check_options,
-      int use_cached_result,
-      unsigned long check_timestamp_horizon);
-int run_sync_host_check_3x(
-      host* hst,
-      int* check_result_code,
-      int check_options,
-      int use_cached_result,
-      unsigned long check_timestamp_horizon);
-int execute_sync_host_check_3x(host* hst);
-int run_scheduled_host_check_3x(
-      host* hst,
-      int check_options,
-      double latency);
-int run_async_host_check_3x(
-      host* hst,
-      int check_options,
-      double latency,
-      int scheduled_check,
-      int reschedule_check,
-      int* time_is_valid,
-      time_t* preferred_time);
-int handle_async_host_check_result_3x(
-      host* temp_host,
-      check_result* queued_check_result);
-int process_host_check_result_3x(
-      host* hst,
-      int new_state,
-      char* old_plugin_output,
-      int check_options,
-      int reschedule_check,
-      int use_cached_result,
-      unsigned long check_timestamp_horizon);
-int check_host_check_viability_3x(
-      host* hst,
-      int check_options,
-      int* time_is_valid,
-      time_t* new_time);
-int adjust_host_check_attempt_3x(host* hst, int is_active);
-int determine_host_reachability(host* hst);
-
-#  ifdef __cplusplus
-}
-#  endif // C++
+ private:
+  enum check_source _object_check_type;  // is this a service or a host check?
+  uint64_t _host_id;
+  uint64_t _service_id;
+  // was this an active or passive service check?
+  enum checkable::check_type _check_type;
+  int _check_options;
+  bool _reschedule_check;  // should we reschedule the next check
+  double _latency;
+  struct timeval _start_time;   // time the service check was initiated
+  struct timeval _finish_time;  // time the service check was completed
+  bool _early_timeout;          // did the service check timeout?
+  bool _exited_ok;              // did the plugin check return okay?
+  int _return_code;             // plugin return code
+  std::string _output;          // plugin output
+};
+CCE_END()
 
 #endif // !CCE_CHECKS_HH

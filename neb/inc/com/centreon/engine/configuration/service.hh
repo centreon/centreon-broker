@@ -21,12 +21,13 @@
 #  define CCE_CONFIGURATION_SERVICE_HH
 
 #  include <list>
+#  include <memory>
 #  include <set>
 #  include <utility>
 #  include "com/centreon/engine/common.hh"
 #  include "com/centreon/engine/configuration/group.hh"
 #  include "com/centreon/engine/configuration/object.hh"
-#  include "com/centreon/engine/objects/customvariable.hh"
+#  include "com/centreon/engine/customvariable.hh"
 #  include "com/centreon/engine/opt.hh"
 #  include "com/centreon/engine/namespace.hh"
 
@@ -46,12 +47,12 @@ namespace                  configuration {
       flapping = (1 << 4),
       downtime = (1 << 5)
     };
-    typedef                std::pair<unsigned int, unsigned int>
+    typedef                std::pair<uint64_t, uint64_t>
                            key_type;
 
                            service();
                            service(service const& other);
-                           ~service() throw ();
+                           ~service() throw () override;
     service&               operator=(service const& other);
     bool                   operator==(
                              service const& other) const throw ();
@@ -59,11 +60,11 @@ namespace                  configuration {
                              service const& other) const throw ();
     bool                   operator<(
                              service const& other) const throw ();
-    void                   check_validity() const;
+    void                   check_validity() const override;
     key_type               key() const;
     void                   merge(configuration::serviceextinfo const& obj);
-    void                   merge(object const& obj);
-    bool                   parse(char const* key, char const* value);
+    void                   merge(object const& obj) override;
+    bool                   parse(char const* key, char const* value) override;
 
     std::string const&     action_url() const throw ();
     bool                   checks_active() const throw ();
@@ -79,7 +80,8 @@ namespace                  configuration {
     set_string&            contacts() throw ();
     set_string const&      contacts() const throw ();
     bool                   contacts_defined() const throw ();
-    map_customvar const&   customvariables() const throw ();
+    map_customvar const& customvariables() const throw ();
+    map_customvar& customvariables() throw ();
     std::string const&     display_name() const throw ();
     std::string const&     event_handler() const throw ();
     bool                   event_handler_enabled() const throw ();
@@ -92,8 +94,8 @@ namespace                  configuration {
     set_string const&      hostgroups() const throw ();
     set_string&            hosts() throw ();
     set_string const&      hosts() const throw ();
-    unsigned int           host_id() const throw ();
-    void                   host_id(unsigned int id);
+    uint64_t               host_id() const throw ();
+    void                   set_host_id(uint64_t id);
     std::string const&     icon_image() const throw ();
     std::string const&     icon_image_alt() const throw ();
     unsigned int           initial_state() const throw ();
@@ -122,7 +124,8 @@ namespace                  configuration {
     set_string const&      servicegroups() const throw ();
     std::string&           service_description() throw ();
     std::string const&     service_description() const throw ();
-    unsigned int           service_id() const throw();
+    uint64_t               service_id() const throw();
+    bool                   set_service_id(uint64_t value);
     unsigned short         stalking_options() const throw ();
     void                   timezone(std::string const& time_zone);
     std::string const&     timezone() const throw ();
@@ -131,10 +134,7 @@ namespace                  configuration {
     bool                   set_acknowledgement_timeout(int value);
 
    private:
-    struct                 setters {
-      char const*          name;
-      bool                 (*func)(service&, char const*);
-    };
+    typedef bool (*setter_func)(service&, char const*);
 
     bool                   _set_action_url(std::string const& value);
     bool                   _set_check_command(std::string const& value);
@@ -178,7 +178,6 @@ namespace                  configuration {
     bool                   _set_recovery_notification_delay(unsigned int value);
     bool                   _set_servicegroups(std::string const& value);
     bool                   _set_service_description(std::string const& value);
-    bool                   _set_service_id(unsigned int value);
     bool                   _set_stalking_options(std::string const& value);
     bool                   _set_timezone(std::string const& value);
 
@@ -224,8 +223,9 @@ namespace                  configuration {
     opt<unsigned int>      _recovery_notification_delay;
     group<set_string>      _servicegroups;
     std::string            _service_description;
-    unsigned int           _service_id;
-    static setters const   _setters[];
+    uint64_t               _host_id;
+    uint64_t               _service_id;
+    static std::unordered_map<std::string, setter_func> const _setters;
     opt<unsigned short>    _stalking_options;
     opt<std::string>       _timezone;
  };
@@ -233,7 +233,7 @@ namespace                  configuration {
   typedef std::shared_ptr<service> service_ptr;
   typedef std::list<service_ptr>   list_service;
   typedef std::set<service>        set_service;
-  typedef umap<std::pair<std::string, std::string>, service_ptr> map_service;
+  typedef std::unordered_map<std::pair<std::string, std::string>, service_ptr> map_service;
 }
 
 CCE_END()

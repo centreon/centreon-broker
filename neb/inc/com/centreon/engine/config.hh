@@ -1,6 +1,6 @@
 /*
 ** Copyright 2002-2006 Ethan Galstad
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2019 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -22,29 +22,15 @@
 #  define CCE_CONFIG_HH
 
 #  include "com/centreon/engine/objects.hh"
+#  include "com/centreon/engine/servicegroup.hh"
+#  include "com/centreon/engine/timeperiod.hh"
 
 #  ifdef __cplusplus
 extern "C" {
 #  endif // C++
 
-// Try and verify the configuration data.
-int pre_flight_check();
-// Verify object relationships and settings.
-int pre_flight_object_check(int* w, int* e);
 // Detects circular dependencies and paths.
 int pre_flight_circular_check(int* w, int* e);
-
-int check_service(service* svc, int* w, int* e);
-int check_host(host* hst, int* w, int* e);
-int check_contact(contact* cntct, int* w, int* e);
-int check_servicegroup(servicegroup* sg, int* w, int* e);
-int check_hostgroup(hostgroup* hg, int* w, int* e);
-int check_contactgroup(contactgroup* cg, int* w, int* e);
-int check_servicedependency(servicedependency* sd, int* w, int* e);
-int check_hostdependency(hostdependency* hd, int* w, int* e);
-int check_serviceescalation(serviceescalation* se, int* w, int* e);
-int check_hostescalation(hostescalation* he, int* w, int* e);
-int check_timeperiod(timeperiod* tp, int* w, int* e);
 
 #  ifdef __cplusplus
 }

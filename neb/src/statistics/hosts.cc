@@ -53,7 +53,7 @@ hosts::~hosts() {}
  */
 hosts& hosts::operator=(hosts const& right) {
   plugin::operator=(right);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -67,24 +67,27 @@ void hosts::run(
 	      std::string& perfdata) {
   // Count hosts up / down / unreachable.
   unsigned int total[3] = { 0, 0, 0 };
-  for (host* h(host_list); h; h = h->next)
-    ++total[h->current_state];
+  for (host_map::const_iterator
+         it{com::centreon::engine::host::hosts.begin()},
+         end{com::centreon::engine::host::hosts.end()};
+       it != end;
+       ++it)
+    ++total[it->second->get_current_state()];
 
-  unsigned int not_up(total[HOST_DOWN] + total[HOST_UNREACHABLE]);
+  unsigned int not_up{total[com::centreon::engine::host::state_down] +
+                      total[com::centreon::engine::host::state_unreachable]};
 
   // Output.
   std::ostringstream oss;
   oss << "Engine " << config::applier::state::instance().poller_name()
-      << " has " << total[HOST_UP] << " hosts on status UP and "
+      << " has " << total[com::centreon::engine::host::state_up] << " hosts on status UP and "
       << not_up << " hosts on non-UP status";
   output = oss.str();
 
   // Perfdata.
   oss.str("");
-  oss << "up=" << total[HOST_UP]
-      << " down=" << total[HOST_DOWN]
-      << " unreachable=" << total[HOST_UNREACHABLE];
+  oss << "up=" << total[com::centreon::engine::host::state_up]
+      << " down=" << total[com::centreon::engine::host::state_down]
+      << " unreachable=" << total[com::centreon::engine::host::state_unreachable];
   perfdata = oss.str();
-
-  return ;
 }

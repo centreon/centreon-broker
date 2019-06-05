@@ -50,12 +50,6 @@ using namespace com::centreon::broker;
 // Specify the event broker API version.
 NEB_API_VERSION(CURRENT_NEB_API_VERSION)
 
-// Centreon Engine/Nagios function.
-extern "C" {
-  extern timed_event* event_list_high;
-  extern timed_event* event_list_high_tail;
-}
-
 /**************************************
 *                                     *
 *           Static Objects            *
@@ -121,22 +115,24 @@ extern "C" {
 
       // Deregister Qt application object.
       if (gl_initialized_qt) {
-        timed_event* te(NULL);
-        for (timed_event* current = event_list_high;
-             current != event_list_high_tail;
-             current = current->next) {
+        com::centreon::engine::timed_event* te(NULL);
+        for (timed_event_list::iterator
+               it{com::centreon::engine::timed_event::event_list_high.begin()},
+               end{com::centreon::engine::timed_event::event_list_high.end()};
+             it != end;
+	     ++it) {
           union {
             void (* code)(void*);
             void *  data;
           } val;
           val.code = &process_qcore;
-          if (current->event_data == val.data) {
-            te = current;
+          if ((*it)->event_data == val.data) {
+            te = (*it);
             break ;
           }
         }
         if (te)
-          remove_event(te, &event_list_high, &event_list_high_tail);
+          remove_event(te, com::centreon::engine::timed_event::high);
         delete QCoreApplication::instance();
       }
     }

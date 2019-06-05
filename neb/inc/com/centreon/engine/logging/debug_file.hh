@@ -37,10 +37,7 @@ namespace        logging {
                  debug_file(
                    std::string const& path,
                    long long max_size = 0);
-                 ~debug_file() throw ();
-
-  protected:
-    virtual void _max_size_reached();
+                 ~debug_file() throw () override;
 
   private:
                  debug_file(debug_file const& other);

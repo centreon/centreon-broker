@@ -20,6 +20,7 @@
 #ifndef CCE_CONFIGURATION_COMMAND_HH
 #  define CCE_CONFIGURATION_COMMAND_HH
 
+#  include <memory>
 #  include <set>
 #  include <string>
 #  include "com/centreon/engine/configuration/object.hh"
@@ -34,7 +35,7 @@ namespace                  configuration {
 
                            command(key_type const& key = "");
                            command(command const& right);
-                           ~command() throw ();
+                           ~command() throw () override;
     command&               operator=(command const& right);
     bool                   operator==(
                              command const& right) const throw ();
@@ -42,20 +43,18 @@ namespace                  configuration {
                              command const& right) const throw ();
     bool                   operator<(
                              command const& right) const throw ();
-    void                   check_validity() const;
+    void                   check_validity() const override;
     key_type const&        key() const throw ();
-    void                   merge(object const& obj);
-    bool                   parse(char const* key, char const* value);
+    void                   merge(object const& obj) override;
+    bool                   parse(char const* key, char const* value) override;
 
     std::string const&     command_line() const throw ();
     std::string const&     command_name() const throw ();
     std::string const&     connector() const throw ();
 
    private:
-    struct                 setters {
-      char const*          name;
-      bool                 (*func)(command&, char const*);
-    };
+    typedef bool (*setter_func)(command&, char const*);
+
     bool                   _set_command_line(std::string const& value);
     bool                   _set_command_name(std::string const& value);
     bool                   _set_connector(std::string const& value);
@@ -63,7 +62,7 @@ namespace                  configuration {
     std::string            _command_line;
     std::string            _command_name;
     std::string            _connector;
-    static setters const   _setters[];
+    static std::unordered_map<std::string, setter_func> const _setters;
   };
 
   typedef std::shared_ptr<command> command_ptr;

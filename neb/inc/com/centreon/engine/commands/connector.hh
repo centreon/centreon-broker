@@ -20,6 +20,7 @@
 #ifndef CCE_COMMANDS_CONNECTOR_HH
 #  define CCE_COMMANDS_CONNECTOR_HH
 
+#  include <memory>
 #  include <string>
 #  include "com/centreon/concurrency/condvar.hh"
 #  include "com/centreon/concurrency/mutex.hh"
@@ -28,7 +29,15 @@
 #  include "com/centreon/engine/namespace.hh"
 #  include "com/centreon/process.hh"
 #  include "com/centreon/process_listener.hh"
-#  include "com/centreon/unordered_hash.hh"
+
+CCE_BEGIN()
+namespace commands {
+  class connector;
+}
+CCE_END()
+
+typedef std::unordered_map<std::string,
+  std::shared_ptr<com::centreon::engine::commands::connector>> connector_map;
 
 CCE_BEGIN()
 
@@ -49,31 +58,33 @@ namespace                commands {
                            std::string const& connector_line,
                            command_listener* listener = NULL);
                          connector(connector const& right);
-                         ~connector() throw();
+                         ~connector() throw() override;
     connector&           operator=(connector const& right);
-    commands::command*   clone() const;
+    commands::command*   clone() const override;
     unsigned long        run(
                            std::string const& processed_cmd,
                            nagios_macros& macros,
-                           unsigned int timeout);
+                           unsigned int timeout) override;
     void                 run(
                            std::string const& processed_cmd,
                            nagios_macros& macros,
                            unsigned int timeout,
-                           result& res);
+                           result& res) override;
     void                 set_command_line(
-                           std::string const& command_line);
+                           std::string const& command_line) override;
+
+    static connector_map connectors;
 
   private:
     class                restart : public concurrency::thread {
     public:
                          restart(connector* c);
-                         ~restart() throw ();
+                         ~restart() throw () override;
 
     private:
                          restart(restart const& right);
       restart&           operator=(restart const& right);
-      void               _run();
+      void               _run() override;
 
       connector*         _c;
     };
@@ -85,9 +96,9 @@ namespace                commands {
       bool               waiting_result;
     };
 
-    void                 data_is_available(process& p) throw ();
-    void                 data_is_available_err(process& p) throw ();
-    void                 finished(process& p) throw ();
+    void                 data_is_available(process& p) throw () override;
+    void                 data_is_available_err(process& p) throw () override;
+    void                 finished(process& p) throw () override;
     void                 _connector_close();
     void                 _connector_start();
     void                 _internal_copy(connector const& right);
@@ -98,7 +109,7 @@ namespace                commands {
     void                 _recv_query_version(char const* data);
     void                 _send_query_execute(
                            std::string const& cmdline,
-                           unsigned int command_id,
+                           uint64_t command_id,
                            timestamp const& start,
                            unsigned int timeout);
     void                 _send_query_quit();
@@ -107,13 +118,13 @@ namespace                commands {
     concurrency::condvar _cv_query;
     std::string          _data_available;
     bool                 _is_running;
-    umap<unsigned long, std::shared_ptr<query_info> >
+    std::unordered_map<unsigned long, std::shared_ptr<query_info> >
                          _queries;
     bool                 _query_quit_ok;
     bool                 _query_version_ok;
     concurrency::mutex   _lock;
     process              _process;
-    umap<unsigned long, result>
+    std::unordered_map<unsigned long, result>
                          _results;
     restart              _restart;
     bool                 _try_to_restart;

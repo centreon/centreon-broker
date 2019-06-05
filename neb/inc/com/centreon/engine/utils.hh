@@ -23,18 +23,8 @@
 
 #  include <sys/time.h>
 #  include "com/centreon/engine/checks.hh"
+#  include "com/centreon/engine/daterange.hh"
 #  include "com/centreon/engine/macros/defines.hh"
-#  include "com/centreon/engine/objects/command.hh"
-#  include "com/centreon/engine/objects/daterange.hh"
-#  include "com/centreon/engine/objects/timeperiod.hh"
-
-// DBUF structure - dynamic string storage
-typedef struct  dbuf_struct {
-  char*         buf;
-  unsigned long used_size;
-  unsigned long allocated_size;
-  unsigned long chunk_size;
-}               dbuf;
 
 #  ifdef __cplusplus
 extern "C" {
@@ -45,20 +35,12 @@ extern "C" {
 // thread-safe version of the above
 int my_system_r(
       nagios_macros* mac,
-      char* cmd,
+      std::string const& cmd,
       int timeout,
       int* early_timeout,
       double* exectime,
-      char** output,
+      std::string & output,
       unsigned int max_output_length);
-// executes a command via popen(), but also protects against timeouts
-int my_system(
-      char* cmd,
-      int timeout,
-      int* early_timeout,
-      double* exectime,
-      char** output,
-      int max_output_length);
 // same like unix ctime without the '\n' at the end of the string.
 char const* my_ctime(time_t const* t);
 
@@ -67,49 +49,18 @@ char const* my_ctime(time_t const* t);
 // thread-safe version of get_raw_command_line_r()
 int get_raw_command_line_r(
       nagios_macros* mac,
-      command* cmd_ptr,
+      com::centreon::engine::commands::command* cmd_ptr,
       char const* cmd,
-      char** full_command,
+      std::string& full_command,
       int macro_options);
-// given a raw command line, determine the actual command to run Manipulates global_macros.argv and is thus not threadsafe
-int get_raw_command_line(
-      command* cmd_ptr,
-      char* cmd,
-      char** full_command,
-      int macro_options);
-// sets/clears and environment variable
-int set_environment_var(
-      char const* name,
-      char const* value,
-      int set);
-// determine the next time to schedule a log rotation
-time_t get_next_log_rotation_time();
 // trap signals
 void setup_sighandler();
-// reset signals to default action
-void reset_sighandler();
 // handles signals
 void sighandler(int sig);
-// handles timeouts when executing commands via my_system()
-void my_system_sighandler(int sig);
-char* get_next_string_from_buf(
-        char* buf,
-        int* start_index,
-        int bufsize);
 // tests whether or not an object name (host, service, etc.) contains illegal characters
-int contains_illegal_object_chars(char* name);
-char* escape_newlines(char* rawbuf);
+bool contains_illegal_object_chars(char const* name);
 // compares two strings for equality
 int compare_strings(char* val1a, char* val2a);
-// renames a file - works across filesystems
-int my_rename(char const* source, char const* dest);
-// copies a named source to an already opened destination file
-int my_fdcopy(char const* source, char const* dest, int dest_fd);
-// copies a file - works across filesystems
-int my_fcopy(char const* source, char const* dest);
-int dbuf_init(dbuf* db, int chunk_size);
-int dbuf_free(dbuf* db);
-int dbuf_strcat(dbuf* db, char const* buf);
 bool set_cloexec(int fd);
 
 
@@ -119,18 +70,14 @@ bool set_cloexec(int fd);
 void cleanup();
 // free memory allocated to all linked lists in memory
 void free_memory(nagios_macros* mac);
-// frees all memory allocated to the notification list
-void free_notification_list();
 
 // frees memory associated with a host/service check result
-int free_check_result(check_result* info);
-int parse_check_output(
-      char* buf,
-      char** short_output,
-      char** long_output,
-      char** perf_data,
-      int escape_newlines_please,
-      int newlines_are_escaped);
+void parse_check_output(std::string const& buffer,
+                       std::string& short_output,
+                       std::string& long_output,
+                       std::string& perf_data,
+                       bool escape_newlines_please,
+                       bool newlines_are_escaped);
 
 #  ifdef __cplusplus
 }

@@ -358,6 +358,9 @@ namespace               configuration {
                         services_find(service::key_type const& k) const;
     set_service::iterator
                         services_find(service::key_type const& k);
+    set_service::const_iterator
+                        services_find(std::string const& host_name,
+                                      std::string const& service_desc) const;
     unsigned int        service_check_timeout() const throw ();
     void                service_check_timeout(unsigned int value);
     unsigned int        service_freshness_check_interval() const throw ();
@@ -400,9 +403,9 @@ namespace               configuration {
     void                time_change_threshold(unsigned int value);
     bool                translate_passive_host_checks() const throw ();
     void                translate_passive_host_checks(bool value);
-    umap<std::string, std::string> const&
+    std::unordered_map<std::string, std::string> const&
                         user() const throw ();
-    void                user(umap<std::string, std::string> const& value);
+    void                user(std::unordered_map<std::string, std::string> const& value);
     void                user(std::string const& key, std::string const& value);
     void                user(unsigned int key, std::string const& value);
     bool                use_aggressive_host_checking() const throw ();
@@ -427,10 +430,7 @@ namespace               configuration {
     void                use_true_regexp_matching(bool value);
 
   private:
-    struct              setters {
-      char const*       name;
-      bool              (*func)(state&, char const*);
-    };
+    typedef bool (*setter_func)(state&, char const*);
 
     void                _set_aggregate_status_updates(std::string const& value);
     void                _set_auth_file(std::string const& value);
@@ -627,8 +627,7 @@ namespace               configuration {
     std::string         _service_perfdata_file_processing_command;
     unsigned int        _service_perfdata_file_processing_interval;
     std::string         _service_perfdata_file_template;
-    static setters const
-                        _setters[];
+    static std::unordered_map<std::string, setter_func> const _setters;
     float               _sleep_time;
     bool                _soft_state_dependencies;
     std::string         _state_retention_file;
@@ -637,7 +636,7 @@ namespace               configuration {
     set_timeperiod      _timeperiods;
     unsigned int        _time_change_threshold;
     bool                _translate_passive_host_checks;
-    umap<std::string, std::string>
+    std::unordered_map<std::string, std::string>
                         _users;
     bool                _use_aggressive_host_checking;
     bool                _use_check_result_path;

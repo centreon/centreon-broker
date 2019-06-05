@@ -25,7 +25,7 @@
 #  include <vector>
 #  include "com/centreon/engine/configuration/group.hh"
 #  include "com/centreon/engine/configuration/object.hh"
-#  include "com/centreon/engine/objects/customvariable.hh"
+#  include "com/centreon/engine/customvariable.hh"
 #  include "com/centreon/engine/opt.hh"
 #  include "com/centreon/engine/namespace.hh"
 
@@ -40,7 +40,7 @@ namespace                  configuration {
 
                            contact(key_type const& key = "");
                            contact(contact const& other);
-                           ~contact() throw ();
+                           ~contact() throw () override;
     contact&               operator=(contact const& other);
     bool                   operator==(
                              contact const& other) const throw ();
@@ -48,10 +48,10 @@ namespace                  configuration {
                              contact const& other) const throw ();
     bool                   operator<(
                              contact const& other) const throw ();
-    void                   check_validity() const;
+    void                   check_validity() const override;
     key_type const&        key() const throw ();
-    void                   merge(object const& obj);
-    bool                   parse(char const* key, char const* value);
+    void                   merge(object const& obj) override;
+    bool                   parse(char const* key, char const* value) override;
 
     tab_string const&      address() const throw ();
     std::string const&     alias() const throw ();
@@ -59,7 +59,8 @@ namespace                  configuration {
     set_string&            contactgroups() throw ();
     set_string const&      contactgroups() const throw ();
     std::string const&     contact_name() const throw ();
-    map_customvar const&   customvariables() const throw ();
+    map_customvar const& customvariables() const throw ();
+    map_customvar& customvariables() throw ();
     std::string const&     email() const throw ();
     bool                   host_notifications_enabled() const throw ();
     list_string const&     host_notification_commands() const throw ();
@@ -75,10 +76,7 @@ namespace                  configuration {
     std::string const&     timezone() const throw ();
 
    private:
-    struct                 setters {
-      char const*          name;
-      bool                 (*func)(contact&, char const*);
-    };
+    typedef bool (*setter_func)(contact&, char const*);
 
     bool                   _set_address(
                              std::string const& key,
@@ -120,7 +118,7 @@ namespace                  configuration {
     std::string            _service_notification_period;
     opt<bool>              _service_notifications_enabled;
     opt<std::string>       _timezone;
-    static setters const   _setters[];
+    static std::unordered_map<std::string, setter_func> const _setters;
   };
 
   typedef std::shared_ptr<contact> contact_ptr;

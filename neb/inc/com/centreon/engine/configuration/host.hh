@@ -20,6 +20,7 @@
 #ifndef CCE_CONFIGURATION_HOST_HH
 #  define CCE_CONFIGURATION_HOST_HH
 
+#  include <memory>
 #  include <list>
 #  include <set>
 #  include "com/centreon/engine/common.hh"
@@ -28,7 +29,7 @@
 #  include "com/centreon/engine/configuration/point_2d.hh"
 #  include "com/centreon/engine/configuration/point_3d.hh"
 #  include "com/centreon/engine/namespace.hh"
-#  include "com/centreon/engine/objects/customvariable.hh"
+#  include "com/centreon/engine/customvariable.hh"
 #  include "com/centreon/engine/opt.hh"
 
 CCE_BEGIN()
@@ -46,20 +47,20 @@ namespace                  configuration {
       flapping = (1 << 3),
       downtime = (1 << 4)
     };
-    typedef unsigned int   key_type;
+    typedef uint64_t       key_type;
 
                            host(key_type const& key = 0);
                            host(host const& other);
-                           ~host() throw ();
+                           ~host() throw () override;
     host&                  operator=(host const& other);
     bool                   operator==(host const& other) const throw ();
     bool                   operator!=(host const& other) const throw ();
     bool                   operator<(host const& other) const throw ();
-    void                   check_validity() const;
-    key_type const&        key() const throw ();
+    void                   check_validity() const override;
+    key_type               key() const throw ();
     void                   merge(configuration::hostextinfo const& obj);
-    void                   merge(object const& obj);
-    bool                   parse(char const* key, char const* value);
+    void                   merge(object const& obj) override;
+    bool                   parse(char const* key, char const* value) override;
 
     std::string const&     action_url() const throw ();
     std::string const&     address() const throw ();
@@ -75,6 +76,7 @@ namespace                  configuration {
     point_2d const&        coords_2d() const throw ();
     point_3d const&        coords_3d() const throw ();
     map_customvar const&   customvariables() const throw ();
+    map_customvar& customvariables() throw ();
     std::string const&     display_name() const throw ();
     std::string const&     event_handler() const throw ();
     bool                   event_handler_enabled() const throw ();
@@ -87,7 +89,7 @@ namespace                  configuration {
     unsigned int           high_flap_threshold() const throw ();
     set_string&            hostgroups() throw ();
     set_string const&      hostgroups() const throw ();
-    unsigned int           host_id() const throw();
+    uint64_t               host_id() const throw();
     std::string const&     host_name() const throw ();
     std::string const&     icon_image() const throw ();
     std::string const&     icon_image_alt() const throw ();
@@ -116,10 +118,7 @@ namespace                  configuration {
     bool                   set_acknowledgement_timeout(int value);
 
    private:
-    struct                 setters {
-      char const*          name;
-      bool                 (*func)(host&, char const*);
-    };
+    typedef bool (*setter_func)(host&, char const*);
 
     bool                   _set_action_url(std::string const& value);
     bool                   _set_address(std::string const& value);
@@ -144,7 +143,7 @@ namespace                  configuration {
     bool                   _set_flap_detection_options(std::string const& value);
     bool                   _set_freshness_threshold(unsigned int value);
     bool                   _set_high_flap_threshold(unsigned int value);
-    bool                   _set_host_id(unsigned int value);
+    bool                   _set_host_id(uint64_t value);
     bool                   _set_host_name(std::string const& value);
     bool                   _set_hostgroups(std::string const& value);
     bool                   _set_icon_image(std::string const& value);
@@ -194,7 +193,7 @@ namespace                  configuration {
     opt<unsigned int>      _freshness_threshold;
     opt<unsigned int>      _high_flap_threshold;
     group<set_string>      _hostgroups;
-    unsigned int           _host_id;
+    uint64_t               _host_id;
     std::string            _host_name;
     std::string            _icon_image;
     std::string            _icon_image_alt;
@@ -214,17 +213,16 @@ namespace                  configuration {
     opt<bool>              _retain_status_information;
     opt<unsigned int>      _retry_interval;
     opt<unsigned int>      _recovery_notification_delay;
-    static setters const   _setters[];
+    static std::unordered_map<std::string, setter_func> const _setters;
     opt<unsigned int>      _stalking_options;
     std::string            _statusmap_image;
     opt<std::string>       _timezone;
     std::string            _vrml_image;
   };
 
-  typedef std::shared_ptr<host>
-                            host_ptr;
-  typedef std::list<host>   list_host;
-  typedef std::set<host>    set_host;
+  typedef std::shared_ptr<host> host_ptr;
+  typedef std::list<host>       list_host;
+  typedef std::set<host>        set_host;
 }
 
 CCE_END()
