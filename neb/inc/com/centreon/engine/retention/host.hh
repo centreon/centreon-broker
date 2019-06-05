@@ -21,10 +21,12 @@
 #  define CCE_RETENTION_HOST_HH
 
 #  include <list>
+#  include <map>
 #  include <string>
+#  include <unordered_map>
 #  include <vector>
+#  include "com/centreon/engine/customvariable.hh"
 #  include "com/centreon/engine/namespace.hh"
-#  include "com/centreon/engine/objects/customvariable.hh"
 #  include "com/centreon/engine/opt.hh"
 #  include "com/centreon/engine/retention/object.hh"
 
@@ -35,11 +37,11 @@ namespace                         retention {
   public:
                                   host();
                                   host(host const& right);
-                                  ~host() throw ();
+                                  ~host() throw () override;
     host&                         operator=(host const& right);
     bool                          operator==(host const& right) const throw ();
     bool                          operator!=(host const& right) const throw ();
-    bool                          set(char const* key, char const* value);
+    bool                          set(char const* key, char const* value) override;
 
     opt<int> const&               acknowledgement_type() const throw ();
     opt<bool> const&              active_checks_enabled() const throw ();
@@ -56,12 +58,13 @@ namespace                         retention {
     opt<int> const&               current_notification_number() const throw ();
     opt<unsigned long> const&     current_problem_id() const throw ();
     opt<int> const&               current_state() const throw ();
-    map_customvar const&          customvariables() const throw ();
+    std::unordered_map<std::string, engine::customvariable> const&
+                                  customvariables() const throw ();
     opt<std::string> const&       event_handler() const throw ();
     opt<bool> const&              event_handler_enabled() const throw ();
     opt<bool> const&              flap_detection_enabled() const throw ();
     opt<bool> const&              has_been_checked() const throw ();
-    unsigned long                 host_id() const throw ();
+    uint64_t                      host_id() const throw ();
     std::string const&            host_name() const throw ();
     opt<bool> const&              is_flapping() const throw ();
     opt<time_t> const&            last_acknowledgement() const throw ();
@@ -123,7 +126,7 @@ namespace                         retention {
     bool                          _set_failure_prediction_enabled(bool value);
     bool                          _set_flap_detection_enabled(bool value);
     bool                          _set_has_been_checked(bool value);
-    bool                          _set_host_id(unsigned long value);
+    bool                          _set_host_id(uint64_t value);
     bool                          _set_host_name(std::string const& value);
     bool                          _set_is_flapping(bool value);
     bool                          _set_last_acknowledgement(time_t value);
@@ -179,7 +182,7 @@ namespace                         retention {
     opt<bool>                     _event_handler_enabled;
     opt<bool>                     _flap_detection_enabled;
     opt<bool>                     _has_been_checked;
-    unsigned long                 _host_id;
+    uint64_t                      _host_id;
     std::string                   _host_name;
     opt<bool>                     _is_flapping;
     opt<time_t>                   _last_acknowledgement;
@@ -217,8 +220,8 @@ namespace                         retention {
     opt<int>                      _state_type;
   };
 
-  typedef shared_ptr<host>    host_ptr;
-  typedef std::list<host_ptr> list_host;
+  typedef std::shared_ptr<host> host_ptr;
+  typedef std::list<host_ptr>   list_host;
 }
 
 CCE_END()

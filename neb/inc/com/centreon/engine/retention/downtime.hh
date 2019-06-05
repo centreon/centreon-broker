@@ -37,11 +37,11 @@ namespace                retention {
 
                          downtime(type_id type);
                          downtime(downtime const& right);
-                         ~downtime() throw ();
+                         ~downtime() throw () override;
     downtime&            operator=(downtime const& right);
     bool                 operator==(downtime const& right) const throw ();
     bool                 operator!=(downtime const& right) const throw ();
-    bool                 set(char const* key, char const* value);
+    bool                 set(char const* key, char const* value) override;
 
     std::string          author() const throw ();
     std::string          comment_data() const throw ();
@@ -89,8 +89,8 @@ namespace                retention {
     unsigned long        _triggered_by;
   };
 
-  typedef shared_ptr<downtime> downtime_ptr;
-  typedef std::list<downtime_ptr> list_downtime;
+  typedef std::shared_ptr<downtime> downtime_ptr;
+  typedef std::list<downtime_ptr>   list_downtime;
 }
 
 CCE_END()

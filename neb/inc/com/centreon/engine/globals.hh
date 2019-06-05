@@ -1,7 +1,7 @@
 /*
-** Copyright 1999-2009      Ethan Galstad
-** Copyright 2009-2010      Nagios Core Development Team and Community Contributors
-** Copyright 2011-2013,2017 Centreon
+** Copyright 1999-2009 Ethan Galstad
+** Copyright 2009-2010 Nagios Core Development Team and Community Contributors
+** Copyright 2011-2019 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -34,8 +34,8 @@
 #  include "com/centreon/engine/nebmods.hh"
 #  include "com/centreon/engine/notifications.hh"
 #  include "com/centreon/engine/objects.hh"
+#  include "com/centreon/engine/downtimes/downtime.hh"
 #  include "com/centreon/engine/utils.hh"
-#  include "skiplist.h"
 
 #  ifdef __cplusplus
 extern "C" {
@@ -51,11 +51,15 @@ extern char*                     check_result_path;
 extern com::centreon::engine::configuration::state* config;
 extern char*                     config_file;
 
-extern command*                  global_host_event_handler_ptr;
-extern command*                  global_service_event_handler_ptr;
+extern com::centreon::engine::commands::command*
+                                 global_host_event_handler_ptr;
+extern com::centreon::engine::commands::command*
+                                 global_service_event_handler_ptr;
 
-extern command*                  ocsp_command_ptr;
-extern command*                  ochp_command_ptr;
+extern com::centreon::engine::commands::command*
+                                 ocsp_command_ptr;
+extern com::centreon::engine::commands::command*
+                                 ochp_command_ptr;
 
 extern unsigned long             logging_options;
 extern unsigned long             syslog_options;
@@ -69,7 +73,6 @@ extern time_t                    last_log_rotation;
 extern unsigned long             modified_host_process_attributes;
 extern unsigned long             modified_service_process_attributes;
 
-extern unsigned long             next_comment_id;
 extern unsigned long             next_downtime_id;
 extern unsigned long             next_event_id;
 extern unsigned long             next_problem_id;
@@ -98,37 +101,10 @@ extern time_t                    event_start;
 
 extern int                       embedded_perl_initialized;
 
-extern host*                     host_list;
-extern host*                     host_list_tail;
 extern std::map<std::string, host_other_properties> host_other_props;
-extern service*                  service_list;
-extern service*                  service_list_tail;
 extern std::map<std::pair<std::string, std::string>, service_other_properties> service_other_props;
-extern contact*                  contact_list;
-extern contact*                  contact_list_tail;
-extern std::map<std::string, contact_other_properties> contact_other_props;
-extern contactgroup*             contactgroup_list;
-extern contactgroup*             contactgroup_list_tail;
-extern hostgroup*                hostgroup_list;
-extern hostgroup*                hostgroup_list_tail;
-extern std::map<std::string, hostgroup_other_properties> hostgroup_other_props;
-extern servicegroup*             servicegroup_list;
-extern servicegroup*             servicegroup_list_tail;
-extern std::map<std::string, servicegroup_other_properties> servicegroup_other_props;
-extern command*                  command_list;
-extern command*                  command_list_tail;
-extern timeperiod*               timeperiod_list;
-extern timeperiod*               timeperiod_list_tail;
-extern serviceescalation*        serviceescalation_list;
-extern serviceescalation*        serviceescalation_list_tail;
-extern servicedependency*        servicedependency_list;
-extern servicedependency*        servicedependency_list_tail;
-extern hostdependency*           hostdependency_list;
-extern hostdependency*           hostdependency_list_tail;
-extern hostescalation*           hostescalation_list;
-extern hostescalation*           hostescalation_list_tail;
-
-extern skiplist*                 object_skiplists[];
+extern com::centreon::engine::serviceescalation*        serviceescalation_list;
+extern com::centreon::engine::serviceescalation*        serviceescalation_list_tail;
 
 extern int                       __nagios_object_structure_version;
 
@@ -150,14 +126,11 @@ extern timed_event*              event_list_high;
 extern timed_event*              event_list_high_tail;
 extern sched_info                scheduling_info;
 
-extern comment*                  comment_list;
-extern int                       defer_comment_sorting;
-
 extern char*                     macro_x_names[];
 extern char*                     macro_user[];
 
-extern scheduled_downtime*       scheduled_downtime_list;
-extern int                       defer_downtime_sorting;
+extern std::multimap<time_t, std::shared_ptr<com::centreon::engine::downtimes::downtime>>
+                                 scheduled_downtime_list;
 
 extern FILE*                     debug_file_fp;
 
@@ -170,7 +143,6 @@ extern unsigned int debug_level;
 extern unsigned int debug_verbosity;
 extern char* debug_file;
 extern unsigned long max_debug_file_size;
-extern char* command_file;
 extern char* global_host_event_handler;
 extern char* global_service_event_handler;
 extern char* ocsp_command;

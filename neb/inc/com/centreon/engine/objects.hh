@@ -1,6 +1,6 @@
 /*
 ** Copyright 1999-2008 Ethan Galstad
-** Copyright 2011-2013 Merethis
+** Copyright 2011-2019 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,33 +20,16 @@
 
 #ifndef CCE_OBJECTS_HH
 #  define CCE_OBJECTS_HH
-
-#  include <time.h>
-#  include "com/centreon/engine/common.hh"
-#  include "com/centreon/engine/objects/command.hh"
-#  include "com/centreon/engine/objects/commandsmember.hh"
-#  include "com/centreon/engine/objects/comment.hh"
-#  include "com/centreon/engine/objects/contact.hh"
-#  include "com/centreon/engine/objects/contactgroup.hh"
-#  include "com/centreon/engine/objects/contactgroupsmember.hh"
-#  include "com/centreon/engine/objects/contactsmember.hh"
-#  include "com/centreon/engine/objects/customvariablesmember.hh"
-#  include "com/centreon/engine/objects/daterange.hh"
-#  include "com/centreon/engine/objects/downtime.hh"
-#  include "com/centreon/engine/objects/host.hh"
-#  include "com/centreon/engine/objects/hostdependency.hh"
-#  include "com/centreon/engine/objects/hostescalation.hh"
-#  include "com/centreon/engine/objects/hostgroup.hh"
-#  include "com/centreon/engine/objects/hostsmember.hh"
+#  include "com/centreon/engine/comment.hh"
+#  include "com/centreon/engine/daterange.hh"
+#  include "com/centreon/engine/downtimes/downtime.hh"
+#  include "com/centreon/engine/hostdependency.hh"
+#  include "com/centreon/engine/hostescalation.hh"
+#  include "com/centreon/engine/hostgroup.hh"
 #  include "com/centreon/engine/objects/objectlist.hh"
-#  include "com/centreon/engine/objects/service.hh"
-#  include "com/centreon/engine/objects/servicedependency.hh"
-#  include "com/centreon/engine/objects/serviceescalation.hh"
-#  include "com/centreon/engine/objects/servicegroup.hh"
-#  include "com/centreon/engine/objects/servicesmember.hh"
-#  include "com/centreon/engine/objects/timeperiod.hh"
-#  include "com/centreon/engine/objects/timeperiodexclusion.hh"
-#  include "com/centreon/engine/objects/timerange.hh"
+#  include "com/centreon/engine/servicedependency.hh"
+#  include "com/centreon/engine/serviceescalation.hh"
+#  include "com/centreon/engine/timerange.hh"
 
 /*
 ** Current object revision, Increment when changes are made to data

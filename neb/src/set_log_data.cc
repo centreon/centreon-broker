@@ -22,8 +22,8 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/set_log_data.hh"
-#include "com/centreon/engine/objects/host.hh"
-#include "com/centreon/engine/objects/service.hh"
+#include "com/centreon/engine/host.hh"
+#include "com/centreon/engine/service.hh"
 
 using namespace com::centreon::broker;
 

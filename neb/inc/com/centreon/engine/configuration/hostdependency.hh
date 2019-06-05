@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2017 Centreon
+** Copyright 2011-2019 Centreon
 **
 ** This file is part of Centreon Engine.
 **
@@ -20,6 +20,7 @@
 #ifndef CCE_CONFIGURATION_HOSTDEPENDENCY_HH
 #  define CCE_CONFIGURATION_HOSTDEPENDENCY_HH
 
+#  include <memory>
 #  include <set>
 #  include "com/centreon/engine/configuration/group.hh"
 #  include "com/centreon/engine/configuration/object.hh"
@@ -47,17 +48,17 @@ namespace                  configuration {
 
                            hostdependency();
                            hostdependency(hostdependency const& right);
-                           ~hostdependency() throw ();
+                           ~hostdependency() throw () override;
     hostdependency&        operator=(hostdependency const& right);
     bool                   operator==(
                              hostdependency const& right) const throw ();
     bool                   operator!=(
                              hostdependency const& right) const throw ();
     bool                   operator<(hostdependency const& right) const;
-    void                   check_validity() const;
+    void                   check_validity() const override;
     key_type const&        key() const throw ();
-    void                   merge(object const& obj);
-    bool                   parse(char const* key, char const* value);
+    void                   merge(object const& obj) override;
+    bool                   parse(char const* key, char const* value) override;
 
     void                   dependency_period(std::string const& period);
     std::string const&     dependency_period() const throw ();

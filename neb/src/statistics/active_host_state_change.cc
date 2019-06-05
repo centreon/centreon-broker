@@ -69,9 +69,13 @@ void active_host_state_change::run(
               std::string& output,
 	      std::string& perfdata) {
   compute_value<double> cv;
-  for (host* h(host_list); h; h = h->next)
-    if (h->check_type == HOST_CHECK_ACTIVE)
-      cv << h->percent_state_change;
+  for (host_map::const_iterator
+         it{com::centreon::engine::host::hosts.begin()},
+         end{com::centreon::engine::host::hosts.end()};
+       it != end;
+       ++it)
+    if (it->second->get_check_type() == check_active)
+      cv << it->second->get_percent_state_change();
 
   if (cv.size()) {
     // Output.

@@ -21,12 +21,13 @@
 #  define CCE_CONFIGURATION_SERVICE_HH
 
 #  include <list>
+#  include <memory>
 #  include <set>
 #  include <utility>
 #  include "com/centreon/engine/common.hh"
 #  include "com/centreon/engine/configuration/group.hh"
 #  include "com/centreon/engine/configuration/object.hh"
-#  include "com/centreon/engine/objects/customvariable.hh"
+#  include "com/centreon/engine/customvariable.hh"
 #  include "com/centreon/engine/opt.hh"
 #  include "com/centreon/engine/namespace.hh"
 
@@ -46,12 +47,12 @@ namespace                  configuration {
       flapping = (1 << 4),
       downtime = (1 << 5)
     };
-    typedef                std::pair<unsigned int, unsigned int>
+    typedef                std::pair<uint64_t, uint64_t>
                            key_type;
 
                            service();
                            service(service const& other);
-                           ~service() throw ();
+                           ~service() throw () override;
     service&               operator=(service const& other);
     bool                   operator==(
                              service const& other) const throw ();
@@ -59,11 +60,11 @@ namespace                  configuration {
                              service const& other) const throw ();
     bool                   operator<(
                              service const& other) const throw ();
-    void                   check_validity() const;
+    void                   check_validity() const override;
     key_type               key() const;
     void                   merge(configuration::serviceextinfo const& obj);
-    void                   merge(object const& obj);
-    bool                   parse(char const* key, char const* value);
+    void                   merge(object const& obj) override;
+    bool                   parse(char const* key, char const* value) override;
 
     std::string const&     action_url() const throw ();
     bool                   checks_active() const throw ();
@@ -92,8 +93,8 @@ namespace                  configuration {
     set_string const&      hostgroups() const throw ();
     set_string&            hosts() throw ();
     set_string const&      hosts() const throw ();
-    unsigned int           host_id() const throw ();
-    void                   host_id(unsigned int id);
+    uint64_t               host_id() const throw ();
+    void                   host_id(uint64_t id);
     std::string const&     icon_image() const throw ();
     std::string const&     icon_image_alt() const throw ();
     unsigned int           initial_state() const throw ();
@@ -122,7 +123,7 @@ namespace                  configuration {
     set_string const&      servicegroups() const throw ();
     std::string&           service_description() throw ();
     std::string const&     service_description() const throw ();
-    unsigned int           service_id() const throw();
+    uint64_t               service_id() const throw();
     unsigned short         stalking_options() const throw ();
     void                   timezone(std::string const& time_zone);
     std::string const&     timezone() const throw ();
@@ -149,7 +150,6 @@ namespace                  configuration {
     bool                   _set_event_handler(std::string const& value);
     bool                   _set_event_handler_enabled(bool value);
     bool                   _set_failure_prediction_enabled(bool value);
-    bool                   _set_failure_prediction_options(std::string const& value);
     bool                   _set_first_notification_delay(unsigned int value);
     bool                   _set_flap_detection_enabled(bool value);
     bool                   _set_flap_detection_options(std::string const& value);
@@ -170,7 +170,6 @@ namespace                  configuration {
     bool                   _set_notification_interval(unsigned int value);
     bool                   _set_notification_period(std::string const& value);
     bool                   _set_obsess_over_service(bool value);
-    bool                   _set_parallelize_check(bool value);
     bool                   _set_process_perf_data(bool value);
     bool                   _set_retain_nonstatus_information(bool value);
     bool                   _set_retain_status_information(bool value);
@@ -178,7 +177,7 @@ namespace                  configuration {
     bool                   _set_recovery_notification_delay(unsigned int value);
     bool                   _set_servicegroups(std::string const& value);
     bool                   _set_service_description(std::string const& value);
-    bool                   _set_service_id(unsigned int value);
+    bool                   _set_service_id(uint64_t value);
     bool                   _set_stalking_options(std::string const& value);
     bool                   _set_timezone(std::string const& value);
 
@@ -224,7 +223,7 @@ namespace                  configuration {
     opt<unsigned int>      _recovery_notification_delay;
     group<set_string>      _servicegroups;
     std::string            _service_description;
-    unsigned int           _service_id;
+    uint64_t               _service_id;
     static setters const   _setters[];
     opt<unsigned short>    _stalking_options;
     opt<std::string>       _timezone;

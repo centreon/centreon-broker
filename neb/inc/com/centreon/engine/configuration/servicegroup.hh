@@ -38,7 +38,7 @@ namespace                   configuration {
 
                             servicegroup(key_type const& key = "");
                             servicegroup(servicegroup const& right);
-                            ~servicegroup() throw ();
+                            ~servicegroup() throw () override;
     servicegroup&           operator=(servicegroup const& right);
     bool                    operator==(
                               servicegroup const& right) const throw ();
@@ -46,10 +46,10 @@ namespace                   configuration {
                               servicegroup const& right) const throw ();
     bool                    operator<(
                               servicegroup const& right) const throw();
-    void                    check_validity() const;
+    void                    check_validity() const override;
     key_type const&         key() const throw ();
-    void                    merge(object const& obj);
-    bool                    parse(char const* key, char const* value);
+    void                    merge(object const& obj) override;
+    bool                    parse(char const* key, char const* value) override;
 
     std::string const&      action_url() const throw ();
     std::string const&      alias() const throw ();
@@ -88,8 +88,8 @@ namespace                   configuration {
     static setters const    _setters[];
   };
 
-  typedef std::shared_ptr<servicegroup>  servicegroup_ptr;
-  typedef std::set<servicegroup>         set_servicegroup;
+  typedef std::shared_ptr<servicegroup> servicegroup_ptr;
+  typedef std::set<servicegroup>        set_servicegroup;
 }
 
 CCE_END()

@@ -69,9 +69,13 @@ void passive_service_latency::run(
               std::string& output,
 	      std::string& perfdata) {
   compute_value<double> cv;
-  for (service* s(service_list); s; s = s->next)
-    if (s->check_type == SERVICE_CHECK_PASSIVE)
-      cv << s->latency;
+  for (service_map::const_iterator
+         it{com::centreon::engine::service::services.begin()},
+         end{com::centreon::engine::service::services.end()};
+       it != end;
+       ++it)
+    if (it->second->get_check_type() == check_passive)
+      cv << it->second->get_latency();
 
   if (cv.size()) {
     // Output.

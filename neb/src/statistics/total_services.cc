@@ -66,9 +66,7 @@ void total_services::run(
               std::string& output,
 	      std::string& perfdata) {
   // Count services.
-  unsigned int total(0);
-  for (service* s(service_list); s; s = s->next)
-    ++total;
+  size_t total{com::centreon::engine::service::services.size()};
 
   // Output.
   std::ostringstream oss;
@@ -80,6 +78,4 @@ void total_services::run(
   oss.str("");
   oss << "total_services=" << total;
   perfdata = oss.str();
-
-  return ;
 }

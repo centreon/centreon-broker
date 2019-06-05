@@ -20,6 +20,7 @@
 #ifndef CCE_CONFIGURATION_HOSTESCALATION_HH
 #  define CCE_CONFIGURATION_HOSTESCALATION_HH
 
+#  include <memory>
 #  include <set>
 #  include "com/centreon/engine/configuration/group.hh"
 #  include "com/centreon/engine/configuration/object.hh"
@@ -41,7 +42,7 @@ namespace                  configuration {
 
                            hostescalation();
                            hostescalation(hostescalation const& right);
-                           ~hostescalation() throw ();
+                           ~hostescalation() throw () override;
     hostescalation&        operator=(hostescalation const& right);
     bool                   operator==(
                              hostescalation const& right) const throw ();
@@ -49,10 +50,10 @@ namespace                  configuration {
                              hostescalation const& right) const throw ();
     bool                   operator<(
                              hostescalation const& right) const;
-    void                   check_validity() const;
+    void                   check_validity() const override;
     key_type const&        key() const throw ();
-    void                   merge(object const& obj);
-    bool                   parse(char const* key, char const* value);
+    void                   merge(object const& obj) override;
+    bool                   parse(char const* key, char const* value) override;
 
     set_string&            contactgroups() throw ();
     set_string const&      contactgroups() const throw ();

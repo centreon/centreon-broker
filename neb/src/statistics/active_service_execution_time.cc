@@ -69,9 +69,13 @@ void active_service_execution_time::run(
               std::string& output,
 	      std::string& perfdata) {
   compute_value<double> cv;
-  for (service* s(service_list); s; s = s->next)
-    if (s->check_type == SERVICE_CHECK_ACTIVE)
-      cv << s->execution_time;
+  for (service_map::const_iterator
+         it{com::centreon::engine::service::services.begin()},
+         end{com::centreon::engine::service::services.end()};
+       it != end;
+       ++it)
+    if (it->second->get_check_type() == check_active)
+      cv << it->second->get_execution_time();
 
   if (cv.size()) {
     // Output.

@@ -38,15 +38,15 @@ namespace                  configuration {
    public:
                            hostextinfo();
                            hostextinfo(hostextinfo const& right);
-                           ~hostextinfo() throw ();
+                           ~hostextinfo() throw () override;
     hostextinfo&           operator=(hostextinfo const& right);
     bool                   operator==(
                              hostextinfo const& right) const throw ();
     bool                   operator!=(
                              hostextinfo const& right) const throw ();
-    void                   check_validity() const;
-    void                   merge(object const& obj);
-    bool                   parse(char const* key, char const* value);
+    void                   check_validity() const override;
+    void                   merge(object const& obj) override;
+    bool                   parse(char const* key, char const* value) override;
 
     std::string const&     action_url() const throw ();
     point_2d const&        coords_2d() const throw ();
@@ -92,8 +92,8 @@ namespace                  configuration {
     std::string            _vrml_image;
   };
 
-  typedef shared_ptr<hostextinfo>    hostextinfo_ptr;
-  typedef std::list<hostextinfo_ptr> list_hostextinfo;
+  typedef std::shared_ptr<hostextinfo> hostextinfo_ptr;
+  typedef std::list<hostextinfo_ptr>   list_hostextinfo;
 }
 
 CCE_END()

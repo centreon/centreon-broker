@@ -67,9 +67,13 @@ void hosts_actively_checked::run(
               std::string& output,
 	      std::string& perfdata) {
   // Count hosts active checked.
-  unsigned int total(0);
-  for (host* h(host_list); h; h = h->next)
-    if (h->checks_enabled)
+  unsigned int total{0};
+  for (host_map::const_iterator
+         it{com::centreon::engine::host::hosts.begin()},
+         end{com::centreon::engine::host::hosts.end()};
+         it != end;
+         ++it)
+    if (it->second->get_checks_enabled())
       ++total;
 
   // Output.

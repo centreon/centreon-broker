@@ -20,6 +20,7 @@
 #ifndef CCE_CONFIGURATION_HOST_HH
 #  define CCE_CONFIGURATION_HOST_HH
 
+#  include <memory>
 #  include <list>
 #  include <set>
 #  include "com/centreon/engine/common.hh"
@@ -28,7 +29,7 @@
 #  include "com/centreon/engine/configuration/point_2d.hh"
 #  include "com/centreon/engine/configuration/point_3d.hh"
 #  include "com/centreon/engine/namespace.hh"
-#  include "com/centreon/engine/objects/customvariable.hh"
+#  include "com/centreon/engine/customvariable.hh"
 #  include "com/centreon/engine/opt.hh"
 
 CCE_BEGIN()
@@ -50,16 +51,16 @@ namespace                  configuration {
 
                            host(key_type const& key = 0);
                            host(host const& other);
-                           ~host() throw ();
+                           ~host() throw () override;
     host&                  operator=(host const& other);
     bool                   operator==(host const& other) const throw ();
     bool                   operator!=(host const& other) const throw ();
     bool                   operator<(host const& other) const throw ();
-    void                   check_validity() const;
-    key_type const&        key() const throw ();
+    void                   check_validity() const override;
+    key_type const         key() const throw ();
     void                   merge(configuration::hostextinfo const& obj);
-    void                   merge(object const& obj);
-    bool                   parse(char const* key, char const* value);
+    void                   merge(object const& obj) override;
+    bool                   parse(char const* key, char const* value) override;
 
     std::string const&     action_url() const throw ();
     std::string const&     address() const throw ();
@@ -87,7 +88,7 @@ namespace                  configuration {
     unsigned int           high_flap_threshold() const throw ();
     set_string&            hostgroups() throw ();
     set_string const&      hostgroups() const throw ();
-    unsigned int           host_id() const throw();
+    uint64_t               host_id() const throw();
     std::string const&     host_name() const throw ();
     std::string const&     icon_image() const throw ();
     std::string const&     icon_image_alt() const throw ();
@@ -138,13 +139,12 @@ namespace                  configuration {
     bool                   _set_event_handler(std::string const& value);
     bool                   _set_event_handler_enabled(bool value);
     bool                   _set_failure_prediction_enabled(bool value);
-    bool                   _set_failure_prediction_options(std::string const& value);
     bool                   _set_first_notification_delay(unsigned int value);
     bool                   _set_flap_detection_enabled(bool value);
     bool                   _set_flap_detection_options(std::string const& value);
     bool                   _set_freshness_threshold(unsigned int value);
     bool                   _set_high_flap_threshold(unsigned int value);
-    bool                   _set_host_id(unsigned int value);
+    bool                   _set_host_id(uint64_t value);
     bool                   _set_host_name(std::string const& value);
     bool                   _set_hostgroups(std::string const& value);
     bool                   _set_icon_image(std::string const& value);
@@ -194,7 +194,7 @@ namespace                  configuration {
     opt<unsigned int>      _freshness_threshold;
     opt<unsigned int>      _high_flap_threshold;
     group<set_string>      _hostgroups;
-    unsigned int           _host_id;
+    uint64_t               _host_id;
     std::string            _host_name;
     std::string            _icon_image;
     std::string            _icon_image_alt;
@@ -221,10 +221,9 @@ namespace                  configuration {
     std::string            _vrml_image;
   };
 
-  typedef std::shared_ptr<host>
-                            host_ptr;
-  typedef std::list<host>   list_host;
-  typedef std::set<host>    set_host;
+  typedef std::shared_ptr<host> host_ptr;
+  typedef std::list<host>       list_host;
+  typedef std::set<host>        set_host;
 }
 
 CCE_END()

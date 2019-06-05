@@ -23,10 +23,8 @@
 
 #  include <sys/time.h>
 #  include "com/centreon/engine/checks.hh"
+#  include "com/centreon/engine/daterange.hh"
 #  include "com/centreon/engine/macros/defines.hh"
-#  include "com/centreon/engine/objects/command.hh"
-#  include "com/centreon/engine/objects/daterange.hh"
-#  include "com/centreon/engine/objects/timeperiod.hh"
 
 // DBUF structure - dynamic string storage
 typedef struct  dbuf_struct {
@@ -67,13 +65,13 @@ char const* my_ctime(time_t const* t);
 // thread-safe version of get_raw_command_line_r()
 int get_raw_command_line_r(
       nagios_macros* mac,
-      command* cmd_ptr,
+      com::centreon::engine::commands::command* cmd_ptr,
       char const* cmd,
       char** full_command,
       int macro_options);
 // given a raw command line, determine the actual command to run Manipulates global_macros.argv and is thus not threadsafe
 int get_raw_command_line(
-      command* cmd_ptr,
+      com::centreon::engine::commands::command* cmd_ptr,
       char* cmd,
       char** full_command,
       int macro_options);
@@ -97,7 +95,7 @@ char* get_next_string_from_buf(
         int* start_index,
         int bufsize);
 // tests whether or not an object name (host, service, etc.) contains illegal characters
-int contains_illegal_object_chars(char* name);
+bool contains_illegal_object_chars(char const* name);
 char* escape_newlines(char* rawbuf);
 // compares two strings for equality
 int compare_strings(char* val1a, char* val2a);
@@ -124,13 +122,12 @@ void free_notification_list();
 
 // frees memory associated with a host/service check result
 int free_check_result(check_result* info);
-int parse_check_output(
-      char* buf,
-      char** short_output,
-      char** long_output,
-      char** perf_data,
-      int escape_newlines_please,
-      int newlines_are_escaped);
+void parse_check_output(std::string const& buffer,
+                       std::string& short_output,
+                       std::string& long_output,
+                       std::string& perf_data,
+                       bool escape_newlines_please,
+                       bool newlines_are_escaped);
 
 #  ifdef __cplusplus
 }

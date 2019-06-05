@@ -26,9 +26,9 @@
 #  include "com/centreon/engine/commands/command.hh"
 #  include "com/centreon/engine/commands/command_listener.hh"
 #  include "com/centreon/engine/commands/result.hh"
+#  include "com/centreon/engine/host.hh"
 #  include "com/centreon/engine/namespace.hh"
-#  include "com/centreon/engine/objects/host.hh"
-#  include "com/centreon/engine/objects/service.hh"
+#  include "com/centreon/engine/service.hh"
 #  include "com/centreon/unordered_hash.hh"
 
 CCE_BEGIN()
@@ -68,7 +68,7 @@ namespace                checks {
                            time_t* preferred_time = NULL);
     void                 run_sync(
                            host* hst,
-                           int* check_result_code,
+                           host::host_state * check_result_code,
                            int check_options,
                            int use_cached_result,
                            unsigned long check_timestamp_horizon);
@@ -77,10 +77,10 @@ namespace                checks {
   private:
                          checker();
                          checker(checker const& right);
-                         ~checker() throw ();
+                         ~checker() throw () override;
     checker&             operator=(checker const& right);
-    void                 finished(commands::result const& res) throw ();
-    int                  _execute_sync(host* hst);
+    void                 finished(commands::result const& res) throw () override;
+    host::host_state     _execute_sync(host* hst);
 
     umap<unsigned long, check_result>
                          _list_id;

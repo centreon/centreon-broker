@@ -24,7 +24,7 @@
 #  include <string>
 #  include <vector>
 #  include "com/centreon/engine/namespace.hh"
-#  include "com/centreon/engine/objects/customvariable.hh"
+#  include "com/centreon/engine/customvariable.hh"
 #  include "com/centreon/engine/opt.hh"
 #  include "com/centreon/engine/retention/object.hh"
 
@@ -35,11 +35,11 @@ namespace                         retention {
   public:
                                   service();
                                   service(service const& right);
-                                  ~service() throw ();
+                                  ~service() throw () override;
     service&                      operator=(service const& right);
     bool                          operator==(service const& right) const throw ();
     bool                          operator!=(service const& right) const throw ();
-    bool                          set(char const* key, char const* value);
+    bool                          set(char const* key, char const* value) override;
 
     opt<int> const&               acknowledgement_type() const throw ();
     opt<bool> const&              active_checks_enabled() const throw ();
@@ -94,7 +94,7 @@ namespace                         retention {
     opt<bool> const&              problem_has_been_acknowledged() const throw ();
     opt<int> const&               process_performance_data() const throw ();
     opt<unsigned int> const&      retry_check_interval() const throw ();
-    unsigned long                 service_id() const throw ();
+    uint64_t                      service_id() const throw ();
     std::string const&            service_description() const throw ();
     opt<std::vector<int> > const& state_history() const throw ();
     opt<int> const&               state_type() const throw ();
@@ -159,7 +159,7 @@ namespace                         retention {
     bool                          _set_problem_has_been_acknowledged(bool value);
     bool                          _set_process_performance_data(int value);
     bool                          _set_retry_check_interval(unsigned int value);
-    bool                          _set_service_id(unsigned long value);
+    bool                          _set_service_id(uint64_t value);
     bool                          _set_service_description(std::string const& value);
     bool                          _set_state_history(std::string const& value);
     bool                          _set_state_type(int value);
@@ -220,15 +220,15 @@ namespace                         retention {
     opt<int>                      _process_performance_data;
     opt<bool>                     _recovery_been_sent;
     opt<unsigned int>             _retry_check_interval;
-    unsigned long                 _service_id;
+    uint64_t                      _service_id;
     std::string                   _service_description;
     static setters const          _setters[];
     opt<std::vector<int> >        _state_history;
     opt<int>                      _state_type;
   };
 
-  typedef shared_ptr<service>    service_ptr;
-  typedef std::list<service_ptr> list_service;
+  typedef std::shared_ptr<service> service_ptr;
+  typedef std::list<service_ptr>   list_service;
 }
 
 CCE_END()
