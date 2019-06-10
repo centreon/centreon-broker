@@ -24,13 +24,15 @@
 #include <memory>
 #include <time.h>
 #include <vector>
+#include "com/centreon/engine/contactgroup.hh"
 #include "com/centreon/engine/customvariable.hh"
 
 /* Max number of custom addresses a contact can have. */
 #  define MAX_CONTACT_ADDRESSES 6
 
 /* Forward declaration. */
-struct objectlist_struct;
+typedef std::unordered_map<std::string,
+  std::shared_ptr<com::centreon::engine::contact>> contact_map;
 
 CCE_BEGIN()
 class timeperiod;
@@ -127,6 +129,12 @@ class                           contact {
                                 get_service_notification_commands() const;
   std::list<std::shared_ptr<commands::command>>&
                                 get_service_notification_commands();
+  std::list<std::shared_ptr<contactgroup>> const&
+                                get_parent_groups() const;
+  std::list<std::shared_ptr<contactgroup>>&
+                                get_parent_groups();
+
+  static contact_map            contacts;
 
  private:
                                 contact(contact const& other);
@@ -165,6 +173,8 @@ class                           contact {
                                 _host_notification_commands;
   std::list<std::shared_ptr<commands::command>>
                                 _service_notification_commands;
+  std::list<std::shared_ptr<contactgroup>>
+                                _contactgroups;
 
  public:
   std::unordered_map<std::string, customvariable>
@@ -172,7 +182,6 @@ class                           contact {
 
   timeperiod*                   host_notification_period_ptr;
   timeperiod*                   service_notification_period_ptr;
-  objectlist_struct*            contactgroups_ptr;
 };
 
 CCE_END()
