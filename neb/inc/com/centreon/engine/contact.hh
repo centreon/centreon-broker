@@ -26,6 +26,7 @@
 #include <vector>
 #include "com/centreon/engine/contactgroup.hh"
 #include "com/centreon/engine/customvariable.hh"
+#include "com/centreon/engine/notifier.hh"
 
 /* Max number of custom addresses a contact can have. */
 #  define MAX_CONTACT_ADDRESSES 6
@@ -35,6 +36,8 @@ typedef std::unordered_map<std::string,
   std::shared_ptr<com::centreon::engine::contact>> contact_map;
 
 CCE_BEGIN()
+class host;
+class service;
 class timeperiod;
 
 namespace commands {
@@ -77,28 +80,14 @@ class                           contact {
   void                          set_retain_nonstatus_information(bool retain);
   std::string const&            get_timezone() const;
   void                          set_timezone(std::string const& timezone);
-  bool                          notify_on_service_unknown() const;
-  void                          set_notify_on_service_unknown(bool notify);
-  bool                          notify_on_service_warning() const;
-  void                          set_notify_on_service_warning(bool notify);
-  bool                          notify_on_service_critical() const;
-  void                          set_notify_on_service_critical(bool notify);
-  bool                          notify_on_service_recovery() const;
-  void                          set_notify_on_service_recovery(bool notify);
-  bool                          notify_on_service_flapping() const;
-  void                          set_notify_on_service_flapping(bool notify);
-  bool                          notify_on_service_downtime() const;
-  void                          set_notify_on_service_downtime(bool notify);
-  bool                          notify_on_host_down() const;
-  void                          set_notify_on_host_down(bool notify);
-  bool                          notify_on_host_unreachable() const;
-  void                          set_notify_on_host_unreachable(bool notify);
-  bool                          notify_on_host_recovery() const;
-  void                          set_notify_on_host_recovery(bool notify);
-  bool                          notify_on_host_flapping() const;
-  void                          set_notify_on_host_flapping(bool notify);
-  bool                          notify_on_host_downtime() const;
-  void                          set_notify_on_host_downtime(bool notify);
+  bool                          notify_on_service(notifier::notification_type type) const;
+  void                          set_notify_on_service(uint32_t notif);
+  void                          add_notify_on_service(notifier::notification_type type);
+  void                          remove_notify_on_service(notifier::notification_type type);
+  bool                          notify_on_host(notifier::notification_type type) const;
+  void                          set_notify_on_host(uint32_t notif);
+  void                          add_notify_on_host(notifier::notification_type type);
+  void                          remove_notify_on_host(notifier::notification_type type);
   std::string const&            get_host_notification_period() const;
   void                          set_host_notification_period(std::string const& period);
   std::string const&            get_service_notification_period() const;
@@ -133,6 +122,14 @@ class                           contact {
                                 get_parent_groups() const;
   std::list<std::shared_ptr<contactgroup>>&
                                 get_parent_groups();
+  int                           check_service_notification_viability(
+                                  service* svc,
+                                  unsigned int type,
+                                  int options);
+  int                           check_host_notification_viability(
+                                  host* hst,
+                                  unsigned int type,
+                                  int options);
 
   static contact_map            contacts;
 
@@ -153,17 +150,8 @@ class                           contact {
   std::string                   _pager;
   bool                          _retain_status_information;
   bool                          _retain_nonstatus_information;
-  bool                          _notify_on_service_unknown;
-  bool                          _notify_on_service_warning;
-  bool                          _notify_on_service_critical;
-  bool                          _notify_on_service_recovery;
-  bool                          _notify_on_service_flapping;
-  bool                          _notify_on_service_downtime;
-  bool                          _notify_on_host_down;
-  bool                          _notify_on_host_unreachable;
-  bool                          _notify_on_host_recovery;
-  bool                          _notify_on_host_flapping;
-  bool                          _notify_on_host_downtime;
+  uint32_t                      _notify_on_service;
+  uint32_t                      _notify_on_host;
   std::string                   _host_notification_period;
   std::string                   _service_notification_period;
   bool                          _host_notifications_enabled;

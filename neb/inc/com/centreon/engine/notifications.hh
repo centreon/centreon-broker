@@ -55,14 +55,6 @@ typedef struct               notify_list_struct {
 extern "C" {
 #  endif // C++
 
-// Notification Functions
-
-// checks viability of notifying a contact about a service
-int check_contact_service_notification_viability(
-      com::centreon::engine::contact* cntct,
-      com::centreon::engine::service* svc,
-      unsigned int type,
-      int options);
 // notify a single contact about a service
 int notify_contact_of_service(
       nagios_macros* mac,
@@ -92,12 +84,6 @@ int host_notification(
       unsigned int type,
       char const* not_author,
       char const* not_data,
-      int options);
-// checks viability of notifying a contact about a host
-int check_contact_host_notification_viability(
-      com::centreon::engine::contact* cntct,
-      com::centreon::engine::host* hst,
-      unsigned int type,
       int options);
 // notify a single contact about a host
 int notify_contact_of_host(
