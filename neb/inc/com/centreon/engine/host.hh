@@ -36,17 +36,13 @@
 
 
 /* Forward declaration. */
-extern "C" {
-struct objectlist_struct;
-};
-
 CCE_BEGIN()
-class host;
-class hostescalation;
-class timeperiod;
 namespace commands {
   class command;
 }
+class host;
+class hostgroup;
+class hostescalation;
 CCE_END()
 
 typedef std::unordered_map<std::string,
@@ -121,7 +117,7 @@ class                host : public notifier {
                            bool obsess_over_host,
                            std::string const& timezone);
                      ~host() {}
-  void               add_child_link(host* child);
+  void               add_child_link(std::shared_ptr<host> child);
   void               add_parent_host(std::string const& host_name);
   int                log_event();
   int                handle_async_check_result_3x(
@@ -147,7 +143,7 @@ class                host : public notifier {
                                 double low_threshold);
   void               update_status(bool aggregated_dump) override;
   void               check_for_expired_acknowledgement();
-  int                check_notification_viability(unsigned int type,
+  bool               check_notification_viability(reason_type type,
                                                   int options) override;
   int                handle_state();
   void               update_performance_data();
@@ -179,6 +175,15 @@ class                host : public notifier {
                                                  int reschedule_check,
                                                  int use_cached_result,
                                                  unsigned long check_timestamp_horizon);
+  int                perform_scheduled_check(int check_options,
+                                                 double latency);
+  int                adjust_check_attempt(bool is_active);
+  uint64_t           check_dependencies(int dependency_type) override;
+  static void        check_for_orphaned();
+  static void        check_result_freshness();
+
+
+
   enum host_state    determine_host_reachability();
   bool               recovered() const override ;
   int                get_current_state_int() const override ;
@@ -196,8 +201,6 @@ class                host : public notifier {
   void               set_retain_status_information(bool retain_status_information);
   bool               get_retain_nonstatus_information() const;
   void               set_retain_nonstatus_information(bool retain_nonstatus_information);
-  bool               get_failure_prediction_enabled() const;
-  void               set_failure_prediction_enabled(bool failure_prediction_enabled);
   std::string const& get_vrml_image() const;
   void               set_vrml_image(std::string const& image);
   std::string const& get_statusmap_image() const;
@@ -274,6 +277,7 @@ class                host : public notifier {
                        std::shared_ptr<escalation> e,
                        int options) const override;
   void               handle_flap_detection_disabled();
+  timeperiod*        get_notification_period_ptr() const override;
 
   host_map            parent_hosts;
   host_map            child_hosts;
@@ -285,7 +289,10 @@ class                host : public notifier {
   service_map         services;
   timeperiod          *check_period_ptr;
   timeperiod          *notification_period_ptr;
-  objectlist_struct*  hostgroups_ptr;
+  std::list<std::shared_ptr<hostgroup>> const&
+                                get_parent_groups() const;
+  std::list<std::shared_ptr<hostgroup>>&
+                                get_parent_groups();
 
 private:
   std::string         _name;
@@ -294,7 +301,6 @@ private:
   bool                _process_performance_data;
   int                 _retain_status_information;
   int                 _retain_nonstatus_information;
-  bool                _failure_prediction_enabled;
   std::string         _vrml_image;
   std::string         _statusmap_image;
   bool                _have_2d_coords;
@@ -314,7 +320,6 @@ private:
   bool                _is_being_freshened;
   int                 _check_flapping_recovery_notification;
   int                 _pending_flex_downtime;
-  unsigned int        _state_history_index;
   time_t              _last_state_history_update;
   unsigned long       _flapping_comment_id;
   int                 _total_services;
@@ -326,6 +331,8 @@ private:
   enum host_state    _last_hard_state;
   enum host_state    _current_state;
   enum host_state    _initial_state;
+  std::list<std::shared_ptr<hostgroup>>
+                                _hostgroups;
 };
 
 CCE_END()

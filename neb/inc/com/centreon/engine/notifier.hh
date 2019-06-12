@@ -33,6 +33,8 @@ struct nagios_macros;
 
 CCE_BEGIN()
 class escalation;
+class contact;
+class timeperiod;
 
 class                notifier {
  public:
@@ -56,6 +58,23 @@ class                notifier {
   enum               state_type {
     soft,
     hard
+  };
+
+  enum               notifier_type {
+    host_notification,
+    service_notification,
+  };
+
+  enum               reason_type {
+    notification_normal,
+    notification_acknowledgement,
+    notification_flappingstart,
+    notification_flappingstop,
+    notification_flappingdisabled,
+    notification_downtimestart,
+    notification_downtimeend,
+    notification_downtimecancelled,
+    notification_custom = 99,
   };
 
   static std::array<std::string, 8> const tab_notification_str;
@@ -141,9 +160,9 @@ class                notifier {
   virtual void       update_status(bool aggregated_dump) = 0;
   int                get_max_attempts() const;
   void               set_max_attempts(int max_attempts);
-  virtual int        check_notification_viability(unsigned int type,
+  virtual bool       check_notification_viability(reason_type type,
                                                   int options) = 0;
-  int                notify(unsigned int type,
+  int                notify(reason_type type,
                             std::string const& not_author,
                             std::string const& not_data,
                             int options);
@@ -272,6 +291,10 @@ class                notifier {
   void               set_obsess_over(bool obsess_over_host);
   bool               get_should_be_scheduled() const;
   void               set_should_be_scheduled(bool should_be_scheduled);
+  virtual timeperiod* get_notification_period_ptr() const = 0;
+  bool               notifications_available(int options) const;
+
+  virtual uint64_t   check_dependencies(int dependency_type) = 0;
 
   std::unordered_map<std::string, std::shared_ptr<contact>>
                      contacts;
@@ -280,6 +303,10 @@ class                notifier {
 
   std::unordered_map<std::string, customvariable>
     custom_variables;
+
+  static int         add_notification(nagios_macros* mac, std::shared_ptr<contact> cntct);
+
+  static std::unordered_map<std::string, std::shared_ptr<contact>> current_notifications;
 
  protected:
   int                _notifier_type;
