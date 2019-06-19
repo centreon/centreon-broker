@@ -47,13 +47,13 @@ CCE_END()
 
 typedef std::unordered_map<std::string,
   std::shared_ptr<com::centreon::engine::host>> host_map;
+typedef std::unordered_map<uint64_t,
+  std::shared_ptr<com::centreon::engine::host>> host_id_map;
 
 CCE_BEGIN()
 class                host : public notifier {
  public:
   static std::array<std::pair<uint32_t, std::string>, 3> const tab_host_states;
-
-
 
   enum               host_state {
     state_up,
@@ -77,7 +77,8 @@ class                host : public notifier {
                            int notify_flapping,
                            int notify_downtime,
                            double notification_interval,
-                           double first_notification_delay,
+                           uint32_t first_notification_delay,
+                           uint32_t recovery_notification_delay,
                            std::string const& notification_period,
                            bool notifications_enabled,
                            std::string const& check_command,
@@ -117,6 +118,8 @@ class                host : public notifier {
                            bool obsess_over_host,
                            std::string const& timezone);
                      ~host() {}
+  uint64_t           get_host_id(void) const;
+  void               set_host_id(uint64_t id);
   void               add_child_link(std::shared_ptr<host> child);
   void               add_parent_host(std::string const& host_name);
   int                log_event();
@@ -143,8 +146,8 @@ class                host : public notifier {
                                 double low_threshold);
   void               update_status(bool aggregated_dump) override;
   void               check_for_expired_acknowledgement();
-  bool               check_notification_viability(reason_type type,
-                                                  int options) override;
+//  bool               check_notification_viability(reason_type type,
+//                                                  int options) override;
   int                handle_state();
   void               update_performance_data();
   int                verify_check_viability(int check_options,
@@ -182,11 +185,10 @@ class                host : public notifier {
   static void        check_for_orphaned();
   static void        check_result_freshness();
 
-
-
   enum host_state    determine_host_reachability();
   bool               recovered() const override ;
   int                get_current_state_int() const override ;
+  std::string const& get_current_state_as_string() const override;
 
   // setters / getters
   std::string const& get_name() const;
@@ -201,6 +203,8 @@ class                host : public notifier {
   void               set_retain_status_information(bool retain_status_information);
   bool               get_retain_nonstatus_information() const;
   void               set_retain_nonstatus_information(bool retain_nonstatus_information);
+  bool               get_should_reschedule_current_check() const;
+  void               set_should_reschedule_current_check(bool should_reschedule);
   std::string const& get_vrml_image() const;
   void               set_vrml_image(std::string const& image);
   std::string const& get_statusmap_image() const;
@@ -235,8 +239,6 @@ class                host : public notifier {
   void               set_last_time_up(time_t last_time);
   bool               get_is_being_freshened() const;
   void               set_is_being_freshened(bool is_being_freshened);
-  int                get_current_notification_number() const;
-  void               set_current_notification_number(int current_notification_number);
   int                get_check_flapping_recovery_notification() const;
   void               set_check_flapping_recovery_notification(int check_flapping_recovery_notification);
   int                get_pending_flex_downtime() const;
@@ -277,24 +279,26 @@ class                host : public notifier {
                        std::shared_ptr<escalation> e,
                        int options) const override;
   void               handle_flap_detection_disabled();
-  timeperiod*        get_notification_period_ptr() const override;
+  timeperiod*        get_notification_timeperiod() const override;
+  bool               get_notify_on_current_state() const override;
+  bool               is_in_downtime() const override;
 
   host_map            parent_hosts;
   host_map            child_hosts;
   static host_map     hosts;
+  static host_id_map  hosts_by_id;
 
   commands::command*  event_handler_ptr;
   commands::command*  check_command_ptr;
 
   service_map         services;
-  timeperiod          *check_period_ptr;
-  timeperiod          *notification_period_ptr;
   std::list<std::shared_ptr<hostgroup>> const&
                                 get_parent_groups() const;
   std::list<std::shared_ptr<hostgroup>>&
                                 get_parent_groups();
 
 private:
+  uint64_t            _id;
   std::string         _name;
   std::string         _alias;
   std::string         _address;
@@ -313,6 +317,7 @@ private:
   int                 _should_be_drawn;
   int                 _acknowledgement_type;
   bool                _is_executing;
+  bool                _should_reschedule_current_check;
   int                 _check_options;
   time_t              _last_time_down;
   time_t              _last_time_unreachable;
@@ -336,19 +341,6 @@ private:
 };
 
 CCE_END()
-
-/* Other HOST structure. */
-struct                host_other_properties {
-  bool                should_reschedule_current_check;
-  uint64_t            host_id;
-};
-
-/* Hash structures. */
-typedef struct        host_cursor_struct {
-  int                 host_hashchain_iterator;
-  com::centreon::engine::host*
-                      current_host_pointer;
-}                     host_cursor;
 
 int                   is_contact_for_host(com::centreon::engine::host* hst,
                           com::centreon::engine::contact* cntct);

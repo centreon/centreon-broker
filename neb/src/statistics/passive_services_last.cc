@@ -25,6 +25,7 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 using namespace com::centreon::broker::neb::statistics;
+using namespace com::centreon::engine;
 
 /**
  *  Default constructor.
@@ -72,11 +73,11 @@ void passive_services_last::run(
   unsigned int last_checked_60{0};
   time_t now{time(NULL)};
   for (service_map::const_iterator
-         it{com::centreon::engine::service::services.begin()},
-         end{com::centreon::engine::service::services.end()};
+         it{service::services.begin()},
+         end{service::services.end()};
        it != end;
        ++it) {
-    if (it->second->get_check_type() == check_passive) {
+    if (it->second->get_check_type() == checkable::check_passive) {
       int diff(now - it->second->get_last_check());
       if (diff <= 60 * 60) {
         ++last_checked_60;

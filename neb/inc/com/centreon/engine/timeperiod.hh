@@ -54,8 +54,8 @@ class                timeperiod {
   bool                operator==(timeperiod const& obj) throw ();
   bool                operator!=(timeperiod const& obj) throw ();
 
-  timerange_list      days[7];
-  daterange_list      exceptions[DATERANGE_TYPES];
+  std::array<timerange_list, 7> days;
+  std::array<daterange_list, DATERANGE_TYPES> exceptions;
   timeperiodexclusion exclusions;
 
   static timeperiod_map
@@ -64,12 +64,11 @@ class                timeperiod {
  private:
   std::string         _name;
   std::string         _alias;
-
 };
 
 CCE_END()
 
-int  check_time_against_period(
+bool check_time_against_period(
   time_t test_time,
   com::centreon::engine::timeperiod* tperiod);
 void get_next_valid_time(

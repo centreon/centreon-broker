@@ -25,6 +25,7 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 using namespace com::centreon::broker::neb::statistics;
+using namespace com::centreon::engine;
 
 /**
  *  Default constructor.
@@ -76,7 +77,7 @@ void active_hosts_last::run(
          end{com::centreon::engine::host::hosts.end()};
        it != end;
        ++it) {
-    if (it->second->get_check_type() == check_active) {
+    if (it->second->get_check_type() == checkable::check_active) {
       int diff(now - it->second->get_last_check());
       if (diff <= 60 * 60) {
         ++last_checked_60;

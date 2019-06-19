@@ -27,6 +27,7 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 using namespace com::centreon::broker::neb::statistics;
+using namespace com::centreon::engine;
 
 /**
  *  Default constructor.
@@ -70,11 +71,11 @@ void active_service_execution_time::run(
 	      std::string& perfdata) {
   compute_value<double> cv;
   for (service_map::const_iterator
-         it{com::centreon::engine::service::services.begin()},
-         end{com::centreon::engine::service::services.end()};
+         it{service::services.begin()},
+         end{service::services.end()};
        it != end;
        ++it)
-    if (it->second->get_check_type() == check_active)
+    if (it->second->get_check_type() == checkable::check_active)
       cv << it->second->get_execution_time();
 
   if (cv.size()) {

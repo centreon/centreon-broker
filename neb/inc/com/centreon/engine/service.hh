@@ -22,6 +22,7 @@
 
 #  include <array>
 #  include <memory>
+#  include <ostream>
 #  include <string>
 #  include <time.h>
 #  include <unordered_map>
@@ -57,12 +58,14 @@ struct pair_hash {
 
 typedef std::unordered_map<std::pair<std::string, std::string>,
   std::shared_ptr<com::centreon::engine::service>, pair_hash> service_map;
+typedef std::unordered_map<std::pair<uint64_t, uint64_t>,
+  std::shared_ptr<com::centreon::engine::service>, pair_hash> service_id_map;
 
 CCE_BEGIN()
 
 class                           service : public notifier {
  public:
-  static std::array<std::pair<uint32_t, std::string>, 3> const tab_service_states;
+  static std::array<std::pair<uint32_t, std::string>, 4> const tab_service_states;
 
   enum                          service_state {
     state_ok,
@@ -80,8 +83,10 @@ class                           service : public notifier {
                                         enum service::service_state initial_state,
                                         double check_interval,
                                         double retry_interval,
+                                        double notification_interval,
                                         int max_attempts,
-                                        double first_notification_delay,
+                                        uint32_t first_notification_delay,
+                                        uint32_t recovery_notification_delay,
                                         std::string const& notification_period,
                                         bool notifications_enabled,
                                         bool is_volatile,
@@ -101,6 +106,10 @@ class                           service : public notifier {
                                         bool obsess_over,
                                         std::string const& timezone);
                                 ~service();
+  void                          set_host_id(uint64_t host_id);
+  uint64_t                      get_host_id() const;
+  void                          set_service_id(uint64_t service_id);
+  uint64_t                      get_service_id() const;
   void                          set_hostname(std::string const& name);
   std::string const&            get_hostname() const;
   void                          set_description(std::string const& desc);
@@ -125,8 +134,9 @@ class                           service : public notifier {
   void                          set_last_hard_state(enum service_state last_hard_state);
   enum service_state            get_initial_state() const;
   void                          set_initial_state(enum service_state current_state);
-  bool                          recovered() const override ;
-  int                           get_current_state_int() const override ;
+  bool                          recovered() const override;
+  int                           get_current_state_int() const override;
+  std::string const&            get_current_state_as_string() const override;
 
   int                           handle_async_check_result(
                                   check_result* queued_check_result);
@@ -158,8 +168,8 @@ class                           service : public notifier {
   void                          disable_flap_detection();
   void                          update_status(bool aggregated_dump) override;
   void                          set_notification_number(int num);
-  bool                          check_notification_viability(reason_type type,
-                                                             int options) override;
+//  bool                          check_notification_viability(reason_type type,
+//                                                             int options) override;
   int                           verify_check_viability(int check_options,
                                                        int* time_is_valid,
                                                        time_t* new_time);
@@ -175,7 +185,7 @@ class                           service : public notifier {
   time_t                        get_next_notification_time(time_t offset) override;
   void                          check_for_expired_acknowledgement();
   void                          schedule_acknowledgement_expiration();
-  bool                          operator==(service const& other) throw();
+  bool                          operator==(service const& other);
   bool                          operator!=(service const& other) throw();
   bool                          is_valid_escalation_for_notification(
                                   std::shared_ptr<escalation> e,
@@ -184,13 +194,14 @@ class                           service : public notifier {
   void                          handle_flap_detection_disabled();
   bool                          get_is_volatile() const;
   void                          set_is_volatile(bool vol);
-  timeperiod*                   get_notification_period_ptr() const override;
+  timeperiod*                   get_notification_timeperiod() const override;
+  bool                          get_notify_on_current_state() const override;
 
   uint64_t                      check_dependencies(int dependency_type) override;
   static void                   check_for_orphaned();
   static void                   check_result_freshness();
+  bool                          is_in_downtime() const override;
 
-  double                        notification_interval;
   int                           process_performance_data;
   int                           accept_passive_service_checks;
   int                           retain_status_information;
@@ -209,16 +220,17 @@ class                           service : public notifier {
   host*                         host_ptr;
   commands::command*            event_handler_ptr;
   commands::command*            check_command_ptr;
-  timeperiod*                   check_period_ptr;
-  timeperiod*                   notification_period_ptr;
   std::list<std::shared_ptr<servicegroup>> const&
                                 get_parent_groups() const;
   std::list<std::shared_ptr<servicegroup>>&
                                 get_parent_groups();
 
   static service_map            services;
+  static service_id_map         services_by_id;
 
  private:
+  uint64_t                      _host_id;
+  uint64_t                      _service_id;
   std::string                   _hostname;
   std::string                   _description;
   std::string                   _event_handler_args;
@@ -238,12 +250,6 @@ class                           service : public notifier {
 };
 CCE_END()
 
-/* Other SERVICE structure. */
-struct                          service_other_properties {
-  uint64_t                      host_id;
-  uint64_t                      service_id;
-};
-
 #  ifdef __cplusplus
 extern "C" {
 #  endif /* C++ */
@@ -260,7 +266,8 @@ com::centreon::engine::service* add_service(
            double check_interval,
            double retry_interval,
            double notification_interval,
-           double first_notification_delay,
+           uint32_t first_notification_delay,
+           uint32_t recovery_notification_delay,
            std::string const& notification_period,
            bool notify_recovery,
            bool notify_unknown,
@@ -298,7 +305,6 @@ com::centreon::engine::service* add_service(
            int retain_nonstatus_information,
            bool obsess_over,
            std::string const& timezone);
-int      get_service_count();
 int      is_contact_for_service(
            com::centreon::engine::service* svc,
            com::centreon::engine::contact* cntct);
@@ -308,9 +314,6 @@ int      is_escalated_contact_for_service(
 
 #  ifdef __cplusplus
 }
-
-#    include <ostream>
-#    include <string>
 
 std::ostream& operator<<(std::ostream& os, com::centreon::engine::service const& obj);
 std::ostream& operator<<(std::ostream& os, service_map const& obj);

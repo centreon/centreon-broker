@@ -27,6 +27,7 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 using namespace com::centreon::broker::neb::statistics;
+using namespace com::centreon::engine;
 
 /**
  *  Default constructor.
@@ -70,11 +71,11 @@ void passive_host_latency::run(
 	      std::string& perfdata) {
   compute_value<double> cv;
   for (host_map::const_iterator
-         it{com::centreon::engine::host::hosts.begin()},
-         end{com::centreon::engine::host::hosts.end()};
+         it{host::hosts.begin()},
+         end{host::hosts.end()};
        it != end;
        ++it)
-    if (it->second->get_check_type() == check_passive)
+    if (it->second->get_check_type() == checkable::check_passive)
       cv << it->second->get_latency();
 
   if (cv.size()) {
