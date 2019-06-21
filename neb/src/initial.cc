@@ -236,7 +236,7 @@ static void send_host_group_list() {
     neb::callback_group(NEBCALLBACK_GROUP_DATA, &nsgd);
 
     // Dump host group members.
-    for (host_map::const_iterator
+    for (host_map_unsafe::const_iterator
            hit{it->second->members.begin()},
            hend{it->second->members.end()};
          hit != hend;
@@ -245,7 +245,7 @@ static void send_host_group_list() {
       nebstruct_group_member_data nsgmd;
       memset(&nsgmd, 0, sizeof(nsgmd));
       nsgmd.type = NEBTYPE_HOSTGROUPMEMBER_ADD;
-      nsgmd.object_ptr = hit->second.get();
+      nsgmd.object_ptr = hit->second;
       nsgmd.group_ptr = it->second.get();
 
       // Callback.
@@ -303,7 +303,7 @@ static void send_host_parents_list() {
          it != end;
          ++it) {
       // Loop through all parents.
-      for (host_map::iterator
+      for (host_map_unsafe::iterator
              pit{it->second->parent_hosts.begin()},
              pend{it->second->parent_hosts.end()};
            pit != pend;
@@ -315,7 +315,7 @@ static void send_host_parents_list() {
         nsrd.flags = NEBFLAG_NONE;
         nsrd.attr = NEBATTR_NONE;
         nsrd.timestamp.tv_sec = time(NULL);
-        nsrd.hst = pit->second.get();
+        nsrd.hst = pit->second;
         nsrd.dep_hst = it->second.get();
 
         // Callback.
@@ -433,7 +433,7 @@ static void send_service_group_list() {
     neb::callback_group(NEBCALLBACK_GROUP_DATA, &nsgd);
 
     // Dump service group members.
-    for (service_map::const_iterator
+    for (service_map_unsafe::const_iterator
            sit{it->second->members.begin()},
            send{it->second->members.end()};
          sit != send;
@@ -442,7 +442,7 @@ static void send_service_group_list() {
       nebstruct_group_member_data nsgmd;
       memset(&nsgmd, 0, sizeof(nsgmd));
       nsgmd.type = NEBTYPE_SERVICEGROUPMEMBER_ADD;
-      nsgmd.object_ptr = sit->second.get();
+      nsgmd.object_ptr = sit->second;
       nsgmd.group_ptr = it->second.get();
 
       // Callback.
