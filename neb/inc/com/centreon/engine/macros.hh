@@ -35,9 +35,6 @@
 // cleans macros characters before insertion into output string
 std::string clean_macro_chars(std::string const& macro, int options);
 
-// URL encode a string
-std::string url_encode(std::string const& value);
-
 #  ifdef __cplusplus
 extern "C" {
 #  endif // C++
@@ -89,7 +86,8 @@ int grab_custom_object_macro_r(
       std::string& output);
 
 // URL encode a string
-//char* get_url_encoded_string(std::string const& input);
+std::string url_encode(std::string const& value);
+char* get_url_encoded_string(std::string const& input);
 
 int init_macros();
 int init_macrox_names();
