@@ -1917,7 +1917,7 @@ int neb::callback_service(int callback_type, void* data) {
     if (!s->get_long_plugin_output().empty())
       my_service->output.append(s->get_long_plugin_output().c_str());
     my_service->passive_checks_enabled
-      = s->accept_passive_service_checks;
+      = s->get_accept_passive_checks();
     my_service->percent_state_change = s->get_percent_state_change();
     if (!s->get_perf_data().empty())
       my_service->perf_data = QString(s->get_perf_data().c_str());

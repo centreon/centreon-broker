@@ -11,14 +11,14 @@
 
 CCB_BEGIN()
 
-#  define CENTREON_BROKER_VERSION_INCLUDE "19.10.0"
+#  define CENTREON_BROKER_VERSION_INCLUDE "19.04.0"
 
 namespace            version {
   // Compile-time values.
   unsigned int const major = 19;
-  unsigned int const minor = 10;
+  unsigned int const minor = 04;
   unsigned int const patch = 0;
-  char const* const  string = "19.10.0";
+  char const* const  string = "19.04.0";
 }
 
 CCB_END()
