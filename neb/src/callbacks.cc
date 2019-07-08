@@ -1259,16 +1259,15 @@ int neb::callback_host(int callback_type, void* data) {
       neb::gl_publisher.write(my_host);
 
       // Generate existing custom variables.
-      for (std::pair<std::string, engine::customvariable> const& p : h->custom_variables) {
-        engine::customvariable const& cvar{p.second};
+      for (std::pair<std::string, std::shared_ptr<engine::customvariable>> const& p : h->custom_variables) {
         std::string const& name{p.first};
-        if (cvar.is_sent() && name != "HOST_ID") {
+        if (p.second->is_sent() && name != "HOST_ID") {
           nebstruct_custom_variable_data data;
           memset(&data, 0, sizeof(data));
           data.type = NEBTYPE_HOSTCUSTOMVARIABLE_ADD;
           data.timestamp.tv_sec = host_data->timestamp.tv_sec;
           data.var_name = const_cast<char*>(name.c_str());
-          data.var_value = const_cast<char*>(cvar.get_value().c_str());
+          data.var_value = const_cast<char*>(p.second->get_value().c_str());
           data.object_ptr = host_data->object_ptr;
           callback_custom_variable(
             NEBCALLBACK_CUSTOM_VARIABLE_DATA,
@@ -1953,11 +1952,11 @@ int neb::callback_service(int callback_type, void* data) {
       neb::gl_publisher.write(my_service);
 
       // Generate existing custom variables.
-      for (std::unordered_map<std::string, engine::customvariable>::const_iterator
+      for (com::centreon::engine::map_customvar::const_iterator
              it{s->custom_variables.begin()}, end{s->custom_variables.end()};
            it != end;
            ++it) {
-        if (it->second.is_sent()
+        if (it->second->is_sent()
             && !it->first.empty()
             && it->first != "HOST_ID"
             && it->first != "SERVICE_ID") {
@@ -1966,7 +1965,7 @@ int neb::callback_service(int callback_type, void* data) {
           data.type = NEBTYPE_SERVICECUSTOMVARIABLE_ADD;
           data.timestamp.tv_sec = service_data->timestamp.tv_sec;
           data.var_name = const_cast<char*>(it->first.c_str());
-          data.var_value = const_cast<char*>(it->second.get_value().c_str());
+          data.var_value = const_cast<char*>(it->second->get_value().c_str());
           data.object_ptr = service_data->object_ptr;
           callback_custom_variable(
             NEBCALLBACK_CUSTOM_VARIABLE_DATA,

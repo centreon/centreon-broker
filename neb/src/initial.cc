@@ -66,21 +66,20 @@ static void send_custom_variables_list() {
                           end{com::centreon::engine::host::hosts.end()};
        it != end; ++it) {
     // Send all custom variables.
-    for (std::unordered_map<std::string, com::centreon::engine::customvariable>::const_iterator
+    for (com::centreon::engine::map_customvar::const_iterator
            cit{it->second->custom_variables.begin()},
            cend{it->second->custom_variables.end()};
          cit != cend;
          ++cit) {
       std::string name{cit->first};
-      com::centreon::engine::customvariable const& cv{cit->second};
-      if (cv.is_sent()) {
+      if (cit->second->is_sent()) {
         // Fill callback struct.
         nebstruct_custom_variable_data nscvd;
         memset(&nscvd, 0, sizeof(nscvd));
         nscvd.type = NEBTYPE_HOSTCUSTOMVARIABLE_ADD;
         nscvd.timestamp.tv_sec = time(NULL);
         nscvd.var_name = const_cast<char*>(name.c_str());
-        nscvd.var_value = const_cast<char*>(cv.get_value().c_str());
+        nscvd.var_value = const_cast<char*>(cit->second->get_value().c_str());
         nscvd.object_ptr = it->second.get();
 
         // Callback.
@@ -96,21 +95,20 @@ static void send_custom_variables_list() {
                             end{com::centreon::engine::service::services.end()};
        it != end; ++it) {
     // Send all custom variables.
-    for (std::unordered_map<std::string, com::centreon::engine::customvariable>::const_iterator
+    for (com::centreon::engine::map_customvar::const_iterator
            cit{it->second->custom_variables.begin()},
            cend{it->second->custom_variables.end()};
          cit != cend;
          ++cit) {
       std::string name{cit->first};
-      com::centreon::engine::customvariable const& cv{cit->second};
-      if (cv.is_sent()) {
+      if (cit->second->is_sent()) {
         // Fill callback struct.
         nebstruct_custom_variable_data nscvd;
         memset(&nscvd, 0, sizeof(nscvd));
         nscvd.type = NEBTYPE_SERVICECUSTOMVARIABLE_ADD;
         nscvd.timestamp.tv_sec = time(NULL);
         nscvd.var_name = const_cast<char*>(name.c_str());
-        nscvd.var_value = const_cast<char*>(cv.get_value().c_str());
+        nscvd.var_value = const_cast<char*>(cit->second->get_value().c_str());
         nscvd.object_ptr = it->second.get();
 
         // Callback.
