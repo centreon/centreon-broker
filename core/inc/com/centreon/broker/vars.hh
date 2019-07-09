@@ -24,8 +24,8 @@
 CCB_BEGIN()
 
 // Paths.
-#  define PREFIX_BIN "/usr/local/bin"
-#  define PREFIX_VAR "/usr/local/var"
+#  define PREFIX_BIN "/usr/sbin"
+#  define PREFIX_VAR "/usr/var"
 
 CCB_END()
 

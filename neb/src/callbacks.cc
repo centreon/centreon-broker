@@ -1217,7 +1217,7 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->notify_on_down = h->get_notify_on(engine::notifier::down);
     my_host->notify_on_downtime = h->get_notify_on(engine::notifier::downtime);
     my_host->notify_on_flapping = h->get_notify_on(engine::notifier::flappingstart);
-    my_host->notify_on_recovery = h->get_notify_on(engine::notifier::recovery);
+    my_host->notify_on_recovery = h->get_notify_on(engine::notifier::up);
     my_host->notify_on_unreachable = h->get_notify_on(engine::notifier::unreachable);
     my_host->obsess_over = h->get_obsess_over();
     if (!h->get_plugin_output().empty()) {
@@ -1905,7 +1905,7 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->notify_on_critical = s->get_notify_on(engine::notifier::critical);
     my_service->notify_on_downtime = s->get_notify_on(engine::notifier::downtime);
     my_service->notify_on_flapping = s->get_notify_on(engine::notifier::flappingstart);
-    my_service->notify_on_recovery = s->get_notify_on(engine::notifier::recovery);
+    my_service->notify_on_recovery = s->get_notify_on(engine::notifier::ok);
     my_service->notify_on_unknown = s->get_notify_on(engine::notifier::unknown);
     my_service->notify_on_warning = s->get_notify_on(engine::notifier::warning);
     my_service->obsess_over = s->get_obsess_over();
