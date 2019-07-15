@@ -1831,7 +1831,7 @@ int neb::callback_service(int callback_type, void* data) {
 
     // Fill output var.
     my_service->acknowledged = s->get_problem_has_been_acknowledged();
-    my_service->acknowledgement_type = s->acknowledgement_type;
+    my_service->acknowledgement_type = s->get_acknowledgement_type();
     if (!s->get_action_url().empty())
       my_service->action_url = QString(s->get_action_url().c_str());
     my_service->active_checks_enabled = s->get_checks_enabled();
@@ -1921,9 +1921,9 @@ int neb::callback_service(int callback_type, void* data) {
     if (!s->get_perf_data().empty())
       my_service->perf_data = QString(s->get_perf_data().c_str());
     my_service->retain_nonstatus_information
-      = s->retain_nonstatus_information;
+      = s->get_retain_nonstatus_information();
     my_service->retain_status_information
-      = s->retain_status_information;
+      = s->get_retain_status_information();
     my_service->retry_interval = s->get_retry_interval();
     if (!s->get_description().empty())
       my_service->service_description = QString(s->get_description().c_str());
@@ -2076,7 +2076,7 @@ int neb::callback_service_status(int callback_type, void* data) {
     static_cast<engine::service*>(
       static_cast<nebstruct_service_status_data*>(data)->object_ptr)};
     service_status->acknowledged = s->get_problem_has_been_acknowledged();
-    service_status->acknowledgement_type = s->acknowledgement_type;
+    service_status->acknowledgement_type = s->get_acknowledgement_type();
     service_status->active_checks_enabled = s->get_checks_enabled();
     if (!s->get_check_command().empty())
       service_status->check_command = QString(s->get_check_command().c_str());

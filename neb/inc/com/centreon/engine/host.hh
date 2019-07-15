@@ -103,8 +103,8 @@ class                host : public notifier {
                            std::string const& icon_image_alt,
                            std::string const& vrml_image,
                            std::string const& statusmap_image,
-                           int x_2d,
-                           int y_2d,
+                           double x_2d,
+                           double y_2d,
                            bool have_2d_coords,
                            double x_3d,
                            double y_3d,
@@ -198,10 +198,6 @@ class                host : public notifier {
   void               set_address(std::string const& address);
   bool               get_process_performance_data() const;
   void               set_process_performance_data(bool process_performance_data);
-  bool               get_retain_status_information() const;
-  void               set_retain_status_information(bool retain_status_information);
-  bool               get_retain_nonstatus_information() const;
-  void               set_retain_nonstatus_information(bool retain_nonstatus_information);
   bool               get_should_reschedule_current_check() const;
   void               set_should_reschedule_current_check(bool should_reschedule);
   std::string const& get_vrml_image() const;
@@ -212,34 +208,26 @@ class                host : public notifier {
   void               set_have_2d_coords(bool has_coords);
   bool               get_have_3d_coords() const;
   void               set_have_3d_coords(bool has_coords);
-  int                get_x_2d() const;
-  void               set_x_2d(int x);
-  int                get_y_2d() const;
-  void               set_y_2d(int y);
-  int                get_x_3d() const;
-  void               set_x_3d(int x);
-  int                get_y_3d() const;
-  void               set_y_3d(int y);
-  int                get_z_3d() const;
-  void               set_z_3d(int z);
+  double             get_x_2d() const;
+  void               set_x_2d(double x);
+  double             get_y_2d() const;
+  void               set_y_2d(double y);
+  double             get_x_3d() const;
+  void               set_x_3d(double x);
+  double             get_y_3d() const;
+  void               set_y_3d(double y);
+  double             get_z_3d() const;
+  void               set_z_3d(double z);
   int                get_should_be_drawn() const;
   void               set_should_be_drawn(int should_be_drawn);
-  int                get_acknowledgement_type() const;
-  void               set_acknowledgement_type(int acknowledgement_type);
-  int                get_check_options() const;
-  void               set_check_options(int check_options);
   time_t             get_last_time_down() const;
   void               set_last_time_down(time_t last_time);
   time_t             get_last_time_unreachable() const;
   void               set_last_time_unreachable(time_t last_time);
   time_t             get_last_time_up() const;
   void               set_last_time_up(time_t last_time);
-  bool               get_is_being_freshened() const;
-  void               set_is_being_freshened(bool is_being_freshened);
   time_t             get_last_state_history_update() const;
   void               set_last_state_history_update(time_t last_state_history_update);
-  unsigned long      get_flapping_comment_id() const;
-  void               set_flapping_comment_id(unsigned long flapping_comment_id);
   void               disable_flap_detection();
   void               enable_flap_detection();
   int                get_total_services() const;
@@ -293,27 +281,21 @@ private:
   std::string         _alias;
   std::string         _address;
   bool                _process_performance_data;
-  int                 _retain_status_information;
-  int                 _retain_nonstatus_information;
   std::string         _vrml_image;
   std::string         _statusmap_image;
   bool                _have_2d_coords;
   bool                _have_3d_coords;
-  int                 _x_2d;
-  int                 _y_2d;
-  int                 _x_3d;
-  int                 _y_3d;
-  int                 _z_3d;
+  double              _x_2d;
+  double              _y_2d;
+  double              _x_3d;
+  double              _y_3d;
+  double              _z_3d;
   int                 _should_be_drawn;
-  int                 _acknowledgement_type;
   bool                _should_reschedule_current_check;
-  int                 _check_options;
   time_t              _last_time_down;
   time_t              _last_time_unreachable;
   time_t              _last_time_up;
-  bool                _is_being_freshened;
   time_t              _last_state_history_update;
-  unsigned long       _flapping_comment_id;
   int                 _total_services;
   unsigned long       _total_service_check_interval;
   int                 _circular_path_checked;
