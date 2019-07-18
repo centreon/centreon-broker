@@ -59,7 +59,7 @@ class                customvariable {
   bool               _modified;
 };
 
-typedef std::unordered_map<std::string, std::shared_ptr<customvariable>> map_customvar;
+typedef std::unordered_map<std::string, customvariable> map_customvar;
 
 CCE_END()
 
