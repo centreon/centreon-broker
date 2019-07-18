@@ -21,10 +21,9 @@
 #  define CCE_CONFIGURATION_APPLIER_STATE_HH
 
 #  include <memory>
+#  include <mutex>
 #  include <string>
 #  include <utility>
-#  include "com/centreon/concurrency/condvar.hh"
-#  include "com/centreon/concurrency/mutex.hh"
 #  include "com/centreon/engine/configuration/applier/difference.hh"
 #  include "com/centreon/engine/configuration/state.hh"
 #  include "com/centreon/engine/namespace.hh"
@@ -54,8 +53,7 @@ namespace           configuration {
      */
     class           state {
     public:
-      void          apply(
-                      configuration::state& new_cfg);
+      void          apply(configuration::state& new_cfg);
       void          apply(
                       configuration::state& new_cfg,
                       retention::state& state);
@@ -73,8 +71,10 @@ namespace           configuration {
                     user_macros();
       std::unordered_map<std::string, std::string>::const_iterator
                     user_macros_find(std::string const& key) const;
+      void          lock();
+      void          unlock();
 
-    private:
+     private:
       enum          processing_state {
         state_waiting,
         state_apply,
@@ -103,13 +103,15 @@ namespace           configuration {
       void          _resolve(
                       std::set<ConfigurationType>& cfg);
 
+      std::mutex    _apply_lock;
       state*        _config;
+      processing_state
+                    _processing_state;
 
       servicedependency_mmap
                     _servicedependencies;
       std::unordered_map<std::string, std::string>
                     _user_macros;
-      processing_state _processing_state;
     };
   }
 }

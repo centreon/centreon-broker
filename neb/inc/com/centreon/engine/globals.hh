@@ -22,16 +22,12 @@
 #ifndef CCE_GLOBALS_HH
 #  define CCE_GLOBALS_HH
 
-#include <mutex>
-
-#include <cstdio>
 #  include <map>
 #  include <string>
 #  include <stdio.h>
 #  include "com/centreon/engine/checks.hh"
 #  include "com/centreon/engine/circular_buffer.hh"
 #  include "com/centreon/engine/configuration/state.hh"
-#  include "com/centreon/engine/events/hash_timed_event.hh"
 #  include "com/centreon/engine/events/sched_info.hh"
 #  include "com/centreon/engine/events/timed_event.hh"
 #  include "com/centreon/engine/nebmods.hh"
@@ -41,7 +37,6 @@
 #  ifdef __cplusplus
 extern "C" {
 #  endif /* C++ */
-
 
 extern int                       config_errors;
 extern int                       config_warnings;
@@ -63,7 +58,6 @@ extern com::centreon::engine::commands::command*
 
 extern unsigned long             logging_options;
 
-extern com::centreon::engine::events::hash_timed_event quick_timed_event;
 
 extern time_t                    last_command_check;
 extern time_t                    last_command_status_update;
@@ -76,7 +70,7 @@ extern unsigned long             next_event_id;
 extern unsigned long             next_problem_id;
 extern unsigned long             next_notification_id;
 
-extern bool                      sighup;
+extern bool sighup;
 extern int                       sigshutdown;
 extern int                       sigrestart;
 
