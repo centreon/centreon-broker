@@ -1176,6 +1176,7 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->event_handler_enabled = h->get_event_handler_enabled();
     my_host->execution_time = h->get_execution_time();
     my_host->first_notification_delay = h->get_first_notification_delay();
+    my_host->notification_number = h->get_notification_number();
     my_host->flap_detection_enabled = h->get_flap_detection_enabled();
     my_host->flap_detection_on_down = h->get_flap_detection_on(engine::notifier::down);
     my_host->flap_detection_on_unreachable
@@ -1397,6 +1398,7 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->last_hard_state = h->get_last_hard_state();
     host_status->last_hard_state_change = h->get_last_hard_state_change();
     host_status->last_notification = h->get_last_notification();
+    host_status->notification_number = h->get_notification_number();
     host_status->last_state_change = h->get_last_state_change();
     host_status->last_time_down = h->get_last_time_down();
     host_status->last_time_unreachable = h->get_last_time_unreachable();
@@ -1864,6 +1866,7 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->event_handler_enabled = s->get_event_handler_enabled();
     my_service->execution_time = s->get_execution_time();
     my_service->first_notification_delay = s->get_first_notification_delay();
+    my_service->notification_number = s->get_notification_number();
     my_service->flap_detection_enabled = s->get_flap_detection_enabled();
     my_service->flap_detection_on_critical = s->get_flap_detection_on(engine::notifier::critical);
     my_service->flap_detection_on_ok = s->get_flap_detection_on(engine::notifier::ok);
@@ -2102,6 +2105,7 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->last_hard_state = s->get_last_hard_state();
     service_status->last_hard_state_change = s->get_last_hard_state_change();
     service_status->last_notification = s->get_last_notification();
+    service_status->notification_number = s->get_notification_number();
     service_status->last_state_change = s->get_last_state_change();
     service_status->last_time_critical = s->get_last_time_critical();
     service_status->last_time_ok = s->get_last_time_ok();
