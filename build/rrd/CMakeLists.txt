@@ -90,61 +90,20 @@ if (LIBRRD_CFLAGS)
 endif ()
 target_link_libraries("${RRD}" ${LIBRRD_LDFLAGS})
 
-if (0) # WITH_TESTING)
-  set(TEST_LIBRARIES "${RRD}" "10-neb" "20-storage" "roker" "rokerbase" "roker")
-
-  # Open exception tests.
-  #   Throw.
-  set(TEST_NAME "rrd_exceptions_open_throw")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/exceptions/open/throw.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Rethrow.
-  set(TEST_NAME "rrd_exceptions_open_rethrow")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/exceptions/open/rethrow.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Clone.
-  set(TEST_NAME "rrd_exceptions_open_clone")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/exceptions/open/clone.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Update exception tests.
-  #   Throw.
-  set(TEST_NAME "rrd_exceptions_update_throw")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/exceptions/update/throw.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Rethrow.
-  set(TEST_NAME "rrd_exceptions_update_rethrow")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/exceptions/update/rethrow.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Clone.
-  set(TEST_NAME "rrd_exceptions_update_clone")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/exceptions/update/clone.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # RRD lib tests.
-  #   File creation.
-  set(TEST_NAME "rrd_lib_create")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/lib/create.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   File remove.
-  set(TEST_NAME "rrd_lib_remove")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/lib/remove.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-endif ()
+# Testing.
+set(
+        TESTS_SOURCES
+        ${TESTS_SOURCES}
+        "${TEST_DIR}/exceptions.cc"
+        "${TEST_DIR}/rrd.cc"
+        PARENT_SCOPE
+)
+set(
+        TESTS_LIBRARIES
+        ${TESTS_LIBRARIES}
+        "${RRD}"
+        PARENT_SCOPE
+)
 
 # Install rule.
 install(TARGETS "${RRD}"

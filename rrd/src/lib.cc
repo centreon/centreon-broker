@@ -180,8 +180,21 @@ void lib::update(time_t t, std::string const& value) {
   // Build argument string.
   std::string arg;
   {
+    std::istringstream iss{value};
     std::ostringstream oss;
-    oss << t << ":" << value;
+    float f;
+
+    iss >> std::noskipws >> f;
+
+    if(iss.eof() && !iss.fail())
+      oss << t << ":" << value;
+    else {
+      logging::error(logging::low)
+        << "RRD: ignored update non-float value '"
+        << value << "' in file '"
+        << _filename;
+      return;
+    }
     arg = oss.str();
   }
 
