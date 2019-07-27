@@ -79,9 +79,9 @@ io::factory* factory::clone() const {
  *  @return True if the configuration has this protocol.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  QMap<QString, QString>::const_iterator
-    it(cfg.params.find("protocol"));
-  return ((it != cfg.params.end()) && (it.value() == "bbdo"));
+  std::map<std::string, std::string>::const_iterator it{
+      cfg.params.find("protocol")};
+  return it != cfg.params.end() && it->second == "bbdo";
 }
 
 /**
@@ -105,20 +105,20 @@ io::endpoint* factory::new_endpoint(
   // Coarse endpoint ?
   bool coarse(false);
   {
-    QMap<QString, QString>::const_iterator
+    std::map<std::string, std::string>::const_iterator
       it(cfg.params.find("coarse"));
     if (it != cfg.params.end())
-      coarse = config::parser::parse_boolean(*it);
+      coarse = config::parser::parse_boolean(it->second);
   }
 
   // Negotiation allowed ?
   bool negotiate(false);
   QString extensions;
   if (!coarse) {
-    QMap<QString, QString>::const_iterator
+    std::map<std::string, std::string>::const_iterator
       it(cfg.params.find("negotiation"));
     if ((it != cfg.params.end())
-        && (*it == "no"))
+        && (it->second == "no"))
       negotiate = false;
     else {
       negotiate = true;
@@ -127,22 +127,22 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Ack limit.
-  unsigned int ack_limit(1000);
+  unsigned int ack_limit{1000};
   {
-    QMap<QString, QString>::const_iterator
+    std::map<std::string, std::string>::const_iterator
       it(cfg.params.find("ack_limit"));
     if (it != cfg.params.end())
-      ack_limit = it->toUInt();
+      ack_limit = std::stoul(it->second);
   }
 
   // Create object.
   if (is_acceptor) {
     // One peer retention mode ?
-    bool one_peer_retention_mode(false);
-    QMap<QString, QString>::const_iterator
+    bool one_peer_retention_mode{false};
+    std::map<std::string, std::string>::const_iterator
       it(cfg.params.find("one_peer_retention_mode"));
     if (it != cfg.params.end())
-      one_peer_retention_mode = config::parser::parse_boolean(*it);
+      one_peer_retention_mode = config::parser::parse_boolean(it->second);
     if (one_peer_retention_mode)
       is_acceptor = false;
     retval = new bbdo::acceptor(

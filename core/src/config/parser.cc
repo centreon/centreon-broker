@@ -40,30 +40,9 @@ using namespace json11;
 parser::parser() {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-parser::parser(parser const& other) {
-  (void)other;
-}
-
-/**
  *  Destructor.
  */
 parser::~parser() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-parser& parser::operator=(parser const& other) {
-  (void)other;
-  return (*this);
-}
 
 template <typename T, typename U>
 static bool get_conf(std::pair<std::string const, Json> const& obj,
@@ -212,13 +191,13 @@ void parser::parse(std::string const& file, state& s) {
  *
  *  @param[in] value String representation of the boolean.
  */
-bool parser::parse_boolean(QString const& value) {
+bool parser::parse_boolean(std::string const& value) {
   bool conversion_ok;
-  return (!value.compare("yes", Qt::CaseInsensitive)
-          || !value.compare("enable", Qt::CaseInsensitive)
-          || !value.compare("enabled", Qt::CaseInsensitive)
-          || !value.compare("true", Qt::CaseInsensitive)
-          || (value.toUInt(&conversion_ok) && conversion_ok));
+  return !strcasecmp(value.c_str(), "yes")
+          || !strcasecmp(value.c_str(), "enable")
+          || !strcasecmp(value.c_str(), "enabled")
+          || !strcasecmp(value.c_str(), "true")
+          || std::stol(value);
 }
 
 /**************************************
@@ -267,7 +246,6 @@ void parser::_parse_endpoint(Json const& elem, endpoint& e) {
       e.type = QString::fromStdString(object.second.string_value());
     e.params[QString::fromStdString(object.first)] = QString::fromStdString(object.second.string_value());
   }
-  return ;
 }
 
 /**
@@ -367,5 +345,4 @@ void parser::_parse_logger(Json const& elem, logger& l) {
                << val << "'");
     }
   }
-  return ;
 }

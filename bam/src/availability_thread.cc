@@ -18,7 +18,6 @@
 
 #include <ctime>
 #include <QMutexLocker>
-#include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/bam/availability_thread.hh"
 #include "com/centreon/broker/database_query.hh"

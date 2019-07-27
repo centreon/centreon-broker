@@ -41,10 +41,11 @@ using namespace com::centreon::broker::rrd;
  */
 static QString find_param(
                  config::endpoint const& cfg,
-                 QString const& key,
+                 std::string const& key,
                  bool thrw = true,
                  QString const& def = QString()) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+  std::map<std::string, std::string>::const_iterator it{
+      cfg.params.find(key)};
   if (cfg.params.end() == it) {
     if (thrw)
       throw (exceptions::msg() << "RRD: no '" << key << "' defined " \
