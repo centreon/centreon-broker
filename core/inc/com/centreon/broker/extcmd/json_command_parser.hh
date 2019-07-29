@@ -19,7 +19,6 @@
 #ifndef CCB_EXTCMD_JSON_COMMAND_PARSER_HH
 #  define CCB_EXTCMD_JSON_COMMAND_PARSER_HH
 
-#  include "com/centreon/broker/json/json_parser.hh"
 #  include "com/centreon/broker/extcmd/command_parser.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -45,9 +44,6 @@ namespace         extcmd {
   private:
                   json_command_parser(json_command_parser const&);
     json_command_parser& operator=(json_command_parser const&);
-
-    json::json_parser
-                  _parser;
   };
 }
 

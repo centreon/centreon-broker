@@ -43,6 +43,22 @@ configure_file(
   "@ONLY"
 )
 
+include(ExternalProject)
+
+ExternalProject_Add( json11_lib
+                     GIT_REPOSITORY https://github.com/dropbox/json11/
+                     TIMEOUT 10
+                     INSTALL_COMMAND ""
+                     LOG_DOWNLOAD ON
+                     LOG_CONFIGURE ON
+                     LOG_BUILD ON)
+
+ExternalProject_Get_Property(json11_lib source_dir)
+ExternalProject_Get_Property(json11_lib binary_dir)
+
+link_directories(${binary_dir})
+include_directories(${source_dir})
+
 #
 # Check and/or find required components.
 #
@@ -307,42 +323,9 @@ qt4_wrap_cpp(QT_WRAPPED_SOURCES
   "${INC_DIR}/processing/thread.hh"
 )
 
-include_directories("${INC_DIR}/json/yajl/")
-
-set(YAJL_SOURCES
-  # Sources.
-  "${SRC_DIR}/json/yajl/yajl_version.c"
-  "${SRC_DIR}/json/yajl/yajl_tree.c"
-  "${SRC_DIR}/json/yajl/yajl_parser.c"
-  "${SRC_DIR}/json/yajl/yajl_lex.c"
-  "${SRC_DIR}/json/yajl/yajl_gen.c"
-  "${SRC_DIR}/json/yajl/yajl_encode.c"
-  "${SRC_DIR}/json/yajl/yajl_buf.c"
-  "${SRC_DIR}/json/yajl/yajl_alloc.c"
-  "${SRC_DIR}/json/yajl/yajl.c"
-  # Includes.
-  "${SRC_DIR}/json/yajl/api/yajl_version.h"
-  "${SRC_DIR}/json/yajl/yajl_parser.h"
-  "${SRC_DIR}/json/yajl/yajl_lex.h"
-  "${SRC_DIR}/json/yajl/yajl_encode.h"
-  "${SRC_DIR}/json/yajl/yajl_bytestack.h"
-  "${SRC_DIR}/json/yajl/yajl_buf.h"
-  "${SRC_DIR}/json/yajl/yajl_alloc.h"
-  "${SRC_DIR}/json/yajl/api/yajl_tree.h"
-  "${SRC_DIR}/json/yajl/api/yajl_parse.h"
-  "${SRC_DIR}/json/yajl/api/yajl_gen.h"
-  "${SRC_DIR}/json/yajl/api/yajl_common.h"
-  "${INC_DIR}/json/yajl/yajl/yajl_version.h"
-  "${INC_DIR}/json/yajl/yajl/yajl_tree.h"
-  "${INC_DIR}/json/yajl/yajl/yajl_parse.h"
-  "${INC_DIR}/json/yajl/yajl/yajl_gen.h"
-  "${INC_DIR}/json/yajl/yajl/yajl_common.h"
-  )
-
 # Core library.
 set(LIBROKER_SOURCES
   # Sources.
-  ${YAJL_SOURCES}
   "${SRC_DIR}/bbdo/acceptor.cc"
   "${SRC_DIR}/bbdo/ack.cc"
   "${SRC_DIR}/bbdo/connector.cc"
@@ -416,11 +399,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/io/protocols.cc"
   "${SRC_DIR}/io/raw.cc"
   "${SRC_DIR}/io/stream.cc"
-  "${SRC_DIR}/json/jsmn.c"
-  "${SRC_DIR}/json/json_parser.cc"
-  "${SRC_DIR}/json/json_iterator.cc"
-  "${SRC_DIR}/json/json_writer.cc"
-  "${SRC_DIR}/json/yajl_parser.cc"
   "${SRC_DIR}/logging/backend.cc"
   "${SRC_DIR}/logging/file.cc"
   "${SRC_DIR}/logging/logger.cc"
@@ -534,12 +512,6 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/io/protocols.hh"
   "${INC_DIR}/io/raw.hh"
   "${INC_DIR}/io/stream.hh"
-  "${INC_DIR}/json/jsmn.h"
-  "${INC_DIR}/json/json_parser.hh"
-  "${INC_DIR}/json/json_iterator.hh"
-  "${INC_DIR}/json/json_writer.hh"
-  "${INC_DIR}/json/yajl_parser.hh"
-  "${INC_DIR}/json/yajl_visitable.hh"
   "${INC_DIR}/logging/backend.hh"
   "${INC_DIR}/logging/defines.hh"
   "${INC_DIR}/logging/file.hh"
@@ -587,6 +559,7 @@ set(LIBROKER_SOURCES
 
 # Static libraries.
 add_library("rokerbase" STATIC ${LIBROKER_SOURCES})
+add_dependencies(rokerbase json11_lib)
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-fPIC" COMPILER_HAS_FPIC)
 if (COMPILER_HAS_FPIC)
@@ -601,7 +574,7 @@ if (COMPILER_HAS_FPIC)
   set_property(TARGET "rokerbase"
     PROPERTY COMPILE_FLAGS "${ROKER_CXXFLAGS}")
 endif ()
-target_link_libraries("rokerbase" ${ZLIB_LIBRARIES} ${QT_LIBRARIES})
+target_link_libraries("rokerbase" json11 ${ZLIB_LIBRARIES} ${QT_LIBRARIES})
 add_library("roker" STATIC
   "${SRC_DIR}/config/applier/init.cc"
   "${SRC_DIR}/config/applier/logger.cc")
@@ -757,39 +730,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
     "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in")
   file(GENERATE OUTPUT "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml"
     INPUT "${PROJECT_SOURCE_DIR}/test/cfg/broker_modules.xml.in")
-  # XXX
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/monitoring_to_sql.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/dependencies_to_sql.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/sql_transactions.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/custom_variables_to_sql.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/filtering_to_sql.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/filtering_to_sql.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_1.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/tls_to_sql_2.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_protocol_version.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_protocol_version.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_0.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_0.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_1.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_1.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_2.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_multiple_connections_2.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_1.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_1.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_2.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/bbdo_one_peer_retention_mode_2.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/delete_graphs.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
-  # configure_file("${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml.in"
-  #   "${PROJECT_SOURCE_DIR}/test/cfg/sql_cleanup.xml")
 
   # Test library.
   include_directories("${PROJECT_SOURCE_DIR}")
@@ -978,252 +918,6 @@ if (WITH_TESTING AND DB_TYPE AND MONITORING_ENGINE)
   target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
   add_test("${TEST_NAME}" "${TEST_NAME}")
 
-  # XXX
-  # # Correlation to SQL.
-  # set(TEST_NAME "running_correlation_to_sql")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/correlation_to_sql.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # Instance update when outdated.
-  # set(TEST_NAME "running_sql_instance_update_outdated")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/sql_instance_update_outdated.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # SQL cleanup.
-  # set(TEST_NAME "running_sql_cleanup")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/sql_cleanup.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # SQL id change.
-  # set(TEST_NAME "running_sql_id_change")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/sql_id_change.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Encryption.
-  # set(TEST_NAME "running_tls_to_sql")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/tls_to_sql.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # BBDO protocol version.
-  # set(TEST_NAME "running_bbdo_protocol_version")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/bbdo_protocol_version.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # BBDO supports multiple connections.
-  # set(TEST_NAME "running_bbdo_multiple_connections")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/bbdo_multiple_connections.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # BBDO One Peer Retention Mode.
-  # set(TEST_NAME "running_bbdo_one_peer_retention_mode")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/bbdo_one_peer_retention_mode.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Monitoring to RRD graphs.
-  # set(TEST_NAME "running_monitoring_to_rrd")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/monitoring_to_rrd.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # Graph rebuild
-  # set(TEST_NAME "running_rebuild_graphs")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/rebuild_graphs.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # Graph deletion.
-  # set(TEST_NAME "running_delete_graphs")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/delete_graphs.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Failover to TCP.
-  # set(TEST_NAME "running_failover_to_tcp")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/failover_to_tcp.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Secondary failover to file.
-  # set(TEST_NAME "running_secondary_failovers_to_file")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/secondary_failovers_to_file.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # RRD endpoint as failover.
-  # set(TEST_NAME "running_rrd_as_failover")
-  # add_test("${TEST_NAME}" "cbd" "-c" "${PROJECT_SOURCE_DIR}/test/cfg/rrd_as_failover.xml")
-
-  # # Automatic retention.
-  # set(TEST_NAME "running_automatic_retention")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/automatic_retention.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Statistics.
-  # set(TEST_NAME "running_stats")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/stats.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Statistics events (internal metrics).
-  # set(TEST_NAME "running_stats_events")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/stats_events.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${LIBRRD_LDFLAGS})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Circular path in BA graph.
-  # set(TEST_NAME "running_bam_circular")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/bam_circular.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # BAM dimension.
-  # set(TEST_NAME "running_bam_dimension")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/bam_dimension.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # BAM rebuild.
-  # set(TEST_NAME "running_bam_rebuild")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/bam_rebuild.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # BAM BI events autoclose.
-  # set(TEST_NAME "running_bam_events_autoclose")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/bam_events_autoclose.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # BAM bool expression retention.
-  # set(TEST_NAME "running_bam_boolexp_retention")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/bam_boolexp_retention.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # BA and correlation.
-  # set(TEST_NAME "running_bam_correlation")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/bam_correlation.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Meta-services.
-  # set(TEST_NAME "running_meta_service")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/meta_service.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Non-correlated notification.
-  # set(TEST_NAME "running_notification_non_correlated")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/notification_non_correlated.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Correlated notification.
-  # set(TEST_NAME "running_notification_correlated")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/notification_correlated.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Notification write into file utility
-  # add_executable("util_write_into_file"
-  #   "${PROJECT_SOURCE_DIR}/test/write_into_file.cc")
-
-  # # Notification.
-  # set(TEST_NAME "running_notification")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/notification.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Influxdb
-  # set(TEST_NAME "running_influxdb")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/influxdb.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIB})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Graphite
-  # set(TEST_NAME "running_graphite")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/graphite.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIB})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Dumper FIFO
-  # set(TEST_NAME "running_fifo_dumper")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/fifo_dumper.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIB})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Dumper DIR
-  # set(TEST_NAME "running_directory_dumper")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/directory_dumper.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIB})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # Database synchronization.
-  # set(TEST_NAME "running_db_cfg")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/db_cfg.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIB})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # RRD benchmark.
-  # unset(QT_WRAPPED_SOURCES)
-  # qt4_wrap_cpp(QT_WRAPPED_SOURCES
-  #   "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd_mod.hh")
-  # set(TEST_NAME "running_bench_generate_rrd_mod")
-  # add_library("${TEST_NAME}" SHARED
-  #   "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd_mod.cc"
-  #   ${QT_WRAPPED_SOURCES})
-  # set(TEST_NAME "running_bench_generate_rrd")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/bench_generate_rrd.cc")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}")
-
-  # # BBDO benchmark.
-  # set(TEST_NAME "running_bench_bbdo")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/bench_bbdo.cc"
-  #   "${PROJECT_SOURCE_DIR}/test/bench_stream.cc"
-  #   "${PROJECT_SOURCE_DIR}/test/bench_stream.hh")
-  # target_link_libraries("${TEST_NAME}" "${TEST_LIB}" ${BAM} ${NOTIFICATION} ${CORRELATION} ${NEB} ${STORAGE})
-
-  # # Helgrind.
-  # set(TEST_NAME "running_helgrind")
-  # add_executable("${TEST_NAME}"
-  #   "${PROJECT_SOURCE_DIR}/test/helgrind.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIB})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
   # Last file to configure, based on target paths.
   configure_file("${PROJECT_SOURCE_DIR}/test/install_paths.hh.in.in"
     "${PROJECT_SOURCE_DIR}/test/install_paths.hh.in")
@@ -1275,23 +969,10 @@ install(CODE "
 ")
 
 # Install rule.
-#install(TARGETS "roker"
-#  ARCHIVE DESTINATION "${PREFIX_LIB}"
-#)
-
-# Install rule.
 install(TARGETS "${DAEMON}"
   RUNTIME DESTINATION "${PREFIX_BIN}"
 )
 
-# Install scripts.
-#if (WITH_STARTUP_SCRIPT STREQUAL "sysv")
-#  foreach (DAEMON_NAME IN LISTS WITH_DAEMONS)
-#    install(FILES "${PROJECT_SOURCE_DIR}/script/cbd-${DAEMON_NAME}.sh"
-#      DESTINATION "${STARTUP_DIR}"
-#      RENAME "cbd-${DAEMON_NAME}")
-#  endforeach()
-#endif ()
 
 # Install header files for development.
 install(DIRECTORY "${INC_DIR}/../../../"
@@ -1316,466 +997,6 @@ if (WITH_TESTING)
   enable_testing()
   add_subdirectory("tests")
 
-  # Below are the older CTest-based unit tests.
-
-  # # misc namespace tests.
-  # # misc::stringifier tests.
-  # #   Default construction.
-  # set(TEST_NAME "core_misc_stringifier_ctor_default")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/ctor_default.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   C-string insertion.
-  # set(TEST_NAME "core_misc_stringifier_string")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/string.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Boolean insertion.
-  # set(TEST_NAME "core_misc_stringifier_bool")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/bool.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Double insertion.
-  # set(TEST_NAME "core_misc_stringifier_double")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/double.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Integer insertion.
-  # set(TEST_NAME "core_misc_stringifier_int")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/int.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Long insertion.
-  # set(TEST_NAME "core_misc_stringifier_long")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/long.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Long long insertion.
-  # set(TEST_NAME "core_misc_stringifier_long_long")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/long_long.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   QString insertion.
-  # set(TEST_NAME "core_misc_stringifier_qstring")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/qstring.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Unsigned integer insertion.
-  # set(TEST_NAME "core_misc_stringifier_uint")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/uint.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Unsigned long integer insertion.
-  # set(TEST_NAME "core_misc_stringifier_ulong")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/ulong.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Unsigned long long integer insertion.
-  # set(TEST_NAME "core_misc_stringifier_ulong_long")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/ulong_long.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Pointer insertion.
-  # set(TEST_NAME "core_misc_stringifier_pointer")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/pointer.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Mixed insertions.
-  # set(TEST_NAME "core_misc_stringifier_mixed")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/mixed.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Reinitialization of object.
-  # set(TEST_NAME "core_misc_stringifier_reset")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/reset.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Copy construction.
-  # set(TEST_NAME "core_misc_stringifier_ctor_copy")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/ctor_copy.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Assignment operator.
-  # set(TEST_NAME "core_misc_stringifier_assignment")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/misc/stringifier/assignment.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-
-  # # exceptions namespace tests.
-  # # exceptions::msg tests.
-  # #   Default construction.
-  # set(TEST_NAME "core_exceptions_msg_ctor_default")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/exceptions/msg/ctor_default.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Copy construction.
-  # set(TEST_NAME "core_exceptions_msg_ctor_copy")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/exceptions/msg/ctor_copy.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Assignment operator.
-  # set(TEST_NAME "core_exceptions_msg_assignment")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/exceptions/msg/assignment.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Throw test.
-  # set(TEST_NAME "core_exceptions_msg_throw")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/exceptions/msg/throw.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Rethrow test.
-  # set(TEST_NAME "core_exceptions_msg_rethrow")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/exceptions/msg/rethrow.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Clone test.
-  # set(TEST_NAME "core_exceptions_msg_clone")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/exceptions/msg/clone.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-
-  # # config namespace tests.
-  # # config::logger tests.
-  # #   Default constructor.
-  # set(TEST_NAME "core_config_logger_ctor_default")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/config/logger/ctor_default.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Copy constructor.
-  # set(TEST_NAME "core_config_logger_ctor_copy")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/config/logger/ctor_copy.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Assignment operator.
-  # set(TEST_NAME "core_config_logger_assignment")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/config/logger/assignment.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Equality operator.
-  # set(TEST_NAME "core_config_logger_equality")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/config/logger/equality.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Inequality operator.
-  # set(TEST_NAME "core_config_logger_inequality")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/config/logger/inequality.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # Parser tests.
-  # #   'logger' keyword.
-  # set(TEST_NAME "core_config_parser_logger")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/config/parser/logger.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   'input' and 'output' keywords.
-  # set(TEST_NAME "core_config_parser_endpoint")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/config/parser/endpoint.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   'include' keyword.
-  # set(TEST_NAME "core_config_parser_include")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/config/parser/include.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-
-  # # logging namespace tests.
-  # # logging::file tests.
-  # add_library("ccb_core_logging_file"
-  #   STATIC
-  #   "${TEST_DIR}/logging/file/common.cc")
-  # #   Logging with no timestamp nor thread ID.
-  # set(TEST_NAME "core_logging_file_log_with_nothing")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/logging/file/log_with_nothing.cc"
-  #   "${TEST_DIR}/logging/file/common.hh")
-  # target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Logging with timestamp.
-  # set(TEST_NAME "core_logging_file_log_with_timestamp")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/logging/file/log_with_timestamp.cc"
-  #   "${TEST_DIR}/logging/file/common.hh")
-  # target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Logging with thread ID.
-  # set(TEST_NAME "core_logging_file_log_with_thread_id")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/logging/file/log_with_thread_id.cc"
-  #   "${TEST_DIR}/logging/file/common.hh")
-  # target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Logging with timestamp and thread ID.
-  # set(TEST_NAME "core_logging_file_log_with_everything")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/logging/file/log_with_everything.cc"
-  #   "${TEST_DIR}/logging/file/common.hh")
-  # target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Logging with maximum file size.
-  # set(TEST_NAME "core_logging_file_log_with_max_size")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/logging/file/log_with_max_size.cc"
-  #   "${TEST_DIR}/logging/file/common.hh")
-  # target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # logging::manager tests.
-  # #   Simple logging.
-  # set(TEST_NAME "core_logging_manager_simple")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/logging/manager/simple.cc"
-  #   "${TEST_DIR}/logging/file/common.hh")
-  # target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Logging on multiple backends.
-  # set(TEST_NAME "core_logging_manager_multiple")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/logging/manager/multiple.cc"
-  #   "${TEST_DIR}/logging/file/common.hh")
-  # target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Logging on backends with different options.
-  # set(TEST_NAME "core_logging_manager_cross")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/logging/manager/cross.cc"
-  #   "${TEST_DIR}/logging/file/common.hh")
-  # target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Stop logging on a backend.
-  # set(TEST_NAME "core_logging_manager_backend_unlog")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/logging/manager/backend_unlog.cc"
-  #   "${TEST_DIR}/logging/file/common.hh")
-  # target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # logging::temp_logger tests.
-  # #   Default test.
-  # set(TEST_NAME "core_logging_temp_logger_enabled")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/logging/temp_logger/enabled.cc"
-  #   "${TEST_DIR}/logging/file/common.hh")
-  # target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Object copy.
-  # set(TEST_NAME "core_logging_temp_logger_copied")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/logging/temp_logger/copied.cc"
-  #   "${TEST_DIR}/logging/file/common.hh")
-  # target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Data insertion.
-  # set(TEST_NAME "core_logging_temp_logger_insertion")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/logging/temp_logger/insertion.cc"
-  #   "${TEST_DIR}/logging/file/common.hh")
-  # target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Test with temp_logger disabled.
-  # set(TEST_NAME "core_logging_temp_logger_disabled")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/logging/temp_logger/disabled.cc"
-  #   "${TEST_DIR}/logging/file/common.hh")
-  # target_link_libraries("${TEST_NAME}" "roker" "ccb_core_logging_file")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # Global tests.
-  # if ("${QT_VERSION}" VERSION_GREATER "4.4.0")
-  #   #   Concurrent logging.
-  #   set(TEST_NAME "core_logging_logging_concurrent")
-  #   add_executable("${TEST_NAME}"
-  #     "${TEST_DIR}/logging/logging/concurrent.cc")
-  #   target_link_libraries("${TEST_NAME}" "roker")
-  #   add_test("${TEST_NAME}" "${TEST_NAME}")
-  # endif ()
-  # #   Performance testing.
-  # set(TEST_NAME "core_logging_logging_performance")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/logging/logging/performance.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-
-  # # io namespace tests.
-  # # io::raw tests.
-  # #   Default constructor.
-  # set(TEST_NAME "core_io_raw_ctor_default")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/io/raw/ctor_default.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # io::exceptions namespace tests.
-  # # io::exceptions::shutdown tests.
-  # #   Default constructor.
-  # set(TEST_NAME "core_io_exceptions_shutdown_ctor_default")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/io/exceptions/shutdown/ctor_default.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Copy construction.
-  # set(TEST_NAME "core_io_exceptions_shutdown_ctor_copy")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/io/exceptions/shutdown/ctor_copy.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Assignment operator.
-  # set(TEST_NAME "core_io_exceptions_shutdown_assignment")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/io/exceptions/shutdown/assignment.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Throw test.
-  # set(TEST_NAME "core_io_exceptions_shutdown_throw")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/io/exceptions/shutdown/throw.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Rethrow test.
-  # set(TEST_NAME "core_io_exceptions_shutdown_rethrow")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/io/exceptions/shutdown/rethrow.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Clone test.
-  # set(TEST_NAME "core_io_exceptions_shutdown_clone")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/io/exceptions/shutdown/clone.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-
-  # # multiplexing namespace tests.
-  # # multiplexing::subscriber tests.
-  # add_library("ccb_core_multiplexing_subscriber" STATIC
-  #   "${TEST_DIR}/multiplexing/subscriber/temporary_endpoint.cc"
-  #   "${TEST_DIR}/multiplexing/subscriber/temporary_stream.cc")
-  # set(TEST_LIBRARIES "ccb_core_multiplexing_subscriber" "roker")
-
-  # #   Default constructor.
-  # set(TEST_NAME "core_multiplexing_subscriber_ctor_default")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/multiplexing/subscriber/ctor_default.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # multiplexing::engine tests.
-  # add_library("ccb_core_multiplexing_engine" STATIC
-  #   "${TEST_DIR}/multiplexing/engine/hooker.cc")
-  # #   Start and stop.
-  # set(TEST_NAME "core_multiplexing_engine_start_stop")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/multiplexing/engine/start_stop.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Hook.
-  # set(TEST_NAME "core_multiplexing_engine_hook")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/multiplexing/engine/hook.cc")
-  # target_link_libraries("${TEST_NAME}"
-  #   "ccb_core_multiplexing_engine"
-  #   "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Unhook.
-  # set(TEST_NAME "core_multiplexing_engine_unhook")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/multiplexing/engine/unhook.cc")
-  # target_link_libraries("${TEST_NAME}"
-  #   "ccb_core_multiplexing_engine"
-  #   "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # # multiplexing::publisher tests.
-  # #   Read.
-  # set(TEST_NAME "core_multiplexing_publisher_read")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/multiplexing/publisher/read.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Write.
-  # set(TEST_NAME "core_multiplexing_publisher_write")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/multiplexing/publisher/write.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-
-  # # file namespace tests.
-  # # file::stream tests.
-  # #   Writing.
-  # set(TEST_NAME "file_stream_write")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/file/stream/write.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Reading.
-  # set(TEST_NAME "file_stream_read")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/file/stream/read.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Size limitation.
-  # set(TEST_NAME "file_stream_max_size")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/file/stream/max_size.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-  # #   Mixed reads/writes.
-  # set(TEST_NAME "file_stream_mixed")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/file/stream/mixed.cc")
-  # target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-
-  # # module namespace tests.
-  # # module::loader tests.
-  # #   module versioning.
-  # set(TEST_NAME "modules_versioning")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/modules/module.cc")
-  # add_library("null_module" SHARED
-  #   "${TEST_DIR}/modules/null_module.cc")
-  # add_library("bad_version_module" SHARED
-  #   "${TEST_DIR}/modules/bad_version_module.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # # bbdo namespace tests.
-  # # bbdo::stream tests.
-  # #  stream read.
-  # set(TEST_NAME "bbdo_read")
-  # add_executable("${TEST_NAME}"
-  #   "${TEST_DIR}/bbdo/read.cc")
-  # target_link_libraries("${TEST_NAME}" "roker")
-  # add_test("${TEST_NAME}" "${TEST_NAME}")
 endif ()
 
 #

@@ -19,13 +19,12 @@
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
+#include <json11.hpp>
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
-#include "com/centreon/broker/json/json_parser.hh"
 #include "com/centreon/broker/lua/broker_utils.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::json;
 using namespace com::centreon::broker::lua;
 
 static void broker_json_encode(lua_State* L, std::ostringstream& oss);
@@ -158,7 +157,7 @@ static int l_broker_json_encode(lua_State* L) {
   return 1;
 }
 
-static void broker_json_decode(lua_State* L, json::json_iterator& it);
+static void broker_json_decode(lua_State* L, json11::Json const& it);
 
 /**
  *  The Lua json_decode function for arrays.
@@ -166,12 +165,12 @@ static void broker_json_decode(lua_State* L, json::json_iterator& it);
  *  @param L The Lua interpreter
  *  @param it The current json_iterator
  */
-static void broker_json_decode_array(lua_State* L, json::json_iterator& it) {
-  int size(it.children());
-  json::json_iterator cit(it.enter_children());
+static void broker_json_decode_array(lua_State* L, json11::Json const& it) {
+  int size(it.array_items().size());
+  auto cit(it.array_items().begin());
   lua_createtable(L, size, 0);
   for (int i(1); i <= size; ++i, ++cit) {
-    broker_json_decode(L, cit);
+    broker_json_decode(L, *cit);
     lua_rawseti(L, -2, i);
   }
 }
@@ -182,15 +181,14 @@ static void broker_json_decode_array(lua_State* L, json::json_iterator& it) {
  *  @param L The Lua interpreter
  *  @param it The current json_iterator
  */
-static void broker_json_decode_object(lua_State* L, json::json_iterator& it) {
-  int size(it.children());
+static void broker_json_decode_object(lua_State* L, json11::Json const& it) {
+  int size(it.object_items().size());
   lua_createtable(L, 0, size);
-  for (json::json_iterator cit(it.enter_children());
-       !cit.end();
+  for (auto cit(it.object_items().begin());
+       cit != it.object_items().end();
        ++cit) {
-    broker_json_decode(L, cit);
-    json::json_iterator ccit(cit.enter_children());
-    broker_json_decode(L, ccit);
+    lua_pushstring(L, cit->first.c_str());
+    broker_json_decode(L, cit->second);
     lua_settable(L, -3);
   }
 }
@@ -201,11 +199,11 @@ static void broker_json_decode_object(lua_State* L, json::json_iterator& it) {
  *  @param L The Lua interpreter
  *  @param it The current json_iterator
  */
-static void broker_json_decode(lua_State* L, json::json_iterator& it) {
-  switch (it.get_type()) {
-    case json_iterator::string:
+static void broker_json_decode(lua_State* L, json11::Json const& it) {
+  switch (it.type()) {
+    case json11::Json::STRING:
       {
-        std::string str(it.get_string());
+        std::string str(it.string_value());
         size_t pos(str.find_first_of("\\"));
         while (pos != std::string::npos) {
           switch (str[pos + 1]) {
@@ -231,24 +229,26 @@ static void broker_json_decode(lua_State* L, json::json_iterator& it) {
         lua_pushstring(L, str.c_str());
       }
       break;
-    case json_iterator::number:
+    case json11::Json::NUMBER:
       {
-        double value(atof(it.get_string().c_str()));
-        int intvalue(atoi(it.get_string().c_str()));
+        double value(it.number_value());
+        int intvalue(it.int_value());
         if (value == intvalue)
           lua_pushinteger(L, intvalue);
         else
           lua_pushnumber(L, value);
       }
       break;
-    case json_iterator::boolean:
-      lua_pushboolean(L, it.get_bool() ? 1 : 0);
+    case json11::Json::BOOL:
+      lua_pushboolean(L, it.bool_value() ? 1 : 0);
       break;
-    case json_iterator::array:
+    case json11::Json::ARRAY:
       broker_json_decode_array(L, it);
       break;
-    case json_iterator::object:
+    case json11::Json::OBJECT:
       broker_json_decode_object(L, it);
+      break;
+    case json11::Json::NUL:
       break;
     default:
       luaL_error(L, "Unrecognized type in json content");
@@ -262,9 +262,9 @@ static void broker_json_decode(lua_State* L, json::json_iterator& it) {
  */
 static int l_broker_json_decode(lua_State* L) {
   char const* content(luaL_checkstring(L, -1));
-  json::json_parser parser;
-  parser.parse(content);
-  json::json_iterator it(parser.begin());
+  std::string err;
+
+  json11::Json const& it{json11::Json::parse(content, err)};
   broker_json_decode(L, it);
   return 1;
 }
