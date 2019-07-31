@@ -19,6 +19,8 @@
 #include <utility>
 #include <vector>
 #include <sstream>
+#include <QSqlError>
+#include <QVariant>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/loaders/macro_loader.hh"
