@@ -48,17 +48,17 @@ using namespace com::centreon::broker::bbdo;
  */
 connector::connector(
              bool negotiate,
-             QString const& extensions,
+             std::string const& extensions,
              time_t timeout,
              bool coarse,
              unsigned int ack_limit)
-  : io::endpoint(false),
-    _coarse(coarse),
-    _extensions(extensions),
-    _negotiate(negotiate),
-    _timeout(timeout),
-    _ack_limit(ack_limit) {
-  if ((_timeout == (time_t)-1) || (_timeout == 0))
+  : io::endpoint{false},
+    _coarse{coarse},
+    _extensions{extensions},
+    _negotiate{negotiate},
+    _timeout{timeout},
+    _ack_limit{ack_limit} {
+  if (_timeout == (time_t)-1 || _timeout == 0)
     _timeout = 3;
 }
 
@@ -68,12 +68,12 @@ connector::connector(
  *  @param[in] other Object to copy.
  */
 connector::connector(connector const& other)
-  : io::endpoint(other),
-    _coarse(other._coarse),
-    _extensions(other._extensions),
-    _negotiate(other._negotiate),
-    _timeout(other._timeout),
-    _ack_limit(other._ack_limit) {}
+  : io::endpoint{other},
+    _coarse{other._coarse},
+    _extensions{other._extensions},
+    _negotiate{other._negotiate},
+    _timeout{other._timeout},
+    _ack_limit{other._ack_limit} {}
 
 /**
  *  Destructor.
@@ -139,5 +139,5 @@ std::shared_ptr<io::stream> connector::_open(
     bbdo_stream->negotiate(bbdo::stream::negotiate_first);
     bbdo_stream->set_ack_limit(_ack_limit);
   }
-  return (bbdo_stream);
+  return bbdo_stream;
 }

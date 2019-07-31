@@ -51,15 +51,17 @@ splitter::splitter(
             fs_browser* fs,
             long max_file_size,
             bool auto_delete)
-  : _auto_delete(auto_delete),
-    _base_path(path),
-    _file_factory(file_factory),
-    _fs(fs),
-    _max_file_size(max_file_size),
-    _rid(0),
-    _roffset(0),
-    _wid(0),
-    _woffset(0) {
+  : _auto_delete{auto_delete},
+    _base_path{path},
+    _file_factory{file_factory},
+    _fs{fs},
+    _max_file_size{max_file_size},
+    _rfile{},
+    _rid{0},
+    _roffset{0},
+    _wfile{},
+    _wid{0},
+    _woffset{0} {
   (void)mode;
 
   // Set max file size.

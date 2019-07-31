@@ -16,8 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QHash>
-#include <QPair>
 #include "com/centreon/broker/neb/node_id.hh"
 
 using namespace com::centreon::broker::neb;
@@ -54,16 +52,27 @@ node_id& node_id::operator=(node_id const& obj) {
 }
 
 /**
+ *  Operator == for node_id objects
+ *
+ * @param other
+ *
+ * @return a boolean
+ */
+bool node_id::operator==(node_id const& other) const throw() {
+  return _host_id == other._host_id && _service_id == other._service_id;
+}
+
+/**
  *  Constructor given host and service id.
  *
  *  @param[in] host_id    The host id of this node. 0 if none.
  *  @param[in] service_id  The service id of this node. 0 if none.
  */
 node_id::node_id(
-           unsigned int host_id,
-           unsigned int service_id) :
-  _host_id(host_id),
-  _service_id(service_id) {}
+           uint64_t host_id,
+           uint64_t service_id) :
+  _host_id{host_id},
+  _service_id{service_id} {}
 
 /**
  *  Comparison operator.
@@ -77,17 +86,6 @@ bool node_id::operator<(node_id const& obj) const throw() {
     return (_host_id < obj._host_id);
   else
     return (_service_id < obj._service_id);
-}
-
-/**
- *  Equality operator.
- *
- *  @param[in] obj  The object to compare with.
- *
- *  @return         True if this object is equal to the other.
- */
-bool node_id::operator==(node_id const& obj) const throw() {
-  return (_host_id == obj._host_id && _service_id == obj._service_id);
 }
 
 /**
@@ -106,8 +104,8 @@ bool node_id::operator!=(node_id const& obj) const throw() {
  *
  *  @return  The host id of this node. 0 if none.
  */
-unsigned int node_id::get_host_id() const throw() {
-  return (_host_id);
+uint64_t node_id::get_host_id() const throw() {
+  return _host_id;
 }
 
 /**
@@ -115,8 +113,8 @@ unsigned int node_id::get_host_id() const throw() {
  *
  *  @return  The service id of this node. 0 if none.
  */
-unsigned int node_id::get_service_id() const throw() {
-  return (_service_id);
+uint64_t node_id::get_service_id() const throw() {
+  return _service_id;
 }
 
 /**
@@ -148,16 +146,4 @@ node_id node_id::to_host() const throw() {
 
 bool node_id::empty() const throw() {
   return (_host_id == 0 && _service_id == 0);
-}
-
-/**
- *  QHash function for hash and sets.
- *
- *  @param[in] id  A node id.
- *
- *  @return        An identifier for this node_id usable in hashtable.
- */
-uint com::centreon::broker::neb::qHash(node_id id) {
-  return (qHash(qMakePair(id.get_host_id(),
-                          id.get_service_id())));
 }

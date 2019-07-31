@@ -113,21 +113,21 @@ io::endpoint* factory::new_endpoint(
   // External command file.
   std::string ext_cmd_file;
   if (!is_bam_bi) {
-    QMap<QString, QString>::const_iterator
+    std::map<std::string, std::string>::const_iterator
       it = cfg.params.find("command_file");
-    if (it == cfg.params.end() || it->isEmpty())
-      throw (exceptions::msg()
-             << "BAM: command_file parameter not set");
-    ext_cmd_file = it->toStdString();
+    if (it == cfg.params.end() || it->second.empty())
+      throw exceptions::msg()
+             << "BAM: command_file parameter not set";
+    ext_cmd_file = it->second;
   }
 
   // Storage database name.
   std::string storage_db_name;
   {
-    QMap<QString, QString>::const_iterator
+    std::map<std::string, std::string>::const_iterator
       it(cfg.params.find("storage_db_name"));
     if (it != cfg.params.end())
-      storage_db_name = it->toStdString();
+      storage_db_name = it->second;
   }
 
   // Connector.
@@ -137,5 +137,5 @@ io::endpoint* factory::new_endpoint(
   else
     c->connect_monitoring(ext_cmd_file, db_cfg, storage_db_name, cache);
   is_acceptor = false;
-  return (c.release());
+  return c.release();
 }

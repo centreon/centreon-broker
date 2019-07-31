@@ -19,7 +19,7 @@
 #ifndef CCB_BAM_DIMENSION_BA_EVENT_HH
 #  define CCB_BAM_DIMENSION_BA_EVENT_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
@@ -47,8 +47,8 @@ namespace                bam {
     static unsigned int  static_type();
 
     unsigned int         ba_id;
-    QString              ba_name;
-    QString              ba_description;
+    std::string              ba_name;
+    std::string              ba_description;
     double               sla_month_percent_crit;
     double               sla_month_percent_warn;
     unsigned int         sla_duration_crit;

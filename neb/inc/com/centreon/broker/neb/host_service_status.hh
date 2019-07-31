@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_HOST_SERVICE_STATUS_HH
 #  define CCB_NEB_HOST_SERVICE_STATUS_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/status.hh"
 #  include "com/centreon/broker/timestamp.hh"
@@ -47,15 +47,15 @@ namespace                neb {
     bool                 acknowledged;
     short                acknowledgement_type;
     bool                 active_checks_enabled;
-    QString              check_command;
+    std::string              check_command;
     double               check_interval;
-    QString              check_period;
+    std::string              check_period;
     short                check_type;
     short                current_check_attempt;
     short                current_state;
     short                downtime_depth;
     bool                 enabled;
-    QString              event_handler;
+    std::string              event_handler;
     double               execution_time;
     bool                 has_been_checked;
     unsigned int         host_id;
@@ -73,10 +73,10 @@ namespace                neb {
     bool                 no_more_notifications;
     short                notification_number;
     bool                 obsess_over;
-    QString              output;
+    std::string              output;
     bool                 passive_checks_enabled;
     double               percent_state_change;
-    QString              perf_data;
+    std::string              perf_data;
     double               retry_interval;
     bool                 should_be_scheduled;
     short                state_type;

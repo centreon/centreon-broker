@@ -71,7 +71,7 @@ static bool get_conf(std::pair<std::string const, Json> const& obj,
  *  @param[out] s    Resulting configuration state.
  */
 void parser::parse(std::string const& file, state& s) {
-  // Parse XML document.
+  // Parse JSON document.
   std::ifstream f(file);
   std::string const& json_to_parse{
     std::istreambuf_iterator<char>(f),
@@ -183,7 +183,6 @@ void parser::parse(std::string const& file, state& s) {
         s.params()[object.first] = object.second.dump();
     }
   }
-  return ;
 }
 
 /**
@@ -192,7 +191,6 @@ void parser::parse(std::string const& file, state& s) {
  *  @param[in] value String representation of the boolean.
  */
 bool parser::parse_boolean(std::string const& value) {
-  bool conversion_ok;
   return !strcasecmp(value.c_str(), "yes")
           || !strcasecmp(value.c_str(), "enable")
           || !strcasecmp(value.c_str(), "enabled")

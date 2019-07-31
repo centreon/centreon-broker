@@ -19,7 +19,7 @@
 #ifndef CCB_TCP_CONNECTOR_HH
 #  define CCB_TCP_CONNECTOR_HH
 
-#  include <QString>
+#  include <string>
 #  include <QTcpSocket>
 #  include <QMutex>
 #  include "com/centreon/broker/io/endpoint.hh"
@@ -40,7 +40,7 @@ namespace          tcp {
                    connector(connector const& other);
                    ~connector();
     connector&     operator=(connector const& other);
-    void           connect_to(QString const& host, unsigned short port);
+    void           connect_to(std::string const& host, unsigned short port);
     std::shared_ptr<io::stream>
                    open();
     void           set_read_timeout(int secs);
@@ -49,7 +49,7 @@ namespace          tcp {
   private:
     void           _internal_copy(connector const& other);
 
-    QString        _host;
+    std::string        _host;
     unsigned short _port;
     int            _read_timeout;
     int            _write_timeout;

@@ -19,13 +19,15 @@
 #ifndef CCB_MISC_MISC_HH
 #  define CCB_MISC_MISC_HH
 
+#  include <list>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     misc {
+namespace misc {
   std::string temp_path();
+  std::list<std::string> split(std::string const& str, char sep);
 }
 
 CCB_END()

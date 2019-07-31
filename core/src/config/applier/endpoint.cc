@@ -121,7 +121,7 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
 
   // Copy endpoint configurations and apply eventual modifications.
   std::list<config::endpoint> tmp_endpoints(endpoints);
-  for (QMap<QString, io::protocols::protocol>::const_iterator
+  for (std::map<std::string, io::protocols::protocol>::const_iterator
          it1(io::protocols::instance().begin()),
          end1(io::protocols::instance().end());
        it1 != end1;
@@ -131,7 +131,7 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
            end2(tmp_endpoints.end());
          it2 != end2;
          ++it2)
-      it1->endpntfactry->has_endpoint(*it2);
+      it1->second.endpntfactry->has_endpoint(*it2);
   }
 
   // Remove old inputs and generate inputs to create.
@@ -431,13 +431,13 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(
   // Create endpoint object.
   std::shared_ptr<io::endpoint> endp;
   int level(0);
-  for (QMap<QString, io::protocols::protocol>::const_iterator
+  for (std::map<std::string, io::protocols::protocol>::const_iterator
          it(io::protocols::instance().begin()),
          end(io::protocols::instance().end());
        it != end;
        ++it) {
-    if ((it.value().osi_from == 1)
-        && it.value().endpntfactry->has_endpoint(cfg)) {
+    if ((it->second.osi_from == 1)
+        && it->second.endpntfactry->has_endpoint(cfg)) {
       std::shared_ptr<persistent_cache> cache;
       if (cfg.cache_enabled) {
         std::string
@@ -448,11 +448,11 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(
                         new persistent_cache(cache_path));
       }
       endp = std::shared_ptr<io::endpoint>(
-                     it.value().endpntfactry->new_endpoint(
+                     it->second.endpntfactry->new_endpoint(
                                                 cfg,
                                                 is_acceptor,
                                                 cache));
-      level = it.value().osi_to + 1;
+      level = it->second.osi_to + 1;
       break ;
     }
   }
@@ -463,18 +463,18 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(
   // Create remaining objects.
   while (level <= 7) {
     // Browse protocol list.
-    QMap<QString, io::protocols::protocol>::const_iterator it(io::protocols::instance().begin());
-    QMap<QString, io::protocols::protocol>::const_iterator end(io::protocols::instance().end());
+    std::map<std::string, io::protocols::protocol>::const_iterator it(io::protocols::instance().begin());
+    std::map<std::string, io::protocols::protocol>::const_iterator end(io::protocols::instance().end());
     while (it != end) {
-      if ((it.value().osi_from == level)
-          && (it.value().endpntfactry->has_endpoint(cfg))) {
+      if ((it->second.osi_from == level)
+          && (it->second.endpntfactry->has_endpoint(cfg))) {
         std::shared_ptr<io::endpoint>
-          current(it.value().endpntfactry->new_endpoint(
+          current(it->second.endpntfactry->new_endpoint(
                                              cfg,
                                              is_acceptor));
         current->from(endp);
         endp = current;
-        level = it.value().osi_to;
+        level = it->second.osi_to;
         break ;
       }
       ++it;

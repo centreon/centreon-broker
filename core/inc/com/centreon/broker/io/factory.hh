@@ -53,7 +53,7 @@ namespace             io {
                       new_stream(
                         std::shared_ptr<stream> substream,
                         bool is_acceptor,
-                        QString const& proto_name);
+                        std::string const& proto_name);
   };
 }
 

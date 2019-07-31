@@ -72,10 +72,9 @@ unsigned int plaintext_command_parser::parse(
       // another command status.
       static char const* execute_cmd("EXECUTE;");
       static char const* status_cmd("STATUS;");
-      if (cmd.substr(0, ::strlen(status_cmd)) == status_cmd) {
-        res = _listener.command_status(
-                          QString::fromStdString(cmd.substr(::strlen(status_cmd))));
-      }
+      if (cmd.substr(0, ::strlen(status_cmd)) == status_cmd)
+        res = _listener.command_status(cmd.substr(::strlen(status_cmd)));
+
       // Store command in result listener and let
       // it be processed by multiplexing engine.
       else if (cmd.substr(0, ::strlen(execute_cmd)) == execute_cmd) {
@@ -96,7 +95,7 @@ unsigned int plaintext_command_parser::parse(
     catch (std::exception const& e) {
       // At this point, command request was not written to the command
       // listener, so it not necessary to write command result either.
-      res.uuid = QString();
+      res.uuid = "";
       res.code = -1;
       res.msg = e.what();
     }
@@ -114,7 +113,7 @@ unsigned int plaintext_command_parser::parse(
  */
 std::string plaintext_command_parser::write(command_result const& res) {
   std::ostringstream oss;
-  oss << res.uuid.toStdString() << " " << std::hex << std::showbase
-      << res.code << " " << res.msg.toStdString() << "\n";
-  return (oss.str());
+  oss << res.uuid << " " << std::hex << std::showbase
+      << res.code << " " << res.msg << "\n";
+  return oss.str();
 }

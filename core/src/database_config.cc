@@ -123,7 +123,7 @@ database_config::database_config(config::endpoint const& cfg) {
   // check_replication
   it = cfg.params.find("check_replication");
   if (it != end)
-    _check_replication = config::parser::parse_boolean(*it);
+    _check_replication = config::parser::parse_boolean(it->second);
   else
     _check_replication = true;
 }

@@ -27,8 +27,6 @@
 #  include "com/centreon/broker/storage/status.hh"
 #  include "com/centreon/broker/graphite/macro_cache.hh"
 
-std::ostream& operator<<(std::ostream& in, QString const& string);
-
 CCB_BEGIN()
 
 namespace         graphite {
@@ -77,17 +75,17 @@ namespace         graphite {
     void          _compile_naming_scheme(
                     std::string const& naming_scheme,
                     data_type type);
-    QString       _escape(QString const& str);
+    std::string   _escape(std::string const& str);
     void          _throw_on_invalid(data_type macro_type);
 
     template <typename T, typename U, T (U::*member)>
     void          _get_member(io::data const& d, std::ostream& is);
-    template <typename U, QString (U::*member)>
+    template <typename U, std::string (U::*member)>
     void          _get_string_member(io::data const& d, std::ostream& is);
     void          _get_string(io::data const& d, std::ostream& is);
     void          _get_null(io::data const& d, std::ostream& is);
     void          _get_dollar_sign(io::data const& d, std::ostream& is);
-    unsigned int  _get_index_id(io::data const& d);
+    uint64_t  _get_index_id(io::data const& d);
     void          _get_index_id(io::data const& d, std::ostream& is);
     void          _get_host(io::data const& d, std::ostream& is);
     void          _get_host_id(io::data const& d, std::ostream& is);

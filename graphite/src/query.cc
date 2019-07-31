@@ -26,11 +26,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::graphite;
 
-std::ostream& operator<<(std::ostream& in, QString const& string) {
-  in << string.toStdString();
-  return (in);
-}
-
 /**
  *  Constructor.
  *
@@ -196,16 +191,16 @@ void query::_compile_naming_scheme(
             << "graphite: can't compile query, opened macro not closed: '"
             << naming_scheme.substr(found_macro) << "'";
 
-    std::string macro = naming_scheme.substr(
+    std::string macro{naming_scheme.substr(
                           found_macro,
-                          end_macro + 1 - found_macro);
+                          end_macro + 1 - found_macro)};
     if (macro == "")
       _compiled_getters.push_back(&query::_get_dollar_sign);
     if (macro == "$METRICID$") {
       _throw_on_invalid(metric);
       _compiled_getters.push_back(
         &query::_get_member<
-                  unsigned int,
+                  uint64_t,
                   storage::metric,
                   &storage::metric::metric_id>);
     }
@@ -253,9 +248,15 @@ void query::_compile_naming_scheme(
  *
  *  @return Escaped string.
  */
-QString query::_escape(QString const& str) {
-  QString retval(str);
-  return (retval.replace('.', _escape_string.c_str()));
+std::string query::_escape(std::string const& str) {
+  std::string retval{str};
+  size_t pos = retval.find('.');
+
+  while (pos != std::string::npos) {
+    retval.replace(pos, 1, _escape_string);
+    pos = retval.find('.', pos + _escape_string.size());
+  }
+  return retval;
 }
 
 /**
@@ -265,8 +266,8 @@ QString query::_escape(QString const& str) {
  */
 void query::_throw_on_invalid(data_type macro_type) {
   if (macro_type != _type)
-    throw (exceptions::msg()
-           << "graphite: macro of invalid type");
+    throw exceptions::msg()
+           << "graphite: macro of invalid type";
 }
 
 /*
@@ -282,7 +283,6 @@ void query::_throw_on_invalid(data_type macro_type) {
 template <typename T, typename U, T (U::*member)>
 void query::_get_member(io::data const& d, std::ostream& is) {
   is << static_cast<U const*>(&d)->*member;
-  return ;
 }
 
 /**
@@ -291,10 +291,9 @@ void query::_get_member(io::data const& d, std::ostream& is) {
  *  @param[in]  d   The data.
  *  @param[out] is  The stream.
  */
-template <typename U, QString (U::*member)>
+template <typename U, std::string (U::*member)>
 void query::_get_string_member(io::data const& d, std::ostream& is) {
   is << _escape(static_cast<U const*>(&d)->*member);
-  return ;
 }
 
 /**
@@ -317,7 +316,6 @@ void query::_get_string(io::data const& d, std::ostream& is) {
 void query::_get_null(io::data const& d, std::ostream& is) {
   (void)d;
   (void)is;
-  return ;
 }
 
 /**
@@ -329,7 +327,6 @@ void query::_get_null(io::data const& d, std::ostream& is) {
 void query::_get_dollar_sign(io::data const& d, std::ostream& is) {
   (void)d;
   is << "$";
-  return ;
 }
 
 /**
@@ -339,13 +336,13 @@ void query::_get_dollar_sign(io::data const& d, std::ostream& is) {
  *
  *  @return       The index id.
  */
-unsigned int query::_get_index_id(io::data const& d) {
+uint64_t query::_get_index_id(io::data const& d) {
   if (_type == status)
     return (static_cast<storage::status const&>(d).index_id);
   else if (_type == metric)
     return (_cache->get_metric_mapping(
               static_cast<storage::metric const&>(d).metric_id).index_id);
-  return (0);
+  return 0;
 }
 
 /**
@@ -356,7 +353,6 @@ unsigned int query::_get_index_id(io::data const& d) {
  */
 void query::_get_index_id(io::data const& d, std::ostream& is) {
   is << _get_index_id(d);
-  return ;
 }
 
 /**
@@ -366,10 +362,9 @@ void query::_get_index_id(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void query::_get_host(io::data const& d, std::ostream& is) {
-  unsigned int index_id(_get_index_id(d));
+  uint64_t index_id{_get_index_id(d)};
   is << _escape(_cache->get_host_name(
                   _cache->get_index_mapping(index_id).host_id));
-  return ;
 }
 
 /**
@@ -379,9 +374,8 @@ void query::_get_host(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void query::_get_host_id(io::data const& d, std::ostream& is) {
-  unsigned int index_id(_get_index_id(d));
+  uint64_t index_id(_get_index_id(d));
   is << _cache->get_index_mapping(index_id).host_id;
-  return ;
 }
 
 /**
@@ -391,12 +385,11 @@ void query::_get_host_id(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void query::_get_service(io::data const& d, std::ostream& is) {
-  unsigned int index_id = _get_index_id(d);
+  uint64_t index_id = _get_index_id(d);
   storage::index_mapping const& stm = _cache->get_index_mapping(index_id);
   is << _escape(_cache->get_service_description(
                   stm.host_id,
                   stm.service_id));
-  return ;
 }
 
 /**
@@ -406,9 +399,8 @@ void query::_get_service(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void query::_get_service_id(io::data const& d, std::ostream& is) {
-  unsigned int index_id(_get_index_id(d));
+  uint64_t index_id(_get_index_id(d));
   is << _cache->get_index_mapping(index_id).service_id;
-  return ;
 }
 
 /**
@@ -419,5 +411,4 @@ void query::_get_service_id(io::data const& d, std::ostream& is) {
  */
 void query::_get_instance(io::data const& d, std::ostream& is) {
   is << _escape(_cache->get_instance(d.source_id));
-  return ;
 }

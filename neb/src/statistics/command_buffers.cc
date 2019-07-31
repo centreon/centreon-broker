@@ -64,9 +64,8 @@ command_buffers& command_buffers::operator=(command_buffers const& right) {
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void command_buffers::run(
-              std::string& output,
-	      std::string& perfdata) {
+void command_buffers::run(std::string& output __attribute__((unused)),
+                          std::string& perfdata __attribute__((unused))) {
   // XXX
   // unsigned int high(0);
   // unsigned int total(::external_command_buffer_slots);

@@ -49,7 +49,7 @@ namespace         compression {
                   new_stream(
                     std::shared_ptr<io::stream> to,
                     bool is_acceptor,
-                    QString const& proto_name);
+                    std::string const& proto_name);
   };
 }
 

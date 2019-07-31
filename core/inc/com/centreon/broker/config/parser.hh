@@ -20,7 +20,7 @@
 #  define CCB_CONFIG_PARSER_HH
 
 #  include <json11.hpp>
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/config/state.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -41,7 +41,7 @@ namespace       config {
                 ~parser();
     parser&     operator=(parser const& other) = delete;
     void        parse(std::string const& file, state& s);
-    static bool parse_boolean(QString const& value);
+    static bool parse_boolean(std::string const& value);
 
   private:
     void        _parse_endpoint(json11::Json const& elem, endpoint& e);

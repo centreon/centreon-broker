@@ -96,13 +96,13 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
 int stream::write(std::shared_ptr<io::data> const& d) {
   // Check that data exists.
   if (!validate(d, "dumper"))
-    return (1);
+    return 1;
 
   // Check if the event is a dumper event.
   if (d->type() == dump::static_type()) {
     dump const& data = *std::static_pointer_cast<dump const>(d);
-    if (data.tag.toStdString() == _tagname) {
-      if (data.req_id == 0)
+    if (data.tag == _tagname) {
+      if (data.req_id.empty())
         _process_dump_event(data);
       else
         _add_to_directory_cache(
@@ -112,8 +112,8 @@ int stream::write(std::shared_ptr<io::data> const& d) {
   }
   else if (d->type() == dumper::remove::static_type()) {
     dumper::remove const& data = *std::static_pointer_cast<dumper::remove const>(d);
-    if (data.tag.toStdString() == _tagname) {
-      if (data.req_id == 0)
+    if (data.tag == _tagname) {
+      if (data.req_id.empty())
         _process_remove_event(*std::static_pointer_cast<dumper::remove const>(d));
       else
         _add_to_directory_cache(
@@ -122,7 +122,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
     }
   }
   else if (d->type() == dumper::directory_dump::static_type()
-           && std::static_pointer_cast<dumper::directory_dump const>(d)->tag.toStdString()
+           && std::static_pointer_cast<dumper::directory_dump const>(d)->tag
                  == _tagname) {
     _process_directory_dump_event(*std::static_pointer_cast<dumper::directory_dump const>(d));
   }
@@ -152,7 +152,7 @@ void stream::_process_dump_event(dump const& data) {
   misc::string::replace(
                   path,
                   "$FILENAME$",
-                  data.filename.toStdString());
+                  data.filename);
 
   // Get sub directory, if any. Create it if needed.
   QDir dir = QFileInfo(QString::fromStdString(path)).dir();
@@ -170,7 +170,7 @@ void stream::_process_dump_event(dump const& data) {
            << path << "'");
 
   // Write data.
-  file << data.content.toStdString();
+  file << data.content;
 }
 
 /**
@@ -196,7 +196,7 @@ void stream::_process_remove_event(remove const& data) {
   misc::string::replace(
                   path,
                   "$FILENAME$",
-                  data.filename.toStdString());
+                  data.filename);
 
   // Remove file.
   if (::remove(path.c_str()) == -1) {
@@ -219,13 +219,13 @@ void stream::_process_directory_dump_event(directory_dump const& dd) {
     logging::debug(logging::medium)
       << "dumper: starting directory dump for request " << dd.req_id;
     // Create empty directory cache.
-    _cached_directory_dump[dd.req_id.toStdString()];
+    _cached_directory_dump[dd.req_id];
   }
   else {
     logging::debug(logging::medium)
       << "dumper: committing directory dump for request " << dd.req_id;
     bool success = true;
-    QString error_message;
+    std::string error_message;
 
     directory_dump_cache::iterator found;
     if (found == _cached_directory_dump.end())
@@ -249,7 +249,7 @@ void stream::_process_directory_dump_event(directory_dump const& dd) {
     }
 
     // Remove directory cache.
-    _cached_directory_dump.erase(dd.req_id.toStdString());
+    _cached_directory_dump.erase(dd.req_id);
 
     // Send acknowledgement event.
     {
@@ -276,10 +276,10 @@ void stream::_process_directory_dump_event(directory_dump const& dd) {
  *  @param[in] event              The event to add.
  */
 void stream::_add_to_directory_cache(
-               QString const& req_id,
+               std::string const& req_id,
                std::shared_ptr<io::data> event) {
   directory_dump_cache::iterator found
-    = _cached_directory_dump.find(req_id.toStdString());
+    = _cached_directory_dump.find(req_id);
   if (found == _cached_directory_dump.end())
     return ;
   found->second.push_back(event);

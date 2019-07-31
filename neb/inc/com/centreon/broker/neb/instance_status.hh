@@ -19,7 +19,7 @@
 #ifndef CCB_EVENTS_INSTANCE_STATUS_HH
 #  define CCB_EVENTS_INSTANCE_STATUS_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -51,8 +51,8 @@ namespace            neb {
     bool             active_service_checks_enabled;
     bool             check_hosts_freshness;
     bool             check_services_freshness;
-    QString          global_host_event_handler;
-    QString          global_service_event_handler;
+    std::string          global_host_event_handler;
+    std::string          global_service_event_handler;
     timestamp        last_alive;
     timestamp        last_command_check;
     bool             obsess_over_hosts;

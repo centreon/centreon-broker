@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_CHECK_HH
 #  define CCB_NEB_CHECK_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
@@ -46,7 +46,7 @@ namespace   neb {
 
     bool         active_checks_enabled;
     short        check_type;
-    QString      command_line;
+    std::string      command_line;
     unsigned int host_id;
     timestamp    next_check;
 

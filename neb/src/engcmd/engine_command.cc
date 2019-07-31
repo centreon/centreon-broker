@@ -76,15 +76,15 @@ bool engine_command::read(
  */
 int engine_command::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "engine command"))
-    return (1);
+    return 1;
 
   if (d->type() == command_request::static_type()) {
     command_request const& request = *std::static_pointer_cast<command_request const>(d);
 
     if (request.destination_id == config::applier::state::instance().poller_id()
-        && request.endp == QString::fromStdString(_name)) {
-      _execute_command(request.endp.toStdString());
-      std::shared_ptr<command_result> result(new command_result);
+        && request.endp == _name) {
+      _execute_command(request.endp);
+      std::shared_ptr<command_result> result{new command_result};
       result->code = 1;
       result->uuid = request.uuid;
       result->msg = "\"Command successfully sent to engine\"";
@@ -93,7 +93,7 @@ int engine_command::write(std::shared_ptr<io::data> const& d) {
     }
   }
 
-  return (1);
+  return 1;
 }
 
 /**

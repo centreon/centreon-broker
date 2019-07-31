@@ -44,14 +44,14 @@ command_listener::~command_listener() {}
  *  @return Command result.
  */
 command_result command_listener::command_status(
-                                   QString const& command_uuid) {
+                                   std::string const& command_uuid) {
   // Check for entries that should be removed from cache.
   _check_invalid();
 
   command_result res;
   QMutexLocker lock(&_pendingm);
   std::map<std::string, pending_command>::iterator
-    it(_pending.find(command_uuid.toStdString()));
+    it(_pending.find(command_uuid));
   // Command result exists.
   if (it != _pending.end())
     _extract_command_result(res, it->second);
@@ -62,11 +62,11 @@ command_result command_listener::command_status(
     res.destination_id = io::data::broker_id;
     res.code = -1;
     std::ostringstream oss;
-    oss << "\"Command " << command_uuid.toStdString()
+    oss << "\"Command " << command_uuid
         << " is not available (invalid command ID, timeout, ?)\"";
     res.msg = oss.str().c_str();
   }
-  return (res);
+  return res;
 }
 
 /**
@@ -94,17 +94,17 @@ bool command_listener::read(
  */
 int command_listener::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "command"))
-    return (1);
+    return 1;
 
   // Command request, store it in the cache.
   if (d->type() == command_request::static_type()) {
     command_request const& req(*std::static_pointer_cast<command_request const>(d));
     QMutexLocker lock(&_pendingm);
     std::map<std::string, pending_command>::iterator
-      it(_pending.find(req.uuid.toStdString()));
+      it(_pending.find(req.uuid));
     if (it == _pending.end()) {
       pending_command&
-        p(_pending[req.uuid.toStdString()]);
+        p(_pending[req.uuid]);
       p.invalid_time = time(NULL) + _request_timeout;
       p.uuid = req.uuid;
       p.code = 1;
@@ -118,7 +118,7 @@ int command_listener::write(std::shared_ptr<io::data> const& d) {
     command_result const& res(*std::static_pointer_cast<command_result const>(d));
     QMutexLocker lock(&_pendingm);
     pending_command&
-      p(_pending[res.uuid.toStdString()]);
+      p(_pending[res.uuid]);
     p.code = res.code;
     p.msgs.push_back(res.msg);
     p.invalid_time = time(NULL) + _result_timeout;
@@ -184,8 +184,8 @@ void command_listener::_extract_command_result(
   if (!pending.msgs.empty()) {
     // Merge results if necessary.
     if (!pending.with_partial_result && (pending.msgs.size() != 1)) {
-      QString msg;
-      for (std::list<QString>::const_iterator
+      std::string msg;
+      for (std::list<std::string>::const_iterator
              it(pending.msgs.begin()), end(pending.msgs.end());
            it != end;
            ++it) {

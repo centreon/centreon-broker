@@ -59,7 +59,7 @@ namespace              dumper {
     void               _process_remove_event(remove const& rmv);
     void               _process_directory_dump_event(directory_dump const& dd);
     void               _add_to_directory_cache(
-                         QString const& req_id,
+                         std::string const& req_id,
                          std::shared_ptr<io::data> event);
 
     QMutex             _mutex;

@@ -176,7 +176,7 @@ void rebuilder::run() {
               info.metric_id
                 = metrics_to_rebuild_query.value(0).toUInt();
               info.metric_name
-                = metrics_to_rebuild_query.value(1).toString();
+                = metrics_to_rebuild_query.value(1).toString().toStdString();
               info.metric_type
                 = metrics_to_rebuild_query.value(2).toInt();
               metrics_to_rebuild.push_back(info);
@@ -293,7 +293,7 @@ void rebuilder::_rebuild_metric(
                   unsigned int metric_id,
                   unsigned int host_id,
                   unsigned int service_id,
-                  QString const& metric_name,
+                  std::string const& metric_name,
                   short metric_type,
                   unsigned int interval,
                   unsigned int length) {

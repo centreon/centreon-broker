@@ -21,8 +21,7 @@
 
 #  include <list>
 #  include <memory>
-#  include <QHash>
-#  include <QString>
+#  include <unordered_map>
 #  include <string>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -30,64 +29,57 @@
 
 CCB_BEGIN()
 
-namespace                    rrd {
-  /**
-   *  @class output output.hh "com/centreon/broker/rrd/output.hh"
-   *  @brief RRD output class.
-   *
-   *  Write RRD files.
-   */
-  class                        output : public io::stream {
-  public:
-    typedef                    QHash<
-                                 QString,
-                                 std::list<std::shared_ptr<io::data> > >
-                               rebuild_cache;
+namespace rrd {
+/**
+ *  @class output output.hh "com/centreon/broker/rrd/output.hh"
+ *  @brief RRD output class.
+ *
+ *  Write RRD files.
+ */
+class output : public io::stream {
+ public:
+  typedef std::unordered_map<std::string, std::list<std::shared_ptr<io::data>>>
+      rebuild_cache;
 
-                               output(
-                                 QString const& metrics_path,
-                                 QString const& status_path,
-                                 unsigned int cache_size,
-                                 bool ignore_update_errors,
-                                 bool write_metrics = true,
-                                 bool write_status = true);
-                               output(
-                                 QString const& metrics_path,
-                                 QString const& status_path,
-                                 unsigned int cache_size,
-                                 bool ignore_update_errors,
-                                 QString const& local,
-                                 bool write_metrics = true,
-                                 bool write_status = true);
-                               output(
-                                 QString const& metrics_path,
-                                 QString const& status_path,
-                                 unsigned int cache_size,
-                                 bool ignore_update_errors,
-                                 unsigned short port,
-                                 bool write_metrics = true,
-                                 bool write_status = true);
-                               ~output();
-    bool                       read(
-                                 std::shared_ptr<io::data>& d,
-                                 time_t deadline);
-    void                       update();
-    int                        write(std::shared_ptr<io::data> const& d);
+  output(std::string const& metrics_path,
+         std::string const& status_path,
+         unsigned int cache_size,
+         bool ignore_update_errors,
+         bool write_metrics = true,
+         bool write_status = true);
+  output(std::string const& metrics_path,
+         std::string const& status_path,
+         unsigned int cache_size,
+         bool ignore_update_errors,
+         std::string const& local,
+         bool write_metrics = true,
+         bool write_status = true);
+  output(std::string const& metrics_path,
+         std::string const& status_path,
+         unsigned int cache_size,
+         bool ignore_update_errors,
+         unsigned short port,
+         bool write_metrics = true,
+         bool write_status = true);
+  ~output();
+  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  void update();
+  int write(std::shared_ptr<io::data> const& d);
 
-  private:
-                               output(output const& o);
-    output&                    operator=(output const& o);
+ private:
+  output(output const& o);
+  output& operator=(output const& o);
 
-    std::unique_ptr<backend>     _backend;
-    bool                       _ignore_update_errors;
-    std::string                _metrics_path;
-    rebuild_cache              _metrics_rebuild;
-    std::string                _status_path;
-    rebuild_cache              _status_rebuild;
-    bool                       _write_metrics;
-    bool                       _write_status;
-  };
-}
+  std::unique_ptr<backend> _backend;
+  bool _ignore_update_errors;
+  std::string _metrics_path;
+  rebuild_cache _metrics_rebuild;
+  std::string _status_path;
+  rebuild_cache _status_rebuild;
+  bool _write_metrics;
+  bool _write_status;
+};
+}  // namespace rrd
 
 CCB_END()
 

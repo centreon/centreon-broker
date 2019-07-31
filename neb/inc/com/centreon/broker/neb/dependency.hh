@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_DEPENDENCY_HH
 #  define CCB_NEB_DEPENDENCY_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -42,13 +42,13 @@ namespace        neb {
     virtual      ~dependency();
     dependency&  operator=(dependency const& dep);
 
-    QString      dependency_period;
+    std::string      dependency_period;
     unsigned int dependent_host_id;
     bool         enabled;
-    QString      execution_failure_options;
+    std::string      execution_failure_options;
     unsigned int host_id;
     bool         inherits_parent;
-    QString      notification_failure_options;
+    std::string      notification_failure_options;
 
   private:
     void         _internal_copy(dependency const& dep);

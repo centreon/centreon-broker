@@ -36,12 +36,12 @@ using namespace json11;
  */
 static std::string find_param(
                      config::endpoint const& cfg,
-                     QString const& key) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+                     std::string const& key) {
+  std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw (exceptions::msg() << "lua: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'");
-  return it.value().toStdString();
+    throw exceptions::msg() << "lua: no '" << key
+           << "' defined for endpoint '" << cfg.name << "'";
+  return it->second;
 }
 
 /**

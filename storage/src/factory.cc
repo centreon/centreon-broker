@@ -39,14 +39,14 @@ using namespace com::centreon::broker::storage;
  *
  *  @return Property value.
  */
-static QString const& find_param(
+static std::string const& find_param(
                         config::endpoint const& cfg,
-                        QString const& key) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+                        std::string const& key) {
+  std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw (exceptions::msg() << "storage: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'");
-  return (it.value());
+    throw exceptions::msg() << "storage: no '" << key
+           << "' defined for endpoint '" << cfg.name << "'";
+  return it->second;
 }
 
 /**************************************
@@ -81,7 +81,7 @@ factory::~factory() {}
  */
 factory& factory::operator=(factory const& other) {
   io::factory::operator=(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -90,7 +90,7 @@ factory& factory::operator=(factory const& other) {
  *  @return Exact copy of this factory.
  */
 io::factory* factory::clone() const {
-  return (new factory(*this));
+  return new factory(*this);
 }
 
 /**
@@ -106,7 +106,7 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
     cfg.params["read_timeout"] = "1";
     cfg.read_timeout = 1;
   }
-  return (is_storage);
+  return is_storage;
 }
 
 /**
@@ -125,15 +125,15 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   // Find RRD length.
-  unsigned int rrd_length(find_param(cfg, "length").toUInt());
+  unsigned int rrd_length{static_cast<unsigned int>(std::stoul(find_param(cfg, "length")))};
 
   // Find interval length if set.
-  unsigned int interval_length(0);
+  unsigned int interval_length{0};
   {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("interval"));
+    std::map<std::string, std::string>::const_iterator
+      it{cfg.params.find("interval")};
     if (it != cfg.params.end())
-      interval_length = it.value().toUInt();
+      interval_length = std::stoul(it->second);
     if (!interval_length)
       interval_length = 60;
   }
@@ -144,10 +144,10 @@ io::endpoint* factory::new_endpoint(
   // Rebuild check interval.
   unsigned int rebuild_check_interval(0);
   {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("rebuild_check_interval"));
+    std::map<std::string, std::string>::const_iterator
+      it{cfg.params.find("rebuild_check_interval")};
     if (it != cfg.params.end())
-      rebuild_check_interval = it.value().toUInt();
+      rebuild_check_interval = std::stoul(it->second);
     else
       rebuild_check_interval = 300;
   }
@@ -155,19 +155,19 @@ io::endpoint* factory::new_endpoint(
   // Store or not in data_bin.
   bool store_in_data_bin(true);
   {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("store_in_data_bin"));
+    std::map<std::string, std::string>::const_iterator
+      it{cfg.params.find("store_in_data_bin")};
     if (it != cfg.params.end())
-      store_in_data_bin = config::parser::parse_boolean(*it);
+      store_in_data_bin = config::parser::parse_boolean(it->second);
   }
 
   // Insert entries or not in index_data.
   bool insert_in_index_data(false);
   {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("insert_in_index_data"));
+    std::map<std::string, std::string>::const_iterator
+      it{cfg.params.find("insert_in_index_data")};
     if (it != cfg.params.end())
-      insert_in_index_data = config::parser::parse_boolean(*it);
+      insert_in_index_data = config::parser::parse_boolean(it->second);
   }
 
   // Connector.
@@ -180,5 +180,5 @@ io::endpoint* factory::new_endpoint(
        store_in_data_bin,
        insert_in_index_data);
   is_acceptor = false;
-  return (c.release());
+  return c.release();
 }

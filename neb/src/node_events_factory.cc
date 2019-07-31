@@ -101,11 +101,11 @@ io::endpoint* node_events_factory::new_endpoint(
     config::endpoint& cfg,
     bool& is_acceptor,
     std::shared_ptr<persistent_cache> cache) const {
-  QString name;
-  QMap<QString, QString>::const_iterator found = cfg.params.find("cfg_file");
+  std::string name;
+  std::map<std::string, std::string>::const_iterator found{cfg.params.find("cfg_file")};
   if (found != cfg.params.end())
-    name = *found;
+    name = found->second;
 
   is_acceptor = false;
-  return new node_events_connector(cfg.name, cache, name.toStdString());
+  return new node_events_connector(cfg.name, cache, name);
 }

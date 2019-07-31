@@ -100,7 +100,7 @@ static void get_string(
               io::data const& t,
               mapping::entry const& member,
               QByteArray& buffer) {
-  QByteArray tmp(member.get_string(t).toUtf8());
+  QByteArray tmp(member.get_string(t).c_str());
   buffer.append(tmp.constData(), tmp.size() + 1);
   return ;
 }

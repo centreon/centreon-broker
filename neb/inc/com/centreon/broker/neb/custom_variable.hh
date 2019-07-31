@@ -44,7 +44,7 @@ namespace            neb {
     static unsigned int
                      static_type();
 
-    QString          default_value;
+    std::string          default_value;
     bool             enabled;
     short            var_type;
 

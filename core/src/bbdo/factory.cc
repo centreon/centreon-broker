@@ -112,8 +112,8 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Negotiation allowed ?
-  bool negotiate(false);
-  QString extensions;
+  bool negotiate{false};
+  std::string extensions;
   if (!coarse) {
     std::map<std::string, std::string>::const_iterator
       it(cfg.params.find("negotiation"));
@@ -175,21 +175,21 @@ io::endpoint* factory::new_endpoint(
  *
  *  @param[in] cfg  Endpoint configuration.
  */
-QString factory::_extensions(config::endpoint& cfg) const {
-  QString extensions;
-  for (QMap<QString, io::protocols::protocol>::const_iterator
-         it(io::protocols::instance().begin()),
-         end(io::protocols::instance().end());
+std::string factory::_extensions(config::endpoint& cfg) const {
+  std::string extensions;
+  for (std::map<std::string, io::protocols::protocol>::const_iterator
+         it{io::protocols::instance().begin()},
+         end{io::protocols::instance().end()};
        it != end;
        ++it) {
-    if ((it->osi_from > 1)
-        && (it->osi_to < 7)
-        && !it->endpntfactry->has_endpoint(cfg)
-        && !it->endpntfactry->has_not_endpoint(cfg)) {
-      if (!extensions.isEmpty())
+    if (it->second.osi_from > 1
+        && it->second.osi_to < 7
+        && !it->second.endpntfactry->has_endpoint(cfg)
+        && !it->second.endpntfactry->has_not_endpoint(cfg)) {
+      if (!extensions.empty())
         extensions.append(" ");
-      extensions.append(it.key());
+      extensions.append(it->first);
     }
   }
-  return (extensions);
+  return extensions;
 }

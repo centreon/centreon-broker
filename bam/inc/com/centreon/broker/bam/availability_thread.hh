@@ -19,15 +19,15 @@
 #ifndef CCB_BAM_AVAILABILITY_THREAD_HH
 #  define CCB_BAM_AVAILABILITY_THREAD_HH
 
-#  include <string>
-#  include <memory>
-#  include <map>
-#  include <set>
-#  include <QThread>
 #  include <QMutex>
 #  include <QMutexLocker>
-#  include <QWaitCondition>
 #  include <QSemaphore>
+#  include <QThread>
+#  include <QWaitCondition>
+#  include <map>
+#  include <memory>
+#  include <set>
+#  include <string>
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/database.hh"
 #  include "com/centreon/broker/io/data.hh"
@@ -62,7 +62,7 @@ namespace           bam {
     std::unique_ptr<QMutexLocker>
                     lock();
 
-    void            rebuild_availabilities(QString const& bas_to_rebuild);
+    void            rebuild_availabilities(std::string const& bas_to_rebuild);
 
   private:
                     availability_thread(availability_thread const& other);
@@ -96,7 +96,7 @@ namespace           bam {
     QMutex          _mutex;
     bool            _should_exit;
     bool            _should_rebuild_all;
-    QString         _bas_to_rebuild;
+    std::string         _bas_to_rebuild;
     QWaitCondition  _wait;
     QSemaphore      _started;
   };

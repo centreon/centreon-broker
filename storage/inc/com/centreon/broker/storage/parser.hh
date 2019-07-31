@@ -19,8 +19,8 @@
 #ifndef CCB_STORAGE_PARSER_HH
 #  define CCB_STORAGE_PARSER_HH
 
-#  include <QList>
-#  include <QString>
+#  include <list>
+#  include <string>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/storage/perfdata.hh"
 
@@ -37,12 +37,12 @@ namespace   storage {
   class     parser {
   public:
             parser();
-            parser(parser const& p);
+            parser(parser const& p) = delete;
             ~parser();
-    parser& operator=(parser const& p);
+    parser& operator=(parser const& p) = delete;
     void    parse_perfdata(
-              QString const& str,
-              QList<perfdata>& pd);
+              std::string const& str,
+              std::list<perfdata>& pd);
   };
 }
 

@@ -149,7 +149,7 @@ io::endpoint* factory::new_endpoint(
 std::shared_ptr<io::stream> factory::new_stream(
                                         std::shared_ptr<io::stream> to,
                                         bool is_acceptor,
-                                        QString const& proto_name) {
+                                        std::string const& proto_name) {
   (void)is_acceptor;
   (void)proto_name;
   std::shared_ptr<io::stream> s{std::make_shared<stream>()};

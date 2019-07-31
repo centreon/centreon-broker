@@ -42,7 +42,6 @@ namespace               lua {
 
    private:
                         broker_log();
-    luabinding const*   _binding;
 
     // Data exchanged with the Lua interpreter
     std::string         _file;

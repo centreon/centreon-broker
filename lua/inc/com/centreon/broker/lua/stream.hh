@@ -21,6 +21,7 @@
 
 #  include <memory>
 #  include "com/centreon/broker/lua/macro_cache.hh"
+#  include "com/centreon/broker/misc/variant.hh"
 
 CCB_BEGIN()
 
@@ -39,7 +40,7 @@ namespace          lua {
   public:
                     stream(
                       std::string const& lua_script,
-                      QMap<QString, QVariant> const& conf_params,
+                      std::map<std::string, misc::variant> const& conf_params,
                       std::shared_ptr<persistent_cache> const& cache);
                     ~stream();
     bool            read(std::shared_ptr<io::data>& d, time_t deadline);

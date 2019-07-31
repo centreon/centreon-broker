@@ -56,7 +56,7 @@ using namespace com::centreon::broker::bbdo;
 acceptor::acceptor(
             std::string const& name,
             bool negotiate,
-            QString const& extensions,
+            std::string const& extensions,
             time_t timeout,
             bool one_peer_retention_mode,
             bool coarse,

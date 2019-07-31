@@ -19,7 +19,6 @@
 #ifndef CCB_BBDO_STREAM_HH
 #  define CCB_BBDO_STREAM_HH
 
-#  include <QString>
 #  include "com/centreon/broker/bbdo/input.hh"
 #  include "com/centreon/broker/bbdo/output.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -45,25 +44,24 @@ namespace            bbdo {
                      stream(stream const& other);
                      ~stream();
     stream&          operator=(stream const& other);
-    int              flush();
+    int              flush() override;
     void             negotiate(negotiation_type neg);
-    bool             read(
-                       std::shared_ptr<io::data>& d,
-                       time_t deadline = (time_t)-1);
+    bool read(std::shared_ptr<io::data>& d,
+              time_t deadline = (time_t)-1) override;
     void             set_ack_limit(unsigned int limit);
     void             set_coarse(bool coarse);
     void             set_negotiate(
                        bool negotiate,
-                       QString const& extensions = QString());
+                       std::string const& extensions = "");
     void             set_timeout(int timeout);
-    void             statistics(io::properties& tree) const;
-    int              write(std::shared_ptr<io::data> const& d);
-    void             acknowledge_events(unsigned int events);
+    void             statistics(io::properties& tree) const override;
+    int              write(std::shared_ptr<io::data> const& d) override;
+    void             acknowledge_events(unsigned int events) override;
     void             send_event_acknowledgement();
 
   private:
     bool             _coarse;
-    QString          _extensions;
+    std::string      _extensions;
     bool             _negotiate;
     bool             _negotiated;
     int              _timeout;

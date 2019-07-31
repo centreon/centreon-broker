@@ -20,7 +20,6 @@
 #  define CCB_EXTCMD_COMMAND_REQUEST_HH
 
 #  include <QMutex>
-#  include <QString>
 #  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -44,14 +43,14 @@ namespace                extcmd {
                          ~command_request();
     command_request&     operator=(command_request const& other);
     bool                 is_addressed_to(
-                           QString const& endp_name) const;
+                           std::string const& endp_name) const;
     void                 parse(std::string const& cmd);
     unsigned int         type() const;
     static unsigned int  static_type();
 
-    QString              cmd;
-    QString              endp;
-    QString              uuid;
+    std::string              cmd;
+    std::string              endp;
+    std::string              uuid;
     bool                 with_partial_result;
 
     static mapping::entry const

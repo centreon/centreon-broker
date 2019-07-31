@@ -58,7 +58,6 @@ stream::stream(
   : _user(user),
     _password(passwd),
     _address(addr),
-    _port(port),
     _db(db),
     _queries_per_transaction(queries_per_transaction == 0 ?
                                1 : queries_per_transaction),

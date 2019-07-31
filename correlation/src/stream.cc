@@ -47,7 +47,7 @@ using namespace com::centreon::broker::correlation;
  *                                    (won't send any event)
  */
 stream::stream(
-          QString const& correlation_file,
+          std::string const& correlation_file,
           std::shared_ptr<persistent_cache> cache,
           bool load_correlation,
           bool passive)
@@ -100,7 +100,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   d.reset();
   throw (exceptions::shutdown()
          << "cannot read from correlation stream");
-  return (true);
+  return true;
 }
 
 /**
@@ -120,18 +120,17 @@ void stream::update() {
 int stream::write(std::shared_ptr<io::data> const& d) {
   // Check that data can be processed.
   if (!validate(d, "correlation"))
-    return (1);
+    return 1;
 
   if (d->type() == neb::host_status::static_type()) {
     neb::host_status const& hs = *std::static_pointer_cast<neb::host_status>(d);
-    QPair<unsigned int, unsigned int> id(hs.host_id, 0);
-    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
-      = _nodes.find(id);
+    std::map<std::pair<uint64_t, uint64_t>, node>::iterator found
+      = _nodes.find({hs.host_id, 0});
     if (found != _nodes.end()) {
       logging::debug(logging::medium)
         << "correlation: processing host status " << hs.last_hard_state
         << " for node (" << hs.host_id << ", 0)";
-      found->manage_status(
+      found->second.manage_status(
         hs.last_hard_state,
         hs.last_hard_state_change,
         _pblsh.get());
@@ -139,14 +138,13 @@ int stream::write(std::shared_ptr<io::data> const& d) {
   }
   else if (d->type() == neb::service_status::static_type()) {
     neb::service_status const& ss = *std::static_pointer_cast<neb::service_status>(d);
-    QPair<unsigned int, unsigned int> id(ss.host_id, ss.service_id);
-    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
-      = _nodes.find(id);
+    std::map<std::pair<uint64_t, uint64_t>, node>::iterator found{
+        _nodes.find({ss.host_id, ss.service_id})};
     if (found != _nodes.end()) {
       logging::debug(logging::medium)
         << "correlation: processing service status "  << ss.last_hard_state
         << " for node (" << ss.host_id << ", " << ss.service_id << ")";
-      found->manage_status(
+      found->second.manage_status(
         ss.last_hard_state,
         ss.last_hard_state_change,
         _pblsh.get());
@@ -154,70 +152,65 @@ int stream::write(std::shared_ptr<io::data> const& d) {
   }
   else if (d->type() == neb::host::static_type()) {
     neb::host const& h(*std::static_pointer_cast<neb::host>(d));
-    QPair<unsigned int, unsigned int> id(h.host_id, 0);
-    QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
-      it(_nodes.find(id));
+    std::map<std::pair<uint64_t, uint64_t>, node>::const_iterator
+      it(_nodes.find({h.host_id, 0}));
     if ((it != _nodes.end()) && _pblsh.get()) {
       logging::debug(logging::medium)
         << "correlation: generating state event for host "
         << h.host_id << " following its (re)declaration";
-      _pblsh->write(std::make_shared<state>(*it));
+      _pblsh->write(std::make_shared<state>(it->second));
     }
   }
   else if (d->type() == neb::service::static_type()) {
     neb::service const& s(*std::static_pointer_cast<neb::service>(d));
-    QPair<unsigned int, unsigned int> id(s.host_id, s.service_id);
-    QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
-      it(_nodes.find(id));
+    std::map<std::pair<uint64_t, uint64_t>, node>::const_iterator
+      it(_nodes.find({s.host_id, s.service_id}));
     if ((it != _nodes.end()) && _pblsh.get()) {
       logging::debug(logging::medium)
         << "correlation: generating state event for service ("
         << s.host_id << ", " << s.service_id
         << ") following its (re)declaration";
-      _pblsh->write(std::make_shared<state>(*it));
+      _pblsh->write(std::make_shared<state>(it->second));
     }
   }
   else if (d->type() == neb::acknowledgement::static_type()) {
     neb::acknowledgement const& ack
       = *std::static_pointer_cast<neb::acknowledgement>(d);
-    QPair<unsigned int, unsigned int> id(ack.host_id, ack.service_id);
-    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
-      = _nodes.find(id);
+    std::map<std::pair<uint64_t, uint64_t>, node>::iterator found
+      = _nodes.find({ack.host_id, ack.service_id});
     if (found != _nodes.end()) {
       logging::debug(logging::medium)
         << "correlation: processing ack for node ("
         << ack.host_id << ", " << ack.service_id << ")";
-      found->manage_ack(ack, _pblsh.get());
+      found->second.manage_ack(ack, _pblsh.get());
     }
   }
   else if (d->type() == neb::downtime::static_type()) {
     neb::downtime const& dwn = *std::static_pointer_cast<neb::downtime>(d);
-    QPair<unsigned int, unsigned int> id(dwn.host_id, dwn.service_id);
-    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
-      = _nodes.find(id);
+    std::map<std::pair<uint64_t, uint64_t>, node>::iterator found
+      = _nodes.find({dwn.host_id, dwn.service_id});
     if (found != _nodes.end()) {
       logging::debug(logging::medium)
         << "correlation: processing downtime ("
 	<< dwn.actual_start_time << "-" << dwn.actual_end_time
 	<< ") for node ("
         << dwn.host_id << ", " << dwn.service_id << ")";
-      found->manage_downtime(dwn, _pblsh.get());
+      found->second.manage_downtime(dwn, _pblsh.get());
     }
   }
   else if (d->type() == neb::log_entry::static_type()) {
     neb::log_entry const& entry = *std::static_pointer_cast<neb::log_entry>(d);
-    QPair<unsigned int, unsigned int> id(entry.host_id, entry.service_id);
-    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
-      = _nodes.find(id);
+    std::map<std::pair<uint64_t, uint64_t>, node>::iterator found
+      = _nodes.find({entry.host_id, entry.service_id});
     if (found != _nodes.end()) {
       logging::debug(logging::medium)
         << "correlation: processing log for node ("
         << entry.host_id << ", " << entry.service_id << ")";
-      found->manage_log(entry, _pblsh.get());
+      found->second.manage_log(entry, _pblsh.get());
     }
   }
 
-  return (1);
+  return 1;
 }
 
 /**
@@ -226,7 +219,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
  *  @param[in] st  the state.
  */
 void stream::set_state(
-       QMap<QPair<unsigned int, unsigned int>, node> const& st) {
+       std::map<std::pair<uint64_t, uint64_t>, node> const& st) {
   _nodes = st;
 }
 
@@ -235,9 +228,9 @@ void stream::set_state(
  *
  *  @return  The state.
  */
-QMap<QPair<unsigned int, unsigned int>, node> const&
+std::map<std::pair<uint64_t, uint64_t>, node> const&
   stream::get_state() const {
-  return (_nodes);
+  return _nodes;
 }
 
 /**
@@ -246,7 +239,7 @@ QMap<QPair<unsigned int, unsigned int>, node> const&
  */
 void stream::_load_correlation() {
   // Load the cache.
-  if (_cache.get() != NULL) {
+  if (_cache.get() != nullptr) {
     std::shared_ptr<io::data> d;
     while (true) {
       _cache->get(d);
@@ -255,8 +248,6 @@ void stream::_load_correlation() {
       _load_correlation_event(d);
     }
   }
-
-  return ;
 }
 
 /**
@@ -270,46 +261,46 @@ void stream::_load_correlation_event(std::shared_ptr<io::data> const& d) {
 
   if (d->type() == issue::static_type()) {
     issue const& iss = *std::static_pointer_cast<issue>(d);
-    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
-      = _nodes.find(qMakePair(iss.host_id, iss.service_id));
+    std::map<std::pair<uint64_t, uint64_t>, node>::iterator found
+      = _nodes.find({iss.host_id, iss.service_id});
     if (found != _nodes.end()) {
       logging::debug(logging::medium)
         << "correlation: loading initial issue for node ("
         << iss.host_id << ", " << iss.service_id << ")";
-      found->my_issue.reset(new issue(iss));
+      found->second.my_issue.reset(new issue(iss));
     }
   }
   else if (d->type() == state::static_type()) {
     state const& st = *std::static_pointer_cast<state>(d);
-    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
-      = _nodes.find(qMakePair(st.host_id, st.service_id));
+    std::map<std::pair<uint64_t, uint64_t>, node>::iterator found
+      = _nodes.find({st.host_id, st.service_id});
     if (found != _nodes.end()) {
       logging::debug(logging::medium)
         << "correlation: loading initial state for node ("
         << st.host_id << ", " << st.service_id << ")";
-      *static_cast<state*>(&*found) = st;
+      *static_cast<state*>(&found->second) = st;
     }
   }
   else if (d->type() == neb::downtime::static_type()) {
     neb::downtime const& dwn = *std::static_pointer_cast<neb::downtime>(d);
-    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
-      = _nodes.find(qMakePair(dwn.host_id, dwn.service_id));
+    std::map<std::pair<uint64_t, uint64_t>, node>::iterator found
+      = _nodes.find({dwn.host_id, dwn.service_id});
     if (found != _nodes.end()) {
       logging::debug(logging::medium)
         << "correlation: loading initial downtime for node ("
         << dwn.host_id << ", " << dwn.service_id << ")";
-      found->manage_downtime(dwn, NULL);
+      found->second.manage_downtime(dwn, nullptr);
     }
   }
   else if (d->type() == neb::acknowledgement::static_type()) {
     neb::acknowledgement const& ack = *std::static_pointer_cast<neb::acknowledgement>(d);
-    QMap<QPair<unsigned int, unsigned int>, node>::iterator found
-      = _nodes.find(qMakePair(ack.host_id, ack.service_id));
+    std::map<std::pair<uint64_t, uint64_t>, node>::iterator found
+      = _nodes.find({ack.host_id, ack.service_id});
     if (found != _nodes.end()) {
       logging::debug(logging::medium)
         << "correlation: loading initial acknowledgement for node ("
         << ack.host_id << ", " << ack.service_id << ")";
-      found->manage_ack(ack, NULL);
+      found->second.manage_ack(ack, nullptr);
     }
   }
 }
@@ -319,16 +310,16 @@ void stream::_load_correlation_event(std::shared_ptr<io::data> const& d) {
  */
 void stream::_save_persistent_cache() {
   // No cache, nothing to do.
-  if (_cache.get() == NULL)
+  if (_cache.get() == nullptr)
     return ;
 
   // Serialize to the cache.
   _cache->transaction();
-  for (QMap<QPair<unsigned int, unsigned int>, node>::const_iterator
+  for (std::map<std::pair<uint64_t, uint64_t>, node>::const_iterator
          it = _nodes.begin(),
          end = _nodes.end();
        it != end;
        ++it)
-    it->serialize(*_cache);
+    it->second.serialize(*_cache);
   _cache->commit();
 }

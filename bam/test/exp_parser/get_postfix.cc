@@ -258,15 +258,6 @@ TEST(BamExpParserGetPostfix, Copy) {
 // Then get_postfix() throw an exception
 TEST(BamExpParserGetPostfix, MissingParenthesis1) {
   bam::exp_parser p("HOSTSTATUS(Host, Service) IS OK(");
-  char const* expected[] = {
-    "Host",
-    "Service",
-    "HOSTSTATUS",
-    "2",
-    "OK",
-    "IS",
-    NULL
-  };
   ASSERT_THROW(p.get_postfix(), exceptions::msg);
 }
 
@@ -275,15 +266,6 @@ TEST(BamExpParserGetPostfix, MissingParenthesis1) {
 // Then get_postfix() throw an exception
 TEST(BamExpParserGetPostfix, MissingParenthesis2) {
   bam::exp_parser p("HOSTSTATUS(Host, Service)) IS OK");
-  char const* expected[] = {
-    "Host",
-    "Service",
-    "HOSTSTATUS",
-    "2",
-    "OK",
-    "IS",
-    NULL
-  };
   ASSERT_THROW(p.get_postfix(), exceptions::msg);
 }
 
@@ -292,15 +274,6 @@ TEST(BamExpParserGetPostfix, MissingParenthesis2) {
 // Then get_postfix() throw an exception
 TEST(BamExpParserGetPostfix, BadComma1) {
   bam::exp_parser p("HOSTSTATUS(Host, Service), IS OK");
-  char const* expected[] = {
-    "Host",
-    "Service",
-    "HOSTSTATUS",
-    "2",
-    "OK",
-    "IS",
-    NULL
-  };
   ASSERT_THROW(p.get_postfix(), exceptions::msg);
 }
 
@@ -309,15 +282,6 @@ TEST(BamExpParserGetPostfix, BadComma1) {
 // Then get_postfix() throw an exception
 TEST(BamExpParserGetPostfix, BadComma2) {
   bam::exp_parser p("HOSTSTATUS(Host, Service) IS OK,");
-  char const* expected[] = {
-    "Host",
-    "Service",
-    "HOSTSTATUS",
-    "2",
-    "OK",
-    "IS",
-    NULL
-  };
   ASSERT_THROW(p.get_postfix(), exceptions::msg);
 }
 
@@ -326,9 +290,5 @@ TEST(BamExpParserGetPostfix, BadComma2) {
 // Then get_postfix() throw an exception
 TEST(BamExpParserGetPostfix, BadComma3) {
   bam::exp_parser p("(OK,OK)");
-  char const* expected[] = {
-    ",",
-    NULL
-  };
   ASSERT_THROW(p.get_postfix(), exceptions::msg);
 }
