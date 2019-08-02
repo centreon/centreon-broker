@@ -19,10 +19,9 @@
 #ifndef CCB_WATCHDOG_CONFIGURATION_PARSER_HH
 #  define CCB_WATCHDOG_CONFIGURATION_PARSER_HH
 
+#  include <json11.hpp>
 #  include <map>
 #  include <string>
-#  include <QDomDocument>
-#  include <QDomElement>
 #  include <QFile>
 #  include <QString>
 #  include "com/centreon/broker/namespace.hh"
@@ -52,9 +51,9 @@ namespace         watchdog {
 
     void          _parse_file(std::string const& config_filename);
     void          _parse_xml_document();
-    void          _parse_centreon_broker_element(QDomElement const& element);
+    void          _parse_centreon_broker_element(json11::Json const& element);
 
-    QDomDocument  _xml_document;
+    json11::Json  _json_document;
     QString       _log_path;
     configuration::instance_map
                   _instances_configuration;

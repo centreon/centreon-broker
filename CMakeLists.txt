@@ -67,7 +67,7 @@ include_directories(${source_dir})
 #
 
 # Find Qt.
-find_package(Qt4 4.7.4 COMPONENTS QtCore QtNetwork QtSql QtXml REQUIRED)
+find_package(Qt4 4.7.4 COMPONENTS QtCore QtNetwork QtSql REQUIRED)
 
 # Find zlib.
 find_package(ZLIB REQUIRED)

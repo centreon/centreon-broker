@@ -20,8 +20,8 @@
 #  define CCB_CONFIG_ENDPOINT_HH
 
 #  include <ctime>
+#  include <json11.hpp>
 #  include <list>
-#  include <QDomElement>
 #  include <QMap>
 #  include <QString>
 #  include <set>
@@ -59,7 +59,7 @@ namespace                    config {
     QString                  type;
     std::set<std::string>    write_filters;
     bool                     cache_enabled;
-    QDomElement              cfg;
+    json11::Json             cfg;
 
   private:
     void                     _internal_copy(endpoint const& other);
