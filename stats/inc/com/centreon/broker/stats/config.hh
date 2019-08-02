@@ -38,32 +38,18 @@ namespace                    stats {
    */
   class                      config {
   public:
-    enum                     fifo_type {
-                             plain_text,
-                             json
-    };
-    typedef std::vector<std::pair<std::string, fifo_type> >
+    typedef std::vector<std::string>
                              fifo_list;
 
                              config();
                              config(config const& right);
                              ~config();
     config&                  operator=(config const& right);
-    std::string const&       get_dumper_tag() const throw ();
     fifo_list const&         get_fifo() const throw ();
-    unsigned int             get_interval() const throw ();
-    std::list<metric>&       metrics() throw ();
-    std::list<metric> const& metrics() const throw ();
-    void                     set_dumper_tag(std::string const& tag);
-    void                     add_fifo(std::string const& fifo, fifo_type type);
-    void                     set_interval(
-                               unsigned int interval) throw ();
+    void                     add_fifo(std::string const& fifo);
 
   private:
-    std::string              _dumper_tag;
     fifo_list                _fifos;
-    unsigned int             _interval;
-    std::list<metric>        _metrics;
   };
 }
 

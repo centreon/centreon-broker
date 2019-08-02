@@ -27,7 +27,7 @@ using namespace com::centreon::broker;
 **************************************/
 
 // Configuration file name.
-QString neb::gl_configuration_file;
+std::string neb::gl_configuration_file;
 
 // Sender object.
 multiplexing::publisher neb::gl_publisher;

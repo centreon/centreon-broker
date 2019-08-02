@@ -54,13 +54,7 @@ namespace               com {
           void          run();
 
           unsigned int  _instance_id;
-          int           _interval;
-          std::map<
-                 std::string,
-                 std::pair<unsigned int, unsigned int> >
-                        _plugins;
           volatile bool _should_exit;
-          std::string   _tag;
         };
       }
     }

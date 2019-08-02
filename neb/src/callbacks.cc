@@ -19,8 +19,6 @@
 #include <cstdlib>
 #include <ctime>
 #include <memory>
-#include <QDomDocument>
-#include <QDomElement>
 #include <QString>
 #include <QStringList>
 #include <set>

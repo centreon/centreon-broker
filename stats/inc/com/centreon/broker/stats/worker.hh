@@ -46,7 +46,7 @@ namespace               com {
                         worker();
                         ~worker() throw ();
           void          exit();
-          void          run(QString const& fifo_file, config::fifo_type type);
+          void          run(QString const& fifo_file);
 
          private:
                         worker(worker const& right);
@@ -58,8 +58,6 @@ namespace               com {
           std::string   _buffer;
           int           _fd;
           std::string   _fifo;
-          config::fifo_type
-                        _type;
           volatile bool _should_exit;
         };
       }

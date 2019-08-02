@@ -92,7 +92,7 @@ void state::clear() {
  *
  *  @param[in] id  Broker ID.
  */
-void state::broker_id(unsigned int id) throw () {
+void state::broker_id(int id) throw () {
   _broker_id = id;
   return ;
 }
@@ -102,7 +102,7 @@ void state::broker_id(unsigned int id) throw () {
  *
  *  @return Broker ID.
  */
-unsigned int state::broker_id() const throw () {
+int state::broker_id() const throw () {
   return (_broker_id);
 }
 
@@ -207,7 +207,7 @@ std::list<endpoint> const& state::endpoints() const throw () {
  *
  *  @param[in] val Size limit.
  */
-void state::event_queue_max_size(unsigned int val) throw () {
+void state::event_queue_max_size(int val) throw () {
   _event_queue_max_size = val;
 }
 
@@ -216,7 +216,7 @@ void state::event_queue_max_size(unsigned int val) throw () {
  *
  *  @return The size limit.
  */
-unsigned int state::event_queue_max_size() const throw () {
+int state::event_queue_max_size() const throw () {
   return (_event_queue_max_size);
 }
 
@@ -375,7 +375,7 @@ std::map<std::string, std::string> const& state::params() const throw () {
  *
  *  @param[in] id  Poller ID.
  */
-void state::poller_id(unsigned int id) throw () {
+void state::poller_id(int id) throw () {
   _poller_id = id;
   return ;
 }
@@ -385,7 +385,7 @@ void state::poller_id(unsigned int id) throw () {
  *
  *  @return Poller ID.
  */
-unsigned int state::poller_id() const throw () {
+int state::poller_id() const throw () {
   return (_poller_id);
 }
 
