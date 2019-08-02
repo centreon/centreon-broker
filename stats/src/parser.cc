@@ -16,15 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QDomDocument>
-#include <QDomElement>
-#include <QString>
+#include <json11.hpp>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/stats/config.hh"
 #include "com/centreon/broker/stats/metric.hh"
 #include "com/centreon/broker/stats/parser.hh"
 
 using namespace com::centreon::broker::stats;
+using namespace json11;
 
 /**
  *  Default constructor.
@@ -66,62 +65,16 @@ parser& parser::operator=(parser const& right) {
 void parser::parse(
                config& cfg,
                std::string const& content) {
-  // Parse XML.
-  QDomDocument d;
-  if (!d.setContent(QString(content.c_str())))
-    return ;
+  std::string err;
 
-  QDomElement root(d.documentElement());
+  Json const& js{Json::parse(content, err)};
+  if (!err.empty())
+    throw (exceptions::msg()
+      << "stats: invalid json file");
 
-  for (QDomElement fifo = root.firstChildElement("fifo");
-       !fifo.isNull();
-       fifo = fifo.nextSiblingElement("fifo"))
-    cfg.add_fifo(fifo.text().toStdString(), config::plain_text);
-  for (QDomElement fifo = root.firstChildElement("json_fifo");
-       !fifo.isNull();
-       fifo = fifo.nextSiblingElement("json_fifo"))
-    cfg.add_fifo(fifo.text().toStdString(), config::json);
-
-  QDomElement remote(root.lastChildElement("remote"));
-  if (!remote.isNull()) {
-    QDomElement tag(remote.lastChildElement("dumper_tag"));
-    if (tag.isNull())
-      throw (exceptions::msg()
-             << "stats: invalid remote dumper tag");
-    cfg.set_dumper_tag(tag.text().toStdString());
-
-    QDomElement interval(remote.lastChildElement("interval"));
-    if (!interval.isNull())
-      cfg.set_interval(interval.text().toUInt());
-
-    QDomElement metrics(remote.lastChildElement("metrics"));
-    if (!metrics.isNull()) {
-      QDomElement host(metrics.lastChildElement("host"));
-      if (host.isNull())
-        throw (exceptions::msg() << "stats: invalid remote host");
-      unsigned int host_id(host.text().toUInt());
-
-      QDomElement service(metrics.firstChildElement("service"));
-      while (!service.isNull()) {
-        QDomElement id(service.firstChildElement("id"));
-        if (id.isNull())
-          throw (exceptions::msg()
-                 << "stats: invalid remote service id");
-        QDomElement name(service.firstChildElement("name"));
-        if (name.isNull())
-          throw (exceptions::msg()
-                 << "stats: invalid remote service name");
-
-        metric m;
-        m.set_host_id(host_id);
-        m.set_service_id(id.text().toUInt());
-        m.set_name(name.text().toStdString());
-        cfg.metrics().push_back(m);
-
-        service = service.nextSiblingElement("service");
-      }
-    }
-  }
+  Json const& json_fifo{js["json_fifo"]};
+  if (json_fifo.is_string() && !json_fifo.string_value().empty())
+    cfg.add_fifo(json_fifo.string_value());
 
   return ;
 }
