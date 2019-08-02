@@ -43,8 +43,8 @@ namespace                         config {
                                   state(state const& other);
                                   ~state();
     state&                        operator=(state const& other);
-    void                          broker_id(unsigned int id) throw ();
-    unsigned int                  broker_id() const throw ();
+    void                          broker_id(int id) throw ();
+    int                           broker_id() const throw ();
     void                          broker_name(std::string const& name);
     std::string const&            broker_name() const throw ();
     void                          cache_directory(std::string const& dir);
@@ -57,8 +57,8 @@ namespace                         config {
     std::list<endpoint>&          endpoints() throw ();
     std::list<endpoint> const&    endpoints() const throw ();
     void                          event_queue_max_size(
-                                    unsigned int val) throw ();
-    unsigned int                  event_queue_max_size() const throw ();
+                                    int val) throw ();
+    int                           event_queue_max_size() const throw ();
     void                          flush_logs(bool flush) throw ();
     bool                          flush_logs() const throw ();
     void                          log_thread_id(bool log_id) throw ();
@@ -79,21 +79,21 @@ namespace                         config {
                                   params() throw ();
     std::map<std::string, std::string> const&
                                   params() const throw ();
-    void                          poller_id(unsigned int id) throw ();
-    unsigned int                  poller_id() const throw ();
+    void                          poller_id(int id) throw ();
+    int                           poller_id() const throw ();
     void                          poller_name(std::string const& name);
     std::string const&            poller_name() const throw ();
 
   private:
     void                          _internal_copy(state const& other);
 
-    unsigned int                  _broker_id;
+    int                           _broker_id;
     std::string                   _broker_name;
     std::string                   _cache_directory;
     std::string                   _command_file;
     std::string                   _command_protocol;
     std::list<endpoint>           _endpoints;
-    unsigned int                  _event_queue_max_size;
+    int                           _event_queue_max_size;
     bool                          _flush_logs;
     bool                          _log_thread_id;
     logging::timestamp_type       _log_timestamp;
@@ -103,7 +103,7 @@ namespace                         config {
     std::list<std::string>        _module_list;
     std::map<std::string, std::string>
                                   _params;
-    unsigned int                  _poller_id;
+    int                           _poller_id;
     std::string                   _poller_name;
   };
 }

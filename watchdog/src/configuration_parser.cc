@@ -16,13 +16,17 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QFile>
+#include <json11.hpp>
+#include <fstream>
+#include <streambuf>
 #include "com/centreon/broker/watchdog/configuration_parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#include "../../../../../../usr/include/qt4/QtCore/QString"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::watchdog;
+using namespace json11;
 
 /**
  *  Default constructor.
@@ -53,39 +57,45 @@ configuration configuration_parser::parse(std::string const& config_filename) {
  *  @param[in] config_filename  The config file name.
  */
 void configuration_parser::_parse_file(std::string const& config_filename) {
+  // Parse Json file
+  std::ifstream f(config_filename);
+  std::string const& json_to_parse{
+    std::istreambuf_iterator<char>(f),
+    std::istreambuf_iterator<char>()};
+  std::string err;
+
+  _json_document = Json::parse(json_to_parse, err);
+
+  if (_json_document.is_null())
+    throw exceptions::msg() << "config parser: cannot parse file '"
+                            << config_filename << "': " << err;
+  if (!_json_document.is_object() || !!_json_document["centreonBroker"].is_object())
+    throw exceptions::msg() << "config parser: cannot parse file '"
+                            << config_filename << "': it must contain a centreonBroker object";
+
   QFile config_file(config_filename.c_str());
   if (!config_file.open(QFile::ReadOnly))
     // We don't know where is our log file, so we can't log.
     throw exceptions::msg()
       << "cannot open '" << config_filename
       << "': " << config_file.errorString();
-
-  // Parse the configuration file.
-  QString error_msg;
-  int error_line;
-  int error_column;
-  if (!_xml_document.setContent(
-                       &config_file,
-                       &error_msg,
-                       &error_line,
-                       &error_column))
-    throw exceptions::msg()
-      << "couldn't parse file '" << config_filename << "': "
-      << error_msg << " at line '" << error_line << "', column '"
-      <<  error_column << "'";
 }
 
 /**
  *  Parse the xml document.
  */
 void configuration_parser::_parse_xml_document() {
-  QDomElement e = _xml_document.firstChildElement().firstChildElement();
-  while(!e.isNull()) {
-      if (e.tagName() == "log")
-        _log_path = e.text();
-      else if (e.tagName() == "cbd")
-        _parse_centreon_broker_element(e);
-     e = e.nextSiblingElement();
+  for (std::pair<std::string const, Json> const& object : _json_document["centreonBroker"].object_items()) {
+    if (object.first == "log")
+     _log_path = QString::fromStdString(object.second.string_value());
+    else if (object.first == "cbd") {
+      if (object.second.is_array())
+        for (Json const &entry : object.second.array_items())
+          _parse_centreon_broker_element(entry);
+      else
+        throw exceptions::msg()
+          << "error in watchdog config syntax 'cbd' must be an array";
+    }
   }
 }
 
@@ -95,27 +105,36 @@ void configuration_parser::_parse_xml_document() {
  *  @param[in] element  The element.
  */
 void configuration_parser::_parse_centreon_broker_element(
-                             QDomElement const& element) {
+                             json11::Json const& element) {
   // The default are sane.
-  QString instance_name = element.firstChildElement("name").text();
-  QString instance_config = element.firstChildElement("configuration_file").text();
-  bool run = (element.firstChildElement("run").text().toInt() == 1);
-  bool reload = (element.firstChildElement("reload").text().toInt() == 1);
-  unsigned int seconds_per_tentative
-    = (element.firstChildElement("seconds_per_tentative").text().toUInt());
+  Json const& instance_name{element["name"]};
+  Json const& instance_config{element["configuration_file"]};
+  Json const& run{element["run"]};
+  Json const& reload{element["reload"]};
 
-  if (instance_name.isEmpty())
-    throw (exceptions::msg() << "watchdog: missing instance_name");
+  if (!instance_name.is_string())
+    throw exceptions::msg() << "name field not provided for cbd instance";
+  if (!instance_config.is_string())
+    throw exceptions::msg()
+      << "instance_config field not provided for cbd instance";
+  if (!run.is_bool())
+    throw exceptions::msg() << "run field not provided for cbd instance";
+
+  if (!reload.is_bool())
+    throw exceptions::msg() << "reload field not provided for cbd instance";
+
+  if (instance_name.string_value().empty())
+    throw exceptions::msg() << "watchdog: missing instance_name";
 
   if (_instances_configuration.insert(
     std::make_pair(
-           instance_name.toStdString(),
+           instance_name.string_value(),
            instance_configuration(
-             instance_name.toStdString(),
-             instance_config.toStdString(),
-             run,
-             reload,
-             seconds_per_tentative))).second == false)
-    throw (exceptions::msg()
-             << "instance '" << instance_name << "' already exists");
+             instance_name.string_value(),
+             instance_config.string_value(),
+             run.bool_value(),
+             reload.bool_value(),
+             0))).second == false)
+    throw exceptions::msg()
+             << "instance '" << instance_name.string_value() << "' already exists";
 }

@@ -16,13 +16,16 @@
 ** For more information : contact@centreon.com
 */
 
+#include <json11.hpp>
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/lua/connector.hh"
 #include "com/centreon/broker/lua/factory.hh"
+#include "../../../../../../usr/include/qt4/QtCore/QString"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
+using namespace json11;
 
 /**
  *  Find a parameter in configuration.
@@ -110,49 +113,51 @@ io::endpoint* factory::new_endpoint(
                          bool& is_acceptor,
                          std::shared_ptr<persistent_cache> cache) const {
   QMap<QString, QVariant> conf_map;
+  std::string err;
+
   std::string filename(find_param(cfg, "path"));
-  QDomNodeList config = cfg.cfg.elementsByTagName("lua_parameter");
-  for (int i(0); i < config.size(); ++i) {
-    QDomNode conf(config.item(i));
-    QDomNode name = conf.namedItem("name");
-    QDomNode type = conf.namedItem("type");
-    QDomNode value = conf.namedItem("value");
-    if (name.isNull())
-      throw (exceptions::msg())
-             << "lua: couldn't read a configuration field because"
-             << " its name is empty";
-    if (value.isNull())
-      throw (exceptions::msg())
-             << "lua: couldn't read the '"
-             << name.toElement().text().toStdString()
-             << "' configuration field because its value is empty";
-    std::string t((type.isNull())
-                  ? "string" : type.toElement().text().toStdString());
-    if (t == "string" || t == "password")
-      conf_map.insert(name.toElement().text(), QVariant(value.toElement().text()));
-    else if (t == "number") {
-      bool ok;
-      int val(value.toElement().text().toInt(&ok, 10));
-      if (ok)
-        conf_map.insert(name.toElement().text(), QVariant(val));
-      else {
-        double val(value.toElement().text().toDouble(&ok));
+  Json const& js{cfg.cfg["lua_parameter"]};
+
+  if (!err.empty())
+    throw (exceptions::msg())
+      << "lua: couldn't read a configuration json";
+
+  if (js.is_array()) {
+    for (Json const &obj : js.array_items()) {
+      Json const &name{obj["name"]};
+      Json const &type{obj["type"]};
+      Json const &value{obj["value"]};
+
+      if (name.string_value().empty())
+        throw (exceptions::msg())
+          << "lua: couldn't read a configuration field because"
+          << " its name is empty";
+      if (value.string_value().empty())
+        throw (exceptions::msg())
+          << "lua: couldn't read a configuration field because"
+          << "' configuration field because its value is empty";
+      std::string t((type.string_value().empty())
+                    ? "string" : type.string_value());
+      if (t == "string" || t == "password")
+        conf_map.insert(QString::fromStdString(name.string_value()), QVariant(QString::fromStdString(value.string_value())));
+      else if (t == "number") {
+        bool ok;
+        int val(QString::fromStdString(value.string_value()).toInt(&ok, 10));
         if (ok)
-          conf_map.insert(name.toElement().text(), QVariant(val));
+          conf_map.insert(QString::fromStdString(name.string_value()), QVariant(val));
         else {
-          throw (exceptions::msg())
-                 << "lua: unable to read '"
-                 << name.toElement().text()
-                 << "' content (" << value.toElement().text()
-                 << ") as a number";
+          double val(QString::fromStdString(value.string_value()).toDouble(&ok));
+          if (ok)
+            conf_map.insert(QString::fromStdString(name.string_value()), QVariant(val));
+          else {
+            throw (exceptions::msg())
+              << "lua: unable to read '"
+              << name.string_value()
+              << "' content (" << value.string_value()
+              << ") as a number";
+          }
         }
       }
-    }
-    else {
-      throw (exceptions::msg())
-        << "lua: unable to read '"
-        << name.toElement().text()
-        << "' content: type unrecognized (" << t << ")";
     }
   }
   // Connector.

@@ -19,7 +19,7 @@
 #ifndef CCB_CONFIG_PARSER_HH
 #  define CCB_CONFIG_PARSER_HH
 
-#  include <QDomElement>
+#  include <json11.hpp>
 #  include <QList>
 #  include <QString>
 #  include "com/centreon/broker/config/state.hh"
@@ -41,12 +41,12 @@ namespace       config {
                 parser(parser const& other);
                 ~parser();
     parser&     operator=(parser const& other);
-    void        parse(QString const& file, state& s);
+    void        parse(std::string const& file, state& s);
     static bool parse_boolean(QString const& value);
 
   private:
-    void        _parse_endpoint(QDomElement& elem, endpoint& e);
-    void        _parse_logger(QDomElement& elem, logger& l);
+    void        _parse_endpoint(json11::Json const& elem, endpoint& e);
+    void        _parse_logger(json11::Json const& elem, logger& l);
   };
 }
 
