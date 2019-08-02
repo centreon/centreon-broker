@@ -16,8 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QDomDocument>
-#include <QDomElement>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -250,50 +248,6 @@ void generator::run() {
  *  @param[in] config The configuration to set.
  */
 void generator::set(config::state const& config) {
-  std::map<std::string, std::string>::const_iterator
-    it(config.params().find("stats"));
-  if (it == config.params().end())
-    return ;
-
-  // Parse XML.
-  QDomDocument d;
-  if (d.setContent(static_cast<QString>(it->second.c_str()))) {
-    QDomElement root(d.documentElement());
-
-    QDomElement remote(root.lastChildElement("remote"));
-    if (!remote.isNull()) {
-      QDomElement interval(remote.lastChildElement("interval"));
-      if (!interval.isNull())
-        _interval = interval.text().toUInt();
-
-      QDomElement metrics(remote.lastChildElement("metrics"));
-      if (!metrics.isNull()) {
-        QDomElement host(metrics.lastChildElement("host"));
-        if (host.isNull())
-          throw (exceptions::msg() << "stats: invalid remote host");
-        unsigned int host_id(host.text().toUInt());
-
-        QDomElement service(metrics.firstChildElement("service"));
-        while (!service.isNull()) {
-          QDomElement id(service.firstChildElement("id"));
-          if (id.isNull())
-            throw (exceptions::msg()
-                   << "stats: invalid remote service id");
-          QDomElement name(service.firstChildElement("name"));
-          if (name.isNull())
-            throw (exceptions::msg()
-                   << "stats: invalid remote service name");
-
-          logging::config(logging::medium)
-            << "stats: new service (host " << host_id << ", service "
-            << id.text().toUInt() << ", name " << name.text() << ")";
-          add(host_id, id.text().toUInt(), name.text().toStdString());
-
-          service = service.nextSiblingElement("service");
-        }
-      }
-    }
-  }
-
+  // nothing to parse now...
   return ;
 }

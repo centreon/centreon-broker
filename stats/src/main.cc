@@ -104,14 +104,6 @@ extern "C" {
             p.parse(stats_cfg, it->second);
           }
 
-          // Load stats engine.
-          if (!stats_cfg.get_dumper_tag().empty()
-              && !stats_cfg.metrics().empty()) {
-            // Create thread.
-            worker_dumper.reset(new stats::generator);
-            worker_dumper->run(stats_cfg, base_cfg.poller_id());
-          }
-
           // File configured, load stats engine.
           for (stats::config::fifo_list::const_iterator
                  it = stats_cfg.get_fifo().begin(),
@@ -120,7 +112,7 @@ extern "C" {
                ++it) {
             // Does file exist and is a FIFO ?
             struct stat s;
-            std::string fifo_path = it->first;
+            std::string fifo_path = *it;
             // Stat failed, probably because of inexistant file.
             if (stat(fifo_path.c_str(), &s) != 0) {
               char const* msg(strerror(errno));
@@ -143,7 +135,7 @@ extern "C" {
 
             // Create thread.
             workers_fifo.push_back(std::make_shared<stats::worker>());
-            workers_fifo.back()->run(QString::fromStdString(fifo_path), it->second);
+            workers_fifo.back()->run(QString::fromStdString(fifo_path));
           }
           loaded = true;
         }

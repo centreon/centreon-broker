@@ -122,7 +122,7 @@ bool endpoint::operator<(endpoint const& other) const {
   else if (cache_enabled != other.cache_enabled)
     return (cache_enabled < other.cache_enabled);
   else if (cfg != other.cfg)
-    return (cfg.toText().data() < other.cfg.toText().data());
+    return (cfg < other.cfg);
 
   // Need to check all parameters one by one.
   QMap<QString, QString>::const_iterator it1(params.begin()),

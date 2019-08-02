@@ -41,7 +41,6 @@ add_library("${CORRELATION}" SHARED
   "${SRC_DIR}/log_issue.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/node.cc"
-  "${SRC_DIR}/parser.cc"
   "${SRC_DIR}/state.cc"
   "${SRC_DIR}/stream.cc"
   # Headers.
@@ -54,7 +53,6 @@ add_library("${CORRELATION}" SHARED
   "${INC_DIR}/issue_parent.hh"
   "${INC_DIR}/log_issue.hh"
   "${INC_DIR}/node.hh"
-  "${INC_DIR}/parser.hh"
   "${INC_DIR}/state.hh"
   "${INC_DIR}/stream.hh"
   # Qt-processed files.

@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <json11.hpp>
 #include <memory>
 #include <sstream>
 #include <vector>
@@ -27,6 +28,7 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
+using namespace json11;
 
 /**************************************
 *                                     *
@@ -159,50 +161,43 @@ io::endpoint* factory::new_endpoint(
   // Get status query.
   std::string status_timeseries(find_param(cfg, "status_timeseries"));
   std::vector<column> status_column_list;
-  QDomNodeList status_columns = cfg.cfg.elementsByTagName("status_column");
-  for (int i(0); i < status_columns.size(); ++i) {
-    QDomNode status = status_columns.item(i);
-    QDomNode name = status.namedItem("name");
-    QDomNode value = status.namedItem("value");
-    QDomNode is_tag = status.namedItem("is_tag");
-    QDomNode type = status.namedItem("type");
-    if (name.isNull() || value.isNull())
+  Json const& status_columns = cfg.cfg["status_column"];
+  for (Json const& object : status_columns.array_items()) {
+    Json const& name{object["name"]};
+    Json const& value{object["value"]};
+    Json const& is_tag{object["is_tag"]};
+    Json const& type{object["type"]};
+    if (name.is_null() || !name.is_string() ||
+        name.string_value().empty() || !value.is_string() ||
+        value.string_value().empty())
       throw (exceptions::msg())
              << "influxdb: couldn't get the configuration of a status column";
     status_column_list.push_back(column(
-      name.toElement().text().toStdString(),
-      value.toElement().text().toStdString(),
-      is_tag.isNull() ?
-        false :
-        config::parser::parse_boolean(is_tag.toElement().text()),
-      type.isNull() ?
-        column::string :
-        column::parse_type(type.toElement().text().toStdString())));
-
+      name.string_value(),
+      value.string_value(),
+      is_tag.bool_value(),
+      column::parse_type(type.string_value())));
   }
 
-  // Get metric query.
+  // Get metric query.*/
   std::string metric_timeseries(find_param(cfg, "metrics_timeseries"));
   std::vector<column> metric_column_list;
-  QDomNodeList metric_columns = cfg.cfg.elementsByTagName("metrics_column");
-  for (int i(0); i < metric_columns.size(); ++i) {
-    QDomNode metric = metric_columns.item(i);
-    QDomNode name = metric.namedItem("name");
-    QDomNode value = metric.namedItem("value");
-    QDomNode is_tag = metric.namedItem("is_tag");
-    QDomNode type = metric.namedItem("type");
-    if (name.isNull() || value.isNull())
+  Json const& metric_columns = cfg.cfg["metrics_column"];
+  for (Json const& object : metric_columns.array_items()) {
+    Json const& name{object["name"]};
+    Json const& value{object["value"]};
+    Json const& is_tag{object["is_tag"]};
+    Json const& type{object["type"]};
+    if (name.is_null() || !name.is_string() ||
+        name.string_value().empty() || !value.is_string() ||
+        value.string_value().empty())
       throw (exceptions::msg())
              << "influxdb: couldn't get the configuration of a metric column";
     metric_column_list.push_back(column(
-      name.toElement().text().toStdString(),
-      value.toElement().text().toStdString(),
-      is_tag.isNull() ?
-        false :
-        config::parser::parse_boolean(is_tag.toElement().text()),
-      type.isNull() ?
-        column::string :
-        column::parse_type(type.toElement().text().toStdString())));
+      name.string_value(),
+      value.string_value(),
+      is_tag.bool_value(),
+      column::parse_type(type.string_value())));
   }
 
   // Connector.
