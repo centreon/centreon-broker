@@ -142,7 +142,16 @@ void parser::parse(std::string const& file, state& s) {
         &state::log_human_readable_timestamp, &Json::is_bool, &Json::bool_value))
         ;
       else if (object.first == "output") {
-        if(object.second.is_object()) {
+        if (object.second.is_array()) {
+          for(Json const& node : object.second.array_items()) {
+            endpoint out;
+            out.read_filters.insert("all");
+            out.write_filters.insert("all");
+            _parse_endpoint(node, out);
+            s.endpoints().push_back(out);
+          }
+        }
+        else if(object.second.is_object()) {
           endpoint out;
           out.read_filters.insert("all");
           out.write_filters.insert("all");
@@ -154,8 +163,16 @@ void parser::parse(std::string const& file, state& s) {
         }
       }
 
-      else if (object.first == "input" && object.second.is_object()) {
-        if (object.second.is_object()) {
+      else if (object.first == "input") {
+        if (object.second.is_array()) {
+          for(Json const& node : object.second.array_items()) {
+            endpoint in;
+            in.read_filters.insert("all");
+            _parse_endpoint(node, in);
+            s.endpoints().push_back(in);
+          }
+        }
+        else if (object.second.is_object()) {
           endpoint in;
           in.read_filters.insert("all");
           _parse_endpoint(object.second, in);
@@ -166,8 +183,15 @@ void parser::parse(std::string const& file, state& s) {
         }
       }
 
-      else if (object.first == "logger" && object.second.is_object()) {
-        if (object.second.is_object()) {
+      else if (object.first == "logger") {
+        if (object.second.is_array()) {
+          for(Json const& node : object.second.array_items()) {
+            logger logr;
+            _parse_logger(node, logr);
+            s.loggers().push_back(logr);
+          }
+        }
+        else if (object.second.is_object()) {
           logger logr;
           _parse_logger(object.second, logr);
           s.loggers().push_back(logr);
@@ -215,7 +239,7 @@ void parser::_parse_endpoint(Json const& elem, endpoint& e) {
   for (std::pair<std::string const, Json> const& object : elem.object_items()) {
     if (object.first == "buffering_timeout")
       e.buffering_timeout = static_cast<time_t>(std::stoul(object.second.string_value()));
-    else if ((object.first == "failover") || (object.first == "secondary_failover"))
+    else if (object.first == "failover")
       e.failovers.push_back(object.second.string_value());
     else if (object.first == "name")
       e.name = object.second.string_value();
