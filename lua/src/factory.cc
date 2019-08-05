@@ -122,7 +122,42 @@ io::endpoint* factory::new_endpoint(
     throw (exceptions::msg())
       << "lua: couldn't read a configuration json";
 
-  if (js.is_array()) {
+  if (js.is_object()) {
+    Json const &name{js["name"]};
+    Json const &type{js["type"]};
+    Json const &value{js["value"]};
+
+    if (name.string_value().empty())
+      throw (exceptions::msg())
+        << "lua: couldn't read a configuration field because"
+        << " its name is empty";
+    if (value.string_value().empty())
+      throw (exceptions::msg())
+        << "lua: couldn't read a configuration field because"
+        << "' configuration field because its value is empty";
+    std::string t((type.string_value().empty())
+                  ? "string" : type.string_value());
+    if (t == "string" || t == "password")
+      conf_map.insert(QString::fromStdString(name.string_value()), QVariant(QString::fromStdString(value.string_value())));
+    else if (t == "number") {
+      bool ok;
+      int val(QString::fromStdString(value.string_value()).toInt(&ok, 10));
+      if (ok)
+        conf_map.insert(QString::fromStdString(name.string_value()), QVariant(val));
+      else {
+        double val(QString::fromStdString(value.string_value()).toDouble(&ok));
+        if (ok)
+          conf_map.insert(QString::fromStdString(name.string_value()), QVariant(val));
+        else {
+          throw (exceptions::msg())
+            << "lua: unable to read '"
+            << name.string_value()
+            << "' content (" << value.string_value()
+            << ") as a number";
+        }
+      }
+    }
+  } else if (js.is_array()) {
     for (Json const &obj : js.array_items()) {
       Json const &name{obj["name"]};
       Json const &type{obj["type"]};
