@@ -92,6 +92,8 @@ void configuration_parser::_parse_xml_document() {
       if (object.second.is_array())
         for (Json const &entry : object.second.array_items())
           _parse_centreon_broker_element(entry);
+      else if(object.second.is_object())
+        _parse_centreon_broker_element(object.second);
       else
         throw exceptions::msg()
           << "error in watchdog config syntax 'cbd' must be an array";
