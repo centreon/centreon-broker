@@ -22,7 +22,6 @@
 #include "com/centreon/broker/watchdog/configuration_parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/manager.hh"
-#include "../../../../../../usr/include/qt4/QtCore/QString"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::watchdog;
