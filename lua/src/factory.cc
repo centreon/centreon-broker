@@ -21,7 +21,6 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/lua/connector.hh"
 #include "com/centreon/broker/lua/factory.hh"
-#include "../../../../../../usr/include/qt4/QtCore/QString"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
