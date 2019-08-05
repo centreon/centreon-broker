@@ -239,10 +239,10 @@ void parser::_parse_endpoint(Json const& elem, endpoint& e) {
       }
     }
     else if (object.first == "cache")
-      e.cache_enabled = parse_boolean(QString::fromStdString(object.second.string_value()));
+      e.cache_enabled = parse_boolean(object.second.string_value());
     else if (object.first == "type")
       e.type = QString::fromStdString(object.second.string_value());
-    e.params[QString::fromStdString(object.first)] = QString::fromStdString(object.second.string_value());
+    e.params[object.first] = object.second.string_value();
   }
 }
 
