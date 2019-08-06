@@ -154,8 +154,6 @@ void parser::parse_perfdata(
                std::string const& str,
                std::list<perfdata>& pd) {
   size_t start{str.find_first_not_of(" \n\r\t")};
-  size_t end{str.find_last_not_of(" \n\r\t") + 1};
-  size_t len{end - start};
 
   char const* buf{str.c_str() + start};
 

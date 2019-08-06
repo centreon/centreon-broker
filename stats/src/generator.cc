@@ -53,7 +53,7 @@ void generator::exit() {
  *  @param[in] cfg         Stats configuration.
  *  @param[in] instance_id Instance ID.
  */
-void generator::run(config const& cfg, unsigned int instance_id) {
+void generator::run(config const& cfg __attribute__((unused)), unsigned int instance_id) {
   // Set instance ID.
   _instance_id = instance_id;
 

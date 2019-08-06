@@ -68,7 +68,7 @@ static void hup_handler(int signum) {
     // Parse configuration file.
     config::parser parsr;
     config::state conf;
-    parsr.parse(gl_mainconfigfiles.front().c_str(), conf);
+    parsr.parse(gl_mainconfigfiles.front(), conf);
 
     try {
       // Apply resulting configuration.
@@ -99,8 +99,6 @@ static void hup_handler(int signum) {
 
   // Reenable SIGHUP handler.
   signal(SIGHUP, &hup_handler);
-
-  return ;
 }
 
 /**
@@ -122,8 +120,6 @@ static void term_handler(int signum, siginfo_t* info, void* data) {
 
   // Ask event loop to quit.
   QCoreApplication::exit(0);
-
-  return ;
 }
 
 /**************************************
@@ -280,7 +276,7 @@ int main(int argc, char* argv[]) {
         // Parse configuration file.
         config::parser parsr;
         config::state conf;
-        parsr.parse(gl_mainconfigfiles.front().c_str(), conf);
+        parsr.parse(gl_mainconfigfiles.front(), conf);
 
         // Verification modifications.
         if (check) {

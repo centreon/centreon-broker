@@ -228,7 +228,7 @@ void parser::_parse_endpoint(Json const& elem, endpoint& e) {
     else if (object.first == "retry_interval")
       e.retry_interval = static_cast<time_t>(std::stoul(object.second.string_value()));
     else if (object.first == "filters") {
-      std::set<std::string> (endpoint::* member);
+      std::set<std::string> endpoint::* member;
       if (e.write_filters.empty()) // Input.
         member = &endpoint::read_filters;
       else // Output.

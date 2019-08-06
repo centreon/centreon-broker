@@ -35,15 +35,15 @@ template <typename T>
 class property : public source {
  private:
   union {
-    bool(T::*b);
-    double(T::*d);
-    int(T::*i);
-    short(T::*s);
-    std::string(T::*q);
-    timestamp(T::*t);
-    unsigned int(T::*I);
-    unsigned short(T::*S);
-    uint64_t(T::*l);
+    bool T::*b;
+    double T::*d;
+    int T::*i;
+    short T::*s;
+    std::string T::*q;
+    timestamp T::*t;
+    unsigned int T::*I;
+    unsigned short T::*S;
+    uint64_t T::*l;
   } _prop;
 
  public:

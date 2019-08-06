@@ -62,7 +62,6 @@ static void get_double(
   if (strsz > sizeof(str))
     strsz = sizeof(str);
   buffer.append(str, strsz);
-  return ;
 }
 
 /**
@@ -76,7 +75,6 @@ static void get_integer(
   buffer.append(
            static_cast<char*>(static_cast<void*>(&value)),
            sizeof(value));
-  return ;
 }
 
 /**
@@ -90,7 +88,6 @@ static void get_short(
   buffer.append(
            static_cast<char*>(static_cast<void*>(&value)),
            sizeof(value));
-  return ;
 }
 
 /**
@@ -102,7 +99,6 @@ static void get_string(
               QByteArray& buffer) {
   QByteArray tmp(member.get_string(t).c_str());
   buffer.append(tmp.constData(), tmp.size() + 1);
-  return ;
 }
 
 /**
@@ -121,7 +117,6 @@ static void get_timestamp(
   buffer.append(
            static_cast<char*>(static_cast<void*>(&low)),
            sizeof(low));
-  return ;
 }
 
 /**
@@ -135,7 +130,6 @@ static void get_uint(
   buffer.append(
            static_cast<char*>(static_cast<void*>(&value)),
            sizeof(value));
-  return ;
 }
 
 /**
@@ -250,14 +244,14 @@ static io::raw* serialize(io::data const& e) {
     *static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning))
       = htons(chksum);
 
-    return (buffer.release());
+    return buffer.release();
   }
   else
     logging::info(logging::high)
       << "BBDO: cannot serialize event of ID " << e.type()
       << ": event was not registered and will therefore be ignored";
 
-  return (NULL);
+  return NULL;
 }
 
 /**************************************
@@ -292,7 +286,7 @@ output::~output() {}
  */
 output& output::operator=(output const& other) {
   (void)other;
-  return (*this);
+  return *this;
 }
 
 /**
@@ -302,7 +296,7 @@ output& output::operator=(output const& other) {
  */
 int output::flush() {
   _substream->flush();
-  return (0);
+  return 0;
 }
 
 /**
@@ -313,7 +307,6 @@ int output::flush() {
 void output::statistics(io::properties& tree) const {
   if (_substream)
     _substream->statistics(tree);
-  return ;
 }
 
 /**
@@ -325,7 +318,7 @@ void output::statistics(io::properties& tree) const {
  */
 int output::write(std::shared_ptr<io::data> const& e) {
   if (!validate(e, "BBDO"))
-    return (1);
+    return 1;
 
   // Check if data exists.
   std::shared_ptr<io::raw> serialized(serialize(*e));
@@ -336,5 +329,5 @@ int output::write(std::shared_ptr<io::data> const& e) {
   }
 
   // Event acknowledgement is done in the higher level bbdo::stream.
-  return (0);
+  return 0;
 }
