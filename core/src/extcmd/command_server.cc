@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QLocalSocket>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/command_client.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
@@ -24,10 +23,10 @@
 #include "com/centreon/broker/extcmd/command_server.hh"
 #include "com/centreon/broker/extcmd/plaintext_command_parser.hh"
 #include "com/centreon/broker/extcmd/json_command_parser.hh"
-#include "com/centreon/broker/extcmd/server_socket.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 
+using namespace asio;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::extcmd;
 
@@ -69,8 +68,8 @@ std::shared_ptr<io::stream> command_server::open() {
   // Initialization.
   if (!_socket.get()) {
     // Listen on socket.
-    ::remove(_socket_file.c_str());
-    _socket.reset(new server_socket(_socket_file));
+    ::unlink(_socket_file.c_str());
+    _socket.reset(new local::stream_protocol::socket{_io_context});
 
     // Create command listener.
     _listener.reset(new command_listener);
@@ -94,26 +93,19 @@ std::shared_ptr<io::stream> command_server::open() {
   // Wait for incoming connections.
   logging::debug(logging::medium)
     << "command: waiting for new connection";
-  if (!_socket->has_pending_connections()) {
-    bool timedout(false);
-    _socket->wait_for_new_connection(1000, &timedout);
-    if (!_socket->has_pending_connections()) {
-      if (timedout)
-        return (std::shared_ptr<io::stream>());
-      else
-        throw (exceptions::msg()
-               << "command: error while waiting on client on file '"
-               << _socket_file << "': " << _socket->error_string());
-    }
+
+  try {
+    local::stream_protocol::endpoint ep(_socket_file);
+    local::stream_protocol::acceptor acceptor(_io_context, ep);
+    acceptor.accept(*_socket);
+  } catch (std::system_error se) {
+    throw exceptions::msg()
+      << "command: error while waiting on client on file '"
+      << _socket_file << "': " << se.what();
   }
 
-  // Accept new client.
-  int incoming(_socket->next_pending_connection());
-  if (incoming < 0)
-    throw (exceptions::msg() << "command: could not accept client: "
-           << _socket->error_string());
   logging::info(logging::medium) << "command: new client connected";
   std::shared_ptr<io::stream>
-    new_client(std::make_shared<command_client>(incoming, *_parser.get()));
+    new_client(std::make_shared<command_client>(*_socket, *_parser.get()));
   return new_client;
 }

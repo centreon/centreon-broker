@@ -22,7 +22,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
-#include "com/centreon/broker/tcp/server_socket.hh"
+#include "com/centreon/broker/tcp/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
@@ -55,7 +55,6 @@ acceptor::~acceptor() {}
 void acceptor::add_child(std::string const& child) {
   QMutexLocker lock(&_childrenm);
   _children.push_back(child);
-  return ;
 }
 
 /**
@@ -65,7 +64,6 @@ void acceptor::add_child(std::string const& child) {
  */
 void acceptor::listen_on(unsigned short port) {
   _port = port;
-  return ;
 }
 
 /**
@@ -75,34 +73,22 @@ void acceptor::listen_on(unsigned short port) {
 std::shared_ptr<io::stream> acceptor::open() {
   // Listen on port.
   QMutexLocker lock(&_mutex);
-  if (!_socket.get())
-    _socket.reset(new server_socket(_port));
 
-  // Wait for incoming connections.
-  if (!_socket->has_pending_connections()) {
-    bool timedout(false);
-    _socket->wait_for_new_connection(1000, &timedout);
-    if (!_socket->has_pending_connections()) {
-      if (timedout)
-        return (std::shared_ptr<io::stream>());
-      else
-        throw (exceptions::msg()
-               << "TCP: error while waiting client on port: " << _port
-               << _socket->error_string());
-    }
-  }
+  if (!_socket.get())
+    _socket.reset(new asio::ip::tcp::socket(_io_context));
+
+  asio::ip::tcp::acceptor acceptor(_io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), _port));
+  acceptor.accept(*_socket);
 
   // Accept client.
   std::shared_ptr<stream>
-    incoming(_socket->next_pending_connection());
-  if (!incoming)
-    throw (exceptions::msg() << "TCP: could not accept client: "
-           << _socket->error_string());
+    incoming{new stream{_socket.get(), ""}};
+
   logging::info(logging::medium) << "TCP: new client connected";
   incoming->set_parent(this);
   incoming->set_read_timeout(_read_timeout);
   incoming->set_write_timeout(_write_timeout);
-  return (incoming);
+  return incoming;
 }
 
 /**
@@ -119,9 +105,8 @@ void acceptor::remove_child(std::string const& child) {
        ++it)
     if (*it == child) {
       _children.erase(it);
-      break ;
+      break;
     }
-  return ;
 }
 
 /**
@@ -134,7 +119,6 @@ void acceptor::remove_child(std::string const& child) {
  */
 void acceptor::set_read_timeout(int secs) {
   _read_timeout = secs;
-  return ;
 }
 
 /**
@@ -144,7 +128,6 @@ void acceptor::set_read_timeout(int secs) {
  */
 void acceptor::set_write_timeout(int secs) {
   _write_timeout = secs;
-  return ;
 }
 
 /**
@@ -165,5 +148,4 @@ void acceptor::stats(io::properties& tree) {
   io::property& p(tree["peers"]);
   p.set_name("peers");
   p.set_value(oss.str());
-  return ;
 }

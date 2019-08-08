@@ -265,7 +265,7 @@ TEST_F(LuaTest, SocketConnectionWithNoPort) {
 // And a call to connect is made with a good adress/port
 // Then it succeeds.
 TEST_F(LuaTest, SocketConnectionOk) {
-  std::unordered_map<std::string, misc::variant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  local socket = broker_tcp_socket.new()\n"
@@ -281,7 +281,7 @@ TEST_F(LuaTest, SocketConnectionOk) {
 // And a call to get_state is made
 // Then it succeeds, and the return value is Unconnected.
 TEST_F(LuaTest, SocketUnconnectedState) {
-  std::unordered_map<std::string, misc::variant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
@@ -305,7 +305,7 @@ TEST_F(LuaTest, SocketUnconnectedState) {
 // And a call to get_state is made
 // Then it succeeds, and the return value is Unconnected.
 TEST_F(LuaTest, SocketConnectedState) {
-  std::unordered_map<std::string, misc::variant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
@@ -329,7 +329,7 @@ TEST_F(LuaTest, SocketConnectedState) {
 // And a call to connect is made with a good adress/port
 // Then it succeeds.
 TEST_F(LuaTest, SocketWrite) {
-  std::unordered_map<std::string, misc::variant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename(FILE4);
   ASSERT_NO_THROW(new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));

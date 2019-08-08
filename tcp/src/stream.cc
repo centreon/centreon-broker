@@ -20,6 +20,7 @@
 #include <sstream>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <system_error>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -41,35 +42,20 @@ using namespace com::centreon::broker::tcp;
  *  @param[in] sock  Socket used by this stream.
  *  @param[in] name  Name of this connection.
  */
-stream::stream(QTcpSocket* sock, std::string const& name)
+stream::stream(asio::ip::tcp::socket* sock, std::string const& name)
   : _name(name),
     _parent(NULL),
     _read_timeout(-1),
     _socket(sock),
-    _socket_descriptor(-1),
     _write_timeout(-1) {
   _set_socket_options();
 }
-
-/**
- *  Constructor.
- *
- *  @param[in] socket_descriptor  Native socket descriptor.
- */
-stream::stream(int socket_descriptor)
-  : _parent(NULL),
-    _read_timeout(-1),
-    _socket_descriptor(socket_descriptor),
-    _write_timeout(-1) {}
 
 /**
  *  Destructor.
  */
 stream::~stream() {
   try {
-    // Destructor of socket will properly shutdown connection.
-    if (_socket_descriptor != -1)
-      _initialize_socket();
     // Close the socket.
     if (_socket.get())
       _socket->close();
@@ -88,9 +74,9 @@ stream::~stream() {
  */
 std::string stream::peer() const {
   std::ostringstream oss;
-  oss << "tcp://" << _socket->peerAddress().toString().toStdString()
-      << ":" << _socket->peerPort();
-  return (oss.str());
+  oss << "tcp://" << _socket->remote_endpoint().address().to_string()
+      << ":" << _socket->remote_endpoint().port();
+  return oss.str();
 }
 
 /**
@@ -101,9 +87,8 @@ std::string stream::peer() const {
  *
  *  @return Respects io::stream::read()'s return value.
  */
-bool stream::read(
-               std::shared_ptr<io::data>& d,
-               time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& d,
+  time_t deadline) {
   // Check that socket exist.
   if (!_socket.get())
     _initialize_socket();
@@ -117,43 +102,22 @@ bool stream::read(
       deadline = now + _read_timeout / 1000;
   }
 
-  // If data is already available, skip the waitForReadyRead() loop.
   d.reset();
-  if (_socket->bytesAvailable() <= 0) {
-    bool ret(_socket->waitForReadyRead(0));
-    while (_socket->bytesAvailable() <= 0) {
-      // Disconnected socket with no data.
-      if (!ret
-          && (_socket->state() == QAbstractSocket::UnconnectedState))
-        throw (exceptions::msg() << "TCP peer '"
-               << _name << "' is disconnected");
-      // Request timeout.
-      else if ((deadline != (time_t)-1) && (time(NULL) >= deadline))
-        return (false);
-      // Got data.
-      else if (ret
-          || (_socket->error() != QAbstractSocket::SocketTimeoutError))
-        break ;
 
-      // Wait for data.
-      ret = _socket->waitForReadyRead(200);
-    }
-  }
+  std::error_code err;
+  asio::streambuf b;
 
-  char buffer[2048];
-  qint64 rb(_socket->read(buffer, sizeof(buffer)));
-  if (rb < 0)
-    throw (exceptions::msg()
-           << "error while reading from TCP peer '"
-           << _name << "': " << _socket->errorString());
+  size_t len = asio::read(*_socket, b, asio::transfer_all(), err);
+
+  if (err)
+    throw exceptions::msg() << "TCP peer '"
+                             << _name << "' err: " << err.message();
+  std::string s((std::istreambuf_iterator<char>(&b)), std::istreambuf_iterator<char>());
+
   std::shared_ptr<io::raw> data(new io::raw);
-#if QT_VERSION >= 0x040500
-  data->append(buffer, rb);
-#else
-  data->append(QByteArray(buffer, rb));
-#endif // Qt version
+  data->append(QString::fromStdString(s).toAscii());
   d = data;
-  return (true);
+  return true;
 }
 
 /**
@@ -163,7 +127,6 @@ bool stream::read(
  */
 void stream::set_parent(acceptor* parent) {
   _parent = parent;
-  return ;
 }
 
 /**
@@ -176,7 +139,6 @@ void stream::set_read_timeout(int secs) {
     _read_timeout = -1;
   else
     _read_timeout = secs * 1000;
-  return ;
 }
 
 /**
@@ -189,7 +151,6 @@ void stream::set_write_timeout(int secs) {
     _write_timeout = -1;
   else
     _write_timeout = secs * 1000;
-  return ;
 }
 
 /**
@@ -206,23 +167,22 @@ int stream::write(std::shared_ptr<io::data> const& d) {
 
   // Check that data exists and should be processed.
   if (!validate(d, "TCP"))
-    return (1);
+    return 1;
 
   if (d->type() == io::raw::static_type()) {
-    std::shared_ptr<io::raw> r(std::static_pointer_cast<io::raw>(d));
+    std::shared_ptr <io::raw> r(std::static_pointer_cast<io::raw>(d));
     logging::debug(logging::low) << "TCP: write request of "
-      << r->size() << " bytes to peer '" << _name << "'";
-    qint64 wb(_socket->write(static_cast<char*>(r->QByteArray::data()),
-                             r->size()));
-    if ((wb < 0) || (_socket->state() == QAbstractSocket::UnconnectedState))
-      throw (exceptions::msg() << "TCP: error while writing to peer '"
-             << _name << "': " << _socket->errorString());
-    if (_socket->waitForBytesWritten(_write_timeout) == false)
-      throw (exceptions::msg()
-             << "TCP: error while sending data to peer '" << _name
-             << "': " << _socket->errorString());
+                                 << r->size() << " bytes to peer '" << _name << "'";
+
+    std::error_code err;
+
+    asio::write(*_socket, asio::buffer(r->QByteArray::data(), r->size()), asio::transfer_all(), err);
+
+    if (err)
+      throw exceptions::msg() << "TCP: error while writing to peer '"
+                              << _name << "': " << err.message();
   }
-  return (1);
+  return 1;
 }
 
 /**************************************
@@ -235,13 +195,11 @@ int stream::write(std::shared_ptr<io::data> const& d) {
  *  Initialize socket if it was not already initialized.
  */
 void stream::_initialize_socket() {
-  _socket.reset(new QTcpSocket);
-  _socket->setSocketDescriptor(_socket_descriptor);
-  _socket_descriptor = -1;
+  _socket.reset(new asio::ip::tcp::socket{_io_context});
   {
     std::ostringstream oss;
-    oss << _socket->peerAddress().toString().toStdString()
-        << ":" << _socket->peerPort();
+    oss << _socket->remote_endpoint().address().to_string()
+        << ":" << _socket->remote_endpoint().port();
     _name = oss.str();
   }
   if (_parent)
@@ -255,21 +213,21 @@ void stream::_initialize_socket() {
  */
 void stream::_set_socket_options() {
   // Set the SO_KEEPALIVE option.
-  _socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+  asio::socket_base::keep_alive option{true};
+  _socket->set_option(option);
 
   // Set the write timeout option.
   if (_write_timeout >= 0) {
-#ifndef _WIN32
+
     struct timeval t;
     t.tv_sec = _write_timeout / 1000;
     t.tv_usec = _write_timeout % 1000;
     ::setsockopt(
-        _socket->socketDescriptor(),
+        _socket->native_handle(),
         SOL_SOCKET,
         SO_SNDTIMEO,
         &t,
         sizeof(t));
-#endif //!_WIN32
   }
   return ;
 }

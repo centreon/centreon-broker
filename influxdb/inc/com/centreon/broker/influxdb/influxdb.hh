@@ -21,7 +21,6 @@
 
 #  include <string>
 #  include <memory>
-#  include <QTcpSocket>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/storage/metric.hh"
 #  include "com/centreon/broker/storage/status.hh"
