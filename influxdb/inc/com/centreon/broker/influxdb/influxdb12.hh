@@ -19,9 +19,9 @@
 #ifndef CCB_INFLUXDB_INFLUXDB12_HH
 #  define CCB_INFLUXDB_INFLUXDB12_HH
 
+#  include <asio.hpp>
 #  include <string>
 #  include <memory>
-#  include <QTcpSocket>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/storage/metric.hh"
 #  include "com/centreon/broker/influxdb/influxdb.hh"
@@ -63,11 +63,15 @@ namespace         influxdb {
     std::string   _post_header;
     std::string   _url;
     std::string   _query;
-    line_protocol_query         _status_query;
-    line_protocol_query         _metric_query;
+    line_protocol_query
+                  _status_query;
+    line_protocol_query
+                  _metric_query;
 
-    std::unique_ptr<QTcpSocket>
+    std::unique_ptr<asio::ip::tcp::socket>
                   _socket;
+    asio::io_context
+                  _io_context;
 
     std::string   _host;
     unsigned short

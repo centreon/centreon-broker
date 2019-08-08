@@ -17,45 +17,44 @@
 */
 
 #ifndef CCB_TCP_CONNECTOR_HH
-#  define CCB_TCP_CONNECTOR_HH
+#define CCB_TCP_CONNECTOR_HH
 
-#  include <string>
-#  include <QTcpSocket>
-#  include <QMutex>
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <QMutex>
+#include <asio.hpp>
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          tcp {
-  /**
-   *  @class connector connector.hh "com/centreon/broker/tcp/connector.hh"
-   *  @brief TCP connector.
-   *
-   *  Connect to some remote TCP host.
-   */
-  class            connector : public io::endpoint {
-  public:
-                   connector();
-                   connector(connector const& other);
-                   ~connector();
-    connector&     operator=(connector const& other);
-    void           connect_to(std::string const& host, unsigned short port);
-    std::shared_ptr<io::stream>
-                   open();
-    void           set_read_timeout(int secs);
-    void           set_write_timeout(int secs);
+namespace tcp {
+/**
+ *  @class connector connector.hh "com/centreon/broker/tcp/connector.hh"
+ *  @brief TCP connector.
+ *
+ *  Connect to some remote TCP host.
+ */
+class connector : public io::endpoint {
+ public:
+  connector();
+  connector(connector const& other);
+  ~connector();
+  connector& operator=(connector const& other);
+  void connect_to(std::string const& host, unsigned short port);
+  std::shared_ptr<io::stream> open();
+  void set_read_timeout(int secs);
+  void set_write_timeout(int secs);
 
-  private:
-    void           _internal_copy(connector const& other);
+ private:
+  void _internal_copy(connector const& other);
 
-    std::string        _host;
-    unsigned short _port;
-    int            _read_timeout;
-    int            _write_timeout;
-  };
-}
+  std::string _host;
+  unsigned short _port;
+  int _read_timeout;
+  int _write_timeout;
+  asio::io_context _io_context;
+};
+}  // namespace tcp
 
 CCB_END()
 
-#endif // !CCB_TCP_CONNECTOR_HH
+#endif  // !CCB_TCP_CONNECTOR_HH
