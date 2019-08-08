@@ -19,6 +19,7 @@
 #ifndef CCB_GRAPHITE_STREAM_HH
 #  define CCB_GRAPHITE_STREAM_HH
 
+#  include <asio.hpp>
 #  include <deque>
 #  include <list>
 #  include <map>
@@ -26,7 +27,6 @@
 #  include <mutex>
 #  include <QSqlDatabase>
 #  include <QString>
-#  include <QTcpSocket>
 #  include <utility>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/multiplexing/hooker.hh"
@@ -95,8 +95,10 @@ namespace          graphite {
     query          _status_query;
     std::string    _query;
     std::string    _auth_query;
-    std::unique_ptr<QTcpSocket>
+    std::unique_ptr<asio::ip::tcp::socket>
                    _socket;
+    asio::io_context
+                   _io_context;
 
     // Process metric/status and generate query.
     bool           _process_metric(storage::metric const& me);

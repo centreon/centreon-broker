@@ -79,7 +79,10 @@ include_directories(${source_dir})
 #
 
 # Find Qt.
-find_package(Qt4 4.7.4 COMPONENTS QtCore QtNetwork QtSql REQUIRED)
+list(APPEND CMAKE_MODULE_PATH  "${CMAKE_CURRENT_LIST_DIR}")
+find_package(Qt4 4.7.4 COMPONENTS QtCore QtSql REQUIRED)
+find_package(Asio REQUIRED)
+add_definitions("-DASIO_STANDALONE")
 
 # Find zlib.
 find_package(ZLIB REQUIRED)
@@ -390,7 +393,6 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/extcmd/internal.cc"
   "${SRC_DIR}/extcmd/json_command_parser.cc"
   "${SRC_DIR}/extcmd/plaintext_command_parser.cc"
-  "${SRC_DIR}/extcmd/server_socket.cc"
   "${SRC_DIR}/file/cfile.cc"
   "${SRC_DIR}/file/directory_event.cc"
   "${SRC_DIR}/file/directory_watcher.cc"
@@ -504,7 +506,6 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/extcmd/internal.hh"
   "${INC_DIR}/extcmd/json_command_parser.hh"
   "${INC_DIR}/extcmd/plaintext_command_parser.hh"
-  "${INC_DIR}/extcmd/server_socket.hh"
   "${INC_DIR}/file/cfile.hh"
   "${INC_DIR}/file/directory_event.hh"
   "${INC_DIR}/file/directory_watcher.hh"
@@ -592,7 +593,7 @@ if (COMPILER_HAS_FPIC)
   set_property(TARGET "rokerbase"
     PROPERTY COMPILE_FLAGS "${ROKER_CXXFLAGS}")
 endif ()
-target_link_libraries("rokerbase" json11 ${ZLIB_LIBRARIES} ${QT_LIBRARIES})
+target_link_libraries("rokerbase" json11 ${ZLIB_LIBRARIES} ${QT_LIBRARIES} pthread)
 add_library("roker" STATIC
   "${SRC_DIR}/config/applier/init.cc"
   "${SRC_DIR}/config/applier/logger.cc")
@@ -812,6 +813,7 @@ if (WITH_TESTING)
   set(
     TESTS_SOURCES
     ${TESTS_SOURCES}
+    "${TEST_DIR}/test_server.cc"
     "${TEST_DIR}/config/logger.cc"
     "${TEST_DIR}/config/parser.cc"
   )

@@ -16,13 +16,22 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QHostAddress>
-#include <QTcpSocket>
+#include <asio.hpp>
 #include <sstream>
 #include "com/centreon/broker/lua/broker_socket.hh"
 
+using namespace asio;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
+
+static io_context ctx;
+enum {
+  unconnected,
+  hostLookup,
+  connecting,
+  connected,
+  closing,
+} socket_state{unconnected};
 
 /**
  *  The Lua broker_socket constructor
@@ -32,9 +41,11 @@ using namespace com::centreon::broker::lua;
  *  @return 1
  */
 int l_broker_socket_constructor(lua_State * L) {
-  QTcpSocket** udata = static_cast<QTcpSocket**>(
-    lua_newuserdata(L, sizeof(QTcpSocket*)));
-  *udata = new QTcpSocket;
+  ip::tcp::socket** udata{static_cast<ip::tcp::socket**>(
+    lua_newuserdata(L, sizeof(ip::tcp::socket*)))};
+  *udata = new ip::tcp::socket{ctx};
+
+  socket_state = unconnected;
 
   luaL_getmetatable(L, "lua_broker_tcp_socket");
   lua_setmetatable(L, -2);
@@ -50,8 +61,10 @@ int l_broker_socket_constructor(lua_State * L) {
  *  @return 0
  */
 static int l_broker_socket_destructor(lua_State* L) {
-  delete *static_cast<QTcpSocket**>(
+  delete *static_cast<ip::tcp::socket**>(
            luaL_checkudata(L, 1, "lua_broker_tcp_socket"));
+
+  socket_state = unconnected;
   return 0;
 }
 
@@ -63,17 +76,45 @@ static int l_broker_socket_destructor(lua_State* L) {
  *  @return 0
  */
 static int l_broker_socket_connect(lua_State* L) {
-  QTcpSocket* socket(
-                *static_cast<QTcpSocket**>(
-                  luaL_checkudata(L, 1, "lua_broker_tcp_socket")));
-  char const* addr(luaL_checkstring(L, 2));
-  int port(static_cast<int>(luaL_checknumber(L, 3)));
-  socket->connectToHost(addr, port);
-  if (!socket->waitForConnected()) {
+  ip::tcp::socket* socket{*static_cast<ip::tcp::socket**>(
+    luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
+  char const* addr{luaL_checkstring(L, 2)};
+  int port{static_cast<int>(luaL_checknumber(L, 3))};
+
+  socket_state = hostLookup;
+  ip::tcp::resolver resolver{ctx};
+  ip::tcp::resolver::query query{addr, std::to_string(port)};
+
+  try {
+    ip::tcp::resolver::iterator it{resolver.resolve(query)};
+    ip::tcp::resolver::iterator end;
+    socket_state = connecting;
+
+    std::error_code err{std::make_error_code(std::errc::host_unreachable)};
+
+    //it can resolve to multiple addresses like ipv4 and ipv6
+    //we need to try all to find the first available socket
+    while (err && it != end) {
+      socket->connect(*it, err);
+      ++it;
+    }
+
+    if (err) {
+      socket_state = unconnected;
+      std::ostringstream ss;
+      ss << "broker_socket::connect: Couldn't connect to "
+         << addr << ":" << port
+         << ": " << err.message();
+      luaL_error(L, ss.str().c_str());
+    } else {
+      socket_state = connected;
+    }
+  } catch (std::system_error const& se) {
+    socket_state = unconnected;
     std::ostringstream ss;
     ss << "broker_socket::connect: Couldn't connect to "
        << addr << ":" << port
-       << ": " << socket->errorString().toStdString();
+       << ": " << se.what();
     luaL_error(L, ss.str().c_str());
   }
   return 0;
@@ -87,20 +128,14 @@ static int l_broker_socket_connect(lua_State* L) {
  *  @return 1
  */
 static int l_broker_socket_state(lua_State* L) {
-  QTcpSocket* socket(
-                *static_cast<QTcpSocket**>(
-                  luaL_checkudata(L, 1, "lua_broker_tcp_socket")));
-  QAbstractSocket::SocketState state(socket->state());
   char const* ans[] = {
     "unconnected",
     "hostLookup",
     "connecting",
     "connected",
-    "bound",
-    "listening",
     "closing",
   };
-  lua_pushstring(L, ans[state]);
+  lua_pushstring(L, ans[socket_state]);
   return 1;
 }
 
@@ -112,30 +147,23 @@ static int l_broker_socket_state(lua_State* L) {
  *  @return 0
  */
 static int l_broker_socket_write(lua_State* L) {
-  QTcpSocket* socket(
-                *static_cast<QTcpSocket**>(
-                  luaL_checkudata(L, 1, "lua_broker_tcp_socket")));
+  ip::tcp::socket* socket{*static_cast<ip::tcp::socket**>(
+    luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
   size_t len;
   char const* content(lua_tolstring(L, 2, &len));
-  if (socket->write(content, len) != static_cast<qint64>(len)) {
+  std::error_code err;
+
+  asio::write(*socket, asio::buffer(content, len), asio::transfer_all(), err);
+
+  if (err) {
     std::ostringstream ss;
     ss << "broker_socket::write: Couldn't write to "
-       << socket->peerAddress().toString().toStdString()
-       << ":" << socket->peerPort()
-       << ": " << socket->errorString().toStdString();
+       << socket->remote_endpoint().address().to_string()
+       << ":" << socket->remote_endpoint().port()
+       << ": " << err.message();
     luaL_error(L, ss.str().c_str());
   }
 
-  while (socket->bytesToWrite()) {
-    if (!socket->waitForBytesWritten()) {
-      std::ostringstream ss;
-      ss << "broker_socket::write: Couldn't send data to "
-         << socket->peerAddress().toString().toStdString()
-         << ":" << socket->peerPort()
-         << ": " << socket->errorString().toStdString();
-      luaL_error(L, ss.str().c_str());
-    }
-  }
   return 0;
 }
 
@@ -147,21 +175,25 @@ static int l_broker_socket_write(lua_State* L) {
  *  @return 1
  */
 static int l_broker_socket_read(lua_State* L) {
-  QTcpSocket* socket(
-                *static_cast<QTcpSocket**>(
-                  luaL_checkudata(L, 1, "lua_broker_tcp_socket")));
-  QByteArray answer;
+  ip::tcp::socket* socket{*static_cast<ip::tcp::socket**>(
+    luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
+  std::error_code err;
+  asio::streambuf b;
 
-  if (!socket->waitForReadyRead()) {
+  size_t len = asio::read(*socket, b, asio::transfer_all(), err);
+
+  if (err != asio::error::eof) {
     std::ostringstream ss;
     ss << "broker_socket::read: Couldn't read data from "
-      << socket->peerAddress().toString().toStdString()
-      << ":" << socket->peerPort()
-      << ": " << socket->errorString().toStdString();
+       << socket->remote_endpoint().address().to_string()
+       << ":" << socket->remote_endpoint().port()
+       << ": " << err.message();
     luaL_error(L, ss.str().c_str());
+  } else {
+    std::string s((std::istreambuf_iterator<char>(&b)), std::istreambuf_iterator<char>());
+    lua_pushstring(L, s.c_str());
   }
-  answer.append(socket->readAll());
-  lua_pushstring(L, answer.constData());
+
   return 1;
 }
 
@@ -173,11 +205,13 @@ static int l_broker_socket_read(lua_State* L) {
  *  @return 0
  */
 static int l_broker_socket_close(lua_State* L) {
-  QTcpSocket* socket(
-                *static_cast<QTcpSocket**>(
-                  luaL_checkudata(L, 1, "lua_broker_tcp_socket")));
+  ip::tcp::socket* socket{
+                *static_cast<ip::tcp::socket**>(
+                  luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
 
+  socket_state = closing;
   socket->close();
+  socket_state = unconnected;
   return 0;
 }
 

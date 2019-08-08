@@ -19,8 +19,8 @@
 #ifndef CCB_EXTCMD_COMMAND_CLIENT_HH
 #  define CCB_EXTCMD_COMMAND_CLIENT_HH
 
+#  include <asio.hpp>
 #  include <memory>
-#  include <QLocalSocket>
 #  include <string>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -41,7 +41,7 @@ namespace             extcmd {
   class               command_client : public io::stream {
   public:
                       command_client(
-                        int native_socket,
+                        asio::local::stream_protocol::socket & socket,
                         command_parser& parser);
                       ~command_client();
     bool              read(
@@ -52,13 +52,12 @@ namespace             extcmd {
   private:
                       command_client(command_client const& other);
     command_client&   operator=(command_client const& other);
-    void              _initialize_socket();
 
     std::string       _buffer;
     command_parser&   _parser;
-    std::unique_ptr<QLocalSocket>
+    asio::io_context  _io_context;
+    std::unique_ptr<asio::local::stream_protocol::socket>
                       _socket;
-    int               _socket_native;
   };
 }
 

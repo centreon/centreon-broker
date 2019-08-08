@@ -19,6 +19,7 @@
 #ifndef CCB_RRD_CACHED_HH
 #  define CCB_RRD_CACHED_HH
 
+#  include <asio.hpp>
 #  include <memory>
 #  include <QIODevice>
 #  include <string>
@@ -43,6 +44,11 @@ namespace   rrd {
    */
   class     cached : public backend {
   public:
+    enum cached_type {
+      uninitialized,
+      local,
+      tcp
+    };
             cached(
               std::string const& tmpl_path,
               unsigned int cache_size);
@@ -51,9 +57,7 @@ namespace   rrd {
     void    clean();
     void    close();
     void    commit();
-#  if QT_VERSION >= 0x040400
     void    connect_local(std::string const& name);
-#  endif // Qt >= 4.4.0
     void    connect_remote(
               std::string const& address,
               unsigned short port);
@@ -70,16 +74,21 @@ namespace   rrd {
   private:
             cached(cached const& c);
     cached& operator=(cached const& c);
-    void    _send_to_cached(
-              char const* command,
-              unsigned int size = 0);
+    template<typename T>
+    void    _send_to_cached(std::string const& command, T const& socket);
 
     bool    _batch;
     std::string
             _filename;
     lib     _lib;
-    std::unique_ptr<QIODevice>
-            _socket;
+    cached_type
+            _type;
+    asio::io_context
+            _io_context;
+    std::shared_ptr<asio::ip::tcp::socket>
+            _tcp_socket;
+    std::shared_ptr<asio::local::stream_protocol::socket>
+            _local_socket;
   };
 }
 

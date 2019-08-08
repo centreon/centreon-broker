@@ -18,7 +18,6 @@
 
 #include <QByteArray>
 #include <QMutexLocker>
-#include <QTcpSocket>
 #include <sstream>
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -31,6 +30,7 @@
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/graphite/stream.hh"
 
+using namespace asio;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::graphite;
 
@@ -54,30 +54,30 @@ stream::stream(
           unsigned short db_port,
           unsigned int queries_per_transaction,
           std::shared_ptr<persistent_cache> const& cache)
-  : _metric_naming(metric_naming),
-    _status_naming(status_naming),
-    _db_user(db_user),
-    _db_password(db_password),
-    _db_host(db_host),
-    _db_port(db_port),
-    _queries_per_transaction(
+  : _metric_naming{metric_naming},
+    _status_naming{status_naming},
+    _db_user{db_user},
+    _db_password{db_password},
+    _db_host{db_host},
+    _db_port{db_port},
+    _queries_per_transaction{
       (queries_per_transaction == 0)
       ? 1
-      : queries_per_transaction),
-    _pending_queries(0),
-    _actual_query(0),
-    _commit_flag(false),
-    _cache(cache),
-    _metric_query(
+      : queries_per_transaction},
+    _pending_queries{0},
+    _actual_query{0},
+    _commit_flag{false},
+    _cache{cache},
+    _metric_query{
       _metric_naming,
       escape_string,
       query::metric,
-      _cache),
-    _status_query(
+      _cache},
+    _status_query{
       _status_naming,
       escape_string,
       query::status,
-      _cache) {
+      _cache} {
   // Create the basic HTTP authentification header.
   if (!_db_user.empty() && !_db_password.empty()) {
     QByteArray auth;
@@ -91,13 +91,36 @@ stream::stream(
       .append("\n");
     _query.append(_auth_query);
   }
-  _socket = std::unique_ptr<QTcpSocket>(new QTcpSocket);
-  _socket->connectToHost(QString::fromStdString(_db_host), _db_port);
-  if (!_socket->waitForConnected())
+  _socket = std::unique_ptr<ip::tcp::socket>{new ip::tcp::socket{_io_context}};
+
+  ip::tcp::resolver resolver{_io_context};
+  ip::tcp::resolver::query query{_db_host, std::to_string(_db_port)};
+
+  try {
+    ip::tcp::resolver::iterator it{resolver.resolve(query)};
+    ip::tcp::resolver::iterator end;
+
+    std::error_code err{std::make_error_code(std::errc::host_unreachable)};
+
+    //it can resolve to multiple addresses like ipv4 and ipv6
+    //we need to try all to find the first available socket
+    while (err && it != end) {
+      _socket->connect(*it, err);
+      ++it;
+    }
+
+    if (err) {
+      throw exceptions::msg()
+        << "graphite: can't connect to graphite on host '"
+        << _db_host << "', port '" << _db_port << "': "
+        << err.message();
+    }
+  } catch (std::system_error const& se) {
     throw exceptions::msg()
-          << "graphite: can't connect to graphite on host '"
-          << _db_host << "', port '" << _db_port << "': "
-          << _socket->errorString();
+      << "graphite: can't connect to graphite on host '"
+      << _db_host << "', port '" << _db_port << "': "
+      << se.what();
+  }
 }
 
 /**
@@ -106,7 +129,6 @@ stream::stream(
 stream::~stream() {
   if (_socket.get()) {
     _socket->close();
-    _socket->waitForDisconnected();
   }
 }
 
@@ -232,26 +254,17 @@ bool stream::_process_status(storage::status const& st) {
  *  Commit all the processed event to the database.
  */
 void stream::_commit() {
-  if (!_query.empty()) {
-    if (_socket->write(_query.c_str(), _query.size()) == -1)
-      throw exceptions::msg()
-        << "graphite: can't send data to graphite on host '"
-        << _db_host << "', port '" << _db_port << "': "
-        << _socket->errorString();
+ if (!_query.empty()) {
+   std::error_code err;
 
-    if (_socket->waitForBytesWritten() == false)
-      throw exceptions::msg()
-        << "graphite: can't send data to graphite on host '"
-        << _db_host << "', port '" << _db_port << "': "
-        << _socket->errorString();
-  }
-  else if (_socket->state() != QTcpSocket::ConnectedState) {
-    throw exceptions::msg()
-      << "graphite: unexpected termination of connection to host '"
-      << _db_host << "', port '" << _db_port << "': "
-      << _socket->errorString();
-  }
+   asio::write(*_socket, buffer(_query), asio::transfer_all(), err);
+   if (err)
+     throw exceptions::msg()
+       << "graphite: can't send data to graphite on host '"
+       << _db_host << "', port '" << _db_port << "': "
+       << err.message();
 
-  _query.clear();
-  _query.append(_auth_query);
+   _query.clear();
+   _query.append(_auth_query);
+ }
 }

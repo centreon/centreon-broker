@@ -16,12 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include <asio.hpp>
 #include <cerrno>
 #include <cstdlib>
-#include <QTcpSocket>
-#if QT_VERSION >= 0x040400
-#  include <QLocalSocket>
-#endif // Qt >= 4.4.0
 #include <sstream>
 #include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -31,6 +28,7 @@
 #include "com/centreon/broker/rrd/exceptions/update.hh"
 #include "com/centreon/broker/rrd/lib.hh"
 
+using namespace asio;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
 
@@ -61,8 +59,15 @@ cached::~cached() {}
 void cached::begin() {
   // Send BATCH command to rrdcached.
   _batch = true;
-  char const buffer[] = "BATCH\n";
-  _send_to_cached(buffer, sizeof(buffer) - 1);
+  std::string buffer{"BATCH\n"};
+  if (_type == cached::tcp)
+    _send_to_cached<std::shared_ptr<ip::tcp::socket> &>(buffer,
+      _tcp_socket);
+  else
+    _send_to_cached<std::shared_ptr<local::stream_protocol::socket> &>(buffer,
+      _local_socket);
+
+  return ;
 }
 
 /**
@@ -87,12 +92,16 @@ void cached::commit() {
   if (_batch) {
     // Send a . on the line to indicate that transaction is over.
     _batch = false;
-    char buffer[] = ".\n";
-    _send_to_cached(buffer, sizeof(buffer) - 1);
+    std::string buffer{".\n"};
+    if (_type == cached::tcp)
+      _send_to_cached<std::shared_ptr<ip::tcp::socket> &>(buffer,
+        _tcp_socket);
+    else
+      _send_to_cached<std::shared_ptr<local::stream_protocol::socket> &>(buffer,
+        _local_socket);
   }
 }
 
-#if QT_VERSION >= 0x040400
 /**
  *  Connect to a local socket.
  *
@@ -100,20 +109,24 @@ void cached::commit() {
  */
 void cached::connect_local(std::string const& name) {
   // Create socket object.
-  QLocalSocket* ls(new QLocalSocket);
-  _socket.reset(ls);
 
-  // Connect to server.
-  ls->connectToServer(QString::fromStdString(name));
-  if (!ls->waitForConnected(-1)) {
-    broker::exceptions::msg e;
-    e << "RRD: could not connect to local socket '" << name
-      << ": " << ls->errorString();
-    _socket.reset();
-    throw (e);
+  local::stream_protocol::endpoint ep("/tmp/foobar");
+  local::stream_protocol::socket* ls(
+    new local::stream_protocol::socket{_io_context});
+  _local_socket.reset(ls);
+
+   try {
+    _local_socket->connect(ep);
+  } catch (std::system_error const& se) {
+     broker::exceptions::msg e;
+     e << "RRD: could not connect to local socket '" << name
+       << ": " << se.what();
+     _local_socket.reset();
+     throw (e);
   }
+
+  return ;
 }
-#endif // Qt >= 4.4.0
 
 /**
  *  Connect to a remote server.
@@ -125,21 +138,47 @@ void cached::connect_remote(
                std::string const& address,
                unsigned short port) {
   // Create socket object.
-  QTcpSocket* ts(new QTcpSocket);
-  _socket.reset(ts);
+  asio::ip::tcp::socket* ts{new asio::ip::tcp::socket{_io_context}};
+  _tcp_socket.reset(ts);
 
-  // Connect to server.
-  ts->connectToHost(QString::fromStdString(address), port);
-  if (!ts->waitForConnected(-1)) {
+  asio::ip::tcp::resolver resolver{_io_context};
+  asio::ip::tcp::resolver::query query{
+    address,
+    std::to_string(port)
+  };
+
+  try {
+    asio::ip::tcp::resolver::iterator it{resolver.resolve(query)};
+    asio::ip::tcp::resolver::iterator end;
+
+    std::error_code err{std::make_error_code(std::errc::host_unreachable)};
+
+    //it can resolve to multiple addresses like ipv4 and ipv6
+    //we need to try all to find the first available socket
+    while (err && it != end) {
+      _tcp_socket->connect(*it, err);
+      ++it;
+    }
+
+    if (err) {
+      broker::exceptions::msg e;
+      e << "RRD: could not connect to remote server '" << address
+        << ":" << port << "': " << err.message();
+      _tcp_socket.reset();
+      throw e;
+    }
+
+    asio::socket_base::keep_alive option{true};
+    _tcp_socket->set_option(option);
+  }
+  catch (std::system_error const& se) {
     broker::exceptions::msg e;
-    e << "RRD: could not connect to remote server '" << address
-      << ":" << port << "': " << ts->errorString();
-    _socket.reset();
+    e << "RRD: could not resolve remote server '" << address
+      << ":" << port << "': " << se.what();
+    _tcp_socket.reset();
     throw (e);
   }
-
-  // Set the SO_KEEPALIVE option.
-  ts->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+  return ;
 }
 
 /**
@@ -199,7 +238,12 @@ void cached::remove(std::string const& filename) {
   oss << "FORGET " << filename << "\n";
 
   try {
-    _send_to_cached(oss.str().c_str());
+    if (_type == cached::tcp)
+      _send_to_cached<std::shared_ptr<ip::tcp::socket> &>(oss.str(),
+        _tcp_socket);
+    else
+      _send_to_cached<std::shared_ptr<local::stream_protocol::socket> &>(
+        oss.str(), _local_socket);
   }
   catch (broker::exceptions::msg const& e) {
     logging::error(logging::medium) << e.what();
@@ -228,7 +272,12 @@ void cached::update(time_t t, std::string const& value) {
   logging::debug(logging::high) << "RRD: updating file '"
     << _filename << "' (" << oss.str() << ")";
   try {
-    _send_to_cached(oss.str().c_str());
+    if (_type == cached::tcp)
+      _send_to_cached<std::shared_ptr<ip::tcp::socket> &>(oss.str(),
+        _tcp_socket);
+    else
+      _send_to_cached<std::shared_ptr<local::stream_protocol::socket> &>(
+        oss.str(), _local_socket);
   }
   catch (broker::exceptions::msg const& e) {
     if (!strstr(e.what(), "illegal attempt to update using time"))
@@ -252,49 +301,51 @@ void cached::update(time_t t, std::string const& value) {
  *  @param[in] command Command to send.
  *  @param[in] size    Size of command. If 0, set to strlen(command).
  */
-void cached::_send_to_cached(
-               char const* command,
-               unsigned int size) {
+template<typename T>
+void cached::_send_to_cached(std::string const& command, T const& socket) {
+  std::error_code err;
+
   // Check socket.
-  if (!_socket.get())
+  if (!socket.get())
     throw (broker::exceptions::msg() << "RRD: attempt to communicate " \
              "with rrdcached without connecting first");
 
-  // Check command size.
-  if (!size)
-    size = strlen(command);
+  asio::write(*socket, asio::buffer(command), asio::transfer_all(), err);
 
-  // Write data.
-  while (size > 0) {
-    qint64 rb;
-    rb = _socket->write(command, size);
-    if (rb < 0)
-      throw (broker::exceptions::msg() << "RRD: error while sending " \
-               "command to rrdcached: " << _socket->errorString());
-    size -= rb;
-  }
+  if (err)
+      throw broker::exceptions::msg() << "RRD: error while sending " \
+               "command to rrdcached: " << err.message();
 
   // Read response.
   if (!_batch) {
-    _socket->waitForBytesWritten(-1);
-    char line[1024];
-    _socket->waitForReadyRead(-1);
-    if (_socket->readLine(line, sizeof(line)) < 0)
-      throw (broker::exceptions::msg() << "RRD: error while getting " \
-               "response from rrdcached: " << _socket->errorString());
-    int lines;
-    lines = strtol(line, NULL, 10);
+    asio::streambuf stream;
+    std::string line;
+
+    asio::read_until(*socket, stream, '\n', err);
+
+    if (err)
+      throw (broker::exceptions::msg() << "RRD: error while getting "
+               "response from rrdcached: " << err.message());
+
+    std::istream is(&stream);
+    std::getline(is, line);
+
+    int lines = std::stoi(line);
+
     if (lines < 0)
       throw (broker::exceptions::msg()
              << "RRD: rrdcached query failed on file '"
              << _filename << "' (" << command << "): "
              << line);
     while (lines > 0) {
-      _socket->waitForReadyRead(-1);
-      if (_socket->readLine(line, sizeof(line)) < 0)
+      asio::read_until(*socket, stream, '\n', err);
+      if (err)
         throw (broker::exceptions::msg() << "RRD: error while getting "
-               << "response from rrdcached for file '" << _filename
-               << "': " << _socket->errorString());
+          << "response from rrdcached for file '" << _filename
+          << "': " << err.message());
+
+      std::istream is(&stream);
+      std::getline(is, line);
       --lines;
     }
   }

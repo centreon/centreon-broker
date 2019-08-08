@@ -20,13 +20,13 @@
 #include <iterator>
 #include <sstream>
 #include <vector>
-#include <QHostAddress>
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/influxdb/influxdb12.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/influxdb/json_printer.hh"
 
+using namespace asio;
 using namespace com::centreon::broker::influxdb;
 
 static const char* query_footer = "\n";
@@ -115,37 +115,35 @@ void influxdb12::commit() {
 
   _connect_socket();
 
-  // Send the data to the server.
-  if (_socket->write(final_query.c_str(), final_query.size())
-      != static_cast<int>(final_query.size()))
-    throw (exceptions::msg()
+  std::error_code err;
+
+  asio::write(*_socket, buffer(final_query), asio::transfer_all(), err);
+  if (err)
+    throw exceptions::msg()
       << "influxdb: couldn't commit data to InfluxDB with address '"
-      << _socket->peerAddress().toString()
-      << "' and port '" << _socket->peerPort() << "': "
-      << _socket->errorString());
-
-  while (_socket->bytesToWrite() != 0) {
-    if (_socket->waitForBytesWritten() == false)
-      throw (exceptions::msg()
-        << "influxdb: couldn't send data to InfluxDB with address '"
-        << _socket->peerAddress().toString()
-        << "' and port '" << _socket->peerPort() << "': "
-        << _socket->errorString());
-  }
-
+      << _socket->remote_endpoint().address().to_string()
+      << "' and port '" << _socket->remote_endpoint().port() << "': "
+      << err.message();
   // Receive the server answer.
-  QString answer;
+
+  std::string answer;
+
   while (true) {
-    if (_socket->waitForReadyRead() == false)
-      throw (exceptions::msg()
+    asio::streambuf b;
+
+    size_t len = asio::read(*_socket, b, asio::transfer_all(), err);
+
+    if (err)
+      throw exceptions::msg()
         << "influxdb: couldn't receive InfluxDB answer with address '"
-        << _socket->peerAddress().toString()
-        << "' and port '" << _socket->peerPort() << "': "
-        << _socket->errorString());
+        << _socket->remote_endpoint().address().to_string()
+        << "' and port '" << _socket->remote_endpoint().port() << "': "
+        << err.message();
 
-    answer.append(_socket->readAll());
+    std::string s((std::istreambuf_iterator<char>(&b)), std::istreambuf_iterator<char>());
+    answer.append(s);
 
-    if (_check_answer_string(answer.toStdString()) == true)
+    if (_check_answer_string(answer) == true)
       break;
   }
   _socket->close();
@@ -156,13 +154,33 @@ void influxdb12::commit() {
  *  Connect the socket to the endpoint.
  */
 void influxdb12::_connect_socket() {
-  _socket.reset(new QTcpSocket);
-  _socket->connectToHost(QString::fromStdString(_host), _port);
-  if (!_socket->waitForConnected())
+  _socket.reset(new ip::tcp::socket{_io_context});
+  ip::tcp::resolver resolver{_io_context};
+  ip::tcp::resolver::query query{_host, std::to_string(_port)};
+
+  try {
+    ip::tcp::resolver::iterator it{resolver.resolve(query)};
+    ip::tcp::resolver::iterator end;
+
+    std::error_code err{std::make_error_code(std::errc::host_unreachable)};
+
+    //it can resolve to multiple addresses like ipv4 and ipv6
+    //we need to try all to find the first available socket
+    while (err && it != end) {
+      _socket->connect(*it, err);
+      ++it;
+    }
+
+    if (err) {
+      throw exceptions::msg()
+        << "influxdb: couldn't connect to InfluxDB with address '"
+        << _host << "' and port '" << _port << "': " << err.message();
+    }
+  } catch (std::system_error const& se) {
     throw exceptions::msg()
       << "influxdb: couldn't connect to InfluxDB with address '"
-      << _host << "' and port '" << _port << "': " << _socket->errorString();
-  return ;
+      << _host << "' and port '" << _port << "': " << se.what();
+  }
 }
 
 /**
@@ -180,8 +198,9 @@ bool influxdb12::_check_answer_string(std::string const& ans) {
 
   logging::debug(logging::medium)
     << "influxdb: received an answer from "
-    << _socket->peerAddress().toString()
-    << "' and port '" << _socket->peerPort() << "': '" << ans << "'";
+    << _socket->remote_endpoint().address().to_string()
+    << "' and port '" << _socket->remote_endpoint().port()
+    << "': '" << ans << "'";
 
   // Split the first line using the power of std.
   std::istringstream iss(first_line_str);
@@ -194,8 +213,8 @@ bool influxdb12::_check_answer_string(std::string const& ans) {
   if (split.size() < 3)
     throw (exceptions::msg()
       << "influxdb: unrecognizable HTTP header for '"
-      << _socket->peerAddress().toString()
-      << "' and port '" << _socket->peerPort() << "': got '"
+      << _socket->remote_endpoint().address().to_string()
+      << "' and port '" << _socket->remote_endpoint().port() << "': got '"
       << first_line_str << "'");
 
   if ((split[0] == "HTTP/1.0")
@@ -206,8 +225,8 @@ bool influxdb12::_check_answer_string(std::string const& ans) {
   else
     throw (exceptions::msg()
       << "influxdb: got an error from '"
-      << _socket->peerAddress().toString()
-      << "' and port '" << _socket->peerPort() << "': '"
+      << _socket->remote_endpoint().address().to_string()
+      << "' and port '" << _socket->remote_endpoint().port() << "': '"
       << ans << "'");
 }
 

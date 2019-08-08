@@ -17,56 +17,52 @@
 */
 
 #ifndef CCB_TCP_STREAM_HH
-#  define CCB_TCP_STREAM_HH
+#define CCB_TCP_STREAM_HH
 
-#  include <memory>
-#  include <QTcpSocket>
-#  include <string>
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <asio.hpp>
+#include <memory>
+#include <string>
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        tcp {
-  // Forward declaration.
-  class          acceptor;
+namespace tcp {
+// Forward declaration.
+class acceptor;
 
-  /**
-   *  @class stream stream.hh "com/centreon/broker/tcp/stream.hh"
-   *  @brief TCP stream.
-   *
-   *  TCP stream.
-   */
-  class          stream : public io::stream {
-  public:
-                 stream(QTcpSocket* sock, std::string const& name);
-                 stream(int socket_descriptor);
-                 ~stream();
-    std::string  peer() const;
-    bool         read(
-                   std::shared_ptr<io::data>& d,
-                   time_t deadline);
-    void         set_parent(acceptor* parent);
-    void         set_read_timeout(int secs);
-    void         set_write_timeout(int secs);
-    int          write(std::shared_ptr<io::data> const& d);
+/**
+ *  @class stream stream.hh "com/centreon/broker/tcp/stream.hh"
+ *  @brief TCP stream.
+ *
+ *  TCP stream.
+ */
+class stream : public io::stream {
+ public:
+  stream(asio::ip::tcp::socket* sock, std::string const& name);
+  ~stream();
+  std::string peer() const;
+  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  void set_parent(acceptor* parent);
+  void set_read_timeout(int secs);
+  void set_write_timeout(int secs);
+  int write(std::shared_ptr<io::data> const& d);
 
-  private:
-                 stream(stream const& other);
-    stream&      operator=(stream const& other);
-    void         _initialize_socket();
-    void         _set_socket_options();
+ private:
+  stream(stream const& other);
+  stream& operator=(stream const& other);
+  void _initialize_socket();
+  void _set_socket_options();
 
-    std::string  _name;
-    acceptor*    _parent;
-    int          _read_timeout;
-    std::unique_ptr<QTcpSocket>
-                 _socket;
-    int          _socket_descriptor;
-    int          _write_timeout;
-  };
-}
+  std::string _name;
+  acceptor* _parent;
+  int _read_timeout;
+  asio::io_context _io_context;
+  std::unique_ptr<asio::ip::tcp::socket> _socket;
+  int _write_timeout;
+};
+}  // namespace tcp
 
 CCB_END()
 
-#endif // !CCB_TCP_STREAM_HH
+#endif  // !CCB_TCP_STREAM_HH
