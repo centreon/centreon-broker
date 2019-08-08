@@ -18,7 +18,7 @@
 
 #include <cstdlib>
 #include <memory>
-#include <QAbstractSocket>
+//#include <QAbstractSocket>
 #include <QtCore>
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/compression/internal.hh"
@@ -37,10 +37,6 @@
 #include "com/centreon/broker/time/timezone_manager.hh"
 
 using namespace com::centreon::broker;
-
-// Declare type.
-Q_DECLARE_METATYPE(QAbstractSocket::SocketError)
-Q_DECLARE_METATYPE(QAbstractSocket::SocketState)
 
 /**************************************
 *                                     *
@@ -88,12 +84,6 @@ void config::applier::init() {
   config::applier::logger::load();
   config::applier::endpoint::load();
   config::applier::state::load();
-
-  // Register Qt types.
-  qRegisterMetaType<QAbstractSocket::SocketError>(
-    "QAbstractSocket::SocketError");
-  qRegisterMetaType<QAbstractSocket::SocketState>(
-    "QAbstractSocket::SocketState");
 
   return ;
 }

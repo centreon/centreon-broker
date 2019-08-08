@@ -19,6 +19,7 @@
 #ifndef CCB_EXTCMD_COMMAND_SERVER_HH
 #  define CCB_EXTCMD_COMMAND_SERVER_HH
 
+#  include <asio.hpp>
 #  include <memory>
 #  include <string>
 #  include "com/centreon/broker/extcmd/command_listener.hh"
@@ -69,7 +70,8 @@ namespace               extcmd {
                         _parser;
     processing::thread* _listener_thread;
     protocol            _protocol;
-    std::unique_ptr<server_socket>
+    asio::io_context    _io_context;
+    std::unique_ptr<asio::local::stream_protocol::socket>
                         _socket;
     std::string         _socket_file;
   };
