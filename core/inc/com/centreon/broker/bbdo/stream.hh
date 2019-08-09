@@ -41,9 +41,9 @@ namespace            bbdo {
     };
 
                      stream();
-                     stream(stream const& other);
+                     stream(stream const& other) = delete;
                      ~stream();
-    stream&          operator=(stream const& other);
+    stream&          operator=(stream const& other) = delete;
     int              flush() override;
     void             negotiate(negotiation_type neg);
     bool read(std::shared_ptr<io::data>& d,

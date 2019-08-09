@@ -425,12 +425,11 @@ processing::failover* endpoint::_create_failover(
  *
  *  @return A new endpoint.
  */
-std::shared_ptr<io::endpoint> endpoint::_create_endpoint(
-                                           config::endpoint& cfg,
-                                           bool& is_acceptor) {
+std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
+                                                         bool& is_acceptor) {
   // Create endpoint object.
   std::shared_ptr<io::endpoint> endp;
-  int level(0);
+  int level{0};
   for (std::map<std::string, io::protocols::protocol>::const_iterator
          it(io::protocols::instance().begin()),
          end(io::protocols::instance().end());
@@ -457,8 +456,9 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(
     }
   }
   if (!endp)
-    throw (exceptions::msg() << "endpoint applier: no matching " \
-             "type found for endpoint '" << cfg.name << "'");
+    throw exceptions::msg() << "endpoint applier: no matching "
+                               "type found for endpoint '"
+                            << cfg.name << "'";
 
   // Create remaining objects.
   while (level <= 7) {
@@ -479,13 +479,13 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(
       }
       ++it;
     }
-    if ((7 == level) && (it == end))
-      throw (exceptions::msg() << "endpoint applier: no matching " \
-               "protocol found for endpoint '" << cfg.name << "'");
+    if (7 == level && it == end)
+      throw exceptions::msg() << "endpoint applier: no matching " \
+               "protocol found for endpoint '" << cfg.name << "'";
     ++level;
   }
 
-  return (endp);
+  return endp;
 }
 
 /**

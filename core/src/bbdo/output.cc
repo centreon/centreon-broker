@@ -41,22 +41,19 @@ using namespace com::centreon::broker::bbdo;
 /**
  *  Get a boolean from an object.
  */
-static void get_boolean(
-              io::data const& t,
-              mapping::entry const& member,
-              QByteArray& buffer) {
+static void get_boolean(io::data const& t,
+                        mapping::entry const& member,
+                        QByteArray& buffer) {
   char c(member.get_bool(t) ? 1 : 0);
   buffer.append(&c, 1);
-  return ;
 }
 
 /**
  *  Get a double from an object.
  */
-static void get_double(
-              io::data const& t,
-              mapping::entry const& member,
-              QByteArray& buffer) {
+static void get_double(io::data const& t,
+                       mapping::entry const& member,
+                       QByteArray& buffer) {
   char str[32];
   size_t strsz(snprintf(str, sizeof(str), "%f", member.get_double(t)) + 1);
   if (strsz > sizeof(str))
@@ -67,36 +64,29 @@ static void get_double(
 /**
  *  Get an integer from an object.
  */
-static void get_integer(
-              io::data const& t,
-              mapping::entry const& member,
-              QByteArray& buffer) {
+static void get_integer(io::data const& t,
+                        mapping::entry const& member,
+                        QByteArray& buffer) {
   uint32_t value(htonl(member.get_int(t)));
-  buffer.append(
-           static_cast<char*>(static_cast<void*>(&value)),
-           sizeof(value));
+  buffer.append(static_cast<char*>(static_cast<void*>(&value)), sizeof(value));
 }
 
 /**
  *  Get a short from an object.
  */
-static void get_short(
-              io::data const& t,
-              mapping::entry const& member,
-              QByteArray& buffer) {
+static void get_short(io::data const& t,
+                      mapping::entry const& member,
+                      QByteArray& buffer) {
   uint16_t value(htons(member.get_short(t)));
-  buffer.append(
-           static_cast<char*>(static_cast<void*>(&value)),
-           sizeof(value));
+  buffer.append(static_cast<char*>(static_cast<void*>(&value)), sizeof(value));
 }
 
 /**
  *  Get a string from an object.
  */
-static void get_string(
-              io::data const& t,
-              mapping::entry const& member,
-              QByteArray& buffer) {
+static void get_string(io::data const& t,
+                       mapping::entry const& member,
+                       QByteArray& buffer) {
   QByteArray tmp(member.get_string(t).c_str());
   buffer.append(tmp.constData(), tmp.size() + 1);
 }
@@ -104,10 +94,9 @@ static void get_string(
 /**
  *  Get a timestamp from an object.
  */
-static void get_timestamp(
-              io::data const& t,
-              mapping::entry const& member,
-              QByteArray& buffer) {
+static void get_timestamp(io::data const& t,
+                          mapping::entry const& member,
+                          QByteArray& buffer) {
   uint64_t ts(member.get_time(t).get_time_t());
   uint32_t high(htonl(ts / (1ll << 32)));
   uint32_t low(htonl(ts % (1ll << 32)));
@@ -120,16 +109,30 @@ static void get_timestamp(
 }
 
 /**
+ *  Get a timestamp from an object.
+ */
+static void get_ulong(io::data const& t,
+                      mapping::entry const& member,
+                      QByteArray& buffer) {
+  uint64_t ts(member.get_time(t).get_time_t());
+  uint32_t high{htonl(ts >> 32)};
+  uint32_t low{htonl(ts & 0xffffffff)};
+  buffer.append(
+           static_cast<char*>(static_cast<void*>(&high)),
+           sizeof(high));
+  buffer.append(
+           static_cast<char*>(static_cast<void*>(&low)),
+           sizeof(low));
+}
+
+/**
  *  Get an unsigned integer from an object.
  */
-static void get_uint(
-              io::data const& t,
-              mapping::entry const& member,
-              QByteArray& buffer) {
-  uint32_t value(htonl(member.get_uint(t)));
-  buffer.append(
-           static_cast<char*>(static_cast<void*>(&value)),
-           sizeof(value));
+static void get_uint(io::data const& t,
+                     mapping::entry const& member,
+                     QByteArray& buffer) {
+  uint32_t value{htonl(member.get_uint(t))};
+  buffer.append(static_cast<char*>(static_cast<void*>(&value)), sizeof(value));
 }
 
 /**
@@ -162,32 +165,35 @@ static io::raw* serialize(io::data const& e) {
       // Skip entries that should not be serialized.
       if (current_entry->get_serialize())
         switch (current_entry->get_type()) {
-        case mapping::source::BOOL:
-          get_boolean(e, *current_entry, *buffer);
-          break ;
-        case mapping::source::DOUBLE:
-          get_double(e, *current_entry, *buffer);
-          break ;
-        case mapping::source::INT:
-          get_integer(e, *current_entry, *buffer);
-          break ;
-        case mapping::source::SHORT:
-          get_short(e, *current_entry, *buffer);
-          break ;
-        case mapping::source::STRING:
-          get_string(e, *current_entry, *buffer);
-          break ;
-        case mapping::source::TIME:
-          get_timestamp(e, *current_entry, *buffer);
-          break ;
-        case mapping::source::UINT:
-          get_uint(e, *current_entry, *buffer);
-          break ;
-        default:
-          throw (exceptions::msg() << "BBDO: invalid mapping for object"
-                 << " of type '" << info->get_name() << "': "
-                 << current_entry->get_type()
-                 << " is not a known type ID");
+          case mapping::source::BOOL:
+            get_boolean(e, *current_entry, *buffer);
+            break;
+          case mapping::source::DOUBLE:
+            get_double(e, *current_entry, *buffer);
+            break;
+          case mapping::source::INT:
+            get_integer(e, *current_entry, *buffer);
+            break;
+          case mapping::source::SHORT:
+            get_short(e, *current_entry, *buffer);
+            break;
+          case mapping::source::STRING:
+            get_string(e, *current_entry, *buffer);
+            break;
+          case mapping::source::TIME:
+            get_timestamp(e, *current_entry, *buffer);
+            break;
+          case mapping::source::UINT:
+            get_uint(e, *current_entry, *buffer);
+            break;
+          case mapping::source::ULONG:
+            get_ulong(e, *current_entry, *buffer);
+            break;
+          default:
+            throw exceptions::msg() << "BBDO: invalid mapping for object"
+                                    << " of type '" << info->get_name()
+                                    << "': " << current_entry->get_type()
+                                    << " is not a known type ID";
         }
 
       // Packet splitting.
@@ -270,7 +276,7 @@ output::output() {}
  *
  *  @param[in] other  Object to copy.
  */
-output::output(output const& other) : io::stream(other){}
+//output::output(output const& other) : io::stream(other){}
 
 /**
  *  Destructor.
@@ -284,10 +290,10 @@ output::~output() {}
  *
  *  @return This object.
  */
-output& output::operator=(output const& other) {
-  (void)other;
-  return *this;
-}
+//output& output::operator=(output const& other) {
+//  (void)other;
+//  return *this;
+//}
 
 /**
  *  Flush.

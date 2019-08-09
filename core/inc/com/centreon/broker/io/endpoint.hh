@@ -59,7 +59,7 @@ namespace                            io {
     void                             _internal_copy(
                                        endpoint const& other);
 
-    std::shared_ptr<endpoint>       _from;
+    std::shared_ptr<endpoint> _from;
     bool                             _is_acceptor;
     std::set<unsigned int>           _filter;
   };

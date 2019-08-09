@@ -19,20 +19,28 @@
 #include <arpa/inet.h>
 #include <gtest/gtest.h>
 #include "com/centreon/broker/compression/stream.hh"
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "memory_stream.hh"
 
 using namespace com::centreon::broker;
 
-class  CompressionStreamRead : public ::testing::Test {
+class CompressionStreamRead : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
+    try {
+      config::applier::init();
+    } catch (std::exception const& e) {
+      (void)e;
+    }
     _stream.reset(new compression::stream(-1, 20000));
     _substream.reset(new CompressionStreamMemoryStream());
     _stream->set_substream(_substream);
-    return ;
+    return;
   }
+
+  void TearDown() override { config::applier::deinit(); }
 
   std::shared_ptr<io::raw> predefined_data() {
     std::shared_ptr<io::raw> r(new io::raw);
@@ -42,10 +50,8 @@ class  CompressionStreamRead : public ::testing::Test {
   }
 
  protected:
-  std::shared_ptr<compression::stream>
-       _stream;
-  std::shared_ptr<CompressionStreamMemoryStream>
-       _substream;
+  std::shared_ptr<compression::stream> _stream;
+  std::shared_ptr<CompressionStreamMemoryStream> _substream;
 };
 
 // Given a compression stream
