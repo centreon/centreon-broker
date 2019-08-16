@@ -757,7 +757,7 @@ unsigned int stream::_find_metric_id(
       _update_metrics.bind_value(":warn", check_double(warn));
       _update_metrics.bind_value(":warn_low", check_double(warn_low));
       _update_metrics.bind_value(":warn_threshold_mode", warn_mode);
-      _update_metrics.bind_value(":crit", check_double(crit));
+      _update_metrics.bind_value(":crit", check_double(crit.toFloat()));
       _update_metrics.bind_value(":crit_low", check_double(crit_low));
       _update_metrics.bind_value(":crit_threshold_mode", crit_mode);
       _update_metrics.bind_value(":min", check_double(min));
@@ -811,9 +811,9 @@ unsigned int stream::_find_metric_id(
              "   crit_threshold_mode, min, max, current_value,"
              "   data_source_type)"
              " VALUES (:index_id, :metric_name, :unit_name, :warn, "
-             "         :warn_low, :warn_threshold_mode, :crit, "
-             "         :crit_low, :crit_threshold_mode, :min, :max, "
-             "         :current_value, :data_source_type)";
+             ":warn_low, :warn_threshold_mode, :crit, "
+             ":crit_low, :crit_threshold_mode, :min, :max, "
+             ":current_value, :data_source_type)";
     database_query q(_db);
     q.prepare(
         query.str(),
