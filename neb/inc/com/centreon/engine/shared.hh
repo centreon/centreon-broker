@@ -21,20 +21,40 @@
 #ifndef CCE_SHARED_HH
 #  define CCE_SHARED_HH
 
+#  include <string>
 #  include <sys/time.h>
 #  include <sys/types.h>
 
-// only usable on compile-time initialized arrays, for obvious reasons
-#  define ARRAY_SIZE(ary) (sizeof(ary) / sizeof(ary[0]))
+struct uuid {
+
+};
+
+class Uuid {
+ public:
+  Uuid();
+  Uuid(Uuid const& uuid);
+  Uuid const& operator=(Uuid const& uuid);
+
+  bool operator==(Uuid const& uuid) const;
+
+  std::string to_string() const;
+
+ private:
+  uint32_t	_time_low;
+  uint16_t	_time_mid;
+  uint16_t	_time_hi_and_version;
+  uint8_t		_clock_seq_hi_and_reserved;
+  uint8_t		_clock_seq_low;
+  uint8_t		_node[6];
+};
+
 
 #  ifdef __cplusplus
 extern "C" {
 #  endif // C++
 
 char* my_strtok(char const* buffer, char const* tokens);
-char* my_strsep(char** stringp, char const* delim);
 void strip(char* buffer);
-int hashfunc(char const* name1, char const* name2, int hashslots);
 int compare_hashdata(
       char const* val1a,
       char const* val1b,

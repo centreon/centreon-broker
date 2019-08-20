@@ -24,7 +24,6 @@
 #  include <string>
 #  include "com/centreon/engine/namespace.hh"
 #  include "com/centreon/engine/retention/object.hh"
-#  include "com/centreon/shared_ptr.hh"
 
 CCE_BEGIN()
 
@@ -33,11 +32,11 @@ namespace                retention {
   public:
                          info();
                          info(info const& right);
-                         ~info() throw ();
+                         ~info() throw () override;
     info&                operator=(info const& right);
     bool                 operator==(info const& right) const throw ();
     bool                 operator!=(info const& right) const throw ();
-    bool                 set(char const* key, char const* value);
+    bool                 set(char const* key, char const* value) override;
 
     time_t               created() const throw ();
 
@@ -54,7 +53,7 @@ namespace                retention {
     static setters const _setters[];
   };
 
-  typedef shared_ptr<info> info_ptr;
+  typedef std::shared_ptr<info> info_ptr;
 }
 
 CCE_END()

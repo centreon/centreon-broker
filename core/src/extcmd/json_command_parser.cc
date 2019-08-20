@@ -17,10 +17,9 @@
 */
 
 #include <cstdlib>
-#include <QCoreApplication>
 #include <QString>
 #include <sstream>
-#include "com/centreon/broker/json/json_writer.hh"
+#include <json11.hpp>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
@@ -29,23 +28,6 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::extcmd;
-
-/**
- *  Find a value or throw a exception.
- *
- *  @param[in] val  The key of the param to find.
- *  @param[in] it   A valid iterator.
- *
- *  @return  The value.
- */
-std::string find_or_except(
-              std::string const& val,
-              json::json_iterator const& it) {
-  json::json_iterator found = it.find_child(val).enter_children();
-  if (found.is_null())
-    throw (exceptions::msg() << "couldn't find '" << val << "'");
-  return (found.get_string());
-}
 
 /**************************************
 *                                     *
@@ -110,21 +92,43 @@ unsigned int json_command_parser::parse(
       return (0);
 
     // Found a (hopefully) valid json snippet. Try to parse it.
-    _parser.parse(buffer.substr(0, parsed + 1));
-    json::json_iterator it = _parser.begin();
-    std::string command_type = find_or_except("command_type", it);
-    if (command_type == "status") {
-      res = _listener.command_status(
-                        QString::fromStdString(find_or_except("command_id", it)));
+    std::string err;
+    json11::Json js{json11::Json::parse(buffer.substr(0, parsed + 1), err) };
+    if (js.is_null() || !js.is_object()) {
+      throw (exceptions::msg() << "cannot parse json stream'");
     }
-    else if (command_type == "execute") {
+
+    json11::Json const& command_type{js["command_type"]};
+
+    if (!command_type.is_string()) {
+      throw (exceptions::msg() << "couldn't find 'command_type'");
+    }
+
+    if (command_type.string_value() == "status") {
+      json11::Json command_id{js["command_id"]};
+      if (!command_id.is_string())
+        throw (exceptions::msg() << "couldn't find 'command_id'");
+      _listener.command_status(QString::fromStdString(command_id.string_value()));
+    } else if (command_type.string_value() == "execute") {
+      json11::Json command{js["command"]};
+      json11::Json broker_id{js["broker_id"]};
+      json11::Json endpoint{js["endpoint"]};
+
       request.reset(new command_request);
-      request->cmd = QString::fromStdString(find_or_except("command", it));
-      request->destination_id =
-        QString::fromStdString(find_or_except("broker_id", it)).toUInt();
-      request->endp = QString::fromStdString(find_or_except("endpoint", it));
-      request->with_partial_result
-        = it.find_child("with_partial_result").enter_children().get_bool();
+      if (!command.is_string())
+        throw (exceptions::msg() << "couldn't find 'commands'");
+      request->cmd = QString::fromStdString(command.string_value());
+      if (!broker_id.is_string())
+        throw (exceptions::msg() << "couldn't find 'broker_id'");
+      request->destination_id = std::stoul(broker_id.string_value());
+      if (!endpoint.is_string())
+        throw (exceptions::msg() << "couldn't find 'endpoint'");
+      request->endp = QString::fromStdString(endpoint.string_value());
+
+      json11::Json with_partial_result{js["endpoint"]["with_partial_result"]};
+      if (with_partial_result.is_bool())
+        request->with_partial_result = with_partial_result.bool_value();
+
       logging::debug(logging::high)
         << "command: sending request " << request->uuid << " ('" << request->cmd
         << "') to endpoint '" << request->endp
@@ -156,17 +160,11 @@ unsigned int json_command_parser::parse(
  *  @return         The string.
  */
 std::string json_command_parser::write(command_result const& res) {
-  json::json_writer writer;
-  writer.open_object();
-  writer.add_key("command_id");
-  writer.add_string(res.uuid.toStdString());
-  writer.add_key("command_code");
-  writer.add_number(res.code);
-  writer.add_key("command_output");
-  if (res.msg.isEmpty())
-    writer.add_null();
-  else
-    writer.add_raw(res.msg.toStdString());
-  writer.close_object();
-  return (writer.get_string());
+  json11::Json writer = json11:: Json::object {
+    {"command_id", res.uuid.toStdString()},
+    {"command_code", res.code},
+    {"command_output", res.msg.toStdString()},
+  };
+
+  return (writer.dump());
 }

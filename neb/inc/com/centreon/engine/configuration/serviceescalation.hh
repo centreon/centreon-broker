@@ -23,8 +23,9 @@
 #  include <set>
 #  include "com/centreon/engine/configuration/group.hh"
 #  include "com/centreon/engine/configuration/object.hh"
-#  include "com/centreon/engine/opt.hh"
 #  include "com/centreon/engine/namespace.hh"
+#  include "com/centreon/engine/opt.hh"
+#  include "com/centreon/engine/shared.hh"
 
 CCE_BEGIN()
 
@@ -45,7 +46,7 @@ namespace                  configuration {
                            serviceescalation();
                            serviceescalation(
                              serviceescalation const& right);
-                           ~serviceescalation() throw ();
+                           ~serviceescalation() throw () override;
     serviceescalation&     operator=(serviceescalation const& right);
     bool                   operator==(
                              serviceescalation const& right) const throw ();
@@ -53,17 +54,14 @@ namespace                  configuration {
                              serviceescalation const& right) const throw ();
     bool                   operator<(
                              serviceescalation const& right) const;
-    void                   check_validity() const;
+    void                   check_validity() const override;
     key_type const&        key() const throw ();
-    void                   merge(object const& obj);
-    bool                   parse(char const* key, char const* value);
+    void                   merge(object const& obj) override;
+    bool                   parse(char const* key, char const* value) override;
 
     set_string&            contactgroups() throw ();
     set_string const&      contactgroups() const throw ();
     bool                   contactgroups_defined() const throw ();
-    set_string&            contacts() throw ();
-    set_string const&      contacts() const throw ();
-    bool                   contacts_defined() const throw ();
     void                   escalation_options(
                              unsigned int options) throw ();
     unsigned short         escalation_options() const throw ();
@@ -87,15 +85,12 @@ namespace                  configuration {
     list_string const&     servicegroups() const throw ();
     list_string&           service_description() throw ();
     list_string const&     service_description() const throw ();
+    Uuid const&            uuid() const;
 
    private:
-    struct                 setters {
-      char const*          name;
-      bool                 (*func)(serviceescalation&, char const*);
-    };
+    typedef bool (*setter_func)(serviceescalation&, char const*);
 
     bool                   _set_contactgroups(std::string const& value);
-    bool                   _set_contacts(std::string const& value);
     bool                   _set_escalation_options(std::string const& value);
     bool                   _set_escalation_period(std::string const& value);
     bool                   _set_first_notification(unsigned int value);
@@ -107,7 +102,6 @@ namespace                  configuration {
     bool                   _set_service_description(std::string const& value);
 
     group<set_string>      _contactgroups;
-    group<set_string>      _contacts;
     opt<unsigned short>    _escalation_options;
     opt<std::string>       _escalation_period;
     opt<unsigned int>      _first_notification;
@@ -117,11 +111,12 @@ namespace                  configuration {
     opt<unsigned int>      _notification_interval;
     group<list_string>     _servicegroups;
     group<list_string>     _service_description;
-    static setters const   _setters[];
+    static std::unordered_map<std::string, setter_func> const _setters;
+    Uuid                   _uuid;
   };
 
-  typedef shared_ptr<serviceescalation>  serviceescalation_ptr;
-  typedef std::set<serviceescalation>    set_serviceescalation;
+  typedef std::shared_ptr<serviceescalation> serviceescalation_ptr;
+  typedef std::set<serviceescalation>        set_serviceescalation;
 }
 
 CCE_END()

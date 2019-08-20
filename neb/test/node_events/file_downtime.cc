@@ -28,7 +28,6 @@
 #include <QThread>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/misc/misc.hh"
-#include "com/centreon/broker/misc/shared_ptr.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/neb/node_events_stream.hh"
 #include "com/centreon/broker/neb/service_status.hh"

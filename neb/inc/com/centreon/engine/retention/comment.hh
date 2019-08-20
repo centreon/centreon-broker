@@ -24,7 +24,6 @@
 #  include <string>
 #  include "com/centreon/engine/namespace.hh"
 #  include "com/centreon/engine/retention/object.hh"
-#  include "com/centreon/shared_ptr.hh"
 
 CCE_BEGIN()
 
@@ -38,11 +37,11 @@ namespace                retention {
 
                          comment(type_id type);
                          comment(comment const& right);
-                         ~comment() throw ();
+                         ~comment() throw () override;
     comment&             operator=(comment const& right);
     bool                 operator==(comment const& right) const throw ();
     bool                 operator!=(comment const& right) const throw ();
-    bool                 set(char const* key, char const* value);
+    bool                 set(char const* key, char const* value) override;
 
     std::string const&   author() const throw ();
     std::string const&   comment_data() const throw ();
@@ -90,8 +89,8 @@ namespace                retention {
     int                  _source;
   };
 
-  typedef shared_ptr<comment>    comment_ptr;
-  typedef std::list<comment_ptr> list_comment;
+  typedef std::shared_ptr<comment> comment_ptr;
+  typedef std::list<comment_ptr>   list_comment;
 }
 
 CCE_END()

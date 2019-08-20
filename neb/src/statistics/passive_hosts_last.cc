@@ -25,6 +25,7 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 using namespace com::centreon::broker::neb::statistics;
+using namespace com::centreon::engine;
 
 /**
  *  Default constructor.
@@ -66,14 +67,18 @@ passive_hosts_last& passive_hosts_last::operator=(passive_hosts_last const& righ
 void passive_hosts_last::run(
               std::string& output,
 	      std::string& perfdata) {
-  unsigned int last_checked_1(0);
-  unsigned int last_checked_5(0);
-  unsigned int last_checked_15(0);
-  unsigned int last_checked_60(0);
-  time_t now(time(NULL));
-  for (host* h(host_list); h; h = h->next) {
-    if (h->check_type == HOST_CHECK_PASSIVE) {
-      int diff(now - h->last_check);
+  unsigned int last_checked_1{0};
+  unsigned int last_checked_5{0};
+  unsigned int last_checked_15{0};
+  unsigned int last_checked_60{0};
+  time_t now{time(NULL)};
+  for (host_map::const_iterator
+         it{host::hosts.begin()},
+         end{host::hosts.end()};
+       it != end;
+       ++it) {
+    if (it->second->get_check_type() == checkable::check_passive) {
+      int diff(now - it->second->get_last_check());
       if (diff <= 60 * 60) {
         ++last_checked_60;
         if (diff <= 15 * 60) {

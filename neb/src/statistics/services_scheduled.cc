@@ -65,9 +65,13 @@ void services_scheduled::run(
               std::string& output,
 	      std::string& perfdata) {
   // Count services scheduled.
-  unsigned int total(0);
-  for (service* s(service_list); s; s = s->next)
-    if (s->should_be_scheduled)
+  unsigned int total{0};
+  for (service_map::const_iterator
+         it{com::centreon::engine::service::services.begin()},
+         end{com::centreon::engine::service::services.end()};
+       it != end;
+       ++it)
+    if (it->second->get_should_be_scheduled())
       ++total;
 
   // Output.

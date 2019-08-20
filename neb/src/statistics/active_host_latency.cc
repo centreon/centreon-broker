@@ -27,6 +27,7 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 using namespace com::centreon::broker::neb::statistics;
+using namespace com::centreon::engine;
 
 /**
  *  Default constructor.
@@ -69,9 +70,13 @@ void active_host_latency::run(
               std::string& output,
 	      std::string& perfdata) {
   compute_value<double> cv;
-  for (host* h(host_list); h; h = h->next)
-    if (h->check_type == HOST_CHECK_ACTIVE)
-      cv << h->latency;
+  for (host_map::const_iterator
+         it{com::centreon::engine::host::hosts.begin()},
+         end{com::centreon::engine::host::hosts.end()};
+       it != end;
+       ++it)
+    if (it->second->get_check_type() == checkable::check_active)
+      cv << it->second->get_latency();
 
   if (cv.size()) {
     // Output.

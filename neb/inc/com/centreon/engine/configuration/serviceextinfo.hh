@@ -37,15 +37,15 @@ namespace                  configuration {
   public:
                            serviceextinfo();
                            serviceextinfo(serviceextinfo const& right);
-                           ~serviceextinfo() throw ();
+                           ~serviceextinfo() throw () override;
     serviceextinfo&        operator=(serviceextinfo const& right);
     bool                   operator==(
                              serviceextinfo const& right) const throw ();
     bool                   operator!=(
                              serviceextinfo const& right) const throw ();
-    void                   check_validity() const;
-    void                   merge(object const& obj);
-    bool                   parse(char const* key, char const* value);
+    void                   check_validity() const override;
+    void                   merge(object const& obj) override;
+    bool                   parse(char const* key, char const* value) override;
 
     std::string const&     action_url() const throw ();
     std::string const&     icon_image() const throw ();
@@ -57,10 +57,7 @@ namespace                  configuration {
     std::string const&     service_description() const throw ();
 
   private:
-    struct                 setters {
-      char const*          name;
-      bool                 (*func)(serviceextinfo&, char const*);
-    };
+    typedef bool (*setter_func)(serviceextinfo&, char const*);
 
     bool                   _set_action_url(std::string const& value);
     bool                   _set_icon_image(std::string const& value);
@@ -79,11 +76,11 @@ namespace                  configuration {
     std::string            _notes;
     std::string            _notes_url;
     std::string            _service_description;
-    static setters const   _setters[];
+    static std::unordered_map<std::string, setter_func> const _setters;
   };
 
-  typedef shared_ptr<serviceextinfo>    serviceextinfo_ptr;
-  typedef std::list<serviceextinfo_ptr> list_serviceextinfo;
+  typedef std::shared_ptr<serviceextinfo> serviceextinfo_ptr;
+  typedef std::list<serviceextinfo_ptr>   list_serviceextinfo;
 }
 
 CCE_END()

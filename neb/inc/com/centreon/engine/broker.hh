@@ -22,9 +22,12 @@
 #  define CCE_BROKER_HH
 
 #  include <sys/time.h>
-#  include "com/centreon/engine/objects/contact.hh"
-#  include "com/centreon/engine/objects/host.hh"
-#  include "com/centreon/engine/objects/service.hh"
+#  include "com/centreon/engine/commands/command.hh"
+#  include "com/centreon/engine/contact.hh"
+#  include "com/centreon/engine/host.hh"
+#  include "com/centreon/engine/service.hh"
+#  include "com/centreon/engine/events/timed_event.hh"
+#  include "com/centreon/engine/timeperiod.hh"
 
 /* Event broker options. */
 #  define BROKER_NOTHING                           0
@@ -296,12 +299,6 @@
 #  define NEBATTR_DOWNTIME_STOP_NORMAL             1
 #  define NEBATTR_DOWNTIME_STOP_CANCELLED          2
 
-// Forward declaration.
-struct command_struct;
-struct customvariablesmember_struct;
-struct timed_event_struct;
-struct timeperiod_struct;
-
 #  ifdef __cplusplus
 extern "C" {
 #  endif /* C++ */
@@ -322,7 +319,7 @@ void           broker_adaptive_contact_data(
                  int type,
                  int flags,
                  int attr,
-                 contact* cntct,
+                 com::centreon::engine::contact* cntct,
                  int command_type,
                  unsigned long modattr,
                  unsigned long modattrs,
@@ -347,7 +344,7 @@ void           broker_adaptive_host_data(
                  int type,
                  int flags,
                  int attr,
-                 host* hst,
+                 com::centreon::engine::host* hst,
                  int command_type,
                  unsigned long modattr,
                  unsigned long modattrs,
@@ -366,7 +363,7 @@ void           broker_adaptive_service_data(
                  int type,
                  int flags,
                  int attr,
-                 service* svc,
+                 com::centreon::engine::service* svc,
                  int command_type,
                  unsigned long modattr,
                  unsigned long modattrs,
@@ -375,7 +372,7 @@ void           broker_adaptive_timeperiod_data(
                  int type,
                  int flags,
                  int attr,
-                 timeperiod_struct* tp,
+                 com::centreon::engine::timeperiod* tp,
                  int command_type,
                  struct timeval const* timestamp);
 void           broker_aggregated_status_data(
@@ -387,7 +384,7 @@ void           broker_command_data(
                  int type,
                  int flags,
                  int attr,
-                 command_struct* cmd,
+                 com::centreon::engine::commands::command* cmd,
                  struct timeval const* timestamp);
 void           broker_comment_data(
                  int type,
@@ -415,9 +412,9 @@ int            broker_contact_notification_data(
                  struct timeval start_time,
                  struct timeval end_time,
                  void* data,
-                 contact* cntct,
-                 char* ack_author,
-                 char* ack_data,
+                 com::centreon::engine::contact* cntct,
+                 char const* ack_author,
+                 char const* ack_data,
                  int escalated,
                  struct timeval const* timestamp);
 int            broker_contact_notification_method_data(
@@ -429,17 +426,17 @@ int            broker_contact_notification_method_data(
                  struct timeval start_time,
                  struct timeval end_time,
                  void* data,
-                 contact* cntct,
+                 com::centreon::engine::contact* cntct,
                  char const* cmd,
-                 char* ack_author,
-                 char* ack_data,
+                 char const* ack_author,
+                 char const* ack_data,
                  int escalated,
                  struct timeval const* timestamp);
 void           broker_contact_status(
                  int type,
                  int flags,
                  int attr,
-                 contact* cntct,
+                 com::centreon::engine::contact* cntct,
                  struct timeval const* timestamp);
 void           broker_custom_variable(
                  int type,
@@ -520,7 +517,7 @@ int            broker_host_check(
                  int type,
                  int flags,
                  int attr,
-                 host* hst,
+                 com::centreon::engine::host* hst,
                  int check_type,
                  int state,
                  int state_type,
@@ -541,7 +538,7 @@ void           broker_host_status(
                  int type,
                  int flags,
                  int attr,
-                 host* hst,
+                 com::centreon::engine::host* hst,
                  struct timeval const* timestamp);
 void           broker_log_data(
                  int type,
@@ -567,8 +564,8 @@ int            broker_notification_data(
                  struct timeval start_time,
                  struct timeval end_time,
                  void* data,
-                 char* ack_author,
-                 char* ack_data,
+                 char const* ack_author,
+                 char const* ack_data,
                  int escalated,
                  int contacts_notified,
                  struct timeval const* timestamp);
@@ -586,10 +583,10 @@ void           broker_relation_data(
                  int type,
                  int flags,
                  int attr,
-                 host* hst,
-                 service* svc,
-                 host* dep_hst,
-                 service* dep_svc,
+                 com::centreon::engine::host* hst,
+                 com::centreon::engine::service* svc,
+                 com::centreon::engine::host* dep_hst,
+                 com::centreon::engine::service* dep_svc,
                  struct timeval const* timestamp);
 void           broker_retention_data(
                  int type,
@@ -600,7 +597,7 @@ int            broker_service_check(
                  int type,
                  int flags,
                  int attr,
-                 service* svc,
+                 com::centreon::engine::service* svc,
                  int check_type,
                  struct timeval start_time,
                  struct timeval end_time,
@@ -616,7 +613,7 @@ void           broker_service_status(
                  int type,
                  int flags,
                  int attr,
-                 service* svc,
+                 com::centreon::engine::service* svc,
                  struct timeval const* timestamp);
 void           broker_statechange_data(
                  int type,
@@ -646,7 +643,7 @@ void           broker_timed_event(
                  int type,
                  int flags,
                  int attr,
-                 timed_event_struct* event,
+                 com::centreon::engine::timed_event* event,
                  struct timeval const* timestamp);
 struct timeval get_broker_timestamp(struct timeval const* timestamp);
 

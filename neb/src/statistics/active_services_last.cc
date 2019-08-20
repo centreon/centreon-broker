@@ -25,6 +25,7 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 using namespace com::centreon::broker::neb::statistics;
+using namespace com::centreon::engine;
 
 /**
  *  Default constructor.
@@ -71,9 +72,13 @@ void active_services_last::run(
   unsigned int last_checked_15(0);
   unsigned int last_checked_60(0);
   time_t now(time(NULL));
-  for (service* s(service_list); s; s = s->next) {
-    if (s->check_type == SERVICE_CHECK_ACTIVE) {
-      int diff(now - s->last_check);
+  for (service_map::const_iterator
+         it{service::services.begin()},
+         end{service::services.end()};
+       it != end;
+       ++it) {
+    if (it->second->get_check_type() == checkable::check_active) {
+      int diff(now - it->second->get_last_check());
       if (diff <= 60 * 60) {
         ++last_checked_60;
         if (diff <= 15 * 60) {

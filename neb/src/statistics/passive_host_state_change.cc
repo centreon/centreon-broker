@@ -27,6 +27,7 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 using namespace com::centreon::broker::neb::statistics;
+using namespace com::centreon::engine;
 
 /**
  *  Default constructor.
@@ -69,9 +70,13 @@ void passive_host_state_change::run(
               std::string& output,
 	      std::string& perfdata) {
   compute_value<double> cv;
-  for (host* h(host_list); h; h = h->next)
-    if (h->check_type == HOST_CHECK_PASSIVE)
-      cv << h->percent_state_change;
+  for (host_map::const_iterator
+         it{host::hosts.begin()},
+         end{host::hosts.end()};
+       it != end;
+       ++it)
+    if (it->second->get_check_type() == checkable::check_passive)
+      cv << it->second->get_percent_state_change();
 
   if (cv.size()) {
     // Output.

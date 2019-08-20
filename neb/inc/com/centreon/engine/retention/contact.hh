@@ -24,10 +24,9 @@
 #  include <list>
 #  include <string>
 #  include "com/centreon/engine/namespace.hh"
-#  include "com/centreon/engine/objects/customvariable.hh"
+#  include "com/centreon/engine/customvariable.hh"
 #  include "com/centreon/engine/opt.hh"
 #  include "com/centreon/engine/retention/object.hh"
-#  include "com/centreon/shared_ptr.hh"
 
 CCE_BEGIN()
 
@@ -36,11 +35,11 @@ namespace                     retention {
   public:
                               contact();
                               contact(contact const& right);
-                              ~contact() throw ();
+                              ~contact() throw () override;
     contact&                  operator=(contact const& right);
     bool                      operator==(contact const& right) const throw ();
     bool                      operator!=(contact const& right) const throw ();
-    bool                      set(char const* key, char const* value);
+    bool                      set(char const* key, char const* value) override;
 
     std::string const&        contact_name() const throw ();
     map_customvar const&      customvariables() const throw ();
@@ -85,8 +84,8 @@ namespace                     retention {
     static setters const      _setters[];
   };
 
-  typedef shared_ptr<contact>    contact_ptr;
-  typedef std::list<contact_ptr> list_contact;
+  typedef std::shared_ptr<contact> contact_ptr;
+  typedef std::list<contact_ptr>   list_contact;
 }
 
 CCE_END()

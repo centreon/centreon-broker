@@ -20,8 +20,8 @@
 # define CCB_NEB_SET_LOG_DATA_HH_
 
 # include "com/centreon/broker/neb/log_entry.hh"
-# include "com/centreon/engine/objects/host.hh"
-# include "com/centreon/engine/objects/service.hh"
+# include "com/centreon/engine/host.hh"
+# include "com/centreon/engine/service.hh"
 
 namespace       com {
   namespace     centreon {
