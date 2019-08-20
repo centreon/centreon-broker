@@ -824,7 +824,7 @@ unsigned int stream::_find_metric_id(
     q.bind_value(":warn", check_double(warn));
     q.bind_value(":warn_low", check_double(warn_low));
     q.bind_value(":warn_threshold_mode", warn_mode);
-    q.bind_value(":crit", check_double(crit));
+    q.bind_value(":crit", check_double(crit).isNull() ? 0.0 : check_double(crit));
     q.bind_value(":crit_low", check_double(crit_low));
     q.bind_value(":crit_threshold_mode", crit_mode);
     q.bind_value(":min", check_double(min));
