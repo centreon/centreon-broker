@@ -811,9 +811,9 @@ unsigned int stream::_find_metric_id(
              "   crit_threshold_mode, min, max, current_value,"
              "   data_source_type)"
              " VALUES (:index_id, :metric_name, :unit_name, :warn, "
-             "   :warn_low, :warn_threshold_mode, :crit, "
-             "   :crit_low, :crit_threshold_mode, :min, :max, "
-             "   :current_value, :data_source_type)";
+             "         :warn_low, :warn_threshold_mode, :crit, "
+             "         :crit_low, :crit_threshold_mode, :min, :max, "
+             "         :current_value, :data_source_type)";
     database_query q(_db);
     q.prepare(
         query.str(),
