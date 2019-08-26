@@ -38,7 +38,7 @@ using namespace com::centreon::broker::processing;
 acceptor::acceptor(
             std::shared_ptr<io::endpoint> endp,
             std::string const& name)
-  : thread(name),
+  : bthread(name),
     _endp(endp),
     _retry_interval(30) {}
 
@@ -84,8 +84,7 @@ void acceptor::accept() {
  *  Exit this thread.
  */
 void acceptor::exit() {
-  thread::exit();
-  return ;
+  bthread::exit();
 }
 
 /**

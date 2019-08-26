@@ -40,7 +40,7 @@ namespace              multiplexing {
 }
 namespace              processing {
   class                failover;
-  class                thread;
+  class                bthread;
 }
 
 namespace              config {
@@ -56,7 +56,7 @@ namespace              config {
      */
     class              endpoint {
     public:
-      typedef          std::map<config::endpoint, processing::thread*>::iterator
+      typedef          std::map<config::endpoint, processing::bthread*>::iterator
                        iterator;
 
                        ~endpoint();
@@ -87,13 +87,13 @@ namespace              config {
       multiplexing::subscriber*
                        _create_subscriber(config::endpoint& cfg);
       void             _diff_endpoints(
-                         std::map<config::endpoint, processing::thread*> const& current,
+                         std::map<config::endpoint, processing::bthread*> const& current,
                          std::list<config::endpoint> const& new_endpoints,
                          std::list<config::endpoint>& to_create);
       uset<unsigned int>
                        _filters(std::set<std::string> const& str_filters);
 
-      std::map<config::endpoint, processing::thread*>
+      std::map<config::endpoint, processing::bthread*>
                        _endpoints;
       QMutex           _endpointsm;
     };

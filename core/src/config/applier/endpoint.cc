@@ -172,7 +172,7 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
       bool is_acceptor;
       std::shared_ptr<io::endpoint>
         e(_create_endpoint(*it, is_acceptor));
-      std::unique_ptr<processing::thread> endp;
+      std::unique_ptr<processing::bthread> endp;
       if (is_acceptor) {
         std::unique_ptr<processing::acceptor>
           acceptr(new processing::acceptor(e, it->name));
@@ -496,12 +496,12 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
  *  @param[out] to_create     Endpoints that should be created.
  */
 void endpoint::_diff_endpoints(
-                 std::map<config::endpoint, processing::thread*> const& current,
+                 std::map<config::endpoint, processing::bthread*> const& current,
                  std::list<config::endpoint> const& new_endpoints,
                  std::list<config::endpoint>& to_create) {
   // Copy some lists that we will modify.
   std::list<config::endpoint> new_ep(new_endpoints);
-  std::map<config::endpoint, processing::thread*> to_delete(current);
+  std::map<config::endpoint, processing::bthread*> to_delete(current);
 
   // Loop through new configuration.
   while (!new_ep.empty()) {

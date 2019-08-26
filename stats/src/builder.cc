@@ -201,7 +201,7 @@ io::properties const& builder::root() const throw () {
  *  @return            Name of the endpoint.
  */
 std::string builder::_generate_stats_for_endpoint(
-                       processing::thread* fo,
+                       processing::bthread* fo,
                        io::properties& tree) {
   // Header.
   std::string endpoint = std::string("endpoint ") + fo->get_name();

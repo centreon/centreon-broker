@@ -46,7 +46,7 @@ failover::failover(
             std::shared_ptr<io::endpoint> endp,
             std::shared_ptr<multiplexing::subscriber> sbscrbr,
             std::string const& name)
-  : thread(name),
+  : bthread(name),
     _buffering_timeout(0),
     _endpoint(endp),
     _failover_launched(false),
@@ -69,16 +69,14 @@ failover::~failover() {}
 void failover::add_secondary_endpoint(
                  std::shared_ptr<io::endpoint> endp) {
   _secondary_endpoints.push_back(endp);
-  return ;
 }
 
 /**
  *  Exit failover thread.
  */
 void failover::exit() {
-  thread::exit();
+  bthread::exit();
   _subscriber->get_muxer().wake();
-  return ;
 }
 
 /**
@@ -87,7 +85,7 @@ void failover::exit() {
  *  @return Failover thread buffering timeout.
  */
 time_t failover::get_buffering_timeout() const throw () {
-  return (_buffering_timeout);
+  return _buffering_timeout;
 }
 
 /**
@@ -387,8 +385,6 @@ void failover::run() {
   // Exit log.
   logging::debug(logging::high)
     << "failover: thread of endpoint '" << _name << "' is exiting";
-
-  return ;
 }
 
 /**
@@ -398,7 +394,6 @@ void failover::run() {
  */
 void failover::set_buffering_timeout(time_t secs) {
   _buffering_timeout = secs;
-  return ;
 }
 
 /**
@@ -408,7 +403,6 @@ void failover::set_buffering_timeout(time_t secs) {
  */
 void failover::set_failover(std::shared_ptr<failover> fo) {
   _failover = fo;
-  return ;
 }
 
 /**
@@ -419,7 +413,6 @@ void failover::set_failover(std::shared_ptr<failover> fo) {
  */
 void failover::set_retry_interval(time_t retry_interval) {
   _retry_interval = retry_interval;
-  return ;
 }
 
 /**
@@ -427,7 +420,6 @@ void failover::set_retry_interval(time_t retry_interval) {
  */
 void failover::update() {
   _update = true;
-  return ;
 }
 
 /**
@@ -448,7 +440,7 @@ bool failover::wait(unsigned long time) {
   // If there was no failover or failover finished we
   // can safely wait for ourselves.
   if (finished)
-    finished = thread::wait(time);
+    finished = bthread::wait(time);
   // Otherwise we're not finished yet.
   else
     finished = false;
@@ -544,7 +536,6 @@ void failover::_launch_failover() {
     while (!_failover->get_initialized() && !_failover->wait(10))
       yieldCurrentThread();
   }
-  return ;
 }
 
 /**

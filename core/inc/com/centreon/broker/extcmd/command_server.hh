@@ -37,7 +37,7 @@ CCB_BEGIN()
 
 // Forward declaration.
 namespace               processing {
-  class                 thread;
+  class                 bthread;
 }
 
 namespace               extcmd {
@@ -74,7 +74,7 @@ namespace               extcmd {
                         _listener;
     std::shared_ptr<command_parser>
                         _parser;
-    processing::thread* _listener_thread;
+    processing::bthread* _listener_thread;
     protocol            _protocol;
     asio::io_context    _io_context;
     std::unique_ptr<asio::local::stream_protocol::socket>
