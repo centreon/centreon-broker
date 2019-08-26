@@ -71,6 +71,7 @@ namespace        file {
     virtual fs_file* new_fs_file(
                        std::string const& path,
                        fs_file::open_mode mode) = 0;
+    virtual ~fs_file_factory() {};
   };
 }
 

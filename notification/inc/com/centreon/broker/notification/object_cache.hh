@@ -19,11 +19,10 @@
 #ifndef CCB_NOTIFICATION_OBJECT_CACHE_HH
 #  define CCB_NOTIFICATION_OBJECT_CACHE_HH
 
-#  include <string>
 #  include <deque>
-#  include <map>
 #  include <memory>
-#  include <QHash>
+#  include <string>
+#  include <unordered_map>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/logging/logging.hh"
 #  include "com/centreon/broker/io/data.hh"
@@ -77,18 +76,15 @@ namespace             notification {
      *  @param[in] out  The vector to fill.
      */
     void serialize(std::deque<std::shared_ptr<io::data> >& out) const {
-      out.push_back(std::shared_ptr<io::data>(new FullType(_node)));
-      out.push_back(std::shared_ptr<io::data>(
-                      new StatusType(_prev_status)));
-      out.push_back(std::shared_ptr<io::data>(
-                      new StatusType(_current_status)));
-      for (QHash<std::string, neb::custom_variable_status>::const_iterator
-             it(_custom_variables.begin()),
-             end(_custom_variables.end());
+      out.push_back(std::make_shared<FullType>(_node));
+      out.push_back(std::make_shared<StatusType>(_prev_status));
+      out.push_back(std::make_shared<StatusType>(_current_status));
+      for (std::unordered_map<std::string, neb::custom_variable_status>::const_iterator
+             it{_custom_variables.begin()},
+             end{_custom_variables.end()};
            it != end;
            ++it)
-        out.push_back(
-              std::shared_ptr<io::data>(new neb::custom_variable_status(*it)));
+        out.push_back(std::make_shared<neb::custom_variable_status>(it->second));
     }
 
     /**
@@ -116,22 +112,21 @@ namespace             notification {
      *  @param[in] var  The data to update.
      */
     void update(neb::custom_variable_status const& var) {
-      std::string var_name;
-      var_name = (var.service_id ? "_SERVICE" : "_HOST");
-      var_name.append(var.name.toStdString());
-      if (var.value.isEmpty()) {
+      std::string var_name{var.service_id ? "_SERVICE" : "_HOST"};
+      var_name.append(var.name);
+      if (var.value.empty()) {
         logging::debug(logging::low)
           << "notification: removing custom variable '"
           << var_name << "' from node (" << var.host_id
           << ", " << var.service_id << ")";
-        _custom_variables.remove(var_name);
+        _custom_variables.erase(var_name);
       }
       else {
         logging::debug(logging::low)
           << "notification: adding custom variable '"
           << var_name << "' to node (" << var.host_id
           << ", " << var.service_id << ")";
-        _custom_variables.insert(var_name, var);
+        _custom_variables.insert({var_name, var});
       }
     }
 
@@ -142,7 +137,7 @@ namespace             notification {
      *  @return  The node object.
      */
     FullType const& get_node() const {
-      return (_node);
+      return _node;
     }
 
     /**
@@ -168,8 +163,9 @@ namespace             notification {
      *
      *  @return  The custome vars of this node.
      */
-    QHash<std::string, neb::custom_variable_status> const& get_custom_vars() const {
-      return (_custom_variables);
+    std::unordered_map<std::string, neb::custom_variable_status> const&
+    get_custom_vars() const {
+      return _custom_variables;
     }
 
   private:
@@ -177,8 +173,8 @@ namespace             notification {
     StatusType  _current_status;
     StatusType  _prev_status;
 
-    QHash<std::string, neb::custom_variable_status>
-                _custom_variables;
+    std::unordered_map<std::string, neb::custom_variable_status>
+        _custom_variables;
   };
 }
 

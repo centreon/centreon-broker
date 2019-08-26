@@ -37,7 +37,7 @@ namespace                        correlation {
   class                          connector : public io::endpoint {
   public:
                                  connector(
-                                   QString const& correlation_file,
+                                   std::string const& correlation_file,
                                    bool passive = false,
                                    std::shared_ptr<persistent_cache> cache
                                    = std::shared_ptr<persistent_cache>());
@@ -49,7 +49,7 @@ namespace                        correlation {
   private:
     std::shared_ptr<persistent_cache>
                                  _cache;
-    QString                      _correlation_file;
+    std::string                  _correlation_file;
     bool                         _passive;
   };
 }

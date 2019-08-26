@@ -343,7 +343,7 @@ void line_protocol_query::_compile_scheme(
       _throw_on_invalid(metric);
       _append_compiled_getter(
         &line_protocol_query::_get_member<
-           unsigned int,
+           uint64_t,
            storage::metric,
            &storage::metric::metric_id>,
         escaper);
@@ -379,7 +379,7 @@ void line_protocol_query::_compile_scheme(
       _throw_on_invalid(metric);
       _append_compiled_getter(
         &line_protocol_query::_get_member<
-           QString,
+           std::string,
            storage::metric,
            &storage::metric::name>,
         escaper);

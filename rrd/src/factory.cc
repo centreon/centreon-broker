@@ -39,20 +39,19 @@ using namespace com::centreon::broker::rrd;
  *  @param[in] thrw Should throw if value is not found.
  *  @param[in] def  Default value.
  */
-static QString find_param(
-                 config::endpoint const& cfg,
-                 QString const& key,
-                 bool thrw = true,
-                 QString const& def = QString()) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+static std::string find_param(config::endpoint const &cfg,
+                              std::string const &key, bool thrw = true,
+                              std::string const& def = "") {
+  std::map<std::string, std::string>::const_iterator it{
+      cfg.params.find(key)};
   if (cfg.params.end() == it) {
     if (thrw)
-      throw (exceptions::msg() << "RRD: no '" << key << "' defined " \
-               " for endpoint '" << cfg.name << "'");
+      throw exceptions::msg() << "RRD: no '" << key << "' defined " \
+               " for endpoint '" << cfg.name << "'";
     else
-      return (def);
+      return def;
   }
-  return (it.value());
+  return it->second;
 }
 
 /**************************************
@@ -126,28 +125,28 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   // Local socket path.
-  QString path(find_param(cfg, "path", false));
+  std::string path{find_param(cfg, "path", false)};
 
   // Network connection.
-  unsigned short port;
-  port = find_param(cfg, "port", false, "0").toUShort();
+  unsigned short port{static_cast<unsigned short>(
+      std::stoul(find_param(cfg, "port", false, "0")))};
 
   // Get rrd creator cache size.
   unsigned int cache_size(16);
   {
-    QMap<QString, QString>::iterator
-      it(cfg.params.find("cache_size"));
+    std::map<std::string, std::string>::const_iterator
+      it{cfg.params.find("cache_size")};
     if (it != cfg.params.end())
-      cache_size = it->toUInt();
+      cache_size = std::stoul(it->second);
   }
 
   // Should metrics be written ?
   bool write_metrics;
   {
-    QMap<QString, QString>::iterator
+    std::map<std::string, std::string>::const_iterator
       it(cfg.params.find("write_metrics"));
     if (it != cfg.params.end())
-      write_metrics = config::parser::parse_boolean(*it);
+      write_metrics = config::parser::parse_boolean(it->second);
     else
       write_metrics = true;
   }
@@ -155,42 +154,41 @@ io::endpoint* factory::new_endpoint(
   // Should status be written ?
   bool write_status;
   {
-    QMap<QString, QString>::iterator
-      it(cfg.params.find("write_status"));
+    std::map<std::string, std::string>::const_iterator
+      it{cfg.params.find("write_status")};
     if (it != cfg.params.end())
-      write_status = config::parser::parse_boolean(*it);
+      write_status = config::parser::parse_boolean(it->second);
     else
       write_status = true;
   }
 
   // Get metrics RRD path.
-  QString metrics_path(write_metrics
-                       ? find_param(cfg, "metrics_path")
-                       : "");
+  std::string metrics_path{write_metrics ? find_param(cfg, "metrics_path")
+                                         : ""};
 
   // Get status RRD path.
-  QString status_path(write_status
+  std::string status_path{write_status
                       ? find_param(cfg, "status_path")
-                      : "");
+                      : ""};
 
   // Ignore update errors (2.4.0-compatible behavior).
   bool ignore_update_errors;
   {
-    QMap<QString, QString>::iterator
-      it(cfg.params.find("ignore_update_errors"));
+    std::map<std::string, std::string>::const_iterator
+      it{cfg.params.find("ignore_update_errors")};
     if (it != cfg.params.end())
-      ignore_update_errors = config::parser::parse_boolean(*it);
+      ignore_update_errors = config::parser::parse_boolean(it->second);
     else
       ignore_update_errors = true;
   }
 
   // Create endpoint.
-  std::unique_ptr<rrd::connector> endp(new rrd::connector);
+  std::unique_ptr<rrd::connector> endp{new rrd::connector};
   if (write_metrics)
     endp->set_metrics_path(metrics_path);
   if (write_status)
     endp->set_status_path(status_path);
-  if (!path.isEmpty())
+  if (!path.empty())
     endp->set_cached_local(path);
   else if (port)
     endp->set_cached_net(port);
@@ -199,5 +197,5 @@ io::endpoint* factory::new_endpoint(
   endp->set_write_status(write_status);
   endp->set_ignore_update_errors(ignore_update_errors);
   is_acceptor = false;
-  return (endp.release());
+  return endp.release();
 }

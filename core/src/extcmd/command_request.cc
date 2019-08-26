@@ -37,7 +37,7 @@ using namespace com::centreon::broker::extcmd;
  *  Default constructor.
  */
 command_request::command_request()
-  : uuid(QUuid::createUuid().toString()),
+  : uuid(QUuid::createUuid().toString().toStdString()),
     with_partial_result(false) {}
 
 /**
@@ -78,9 +78,9 @@ command_request& command_request::operator=(
  *
  *  @return True if command request is addressed to specific endpoint.
  */
-bool command_request::is_addressed_to(QString const& endp_name) const {
-  return ((!destination_id || (destination_id == io::data::broker_id))
-          && (endp == endp_name));
+bool command_request::is_addressed_to(std::string const& endp_name) const {
+  return (!destination_id || (destination_id == io::data::broker_id))
+          && endp == endp_name;
 }
 
 /**

@@ -60,7 +60,7 @@ namespace           storage {
 
     struct metric_info {
       unsigned int metric_id;
-      QString metric_name;
+      std::string metric_name;
       short metric_type;
     };
 
@@ -74,7 +74,7 @@ namespace           storage {
                       unsigned int metric_id,
                       unsigned int host_id,
                       unsigned int service_id,
-                      QString const& metric_name,
+                      std::string const& metric_name,
                       short metric_type,
                       unsigned int interval,
                       unsigned length);

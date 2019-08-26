@@ -19,7 +19,7 @@
 #ifndef CCB_BBDO_VERSION_RESPONSE_HH
 #  define CCB_BBDO_VERSION_RESPONSE_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/bbdo/internal.hh"
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
@@ -50,15 +50,14 @@ namespace               bbdo {
      *  @return The event type.
      */
     static unsigned int static_type() {
-      return (io::events::data_type<
-                            io::events::bbdo,
-                            bbdo::de_version_response>::value);
+      return io::events::data_type<io::events::bbdo,
+                                   bbdo::de_version_response>::value;
     }
 
     short               bbdo_major;
     short               bbdo_minor;
     short               bbdo_patch;
-    QString             extensions;
+    std::string         extensions;
 
     static mapping::entry const
                         entries[];

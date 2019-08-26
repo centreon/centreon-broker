@@ -21,9 +21,8 @@
 
 #  include <memory>
 #  include <vector>
-#  include <QString>
-#  include <QHash>
-#  include <QPair>
+#  include <string>
+#  include <unordered_map>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
@@ -61,7 +60,7 @@ namespace        neb {
                    extcmd::command_request const& exc,
                    io::stream& stream);
     void         set_timeperiods(
-                   QHash<QString, time::timeperiod::ptr> const& tps);
+                   std::unordered_map<std::string, time::timeperiod::ptr> const& tps);
 
   private:
                  node_events_stream(node_events_stream const& other);
@@ -71,10 +70,10 @@ namespace        neb {
     std::shared_ptr<persistent_cache>
                  _cache;
     std::string  _config_file;
-    QString      _name;
+    std::string      _name;
 
     // Timeperiods.
-    QHash<QString, time::timeperiod::ptr>
+    std::unordered_map<std::string, time::timeperiod::ptr>
                  _timeperiods;
 
     // Host/Service caches.
@@ -94,7 +93,7 @@ namespace        neb {
     void         _trigger_floating_downtime(node_id node, short state);
 
     // Acks and downtimes caches.
-    QHash<node_id, neb::acknowledgement>
+    std::unordered_map<node_id, neb::acknowledgement>
                  _acknowledgements;
     std::vector<neb::downtime>
                  _incomplete_downtime;

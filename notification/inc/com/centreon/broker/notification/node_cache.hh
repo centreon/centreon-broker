@@ -70,6 +70,7 @@ namespace         notification {
                     time_t deadline);
     virtual int   write(std::shared_ptr<io::data> const& d);
 
+    using io::stream::update;
     void          update(neb::host const& hst);
     void          update(neb::host_status const& hs);
     void          update(neb::service const& svc);

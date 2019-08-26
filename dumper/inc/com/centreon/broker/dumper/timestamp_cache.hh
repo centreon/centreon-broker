@@ -19,7 +19,7 @@
 #ifndef CCB_DUMPER_TIMESTAMP_CACHE_HH
 #  define CCB_DUMPER_TIMESTAMP_CACHE_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -44,7 +44,7 @@ namespace               dumper {
     unsigned int        type() const;
     static unsigned int static_type();
 
-    QString             filename;
+    std::string             filename;
     timestamp           last_modified;
 
     static mapping::entry const

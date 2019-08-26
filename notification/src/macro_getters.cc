@@ -31,10 +31,9 @@ using namespace com::centreon::broker;
  */
 template <> std::string notification::get_host_output<false>(
                           macro_context const& context) {
-  std::string output =
-    context.get_cache().get_host(
-      context.get_id()).get_status().output.toStdString();
-  return (output.substr(0, output.find_first_of('\n')));
+  std::string output{
+      context.get_cache().get_host(context.get_id()).get_status().output};
+  return output.substr(0, output.find_first_of('\n'));
 }
 
 /**
@@ -48,13 +47,12 @@ template <> std::string notification::get_host_output<false>(
  */
 template <> std::string notification::get_host_output<true>(
                           macro_context const& context) {
-  std::string output =
-    context.get_cache().get_host(
-      context.get_id()).get_status().output.toStdString();
+  std::string output{
+      context.get_cache().get_host(context.get_id()).get_status().output};
   size_t found = output.find_first_of('\n');
   if (found != std::string::npos)
-    return (output.substr(found + 1, std::string::npos));
-  return ("");
+    return output.substr(found + 1, std::string::npos);
+  return "";
 }
 
 /**
@@ -68,10 +66,9 @@ template <> std::string notification::get_host_output<true>(
  */
 template <> std::string notification::get_service_output<false>(
                           macro_context const& context) {
-  std::string output =
-    context.get_cache().get_service(
-      context.get_id()).get_status().output.toStdString();
-  return (output.substr(0, output.find_first_of('\n')));
+  std::string output{
+      context.get_cache().get_service(context.get_id()).get_status().output};
+  return output.substr(0, output.find_first_of('\n'));
 }
 
 /**
@@ -85,13 +82,12 @@ template <> std::string notification::get_service_output<false>(
  */
 template <> std::string notification::get_service_output<true>(
                           macro_context const& context) {
-  std::string output =
-    context.get_cache().get_service(
-      context.get_id()).get_status().output.toStdString();
+  std::string output{
+      context.get_cache().get_service(context.get_id()).get_status().output};
   size_t found = output.find_first_of('\n');
   if (found != std::string::npos)
-    return (output.substr(found + 1, std::string::npos));
-  return ("");
+    return output.substr(found + 1, std::string::npos);
+  return "";
 }
 
 /**

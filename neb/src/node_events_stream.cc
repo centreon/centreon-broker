@@ -180,7 +180,7 @@ int node_events_stream::write(std::shared_ptr<io::data> const& d) {
         std::shared_ptr<extcmd::command_result>
           res(new extcmd::command_result);
         res->uuid = req.uuid;
-        res->msg = QString("\"") + e.what() + "\"";
+        res->msg = std::string("\"") + e.what() + "\"";
         res->code = -1;
         res->destination_id = req.source_id;
         pblsh.write(res);
@@ -238,8 +238,8 @@ private:
 void node_events_stream::parse_command(
                            extcmd::command_request const& exc,
                            io::stream& stream) {
-  std::string line = exc.cmd.toStdString();
-  buffer command(line.size());
+  std::string line{exc.cmd};
+  buffer command{static_cast<unsigned int>(line.size())};
   buffer args(line.size());
 
   logging::info(logging::medium)
@@ -288,7 +288,7 @@ void node_events_stream::parse_command(
  *  @param[in] tps  The timeperiods.
  */
 void node_events_stream::set_timeperiods(
-        QHash<QString, time::timeperiod::ptr> const& tps) {
+        std::unordered_map<std::string, time::timeperiod::ptr> const& tps) {
   _timeperiods = tps;
 }
 
@@ -384,17 +384,17 @@ void node_events_stream::_remove_expired_acknowledgement(
                            timestamp check_time,
                            short prev_state,
                            short state) {
-  QHash<node_id, neb::acknowledgement>::iterator found
-    = _acknowledgements.find(node);
+  std::unordered_map<node_id, neb::acknowledgement>::iterator found{
+      _acknowledgements.find(node)};
   if (found != _acknowledgements.end()
-        && (state == 0 || (!found->is_sticky && prev_state != state))) {
+        && (state == 0 || (!found->second.is_sticky && prev_state != state))) {
     logging::info(logging::medium)
       << "node events: removing expired acknowledgement for "
          "(" << node.get_host_id() << ", " << node.get_service_id() << ")";
     // Close the ack.
-    found->deletion_time = check_time;
+    found->second.deletion_time = check_time;
     multiplexing::publisher pblsh;
-    pblsh.write(std::make_shared<neb::acknowledgement>(*found));
+    pblsh.write(std::make_shared<neb::acknowledgement>(found->second));
     _acknowledgements.erase(found);
   }
 }
@@ -410,8 +410,8 @@ void node_events_stream::_trigger_floating_downtime(
                            short state) {
   if (state == 0)
     return ;
-  QList<downtime> downtimes = _downtimes.get_all_downtimes_of_node(node);
-  for (QList<downtime>::const_iterator
+  std::list<downtime> downtimes{_downtimes.get_all_downtimes_of_node(node)};
+  for (std::list<downtime>::const_iterator
          it = downtimes.begin(),
          end = downtimes.end();
        it != end;
@@ -475,15 +475,17 @@ void node_events_stream::_parse_ack(
 
     // The entry time is inherited from any existing ack.
     timestamp t = ::time(NULL);
-    if (_acknowledgements.contains(id))
+    std::unordered_map<node_id, neb::acknowledgement>::const_iterator found{
+      _acknowledgements.find(id)};
+    if (found != _acknowledgements.end())
       t = _acknowledgements[id].entry_time;
 
 
     std::shared_ptr<neb::acknowledgement>
       ack(new neb::acknowledgement);
     ack->acknowledgement_type = is_host;
-    ack->comment = QString::fromStdString(comment);
-    ack->author = QString::fromStdString(author);
+    ack->comment = comment;
+    ack->author = author;
     ack->entry_time = t;
     ack->host_id = id.get_host_id();
     ack->service_id = id.get_service_id();
@@ -538,7 +540,7 @@ void node_events_stream::_parse_remove_ack(
                    service_description);
 
     // Find the ack.
-    QHash<node_id, neb::acknowledgement>::iterator
+    std::unordered_map<node_id, neb::acknowledgement>::iterator
       found(_acknowledgements.find(id));
     if (found == _acknowledgements.end())
       throw (exceptions::msg()
@@ -546,7 +548,7 @@ void node_events_stream::_parse_remove_ack(
              << id.get_host_id() << ", " << id.get_service_id() << ")");
 
     // Close the ack.
-    std::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement(*found));
+    std::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement(found->second));
     ack->deletion_time = ::time(NULL);
 
     // Erase the ack.
@@ -607,11 +609,11 @@ void node_events_stream::_parse_downtime(
 
     std::shared_ptr<neb::downtime>
       d(new neb::downtime);
-    d->author = QString::fromStdString(author);
-    d->comment = QString::fromStdString(comment);
+    d->author = author;
+    d->comment = comment;
     d->start_time = start_time;
     d->end_time = end_time;
-    d->entry_time = ::time(NULL);
+    d->entry_time = ::time(nullptr);
     d->duration = fixed ? end_time - start_time : duration;
     d->fixed = (fixed == 1);
     d->downtime_type = type;
@@ -621,8 +623,8 @@ void node_events_stream::_parse_downtime(
     d->was_started = false;
     d->internal_id = _downtimes.get_new_downtime_id();
     d->triggered_by = trigger_id;
-    d->recurring_timeperiod = QString::fromStdString(recurring_timeperiod);
-    d->is_recurring = !d->recurring_timeperiod.isEmpty();
+    d->recurring_timeperiod = recurring_timeperiod;
+    d->is_recurring = !d->recurring_timeperiod.empty();
     d->entry_time = ::time(NULL);
 
     logging::info(logging::high)
@@ -733,14 +735,14 @@ void node_events_stream::_delete_downtime(
  *  Check that each recurring timeperiod has its downtime.
  */
 void node_events_stream::_check_downtime_timeperiod_consistency() {
-  QList<downtime> recurring_downtimes
-    = _downtimes.get_all_recurring_downtimes();
-  for (QList<downtime>::const_iterator
-         it = recurring_downtimes.begin(),
-         end = recurring_downtimes.end();
+  std::list<downtime> recurring_downtimes{
+      _downtimes.get_all_recurring_downtimes()};
+  for (std::list<downtime>::const_iterator
+         it{recurring_downtimes.begin()},
+         end{recurring_downtimes.end()};
        it != end;
        ++it) {
-    if (!_timeperiods.contains(it->recurring_timeperiod)) {
+    if (!_timeperiods.count(it->recurring_timeperiod)) {
       logging::error(logging::medium)
         << "core: node events stream: recurring timeperiod '"
         << it->recurring_timeperiod << "' deleted,"
@@ -789,7 +791,7 @@ void node_events_stream::_load_config_file() {
         ceof::ceof_deserializer cd(iterator.enter_children());
         ts.visit(cd);
         _timeperiods.insert(
-          QString::fromStdString(ts.get_name()), ts.get_timeperiod());
+            {ts.get_name(), ts.get_timeperiod()});
       }
     }
   }
@@ -865,25 +867,22 @@ void node_events_stream::_apply_config_downtimes() {
        ++it) {
     // Try to find a matching loaded downtime.
     bool found_matching_downtime = false;
-    bool is_recurring = !it->recurring_timeperiod.isEmpty();
+    bool is_recurring = !it->recurring_timeperiod.empty();
     node_id id(it->host_id, it->service_id);
 
-    QList<downtime> downtimes = !is_recurring
+    std::list<downtime> downtimes = !is_recurring
       ? _downtimes.get_all_downtimes_of_node(id)
       : _downtimes.get_all_recurring_downtimes_of_node(id);
 
-    for (QList<downtime>::const_iterator
-           it_set = downtimes.begin(),
-           end_set = downtimes.end();
-         it_set != end_set;
-         ++it_set)
-      if (it_set->start_time == it->start_time
-            && it_set->end_time == it->end_time
-            && it_set->come_from == 1
-            && it_set->recurring_timeperiod == it->recurring_timeperiod) {
+    for (std::list<downtime>::const_iterator it_set{downtimes.begin()},
+         end_set{downtimes.end()};
+         it_set != end_set; ++it_set)
+      if (it_set->start_time == it->start_time &&
+          it_set->end_time == it->end_time && it_set->come_from == 1 &&
+          it_set->recurring_timeperiod == it->recurring_timeperiod) {
         found_downtime_ids.insert(it_set->internal_id);
         found_matching_downtime = true;
-        break ;
+        break;
       }
 
     // No matching loaded downtime found, create one.
@@ -899,8 +898,8 @@ void node_events_stream::_apply_config_downtimes() {
 
   // Saved downtimes coming from configuration that wasn't in the config file
   // have been deleted.
-  QList<downtime> downtimes = _downtimes.get_all_downtimes();
-  for (QList<downtime>::const_iterator
+  std::list<downtime> downtimes = _downtimes.get_all_downtimes();
+  for (std::list<downtime>::const_iterator
          it = downtimes.begin(),
          end = downtimes.end();
        it != end;
@@ -923,14 +922,14 @@ void node_events_stream::_save_cache() {
   // Serialize the node cache.
   _node_cache.serialize(_cache);
   // Managed internally.
-  for (QHash<node_id, neb::acknowledgement>::const_iterator
+  for (std::unordered_map<node_id, neb::acknowledgement>::const_iterator
          it = _acknowledgements.begin(),
          end = _acknowledgements.end();
        it != end;
        ++it)
-    _cache->add(std::make_shared<neb::acknowledgement>(*it));
-  QList<downtime> downtimes = _downtimes.get_all_downtimes();
-  for (QList<downtime>::const_iterator
+    _cache->add(std::make_shared<neb::acknowledgement>(it->second));
+  std::list<downtime> downtimes = _downtimes.get_all_downtimes();
+  for (std::list<downtime>::const_iterator
          it = downtimes.begin(),
          end = downtimes.end();
        it != end;
@@ -1000,8 +999,8 @@ void node_events_stream::_spawn_recurring_downtime(
   spawned.internal_id = _downtimes.get_new_downtime_id();
 
   // Get the timeperiod.
-  QHash<QString, time::timeperiod::ptr>::const_iterator
-    tp = _timeperiods.find(dwn.recurring_timeperiod);
+  std::unordered_map<std::string, time::timeperiod::ptr>::const_iterator tp{
+      _timeperiods.find(dwn.recurring_timeperiod)};
 
   if (tp == _timeperiods.end()) {
     logging::error(logging::medium)
@@ -1020,8 +1019,8 @@ void node_events_stream::_spawn_recurring_downtime(
     return ;
   }
 
-  spawned.start_time = (*tp)->get_next_valid(dwn.start_time < when ? when : dwn.start_time);
-  spawned.end_time = (*tp)->get_next_invalid(spawned.start_time);
+  spawned.start_time = tp->second->get_next_valid(dwn.start_time < when ? when : dwn.start_time);
+  spawned.end_time = tp->second->get_next_invalid(spawned.start_time);
   if (spawned.end_time > dwn.end_time)
     spawned.end_time = dwn.end_time;
   spawned.entry_time = ::time(NULL);

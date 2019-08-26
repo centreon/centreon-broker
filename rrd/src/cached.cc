@@ -63,7 +63,6 @@ void cached::begin() {
   _batch = true;
   char const buffer[] = "BATCH\n";
   _send_to_cached(buffer, sizeof(buffer) - 1);
-  return ;
 }
 
 /**
@@ -71,7 +70,6 @@ void cached::begin() {
  */
 void cached::clean() {
   _lib.clean();
-  return ;
 }
 
 /**
@@ -80,7 +78,6 @@ void cached::clean() {
 void cached::close() {
   _filename.clear();
   _batch = false;
-  return ;
 }
 
 /**
@@ -93,7 +90,6 @@ void cached::commit() {
     char buffer[] = ".\n";
     _send_to_cached(buffer, sizeof(buffer) - 1);
   }
-  return ;
 }
 
 #if QT_VERSION >= 0x040400
@@ -102,13 +98,13 @@ void cached::commit() {
  *
  *  @param[in] name Socket name.
  */
-void cached::connect_local(QString const& name) {
+void cached::connect_local(std::string const& name) {
   // Create socket object.
   QLocalSocket* ls(new QLocalSocket);
   _socket.reset(ls);
 
   // Connect to server.
-  ls->connectToServer(name);
+  ls->connectToServer(QString::fromStdString(name));
   if (!ls->waitForConnected(-1)) {
     broker::exceptions::msg e;
     e << "RRD: could not connect to local socket '" << name
@@ -116,8 +112,6 @@ void cached::connect_local(QString const& name) {
     _socket.reset();
     throw (e);
   }
-
-  return ;
 }
 #endif // Qt >= 4.4.0
 
@@ -128,14 +122,14 @@ void cached::connect_local(QString const& name) {
  *  @param[in] port    Port to connect to.
  */
 void cached::connect_remote(
-               QString const& address,
+               std::string const& address,
                unsigned short port) {
   // Create socket object.
   QTcpSocket* ts(new QTcpSocket);
   _socket.reset(ts);
 
   // Connect to server.
-  ts->connectToHost(address, port);
+  ts->connectToHost(QString::fromStdString(address), port);
   if (!ts->waitForConnected(-1)) {
     broker::exceptions::msg e;
     e << "RRD: could not connect to remote server '" << address
@@ -146,8 +140,6 @@ void cached::connect_remote(
 
   // Set the SO_KEEPALIVE option.
   ts->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-
-  return ;
 }
 
 /**
@@ -166,8 +158,6 @@ void cached::open(std::string const& filename) {
 
   // Remember information for further operations.
   _filename = filename;
-
-  return ;
 }
 
 /**
@@ -196,8 +186,6 @@ void cached::open(
   ** rrdcached does not support RRD file creation.
   */
   _lib.open(filename, length, from, step, value_type);
-
-  return ;
 }
 
 /**
@@ -222,7 +210,6 @@ void cached::remove(std::string const& filename) {
     logging::error(logging::high) << "RRD: could not remove file '"
       << filename << "': " << msg;
   }
-  return ;
 }
 
 /**
@@ -251,8 +238,6 @@ void cached::update(time_t t, std::string const& value) {
         << "RRD: ignored update error in file '"
         << _filename << "': " << e.what() + 5;
   }
-
-  return ;
 }
 
 /**************************************
@@ -313,6 +298,4 @@ void cached::_send_to_cached(
       --lines;
     }
   }
-
-  return ;
 }

@@ -183,7 +183,7 @@ void perfdata::min(double m) throw () {
  *
  *  @return Name of the metric.
  */
-QString const& perfdata::name() const throw () {
+std::string const& perfdata::name() const throw () {
   return (_name);
 }
 
@@ -192,7 +192,7 @@ QString const& perfdata::name() const throw () {
  *
  *  @param[in] n New name of the metric.
  */
-void perfdata::name(QString const& n) {
+void perfdata::name(std::string const& n) {
   _name = n;
   return ;
 }
@@ -202,7 +202,7 @@ void perfdata::name(QString const& n) {
  *
  *  @return Unit.
  */
-QString const& perfdata::unit() const throw () {
+std::string const& perfdata::unit() const throw () {
   return (_unit);
 }
 
@@ -211,7 +211,7 @@ QString const& perfdata::unit() const throw () {
  *
  *  @param[in] u New unit.
  */
-void perfdata::unit(QString const& u) {
+void perfdata::unit(std::string const& u) {
   _unit = u;
   return ;
 }

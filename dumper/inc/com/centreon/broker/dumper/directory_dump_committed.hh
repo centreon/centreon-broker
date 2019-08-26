@@ -26,37 +26,34 @@
 
 CCB_BEGIN()
 
-namespace               dumper {
-  /**
-   *  @class directory_dump_committed directory_dump_committed.hh "com/centreon/broker/dumper/directory_dump_committed.hh"
-   *  @brief Directory dump committed event.
-   *
-   *  Notify that a directory dump has been properly committed.
-   */
-  class                 directory_dump_committed : public io::data {
-  public:
-                        directory_dump_committed();
-                        directory_dump_committed(
-                          directory_dump_committed const& other);
-                        ~directory_dump_committed();
-    directory_dump_committed&
-                        operator=(directory_dump_committed const& other);
-    unsigned int        type() const;
-    static unsigned int static_type();
+namespace dumper {
+/**
+ *  @class directory_dump_committed directory_dump_committed.hh
+ * "com/centreon/broker/dumper/directory_dump_committed.hh"
+ *  @brief Directory dump committed event.
+ *
+ *  Notify that a directory dump has been properly committed.
+ */
+class directory_dump_committed : public io::data {
+ public:
+  directory_dump_committed();
+  directory_dump_committed(directory_dump_committed const& other);
+  ~directory_dump_committed();
+  directory_dump_committed& operator=(directory_dump_committed const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    bool                success;
-    QString             req_id;
-    QString             error_message;
+  bool success;
+  std::string req_id;
+  std::string error_message;
 
-    static mapping::entry const
-                        entries[];
-    static io::event_info::event_operations const
-                        operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void                _internal_copy(directory_dump_committed const& other);
-  };
-}
+ private:
+  void _internal_copy(directory_dump_committed const& other);
+};
+}  // namespace dumper
 
 CCB_END()
 

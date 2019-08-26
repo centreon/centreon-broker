@@ -19,8 +19,8 @@
 #ifndef CCB_LUA_LUABINDING_HH
 #  define CCB_LUA_LUABINDING_HH
 
-#  include <QMap>
-#  include <QVariant>
+#  include <map>
+#  include "com/centreon/broker/misc/variant.hh"
 #  include "com/centreon/broker/lua/macro_cache.hh"
 
 extern "C" {
@@ -42,7 +42,7 @@ namespace               lua {
    public:
                         luabinding(
                           std::string const& lua_script,
-                          QMap<QString, QVariant> const& conf_params,
+                          std::map<std::string, misc::variant> const& conf_params,
                           macro_cache const& cache);
                         ~luabinding();
     bool                has_filter() const;
@@ -54,7 +54,7 @@ namespace               lua {
     lua_State*          _load_interpreter();
     void                _load_script();
     void                _init_script(
-                          QMap<QString, QVariant> const& conf_params);
+                          std::map<std::string, misc::variant> const& conf_params);
     void                _update_lua_path(std::string const& path);
 
     // Event conversion to Lua table.

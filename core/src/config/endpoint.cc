@@ -125,19 +125,20 @@ bool endpoint::operator<(endpoint const& other) const {
     return (cfg < other.cfg);
 
   // Need to check all parameters one by one.
-  QMap<QString, QString>::const_iterator it1(params.begin()),
-    it2(other.params.begin()),
-    end1(params.end()),
-    end2(other.params.end());
-  while ((it1 != end1) && (it2 != end2)) {
-    if (it1.key() != it2.key())
-      return (it1.key() < it2.key());
-    else if (it1.value() != it2.value())
-      return (it1.value() < it2.value());
+  std::map<std::string, std::string>::const_iterator it1{
+      params.begin()},
+      it2{other.params.begin()},
+      end1{params.end()},
+      end2{other.params.end()};
+  while (it1 != end1 && it2 != end2) {
+    if (it1->first != it2->first)
+      return it1->first < it2->first;
+    else if (it1->second != it2->second)
+      return it1->second < it2->second;
     ++it1;
     ++it2;
   }
-  return ((it1 == end1) && (it2 != end2));
+  return it1 == end1 && it2 != end2;
 }
 
 /**************************************

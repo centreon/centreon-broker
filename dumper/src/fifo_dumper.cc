@@ -88,9 +88,9 @@ bool fifo_dumper::read(std::shared_ptr<io::data>& d, time_t deadline) {
     line = _fifo.read_line(timeout);
     if (!line.empty()) {
       std::shared_ptr<dumper::dump> dmp(new dumper::dump);
-      dmp->content = QString::fromStdString(line);
-      dmp->filename = QString::fromStdString(_path);
-      dmp->tag = QString::fromStdString(_tagname);
+      dmp->content = line;
+      dmp->filename = _path;
+      dmp->tag = _tagname;
       d = dmp;
     }
   }
@@ -98,7 +98,7 @@ bool fifo_dumper::read(std::shared_ptr<io::data>& d, time_t deadline) {
     throw (exceptions::msg()
            << "dumper: error while trying to read fifo: " << e.what());
   }
-  return (!line.empty());
+  return !line.empty();
 }
 
 /**

@@ -46,12 +46,12 @@ using namespace json11;
  */
 static std::string find_param(
                      config::endpoint const& cfg,
-                     QString const& key) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+                     std::string const& key) {
+  std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw (exceptions::msg() << "influxdb: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'");
-  return (it.value().toStdString());
+    throw exceptions::msg() << "influxdb: no '" << key
+           << "' defined for endpoint '" << cfg.name << "'";
+  return it->second;
 }
 
 /**************************************
@@ -135,31 +135,31 @@ io::endpoint* factory::new_endpoint(
   unsigned short port(0);
   {
     std::stringstream ss;
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("db_port"));
+    std::map<std::string, std::string>::const_iterator
+      it{cfg.params.find("db_port")};
     if (it == cfg.params.end())
       port = 8086;
     else {
-      ss << it->toStdString();
+      ss << it->second;
       ss >> port;
       if (!ss.eof())
-        throw (exceptions::msg() << "influxdb: couldn't parse port '" << ss.str()
-               << "' defined for endpoint '" << cfg.name << "'");
+        throw exceptions::msg() << "influxdb: couldn't parse port '" << ss.str()
+               << "' defined for endpoint '" << cfg.name << "'";
     }
   }
 
   unsigned int queries_per_transaction(0);
   {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("queries_per_transaction"));
+    std::map<std::string, std::string>::const_iterator
+      it{cfg.params.find("queries_per_transaction")};
     if (it != cfg.params.end())
-      queries_per_transaction = it.value().toUInt();
+      queries_per_transaction = std::stoul(it->second);
     else
       queries_per_transaction = 1000;
   }
 
   // Get status query.
-  std::string status_timeseries(find_param(cfg, "status_timeseries"));
+  std::string status_timeseries{find_param(cfg, "status_timeseries")};
   std::vector<column> status_column_list;
   Json const& status_columns = cfg.cfg["status_column"];
   if (status_columns.is_object()) {
@@ -170,8 +170,8 @@ io::endpoint* factory::new_endpoint(
     if (name.is_null() || !name.is_string() ||
         name.string_value().empty() || !value.is_string() ||
         value.string_value().empty())
-      throw (exceptions::msg())
-        << "influxdb: couldn't get the configuration of a status column";
+      throw exceptions::msg()
+             << "influxdb: couldn't get the configuration of a status column";
     status_column_list.push_back(column(
       name.string_value(),
       value.string_value(),

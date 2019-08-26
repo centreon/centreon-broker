@@ -19,50 +19,49 @@
 #ifndef CCB_RRD_CONNECTOR_HH
 #  define CCB_RRD_CONNECTOR_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          rrd {
-  /**
-   *  @class connector connector.hh "com/centreon/broker/rrd/connector.hh"
-   *  @brief RRD connector.
-   *
-   *  Generate an RRD stream that will write files.
-   */
-  class            connector : public io::endpoint {
-  public:
-                   connector();
-                   connector(connector const& right);
-                   ~connector();
-    connector&     operator=(connector const& right);
-    std::shared_ptr<io::stream>
-                   open();
-    void           set_cache_size(unsigned int cache_size);
-    void           set_cached_local(QString const& local_socket);
-    void           set_cached_net(unsigned short port) throw ();
-    void           set_ignore_update_errors(bool ignore) throw ();
-    void           set_metrics_path(QString const& metrics_path);
-    void           set_status_path(QString const& status_path);
-    void           set_write_metrics(bool write_metrics) throw ();
-    void           set_write_status(bool write_status) throw ();
+namespace rrd {
+/**
+ *  @class connector connector.hh "com/centreon/broker/rrd/connector.hh"
+ *  @brief RRD connector.
+ *
+ *  Generate an RRD stream that will write files.
+ */
+class connector : public io::endpoint {
+ public:
+  connector();
+  connector(connector const& right);
+  ~connector();
+  connector& operator=(connector const& right);
+  std::shared_ptr<io::stream> open();
+  void set_cache_size(unsigned int cache_size);
+  void set_cached_local(std::string const& local_socket);
+  void set_cached_net(unsigned short port) throw();
+  void set_ignore_update_errors(bool ignore) throw();
+  void set_metrics_path(std::string const& metrics_path);
+  void set_status_path(std::string const& status_path);
+  void set_write_metrics(bool write_metrics) throw();
+  void set_write_status(bool write_status) throw();
 
-  private:
-    void           _internal_copy(connector const& right);
-    QString        _real_path_of(QString const& path);
+ private:
+  void _internal_copy(connector const& right);
+  std::string _real_path_of(std::string const& path);
 
-    unsigned int   _cache_size;
-    QString        _cached_local;
-    unsigned short _cached_port;
-    bool           _ignore_update_errors;
-    QString        _metrics_path;
-    QString        _status_path;
-    bool           _write_metrics;
-    bool           _write_status;
-  };
-}
+  unsigned int _cache_size;
+  std::string _cached_local;
+  unsigned short _cached_port;
+  bool _ignore_update_errors;
+  std::string _metrics_path;
+  std::string _status_path;
+  bool _write_metrics;
+  bool _write_status;
+};
+}  // namespace rrd
 
 CCB_END()
 

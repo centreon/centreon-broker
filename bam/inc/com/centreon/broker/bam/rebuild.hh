@@ -19,7 +19,7 @@
 #ifndef CCB_BAM_REBUILD_HH
 #  define CCB_BAM_REBUILD_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/event_info.hh"
@@ -45,7 +45,7 @@ namespace          bam {
     static unsigned int
                    static_type();
 
-    QString        bas_to_rebuild;
+    std::string        bas_to_rebuild;
 
     static mapping::entry const
                    entries[];

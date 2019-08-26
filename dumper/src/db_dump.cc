@@ -97,7 +97,6 @@ void db_dump::_internal_copy(db_dump const& other) {
   full = other.full;
   poller_id = other.poller_id;
   req_id = other.req_id;
-  return ;
 }
 
 /**************************************

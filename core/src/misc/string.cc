@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <iostream>
 #include <fstream>
 #include "com/centreon/broker/misc/string.hh"
 
@@ -245,4 +246,21 @@ void string::replace_all(std::string& input,
        input.replace(pos, str.length(), str2);
        pos += str.length();
   }
+}
+
+std::list<std::string> string::split(std::string const& str, char sep) {
+  std::list<std::string> retval;
+  size_t pos = 0, new_pos;
+  while (pos != std::string::npos) {
+    new_pos = str.find(sep, pos);
+    if (new_pos != std::string::npos) {
+      retval.push_back(str.substr(pos, new_pos - pos));
+      pos = new_pos + 1;
+    } else {
+      retval.push_back(str.substr(pos));
+      pos = new_pos;
+    }
+  }
+
+  return retval;
 }

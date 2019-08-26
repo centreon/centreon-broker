@@ -19,7 +19,7 @@
 #ifndef CCB_EXTCMD_COMMAND_RESULT_HH
 #  define CCB_EXTCMD_COMMAND_RESULT_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/event_info.hh"
@@ -45,8 +45,8 @@ namespace                extcmd {
     static unsigned int  static_type();
 
     int                  code;
-    QString              uuid;
-    QString              msg;
+    std::string              uuid;
+    std::string              msg;
 
     static mapping::entry const
                          entries[];

@@ -45,8 +45,8 @@ protocols::~protocols() {
  *
  *  @return Iterator to the beginning of the protocol list.
  */
-QMap<QString, protocols::protocol>::const_iterator protocols::begin() const {
-  return (_protocols.begin());
+std::map<std::string, protocols::protocol>::const_iterator protocols::begin() const {
+  return _protocols.begin();
 }
 
 /**
@@ -54,8 +54,8 @@ QMap<QString, protocols::protocol>::const_iterator protocols::begin() const {
  *
  *  @return Iterator to the end of the protocol list.
  */
-QMap<QString, protocols::protocol>::const_iterator protocols::end() const {
-  return (_protocols.end());
+std::map<std::string, protocols::protocol>::const_iterator protocols::end() const {
+  return _protocols.end();
 }
 
 /**
@@ -64,7 +64,7 @@ QMap<QString, protocols::protocol>::const_iterator protocols::end() const {
  *  @return Class instance.
  */
 protocols& protocols::instance() {
-  return (*gl_protocols);
+  return *gl_protocols;
 }
 
 /**
@@ -73,7 +73,6 @@ protocols& protocols::instance() {
 void protocols::load() {
   if (!gl_protocols)
     gl_protocols = new protocols;
-  return ;
 }
 
 /**
@@ -86,7 +85,7 @@ void protocols::load() {
  *  @param[in] osi_to       OSI layer this protocol supports.
  */
 void protocols::reg(
-                  QString const& name,
+                  std::string const& name,
                   factory const& fac,
                   unsigned short osi_from,
                   unsigned short osi_to) {
@@ -101,8 +100,6 @@ void protocols::reg(
     << "protocols: registering protocol '" << name << "' (layers "
     << osi_from << "-" << osi_to << ")";
   _protocols[name] = p;
-
-  return ;
 }
 
 /**
@@ -110,8 +107,7 @@ void protocols::reg(
  */
 void protocols::unload() {
   delete gl_protocols;
-  gl_protocols = NULL;
-  return ;
+  gl_protocols = nullptr;
 }
 
 /**
@@ -119,11 +115,10 @@ void protocols::unload() {
  *
  *  @param[in] name Protocol name.
  */
-void protocols::unreg(QString const& name) {
+void protocols::unreg(std::string const& name) {
   logging::info(logging::low)
     << "protocols: unregistering protocol '" << name << "'";
-  _protocols.remove(name);
-  return ;
+  _protocols.erase(name);
 }
 
 /**************************************

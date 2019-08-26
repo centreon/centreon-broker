@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include <fstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -37,7 +38,7 @@ using namespace com::centreon::broker::lua;
  */
 luabinding::luabinding(
               std::string const& lua_script,
-              QMap<QString, QVariant> const& conf_params,
+              std::map<std::string, misc::variant> const& conf_params,
               macro_cache const& cache)
   : _lua_script(lua_script),
     _cache(cache),
@@ -155,36 +156,39 @@ void luabinding::_load_script() {
  *  informations needed by the script to work.
  *
  */
-void luabinding::_init_script(QMap<QString, QVariant> const& conf_params) {
+void luabinding::_init_script(std::map<std::string, misc::variant> const& conf_params) {
   lua_getglobal(_L, "init");
   lua_newtable(_L);
-  for (QMap<QString, QVariant>::const_iterator
-         it(conf_params.begin()),
-         end(conf_params.end());
-       it != end;
-       ++it) {
-    bool ok;
-    switch (it->userType())
-    {
-        case QMetaType::Int:
-        case QMetaType::UInt:
-        case QMetaType::LongLong:
-        case QMetaType::ULongLong:
-          lua_pushstring(_L, it.key().toStdString().c_str());
-          lua_pushinteger(_L, it->toInt(&ok));
+  for (std::map<std::string, misc::variant>::const_iterator
+           it(conf_params.begin()),
+       end(conf_params.end());
+       it != end; ++it) {
+    switch (it->second.user_type()) {
+      case misc::variant::type_int:
+      case misc::variant::type_uint:
+        lua_pushstring(_L, it->first.c_str());
+        lua_pushinteger(_L, it->second.as_int());
+        lua_rawset(_L, -3);
+        break;
+      case misc::variant::type_long:
+      case misc::variant::type_ulong:
+        lua_pushstring(_L, it->first.c_str());
+        lua_pushinteger(_L, it->second.as_long());
+        lua_rawset(_L, -3);
+        break;
+      case misc::variant::type_double:
+        lua_pushstring(_L, it->first.c_str());
+        lua_pushnumber(_L, it->second.as_double());
+        lua_rawset(_L, -3);
+        break;
+      case misc::variant::type_string:
+        lua_pushstring(_L, it->first.c_str());
+          lua_pushstring(_L, it->second.as_string().c_str());
           lua_rawset(_L, -3);
           break;
-        case QMetaType::Double:
-        case QMetaType::Float:
-          lua_pushstring(_L, it.key().toStdString().c_str());
-          lua_pushnumber(_L, it->toDouble(&ok));
-          lua_rawset(_L, -3);
-          break;
-        case QMetaType::QString:
-          lua_pushstring(_L, it.key().toStdString().c_str());
-          lua_pushstring(_L, it->toString().toStdString().c_str());
-          lua_rawset(_L, -3);
-          break;
+          default:
+          /* Should not arrive */
+          assert(1==0);
     }
   }
   if (lua_pcall(_L, 1, 0, 0) != 0)
@@ -332,14 +336,14 @@ void luabinding::_parse_entries(io::data const& d) {
         case mapping::source::STRING:
           if (current_entry->get_attribute()
               == mapping::entry::invalid_on_zero) {
-            QString val(current_entry->get_string(d));
-            if (val.isEmpty() || val.isNull())
+            std::string val{current_entry->get_string(d)};
+            if (val.empty())
               lua_pushnil(_L);
             else
-              lua_pushstring(_L, val.toLatin1().data());
+              lua_pushstring(_L, val.c_str());
           }
           else
-            lua_pushstring(_L, current_entry->get_string(d).toLatin1().data());
+            lua_pushstring(_L, current_entry->get_string(d).c_str());
           break;
         case mapping::source::TIME:
           switch (current_entry->get_attribute()) {

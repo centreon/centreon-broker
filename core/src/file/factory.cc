@@ -102,18 +102,18 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   // Find path to the file.
-  QString filename;
+  std::string filename;
   {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("path"));
+    std::map<std::string, std::string>::const_iterator it{cfg.params.find("path")};
     if (it == cfg.params.end())
-      throw (exceptions::msg() << "file: no 'path' defined for file "
-             "endpoint '" << cfg.name << "'");
-    filename = *it;
+      throw exceptions::msg() << "file: no 'path' defined for file "
+             "endpoint '" << cfg.name << "'";
+    filename = it->second;
   }
 
   // Generate opener.
   std::unique_ptr<opener> openr(new opener);
-  openr->set_filename(filename.toStdString());
+  openr->set_filename(filename);
   is_acceptor = false;
-  return (openr.release());
+  return openr.release();
 }

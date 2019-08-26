@@ -19,7 +19,7 @@
 #ifndef CCB_BAM_DIMENSION_KPI_EVENT_HH
 #  define CCB_BAM_DIMENSION_KPI_EVENT_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
@@ -48,17 +48,17 @@ namespace                bam {
 
     unsigned             kpi_id;
     unsigned int         ba_id;
-    QString              ba_name;
-    unsigned int         host_id;
-    QString              host_name;
-    unsigned int         service_id;
-    QString              service_description;
+    std::string              ba_name;
+    uint64_t         host_id;
+    std::string              host_name;
+    uint64_t         service_id;
+    std::string              service_description;
     unsigned int         kpi_ba_id;
-    QString              kpi_ba_name;
+    std::string              kpi_ba_name;
     unsigned int         meta_service_id;
-    QString              meta_service_name;
+    std::string              meta_service_name;
     unsigned int         boolean_id;
-    QString              boolean_name;
+    std::string              boolean_name;
     double               impact_warning;
     double               impact_critical;
     double               impact_unknown;

@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_ACKNOWLEDGEMENT_HH
 #  define CCB_NEB_ACKNOWLEDGEMENT_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/io/events.hh"
@@ -59,8 +59,8 @@ namespace               neb {
     }
 
     short               acknowledgement_type;
-    QString             author;
-    QString             comment;
+    std::string             author;
+    std::string             comment;
     timestamp           deletion_time;
     timestamp           entry_time;
     unsigned int        host_id;

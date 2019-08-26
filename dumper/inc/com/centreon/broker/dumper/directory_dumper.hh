@@ -19,10 +19,10 @@
 #ifndef CCB_DUMPER_DIRECTORY_DUMPER_HH
 #  define CCB_DUMPER_DIRECTORY_DUMPER_HH
 
+#  include <QMutex>
 #  include <map>
 #  include <memory>
-#  include <QMutex>
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
@@ -57,7 +57,7 @@ namespace              dumper {
     directory_dumper&  operator=(directory_dumper const& s);
 
     QMutex             _mutex;
-    QString            _name;
+    std::string        _name;
     std::string        _path;
     std::string        _tagname;
     std::shared_ptr<persistent_cache>
@@ -70,7 +70,7 @@ namespace              dumper {
 
     void               _dump_dir(
                          std::string const& path,
-                         QString const& req_id);
+                         std::string const& req_id);
 
     void               _load_cache();
     void               _save_cache();

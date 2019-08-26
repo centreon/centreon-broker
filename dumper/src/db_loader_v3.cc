@@ -89,9 +89,9 @@ void db_loader_v3::_load_ba_types() {
   while (q.next()) {
     entries::ba_type b;
     b.ba_type_id = q.value(0).toUInt();
-    b.name = q.value(1).toString();
-    b.slug = q.value(2).toString();
-    b.description = q.value(3).toString();
+    b.name = q.value(1).toString().toStdString();
+    b.slug = q.value(2).toString().toStdString();
+    b.description = q.value(3).toString().toStdString();
     _state->get_ba_types().push_back(b);
   }
 }
@@ -117,8 +117,8 @@ void db_loader_v3::_load_bas() {
     b.enable = true;
     b.poller_id = _poller_id;
     b.ba_id = q.value(0).toUInt();
-    b.name = q.value(1).toString();
-    b.description = q.value(2).toString();
+    b.name = q.value(1).toString().toStdString();
+    b.description = q.value(2).toString().toStdString();
     b.level_warning = q.value(3).toDouble();
     b.level_critical = q.value(4).toDouble();
     b.organization_id = q.value(5).toUInt();
@@ -191,7 +191,7 @@ void db_loader_v3::_load_organizations() {
   entries::organization o;
   o.enable = true;
   o.organization_id = q.value(0).toUInt();
-  o.name = q.value(1).toString();
-  o.shortname = q.value(2).toString();
+  o.name = q.value(1).toString().toStdString();
+  o.shortname = q.value(2).toString().toStdString();
   _state->get_organizations().push_back(o);
 }

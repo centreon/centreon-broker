@@ -56,20 +56,20 @@ using namespace com::centreon::broker::rrd;
  *                                  written.
  */
 output::output(
-          QString const& metrics_path,
-          QString const& status_path,
+          std::string const& metrics_path,
+          std::string const& status_path,
           unsigned int cache_size,
           bool ignore_update_errors,
           bool write_metrics,
           bool write_status)
   : _backend(new lib(
-                   (!metrics_path.isEmpty()
-                    ? metrics_path.toStdString()
-                    : status_path.toStdString()),
+                   (!metrics_path.empty()
+                    ? metrics_path
+                    : status_path),
                    cache_size)),
     _ignore_update_errors(ignore_update_errors),
-    _metrics_path(metrics_path.toStdString()),
-    _status_path(status_path.toStdString()),
+    _metrics_path(metrics_path),
+    _status_path(status_path),
     _write_metrics(write_metrics),
     _write_status(write_status) {}
 
@@ -87,21 +87,21 @@ output::output(
  *                                  written.
  */
 output::output(
-          QString const& metrics_path,
-          QString const& status_path,
+          std::string const& metrics_path,
+          std::string const& status_path,
           unsigned int cache_size,
           bool ignore_update_errors,
-          QString const& local,
+          std::string const& local,
           bool write_metrics,
           bool write_status)
   : _ignore_update_errors(ignore_update_errors),
-    _metrics_path(metrics_path.toStdString()),
-    _status_path(status_path.toStdString()),
+    _metrics_path(metrics_path),
+    _status_path(status_path),
     _write_metrics(write_metrics),
     _write_status(write_status) {
 #if QT_VERSION >= 0x040400
   std::unique_ptr<cached>
-    rrdcached(new cached(metrics_path.toStdString(), cache_size));
+    rrdcached(new cached(metrics_path, cache_size));
   rrdcached->connect_local(local);
   _backend.reset(rrdcached.release());
 #else
@@ -125,20 +125,20 @@ output::output(
  *                                  written.
  */
 output::output(
-          QString const& metrics_path,
-          QString const& status_path,
+          std::string const& metrics_path,
+          std::string const& status_path,
           unsigned int cache_size,
           bool ignore_update_errors,
           unsigned short port,
           bool write_metrics,
           bool write_status)
   : _ignore_update_errors(ignore_update_errors),
-    _metrics_path(metrics_path.toStdString()),
-    _status_path(status_path.toStdString()),
+    _metrics_path(metrics_path),
+    _status_path(status_path),
     _write_metrics(write_metrics),
     _write_status(write_status) {
   std::unique_ptr<cached>
-    rrdcached(new cached(metrics_path.toStdString(), cache_size));
+    rrdcached(new cached(metrics_path, cache_size));
   rrdcached->connect_remote("localhost", port);
   _backend.reset(rrdcached.release());
 }
@@ -204,7 +204,7 @@ int output::write(std::shared_ptr<io::data> const& d) {
 
       // Check that metric is not being rebuild.
       rebuild_cache::iterator
-        it(_metrics_rebuild.find(metric_path.c_str()));
+        it(_metrics_rebuild.find(metric_path));
       if (e->is_for_rebuild || it == _metrics_rebuild.end()) {
         // Write metrics RRD.
         try {
@@ -230,7 +230,7 @@ int output::write(std::shared_ptr<io::data> const& d) {
       }
       else
         // Cache value.
-        it->push_back(d);
+        it->second.push_back(d);
     }
   }
   else if (d->type() == storage::status::static_type()) {
@@ -277,7 +277,7 @@ int output::write(std::shared_ptr<io::data> const& d) {
       }
       else
         // Cache value.
-        it->push_back(d);
+        it->second.push_back(d);
     }
   }
   else if (d->type() == storage::rebuild::static_type()) {
@@ -314,14 +314,14 @@ int output::write(std::shared_ptr<io::data> const& d) {
         if (e->is_index) {
           it = _status_rebuild.find(path.c_str());
           if (it != _status_rebuild.end()) {
-            l = *it;
+            l = it->second;
             _status_rebuild.erase(it);
           }
         }
         else {
           it = _metrics_rebuild.find(path.c_str());
           if (it != _metrics_rebuild.end()) {
-            l = *it;
+            l = it->second;
             _metrics_rebuild.erase(it);
           }
         }
