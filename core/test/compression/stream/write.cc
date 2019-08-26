@@ -49,8 +49,9 @@ class   CompressionStreamWrite : public ::testing::Test {
 
   std::shared_ptr<io::data> new_data() {
     std::shared_ptr<io::raw> r(new io::raw);
+    r->get_buffer().reserve(1000 * sizeof(int));
     for (int i(0); i < 1000; ++i)
-      r->append(static_cast<char*>(static_cast<void*>(&i)), sizeof(i));
+      std::copy(reinterpret_cast<char*>(&i), reinterpret_cast<char*>(&i) + sizeof(i), std::back_inserter(r->get_buffer()));
     return r;
   }
 
@@ -177,7 +178,7 @@ TEST_F(CompressionStreamWrite, Flush) {
   _stream.reset(new compression::stream(-1, 20000));
   _stream->set_substream(_substream);
   _stream->write(new_data());
-  ASSERT_TRUE(!_substream->get_buffer() || _substream->get_buffer()->isEmpty());
+  ASSERT_TRUE(!_substream->get_buffer() || _substream->get_buffer()->empty());
 
   // When
   int retval(_stream->flush());

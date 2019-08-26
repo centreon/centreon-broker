@@ -50,7 +50,7 @@ stack_array& stack_array::operator=(stack_array const& other) {
     _buffer = other._buffer;
     _offset = other._offset;
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -59,7 +59,7 @@ stack_array& stack_array::operator=(stack_array const& other) {
  *  @return Internal buffer.
  */
 char const* stack_array::data() const {
-  return (_buffer.data() + _offset);
+  return _buffer.data() + _offset;
 }
 
 /**
@@ -69,7 +69,6 @@ char const* stack_array::data() const {
  */
 void stack_array::pop(int bytes) {
   _offset += bytes;
-  return ;
 }
 
 /**
@@ -77,7 +76,7 @@ void stack_array::pop(int bytes) {
  *
  *  @param[in] buffer  Data.
  */
-void stack_array::push(QByteArray const& buffer) {
+void stack_array::push(std::vector<char> const& buffer) {
   // Remove processed data from underlying container.
   if (_offset) {
     _buffer.erase(0, _offset);
@@ -85,9 +84,7 @@ void stack_array::push(QByteArray const& buffer) {
   }
 
   // Append data.
-  _buffer.append(buffer.constData(), buffer.size());
-
-  return ;
+  std::copy(buffer.begin(), buffer.end(), back_inserter(_buffer));
 }
 
 /**
@@ -96,5 +93,5 @@ void stack_array::push(QByteArray const& buffer) {
  *  @return The container's size.
  */
 int stack_array::size() const {
-  return (_buffer.size() - _offset);
+  return _buffer.size() - _offset;
 }

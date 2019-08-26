@@ -31,7 +31,7 @@ class BbdoInputBufferErase : public ::testing::Test {
         buffer[j] = j;
       _raw.append(buffer, i);
       std::shared_ptr<io::raw> r(new io::raw);
-      r->append(buffer, i);
+      std::copy(buffer, buffer + i, std::back_inserter(r->get_buffer()));
       _buffer.append(r);
     }
   }

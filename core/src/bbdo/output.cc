@@ -43,9 +43,9 @@ using namespace com::centreon::broker::bbdo;
  */
 static void get_boolean(io::data const& t,
                         mapping::entry const& member,
-                        QByteArray& buffer) {
+                        std::vector<char>& buffer) {
   char c(member.get_bool(t) ? 1 : 0);
-  buffer.append(&c, 1);
+  buffer.push_back(c);
 }
 
 /**
@@ -53,12 +53,12 @@ static void get_boolean(io::data const& t,
  */
 static void get_double(io::data const& t,
                        mapping::entry const& member,
-                       QByteArray& buffer) {
+                        std::vector<char>& buffer) {
   char str[32];
   size_t strsz(snprintf(str, sizeof(str), "%f", member.get_double(t)) + 1);
   if (strsz > sizeof(str))
     strsz = sizeof(str);
-  buffer.append(str, strsz);
+  std::copy(str, str + strsz, std::back_inserter(buffer));
 }
 
 /**
@@ -66,9 +66,10 @@ static void get_double(io::data const& t,
  */
 static void get_integer(io::data const& t,
                         mapping::entry const& member,
-                        QByteArray& buffer) {
+                        std::vector<char>& buffer) {
   uint32_t value(htonl(member.get_int(t)));
-  buffer.append(static_cast<char*>(static_cast<void*>(&value)), sizeof(value));
+  char* v(reinterpret_cast<char*>(&value));
+  std::copy(v, v + sizeof(value), std::back_inserter(buffer));
 }
 
 /**
@@ -76,9 +77,10 @@ static void get_integer(io::data const& t,
  */
 static void get_short(io::data const& t,
                       mapping::entry const& member,
-                      QByteArray& buffer) {
+                        std::vector<char>& buffer) {
   uint16_t value(htons(member.get_short(t)));
-  buffer.append(static_cast<char*>(static_cast<void*>(&value)), sizeof(value));
+  char* v(reinterpret_cast<char*>(&value));
+  std::copy(v, v + sizeof(value), std::back_inserter(buffer));
 }
 
 /**
@@ -86,9 +88,9 @@ static void get_short(io::data const& t,
  */
 static void get_string(io::data const& t,
                        mapping::entry const& member,
-                       QByteArray& buffer) {
-  QByteArray tmp(member.get_string(t).c_str());
-  buffer.append(tmp.constData(), tmp.size() + 1);
+                        std::vector<char>& buffer) {
+  std::string const& tmp(member.get_string(t));
+  std::copy(tmp.c_str(), tmp.c_str() + tmp.size() + 1, std::back_inserter(buffer));
 }
 
 /**
@@ -96,33 +98,14 @@ static void get_string(io::data const& t,
  */
 static void get_timestamp(io::data const& t,
                           mapping::entry const& member,
-                          QByteArray& buffer) {
-  uint64_t ts(member.get_time(t).get_time_t());
-  uint32_t high(htonl(ts / (1ll << 32)));
-  uint32_t low(htonl(ts % (1ll << 32)));
-  buffer.append(
-           static_cast<char*>(static_cast<void*>(&high)),
-           sizeof(high));
-  buffer.append(
-           static_cast<char*>(static_cast<void*>(&low)),
-           sizeof(low));
-}
-
-/**
- *  Get a timestamp from an object.
- */
-static void get_ulong(io::data const& t,
-                      mapping::entry const& member,
-                      QByteArray& buffer) {
+                        std::vector<char>& buffer) {
   uint64_t ts(member.get_time(t).get_time_t());
   uint32_t high{htonl(ts >> 32)};
   uint32_t low{htonl(ts & 0xffffffff)};
-  buffer.append(
-           static_cast<char*>(static_cast<void*>(&high)),
-           sizeof(high));
-  buffer.append(
-           static_cast<char*>(static_cast<void*>(&low)),
-           sizeof(low));
+  char* vh{reinterpret_cast<char*>(&high)};
+  char* vl{reinterpret_cast<char*>(&low)};
+  std::copy(vh, vh + sizeof(high), std::back_inserter(buffer));
+  std::copy(vl, vl + sizeof(low), std::back_inserter(buffer));
 }
 
 /**
@@ -130,9 +113,10 @@ static void get_ulong(io::data const& t,
  */
 static void get_uint(io::data const& t,
                      mapping::entry const& member,
-                     QByteArray& buffer) {
+                        std::vector<char>& buffer) {
   uint32_t value{htonl(member.get_uint(t))};
-  buffer.append(static_cast<char*>(static_cast<void*>(&value)), sizeof(value));
+  char* v{reinterpret_cast<char*>(&value)};
+  std::copy(v, v + sizeof(value), std::back_inserter(buffer));
 }
 
 /**
@@ -149,7 +133,7 @@ static io::raw* serialize(io::data const& e) {
   if (info) {
     // Serialization buffer.
     std::unique_ptr<io::raw> buffer(new io::raw);
-    QByteArray& data(*buffer);
+    std::vector<char>& data{buffer->get_buffer()};
 
     // Reserve space for the BBDO header.
     unsigned int beginning(data.size());
@@ -166,28 +150,25 @@ static io::raw* serialize(io::data const& e) {
       if (current_entry->get_serialize())
         switch (current_entry->get_type()) {
           case mapping::source::BOOL:
-            get_boolean(e, *current_entry, *buffer);
+            get_boolean(e, *current_entry, data);
             break;
           case mapping::source::DOUBLE:
-            get_double(e, *current_entry, *buffer);
+            get_double(e, *current_entry, data);
             break;
           case mapping::source::INT:
-            get_integer(e, *current_entry, *buffer);
+            get_integer(e, *current_entry, data);
             break;
           case mapping::source::SHORT:
-            get_short(e, *current_entry, *buffer);
+            get_short(e, *current_entry, data);
             break;
           case mapping::source::STRING:
-            get_string(e, *current_entry, *buffer);
+            get_string(e, *current_entry, data);
             break;
           case mapping::source::TIME:
-            get_timestamp(e, *current_entry, *buffer);
+            get_timestamp(e, *current_entry, data);
             break;
           case mapping::source::UINT:
-            get_uint(e, *current_entry, *buffer);
-            break;
-          case mapping::source::ULONG:
-            get_ulong(e, *current_entry, *buffer);
+            get_uint(e, *current_entry, data);
             break;
           default:
             throw exceptions::msg() << "BBDO: invalid mapping for object"
@@ -225,9 +206,10 @@ static io::raw* serialize(io::data const& e) {
         beginning += BBDO_HEADER_SIZE + 0xFFFF;
         char header[BBDO_HEADER_SIZE];
         memset(header, 0, sizeof(header));
-        *static_cast<uint32_t*>(static_cast<void*>(header + 4))
+        *reinterpret_cast<uint32_t*>(header + 4)
           = htonl(e.type());
-        data.insert(beginning, header, sizeof(header));
+        std::vector<char>::iterator it{data.begin() + beginning};
+        data.insert(it, header, header + sizeof(header) - 1);
       }
     }
 

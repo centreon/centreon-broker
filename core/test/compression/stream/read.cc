@@ -37,7 +37,6 @@ class CompressionStreamRead : public ::testing::Test {
     _stream.reset(new compression::stream(-1, 20000));
     _substream.reset(new CompressionStreamMemoryStream());
     _stream->set_substream(_substream);
-    return;
   }
 
   void TearDown() override { config::applier::deinit(); }
@@ -45,8 +44,8 @@ class CompressionStreamRead : public ::testing::Test {
   std::shared_ptr<io::raw> predefined_data() {
     std::shared_ptr<io::raw> r(new io::raw);
     for (int i(0); i < 1000; ++i)
-      r->append(static_cast<char*>(static_cast<void*>(&i)), sizeof(i));
-    return (r);
+      std::copy(reinterpret_cast<char*>(&i), reinterpret_cast<char*>(&i) + sizeof(i), std::back_inserter(r->get_buffer()));
+    return r;
   }
 
  protected:
@@ -91,7 +90,7 @@ TEST_F(CompressionStreamRead, NormalRead) {
   ASSERT_TRUE(retval);
   ASSERT_TRUE(d);
   ASSERT_EQ(d->type(), io::raw::static_type());
-  ASSERT_EQ(*std::static_pointer_cast<io::raw>(d), *predefined_data());
+  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(), predefined_data()->get_buffer());
 }
 
 // Given a compression stream
@@ -111,7 +110,7 @@ TEST_F(CompressionStreamRead, BufferIsReadBack) {
 
   // Then
   ASSERT_TRUE(retval);
-  ASSERT_EQ(*std::static_pointer_cast<io::raw>(d), *predefined_data());
+  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(), predefined_data()->get_buffer());
 }
 
 // Given a compression stream
@@ -141,8 +140,8 @@ TEST_F(CompressionStreamRead, CorruptedData) {
   _stream->write(predefined_data());
   _stream->flush();
   std::shared_ptr<io::raw>& buffer(_substream->get_buffer());
-  (*buffer)[4] = 42;
-  (*buffer)[5] = 42;
+  buffer->get_buffer()[4] = 42;
+  buffer->get_buffer()[5] = 42;
 
   // When
   std::shared_ptr<io::data> d;
@@ -152,7 +151,7 @@ TEST_F(CompressionStreamRead, CorruptedData) {
   ASSERT_TRUE(retval);
   ASSERT_FALSE(!d);
   ASSERT_EQ(d->type(), io::raw::static_type());
-  ASSERT_EQ(*std::static_pointer_cast<io::raw>(d), *predefined_data());
+  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(), predefined_data()->get_buffer());
 }
 
 // Given a compression stream
@@ -166,8 +165,8 @@ TEST_F(CompressionStreamRead, CorruptedDataZippedPart) {
   _stream->write(predefined_data());
   _stream->flush();
   std::shared_ptr<io::raw>& buffer(_substream->get_buffer());
-  (*buffer)[8] = 42;
-  (*buffer)[9] = 42;
+  buffer->get_buffer()[8] = 42;
+  buffer->get_buffer()[9] = 42;
 
   // When
   std::shared_ptr<io::data> d;
@@ -177,7 +176,7 @@ TEST_F(CompressionStreamRead, CorruptedDataZippedPart) {
   ASSERT_TRUE(retval);
   ASSERT_FALSE(!d);
   ASSERT_EQ(d->type(), io::raw::static_type());
-  ASSERT_EQ(*std::static_pointer_cast<io::raw>(d), *predefined_data());
+  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(), predefined_data()->get_buffer());
 }
 
 // Given a compression stream
@@ -191,7 +190,7 @@ TEST_F(CompressionStreamRead, FragmentGreaterThanMaxSize) {
   _stream->write(predefined_data());
   _stream->flush();
   std::shared_ptr<io::raw>& buffer(_substream->get_buffer());
-  *static_cast<uint32_t*>(static_cast<void*>(buffer->QByteArray::data())) = htonl(0xFFFFFFFF);
+  *static_cast<uint32_t*>(static_cast<void*>(buffer->data())) = htonl(0xFFFFFFFF);
 
   // When
   std::shared_ptr<io::data> d;
@@ -201,5 +200,5 @@ TEST_F(CompressionStreamRead, FragmentGreaterThanMaxSize) {
   ASSERT_TRUE(retval);
   ASSERT_FALSE(!d);
   ASSERT_EQ(d->type(), io::raw::static_type());
-  ASSERT_EQ(*std::static_pointer_cast<io::raw>(d), *predefined_data());
+  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(), predefined_data()->get_buffer());
 }

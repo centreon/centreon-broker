@@ -38,9 +38,8 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 
 class into_memory : public io::stream {
-public:
-  into_memory()
-    : sent_data(false), _memory() {}
+ public:
+  into_memory() : sent_data(false), _memory() {}
   ~into_memory() {}
 
   bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1) {
@@ -48,24 +47,22 @@ public:
     if (sent_data)
       throw exceptions::msg() << "shutdown";
     std::shared_ptr<io::raw> raw(new io::raw);
-    *static_cast<QByteArray*>(raw.get()) = _memory;
+    raw->get_buffer() = _memory;
     d = raw;
     sent_data = true;
     return true;
   }
 
   int write(std::shared_ptr<io::data> const& d) {
-    _memory = *(static_cast<QByteArray*>(std::static_pointer_cast<io::raw>(d).get()));
+    _memory = std::static_pointer_cast<io::raw>(d)->get_buffer();
     return 1;
   }
 
-  QByteArray const& get_memory() const {
-    return _memory;
-  }
+  std::vector<char> const& get_memory() const { return _memory; }
 
-private:
+ private:
   bool sent_data;
-  QByteArray _memory;
+  std::vector<char> _memory;
 };
 
 class OutputTest : public ::testing::Test {
@@ -73,9 +70,8 @@ class OutputTest : public ::testing::Test {
   void SetUp() {
     try {
       config::applier::init();
-    }
-    catch (std::exception const& e) {
-      (void) e;
+    } catch (std::exception const& e) {
+      (void)e;
     }
     std::shared_ptr<persistent_cache> pcache(
         std::make_shared<persistent_cache>("/tmp/broker_test_cache"));
@@ -108,7 +104,7 @@ TEST_F(OutputTest, WriteService) {
   stm.set_negotiate(false);
   stm.negotiate(bbdo::stream::negotiate_first);
   stm.write(svc);
-  QByteArray const& mem1 = memory_stream->get_memory();
+  std::vector<char> const& mem1 = memory_stream->get_memory();
   for (int i = 140; i < mem1.size(); i++) {
     std::cout << std::hex << (static_cast<uint32_t>(mem1[i]) & 0xff) << ' ';
   }
@@ -116,31 +112,30 @@ TEST_F(OutputTest, WriteService) {
 
   ASSERT_EQ(mem1.size(), 276);
   // The size is 276 - 16: 16 is the header size.
-  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(mem1.constData() + 146)), 0x11223344);
-  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(mem1.constData() + 150)), 0x55667788);
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData() + 2)), 260);
-  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(mem1.constData() + 91)), 12345u);
-  ASSERT_EQ(std::string(mem1.constData() + 265), "Bonjour");
+  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 146)),
+            0x11223344);
+  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 150)),
+            0x55667788);
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 260);
+  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)), 12345u);
+  ASSERT_EQ(std::string(&mem1[0] + 265), "Bonjour");
 
+  ASSERT_EQ(std::string(&mem1[0] + 265), "Bonjour");
   svc->host_id = 78113;
   svc->service_id = 18;
   svc->output = "Conjour";
   stm.write(svc);
-  QByteArray const& mem2 = memory_stream->get_memory();
-  for (int i = 0; i < mem2.size(); i++) {
-    std::cout << std::hex << (static_cast<uint32_t>(mem2[i]) & 0xff) << ' ';
-  }
-  std::cout << "\n";
+  std::vector<char> const& mem2 = memory_stream->get_memory();
 
   ASSERT_EQ(mem2.size(), 276);
-  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(mem1.constData() + 91)), 78113u);
+  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)), 78113u);
   // The size is 276 - 16: 16 is the header size.
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData() + 2)), 260);
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 260);
 
   // Check checksum
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData())), 33491);
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0])), 33491);
 
-  ASSERT_EQ(std::string(mem1.constData() + 265), "Conjour");
+  ASSERT_EQ(std::string(&mem1[0] + 265), "Conjour");
   l.unload();
 }
 
@@ -173,28 +168,26 @@ TEST_F(OutputTest, WriteLongService) {
   stm.set_negotiate(false);
   stm.negotiate(bbdo::stream::negotiate_first);
   stm.write(svc);
-  QByteArray const& mem1 = memory_stream->get_memory();
-  for (int i = 0; i < 500; i++) {
-    std::cout << std::hex << (static_cast<uint32_t>(mem1[i]) & 0xff) << ' ';
-  }
-  std::cout << '\n';
+  std::vector<char> const& mem1 = memory_stream->get_memory();
 
   ASSERT_EQ(mem1.size(), 70284);
+
   // The buffer is too big. So it is splitted into several -- here 2 -- buffers.
   // The are concatenated, keeped into the same block, but a new header is
   // inserted in the "middle" of the buffer: Something like this:
   //     HEADER | BUFFER1 | HEADER | BUFFER2
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData() + 2)), 0xffff);
-  // Check checksum
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData())), 48152);
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 0xffff);
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0])), 48152);
 
-  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(mem1.constData() + 91)), 12u);
+  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)), 12u);
 
   // Second block
   // We have 70284 = HeaderSize + block1 + HeaderSize + block2
   //      So 70284 = 16         + 0xffff + 16         + 4717
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData() + 16 + 65535 + 2)), 4717);
+  ASSERT_EQ(
+      htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535 + 2)),
+      4717);
 
   // Check checksum
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData() + 16 + 65535)), 10510);
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535)), 10510);
 }

@@ -57,7 +57,7 @@ stream::~stream() {}
 std::string stream::peer() const {
   std::ostringstream oss;
   oss << "file://" << _file->get_file_path();
-  return (oss.str());
+  return oss.str();
 }
 
 /**
@@ -68,9 +68,7 @@ std::string stream::peer() const {
  *
  *  @return Always true as file never times out.
  */
-bool stream::read(
-               std::shared_ptr<io::data>& d,
-               time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
 
   // Lock mutex.
@@ -82,7 +80,7 @@ bool stream::read(
   data->resize(BUFSIZ);
 
   // Read data.
-  long rb(_file->read(data->QByteArray::data(), data->size()));
+  long rb(_file->read(data->data(), data->size()));
   if (rb) {
     data->resize(rb);
     d.reset(data.release());
@@ -208,7 +206,7 @@ void stream::statistics(io::properties& tree) const {
 int stream::write(std::shared_ptr<io::data> const& d) {
   // Check that data exists.
   if (!validate(d, "file"))
-    return (1);
+    return 1;
 
   if (d->type() == io::raw::static_type()) {
     // Lock mutex.
@@ -219,7 +217,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
     unsigned int size;
     {
       io::raw* data(static_cast<io::raw*>(d.get()));
-      memory = data->QByteArray::data();
+      memory = data->data();
       size = data->size();
     }
 
@@ -231,7 +229,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
     }
   }
 
-  return (1);
+  return 1;
 }
 
 /**

@@ -19,7 +19,7 @@
 #ifndef CCB_COMPRESSION_STREAM_HH
 #  define CCB_COMPRESSION_STREAM_HH
 
-#  include <QByteArray>
+#  include <vector>
 #  include "com/centreon/broker/compression/stack_array.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -62,7 +62,7 @@ namespace        compression {
     stack_array  _rbuffer;
     bool         _shutdown;
     int          _size;
-    QByteArray   _wbuffer;
+    std::vector<char> _wbuffer;
   };
 }
 

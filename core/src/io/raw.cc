@@ -37,7 +37,7 @@ raw::raw() {}
  *
  *  @param[in] r Object to copy.
  */
-raw::raw(raw const& r) : io::data(r), QByteArray(r) {}
+raw::raw(raw const& r) : io::data(r), _buffer{r._buffer} {}
 
 /**
  *  Destructor.
@@ -52,8 +52,10 @@ raw::~raw() {}
  *  @return This object.
  */
 raw& raw::operator=(raw const& r) {
-  data::operator=(r);
-  QByteArray::operator=(r);
+  if (this != &r) {
+    data::operator=(r);
+    _buffer = r._buffer;
+  }
   return *this;
 }
 
@@ -73,4 +75,28 @@ unsigned int raw::type() const {
  */
 unsigned int raw::static_type() {
   return events::data_type<events::internal, events::de_raw>::value;
+}
+
+void raw::resize(size_t s) {
+  _buffer.resize(s);
+}
+
+char* raw::data() {
+  return &_buffer[0];
+}
+
+char const* raw::const_data() const {
+  return &_buffer[0];
+}
+
+size_t raw::size() const {
+  return _buffer.size();
+}
+
+std::vector<char>& raw::get_buffer() {
+  return _buffer;
+}
+
+bool raw::empty() const {
+  return _buffer.empty();
 }

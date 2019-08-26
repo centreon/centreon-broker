@@ -115,7 +115,8 @@ bool stream::read(std::shared_ptr<io::data>& d,
   std::string s((std::istreambuf_iterator<char>(&b)), std::istreambuf_iterator<char>());
 
   std::shared_ptr<io::raw> data(new io::raw);
-  data->append(QString::fromStdString(s).toAscii());
+  std::copy(s.c_str(), s.c_str() + len, std::back_inserter(data->get_buffer()));
+  //data->append(QString::fromStdString(s).toAscii());
   d = data;
   return true;
 }
@@ -176,7 +177,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
 
     std::error_code err;
 
-    asio::write(*_socket, asio::buffer(r->QByteArray::data(), r->size()), asio::transfer_all(), err);
+    asio::write(*_socket, asio::buffer(r->data(), r->size()), asio::transfer_all(), err);
 
     if (err)
       throw exceptions::msg() << "TCP: error while writing to peer '"
@@ -205,7 +206,6 @@ void stream::_initialize_socket() {
   if (_parent)
     _parent->add_child(_name);
   _set_socket_options();
-  return ;
 }
 
 /**
@@ -229,5 +229,4 @@ void stream::_set_socket_options() {
         &t,
         sizeof(t));
   }
-  return ;
 }

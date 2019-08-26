@@ -49,7 +49,7 @@ class MultiplexingMuxerRead : public ::testing::Test {
     for (int i(0); i < count; ++i) {
       std::shared_ptr<io::raw> r(new io::raw());
       r->resize(sizeof(i));
-      memcpy(r->QByteArray::data(), &i, sizeof(i));
+      memcpy(r->data(), &i, sizeof(i));
       _m->publish(r);
     }
     return;
@@ -63,7 +63,7 @@ class MultiplexingMuxerRead : public ::testing::Test {
       ASSERT_FALSE(!d);
       ASSERT_EQ(d->type(), io::raw::static_type());
       int reread;
-      memcpy(&reread, std::static_pointer_cast<io::raw>(d)->QByteArray::data(),
+      memcpy(&reread, std::static_pointer_cast<io::raw>(d)->data(),
              sizeof(reread));
       ASSERT_EQ(reread, i);
     }

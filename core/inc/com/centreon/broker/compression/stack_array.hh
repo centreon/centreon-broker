@@ -19,8 +19,8 @@
 #ifndef CCB_COMPRESSION_STACK_ARRAY_HH
 #  define CCB_COMPRESSION_STACK_ARRAY_HH
 
-#  include <QByteArray>
 #  include <string>
+#  include <vector>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -41,7 +41,7 @@ namespace        compression {
     stack_array& operator=(stack_array const& other);
     char const*  data() const;
     void         pop(int bytes);
-    void         push(QByteArray const& buffer);
+    void         push(std::vector<char> const& buffer);
     int          size() const;
 
    private:
