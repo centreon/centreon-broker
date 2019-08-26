@@ -19,7 +19,6 @@
 #ifndef CCB_IO_ENDPOINT_HH
 #  define CCB_IO_ENDPOINT_HH
 
-#  include <QString>
 #  include <memory>
 #  include <string>
 #  include <set>

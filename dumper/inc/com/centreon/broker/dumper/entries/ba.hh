@@ -19,7 +19,7 @@
 #ifndef CCB_DUMPER_ENTRIES_BA_HH
 #  define CCB_DUMPER_ENTRIES_BA_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
@@ -49,10 +49,10 @@ namespace                 dumper {
       bool                enable;
       unsigned int        poller_id;
       unsigned int        ba_id;
-      QString             description;
+      std::string             description;
       double              level_critical;
       double              level_warning;
-      QString             name;
+      std::string             name;
       unsigned int        organization_id;
       unsigned int        type_id;
 

@@ -57,7 +57,7 @@ factory::~factory() {}
  */
 factory& factory::operator=(factory const& other) {
   io::factory::operator=(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -66,7 +66,7 @@ factory& factory::operator=(factory const& other) {
  *  @return A Copy of this object.
  */
 io::factory* factory::clone() const {
-  return (new factory(*this));
+  return new factory(*this);
 }
 
 /**
@@ -77,11 +77,9 @@ io::factory* factory::clone() const {
  *  @return True if the configuration matches the TLS layer.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  QMap<QString, QString>::const_iterator
-    it(cfg.params.find("tls"));
-  return ((cfg.params.end() != it)
-          && it->compare("auto", Qt::CaseInsensitive)
-          && config::parser::parse_boolean(*it));
+  std::map<std::string, std::string>::const_iterator it{cfg.params.find("tls")};
+  return cfg.params.end() != it && strcasecmp(it->second.c_str(), "auto") &&
+          config::parser::parse_boolean(it->second);
 }
 
 /**
@@ -92,12 +90,11 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return True if the configuration does not match the TLS layer.
  */
 bool factory::has_not_endpoint(config::endpoint& cfg) const {
-  QMap<QString, QString>::const_iterator
-    it(cfg.params.find("tls"));
-  return (((it != cfg.params.end())
-           && it->compare("auto", Qt::CaseInsensitive))
+  std::map<std::string, std::string>::const_iterator it{cfg.params.find("tls")};
+  return (it != cfg.params.end()
+      && strcasecmp(it->second.c_str(), "auto"))
           ? !has_endpoint(cfg)
-          : false);
+          : false;
 }
 
 /**
@@ -123,24 +120,24 @@ io::endpoint* factory::new_endpoint(
   std::string public_cert;
   {
     // Is TLS enabled ?
-    QMap<QString, QString>::const_iterator it(cfg.params.find("tls"));
+    std::map<std::string, std::string>::const_iterator it{cfg.params.find("tls")};
     if (it != cfg.params.end()) {
-      tls = config::parser::parse_boolean(*it);
+      tls = config::parser::parse_boolean(it->second);
       if (tls) {
         // CA certificate.
         it = cfg.params.find("ca_certificate");
         if (it != cfg.params.end())
-          ca_cert = it.value().toStdString();
+          ca_cert = it->second;
 
         // Private key.
         it = cfg.params.find("private_key");
         if (it != cfg.params.end())
-          private_key = it.value().toStdString();
+          private_key = it->second;
 
         // Public certificate.
         it = cfg.params.find("public_cert");
         if (it != cfg.params.end())
-          public_cert = it.value().toStdString();
+          public_cert = it->second;
       }
     }
   }
@@ -152,7 +149,7 @@ io::endpoint* factory::new_endpoint(
   // Connector.
   else
     endp.reset(new connector(public_cert, private_key, ca_cert));
-  return (endp.release());
+  return endp.release();
 }
 
 /**
@@ -167,7 +164,7 @@ io::endpoint* factory::new_endpoint(
 std::shared_ptr<io::stream> factory::new_stream(
                                         std::shared_ptr<io::stream> to,
                                         bool is_acceptor,
-                                        QString const& proto_name) {
+                                        std::string const& proto_name) {
   (void)proto_name;
-  return (is_acceptor ? acceptor().open(to) : connector().open(to));
+  return is_acceptor ? acceptor().open(to) : connector().open(to);
 }

@@ -48,6 +48,17 @@ configure_file(
 
 include(ExternalProject)
 
+option(BUILD_OFFLINE "Build offline" OFF)
+
+if (${BUILD_OFFLINE})
+ExternalProject_Add( json11_lib
+                     SOURCE_DIR ${PROJECT_SOURCE_DIR}/build/json11_lib-prefix/src/json11_lib
+                     TIMEOUT 10
+                     INSTALL_COMMAND ""
+                     LOG_DOWNLOAD ON
+                     LOG_CONFIGURE ON
+                     LOG_BUILD ON)
+else()
 ExternalProject_Add( json11_lib
                      GIT_REPOSITORY https://github.com/dropbox/json11/
                      TIMEOUT 10
@@ -55,6 +66,7 @@ ExternalProject_Add( json11_lib
                      LOG_DOWNLOAD ON
                      LOG_CONFIGURE ON
                      LOG_BUILD ON)
+endif()
 
 ExternalProject_Get_Property(json11_lib source_dir)
 ExternalProject_Get_Property(json11_lib binary_dir)
@@ -412,13 +424,14 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/mapping/entry.cc"
   "${SRC_DIR}/mapping/source.cc"
   "${SRC_DIR}/misc/diagnostic.cc"
+  "${SRC_DIR}/misc/global_lock.cc"
+  "${SRC_DIR}/misc/json_writer.cc"
   "${SRC_DIR}/misc/misc.cc"
   "${SRC_DIR}/misc/processing_speed_computer.cc"
   "${SRC_DIR}/misc/string.cc"
   "${SRC_DIR}/misc/stringifier.cc"
-  "${SRC_DIR}/misc/json_writer.cc"
   "${SRC_DIR}/misc/tokenizer.cc"
-  "${SRC_DIR}/misc/global_lock.cc"
+  "${SRC_DIR}/misc/variant.cc"
   "${SRC_DIR}/modules/handle.cc"
   "${SRC_DIR}/modules/loader.cc"
   "${SRC_DIR}/multiplexing/engine.cc"
@@ -527,13 +540,15 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/mapping/property.hh"
   "${INC_DIR}/mapping/source.hh"
   "${INC_DIR}/misc/diagnostic.hh"
+  "${INC_DIR}/misc/global_lock.hh"
+  "${INC_DIR}/misc/json_writer.hh"
   "${INC_DIR}/misc/misc.hh"
+  "${INC_DIR}/misc/pair.hh"
   "${INC_DIR}/misc/processing_speed_computer.hh"
   "${INC_DIR}/misc/string.hh"
   "${INC_DIR}/misc/stringifier.hh"
-  "${INC_DIR}/misc/json_writer.hh"
   "${INC_DIR}/misc/tokenizer.hh"
-  "${INC_DIR}/misc/global_lock.hh"
+  "${INC_DIR}/misc/variant.hh"
   "${INC_DIR}/modules/handle.hh"
   "${INC_DIR}/modules/loader.hh"
   "${INC_DIR}/multiplexing/engine.hh"

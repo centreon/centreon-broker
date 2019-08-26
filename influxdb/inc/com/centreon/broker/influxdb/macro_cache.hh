@@ -22,10 +22,11 @@
 #  include <map>
 #  include <memory>
 #  include <string>
-#  include <QHash>
+#  include <unordered_map>
 #  include "com/centreon/broker/io/factory.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
+#  include "com/centreon/broker/misc/pair.hh"
 #  include "com/centreon/broker/neb/instance.hh"
 #  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/service.hh"
@@ -46,14 +47,14 @@ namespace         influxdb {
     void           write(std::shared_ptr<io::data> const& data);
 
     storage::index_mapping const&
-                   get_index_mapping(unsigned int index_id) const;
+                   get_index_mapping(uint64_t index_id) const;
     storage::metric_mapping const&
-                   get_metric_mapping(unsigned int metric_id) const;
-    QString const& get_host_name(unsigned int host_id) const;
-    QString const& get_service_description(
-                     unsigned int host_id,
-                     unsigned int service_id) const;
-    QString const& get_instance(unsigned int instance_id) const;
+                   get_metric_mapping(uint64_t metric_id) const;
+    std::string const& get_host_name(uint64_t host_id) const;
+    std::string const& get_service_description(
+                     uint64_t host_id,
+                     uint64_t service_id) const;
+    std::string const& get_instance(uint64_t instance_id) const;
 
   private:
                    macro_cache(macro_cache const& f);
@@ -68,15 +69,15 @@ namespace         influxdb {
 
     std::shared_ptr<persistent_cache>
                    _cache;
-    QHash<unsigned int, neb::instance>
+    std::unordered_map<uint64_t, neb::instance>
                    _instances;
-    QHash<unsigned int, neb::host>
+    std::unordered_map<uint64_t, neb::host>
                    _hosts;
-    QHash<QPair<unsigned int, unsigned int>, neb::service>
+    std::unordered_map<std::pair<uint64_t, uint64_t>, neb::service>
                    _services;
-    QHash<unsigned int, storage::index_mapping>
+    std::unordered_map<uint64_t, storage::index_mapping>
                    _index_mappings;
-    QHash<unsigned int, storage::metric_mapping>
+    std::unordered_map<uint64_t, storage::metric_mapping>
                    _metric_mappings;
   };
 }

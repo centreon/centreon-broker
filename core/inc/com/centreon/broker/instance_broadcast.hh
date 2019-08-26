@@ -19,7 +19,7 @@
 #ifndef CCB_INSTANCE_BROADCAST_HH
 #  define CCB_INSTANCE_BROADCAST_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/io/events.hh"
@@ -52,10 +52,10 @@ public:
   }
 
   unsigned int        broker_id;
-  QString             broker_name;
+  std::string             broker_name;
   bool                enabled;
   unsigned int        poller_id;
-  QString             poller_name;
+  std::string             poller_name;
 
   static mapping::entry const
                       entries[];

@@ -16,7 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QSet>
+#include <unordered_set>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
@@ -31,7 +31,8 @@ using namespace com::centreon::broker::lua;
  *  @param[in] cache  Persistent cache used by the macro cache.
  */
 macro_cache::macro_cache(std::shared_ptr<persistent_cache> const& cache)
-  : _cache(cache) {
+  : _cache(cache), _services{}
+{
   if (_cache.get() != NULL) {
     std::shared_ptr<io::data> d;
     do {
@@ -65,13 +66,13 @@ macro_cache::~macro_cache() {
  */
 storage::index_mapping const& macro_cache::get_index_mapping(
                                  unsigned int index_id) const {
-  QHash<unsigned int, storage::index_mapping>::const_iterator
-    found(_index_mappings.find(index_id));
+  std::unordered_map<uint64_t, storage::index_mapping>::const_iterator
+    found{_index_mappings.find(index_id)};
   if (found == _index_mappings.end())
-    throw (exceptions::msg()
+    throw exceptions::msg()
            << "lua: could not find host/service of index "
-           << index_id);
-  return (*found);
+           << index_id;
+  return found->second;
 }
 
 /**
@@ -83,12 +84,12 @@ storage::index_mapping const& macro_cache::get_index_mapping(
  */
 storage::metric_mapping const& macro_cache::get_metric_mapping(
                                  unsigned int metric_id) const {
-  QHash<unsigned int, storage::metric_mapping>::const_iterator
-    found(_metric_mappings.find(metric_id));
+  std::unordered_map<uint64_t, storage::metric_mapping>::const_iterator
+    found{_metric_mappings.find(metric_id)};
   if (found == _metric_mappings.end())
-    throw (exceptions::msg()
-           << "lua: could not find index of metric " << metric_id);
-  return (*found);
+    throw exceptions::msg()
+           << "lua: could not find index of metric " << metric_id;
+  return found->second;
 }
 
 /**
@@ -98,17 +99,15 @@ storage::metric_mapping const& macro_cache::get_metric_mapping(
  *
  *  @return             The name of the host.
  */
-QString const& macro_cache::get_host_name(unsigned int host_id) const {
-  QHash<unsigned int, neb::host>::const_iterator
-    found(_hosts.find(host_id));
+std::string const& macro_cache::get_host_name(uint64_t host_id) const {
+  std::unordered_map<uint64_t, neb::host>::const_iterator found{
+      _hosts.find(host_id)};
 
   if (found == _hosts.end())
-    throw (exceptions::msg()
-           << "lua: could not find information on host "
-           << host_id);
-  return (found->host_name);
+    throw exceptions::msg()
+        << "lua: could not find information on host " << host_id;
+  return found->second.host_name;
 }
-
 
 /**
  *  Get a list of the host groups containing a host.
@@ -117,8 +116,8 @@ QString const& macro_cache::get_host_name(unsigned int host_id) const {
  *
  *  @return             A QStringList.
  */
-QHash<unsigned int, QHash<unsigned int, neb::host_group_member> > const&
-                                   macro_cache::get_host_group_members() const {
+std::map<std::pair<uint64_t, uint64_t>, neb::host_group_member> const&
+macro_cache::get_host_group_members() const {
   return _host_group_members;
 }
 
@@ -129,14 +128,14 @@ QHash<unsigned int, QHash<unsigned int, neb::host_group_member> > const&
  *
  *  @return             The name of the host group.
  */
-QString const& macro_cache::get_host_group_name(unsigned int id) const {
-  QHash<unsigned int, neb::host_group>::const_iterator
-    found(_host_groups.find(id));
+std::string const& macro_cache::get_host_group_name(uint64_t id) const {
+  std::unordered_map<uint64_t, neb::host_group>::const_iterator
+    found{_host_groups.find(id)};
 
   if (found == _host_groups.end())
-    throw (exceptions::msg()
-           << "lua: could not find information on host group " << id);
-  return (found->name);
+    throw exceptions::msg()
+           << "lua: could not find information on host group " << id;
+  return found->second.name;
 }
 
 /**
@@ -147,16 +146,16 @@ QString const& macro_cache::get_host_group_name(unsigned int id) const {
  *
  *  @return             The description of the service.
  */
-QString const& macro_cache::get_service_description(
-                 unsigned int host_id,
-                 unsigned int service_id) const {
-  QHash<QPair<unsigned int, unsigned int>, neb::service>::const_iterator
-    found(_services.find(qMakePair(host_id, service_id)));
+std::string const& macro_cache::get_service_description(
+                 uint64_t host_id,
+                 uint64_t service_id) const {
+  std::unordered_map<std::pair<uint64_t, uint64_t>, neb::service>::const_iterator
+    found{_services.find({host_id, service_id})};
   if (found == _services.end())
-    throw (exceptions::msg()
+    throw exceptions::msg()
            << "lua: could not find information on service ("
-           << host_id << ", " << service_id << ")");
-  return (found->service_description);
+           << host_id << ", " << service_id << ")";
+  return found->second.service_description;
 }
 
 /**
@@ -167,9 +166,9 @@ QString const& macro_cache::get_service_description(
  *
  *  @return             A QHash indexed by service group ids.
  */
-QHash<QPair<unsigned int, unsigned int>,
-      QHash<unsigned int, neb::service_group_member> > const&
-                               macro_cache::get_service_group_members() const {
+std::map<std::tuple<uint64_t, uint64_t, uint64_t>,
+         neb::service_group_member> const&
+macro_cache::get_service_group_members() const {
   return _service_group_members;
 }
 
@@ -180,14 +179,14 @@ QHash<QPair<unsigned int, unsigned int>,
  *
  *  @return            The name of the service group.
  */
-QString const& macro_cache::get_service_group_name(unsigned int id) const {
-  QHash<unsigned int, neb::service_group>::const_iterator
-    found(_service_groups.find(id));
+std::string const& macro_cache::get_service_group_name(uint64_t id) const {
+  std::unordered_map<uint64_t, neb::service_group>::const_iterator
+    found{_service_groups.find(id)};
 
   if (found == _service_groups.end())
-    throw (exceptions::msg()
-           << "lua: could not find information on service group " << id);
-  return (found->name);
+    throw exceptions::msg()
+           << "lua: could not find information on service group " << id;
+  return found->second.name;
 }
 
 /**
@@ -197,14 +196,14 @@ QString const& macro_cache::get_service_group_name(unsigned int id) const {
  *
  *  @return   The name of the instance.
  */
-QString const& macro_cache::get_instance(unsigned int instance_id) const {
-  QHash<unsigned int, neb::instance>::const_iterator
-    found(_instances.find(instance_id));
+std::string const& macro_cache::get_instance(uint64_t instance_id) const {
+  std::unordered_map<uint64_t, neb::instance>::const_iterator
+    found{_instances.find(instance_id)};
   if (found == _instances.end())
-    throw (exceptions::msg()
+    throw exceptions::msg()
            << "lua: could not find information on instance "
-           << instance_id);
-  return (found->name);
+           << instance_id;
+  return found->second.name;
 }
 
 /**
@@ -212,7 +211,7 @@ QString const& macro_cache::get_instance(unsigned int instance_id) const {
  *
  * @return A reference to a QMultiHash.
  */
-QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event> const&
+std::unordered_multimap<uint64_t, bam::dimension_ba_bv_relation_event> const&
        macro_cache::get_dimension_ba_bv_relation_events() const {
   return _dimension_ba_bv_relation_events;
 }
@@ -225,14 +224,14 @@ QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event> const&
  * @return a reference to the dimension_ba_event.
  */
 bam::dimension_ba_event const& macro_cache::get_dimension_ba_event(
-       unsigned int ba_id) const {
-  QHash<unsigned int, bam::dimension_ba_event>::const_iterator
-    found(_dimension_ba_events.find(ba_id));
+       uint64_t ba_id) const {
+  std::unordered_map<uint64_t, bam::dimension_ba_event>::const_iterator
+    found{_dimension_ba_events.find(ba_id)};
   if (found == _dimension_ba_events.end())
-    throw (exceptions::msg()
+    throw exceptions::msg()
            << "lua: could not find information on dimension ba event "
-           << ba_id);
-  return found.value();
+           << ba_id;
+  return found->second;
 }
 
 /**
@@ -243,14 +242,14 @@ bam::dimension_ba_event const& macro_cache::get_dimension_ba_event(
  * @return a reference to the dimension_bv_event.
  */
 bam::dimension_bv_event const& macro_cache::get_dimension_bv_event(
-       unsigned int bv_id) const {
-  QHash<unsigned int, bam::dimension_bv_event>::const_iterator
-    found(_dimension_bv_events.find(bv_id));
+       uint64_t bv_id) const {
+  std::unordered_map<uint64_t, bam::dimension_bv_event>::const_iterator
+    found{_dimension_bv_events.find(bv_id)};
   if (found == _dimension_bv_events.end())
-    throw (exceptions::msg()
+    throw exceptions::msg()
            << "lua: could not find information on dimension bv event "
-           << bv_id);
-  return found.value();
+           << bv_id;
+  return found->second;
 }
 
 /**
@@ -301,37 +300,33 @@ void macro_cache::write(std::shared_ptr<io::data> const& data) {
 void macro_cache::_process_instance(neb::instance const& in) {
   unsigned int poller_id(in.poller_id);
 
-  QSet<unsigned int> hosts_removed;
-  for (QHash<unsigned int, neb::host>::iterator
-         it(_hosts.begin()),
-         end(_hosts.end());
+  std::unordered_set<uint64_t> hosts_removed;
+  for (std::unordered_map<uint64_t, neb::host>::iterator
+         it{_hosts.begin()},
+         end{_hosts.end()};
        it != end; ) {
-    if (it->poller_id == poller_id) {
-      hosts_removed << it->host_id;
+    if (it->second.poller_id == poller_id) {
+      hosts_removed.insert(it->second.host_id);
       it = _hosts.erase(it);
     }
     else
       ++it;
   }
 
-  for (QHash<unsigned int,
-             QHash<unsigned int, neb::host_group_member> >::iterator
-         it(_host_group_members.begin()),
-         end(_host_group_members.end());
-       it != end; ) {
-    if (hosts_removed.contains(it.key()))
+  for (uint64_t id : hosts_removed) {
+    auto it{_host_group_members.lower_bound({id, 0})};
+    while (it != _host_group_members.end() && it->first.first == id) {
       it = _host_group_members.erase(it);
-    else
-      ++it;
+    }
   }
 
-  QSet<QPair<unsigned int, unsigned int> > services_removed;
-  for (QHash<QPair<unsigned int, unsigned int>, neb::service>::iterator
+  std::unordered_set<std::pair<uint64_t, uint64_t>> services_removed;
+  for (std::unordered_map<std::pair<uint64_t, uint64_t>, neb::service>::iterator
          it(_services.begin()),
          end(_services.end());
        it != end; ) {
-    if (hosts_removed.contains(it->host_id)) {
-      services_removed << it.key();
+    if (hosts_removed.count(it->second.host_id)) {
+      services_removed.insert(it->first);
       it = _services.erase(it);
     }
     else
@@ -376,9 +371,9 @@ void macro_cache::_process_host_group_member(
     << " (group_name: '" << hgm.group_name << "', group_id: " << hgm.group_id
     << ", host_id: " << hgm.host_id << ")";
   if (hgm.enabled)
-    _host_group_members[hgm.host_id].insert(hgm.group_id, hgm);
+    _host_group_members[{hgm.host_id, hgm.group_id}] = hgm;
   else
-    _host_group_members[hgm.host_id].remove(hgm.group_id);
+    _host_group_members.erase({hgm.host_id, hgm.group_id});
 }
 
 /**
@@ -390,7 +385,7 @@ void macro_cache::_process_service(neb::service const& s) {
   logging::debug(logging::medium)
     << "lua: processing service (" << s.host_id << ", " << s.service_id << ") "
     << "(description: " << s.service_description << ")";
-  _services[qMakePair(s.host_id, s.service_id)] = s;
+  _services[{s.host_id, s.service_id}] = s;
 }
 
 /**
@@ -418,11 +413,9 @@ void macro_cache::_process_service_group_member(
     << ", host_id: " << sgm.host_id
     << ", service_id: " << sgm.service_id << ")";
   if (sgm.enabled)
-    _service_group_members[qMakePair(sgm.host_id, sgm.service_id)].insert(
-      sgm.group_id, sgm);
+    _service_group_members[std::make_tuple(sgm.host_id, sgm.service_id, sgm.group_id)] = sgm;
   else
-    _service_group_members[qMakePair(sgm.host_id, sgm.service_id)].remove(
-      sgm.group_id);
+    _service_group_members.erase(std::make_tuple(sgm.host_id, sgm.service_id, sgm.group_id));
 }
 
 /**
@@ -472,7 +465,7 @@ void macro_cache::_process_dimension_ba_bv_relation_event(
   logging::debug(logging::medium)
     << "lua: processing dimension ba bv relation event "
     << "(ba_id: " << rel.ba_id << ", " << "bv_id: " << rel.bv_id << ")";
-  _dimension_ba_bv_relation_events.insert(rel.ba_id, rel);
+  _dimension_ba_bv_relation_events.insert({rel.ba_id, rel});
 }
 
 /**
@@ -510,105 +503,90 @@ void macro_cache::_process_dimension_truncate_table_signal(
 void macro_cache::_save_to_disk() {
   _cache->transaction();
 
-  for (QHash<unsigned int, neb::instance>::const_iterator
+  for (std::unordered_map<uint64_t, neb::instance>::const_iterator
          it(_instances.begin()),
          end(_instances.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(new neb::instance(*it)));
+    _cache->add(std::make_shared<neb::instance>(it->second));
 
-  for (QHash<unsigned int, neb::host>::const_iterator
+  for (std::unordered_map<uint64_t, neb::host>::const_iterator
          it(_hosts.begin()),
          end(_hosts.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(new neb::host(*it)));
+    _cache->add(std::make_shared<neb::host>(it->second));
 
-  for (QHash<unsigned int, neb::host_group>::const_iterator
+  for (std::unordered_map<uint64_t, neb::host_group>::const_iterator
          it(_host_groups.begin()),
          end(_host_groups.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(new neb::host_group(*it)));
+    _cache->add(std::make_shared<neb::host_group>(it->second));
 
-  for (QHash<unsigned int, QHash<unsigned int, neb::host_group_member> >::const_iterator
+  for (std::map<std::pair<uint64_t, uint64_t>, neb::host_group_member>::const_iterator
          it(_host_group_members.begin()),
          end(_host_group_members.end());
        it != end;
-       ++it) {
-    for (QHash<unsigned int, neb::host_group_member>::const_iterator
-           hit(it.value().begin()),
-           hend(it.value().end());
-         hit != hend;
-         ++hit) {
-      _cache->add(std::shared_ptr<io::data>(new neb::host_group_member(*hit)));
-    }
-  }
+       ++it)
+    _cache->add(std::make_shared<neb::host_group_member>(it->second));
 
-  for (QHash<QPair<unsigned int, unsigned int>, neb::service>::const_iterator
+  for (std::unordered_map<std::pair<uint64_t, uint64_t>, neb::service>::const_iterator
          it(_services.begin()),
          end(_services.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(new neb::service(*it)));
+    _cache->add(std::make_shared<neb::service>(it->second));
 
-  for (QHash<unsigned int, neb::service_group>::const_iterator
+  for (std::unordered_map<uint64_t, neb::service_group>::const_iterator
          it(_service_groups.begin()),
          end(_service_groups.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(new neb::service_group(*it)));
+    _cache->add(std::make_shared<neb::service_group>(it->second));
 
-  for (QHash<QPair<unsigned int, unsigned int>,
-             QHash<unsigned int, neb::service_group_member> >::const_iterator
-         it(_service_group_members.begin()),
-         end(_service_group_members.end());
+  for (std::map<std::tuple<uint64_t, uint64_t, uint64_t>,
+             neb::service_group_member>::const_iterator
+         it{_service_group_members.begin()},
+         end{_service_group_members.end()};
        it != end;
-       ++it) {
-    for (QHash<unsigned int, neb::service_group_member>::const_iterator
-           sit(it.value().begin()),
-           send(it.value().end());
-         sit != send;
-         ++sit) {
-      _cache->add(std::shared_ptr<io::data>(new neb::service_group_member(*sit)));
-    }
-  }
+       ++it)
+    _cache->add(std::make_shared<neb::service_group_member>(it->second));
 
-  for (QHash<unsigned int, storage::index_mapping>::const_iterator
+  for (std::unordered_map<uint64_t, storage::index_mapping>::const_iterator
          it(_index_mappings.begin()),
          end(_index_mappings.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(new storage::index_mapping(*it)));
+    _cache->add(std::make_shared<storage::index_mapping>(it->second));
 
-  for (QHash<unsigned int, storage::metric_mapping>::const_iterator
+  for (std::unordered_map<uint64_t, storage::metric_mapping>::const_iterator
          it(_metric_mappings.begin()),
          end(_metric_mappings.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(new storage::metric_mapping(*it)));
+    _cache->add(std::make_shared<storage::metric_mapping>(it->second));
 
-  for (QHash<unsigned int, bam::dimension_ba_event>::const_iterator
+  for (std::unordered_map<uint64_t, bam::dimension_ba_event>::const_iterator
          it(_dimension_ba_events.begin()),
          end(_dimension_ba_events.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(new bam::dimension_ba_event(*it)));
+    _cache->add(std::make_shared<bam::dimension_ba_event>(it->second));
 
-  for (QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event>::const_iterator
+  for (std::unordered_multimap<uint64_t, bam::dimension_ba_bv_relation_event>::const_iterator
          it(_dimension_ba_bv_relation_events.begin()),
          end(_dimension_ba_bv_relation_events.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(
-      new bam::dimension_ba_bv_relation_event(*it)));
+    _cache->add(std::make_shared<bam::dimension_ba_bv_relation_event>(it->second));
 
-  for (QHash<unsigned int, bam::dimension_bv_event>::const_iterator
+  for (std::unordered_map<uint64_t, bam::dimension_bv_event>::const_iterator
          it(_dimension_bv_events.begin()),
          end(_dimension_bv_events.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(new bam::dimension_bv_event(*it)));
+    _cache->add(std::make_shared<bam::dimension_bv_event>(it->second));
 
   _cache->commit();
 }

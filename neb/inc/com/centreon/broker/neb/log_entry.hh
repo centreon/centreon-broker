@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_LOG_ENTRY_HH
 #  define CCB_NEB_LOG_ENTRY_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
@@ -50,16 +50,16 @@ namespace          neb {
 
     timestamp      c_time;
     unsigned int   host_id;
-    QString        host_name;
+    std::string        host_name;
     timestamp      issue_start_time;
     short          log_type;
     short          msg_type;
-    QString        notification_cmd;
-    QString        notification_contact;
-    QString        output;
-    QString        poller_name;
+    std::string        notification_cmd;
+    std::string        notification_contact;
+    std::string        output;
+    std::string        poller_name;
     int            retry;
-    QString        service_description;
+    std::string        service_description;
     unsigned int   service_id;
     short          status;
 

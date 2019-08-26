@@ -19,7 +19,7 @@
 #ifndef CCB_DUMPER_ENTRIES_ORGANIZATION_HH
 #  define CCB_DUMPER_ENTRIES_ORGANIZATION_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
@@ -47,9 +47,9 @@ namespace                 dumper {
       static unsigned int static_type();
 
       bool                enable;
-      QString             name;
+      std::string             name;
       unsigned int        organization_id;
-      QString             shortname;
+      std::string             shortname;
 
       static mapping::entry const
                           entries[];

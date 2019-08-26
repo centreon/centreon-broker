@@ -34,14 +34,14 @@ using namespace com::centreon::broker::neb::engcmd;
  *
  *  @return Property value.
  */
-static QString const& find_param(
+static std::string const& find_param(
                         config::endpoint const& cfg,
-                        QString const& key) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+                        std::string const& key) {
+  std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw (exceptions::msg() << "engcmd: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'");
-  return (it.value());
+    throw exceptions::msg() << "engcmd: no '" << key
+           << "' defined for endpoint '" << cfg.name << "'";
+  return it->second;
 }
 
 /**************************************
@@ -115,10 +115,9 @@ io::endpoint* factory::new_endpoint(
                          bool& is_acceptor,
                          std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
-  std::string command_module_path(
-    find_param(cfg, "command_module_path").toStdString());
+  std::string command_module_path{find_param(cfg, "command_module_path")};
   std::unique_ptr<io::endpoint>
-    end(new endpoint(cfg.name, command_module_path));
+    end{new endpoint(cfg.name, command_module_path)};
   is_acceptor = false;
-  return (end.release());
+  return end.release();
 }

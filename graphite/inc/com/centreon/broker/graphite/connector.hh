@@ -21,7 +21,6 @@
 
 #  include <ctime>
 #  include <memory>
-#  include <QString>
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"

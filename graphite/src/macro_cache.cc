@@ -62,14 +62,14 @@ macro_cache::~macro_cache() {
  *  @return               The status mapping.
  */
 storage::index_mapping const& macro_cache::get_index_mapping(
-                                 unsigned int index_id) const {
-  QHash<unsigned int, storage::index_mapping>::const_iterator
+                                 uint64_t index_id) const {
+  std::unordered_map<uint64_t, storage::index_mapping>::const_iterator
     found(_index_mappings.find(index_id));
   if (found == _index_mappings.end())
-    throw (exceptions::msg()
+    throw exceptions::msg()
            << "graphite: could not find host/service of index "
-           << index_id);
-  return (*found);
+           << index_id;
+  return found->second;
 }
 
 /**
@@ -80,13 +80,13 @@ storage::index_mapping const& macro_cache::get_index_mapping(
  *  @return               The metric mapping.
  */
 storage::metric_mapping const& macro_cache::get_metric_mapping(
-                                 unsigned int metric_id) const {
-  QHash<unsigned int, storage::metric_mapping>::const_iterator
+                                 uint64_t metric_id) const {
+  std::unordered_map<uint64_t, storage::metric_mapping>::const_iterator
     found(_metric_mappings.find(metric_id));
   if (found == _metric_mappings.end())
-    throw (exceptions::msg()
-           << "graphite: could not find index of metric " << metric_id);
-  return (*found);
+    throw exceptions::msg()
+           << "graphite: could not find index of metric " << metric_id;
+  return found->second;
 }
 
 /**
@@ -96,14 +96,14 @@ storage::metric_mapping const& macro_cache::get_metric_mapping(
  *
  *  @return             The name of the host.
  */
-QString const& macro_cache::get_host_name(unsigned int host_id) const {
-  QHash<unsigned int, neb::host>::const_iterator
+std::string const& macro_cache::get_host_name(uint64_t host_id) const {
+  std::unordered_map<uint64_t, neb::host>::const_iterator
     found(_hosts.find(host_id));
   if (found == _hosts.end())
-    throw (exceptions::msg()
+    throw exceptions::msg()
            << "graphite: could not find information on host "
-           << host_id);
-  return (found->host_name);
+           << host_id;
+  return found->second.host_name;
 }
 
 /**
@@ -114,16 +114,16 @@ QString const& macro_cache::get_host_name(unsigned int host_id) const {
  *
  *  @return             The description of the service.
  */
-QString const& macro_cache::get_service_description(
-                 unsigned int host_id,
-                 unsigned int service_id) const {
-  QHash<QPair<unsigned int, unsigned int>, neb::service>::const_iterator
-    found(_services.find(qMakePair(host_id, service_id)));
+std::string const& macro_cache::get_service_description(
+                 uint64_t host_id,
+                 uint64_t service_id) const {
+  std::unordered_map<std::pair<uint64_t, uint64_t>, neb::service>::const_iterator
+    found(_services.find({host_id, service_id}));
   if (found == _services.end())
-    throw (exceptions::msg()
+    throw exceptions::msg()
            << "graphite: could not find information on service ("
-           << host_id << ", " << service_id << ")");
-  return (found->service_description);
+           << host_id << ", " << service_id << ")";
+  return found->second.service_description;
 }
 
 /**
@@ -133,14 +133,14 @@ QString const& macro_cache::get_service_description(
  *
  *  @return   The name of the instance.
  */
-QString const& macro_cache::get_instance(unsigned int instance_id) const {
-  QHash<unsigned int, neb::instance>::const_iterator
+std::string const& macro_cache::get_instance(uint64_t instance_id) const {
+  std::unordered_map<uint64_t, neb::instance>::const_iterator
     found(_instances.find(instance_id));
   if (found == _instances.end())
-    throw (exceptions::msg()
+    throw exceptions::msg()
            << "graphite: could not find information on instance "
-           << instance_id);
-  return (found->name);
+           << instance_id;
+  return found->second.name;
 }
 
 /**
@@ -188,7 +188,7 @@ void macro_cache::_process_host(neb::host const& h) {
  *  @param s  The event.
  */
 void macro_cache::_process_service(neb::service const& s) {
-  _services[qMakePair(s.host_id, s.service_id)] = s;
+  _services[{s.host_id, s.service_id}] = s;
 }
 
 /**
@@ -198,7 +198,6 @@ void macro_cache::_process_service(neb::service const& s) {
  */
 void macro_cache::_process_index_mapping(storage::index_mapping const& im) {
   _index_mappings[im.index_id] = im;
-  return ;
 }
 
 /**
@@ -216,40 +215,40 @@ void macro_cache::_process_metric_mapping(storage::metric_mapping const& mm) {
 void macro_cache::_save_to_disk() {
   _cache->transaction();
 
-  for (QHash<unsigned int, neb::instance>::const_iterator
+  for (std::unordered_map<uint64_t, neb::instance>::const_iterator
          it(_instances.begin()),
          end(_instances.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(new neb::instance(*it)));
+    _cache->add(std::make_shared<neb::instance>(it->second));
 
-  for (QHash<unsigned int, neb::host>::const_iterator
+  for (std::unordered_map<uint64_t, neb::host>::const_iterator
          it(_hosts.begin()),
          end(_hosts.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(new neb::host(*it)));
+    _cache->add(std::make_shared<neb::host>(it->second));
 
-  for (QHash<QPair<unsigned int, unsigned int>, neb::service>::const_iterator
+  for (std::unordered_map<std::pair<uint64_t, uint64_t>, neb::service>::const_iterator
          it(_services.begin()),
          end(_services.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(new neb::service(*it)));
+    _cache->add(std::make_shared<neb::service>(it->second));
 
-  for (QHash<unsigned int, storage::index_mapping>::const_iterator
+  for (std::unordered_map<uint64_t, storage::index_mapping>::const_iterator
          it(_index_mappings.begin()),
          end(_index_mappings.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(new storage::index_mapping(*it)));
+    _cache->add(std::make_shared<storage::index_mapping>(it->second));
 
-  for (QHash<unsigned int, storage::metric_mapping>::const_iterator
+  for (std::unordered_map<uint64_t, storage::metric_mapping>::const_iterator
          it(_metric_mappings.begin()),
          end(_metric_mappings.end());
        it != end;
        ++it)
-    _cache->add(std::shared_ptr<io::data>(new storage::metric_mapping(*it)));
+    _cache->add(std::make_shared<storage::metric_mapping>(it->second));
 
   _cache->commit();
 }

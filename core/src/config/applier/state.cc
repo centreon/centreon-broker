@@ -165,12 +165,8 @@ void state::apply(
     config::endpoint ept;
     ept.name = "(external commands)";
     ept.type = "extcmd";
-    ept.params.insert(
-      "extcmd",
-      QString::fromStdString(s.command_file()));
-    ept.params.insert(
-      "command_protocol",
-      QString::fromStdString(s.command_protocol()));
+    ept.params.insert({"extcmd", s.command_file()});
+    ept.params.insert({"command_protocol", s.command_protocol()});
     ept.read_filters.insert("all");
     st.endpoints().push_back(ept);
   }
@@ -189,8 +185,6 @@ void state::apply(
   // Enable multiplexing loop.
   if (run_mux)
     com::centreon::broker::multiplexing::engine::instance().start();
-
-  return ;
 }
 
 /**

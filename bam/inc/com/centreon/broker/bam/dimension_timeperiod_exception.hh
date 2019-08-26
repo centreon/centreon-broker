@@ -19,7 +19,7 @@
 #ifndef CCB_BAM_DIMENSION_TIMEPERIOD_EXCEPTION_HH
 #  define CCB_BAM_DIMENSION_TIMEPERIOD_EXCEPTION_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/event_info.hh"
@@ -46,8 +46,8 @@ namespace        bam {
     static unsigned int
                  static_type();
 
-    QString      daterange;
-    QString      timerange;
+    std::string      daterange;
+    std::string      timerange;
     unsigned int timeperiod_id;
 
     static mapping::entry const

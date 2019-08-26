@@ -19,8 +19,8 @@
 #ifndef CCB_IO_PROTOCOLS_HH
 #  define CCB_IO_PROTOCOLS_HH
 
-#  include <QMap>
-#  include <QString>
+#  include <map>
+#  include <string>
 #  include "com/centreon/broker/io/factory.hh"
 
 CCB_BEGIN()
@@ -33,36 +33,31 @@ namespace                       io {
    *  This class registers every available protocol that are used
    *  to build input or output objects.
    */
-  class                         protocols {
-  public:
-    struct                      protocol {
-      std::shared_ptr<factory> endpntfactry;
-      unsigned short            osi_from;
-      unsigned short            osi_to;
-    };
-
-                                ~protocols();
-    QMap<QString, protocol>::const_iterator
-                                begin() const;
-    QMap<QString, protocol>::const_iterator
-                                end() const;
-    static protocols&           instance();
-    static void                 load();
-    void                        reg(
-                                  QString const& name,
-                                  factory const& fac,
-                                  unsigned short osi_from,
-                                  unsigned short osi_to);
-    static void                 unload();
-    void                        unreg(QString const& name);
-
-  private:
-                                protocols();
-                                protocols(protocols const& p);
-    protocols&                  operator=(protocols const& p);
-
-    QMap<QString, protocol>     _protocols;
+class protocols {
+public:
+  struct protocol {
+    std::shared_ptr<factory> endpntfactry;
+    unsigned short osi_from;
+    unsigned short osi_to;
   };
+
+  ~protocols();
+  std::map<std::string, protocol>::const_iterator begin() const;
+  std::map<std::string, protocol>::const_iterator end() const;
+  static protocols &instance();
+  static void load();
+  void reg(std::string const &name, factory const &fac, unsigned short osi_from,
+           unsigned short osi_to);
+  static void unload();
+  void unreg(std::string const &name);
+
+private:
+  protocols();
+  protocols(protocols const &p);
+  protocols &operator=(protocols const &p);
+
+  std::map<std::string, protocol> _protocols;
+};
 }
 
 CCB_END()

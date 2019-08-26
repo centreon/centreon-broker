@@ -19,39 +19,37 @@
 #ifndef CCB_LUA_CONNECTOR_HH
 #  define CCB_LUA_CONNECTOR_HH
 
-#  include <QMap>
-#  include <QVariant>
+#  include <map>
 #  include <memory>
+#  include "com/centreon/broker/misc/variant.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 
 CCB_BEGIN()
 
-namespace                        lua {
-  /**
-   *  @class connector connector.hh "com/centreon/broker/lua/connector.hh"
-   *  @brief Connect to a lua interpreter.
-   *
-   *  Send events to a lua interpreter.
-   */
-  class                          connector : public io::endpoint {
-  public:
-                                 connector();
-                                 connector(connector const& other);
-                                 ~connector();
-    connector&                   operator=(connector const& other);
-    void                         connect_to(
-                                   std::string const& lua_script,
-                                   QMap<QString, QVariant> const& cfg_params,
-                                   std::shared_ptr<persistent_cache> const& cache);
-    std::shared_ptr<io::stream> open();
+namespace lua {
+/**
+ *  @class connector connector.hh "com/centreon/broker/lua/connector.hh"
+ *  @brief Connect to a lua interpreter.
+ *
+ *  Send events to a lua interpreter.
+ */
+class connector : public io::endpoint {
+ public:
+  connector();
+  connector(connector const& other);
+  ~connector();
+  connector& operator=(connector const& other);
+  void connect_to(std::string const& lua_script,
+                  std::map<std::string, misc::variant> const& cfg_params,
+                  std::shared_ptr<persistent_cache> const& cache);
+  std::shared_ptr<io::stream> open();
 
-  private:
-    std::string                  _lua_script;
-    QMap<QString, QVariant>      _conf_params;
-    std::shared_ptr<persistent_cache>
-                                 _cache;
-  };
-}
+ private:
+  std::string _lua_script;
+  std::map<std::string, misc::variant> _conf_params;
+  std::shared_ptr<persistent_cache> _cache;
+};
+}  // namespace lua
 
 CCB_END()
 

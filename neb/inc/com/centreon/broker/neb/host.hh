@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_HOST_HH
 #  define CCB_NEB_HOST_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -48,20 +48,20 @@ namespace          neb {
     static unsigned int
                    static_type();
 
-    QString        address;
-    QString        alias;
+    std::string        address;
+    std::string        alias;
     bool           flap_detection_on_down;
     bool           flap_detection_on_unreachable;
     bool           flap_detection_on_up;
-    QString        host_name;
+    std::string        host_name;
     bool           notify_on_down;
     bool           notify_on_unreachable;
     unsigned int   poller_id;
     bool           stalk_on_down;
     bool           stalk_on_unreachable;
     bool           stalk_on_up;
-    QString        statusmap_image;
-    QString        timezone;
+    std::string        statusmap_image;
+    std::string        timezone;
 
     static mapping::entry const
                    entries[];

@@ -41,7 +41,7 @@ namespace                 extcmd {
                           command_listener();
                           ~command_listener();
     command_result        command_status(
-                            QString const& command_uuid);
+                            std::string const& command_uuid);
     bool                  read(
                             std::shared_ptr<io::data>& d,
                             time_t deadline = (time_t)-1);
@@ -50,10 +50,10 @@ namespace                 extcmd {
   private:
     struct                pending_command {
       time_t              invalid_time;
-      QString             uuid;
+      std::string             uuid;
       int                 code;
       bool                with_partial_result;
-      std::list<QString>  msgs;
+      std::list<std::string>  msgs;
     };
 
                           command_listener(command_listener const& other);

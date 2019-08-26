@@ -19,7 +19,7 @@
 #ifndef CCB_BAM_DIMENSION_BV_EVENT_HH
 #  define CCB_BAM_DIMENSION_BV_EVENT_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
@@ -45,8 +45,8 @@ namespace                bam {
     static unsigned int  static_type();
 
     unsigned int         bv_id;
-    QString              bv_name;
-    QString              bv_description;
+    std::string              bv_name;
+    std::string              bv_description;
 
     static mapping::entry const
                          entries[];

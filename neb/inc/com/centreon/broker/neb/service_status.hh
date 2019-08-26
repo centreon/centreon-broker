@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_SERVICE_STATUS_HH
 #  define CCB_NEB_SERVICE_STATUS_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -45,12 +45,12 @@ namespace           neb {
     static unsigned int
                     static_type();
 
-    QString         host_name;
+    std::string     host_name;
     timestamp       last_time_critical;
     timestamp       last_time_ok;
     timestamp       last_time_unknown;
     timestamp       last_time_warning;
-    QString         service_description;
+    std::string     service_description;
     unsigned int    service_id;
 
     static mapping::entry const

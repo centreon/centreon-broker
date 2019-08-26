@@ -97,7 +97,6 @@ void directory_dump::_internal_copy(directory_dump const& other) {
   started = other.started;
   tag = other.tag;
   req_id = other.req_id;
-  return ;
 }
 
 /**************************************

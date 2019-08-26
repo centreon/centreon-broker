@@ -19,10 +19,11 @@
 #ifndef CCB_NEB_DOWNTIME_MAP_HH
 #  define CCB_NEB_DOWNTIME_MAP_HH
 
-#  include <QHash>
+#  include <unordered_map>
 #  include "com/centreon/broker/neb/downtime.hh"
 #  include "com/centreon/broker/neb/node_id.hh"
 #  include "com/centreon/broker/namespace.hh"
+#  include "com/centreon/broker/misc/pair.hh"
 
 CCB_BEGIN()
 
@@ -41,29 +42,29 @@ namespace   neb {
     virtual      ~downtime_map();
 
     unsigned int get_new_downtime_id();
-    QList<downtime>
+    std::list<downtime>
                  get_all_downtimes_of_node(node_id id) const;
-    QList<downtime>
+    std::list<downtime>
                  get_all_recurring_downtimes_of_node(node_id id) const;
     void         delete_downtime(downtime const& dwn);
     void         add_downtime(downtime const& dwn);
     downtime*    get_downtime(unsigned int internal_id);
     bool         is_recurring(unsigned int internal_id) const;
-    QList<downtime>
+    std::list<downtime>
                  get_all_recurring_downtimes() const;
-    QList<downtime>
+    std::list<downtime>
                  get_all_downtimes() const;
     bool         spawned_downtime_exist(unsigned int parent_id) const;
 
   private:
     unsigned int _actual_downtime_id;
-    QHash<unsigned int, downtime>
+    std::unordered_map<unsigned int, downtime>
                  _downtimes;
-    QMultiHash<node_id, unsigned int>
+    std::unordered_multimap<node_id, unsigned int>
                  _downtime_id_by_nodes;
-    QHash<unsigned int, downtime>
+    std::unordered_map<unsigned int, downtime>
                  _recurring_downtimes;
-    QMultiHash<node_id, unsigned int>
+    std::unordered_multimap<node_id, unsigned int>
                  _recurring_downtime_id_by_nodes;
 
   };

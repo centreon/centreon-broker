@@ -203,10 +203,8 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
   free(datadup);
 
   // Set host and service IDs.
-  le.host_id = engine::get_host_id(le.host_name.toStdString().c_str());
+  le.host_id = engine::get_host_id(le.host_name);
   le.service_id = engine::get_service_id(
-                    le.host_name.toStdString().c_str(),
-                    le.service_description.toStdString().c_str());
-
-  return ;
+                    le.host_name,
+                    le.service_description);
 }

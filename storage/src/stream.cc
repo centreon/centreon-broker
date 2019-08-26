@@ -69,24 +69,6 @@ static inline QVariant check_double(double f) {
   );
 }
 
-/**
- *  Check that two double are equal.
- *
- *  @param[in] a First value.
- *  @param[in] b Second value.
- *
- *  @return true if a and b are equal.
- */
-static inline bool double_equal(double a, double b) {
-  return ((std::isnan(a) && std::isnan(b))
-          || (std::isinf(a)
-              && std::isinf(b)
-              && (std::signbit(a) == std::signbit(b)))
-          || (std::isfinite(a)
-              && std::isfinite(b)
-              && !(fabs((a) - (b)) > (0.01 * fabs(a)))));
-}
-
 /**************************************
 *                                     *
 *           Public Methods            *
@@ -244,9 +226,9 @@ int stream::write(std::shared_ptr<io::data> const& data) {
       status->state = ss->last_hard_state;
       multiplexing::publisher().write(status);
 
-      if (!ss->perf_data.isEmpty()) {
+      if (!ss->perf_data.empty()) {
         // Parse perfdata.
-        QList<perfdata> pds;
+        std::list<perfdata> pds;
         parser p;
         try {
           p.parse_perfdata(ss->perf_data, pds);
@@ -260,7 +242,7 @@ int stream::write(std::shared_ptr<io::data> const& data) {
         }
 
         // Loop through all metrics.
-        for (QList<perfdata>::iterator
+        for (std::list<perfdata>::iterator
                it(pds.begin()),
                end(pds.end());
              it != end;
@@ -519,10 +501,10 @@ void stream::_delete_metrics(
  *  @return Index ID matching host and service ID.
  */
 unsigned int stream::_find_index_id(
-                       unsigned int host_id,
-                       unsigned int service_id,
-                       QString const& host_name,
-                       QString const& service_desc,
+                       uint64_t host_id,
+                       uint64_t service_id,
+                       std::string const& host_name,
+                       std::string const& service_desc,
                        unsigned int* rrd_len,
                        bool* locked) {
   unsigned int retval;
@@ -531,14 +513,12 @@ unsigned int stream::_find_index_id(
   bool db_v2(_db.schema_version() == database::v2);
 
   // Look in the cache.
-  std::map<
-    std::pair<unsigned int, unsigned int>,
-    index_info>::iterator
-    it(_index_cache.find(std::make_pair(host_id, service_id)));
+  std::map<std::pair<uint64_t, uint64_t>, index_info>::iterator it{
+      _index_cache.find({host_id, service_id})};
 
   // Special.
-  int32_t special(strncmp(
-                  host_name.toStdString().c_str(),
+  bool special(!strncmp(
+                  host_name.c_str(),
                   BAM_NAME,
                   sizeof(BAM_NAME) - 1) == 0 ? 1 : 0);
 
@@ -567,13 +547,14 @@ unsigned int stream::_find_index_id(
         );
       }
       try {
-        _index_data_update.bind_value(":host_name", host_name);
-        _index_data_update.bind_value(":service_description", service_desc);
-        _index_data_update.bind_value(":special", special == 0 ? "0" : "1");
-        _index_data_update.bind_value(":host_id", host_id);
-        _index_data_update.bind_value(":service_id", service_id);
-
-        _index_data_update.run_statement();
+        database_query q(_db);
+        q.prepare(query.str());
+        q.bind_value(":host_name", QString::fromStdString(host_name));
+        q.bind_value(":service_description", QString::fromStdString(service_desc));
+        q.bind_value(":special", special);
+        q.bind_value(":host_id", (qulonglong)host_id);
+        q.bind_value(":service_id", (qulonglong)service_id);
+        q.run_statement();
       }
       catch (std::exception const& e) {
         throw (broker::exceptions::msg() << "storage: could not update "
@@ -618,13 +599,10 @@ unsigned int stream::_find_index_id(
       _index_data_insert.prepare(oss.str());
       }
       try {
-        _index_data_insert.bind_value(":host_id", host_id);
-        _index_data_insert.bind_value(":host_name", host_name);
-        _index_data_insert.bind_value(":service_id", service_id);
-        _index_data_insert.bind_value(":service_description", service_desc);
-        _index_data_insert.bind_value(":must_be_rebuild", "0");
-        QString sp(QString::number(special));
-        _index_data_insert.bind_value(":special", sp);
+        q.prepare(oss.str());
+        q.bind_value(":host_name", QString::fromStdString(host_name));
+        q.bind_value(":service_description", QString::fromStdString(service_desc));
+        q.bind_value(":special", special);
 
         // Execute query.
         _index_data_insert.run_statement();
@@ -717,28 +695,28 @@ unsigned int stream::_find_index_id(
  *  @return Metric ID requested, 0 if it could not be found not
  *          inserted.
  */
-unsigned int stream::_find_metric_id(
-                       unsigned int index_id,
-                       QString metric_name,
-                       QString const& unit_name,
-                       double warn,
-                       double warn_low,
-                       bool warn_mode,
-                       double crit,
-                       double crit_low,
-                       bool crit_mode,
-                       double min,
-                       double max,
-                       double value,
-                       unsigned int* type,
-                       bool* locked) {
-  unsigned int retval;
+uint64_t stream::_find_metric_id(uint64_t index_id,
+                                 std::string metric_name,
+                                 std::string const& unit_name,
+                                 double warn,
+                                 double warn_low,
+                                 bool warn_mode,
+                                 double crit,
+                                 double crit_low,
+                                 bool crit_mode,
+                                 double min,
+                                 double max,
+                                 double value,
+                                 unsigned int* type,
+                                 bool* locked) {
+  uint64_t retval;
 
   // Trim metric_name.
-  metric_name = metric_name.trimmed();
+  // Is the following really needed, I don't think so.
+  //metric_name = metric_name.trimmed();
 
   // Look in the cache.
-  std::map<std::pair<unsigned int, QString>, metric_info>::iterator
+  std::map<std::pair<uint64_t, std::string>, metric_info>::iterator
     it(_metric_cache.find(std::make_pair(index_id, metric_name)));
   if (it != _metric_cache.end()) {
     logging::debug(logging::low) << "storage: found metric "
@@ -761,7 +739,7 @@ unsigned int stream::_find_metric_id(
         << warn_low << ":" << warn << ", critical: " << crit_low << ":"
         << crit << ", min: " << min << ", max: " << max << ")";
       // Update metrics table.
-      _update_metrics.bind_value(":unit_name", unit_name);
+      _update_metrics.bind_value(":unit_name", QString::fromStdString(unit_name));
       _update_metrics.bind_value(":warn", check_double(warn));
       _update_metrics.bind_value(":warn_low", check_double(warn_low));
       _update_metrics.bind_value(":warn_threshold_mode", warn_mode);
@@ -771,8 +749,8 @@ unsigned int stream::_find_metric_id(
       _update_metrics.bind_value(":min", check_double(min));
       _update_metrics.bind_value(":max", check_double(max));
       _update_metrics.bind_value(":current_value", check_double(value));
-      _update_metrics.bind_value(":index_id", index_id);
-      _update_metrics.bind_value(":metric_name", metric_name);
+      _update_metrics.bind_value(":index_id", (qulonglong)index_id);
+      _update_metrics.bind_value(":metric_name", QString::fromStdString(metric_name));
       try { _update_metrics.run_statement(); }
       catch (std::exception const& e) {
         throw (broker::exceptions::msg() << "storage: could not "
@@ -826,9 +804,9 @@ unsigned int stream::_find_metric_id(
     q.prepare(
         query.str(),
         "storage: could not prepare metric insertion query");
-    q.bind_value(":index_id", index_id);
-    q.bind_value(":metric_name", metric_name);
-    q.bind_value(":unit_name", unit_name);
+    q.bind_value(":index_id", (qulonglong)index_id);
+    q.bind_value(":metric_name", QString::fromStdString(metric_name));
+    q.bind_value(":unit_name", QString::fromStdString(unit_name));
     q.bind_value(":warn", check_double(warn));
     q.bind_value(":warn_low", check_double(warn_low));
     q.bind_value(":warn_threshold_mode", warn_mode);
@@ -861,8 +839,8 @@ unsigned int stream::_find_metric_id(
       q2.prepare(
            query.str(),
            "storage: could not prepare metric ID fetching query");
-      q2.bind_value(":index_id", index_id);
-      q2.bind_value(":metric_name", metric_name);
+      q2.bind_value(":index_id", (qulonglong)index_id);
+      q2.bind_value(":metric_name", QString::fromStdString(metric_name));
       try {
         q2.run_statement();
         if (!q2.next())
@@ -1039,11 +1017,11 @@ void stream::_rebuild_cache() {
       info.index_id = q.value(0).toUInt();
       unsigned int host_id(q.value(1).toUInt());
       unsigned int service_id(q.value(2).toUInt());
-      info.host_name = q.value(3).toString();
+      info.host_name = q.value(3).toString().toStdString();
       info.rrd_retention = (q.value(4).isNull() ? 0 : q.value(4).toUInt());
       if (!info.rrd_retention)
         info.rrd_retention = _rrd_len;
-      info.service_description = q.value(5).toString();
+      info.service_description = q.value(5).toString().toStdString();
       if (db_v2)
         info.special = (q.value(6).toUInt() == 2);
       else
@@ -1082,14 +1060,14 @@ void stream::_rebuild_cache() {
     while (q.next()) {
       metric_info info;
       info.metric_id = q.value(0).toUInt();
-      unsigned int index_id(q.value(1).toUInt());
-      QString name(q.value(2).toString());
+      uint64_t index_id(q.value(1).toUInt());
+      std::string name(q.value(2).toString().toStdString());
       info.type = (q.value(3).isNull()
                    ? static_cast<unsigned int>(perfdata::automatic)
                    : q.value(3).toUInt());
       info.locked = q.value(4).toBool();
       info.value = (q.value(5).isNull() ? NAN : q.value(5).toDouble());
-      info.unit_name = q.value(6).toString();
+      info.unit_name = q.value(6).toString().toStdString();
       info.warn = (q.value(7).isNull() ? NAN : q.value(7).toDouble());
       info.warn_low = (q.value(8).isNull() ? NAN : q.value(8).toDouble());
       info.warn_mode = q.value(9).toBool();
@@ -1101,7 +1079,7 @@ void stream::_rebuild_cache() {
       logging::debug(logging::high) << "storage: loaded metric "
         << info.metric_id << " of (" << index_id << ", " << name
         << "), type " << info.type;
-      _metric_cache[std::make_pair(index_id, name)] = info;
+      _metric_cache[{index_id, name}] = info;
 
       // Create the metric mapping.
       std::shared_ptr<metric_mapping> mm(new metric_mapping);

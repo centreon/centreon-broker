@@ -19,8 +19,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <memory>
-#include <QString>
-#include <QStringList>
+#include <string>
 #include <set>
 #include <unistd.h>
 #include "com/centreon/broker/config/applier/state.hh"
@@ -28,6 +27,7 @@
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/neb/callback.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/events.hh"
@@ -36,16 +36,16 @@
 #include "com/centreon/broker/neb/set_log_data.hh"
 #include "com/centreon/broker/neb/statistics/generator.hh"
 #include "com/centreon/engine/broker.hh"
+#include "com/centreon/engine/comment.hh"
+#include "com/centreon/engine/events/defines.hh"
+#include "com/centreon/engine/events/timed_event.hh"
 #include "com/centreon/engine/globals.hh"
+#include "com/centreon/engine/hostdependency.hh"
+#include "com/centreon/engine/hostgroup.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
 #include "com/centreon/engine/nebstructs.hh"
-#include "com/centreon/engine/hostdependency.hh"
 #include "com/centreon/engine/servicedependency.hh"
-#include "com/centreon/engine/comment.hh"
-#include "com/centreon/engine/hostgroup.hh"
 #include "com/centreon/engine/servicegroup.hh"
-#include "com/centreon/engine/events/timed_event.hh"
-#include "com/centreon/engine/events/defines.hh"
 
 using namespace com::centreon::broker;
 
@@ -473,9 +473,9 @@ int neb::callback_dependency(int callback_type, void* data) {
       hst_dep->dependent_host_id = dep_host_id;
       hst_dep->enabled = (nsadd->type != NEBTYPE_HOSTDEPENDENCY_DELETE);
       if (!dep->get_dependency_period().empty())
-        hst_dep->dependency_period = QString(dep->get_dependency_period().c_str());
+        hst_dep->dependency_period = dep->get_dependency_period();
       {
-        QString options;
+        std::string options;
         if (dep->get_fail_on_down())
           options.append("d");
         if (dep->get_fail_on_up())
@@ -541,9 +541,9 @@ int neb::callback_dependency(int callback_type, void* data) {
       svc_dep->enabled
         = (nsadd->type != NEBTYPE_SERVICEDEPENDENCY_DELETE);
       if (!dep->get_dependency_period().empty())
-        svc_dep->dependency_period = QString(dep->get_dependency_period().c_str());
+        svc_dep->dependency_period = dep->get_dependency_period();
       {
-        QString options;
+        std::string options;
         if (dep->get_fail_on_critical())
           options.append("c");
         if (dep->get_fail_on_ok())
@@ -780,23 +780,22 @@ int neb::callback_external_command(int callback_type, void* data) {
 
         // Split argument string.
         if (necd->command_args) {
-          QStringList l(QString(necd->command_args).split(';'));
+          std::list<std::string> l{misc::string::split(necd->command_args, ';')};
           if (l.size() != 3)
             logging::error(logging::medium)
               << "callbacks: invalid host custom variable command";
           else {
-            QStringList::iterator it(l.begin());
-            QString host(*it++);
-            QString var_name(*it++);
-            QString var_value(*it);
+            std::list<std::string>::iterator it(l.begin());
+            std::string host{*it++};
+            std::string var_name{*it++};
+            std::string var_value{*it};
 
             // Find host ID.
-            unsigned int host_id = engine::get_host_id(
-                                     host.toStdString().c_str());
+            uint64_t host_id = engine::get_host_id(host);
             if (host_id != 0) {
               // Fill custom variable.
               std::shared_ptr<neb::custom_variable_status>
-                cvs(new neb::custom_variable_status);
+                cvs{new neb::custom_variable_status};
               cvs->host_id = host_id;
               cvs->modified = true;
               cvs->name = var_name;
@@ -816,26 +815,24 @@ int neb::callback_external_command(int callback_type, void* data) {
 
         // Split argument string.
         if (necd->command_args) {
-          QStringList l(QString(necd->command_args).split(';'));
+          std::list<std::string> l{misc::string::split(necd->command_args, ';')};
           if (l.size() != 4)
             logging::error(logging::medium)
               << "callbacks: invalid service custom variable command";
           else {
-            QStringList::iterator it(l.begin());
-            QString host(*it++);
-            QString service(*it++);
-            QString var_name(*it++);
-            QString var_value(*it);
+            std::list<std::string>::iterator it{l.begin()};
+            std::string host{*it++};
+            std::string service{*it++};
+            std::string var_name{*it++};
+            std::string var_value{*it};
 
             // Find host/service IDs.
-            std::pair<unsigned int, unsigned int> p;
-            p = engine::get_host_and_service_id(
-                          host.toStdString().c_str(),
-                          service.toStdString().c_str());
+            std::pair<uint64_t, uint64_t> p{
+                engine::get_host_and_service_id(host, service)};
             if (p.first && p.second) {
               // Fill custom variable.
-              std::shared_ptr<neb::custom_variable_status> cvs(
-                new neb::custom_variable_status);
+              std::shared_ptr<neb::custom_variable_status> cvs{
+                new neb::custom_variable_status};
               cvs->host_id = p.first;
               cvs->modified = true;
               cvs->name = var_name;
@@ -985,7 +982,7 @@ int neb::callback_group(int callback_type, void* data) {
         new_sg->enabled
           = (group_data->type != NEBTYPE_SERVICEGROUP_DELETE
              && !service_group->members.empty());
-        new_sg->name = QString(service_group->get_group_name().c_str());
+        new_sg->name = service_group->get_group_name();
 
         // Send service group event.
         if (new_sg->id) {
@@ -1038,7 +1035,7 @@ int neb::callback_group_member(int callback_type, void* data) {
         std::shared_ptr<neb::host_group_member>
           hgm(new neb::host_group_member);
         hgm->group_id = hg->get_id();
-        hgm->group_name = QString(hg->get_group_name().c_str());
+        hgm->group_name = hg->get_group_name();
         hgm->poller_id = config::applier::state::instance().poller_id();
         unsigned int host_id = engine::get_host_id(hst->get_name());
         if (host_id != 0 && hgm->group_id != 0) {
@@ -1077,7 +1074,7 @@ int neb::callback_group_member(int callback_type, void* data) {
         std::shared_ptr<neb::service_group_member>
           sgm(new neb::service_group_member);
         sgm->group_id = sg->get_id();
-        sgm->group_name = QString(sg->get_group_name().c_str());
+        sgm->group_name = sg->get_group_name();
         sgm->poller_id = config::applier::state::instance().poller_id();
         std::pair<unsigned int, unsigned int> p;
         p = engine::get_host_and_service_id(
@@ -1143,18 +1140,18 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->acknowledged = h->get_problem_has_been_acknowledged();
     my_host->acknowledgement_type = h->get_acknowledgement_type();
     if (!h->get_action_url().empty())
-      my_host->action_url = QString(h->get_action_url().c_str());
+      my_host->action_url = h->get_action_url();
     my_host->active_checks_enabled = h->get_checks_enabled();
     if (!h->get_address().empty())
-      my_host->address = QString(h->get_address().c_str());
+      my_host->address = h->get_address();
     if (!h->get_alias().empty())
-      my_host->alias = QString(h->get_alias().c_str());
+      my_host->alias = h->get_alias();
     my_host->check_freshness = h->get_check_freshness();
     if (!h->get_check_command().empty())
-      my_host->check_command = QString(h->get_check_command().c_str());
+      my_host->check_command = h->get_check_command();
     my_host->check_interval = h->get_check_interval();
     if (!h->get_check_period().empty())
-      my_host->check_period = QString(h->get_check_period().c_str());
+      my_host->check_period = h->get_check_period();
     my_host->check_type = h->get_check_type();
     my_host->current_check_attempt = h->get_current_attempt();
     my_host->current_state = (h->get_has_been_checked()
@@ -1167,10 +1164,10 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->default_passive_checks_enabled = h->get_accept_passive_checks();
     my_host->downtime_depth = h->get_scheduled_downtime_depth();
     if (!h->get_display_name().empty())
-      my_host->display_name = QString(h->get_display_name().c_str());
+      my_host->display_name = h->get_display_name();
     my_host->enabled = (host_data->type != NEBTYPE_HOST_DELETE);
     if (!h->get_event_handler().empty())
-      my_host->event_handler = QString(h->get_event_handler().c_str());
+      my_host->event_handler = h->get_event_handler();
     my_host->event_handler_enabled = h->get_event_handler_enabled();
     my_host->execution_time = h->get_execution_time();
     my_host->first_notification_delay = h->get_first_notification_delay();
@@ -1184,11 +1181,11 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->has_been_checked = h->get_has_been_checked();
     my_host->high_flap_threshold = h->get_high_flap_threshold();
     if (!h->get_name().empty())
-      my_host->host_name = QString(h->get_name().c_str());
+      my_host->host_name = h->get_name();
     if (!h->get_icon_image().empty())
-      my_host->icon_image = QString(h->get_icon_image().c_str());
+      my_host->icon_image = h->get_icon_image();
     if (!h->get_icon_image_alt().empty())
-      my_host->icon_image_alt = QString(h->get_icon_image_alt().c_str());
+      my_host->icon_image_alt = h->get_icon_image_alt();
     my_host->is_flapping = h->get_is_flapping();
     my_host->last_check = h->get_last_check();
     my_host->last_hard_state = h->get_last_hard_state();
@@ -1206,13 +1203,13 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->next_notification = h->get_next_notification();
     my_host->no_more_notifications = h->get_no_more_notifications();
     if (!h->get_notes().empty())
-      my_host->notes = QString(h->get_notes().c_str());
+      my_host->notes = h->get_notes();
     if (!h->get_notes_url().empty())
-      my_host->notes_url = QString(h->get_notes_url().c_str());
+      my_host->notes_url = h->get_notes_url();
     my_host->notifications_enabled = h->get_notifications_enabled();
     my_host->notification_interval = h->get_notification_interval();
     if (!h->get_notification_period().empty())
-      my_host->notification_period = QString(h->get_notification_period().c_str());
+      my_host->notification_period = h->get_notification_period();
     my_host->notify_on_down = h->get_notify_on(engine::notifier::down);
     my_host->notify_on_downtime = h->get_notify_on(engine::notifier::downtime);
     my_host->notify_on_flapping = h->get_notify_on(engine::notifier::flappingstart);
@@ -1220,15 +1217,15 @@ int neb::callback_host(int callback_type, void* data) {
     my_host->notify_on_unreachable = h->get_notify_on(engine::notifier::unreachable);
     my_host->obsess_over = h->get_obsess_over();
     if (!h->get_plugin_output().empty()) {
-      my_host->output = QString(h->get_plugin_output().c_str());
+      my_host->output = h->get_plugin_output();
       my_host->output.append("\n");
     }
     if (!h->get_long_plugin_output().empty())
-        my_host->output.append(QString(h->get_long_plugin_output().c_str()));
+        my_host->output.append(h->get_long_plugin_output());
     my_host->passive_checks_enabled = h->get_accept_passive_checks();
     my_host->percent_state_change = h->get_percent_state_change();
     if (!h->get_perf_data().empty())
-      my_host->perf_data = QString(h->get_perf_data().c_str());
+      my_host->perf_data = h->get_perf_data();
     my_host->poller_id = config::applier::state::instance().poller_id();
     my_host->retain_nonstatus_information
       = h->get_retain_nonstatus_information();
@@ -1242,12 +1239,11 @@ int neb::callback_host(int callback_type, void* data) {
                            ? h->get_state_type()
                            : engine::notifier::hard);
     if (!h->get_statusmap_image().empty())
-      my_host->statusmap_image = QString(h->get_statusmap_image().c_str());
-    my_host->timezone = QString(h->get_timezone().c_str());
+      my_host->statusmap_image = h->get_statusmap_image();
+    my_host->timezone = h->get_timezone();
 
     // Find host ID.
-    uint64_t host_id = engine::get_host_id(
-                             my_host->host_name.toStdString().c_str());
+    uint64_t host_id = engine::get_host_id(my_host->host_name);
     if (host_id != 0) {
       my_host->host_id = host_id;
 
@@ -1367,10 +1363,10 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->acknowledgement_type = h->get_acknowledgement_type();
     host_status->active_checks_enabled = h->get_checks_enabled();
     if (!h->get_check_command().empty())
-      host_status->check_command = QString(h->get_check_command().c_str());
+      host_status->check_command = h->get_check_command();
     host_status->check_interval = h->get_check_interval();
     if (!h->get_check_period().empty())
-      host_status->check_period = QString(h->get_check_period().c_str());
+      host_status->check_period = h->get_check_period();
     host_status->check_type = h->get_check_type();
     host_status->current_check_attempt = h->get_current_attempt();
     host_status->current_state = (h->get_has_been_checked()
@@ -1378,7 +1374,7 @@ int neb::callback_host_status(int callback_type, void* data) {
                                   : 4); // Pending state.
     host_status->downtime_depth = h->get_scheduled_downtime_depth();
     if (!h->get_event_handler().empty())
-      host_status->event_handler = QString(h->get_event_handler().c_str());
+      host_status->event_handler = h->get_event_handler();
     host_status->event_handler_enabled = h->get_event_handler_enabled();
     host_status->execution_time = h->get_execution_time();
     host_status->flap_detection_enabled = h->get_flap_detection_enabled();
@@ -1410,15 +1406,15 @@ int neb::callback_host_status(int callback_type, void* data) {
     host_status->notifications_enabled = h->get_notifications_enabled();
     host_status->obsess_over = h->get_obsess_over();
     if (!h->get_plugin_output().empty()) {
-      host_status->output = QString(h->get_plugin_output().c_str());
+      host_status->output = h->get_plugin_output();
       host_status->output.append("\n");
     }
     if (!h->get_long_plugin_output().empty())
-      host_status->output.append(QString(h->get_long_plugin_output().c_str()));
+      host_status->output.append(h->get_long_plugin_output());
     host_status->passive_checks_enabled = h->get_accept_passive_checks();
     host_status->percent_state_change = h->get_percent_state_change();
     if (!h->get_perf_data().empty())
-      host_status->perf_data = QString(h->get_perf_data().c_str());
+      host_status->perf_data = h->get_perf_data();
     host_status->retry_interval = h->get_retry_interval();
     host_status->should_be_scheduled = h->get_should_be_scheduled();
     host_status->state_type = (h->get_has_been_checked()
@@ -1835,14 +1831,14 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->acknowledged = s->get_problem_has_been_acknowledged();
     my_service->acknowledgement_type = s->get_acknowledgement_type();
     if (!s->get_action_url().empty())
-      my_service->action_url = QString(s->get_action_url().c_str());
+      my_service->action_url = s->get_action_url();
     my_service->active_checks_enabled = s->get_checks_enabled();
     if (!s->get_check_command().empty())
-      my_service->check_command = QString(s->get_check_command().c_str());
+      my_service->check_command = s->get_check_command();
     my_service->check_freshness = s->get_check_freshness();
     my_service->check_interval = s->get_check_interval();
     if (!s->get_check_period().empty())
-      my_service->check_period = QString(s->get_check_period().c_str());
+      my_service->check_period = s->get_check_period();
     my_service->check_type = s->get_check_type();
     my_service->current_check_attempt = s->get_current_attempt();
     my_service->current_state = (s->get_has_been_checked()
@@ -1856,11 +1852,11 @@ int neb::callback_service(int callback_type, void* data) {
       = s->get_accept_passive_checks();
     my_service->downtime_depth = s->get_scheduled_downtime_depth();
     if (!s->get_display_name().empty())
-      my_service->display_name = QString(s->get_display_name().c_str());
+      my_service->display_name = s->get_display_name();
     my_service->enabled
       = (service_data->type != NEBTYPE_SERVICE_DELETE);
     if (!s->get_event_handler().empty())
-      my_service->event_handler = QString(s->get_event_handler().c_str());
+      my_service->event_handler = s->get_event_handler();
     my_service->event_handler_enabled = s->get_event_handler_enabled();
     my_service->execution_time = s->get_execution_time();
     my_service->first_notification_delay = s->get_first_notification_delay();
@@ -1874,11 +1870,11 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->has_been_checked = s->get_has_been_checked();
     my_service->high_flap_threshold = s->get_high_flap_threshold();
     if (!s->get_hostname().empty())
-      my_service->host_name = QString(s->get_hostname().c_str());
+      my_service->host_name = s->get_hostname();
     if (!s->get_icon_image().empty())
-      my_service->icon_image = QString(s->get_icon_image().c_str());
+      my_service->icon_image = s->get_icon_image();
     if (!s->get_icon_image_alt().empty())
-      my_service->icon_image_alt = QString(s->get_icon_image_alt().c_str());
+      my_service->icon_image_alt = s->get_icon_image_alt();
     my_service->is_flapping = s->get_is_flapping();
     my_service->is_volatile = s->get_is_volatile();
     my_service->last_check = s->get_last_check();
@@ -1898,13 +1894,13 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->next_notification = s->get_next_notification();
     my_service->no_more_notifications = s->get_no_more_notifications();
     if (!s->get_notes().empty())
-      my_service->notes = QString(s->get_notes().c_str());
+      my_service->notes = s->get_notes();
     if (!s->get_notes_url().empty())
-      my_service->notes_url = QString(s->get_notes_url().c_str());
+      my_service->notes_url = s->get_notes_url();
     my_service->notifications_enabled = s->get_notifications_enabled();
     my_service->notification_interval = s->get_notification_interval();
     if (!s->get_notification_period().empty())
-      my_service->notification_period = QString(s->get_notification_period().c_str());
+      my_service->notification_period = s->get_notification_period();
     my_service->notify_on_critical = s->get_notify_on(engine::notifier::critical);
     my_service->notify_on_downtime = s->get_notify_on(engine::notifier::downtime);
     my_service->notify_on_flapping = s->get_notify_on(engine::notifier::flappingstart);
@@ -1913,7 +1909,7 @@ int neb::callback_service(int callback_type, void* data) {
     my_service->notify_on_warning = s->get_notify_on(engine::notifier::warning);
     my_service->obsess_over = s->get_obsess_over();
     if (!s->get_plugin_output().empty()) {
-      my_service->output = QString(s->get_plugin_output().c_str());
+      my_service->output = s->get_plugin_output();
       my_service->output.append("\n");
     }
     if (!s->get_long_plugin_output().empty())
@@ -1922,14 +1918,14 @@ int neb::callback_service(int callback_type, void* data) {
       = s->get_accept_passive_checks();
     my_service->percent_state_change = s->get_percent_state_change();
     if (!s->get_perf_data().empty())
-      my_service->perf_data = QString(s->get_perf_data().c_str());
+      my_service->perf_data = s->get_perf_data();
     my_service->retain_nonstatus_information
       = s->get_retain_nonstatus_information();
     my_service->retain_status_information
       = s->get_retain_status_information();
     my_service->retry_interval = s->get_retry_interval();
     if (!s->get_description().empty())
-      my_service->service_description = QString(s->get_description().c_str());
+      my_service->service_description = s->get_description();
     my_service->should_be_scheduled = s->get_should_be_scheduled();
     my_service->stalk_on_critical = s->get_stalk_on(engine::notifier::critical);
     my_service->stalk_on_ok = s->get_stalk_on(engine::notifier::ok);
@@ -2082,10 +2078,10 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->acknowledgement_type = s->get_acknowledgement_type();
     service_status->active_checks_enabled = s->get_checks_enabled();
     if (!s->get_check_command().empty())
-      service_status->check_command = QString(s->get_check_command().c_str());
+      service_status->check_command = s->get_check_command();
     service_status->check_interval = s->get_check_interval();
     if (!s->get_check_period().empty())
-      service_status->check_period = QString(s->get_check_period().c_str());
+      service_status->check_period = s->get_check_period();
     service_status->check_type = s->get_check_type();
     service_status->current_check_attempt = s->get_current_attempt();
     service_status->current_state = (s->get_has_been_checked()
@@ -2093,7 +2089,7 @@ int neb::callback_service_status(int callback_type, void* data) {
                                      : 4); // Pending state.
     service_status->downtime_depth = s->get_scheduled_downtime_depth();
     if (!s->get_event_handler().empty())
-      service_status->event_handler = QString(s->get_event_handler().c_str());
+      service_status->event_handler = s->get_event_handler();
     service_status->event_handler_enabled = s->get_event_handler_enabled();
     service_status->execution_time = s->get_execution_time();
     service_status->flap_detection_enabled = s->get_flap_detection_enabled();
@@ -2118,7 +2114,7 @@ int neb::callback_service_status(int callback_type, void* data) {
     service_status->notifications_enabled = s->get_notifications_enabled();
     service_status->obsess_over = s->get_obsess_over();
     if (!s->get_plugin_output().empty()) {
-      service_status->output = QString(s->get_plugin_output().c_str());
+      service_status->output = s->get_plugin_output();
       service_status->output.append("\n");
     }
     if (!s->get_long_plugin_output().empty())
@@ -2127,14 +2123,14 @@ int neb::callback_service_status(int callback_type, void* data) {
       = s->get_accept_passive_checks();
     service_status->percent_state_change = s->get_percent_state_change();
     if (!s->get_perf_data().empty())
-      service_status->perf_data = QString(s->get_perf_data().c_str());
+      service_status->perf_data = s->get_perf_data();
     service_status->retry_interval = s->get_retry_interval();
     if (s->get_hostname().empty())
       throw exceptions::msg() << "unnamed host";
     if (s->get_description().empty())
       throw exceptions::msg() << "unnamed service";
-    service_status->host_name = QString(s->get_hostname().c_str());
-    service_status->service_description = QString(s->get_description().c_str());
+    service_status->host_name = s->get_hostname();
+    service_status->service_description = s->get_description();
     {
       std::pair<uint64_t, uint64_t> p{
           engine::get_host_and_service_id(s->get_hostname(), s->get_description())};

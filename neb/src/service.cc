@@ -179,7 +179,7 @@ mapping::entry const service::entries[] = {
     true,
     "acknowledgement_type"),
   mapping::entry(
-    static_cast<QString (service::*) >(&service::action_url),
+    static_cast<std::string (service::*) >(&service::action_url),
     NULL,
     mapping::entry::always_valid,
     true,
@@ -239,7 +239,7 @@ mapping::entry const service::entries[] = {
     true,
     "scheduled_downtime_depth"),
   mapping::entry(
-    static_cast<QString (service::*) >(&service::display_name),
+    static_cast<std::string (service::*) >(&service::display_name),
     "display_name",
     mapping::entry::invalid_on_v3,
     true),
@@ -293,13 +293,13 @@ mapping::entry const service::entries[] = {
     &service::host_name,
     ""),
   mapping::entry(
-    static_cast<QString (service::*) >(&service::icon_image),
+    static_cast<std::string (service::*) >(&service::icon_image),
     NULL,
     mapping::entry::always_valid,
     true,
     "icon_image"),
   mapping::entry(
-    static_cast<QString (service::*) >(&service::icon_image_alt),
+    static_cast<std::string (service::*) >(&service::icon_image_alt),
     NULL,
     mapping::entry::always_valid,
     true,
@@ -381,13 +381,13 @@ mapping::entry const service::entries[] = {
     true,
     "no_more_notifications"),
   mapping::entry(
-    static_cast<QString (service::*) >(&service::notes),
+    static_cast<std::string (service::*) >(&service::notes),
     NULL,
     mapping::entry::always_valid,
     true,
     "notes"),
   mapping::entry(
-    static_cast<QString (service::*) >(&service::notes_url),
+    static_cast<std::string (service::*) >(&service::notes_url),
     NULL,
     mapping::entry::always_valid,
     true,
@@ -405,7 +405,7 @@ mapping::entry const service::entries[] = {
     true,
     "notification_number"),
   mapping::entry(
-    static_cast<QString (service::*) >(&service::notification_period),
+    static_cast<std::string (service::*) >(&service::notification_period),
     NULL,
     mapping::entry::always_valid,
     true,

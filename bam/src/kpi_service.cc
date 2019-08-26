@@ -73,7 +73,7 @@ kpi_service& kpi_service::operator=(kpi_service const& right) {
     kpi::operator=(right);
     _internal_copy(right);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -89,7 +89,7 @@ bool kpi_service::child_has_update(
                     io::stream* visitor) {
   (void)child;
   (void)visitor;
-  return (true);
+  return true;
 }
 
 /**
@@ -98,7 +98,7 @@ bool kpi_service::child_has_update(
  *  @return Host ID.
  */
 unsigned int kpi_service::get_host_id() const {
-  return (_host_id);
+  return _host_id;
 }
 
 /**
@@ -107,7 +107,7 @@ unsigned int kpi_service::get_host_id() const {
  *  @return The impact applied when service is CRITICAL.
  */
 double kpi_service::get_impact_critical() const {
-  return (_impacts[2]);
+  return _impacts[2];
 }
 
 /**
@@ -116,7 +116,7 @@ double kpi_service::get_impact_critical() const {
  *  @return The impact applied when service is UNKNOWN.
  */
 double kpi_service::get_impact_unknown() const {
-  return (_impacts[3]);
+  return _impacts[3];
 }
 
 /**
@@ -125,7 +125,7 @@ double kpi_service::get_impact_unknown() const {
  *  @return The impact applied when service is WARNING.
  */
 double kpi_service::get_impact_warning() const {
-  return (_impacts[1]);
+  return _impacts[1];
 }
 
 /**
@@ -134,7 +134,7 @@ double kpi_service::get_impact_warning() const {
  *  @return Service ID.
  */
 unsigned int kpi_service::get_service_id() const {
-  return (_service_id);
+  return _service_id;
 }
 
 /**
@@ -143,7 +143,7 @@ unsigned int kpi_service::get_service_id() const {
  *  @return Hard state of the service.
  */
 short kpi_service::get_state_hard() const {
-  return (_state_hard);
+  return _state_hard;
 }
 
 /**
@@ -152,7 +152,7 @@ short kpi_service::get_state_hard() const {
  *  @return Soft state of the service.
  */
 short kpi_service::get_state_soft() const {
-  return (_state_soft);
+  return _state_soft;
 }
 
 /**
@@ -161,7 +161,7 @@ short kpi_service::get_state_soft() const {
  *  @return State type.
  */
 short kpi_service::get_state_type() const {
-  return (_state_type);
+  return _state_type;
 }
 
 /**
@@ -171,7 +171,6 @@ short kpi_service::get_state_type() const {
  */
 void kpi_service::impact_hard(impact_values& impact) {
   _fill_impact(impact, _state_hard);
-  return ;
 }
 
 /**
@@ -181,7 +180,6 @@ void kpi_service::impact_hard(impact_values& impact) {
  */
 void kpi_service::impact_soft(impact_values& impact) {
   _fill_impact(impact, _state_soft);
-  return ;
 }
 
 /**
@@ -190,7 +188,7 @@ void kpi_service::impact_soft(impact_values& impact) {
  *  @return True if the service is in downtime.
  */
 bool kpi_service::in_downtime() const {
-  return (_downtimed);
+  return _downtimed;
 }
 
 /**
@@ -199,7 +197,7 @@ bool kpi_service::in_downtime() const {
  *  @return True if the service is acknowledged.
  */
 bool kpi_service::is_acknowledged() const {
-  return (_acknowledged);
+  return _acknowledged;
 }
 
 /**
@@ -228,8 +226,8 @@ void kpi_service::service_update(
     }
     else
       _last_check = status->last_check;
-    _output = status->output.toStdString();
-    _perfdata = status->perf_data.toStdString();
+    _output = status->output;
+    _perfdata = status->perf_data;
     _state_hard = status->last_hard_state;
     _state_soft = status->current_state;
     _state_type = status->state_type;
@@ -240,7 +238,6 @@ void kpi_service::service_update(
     // Propagate change.
     propagate_update(visitor);
   }
-  return ;
 }
 
 /**
@@ -269,7 +266,6 @@ void kpi_service::service_update(
     // Propagate change.
     propagate_update(visitor);
   }
-  return ;
 }
 
 /**
@@ -298,7 +294,6 @@ void kpi_service::service_update(
     // Propagate change.
     propagate_update(visitor);
   }
-  return ;
 }
 
 /**
@@ -308,7 +303,6 @@ void kpi_service::service_update(
  */
 void kpi_service::set_acknowledged(bool acknowledged) {
   _acknowledged = acknowledged;
-  return ;
 }
 
 /**
@@ -318,7 +312,6 @@ void kpi_service::set_acknowledged(bool acknowledged) {
  */
 void kpi_service::set_downtimed(bool downtimed) {
   _downtimed = downtimed;
-  return ;
 }
 
 /**
@@ -328,7 +321,6 @@ void kpi_service::set_downtimed(bool downtimed) {
  */
 void kpi_service::set_host_id(unsigned int host_id) {
   _host_id = host_id;
-  return ;
 }
 
 /**
@@ -338,7 +330,6 @@ void kpi_service::set_host_id(unsigned int host_id) {
  */
 void kpi_service::set_impact_critical(double impact) {
   _impacts[2] = impact;
-  return ;
 }
 
 /**
@@ -348,7 +339,6 @@ void kpi_service::set_impact_critical(double impact) {
  */
 void kpi_service::set_impact_unknown(double impact) {
   _impacts[3] = impact;
-  return ;
 }
 
 /**
@@ -358,7 +348,6 @@ void kpi_service::set_impact_unknown(double impact) {
  */
 void kpi_service::set_impact_warning(double impact) {
   _impacts[1] = impact;
-  return ;
 }
 
 /**
@@ -368,7 +357,6 @@ void kpi_service::set_impact_warning(double impact) {
  */
 void kpi_service::set_service_id(unsigned int service_id) {
   _service_id = service_id;
-  return ;
 }
 
 /**
@@ -378,7 +366,6 @@ void kpi_service::set_service_id(unsigned int service_id) {
  */
 void kpi_service::set_state_hard(short state) {
   _state_hard = state;
-  return ;
 }
 
 /**
@@ -388,7 +375,6 @@ void kpi_service::set_state_hard(short state) {
  */
 void kpi_service::set_state_soft(short state) {
   _state_soft = state;
-  return ;
 }
 
 /**
@@ -398,7 +384,6 @@ void kpi_service::set_state_soft(short state) {
  */
 void kpi_service::set_state_type(short type) {
   _state_type = type;
-  return ;
 }
 
 /**
@@ -475,7 +460,6 @@ void kpi_service::_fill_impact(impact_values& impact, short state) {
   impact.set_nominal(nominal);
   impact.set_acknowledgement(_acknowledged ? nominal : 0.0);
   impact.set_downtime(_downtimed ? nominal : 0.0);
-  return ;
 }
 
 /**
@@ -496,7 +480,6 @@ void kpi_service::_internal_copy(kpi_service const& right) {
   _state_hard = right._state_hard;
   _state_soft = right._state_soft;
   _state_type = right._state_type;
-  return ;
 }
 
 /**
@@ -522,7 +505,6 @@ void kpi_service::_open_new_event(
     std::shared_ptr<io::data> ke(new kpi_event(*_event));
     visitor->write(ke);
   }
-  return ;
 }
 
 /**
@@ -542,5 +524,5 @@ void kpi_service::set_initial_event(kpi_event const& e) {
  *  @return  True if this KPI is in an ok state.
  */
 bool kpi_service::ok_state() const {
-  return (_state_hard == 0);
+  return _state_hard == 0;
 }

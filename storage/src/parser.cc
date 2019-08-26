@@ -51,14 +51,29 @@ static inline double extract_double(
   if (isspace(**str))
     retval = NAN;
   else {
-    retval = strtod(*str, &tmp);
-    if (*str == tmp)
-      retval = NAN;
-    *str = tmp;
+    char const* comma{strchr(*str, ',')};
+    if (comma) {
+      /* In case of comma decimal separator, we duplicate the number and
+       * replace the comma by a point. */
+      size_t t = strcspn(comma, " \t\n\r;");
+      char* nb = strndup(*str, (comma - *str) + t);
+      nb[comma - *str] = '.';
+      retval = strtod(nb, &tmp);
+      if (nb == tmp)
+        retval = NAN;
+      *str = *str + (tmp - nb);
+      free(nb);
+    }
+    else {
+      retval = strtod(*str, &tmp);
+      if (*str == tmp)
+        retval = NAN;
+      *str = tmp;
+    }
     if (skip && (**str == ';'))
       ++*str;
   }
-  return (retval);
+  return retval;
 }
 
 /**
@@ -111,8 +126,6 @@ static inline void extract_range(
   // Set values.
   *low = low_value;
   *high = high_value;
-
-  return ;
 }
 
 /**************************************
@@ -127,34 +140,9 @@ static inline void extract_range(
 parser::parser() {}
 
 /**
- *  @brief Copy constructor.
- *
- *  No data is stored within the parser class.
- *
- *  @param[in] pp Unused.
- */
-parser::parser(parser const& pp) {
-  (void)pp;
-}
-
-/**
  *  Destructor.
  */
 parser::~parser() {}
-
-/**
- *  @brief Assignment operator.
- *
- *  No data is stored within the parser class.
- *
- *  @param[in] pp Unused.
- *
- *  @return This object.
- */
-parser& parser::operator=(parser const& pp) {
-  (void)pp;
-  return (*this);
-}
 
 /**
  *  Parse perfdata string as given by plugin.
@@ -163,97 +151,102 @@ parser& parser::operator=(parser const& pp) {
  *  @param[out] pd  List of parsed metrics.
  */
 void parser::parse_perfdata(
-               QString const& str,
-               QList<perfdata>& pd) {
-  // Here we will use a UTF-8 copy of the UTF-16 QString. This will
-  // allow us to work with standard C string functions. The key thing
-  // to remember is that ASCII-compatible character encodings cannot
-  // occur on multi-byte characters.
+               std::string const& str,
+               std::list<perfdata>& pd) {
+  size_t start{str.find_first_not_of(" \n\r\t")};
+  size_t end{str.find_last_not_of(" \n\r\t") + 1};
+  size_t len{end - start};
 
-  // PS : things seem to be working with ASCII-compliant characters
-  //      and multi-bytes Unicode characters. DO NOT TOUCH UNLESS YOU
-  //      KNOW WHAT YOU'RE DOING.
-
-  // Extract metrics strings.
-  QByteArray buf(str.trimmed().toUtf8());
-  std::replace(buf.begin(), buf.end(), ',', '.');
-  char const* ptr(buf.constData());
+  char const* buf{str.c_str() + start};
 
   // Debug message.
   logging::debug(logging::medium)
-    << "storage: parsing perfdata string '"
-    << ptr << "'";
+      << "storage: parsing perfdata string '" << buf << "'";
 
-  while (*ptr) {
+  char const* tmp = buf;
+  while (*tmp) {
     // Perfdata object.
     perfdata p;
 
     // Get metric name.
-    bool in_quote(false);
-    int i(0);
-    while (ptr[i] && (in_quote
-                      || ((ptr[i] != '=') && !isspace(ptr[i]))
-                      || (static_cast<unsigned char>(ptr[i]) >= 128))) {
-      if ('\'' == ptr[i])
+    bool in_quote{false};
+    char const* end{tmp};
+    while (*end && (in_quote
+                      || (*end != '=' && !isspace(*end))
+                      || static_cast<unsigned char>(*end) >= 128)) {
+      if ('\'' == *end)
         in_quote = !in_quote;
-      ++i;
+      ++end;
     }
-    QByteArray s(ptr, i);
-    ptr += i;
 
-    // Unquote metric name.
-    int t;
-    t = s.indexOf('\'');
-    while (t != -1) {
-      s.remove(t, 1);
-      t = s.indexOf('\'', t + 1); // Skip one char, so '' becomes '.
-    }
-    int size(s.size());
-    if ((size > 0) && (s[size - 1] == ']')) {
-      if (s.startsWith("a[")) {
-        s = s.mid(2, size - 3);
+    /* The metric name is in the range s[0;size) */
+    char const* s{tmp};
+    tmp = end;
+    --end;
+
+    // Unquote metric name. Just beginning quotes and ending quotes"'".
+    // We also remove spaces by the way.
+    if (*s == '\'')
+      ++s;
+    if (*end == '\'')
+      --end;
+
+    while (*s && strchr(" \n\r\t", *s))
+      ++s;
+    while (end != s && strchr(" \n\r\t", *end))
+      --end;
+
+    /* The label is given by s and finishes at end */
+    if (*end == ']') {
+      --end;
+      if (strncmp(s, "a[", 2) == 0) {
+        s += 2;
         p.value_type(perfdata::absolute);
       }
-      else if (s.startsWith("c[")) {
-        s = s.mid(2, size - 3);
+      else if (strncmp(s, "c[", 2) == 0) {
+        s += 2;
         p.value_type(perfdata::counter);
       }
-      else if (s.startsWith("d[")) {
-        s = s.mid(2, size - 3);
+      else if (strncmp(s, "d[", 2) == 0) {
+        s += 2;
         p.value_type(perfdata::derive);
       }
-      else if (s.startsWith("g[")) {
-        s = s.mid(2, s.size() - 3);
+      else if (strncmp(s, "g[", 2) == 0) {
+        s += 2;
         p.value_type(perfdata::gauge);
       }
     }
-    p.name(QString::fromUtf8(s.trimmed().constData()));
+
+    p.name(std::string(s, end - s + 1));
 
     // Check format.
-    if (*ptr != '=')
-      throw (exceptions::perfdata() << "storage: invalid perfdata "
-             << "format: equal sign not present or misplaced");
-    ++ptr;
+    if (*tmp != '=') {
+      throw exceptions::perfdata() << "storage: invalid perfdata "
+             "format: equal sign not present or misplaced";
+    }
+    ++tmp;
 
     // Extract value.
-    p.value(extract_double(&ptr, false));
-    if (std::isnan(p.value()))
-      throw (exceptions::perfdata() << "storage: invalid perfdata "
-             << "format: no numeric value after equal sign");
+    p.value(extract_double(const_cast<char const**>(&tmp), false));
+    if (std::isnan(p.value())) {
+      throw exceptions::perfdata() << "storage: invalid perfdata "
+             << "format: no numeric value after equal sign";
+    }
 
     // Extract unit.
-    t = strcspn(ptr, " \t\n\r;");
-    p.unit(QString::fromUtf8(ptr, t));
-    ptr += t;
-    if (*ptr == ';')
-      ++ptr;
+    size_t t = strcspn(tmp, " \t\n\r;");
+    p.unit(std::string(tmp, t));
+    tmp += t;
+    if (*tmp == ';')
+      ++tmp;
 
     // Extract warning.
     {
       double warning_high;
       double warning_low;
       bool warning_mode;
-      extract_range(&warning_low, &warning_high, &warning_mode, &ptr);
+      extract_range(&warning_low, &warning_high, &warning_mode,
+                    const_cast<char const**>(&tmp));
       p.warning(warning_high);
       p.warning_low(warning_low);
       p.warning_mode(warning_mode);
@@ -268,17 +261,17 @@ void parser::parse_perfdata(
         &critical_low,
         &critical_high,
         &critical_mode,
-        &ptr);
+        const_cast<const char**>(&tmp));
       p.critical(critical_high);
       p.critical_low(critical_low);
       p.critical_mode(critical_mode);
     }
 
     // Extract minimum.
-    p.min(extract_double(&ptr));
+    p.min(extract_double(const_cast<const char**>(&tmp)));
 
     // Extract maximum.
-    p.max(extract_double(&ptr));
+    p.max(extract_double(const_cast<const char**>(&tmp)));
 
     // Log new perfdata.
     logging::debug(logging::low) << "storage: got new perfdata (name="
@@ -290,9 +283,7 @@ void parser::parse_perfdata(
     pd.push_back(p);
 
     // Skip whitespaces.
-    while (isblank(*ptr))
-      ++ptr;
+    while (isblank(*tmp))
+      ++tmp;
   }
-
-  return ;
 }

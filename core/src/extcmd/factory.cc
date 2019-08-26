@@ -97,14 +97,16 @@ io::endpoint* factory::new_endpoint(
   is_acceptor = true;
   // Find the protocol to use.
   command_server::protocol prot = command_server::json;
-  if (cfg.params.contains("command_protocol")) {
-    QString command_prot = cfg.params["command_protocol"];
+  std::map<std::string, std::string>::const_iterator
+    it{cfg.params.find("command_protocol")};
+  if (it != cfg.params.end()) {
+    std::string command_prot{it->second};
     if (command_prot == "plaintext")
       prot = command_server::plaintext;
   }
 
-  return (new command_server(
+  return new command_server(
                 prot,
-                cfg.params.value("extcmd").toStdString(),
-                cache));
+                cfg.params["extcmd"],
+                cache);
 }

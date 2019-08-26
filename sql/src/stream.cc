@@ -672,7 +672,7 @@ void stream::_process_custom_variable(
     _custom_variable_delete.bind_value(
       ":service_id",
       (cv.service_id ? QVariant(cv.service_id) : QVariant(QVariant::Int)));
-    _custom_variable_delete.bind_value(":name", cv.name);
+    _custom_variable_delete.bind_value(":name", QString::fromStdString(cv.name));
     try { _custom_variable_delete.run_statement(); }
     catch (std::exception const& e) {
       throw (exceptions::msg()
@@ -1035,7 +1035,7 @@ void stream::_process_host_check(
     // Processing.
     // Compute the command hash
     bool execute_query(true);
-    unsigned int str_hash(qHash(hc.command_line));
+    std::size_t str_hash = std::hash<std::string>{}(hc.command_line);
     std::map<unsigned int, unsigned int>::iterator it(
       _cache_hst_cmd.find(hc.host_id));
 
@@ -1887,7 +1887,7 @@ void stream::_process_module(
       database_query q(_db);
       q.prepare(ss.str(), "SQL");
       q.bind_value(":instance_id", m.poller_id);
-      q.bind_value(":filename", m.filename);
+      q.bind_value(":filename", QString::fromStdString(m.filename));
       q.run_statement("SQL");
     }
   }
@@ -1901,7 +1901,7 @@ void stream::_process_module(
  *  @param[in] e Uncasted notification.
  */
 void stream::_process_notification(
-               std::shared_ptr<io::data> const& e) {
+               std::shared_ptr<io::data> const& e __attribute__((unused))) {
   // XXX
   // // Log message.
   // logging::info(logging::medium)
@@ -1993,7 +1993,7 @@ void stream::_process_service_check(
     // Processing.
     // Compute the command hash
     bool execute_query(true);
-    unsigned int str_hash(qHash(sc.command_line));
+    std::size_t str_hash = std::hash<std::string>{}(sc.command_line);
     std::map<std::pair<unsigned int, unsigned int>, unsigned int>::iterator it(
       _cache_svc_cmd.find(std::make_pair(sc.host_id, sc.service_id)));
 
@@ -2429,7 +2429,7 @@ void stream::_process_service_status(
 }
 
 void stream::_process_responsive_instance(
-               std::shared_ptr<io::data> const& e) {}
+               std::shared_ptr<io::data> const& e __attribute__((unused))) {}
 
 template <typename T>
 void stream::_update_on_none_insert(

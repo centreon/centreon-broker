@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_EVENT_HANDLER_HH
 #  define CCB_NEB_EVENT_HANDLER_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
@@ -46,14 +46,14 @@ namespace          neb {
     static unsigned int
                    static_type();
 
-    QString        command_args;
-    QString        command_line;
+    std::string        command_args;
+    std::string        command_line;
     bool           early_timeout;
     timestamp      end_time;
     double         execution_time;
     short          handler_type;
     unsigned int   host_id;
-    QString        output;
+    std::string        output;
     short          return_code;
     unsigned int   service_id;
     timestamp      start_time;

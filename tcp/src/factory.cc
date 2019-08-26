@@ -17,7 +17,7 @@
 */
 
 #include <memory>
-#include <QString>
+#include <string>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
@@ -59,7 +59,7 @@ factory::~factory() {}
  */
 factory& factory::operator=(factory const& other) {
   io::factory::operator=(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -68,7 +68,7 @@ factory& factory::operator=(factory const& other) {
  *  @return Clone of this factory.
  */
 io::factory* factory::clone() const {
-  return (new factory(*this));
+  return new factory(*this);
 }
 
 /**
@@ -101,42 +101,41 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   // Find host (if exist).
-  QString host;
+  std::string host;
   {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("host"));
+    std::map<std::string, std::string>::const_iterator it{cfg.params.find("host")};
     if (it != cfg.params.end())
-      host = it.value();
+      host = it->second;
   }
 
   // Find port (must exist).
   unsigned short port;
   {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("port"));
+    std::map<std::string, std::string>::const_iterator it{cfg.params.find("port")};
     if (it == cfg.params.end())
-      throw (exceptions::msg() << "TCP: no 'port' defined for " \
-               "endpoint '" << cfg.name << "'");
-    port = it.value().toUShort();
+      throw exceptions::msg() << "TCP: no 'port' defined for " \
+               "endpoint '" << cfg.name << "'";
+    port = static_cast<unsigned short>(std::stol(it->second));
   }
 
   // Find TCP socket timeout option.
   int write_timeout(-1);
   {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("socket_write_timeout"));
+    std::map<std::string, std::string>::const_iterator it{cfg.params.find("socket_write_timeout")};
     if (it != cfg.params.end())
-      write_timeout = it.value().toUInt();
+      write_timeout = std::stoul(it->second);
   }
 
   int read_timeout(-1);
   {
-    QMap<QString, QString>::const_iterator it(cfg.params.find("socket_read_timeout"));
+    std::map<std::string, std::string>::const_iterator it{cfg.params.find("socket_read_timeout")};
     if (it != cfg.params.end())
-      read_timeout = it.value().toUInt();
+      read_timeout = std::stoul(it->second);
   }
-
 
   // Acceptor.
   std::unique_ptr<io::endpoint> endp;
-  if (host.isEmpty()) {
+  if (host.empty()) {
     is_acceptor = true;
     std::unique_ptr<tcp::acceptor> a(new tcp::acceptor);
     a->set_read_timeout(read_timeout);
@@ -153,5 +152,5 @@ io::endpoint* factory::new_endpoint(
     c->set_write_timeout(write_timeout);
     endp.reset(c.release());
   }
-  return (endp.release());
+  return endp.release();
 }

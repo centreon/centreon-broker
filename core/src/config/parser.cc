@@ -40,30 +40,9 @@ using namespace json11;
 parser::parser() {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-parser::parser(parser const& other) {
-  (void)other;
-}
-
-/**
  *  Destructor.
  */
 parser::~parser() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-parser& parser::operator=(parser const& other) {
-  (void)other;
-  return (*this);
-}
 
 template <typename T, typename U>
 static bool get_conf(std::pair<std::string const, Json> const& obj,
@@ -92,7 +71,7 @@ static bool get_conf(std::pair<std::string const, Json> const& obj,
  *  @param[out] s    Resulting configuration state.
  */
 void parser::parse(std::string const& file, state& s) {
-  // Parse XML document.
+  // Parse JSON document.
   std::ifstream f(file);
   std::string const& json_to_parse{
     std::istreambuf_iterator<char>(f),
@@ -204,7 +183,6 @@ void parser::parse(std::string const& file, state& s) {
         s.params()[object.first] = object.second.dump();
     }
   }
-  return ;
 }
 
 /**
@@ -212,13 +190,12 @@ void parser::parse(std::string const& file, state& s) {
  *
  *  @param[in] value String representation of the boolean.
  */
-bool parser::parse_boolean(QString const& value) {
-  bool conversion_ok;
-  return (!value.compare("yes", Qt::CaseInsensitive)
-          || !value.compare("enable", Qt::CaseInsensitive)
-          || !value.compare("enabled", Qt::CaseInsensitive)
-          || !value.compare("true", Qt::CaseInsensitive)
-          || (value.toUInt(&conversion_ok) && conversion_ok));
+bool parser::parse_boolean(std::string const& value) {
+  return !strcasecmp(value.c_str(), "yes")
+          || !strcasecmp(value.c_str(), "enable")
+          || !strcasecmp(value.c_str(), "enabled")
+          || !strcasecmp(value.c_str(), "true")
+          || std::stol(value);
 }
 
 /**************************************
@@ -262,12 +239,11 @@ void parser::_parse_endpoint(Json const& elem, endpoint& e) {
       }
     }
     else if (object.first == "cache")
-      e.cache_enabled = parse_boolean(QString::fromStdString(object.second.string_value()));
+      e.cache_enabled = parse_boolean(object.second.string_value());
     else if (object.first == "type")
       e.type = QString::fromStdString(object.second.string_value());
-    e.params[QString::fromStdString(object.first)] = QString::fromStdString(object.second.string_value());
+    e.params[object.first] = object.second.string_value();
   }
-  return ;
 }
 
 /**
@@ -367,5 +343,4 @@ void parser::_parse_logger(Json const& elem, logger& l) {
                << val << "'");
     }
   }
-  return ;
 }

@@ -46,7 +46,7 @@ namespace               dumper {
     bool                full;
     unsigned int        poller_id;
     // Small cookie used to track which request is which.
-    QString             req_id;
+    std::string         req_id;
 
     static mapping::entry const
                         entries[];

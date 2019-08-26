@@ -36,12 +36,12 @@ using namespace json11;
  */
 static std::string find_param(
                      config::endpoint const& cfg,
-                     QString const& key) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+                     std::string const& key) {
+  std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw (exceptions::msg() << "lua: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'");
-  return it.value().toStdString();
+    throw exceptions::msg() << "lua: no '" << key
+           << "' defined for endpoint '" << cfg.name << "'";
+  return it->second;
 }
 
 /**
@@ -111,14 +111,14 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
                          std::shared_ptr<persistent_cache> cache) const {
-  QMap<QString, QVariant> conf_map;
+  std::map<std::string, misc::variant> conf_map;
   std::string err;
 
   std::string filename(find_param(cfg, "path"));
   Json const& js{cfg.cfg["lua_parameter"]};
 
   if (!err.empty())
-    throw (exceptions::msg())
+    throw exceptions::msg()
       << "lua: couldn't read a configuration json";
 
   if (js.is_object()) {
@@ -137,22 +137,21 @@ io::endpoint* factory::new_endpoint(
     std::string t((type.string_value().empty())
                   ? "string" : type.string_value());
     if (t == "string" || t == "password")
-      conf_map.insert(QString::fromStdString(name.string_value()), QVariant(QString::fromStdString(value.string_value())));
+      conf_map.insert({name.string_value(), misc::variant(value.string_value())});
     else if (t == "number") {
       bool ok;
       int val(QString::fromStdString(value.string_value()).toInt(&ok, 10));
       if (ok)
-        conf_map.insert(QString::fromStdString(name.string_value()), QVariant(val));
+        conf_map.insert({name.string_value(), misc::variant(val)});
       else {
-        double val(QString::fromStdString(value.string_value()).toDouble(&ok));
-        if (ok)
-          conf_map.insert(QString::fromStdString(name.string_value()), QVariant(val));
-        else {
-          throw (exceptions::msg())
-            << "lua: unable to read '"
-            << name.string_value()
-            << "' content (" << value.string_value()
-            << ") as a number";
+        try {
+          double val = std::stod(value.string_value(), nullptr);
+          conf_map.insert({name.string_value(), misc::variant(val)});
+        }
+        catch (std::exception const& e) {
+            throw exceptions::msg()
+                << "lua: unable to read '" << name.string_value()
+                << "' content (" << value.string_value() << ") as a number";
         }
       }
     }
@@ -163,33 +162,25 @@ io::endpoint* factory::new_endpoint(
       Json const &value{obj["value"]};
 
       if (name.string_value().empty())
-        throw (exceptions::msg())
+        throw exceptions::msg()
           << "lua: couldn't read a configuration field because"
           << " its name is empty";
       if (value.string_value().empty())
-        throw (exceptions::msg())
+        throw exceptions::msg()
           << "lua: couldn't read a configuration field because"
           << "' configuration field because its value is empty";
       std::string t((type.string_value().empty())
                     ? "string" : type.string_value());
       if (t == "string" || t == "password")
-        conf_map.insert(QString::fromStdString(name.string_value()), QVariant(QString::fromStdString(value.string_value())));
+        conf_map.insert({name.string_value(), misc::variant(value.string_value())});
       else if (t == "number") {
-        bool ok;
-        int val(QString::fromStdString(value.string_value()).toInt(&ok, 10));
-        if (ok)
-          conf_map.insert(QString::fromStdString(name.string_value()), QVariant(val));
-        else {
-          double val(QString::fromStdString(value.string_value()).toDouble(&ok));
-          if (ok)
-            conf_map.insert(QString::fromStdString(name.string_value()), QVariant(val));
-          else {
-            throw (exceptions::msg())
-              << "lua: unable to read '"
-              << name.string_value()
-              << "' content (" << value.string_value()
-              << ") as a number";
-          }
+        try {
+          int val = std::stol(value.string_value());
+          conf_map.insert({name.string_value(), misc::variant(val)});
+        } catch (std::exception const& e) {
+          throw exceptions::msg()
+              << "lua: unable to read '" << name.string_value() << "' content ("
+              << value.string_value() << ") as a number";
         }
       }
     }

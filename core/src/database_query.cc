@@ -105,7 +105,6 @@ static void bind_short(
               short val,
               database_query& q) {
   q.bind_value(field, QVariant(val));
-  return ;
 }
 
 /**
@@ -116,7 +115,6 @@ static void bind_string(
               QString const& val,
               database_query& q) {
   q.bind_value(field, QVariant(val.toStdString().c_str()));
-  return ;
 }
 
 /**
@@ -132,7 +130,6 @@ static void bind_string_null_on_empty(
   // NULL.
   else
     q.bind_value(field, QVariant(QVariant::String));
-  return ;
 }
 
 /**
@@ -304,10 +301,10 @@ database_query& database_query::operator<<(io::data const& d) {
               == mapping::entry::invalid_on_zero)
             bind_string_null_on_empty(
               field,
-              current_entry->get_string(d),
+              current_entry->get_string(d).c_str(),
               *this);
           else
-            bind_string(field, current_entry->get_string(d), *this);
+            bind_string(field, current_entry->get_string(d).c_str(), *this);
           break ;
         case mapping::source::TIME:
           switch (current_entry->get_attribute()) {

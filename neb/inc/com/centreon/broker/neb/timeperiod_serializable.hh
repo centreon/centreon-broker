@@ -20,8 +20,8 @@
 #  define CCB_NEB_TIMEPERIOD_SERIALIZABLE_HH
 
 #  include <string>
-#  include <QHash>
-#  include <QString>
+#  include <unordered_map>
+#  include <string>
 #  include "com/centreon/broker/time/timeperiod.hh"
 #  include "com/centreon/broker/ceof/ceof_serializable.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -37,7 +37,7 @@ namespace   neb {
                    : public ceof::ceof_serializable {
   public:
                  timeperiod_serializable(
-                   QHash<QString, time::timeperiod::ptr> const& tps);
+                   std::unordered_map<std::string, time::timeperiod::ptr> const& tps);
                  timeperiod_serializable(
                  timeperiod_serializable const& other);
     timeperiod_serializable&
@@ -76,7 +76,7 @@ namespace   neb {
     virtual void visit(ceof::ceof_visitor& visitor);
 
   private:
-    QHash<QString, time::timeperiod::ptr> const*
+    std::unordered_map<std::string, time::timeperiod::ptr> const*
                  _tps;
     time::timeperiod::ptr
                  _tp;

@@ -19,7 +19,7 @@
 #ifndef CCB_MAPPING_SOURCE_HH
 #  define CCB_MAPPING_SOURCE_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
@@ -45,7 +45,8 @@ namespace                    mapping {
       STRING,
       TIME,
       UINT,
-      USHORT
+      USHORT,
+      ULONG
     };
                              source();
                              source(source const& other);
@@ -55,7 +56,7 @@ namespace                    mapping {
     virtual double           get_double(io::data const& d) = 0;
     virtual int              get_int(io::data const& d) = 0;
     virtual short            get_short(io::data const& d) = 0;
-    virtual QString const&   get_string(io::data const& d) = 0;
+    virtual std::string const&   get_string(io::data const& d) = 0;
     virtual timestamp const& get_time(io::data const& d) = 0;
     virtual unsigned int     get_uint(io::data const& d) = 0;
     virtual unsigned short   get_ushort(io::data const& d) = 0;
@@ -65,7 +66,7 @@ namespace                    mapping {
     virtual void             set_short(io::data& d, short value) = 0;
     virtual void             set_string(
                                io::data& d,
-                               QString const& value) = 0;
+                               std::string const& value) = 0;
     virtual void             set_time(
                                io::data& d,
                                timestamp const& value) = 0;
