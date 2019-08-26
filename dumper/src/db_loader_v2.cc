@@ -101,8 +101,8 @@ void db_loader_v2::_load_bas() {
     b.enable = true;
     b.poller_id = _poller_id;
     b.ba_id = q.value(0).toUInt();
-    b.name = q.value(1).toString();
-    b.description = q.value(2).toString();
+    b.name = q.value(1).toString().toStdString();
+    b.description = q.value(2).toString().toStdString();
     b.level_warning = q.value(3).toDouble();
     b.level_critical = q.value(4).toDouble();
     _state->get_bas().push_back(b);
@@ -132,10 +132,10 @@ void db_loader_v2::_load_booleans() {
     b.enable = true;
     b.poller_id = _poller_id;
     b.boolean_id = q.value(0).toUInt();
-    b.name = q.value(1).toString();
-    b.expression = q.value(2).toString();
+    b.name = q.value(1).toString().toStdString();
+    b.expression = q.value(2).toString().toStdString();
     b.bool_state = q.value(3).toInt();
-    b.comment = q.value(4).toString();
+    b.comment = q.value(4).toString().toStdString();
     _state->get_booleans().push_back(b);
   }
 }
@@ -204,7 +204,7 @@ void db_loader_v2::_load_hosts() {
   h.enable = true;
   h.poller_id = _poller_id;
   h.host_id = q.value(0).toUInt();
-  h.name = q.value(1).toString();
+  h.name = q.value(1).toString().toStdString();
   _state->get_hosts().push_back(h);
 }
 
@@ -239,8 +239,14 @@ void db_loader_v2::_load_services() {
     std::string trimmed_description = service_description;
     trimmed_description.erase(0, strlen("ba_"));
     if (!trimmed_description.empty()) {
-      bool ok = false;
-      unsigned int ba_id = QString(trimmed_description.c_str()).toUInt(&ok);
+      bool ok;
+      unsigned int ba_id;
+      try {
+        ba_id = std::stoul(trimmed_description);
+        ok = true;
+      } catch (std::exception const& e) {
+        ok = false;
+      }
       if (!ok)
         continue ;
       std::map<unsigned int, entries::ba>::const_iterator
@@ -252,7 +258,7 @@ void db_loader_v2::_load_services() {
       s.poller_id = _poller_id;
       s.host_id = host_id;
       s.service_id = service_id;
-      s.description = QString::fromStdString(service_description);
+      s.description = service_description;
       _state->get_services().push_back(s);
     }
   }

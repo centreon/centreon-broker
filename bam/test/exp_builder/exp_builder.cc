@@ -26,23 +26,13 @@
 
 using namespace com::centreon::broker;
 
-/**
- *  Helper function.
- */
-static std::list<std::string> array_to_list(char const* array[]) {
-  std::list<std::string> retval;
-  for (int i(0); array[i]; ++i)
-    retval.push_back(array[i]);
-  return (retval);
-}
-
 TEST(BamExpBuilder, Valid1) {
   bam::exp_parser p("OK IS OK");
   bam::hst_svc_mapping mapping;
   bam::exp_builder builder(p.get_postfix(), mapping);
-  ASSERT_EQ(builder.get_calls().size(), 0);
-  ASSERT_EQ(builder.get_metrics().size(), 0);
-  ASSERT_EQ(builder.get_services().size(), 0);
+  ASSERT_EQ(builder.get_calls().size(), 0u);
+  ASSERT_EQ(builder.get_metrics().size(), 0u);
+  ASSERT_EQ(builder.get_services().size(), 0u);
   bam::bool_value::ptr b(builder.get_tree());
   ASSERT_EQ(b->value_soft(), 1);
   ASSERT_EQ(b->value_hard(), 1);
@@ -52,9 +42,9 @@ TEST(BamExpBuilder, Valid2) {
   bam::exp_parser p("OK IS NOT OK");
   bam::hst_svc_mapping mapping;
   bam::exp_builder builder(p.get_postfix(), mapping);
-  ASSERT_EQ(builder.get_calls().size(), 0);
-  ASSERT_EQ(builder.get_metrics().size(), 0);
-  ASSERT_EQ(builder.get_services().size(), 0);
+  ASSERT_EQ(builder.get_calls().size(), 0u);
+  ASSERT_EQ(builder.get_metrics().size(), 0u);
+  ASSERT_EQ(builder.get_services().size(), 0u);
   bam::bool_value::ptr b(builder.get_tree());
   ASSERT_EQ(b->value_soft(), 0);
   ASSERT_EQ(b->value_hard(), 0);
@@ -64,9 +54,9 @@ TEST(BamExpBuilder, Valid3) {
   bam::exp_parser p("OK AND CRITICAL");
   bam::hst_svc_mapping mapping;
   bam::exp_builder builder(p.get_postfix(), mapping);
-  ASSERT_EQ(builder.get_calls().size(), 0);
-  ASSERT_EQ(builder.get_metrics().size(), 0);
-  ASSERT_EQ(builder.get_services().size(), 0);
+  ASSERT_EQ(builder.get_calls().size(), 0u);
+  ASSERT_EQ(builder.get_metrics().size(), 0u);
+  ASSERT_EQ(builder.get_services().size(), 0u);
   bam::bool_value::ptr b(builder.get_tree());
   ASSERT_EQ(b->value_soft(), 0);
   ASSERT_EQ(b->value_hard(), 0);
@@ -76,9 +66,9 @@ TEST(BamExpBuilder, Valid4) {
   bam::exp_parser p("OK OR CRITICAL");
   bam::hst_svc_mapping mapping;
   bam::exp_builder builder(p.get_postfix(), mapping);
-  ASSERT_EQ(builder.get_calls().size(), 0);
-  ASSERT_EQ(builder.get_metrics().size(), 0);
-  ASSERT_EQ(builder.get_services().size(), 0);
+  ASSERT_EQ(builder.get_calls().size(), 0u);
+  ASSERT_EQ(builder.get_metrics().size(), 0u);
+  ASSERT_EQ(builder.get_services().size(), 0u);
   bam::bool_value::ptr b(builder.get_tree());
   ASSERT_EQ(b->value_soft(), 1);
   ASSERT_EQ(b->value_hard(), 1);
@@ -88,9 +78,9 @@ TEST(BamExpBuilder, Valid5) {
   bam::exp_parser p("OK XOR CRITICAL");
   bam::hst_svc_mapping mapping;
   bam::exp_builder builder(p.get_postfix(), mapping);
-  ASSERT_EQ(builder.get_calls().size(), 0);
-  ASSERT_EQ(builder.get_metrics().size(), 0);
-  ASSERT_EQ(builder.get_services().size(), 0);
+  ASSERT_EQ(builder.get_calls().size(), 0u);
+  ASSERT_EQ(builder.get_metrics().size(), 0u);
+  ASSERT_EQ(builder.get_services().size(), 0u);
   bam::bool_value::ptr b(builder.get_tree());
   ASSERT_EQ(b->value_soft(), 1);
   ASSERT_EQ(b->value_hard(), 1);

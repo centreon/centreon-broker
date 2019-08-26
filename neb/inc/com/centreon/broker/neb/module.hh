@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_MODULE_HH
 #  define CCB_NEB_MODULE_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
@@ -45,9 +45,9 @@ namespace          neb {
     static unsigned int
                    static_type();
 
-    QString        args;
+    std::string        args;
     bool           enabled;
-    QString        filename;
+    std::string        filename;
     bool           loaded;
     unsigned int   poller_id;
     bool           should_be_loaded;

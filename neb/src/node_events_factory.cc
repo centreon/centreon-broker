@@ -18,7 +18,6 @@
 
 #include <libgen.h>
 #include <memory>
-#include <QVariant>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/neb/node_events_factory.hh"
 #include "com/centreon/broker/neb/node_events_connector.hh"
@@ -26,17 +25,6 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
-
-template <typename T>
-static T get(T def, config::endpoint& cfg, QString const& name) {
-  T ret = def;
-
-  QMap<QString, QString>::const_iterator found = cfg.params.find(name);
-  if (found != cfg.params.end())
-    ret = QVariant(*found).value<T>();
-
-  return (ret);
-}
 
 /**************************************
 *                                     *
@@ -54,9 +42,8 @@ node_events_factory::node_events_factory() {}
  *
  *  @param[in] other  Object to copy.
  */
-node_events_factory::node_events_factory(
-                       node_events_factory const& other)
-  : io::factory(other) {}
+node_events_factory::node_events_factory(node_events_factory const& other)
+    : io::factory(other) {}
 
 /**
  *  Destructor.
@@ -71,9 +58,9 @@ node_events_factory::~node_events_factory() {}
  *  @return This object.
  */
 node_events_factory& node_events_factory::operator=(
-                       node_events_factory const& other) {
+    node_events_factory const& other) {
   io::factory::operator=(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -82,7 +69,7 @@ node_events_factory& node_events_factory::operator=(
  *  @return Exact copy of this object.
  */
 io::factory* node_events_factory::clone() const {
-  return (new node_events_factory(*this));
+  return new node_events_factory(*this);
 }
 
 /**
@@ -98,7 +85,7 @@ bool node_events_factory::has_endpoint(config::endpoint& cfg) const {
     cfg.params["cache"] = "yes";
     cfg.cache_enabled = true;
   }
-  return (is_node_events);
+  return is_node_events;
 }
 
 /**
@@ -111,13 +98,14 @@ bool node_events_factory::has_endpoint(config::endpoint& cfg) const {
  *  @return Connector matching configuration.
  */
 io::endpoint* node_events_factory::new_endpoint(
-                config::endpoint& cfg,
-                bool& is_acceptor,
-                std::shared_ptr<persistent_cache> cache) const {
-  QString name = get(QString(), cfg, "cfg_file");
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
+  std::string name;
+  std::map<std::string, std::string>::const_iterator found{cfg.params.find("cfg_file")};
+  if (found != cfg.params.end())
+    name = found->second;
+
   is_acceptor = false;
-  return (new node_events_connector(
-                cfg.name,
-                cache,
-                name.toStdString()));
+  return new node_events_connector(cfg.name, cache, name);
 }

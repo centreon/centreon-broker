@@ -17,8 +17,8 @@
 */
 
 #include <sstream>
-#include <QVariant>
 #include <QSet>
+#include <QVariant> // Needed because of QSql
 #include <QSqlError>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"

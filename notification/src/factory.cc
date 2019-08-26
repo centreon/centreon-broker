@@ -39,14 +39,13 @@ using namespace com::centreon::broker::notification;
  *
  *  @return Property value.
  */
-static QString const& find_param(
-                        config::endpoint const& cfg,
-                        QString const& key) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+static std::string const &find_param(config::endpoint const &cfg,
+                                     std::string const &key) {
+  std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw (exceptions::msg() << "notification: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'");
-  return (it.value());
+    throw exceptions::msg() << "notification: no '" << key
+                            << "' defined for endpoint '" << cfg.name << "'";
+  return it->second;
 }
 
 /**************************************
@@ -123,42 +122,37 @@ io::endpoint* factory::new_endpoint(
                          bool& is_acceptor,
                          std::shared_ptr<persistent_cache> cache) const {
   // Find DB type.
-  QString type(find_param(cfg, "db_type"));
+  std::string type(find_param(cfg, "db_type"));
 
   // Find DB host.
-  QString host(find_param(cfg, "db_host"));
+  std::string host(find_param(cfg, "db_host"));
 
   // Find DB port.
-  unsigned short port(find_param(cfg, "db_port").toUShort());
+  unsigned short port{
+      static_cast<unsigned short>(std::stol(find_param(cfg, "db_port")))};
 
   // Find DB user.
-  QString user(find_param(cfg, "db_user"));
+  std::string user{find_param(cfg, "db_user")};
 
   // Find DB password.
-  QString password(find_param(cfg, "db_password"));
+  std::string password{find_param(cfg, "db_password")};
 
   // Find DB name.
-  QString db_name(find_param(cfg, "db_name"));
+  std::string db_name{find_param(cfg, "db_name")};
 
   // Check replication status ?
-  bool check_replication(true);
+  bool check_replication{true};
   {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("check_replication"));
+    std::map<std::string, std::string>::const_iterator
+      it{cfg.params.find("check_replication")};
     if (it != cfg.params.end())
-      check_replication = config::parser::parse_boolean(*it);
+      check_replication = config::parser::parse_boolean(it->second);
   }
 
   // Connector.
-  std::unique_ptr<notification::connector> c(new notification::connector(cache));
-  c->connect_to(
-       type.toStdString(),
-       host.toStdString(),
-       port,
-       user.toStdString(),
-       password.toStdString(),
-       db_name.toStdString(),
-       check_replication);
+  std::unique_ptr<notification::connector> c{
+      new notification::connector(cache)};
+  c->connect_to(type, host, port, user, password, db_name, check_replication);
   is_acceptor = false;
-  return (c.release());
+  return c.release();
 }

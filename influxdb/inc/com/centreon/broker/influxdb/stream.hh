@@ -24,7 +24,6 @@
 #  include <map>
 #  include <memory>
 #  include <QMutex>
-#  include <QString>
 #  include <utility>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -71,7 +70,6 @@ namespace          influxdb {
     std::string    _user;
     std::string    _password;
     std::string    _address;
-    unsigned short _port;
     std::string    _db;
     unsigned int   _queries_per_transaction;
     std::unique_ptr<influxdb>

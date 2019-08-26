@@ -27,10 +27,9 @@ using namespace com::centreon::broker::neb;
  *  Default constructor.
  */
 timeperiod_serializable::timeperiod_serializable(
-  QHash<QString, time::timeperiod::ptr> const& tps)
-  : _tps(&tps),
-    _tp(new time::timeperiod()){
-}
+  std::unordered_map<std::string, time::timeperiod::ptr> const& tps)
+  : _tps{&tps},
+    _tp{new time::timeperiod()} {}
 
 /**
  *  Copy constructor.
@@ -330,7 +329,7 @@ void timeperiod_serializable::set_excluded(std::string const& val) {
          end = excluded.end();
        it != end;
        ++it) {
-    time::timeperiod::ptr tp = _tps->value(QString::fromStdString(*it));
+    time::timeperiod::ptr tp = _tps->at(*it);
     if (!tp)
       throw (exceptions::msg()
              << "couldn't find the excluded timeperiod '" << *it << "'");
@@ -351,7 +350,7 @@ void timeperiod_serializable::set_included(std::string const& val) {
          end = included.end();
        it != end;
        ++it) {
-    time::timeperiod::ptr tp = _tps->value(QString::fromStdString(*it));
+    time::timeperiod::ptr tp = _tps->at(*it);
     if (!tp)
       throw (exceptions::msg()
              << "couldn't find the included timeperiod '" << *it << "'");

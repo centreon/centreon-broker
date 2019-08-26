@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_GROUP_HH
 #  define CCB_NEB_GROUP_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -45,7 +45,7 @@ namespace        neb {
 
     bool         enabled;
     unsigned int id;
-    QString      name;
+    std::string      name;
     unsigned int poller_id;
 
   private:

@@ -17,9 +17,9 @@
 */
 
 #include <sstream>
-#include <QVariant>
 #include <QSet>
 #include <QSqlError>
+#include <QVariant>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/notification_method.hh"

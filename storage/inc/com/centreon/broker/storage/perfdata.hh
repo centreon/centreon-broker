@@ -19,7 +19,7 @@
 #ifndef CCB_STORAGE_PERFDATA_HH
 #  define CCB_STORAGE_PERFDATA_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -55,10 +55,10 @@ namespace          storage {
     void           max(double m) throw ();
     double         min() const throw ();
     void           min(double m) throw ();
-    QString const& name() const throw ();
-    void           name(QString const& n);
-    QString const& unit() const throw ();
-    void           unit(QString const& u);
+    std::string const& name() const throw ();
+    void           name(std::string const& n);
+    std::string const& unit() const throw ();
+    void           unit(std::string const& u);
     double         value() const throw ();
     void           value(double v) throw ();
     data_type      value_type() const throw ();
@@ -76,8 +76,8 @@ namespace          storage {
     bool           _critical_mode;
     double         _max;
     double         _min;
-    QString        _name;
-    QString        _unit;
+    std::string        _name;
+    std::string        _unit;
     double         _value;
     data_type      _value_type;
     double         _warning;

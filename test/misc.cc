@@ -47,7 +47,6 @@ void test::recursive_remove(std::string const& dir_path) {
     ::remove(oss.str().c_str());
   }
   QDir().rmdir(dir_path.c_str());
-  return ;
 }
 
 /**
@@ -64,5 +63,4 @@ void test::sleep_for(int units) {
       now = time(NULL);
     }
   }
-  return ;
 }

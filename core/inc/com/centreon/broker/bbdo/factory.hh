@@ -47,7 +47,7 @@ namespace         bbdo {
                     = std::shared_ptr<persistent_cache>()) const;
 
   private:
-    QString       _extensions(config::endpoint& cfg) const;
+    std::string _extensions(config::endpoint& cfg) const;
   };
 }
 

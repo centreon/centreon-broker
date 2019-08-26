@@ -26,34 +26,33 @@
 
 CCB_BEGIN()
 
-namespace               dumper {
-  /**
-   *  @class db_dump_committed db_dump_committed.hh "com/centreon/broker/dumper/db_dump_committed.hh"
-   *  @brief DB dump committed event.
-   *
-   *  A general notification that the database just has been dumped,
-   *  and endpoints should maybe reload their configurations.
-   */
-  class                 db_dump_committed : public io::data {
-  public:
-                        db_dump_committed();
-                        db_dump_committed(db_dump_committed const& other);
-                        ~db_dump_committed();
-    db_dump_committed&  operator=(db_dump_committed const& other);
-    unsigned int        type() const;
-    static unsigned int static_type();
+namespace dumper {
+/**
+ *  @class db_dump_committed db_dump_committed.hh
+ * "com/centreon/broker/dumper/db_dump_committed.hh"
+ *  @brief DB dump committed event.
+ *
+ *  A general notification that the database just has been dumped,
+ *  and endpoints should maybe reload their configurations.
+ */
+class db_dump_committed : public io::data {
+ public:
+  db_dump_committed();
+  db_dump_committed(db_dump_committed const& other);
+  ~db_dump_committed();
+  db_dump_committed& operator=(db_dump_committed const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    QString             req_id;
+  std::string req_id;
 
-    static mapping::entry const
-                        entries[];
-    static io::event_info::event_operations const
-                        operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void                _internal_copy(db_dump_committed const& other);
-  };
-}
+ private:
+  void _internal_copy(db_dump_committed const& other);
+};
+}  // namespace dumper
 
 CCB_END()
 

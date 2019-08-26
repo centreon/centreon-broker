@@ -627,14 +627,14 @@ void reader_v2::_load_dimensions() {
               q.value(9).toString().toStdString())); // saturday
       std::shared_ptr<dimension_timeperiod> tp(new dimension_timeperiod);
       tp->id = q.value(0).toUInt();
-      tp->name = q.value(1).toString();
-      tp->sunday = q.value(3).toString();
-      tp->monday = q.value(4).toString();
-      tp->tuesday = q.value(5).toString();
-      tp->wednesday = q.value(6).toString();
-      tp->thursday = q.value(7).toString();
-      tp->friday = q.value(8).toString();
-      tp->saturday = q.value(9).toString();
+      tp->name = q.value(1).toString().toStdString();
+      tp->sunday = q.value(3).toString().toStdString();
+      tp->monday = q.value(4).toString().toStdString();
+      tp->tuesday = q.value(5).toString().toStdString();
+      tp->wednesday = q.value(6).toString().toStdString();
+      tp->thursday = q.value(7).toString().toStdString();
+      tp->friday = q.value(8).toString().toStdString();
+      tp->saturday = q.value(9).toString().toStdString();
       datas.push_back(std::static_pointer_cast<io::data>(tp));
     }
 
@@ -710,8 +710,8 @@ void reader_v2::_load_dimensions() {
     while (q.next()) {
       std::shared_ptr<dimension_ba_event> ba(new dimension_ba_event);
       ba->ba_id = q.value(0).toUInt();
-      ba->ba_name = q.value(1).toString();
-      ba->ba_description = q.value(2).toString();
+      ba->ba_name = q.value(1).toString().toStdString();
+      ba->ba_description = q.value(2).toString().toStdString();
       ba->sla_month_percent_warn = q.value(3).toDouble();
       ba->sla_month_percent_crit = q.value(4).toDouble();
       ba->sla_duration_warn = q.value(5).toInt();
@@ -736,8 +736,8 @@ void reader_v2::_load_dimensions() {
       std::shared_ptr<dimension_bv_event>
           bv(new dimension_bv_event);
       bv->bv_id = q.value(0).toUInt();
-      bv->bv_name = q.value(1).toString();
-      bv->bv_description = q.value(2).toString();
+      bv->bv_name = q.value(1).toString().toStdString();
+      bv->bv_description = q.value(2).toString().toStdString();
       datas.push_back(std::static_pointer_cast<io::data>(bv));
     }
     // Load the BA BV relations.
@@ -821,11 +821,11 @@ void reader_v2::_load_dimensions() {
       k->impact_warning = q.value(8).toDouble();
       k->impact_critical = q.value(9).toDouble();
       k->impact_unknown = q.value(10).toDouble();
-      k->host_name = q.value(11).toString();
-      k->service_description = q.value(12).toString();
-      k->ba_name = q.value(13).toString();
-      k->meta_service_name = q.value(14).toString();
-      k->boolean_name = q.value(15).toString();
+      k->host_name = q.value(11).toString().toStdString();
+      k->service_description = q.value(12).toString().toStdString();
+      k->ba_name = q.value(13).toString().toStdString();
+      k->meta_service_name = q.value(14).toString().toStdString();
+      k->boolean_name = q.value(15).toString().toStdString();
 
       // Resolve the id_indicator_ba.
       if (k->kpi_ba_id) {

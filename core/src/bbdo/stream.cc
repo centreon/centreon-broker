@@ -116,18 +116,17 @@ void stream::negotiate(stream::negotiation_type neg) {
   // Coarse peer don't expect any salutation either.
   if (_coarse) {
     _negotiated = true;
-    return ;
-  }
-  else if (_negotiated)
-    return ;
+    return;
+  } else if (_negotiated)
+    return;
 
   // Send our own packet if we should be first.
   if (neg == negotiate_first) {
     logging::debug(logging::medium)
-      << "BBDO: sending welcome packet (available extensions: "
-      << (_negotiate ? _extensions : "") << ")";
-    std::shared_ptr<version_response>
-      welcome_packet(std::make_shared<version_response>());
+        << "BBDO: sending welcome packet (available extensions: "
+        << (_negotiate ? _extensions : "") << ")";
+    std::shared_ptr<version_response> welcome_packet(
+        std::make_shared<version_response>());
     if (_negotiate)
       welcome_packet->extensions = _extensions;
     output::write(welcome_packet);
@@ -135,8 +134,7 @@ void stream::negotiate(stream::negotiation_type neg) {
   }
 
   // Read peer packet.
-  logging::debug(logging::medium)
-    << "BBDO: retrieving welcome packet of peer";
+  logging::debug(logging::medium) << "BBDO: retrieving welcome packet of peer";
   std::shared_ptr<io::data> d;
   time_t deadline;
   if (_timeout == (time_t)-1)
@@ -145,32 +143,31 @@ void stream::negotiate(stream::negotiation_type neg) {
     deadline = time(NULL) + _timeout;
   read_any(d, deadline);
   if (!d || (d->type() != version_response::static_type()))
-    throw (exceptions::msg()
-           << "BBDO: invalid protocol header, aborting connection");
+    throw(exceptions::msg()
+          << "BBDO: invalid protocol header, aborting connection");
 
   // Handle protocol version.
-  std::shared_ptr<version_response>
-    v(std::static_pointer_cast<version_response>(d));
+  std::shared_ptr<version_response> v(
+      std::static_pointer_cast<version_response>(d));
   if (v->bbdo_major != BBDO_VERSION_MAJOR)
-    throw (exceptions::msg()
-           << "BBDO: peer is using protocol version " << v->bbdo_major
-           << "." << v->bbdo_minor << "." << v->bbdo_patch
-           << " whereas we're using protocol version "
-           << BBDO_VERSION_MAJOR << "." << BBDO_VERSION_MINOR << "."
-           << BBDO_VERSION_PATCH);
+    throw(exceptions::msg()
+          << "BBDO: peer is using protocol version " << v->bbdo_major << "."
+          << v->bbdo_minor << "." << v->bbdo_patch
+          << " whereas we're using protocol version " << BBDO_VERSION_MAJOR
+          << "." << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH);
   logging::info(logging::medium)
-    << "BBDO: peer is using protocol version " << v->bbdo_major
-    << "." << v->bbdo_minor << "." << v->bbdo_patch
-    << ", we're using version " << BBDO_VERSION_MAJOR << "."
-    << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
+      << "BBDO: peer is using protocol version " << v->bbdo_major << "."
+      << v->bbdo_minor << "." << v->bbdo_patch << ", we're using version "
+      << BBDO_VERSION_MAJOR << "." << BBDO_VERSION_MINOR << "."
+      << BBDO_VERSION_PATCH;
 
   // Send our own packet if we should be second.
   if (neg == negotiate_second) {
     logging::debug(logging::medium)
-      << "BBDO: sending welcome packet (available extensions: "
-      << (_negotiate ? _extensions : "") << ")";
-    std::shared_ptr<version_response>
-      welcome_packet(std::make_shared<version_response>());
+        << "BBDO: sending welcome packet (available extensions: "
+        << (_negotiate ? _extensions : "") << ")";
+    std::shared_ptr<version_response> welcome_packet(
+        std::make_shared<version_response>());
     if (_negotiate)
       welcome_packet->extensions = _extensions;
     output::write(welcome_packet);
@@ -181,35 +178,29 @@ void stream::negotiate(stream::negotiation_type neg) {
   if (_negotiate) {
     // Apply negotiated extensions.
     logging::info(logging::medium)
-      << "BBDO: we have extensions '"
-      << _extensions << "' and peer has '" << v->extensions << "'";
-    QStringList own_ext(_extensions.split(' '));
-    QStringList peer_ext(v->extensions.split(' '));
-    for (QStringList::const_iterator
-           it(own_ext.begin()),
-           end(own_ext.end());
-         it != end;
-         ++it) {
+        << "BBDO: we have extensions '" << _extensions << "' and peer has '"
+        << v->extensions << "'";
+    std::list<std::string> own_ext(misc::string::split(_extensions, ' '));
+    std::list<std::string> peer_ext(misc::string::split(v->extensions, ' '));
+    for (std::list<std::string>::const_iterator it{own_ext.begin()},
+         end{own_ext.end()};
+         it != end; ++it) {
       // Find matching extension in peer extension list.
-      QStringList::const_iterator
-        peer_it(std::find(peer_ext.begin(), peer_ext.end(), *it));
+      std::list<std::string>::const_iterator peer_it{
+          std::find(peer_ext.begin(), peer_ext.end(), *it)};
       // Apply extension if found.
       if (peer_it != peer_ext.end()) {
         logging::info(logging::medium)
-          << "BBDO: applying extension '" << *it << "'";
-        for (QMap<QString, io::protocols::protocol>::const_iterator
-               proto_it(io::protocols::instance().begin()),
-               proto_end(io::protocols::instance().end());
-             proto_it != proto_end;
-             ++proto_it)
-          if (proto_it.key() == *it) {
-            std::shared_ptr<io::stream>
-              s(proto_it->endpntfactry->new_stream(
-                                          _substream,
-                                          neg == negotiate_second,
-                                          *it));
+            << "BBDO: applying extension '" << *it << "'";
+        for (std::map<std::string, io::protocols::protocol>::const_iterator
+                 proto_it{io::protocols::instance().begin()},
+             proto_end{io::protocols::instance().end()};
+             proto_it != proto_end; ++proto_it)
+          if (proto_it->first == *it) {
+            std::shared_ptr<io::stream> s{proto_it->second.endpntfactry->new_stream(
+                _substream, neg == negotiate_second, *it)};
             set_substream(s);
-            break ;
+            break;
           }
       }
     }
@@ -217,7 +208,6 @@ void stream::negotiate(stream::negotiation_type neg) {
 
   // Stream has now negotiated.
   _negotiated = true;
-  return ;
 }
 
 /**
@@ -258,7 +248,6 @@ void stream::set_ack_limit(unsigned int limit) {
  */
 void stream::set_coarse(bool coarse) {
   _coarse = coarse;
-  return ;
 }
 
 /**
@@ -267,10 +256,9 @@ void stream::set_coarse(bool coarse) {
  *  @param[in] negotiate   True if the stream should negotiate features.
  *  @param[in] extensions  Extensions supported by this stream.
  */
-void stream::set_negotiate(bool negotiate, QString const& extensions) {
+void stream::set_negotiate(bool negotiate, std::string const& extensions) {
   _negotiate = negotiate;
   _extensions = extensions;
-  return ;
 }
 
 /**
@@ -280,7 +268,6 @@ void stream::set_negotiate(bool negotiate, QString const& extensions) {
  */
 void stream::set_timeout(int timeout) {
   _timeout = timeout;
-  return ;
 }
 
 /**
@@ -300,7 +287,6 @@ void stream::statistics(io::properties& tree) const {
                "bbdo_unacknowledged_events",
                misc::string::get(_events_received_since_last_ack)));
   output::statistics(tree);
-  return ;
 }
 
 /**
@@ -338,5 +324,4 @@ void stream::send_event_acknowledgement() {
     output::write(acknowledgement);
     _events_received_since_last_ack = 0;
   }
-  return ;
 }

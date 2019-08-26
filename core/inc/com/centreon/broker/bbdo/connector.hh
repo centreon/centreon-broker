@@ -25,38 +25,32 @@
 
 CCB_BEGIN()
 
-namespace         bbdo {
-  /**
-   *  @class connector connector.hh "com/centreon/broker/bbdo/connector.hh"
-   *  @brief BBDO connector.
-   *
-   *  Initiate direct BBDO protocol connections.
-   */
-  class           connector : public io::endpoint {
-  public:
-                  connector(
-                    bool negotiate,
-                    QString const& extensions,
-                    time_t timeout,
-                    bool coarse = false,
-                    unsigned int ack_limit = 1000);
-                  connector(connector const& other);
-                  ~connector();
-    connector&    operator=(connector const& other);
-    std::shared_ptr<io::stream>
-                  open();
+namespace bbdo {
+/**
+ *  @class connector connector.hh "com/centreon/broker/bbdo/connector.hh"
+ *  @brief BBDO connector.
+ *
+ *  Initiate direct BBDO protocol connections.
+ */
+class connector : public io::endpoint {
+public:
+  connector(bool negotiate, std::string const &extensions, time_t timeout,
+            bool coarse = false, unsigned int ack_limit = 1000);
+  connector(connector const &other);
+  ~connector();
+  connector &operator=(connector const &other);
+  std::shared_ptr<io::stream> open();
 
-  private:
-    std::shared_ptr<io::stream>
-                  _open(std::shared_ptr<io::stream> stream);
+private:
+  std::shared_ptr<io::stream> _open(std::shared_ptr<io::stream> stream);
 
-    bool          _coarse;
-    QString       _extensions;
-    bool          _negotiate;
-    time_t        _timeout;
-    unsigned int  _ack_limit;
-  };
-}
+  bool _coarse;
+  std::string _extensions;
+  bool _negotiate;
+  time_t _timeout;
+  unsigned int _ack_limit;
+};
+} // namespace bbdo
 
 CCB_END()
 

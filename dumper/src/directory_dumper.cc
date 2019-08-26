@@ -120,7 +120,7 @@ int directory_dumper::write(std::shared_ptr<io::data> const& d) {
     extcmd::command_request const&
       req(*std::static_pointer_cast<extcmd::command_request const>(d));
     if (req.is_addressed_to(_name)) {
-      _command_to_poller_id[req.uuid.toStdString()] = req.source_id;
+      _command_to_poller_id[req.uuid] = req.source_id;
       try {
         // Execute command that was especially addressed to us.
         if (req.cmd == "DUMP_DIR")
@@ -139,7 +139,7 @@ int directory_dumper::write(std::shared_ptr<io::data> const& d) {
         std::shared_ptr<extcmd::command_result>
           res(new extcmd::command_result);
         res->uuid = req.uuid;
-        res->msg = QString("\"") + e.what() + "\"";
+        res->msg = std::string("\"") + e.what() + "\"";
         res->code = -1;
         res->destination_id = req.source_id;
         multiplexing::publisher().write(res);
@@ -148,14 +148,14 @@ int directory_dumper::write(std::shared_ptr<io::data> const& d) {
   }
   else if (d->type() == directory_dump_committed::static_type()) {
     directory_dump_committed const& ddc = *std::static_pointer_cast<directory_dump_committed>(d);
-    if (_command_to_poller_id.find(ddc.req_id.toStdString()) != _command_to_poller_id.end()) {
+    if (_command_to_poller_id.find(ddc.req_id) != _command_to_poller_id.end()) {
       // Send successful result.
       std::shared_ptr<extcmd::command_result>
         res(new extcmd::command_result);
       res->uuid = ddc.req_id;
       res->msg = "\"Command successfully executed.\"";
       res->code = 0;
-      res->destination_id = _command_to_poller_id[ddc.req_id.toStdString()];
+      res->destination_id = _command_to_poller_id[ddc.req_id];
       multiplexing::publisher().write(res);
     }
   }
@@ -172,7 +172,7 @@ int directory_dumper::write(std::shared_ptr<io::data> const& d) {
  */
 void directory_dumper::_dump_dir(
                          std::string const& path,
-                         QString const& req_id) {
+                         std::string const& req_id) {
   logging::debug(logging::medium)
     << "directory_dumper: dumping dir '" << path << "'";
 
@@ -189,7 +189,7 @@ void directory_dumper::_dump_dir(
   {
     std::shared_ptr<directory_dump> dmp(new directory_dump);
     dmp->req_id = req_id;
-    dmp->tag = QString::fromStdString(_tagname);
+    dmp->tag = _tagname;
     dmp->started = true;
     pblsh.write(dmp);
   }
@@ -205,12 +205,12 @@ void directory_dumper::_dump_dir(
         << "directory_dumper: can't read file '" << path << "'";
     QByteArray content = file.readAll();
     std::shared_ptr<dump> dmp(new dump);
-    dmp->filename = root_dir.relativeFilePath(path);
-    dmp->content = QString(content);
-    dmp->tag = QString::fromStdString(_tagname);
+    dmp->filename = root_dir.relativeFilePath(path).toStdString();
+    dmp->content = std::string(content.constData(), content.size());
+    dmp->tag = _tagname;
     dmp->req_id = req_id;
     pblsh.write(dmp);
-    found.insert(dmp->filename.toStdString());
+    found.insert(dmp->filename);
   }
 
   // Remove all files not found.
@@ -221,8 +221,8 @@ void directory_dumper::_dump_dir(
        ++it)
     if (found.find(it->first) == found.end()) {
       std::shared_ptr<remove> rm(new remove);
-      rm->tag = QString::fromStdString(_tagname);
-      rm->filename = QString::fromStdString(it->first);
+      rm->tag = _tagname;
+      rm->filename = it->first;
       rm->req_id = req_id;
       pblsh.write(rm);
     }
@@ -235,7 +235,7 @@ void directory_dumper::_dump_dir(
        it != end;
        ++it) {
     timestamp_cache tc;
-    tc.filename = QString::fromStdString(*it);
+    tc.filename = *it;
     _files_cache[*it] = tc;
   }
 
@@ -243,7 +243,7 @@ void directory_dumper::_dump_dir(
   {
     std::shared_ptr<directory_dump> dmp(new directory_dump);
     dmp->req_id = req_id;
-    dmp->tag = QString::fromStdString(_tagname);
+    dmp->tag = _tagname;
     dmp->started = false;
     pblsh.write(dmp);
   }
@@ -264,7 +264,7 @@ void directory_dumper::_load_cache() {
       return ;
     if (d->type() == timestamp_cache::static_type()) {
      timestamp_cache const& tc  = *std::static_pointer_cast<timestamp_cache const>(d);
-      _files_cache[tc.filename.toStdString()] = tc;
+      _files_cache[tc.filename] = tc;
     }
   }
 }

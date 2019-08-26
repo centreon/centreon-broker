@@ -19,7 +19,6 @@
 #ifndef CCB_NOTIFICATION_MACRO_GETTERS_HH
 #  define CCB_NOTIFICATION_MACRO_GETTERS_HH
 
-#  include <QString>
 #  include <QHash>
 #  include <QList>
 #  include <string>
@@ -91,20 +90,6 @@ namespace        notification {
   template <> std::string inline to_string <std::string, 0>(
                                             std::string const& value) {
     return (value);
-  }
-
-  /**
-   *  @brief Write a type into a string.
-   *
-   *  Specialization for QString and 0 precision.
-   *
-   *  @param[in] value  The value of the string.
-   *
-   *  @return  The value of the macro.
-   */
-  template <> std::string inline to_string <QString, 0>(
-                                            QString const& value) {
-    return (value.toStdString());
   }
 
   /**
@@ -237,8 +222,10 @@ namespace        notification {
    *  @return  The value of the macro.
    */
   template <bool get_long_output>
-  std::string get_host_output(
-                macro_context const& context) {return ("");}
+  std::string get_host_output(macro_context const& context
+                              __attribute__((unused))) {
+    return "";
+  }
 
   template <> std::string get_host_output<false>(
                             macro_context const& context);
@@ -257,7 +244,7 @@ namespace        notification {
    */
   template <bool get_long_output>
   std::string get_service_output(
-                macro_context const& context) {return ("");}
+                macro_context const& context __attribute__((unused))) {return "";}
 
   template <> std::string get_service_output<false>(
                             macro_context const& context);

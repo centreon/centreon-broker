@@ -19,7 +19,7 @@
 #ifndef CCB_DUMPER_ENTRIES_BOOLEAN_HH
 #  define CCB_DUMPER_ENTRIES_BOOLEAN_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
@@ -50,9 +50,9 @@ namespace                 dumper {
       unsigned int        poller_id;
       unsigned int        boolean_id;
       int                 bool_state;
-      QString             name;
-      QString             expression;
-      QString             comment;
+      std::string             name;
+      std::string             expression;
+      std::string             comment;
 
       static mapping::entry const
                           entries[];

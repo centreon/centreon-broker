@@ -43,3 +43,4 @@ std::string misc::temp_path() {
   ::remove(path);
   return (path);
 }
+

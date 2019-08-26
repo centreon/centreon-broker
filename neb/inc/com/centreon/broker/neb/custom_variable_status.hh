@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_CUSTOM_VARIABLE_STATUS_HH
 #  define CCB_NEB_CUSTOM_VARIABLE_STATUS_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
@@ -48,10 +48,10 @@ namespace                   neb {
 
     unsigned int            host_id;
     bool                    modified;
-    QString                 name;
+    std::string                 name;
     unsigned int            service_id;
     timestamp               update_time;
-    QString                 value;
+    std::string                 value;
 
     static mapping::entry const
                             entries[];

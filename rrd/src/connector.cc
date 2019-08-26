@@ -80,15 +80,10 @@ connector& connector::operator=(connector const& right) {
  */
 std::shared_ptr<io::stream> connector::open() {
   std::shared_ptr<io::stream> retval;
-  if (!_cached_local.isEmpty())
+  if (!_cached_local.empty())
     retval = std::shared_ptr<io::stream>(new output(
-                                                _metrics_path,
-                                                _status_path,
-                                                _cache_size,
-                                                _ignore_update_errors,
-                                                _cached_local,
-                                                _write_metrics,
-                                                _write_status));
+        _metrics_path, _status_path, _cache_size, _ignore_update_errors,
+        _cached_local, _write_metrics, _write_status));
   else if (_cached_port)
     retval = std::shared_ptr<io::stream>(new output(
                                                 _metrics_path,
@@ -116,7 +111,6 @@ std::shared_ptr<io::stream> connector::open() {
  */
 void connector::set_cache_size(unsigned int cache_size) {
   _cache_size = cache_size;
-  return ;
 }
 
 /**
@@ -124,9 +118,8 @@ void connector::set_cache_size(unsigned int cache_size) {
  *
  *  @param[in] local_socket Local socket path.
  */
-void connector::set_cached_local(QString const& local_socket) {
+void connector::set_cached_local(std::string const& local_socket) {
   _cached_local = local_socket;
-  return ;
 }
 
 /**
@@ -136,7 +129,6 @@ void connector::set_cached_local(QString const& local_socket) {
  */
 void connector::set_cached_net(unsigned short port) throw () {
   _cached_port = port;
-  return ;
 }
 
 /**
@@ -147,7 +139,6 @@ void connector::set_cached_net(unsigned short port) throw () {
  */
 void connector::set_ignore_update_errors(bool ignore) throw () {
   _ignore_update_errors = ignore;
-  return ;
 }
 
 /**
@@ -155,9 +146,8 @@ void connector::set_ignore_update_errors(bool ignore) throw () {
  *
  *  @param[in] metrics_path Where metrics RRD files will be written.
  */
-void connector::set_metrics_path(QString const& metrics_path) {
+void connector::set_metrics_path(std::string const& metrics_path) {
   _metrics_path = _real_path_of(metrics_path);
-  return ;
 }
 
 /**
@@ -165,9 +155,8 @@ void connector::set_metrics_path(QString const& metrics_path) {
  *
  *  @param[in] status_path Where status RRD files will be written.
  */
-void connector::set_status_path(QString const& status_path) {
+void connector::set_status_path(std::string const& status_path) {
   _status_path = _real_path_of(status_path);
-  return ;
 }
 
 /**
@@ -177,7 +166,6 @@ void connector::set_status_path(QString const& status_path) {
  */
 void connector::set_write_metrics(bool write_metrics) throw () {
   _write_metrics = write_metrics;
-  return ;
 }
 
 /**
@@ -187,7 +175,6 @@ void connector::set_write_metrics(bool write_metrics) throw () {
  */
 void connector::set_write_status(bool write_status) throw () {
   _write_status = write_status;
-  return ;
 }
 
 /**************************************
@@ -210,7 +197,6 @@ void connector::_internal_copy(connector const& right) {
   _status_path = right._status_path;
   _write_metrics = right._write_metrics;
   _write_status = right._write_status;
-  return ;
 }
 
 /**
@@ -220,10 +206,10 @@ void connector::_internal_copy(connector const& right) {
  *
  *  @return Real path.
  */
-QString connector::_real_path_of(QString const& path) {
+std::string connector::_real_path_of(std::string const& path) {
   // Variables.
-  QString retval;
-  char* real_path(realpath(qPrintable(path), NULL));
+  std::string retval;
+  char* real_path{realpath(path.c_str(), nullptr)};
 
   // Resolution success.
   if (real_path) {
@@ -240,16 +226,16 @@ QString connector::_real_path_of(QString const& path) {
   }
   // Resolution failure.
   else {
-    char const* msg(strerror(errno));
+    char const* msg{strerror(errno)};
     logging::error(logging::high) << "RRD: could not resolve path '"
       << path << "', using it as such: " << msg;
     retval = path;
   }
 
   // Last slash.
-  int last_index(retval.size() - 1);
-  if (!retval.isEmpty() && (retval[last_index] != '/'))
+  int last_index{static_cast<int>(retval.size()) - 1};
+  if (!retval.empty() && retval[last_index] != '/')
     retval.append("/");
 
-  return (retval);
+  return retval;
 }
