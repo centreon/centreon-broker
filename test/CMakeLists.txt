@@ -45,7 +45,7 @@ include_directories(${PROJECT_SOURCE_DIR}/storage/inc)
 include_directories(${PROJECT_SOURCE_DIR}/lua/inc)
 include_directories(${PROJECT_SOURCE_DIR}/neb/inc)
 include_directories(${PROJECT_SOURCE_DIR}/rrd/inc)
-include_directories("${PROJECT_SOURCE_DIR}/simu/inc")
+include_directories(${PROJECT_SOURCE_DIR}/simu/inc)
 
 # Unit test executable.
 add_executable(ut
@@ -72,6 +72,7 @@ add_executable(ut
   ${TESTS_DIR}/misc/string.cc
   ${TESTS_DIR}/mysql/mysql.cc
   ${TESTS_DIR}/multiplexing/muxer/read.cc
+  ${TESTS_DIR}/processing/thread.cc
   # Module sources.
   ${TESTS_SOURCES}
 )

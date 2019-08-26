@@ -158,8 +158,6 @@ void failover::run() {
         time_t valid_time(time(NULL) + _buffering_timeout);
         do {
           QTimer::singleShot(1000, this, SLOT(quit()));
-          logging::info(logging::high)
-            << "failover: FIXME DBR exec";
           exec();
         } while (!should_exit() && (time(NULL) < valid_time));
         _update_status("");
@@ -362,8 +360,6 @@ void failover::run() {
     time_t valid_time(time(NULL) + _retry_interval);
     while (!should_exit() && (time(NULL) < valid_time)) {
       QTimer::singleShot(1000, this, SLOT(quit()));
-      logging::info(logging::high)
-        << "failover: FIXME DBR exec2";
       exec();
     }
     _update_status("");
