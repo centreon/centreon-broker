@@ -39,14 +39,14 @@ using namespace com::centreon::broker::dumper;
  *
  *  @return Property value.
  */
-static QString const& find_param(
+static std::string const& find_param(
                         config::endpoint const& cfg,
-                        QString const& key) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+                        std::string const& key) {
+  std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw (exceptions::msg() << "dumper: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'");
-  return (it.value());
+    throw exceptions::msg() << "dumper: no '" << key
+           << "' defined for endpoint '" << cfg.name << "'";
+  return it->second;
 }
 
 /**************************************
@@ -164,15 +164,15 @@ io::endpoint* factory::new_endpoint(
   // Filesystem dumpers.
   else {
     // Find path to the dumper.
-    std::string path(find_param(cfg, "path").toStdString());
+    std::string path{find_param(cfg, "path")};
 
     // Find tagname to the dumper.
-    std::string tagname(find_param(cfg, "tagname").toStdString());
+    std::string tagname{find_param(cfg, "tagname")};
 
     // Set opener properties.
     openr->set_path(path);
     openr->set_tagname(tagname);
   }
 
-  return (openr.release());
+  return openr.release();
 }

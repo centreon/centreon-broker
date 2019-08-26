@@ -23,11 +23,12 @@
 #include <gtest/gtest.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/lua/luabinding.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
+#include "com/centreon/broker/misc/variant.hh"
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/events.hh"
+#include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
@@ -93,14 +94,14 @@ class LuaTest : public ::testing::Test {
 // When a lua script that does not exist is loaded
 // Then an exception is thrown
 TEST_F(LuaTest, MissingScript) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   ASSERT_THROW(new luabinding(FILE1, conf, *_cache.get()), exceptions::msg);
 }
 
 // When a lua script with error such as number divided by nil is loaded
 // Then an exception is thrown
 TEST_F(LuaTest, FaultyScript) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/faulty.lua");
   CreateScript(filename, "local a = { 1, 2, 3 }\n"
                          "local b = 18 / a[4]");
@@ -113,7 +114,7 @@ TEST_F(LuaTest, FaultyScript) {
 // When a lua script that does not contain an init() function is loaded
 // Then an exception is thrown
 TEST_F(LuaTest, WithoutInit) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/without_init.lua");
   CreateScript(filename, "local a = { 1, 2, 3 }\n");
   ASSERT_THROW(
@@ -124,7 +125,7 @@ TEST_F(LuaTest, WithoutInit) {
 // When a lua script that does not contain a filter() function is loaded
 // Then has_filter() method returns false
 TEST_F(LuaTest, WithoutFilter) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/without_filter.lua");
   CreateScript(filename, "function init()\n"
                          "end\n"
@@ -140,7 +141,7 @@ TEST_F(LuaTest, WithoutFilter) {
 // When a json parameters file exists but the lua script is incomplete
 // Then an exception is thrown
 TEST_F(LuaTest, IncompleteScript) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   ASSERT_THROW(new luabinding(FILE2, conf, *_cache.get()), exceptions::msg);
 }
 
@@ -149,9 +150,9 @@ TEST_F(LuaTest, IncompleteScript) {
 // function.
 TEST_F(LuaTest, SimpleScript) {
   RemoveFile("/tmp/test.log");
-  QMap<QString, QVariant> conf;
-  conf["address"] = "127.0.0.1";
-  conf["port"] = 8857;
+  std::map<std::string, misc::variant> conf;
+  conf.insert({"address", "127.0.0.1"});
+  conf.insert({"port", 8857});
   modules::loader l;
   l.load_file("./neb/10-neb.so");
 
@@ -166,7 +167,8 @@ TEST_F(LuaTest, SimpleScript) {
 
   QStringList result(ReadFile("/tmp/test.log"));
   ASSERT_EQ(result.size(), 74);
-  ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: init: address => 127\\.0\\.0\\.1")) >= 0);
+  ASSERT_TRUE(
+      result.indexOf(QRegExp(".*INFO: init: address => 127\\.0\\.0\\.1")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: init: port => 8857")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: write: host_id => 12")) >= 0);
   ASSERT_TRUE(result.indexOf(QRegExp(".*INFO: write: output => Bonjour")) >= 0);
@@ -180,11 +182,11 @@ TEST_F(LuaTest, SimpleScript) {
 // function.
 TEST_F(LuaTest, WriteAcknowledgement) {
   RemoveFile("/tmp/test.log");
-  QMap<QString, QVariant> conf;
-  conf["address"] = "127.0.0.1";
-  conf["double"] = 3.14159265358979323846;
-  conf["port"] = 8857;
-  conf["name"] = "test-centreon";
+  std::map<std::string, misc::variant> conf;
+  conf.insert({"address", "127.0.0.1"});
+  conf.insert({"double", 3.14159265358979323846});
+  conf.insert({"port", 8857});
+  conf.insert({"name", "test-centreon"});
   modules::loader l;
   l.load_file("./neb/10-neb.so");
 
@@ -213,7 +215,7 @@ TEST_F(LuaTest, WriteAcknowledgement) {
 // When a script is loaded and a new socket is created
 // Then it is created.
 TEST_F(LuaTest, SocketCreation) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  local socket = broker_tcp_socket.new()\n"
@@ -228,7 +230,7 @@ TEST_F(LuaTest, SocketCreation) {
 // And a call to connect is made without argument
 // Then it fails.
 TEST_F(LuaTest, SocketConnectionWithoutArg) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  local socket = broker_tcp_socket.new()\n"
@@ -244,7 +246,7 @@ TEST_F(LuaTest, SocketConnectionWithoutArg) {
 // And a call to connect is made without argument
 // Then it fails.
 TEST_F(LuaTest, SocketConnectionWithNoPort) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  local socket = broker_tcp_socket.new()\n"
@@ -263,7 +265,7 @@ TEST_F(LuaTest, SocketConnectionWithNoPort) {
 // And a call to connect is made with a good adress/port
 // Then it succeeds.
 TEST_F(LuaTest, SocketConnectionOk) {
-  QMap<QString, QVariant> conf;
+  std::unordered_map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  local socket = broker_tcp_socket.new()\n"
@@ -279,7 +281,7 @@ TEST_F(LuaTest, SocketConnectionOk) {
 // And a call to get_state is made
 // Then it succeeds, and the return value is Unconnected.
 TEST_F(LuaTest, SocketUnconnectedState) {
-  QMap<QString, QVariant> conf;
+  std::unordered_map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
@@ -303,7 +305,7 @@ TEST_F(LuaTest, SocketUnconnectedState) {
 // And a call to get_state is made
 // Then it succeeds, and the return value is Unconnected.
 TEST_F(LuaTest, SocketConnectedState) {
-  QMap<QString, QVariant> conf;
+  std::unordered_map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
@@ -327,7 +329,7 @@ TEST_F(LuaTest, SocketConnectedState) {
 // And a call to connect is made with a good adress/port
 // Then it succeeds.
 TEST_F(LuaTest, SocketWrite) {
-  QMap<QString, QVariant> conf;
+  std::unordered_map<std::string, misc::variant> conf;
   std::string filename(FILE4);
   ASSERT_NO_THROW(new luabinding(filename, conf, *_cache.get()));
   QStringList lst(ReadFile("/tmp/log"));
@@ -340,7 +342,7 @@ TEST_F(LuaTest, SocketWrite) {
 // And a call to connect is made with a good adress/port
 // Then it succeeds.
 TEST_F(LuaTest, JsonEncode) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/json_encode.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
@@ -369,7 +371,7 @@ TEST_F(LuaTest, JsonEncode) {
 // Given an empty array,
 // Then json_encode() works well on it.
 TEST_F(LuaTest, EmptyJsonEncode) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/json_encode.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
@@ -391,7 +393,7 @@ TEST_F(LuaTest, EmptyJsonEncode) {
 // And a call to connect is made with a good adress/port
 // Then it succeeds.
 TEST_F(LuaTest, JsonEncodeEscape) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/json_encode.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
@@ -422,7 +424,7 @@ TEST_F(LuaTest, JsonEncodeEscape) {
 // And the cache does not know about it
 // Then nil is returned from the lua method.
 TEST_F(LuaTest, CacheTest) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
@@ -445,7 +447,7 @@ TEST_F(LuaTest, CacheTest) {
 // And the cache knows about it
 // Then the hostname is returned from the lua method.
 TEST_F(LuaTest, HostCacheTest) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::host> hst(new neb::host);
   hst->host_id = 1;
@@ -471,7 +473,7 @@ TEST_F(LuaTest, HostCacheTest) {
 // And the cache knows about it
 // Then the hostname is returned from the lua method.
 TEST_F(LuaTest, ServiceCacheTest) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 1;
@@ -498,7 +500,7 @@ TEST_F(LuaTest, ServiceCacheTest) {
 // And the cache knows about it
 // Then the hostname is returned from the lua method.
 TEST_F(LuaTest, IndexMetricCacheTest) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 1;
@@ -535,7 +537,7 @@ TEST_F(LuaTest, IndexMetricCacheTest) {
 // And the cache knows about it
 // Then the instance is returned from the lua method.
 TEST_F(LuaTest, InstanceNameCacheTest) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::instance> inst(new neb::instance);
   inst->broker_id = 42;
@@ -564,7 +566,7 @@ TEST_F(LuaTest, InstanceNameCacheTest) {
 // And the cache knows about it
 // Then the metric mapping is returned from the lua method.
 TEST_F(LuaTest, MetricMappingCacheTest) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<storage::metric_mapping> mm(new storage::metric_mapping);
   mm->index_id = 19;
@@ -592,7 +594,7 @@ TEST_F(LuaTest, MetricMappingCacheTest) {
 // And the cache does not know about it
 // Then nil is returned by the lua method.
 TEST_F(LuaTest, HostGroupCacheTestNameNotAvailable) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
 
   CreateScript(filename, "function init(conf)\n"
@@ -614,7 +616,7 @@ TEST_F(LuaTest, HostGroupCacheTestNameNotAvailable) {
 // And the cache does know about it
 // Then the name is returned by the lua method.
 TEST_F(LuaTest, HostGroupCacheTestName) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::host_group> hg(new neb::host_group);
   hg->id = 28;
@@ -640,7 +642,7 @@ TEST_F(LuaTest, HostGroupCacheTestName) {
 // And the host is attached to no group
 // Then an empty array is returned.
 TEST_F(LuaTest, HostGroupCacheTestEmpty) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
 
   CreateScript(filename, "function init(conf)\n"
@@ -662,7 +664,7 @@ TEST_F(LuaTest, HostGroupCacheTestEmpty) {
 // And the cache does know about them
 // Then an array is returned by the lua method.
 TEST_F(LuaTest, HostGroupCacheTest) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::host_group> hg(new neb::host_group);
   hg->id = 16;
@@ -714,7 +716,7 @@ TEST_F(LuaTest, HostGroupCacheTest) {
 // And the cache does not know about it
 // Then nil is returned by the lua method.
 TEST_F(LuaTest, ServiceGroupCacheTestNameNotAvailable) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
 
   CreateScript(filename, "function init(conf)\n"
@@ -736,7 +738,7 @@ TEST_F(LuaTest, ServiceGroupCacheTestNameNotAvailable) {
 // And the cache does know about it
 // Then the name is returned by the lua method.
 TEST_F(LuaTest, ServiceGroupCacheTestName) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::service_group> sg(new neb::service_group);
   sg->id = 28;
@@ -762,7 +764,7 @@ TEST_F(LuaTest, ServiceGroupCacheTestName) {
 // And the service is attached to no group
 // Then an empty array is returned.
 TEST_F(LuaTest, ServiceGroupCacheTestEmpty) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
 
   CreateScript(filename, "function init(conf)\n"
@@ -784,7 +786,7 @@ TEST_F(LuaTest, ServiceGroupCacheTestEmpty) {
 // And the cache does know about them
 // Then an array is returned by the lua method.
 TEST_F(LuaTest, ServiceGroupCacheTest) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::service_group> sg(new neb::service_group);
   sg->id = 16;
@@ -840,7 +842,7 @@ TEST_F(LuaTest, ServiceGroupCacheTest) {
 // And the cache does know about them
 // Then an array is returned by the lua method.
 TEST_F(LuaTest, SetNewInstance) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::service_group> sg(new neb::service_group);
   sg->id = 16;
@@ -917,7 +919,7 @@ TEST_F(LuaTest, SetNewInstance) {
 // And the cache does know about them
 // Then an array with bvs id is returned by the lua method.
 TEST_F(LuaTest, BamCacheTestBvBaRelation) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<bam::dimension_ba_bv_relation_event> rel(
     new bam::dimension_ba_bv_relation_event);
@@ -962,7 +964,7 @@ TEST_F(LuaTest, BamCacheTestBvBaRelation) {
 // When the Lua get_ba() function is called with it,
 // Then a table corresponding to this ba is returned.
 TEST_F(LuaTest, BamCacheTestBa) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<bam::dimension_ba_event> ba(
     new bam::dimension_ba_event);
@@ -997,7 +999,7 @@ TEST_F(LuaTest, BamCacheTestBa) {
 // And the cache does not know about it,
 // Then nil is returned.
 TEST_F(LuaTest, BamCacheTestBaNil) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
 
   CreateScript(filename, "function init(conf)\n"
@@ -1020,7 +1022,7 @@ TEST_F(LuaTest, BamCacheTestBaNil) {
 // When the Lua get_bv() function is called with it,
 // Then a table corresponding to this bv is returned.
 TEST_F(LuaTest, BamCacheTestBv) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<bam::dimension_bv_event> bv(
     new bam::dimension_bv_event);
@@ -1052,7 +1054,7 @@ TEST_F(LuaTest, BamCacheTestBv) {
 // And the cache does not know about it,
 // Then nil is returned.
 TEST_F(LuaTest, BamCacheTestBvNil) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
 
   CreateScript(filename, "function init(conf)\n"
@@ -1072,7 +1074,7 @@ TEST_F(LuaTest, BamCacheTestBvNil) {
 }
 
 TEST_F(LuaTest, ParsePerfdata) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/parse_perfdata.lua");
 
   CreateScript(filename, "local function test_perf(value, full)\n"
@@ -1130,7 +1132,7 @@ TEST_F(LuaTest, ParsePerfdata) {
 // When the first script call a function defined in the second one
 // Then the call works.
 TEST_F(LuaTest, UpdatePath) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/test.lua");
   std::string module("/tmp/module.lua");
 
@@ -1158,7 +1160,7 @@ TEST_F(LuaTest, UpdatePath) {
 }
 
 TEST_F(LuaTest, CheckPath) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/test.lua");
 
   CreateScript(filename, "function init(conf)\n"

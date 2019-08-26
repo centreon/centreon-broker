@@ -19,7 +19,7 @@
 #ifndef CCB_DUMPER_ENTRIES_HOST_HH
 #  define CCB_DUMPER_ENTRIES_HOST_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
@@ -48,7 +48,7 @@ namespace                 dumper {
 
       bool                enable;
       unsigned int        host_id;
-      QString             name;
+      std::string             name;
       unsigned int        poller_id;
 
       static mapping::entry const

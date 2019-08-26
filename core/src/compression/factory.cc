@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cstring>
 #include <memory>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/compression/factory.hh"
@@ -77,11 +78,11 @@ io::factory* factory::clone() const {
  *  @return True if the configuration matches the compression layer.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  QMap<QString, QString>::const_iterator
-    it(cfg.params.find("compression"));
-  return ((cfg.params.end() != it)
-          && it->compare("auto", Qt::CaseInsensitive)
-          && config::parser::parse_boolean(*it));
+  std::map<std::string, std::string>::const_iterator
+    it{cfg.params.find("compression")};
+  return cfg.params.end() != it
+         && strcasecmp(it->second.c_str(), "auto")
+         && config::parser::parse_boolean(it->second);
 }
 
 /**
@@ -93,12 +94,11 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *          layer.
  */
 bool factory::has_not_endpoint(config::endpoint& cfg) const {
-  QMap<QString, QString>::const_iterator
-    it(cfg.params.find("compression"));
-  return (((it != cfg.params.end())
-           && it->compare("auto", Qt::CaseInsensitive))
-          ? !has_endpoint(cfg)
-          : false);
+  std::map<std::string, std::string>::const_iterator
+    it{cfg.params.find("compression")};
+  return (it != cfg.params.end() && strcasecmp(it->second.c_str(), "auto"))
+             ? !has_endpoint(cfg)
+             : false;
 }
 
 /**
@@ -118,23 +118,23 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   // Get compression level.
-  int level(-1);
-  QMap<QString, QString>::const_iterator
-    it(cfg.params.find("compression_level"));
+  int level{-1};
+  std::map<std::string, std::string>::const_iterator
+    it{cfg.params.find("compression_level")};
   if (it != cfg.params.end())
-    level = it.value().toInt();
+    level = std::stol(it->second);
 
   // Get buffer size.
   unsigned int size(0);
   it = cfg.params.find("compression_buffer");
   if (it != cfg.params.end())
-    size = it.value().toUInt();
+    size = std::stoul(it->second);
 
   // Create compression object.
   std::unique_ptr<compression::opener> openr(new compression::opener);
   openr->set_level(level);
   openr->set_size(size);
-  return (openr.release());
+  return openr.release();
 }
 
 /**
@@ -149,10 +149,10 @@ io::endpoint* factory::new_endpoint(
 std::shared_ptr<io::stream> factory::new_stream(
                                         std::shared_ptr<io::stream> to,
                                         bool is_acceptor,
-                                        QString const& proto_name) {
+                                        std::string const& proto_name) {
   (void)is_acceptor;
   (void)proto_name;
-  std::shared_ptr<io::stream> s(std::make_shared<stream>());
+  std::shared_ptr<io::stream> s{std::make_shared<stream>()};
   s->set_substream(to);
-  return (s);
+  return s;
 }

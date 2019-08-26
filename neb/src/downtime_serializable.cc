@@ -23,37 +23,6 @@
 using namespace com::centreon::broker::neb;
 
 /**
- *  Stream operator for QString.
- *
- *  @param[in] stream    The stream.
- *  @param[in] fake_str  The QString.
- *
- *  @return            Reference to the stream.
- */
-std::istream& com::centreon::broker::neb::operator>>(
-                std::istream& stream, QString& fake_str) {
-  std::string str;
-  stream >> str;
-  fake_str = QString::fromStdString(str);
-  return (stream);
-}
-
-/**
- *  Stream operator for QString.
- *
- *  @param[in] stream    The stream.
- *  @param[in] fake_str  The QString.
- *
- *  @return            Reference to the stream.
- */
-std::ostream& com::centreon::broker::neb::operator<<(
-                std::ostream& stream, QString const& fake_str) {
-  std::string str = fake_str.toStdString();
-  stream << str;
-  return (stream);
-}
-
-/**
  *  Default constructor.
  */
 downtime_serializable::downtime_serializable()
@@ -81,7 +50,7 @@ downtime_serializable& downtime_serializable::operator=(
                          downtime_serializable const& other) {
   if (this != &other)
     _downtime.reset(new downtime(*other._downtime));
-  return (*this);
+  return *this;
 }
 
 /**
@@ -95,7 +64,7 @@ template <typename U, U (downtime::* member)>
 std::string downtime_serializable::get_downtime_member() const {
   std::stringstream ss;
   ss << ((*_downtime).*member);
-  return (ss.str());
+  return ss.str();
 }
 
 template <typename U, U (downtime::* member)>
@@ -134,13 +103,13 @@ void downtime_serializable::visit(ceof::ceof_visitor& visitor) {
   visitor.visit(
     *this,
     "author",
-    &downtime_serializable::get_downtime_member<QString, &downtime::author>,
-    &downtime_serializable::set_downtime_member<QString, &downtime::author>);
+    &downtime_serializable::get_downtime_member<std::string, &downtime::author>,
+    &downtime_serializable::set_downtime_member<std::string, &downtime::author>);
   visitor.visit(
     *this,
     "comment",
-    &downtime_serializable::get_downtime_member<QString, &downtime::comment>,
-    &downtime_serializable::set_downtime_member<QString, &downtime::comment>);
+    &downtime_serializable::get_downtime_member<std::string, &downtime::comment>,
+    &downtime_serializable::set_downtime_member<std::string, &downtime::comment>);
   visitor.visit(
     *this,
     "deletion_time",
@@ -214,6 +183,6 @@ void downtime_serializable::visit(ceof::ceof_visitor& visitor) {
   visitor.visit(
     *this,
     "recurring_period",
-    &downtime_serializable::get_downtime_member<QString, &downtime::recurring_timeperiod>,
-    &downtime_serializable::set_downtime_member<QString, &downtime::recurring_timeperiod>);
+    &downtime_serializable::get_downtime_member<std::string, &downtime::recurring_timeperiod>,
+    &downtime_serializable::set_downtime_member<std::string, &downtime::recurring_timeperiod>);
 }

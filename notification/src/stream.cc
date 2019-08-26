@@ -25,7 +25,6 @@
 #include <QSqlRecord>
 #include <QTextStream>
 #include <QThread>
-#include <QVariant>
 #include <QVector>
 #include <QMutexLocker>
 #include <QHash>

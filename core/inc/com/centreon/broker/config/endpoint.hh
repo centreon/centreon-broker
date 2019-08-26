@@ -22,10 +22,10 @@
 #  include <ctime>
 #  include <json11.hpp>
 #  include <list>
-#  include <QMap>
 #  include <QString>
 #  include <set>
 #  include <string>
+#  include <map>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -52,7 +52,7 @@ namespace                    config {
     time_t                   buffering_timeout;
     std::list<std::string>   failovers;
     std::string              name;
-    QMap<QString, QString>   params;
+    std::map<std::string, std::string> params;
     std::set<std::string>    read_filters;
     time_t                   read_timeout;
     time_t                   retry_interval;

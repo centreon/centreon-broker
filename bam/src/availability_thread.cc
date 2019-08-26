@@ -18,7 +18,6 @@
 
 #include <ctime>
 #include <QMutexLocker>
-#include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/bam/availability_thread.hh"
 #include "com/centreon/broker/database_query.hh"
@@ -124,7 +123,7 @@ void availability_thread::start_and_wait() {
  *  @return  A QMutexLocker locking the main mutex.
  */
 std::unique_ptr<QMutexLocker> availability_thread::lock() {
-  return (std::unique_ptr<QMutexLocker>(new QMutexLocker(&_mutex)));
+  return std::unique_ptr<QMutexLocker>(new QMutexLocker(&_mutex));
 }
 
 /**
@@ -133,10 +132,10 @@ std::unique_ptr<QMutexLocker> availability_thread::lock() {
  *  @param[in] bas_to_rebuild  A string containing the bas to rebuild.
  */
 void availability_thread::rebuild_availabilities(
-                            QString const& bas_to_rebuild) {
+    std::string const& bas_to_rebuild) {
   QMutexLocker lock(&_mutex);
-  if (bas_to_rebuild.isEmpty())
-    return ;
+  if (bas_to_rebuild.empty())
+    return;
   _should_rebuild_all = true;
   _bas_to_rebuild = bas_to_rebuild;
   _wait.wakeOne();
@@ -152,7 +151,7 @@ void availability_thread::_delete_all_availabilities() {
   // Prepare the query.
   std::stringstream query;
   query << "DELETE FROM mod_bam_reporting_ba_availabilities WHERE ba_id IN ("
-        << _bas_to_rebuild.toStdString() << ")";
+        << _bas_to_rebuild << ")";
 
   database_query q(*_db);
   q.run_query(
@@ -180,16 +179,16 @@ void availability_thread::_build_availabilities(time_t midnight) {
   if (_should_rebuild_all) {
     query << "SELECT MIN(start_time), MAX(end_time), MIN(IFNULL(end_time, '0'))"
              "  FROM mod_bam_reporting_ba_events"
-             "  WHERE ba_id IN (" << _bas_to_rebuild.toStdString() << ")";
+             "  WHERE ba_id IN (" << _bas_to_rebuild << ")";
     try {
       q.run_query(query.str());
       if (!q.next())
-        throw (exceptions::msg() << "no events matching BAs to rebuild");
+        throw exceptions::msg() << "no events matching BAs to rebuild";
     }
     catch (std::exception const& e) {
-      throw (exceptions::msg()
+      throw exceptions::msg()
              << "BAM-BI: availability thread could not select the BA durations "
-                "from the reporting database: " << e.what());
+                "from the reporting database: " << e.what();
     }
 
     first_day = q.value(0).toInt();
@@ -207,13 +206,13 @@ void availability_thread::_build_availabilities(time_t midnight) {
     try {
       q.run_query(query.str());
       if (!q.next())
-        throw (exceptions::msg() << "no availability in table");
+        throw exceptions::msg() << "no availability in table";
     }
     catch (std::exception const& e) {
-      throw (exceptions::msg()
+      throw exceptions::msg()
              << "BAM-BI: availability thread "
                 "could not select the BA availabilities "
-                "from the reporting database: " << e.what());
+                "from the reporting database: " << e.what();
     }
 
     first_day = q.value(0).toInt();
@@ -262,7 +261,7 @@ void availability_thread::_build_daily_availabilities(
            "  ON a.ba_event_id = b.ba_event_id"
            "  WHERE ";
   if (_should_rebuild_all)
-    query << "(b.ba_id IN (" << _bas_to_rebuild.toStdString() << ")) AND ";
+    query << "(b.ba_id IN (" << _bas_to_rebuild << ")) AND ";
   query << "((a.start_time BETWEEN " << day_start << " AND " << day_end - 1
         << ") OR (a.end_time BETWEEN " << day_start << " AND " << day_end - 1
         << ") OR (" << day_start << " BETWEEN a.start_time AND a.end_time))";
@@ -310,7 +309,7 @@ void availability_thread::_build_daily_availabilities(
            "  FROM mod_bam_reporting_ba_events"
            "  WHERE ";
   if (_should_rebuild_all)
-    query << "(ba_id IN (" << _bas_to_rebuild.toStdString() << ")) AND ";
+    query << "(ba_id IN (" << _bas_to_rebuild << ")) AND ";
   query << "(start_time < " << day_end << " AND end_time IS NULL)";
 
   q.run_query(
@@ -421,28 +420,24 @@ time_t availability_thread::_compute_start_of_day(
                             time_t when) {
   struct tm tmv;
   if (!localtime_r(&when, &tmv))
-    throw (exceptions::msg()
-           << "BAM-BI: availability thread could not compute start of day");
+    throw exceptions::msg()
+           << "BAM-BI: availability thread could not compute start of day";
   tmv.tm_sec = tmv.tm_min = tmv.tm_hour = 0;
-  return (mktime(&tmv));
+  return mktime(&tmv);
 }
 
 /**
  *  Open the database.
  */
 void availability_thread::_open_database() {
-  // Availability thread connection ID.
-  QString bam_id;
-  bam_id.setNum((qulonglong)this, 16);
-
   // Add database connection.
   try {
-  _db.reset(new database(_db_cfg));
+    _db.reset(new database(_db_cfg));
   }
   catch (std::exception const& e) {
-    throw (exceptions::msg()
+    throw exceptions::msg()
            << "BAM-BI: availability thread could not connect to "
-              "reporting database '" << e.what());
+              "reporting database '" << e.what();
   }
 }
 

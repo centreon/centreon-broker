@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/misc/pair.hh"
 #include "com/centreon/broker/lua/broker_cache.hh"
 
 using namespace com::centreon::broker;
@@ -52,10 +53,10 @@ static int l_broker_cache_get_ba(lua_State* L) {
     lua_pushinteger(L, ba.ba_id);
     lua_setfield(L, -2, "ba_id");
 
-    lua_pushstring(L, ba.ba_name.toStdString().c_str());
+    lua_pushstring(L, ba.ba_name.c_str());
     lua_setfield(L, -2, "ba_name");
 
-    lua_pushstring(L, ba.ba_description.toStdString().c_str());
+    lua_pushstring(L, ba.ba_description.c_str());
     lua_setfield(L, -2, "ba_description");
   }
   catch (std::exception const& e) {
@@ -84,10 +85,10 @@ static int l_broker_cache_get_bv(lua_State* L) {
     lua_pushinteger(L, bv.bv_id);
     lua_setfield(L, -2, "bv_id");
 
-    lua_pushstring(L, bv.bv_name.toStdString().c_str());
+    lua_pushstring(L, bv.bv_name.c_str());
     lua_setfield(L, -2, "bv_name");
 
-    lua_pushstring(L, bv.bv_description.toStdString().c_str());
+    lua_pushstring(L, bv.bv_description.c_str());
     lua_setfield(L, -2, "bv_description");
   }
   catch (std::exception const& e) {
@@ -110,16 +111,16 @@ static int l_broker_cache_get_bvs(lua_State* L) {
     *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
   unsigned int ba_id(luaL_checkinteger(L, 2));
 
-  QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event> const&
+  std::unordered_multimap<uint64_t, bam::dimension_ba_bv_relation_event> const&
     relations(cache->get_dimension_ba_bv_relation_events());
-  QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event>::const_iterator
+  std::unordered_multimap<uint64_t, bam::dimension_ba_bv_relation_event>::const_iterator
     it(relations.find(ba_id));
 
   lua_newtable(L);
 
   int i = 1;
-  while (it != relations.end() && it.key() == ba_id) {
-    bam::dimension_ba_bv_relation_event const& rel(it.value());
+  while (it != relations.end() && it->first == ba_id) {
+    bam::dimension_ba_bv_relation_event const& rel(it->second);
     lua_pushinteger(L, rel.bv_id);
     lua_rawseti(L, -2, i);
     ++i;
@@ -142,8 +143,8 @@ static int l_broker_cache_get_hostgroup_name(lua_State* L) {
   int id(luaL_checkinteger(L, 2));
 
   try {
-    QString const& hg(cache->get_host_group_name(id));
-    lua_pushstring(L, hg.toStdString().c_str());
+    std::string const& hg{cache->get_host_group_name(id)};
+    lua_pushstring(L, hg.c_str());
   }
   catch (std::exception const& e) {
     (void) e;
@@ -166,8 +167,8 @@ static int l_broker_cache_get_hostname(lua_State* L) {
   int id(luaL_checkinteger(L, 2));
 
   try {
-    QString const& hst(cache->get_host_name(id));
-    lua_pushstring(L, hst.toStdString().c_str());
+    std::string const& hst{cache->get_host_name(id)};
+    lua_pushstring(L, hst.c_str());
   }
   catch (std::exception const& e) {
     (void) e;
@@ -223,8 +224,8 @@ static int l_broker_cache_get_instance_name(lua_State* L) {
   int instance_id(luaL_checkinteger(L, 2));
 
   try {
-    QString const& instance(cache->get_instance(instance_id));
-    lua_pushstring(L, instance.toStdString().c_str());
+    std::string const& instance{cache->get_instance(instance_id)};
+    lua_pushstring(L, instance.c_str());
   }
   catch (std::exception const& e) {
     (void) e;
@@ -279,8 +280,8 @@ static int l_broker_cache_get_service_description(lua_State* L) {
   int service_id(luaL_checkinteger(L, 3));
 
   try {
-    QString const& svc(cache->get_service_description(host_id, service_id));
-    lua_pushstring(L, svc.toStdString().c_str());
+    std::string const& svc{cache->get_service_description(host_id, service_id)};
+    lua_pushstring(L, svc.c_str());
   }
   catch (std::exception const& e) {
     (void) e;
@@ -303,8 +304,8 @@ static int l_broker_cache_get_servicegroup_name(lua_State* L) {
   int id(luaL_checkinteger(L, 2));
 
   try {
-    QString const& sg(cache->get_service_group_name(id));
-    lua_pushstring(L, sg.toStdString().c_str());
+    std::string const& sg{cache->get_service_group_name(id)};
+    lua_pushstring(L, sg.c_str());
   }
   catch (std::exception const& e) {
     (void) e;
@@ -322,33 +323,29 @@ static int l_broker_cache_get_servicegroup_name(lua_State* L) {
  *  @return 1
  */
 static int l_broker_cache_get_servicegroups(lua_State* L) {
-  macro_cache const* cache(
-    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
-  unsigned int host_id(luaL_checkinteger(L, 2));
-  unsigned int service_id(luaL_checkinteger(L, 3));
+  macro_cache const* cache{
+    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache"))};
+  uint64_t host_id(luaL_checkinteger(L, 2));
+  uint64_t service_id(luaL_checkinteger(L, 3));
 
-  QHash<QPair<unsigned int, unsigned int>,
-        QHash<unsigned int, neb::service_group_member> > const& members(
-    cache->get_service_group_members());
+  std::map<std::tuple<uint64_t, uint64_t, uint64_t>,
+        neb::service_group_member> const& members{
+    cache->get_service_group_members()};
 
-  QHash<QPair<unsigned int, unsigned int>,
-        QHash<unsigned int, neb::service_group_member> >::const_iterator grp_it(
-    members.find(qMakePair(host_id, service_id)));
+  auto first{members.lower_bound(std::make_tuple(host_id, service_id, 0))};
+  auto second{members.upper_bound(std::make_tuple(host_id, service_id + 1, 0))};
+
   lua_newtable(L);
 
-  if (grp_it != members.end()) {
-    int i = 1;
-    for (QHash<unsigned int, neb::service_group_member>::const_iterator
-           it(grp_it->begin()),
-           end(grp_it->end());
-           it != end;
-           ++it) {
-      neb::service_group_member const& sgm(it.value());
+  if (first != members.end()) {
+    int i{1};
+    for (auto it{first}, end{second}; it != end; ++it) {
+      neb::service_group_member const& sgm{it->second};
       lua_createtable(L, 0, 2);
       lua_pushinteger(L, sgm.group_id);
       lua_setfield(L, -2, "group_id");
 
-      lua_pushstring(L, sgm.group_name.toStdString().c_str());
+      lua_pushstring(L, sgm.group_name.c_str());
       lua_setfield(L, -2, "group_name");
 
       lua_rawseti(L, -2, i);
@@ -367,30 +364,30 @@ static int l_broker_cache_get_servicegroups(lua_State* L) {
  *  @return 1
  */
 static int l_broker_cache_get_hostgroups(lua_State* L) {
-  macro_cache const* cache(
-    *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
-  int id(luaL_checkinteger(L, 2));
+  macro_cache const* cache{
+      *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache"))};
+  uint64_t id{static_cast<uint64_t>(luaL_checkinteger(L, 2))};
 
-  QHash<unsigned int, QHash<unsigned int, neb::host_group_member> > const& members(
-    cache->get_host_group_members());
+  std::map<std::pair<uint64_t, uint64_t>, neb::host_group_member> const&
+      members{cache->get_host_group_members()};
 
-  QHash<unsigned int, QHash<unsigned int, neb::host_group_member> >::const_iterator grp_it(
-    members.find(id));
+  std::map<std::pair<uint64_t, uint64_t>,
+           neb::host_group_member>::const_iterator first{
+      members.lower_bound({id, 0})};
+  std::map<std::pair<uint64_t, uint64_t>,
+           neb::host_group_member>::const_iterator second{
+      members.upper_bound({id + 1, 0})};
+
   lua_newtable(L);
-
-  if (grp_it != members.end()) {
-    int i = 1;
-    for (QHash<unsigned int, neb::host_group_member>::const_iterator
-           it(grp_it->begin()),
-           end(grp_it->end());
-           it != end;
-           ++it) {
-      neb::host_group_member const& hgm(it.value());
+  if (first != members.end()) {
+    int i{1};
+    for (auto it{first}; it != second; ++it) {
+      neb::host_group_member const& hgm(it->second);
       lua_createtable(L, 0, 2);
       lua_pushinteger(L, hgm.group_id);
       lua_setfield(L, -2, "group_id");
 
-      lua_pushstring(L, hgm.group_name.toStdString().c_str());
+      lua_pushstring(L, hgm.group_name.c_str());
       lua_setfield(L, -2, "group_name");
 
       lua_rawseti(L, -2, i);

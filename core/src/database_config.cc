@@ -70,13 +70,13 @@ database_config::database_config(
  *  @param[in] cfg  Endpoint configuration.
  */
 database_config::database_config(config::endpoint const& cfg) {
-  QMap<QString, QString>::const_iterator it, end;
+  std::map<std::string, std::string>::const_iterator it, end;
   end = cfg.params.end();
 
   // db_type
   it = cfg.params.find("db_type");
   if (it != end)
-    _type = it->toStdString();
+    _type = it->second;
   else
     throw (exceptions::config() << "no 'db_type' defined for endpoint '"
            << cfg.name << "'");
@@ -84,46 +84,46 @@ database_config::database_config(config::endpoint const& cfg) {
   // db_host
   it = cfg.params.find("db_host");
   if (it != end)
-    _host = it->toStdString();
+    _host = it->second;
   else
     _host = "localhost";
 
   // db_port
   it = cfg.params.find("db_port");
   if (it != end)
-    _port = it->toInt();
+    _port = std::stol(it->second);
   else
     _port = 0;
 
   // db_user
   it = cfg.params.find("db_user");
   if (it != end)
-    _user = it->toStdString();
+    _user = it->second;
 
   // db_password
   it = cfg.params.find("db_password");
   if (it != end)
-    _password = it->toStdString();
+    _password = it->second;
 
   // db_name
   it = cfg.params.find("db_name");
   if (it != end)
-    _name = it->toStdString();
+    _name = it->second;
   else
-    throw (exceptions::config() << "no 'db_name' defined for endpoint '"
-           << cfg.name << "'");
+    throw exceptions::config() << "no 'db_name' defined for endpoint '"
+           << cfg.name << "'";
 
   // queries_per_transaction
   it = cfg.params.find("queries_per_transaction");
   if (it != end)
-    _queries_per_transaction = it->toUInt();
+    _queries_per_transaction = std::stoul(it->second);
   else
     _queries_per_transaction = 20000;
 
   // check_replication
   it = cfg.params.find("check_replication");
   if (it != end)
-    _check_replication = config::parser::parse_boolean(*it);
+    _check_replication = config::parser::parse_boolean(it->second);
   else
     _check_replication = true;
 }

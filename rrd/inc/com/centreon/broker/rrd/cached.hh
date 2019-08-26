@@ -21,7 +21,7 @@
 
 #  include <memory>
 #  include <QIODevice>
-#  include <QString>
+#  include <string>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/rrd/backend.hh"
@@ -52,10 +52,10 @@ namespace   rrd {
     void    close();
     void    commit();
 #  if QT_VERSION >= 0x040400
-    void    connect_local(QString const& name);
+    void    connect_local(std::string const& name);
 #  endif // Qt >= 4.4.0
     void    connect_remote(
-              QString const& address,
+              std::string const& address,
               unsigned short port);
     void    open(std::string const& filename);
     void    open(

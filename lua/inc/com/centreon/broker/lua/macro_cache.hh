@@ -19,12 +19,14 @@
 #ifndef CCB_LUA_MACRO_CACHE_HH
 #  define CCB_LUA_MACRO_CACHE_HH
 
-#  include <QHash>
+#  include <map>
+#  include <unordered_map>
 #  include <memory>
 #  include "com/centreon/broker/bam/dimension_ba_bv_relation_event.hh"
 #  include "com/centreon/broker/bam/dimension_ba_event.hh"
 #  include "com/centreon/broker/bam/dimension_bv_event.hh"
 #  include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
+#  include "com/centreon/broker/misc/pair.hh"
 #  include "com/centreon/broker/neb/host.hh"
 #  include "com/centreon/broker/neb/host_group.hh"
 #  include "com/centreon/broker/neb/host_group_member.hh"
@@ -54,25 +56,25 @@ namespace         lua {
                    get_index_mapping(unsigned int index_id) const;
     storage::metric_mapping const&
                    get_metric_mapping(unsigned int metric_id) const;
-    QString const& get_host_name(unsigned int host_id) const;
-    QString const& get_host_group_name(unsigned int id) const;
-    QHash<unsigned int, QHash<unsigned int, neb::host_group_member> > const&
+    std::string const& get_host_name(uint64_t host_id) const;
+    std::string const& get_host_group_name(uint64_t id) const;
+    std::map<std::pair<uint64_t, uint64_t>, neb::host_group_member> const&
                    get_host_group_members() const;
-    QString const& get_service_description(
-                     unsigned int host_id,
-                     unsigned int service_id) const;
-    QString const& get_service_group_name(unsigned int id) const;
-    QHash<QPair<unsigned int, unsigned int>,
-          QHash<unsigned int, neb::service_group_member> > const&
-                   get_service_group_members() const;
-    QString const& get_instance(unsigned int instance_id) const;
+    std::string const& get_service_description(
+                     uint64_t host_id,
+                     uint64_t service_id) const;
+    std::string const& get_service_group_name(uint64_t id) const;
+    std::map<std::tuple<uint64_t, uint64_t, uint64_t>,
+                       neb::service_group_member> const&
+    get_service_group_members() const;
+    std::string const& get_instance(uint64_t instance_id) const;
 
-    QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event> const&
+    std::unordered_multimap<uint64_t, bam::dimension_ba_bv_relation_event> const&
                    get_dimension_ba_bv_relation_events() const;
     bam::dimension_ba_event const&
-                   get_dimension_ba_event(unsigned int id) const;
+                   get_dimension_ba_event(uint64_t id) const;
     bam::dimension_bv_event const&
-                   get_dimension_bv_event(unsigned int id) const;
+                   get_dimension_bv_event(uint64_t id) const;
 
   private:
                    macro_cache(macro_cache const& f);
@@ -100,30 +102,32 @@ namespace         lua {
 
     std::shared_ptr<persistent_cache>
                    _cache;
-    QHash<unsigned int, neb::instance>
+    std::unordered_map<uint64_t, neb::instance>
                    _instances;
-    QHash<unsigned int, neb::host>
+    std::unordered_map<uint64_t, neb::host>
                    _hosts;
-    QHash<unsigned int, neb::host_group>
+    std::unordered_map<uint64_t, neb::host_group>
                    _host_groups;
-    QHash<unsigned int, QHash<unsigned int, neb::host_group_member> >
+    std::map<std::pair<uint64_t, uint64_t>, neb::host_group_member>
                    _host_group_members;
-    QHash<QPair<unsigned int, unsigned int>, neb::service>
+//    std::unordered_map<uint64_t, std::list<std::pair<uint64_t, neb::host_group_member>>>
+//                   _host_group_members;
+    std::unordered_map<std::pair<uint64_t, uint64_t>, neb::service>
                    _services;
-    QHash<unsigned int, neb::service_group>
+    std::unordered_map<uint64_t, neb::service_group>
                    _service_groups;
-    QHash<QPair<unsigned int, unsigned int>,
-          QHash<unsigned int, neb::service_group_member> >
-                   _service_group_members;
-    QHash<unsigned int, storage::index_mapping>
+    std::map<std::tuple<uint64_t, uint64_t, uint64_t>,
+             neb::service_group_member>
+        _service_group_members;
+    std::unordered_map<uint64_t, storage::index_mapping>
                    _index_mappings;
-    QHash<unsigned int, storage::metric_mapping>
+    std::unordered_map<uint64_t, storage::metric_mapping>
                    _metric_mappings;
-    QHash<unsigned int, bam::dimension_ba_event>
+    std::unordered_map<uint64_t, bam::dimension_ba_event>
                    _dimension_ba_events;
-    QMultiHash<unsigned int, bam::dimension_ba_bv_relation_event>
+    std::unordered_multimap<uint64_t, bam::dimension_ba_bv_relation_event>
                    _dimension_ba_bv_relation_events;
-    QHash<unsigned int, bam::dimension_bv_event>
+    std::unordered_map<uint64_t, bam::dimension_bv_event>
                    _dimension_bv_events;
   };
 }

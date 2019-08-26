@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_DOWNTIME_HH
 #  define CCB_NEB_DOWNTIME_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/io/events.hh"
@@ -62,8 +62,8 @@ namespace               neb {
 
     timestamp           actual_end_time;
     timestamp           actual_start_time;
-    QString             author;
-    QString             comment;
+    std::string             author;
+    std::string             comment;
     timestamp           deletion_time;
     short               downtime_type;
     timestamp           duration;
@@ -79,7 +79,7 @@ namespace               neb {
     bool                was_cancelled;
     bool                was_started;
     bool                is_recurring;
-    QString             recurring_timeperiod;
+    std::string             recurring_timeperiod;
     short               come_from;
 
     static mapping::entry const

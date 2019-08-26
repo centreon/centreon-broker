@@ -22,7 +22,7 @@
 #  include <ctime>
 #  include <list>
 #  include <QMutex>
-#  include <QString>
+#  include <string>
 #  include <QThread>
 #  include <string>
 #  include "com/centreon/broker/io/endpoint.hh"
@@ -31,52 +31,46 @@
 CCB_BEGIN()
 
 // Forward declaration.
-namespace         processing {
-  class           thread;
+namespace processing {
+class thread;
 }
 
-namespace         bbdo {
-  // Forward declaration.
-  class           stream;
+namespace bbdo {
+// Forward declaration.
+class stream;
 
-  /**
-   *  @class acceptor acceptor.hh "com/centreon/broker/bbdo/acceptor.hh"
-   *  @brief BBDO acceptor.
-   *
-   *  Accept incoming BBDO connections.
-   */
-  class           acceptor : public io::endpoint {
-  public:
-                  acceptor(
-                    std::string const& name,
-                    bool negotiate,
-                    QString const& extensions,
-                    time_t timeout,
-                    bool one_peer_retention_mode = false,
-                    bool coarse = false,
-                    unsigned int ack_limit = 1000);
-                  acceptor(acceptor const& other);
-                  ~acceptor();
-    acceptor&     operator=(acceptor const& other);
-    std::shared_ptr<io::stream>
-                  open();
-    void          stats(io::properties& tree);
+/**
+ *  @class acceptor acceptor.hh "com/centreon/broker/bbdo/acceptor.hh"
+ *  @brief BBDO acceptor.
+ *
+ *  Accept incoming BBDO connections.
+ */
+class acceptor : public io::endpoint {
+public:
+  acceptor(std::string const &name, bool negotiate,
+           std::string const &extensions, time_t timeout,
+           bool one_peer_retention_mode = false, bool coarse = false,
+           unsigned int ack_limit = 1000);
+  acceptor(acceptor const &other);
+  ~acceptor();
+  acceptor &operator=(acceptor const &other);
+  std::shared_ptr<io::stream> open() override;
+  void stats(io::properties &tree) override;
 
-  private:
-    unsigned int  _negotiate_features(
-                     std::shared_ptr<io::stream> stream,
-                     std::shared_ptr<bbdo::stream> my_bbdo);
-    void          _open(std::shared_ptr<io::stream> stream);
+private:
+  unsigned int _negotiate_features(std::shared_ptr<io::stream> stream,
+                                   std::shared_ptr<bbdo::stream> my_bbdo);
+  void _open(std::shared_ptr<io::stream> stream);
 
-    bool          _coarse;
-    QString       _extensions;
-    std::string   _name;
-    bool          _negotiate;
-    bool          _one_peer_retention_mode;
-    time_t        _timeout;
-    unsigned int  _ack_limit;
-  };
-}
+  bool _coarse;
+  std::string _extensions;
+  std::string _name;
+  bool _negotiate;
+  bool _one_peer_retention_mode;
+  time_t _timeout;
+  unsigned int _ack_limit;
+};
+} // namespace bbdo
 
 CCB_END()
 

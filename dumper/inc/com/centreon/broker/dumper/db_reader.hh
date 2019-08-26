@@ -19,7 +19,6 @@
 #ifndef CCB_DUMPER_DB_READER_HH
 #  define CCB_DUMPER_DB_READER_HH
 
-#  include <QString>
 #  include <string>
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/dumper/entries/state.hh"
@@ -48,17 +47,17 @@ namespace           dumper {
   private:
                     db_reader(db_reader const& other);
     db_reader&      operator=(db_reader const& other);
-    void            _sync_cfg_db(unsigned int poller_id, QString const& req_id);
+    void            _sync_cfg_db(unsigned int poller_id, std::string const& req_id);
     void            _update_cfg_db(
                       unsigned int poller_id,
-                      QString const& req_id);
+                      std::string const& req_id);
 
     umap<unsigned int, entries::state>
                     _cache;
     umap<std::string, unsigned int>
                     _req_id_to_source_id;
     database_config _db_cfg;
-    QString         _name;
+    std::string         _name;
   };
 }
 

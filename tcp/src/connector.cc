@@ -67,7 +67,7 @@ connector& connector::operator=(connector const& other) {
     io::endpoint::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -76,10 +76,9 @@ connector& connector::operator=(connector const& other) {
  *  @param[in] host  Host to connect to.
  *  @param[in] port  Port to connect to.
  */
-void connector::connect_to(QString const& host, unsigned short port) {
+void connector::connect_to(std::string const& host, unsigned short port) {
   _host = host;
   _port = port;
-  return ;
 }
 
 /**
@@ -92,11 +91,11 @@ std::shared_ptr<io::stream> connector::open() {
   std::string connection_name;
   {
     std::ostringstream oss;
-    oss << _host.toStdString() << ":" << _port;
+    oss << _host << ":" << _port;
     connection_name = oss.str();
   }
   std::unique_ptr<QTcpSocket> sock(new QTcpSocket);
-  sock->connectToHost(_host, _port);
+  sock->connectToHost(QString::fromStdString(_host), _port);
 
   // Wait for connection result.
   if (!sock->waitForConnected())
@@ -110,7 +109,7 @@ std::shared_ptr<io::stream> connector::open() {
   sock.release();
   s->set_read_timeout(_read_timeout);
   s->set_write_timeout(_write_timeout);
-  return (s);
+  return s;
 }
 
 /**
@@ -120,7 +119,6 @@ std::shared_ptr<io::stream> connector::open() {
  */
 void connector::set_read_timeout(int secs) {
   _read_timeout = secs;
-  return ;
 }
 
 /**
@@ -130,7 +128,6 @@ void connector::set_read_timeout(int secs) {
  */
 void connector::set_write_timeout(int secs) {
   _write_timeout = secs;
-  return ;
 }
 
 /**************************************
@@ -149,5 +146,4 @@ void connector::_internal_copy(connector const& other) {
   _port = other._port;
   _read_timeout = other._read_timeout;
   _write_timeout = other._write_timeout;
-  return ;
 }

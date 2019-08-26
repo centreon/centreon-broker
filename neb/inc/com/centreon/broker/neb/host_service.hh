@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_HOST_SERVICE_HH
 #  define CCB_NEB_HOST_SERVICE_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -42,24 +42,24 @@ namespace         neb {
     virtual       ~host_service();
     host_service& operator=(host_service const& other);
 
-    QString       action_url;
+    std::string       action_url;
     bool          check_freshness;
     bool          default_active_checks_enabled;
     bool          default_event_handler_enabled;
     bool          default_flap_detection_enabled;
     bool          default_notifications_enabled;
     bool          default_passive_checks_enabled;
-    QString       display_name;
+    std::string       display_name;
     double        first_notification_delay;
     double        freshness_threshold;
     double        high_flap_threshold;
-    QString       icon_image;
-    QString       icon_image_alt;
+    std::string       icon_image;
+    std::string       icon_image_alt;
     double        low_flap_threshold;
-    QString       notes;
-    QString       notes_url;
+    std::string       notes;
+    std::string       notes_url;
     double        notification_interval;
-    QString       notification_period;
+    std::string       notification_period;
     bool          notify_on_downtime;
     bool          notify_on_flapping;
     bool          notify_on_recovery;

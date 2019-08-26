@@ -108,7 +108,7 @@ unsigned int json_command_parser::parse(
       json11::Json command_id{js["command_id"]};
       if (!command_id.is_string())
         throw (exceptions::msg() << "couldn't find 'command_id'");
-      _listener.command_status(QString::fromStdString(command_id.string_value()));
+      _listener.command_status(command_id.string_value());
     } else if (command_type.string_value() == "execute") {
       json11::Json command{js["command"]};
       json11::Json broker_id{js["broker_id"]};
@@ -117,13 +117,13 @@ unsigned int json_command_parser::parse(
       request.reset(new command_request);
       if (!command.is_string())
         throw (exceptions::msg() << "couldn't find 'commands'");
-      request->cmd = QString::fromStdString(command.string_value());
+      request->cmd = command.string_value();
       if (!broker_id.is_string())
-        throw (exceptions::msg() << "couldn't find 'broker_id'");
+        throw exceptions::msg() << "couldn't find 'broker_id'";
       request->destination_id = std::stoul(broker_id.string_value());
       if (!endpoint.is_string())
-        throw (exceptions::msg() << "couldn't find 'endpoint'");
-      request->endp = QString::fromStdString(endpoint.string_value());
+        throw exceptions::msg() << "couldn't find 'endpoint'";
+      request->endp = endpoint.string_value();
 
       json11::Json with_partial_result{js["endpoint"]["with_partial_result"]};
       if (with_partial_result.is_bool())
@@ -145,11 +145,11 @@ unsigned int json_command_parser::parse(
   } catch (std::exception const& e) {
     // At this point, command request was not written to the command
     // listener, so it not necessary to write command result either.
-    res.uuid = QString();
+    res.uuid = "";
     res.code = -1;
-    res.msg = QString("\"") + e.what() + "\"";
+    res.msg = std::string("\"") + e.what() + "\"";
   }
-  return (parsed);
+  return parsed;
 }
 
 /**
@@ -161,10 +161,10 @@ unsigned int json_command_parser::parse(
  */
 std::string json_command_parser::write(command_result const& res) {
   json11::Json writer = json11:: Json::object {
-    {"command_id", res.uuid.toStdString()},
+    {"command_id", res.uuid},
     {"command_code", res.code},
-    {"command_output", res.msg.toStdString()},
+    {"command_output", res.msg},
   };
 
-  return (writer.dump());
+  return writer.dump();
 }

@@ -280,7 +280,7 @@ static int l_broker_parse_perfdata(lua_State* L) {
   char const* perf_data(lua_tostring(L, 1));
   int full(lua_toboolean(L, 2));
   storage::parser p;
-  QList<storage::perfdata> pds;
+  std::list<storage::perfdata> pds;
   try {
     p.parse_perfdata(perf_data, pds);
   }
@@ -290,18 +290,18 @@ static int l_broker_parse_perfdata(lua_State* L) {
     return 2;
   }
   lua_createtable(L, 0, pds.size());
-  for (QList<storage::perfdata>::iterator
+  for (std::list<storage::perfdata>::const_iterator
          it(pds.begin()),
          end(pds.end());
        it != end;
        ++it) {
-    storage::perfdata& pd(*it);
-    lua_pushstring(L, pd.name().toStdString().c_str());
+    storage::perfdata const& pd(*it);
+    lua_pushstring(L, pd.name().c_str());
     if (full) {
       lua_createtable(L, 0, 3);
       lua_pushnumber(L, pd.value());
       lua_setfield(L, -2, "value");
-      lua_pushstring(L, pd.unit().toStdString().c_str());
+      lua_pushstring(L, pd.unit().c_str());
       lua_setfield(L, -2, "uom");
       lua_pushnumber(L, pd.min());
       lua_setfield(L, -2, "min");

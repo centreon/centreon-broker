@@ -25,7 +25,7 @@
 #  include <map>
 #  include <memory>
 #  include <QSqlDatabase>
-#  include <QString>
+#  include <string>
 #  include <utility>
 #  include "com/centreon/broker/database.hh"
 #  include "com/centreon/broker/database_query.hh"
@@ -64,11 +64,11 @@ namespace          storage {
 
    private:
     struct         index_info {
-      QString      host_name;
+      std::string      host_name;
       unsigned int index_id;
       bool         locked;
       unsigned int rrd_retention;
-      QString      service_description;
+      std::string      service_description;
       bool         special;
     };
     struct         metric_info {
@@ -76,7 +76,7 @@ namespace          storage {
       unsigned int metric_id;
       unsigned int type;
       double       value;
-      QString      unit_name;
+      std::string      unit_name;
       double       warn;
       double       warn_low;
       bool         warn_mode;
@@ -99,37 +99,36 @@ namespace          storage {
     void           _delete_metrics(
                      std::list<unsigned long long> const& metrics_to_delete);
     unsigned int   _find_index_id(
-                     unsigned int host_id,
-                     unsigned int service_id,
-                     QString const& host_name,
-                     QString const& service_desc,
+                     uint64_t host_id,
+                     uint64_t service_id,
+                     std::string const& host_name,
+                     std::string const& service_desc,
                      unsigned int* rrd_len,
                      bool* locked);
-    unsigned int   _find_metric_id(
-                     unsigned int index_id,
-                     QString metric_name,
-		     QString const& unit_name,
-		     double warn,
-                     double warn_low,
-                     bool warn_mode,
-		     double crit,
-                     double crit_low,
-                     bool crit_mode,
-		     double min,
-		     double max,
-                     double value,
-                     unsigned int* type,
-                     bool* locked);
+    uint64_t _find_metric_id(uint64_t index_id,
+                             std::string metric_name,
+                             std::string const& unit_name,
+                             double warn,
+                             double warn_low,
+                             bool warn_mode,
+                             double crit,
+                             double crit_low,
+                             bool crit_mode,
+                             double min,
+                             double max,
+                             double value,
+                             unsigned int* type,
+                             bool* locked);
     void           _insert_perfdatas();
     void           _prepare();
     void           _rebuild_cache();
     void           _update_status(std::string const& status);
 
-    std::map<std::pair<unsigned int, unsigned int>, index_info>
+    std::map<std::pair<uint64_t, uint64_t>, index_info>
                    _index_cache;
     bool           _insert_in_index_data;
     unsigned int   _interval_length;
-    std::map<std::pair<unsigned int, QString>, metric_info>
+    std::map<std::pair<uint64_t, std::string>, metric_info>
                    _metric_cache;
     unsigned int   _pending_events;
     std::deque<metric_value>

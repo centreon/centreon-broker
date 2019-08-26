@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_INSTANCE_HH
 #  define CCB_NEB_INSTANCE_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
@@ -46,14 +46,14 @@ namespace          neb {
     static unsigned int
                    static_type();
 
-    QString        engine;
+    std::string        engine;
     bool           is_running;
-    QString        name;
+    std::string        name;
     unsigned int   pid;
     unsigned int   poller_id;
     timestamp      program_end;
     timestamp      program_start;
-    QString        version;
+    std::string        version;
 
     static mapping::entry const
                    entries[];

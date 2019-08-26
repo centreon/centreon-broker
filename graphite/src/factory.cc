@@ -42,12 +42,12 @@ using namespace com::centreon::broker::graphite;
  */
 static std::string find_param(
                      config::endpoint const& cfg,
-                     QString const& key) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+                     std::string const& key) {
+  std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw (exceptions::msg() << "graphite: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'");
-  return (it.value().toStdString());
+    throw exceptions::msg() << "graphite: no '" << key
+           << "' defined for endpoint '" << cfg.name << "'";
+  return it->second;
 }
 
 /**
@@ -61,13 +61,13 @@ static std::string find_param(
  */
 static std::string get_string_param(
               config::endpoint const& cfg,
-              QString const& key,
+              std::string const& key,
               std::string const& def) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+  std::map<std::string, std::string>::const_iterator it(cfg.params.find(key));
   if (cfg.params.end() == it)
-    return (def);
+    return def;
   else
-    return (it->toStdString());
+    return it->second;
 }
 
 /**
@@ -81,13 +81,13 @@ static std::string get_string_param(
  */
 static unsigned int get_uint_param(
              config::endpoint const& cfg,
-             QString const& key,
+             std::string const& key,
              unsigned int def) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+  std::map<std::string, std::string>::const_iterator it(cfg.params.find(key));
   if (cfg.params.end() == it)
     return (def);
   else
-    return (it->toUInt());
+    return std::stoul(it->second);
 }
 
 /**************************************
@@ -122,7 +122,7 @@ factory::~factory() {}
  */
 factory& factory::operator=(factory const& other) {
   io::factory::operator=(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -131,7 +131,7 @@ factory& factory::operator=(factory const& other) {
  *  @return Exact copy of this factory.
  */
 io::factory* factory::clone() const {
-  return (new factory(*this));
+  return new factory(*this);
 }
 
 /**
@@ -142,12 +142,12 @@ io::factory* factory::clone() const {
  *  @return true if the configuration matches the storage layer.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  bool is_ifdb(!cfg.type.compare("graphite", Qt::CaseInsensitive));
+  bool is_ifdb{!cfg.type.compare("graphite", Qt::CaseInsensitive)};
   if (is_ifdb) {
     cfg.params["cache"] = "yes";
     cfg.cache_enabled = true;
   }
-  return (is_ifdb);
+  return is_ifdb;
 }
 
 /**

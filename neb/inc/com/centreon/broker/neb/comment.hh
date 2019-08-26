@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_COMMENT_HH
 #  define CCB_NEB_COMMENT_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/mapping/entry.hh"
@@ -45,9 +45,9 @@ namespace          neb {
     static unsigned int
                    static_type();
 
-    QString        author;
+    std::string        author;
     short          comment_type;
-    QString        data;
+    std::string        data;
     timestamp      deletion_time;
     timestamp      entry_time;
     short          entry_type;

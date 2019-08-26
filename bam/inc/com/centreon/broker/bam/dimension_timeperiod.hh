@@ -19,7 +19,7 @@
 #ifndef CCB_BAM_DIMENSION_TIMEPERIOD_HH
 #  define CCB_BAM_DIMENSION_TIMEPERIOD_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/event_info.hh"
@@ -46,14 +46,14 @@ namespace          bam {
                    static_type();
 
     unsigned int   id;
-    QString        name;
-    QString        monday;
-    QString        tuesday;
-    QString        wednesday;
-    QString        thursday;
-    QString        friday;
-    QString        saturday;
-    QString        sunday;
+    std::string        name;
+    std::string        monday;
+    std::string        tuesday;
+    std::string        wednesday;
+    std::string        thursday;
+    std::string        friday;
+    std::string        saturday;
+    std::string        sunday;
 
     static mapping::entry const
                    entries[];

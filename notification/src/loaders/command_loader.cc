@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QVariant>
 #include <QSqlError>
+#include <QVariant>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/command.hh"

@@ -19,7 +19,7 @@
 #ifndef CCB_NEB_DOWNTIME_SERIALIZABLE_HH
 #  define CCB_NEB_DOWNTIME_SERIALIZABLE_HH
 
-#  include <QString>
+#  include <string>
 #  include <istream>
 #  include <memory>
 #  include <ostream>
@@ -60,10 +60,6 @@ namespace   neb {
     std::shared_ptr<downtime>
                 _downtime;
   };
-
-  // Stream operators for QString.
-  std::istream& operator>>(std::istream& stream, QString& fake_str);
-  std::ostream& operator<<(std::ostream& stream, QString const& fake_str);
 }
 
 CCB_END()

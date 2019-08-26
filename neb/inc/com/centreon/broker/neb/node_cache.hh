@@ -20,8 +20,8 @@
 #  define CCB_NEB_NODE_CACHE_HH
 
 #  include <memory>
-#  include <QHash>
-#  include <QString>
+#  include <string>
+#  include <unordered_map>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/neb/host.hh"
@@ -30,6 +30,7 @@
 #  include "com/centreon/broker/neb/service_status.hh"
 #  include "com/centreon/broker/neb/node_id.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
+#  include "com/centreon/broker/misc/pair.hh"
 
 CCB_BEGIN()
 
@@ -56,16 +57,16 @@ namespace                        neb {
     neb::service_status*         get_service_status(node_id id);
 
   private:
-    QHash<node_id, neb::host>   _hosts;
-    QHash<node_id, neb::service>
-                                _services;
-    QHash<node_id, neb::host_status>
-                                _host_statuses;
-    QHash<node_id, neb::service_status>
+    std::unordered_map<node_id, neb::host>   _hosts;
+    std::unordered_map<node_id, neb::service>
+                      _services;
+    std::unordered_map<node_id, neb::host_status>
+                      _host_statuses;
+    std::unordered_map<node_id, neb::service_status>
                                 _service_statuses;
-    QHash<QPair<QString, QString>, node_id>
+    std::unordered_map<std::pair<std::string, std::string>, node_id>
                                 _names_to_node;
-    QHash<node_id, unsigned short>
+    std::unordered_map<node_id, unsigned short>
                                 _previous_statuses;
 
     void                        _process_host(neb::host const& hst);

@@ -67,6 +67,7 @@ namespace        misc {
                               std::string const& data,
                               std::vector<std::string>& out,
                               char delim);
+    std::list<std::string> split(std::string const& str, char sep);
     std::string&            trim(std::string& str) throw ();
     std::string&            trim_left(std::string& str) throw ();
     std::string&            trim_right(std::string& str) throw ();

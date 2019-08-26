@@ -19,8 +19,8 @@
 #include <utility>
 #include <vector>
 #include <sstream>
-#include <QVariant>
 #include <QSqlError>
+#include <QVariant> // Needed because of QSql
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/dependency.hh"
@@ -60,9 +60,9 @@ void dependency_loader::load(QSqlDatabase* db, dependency_builder* output) {
                "       execution_failure_criteria,"
                "       notification_failure_criteria"
                "  FROM cfg_dependencies"))
-    throw (exceptions::msg()
+    throw exceptions::msg()
            << "notification: cannot load dependencies from database: "
-           << query.lastError().text());
+           << query.lastError().text();
 
   while (query.next()) {
     dependency::ptr dep(new dependency);

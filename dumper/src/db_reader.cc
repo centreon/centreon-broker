@@ -98,7 +98,7 @@ bool db_reader::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   throw (exceptions::shutdown()
          << "cannot read from DB configuration reader");
-  return (false);
+  return false;
 }
 
 /**
@@ -110,7 +110,7 @@ bool db_reader::read(std::shared_ptr<io::data>& d, time_t deadline) {
  */
 int db_reader::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "db_reader"))
-    return (1);
+    return 1;
 
   // Process only external commands addressed to us.
   if (d->type() == extcmd::command_request::static_type()) {
@@ -120,11 +120,11 @@ int db_reader::write(std::shared_ptr<io::data> const& d) {
       logging::info(logging::medium)
         << "db_reader: processing command: " << req.cmd;
       // Cache the source id for asynchronuous response.
-      _req_id_to_source_id[req.uuid.toStdString()] = req.source_id;
+      _req_id_to_source_id[req.uuid] = req.source_id;
       try {
         // Split command for processing.
         std::vector<std::string> params;
-        misc::string::split(req.cmd.toStdString(), params, ';');
+        misc::string::split(req.cmd, params, ';');
         if (params.size() != 2) {
           throw (exceptions::msg()
                  << "invalid format: expected format is"
@@ -154,7 +154,7 @@ int db_reader::write(std::shared_ptr<io::data> const& d) {
         std::shared_ptr<extcmd::command_result>
           res(new extcmd::command_result);
         res->uuid = req.uuid;
-        res->msg = QString("\"") + e.what() + "\"";
+        res->msg = std::string("\"") + e.what() + "\"";
         res->code = -1;
         res->destination_id = req.source_id;
         multiplexing::publisher().write(res);
@@ -166,16 +166,16 @@ int db_reader::write(std::shared_ptr<io::data> const& d) {
     std::shared_ptr<extcmd::command_result>
       res(new extcmd::command_result);
     if (_req_id_to_source_id.find(
-          std::static_pointer_cast<dumper::db_dump_committed>(d)->req_id.toStdString())
+          std::static_pointer_cast<dumper::db_dump_committed>(d)->req_id)
         != _req_id_to_source_id.end()) {
       res->uuid = std::static_pointer_cast<dumper::db_dump_committed>(d)->req_id;
       res->msg = "\"Command successfully executed.\"";
       res->code = 0;
-      res->destination_id = _req_id_to_source_id[res->uuid.toStdString()];
+      res->destination_id = _req_id_to_source_id[res->uuid];
       multiplexing::publisher().write(res);
     }
   }
-  return (1);
+  return 1;
 }
 
 /**************************************
@@ -191,7 +191,7 @@ int db_reader::write(std::shared_ptr<io::data> const& d) {
  */
 void db_reader::_sync_cfg_db(
                   unsigned int poller_id,
-                  QString const& req_id) {
+                  std::string const& req_id) {
   if (poller_id) {
     // Log message.
     logging::info(logging::medium)
@@ -240,7 +240,7 @@ void db_reader::_sync_cfg_db(
  *
  *  @param[in] poller_id  Poller ID.
  */
-void db_reader::_update_cfg_db(unsigned int poller_id, QString const& req_id) {
+void db_reader::_update_cfg_db(unsigned int poller_id, std::string const& req_id) {
   if (poller_id) {
     // Log message.
     logging::info(logging::medium)

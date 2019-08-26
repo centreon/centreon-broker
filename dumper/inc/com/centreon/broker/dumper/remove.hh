@@ -19,7 +19,7 @@
 #ifndef CCB_DUMPER_REMOVE_HH
 #  define CCB_DUMPER_REMOVE_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -43,9 +43,9 @@ namespace               dumper {
     unsigned int        type() const;
     static unsigned int static_type();
 
-    QString             tag;
-    QString             filename;
-    QString             req_id;
+    std::string             tag;
+    std::string             filename;
+    std::string             req_id;
 
     static mapping::entry const
                         entries[];

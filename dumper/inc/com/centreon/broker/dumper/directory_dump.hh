@@ -42,9 +42,9 @@ namespace               dumper {
     unsigned int        type() const;
     static unsigned int static_type();
 
-    QString             tag;
+    std::string             tag;
     bool                started;
-    QString             req_id;
+    std::string             req_id;
 
     static mapping::entry const
                         entries[];

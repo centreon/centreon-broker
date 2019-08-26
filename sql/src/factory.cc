@@ -106,38 +106,38 @@ io::endpoint* factory::new_endpoint(
   // Cleanup check interval.
   unsigned int cleanup_check_interval(0);
   {
-    QMap<QString, QString>::const_iterator
-      it(cfg.params.find("cleanup_check_interval"));
+    std::map<std::string, std::string>::const_iterator
+      it{cfg.params.find("cleanup_check_interval")};
     if (it != cfg.params.end())
-      cleanup_check_interval = it.value().toUInt();
+      cleanup_check_interval = std::stoul(it->second);
   }
 
   // Instance timeout
   // By default, 5 minutes.
   unsigned int instance_timeout(5 * 60);
   {
-    QMap<QString, QString>::const_iterator
+    std::map<std::string, std::string>::const_iterator
       it(cfg.params.find("instance_timeout"));
     if (it != cfg.params.end())
-      instance_timeout = it.value().toUInt();
+      instance_timeout = std::stoul(it->second);
   }
 
   // Use state events ?
   bool wse(false);
   {
-    QMap<QString, QString>::const_iterator
+    std::map<std::string, std::string>::const_iterator
       it(cfg.params.find("with_state_events"));
     if (it != cfg.params.end())
-      wse = config::parser::parse_boolean(*it);
+      wse = config::parser::parse_boolean(it->second);
   }
 
   // Connector.
-  std::unique_ptr<sql::connector> c(new sql::connector);
+  std::unique_ptr<sql::connector> c{new sql::connector};
   c->connect_to(
        dbcfg,
        cleanup_check_interval,
        instance_timeout,
        wse);
   is_acceptor = false;
-  return (c.release());
+  return c.release();
 }

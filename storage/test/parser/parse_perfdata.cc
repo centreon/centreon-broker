@@ -18,7 +18,7 @@
 
 #include <cmath>
 #include <gtest/gtest.h>
-#include <QList>
+#include <list>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/parser.hh"
@@ -32,15 +32,15 @@ using namespace com::centreon::broker;
 TEST(StorageParserParsePerfdata, Simple1) {
   config::applier::init();
   // Parse perfdata.
-  QList<storage::perfdata> list;
+  std::list<storage::perfdata> lst;
   storage::parser p;
   p.parse_perfdata(
     "time=2.45698s;2.000000;5.000000;0.000000;10.000000",
-    list);
+    lst);
 
   // Assertions.
-  ASSERT_EQ(list.size(), 1);
-  QList<storage::perfdata>::const_iterator it(list.begin());
+  ASSERT_EQ(lst.size(), 1u);
+  std::list<storage::perfdata>::const_iterator it(lst.begin());
   storage::perfdata expected;
   expected.name("time");
   expected.value_type(storage::perfdata::gauge);
@@ -57,13 +57,13 @@ TEST(StorageParserParsePerfdata, Simple1) {
 
 TEST(StorageParserParsePerfdata, Simple2) {
   // Parse perfdata.
-  QList<storage::perfdata> list;
+  std::list<storage::perfdata> list;
   storage::parser p;
   p.parse_perfdata("'ABCD12E'=18.00%;15:;10:;0;100", list);
 
   // Assertions.
-  ASSERT_EQ(list.size(), 1);
-  QList<storage::perfdata>::const_iterator it(list.begin());
+  ASSERT_EQ(list.size(), 1u);
+  std::list<storage::perfdata>::const_iterator it(list.begin());
   storage::perfdata expected;
   expected.name("ABCD12E");
   expected.value_type(storage::perfdata::gauge);
@@ -80,7 +80,7 @@ TEST(StorageParserParsePerfdata, Simple2) {
 
 TEST(StorageParserParsePerfdata, Complex1) {
   // Parse perfdata.
-  QList<storage::perfdata> list;
+  std::list<storage::perfdata> list;
   storage::parser p;
   p.parse_perfdata(
       "time=2.45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; "
@@ -89,8 +89,8 @@ TEST(StorageParserParsePerfdata, Complex1) {
       list);
 
   // Assertions.
-  ASSERT_EQ(list.size(), 7);
-  QList<storage::perfdata>::const_iterator it(list.begin());
+  ASSERT_EQ(list.size(), 7u);
+  std::list<storage::perfdata>::const_iterator it(list.begin());
   storage::perfdata expected;
 
   // #1.
@@ -180,7 +180,7 @@ TEST(StorageParserParsePerfdata, Complex1) {
 // Then the corresponding perfdata list is returned
 TEST(StorageParserParsePerfdata, Loop) {
   // Objects.
-  QList<storage::perfdata> list;
+  std::list<storage::perfdata> list;
   storage::parser p;
 
   // Loop.
@@ -192,8 +192,8 @@ TEST(StorageParserParsePerfdata, Loop) {
         list);
 
     // Assertions.
-    ASSERT_EQ(list.size(), 1);
-    QList<storage::perfdata>::const_iterator it(list.begin());
+    ASSERT_EQ(list.size(), 1u);
+    std::list<storage::perfdata>::const_iterator it(list.begin());
     storage::perfdata expected;
     expected.name("time");
     expected.value_type(storage::perfdata::counter);
@@ -215,7 +215,7 @@ TEST(StorageParserParsePerfdata, Loop) {
 // Then it throws a storage::exceptions::perfdata
 TEST(StorageParserParsePerfdata, Incorrect1) {
   // Objects.
-  QList<storage::perfdata> list;
+  std::list<storage::perfdata> list;
   storage::parser p;
 
   // Attempt to parse perfdata.
@@ -229,11 +229,101 @@ TEST(StorageParserParsePerfdata, Incorrect1) {
 // Then it throws a storage::exceptions::perfdata
 TEST(StorageParserParsePerfdata, Incorrect2) {
   // Given
-  QList<storage::perfdata> list;
+  std::list<storage::perfdata> list;
   storage::parser p;
 
   // Then
   ASSERT_THROW(
     { p.parse_perfdata("metric=kb/s", list); },
     com::centreon::broker::storage::exceptions::perfdata);
+}
+
+TEST(StorageParserParsePerfdata, LabelWithSpaces) {
+  // Parse perfdata.
+  std::list<storage::perfdata> lst;
+  storage::parser p;
+  p.parse_perfdata("  'foo  bar   '=2s;2;5;;", lst);
+
+  // Assertions.
+  ASSERT_EQ(lst.size(), 1u);
+  std::list<storage::perfdata>::const_iterator it(lst.begin());
+  storage::perfdata expected;
+  expected.name("foo  bar");
+  expected.value_type(storage::perfdata::gauge);
+  expected.value(2);
+  expected.unit("s");
+  expected.warning(2.0);
+  expected.warning_low(0.0);
+  expected.critical(5.0);
+  expected.critical_low(0.0);
+  ASSERT_TRUE(expected == *it);
+}
+
+TEST(StorageParserParsePerfdata, Complex2) {
+  // Parse perfdata.
+  std::list<storage::perfdata> list;
+  storage::parser p;
+  p.parse_perfdata(
+      "time=2,45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; "
+      "infotraffic=18,6x;;;; a[foo]=1234,17;10;11: c[bar]=1234,147;~:10;20:30",
+      list);
+
+  // Assertions.
+  ASSERT_EQ(list.size(), 5u);
+  std::list<storage::perfdata>::const_iterator it(list.begin());
+  storage::perfdata expected;
+
+  // #1.
+  expected.name("time");
+  expected.value_type(storage::perfdata::gauge);
+  expected.value(2.45698);
+  expected.unit("s");
+  expected.max(INFINITY);
+  ASSERT_TRUE(expected == *it);
+  ++it;
+
+  // #2.
+  expected = storage::perfdata();
+  expected.name("metric");
+  expected.value_type(storage::perfdata::derive);
+  expected.value(239765);
+  expected.unit("B/s");
+  expected.warning(5.0);
+  expected.warning_low(0.0);
+  expected.min(-INFINITY);
+  ASSERT_TRUE(expected == *it);
+  ++it;
+
+  // #3.
+  expected = storage::perfdata();
+  expected.name("infotraffic");
+  expected.value_type(storage::perfdata::gauge);
+  expected.value(18.6);
+  expected.unit("x");
+  ASSERT_TRUE(expected == *it);
+  ++it;
+
+  // #4.
+  expected = storage::perfdata();
+  expected.name("foo");
+  expected.value_type(storage::perfdata::absolute);
+  expected.value(1234.17);
+  expected.warning(10.0);
+  expected.warning_low(0.0);
+  expected.critical(INFINITY);
+  expected.critical_low(11.0);
+  ASSERT_TRUE(expected == *it);
+  ++it;
+
+  // #5.
+  expected = storage::perfdata();
+  expected.name("bar");
+  expected.value_type(storage::perfdata::counter);
+  expected.value(1234.147);
+  expected.warning(10.0);
+  expected.warning_low(-INFINITY);
+  expected.critical(30.0);
+  expected.critical_low(20.0);
+  ASSERT_TRUE(expected == *it);
+  ++it;
 }

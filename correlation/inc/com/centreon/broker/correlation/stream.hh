@@ -20,8 +20,8 @@
 #  define CCB_CORRELATION_STREAM_HH
 
 #  include <memory>
-#  include <QString>
-#  include <QMap>
+#  include <string>
+#  include <map>
 #  include <QPair>
 #  include "com/centreon/broker/correlation/node.hh"
 #  include "com/centreon/broker/io/stream.hh"
@@ -44,7 +44,7 @@ namespace        correlation {
   class          stream : public io::stream {
   public:
                  stream(
-                   QString const& correlation_file,
+                   std::string const& correlation_file,
                    std::shared_ptr<persistent_cache> cache
                    = std::shared_ptr<persistent_cache>(),
                    bool load_correlation = true,
@@ -56,8 +56,8 @@ namespace        correlation {
     void         update();
     int          write(std::shared_ptr<io::data> const& d);
     void         set_state(
-                   QMap<QPair<unsigned int, unsigned int>, node> const& st);
-    QMap<QPair<unsigned int, unsigned int>, node> const&
+                   std::map<std::pair<uint64_t, uint64_t>, node> const& st);
+    std::map<std::pair<uint64_t, uint64_t>, node> const&
                  get_state() const;
 
   private:
@@ -69,14 +69,13 @@ namespace        correlation {
 
     std::shared_ptr<persistent_cache>
                  _cache;
-    QString      _correlation_file;
+    std::string _correlation_file;
     bool         _passive;
 
     std::unique_ptr<io::stream>
                  _pblsh;
 
-    QMap<QPair<unsigned int, unsigned int>, node>
-                 _nodes;
+    std::map<std::pair<uint64_t, uint64_t>, node> _nodes;
   };
 }
 

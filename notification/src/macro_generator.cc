@@ -160,20 +160,20 @@ bool macro_generator::_get_custom_macros(
                         objects::node_id id,
                         node_cache const& cache,
                         std::string& result) {
-  QHash<std::string, neb::custom_variable_status> const* custom_vars;
+  std::unordered_map<std::string, neb::custom_variable_status> const* custom_vars;
   if (id.is_host())
     custom_vars = &cache.get_host(id).get_custom_vars();
   else
     custom_vars = &cache.get_service(id).get_custom_vars();
 
-  QHash<std::string, neb::custom_variable_status>::const_iterator found =
-    custom_vars->find(macro_name);
+  std::unordered_map<std::string, neb::custom_variable_status>::const_iterator
+      found{custom_vars->find(macro_name)};
   if (found != custom_vars->end()) {
-    result = found->value.toStdString();
-    return (true);
+    result = found->second.value;
+    return true;
   }
   else
-    return (false);
+    return false;
 }
 
 /**
@@ -204,15 +204,15 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
     "HOSTNAME",
     &get_host_member_as_string<
       neb::host,
-      QString,
+      std::string,
       &neb::host::host_name,
       0>);
   map.insert(
     "HOSTALIAS",
-    &get_host_member_as_string<neb::host, QString, &neb::host::alias, 0>);
+    &get_host_member_as_string<neb::host, std::string, &neb::host::alias, 0>);
   map.insert(
     "HOSTADDRESS",
-    &get_host_member_as_string<neb::host, QString, &neb::host::address, 0>);
+    &get_host_member_as_string<neb::host, std::string, &neb::host::address, 0>);
   map.insert(
     "HOSTSTATE",
     &get_host_state);
@@ -336,14 +336,14 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
     "HOSTPERFDATA",
     &get_host_status_member_as_string<
       neb::host_service_status,
-      QString,
+      std::string,
       &neb::host_service_status::perf_data,
       0>);
   map.insert(
     "HOSTCHECKCOMMAND",
     &get_host_status_member_as_string<
       neb::host_service_status,
-      QString,
+      std::string,
       &neb::host_service_status::check_command,
       0>);
   // Hst ack macros are deprecated and ignored.
@@ -372,7 +372,7 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
     "SERVICEDESC",
     &get_service_status_member_as_string<
       neb::service_status,
-      QString,
+      std::string,
       &neb::service_status::service_description,
       0>);
   map.insert(
@@ -516,14 +516,14 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
     "SERVICEPERFDATA",
     &get_service_status_member_as_string<
       neb::host_service_status,
-      QString,
+      std::string,
       &neb::host_service_status::perf_data,
       0>);
   map.insert(
     "SERVICECHECKCOMMAND",
     &get_service_status_member_as_string<
       neb::host_service_status,
-      QString,
+      std::string,
       &neb::host_service_status::check_command,
       0>);
   // Deprecated, ignored.

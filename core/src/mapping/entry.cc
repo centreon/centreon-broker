@@ -153,7 +153,7 @@ bool entry::get_serialize() const {
  *  @return The short value.
  */
 short entry::get_short(io::data const& d) const {
-  return (_ptr->get_short(d));
+  return _ptr->get_short(d);
 }
 
 /**
@@ -163,8 +163,8 @@ short entry::get_short(io::data const& d) const {
  *
  *  @return The string value.
  */
-QString const& entry::get_string(io::data const& d) const {
-  return (_ptr->get_string(d));
+std::string const& entry::get_string(io::data const& d) const {
+  return _ptr->get_string(d);
 }
 
 /**
@@ -175,7 +175,7 @@ QString const& entry::get_string(io::data const& d) const {
  *  @return The time value.
  */
 timestamp const& entry::get_time(io::data const& d) const {
-  return (_ptr->get_time(d));
+  return _ptr->get_time(d);
 }
 
 /**
@@ -184,7 +184,7 @@ timestamp const& entry::get_time(io::data const& d) const {
  *  @return Entry type.
  */
 unsigned int entry::get_type() const {
-  return (_type);
+  return _type;
 }
 
 /**
@@ -195,7 +195,7 @@ unsigned int entry::get_type() const {
  *  @return The unsigned integer value.
  */
 unsigned int entry::get_uint(io::data const& d) const {
-  return (_ptr->get_uint(d));
+  return _ptr->get_uint(d);
 }
 
 /**
@@ -206,7 +206,7 @@ unsigned int entry::get_uint(io::data const& d) const {
  *  @return The unsigned short value.
  */
 unsigned short entry::get_ushort(io::data const& d) const {
-  return (_ptr->get_ushort(d));
+  return _ptr->get_ushort(d);
 }
 
 /**
@@ -215,7 +215,7 @@ unsigned short entry::get_ushort(io::data const& d) const {
  *  @return  True if this entry is a null entry (last entry).
  */
 bool entry::is_null() const {
-  return (_type == source::UNKNOWN);
+  return _type == source::UNKNOWN;
 }
 
 /**
@@ -226,7 +226,6 @@ bool entry::is_null() const {
  */
 void entry::set_bool(io::data& d, bool value) const {
   _ptr->set_bool(d, value);
-  return ;
 }
 
 /**
@@ -237,7 +236,6 @@ void entry::set_bool(io::data& d, bool value) const {
  */
 void entry::set_double(io::data& d, double value) const {
   _ptr->set_double(d, value);
-  return ;
 }
 
 /**
@@ -248,7 +246,6 @@ void entry::set_double(io::data& d, double value) const {
  */
 void entry::set_int(io::data& d, int value) const {
   _ptr->set_int(d, value);
-  return ;
 }
 
 /**
@@ -259,7 +256,6 @@ void entry::set_int(io::data& d, int value) const {
  */
 void entry::set_short(io::data& d, short value) const {
   _ptr->set_short(d, value);
-  return ;
 }
 
 /**
@@ -268,9 +264,8 @@ void entry::set_short(io::data& d, short value) const {
  *  @param[out] d     Object to work on.
  *  @param[in]  value New value.
  */
-void entry::set_string(io::data& d, QString const& value) const {
+void entry::set_string(io::data& d, std::string const& value) const {
   _ptr->set_string(d, value);
-  return ;
 }
 
 /**
@@ -281,7 +276,6 @@ void entry::set_string(io::data& d, QString const& value) const {
  */
 void entry::set_time(io::data& d, timestamp const& value) const {
   _ptr->set_time(d, value);
-  return ;
 }
 
 /**
@@ -292,7 +286,6 @@ void entry::set_time(io::data& d, timestamp const& value) const {
  */
 void entry::set_uint(io::data& d, unsigned int value) const {
   _ptr->set_uint(d, value);
-  return ;
 }
 
 /**
@@ -303,5 +296,4 @@ void entry::set_uint(io::data& d, unsigned int value) const {
  */
 void entry::set_ushort(io::data& d, unsigned short value) const {
   _ptr->set_ushort(d, value);
-  return ;
 }

@@ -19,7 +19,7 @@
 #ifndef CCB_STORAGE_METRIC_HH
 #  define CCB_STORAGE_METRIC_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"
 #  include "com/centreon/broker/io/events.hh"
@@ -57,17 +57,16 @@ namespace          storage {
                             storage::de_metric>::value);
     }
 
-
     timestamp      ctime;
     unsigned int   interval;
     bool           is_for_rebuild;
-    unsigned int   metric_id;
-    QString        name;
+    uint64_t   metric_id;
+    std::string        name;
     int            rrd_len;
     double         value;
     short          value_type;
-    unsigned int   host_id;
-    unsigned int   service_id;
+    uint64_t   host_id;
+    uint64_t   service_id;
 
     static mapping::entry const
                     entries[];
