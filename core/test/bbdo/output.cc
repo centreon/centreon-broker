@@ -136,6 +136,10 @@ TEST_F(OutputTest, WriteService) {
   ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(mem1.constData() + 91)), 78113u);
   // The size is 276 - 16: 16 is the header size.
   ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData() + 2)), 260);
+
+  // Check checksum
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData())), 33491);
+
   ASSERT_EQ(std::string(mem1.constData() + 265), "Conjour");
   l.unload();
 }
@@ -181,10 +185,16 @@ TEST_F(OutputTest, WriteLongService) {
   // inserted in the "middle" of the buffer: Something like this:
   //     HEADER | BUFFER1 | HEADER | BUFFER2
   ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData() + 2)), 0xffff);
+  // Check checksum
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData())), 48152);
+
   ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(mem1.constData() + 91)), 12u);
 
   // Second block
   // We have 70284 = HeaderSize + block1 + HeaderSize + block2
   //      So 70284 = 16         + 0xffff + 16         + 4717
   ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData() + 16 + 65535 + 2)), 4717);
+
+  // Check checksum
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData())), 48152);
 }
