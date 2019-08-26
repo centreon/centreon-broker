@@ -280,7 +280,7 @@ void stream::_flush() {
   if (_wbuffer.size() > 0) {
     // Compress data.
     std::shared_ptr<io::raw> compressed(new io::raw);
-    std::vector<char>& data{compressed->get_buffer()};
+    std::vector<char>& data(compressed->get_buffer());
     data = std::move(zlib::compress(_wbuffer, _level));
     logging::debug(logging::low) << "compression: " << this
       << " compressed " << _wbuffer.size() << " bytes to "

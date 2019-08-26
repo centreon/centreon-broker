@@ -412,9 +412,9 @@ void macro_cache::_process_service_group_member(
     << ", host_id: " << sgm.host_id
     << ", service_id: " << sgm.service_id << ")";
   if (sgm.enabled)
-    _service_group_members[{sgm.host_id, sgm.service_id, sgm.group_id}] = sgm;
+    _service_group_members[std::make_tuple(sgm.host_id, sgm.service_id, sgm.group_id)] = sgm;
   else
-    _service_group_members.erase({sgm.host_id, sgm.service_id, sgm.group_id});
+    _service_group_members.erase(std::make_tuple(sgm.host_id, sgm.service_id, sgm.group_id));
 }
 
 /**

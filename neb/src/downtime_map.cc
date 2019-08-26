@@ -86,7 +86,7 @@ std::list<downtime> downtime_map::get_all_downtimes_of_node(
   auto range(_downtime_id_by_nodes.equal_range(id));
 
   for (std::unordered_multimap<node_id, unsigned int>::const_iterator
-       it{range.first}, end{range.second}; it != end; ++it)
+       it(range.first), end(range.second); it != end; ++it)
     ret.push_back(_downtimes.at(it->second));
   return ret;
 }
@@ -120,7 +120,7 @@ void downtime_map::delete_downtime(downtime const& dwn) {
   node_id id{dwn.host_id, dwn.service_id};
   auto range(_downtime_id_by_nodes.equal_range(id));
   for (std::unordered_multimap<node_id, unsigned int>::const_iterator
-      it{range.first}, end{range.second}; it != end; ++it)
+      it(range.first), end(range.second); it != end; ++it)
     if (it->second == dwn.internal_id) {
       _downtime_id_by_nodes.erase(it);
       break;

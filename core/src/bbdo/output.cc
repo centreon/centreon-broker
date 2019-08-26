@@ -133,7 +133,7 @@ static io::raw* serialize(io::data const& e) {
   if (info) {
     // Serialization buffer.
     std::unique_ptr<io::raw> buffer(new io::raw);
-    std::vector<char>& data{buffer->get_buffer()};
+    std::vector<char>& data(buffer->get_buffer());
 
     // Reserve space for the BBDO header.
     unsigned int beginning(data.size());
