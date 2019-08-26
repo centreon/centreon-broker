@@ -196,5 +196,5 @@ TEST_F(OutputTest, WriteLongService) {
   ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData() + 16 + 65535 + 2)), 4717);
 
   // Check checksum
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData())), 48152);
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(mem1.constData() + 16 + 65535)), 10510);
 }
