@@ -191,11 +191,14 @@ void parser::parse(std::string const& file, state& s) {
  *  @param[in] value String representation of the boolean.
  */
 bool parser::parse_boolean(std::string const& value) {
+  if (std::all_of(value.begin(), value.end(), ::isdigit))
+    return std::stol(value);
+
   return !strcasecmp(value.c_str(), "yes")
           || !strcasecmp(value.c_str(), "enable")
           || !strcasecmp(value.c_str(), "enabled")
           || !strcasecmp(value.c_str(), "true")
-          || std::stol(value);
+          || false;
 }
 
 /**************************************
