@@ -137,7 +137,7 @@ void builder::build(serializer const& srz) {
 
   // Print endpoints.
   {
-    bool locked(endp_applier.endpoints_mutex().tryLock(100));
+    bool locked(endp_applier.endpoints_mutex().try_lock_for(std::chrono::milliseconds(100)));
     try {
       if (locked)
         for (config::applier::endpoint::iterator

@@ -122,7 +122,7 @@ bool reporting_stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *  @param[out] tree Output tree.
  */
 void reporting_stream::statistics(io::properties& tree) const {
-  QMutexLocker lock(&_statusm);
+  std::lock_guard<std::mutex> lock(_statusm);
   if (!_status.empty())
     tree.add_property("status", io::property("status", _status));
 }
@@ -918,7 +918,7 @@ void reporting_stream::_process_dimension(
 
     if (!dtts.update_started) {
       // Lock the availability thread.
-      std::unique_ptr<QMutexLocker> lock(_availabilities->lock());
+      std::unique_ptr<std::unique_lock<std::mutex>> lock(_availabilities->lock());
 
       // XXX : dimension event acknowledgement might not work !!!
       //       For this reason, ignore any db error. We wouldn't
@@ -1332,7 +1332,7 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
   // We block the availability thread to prevent it waking
   // up on truncated event durations.
   try {
-    std::unique_ptr<QMutexLocker> lock(_availabilities->lock());
+    std::unique_ptr<std::unique_lock<std::mutex>> lock(_availabilities->lock());
 
     // Delete obsolete ba events durations.
     {
@@ -1429,6 +1429,6 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
  *  @param[in] status New status.
  */
 void reporting_stream::_update_status(std::string const& status) {
-  QMutexLocker lock(&_statusm);
+  std::lock_guard<std::mutex> lock(_statusm);
   _status = status;
 }

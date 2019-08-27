@@ -21,7 +21,10 @@
 
 #  include <map>
 #  include <memory>
+#  include <mutex>
 #  include <vector>
+#  include "com/centreon/broker/database.hh"
+#  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/stream.hh"
@@ -96,7 +99,7 @@ namespace          bam {
     unsigned int   _pending_events;
     unsigned int   _queries_per_transaction;
     std::string    _status;
-    mutable QMutex _statusm;
+    mutable std::mutex _statusm;
     unsigned int   _transaction_queries;
     mysql          _mysql;
     database::mysql_stmt

@@ -22,7 +22,7 @@
 #  include <list>
 #  include <map>
 #  include <memory>
-#  include <QMutex>
+#  include <mutex>
 #  include <QObject>
 #  include <set>
 #  include <string>
@@ -65,7 +65,7 @@ namespace              config {
       void             discard();
       iterator         endpoints_begin();
       iterator         endpoints_end();
-      QMutex&          endpoints_mutex();
+      std::timed_mutex& endpoints_mutex();
       static endpoint& instance();
       static void      load();
       static void      unload();
@@ -95,7 +95,7 @@ namespace              config {
 
       std::map<config::endpoint, processing::bthread*>
                        _endpoints;
-      QMutex           _endpointsm;
+      std::timed_mutex _endpointsm;
     };
   }
 }

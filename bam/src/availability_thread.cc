@@ -38,7 +38,7 @@ availability_thread::availability_thread(
                        timeperiod_map& shared_map)
   : _db_cfg(db_cfg),
     _shared_tps(shared_map),
-    _mutex(QMutex::NonRecursive),
+    _mutex{},
     _should_exit(false),
     _should_rebuild_all(false) {}
 
@@ -54,7 +54,7 @@ availability_thread::~availability_thread() {
  */
 void availability_thread::run() {
   // Lock the mutex.
-  QMutexLocker lock(&_mutex);
+  std::unique_lock<std::mutex> lock(_mutex);
   // Release the thread that is waiting on our start.
   _started.release();
 
@@ -70,7 +70,7 @@ void availability_thread::run() {
       logging::debug(logging::medium)
           << "BAM-BI: availability thread sleeping for "
           << wait_for << " seconds.";
-      _wait.wait(lock.mutex(), wait_for * 1000);
+      _wait.wait_for(lock, std::chrono::seconds(wait_for));
       logging::debug(logging::medium)
           << "BAM-BI: availability thread waking up ";
 
@@ -100,9 +100,9 @@ void availability_thread::run() {
  *  Ask for the thread termination.
  */
 void availability_thread::terminate() {
-  QMutexLocker lock(&_mutex);
+  std::lock_guard<std::mutex> lock(_mutex);
   _should_exit = true;
-  _wait.wakeOne();
+  _wait.notify_one();
 }
 
 /**
@@ -121,8 +121,8 @@ void availability_thread::start_and_wait() {
  *
  *  @return  A QMutexLocker locking the main mutex.
  */
-std::unique_ptr<QMutexLocker> availability_thread::lock() {
-  return std::unique_ptr<QMutexLocker>(new QMutexLocker(&_mutex));
+std::unique_ptr<std::unique_lock<std::mutex>> availability_thread::lock() {
+  return std::unique_ptr<std::unique_lock<std::mutex>>(new std::unique_lock<std::mutex>(_mutex));
 }
 
 /**
@@ -132,12 +132,12 @@ std::unique_ptr<QMutexLocker> availability_thread::lock() {
  */
 void availability_thread::rebuild_availabilities(
     std::string const& bas_to_rebuild) {
-  QMutexLocker lock(&_mutex);
+  std::lock_guard<std::mutex> lock(_mutex);
   if (bas_to_rebuild.empty())
     return;
   _should_rebuild_all = true;
   _bas_to_rebuild = bas_to_rebuild;
-  _wait.wakeOne();
+  _wait.notify_one();
 }
 
 /**

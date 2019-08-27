@@ -19,7 +19,7 @@
 #ifndef CCB_BAM_MONITORING_STREAM_HH
 #  define CCB_BAM_MONITORING_STREAM_HH
 
-#  include <QMutex>
+#  include <mutex>
 #  include <string>
 #  include "com/centreon/broker/bam/configuration/applier/state.hh"
 #  include "com/centreon/broker/mysql.hh"
@@ -74,7 +74,7 @@ namespace           bam {
     std::string     _ext_cmd_file;
     ba_svc_mapping  _ba_mapping;
     ba_svc_mapping  _meta_mapping;
-    mutable QMutex  _statusm;
+    mutable std::mutex _statusm;
     mysql           _mysql;
     bool            _db_v2;
     database::mysql_stmt
