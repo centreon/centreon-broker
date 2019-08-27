@@ -332,14 +332,14 @@ static int l_broker_cache_get_servicegroups(lua_State* L) {
         neb::service_group_member> const& members{
     cache->get_service_group_members()};
 
-  auto first{members.lower_bound(std::make_tuple(host_id, service_id, 0))};
-  auto second{members.upper_bound(std::make_tuple(host_id, service_id + 1, 0))};
+  auto first(members.lower_bound(std::make_tuple(host_id, service_id, 0)));
+  auto second(members.upper_bound(std::make_tuple(host_id, service_id + 1, 0)));
 
   lua_newtable(L);
 
   if (first != members.end()) {
     int i{1};
-    for (auto it{first}, end{second}; it != end; ++it) {
+    for (auto it(first), end(second); it != end; ++it) {
       neb::service_group_member const& sgm{it->second};
       lua_createtable(L, 0, 2);
       lua_pushinteger(L, sgm.group_id);
@@ -381,7 +381,7 @@ static int l_broker_cache_get_hostgroups(lua_State* L) {
   lua_newtable(L);
   if (first != members.end()) {
     int i{1};
-    for (auto it{first}; it != second; ++it) {
+    for (auto it(first); it != second; ++it) {
       neb::host_group_member const& hgm(it->second);
       lua_createtable(L, 0, 2);
       lua_pushinteger(L, hgm.group_id);
