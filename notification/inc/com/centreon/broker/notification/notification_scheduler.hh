@@ -19,12 +19,11 @@
 #ifndef CCB_NOTIFICATION_NOTIFICATION_SCHEDULER_HH
 #  define CCB_NOTIFICATION_NOTIFICATION_SCHEDULER_HH
 
+#  include <condition_variable>
 #  include <ctime>
 #  include <map>
-#  include <QThread>
-#  include <QMutex>
-#  include <QSemaphore>
-#  include <QWaitCondition>
+#  include <mutex>
+#  include <thread>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/notification/action.hh"
 #  include "com/centreon/broker/notification/run_queue.hh"
@@ -42,7 +41,7 @@ namespace             notification {
    *
    *  Manage a thread as a notification scheduler.
    */
-  class        notification_scheduler : public QThread {
+  class        notification_scheduler {
   public:
                notification_scheduler(
                   ::com::centreon::broker::notification::state& st,
@@ -52,17 +51,22 @@ namespace             notification {
     void       exit() throw ();
     void       add_action_to_queue(time_t at, action a);
     void       remove_actions_of_node(objects::node_id id);
+    void wait();
 
   protected:
     void       run();
 
   private:
+    std::thread _thread;
+
+    // only used by master
+    bool _started_flag;
+
     run_queue  _queue;
     bool       _should_exit;
-    QMutex     _general_mutex;
-    QWaitCondition
+    std::mutex     _general_mutex;
+    std::condition_variable
                _general_condition;
-    QSemaphore _started;
 
     void       _process_actions();
     void       _schedule_actions(

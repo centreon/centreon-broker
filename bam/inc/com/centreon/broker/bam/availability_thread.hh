@@ -20,8 +20,7 @@
 #  define CCB_BAM_AVAILABILITY_THREAD_HH
 
 #  include <mutex>
-#  include <QSemaphore>
-#  include <QThread>
+#  include <thread>
 #  include <condition_variable>
 #  include <memory>
 #  include <string>
@@ -44,7 +43,7 @@ namespace           bam {
    *  @brief Availability thread
    *
    */
-  class             availability_thread : public QThread {
+  class             availability_thread {
   public:
                     availability_thread(
                       database_config const& db_cfg,
@@ -58,6 +57,7 @@ namespace           bam {
                     lock();
 
     void            rebuild_availabilities(std::string const& bas_to_rebuild);
+    void wait();
 
   private:
                     availability_thread(availability_thread const& other);
@@ -83,8 +83,12 @@ namespace           bam {
     void            _open_database();
     void            _close_database();
 
-    std::unique_ptr<mysql>
-                    _mysql;
+    std::thread _thread;
+
+    // Checked from master
+    bool _started_flag;
+
+    std::unique_ptr<mysql> _mysql;
     database_config _db_cfg;
     timeperiod_map& _shared_tps;
 
@@ -93,7 +97,6 @@ namespace           bam {
     bool            _should_rebuild_all;
     std::string         _bas_to_rebuild;
     std::condition_variable _wait;
-    QSemaphore      _started;
   };
 }
 

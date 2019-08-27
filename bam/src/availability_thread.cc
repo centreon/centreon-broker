@@ -17,7 +17,6 @@
 */
 
 #include <ctime>
-#include <QMutexLocker>
 #include <sstream>
 #include "com/centreon/broker/bam/availability_thread.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -40,7 +39,8 @@ availability_thread::availability_thread(
     _shared_tps(shared_map),
     _mutex{},
     _should_exit(false),
-    _should_rebuild_all(false) {}
+    _should_rebuild_all(false),
+    _started_flag{false} {}
 
 /**
  *  Destructor.
@@ -55,8 +55,6 @@ availability_thread::~availability_thread() {
 void availability_thread::run() {
   // Lock the mutex.
   std::unique_lock<std::mutex> lock(_mutex);
-  // Release the thread that is waiting on our start.
-  _started.release();
 
   // Check for termination asked.
   if (_should_exit)
@@ -109,17 +107,21 @@ void availability_thread::terminate() {
  *  Start a thread, and wait for its initialization.
  */
 void availability_thread::start_and_wait() {
-  if (!isRunning()) {
-    start();
-    _started.acquire();
+  if (!_started_flag) {
+    _thread = std::thread(&availability_thread::run, this);
+    _started_flag = true;
   }
 }
 
+void availability_thread::wait() {
+  _thread.join();
+  _started_flag = false;
+}
 
 /**
  *  Lock the main mutex of the availability thread.
  *
- *  @return  A QMutexLocker locking the main mutex.
+ *  @return  A unique_lock<std::mutex> locking the main mutex.
  */
 std::unique_ptr<std::unique_lock<std::mutex>> availability_thread::lock() {
   return std::unique_ptr<std::unique_lock<std::mutex>>(new std::unique_lock<std::mutex>(_mutex));

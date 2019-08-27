@@ -690,7 +690,7 @@ if (WITH_MODULE_NEB)
 endif()
 
 # Notification module.
-option(WITH_MODULE_NOTIFICATION "Build NOTIFICATION module." ON)
+option(WITH_MODULE_NOTIFICATION "Build NOTIFICATION module." OFF)
 if (WITH_MODULE_NOTIFICATION)
   add_subdirectory(notification)
   list(APPEND MODULE_LIST "notification")
