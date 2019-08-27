@@ -83,7 +83,7 @@ unsigned int downtime_map::get_new_downtime_id() {
 std::list<downtime> downtime_map::get_all_downtimes_of_node(
                                 node_id id) const {
   std::list<downtime> ret;
-  auto range{_downtime_id_by_nodes.equal_range(id)};
+  auto range(_downtime_id_by_nodes.equal_range(id));
 
   for (std::unordered_multimap<node_id, unsigned int>::const_iterator
        it{range.first}, end{range.second}; it != end; ++it)
@@ -101,7 +101,7 @@ std::list<downtime> downtime_map::get_all_downtimes_of_node(
 std::list<downtime> downtime_map::get_all_recurring_downtimes_of_node(
                                 node_id id) const {
   std::list<downtime> ret;
-  auto range{_recurring_downtime_id_by_nodes.equal_range(id)};
+  auto range(_recurring_downtime_id_by_nodes.equal_range(id));
 
   for (std::unordered_multimap<node_id, unsigned int>::const_iterator
       it{range.first}, end{range.second}; it != end; ++it)
@@ -118,7 +118,7 @@ void downtime_map::delete_downtime(downtime const& dwn) {
   _downtimes.erase(dwn.internal_id);
 
   node_id id{dwn.host_id, dwn.service_id};
-  auto range{_downtime_id_by_nodes.equal_range(id)};
+  auto range(_downtime_id_by_nodes.equal_range(id));
   for (std::unordered_multimap<node_id, unsigned int>::const_iterator
       it{range.first}, end{range.second}; it != end; ++it)
     if (it->second == dwn.internal_id) {
