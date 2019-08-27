@@ -100,7 +100,7 @@ void parser::parse(std::string const& file, state& s) {
         &state::poller_id, &Json::is_number, &Json::int_value))
         ;
       else if (get_conf<std::string const&, state>(object, "poller_name", s,
-        &state::broker_name, &Json::is_string, &Json::string_value))
+        &state::poller_name, &Json::is_string, &Json::string_value))
         ;
       else if (get_conf<std::string const&, state>(object, "module_directory", s,
         &state::module_directory, &Json::is_string, &Json::string_value))
