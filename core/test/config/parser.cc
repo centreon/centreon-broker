@@ -249,3 +249,65 @@ TEST(parser, logger) {
   ASSERT_EQ(l2.info(), true);
   ASSERT_EQ(l2.level(), 3);
 }
+
+/**
+ *  Check that 'logger's are properly parsed by the configuration
+ *  parser.
+ *
+ *  @return EXIT_SUCCESS on success.
+ */
+TEST(parser, global) {
+
+  // File name.
+  std::string config_file(misc::temp_path());
+
+  // Open file.
+  FILE* file_stream(fopen(config_file.c_str(), "w"));
+  if (!file_stream)
+  throw (exceptions::msg() << "could not open '"
+  << config_file.c_str() << "'");
+  // Data.
+  std::string data;
+  data =
+  "{\n"
+  "  \"centreonBroker\": {\n"
+  "     \"broker_id\": 1,\n"
+  "     \"broker_name\": \"central-broker-master\",\n"
+  "     \"poller_id\": 1,\n"
+  "     \"poller_name\": \"Central\",\n"
+  "     \"module_directory\": \"/usr/share/centreon/lib/centreon-broker\",\n"
+  "     \"log_timestamp\": true,\n"
+  "     \"event_queue_max_size\": 100000,\n"
+  "     \"command_file\": \"/var/lib/centreon-broker/command.sock\",\n"
+  "     \"cache_directory\": \"/var/lib/centreon-broker\",\n"
+  "     \"log_thread_id\": false\n"
+  "  }\n"
+  "}\n";
+
+  // Write data.
+  if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
+  throw (exceptions::msg() << "could not write content of '"
+  << config_file.c_str() << "'");
+
+  // Close file.
+  fclose(file_stream);
+
+  // Parse.
+  config::state s;
+  config::parser p;
+  p.parse(config_file.c_str(), s);
+
+  // Remove temporary file.
+  ::remove(config_file.c_str());
+
+  // Check global params
+  ASSERT_EQ(s.broker_id(), 1);
+  ASSERT_EQ(s.broker_name(), "central-broker-master");
+  ASSERT_EQ(s.poller_id(), 1);
+  ASSERT_EQ(s.module_directory(), "/usr/share/centreon/lib/centreon-broker");
+  ASSERT_EQ(s.log_timestamp(), true);
+  ASSERT_EQ(s.log_thread_id(), false);
+  ASSERT_EQ(s.event_queue_max_size(), 100000);
+  ASSERT_EQ(s.command_file(), "/var/lib/centreon-broker/command.sock");
+  ASSERT_EQ(s.cache_directory(), "/var/lib/centreon-broker/");
+}
