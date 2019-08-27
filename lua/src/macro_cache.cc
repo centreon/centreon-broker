@@ -314,7 +314,7 @@ void macro_cache::_process_instance(neb::instance const& in) {
   }
 
   for (uint64_t id : hosts_removed) {
-    auto it{_host_group_members.lower_bound({id, 0})};
+    auto it(_host_group_members.lower_bound({id, 0}));
     while (it != _host_group_members.end() && it->first.first == id) {
       it = _host_group_members.erase(it);
     }
