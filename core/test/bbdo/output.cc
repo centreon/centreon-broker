@@ -105,7 +105,7 @@ TEST_F(OutputTest, WriteService) {
   stm.negotiate(bbdo::stream::negotiate_first);
   stm.write(svc);
   std::vector<char> const& mem1 = memory_stream->get_memory();
-  for (int i = 140; i < mem1.size(); i++) {
+  for (uint32_t i = 140; i < mem1.size(); i++) {
     std::cout << std::hex << (static_cast<uint32_t>(mem1[i]) & 0xff) << ' ';
   }
   std::cout << '\n';

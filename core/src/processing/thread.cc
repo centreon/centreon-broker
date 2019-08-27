@@ -99,3 +99,8 @@ void bthread::_callback() {
   run();
   _cv.notify_all();
 }
+
+bool bthread::is_running() const {
+  std::lock_guard<std::mutex> lk(_should_exitm);
+  return _started;
+}

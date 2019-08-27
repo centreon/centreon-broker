@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QCoreApplication>
 #include <QTimer>
 #include <memory>
 #include <string>
@@ -26,16 +25,21 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
 
-class DummyThread : public thread {
+class DummyThread : public bthread {
   void run() override {
-    time_t valid_time{time(nullptr) + 1};
-    while (!should_exit() && time(nullptr) < valid_time) {
-      QTimer::singleShot(1000, this, SLOT(quit()));
-      std::cout << "Wait loop" << std::endl;
-      exec();
-    }
+    std::cout << "Wait loop" << std::endl;
+    if (!should_exit())
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    return;
+
+    // FIXME DBR
+//    while (!should_exit() && time(nullptr) < valid_time) {
+//      QTimer::singleShot(1000, this, SLOT(quit()));
+//      exec();
+//    }
     std::cout << "Thread finished" << std::endl;
   }
+
   std::string _get_state() { return "test"; }
   unsigned int _get_queued_events() { return 0; }
   std::unordered_set<unsigned int> _get_write_filters() {
@@ -48,7 +52,7 @@ class DummyThread : public thread {
   }
  public:
   bool isRunning() {
-    return QThread::isRunning();
+    return is_running();
   }
 };
 
@@ -63,27 +67,21 @@ class TestThread : public ::testing::Test {
 };
 
 TEST_F(TestThread, TimerBeforeExit) {
-  int argc{0};
-  char* argv[] = { nullptr };
-  QCoreApplication app(argc, argv);
   _thread->start();
   time_t now{time(nullptr) + 2};
   do {
-    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
   } while (time(nullptr) <= now);
   ASSERT_FALSE(_thread->isRunning());
 }
 
 TEST_F(TestThread, Wait) {
-  int argc{0};
-  char* argv[] = { nullptr };
-  QCoreApplication app(argc, argv);
   ASSERT_TRUE(_thread->wait(100));
   _thread->start();
   ASSERT_FALSE(_thread->wait(100));
   time_t now{time(nullptr) + 2};
   do {
-    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
   } while (time(nullptr) <= now);
   ASSERT_FALSE(_thread->isRunning());
   ASSERT_TRUE(_thread->wait(100));

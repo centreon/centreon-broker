@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QCoreApplication>
-#include <QTimer>
+//#include <QCoreApplication>
+//#include <QTimer>
 #include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -153,13 +153,19 @@ void failover::run() {
         _update_status("buffering data");
 
         // Wait loop.
-        time_t valid_time(time(NULL) + _buffering_timeout);
-        do {
-          QTimer::singleShot(1000, this, SLOT(quit()));
-          logging::info(logging::high)
-            << "failover: FIXME DBR exec";
-          exec();
-        } while (!should_exit() && (time(NULL) < valid_time));
+        // FIXME DBR: attempt to replace the Qt code below.
+        if (!should_exit())
+          std::this_thread::sleep_for(std::chrono::seconds(_buffering_timeout));
+//        return;
+
+//        time_t valid_time(time(NULL) + _buffering_timeout);
+//        do {
+//          QTimer::singleShot(1000, this, SLOT(quit()));
+//          exec();
+//        } while (!should_exit() && (time(NULL) < valid_time));
+
+        // FIXME DBR: I don't see how this method could be called... even
+        // in the Qt version.
         _update_status("");
       }
 
@@ -210,7 +216,7 @@ void failover::run() {
       std::shared_ptr<io::data> d;
       while (!should_exit()) {
         // Process events.
-        QCoreApplication::processEvents();
+        //QCoreApplication::processEvents();
 
         // Check for update.
         if (_update) {
@@ -357,13 +363,18 @@ void failover::run() {
 
     // Sleep a while before attempting a reconnection.
     _update_status("sleeping before reconnection");
-    time_t valid_time(time(NULL) + _retry_interval);
-    while (!should_exit() && (time(NULL) < valid_time)) {
-      QTimer::singleShot(1000, this, SLOT(quit()));
-      logging::info(logging::high)
-        << "failover: FIXME DBR exec2";
-      exec();
-    }
+
+    // FIXME DBR: attempt to replace the Qt code below.
+    if (!should_exit())
+      std::this_thread::sleep_for(std::chrono::seconds(_retry_interval));
+
+//    time_t valid_time(time(NULL) + _retry_interval);
+//    while (!should_exit() && (time(NULL) < valid_time)) {
+//      QTimer::singleShot(1000, this, SLOT(quit()));
+//      exec();
+//    }
+    // FIXME DBR: I don't see how this method could be called... even
+    // in the Qt version.
     _update_status("");
 
   } while (!should_exit());
@@ -533,8 +544,9 @@ void failover::_launch_failover() {
   if (_failover && !_failover_launched) {
     _failover_launched = true;
     _failover->start();
-    while (!_failover->get_initialized() && !_failover->wait(10))
-      yieldCurrentThread();
+    // FIXME DBR: what's this...
+//    while (!_failover->get_initialized() && !_failover->wait(10))
+//      yieldCurrentThread();
   }
 }
 

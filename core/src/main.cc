@@ -17,14 +17,16 @@
 */
 
 #include <cerrno>
+#include <chrono>
 #include <clocale>
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
 #include <exception>
-#include <QCoreApplication>
-#include <QLibraryInfo>
-#include <QTextCodec>
+#include <thread>
+//#include <QCoreApplication>
+//#include <QLibraryInfo>
+//#include <QTextCodec>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
@@ -119,7 +121,9 @@ static void term_handler(int signum, siginfo_t* info, void* data) {
     << info->si_pid << " with real user id " << info->si_uid;
 
   // Ask event loop to quit.
-  QCoreApplication::exit(0);
+  // FIXME DBR
+  exit(0);
+  //QCoreApplication::exit(0);
 }
 
 /**************************************
@@ -147,14 +151,14 @@ int main(int argc, char* argv[]) {
   int retval(0);
 
   // Qt application object.
-  QCoreApplication app(argc, argv);
-  QTextCodec* utf8_codec(QTextCodec::codecForName("UTF-8"));
-  if (utf8_codec)
-    QTextCodec::setCodecForCStrings(utf8_codec);
-  else
-    logging::error(logging::high)
-      << "core: could not find UTF-8 codec, strings will be "
-         "interpreted using the current locale";
+  //QCoreApplication app(argc, argv);
+  //QTextCodec* utf8_codec(QTextCodec::codecForName("UTF-8"));
+  //if (utf8_codec)
+  //  QTextCodec::setCodecForCStrings(utf8_codec);
+  //else
+  //  logging::error(logging::high)
+  //    << "core: could not find UTF-8 codec, strings will be "
+  //       "interpreted using the current locale";
 
   try {
     // Check the command line.
@@ -244,30 +248,30 @@ int main(int argc, char* argv[]) {
       retval = 1;
     }
     else {
-      app.setApplicationName("Centreon Broker");
-#if QT_VERSION >= 0x040400
-      app.setApplicationVersion(CENTREON_BROKER_VERSION);
-#endif // Qt >= 4.4.0
-      app.setOrganizationDomain("centreon.com");
-      app.setOrganizationName("Centreon");
+//      app.setApplicationName("Centreon Broker");
+//#if QT_VERSION >= 0x040400
+//      app.setApplicationVersion(CENTREON_BROKER_VERSION);
+//#endif // Qt >= 4.4.0
+//      app.setOrganizationDomain("centreon.com");
+//      app.setOrganizationName("Centreon");
       logging::info(logging::medium)
         << "Centreon Broker " << CENTREON_BROKER_VERSION;
       logging::info(logging::medium) << "Copyright 2009-2018 Centreon";
       logging::info(logging::medium) << "License ASL 2.0 " \
         "<http://www.apache.org/licenses/LICENSE-2.0>";
-#if QT_VERSION >= 0x040400
-      logging::info(logging::low) << "PID: " << app.applicationPid();
-#endif // Qt >= 4.4.0
-      logging::info(logging::medium)
-        << "Qt compilation version " << QT_VERSION_STR;
-      logging::info(logging::medium)
-        << "Qt runtime version " << qVersion();
-      logging::info(logging::medium) << "  Build Key: "
-        << QLibraryInfo::buildKey();
-      logging::info(logging::medium) << "  Licensee: "
-        << QLibraryInfo::licensee();
-      logging::info(logging::medium) << "  Licensed Products: "
-        << QLibraryInfo::licensedProducts();
+//#if QT_VERSION >= 0x040400
+//      logging::info(logging::low) << "PID: " << app.applicationPid();
+//#endif // Qt >= 4.4.0
+//      logging::info(logging::medium)
+//        << "Qt compilation version " << QT_VERSION_STR;
+//      logging::info(logging::medium)
+//        << "Qt runtime version " << qVersion();
+//      logging::info(logging::medium) << "  Build Key: "
+//        << QLibraryInfo::buildKey();
+//      logging::info(logging::medium) << "  Licensee: "
+//        << QLibraryInfo::licensee();
+//      logging::info(logging::medium) << "  Licensed Products: "
+//        << QLibraryInfo::licensedProducts();
 
       // Reset locale.
       setlocale(LC_NUMERIC, "C");
@@ -323,7 +327,10 @@ int main(int argc, char* argv[]) {
 
       // Launch event loop.
       if (!check)
-        retval = app.exec();
+        while (true) {
+          std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+        //retval = app.exec();
       else
         retval = EXIT_SUCCESS;
     }
@@ -343,5 +350,5 @@ int main(int argc, char* argv[]) {
   // Unload endpoints.
   config::applier::deinit();
 
-  return (retval);
+  return retval;
 }
