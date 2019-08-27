@@ -19,7 +19,6 @@
 #ifndef CCB_BBDO_ACK_HH
 #  define CCB_BBDO_ACK_HH
 
-#  include <QString>
 #  include "com/centreon/broker/bbdo/internal.hh"
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/io/event_info.hh"

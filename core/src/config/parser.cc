@@ -329,7 +329,7 @@ void parser::_parse_logger(Json const& elem, logger& l) {
     else if (object.first == "max_size")
       l.max_size(std::stoul(object.second.string_value()));
     else if (object.first == "name")
-      l.name(QString::fromStdString(object.second.string_value()));
+      l.name(object.second.string_value());
     else if (object.first == "type") {
       const QString & val{QString::fromStdString(object.second.string_value())};
       if (val == "file")
