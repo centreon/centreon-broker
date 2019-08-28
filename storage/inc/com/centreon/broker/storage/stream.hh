@@ -142,7 +142,7 @@ namespace          storage {
     rebuilder      _rebuilder;
     unsigned int   _rrd_len;
     std::string    _status;
-    mutable QMutex _statusm;
+    mutable std::mutex _statusm;
     bool           _store_in_db;
     database::mysql_stmt
                    _update_metrics_stmt;

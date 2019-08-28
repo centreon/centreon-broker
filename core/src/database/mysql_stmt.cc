@@ -221,7 +221,7 @@ void mysql_stmt::operator<<(io::data const& d) {
           break;
         case mapping::source::STRING:
           {
-            std::string v(current_entry->get_string(d).toStdString());
+            std::string v(current_entry->get_string(d));
             if (current_entry->get_attribute()
                 == mapping::entry::invalid_on_zero) {
               if (v == "")

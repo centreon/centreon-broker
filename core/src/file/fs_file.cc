@@ -29,8 +29,3 @@ fs_file::fs_file() {}
  *  Destructor.
  */
 fs_file::~fs_file() {}
-
-/**
- *  Destructor.
- */
-fs_file_factory::~fs_file_factory() {}
