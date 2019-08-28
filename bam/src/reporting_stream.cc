@@ -18,7 +18,6 @@
 
 #include <cstdlib>
 #include <sstream>
-#include <QMutexLocker>
 #include "com/centreon/broker/bam/ba_event.hh"
 #include "com/centreon/broker/bam/ba_duration_event.hh"
 #include "com/centreon/broker/bam/dimension_ba_bv_relation_event.hh"

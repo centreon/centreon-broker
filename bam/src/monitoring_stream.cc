@@ -20,7 +20,6 @@
 #include <ctime>
 #include <fstream>
 #include <sstream>
-#include <QMutexLocker>
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/reader_v2.hh"

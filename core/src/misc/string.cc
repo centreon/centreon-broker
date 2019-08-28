@@ -179,7 +179,6 @@ void string::split(
   }
   std::string tmp(last ? data.substr(last) : data);
   out.push_back(trim(tmp));
-  return ;
 }
 
 /**
@@ -198,7 +197,7 @@ std::string& string::trim(std::string& str) throw () {
     if ((pos = str.find_first_not_of(whitespaces)) != std::string::npos)
       str.erase(0, pos);
   }
-  return (str);
+  return str;
 }
 
 /**

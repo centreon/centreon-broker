@@ -20,7 +20,6 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
-#include <QString>
 #include <vector>
 #include "com/centreon/broker/time/timeperiod.hh"
 #include "com/centreon/broker/time/timezone_locker.hh"
@@ -58,10 +57,10 @@ static time_t string_to_time_t(std::string const& data) {
   memset(&t, 0, sizeof(t));
   char* ptr(strptime(data.c_str(), "%Y-%m-%d %H:%M:%S", &t));
   if (!ptr)
-    throw (exceptions::msg() << "invalid date format");
+    throw exceptions::msg() << "invalid date format";
   t.tm_isdst = -1; // Not set by strptime().
   time::timezone_locker tzlock((*ptr == ' ') ? ptr + 1 : NULL);
-  return (mktime(&t));
+  return mktime(&t);
 }
 
 /**
@@ -72,11 +71,11 @@ static time_t string_to_time_t(std::string const& data) {
  */
 static void parse_file(char const* filename, options& opt) {
   if (!filename)
-    throw (exceptions::msg() << "null file name");
+    throw exceptions::msg() << "null file name";
   std::ifstream stream(filename);
   if (!stream.is_open())
-    throw (exceptions::msg() << "could not open file '"
-           << filename << "'");
+    throw exceptions::msg() << "could not open file '"
+           << filename << "'";
   std::vector<std::string> range;
   std::vector<std::string> exclude;
   std::shared_ptr<time::timeperiod>
@@ -84,13 +83,13 @@ static void parse_file(char const* filename, options& opt) {
   while (stream.good()) {
     std::string line;
     std::getline(stream, line, '\n');
-    line = QString(line.c_str()).trimmed().toStdString();
+    misc::string::trim(line);
     if (line.empty() || line[0] == '#')
       continue ;
     size_t pos(line.find_first_of('='));
     if (pos == std::string::npos)
-      throw (exceptions::msg() << "parsing of file '" << filename
-             << "' failed because of line: " << line);
+      throw exceptions::msg() << "parsing of file '" << filename
+             << "' failed because of line: " << line;
     std::string key(line.substr(0, pos));
     std::string value(line.substr(pos + 1));
     if (key == "preferred_time")
@@ -110,20 +109,22 @@ static void parse_file(char const* filename, options& opt) {
         "saturday"
       };
       for (size_t i(0); i < sizeof(days) / sizeof(*days); ++i) {
-        if (!strncmp(days[i], value.c_str(), strlen(days[i])))
-          current_tp->set_timerange(
-            QString(value.c_str() + strlen(days[i])).trimmed().toStdString(),
-            i);
+        if (!strncmp(days[i], value.c_str(), strlen(days[i]))) {
+          std::string v{value.substr(strlen(days[i]))};
+          string::trim(v);
+          current_tp->set_timerange(v, i);
+        }
       }
     }
     else if (key == "speday") {
       size_t pos(value.find_first_of(" \t\n"));
       if (pos == std::string::npos)
-        throw (exceptions::msg()
-               << "invalid timeperiod exception format: " << value);
+        throw exceptions::msg()
+               << "invalid timeperiod exception format: " << value;
+      std::string v{value.substr(pos)};
+      misc::string::trim(v);
       current_tp->add_exception(
-                    value.substr(0, pos),
-                    QString(value.substr(pos).c_str()).trimmed().toStdString());
+                    value.substr(0, pos), v);
     }
     else if (key == "exclusion") {
       for (std::vector<std::shared_ptr<time::timeperiod> >::iterator
@@ -145,16 +146,16 @@ static void parse_file(char const* filename, options& opt) {
                      new time::timeperiod);
     }
     else
-      throw (exceptions::msg() << "parsing of file '" << filename
-             << "' failed because of line: " << line);
+      throw exceptions::msg() << "parsing of file '" << filename
+             << "' failed because of line: " << line;
   }
   if (!opt.preferred_time
       || !opt.current_time
       || !opt.ref_time
       || !opt.period.size())
-    throw (exceptions::msg()
+    throw exceptions::msg()
            << "invalid configuration file: "
-           << "not all required parameters are set");
+           << "not all required parameters are set";
 }
 
 /**
@@ -173,7 +174,7 @@ int main(int argc, char* argv[]) {
 
     // Usage.
     if (argc != 2)
-      throw (exceptions::msg() << "usage: " << argv[0] << " file.conf");
+      throw exceptions::msg() << "usage: " << argv[0] << " file.conf";
 
     // Parse configuration file.
     options opt;
@@ -189,12 +190,14 @@ int main(int argc, char* argv[]) {
     // Check against reference time.
     if (valid != opt.ref_time) {
       std::string ref_str(ctime(&opt.ref_time));
+      misc::string::trim(ref_str);
       std::string valid_str(ctime(&valid));
-      throw (exceptions::msg()
+      misc::string::trim(valid_str);
+      throw exceptions::msg()
              << "next valid time of timeperiod is "
-             << QString(valid_str.c_str()).trimmed()
+             << valid_str
              << " but does not match reference time "
-             << QString(ref_str.c_str()).trimmed());
+             << ref_str;
     }
 
     // Success.
@@ -212,5 +215,5 @@ int main(int argc, char* argv[]) {
   config::applier::deinit();
 
   // Return exit code.
-  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
+  return error ? EXIT_FAILURE : EXIT_SUCCESS;
 }
