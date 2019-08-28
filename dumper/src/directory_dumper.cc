@@ -16,6 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include <sys/types.h>
+#include <fstream>
+#include <dirent.h>
 #include <QMutexLocker>
 #include <QFileInfo>
 #include <QFile>
@@ -170,6 +173,34 @@ int directory_dumper::write(std::shared_ptr<io::data> const& d) {
  *  @param[in] req_id             The id of the request.
  *  @param[in] command_poller_id  The id of the poller making the request.
  */
+
+std::list<std::string> directory_dumper::dir_content(std::string const& path) {
+  std::list<std::string> retval;
+  DIR* dir{opendir(path.c_str())};
+  if (dir) {
+    struct dirent* ent;
+    while ((ent = readdir(dir))) {
+      if (strncmp(ent->d_name, ".", 2) == 0 ||
+          strncmp(ent->d_name, "..", 3) == 0)
+        continue;
+      std::string fullname{path};
+      fullname.append("/").append(ent->d_name);
+      if (ent->d_type == DT_DIR) {
+        std::list<std::string> res{dir_content(fullname)};
+        retval.splice(retval.end(), res);
+      }
+      else if (ent->d_type == DT_REG)
+        retval.push_back(std::move(fullname));
+    }
+    closedir(dir);
+  }
+  else
+    logging::error(logging::medium)
+      << "directory_dumper: unable to read directory '" << path << "'";
+
+  return retval;
+}
+
 void directory_dumper::_dump_dir(
                          std::string const& path,
                          std::string const& req_id) {
@@ -178,11 +209,13 @@ void directory_dumper::_dump_dir(
 
   multiplexing::publisher pblsh;
 
-  QDirIterator dir(
-    QString::fromStdString(path),
-    QDir::Files | QDir::NoDotAndDotDot,
-    QDirIterator::Subdirectories);
+  std::list<std::string> dir{dir_content(path)};
+//  QDirIterator dir(
+//    QString::fromStdString(path),
+//    QDir::Files | QDir::NoDotAndDotDot,
+//    QDirIterator::Subdirectories);
 
+  std::string const& root_path{path};
   QDir root_dir(QString::fromStdString(path));
 
   // Start the dump.
@@ -197,16 +230,17 @@ void directory_dumper::_dump_dir(
   // Set of found files.
   std::set<std::string> found;
 
-  while (dir.hasNext()) {
-    QString path = dir.next();
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly))
+  for (std::string& path : dir) {
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+    std::streamsize size{file.tellg()};
+    file.seekg(0, std::ios::beg);
+    std::vector<char> content(size);
+    if (!file.read(content.data(), size))
       logging::error(logging::medium)
         << "directory_dumper: can't read file '" << path << "'";
-    QByteArray content = file.readAll();
     std::shared_ptr<dump> dmp(new dump);
-    dmp->filename = root_dir.relativeFilePath(path).toStdString();
-    dmp->content = std::string(content.constData(), content.size());
+    dmp->filename = path.substr(root_path.size());
+    dmp->content = std::string(content.data(), content.size());
     dmp->tag = _tagname;
     dmp->req_id = req_id;
     pblsh.write(dmp);

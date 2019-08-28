@@ -167,7 +167,7 @@ void diagnostic::generate(
   logging::info(logging::high)
     << "diagnostic: Centreon Broker " << CENTREON_BROKER_VERSION;
   logging::info(logging::high) << "diagnostic: using Qt " << qVersion()
-    << " " << QLibraryInfo::buildKey()
+    << " " << QLibraryInfo::buildKey().toStdString()
     << " (compiled with " << QT_VERSION_STR << ")";
 
   // df.
