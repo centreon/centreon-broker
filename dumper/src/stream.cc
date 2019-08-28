@@ -16,8 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QDir>
-#include <QFileInfo>
 #include <fstream>
 #include <sstream>
 #include <errno.h>
