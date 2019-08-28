@@ -28,6 +28,12 @@
 #  include "com/centreon/broker/rrd/backend.hh"
 #  include "com/centreon/broker/rrd/lib.hh"
 
+#if ASIO_VERSION < 101200
+namespace asio {
+  typedef io_service io_context;
+}
+#endif
+
 CCB_BEGIN()
 
 namespace   rrd {
