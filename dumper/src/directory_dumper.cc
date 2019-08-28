@@ -16,9 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sys/types.h>
 #include <fstream>
-#include <dirent.h>
 #include <cstdio>
 #include <set>
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -169,34 +167,6 @@ int directory_dumper::write(std::shared_ptr<io::data> const& d) {
  *  @param[in] req_id             The id of the request.
  *  @param[in] command_poller_id  The id of the poller making the request.
  */
-
-std::list<std::string> directory_dumper::dir_content(std::string const& path) {
-  std::list<std::string> retval;
-  DIR* dir{opendir(path.c_str())};
-  if (dir) {
-    struct dirent* ent;
-    while ((ent = readdir(dir))) {
-      if (strncmp(ent->d_name, ".", 2) == 0 ||
-          strncmp(ent->d_name, "..", 3) == 0)
-        continue;
-      std::string fullname{path};
-      fullname.append("/").append(ent->d_name);
-      if (ent->d_type == DT_DIR) {
-        std::list<std::string> res{dir_content(fullname)};
-        retval.splice(retval.end(), res);
-      }
-      else if (ent->d_type == DT_REG)
-        retval.push_back(std::move(fullname));
-    }
-    closedir(dir);
-  }
-  else
-    logging::error(logging::medium)
-      << "directory_dumper: unable to read directory '" << path << "'";
-
-  return retval;
-}
-
 void directory_dumper::_dump_dir(
                          std::string const& path,
                          std::string const& req_id) {
