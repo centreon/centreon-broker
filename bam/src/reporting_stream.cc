@@ -1382,7 +1382,7 @@ void reporting_stream::_process_rebuild(std::shared_ptr<io::data> const& e) {
       catch (std::exception const& e) {
         throw exceptions::msg()
           << "BAM-BI: could not get BA events of "
-          << r.bas_to_rebuild.toStdString() << ": "
+          << r.bas_to_rebuild << ": "
           << e.what();
       }
     }

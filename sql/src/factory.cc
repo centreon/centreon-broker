@@ -114,10 +114,10 @@ io::endpoint* factory::new_endpoint(
 
   bool enable_cmd_cache(false);
   {
-    QMap<QString, QString>::const_iterator
+    std::map<std::string, std::string>::const_iterator
       it(cfg.params.find("enable_command_cache"));
     if (it != cfg.params.end())
-      enable_cmd_cache = it.value().toInt();
+      enable_cmd_cache = std::stoul(it->second);
   }
 
   // Instance timeout
