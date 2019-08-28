@@ -20,7 +20,7 @@
 #include <sstream>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/graphite//connector.hh"
+#include "com/centreon/broker/graphite/connector.hh"
 #include "com/centreon/broker/graphite/factory.hh"
 
 using namespace com::centreon::broker;
