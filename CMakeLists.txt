@@ -79,7 +79,7 @@ include_directories(${source_dir})
 #
 
 # Find Qt.
-list(APPEND CMAKE_MODULE_PATH  "${CMAKE_CURRENT_LIST_DIR}")
+list(APPEND CMAKE_MODULE_PATH  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(Qt4 4.7.4 COMPONENTS QtCore REQUIRED)
 find_package(Asio REQUIRED)
 add_definitions("-DASIO_STANDALONE")
