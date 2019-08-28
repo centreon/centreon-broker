@@ -17,7 +17,7 @@
 */
 
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/graphite//macro_cache.hh"
+#include "com/centreon/broker/graphite/macro_cache.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;

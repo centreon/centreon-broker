@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015 Centreon
+** Copyright 2011-2015,2019 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 */
 
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/influxdb//macro_cache.hh"
+#include "com/centreon/broker/influxdb/macro_cache.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;

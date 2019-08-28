@@ -24,7 +24,6 @@
 cmake_minimum_required(VERSION 2.8)
 project("Centreon Broker" C CXX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/..")
 set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc")
 include_directories("${INC_DIR}")
 set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc/com/centreon/broker")
@@ -170,7 +169,7 @@ endif ()
 option(WITH_COVERAGE "Add code coverage on unit tests." OFF)
 if (WITH_TESTING AND WITH_COVERAGE)
   set(CMAKE_BUILD_TYPE "Debug")
-  include("CodeCoverage.cmake")
+  include(cmake/CodeCoverage.cmake)
   APPEND_COVERAGE_COMPILER_FLAGS()
 endif()
 
@@ -602,7 +601,7 @@ endif ()
 # Centreon Broker Watchdog
 option(WITH_CBWD "Build centreon broker watchdong." ON)
 if (WITH_CBWD)
-  add_subdirectory("watchdog")
+  ADD_SUBDIrectory(watchdog)
 endif()
 
 # Module list.
@@ -611,63 +610,63 @@ unset(MODULE_LIST)
 # Generator module.
 option(WITH_MODULE_GENERATOR "Build generator module." OFF)
 if (WITH_MODULE_GENERATOR)
-  add_subdirectory("generator")
+  add_subdirectory(generator)
   list(APPEND MODULE_LIST "generator")
 endif ()
 
 # Stats module.
 option(WITH_MODULE_STATS "Build stats module." ON)
 if (WITH_MODULE_STATS)
-  add_subdirectory("stats")
+  add_subdirectory(stats)
   list(APPEND MODULE_LIST "stats")
 endif()
 
 # NEB module.
 option(WITH_MODULE_NEB "Build NEB module." ON)
 if (WITH_MODULE_NEB)
-  add_subdirectory("neb")
+  add_subdirectory(neb)
   list(APPEND MODULE_LIST "neb")
 endif()
 
 # Notification module.
 option(WITH_MODULE_NOTIFICATION "Build NOTIFICATION module." ON)
 if (WITH_MODULE_NOTIFICATION)
-  add_subdirectory("notification")
+  add_subdirectory(notification)
   list(APPEND MODULE_LIST "notification")
 endif()
 
 # Correlation module.
 option(WITH_MODULE_CORRELATION "Build correlation module." ON)
 if (WITH_MODULE_CORRELATION)
-  add_subdirectory("correlation")
+  add_subdirectory(correlation)
   list(APPEND MODULE_LIST "correlation")
 endif()
 
 # Dumper module.
 option(WITH_MODULE_DUMPER "Build Dumper module." ON)
 if (WITH_MODULE_DUMPER)
-  add_subdirectory("dumper")
+  add_subdirectory(dumper)
   list(APPEND MODULE_LIST "dumper")
 endif()
 
 # RRD module.
 option(WITH_MODULE_RRD "Build RRD module." ON)
 if (WITH_MODULE_RRD)
-  add_subdirectory("rrd")
+  add_subdirectory(rrd)
   list(APPEND MODULE_LIST "rrd")
 endif()
 
 # SQL module.
 option(WITH_MODULE_SQL "Build SQL module." ON)
 if (WITH_MODULE_SQL)
-  add_subdirectory("sql")
+  add_subdirectory(sql)
   list(APPEND MODULE_LIST "sql")
 endif()
 
 # Storage module.
 option(WITH_MODULE_STORAGE "Build storage module." ON)
 if (WITH_MODULE_STORAGE)
-  add_subdirectory("storage")
+  add_subdirectory(storage)
   list(APPEND MODULE_LIST "storage")
 endif()
 
@@ -680,7 +679,7 @@ if (WITH_MODULE_LUA)
       string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.[0-9]+" "\\1\\2" v "${LUA_VERSION_STRING}")
       add_definitions(-DLUA${v} -DCENTREON_BROKER_LUA_SCRIPT_PATH="${PROJECT_SOURCE_DIR}/lua/test")
       include_directories("${LUA_INCLUDE_DIR}")
-      add_subdirectory("lua")
+      add_subdirectory(lua)
       list(APPEND MODULE_LIST "lua")
       break ()
     endif ()
@@ -693,35 +692,35 @@ endif ()
 # Influxdb module.
 option(WITH_MODULE_INFLUXDB "Build influxdb module." ON)
 if (WITH_MODULE_INFLUXDB)
-  add_subdirectory("influxdb")
+  add_subdirectory(influxdb)
   list(APPEND MODULE_LIST "influxdb")
 endif()
 
 # Graphite module.
 option(WITH_MODULE_GRAPHITE "Build graphite module." ON)
 if (WITH_MODULE_GRAPHITE)
-  add_subdirectory("graphite")
+  add_subdirectory(graphite)
   list(APPEND MODULE_LIST "graphite")
 endif()
 
 # BAM module.
 option(WITH_MODULE_BAM "Build BAM module." ON)
 if (WITH_MODULE_BAM)
-  add_subdirectory("bam")
+  add_subdirectory(bam)
   list(APPEND MODULE_LIST "bam")
 endif()
 
 # TCP module.
 option(WITH_MODULE_TCP "Build TCP module." ON)
 if (WITH_MODULE_TCP)
-  add_subdirectory("tcp")
+  add_subdirectory(tcp)
   list(APPEND MODULE_LIST "tcp")
 endif()
 
 # TLS module.
 option(WITH_MODULE_TLS "Build TLS module." ON)
 if (WITH_MODULE_TLS)
-  add_subdirectory("tls")
+  add_subdirectory(tls)
   list(APPEND MODULE_LIST "tls")
 endif()
 
@@ -990,7 +989,7 @@ install(DIRECTORY "${INC_DIR}/../../../"
 # Packaging.
 #
 
-include("package.cmake")
+include(cmake/package.cmake)
 
 #
 # Unit tests.
@@ -1000,7 +999,7 @@ include("package.cmake")
 option(WITH_TESTING "Generate unit tests." OFF)
 if (WITH_TESTING)
   enable_testing()
-  add_subdirectory("tests")
+  add_subdirectory(test)
 
 endif ()
 
