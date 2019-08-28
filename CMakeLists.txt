@@ -59,6 +59,13 @@ ExternalProject_Add( json11_lib
                      LOG_DOWNLOAD ON
                      LOG_CONFIGURE ON
                      LOG_BUILD ON)
+ExternalProject_Add( Asio
+                     SOURCE_DIR ${PROJECT_SOURCE_DIR}/build/Asio-prefix/src/Asio
+                     TIMEOUT 10
+                     CONFIGURE_COMMAND ""
+                     BUILD_COMMAND ""
+                     INSTALL_COMMAND ""
+                     LOG_DOWNLOAD ON)
 else()
 ExternalProject_Add( json11_lib
                      GIT_REPOSITORY https://github.com/dropbox/json11/
@@ -67,6 +74,13 @@ ExternalProject_Add( json11_lib
                      LOG_DOWNLOAD ON
                      LOG_CONFIGURE ON
                      LOG_BUILD ON)
+ExternalProject_Add( Asio
+                     GIT_REPOSITORY https://github.com/chriskohlhoff/asio/
+                     TIMEOUT 10
+                     CONFIGURE_COMMAND ""
+                     BUILD_COMMAND ""
+                     INSTALL_COMMAND ""
+                     LOG_DOWNLOAD ON)
 endif()
 
 ExternalProject_Get_Property(json11_lib source_dir)
@@ -75,6 +89,9 @@ ExternalProject_Get_Property(json11_lib binary_dir)
 link_directories(${binary_dir})
 include_directories(${source_dir})
 
+ExternalProject_Get_Property(Asio source_dir)
+include_directories(${source_dir}/asio/include)
+
 #
 # Check and/or find required components.
 #
@@ -82,7 +99,6 @@ include_directories(${source_dir})
 # Find Qt.
 list(APPEND CMAKE_MODULE_PATH  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(Qt4 4.7.4 COMPONENTS QtCore REQUIRED)
-find_package(Asio REQUIRED)
 add_definitions("-DASIO_STANDALONE")
 
 

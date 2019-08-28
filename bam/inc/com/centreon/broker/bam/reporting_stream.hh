@@ -23,8 +23,6 @@
 #  include <memory>
 #  include <mutex>
 #  include <vector>
-#  include "com/centreon/broker/database.hh"
-#  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/stream.hh"
