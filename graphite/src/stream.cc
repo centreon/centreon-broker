@@ -16,14 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QByteArray>
-#include <QMutexLocker>
 #include <sstream>
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/storage/internal.hh"
@@ -80,14 +79,12 @@ stream::stream(
       _cache} {
   // Create the basic HTTP authentification header.
   if (!_db_user.empty() && !_db_password.empty()) {
-    QByteArray auth;
-    auth
-      .append(QString::fromStdString(_db_user))
-      .append(":")
-      .append(QString::fromStdString(_db_password));
+    std::string auth{_db_user};
+    auth.append(":").append(_db_password);
+
     _auth_query
       .append("Authorization: Basic ")
-      .append(QString(auth.toBase64()).toStdString())
+      .append(misc::string::base64_encode(auth))
       .append("\n");
     _query.append(_auth_query);
   }
