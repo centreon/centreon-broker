@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QWaitCondition>
 #include <sstream>
 #include <sys/socket.h>
 #include <sys/time.h>
