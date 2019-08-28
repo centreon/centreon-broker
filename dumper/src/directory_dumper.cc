@@ -19,10 +19,6 @@
 #include <sys/types.h>
 #include <fstream>
 #include <dirent.h>
-#include <QMutexLocker>
-#include <QFileInfo>
-#include <QFile>
-#include <QDirIterator>
 #include <cstdio>
 #include <set>
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -210,13 +206,8 @@ void directory_dumper::_dump_dir(
   multiplexing::publisher pblsh;
 
   std::list<std::string> dir{dir_content(path)};
-//  QDirIterator dir(
-//    QString::fromStdString(path),
-//    QDir::Files | QDir::NoDotAndDotDot,
-//    QDirIterator::Subdirectories);
 
   std::string const& root_path{path};
-  QDir root_dir(QString::fromStdString(path));
 
   // Start the dump.
   {
