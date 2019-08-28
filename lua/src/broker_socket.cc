@@ -20,6 +20,12 @@
 #include <sstream>
 #include "com/centreon/broker/lua/broker_socket.hh"
 
+#if ASIO_VERSION < 101200
+namespace asio {
+  typedef io_service io_context;
+}
+#endif
+
 using namespace asio;
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;

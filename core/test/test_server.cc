@@ -22,6 +22,12 @@
 #include <iostream>
 #include <list>
 
+#if ASIO_VERSION < 101200
+namespace asio {
+  typedef io_service io_context;
+}
+#endif
+
 struct test_server_connection {
   asio::ip::tcp::socket socket;
   asio::streambuf buf;

@@ -25,6 +25,12 @@
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
 
+#if ASIO_VERSION < 101200
+namespace asio {
+  typedef io_service io_context;
+}
+#endif
+
 CCB_BEGIN()
 
 namespace tcp {

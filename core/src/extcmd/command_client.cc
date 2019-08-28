@@ -46,7 +46,7 @@ using namespace com::centreon::broker::extcmd;
 command_client::command_client(
                   asio::local::stream_protocol::socket & socket,
                   command_parser& parser)
-  : _parser{parser} {
+  : _parser(parser) {
   _socket.reset(&socket);
 }
 

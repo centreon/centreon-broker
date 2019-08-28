@@ -36,6 +36,12 @@
 #  include "com/centreon/broker/graphite/query.hh"
 #  include "com/centreon/broker/graphite/macro_cache.hh"
 
+#if ASIO_VERSION < 101200
+namespace asio {
+  typedef io_service io_context;
+}
+#endif
+
 CCB_BEGIN()
 
 // Forward declaration.
