@@ -428,7 +428,7 @@ TEST_F(LuaTest, JsonEncodeEscape) {
 // And a call to json_encode is made on that table
 // Then it succeeds.
 TEST_F(LuaTest, JsonEncodeEvent) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/json_encode.lua");
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"

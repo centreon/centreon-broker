@@ -17,6 +17,7 @@
 */
 
 #include <map>
+#include <string>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/exceptions/config.hh"
@@ -134,7 +135,7 @@ database_config::database_config(config::endpoint const& cfg) {
   // connections_count
   it = cfg.params.find("connections_count");
   if (it != end)
-    _connections_count = it->toUInt();
+    _connections_count = std::stoul(it->second);
   else
     _connections_count = 1;
 

@@ -34,6 +34,8 @@
 #include "com/centreon/broker/query_preparator.hh"
 #include "com/centreon/broker/sql/stream.hh"
 #include "com/centreon/engine/common.hh"
+#include "com/centreon/engine/host.hh"
+#include "com/centreon/engine/service.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -505,7 +507,7 @@ void stream::_process_custom_variable(
       << cv.host_id << ", " << cv.service_id << ")";
     std::ostringstream oss;
     oss << "SQL: could not store custom variable (name: "
-        << cv.name.toStdString() << ", host: " << cv.host_id << ", service: "
+        << cv.name << ", host: " << cv.host_id << ", service: "
         << cv.service_id << "): ";
 
     _custom_variable_insupdate << cv;
@@ -515,31 +517,16 @@ void stream::_process_custom_variable(
     logging::info(logging::medium)
       << "SQL: disabling custom variable '" << cv.name << "' of ("
       << cv.host_id << ", " << cv.service_id << ")";
-<<<<<<< HEAD
-    _custom_variable_delete.bind_value(":host_id", cv.host_id);
-    _custom_variable_delete.bind_value(
-      ":service_id",
-      (cv.service_id ? QVariant(cv.service_id) : QVariant(QVariant::Int)));
-    _custom_variable_delete.bind_value(":name", QString::fromStdString(cv.name));
-    try { _custom_variable_delete.run_statement(); }
-    catch (std::exception const& e) {
-      throw (exceptions::msg()
-             << "SQL: could not remove custom variable (host: "
-             << cv.host_id << ", service: " << cv.service_id
-             << ", name '" << cv.name << "'): " << e.what());
-    }
-=======
     _custom_variable_delete.bind_value_as_i32(":host_id", cv.host_id);
     _custom_variable_delete.bind_value_as_i32(":service_id", cv.service_id);
-    _custom_variable_delete.bind_value_as_str(":name", cv.name.toStdString());
+    _custom_variable_delete.bind_value_as_str(":name", cv.name);
 
     std::ostringstream oss;
     oss << "SQL: could not remove custom variable (host: "
         << cv.host_id << ", service: " << cv.service_id
-        << ", name '" << cv.name.toStdString() << "'): ";
+        << ", name '" << cv.name << "'): ";
     _transversal_mysql.run_statement(_custom_variable_delete, oss.str(), true,
     _transversal_mysql.choose_connection_by_instance(_cache_host_instance[cv.host_id]));
->>>>>>> feat(sql): Migration to the new multiconnection engine
   }
 }
 
@@ -587,7 +574,7 @@ void stream::_process_custom_variable_status(
   catch (std::exception const& e) {
     throw exceptions::msg()
       << "SQL: could not update custom variable (name: "
-      << cvs.name.toStdString() << ", host: " << cvs.host_id << ", service: "
+      << cvs.name << ", host: " << cvs.host_id << ", service: "
       << cvs.service_id << "): "
       << e.what();
   }
@@ -845,49 +832,18 @@ void stream::_process_host_check(
       << "SQL: processing host check event (host: " << hc.host_id
       << ", command: " << hc.command_line << ")";
 
-<<<<<<< HEAD
-    // Processing.
-    // Compute the command hash
-    bool execute_query(true);
-    std::size_t str_hash = std::hash<std::string>{}(hc.command_line);
-    std::map<unsigned int, unsigned int>::iterator it(
-      _cache_hst_cmd.find(hc.host_id));
-
-    if (it != _cache_hst_cmd.end()) {
-      // The command is already stored. Has it changed?
-      if (it->second != str_hash) {
-        logging::debug(logging::low)
-          << "SQL: host check command (host: " << hc.host_id
-          << ", command: " << hc.command_line << ") changed - database updated";
-        it->second = str_hash;
-      }
-      else {
-        logging::debug(logging::low)
-          << "SQL: host check command (host: " << hc.host_id
-          << ", command: " << hc.command_line << ") did not change";
-        execute_query = false;
-      }
-    }
-    else {
-      logging::debug(logging::low)
-        << "SQL: host check command (host: " << hc.host_id
-        << ", command: " << hc.command_line
-        << ") not stored - insert it into database";
-      _cache_hst_cmd.insert(std::make_pair(hc.host_id, str_hash));
-=======
     // Prepare queries.
     if (!_host_check_update.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("host_id");
       query_preparator qp(neb::host_check::static_type(), unique);
       _host_check_update = qp.prepare_update(_mysql);
->>>>>>> feat(sql): Migration to the new multiconnection engine
     }
 
     // Processing.
     bool store(true);
     if (_enable_cmd_cache) {
-      size_t str_hash = std::hash<std::string>{}(hc.command_line.toStdString());
+      size_t str_hash = std::hash<std::string>{}(hc.command_line);
       // Did the command changed since last time?
       if (_cache_hst_cmd[hc.host_id] != str_hash)
         _cache_hst_cmd[hc.host_id] = str_hash;
@@ -1719,20 +1675,10 @@ void stream::_process_module(
          << ((_mysql.schema_version() == mysql::v2)
              ? "modules"
              : "rt_modules")
-<<<<<<< HEAD
-         << "  WHERE instance_id=:instance_id"
-            "    AND filename=:filename";
-      database_query q(_db);
-      q.prepare(ss.str(), "SQL");
-      q.bind_value(":instance_id", m.poller_id);
-      q.bind_value(":filename", QString::fromStdString(m.filename));
-      q.run_statement("SQL");
-=======
          << "  WHERE instance_id=" << m.poller_id
-         << "    AND filename='" << m.filename.toStdString() << "'";
+         << "    AND filename='" << m.filename << "'";
       _mysql.run_query(oss.str(), "SQL: ", false,
-                       _mysql.choose_connection_by_instance(m.poller_id));
->>>>>>> feat(sql): Migration to the new multiconnection engine
+        _mysql.choose_connection_by_instance(m.poller_id));
     }
   }
 }
@@ -1820,40 +1766,6 @@ void stream::_process_service_check(
       << ", service: " << sc.service_id << ", command: "
       << sc.command_line << ")";
 
-<<<<<<< HEAD
-    // Processing.
-    // Compute the command hash
-    bool execute_query(true);
-    std::size_t str_hash = std::hash<std::string>{}(sc.command_line);
-    std::map<std::pair<unsigned int, unsigned int>, unsigned int>::iterator it(
-      _cache_svc_cmd.find(std::make_pair(sc.host_id, sc.service_id)));
-
-    if (it != _cache_svc_cmd.end()) {
-      // The command is already stored. Has it changed?
-      if (it->second != str_hash) {
-        logging::debug(logging::low)
-          << "SQL: service check command (host: " << sc.host_id
-          << ", service: " << sc.service_id
-          << ", command: " << sc.command_line << ") changed - database updated";
-        it->second = str_hash;
-      }
-      else {
-        logging::debug(logging::low)
-          << "SQL: service check command (host: " << sc.host_id
-          << ", service: " << sc.service_id
-          << ", command: " << sc.command_line << ") did not change";
-        execute_query = false;
-      }
-    }
-    else {
-      logging::debug(logging::low)
-        << "SQL: service check command (host: " << sc.host_id
-        << ", service: " << sc.service_id
-        << ", command: " << sc.command_line
-        << ") not stored - insert it into database";
-      _cache_svc_cmd.insert(
-        std::make_pair(std::make_pair(sc.host_id, sc.service_id), str_hash));
-=======
     // Prepare queries.
     if (!_service_check_update.prepared()) {
       query_preparator::event_unique unique;
@@ -1861,13 +1773,12 @@ void stream::_process_service_check(
       unique.insert("service_id");
       query_preparator qp(neb::service_check::static_type(), unique);
       _service_check_update = qp.prepare_update(_mysql);
->>>>>>> feat(sql): Migration to the new multiconnection engine
     }
 
     // Processing.
     bool store(true);
     if (_enable_cmd_cache) {
-      size_t str_hash(std::hash<std::string>{}(sc.command_line.toStdString()));
+      size_t str_hash(std::hash<std::string>{}(sc.command_line));
       // Did the command changed since last time?
       if (_cache_svc_cmd[std::make_pair(sc.host_id, sc.service_id)] != str_hash)
         _cache_svc_cmd[std::make_pair(sc.host_id, sc.service_id)] = str_hash;

@@ -22,6 +22,8 @@
 #  include <QMutex>
 #  include <QMutexLocker>
 #  include <QSemaphore>
+#  include <QThread>
+#  include <QWaitCondition>
 #  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/data.hh"

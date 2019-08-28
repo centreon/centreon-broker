@@ -164,7 +164,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *  @param[out] tree Output tree.
  */
 void stream::statistics(io::properties& tree) const {
-  QMutexLocker lock(&_statusm);
+  std::lock_guard<std::mutex> lock(_statusm);
   if (!_status.empty())
     tree.add_property("status", io::property("status", _status));
 }
@@ -775,7 +775,7 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
   if (it != _metric_cache.end()) {
     logging::debug(logging::low) << "storage: found metric "
       << it->second.metric_id << " of (" << index_id << ", "
-      << mtc_name << ") in cache";
+      << metric_name << ") in cache";
     // Should we update metrics ?
     if ((check_double(it->second.value) != check_double(value))
         || (it->second.unit_name != unit_name)
@@ -789,7 +789,7 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
         || (check_double(it->second.max) != check_double(max))) {
       logging::info(logging::medium) << "storage: updating metric "
         << it->second.metric_id << " of (" << index_id << ", "
-        << mtc_name << ") (unit: " << unit_name << ", warning: "
+        << metric_name << ") (unit: " << unit_name << ", warning: "
         << warn_low << ":" << warn << ", critical: " << crit_low << ":"
         << crit << ", min: " << min << ", max: " << max << ")";
       // Update metrics table.
@@ -834,7 +834,7 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
   else {
     logging::debug(logging::low)
       << "storage: creating new metric for (" << index_id
-      << ", " << mtc_name << ")";
+      << ", " << metric_name << ")";
 
     // Database schema version.
     bool db_v2(_mysql.schema_version() == mysql::v2);
@@ -844,7 +844,7 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
       *type = perfdata::gauge;
 
     _insert_metrics_stmt.bind_value_as_i32(0, index_id);
-    _insert_metrics_stmt.bind_value_as_str(1, mtc_name);
+    _insert_metrics_stmt.bind_value_as_str(1, metric_name);
     _insert_metrics_stmt.bind_value_as_str(2, unit_name);
     _insert_metrics_stmt.bind_value_as_f32(3, warn);
     _insert_metrics_stmt.bind_value_as_f32(4, warn_low);
@@ -871,7 +871,7 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
 
       // Insert metric in cache.
       logging::info(logging::medium) << "storage: new metric "
-        << retval << " for (" << index_id << ", " << mtc_name << ")";
+        << retval << " for (" << index_id << ", " << metric_name << ")";
       metric_info info;
       info.locked = false;
       info.metric_id = retval;
@@ -886,7 +886,7 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
       info.crit_mode = crit_mode;
       info.min = min;
       info.max = max;
-      _metric_cache[std::make_pair(index_id, mtc_name)] = info;
+      _metric_cache[std::make_pair(index_id, metric_name)] = info;
 
       // Create the metric mapping.
       std::shared_ptr<metric_mapping> mm(new metric_mapping);
@@ -900,7 +900,7 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
     catch (std::exception const& e) {
       throw broker::exceptions::msg()
         << "storage: insertion of "
-           "metric '" << mtc_name.toStdString() << "' of index " << index_id
+           "metric '" << metric_name << "' of index " << index_id
         << " failed: " << e.what();
     }
   }
@@ -1053,11 +1053,11 @@ void stream::_rebuild_cache() {
         info.index_id = res.value_as_u32(0);
         unsigned int host_id(res.value_as_u32(1));
         unsigned int service_id(res.value_as_u32(2));
-        info.host_name = QString(res.value_as_str(3).c_str());
+        info.host_name = res.value_as_str(3).c_str();
         info.rrd_retention = res.value_as_u32(4);
         if (!info.rrd_retention)
           info.rrd_retention = _rrd_len;
-        info.service_description = QString(res.value_as_str(5).c_str());
+        info.service_description = res.value_as_str(5).c_str();
         if (db_v2)
           info.special = (res.value_as_u32(6) == 2);
         else
@@ -1104,8 +1104,8 @@ void stream::_rebuild_cache() {
       while (_mysql.fetch_row(res)) {
         metric_info info;
         info.metric_id = res.value_as_u32(0);
-        unsigned int index_id(res.value_as_u32(1));
-        QString name(res.value_as_str(2).c_str());
+        uint64_t index_id(res.value_as_u32(1));
+        std::string name(res.value_as_str(2).c_str());
         info.type = (res.value_is_null(3)
                      ? static_cast<unsigned int>(perfdata::automatic)
                      : res.value_as_u32(3));
@@ -1123,7 +1123,7 @@ void stream::_rebuild_cache() {
         logging::debug(logging::high) << "storage: loaded metric "
           << info.metric_id << " of (" << index_id << ", " << name
           << "), type " << info.type;
-        _metric_cache[std::make_pair(index_id, name)] = info;
+        _metric_cache[{index_id, name}] = info;
 
         // Create the metric mapping.
         std::shared_ptr<metric_mapping> mm(new metric_mapping);
@@ -1141,8 +1141,6 @@ void stream::_rebuild_cache() {
 
   // Status.
   _update_status("");
-
-  return ;
 }
 
 /**
@@ -1151,9 +1149,8 @@ void stream::_rebuild_cache() {
  *  @param[in] status New status.
  */
 void stream::_update_status(std::string const& status) {
-  QMutexLocker lock(&_statusm);
+  std::lock_guard<std::mutex> lock(_statusm);
   _status = status;
-  return ;
 }
 
 void stream::_set_ack_events() {
