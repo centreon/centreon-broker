@@ -90,7 +90,7 @@ io::factory* factory::clone() const {
  *  @return true if the endpoint match the configuration.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  bool is_lua(!cfg.type.compare("lua", Qt::CaseInsensitive));
+  bool is_lua{!strncasecmp(cfg.type.c_str(), "lua", 4)};
   if (is_lua) {
     cfg.params["cache"] = "yes";
     cfg.cache_enabled = true;

@@ -22,7 +22,6 @@
 #  include <ctime>
 #  include <json11.hpp>
 #  include <list>
-#  include <QString>
 #  include <set>
 #  include <string>
 #  include <map>
@@ -56,7 +55,7 @@ namespace                    config {
     std::set<std::string>    read_filters;
     time_t                   read_timeout;
     time_t                   retry_interval;
-    QString                  type;
+    std::string              type;
     std::set<std::string>    write_filters;
     bool                     cache_enabled;
     json11::Json             cfg;

@@ -119,12 +119,13 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
 long long stream::read_encrypted(void* buffer, long long size) {
   // Read some data.
   bool timed_out(false);
-  while (_buffer.isEmpty()) {
+  while (_buffer.empty()) {
     std::shared_ptr<io::data> d;
     timed_out = !_substream->read(d, _deadline);
     if (d && d->type() == io::raw::static_type()) {
       io::raw* r(static_cast<io::raw*>(d.get()));
-      _buffer.append(r->data(), r->size());
+      std::copy(r->data(), r->data() + r->size() - 1, std::back_inserter(_buffer));
+      //_buffer.append(r->data(), r->size());
     }
     else if (timed_out)
       break ;
@@ -148,7 +149,8 @@ long long stream::read_encrypted(void* buffer, long long size) {
   }
   else {
     memcpy(buffer, _buffer.data(), size);
-    _buffer.remove(0, size);
+    _buffer.erase(_buffer.begin(), _buffer.begin() + (size - 1));
+    //_buffer.remove(0, size);
     return size;
   }
 }

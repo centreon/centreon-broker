@@ -58,7 +58,7 @@ factory::~factory() {}
  */
 factory& factory::operator=(factory const& other) {
   io::factory::operator=(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -67,7 +67,7 @@ factory& factory::operator=(factory const& other) {
  *  @return Exact copy of this factory.
  */
 io::factory* factory::clone() const {
-  return (new factory(*this));
+  return new factory(*this);
 }
 
 /**
@@ -78,8 +78,8 @@ io::factory* factory::clone() const {
  *  @return True if the configuration matches the BAM layer.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  bool is_bam(!cfg.type.compare("bam", Qt::CaseInsensitive));
-  bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive));
+  bool is_bam{!strncasecmp("bam", cfg.type.c_str(), 4)};
+  bool is_bam_bi{!strncasecmp("bam_bi", cfg.type.c_str(), 7)};
   if (is_bam || is_bam_bi) {
     cfg.params["read_timeout"] = "1";
     cfg.read_timeout = 1;
@@ -88,7 +88,7 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
     cfg.params["cache"] = "yes";
     cfg.cache_enabled = true;
   }
-  return (is_bam || is_bam_bi);
+  return is_bam || is_bam_bi;
 }
 
 /**
@@ -108,7 +108,7 @@ io::endpoint* factory::new_endpoint(
   database_config db_cfg(cfg);
 
   // Is it a BAM or BAM-BI output ?
-  bool is_bam_bi(!cfg.type.compare("bam_bi", Qt::CaseInsensitive));
+  bool is_bam_bi{!strncasecmp(cfg.type.c_str(), "bam_bi", 7)};
 
   // External command file.
   std::string ext_cmd_file;

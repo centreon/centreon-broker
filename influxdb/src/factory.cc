@@ -106,7 +106,7 @@ io::factory* factory::clone() const {
  *  @return True if the configuration matches the storage layer.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  bool is_ifdb(!cfg.type.compare("influxdb", Qt::CaseInsensitive));
+  bool is_ifdb{!strncasecmp(cfg.type.c_str(), "influxdb", 9)};
   if (is_ifdb) {
     cfg.params["cache"] = "yes";
     cfg.cache_enabled = true;

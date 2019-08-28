@@ -17,6 +17,7 @@
 */
 
 #include <memory>
+#include <cstring>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/tls/acceptor.hh"
 #include "com/centreon/broker/tls/connector.hh"
@@ -78,7 +79,7 @@ io::factory* factory::clone() const {
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find("tls")};
-  return cfg.params.end() != it && strcasecmp(it->second.c_str(), "auto") &&
+  return cfg.params.end() != it && strncasecmp(it->second.c_str(), "auto", 5) &&
           config::parser::parse_boolean(it->second);
 }
 

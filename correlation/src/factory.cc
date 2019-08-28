@@ -50,7 +50,7 @@ factory::~factory() {}
  */
 factory& factory::operator=(factory const& other) {
   io::factory::operator=(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -59,7 +59,7 @@ factory& factory::operator=(factory const& other) {
  *  @return A new exact copy of this factory.
  */
 io::factory* factory::clone() const {
-  return (new factory(*this));
+  return new factory(*this);
 }
 
 /**
@@ -71,14 +71,12 @@ io::factory* factory::clone() const {
  *  @return True if configuration matches streams build by this factory.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  bool is_correlation(!cfg.type.compare(
-                                  "correlation",
-                                  Qt::CaseInsensitive));
+  bool is_correlation(!strncasecmp(cfg.type.c_str(), "correlation", 12));
   if (is_correlation) {
     cfg.params["cache"] = "yes";
     cfg.cache_enabled = true;
   }
-  return (is_correlation);
+  return is_correlation;
 }
 
 /**
