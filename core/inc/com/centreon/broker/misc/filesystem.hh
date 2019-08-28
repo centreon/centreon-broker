@@ -30,6 +30,7 @@ namespace misc {
     std::list<std::string> dir_content(std::string const& path, bool recursive);
     bool dir_exists(std::string const& path);
     bool mkpath(std::string const& path);
+    int64_t file_size(std::string const& path);
   }
 }
 

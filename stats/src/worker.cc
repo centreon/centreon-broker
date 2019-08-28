@@ -21,8 +21,6 @@
 #include <cstring>
 #include <fcntl.h>
 #include <iomanip>
-#include <QFileInfo>
-#include <QMutexLocker>
 #include <poll.h>
 #include <sstream>
 #include <time.h>
@@ -67,20 +65,18 @@ void worker::exit() {
  *  @param[in] fifo_file Path to the FIFO file.
  *  @param[in] type     The type of this FIFO.
  */
-void worker::run(QString const& fifo_file) {
+void worker::run(std::string const& fifo_file) {
   // Close FD.
   _close();
 
   // Set FIFO file.
-  _fifo = fifo_file.toStdString();
+  _fifo = fifo_file;
 
   // Set exit flag.
   _should_exit = false;
 
   // Launch thread.
-  start();
-
-  return ;
+  _thread = std::thread(&worker::_run, this);
 }
 
 /**************************************
@@ -124,7 +120,7 @@ bool worker::_open() {
 /**
  *  Thread entry point.
  */
-void worker::run() {
+void worker::_run() {
   try {
     while (!_should_exit) {
       // Check file opening.
@@ -185,5 +181,8 @@ void worker::run() {
       << "stats: FIFO thread will exit due to an unknown error";
   }
   ::unlink(_fifo.c_str());
-  return ;
+}
+
+void worker::wait() {
+  _thread.join();
 }

@@ -16,10 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sys/types.h>
 #include <cstring>
 #include <dirent.h>
+#include <fstream>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -109,4 +110,9 @@ bool filesystem::mkpath(std::string const& path) {
     default:
       return false;
   }
+}
+
+int64_t filesystem::file_size(std::string const& path) {
+    std::ifstream file{path, std::ios::binary | std::ios::ate};
+    int64_t size{file.tellg()};
 }
