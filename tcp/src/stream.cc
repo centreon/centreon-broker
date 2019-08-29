@@ -115,7 +115,6 @@ bool stream::read(std::shared_ptr<io::data>& d,
 
   std::shared_ptr<io::raw> data(new io::raw);
   std::copy(s.c_str(), s.c_str() + len, std::back_inserter(data->get_buffer()));
-  //data->append(QString::fromStdString(s).toAscii());
   d = data;
   return true;
 }

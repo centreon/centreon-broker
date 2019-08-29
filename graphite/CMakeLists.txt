@@ -44,7 +44,6 @@ add_library("${GRAPHITE}" SHARED
   "${INC_DIR}/macro_cache.hh"
 )
 add_dependencies("${GRAPHITE}" Asio)
-target_link_libraries("${GRAPHITE}" ${QT_LIBRARIES})
 set_target_properties("${GRAPHITE}" PROPERTIES PREFIX "")
 
 # Testing.
