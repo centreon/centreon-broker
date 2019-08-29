@@ -369,7 +369,6 @@ configure_file(
 qt4_wrap_cpp(QT_WRAPPED_SOURCES
   "${INC_DIR}/logging/backend.hh"
   "${INC_DIR}/logging/manager.hh"
-  "${INC_DIR}/processing/thread.hh"
 )
 
 # Core library.
