@@ -227,12 +227,12 @@ bool luabinding::_parse_event(std::shared_ptr<io::data>& d) {
     if (lua_isstring(_L, -2)) { // only store stuff with string keys
       char const* key(lua_tostring(_L, -2));
       if (lua_isboolean(_L, -1))
-        map[key] = misc::variant(lua_toboolean(_L, -1));
+        map.insert({key, misc::variant(lua_toboolean(_L, -1))});
 #if LUA53
       else if (lua_isinteger(_L, -1))
-        map[key] = misc::variant(lua_tointeger(_L, -1));
+        map.insert({key, misc::variant(static_cast<int64_t>(lua_tointeger(_L, -1)))});
       else if (lua_isnumber(_L, -1))
-        map[key] = misc::variant(lua_tonumber(_L, -1));
+        map.insert({key, misc::variant(lua_tonumber(_L, -1))});
 #else
       else if (lua_isnumber(_L, -1)) {
         const double eps = 0.0000001;
@@ -240,13 +240,13 @@ bool luabinding::_parse_event(std::shared_ptr<io::data>& d) {
         int64_t vi = lua_tointeger(_L, -1);
         double valuei = vi;
         if (valued - valuei < eps && valuei - valued < eps)
-          map[key] = misc::variant(vi);
+          map.insert({key, misc::variant(vi)});
         else
-          map[key] = misc::variant(valued);
+          map.insert({key, misc::variant(valued)});
       }
 #endif
       else if (lua_isstring(_L, -1))
-        map[key] = misc::variant(lua_tostring(_L, -1));
+        map.insert({key, misc::variant(lua_tostring(_L, -1))});
       else
         throw exceptions::msg() << "simu: item with key " << key
           << " is not supported for a broker event";

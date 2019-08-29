@@ -115,4 +115,5 @@ bool filesystem::mkpath(std::string const& path) {
 int64_t filesystem::file_size(std::string const& path) {
     std::ifstream file{path, std::ios::binary | std::ios::ate};
     int64_t size{file.tellg()};
+    return size;
 }

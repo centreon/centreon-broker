@@ -198,16 +198,18 @@ TEST_F(LuaTest, WriteAcknowledgement) {
   std::shared_ptr<io::data> svc(s.release());
   bnd->write(svc);
 
-  std::string result(ReadFile("/tmp/test.log"));
+  std::string result{ReadFile("/tmp/test.log")};
   {
     std::list<std::string> lst{misc::string::split(result, '\n')};
-    // 16 = 15 lines + 1 empty line
-    ASSERT_EQ(lst.size(), 16u);
+    // 17 = 16 lines + 1 empty line
+    ASSERT_EQ(lst.size(), 17u);
   }
   ASSERT_NE(result.find("INFO: init: address => 127.0.0.1"), std::string::npos);
-  ASSERT_NE(result.find("INFO: init: double => 3.1415926535898"), std::string::npos);
+  ASSERT_NE(result.find("INFO: init: double => 3.1415926535898"),
+            std::string::npos);
   ASSERT_NE(result.find("INFO: init: port => 8857"), std::string::npos);
-  ASSERT_NE(result.find("INFO: init: name => test-centreon"), std::string::npos);
+  ASSERT_NE(result.find("INFO: init: name => test-centreon"),
+            std::string::npos);
   ASSERT_NE(result.find("INFO: write: host_id => 13"), std::string::npos);
   ASSERT_NE(result.find("INFO: write: author => testAck"), std::string::npos);
   ASSERT_NE(result.find("INFO: write: service_id => 21"), std::string::npos);
