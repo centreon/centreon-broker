@@ -31,6 +31,7 @@
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/storage/status.hh"
+#include "../../core/test/test_server.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -43,7 +44,7 @@ using namespace com::centreon::broker::lua;
 
 class LuaTest : public ::testing::Test {
  public:
-  void SetUp() {
+  virtual void SetUp() {
     try {
       config::applier::init();
     }
@@ -54,7 +55,7 @@ class LuaTest : public ::testing::Test {
         std::make_shared<persistent_cache>("/tmp/broker_test_cache"));
     _cache.reset(new macro_cache(pcache));
   }
-  void TearDown() {
+  virtual void TearDown() {
     // The cache must be destroyed before the applier deinit() call.
     _cache.reset();
     config::applier::deinit();
@@ -82,6 +83,31 @@ class LuaTest : public ::testing::Test {
 
  protected:
   std::unique_ptr<macro_cache> _cache;
+};
+
+class LuaAsioTest : public LuaTest {
+ public:
+  void SetUp() {
+    LuaTest::SetUp();
+    std::thread t{[&] {
+      _server.init();
+      _server.run();
+    }};
+
+    _thread = std::move(t);
+
+    while (!_server.get_init_done())
+      ;
+  }
+  void TearDown() {
+    LuaTest::TearDown();
+    if (_server.get_init_done())
+      _server.stop();
+    _thread.join();
+  }
+
+  test_server _server;
+  std::thread _thread;
 };
 
 // When a lua script that does not exist is loaded
@@ -263,18 +289,18 @@ TEST_F(LuaTest, SocketConnectionWithNoPort) {
   RemoveFile(filename);
 }
 
-#if 0
-// Thoses tests need a little server working on 127.0.0.1:9200
-// For example 'python -m SimpleHTTPServer 9200'
 // When a script is loaded, a new socket is created
 // And a call to connect is made with a good adress/port
 // Then it succeeds.
-TEST_F(LuaTest, SocketConnectionOk) {
+TEST_F(LuaAsioTest, SocketConnectionOk) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
+
+  ASSERT_TRUE(_server.get_bind_ok());
+
   CreateScript(filename, "function init(conf)\n"
                          "  local socket = broker_tcp_socket.new()\n"
-                         "  socket:connect('127.0.0.1', 9200)\n"
+                         "  socket:connect('127.0.0.1', 4242)\n"
                          "end\n\n"
                          "function write(d)\n"
                          "end\n\n");
@@ -285,15 +311,18 @@ TEST_F(LuaTest, SocketConnectionOk) {
 // When a script is loaded, a new socket is created
 // And a call to get_state is made
 // Then it succeeds, and the return value is Unconnected.
-TEST_F(LuaTest, SocketUnconnectedState) {
+TEST_F(LuaAsioTest, SocketUnconnectedState) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
+
+  ASSERT_TRUE(_server.get_bind_ok());
+
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
                          "  local socket = broker_tcp_socket.new()\n"
                          "  local state = socket:get_state()\n"
                          "  broker_log:info(1, 'State: ' .. state)\n"
-                         "  socket:connect('127.0.0.1', 9200)\n"
+                         "  socket:connect('127.0.0.1', 4242)\n"
                          "end\n\n"
                          "function write(d)\n"
                          "end\n\n");
@@ -308,13 +337,16 @@ TEST_F(LuaTest, SocketUnconnectedState) {
 // When a script is loaded, a new socket is created
 // And a call to get_state is made
 // Then it succeeds, and the return value is Unconnected.
-TEST_F(LuaTest, SocketConnectedState) {
+TEST_F(LuaAsioTest, SocketConnectedState) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
+
+  ASSERT_TRUE(_server.get_bind_ok());
+
   CreateScript(filename, "function init(conf)\n"
                          "  broker_log:set_parameters(3, '/tmp/log')\n"
                          "  local socket = broker_tcp_socket.new()\n"
-                         "  socket:connect('127.0.0.1', 9200)\n"
+                         "  socket:connect('127.0.0.1', 4242)\n"
                          "  local state = socket:get_state()\n"
                          "  broker_log:info(1, 'State: ' .. state)\n"
                          "end\n\n"
@@ -332,15 +364,17 @@ TEST_F(LuaTest, SocketConnectedState) {
 // When a script is loaded, a new socket is created
 // And a call to connect is made with a good adress/port
 // Then it succeeds.
-TEST_F(LuaTest, SocketWrite) {
+TEST_F(LuaAsioTest, SocketWrite) {
   std::map<std::string, misc::variant> conf;
   std::string filename(FILE4);
+
+  ASSERT_TRUE(_server.get_bind_ok());
+
   ASSERT_NO_THROW(new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
   ASSERT_TRUE(lst.size() > 0);
   RemoveFile("/tmp/log");
 }
-#endif
 
 // When a script is loaded, a new socket is created
 // And a call to connect is made with a good adress/port

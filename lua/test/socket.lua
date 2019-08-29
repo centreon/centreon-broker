@@ -35,7 +35,7 @@ end
 function init(conf)
   broker_log:set_parameters(3, '/tmp/log')
   local socket = broker_tcp_socket.new()
-  socket:connect('127.0.0.1', 9200)
+  socket:connect('127.0.0.1', 4242)
 
   if check_index(socket) then
     broker_log:info(1, "Index already constructed")
@@ -47,6 +47,7 @@ function init(conf)
       broker_log:info(1, "Index construction failed")
     end
   end
+  socket:close()
 end
 
 function write(d)
