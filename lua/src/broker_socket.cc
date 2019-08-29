@@ -184,22 +184,23 @@ static int l_broker_socket_read(lua_State* L) {
   ip::tcp::socket* socket{*static_cast<ip::tcp::socket**>(
     luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
   std::error_code err;
-  asio::streambuf b;
 
-  size_t len = asio::read(*socket, b, asio::transfer_all(), err);
+  char* buff = new char[1024];
 
-  if (err != asio::error::eof) {
+  size_t len = socket->read_some( asio::buffer(buff, 1024), err);
+
+  if (err && err != asio::error::eof) {
     std::ostringstream ss;
     ss << "broker_socket::read: Couldn't read data from "
        << socket->remote_endpoint().address().to_string()
        << ":" << socket->remote_endpoint().port()
        << ": " << err.message();
     luaL_error(L, ss.str().c_str());
-  } else {
-    std::string s((std::istreambuf_iterator<char>(&b)), std::istreambuf_iterator<char>());
-    lua_pushstring(L, s.c_str());
+  } else if (!err) {
+    lua_pushlstring(L, buff, len);
   }
 
+  delete[] buff;
   return 1;
 }
 
