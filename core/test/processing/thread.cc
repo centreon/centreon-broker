@@ -28,15 +28,11 @@ using namespace com::centreon::broker::processing;
 class DummyThread : public bthread {
   void run() override {
     std::cout << "Wait loop" << std::endl;
-    if (!should_exit())
+    while (!should_exit()) {
+      std::cout << "loop" << std::endl;
       std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
     return;
-
-    // FIXME DBR
-//    while (!should_exit() && time(nullptr) < valid_time) {
-//      QTimer::singleShot(1000, this, SLOT(quit()));
-//      exec();
-//    }
     std::cout << "Thread finished" << std::endl;
   }
 
@@ -67,11 +63,6 @@ class TestThread : public ::testing::Test {
 };
 
 TEST_F(TestThread, TimerBeforeExit) {
-  _thread->start();
-  time_t now{time(nullptr) + 2};
-  do {
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-  } while (time(nullptr) <= now);
   ASSERT_FALSE(_thread->isRunning());
 }
 
@@ -79,10 +70,9 @@ TEST_F(TestThread, Wait) {
   ASSERT_TRUE(_thread->wait(100));
   _thread->start();
   ASSERT_FALSE(_thread->wait(100));
-  time_t now{time(nullptr) + 2};
-  do {
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-  } while (time(nullptr) <= now);
-  ASSERT_FALSE(_thread->isRunning());
-  ASSERT_TRUE(_thread->wait(100));
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+  ASSERT_TRUE(_thread->isRunning());
+  _thread->exit();
+  std::cout << "COUCOU" << std::endl;
+  ASSERT_TRUE(_thread->wait(1500));
 }

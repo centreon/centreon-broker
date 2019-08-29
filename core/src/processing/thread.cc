@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <iostream>
 #include "com/centreon/broker/io/properties.hh"
 #include "com/centreon/broker/processing/thread.hh"
 
@@ -72,7 +73,10 @@ void bthread::update() {
 }
 
 /**
- *  Wait for bthread termination.
+ *  Wait for bthread termination. The idea is to add a timeout to the join
+ *  function. If the main loop is over, then join() is called, otherwise,
+ *  if the timeout is reached, the main loop continues to run and no join()
+ *  is called.
  *
  *  @param[in] timeout_ms  Maximum wait time in ms.
  *
@@ -85,12 +89,14 @@ bool bthread::wait(unsigned long timeout_ms) {
       return true;
   }
   std::unique_lock<std::mutex> lock(_cv_m);
-  bool retval{_cv.wait_for(lock, std::chrono::milliseconds(timeout_ms)) == std::cv_status::no_timeout};
+  bool retval{_cv.wait_for(lock, std::chrono::milliseconds(timeout_ms)) ==
+              std::cv_status::no_timeout};
 
   if (retval) {
     // Thread execution correctly stopped.
     std::lock_guard<std::mutex> lk(_should_exitm);
     _should_exit = false;
+    _thread.join();
   }
   return retval;
 }

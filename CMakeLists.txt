@@ -625,7 +625,7 @@ set(LIBROKER_SOURCES
 
 # Static libraries.
 add_library("rokerbase" STATIC ${LIBROKER_SOURCES})
-add_dependencies(rokerbase json11_lib)
+add_dependencies(rokerbase json11_lib Asio)
 set_target_properties("rokerbase" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-fPIC" COMPILER_HAS_FPIC)
@@ -645,6 +645,7 @@ target_link_libraries("rokerbase" json11 ${ZLIB_LIBRARIES} ${QT_LIBRARIES} ${MYS
 add_library("roker" STATIC
   "${SRC_DIR}/config/applier/init.cc"
   "${SRC_DIR}/config/applier/logger.cc")
+add_dependencies("roker" Asio)
 target_link_libraries("roker" "rokerbase")
 
 # Standalone binary.
@@ -653,6 +654,8 @@ add_executable("${DAEMON}"
   # Sources.
   "${SRC_DIR}/main.cc"
 )
+add_dependencies("${DAEMON}" Asio)
+
 if (CMAKE_COMPILER_IS_GNUCXX)
   # Flags needed to include all symbols in binary.
   target_link_libraries("${DAEMON}"
