@@ -53,14 +53,14 @@ option(BUILD_OFFLINE "Build offline" OFF)
 
 if (${BUILD_OFFLINE})
 ExternalProject_Add( json11_lib
-                     SOURCE_DIR ${PROJECT_SOURCE_DIR}/build/json11_lib-prefix/src/json11_lib
+                     SOURCE_DIR ${CMAKE_BINARY_DIR}/json11_lib-prefix/src/json11_lib
                      TIMEOUT 10
                      INSTALL_COMMAND ""
                      LOG_DOWNLOAD ON
                      LOG_CONFIGURE ON
                      LOG_BUILD ON)
 ExternalProject_Add( Asio
-                     SOURCE_DIR ${PROJECT_SOURCE_DIR}/build/Asio-prefix/src/Asio
+                     SOURCE_DIR ${CMAKE_BINARY_DIR}/Asio-prefix/src/Asio
                      TIMEOUT 10
                      CONFIGURE_COMMAND ""
                      BUILD_COMMAND ""
