@@ -265,6 +265,8 @@ bool luabinding::_parse_event(std::shared_ptr<io::data>& d) {
       for (mapping::entry const* current_entry(info->get_mapping());
            !current_entry->is_null();
            ++current_entry) {
+        if (!current_entry->get_name_v2())
+          continue;
         std::map<std::string, misc::variant>::const_iterator it{map.find(current_entry->get_name_v2())};
         if (it != map.end()) {
           // Skip entries that should not be serialized.
