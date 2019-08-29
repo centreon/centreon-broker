@@ -71,7 +71,7 @@ connector& connector::operator=(connector const& other) {
  */
 void connector::connect_to(
                   std::string const& lua_script,
-                  QMap<QString, QVariant> const& cfg_params) {
+                  std::map<std::string, misc::variant> const& cfg_params) {
   _conf_params = cfg_params;
   _lua_script = lua_script;
 }
