@@ -260,7 +260,6 @@ void     randomize_init() {
             "service_status",
             &neb::service_status::operations,
             neb::service_status::entries));
-  return ;
 }
 
 /**
@@ -273,8 +272,8 @@ void     randomize_cleanup() {
        it != end;
        ++it)
     delete [] *it;
+  generated.clear();
   io::events::unload();
-  return ;
 }
 
 CCB_END()
