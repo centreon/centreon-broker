@@ -19,13 +19,13 @@
 #ifndef CCB_MISC_GLOBAL_LOCK_HH_
 # define CCB_MISC_GLOBAL_LOCK_HH_
 
-# include <QMutex>
+# include <mutex>
 # include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace       misc {
-  extern QMutex global_lock;
+  extern std::mutex global_lock;
 }
 
 CCB_END()

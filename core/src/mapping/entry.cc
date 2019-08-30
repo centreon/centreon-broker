@@ -133,7 +133,7 @@ char const* entry::get_name() const {
  *  @return The name of this entry in version 2.x.
  */
 char const* entry::get_name_v2() const {
-  return (_name_v2);
+  return _name_v2;
 }
 
 /**

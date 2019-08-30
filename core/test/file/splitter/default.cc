@@ -17,34 +17,35 @@
 */
 
 #include <gtest/gtest.h>
-#include "com/centreon/broker/exceptions/shutdown.hh"
-#include "com/centreon/broker/file/splitter.hh"
 #include "../test_file.hh"
 #include "../test_fs_browser.hh"
+#include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
+#include "com/centreon/broker/file/splitter.hh"
 
 using namespace com::centreon::broker;
 
 class FileSplitterDefault : public ::testing::Test {
  public:
   void SetUp() {
+    try {
+      config::applier::init();
+    } catch (std::exception const& e) {
+      (void)e;
+    }
     _path = "queue";
     _file_factory = new test_file_factory();
     _fs_browser = new test_fs_browser();
-    _file.reset(new file::splitter(
-                            _path,
-                            file::fs_file::open_read_write_truncate,
-                            _file_factory,
-                            _fs_browser,
-                            10000,
-                            true));
-    return ;
+    _file.reset(new file::splitter(_path,
+                                   file::fs_file::open_read_write_truncate,
+                                   _file_factory, _fs_browser, 10000, true));
   }
 
  protected:
   std::unique_ptr<file::splitter> _file;
-  test_file_factory*            _file_factory;
-  test_fs_browser*              _fs_browser;
-  std::string                   _path;
+  test_file_factory* _file_factory;
+  test_fs_browser* _fs_browser;
+  std::string _path;
 };
 
 // Given a splitter object

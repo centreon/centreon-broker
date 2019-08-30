@@ -99,16 +99,10 @@ output::output(
     _status_path(status_path),
     _write_metrics(write_metrics),
     _write_status(write_status) {
-#if QT_VERSION >= 0x040400
   std::unique_ptr<cached>
     rrdcached(new cached(metrics_path, cache_size));
   rrdcached->connect_local(local);
   _backend.reset(rrdcached.release());
-#else
-  throw (broker::exceptions::msg()
-         << "RRD: local connection is not supported on Qt "
-         << QT_VERSION_STR);
-#endif // Qt version
 }
 
 /**

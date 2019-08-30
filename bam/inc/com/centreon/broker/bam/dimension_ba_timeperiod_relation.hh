@@ -21,7 +21,6 @@
 
 #  include <memory>
 #  include <vector>
-#  include <QThread>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/io/event_info.hh"

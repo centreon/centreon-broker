@@ -115,8 +115,8 @@ TEST(parser, endpoint) {
   ::remove(config_file.c_str());
 
   // Check against expected result.
-  ASSERT_EQ(s.loggers().size(), 0);
-  ASSERT_EQ(s.endpoints().size(), 5);
+  ASSERT_EQ(s.loggers().size(), 0u);
+  ASSERT_EQ(s.endpoints().size(), 5u);
 
   // Check input #1.
   std::list<config::endpoint>::iterator it(s.endpoints().begin());
@@ -131,7 +131,7 @@ TEST(parser, endpoint) {
   config::endpoint output1(*(it++));
   ASSERT_EQ(output1.name, "CentreonDatabase");
   ASSERT_EQ(output1.type, "sql");
-  ASSERT_EQ(output1.failovers.size(), 1);
+  ASSERT_EQ(output1.failovers.size(), 1u);
   ASSERT_EQ(output1.failovers.front(), "CentreonRetention");
   ASSERT_EQ(output1.buffering_timeout, 10);
   ASSERT_EQ(output1.read_timeout, 5);
@@ -226,7 +226,7 @@ TEST(parser, logger) {
   ::remove(config_file.c_str());
 
   // Check against expected result.
-  ASSERT_EQ(s.loggers().size(), 2);
+  ASSERT_EQ(s.loggers().size(), 2u);
 
   // Check logger #1.
   std::list<config::logger>::iterator it(s.loggers().begin());

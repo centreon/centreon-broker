@@ -21,7 +21,6 @@
 #include <fstream>
 #include <limits>
 #include <sstream>
-#include <QMutexLocker>
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/configuration/reader.hh"
 #include "com/centreon/broker/bam/configuration/reader_v2.hh"
@@ -137,7 +136,6 @@ void monitoring_stream::initialize() {
   event_cache_visitor ev_cache;
   _applier.visit(&ev_cache);
   ev_cache.commit_to(pblshr);
-  return ;
 }
 
 /**
@@ -156,7 +154,7 @@ bool monitoring_stream::read(
   d.reset();
   throw (exceptions::shutdown()
          << "cannot read from BAM monitoring stream");
-  return (true);
+  return true;
 }
 /**
  *  Get endpoint statistics.
@@ -164,10 +162,9 @@ bool monitoring_stream::read(
  *  @param[out] tree Output tree.
  */
 void monitoring_stream::statistics(io::properties& tree) const {
-  QMutexLocker lock(&_statusm);
+  std::lock_guard<std::mutex> lock(_statusm);
   if (!_status.empty())
     tree.add_property("status", io::property("status", _status));
-  return ;
 }
 
 /**
@@ -194,7 +191,6 @@ void monitoring_stream::update() {
     throw (exceptions::msg()
            << "BAM: could not process configuration update: " << e.what());
   }
-  return ;
 }
 
 /**
@@ -208,7 +204,7 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_events;
   if (!validate(data, "BAM"))
-    return (0);
+    return 0;
 
   // Process service status events.
   if ((data->type() == neb::service_status::static_type())
@@ -454,9 +450,8 @@ void monitoring_stream::_rebuild() {
  *  @param[in] status New status.
  */
 void monitoring_stream::_update_status(std::string const& status) {
-  QMutexLocker lock(&_statusm);
+  std::lock_guard<std::mutex> lock(_statusm);
   _status = status;
-  return ;
 }
 
 /**
@@ -485,7 +480,6 @@ void monitoring_stream::_write_external_command(
         << "BAM: sent external command '" << cmd << "'";
     ofs.close();
   }
-  return ;
 }
 
 /**

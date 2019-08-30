@@ -16,7 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QMutexLocker>
+#include <iostream>
 #include "com/centreon/broker/io/properties.hh"
 #include "com/centreon/broker/processing/thread.hh"
 
@@ -25,66 +25,88 @@ using namespace com::centreon::broker::processing;
 /**
  *  Default constructor.
  */
-thread::thread(std::string const& name)
-  : stat_visitable(name), _should_exit(false) {}
+bthread::bthread(std::string const& name)
+  : stat_visitable{name}, _should_exit{false}, _started{false} {}
 
 /**
  *  Destructor.
  */
-thread::~thread() {}
+bthread::~bthread() {}
 
 /**
- *  Notify thread to exit.
+ *  Notify bthread to exit.
  */
-void thread::exit() {
-  QMutexLocker lock(&_should_exitm);
+void bthread::exit() {
+  std::lock_guard<std::mutex> lock(_should_exitm);
   _should_exit = true;
-  return ;
 }
 
 /**
- *  Check if thread should exit.
+ *  Check if bthread should exit.
  *
- *  @return True if thread should exit.
+ *  @return True if bthread should exit.
  */
-bool thread::should_exit() const {
-  QMutexLocker lock(&_should_exitm);
-  return (_should_exit);
+bool bthread::should_exit() const {
+  std::lock_guard<std::mutex> lock(_should_exitm);
+  return _should_exit;
 }
 
 /**
- *  Start thread.
+ *  Start bthread.
  */
-void thread::start() {
+void bthread::start() {
   {
-    QMutexLocker lock(&_should_exitm);
+    std::lock_guard<std::mutex> lock(_should_exitm);
+    if (_started)
+      return;
     _should_exit = false;
+    _started = true;
   }
-  QThread::start();
-  return ;
+  _thread = std::thread(&bthread::_callback, this);
 }
 
 /**
- *  Notify thread of a configuration update request.
+ *  Notify bthread of a configuration update request.
  */
-void thread::update() {
+void bthread::update() {
   // Do nothing.
-  return ;
 }
 
 /**
- *  Wait for thread termination.
+ *  Wait for bthread termination. The idea is to add a timeout to the join
+ *  function. If the main loop is over, then join() is called, otherwise,
+ *  if the timeout is reached, the main loop continues to run and no join()
+ *  is called.
  *
  *  @param[in] timeout_ms  Maximum wait time in ms.
  *
- *  @return True if thread exited in less than timeout_ms.
+ *  @return True if bthread exited in less than timeout_ms.
  */
-bool thread::wait(unsigned long timeout_ms) {
-  bool retval(QThread::wait(timeout_ms));
-  if (retval) {
-    QMutexLocker lock(&_should_exitm);
-    _should_exit = false;
+bool bthread::wait(unsigned long timeout_ms) {
+  {
+    std::lock_guard<std::mutex> lock(_should_exitm);
+    if (!_started)
+      return true;
   }
-  return (retval);
+  std::unique_lock<std::mutex> lock(_cv_m);
+  bool retval{_cv.wait_for(lock, std::chrono::milliseconds(timeout_ms)) ==
+              std::cv_status::no_timeout};
+
+  if (retval) {
+    // Thread execution correctly stopped.
+    std::lock_guard<std::mutex> lk(_should_exitm);
+    _should_exit = false;
+    _thread.join();
+  }
+  return retval;
 }
 
+void bthread::_callback() {
+  run();
+  _cv.notify_all();
+}
+
+bool bthread::is_running() const {
+  std::lock_guard<std::mutex> lk(_should_exitm);
+  return _started;
+}

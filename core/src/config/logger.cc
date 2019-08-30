@@ -61,7 +61,7 @@ logger::~logger() {}
  */
 logger& logger::operator=(logger const& l) {
   _internal_copy(l);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -80,7 +80,7 @@ bool logger::operator==(logger const& l) const {
          && (_types == l._types));
   if (ret && ((file == _type) || (standard == _type)))
     ret = (ret && (_name == l._name));
-  return (ret);
+  return ret;
 }
 
 /**
@@ -91,7 +91,7 @@ bool logger::operator==(logger const& l) const {
  *  @return true if objects are different, false otherwise.
  */
 bool logger::operator!=(logger const& l) const {
-  return (!(*this == l));
+  return !(*this == l);
 }
 
 /**
@@ -118,7 +118,7 @@ bool logger::operator<(logger const& l) const {
     ret = (_name < l._name);
   else
     ret = false;
-  return (ret);
+  return ret;
 }
 
 /**
@@ -131,7 +131,6 @@ void logger::config(bool c) throw () {
     _types = (_types | logging::config_type);
   else
     _types = (_types & ~logging::config_type);
-  return ;
 }
 
 /**
@@ -140,7 +139,7 @@ void logger::config(bool c) throw () {
  *  @return Current value.
  */
 bool logger::config() const throw () {
-  return (_types & logging::config_type);
+  return _types & logging::config_type;
 }
 
 /**
@@ -153,7 +152,6 @@ void logger::debug(bool d) throw () {
     _types = (_types | logging::debug_type);
   else
     _types = (_types & ~logging::debug_type);
-  return ;
 }
 
 /**
@@ -162,7 +160,7 @@ void logger::debug(bool d) throw () {
  *  @return Current value.
  */
 bool logger::debug() const throw () {
-  return (_types & logging::debug_type);
+  return _types & logging::debug_type;
 }
 
 /**
@@ -175,7 +173,6 @@ void logger::error(bool e) throw () {
     _types = (_types | logging::error_type);
   else
     _types = (_types & ~logging::error_type);
-  return ;
 }
 
 /**
@@ -184,7 +181,7 @@ void logger::error(bool e) throw () {
  *  @return Current value.
  */
 bool logger::error() const throw () {
-  return (_types & logging::error_type);
+  return _types & logging::error_type;
 }
 
 /**
@@ -194,7 +191,6 @@ bool logger::error() const throw () {
  */
 void logger::facility(int f) throw () {
   _facility = f;
-  return ;
 }
 
 /**
@@ -203,7 +199,7 @@ void logger::facility(int f) throw () {
  *  @return Current value.
  */
 int logger::facility() const throw () {
-  return (_facility);
+  return _facility;
 }
 
 /**
@@ -216,7 +212,6 @@ void logger::info(bool i) throw () {
     _types = (_types | logging::info_type);
   else
     _types = (_types & ~logging::info_type);
-  return ;
 }
 
 /**
@@ -225,7 +220,7 @@ void logger::info(bool i) throw () {
  *  @return Current value.
  */
 bool logger::info() const throw () {
-  return (_types & logging::info_type);
+  return _types & logging::info_type;
 }
 
 /**
@@ -238,7 +233,6 @@ void logger::perf(bool p) throw () {
     _types = (_types | logging::perf_type);
   else
     _types = (_types & ~logging::perf_type);
-  return ;
 }
 
 /**
@@ -247,7 +241,7 @@ void logger::perf(bool p) throw () {
  *  @return Current value.
  */
 bool logger::perf() const throw () {
-  return (_types & logging::perf_type);
+  return _types & logging::perf_type;
 }
 
 /**
@@ -257,7 +251,6 @@ bool logger::perf() const throw () {
  */
 void logger::level(logging::level l) throw () {
   _level = l;
-  return ;
 }
 
 /**
@@ -266,7 +259,7 @@ void logger::level(logging::level l) throw () {
  *  @return Current value.
  */
 com::centreon::broker::logging::level logger::level() const throw () {
-  return (_level);
+  return _level;
 }
 
 /**
@@ -276,7 +269,6 @@ com::centreon::broker::logging::level logger::level() const throw () {
  */
 void logger::max_size(unsigned long long max) throw () {
   _max_size = max;
-  return ;
 }
 
 /**
@@ -285,7 +277,7 @@ void logger::max_size(unsigned long long max) throw () {
  *  @return Maximum file size.
  */
 unsigned long long logger::max_size() const throw () {
-  return (_max_size);
+  return _max_size;
 }
 
 /**
@@ -293,9 +285,8 @@ unsigned long long logger::max_size() const throw () {
  *
  *  @param[in] n New value.
  */
-void logger::name(QString const& n) {
+void logger::name(std::string const& n) {
   _name = n;
-  return ;
 }
 
 /**
@@ -303,8 +294,8 @@ void logger::name(QString const& n) {
  *
  *  @return Current value.
  */
-QString const& logger::name() const throw () {
-  return (_name);
+std::string const& logger::name() const throw () {
+  return _name;
 }
 
 /**
@@ -314,7 +305,6 @@ QString const& logger::name() const throw () {
  */
 void logger::type(logger::logger_type lt) throw () {
   _type = lt;
-  return ;
 }
 
 /**
@@ -323,7 +313,7 @@ void logger::type(logger::logger_type lt) throw () {
  *  @return Current value.
  */
 logger::logger_type logger::type() const throw () {
-  return (_type);
+  return _type;
 }
 
 /**
@@ -333,7 +323,6 @@ logger::logger_type logger::type() const throw () {
  */
 void logger::types(unsigned int t) throw () {
   _types = t;
-  return ;
 }
 
 /**
@@ -342,7 +331,7 @@ void logger::types(unsigned int t) throw () {
  *  @return Current value.
  */
 unsigned int logger::types() const throw () {
-  return (_types);
+  return _types;
 }
 
 /**************************************
@@ -363,5 +352,4 @@ void logger::_internal_copy(logger const& l) {
   _name = l._name;
   _type = l._type;
   _types = l._types;
-  return ;
 }

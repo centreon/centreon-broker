@@ -122,8 +122,7 @@ void application::_init() {
 void application::_apply_new_configuration(configuration const& config) {
   // Create the log file backend if needed.
   if (_config.get_log_filename() != config.get_log_filename()) {
-    _log.reset(new logging::file(
-                     QString::fromStdString(config.get_log_filename())));
+    _log.reset(new logging::file(config.get_log_filename()));
     logging::manager::instance().log_on(*_log);
   }
 

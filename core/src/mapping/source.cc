@@ -32,27 +32,6 @@ using namespace com::centreon::broker::mapping;
 source::source() {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-source::source(source const& other) {
-  (void)other;
-}
-
-/**
  *  Destructor.
  */
 source::~source() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-source& source::operator=(source const& other) {
-  (void)other;
-  return (*this);
-}

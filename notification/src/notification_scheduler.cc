@@ -33,26 +33,19 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in] cache  The data cache object.
  */
 notification_scheduler::notification_scheduler(state& st, node_cache& cache)
-  : _should_exit(false),
-    _general_mutex(QMutex::NonRecursive),
+  : _should_exit{false},
+    _general_mutex{},
     _state(st),
-    _cache (cache) {}
+    _cache (cache),
+    _started_flag{false} {}
 
 /**
  *  Called by the notification thread when it starts.
  */
 void notification_scheduler::run() {
-  bool just_started = true;
-
   while (1) {
     // Lock the general mutex used by the notification scheduler.
-    _general_mutex.lock();
-
-    // Signal the thread waiting on us that we have started.
-    if (just_started) {
-      _started.release();
-      just_started = false;
-    }
+    std::unique_lock<std::mutex> lock(_general_mutex);
 
     // Wait until the first action in the queue - or forever until awakened
     // if the queue is empty.
@@ -68,7 +61,7 @@ void notification_scheduler::run() {
       << "notification: scheduler sleeping for "
       << wait_for / 1000.0 << " seconds";
 
-    _general_condition.wait(&_general_mutex, wait_for);
+    _general_condition.wait_for(lock, std::chrono::milliseconds(wait_for));
 
     logging::debug(logging::medium)
         << "notification: scheduler waking up";
@@ -86,9 +79,13 @@ void notification_scheduler::run() {
  *  Start the notification scheduler and wait until it has started.
  */
 void notification_scheduler::start() {
-  QThread::start();
-  // Wait until the thread has started.
-  _started.acquire();
+  _thread = std::thread(&notification_scheduler::run, this);
+  _started_flag = true;
+}
+
+void notification_scheduler::wait() {
+  _thread.join();
+  _started_flag = false;
 }
 
 /**
@@ -97,10 +94,10 @@ void notification_scheduler::start() {
 void notification_scheduler::exit() throw () {
   // Set the should exit flag.
   {
-    QMutexLocker lock(&_general_mutex);
+    std::lock_guard<std::mutex> lock(_general_mutex);
     _should_exit = true;
     // Wake the notification scheduling thread.
-    _general_condition.wakeAll();
+    _general_condition.notify_all();
   }
 }
 
@@ -116,7 +113,7 @@ void notification_scheduler::add_action_to_queue(time_t at, action a) {
   bool need_to_wake = false;
   // Add the action to the queue.
   {
-    QMutexLocker lock(&_general_mutex);
+    std::lock_guard<std::mutex> lock(_general_mutex);
     // If we just replaced the first event, we need to wake the scheduling
     // thread.
     time_t first_time(_queue.get_first_time());
@@ -125,7 +122,7 @@ void notification_scheduler::add_action_to_queue(time_t at, action a) {
     _queue.run(at, a);
     // Wake the notification scheduling thread if needed.
     if (need_to_wake)
-      _general_condition.wakeAll();
+      _general_condition.notify_all();
   }
 }
 
@@ -138,7 +135,7 @@ void notification_scheduler::add_action_to_queue(time_t at, action a) {
  */
 void notification_scheduler::remove_actions_of_node(objects::node_id id) {
   {
-    QMutexLocker lock(&_general_mutex);
+    std::lock_guard<std::mutex> lock(_general_mutex);
     // Get all the action of a particular node.
     time_t first_time = _queue.get_first_time();
     std::vector<const action*> actions = _queue.get_actions_of_node(id);
@@ -151,7 +148,7 @@ void notification_scheduler::remove_actions_of_node(objects::node_id id) {
     // If we just deleted the first event, we need to wake
     // the scheduling thread.
     if (_queue.get_first_time() != first_time)
-      _general_condition.wakeAll();
+      _general_condition.notify_all();
   }
 }
 

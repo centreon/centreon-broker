@@ -1,5 +1,5 @@
 /*
-** Copyright 2018 Centreon
+** Copyright 2013 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,32 +16,23 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_SIMU_BROKER_UTILS_HH
-#  define CCB_SIMU_BROKER_UTILS_HH
+#ifndef CCB_MISC_FILESYSTEM_HH
+#define CCB_MISC_FILESYSTEM_HH
 
+#include <list>
+#include <string>
 #include "com/centreon/broker/namespace.hh"
-
-extern "C" {
-#  include "lua.h"
-#  include "lauxlib.h"
-#  include "lualib.h"
-}
 
 CCB_BEGIN()
 
-namespace               simu {
-  /**
-   *  @class broker_utils broker_utils.hh "com/centreon/broker/simu/broker_utils.hh"
-   *  @brief Class providing several functions to the lua interpreter
-   *
-   *  This class provides a binding to Lua to several useful functions.
-   */
-  class                 broker_utils {
-   public:
-    static void         broker_utils_reg(lua_State* L);
-  };
+namespace misc {
+  namespace filesystem {
+    std::list<std::string> dir_content(std::string const& path, bool recursive);
+    bool dir_exists(std::string const& path);
+    bool mkpath(std::string const& path);
+    int64_t file_size(std::string const& path);
+  }
 }
 
 CCB_END()
-
-#endif // !CCB_SIMU_BROKER_UTILS_HH
+#endif /* CCB_MISC_FILESYSTEM_HH */

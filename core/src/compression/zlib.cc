@@ -38,9 +38,10 @@ using namespace com::centreon::broker::compression;
  *
  * @return The same data compressed.
  */
-QByteArray zlib::compress(QByteArray const& data, int compression_level) {
-  if (data.isEmpty())
-    return QByteArray(4, '\0');
+std::vector<char> zlib::compress(std::vector<char> const& data,
+                                 int compression_level) {
+  if (data.empty())
+    return {'\0', '\0', '\0', '\0'};
 
   uLongf nbytes = static_cast<uLongf>(data.size());
 
@@ -48,14 +49,14 @@ QByteArray zlib::compress(QByteArray const& data, int compression_level) {
     compression_level = -1;
 
   uLongf len = compressBound(nbytes);
-  QByteArray retval;
+  std::vector<char> retval;
   int res;
   do {
     retval.resize(len + 4);
     res = ::compress2(
-      static_cast<Bytef*>(static_cast<void*>(retval.data())) + 4,
+      reinterpret_cast<Bytef*>(retval.data()) + 4,
       &len,
-      static_cast<Bytef const*>(static_cast<void const*>(data.constData())),
+      reinterpret_cast<Bytef const*>(&data[0]),
       nbytes,
       compression_level);
 
@@ -89,32 +90,30 @@ QByteArray zlib::compress(QByteArray const& data, int compression_level) {
  *
  * @return the extract data
  */
-QByteArray zlib::uncompress(unsigned char const* data, uLong nbytes) {
+std::vector<char> zlib::uncompress(unsigned char const* data, uLong nbytes) {
   if (!data) {
     logging::debug(logging::medium)
       << "compression: attempting to uncompress null buffer";
-    return QByteArray();
+    return std::vector<char>();
   }
   if (nbytes <= 4) {
-    if (nbytes < 4 || (data[0] != 0 || data[1] != 0
-                   || data[2] != 0 || data[3] != 0))
-    throw (exceptions::corruption()
-        << "compression: attempting to uncompress data with invalid size");
+    if (nbytes < 4 ||
+        (data[0] != 0 || data[1] != 0 || data[2] != 0 || data[3] != 0))
+      throw exceptions::corruption()
+          << "compression: attempting to uncompress data with invalid size";
   }
   ulong expected_size = (data[0] << 24) | (data[1] << 16)
                      | (data[2] <<  8) | data[3];
   ulong len = qMax(expected_size, 1ul);
   if (len > stream::max_data_size)
-    throw (exceptions::corruption()
-      << "compression: data expected size is too big");
-  QByteArray uncompressed_array(len, '\0');
+    throw exceptions::corruption()
+        << "compression: data expected size is too big";
+  std::vector<char> uncompressed_array(len, '\0');
 
   ulong alloc = len;
 
-  int res = ::uncompress(
-    static_cast<Bytef*>(static_cast<void*>(uncompressed_array.data())),
-    &len,
-    static_cast<Bytef const*>(data) + 4, nbytes - 4);
+  int res = ::uncompress(reinterpret_cast<Bytef*>(uncompressed_array.data()),
+                         &len, static_cast<Bytef const*>(data) + 4, nbytes - 4);
 
   switch (res) {
     case Z_OK:
@@ -122,14 +121,14 @@ QByteArray zlib::uncompress(unsigned char const* data, uLong nbytes) {
         uncompressed_array.resize(len);
       break;
     case Z_MEM_ERROR:
-      throw (exceptions::msg()
+      throw exceptions::msg()
         << "compression: not enough memory to uncompress " << nbytes
-        << " compressed bytes to " << len << " uncompressed bytes");
+        << " compressed bytes to " << len << " uncompressed bytes";
     case Z_BUF_ERROR:
     case Z_DATA_ERROR:
-      throw (exceptions::corruption()
+      throw exceptions::corruption()
         << "compression: compressed input data is corrupted, "
-        << "unable to uncompress it");
+        << "unable to uncompress it";
   }
   return uncompressed_array;
 }

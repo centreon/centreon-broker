@@ -45,7 +45,7 @@ add_library("${TCP}" SHARED
   ${SOURCES}
   ${HEADERS}
 )
-target_link_libraries("${TCP}" ${QT_LIBRARIES})
+add_dependencies("${TCP}" Asio)
 set_target_properties("${TCP}" PROPERTIES PREFIX "")
 
 # Install rule.

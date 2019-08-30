@@ -49,7 +49,7 @@ namespace           processing {
    *
    *  Multiple failover can be forwarded.
    */
-  class             failover : public thread {
+  class             failover : public bthread {
     friend class    stats::builder;
 
    public:

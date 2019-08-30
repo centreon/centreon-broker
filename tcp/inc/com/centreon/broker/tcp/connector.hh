@@ -19,7 +19,6 @@
 #ifndef CCB_TCP_CONNECTOR_HH
 #define CCB_TCP_CONNECTOR_HH
 
-#include <QMutex>
 #include <asio.hpp>
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/namespace.hh"

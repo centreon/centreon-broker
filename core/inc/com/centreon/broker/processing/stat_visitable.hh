@@ -20,7 +20,7 @@
 #  define CCB_PROCESSING_STAT_VISITABLE_HH
 
 #  include <string>
-#  include <QMutex>
+#  include <mutex>
 #  include "com/centreon/broker/io/properties.hh"
 #  include "com/centreon/broker/timestamp.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
@@ -50,7 +50,7 @@ namespace                        processing {
 
   protected:
     std::string                 _name;
-    QMutex                      _stat_mutex;
+    mutable std::mutex          _stat_mutex;
 
     virtual std::string         _get_state() = 0;
     virtual unsigned int        _get_queued_events() = 0;

@@ -16,13 +16,16 @@
 ** For more information : contact@centreon.com
 */
 
+#include <json11.hpp>
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/misc/variant.hh"
 #include "com/centreon/broker/simu/connector.hh"
 #include "com/centreon/broker/simu/factory.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::simu;
+using namespace json11;
 
 /**
  *  Find a parameter in configuration.
@@ -34,12 +37,12 @@ using namespace com::centreon::broker::simu;
  */
 static std::string find_param(
                      config::endpoint const& cfg,
-                     QString const& key) {
-  QMap<QString, QString>::const_iterator it(cfg.params.find(key));
+                     std::string const& key) {
+  std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw (exceptions::msg() << "lua: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'");
-  return it.value().toStdString();
+    throw exceptions::msg() << "lua: no '" << key
+           << "' defined for endpoint '" << cfg.name << "'";
+  return it->second;
 }
 
 /**
@@ -68,7 +71,7 @@ factory::~factory() {}
  */
 factory& factory::operator=(factory const& other) {
   io::factory::operator=(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -77,7 +80,7 @@ factory& factory::operator=(factory const& other) {
  *  @return Copy of the factory.
  */
 io::factory* factory::clone() const {
-  return (new factory(*this));
+  return new factory(*this);
 }
 
 /**
@@ -88,7 +91,7 @@ io::factory* factory::clone() const {
  *  @return true if the endpoint match the configuration.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  bool is_simu(!cfg.type.compare("simu", Qt::CaseInsensitive));
+  bool is_simu{!strncasecmp(cfg.type.c_str(), "simu", 5)};
   if (is_simu) {
     cfg.params["cache"] = "yes";
     cfg.cache_enabled = true;
@@ -109,50 +112,92 @@ io::endpoint* factory::new_endpoint(
                          config::endpoint& cfg,
                          bool& is_acceptor,
                          std::shared_ptr<persistent_cache> cache) const {
-  QMap<QString, QVariant> conf_map;
+  std::map<std::string, misc::variant> conf_map;
+  std::string err;
+
   std::string filename(find_param(cfg, "path"));
-  QDomNodeList config = cfg.cfg.elementsByTagName("lua_parameter");
-  for (int i(0); i < config.size(); ++i) {
-    QDomNode conf(config.item(i));
-    QDomNode name = conf.namedItem("name");
-    QDomNode type = conf.namedItem("type");
-    QDomNode value = conf.namedItem("value");
-    if (name.isNull())
-      throw (exceptions::msg())
-             << "lua: couldn't read a configuration field because"
-             << " its name is empty";
-    if (value.isNull())
-      throw (exceptions::msg())
-             << "lua: couldn't read the '"
-             << name.toElement().text().toStdString()
-             << "' configuration field because its value is empty";
-    std::string t((type.isNull())
-                  ? "string" : type.toElement().text().toStdString());
+
+  Json const& js{cfg.cfg["lua_parameter"]};
+
+  if (!err.empty())
+    throw exceptions::msg()
+      << "simu: couldn't read a configuration json";
+
+  if (js.is_object()) {
+    Json const &name{js["name"]};
+    Json const &type{js["type"]};
+    Json const &value{js["value"]};
+
+    if (name.string_value().empty())
+      throw exceptions::msg()
+        << "simu: couldn't read a configuration field because"
+        << " its name is empty";
+    if (value.string_value().empty())
+      throw exceptions::msg()
+        << "simu: couldn't read a configuration field because"
+        << "' configuration field because its value is empty";
+    std::string t((type.string_value().empty())
+                  ? "string" : type.string_value());
     if (t == "string" || t == "password")
-      conf_map.insert(name.toElement().text(), QVariant(value.toElement().text()));
+      conf_map.insert({name.string_value(), misc::variant(value.string_value())});
     else if (t == "number") {
-      bool ok;
-      int val(value.toElement().text().toInt(&ok, 10));
-      if (ok)
-        conf_map.insert(name.toElement().text(), QVariant(val));
-      else {
-        double val(value.toElement().text().toDouble(&ok));
-        if (ok)
-          conf_map.insert(name.toElement().text(), QVariant(val));
-        else {
-          throw (exceptions::msg())
-                 << "lua: unable to read '"
-                 << name.toElement().text()
-                 << "' content (" << value.toElement().text()
-                 << ") as a number";
+      bool ko = false;
+      size_t pos;
+      std::string const& v(value.string_value());
+      try {
+        int val = std::stol(v, &pos);
+        if (pos == v.size())  // All the string is read
+          conf_map.insert({name.string_value(), misc::variant(val)});
+        else
+          ko = true;
+      } catch (std::exception const& e) {
+        ko = true;
+      }
+      // Second attempt using floating point numbers
+      if (ko) {
+        try {
+          double val = std::stod(v, &pos);
+          if (pos == v.size()) // All the string is read
+            conf_map.insert({name.string_value(), misc::variant(val)});
+          else
+            ko = true;
+        } catch (std::exception const& e) {
+          ko = true;
         }
       }
+      if (ko)
+        throw exceptions::msg()
+            << "simu: unable to read '" << name.string_value() << "' content ("
+            << value.string_value() << ") as a number";
     }
-    else {
-      throw (exceptions::msg())
-        << "lua: unable to read '"
-        << name.toElement().text()
-        << "' content: type unrecognized (" << t << ")";
+  } else if (js.is_array()) {
+    for (Json const &obj : js.array_items()) {
+      Json const &name{obj["name"]};
+      Json const &type{obj["type"]};
+      Json const &value{obj["value"]};
+
+      if (name.string_value().empty())
+        throw exceptions::msg()
+          << "lua: couldn't read a configuration field because"
+          << " its name is empty";
+      if (value.string_value().empty())
+        throw exceptions::msg()
+          << "simu: couldn't read a configuration field because"
+          << "' configuration field because its value is empty";
+      std::string t((type.string_value().empty())
+                    ? "string" : type.string_value());
+      if (t == "string" || t == "password")
+        conf_map.insert({name.string_value(), misc::variant(value.string_value())});
+      else if (t == "number") {
+        try {
+          int val = std::stol(value.string_value());
+          conf_map.insert({name.string_value(), misc::variant(val)});
+        } catch (std::exception const& e) {
+          throw exceptions::msg()
+              << "lua: unable to read '" << name.string_value() << "' content ("
+              << value.string_value() << ") as a number";
+        }
+      }
     }
   }
   // Connector.

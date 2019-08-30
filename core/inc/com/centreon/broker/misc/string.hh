@@ -71,6 +71,7 @@ namespace        misc {
     std::string&            trim(std::string& str) throw ();
     std::string&            trim_left(std::string& str) throw ();
     std::string&            trim_right(std::string& str) throw ();
+    std::string base64_encode(std::string const& str);
     void                    replace_all(std::string& input,
                                         std::string const& str,
                                         std::string const& str2);

@@ -43,7 +43,6 @@ extern "C" {
       // Deregister storage layer.
       io::protocols::instance().unreg("graphite");
     }
-    return ;
   }
 
   /**

@@ -61,6 +61,7 @@ add_library("${STORAGE}" SHARED
   "${INC_DIR}/status.hh"
   "${INC_DIR}/stream.hh"
 )
+add_dependencies("${STORAGE}" json11_lib)
 set_target_properties("${STORAGE}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS}")

@@ -49,7 +49,7 @@ macro_cache::~macro_cache() {
   if (_cache.get() != NULL) {
     try {
       _save_to_disk();
-    } catch (std::exception e) {
+    } catch (std::exception const& e) {
       logging::error(logging::medium)
         << "lua: macro cache couldn't save data to disk: '"
         << e.what() << "'";
@@ -110,11 +110,9 @@ std::string const& macro_cache::get_host_name(uint64_t host_id) const {
 }
 
 /**
- *  Get a list of the host groups containing a host.
+ *  Get a map of the host groups members index by host_id and host_group.
  *
- *  @param[in] host_id  The id of the host.
- *
- *  @return             A QStringList.
+ *  @return             A std::map
  */
 std::map<std::pair<uint64_t, uint64_t>, neb::host_group_member> const&
 macro_cache::get_host_group_members() const {
@@ -164,7 +162,7 @@ std::string const& macro_cache::get_service_description(
  *  @param[in] host_id  The id of the host.
  *  @param[in] service_id  The id of the service.
  *
- *  @return             A QHash indexed by service group ids.
+ *  @return   A map indexed by host_id/service_id/group_id.
  */
 std::map<std::tuple<uint64_t, uint64_t, uint64_t>,
          neb::service_group_member> const&
@@ -209,7 +207,8 @@ std::string const& macro_cache::get_instance(uint64_t instance_id) const {
 /**
  *  Accessor to the multi hash containing ba bv relations.
  *
- * @return A reference to a QMultiHash.
+ * @return A reference to an unordered_multimap containining ba/bv relation
+ * events.
  */
 std::unordered_multimap<uint64_t, bam::dimension_ba_bv_relation_event> const&
        macro_cache::get_dimension_ba_bv_relation_events() const {

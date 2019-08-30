@@ -20,8 +20,8 @@
 #  define CCB_SIMU_STREAM_HH
 
 #  include <memory>
-#  include <QVariant>
 #  include "com/centreon/broker/io/stream.hh"
+#  include "com/centreon/broker/misc/variant.hh"
 
 CCB_BEGIN()
 
@@ -40,7 +40,7 @@ namespace          simu {
   public:
                     stream(
                       std::string const& lua_script,
-                      QMap<QString, QVariant> const& conf_params);
+                      std::map<std::string, misc::variant> const& conf_params);
                     ~stream();
     bool            read(std::shared_ptr<io::data>& d, time_t deadline);
     int             write(std::shared_ptr<io::data> const& d);

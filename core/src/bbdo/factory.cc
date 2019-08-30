@@ -57,7 +57,7 @@ factory::~factory() {}
  */
 factory& factory::operator=(factory const& other) {
   io::factory::operator=(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -66,7 +66,7 @@ factory& factory::operator=(factory const& other) {
  *  @return Clone of this factory.
  */
 io::factory* factory::clone() const {
-  return (new factory(*this));
+  return new factory(*this);
 }
 
 /**
@@ -100,10 +100,10 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   // Return value.
-  io::endpoint* retval(NULL);
+  io::endpoint* retval{NULL};
 
   // Coarse endpoint ?
-  bool coarse(false);
+  bool coarse{false};
   {
     std::map<std::string, std::string>::const_iterator
       it(cfg.params.find("coarse"));
@@ -161,7 +161,7 @@ io::endpoint* factory::new_endpoint(
                          cfg.read_timeout,
                          coarse,
                          ack_limit);
-  return (retval);
+  return retval;
 }
 
 /**************************************

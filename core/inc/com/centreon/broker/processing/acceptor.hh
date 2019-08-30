@@ -43,7 +43,7 @@ namespace       processing {
    *
    *  Accept incoming connections and launch a feeder thread.
    */
-  class         acceptor : public thread {
+  class         acceptor : public bthread {
   public:
                 acceptor(
                   std::shared_ptr<io::endpoint> endp,
@@ -51,7 +51,7 @@ namespace       processing {
                 ~acceptor();
     void        accept();
     void        exit();
-    void        run();
+    void        run() override;
     void        set_read_filters(uset<unsigned int> const& filters);
     void        set_retry_interval(time_t retry_interval);
     void        set_write_filters(uset<unsigned int> const& filters);

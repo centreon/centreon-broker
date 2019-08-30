@@ -89,23 +89,23 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   buffer->resize(BUFSIZ);
   int ret(gnutls_record_recv(
             *_session,
-            buffer->QByteArray::data(),
+            buffer->data(),
             buffer->size()));
   if (ret < 0) {
     if ((ret != GNUTLS_E_INTERRUPTED) && (ret != GNUTLS_E_AGAIN))
       throw (exceptions::msg() << "TLS: could not receive data: "
              << gnutls_strerror(ret));
     else
-      return (false);
+      return false;
   }
   else if (ret) {
     buffer->resize(ret);
     d = buffer;
-    return (true);
+    return true;
   }
   else
     throw (exceptions::msg() << "TLS session is terminated");
-  return (false);
+  return false;
 }
 
 /**
@@ -119,12 +119,13 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
 long long stream::read_encrypted(void* buffer, long long size) {
   // Read some data.
   bool timed_out(false);
-  while (_buffer.isEmpty()) {
+  while (_buffer.empty()) {
     std::shared_ptr<io::data> d;
     timed_out = !_substream->read(d, _deadline);
     if (d && d->type() == io::raw::static_type()) {
       io::raw* r(static_cast<io::raw*>(d.get()));
-      _buffer.append(r->QByteArray::data(), r->size());
+      std::copy(r->data(), r->data() + r->size() - 1, std::back_inserter(_buffer));
+      //_buffer.append(r->data(), r->size());
     }
     else if (timed_out)
       break ;
@@ -135,21 +136,22 @@ long long stream::read_encrypted(void* buffer, long long size) {
   if (!rb) {
     if (timed_out) {
       gnutls_transport_set_errno(*_session, EAGAIN);
-      return (-1);
+      return -1;
     }
     else {
-      return (0);
+      return 0;
     }
   }
   else if (size >= rb) {
     memcpy(buffer, _buffer.data(), rb);
     _buffer.clear();
-    return (rb);
+    return rb;
   }
   else {
     memcpy(buffer, _buffer.data(), size);
-    _buffer.remove(0, size);
-    return (size);
+    _buffer.erase(_buffer.begin(), _buffer.begin() + (size - 1));
+    //_buffer.remove(0, size);
+    return size;
   }
 }
 
@@ -164,12 +166,12 @@ long long stream::read_encrypted(void* buffer, long long size) {
  */
 int stream::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "TLS"))
-    return (1);
+    return 1;
 
   // Send data.
   if (d->type() == io::raw::static_type()) {
     io::raw const* packet(static_cast<io::raw const*>(d.get()));
-    char const* ptr(packet->QByteArray::data());
+    char const* ptr(packet->const_data());
     int size(packet->size());
     while (size > 0) {
       int ret(gnutls_record_send(
@@ -184,7 +186,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
     }
   }
 
-  return (1);
+  return 1;
 }
 
 /**
@@ -199,8 +201,8 @@ long long stream::write_encrypted(
                     void const* buffer,
                     long long size) {
   std::shared_ptr<io::raw> r(new io::raw);
-  r->append(static_cast<char const*>(buffer), size);
+  std::copy(static_cast<char const*>(buffer), static_cast<char const*>(buffer) + size, std::back_inserter(r->get_buffer()));
   _substream->write(r);
   _substream->flush();
-  return (size);
+  return size;
 }

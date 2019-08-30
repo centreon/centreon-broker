@@ -58,7 +58,7 @@ endpoint::~endpoint() {}
 endpoint& endpoint::operator=(endpoint const& other) {
   if (this != &other)
     _internal_copy(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -78,7 +78,7 @@ void endpoint::from(std::shared_ptr<endpoint> endp) {
  *  @return true if endpoint is an acceptor.
  */
 bool endpoint::is_acceptor() const throw () {
-  return (_is_acceptor);
+  return _is_acceptor;
 }
 
 /**
@@ -87,7 +87,7 @@ bool endpoint::is_acceptor() const throw () {
  *  @return true if endpoint is a connector.
  */
 bool endpoint::is_connector() const throw () {
-  return (!_is_acceptor);
+  return !_is_acceptor;
 }
 
 /**

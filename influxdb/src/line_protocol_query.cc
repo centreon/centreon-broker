@@ -27,11 +27,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
 
-std::ostream& operator<<(std::ostream& in, QString const& string) {
-  in << string.toStdString();
-  return (in);
-}
-
 /**
  *  Create an empty query.
  */
@@ -52,9 +47,9 @@ line_protocol_query::line_protocol_query(
                        std::vector<column> const& columns,
                        data_type type,
                        macro_cache const& cache)
-  : _string_index(0),
-    _type(type),
-    _cache(&cache) {
+  : _string_index{0},
+    _type{type},
+    _cache{&cache} {
   // Following implementation is based on
   // https://docs.influxdata.com/influxdb/v1.2/write_protocols/line_protocol_tutorial/
   // The base format is <measurement>,<tag_set> <field_set> <timestamp>.

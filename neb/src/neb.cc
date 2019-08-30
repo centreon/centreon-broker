@@ -19,9 +19,9 @@
 #include <clocale>
 #include <csignal>
 #include <cstring>
-#include <QCoreApplication>
-#include <QTextCodec>
-#include <QTimer>
+//#include <QCoreApplication>
+//#include <QTextCodec>
+//#include <QTimer>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
@@ -77,10 +77,10 @@ static char const* gl_qt_argv[2] = {
  */
 static void process_qcore(void* arg) {
   (void)arg;
-  QCoreApplication* app(QCoreApplication::instance());
-  QTimer::singleShot(0, app, SLOT(quit()));
-  app->exec();
-  return ;
+  // FIXME DBR
+  //QCoreApplication* app(QCoreApplication::instance());
+  //QTimer::singleShot(0, app, SLOT(quit()));
+  //app->exec();
 }
 
 /**************************************
@@ -114,7 +114,7 @@ extern "C" {
       com::centreon::broker::config::applier::deinit();
 
       // Deregister Qt application object.
-      if (gl_initialized_qt) {
+      //if (gl_initialized_qt) {
         com::centreon::engine::timed_event* te(NULL);
         for (timed_event_list::iterator
                it{com::centreon::engine::timed_event::event_list_high.begin()},
@@ -133,13 +133,13 @@ extern "C" {
         }
         if (te)
           remove_event(te, com::centreon::engine::timed_event::high);
-        delete QCoreApplication::instance();
-      }
+        //delete QCoreApplication::instance();
+      //}
     }
     // Avoid exception propagation in C code.
     catch (...) {}
 
-    return (0);
+    return 0;
   }
 
   /**
@@ -199,22 +199,22 @@ extern "C" {
         "Broker's cbd.");
 
       // Initialize Qt if not already done by parent process.
-      if (!QCoreApplication::instance()) {
+//      if (!QCoreApplication::instance()) {
         gl_initialized_qt = true;
-        new QCoreApplication(gl_qt_argc, (char**)gl_qt_argv);
+//        new QCoreApplication(gl_qt_argc, (char**)gl_qt_argv);
         signal(SIGCHLD, SIG_DFL);
-        QTextCodec* utf8_codec(QTextCodec::codecForName("UTF-8"));
-        if (utf8_codec)
-          QTextCodec::setCodecForCStrings(utf8_codec);
-        else
-          logging::error(logging::high)
-            << "core: could not find UTF-8 codec, strings will be "
-               "interpreted using the current locale";
-      }
+//        QTextCodec* utf8_codec(QTextCodec::codecForName("UTF-8"));
+//        if (utf8_codec)
+//          QTextCodec::setCodecForCStrings(utf8_codec);
+//        else
+//          logging::error(logging::high)
+//            << "core: could not find UTF-8 codec, strings will be "
+//               "interpreted using the current locale";
+//      }
       // Qt already loaded.
-      else
-        logging::info(logging::high)
-          << "core: Qt was already loaded";
+//      else
+//        logging::info(logging::high)
+//          << "core: Qt was already loaded";
 
       // Reset locale.
       setlocale(LC_NUMERIC, "C");
@@ -278,13 +278,13 @@ extern "C" {
       catch (std::exception const& e) {
         logging::error(logging::high) << e.what();
         logging::manager::instance().log_on(monlog, 0);
-        return (-1);
+        return -1;
       }
       catch (...) {
         logging::error(logging::high)
           << "main: configuration file parsing failed";
         logging::manager::instance().log_on(monlog, 0);
-        return (-1);
+        return -1;
       }
 
       // Remove old monitoring object.
@@ -328,16 +328,16 @@ extern "C" {
       logging::error(logging::high)
         << "main: cbmod loading failed: " << e.what();
       nebmodule_deinit(0, 0);
-      return (-1);
+      return -1;
     }
     catch (...) {
       logging::error(logging::high)
         << "main: cbmod loading failed due to an unknown exception";
       nebmodule_deinit(0, 0);
-      return (-1);
+      return -1;
     }
 
-    return (0);
+    return 0;
   }
 
   /**
@@ -355,6 +355,6 @@ extern "C" {
     ic->poller_id = config::applier::state::instance().poller_id();
     multiplexing::publisher p;
     p.write(ic);
-    return (0);
+    return 0;
   }
 }

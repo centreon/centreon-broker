@@ -28,8 +28,6 @@
 #  include "com/centreon/broker/storage/metric.hh"
 #  include "com/centreon/broker/storage/status.hh"
 
-std::ostream& operator<<(std::ostream& in, QString const& string);
-
 CCB_BEGIN()
 
 namespace                influxdb {

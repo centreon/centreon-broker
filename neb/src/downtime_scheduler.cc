@@ -18,7 +18,6 @@
 
 #include <ctime>
 #include <limits>
-#include <QMutexLocker>
 #include "com/centreon/broker/neb/downtime_scheduler.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -31,16 +30,13 @@ using namespace com::centreon::broker::neb;
  */
 downtime_scheduler::downtime_scheduler()
   : _should_exit(false),
-    _general_mutex(QMutex::NonRecursive) {}
+    _started_flag{false} {}
 
 /**
  *  Called by the downtime manager thread when it starts.
  */
 void downtime_scheduler::run() {
-  QMutexLocker lock(&_general_mutex);
-
-  // Signal the thread waiting on us that we have started.
-  _started.release();
+  std::lock_guard<std::mutex> lock(_general_mutex);
 
   while (1) {
     // Wait until the first downtime in the queue - or forever until awakened
@@ -49,7 +45,7 @@ void downtime_scheduler::run() {
                           _get_first_timestamp(_downtime_starts),
                           _get_first_timestamp(_downtime_ends),
                           timestamp::less);
-    time_t now = ::time(NULL);
+    time_t now = ::time(nullptr);
     unsigned long wait_for = first_time == time_t(-1) ?
                                std::numeric_limits<unsigned long>::max()
                                : (first_time >= now) ?
@@ -60,7 +56,8 @@ void downtime_scheduler::run() {
       << "node events: downtime scheduler sleeping for "
       << wait_for / 1000.0 << " seconds";
 
-    _general_condition.wait(&_general_mutex, wait_for);
+    std::unique_lock<std::mutex> lock(_general_mutex);
+    _general_condition.wait_for(lock, std::chrono::milliseconds(wait_for));
 
     logging::debug(logging::medium)
       << "node events: downtime scheduler waking up";
@@ -78,9 +75,8 @@ void downtime_scheduler::run() {
  *  Start the downtime scheduler and wait until it has started.
  */
 void downtime_scheduler::start_and_wait() {
-  QThread::start();
-  // Wait until the thread has started.
-  _started.acquire();
+  _thread = std::thread(&downtime_scheduler::run, this);
+  _started_flag = true;
 }
 
 /**
@@ -89,10 +85,10 @@ void downtime_scheduler::start_and_wait() {
 void downtime_scheduler::quit() throw () {
   // Set the should exit flag.
   {
-    QMutexLocker lock(&_general_mutex);
+    std::lock_guard<std::mutex> lock(_general_mutex);
     _should_exit = true;
     // Wake the notification scheduling thread.
-    _general_condition.wakeAll();
+    _general_condition.notify_all();
   }
 }
 
@@ -115,7 +111,7 @@ void downtime_scheduler::add_downtime(
   }
 
   // Lock the mutex.
-  QMutexLocker lock(&_general_mutex);
+  std::lock_guard<std::mutex> lock(_general_mutex);
 
   timestamp first_starting_timestamp = _get_first_timestamp(_downtime_starts);
   timestamp first_ending_timestamp = _get_first_timestamp(_downtime_ends);
@@ -128,9 +124,7 @@ void downtime_scheduler::add_downtime(
     _downtime_ends.insert(std::make_pair(end_time, dwn.internal_id));
 
   // Wake thread.
-  _general_condition.wakeAll();
-
-  return ;
+  _general_condition.notify_all();
 }
 
 /**
@@ -140,7 +134,7 @@ void downtime_scheduler::add_downtime(
  */
 void downtime_scheduler::remove_downtime(unsigned int internal_id) {
   // Lock the mutex.
-  QMutexLocker lock(&_general_mutex);
+  std::lock_guard<std::mutex> lock(_general_mutex);
 
   std::map<unsigned int, downtime>::iterator
     found = _downtimes.find(internal_id);
@@ -245,4 +239,8 @@ void downtime_scheduler::_end_downtime(downtime& dwn, io::stream* stream) {
     << dwn.service_id << ") at " << dwn.actual_end_time;
   if (stream)
     stream->write(std::make_shared<downtime>(dwn));
+}
+
+void downtime_scheduler::wait() {
+  _thread.join();
 }

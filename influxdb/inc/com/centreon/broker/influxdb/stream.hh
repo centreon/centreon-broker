@@ -23,7 +23,7 @@
 #  include <list>
 #  include <map>
 #  include <memory>
-#  include <QMutex>
+#  include <mutex>
 #  include <utility>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -85,7 +85,7 @@ namespace          influxdb {
 
     // Status members
     std::string    _status;
-    mutable QMutex _statusm;
+    mutable std::mutex _statusm;
   };
 }
 

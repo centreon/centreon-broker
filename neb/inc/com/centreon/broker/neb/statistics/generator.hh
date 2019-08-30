@@ -53,8 +53,8 @@ namespace          neb {
       unsigned int interval() const throw ();
       void         interval(unsigned int value);
       void         remove(
-                     unsigned int host_id,
-                     unsigned int service_id);
+                     uint64_t host_id,
+                     uint64_t service_id);
       void         run();
       void         set(config::state const& config);
 
@@ -62,10 +62,8 @@ namespace          neb {
       unsigned int _interval;
       std::map<std::string, std::shared_ptr<plugin> >
                    _plugins;
-      std::map<
-             std::pair<unsigned int, unsigned int>,
-             std::shared_ptr<plugin> >
-                   _registers;
+      std::map<std::pair<uint64_t, uint64_t>, std::shared_ptr<plugin>>
+          _registers;
     };
   }
 }

@@ -19,7 +19,7 @@
 #ifndef CCB_CONFIG_LOGGER_HH
 #  define CCB_CONFIG_LOGGER_HH
 
-#  include <QString>
+#  include <string>
 #  include "com/centreon/broker/logging/defines.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -66,8 +66,8 @@ namespace              config {
     logging::level     level() const throw ();
     void               max_size(unsigned long long max) throw ();
     unsigned long long max_size() const throw ();
-    void               name(QString const& s);
-    QString const&     name() const throw ();
+    void               name(std::string const& s);
+    std::string const&     name() const throw ();
     void               type(logger_type lt) throw ();
     logger_type        type() const throw ();
     void               types(unsigned int t) throw ();
@@ -79,7 +79,7 @@ namespace              config {
     int                _facility;
     logging::level     _level;
     unsigned long long _max_size;
-    QString            _name;
+    std::string        _name;
     logger_type        _type;
     unsigned int       _types;
   };

@@ -23,10 +23,8 @@
 #  include <list>
 #  include <set>
 #  include <string>
-#  include <QMutex>
-#  include <QMutexLocker>
+#  include <mutex>
 #  include <QThread>
-#  include <QTimer>
 #  include "com/centreon/broker/notification/process.hh"
 
 namespace                          com {
@@ -60,7 +58,7 @@ namespace                          com {
                                    process_manager(process_manager const&);
           process_manager&         operator=(process_manager const&);
 
-          QMutex                   _process_list_mutex;
+          std::recursive_mutex _process_list_mutex;
           std::set<process*>       _process_list;
 
           std::unique_ptr<QThread>   _thread;

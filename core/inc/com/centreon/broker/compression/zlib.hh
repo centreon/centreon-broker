@@ -19,25 +19,27 @@
 #ifndef CCB_COMPRESSION_ZLIB_HH
 #  define CCB_COMPRESSION_ZLIB_HH
 
-#  include <QByteArray>
-#  include "com/centreon/broker/namespace.hh"
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace             compression {
-  /**
-   *  @class zlib zlib.hh "com/centreon/broker/compression/zlib.hh"
-   *  @brief Binding around the zlib library.
-   *
-   *  Compress and uncompress data.
-   */
-  class               zlib {
-   public:
-    static QByteArray compress(QByteArray const& data, int compression_level);
-    static QByteArray uncompress(unsigned char const* data, unsigned long nbytes);
-  };
-}
+namespace compression {
+/**
+ *  @class zlib zlib.hh "com/centreon/broker/compression/zlib.hh"
+ *  @brief Binding around the zlib library.
+ *
+ *  Compress and uncompress data.
+ */
+class zlib {
+ public:
+  static std::vector<char> compress(std::vector<char> const& data,
+                                    int compression_level);
+  static std::vector<char> uncompress(unsigned char const* data,
+                                      unsigned long nbytes);
+};
+}  // namespace compression
 
 CCB_END()
 
-#endif // !CCB_COMPRESSION_ZLIB_HH
+#endif  // !CCB_COMPRESSION_ZLIB_HH

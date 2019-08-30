@@ -292,29 +292,29 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
       service_description.erase(0, strlen("ba_"));
 
       if (!service_description.empty()) {
-        bool ok = false;
-        unsigned int ba_id = QString(service_description.c_str()).toUInt(&ok);
-        if (!ok) {
+        try {
+          unsigned int ba_id = std::stoul(service_description);
+          state::bas::iterator found = bas.find(ba_id);
+          if (found == bas.end()) {
+            logging::info(logging::medium) << "BAM: virtual BA service '"
+              << res.value_as_str(1) << "' of host '"
+              << res.value_as_str(0) << "' references an unknown BA ("
+              << ba_id << ")";
+            continue;
+          }
+          found->second.set_host_id(host_id);
+          found->second.set_service_id(service_id);
+          mapping.set(
+                    ba_id,
+                    res.value_as_str(0),
+                    res.value_as_str(1));
+        } catch (std::exception const& e) {
           logging::info(logging::medium)
             << "BAM: service '" << res.value_as_str(1) << "' of host '"
             << res.value_as_str(0)
             << "' is not a valid virtual BA service";
           continue ;
         }
-        state::bas::iterator found = bas.find(ba_id);
-        if (found == bas.end()) {
-          logging::info(logging::medium) << "BAM: virtual BA service '"
-            << res.value_as_str(1) << "' of host '"
-            << res.value_as_str(0) << "' references an unknown BA ("
-            << ba_id << ")";
-          continue;
-        }
-        found->second.set_host_id(host_id);
-        found->second.set_service_id(service_id);
-        mapping.set(
-                  ba_id,
-                  res.value_as_str(0),
-                  res.value_as_str(1));
       }
     }
   }
@@ -440,22 +440,22 @@ void reader_v2::_load(state::meta_services& meta_services) {
     while (_mysql.fetch_row(res)) {
       std::string service_description(res.value_as_str(1));
       service_description.erase(0, strlen("meta_"));
-      bool ok(false);
-      unsigned int meta_id(QString(service_description.c_str()).toUInt(&ok));
-      if (!ok) {
+      try {
+        unsigned int meta_id(std::stoul(service_description));
+        state::meta_services::iterator found(meta_services.find(meta_id));
+        if (found == meta_services.end()) {
+          logging::info(logging::medium)
+            << "BAM: virtual meta-service service '"
+            << res.value_as_str(1) << "' of host '"
+            << res.value_as_str(0)
+            << "' references an unknown meta-service (" << meta_id << ")";
+          continue ;
+        }
+      } catch (std::exception const& e) {
         logging::info(logging::medium)
           << "BAM: service '" << res.value_as_str(1) << "' of host '"
           << res.value_as_str(0)
           << "' is not a valid virtual meta-service service";
-        continue ;
-      }
-      state::meta_services::iterator found(meta_services.find(meta_id));
-      if (found == meta_services.end()) {
-        logging::info(logging::medium)
-          << "BAM: virtual meta-service service '"
-          << res.value_as_str(1) << "' of host '"
-          << res.value_as_str(0)
-          << "' references an unknown meta-service (" << meta_id << ")";
         continue ;
       }
     }

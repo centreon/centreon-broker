@@ -164,9 +164,9 @@ std::shared_ptr<logging::backend> logger::_new_backend(config::logger const& cfg
   switch (cfg.type()) {
   case config::logger::file:
     {
-      if (cfg.name().isEmpty())
-        throw (exceptions::msg()
-               << "log applier: attempt to log on an empty file");
+      if (cfg.name().empty())
+        throw exceptions::msg()
+               << "log applier: attempt to log on an empty file";
       std::unique_ptr<logging::file>
         file(new logging::file(cfg.name(), cfg.max_size()));
       back.reset(file.get());

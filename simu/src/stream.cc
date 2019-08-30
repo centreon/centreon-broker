@@ -40,7 +40,7 @@ using namespace com::centreon::broker::simu;
  */
 stream::stream(
           std::string const& lua_script,
-          QMap<QString, QVariant> const& conf_params) {
+          std::map<std::string, misc::variant> const& conf_params) {
   _luabinding = new luabinding(lua_script, conf_params);
 }
 

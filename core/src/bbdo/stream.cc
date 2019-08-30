@@ -41,59 +41,36 @@ using namespace com::centreon::broker::bbdo;
  *  Default constructor.
  */
 stream::stream()
-  : _coarse(false),
-    _negotiate(true),
-    _negotiated(false),
-    _timeout(5),
-    _acknowledged_events(0),
-    _ack_limit(1000),
-    _events_received_since_last_ack(0) {}
+    : _coarse(false),
+      _negotiate(true),
+      _negotiated(false),
+      _timeout(5),
+      _acknowledged_events(0),
+      _ack_limit(1000),
+      _events_received_since_last_ack(0) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-stream::stream(stream const& other)
-  : io::stream(other),
-    input(other),
-    output(other),
-    _coarse(other._coarse),
-    _extensions(other._extensions),
-    _negotiate(other._negotiate),
-    _negotiated(other._negotiated),
-    _timeout(other._timeout),
-    _acknowledged_events(other._acknowledged_events),
-    _ack_limit(other._ack_limit),
-    _events_received_since_last_ack(other._events_received_since_last_ack) {}
+//stream::stream(stream const& other)
+//    : io::stream(other),
+//      input(other),
+//      output(other),
+//      _coarse(other._coarse),
+//      _extensions(other._extensions),
+//      _negotiate(other._negotiate),
+//      _negotiated(other._negotiated),
+//      _timeout(other._timeout),
+//      _acknowledged_events(other._acknowledged_events),
+//      _ack_limit(other._ack_limit),
+//      _events_received_since_last_ack(other._events_received_since_last_ack) {}
 
 /**
  *  Destructor.
  */
 stream::~stream() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-stream& stream::operator=(stream const& other) {
-  if (this != &other) {
-    input::operator=(other);
-    output::operator=(other);
-    _coarse = other._coarse;
-    _extensions = other._extensions;
-    _negotiate = other._negotiate;
-    _negotiated = other._negotiated;
-    _timeout = other._timeout;
-    _acknowledged_events = other._acknowledged_events;
-    _ack_limit = other._ack_limit;
-    _events_received_since_last_ack = other._events_received_since_last_ack;
-  }
-  return (*this);
-}
 
 /**
  *  Flush stream data.

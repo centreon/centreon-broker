@@ -66,7 +66,7 @@ void process_manager::create_process(
   process* pr(new process(timeout));
 
   {
-    QMutexLocker lock(&_process_list_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_process_list_mutex);
     pr->moveToThread(_thread.get());
     pr->setParent(this);
     _process_list.insert(pr);
@@ -79,7 +79,7 @@ void process_manager::create_process(
  *  Default constructor.
  */
 process_manager::process_manager()
-  : _process_list_mutex(QMutex::Recursive) {
+  : _process_list_mutex{} {
   _thread.reset(new QThread);
   moveToThread(_thread.get());
 }
@@ -102,7 +102,7 @@ void process_manager::process_finished(process& pr) {
       << "notification: error while executing a process: "
       << error_output;
 
-  QMutexLocker lock(&_process_list_mutex);
+  std::lock_guard<std::recursive_mutex> lock(_process_list_mutex);
 
   std::set<process*>::iterator found(_process_list.find(&pr));
   if (found != _process_list.end()) {
