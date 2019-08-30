@@ -16,16 +16,16 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QFileInfo>
-#include <QMutexLocker>
 #include <iomanip>
 #include <sstream>
 #include <time.h>
 #include <unistd.h>
+#include <asio.hpp>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/endpoint.hh"
 #include "com/centreon/broker/io/properties.hh"
+#include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/mysql_manager.hh"
@@ -96,12 +96,11 @@ void builder::build(serializer const& srz) {
     _root.add_property(
             "now",
             io::property("now", misc::string::get(::time(NULL))));
-    _root.add_property(
-            "compiled with qt",
-            io::property("compiled with qt", QT_VERSION_STR));
-    _root.add_property(
-            "running with qt",
-            io::property("running with qt", qVersion()));
+
+    std::string asio_version{std::to_string(ASIO_VERSION / 100000)};
+    asio_version.append(".").append(std::to_string(ASIO_VERSION / 100 % 1000))
+      .append(".").append(std::to_string(ASIO_VERSION % 100));
+    _root.add_property("asio_version", asio_version);
   }
 
   // Mysql manager.
@@ -122,12 +121,11 @@ void builder::build(serializer const& srz) {
          end(mod_applier.end());
        it != end;
        ++it) {
-    QFileInfo fi(it->first.c_str());
     io::properties subtree;
     subtree.add_property("state", io::property("state", "loaded"));
     subtree.add_property(
               "size",
-              io::property("size", misc::string::get(fi.size()) + "B"));
+              io::property("size", misc::string::get(misc::filesystem::file_size(it->first)) + "B"));
     _root.add_child(subtree, std::string("module " + it->first));
   }
 
@@ -137,7 +135,7 @@ void builder::build(serializer const& srz) {
 
   // Print endpoints.
   {
-    bool locked(endp_applier.endpoints_mutex().tryLock(100));
+    bool locked(endp_applier.endpoints_mutex().try_lock_for(std::chrono::milliseconds(100)));
     try {
       if (locked)
         for (config::applier::endpoint::iterator
@@ -201,7 +199,7 @@ io::properties const& builder::root() const throw () {
  *  @return            Name of the endpoint.
  */
 std::string builder::_generate_stats_for_endpoint(
-                       processing::thread* fo,
+                       processing::bthread* fo,
                        io::properties& tree) {
   // Header.
   std::string endpoint = std::string("endpoint ") + fo->get_name();

@@ -135,7 +135,7 @@ extern "C" {
 
             // Create thread.
             workers_fifo.push_back(std::make_shared<stats::worker>());
-            workers_fifo.back()->run(QString::fromStdString(fifo_path));
+            workers_fifo.back()->run(fifo_path);
           }
           loaded = true;
         }

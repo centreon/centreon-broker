@@ -54,6 +54,7 @@ add_library("${STATS}" SHARED
   "${INC_DIR}/json_serializer.hh"
   "${INC_DIR}/worker.hh"
 )
+add_dependencies("${STATS}" Asio)
 set_target_properties("${STATS}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS}")

@@ -16,8 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QMutexLocker>
-#include <QWaitCondition>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -53,7 +51,7 @@ acceptor::~acceptor() {}
  *  @param[in] child  Child name.
  */
 void acceptor::add_child(std::string const& child) {
-  QMutexLocker lock(&_childrenm);
+  std::lock_guard<std::mutex> lock(_childrenm);
   _children.push_back(child);
 }
 
@@ -72,7 +70,7 @@ void acceptor::listen_on(unsigned short port) {
  */
 std::shared_ptr<io::stream> acceptor::open() {
   // Listen on port.
-  QMutexLocker lock(&_mutex);
+  std::lock_guard<std::mutex> lock(_mutex);
 
   if (!_socket.get())
     _socket.reset(new asio::ip::tcp::socket(_io_context));
@@ -97,7 +95,7 @@ std::shared_ptr<io::stream> acceptor::open() {
  *  @param[in] child  Child to remove.
  */
 void acceptor::remove_child(std::string const& child) {
-  QMutexLocker lock(&_childrenm);
+  std::lock_guard<std::mutex> lock(_childrenm);
   for (std::list<std::string>::iterator
          it(_children.begin()),
          end(_children.end());
@@ -136,7 +134,7 @@ void acceptor::set_write_timeout(int secs) {
  *  @param[out] tree Buffer in which statistics will be written.
  */
 void acceptor::stats(io::properties& tree) {
-  QMutexLocker children_lock(&_childrenm);
+  std::lock_guard<std::mutex> children_lock(_childrenm);
   std::ostringstream oss;
   oss << _children.size() << ": ";
   for (std::list<std::string>::const_iterator

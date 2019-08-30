@@ -49,7 +49,7 @@ feeder::feeder(
           std::shared_ptr<io::stream> client,
           uset<unsigned int> const& read_filters,
           uset<unsigned int> const& write_filters)
-  : thread(name), _client(client), _subscriber(name, false) {
+  : bthread(name), _client(client), _subscriber(name, false) {
   _subscriber.get_muxer().set_read_filters(read_filters);
   _subscriber.get_muxer().set_write_filters(write_filters);
   // By default, we assume the feeder is already connected.

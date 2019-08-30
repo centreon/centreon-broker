@@ -19,9 +19,10 @@
 #ifndef CCB_LOGGING_FILE_HH
 #  define CCB_LOGGING_FILE_HH
 
-#  include <QFile>
-#  include "com/centreon/broker/logging/backend.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <QFile>
+#include <string>
+#include "com/centreon/broker/logging/backend.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -35,8 +36,8 @@ namespace              logging {
   class                file : public backend {
   public:
                        file(
-                         QString const& path,
-                         unsigned long long max = 100000000000ull);
+                         std::string const& path,
+                         uint64_t max = 100000000000ull);
                        file(FILE* special);
                        ~file();
     void               log_msg(

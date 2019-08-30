@@ -31,12 +31,13 @@ class  CompressionZlib : public ::testing::Test {
 // Then we get as result the same buffer as the input one
 TEST_F(CompressionZlib, Simple) {
   // Given
-  QByteArray data("Some data compression");
+  char str[] = "Some data compression";
+  std::vector<char> data{str, str + sizeof(str)};
   // When
-  QByteArray compressed(zlib::compress(data, -1));
-  QByteArray uncompressed(
+  std::vector<char> compressed(zlib::compress(data, -1));
+  std::vector<char> uncompressed(
     zlib::uncompress(
-      static_cast<unsigned char const*>(static_cast<void const*>(compressed.constData())),
+      reinterpret_cast<unsigned char const*>(&compressed[0]),
       compressed.size()));
 
   // Then
@@ -48,10 +49,10 @@ TEST_F(CompressionZlib, Simple) {
 // Then we get as result a buffer containing "\0\0\0\0"
 TEST_F(CompressionZlib, Empty) {
   // Given
-  QByteArray data;
+  std::vector<char> data;
   // When
-  QByteArray compressed(zlib::compress(data, -1));
+  std::vector<char> compressed(zlib::compress(data, -1));
 
-  QByteArray expected(4, '\0');
+  std::vector<char> expected(4, '\0');
   ASSERT_EQ(compressed, expected);
 }

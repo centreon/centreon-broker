@@ -19,7 +19,6 @@
 #ifndef CCB_DUMPER_DIRECTORY_DUMPER_HH
 #  define CCB_DUMPER_DIRECTORY_DUMPER_HH
 
-#  include <QMutex>
 #  include <map>
 #  include <memory>
 #  include <string>
@@ -51,12 +50,12 @@ namespace              dumper {
                          std::shared_ptr<io::data>& d,
                          time_t deadline);
     int                write(std::shared_ptr<io::data> const& d);
+    static std::list<std::string> dir_content(std::string const& path);
 
   private:
                        directory_dumper(directory_dumper const& s);
     directory_dumper&  operator=(directory_dumper const& s);
 
-    QMutex             _mutex;
     std::string        _name;
     std::string        _path;
     std::string        _tagname;

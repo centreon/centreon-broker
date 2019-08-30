@@ -18,6 +18,7 @@
 
 #include <gtest/gtest.h>
 #include "com/centreon/broker/compression/stream.hh"
+#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -27,17 +28,31 @@ using namespace com::centreon::broker;
 
 class   CompressionStreamWrite : public ::testing::Test {
  public:
-  void  SetUp() {
+  void  SetUp() override {
+    try {
+      config::applier::init();
+    }
+    catch (std::exception const& e) {
+      (void) e;
+    }
     _stream.reset(new compression::stream(-1, 20000));
     _substream.reset(new CompressionStreamMemoryStream());
     _stream->set_substream(_substream);
   }
 
+  void TearDown() override {
+    _stream.reset();
+    _substream.reset();
+    // The cache must be destroyed before the applier deinit() call.
+    config::applier::deinit();
+  }
+
   std::shared_ptr<io::data> new_data() {
     std::shared_ptr<io::raw> r(new io::raw);
+    r->get_buffer().reserve(1000 * sizeof(int));
     for (int i(0); i < 1000; ++i)
-      r->append(static_cast<char*>(static_cast<void*>(&i)), sizeof(i));
-    return (r);
+      std::copy(reinterpret_cast<char*>(&i), reinterpret_cast<char*>(&i) + sizeof(i), std::back_inserter(r->get_buffer()));
+    return r;
   }
 
  protected:
@@ -163,7 +178,7 @@ TEST_F(CompressionStreamWrite, Flush) {
   _stream.reset(new compression::stream(-1, 20000));
   _stream->set_substream(_substream);
   _stream->write(new_data());
-  ASSERT_TRUE(!_substream->get_buffer() || _substream->get_buffer()->isEmpty());
+  ASSERT_TRUE(!_substream->get_buffer() || _substream->get_buffer()->empty());
 
   // When
   int retval(_stream->flush());

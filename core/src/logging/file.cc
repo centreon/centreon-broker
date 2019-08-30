@@ -19,7 +19,6 @@
 #include <ctime>
 #include <climits>
 #include <cstdlib>
-#include <QThread>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/file.hh"
 
@@ -73,8 +72,8 @@ struct integer_width {
  *  @param[in] path Path to the log file.
  *  @param[in] max  Maximum file size of log file.
  */
-file::file(QString const& path, unsigned long long max)
-  : _file(path), _max(0), _special(false), _written(0) {
+file::file(std::string const& path, uint64_t max)
+  : _file(QString::fromStdString(path)), _max(0), _special(false), _written(0) {
   if (!_file.open(QIODevice::WriteOnly | QIODevice::Append))
     throw (exceptions::msg() << "log: could not open file '" << path
              << "': " << _file.errorString());
@@ -95,8 +94,8 @@ file::file(QString const& path, unsigned long long max)
  */
 file::file(FILE* special) : _special(true) {
   if (!_file.open(special, QIODevice::WriteOnly))
-    throw (exceptions::msg() << "log: could not open special file: "
-             << _file.errorString());
+    throw exceptions::msg() << "log: could not open special file: "
+             << _file.errorString();
 }
 
 /**
@@ -194,7 +193,6 @@ void file::log_msg(char const* msg,
     if (_with_flush)
       _file.flush();
   }
-  return ;
 }
 
 /**
@@ -213,7 +211,6 @@ bool file::with_flush() throw () {
  */
 void file::with_flush(bool enable) throw () {
   _with_flush = enable;
-  return ;
 }
 
 /**
@@ -232,7 +229,6 @@ bool file::with_thread_id() throw () {
  */
 void file::with_thread_id(bool enable) throw () {
   _with_thread_id = enable;
-  return ;
 }
 
 /**
@@ -251,7 +247,6 @@ timestamp_type file::with_timestamp() throw () {
  */
 void file::with_timestamp(timestamp_type ts_type) throw () {
   _with_timestamp = ts_type;
-  return ;
 }
 
 /**
@@ -298,8 +293,6 @@ void file::_reopen() {
   _file.open(QIODevice::WriteOnly | QIODevice::Truncate);
   _written = 0;
   _write(LOG_OPEN_STR);
-
-  return ;
 }
 
 /**
@@ -327,6 +320,4 @@ void file::_write(char const* data) throw () {
     if (wb > 0)
       _written += wb;
   }
-
-  return ;
 }

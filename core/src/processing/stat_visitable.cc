@@ -84,7 +84,7 @@ static std::string dump_filters(uset<unsigned int> const& filters) {
  *  @param[in] tree  Tree of information.
  */
 void stat_visitable::stats(io::properties &tree) {
-  QMutexLocker lock(&_stat_mutex);
+  std::lock_guard<std::mutex> lock(_stat_mutex);
   tree.add_property("state", io::property("state", _get_state()));
   tree.add_property(
          "read_filters",
@@ -143,7 +143,7 @@ std::string const& stat_visitable::get_name() const {
  *  @param[in] last_error  The last error.
  */
 void stat_visitable::set_last_error(std::string const& last_error) {
-  QMutexLocker lock(&_stat_mutex);
+  std::lock_guard<std::mutex> lock(_stat_mutex);
   _last_error = last_error;
 }
 
@@ -154,7 +154,7 @@ void stat_visitable::set_last_error(std::string const& last_error) {
  */
 void stat_visitable::set_last_connection_attempt(
                        timestamp last_connection_attempt) {
-  QMutexLocker lock(&_stat_mutex);
+  std::lock_guard<std::mutex> lock(_stat_mutex);
   _last_connection_attempt = last_connection_attempt;
 }
 
@@ -165,7 +165,7 @@ void stat_visitable::set_last_connection_attempt(
  */
 void stat_visitable::set_last_connection_success(
                        timestamp last_connection_success) {
-  QMutexLocker lock(&_stat_mutex);
+  std::lock_guard<std::mutex> lock(_stat_mutex);
   _last_connection_success = last_connection_success;
 }
 
@@ -173,7 +173,7 @@ void stat_visitable::set_last_connection_success(
  *  Tick the event processing computation.
  */
 void stat_visitable::tick(unsigned int events) {
-  QMutexLocker lock(&_stat_mutex);
+  std::lock_guard<std::mutex> lock(_stat_mutex);
   _event_processing_speed.tick(events);
 }
 

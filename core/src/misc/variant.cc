@@ -166,11 +166,14 @@ variant::meta_type variant::user_type() const {
  * @return the boolean value or false.
  */
 bool variant::as_bool() const {
-  assert(_type == type_bool || _type == type_none);
+  assert(_type == type_int || _type == type_uint || _type == type_long ||
+         _type == type_ulong || _type == type_bool || _type == type_none);
   if (_type == type_none)
     return false;
-  else
+  else if (_type == type_bool)
     return _bool_value;
+  else
+    return static_cast<bool>(_long_value);
 }
 
 /**

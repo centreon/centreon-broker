@@ -29,7 +29,7 @@ class  CompressionStreamMemoryStream : public com::centreon::broker::io::stream 
 
   std::shared_ptr<com::centreon::broker::io::raw>&
        get_buffer() {
-    return (_buffer);
+    return _buffer;
   }
 
   bool read(
@@ -42,13 +42,13 @@ class  CompressionStreamMemoryStream : public com::centreon::broker::io::stream 
       throw (exceptions::shutdown() << __FUNCTION__
              << " is shutdown");
     else if (_timeout)
-      return (false);
+      return false;
     d = _buffer;
     _buffer = std::shared_ptr<io::raw>();
     if (!d)
       throw (exceptions::shutdown() << __FUNCTION__
              << " has no more data");
-    return (true);
+    return true;
   }
 
   int  write(std::shared_ptr<com::centreon::broker::io::data> const& d) {
@@ -56,17 +56,16 @@ class  CompressionStreamMemoryStream : public com::centreon::broker::io::stream 
     if (!d || d->type() != io::raw::static_type())
       throw (exceptions::msg()
              << "invalid data sent to " << __FUNCTION__);
-    io::raw const& e(*std::static_pointer_cast<io::raw>(d));
+    io::raw& e(*std::static_pointer_cast<io::raw>(d));
     if (!_buffer)
       _buffer.reset(new io::raw(e));
     else
-      _buffer->append(e);
-    return (1);
+      std::copy(e.get_buffer().begin(), e.get_buffer().end(), std::back_inserter(_buffer->get_buffer()));
+    return 1;
   }
 
   void shutdown(bool shut_it_down = true) {
     _shutdown = shut_it_down;
-    return ;
   }
 
   void timeout(bool time_it_out = true) {

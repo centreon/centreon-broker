@@ -16,8 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QMutexLocker>
-#include <QReadLocker>
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/logging/temp_logger.hh"
 
@@ -35,7 +33,6 @@ temp_logger::redir const temp_logger::_redir_nothing = {
   &temp_logger::_nothing<int>,
   &temp_logger::_nothing<long>,
   &temp_logger::_nothing<long long>,
-  &temp_logger::_nothing<QString const&>,
   &temp_logger::_nothing<std::string const&>,
   &temp_logger::_nothing<unsigned int>,
   &temp_logger::_nothing<unsigned long>,
@@ -49,7 +46,6 @@ temp_logger::redir const temp_logger::_redir_stringifier = {
   &temp_logger::_to_stringifier<int>,
   &temp_logger::_to_stringifier<long>,
   &temp_logger::_to_stringifier<long long>,
-  &temp_logger::_to_stringifier<QString const&>,
   &temp_logger::_to_stringifier<std::string const&>,
   &temp_logger::_to_stringifier<unsigned int>,
   &temp_logger::_to_stringifier<unsigned long>,
@@ -204,17 +200,6 @@ temp_logger& temp_logger::operator<<(long l) throw () {
  */
 temp_logger& temp_logger::operator<<(long long ll) throw () {
   return ((this->*(_redir->redirect_long_long))(ll));
-}
-
-/**
- *  QString redirection.
- *
- *  @param[in] q Qt string.
- *
- *  @return This object.
- */
-temp_logger& temp_logger::operator<<(QString const& q) throw () {
-  return ((this->*(_redir->redirect_qstring))(q));
 }
 
 /**

@@ -96,7 +96,7 @@ connector& connector::operator=(connector const& other) {
     _timeout = other._timeout;
     _ack_limit = other._ack_limit;
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -113,7 +113,7 @@ std::shared_ptr<io::stream> connector::open() {
     // Open lower layer connection and add our own layer.
     retval = _open(_from->open());
   }
-  return (retval);
+  return retval;
 }
 
 /**************************************

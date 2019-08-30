@@ -19,7 +19,8 @@
 #ifndef CCB_STATS_GENERATOR_HH
 #  define CCB_STATS_GENERATOR_HH
 
-#  include <QThread>
+#  include <atomic>
+#  include <thread>
 #  include <map>
 #  include <utility>
 
@@ -37,9 +38,7 @@ namespace               com {
          *  Standalone thread that generates statistics about Broker at
          *  regular interval.
          */
-        class           generator : public QThread {
-          Q_OBJECT
-
+        class           generator {
         public:
                         generator();
                         ~generator() throw ();
@@ -47,14 +46,17 @@ namespace               com {
           void          run(
                           config const& cfg,
                           unsigned int instance_id);
+          void wait();
 
         private:
                         generator(generator const& right);
           generator&    operator=(generator const& right);
-          void          run();
+          void          _run();
 
           unsigned int  _instance_id;
-          volatile bool _should_exit;
+          std::atomic<bool> _should_exit;
+
+          std::thread _thread;
         };
       }
     }

@@ -19,7 +19,6 @@
 #ifndef CCB_DUMPER_FIFO_DUMPER_HH
 #  define CCB_DUMPER_FIFO_DUMPER_HH
 
-#  include <QMutex>
 #  include <fstream>
 #  include <memory>
 #  include "com/centreon/broker/io/stream.hh"
@@ -50,7 +49,6 @@ namespace              dumper {
                        fifo_dumper(fifo_dumper const& s);
     fifo_dumper&       operator=(fifo_dumper const& s);
 
-    QMutex             _mutex;
     std::string        _path;
     std::string        _tagname;
     file::fifo         _fifo;

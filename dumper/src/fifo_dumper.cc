@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QMutexLocker>
 #include <sys/select.h>
 #include <sys/types.h>
 #include <sys/stat.h>

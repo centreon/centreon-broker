@@ -17,56 +17,64 @@
 */
 
 #ifndef CCB_PROCESSING_THREAD_HH
-#  define CCB_PROCESSING_THREAD_HH
+#define CCB_PROCESSING_THREAD_HH
 
-#  include <climits>
-#  include <string>
-#  include <QMutex>
-#  include <QThread>
-#  include "com/centreon/broker/processing/stat_visitable.hh"
+#include <climits>
+#include <condition_variable>
+#include <mutex>
+#include <string>
+#include <thread>
+#include "com/centreon/broker/processing/stat_visitable.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      // Forward declaration.
-      namespace          io {
-        class            properties;
-      }
-
-      namespace          processing {
-        /**
-         *  @class thread thread.hh "com/centreon/broker/processing/thread.hh"
-         *  @brief Processing thread interface.
-         *
-         *  All processing threads respect this interface.
-         *
-         *  @see acceptor
-         *  @see failover
-         *  @see feeder
-         */
-        class            thread : protected QThread, public stat_visitable {
-          Q_OBJECT
-
-        public:
-                         thread(std::string const& name = std::string());
-                         ~thread();
-          virtual void   exit();
-          bool           should_exit() const;
-          void           start();
-          virtual void   update();
-          virtual bool   wait(unsigned long timeout_ms = ULONG_MAX);
-
-        protected:
-          bool           _should_exit;
-          mutable QMutex _should_exitm;
-
-        private:
-                         thread(thread const& other);
-          thread&        operator=(thread const& other);
-        };
-      }
-    }
-  }
+namespace com {
+namespace centreon {
+namespace broker {
+// Forward declaration.
+namespace io {
+class properties;
 }
 
-#endif // !CCB_PROCESSING_THREAD_HH
+namespace processing {
+/**
+ *  @class bthread thread.hh "com/centreon/broker/processing/thread.hh"
+ *  @brief Processing thread interface.
+ *
+ *  All processing threads respect this interface.
+ *
+ *  @see acceptor
+ *  @see failover
+ *  @see feeder
+ */
+class bthread : public stat_visitable {
+ public:
+  bthread(std::string const& name = std::string());
+  bthread(bthread const& other) = delete;
+  bthread& operator=(bthread const& other) = delete;
+  ~bthread();
+  virtual void exit();
+  bool should_exit() const;
+  void start();
+  virtual void update();
+  bool wait(unsigned long timeout_ms = ULONG_MAX);
+  virtual void run() = 0;
+  bool is_running() const;
+
+ protected:
+  bool _should_exit;
+  mutable std::mutex _should_exitm;
+
+ private:
+  bool _started;
+
+  // Condition variable used when waiting for the thread to finish
+  mutable std::mutex _cv_m;
+  std::condition_variable _cv;
+  std::thread _thread;
+  void _callback();
+};
+}  // namespace processing
+}  // namespace broker
+}  // namespace centreon
+}  // namespace com
+
+#endif  // !CCB_PROCESSING_THREAD_HH

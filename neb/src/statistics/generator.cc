@@ -196,15 +196,14 @@ void generator::interval(unsigned int value) {
  *  @param[in] service_id The service id.
  */
 void generator::remove(
-                  unsigned int host_id,
-                  unsigned int service_id) {
+                  uint64_t host_id,
+                  uint64_t service_id) {
   std::map<
-         std::pair<unsigned int, unsigned int>,
+         std::pair<uint64_t, uint64_t>,
          std::shared_ptr<plugin> >::iterator
-    it(_registers.find(std::make_pair(host_id, service_id)));
+    it{_registers.find({host_id, service_id})};
   if (it != _registers.end())
     _registers.erase(it);
-  return ;
 }
 
 /**
@@ -212,7 +211,7 @@ void generator::remove(
  */
 void generator::run() {
   time_t now(time(NULL));
-  for (std::map<std::pair<unsigned int, unsigned int>, std::shared_ptr<plugin> >::const_iterator
+  for (std::map<std::pair<uint64_t, uint64_t>, std::shared_ptr<plugin> >::const_iterator
          it(_registers.begin()), end(_registers.end());
        it != end;
        ++it) {
@@ -247,7 +246,6 @@ void generator::run() {
  *
  *  @param[in] config The configuration to set.
  */
-void generator::set(config::state const& config) {
+void generator::set(config::state const& config __attribute__((unused))) {
   // nothing to parse now...
-  return ;
 }

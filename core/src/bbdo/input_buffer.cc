@@ -125,19 +125,17 @@ void input_buffer::extract(std::string& output, int offset, int size) {
     int to_extract((*it)->size() - it_offset);
     if (to_extract > remaining)
       to_extract = remaining;
-    output.append((*it)->constData() + it_offset, to_extract);
+    output.append((*it)->const_data() + it_offset, to_extract);
     remaining -= to_extract;
   }
 
   // Check that extraction was successful.
   if (remaining)
-    throw (exceptions::msg() << "BBDO: cannot extract " << size
-           << " bytes at offset " << offset
-           << " from input buffer, only "
-           << _size << " bytes available: this is likely a software bug"
-           << " that you should report to Centreon Broker developers");
-
-  return ;
+    throw exceptions::msg()
+        << "BBDO: cannot extract " << size << " bytes at offset " << offset
+        << " from input buffer, only " << _size
+        << " bytes available: this is likely a software bug"
+        << " that you should report to Centreon Broker developers";
 }
 
 /**
@@ -146,7 +144,7 @@ void input_buffer::extract(std::string& output, int offset, int size) {
  *  @return Buffer size in bytes.
  */
 int input_buffer::size() const {
-  return (_size);
+  return _size;
 }
 
 /**
@@ -158,5 +156,4 @@ void input_buffer::_internal_copy(input_buffer const& other) {
   _data = other._data;
   _first_offset = other._first_offset;
   _size = other._size;
-  return ;
 }

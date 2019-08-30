@@ -23,11 +23,11 @@
 //#include <QSqlField>
 //#include <QSqlRecord>
 #include <QTextStream>
-#include <QThread>
 #include <QVector>
 #include <QMutexLocker>
 #include <QHash>
 #include <QMultiHash>
+#include <mutex>
 #include <sstream>
 #include <limits>
 #include "com/centreon/engine/common.hh"

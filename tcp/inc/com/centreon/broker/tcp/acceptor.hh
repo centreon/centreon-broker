@@ -22,7 +22,7 @@
 #  include <asio.hpp>
 #  include <list>
 #  include <memory>
-#  include <QMutex>
+#  include <mutex>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -59,8 +59,8 @@ class acceptor : public io::endpoint {
   acceptor& operator=(acceptor const& other);
 
   std::list<std::string> _children;
-  QMutex _childrenm;
-  QMutex _mutex;
+  std::mutex _childrenm;
+  std::mutex _mutex;
   unsigned short _port;
   int _read_timeout;
   std::unique_ptr<asio::ip::tcp::socket> _socket;

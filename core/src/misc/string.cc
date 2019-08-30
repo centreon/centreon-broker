@@ -179,7 +179,6 @@ void string::split(
   }
   std::string tmp(last ? data.substr(last) : data);
   out.push_back(trim(tmp));
-  return ;
 }
 
 /**
@@ -198,7 +197,7 @@ std::string& string::trim(std::string& str) throw () {
     if ((pos = str.find_first_not_of(whitespaces)) != std::string::npos)
       str.erase(0, pos);
   }
-  return (str);
+  return str;
 }
 
 /**
@@ -261,6 +260,27 @@ std::list<std::string> string::split(std::string const& str, char sep) {
       pos = new_pos;
     }
   }
+
+  return retval;
+}
+
+std::string string::base64_encode(const std::string& str) {
+  static const std::string b = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  std::string retval;
+  retval.reserve((str.size() / 3 + (str.size() % 3 > 0)) * 4);
+
+  int val = 0, valb = -6;
+  for (unsigned char c : str) {
+    val = (val << 8) + c;
+    valb += 8;
+    while (valb>=0) {
+      retval.push_back(b[(val >> valb) & 0x3F]);
+      valb-=6;
+    }
+  }
+  if (valb > -6) retval.push_back(b[((val << 8) >> (valb + 8)) & 0x3F]);
+  while (retval.size() % 4)
+    retval.push_back('=');
 
   return retval;
 }

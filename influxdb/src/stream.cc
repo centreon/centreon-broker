@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QMutexLocker>
 #include <sstream>
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -96,7 +95,7 @@ int stream::flush() {
   _pending_queries = 0;
   _influx_db->commit();
   _commit = false;
-  return (ret);
+  return ret;
 }
 
 /**
@@ -112,7 +111,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   d.reset();
   throw (exceptions::shutdown()
          << "cannot read from InfluxDB database");
-  return (true);
+  return true;
 }
 
 /**
@@ -121,18 +120,15 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *  @param[out] tree Output tree.
  */
 void stream::statistics(io::properties& tree) const {
-  QMutexLocker lock(&_statusm);
+  std::lock_guard<std::mutex> lock(_statusm);
   if (!_status.empty())
     tree.add_property("status", io::property("status", _status));
-  return ;
 }
 
 /**
  *  Do nothing.
  */
-void stream::update() {
-  return ;
-}
+void stream::update() {}
 
 /**
  *  Write an event.
@@ -145,7 +141,7 @@ int stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_queries;
   if (!validate(data, "influxdb"))
-    return (0);
+    return 0;
 
   // Give data to cache.
   _cache.write(data);
@@ -167,7 +163,7 @@ int stream::write(std::shared_ptr<io::data> const& data) {
     _commit = true;
 
   if (_commit)
-    return (flush());
+    return flush();
   else
-    return (0);
+    return 0;
 }

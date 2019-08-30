@@ -41,6 +41,7 @@ namespace       misc {
     void        generate(
                   std::vector<std::string> const& cfg_files,
                   std::string const& out_file = "");
+    static int exec_process(char const** argv, bool wait_for_completion);
   };
 }
 
