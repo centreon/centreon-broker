@@ -17,7 +17,6 @@
 */
 
 #include <arpa/inet.h>
-#include <cstdio>
 #include <fstream>
 #include <gtest/gtest.h>
 #include <list>
@@ -25,14 +24,11 @@
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/lua/luabinding.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/misc/variant.hh"
 #include "com/centreon/broker/modules/loader.hh"
-#include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/instance.hh"
-#include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;

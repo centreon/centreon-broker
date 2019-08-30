@@ -866,18 +866,8 @@ include(cmake/package.cmake)
 # Enable testing.
 option(WITH_TESTING "Generate unit tests." OFF)
 if (WITH_TESTING)
-  # Testing.
-  set(
-    TESTS_SOURCES
-    ${TESTS_SOURCES}
-    "${TEST_DIR}/test_server.cc"
-    "${TEST_DIR}/config/logger.cc"
-    "${TEST_DIR}/config/parser.cc"
-  )
-
   enable_testing()
   add_subdirectory(test)
-
 endif ()
 
 #

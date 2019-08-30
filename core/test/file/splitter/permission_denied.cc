@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/splitter.hh"
+#include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
@@ -32,10 +33,16 @@ class FileSplitterPermissionDenied : public ::testing::Test {
 
  public:
   void SetUp() {
+    logging::manager::load();
+
     _path = FILE_WITH_BAD_PERMISSION;
     _file_factory.reset(new splitter_factory());
 
     return ;
+  }
+
+  void TearDown() {
+    logging::manager::unload();
   }
 
  protected:

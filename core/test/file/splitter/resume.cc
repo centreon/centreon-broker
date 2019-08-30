@@ -19,6 +19,7 @@
 #include <gtest/gtest.h>
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/splitter.hh"
+#include "com/centreon/broker/logging/manager.hh"
 #include "../test_file.hh"
 #include "../test_fs_browser.hh"
 
@@ -27,6 +28,8 @@ using namespace com::centreon::broker;
 class FileSplitterResume : public ::testing::Test {
  public:
   void SetUp() {
+    logging::manager::load();
+
     _path = "/var/lib/centreon-broker/queue";
     _fs_browser = new test_fs_browser();
     _file_factory = new test_file_factory();
@@ -72,6 +75,10 @@ class FileSplitterResume : public ::testing::Test {
                             10000,
                             true));
   }
+
+  void TearDown() {
+      logging::manager::unload();
+  };
 
  protected:
   std::unique_ptr<file::splitter> _file;

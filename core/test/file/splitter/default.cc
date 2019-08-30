@@ -19,26 +19,26 @@
 #include <gtest/gtest.h>
 #include "../test_file.hh"
 #include "../test_fs_browser.hh"
-#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/splitter.hh"
+#include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker;
 
 class FileSplitterDefault : public ::testing::Test {
  public:
   void SetUp() {
-    try {
-      config::applier::init();
-    } catch (std::exception const& e) {
-      (void)e;
-    }
+    logging::manager::load();
     _path = "queue";
     _file_factory = new test_file_factory();
     _fs_browser = new test_fs_browser();
     _file.reset(new file::splitter(_path,
                                    file::fs_file::open_read_write_truncate,
                                    _file_factory, _fs_browser, 10000, true));
+  }
+
+  void TearDown() {
+    logging::manager::unload();
   }
 
  protected:
