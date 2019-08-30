@@ -68,7 +68,7 @@ handle::~handle() {
   }
   catch (...) {
     logging::error(logging::high) << "modules: unknown error while " \
-      "unloading '" << _handle.fileName() << "'";
+      "unloading '" << _handle.fileName().toStdString() << "'";
   }
 }
 
@@ -96,7 +96,7 @@ void handle::close() {
   if (is_open()) {
     // Log message.
     logging::info(logging::medium) << "modules: closing '"
-      << _handle.fileName() << "'";
+      << _handle.fileName().toStdString() << "'";
 
     // Find deinitialization routine.
     union {
@@ -109,26 +109,26 @@ void handle::close() {
     if (!sym.data) {
       QString error_str(_handle.errorString());
       logging::info(logging::medium) << "modules: could not find "
-           "deinitialization routine in '" << _handle.fileName()
-        << "': " << error_str;
+           "deinitialization routine in '" << _handle.fileName().toStdString()
+        << "': " << error_str.toStdString();
     }
     // Call deinitialization routine.
     else {
       logging::debug(logging::low)
         << "modules: running deinitialization routine of '"
-        << _handle.fileName() << "'";
+        << _handle.fileName().toStdString() << "'";
       (*(sym.code))();
     }
 
     // Reset library handle.
     logging::debug(logging::low) << "modules: unloading library '"
-      << _handle.fileName() << "'";
+      << _handle.fileName().toStdString() << "'";
     // Library was not unloaded.
     if (!_handle.unload()) {
       QString error_str(_handle.errorString());
       logging::info(logging::medium)
         << "modules: could not unload library '"
-        << _handle.fileName() << "': " << error_str;
+        << _handle.fileName().toStdString() << "': " << error_str.toStdString();
     }
   }
   return ;
@@ -194,7 +194,7 @@ void handle::update(void const* arg) {
   if (sym.data) {
     logging::debug(logging::low)
       << "modules: running update routine of '"
-      << _handle.fileName() << "'";
+      << _handle.fileName().toStdString() << "'";
     (*(void (*)(void const*))(sym.code))(arg);
   }
 
@@ -214,7 +214,7 @@ void handle::_check_version() {
   // Find version symbol.
   logging::debug(logging::low)
     << "modules: checking module version (symbol " << versionning
-    << ") in '" << _handle.fileName() << "'";
+    << ") in '" << _handle.fileName().toStdString() << "'";
 
   char const** version = (char const**)_handle.resolve(versionning);
 
@@ -262,7 +262,7 @@ void handle::_init(void const* arg) {
   // Call initialization routine.
   logging::debug(logging::medium)
     << "modules: running initialization routine of '"
-    << _handle.fileName() << "'";
+    << _handle.fileName().toStdString() << "'";
   (*(void (*)(void const*))(sym.code))(arg);
 
   return ;

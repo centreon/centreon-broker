@@ -17,8 +17,6 @@
 */
 
 #include <cstdlib>
-#include <QCoreApplication>
-#include <QString>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"

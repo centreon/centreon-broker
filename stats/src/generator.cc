@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <chrono>
 #include "com/centreon/broker/dumper/dump.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -32,7 +33,7 @@ using namespace com::centreon::broker::stats;
 /**
  *  Default constructor.
  */
-generator::generator() {}
+generator::generator() : _should_exit{false} {}
 
 /**
  *  Destructor.
@@ -44,7 +45,6 @@ generator::~generator() throw () {}
  */
 void generator::exit() {
   _should_exit = true;
-  return ;
 }
 
 /**
@@ -53,7 +53,7 @@ void generator::exit() {
  *  @param[in] cfg         Stats configuration.
  *  @param[in] instance_id Instance ID.
  */
-void generator::run(config const& cfg, unsigned int instance_id) {
+void generator::run(config const& cfg __attribute__((unused)), unsigned int instance_id) {
   // Set instance ID.
   _instance_id = instance_id;
 
@@ -61,22 +61,20 @@ void generator::run(config const& cfg, unsigned int instance_id) {
   _should_exit = false;
 
   // Launch thread.
-  start();
-
-  return ;
+  _thread = std::thread(&generator::_run, this);
 }
 
 /**
  *  Thread entry point.
  */
-void generator::run() {
+void generator::_run() {
   try {
     time_t next_time(time(NULL) + 1);
     while (!_should_exit) {
       // Wait for appropriate time.
       time_t now(time(NULL));
       if (now < next_time) {
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         continue ;
       }
       next_time = now + 1;
@@ -108,4 +106,8 @@ void generator::run() {
       << "stats: generator thread will exit due to an unknown error";
   }
   return ;
+}
+
+void generator::wait() {
+  _thread.join();
 }

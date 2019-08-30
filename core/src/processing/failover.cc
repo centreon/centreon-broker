@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QCoreApplication>
-#include <QTimer>
+//#include <QCoreApplication>
+//#include <QTimer>
 #include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -46,7 +46,7 @@ failover::failover(
             std::shared_ptr<io::endpoint> endp,
             std::shared_ptr<multiplexing::subscriber> sbscrbr,
             std::string const& name)
-  : thread(name),
+  : bthread(name),
     _buffering_timeout(0),
     _endpoint(endp),
     _failover_launched(false),
@@ -69,16 +69,14 @@ failover::~failover() {}
 void failover::add_secondary_endpoint(
                  std::shared_ptr<io::endpoint> endp) {
   _secondary_endpoints.push_back(endp);
-  return ;
 }
 
 /**
  *  Exit failover thread.
  */
 void failover::exit() {
-  thread::exit();
+  bthread::exit();
   _subscriber->get_muxer().wake();
-  return ;
 }
 
 /**
@@ -87,7 +85,7 @@ void failover::exit() {
  *  @return Failover thread buffering timeout.
  */
 time_t failover::get_buffering_timeout() const throw () {
-  return (_buffering_timeout);
+  return _buffering_timeout;
 }
 
 /**
@@ -155,11 +153,19 @@ void failover::run() {
         _update_status("buffering data");
 
         // Wait loop.
-        time_t valid_time(time(NULL) + _buffering_timeout);
-        do {
-          QTimer::singleShot(1000, this, SLOT(quit()));
-          exec();
-        } while (!should_exit() && (time(NULL) < valid_time));
+        // FIXME DBR: attempt to replace the Qt code below.
+        if (!should_exit())
+          std::this_thread::sleep_for(std::chrono::seconds(_buffering_timeout));
+//        return;
+
+//        time_t valid_time(time(NULL) + _buffering_timeout);
+//        do {
+//          QTimer::singleShot(1000, this, SLOT(quit()));
+//          exec();
+//        } while (!should_exit() && (time(NULL) < valid_time));
+
+        // FIXME DBR: I don't see how this method could be called... even
+        // in the Qt version.
         _update_status("");
       }
 
@@ -210,7 +216,7 @@ void failover::run() {
       std::shared_ptr<io::data> d;
       while (!should_exit()) {
         // Process events.
-        QCoreApplication::processEvents();
+        //QCoreApplication::processEvents();
 
         // Check for update.
         if (_update) {
@@ -357,11 +363,18 @@ void failover::run() {
 
     // Sleep a while before attempting a reconnection.
     _update_status("sleeping before reconnection");
-    time_t valid_time(time(NULL) + _retry_interval);
-    while (!should_exit() && (time(NULL) < valid_time)) {
-      QTimer::singleShot(1000, this, SLOT(quit()));
-      exec();
-    }
+
+    // FIXME DBR: attempt to replace the Qt code below.
+    if (!should_exit())
+      std::this_thread::sleep_for(std::chrono::seconds(_retry_interval));
+
+//    time_t valid_time(time(NULL) + _retry_interval);
+//    while (!should_exit() && (time(NULL) < valid_time)) {
+//      QTimer::singleShot(1000, this, SLOT(quit()));
+//      exec();
+//    }
+    // FIXME DBR: I don't see how this method could be called... even
+    // in the Qt version.
     _update_status("");
 
   } while (!should_exit());
@@ -383,8 +396,6 @@ void failover::run() {
   // Exit log.
   logging::debug(logging::high)
     << "failover: thread of endpoint '" << _name << "' is exiting";
-
-  return ;
 }
 
 /**
@@ -394,7 +405,6 @@ void failover::run() {
  */
 void failover::set_buffering_timeout(time_t secs) {
   _buffering_timeout = secs;
-  return ;
 }
 
 /**
@@ -404,7 +414,6 @@ void failover::set_buffering_timeout(time_t secs) {
  */
 void failover::set_failover(std::shared_ptr<failover> fo) {
   _failover = fo;
-  return ;
 }
 
 /**
@@ -415,7 +424,6 @@ void failover::set_failover(std::shared_ptr<failover> fo) {
  */
 void failover::set_retry_interval(time_t retry_interval) {
   _retry_interval = retry_interval;
-  return ;
 }
 
 /**
@@ -423,7 +431,6 @@ void failover::set_retry_interval(time_t retry_interval) {
  */
 void failover::update() {
   _update = true;
-  return ;
 }
 
 /**
@@ -444,7 +451,7 @@ bool failover::wait(unsigned long time) {
   // If there was no failover or failover finished we
   // can safely wait for ourselves.
   if (finished)
-    finished = thread::wait(time);
+    finished = bthread::wait(time);
   // Otherwise we're not finished yet.
   else
     finished = false;
@@ -537,10 +544,10 @@ void failover::_launch_failover() {
   if (_failover && !_failover_launched) {
     _failover_launched = true;
     _failover->start();
-    while (!_failover->get_initialized() && !_failover->wait(10))
-      yieldCurrentThread();
+    // FIXME DBR: what's this...
+//    while (!_failover->get_initialized() && !_failover->wait(10))
+//      yieldCurrentThread();
   }
-  return ;
 }
 
 /**

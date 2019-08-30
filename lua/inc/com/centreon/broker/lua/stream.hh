@@ -42,14 +42,13 @@ namespace          lua {
                       std::string const& lua_script,
                       std::map<std::string, misc::variant> const& conf_params,
                       std::shared_ptr<persistent_cache> const& cache);
+    stream&         operator=(stream const& other) = delete;
+                    stream(stream const& other) = delete;
                     ~stream();
-    bool            read(std::shared_ptr<io::data>& d, time_t deadline);
-    int             write(std::shared_ptr<io::data> const& d);
+    bool            read(std::shared_ptr<io::data>& d, time_t deadline) override;
+    int             write(std::shared_ptr<io::data> const& d) override;
 
   private:
-    stream&         operator=(stream const& other);
-                    stream(stream const& other);
-
     // Access to the Lua interpreter
     luabinding*     _luabinding;
 

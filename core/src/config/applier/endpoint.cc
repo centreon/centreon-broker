@@ -20,9 +20,7 @@
 #include <cstdlib>
 #include <memory>
 #include <vector>
-#include <QCoreApplication>
-#include <QMutexLocker>
-#include <QLinkedList>
+#include <list>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -63,10 +61,10 @@ public:
                        ~failover_match_name() {}
   failover_match_name& operator=(failover_match_name& fmn) {
     _failover = fmn._failover;
-    return (*this);
+    return *this;
   }
   bool                 operator()(config::endpoint const& endp) const {
-    return (_failover == endp.name);
+    return _failover == endp.name;
   }
 
 private:
@@ -81,7 +79,7 @@ public:
                        ~name_match_failover() {}
   name_match_failover& operator=(name_match_failover const& nmf) {
     _name = nmf._name;
-    return (*this);
+    return *this;
   }
   bool                 operator()(config::endpoint const& endp) const {
     return (std::find(
@@ -137,7 +135,7 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
   // Remove old inputs and generate inputs to create.
   std::list<config::endpoint> endp_to_create;
   {
-    QMutexLocker lock(&_endpointsm);
+    std::lock_guard<std::timed_mutex> lock(_endpointsm);
     _diff_endpoints(
       _endpoints,
       tmp_endpoints,
@@ -172,7 +170,7 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
       bool is_acceptor;
       std::shared_ptr<io::endpoint>
         e(_create_endpoint(*it, is_acceptor));
-      std::unique_ptr<processing::thread> endp;
+      std::unique_ptr<processing::bthread> endp;
       if (is_acceptor) {
         std::unique_ptr<processing::acceptor>
           acceptr(new processing::acceptor(e, it->name));
@@ -183,7 +181,7 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
       else
         endp.reset(_create_failover(*it, s, e, endp_to_create));
       {
-        QMutexLocker lock(&_endpointsm);
+        std::lock_guard<std::timed_mutex> lock(_endpointsm);
         _endpoints[*it] = endp.get();
       }
 
@@ -211,7 +209,7 @@ void endpoint::discard() {
   {
     logging::debug(logging::medium)
       << "endpoint applier: requesting threads termination";
-    QMutexLocker lock(&_endpointsm);
+    std::unique_lock<std::timed_mutex> lock(_endpointsm);
 
     // Send termination requests.
     for (iterator it(_endpoints.begin()), end(_endpoints.end());
@@ -226,12 +224,14 @@ void endpoint::discard() {
         << _endpoints.size() << " endpoint threads remaining";
       lock.unlock();
       time_t now(time(NULL));
-      do {
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-      } while (time(NULL) <= now); // Maximum one second delay.
+
+      // FIXME DBR: no more events without qt
+      //do {
+      //  QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+      //} while (time(NULL) <= now); // Maximum one second delay.
 
       // Expect threads to terminate.
-      lock.relock();
+      lock.lock();
       // With a map valid iterator are not invalidated by erase().
       for (iterator it(_endpoints.begin()), end(_endpoints.end());
            it != end;)
@@ -256,7 +256,7 @@ void endpoint::discard() {
  *  @return Iterator to the first endpoint.
  */
 endpoint::iterator endpoint::endpoints_begin() {
-  return (_endpoints.begin());
+  return _endpoints.begin();
 }
 
 /**
@@ -265,7 +265,7 @@ endpoint::iterator endpoint::endpoints_begin() {
  *  @return Last iterator of endpoints.
  */
 endpoint::iterator endpoint::endpoints_end() {
-  return (_endpoints.end());
+  return _endpoints.end();
 }
 
 /**
@@ -273,8 +273,8 @@ endpoint::iterator endpoint::endpoints_end() {
  *
  *  @return Endpoints mutex.
  */
-QMutex& endpoint::endpoints_mutex() {
-  return (_endpointsm);
+std::timed_mutex& endpoint::endpoints_mutex() {
+  return _endpointsm;
 }
 
 /**
@@ -283,7 +283,7 @@ QMutex& endpoint::endpoints_mutex() {
  *  @return Class instance.
  */
 endpoint& endpoint::instance() {
-  return (*gl_endpoint);
+  return *gl_endpoint;
 }
 
 /**
@@ -313,7 +313,7 @@ void endpoint::unload() {
 /**
  *  Default constructor.
  */
-endpoint::endpoint() : _endpointsm(QMutex::Recursive) {}
+endpoint::endpoint() {}
 
 /**
  *  Create a muxer for a chain of failovers / endpoints. This method
@@ -333,7 +333,7 @@ multiplexing::subscriber* endpoint::_create_subscriber(config::endpoint& cfg) {
     s(new multiplexing::subscriber(cfg.name, true));
   s->get_muxer().set_read_filters(read_elements);
   s->get_muxer().set_write_filters(write_elements);
-  return (s.release());
+  return s.release();
 }
 
 /**
@@ -414,7 +414,7 @@ processing::failover* endpoint::_create_failover(
   fo->set_buffering_timeout(cfg.buffering_timeout);
   fo->set_retry_interval(cfg.retry_interval);
   fo->set_failover(failovr);
-  return (fo.release());
+  return fo.release();
 }
 
 /**
@@ -425,12 +425,11 @@ processing::failover* endpoint::_create_failover(
  *
  *  @return A new endpoint.
  */
-std::shared_ptr<io::endpoint> endpoint::_create_endpoint(
-                                           config::endpoint& cfg,
-                                           bool& is_acceptor) {
+std::shared_ptr<io::endpoint> endpoint::_create_endpoint(config::endpoint& cfg,
+                                                         bool& is_acceptor) {
   // Create endpoint object.
   std::shared_ptr<io::endpoint> endp;
-  int level(0);
+  int level{0};
   for (std::map<std::string, io::protocols::protocol>::const_iterator
          it(io::protocols::instance().begin()),
          end(io::protocols::instance().end());
@@ -457,8 +456,9 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(
     }
   }
   if (!endp)
-    throw (exceptions::msg() << "endpoint applier: no matching " \
-             "type found for endpoint '" << cfg.name << "'");
+    throw exceptions::msg() << "endpoint applier: no matching "
+                               "type found for endpoint '"
+                            << cfg.name << "'";
 
   // Create remaining objects.
   while (level <= 7) {
@@ -479,13 +479,13 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(
       }
       ++it;
     }
-    if ((7 == level) && (it == end))
-      throw (exceptions::msg() << "endpoint applier: no matching " \
-               "protocol found for endpoint '" << cfg.name << "'");
+    if (7 == level && it == end)
+      throw exceptions::msg() << "endpoint applier: no matching " \
+               "protocol found for endpoint '" << cfg.name << "'";
     ++level;
   }
 
-  return (endp);
+  return endp;
 }
 
 /**
@@ -496,12 +496,12 @@ std::shared_ptr<io::endpoint> endpoint::_create_endpoint(
  *  @param[out] to_create     Endpoints that should be created.
  */
 void endpoint::_diff_endpoints(
-                 std::map<config::endpoint, processing::thread*> const& current,
+                 std::map<config::endpoint, processing::bthread*> const& current,
                  std::list<config::endpoint> const& new_endpoints,
                  std::list<config::endpoint>& to_create) {
   // Copy some lists that we will modify.
   std::list<config::endpoint> new_ep(new_endpoints);
-  std::map<config::endpoint, processing::thread*> to_delete(current);
+  std::map<config::endpoint, processing::bthread*> to_delete(current);
 
   // Loop through new configuration.
   while (!new_ep.empty()) {
@@ -518,12 +518,12 @@ void endpoint::_diff_endpoints(
     if (list_it == new_ep.end())
       throw (exceptions::msg() << "endpoint applier: error while " \
                                   "diff'ing new and old configuration");
-    QLinkedList<config::endpoint> entries;
+    std::list<config::endpoint> entries;
     entries.push_back(*list_it);
     new_ep.erase(list_it);
 
     // Find all subentries.
-    for (QLinkedList<config::endpoint>::iterator
+    for (std::list<config::endpoint>::iterator
            it_entries(entries.begin()),
            it_end(entries.end());
          it_entries != it_end;
@@ -550,9 +550,9 @@ void endpoint::_diff_endpoints(
     }
 
     // Try to find entry and subentries in the endpoints already running.
-    iterator map_it(to_delete.find(entries.first()));
+    std::map<config::endpoint, processing::bthread*>::iterator map_it(to_delete.find(entries.front()));
     if (map_it == to_delete.end())
-      for (QLinkedList<config::endpoint>::iterator
+      for (std::list<config::endpoint>::iterator
              it(entries.begin()),
              end(entries.end());
            it != end;
@@ -563,7 +563,7 @@ void endpoint::_diff_endpoints(
   }
 
   // Remove old endpoints.
-  for (iterator it(to_delete.begin()), end(to_delete.end());
+  for (auto it(to_delete.begin()), end(to_delete.end());
        it != end;
        ++it) {
     // Send only termination request, object will be destroyed by event
@@ -573,8 +573,6 @@ void endpoint::_diff_endpoints(
     it->second->wait();
     delete it->second;
   }
-
-  return ;
 }
 
 /**
@@ -602,5 +600,5 @@ uset<unsigned int> endpoint::_filters(std::set<std::string> const& str_filters) 
       elements.insert(it->first);
     }
   }
-  return (elements);
+  return elements;
 }

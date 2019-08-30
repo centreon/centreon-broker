@@ -21,9 +21,6 @@
 
 #  include <ctime>
 #  include <list>
-#  include <QMutex>
-#  include <string>
-#  include <QThread>
 #  include <string>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"

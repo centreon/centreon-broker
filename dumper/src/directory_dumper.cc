@@ -16,10 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QMutexLocker>
-#include <QFileInfo>
-#include <QFile>
-#include <QDirIterator>
+#include <fstream>
 #include <cstdio>
 #include <set>
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -178,12 +175,9 @@ void directory_dumper::_dump_dir(
 
   multiplexing::publisher pblsh;
 
-  QDirIterator dir(
-    QString::fromStdString(path),
-    QDir::Files | QDir::NoDotAndDotDot,
-    QDirIterator::Subdirectories);
+  std::list<std::string> dir{dir_content(path)};
 
-  QDir root_dir(QString::fromStdString(path));
+  std::string const& root_path{path};
 
   // Start the dump.
   {
@@ -197,16 +191,17 @@ void directory_dumper::_dump_dir(
   // Set of found files.
   std::set<std::string> found;
 
-  while (dir.hasNext()) {
-    QString path = dir.next();
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly))
+  for (std::string& path : dir) {
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+    std::streamsize size{file.tellg()};
+    file.seekg(0, std::ios::beg);
+    std::vector<char> content(size);
+    if (!file.read(content.data(), size))
       logging::error(logging::medium)
         << "directory_dumper: can't read file '" << path << "'";
-    QByteArray content = file.readAll();
     std::shared_ptr<dump> dmp(new dump);
-    dmp->filename = root_dir.relativeFilePath(path).toStdString();
-    dmp->content = std::string(content.constData(), content.size());
+    dmp->filename = path.substr(root_path.size());
+    dmp->content = std::string(content.data(), content.size());
     dmp->tag = _tagname;
     dmp->req_id = req_id;
     pblsh.write(dmp);

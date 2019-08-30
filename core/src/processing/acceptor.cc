@@ -17,7 +17,7 @@
 */
 
 #include <QMutexLocker>
-#include <QCoreApplication>
+//#include <QCoreApplication>
 #include <sstream>
 #include <unistd.h>
 #include "com/centreon/broker/io/endpoint.hh"
@@ -38,7 +38,7 @@ using namespace com::centreon::broker::processing;
 acceptor::acceptor(
             std::shared_ptr<io::endpoint> endp,
             std::string const& name)
-  : thread(name),
+  : bthread(name),
     _endp(endp),
     _retry_interval(30) {}
 
@@ -74,18 +74,16 @@ void acceptor::accept() {
 
     // Run feeder thread.
     f->start();
-    QMutexLocker lock(&_stat_mutex);
+    std::lock_guard<std::mutex> lock(_stat_mutex);
     _feeders.push_back(f);
   }
-  return ;
 }
 
 /**
  *  Exit this thread.
  */
 void acceptor::exit() {
-  thread::exit();
-  return ;
+  bthread::exit();
 }
 
 /**
@@ -114,14 +112,15 @@ void acceptor::run() {
         << "s before attempting to accept a new client";
       time_t limit(time(NULL) + _retry_interval);
       while (!should_exit() && (time(NULL) < limit)) {
-        QCoreApplication::processEvents();
+        // FIXME DBR: what to do without Qt?
+        //QCoreApplication::processEvents();
         ::sleep(1);
       }
     }
 
     // Check for terminated feeders.
     {
-      QMutexLocker lock(&_stat_mutex);
+      std::lock_guard<std::mutex> lock(_stat_mutex);
       for (std::list<std::shared_ptr<processing::feeder> >::iterator
              it(_feeders.begin()),
              end(_feeders.end());
@@ -136,8 +135,6 @@ void acceptor::run() {
 
   // Cleanup.
   _wait_feeders();
-
-  return ;
 }
 
 /**
@@ -148,9 +145,8 @@ void acceptor::run() {
  *  @param[in] filters  Set of accepted event IDs.
  */
 void acceptor::set_read_filters(uset<unsigned int> const& filters) {
-  QMutexLocker lock(&_stat_mutex);
+  std::lock_guard<std::mutex> lock(_stat_mutex);
   _read_filters = filters;
-  return ;
 }
 
 /**
@@ -165,7 +161,6 @@ void acceptor::set_read_filters(uset<unsigned int> const& filters) {
  */
 void acceptor::set_retry_interval(time_t retry_interval) {
   _retry_interval = retry_interval;
-  return ;
 }
 
 /**
@@ -175,9 +170,8 @@ void acceptor::set_retry_interval(time_t retry_interval) {
  *  events.
  */
 void acceptor::set_write_filters(uset<unsigned int> const& filters) {
-  QMutexLocker lock(&_stat_mutex);
+  std::lock_guard<std::mutex> lock(_stat_mutex);
   _write_filters = filters;
-  return ;
 }
 
 /**
@@ -187,9 +181,9 @@ void acceptor::set_write_filters(uset<unsigned int> const& filters) {
  */
 std::string acceptor::_get_state() {
   if (_listening)
-    return ("listening");
+    return "listening";
   else
-    return ("disconnected");
+    return "disconnected";
 }
 
 /**
@@ -198,7 +192,7 @@ std::string acceptor::_get_state() {
  *  @return  The number of queued events.
  */
 unsigned int acceptor::_get_queued_events() {
-  return (0);
+  return 0;
 }
 
 /**
@@ -207,7 +201,7 @@ unsigned int acceptor::_get_queued_events() {
  *  @return  The read filters used by the feeder.
  */
 uset<unsigned int> acceptor::_get_read_filters() {
-  return (_read_filters);
+  return _read_filters;
 }
 
 /**
@@ -216,7 +210,7 @@ uset<unsigned int> acceptor::_get_read_filters() {
  *  @return  The write filters used by the feeder.
  */
 uset<unsigned int> acceptor::_get_write_filters() {
-  return (_write_filters);
+  return _write_filters;
 }
 
 /**
@@ -257,7 +251,6 @@ void acceptor::_wait_feeders() {
        ++it)
     (*it)->wait();
   _feeders.clear();
-  return ;
 }
 
 /**
@@ -266,7 +259,7 @@ void acceptor::_wait_feeders() {
  *  @param[in] val  The new value.
  */
 void acceptor::_set_listening(bool val) {
-  QMutexLocker lock(&_stat_mutex);
+  std::lock_guard<std::mutex> lock(_stat_mutex);
   _listening = val;
 }
 
@@ -276,6 +269,6 @@ void acceptor::_set_listening(bool val) {
  *  @return  The listening value.
  */
 bool acceptor::_get_listening() const throw() {
-  QMutexLocker lock(const_cast<QMutex*>(&_stat_mutex));
-  return (_listening);
+  std::lock_guard<std::mutex> lock(_stat_mutex);
+  return _listening;
 }

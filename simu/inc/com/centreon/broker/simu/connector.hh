@@ -19,9 +19,9 @@
 #ifndef CCB_SIMU_CONNECTOR_HH
 #  define CCB_SIMU_CONNECTOR_HH
 
-#  include <QMap>
-#  include <QVariant>
+#  include <map>
 #  include "com/centreon/broker/io/endpoint.hh"
+#  include "com/centreon/broker/misc/variant.hh"
 
 CCB_BEGIN()
 
@@ -40,12 +40,12 @@ namespace                        simu {
     connector&                   operator=(connector const& other);
     void                         connect_to(
                                    std::string const& lua_script,
-                                   QMap<QString, QVariant> const& cfg_params);
+                                   std::map<std::string, misc::variant> const& cfg_params);
     std::shared_ptr<io::stream> open();
 
   private:
     std::string                  _lua_script;
-    QMap<QString, QVariant>      _conf_params;
+    std::map<std::string, misc::variant>      _conf_params;
   };
 }
 

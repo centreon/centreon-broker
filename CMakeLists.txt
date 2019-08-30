@@ -53,12 +53,19 @@ option(BUILD_OFFLINE "Build offline" OFF)
 
 if (${BUILD_OFFLINE})
 ExternalProject_Add( json11_lib
-                     SOURCE_DIR ${PROJECT_SOURCE_DIR}/build/json11_lib-prefix/src/json11_lib
+                     SOURCE_DIR ${CMAKE_BINARY_DIR}/json11_lib-prefix/src/json11_lib
                      TIMEOUT 10
                      INSTALL_COMMAND ""
                      LOG_DOWNLOAD ON
                      LOG_CONFIGURE ON
                      LOG_BUILD ON)
+ExternalProject_Add( Asio
+                     SOURCE_DIR ${CMAKE_BINARY_DIR}/Asio-prefix/src/Asio
+                     TIMEOUT 10
+                     CONFIGURE_COMMAND ""
+                     BUILD_COMMAND ""
+                     INSTALL_COMMAND ""
+                     LOG_DOWNLOAD ON)
 else()
 ExternalProject_Add( json11_lib
                      GIT_REPOSITORY https://github.com/dropbox/json11/
@@ -67,6 +74,13 @@ ExternalProject_Add( json11_lib
                      LOG_DOWNLOAD ON
                      LOG_CONFIGURE ON
                      LOG_BUILD ON)
+ExternalProject_Add( Asio
+                     GIT_REPOSITORY https://github.com/chriskohlhoff/asio/
+                     TIMEOUT 10
+                     CONFIGURE_COMMAND ""
+                     BUILD_COMMAND ""
+                     INSTALL_COMMAND ""
+                     LOG_DOWNLOAD ON)
 endif()
 
 ExternalProject_Get_Property(json11_lib source_dir)
@@ -75,6 +89,9 @@ ExternalProject_Get_Property(json11_lib binary_dir)
 link_directories(${binary_dir})
 include_directories(${source_dir})
 
+ExternalProject_Get_Property(Asio source_dir)
+include_directories(${source_dir}/asio/include)
+
 #
 # Check and/or find required components.
 #
@@ -82,7 +99,6 @@ include_directories(${source_dir})
 # Find Qt.
 list(APPEND CMAKE_MODULE_PATH  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(Qt4 4.7.4 COMPONENTS QtCore REQUIRED)
-find_package(Asio REQUIRED)
 add_definitions("-DASIO_STANDALONE")
 
 
@@ -439,6 +455,7 @@ set(LIBROKER_SOURCES
   "${SRC_DIR}/mapping/entry.cc"
   "${SRC_DIR}/mapping/source.cc"
   "${SRC_DIR}/misc/diagnostic.cc"
+  "${SRC_DIR}/misc/filesystem.cc"
   "${SRC_DIR}/misc/global_lock.cc"
   "${SRC_DIR}/misc/json_writer.cc"
   "${SRC_DIR}/misc/misc.cc"
@@ -560,6 +577,7 @@ set(LIBROKER_SOURCES
   "${INC_DIR}/mapping/property.hh"
   "${INC_DIR}/mapping/source.hh"
   "${INC_DIR}/misc/diagnostic.hh"
+  "${INC_DIR}/misc/filesystem.hh"
   "${INC_DIR}/misc/global_lock.hh"
   "${INC_DIR}/misc/json_writer.hh"
   "${INC_DIR}/misc/misc.hh"
@@ -607,7 +625,7 @@ set(LIBROKER_SOURCES
 
 # Static libraries.
 add_library("rokerbase" STATIC ${LIBROKER_SOURCES})
-add_dependencies(rokerbase json11_lib)
+add_dependencies(rokerbase json11_lib Asio)
 set_target_properties("rokerbase" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-fPIC" COMPILER_HAS_FPIC)
@@ -627,6 +645,7 @@ target_link_libraries("rokerbase" json11 ${ZLIB_LIBRARIES} ${QT_LIBRARIES} ${MYS
 add_library("roker" STATIC
   "${SRC_DIR}/config/applier/init.cc"
   "${SRC_DIR}/config/applier/logger.cc")
+add_dependencies("roker" Asio)
 target_link_libraries("roker" "rokerbase")
 
 # Standalone binary.
@@ -635,6 +654,8 @@ add_executable("${DAEMON}"
   # Sources.
   "${SRC_DIR}/main.cc"
 )
+add_dependencies("${DAEMON}" Asio)
+
 if (CMAKE_COMPILER_IS_GNUCXX)
   # Flags needed to include all symbols in binary.
   target_link_libraries("${DAEMON}"
@@ -674,7 +695,7 @@ if (WITH_MODULE_NEB)
 endif()
 
 # Notification module.
-option(WITH_MODULE_NOTIFICATION "Build NOTIFICATION module." ON)
+option(WITH_MODULE_NOTIFICATION "Build NOTIFICATION module." OFF)
 if (WITH_MODULE_NOTIFICATION)
   add_subdirectory(notification)
   list(APPEND MODULE_LIST "notification")

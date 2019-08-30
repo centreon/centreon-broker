@@ -16,9 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QMutexLocker>
-#include <QDir>
-#include <QFileInfo>
 #include <fstream>
 #include <sstream>
 #include <errno.h>
@@ -31,6 +28,7 @@
 #include "com/centreon/broker/dumper/internal.hh"
 #include "com/centreon/broker/dumper/stream.hh"
 #include "com/centreon/broker/config/applier/state.hh"
+#include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -136,7 +134,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
  */
 void stream::_process_dump_event(dump const& data) {
   // Lock mutex.
-  QMutexLocker lock(&_mutex);
+  std::lock_guard<std::mutex> lock(_mutex);
 
   logging::debug(logging::medium)
     << "dumper: dumping content of file " << data.filename;
@@ -155,19 +153,25 @@ void stream::_process_dump_event(dump const& data) {
                   data.filename);
 
   // Get sub directory, if any. Create it if needed.
-  QDir dir = QFileInfo(QString::fromStdString(path)).dir();
-  if (!dir.exists()) {
-    if (!dir.mkpath(dir.path()))
-      throw (exceptions::msg()
-        << "dumper: can't create the directory: " << dir.path());
+  size_t pos{path.find_last_of('/')};
+  std::string dir;
+  if (pos == std::string::npos)
+    dir = "/";
+  else
+    dir = path.substr(0, pos);
+
+  if (!misc::filesystem::dir_exists(dir)) {
+    if (!misc::filesystem::mkpath(dir))
+      throw exceptions::msg()
+        << "dumper: can't create the directory: " << dir;
   }
 
   // Open file.
-  std::ofstream file(path.c_str());
+  std::ofstream file(path);
   if (!file.is_open())
-    throw (exceptions::msg()
+    throw exceptions::msg()
            << "dumper: error can not open file '"
-           << path << "'");
+           << path << "'";
 
   // Write data.
   file << data.content;
@@ -180,7 +184,7 @@ void stream::_process_dump_event(dump const& data) {
  */
 void stream::_process_remove_event(remove const& data) {
   // Lock mutex.
-  QMutexLocker lock(&_mutex);
+  std::lock_guard<std::mutex> lock(_mutex);
 
   logging::debug(logging::medium)
     << "dumper: removing file " << data.filename;
@@ -213,7 +217,7 @@ void stream::_process_remove_event(remove const& data) {
  */
 void stream::_process_directory_dump_event(directory_dump const& dd) {
   // Lock mutex.
-  QMutexLocker lock(&_mutex);
+  std::lock_guard<std::mutex> lock(_mutex);
 
   if (dd.started) {
     logging::debug(logging::medium)

@@ -46,7 +46,7 @@ macro_cache::~macro_cache() {
   if (_cache.get() != NULL) {
     try {
       _save_to_disk();
-    } catch (std::exception e) {
+    } catch (std::exception const& e) {
       logging::error(logging::medium)
         << "graphite: macro cache couldn't save data to disk: '"
         << e.what() << "'";

@@ -24,36 +24,38 @@
 
 using namespace com::centreon::broker;
 
-class                  MultiplexingMuxerRead : public ::testing::Test {
+class MultiplexingMuxerRead : public ::testing::Test {
  public:
-  void                 SetUp() {
+  void SetUp() {
+    try {
       config::applier::init();
+    } catch (std::exception const& e) {
+      (void)e;
+    }
   }
 
-  void TearDown() {
-    config::applier::deinit();
-  }
+  void TearDown() { config::applier::deinit(); }
 
-  void                 setup(std::string const& name) {
+  void setup(std::string const& name) {
     _m.reset(new multiplexing::muxer(name, false));
     multiplexing::muxer::filters f;
     f.insert(io::raw::static_type());
     _m->set_read_filters(f);
     _m->set_write_filters(f);
-    return ;
+    return;
   }
 
-  void                 publish_events(int count = 10000) {
+  void publish_events(int count = 10000) {
     for (int i(0); i < count; ++i) {
       std::shared_ptr<io::raw> r(new io::raw());
       r->resize(sizeof(i));
-      memcpy(r->QByteArray::data(), &i, sizeof(i));
+      memcpy(r->data(), &i, sizeof(i));
       _m->publish(r);
     }
-    return ;
+    return;
   }
 
-  void                 reread_events(int from = 0, int to = 10000) {
+  void reread_events(int from = 0, int to = 10000) {
     std::shared_ptr<io::data> d;
     for (int i(from); i < to; ++i) {
       d.reset();
@@ -61,13 +63,11 @@ class                  MultiplexingMuxerRead : public ::testing::Test {
       ASSERT_FALSE(!d);
       ASSERT_EQ(d->type(), io::raw::static_type());
       int reread;
-      memcpy(
-        &reread,
-        std::static_pointer_cast<io::raw>(d)->QByteArray::data(),
-        sizeof(reread));
+      memcpy(&reread, std::static_pointer_cast<io::raw>(d)->data(),
+             sizeof(reread));
       ASSERT_EQ(reread, i);
     }
-    return ;
+    return;
   }
 
  protected:

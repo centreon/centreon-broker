@@ -57,7 +57,7 @@ factory::~factory() {}
  */
 factory& factory::operator=(factory const& other) {
   io::factory::operator=(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -66,7 +66,7 @@ factory& factory::operator=(factory const& other) {
  *  @return Copy of the factory.
  */
 io::factory* factory::clone() const {
-  return (new factory(*this));
+  return new factory(*this);
 }
 
 /**
@@ -77,12 +77,12 @@ io::factory* factory::clone() const {
  *  @return True if the endpoint match the configuration.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  bool is_sql(!cfg.type.compare("sql", Qt::CaseInsensitive));
+  bool is_sql{!strncasecmp(cfg.type.c_str(), "sql", 4)};
   if (is_sql) {
     cfg.params["read_timeout"] = 1;
     cfg.read_timeout = 1;
   }
-  return (is_sql);
+  return is_sql;
 }
 
 /**

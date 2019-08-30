@@ -26,4 +26,4 @@ using namespace com::centreon::broker;
 *                                     *
 **************************************/
 
-QMutex misc::global_lock;
+std::mutex misc::global_lock;

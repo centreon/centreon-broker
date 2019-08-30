@@ -16,11 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QFile>
-#include <QTextStream>
-#include <QStringList>
-#include <memory>
+#include <fstream>
 #include <gtest/gtest.h>
+#include <list>
+#include <memory>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/instance_broadcast.hh"
@@ -47,49 +46,41 @@ class SimuGenericTest : public ::testing::Test {
     config::applier::deinit();
   }
 
-  void CreateScript(std::string const& filename, QString const& content) {
-    QFile file(filename.c_str());
-    file.open(QIODevice::WriteOnly);
-    QTextStream out(&file);
-    out << content;
+  void CreateScript(std::string const& filename, std::string const& content) {
+    std::ofstream oss(filename);
+    oss << content;
   }
 
-  QStringList ReadFile(QString const& filename) {
-    QStringList retval;
-    QFile file(filename);
-    if (!file.open(QIODevice::ReadOnly))
-      return retval;
+  std::string ReadFile(std::string const& filename) {
+    std::ostringstream oss;
+    std::string retval;
+    std::ifstream infile(filename);
+    std::string line;
 
-    QTextStream in(&file);
-
-    while (!in.atEnd()) {
-      retval << in.readLine();
-    }
-
-    file.close();
-    return retval;
+    while (std::getline(infile, line))
+      oss << line << '\n';
+    return oss.str();
   }
 
   void RemoveFile(std::string const& filename) {
-    QFile file(filename.c_str());
-    file.remove();
+    std::remove(filename.c_str());
   }
 };
 
 // When a lua script that does not exist is loaded
 // Then an exception is thrown
 TEST_F(SimuGenericTest, MissingScript) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   ASSERT_THROW(
     new luabinding(
-      "/tmp/this_script_does_not_exist.lua",conf),
+      "/tmp/this_script_does_not_exist.lua", conf),
 		exceptions::msg);
 }
 
 // When a lua script with error such as number divided by nil is loaded
 // Then an exception is thrown
 TEST_F(SimuGenericTest, FaultyScript) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/faulty.lua");
   CreateScript(filename, "local a = { 1, 2, 3 }\n"
                          "local b = 18 / a[4]");
@@ -102,7 +93,7 @@ TEST_F(SimuGenericTest, FaultyScript) {
 // When a lua script that does not contain an init() function is loaded
 // Then an exception is thrown
 TEST_F(SimuGenericTest, WithoutInit) {
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/without_init.lua");
   CreateScript(filename, "local a = { 1, 2, 3 }\n");
   ASSERT_THROW(
@@ -117,7 +108,7 @@ TEST_F(SimuGenericTest, IncompleteScript) {
   CreateScript(filename, "function init()\n"
                          "end\n"
                          "local a = { 1, 2, 3 }\n");
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   ASSERT_THROW(new luabinding(
                      filename,
                      conf),
@@ -134,7 +125,7 @@ TEST_F(SimuGenericTest, ReadReturnValue1) {
                          "function read()\n"
                          "return 2\n"
                          "end\n");
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::unique_ptr<luabinding> lb(new luabinding(
                      filename,
                      conf));
@@ -152,7 +143,7 @@ TEST_F(SimuGenericTest, ReadReturnValue2) {
                          "function read()\n"
                          "return nil\n"
                          "end\n");
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::unique_ptr<luabinding> lb(new luabinding(
                      filename,
                      conf));
@@ -172,7 +163,7 @@ TEST_F(SimuGenericTest, ReadReturnValue3) {
                          "function read()\n"
                          "return { a='toto' }\n"
                          "end\n");
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   std::unique_ptr<luabinding> lb(new luabinding(
                      filename,
                      conf));
@@ -199,7 +190,7 @@ TEST_F(SimuGenericTest, ReadReturnValue4) {
                                   "description=\"Super description\"\n"
                          "}\n"
                          "end\n");
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   modules::loader l;
   l.load_file("./neb/10-neb.so");
   std::unique_ptr<luabinding> lb(new luabinding(
@@ -211,7 +202,7 @@ TEST_F(SimuGenericTest, ReadReturnValue4) {
   neb::service* svc(static_cast<neb::service*>(d.get()));
   ASSERT_TRUE(svc->type() == 65559);
   ASSERT_EQ(svc->host_id, 2);
-  std::cout << "service description: " << svc->service_description.toStdString();
+  std::cout << "service description: " << svc->service_description;
   ASSERT_TRUE(svc->service_description == "Super description");
 }
 
@@ -236,7 +227,7 @@ TEST_F(SimuGenericTest, ReadReturnCustomVariable) {
                          "    value=\"centengine\",\n"
                          "    default_value=\"centengine\"}\n"
                          "end\n");
-  QMap<QString, QVariant> conf;
+  std::map<std::string, misc::variant> conf;
   modules::loader l;
   l.load_file("./neb/10-neb.so");
   std::unique_ptr<luabinding> lb(new luabinding(

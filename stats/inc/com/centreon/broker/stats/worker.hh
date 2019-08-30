@@ -19,7 +19,7 @@
 #ifndef CCB_STATS_WORKER_HH
 #  define CCB_STATS_WORKER_HH
 
-#  include <QThread>
+#  include <thread>
 #  include <string>
 #  include "com/centreon/broker/stats/config.hh"
 
@@ -39,26 +39,27 @@ namespace               com {
          *  The worker thread will wait for readability on a FIFO file
          *  and write to it statistics when available.
          */
-        class           worker : public QThread {
-          Q_OBJECT
-
+        class           worker {
          public:
                         worker();
                         ~worker() throw ();
           void          exit();
-          void          run(QString const& fifo_file);
+          void          run(std::string const& fifo_file);
+          void wait();
 
          private:
                         worker(worker const& right);
           worker&       operator=(worker const& right);
           void          _close();
           bool          _open();
-          void          run();
+          void _run();
 
           std::string   _buffer;
           int           _fd;
           std::string   _fifo;
           volatile bool _should_exit;
+
+          std::thread _thread;
         };
       }
     }

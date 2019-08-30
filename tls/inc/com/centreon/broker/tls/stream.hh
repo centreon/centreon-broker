@@ -20,7 +20,7 @@
 #  define CCB_TLS_STREAM_HH
 
 #  include <gnutls/gnutls.h>
-#  include <QByteArray>
+#  include <vector>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -53,7 +53,7 @@ namespace             tls {
                       stream(stream const& other);
     stream&           operator=(stream const& other);
 
-    QByteArray        _buffer;
+    std::vector<char> _buffer;
     time_t            _deadline;
     gnutls_session_t* _session;
   };

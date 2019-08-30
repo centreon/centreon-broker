@@ -76,7 +76,6 @@ extern "C" {
       // Deregister bam events.
       io::events::instance().unregister_category(io::events::bam);
     }
-    return ;
   }
 
   /**

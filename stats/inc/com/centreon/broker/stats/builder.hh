@@ -28,7 +28,7 @@ CCB_BEGIN()
 
 // Forward declarations.
 namespace                 processing {
-  class                   thread;
+  class                   bthread;
 }
 
 namespace                 stats {
@@ -48,7 +48,7 @@ namespace                 stats {
 
   private:
     static std::string    _generate_stats_for_endpoint(
-                            processing::thread* fo,
+                            processing::bthread* fo,
                             io::properties& tree);
 
     std::string           _data;

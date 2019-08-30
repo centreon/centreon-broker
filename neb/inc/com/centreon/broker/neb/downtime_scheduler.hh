@@ -20,10 +20,9 @@
 #  define CCB_NEB_DOWNTIME_SCHEDULER_HH
 
 #  include <map>
-#  include <QThread>
-#  include <QMutex>
-#  include <QSemaphore>
-#  include <QWaitCondition>
+#  include <thread>
+#  include <condition_variable>
+#  include <mutex>
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/timestamp.hh"
 #  include "com/centreon/broker/neb/downtime.hh"
@@ -38,7 +37,7 @@ namespace             neb {
    *
    *  Manage a thread that manages downtime end scheduling.
    */
-  class        downtime_scheduler : public QThread {
+  class        downtime_scheduler {
   public:
                downtime_scheduler();
 
@@ -50,16 +49,15 @@ namespace             neb {
                  downtime const& dwn);
     void       remove_downtime(
                  unsigned int internal_id);
+    void wait();
 
   protected:
     void       run();
 
   private:
     bool       _should_exit;
-    QMutex     _general_mutex;
-    QWaitCondition
-               _general_condition;
-    QSemaphore _started;
+    std::mutex _general_mutex;
+    std::condition_variable _general_condition;
 
     std::multimap<timestamp, unsigned int>
                _downtime_starts;
@@ -80,6 +78,11 @@ namespace             neb {
                _start_downtime(downtime& dwn, io::stream* stream);
     static void
                _end_downtime(downtime& dwn, io::stream* stream);
+
+    std::thread _thread;
+
+    // Accessed from the master
+    bool _started_flag;
   };
 }
 

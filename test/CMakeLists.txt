@@ -21,6 +21,16 @@ include(ExternalProject)
 set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/3rdparty)
 
 set(GOOGLE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+if (${BUILD_OFFLINE})
+ExternalProject_Add( googletest
+                     SOURCE_DIR ${CMAKE_BINARY_DIR}/3rdparty/src/googletest
+                     TIMEOUT 10
+                     INSTALL_COMMAND ""
+                     LOG_DOWNLOAD ON
+                     LOG_CONFIGURE ON
+                     LOG_BUILD ON
+                     CMAKE_ARGS -DCMAKE_CXX_FLAGS=${GOOGLE_CXX_FLAGS} -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
+else()
 ExternalProject_Add( googletest
                      GIT_REPOSITORY https://github.com/google/googletest/
                      TIMEOUT 10
@@ -29,6 +39,7 @@ ExternalProject_Add( googletest
                      LOG_CONFIGURE ON
                      LOG_BUILD ON
                      CMAKE_ARGS -DCMAKE_CXX_FLAGS=${GOOGLE_CXX_FLAGS} -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
+endif()
 
 ExternalProject_Get_Property(googletest source_dir)
 ExternalProject_Get_Property(googletest binary_dir)
@@ -45,7 +56,7 @@ include_directories(${PROJECT_SOURCE_DIR}/storage/inc)
 include_directories(${PROJECT_SOURCE_DIR}/lua/inc)
 include_directories(${PROJECT_SOURCE_DIR}/neb/inc)
 include_directories(${PROJECT_SOURCE_DIR}/rrd/inc)
-include_directories("${PROJECT_SOURCE_DIR}/simu/inc")
+include_directories(${PROJECT_SOURCE_DIR}/simu/inc)
 
 # Unit test executable.
 add_executable(ut
@@ -53,6 +64,7 @@ add_executable(ut
   ${TESTS_DIR}/main.cc
   ${TESTS_DIR}/bbdo/input_buffer/erase.cc
   ${TESTS_DIR}/bbdo/input_buffer/extract.cc
+  ${TESTS_DIR}/bbdo/output.cc
   ${TESTS_DIR}/ceof/ceof_parser/parse.cc
   ${TESTS_DIR}/compression/stream/memory_stream.hh
   ${TESTS_DIR}/compression/stream/read.cc
@@ -68,9 +80,11 @@ add_executable(ut
   ${TESTS_DIR}/file/test_file.cc
   ${TESTS_DIR}/file/test_fs_browser.hh
   ${TESTS_DIR}/file/test_fs_browser.cc
+  ${TESTS_DIR}/misc/filesystem.cc
   ${TESTS_DIR}/misc/string.cc
-  "${TESTS_DIR}/mysql/mysql.cc"
+  ${TESTS_DIR}/mysql/mysql.cc
   ${TESTS_DIR}/multiplexing/muxer/read.cc
+  ${TESTS_DIR}/processing/thread.cc
   # Module sources.
   ${TESTS_SOURCES}
 )

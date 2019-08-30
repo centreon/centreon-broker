@@ -259,88 +259,32 @@ else ()
 endif ()
 set_target_properties("${CBMOD}" PROPERTIES PREFIX "")
 
+# Testing.
+set(
+    TESTS_SOURCES
+    ${TESTS_SOURCES}
+    "${TEST_DIR}/randomize.cc"
+    "${TEST_DIR}/custom_variable.cc"
+    "${TEST_DIR}/custom_variable_status.cc"
+    "${TEST_DIR}/event_handler.cc"
+    "${TEST_DIR}/flapping_status.cc"
+
+    "${TEST_DIR}/randomize.hh"
+    PARENT_SCOPE
+   )
+set(
+    TESTS_LIBRARIES
+    ${TESTS_LIBRARIES}
+    "${NEB}"
+    PARENT_SCOPE
+   )
+
 # Unit tests.
 if (0) # WITH_TESTING)
   include_directories("${PROJECT_SOURCE_DIR}/neb")
   include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
   include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
   set(TEST_LIBRARIES "${NEB}" "rokerbase" "roker" "rokerbase")
-  # Custom Variable tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_custom_variable_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/custom_variable/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_custom_variable_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/custom_variable/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_custom_variable_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/custom_variable/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Custom Variable Status tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_custom_variable_status_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/custom_variable_status/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_custom_variable_status_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/custom_variable_status/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_custom_variable_status_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/custom_variable_status/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Event Handler tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_event_handler_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/event_handler/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_event_handler_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/event_handler/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_event_handler_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/event_handler/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Flapping Status Tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_flapping_status_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/flapping_status/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_flapping_status_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/flapping_status/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_flapping_status_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/flapping_status/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
   # Host Tests.
   #   Default constructor.
   set(TEST_NAME "neb_host_ctor_default")

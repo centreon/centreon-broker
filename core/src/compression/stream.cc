@@ -76,7 +76,7 @@ stream& stream::operator=(stream const& other) {
     io::stream::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -107,15 +107,15 @@ bool stream::read(
         // We do not have enough data to get the next chunk's size.
         // Stream is shutdown.
         if (_rbuffer.size() < static_cast<int>(sizeof(qint32)))
-          throw (exceptions::shutdown() << "no more data to uncompress");
+          throw exceptions::shutdown() << "no more data to uncompress";
 
         // Extract next chunk's size.
         {
           unsigned char const* buff((unsigned char const*)_rbuffer.data());
-          size = (buff[0] << 24)
+          size = static_cast<uint32_t>((buff[0] << 24)
                   | (buff[1] << 16)
                   | (buff[2] << 8)
-                  | (buff[3]);
+                  | (buff[3]));
         }
 
         // Check if size is within bounds.
@@ -146,12 +146,11 @@ bool stream::read(
       // payload size.
       if (_rbuffer.size() >= static_cast<int>(size + sizeof(qint32))) {
         try {
-          r->QByteArray::operator=(zlib::uncompress(
-            static_cast<unsigned char const*>(static_cast<void const*>((
-              _rbuffer.data() + sizeof(qint32)))),
-            size));
-        }
-        catch (exceptions::corruption const& e) {
+          r->get_buffer() =
+              zlib::uncompress(reinterpret_cast<unsigned char const*>(
+                                   (_rbuffer.data() + sizeof(int32_t))),
+                               size);
+        } catch (exceptions::corruption const& e) {
           logging::debug(logging::medium) << e.what();
         }
       }
@@ -182,17 +181,17 @@ bool stream::read(
   }
   catch (exceptions::interrupt const& e) {
     (void)e;
-    return (true);
+    return true;
   }
   catch (exceptions::timeout const& e) {
     (void)e;
-    return (false);
+    return false;
   }
   catch (exceptions::shutdown const& e) {
     _shutdown = true;
-    if (!_wbuffer.isEmpty()) {
+    if (!_wbuffer.empty()) {
       std::shared_ptr<io::raw> r(new io::raw);
-      *static_cast<QByteArray*>(r.get()) = _wbuffer;
+      r.get()->get_buffer() = _wbuffer;
       data = r;
       _wbuffer.clear();
     }
@@ -200,7 +199,7 @@ bool stream::read(
       throw ;
   }
 
-  return (true);
+  return true;
 }
 
 /**
@@ -221,7 +220,7 @@ void stream::statistics(io::properties& tree) const {
  */
 int stream::flush() {
   _flush();
-  return (0);
+  return 0;
 }
 
 /**
@@ -235,32 +234,32 @@ int stream::flush() {
  */
 int stream::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "compression"))
-    return (1);
+    return 1;
 
   // Check if substream is shutdown.
   if (_shutdown)
-    throw (exceptions::shutdown() << "cannot write to compression "
-           << "stream: sub-stream is already shutdown");
+    throw exceptions::shutdown() << "cannot write to compression "
+           << "stream: sub-stream is already shutdown";
 
   // Process raw data only.
   if (d->type() == io::raw::static_type()) {
-    io::raw const& r(*std::static_pointer_cast<io::raw>(d));
+    io::raw& r(*std::static_pointer_cast<io::raw>(d));
 
     // Check length.
     if (r.size() > max_data_size)
-      throw (exceptions::msg() << "cannot compress buffers longer than "
+      throw exceptions::msg() << "cannot compress buffers longer than "
              << max_data_size << " bytes: you should report this error "
-             << "to Centreon Broker developers");
+             << "to Centreon Broker developers";
     else if (r.size() > 0) {
       // Append data to write buffer.
-      _wbuffer.append(r);
+      std::copy(r.get_buffer().begin(), r.get_buffer().end(), std::back_inserter(_wbuffer));
 
       // Send compressed data if size limit is reached.
       if (_wbuffer.size() >= _size)
         _flush();
     }
   }
-  return (1);
+  return 1;
 }
 
 /**************************************
@@ -275,13 +274,14 @@ int stream::write(std::shared_ptr<io::data> const& d) {
 void stream::_flush() {
   // Check for shutdown stream.
   if (_shutdown)
-    throw (exceptions::shutdown() << "cannot flush compression "
-           << "stream: sub-stream is already shutdown");
+    throw exceptions::shutdown() << "cannot flush compression "
+           << "stream: sub-stream is already shutdown";
 
   if (_wbuffer.size() > 0) {
     // Compress data.
     std::shared_ptr<io::raw> compressed(new io::raw);
-    compressed->QByteArray::operator=(zlib::compress(_wbuffer, _level));
+    std::vector<char>& data(compressed->get_buffer());
+    data = std::move(zlib::compress(_wbuffer, _level));
     logging::debug(logging::low) << "compression: " << this
       << " compressed " << _wbuffer.size() << " bytes to "
       << compressed->size() << " bytes (level " << _level << ")";
@@ -290,18 +290,15 @@ void stream::_flush() {
     // Add compressed data size.
     unsigned char buffer[4];
     unsigned int size(compressed->size());
-    buffer[0] = size & 0xFF;
-    buffer[1] = (size >> 8) & 0xFF;
-    buffer[2] = (size >> 16) & 0xFF;
-    buffer[3] = (size >> 24) & 0xFF;
-    for (size_t i(0); i < sizeof(buffer); ++i)
-      compressed->prepend(buffer[i]);
+    buffer[0] = (size >> 24) & 0xFF;
+    buffer[1] = (size >> 16) & 0xFF;
+    buffer[2] = (size >> 8) & 0xFF;
+    buffer[3] = size & 0xFF;
+    data.insert(data.begin(), buffer, buffer + 4);
 
     // Send compressed data.
     _substream->write(compressed);
   }
-
-  return ;
 }
 
 /**
@@ -315,12 +312,12 @@ void stream::_get_data(int size, time_t deadline) {
     while (_rbuffer.size() < size) {
       std::shared_ptr<io::data> d;
       if (!_substream->read(d, deadline))
-        throw (exceptions::timeout());
+        throw exceptions::timeout();
       else if (!d)
-        throw (exceptions::interrupt());
+        throw exceptions::interrupt();
       else if (d->type() == io::raw::static_type()) {
         std::shared_ptr<io::raw> r(std::static_pointer_cast<io::raw>(d));
-        _rbuffer.push(*r);
+        _rbuffer.push(r->get_buffer());
       }
     }
   }
@@ -330,7 +327,6 @@ void stream::_get_data(int size, time_t deadline) {
     (void)e;
     _shutdown = true;
   }
-  return ;
 }
 
 /**

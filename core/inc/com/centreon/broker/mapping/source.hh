@@ -49,9 +49,9 @@ namespace                    mapping {
       ULONG
     };
                              source();
-                             source(source const& other);
+                             source(source const& other) = delete;
     virtual                  ~source();
-    source&                  operator=(source const& other);
+    source&                  operator=(source const& other) = delete;
     virtual bool             get_bool(io::data const& d) = 0;
     virtual double           get_double(io::data const& d) = 0;
     virtual int              get_int(io::data const& d) = 0;

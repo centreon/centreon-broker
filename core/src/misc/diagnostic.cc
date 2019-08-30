@@ -19,8 +19,14 @@
 #include <cstdlib>
 #include <QDir>
 #include <QLibraryInfo>
+#include <sys/types.h>
+#include <unistd.h>
 #include <QProcess>
 #include <sstream>
+#include <cstdio>
+#include <sys/wait.h>
+#include <thread>
+#include <chrono>
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
@@ -31,6 +37,40 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
+
+/**************************************
+*                                     *
+*           Static Methods            *
+*                                     *
+**************************************/
+int diagnostic::exec_process(char const** argv, bool wait_for_completion) {
+  int status;
+  pid_t my_pid{fork()};
+  if (my_pid == 0) {
+    int res = execve(argv[0], const_cast<char**>(argv), nullptr);
+    if (res == -1) {
+      perror("child process failed [%m]");
+      return -1;
+    }
+  }
+
+  if (wait_for_completion) {
+    int timeout = 20;
+    while (waitpid(my_pid, &status, WNOHANG)) {
+      if (--timeout < 0) {
+        perror("timeout reached during execution");
+        return -1;
+      }
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+
+    if (WIFEXITED(status) != 1 || WEXITSTATUS(status) != 0) {
+      perror("%s failed");
+      return -1;
+    }
+  }
+  return 0;
+}
 
 /**************************************
 *                                     *
@@ -127,7 +167,7 @@ void diagnostic::generate(
   logging::info(logging::high)
     << "diagnostic: Centreon Broker " << CENTREON_BROKER_VERSION;
   logging::info(logging::high) << "diagnostic: using Qt " << qVersion()
-    << " " << QLibraryInfo::buildKey()
+    << " " << QLibraryInfo::buildKey().toStdString()
     << " (compiled with " << QT_VERSION_STR << ")";
 
   // df.
@@ -321,21 +361,24 @@ void diagnostic::generate(
         std::string log_path;
         log_path = tmp_dir;
         log_path.append("/");
-        int pos(it->name().lastIndexOf('/'));
-        if (pos != -1)
-          log_path.append(
-            it->name().right(it->name().size() - pos - 1).toStdString());
+        size_t pos{it->name().find_last_of('/')};
+        if (pos != std::string::npos)
+          log_path.append(it->name().substr(pos));
         else
-          log_path.append(it->name().toStdString());
+          log_path.append(it->name());
         to_remove.push_back(log_path);
-        QStringList args;
-        args.push_back("-c");
-        args.push_back("20000000");
-        args.push_back(it->name());
-        QProcess p;
-        p.setStandardOutputFile(log_path.c_str());
-        p.start("tail", args);
-        p.waitForFinished();
+
+        char const* args[]{
+          "tail",
+          "-c",
+          "20000000",
+          it->name().c_str()
+        };
+        //QStringList args;
+        //args.push_back("-c");
+        //args.push_back("20000000");
+        //args.push_back(it->name());
+        exec_process(args, true);
       }
   }
 

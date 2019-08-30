@@ -228,7 +228,7 @@ void parser::_parse_endpoint(Json const& elem, endpoint& e) {
     else if (object.first == "retry_interval")
       e.retry_interval = static_cast<time_t>(std::stoul(object.second.string_value()));
     else if (object.first == "filters") {
-      std::set<std::string> (endpoint::* member);
+      std::set<std::string> endpoint::* member;
       if (e.write_filters.empty()) // Input.
         member = &endpoint::read_filters;
       else // Output.
@@ -244,7 +244,7 @@ void parser::_parse_endpoint(Json const& elem, endpoint& e) {
     else if (object.first == "cache")
       e.cache_enabled = parse_boolean(object.second.string_value());
     else if (object.first == "type")
-      e.type = QString::fromStdString(object.second.string_value());
+      e.type = object.second.string_value();
     e.params[object.first] = object.second.string_value();
   }
 }
@@ -329,7 +329,7 @@ void parser::_parse_logger(Json const& elem, logger& l) {
     else if (object.first == "max_size")
       l.max_size(std::stoul(object.second.string_value()));
     else if (object.first == "name")
-      l.name(QString::fromStdString(object.second.string_value()));
+      l.name(object.second.string_value());
     else if (object.first == "type") {
       const QString & val{QString::fromStdString(object.second.string_value())};
       if (val == "file")

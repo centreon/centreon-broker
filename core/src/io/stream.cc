@@ -57,7 +57,7 @@ stream::~stream() {}
 stream& stream::operator=(stream const& other) {
   if (this != &other)
     _substream = other._substream;
-  return (*this);
+  return *this;
 }
 
 /**
@@ -66,7 +66,7 @@ stream& stream::operator=(stream const& other) {
  *  @return Number of events acknowledged. This is 0 by default.
  */
 int stream::flush() {
-  return (0);
+  return 0;
 }
 
 /**
@@ -75,7 +75,7 @@ int stream::flush() {
  *  @return Peer name.
  */
 std::string stream::peer() const {
-  return (!_substream ? "(unknown)" : _substream->peer());
+  return !_substream ? "(unknown)" : _substream->peer();
 }
 
 /**
@@ -95,15 +95,12 @@ void stream::set_substream(std::shared_ptr<stream> substream) {
  */
 void stream::statistics(io::properties& tree) const {
   (void)tree;
-  return ;
 }
 
 /**
  *  Configuration update.
  */
-void stream::update() {
-  return ;
-}
+void stream::update() {}
 
 /**
  *  Validate an event.

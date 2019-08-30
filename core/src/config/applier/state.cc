@@ -18,9 +18,6 @@
 
 #include <cstdlib>
 #include <memory>
-#include <QCoreApplication>
-#include <QMutex>
-#include <QMutexLocker>
 #include "com/centreon/broker/vars.hh"
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/logger.hh"

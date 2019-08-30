@@ -37,9 +37,9 @@ namespace        bbdo {
   class          output : virtual public io::stream {
    public:
                  output();
-                 output(output const& other);
+                 output(output const& other) = delete;
     virtual      ~output();
-    output&      operator=(output const& other);
+    output&      operator=(output const& other) = delete;
     int          flush();
     void         statistics(io::properties& tree) const;
     virtual int  write(std::shared_ptr<io::data> const& e);

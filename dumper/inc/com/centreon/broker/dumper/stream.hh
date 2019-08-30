@@ -22,7 +22,7 @@
 #  include <map>
 #  include <memory>
 #  include <vector>
-#  include <QMutex>
+#  include <mutex>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -62,7 +62,7 @@ namespace              dumper {
                          std::string const& req_id,
                          std::shared_ptr<io::data> event);
 
-    QMutex             _mutex;
+    mutable std::mutex _mutex;
     std::string        _path;
     std::string        _tagname;
 

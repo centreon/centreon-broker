@@ -137,7 +137,7 @@ TEST(logger, defaultCtor) {
   ASSERT_FALSE(cfg.info());
   ASSERT_FALSE(cfg.level() != logging::high);
   ASSERT_FALSE(cfg.max_size() != 10000000000ull);
-  ASSERT_FALSE(!cfg.name().isEmpty());
+  ASSERT_FALSE(!cfg.name().empty());
   ASSERT_FALSE(cfg.type() != config::logger::unknown);
 }
 

@@ -70,7 +70,7 @@ factory::~factory() {}
  */
 factory& factory::operator=(factory const& other) {
   io::factory::operator=(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -79,7 +79,7 @@ factory& factory::operator=(factory const& other) {
  *  @return Copy of the factory.
  */
 io::factory* factory::clone() const {
-  return (new factory(*this));
+  return new factory(*this);
 }
 
 /**
@@ -90,7 +90,7 @@ io::factory* factory::clone() const {
  *  @return true if the endpoint match the configuration.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  bool is_lua(!cfg.type.compare("lua", Qt::CaseInsensitive));
+  bool is_lua{!strncasecmp(cfg.type.c_str(), "lua", 4)};
   if (is_lua) {
     cfg.params["cache"] = "yes";
     cfg.cache_enabled = true;
@@ -127,11 +127,11 @@ io::endpoint* factory::new_endpoint(
     Json const &value{js["value"]};
 
     if (name.string_value().empty())
-      throw (exceptions::msg())
+      throw exceptions::msg()
         << "lua: couldn't read a configuration field because"
         << " its name is empty";
     if (value.string_value().empty())
-      throw (exceptions::msg())
+      throw exceptions::msg()
         << "lua: couldn't read a configuration field because"
         << "' configuration field because its value is empty";
     std::string t((type.string_value().empty())
@@ -139,21 +139,34 @@ io::endpoint* factory::new_endpoint(
     if (t == "string" || t == "password")
       conf_map.insert({name.string_value(), misc::variant(value.string_value())});
     else if (t == "number") {
-      bool ok;
-      int val(QString::fromStdString(value.string_value()).toInt(&ok, 10));
-      if (ok)
-        conf_map.insert({name.string_value(), misc::variant(val)});
-      else {
-        try {
-          double val = std::stod(value.string_value(), nullptr);
+      bool ko = false;
+      size_t pos;
+      std::string const& v(value.string_value());
+      try {
+        int val = std::stol(v, &pos);
+        if (pos == v.size())  // All the string is read
           conf_map.insert({name.string_value(), misc::variant(val)});
-        }
-        catch (std::exception const& e) {
-            throw exceptions::msg()
-                << "lua: unable to read '" << name.string_value()
-                << "' content (" << value.string_value() << ") as a number";
+        else
+          ko = true;
+      } catch (std::exception const& e) {
+        ko = true;
+      }
+      // Second attempt using floating point numbers
+      if (ko) {
+        try {
+          double val = std::stod(v, &pos);
+          if (pos == v.size()) // All the string is read
+            conf_map.insert({name.string_value(), misc::variant(val)});
+          else
+            ko = true;
+        } catch (std::exception const& e) {
+          ko = true;
         }
       }
+      if (ko)
+        throw exceptions::msg()
+            << "lua: unable to read '" << name.string_value() << "' content ("
+            << value.string_value() << ") as a number";
     }
   } else if (js.is_array()) {
     for (Json const &obj : js.array_items()) {

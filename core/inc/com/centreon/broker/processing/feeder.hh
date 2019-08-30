@@ -41,7 +41,7 @@ namespace                        processing {
    *
    *  Take events from a source and send them to a destination.
    */
-  class                          feeder : public thread {
+  class                          feeder : public bthread {
   public:
                                  feeder(
                                    std::string const& name,

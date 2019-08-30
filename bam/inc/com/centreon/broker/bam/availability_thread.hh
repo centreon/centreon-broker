@@ -19,11 +19,11 @@
 #ifndef CCB_BAM_AVAILABILITY_THREAD_HH
 #  define CCB_BAM_AVAILABILITY_THREAD_HH
 
-#  include <QMutex>
-#  include <QMutexLocker>
-#  include <QSemaphore>
-#  include <QThread>
-#  include <QWaitCondition>
+#  include <mutex>
+#  include <thread>
+#  include <condition_variable>
+#  include <memory>
+#  include <string>
 #  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/data.hh"
@@ -43,7 +43,7 @@ namespace           bam {
    *  @brief Availability thread
    *
    */
-  class             availability_thread : public QThread {
+  class             availability_thread {
   public:
                     availability_thread(
                       database_config const& db_cfg,
@@ -53,10 +53,11 @@ namespace           bam {
     void            terminate();
     void            start_and_wait();
 
-    std::unique_ptr<QMutexLocker>
+    std::unique_ptr<std::unique_lock<std::mutex>>
                     lock();
 
     void            rebuild_availabilities(std::string const& bas_to_rebuild);
+    void wait();
 
   private:
                     availability_thread(availability_thread const& other);
@@ -82,17 +83,20 @@ namespace           bam {
     void            _open_database();
     void            _close_database();
 
-    std::unique_ptr<mysql>
-                    _mysql;
+    std::thread _thread;
+
+    // Checked from master
+    bool _started_flag;
+
+    std::unique_ptr<mysql> _mysql;
     database_config _db_cfg;
     timeperiod_map& _shared_tps;
 
-    QMutex          _mutex;
+    std::mutex _mutex;
     bool            _should_exit;
     bool            _should_rebuild_all;
     std::string         _bas_to_rebuild;
-    QWaitCondition  _wait;
-    QSemaphore      _started;
+    std::condition_variable _wait;
   };
 }
 

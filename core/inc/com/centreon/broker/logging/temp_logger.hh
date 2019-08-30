@@ -19,7 +19,6 @@
 #ifndef CCB_LOGGING_TEMP_LOGGER_HH_
 #  define CCB_LOGGING_TEMP_LOGGER_HH_
 
-#  include <QString>
 #  include <string>
 #  include "com/centreon/broker/logging/defines.hh"
 #  include "com/centreon/broker/misc/stringifier.hh"
@@ -48,8 +47,6 @@ namespace                logging {
                          redirect_long)(long) throw ();
       temp_logger& (temp_logger::*
                          redirect_long_long)(long long) throw ();
-      temp_logger& (temp_logger::*
-                         redirect_qstring)(QString const&) throw ();
       temp_logger& (temp_logger::*
                          redirect_std_string)(std::string const&) throw ();
       temp_logger& (temp_logger::*
@@ -86,7 +83,6 @@ namespace                logging {
     temp_logger&         operator<<(int i) throw ();
     temp_logger&         operator<<(long l) throw ();
     temp_logger&         operator<<(long long ll) throw ();
-    temp_logger&         operator<<(QString const& q) throw ();
     temp_logger&         operator<<(std::string const& q) throw ();
     temp_logger&         operator<<(unsigned int u) throw ();
     temp_logger&         operator<<(unsigned long ul) throw ();

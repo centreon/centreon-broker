@@ -17,9 +17,9 @@
 */
 
 #include <QDir>
-#include <QThread>
+#include <thread>
 #include <QByteArray>
-#include <QMutexLocker>
+#include <mutex>
 #include <cstdlib>
 #include <gtest/gtest.h>
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -35,58 +35,60 @@ using namespace com::centreon::broker::file;
 #define RETENTION_DIR "/tmp/"
 #define RETENTION_FILE "test-concurrent-queue"
 
-static QMutex mutex;
+static std::mutex mutex;
 
-class read_thread: public QThread
-{
+class read_thread {
  public:
   read_thread(file::splitter* f, int size)
-    : _file(f), _current(0), _buf(size, '\0'), _size(size) {}
-
-  QByteArray get_result() {
-    return _buf;
+      : _file(f), _current(0), _buf(size, '\0'), _size(size) {
+    _thread = std::thread(&read_thread::callback, this);
   }
 
- private:
-  file::splitter* _file;
-  int _current;
-  QByteArray _buf;
-  int _size;
+  void join() {
+    _thread.join();
+  }
+  QByteArray get_result() { return _buf; }
 
-  void run() {
+  void callback() {
     int ret = 0;
 
     do {
       try {
-        QMutexLocker lock(&mutex);
+        std::lock_guard<std::mutex> lock(mutex);
         ret = _file->read(_buf.data() + _current, _size);
         _current += ret;
+      } catch (...) {
       }
-      catch (...) {}
       usleep(100);
-    }
-    while (_current < _size);
+    } while (_current < _size);
   }
-};
-
-class write_thread: public QThread
-{
- public:
-  write_thread(file::splitter* f, int size)
-    : _file(f), _size(size) {}
 
  private:
+  std::thread _thread;
   file::splitter* _file;
-  int             _size;
+  int _current;
+  QByteArray _buf;
+  int _size;
+};
 
-  void run() {
+class write_thread {
+ public:
+  write_thread(file::splitter* f, int size) : _file(f), _size(size) {
+    _thread = std::thread(&write_thread::callback, this);
+  }
+
+  void join() {
+    _thread.join();
+  }
+
+  void callback() {
     char* buf = new char[_size];
     for (int i(0); i < _size; ++i)
       buf[i] = i & 255;
 
     int wb = 0;
     for (int j(0); j < _size; j += wb) {
-      QMutexLocker lock(&mutex);
+      std::unique_lock<std::mutex> lock(mutex);
       wb = _file->write(buf + j, 100);
       lock.unlock();
       usleep(rand() % 100);
@@ -94,6 +96,11 @@ class write_thread: public QThread
 
     delete[] buf;
   }
+
+ private:
+  std::thread _thread;
+  file::splitter* _file;
+  int _size;
 };
 
 class FileSplitterConcurrent : public ::testing::Test {
@@ -112,7 +119,6 @@ class FileSplitterConcurrent : public ::testing::Test {
                             _fs_browser.release(),
                             10000,
                             true));
-    return ;
   }
 
  protected:
@@ -145,11 +151,8 @@ TEST_F(FileSplitterConcurrent, DefaultFile) {
   write_thread wt(_file.get(), 1000);
   read_thread rt(_file.get(), 1000);
 
-  wt.start();
-  rt.start();
-
-  rt.wait();
-  wt.wait();
+  wt.join();
+  rt.join();
 
   QByteArray result(rt.get_result());
   QByteArray buffer(1000, '\0');
@@ -171,11 +174,8 @@ TEST_F(FileSplitterConcurrent, MultipleFilesCreated) {
   write_thread wt(_file.get(), BIG);
   read_thread rt(_file.get(), BIG);
 
-  wt.start();
-  rt.start();
-
-  rt.wait();
-  wt.wait();
+  rt.join();
+  wt.join();
 
   QByteArray result(rt.get_result());
   QByteArray buffer(BIG, '\0');
