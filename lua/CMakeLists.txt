@@ -58,19 +58,20 @@ target_link_libraries("${LUA}" ${LUA_LIBRARIES})
 set_target_properties("${LUA}" PROPERTIES PREFIX "")
 
 # Testing.
-set(
-  TESTS_SOURCES
-  ${TESTS_SOURCES}
-  "${TEST_DIR}/lua.cc"
-  PARENT_SCOPE
-)
-set(
-  TESTS_LIBRARIES
-  ${TESTS_LIBRARIES}
-  "${LUA}"
-  PARENT_SCOPE
-)
-
+if (WITH_TESTING)
+  set(
+    TESTS_SOURCES
+    ${TESTS_SOURCES}
+    "${TEST_DIR}/lua.cc"
+    PARENT_SCOPE
+  )
+  set(
+    TESTS_LIBRARIES
+    ${TESTS_LIBRARIES}
+    "${LUA}"
+    PARENT_SCOPE
+  )
+endif()
 # Install rule.
 install(TARGETS "${LUA}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
