@@ -121,9 +121,9 @@ add_library("${NEB}" SHARED
   "${SRC_DIR}/broker.cc"
   "${SRC_DIR}/downtime_scheduler.cc"
   "${SRC_DIR}/node_cache.cc"
-  "${SRC_DIR}/node_events_connector.cc"
-  "${SRC_DIR}/node_events_factory.cc"
-  "${SRC_DIR}/node_events_stream.cc"
+#  "${SRC_DIR}/node_events_connector.cc"
+#  "${SRC_DIR}/node_events_factory.cc"
+#  "${SRC_DIR}/node_events_stream.cc"
   "${SRC_DIR}/node_id.cc"
   "${SRC_DIR}/timeperiod_serializable.cc"
   "${SRC_DIR}/downtime_serializable.cc"
@@ -132,9 +132,9 @@ add_library("${NEB}" SHARED
   # Inc
   "${INC_DIR}/com/centreon/broker/neb/downtime_scheduler.hh"
   "${INC_DIR}/com/centreon/broker/neb/node_cache.hh"
-  "${INC_DIR}/com/centreon/broker/neb/node_events_connector.hh"
-  "${INC_DIR}/com/centreon/broker/neb/node_events_factory.hh"
-  "${INC_DIR}/com/centreon/broker/neb/node_events_stream.hh"
+#  "${INC_DIR}/com/centreon/broker/neb/node_events_connector.hh"
+#  "${INC_DIR}/com/centreon/broker/neb/node_events_factory.hh"
+#  "${INC_DIR}/com/centreon/broker/neb/node_events_stream.hh"
   "${INC_DIR}/com/centreon/broker/neb/node_id.hh"
   "${INC_DIR}/com/centreon/broker/neb/timeperiod_serializable.hh"
   "${INC_DIR}/com/centreon/broker/neb/downtime_serializable.hh"
@@ -260,29 +260,31 @@ endif ()
 set_target_properties("${CBMOD}" PROPERTIES PREFIX "")
 
 # Testing.
-set(
-    TESTS_SOURCES
-    ${TESTS_SOURCES}
-    "${TEST_DIR}/randomize.cc"
-    "${TEST_DIR}/custom_variable.cc"
-    "${TEST_DIR}/custom_variable_status.cc"
-    "${TEST_DIR}/event_handler.cc"
-    "${TEST_DIR}/flapping_status.cc"
-    "${TEST_DIR}/host.cc"
-    "${TEST_DIR}/host_check.cc"
-    "${TEST_DIR}/host_dependency.cc"
-    "${TEST_DIR}/host_parent.cc"
-    "${TEST_DIR}/host_status.cc"
+if (WITH_TESTING)
+  set(
+      TESTS_SOURCES
+      ${TESTS_SOURCES}
+      "${TEST_DIR}/randomize.cc"
+      "${TEST_DIR}/custom_variable.cc"
+      "${TEST_DIR}/custom_variable_status.cc"
+      "${TEST_DIR}/event_handler.cc"
+      "${TEST_DIR}/flapping_status.cc"
+      "${TEST_DIR}/host.cc"
+      "${TEST_DIR}/host_check.cc"
+      "${TEST_DIR}/host_dependency.cc"
+      "${TEST_DIR}/host_parent.cc"
+      "${TEST_DIR}/host_status.cc"
 
-    "${TEST_DIR}/randomize.hh"
-    PARENT_SCOPE
-   )
-set(
-    TESTS_LIBRARIES
-    ${TESTS_LIBRARIES}
-    "${NEB}"
-    PARENT_SCOPE
-   )
+      "${TEST_DIR}/randomize.hh"
+      PARENT_SCOPE
+     )
+  set(
+      TESTS_LIBRARIES
+      ${TESTS_LIBRARIES}
+      "${NEB}"
+      PARENT_SCOPE
+     )
+endif()
 
 # Unit tests.
 if (0) # WITH_TESTING)
