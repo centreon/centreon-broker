@@ -17,8 +17,7 @@
 */
 
 #include <cstdio>
-#include <QLibrary>
-#include <QMutexLocker>
+#include <dlfcn.h>
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -36,19 +35,23 @@ using namespace com::centreon::broker::extcmd;
  *
  *  @param[in] name  The name of the stream.
  */
-engine_command::engine_command(
-                  std::string const& name,
-                  std::string const& command_module_path)
-  : _name(name),
-    _command_module_path(command_module_path),
-    _process_external_command(NULL) {
+engine_command::engine_command(std::string const& name,
+                               std::string const& command_module_path)
+    : _name(name),
+      _command_module_path(command_module_path),
+      _handle{nullptr},
+      _process_external_command(nullptr) {
   _load_command_engine_module();
 }
 
 /**
  *  Destructor.
  */
-engine_command::~engine_command() {}
+engine_command::~engine_command() {
+  if (_handle)
+    dlclose(_handle);
+  _handle = nullptr;
+}
 
 /**
  *  Read from stream.
@@ -58,13 +61,11 @@ engine_command::~engine_command() {}
  *
  *  @return              True.
  */
-bool engine_command::read(
-       std::shared_ptr<io::data>& d,
-       time_t deadline) {
+bool engine_command::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw (exceptions::shutdown() << "cannot read from engine command");
-  return (true);
+  throw exceptions::shutdown() << "cannot read from engine command";
+  return true;
 }
 
 /**
@@ -79,10 +80,12 @@ int engine_command::write(std::shared_ptr<io::data> const& d) {
     return 1;
 
   if (d->type() == command_request::static_type()) {
-    command_request const& request = *std::static_pointer_cast<command_request const>(d);
+    command_request const& request =
+        *std::static_pointer_cast<command_request const>(d);
 
-    if (request.destination_id == config::applier::state::instance().poller_id()
-        && request.endp == _name) {
+    if (request.destination_id ==
+            config::applier::state::instance().poller_id() &&
+        request.endp == _name) {
       _execute_command(request.endp);
       std::shared_ptr<command_result> result{new command_result};
       result->code = 1;
@@ -100,24 +103,25 @@ int engine_command::write(std::shared_ptr<io::data> const& d) {
  *  Load the command engine module.
  */
 void engine_command::_load_command_engine_module() {
-  QLibrary lib(QString::fromStdString(_command_module_path));
-
-  if (!lib.load())
-    throw (exceptions::msg()
-           << "engcmd: couldn't load '"
-           << _command_module_path << "': " << lib.errorString());
+  _handle = dlopen(_command_module_path.c_str(), RTLD_LAZY);
+  if (!_handle)
+    throw exceptions::msg() << "engcmd: couldn't load '" << _command_module_path
+                            << "': " << dlerror();
 
   union {
     void* ptr;
     int (*f)(char const*);
   } ptr_to_f;
-  ptr_to_f.ptr = lib.resolve("process_external_command");
-  if (ptr_to_f.ptr == NULL)
-    throw (exceptions::msg()
-           << "engcmd: couldn't resolve 'process_external_command': "
-           << lib.errorString());
-  _process_external_command = ptr_to_f.f;
 
+  ptr_to_f.ptr = dlsym(_handle, "process_external_command");
+  const char* dlsym_error = dlerror();
+  if (dlsym_error) {
+    std::string excp{"engcmd: couldn't resolve 'process_external_command': "};
+    excp.append(dlsym_error);
+    dlclose(_handle);
+    throw exceptions::msg() << excp;
+  }
+  _process_external_command = ptr_to_f.f;
 }
 
 /**
@@ -129,7 +133,7 @@ void engine_command::_execute_command(std::string const cmd) {
   char buff[32];
   int ret = ::snprintf(buff, 32, "[%li]", ::time(NULL));
   if (ret < 0 || ret >= 32)
-    return ;
+    return;
 
   std::string prepared_cmd;
   prepared_cmd.append(buff).append(" ").append(cmd);

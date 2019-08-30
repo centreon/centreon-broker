@@ -20,7 +20,6 @@
 #  define CCB_ENGCMD_ENGINE_COMMAND_HH
 
 #  include <string>
-#  include <QMutex>
 #  include "com/centreon/broker/extcmd/command_result.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -51,6 +50,7 @@ namespace                 engcmd {
     engine_command&       operator=(engine_command const& other);
 
     std::string           _name;
+    void* _handle;
     std::string           _command_module_path;
     int                   (*_process_external_command)(char const*);
 
