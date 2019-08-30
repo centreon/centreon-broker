@@ -19,9 +19,8 @@
 #ifndef CCB_LOGGING_MANAGER_HH
 # define CCB_LOGGING_MANAGER_HH
 
-#  include <QObject>
-#  include <QReadWriteLock>
-#  include <QVector>
+#  include <mutex>
+#  include <vector>
 #  include "com/centreon/broker/logging/backend.hh"
 #  include "com/centreon/broker/logging/defines.hh"
 #  include "com/centreon/broker/logging/temp_logger.hh"
@@ -38,7 +37,6 @@ namespace                 com {
          *  to the logging system.
          */
         class             manager : public backend {
-          Q_OBJECT
 
          private:
           struct          manager_backend {
@@ -46,18 +44,15 @@ namespace                 com {
             level         l;
             unsigned int  types;
           };
-          QVector<manager_backend>
+          std::vector<manager_backend>
                           _backends;
-          QReadWriteLock  _backendsm;
+          std::mutex      _backendsm;
           static manager* _instance;
           unsigned int    _limits[4];
                           manager();
                           manager(manager const& m);
           manager&        operator=(manager const& m);
           void            _compute_optimizations();
-
-         private slots:
-          void            _on_backend_destruction(QObject* obj);
 
          public:
                           ~manager();
@@ -68,7 +63,7 @@ namespace                 com {
                             char const* msg,
                             unsigned int len,
                             type t,
-                            level l) throw ();
+                              level l) throw ();
           void            log_on(
                             backend& b,
                             unsigned int
