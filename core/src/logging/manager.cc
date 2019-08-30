@@ -18,8 +18,6 @@
 
 #include <cstdlib>
 #include <cstring>
-#include <QReadLocker>
-#include <QWriteLocker>
 #include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker::logging;
@@ -52,40 +50,13 @@ manager::manager() {
  */
 void manager::_compute_optimizations() {
   memset(_limits, 0, sizeof(_limits));
-  for (QVector<manager_backend>::const_iterator
+  for (std::vector<manager_backend>::const_iterator
          it = _backends.begin(),
          end = _backends.end();
        it != end;
        ++it)
     for (unsigned int i = 1; i <= static_cast<unsigned int>(it->l); ++i)
       _limits[i] |= it->types;
-  return ;
-}
-
-/**
- *  @brief Receive backend destruction notifications.
- *
- *  On receive of such notifications, this method will update
- *  optimization parameters to avoid generating as much log messages as
- *  possible.
- *
- *  @param[in] obj Backend pointer.
- */
-void manager::_on_backend_destruction(QObject* obj) {
-  QWriteLocker lock(&_backendsm);
-
-  // Remove backend from backend list.
-  for (QVector<manager_backend>::iterator
-         it = _backends.begin();
-       it != _backends.end();)
-    if (it->b == obj)
-      it = _backends.erase(it);
-    else
-      ++it;
-
-  // Recompute optimization parameters.
-  _compute_optimizations();
-
   return ;
 }
 
@@ -142,14 +113,14 @@ void manager::log_msg(char const* msg,
                       unsigned int len,
                       type t,
                       level l) throw () {
-  QReadLocker lock(&_backendsm);
-  for (QVector<manager_backend>::iterator
+  std::lock_guard<std::mutex> lock(_backendsm);
+  for (std::vector<manager_backend>::iterator
          it = _backends.begin(),
          end = _backends.end();
        it != end;
        ++it)
     if (msg && (it->types & t) && (it->l >= l)) {
-      QMutexLocker lock(it->b);
+      std::lock_guard<backend> lock(*it->b);
       it->b->log_msg(msg, len, t, l);
     }
   return ;
@@ -168,7 +139,7 @@ void manager::log_msg(char const* msg,
 void manager::log_on(backend& b,
                      unsigned int types,
                      level min_priority) {
-  QWriteLocker lock(&_backendsm);
+  std::lock_guard<std::mutex> lock(_backendsm);
 
   // Either add backend to list.
   if (types && min_priority) {
@@ -181,15 +152,10 @@ void manager::log_on(backend& b,
          i <= static_cast<unsigned int>(min_priority);
          ++i)
       _limits[i] |= types;
-    connect(
-      &b,
-      SIGNAL(destroyed(QObject*)),
-      this,
-      SLOT(_on_backend_destruction(QObject*)));
   }
   // Or remove it.
   else {
-    for (QVector<manager_backend>::iterator
+    for (std::vector<manager_backend>::iterator
            it = _backends.begin();
          it != _backends.end();)
       if (it->b == &b)
