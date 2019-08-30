@@ -73,29 +73,6 @@ stream::stream()
 stream::~stream() {}
 
 /**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-//stream& stream::operator=(stream const& other) {
-//  if (this != &other) {
-//    input::operator=(other);
-//    output::operator=(other);
-//    _coarse = other._coarse;
-//    _extensions = other._extensions;
-//    _negotiate = other._negotiate;
-//    _negotiated = other._negotiated;
-//    _timeout = other._timeout;
-//    _acknowledged_events = other._acknowledged_events;
-//    _ack_limit = other._ack_limit;
-//    _events_received_since_last_ack = other._events_received_since_last_ack;
-//  }
-//  return (*this);
-//}
-
-/**
  *  Flush stream data.
  *
  *  @return Number of acknowledged events.

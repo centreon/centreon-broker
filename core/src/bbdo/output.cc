@@ -254,28 +254,9 @@ static io::raw* serialize(io::data const& e) {
 output::output() {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-//output::output(output const& other) : io::stream(other){}
-
-/**
  *  Destructor.
  */
 output::~output() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-//output& output::operator=(output const& other) {
-//  (void)other;
-//  return *this;
-//}
 
 /**
  *  Flush.

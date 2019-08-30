@@ -24,9 +24,6 @@
 #include <cstring>
 #include <exception>
 #include <thread>
-//#include <QCoreApplication>
-//#include <QLibraryInfo>
-//#include <QTextCodec>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
