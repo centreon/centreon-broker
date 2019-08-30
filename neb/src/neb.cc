@@ -19,9 +19,6 @@
 #include <clocale>
 #include <csignal>
 #include <cstring>
-//#include <QCoreApplication>
-//#include <QTextCodec>
-//#include <QTimer>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
@@ -56,7 +53,6 @@ NEB_API_VERSION(CURRENT_NEB_API_VERSION)
 *                                     *
 **************************************/
 
-// Qt initialization flag.
 static bool        gl_initialized_qt(false);
 static int         gl_qt_argc;
 static char const* gl_qt_argv[2] = {

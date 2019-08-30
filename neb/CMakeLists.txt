@@ -147,7 +147,6 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 else ()
   target_link_libraries("${NEB}" "nebbase")
 endif ()
-target_link_libraries("${NEB}" ${QT_LIBRARIES})
 set_target_properties("${NEB}" PROPERTIES PREFIX "")
 install(TARGETS "${NEB}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
