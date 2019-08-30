@@ -21,7 +21,7 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/node_events_factory.hh"
+//#include "com/centreon/broker/neb/node_events_factory.hh"
 #include "com/centreon/broker/io/protocols.hh"
 
 using namespace com::centreon::broker;
@@ -39,13 +39,12 @@ extern "C" {
    */
   void broker_module_deinit() {
     if (!--neb_instances) {
-      // Remove factory.
-      io::protocols::instance().unreg("node_events");
+//      // Remove factory.
+//      io::protocols::instance().unreg("node_events");
 
       // Remove events.
       io::events::instance().unregister_category(io::events::neb);
     }
-    return ;
   }
 
   /**
@@ -305,12 +304,12 @@ extern "C" {
                   neb::responsive_instance::entries));
       }
 
-      // Register neb layer.
-      io::protocols::instance().reg(
-                                  "node_events",
-                                  neb::node_events_factory(),
-                                  1,
-                                  7);
+//      // Register neb layer.
+//      io::protocols::instance().reg(
+//                                  "node_events",
+//                                  neb::node_events_factory(),
+//                                  1,
+//                                  7);
     }
 
     return ;

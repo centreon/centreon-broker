@@ -19,7 +19,7 @@
 #ifndef CCB_MODULES_HANDLE_HH
 #  define CCB_MODULES_HANDLE_HH
 
-#  include <QLibrary>
+#  include <dlfcn.h>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
@@ -55,7 +55,8 @@ namespace              modules {
     void               _init(void const* arg = NULL);
     void               _check_version();
 
-    QLibrary           _handle;
+    std::string _filename;
+    void* _handle;
   };
 }
 
