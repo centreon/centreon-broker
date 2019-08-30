@@ -19,7 +19,6 @@
 #ifndef CCB_FILE_FIFO_HH
 #  define CCB_FILE_FIFO_HH
 
-#  include <QMutex>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 

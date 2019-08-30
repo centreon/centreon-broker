@@ -97,9 +97,6 @@ TEST_F(LoggingManager, Simple) {
   // Initialization.
   logging::manager::load();
 
-  // Return value.
-  int retval(0);
-
   // Log file path.
   std::string file_path{std::tmpnam(nullptr)};
   std::remove(file_path.c_str());
