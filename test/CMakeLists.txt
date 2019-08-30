@@ -65,17 +65,28 @@ add_executable(ut
   ${TESTS_DIR}/bbdo/input_buffer/erase.cc
   ${TESTS_DIR}/bbdo/input_buffer/extract.cc
   ${TESTS_DIR}/bbdo/output.cc
+  #${TESTS_DIR}/bbdo/read.cc need conversion
   ${TESTS_DIR}/ceof/ceof_parser/parse.cc
   ${TESTS_DIR}/compression/stream/memory_stream.hh
   ${TESTS_DIR}/compression/stream/read.cc
   ${TESTS_DIR}/compression/stream/write.cc
   ${TESTS_DIR}/compression/zlib/zlib.cc
+  ${TESTS_DIR}/config/logger.cc
+  ${TESTS_DIR}/config/parser.cc
+  #${TESTS_DIR}/exceptions/msg/default.cc need conversion
   ${TESTS_DIR}/exceptions/msg/default.cc
-  ${TESTS_DIR}/file/splitter/default.cc
+  #${TESTS_DIR}/exceptions/msg/default.cc need conversion
+  #${TESTS_DIR}/exceptions/msg/default.cc need conversion
   ${TESTS_DIR}/file/splitter/concurrent.cc
+  ${TESTS_DIR}/file/splitter/default.cc
   ${TESTS_DIR}/file/splitter/more_than_max_size.cc
+  ${TESTS_DIR}/file/splitter/permission_denied.cc
   ${TESTS_DIR}/file/splitter/resume.cc
   ${TESTS_DIR}/file/splitter/split.cc
+  #${TESTS_DIR}/file/stream/max_size.cc need conversion
+  #${TESTS_DIR}/file/stream/mixed.cc  need conversion
+  #${TESTS_DIR}/file/stream/read.cc need conversion
+  #${TESTS_DIR}/file/stream/write.cc  need conversion
   ${TESTS_DIR}/file/test_file.hh
   ${TESTS_DIR}/file/test_file.cc
   ${TESTS_DIR}/file/test_fs_browser.hh
@@ -85,6 +96,7 @@ add_executable(ut
   ${TESTS_DIR}/mysql/mysql.cc
   ${TESTS_DIR}/multiplexing/muxer/read.cc
   ${TESTS_DIR}/processing/thread.cc
+  ${TESTS_DIR}/test_server.cc
   # Module sources.
   ${TESTS_SOURCES}
 )

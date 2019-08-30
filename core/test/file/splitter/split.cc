@@ -18,6 +18,7 @@
 
 #include <gtest/gtest.h>
 #include "com/centreon/broker/file/splitter.hh"
+#include "com/centreon/broker/logging/manager.hh"
 #include "../test_file.hh"
 #include "../test_fs_browser.hh"
 
@@ -26,6 +27,8 @@ using namespace com::centreon::broker;
 class FileSplitterSplit : public ::testing::Test {
  public:
   void SetUp() {
+    logging::manager::load();
+
     _path = "/var/lib/centreon-broker/queue";
     _file_factory = new test_file_factory();
     _fs_browser = new test_fs_browser();
@@ -42,6 +45,10 @@ class FileSplitterSplit : public ::testing::Test {
     for (int i(0); i < 10001; ++i)
       _file->write(buffer, sizeof(buffer));
     return ;
+  }
+
+  void TearDown() {
+    logging::manager::unload();
   }
 
  protected:

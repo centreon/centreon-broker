@@ -27,6 +27,7 @@
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/file/qt_fs_browser.hh"
+#include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
@@ -112,6 +113,8 @@ class FileSplitterConcurrent : public ::testing::Test {
     _file_factory.reset(new cfile_factory());
     _fs_browser.reset(new qt_fs_browser());
 
+    logging::manager::load();
+
     _file.reset(new file::splitter(
                             _path,
                             file::fs_file::open_read_write_truncate,
@@ -119,6 +122,9 @@ class FileSplitterConcurrent : public ::testing::Test {
                             _fs_browser.release(),
                             10000,
                             true));
+  }
+  void TearDown() {
+    logging::manager::unload();
   }
 
  protected:
