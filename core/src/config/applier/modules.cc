@@ -18,7 +18,6 @@
 
 #include <cstdlib>
 #include <memory>
-#include <QMutexLocker>
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
@@ -53,8 +52,8 @@ void modules::apply(
                 std::string const& module_dir,
                 void const* arg) {
   // Lock multiplexing engine in case modules register hooks.
-  QMutexLocker
-    lock(&com::centreon::broker::multiplexing::engine::instance());
+  std::lock_guard<std::recursive_mutex>
+    lock(com::centreon::broker::multiplexing::engine::instance());
 
   // Load modules.
   for (std::list<std::string>::const_iterator

@@ -19,7 +19,6 @@
 #ifndef CCB_EXTCMD_COMMAND_REQUEST_HH
 #  define CCB_EXTCMD_COMMAND_REQUEST_HH
 
-#  include <QMutex>
 #  include <string>
 #  include "com/centreon/broker/io/data.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -62,7 +61,6 @@ namespace                extcmd {
     void                 _internal_copy(command_request const& other);
 
     static unsigned int  _id;
-    static QMutex        _mutex;
   };
 }
 

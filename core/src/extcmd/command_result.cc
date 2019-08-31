@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QMutexLocker>
 #include "com/centreon/broker/extcmd/command_result.hh"
 #include "com/centreon/broker/extcmd/internal.hh"
 #include "com/centreon/broker/io/events.hh"

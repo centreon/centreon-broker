@@ -18,7 +18,6 @@
 
 #include <cstdio>
 #include <limits>
-#include <QMutexLocker>
 #include <sstream>
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/io/raw.hh"

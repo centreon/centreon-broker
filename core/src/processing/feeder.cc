@@ -80,7 +80,7 @@ void feeder::run() {
       bool timed_out_stream(true);
       if (stream_can_read) {
         try {
-          QReadLocker lock(&_client_mutex);
+          misc::read_lock lock(_client_mutex);
           timed_out_stream = !_client->read(d, 0);
         }
         catch (exceptions::shutdown const& e) {
@@ -88,7 +88,7 @@ void feeder::run() {
         }
         if (d) {
           {
-            QReadLocker lock(&_client_mutex);
+            misc::read_lock lock(_client_mutex);
             _subscriber.get_muxer().write(d);
           }
           tick();
@@ -108,7 +108,7 @@ void feeder::run() {
         }
       if (d) {
         {
-          QReadLocker lock(&_client_mutex);
+          misc::read_lock lock(_client_mutex);
           _client->write(d);
         }
         _subscriber.get_muxer().ack_events(1);
@@ -137,7 +137,7 @@ void feeder::run() {
       << _name << "'";
   }
   {
-    QWriteLocker lock(&_client_mutex);
+    misc::read_lock lock(_client_mutex);
     _client.reset();
     _subscriber.get_muxer().remove_queue_files();
   }
@@ -152,7 +152,7 @@ void feeder::run() {
  */
 std::string feeder::_get_state() {
   char const* ret;
-  if (_client_mutex.tryLockForRead(300)) {
+  if (_client_mutex.try_lock_shared_for(300)) {
     if (!_client)
       ret = "disconnected";
     else
@@ -161,7 +161,7 @@ std::string feeder::_get_state() {
   }
   else
     ret = "blocked";
-  return (ret);
+  return ret;
 }
 
 /**
@@ -170,7 +170,7 @@ std::string feeder::_get_state() {
  *  @return  The number of queued events.
  */
 unsigned int feeder::_get_queued_events() {
-  return (_subscriber.get_muxer().get_event_queue_size());
+  return _subscriber.get_muxer().get_event_queue_size();
 }
 
 /**
@@ -179,7 +179,7 @@ unsigned int feeder::_get_queued_events() {
  *  @return  The read filters used by the feeder.
  */
 uset<unsigned int> feeder::_get_read_filters() {
-  return (_subscriber.get_muxer().get_read_filters());
+  return _subscriber.get_muxer().get_read_filters();
 }
 
 /**
@@ -188,7 +188,7 @@ uset<unsigned int> feeder::_get_read_filters() {
  *  @return  The write filters used by the feeder.
  */
 uset<unsigned int> feeder::_get_write_filters() {
-  return (_subscriber.get_muxer().get_write_filters());
+  return _subscriber.get_muxer().get_write_filters();
 }
 
 /**
@@ -197,7 +197,7 @@ uset<unsigned int> feeder::_get_write_filters() {
  *  @param[in] tree  The statistic tree.
  */
 void feeder::_forward_statistic(io::properties& tree) {
-  if (_client_mutex.tryLockForRead(300)) {
+  if (_client_mutex.try_lock_shared_for(300)) {
     if (_client)
       _client->statistics(tree);
     _client_mutex.unlock();
