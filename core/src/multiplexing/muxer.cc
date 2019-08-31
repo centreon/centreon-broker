@@ -123,7 +123,7 @@ void muxer::ack_events(int count) {
     << "multiplexing: acknowledging " << count << " events from "
     << _name << " event queue";
   if (count) {
-    QMutexLocker lock(&_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     for (int i(0); (i < count) && !_events.empty(); ++i) {
       if (_events.begin() == _pos) {
         logging::error(logging::high) << "multiplexing: attempt to "
@@ -146,8 +146,6 @@ void muxer::ack_events(int count) {
       _push_to_queue(e);
     }
   }
-
-  return ;
 }
 
 /**
@@ -159,7 +157,6 @@ void muxer::event_queue_max_size(unsigned int max) throw () {
   if (!max)
     max = std::numeric_limits<unsigned int>::max();
   _event_queue_max_size = max;
-  return ;
 }
 
 /**
@@ -168,7 +165,7 @@ void muxer::event_queue_max_size(unsigned int max) throw () {
  *  @return The size limit.
  */
 unsigned int muxer::event_queue_max_size() throw () {
-  return (_event_queue_max_size);
+  return _event_queue_max_size;
 }
 
 /**
@@ -178,7 +175,7 @@ unsigned int muxer::event_queue_max_size() throw () {
  */
 void muxer::publish(std::shared_ptr<io::data> const& event) {
   if (event) {
-    QMutexLocker lock(&_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     // Check if we should process this event.
     if (_write_filters.find(event->type()) == _write_filters.end())
       return ;
@@ -192,7 +189,6 @@ void muxer::publish(std::shared_ptr<io::data> const& event) {
     else
       _push_to_queue(event);
   }
-  return ;
 }
 
 /**
@@ -207,19 +203,16 @@ bool muxer::read(
               std::shared_ptr<io::data>& event,
               time_t deadline) {
   bool timed_out(false);
-  QMutexLocker lock(&_mutex);
+  std::unique_lock<std::mutex> lock(_mutex);
 
   // No data is directly available.
   if (_pos == _events.end()) {
     // Wait a while if subscriber was not shutdown.
     if ((time_t)-1 == deadline)
-      _cv.wait(&_mutex);
+      _cv.wait(lock);
     else {
       time_t now(time(NULL));
-      if (now < deadline)
-        timed_out = !_cv.wait(&_mutex, (deadline - now) * 1000);
-      else
-        timed_out = true;
+      timed_out = _cv.wait_for(lock, std::chrono::seconds(deadline - now)) == std::cv_status::timeout;
     }
     if (_pos != _events.end()) {
       event = *_pos;
@@ -237,7 +230,7 @@ bool muxer::read(
     ++_pos;
     lock.unlock();
   }
-  return (!timed_out);
+  return !timed_out;
 }
 
 /**
@@ -248,7 +241,6 @@ bool muxer::read(
  */
 void muxer::set_read_filters(muxer::filters const& fltrs) {
   _read_filters = fltrs;
-  return ;
 }
 
 /**
@@ -260,7 +252,6 @@ void muxer::set_read_filters(muxer::filters const& fltrs) {
  */
 void muxer::set_write_filters(muxer::filters const& fltrs) {
   _write_filters = fltrs;
-  return ;
 }
 
 /**
@@ -269,7 +260,7 @@ void muxer::set_write_filters(muxer::filters const& fltrs) {
  *  @return  The read filters.
  */
 muxer::filters const& muxer::get_read_filters() const {
-  return (_read_filters);
+  return _read_filters;
 }
 
 /**
@@ -278,7 +269,7 @@ muxer::filters const& muxer::get_read_filters() const {
  *  @return  The write filters.
  */
 muxer::filters const& muxer::get_write_filters() const {
-  return (_write_filters);
+  return _write_filters;
 }
 
 /**
@@ -287,8 +278,8 @@ muxer::filters const& muxer::get_write_filters() const {
  *  @return  The size of the event queue.
  */
 unsigned int muxer::get_event_queue_size() const {
-  QMutexLocker lock(&_mutex);
-  return (_events.size());
+  std::lock_guard<std::mutex> lock(_mutex);
+  return _events.size();
 }
 
 /**
@@ -298,9 +289,8 @@ void muxer::nack_events() {
   logging::debug(logging::low)
     << "multiplexing: reprocessing unacknowledged events from "
     << _name << " event queue";
-  QMutexLocker lock(&_mutex);
+  std::lock_guard<std::mutex> lock(_mutex);
   _pos = _events.begin();
-  return ;
 }
 
 /**
@@ -310,7 +300,7 @@ void muxer::nack_events() {
  */
 void muxer::statistics(io::properties& tree) const {
   // Lock object.
-  QMutexLocker lock(&_mutex);
+  std::lock_guard<std::mutex> lock(_mutex);
 
   // Queue file mode.
   bool queue_file_enabled(_file.get());
@@ -337,17 +327,14 @@ void muxer::statistics(io::properties& tree) const {
          io::property(
                "unacknowledged_events",
                misc::string::get(unacknowledged)));
-
-  return ;
 }
 
 /**
  *  Wake all threads waiting on this subscriber.
  */
 void muxer::wake() {
-  QMutexLocker lock(&_mutex);
-  _cv.wakeAll();
-  return ;
+  std::lock_guard<std::mutex> lock(_mutex);
+  _cv.notify_all();
 }
 
 /**
@@ -358,7 +345,7 @@ void muxer::wake() {
 int muxer::write(std::shared_ptr<io::data> const& d) {
   if (d && _read_filters.find(d->type()) != _read_filters.end())
     engine::instance().publish(d);
-  return (1);
+  return 1;
 }
 
 /**
@@ -372,7 +359,7 @@ std::string muxer::memory_file(std::string const& name) {
   std::string retval(config::applier::state::instance().cache_dir());
   retval.append(".memory.");
   retval.append(name);
-  return (retval);
+  return retval;
 }
 
 /**
@@ -386,7 +373,7 @@ std::string muxer::queue_file(std::string const& name) {
   std::string retval(config::applier::state::instance().cache_dir());
   retval.append(".queue.");
   retval.append(name);
-  return (retval);
+  return retval;
 }
 
 /**************************************
@@ -399,7 +386,7 @@ std::string muxer::queue_file(std::string const& name) {
  *  Release all events stored within the internal list.
  */
 void muxer::_clean() {
-  QMutexLocker lock(&_mutex);
+  std::lock_guard<std::mutex> lock(_mutex);
   _file.reset();
   if (_persistent && !_events.empty()) {
     try {
@@ -419,7 +406,6 @@ void muxer::_clean() {
   }
   _events.clear();
   _events_size = 0;
-  return ;
 }
 
 /**
@@ -443,7 +429,6 @@ void muxer::_get_event_from_file(std::shared_ptr<io::data>& event) {
       _file.reset();
     }
   }
-  return ;
 }
 
 /**
@@ -452,7 +437,7 @@ void muxer::_get_event_from_file(std::shared_ptr<io::data>& event) {
  *  @return Path to the memory file.
  */
 std::string muxer::_memory_file() const {
-  return (memory_file(_name));
+  return memory_file(_name);
 }
 
 /**
@@ -466,9 +451,8 @@ void muxer::_push_to_queue(std::shared_ptr<io::data> const& event) {
   ++_events_size;
   if (pos_has_no_more_to_read) {
     _pos = --_events.end();
-    _cv.wakeOne();
+    _cv.notify_one();
   }
-  return ;
 }
 
 /**
@@ -477,7 +461,7 @@ void muxer::_push_to_queue(std::shared_ptr<io::data> const& event) {
  *  @return Path to the queue file.
  */
 std::string muxer::_queue_file() const {
-  return (queue_file(_name));
+  return queue_file(_name);
 }
 
 /**

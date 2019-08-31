@@ -21,7 +21,8 @@
 
 #  include <memory>
 #  include <queue>
-#  include <QWaitCondition>
+#  include <condition_variable>
+#  include <mutex>
 #  include <string>
 #  include "com/centreon/broker/persistent_file.hh"
 #  include "com/centreon/broker/misc/unordered_hash.hh"
@@ -82,14 +83,14 @@ namespace               multiplexing {
                           std::shared_ptr<io::data> const& event);
     std::string         _queue_file() const;
 
-    QWaitCondition      _cv;
+    std::condition_variable _cv;
     std::list<std::shared_ptr<io::data> >
                         _events;
     unsigned int        _events_size;
     static unsigned int _event_queue_max_size;
     std::unique_ptr<persistent_file>
                         _file;
-    mutable QMutex      _mutex;
+    mutable std::mutex _mutex;
     std::string         _name;
     bool                _persistent;
     std::list<std::shared_ptr<io::data>>::iterator
