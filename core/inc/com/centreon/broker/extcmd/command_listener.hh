@@ -20,7 +20,7 @@
 #  define CCB_EXTCMD_COMMAND_LISTENER_HH
 
 #  include <map>
-#  include <QMutex>
+#  include <mutex>
 #  include "com/centreon/broker/extcmd/command_result.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -40,6 +40,8 @@ namespace                 extcmd {
   public:
                           command_listener();
                           ~command_listener();
+                          command_listener(command_listener const& other) = delete;
+    command_listener&     operator=(command_listener const& other) = delete;
     command_result        command_status(
                             std::string const& command_uuid);
     bool                  read(
@@ -56,8 +58,6 @@ namespace                 extcmd {
       std::list<std::string>  msgs;
     };
 
-                          command_listener(command_listener const& other);
-    command_listener&     operator=(command_listener const& other);
     void                  _check_invalid();
     void                  _extract_command_result(
                             command_result& res,
@@ -66,7 +66,7 @@ namespace                 extcmd {
     time_t                _next_invalid;
     std::map<std::string, pending_command>
                           _pending;
-    QMutex                _pendingm;
+    std::mutex _pendingm;
     static int const      _request_timeout = 30;
     static int const      _result_timeout = 60;
   };
