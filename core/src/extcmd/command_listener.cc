@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QMutexLocker>
 #include <sstream>
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/extcmd/command_listener.hh"
@@ -49,7 +48,7 @@ command_result command_listener::command_status(
   _check_invalid();
 
   command_result res;
-  QMutexLocker lock(&_pendingm);
+  std::unique_lock<std::mutex> lock(_pendingm);
   std::map<std::string, pending_command>::iterator
     it(_pending.find(command_uuid));
   // Command result exists.
@@ -99,7 +98,7 @@ int command_listener::write(std::shared_ptr<io::data> const& d) {
   // Command request, store it in the cache.
   if (d->type() == command_request::static_type()) {
     command_request const& req(*std::static_pointer_cast<command_request const>(d));
-    QMutexLocker lock(&_pendingm);
+    std::lock_guard<std::mutex> lock(_pendingm);
     std::map<std::string, pending_command>::iterator
       it(_pending.find(req.uuid));
     if (it == _pending.end()) {
@@ -116,7 +115,7 @@ int command_listener::write(std::shared_ptr<io::data> const& d) {
   // Command result, store it in the cache.
   else if (d->type() == command_result::static_type()) {
     command_result const& res(*std::static_pointer_cast<command_result const>(d));
-    QMutexLocker lock(&_pendingm);
+    std::lock_guard<std::mutex> lock(_pendingm);
     pending_command&
       p(_pending[res.uuid]);
     p.code = res.code;
@@ -138,7 +137,7 @@ int command_listener::write(std::shared_ptr<io::data> const& d) {
 void command_listener::_check_invalid() {
   time_t now(time(NULL));
   _next_invalid = now + 24 * 60 * 60;
-  QMutexLocker lock(&_pendingm);
+  std::lock_guard<std::mutex> lock(_pendingm);
   for (std::map<std::string, pending_command>::iterator
          it(_pending.begin()),
          end(_pending.end());

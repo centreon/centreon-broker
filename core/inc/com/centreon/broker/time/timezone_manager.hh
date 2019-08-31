@@ -21,7 +21,7 @@
 
 #  include <stack>
 #  include <string>
-#  include <QMutex>
+#  include <mutex>
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -73,7 +73,7 @@ namespace time {
     tz_info                  _base;
     static timezone_manager* _instance;
     std::stack<tz_info>      _tz;
-    QMutex                   _timezone_manager_mutex;
+    std::recursive_mutex _timezone_manager_mutex;
   };
 }
 

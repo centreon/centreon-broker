@@ -81,7 +81,6 @@ void timezone_manager::push_timezone(char const* tz) {
  */
 void timezone_manager::unlock() {
   _timezone_manager_mutex.unlock();
-  return ;
 }
 
 /**
@@ -90,14 +89,13 @@ void timezone_manager::unlock() {
 void timezone_manager::unload() {
   delete _instance;
   _instance = NULL;
-  return ;
 }
 
 /**
  *  Default constructor.
  */
 timezone_manager::timezone_manager()
-  : _timezone_manager_mutex(QMutex::Recursive) {
+  : _timezone_manager_mutex{} {
   char* base_tz(getenv("TZ"));
   _fill_tz_info(&_base, base_tz);
 }
@@ -110,7 +108,7 @@ timezone_manager::timezone_manager()
 timezone_manager::timezone_manager(timezone_manager const& other)
   : _base(other._base),
     _tz(other._tz),
-    _timezone_manager_mutex(QMutex::Recursive) {}
+    _timezone_manager_mutex{} {}
 
 /**
  *  Destructor.
