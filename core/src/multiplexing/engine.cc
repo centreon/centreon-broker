@@ -82,6 +82,7 @@ void engine::clear() {
  */
 void engine::hook(hooker& h, bool with_data) {
   std::lock_guard<std::recursive_mutex> lock(*this);
+
   _hooks.push_back(std::make_pair(&h, with_data));
   _hooks_begin = _hooks.begin();
   _hooks_end = _hooks.end();

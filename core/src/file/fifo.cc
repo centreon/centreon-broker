@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cstring>
 #include <errno.h>
 #include <sys/select.h>
 #include <sys/types.h>

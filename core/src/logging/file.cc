@@ -76,7 +76,7 @@ file::file(std::string const& path, uint64_t max)
   : _file(QString::fromStdString(path)), _max(0), _special(false), _written(0) {
   if (!_file.open(QIODevice::WriteOnly | QIODevice::Append))
     throw (exceptions::msg() << "log: could not open file '" << path
-             << "': " << _file.errorString());
+             << "': " << _file.errorString().toStdString());
   if (!max)
     _max = ULLONG_MAX;
   else
@@ -95,7 +95,7 @@ file::file(std::string const& path, uint64_t max)
 file::file(FILE* special) : _special(true) {
   if (!_file.open(special, QIODevice::WriteOnly))
     throw exceptions::msg() << "log: could not open special file: "
-             << _file.errorString();
+             << _file.errorString().toStdString();
 }
 
 /**

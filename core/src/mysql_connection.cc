@@ -15,6 +15,7 @@
 **
 ** For more information : contact@centreon.com
 */
+#include <cstring>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"

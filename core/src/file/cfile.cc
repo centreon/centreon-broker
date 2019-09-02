@@ -17,7 +17,7 @@
 */
 
 #include <cerrno>
-#include <cstdlib>
+#include <cstring>
 #include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"

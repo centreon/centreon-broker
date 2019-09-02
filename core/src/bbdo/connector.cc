@@ -18,7 +18,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <QStringList>
 #include "com/centreon/broker/bbdo/connector.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/stream.hh"

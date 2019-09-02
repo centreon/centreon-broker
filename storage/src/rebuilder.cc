@@ -19,6 +19,7 @@
 #include <cfloat>
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"

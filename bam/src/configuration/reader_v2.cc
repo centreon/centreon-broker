@@ -17,6 +17,7 @@
 */
 
 #include <cstdlib>
+#include <cstring>
 #include <sstream>
 #include <memory>
 #include "com/centreon/broker/bam/configuration/state.hh"

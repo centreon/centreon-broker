@@ -77,7 +77,7 @@ void configuration_parser::_parse_file(std::string const& config_filename) {
     // We don't know where is our log file, so we can't log.
     throw exceptions::msg()
       << "cannot open '" << config_filename
-      << "': " << config_file.errorString();
+      << "': " << config_file.errorString().toStdString();
 }
 
 /**
