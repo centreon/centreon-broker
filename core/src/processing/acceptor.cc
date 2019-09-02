@@ -16,8 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QMutexLocker>
-//#include <QCoreApplication>
 #include <sstream>
 #include <unistd.h>
 #include "com/centreon/broker/io/endpoint.hh"

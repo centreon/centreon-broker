@@ -21,8 +21,7 @@
 
 #  include <memory>
 #  include <string>
-#  include <QReadWriteLock>
-#  include "com/centreon/broker/misc/unordered_hash.hh"
+#  include "com/centreon/broker/misc/shared_mutex.hh"
 #  include "com/centreon/broker/multiplexing/subscriber.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/processing/thread.hh"
@@ -66,7 +65,7 @@ namespace                        processing {
     std::shared_ptr<io::stream> _client;
     multiplexing::subscriber     _subscriber;
     // This mutex is used for the stat thread.
-    QReadWriteLock               _client_mutex;
+    misc::shared_mutex _client_mutex;
   };
 }
 
