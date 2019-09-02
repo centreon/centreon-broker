@@ -19,6 +19,8 @@
 #include <ctime>
 #include <climits>
 #include <cstdlib>
+#include <cstring>
+#include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/file.hh"
 
@@ -73,10 +75,14 @@ struct integer_width {
  *  @param[in] max  Maximum file size of log file.
  */
 file::file(std::string const& path, uint64_t max)
-  : _file(QString::fromStdString(path)), _max(0), _special(false), _written(0) {
-  if (!_file.open(QIODevice::WriteOnly | QIODevice::Append))
-    throw (exceptions::msg() << "log: could not open file '" << path
-             << "': " << _file.errorString().toStdString());
+  : _file_special(std::cout), _filename{path}, _max(0), _special(false), _written(0) {
+  try {
+    _file.open(_filename, std::ofstream::out | std::ofstream::app);
+  } catch (std::system_error se) {
+    throw exceptions::msg() << "log: could not open file '" << path
+                             << "': " << se.what();
+  }
+
   if (!max)
     _max = ULLONG_MAX;
   else
@@ -84,18 +90,13 @@ file::file(std::string const& path, uint64_t max)
            - sizeof(LOG_ROTATION_STR) + 1;
   _write(LOG_OPEN_STR);
   _file.flush();
-  _written = _file.size();
+  _written = _file.tellp();
 }
 
-/**
- *  Special file constructor.
- *
- *  @param[in] special Special file handle.
- */
-file::file(FILE* special) : _special(true) {
-  if (!_file.open(special, QIODevice::WriteOnly))
-    throw exceptions::msg() << "log: could not open special file: "
-             << _file.errorString().toStdString();
+file::file(std::ostream & stream, std::string const& filename)
+  : _special(true),
+    _file_special(stream),
+    _filename{filename} {
 }
 
 /**
@@ -104,8 +105,12 @@ file::file(FILE* special) : _special(true) {
 file::~file() {
   if (!_special)
     _write(LOG_CLOSE_STR);
-  _file.flush();
-  _file.close();
+  if (_special) {
+    _file_special.flush();
+  } else {
+    _file.flush();
+    _file.close();
+  }
 }
 
 /**
@@ -191,7 +196,10 @@ void file::log_msg(char const* msg,
     _write(prefix);
     _write(msg);
     if (_with_flush)
-      _file.flush();
+      if (_special)
+        _file_special.flush();
+      else
+        _file.flush();
   }
 }
 
@@ -284,13 +292,13 @@ void file::_reopen() {
   _file.close();
 
   // Move log file to .old
-  QString backup_name(_file.fileName());
+  std::string backup_name(_filename);
   backup_name.append(".old");
-  QFile::remove(backup_name);
-  QFile::rename(_file.fileName(), backup_name);
+  std::remove(backup_name.c_str());
+  std::rename(_filename.c_str(), backup_name.c_str());
 
   // Reopen file.
-  _file.open(QIODevice::WriteOnly | QIODevice::Truncate);
+  _file.open(_filename, std::ofstream::out | std::ostream::trunc);
   _written = 0;
   _write(LOG_OPEN_STR);
 }
@@ -302,22 +310,14 @@ void file::_reopen() {
  */
 void file::_write(char const* data) throw () {
   // Check sizes.
-  qint64 to_write(strlen(data));
+  std::streamsize to_write(strlen(data));
   if (!_special && (_written + to_write > _max))
     _reopen();
 
   // Write data.
-  qint64 wb(_file.write(data, to_write));
-  to_write -= wb;
-  data += wb;
-  if (wb > 0)
-    _written += wb;
-  while ((to_write > 0) && (wb >= 0)) {
-    _file.waitForBytesWritten(-1);
-    wb = _file.write(data, to_write);
-    to_write -= wb;
-    data += wb;
-    if (wb > 0)
-      _written += wb;
-  }
+  if (_special)
+    _file_special.write(data, to_write);
+  else
+    _file.write(data, to_write);
+  _written += to_write;
 }

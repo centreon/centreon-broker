@@ -17,6 +17,7 @@
 */
 
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 #include "com/centreon/broker/vars.hh"
 #include "com/centreon/broker/config/applier/endpoint.hh"

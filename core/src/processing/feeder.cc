@@ -17,8 +17,6 @@
 */
 
 #include <unistd.h>
-#include <QReadLocker>
-#include <QWriteLocker>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -60,7 +58,9 @@ feeder::feeder(
 /**
  *  Destructor.
  */
-feeder::~feeder() {}
+feeder::~feeder() {
+  this->bthread::~bthread();
+}
 
 /**
  *  Thread main routine.

@@ -19,7 +19,7 @@
 #ifndef CCB_LOGGING_FILE_HH
 #  define CCB_LOGGING_FILE_HH
 
-#include <QFile>
+#include <fstream>
 #include <string>
 #include "com/centreon/broker/logging/backend.hh"
 #include "com/centreon/broker/namespace.hh"
@@ -38,7 +38,9 @@ namespace              logging {
                        file(
                          std::string const& path,
                          uint64_t max = 100000000000ull);
-                       file(FILE* special);
+                       file(
+                          std::ostream & stream,
+                          std::string const& filename);
                        ~file();
     void               log_msg(
                          char const* msg,
@@ -61,7 +63,9 @@ namespace              logging {
     void               _reopen();
     void               _write(char const* data) throw ();
 
-    QFile              _file;
+    std::ofstream      _file;
+    std::ostream&      _file_special;
+    std::string        _filename;
     unsigned long long _max;
     bool               _special;
     static bool        _with_flush;

@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QString>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/opener.hh"

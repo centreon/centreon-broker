@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QDir>
 #include <limits>
 #include <memory>
 #include <sstream>

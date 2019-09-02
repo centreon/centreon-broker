@@ -17,7 +17,7 @@
 */
 
 #include <cstdlib>
-#include <QUuid>
+#include "com/centreon/broker/misc/uuid.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/internal.hh"
@@ -36,8 +36,8 @@ using namespace com::centreon::broker::extcmd;
  *  Default constructor.
  */
 command_request::command_request()
-  : uuid(QUuid::createUuid().toString().toStdString()),
-    with_partial_result(false) {}
+  : uuid(misc::Uuid().to_string()), with_partial_result(false) {
+}
 
 /**
  *  Copy constructor.

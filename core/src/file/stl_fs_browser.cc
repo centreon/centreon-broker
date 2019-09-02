@@ -16,21 +16,22 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QDir>
-#include <QFile>
-#include "com/centreon/broker/file/qt_fs_browser.hh"
+#include <sys/types.h>
+#include <regex.h>
+#include "com/centreon/broker/misc/filesystem.hh"
+#include "com/centreon/broker/file/stl_fs_browser.hh"
 
 using namespace com::centreon::broker::file;
 
 /**
  *  Default constructor.
  */
-qt_fs_browser::qt_fs_browser() {}
+stl_fs_browser::stl_fs_browser() {}
 
 /**
  *  Destructor.
  */
-qt_fs_browser::~qt_fs_browser() {}
+stl_fs_browser::~stl_fs_browser() {}
 
 /**
  *  Read directory elements.
@@ -40,21 +41,35 @@ qt_fs_browser::~qt_fs_browser() {}
  *
  *  @return List of elements within the directory.
  */
-fs_browser::entry_list qt_fs_browser::read_directory(
+#include <iostream>
+fs_browser::entry_list stl_fs_browser::read_directory(
                                         std::string const& path,
                                         std::string const& filters) {
-  QDir dir(path.c_str());
-  QStringList entries;
+  std::list<std::string> entries;
+  entries = misc::filesystem::dir_content(path, false);
   {
-    QStringList filters_list;
-    filters_list << filters.c_str();
-    entries = dir.entryList(filters_list);
+    std::list<std::string> filters_list;
+    regex_t r;
+
+    ::regcomp(&r, filters.c_str(), REG_EXTENDED);
+
+    for (std::list<std::string>::iterator it(entries.begin()),
+           end(entries.end());
+         it != end;
+         ++it) {
+      if (::regexec(&r, it->c_str(), 0, NULL, 0) == 0)
+        filters_list.push_back(*it);
+    }
+   
+    ::regfree(&r);
+    entries = filters_list;
   }
+
   fs_browser::entry_list retval;
-  for (QStringList::iterator it(entries.begin()), end(entries.end());
+  for (std::list<std::string>::iterator it(entries.begin()), end(entries.end());
        it != end;
        ++it)
-    retval.push_back(it->toStdString());
+    retval.push_back(*it);
   return (retval);
 }
 
@@ -63,7 +78,7 @@ fs_browser::entry_list qt_fs_browser::read_directory(
  *
  *  @param[in] path  Path to file.
  */
-void qt_fs_browser::remove(std::string const& path) {
-  QFile::remove(path.c_str());
+void stl_fs_browser::remove(std::string const& path) {
+  std::remove(path.c_str());
   return ;
 }

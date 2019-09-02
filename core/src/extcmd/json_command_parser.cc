@@ -17,7 +17,6 @@
 */
 
 #include <cstdlib>
-#include <QString>
 #include <sstream>
 #include <json11.hpp>
 #include "com/centreon/broker/exceptions/msg.hh"

@@ -50,7 +50,7 @@ class bthread : public stat_visitable {
   bthread(std::string const& name = std::string());
   bthread(bthread const& other) = delete;
   bthread& operator=(bthread const& other) = delete;
-  ~bthread();
+  virtual ~bthread();
   virtual void exit();
   bool should_exit() const;
   void start();

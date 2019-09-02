@@ -113,8 +113,8 @@ void test_server::handle_read(
 
     bool key_found{false};
     con_handle->buf[bytes_transfered] = 0;
-    for (auto it{_answer_reply.begin()},
-              end{_answer_reply.end()};
+    for (auto it(_answer_reply.begin()),
+              end(_answer_reply.end());
          it != end;
          ++it) {
       std::string const& s{con_handle->buf};
