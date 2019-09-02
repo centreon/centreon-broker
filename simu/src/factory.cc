@@ -17,6 +17,7 @@
 */
 
 #include <json11.hpp>
+#include <cstring>
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/misc/variant.hh"

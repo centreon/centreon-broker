@@ -29,6 +29,7 @@
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/misc/misc.hh"
 
 using namespace com::centreon::broker;
 
@@ -210,8 +211,9 @@ class ReadTest : public ::testing::Test {
    *  @param packet  The packet.
    */
   void prepend_checksum(std::vector<char>& packet) {
-    quint16 checksum = htons(qChecksum(&packet[0], 6));
-    packet.prepend((char*)&checksum, sizeof(quint16));
+    uint16_t checksum{htons(misc::crc16_ccitt(&packet[0], 6))};
+    //FIXME DBR: This is bad but just a conversion of the previous code...
+    packet.insert(packet.begin(), (char*)&checksum, ((char*)&checksum) + sizeof(uint16_t));
   }
 };
 
