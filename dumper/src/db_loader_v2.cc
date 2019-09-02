@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cstring>
 #include <sstream>
 #include <map>
 #include "com/centreon/broker/dumper/db_loader_v2.hh"

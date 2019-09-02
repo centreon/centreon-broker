@@ -349,8 +349,8 @@ void node::remove_parent(node* n) {
  *
  *  @return  A pair of host_id, service_id.
  */
-QPair<unsigned int, unsigned int> node::get_id() const {
-  return (qMakePair(host_id, service_id));
+std::pair<unsigned int, unsigned int> node::get_id() const {
+  return (std::make_pair(host_id, service_id));
 }
 
 /**

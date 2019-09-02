@@ -21,9 +21,7 @@
 
 #  include <memory>
 #  include <map>
-#  include <QList>
 #  include <set>
-#  include <QPair>
 #  include "com/centreon/broker/correlation/issue.hh"
 #  include "com/centreon/broker/correlation/state.hh"
 #  include "com/centreon/broker/namespace.hh"
@@ -68,7 +66,7 @@ namespace                correlation {
     void                 remove_depended(node* n);
     void                 remove_dependency(node* n);
     void                 remove_parent(node* n);
-    QPair<unsigned int, unsigned int>
+    std::pair<unsigned int, unsigned int>
                          get_id() const;
     bool                 all_parents_with_issues_and_get_start_time(
                            timestamp& start_time) const;

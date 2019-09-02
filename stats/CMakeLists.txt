@@ -24,17 +24,10 @@ include_directories("${PROJECT_SOURCE_DIR}/stats/inc")
 include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 
-# Some files must be processed by Qt's moc.
-unset(QT_WRAPPED_SOURCES)
-qt4_wrap_cpp(QT_WRAPPED_SOURCES
-  "${INC_DIR}/generator.hh"
-  "${INC_DIR}/worker.hh")
-
 # Stats module.
 set(STATS "15-stats")
 set(STATS "${STATS}" PARENT_SCOPE)
 add_library("${STATS}" SHARED
-  ${QT_WRAPPED_SOURCES}
   # Sources.
   "${SRC_DIR}/builder.cc"
   "${SRC_DIR}/config.cc"

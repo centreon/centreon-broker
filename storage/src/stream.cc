@@ -19,8 +19,9 @@
 #include <cfloat>
 #include <cmath>
 #include <cstdlib>
-#include <sstream>
+#include <cstring>
 #include <QVariant>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -30,7 +31,6 @@
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/service.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"

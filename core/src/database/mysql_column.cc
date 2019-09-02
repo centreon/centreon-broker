@@ -17,6 +17,7 @@
 */
 
 #include <cassert>
+#include <cstring>
 #include <iostream>
 #include "com/centreon/broker/database/mysql_column.hh"
 #include "com/centreon/broker/exceptions/msg.hh"

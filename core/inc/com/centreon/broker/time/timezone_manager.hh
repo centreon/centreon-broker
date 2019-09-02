@@ -73,7 +73,7 @@ namespace time {
     tz_info                  _base;
     static timezone_manager* _instance;
     std::stack<tz_info>      _tz;
-    std::recursive_mutex _timezone_manager_mutex;
+    std::recursive_mutex     _timezone_manager_mutex;
   };
 }
 

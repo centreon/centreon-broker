@@ -21,8 +21,6 @@
 
 #  include <map>
 #  include <set>
-#  include <QSet>
-#  include <QString>
 #  include "com/centreon/broker/mysql.hh"
 #  include "com/centreon/broker/namespace.hh"
 

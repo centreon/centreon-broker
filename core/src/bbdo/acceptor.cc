@@ -18,7 +18,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <QStringList>
 #include <sstream>
 #include "com/centreon/broker/bbdo/acceptor.hh"
 #include "com/centreon/broker/bbdo/internal.hh"

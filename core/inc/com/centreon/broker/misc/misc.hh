@@ -28,6 +28,7 @@ CCB_BEGIN()
 namespace misc {
   std::string temp_path();
   std::list<std::string> split(std::string const& str, char sep);
+  uint16_t crc16_ccitt(char const* data, unsigned int data_len);
 }
 
 CCB_END()

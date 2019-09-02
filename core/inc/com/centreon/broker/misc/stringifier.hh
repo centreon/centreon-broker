@@ -19,7 +19,6 @@
 #ifndef CCB_MISC_STRINGIFIER_HH_
 #  define CCB_MISC_STRINGIFIER_HH_
 
-#  include <QString>
 #  include <string>
 #  include "com/centreon/broker/namespace.hh"
 
@@ -52,7 +51,6 @@ namespace                     misc {
     stringifier&              operator<<(unsigned long long ull) throw ();
     stringifier&              operator<<(unsigned long ul) throw ();
     stringifier&              operator<<(void const* p) throw ();
-    stringifier&              operator<<(QString const& q) throw();
     stringifier&              append(char const* str,
                                      unsigned int size) throw ();
     char const*               data() const throw ();

@@ -102,11 +102,11 @@ bool stream::read(
     while (corrupted) {
       // Get compressed data length.
       while (corrupted) {
-        _get_data(sizeof(qint32), deadline);
+        _get_data(sizeof(int32_t), deadline);
 
         // We do not have enough data to get the next chunk's size.
         // Stream is shutdown.
-        if (_rbuffer.size() < static_cast<int>(sizeof(qint32)))
+        if (_rbuffer.size() < static_cast<int>(sizeof(int32_t)))
           throw exceptions::shutdown() << "no more data to uncompress";
 
         // Extract next chunk's size.
@@ -137,14 +137,14 @@ bool stream::read(
       }
 
       // Get compressed data.
-      _get_data(size + sizeof(qint32), deadline);
+      _get_data(size + sizeof(int32_t), deadline);
       std::shared_ptr<io::raw> r(new io::raw);
 
       // The requested data size might have not been read entirely
       // because of substream shutdown. This indicates that data is
       // corrupted because the size is greater than the remaining
       // payload size.
-      if (_rbuffer.size() >= static_cast<int>(size + sizeof(qint32))) {
+      if (_rbuffer.size() >= static_cast<int>(size + sizeof(int32_t))) {
         try {
           r->get_buffer() =
               zlib::uncompress(reinterpret_cast<unsigned char const*>(
@@ -167,10 +167,10 @@ bool stream::read(
       }
       else {
         logging::debug(logging::low) << "compression: " << this
-          << " uncompressed " << size + sizeof(qint32) << " bytes to "
+          << " uncompressed " << size + sizeof(int32_t) << " bytes to "
           << r->size() << " bytes";
         data = r;
-        _rbuffer.pop(size + sizeof(qint32));
+        _rbuffer.pop(size + sizeof(int32_t));
         corrupted = false;
       }
     }

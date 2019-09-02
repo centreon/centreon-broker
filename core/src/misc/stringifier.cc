@@ -222,30 +222,6 @@ stringifier& stringifier::operator<<(void const* p) throw () {
 }
 
 /**
- *  @brief Append a QString to the internal buffer.
- *
- *  The QString (Unicode) is converted to latin1 and inserted in the
- *  buffer. However this process might include extra allocation which
- *  can cause exceptions if memory is exhausted. However such errors are
- *  caught and if string could not be converted the string "(unknown)"
- *  is inserted instead.
- *
- *  @param[in] q QString to append.
- *
- *  @return Current instance.
- */
-stringifier& stringifier::operator<<(QString const& q) throw () {
-  try {
-    operator<<(qPrintable(q));
-  }
-  catch (...) {
-    operator<<("(unknown)");
-  }
-  return (*this);
-}
-
-
-/**
  *  Adding an additional string at its end.
  *
  *  @param[in] str   The string to add.

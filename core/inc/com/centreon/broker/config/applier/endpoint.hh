@@ -23,7 +23,6 @@
 #  include <map>
 #  include <memory>
 #  include <mutex>
-#  include <QObject>
 #  include <set>
 #  include <string>
 #  include "com/centreon/broker/misc/unordered_hash.hh"

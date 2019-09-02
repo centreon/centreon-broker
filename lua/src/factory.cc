@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cstring>
 #include <json11.hpp>
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"

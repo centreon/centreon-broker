@@ -17,7 +17,6 @@
 */
 
 #include <algorithm>
-#include <QStringList>
 #include "com/centreon/broker/bbdo/ack.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/stream.hh"
