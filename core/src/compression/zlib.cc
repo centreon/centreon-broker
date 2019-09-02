@@ -104,7 +104,7 @@ std::vector<char> zlib::uncompress(unsigned char const* data, uLong nbytes) {
   }
   ulong expected_size = (data[0] << 24) | (data[1] << 16)
                      | (data[2] <<  8) | data[3];
-  ulong len = qMax(expected_size, 1ul);
+  ulong len = (expected_size > 1ul) ? expected_size: 1ul;
   if (len > stream::max_data_size)
     throw exceptions::corruption()
         << "compression: data expected size is too big";

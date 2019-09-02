@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <unistd.h>
 #include <ctime>
 #include <sstream>
 #include "com/centreon/broker/mysql.hh"

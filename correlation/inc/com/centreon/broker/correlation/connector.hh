@@ -20,7 +20,6 @@
 #  define CCB_CORRELATION_CONNECTOR_HH
 
 #  include <memory>
-#  include <QString>
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"
 

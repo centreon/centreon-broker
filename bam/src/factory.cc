@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cstring>
 #include <memory>
 #include "com/centreon/broker/bam/connector.hh"
 #include "com/centreon/broker/bam/factory.hh"

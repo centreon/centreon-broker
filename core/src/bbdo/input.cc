@@ -17,6 +17,7 @@
 */
 
 #include <arpa/inet.h>
+#include <cstring>
 #include <cstdlib>
 #include <memory>
 #include <stdint.h>
@@ -30,6 +31,7 @@
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/misc/misc.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -383,7 +385,7 @@ bool input::read_any(
                               static_cast<void const*>(
                                 header.data() + 12))));
       uint16_t expected(
-        qChecksum(header.data() + 2, BBDO_HEADER_SIZE - 2));
+        misc::crc16_ccitt(header.data() + 2, BBDO_HEADER_SIZE - 2));
 
       // Initial packet, extract info.
       if (!event_id) {

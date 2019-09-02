@@ -19,7 +19,6 @@
 #ifndef CCB_SQL_CONNECTOR_HH
 #  define CCB_SQL_CONNECTOR_HH
 
-#  include <QString>
 #  include "com/centreon/broker/database_config.hh"
 #  include "com/centreon/broker/io/endpoint.hh"
 #  include "com/centreon/broker/namespace.hh"

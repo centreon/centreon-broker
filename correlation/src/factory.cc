@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cstring>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/correlation/connector.hh"
 #include "com/centreon/broker/correlation/factory.hh"

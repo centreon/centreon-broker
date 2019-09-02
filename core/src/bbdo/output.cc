@@ -18,6 +18,8 @@
 
 #include <arpa/inet.h>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <stdint.h>
 #include "com/centreon/broker/bbdo/internal.hh"
@@ -27,6 +29,7 @@
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
@@ -195,7 +198,7 @@ static io::raw* serialize(io::data const& e) {
           = htonl(e.destination_id);
 
         // Set checksum.
-        uint16_t chksum(qChecksum(
+        uint16_t chksum(misc::crc16_ccitt(
                           data.data() + beginning + 2,
                           BBDO_HEADER_SIZE - 2));
         *static_cast<uint16_t*>(static_cast<void*>(
@@ -226,7 +229,7 @@ static io::raw* serialize(io::data const& e) {
       = htonl(e.destination_id);
 
     // Checksum.
-    uint16_t chksum(qChecksum(
+    uint16_t chksum(misc::crc16_ccitt(
                       data.data() + beginning + 2,
                       BBDO_HEADER_SIZE - 2));
     *static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning))

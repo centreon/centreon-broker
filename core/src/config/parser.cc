@@ -16,6 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
+#include <algorithm>
+#include <cstring>
 #include <json11.hpp>
 #include <fstream>
 #include <streambuf>
@@ -276,47 +278,47 @@ void parser::_parse_logger(Json const& elem, logger& l) {
       &logger::perf, &Json::is_bool, &Json::bool_value))
       ;
     else if (object.first == "facility") {
-      QString const& val{QString::fromStdString(object.second.string_value())};
-      if (!val.compare("kern", Qt::CaseInsensitive))
+      std::string const& val{object.second.string_value()};
+      if (!strcasecmp(val.c_str(), "kern"))
           l.facility(LOG_KERN);
-      else if (!val.compare("user", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "user"))
         l.facility(LOG_USER);
-      else if (!val.compare("mail", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "mail"))
         l.facility(LOG_MAIL);
-      else if (!val.compare("news", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "news"))
         l.facility(LOG_NEWS);
-      else if (!val.compare("uucp", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "uucp"))
         l.facility(LOG_UUCP);
-      else if (!val.compare("daemon", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "daemon"))
         l.facility(LOG_DAEMON);
-      else if (!val.compare("auth", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "auth"))
         l.facility(LOG_AUTH);
-      else if (!val.compare("cron", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "cron"))
         l.facility(LOG_CRON);
-      else if (!val.compare("lpr", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "lpr"))
         l.facility(LOG_LPR);
-      else if (!val.compare("local0", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "local0"))
         l.facility(LOG_LOCAL0);
-      else if (!val.compare("local1", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "local1"))
         l.facility(LOG_LOCAL1);
-      else if (!val.compare("local2", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "local2"))
         l.facility(LOG_LOCAL2);
-      else if (!val.compare("local3", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "local3"))
         l.facility(LOG_LOCAL3);
-      else if (!val.compare("local4", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "local4"))
         l.facility(LOG_LOCAL4);
-      else if (!val.compare("local5", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "local5"))
         l.facility(LOG_LOCAL5);
-      else if (!val.compare("local6", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "local6"))
         l.facility(LOG_LOCAL6);
-      else if (!val.compare("local7", Qt::CaseInsensitive))
+      else if (!strcasecmp(val.c_str(), "local7"))
         l.facility(LOG_LOCAL7);
       else
-        l.facility(val.toUInt());
+        l.facility(std::stoul(val));
     }
     else if (object.first == "level") {
-      const QString& val_str = {QString::fromStdString(object.second.string_value())};
-      int val(val_str.toInt());
+      std::string const& val_str = {object.second.string_value()};
+      int val(std::stoi(val_str));
       if ((val == 3) || (val_str == "high"))
         l.level(com::centreon::broker::logging::low);
       else if ((val == 2) || (val_str == "medium"))
@@ -331,7 +333,7 @@ void parser::_parse_logger(Json const& elem, logger& l) {
     else if (object.first == "name")
       l.name(object.second.string_value());
     else if (object.first == "type") {
-      const QString & val{QString::fromStdString(object.second.string_value())};
+      std::string const& val{object.second.string_value()};
       if (val == "file")
         l.type(logger::file);
       else if (val == "monitoring")

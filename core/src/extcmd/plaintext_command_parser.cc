@@ -17,6 +17,7 @@
 */
 
 #include <cstdlib>
+#include <cstring>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"

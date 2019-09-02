@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cstring>
 #include <memory>
 #include <sstream>
 #include "com/centreon/broker/config/parser.hh"
