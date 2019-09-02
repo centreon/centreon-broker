@@ -653,7 +653,7 @@ void reporting_stream::_process_ba_event(std::shared_ptr<io::data> const& e) {
   _ba_event_update.bind_value_as_bool(3, be.in_downtime);
   _ba_event_update.bind_value_as_i32(4, be.ba_id);
   _ba_event_update.bind_value_as_u64(5,
-    static_cast<long long int>(be.start_time.get_time_t()));
+    static_cast<uint64_t>(be.start_time.get_time_t()));
 
   std::promise<int> promise;
   _mysql.run_statement_and_get_int(
@@ -666,13 +666,13 @@ void reporting_stream::_process_ba_event(std::shared_ptr<io::data> const& e) {
       _ba_full_event_insert.bind_value_as_i32(0, be.ba_id);
       _ba_full_event_insert.bind_value_as_i32(1, be.first_level);
       _ba_full_event_insert.bind_value_as_u64(2,
-        static_cast<long long int>(be.start_time.get_time_t()));
+        static_cast<uint64_t>(be.start_time.get_time_t()));
 
       if (be.end_time.is_null())
         _ba_full_event_insert.bind_value_as_null(3);
       else
         _ba_full_event_insert.bind_value_as_u64(3,
-          static_cast<long long int>(be.end_time.get_time_t()));
+          static_cast<uint64_t>(be.end_time.get_time_t()));
       _ba_full_event_insert.bind_value_as_tiny(4, be.status);
       _ba_full_event_insert.bind_value_as_bool(5, be.in_downtime);
 
@@ -711,15 +711,15 @@ void reporting_stream::_process_ba_duration_event(
 
   // Try to update first.
   _ba_duration_event_update.bind_value_as_u64(1,
-    static_cast<long long int>(bde.end_time.get_time_t()));
+    static_cast<uint64_t>(bde.end_time.get_time_t()));
   _ba_duration_event_update.bind_value_as_u64(0,
-    static_cast<long long int>(bde.start_time.get_time_t()));
+    static_cast<uint64_t>(bde.start_time.get_time_t()));
   _ba_duration_event_update.bind_value_as_i32(2, bde.duration);
   _ba_duration_event_update.bind_value_as_i32(3, bde.sla_duration);
   _ba_duration_event_update.bind_value_as_i32(4, bde.timeperiod_is_default);
   _ba_duration_event_update.bind_value_as_i32(5, bde.ba_id);
   _ba_duration_event_update.bind_value_as_u64(6,
-    static_cast<long long int>(bde.real_start_time.get_time_t()));
+    static_cast<uint64_t>(bde.real_start_time.get_time_t()));
   _ba_duration_event_update.bind_value_as_i32(7,bde.timeperiod_id);
 
   std::promise<int> promise;
@@ -730,16 +730,16 @@ void reporting_stream::_process_ba_duration_event(
     // Insert if no rows was updated.
     if (promise.get_future().get() == 0) {
       _ba_duration_event_insert.bind_value_as_u64(0,
-        static_cast<long long int>(bde.start_time.get_time_t()));
+        static_cast<uint64_t>(bde.start_time.get_time_t()));
       _ba_duration_event_insert.bind_value_as_u64(1,
-        static_cast<long long int>(bde.end_time.get_time_t()));
+        static_cast<uint64_t>(bde.end_time.get_time_t()));
       _ba_duration_event_insert.bind_value_as_i32(2, bde.duration);
       _ba_duration_event_insert.bind_value_as_i32(3, bde.sla_duration);
       _ba_duration_event_insert.bind_value_as_i32(4, bde.timeperiod_id);
       _ba_duration_event_insert.bind_value_as_f64(5, bde.timeperiod_is_default);
       _ba_duration_event_insert.bind_value_as_i32(6, bde.ba_id);
       _ba_duration_event_insert.bind_value_as_u64(7,
-        static_cast<long long int>(bde.real_start_time.get_time_t()));
+        static_cast<uint64_t>(bde.real_start_time.get_time_t()));
 
       _mysql.run_statement(_ba_duration_event_insert,
                            "Insertion failed", true, thread_id);
@@ -771,7 +771,7 @@ void reporting_stream::_process_kpi_event(
     _kpi_event_update.bind_value_as_null(0);
   else
     _kpi_event_update.bind_value_as_u64(0,
-      static_cast<long long int>(ke.end_time.get_time_t()));
+      static_cast<uint64_t>(ke.end_time.get_time_t()));
   _kpi_event_update.bind_value_as_tiny(1, ke.status);
   _kpi_event_update.bind_value_as_i32(2, ke.in_downtime);
   _kpi_event_update.bind_value_as_i32(3, ke.impact_level);
@@ -779,7 +779,7 @@ void reporting_stream::_process_kpi_event(
   _kpi_event_update.bind_value_as_str(5, ke.perfdata);
   _kpi_event_update.bind_value_as_i32(6, ke.kpi_id);
   _kpi_event_update.bind_value_as_u64(7,
-    static_cast<long long int>(ke.start_time.get_time_t()));
+    static_cast<uint64_t>(ke.start_time.get_time_t()));
 
   std::promise<int> promise;
   int thread_id(_mysql.run_statement_and_get_int(
@@ -790,12 +790,12 @@ void reporting_stream::_process_kpi_event(
     if (promise.get_future().get() == 0) {
       _kpi_full_event_insert.bind_value_as_i32(0, ke.kpi_id);
       _kpi_full_event_insert.bind_value_as_u64(1,
-        static_cast<long long int>(ke.start_time.get_time_t()));
+        static_cast<uint64_t>(ke.start_time.get_time_t()));
       if (ke.end_time.is_null())
         _kpi_full_event_insert.bind_value_as_null(2);
       else
         _kpi_full_event_insert.bind_value_as_u64(2,
-          static_cast<long long int>(ke.end_time.get_time_t()));
+          static_cast<uint64_t>(ke.end_time.get_time_t()));
       _kpi_full_event_insert.bind_value_as_tiny(3, ke.status);
       _kpi_full_event_insert.bind_value_as_bool(4, ke.in_downtime);
       _kpi_full_event_insert.bind_value_as_i32(5, ke.impact_level);
@@ -814,7 +814,7 @@ void reporting_stream::_process_kpi_event(
       // Insert kpi event link.
       _kpi_event_link.bind_value_as_i32(0, ke.kpi_id);
       _kpi_event_link.bind_value_as_u64(1,
-        static_cast<long long int>(ke.start_time.get_time_t()));
+        static_cast<uint64_t>(ke.start_time.get_time_t()));
       oss_err.str("");
       oss_err << "BAM-BI: could not create link from event of KPI "
               << ke.kpi_id << " starting at " << ke.start_time
