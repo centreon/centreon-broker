@@ -18,7 +18,6 @@
 
 #include <map>
 #include <unistd.h>
-#include <QMutexLocker>
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/processing/stat_visitable.hh"
 #include "com/centreon/broker/io/events.hh"

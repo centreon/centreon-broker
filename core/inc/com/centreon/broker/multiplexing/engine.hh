@@ -20,7 +20,7 @@
 #  define CCB_MULTIPLEXING_ENGINE_HH
 
 #  include <memory>
-#  include <QMutex>
+#  include <mutex>
 #  include "com/centreon/broker/multiplexing/hooker.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/persistent_cache.hh"
@@ -40,7 +40,7 @@ namespace           multiplexing {
    *
    *  @see muxer
    */
-  class             engine : public QMutex {
+  class             engine : public std::recursive_mutex {
   public:
                     ~engine();
     void            clear();

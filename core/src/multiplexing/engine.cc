@@ -18,7 +18,6 @@
 
 #include <cstdlib>
 #include <queue>
-#include <QMutexLocker>
 #include <unistd.h>
 #include <vector>
 #include <utility>
@@ -44,7 +43,7 @@ static std::vector<std::pair<hooker*, bool> >::iterator _hooks_end;
 
 // Subscriber.
 static std::vector<muxer*> _muxers;
-static QMutex              _muxersm;
+static std::mutex _muxersm;
 
 // Class instance.
 engine* engine::_instance(NULL);
@@ -72,7 +71,7 @@ engine::~engine() {}
 void engine::clear() {
   while (!_kiew.empty())
     _kiew.pop();
-  return ;
+
 }
 
 /**
@@ -82,11 +81,10 @@ void engine::clear() {
  *  @param[in] with_data  Write data to hook.
  */
 void engine::hook(hooker& h, bool with_data) {
-  QMutexLocker lock(this);
+  std::lock_guard<std::recursive_mutex> lock(*this);
   _hooks.push_back(std::make_pair(&h, with_data));
   _hooks_begin = _hooks.begin();
   _hooks_end = _hooks.end();
-  return ;
 }
 
 /**
@@ -95,7 +93,7 @@ void engine::hook(hooker& h, bool with_data) {
  *  @return Class instance.
  */
 engine& engine::instance() {
-  return (*_instance);
+  return *_instance;
 }
 
 /**
@@ -104,7 +102,7 @@ engine& engine::instance() {
 void engine::load() {
   if (!_instance)
     _instance = new engine;
-  return ;
+
 }
 
 /**
@@ -114,15 +112,13 @@ void engine::load() {
  */
 void engine::publish(std::shared_ptr<io::data> const& e) {
   // Lock mutex.
-  QMutexLocker lock(this);
+  std::lock_guard<std::recursive_mutex> lock(*this);
 
   // Store object for further processing.
   _kiew.push(e);
 
   // Processing function.
   (this->*_write_func)(e);
-
-  return ;
 }
 
 /**
@@ -134,7 +130,7 @@ void engine::start() {
     logging::debug(logging::high) << "multiplexing: starting";
     _write_func = &engine::_write;
 
-    QMutexLocker lock(this);
+    std::lock_guard<std::recursive_mutex> lock(*this);
     // Local queue.
     std::queue<std::shared_ptr<io::data> > kiew;
     // Get events from the cache file to the local queue.
@@ -190,7 +186,7 @@ void engine::start() {
       kiew.pop();
     }
   }
-  return ;
+
 }
 
 /**
@@ -200,7 +196,7 @@ void engine::stop() {
   if (_write_func != &engine::_nop) {
     // Notify hooks of multiplexing loop end.
     logging::debug(logging::high) << "multiplexing: stopping";
-    QMutexLocker lock(this);
+    std::unique_lock<std::recursive_mutex> lock(*this);
     for (std::vector<std::pair<hooker*, bool> >::iterator
            it(_hooks_begin),
            end(_hooks_end);
@@ -227,7 +223,7 @@ void engine::stop() {
       // Make sur that no more data is available.
       lock.unlock();
       usleep(200000);
-      lock.relock();
+      lock.lock();
     } while (!_kiew.empty());
 
     // Open the cache file and start the transaction.
@@ -246,7 +242,6 @@ void engine::stop() {
     // Set writing method.
     _write_func = &engine::_write_to_cache_file;
   }
-  return ;
 }
 
 /**
@@ -255,9 +250,8 @@ void engine::stop() {
  *  @param[in] subscriber  Subscriber.
  */
 void engine::subscribe(muxer* subscriber) {
-  QMutexLocker lock(&_muxersm);
+  std::lock_guard<std::mutex> lock(_muxersm);
   _muxers.push_back(subscriber);
-  return ;
 }
 
 /**
@@ -266,7 +260,7 @@ void engine::subscribe(muxer* subscriber) {
  *  @param[in] h  Hook.
  */
 void engine::unhook(hooker& h) {
-  QMutexLocker lock(this);
+  std::lock_guard<std::recursive_mutex> lock(*this);
   for (std::vector<std::pair<hooker*, bool> >::iterator
          it(_hooks_begin);
        it != _hooks.end();)
@@ -276,7 +270,7 @@ void engine::unhook(hooker& h) {
       ++it;
   _hooks_begin = _hooks.begin();
   _hooks_end = _hooks.end();
-  return ;
+
 }
 
 /**
@@ -289,7 +283,7 @@ void engine::unload() {
 
   delete _instance;
   _instance = NULL;
-  return ;
+
 }
 
 /**
@@ -298,7 +292,7 @@ void engine::unload() {
  *  @param[in] subscriber  Subscriber.
  */
 void engine::unsubscribe(muxer* subscriber) {
-  QMutexLocker lock(&_muxersm);
+  std::lock_guard<std::mutex> lock(_muxersm);
   for (std::vector<muxer*>::iterator
          it(_muxers.begin()), end(_muxers.end());
        it != end;
@@ -307,7 +301,7 @@ void engine::unsubscribe(muxer* subscriber) {
       _muxers.erase(it);
       break ;
     }
-  return ;
+
 }
 
 /**************************************
@@ -320,7 +314,7 @@ void engine::unsubscribe(muxer* subscriber) {
  *  Default constructor.
  */
 engine::engine()
-  : QMutex(QMutex::Recursive),
+  : std::recursive_mutex{},
     _write_func(&engine::_nop) {
   // Initialize hook iterators.
   _hooks_begin = _hooks.begin();
@@ -335,7 +329,7 @@ engine::engine()
 std::string engine::_cache_file_path() const {
   std::string retval(config::applier::state::instance().cache_dir());
   retval.append(".unprocessed");
-  return (retval);
+  return retval;
 }
 
 /**
@@ -345,7 +339,6 @@ std::string engine::_cache_file_path() const {
  */
 void engine::_nop(std::shared_ptr<io::data> const& d) {
   (void)d;
-  return ;
 }
 
 /**
@@ -353,7 +346,7 @@ void engine::_nop(std::shared_ptr<io::data> const& d) {
  */
 void engine::_send_to_subscribers() {
   // Process all queued events.
-  QMutexLocker lock(&_muxersm);
+  std::lock_guard<std::mutex> lock(_muxersm);
   while (!_kiew.empty()) {
     // Send object to every subscriber.
     for (std::vector<muxer*>::iterator
@@ -364,7 +357,7 @@ void engine::_send_to_subscribers() {
       (*it)->publish(_kiew.front());
     _kiew.pop();
   }
-  return ;
+
 }
 
 /**
@@ -406,8 +399,6 @@ void engine::_write(std::shared_ptr<io::data> const& e) {
       throw ;
     }
   }
-
-  return ;
 }
 
 /**
