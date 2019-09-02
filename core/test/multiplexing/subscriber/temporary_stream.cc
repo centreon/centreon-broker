@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QMutexLocker>
 #include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "test/multiplexing/subscriber/temporary_stream.hh"
 
@@ -61,12 +60,12 @@ temporary_stream::~temporary_stream() {}
 temporary_stream& temporary_stream::operator=(temporary_stream const& ss) {
   if (this != &ss) {
     io::stream::operator=(ss);
-    QMutexLocker lock1(&_eventsm);
-    QMutexLocker lock2(&ss._eventsm);
+    std::lock_guard<std::mutex> lock1(_eventsm);
+    std::lock_guard<std::mutex> lock2(ss._eventsm);
     _events = ss._events;
     _id = ss._id;
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -81,13 +80,13 @@ bool temporary_stream::read(
                          std::shared_ptr<io::data>& data,
                          time_t deadline) {
   (void)deadline;
-  QMutexLocker lock(&_eventsm);
+  std::lock_guard<std::mutex> lock(_eventsm);
   if (_events.empty())
     throw (io::exceptions::shutdown(false, false)
            << "temporary stream does not have any more event");
   else
     data = _events.dequeue();
-  return (true);
+  return true;
 }
 
 /**
@@ -98,7 +97,7 @@ bool temporary_stream::read(
  *  @return Number of elements acknowledged (1).
  */
 int temporary_stream::write(std::shared_ptr<io::data> const& d) {
-  QMutexLocker lock(&_eventsm);
+  std::lock_guard<std::mutex> lock(_eventsm);
   _events.enqueue(d);
-  return (1);
+  return 1;
 }

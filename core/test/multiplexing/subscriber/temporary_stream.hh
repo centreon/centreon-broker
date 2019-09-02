@@ -20,7 +20,7 @@
 #  define CCB_TEMPORARY_STREAM_HH
 
 #  include <QQueue>
-#  include <QMutex>
+#  include <mutex>
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 
@@ -44,7 +44,7 @@ public:
 private:
   QQueue<std::shared_ptr<io::data> >
                     _events;
-  mutable QMutex    _eventsm;
+  mutable std::mutex _eventsm;
   QString           _id;
 };
 
