@@ -21,7 +21,6 @@
 #include <bitset>
 #include <QCoreApplication>
 #include <QDir>
-#include <QFile>
 #include "com/centreon/broker/extcmd/internal.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/config/applier/init.hh"

@@ -44,6 +44,7 @@ acceptor::acceptor(
  *  Destructor.
  */
 acceptor::~acceptor() {
+  this->bthread::~bthread();
   _wait_feeders();
 }
 

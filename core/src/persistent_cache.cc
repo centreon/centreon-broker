@@ -19,7 +19,7 @@
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
-#include <QFile>
+#include <fstream>
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -174,8 +174,10 @@ std::string persistent_cache::_old_file() const {
  */
 void persistent_cache::_open() {
   // Open either cache file or old cache file.
-  if (!QFile::exists(_cache_file.c_str())) {
-    if (QFile::exists(_old_file().c_str()))
+  std::ifstream if_cache(_cache_file);
+  std::ifstream if_old(_old_file());
+  if (!if_cache.good()) {
+    if (if_old.good())
       ::rename(_old_file().c_str(), _cache_file.c_str());
   }
 

@@ -24,7 +24,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/cfile.hh"
-#include "com/centreon/broker/file/qt_fs_browser.hh"
+#include "com/centreon/broker/file/stl_fs_browser.hh"
 #include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -452,7 +452,7 @@ splitter* splitter_factory::new_cfile_splitter(
                               long max_file_size,
                               bool auto_delete) {
   std::unique_ptr<fs_file_factory> f(new cfile_factory());
-  std::unique_ptr<fs_browser> b(new qt_fs_browser());
+  std::unique_ptr<fs_browser> b(new stl_fs_browser());
   splitter* s(new splitter(
                     path,
                     mode,
