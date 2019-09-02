@@ -418,8 +418,8 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/file/fs_file.cc
   ${SRC_DIR}/file/internal.cc
   ${SRC_DIR}/file/opener.cc
-  ${SRC_DIR}/file/qt_fs_browser.cc
   ${SRC_DIR}/file/splitter.cc
+  ${SRC_DIR}/file/stl_fs_browser.cc
   ${SRC_DIR}/file/stream.cc
   ${SRC_DIR}/instance_broadcast.cc
   ${SRC_DIR}/io/data.cc
@@ -450,6 +450,7 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/misc/string.cc
   ${SRC_DIR}/misc/stringifier.cc
   ${SRC_DIR}/misc/tokenizer.cc
+  ${SRC_DIR}/misc/uuid.cc
   ${SRC_DIR}/misc/variant.cc
   ${SRC_DIR}/modules/handle.cc
   ${SRC_DIR}/modules/loader.cc
@@ -538,8 +539,8 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/file/fs_file.hh
   ${INC_DIR}/file/internal.hh
   ${INC_DIR}/file/opener.hh
-  ${INC_DIR}/file/qt_fs_browser.hh
   ${INC_DIR}/file/splitter.hh
+  ${INC_DIR}/file/stl_fs_browser.hh
   ${INC_DIR}/file/stream.hh
   ${INC_DIR}/instance_broadcast.hh
   ${INC_DIR}/io/data.hh

@@ -16,17 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
+#include <sys/types.h>
 #include <gtest/gtest.h>
 #include <cstdio>
 #include <fstream>
-#include <regex>
+#include <regex.h>
 #include <thread>
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#include "com/centreon/broker/misc/misc.hh"
 
 using namespace com::centreon::broker;
-using namespace std::regex_constants;
 
 // Log messages.
 #define MSG1 "my first normal message"
@@ -41,8 +42,23 @@ using namespace std::regex_constants;
 class LoggingManager : public ::testing::Test {
  public:
   bool check_line(std::string const& line, std::string const& reg) {
-    std::regex self_regex(reg, ECMAScript);
-    return (std::regex_search(line, self_regex));
+    regex_t r;
+    int status;
+
+    status = ::regcomp(&r, reg.c_str(), REG_EXTENDED);
+
+    if (status != 0) {
+      char *err = new char[128];
+      regerror(status, &r, err, 128);
+      std::cout << "cannot compile regex :" << err << std::endl;
+      delete err;
+      return false;
+    }
+    
+    status = ::regexec(&r, line.c_str(), 0, NULL, 0);
+    ::regfree(&r);
+
+    return status == 0;
   }
 
   /**
@@ -98,7 +114,7 @@ TEST_F(LoggingManager, Simple) {
   logging::manager::load();
 
   // Log file path.
-  std::string file_path{std::tmpnam(nullptr)};
+  std::string file_path{misc::temp_path()};
   std::remove(file_path.c_str());
 
   // Open log file object.
@@ -143,8 +159,8 @@ TEST_F(LoggingManager, Multiple) {
   logging::manager::load();
 
   // Log file path.
-  std::string file_path1(std::tmpnam(nullptr));
-  std::string file_path2(std::tmpnam(nullptr));
+  std::string file_path1(misc::temp_path());
+  std::string file_path2(misc::temp_path());
   std::remove(file_path1.c_str());
   std::remove(file_path2.c_str());
 
@@ -213,9 +229,9 @@ TEST_F(LoggingManager, Cross) {
   logging::manager::load();
 
   // Log file path.
-  std::string file_path1(std::tmpnam(nullptr));
-  std::string file_path2(std::tmpnam(nullptr));
-  std::string file_path3(std::tmpnam(nullptr));
+  std::string file_path1(misc::temp_path());
+  std::string file_path2(misc::temp_path());
+  std::string file_path3(misc::temp_path());
   std::remove(file_path1.c_str());
   std::remove(file_path2.c_str());
   std::remove(file_path3.c_str());
@@ -289,8 +305,8 @@ TEST_F(LoggingManager, BacklogUnlog) {
   logging::manager::load();
 
   // Log file path.
-  std::string file_path1(std::tmpnam(nullptr));
-  std::string file_path2(std::tmpnam(nullptr));
+  std::string file_path1(misc::temp_path());
+  std::string file_path2(misc::temp_path());
   std::remove(file_path1.c_str());
   std::remove(file_path2.c_str());
 
@@ -364,13 +380,13 @@ TEST_F(LoggingManager, BacklogUnlog) {
   ASSERT_TRUE(check_line(line2, std::string{"^[a-z]+: +" MSG4 "$"}));
 
   // Remove file.
-  QFile::remove(file_path1.c_str());
-  QFile::remove(file_path2.c_str());
+  std::remove(file_path1.c_str());
+  std::remove(file_path2.c_str());
 }
 
 TEST_F(LoggingManager, Everything) {
   // Log file path.
-  std::string file_path(std::tmpnam(nullptr));
+  std::string file_path(misc::temp_path());
   std::remove(file_path.c_str());
 
   // Open log file object.
@@ -404,7 +420,7 @@ TEST_F(LoggingManager, Everything) {
 
 TEST_F(LoggingManager, MaxSize) {
   // Log file path.
-  std::string file_path(std::tmpnam(nullptr));
+  std::string file_path(misc::temp_path());
   std::string backup_file_path(file_path);
   backup_file_path.append(".old");
   std::remove(file_path.c_str());
@@ -437,8 +453,8 @@ TEST_F(LoggingManager, MaxSize) {
 
   ASSERT_TRUE(fsize1 >= 0);
   ASSERT_TRUE(fsize2 >= 0);
-  ASSERT_TRUE(fsize1 <= static_cast<qint64>(MAX_SIZE));
-  ASSERT_TRUE(fsize2 <= static_cast<qint64>(MAX_SIZE));
+  ASSERT_TRUE(fsize1 <= static_cast<int64_t>(MAX_SIZE));
+  ASSERT_TRUE(fsize2 <= static_cast<int64_t>(MAX_SIZE));
 
   // Remove files.
   std::remove(file_path.c_str());
@@ -447,7 +463,7 @@ TEST_F(LoggingManager, MaxSize) {
 
 TEST_F(LoggingManager, Nothing) {
   // Log file path.
-  std::string file_path{std::tmpnam(nullptr)};
+  std::string file_path{misc::temp_path()};
   std::remove(file_path.c_str());
 
   // Open log file object.
@@ -478,7 +494,7 @@ TEST_F(LoggingManager, Nothing) {
 
 TEST_F(LoggingManager, ThreadId) {
   // Log file path.
-  std::string file_path{std::tmpnam(nullptr)};
+  std::string file_path{misc::temp_path()};
   std::remove(file_path.c_str());
 
   // Open log file object.
@@ -509,7 +525,7 @@ TEST_F(LoggingManager, ThreadId) {
 
 TEST_F(LoggingManager, Timestamp) {
   // Log file path.
-  std::string file_path(std::tmpnam(nullptr));
+  std::string file_path(misc::temp_path());
   std::remove(file_path.c_str());
 
   // Open log file object.
@@ -540,7 +556,7 @@ TEST_F(LoggingManager, Copied) {
   logging::manager::load();
 
   // Log file path.
-  std::string file_path(std::tmpnam(nullptr));
+  std::string file_path(misc::temp_path());
   std::remove(file_path.c_str());
 
   // Open log file object.
@@ -586,7 +602,7 @@ TEST_F(LoggingManager, Disabled) {
   logging::manager::load();
 
   // Log file path.
-  std::string file_path(std::tmpnam(nullptr));
+  std::string file_path(misc::temp_path());
   std::remove(file_path.c_str());
 
   // Open log file object.
@@ -628,7 +644,7 @@ TEST_F(LoggingManager, Enabled) {
   // Initialization.
   logging::manager::load();
   // Log file path.
-  std::string file_path(std::tmpnam(nullptr));
+  std::string file_path(misc::temp_path());
   std::remove(file_path.c_str());
 
   // Open log file object.
@@ -673,7 +689,7 @@ TEST_F(LoggingManager, Insertion) {
   logging::manager::load();
 
   // Log file path.
-  std::string file_path(std::tmpnam(nullptr));
+  std::string file_path(misc::temp_path());
   std::remove(file_path.c_str());
 
   // Open log file object.
@@ -739,7 +755,7 @@ TEST_F(LoggingManager, Concurrent) {
   logging::manager::load();
 
   // Build filename.
-  std::string filename(std::tmpnam(nullptr));
+  std::string filename(misc::temp_path());
 
   // Remove old file.
   std::remove(filename.c_str());

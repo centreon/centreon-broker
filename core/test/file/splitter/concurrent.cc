@@ -26,7 +26,7 @@
 #include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/file/cfile.hh"
-#include "com/centreon/broker/file/qt_fs_browser.hh"
+#include "com/centreon/broker/file/stl_fs_browser.hh"
 #include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker;
@@ -111,7 +111,7 @@ class FileSplitterConcurrent : public ::testing::Test {
     _path = RETENTION_DIR RETENTION_FILE;
     _remove_files();
     _file_factory.reset(new cfile_factory());
-    _fs_browser.reset(new qt_fs_browser());
+    _fs_browser.reset(new stl_fs_browser());
 
     logging::manager::load();
 
@@ -130,7 +130,7 @@ class FileSplitterConcurrent : public ::testing::Test {
  protected:
   std::unique_ptr<file::splitter> _file;
   std::unique_ptr<cfile_factory>  _file_factory;
-  std::unique_ptr<qt_fs_browser>  _fs_browser;
+  std::unique_ptr<stl_fs_browser>  _fs_browser;
   std::string                   _path;
 
   void _remove_files() {

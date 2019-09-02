@@ -18,8 +18,6 @@
 
 #include <cstdlib>
 #include <memory>
-//#include <QAbstractSocket>
-#include <QtCore>
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/compression/internal.hh"
 #include "com/centreon/broker/config/applier/endpoint.hh"

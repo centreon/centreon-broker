@@ -18,6 +18,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 #include <memory>
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -188,15 +189,14 @@ std::shared_ptr<logging::backend> logger::_new_backend(config::logger const& cfg
     break ;
   case config::logger::standard:
     {
-      FILE* out;
       if ((cfg.name() == "stderr") || (cfg.name() == "cerr"))
-        out = stderr;
+        back.reset(new logging::file(std::cerr, "cerr"));
       else if ((cfg.name() == "stdout") || (cfg.name() == "cout"))
-        out = stdout;
+        back.reset(new logging::file(std::cout, "cout"));
       else
         throw (exceptions::msg() << "log applier: attempt to log on " \
                  "an undefined output object");
-      back.reset(new logging::file(out));
+
     }
     break ;
   case config::logger::syslog:

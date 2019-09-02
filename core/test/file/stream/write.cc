@@ -43,11 +43,11 @@ int main(int argc, char* argv[]) {
   config::applier::init();
 
   // Generate file name.
-  QString filename(QDir::tempPath());
+  std::string filename(misc::temp_path());
   filename.append("/" TEMP_FILE_NAME);
 
   // Remove old file.
-  QFile::remove(filename);
+  std::remove(filename.c_str());
 
   // Generate data packet.
   std::shared_ptr<io::raw> data(new io::raw);
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 
   {
     // Open file stream for writing.
-    file::stream fs(filename.toStdString());
+    file::stream fs(filename);
 
     // Write data in file.
     for (unsigned int i = 0; i < 10000; ++i)

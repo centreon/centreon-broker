@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <random>
 #include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/misc/misc.hh"

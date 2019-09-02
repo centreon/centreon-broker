@@ -83,7 +83,7 @@ class shared_mutex {
 class read_lock {
   public:
     read_lock(shared_mutex& m)
-    : _m{m} {
+    : _m(m) {
       _m.lock_shared();
     }
     ~read_lock() {

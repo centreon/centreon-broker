@@ -59,7 +59,9 @@ failover::failover(
 /**
  *  Destructor.
  */
-failover::~failover() {}
+failover::~failover() {
+  this->bthread::~bthread();
+}
 
 /**
  *  Add secondary endpoint to this failover thread.
