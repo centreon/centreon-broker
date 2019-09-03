@@ -74,8 +74,8 @@ class failover : public bthread {
   // From stat_visitable
   virtual std::string _get_state();
   virtual unsigned int _get_queued_events();
-  virtual uset<unsigned int> _get_read_filters();
-  virtual uset<unsigned int> _get_write_filters();
+  virtual std::unordered_set<uint32_t> _get_read_filters();
+  virtual std::unordered_set<uint32_t> _get_write_filters();
   virtual void _forward_statistic(io::properties& tree);
 
  private:

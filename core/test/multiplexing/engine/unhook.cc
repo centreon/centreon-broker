@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include <gtest/gtest.h>
 #include <cstdlib>
 #include <iostream>
-#include <gtest/gtest.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -45,10 +45,9 @@ TEST(Unhook, EngineWorks) {
 
   try {
     // Subscriber.
-    uset<unsigned int> filters;
+    std::unordered_set<uint32_t> filters;
     filters.insert(io::raw::static_type());
-    multiplexing::subscriber
-      s("core_multiplexing_engine_unhook", "");
+    multiplexing::subscriber s("core_multiplexing_engine_unhook", "");
     s.get_muxer().set_read_filters(filters);
     s.get_muxer().set_write_filters(filters);
 
@@ -72,7 +71,7 @@ TEST(Unhook, EngineWorks) {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG1);
       multiplexing::engine::instance().publish(
-        std::static_pointer_cast<io::data>(data));
+          std::static_pointer_cast<io::data>(data));
     }
 
     // Unhook.
@@ -83,7 +82,7 @@ TEST(Unhook, EngineWorks) {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG2);
       multiplexing::engine::instance().publish(
-        std::static_pointer_cast<io::data>(data));
+          std::static_pointer_cast<io::data>(data));
     }
 
     // Stop multiplexing engine.
@@ -94,13 +93,12 @@ TEST(Unhook, EngineWorks) {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG3);
       multiplexing::engine::instance().publish(
-        std::static_pointer_cast<io::data>(data));
+          std::static_pointer_cast<io::data>(data));
     }
 
     // Check subscriber content.
     {
-      char const* messages[] =
-        { HOOKMSG1, MSG1, HOOKMSG2, MSG2, NULL };
+      char const* messages[] = {HOOKMSG1, MSG1, HOOKMSG2, MSG2, NULL};
       for (unsigned int i = 0; messages[i]; ++i) {
         std::shared_ptr<io::data> d;
         s.get_muxer().read(d, 0);
@@ -108,10 +106,7 @@ TEST(Unhook, EngineWorks) {
           throw exceptions::msg() << "error at step #2";
         else {
           std::shared_ptr<io::raw> raw(std::static_pointer_cast<io::raw>(d));
-          if (strncmp(
-                raw->const_data(),
-                messages[i],
-                strlen(messages[i])))
+          if (strncmp(raw->const_data(), messages[i], strlen(messages[i])))
             throw exceptions::msg() << "error at step #3";
         }
       }
@@ -123,11 +118,9 @@ TEST(Unhook, EngineWorks) {
 
     // Success.
     error = false;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception\n";
   }
 

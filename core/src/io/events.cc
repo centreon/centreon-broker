@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/io/events.hh"
 #include <algorithm>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::io;
@@ -27,10 +27,10 @@ using namespace com::centreon::broker::io;
 static events* _instance(NULL);
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Get class instance.
@@ -38,7 +38,7 @@ static events* _instance(NULL);
  *  @return Class instance.
  */
 events& events::instance() {
-  return (*_instance);
+  return *_instance;
 }
 
 /**
@@ -47,7 +47,6 @@ events& events::instance() {
 void events::load() {
   if (!_instance)
     _instance = new events;
-  return ;
 }
 
 /**
@@ -57,7 +56,6 @@ void events::unload() {
   // Delete operator is NULL-aware.
   delete _instance;
   _instance = NULL;
-  return ;
 }
 
 /**
@@ -68,9 +66,8 @@ void events::unload() {
  *
  *  @return Assigned category ID. This could be different than hint.
  */
-unsigned short events::register_category(
-                         std::string const& name,
-                         unsigned short hint) {
+unsigned short events::register_category(std::string const& name,
+                                         unsigned short hint) {
   if (!hint)
     ++hint;
   while (_elements.find(hint) != _elements.end()) {
@@ -78,7 +75,7 @@ unsigned short events::register_category(
       ++hint;
   }
   _elements[hint].name = name;
-  return (hint);
+  return hint;
 }
 
 /**
@@ -90,7 +87,6 @@ void events::unregister_category(unsigned short category_id) {
   categories_container::iterator it(_elements.find(category_id));
   if (it != _elements.end())
     _elements.erase(it);
-  return ;
 }
 
 /**
@@ -103,18 +99,17 @@ void events::unregister_category(unsigned short category_id) {
  *
  *  @return Event type ID.
  */
-unsigned int events::register_event(
-                       unsigned short category_id,
-                       unsigned short event_id,
-                       event_info const& info) {
+unsigned int events::register_event(unsigned short category_id,
+                                    unsigned short event_id,
+                                    event_info const& info) {
   categories_container::iterator it(_elements.find(category_id));
   if (it == _elements.end())
-    throw (exceptions::msg() << "core: could not register event '"
-           << info.get_name() << "': category " << category_id
-           << " was not registered");
+    throw(exceptions::msg()
+          << "core: could not register event '" << info.get_name()
+          << "': category " << category_id << " was not registered");
   int type(make_type(category_id, event_id));
   it->second.events[type] = info;
-  return (type);
+  return type;
 }
 
 /**
@@ -130,7 +125,6 @@ void events::unregister_event(unsigned int type_id) {
     if (ite != itc->second.events.end())
       itc->second.events.erase(ite);
   }
-  return ;
 }
 
 /**
@@ -139,7 +133,7 @@ void events::unregister_event(unsigned int type_id) {
  *  @return First iterator.
  */
 events::categories_container::const_iterator events::begin() const {
-  return (_elements.begin());
+  return _elements.begin();
 }
 
 /**
@@ -148,7 +142,7 @@ events::categories_container::const_iterator events::begin() const {
  *  @return Last iterator.
  */
 events::categories_container::const_iterator events::end() const {
-  return (_elements.end());
+  return _elements.end();
 }
 
 /**
@@ -159,34 +153,30 @@ events::categories_container::const_iterator events::end() const {
  *  @return Category elements.
  */
 events::events_container events::get_events_by_category_name(
-                                   std::string const& name) const {
+    std::string const& name) const {
   // Special category matching all registered events.
   if (name == "all") {
     events::events_container all;
-    for (categories_container::const_iterator
-           it1(_elements.begin()), end1(_elements.end());
-         it1 != end1;
-         ++it1)
-      for (events_container::const_iterator
-             it2(it1->second.events.begin()),
-             end2(it1->second.events.end());
-           it2 != end2;
-           ++it2)
+    for (categories_container::const_iterator it1(_elements.begin()),
+         end1(_elements.end());
+         it1 != end1; ++it1)
+      for (events_container::const_iterator it2(it1->second.events.begin()),
+           end2(it1->second.events.end());
+           it2 != end2; ++it2)
         all.insert(*it2);
-    return (all);
+    return all;
   }
   // Category name.
   else {
-    for (categories_container::const_iterator
-           it(_elements.begin()), end(_elements.end());
-         it != end;
-         ++it) {
+    for (categories_container::const_iterator it(_elements.begin()),
+         end(_elements.end());
+         it != end; ++it) {
       if (it->second.name == name)
-        return (it->second.events);
+        return it->second.events;
     }
   }
-  throw (exceptions::msg() << "core: cannot find event category '"
-         << name << "'");
+  throw(exceptions::msg() << "core: cannot find event category '" << name
+                          << "'");
 }
 
 /**
@@ -197,15 +187,15 @@ events::events_container events::get_events_by_category_name(
  *  @return Event information structure if found, NULL otherwise.
  */
 event_info const* events::get_event_info(unsigned int type) {
-  umap<unsigned short, category_info>::const_iterator
-    itc(_elements.find(category_of_type(type)));
+  std::unordered_map<unsigned short, category_info>::const_iterator itc(
+      _elements.find(category_of_type(type)));
   if (itc != _elements.end()) {
-    umap<unsigned int, event_info>::const_iterator
-      ite(itc->second.events.find(type));
+    std::unordered_map<uint32_t, event_info>::const_iterator ite(
+        itc->second.events.find(type));
     if (ite != itc->second.events.end())
-      return (&ite->second);
+      return &ite->second;
   }
-  return (NULL);
+  return NULL;
 }
 
 /**
@@ -220,40 +210,36 @@ event_info const* events::get_event_info(unsigned int type) {
  *  @return  A list of all the matching events.
  */
 events::events_container events::get_matching_events(
-                                   std::string const& name) const {
+    std::string const& name) const {
   size_t num = std::count(name.begin(), name.end(), ':');
   if (num == 0)
-    return (get_events_by_category_name(name));
+    return get_events_by_category_name(name);
   else if (num == 1) {
     size_t place = name.find_first_of(':');
     std::string category_name = name.substr(0, place);
-    events::events_container const &events = get_events_by_category_name(
-                                               category_name);
+    events::events_container const& events =
+        get_events_by_category_name(category_name);
     std::string event_name = name.substr(place + 1);
-    for (events::events_container::const_iterator
-           it(events.begin()),
-           end(events.end());
-         it != end;
-         ++it) {
+    for (events::events_container::const_iterator it(events.begin()),
+         end(events.end());
+         it != end; ++it) {
       if (it->second.get_name() == event_name) {
         events::events_container res;
         res[it->first] = it->second;
-        return (res);
+        return res;
       }
     }
-    throw (exceptions::msg() << "core: cannot find event '"
-           << event_name << "' in '" << name << "'");
-  }
-  else
-    throw (exceptions::msg() << "core: too many ':' in '"
-           << name << "'");
+    throw(exceptions::msg() << "core: cannot find event '" << event_name
+                            << "' in '" << name << "'");
+  } else
+    throw(exceptions::msg() << "core: too many ':' in '" << name << "'");
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.

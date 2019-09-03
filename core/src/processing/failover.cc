@@ -479,7 +479,7 @@ unsigned int failover::_get_queued_events() {
  *
  *  @return  The read filters used by the failover.
  */
-uset<unsigned int> failover::_get_read_filters() {
+std::unordered_set<uint32_t> failover::_get_read_filters() {
   return (_subscriber->get_muxer().get_read_filters());
 }
 
@@ -488,7 +488,7 @@ uset<unsigned int> failover::_get_read_filters() {
  *
  *  @return  The write filters used by the failover.
  */
-uset<unsigned int> failover::_get_write_filters() {
+std::unordered_set<uint32_t> failover::_get_write_filters() {
   return (_subscriber->get_muxer().get_write_filters());
 }
 

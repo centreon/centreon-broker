@@ -133,7 +133,7 @@ void acceptor::run() {
  *
  *  @param[in] filters  Set of accepted event IDs.
  */
-void acceptor::set_read_filters(uset<unsigned int> const& filters) {
+void acceptor::set_read_filters(std::unordered_set<uint32_t> const& filters) {
   std::lock_guard<std::mutex> lock(_stat_mutex);
   _read_filters = filters;
 }
@@ -158,7 +158,7 @@ void acceptor::set_retry_interval(time_t retry_interval) {
  *  This is useful to prevent endpoints of generating some kind of
  *  events.
  */
-void acceptor::set_write_filters(uset<unsigned int> const& filters) {
+void acceptor::set_write_filters(std::unordered_set<uint32_t> const& filters) {
   std::lock_guard<std::mutex> lock(_stat_mutex);
   _write_filters = filters;
 }
@@ -189,7 +189,7 @@ unsigned int acceptor::_get_queued_events() {
  *
  *  @return  The read filters used by the feeder.
  */
-uset<unsigned int> acceptor::_get_read_filters() {
+std::unordered_set<uint32_t> acceptor::_get_read_filters() {
   return _read_filters;
 }
 
@@ -198,7 +198,7 @@ uset<unsigned int> acceptor::_get_read_filters() {
  *
  *  @return  The write filters used by the feeder.
  */
-uset<unsigned int> acceptor::_get_write_filters() {
+std::unordered_set<uint32_t> acceptor::_get_write_filters() {
   return _write_filters;
 }
 

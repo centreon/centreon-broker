@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include <gtest/gtest.h>
 #include <cstdlib>
 #include <iostream>
-#include <gtest/gtest.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -46,10 +46,9 @@ TEST(Hook, EngineWorks) {
 
   try {
     // Subscriber.
-    uset<unsigned int> filters;
+    std::unordered_set<uint32_t> filters;
     filters.insert(io::raw::static_type());
-    multiplexing::subscriber
-      s("core_multiplexing_engine_hook", "");
+    multiplexing::subscriber s("core_multiplexing_engine_hook", "");
     s.get_muxer().set_read_filters(filters);
     s.get_muxer().set_write_filters(filters);
 
@@ -59,12 +58,12 @@ TEST(Hook, EngineWorks) {
 
     // Send events through engine.
     {
-      char const* messages[] = { MSG1, MSG2, NULL };
+      char const* messages[] = {MSG1, MSG2, NULL};
       for (unsigned int i = 0; messages[i]; ++i) {
         std::shared_ptr<io::raw> data(new io::raw);
         data->append(messages[i]);
         multiplexing::engine::instance().publish(
-          std::static_pointer_cast<io::data>(data));
+            std::static_pointer_cast<io::data>(data));
       }
     }
 
@@ -84,7 +83,7 @@ TEST(Hook, EngineWorks) {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG3);
       multiplexing::engine::instance().publish(
-        std::static_pointer_cast<io::data>(data));
+          std::static_pointer_cast<io::data>(data));
     }
 
     // Stop multiplexing engine.
@@ -95,13 +94,13 @@ TEST(Hook, EngineWorks) {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG4);
       multiplexing::engine::instance().publish(
-        std::static_pointer_cast<io::data>(data));
+          std::static_pointer_cast<io::data>(data));
     }
 
     // Check subscriber content.
     {
-      char const* messages[] =
-        { HOOKMSG1, MSG1, HOOKMSG2, MSG2, HOOKMSG2, MSG3, HOOKMSG2, HOOKMSG3, NULL };
+      char const* messages[] = {HOOKMSG1, MSG1,     HOOKMSG2, MSG2, HOOKMSG2,
+                                MSG3,     HOOKMSG2, HOOKMSG3, NULL};
       for (unsigned int i = 0; messages[i]; ++i) {
         std::shared_ptr<io::data> d;
         s.get_muxer().read(d, 0);
@@ -109,11 +108,8 @@ TEST(Hook, EngineWorks) {
           throw exceptions::msg() << "error at step #2";
         else {
           std::shared_ptr<io::raw> raw(std::static_pointer_cast<io::raw>(d));
-          if (strncmp(
-                raw->const_data(),
-                messages[i],
-                strlen(messages[i])))
-            throw (exceptions::msg() << "error at step #3");
+          if (strncmp(raw->const_data(), messages[i], strlen(messages[i])))
+            throw(exceptions::msg() << "error at step #3");
         }
       }
       std::shared_ptr<io::data> d;
@@ -127,11 +123,9 @@ TEST(Hook, EngineWorks) {
 
     // Success.
     error = false;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception\n";
   }
 

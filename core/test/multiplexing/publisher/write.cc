@@ -44,7 +44,7 @@ TEST(Publisher, Write) {
     multiplexing::publisher p;
 
     // Subscriber.
-    uset<unsigned int> filters;
+    std::unordered_set<uint32_t> filters;
     filters.insert(io::raw::static_type());
     multiplexing::subscriber s("core_multiplexing_publisher_write", "");
     s.get_muxer().set_read_filters(filters);

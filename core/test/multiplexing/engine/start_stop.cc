@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
 #include <gtest/gtest.h>
+#include <cstdlib>
 #include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -46,15 +46,14 @@ TEST(StartStop, MultiplexingWorks) {
 
   try {
     // Subscriber.
-    uset<unsigned int> filters;
+    std::unordered_set<uint32_t> filters;
     filters.insert(io::raw::static_type());
-    multiplexing::subscriber
-      s("core_multiplexing_engine_start_stop", false);
+    multiplexing::subscriber s("core_multiplexing_engine_start_stop", false);
     s.get_muxer().set_read_filters(filters);
     s.get_muxer().set_write_filters(filters);
 
     // Send events through engine.
-    char const* messages[] = { MSG1, MSG2, NULL };
+    char const* messages[] = {MSG1, MSG2, NULL};
     for (unsigned int i = 0; messages[i]; ++i) {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(messages[i]);
@@ -77,15 +76,11 @@ TEST(StartStop, MultiplexingWorks) {
     for (unsigned int i(0); messages[i]; ++i) {
       std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
-      if (!data
-          || data->type() != io::raw::static_type())
+      if (!data || data->type() != io::raw::static_type())
         throw exceptions::msg() << "error at step #2";
       else {
         std::shared_ptr<io::raw> raw(std::static_pointer_cast<io::raw>(data));
-        if (strncmp(
-              raw->const_data(),
-              messages[i],
-              strlen(messages[i])))
+        if (strncmp(raw->const_data(), messages[i], strlen(messages[i])))
           throw exceptions::msg() << "error at step #3";
       }
     }
@@ -106,10 +101,7 @@ TEST(StartStop, MultiplexingWorks) {
         throw exceptions::msg() << "error at step #4";
       else {
         std::shared_ptr<io::raw> raw(std::static_pointer_cast<io::raw>(data));
-        if (strncmp(
-              raw->const_data(),
-              MSG3,
-              strlen(MSG3)))
+        if (strncmp(raw->const_data(), MSG3, strlen(MSG3)))
           throw exceptions::msg() << "error at step #5";
       }
     }
@@ -122,7 +114,7 @@ TEST(StartStop, MultiplexingWorks) {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG4);
       multiplexing::engine::instance().publish(
-        std::static_pointer_cast<io::data>(data));
+          std::static_pointer_cast<io::data>(data));
     }
 
     // Read no event.
@@ -135,11 +127,9 @@ TEST(StartStop, MultiplexingWorks) {
 
     // Success.
     error = false;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception\n";
   }
 
