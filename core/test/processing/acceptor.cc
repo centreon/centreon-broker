@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/io/raw.hh"
 #include "temporary_endpoint.hh"
 
 using namespace com::centreon::broker;
@@ -51,13 +52,20 @@ class ProcessingTest : public ::testing::Test {
 };
 
 TEST_F(ProcessingTest, NotStarted) {
-  _acceptor->exit();
-  ASSERT_TRUE(true);
+  ASSERT_NO_THROW(_acceptor->exit());
 }
 
 TEST_F(ProcessingTest, StartStop) {
   _acceptor->start();
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  _acceptor->exit();
-  ASSERT_TRUE(true);
+  ASSERT_NO_THROW(_acceptor->exit());
+}
+
+TEST_F(ProcessingTest, StartWithFilterStop) {
+  std::unordered_set<uint32_t> filters;
+  filters.insert(io::raw::static_type());
+  _acceptor->set_read_filters(filters);
+  _acceptor->start();
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  ASSERT_NO_THROW(_acceptor->exit());
 }

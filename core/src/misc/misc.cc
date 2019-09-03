@@ -58,7 +58,6 @@ static const uint16_t crc_tbl[16] = {
  *
  * @return The checksum
  */
->>>>>>> enh(misc): from_hex method replaces the Qt FromHex.
 uint16_t misc::crc16_ccitt(char const* data, unsigned int data_len) {
   uint16_t crc = 0xffff;
   uint8_t c;
