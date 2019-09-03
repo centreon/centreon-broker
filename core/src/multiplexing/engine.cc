@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include <cstdlib>
 #include <queue>
 #include <unistd.h>
@@ -94,6 +95,7 @@ void engine::hook(hooker& h, bool with_data) {
  *  @return Class instance.
  */
 engine& engine::instance() {
+  assert(_instance);
   return *_instance;
 }
 
