@@ -26,13 +26,15 @@
 CCB_BEGIN()
 
 namespace misc {
-  namespace filesystem {
-    std::list<std::string> dir_content(std::string const& path, bool recursive);
-    bool dir_exists(std::string const& path);
-    bool mkpath(std::string const& path);
-    int64_t file_size(std::string const& path);
-  }
-}
+namespace filesystem {
+std::list<std::string> dir_content(std::string const& path, bool recursive);
+std::list<std::string> dir_content(std::string const& path,
+                                   std::string const& filter);
+bool dir_exists(std::string const& path);
+bool mkpath(std::string const& path);
+int64_t file_size(std::string const& path);
+}  // namespace filesystem
+}  // namespace misc
 
 CCB_END()
 #endif /* CCB_MISC_FILESYSTEM_HH */

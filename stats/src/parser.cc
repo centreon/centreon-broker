@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/stats/parser.hh"
 #include <json11.hpp>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/stats/config.hh"
 #include "com/centreon/broker/stats/metric.hh"
-#include "com/centreon/broker/stats/parser.hh"
 
 using namespace com::centreon::broker::stats;
 using namespace json11;
@@ -42,7 +42,7 @@ parser::parser(parser const& right) {
 /**
  *  Destructor.
  */
-parser::~parser() throw () {}
+parser::~parser() throw() {}
 
 /**
  *  Assignment operator.
@@ -62,19 +62,16 @@ parser& parser::operator=(parser const& right) {
  *  @param[out] entries Parsed entries.
  *  @param[in]  content XML content.
  */
-void parser::parse(
-               config& cfg,
-               std::string const& content) {
+void parser::parse(config& cfg, std::string const& content) {
   std::string err;
 
   Json const& js{Json::parse(content, err)};
   if (!err.empty())
-    throw (exceptions::msg()
-      << "stats: invalid json file");
+    throw(exceptions::msg() << "stats: invalid json file");
 
   Json const& json_fifo{js["json_fifo"]};
   if (json_fifo.is_string() && !json_fifo.string_value().empty())
     cfg.add_fifo(json_fifo.string_value());
 
-  return ;
+  return;
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2012 Centreon
+** Copyright 2018 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,23 +16,17 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CCB_NAMESPACE_HH
-#define CCB_NAMESPACE_HH
+#include <gtest/gtest.h>
+#include "com/centreon/broker/misc/misc.hh"
 
-#ifdef CCB_BEGIN
-#undef CCB_BEGIN
-#endif  // CCB_BEGIN
-#define CCB_BEGIN()    \
-  namespace com {      \
-  namespace centreon { \
-  namespace broker {
+using namespace com::centreon::broker;
 
-#ifdef CCB_END
-#undef CCB_END
-#endif  // CCB_END
-#define CCB_END() \
-  }               \
-  }               \
-  }
+TEST(miscExec, Echo) {
+  std::string output{misc::exec("echo coucou")};
+  ASSERT_TRUE(output == "coucou\n");
+}
 
-#endif  // !CCB_NAMESPACE_HH
+TEST(miscExec, Uname) {
+  std::string output{misc::exec("ps aux | grep ut")};
+  ASSERT_TRUE(!output.empty());
+}

@@ -16,10 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sys/types.h>
-#include <regex.h>
-#include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/file/stl_fs_browser.hh"
+#include "com/centreon/broker/misc/filesystem.hh"
 
 using namespace com::centreon::broker::file;
 
@@ -43,32 +41,14 @@ stl_fs_browser::~stl_fs_browser() {}
  */
 #include <iostream>
 fs_browser::entry_list stl_fs_browser::read_directory(
-                                        std::string const& path,
-                                        std::string const& filters) {
+    std::string const& path,
+    std::string const& filters) {
   std::list<std::string> entries;
-  entries = misc::filesystem::dir_content(path, false);
-  {
-    std::list<std::string> filters_list;
-    regex_t r;
-
-    ::regcomp(&r, filters.c_str(), REG_EXTENDED);
-
-    for (std::list<std::string>::iterator it(entries.begin()),
-           end(entries.end());
-         it != end;
-         ++it) {
-      if (::regexec(&r, it->c_str(), 0, NULL, 0) == 0)
-        filters_list.push_back(*it);
-    }
-   
-    ::regfree(&r);
-    entries = filters_list;
-  }
+  entries = misc::filesystem::dir_content(path, filters);
 
   fs_browser::entry_list retval;
   for (std::list<std::string>::iterator it(entries.begin()), end(entries.end());
-       it != end;
-       ++it)
+       it != end; ++it)
     retval.push_back(*it);
   return (retval);
 }
@@ -80,5 +60,5 @@ fs_browser::entry_list stl_fs_browser::read_directory(
  */
 void stl_fs_browser::remove(std::string const& path) {
   std::remove(path.c_str());
-  return ;
+  return;
 }

@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/misc/string.hh"
 #include <gtest/gtest.h>
 #include "com/centreon/broker/misc/misc.hh"
-#include "com/centreon/broker/misc/string.hh"
 
 using namespace com::centreon::broker::misc;
 
@@ -36,14 +36,17 @@ TEST(StringSplit, ThreePart) {
 }
 
 TEST(StringSplit, ManyPart) {
-  std::list<std::string> lst{string::split("  test foo bar a b  c d eeeee", ' ')};
+  std::list<std::string> lst{
+      string::split("  test foo bar a b  c d eeeee", ' ')};
   ASSERT_EQ(lst.size(), 11u);
-  std::list<std::string> res{"", "", "test", "foo", "bar", "a", "b", "", "c", "d", "eeeee"};
+  std::list<std::string> res{"",  "", "test", "foo", "bar",  "a",
+                             "b", "", "c",    "d",   "eeeee"};
   ASSERT_EQ(lst, res);
 }
 
 TEST(StringBase64, Encode) {
-  ASSERT_EQ(string::base64_encode("A first little attempt."), "QSBmaXJzdCBsaXR0bGUgYXR0ZW1wdC4=");
+  ASSERT_EQ(string::base64_encode("A first little attempt."),
+            "QSBmaXJzdCBsaXR0bGUgYXR0ZW1wdC4=");
   ASSERT_EQ(string::base64_encode("A"), "QQ==");
   ASSERT_EQ(string::base64_encode("AB"), "QUI=");
   ASSERT_EQ(string::base64_encode("ABC"), "QUJD");

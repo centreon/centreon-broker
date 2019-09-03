@@ -16,12 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstring>
+#include "com/centreon/broker/misc/filesystem.hh"
 #include <dirent.h>
-#include <fstream>
+#include <regex.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "com/centreon/broker/misc/filesystem.hh"
+#include <cstring>
+#include <fstream>
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -34,7 +35,8 @@ using namespace com::centreon::broker::misc;
  *
  * @return a list of names.
  */
-std::list<std::string> filesystem::dir_content(std::string const& path, bool recursive) {
+std::list<std::string> filesystem::dir_content(std::string const& path,
+                                               bool recursive) {
   std::list<std::string> retval;
   DIR* dir{opendir(path.c_str())};
   if (dir) {
@@ -48,17 +50,37 @@ std::list<std::string> filesystem::dir_content(std::string const& path, bool rec
       if (recursive && ent->d_type == DT_DIR) {
         std::list<std::string> res{filesystem::dir_content(fullname, true)};
         retval.splice(retval.end(), res);
-      }
-      else if (ent->d_type == DT_REG)
+      } else if (ent->d_type == DT_REG)
         retval.push_back(std::move(fullname));
     }
     closedir(dir);
-  }
-  else
+  } else
     logging::error(logging::medium)
-      << "directory_dumper: unable to read directory '" << path << "'";
+        << "directory_dumper: unable to read directory '" << path << "'";
 
   return retval;
+}
+
+std::list<std::string> filesystem::dir_content(std::string const& path,
+                                               std::string const& filter) {
+  std::list<std::string> list{filesystem::dir_content(path, false)};
+  {
+    std::list<std::string> filters_list;
+    regex_t r;
+
+    ::regcomp(&r, filter.c_str(), REG_EXTENDED);
+
+    for (std::list<std::string>::iterator it(list.begin()), end(list.end());
+         it != end; ++it) {
+      if (::regexec(&r, it->c_str(), 0, NULL, 0) == 0)
+        filters_list.push_back(*it);
+    }
+
+    ::regfree(&r);
+    list = filters_list;
+  }
+
+  return list;
 }
 
 /**
@@ -113,7 +135,7 @@ bool filesystem::mkpath(std::string const& path) {
 }
 
 int64_t filesystem::file_size(std::string const& path) {
-    std::ifstream file{path, std::ios::binary | std::ios::ate};
-    int64_t size{file.tellg()};
-    return size;
+  std::ifstream file{path, std::ios::binary | std::ios::ate};
+  int64_t size{file.tellg()};
+  return size;
 }

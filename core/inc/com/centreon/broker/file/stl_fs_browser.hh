@@ -17,36 +17,35 @@
 */
 
 #ifndef CCB_FILE_STL_FS_BROWSER_HH
-#  define CCB_FILE_STL_FS_BROWSER_HH
+#define CCB_FILE_STL_FS_BROWSER_HH
 
-#  include "com/centreon/broker/file/fs_browser.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/file/fs_browser.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          file {
-  /**
-   *  @class stl_fs_browser stl_fs_browser.hh "com/centreon/broker/file/stl_fs_browser.hh"
-   *  @brief Qt-base implementation of fs_browser.
-   *
-   *  Implements fs_browser interface using Qt.
-   */
-  class            stl_fs_browser : public fs_browser {
-   public:
-                   stl_fs_browser();
-                   ~stl_fs_browser();
-    fs_browser::entry_list
-                   read_directory(
-                     std::string const& path,
-                     std::string const& filters = "");
-    void           remove(std::string const& path);
+namespace file {
+/**
+ *  @class stl_fs_browser stl_fs_browser.hh
+ * "com/centreon/broker/file/stl_fs_browser.hh"
+ *  @brief Qt-base implementation of fs_browser.
+ *
+ *  Implements fs_browser interface using Qt.
+ */
+class stl_fs_browser : public fs_browser {
+ public:
+  stl_fs_browser();
+  ~stl_fs_browser();
+  fs_browser::entry_list read_directory(std::string const& path,
+                                        std::string const& filters = "");
+  void remove(std::string const& path);
 
-   private:
-                   stl_fs_browser(stl_fs_browser const& other);
-    stl_fs_browser& operator=(stl_fs_browser const& other);
-  };
-}
+ private:
+  stl_fs_browser(stl_fs_browser const& other);
+  stl_fs_browser& operator=(stl_fs_browser const& other);
+};
+}  // namespace file
 
 CCB_END()
 
-#endif // !CCB_FILE_STL_FS_BROWSER_HH
+#endif  // !CCB_FILE_STL_FS_BROWSER_HH

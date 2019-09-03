@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/processing/feeder.hh"
 #include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
@@ -23,16 +24,15 @@
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
-#include "com/centreon/broker/processing/feeder.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -42,12 +42,11 @@ using namespace com::centreon::broker::processing;
  *  @param[in] read_filters   Read filters.
  *  @param[in] write_filters  Write filters.
  */
-feeder::feeder(
-          std::string const& name,
-          std::shared_ptr<io::stream> client,
-          uset<unsigned int> const& read_filters,
-          uset<unsigned int> const& write_filters)
-  : bthread(name), _client(client), _subscriber(name, false) {
+feeder::feeder(std::string const& name,
+               std::shared_ptr<io::stream> client,
+               uset<unsigned int> const& read_filters,
+               uset<unsigned int> const& write_filters)
+    : bthread(name), _client(client), _subscriber(name, false) {
   _subscriber.get_muxer().set_read_filters(read_filters);
   _subscriber.get_muxer().set_write_filters(write_filters);
   // By default, we assume the feeder is already connected.
@@ -58,20 +57,18 @@ feeder::feeder(
 /**
  *  Destructor.
  */
-feeder::~feeder() {
-  this->bthread::~bthread();
-}
+feeder::~feeder() {}
 
 /**
  *  Thread main routine.
  */
 void feeder::run() {
   logging::info(logging::medium)
-    << "feeder: thread of client '" << _name << "' is starting";
+      << "feeder: thread of client '" << _name << "' is starting";
   try {
     if (!_client)
-      throw (exceptions::msg() << "could not process '"
-             << _name << "' with no client stream");
+      throw(exceptions::msg()
+            << "could not process '" << _name << "' with no client stream");
     bool stream_can_read(true);
     bool muxer_can_read(true);
     std::shared_ptr<io::data> d;
@@ -82,8 +79,7 @@ void feeder::run() {
         try {
           misc::read_lock lock(_client_mutex);
           timed_out_stream = !_client->read(d, 0);
-        }
-        catch (exceptions::shutdown const& e) {
+        } catch (exceptions::shutdown const& e) {
           stream_can_read = false;
         }
         if (d) {
@@ -92,7 +88,7 @@ void feeder::run() {
             _subscriber.get_muxer().write(d);
           }
           tick();
-          continue ; // Stream read bias.
+          continue;  // Stream read bias.
         }
       }
 
@@ -102,8 +98,7 @@ void feeder::run() {
       if (muxer_can_read)
         try {
           timed_out_muxer = !_subscriber.get_muxer().read(d, 0);
-        }
-        catch (exceptions::shutdown const& e) {
+        } catch (exceptions::shutdown const& e) {
           muxer_can_read = false;
         }
       if (d) {
@@ -120,21 +115,18 @@ void feeder::run() {
       if (timed_out_stream && timed_out_muxer)
         ::usleep(100000);
     }
-  }
-  catch (exceptions::shutdown const& e) {
+  } catch (exceptions::shutdown const& e) {
     // Normal termination.
     (void)e;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     logging::error(logging::medium)
-      << "feeder: error occured while processing client '"
-      << _name << "': " << e.what();
+        << "feeder: error occured while processing client '" << _name
+        << "': " << e.what();
     set_last_error(e.what());
-  }
-  catch (...) {
+  } catch (...) {
     logging::error(logging::high)
-      << "feeder: unknown error occured while processing client '"
-      << _name << "'";
+        << "feeder: unknown error occured while processing client '" << _name
+        << "'";
   }
   {
     misc::read_lock lock(_client_mutex);
@@ -142,7 +134,7 @@ void feeder::run() {
     _subscriber.get_muxer().remove_queue_files();
   }
   logging::info(logging::medium)
-    << "feeder: thread of client '" << _name << "' will exit";
+      << "feeder: thread of client '" << _name << "' will exit";
 }
 
 /**
@@ -158,8 +150,7 @@ std::string feeder::_get_state() {
     else
       ret = "connected";
     _client_mutex.unlock();
-  }
-  else
+  } else
     ret = "blocked";
   return ret;
 }

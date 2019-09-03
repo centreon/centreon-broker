@@ -17,49 +17,43 @@
 */
 
 #ifndef CCB_MODULES_LOADER_HH
-#  define CCB_MODULES_LOADER_HH
+#define CCB_MODULES_LOADER_HH
 
-#  include <memory>
-#  include <string>
-#  include "com/centreon/broker/misc/unordered_hash.hh"
-#  include "com/centreon/broker/modules/handle.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <memory>
+#include <string>
+#include "com/centreon/broker/misc/unordered_hash.hh"
+#include "com/centreon/broker/modules/handle.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace    modules {
-  /**
-   *  @class loader loader.hh "com/centreon/broker/modules/loader.hh"
-   *  @brief Load Centreon Broker plugins.
-   *
-   *  This class is used to load Centreon Broker plugins and hold
-   *  reference to them as long as they exist.
-   */
-  class      loader {
-  public:
-    typedef  umap<std::string, std::shared_ptr<handle> >::iterator
-             iterator;
+namespace modules {
+/**
+ *  @class loader loader.hh "com/centreon/broker/modules/loader.hh"
+ *  @brief Load Centreon Broker plugins.
+ *
+ *  This class is used to load Centreon Broker plugins and hold
+ *  reference to them as long as they exist.
+ */
+class loader {
+ public:
+  typedef umap<std::string, std::shared_ptr<handle> >::iterator iterator;
 
-             loader();
-             loader(loader const& l);
-             ~loader();
-    loader&  operator=(loader const& l);
-    iterator begin();
-    iterator end();
-    void     load_dir(
-               std::string const& dirname,
-               void const* arg = NULL);
-    void     load_file(
-               std::string const& filename,
-               void const* arg = NULL);
-    void     unload();
+  loader();
+  loader(loader const& l);
+  ~loader();
+  loader& operator=(loader const& l);
+  iterator begin();
+  iterator end();
+  void load_dir(std::string const& dirname, void const* arg = NULL);
+  void load_file(std::string const& filename, void const* arg = NULL);
+  void unload();
 
-  private:
-    umap<std::string, std::shared_ptr<handle> >
-             _handles;
-  };
-}
+ private:
+  umap<std::string, std::shared_ptr<handle> > _handles;
+};
+}  // namespace modules
 
 CCB_END()
 
-#endif // !CCB_MODULES_LOADER_HH
+#endif  // !CCB_MODULES_LOADER_HH
