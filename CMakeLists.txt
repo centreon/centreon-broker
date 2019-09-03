@@ -105,11 +105,6 @@ add_definitions("-DASIO_STANDALONE")
 find_package(ZLIB REQUIRED)
 
 include(${QT_USE_FILE})
-set(QT_VERSION "${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
-if (("${QT_VERSION}" VERSION_EQUAL "4.7.0")
-    OR ("${QT_VERSION}" VERSION_EQUAL "4.7.1"))
-  message(WARNING "Qt versions 4.7.0 and 4.7.1 contain a bug that might prevent Centreon Broker from working properly.")
-endif ()
 
 # Find MySQL/Mariadb devel package
 find_program(MYSQL_CONFIG "mysql_config")
@@ -480,7 +475,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/time/timerange.cc
   ${SRC_DIR}/time/timezone_locker.cc
   ${SRC_DIR}/time/timezone_manager.cc
-  ${QT_WRAPPED_SOURCES}
   # Headers.
   ${INC_DIR}/bbdo/acceptor.hh
   ${INC_DIR}/bbdo/ack.hh
@@ -892,7 +886,6 @@ message(STATUS "")
 message(STATUS "  Build")
 message(STATUS "    - Compiler                   ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID})")
 message(STATUS "    - Extra compilation flags    ${CMAKE_CXX_FLAGS}")
-message(STATUS "    - Qt                         ${QT_VERSION}")
 if (WITH_TESTING)
   message(STATUS "    - Unit tests                 enabled")
   if (MONITORING_ENGINE)

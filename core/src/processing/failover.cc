@@ -18,22 +18,22 @@
 
 //#include <QCoreApplication>
 //#include <QTimer>
+#include "com/centreon/broker/processing/failover.hh"
 #include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
-#include "com/centreon/broker/processing/failover.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -42,34 +42,30 @@ using namespace com::centreon::broker::processing;
  *  @param[in] sbscrbr   Multiplexing agent.
  *  @param[in] name      The failover name.
  */
-failover::failover(
-            std::shared_ptr<io::endpoint> endp,
-            std::shared_ptr<multiplexing::subscriber> sbscrbr,
-            std::string const& name)
-  : bthread(name),
-    _buffering_timeout(0),
-    _endpoint(endp),
-    _failover_launched(false),
-    _initialized(false),
-    _next_timeout(0),
-    _retry_interval(30),
-    _subscriber(sbscrbr),
-    _update(false) {}
+failover::failover(std::shared_ptr<io::endpoint> endp,
+                   std::shared_ptr<multiplexing::subscriber> sbscrbr,
+                   std::string const& name)
+    : bthread(name),
+      _buffering_timeout(0),
+      _endpoint(endp),
+      _failover_launched(false),
+      _initialized(false),
+      _next_timeout(0),
+      _retry_interval(30),
+      _subscriber(sbscrbr),
+      _update(false) {}
 
 /**
  *  Destructor.
  */
-failover::~failover() {
-  this->bthread::~bthread();
-}
+failover::~failover() {}
 
 /**
  *  Add secondary endpoint to this failover thread.
  *
  *  @param[in] endp  New secondary endpoint.
  */
-void failover::add_secondary_endpoint(
-                 std::shared_ptr<io::endpoint> endp) {
+void failover::add_secondary_endpoint(std::shared_ptr<io::endpoint> endp) {
   _secondary_endpoints.push_back(endp);
 }
 
@@ -86,7 +82,7 @@ void failover::exit() {
  *
  *  @return Failover thread buffering timeout.
  */
-time_t failover::get_buffering_timeout() const throw () {
+time_t failover::get_buffering_timeout() const throw() {
   return _buffering_timeout;
 }
 
@@ -95,7 +91,7 @@ time_t failover::get_buffering_timeout() const throw () {
  *
  *  @return True if the thread is initializable. That is it is read()able.
  */
-bool failover::get_initialized() const throw () {
+bool failover::get_initialized() const throw() {
   return (_initialized);
 }
 
@@ -104,7 +100,7 @@ bool failover::get_initialized() const throw () {
  *
  *  @return Failover thread retry interval.
  */
-time_t failover::get_retry_interval() const throw () {
+time_t failover::get_retry_interval() const throw() {
   return (_retry_interval);
 }
 
@@ -114,15 +110,15 @@ time_t failover::get_retry_interval() const throw () {
 void failover::run() {
   // Initial log.
   logging::debug(logging::high)
-    << "failover: thread of endpoint '" << _name << "' is starting";
+      << "failover: thread of endpoint '" << _name << "' is starting";
 
   // Check endpoint.
   if (!_endpoint) {
     logging::error(logging::high)
-      << "failover: thread of endpoint '" << _name << "' has no endpoint"
-      << " object, this is likely a software bug that should be reported"
-      << " to Centreon Broker developers";
-    return ;
+        << "failover: thread of endpoint '" << _name << "' has no endpoint"
+        << " object, this is likely a software bug that should be reported"
+        << " to Centreon Broker developers";
+    return;
   }
 
   // Thread should be aware of external exit requests.
@@ -150,21 +146,21 @@ void failover::run() {
       if (_buffering_timeout > 0) {
         // Status.
         logging::debug(logging::medium)
-          << "failover: buffering data for endpoint '" << _name
-          << "' (" << _buffering_timeout << "s)";
+            << "failover: buffering data for endpoint '" << _name << "' ("
+            << _buffering_timeout << "s)";
         _update_status("buffering data");
 
         // Wait loop.
         // FIXME DBR: attempt to replace the Qt code below.
         if (!should_exit())
           std::this_thread::sleep_for(std::chrono::seconds(_buffering_timeout));
-//        return;
+        //        return;
 
-//        time_t valid_time(time(NULL) + _buffering_timeout);
-//        do {
-//          QTimer::singleShot(1000, this, SLOT(quit()));
-//          exec();
-//        } while (!should_exit() && (time(NULL) < valid_time));
+        //        time_t valid_time(time(NULL) + _buffering_timeout);
+        //        do {
+        //          QTimer::singleShot(1000, this, SLOT(quit()));
+        //          exec();
+        //        } while (!should_exit() && (time(NULL) < valid_time));
 
         // FIXME DBR: I don't see how this method could be called... even
         // in the Qt version.
@@ -175,31 +171,28 @@ void failover::run() {
       _update_status("initializing secondaries");
       std::vector<std::shared_ptr<io::stream> > secondaries;
       for (std::vector<std::shared_ptr<io::endpoint> >::iterator
-             it(_secondary_endpoints.begin()),
-             end(_secondary_endpoints.end());
-           it != end;
-           ++it)
+               it(_secondary_endpoints.begin()),
+           end(_secondary_endpoints.end());
+           it != end; ++it)
         try {
           std::shared_ptr<io::stream> s((*it)->open());
           if (s)
             secondaries.push_back(s);
           else
             logging::error(logging::medium)
-              << "failover: could not open a secondary of endpoint '"
-              << _name << ": secondary returned a null stream";
-        }
-        catch (std::exception const& e) {
+                << "failover: could not open a secondary of endpoint '" << _name
+                << ": secondary returned a null stream";
+        } catch (std::exception const& e) {
           logging::error(logging::medium)
-            << "failover: error occured while opening a secondary "
-            << "of endpoint '" << _name << "': " << e.what();
+              << "failover: error occured while opening a secondary "
+              << "of endpoint '" << _name << "': " << e.what();
         }
       _update_status("");
 
       // Shutdown failover.
       if (_failover_launched) {
         logging::debug(logging::medium)
-          << "failover: shutting down failover of endpoint '"
-          << _name << "'";
+            << "failover: shutting down failover of endpoint '" << _name << "'";
         _update_status("shutting down failover");
         _failover->exit();
         _failover->wait();
@@ -209,8 +202,7 @@ void failover::run() {
 
       // Event processing loop.
       logging::debug(logging::medium)
-        << "failover: launching event loop of endpoint '"
-        << _name << "'";
+          << "failover: launching event loop of endpoint '" << _name << "'";
       _subscriber->get_muxer().nack_events();
       bool stream_can_read(true);
       bool muxer_can_read(true);
@@ -218,7 +210,7 @@ void failover::run() {
       std::shared_ptr<io::data> d;
       while (!should_exit()) {
         // Process events.
-        //QCoreApplication::processEvents();
+        // QCoreApplication::processEvents();
 
         // Check for update.
         if (_update) {
@@ -232,28 +224,26 @@ void failover::run() {
         bool timed_out_stream(true);
         if (stream_can_read) {
           logging::debug(logging::low)
-            << "failover: reading event from endpoint '"
-            << _name << "'";
+              << "failover: reading event from endpoint '" << _name << "'";
           _update_status("reading event from stream");
           try {
             std::lock_guard<std::timed_mutex> stream_lock(_streamm);
             timed_out_stream = !_stream->read(d, 0);
-          }
-          catch (exceptions::shutdown const& e) {
+          } catch (exceptions::shutdown const& e) {
             logging::debug(logging::medium)
-              << "failover: stream of endpoint '" << _name
-              << "' shutdown while reading: " << e.what();
+                << "failover: stream of endpoint '" << _name
+                << "' shutdown while reading: " << e.what();
             stream_can_read = false;
           }
           if (d) {
             logging::debug(logging::low)
-              << "failover: writing event of endpoint '" << _name
-              << "' to multiplexing engine";
+                << "failover: writing event of endpoint '" << _name
+                << "' to multiplexing engine";
             _update_status("writing event to multiplexing engine");
             _subscriber->get_muxer().write(d);
             tick();
             _update_status("");
-            continue ; // Stream read bias.
+            continue;  // Stream read bias.
           }
           _update_status("");
         }
@@ -262,51 +252,48 @@ void failover::run() {
         d.reset();
         bool timed_out_muxer(true);
         if (muxer_can_read) {
-          logging::debug(logging::low)
-            << "failover: reading event from multiplexing engine for endpoint '"
-            << _name << "'";
+          logging::debug(logging::low) << "failover: reading event from "
+                                          "multiplexing engine for endpoint '"
+                                       << _name << "'";
           _update_status("reading event from multiplexing engine");
           try {
             timed_out_muxer = !_subscriber->get_muxer().read(d, 0);
             should_commit = should_commit || d;
-          }
-          catch (exceptions::shutdown const& e) {
+          } catch (exceptions::shutdown const& e) {
             logging::debug(logging::medium)
-              << "failover: muxer of endpoint '" << _name
-              << "' shutdown while reading: " << e.what();
+                << "failover: muxer of endpoint '" << _name
+                << "' shutdown while reading: " << e.what();
             muxer_can_read = false;
           }
           if (d) {
-            logging::debug(logging::low)
-              << "failover: writing event of multiplexing engine to endpoint '"
-              << _name << "'";
+            logging::debug(logging::low) << "failover: writing event of "
+                                            "multiplexing engine to endpoint '"
+                                         << _name << "'";
             _update_status("writing event to stream");
             int we(0);
             try {
               std::lock_guard<std::timed_mutex> stream_lock(_streamm);
               we = _stream->write(d);
-            }
-            catch (exceptions::shutdown const& e) {
+            } catch (exceptions::shutdown const& e) {
               logging::debug(logging::medium)
-                << "failover: stream of endpoint '" << _name
-                << "' shutdown while writing: " << e.what();
+                  << "failover: stream of endpoint '" << _name
+                  << "' shutdown while writing: " << e.what();
               muxer_can_read = false;
             }
             _subscriber->get_muxer().ack_events(we);
             tick();
             for (std::vector<std::shared_ptr<io::stream> >::iterator
-                   it(secondaries.begin()),
-                   end(secondaries.end());
+                     it(secondaries.begin()),
+                 end(secondaries.end());
                  it != end;) {
               try {
                 (*it)->write(d);
                 ++it;
-              }
-              catch (std::exception const& e) {
-                logging::error(logging::medium) << "failover: error "
-                  << "occurred while writing to a secondary of endpoint '"
-                  << _name << "' (secondary will be removed): "
-                  << e.what();
+              } catch (std::exception const& e) {
+                logging::error(logging::medium)
+                    << "failover: error "
+                    << "occurred while writing to a secondary of endpoint '"
+                    << _name << "' (secondary will be removed): " << e.what();
                 it = secondaries.erase(it);
               }
             }
@@ -324,8 +311,7 @@ void failover::run() {
             _next_timeout = now + 1;
             std::lock_guard<std::timed_mutex> stream_lock(_streamm);
             we = _stream->flush();
-          }
-          else if (now >= _next_timeout) {
+          } else if (now >= _next_timeout) {
             _next_timeout = now + 1;
             std::lock_guard<std::timed_mutex> stream_lock(_streamm);
             we = _stream->flush();
@@ -344,11 +330,12 @@ void failover::run() {
       }
       _launch_failover();
       _initialized = true;
-    }
-    catch (...) {
-      logging::error(logging::high) << "failover: endpoint '" << _name
-        << "' encountered an unknown exception, this is likely a "
-        << "software bug that should be reported to Centreon Broker developers";
+    } catch (...) {
+      logging::error(logging::high)
+          << "failover: endpoint '" << _name
+          << "' encountered an unknown exception, this is likely a "
+          << "software bug that should be reported to Centreon Broker "
+             "developers";
       {
         std::lock_guard<std::timed_mutex> stream_lock(_streamm);
         _stream.reset();
@@ -370,11 +357,11 @@ void failover::run() {
     if (!should_exit())
       std::this_thread::sleep_for(std::chrono::seconds(_retry_interval));
 
-//    time_t valid_time(time(NULL) + _retry_interval);
-//    while (!should_exit() && (time(NULL) < valid_time)) {
-//      QTimer::singleShot(1000, this, SLOT(quit()));
-//      exec();
-//    }
+    //    time_t valid_time(time(NULL) + _retry_interval);
+    //    while (!should_exit() && (time(NULL) < valid_time)) {
+    //      QTimer::singleShot(1000, this, SLOT(quit()));
+    //      exec();
+    //    }
     // FIXME DBR: I don't see how this method could be called... even
     // in the Qt version.
     _update_status("");
@@ -390,14 +377,14 @@ void failover::run() {
   // Exit failover thread if necessary.
   if (_failover) {
     logging::info(logging::medium)
-      << "failover: requesting termination of failover of endpoint '"
-      << _name << "'";
+        << "failover: requesting termination of failover of endpoint '" << _name
+        << "'";
     _failover->exit();
   }
 
   // Exit log.
   logging::debug(logging::high)
-    << "failover: thread of endpoint '" << _name << "' is exiting";
+      << "failover: thread of endpoint '" << _name << "' is exiting";
 }
 
 /**
@@ -473,8 +460,7 @@ std::string failover::_get_state() {
     else
       ret = "connected";
     _streamm.unlock();
-  }
-  else
+  } else
     ret = "blocked";
   return ret;
 }
@@ -521,8 +507,7 @@ void failover::_forward_statistic(io::properties& tree) {
     if (stream_lock.try_lock_for(std::chrono::milliseconds(100))) {
       if (_stream)
         _stream->statistics(tree);
-    }
-    else
+    } else
       tree.add_property("status", io::property("status", "busy"));
   }
   _subscriber->get_muxer().statistics(tree);
@@ -533,10 +518,10 @@ void failover::_forward_statistic(io::properties& tree) {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Launch failover of this endpoint.
@@ -547,8 +532,8 @@ void failover::_launch_failover() {
     _failover_launched = true;
     _failover->start();
     // FIXME DBR: what's this...
-//    while (!_failover->get_initialized() && !_failover->wait(10))
-//      yieldCurrentThread();
+    //    while (!_failover->get_initialized() && !_failover->wait(10))
+    //      yieldCurrentThread();
   }
 }
 
