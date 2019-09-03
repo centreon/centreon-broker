@@ -16,14 +16,16 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/misc/misc.hh"
+#include <unistd.h>
+#include <array>
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <random>
-#include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/misc/misc.hh"
 
 using namespace com::centreon::broker;
 
@@ -37,8 +39,7 @@ std::string misc::temp_path() {
   int retval(mkstemp(path));
   if (retval < 0) {
     char const* err_msg(strerror(errno));
-    throw (exceptions::msg() << "cannot create temporary file: "
-           << err_msg);
+    throw exceptions::msg() << "cannot create temporary file: " << err_msg;
   }
   ::close(retval);
   ::remove(path);
@@ -46,17 +47,13 @@ std::string misc::temp_path() {
 }
 
 static const uint16_t crc_tbl[16] = {
-    0x0000, 0x1081, 0x2102, 0x3183,
-    0x4204, 0x5285, 0x6306, 0x7387,
-    0x8408, 0x9489, 0xa50a, 0xb58b,
-    0xc60c, 0xd68d, 0xe70e, 0xf78f
-};
-
+    0x0000, 0x1081, 0x2102, 0x3183, 0x4204, 0x5285, 0x6306, 0x7387,
+    0x8408, 0x9489, 0xa50a, 0xb58b, 0xc60c, 0xd68d, 0xe70e, 0xf78f};
 
 uint16_t misc::crc16_ccitt(char const* data, unsigned int data_len) {
   uint16_t crc = 0xffff;
   uint8_t c;
-  const uint8_t *p = reinterpret_cast<const uint8_t *>(data);
+  const uint8_t* p = reinterpret_cast<const uint8_t*>(data);
   while (data_len--) {
     c = *p++;
     crc = ((crc >> 4) & 0x0fff) ^ crc_tbl[((crc ^ c) & 15)];
@@ -64,4 +61,18 @@ uint16_t misc::crc16_ccitt(char const* data, unsigned int data_len) {
     crc = ((crc >> 4) & 0x0fff) ^ crc_tbl[((crc ^ c) & 15)];
   }
   return ~crc & 0xffff;
+}
+
+std::string misc::exec(std::string const& cmd) {
+  std::array<char, 128> buffer;
+  std::string result;
+  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"),
+                                                pclose);
+  if (!pipe) {
+    throw std::runtime_error("popen() failed!");
+  }
+  while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+    result += buffer.data();
+  }
+  return result;
 }

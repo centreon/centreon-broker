@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sstream>
+#include "com/centreon/broker/processing/acceptor.hh"
 #include <unistd.h>
+#include <sstream>
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
-#include "com/centreon/broker/processing/acceptor.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 
 using namespace com::centreon::broker;
@@ -33,18 +33,13 @@ using namespace com::centreon::broker::processing;
  *  @param[in] endp       Endpoint.
  *  @param[in] name       Name of the endpoint.
  */
-acceptor::acceptor(
-            std::shared_ptr<io::endpoint> endp,
-            std::string const& name)
-  : bthread(name),
-    _endp(endp),
-    _retry_interval(30) {}
+acceptor::acceptor(std::shared_ptr<io::endpoint> endp, std::string const& name)
+    : bthread(name), _endp(endp), _retry_interval(30) {}
 
 /**
  *  Destructor.
  */
 acceptor::~acceptor() {
-  this->bthread::~bthread();
   _wait_feeders();
 }
 
@@ -64,12 +59,8 @@ void acceptor::accept() {
       oss << _name << "-" << ++connection_id;
       name = oss.str();
     }
-    std::shared_ptr<processing::feeder>
-      f(new processing::feeder(
-                          name,
-                          s,
-                          _read_filters,
-                          _write_filters));
+    std::shared_ptr<processing::feeder> f(
+        new processing::feeder(name, s, _read_filters, _write_filters));
 
     // Run feeder thread.
     f->start();
@@ -97,22 +88,21 @@ void acceptor::run() {
       _set_listening(true);
       // Try to accept connection.
       accept();
-    }
-    catch (std::exception const& e) {
+    } catch (std::exception const& e) {
       _set_listening(false);
       // Log error.
-      logging::error(logging::high) << "acceptor: endpoint '"
-        << _name << "' could not accept client: " << e.what();
+      logging::error(logging::high)
+          << "acceptor: endpoint '" << _name
+          << "' could not accept client: " << e.what();
 
       // Sleep a while before reconnection.
       logging::info(logging::medium)
-        << "acceptor: endpoint '" << _name << "' will wait "
-        << _retry_interval
-        << "s before attempting to accept a new client";
+          << "acceptor: endpoint '" << _name << "' will wait "
+          << _retry_interval << "s before attempting to accept a new client";
       time_t limit(time(NULL) + _retry_interval);
       while (!should_exit() && (time(NULL) < limit)) {
         // FIXME DBR: what to do without Qt?
-        //QCoreApplication::processEvents();
+        // QCoreApplication::processEvents();
         ::sleep(1);
       }
     }
@@ -121,8 +111,8 @@ void acceptor::run() {
     {
       std::lock_guard<std::mutex> lock(_stat_mutex);
       for (std::list<std::shared_ptr<processing::feeder> >::iterator
-             it(_feeders.begin()),
-             end(_feeders.end());
+               it(_feeders.begin()),
+           end(_feeders.end());
            it != end;)
         if ((*it)->wait(0))
           it = _feeders.erase(it);
@@ -222,10 +212,9 @@ void acceptor::_forward_statistic(io::properties& tree) {
   _endp->stats(tree);
   // Get statistics of feeders
   for (std::list<std::shared_ptr<processing::feeder> >::iterator
-         it(_feeders.begin()),
-         end(_feeders.end());
-       it != end;
-       ++it) {
+           it(_feeders.begin()),
+       end(_feeders.end());
+       it != end; ++it) {
     io::properties subtree;
     (*it)->stats(subtree);
     tree.add_child(subtree, (*it)->get_name());
@@ -238,16 +227,14 @@ void acceptor::_forward_statistic(io::properties& tree) {
 void acceptor::_wait_feeders() {
   // Wait for all launched feeders.
   for (std::list<std::shared_ptr<processing::feeder> >::iterator
-         it(_feeders.begin()),
-         end(_feeders.end());
-       it != end;
-       ++it)
+           it(_feeders.begin()),
+       end(_feeders.end());
+       it != end; ++it)
     (*it)->exit();
   for (std::list<std::shared_ptr<processing::feeder> >::iterator
-         it(_feeders.begin()),
-         end(_feeders.end());
-       it != end;
-       ++it)
+           it(_feeders.begin()),
+       end(_feeders.end());
+       it != end; ++it)
     (*it)->wait();
   _feeders.clear();
 }

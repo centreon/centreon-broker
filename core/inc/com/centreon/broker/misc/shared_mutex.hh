@@ -20,8 +20,9 @@
 #define CCB_MISC_SHARED_MUTEX_HH
 
 #include <pthread.h>
-#include <ctime>
 #include <chrono>
+#include <ctime>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -32,68 +33,49 @@ class shared_mutex {
   pthread_rwlock_t _rwlock;
 
  public:
-  shared_mutex() :
-    _rwlock(PTHREAD_RWLOCK_INITIALIZER) {}
+  shared_mutex() : _rwlock(PTHREAD_RWLOCK_INITIALIZER) {}
 
-  ~shared_mutex() {
-    pthread_rwlock_destroy(&_rwlock);
-  }
+  ~shared_mutex() { pthread_rwlock_destroy(&_rwlock); }
 
   // Exclusive ownership
 
-  void lock() {
-    pthread_rwlock_wrlock(&_rwlock);
-  }
+  void lock() { pthread_rwlock_wrlock(&_rwlock); }
 
-  bool try_lock() {
-    return pthread_rwlock_trywrlock(&_rwlock) == 0;
-  }
+  bool try_lock() { return pthread_rwlock_trywrlock(&_rwlock) == 0; }
 
   bool try_lock_for(int ms) {
-    struct timespec timeout{
-      .tv_sec = ms / 1000,
-      .tv_nsec = (ms % 1000) * 1000000
+    struct timespec timeout {
+      .tv_sec = ms / 1000, .tv_nsec = (ms % 1000) * 1000000
     };
     return pthread_rwlock_timedwrlock(&_rwlock, &timeout) == 0;
   }
 
-  void unlock() {
-    pthread_rwlock_unlock(&_rwlock);
-  }
+  void unlock() { pthread_rwlock_unlock(&_rwlock); }
 
   // Shared ownership
 
-  void lock_shared() {
-    pthread_rwlock_rdlock(&_rwlock);
-  }
+  void lock_shared() { pthread_rwlock_rdlock(&_rwlock); }
 
-  bool try_lock_shared() {
-    return pthread_rwlock_trywrlock(&_rwlock) == 0;
-  }
+  bool try_lock_shared() { return pthread_rwlock_trywrlock(&_rwlock) == 0; }
 
   bool try_lock_shared_for(int ms) {
-    struct timespec timeout{
-      .tv_sec = ms / 1000,
-      .tv_nsec = (ms % 1000) * 1000000
+    struct timespec timeout {
+      .tv_sec = ms / 1000, .tv_nsec = (ms % 1000) * 1000000
     };
     return pthread_rwlock_timedrdlock(&_rwlock, &timeout) == 0;
   }
 };
 
 class read_lock {
-  public:
-    read_lock(shared_mutex& m)
-    : _m(m) {
-      _m.lock_shared();
-    }
-    ~read_lock() {
-      _m.unlock();
-    }
-  private:
-    shared_mutex& _m;
+ public:
+  read_lock(shared_mutex& m) : _m(m) { _m.lock_shared(); }
+  ~read_lock() { _m.unlock(); }
+
+ private:
+  shared_mutex& _m;
 };
 
-} // namespace misc
+}  // namespace misc
 
 CCB_END()
 

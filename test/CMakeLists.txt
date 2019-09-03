@@ -94,6 +94,7 @@ add_executable(ut
   ${TESTS_DIR}/logging.cc
   ${TESTS_DIR}/misc/filesystem.cc
   ${TESTS_DIR}/misc/string.cc
+  ${TESTS_DIR}/misc/exec.cc
   ${TESTS_DIR}/mysql/mysql.cc
   ${TESTS_DIR}/multiplexing/muxer/read.cc
   ${TESTS_DIR}/processing/thread.cc

@@ -16,33 +16,32 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <QDir>
-#include <QLibraryInfo>
+#include "com/centreon/broker/misc/diagnostic.hh"
 #include <sys/types.h>
-#include <unistd.h>
-#include <QProcess>
-#include <sstream>
-#include <cstdio>
 #include <sys/wait.h>
-#include <thread>
+#include <unistd.h>
 #include <chrono>
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+#include <sstream>
+#include <thread>
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/misc/diagnostic.hh"
+#include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/misc/misc.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 
 /**************************************
-*                                     *
-*           Static Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Methods            *
+ *                                     *
+ **************************************/
 int diagnostic::exec_process(char const** argv, bool wait_for_completion) {
   int status;
   pid_t my_pid{fork()};
@@ -73,10 +72,10 @@ int diagnostic::exec_process(char const** argv, bool wait_for_completion) {
 }
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -95,7 +94,7 @@ diagnostic::diagnostic(diagnostic const& right) {
 /**
  *  Destructor.
  */
-diagnostic::~diagnostic() throw () {}
+diagnostic::~diagnostic() throw() {}
 
 /**
  *  Assignment operator.
@@ -115,17 +114,15 @@ diagnostic& diagnostic::operator=(diagnostic const& right) {
  *  @param[in]  cfg_files Main configuration files.
  *  @param[out] out_file  Output file.
  */
-void diagnostic::generate(
-                   std::vector<std::string> const& cfg_files,
-                   std::string const& out_file) {
+void diagnostic::generate(std::vector<std::string> const& cfg_files,
+                          std::string const& out_file) {
   // Destination directory.
   std::string tmp_dir;
   {
     tmp_dir = temp_path();
-    QDir dir;
-    if (!dir.mkdir(tmp_dir.c_str()))
-      throw (exceptions::msg()
-             << "diagnostic: cannot create temporary directory path");
+    std::ifstream dir(tmp_dir);
+    if (!dir.good())
+      throw exceptions::msg() << "diagnostic: cannot create temporary file";
   }
 
   // Files to remove.
@@ -165,10 +162,7 @@ void diagnostic::generate(
 
   // Base information about the software.
   logging::info(logging::high)
-    << "diagnostic: Centreon Broker " << CENTREON_BROKER_VERSION;
-  logging::info(logging::high) << "diagnostic: using Qt " << qVersion()
-    << " " << QLibraryInfo::buildKey().toStdString()
-    << " (compiled with " << QT_VERSION_STR << ")";
+      << "diagnostic: Centreon Broker " << CENTREON_BROKER_VERSION;
 
   // df.
   logging::info(logging::high) << "diagnostic: getting disk usage";
@@ -177,10 +171,11 @@ void diagnostic::generate(
     df_log_path = tmp_dir;
     df_log_path.append("/df.log");
     to_remove.push_back(df_log_path);
-    QProcess p;
-    p.setStandardOutputFile(df_log_path.c_str());
-    p.start("df -P");
-    p.waitForFinished();
+    std::string output{misc::exec("df -P")};
+
+    std::ofstream out(df_log_path);
+    out << output;
+    out.close();
   }
 
   // lsb_release.
@@ -190,10 +185,11 @@ void diagnostic::generate(
     lsb_release_log_path = tmp_dir;
     lsb_release_log_path.append("/lsb_release.log");
     to_remove.push_back(lsb_release_log_path);
-    QProcess p;
-    p.setStandardOutputFile(lsb_release_log_path.c_str());
-    p.start("lsb_release -a");
-    p.waitForFinished();
+    std::string output{misc::exec("lsb_release -a")};
+
+    std::ofstream out(lsb_release_log_path);
+    out << output;
+    out.close();
   }
 
   // uname.
@@ -203,94 +199,91 @@ void diagnostic::generate(
     uname_log_path = tmp_dir;
     uname_log_path.append("/uname.log");
     to_remove.push_back(uname_log_path);
-    QProcess p;
-    p.setStandardOutputFile(uname_log_path.c_str());
-    p.start("uname -a");
-    p.waitForFinished();
+    std::string output{misc::exec("uname -a")};
+
+    std::ofstream out(uname_log_path);
+    out << output;
+    out.close();
   }
 
   // /proc/version
-  logging::info(logging::high)
-    << "diagnostic: getting kernel information";
+  logging::info(logging::high) << "diagnostic: getting kernel information";
   {
     std::string proc_version_log_path;
     proc_version_log_path = tmp_dir;
     proc_version_log_path.append("/proc_version.log");
     to_remove.push_back(proc_version_log_path);
-    QProcess p;
-    p.setStandardOutputFile(proc_version_log_path.c_str());
-    p.start("cat /proc/version");
-    p.waitForFinished();
+    std::string output{misc::exec("cat /proc/version")};
+
+    std::ofstream out(proc_version_log_path);
+    out << output;
+    out.close();
   }
 
   // netstat.
   logging::info(logging::high)
-    << "diagnostic: getting network connections information";
+      << "diagnostic: getting network connections information";
   {
     std::string netstat_log_path;
     netstat_log_path = tmp_dir;
     netstat_log_path.append("/netstat.log");
     to_remove.push_back(netstat_log_path);
-    QProcess p;
-    p.setStandardOutputFile(netstat_log_path.c_str());
-    p.start("netstat -ap --numeric-hosts");
-    p.waitForFinished();
+    std::string output{misc::exec("netstat -ap --numeric-hosts")};
+
+    std::ofstream out(netstat_log_path);
+    out << output;
+    out.close();
   }
 
   // ps.
-  logging::info(logging::high)
-    << "diagnostic: getting processes information";
+  logging::info(logging::high) << "diagnostic: getting processes information";
   {
     std::string ps_log_path;
     ps_log_path = tmp_dir;
     ps_log_path.append("/ps.log");
     to_remove.push_back(ps_log_path);
-    QProcess p;
-    p.setStandardOutputFile(ps_log_path.c_str());
-    p.start("ps aux");
-    p.waitForFinished();
+    std::string output{misc::exec("ps aux")};
+
+    std::ofstream out(ps_log_path);
+    out << output;
+    out.close();
   }
 
   // rpm.
-  logging::info(logging::high)
-    << "diagnostic: getting packages information";
+  logging::info(logging::high) << "diagnostic: getting packages information";
   {
     std::string rpm_log_path;
     rpm_log_path = tmp_dir;
     rpm_log_path.append("/rpm.log");
     to_remove.push_back(rpm_log_path);
-    QStringList args;
-    args.push_back("-qa");
-    args.push_back("centreon*");
-    QProcess p;
-    p.setStandardOutputFile(rpm_log_path.c_str());
-    p.start("rpm", args);
-    p.waitForFinished();
+    std::string output{misc::exec("rpm -qa centreon")};
+
+    std::ofstream out(rpm_log_path);
+    out << output;
+    out.close();
   }
 
   // sestatus.
-  logging::info(logging::high)
-    << "diagnostic: getting SELinux status";
+  logging::info(logging::high) << "diagnostic: getting SELinux status";
   {
     std::string selinux_log_path;
     selinux_log_path = tmp_dir;
     selinux_log_path.append("/selinux.log");
     to_remove.push_back(selinux_log_path);
-    QProcess p;
-    p.setStandardOutputFile(selinux_log_path.c_str());
-    p.start("sestatus");
-    p.waitForFinished();
+    std::string output{misc::exec("sestatus")};
+
+    std::ofstream out(selinux_log_path);
+    out << output;
+    out.close();
   }
 
   // Browse configuration files.
-  for (std::vector<std::string>::const_iterator
-         it(cfg_files.begin()),
-         end(cfg_files.end());
-       it != end;
-       ++it) {
+  for (std::vector<std::string>::const_iterator it(cfg_files.begin()),
+       end(cfg_files.end());
+       it != end; ++it) {
     // Configuration file.
     logging::info(logging::high)
-      << "diagnostic: getting configuration file '" << *it << "'";
+        << "diagnostic: getting configuration file '" << *it << "'";
     std::string cfg_path;
     {
       cfg_path = tmp_dir;
@@ -301,12 +294,9 @@ void diagnostic::generate(
       else
         cfg_path.append(*it);
       to_remove.push_back(cfg_path);
-      QStringList args;
-      args.push_back(it->c_str());
-      args.push_back(cfg_path.c_str());
-      QProcess p;
-      p.start("cp", args);
-      p.waitForFinished();
+      std::ostringstream oss;
+      oss << "cp " << *it << " " << cfg_path;
+      misc::exec(oss.str());
     }
 
     // Parse configuration file.
@@ -314,16 +304,14 @@ void diagnostic::generate(
     config::state conf;
     try {
       parsr.parse(it->c_str(), conf);
-    }
-    catch (std::exception const& e) {
-      logging::error(logging::high)
-        << "diagnostic: configuration file '" << *it
-        << "' parsing failed: " << e.what();
+    } catch (std::exception const& e) {
+      logging::error(logging::high) << "diagnostic: configuration file '" << *it
+                                    << "' parsing failed: " << e.what();
     }
 
     // ls.
     logging::info(logging::high)
-      << "diagnostic:     getting modules information";
+        << "diagnostic:     getting modules information";
     {
       std::string ls_log_path;
       ls_log_path = tmp_dir;
@@ -335,28 +323,25 @@ void diagnostic::generate(
         ls_log_path.append(*it);
       ls_log_path.append(".log");
       to_remove.push_back(ls_log_path);
-      QStringList args;
-      args.push_back("-la");
-      args.push_back(conf.module_directory().c_str());
+      std::ostringstream oss;
+      oss << "ls -la " << conf.module_directory();
       for (std::list<std::string>::const_iterator
-             it(conf.module_list().begin()),
-             end(conf.module_list().end());
-           it != end;
-           ++it)
-        args.push_back(it->c_str());
-      QProcess p;
-      p.setStandardOutputFile(ls_log_path.c_str());
-      p.start("ls", args);
-      p.waitForFinished();
+               it(conf.module_list().begin()),
+           end(conf.module_list().end());
+           it != end; ++it)
+        oss << " " << *it;
+      std::string output{misc::exec(oss.str())};
+
+      std::ofstream out(ls_log_path);
+      out << output;
+      out.close();
     }
 
     // Log files.
     logging::info(logging::high) << "diagnostic:     getting log files";
-    for (std::list<config::logger>::const_iterator
-           it(conf.loggers().begin()),
-           end(conf.loggers().end());
-         it != end;
-         ++it)
+    for (std::list<config::logger>::const_iterator it(conf.loggers().begin()),
+         end(conf.loggers().end());
+         it != end; ++it)
       if (it->type() == config::logger::file) {
         std::string log_path;
         log_path = tmp_dir;
@@ -368,16 +353,11 @@ void diagnostic::generate(
           log_path.append(it->name());
         to_remove.push_back(log_path);
 
-        char const* args[]{
-          "tail",
-          "-c",
-          "20000000",
-          it->name().c_str()
-        };
-        //QStringList args;
-        //args.push_back("-c");
-        //args.push_back("20000000");
-        //args.push_back(it->name());
+        char const* args[]{"tail", "-c", "20000000", it->name().c_str()};
+        // QStringList args;
+        // args.push_back("-c");
+        // args.push_back("20000000");
+        // args.push_back(it->name());
         exec_process(args, true);
       }
   }
@@ -391,28 +371,22 @@ void diagnostic::generate(
 
   // Create tarball.
   logging::info(logging::high)
-    << "diagnostic: creating tarball '" << my_out_file << "'";
+      << "diagnostic: creating tarball '" << my_out_file << "'";
   {
-    QStringList args;
-    args.push_back("czf");
-    args.push_back(my_out_file.c_str());
-    args.push_back(tmp_dir.c_str());
-    QProcess p;
-    p.start("tar", args);
-    p.waitForFinished(-1);
+    std::ostringstream oss;
+    oss << "tar "
+        << "czf " << my_out_file << " " << tmp_dir;
+    std::string output{misc::exec(oss.str())};
   }
 
   // Clean temporary directory.
   {
-    for (std::list<std::string>::const_iterator
-           it(to_remove.begin()),
-           end(to_remove.end());
-         it != end;
-         ++it)
+    for (std::list<std::string>::const_iterator it(to_remove.begin()),
+         end(to_remove.end());
+         it != end; ++it)
       ::remove(it->c_str());
-    QDir dir;
-    dir.rmdir(tmp_dir.c_str());
+    ::rmdir(tmp_dir.c_str());
   }
 
-  return ;
+  return;
 }
