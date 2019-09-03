@@ -160,7 +160,7 @@ std::string feeder::_get_state() {
  *
  *  @return  The number of queued events.
  */
-unsigned int feeder::_get_queued_events() {
+uint32_t feeder::_get_queued_events() {
   return _subscriber.get_muxer().get_event_queue_size();
 }
 
@@ -169,7 +169,7 @@ unsigned int feeder::_get_queued_events() {
  *
  *  @return  The read filters used by the feeder.
  */
-std::unordered_set<uint32_t> feeder::_get_read_filters() {
+std::unordered_set<uint32_t> const& feeder::_get_read_filters() const {
   return _subscriber.get_muxer().get_read_filters();
 }
 
@@ -178,7 +178,7 @@ std::unordered_set<uint32_t> feeder::_get_read_filters() {
  *
  *  @return  The write filters used by the feeder.
  */
-std::unordered_set<uint32_t> feeder::_get_write_filters() {
+std::unordered_set<uint32_t> const& feeder::_get_write_filters() const {
   return _subscriber.get_muxer().get_write_filters();
 }
 

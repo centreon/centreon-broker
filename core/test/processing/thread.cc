@@ -16,11 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QTimer>
+#include "com/centreon/broker/processing/thread.hh"
+#include <gtest/gtest.h>
 #include <memory>
 #include <string>
-#include <gtest/gtest.h>
-#include "com/centreon/broker/processing/thread.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
@@ -37,26 +36,24 @@ class DummyThread : public bthread {
   }
 
   std::string _get_state() { return "test"; }
-  unsigned int _get_queued_events() { return 0; }
-  std::unordered_set<unsigned int> _get_write_filters() {
-    std::unordered_set<unsigned int> retval;
-    return retval;
+  uint32_t _get_queued_events() { return 0; }
+  std::unordered_set<uint32_t> const& _get_write_filters() const {
+    return _filters;
   }
-  std::unordered_set<unsigned int> _get_read_filters() {
-    std::unordered_set<unsigned int> retval;
-    return retval;
+  std::unordered_set<uint32_t> const& _get_read_filters() const {
+    return _filters;
   }
+
  public:
-  bool isRunning() {
-    return is_running();
-  }
+  bool isRunning() { return is_running(); }
+
+ private:
+  std::unordered_set<uint32_t> _filters;
 };
 
 class TestThread : public ::testing::Test {
  public:
-  void  SetUp() {
-    _thread.reset(new DummyThread);
-  }
+  void SetUp() { _thread.reset(new DummyThread); }
 
  protected:
   std::unique_ptr<DummyThread> _thread;

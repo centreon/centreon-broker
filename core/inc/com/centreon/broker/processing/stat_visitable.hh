@@ -44,16 +44,16 @@ class stat_visitable {
   virtual void stats(io::properties& tree);
   void set_last_connection_attempt(timestamp last_connection_attempt);
   void set_last_connection_success(timestamp last_connection_success);
-  void tick(unsigned int events = 1);
+  void tick(uint32_t events = 1);
 
  protected:
   std::string _name;
   mutable std::mutex _stat_mutex;
 
   virtual std::string _get_state() = 0;
-  virtual unsigned int _get_queued_events() = 0;
-  virtual std::unordered_set<uint32_t> _get_read_filters() = 0;
-  virtual std::unordered_set<uint32_t> _get_write_filters() = 0;
+  virtual uint32_t _get_queued_events() = 0;
+  virtual std::unordered_set<uint32_t> const& _get_read_filters() const = 0;
+  virtual std::unordered_set<uint32_t> const& _get_write_filters() const = 0;
   virtual void _forward_statistic(io::properties& tree);
 
  private:

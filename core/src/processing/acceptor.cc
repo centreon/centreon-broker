@@ -47,7 +47,7 @@ acceptor::~acceptor() {
  *  Accept a new incoming connection.
  */
 void acceptor::accept() {
-  static unsigned int connection_id(0);
+  static uint32_t connection_id(0);
 
   // Try to accept connection.
   std::shared_ptr<io::stream> s(_endp->open());
@@ -180,7 +180,7 @@ std::string acceptor::_get_state() {
  *
  *  @return  The number of queued events.
  */
-unsigned int acceptor::_get_queued_events() {
+uint32_t acceptor::_get_queued_events() {
   return 0;
 }
 
@@ -189,7 +189,7 @@ unsigned int acceptor::_get_queued_events() {
  *
  *  @return  The read filters used by the feeder.
  */
-std::unordered_set<uint32_t> acceptor::_get_read_filters() {
+std::unordered_set<uint32_t> const& acceptor::_get_read_filters() const {
   return _read_filters;
 }
 
@@ -198,7 +198,7 @@ std::unordered_set<uint32_t> acceptor::_get_read_filters() {
  *
  *  @return  The write filters used by the feeder.
  */
-std::unordered_set<uint32_t> acceptor::_get_write_filters() {
+std::unordered_set<uint32_t> const& acceptor::_get_write_filters() const {
   return _write_filters;
 }
 
