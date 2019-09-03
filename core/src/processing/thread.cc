@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/processing/thread.hh"
 #include <iostream>
 #include "com/centreon/broker/io/properties.hh"
-#include "com/centreon/broker/processing/thread.hh"
 
 using namespace com::centreon::broker::processing;
 
@@ -26,7 +26,7 @@ using namespace com::centreon::broker::processing;
  *  Default constructor.
  */
 bthread::bthread(std::string const& name)
-  : stat_visitable{name}, _should_exit{false}, _started{false} {}
+    : stat_visitable{name}, _should_exit{false}, _started{false} {}
 
 /**
  *  Destructor.

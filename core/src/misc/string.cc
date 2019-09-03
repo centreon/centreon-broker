@@ -16,9 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
-#include <iostream>
-#include <fstream>
 #include "com/centreon/broker/misc/string.hh"
+#include <algorithm>
+#include <fstream>
+#include <iostream>
 
 using namespace com::centreon::broker::misc;
 
@@ -33,10 +34,9 @@ static char const* whitespaces(" \t\r\n");
  *
  *  @return True if data is available, false if no data.
  */
-bool string::get_next_line(
-       std::ifstream& stream,
-       std::string& line,
-       unsigned int& pos) {
+bool string::get_next_line(std::ifstream& stream,
+                           std::string& line,
+                           unsigned int& pos) {
   while (std::getline(stream, line, '\n')) {
     ++pos;
     string::trim(line);
@@ -57,11 +57,10 @@ bool string::get_next_line(
  *  @param[out]    value The value pointer.
  *  @param[in]     delim The delimiter.
  */
-bool string::split(
-               std::string& line,
-               char const** key,
-               char const** value,
-               char delim) {
+bool string::split(std::string& line,
+                   char const** key,
+                   char const** value,
+                   char delim) {
   std::size_t delim_pos(line.find_first_of(delim));
   if (delim_pos == std::string::npos)
     return (false);
@@ -99,11 +98,10 @@ bool string::split(
  *  @param[out] value The value to fill.
  *  @param[in]  delim The delimiter.
  */
-bool string::split(
-       std::string const& line,
-       std::string& key,
-       std::string& value,
-       char delim) {
+bool string::split(std::string const& line,
+                   std::string& key,
+                   std::string& value,
+                   char delim) {
   std::size_t delim_pos(line.find_first_of(delim));
   if (delim_pos == std::string::npos)
     return (false);
@@ -137,12 +135,11 @@ bool string::split(
  *  @param[out] out   The list to fill.
  *  @param[in]  delim The delimiter.
  */
-void string::split(
-               std::string const& data,
-               std::list<std::string>& out,
-               char delim) {
+void string::split(std::string const& data,
+                   std::list<std::string>& out,
+                   char delim) {
   if (data.empty())
-    return ;
+    return;
 
   std::size_t last(0);
   std::size_t current(0);
@@ -153,7 +150,7 @@ void string::split(
   }
   std::string tmp(last ? data.substr(last) : data);
   out.push_back(trim(tmp));
-  return ;
+  return;
 }
 
 /**
@@ -163,12 +160,11 @@ void string::split(
  *  @param[out] out   The vector to fill.
  *  @param[in]  delim The delimiter.
  */
-void string::split(
-               std::string const& data,
-               std::vector<std::string>& out,
-               char delim) {
+void string::split(std::string const& data,
+                   std::vector<std::string>& out,
+                   char delim) {
   if (data.empty())
-    return ;
+    return;
 
   std::size_t last(0);
   std::size_t current(0);
@@ -188,7 +184,7 @@ void string::split(
  *
  *  @return The trimming stream.
  */
-std::string& string::trim(std::string& str) throw () {
+std::string& string::trim(std::string& str) throw() {
   size_t pos(str.find_last_not_of(whitespaces));
   if (pos == std::string::npos)
     str.clear();
@@ -207,7 +203,7 @@ std::string& string::trim(std::string& str) throw () {
  *
  *  @return The trimming stream.
  */
-std::string& string::trim_left(std::string& str) throw () {
+std::string& string::trim_left(std::string& str) throw() {
   size_t pos(str.find_first_not_of(whitespaces));
   if (pos != std::string::npos)
     str.erase(0, pos);
@@ -221,7 +217,7 @@ std::string& string::trim_left(std::string& str) throw () {
  *
  *  @return The trimming stream.
  */
-std::string& string::trim_right(std::string& str) throw () {
+std::string& string::trim_right(std::string& str) throw() {
   size_t pos(str.find_last_not_of(whitespaces));
   if (pos == std::string::npos)
     str.clear();
@@ -242,8 +238,8 @@ void string::replace_all(std::string& input,
                          std::string const& str2) {
   size_t pos = 0;
   while ((pos = input.find(str, pos)) != std::string::npos) {
-       input.replace(pos, str.length(), str2);
-       pos += str.length();
+    input.replace(pos, str.length(), str2);
+    pos += str.length();
   }
 }
 
@@ -265,7 +261,8 @@ std::list<std::string> string::split(std::string const& str, char sep) {
 }
 
 std::string string::base64_encode(const std::string& str) {
-  static const std::string b = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  static const std::string b =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   std::string retval;
   retval.reserve((str.size() / 3 + (str.size() % 3 > 0)) * 4);
 
@@ -273,14 +270,21 @@ std::string string::base64_encode(const std::string& str) {
   for (unsigned char c : str) {
     val = (val << 8) + c;
     valb += 8;
-    while (valb>=0) {
+    while (valb >= 0) {
       retval.push_back(b[(val >> valb) & 0x3F]);
-      valb-=6;
+      valb -= 6;
     }
   }
-  if (valb > -6) retval.push_back(b[((val << 8) >> (valb + 8)) & 0x3F]);
+  if (valb > -6)
+    retval.push_back(b[((val << 8) >> (valb + 8)) & 0x3F]);
   while (retval.size() % 4)
     retval.push_back('=');
 
   return retval;
+}
+
+bool string::is_number(const std::string& s) {
+  return !s.empty() && std::find_if(s.begin(), s.end(), [](char c) {
+                         return !std::isdigit(c);
+                       }) == s.end();
 }

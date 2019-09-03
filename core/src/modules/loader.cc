@@ -16,19 +16,20 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QDir>
+#include "com/centreon/broker/modules/loader.hh"
+#include <sys/stat.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/modules/loader.hh"
+#include "com/centreon/broker/misc/filesystem.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::modules;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -88,39 +89,29 @@ loader::iterator loader::end() {
 void loader::load_dir(std::string const& dirname, void const* arg) {
   // Debug message.
   logging::debug(logging::medium)
-    << "modules: loading directory '" << dirname << "'";
+      << "modules: loading directory '" << dirname << "'";
 
   // Set directory browsing parameters.
-  QDir dir(dirname.c_str());
-  QStringList l;
-#ifdef Q_OS_WIN32
-  l.push_back("*.dll");
-#else
-  l.push_back("*.so");
-#endif /* Q_OS_WIN32 */
-  dir.setNameFilters(l);
+  std::list<std::string> list;
+  list = misc::filesystem::dir_content(dirname, "*.so");
 
-  // Iterate through all modules in directory.
-  l = dir.entryList();
-  for (QStringList::iterator it(l.begin()), end(l.end());
-       it != end;
-       ++it) {
+  for (std::list<std::string>::iterator it(list.begin()), end(list.end());
+       it != end; ++it) {
     std::string file(dirname);
     file.append("/");
-    file.append(it->toStdString());
+    file.append(*it);
     try {
       load_file(file, arg);
-    }
-    catch (exceptions::msg const& e) {
+    } catch (exceptions::msg const& e) {
       logging::error(logging::high) << e.what();
     }
   }
 
   // Ending log message.
   logging::debug(logging::medium)
-    << "modules: finished loading directory '" << dirname << "'";
+      << "modules: finished loading directory '" << dirname << "'";
 
-  return ;
+  return;
 }
 
 /**
@@ -130,19 +121,18 @@ void loader::load_dir(std::string const& dirname, void const* arg) {
  *  @param[in] arg      Module argument.
  */
 void loader::load_file(std::string const& filename, void const* arg) {
-  umap<std::string, std::shared_ptr<handle> >::iterator
-    it(_handles.find(filename));
+  umap<std::string, std::shared_ptr<handle> >::iterator it(
+      _handles.find(filename));
   if (it == _handles.end()) {
     std::shared_ptr<handle> handl(new handle);
     handl->open(filename, arg);
     _handles[filename] = handl;
-  }
-  else {
-    logging::info(logging::low) << "modules: attempt to load '"
-      << filename << "' which is already loaded";
+  } else {
+    logging::info(logging::low) << "modules: attempt to load '" << filename
+                                << "' which is already loaded";
     it->second->update(arg);
   }
-  return ;
+  return;
 }
 
 /**
@@ -151,15 +141,13 @@ void loader::load_file(std::string const& filename, void const* arg) {
 void loader::unload() {
   std::string key;
   while (!_handles.empty()) {
-    umap<std::string, std::shared_ptr<handle> >::iterator
-      it(_handles.begin());
+    umap<std::string, std::shared_ptr<handle> >::iterator it(_handles.begin());
     key = it->first;
-    umap<std::string, std::shared_ptr<handle> >::iterator
-      end(_handles.end());
+    umap<std::string, std::shared_ptr<handle> >::iterator end(_handles.end());
     while (++it != end)
       if (it->first > key)
         key = it->first;
     _handles.erase(key);
   }
-  return ;
+  return;
 }

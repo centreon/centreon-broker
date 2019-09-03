@@ -17,20 +17,21 @@
 */
 
 #ifndef CCB_MISC_MISC_HH
-#  define CCB_MISC_MISC_HH
+#define CCB_MISC_MISC_HH
 
-#  include <list>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <list>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace misc {
-  std::string temp_path();
-  std::list<std::string> split(std::string const& str, char sep);
-  uint16_t crc16_ccitt(char const* data, unsigned int data_len);
-}
+std::string temp_path();
+std::list<std::string> split(std::string const& str, char sep);
+uint16_t crc16_ccitt(char const* data, unsigned int data_len);
+std::string exec(std::string const& cmd);
+}  // namespace misc
 
 CCB_END()
 
-#endif // !CCB_MISC_MISC_HH
+#endif  // !CCB_MISC_MISC_HH
