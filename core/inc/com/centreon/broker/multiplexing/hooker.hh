@@ -34,9 +34,9 @@ namespace        multiplexing {
   class          hooker : public io::stream {
   public:
                  hooker();
-                 hooker(hooker const& other);
+                 hooker(hooker const& other) = delete;
+    hooker&      operator=(hooker const& other) = delete;
     virtual      ~hooker();
-    hooker&      operator=(hooker const& other);
     void         hook(bool should_hook);
     virtual void starting() = 0;
     virtual void stopping() = 0;

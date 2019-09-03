@@ -38,7 +38,6 @@ using namespace com::centreon::broker;
 /**
  *  Check that multiplexing engine works properly.
  *
- *  @return 0 on success.
  */
 TEST(Hook, EngineWorks) {
   // Initialization.

@@ -38,28 +38,13 @@ hooker::hooker() {}
  *
  *  @param[in] other  Object to copy.
  */
-hooker::hooker(hooker const& other)
-  : multiplexing::hooker(other), _queue(other._queue) {}
+//hooker::hooker(hooker const& other)
+//  : multiplexing::hooker(other), _queue(other._queue) {}
 
 /**
  *  Destructor.
  */
 hooker::~hooker() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-hooker& hooker::operator=(hooker const& other) {
-  if (this != &other) {
-    multiplexing::hooker::operator=(other);
-    _queue = other._queue;
-  }
-  return *this;
-}
 
 /**
  *  Read events from the hook.
@@ -69,18 +54,14 @@ hooker& hooker::operator=(hooker const& other) {
  *
  *  @return Respect io::stream::read()'s return value.
  */
-bool hooker::read(
-               std::shared_ptr<io::data>& d,
-               time_t deadline) {
+bool hooker::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  if (!_queue.isEmpty()) {
-    d = _queue.head();
-    _queue.dequeue();
-  }
-  else if (!_registered)
-    throw exceptions::msg()
-             << "hooker test object is shutdown";
+  if (!_queue.empty()) {
+    d = _queue.front();
+    _queue.pop();
+  } else if (!_registered)
+    throw exceptions::msg() << "hooker test object is shutdown";
   return true;
 }
 
@@ -90,7 +71,7 @@ bool hooker::read(
 void hooker::starting() {
   std::shared_ptr<io::raw> raw(new io::raw);
   raw->append(HOOKMSG1);
-  _queue.enqueue(std::static_pointer_cast<io::data>(raw));
+  _queue.push(std::static_pointer_cast<io::data>(raw));
 }
 
 /**
@@ -99,7 +80,7 @@ void hooker::starting() {
 void hooker::stopping() {
   std::shared_ptr<io::raw> raw(new io::raw);
   raw->append(HOOKMSG3);
-  _queue.enqueue(std::static_pointer_cast<io::data>(raw));
+  _queue.push(std::static_pointer_cast<io::data>(raw));
 }
 
 /**
@@ -114,7 +95,7 @@ int hooker::write(std::shared_ptr<io::data> const& d) {
   if (_registered) {
     std::shared_ptr<io::raw> raw(new io::raw);
     raw->append(HOOKMSG2);
-    _queue.enqueue(std::static_pointer_cast<io::data>(raw));
+    _queue.push(std::static_pointer_cast<io::data>(raw));
   }
   else
     throw exceptions::msg()
