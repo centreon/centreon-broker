@@ -80,6 +80,7 @@ add_executable(ut
   ${TESTS_DIR}/multiplexing/engine/start_stop.cc
   ${TESTS_DIR}/multiplexing/publisher/read.cc
   ${TESTS_DIR}/multiplexing/publisher/write.cc
+  ${TESTS_DIR}/multiplexing/subscriber/ctor_default.cc
   #${TESTS_DIR}/exceptions/msg/default.cc need conversion
   ${TESTS_DIR}/exceptions/msg/default.cc
   #${TESTS_DIR}/exceptions/msg/default.cc need conversion
