@@ -17,6 +17,7 @@
 */
 
 #include <cstdlib>
+#include <gtest/gtest.h>
 #include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -38,10 +39,10 @@ using namespace com::centreon::broker;
  *
  *  @return 0 on success.
  */
-int main() {
+TEST(StartStop, MultiplexingWorks) {
   // Initialization.
   config::applier::init();
-  bool error(true);
+  bool error{true};
 
   try {
     // Subscriber.
@@ -58,15 +59,15 @@ int main() {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(messages[i]);
       multiplexing::engine::instance().publish(
-      data.staticCast<io::data>());
+          std::static_pointer_cast<io::data>(data));
     }
 
     // Should read no events from subscriber.
     {
       std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
-      if (!data.isNull())
-        throw (exceptions::msg() << "error at step #1");
+      if (data)
+        throw exceptions::msg() << "error at step #1";
     }
 
     // Start multiplexing engine.
@@ -76,16 +77,16 @@ int main() {
     for (unsigned int i(0); messages[i]; ++i) {
       std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
-      if (data.isNull()
-          || (data->type() != io::raw::static_type()))
-        throw (exceptions::msg() << "error at step #2");
+      if (!data
+          || data->type() != io::raw::static_type())
+        throw exceptions::msg() << "error at step #2";
       else {
-        std::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
+        std::shared_ptr<io::raw> raw(std::static_pointer_cast<io::raw>(data));
         if (strncmp(
-              raw->QByteArray::data(),
+              raw->const_data(),
               messages[i],
               strlen(messages[i])))
-          throw (exceptions::msg() << "error at step #3");
+          throw exceptions::msg() << "error at step #3";
       }
     }
 
@@ -94,23 +95,22 @@ int main() {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG3);
       multiplexing::engine::instance().publish(
-        data.staticCast<io::data>());
+          std::static_pointer_cast<io::data>(data));
     }
 
     // Read event.
     {
       std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
-      if (data.isNull()
-          || (data->type() != io::raw::static_type()))
-        throw (exceptions::msg() << "error at step #4");
+      if (!data || data->type() != io::raw::static_type())
+        throw exceptions::msg() << "error at step #4";
       else {
-        std::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
+        std::shared_ptr<io::raw> raw(std::static_pointer_cast<io::raw>(data));
         if (strncmp(
-              raw->QByteArray::data(),
+              raw->const_data(),
               MSG3,
               strlen(MSG3)))
-          throw (exceptions::msg() << "error at step #5");
+          throw exceptions::msg() << "error at step #5";
       }
     }
 
@@ -122,15 +122,15 @@ int main() {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG4);
       multiplexing::engine::instance().publish(
-        data.staticCast<io::data>());
+        std::static_pointer_cast<io::data>(data));
     }
 
     // Read no event.
     {
       std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
-      if (!data.isNull())
-        throw (exceptions::msg() << "error at step #6");
+      if (data)
+        throw exceptions::msg() << "error at step #6";
     }
 
     // Success.
@@ -147,5 +147,5 @@ int main() {
   config::applier::deinit();
 
   // Return.
-  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
+  ASSERT_FALSE(error);
 }

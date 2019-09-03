@@ -46,6 +46,7 @@ namespace          io {
     size_t size() const;
     std::vector<char>& get_buffer();
     bool empty() const;
+    void append(std::string const& msg);
   public:
     std::vector<char> _buffer;
   };

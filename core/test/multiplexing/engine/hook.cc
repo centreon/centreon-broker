@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Centreon
+** Copyright 2011-2019 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <gtest/gtest.h>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -25,7 +26,7 @@
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
-#include "test/multiplexing/engine/hooker.hh"
+#include "hooker.hh"
 
 using namespace com::centreon::broker;
 
@@ -39,7 +40,7 @@ using namespace com::centreon::broker;
  *
  *  @return 0 on success.
  */
-int main() {
+TEST(Hook, EngineWorks) {
   // Initialization.
   config::applier::init();
   bool error(true);
@@ -64,7 +65,7 @@ int main() {
         std::shared_ptr<io::raw> data(new io::raw);
         data->append(messages[i]);
         multiplexing::engine::instance().publish(
-          data.staticCast<io::data>());
+          std::static_pointer_cast<io::data>(data));
       }
     }
 
@@ -72,8 +73,8 @@ int main() {
     {
       std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
-      if (!data.isNull())
-        throw (exceptions::msg() << "error at step #1");
+      if (data)
+        throw exceptions::msg() << "error at step #1";
     }
 
     // Start multiplexing engine.
@@ -84,7 +85,7 @@ int main() {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG3);
       multiplexing::engine::instance().publish(
-        data.staticCast<io::data>());
+        std::static_pointer_cast<io::data>(data));
     }
 
     // Stop multiplexing engine.
@@ -95,7 +96,7 @@ int main() {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG4);
       multiplexing::engine::instance().publish(
-        data.staticCast<io::data>());
+        std::static_pointer_cast<io::data>(data));
     }
 
     // Check subscriber content.
@@ -105,13 +106,12 @@ int main() {
       for (unsigned int i = 0; messages[i]; ++i) {
         std::shared_ptr<io::data> d;
         s.get_muxer().read(d, 0);
-        if (d.isNull()
-            || (d->type() != io::raw::static_type()))
-          throw (exceptions::msg() << "error at step #2");
+        if (!d || (d->type() != io::raw::static_type()))
+          throw exceptions::msg() << "error at step #2";
         else {
-          std::shared_ptr<io::raw> raw(d.staticCast<io::raw>());
+          std::shared_ptr<io::raw> raw(std::static_pointer_cast<io::raw>(d));
           if (strncmp(
-                raw->QByteArray::data(),
+                raw->const_data(),
                 messages[i],
                 strlen(messages[i])))
             throw (exceptions::msg() << "error at step #3");
@@ -119,8 +119,8 @@ int main() {
       }
       std::shared_ptr<io::data> d;
       s.get_muxer().read(d, 0);
-      if (!d.isNull())
-        throw (exceptions::msg() << "error at step #4");
+      if (d)
+        throw exceptions::msg() << "error at step #4";
     }
 
     // Unhook.
@@ -138,7 +138,5 @@ int main() {
 
   // Cleanup.
   config::applier::deinit();
-
-  // Return.
-  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
+  ASSERT_FALSE(error);
 }

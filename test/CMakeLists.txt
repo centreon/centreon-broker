@@ -74,6 +74,9 @@ add_executable(ut
   ${TESTS_DIR}/compression/zlib/zlib.cc
   ${TESTS_DIR}/config/logger.cc
   ${TESTS_DIR}/config/parser.cc
+  ${TESTS_DIR}/multiplexing/engine/hook.cc
+  ${TESTS_DIR}/multiplexing/engine/hooker.cc
+  ${TESTS_DIR}/multiplexing/engine/start_stop.cc
   #${TESTS_DIR}/exceptions/msg/default.cc need conversion
   ${TESTS_DIR}/exceptions/msg/default.cc
   #${TESTS_DIR}/exceptions/msg/default.cc need conversion
