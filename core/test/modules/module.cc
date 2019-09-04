@@ -17,10 +17,9 @@
  *
  */
 
+#include <gtest/gtest.h>
 #include <iostream>
 #include <string>
-#include <QCoreApplication>
-#include <QString>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/modules/loader.hh"
 
@@ -34,9 +33,8 @@ using namespace com::centreon::broker;
  *
  *  @return                        True if the module didn't load.
  */
-bool check_for(
-       std::string const& module,
-       std::string const& expected_error_msg) {
+bool check_for(std::string const& module,
+               std::string const& expected_error_msg) {
   try {
     modules::loader l;
 
@@ -44,28 +42,23 @@ bool check_for(
     return (false);
   } catch (std::exception const& e) {
     std::cout << e.what() << std::endl;
-    return (QString::fromStdString(e.what())
-              .contains(QString::fromStdString(expected_error_msg)));
+    return (std::string{e.what()}.find(expected_error_msg) !=
+            std::string::npos);
   }
 }
 
 /**
  *  Verify that the module version checks work.
  */
-int main(int argc, char *argv[]) {
-  // Qt core object.
-  QCoreApplication app(argc, argv);
-
+TEST(Modules, load) {
   // Initialization.
   config::applier::init();
 
-  int retval =
-    check_for(
-      "./null_module",
-      "Cannot resolve symbol \"broker_module_version\" in")
-    && check_for(
-         "./bad_version_module",
-         "version mismatch in") ? 0 : -1;
+  ASSERT_TRUE(check_for(CENTREON_BROKER_TEST_MODULE_PATH "./libnull_module.so",
+                        "undefined symbol: broker_module_version"));
+  ASSERT_TRUE(check_for(CENTREON_BROKER_TEST_MODULE_PATH
+                        "./libbad_version_module.so",
+                        "version mismatch in"));
 
-  return (retval);
+  config::applier::deinit();
 }
