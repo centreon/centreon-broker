@@ -690,13 +690,6 @@ if (WITH_MODULE_CORRELATION)
     list(APPEND MODULE_LIST "correlation")
 endif ()
 
-# Dumper module.
-option(WITH_MODULE_DUMPER "Build Dumper module." ON)
-if (WITH_MODULE_DUMPER)
-    add_subdirectory(dumper)
-    list(APPEND MODULE_LIST "dumper")
-endif ()
-
 # RRD module.
 option(WITH_MODULE_RRD "Build RRD module." ON)
 if (WITH_MODULE_RRD)
