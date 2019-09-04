@@ -16,21 +16,21 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/sql/factory.hh"
 #include <cstring>
 #include <memory>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/sql/connector.hh"
-#include "com/centreon/broker/sql/factory.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::sql;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -96,9 +96,9 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return New endpoint.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
   // Database configuration.
@@ -107,16 +107,16 @@ io::endpoint* factory::new_endpoint(
   // Cleanup check interval.
   unsigned int cleanup_check_interval(0);
   {
-    std::map<std::string, std::string>::const_iterator
-      it{cfg.params.find("cleanup_check_interval")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("cleanup_check_interval")};
     if (it != cfg.params.end())
       cleanup_check_interval = std::stoul(it->second);
   }
 
   bool enable_cmd_cache(false);
   {
-    std::map<std::string, std::string>::const_iterator
-      it(cfg.params.find("enable_command_cache"));
+    std::map<std::string, std::string>::const_iterator it(
+        cfg.params.find("enable_command_cache"));
     if (it != cfg.params.end())
       enable_cmd_cache = std::stoul(it->second);
   }
@@ -125,8 +125,8 @@ io::endpoint* factory::new_endpoint(
   // By default, 5 minutes.
   unsigned int instance_timeout(5 * 60);
   {
-    std::map<std::string, std::string>::const_iterator
-      it(cfg.params.find("instance_timeout"));
+    std::map<std::string, std::string>::const_iterator it(
+        cfg.params.find("instance_timeout"));
     if (it != cfg.params.end())
       instance_timeout = std::stoul(it->second);
   }
@@ -134,20 +134,16 @@ io::endpoint* factory::new_endpoint(
   // Use state events ?
   bool wse(false);
   {
-    std::map<std::string, std::string>::const_iterator
-      it(cfg.params.find("with_state_events"));
+    std::map<std::string, std::string>::const_iterator it(
+        cfg.params.find("with_state_events"));
     if (it != cfg.params.end())
       wse = config::parser::parse_boolean(it->second);
   }
 
   // Connector.
   std::unique_ptr<sql::connector> c{new sql::connector};
-  c->connect_to(
-       dbcfg,
-       cleanup_check_interval,
-       instance_timeout,
-       wse,
-       enable_cmd_cache);
+  c->connect_to(dbcfg, cleanup_check_interval, instance_timeout, wse,
+                enable_cmd_cache);
   is_acceptor = false;
   return c.release();
 }
