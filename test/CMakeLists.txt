@@ -61,12 +61,10 @@ include_directories(${PROJECT_SOURCE_DIR}/simu/inc)
 # Unit test executable.
 add_executable(ut
   # Core sources.
-  ${TESTS_DIR}/main.cc
   ${TESTS_DIR}/bbdo/input_buffer/erase.cc
   ${TESTS_DIR}/bbdo/input_buffer/extract.cc
   ${TESTS_DIR}/bbdo/output.cc
   ${TESTS_DIR}/bbdo/read.cc
-
   ${TESTS_DIR}/ceof/ceof_parser/parse.cc
   ${TESTS_DIR}/compression/stream/memory_stream.hh
   ${TESTS_DIR}/compression/stream/read.cc
@@ -74,42 +72,42 @@ add_executable(ut
   ${TESTS_DIR}/compression/zlib/zlib.cc
   ${TESTS_DIR}/config/logger.cc
   ${TESTS_DIR}/config/parser.cc
-  ${TESTS_DIR}/multiplexing/engine/hook.cc
-  ${TESTS_DIR}/multiplexing/engine/unhook.cc
-  ${TESTS_DIR}/multiplexing/engine/hooker.cc
-  ${TESTS_DIR}/multiplexing/engine/start_stop.cc
-  ${TESTS_DIR}/multiplexing/publisher/read.cc
-  ${TESTS_DIR}/multiplexing/publisher/write.cc
-  ${TESTS_DIR}/multiplexing/subscriber/ctor_default.cc
-  ${TESTS_DIR}/processing/acceptor.cc
-  ${TESTS_DIR}/processing/temporary_endpoint.cc
-  ${TESTS_DIR}/processing/temporary_stream.cc
-  #${TESTS_DIR}/exceptions/msg/default.cc need conversion
-  ${TESTS_DIR}/exceptions/msg/default.cc
-  #${TESTS_DIR}/exceptions/msg/default.cc need conversion
-  #${TESTS_DIR}/exceptions/msg/default.cc need conversion
+  ${TESTS_DIR}/config/parser.cc
   ${TESTS_DIR}/file/splitter/concurrent.cc
   ${TESTS_DIR}/file/splitter/default.cc
   ${TESTS_DIR}/file/splitter/more_than_max_size.cc
   ${TESTS_DIR}/file/splitter/permission_denied.cc
   ${TESTS_DIR}/file/splitter/resume.cc
   ${TESTS_DIR}/file/splitter/split.cc
-  #${TESTS_DIR}/file/stream/max_size.cc need conversion
-  #${TESTS_DIR}/file/stream/mixed.cc  need conversion
-  #${TESTS_DIR}/file/stream/read.cc need conversion
-  #${TESTS_DIR}/file/stream/write.cc  need conversion
+  #${TESTS_DIR}/file/stream/max_size.cc
+  #${TESTS_DIR}/file/stream/mixed.cc
+  #${TESTS_DIR}/file/stream/read.cc
+  #${TESTS_DIR}/file/stream/write.cc
   ${TESTS_DIR}/file/test_file.hh
   ${TESTS_DIR}/file/test_file.cc
   ${TESTS_DIR}/file/test_fs_browser.hh
   ${TESTS_DIR}/file/test_fs_browser.cc
-  ${TESTS_DIR}/logging.cc
+  ${TESTS_DIR}/multiplexing/engine/hook.cc
+  ${TESTS_DIR}/multiplexing/engine/unhook.cc
+  ${TESTS_DIR}/multiplexing/engine/hooker.cc
+  ${TESTS_DIR}/multiplexing/engine/start_stop.cc
+  ${TESTS_DIR}/multiplexing/muxer/read.cc
+  ${TESTS_DIR}/multiplexing/publisher/read.cc
+  ${TESTS_DIR}/multiplexing/publisher/write.cc
+  ${TESTS_DIR}/multiplexing/subscriber/ctor_default.cc
+  ${TESTS_DIR}/misc/exec.cc
   ${TESTS_DIR}/misc/filesystem.cc
   ${TESTS_DIR}/misc/misc.cc
   ${TESTS_DIR}/misc/string.cc
-  ${TESTS_DIR}/misc/exec.cc
   ${TESTS_DIR}/mysql/mysql.cc
-  ${TESTS_DIR}/multiplexing/muxer/read.cc
+  ${TESTS_DIR}/processing/acceptor.cc
+  ${TESTS_DIR}/processing/temporary_endpoint.cc
+  ${TESTS_DIR}/processing/temporary_stream.cc
   ${TESTS_DIR}/processing/thread.cc
+  ${TESTS_DIR}/exceptions.cc
+  ${TESTS_DIR}/io.cc
+  ${TESTS_DIR}/logging.cc
+  ${TESTS_DIR}/main.cc
   ${TESTS_DIR}/test_server.cc
   # Module sources.
   ${TESTS_SOURCES}
