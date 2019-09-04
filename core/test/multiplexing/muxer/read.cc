@@ -42,7 +42,6 @@ class MultiplexingMuxerRead : public ::testing::Test {
     f.insert(io::raw::static_type());
     _m->set_read_filters(f);
     _m->set_write_filters(f);
-    return;
   }
 
   void publish_events(int count = 10000) {
@@ -52,7 +51,6 @@ class MultiplexingMuxerRead : public ::testing::Test {
       memcpy(r->data(), &i, sizeof(i));
       _m->publish(r);
     }
-    return;
   }
 
   void reread_events(int from = 0, int to = 10000) {
@@ -67,7 +65,6 @@ class MultiplexingMuxerRead : public ::testing::Test {
              sizeof(reread));
       ASSERT_EQ(reread, i);
     }
-    return;
   }
 
  protected:

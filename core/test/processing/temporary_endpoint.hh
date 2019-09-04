@@ -17,10 +17,9 @@
 */
 
 #ifndef CCB_TEMPORARY_ENDPOINT_HH
-#  define CCB_TEMPORARY_ENDPOINT_HH
+#define CCB_TEMPORARY_ENDPOINT_HH
 
-#  include <QList>
-#  include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/io/endpoint.hh"
 
 CCB_BEGIN()
 
@@ -30,21 +29,20 @@ CCB_BEGIN()
  *
  *  Endpoint that can be set to generate errors or not.
  */
-class                 temporary_endpoint : public io::endpoint {
-public:
-                      temporary_endpoint(QString const& id = "");
-                      temporary_endpoint(temporary_endpoint const& se);
-                      ~temporary_endpoint();
+class temporary_endpoint : public io::endpoint {
+ public:
+  temporary_endpoint(std::string const& id = "");
+  temporary_endpoint(temporary_endpoint const& se);
+  ~temporary_endpoint();
   temporary_endpoint& operator=(temporary_endpoint const& se);
-  io::endpoint*       clone() const;
-  void                close();
-  std::shared_ptr<io::stream>
-                      open();
+  io::endpoint* clone() const;
+  void close();
+  std::shared_ptr<io::stream> open();
 
-private:
-  QString             _id;
+ private:
+  std::string _id;
 };
 
 CCB_END()
 
-#endif // !CCB_TEMPORARY_ENDPOINT_HH
+#endif  // !CCB_TEMPORARY_ENDPOINT_HH

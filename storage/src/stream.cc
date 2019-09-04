@@ -56,17 +56,24 @@ using namespace com::centreon::broker::storage;
 **************************************/
 
 /**
- *  Check that the floating point value is a NaN, in which case return a
- *  NULL QVariant.
+ *  Check that the floating point values are the same number or are NaN or are
+ *  INFINITY at the same time. The idea is to check if a is changed into b, did
+ *  it really change?
  *
- *  @param[in] f Floating point value.
+ *  @param[in] a Floating point value.
+ *  @param[in] b Floating point value.
  *
- *  @return NULL QVariant if f is a NaN, f casted as QVariant otherwise.
+ *  @return 0 if there was no change between a and b, 1 otherwise.
  */
-static inline QVariant check_double(double f) {
-  return (
-    std::isnan(f) || std::isinf(f) ? QVariant(QVariant::Double) : QVariant(f)
-  );
+static inline int check_equality(double a, double b) {
+  static const double eps = 0.000001;
+  if (a == b)
+    return 0;
+  if (std::isnan(a) && std::isnan(b))
+    return 0;
+  if (fabs(a - b) < eps)
+    return 0;
+  return 1;
 }
 
 /**************************************
@@ -776,16 +783,16 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
       << it->second.metric_id << " of (" << index_id << ", "
       << metric_name << ") in cache";
     // Should we update metrics ?
-    if ((check_double(it->second.value) != check_double(value))
-        || (it->second.unit_name != unit_name)
-        || (check_double(it->second.warn) != check_double(warn))
-        || (check_double(it->second.warn_low) != check_double(warn_low))
-        || (it->second.warn_mode != warn_mode)
-        || (check_double(it->second.crit) != check_double(crit))
-        || (check_double(it->second.crit_low) != check_double(crit_low))
-        || (it->second.crit_mode != crit_mode)
-        || (check_double(it->second.min) != check_double(min))
-        || (check_double(it->second.max) != check_double(max))) {
+    if (check_equality(it->second.value, value)
+        || it->second.unit_name != unit_name
+        || check_equality(it->second.warn, warn)
+        || check_equality(it->second.warn_low, warn_low)
+        || it->second.warn_mode != warn_mode
+        || check_equality(it->second.crit, crit)
+        || check_equality(it->second.crit_low, crit_low)
+        || it->second.crit_mode != crit_mode
+        || check_equality(it->second.min, min)
+        || check_equality(it->second.max, max)) {
       logging::info(logging::medium) << "storage: updating metric "
         << it->second.metric_id << " of (" << index_id << ", "
         << metric_name << ") (unit: " << unit_name << ", warning: "

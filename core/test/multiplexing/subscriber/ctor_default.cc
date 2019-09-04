@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <gtest/gtest.h>
 #include <cstring>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -28,53 +29,46 @@ using namespace com::centreon::broker;
 
 #define MSG "0123456789abcdef"
 
-/**
- *  Check that multiplexing subscriber works properly.
- *
- *  @return 0 on success.
- */
-int main() {
-  // Initialization.
-  config::applier::init();
-  multiplexing::engine::instance().start();
+class SubscriberTest : public ::testing::Test {
+ public:
+  void SetUp() override {
+    // Initialization.
+    config::applier::init();
+    multiplexing::engine::instance().start();
+  }
 
+  void TearDown() override {
+    // Cleanup.
+    config::applier::deinit();
+  }
+};
+
+TEST_F(SubscriberTest, DefaultConstructor) {
   // Subscriber.
-  uset<unsigned int> filters;
+  std::unordered_set<uint32_t> filters;
   filters.insert(io::raw::static_type());
-  multiplexing::subscriber
-    s("core_multiplexing_subscriber_ctor_default", "");
+  multiplexing::subscriber s("core_multiplexing_subscriber_ctor_default", "");
   s.get_muxer().set_read_filters(filters);
   s.get_muxer().set_write_filters(filters);
-
-  // Return value.
-  int retval(0);
 
   // Check that subscriber is empty.
   std::shared_ptr<io::data> event;
   s.get_muxer().read(event, 0);
-  retval |= !event.isNull();
+  ASSERT_FALSE(event);
 
   // Write data to subscriber.
-  std::shared_ptr<io::raw> data(new io::raw);
+  std::shared_ptr<io::raw> data = std::make_shared<io::raw>();
   data->append(MSG);
-  s.get_muxer().write(data.staticCast<io::data>());
+  s.get_muxer().write(std::static_pointer_cast<io::data>(data));
 
   // Fetch event.
   s.get_muxer().read(event, 0);
-  retval |= (event.isNull()
-             || (event->type() != io::raw::static_type())
-             || strncmp(
-                  event.staticCast<io::raw>()->QByteArray::data(),
-                  MSG,
-                  sizeof(MSG) - 1));
+  ASSERT_TRUE(event);
+  ASSERT_EQ(event->type(), io::raw::static_type());
+  ASSERT_TRUE(strncmp(std::static_pointer_cast<io::raw>(event)->const_data(),
+                      MSG, sizeof(MSG) - 1) == 0);
 
   // Try reading again.
   s.get_muxer().read(event, 0);
-  retval |= !event.isNull();
-
-  // Cleanup.
-  config::applier::deinit();
-
-  // Return.
-  return (retval);
+  ASSERT_FALSE(event);
 }

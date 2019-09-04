@@ -65,7 +65,8 @@ add_executable(ut
   ${TESTS_DIR}/bbdo/input_buffer/erase.cc
   ${TESTS_DIR}/bbdo/input_buffer/extract.cc
   ${TESTS_DIR}/bbdo/output.cc
-  #${TESTS_DIR}/bbdo/read.cc need conversion
+  ${TESTS_DIR}/bbdo/read.cc
+
   ${TESTS_DIR}/ceof/ceof_parser/parse.cc
   ${TESTS_DIR}/compression/stream/memory_stream.hh
   ${TESTS_DIR}/compression/stream/read.cc
@@ -73,6 +74,16 @@ add_executable(ut
   ${TESTS_DIR}/compression/zlib/zlib.cc
   ${TESTS_DIR}/config/logger.cc
   ${TESTS_DIR}/config/parser.cc
+  ${TESTS_DIR}/multiplexing/engine/hook.cc
+  ${TESTS_DIR}/multiplexing/engine/unhook.cc
+  ${TESTS_DIR}/multiplexing/engine/hooker.cc
+  ${TESTS_DIR}/multiplexing/engine/start_stop.cc
+  ${TESTS_DIR}/multiplexing/publisher/read.cc
+  ${TESTS_DIR}/multiplexing/publisher/write.cc
+  ${TESTS_DIR}/multiplexing/subscriber/ctor_default.cc
+  ${TESTS_DIR}/processing/acceptor.cc
+  ${TESTS_DIR}/processing/temporary_endpoint.cc
+  ${TESTS_DIR}/processing/temporary_stream.cc
   #${TESTS_DIR}/exceptions/msg/default.cc need conversion
   ${TESTS_DIR}/exceptions/msg/default.cc
   #${TESTS_DIR}/exceptions/msg/default.cc need conversion
@@ -93,6 +104,7 @@ add_executable(ut
   ${TESTS_DIR}/file/test_fs_browser.cc
   ${TESTS_DIR}/logging.cc
   ${TESTS_DIR}/misc/filesystem.cc
+  ${TESTS_DIR}/misc/misc.cc
   ${TESTS_DIR}/misc/string.cc
   ${TESTS_DIR}/misc/exec.cc
   ${TESTS_DIR}/mysql/mysql.cc

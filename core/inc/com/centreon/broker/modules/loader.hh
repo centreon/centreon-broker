@@ -21,7 +21,7 @@
 
 #include <memory>
 #include <string>
-#include "com/centreon/broker/misc/unordered_hash.hh"
+#include <unordered_map>
 #include "com/centreon/broker/modules/handle.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -37,7 +37,8 @@ namespace modules {
  */
 class loader {
  public:
-  typedef umap<std::string, std::shared_ptr<handle> >::iterator iterator;
+  typedef std::unordered_map<std::string, std::shared_ptr<handle>>::iterator
+      iterator;
 
   loader();
   loader(loader const& l);
@@ -50,7 +51,7 @@ class loader {
   void unload();
 
  private:
-  umap<std::string, std::shared_ptr<handle> > _handles;
+  std::unordered_map<std::string, std::shared_ptr<handle>> _handles;
 };
 }  // namespace modules
 

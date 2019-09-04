@@ -16,14 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sys/types.h>
-#include <gtest/gtest.h>
 #include <cstdio>
 #include <fstream>
+#include <gtest/gtest.h>
 #include <regex.h>
+#include <sys/types.h>
 #include <thread>
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/file.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/misc/misc.hh"
 

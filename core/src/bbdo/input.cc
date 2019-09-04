@@ -366,26 +366,17 @@ bool input::read_any(
       _buffer.extract(header, raw_size, BBDO_HEADER_SIZE);
 
       // Extract header info.
-      uint16_t chksum(ntohs(*static_cast<uint16_t const*>(
-                               static_cast<void const*>(
-                                 header.data()))));
-      packet_size = ntohs(*static_cast<uint16_t const*>(
-                             static_cast<void const*>(
-                               header.data() + 2)));
-      unsigned int current_event_id(
-                     ntohl(*static_cast<uint32_t const*>(
-                              static_cast<void const*>(
-                                header.data() + 4))));
-      unsigned int current_source_id(
-                     ntohl(*static_cast<uint32_t const*>(
-                              static_cast<void const*>(
-                                header.data() + 8))));
-      unsigned int current_dest_id(
-                     ntohl(*static_cast<uint32_t const*>(
-                              static_cast<void const*>(
-                                header.data() + 12))));
-      uint16_t expected(
-        misc::crc16_ccitt(header.data() + 2, BBDO_HEADER_SIZE - 2));
+      uint16_t chksum{ntohs(*reinterpret_cast<uint16_t const*>(header.data()))};
+      packet_size =
+          ntohs(*reinterpret_cast<uint16_t const*>(header.data() + 2));
+      uint32_t current_event_id{
+          ntohl(*reinterpret_cast<uint32_t const*>(header.data() + 4))};
+      uint32_t current_source_id{
+          ntohl(*reinterpret_cast<uint32_t const*>(header.data() + 8))};
+      uint32_t current_dest_id{
+          ntohl(*reinterpret_cast<uint32_t const*>(header.data() + 12))};
+      uint16_t expected{
+          misc::crc16_ccitt(header.data() + 2, BBDO_HEADER_SIZE - 2)};
 
       // Initial packet, extract info.
       if (!event_id) {
@@ -395,10 +386,10 @@ bool input::read_any(
       }
 
       // Checksum and for multi-packet, assert same event.
-      if ((chksum != expected)
-          || (event_id != current_event_id)
-          || (source_id != current_source_id)
-          || (destination_id != current_dest_id)) {
+      if (chksum != expected
+          || event_id != current_event_id
+          || source_id != current_source_id
+          || destination_id != current_dest_id) {
         if (!_skipped) // First corrupted byte.
           logging::error(logging::high) << "BBDO: peer " << peer()
             << " is sending corrupted data: "

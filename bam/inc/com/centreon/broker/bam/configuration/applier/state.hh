@@ -17,77 +17,74 @@
 */
 
 #ifndef CCB_BAM_CONFIGURATION_APPLIER_STATE_HH
-#  define CCB_BAM_CONFIGURATION_APPLIER_STATE_HH
+#define CCB_BAM_CONFIGURATION_APPLIER_STATE_HH
 
-#  include <set>
-#  include <string>
-#  include "com/centreon/broker/bam/configuration/applier/ba.hh"
-#  include "com/centreon/broker/bam/configuration/applier/bool_expression.hh"
-#  include "com/centreon/broker/bam/configuration/applier/kpi.hh"
-#  include "com/centreon/broker/bam/configuration/applier/meta_service.hh"
-#  include "com/centreon/broker/bam/metric_book.hh"
-#  include "com/centreon/broker/bam/service_book.hh"
-#  include "com/centreon/broker/misc/unordered_hash.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <set>
+#include <string>
+#include "com/centreon/broker/bam/configuration/applier/ba.hh"
+#include "com/centreon/broker/bam/configuration/applier/bool_expression.hh"
+#include "com/centreon/broker/bam/configuration/applier/kpi.hh"
+#include "com/centreon/broker/bam/configuration/applier/meta_service.hh"
+#include "com/centreon/broker/bam/metric_book.hh"
+#include "com/centreon/broker/bam/service_book.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace               bam {
-  // Forward declaration.
-  class                 monitoring_stream;
+namespace bam {
+// Forward declaration.
+class monitoring_stream;
 
-  namespace             configuration {
-    // Forward declaration.
-    class               state;
+namespace configuration {
+// Forward declaration.
+class state;
 
-    namespace           applier {
-      /**
-       *  @class state state.hh "com/centreon/broker/bam/configuration/applier/state.hh"
-       *  @brief Apply global state of the BAM engine.
-       *
-       *  Take the configuration of the BAM engine and apply it.
-       */
-      class             state {
-      public:
-                        state();
-                        state(state const& other);
-                        ~state();
-        state&          operator=(state const& other);
-        void            apply(configuration::state const& my_state);
-        metric_book&    book_metric();
-        service_book&   book_service();
-        void            visit(io::stream* visitor);
-        void            save_to_cache(persistent_cache& cache);
-        void            load_from_cache(persistent_cache& cache);
+namespace applier {
+/**
+ *  @class state state.hh
+ * "com/centreon/broker/bam/configuration/applier/state.hh"
+ *  @brief Apply global state of the BAM engine.
+ *
+ *  Take the configuration of the BAM engine and apply it.
+ */
+class state {
+ public:
+  state();
+  state(state const& other);
+  ~state();
+  state& operator=(state const& other);
+  void apply(configuration::state const& my_state);
+  metric_book& book_metric();
+  service_book& book_service();
+  void visit(io::stream* visitor);
+  void save_to_cache(persistent_cache& cache);
+  void load_from_cache(persistent_cache& cache);
 
-      private:
-        struct          circular_check_node {
-                        circular_check_node();
+ private:
+  struct circular_check_node {
+    circular_check_node();
 
-          bool          in_visit;
-          bool          visited;
-          std::set<std::string>
-                        targets;
-        };
+    bool in_visit;
+    bool visited;
+    std::set<std::string> targets;
+  };
 
-        void            _circular_check(
-                          configuration::state const& my_state);
-        void            _circular_check(circular_check_node& n);
-        void            _internal_copy(state const& other);
+  void _circular_check(configuration::state const& my_state);
+  void _circular_check(circular_check_node& n);
+  void _internal_copy(state const& other);
 
-        ba              _ba_applier;
-        metric_book     _book_metric;
-        service_book    _book_service;
-        kpi             _kpi_applier;
-        bool_expression _bool_exp_applier;
-        meta_service    _meta_service_applier;
-        umap<std::string, circular_check_node>
-                        _nodes;
-      };
-    }
-  }
-}
+  ba _ba_applier;
+  metric_book _book_metric;
+  service_book _book_service;
+  kpi _kpi_applier;
+  bool_expression _bool_exp_applier;
+  meta_service _meta_service_applier;
+  std::unordered_map<std::string, circular_check_node> _nodes;
+};
+}  // namespace applier
+}  // namespace configuration
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_CONFIGURATION_APPLIER_STATE_HH
+#endif  // !CCB_BAM_CONFIGURATION_APPLIER_STATE_HH

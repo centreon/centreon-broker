@@ -17,14 +17,14 @@
 */
 
 #ifndef HOOKER_HH
-#  define HOOKER_HH
+#define HOOKER_HH
 
-#  include <QQueue>
-#  include "com/centreon/broker/multiplexing/hooker.hh"
+#include <queue>
+#include "com/centreon/broker/multiplexing/hooker.hh"
 
-#  define HOOKMSG1 "my first hooking message (when engine is started)"
-#  define HOOKMSG2 "my second hooking message (when multiplexing events)"
-#  define HOOKMSG3 "my third hooking message (when engine is stopped)"
+#define HOOKMSG1 "my first hooking message (when engine is started)"
+#define HOOKMSG2 "my second hooking message (when multiplexing events)"
+#define HOOKMSG3 "my third hooking message (when engine is stopped)"
 
 using namespace com::centreon::broker;
 
@@ -34,22 +34,19 @@ using namespace com::centreon::broker;
  *
  *  Simple class that hook events from the multiplexing engine.
  */
-class          hooker : public multiplexing::hooker {
-public:
-               hooker();
-               hooker(hooker const& other);
-               ~hooker();
-  hooker&      operator=(hooker const& other);
-  bool         read(
-                 std::shared_ptr<io::data>& d,
-                 time_t deadline = (time_t)-1);
-  void         starting();
-  void         stopping();
-  int          write(std::shared_ptr<io::data> const& d);
+class hooker : public multiplexing::hooker {
+ public:
+  hooker();
+  ~hooker();
+  hooker(hooker const& other) = delete;
+  hooker& operator=(hooker const& other) = delete;
+  bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
+  void starting();
+  void stopping();
+  int write(std::shared_ptr<io::data> const& d);
 
-private:
-  QQueue<std::shared_ptr<io::data> >
-               _queue;
+ private:
+  std::queue<std::shared_ptr<io::data> > _queue;
 };
 
-#endif // !HOOKER_HH
+#endif  // !HOOKER_HH

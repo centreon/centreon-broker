@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sstream>
 #include "com/centreon/broker/bam/ba.hh"
+#include <sstream>
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
@@ -52,22 +52,22 @@ static double normalize(double d) {
  *                                      virtual hosts and services.
  */
 ba::ba(bool generate_virtual_status)
-  : _acknowledgement_hard(0.0),
-    _acknowledgement_soft(0.0),
-    _downtime_hard(0.0),
-    _downtime_soft(0.0),
-    _generate_virtual_status(generate_virtual_status),
-    _host_id(0),
-    _id(0),
-    _in_downtime(false),
-    _last_kpi_update(0),
-    _level_critical(0.0),
-    _level_hard(100.0),
-    _level_soft(100.0),
-    _level_warning(0.0),
-    _recompute_count(0),
-    _service_id(0),
-    _valid(true) {}
+    : _acknowledgement_hard(0.0),
+      _acknowledgement_soft(0.0),
+      _downtime_hard(0.0),
+      _downtime_soft(0.0),
+      _generate_virtual_status(generate_virtual_status),
+      _host_id(0),
+      _id(0),
+      _in_downtime(false),
+      _last_kpi_update(0),
+      _level_critical(0.0),
+      _level_hard(100.0),
+      _level_soft(100.0),
+      _level_warning(0.0),
+      _recompute_count(0),
+      _service_id(0),
+      _valid(true) {}
 
 /**
  *  Copy constructor.
@@ -105,8 +105,8 @@ ba& ba::operator=(ba const& other) {
  *  @param[in] impact KPI that will impact BA.
  */
 void ba::add_impact(std::shared_ptr<kpi> const& impact) {
-  umap<kpi*, impact_info>::iterator
-    it(_impacts.find(impact.get()));
+  std::unordered_map<kpi*, impact_info>::iterator it(
+      _impacts.find(impact.get()));
   if (it == _impacts.end()) {
     impact_info& ii(_impacts[impact.get()]);
     ii.kpi_ptr = impact;
@@ -116,11 +116,10 @@ void ba::add_impact(std::shared_ptr<kpi> const& impact) {
     _apply_impact(ii);
     timestamp last_state_change(impact->get_last_state_change());
     if (last_state_change.get_time_t() != (time_t)-1)
-      _last_kpi_update = std::max(
-                                _last_kpi_update.get_time_t(),
-                                last_state_change.get_time_t());
+      _last_kpi_update = std::max(_last_kpi_update.get_time_t(),
+                                  last_state_change.get_time_t());
   }
-  return ;
+  return;
 }
 
 /**
@@ -131,11 +130,9 @@ void ba::add_impact(std::shared_ptr<kpi> const& impact) {
  *
  *  @return True if the value of this ba was modified.
  */
-bool ba::child_has_update(
-           computable* child,
-           io::stream* visitor) {
-  umap<kpi*, impact_info>::iterator
-    it(_impacts.find(static_cast<kpi*>(child)));
+bool ba::child_has_update(computable* child, io::stream* visitor) {
+  std::unordered_map<kpi*, impact_info>::iterator it(
+      _impacts.find(static_cast<kpi*>(child)));
   if (it != _impacts.end()) {
     // Get impact.
     impact_values new_hard_impact;
@@ -145,23 +142,21 @@ bool ba::child_has_update(
     bool kpi_in_downtime(it->second.kpi_ptr->in_downtime());
 
     // Logging.
-    logging::debug(logging::low) << "BAM: BA " << _id
-      << " is getting notified of child update (KPI "
-      << it->second.kpi_ptr->get_id() << ", impact "
-      << new_hard_impact.get_nominal() << ", last state change "
-      << it->second.kpi_ptr->get_last_state_change() << ")";
+    logging::debug(logging::low)
+        << "BAM: BA " << _id << " is getting notified of child update (KPI "
+        << it->second.kpi_ptr->get_id() << ", impact "
+        << new_hard_impact.get_nominal() << ", last state change "
+        << it->second.kpi_ptr->get_last_state_change() << ")";
 
     // If the new impact is the same as the old, don't update.
-    if (it->second.hard_impact == new_hard_impact
-        && it->second.soft_impact == new_soft_impact
-        && it->second.in_downtime == kpi_in_downtime)
+    if (it->second.hard_impact == new_hard_impact &&
+        it->second.soft_impact == new_soft_impact &&
+        it->second.in_downtime == kpi_in_downtime)
       return (false);
-    timestamp last_state_change(
-                it->second.kpi_ptr->get_last_state_change());
+    timestamp last_state_change(it->second.kpi_ptr->get_last_state_change());
     if (last_state_change.get_time_t() != (time_t)-1)
-      _last_kpi_update = std::max(
-                                _last_kpi_update.get_time_t(),
-                                last_state_change.get_time_t());
+      _last_kpi_update = std::max(_last_kpi_update.get_time_t(),
+                                  last_state_change.get_time_t());
 
     // Discard old data.
     _unapply_impact(it->second);
@@ -180,7 +175,6 @@ bool ba::child_has_update(
   }
   return (true);
 }
-
 
 /**
  *  Get the hard impact introduced by acknowledged KPI.
@@ -290,8 +284,9 @@ std::string const& ba::get_name() const {
  */
 std::string ba::get_output() const {
   std::ostringstream oss;
-  oss << "BA : " << _name << " - current_level = "
-      << static_cast<int>(normalize(_level_hard)) << "%";
+  oss << "BA : " << _name
+      << " - current_level = " << static_cast<int>(normalize(_level_hard))
+      << "%";
   return (oss.str());
 }
 
@@ -351,13 +346,13 @@ short ba::get_state_soft() {
  *  @param[in] impact Impact to remove.
  */
 void ba::remove_impact(std::shared_ptr<kpi> const& impact) {
-  umap<kpi*, impact_info>::iterator
-    it(_impacts.find(impact.get()));
+  std::unordered_map<kpi*, impact_info>::iterator it(
+      _impacts.find(impact.get()));
   if (it != _impacts.end()) {
     _unapply_impact(it->second);
     _impacts.erase(it);
   }
-  return ;
+  return;
 }
 
 /**
@@ -367,7 +362,7 @@ void ba::remove_impact(std::shared_ptr<kpi> const& impact) {
  */
 void ba::set_id(unsigned int id) {
   _id = id;
-  return ;
+  return;
 }
 
 /**
@@ -395,7 +390,7 @@ void ba::set_host_id(unsigned int host_id) {
  */
 void ba::set_level_critical(double level) {
   _level_critical = level;
-  return ;
+  return;
 }
 
 /**
@@ -405,7 +400,7 @@ void ba::set_level_critical(double level) {
  */
 void ba::set_level_warning(double level) {
   _level_warning = level;
-  return ;
+  return;
 }
 
 /**
@@ -431,7 +426,7 @@ void ba::set_initial_event(ba_event const& event) {
  */
 void ba::set_name(std::string const& name) {
   _name = name;
-  return ;
+  return;
 }
 
 /**
@@ -443,7 +438,7 @@ void ba::set_name(std::string const& name) {
  */
 void ba::set_valid(bool valid) {
   _valid = valid;
-  return ;
+  return;
 }
 
 /**
@@ -469,14 +464,14 @@ void ba::visit(io::stream* visitor) {
     short hard_state(get_state_hard());
     bool state_changed(false);
     if (!_event) {
-      if ((_last_kpi_update.get_time_t() == (time_t)-1)
-          || (_last_kpi_update.get_time_t() == (time_t)0))
+      if ((_last_kpi_update.get_time_t() == (time_t)-1) ||
+          (_last_kpi_update.get_time_t() == (time_t)0))
         _last_kpi_update = time(NULL);
       _open_new_event(visitor, hard_state);
     }
     // If state changed, close event and open a new one.
-    else if ((_in_downtime != _event->in_downtime)
-             || (hard_state != _event->status)) {
+    else if ((_in_downtime != _event->in_downtime) ||
+             (hard_state != _event->status)) {
       state_changed = true;
       _event->end_time = _last_kpi_update;
       visitor->write(std::static_pointer_cast<io::data>(_event));
@@ -499,9 +494,9 @@ void ba::visit(io::stream* visitor) {
       status->state = hard_state;
       status->state_changed = state_changed;
       logging::debug(logging::low)
-        << "BAM: generating status of BA " << status->ba_id << " (state "
-        << status->state << ", in downtime " << status->in_downtime
-        << ", level " << status->level_nominal << ")";
+          << "BAM: generating status of BA " << status->ba_id << " (state "
+          << status->state << ", in downtime " << status->in_downtime
+          << ", level " << status->level_nominal << ")";
       visitor->write(status);
     }
 
@@ -510,7 +505,7 @@ void ba::visit(io::stream* visitor) {
       std::shared_ptr<neb::service_status> status(new neb::service_status);
       status->active_checks_enabled = false;
       status->check_interval = 0.0;
-      status->check_type = 1; // Passive.
+      status->check_type = 1;  // Passive.
       status->current_check_attempt = 1;
       status->current_state = hard_state;
       status->enabled = true;
@@ -537,15 +532,16 @@ void ba::visit(io::stream* visitor) {
       status->obsess_over = false;
       {
         std::ostringstream oss;
-        oss << "BA : Business Activity " << _id << " - current_level = "
-            << static_cast<int>(normalize(_level_hard)) << "%";
+        oss << "BA : Business Activity " << _id
+            << " - current_level = " << static_cast<int>(normalize(_level_hard))
+            << "%";
         status->output = oss.str().c_str();
       }
       // status->percent_state_chagne = XXX;
       {
         std::ostringstream oss;
-        oss << "BA_Level=" << static_cast<int>(normalize(_level_hard))
-            << "%;" << static_cast<int>(_level_warning) << ";"
+        oss << "BA_Level=" << static_cast<int>(normalize(_level_hard)) << "%;"
+            << static_cast<int>(_level_warning) << ";"
             << static_cast<int>(_level_critical) << ";0;100";
         status->perf_data = oss.str().c_str();
       }
@@ -553,11 +549,11 @@ void ba::visit(io::stream* visitor) {
       // status->service_description = XXX;
       status->service_id = _service_id;
       status->should_be_scheduled = false;
-      status->state_type = 1; // Hard.
+      status->state_type = 1;  // Hard.
       visitor->write(status);
     }
   }
-  return ;
+  return;
 }
 
 /**
@@ -568,21 +564,19 @@ void ba::visit(io::stream* visitor) {
  *  @param dt       Downtime of the service.
  *  @param visitor  Visitor that will receive events.
  */
-void ba::service_update(
-          std::shared_ptr<neb::downtime> const& dt,
-          io::stream* visitor) {
+void ba::service_update(std::shared_ptr<neb::downtime> const& dt,
+                        io::stream* visitor) {
   (void)visitor;
-  if ((dt->host_id == _host_id)
-      && (dt->service_id == _service_id)) {
+  if ((dt->host_id == _host_id) && (dt->service_id == _service_id)) {
     // Log message.
     logging::debug(logging::low)
-      << "BAM: BA " << _id
-      << " is getting notified of a downtime on its service ("
-      << _host_id << ", " << _service_id << ")";
+        << "BAM: BA " << _id
+        << " is getting notified of a downtime on its service (" << _host_id
+        << ", " << _service_id << ")";
 
     // Check if there was a change.
     bool in_downtime(dt->was_started &&
-                       (dt->actual_end_time == -1 || dt->actual_end_time == 0));
+                     (dt->actual_end_time == -1 || dt->actual_end_time == 0));
     if (_in_downtime != in_downtime) {
       _in_downtime = in_downtime;
 
@@ -592,13 +586,13 @@ void ba::service_update(
       // Propagate change.
       propagate_update(visitor);
     }
-  }
-  else
+  } else
     logging::error(logging::medium)
-      << "BAM: BA " << _id << " has got an invalid downtime event."
-         " This should never happen. Check your database: got (host "
-      << dt->host_id << ", service " << dt->service_id
-      << ") expected (" << _host_id << ", " << _service_id << ")";
+        << "BAM: BA " << _id
+        << " has got an invalid downtime event."
+           " This should never happen. Check your database: got (host "
+        << dt->host_id << ", service " << dt->service_id << ") expected ("
+        << _host_id << ", " << _service_id << ")";
 }
 
 /**
@@ -609,7 +603,7 @@ void ba::service_update(
 void ba::save_inherited_downtime(persistent_cache& cache) const {
   if (_inherited_downtime.get())
     cache.add(std::shared_ptr<inherited_downtime>(
-                new inherited_downtime(*_inherited_downtime)));
+        new inherited_downtime(*_inherited_downtime)));
 }
 
 /**
@@ -617,8 +611,7 @@ void ba::save_inherited_downtime(persistent_cache& cache) const {
  *
  *  @param[in] dwn  The inherited downtime.
  */
-void ba::set_inherited_downtime(
-           inherited_downtime const& dwn) {
+void ba::set_inherited_downtime(inherited_downtime const& dwn) {
   _inherited_downtime.reset(new inherited_downtime(dwn));
 }
 
@@ -636,7 +629,7 @@ void ba::_apply_impact(ba::impact_info& impact) {
   _level_hard -= impact.hard_impact.get_nominal();
   _level_soft -= impact.soft_impact.get_nominal();
 
-  return ;
+  return;
 }
 
 /**
@@ -662,7 +655,7 @@ void ba::_internal_copy(ba const& other) {
   _level_soft = other._level_soft;
   _level_warning = other._level_warning;
   _valid = other._valid;
-  return ;
+  return;
 }
 
 /**
@@ -671,9 +664,7 @@ void ba::_internal_copy(ba const& other) {
  *  @param[out] visitor             Visitor that will receive events.
  *  @param[in]  service_hard_state  Hard state of virtual BA service.
  */
-void ba::_open_new_event(
-           io::stream* visitor,
-           short service_hard_state) {
+void ba::_open_new_event(io::stream* visitor, short service_hard_state) {
   _event.reset(new ba_event);
   _event->ba_id = _id;
   _event->first_level = _level_hard < 0 ? 0 : _level_hard;
@@ -684,7 +675,7 @@ void ba::_open_new_event(
     std::shared_ptr<io::data> be(new ba_event(*_event));
     visitor->write(be);
   }
-  return ;
+  return;
 }
 
 /**
@@ -700,14 +691,12 @@ void ba::_recompute() {
   _downtime_soft = 0.0;
   _level_hard = 100.0;
   _level_soft = 100.0;
-  for (umap<kpi*, impact_info>::iterator
-         it(_impacts.begin()),
-         end(_impacts.end());
-       it != end;
-       ++it)
+  for (std::unordered_map<kpi*, impact_info>::iterator it(_impacts.begin()),
+       end(_impacts.end());
+       it != end; ++it)
     _apply_impact(it->second);
   _recompute_count = 0;
-  return ;
+  return;
 }
 
 /**
@@ -729,7 +718,7 @@ void ba::_unapply_impact(ba::impact_info& impact) {
   _level_hard += impact.hard_impact.get_nominal();
   _level_soft += impact.soft_impact.get_nominal();
 
-  return ;
+  return;
 }
 
 /**
@@ -739,14 +728,13 @@ void ba::_unapply_impact(ba::impact_info& impact) {
  */
 void ba::_commit_initial_events(io::stream* visitor) {
   if (_initial_events.empty())
-    return ;
+    return;
 
   if (visitor) {
     for (std::vector<std::shared_ptr<ba_event> >::const_iterator
-           it(_initial_events.begin()),
-           end(_initial_events.end());
-         it != end;
-         ++it)
+             it(_initial_events.begin()),
+         end(_initial_events.end());
+         it != end; ++it)
       visitor->write(std::shared_ptr<io::data>(new ba_event(**it)));
   }
   _initial_events.clear();
@@ -758,15 +746,14 @@ void ba::_commit_initial_events(io::stream* visitor) {
 void ba::_compute_inherited_downtime(io::stream* visitor) {
   // kpi downtime heritance deactived. Do nothing.
   if (!_inherit_kpi_downtime)
-    return ;
+    return;
 
   // Check if every impacting child KPIs are in downtime.
   bool every_kpi_in_downtime(!_impacts.empty());
-  for (umap<kpi*, impact_info>::const_iterator
-         it = _impacts.begin(),
-         end = _impacts.end();
-       it != end;
-       ++it) {
+  for (std::unordered_map<kpi*, impact_info>::const_iterator
+           it = _impacts.begin(),
+           end = _impacts.end();
+       it != end; ++it) {
     if (!it->first->ok_state() && !it->first->in_downtime()) {
       every_kpi_in_downtime = false;
       break;
@@ -783,14 +770,12 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
     _in_downtime = true;
 
     if (visitor)
-      visitor->write(
-        std::shared_ptr<inherited_downtime>(
-                new inherited_downtime(*_inherited_downtime)));
+      visitor->write(std::shared_ptr<inherited_downtime>(
+          new inherited_downtime(*_inherited_downtime)));
   }
   // Case 2: state ok or not every kpi in downtime, actual downtime.
   //         Remove the downtime.
-  else if ((state_ok || !every_kpi_in_downtime)
-           && _inherited_downtime.get()) {
+  else if ((state_ok || !every_kpi_in_downtime) && _inherited_downtime.get()) {
     _inherited_downtime.reset();
     if (visitor) {
       std::shared_ptr<inherited_downtime> dwn(new inherited_downtime);

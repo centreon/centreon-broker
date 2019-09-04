@@ -110,8 +110,6 @@ void loader::load_dir(std::string const& dirname, void const* arg) {
   // Ending log message.
   logging::debug(logging::medium)
       << "modules: finished loading directory '" << dirname << "'";
-
-  return;
 }
 
 /**
@@ -121,7 +119,7 @@ void loader::load_dir(std::string const& dirname, void const* arg) {
  *  @param[in] arg      Module argument.
  */
 void loader::load_file(std::string const& filename, void const* arg) {
-  umap<std::string, std::shared_ptr<handle> >::iterator it(
+  std::unordered_map<std::string, std::shared_ptr<handle> >::iterator it(
       _handles.find(filename));
   if (it == _handles.end()) {
     std::shared_ptr<handle> handl(new handle);
@@ -132,7 +130,6 @@ void loader::load_file(std::string const& filename, void const* arg) {
                                 << "' which is already loaded";
     it->second->update(arg);
   }
-  return;
 }
 
 /**
@@ -141,13 +138,14 @@ void loader::load_file(std::string const& filename, void const* arg) {
 void loader::unload() {
   std::string key;
   while (!_handles.empty()) {
-    umap<std::string, std::shared_ptr<handle> >::iterator it(_handles.begin());
+    std::unordered_map<std::string, std::shared_ptr<handle> >::iterator it(
+        _handles.begin());
     key = it->first;
-    umap<std::string, std::shared_ptr<handle> >::iterator end(_handles.end());
+    std::unordered_map<std::string, std::shared_ptr<handle> >::iterator end(
+        _handles.end());
     while (++it != end)
       if (it->first > key)
         key = it->first;
     _handles.erase(key);
   }
-  return;
 }
