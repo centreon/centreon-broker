@@ -87,22 +87,6 @@ else ()
       INSTALL_COMMAND ""
       LOG_DOWNLOAD ON)
 endif ()
-#  set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY EP_UPDATE_DISCONNECTED 1)
-
-#ExternalProject_Add(json11_lib
-#  GIT_REPOSITORY https://github.com/dropbox/json11/
-#  TIMEOUT 10
-#  INSTALL_COMMAND ""
-#  LOG_DOWNLOAD ON
-#  LOG_CONFIGURE ON
-#  LOG_BUILD ON)
-#ExternalProject_Add(Asio
-#  GIT_REPOSITORY https://github.com/chriskohlhoff/asio/
-#  TIMEOUT 10
-#  CONFIGURE_COMMAND ""
-#  BUILD_COMMAND ""
-#  INSTALL_COMMAND ""
-#  LOG_DOWNLOAD ON)
 
 ExternalProject_Get_Property(json11_lib source_dir)
 ExternalProject_Get_Property(json11_lib binary_dir)
@@ -125,29 +109,18 @@ find_package(ZLIB REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 # Find MySQL/Mariadb devel package
-pkg_check_modules(_libmariadb libmariadb)
-if (_libmariadb_FOUND)
-  set(MYSQL_CFLAGS ${_libmariadb_CFLAGS})
-  set(MYSQL_LIBS ${_libmariadb_LDFLAGS})
-else ()
-  pkg_check_modules(_mariadb mariadb)
-  if (_mariadb_FOUND)
-    set(MYSQL_CFLAGS ${_mariadb_CFLAGS})
-    set(MYSQL_LIBS ${_mariadb_LDFLAGS})
-  else ()
-    pkg_check_modules(_mysql mysql)
-    if (_mysql_FOUND)
-      set(MYSQL_CFLAGS ${_mysql_CFLAGS})
-      set(MYSQL_LIBS ${_mysql_LDFLAGS})
-    else ()
-      message(SEND_ERROR "MariaDB devel package is not installed")
-    endif ()
+find_program(MYSQL_CONFIG mysql_config)
+if (${MYSQL_CONFIG} STREQUAL "MYSQL_CONFIG-NOTFOUND")
+  find_program(MYSQL_CONFIG mariadb_config)
+  if (${MYSQL_CONFIG} STREQUAL "MYSQL_CONFIG-NOTFOUND")
+    message(SEND_ERROR "MariaDB devel package is not installed")
   endif ()
 endif ()
 
-string(REPLACE "-" " -" MYSQL_CFLAGS ${MYSQL_CFLAGS})
-message(STATUS ${MYSQL_CFLAGS})
-message(STATUS ${MYSQL_LIBS})
+execute_process(COMMAND ${MYSQL_CONFIG} --cflags
+  OUTPUT_VARIABLE MYSQL_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${MYSQL_CONFIG} --libs
+  OUTPUT_VARIABLE MYSQL_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 #
 # Get distributions name
