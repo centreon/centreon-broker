@@ -186,188 +186,26 @@ set_target_properties("${BAM}" PROPERTIES
     COMPILE_FLAGS "${MYSQL_CFLAGS}")
 target_link_libraries("${BAM}" ${QT_LIBRARIES})
 
+
 # Testing.
-set(
-  TESTS_SOURCES
-  ${TESTS_SOURCES}
-  "${TEST_DIR}/exp_parser/get_postfix.cc"
-  "${TEST_DIR}/exp_tokenizer/next.cc"
-  "${TEST_DIR}/exp_builder/exp_builder.cc"
-  "${TEST_DIR}/configuration/applier-boolexp.cc"
-  PARENT_SCOPE
-)
-set(
-  TESTS_LIBRARIES
-  ${TESTS_LIBRARIES}
-  "${BAM}"
-  PARENT_SCOPE
-)
-if (0) # WITH_TESTING)
-  set(TEST_LIBRARIES "${NEB}" "${BAM}" "roker")
-
-  # ba tests.
-  #   KPI change at recompute.
-  set(TEST_NAME "bam_ba_kpi_change_at_recompute")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/ba/kpi_change_at_recompute.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-
-  # time tests.
-  set(CHECK_TIMEPERIOD "check_timeperiod")
-  add_executable("${CHECK_TIMEPERIOD}"
-    "${TEST_DIR}/time/check_timeperiod.cc")
-  target_link_libraries("${CHECK_TIMEPERIOD}" ${TEST_LIBRARIES})
-  #   Week days tests.
-  add_test("bam_time_week_day_after_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/week_day/after_period.conf")
-  add_test("bam_time_week_day_before_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/week_day/before_period.conf")
-  add_test("bam_time_week_day_into_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/week_day/into_period.conf")
-  add_test("bam_time_week_day_into_period_for_next_week"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/week_day/into_period_for_next_week.conf")
-  add_test("bam_time_week_day_into_period_with_exclude_after"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/week_day/into_period_with_exclude_after.conf")
-  add_test("bam_time_week_day_into_period_with_exclude_before"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/week_day/into_period_with_exclude_before.conf")
-  add_test("bam_time_week_day_into_period_with_exclude_into"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/week_day/into_period_with_exclude_into.conf")
-  #   Exceptions tests.
-  #     Calendar date.
-  add_test("bam_time_exception_calendar_date_after_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/after_period.conf")
-  add_test("bam_time_exception_calendar_date_before_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/before_period.conf")
-  add_test("bam_time_exception_calendar_date_into_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/into_period.conf")
-  add_test("bam_time_exception_calendar_date_into_period_with_exclude_after"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/into_period_with_exclude_after.conf")
-  add_test("bam_time_exception_calendar_date_into_period_with_exclude_before"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/into_period_with_exclude_before.conf")
-  add_test("bam_time_exception_calendar_date_into_period_with_exclude_into"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/into_period_with_exclude_into.conf")
-  add_test("bam_time_exception_calendar_date_skip_in_after_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/skip_in_after_period.conf")
-  add_test("bam_time_exception_calendar_date_skip_in_before_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/skip_in_before_period.conf")
-  add_test("bam_time_exception_calendar_date_skip_in_into_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/skip_in_into_period.conf")
-  add_test("bam_time_exception_calendar_date_skip_in_into_period_with_exclude_after"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/skip_in_into_period_with_exclude_after.conf")
-  add_test("bam_time_exception_calendar_date_skip_in_into_period_with_exclude_before"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/skip_in_into_period_with_exclude_before.conf")
-  add_test("bam_time_exception_calendar_date_skip_in_into_period_with_exclude_into"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/skip_in_into_period_with_exclude_into.conf")
-  add_test("bam_time_exception_calendar_date_start_end_skip_in_after_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/start_end_skip_in_after_period.conf")
-  add_test("bam_time_exception_calendar_date_start_end_skip_in_before_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/start_end_skip_in_before_period.conf")
-  add_test("bam_time_exception_calendar_date_start_end_skip_in_into_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/start_end_skip_in_into_period.conf")
-  add_test("bam_time_exception_calendar_date_start_end_skip_in_into_period_with_exclude_after"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/start_end_skip_in_into_period_with_exclude_after.conf")
-  add_test("bam_time_exception_calendar_date_start_end_skip_in_into_period_with_exclude_before"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/start_end_skip_in_into_period_with_exclude_before.conf")
-  add_test("bam_time_exception_calendar_date_start_end_skip_in_into_period_with_exclude_into"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/start_end_skip_in_into_period_with_exclude_into.conf")
-  add_test("bam_time_exception_calendar_date_start_end_skip_out_after_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/start_end_skip_out_after_period.conf")
-  add_test("bam_time_exception_calendar_date_start_end_skip_out_after_period_with_exclude_after"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/start_end_skip_out_after_period_with_exclude_after.conf")
-  add_test("bam_time_exception_calendar_date_start_end_skip_out_after_period_with_exclude_before"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/start_end_skip_out_after_period_with_exclude_before.conf")
-  add_test("bam_time_exception_calendar_date_start_end_skip_out_after_period_with_exclude_into"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/start_end_skip_out_after_period_with_exclude_into.conf")
-  add_test("bam_time_exception_calendar_date_start_end_skip_out_before_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/start_end_skip_out_before_period.conf")
-  add_test("bam_time_exception_calendar_date_start_end_skip_out_into_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/calendar_date/start_end_skip_out_into_period.conf")
-  #     Month date.
-  add_test("bam_time_exception_month_date_day_after_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_date/day_after_period.conf")
-  add_test("bam_time_exception_month_date_day_before_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_date/day_before_period.conf")
-  add_test("bam_time_exception_month_date_day_into_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_date/day_into_period.conf")
-  add_test("bam_time_exception_month_date_day_into_period_with_exclude_after"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_date/day_into_period_with_exclude_after.conf")
-  add_test("bam_time_exception_month_date_day_into_period_with_exclude_before"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_date/day_into_period_with_exclude_before.conf")
-  add_test("bam_time_exception_month_date_day_into_period_with_exclude_into"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_date/day_into_period_with_exclude_into.conf")
-  #     Month day.
-  add_test("bam_time_exception_month_day_after_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_day/after_period.conf")
-  add_test("bam_time_exception_month_day_before_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_day/before_period.conf")
-  add_test("bam_time_exception_month_day_into_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_day/into_period.conf")
-  add_test("bam_time_exception_month_day_into_period_with_exclude_after"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_day/into_period_with_exclude_after.conf")
-  add_test("bam_time_exception_month_day_into_period_with_exclude_before"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_day/into_period_with_exclude_before.conf")
-  add_test("bam_time_exception_month_day_into_period_with_exclude_into"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_day/into_period_with_exclude_into.conf")
-  #     Month week day.
-  add_test("bam_time_exception_month_week_day_4_after_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_week_day/4_after_period.conf")
-  add_test("bam_time_exception_month_week_day_4_before_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_week_day/4_before_period.conf")
-  add_test("bam_time_exception_month_week_day_4_into_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_week_day/4_into_period.conf")
-  add_test("bam_time_exception_month_week_day_4_into_period_with_exclude_after"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_week_day/4_into_period_with_exclude_after.conf")
-  add_test("bam_time_exception_month_week_day_4_into_period_with_exclude_before"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_week_day/4_into_period_with_exclude_before.conf")
-  add_test("bam_time_exception_month_week_day_4_into_period_with_exclude_into"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_week_day/4_into_period_with_exclude_into.conf")
-  add_test("bam_time_exception_month_week_day_last_after_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_week_day/last_after_period.conf")
-  add_test("bam_time_exception_month_week_day_last_before_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_week_day/last_before_period.conf")
-  add_test("bam_time_exception_month_week_day_last_into_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_week_day/last_into_period.conf")
-  add_test("bam_time_exception_month_week_day_last_into_period_with_exclude_after"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_week_day/last_into_period_with_exclude_after.conf")
-  add_test("bam_time_exception_month_week_day_last_into_period_with_exclude_before"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_week_day/last_into_period_with_exclude_before.conf")
-  add_test("bam_time_exception_month_week_day_last_into_period_with_exclude_into"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/month_week_day/last_into_period_with_exclude_into.conf")
-  #     Week day.
-  add_test("bam_time_exception_week_day_4_after_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/week_day/4_after_period.conf")
-  add_test("bam_time_exception_week_day_4_before_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/week_day/4_before_period.conf")
-  add_test("bam_time_exception_week_day_4_into_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/week_day/4_into_period.conf")
-  add_test("bam_time_exception_week_day_4_into_period_with_exclude_after"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/week_day/4_into_period_with_exclude_after.conf")
-  add_test("bam_time_exception_week_day_4_into_period_with_exclude_before"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/week_day/4_into_period_with_exclude_before.conf")
-  add_test("bam_time_exception_week_day_4_into_period_with_exclude_into"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/week_day/4_into_period_with_exclude_into.conf")
-  add_test("bam_time_exception_week_day_last_after_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/week_day/last_after_period.conf")
-  add_test("bam_time_exception_week_day_last_before_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/week_day/last_before_period.conf")
-  add_test("bam_time_exception_week_day_last_into_period"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/week_day/last_into_period.conf")
-  add_test("bam_time_exception_week_day_last_into_period_with_exclude_after"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/week_day/last_into_period_with_exclude_after.conf")
-  add_test("bam_time_exception_week_day_last_into_period_with_exclude_before"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/week_day/last_into_period_with_exclude_before.conf")
-  add_test("bam_time_exception_week_day_last_into_period_with_exclude_into"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exception/week_day/last_into_period_with_exclude_into.conf")
-  #   Exclusions tests.
-  add_test("bam_time_exclusion_nested_after"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exclusion/nested_after.conf")
-  add_test("bam_time_exclusion_nested_before"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exclusion/nested_before.conf")
-  add_test("bam_time_exclusion_nested_into"
-    "${CHECK_TIMEPERIOD}" "${TEST_DIR}/time/cfg/exclusion/nested_into.conf")
-
-endif ()
+if (WITH_TESTING )
+    set(
+      TESTS_SOURCES
+      ${TESTS_SOURCES}
+      "${TEST_DIR}/exp_parser/get_postfix.cc"
+      "${TEST_DIR}/exp_tokenizer/next.cc"
+      "${TEST_DIR}/exp_builder/exp_builder.cc"
+      "${TEST_DIR}/configuration/applier-boolexp.cc"
+      "${TEST_DIR}/time/check_timeperiod.cc"
+      PARENT_SCOPE
+    )
+    set(
+      TESTS_LIBRARIES
+      ${TESTS_LIBRARIES}
+      "${BAM}"
+      PARENT_SCOPE
+    )
+endif (WITH_TESTING)
 
 # Install rule.
 install(TARGETS "${BAM}"
