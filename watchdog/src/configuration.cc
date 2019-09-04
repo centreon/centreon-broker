@@ -33,12 +33,9 @@ configuration::configuration() {}
  *  @param[in] instances     The configuration of the instances centreon-broker.
  */
 configuration::configuration(
-                 std::string const& log_filename,
-                 std::map<
-                   std::string,
-                   instance_configuration> const& instances)
-  : _log_filename(log_filename),
-    _instances_configuration(instances) {}
+    std::string const& log_filename,
+    std::map<std::string, instance_configuration> const& instances)
+    : _log_filename(log_filename), _instances_configuration(instances) {}
 
 /**
  *  Destructor.
@@ -50,10 +47,9 @@ configuration::~configuration() {}
  *
  *  @param[in] other  Object to copy.
  */
-configuration::configuration(
-                 configuration const& other)
-  : _log_filename(other._log_filename),
-    _instances_configuration(other._instances_configuration) {}
+configuration::configuration(configuration const& other)
+    : _log_filename(other._log_filename),
+      _instances_configuration(other._instances_configuration) {}
 
 /**
  *  Assignment operator.
@@ -62,8 +58,7 @@ configuration::configuration(
  *
  *  @return  A reference to this object.
  */
-configuration& configuration::operator=(
-                                configuration const& other) {
+configuration& configuration::operator=(configuration const& other) {
   if (this != &other) {
     _log_filename = other._log_filename;
     _instances_configuration = other._instances_configuration;
@@ -86,7 +81,7 @@ std::string const& configuration::get_log_filename() const throw() {
  *  @return  The configuration of the instances.
  */
 std::map<std::string, instance_configuration> const&
-  configuration::get_instances_configuration() const throw() {
+configuration::get_instances_configuration() const throw() {
   return (_instances_configuration);
 }
 
@@ -97,12 +92,11 @@ std::map<std::string, instance_configuration> const&
  *
  *  @return  The configuration of this instance, or an empty one.
  */
-instance_configuration
-  configuration::get_instance_configuration(std::string const& name) const {
+instance_configuration configuration::get_instance_configuration(
+    std::string const& name) const {
   instance_map::const_iterator found = _instances_configuration.find(name);
-  return (found != _instances_configuration.end()
-            ? found->second
-            : instance_configuration());
+  return (found != _instances_configuration.end() ? found->second
+                                                  : instance_configuration());
 }
 
 /**
@@ -112,8 +106,7 @@ instance_configuration
  *
  *  @return  True if the instance exist.
  */
-bool configuration::instance_exists(
-                      std::string const& name) const throw() {
-  return (_instances_configuration.find(name)
-          != _instances_configuration.end());
+bool configuration::instance_exists(std::string const& name) const throw() {
+  return (_instances_configuration.find(name) !=
+          _instances_configuration.end());
 }

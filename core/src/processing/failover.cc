@@ -16,8 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-//#include <QCoreApplication>
-//#include <QTimer>
 #include "com/centreon/broker/processing/failover.hh"
 #include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -452,7 +450,7 @@ bool failover::wait(unsigned long time) {
  *
  *  @return  The state of the failover.
  */
-std::string failover::_get_state() {
+const char* failover::_get_state() const {
   char const* ret = NULL;
   if (_streamm.try_lock_for(std::chrono::milliseconds(10))) {
     if (!_stream)

@@ -25,7 +25,7 @@ using namespace com::centreon::broker::watchdog;
  *  Default constructor.
  */
 instance_configuration::instance_configuration()
-  : _run(false), _reload(false), _seconds_per_tentative(0) {}
+    : _run(false), _reload(false), _seconds_per_tentative(0) {}
 
 /**
  *  Constructor.
@@ -37,16 +37,16 @@ instance_configuration::instance_configuration()
  *  @param[in] seconds_per_tentative  The number of seconds between tentatives.
  */
 instance_configuration::instance_configuration(
-                                 std::string const& name,
-                                 std::string const& config_file,
-                                 bool should_run,
-                                 bool should_reload,
-                                 unsigned int seconds_per_tentative)
-  : _name(name),
-    _config_file(config_file),
-    _run(should_run),
-    _reload(should_reload),
-    _seconds_per_tentative(seconds_per_tentative) {}
+    std::string const& name,
+    std::string const& config_file,
+    bool should_run,
+    bool should_reload,
+    unsigned int seconds_per_tentative)
+    : _name(name),
+      _config_file(config_file),
+      _run(should_run),
+      _reload(should_reload),
+      _seconds_per_tentative(seconds_per_tentative) {}
 /**
  *  Destructor.
  */
@@ -58,12 +58,12 @@ instance_configuration::~instance_configuration() {}
  *  @param[in] other  Object to copy.
  */
 instance_configuration::instance_configuration(
-                                 instance_configuration const& other)
-  : _name(other._name),
-    _config_file(other._config_file),
-    _run(other._run),
-    _reload(other._reload),
-   _seconds_per_tentative(other._seconds_per_tentative) {}
+    instance_configuration const& other)
+    : _name(other._name),
+      _config_file(other._config_file),
+      _run(other._run),
+      _reload(other._reload),
+      _seconds_per_tentative(other._seconds_per_tentative) {}
 
 /**
  *  Assignment operator.
@@ -73,7 +73,7 @@ instance_configuration::instance_configuration(
  *  @return  A reference to this object.
  */
 instance_configuration& instance_configuration::operator=(
-                                 instance_configuration const& other) {
+    instance_configuration const& other) {
   if (this != &other) {
     _name = other._name;
     _config_file = other._config_file;
@@ -95,10 +95,9 @@ instance_configuration& instance_configuration::operator=(
  *  @return  True if equal.
  */
 bool instance_configuration::operator==(
-       instance_configuration const& other) const {
-  return (_name == other._name
-          && _config_file == other._config_file
-          && _run == other._run);
+    instance_configuration const& other) const {
+  return (_name == other._name && _config_file == other._config_file &&
+          _run == other._run);
 }
 
 /**
@@ -109,7 +108,7 @@ bool instance_configuration::operator==(
  *  @return  !operator==().
  */
 bool instance_configuration::operator!=(
-       instance_configuration const& other) const {
+    instance_configuration const& other) const {
   return (!instance_configuration::operator==(other));
 }
 
@@ -136,8 +135,7 @@ std::string const& instance_configuration::get_name() const throw() {
  *
  *  @return[in]  The configuration file for this instance.
  */
-std::string const&
-  instance_configuration::get_config_file() const throw() {
+std::string const& instance_configuration::get_config_file() const throw() {
   return (_config_file);
 }
 

@@ -50,7 +50,7 @@ class stat_visitable {
   std::string _name;
   mutable std::mutex _stat_mutex;
 
-  virtual std::string _get_state() = 0;
+  virtual char const* _get_state() const = 0;
   virtual uint32_t _get_queued_events() = 0;
   virtual std::unordered_set<uint32_t> const& _get_read_filters() const = 0;
   virtual std::unordered_set<uint32_t> const& _get_write_filters() const = 0;
