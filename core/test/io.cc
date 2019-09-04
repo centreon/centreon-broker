@@ -16,23 +16,17 @@
  * For more information : contact@centreon.com
  *
  */
-#include <cstdlib>
-#include "com/centreon/broker/misc/stringifier.hh"
+
+#include <gtest/gtest.h>
+#include "com/centreon/broker/io/raw.hh"
 
 using namespace com::centreon::broker;
 
-/**
- *  Check that pointer insertion works properly.
- *
- *  @return 0 on success.
- */
-int main() {
-  // Insertion.
-  misc::stringifier s;
-  s << &s;
+TEST(IO, DefaultCtor) {
+  // Object.
+  io::raw data;
 
-  // Check content.
-  return ((&s != (void*)strtoull(s.data(), NULL, 0))
-          ? EXIT_FAILURE
-          : EXIT_SUCCESS);
+  // Check construction.
+  ASSERT_TRUE(data.type() == io::raw::static_type());
+  ASSERT_TRUE(data.size() == 0);
 }
