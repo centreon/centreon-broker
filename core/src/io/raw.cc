@@ -100,3 +100,7 @@ std::vector<char>& raw::get_buffer() {
 bool raw::empty() const {
   return _buffer.empty();
 }
+
+void raw::append(std::string const& msg) {
+  _buffer.insert(_buffer.end(), msg.begin(), msg.end());
+}

@@ -17,12 +17,12 @@
 */
 
 #ifndef CCB_TEMPORARY_STREAM_HH
-#  define CCB_TEMPORARY_STREAM_HH
+#define CCB_TEMPORARY_STREAM_HH
 
-#  include <QQueue>
-#  include <mutex>
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <mutex>
+#include <queue>
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -30,24 +30,21 @@ CCB_BEGIN()
  *  @class temporary_stream temporary_stream.hh
  *  @brief Temporary stream.
  */
-class               temporary_stream : public io::stream {
-public:
-                    temporary_stream(QString const& id = "");
-                    temporary_stream(temporary_stream const& ss);
-                    ~temporary_stream();
+class temporary_stream : public io::stream {
+ public:
+  temporary_stream(std::string const& id = "");
+  temporary_stream(temporary_stream const& ss);
+  ~temporary_stream();
   temporary_stream& operator=(temporary_stream const& ss);
-  bool              read(
-                      std::shared_ptr<io::data>& d,
-                      time_t deadline);
-  int               write(std::shared_ptr<io::data> const& d);
+  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  int write(std::shared_ptr<io::data> const& d);
 
-private:
-  QQueue<std::shared_ptr<io::data> >
-                    _events;
+ private:
+  std::queue<std::shared_ptr<io::data>> _events;
   mutable std::mutex _eventsm;
-  QString           _id;
+  std::string _id;
 };
 
 CCB_END()
 
-#endif // !CCB_TEMPORARY_STREAM_HH
+#endif  // !CCB_TEMPORARY_STREAM_HH

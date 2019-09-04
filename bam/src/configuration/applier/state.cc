@@ -16,20 +16,20 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bam/configuration/applier/state.hh"
 #include <sstream>
 #include "com/centreon/broker/bam/exp_builder.hh"
 #include "com/centreon/broker/bam/exp_parser.hh"
-#include "com/centreon/broker/bam/configuration/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam::configuration;
 
 /**************************************
-*                                     *
-*            Static Objects           *
-*                                     *
-**************************************/
+ *                                     *
+ *            Static Objects           *
+ *                                     *
+ **************************************/
 
 /**
  *  Get BA identifier for circular path search.
@@ -39,7 +39,7 @@ using namespace com::centreon::broker::bam::configuration;
 static std::string ba_node_id(unsigned int ba_id) {
   std::ostringstream oss;
   oss << "BA " << ba_id;
-  return (oss.str());
+  return oss.str();
 }
 
 /**
@@ -50,7 +50,7 @@ static std::string ba_node_id(unsigned int ba_id) {
 static std::string boolexp_node_id(unsigned int boolexp_id) {
   std::ostringstream oss;
   oss << "boolean expression " << boolexp_id;
-  return (oss.str());
+  return oss.str();
 }
 
 /**
@@ -61,7 +61,7 @@ static std::string boolexp_node_id(unsigned int boolexp_id) {
 static std::string kpi_node_id(unsigned int kpi_id) {
   std::ostringstream oss;
   oss << "KPI " << kpi_id;
-  return (oss.str());
+  return oss.str();
 }
 
 /**
@@ -72,7 +72,7 @@ static std::string kpi_node_id(unsigned int kpi_id) {
 static std::string meta_node_id(unsigned int meta_id) {
   std::ostringstream oss;
   oss << "meta-service " << meta_id;
-  return (oss.str());
+  return oss.str();
 }
 
 /**
@@ -80,19 +80,18 @@ static std::string meta_node_id(unsigned int meta_id) {
  *
  *  @return Service identifier for circular path search.
  */
-static std::string service_node_id(
-                     unsigned int host_id,
-                     unsigned int service_id) {
+static std::string service_node_id(unsigned int host_id,
+                                   unsigned int service_id) {
   std::ostringstream oss;
   oss << "service (" << host_id << ", " << service_id << ")";
-  return (oss.str());
+  return oss.str();
 }
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -123,7 +122,7 @@ applier::state::~state() {}
 applier::state& applier::state::operator=(applier::state const& other) {
   if (this != &other)
     _internal_copy(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -137,22 +136,13 @@ void applier::state::apply(bam::configuration::state const& my_state) {
 
   // Really apply objects.
   _ba_applier.apply(my_state.get_bas(), _book_service);
-  _meta_service_applier.apply(
-                          my_state.get_meta_services(),
+  _meta_service_applier.apply(my_state.get_meta_services(), _book_metric);
+  _bool_exp_applier.apply(my_state.get_bool_exps(),
+                          my_state.get_hst_svc_mapping(), _book_service,
                           _book_metric);
-  _bool_exp_applier.apply(
-                      my_state.get_bool_exps(),
-                      my_state.get_hst_svc_mapping(),
-                      _book_service,
-                      _book_metric);
-  _kpi_applier.apply(
-                 my_state.get_kpis(),
-                 my_state.get_hst_svc_mapping(),
-                 _ba_applier,
-                 _meta_service_applier,
-                 _bool_exp_applier,
-                 _book_service);
-  return ;
+  _kpi_applier.apply(my_state.get_kpis(), my_state.get_hst_svc_mapping(),
+                     _ba_applier, _meta_service_applier, _bool_exp_applier,
+                     _book_service);
 }
 
 /**
@@ -161,7 +151,7 @@ void applier::state::apply(bam::configuration::state const& my_state) {
  *  @return Book of metric listeners.
  */
 bam::metric_book& applier::state::book_metric() {
-  return (_book_metric);
+  return _book_metric;
 }
 
 /**
@@ -170,7 +160,7 @@ bam::metric_book& applier::state::book_metric() {
  *  @return Book of service listeners.
  */
 bam::service_book& applier::state::book_service() {
-  return (_book_service);
+  return _book_service;
 }
 
 /**
@@ -183,28 +173,26 @@ bam::service_book& applier::state::book_service() {
 void applier::state::visit(io::stream* visitor) {
   _ba_applier.visit(visitor);
   _kpi_applier.visit(visitor);
-  return ;
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Circular check node constructor.
  */
 applier::state::circular_check_node::circular_check_node()
-  : in_visit(false), visited(false) {}
+    : in_visit(false), visited(false) {}
 
 /**
  *  Check BA computation graph for circular paths.
  *
  *  @param[in] my_state  Configuration state.
  */
-void applier::state::_circular_check(
-                       configuration::state const& my_state) {
+void applier::state::_circular_check(configuration::state const& my_state) {
   // In this method, nodes are referenced by an internal ID named after
   // object type and ID.
 
@@ -214,55 +202,46 @@ void applier::state::_circular_check(
   _nodes.clear();
 
   // Add BAs.
-  for (configuration::state::bas::const_iterator
-         it(my_state.get_bas().begin()),
-         end(my_state.get_bas().end());
-       it != end;
-       ++it) {
+  for (configuration::state::bas::const_iterator it(my_state.get_bas().begin()),
+       end(my_state.get_bas().end());
+       it != end; ++it) {
     circular_check_node& n(_nodes[ba_node_id(it->first)]);
-    n.targets.insert(service_node_id(
-                       it->second.get_host_id(),
-                       it->second.get_service_id()));
+    n.targets.insert(
+        service_node_id(it->second.get_host_id(), it->second.get_service_id()));
   }
   // Add meta-services.
   for (configuration::state::meta_services::const_iterator
-         it(my_state.get_meta_services().begin()),
-         end(my_state.get_meta_services().end());
-       it != end;
-       ++it) {
+           it(my_state.get_meta_services().begin()),
+       end(my_state.get_meta_services().end());
+       it != end; ++it) {
     std::string meta_id(meta_node_id(it->first));
     circular_check_node& n(_nodes[meta_id]);
-    n.targets.insert(service_node_id(
-                       it->second.get_host_id(),
-                       it->second.get_service_id()));
+    n.targets.insert(
+        service_node_id(it->second.get_host_id(), it->second.get_service_id()));
     for (configuration::meta_service::service_container::const_iterator
-           it_svc(it->second.get_services().begin()),
-           end_svc(it->second.get_services().end());
-         it_svc != end_svc;
-         ++it)
-      _nodes[service_node_id(it_svc->first, it_svc->second)].targets.insert(meta_id);
+             it_svc(it->second.get_services().begin()),
+         end_svc(it->second.get_services().end());
+         it_svc != end_svc; ++it)
+      _nodes[service_node_id(it_svc->first, it_svc->second)].targets.insert(
+          meta_id);
   }
   // Add boolean expressions.
   for (configuration::state::bool_exps::const_iterator
-         it(my_state.get_bool_exps().begin()),
-         end(my_state.get_bool_exps().end());
-       it != end;
-       ++it) {
+           it(my_state.get_bool_exps().begin()),
+       end(my_state.get_bool_exps().end());
+       it != end; ++it) {
     std::string bool_id(boolexp_node_id(it->first));
     _nodes[bool_id];
     try {
       exp_parser parsr(it->second.get_expression());
-      exp_builder buildr(
-                    parsr.get_postfix(),
-                    my_state.get_hst_svc_mapping());
+      exp_builder buildr(parsr.get_postfix(), my_state.get_hst_svc_mapping());
       for (std::list<bool_service::ptr>::const_iterator
-             it_svc(buildr.get_services().begin()),
-             end_svc(buildr.get_services().end());
-           it_svc != end_svc;
-           ++it_svc)
-        _nodes[service_node_id(
-                 (*it_svc)->get_host_id(),
-                 (*it_svc)->get_service_id())].targets.insert(bool_id);
+               it_svc(buildr.get_services().begin()),
+           end_svc(buildr.get_services().end());
+           it_svc != end_svc; ++it_svc)
+        _nodes[service_node_id((*it_svc)->get_host_id(),
+                               (*it_svc)->get_service_id())]
+            .targets.insert(bool_id);
     }
     // Silently ignore parsing errors.
     catch (std::exception const& e) {
@@ -271,10 +250,9 @@ void applier::state::_circular_check(
   }
   // Add KPIs.
   for (configuration::state::kpis::const_iterator
-         it(my_state.get_kpis().begin()),
-         end(my_state.get_kpis().end());
-       it != end;
-       ++it) {
+           it(my_state.get_kpis().begin()),
+       end(my_state.get_kpis().end());
+       it != end; ++it) {
     std::string kpi_id(kpi_node_id(it->first));
     circular_check_node& n(_nodes[kpi_id]);
     n.targets.insert(ba_node_id(it->second.get_ba_id()));
@@ -286,25 +264,21 @@ void applier::state::_circular_check(
     else if (it->second.is_boolexp())
       node_id = boolexp_node_id(it->second.get_boolexp_id());
     else if (it->second.is_service())
-      node_id = service_node_id(
-                  it->second.get_host_id(),
-                  it->second.get_service_id());
+      node_id = service_node_id(it->second.get_host_id(),
+                                it->second.get_service_id());
     else
-      continue ;
+      continue;
     _nodes[node_id].targets.insert(kpi_id);
   }
 
   // Process all nodes.
-  for (umap<std::string, circular_check_node>::iterator
-         it(_nodes.begin()),
-         end(_nodes.end());
-       it != end;
-       ++it)
+  for (std::unordered_map<std::string, circular_check_node>::iterator
+           it(_nodes.begin()),
+       end(_nodes.end());
+       it != end; ++it)
     if (!it->second.visited)
       _circular_check(it->second);
   _nodes.clear();
-
-  return ;
 }
 
 /**
@@ -312,27 +286,22 @@ void applier::state::_circular_check(
  *
  *  @param[in,out] n      Target node.
  */
-void applier::state::_circular_check(
-                       applier::state::circular_check_node& n) {
+void applier::state::_circular_check(applier::state::circular_check_node& n) {
   if (n.in_visit)
-    throw (exceptions::msg()
-           << "BAM: loop found in BA graph");
+    throw(exceptions::msg() << "BAM: loop found in BA graph");
   if (!n.visited) {
     n.in_visit = true;
-    for (std::set<std::string>::const_iterator
-           it(n.targets.begin()),
-           end(n.targets.end());
-         it != end;
-         ++it) {
-      umap<std::string, circular_check_node>::iterator
-        it_node(_nodes.find(*it));
+    for (std::set<std::string>::const_iterator it(n.targets.begin()),
+         end(n.targets.end());
+         it != end; ++it) {
+      std::unordered_map<std::string, circular_check_node>::iterator it_node(
+          _nodes.find(*it));
       if (it_node != _nodes.end())
         _circular_check(it_node->second);
     }
     n.visited = true;
     n.in_visit = false;
   }
-  return ;
 }
 
 /**
@@ -347,7 +316,6 @@ void applier::state::_internal_copy(applier::state const& other) {
   _kpi_applier = other._kpi_applier;
   _bool_exp_applier = other._bool_exp_applier;
   _meta_service_applier = other._meta_service_applier;
-  return ;
 }
 
 /**

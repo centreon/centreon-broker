@@ -195,13 +195,22 @@ unsigned long long mysql_bind::value_as_u64(int range) const {
     assert("This field is not an unsigned long int" == 0);
 }
 
+/**
+ *  This method is called from the statement and not directly. It is called
+ *  by mysql_stmt.bind_value_as_f32() to bind the value at index range with
+ *  the given value.
+ *
+ * @param range The index
+ * @param value The float value.
+ */
 void mysql_bind::set_value_as_f32(int range, float value) {
+  if (std::isinf(value) || std::isnan(value)) {
+    set_value_as_null(range);
+    return;
+  }
   assert(static_cast<unsigned int>(range) < _bind.size());
-  //if (range >= _bind.size())
-  //  set_size(range + 1);
   if (!_prepared(range))
     _prepare_type(range, MYSQL_TYPE_FLOAT);
-  //_bind[range].buffer_type = MYSQL_TYPE_FLOAT;
   _column[range].set_value<float>(value);
   _bind[range].buffer = _column[range].get_buffer();
   _bind[range].is_null = _column[range].is_null_buffer();
@@ -219,13 +228,22 @@ float mysql_bind::value_as_f32(int range) const {
     assert("This field is not a float" == 0);
 }
 
+/**
+ *  This method is called from the statement and not directly. It is called
+ *  by mysql_stmt.bind_value_as_f64() to bind the value at index range with
+ *  the given value.
+ *
+ * @param range The index
+ * @param value The double value.
+ */
 void mysql_bind::set_value_as_f64(int range, double value) {
+  if (std::isinf(value) || std::isnan(value)) {
+    set_value_as_null(range);
+    return;
+  }
   assert(static_cast<unsigned int>(range) < _bind.size());
-  //if (range >= _bind.size())
-  //  set_size(range + 1);
   if (!_prepared(range))
     _prepare_type(range, MYSQL_TYPE_DOUBLE);
-  //_bind[range].buffer_type = MYSQL_TYPE_DOUBLE;
   _column[range].set_value<double>(value);
   _bind[range].buffer = _column[range].get_buffer();
   _bind[range].is_null = _column[range].is_null_buffer();

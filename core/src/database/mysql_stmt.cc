@@ -379,6 +379,12 @@ void mysql_stmt::bind_value_as_u64(std::string const& name, unsigned long long v
   }
 }
 
+/**
+ *  Bind the value to the variable at index range.
+ *
+ * @param range The index in the statement.
+ * @param value The value to bind. It can be Inf or NaN.
+ */
 void mysql_stmt::bind_value_as_f32(int range, float value) {
   if (!_bind.get())
     _bind.reset(new database::mysql_bind(_param_count));
@@ -409,6 +415,12 @@ void mysql_stmt::bind_value_as_f32(std::string const& name, float value) {
   }
 }
 
+/**
+ *  Bind the value to the variable at index range.
+ *
+ * @param range The index in the statement.
+ * @param value The value to bind. It can be Inf or NaN.
+ */
 void mysql_stmt::bind_value_as_f64(int range, double value) {
   if (!_bind.get())
     _bind.reset(new database::mysql_bind(_param_count));

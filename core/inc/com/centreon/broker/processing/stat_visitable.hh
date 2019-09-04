@@ -17,58 +17,55 @@
 */
 
 #ifndef CCB_PROCESSING_STAT_VISITABLE_HH
-#  define CCB_PROCESSING_STAT_VISITABLE_HH
+#define CCB_PROCESSING_STAT_VISITABLE_HH
 
-#  include <string>
-#  include <mutex>
-#  include "com/centreon/broker/io/properties.hh"
-#  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/misc/unordered_hash.hh"
-#  include "com/centreon/broker/misc/processing_speed_computer.hh"
+#include <mutex>
+#include <string>
+#include <unordered_set>
+#include "com/centreon/broker/io/properties.hh"
+#include "com/centreon/broker/misc/processing_speed_computer.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace                        processing {
-  /**
-   *  @class stat_visitable stat_visitable.hh "com/centreon/broker/processing/stat_visitable.hh"
-   *  @brief Represent a processing thread that is visitable.
-   */
-  class                          stat_visitable {
-  public:
-                                 stat_visitable(
-                                   std::string const& name = std::string());
-                                 ~stat_visitable();
+namespace processing {
+/**
+ *  @class stat_visitable stat_visitable.hh
+ * "com/centreon/broker/processing/stat_visitable.hh"
+ *  @brief Represent a processing thread that is visitable.
+ */
+class stat_visitable {
+ public:
+  stat_visitable(std::string const& name = std::string());
+  ~stat_visitable();
 
-    std::string const&           get_name() const;
-    void                         set_last_error(std::string const& last_error);
-    virtual void                 stats(io::properties& tree);
-    void                         set_last_connection_attempt(
-                                   timestamp last_connection_attempt);
-    void                         set_last_connection_success(
-                                   timestamp last_connection_success);
-    void                         tick(unsigned int events = 1);
+  std::string const& get_name() const;
+  void set_last_error(std::string const& last_error);
+  virtual void stats(io::properties& tree);
+  void set_last_connection_attempt(timestamp last_connection_attempt);
+  void set_last_connection_success(timestamp last_connection_success);
+  void tick(uint32_t events = 1);
 
-  protected:
-    std::string                 _name;
-    mutable std::mutex          _stat_mutex;
+ protected:
+  std::string _name;
+  mutable std::mutex _stat_mutex;
 
-    virtual std::string         _get_state() = 0;
-    virtual unsigned int        _get_queued_events() = 0;
-    virtual uset<unsigned int>  _get_read_filters() = 0;
-    virtual uset<unsigned int>  _get_write_filters() = 0;
-    virtual void                _forward_statistic(io::properties& tree);
+  virtual std::string _get_state() = 0;
+  virtual uint32_t _get_queued_events() = 0;
+  virtual std::unordered_set<uint32_t> const& _get_read_filters() const = 0;
+  virtual std::unordered_set<uint32_t> const& _get_write_filters() const = 0;
+  virtual void _forward_statistic(io::properties& tree);
 
-  private:
-    std::string                  _last_error;
-    timestamp                    _last_connection_attempt;
-    timestamp                    _last_connection_success;
-    misc::processing_speed_computer
-                                 _event_processing_speed;
-                                 stat_visitable(stat_visitable const& other);
-    stat_visitable&              operator=(stat_visitable const& other);
-  };
-}
+ private:
+  std::string _last_error;
+  timestamp _last_connection_attempt;
+  timestamp _last_connection_success;
+  misc::processing_speed_computer _event_processing_speed;
+  stat_visitable(stat_visitable const& other);
+  stat_visitable& operator=(stat_visitable const& other);
+};
+}  // namespace processing
 
 CCB_END()
 
-#endif // !CCB_PROCESSING_STAT_VISITABLE_HH
+#endif  // !CCB_PROCESSING_STAT_VISITABLE_HH

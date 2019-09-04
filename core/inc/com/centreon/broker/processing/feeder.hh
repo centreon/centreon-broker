@@ -44,17 +44,17 @@ class feeder : public bthread {
  public:
   feeder(std::string const& name,
          std::shared_ptr<io::stream> client,
-         uset<unsigned int> const& read_filters,
-         uset<unsigned int> const& write_filters);
+         std::unordered_set<uint32_t> const& read_filters,
+         std::unordered_set<uint32_t> const& write_filters);
   ~feeder();
   void run();
 
  protected:
   // From stat_visitable
   virtual std::string _get_state();
-  virtual unsigned int _get_queued_events();
-  virtual uset<unsigned int> _get_read_filters();
-  virtual uset<unsigned int> _get_write_filters();
+  virtual uint32_t _get_queued_events();
+  std::unordered_set<uint32_t> const& _get_read_filters() const override;
+  std::unordered_set<uint32_t> const& _get_write_filters() const override;
   void _forward_statistic(io::properties& tree);
 
  private:

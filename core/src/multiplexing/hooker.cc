@@ -37,10 +37,10 @@ hooker::hooker() : _registered(false) {}
  *
  *  @param[in] other  Object to copy.
  */
-hooker::hooker(hooker const& other)
-  : io::stream(other), _registered(false) {
-  hook(other._registered);
-}
+//hooker::hooker(hooker const& other)
+//  : io::stream(other), _registered(false) {
+//  hook(other._registered);
+//}
 
 /**
  *  Destructor.
@@ -54,13 +54,13 @@ hooker::~hooker() {}
  *
  *  @return This object.
  */
-hooker& hooker::operator=(hooker const& other) {
-  if (this != &other) {
-    io::stream::operator=(other);
-    hook(other._registered);
-  }
-  return (*this);
-}
+//hooker& hooker::operator=(hooker const& other) {
+//  if (this != &other) {
+//    io::stream::operator=(other);
+//    hook(other._registered);
+//  }
+//  return (*this);
+//}
 
 /**
  *  Enable or disable hooking.

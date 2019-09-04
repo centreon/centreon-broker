@@ -16,13 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/extcmd/command_server.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/command_client.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
-#include "com/centreon/broker/extcmd/command_server.hh"
-#include "com/centreon/broker/extcmd/plaintext_command_parser.hh"
 #include "com/centreon/broker/extcmd/json_command_parser.hh"
+#include "com/centreon/broker/extcmd/plaintext_command_parser.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/processing/feeder.hh"
 
@@ -37,14 +37,13 @@ using namespace com::centreon::broker::extcmd;
  *  @param[in] socket_file  Socket file.
  *  @param[in] cache        Endpoint persistent cache.
  */
-command_server::command_server(
-                  protocol prot,
-                  std::string const& socket_file,
-                  std::shared_ptr<persistent_cache> cache)
-  : io::endpoint(true),
-    _listener_thread(NULL),
-    _protocol(prot),
-    _socket_file(socket_file) {
+command_server::command_server(protocol prot,
+                               std::string const& socket_file,
+                               std::shared_ptr<persistent_cache> cache)
+    : io::endpoint(true),
+      _listener_thread(NULL),
+      _protocol(prot),
+      _socket_file(socket_file) {
   (void)cache;
 }
 
@@ -79,20 +78,17 @@ std::shared_ptr<io::stream> command_server::open() {
     else
       _parser.reset(new plaintext_command_parser(*_listener));
     // Create listener thread.
-    uset<unsigned int> write_filters;
+    std::unordered_set<uint32_t> write_filters;
     write_filters.insert(command_request::static_type());
     write_filters.insert(command_result::static_type());
-    _listener_thread = new processing::feeder(
-                                         "(external commands)",
-                                         _listener,
-                                         uset<unsigned int>(),
-                                         write_filters);
+    _listener_thread =
+        new processing::feeder("(external commands)", _listener,
+                               std::unordered_set<uint32_t>(), write_filters);
     _listener_thread->start();
   }
 
   // Wait for incoming connections.
-  logging::debug(logging::medium)
-    << "command: waiting for new connection";
+  logging::debug(logging::medium) << "command: waiting for new connection";
 
   try {
     local::stream_protocol::endpoint ep(_socket_file);
@@ -100,12 +96,12 @@ std::shared_ptr<io::stream> command_server::open() {
     acceptor.accept(*_socket);
   } catch (std::system_error se) {
     throw exceptions::msg()
-      << "command: error while waiting on client on file '"
-      << _socket_file << "': " << se.what();
+        << "command: error while waiting on client on file '" << _socket_file
+        << "': " << se.what();
   }
 
   logging::info(logging::medium) << "command: new client connected";
-  std::shared_ptr<io::stream>
-    new_client(std::make_shared<command_client>(*_socket, *_parser.get()));
+  std::shared_ptr<io::stream> new_client(
+      std::make_shared<command_client>(*_socket, *_parser.get()));
   return new_client;
 }
