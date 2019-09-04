@@ -16,9 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QDir>
 #include <thread>
-#include <QByteArray>
 #include <mutex>
 #include <cstdlib>
 #include <gtest/gtest.h>
@@ -28,6 +26,7 @@
 #include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/file/stl_fs_browser.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#include "com/centreon/broker/misc/filesystem.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
@@ -48,7 +47,7 @@ class read_thread {
   void join() {
     _thread.join();
   }
-  QByteArray get_result() { return _buf; }
+  std::vector<uint8_t> get_result() { return _buf; }
 
   void callback() {
     int ret = 0;
@@ -68,7 +67,7 @@ class read_thread {
   std::thread _thread;
   file::splitter* _file;
   int _current;
-  QByteArray _buf;
+  std::vector<uint8_t> _buf;
   int _size;
 };
 
@@ -108,12 +107,12 @@ class FileSplitterConcurrent : public ::testing::Test {
 
  public:
   void SetUp() {
+    logging::manager::load();
+
     _path = RETENTION_DIR RETENTION_FILE;
     _remove_files();
     _file_factory.reset(new cfile_factory());
     _fs_browser.reset(new stl_fs_browser());
-
-    logging::manager::load();
 
     _file.reset(new file::splitter(
                             _path,
@@ -134,18 +133,12 @@ class FileSplitterConcurrent : public ::testing::Test {
   std::string                   _path;
 
   void _remove_files() {
-    QString dirname(_path.c_str());
-    int idx(dirname.lastIndexOf("/"));
-    QString path = dirname.mid(idx + 1) + "*";
-    dirname.resize(idx + 1);
-    QDir dir(dirname);
-    QStringList filters_list;
-    filters_list << path;
-    QStringList entries(dir.entryList(filters_list));
-    for (QStringList::iterator it(entries.begin()), end(entries.end());
-      it != end; ++it) {
-      QFile::remove(dirname + *it);
-    }
+    std::list<std::string> entries = misc::filesystem::dir_content(RETENTION_DIR,RETENTION_FILE "*");
+    for (std::list<std::string>::iterator it{entries.begin()},
+           end{entries.end()};
+         it != end;
+         ++it)
+      std::remove(it->c_str());
   }
 
 };
@@ -160,8 +153,8 @@ TEST_F(FileSplitterConcurrent, DefaultFile) {
   wt.join();
   rt.join();
 
-  QByteArray result(rt.get_result());
-  QByteArray buffer(1000, '\0');
+  std::vector<uint8_t> const& result(rt.get_result());
+  std::vector<uint8_t> buffer(1000, '\0');
   for (int i(0); i < 1000; ++i)
     buffer[i] = i & 255;
 
@@ -183,8 +176,8 @@ TEST_F(FileSplitterConcurrent, MultipleFilesCreated) {
   rt.join();
   wt.join();
 
-  QByteArray result(rt.get_result());
-  QByteArray buffer(BIG, '\0');
+  std::vector<uint8_t> result(rt.get_result());
+  std::vector<uint8_t> buffer(BIG, '\0');
   for (int i(0); i < BIG; ++i)
     buffer[i] = i & 255;
 
@@ -194,9 +187,6 @@ TEST_F(FileSplitterConcurrent, MultipleFilesCreated) {
 
   // Then
   _file->remove_all_files();
-  QDir dir(RETENTION_DIR);
-  QStringList filters_list;
-  filters_list << RETENTION_FILE;
-  QStringList entries(dir.entryList(filters_list));
+  std::list<std::string> entries = misc::filesystem::dir_content(RETENTION_DIR,RETENTION_FILE);
   ASSERT_EQ(entries.size(), 0);
 }
