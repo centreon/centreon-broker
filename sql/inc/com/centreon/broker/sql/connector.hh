@@ -17,44 +17,43 @@
 */
 
 #ifndef CCB_SQL_CONNECTOR_HH
-#  define CCB_SQL_CONNECTOR_HH
+#define CCB_SQL_CONNECTOR_HH
 
-#  include "com/centreon/broker/database_config.hh"
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/database_config.hh"
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                        sql {
-  /**
-   *  @class connector connector.hh "com/centreon/broker/sql/connector.hh"
-   *  @brief Connect to a database.
-   *
-   *  Send events to a SQL database.
-   */
-  class                          connector : public io::endpoint {
-  public:
-                                 connector();
-                                 connector(connector const& other);
-                                 ~connector();
-    connector&                   operator=(connector const& other);
-    void                         connect_to(
-                                   database_config const& dbcfg,
-                                   unsigned int cleanup_check_interval = 0,
-                                   unsigned int instance_timeout = 15,
-                                   bool with_state_events = false,
-                                   bool enable_command_cache = false);
-    std::shared_ptr<io::stream> open();
+namespace sql {
+/**
+ *  @class connector connector.hh "com/centreon/broker/sql/connector.hh"
+ *  @brief Connect to a database.
+ *
+ *  Send events to a SQL database.
+ */
+class connector : public io::endpoint {
+ public:
+  connector();
+  connector(connector const& other);
+  ~connector();
+  connector& operator=(connector const& other);
+  void connect_to(database_config const& dbcfg,
+                  unsigned int cleanup_check_interval = 0,
+                  unsigned int instance_timeout = 15,
+                  bool with_state_events = false,
+                  bool enable_command_cache = false);
+  std::shared_ptr<io::stream> open();
 
-  private:
-    unsigned int                 _cleanup_check_interval;
-    database_config              _dbcfg;
-    unsigned int                 _instance_timeout;
-    bool                         _with_state_events;
-    bool                         _enable_cmd_cache;
-  };
-}
+ private:
+  unsigned int _cleanup_check_interval;
+  database_config _dbcfg;
+  unsigned int _instance_timeout;
+  bool _with_state_events;
+  bool _enable_cmd_cache;
+};
+}  // namespace sql
 
 CCB_END()
 
-#endif // !CCB_SQL_CONNECTOR_HH
+#endif  // !CCB_SQL_CONNECTOR_HH

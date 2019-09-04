@@ -35,7 +35,7 @@ class DummyThread : public bthread {
     std::cout << "Thread finished" << std::endl;
   }
 
-  std::string _get_state() { return "test"; }
+  const char* _get_state() const override { return "test"; }
   uint32_t _get_queued_events() { return 0; }
   std::unordered_set<uint32_t> const& _get_write_filters() const {
     return _filters;
@@ -53,7 +53,7 @@ class DummyThread : public bthread {
 
 class TestThread : public ::testing::Test {
  public:
-  void SetUp() { _thread.reset(new DummyThread); }
+  void SetUp() override { _thread.reset(new DummyThread); }
 
  protected:
   std::unique_ptr<DummyThread> _thread;

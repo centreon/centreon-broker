@@ -17,52 +17,44 @@
 */
 
 #ifndef CCB_WATCHDOG_CONFIGURATION_HH
-#  define CCB_WATCHDOG_CONFIGURATION_HH
+#define CCB_WATCHDOG_CONFIGURATION_HH
 
-#  include <string>
-#  include <map>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/watchdog/instance_configuration.hh"
+#include <map>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/watchdog/instance_configuration.hh"
 
 CCB_BEGIN()
 
-namespace     watchdog {
-  /**
-   *  @class configuration configuration.hh "com/centreon/broker/watchdog/configuration.hh"
-   *  @brief Configuration of the watchdog.
-   */
-  class       configuration {
-  public:
-    typedef std::map<std::string, instance_configuration>
-              instance_map;
+namespace watchdog {
+/**
+ *  @class configuration configuration.hh
+ * "com/centreon/broker/watchdog/configuration.hh"
+ *  @brief Configuration of the watchdog.
+ */
+class configuration {
+ public:
+  typedef std::map<std::string, instance_configuration> instance_map;
 
-              configuration();
-              ~configuration();
-              configuration(
-                std::string const& log_filename,
-                std::map<
-                      std::string,
-                      instance_configuration> const& instances);
-              configuration(configuration const& other);
-    configuration&
-              operator=(configuration const& other);
+  configuration();
+  ~configuration();
+  configuration(std::string const& log_filename,
+                std::map<std::string, instance_configuration> const& instances);
+  configuration(configuration const& other);
+  configuration& operator=(configuration const& other);
 
-    std::string const&
-              get_log_filename() const throw();
-    instance_map const&
-              get_instances_configuration() const throw();
-    instance_configuration
-              get_instance_configuration(std::string const& name) const;
-    bool      instance_exists(std::string const& name) const throw();
+  std::string const& get_log_filename() const throw();
+  instance_map const& get_instances_configuration() const throw();
+  instance_configuration get_instance_configuration(
+      std::string const& name) const;
+  bool instance_exists(std::string const& name) const throw();
 
-  private:
-    std::string
-              _log_filename;
-    instance_map
-              _instances_configuration;
-  };
-}
+ private:
+  std::string _log_filename;
+  instance_map _instances_configuration;
+};
+}  // namespace watchdog
 
 CCB_END()
 
-#endif // !CCB_WATCHDOG_BROKER_INSTANCE_CONFIGURATION_HH
+#endif  // !CCB_WATCHDOG_BROKER_INSTANCE_CONFIGURATION_HH

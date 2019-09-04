@@ -17,51 +17,58 @@
 */
 
 #ifndef CCB_SQL_CLEANUP_HH
-#  define CCB_SQL_CLEANUP_HH
+#define CCB_SQL_CLEANUP_HH
 
-#  include <QThread>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <mutex>
+#include <thread>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          sql {
-  /**
-   *  @class cleanup cleanup.hh "com/centreon/broker/sql/cleanup.hh"
-   *  @brief Check to cleanup database.
-   *
-   *  Check to cleanup database.
-   */
-  class            cleanup : public QThread {
-  public:
-                   cleanup(
-                     std::string const& db_type,
-                     std::string const& db_host,
-                     unsigned short db_port,
-                     std::string const& db_user,
-                     std::string const& db_password,
-                     std::string const& db_name,
-                     unsigned int cleanup_interval = 600);
-                   ~cleanup() throw ();
-    void           exit() throw ();
-    unsigned int   get_interval() const throw ();
-    void           run();
+namespace sql {
+/**
+ *  @class cleanup cleanup.hh "com/centreon/broker/sql/cleanup.hh"
+ *  @brief Check to cleanup database.
+ *
+ *  Check to cleanup database.
+ */
+class cleanup {
+ public:
+  cleanup(std::string const& db_type,
+          std::string const& db_host,
+          unsigned short db_port,
+          std::string const& db_user,
+          std::string const& db_password,
+          std::string const& db_name,
+          uint32_t cleanup_interval = 600);
+  ~cleanup() throw();
+  void exit() throw();
+  uint32_t get_interval() const throw();
+  void _run();
+  void start();
 
-  private:
-                   cleanup(cleanup const& other);
-    cleanup&       operator=(cleanup const& other);
+ private:
+  cleanup(cleanup const& other);
+  cleanup& operator=(cleanup const& other);
 
-    std::string    _db_type;
-    std::string    _db_host;
-    unsigned short _db_port;
-    std::string    _db_user;
-    std::string    _db_password;
-    std::string    _db_name;
-    unsigned int   _interval;
-    volatile bool  _should_exit;
-  };
-}
+  bool should_exit() const;
+
+  std::thread _thread;
+  std::string _db_type;
+  std::string _db_host;
+  unsigned short _db_port;
+  std::string _db_user;
+  std::string _db_password;
+  std::string _db_name;
+  const uint32_t _interval;
+
+  mutable std::mutex _start_stop_m;
+  bool _started;
+  bool _should_exit;
+};
+}  // namespace sql
 
 CCB_END()
 
-#endif // !CCB_SQL_CLEANUP_HH
+#endif  // !CCB_SQL_CLEANUP_HH

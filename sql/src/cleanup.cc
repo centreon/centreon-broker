@@ -16,22 +16,22 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/sql/cleanup.hh"
 #include <unistd.h>
 #include <ctime>
 #include <sstream>
-#include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/sql/cleanup.hh"
+#include "com/centreon/broker/mysql.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::sql;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -44,33 +44,44 @@ using namespace com::centreon::broker::sql;
  *  @param[in] db_name           DB name.
  *  @param[in] cleanup_interval  Cleanup interval.
  */
-cleanup::cleanup(
-           std::string const& db_type,
-           std::string const& db_host,
-           unsigned short db_port,
-           std::string const& db_user,
-           std::string const& db_password,
-           std::string const& db_name,
-           unsigned int cleanup_interval)
-  : _db_type(db_type),
-    _db_host(db_host),
-    _db_port(db_port),
-    _db_user(db_user),
-    _db_password(db_password),
-    _db_name(db_name),
-    _interval(cleanup_interval),
-    _should_exit(false) {}
+cleanup::cleanup(std::string const& db_type,
+                 std::string const& db_host,
+                 unsigned short db_port,
+                 std::string const& db_user,
+                 std::string const& db_password,
+                 std::string const& db_name,
+                 uint32_t cleanup_interval)
+    : _db_type(db_type),
+      _db_host(db_host),
+      _db_port(db_port),
+      _db_user(db_user),
+      _db_password(db_password),
+      _db_name(db_name),
+      _start_stop_m{},
+      _started{false},
+      _interval(cleanup_interval),
+      _should_exit{false} {}
 
 /**
  *  Destructor.
  */
-cleanup::~cleanup() throw () {}
+cleanup::~cleanup() throw() {}
 
 /**
  *  Set the exit flag.
  */
-void cleanup::exit() throw () {
-  _should_exit = true;
+void cleanup::exit() throw() {
+  {
+    std::lock_guard<std::mutex> lk(_start_stop_m);
+    _should_exit = true;
+    if (!_started)
+      return;
+  }
+  _thread.join();
+  {
+    std::lock_guard<std::mutex> lk(_start_stop_m);
+    _started = false;
+  }
 }
 
 /**
@@ -78,22 +89,31 @@ void cleanup::exit() throw () {
  *
  *  @return Rebuild check interval in seconds.
  */
-unsigned int cleanup::get_interval() const throw () {
-  return (_interval);
+uint32_t cleanup::get_interval() const throw() {
+  return _interval;
+}
+
+bool cleanup::should_exit() const {
+  std::lock_guard<std::mutex> lk(_start_stop_m);
+  return _should_exit;
+}
+
+void cleanup::start() {
+  if (_interval == 0)
+    return;
+  std::lock_guard<std::mutex> lk(_start_stop_m);
+  _thread = std::thread(&cleanup::_run, this);
+  _started = true;
+  _should_exit = false;
 }
 
 /**
  *  Thread entry point.
  */
-void cleanup::run() {
-  while (!_should_exit && _interval) {
-    mysql ms(database_config(
-                 _db_type,
-                 _db_host,
-                 _db_port,
-                 _db_user,
-                 _db_password,
-                 _db_name));
+void cleanup::_run() {
+  while (!should_exit() && _interval) {
+    mysql ms(database_config(_db_type, _db_host, _db_port, _db_user,
+                             _db_password, _db_name));
 
     if (ms.schema_version() == mysql::v2) {
       ms.run_query(
@@ -105,7 +125,8 @@ void cleanup::run() {
           "  SET index_data.to_delete=1"
           "  WHERE instances.deleted=1",
           "SQL: could not flag the index_data table"
-          " to delete outdated entries", false);
+          " to delete outdated entries",
+          false);
       ms.run_query(
           "DELETE hosts FROM hosts INNER JOIN instances"
           "  ON hosts.instance_id=instances.instance_id"
@@ -116,9 +137,9 @@ void cleanup::run() {
           "  ON modules.instance_id=instances.instance_id"
           "  WHERE instances.deleted=1",
           "SQL: could not delete outdated entries"
-          " from the modules tables", false);
-    }
-    else {
+          " from the modules tables",
+          false);
+    } else {
       ms.run_query(
           "UPDATE rt_index_data"
           "  INNER JOIN rt_hosts"
@@ -128,24 +149,27 @@ void cleanup::run() {
           "  SET rt_index_data.to_delete=1"
           "  WHERE rt_instances.deleted=1",
           "SQL: could not flag the rt_index_data table"
-          " to delete outdated entries", false);
+          " to delete outdated entries",
+          false);
       ms.run_query(
           "DELETE rt_hosts FROM rt_hosts INNER JOIN rt_instances"
           "  ON rt_hosts.instance_id=rt_instances.instance_id"
           "  WHERE rt_instances.deleted=1",
           "SQL: could not delete outdated entries"
-          " from the rt_hosts table", false);
+          " from the rt_hosts table",
+          false);
       ms.run_query(
           "DELETE rt_modules FROM rt_modules INNER JOIN rt_instances"
           "  ON rt_modules.instance_id=rt_instances.instance_id"
           "  WHERE rt_instances.deleted=1",
           "SQL: could not delete outdated entries"
-          " from the rt_modules table", false);
+          " from the rt_modules table",
+          false);
     }
 
     // Sleep a while.
     time_t target(time(NULL) + _interval);
-    while (!_should_exit && target > time(NULL))
+    while (!should_exit() && target > time(NULL))
       sleep(1);
   }
 }
