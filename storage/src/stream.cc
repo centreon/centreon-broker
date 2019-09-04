@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/storage/stream.hh"
 #include <cfloat>
 #include <cmath>
 #include <cstdlib>
@@ -39,7 +40,6 @@
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
-#include "com/centreon/broker/storage/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -49,10 +49,10 @@ using namespace com::centreon::broker::storage;
 #define EPSILON 0.0001
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 /**
  *  Check that the floating point values are the same number or are NaN or are
@@ -76,10 +76,10 @@ static inline int check_equality(double a, double b) {
 }
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -94,25 +94,20 @@ static inline int check_equality(double a, double b) {
  *  @param[in] insert_in_index_data    Create entries in index_data or
  *                                     not.
  */
-stream::stream(
-          database_config const& db_cfg,
-          unsigned int rrd_len,
-          unsigned int interval_length,
-          unsigned int rebuild_check_interval,
-          bool store_in_db,
-          bool insert_in_index_data)
-  : _insert_in_index_data(insert_in_index_data),
-    _interval_length(interval_length),
-    _ack_events(0),
-    _pending_events(0),
-    _rebuilder(
-      db_cfg,
-      rebuild_check_interval,
-      rrd_len,
-      interval_length),
-    _rrd_len(rrd_len ? rrd_len : 15552000),
-    _store_in_db(store_in_db),
-    _mysql(db_cfg) {
+stream::stream(database_config const& db_cfg,
+               unsigned int rrd_len,
+               unsigned int interval_length,
+               unsigned int rebuild_check_interval,
+               bool store_in_db,
+               bool insert_in_index_data)
+    : _insert_in_index_data(insert_in_index_data),
+      _interval_length(interval_length),
+      _ack_events(0),
+      _pending_events(0),
+      _rebuilder(db_cfg, rebuild_check_interval, rrd_len, interval_length),
+      _rrd_len(rrd_len ? rrd_len : 15552000),
+      _store_in_db(store_in_db),
+      _mysql(db_cfg) {
   // Prepare queries.
   _prepare();
 }
@@ -122,8 +117,7 @@ stream::stream(
  */
 stream::~stream() {
   mysql_manager::instance().clear();
-  logging::debug(logging::low)
-    << "storage: stream closed.";
+  logging::debug(logging::low) << "storage: stream closed.";
 }
 
 /**
@@ -132,8 +126,7 @@ stream::~stream() {
  *  @return Number of events acknowledged.
  */
 int stream::flush() {
-  logging::info(logging::low)
-    << "storage: committing transaction";
+  logging::info(logging::low) << "storage: committing transaction";
   _update_status("status=committing current transaction\n");
   _insert_perfdatas();
   _mysql.commit();
@@ -142,7 +135,7 @@ int stream::flush() {
   _ack_events = 0;
   _pending_events = 0;
   logging::debug(logging::medium)
-    << "storage: flush ack events count: " << retval;
+      << "storage: flush ack events count: " << retval;
   _update_status("");
   return retval;
 }
@@ -158,8 +151,7 @@ int stream::flush() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw (broker::exceptions::shutdown()
-         << "cannot read from a storage stream");
+  throw(broker::exceptions::shutdown() << "cannot read from a storage stream");
   return true;
 }
 
@@ -192,34 +184,32 @@ void stream::_host_instance_cache_create() {
 
   std::promise<database::mysql_result> promise;
   _mysql.run_query_and_get_result("SELECT host_id, instance_id FROM hosts",
-           &promise);
+                                  &promise);
   try {
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res))
       _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     logging::error(logging::medium)
-      << "SQL: could not get the list of host/instance pairs: "
-      << e.what();
+        << "SQL: could not get the list of host/instance pairs: " << e.what();
   }
 }
 
-void stream::_process_instance(
-               std::shared_ptr<io::data> const& e) {
+void stream::_process_instance(std::shared_ptr<io::data> const& e) {
   // Cast object.
   neb::instance const& i(*static_cast<neb::instance const*>(e.get()));
 
   // Log message.
-  logging::info(logging::medium) << "SQL: processing poller event "
-    << "(id: " << i.poller_id << ", name: " << i.name << ", running: "
-    << (i.is_running ? "yes" : "no") << ")";
+  logging::info(logging::medium)
+      << "SQL: processing poller event "
+      << "(id: " << i.poller_id << ", name: " << i.name
+      << ", running: " << (i.is_running ? "yes" : "no") << ")";
 
   if (i.is_running) {
     for (std::map<unsigned int, unsigned int>::iterator
-           it(_cache_host_instance.begin()),
-           end(_cache_host_instance.end());
-         it != end ; ) {
+             it(_cache_host_instance.begin()),
+         end(_cache_host_instance.end());
+         it != end;) {
       if (it->second == i.poller_id)
         _cache_host_instance.erase(it++);
       else
@@ -233,15 +223,15 @@ void stream::_process_instance(
  *
  *  @param[in] e Uncasted host.
  */
-void stream::_process_host(
-               std::shared_ptr<io::data> const& e) {
+void stream::_process_host(std::shared_ptr<io::data> const& e) {
   // Cast object.
   neb::host const& h(*static_cast<neb::host const*>(e.get()));
 
   // Log message.
   logging::info(logging::medium) << "storage: processing host event"
-       " (poller: " << h.poller_id << ", id: "
-    << h.host_id << ", name: " << h.host_name << ")";
+                                    " (poller: "
+                                 << h.poller_id << ", id: " << h.host_id
+                                 << ", name: " << h.host_name << ")";
 
   // Processing
   if (h.host_id) {
@@ -249,10 +239,10 @@ void stream::_process_host(
       _cache_host_instance[h.host_id] = h.poller_id;
     else
       _cache_host_instance.erase(h.host_id);
-  }
-  else
-    logging::error(logging::high) << "storage: host '" << h.host_name
-      << "' of poller " << h.poller_id << " has no ID";
+  } else
+    logging::error(logging::high)
+        << "storage: host '" << h.host_name << "' of poller " << h.poller_id
+        << " has no ID";
 }
 /**
  *  Write an event.
@@ -264,38 +254,34 @@ void stream::_process_host(
 int stream::write(std::shared_ptr<io::data> const& data) {
   ++_pending_events;
   logging::info(logging::low)
-    << "storage: write pending_events = " << _pending_events;
+      << "storage: write pending_events = " << _pending_events;
   if (!validate(data, "storage"))
     return 0;
 
   // Process service status events.
   if (data->type() == neb::service_status::static_type()) {
-    std::shared_ptr<neb::service_status>
-      ss(std::static_pointer_cast<neb::service_status>(data));
+    std::shared_ptr<neb::service_status> ss(
+        std::static_pointer_cast<neb::service_status>(data));
     logging::debug(logging::high)
-      << "storage: processing service status event of service "
-      << ss->service_id << " of host " << ss->host_id
-      << " (ctime " << ss->last_check << ")";
+        << "storage: processing service status event of service "
+        << ss->service_id << " of host " << ss->host_id << " (ctime "
+        << ss->last_check << ")";
 
     unsigned int rrd_len;
     bool index_locked(false);
-    unsigned int index_id(_find_index_id(
-                            ss->host_id,
-                            ss->service_id,
-                            ss->host_name,
-                            ss->service_description,
-                            &rrd_len,
-                            &index_locked));
+    unsigned int index_id(_find_index_id(ss->host_id, ss->service_id,
+                                         ss->host_name, ss->service_description,
+                                         &rrd_len, &index_locked));
     if (index_id != 0) {
       // Generate status event.
       logging::debug(logging::low)
-        << "storage: generating status event for (" << ss->host_id
-        << ", " << ss->service_id << ") of index " << index_id;
+          << "storage: generating status event for (" << ss->host_id << ", "
+          << ss->service_id << ") of index " << index_id;
       std::shared_ptr<storage::status> status(new storage::status);
       status->ctime = ss->last_check;
       status->index_id = index_id;
-      status->interval
-        = static_cast<unsigned int>(ss->check_interval * _interval_length);
+      status->interval =
+          static_cast<unsigned int>(ss->check_interval * _interval_length);
       status->is_for_rebuild = false;
       status->rrd_len = rrd_len;
       status->state = ss->last_hard_state;
@@ -307,41 +293,27 @@ int stream::write(std::shared_ptr<io::data> const& data) {
         parser p;
         try {
           p.parse_perfdata(ss->perf_data, pds);
-        }
-        catch (storage::exceptions::perfdata const& e) { // Discard parsing errors.
+        } catch (storage::exceptions::perfdata const&
+                     e) {  // Discard parsing errors.
           logging::error(logging::medium)
-            << "storage: error while parsing perfdata of service ("
-            << ss->host_id << ", " << ss->service_id << "): "
-            << e.what();
+              << "storage: error while parsing perfdata of service ("
+              << ss->host_id << ", " << ss->service_id << "): " << e.what();
           return 0;
         }
 
         // Loop through all metrics.
-        for (std::list<perfdata>::iterator
-               it(pds.begin()),
-               end(pds.end());
-             it != end;
-             ++it) {
+        for (std::list<perfdata>::iterator it(pds.begin()), end(pds.end());
+             it != end; ++it) {
           perfdata& pd(*it);
 
           // Find metric_id.
           unsigned int metric_type(pd.value_type());
           bool metric_locked(false);
           unsigned int metric_id(_find_metric_id(
-                                   index_id,
-                                   pd.name(),
-                                   pd.unit(),
-                                   pd.warning(),
-                                   pd.warning_low(),
-                                   pd.warning_mode(),
-                                   pd.critical(),
-                                   pd.critical_low(),
-                                   pd.critical_mode(),
-                                   pd.min(),
-                                   pd.max(),
-                                   pd.value(),
-                                   &metric_type,
-                                   &metric_locked));
+              index_id, pd.name(), pd.unit(), pd.warning(), pd.warning_low(),
+              pd.warning_mode(), pd.critical(), pd.critical_low(),
+              pd.critical_mode(), pd.min(), pd.max(), pd.value(), &metric_type,
+              &metric_locked));
 
           if (_store_in_db) {
             // Append perfdata to queue.
@@ -355,11 +327,10 @@ int stream::write(std::shared_ptr<io::data> const& data) {
 
           if (!index_locked && !metric_locked) {
             // Send perfdata event to processing.
-            std::shared_ptr<storage::metric>
-              perf(new storage::metric);
+            std::shared_ptr<storage::metric> perf(new storage::metric);
             perf->ctime = ss->last_check;
-            perf->interval
-              = static_cast<unsigned int>(ss->check_interval * _interval_length);
+            perf->interval = static_cast<unsigned int>(ss->check_interval *
+                                                       _interval_length);
             perf->is_for_rebuild = false;
             perf->metric_id = metric_id;
             perf->name = pd.name();
@@ -369,37 +340,34 @@ int stream::write(std::shared_ptr<io::data> const& data) {
             perf->host_id = ss->host_id;
             perf->service_id = ss->service_id;
             logging::debug(logging::high)
-              << "storage: generating perfdata event for metric "
-              << perf->metric_id << " (name " << perf->name
-              << ", ctime " << perf->ctime << ", value "
-              << perf->value << ")";
+                << "storage: generating perfdata event for metric "
+                << perf->metric_id << " (name " << perf->name << ", ctime "
+                << perf->ctime << ", value " << perf->value << ")";
             multiplexing::publisher().write(perf);
           }
         }
       }
     }
-  }
-  else if (data->type() == neb::instance::static_type())
+  } else if (data->type() == neb::instance::static_type())
     _process_instance(data);
   else if (data->type() == neb::host::static_type())
     _process_host(data);
 
   // Event acknowledgement.
-  logging::debug(logging::low)
-    << "storage: " << _pending_events << " events have not yet been acknowledged";
+  logging::debug(logging::low) << "storage: " << _pending_events
+                               << " events have not yet been acknowledged";
 
   int retval(_ack_events);
   _ack_events = 0;
-  logging::debug(logging::low)
-    << "storage: ack events count: " << retval;
+  logging::debug(logging::low) << "storage: ack events count: " << retval;
   return retval;
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Check for deleted index.
@@ -409,17 +377,16 @@ void stream::_check_deleted_index() {
   logging::info(logging::medium) << "storage: starting DB cleanup";
   unsigned long long deleted_index(0);
   unsigned long long deleted_metrics(0);
-  _update_status(
-    "status=deleting old performance data (might take a while)\n");
+  _update_status("status=deleting old performance data (might take a while)\n");
 
   // Database schema version.
   bool db_v2(_mysql.schema_version() == mysql::v2);
 
   std::ostringstream oss;
-  oss << "SELECT " << (db_v2 ? "id" : "index_id")
-        << "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
-        << "  WHERE to_delete=1"
-           "  LIMIT 1";
+  oss << "SELECT " << (db_v2 ? "id" : "index_id") << "  FROM "
+      << (db_v2 ? "index_data" : "rt_index_data")
+      << "  WHERE to_delete=1"
+         "  LIMIT 1";
   std::string query(oss.str());
 
   // Delete index.
@@ -428,18 +395,16 @@ void stream::_check_deleted_index() {
     unsigned long long index_id;
     {
       std::promise<database::mysql_result> promise;
-      _mysql.run_query_and_get_result(
-               query, &promise);
+      _mysql.run_query_and_get_result(query, &promise);
       try {
         database::mysql_result res(promise.get_future().get());
         if (!_mysql.fetch_row(res))
-          break ;
+          break;
         index_id = res.value_as_u64(0);
-      }
-      catch (std::exception const& e) {
+      } catch (std::exception const& e) {
         throw broker::exceptions::msg()
-          << "storage: could not query index table to get index to delete: "
-          << e.what();
+            << "storage: could not query index table to get index to delete: "
+            << e.what();
       }
     }
 
@@ -448,7 +413,8 @@ void stream::_check_deleted_index() {
     {
       std::ostringstream oss;
       oss << "SELECT metric_id"
-             "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
+             "  FROM "
+          << (db_v2 ? "metrics" : "rt_metrics")
           << "  WHERE index_id=" << index_id;
 
       std::promise<database::mysql_result> promise;
@@ -457,12 +423,10 @@ void stream::_check_deleted_index() {
         database::mysql_result res(promise.get_future().get());
         while (_mysql.fetch_row(res))
           metrics_to_delete.push_back(res.value_as_u64(0));
-      }
-      catch (std::exception const& e) {
+      } catch (std::exception const& e) {
         throw broker::exceptions::msg()
-          << "storage: could not get metrics at index "
-          << index_id << ": "
-          << e.what();
+            << "storage: could not get metrics at index " << index_id << ": "
+            << e.what();
       }
     }
 
@@ -474,8 +438,8 @@ void stream::_check_deleted_index() {
     {
       std::ostringstream oss;
       oss << "DELETE FROM " << (db_v2 ? "index_data" : "rt_index_data")
-          << "  WHERE " << (db_v2 ? "id" : "index_id")
-          << "        =" << index_id;
+          << "  WHERE " << (db_v2 ? "id" : "index_id") << "        ="
+          << index_id;
       std::ostringstream oss_error;
       oss_error << "storage: cannot delete index " << index_id << ": ";
       _mysql.run_query(oss.str(), oss_error.str());
@@ -496,21 +460,18 @@ void stream::_check_deleted_index() {
   {
     std::ostringstream oss;
     oss << "SELECT metric_id"
-           "  FROM " << (db_v2 ? "metrics" : "rt_metrics")
-        << "  WHERE to_delete=1";
+           "  FROM "
+        << (db_v2 ? "metrics" : "rt_metrics") << "  WHERE to_delete=1";
     std::promise<database::mysql_result> promise;
-    _mysql.run_query_and_get_result(
-             oss.str(),
-             &promise);
+    _mysql.run_query_and_get_result(oss.str(), &promise);
     try {
       database::mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res))
         metrics_to_delete.push_back(res.value_as_u64(0));
-    }
-    catch (std::exception const& e) {
+    } catch (std::exception const& e) {
       throw broker::exceptions::msg()
-        << "storage: could not get the list of metrics to delete: "
-        << e.what();
+          << "storage: could not get the list of metrics to delete: "
+          << e.what();
     }
   }
 
@@ -519,9 +480,9 @@ void stream::_check_deleted_index() {
   deleted_metrics += metrics_to_delete.size();
 
   // End.
-  logging::info(logging::medium) << "storage: end of DB cleanup: "
-    << deleted_metrics << " metrics and "
-    << deleted_index << " index removed";
+  logging::info(logging::medium)
+      << "storage: end of DB cleanup: " << deleted_metrics << " metrics and "
+      << deleted_index << " index removed";
   _update_status("");
 }
 
@@ -531,16 +492,15 @@ void stream::_check_deleted_index() {
  *  @param[in] metrics_to_delete Metrics to delete.
  */
 void stream::_delete_metrics(
-               std::list<unsigned long long> const& metrics_to_delete) {
+    std::list<unsigned long long> const& metrics_to_delete) {
   // Database schema version.
   bool db_v2(_mysql.schema_version() == mysql::v2);
 
   // Delete metrics.
   for (std::list<unsigned long long>::const_iterator
-         it(metrics_to_delete.begin()),
-         end(metrics_to_delete.end());
-       it != end;
-       ++it) {
+           it(metrics_to_delete.begin()),
+       end(metrics_to_delete.end());
+       it != end; ++it) {
     // Current metric.
     unsigned long long metric_id(*it);
 
@@ -593,13 +553,12 @@ void stream::_delete_metrics(
  *
  *  @return Index ID matching host and service ID.
  */
-unsigned int stream::_find_index_id(
-                       uint64_t host_id,
-                       uint64_t service_id,
-                       std::string const& host_name,
-                       std::string const& service_desc,
-                       unsigned int* rrd_len,
-                       bool* locked) {
+unsigned int stream::_find_index_id(uint64_t host_id,
+                                    uint64_t service_id,
+                                    std::string const& host_name,
+                                    std::string const& service_desc,
+                                    unsigned int* rrd_len,
+                                    bool* locked) {
   unsigned int retval;
 
   // Database schema version.
@@ -610,24 +569,21 @@ unsigned int stream::_find_index_id(
       _index_cache.find({host_id, service_id})};
 
   // Special.
-  bool special(!strncmp(
-                  host_name.c_str(),
-                  BAM_NAME,
-                  sizeof(BAM_NAME) - 1) == 0 ? 1 : 0);
+  bool special(!strncmp(host_name.c_str(), BAM_NAME, sizeof(BAM_NAME) - 1));
 
   // Found in cache.
   if (it != _index_cache.end()) {
-    logging::debug(logging::low) << "storage: found index "
-      << it->second.index_id << " of (" << host_id << ", "
-      << service_id << ") in cache";
+    logging::debug(logging::low)
+        << "storage: found index " << it->second.index_id << " of (" << host_id
+        << ", " << service_id << ") in cache";
     // Should we update index_data?
-    if (it->second.host_name != host_name
-        || it->second.service_description != service_desc
-        || it->second.special != special) {
-      logging::info(logging::medium) << "storage: updating index "
-        << it->second.index_id << " of (" << host_id << ", "
-        << service_id << ") (host: " << host_name << ", service: "
-        << service_desc << ", special: " << special << ")";
+    if (it->second.host_name != host_name ||
+        it->second.service_description != service_desc ||
+        it->second.special != special) {
+      logging::info(logging::medium)
+          << "storage: updating index " << it->second.index_id << " of ("
+          << host_id << ", " << service_id << ") (host: " << host_name
+          << ", service: " << service_desc << ", special: " << special << ")";
 
       // Update index_data table.
       _update_index_data_stmt.bind_value_as_str(0, host_name);
@@ -637,10 +593,8 @@ unsigned int stream::_find_index_id(
       _update_index_data_stmt.bind_value_as_i32(4, service_id);
 
       _mysql.run_statement(
-               _update_index_data_stmt,
-               "UPDATE index_data",
-               true,
-               _cache_host_instance[host_id] % _mysql.connections_count());
+          _update_index_data_stmt, "UPDATE index_data", true,
+          _cache_host_instance[host_id] % _mysql.connections_count());
       if (_mysql.commit_if_needed())
         _set_ack_events();
 
@@ -658,7 +612,7 @@ unsigned int stream::_find_index_id(
   // Can't find in cache, discard data or insert in DB.
   else {
     logging::info(logging::medium) << "storage: index not found for ("
-      << host_id << ", " << service_id << ")";
+                                   << host_id << ", " << service_id << ")";
     // Discard.
     if (!_insert_in_index_data) {
       retval = 0;
@@ -666,35 +620,35 @@ unsigned int stream::_find_index_id(
     }
     // Insert in index_data.
     else {
-      logging::info(logging::medium)
-        << "storage: creating new index for (" << host_id << ", "
-        << service_id << ")";
+      logging::info(logging::medium) << "storage: creating new index for ("
+                                     << host_id << ", " << service_id << ")";
       // Build query.
       std::ostringstream oss;
       oss << "INSERT INTO " << (db_v2 ? "index_data" : "rt_index_data")
           << "  (host_id, host_name, service_id, service_description,"
              "   must_be_rebuild, special)"
-             "  VALUES (" << host_id << ", '" << host_name << "', " << service_id
-          << ", '" << service_desc << "', " << (db_v2 ? "'0'" : "0")
-          << ", '" << special << "')";
+             "  VALUES ("
+          << host_id << ", '" << host_name << "', " << service_id << ", '"
+          << service_desc << "', " << (db_v2 ? "'0'" : "0") << ", '" << special
+          << "')";
 
       std::promise<int> promise;
-      _mysql.run_query_and_get_int(
-                      oss.str(),
-                      &promise,
-                      database::mysql_task::LAST_INSERT_ID);
+      _mysql.run_query_and_get_int(oss.str(), &promise,
+                                   database::mysql_task::LAST_INSERT_ID);
       try {
         // Let's get the index id
         retval = promise.get_future().get();
         if (retval == 0) {
-          throw broker::exceptions::msg() << "storage: could not "
-                    "fetch index_id of newly inserted index ("
-                 << host_id << ", " << service_id << ")";
+          throw broker::exceptions::msg()
+              << "storage: could not "
+                 "fetch index_id of newly inserted index ("
+              << host_id << ", " << service_id << ")";
         }
 
         // Insert index in cache.
-        logging::info(logging::medium) << "storage: new index " << retval
-          << " for (" << host_id << ", " << service_id << ")";
+        logging::info(logging::medium)
+            << "storage: new index " << retval << " for (" << host_id << ", "
+            << service_id << ")";
         index_info info;
         info.host_name = host_name;
         info.index_id = retval;
@@ -716,13 +670,11 @@ unsigned int stream::_find_index_id(
         if (rrd_len)
           *rrd_len = info.rrd_retention;
         *locked = info.locked;
-      }
-      catch (std::exception const& e) {
+      } catch (std::exception const& e) {
         throw broker::exceptions::msg()
-          << "storage: insertion of "
-             "index (" << host_id << ", " << service_id
-          << ") failed: "
-          << e.what();
+            << "storage: insertion of "
+               "index ("
+            << host_id << ", " << service_id << ") failed: " << e.what();
       }
     }
   }
@@ -772,31 +724,32 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
 
   // Trim metric_name.
   // Is the following really needed, I don't think so.
-  //metric_name = metric_name.trimmed();
+  // metric_name = metric_name.trimmed();
 
   // Look in the cache.
-  std::map<std::pair<uint64_t, std::string>, metric_info>::iterator
-    it(_metric_cache.find(std::make_pair(index_id, metric_name)));
+  std::map<std::pair<uint64_t, std::string>, metric_info>::iterator it(
+      _metric_cache.find(std::make_pair(index_id, metric_name)));
   if (it != _metric_cache.end()) {
-    logging::debug(logging::low) << "storage: found metric "
-      << it->second.metric_id << " of (" << index_id << ", "
-      << metric_name << ") in cache";
+    logging::debug(logging::low)
+        << "storage: found metric " << it->second.metric_id << " of ("
+        << index_id << ", " << metric_name << ") in cache";
     // Should we update metrics ?
-    if (check_equality(it->second.value, value)
-        || it->second.unit_name != unit_name
-        || check_equality(it->second.warn, warn)
-        || check_equality(it->second.warn_low, warn_low)
-        || it->second.warn_mode != warn_mode
-        || check_equality(it->second.crit, crit)
-        || check_equality(it->second.crit_low, crit_low)
-        || it->second.crit_mode != crit_mode
-        || check_equality(it->second.min, min)
-        || check_equality(it->second.max, max)) {
-      logging::info(logging::medium) << "storage: updating metric "
-        << it->second.metric_id << " of (" << index_id << ", "
-        << metric_name << ") (unit: " << unit_name << ", warning: "
-        << warn_low << ":" << warn << ", critical: " << crit_low << ":"
-        << crit << ", min: " << min << ", max: " << max << ")";
+    if (check_equality(it->second.value, value) ||
+        it->second.unit_name != unit_name ||
+        check_equality(it->second.warn, warn) ||
+        check_equality(it->second.warn_low, warn_low) ||
+        it->second.warn_mode != warn_mode ||
+        check_equality(it->second.crit, crit) ||
+        check_equality(it->second.crit_low, crit_low) ||
+        it->second.crit_mode != crit_mode ||
+        check_equality(it->second.min, min) ||
+        check_equality(it->second.max, max)) {
+      logging::info(logging::medium)
+          << "storage: updating metric " << it->second.metric_id << " of ("
+          << index_id << ", " << metric_name << ") (unit: " << unit_name
+          << ", warning: " << warn_low << ":" << warn
+          << ", critical: " << crit_low << ":" << crit << ", min: " << min
+          << ", max: " << max << ")";
       // Update metrics table.
       _update_metrics_stmt.bind_value_as_str(0, unit_name);
       _update_metrics_stmt.bind_value_as_f32(1, warn);
@@ -837,9 +790,8 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
 
   // Can't find in cache, insert in DB.
   else {
-    logging::debug(logging::low)
-      << "storage: creating new metric for (" << index_id
-      << ", " << metric_name << ")";
+    logging::debug(logging::low) << "storage: creating new metric for ("
+                                 << index_id << ", " << metric_name << ")";
 
     // Database schema version.
     bool db_v2(_mysql.schema_version() == mysql::v2);
@@ -867,16 +819,15 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
 
     // Execute query.
     std::promise<int> promise;
-    _mysql.run_statement_and_get_int(
-             _insert_metrics_stmt,
-             &promise,
-             database::mysql_task::LAST_INSERT_ID);
+    _mysql.run_statement_and_get_int(_insert_metrics_stmt, &promise,
+                                     database::mysql_task::LAST_INSERT_ID);
     try {
       retval = promise.get_future().get();
 
       // Insert metric in cache.
-      logging::info(logging::medium) << "storage: new metric "
-        << retval << " for (" << index_id << ", " << metric_name << ")";
+      logging::info(logging::medium)
+          << "storage: new metric " << retval << " for (" << index_id << ", "
+          << metric_name << ")";
       metric_info info;
       info.locked = false;
       info.metric_id = retval;
@@ -901,12 +852,11 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
       pblshr.write(mm);
 
       *locked = info.locked;
-    }
-    catch (std::exception const& e) {
-      throw broker::exceptions::msg()
-        << "storage: insertion of "
-           "metric '" << metric_name << "' of index " << index_id
-        << " failed: " << e.what();
+    } catch (std::exception const& e) {
+      throw broker::exceptions::msg() << "storage: insertion of "
+                                         "metric '"
+                                      << metric_name << "' of index "
+                                      << index_id << " failed: " << e.what();
     }
   }
 
@@ -929,12 +879,13 @@ void stream::_insert_perfdatas() {
     {
       metric_value& mv(_perfdata_queue.front());
       query.precision(10);
-      query << std::scientific
-            << "INSERT INTO " << (db_v2 ? "data_bin" : "log_data_bin")
-            << "  (" << (db_v2 ? "id_metric" : "metric_id")
+      query << std::scientific << "INSERT INTO "
+            << (db_v2 ? "data_bin" : "log_data_bin") << "  ("
+            << (db_v2 ? "id_metric" : "metric_id")
             << "   , ctime, status, value)"
-               "  VALUES (" << mv.metric_id << ", " << mv.c_time << ", '"
-            << mv.status << "', '";
+               "  VALUES ("
+            << mv.metric_id << ", " << mv.c_time << ", '" << mv.status
+            << "', '";
       if (std::isinf(mv.value))
         query << ((mv.value < 0.0) ? -FLT_MAX : FLT_MAX);
       else if (std::isnan(mv.value))
@@ -948,8 +899,8 @@ void stream::_insert_perfdatas() {
     // Insert perfdata in data_bin.
     while (!_perfdata_queue.empty()) {
       metric_value& mv(_perfdata_queue.front());
-      query << ", (" << mv.metric_id << ", " << mv.c_time << ", '"
-            << mv.status << "', ";
+      query << ", (" << mv.metric_id << ", " << mv.c_time << ", '" << mv.status
+            << "', ";
       if (std::isinf(mv.value))
         query << ((mv.value < 0.0) ? -FLT_MAX : FLT_MAX);
       else if (std::isnan(mv.value))
@@ -961,9 +912,7 @@ void stream::_insert_perfdatas() {
     }
 
     // Execute query.
-    _mysql.run_query(
-             query.str(),
-             "storage: could not insert data in data_bin");
+    _mysql.run_query(query.str(), "storage: could not insert data in data_bin");
     if (_mysql.commit_if_needed())
       _set_ack_events();
 
@@ -1044,11 +993,10 @@ void stream::_rebuild_cache() {
           << "       , host_id, service_id, host_name,"
              "       rrd_retention, service_description, special,"
              "       locked"
-             " FROM " << (db_v2 ? "index_data" : "rt_index_data");
+             " FROM "
+          << (db_v2 ? "index_data" : "rt_index_data");
     std::promise<database::mysql_result> promise;
-    _mysql.run_query_and_get_result(
-             query.str(),
-          &promise);
+    _mysql.run_query_and_get_result(query.str(), &promise);
     try {
       database::mysql_result res(promise.get_future().get());
 
@@ -1068,9 +1016,9 @@ void stream::_rebuild_cache() {
         else
           info.special = res.value_as_bool(6);
         info.locked = res.value_as_bool(7);
-        logging::debug(logging::high) << "storage: loaded index "
-          << info.index_id << " of (" << host_id << ", "
-          << service_id << ")";
+        logging::debug(logging::high)
+            << "storage: loaded index " << info.index_id << " of (" << host_id
+            << ", " << service_id << ")";
         _index_cache[std::make_pair(host_id, service_id)] = info;
 
         // Create the metric mapping.
@@ -1080,11 +1028,9 @@ void stream::_rebuild_cache() {
         im->service_id = service_id;
         pblshr.write(im);
       }
-    }
-    catch (std::exception const& e) {
+    } catch (std::exception const& e) {
       throw broker::exceptions::msg()
-        << "storage: could not fetch index list from data DB: "
-        << e.what();
+          << "storage: could not fetch index list from data DB: " << e.what();
     }
   }
 
@@ -1097,11 +1043,10 @@ void stream::_rebuild_cache() {
              "       locked, current_value, unit_name, warn, warn_low,"
              "       warn_threshold_mode, crit, crit_low,"
              "       crit_threshold_mode, min, max"
-             "  FROM " << (db_v2 ? "metrics" : "rt_metrics");
+             "  FROM "
+          << (db_v2 ? "metrics" : "rt_metrics");
     std::promise<database::mysql_result> promise;
-    _mysql.run_query_and_get_result(
-             query.str(),
-          &promise);
+    _mysql.run_query_and_get_result(query.str(), &promise);
     try {
       database::mysql_result res(promise.get_future().get());
 
@@ -1112,8 +1057,8 @@ void stream::_rebuild_cache() {
         uint64_t index_id(res.value_as_u32(1));
         std::string name(res.value_as_str(2).c_str());
         info.type = (res.value_is_null(3)
-                     ? static_cast<unsigned int>(perfdata::automatic)
-                     : res.value_as_u32(3));
+                         ? static_cast<unsigned int>(perfdata::automatic)
+                         : res.value_as_u32(3));
         info.locked = res.value_as_bool(4);
         info.value = (res.value_is_null(5) ? NAN : res.value_as_f64(5));
         info.unit_name = res.value_as_str(6).c_str();
@@ -1125,9 +1070,9 @@ void stream::_rebuild_cache() {
         info.crit_mode = res.value_as_bool(12);
         info.min = (res.value_is_null(13) ? NAN : res.value_as_f64(13));
         info.max = (res.value_is_null(14) ? NAN : res.value_as_f64(14));
-        logging::debug(logging::high) << "storage: loaded metric "
-          << info.metric_id << " of (" << index_id << ", " << name
-          << "), type " << info.type;
+        logging::debug(logging::high)
+            << "storage: loaded metric " << info.metric_id << " of ("
+            << index_id << ", " << name << "), type " << info.type;
         _metric_cache[{index_id, name}] = info;
 
         // Create the metric mapping.
@@ -1136,11 +1081,9 @@ void stream::_rebuild_cache() {
         mm->metric_id = info.metric_id;
         pblshr.write(mm);
       }
-    }
-    catch (std::exception const& e) {
+    } catch (std::exception const& e) {
       throw broker::exceptions::msg()
-        << "storage: could not fetch metric list from data DB: "
-        << e.what();
+          << "storage: could not fetch metric list from data DB: " << e.what();
     }
   }
 
