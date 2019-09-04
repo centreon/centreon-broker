@@ -19,7 +19,8 @@
 #ifndef CCB_SQL_CLEANUP_HH
 #define CCB_SQL_CLEANUP_HH
 
-#include <QThread>
+#include <mutex>
+#include <thread>
 #include <string>
 #include "com/centreon/broker/namespace.hh"
 
@@ -32,7 +33,7 @@ namespace sql {
  *
  *  Check to cleanup database.
  */
-class cleanup : public QThread {
+class cleanup {
  public:
   cleanup(std::string const& db_type,
           std::string const& db_host,
@@ -40,24 +41,31 @@ class cleanup : public QThread {
           std::string const& db_user,
           std::string const& db_password,
           std::string const& db_name,
-          unsigned int cleanup_interval = 600);
+          uint32_t cleanup_interval = 600);
   ~cleanup() throw();
   void exit() throw();
-  unsigned int get_interval() const throw();
-  void run();
+  uint32_t get_interval() const throw();
+  void _run();
+  void start();
 
  private:
   cleanup(cleanup const& other);
   cleanup& operator=(cleanup const& other);
 
+  bool should_exit() const;
+
+  std::thread _thread;
   std::string _db_type;
   std::string _db_host;
   unsigned short _db_port;
   std::string _db_user;
   std::string _db_password;
   std::string _db_name;
-  unsigned int _interval;
-  volatile bool _should_exit;
+  const uint32_t _interval;
+
+  mutable std::mutex _start_stop_m;
+  bool _started;
+  bool _should_exit;
 };
 }  // namespace sql
 

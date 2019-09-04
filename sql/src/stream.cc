@@ -2214,7 +2214,6 @@ stream::stream(database_config const& dbcfg,
 stream::~stream() {
   // Stop cleanup thread.
   _cleanup_thread.exit();
-  _cleanup_thread.wait(-1);
   logging::debug(logging::low) << "SQL: sql stream is closed.";
   mysql_manager::instance().clear();
 }

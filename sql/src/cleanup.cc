@@ -50,15 +50,17 @@ cleanup::cleanup(std::string const& db_type,
                  std::string const& db_user,
                  std::string const& db_password,
                  std::string const& db_name,
-                 unsigned int cleanup_interval)
+                 uint32_t cleanup_interval)
     : _db_type(db_type),
       _db_host(db_host),
       _db_port(db_port),
       _db_user(db_user),
       _db_password(db_password),
       _db_name(db_name),
+      _start_stop_m{},
+      _started{false},
       _interval(cleanup_interval),
-      _should_exit(false) {}
+      _should_exit{false} {}
 
 /**
  *  Destructor.
@@ -69,7 +71,17 @@ cleanup::~cleanup() throw() {}
  *  Set the exit flag.
  */
 void cleanup::exit() throw() {
-  _should_exit = true;
+  {
+    std::lock_guard<std::mutex> lk(_start_stop_m);
+    _should_exit = true;
+    if (!_started)
+      return;
+  }
+  _thread.join();
+  {
+    std::lock_guard<std::mutex> lk(_start_stop_m);
+    _started = false;
+  }
 }
 
 /**
@@ -77,15 +89,29 @@ void cleanup::exit() throw() {
  *
  *  @return Rebuild check interval in seconds.
  */
-unsigned int cleanup::get_interval() const throw() {
-  return (_interval);
+uint32_t cleanup::get_interval() const throw() {
+  return _interval;
+}
+
+bool cleanup::should_exit() const {
+  std::lock_guard<std::mutex> lk(_start_stop_m);
+  return _should_exit;
+}
+
+void cleanup::start() {
+  if (_interval == 0)
+    return;
+  std::lock_guard<std::mutex> lk(_start_stop_m);
+  _thread = std::thread(&cleanup::_run, this);
+  _started = true;
+  _should_exit = false;
 }
 
 /**
  *  Thread entry point.
  */
-void cleanup::run() {
-  while (!_should_exit && _interval) {
+void cleanup::_run() {
+  while (!should_exit() && _interval) {
     mysql ms(database_config(_db_type, _db_host, _db_port, _db_user,
                              _db_password, _db_name));
 
@@ -143,7 +169,7 @@ void cleanup::run() {
 
     // Sleep a while.
     time_t target(time(NULL) + _interval);
-    while (!_should_exit && target > time(NULL))
+    while (!should_exit() && target > time(NULL))
       sleep(1);
   }
 }
