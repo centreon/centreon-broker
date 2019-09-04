@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 - 2019 Centreon (https://www.centreon.com/)
+ * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  * For more information : contact@centreon.com
  *
  */
-
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <cstdio>
