@@ -20,7 +20,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"

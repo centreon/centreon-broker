@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <QDir>
 #include <gtest/gtest.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/file/splitter.hh"

@@ -18,7 +18,6 @@
 
 #include "com/centreon/broker/processing/acceptor.hh"
 #include <gtest/gtest.h>
-#include <QTimer>
 #include <memory>
 #include <string>
 #include "com/centreon/broker/config/applier/init.hh"
