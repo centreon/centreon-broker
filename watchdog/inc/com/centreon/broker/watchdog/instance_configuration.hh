@@ -34,6 +34,7 @@ class instance_configuration {
  public:
   instance_configuration();
   instance_configuration(std::string const& name,
+                         std::string const& executable,
                          std::string const& config_file,
                          bool should_run,
                          bool should_reload,
@@ -47,6 +48,7 @@ class instance_configuration {
   bool is_empty() const throw();
 
   std::string const& get_name() const throw();
+  std::string const& get_executable() const throw();
   std::string const& get_config_file() const throw();
   bool should_run() const throw();
   bool should_reload() const throw();
@@ -54,6 +56,7 @@ class instance_configuration {
 
  private:
   std::string _name;
+  std::string _executable;
   std::string _config_file;
   bool _run;
   bool _reload;

@@ -846,6 +846,7 @@ option(WITH_TESTING "Generate unit tests." OFF)
 if (WITH_TESTING)
     add_definitions(-DCENTREON_BROKER_LUA_SCRIPT_PATH="${PROJECT_SOURCE_DIR}/lua/test")
     add_definitions(-DCENTREON_BROKER_NEB_TEST="${PROJECT_SOURCE_DIR}/neb/test")
+    add_definitions(-DCENTREON_BROKER_WD_TEST="${PROJECT_SOURCE_DIR}/watchdog/test")
     # Testing.
     set(
             TESTS_SOURCES

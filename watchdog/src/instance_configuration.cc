@@ -38,15 +38,17 @@ instance_configuration::instance_configuration()
  */
 instance_configuration::instance_configuration(
     std::string const& name,
+    std::string const& executable,
     std::string const& config_file,
     bool should_run,
     bool should_reload,
     unsigned int seconds_per_tentative)
-    : _name(name),
-      _config_file(config_file),
-      _run(should_run),
-      _reload(should_reload),
-      _seconds_per_tentative(seconds_per_tentative) {}
+    : _name{name},
+      _executable{executable},
+      _config_file{config_file},
+      _run{should_run},
+      _reload{should_reload},
+      _seconds_per_tentative{seconds_per_tentative} {}
 /**
  *  Destructor.
  */
@@ -60,6 +62,7 @@ instance_configuration::~instance_configuration() {}
 instance_configuration::instance_configuration(
     instance_configuration const& other)
     : _name(other._name),
+      _executable{other._executable},
       _config_file(other._config_file),
       _run(other._run),
       _reload(other._reload),
@@ -76,12 +79,13 @@ instance_configuration& instance_configuration::operator=(
     instance_configuration const& other) {
   if (this != &other) {
     _name = other._name;
+    _executable = other._executable;
     _config_file = other._config_file;
     _run = other._run;
     _reload = other._reload;
     _seconds_per_tentative = other._seconds_per_tentative;
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -109,7 +113,7 @@ bool instance_configuration::operator==(
  */
 bool instance_configuration::operator!=(
     instance_configuration const& other) const {
-  return (!instance_configuration::operator==(other));
+  return !instance_configuration::operator==(other);
 }
 
 /**
@@ -118,7 +122,7 @@ bool instance_configuration::operator!=(
  *  @return  True if empty.
  */
 bool instance_configuration::is_empty() const throw() {
-  return (_name.empty());
+  return _name.empty();
 }
 
 /**
@@ -127,7 +131,7 @@ bool instance_configuration::is_empty() const throw() {
  *  @return[in]  The name of this instance.
  */
 std::string const& instance_configuration::get_name() const throw() {
-  return (_name);
+  return _name;
 }
 
 /**
@@ -136,7 +140,16 @@ std::string const& instance_configuration::get_name() const throw() {
  *  @return[in]  The configuration file for this instance.
  */
 std::string const& instance_configuration::get_config_file() const throw() {
-  return (_config_file);
+  return _config_file;
+}
+
+/**
+ *  Get the executable of this instance.
+ *
+ *  @return[in]  The executable to launch for this instance.
+ */
+std::string const& instance_configuration::get_executable() const throw() {
+  return _executable;
 }
 
 /**
@@ -145,7 +158,7 @@ std::string const& instance_configuration::get_config_file() const throw() {
  *  @return  True if this instance should be run.
  */
 bool instance_configuration::should_run() const throw() {
-  return (_run);
+  return _run;
 }
 
 /**
@@ -154,7 +167,7 @@ bool instance_configuration::should_run() const throw() {
  *  @return  True if this instance should be reloaded.
  */
 bool instance_configuration::should_reload() const throw() {
-  return (_reload);
+  return _reload;
 }
 
 /**
@@ -163,5 +176,5 @@ bool instance_configuration::should_reload() const throw() {
  *  @return  How many seconds between restart.
  */
 unsigned int instance_configuration::seconds_per_tentative() const throw() {
-  return (_seconds_per_tentative == 0 ? 1 : _seconds_per_tentative);
+  return _seconds_per_tentative == 0 ? 1 : _seconds_per_tentative;
 }

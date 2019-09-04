@@ -17,9 +17,12 @@
 */
 
 #include "com/centreon/broker/watchdog/instance.hh"
-#include <QTimer>
+#include <wait.h>
 #include <csignal>
+#include <cstring>
+#include <iostream>
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/broker/vars.hh"
 #include "com/centreon/broker/watchdog/application.hh"
 
@@ -29,18 +32,18 @@ using namespace com::centreon::broker::watchdog;
 /**
  *  Default constructor.
  */
-instance::instance(instance_configuration const& config, application& parent)
-    : QProcess(&parent), _config(config), _started(false) {
+instance::instance(instance_configuration const& config)
+    : _config{config}, _started{false}, _pid{}, _fd{0} {
   if (config.should_run())
-    start_instance();
-  connect(this, SIGNAL(finished(int)), this, SLOT(on_exit()));
+    start();
+  // connect(this, SIGNAL(finished(int)), this, SLOT(on_exit()));
 }
 
 /**
  *  Destructor.
  */
 instance::~instance() {
-  stop_instance();
+  stop();
 }
 
 /**
@@ -61,86 +64,138 @@ void instance::merge_configuration(instance_configuration const& new_config) {
   _config = new_config;
 }
 
+static std::pair<pid_t, int> exec_process(char const** argv) {
+  int status;
+  int fd[2];
+
+  if (pipe(fd) == -1) {
+    logging::error(logging::medium)
+        << "watchdog: Unable to create the pipe to exchange with broker.";
+    std::cout << "ERROR: unable to create the pipe to exchange with broker: "
+              << strerror(errno) << '\n';
+    exit(EXIT_FAILURE);
+  }
+
+  pid_t son_pid{fork()};
+
+  // I'm your father
+  if (son_pid) {
+    // Let's close the write file descriptor.
+    close(fd[1]);
+  }
+  else {
+    // Let's close the read file descriptor.
+    close(fd[0]);
+    int res = execve(argv[0], const_cast<char**>(argv), nullptr);
+    if (res == -1) {
+      std::cout << "Child process failed: " << std::strerror(errno) << '\n';
+    }
+    write(fd[1], &res, sizeof(res));
+    close(fd[1]);
+    exit(res);
+  }
+  return {son_pid, fd[0]};
+}
+
+/**
+ *  Restart an instance of cbd.
+ */
+void instance::restart() {
+  _started = false;
+  close(_fd);
+  start();
+}
+
 /**
  *  Start an instance of cbd.
  */
-void instance::start_instance() {
+void instance::start() {
   if (!_started && _config.should_run()) {
     _started = true;
     _since_last_start = timestamp::now();
     logging::info(logging::medium)
         << "watchdog: starting process '" << _config.get_name() << "'";
-    start(PREFIX_BIN "/cbd",
-          QStringList(QString::fromStdString(_config.get_config_file())),
-          QProcess::ReadOnly);
+    char const* argv[]{_config.get_executable().c_str(),
+                       _config.get_config_file().c_str(), nullptr};
+    std::pair<pid_t, int> res{exec_process(argv)};
+    _pid = res.first;
+    _fd = res.second;
     logging::info(logging::medium)
         << "watchdog: process '" << _config.get_name() << "' started (PID "
-        << pid() << ")";
+        << _pid << ")";
   }
-  return;
 }
 
 /**
  *  Update an instance broker.
  */
 void instance::update_instance() {
-  if (state() == QProcess::Running && _config.should_reload()) {
-    logging::info(logging::medium)
-        << "watchdog: sending update signal to process '" << _config.get_name()
-        << "' (PID " << pid() << ")";
-    ::kill(pid(), SIGHUP);
-  }
-  return;
+  //  if (state() == QProcess::Running && _config.should_reload()) {
+  //    logging::info(logging::medium)
+  //        << "watchdog: sending update signal to process '" <<
+  //        _config.get_name()
+  //        << "' (PID " << pid() << ")";
+  //    ::kill(pid(), SIGHUP);
+  //  }
 }
 
 /**
  *  Stop an instance broker.
  */
-void instance::stop_instance() {
+void instance::stop() {
   if (_started) {
     logging::info(logging::medium)
         << "watchdog: stopping process '" << _config.get_name() << "' (PID "
-        << pid() << ")";
+        << _pid << ")";
     _started = false;
-    terminate();
-    if (!waitForFinished(_exit_timeout)) {
-      logging::error(logging::medium)
-          << "watchdog: could npt gracefully terminate process '"
-          << _config.get_name() << "' (PID " << pid() << "): killing it";
-      kill();
-    } else {
-      logging::error(logging::medium)
-          << "watchdog: process '" << _config.get_name()
-          << "' stopped gracefully";
+    close(_fd);
+    kill(_pid, SIGTERM);
+    int status;
+    int timeout = 10;
+    while (waitpid(_pid, &status, WNOHANG)) {
+      if (--timeout < 0) {
+        logging::error(logging::medium)
+            << "watchdog: could not gracefully terminate process '"
+            << _config.get_name() << "' (PID " << _pid << "): killing it";
+        kill(_pid, SIGKILL);
+        return;
+      }
+      sleep(1);
     }
+    logging::error(logging::medium)
+        << "watchdog: process '" << _config.get_name()
+        << "' stopped gracefully";
   }
-  return;
 }
 
 /**
  *  Called when the process exit.
  */
 void instance::on_exit() {
-  // Process should be stopped, everything is going well.
-  if (!_started || !_config.should_run())
-    return;
+  //  // Process should be stopped, everything is going well.
+  //  if (!_started || !_config.should_run())
+  //    return;
+  //
+  //  _started = false;
+  //
+  //  // Process should not be stopped, restart it.
+  //  unsigned int time_to_restart =
+  //      std::min(static_cast<unsigned int>(timestamp::now() -
+  //      _since_last_start),
+  //               _config.seconds_per_tentative());
+  //  if (time_to_restart == 0)
+  //    logging::error(logging::medium)
+  //        << "watchdog: process '" << _config.get_name()
+  //        << "' terminated unexpectedly, restarting it immediately";
+  //  else
+  //    logging::error(logging::medium)
+  //        << "watchdog: process '" << _config.get_name()
+  //        << "' terminated unexpectedly, restarting it in "
+  //        << _config.seconds_per_tentative() << " seconds";
+  //  QTimer::singleShot(_config.seconds_per_tentative() * 1000, this,
+  //                     SLOT(start()));
+}
 
-  _started = false;
-
-  // Process should not be stopped, restart it.
-  unsigned int time_to_restart =
-      std::min(static_cast<unsigned int>(timestamp::now() - _since_last_start),
-               _config.seconds_per_tentative());
-  if (time_to_restart == 0)
-    logging::error(logging::medium)
-        << "watchdog: process '" << _config.get_name()
-        << "' terminated unexpectedly, restarting it immediately";
-  else
-    logging::error(logging::medium)
-        << "watchdog: process '" << _config.get_name()
-        << "' terminated unexpectedly, restarting it in "
-        << _config.seconds_per_tentative() << " seconds";
-  QTimer::singleShot(_config.seconds_per_tentative() * 1000, this,
-                     SLOT(start_instance()));
-  return;
+int instance::get_fd() const {
+  return _fd;
 }

@@ -1,0 +1,19 @@
+{
+  "centreonBroker": {
+    "cbd": [
+      {
+        "name": "central-broker-master",
+        "configuration_file": "Master",
+        "run": true
+      },
+      {
+        "name": "central-rrd-master",
+        "configuration_file": "Slave",
+        "run": true,
+        "reload": true
+      }
+    ],
+    "log": "/tmp/watchdog.log"
+  }
+}
+

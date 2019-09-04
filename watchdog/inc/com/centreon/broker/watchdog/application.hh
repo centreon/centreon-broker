@@ -41,8 +41,7 @@ namespace watchdog {
  * "com/centreon/broker/watchdog/application.hh"
  *  @brief The application main loop.
  */
-class application : public QEventLoop {
-  Q_OBJECT
+class application {
 
  public:
   application(std::string const& config_path);
