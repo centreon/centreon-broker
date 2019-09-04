@@ -65,7 +65,7 @@ using namespace com::centreon::broker::storage;
  */
 static inline QVariant check_double(double f) {
   return (
-    std::isnan(f) || std::ininf(f) ? QVariant(QVariant::Double) : QVariant(f)
+    std::isnan(f) || std::isinf(f) ? QVariant(QVariant::Double) : QVariant(f)
   );
 }
 
