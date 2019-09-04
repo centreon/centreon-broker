@@ -654,6 +654,7 @@ void ba::_internal_copy(ba const& other) {
   _level_hard = other._level_hard;
   _level_soft = other._level_soft;
   _level_warning = other._level_warning;
+  _name = other._name;
   _valid = other._valid;
   return;
 }
