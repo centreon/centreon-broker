@@ -18,20 +18,20 @@
  */
 
 extern "C" {
-  /**
-   *  Module deinitialization routine.
-   */
-  void broker_module_deinit() {
-    return ;
-  }
+/**
+ *  Module deinitialization routine.
+ */
+void broker_module_deinit() {
+  return;
+}
 
-  /**
-   *  Module initialization routine.
-   *
-   *  @param[in] arg Configuration object.
-   */
-  void broker_module_init(void const* arg) {
-    (void) arg;
-    return ;
-  }
+/**
+ *  Module initialization routine.
+ *
+ *  @param[in] arg Configuration object.
+ */
+void broker_module_init(void const* arg) {
+  (void)arg;
+  return;
+}
 }

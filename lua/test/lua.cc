@@ -16,11 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
+#include <gtest/gtest.h>
 #include <cstdio>
 #include <fstream>
-#include <gtest/gtest.h>
 #include <list>
 #include <memory>
+#include "../../core/test/test_server.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/lua/luabinding.hh"
@@ -31,7 +32,6 @@
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/storage/status.hh"
-#include "../../core/test/test_server.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -47,9 +47,8 @@ class LuaTest : public ::testing::Test {
   virtual void SetUp() {
     try {
       config::applier::init();
-    }
-    catch (std::exception const& e) {
-      (void) e;
+    } catch (std::exception const& e) {
+      (void)e;
     }
     std::shared_ptr<persistent_cache> pcache(
         std::make_shared<persistent_cache>("/tmp/broker_test_cache"));
@@ -122,11 +121,10 @@ TEST_F(LuaTest, MissingScript) {
 TEST_F(LuaTest, FaultyScript) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/faulty.lua");
-  CreateScript(filename, "local a = { 1, 2, 3 }\n"
-                         "local b = 18 / a[4]");
-  ASSERT_THROW(
-    new luabinding(filename, conf, *_cache.get()),
-    exceptions::msg);
+  CreateScript(filename,
+               "local a = { 1, 2, 3 }\n"
+               "local b = 18 / a[4]");
+  ASSERT_THROW(new luabinding(filename, conf, *_cache.get()), exceptions::msg);
   RemoveFile(filename);
 }
 
@@ -136,8 +134,7 @@ TEST_F(LuaTest, WithoutInit) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/without_init.lua");
   CreateScript(filename, "local a = { 1, 2, 3 }\n");
-  ASSERT_THROW(
-    new luabinding(filename, conf, *_cache.get()), exceptions::msg);
+  ASSERT_THROW(new luabinding(filename, conf, *_cache.get()), exceptions::msg);
   RemoveFile(filename);
 }
 
@@ -146,13 +143,13 @@ TEST_F(LuaTest, WithoutInit) {
 TEST_F(LuaTest, WithoutFilter) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/without_filter.lua");
-  CreateScript(filename, "function init()\n"
-                         "end\n"
-                         "function write(d)\n"
-                         "  return 1\n"
-                         "end");
-  std::unique_ptr<luabinding> bb(
-    new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init()\n"
+               "end\n"
+               "function write(d)\n"
+               "  return 1\n"
+               "end");
+  std::unique_ptr<luabinding> bb(new luabinding(filename, conf, *_cache.get()));
   ASSERT_FALSE(bb->has_filter());
   RemoveFile(filename);
 }
@@ -248,11 +245,12 @@ TEST_F(LuaTest, WriteAcknowledgement) {
 TEST_F(LuaTest, SocketCreation) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
-  CreateScript(filename, "function init(conf)\n"
-                         "  local socket = broker_tcp_socket.new()\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n\n");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  local socket = broker_tcp_socket.new()\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n\n");
   ASSERT_NO_THROW(new luabinding(filename, conf, *_cache.get()));
   RemoveFile(filename);
 }
@@ -263,12 +261,13 @@ TEST_F(LuaTest, SocketCreation) {
 TEST_F(LuaTest, SocketConnectionWithoutArg) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
-  CreateScript(filename, "function init(conf)\n"
-                         "  local socket = broker_tcp_socket.new()\n"
-                         "  socket:connect()\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n\n");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  local socket = broker_tcp_socket.new()\n"
+               "  socket:connect()\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n\n");
   ASSERT_THROW(new luabinding(filename, conf, *_cache.get()), std::exception);
   RemoveFile(filename);
 }
@@ -279,12 +278,13 @@ TEST_F(LuaTest, SocketConnectionWithoutArg) {
 TEST_F(LuaTest, SocketConnectionWithNoPort) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/socket.lua");
-  CreateScript(filename, "function init(conf)\n"
-                         "  local socket = broker_tcp_socket.new()\n"
-                         "  socket:connect('127.0.0.1')\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n\n");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  local socket = broker_tcp_socket.new()\n"
+               "  socket:connect('127.0.0.1')\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n\n");
   ASSERT_THROW(new luabinding(filename, conf, *_cache.get()), std::exception);
   RemoveFile(filename);
 }
@@ -298,12 +298,13 @@ TEST_F(LuaAsioTest, SocketConnectionOk) {
 
   ASSERT_TRUE(_server.get_bind_ok());
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  local socket = broker_tcp_socket.new()\n"
-                         "  socket:connect('127.0.0.1', 4242)\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n\n");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  local socket = broker_tcp_socket.new()\n"
+               "  socket:connect('127.0.0.1', 4242)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n\n");
   ASSERT_NO_THROW(new luabinding(filename, conf, *_cache.get()));
   RemoveFile(filename);
 }
@@ -317,16 +318,18 @@ TEST_F(LuaAsioTest, SocketUnconnectedState) {
 
   ASSERT_TRUE(_server.get_bind_ok());
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local socket = broker_tcp_socket.new()\n"
-                         "  local state = socket:get_state()\n"
-                         "  broker_log:info(1, 'State: ' .. state)\n"
-                         "  socket:connect('127.0.0.1', 4242)\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local socket = broker_tcp_socket.new()\n"
+               "  local state = socket:get_state()\n"
+               "  broker_log:info(1, 'State: ' .. state)\n"
+               "  socket:connect('127.0.0.1', 4242)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("State: unconnected"));
@@ -343,15 +346,16 @@ TEST_F(LuaAsioTest, SocketConnectedState) {
 
   ASSERT_TRUE(_server.get_bind_ok());
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local socket = broker_tcp_socket.new()\n"
-                         "  socket:connect('127.0.0.1', 4242)\n"
-                         "  local state = socket:get_state()\n"
-                         "  broker_log:info(1, 'State: ' .. state)\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n\n");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local socket = broker_tcp_socket.new()\n"
+               "  socket:connect('127.0.0.1', 4242)\n"
+               "  local state = socket:get_state()\n"
+               "  broker_log:info(1, 'State: ' .. state)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n\n");
   std::unique_ptr<luabinding> binding(
       new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
@@ -382,20 +386,23 @@ TEST_F(LuaAsioTest, SocketWrite) {
 TEST_F(LuaTest, JsonEncode) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/json_encode.lua");
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  broker_log:info('coucou')\n"
-                         "  local a = { aa='C:\\\\bonjour',bb=12,cc={'a', 'b', 'c', 4},dd=true}\n"
-                         "  local json = broker.json_encode(a)\n"
-                         "  local b = broker.json_decode(json)\n"
-                         "  for i,v in pairs(b) do\n"
-                         "    broker_log:info(1, i .. '=>' .. tostring(v))\n"
-                         "  end"
-                         "  broker_log:info(1, json)\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(
+      filename,
+      "function init(conf)\n"
+      "  broker_log:set_parameters(3, '/tmp/log')\n"
+      "  broker_log:info('coucou')\n"
+      "  local a = { aa='C:\\\\bonjour',bb=12,cc={'a', 'b', 'c', 4},dd=true}\n"
+      "  local json = broker.json_encode(a)\n"
+      "  local b = broker.json_decode(json)\n"
+      "  for i,v in pairs(b) do\n"
+      "    broker_log:info(1, i .. '=>' .. tostring(v))\n"
+      "  end"
+      "  broker_log:info(1, json)\n"
+      "end\n\n"
+      "function write(d)\n"
+      "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string result(ReadFile("/tmp/log"));
 
   ASSERT_NE(result.find("INFO: aa=>C:\\bonjour"), std::string::npos);
@@ -411,15 +418,17 @@ TEST_F(LuaTest, JsonEncode) {
 TEST_F(LuaTest, EmptyJsonEncode) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/json_encode.lua");
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local a = {}\n"
-                         "  local json = broker.json_encode(a)\n"
-                         "  broker_log:info(1, 'empty array: ' .. json)\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local a = {}\n"
+               "  local json = broker.json_encode(a)\n"
+               "  broker_log:info(1, 'empty array: ' .. json)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("INFO: empty array: []"), std::string::npos);
@@ -433,19 +442,22 @@ TEST_F(LuaTest, EmptyJsonEncode) {
 TEST_F(LuaTest, JsonEncodeEscape) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/json_encode.lua");
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local a = { 'd:\\\\bonjour le \"monde\"', 12, true, 27.1, {a=1, b=2, c=3, d=4}, 'une tabulation\\t...'}\n"
-                         "  local json = broker.json_encode(a)\n"
-                         "  local b = broker.json_decode(json)\n"
-                         "  for i,v in ipairs(b) do\n"
-                         "    broker_log:info(1, i .. '=>' .. tostring(v))\n"
-                         "  end"
-                         "  broker_log:info(1, json)\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local a = { 'd:\\\\bonjour le \"monde\"', 12, true, 27.1, "
+               "{a=1, b=2, c=3, d=4}, 'une tabulation\\t...'}\n"
+               "  local json = broker.json_encode(a)\n"
+               "  local b = broker.json_decode(json)\n"
+               "  for i,v in ipairs(b) do\n"
+               "    broker_log:info(1, i .. '=>' .. tostring(v))\n"
+               "  end"
+               "  broker_log:info(1, json)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("INFO: 1=>d:\\bonjour le \"monde\""), std::string::npos);
@@ -466,18 +478,20 @@ TEST_F(LuaTest, JsonEncodeEscape) {
 TEST_F(LuaTest, JsonEncodeEvent) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/json_encode.lua");
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local a = { category = 1, element = 4, type = 65540 }\n"
-                         "  local json = broker.json_encode(a)\n"
-                         "  local b = broker.json_decode(json)\n"
-                         "  for i,v in pairs(b) do\n"
-                         "    broker_log:info(1, i .. '=>' .. tostring(v))\n"
-                         "  end\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local a = { category = 1, element = 4, type = 65540 }\n"
+               "  local json = broker.json_encode(a)\n"
+               "  local b = broker.json_decode(json)\n"
+               "  for i,v in pairs(b) do\n"
+               "    broker_log:info(1, i .. '=>' .. tostring(v))\n"
+               "  end\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string result{ReadFile("/tmp/log")};
 
   ASSERT_NE(result.find("INFO: category=>1"), std::string::npos);
@@ -493,16 +507,18 @@ TEST_F(LuaTest, JsonEncodeEvent) {
 TEST_F(LuaTest, CacheTest) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local hst = broker_cache:get_hostname(1)\n"
-                         "  if not hst then\n"
-                         "    broker_log:info(1, 'host does not exist')\n"
-                         "  end\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local hst = broker_cache:get_hostname(1)\n"
+               "  if not hst then\n"
+               "    broker_log:info(1, 'host does not exist')\n"
+               "  end\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("host does not exist"), std::string::npos);
@@ -521,14 +537,16 @@ TEST_F(LuaTest, HostCacheTest) {
   hst->host_name = strdup("centreon");
   _cache->write(hst);
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local hst = broker_cache:get_hostname(1)\n"
-                         "  broker_log:info(1, 'host is ' .. tostring(hst))\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local hst = broker_cache:get_hostname(1)\n"
+               "  broker_log:info(1, 'host is ' .. tostring(hst))\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("host is centreon"), std::string::npos);
@@ -548,14 +566,17 @@ TEST_F(LuaTest, ServiceCacheTest) {
   svc->service_description = strdup("description");
   _cache->write(svc);
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local svc = broker_cache:get_service_description(1, 14)\n"
-                         "  broker_log:info(1, 'service description is ' .. tostring(svc))\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(
+      filename,
+      "function init(conf)\n"
+      "  broker_log:set_parameters(3, '/tmp/log')\n"
+      "  local svc = broker_cache:get_service_description(1, 14)\n"
+      "  broker_log:info(1, 'service description is ' .. tostring(svc))\n"
+      "end\n\n"
+      "function write(d)\n"
+      "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("service description is description"), std::string::npos);
@@ -584,18 +605,24 @@ TEST_F(LuaTest, IndexMetricCacheTest) {
   im->host_id = 1;
   _cache->write(im);
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local index_mapping = broker_cache:get_index_mapping(7)\n"
-                         "  local svc = broker_cache:get_service_description(index_mapping.host_id, index_mapping.service_id)\n"
-                         "  broker_log:info(1, 'service description is ' .. tostring(svc))\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(
+      filename,
+      "function init(conf)\n"
+      "  broker_log:set_parameters(3, '/tmp/log')\n"
+      "  local index_mapping = broker_cache:get_index_mapping(7)\n"
+      "  local svc = "
+      "broker_cache:get_service_description(index_mapping.host_id, "
+      "index_mapping.service_id)\n"
+      "  broker_log:info(1, 'service description is ' .. tostring(svc))\n"
+      "end\n\n"
+      "function write(d)\n"
+      "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
-  ASSERT_NE(lst.find("service description is MyDescription"), std::string::npos);
+  ASSERT_NE(lst.find("service description is MyDescription"),
+            std::string::npos);
   RemoveFile(filename);
   RemoveFile("/tmp/log");
 }
@@ -614,14 +641,17 @@ TEST_F(LuaTest, InstanceNameCacheTest) {
   inst->name = "MyPoller";
   _cache->write(inst);
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local instance_name = broker_cache:get_instance_name(18)\n"
-                         "  broker_log:info(1, 'instance name is ' .. tostring(instance_name))\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(
+      filename,
+      "function init(conf)\n"
+      "  broker_log:set_parameters(3, '/tmp/log')\n"
+      "  local instance_name = broker_cache:get_instance_name(18)\n"
+      "  broker_log:info(1, 'instance name is ' .. tostring(instance_name))\n"
+      "end\n\n"
+      "function write(d)\n"
+      "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("instance name is MyPoller"), std::string::npos);
@@ -640,15 +670,17 @@ TEST_F(LuaTest, MetricMappingCacheTest) {
   mm->metric_id = 27;
   _cache->write(mm);
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local mm = broker_cache:get_metric_mapping(27)\n"
-                         "  broker_log:info(1, 'metric id is ' .. mm.metric_id)\n"
-                         "  broker_log:info(1, 'index id is ' .. mm.index_id)\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local mm = broker_cache:get_metric_mapping(27)\n"
+               "  broker_log:info(1, 'metric id is ' .. mm.metric_id)\n"
+               "  broker_log:info(1, 'index id is ' .. mm.index_id)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("metric id is 27"));
@@ -664,14 +696,16 @@ TEST_F(LuaTest, HostGroupCacheTestNameNotAvailable) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local hg = broker_cache:get_hostgroup_name(28)\n"
-                         "  broker_log:info(1, 'host group is ' .. tostring(hg))\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local hg = broker_cache:get_hostgroup_name(28)\n"
+               "  broker_log:info(1, 'host group is ' .. tostring(hg))\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("host group is nil"), std::string::npos);
@@ -690,14 +724,16 @@ TEST_F(LuaTest, HostGroupCacheTestName) {
   hg->name = strdup("centreon");
   _cache->write(hg);
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local hg = broker_cache:get_hostgroup_name(28)\n"
-                         "  broker_log:info(1, 'host group is ' .. tostring(hg))\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local hg = broker_cache:get_hostgroup_name(28)\n"
+               "  broker_log:info(1, 'host group is ' .. tostring(hg))\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("host group is centreon"), std::string::npos);
@@ -712,14 +748,17 @@ TEST_F(LuaTest, HostGroupCacheTestEmpty) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local hg = broker_cache:get_hostgroups(1)\n"
-                         "  broker_log:info(1, 'host group is ' .. broker.json_encode(hg))\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(
+      filename,
+      "function init(conf)\n"
+      "  broker_log:set_parameters(3, '/tmp/log')\n"
+      "  local hg = broker_cache:get_hostgroups(1)\n"
+      "  broker_log:info(1, 'host group is ' .. broker.json_encode(hg))\n"
+      "end\n\n"
+      "function write(d)\n"
+      "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("host group is []"), std::string::npos);
@@ -760,16 +799,18 @@ TEST_F(LuaTest, HostGroupCacheTest) {
   member->poller_id = 144;
   _cache->write(member);
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local hg = broker_cache:get_hostgroups(22)\n"
-                         "  for i,v in ipairs(hg) do\n"
-                         "    broker_log:info(1, 'member of ' .. broker.json_encode(v))\n"
-                         "  end\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local hg = broker_cache:get_hostgroups(22)\n"
+               "  for i,v in ipairs(hg) do\n"
+               "    broker_log:info(1, 'member of ' .. broker.json_encode(v))\n"
+               "  end\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("\"group_id\":17"));
@@ -786,14 +827,16 @@ TEST_F(LuaTest, ServiceGroupCacheTestNameNotAvailable) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local hg = broker_cache:get_servicegroup_name(28)\n"
-                         "  broker_log:info(1, 'service group is ' .. tostring(hg))\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local hg = broker_cache:get_servicegroup_name(28)\n"
+               "  broker_log:info(1, 'service group is ' .. tostring(hg))\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("service group is nil"), std::string::npos);
@@ -812,14 +855,16 @@ TEST_F(LuaTest, ServiceGroupCacheTestName) {
   sg->name = strdup("centreon");
   _cache->write(sg);
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local sg = broker_cache:get_servicegroup_name(28)\n"
-                         "  broker_log:info(1, 'service group is ' .. tostring(sg))\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local sg = broker_cache:get_servicegroup_name(28)\n"
+               "  broker_log:info(1, 'service group is ' .. tostring(sg))\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("service group is centreon"), std::string::npos);
@@ -834,14 +879,17 @@ TEST_F(LuaTest, ServiceGroupCacheTestEmpty) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local sg = broker_cache:get_servicegroups(1, 3)\n"
-                         "  broker_log:info(1, 'service group is ' .. broker.json_encode(sg))\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(
+      filename,
+      "function init(conf)\n"
+      "  broker_log:set_parameters(3, '/tmp/log')\n"
+      "  local sg = broker_cache:get_servicegroups(1, 3)\n"
+      "  broker_log:info(1, 'service group is ' .. broker.json_encode(sg))\n"
+      "end\n\n"
+      "function write(d)\n"
+      "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst.find("service group is []", std::string::npos));
@@ -869,7 +917,8 @@ TEST_F(LuaTest, ServiceGroupCacheTest) {
   svc->host_name = strdup("host_centreon");
   svc->service_description = strdup("service_description");
   _cache->write(svc);
-  std::shared_ptr<neb::service_group_member> member(new neb::service_group_member);
+  std::shared_ptr<neb::service_group_member> member(
+      new neb::service_group_member);
   member->host_id = 22;
   member->service_id = 17;
   member->poller_id = 3;
@@ -886,16 +935,18 @@ TEST_F(LuaTest, ServiceGroupCacheTest) {
   member->group_name = "dix-sept";
   _cache->write(member);
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local sg = broker_cache:get_servicegroups(22, 17)\n"
-                         "  for i,v in ipairs(sg) do\n"
-                         "    broker_log:info(1, 'member of ' .. broker.json_encode(v))\n"
-                         "  end\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local sg = broker_cache:get_servicegroups(22, 17)\n"
+               "  for i,v in ipairs(sg) do\n"
+               "    broker_log:info(1, 'member of ' .. broker.json_encode(v))\n"
+               "  end\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("\"group_id\":17"));
@@ -941,7 +992,8 @@ TEST_F(LuaTest, SetNewInstance) {
   hmember->group_id = 19;
   hmember->group_name = "hg1";
   _cache->write(hmember);
-  std::shared_ptr<neb::service_group_member> member(new neb::service_group_member);
+  std::shared_ptr<neb::service_group_member> member(
+      new neb::service_group_member);
   member->host_id = 22;
   member->service_id = 17;
   member->poller_id = 3;
@@ -966,14 +1018,16 @@ TEST_F(LuaTest, SetNewInstance) {
   ib->name = "MyPoller";
   _cache->write(ib);
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local s = broker_cache:get_service_description(22, 17)\n"
-                         "  broker_log:info(1, 'service description ' .. tostring(s))\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local s = broker_cache:get_service_description(22, 17)\n"
+               "  broker_log:info(1, 'service description ' .. tostring(s))\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("service description nil"));
@@ -989,7 +1043,7 @@ TEST_F(LuaTest, BamCacheTestBvBaRelation) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<bam::dimension_ba_bv_relation_event> rel(
-    new bam::dimension_ba_bv_relation_event);
+      new bam::dimension_ba_bv_relation_event);
   rel->ba_id = 10;
   rel->bv_id = 18;
   _cache->write(rel);
@@ -999,16 +1053,18 @@ TEST_F(LuaTest, BamCacheTestBvBaRelation) {
   rel->bv_id = 23;
   _cache->write(rel);
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local rel = broker_cache:get_bvs(10)\n"
-                         "  for i,v in ipairs(rel) do\n"
-                         "    broker_log:info(1, 'member of bv ' .. v)\n"
-                         "  end\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local rel = broker_cache:get_bvs(10)\n"
+               "  for i,v in ipairs(rel) do\n"
+               "    broker_log:info(1, 'member of bv ' .. v)\n"
+               "  end\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("member of bv 18"));
@@ -1024,8 +1080,7 @@ TEST_F(LuaTest, BamCacheTestBvBaRelation) {
 TEST_F(LuaTest, BamCacheTestBa) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
-  std::shared_ptr<bam::dimension_ba_event> ba(
-    new bam::dimension_ba_event);
+  std::shared_ptr<bam::dimension_ba_event> ba(new bam::dimension_ba_event);
   ba->ba_id = 10;
   ba->ba_name = "ba name";
   ba->ba_description = "ba description";
@@ -1035,18 +1090,22 @@ TEST_F(LuaTest, BamCacheTestBa) {
   ba->sla_duration_warn = 23;
   _cache->write(ba);
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local ba = broker_cache:get_ba(10)\n"
-                         "  broker_log:info(1, 'member of ba ' .. broker.json_encode(ba))\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(
+      filename,
+      "function init(conf)\n"
+      "  broker_log:set_parameters(3, '/tmp/log')\n"
+      "  local ba = broker_cache:get_ba(10)\n"
+      "  broker_log:info(1, 'member of ba ' .. broker.json_encode(ba))\n"
+      "end\n\n"
+      "function write(d)\n"
+      "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("\"ba_name\":\"ba name\""));
-  ASSERT_NE(std::string::npos, lst.find("\"ba_description\":\"ba description\""));
+  ASSERT_NE(std::string::npos,
+            lst.find("\"ba_description\":\"ba description\""));
 
   RemoveFile(filename);
   RemoveFile("/tmp/log");
@@ -1060,14 +1119,16 @@ TEST_F(LuaTest, BamCacheTestBaNil) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local ba = broker_cache:get_ba(10)\n"
-                         "  broker_log:info(1, 'member of ba ' .. tostring(ba))\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local ba = broker_cache:get_ba(10)\n"
+               "  broker_log:info(1, 'member of ba ' .. tostring(ba))\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("member of ba nil"));
@@ -1082,26 +1143,29 @@ TEST_F(LuaTest, BamCacheTestBaNil) {
 TEST_F(LuaTest, BamCacheTestBv) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/cache_test.lua");
-  std::shared_ptr<bam::dimension_bv_event> bv(
-    new bam::dimension_bv_event);
+  std::shared_ptr<bam::dimension_bv_event> bv(new bam::dimension_bv_event);
   bv->bv_id = 10;
   bv->bv_name = "bv name";
   bv->bv_description = "bv description";
   _cache->write(bv);
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  local bv = broker_cache:get_bv(10)\n"
-                         "  broker_log:info(1, 'member of bv ' .. broker.json_encode(bv))\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(
+      filename,
+      "function init(conf)\n"
+      "  broker_log:set_parameters(3, '/tmp/log')\n"
+      "  local bv = broker_cache:get_bv(10)\n"
+      "  broker_log:info(1, 'member of bv ' .. broker.json_encode(bv))\n"
+      "end\n\n"
+      "function write(d)\n"
+      "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("\"bv_id\":10"));
   ASSERT_NE(std::string::npos, lst.find("\"bv_name\":\"bv name\""));
-  ASSERT_NE(std::string::npos, lst.find("\"bv_description\":\"bv description\""));
+  ASSERT_NE(std::string::npos,
+            lst.find("\"bv_description\":\"bv description\""));
 
   RemoveFile(filename);
   RemoveFile("/tmp/log");
@@ -1114,51 +1178,55 @@ TEST_F(LuaTest, BamCacheTestBv) {
 //  TEST_F(LuaTest, BamCacheTestBvNil) {
 //    std::map<std::string, misc::variant> conf;
 //    std::string filename("/tmp/cache_test.lua");
-//  
+//
 //    CreateScript(filename, "function init(conf)\n"
 //                           "  broker_log:set_parameters(3, '/tmp/log')\n"
 //                           "  local bv = broker_cache:get_bv(10)\n"
-//                           "  broker_log:info(1, 'member of bv ' .. tostring(bv))\n"
-//                           "end\n\n"
-//                           "function write(d)\n"
+//                           "  broker_log:info(1, 'member of bv ' ..
+//                           tostring(bv))\n" "end\n\n" "function write(d)\n"
 //                           "end\n");
-//    std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
-//    std::list<std::string> lst(ReadFile("/tmp/log"));
-//  
+//    std::unique_ptr<luabinding> binding(new luabinding(filename, conf,
+//    *_cache.get())); std::list<std::string> lst(ReadFile("/tmp/log"));
+//
 //    ASSERT_TRUE(lst[0].contains("member of bv nil"));
-//  
+//
 //    RemoveFile(filename);
 //    RemoveFile("/tmp/log");
 //  }
-//  
+//
 TEST_F(LuaTest, ParsePerfdata) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/parse_perfdata.lua");
 
-  CreateScript(filename, "local function test_perf(value, full)\n"
-                         "  perf, err_msg = broker.parse_perfdata(value, full)\n"
-                         "  if perf then\n"
-                         "    broker_log:info(1, broker.json_encode(perf))\n"
-                         "  else\n"
-                         "    broker_log:info(1, err_msg)\n"
-                         "  end \n"
-                         "end\n\n"
-                         "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  test_perf(' percent_packet_loss=0 rta=0.80')\n"
-                         "  test_perf(\" 'one value'=0 'another value'=0.89\")\n"
-                         "  test_perf(\" 'one value'=0;3;5 'another value'=0.89;0.8;1;;\")\n"
-                         "  test_perf(\" 'one value'=1;3;5;0;9 'another value'=10.89;0.8;1;0;20\")\n"
-                         "  test_perf(\" 'one value'=2s;3;5;0;9 'a b c'=3.14KB;0.8;1;0;10\")\n"
-                         "  test_perf(' percent_packet_loss=1.74;50;80;0;100 rta=0.80', true)\n"
-                         "  test_perf(\" 'one value'=12%;25:80;81:95 'another value'=78%;60;90;;\", true)\n"
-                         "  test_perf(\"                \")\n"
-                         "  test_perf(\" 'one value' 0;3;5\")\n"
-                         "  test_perf(\" 'events'=;;;0;\")\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(
+      filename,
+      "local function test_perf(value, full)\n"
+      "  perf, err_msg = broker.parse_perfdata(value, full)\n"
+      "  if perf then\n"
+      "    broker_log:info(1, broker.json_encode(perf))\n"
+      "  else\n"
+      "    broker_log:info(1, err_msg)\n"
+      "  end \n"
+      "end\n\n"
+      "function init(conf)\n"
+      "  broker_log:set_parameters(3, '/tmp/log')\n"
+      "  test_perf(' percent_packet_loss=0 rta=0.80')\n"
+      "  test_perf(\" 'one value'=0 'another value'=0.89\")\n"
+      "  test_perf(\" 'one value'=0;3;5 'another value'=0.89;0.8;1;;\")\n"
+      "  test_perf(\" 'one value'=1;3;5;0;9 'another "
+      "value'=10.89;0.8;1;0;20\")\n"
+      "  test_perf(\" 'one value'=2s;3;5;0;9 'a b c'=3.14KB;0.8;1;0;10\")\n"
+      "  test_perf(' percent_packet_loss=1.74;50;80;0;100 rta=0.80', true)\n"
+      "  test_perf(\" 'one value'=12%;25:80;81:95 'another "
+      "value'=78%;60;90;;\", true)\n"
+      "  test_perf(\"                \")\n"
+      "  test_perf(\" 'one value' 0;3;5\")\n"
+      "  test_perf(\" 'events'=;;;0;\")\n"
+      "end\n\n"
+      "function write(d)\n"
+      "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
   size_t pos1 = lst.find("\"percent_packet_loss\":0");
   size_t pos2 = lst.find("\"rta\":0.8");
@@ -1178,8 +1246,12 @@ TEST_F(LuaTest, ParsePerfdata) {
   size_t pos16 = lst.find("\"warning_high\":80", pos13 + 1);
   size_t pos17 = lst.find("\"critical_low\":81", pos13 + 1);
   size_t pos18 = lst.find("\"critical_high\":95", pos13 + 1);
-  size_t pos19 = lst.find("storage: invalid perfdata format: equal sign not present or misplaced", pos18 + 1);
-  size_t pos20 = lst.find("storage: invalid perfdata format: no numeric value after equal sign", pos19 + 1);
+  size_t pos19 = lst.find(
+      "storage: invalid perfdata format: equal sign not present or misplaced",
+      pos18 + 1);
+  size_t pos20 = lst.find(
+      "storage: invalid perfdata format: no numeric value after equal sign",
+      pos19 + 1);
 
   ASSERT_LE(pos1, pos3);
   ASSERT_LE(pos3, pos5);
@@ -1206,20 +1278,23 @@ TEST_F(LuaTest, UpdatePath) {
   std::string filename("/tmp/test.lua");
   std::string module("/tmp/module.lua");
 
-  CreateScript(module, "local my_module = {}\n"
-                       "function my_module.test()\n"
-                       "  return 'foo bar'\n"
-                       "end\n\n"
-                       "return my_module");
-  CreateScript(filename, "local my_module = require('module')\n"
-                         "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  broker_log:info(0, my_module.test())\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "  return true\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(module,
+               "local my_module = {}\n"
+               "function my_module.test()\n"
+               "  return 'foo bar'\n"
+               "end\n\n"
+               "return my_module");
+  CreateScript(filename,
+               "local my_module = require('module')\n"
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  broker_log:info(0, my_module.test())\n"
+               "end\n\n"
+               "function write(d)\n"
+               "  return true\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("foo bar"), std::string::npos);
@@ -1233,15 +1308,17 @@ TEST_F(LuaTest, CheckPath) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/test.lua");
 
-  CreateScript(filename, "function init(conf)\n"
-                         "  broker_log:set_parameters(3, '/tmp/log')\n"
-                         "  broker_log:info(0, package.path)\n"
-                         "  broker_log:info(0, package.cpath)\n"
-                         "end\n\n"
-                         "function write(d)\n"
-                         "  return true\n"
-                         "end\n");
-  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache.get()));
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  broker_log:info(0, package.path)\n"
+               "  broker_log:info(0, package.cpath)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "  return true\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(
+      new luabinding(filename, conf, *_cache.get()));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("/tmp/?.lua"), std::string::npos);

@@ -17,9 +17,9 @@
  *
  */
 
+#include "com/centreon/broker/misc/stringifier.hh"
 #include <gtest/gtest.h>
 #include <math.h>
-#include "com/centreon/broker/misc/stringifier.hh"
 
 using namespace com::centreon::broker;
 
@@ -132,8 +132,9 @@ TEST(Stringifier, mixed) {
     << std::string("baz   qux") << false << -42 << "2156" << true;
 
   // Check resulting string.
-  ASSERT_STREQ(s.data(), "147852894567891023foobar-425789751234547b" \
-                           "az   quxfalse-422156true");
+  ASSERT_STREQ(s.data(),
+               "147852894567891023foobar-425789751234547b"
+               "az   quxfalse-422156true");
 }
 
 TEST(Stringifier, pointer) {
@@ -167,7 +168,9 @@ TEST(Stringifier, string) {
   ASSERT_STREQ(s.data(), "foo");
 
   // Second insertions.
-  s << " bar" << " baz" << " qux";
+  s << " bar"
+    << " baz"
+    << " qux";
   ASSERT_STREQ(s.data(), "foo bar baz qux");
 
   // Third insertion.
