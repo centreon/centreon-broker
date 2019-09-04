@@ -64,7 +64,9 @@ using namespace com::centreon::broker::storage;
  *  @return NULL QVariant if f is a NaN, f casted as QVariant otherwise.
  */
 static inline QVariant check_double(double f) {
-  return (std::isnan(f) ? QVariant(QVariant::Double) : QVariant(f));
+  return (
+    std::isnan(f) || std::ininf(f) ? QVariant(QVariant::Double) : QVariant(f)
+  );
 }
 
 /**
@@ -754,14 +756,14 @@ unsigned int stream::_find_metric_id(
         << crit << ", min: " << min << ", max: " << max << ")";
       // Update metrics table.
       _update_metrics.bind_value(":unit_name", unit_name);
-      _update_metrics.bind_value(":warn", isinf(check_double(warn).toFloat()) ? 0 : check_double(warn));
-      _update_metrics.bind_value(":warn_low", isinf(check_double(warn_low).toFloat()) ? 0 : check_double(warn_low));
+      _update_metrics.bind_value(":warn", check_double(warn));
+      _update_metrics.bind_value(":warn_low", check_double(warn_low));
       _update_metrics.bind_value(":warn_threshold_mode", warn_mode);
-      _update_metrics.bind_value(":crit", isinf(check_double(crit).toFloat()) ? 0 : check_double(crit));
-      _update_metrics.bind_value(":crit_low", isinf(check_double(crit_low).toFloat()) ? 0 : check_double(crit_low));
+      _update_metrics.bind_value(":crit", check_double(crit));
+      _update_metrics.bind_value(":crit_low", check_double(crit_low));
       _update_metrics.bind_value(":crit_threshold_mode", crit_mode);
-      _update_metrics.bind_value(":min", isinf(check_double(min).toFloat()) ? 0 : check_double(min));
-      _update_metrics.bind_value(":max", isinf(check_double(max).toFloat()) ? 0 : check_double(max));
+      _update_metrics.bind_value(":min", check_double(min));
+      _update_metrics.bind_value(":max", check_double(max));
       _update_metrics.bind_value(":current_value", check_double(value));
       _update_metrics.bind_value(":index_id", index_id);
       _update_metrics.bind_value(":metric_name", metric_name);
@@ -821,14 +823,14 @@ unsigned int stream::_find_metric_id(
     q.bind_value(":index_id", index_id);
     q.bind_value(":metric_name", metric_name);
     q.bind_value(":unit_name", unit_name);
-    q.bind_value(":warn", isinf(check_double(warn).toFloat()) ? 0 : check_double(warn));
-    q.bind_value(":warn_low", isinf(check_double(warn_low).toFloat()) ? 0 : check_double(warn_low));
+    q.bind_value(":warn", check_double(warn));
+    q.bind_value(":warn_low", check_double(warn_low));
     q.bind_value(":warn_threshold_mode", warn_mode);
-    q.bind_value(":crit", isinf(check_double(crit).toFloat()) ? 0 : check_double(crit));
-    q.bind_value(":crit_low", isinf(check_double(crit_low).toFloat()) ? 0 : check_double(crit_low));
+    q.bind_value(":crit", check_double(crit));
+    q.bind_value(":crit_low", check_double(crit_low));
     q.bind_value(":crit_threshold_mode", crit_mode);
-    q.bind_value(":min", isinf(check_double(min).toFloat()) ? 0 : check_double(min));
-    q.bind_value(":max", isinf(check_double(max).toFloat()) ? 0 : check_double(max));
+    q.bind_value(":min", check_double(min));
+    q.bind_value(":max", check_double(max));
     q.bind_value(":current_value", check_double(value));
     q.bind_value(":data_source_type", *type + (db_v2 ? 1 : 0));
 
