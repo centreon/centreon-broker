@@ -21,3 +21,4 @@ build
 core/inc/com/centreon/broker/vars.hh
 core/inc/com/centreon/broker/version.hh
 .idea
+.vscode
