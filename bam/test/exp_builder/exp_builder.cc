@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bam/exp_builder.hh"
 #include <gtest/gtest.h>
 #include <list>
 #include <string>
 #include "com/centreon/broker/bam/bool_value.hh"
-#include "com/centreon/broker/bam/exp_builder.hh"
 #include "com/centreon/broker/bam/exp_parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 

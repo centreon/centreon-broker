@@ -20,8 +20,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
-#include <vector>
 #include <stack>
+#include <vector>
 #include "com/centreon/broker/bam/ba.hh"
 #include "com/centreon/broker/bam/configuration/applier/state.hh"
 #include "com/centreon/broker/bam/kpi_service.hh"
@@ -31,7 +31,7 @@
 
 using namespace com::centreon::broker;
 
-class  BamBA : public ::testing::Test {
+class BamBA : public ::testing::Test {
  public:
   void SetUp() {
     // Initialization.
@@ -45,6 +45,7 @@ class  BamBA : public ::testing::Test {
     // Cleanup.
     config::applier::deinit();
   }
+
  protected:
   std::unique_ptr<bam::configuration::applier::state> _aply_state;
   std::unique_ptr<bam::configuration::state> _state;
@@ -95,8 +96,7 @@ TEST_F(BamBA, CopyAssign) {
  * Check that KPI change at BA recompute does not mess with the BA
  * value.
  */
-TEST_F(BamBA, Recompute)
-{
+TEST_F(BamBA, Recompute) {
   // Build BAM objects.
   std::shared_ptr<bam::ba> test_ba(new bam::ba);
 
@@ -114,7 +114,7 @@ TEST_F(BamBA, Recompute)
   // recomputation. Note that the loop must terminate on a odd number
   // for the test to be correct.
   time_t now(time(NULL));
-  for(int i(0); i < 100 + 2; ++i) {
+  for (int i(0); i < 100 + 2; ++i) {
     std::shared_ptr<neb::service_status> ss(new neb::service_status);
     ss->host_id = 1;
     ss->service_id = 1;
@@ -141,8 +141,7 @@ TEST_F(BamBA, Recompute)
  *
  *  @return EXIT_SUCCESS on success.
  */
-TEST_F(BamBA, ImpactState)
-{
+TEST_F(BamBA, ImpactState) {
   // Build BAM objects.
   std::shared_ptr<bam::ba> test_ba(new bam::ba);
 
@@ -163,7 +162,7 @@ TEST_F(BamBA, ImpactState)
   std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
   kpis.push_back(s3);
 
-  for(int i = 0; i < kpis.size(); i++) {
+  for (int i = 0; i < kpis.size(); i++) {
     kpis[i]->set_host_id(i + 1);
     kpis[i]->set_service_id(1);
     kpis[i]->set_impact_warning(10);
@@ -200,4 +199,3 @@ TEST_F(BamBA, ImpactState)
     }
   }
 }
-

@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bam/kpi_service.hh"
 #include <cstring>
 #include "com/centreon/broker/bam/impact_values.hh"
-#include "com/centreon/broker/bam/kpi_service.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -33,14 +33,14 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 kpi_service::kpi_service()
-  : _acknowledged(false),
-    _downtimed(false),
-    _host_id(0),
-    _last_check(0),
-    _service_id(0),
-    _state_hard(0),
-    _state_soft(0),
-    _state_type(0) {
+    : _acknowledged(false),
+      _downtimed(false),
+      _host_id(0),
+      _last_check(0),
+      _service_id(0),
+      _state_hard(0),
+      _state_soft(0),
+      _state_type(0) {
   for (unsigned int i(0); i < sizeof(_impacts) / sizeof(*_impacts); ++i)
     _impacts[i] = 0.0;
 }
@@ -51,7 +51,7 @@ kpi_service::kpi_service()
  *  @param[in] right Object to copy.
  */
 kpi_service::kpi_service(kpi_service const& right)
-  : service_listener(right), kpi(right) {
+    : service_listener(right), kpi(right) {
   _internal_copy(right);
 }
 
@@ -84,9 +84,7 @@ kpi_service& kpi_service::operator=(kpi_service const& right) {
  *
  *  @return              True.
  */
-bool kpi_service::child_has_update(
-                    computable* child,
-                    io::stream* visitor) {
+bool kpi_service::child_has_update(computable* child, io::stream* visitor) {
   (void)child;
   (void)visitor;
   return true;
@@ -207,24 +205,21 @@ bool kpi_service::is_acknowledged() const {
  *  @param[out] visitor  Object that will receive events.
  */
 void kpi_service::service_update(
-                    std::shared_ptr<neb::service_status> const& status,
-                    io::stream* visitor) {
-  if (status
-      && status->host_id == _host_id
-      && status->service_id == _service_id) {
+    std::shared_ptr<neb::service_status> const& status,
+    io::stream* visitor) {
+  if (status && status->host_id == _host_id &&
+      status->service_id == _service_id) {
     // Log message.
-    logging::debug(logging::low) << "BAM: KPI " << _id
-      << " is getting notified of service (" << _host_id << ", "
-      << _service_id << ") update";
+    logging::debug(logging::low)
+        << "BAM: KPI " << _id << " is getting notified of service (" << _host_id
+        << ", " << _service_id << ") update";
 
     // Update information.
-    if ((status->last_check == (time_t)-1)
-        || (status->last_check == (time_t)0)) {
-      if ((_last_check == (time_t)-1)
-          || (_last_check == (time_t)0))
+    if ((status->last_check == (time_t)-1) ||
+        (status->last_check == (time_t)0)) {
+      if ((_last_check == (time_t)-1) || (_last_check == (time_t)0))
         _last_check = status->last_update;
-    }
-    else
+    } else
       _last_check = status->last_check;
     _output = status->output;
     _perfdata = status->perf_data;
@@ -247,15 +242,14 @@ void kpi_service::service_update(
  *  @param[out] visitor  Object that will receive events.
  */
 void kpi_service::service_update(
-                    std::shared_ptr<neb::acknowledgement> const& ack,
-                    io::stream* visitor) {
-  if (ack
-      && ack->host_id == _host_id
-      && ack->service_id == _service_id) {
+    std::shared_ptr<neb::acknowledgement> const& ack,
+    io::stream* visitor) {
+  if (ack && ack->host_id == _host_id && ack->service_id == _service_id) {
     // Log message.
-    logging::debug(logging::low) << "BAM: KPI " << _id
-      << " is getting an acknowledgement event for service ("
-      << _host_id << ", " << _service_id << ")";
+    logging::debug(logging::low)
+        << "BAM: KPI " << _id
+        << " is getting an acknowledgement event for service (" << _host_id
+        << ", " << _service_id << ")";
 
     // Update information.
     _acknowledged = (ack->deletion_time != -1);
@@ -274,16 +268,13 @@ void kpi_service::service_update(
  *  @param[in]  dt
  *  @param[out] visitor  Object that will receive events.
  */
-void kpi_service::service_update(
-                    std::shared_ptr<neb::downtime> const& dt,
-                    io::stream* visitor) {
-  if (dt
-      && dt->host_id == _host_id
-      && dt->service_id == _service_id) {
+void kpi_service::service_update(std::shared_ptr<neb::downtime> const& dt,
+                                 io::stream* visitor) {
+  if (dt && dt->host_id == _host_id && dt->service_id == _service_id) {
     // Log message.
-    logging::debug(logging::low) << "BAM: KPI " << _id
-      << " is getting a downtime event for service ("
-      << _host_id << ", " << _service_id << ")";
+    logging::debug(logging::low)
+        << "BAM: KPI " << _id << " is getting a downtime event for service ("
+        << _host_id << ", " << _service_id << ")";
 
     // Update information.
     _downtimed = (dt->was_started && dt->actual_end_time.is_null());
@@ -406,14 +397,14 @@ void kpi_service::visit(io::stream* visitor) {
     {
       // If no event was cached, create one.
       if (!_event) {
-        if ((_last_check.get_time_t() != (time_t)-1)
-            && (_last_check.get_time_t() != (time_t)0))
-        _open_new_event(visitor, hard_values);
+        if ((_last_check.get_time_t() != (time_t)-1) &&
+            (_last_check.get_time_t() != (time_t)0))
+          _open_new_event(visitor, hard_values);
       }
       // If state changed, close event and open a new one.
-      else if ((_last_check > _event->start_time)
-               && ((_downtimed != _event->in_downtime)
-                   || (_state_hard != _event->status))) {
+      else if ((_last_check > _event->start_time) &&
+               ((_downtimed != _event->in_downtime) ||
+                (_state_hard != _event->status))) {
         _event->end_time = _last_check;
         visitor->write(std::static_pointer_cast<io::data>(_event));
         _event.reset();
@@ -435,9 +426,8 @@ void kpi_service::visit(io::stream* visitor) {
       status->state_hard = _state_hard;
       status->state_soft = _state_soft;
       status->last_state_change = get_last_state_change();
-      status->last_impact = _downtimed
-                             ? hard_values.get_downtime()
-                             : hard_values.get_nominal();
+      status->last_impact =
+          _downtimed ? hard_values.get_downtime() : hard_values.get_nominal();
       visitor->write(std::static_pointer_cast<io::data>(status));
     }
   }
@@ -450,12 +440,10 @@ void kpi_service::visit(io::stream* visitor) {
  *  @param[in]  state  Service state.
  */
 void kpi_service::_fill_impact(impact_values& impact, short state) {
-  if ((state < 0)
-      || (static_cast<size_t>(state)
-          >= (sizeof(_impacts) / sizeof(*_impacts))))
-    throw (exceptions::msg()
-           << "BAM: could not get impact introduced by state "
-           << state);
+  if ((state < 0) ||
+      (static_cast<size_t>(state) >= (sizeof(_impacts) / sizeof(*_impacts))))
+    throw(exceptions::msg()
+          << "BAM: could not get impact introduced by state " << state);
   double nominal(_impacts[state]);
   impact.set_nominal(nominal);
   impact.set_acknowledgement(_acknowledged ? nominal : 0.0);
@@ -488,14 +476,12 @@ void kpi_service::_internal_copy(kpi_service const& right) {
  *  @param[out] visitor  Visitor that will receive events.
  *  @param[in]  impacts  Impact values.
  */
-void kpi_service::_open_new_event(
-                    io::stream* visitor,
-                    impact_values const& impacts) {
+void kpi_service::_open_new_event(io::stream* visitor,
+                                  impact_values const& impacts) {
   _event.reset(new kpi_event);
   _event->kpi_id = _id;
-  _event->impact_level = _event->in_downtime
-                         ? impacts.get_downtime()
-                         : impacts.get_nominal();
+  _event->impact_level =
+      _event->in_downtime ? impacts.get_downtime() : impacts.get_nominal();
   _event->in_downtime = _downtimed;
   _event->output = _output.c_str();
   _event->perfdata = _perfdata.c_str();

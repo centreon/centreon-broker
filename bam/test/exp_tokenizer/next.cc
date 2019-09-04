@@ -42,7 +42,8 @@ TEST(BamExpTokenizerNext, Valid1) {
 // When it is constructed with a valid expression
 // Then next() returns the tokens one after the other
 TEST(BamExpTokenizerNext, Valid2) {
-  bam::exp_tokenizer toknzr("AVERAGE(METRICS(trafficin), METRIC(traffic_in, "
+  bam::exp_tokenizer toknzr(
+      "AVERAGE(METRICS(trafficin), METRIC(traffic_in, "
       "Host, \\Service) + 42)");
   ASSERT_EQ(toknzr.next(), "AVERAGE");
   ASSERT_EQ(toknzr.next(), "(");
@@ -69,8 +70,9 @@ TEST(BamExpTokenizerNext, Valid2) {
 // When it is constructed with a valid expression
 // Then next() returns the tokens one after the other
 TEST(BamExpTokenizerNext, Valid3) {
-  bam::exp_tokenizer toknzr("METRIC(\"my 'out\' \\\"METR:C\\\"\", 'Host', "
-    "'Serv\\ice')");
+  bam::exp_tokenizer toknzr(
+      "METRIC(\"my 'out\' \\\"METR:C\\\"\", 'Host', "
+      "'Serv\\ice')");
   ASSERT_EQ(toknzr.next(), "METRIC");
   ASSERT_EQ(toknzr.next(), "(");
   ASSERT_EQ(toknzr.next(), "my 'out' \"METR:C\"");
@@ -86,8 +88,9 @@ TEST(BamExpTokenizerNext, Valid3) {
 // When it is constructed with a valid expression
 // Then next() returns the tokens one after the other
 TEST(BamExpTokenizerNext, NoSpaces1) {
-  bam::exp_tokenizer toknzr("!HOSTSTATUS('MyHost1')!=HOSTSTATUS('MyHost2')||"
-    "HOSTSTATUS(\"MyHost3\")");
+  bam::exp_tokenizer toknzr(
+      "!HOSTSTATUS('MyHost1')!=HOSTSTATUS('MyHost2')||"
+      "HOSTSTATUS(\"MyHost3\")");
   ASSERT_EQ(toknzr.next(), "!");
   ASSERT_EQ(toknzr.next(), "HOSTSTATUS");
   ASSERT_EQ(toknzr.next(), "(");
@@ -110,8 +113,9 @@ TEST(BamExpTokenizerNext, NoSpaces1) {
 // When it is constructed with a valid expression
 // Then next() returns the tokens one after the other
 TEST(BamExpTokenizerNext, NoSpaces2) {
-  bam::exp_tokenizer toknzr("SERVICESTATUS('MyHost1','MyService1')!=OK||"
-    "(42+36==SERVICESTATUS('MyHost2',\"MyService2\"))");
+  bam::exp_tokenizer toknzr(
+      "SERVICESTATUS('MyHost1','MyService1')!=OK||"
+      "(42+36==SERVICESTATUS('MyHost2',\"MyService2\"))");
   ASSERT_EQ(toknzr.next(), "SERVICESTATUS");
   ASSERT_EQ(toknzr.next(), "(");
   ASSERT_EQ(toknzr.next(), "MyHost1");
@@ -140,8 +144,9 @@ TEST(BamExpTokenizerNext, NoSpaces2) {
 // When it is constructed with a valid expression of the old syntax
 // Then next() returns the tokens one after the other
 TEST(BamExpTokenizerNext, OldSyntax1) {
-  bam::exp_tokenizer toknzr("{Host1 Service1} {IS} {OK} AND ({Host2} {NOT} "
-    "{DOWN} OR {Host3} {IS} {UNREACHABLE})");
+  bam::exp_tokenizer toknzr(
+      "{Host1 Service1} {IS} {OK} AND ({Host2} {NOT} "
+      "{DOWN} OR {Host3} {IS} {UNREACHABLE})");
   ASSERT_EQ(toknzr.next(), "SERVICESTATUS");
   ASSERT_EQ(toknzr.next(), "(");
   ASSERT_EQ(toknzr.next(), "Host1");
@@ -170,8 +175,9 @@ TEST(BamExpTokenizerNext, OldSyntax1) {
 }
 
 TEST(BamExpTokenizerNext, OldSyntax2) {
-  bam::exp_tokenizer toknzr("{Host1 Service1} {IS} {OK} AND ({Host2} {NOT} "
-    "{DOWN} XOR {Host3} {IS} {UNREACHABLE})");
+  bam::exp_tokenizer toknzr(
+      "{Host1 Service1} {IS} {OK} AND ({Host2} {NOT} "
+      "{DOWN} XOR {Host3} {IS} {UNREACHABLE})");
   ASSERT_EQ(toknzr.next(), "SERVICESTATUS");
   ASSERT_EQ(toknzr.next(), "(");
   ASSERT_EQ(toknzr.next(), "Host1");
@@ -224,11 +230,12 @@ TEST(BamExpTokenizerNext, Copy) {
 // Then next() will throw when the invalid syntax is parsed
 TEST(BamExpTokenizerNext, UnterminatedSingleQuote) {
   bam::exp_tokenizer toknzr("{'MyHost' 'MyService} {IS} {'OK'}");
-  ASSERT_THROW({
-      for (int i(0); i < 100; ++i)
-        toknzr.next();
-    },
-    exceptions::msg);
+  ASSERT_THROW(
+      {
+        for (int i(0); i < 100; ++i)
+          toknzr.next();
+      },
+      exceptions::msg);
 }
 
 // Given an exp_tokenizer object
@@ -236,11 +243,12 @@ TEST(BamExpTokenizerNext, UnterminatedSingleQuote) {
 // Then next() will throw when the invalid syntax is parsed
 TEST(BamExpTokenizerNext, UnterminatedDoubleQuote) {
   bam::exp_tokenizer toknzr("{\"MyHost\" \"MyService} {IS} {\"OK\"}");
-  ASSERT_THROW({
-      for (int i(0); i < 100; ++i)
-        toknzr.next();
-    },
-    exceptions::msg);
+  ASSERT_THROW(
+      {
+        for (int i(0); i < 100; ++i)
+          toknzr.next();
+      },
+      exceptions::msg);
 }
 
 // Given an exp_tokenizer object
@@ -248,11 +256,12 @@ TEST(BamExpTokenizerNext, UnterminatedDoubleQuote) {
 // Then next() will throw when the invalid syntax is parsed
 TEST(BamExpTokenizerNext, UnterminatedBrace1) {
   bam::exp_tokenizer toknzr("{MyHost Service} {IS} {OK");
-  ASSERT_THROW({
-      for (int i(0); i < 100; ++i)
-        toknzr.next();
-    },
-    exceptions::msg);
+  ASSERT_THROW(
+      {
+        for (int i(0); i < 100; ++i)
+          toknzr.next();
+      },
+      exceptions::msg);
 }
 
 // Given an exp_tokenizer object
@@ -260,11 +269,12 @@ TEST(BamExpTokenizerNext, UnterminatedBrace1) {
 // Then next() will throw when the invalid syntax is parsed
 TEST(BamExpTokenizerNext, UnterminatedBrace2) {
   bam::exp_tokenizer toknzr("{MyHost Service} {IS {OK}");
-  ASSERT_THROW({
-      for (int i(0); i < 100; ++i)
-        toknzr.next();
-    },
-    exceptions::msg);
+  ASSERT_THROW(
+      {
+        for (int i(0); i < 100; ++i)
+          toknzr.next();
+      },
+      exceptions::msg);
 }
 
 // Given an exp_tokenizer object
@@ -273,7 +283,7 @@ TEST(BamExpTokenizerNext, UnterminatedBrace2) {
 TEST(BamExpTokenizerNext, UnterminatedBrace3) {
   bam::exp_tokenizer toknzr("{MyHost Service {IS} {OK}");
   ASSERT_NO_THROW({
-      for (int i(0); i < 100; ++i)
-        toknzr.next();
-    });
+    for (int i(0); i < 100; ++i)
+      toknzr.next();
+  });
 }
