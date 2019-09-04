@@ -186,23 +186,23 @@ set_target_properties("${BAM}" PROPERTIES
     COMPILE_FLAGS "${MYSQL_CFLAGS}")
 target_link_libraries("${BAM}" ${QT_LIBRARIES})
 
-
 # Testing.
 if (WITH_TESTING )
     set(
       TESTS_SOURCES
       ${TESTS_SOURCES}
-      "${TEST_DIR}/exp_parser/get_postfix.cc"
-      "${TEST_DIR}/exp_tokenizer/next.cc"
-      "${TEST_DIR}/exp_builder/exp_builder.cc"
-      "${TEST_DIR}/configuration/applier-boolexp.cc"
-      "${TEST_DIR}/time/check_timeperiod.cc"
+      ${TEST_DIR}/ba/kpi_change_at_recompute.cc
+      ${TEST_DIR}/configuration/applier-boolexp.cc
+      ${TEST_DIR}/exp_builder/exp_builder.cc
+      ${TEST_DIR}/exp_parser/get_postfix.cc
+      ${TEST_DIR}/exp_tokenizer/next.cc
+      ${TEST_DIR}/time/check_timeperiod.cc
       PARENT_SCOPE
     )
     set(
       TESTS_LIBRARIES
       ${TESTS_LIBRARIES}
-      "${BAM}"
+      ${BAM}
       PARENT_SCOPE
     )
 endif (WITH_TESTING)

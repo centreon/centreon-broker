@@ -18,6 +18,7 @@ test-coverage
 ut
 doc/_build
 build
+cmake-build-debug
 core/inc/com/centreon/broker/vars.hh
 core/inc/com/centreon/broker/version.hh
 .idea
