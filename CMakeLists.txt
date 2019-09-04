@@ -100,7 +100,6 @@ list(APPEND CMAKE_MODULE_PATH  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(Qt4 4.7.4 COMPONENTS QtCore REQUIRED)
 add_definitions("-DASIO_STANDALONE")
 
-
 # Find zlib.
 find_package(ZLIB REQUIRED)
 
@@ -624,7 +623,7 @@ if (COMPILER_HAS_FPIC)
   set_property(TARGET "rokerbase"
     PROPERTY COMPILE_FLAGS "${ROKER_CXXFLAGS}")
 endif ()
-target_link_libraries("rokerbase" json11 ${ZLIB_LIBRARIES} ${QT_LIBRARIES} ${MYSQL_LIBS} pthread dl)
+target_link_libraries("rokerbase" json11 ${ZLIB_LIBRARIES} ${MYSQL_LIBS} pthread dl)
 add_library("roker" STATIC
   "${SRC_DIR}/config/applier/init.cc"
   "${SRC_DIR}/config/applier/logger.cc")

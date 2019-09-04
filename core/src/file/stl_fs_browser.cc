@@ -48,8 +48,14 @@ fs_browser::entry_list stl_fs_browser::read_directory(
 
   fs_browser::entry_list retval;
   for (std::list<std::string>::iterator it(entries.begin()), end(entries.end());
-       it != end; ++it)
-    retval.push_back(*it);
+       it != end; ++it) {
+    std::size_t pos;
+    pos = it->rfind('/');
+    if (pos == std::string::npos)
+      retval.push_back(*it);
+    else
+      retval.push_back(it->substr(pos));
+  }
   return (retval);
 }
 
