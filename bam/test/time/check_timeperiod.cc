@@ -399,14 +399,13 @@ TEST_F(BamTime, Exclusion) {
 
 TEST_F(BamTime, WeekDay) {
   ASSERT_TRUE(checkPeriod(CENTREON_BROKER_BAM_TEST_PATH
-                           "/time/cfg/week_day/after_period.conf"));
+                          "/time/cfg/week_day/after_period.conf"));
   ASSERT_TRUE(checkPeriod(CENTREON_BROKER_BAM_TEST_PATH
-                           "/time/cfg/week_day/before_period.conf"));
+                          "/time/cfg/week_day/before_period.conf"));
   ASSERT_TRUE(checkPeriod(CENTREON_BROKER_BAM_TEST_PATH
-                           "/time/cfg/week_day/into_period.conf"));
-  ASSERT_TRUE(
-      checkPeriod(CENTREON_BROKER_BAM_TEST_PATH
-                  "/time/cfg/week_day/into_period_for_next_week.conf"));
+                          "/time/cfg/week_day/into_period.conf"));
+  ASSERT_TRUE(checkPeriod(CENTREON_BROKER_BAM_TEST_PATH
+                          "/time/cfg/week_day/into_period_for_next_week.conf"));
   ASSERT_TRUE(
       checkPeriod(CENTREON_BROKER_BAM_TEST_PATH
                   "/time/cfg/week_day/into_period_with_exclude_after.conf"));
