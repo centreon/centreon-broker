@@ -17,53 +17,50 @@
 */
 
 #ifndef CCB_WATCHDOG_INSTANCE_CONFIGURATION_HH
-#  define CCB_WATCHDOG_INSTANCE_CONFIGURATION_HH
+#define CCB_WATCHDOG_INSTANCE_CONFIGURATION_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         watchdog {
-  /**
-   *  @class instance_configuration instance_configuration.hh "com/centreon/broker/watchdog/instance_configuration.hh"
-   *  @brief Configuration of a centreon broker instance.
-   */
-  class           instance_configuration {
-  public:
-                  instance_configuration();
-                  instance_configuration(std::string const& name,
-                    std::string const& config_file,
-                    bool should_run,
-                    bool should_reload,
-                    unsigned int seconds_per_tentative);
-                  ~instance_configuration();
-                  instance_configuration(
-                    instance_configuration const& other);
-    instance_configuration&
-                  operator=(instance_configuration const& other);
-    bool          operator==(instance_configuration const& other) const;
-    bool          operator!=(instance_configuration const& other) const;
+namespace watchdog {
+/**
+ *  @class instance_configuration instance_configuration.hh
+ * "com/centreon/broker/watchdog/instance_configuration.hh"
+ *  @brief Configuration of a centreon broker instance.
+ */
+class instance_configuration {
+ public:
+  instance_configuration();
+  instance_configuration(std::string const& name,
+                         std::string const& config_file,
+                         bool should_run,
+                         bool should_reload,
+                         unsigned int seconds_per_tentative);
+  ~instance_configuration();
+  instance_configuration(instance_configuration const& other);
+  instance_configuration& operator=(instance_configuration const& other);
+  bool operator==(instance_configuration const& other) const;
+  bool operator!=(instance_configuration const& other) const;
 
-    bool          is_empty() const throw();
+  bool is_empty() const throw();
 
-    std::string const&
-                  get_name() const throw();
-    std::string const&
-                  get_config_file() const throw();
-    bool          should_run() const throw();
-    bool          should_reload() const throw();
-    unsigned int  seconds_per_tentative() const throw();
+  std::string const& get_name() const throw();
+  std::string const& get_config_file() const throw();
+  bool should_run() const throw();
+  bool should_reload() const throw();
+  unsigned int seconds_per_tentative() const throw();
 
-  private:
-    std::string   _name;
-    std::string   _config_file;
-    bool          _run;
-    bool          _reload;
-    unsigned int  _seconds_per_tentative;
-  };
-}
+ private:
+  std::string _name;
+  std::string _config_file;
+  bool _run;
+  bool _reload;
+  unsigned int _seconds_per_tentative;
+};
+}  // namespace watchdog
 
 CCB_END()
 
-#endif // !CCB_WATCHDOG_INSTANCE_CONFIGURATION_HH
+#endif  // !CCB_WATCHDOG_INSTANCE_CONFIGURATION_HH
