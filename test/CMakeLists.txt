@@ -58,6 +58,11 @@ include_directories(${PROJECT_SOURCE_DIR}/neb/inc)
 include_directories(${PROJECT_SOURCE_DIR}/rrd/inc)
 include_directories(${PROJECT_SOURCE_DIR}/simu/inc)
 
+# needed by module.cc
+add_definitions(-DCENTREON_BROKER_TEST_MODULE_PATH="${CMAKE_BINARY_DIR}/test/")
+
+add_library(null_module SHARED ${TEST_DIR}/modules/null_module.cc)
+add_library(bad_version_module SHARED ${TEST_DIR}/modules/bad_version_module.cc)
 # Unit test executable.
 add_executable(ut
   # Core sources.
@@ -87,18 +92,20 @@ add_executable(ut
   ${TESTS_DIR}/file/test_file.cc
   ${TESTS_DIR}/file/test_fs_browser.hh
   ${TESTS_DIR}/file/test_fs_browser.cc
-  ${TESTS_DIR}/multiplexing/engine/hook.cc
-  ${TESTS_DIR}/multiplexing/engine/unhook.cc
-  ${TESTS_DIR}/multiplexing/engine/hooker.cc
-  ${TESTS_DIR}/multiplexing/engine/start_stop.cc
-  ${TESTS_DIR}/multiplexing/muxer/read.cc
-  ${TESTS_DIR}/multiplexing/publisher/read.cc
-  ${TESTS_DIR}/multiplexing/publisher/write.cc
-  ${TESTS_DIR}/multiplexing/subscriber/ctor_default.cc
   ${TESTS_DIR}/misc/exec.cc
   ${TESTS_DIR}/misc/filesystem.cc
   ${TESTS_DIR}/misc/misc.cc
   ${TESTS_DIR}/misc/string.cc
+  ${TESTS_DIR}/misc/stringifier.cc
+  ${TESTS_DIR}/modules/module.cc
+  ${TESTS_DIR}/multiplexing/engine/hook.cc
+  ${TESTS_DIR}/multiplexing/engine/hooker.cc
+  ${TESTS_DIR}/multiplexing/engine/start_stop.cc
+  ${TESTS_DIR}/multiplexing/engine/unhook.cc
+  ${TESTS_DIR}/multiplexing/muxer/read.cc
+  ${TESTS_DIR}/multiplexing/publisher/read.cc
+  ${TESTS_DIR}/multiplexing/publisher/write.cc
+  ${TESTS_DIR}/multiplexing/subscriber/ctor_default.cc
   ${TESTS_DIR}/mysql/mysql.cc
   ${TESTS_DIR}/processing/acceptor.cc
   ${TESTS_DIR}/processing/temporary_endpoint.cc
@@ -118,7 +125,6 @@ set_target_properties("ut" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 add_dependencies(ut googletest)
 target_link_libraries(ut gtest ${TESTS_LIBRARIES} ${NEB} rokerbase roker
   pthread gcov)
-
 add_test(NAME tests COMMAND ut)
 
 if (WITH_COVERAGE)
