@@ -142,7 +142,7 @@ void feeder::run() {
  *
  *  @return  The state of the feeder.
  */
-std::string feeder::_get_state() {
+const char* feeder::_get_state() const {
   char const* ret;
   if (_client_mutex.try_lock_shared_for(300)) {
     if (!_client)

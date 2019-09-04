@@ -99,11 +99,9 @@ void acceptor::run() {
       logging::info(logging::medium)
           << "acceptor: endpoint '" << _name << "' will wait "
           << _retry_interval << "s before attempting to accept a new client";
-      time_t limit(time(NULL) + _retry_interval);
-      while (!should_exit() && (time(NULL) < limit)) {
-        // FIXME DBR: what to do without Qt?
-        // QCoreApplication::processEvents();
-        ::sleep(1);
+      time_t limit{time(nullptr) + _retry_interval};
+      while (!should_exit() && time(nullptr) < limit) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
       }
     }
 
@@ -168,7 +166,7 @@ void acceptor::set_write_filters(std::unordered_set<uint32_t> const& filters) {
  *
  *  @return  The state of the acceptor.
  */
-std::string acceptor::_get_state() {
+char const* acceptor::_get_state() const {
   if (_listening)
     return "listening";
   else

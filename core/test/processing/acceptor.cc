@@ -65,7 +65,11 @@ TEST_F(ProcessingTest, StartWithFilterStop) {
   std::unordered_set<uint32_t> filters;
   filters.insert(io::raw::static_type());
   _acceptor->set_read_filters(filters);
+  time_t now{time(nullptr)};
+  _acceptor->set_retry_interval(2);
   _acceptor->start();
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  std::this_thread::sleep_for(std::chrono::milliseconds(1500));
   ASSERT_NO_THROW(_acceptor->exit());
+  time_t now1{time(nullptr)};
+  ASSERT_TRUE(now1 >= now + 2);
 }

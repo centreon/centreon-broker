@@ -17,60 +17,54 @@
 */
 
 #ifndef CCB_WATCHDOG_INSTANCE_HH
-#  define CCB_WATCHDOG_INSTANCE_HH
+#define CCB_WATCHDOG_INSTANCE_HH
 
-#  include <QObject>
-#  include <QProcess>
-#  include <string>
-#  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/watchdog/instance_configuration.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <QObject>
+#include <QProcess>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
+#include "com/centreon/broker/watchdog/instance_configuration.hh"
 
-namespace               com {
-  namespace             centreon {
-    namespace           broker {
-      namespace         watchdog {
-      class application;
+namespace com {
+namespace centreon {
+namespace broker {
+namespace watchdog {
+class application;
 
-  /**
-   *  @class instance instance.hh "com/centreon/broker/watchdog/instance.hh"
-   *  @brief This represents the process associated with an instance of broker.
-   */
-        class           instance : public QProcess {
-          Q_OBJECT
-        public:
-                        instance(
-                          instance_configuration const& config,
-                          application& parent);
-                        ~instance();
+/**
+ *  @class instance instance.hh "com/centreon/broker/watchdog/instance.hh"
+ *  @brief This represents the process associated with an instance of broker.
+ */
+class instance : public QProcess {
+  Q_OBJECT
+ public:
+  instance(instance_configuration const& config, application& parent);
+  ~instance();
 
-          void          merge_configuration(
-                          instance_configuration const& new_config);
+  void merge_configuration(instance_configuration const& new_config);
 
-        public slots:
-          void          start_instance();
-          void          update_instance();
-          void          stop_instance();
+ public slots:
+  void start_instance();
+  void update_instance();
+  void stop_instance();
 
-        public slots:
-          void          on_exit();
+ public slots:
+  void on_exit();
 
-        private:
-                        instance(instance const&);
-          instance& operator=(
-                        instance const&);
+ private:
+  instance(instance const&);
+  instance& operator=(instance const&);
 
-          instance_configuration
-                        _config;
-          bool          _started;
-          timestamp     _since_last_start;
+  instance_configuration _config;
+  bool _started;
+  timestamp _since_last_start;
 
-          static const unsigned int
-                        _exit_timeout = 10000;
-        };
-      }
-    }
-  }
-}
+  static const unsigned int _exit_timeout = 10000;
+};
+}  // namespace watchdog
+}  // namespace broker
+}  // namespace centreon
+}  // namespace com
 
-#endif // !CCB_WATCHDOG_INSTANCE_HH
+#endif  // !CCB_WATCHDOG_INSTANCE_HH

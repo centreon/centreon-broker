@@ -17,20 +17,19 @@
 */
 
 #include <unistd.h>
+#include <QCoreApplication>
 #include <csignal>
 #include <cstring>
 #include <iostream>
-#include <QCoreApplication>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/watchdog/application.hh"
 #include "com/centreon/broker/watchdog/configuration_parser.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 
 #include <QMetaObject>
 
 static com::centreon::broker::watchdog::application* p_app = NULL;
 
-static char const* help_msg =
-  "USAGE: cbwd configuration_file";
+static char const* help_msg = "USAGE: cbwd configuration_file";
 
 /**
  *  Print the help.
@@ -50,21 +49,16 @@ static void print_help() {
  */
 static void signal_handler(int sig) {
   if (!p_app)
-    return ;
+    return;
 
   if (sig == SIGTERM || sig == SIGINT) {
     char a = 1;
-    ::write(
-      com::centreon::broker::watchdog::application::sigterm_fd[0],
-      &a,
-      sizeof(a));
-  }
-  else if (sig == SIGHUP) {
+    ::write(com::centreon::broker::watchdog::application::sigterm_fd[0], &a,
+            sizeof(a));
+  } else if (sig == SIGHUP) {
     char a = 1;
-    ::write(
-      com::centreon::broker::watchdog::application::sighup_fd[0],
-      &a,
-      sizeof(a));
+    ::write(com::centreon::broker::watchdog::application::sighup_fd[0], &a,
+            sizeof(a));
   }
 }
 
@@ -77,11 +71,11 @@ static void set_signal_handlers() {
   ::sigemptyset(&sig.sa_mask);
   ::sigfillset(&sig.sa_mask);
   sig.sa_flags = 0;
-  if (::sigaction(SIGTERM, &sig, NULL) < 0
-      || ::sigaction(SIGINT, &sig, NULL) < 0
-      || ::sigaction(SIGHUP, &sig, NULL) < 0)
-    throw (com::centreon::broker::exceptions::msg()
-            << "can't set the signal handlers");
+  if (::sigaction(SIGTERM, &sig, NULL) < 0 ||
+      ::sigaction(SIGINT, &sig, NULL) < 0 ||
+      ::sigaction(SIGHUP, &sig, NULL) < 0)
+    throw(com::centreon::broker::exceptions::msg()
+          << "can't set the signal handlers");
 }
 
 /**
@@ -92,7 +86,7 @@ static void set_signal_handlers() {
  *
  *  @return  0 on success.
  */
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   // Create QApplication.
   QCoreApplication a(argc, argv);
 
@@ -109,8 +103,7 @@ int main(int argc, char **argv) {
     p_app = &app;
     set_signal_handlers();
     app.exec();
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << "watchdog: " << e.what() << std::endl;
     return (1);
   }

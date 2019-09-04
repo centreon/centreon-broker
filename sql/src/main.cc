@@ -27,46 +27,41 @@ using namespace com::centreon::broker;
 static unsigned int instances(0);
 
 extern "C" {
-  /**
-   *  Module version symbol. Used to check for version mismatch.
-   */
-  char const* broker_module_version = CENTREON_BROKER_VERSION;
+/**
+ *  Module version symbol. Used to check for version mismatch.
+ */
+char const* broker_module_version = CENTREON_BROKER_VERSION;
 
-  /**
-   *  Module deinitialization routine.
-   */
-  void broker_module_deinit() {
-    // Decrement instance number.
-    if (!--instances) {
-      // Deregister SQL layer.
-      io::protocols::instance().unreg("SQL");
+/**
+ *  Module deinitialization routine.
+ */
+void broker_module_deinit() {
+  // Decrement instance number.
+  if (!--instances) {
+    // Deregister SQL layer.
+    io::protocols::instance().unreg("SQL");
+  }
+  return;
+}
 
-    }
-    return ;
+/**
+ *  Module initialization routine.
+ *
+ *  @param[in] arg Configuration object.
+ */
+void broker_module_init(void const* arg) {
+  (void)arg;
+
+  // Increment instance number.
+  if (!instances++) {
+    // SQL module.
+    logging::info(logging::high)
+        << "SQL: module for Centreon Broker " << CENTREON_BROKER_VERSION;
+
+    // Register SQL layer.
+    io::protocols::instance().reg("SQL", sql::factory(), 1, 7);
   }
 
-  /**
-   *  Module initialization routine.
-   *
-   *  @param[in] arg Configuration object.
-   */
-  void broker_module_init(void const* arg) {
-    (void)arg;
-
-    // Increment instance number.
-    if (!instances++) {
-      // SQL module.
-      logging::info(logging::high)
-        << "SQL: module for Centreon Broker "
-        << CENTREON_BROKER_VERSION;
-
-      // Register SQL layer.
-      io::protocols::instance().reg("SQL",
-        sql::factory(),
-        1,
-        7);
-    }
-
-    return ;
-  }
+  return;
+}
 }

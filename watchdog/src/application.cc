@@ -16,14 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
-#include <unistd.h>
+#include "com/centreon/broker/watchdog/application.hh"
 #include <sys/socket.h>
+#include <unistd.h>
 #include <set>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/watchdog/configuration_parser.hh"
-#include "com/centreon/broker/watchdog/application.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#include "com/centreon/broker/watchdog/configuration_parser.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::watchdog;
@@ -37,14 +37,15 @@ int application::sigterm_fd[2];
  *  @param[in] config_file  The config file.
  */
 application::application(std::string const& config_file)
-  : _config_path(config_file) {
+    : _config_path(config_file) {
   // Init the socketpairs used for signal handling.
-  if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sighup_fd) != 0
-      || ::socketpair(AF_UNIX, SOCK_STREAM, 0, sigterm_fd) != 0)
-    throw (exceptions::msg() << "watchdog: could not init the socket pairs");
+  if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sighup_fd) != 0 ||
+      ::socketpair(AF_UNIX, SOCK_STREAM, 0, sigterm_fd) != 0)
+    throw(exceptions::msg() << "watchdog: could not init the socket pairs");
   _sighup.reset(new QSocketNotifier(sighup_fd[1], QSocketNotifier::Read, this));
   connect(_sighup.get(), SIGNAL(activated(int)), this, SLOT(handle_sighup()));
-  _sigterm.reset(new QSocketNotifier(sigterm_fd[1], QSocketNotifier::Read, this));
+  _sigterm.reset(
+      new QSocketNotifier(sigterm_fd[1], QSocketNotifier::Read, this));
   connect(_sigterm.get(), SIGNAL(activated(int)), this, SLOT(handle_sigterm()));
 
   _init();
@@ -54,11 +55,9 @@ application::application(std::string const& config_file)
  *  Destructor.
  */
 application::~application() {
-  for (std::map<std::string, instance*>::iterator
-         it(_instances.begin()),
-         end(_instances.end());
-       it != end;
-       ++it)
+  for (std::map<std::string, instance*>::iterator it(_instances.begin()),
+       end(_instances.end());
+       it != end; ++it)
     delete it->second;
   logging::manager::unload();
 }
@@ -75,10 +74,9 @@ void application::handle_sighup() {
   try {
     configuration_parser parser;
     config = parser.parse(_config_path);
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     logging::error(logging::medium)
-      << "watchdog: could not parse the new configuration: " << e.what();
+        << "watchdog: could not parse the new configuration: " << e.what();
     _sighup->setEnabled(true);
     return;
   }
@@ -96,7 +94,7 @@ void application::handle_sigterm() {
   ::read(sigterm_fd[1], &tmp, sizeof(tmp));
   _quit();
   _sigterm->setEnabled(true);
-  return ;
+  return;
 }
 
 /**
@@ -134,39 +132,33 @@ void application::_apply_new_configuration(configuration const& config) {
   // Old configs that are present in the new should be updated
   // or deleted/recreated.
   for (configuration::instance_map::const_iterator
-         it(_config.get_instances_configuration().begin()),
-         end(_config.get_instances_configuration().end());
-       it != end;
-       ++it) {
+           it(_config.get_instances_configuration().begin()),
+       end(_config.get_instances_configuration().end());
+       it != end; ++it) {
     instance_configuration new_config(
-      config.get_instance_configuration(it->first));
+        config.get_instance_configuration(it->first));
     if (new_config.is_empty())
       to_delete.insert(it->first);
     else if (new_config != it->second) {
       to_delete.insert(it->first);
       to_create.insert(it->first);
-    }
-    else
+    } else
       to_update.insert(it->first);
   }
 
   // New configs that aren't present in the old should be created.
   for (configuration::instance_map::const_iterator
-         it(config.get_instances_configuration().begin()),
-         end(config.get_instances_configuration().end());
-       it != end;
-       ++it)
+           it(config.get_instances_configuration().begin()),
+       end(config.get_instances_configuration().end());
+       it != end; ++it)
     if (!_config.instance_exists(it->first))
       to_create.insert(it->first);
 
   // Delete old processes.
-  for (std::set<std::string>::const_iterator
-         it(to_delete.begin()),
-         end(to_delete.end());
-       it != end;
-       ++it) {
-    std::map<std::string, instance*>::iterator
-      found(_instances.find(*it));
+  for (std::set<std::string>::const_iterator it(to_delete.begin()),
+       end(to_delete.end());
+       it != end; ++it) {
+    std::map<std::string, instance*>::iterator found(_instances.find(*it));
     if (found != _instances.end()) {
       delete found->second;
       _instances.erase(found);
@@ -174,28 +166,23 @@ void application::_apply_new_configuration(configuration const& config) {
   }
 
   // Update processes.
-  for (std::set<std::string>::const_iterator
-         it(to_update.begin()),
-         end(to_update.end());
-       it != end;
-       ++it) {
-    std::map<std::string, instance*>::iterator
-      found(_instances.find(*it));
+  for (std::set<std::string>::const_iterator it(to_update.begin()),
+       end(to_update.end());
+       it != end; ++it) {
+    std::map<std::string, instance*>::iterator found(_instances.find(*it));
     if (found != _instances.end()) {
       found->second->merge_configuration(
-        config.get_instance_configuration(*it));
+          config.get_instance_configuration(*it));
       found->second->update_instance();
     }
   }
 
   // Start new processes.
-  for (std::set<std::string>::const_iterator
-         it(to_create.begin()),
-         end(to_create.end());
-       it != end;
-       ++it) {
+  for (std::set<std::string>::const_iterator it(to_create.begin()),
+       end(to_create.end());
+       it != end; ++it) {
     std::unique_ptr<instance> ins(
-      new instance(config.get_instance_configuration(*it), *this));
+        new instance(config.get_instance_configuration(*it), *this));
     _instances.insert(std::make_pair(*it, ins.release()));
   }
 
@@ -207,16 +194,13 @@ void application::_apply_new_configuration(configuration const& config) {
  *  Quit the application and subinstances.
  */
 void application::_quit() {
-  logging::info(logging::medium)
-    << "watchdog: initiating shutdown sequence";
-  for (std::map<std::string, instance*>::iterator
-         it(_instances.begin()),
-         end(_instances.end());
-       it != end;
-       ++it)
+  logging::info(logging::medium) << "watchdog: initiating shutdown sequence";
+  for (std::map<std::string, instance*>::iterator it(_instances.begin()),
+       end(_instances.end());
+       it != end; ++it)
     it->second->stop_instance();
   logging::info(logging::medium)
-    << "watchdog: shutdown sequence completed, exiting watchdog";
+      << "watchdog: shutdown sequence completed, exiting watchdog";
   exit();
-  return ;
+  return;
 }

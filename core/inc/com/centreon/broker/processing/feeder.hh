@@ -51,7 +51,7 @@ class feeder : public bthread {
 
  protected:
   // From stat_visitable
-  virtual std::string _get_state();
+  char const* _get_state() const override;
   virtual uint32_t _get_queued_events();
   std::unordered_set<uint32_t> const& _get_read_filters() const override;
   std::unordered_set<uint32_t> const& _get_write_filters() const override;
@@ -64,7 +64,7 @@ class feeder : public bthread {
   std::shared_ptr<io::stream> _client;
   multiplexing::subscriber _subscriber;
   // This mutex is used for the stat thread.
-  misc::shared_mutex _client_mutex;
+  mutable misc::shared_mutex _client_mutex;
 };
 }  // namespace processing
 
