@@ -72,5 +72,4 @@ TEST_F(ProcessingTest, StartWithFilterStop) {
   ASSERT_NO_THROW(_acceptor->exit());
   time_t now1{time(nullptr)};
   ASSERT_TRUE(now1 >= now + 2);
-  ASSERT_EQ(_acceptor->dump_filters(), "toto");
 }
