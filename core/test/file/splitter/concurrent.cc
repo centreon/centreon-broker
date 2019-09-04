@@ -16,15 +16,15 @@
 ** For more information : contact@centreon.com
 */
 
-#include <thread>
-#include <mutex>
-#include <cstdlib>
 #include <gtest/gtest.h>
+#include <cstdlib>
+#include <mutex>
+#include <thread>
 #include "com/centreon/broker/exceptions/shutdown.hh"
-#include "com/centreon/broker/file/splitter.hh"
-#include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/file/cfile.hh"
+#include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/file/stl_fs_browser.hh"
+#include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/misc/filesystem.hh"
 
@@ -44,9 +44,7 @@ class read_thread {
     _thread = std::thread(&read_thread::callback, this);
   }
 
-  void join() {
-    _thread.join();
-  }
+  void join() { _thread.join(); }
   std::vector<uint8_t> get_result() { return _buf; }
 
   void callback() {
@@ -77,9 +75,7 @@ class write_thread {
     _thread = std::thread(&write_thread::callback, this);
   }
 
-  void join() {
-    _thread.join();
-  }
+  void join() { _thread.join(); }
 
   void callback() {
     char* buf = new char[_size];
@@ -104,7 +100,6 @@ class write_thread {
 };
 
 class FileSplitterConcurrent : public ::testing::Test {
-
  public:
   void SetUp() {
     logging::manager::load();
@@ -115,32 +110,25 @@ class FileSplitterConcurrent : public ::testing::Test {
     _fs_browser.reset(new stl_fs_browser());
 
     _file.reset(new file::splitter(
-                            _path,
-                            file::fs_file::open_read_write_truncate,
-                            _file_factory.release(),
-                            _fs_browser.release(),
-                            10000,
-                            true));
+        _path, file::fs_file::open_read_write_truncate, _file_factory.release(),
+        _fs_browser.release(), 10000, true));
   }
-  void TearDown() {
-    logging::manager::unload();
-  }
+  void TearDown() { logging::manager::unload(); }
 
  protected:
   std::unique_ptr<file::splitter> _file;
-  std::unique_ptr<cfile_factory>  _file_factory;
-  std::unique_ptr<stl_fs_browser>  _fs_browser;
-  std::string                   _path;
+  std::unique_ptr<cfile_factory> _file_factory;
+  std::unique_ptr<stl_fs_browser> _fs_browser;
+  std::string _path;
 
   void _remove_files() {
-    std::list<std::string> entries = misc::filesystem::dir_content(RETENTION_DIR,RETENTION_FILE "*");
+    std::list<std::string> entries =
+        misc::filesystem::dir_content(RETENTION_DIR, RETENTION_FILE "*");
     for (std::list<std::string>::iterator it{entries.begin()},
-           end{entries.end()};
-         it != end;
-         ++it)
+         end{entries.end()};
+         it != end; ++it)
       std::remove(it->c_str());
   }
-
 };
 
 // Given a splitter object
@@ -187,6 +175,7 @@ TEST_F(FileSplitterConcurrent, MultipleFilesCreated) {
 
   // Then
   _file->remove_all_files();
-  std::list<std::string> entries = misc::filesystem::dir_content(RETENTION_DIR,RETENTION_FILE);
+  std::list<std::string> entries =
+      misc::filesystem::dir_content(RETENTION_DIR, RETENTION_FILE);
   ASSERT_EQ(entries.size(), 0);
 }
