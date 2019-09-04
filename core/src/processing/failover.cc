@@ -92,7 +92,7 @@ time_t failover::get_buffering_timeout() const throw() {
  *  @return True if the thread is initializable. That is it is read()able.
  */
 bool failover::get_initialized() const throw() {
-  return (_initialized);
+  return _initialized;
 }
 
 /**
@@ -101,7 +101,7 @@ bool failover::get_initialized() const throw() {
  *  @return Failover thread retry interval.
  */
 time_t failover::get_retry_interval() const throw() {
-  return (_retry_interval);
+  return _retry_interval;
 }
 
 /**
@@ -444,7 +444,7 @@ bool failover::wait(unsigned long time) {
   // Otherwise we're not finished yet.
   else
     finished = false;
-  return (finished);
+  return finished;
 }
 
 /**
@@ -470,8 +470,8 @@ std::string failover::_get_state() {
  *
  *  @return  The number of queued events.
  */
-unsigned int failover::_get_queued_events() {
-  return (_subscriber->get_muxer().get_event_queue_size());
+uint32_t failover::_get_queued_events() {
+  return _subscriber->get_muxer().get_event_queue_size();
 }
 
 /**
@@ -479,8 +479,8 @@ unsigned int failover::_get_queued_events() {
  *
  *  @return  The read filters used by the failover.
  */
-uset<unsigned int> failover::_get_read_filters() {
-  return (_subscriber->get_muxer().get_read_filters());
+std::unordered_set<uint32_t> const& failover::_get_read_filters() const {
+  return _subscriber->get_muxer().get_read_filters();
 }
 
 /**
@@ -488,8 +488,8 @@ uset<unsigned int> failover::_get_read_filters() {
  *
  *  @return  The write filters used by the failover.
  */
-uset<unsigned int> failover::_get_write_filters() {
-  return (_subscriber->get_muxer().get_write_filters());
+std::unordered_set<uint32_t> const& failover::_get_write_filters() const {
+  return _subscriber->get_muxer().get_write_filters();
 }
 
 /**

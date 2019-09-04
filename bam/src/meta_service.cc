@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <ctime>
 #include <cmath>
+#include <ctime>
 #include <sstream>
 #include "com/centreon/broker/bam/meta_service.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
@@ -32,15 +32,15 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 meta_service::meta_service()
-  : _computation(meta_service::average),
-    _id(0),
-    _host_id(0),
-    _service_id(0),
-    _last_state(-1),
-    _level_critical(0.0),
-    _level_warning(0.0),
-    _recompute_count(0),
-    _value(NAN) {}
+    : _computation(meta_service::average),
+      _id(0),
+      _host_id(0),
+      _service_id(0),
+      _last_state(-1),
+      _level_critical(0.0),
+      _level_warning(0.0),
+      _recompute_count(0),
+      _value(NAN) {}
 
 /**
  *  Copy constructor.
@@ -48,7 +48,7 @@ meta_service::meta_service()
  *  @param[in] other  Object to copy.
  */
 meta_service::meta_service(meta_service const& other)
-  : computable(other), metric_listener(other) {
+    : computable(other), metric_listener(other) {
   _internal_copy(other);
 }
 
@@ -81,7 +81,6 @@ meta_service& meta_service::operator=(meta_service const& other) {
 void meta_service::add_metric(unsigned int metric_id) {
   _metrics[metric_id] = 0.0;
   _recompute_count = _recompute_limit;
-  return ;
 }
 
 /**
@@ -92,9 +91,7 @@ void meta_service::add_metric(unsigned int metric_id) {
  *
  *  @return              True.
  */
-bool meta_service::child_has_update(
-                     computable* child,
-                     io::stream* visitor) {
+bool meta_service::child_has_update(computable* child, io::stream* visitor) {
   (void)child;
   (void)visitor;
   return true;
@@ -145,8 +142,7 @@ std::string meta_service::get_output() const {
  */
 std::string meta_service::get_perfdata() const {
   std::ostringstream oss;
-  oss << "g[rta]=" << _value << ";" << _level_warning << ";"
-      << _level_critical;
+  oss << "g[rta]=" << _value << ";" << _level_warning << ";" << _level_critical;
   return (oss.str());
 }
 
@@ -158,11 +154,11 @@ std::string meta_service::get_perfdata() const {
 short meta_service::get_state() const {
   short state;
   bool less_than(_level_warning < _level_critical);
-  if ((less_than && (_value >= _level_critical))
-      || (!less_than && (_value <= _level_critical)))
+  if ((less_than && (_value >= _level_critical)) ||
+      (!less_than && (_value <= _level_critical)))
     state = 2;
-  else if ((less_than && (_value >= _level_warning))
-           || (!less_than && (_value <= _level_warning)))
+  else if ((less_than && (_value >= _level_warning)) ||
+           (!less_than && (_value <= _level_warning)))
     state = 1;
   else if (std::isnan(_value))
     state = 3;
@@ -177,13 +173,12 @@ short meta_service::get_state() const {
  *  @param[in]  m        Metric update.
  *  @param[out] visitor  Visitor that will receive meta-service status.
  */
-void meta_service::metric_update(
-                     std::shared_ptr<storage::metric> const& m,
-                     io::stream* visitor) {
+void meta_service::metric_update(std::shared_ptr<storage::metric> const& m,
+                                 io::stream* visitor) {
   if (m) {
     bool state_has_changed = false;
-    umap<unsigned int, double>::iterator
-      it(_metrics.find(m->metric_id));
+    std::unordered_map<unsigned int, double>::iterator it(
+        _metrics.find(m->metric_id));
     if (it != _metrics.end()) {
       if (it->second != m->value) {
         // Backup old value.
@@ -203,7 +198,6 @@ void meta_service::metric_update(
       _send_service_status(visitor, state_has_changed);
     }
   }
-  return ;
 }
 
 /**
@@ -215,9 +209,9 @@ void meta_service::recompute() {
     if (_metrics.empty())
       _value = NAN;
     else {
-      umap<unsigned int, double>::const_iterator
-        it(_metrics.begin()),
-        end(_metrics.end());
+      std::unordered_map<unsigned int, double>::const_iterator it(
+          _metrics.begin()),
+          end(_metrics.end());
       _value = it->second;
       while (++it != end)
         if (it->second < _value)
@@ -229,9 +223,9 @@ void meta_service::recompute() {
     if (_metrics.empty())
       _value = NAN;
     else {
-      umap<unsigned int, double>::const_iterator
-        it(_metrics.begin()),
-        end(_metrics.end());
+      std::unordered_map<unsigned int, double>::const_iterator it(
+          _metrics.begin()),
+          end(_metrics.end());
       _value = it->second;
       while (++it != end)
         if (it->second > _value)
@@ -241,17 +235,15 @@ void meta_service::recompute() {
   // SUM/AVERAGE.
   else {
     _value = 0.0;
-    for (umap<unsigned int, double>::const_iterator
-           it(_metrics.begin()),
-           end(_metrics.end());
-         it != end;
-         ++it)
+    for (std::unordered_map<unsigned int, double>::const_iterator
+             it(_metrics.begin()),
+         end(_metrics.end());
+         it != end; ++it)
       _value += it->second;
     if (_computation != sum)
       _value /= _metrics.size();
   }
   _recompute_count = 0;
-  return ;
 }
 
 /**
@@ -262,7 +254,6 @@ void meta_service::recompute() {
 void meta_service::remove_metric(unsigned int metric_id) {
   _metrics.erase(metric_id);
   _recompute_count = _recompute_limit;
-  return ;
 }
 
 /**
@@ -270,11 +261,9 @@ void meta_service::remove_metric(unsigned int metric_id) {
  *
  *  @param[in] type  Computation method.
  */
-void meta_service::set_computation(
-                     meta_service::computation_type type) {
+void meta_service::set_computation(meta_service::computation_type type) {
   _computation = type;
   _recompute_count = _recompute_limit;
-  return ;
 }
 
 /**
@@ -284,7 +273,6 @@ void meta_service::set_computation(
  */
 void meta_service::set_id(unsigned int id) {
   _id = id;
-  return ;
 }
 
 /**
@@ -294,7 +282,6 @@ void meta_service::set_id(unsigned int id) {
  */
 void meta_service::set_host_id(unsigned int host_id) {
   _host_id = host_id;
-  return ;
 }
 
 /**
@@ -304,7 +291,6 @@ void meta_service::set_host_id(unsigned int host_id) {
  */
 void meta_service::set_service_id(unsigned int service_id) {
   _service_id = service_id;
-  return ;
 }
 
 /**
@@ -314,7 +300,6 @@ void meta_service::set_service_id(unsigned int service_id) {
  */
 void meta_service::set_level_critical(double level) {
   _level_critical = level;
-  return ;
 }
 
 /**
@@ -324,7 +309,6 @@ void meta_service::set_level_critical(double level) {
  */
 void meta_service::set_level_warning(double level) {
   _level_warning = level;
-  return ;
 }
 
 /**
@@ -345,16 +329,14 @@ void meta_service::visit(io::stream* visitor, bool& changed_state) {
 
     // Send meta-service status.
     {
-      std::shared_ptr<meta_service_status>
-        status(new meta_service_status);
+      std::shared_ptr<meta_service_status> status(new meta_service_status);
       status->meta_service_id = _id;
       status->value = _value;
       status->state_changed = changed_state;
       _last_state = new_state;
       logging::debug(logging::low)
-        << "BAM: generating status of meta-service "
-        << status->meta_service_id << " (value " << status->value
-        << ")";
+          << "BAM: generating status of meta-service "
+          << status->meta_service_id << " (value " << status->value << ")";
       visitor->write(std::static_pointer_cast<io::data>(status));
     }
   }
@@ -376,7 +358,6 @@ void meta_service::_internal_copy(meta_service const& other) {
   _metrics = other._metrics;
   _recompute_count = _recompute_limit;
   _value = other._value;
-  return ;
 }
 
 /**
@@ -385,9 +366,7 @@ void meta_service::_internal_copy(meta_service const& other) {
  *  @param[in] new_value  New value.
  *  @param[in] old_value  Old value.
  */
-void meta_service::_recompute_partial(
-                     double new_value,
-                     double old_value) {
+void meta_service::_recompute_partial(double new_value, double old_value) {
   // MIN.
   if (min == _computation) {
     if (new_value <= _value)
@@ -410,7 +389,6 @@ void meta_service::_recompute_partial(
   else {
     _value = _value + (new_value - old_value) / _metrics.size();
   }
-  return ;
 }
 
 /**
@@ -419,22 +397,21 @@ void meta_service::_recompute_partial(
  *  @param[out] visitor           The visitor.
  *  @param[in] state_has_changed  True if the state has changed.
  */
-void meta_service::_send_service_status(io::stream* visitor, bool state_has_changed) {
+void meta_service::_send_service_status(io::stream* visitor,
+                                        bool state_has_changed) {
   if (!visitor)
-    return ;
+    return;
 
   time_t now(::time(NULL));
 
   // Once every minutes, of if the state just changed.
-  if (state_has_changed
-      || _last_service_status_sent.is_null()
-      || std::difftime(_last_service_status_sent.get_time_t(), now) >= 60) {
+  if (state_has_changed || _last_service_status_sent.is_null() ||
+      std::difftime(_last_service_status_sent.get_time_t(), now) >= 60) {
     short new_state = get_state();
-    std::shared_ptr<neb::service_status>
-      status(new neb::service_status);
+    std::shared_ptr<neb::service_status> status(new neb::service_status);
     status->active_checks_enabled = false;
     status->check_interval = 0.0;
-    status->check_type = 1; // Passive.
+    status->check_type = 1;  // Passive.
     status->current_check_attempt = 1;
     status->current_state = new_state;
     status->enabled = true;
@@ -461,7 +438,7 @@ void meta_service::_send_service_status(io::stream* visitor, bool state_has_chan
     status->retry_interval = 0;
     status->service_id = _service_id;
     status->should_be_scheduled = false;
-    status->state_type = 1; // Hard.
+    status->state_type = 1;  // Hard.
     visitor->write(status);
     _last_service_status_sent = now;
   }

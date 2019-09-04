@@ -16,23 +16,23 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
-#include "test/multiplexing/subscriber/temporary_stream.hh"
+#include "temporary_stream.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
  *
  *  @param[in] id The temporary id.
  */
-temporary_stream::temporary_stream(QString const& id) : _id(id) {}
+temporary_stream::temporary_stream(std::string const& id) : _id(id) {}
 
 /**
  *  Copy constructor.
@@ -40,7 +40,7 @@ temporary_stream::temporary_stream(QString const& id) : _id(id) {}
  *  @param[in] ss Object to copy.
  */
 temporary_stream::temporary_stream(temporary_stream const& ss)
-  : io::stream(ss) {
+    : io::stream(ss) {
   _events = ss._events;
   _id = ss._id;
 }
@@ -76,16 +76,14 @@ temporary_stream& temporary_stream::operator=(temporary_stream const& ss) {
  *
  *  @return Always return true.
  */
-bool temporary_stream::read(
-                         std::shared_ptr<io::data>& data,
-                         time_t deadline) {
+bool temporary_stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
   (void)deadline;
   std::lock_guard<std::mutex> lock(_eventsm);
   if (_events.empty())
-    throw (io::exceptions::shutdown(false, false)
-           << "temporary stream does not have any more event");
+    throw exceptions::msg() << "temporary stream does not have any more event";
   else
-    data = _events.dequeue();
+    data = _events.front();
+  _events.pop();
   return true;
 }
 
@@ -98,6 +96,6 @@ bool temporary_stream::read(
  */
 int temporary_stream::write(std::shared_ptr<io::data> const& d) {
   std::lock_guard<std::mutex> lock(_eventsm);
-  _events.enqueue(d);
+  _events.push(d);
   return 1;
 }

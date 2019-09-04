@@ -17,8 +17,8 @@
 */
 
 #include <cstdlib>
+#include <gtest/gtest.h>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/io/exceptions/shutdown.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 
 using namespace com::centreon::broker;
@@ -26,9 +26,8 @@ using namespace com::centreon::broker;
 /**
  *  We should not be able to read from publisher.
  *
- *  @return 0 on success.
  */
-int main() {
+TEST(Publisher, Read) {
   // Initialization.
   config::applier::init();
 
@@ -44,7 +43,7 @@ int main() {
     p.read(d);
     error = true;
   }
-  catch (io::exceptions::shutdown const& e) {
+  catch (std::exception const& e) {
     error = false;
   }
   catch (...) {
@@ -55,5 +54,5 @@ int main() {
   config::applier::deinit();
 
   // Return.
-  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
+  ASSERT_FALSE(error);
 }

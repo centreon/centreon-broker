@@ -44,8 +44,8 @@ using namespace com::centreon::broker::processing;
  */
 feeder::feeder(std::string const& name,
                std::shared_ptr<io::stream> client,
-               uset<unsigned int> const& read_filters,
-               uset<unsigned int> const& write_filters)
+               std::unordered_set<uint32_t> const& read_filters,
+               std::unordered_set<uint32_t> const& write_filters)
     : bthread(name), _client(client), _subscriber(name, false) {
   _subscriber.get_muxer().set_read_filters(read_filters);
   _subscriber.get_muxer().set_write_filters(write_filters);
@@ -160,7 +160,7 @@ std::string feeder::_get_state() {
  *
  *  @return  The number of queued events.
  */
-unsigned int feeder::_get_queued_events() {
+uint32_t feeder::_get_queued_events() {
   return _subscriber.get_muxer().get_event_queue_size();
 }
 
@@ -169,7 +169,7 @@ unsigned int feeder::_get_queued_events() {
  *
  *  @return  The read filters used by the feeder.
  */
-uset<unsigned int> feeder::_get_read_filters() {
+std::unordered_set<uint32_t> const& feeder::_get_read_filters() const {
   return _subscriber.get_muxer().get_read_filters();
 }
 
@@ -178,7 +178,7 @@ uset<unsigned int> feeder::_get_read_filters() {
  *
  *  @return  The write filters used by the feeder.
  */
-uset<unsigned int> feeder::_get_write_filters() {
+std::unordered_set<uint32_t> const& feeder::_get_write_filters() const {
   return _subscriber.get_muxer().get_write_filters();
 }
 

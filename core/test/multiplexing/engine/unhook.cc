@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013,2015 Centreon
+** Copyright 2011-2019 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <gtest/gtest.h>
 #include <cstdlib>
 #include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
@@ -25,7 +26,7 @@
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
-#include "test/multiplexing/engine/hooker.hh"
+#include "hooker.hh"
 
 using namespace com::centreon::broker;
 
@@ -36,19 +37,17 @@ using namespace com::centreon::broker;
 /**
  *  Check that multiplexing engine works properly.
  *
- *  @return 0 on success.
  */
-int main() {
+TEST(Unhook, EngineWorks) {
   // Initialization.
   config::applier::init();
   bool error(true);
 
   try {
     // Subscriber.
-    uset<unsigned int> filters;
+    std::unordered_set<uint32_t> filters;
     filters.insert(io::raw::static_type());
-    multiplexing::subscriber
-      s("core_multiplexing_engine_unhook", "");
+    multiplexing::subscriber s("core_multiplexing_engine_unhook", "");
     s.get_muxer().set_read_filters(filters);
     s.get_muxer().set_write_filters(filters);
 
@@ -60,8 +59,8 @@ int main() {
     {
       std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
-      if (!data.isNull())
-        throw (exceptions::msg() << "error at step #1");
+      if (data)
+        throw exceptions::msg() << "error at step #1";
     }
 
     // Start multiplexing engine.
@@ -72,7 +71,7 @@ int main() {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG1);
       multiplexing::engine::instance().publish(
-        data.staticCast<io::data>());
+          std::static_pointer_cast<io::data>(data));
     }
 
     // Unhook.
@@ -83,7 +82,7 @@ int main() {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG2);
       multiplexing::engine::instance().publish(
-        data.staticCast<io::data>());
+          std::static_pointer_cast<io::data>(data));
     }
 
     // Stop multiplexing engine.
@@ -94,47 +93,38 @@ int main() {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(MSG3);
       multiplexing::engine::instance().publish(
-        data.staticCast<io::data>());
+          std::static_pointer_cast<io::data>(data));
     }
 
     // Check subscriber content.
     {
-      char const* messages[] =
-        { HOOKMSG1, MSG1, HOOKMSG2, MSG2, NULL };
+      char const* messages[] = {HOOKMSG1, MSG1, HOOKMSG2, MSG2, NULL};
       for (unsigned int i = 0; messages[i]; ++i) {
         std::shared_ptr<io::data> d;
         s.get_muxer().read(d, 0);
-        if (d.isNull()
-            || (d->type() != io::raw::static_type()))
-          throw (exceptions::msg() << "error at step #2");
+        if (!d || d->type() != io::raw::static_type())
+          throw exceptions::msg() << "error at step #2";
         else {
-          std::shared_ptr<io::raw> raw(d.staticCast<io::raw>());
-          if (strncmp(
-                raw->QByteArray::data(),
-                messages[i],
-                strlen(messages[i])))
-            throw (exceptions::msg() << "error at step #3");
+          std::shared_ptr<io::raw> raw(std::static_pointer_cast<io::raw>(d));
+          if (strncmp(raw->const_data(), messages[i], strlen(messages[i])))
+            throw exceptions::msg() << "error at step #3";
         }
       }
       std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
-      if (!data.isNull())
-        throw (exceptions::msg() << "error at step #4");
+      if (data)
+        throw exceptions::msg() << "error at step #4";
     }
 
     // Success.
     error = false;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception\n";
   }
 
   // Cleanup.
   config::applier::deinit();
-
-  // Return.
-  return (error ? EXIT_FAILURE : EXIT_SUCCESS);
+  ASSERT_FALSE(error);
 }

@@ -17,50 +17,44 @@
 */
 
 #ifndef CCB_DUMPER_DB_READER_HH
-#  define CCB_DUMPER_DB_READER_HH
+#define CCB_DUMPER_DB_READER_HH
 
-#  include <string>
-#  include "com/centreon/broker/database_config.hh"
-#  include "com/centreon/broker/dumper/entries/state.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/unordered_hash.hh"
+#include <string>
+#include <unordered_map>
+#include "com/centreon/broker/database_config.hh"
+#include "com/centreon/broker/dumper/entries/state.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace           dumper {
-  /**
-   *  @class db_reader db_reader.hh "com/centreon/broker/dumper/db_reader.hh"
-   *  @brief Dump DB configuration.
-   *
-   *  Read configuration from database and dumps it.
-   */
-  class             db_reader : public io::stream {
-  public:
-                    db_reader(
-                      std::string const& name,
-                      database_config const& db_cfg);
-                    ~db_reader();
-    bool            read(std::shared_ptr<io::data>& d, time_t deadline);
-    int             write(std::shared_ptr<io::data> const& d);
+namespace dumper {
+/**
+ *  @class db_reader db_reader.hh "com/centreon/broker/dumper/db_reader.hh"
+ *  @brief Dump DB configuration.
+ *
+ *  Read configuration from database and dumps it.
+ */
+class db_reader : public io::stream {
+ public:
+  db_reader(std::string const& name, database_config const& db_cfg);
+  ~db_reader();
+  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  int write(std::shared_ptr<io::data> const& d);
 
-  private:
-                    db_reader(db_reader const& other);
-    db_reader&      operator=(db_reader const& other);
-    void            _sync_cfg_db(unsigned int poller_id, std::string const& req_id);
-    void            _update_cfg_db(
-                      unsigned int poller_id,
-                      std::string const& req_id);
+ private:
+  db_reader(db_reader const& other);
+  db_reader& operator=(db_reader const& other);
+  void _sync_cfg_db(unsigned int poller_id, std::string const& req_id);
+  void _update_cfg_db(unsigned int poller_id, std::string const& req_id);
 
-    umap<unsigned int, entries::state>
-                    _cache;
-    umap<std::string, unsigned int>
-                    _req_id_to_source_id;
-    database_config _db_cfg;
-    std::string         _name;
-  };
-}
+  std::unordered_map<unsigned int, entries::state> _cache;
+  std::unordered_map<std::string, unsigned int> _req_id_to_source_id;
+  database_config _db_cfg;
+  std::string _name;
+};
+}  // namespace dumper
 
 CCB_END()
 
-#endif // !CCB_DUMPER_DB_READER_HH
+#endif  // !CCB_DUMPER_DB_READER_HH

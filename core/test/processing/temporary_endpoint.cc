@@ -16,28 +16,25 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "temporary_endpoint.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "temporary_stream.hh"
 
 using namespace com::centreon::broker;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
  *
  *  @param[in] id The temporary id.
  */
-temporary_endpoint::temporary_endpoint(QString const& id)
-  : io::endpoint(false),
-    _id(id) {
-
-}
+temporary_endpoint::temporary_endpoint(std::string const& id)
+    : io::endpoint(false), _id(id) {}
 
 /**
  *  Copy constructor.
@@ -45,10 +42,7 @@ temporary_endpoint::temporary_endpoint(QString const& id)
  *  @param[in] se Object to copy.
  */
 temporary_endpoint::temporary_endpoint(temporary_endpoint const& se)
-  : io::endpoint(se),
-    _id(se._id) {
-
-}
+    : io::endpoint(se), _id(se._id) {}
 
 /**
  *  Destructor.
@@ -64,27 +58,26 @@ temporary_endpoint::~temporary_endpoint() {
  *
  *  @return This object.
  */
-temporary_endpoint& temporary_endpoint::operator=(temporary_endpoint const& se) {
+temporary_endpoint& temporary_endpoint::operator=(
+    temporary_endpoint const& se) {
   if (&se != this) {
     com::centreon::broker::io::endpoint::operator=(se);
     _id = se._id;
   }
-  return (*this);
+  return *this;
 }
 
 /**
  *  Clone endpoint.
  */
 com::centreon::broker::io::endpoint* temporary_endpoint::clone() const {
-  return (new temporary_endpoint(*this));
+  return new temporary_endpoint(*this);
 }
 
 /**
  *  Close endpoint.
  */
-void temporary_endpoint::close() {
-  return ;
-}
+void temporary_endpoint::close() {}
 
 /**
  *  Open endpoint.
@@ -92,5 +85,5 @@ void temporary_endpoint::close() {
  *  @return New temporary_stream.
  */
 std::shared_ptr<io::stream> temporary_endpoint::open() {
-  return (std::shared_ptr<io::stream>(new temporary_stream));
+  return std::shared_ptr<io::stream>(new temporary_stream);
 }

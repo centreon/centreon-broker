@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <gtest/gtest.h>
 #include <cstring>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -31,63 +32,57 @@ using namespace com::centreon::broker;
 #define MSG2 "foo bar baz qux"
 
 /**
- *  We should not be able to read from publisher.
- *
- *  @return 0 on success.
+ *  We should be able to read from publisher.
  */
-int main() {
+TEST(Publisher, Write) {
   // Initialization.
   config::applier::init();
 
-  // Publisher.
-  multiplexing::publisher p;
-
-  // Subscriber.
-  uset<unsigned int> filters;
-  filters.insert(io::raw::static_type());
-  multiplexing::subscriber
-    s("core_multiplexing_publisher_write", "");
-  s.get_muxer().set_read_filters(filters);
-  s.get_muxer().set_write_filters(filters);
-
-  // Publish event.
+  int retval{0};
   {
-    std::shared_ptr<io::raw> raw(new io::raw);
-    raw->append(MSG1);
-    p.write(raw.staticCast<io::data>());
-  }
+    // Publisher.
+    multiplexing::publisher p;
 
-  // Launch multiplexing.
-  multiplexing::engine::instance().start();
+    // Subscriber.
+    std::unordered_set<uint32_t> filters;
+    filters.insert(io::raw::static_type());
+    multiplexing::subscriber s("core_multiplexing_publisher_write", "");
+    s.get_muxer().set_read_filters(filters);
+    s.get_muxer().set_write_filters(filters);
 
-  // Publish another event.
-  {
-    std::shared_ptr<io::raw> raw(new io::raw);
-    raw->append(MSG2);
-    p.write(raw.staticCast<io::data>());
-  }
+    // Publish event.
+    {
+      std::shared_ptr<io::raw> raw(new io::raw);
+      raw->append(MSG1);
+      p.write(std::static_pointer_cast<io::data>(raw));
+    }
 
-  // Check data.
-  int retval(0);
-  char const* messages[] = { MSG1, MSG2, NULL };
-  for (unsigned int i = 0; messages[i]; ++i) {
-    std::shared_ptr<io::data> data;
-    s.get_muxer().read(data, 0);
-    if (data.isNull()
-        || (data->type() != io::raw::static_type()))
-      retval |= 1;
-    else {
-      std::shared_ptr<io::raw> raw(data.staticCast<io::raw>());
-      retval |= strncmp(
-        raw->QByteArray::data(),
-        messages[i],
-        strlen(messages[i]));
+    // Launch multiplexing.
+    multiplexing::engine::instance().start();
+
+    // Publish another event.
+    {
+      std::shared_ptr<io::raw> raw(new io::raw);
+      raw->append(MSG2);
+      p.write(std::static_pointer_cast<io::data>(raw));
+    }
+
+    // Check data.
+    char const* messages[] = {MSG1, MSG2, NULL};
+    for (unsigned int i = 0; messages[i]; ++i) {
+      std::shared_ptr<io::data> data;
+      s.get_muxer().read(data, 0);
+      if (!data || data->type() != io::raw::static_type())
+        retval |= 1;
+      else {
+        std::shared_ptr<io::raw> raw(std::static_pointer_cast<io::raw>(data));
+        retval |= strncmp(raw->const_data(), messages[i], strlen(messages[i]));
+      }
     }
   }
-
   // Cleanup.
   config::applier::deinit();
 
   // Return.
-  return (retval);
+  ASSERT_EQ(retval, 0);
 }

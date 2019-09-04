@@ -37,8 +37,13 @@ bthread::~bthread() {}
  *  Notify bthread to exit.
  */
 void bthread::exit() {
-  std::lock_guard<std::mutex> lock(_should_exitm);
-  _should_exit = true;
+  if (!is_running())
+    return;
+  {
+    std::lock_guard<std::mutex> lock(_should_exitm);
+    _should_exit = true;
+  }
+  _thread.join();
 }
 
 /**
@@ -83,26 +88,43 @@ void bthread::update() {
  *  @return True if bthread exited in less than timeout_ms.
  */
 bool bthread::wait(unsigned long timeout_ms) {
-  {
-    std::lock_guard<std::mutex> lock(_should_exitm);
-    if (!_started)
-      return true;
+  if (timeout_ms == ULONG_MAX && _thread.joinable()) {
+    _thread.join();
+    return true;
   }
-  std::unique_lock<std::mutex> lock(_cv_m);
-  bool retval{_cv.wait_for(lock, std::chrono::milliseconds(timeout_ms)) ==
-              std::cv_status::no_timeout};
 
-  if (retval) {
+  if (!_thread.joinable())
+    return true;
+
+  std::cv_status res;
+  std::unique_lock<std::mutex> lock(_cv_m);
+  if (is_running())
+    res = _cv.wait_for(lock, std::chrono::milliseconds(timeout_ms));
+  else
+    res = std::cv_status::no_timeout;
+
+  bool retval;
+  if (res == std::cv_status::no_timeout) {
+    std::cout << "bthread::wait " << timeout_ms << " no timeout\n";
     // Thread execution correctly stopped.
     std::lock_guard<std::mutex> lk(_should_exitm);
     _should_exit = false;
+    std::cout << "         join\n";
     _thread.join();
+    retval = true;
+  } else {
+    std::cout << "bthread::wait " << timeout_ms << " timeout\n";
+    retval = false;
   }
   return retval;
 }
 
 void bthread::_callback() {
   run();
+  {
+    std::lock_guard<std::mutex> lk(_should_exitm);
+    _started = false;
+  }
   _cv.notify_all();
 }
 

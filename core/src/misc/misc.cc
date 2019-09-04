@@ -50,6 +50,14 @@ static const uint16_t crc_tbl[16] = {
     0x0000, 0x1081, 0x2102, 0x3183, 0x4204, 0x5285, 0x6306, 0x7387,
     0x8408, 0x9489, 0xa50a, 0xb58b, 0xc60c, 0xd68d, 0xe70e, 0xf78f};
 
+/**
+ *
+ * Return a crc16 checksum of the given string
+ * @param data The string to create the checksum from.
+ * @param data_len The length of data to consider.
+ *
+ * @return The checksum
+ */
 uint16_t misc::crc16_ccitt(char const* data, unsigned int data_len) {
   uint16_t crc = 0xffff;
   uint8_t c;
@@ -75,4 +83,46 @@ std::string misc::exec(std::string const& cmd) {
     result += buffer.data();
   }
   return result;
+}
+
+/**
+ *  Build a vector<char> from a string. The string contains numbers in
+ *  hexadecimal format. For example: "0A1286EF"
+ *
+ * @param str The string to convert.
+ *
+ * @return A vector<char>
+ */
+std::vector<char> misc::from_hex(std::string const& str) {
+  std::vector<char> retval;
+  size_t len{str.size()};
+  if (len & 1)
+    throw exceptions::msg()
+        << "from_hex: '" << str << "' length should be even";
+  retval.reserve(len >> 1);
+  bool valid{false};
+  uint8_t value;
+  for (char c : str) {
+    if (!valid)
+      value = 0;
+    else
+      value <<= 4;
+    if (c >= '0' && c <= '9')
+      value |= c - '0';
+    else if (c >= 'A' && c <= 'F')
+      value |= c + 10 -'A';
+    else if (c >= 'a' && c <= 'f')
+      value |= c + 10 -'a';
+    else
+      throw exceptions::msg()
+        << "from_hex: '" << str << "' should be a string containing some "
+        << "hexadecimal digits";
+    if (valid) {
+      retval.push_back(value);
+      valid = false;
+    }
+    else
+      valid = true;
+  }
+  return retval;
 }
