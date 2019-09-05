@@ -19,8 +19,9 @@
 #ifndef CCB_GENERATOR_RECEIVER_HH
 #  define CCB_GENERATOR_RECEIVER_HH
 
+#  include <memory>
+#  include <unordered_map>
 #  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -45,7 +46,7 @@ namespace              generator {
                        receiver(receiver const& other);
     receiver&          operator=(receiver const& other);
 
-    umap<unsigned int, unsigned int>
+    std::unordered_map<unsigned int, unsigned int>
                        _last_numbers;
   };
 }
