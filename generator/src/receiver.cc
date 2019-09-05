@@ -44,7 +44,7 @@ receiver::~receiver() {}
  */
 bool receiver::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
-  d.clear();
+  d.reset();
   throw (exceptions::shutdown()
          << "cannot read from event receiver (generator)");
   return (true);
@@ -58,11 +58,11 @@ bool receiver::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *  @return 1.
  */
 int receiver::write(std::shared_ptr<io::data> const& d) {
-  if (!d.isNull() && (d->type() == dummy::static_type())) {
-    dummy const& e(d.ref_as<dummy>());
+  if (d && (d->type() == dummy::static_type())) {
+    dummy const& e(*(static_cast<dummy *>(d.get())));
 
     // Find last number of the Broker instance.
-    umap<unsigned int, unsigned int>::iterator
+    std::unordered_map<unsigned int, unsigned int>::iterator
       it(_last_numbers.find(e.source_id));
     if (it == _last_numbers.end()) {
       _last_numbers[e.source_id] = 0;
