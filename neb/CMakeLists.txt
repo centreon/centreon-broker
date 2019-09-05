@@ -257,267 +257,37 @@ if (WITH_TESTING)
   set(
       TESTS_SOURCES
       ${TESTS_SOURCES}
-      "${TEST_DIR}/randomize.cc"
-      "${TEST_DIR}/custom_variable.cc"
-      "${TEST_DIR}/custom_variable_status.cc"
-      "${TEST_DIR}/event_handler.cc"
-      "${TEST_DIR}/flapping_status.cc"
-      "${TEST_DIR}/host.cc"
-      "${TEST_DIR}/host_check.cc"
-      "${TEST_DIR}/host_dependency.cc"
-      "${TEST_DIR}/host_parent.cc"
-      "${TEST_DIR}/host_status.cc"
-
-      "${TEST_DIR}/randomize.hh"
+      ${SRC_DIR}/set_log_data.cc
+      #Actual tests
+      ${TEST_DIR}/custom_variable.cc
+      ${TEST_DIR}/custom_variable_status.cc
+      ${TEST_DIR}/event_handler.cc
+      ${TEST_DIR}/flapping_status.cc
+      ${TEST_DIR}/host.cc
+      ${TEST_DIR}/host_check.cc
+      ${TEST_DIR}/host_dependency.cc
+      ${TEST_DIR}/host_parent.cc
+      ${TEST_DIR}/host_status.cc
+      ${TEST_DIR}/instance.cc
+      ${TEST_DIR}/instance_status.cc
+      ${TEST_DIR}/log_entry.cc
+      ${TEST_DIR}/module.cc
+      ${TEST_DIR}/randomize.cc
+      ${TEST_DIR}/randomize.hh
+      ${TEST_DIR}/service.cc
+      ${TEST_DIR}/service_check.cc
+      ${TEST_DIR}/service_dependency.cc
+      ${TEST_DIR}/service_status.cc
+      ${TEST_DIR}/set_log_data.cc
       PARENT_SCOPE
      )
   set(
       TESTS_LIBRARIES
       ${TESTS_LIBRARIES}
-      "${NEB}"
+      ${NEB}
       PARENT_SCOPE
      )
 endif()
-
-# Unit tests.
-if (0) # WITH_TESTING)
-  include_directories("${PROJECT_SOURCE_DIR}/neb")
-  include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
-  include_directories("${PROJECT_SOURCE_DIR}/dumper/inc")
-  set(TEST_LIBRARIES "${NEB}" "rokerbase" "roker" "rokerbase")
-  # Instance Tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_instance_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/instance/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_instance_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/instance/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_instance_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/instance/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Instance Status Tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_instance_status_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/instance_status/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_instance_status_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/instance_status/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_instance_status_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/instance_status/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Log Entry Tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_log_entry_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/log_entry/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_log_entry_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/log_entry/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_log_entry_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/log_entry/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Module Tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_module_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/module/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_module_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/module/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_module_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/module/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Service Tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_service_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_service_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_service_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Service Check Tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_service_check_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_check/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_service_check_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_check/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_service_check_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_check/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Service Dependency Tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_service_dependency_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_dependency/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_service_dependency_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_dependency/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_service_dependency_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_dependency/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Service Status Tests.
-  #   Default constructor.
-  set(TEST_NAME "neb_service_status_ctor_default")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_status/ctor_default.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Copy constructor.
-  set(TEST_NAME "neb_service_status_ctor_copy")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_status/ctor_copy.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Assignment operator.
-  set(TEST_NAME "neb_service_status_assignment")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/service_status/assignment.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # set_log_data tests.
-  #   set_log_data library.
-  add_library("ccb_neb_set_log_data" STATIC
-    "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/set_log_data.cc")
-  set(SETLOGDATA_LIBRARIES "ccb_neb_set_log_data" "${NEB}" "rokerbase" "roker" "rokerbase")
-  #   Host alert.
-  set(TEST_NAME "neb_set_log_data_host_alert")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/set_log_data/dummy_engine.cc"
-    "${TEST_DIR}/set_log_data/host_alert.cc")
-  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Service alert.
-  set(TEST_NAME "neb_set_log_data_service_alert")
-  add_executable("${TEST_NAME}"
-    "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/set_log_data.cc"
-    "${TEST_DIR}/set_log_data/dummy_engine.cc"
-    "${TEST_DIR}/set_log_data/service_alert.cc")
-  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Initial host state.
-  set(TEST_NAME "neb_set_log_data_initial_host_state")
-  add_executable("${TEST_NAME}"
-    "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/set_log_data.cc"
-    "${TEST_DIR}/set_log_data/dummy_engine.cc"
-    "${TEST_DIR}/set_log_data/initial_host_state.cc")
-  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Initial service state.
-  set(TEST_NAME "neb_set_log_data_initial_service_state")
-  add_executable("${TEST_NAME}"
-    "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/set_log_data.cc"
-    "${TEST_DIR}/set_log_data/dummy_engine.cc"
-    "${TEST_DIR}/set_log_data/initial_service_state.cc")
-  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  #   Default logs.
-  set(TEST_NAME "neb_set_log_data_default")
-  add_executable("${TEST_NAME}"
-    "${SRC_DIR}/internal.cc"
-    "${SRC_DIR}/set_log_data.cc"
-    "${TEST_DIR}/set_log_data/dummy_engine.cc"
-    "${TEST_DIR}/set_log_data/default.cc")
-  target_link_libraries("${TEST_NAME}" ${SETLOGDATA_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  # Node events.
-  set(TEST_NAME "neb_downtime_fixed")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/node_events/downtime_fixed.cc"
-    "${TEST_DIR}/node_events/common.hh"
-    "${TEST_DIR}/node_events/common.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  set(TEST_NAME "neb_downtime_floating")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/node_events/downtime_floating.cc"
-    "${TEST_DIR}/node_events/common.hh"
-    "${TEST_DIR}/node_events/common.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  set(TEST_NAME "neb_downtime_recurring")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/node_events/recurring_downtime.cc"
-    "${TEST_DIR}/node_events/common.hh"
-    "${TEST_DIR}/node_events/common.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  set(TEST_NAME "neb_downtime_file")
-  add_executable("${TEST_NAME}"
-    "${TEST_DIR}/node_events/file_downtime.cc"
-    "${TEST_DIR}/node_events/common.hh"
-    "${TEST_DIR}/node_events/common.cc")
-  target_link_libraries("${TEST_NAME}" ${TEST_LIBRARIES})
-  add_test("${TEST_NAME}" "${TEST_NAME}")
-  configure_file("${TEST_DIR}/node_events/vars.hh.in"
-    "${TEST_DIR}/node_events/vars.hh")
-endif ()
 
 # Install rules.
 install(TARGETS "${CBMOD}"
