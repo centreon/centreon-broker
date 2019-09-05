@@ -17,7 +17,6 @@
 */
 
 #include <chrono>
-#include "com/centreon/broker/dumper/dump.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/service_status.hh"
@@ -85,15 +84,6 @@ void generator::_run() {
       builder b;
       b.build(json_serializer());
 
-      // Send dumper events.
-      {
-        std::shared_ptr<dumper::dump> d(new dumper::dump);
-        d->source_id = _instance_id;
-        d->content = b.data().c_str();
-        d->tag = "";
-        multiplexing::publisher p;
-        p.write(d);
-      }
     }
   }
   catch (std::exception const& e) {
