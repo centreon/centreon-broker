@@ -44,8 +44,8 @@ endpoint::~endpoint() {}
 std::shared_ptr<io::stream> endpoint::open() {
   std::shared_ptr<io::stream> s;
   if (_type == type_receiver)
-    s = new receiver();
+    s = std::make_shared<receiver>();
   else if (_type == type_sender)
-    s = new sender();
+    s = std::make_shared<sender>();
   return (s);
 }
