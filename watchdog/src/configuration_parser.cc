@@ -17,11 +17,12 @@
 */
 
 #include "com/centreon/broker/watchdog/configuration_parser.hh"
+#include <cstring>
 #include <fstream>
-#include <json11.hpp>
 #include <streambuf>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#include "com/centreon/broker/vars.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::watchdog;
@@ -46,8 +47,7 @@ configuration_parser::~configuration_parser() {}
  */
 configuration configuration_parser::parse(std::string const& config_filename) {
   _parse_file(config_filename);
-  _parse_xml_document();
-  return (configuration(_log_path.toStdString(), _instances_configuration));
+  return configuration(_log_path, _instances_configuration);
 }
 
 /**
@@ -58,6 +58,10 @@ configuration configuration_parser::parse(std::string const& config_filename) {
 void configuration_parser::_parse_file(std::string const& config_filename) {
   // Parse Json file
   std::ifstream f(config_filename);
+  if (f.fail()) {
+    throw exceptions::msg() << "config parser: cannot read file '"
+                            << config_filename << "': " << std::strerror(errno);
+  }
   std::string const& json_to_parse{std::istreambuf_iterator<char>(f),
                                    std::istreambuf_iterator<char>()};
   std::string err;
@@ -68,35 +72,34 @@ void configuration_parser::_parse_file(std::string const& config_filename) {
     throw exceptions::msg() << "config parser: cannot parse file '"
                             << config_filename << "': " << err;
   if (!_json_document.is_object() ||
-      !!_json_document["centreonBroker"].is_object())
+      !_json_document["centreonBroker"].is_object())
     throw exceptions::msg()
         << "config parser: cannot parse file '" << config_filename
         << "': it must contain a centreonBroker object";
-
-  QFile config_file(config_filename.c_str());
-  if (!config_file.open(QFile::ReadOnly))
-    // We don't know where is our log file, so we can't log.
-    throw exceptions::msg() << "cannot open '" << config_filename
-                            << "': " << config_file.errorString().toStdString();
+  _check_json_document();
 }
 
 /**
  *  Parse the xml document.
  */
-void configuration_parser::_parse_xml_document() {
+void configuration_parser::_check_json_document() {
   for (std::pair<std::string const, Json> const& object :
        _json_document["centreonBroker"].object_items()) {
     if (object.first == "log")
-      _log_path = QString::fromStdString(object.second.string_value());
+      _log_path = object.second.string_value();
     else if (object.first == "cbd") {
-      if (object.second.is_array())
-        for (Json const& entry : object.second.array_items())
+      Json sec{object.second};
+      if (sec.is_array())
+        for (Json const& entry : sec.array_items())
           _parse_centreon_broker_element(entry);
-      else if (object.second.is_object())
-        _parse_centreon_broker_element(object.second);
+      else if (sec.is_object())
+        _parse_centreon_broker_element(sec);
       else
         throw exceptions::msg()
             << "error in watchdog config syntax 'cbd' must be an array";
+    } else {
+      throw exceptions::msg() << "error in watchdog config '" << object.first
+                              << "' key is not recognized";
     }
   }
 }
@@ -109,6 +112,7 @@ void configuration_parser::_parse_xml_document() {
 void configuration_parser::_parse_centreon_broker_element(
     json11::Json const& element) {
   // The default are sane.
+  Json const& instance_executable{element["executable"]};
   Json const& instance_name{element["name"]};
   Json const& instance_config{element["configuration_file"]};
   Json const& run{element["run"]};
@@ -128,13 +132,20 @@ void configuration_parser::_parse_centreon_broker_element(
   if (instance_name.string_value().empty())
     throw exceptions::msg() << "watchdog: missing instance_name";
 
-  if (_instances_configuration
-          .insert(std::make_pair(
+  std::string executable;
+  if (instance_executable.string_value().empty())
+    executable = std::string(PREFIX_BIN "/cbd");
+  else
+    executable = instance_executable.string_value();
+
+  if (!_instances_configuration
+          .insert({
               instance_name.string_value(),
               instance_configuration(instance_name.string_value(),
+                                     executable,
                                      instance_config.string_value(),
-                                     run.bool_value(), reload.bool_value(), 0)))
-          .second == false)
+                                     run.bool_value(), reload.bool_value(), 0)})
+          .second)
     throw exceptions::msg()
         << "instance '" << instance_name.string_value() << "' already exists";
 }

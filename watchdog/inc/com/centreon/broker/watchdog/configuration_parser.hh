@@ -19,8 +19,6 @@
 #ifndef CCB_WATCHDOG_CONFIGURATION_PARSER_HH
 #define CCB_WATCHDOG_CONFIGURATION_PARSER_HH
 
-#include <QFile>
-#include <QString>
 #include <json11.hpp>
 #include <map>
 #include <string>
@@ -42,19 +40,18 @@ class configuration_parser {
  public:
   configuration_parser();
   ~configuration_parser();
+  configuration_parser& operator=(configuration_parser const& other) = delete;
+  configuration_parser(configuration_parser const& other) = delete;
 
   configuration parse(std::string const& config_filename);
 
  private:
-  configuration_parser& operator=(configuration_parser const& other);
-  configuration_parser(configuration_parser const& other);
-
   void _parse_file(std::string const& config_filename);
-  void _parse_xml_document();
+  void _check_json_document();
   void _parse_centreon_broker_element(json11::Json const& element);
 
   json11::Json _json_document;
-  QString _log_path;
+  std::string _log_path;
   configuration::instance_map _instances_configuration;
 };
 }  // namespace watchdog
