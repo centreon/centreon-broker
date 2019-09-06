@@ -19,7 +19,6 @@
 #ifndef CCB_WATCHDOG_CONFIGURATION_PARSER_HH
 #define CCB_WATCHDOG_CONFIGURATION_PARSER_HH
 
-#include <string>
 #include <json11.hpp>
 #include <map>
 #include <string>

@@ -96,15 +96,11 @@ include_directories(${source_dir}/asio/include)
 # Check and/or find required components.
 #
 
-# Find Qt.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-find_package(Qt4 4.7.4 COMPONENTS QtCore REQUIRED)
 add_definitions("-DASIO_STANDALONE")
 
 # Find zlib.
 find_package(ZLIB REQUIRED)
-
-include(${QT_USE_FILE})
 
 # Find MySQL/Mariadb devel package
 find_program(MYSQL_CONFIG "mysql_config")

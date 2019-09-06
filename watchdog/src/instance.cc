@@ -18,13 +18,13 @@
 
 #include "com/centreon/broker/watchdog/instance.hh"
 #include <wait.h>
+#include <cassert>
 #include <csignal>
 #include <cstring>
 #include <iostream>
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/broker/vars.hh"
-#include "com/centreon/broker/watchdog/application.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::watchdog;
@@ -33,10 +33,9 @@ using namespace com::centreon::broker::watchdog;
  *  Default constructor.
  */
 instance::instance(instance_configuration const& config)
-    : _config{config}, _started{false}, _pid{}, _fd{0} {
+    : _config{config}, _started{false}, _pid{} {
   if (config.should_run())
     start();
-  // connect(this, SIGNAL(finished(int)), this, SLOT(on_exit()));
 }
 
 /**
@@ -52,7 +51,7 @@ instance::~instance() {
  *  @param[in] new_config  The new config.
  */
 void instance::merge_configuration(instance_configuration const& new_config) {
-  if (_config != new_config) {
+  if (!_config.same_child(new_config)) {
     logging::error(logging::medium)
         << "watchdog: attempting to merge an incompatible configuration "
            "for process '"
@@ -64,37 +63,26 @@ void instance::merge_configuration(instance_configuration const& new_config) {
   _config = new_config;
 }
 
-static std::pair<pid_t, int> exec_process(char const** argv) {
+/**
+ *  A binding to the execve function.
+ *
+ * @param argv Args to give to the function.
+ *
+ * @return the pid.
+ */
+static pid_t exec_process(char const** argv) {
   int status;
-  int fd[2];
-
-  if (pipe(fd) == -1) {
-    logging::error(logging::medium)
-        << "watchdog: Unable to create the pipe to exchange with broker.";
-    std::cout << "ERROR: unable to create the pipe to exchange with broker: "
-              << strerror(errno) << '\n';
-    exit(EXIT_FAILURE);
-  }
 
   pid_t son_pid{fork()};
 
   // I'm your father
   if (son_pid) {
-    // Let's close the write file descriptor.
-    close(fd[1]);
   }
   else {
-    // Let's close the read file descriptor.
-    close(fd[0]);
     int res = execve(argv[0], const_cast<char**>(argv), nullptr);
-    if (res == -1) {
-      std::cout << "Child process failed: " << std::strerror(errno) << '\n';
-    }
-    write(fd[1], &res, sizeof(res));
-    close(fd[1]);
     exit(res);
   }
-  return {son_pid, fd[0]};
+  return son_pid;
 }
 
 /**
@@ -102,7 +90,6 @@ static std::pair<pid_t, int> exec_process(char const** argv) {
  */
 void instance::restart() {
   _started = false;
-  close(_fd);
   start();
 }
 
@@ -117,9 +104,7 @@ void instance::start() {
         << "watchdog: starting process '" << _config.get_name() << "'";
     char const* argv[]{_config.get_executable().c_str(),
                        _config.get_config_file().c_str(), nullptr};
-    std::pair<pid_t, int> res{exec_process(argv)};
-    _pid = res.first;
-    _fd = res.second;
+    _pid = exec_process(argv);
     logging::info(logging::medium)
         << "watchdog: process '" << _config.get_name() << "' started (PID "
         << _pid << ")";
@@ -129,14 +114,13 @@ void instance::start() {
 /**
  *  Update an instance broker.
  */
-void instance::update_instance() {
-  //  if (state() == QProcess::Running && _config.should_reload()) {
-  //    logging::info(logging::medium)
-  //        << "watchdog: sending update signal to process '" <<
-  //        _config.get_name()
-  //        << "' (PID " << pid() << ")";
-  //    ::kill(pid(), SIGHUP);
-  //  }
+void instance::update() {
+  if (_started && _config.should_reload()) {
+    logging::info(logging::medium)
+        << "watchdog: sending update signal to process '" << _config.get_name()
+        << "' (PID " << _pid << ")";
+    kill(_pid, SIGHUP);
+  }
 }
 
 /**
@@ -148,11 +132,15 @@ void instance::stop() {
         << "watchdog: stopping process '" << _config.get_name() << "' (PID "
         << _pid << ")";
     _started = false;
-    close(_fd);
-    kill(_pid, SIGTERM);
+    int res = kill(_pid, SIGTERM);
+    if (res)
+      logging::error(logging::medium)
+          << "watchdog: could not send a kill signal to process '"
+          << _config.get_name() << "' (PID " << _pid << "):" << strerror(errno)
+          << '\n';
     int status;
     int timeout = 10;
-    while (waitpid(_pid, &status, WNOHANG)) {
+    while ((res = waitpid(_pid, &status, WNOHANG))) {
       if (--timeout < 0) {
         logging::error(logging::medium)
             << "watchdog: could not gracefully terminate process '"
@@ -169,33 +157,10 @@ void instance::stop() {
 }
 
 /**
- *  Called when the process exit.
+ *  Accessor to the pid.
+ *
+ * @return The pid.
  */
-void instance::on_exit() {
-  //  // Process should be stopped, everything is going well.
-  //  if (!_started || !_config.should_run())
-  //    return;
-  //
-  //  _started = false;
-  //
-  //  // Process should not be stopped, restart it.
-  //  unsigned int time_to_restart =
-  //      std::min(static_cast<unsigned int>(timestamp::now() -
-  //      _since_last_start),
-  //               _config.seconds_per_tentative());
-  //  if (time_to_restart == 0)
-  //    logging::error(logging::medium)
-  //        << "watchdog: process '" << _config.get_name()
-  //        << "' terminated unexpectedly, restarting it immediately";
-  //  else
-  //    logging::error(logging::medium)
-  //        << "watchdog: process '" << _config.get_name()
-  //        << "' terminated unexpectedly, restarting it in "
-  //        << _config.seconds_per_tentative() << " seconds";
-  //  QTimer::singleShot(_config.seconds_per_tentative() * 1000, this,
-  //                     SLOT(start()));
-}
-
-int instance::get_fd() const {
-  return _fd;
+int instance::get_pid() const {
+  return _pid;
 }

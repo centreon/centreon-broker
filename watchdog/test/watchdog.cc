@@ -85,15 +85,12 @@ TEST(WatchdogTest, SimpleConfig) {
       "  }\n"
       "}"};
   create_conf("/tmp/simple-conf.json", content);
-  char const* arg[] {
-    "watchdog/cbwd",
-    "/tmp/simple-conf.json",
-    nullptr};
-  int res =
-      com::centreon::broker::misc::exec_process(arg, false);
-  std::string r = misc::exec("ps ax | grep tester | grep -v grep | awk '{print $1}'");
+  char const* arg[]{"watchdog/cbwd", "/tmp/simple-conf.json", nullptr};
+  int res = com::centreon::broker::misc::exec_process(arg, false);
+  std::string r =
+      misc::exec("ps ax | grep tester | grep -v grep | awk '{print $1}'");
   std::list<std::string> lst = misc::string::split(r, '\n');
-  //There are 3 elements, but the last one is empty
+  // There are 3 elements, but the last one is empty
   ASSERT_EQ(lst.size(), 3u);
   ASSERT_TRUE(lst.back().empty());
 
@@ -110,7 +107,8 @@ TEST(WatchdogTest, SimpleConfig) {
   ASSERT_TRUE(lst.back().empty());
 
   // We send a term signal to cbwd
-  r = misc::exec("ps ax | grep watchdog/cbwd | grep -v grep | awk '{print $1}'");
+  r = misc::exec(
+      "ps ax | grep watchdog/cbwd | grep -v grep | awk '{print $1}'");
   pid = std::stol(r);
   kill(pid, SIGTERM);
   sleep(2);
@@ -119,7 +117,100 @@ TEST(WatchdogTest, SimpleConfig) {
   r = misc::exec("ps ax | grep tester | grep -v grep | awk '{print $1}'");
   ASSERT_EQ(r, "");
 
-  r = misc::exec("ps ax | grep watchdog/cbwd | grep -v grep | awk '{print $1}'");
+  r = misc::exec(
+      "ps ax | grep watchdog/cbwd | grep -v grep | awk '{print $1}'");
   // No cbwd anymore.
   ASSERT_EQ(r, "");
+}
+
+TEST(WatchdogTest, SimpleConfigUpdated) {
+  std::string const& content1{
+      "{\n"
+      "  \"centreonBroker\": {\n"
+      "   \"cbd\": [\n"
+      "      {\n"
+      "        \"executable\": \"" CENTREON_BROKER_WD_TEST
+      "/tester-echo\",\n"
+      "        \"name\": \"central-broker-master\",\n"
+      "        \"configuration_file\": \"Master\",\n"
+      "        \"run\": true,\n"
+      "        \"reload\": true\n"
+      "      },\n"
+      "      {\n"
+      "        \"executable\": \"" CENTREON_BROKER_WD_TEST
+      "/tester-echo\",\n"
+      "        \"name\": \"central-rrd-master\",\n"
+      "        \"configuration_file\": \"Slave\",\n"
+      "        \"run\": true,\n"
+      "        \"reload\": true\n"
+      "      }\n"
+      "    ],\n"
+      "    \"log\": \"/tmp/watchdog.log\"\n"
+      "  }\n"
+      "}"};
+  std::string const& content2{
+      "{\n"
+      "  \"centreonBroker\": {\n"
+      "   \"cbd\": [\n"
+      "      {\n"
+      "        \"executable\": \"" CENTREON_BROKER_WD_TEST
+      "/tester-echo\",\n"
+      "        \"name\": \"central-rrd-master\",\n"
+      "        \"configuration_file\": \"Slave\",\n"
+      "        \"run\": true,\n"
+      "        \"reload\": true\n"
+      "      },\n"
+      "      {\n"
+      "        \"executable\": \"" CENTREON_BROKER_WD_TEST
+      "/tester-echo\",\n"
+      "        \"name\": \"central-broker-master\",\n"
+      "        \"configuration_file\": \"God\",\n"
+      "        \"run\": true,\n"
+      "        \"reload\": true\n"
+      "      }\n"
+      "    ],\n"
+      "    \"log\": \"/tmp/watchdog.log\"\n"
+      "  }\n"
+      "}"};
+  create_conf("/tmp/simple-conf.json", content1);
+  char const* arg[]{"watchdog/cbwd", "/tmp/simple-conf.json", nullptr};
+
+  int res = com::centreon::broker::misc::exec_process(arg, false);
+  std::string r = misc::exec(
+      "ps ax | grep tester-echo | grep -v grep | grep -v defunc | awk '{print "
+      "$1}'");
+  std::list<std::string> lst = misc::string::split(r, '\n');
+  // There are 3 elements, but the last one is empty
+  ASSERT_EQ(lst.size(), 3u);
+  ASSERT_TRUE(lst.back().empty());
+
+  // We change the configuration
+  create_conf("/tmp/simple-conf.json", content2);
+  // We send a sighup signal to cbwd
+  r = misc::exec(
+      "ps ax | grep watchdog/cbwd | grep -v grep | awk '{print $1}'");
+  int pid = std::stol(r);
+  kill(pid, SIGHUP);
+
+  int timeout = 20;
+  do {
+    sleep(1);
+    // Testers are here again but with different pid.
+    r = misc::exec("ps ax | grep tester-echo | grep -v grep | grep -v defunc");
+    lst = misc::string::split(r, '\n');
+    // There are 3 elements, but the last one is empty
+  } while ((lst.size() < 3u || !lst.back().empty()) && --timeout > 0);
+  ASSERT_GT(timeout, 0);
+  ASSERT_TRUE(lst.back().empty());
+
+  // We send a term signal to cbwd
+  kill(pid, SIGTERM);
+  timeout = 10;
+  do {
+    sleep(1);
+    r = misc::exec(
+        "ps ax | grep watchdog/cbwd | grep -v grep | grep -v defunc | awk "
+        "'{print $1}'");
+  } while (!r.empty());
+  ASSERT_GT(timeout, 0);
 }

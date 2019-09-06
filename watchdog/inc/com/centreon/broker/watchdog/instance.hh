@@ -45,10 +45,10 @@ class instance {
   void restart();
   void start();
   void stop();
-  void update_instance();
+  void update();
 
   void on_exit();
-  int get_fd() const;
+  int get_pid() const;
 
  private:
   instance(instance const&);
@@ -58,7 +58,6 @@ class instance {
   bool _started;
   timestamp _since_last_start;
   pid_t _pid;
-  int _fd;
 
   static const unsigned int _exit_timeout = 10000;
 };

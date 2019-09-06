@@ -45,7 +45,7 @@ add_dependencies("${SQL}" json11_lib)
 set_target_properties("${SQL}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS}")
-target_link_libraries("${SQL}" ${QT_LIBRARIES})
+target_link_libraries("${SQL}")
 
 # Install rule.
 install(TARGETS "${SQL}"

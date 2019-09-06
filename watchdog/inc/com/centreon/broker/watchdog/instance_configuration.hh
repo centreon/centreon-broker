@@ -42,8 +42,9 @@ class instance_configuration {
   ~instance_configuration();
   instance_configuration(instance_configuration const& other);
   instance_configuration& operator=(instance_configuration const& other);
-  bool operator==(instance_configuration const& other) const;
-  bool operator!=(instance_configuration const& other) const;
+  bool same_child(instance_configuration const& other) const;
+  bool operator==(instance_configuration const& other) const = delete;
+  bool operator!=(instance_configuration const& other) const = delete;
 
   bool is_empty() const throw();
 
@@ -52,7 +53,6 @@ class instance_configuration {
   std::string const& get_config_file() const throw();
   bool should_run() const throw();
   bool should_reload() const throw();
-  unsigned int seconds_per_tentative() const throw();
 
  private:
   std::string _name;

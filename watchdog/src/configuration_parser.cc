@@ -19,7 +19,6 @@
 #include "com/centreon/broker/watchdog/configuration_parser.hh"
 #include <cstring>
 #include <fstream>
-#include <json11.hpp>
 #include <streambuf>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/manager.hh"

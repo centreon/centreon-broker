@@ -16,17 +16,20 @@
  * For more information : contact@centreon.com
  */
 
-#include <sys/select.h>
+#include <poll.h>
+#include <stropts.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <csignal>
 #include <cstring>
 #include <iostream>
-#include <unordered_map>
 #include <set>
+#include <unordered_map>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/manager.hh"
-#include "com/centreon/broker/watchdog/application.hh"
 #include "com/centreon/broker/watchdog/configuration.hh"
 #include "com/centreon/broker/watchdog/configuration_parser.hh"
 #include "com/centreon/broker/watchdog/instance.hh"
@@ -35,10 +38,12 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::watchdog;
 
 static char const* help_msg = "USAGE: cbwd configuration_file";
+static char const* config_filename = nullptr;
 static bool should_exit{false};
 static std::unique_ptr<logging::file> log;
 static configuration config;
 static std::unordered_map<std::string, instance*> instances;
+static bool sighup{false};
 
 /**
  *  Print the help.
@@ -48,41 +53,11 @@ static void print_help() {
 }
 
 /**
- *  @brief Signal handler
+ *  This function applies a new configuration in replacement of the current one.
  *
- *  There is not many things we can do in signal handlers.
- *  We convert the signal into something usable by using the
- *  writing to a self-pipe pattern.
- *
- *  @param sig  The signal.
+ * @param cfg The new configuration to set.
  */
-static void signal_handler(int sig) {
-  // Sigterm : should exit now...
-  if (sig == SIGTERM || sig == SIGINT) {
-    should_exit = true;
-  // Sighup : should reload...
-  } else if (sig == SIGHUP) {
-    std::cout << "Reload\n";
-  }
-}
-
-/**
- *  Set the signals handlers.
- */
-static void set_signal_handlers() {
-  struct sigaction sig;
-  sig.sa_handler = signal_handler;
-  ::sigemptyset(&sig.sa_mask);
-  ::sigfillset(&sig.sa_mask);
-  sig.sa_flags = 0;
-  if (::sigaction(SIGTERM, &sig, NULL) < 0 ||
-      ::sigaction(SIGINT, &sig, NULL) < 0 ||
-      ::sigaction(SIGHUP, &sig, NULL) < 0)
-    throw com::centreon::broker::exceptions::msg()
-          << "can't set the signal handlers";
-}
-
-void apply_new_configuration(configuration const& cfg) {
+static void apply_new_configuration(configuration const& cfg) {
   if (config.get_log_filename() != cfg.get_log_filename()) {
     log.reset(new logging::file(cfg.get_log_filename()));
     logging::manager::instance().log_on(*log);
@@ -103,11 +78,24 @@ void apply_new_configuration(configuration const& cfg) {
         cfg.get_instance_configuration(it->first));
     if (new_config.is_empty())
       to_delete.insert(it->first);
-    else if (new_config != it->second) {
+    else if (!it->second.same_child(new_config)) {
       to_delete.insert(it->first);
       to_create.insert(it->first);
-    } else
+    } else {
       to_update.insert(it->first);
+    }
+  }
+
+  // Delete old processes.
+  for (std::set<std::string>::const_iterator it(to_delete.begin()),
+       end(to_delete.end());
+       it != end; ++it) {
+    std::unordered_map<std::string, instance*>::iterator found(instances.find(*it));
+    if (found != instances.end()) {
+      instance* to_remove{found->second};
+      instances.erase(found);
+      delete to_remove;
+    }
   }
 
   // New configs that aren't present in the old should be created.
@@ -118,26 +106,15 @@ void apply_new_configuration(configuration const& cfg) {
     if (!config.instance_exists(it->first))
       to_create.insert(it->first);
 
-  // Delete old processes.
-  for (std::set<std::string>::const_iterator it(to_delete.begin()),
-       end(to_delete.end());
-       it != end; ++it) {
-    std::unordered_map<std::string, instance*>::iterator found(instances.find(*it));
-    if (found != instances.end()) {
-      delete found->second;
-      instances.erase(found);
-    }
-  }
-
   // Update processes.
   for (std::set<std::string>::const_iterator it(to_update.begin()),
        end(to_update.end());
        it != end; ++it) {
-    std::unordered_map<std::string, instance*>::iterator found(instances.find(*it));
+    std::unordered_map<std::string, instance*>::iterator found(
+        instances.find(*it));
     if (found != instances.end()) {
-      found->second->merge_configuration(
-          cfg.get_instance_configuration(*it));
-      found->second->update_instance();
+      found->second->merge_configuration(cfg.get_instance_configuration(*it));
+      found->second->update();
     }
   }
 
@@ -155,6 +132,40 @@ void apply_new_configuration(configuration const& cfg) {
 }
 
 /**
+ *  @brief Signal handler
+ *
+ *  There is not many things we can do in signal handlers.
+ *  We convert the signal into something usable by using the
+ *  writing to a self-pipe pattern.
+ *
+ *  @param sig  The signal.
+ */
+static void signal_handler(int sig) {
+  if (sig == SIGTERM || sig == SIGINT) {
+    // Sigterm : should exit now...
+    should_exit = true;
+  } else if (sig == SIGHUP) {
+    sighup = true;
+  }
+}
+
+/**
+ *  Set the signals handlers.
+ */
+static void set_signal_handlers() {
+  struct sigaction sig;
+  sig.sa_handler = signal_handler;
+  ::sigemptyset(&sig.sa_mask);
+  ::sigfillset(&sig.sa_mask);
+  sig.sa_flags = 0;
+  if (::sigaction(SIGTERM, &sig, NULL) < 0 ||
+      ::sigaction(SIGINT, &sig, NULL) < 0 ||
+      ::sigaction(SIGHUP, &sig, NULL) < 0)
+    throw com::centreon::broker::exceptions::msg()
+          << "can't set the signal handlers";
+}
+
+/**
  *  Centreon Watchdog entry point.
  *
  *  @param[in] argc  Parameter count.
@@ -169,7 +180,7 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  char const* config_filename = argv[1];
+  config_filename = argv[1];
 
   // Load the log manager.
   logging::manager::load();
@@ -188,29 +199,58 @@ int main(int argc, char** argv) {
   }
 
   int retval{0};
-  signal(SIGCHLD, SIG_IGN);
 
   // Create the main event loop.
   try {
     set_signal_handlers();
     apply_new_configuration(config);
+    int max_fd = 0;
     while (!should_exit) {
-      for (std::unordered_map<std::string, instance*>::iterator
-             it{instances.begin()}, end{instances.end()};
-             it != end; ++it) {
-        fd_set fds;
-        FD_ZERO(&fds);
-        int fd{it->second->get_fd()};
-        FD_SET(fd, &fds);
-        struct timeval timeout{ .tv_sec = 0, .tv_usec = 1000 };
-        if (select(fd + 1, &fds, nullptr, nullptr, &timeout) == 1) { // data available
-          logging::error(logging::medium)
-            << "watchdog: cbd '" << it->first << "' is lost. Attempt to restart it.";
-          it->second->restart();
+      int timeout = 5;
+      int freq = 0;
+
+      int status, stopped_pid;
+      stopped_pid = waitpid(0, &status, WNOHANG);
+      if (stopped_pid > 0) {
+        for (std::unordered_map<std::string, instance*>::iterator
+               it = instances.begin(), end = instances.end(); it != end; ++it) {
+          instance* inst{it->second};
+          if (inst->get_pid() == stopped_pid)
+            inst->restart();
         }
+
+        /* We measure the frequency of potential restarts of cbd.
+         * - The watchdog checks every 5s.
+         * - When a cbd needs a restart, the timeout is set to 0.
+         * - If we restart cbd too often, the timeout is set again to 5.
+         */
+        freq++;
+        if (freq / instances.size() > 5) {
+          logging::error(logging::medium)
+              << "watchdog: cbd seems to stop too many times, you must look at its configuration. The watchdog loop is slow down";
+        }
+        else
+          timeout = 0;
+      }
+      else
+        freq = 0;
+
+      if (sighup) {
+        // Sighup : should reload...
+        configuration config;
+        try {
+          configuration_parser parser;
+          config = parser.parse(config_filename);
+          apply_new_configuration(config);
+        } catch (std::exception const& e) {
+          logging::error(logging::medium)
+              << "watchdog: could not parse the new configuration: "
+              << e.what();
+        }
+        sighup = false;
       }
 
-      int timeout = 5;
+      /* Let's wait a little */
       while (timeout > 0) {
         timeout--;
         sleep(1);

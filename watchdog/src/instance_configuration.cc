@@ -25,7 +25,7 @@ using namespace com::centreon::broker::watchdog;
  *  Default constructor.
  */
 instance_configuration::instance_configuration()
-    : _run(false), _reload(false), _seconds_per_tentative(0) {}
+    : _run(false), _reload(false) {}
 
 /**
  *  Constructor.
@@ -47,8 +47,8 @@ instance_configuration::instance_configuration(
       _executable{executable},
       _config_file{config_file},
       _run{should_run},
-      _reload{should_reload},
-      _seconds_per_tentative{seconds_per_tentative} {}
+      _reload{should_reload} {}
+
 /**
  *  Destructor.
  */
@@ -65,8 +65,7 @@ instance_configuration::instance_configuration(
       _executable{other._executable},
       _config_file(other._config_file),
       _run(other._run),
-      _reload(other._reload),
-      _seconds_per_tentative(other._seconds_per_tentative) {}
+      _reload(other._reload) {}
 
 /**
  *  Assignment operator.
@@ -83,7 +82,6 @@ instance_configuration& instance_configuration::operator=(
     _config_file = other._config_file;
     _run = other._run;
     _reload = other._reload;
-    _seconds_per_tentative = other._seconds_per_tentative;
   }
   return *this;
 }
@@ -92,28 +90,16 @@ instance_configuration& instance_configuration::operator=(
  *  @brief Compare two instance configuration.
  *
  *  Two instances compare true if their name, config file and run properties
- *  are the same.
+ *  are the same. It's a trick!
  *
  *  @param[in] other  The object to compare with.
  *
  *  @return  True if equal.
  */
-bool instance_configuration::operator==(
+bool instance_configuration::same_child(
     instance_configuration const& other) const {
-  return (_name == other._name && _config_file == other._config_file &&
-          _run == other._run);
-}
-
-/**
- *  @brief Unequal comparison.
- *
- *  @param[in] other  The object to compare.
- *
- *  @return  !operator==().
- */
-bool instance_configuration::operator!=(
-    instance_configuration const& other) const {
-  return !instance_configuration::operator==(other);
+  return _name == other._name && _executable == other._executable &&
+         _config_file == other._config_file && _run == other._run;
 }
 
 /**
@@ -168,13 +154,4 @@ bool instance_configuration::should_run() const throw() {
  */
 bool instance_configuration::should_reload() const throw() {
   return _reload;
-}
-
-/**
- *  How many seconds between each tentative?
- *
- *  @return  How many seconds between restart.
- */
-unsigned int instance_configuration::seconds_per_tentative() const throw() {
-  return _seconds_per_tentative == 0 ? 1 : _seconds_per_tentative;
 }
