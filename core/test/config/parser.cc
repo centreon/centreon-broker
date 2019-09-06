@@ -106,9 +106,8 @@ TEST(parser, endpoint) {
   fclose(file_stream);
 
   // Parse.
-  config::state s;
   config::parser p;
-  p.parse(config_file.c_str(), s);
+  config::state s{p.parse(config_file.c_str())};
 
   // Remove temporary file.
   ::remove(config_file.c_str());
@@ -217,9 +216,8 @@ TEST(parser, logger) {
   fclose(file_stream);
 
   // Parse.
-  config::state s;
   config::parser p;
-  p.parse(config_file.c_str(), s);
+  config::state s{p.parse(config_file.c_str())};
 
   // Remove temporary file.
   ::remove(config_file.c_str());
@@ -292,9 +290,8 @@ TEST(parser, global) {
   fclose(file_stream);
 
   // Parse.
-  config::state s;
   config::parser p;
-  p.parse(config_file.c_str(), s);
+  config::state s{p.parse(config_file)};
 
   // Remove temporary file.
   ::remove(config_file.c_str());

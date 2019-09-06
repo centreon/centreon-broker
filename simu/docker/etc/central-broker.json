@@ -1,0 +1,129 @@
+{
+  "centreonBroker":
+  {
+    "broker_id": 1,
+      "broker_name": "central-broker-master",
+      "poller_id": 1,
+      "poller_name": "Central",
+      "module_directory": "/usr/share/centreon/lib/centreon-broker",
+      "log_timestamp": true,
+      "log_thread_id": false,
+      "event_queue_max_size": 100000,
+      "command_file": "/var/lib/centreon-broker/command.sock",
+      "cache_directory": "/var/lib/centreon-broker",
+      "logger": {
+        "name": "/var/log/centreon-broker/central-broker-master.log",
+        "config": true,
+        "debug": false,
+        "error": true,
+        "info": true,
+        "level": "medium",
+        "type": "file"
+      },
+      "input": {
+        "name": "test-simu",
+        "path": "/usr/share/centreon-broker/lua/test-full.lua",
+        "type": "simu",
+        "lua_parameter": [
+        {
+          "type": "number",
+          "name": "count",
+          "value": "5"
+        },
+        {
+          "type": "string",
+          "name": "db_addr",
+          "value": "172.17.0.1"
+        },
+        {
+          "type": "string",
+          "name": "login",
+          "value": "root"
+        },
+        {
+          "type": "string",
+          "name": "password",
+          "value": "root"
+        }
+        ]
+      },
+      "output": [
+      {
+        "name": "central-broker-master-sql",
+        "db_type": "mysql",
+        "retry_interval": "60",
+        "db_host": "172.17.0.1",
+        "buffering_timeout": "0",
+        "db_port": "3306",
+        "db_user": "root",
+        "db_password": "root",
+        "db_name": "centreon_storage",
+        "check_replication": "no",
+        "type": "sql",
+        "connections_count": "3"
+      },
+      {
+        "name": "central-rrd-master-output",
+        "metrics_path": "/var/lib/centreon/metrics/",
+        "status_path": "/var/lib/centreon/status/",
+        "retry_interval": "60",
+        "buffering_timeout": "0",
+        "store_in_data_bin": "yes",
+        "write_metrics": "yes",
+        "write_status": "yes",
+        "type": "rrd"
+      },
+      {
+        "name": "central-broker-master-perfdata",
+        "interval": "60",
+        "retry_interval": "60",
+        "buffering_timeout": "0",
+        "length": "15552000",
+        "db_type": "mysql",
+        "db_host": "172.17.0.1",
+        "db_port": "3306",
+        "db_user": "root",
+        "db_password": "root",
+        "db_name": "centreon_storage",
+        "check_replication": "no",
+        "store_in_data_bin": "yes",
+        "insert_in_index_data": "1",
+        "connections_count": "3",
+        "type": "storage"
+      },
+      {
+        "name": "centreon-bam-monitoring",
+        "type": "bam",
+        "cache": "yes",
+        "db_name": "centreon",
+        "db_type": "mysql",
+        "db_host": "172.17.0.1",
+        "db_user": "root",
+        "db_password": "root",
+        "db_port": "3306",
+        "storage_db_name": "centreon_storage",
+        "queries_per_transaction": "0",
+        "command_file": "/var/lib/centreon-engine/rw/centengine.cmd"
+      },
+      {
+        "name": "centreon-bam-reporting",
+        "type": "bam_bi",
+        "db_name": "centreon_storage",
+        "db_type": "mysql",
+        "db_host": "172.17.0.1",
+        "db_user": "root",
+        "db_password": "root",
+        "db_port": "3306",
+        "queries_per_transaction": "0",
+        "filters": {
+          "category": "bam"
+        }
+      }
+    ],
+      "stats": {
+        "type": "stats",
+        "name": "central-broker-master-stats",
+        "json_fifo": "/var/lib/centreon-broker/central-broker-master-stats.json"
+      }
+  }
+}

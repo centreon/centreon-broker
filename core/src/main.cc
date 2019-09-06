@@ -66,8 +66,7 @@ static void hup_handler(int signum) {
   try {
     // Parse configuration file.
     config::parser parsr;
-    config::state conf;
-    parsr.parse(gl_mainconfigfiles.front(), conf);
+    config::state conf{parsr.parse(gl_mainconfigfiles.front())};
 
     try {
       // Apply resulting configuration.
@@ -276,8 +275,7 @@ int main(int argc, char* argv[]) {
       {
         // Parse configuration file.
         config::parser parsr;
-        config::state conf;
-        parsr.parse(gl_mainconfigfiles.front(), conf);
+        config::state conf{parsr.parse(gl_mainconfigfiles.front())};
 
         // Verification modifications.
         if (check) {

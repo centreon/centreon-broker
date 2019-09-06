@@ -40,7 +40,7 @@ namespace       config {
                 parser(parser const& other) = delete;
                 ~parser();
     parser&     operator=(parser const& other) = delete;
-    void        parse(std::string const& file, state& s);
+    state       parse(std::string const& file);
     static bool parse_boolean(std::string const& value);
 
   private:
