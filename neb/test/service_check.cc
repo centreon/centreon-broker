@@ -27,11 +27,11 @@
 using namespace com::centreon::broker;
 
 class ServiceCheck : public ::testing::Test {
-  void SetUp() {
+  void SetUp() override {
     randomize_init();
   };
 
-  void TearDown() {
+  void TearDown() override {
     randomize_cleanup();
   };
 };

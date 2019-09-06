@@ -26,7 +26,7 @@ using namespace com::centreon::broker;
 
 class  FileSplitterMoreThanMaxSize : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     logging::manager::load();
     _path = "/var/lib/centreon-broker/queue";
     _file_factory = new test_file_factory();
@@ -41,7 +41,7 @@ class  FileSplitterMoreThanMaxSize : public ::testing::Test {
     return ;
   }
 
-  void TearDown() {
+  void TearDown() override {
     logging::manager::unload();
   };
 

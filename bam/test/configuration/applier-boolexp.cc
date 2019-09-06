@@ -26,7 +26,7 @@ using namespace com::centreon::broker;
 
 class ApplierBoolexp : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     // Initialization.
     config::applier::init();
 
@@ -34,7 +34,7 @@ class ApplierBoolexp : public ::testing::Test {
     _state.reset(new bam::configuration::state);
   }
 
-  void TearDown() {
+  void TearDown() override {
     // Cleanup.
     config::applier::deinit();
   }

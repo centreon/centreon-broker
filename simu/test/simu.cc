@@ -34,7 +34,7 @@ using namespace com::centreon::broker::simu;
 
 class SimuGenericTest : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     try {
       config::applier::init();
     }
@@ -42,7 +42,7 @@ class SimuGenericTest : public ::testing::Test {
       (void) e;
     }
   }
-  void TearDown() {
+  void TearDown() override {
     config::applier::deinit();
   }
 

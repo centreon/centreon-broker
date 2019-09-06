@@ -27,7 +27,7 @@ using namespace com::centreon::broker;
 
 class FileSplitterResume : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     logging::manager::load();
 
     _path = "/var/lib/centreon-broker/queue";
@@ -76,7 +76,7 @@ class FileSplitterResume : public ::testing::Test {
                             true));
   }
 
-  void TearDown() {
+  void TearDown() override {
       logging::manager::unload();
   };
 

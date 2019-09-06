@@ -48,7 +48,7 @@ using namespace com::centreon::broker::database;
 
 class DatabaseStorageTest : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     try {
       config::applier::init();
     }
@@ -56,7 +56,7 @@ class DatabaseStorageTest : public ::testing::Test {
       (void) e;
     }
   }
-  void TearDown() {
+  void TearDown() override {
     config::applier::deinit();
   }
 };

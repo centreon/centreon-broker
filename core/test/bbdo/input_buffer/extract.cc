@@ -23,7 +23,7 @@ using namespace com::centreon::broker;
 
 class BbdoInputBufferExtract : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     for (int i(1); i < 120; ++i) {
       char buffer[120];
       for (int j(0); j < i; ++j)

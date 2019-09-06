@@ -27,7 +27,7 @@ using namespace com::centreon::broker;
 
 class MultiplexingMuxerRead : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     try {
       config::applier::init();
     } catch (std::exception const& e) {
@@ -35,7 +35,7 @@ class MultiplexingMuxerRead : public ::testing::Test {
     }
   }
 
-  void TearDown() { config::applier::deinit(); }
+  void TearDown() override { config::applier::deinit(); }
 
   void setup(std::string const& name) {
     _m.reset(new multiplexing::muxer(name, false));

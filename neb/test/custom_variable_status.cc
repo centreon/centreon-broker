@@ -25,12 +25,12 @@ using namespace com::centreon::broker;
 
 class CVarStatusTest : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     // Initialization.
     randomize_init();
   }
 
-  void TearDown() {
+  void TearDown() override {
     // Cleanup.
     com::centreon::broker::randomize_cleanup();
   }

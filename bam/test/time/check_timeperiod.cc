@@ -143,12 +143,12 @@ static void parse_file(char const* filename, options& opt) {
 
 class BamTime : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     config::applier::init();
     time::timezone_manager::load();
   }
 
-  void TearDown() {
+  void TearDown() override {
     time::timezone_manager::unload();
     config::applier::deinit();
   }

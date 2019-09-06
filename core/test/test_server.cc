@@ -170,7 +170,7 @@ bool test_server::add_client(asio::ip::tcp::socket& sock, asio::io_context& io) 
 
 class AsioTest : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     buf = new char[buff_size];
 
     std::thread t{[&] {
@@ -183,7 +183,7 @@ class AsioTest : public ::testing::Test {
     while (!_server.get_init_done())
       ;
   }
-  void TearDown() {
+  void TearDown() override {
     if (_server.get_init_done())
       _server.stop();
     _thread.join();

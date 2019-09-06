@@ -44,7 +44,7 @@ using namespace com::centreon::broker::lua;
 
 class LuaTest : public ::testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     try {
       config::applier::init();
     } catch (std::exception const& e) {
@@ -54,7 +54,7 @@ class LuaTest : public ::testing::Test {
         std::make_shared<persistent_cache>("/tmp/broker_test_cache"));
     _cache.reset(new macro_cache(pcache));
   }
-  virtual void TearDown() {
+  void TearDown() override {
     // The cache must be destroyed before the applier deinit() call.
     _cache.reset();
     config::applier::deinit();
@@ -86,7 +86,7 @@ class LuaTest : public ::testing::Test {
 
 class LuaAsioTest : public LuaTest {
  public:
-  void SetUp() {
+  void SetUp() override {
     LuaTest::SetUp();
     std::thread t{[&] {
       _server.init();
@@ -98,7 +98,7 @@ class LuaAsioTest : public LuaTest {
     while (!_server.get_init_done())
       ;
   }
-  void TearDown() {
+  void TearDown() override {
     LuaTest::TearDown();
     if (_server.get_init_done())
       _server.stop();

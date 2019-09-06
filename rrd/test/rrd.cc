@@ -28,7 +28,7 @@ using namespace com::centreon::broker;
 
 class Rrd : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     try {
       config::applier::init();
     }
@@ -37,7 +37,7 @@ class Rrd : public ::testing::Test {
     }
   }
 
-  void TearDown() {
+  void TearDown() override {
     // The cache must be destroyed before the applier deinit() call.
     config::applier::deinit();
   }
