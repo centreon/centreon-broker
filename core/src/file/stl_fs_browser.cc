@@ -44,7 +44,7 @@ fs_browser::entry_list stl_fs_browser::read_directory(
     std::string const& path,
     std::string const& filters) {
   std::list<std::string> entries;
-  entries = misc::filesystem::dir_content(path, filters);
+  entries = misc::filesystem::dir_content_with_filter(path, filters);
 
   fs_browser::entry_list retval;
   for (std::list<std::string>::iterator it(entries.begin()), end(entries.end());
