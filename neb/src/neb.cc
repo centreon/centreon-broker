@@ -261,8 +261,7 @@ extern "C" {
 
         // Try configuration parsing.
 	com::centreon::broker::config::parser p;
-	com::centreon::broker::config::state s;
-        p.parse(neb::gl_configuration_file, s);
+	com::centreon::broker::config::state s{p.parse(neb::gl_configuration_file)};
 
         // Apply loggers.
 	com::centreon::broker::config::applier::logger::instance().apply(
