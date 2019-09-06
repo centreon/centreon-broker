@@ -150,7 +150,6 @@ void string::split(std::string const& data,
   }
   std::string tmp(last ? data.substr(last) : data);
   out.push_back(trim(tmp));
-  return;
 }
 
 /**

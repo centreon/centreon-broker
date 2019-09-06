@@ -18,7 +18,7 @@
 
 #include "com/centreon/broker/misc/filesystem.hh"
 #include <dirent.h>
-#include <regex.h>
+#include <fnmatch.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <cstring>
@@ -61,26 +61,34 @@ std::list<std::string> filesystem::dir_content(std::string const& path,
   return retval;
 }
 
-std::list<std::string> filesystem::dir_content(std::string const& path,
-                                               std::string const& filter) {
+/**
+ *  Get the file names contained in a directory that match a given wildcard
+ * match.
+ *
+ * @param path The directory where to get files.
+ * @param filter A filter, the same we could give to a `ls` call.
+ *
+ * @return The list of the files matching the filter.
+ */
+std::list<std::string> filesystem::dir_content_with_filter(
+    std::string const& path,
+    std::string const& filter) {
+  std::list<std::string> retval;
   std::list<std::string> list{filesystem::dir_content(path, false)};
-  {
-    std::list<std::string> filters_list;
-    regex_t r;
+  std::string flt;
+  flt.reserve(path.size() + 1 + filter.size());
+  flt = path;
 
-    ::regcomp(&r, filter.c_str(), REG_EXTENDED);
+  if (flt.size() == 0 || flt[flt.size() - 1] != '/')
+    flt.append("/");
+  flt.append(filter);
 
-    for (std::list<std::string>::iterator it(list.begin()), end(list.end());
-         it != end; ++it) {
-      if (::regexec(&r, it->c_str(), 0, NULL, 0) == 0)
-        filters_list.push_back(*it);
-    }
-
-    ::regfree(&r);
-    list = filters_list;
+  for (std::string& f : list) {
+    if (fnmatch(flt.c_str(), f.c_str(),
+                FNM_PATHNAME | FNM_NOESCAPE | FNM_PERIOD) == 0)
+      retval.push_back(std::move(f));
   }
-
-  return list;
+  return retval;
 }
 
 /**

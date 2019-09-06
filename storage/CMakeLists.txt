@@ -65,7 +65,7 @@ add_dependencies("${STORAGE}" json11_lib)
 set_target_properties("${STORAGE}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS}")
-target_link_libraries("${STORAGE}" ${QT_LIBRARIES})
+target_link_libraries("${STORAGE}")
 
 # Testing.
 set(

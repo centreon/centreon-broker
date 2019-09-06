@@ -51,7 +51,7 @@ add_dependencies("${STATS}" Asio)
 set_target_properties("${STATS}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS}")
-target_link_libraries("${STATS}" ${QT_LIBRARIES})
+target_link_libraries("${STATS}")
 
 # Install rule.
 install(TARGETS "${STATS}"

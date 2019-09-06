@@ -19,9 +19,8 @@
 #ifndef CCB_WATCHDOG_INSTANCE_HH
 #define CCB_WATCHDOG_INSTANCE_HH
 
-#include <QObject>
-#include <QProcess>
 #include <string>
+#include <unistd.h>
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
 #include "com/centreon/broker/watchdog/instance_configuration.hh"
@@ -36,21 +35,20 @@ class application;
  *  @class instance instance.hh "com/centreon/broker/watchdog/instance.hh"
  *  @brief This represents the process associated with an instance of broker.
  */
-class instance : public QProcess {
-  Q_OBJECT
+class instance {
  public:
-  instance(instance_configuration const& config, application& parent);
+  instance(instance_configuration const& config);
   ~instance();
 
   void merge_configuration(instance_configuration const& new_config);
 
- public slots:
-  void start_instance();
-  void update_instance();
-  void stop_instance();
+  void restart();
+  void start();
+  void stop();
+  void update();
 
- public slots:
   void on_exit();
+  int get_pid() const;
 
  private:
   instance(instance const&);
@@ -59,6 +57,7 @@ class instance : public QProcess {
   instance_configuration _config;
   bool _started;
   timestamp _since_last_start;
+  pid_t _pid;
 
   static const unsigned int _exit_timeout = 10000;
 };

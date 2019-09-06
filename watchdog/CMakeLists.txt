@@ -19,33 +19,40 @@
 # Global options.
 set(INC_DIR "${PROJECT_SOURCE_DIR}/watchdog/inc/com/centreon/broker/watchdog")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/watchdog/src")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/watchdog/test")
 include_directories("${PROJECT_SOURCE_DIR}/watchdog/inc/")
 
-# Some files must be processed by Qt's moc.
-unset(QT_WRAPPED_SOURCES)
-qt4_wrap_cpp(QT_WRAPPED_SOURCES
-  "${INC_DIR}/instance.hh"
-  "${INC_DIR}/application.hh")
 # Watchdog binary.
 set(WATCHDOG "cbwd")
 set(WATCHDOG "${WATCHDOG}" PARENT_SCOPE)
 add_executable("${WATCHDOG}"
-  ${QT_WRAPPED_SOURCES}
   # Sources.
   "${SRC_DIR}/main.cc"
-  "${SRC_DIR}/application.cc"
   "${SRC_DIR}/configuration.cc"
   "${SRC_DIR}/configuration_parser.cc"
   "${SRC_DIR}/instance.cc"
   "${SRC_DIR}/instance_configuration.cc"
   # Headers.
-  "${INC_DIR}/application.hh"
   "${INC_DIR}/configuration.hh"
   "${INC_DIR}/configuration_parser.hh"
   "${INC_DIR}/instance.hh"
   "${INC_DIR}/instance_configuration.hh"
 )
-target_link_libraries("${WATCHDOG}" ${QT_LIBRARIES} "roker")
+target_link_libraries("${WATCHDOG}" "roker")
+
+# Testing.
+set(
+  TESTS_SOURCES
+  ${TESTS_SOURCES}
+  "${TEST_DIR}/watchdog.cc"
+  PARENT_SCOPE
+)
+set(
+  TESTS_LIBRARIES
+  ${TESTS_LIBRARIES}
+  "${STORAGE}"
+  PARENT_SCOPE
+)
 
 # Install rule.
 install(TARGETS "${WATCHDOG}"
