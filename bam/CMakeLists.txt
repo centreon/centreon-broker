@@ -184,7 +184,6 @@ add_library("${BAM}" SHARED
 set_target_properties("${BAM}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS}")
-target_link_libraries("${BAM}" ${QT_LIBRARIES})
 
 # Testing.
 if (WITH_TESTING )

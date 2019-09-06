@@ -40,7 +40,6 @@ add_library("${GENERATOR}" SHARED
   "${INC_DIR}/receiver.hh"
   "${INC_DIR}/sender.hh"
 )
-target_link_libraries("${GENERATOR}" ${QT_LIBRARIES})
 set_target_properties("${GENERATOR}" PROPERTIES PREFIX "")
 
 # Install rule.

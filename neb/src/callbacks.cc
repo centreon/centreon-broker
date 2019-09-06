@@ -1546,8 +1546,7 @@ int neb::callback_process(int callback_type, void* data) {
       unsigned int statistics_interval(0);
       try {
         config::parser parsr;
-        config::state conf;
-        parsr.parse(gl_configuration_file, conf);
+        config::state conf{parsr.parse(gl_configuration_file)};
 
         // Apply resulting configuration.
         config::applier::state::instance().apply(conf);
