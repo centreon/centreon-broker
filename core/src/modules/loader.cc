@@ -93,7 +93,7 @@ void loader::load_dir(std::string const& dirname, void const* arg) {
 
   // Set directory browsing parameters.
   std::list<std::string> list;
-  list = misc::filesystem::dir_content(dirname, "*.so");
+  list = misc::filesystem::dir_content_with_filter(dirname, "*.so");
 
   for (std::list<std::string>::iterator it(list.begin()), end(list.end());
        it != end; ++it) {

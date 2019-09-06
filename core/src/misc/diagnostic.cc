@@ -18,9 +18,7 @@
 
 #include "com/centreon/broker/misc/diagnostic.hh"
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
-#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
@@ -36,40 +34,6 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
-
-/**************************************
- *                                     *
- *           Static Methods            *
- *                                     *
- **************************************/
-int diagnostic::exec_process(char const** argv, bool wait_for_completion) {
-  int status;
-  pid_t my_pid{fork()};
-  if (my_pid == 0) {
-    int res = execve(argv[0], const_cast<char**>(argv), nullptr);
-    if (res == -1) {
-      perror("child process failed [%m]");
-      return -1;
-    }
-  }
-
-  if (wait_for_completion) {
-    int timeout = 20;
-    while (waitpid(my_pid, &status, WNOHANG)) {
-      if (--timeout < 0) {
-        perror("timeout reached during execution");
-        return -1;
-      }
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-
-    if (WIFEXITED(status) != 1 || WEXITSTATUS(status) != 0) {
-      perror("%s failed");
-      return -1;
-    }
-  }
-  return 0;
-}
 
 /**************************************
  *                                     *
@@ -353,12 +317,8 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
           log_path.append(it->name());
         to_remove.push_back(log_path);
 
-        char const* args[]{"tail", "-c", "20000000", it->name().c_str()};
-        // QStringList args;
-        // args.push_back("-c");
-        // args.push_back("20000000");
-        // args.push_back(it->name());
-        exec_process(args, true);
+        char const* args[]{"tail", "-c", "20000000", it->name().c_str(), nullptr};
+        misc::exec_process(args, true);
       }
   }
 

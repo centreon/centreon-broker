@@ -16,8 +16,8 @@
  * For more information : contact@centreon.com
  *
  */
-#include <gtest/gtest.h>
 #include "com/centreon/broker/misc/filesystem.hh"
+#include <gtest/gtest.h>
 
 using namespace com::centreon::broker::misc::filesystem;
 
@@ -28,9 +28,13 @@ TEST(Filesystem, Mkpath) {
 }
 
 TEST(Filesystem, DirContent) {
-  system("touch /tmp/foo/a /tmp/foo/b /tmp/foo/c /tmp/foo/bar/aa /tmp/foo/bar/bb /tmp/foo/bar/incredible/cc");
+  system(
+      "touch /tmp/foo/a /tmp/foo/ar /tmp/foo/ca /tmp/foo/bar/aa "
+      "/tmp/foo/bar/bb /tmp/foo/bar/incredible/cc");
   std::list<std::string> lst{dir_content("/tmp/foo", true)};
   ASSERT_EQ(lst.size(), 6u);
   std::list<std::string> lst1{dir_content("/tmp/foo", false)};
   ASSERT_EQ(lst1.size(), 3u);
+  std::list<std::string> lst2{dir_content_with_filter("/tmp/foo", "a*")};
+  ASSERT_EQ(lst2.size(), 2u);
 }

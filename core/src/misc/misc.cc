@@ -17,14 +17,17 @@
 */
 
 #include "com/centreon/broker/misc/misc.hh"
+#include <sys/wait.h>
 #include <unistd.h>
 #include <array>
 #include <cerrno>
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
 #include <random>
+#include <thread>
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
@@ -85,6 +88,35 @@ std::string misc::exec(std::string const& cmd) {
   return result;
 }
 
+int32_t misc::exec_process(char const** argv, bool wait_for_completion) {
+  int status;
+  pid_t my_pid{fork()};
+  if (my_pid == 0) {
+    int res = execve(argv[0], const_cast<char**>(argv), nullptr);
+    if (res == -1) {
+      perror("child process failed [%m]");
+      return -1;
+    }
+  }
+
+  if (wait_for_completion) {
+    int timeout = 20;
+    while (waitpid(my_pid, &status, WNOHANG)) {
+      if (--timeout < 0) {
+        perror("timeout reached during execution");
+        return -1;
+      }
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+
+    if (WIFEXITED(status) != 1 || WEXITSTATUS(status) != 0) {
+      perror("%s failed");
+      return -1;
+    }
+  }
+  return 0;
+}
+
 /**
  *  Build a vector<char> from a string. The string contains numbers in
  *  hexadecimal format. For example: "0A1286EF"
@@ -110,18 +142,17 @@ std::vector<char> misc::from_hex(std::string const& str) {
     if (c >= '0' && c <= '9')
       value |= c - '0';
     else if (c >= 'A' && c <= 'F')
-      value |= c + 10 -'A';
+      value |= c + 10 - 'A';
     else if (c >= 'a' && c <= 'f')
-      value |= c + 10 -'a';
+      value |= c + 10 - 'a';
     else
       throw exceptions::msg()
-        << "from_hex: '" << str << "' should be a string containing some "
-        << "hexadecimal digits";
+          << "from_hex: '" << str << "' should be a string containing some "
+          << "hexadecimal digits";
     if (valid) {
       retval.push_back(value);
       valid = false;
-    }
-    else
+    } else
       valid = true;
   }
   return retval;

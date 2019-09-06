@@ -17,11 +17,14 @@
 */
 
 #include "com/centreon/broker/watchdog/instance.hh"
-#include <QTimer>
+#include <wait.h>
+#include <cassert>
 #include <csignal>
+#include <cstring>
+#include <iostream>
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/broker/vars.hh"
-#include "com/centreon/broker/watchdog/application.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::watchdog;
@@ -29,18 +32,17 @@ using namespace com::centreon::broker::watchdog;
 /**
  *  Default constructor.
  */
-instance::instance(instance_configuration const& config, application& parent)
-    : QProcess(&parent), _config(config), _started(false) {
+instance::instance(instance_configuration const& config)
+    : _config{config}, _started{false}, _pid{} {
   if (config.should_run())
-    start_instance();
-  connect(this, SIGNAL(finished(int)), this, SLOT(on_exit()));
+    start();
 }
 
 /**
  *  Destructor.
  */
 instance::~instance() {
-  stop_instance();
+  stop();
 }
 
 /**
@@ -49,7 +51,7 @@ instance::~instance() {
  *  @param[in] new_config  The new config.
  */
 void instance::merge_configuration(instance_configuration const& new_config) {
-  if (_config != new_config) {
+  if (!_config.same_child(new_config)) {
     logging::error(logging::medium)
         << "watchdog: attempting to merge an incompatible configuration "
            "for process '"
@@ -62,85 +64,103 @@ void instance::merge_configuration(instance_configuration const& new_config) {
 }
 
 /**
+ *  A binding to the execve function.
+ *
+ * @param argv Args to give to the function.
+ *
+ * @return the pid.
+ */
+static pid_t exec_process(char const** argv) {
+  int status;
+
+  pid_t son_pid{fork()};
+
+  // I'm your father
+  if (son_pid) {
+  }
+  else {
+    int res = execve(argv[0], const_cast<char**>(argv), nullptr);
+    exit(res);
+  }
+  return son_pid;
+}
+
+/**
+ *  Restart an instance of cbd.
+ */
+void instance::restart() {
+  _started = false;
+  start();
+}
+
+/**
  *  Start an instance of cbd.
  */
-void instance::start_instance() {
+void instance::start() {
   if (!_started && _config.should_run()) {
     _started = true;
     _since_last_start = timestamp::now();
     logging::info(logging::medium)
         << "watchdog: starting process '" << _config.get_name() << "'";
-    start(PREFIX_BIN "/cbd",
-          QStringList(QString::fromStdString(_config.get_config_file())),
-          QProcess::ReadOnly);
+    char const* argv[]{_config.get_executable().c_str(),
+                       _config.get_config_file().c_str(), nullptr};
+    _pid = exec_process(argv);
     logging::info(logging::medium)
         << "watchdog: process '" << _config.get_name() << "' started (PID "
-        << pid() << ")";
+        << _pid << ")";
   }
-  return;
 }
 
 /**
  *  Update an instance broker.
  */
-void instance::update_instance() {
-  if (state() == QProcess::Running && _config.should_reload()) {
+void instance::update() {
+  if (_started && _config.should_reload()) {
     logging::info(logging::medium)
         << "watchdog: sending update signal to process '" << _config.get_name()
-        << "' (PID " << pid() << ")";
-    ::kill(pid(), SIGHUP);
+        << "' (PID " << _pid << ")";
+    kill(_pid, SIGHUP);
   }
-  return;
 }
 
 /**
  *  Stop an instance broker.
  */
-void instance::stop_instance() {
+void instance::stop() {
   if (_started) {
     logging::info(logging::medium)
         << "watchdog: stopping process '" << _config.get_name() << "' (PID "
-        << pid() << ")";
+        << _pid << ")";
     _started = false;
-    terminate();
-    if (!waitForFinished(_exit_timeout)) {
+    int res = kill(_pid, SIGTERM);
+    if (res)
       logging::error(logging::medium)
-          << "watchdog: could npt gracefully terminate process '"
-          << _config.get_name() << "' (PID " << pid() << "): killing it";
-      kill();
-    } else {
-      logging::error(logging::medium)
-          << "watchdog: process '" << _config.get_name()
-          << "' stopped gracefully";
+          << "watchdog: could not send a kill signal to process '"
+          << _config.get_name() << "' (PID " << _pid << "):" << strerror(errno)
+          << '\n';
+    int status;
+    int timeout = 10;
+    while ((res = waitpid(_pid, &status, WNOHANG))) {
+      if (--timeout < 0) {
+        logging::error(logging::medium)
+            << "watchdog: could not gracefully terminate process '"
+            << _config.get_name() << "' (PID " << _pid << "): killing it";
+        kill(_pid, SIGKILL);
+        return;
+      }
+      sleep(1);
     }
+    logging::error(logging::medium)
+        << "watchdog: process '" << _config.get_name()
+        << "' stopped gracefully";
   }
-  return;
 }
 
 /**
- *  Called when the process exit.
+ *  Accessor to the pid.
+ *
+ * @return The pid.
  */
-void instance::on_exit() {
-  // Process should be stopped, everything is going well.
-  if (!_started || !_config.should_run())
-    return;
-
-  _started = false;
-
-  // Process should not be stopped, restart it.
-  unsigned int time_to_restart =
-      std::min(static_cast<unsigned int>(timestamp::now() - _since_last_start),
-               _config.seconds_per_tentative());
-  if (time_to_restart == 0)
-    logging::error(logging::medium)
-        << "watchdog: process '" << _config.get_name()
-        << "' terminated unexpectedly, restarting it immediately";
-  else
-    logging::error(logging::medium)
-        << "watchdog: process '" << _config.get_name()
-        << "' terminated unexpectedly, restarting it in "
-        << _config.seconds_per_tentative() << " seconds";
-  QTimer::singleShot(_config.seconds_per_tentative() * 1000, this,
-                     SLOT(start_instance()));
-  return;
+int instance::get_pid() const {
+  return _pid;
 }
