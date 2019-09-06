@@ -123,7 +123,7 @@ class FileSplitterConcurrent : public ::testing::Test {
 
   void _remove_files() {
     std::list<std::string> entries =
-        misc::filesystem::dir_content(RETENTION_DIR, RETENTION_FILE "*");
+        misc::filesystem::dir_content_with_filter(RETENTION_DIR, RETENTION_FILE "*");
     for (std::list<std::string>::iterator it{entries.begin()},
          end{entries.end()};
          it != end; ++it)
@@ -176,6 +176,6 @@ TEST_F(FileSplitterConcurrent, MultipleFilesCreated) {
   // Then
   _file->remove_all_files();
   std::list<std::string> entries =
-      misc::filesystem::dir_content(RETENTION_DIR, RETENTION_FILE);
+      misc::filesystem::dir_content_with_filter(RETENTION_DIR, RETENTION_FILE);
   ASSERT_EQ(entries.size(), 0);
 }
