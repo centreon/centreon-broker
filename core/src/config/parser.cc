@@ -73,9 +73,11 @@ static bool get_conf(std::pair<std::string const, Json> const& obj,
  *  Parse a configuration file.
  *
  *  @param[in]  file File to process.
- *  @param[out] s    Resulting configuration state.
+ *
+ *  @return a state corresponding to the json file processed.
  */
-void parser::parse(std::string const& file, state& s) {
+state parser::parse(std::string const& file) {
+  state retval;
   // Parse JSON document.
   std::ifstream f(file);
   std::string const& json_to_parse{std::istreambuf_iterator<char>(f),
@@ -88,47 +90,44 @@ void parser::parse(std::string const& file, state& s) {
     throw exceptions::msg()
         << "config parser: cannot parse file '" << file << "': " << err;
 
-  // Clear state.
-  s.clear();
-
   if (js.is_object() && js["centreonBroker"].is_object()) {
     for (std::pair<std::string const, Json> const& object :
          js["centreonBroker"].object_items()) {
-      if (get_conf<int, state>(object, "broker_id", s, &state::broker_id,
+      if (get_conf<int, state>(object, "broker_id", retval, &state::broker_id,
                                &Json::is_number, &Json::int_value))
         ;
       else if (get_conf<std::string const&, state>(
-                   object, "broker_name", s, &state::broker_name,
+                   object, "broker_name", retval, &state::broker_name,
                    &Json::is_string, &Json::string_value))
         ;
-      else if (get_conf<int, state>(object, "poller_id", s, &state::poller_id,
+      else if (get_conf<int, state>(object, "poller_id", retval, &state::poller_id,
                                     &Json::is_number, &Json::int_value))
         ;
       else if (get_conf<std::string const&, state>(
-                   object, "poller_name", s, &state::poller_name,
+                   object, "poller_name", retval, &state::poller_name,
                    &Json::is_string, &Json::string_value))
         ;
       else if (get_conf<std::string const&, state>(
-                   object, "module_directory", s, &state::module_directory,
+                   object, "module_directory", retval, &state::module_directory,
                    &Json::is_string, &Json::string_value))
         ;
       else if (get_conf<std::string const&, state>(
-                   object, "cache_directory", s, &state::cache_directory,
+                   object, "cache_directory", retval, &state::cache_directory,
                    &Json::is_string, &Json::string_value))
         ;
       else if (get_conf<std::string const&, state>(
-                   object, "command_file", s, &state::command_file,
+                   object, "command_file", retval, &state::command_file,
                    &Json::is_string, &Json::string_value))
         ;
-      else if (get_conf<int, state>(object, "event_queue_max_size", s,
+      else if (get_conf<int, state>(object, "event_queue_max_size", retval,
                                     &state::event_queue_max_size,
                                     &Json::is_number, &Json::int_value))
         ;
-      else if (get_conf<bool, state>(object, "log_thread_id", s,
+      else if (get_conf<bool, state>(object, "log_thread_id", retval,
                                      &state::log_thread_id, &Json::is_bool,
                                      &Json::bool_value))
         ;
-      else if (get_conf<bool, state>(object, "log_human_readable_timestamp", s,
+      else if (get_conf<bool, state>(object, "log_human_readable_timestamp", retval,
                                      &state::log_human_readable_timestamp,
                                      &Json::is_bool, &Json::bool_value))
         ;
@@ -139,14 +138,14 @@ void parser::parse(std::string const& file, state& s) {
             out.read_filters.insert("all");
             out.write_filters.insert("all");
             _parse_endpoint(node, out);
-            s.endpoints().push_back(out);
+            retval.endpoints().push_back(out);
           }
         } else if (object.second.is_object()) {
           endpoint out;
           out.read_filters.insert("all");
           out.write_filters.insert("all");
           _parse_endpoint(object.second, out);
-          s.endpoints().push_back(out);
+          retval.endpoints().push_back(out);
         } else {
           throw exceptions::msg() << "config parser: cannot parse key '"
                                   << "'output':  value type must be an object";
@@ -159,13 +158,13 @@ void parser::parse(std::string const& file, state& s) {
             endpoint in;
             in.read_filters.insert("all");
             _parse_endpoint(node, in);
-            s.endpoints().push_back(in);
+            retval.endpoints().push_back(in);
           }
         } else if (object.second.is_object()) {
           endpoint in;
           in.read_filters.insert("all");
           _parse_endpoint(object.second, in);
-          s.endpoints().push_back(in);
+          retval.endpoints().push_back(in);
         } else {
           throw exceptions::msg() << "config parser: cannot parse key '"
                                   << "'input':  value type must be an object";
@@ -177,20 +176,21 @@ void parser::parse(std::string const& file, state& s) {
           for (Json const& node : object.second.array_items()) {
             logger logr;
             _parse_logger(node, logr);
-            s.loggers().push_back(logr);
+            retval.loggers().push_back(logr);
           }
         } else if (object.second.is_object()) {
           logger logr;
           _parse_logger(object.second, logr);
-          s.loggers().push_back(logr);
+          retval.loggers().push_back(logr);
         } else {
           throw exceptions::msg() << "config parser: cannot parse key "
                                   << "'logger':  value type must be an object";
         }
       } else
-        s.params()[object.first] = object.second.dump();
+        retval.params()[object.first] = object.second.dump();
     }
   }
+  return retval;
 }
 
 /**

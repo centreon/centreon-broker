@@ -267,7 +267,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
     config::parser parsr;
     config::state conf;
     try {
-      parsr.parse(it->c_str(), conf);
+      conf = parsr.parse(it->c_str());
     } catch (std::exception const& e) {
       logging::error(logging::high) << "diagnostic: configuration file '" << *it
                                     << "' parsing failed: " << e.what();
