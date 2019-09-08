@@ -246,7 +246,7 @@ std::shared_ptr<neb::service> applier::meta_service::_meta_service(
   {
     std::ostringstream oss;
     oss << "meta_" << meta_id;
-    s->service_description = oss.str().c_str();
+    s->service_description = oss.str();
   }
   s->last_update = time(NULL);
   return (s);

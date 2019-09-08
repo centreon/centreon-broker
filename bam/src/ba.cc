@@ -535,7 +535,7 @@ void ba::visit(io::stream* visitor) {
         oss << "BA : Business Activity " << _id
             << " - current_level = " << static_cast<int>(normalize(_level_hard))
             << "%";
-        status->output = oss.str().c_str();
+        status->output = oss.str();
       }
       // status->percent_state_chagne = XXX;
       {
@@ -543,7 +543,7 @@ void ba::visit(io::stream* visitor) {
         oss << "BA_Level=" << static_cast<int>(normalize(_level_hard)) << "%;"
             << static_cast<int>(_level_warning) << ";"
             << static_cast<int>(_level_critical) << ";0;100";
-        status->perf_data = oss.str().c_str();
+        status->perf_data = oss.str();
       }
       status->retry_interval = 0;
       // status->service_description = XXX;

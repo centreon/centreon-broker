@@ -432,9 +432,9 @@ void meta_service::_send_service_status(io::stream* visitor,
     status->latency = 0.0;
     status->max_check_attempts = 1;
     status->obsess_over = false;
-    status->output = get_output().c_str();
+    status->output = get_output();
     // status->percent_state_chagne = XXX;
-    status->perf_data = get_perfdata().c_str();
+    status->perf_data = get_perfdata();
     status->retry_interval = 0;
     status->service_id = _service_id;
     status->should_be_scheduled = false;

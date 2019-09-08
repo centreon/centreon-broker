@@ -787,14 +787,14 @@ void reader::_load_dimensions() {
                 res.value_as_str(9))); // saturday
         std::shared_ptr<dimension_timeperiod> tp(new dimension_timeperiod);
         tp->id = res.value_as_u32(0);
-        tp->name = res.value_as_str(1).c_str();
-        tp->sunday = res.value_as_str(3).c_str();
-        tp->monday = res.value_as_str(4).c_str();
-        tp->tuesday = res.value_as_str(5).c_str();
-        tp->wednesday = res.value_as_str(6).c_str();
-        tp->thursday = res.value_as_str(7).c_str();
-        tp->friday = res.value_as_str(8).c_str();
-        tp->saturday = res.value_as_str(9).c_str();
+        tp->name = res.value_as_str(1);
+        tp->sunday = res.value_as_str(3);
+        tp->monday = res.value_as_str(4);
+        tp->tuesday = res.value_as_str(5);
+        tp->wednesday = res.value_as_str(6);
+        tp->thursday = res.value_as_str(7);
+        tp->friday = res.value_as_str(8);
+        tp->saturday = res.value_as_str(9);
         datas.push_back(std::static_pointer_cast<io::data>(tp));
       }
     }
@@ -878,8 +878,8 @@ void reader::_load_dimensions() {
       while (_mysql.fetch_row(res)) {
         std::shared_ptr<dimension_ba_event> ba(new dimension_ba_event);
         ba->ba_id = res.value_as_u32(0);
-        ba->ba_name = res.value_as_str(1).c_str();
-        ba->ba_description = res.value_as_str(2).c_str();
+        ba->ba_name = res.value_as_str(1);
+        ba->ba_description = res.value_as_str(2);
         ba->sla_month_percent_warn = res.value_as_f64(3);
         ba->sla_month_percent_crit = res.value_as_f64(4);
         ba->sla_duration_warn = res.value_as_i32(5);
@@ -914,8 +914,8 @@ void reader::_load_dimensions() {
         std::shared_ptr<dimension_bv_event>
             bv(new dimension_bv_event);
         bv->bv_id = res.value_as_u32(0);
-        bv->bv_name = res.value_as_str(1).c_str();
-        bv->bv_description = res.value_as_str(2).c_str();
+        bv->bv_name = res.value_as_str(1);
+        bv->bv_description = res.value_as_str(2);
         datas.push_back(std::static_pointer_cast<io::data>(bv));
       }
     }
@@ -1016,11 +1016,11 @@ void reader::_load_dimensions() {
         k->impact_warning = res.value_as_f64(8);
         k->impact_critical = res.value_as_f64(9);
         k->impact_unknown = res.value_as_f64(10);
-        k->host_name = res.value_as_str(11).c_str();
-        k->service_description = res.value_as_str(12).c_str();
-        k->ba_name = res.value_as_str(13).c_str();
-        k->meta_service_name = res.value_as_str(14).c_str();
-        k->boolean_name = res.value_as_str(15).c_str();
+        k->host_name = res.value_as_str(11);
+        k->service_description = res.value_as_str(12);
+        k->ba_name = res.value_as_str(13);
+        k->meta_service_name = res.value_as_str(14);
+        k->boolean_name = res.value_as_str(15);
 
         // Resolve the id_indicator_ba.
         if (k->kpi_ba_id) {

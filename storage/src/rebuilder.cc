@@ -336,7 +336,7 @@ void rebuilder::_rebuild_metric(
         entry->interval = interval;
         entry->is_for_rebuild = true;
         entry->metric_id = metric_id;
-        entry->name = metric_name.c_str();
+        entry->name = metric_name;
         entry->rrd_len = length;
         entry->value_type = metric_type;
         entry->value = res.value_as_f64(1);

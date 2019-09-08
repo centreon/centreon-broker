@@ -239,7 +239,7 @@ std::shared_ptr<neb::host> applier::ba::_ba_host(
   {
     std::ostringstream oss;
     oss << "_Module_BAM_" << h->poller_id;
-    h->host_name = oss.str().c_str();
+    h->host_name = oss.str();
   }
   h->last_update = time(NULL);
   return (h);
@@ -264,7 +264,7 @@ std::shared_ptr<neb::service> applier::ba::_ba_service(
   {
     std::ostringstream oss;
     oss << "ba_" << ba_id;
-    s->service_description = oss.str().c_str();
+    s->service_description = oss.str();
   }
   s->last_update = time(NULL);
   return (s);

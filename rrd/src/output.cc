@@ -246,7 +246,7 @@ int output::write(std::shared_ptr<io::data> const& d) {
 
       // Check that status is not begin rebuild.
       rebuild_cache::iterator
-        it(_status_rebuild.find(status_path.c_str()));
+        it(_status_rebuild.find(status_path));
       if (e->is_for_rebuild || it == _status_rebuild.end()) {
         // Write status RRD.
         try {
@@ -294,9 +294,9 @@ int output::write(std::shared_ptr<io::data> const& d) {
     // Rebuild is starting.
     if (!e->end) {
       if (e->is_index)
-        _status_rebuild[path.c_str()];
+        _status_rebuild[path];
       else
-        _metrics_rebuild[path.c_str()];
+        _metrics_rebuild[path];
       _backend->remove(path);
     }
     // Rebuild is ending.
@@ -306,14 +306,14 @@ int output::write(std::shared_ptr<io::data> const& d) {
       {
         rebuild_cache::iterator it;
         if (e->is_index) {
-          it = _status_rebuild.find(path.c_str());
+          it = _status_rebuild.find(path);
           if (it != _status_rebuild.end()) {
             l = it->second;
             _status_rebuild.erase(it);
           }
         }
         else {
-          it = _metrics_rebuild.find(path.c_str());
+          it = _metrics_rebuild.find(path);
           if (it != _metrics_rebuild.end()) {
             l = it->second;
             _metrics_rebuild.erase(it);
@@ -347,7 +347,7 @@ int output::write(std::shared_ptr<io::data> const& d) {
     // Remove data from cache.
     rebuild_cache&
       cache(e->is_index ? _status_rebuild : _metrics_rebuild);
-    rebuild_cache::iterator it(cache.find(path.c_str()));
+    rebuild_cache::iterator it(cache.find(path));
     if (it != cache.end())
       cache.erase(it);
 

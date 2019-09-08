@@ -1134,10 +1134,10 @@ TEST_F(DatabaseStorageTest, CustomvariableStatement) {
       cv.host_id = j;
       std::ostringstream oss;
       oss << "cv_" << i << "_" << j;
-      cv.name = oss.str().c_str();
+      cv.name = oss.str();
       oss.str("");
       oss << "v" << i << "_" << j;
-      cv.value = oss.str().c_str();
+      cv.value = oss.str();
 
       custom_variable_insupdate << cv;
       ms->run_statement(

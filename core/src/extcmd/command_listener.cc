@@ -63,7 +63,7 @@ command_result command_listener::command_status(
     std::ostringstream oss;
     oss << "\"Command " << command_uuid
         << " is not available (invalid command ID, timeout, ?)\"";
-    res.msg = oss.str().c_str();
+    res.msg = oss.str();
   }
   return res;
 }

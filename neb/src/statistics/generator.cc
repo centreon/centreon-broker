@@ -222,14 +222,14 @@ void generator::run() {
     ss->host_id = it->first.first;
     ss->service_id = it->first.second;
     ss->host_name
-      = config::applier::state::instance().poller_name().c_str();
-    ss->service_description = it->second->name().c_str();
+      = config::applier::state::instance().poller_name();
+    ss->service_description = it->second->name();
     try {
       std::string output;
       std::string perfdata;
       it->second->run(output, perfdata);
-      ss->output = output.c_str();
-      ss->perf_data = perfdata.c_str();
+      ss->output = output;
+      ss->perf_data = perfdata;
     }
     catch (std::exception const& e) {
       ss->output = e.what();

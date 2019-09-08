@@ -104,10 +104,10 @@ void command_request::parse(std::string const& cmdline) {
   if (delim2 == std::string::npos)
     throw (exceptions::msg() << "invalid command format: expected "
            << "<BROKERID>;<TARGETENDPOINT>;<CMD>[;<ARG1>[;<ARG2>...]]");
-  endp = cmdline.substr(delim1 + 1, delim2 - delim1 - 1).c_str();
+  endp = cmdline.substr(delim1 + 1, delim2 - delim1 - 1);
 
   // Get command.
-  cmd = cmdline.substr(delim2 + 1).c_str();
+  cmd = cmdline.substr(delim2 + 1);
 
   return ;
 }

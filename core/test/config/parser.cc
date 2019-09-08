@@ -107,7 +107,7 @@ TEST(parser, endpoint) {
 
   // Parse.
   config::parser p;
-  config::state s{p.parse(config_file.c_str())};
+  config::state s{p.parse(config_file)};
 
   // Remove temporary file.
   ::remove(config_file.c_str());
@@ -217,7 +217,7 @@ TEST(parser, logger) {
 
   // Parse.
   config::parser p;
-  config::state s{p.parse(config_file.c_str())};
+  config::state s{p.parse(config_file)};
 
   // Remove temporary file.
   ::remove(config_file.c_str());

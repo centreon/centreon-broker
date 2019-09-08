@@ -426,7 +426,7 @@ void monitoring_stream::_rebuild() {
          it != end;
          ++it)
       oss << *it << ", ";
-    r->bas_to_rebuild = oss.str().c_str();
+    r->bas_to_rebuild = oss.str();
     r->bas_to_rebuild.resize(r->bas_to_rebuild.size() - 2);
   }
   std::unique_ptr<io::stream> out(new multiplexing::publisher);

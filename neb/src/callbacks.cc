@@ -925,7 +925,7 @@ int neb::callback_group(int callback_type, void* data) {
         new_hg->id = host_group->get_id();
         new_hg->enabled = (group_data->type != NEBTYPE_HOSTGROUP_DELETE &&
                            !host_group->members.empty());
-        new_hg->name = host_group->get_group_name().c_str();
+        new_hg->name = host_group->get_group_name();
 
         // Send host group event.
         if (new_hg->id) {
@@ -1438,7 +1438,7 @@ int neb::callback_log(int callback_type, void* data) {
     // Fill output var.
     log_data = static_cast<nebstruct_log_data*>(data);
     le->c_time = log_data->entry_time;
-    le->poller_name = config::applier::state::instance().poller_name().c_str();
+    le->poller_name = config::applier::state::instance().poller_name();
     if (log_data->data) {
       if (log_data->data)
         le->output = log_data->data;
@@ -1564,7 +1564,7 @@ int neb::callback_process(int callback_type, void* data) {
       instance->poller_id = config::applier::state::instance().poller_id();
       instance->engine = "Centreon Engine";
       instance->is_running = true;
-      instance->name = config::applier::state::instance().poller_name().c_str();
+      instance->name = config::applier::state::instance().poller_name();
       instance->pid = getpid();
       instance->program_start = time(nullptr);
       instance->version = get_program_version();
@@ -1598,7 +1598,7 @@ int neb::callback_process(int callback_type, void* data) {
       instance->poller_id = config::applier::state::instance().poller_id();
       instance->engine = "Centreon Engine";
       instance->is_running = false;
-      instance->name = config::applier::state::instance().poller_name().c_str();
+      instance->name = config::applier::state::instance().poller_name();
       instance->pid = getpid();
       instance->program_end = time(nullptr);
       instance->program_start = start_time;
@@ -1851,7 +1851,7 @@ int neb::callback_service(int callback_type, void* data) {
       my_service->output.append("\n");
     }
     if (!s->get_long_plugin_output().empty())
-      my_service->output.append(s->get_long_plugin_output().c_str());
+      my_service->output.append(s->get_long_plugin_output());
     my_service->passive_checks_enabled = s->get_accept_passive_checks();
     my_service->percent_state_change = s->get_percent_state_change();
     if (!s->get_perf_data().empty())
@@ -2047,7 +2047,7 @@ int neb::callback_service_status(int callback_type, void* data) {
       service_status->output.append("\n");
     }
     if (!s->get_long_plugin_output().empty())
-      service_status->output.append(s->get_long_plugin_output().c_str());
+      service_status->output.append(s->get_long_plugin_output());
     service_status->passive_checks_enabled = s->get_accept_passive_checks();
     service_status->percent_state_change = s->get_percent_state_change();
     if (!s->get_perf_data().empty())

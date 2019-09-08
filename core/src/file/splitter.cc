@@ -84,8 +84,8 @@ splitter::splitter(
       base_name = _base_path;
     }
     else {
-      base_dir = _base_path.substr(0, last_slash).c_str();
-      base_name = _base_path.substr(last_slash + 1).c_str();
+      base_dir = _base_path.substr(0, last_slash);
+      base_name = _base_path.substr(last_slash + 1);
     }
   }
   fs_browser::entry_list parts;
@@ -180,7 +180,7 @@ long splitter::read(void* buffer, long max_size) {
     if (_auto_delete) {
       logging::info(logging::high) << "file: end of file '"
         << file_path << "' reached, erasing file";
-      _fs->remove(file_path.c_str());
+      _fs->remove(file_path);
     }
     else {
       logging::info(logging::high) << "file: end of file '"
@@ -333,8 +333,8 @@ void splitter::remove_all_files() {
       base_name = _base_path;
     }
     else {
-      base_dir = _base_path.substr(0, last_slash + 1).c_str();
-      base_name = _base_path.substr(last_slash + 1).c_str();
+      base_dir = _base_path.substr(0, last_slash + 1);
+      base_name = _base_path.substr(last_slash + 1);
     }
   }
   fs_browser::entry_list parts;
