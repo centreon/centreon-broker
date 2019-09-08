@@ -33,7 +33,7 @@ using namespace com::centreon::broker::lua;
 macro_cache::macro_cache(std::shared_ptr<persistent_cache> const& cache)
   : _cache(cache), _services{}
 {
-  if (_cache.get() != NULL) {
+  if (_cache != NULL) {
     std::shared_ptr<io::data> d;
     do {
       _cache->get(d);
@@ -46,7 +46,7 @@ macro_cache::macro_cache(std::shared_ptr<persistent_cache> const& cache)
  *  Destructor.
  */
 macro_cache::~macro_cache() {
-  if (_cache.get() != NULL) {
+  if (_cache != NULL) {
     try {
       _save_to_disk();
     } catch (std::exception const& e) {

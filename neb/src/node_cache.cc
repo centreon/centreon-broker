@@ -93,7 +93,7 @@ void node_cache::write(std::shared_ptr<io::data> const& d) {
  *  @param[in] cache  The cache.
  */
 void node_cache::serialize(std::shared_ptr<persistent_cache> cache) {
-  if (cache.get() == NULL)
+  if (cache == NULL)
     return ;
   for (std::unordered_map<node_id, neb::host>::const_iterator
          it = _hosts.begin(),

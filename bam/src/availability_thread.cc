@@ -473,7 +473,7 @@ void availability_thread::_open_database() {
  *  Close the database.
  */
 void availability_thread::_close_database() {
-  if (_mysql.get()) {
+  if (_mysql) {
     _mysql.reset();
   }
 }

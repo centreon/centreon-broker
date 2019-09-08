@@ -107,7 +107,7 @@ MYSQL_RES* mysql_result::get() {
  */
 bool mysql_result::value_as_bool(int idx) {
   bool retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_as_bool(idx);
   else if (_row)
     retval = _row[idx] ? strtol(_row[idx], 0, 10) : 0;
@@ -126,7 +126,7 @@ bool mysql_result::value_as_bool(int idx) {
  */
 std::string mysql_result::value_as_str(int idx) {
   std::string retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_as_str(idx);
   else if (_row)
     retval = _row[idx];
@@ -145,7 +145,7 @@ std::string mysql_result::value_as_str(int idx) {
  */
 float mysql_result::value_as_f32(int idx) {
   float retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_as_f32(idx);
   else if (_row)
     retval = _row[idx] ? atof(_row[idx]) : 0;
@@ -164,7 +164,7 @@ float mysql_result::value_as_f32(int idx) {
  */
 double mysql_result::value_as_f64(int idx) {
   double retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_as_f64(idx);
   else if (_row)
     retval = _row[idx] ? atof(_row[idx]) : 0;
@@ -183,7 +183,7 @@ double mysql_result::value_as_f64(int idx) {
  */
 int mysql_result::value_as_i32(int idx) {
   int retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_as_i32(idx);
   else if (_row)
     retval = _row[idx] ? strtol(_row[idx], 0, 10) : 0;
@@ -202,7 +202,7 @@ int mysql_result::value_as_i32(int idx) {
  */
 unsigned int mysql_result::value_as_u32(int idx) {
   unsigned int retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_as_u32(idx);
   else if (_row)
     retval = _row[idx] ? strtoul(_row[idx], 0, 10) : 0;
@@ -221,7 +221,7 @@ unsigned int mysql_result::value_as_u32(int idx) {
  */
 unsigned long long mysql_result::value_as_u64(int idx) {
   unsigned long long retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_as_u64(idx);
   else if (_row)
     retval = _row[idx] ? strtoull(_row[idx], 0, 10) : 0;
@@ -240,7 +240,7 @@ unsigned long long mysql_result::value_as_u64(int idx) {
  */
 bool mysql_result::value_is_null(int idx) {
   bool retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_is_null(idx);
   else if (_row)
     retval = (_row[idx] == 0);
@@ -256,7 +256,7 @@ bool mysql_result::value_is_null(int idx) {
  * @return true if it is empty, false otherwise.
  */
 bool mysql_result::is_empty() const {
-  if (_bind.get())
+  if (_bind)
     return _bind->is_empty();
   else
     return _row == NULL;
@@ -268,7 +268,7 @@ bool mysql_result::is_empty() const {
  * @return an integer.
  */
 int mysql_result::get_rows_count() const {
-  if (_bind.get())
+  if (_bind)
     return _bind->get_rows_count();
   else
     return mysql_num_rows(_result.get());

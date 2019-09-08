@@ -56,7 +56,7 @@ stream::stream(asio::ip::tcp::socket* sock, std::string const& name)
 stream::~stream() {
   try {
     // Close the socket.
-    if (_socket.get())
+    if (_socket)
       _socket->close();
     // Remove from parent.
     if (_parent)
@@ -89,7 +89,7 @@ std::string stream::peer() const {
 bool stream::read(std::shared_ptr<io::data>& d,
   time_t deadline) {
   // Check that socket exist.
-  if (!_socket.get())
+  if (!_socket)
     _initialize_socket();
 
   // Set deadline.
@@ -161,7 +161,7 @@ void stream::set_write_timeout(int secs) {
  */
 int stream::write(std::shared_ptr<io::data> const& d) {
   // Check that socket exist.
-  if (!_socket.get())
+  if (!_socket)
     _initialize_socket();
 
   // Check that data exists and should be processed.

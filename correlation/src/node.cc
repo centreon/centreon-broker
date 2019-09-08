@@ -114,7 +114,7 @@ bool node::operator==(node const& other) const {
     retval = true;
   else if (state::operator==(other)
            && (downtimes == other.downtimes)
-           && ((!my_issue.get() && !other.my_issue.get())
+           && ((!my_issue && !other.my_issue)
                || (my_issue.get()
                    && other.my_issue.get()
                    && (*my_issue == *other.my_issue)))
@@ -367,7 +367,7 @@ bool node::all_parents_with_issues_and_get_start_time(timestamp& start_time) con
   for (node_map::const_iterator it = _parents.begin(), end = _parents.end();
        it != end;
        ++it) {
-    if (!(*it)->my_issue.get())
+    if (!(*it)->my_issue)
       return (false);
     if (start_time.is_null() || start_time < (*it)->my_issue->start_time)
       start_time = (*it)->my_issue->start_time;
@@ -434,7 +434,7 @@ void node::manage_status(
     my_issue->start_time = last_state_change;
     my_issue->host_id = host_id;
     my_issue->service_id = service_id;
-    if (acknowledgement.get())
+    if (acknowledgement)
       my_issue->ack_time = last_state_change;
     if (stream)
       stream->write(std::make_shared<issue>(*my_issue));
@@ -461,7 +461,7 @@ void node::manage_ack(
     acknowledgement.reset(new neb::acknowledgement(ack));
 
     // Update issue.
-    if (my_issue.get()) {
+    if (my_issue) {
       my_issue->ack_time = ack.entry_time;
       if (stream)
         stream->write(std::make_shared<issue>(*my_issue));
@@ -615,7 +615,7 @@ void node::linked_node_updated(
  *  @param[in] cache  A cache to write the event to.
  */
 void node::serialize(persistent_cache& cache) const {
-  if (my_issue.get())
+  if (my_issue)
     cache.add(std::make_shared<issue>(*my_issue));
   cache.add(std::make_shared<correlation::state>(*this));
   for (std::map<unsigned int, neb::downtime>::const_iterator
@@ -624,7 +624,7 @@ void node::serialize(persistent_cache& cache) const {
        it != end;
        ++it)
     cache.add(std::make_shared<neb::downtime>(it->second));
-  if (acknowledgement.get())
+  if (acknowledgement)
     cache.add(std::make_shared<neb::acknowledgement>(*acknowledgement));
 }
 
@@ -644,12 +644,12 @@ void node::serialize(persistent_cache& cache) const {
  */
 void node::_internal_copy(node const& n) {
   // Copy other members.
-  if (n.my_issue.get())
+  if (n.my_issue)
     my_issue.reset(new issue(*(n.my_issue)));
   else
     my_issue.reset();
   downtimes = n.downtimes;
-  if (n.acknowledgement.get())
+  if (n.acknowledgement)
     acknowledgement.reset(new neb::acknowledgement(*n.acknowledgement));
   else
     acknowledgement.reset();
@@ -754,7 +754,7 @@ correlation::state node::_open_state_event(timestamp start_time) const {
       earliest_downtime = it->second.start_time;
   st.in_downtime
     = earliest_downtime.is_null() ? false : earliest_downtime <= start_time;
-  if (acknowledgement.get())
+  if (acknowledgement)
     st.ack_time = acknowledgement->entry_time > start_time
                   ? acknowledgement->entry_time
                   : start_time;

@@ -65,7 +65,7 @@ command_server::~command_server() {
  */
 std::shared_ptr<io::stream> command_server::open() {
   // Initialization.
-  if (!_socket.get()) {
+  if (!_socket) {
     // Listen on socket.
     ::unlink(_socket_file.c_str());
     _socket.reset(new local::stream_protocol::socket{_io_context});

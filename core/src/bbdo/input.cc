@@ -183,7 +183,7 @@ static io::data* unserialize(
   if (info) {
     // Create object.
     std::unique_ptr<io::data> t(info->get_operations().constructor());
-    if (t.get()) {
+    if (t) {
       t->source_id = source_id;
       t->destination_id = destination_id;
       // Browse all mapping to unserialize the object.

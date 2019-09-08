@@ -260,7 +260,7 @@ bool luabinding::_parse_event(std::shared_ptr<io::data>& d) {
   if (info) {
     // Create event
     std::unique_ptr<io::data> t(info->get_operations().constructor());
-    if (t.get()) {
+    if (t) {
       // Browse all mapping to unserialize the object.
       for (mapping::entry const* current_entry(info->get_mapping());
            !current_entry->is_null();

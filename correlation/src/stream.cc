@@ -74,7 +74,7 @@ stream::stream(
  */
 stream::~stream() {
   try {
-    if (_pblsh.get()) {
+    if (_pblsh) {
       std::shared_ptr<engine_state> es(new engine_state);
       es->poller_id = config::applier::state::instance().poller_id();
       _pblsh->write(es);
@@ -239,7 +239,7 @@ std::map<std::pair<uint64_t, uint64_t>, node> const&
  */
 void stream::_load_correlation() {
   // Load the cache.
-  if (_cache.get() != nullptr) {
+  if (_cache != nullptr) {
     std::shared_ptr<io::data> d;
     while (true) {
       _cache->get(d);
@@ -310,7 +310,7 @@ void stream::_load_correlation_event(std::shared_ptr<io::data> const& d) {
  */
 void stream::_save_persistent_cache() {
   // No cache, nothing to do.
-  if (_cache.get() == nullptr)
+  if (_cache == nullptr)
     return ;
 
   // Serialize to the cache.

@@ -52,7 +52,7 @@ static void unload_workers() {
     (*it)->wait();
     it->reset();
   }
-  if (worker_dumper.get()) {
+  if (worker_dumper) {
     // Terminate thread.
     worker_dumper->exit();
     worker_dumper->wait();

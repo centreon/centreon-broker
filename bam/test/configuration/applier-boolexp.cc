@@ -56,5 +56,5 @@ TEST_F(ApplierBoolexp, Simple) {
   _state->get_bool_exps().insert(std::make_pair(boolexp.get_id(), boolexp));
   _state->get_kpis().insert(std::make_pair(kpi_boolexp.get_id(), kpi_boolexp));
 
-  ASSERT_NO_THROW(_aply_state->apply(*_state.get()));
+  ASSERT_NO_THROW(_aply_state->apply(*_state));
 }

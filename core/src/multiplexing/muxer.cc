@@ -101,7 +101,7 @@ muxer::muxer(
   logging::info(logging::low)
     << "multiplexing: '" << _name << "' start with " << _events_size
     << " in queue and the queue file is "
-    << (_file.get() ? "enable" : "disable");
+    << (_file ? "enable" : "disable");
 }
 
 /**
@@ -181,7 +181,7 @@ void muxer::publish(std::shared_ptr<io::data> const& event) {
     // Check if the event queue limit is reach.
     if (_events_size >= event_queue_max_size()) {
       // Try to create file if is necessary.
-      if (!_file.get())
+      if (!_file)
         _file.reset(new persistent_file(_queue_file()));
       _file->write(event);
     }
@@ -416,7 +416,7 @@ void muxer::_clean() {
 void muxer::_get_event_from_file(std::shared_ptr<io::data>& event) {
   event.reset();
   // If file exist, try to get the last event.
-  if (_file.get()) {
+  if (_file) {
     try {
       do {
         _file->read(event);

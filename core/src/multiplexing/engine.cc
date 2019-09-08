@@ -411,7 +411,7 @@ void engine::_write(std::shared_ptr<io::data> const& e) {
  */
 void engine::_write_to_cache_file(std::shared_ptr<io::data> const& d) {
   try {
-    if (_cache_file.get())
+    if (_cache_file)
       _cache_file->add(d);
   }
   catch (std::exception const& e) {

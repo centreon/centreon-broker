@@ -124,7 +124,7 @@ stream::stream(
  *  Destructor.
  */
 stream::~stream() {
-  if (_socket.get()) {
+  if (_socket) {
     _socket->close();
   }
 }

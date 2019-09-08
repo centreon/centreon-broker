@@ -162,7 +162,7 @@ bool output::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *  Update backend after a sigup.
  */
 void output::update() {
-  if (_backend.get())
+  if (_backend)
     _backend->clean();
   return ;
 }

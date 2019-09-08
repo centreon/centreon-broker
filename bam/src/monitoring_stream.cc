@@ -485,7 +485,7 @@ void monitoring_stream::_write_external_command(
  *  Get inherited downtime from the cache.
  */
 void monitoring_stream::_read_cache() {
-  if (_cache.get() == NULL)
+  if (_cache == NULL)
     return ;
 
   _applier.load_from_cache(*_cache);
@@ -495,7 +495,7 @@ void monitoring_stream::_read_cache() {
  *  Save inherited downtime to the cache.
  */
 void monitoring_stream::_write_cache() {
-  if (_cache.get() == NULL) {
+  if (_cache == NULL) {
     logging::debug(logging::medium)
       << "BAM: no cache configured";
     return ;

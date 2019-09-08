@@ -42,7 +42,7 @@ TEST(RrdExceptions, OpenClone) {
   std::unique_ptr<exceptions::msg> clone(e.clone());
 
   // Check that clone object was properly constructed.
-  int retval(!clone.get()
+  int retval(!clone
              || strcmp("foo4277454654249841-1bar", clone->what()));
 
   // Check that this is really an open error.
@@ -155,7 +155,7 @@ TEST(RrdExceptions, UpdateClone) {
   std::unique_ptr<exceptions::msg> clone(e.clone());
 
   // Check that clone object was properly constructed.
-  int retval(!clone.get()
+  int retval(!clone
              || strcmp("foo4277454654249841-1bar", clone->what()));
 
   // Check that this is really an open error.

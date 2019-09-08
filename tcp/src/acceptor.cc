@@ -72,7 +72,7 @@ std::shared_ptr<io::stream> acceptor::open() {
   // Listen on port.
   std::lock_guard<std::mutex> lock(_mutex);
 
-  if (!_socket.get())
+  if (!_socket)
     _socket.reset(new asio::ip::tcp::socket(_io_context));
 
   asio::ip::tcp::acceptor acceptor(_io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), _port));

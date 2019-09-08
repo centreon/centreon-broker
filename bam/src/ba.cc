@@ -601,7 +601,7 @@ void ba::service_update(std::shared_ptr<neb::downtime> const& dt,
  *  @param[in] cache  The cache.
  */
 void ba::save_inherited_downtime(persistent_cache& cache) const {
-  if (_inherited_downtime.get())
+  if (_inherited_downtime)
     cache.add(std::shared_ptr<inherited_downtime>(
         new inherited_downtime(*_inherited_downtime)));
 }
@@ -764,7 +764,7 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   // Case 1: state not ok, every child in downtime, no actual downtime.
   //         Put the BA in downtime.
   bool state_ok(!get_state_hard());
-  if (!state_ok && every_kpi_in_downtime && !_inherited_downtime.get()) {
+  if (!state_ok && every_kpi_in_downtime && !_inherited_downtime) {
     _inherited_downtime.reset(new inherited_downtime);
     _inherited_downtime->ba_id = _id;
     _inherited_downtime->in_downtime = true;

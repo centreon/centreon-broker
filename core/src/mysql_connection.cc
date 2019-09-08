@@ -185,7 +185,7 @@ void mysql_connection::_statement(mysql_task* t) {
     return ;
   }
   MYSQL_BIND* bb(NULL);
-  if (task->bind.get())
+  if (task->bind)
     bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
 
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
@@ -245,7 +245,7 @@ void mysql_connection::_statement_res(mysql_task* t) {
     return ;
   }
   MYSQL_BIND* bb(NULL);
-  if (task->bind.get())
+  if (task->bind)
     bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
 
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
@@ -342,7 +342,7 @@ void mysql_connection::_statement_int(mysql_task* t) {
     return ;
   }
   MYSQL_BIND* bb(NULL);
-  if (task->bind.get())
+  if (task->bind)
     bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
 
   if (bb && mysql_stmt_bind_param(stmt, bb)) {

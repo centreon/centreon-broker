@@ -54,7 +54,7 @@ command_client::command_client(
  *  Destructor.
  */
 command_client::~command_client() {
-  if (_socket.get())
+  if (_socket)
     _socket->close();
 }
 
@@ -72,7 +72,7 @@ bool command_client::read(
   std::error_code err;
 
   // Check that socket exist.
-  if (!_socket.get())
+  if (!_socket)
     throw exceptions::shutdown() << "socket does not exist";
 
   // Read commands from socket.

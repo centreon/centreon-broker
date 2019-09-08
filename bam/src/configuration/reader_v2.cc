@@ -505,7 +505,7 @@ void reader_v2::_load(state::meta_services& meta_services) {
             << it->second.get_service_filter() << "'"
             << "    AND m.metric_name='"
             << it->second.get_metric_name() << "'";
-      if (!storage_mysql.get())
+      if (!storage_mysql)
         try { storage_mysql.reset(new mysql(_storage_cfg)); }
         catch (std::exception const& e) {
           throw (reader_exception()
