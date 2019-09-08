@@ -92,6 +92,21 @@ std::list<std::string> filesystem::dir_content_with_filter(
 }
 
 /**
+ *  Check if the file exists.
+ *
+ * @param path The file name
+ *
+ * @return a boolean.
+ */
+bool filesystem::file_exists(std::string const& path) {
+  struct stat info;
+  if (stat(path.c_str(), &info) != 0)
+    return false;
+
+  return info.st_mode & S_IFREG;
+}
+
+/**
  *  Check if the directory exists.
  *
  * @param path The directory name

@@ -107,18 +107,16 @@ class FileSplitterConcurrent : public ::testing::Test {
     _path = RETENTION_DIR RETENTION_FILE;
     _remove_files();
     _file_factory.reset(new cfile_factory());
-    _fs_browser.reset(new stl_fs_browser());
 
     _file.reset(new file::splitter(
         _path, file::fs_file::open_read_write_truncate, _file_factory.release(),
-        _fs_browser.release(), 10000, true));
+        10000, true));
   }
   void TearDown() override { logging::manager::unload(); }
 
  protected:
   std::unique_ptr<file::splitter> _file;
   std::unique_ptr<cfile_factory> _file_factory;
-  std::unique_ptr<stl_fs_browser> _fs_browser;
   std::string _path;
 
   void _remove_files() {

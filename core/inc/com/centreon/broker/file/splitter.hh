@@ -21,7 +21,6 @@
 
 #include <memory>
 #include <string>
-#include "com/centreon/broker/file/fs_browser.hh"
 #include "com/centreon/broker/file/fs_file.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -40,7 +39,6 @@ class splitter : public fs_file {
   splitter(std::string const& path,
            fs_file::open_mode mode,
            fs_file_factory* file_factory,
-           fs_browser* fs,
            long max_file_size = 100000000,
            bool auto_delete = false);
   ~splitter();
@@ -67,7 +65,6 @@ class splitter : public fs_file {
   bool _auto_delete;
   std::string _base_path;
   std::unique_ptr<fs_file_factory> _file_factory;
-  std::unique_ptr<fs_browser> _fs;
   long _max_file_size;
   std::shared_ptr<fs_file> _rfile;
   int _rid;

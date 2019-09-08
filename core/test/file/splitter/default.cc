@@ -17,11 +17,11 @@
  *
  */
 #include <gtest/gtest.h>
-#include "../test_file.hh"
-#include "../test_fs_browser.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
+#include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#include "com/centreon/broker/misc/filesystem.hh"
 
 using namespace com::centreon::broker;
 
@@ -29,20 +29,21 @@ class FileSplitterDefault : public ::testing::Test {
  public:
   void SetUp() override {
     logging::manager::load();
-    _path = "queue";
-    _file_factory = new test_file_factory();
-    _fs_browser = new test_fs_browser();
-    _file.reset(new file::splitter(_path,
-                                   file::fs_file::open_read_write_truncate,
-                                   _file_factory, _fs_browser, 10000, true));
+    _path = "/tmp/queue";
+    _file_factory = new file::cfile_factory();
+    _file = new file::splitter(_path, file::fs_file::open_read_write_truncate,
+                               _file_factory, 10000, true);
   }
 
-  void TearDown() override { logging::manager::unload(); }
+  void TearDown() override {
+    delete _file;
+    delete _file_factory;
+    logging::manager::unload();
+  }
 
  protected:
-  std::unique_ptr<file::splitter> _file;
-  test_file_factory* _file_factory;
-  test_fs_browser* _fs_browser;
+  file::splitter* _file;
+  file::cfile_factory* _file_factory;
   std::string _path;
 };
 
@@ -51,7 +52,8 @@ class FileSplitterDefault : public ::testing::Test {
 // Then a file is created with a size of 8 bytes
 TEST_F(FileSplitterDefault, DefaultFile) {
   // Then
-  ASSERT_EQ(_file_factory->get(_path).size(), 8u);
+  ASSERT_TRUE(misc::filesystem::file_exists(_path));
+  ASSERT_EQ(misc::filesystem::file_size(_path), 8u);
 }
 
 // Given a splitter object
@@ -75,5 +77,5 @@ TEST_F(FileSplitterDefault, FirstReadNoDataAndRemove) {
   ASSERT_THROW(_file->read(buffer, sizeof(buffer)), exceptions::shutdown);
   std::list<std::string> removed;
   removed.push_back(_path);
-  ASSERT_EQ(_fs_browser->get_removed(), removed);
+  ASSERT_FALSE(misc::filesystem::file_exists(_path));
 }
