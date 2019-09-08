@@ -16,17 +16,17 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
 #include "com/centreon/broker/logging/logger.hh"
+#include <cstdlib>
 #include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker::logging;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -45,6 +45,6 @@ logger::~logger() {}
  *
  *  @return Temporary logging object.
  */
-temp_logger logger::operator()(level l) throw () {
+temp_logger logger::operator()(level l) throw() {
   return (manager::instance().get_temp_logger(_type, l));
 }

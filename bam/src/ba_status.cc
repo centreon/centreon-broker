@@ -27,13 +27,13 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 ba_status::ba_status()
-  : ba_id(0),
-    in_downtime(false),
-    level_acknowledgement(0.0),
-    level_downtime(0.0),
-    level_nominal(100.0),
-    state(0),
-    state_changed(false) {}
+    : ba_id(0),
+      in_downtime(false),
+      level_acknowledgement(0.0),
+      level_downtime(0.0),
+      level_nominal(100.0),
+      state(0),
+      state_changed(false) {}
 
 /**
  *  Copy constructor.
@@ -96,49 +96,32 @@ void ba_status::_internal_copy(ba_status const& other) {
   level_nominal = other.level_nominal;
   state = other.state;
   state_changed = other.state_changed;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const ba_status::entries[] = {
-mapping::entry(
-    &bam::ba_status::ba_id,
-    "ba_id",
-    mapping::entry::invalid_on_zero),
-mapping::entry(
-    &bam::ba_status::in_downtime,
-    "in_downtime"),
-mapping::entry(
-    &bam::ba_status::last_state_change,
-    "last_state_change"),
-mapping::entry(
-    &bam::ba_status::level_acknowledgement,
-    "level_acknowledgement"),
-mapping::entry(
-    &bam::ba_status::level_downtime,
-    "level_downtime"),
-mapping::entry(
-    &bam::ba_status::level_nominal,
-    "level_nominal"),
-mapping::entry(
-    &bam::ba_status::state,
-    "state"),
-mapping::entry(
-    &bam::ba_status::state_changed,
-    "state_changed"),
-mapping::entry()
-};
+    mapping::entry(&bam::ba_status::ba_id,
+                   "ba_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&bam::ba_status::in_downtime, "in_downtime"),
+    mapping::entry(&bam::ba_status::last_state_change, "last_state_change"),
+    mapping::entry(&bam::ba_status::level_acknowledgement,
+                   "level_acknowledgement"),
+    mapping::entry(&bam::ba_status::level_downtime, "level_downtime"),
+    mapping::entry(&bam::ba_status::level_nominal, "level_nominal"),
+    mapping::entry(&bam::ba_status::state, "state"),
+    mapping::entry(&bam::ba_status::state_changed, "state_changed"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_ba_status() {
   return (new ba_status);
 }
-io::event_info::event_operations const ba_status::operations = {
-  &new_ba_status
-};
+io::event_info::event_operations const ba_status::operations = {&new_ba_status};

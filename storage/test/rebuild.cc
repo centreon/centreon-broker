@@ -17,8 +17,8 @@
  *
  */
 
-#include <gtest/gtest.h>
 #include "com/centreon/broker/storage/rebuild.hh"
+#include <gtest/gtest.h>
 
 using namespace com::centreon::broker;
 
@@ -55,7 +55,6 @@ TEST(StorageRebuild, Assign) {
   ASSERT_FALSE(r2.is_index);
 }
 
-
 /**
  *  Check that rebuild copy constructor works properly.
  */
@@ -82,7 +81,6 @@ TEST(StorageRebuild, CopyCtor) {
   ASSERT_FALSE(r2.id != 42);
   ASSERT_FALSE(r2.is_index);
 }
-
 
 /**
  *  Check that the rebuild object properly default constructs.

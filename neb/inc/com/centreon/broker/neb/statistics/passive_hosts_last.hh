@@ -17,33 +17,32 @@
 */
 
 #ifndef CCB_NEB_STATISTICS_PASSIVE_HOSTS_LAST_HH
-#  define CCB_NEB_STATISTICS_PASSIVE_HOSTS_LAST_HH
+#define CCB_NEB_STATISTICS_PASSIVE_HOSTS_LAST_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/statistics/plugin.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/statistics/plugin.hh"
 
 CCB_BEGIN()
 
-namespace         neb {
-  namespace       statistics {
-    /**
-     *  @class passive_hosts_last passive_hosts_last.hh "com/centreon/broker/neb/statistics/passive_hosts_last.hh"
-     *  @brief passive_hosts_last statistics plugin.
-     */
-    class         passive_hosts_last : public plugin {
-    public:
-                  passive_hosts_last();
-                  passive_hosts_last(
-                    passive_hosts_last const& right);
-                  ~passive_hosts_last();
-      passive_hosts_last&
-                  operator=(passive_hosts_last const& right);
-      void        run(std::string& output, std::string& perfdata);
-    };
-  }
-}
+namespace neb {
+namespace statistics {
+/**
+ *  @class passive_hosts_last passive_hosts_last.hh
+ * "com/centreon/broker/neb/statistics/passive_hosts_last.hh"
+ *  @brief passive_hosts_last statistics plugin.
+ */
+class passive_hosts_last : public plugin {
+ public:
+  passive_hosts_last();
+  passive_hosts_last(passive_hosts_last const& right);
+  ~passive_hosts_last();
+  passive_hosts_last& operator=(passive_hosts_last const& right);
+  void run(std::string& output, std::string& perfdata);
+};
+}  // namespace statistics
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_PASSIVE_HOSTS_LAST_HH
+#endif  // !CCB_NEB_STATISTICS_PASSIVE_HOSTS_LAST_HH

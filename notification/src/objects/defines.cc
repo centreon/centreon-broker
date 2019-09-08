@@ -23,40 +23,35 @@ using namespace com::centreon::broker::notification::objects;
 /**
  *  Default constructor.
  */
-node_state::node_state()
-  : value(ok) {}
+node_state::node_state() : value(ok) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] type  The value to copy.
  */
-node_state::node_state(state_type type)
-  : value(type) {}
+node_state::node_state(state_type type) : value(type) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] type  The value to copy.
  */
-node_state::node_state(short val)
-  : value((state_type)val) {}
+node_state::node_state(short val) : value((state_type)val) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] type  The value to copy.
  */
-node_state::node_state(int val)
-  : value((state_type)val) {}
+node_state::node_state(int val) : value((state_type)val) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] type  The value to copy.
  */
-node_state::node_state(node_state const& st)
-  : value(st.value) {}
+node_state::node_state(node_state const& st) : value(st.value) {}
 
 /**
  *  Assignment operator.
@@ -101,4 +96,3 @@ bool node_state::operator==(node_state::state_type type) const throw() {
 node_state::operator int() const throw() {
   return ((int)(value));
 }
-

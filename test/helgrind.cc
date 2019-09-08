@@ -17,12 +17,12 @@
 */
 
 #include <cstdio>
-#include <sstream>
 #include <iostream>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "test/cbd.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
-#include "test/cbd.hh"
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
@@ -74,25 +74,20 @@ int main() {
     args.push_back(broker_cfg.generate().c_str());
     broker.start("valgrind", args);
     if (!broker.waitForStarted())
-      throw (exceptions::msg()
-             << "couldn't start valgrind: " << broker.errorString());
+      throw(exceptions::msg()
+            << "couldn't start valgrind: " << broker.errorString());
 
     // Generate configuration.
-    cbmod_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/helgrind_1.xml.in");
+    cbmod_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/helgrind_1.xml.in");
     std::string additional_config;
     {
       std::ostringstream oss;
-      oss << "broker_module=" << CBMOD_PATH << " "
-          << cbmod_cfg.generate() << "\n";
+      oss << "broker_module=" << CBMOD_PATH << " " << cbmod_cfg.generate()
+          << "\n";
       additional_config = oss.str();
     }
-    config_write(
-      engine_config_path.c_str(),
-      additional_config.c_str(),
-      &hosts,
-      &services,
-      &commands);
+    config_write(engine_config_path.c_str(), additional_config.c_str(), &hosts,
+                 &services, &commands);
 
     // Start monitoring.
     std::string engine_config_file(engine_config_path);
@@ -107,14 +102,11 @@ int main() {
     QByteArray stderr = broker.readAllStandardError();
 
     if (!stderr.isEmpty())
-      throw (exceptions::msg()
-             << "got helgrind warnings: " << QString(stderr));
-  }
-  catch (std::exception const& e) {
+      throw(exceptions::msg() << "got helgrind warnings: " << QString(stderr));
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
     error = true;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
     error = true;
   }

@@ -23,8 +23,7 @@ using namespace com::centreon::broker::notification::objects;
 /**
  *  Default constructor.
  */
-contact::contact() :
-  _id(0) {}
+contact::contact() : _id(0) {}
 
 /**
  *  Copy constructor.

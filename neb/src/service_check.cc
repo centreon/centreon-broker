@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/service_check.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/service_check.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -40,7 +40,7 @@ service_check::service_check() : service_id(0) {}
  *  @param[in] service_check Object to copy.
  */
 service_check::service_check(service_check const& sc)
-  : check(sc), service_id(sc.service_id) {}
+    : check(sc), service_id(sc.service_id) {}
 
 /**
  *  Destructor.
@@ -79,40 +79,28 @@ unsigned int service_check::static_type() {
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const service_check::entries[] = {
-  mapping::entry(
-    &service_check::active_checks_enabled,
-    ""),
-  mapping::entry(
-    &service_check::check_type,
-    ""),
-  mapping::entry(
-    &service_check::host_id,
-    "host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &service_check::next_check,
-    ""),
-  mapping::entry(
-    &service_check::service_id,
-    "service_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &service_check::command_line,
-    "command_line"),
-  mapping::entry()
-};
+    mapping::entry(&service_check::active_checks_enabled, ""),
+    mapping::entry(&service_check::check_type, ""),
+    mapping::entry(&service_check::host_id,
+                   "host_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&service_check::next_check, ""),
+    mapping::entry(&service_check::service_id,
+                   "service_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&service_check::command_line, "command_line"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_service_check() {
   return (new service_check);
 }
 io::event_info::event_operations const service_check::operations = {
-  &new_service_check
-};
+    &new_service_check};

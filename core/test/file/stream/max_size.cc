@@ -16,11 +16,11 @@
  * For more information : contact@centreon.com
  *
  */
-#include <cstdlib>
-#include <limits>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <cstdlib>
+#include <limits>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -74,10 +74,10 @@ int main(int argc, char* argv[]) {
   int retval(0);
 
   // Check files.
-  retval = ((QFile(filename[0]).size() != 100000)
-            || (QFile(filename[1]).size() != 100000)
-            || (QFile(filename[2]).size() != 100000)
-            || (QFile(filename[3]).size() != (60000 + 4 * 8)));
+  retval = ((QFile(filename[0]).size() != 100000) ||
+            (QFile(filename[1]).size() != 100000) ||
+            (QFile(filename[2]).size() != 100000) ||
+            (QFile(filename[3]).size() != (60000 + 4 * 8)));
 
   // Remove temporary file.
   for (unsigned int i(0); i < 4; ++i)
@@ -86,28 +86,23 @@ int main(int argc, char* argv[]) {
   // Check max file size #1.
   {
     file::stream fs(filename[0].toStdString(), 0);
-    retval |= (fs.get_max_size()
-               != static_cast<unsigned long long>(
-                    std::numeric_limits<long>::max()));
+    retval |= (fs.get_max_size() != static_cast<unsigned long long>(
+                                        std::numeric_limits<long>::max()));
   }
 
   // Check max file size #2.
   {
     file::stream fs(filename[0].toStdString(), 5);
-    retval |= (fs.get_max_size()
-               != static_cast<unsigned long long>(
-                    std::numeric_limits<long>::max()));
+    retval |= (fs.get_max_size() != static_cast<unsigned long long>(
+                                        std::numeric_limits<long>::max()));
   }
 
   // Check max fiel size #3.
   {
-    file::stream
-      fs(
-        filename[0].toStdString(),
-        std::numeric_limits<unsigned long long>::max() - 123456);
-    retval |= (fs.get_max_size()
-               != static_cast<unsigned long long>(
-                    std::numeric_limits<long>::max()));
+    file::stream fs(filename[0].toStdString(),
+                    std::numeric_limits<unsigned long long>::max() - 123456);
+    retval |= (fs.get_max_size() != static_cast<unsigned long long>(
+                                        std::numeric_limits<long>::max()));
   }
 
   // Cleanup.

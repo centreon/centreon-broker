@@ -17,42 +17,41 @@
 */
 
 #ifndef CCB_STATS_CONFIG_HH
-#  define CCB_STATS_CONFIG_HH
+#define CCB_STATS_CONFIG_HH
 
-#  include <list>
-#  include <string>
-#  include <vector>
-#  include "com/centreon/broker/namespace.hh"
+#include <list>
+#include <string>
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                    stats {
-  // Forward declaration.
-  class                      metric;
+namespace stats {
+// Forward declaration.
+class metric;
 
-  /**
-   *  @class config config.hh "com/centreon/broker/stats/config.hh"
-   *  @brief Stats module configuration.
-   *
-   *  Holds the statistics module configuration.
-   */
-  class                      config {
-  public:
-    typedef std::vector<std::string>
-                             fifo_list;
+/**
+ *  @class config config.hh "com/centreon/broker/stats/config.hh"
+ *  @brief Stats module configuration.
+ *
+ *  Holds the statistics module configuration.
+ */
+class config {
+ public:
+  typedef std::vector<std::string> fifo_list;
 
-                             config();
-                             config(config const& right);
-                             ~config();
-    config&                  operator=(config const& right);
-    fifo_list const&         get_fifo() const throw ();
-    void                     add_fifo(std::string const& fifo);
+  config();
+  config(config const& right);
+  ~config();
+  config& operator=(config const& right);
+  fifo_list const& get_fifo() const throw();
+  void add_fifo(std::string const& fifo);
 
-  private:
-    fifo_list                _fifos;
-  };
-}
+ private:
+  fifo_list _fifos;
+};
+}  // namespace stats
 
 CCB_END()
 
-#endif // !CCB_STATS_CONFIG_HH
+#endif  // !CCB_STATS_CONFIG_HH

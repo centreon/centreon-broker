@@ -26,8 +26,7 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-dimension_bv_event::dimension_bv_event()
-  : bv_id(0) {}
+dimension_bv_event::dimension_bv_event() : bv_id(0) {}
 
 /**
  *  Copy constructor.
@@ -35,7 +34,7 @@ dimension_bv_event::dimension_bv_event()
  *  @param[in] other  Object to copy.
  */
 dimension_bv_event::dimension_bv_event(dimension_bv_event const& other)
-  : io::data(other) {
+    : io::data(other) {
   _internal_copy(other);
 }
 
@@ -67,11 +66,9 @@ dimension_bv_event& dimension_bv_event::operator=(
  *
  *  @return  True if the two objects are equal.
  */
-bool dimension_bv_event::operator==(
-    dimension_bv_event const& other) const {
-  return ((bv_id == other.bv_id)
-          && (bv_name == other.bv_name)
-          && (bv_description == other.bv_description));
+bool dimension_bv_event::operator==(dimension_bv_event const& other) const {
+  return ((bv_id == other.bv_id) && (bv_name == other.bv_name) &&
+          (bv_description == other.bv_description));
 }
 
 /**
@@ -89,7 +86,8 @@ unsigned int dimension_bv_event::type() const {
  *  @return Event type.
  */
 unsigned int dimension_bv_event::static_type() {
-  return (io::events::data_type<io::events::bam, bam::de_dimension_bv_event>::value);
+  return (io::events::data_type<io::events::bam,
+                                bam::de_dimension_bv_event>::value);
 }
 
 /**
@@ -101,34 +99,27 @@ void dimension_bv_event::_internal_copy(dimension_bv_event const& other) {
   bv_id = other.bv_id;
   bv_name = other.bv_name;
   bv_description = other.bv_description;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const dimension_bv_event::entries[] = {
-  mapping::entry(
-    &bam::dimension_bv_event::bv_id,
-    "bv_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &bam::dimension_bv_event::bv_name,
-    "bv_name"),
-  mapping::entry(
-    &bam::dimension_bv_event::bv_description,
-    "bv_description"),
-  mapping::entry()
-};
+    mapping::entry(&bam::dimension_bv_event::bv_id,
+                   "bv_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&bam::dimension_bv_event::bv_name, "bv_name"),
+    mapping::entry(&bam::dimension_bv_event::bv_description, "bv_description"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_dimension_bv_event() {
   return (new dimension_bv_event);
 }
 io::event_info::event_operations const dimension_bv_event::operations = {
-  &new_dimension_bv_event
-};
+    &new_dimension_bv_event};

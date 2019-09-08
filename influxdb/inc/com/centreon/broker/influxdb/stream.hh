@@ -17,78 +17,76 @@
 */
 
 #ifndef CCB_INFLUXDB_STREAM_HH
-#  define CCB_INFLUXDB_STREAM_HH
+#define CCB_INFLUXDB_STREAM_HH
 
-#  include <deque>
-#  include <list>
-#  include <map>
-#  include <memory>
-#  include <mutex>
-#  include <utility>
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/influxdb/influxdb.hh"
-#  include "com/centreon/broker/influxdb/column.hh"
-#  include "com/centreon/broker/persistent_cache.hh"
-#  include "com/centreon/broker/influxdb/macro_cache.hh"
+#include <deque>
+#include <list>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <utility>
+#include "com/centreon/broker/influxdb/column.hh"
+#include "com/centreon/broker/influxdb/influxdb.hh"
+#include "com/centreon/broker/influxdb/macro_cache.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/persistent_cache.hh"
 
 CCB_BEGIN()
 
 // Forward declaration.
-class              database_config;
+class database_config;
 
-namespace          influxdb {
-  /**
-   *  @class stream stream.hh "com/centreon/broker/influxdb/stream.hh"
-   *  @brief Influxdb stream.
-   *
-   *  Insert metrics into influxdb.
-   */
-  class            stream : public io::stream {
-  public:
-                   stream(
-                     std::string const& user,
-                     std::string const& passwd,
-                     std::string const& addr,
-                     unsigned short port,
-                     std::string const& db,
-                     unsigned int queries_per_transaction,
-                     std::string const& status_ts,
-                     std::vector<column> const& status_cols,
-                     std::string const& metric_ts,
-                     std::vector<column> const& metric_cols,
-                     std::shared_ptr<persistent_cache> const& cache);
-                   ~stream();
-    int            flush();
-    bool           read(std::shared_ptr<io::data>& d, time_t deadline);
-    void           statistics(io::properties& tree) const;
-    void           update();
-    int            write(std::shared_ptr<io::data> const& d);
+namespace influxdb {
+/**
+ *  @class stream stream.hh "com/centreon/broker/influxdb/stream.hh"
+ *  @brief Influxdb stream.
+ *
+ *  Insert metrics into influxdb.
+ */
+class stream : public io::stream {
+ public:
+  stream(std::string const& user,
+         std::string const& passwd,
+         std::string const& addr,
+         unsigned short port,
+         std::string const& db,
+         unsigned int queries_per_transaction,
+         std::string const& status_ts,
+         std::vector<column> const& status_cols,
+         std::string const& metric_ts,
+         std::vector<column> const& metric_cols,
+         std::shared_ptr<persistent_cache> const& cache);
+  ~stream();
+  int flush();
+  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  void statistics(io::properties& tree) const;
+  void update();
+  int write(std::shared_ptr<io::data> const& d);
 
-  private:
-    // Database parameters
-    std::string    _user;
-    std::string    _password;
-    std::string    _address;
-    std::string    _db;
-    unsigned int   _queries_per_transaction;
-    std::unique_ptr<influxdb>
-                   _influx_db;
+ private:
+  // Database parameters
+  std::string _user;
+  std::string _password;
+  std::string _address;
+  std::string _db;
+  unsigned int _queries_per_transaction;
+  std::unique_ptr<influxdb> _influx_db;
 
-    // Internal working members
-    int            _pending_queries;
-    unsigned int   _actual_query;
-    bool           _commit;
+  // Internal working members
+  int _pending_queries;
+  unsigned int _actual_query;
+  bool _commit;
 
-    // Cache
-    macro_cache    _cache;
+  // Cache
+  macro_cache _cache;
 
-    // Status members
-    std::string    _status;
-    mutable std::mutex _statusm;
-  };
-}
+  // Status members
+  std::string _status;
+  mutable std::mutex _statusm;
+};
+}  // namespace influxdb
 
 CCB_END()
 
-#endif // !CCB_INFLUXDB_STREAM_HH
+#endif  // !CCB_INFLUXDB_STREAM_HH

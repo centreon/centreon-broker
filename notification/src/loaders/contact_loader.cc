@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sstream>
+#include "com/centreon/broker/notification/loaders/contact_loader.hh"
 #include <QSet>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/contact.hh"
-#include "com/centreon/broker/notification/loaders/contact_loader.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::notification;
@@ -41,13 +41,12 @@ void contact_loader::load(mysql* ms, contact_builder* output) {
     return;
 
   logging::debug(logging::medium)
-    << "notification: loading contacts from the database";
+      << "notification: loading contacts from the database";
 
   // Load the contacts.
   std::promise<database::mysql_result> promise;
   ms->run_query_and_get_result(
-        "SELECT contact_id, description FROM cfg_contacts",
-        &promise);
+      "SELECT contact_id, description FROM cfg_contacts", &promise);
 
   try {
     database::mysql_result res(promise.get_future().get());
@@ -58,32 +57,27 @@ void contact_loader::load(mysql* ms, contact_builder* output) {
       cont->set_description(res.value_as_str(1));
       output->add_contact(id, cont);
     }
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     throw exceptions::msg()
-      << "notification: cannot load contacts from database: "
-      << e.what();
+        << "notification: cannot load contacts from database: " << e.what();
   }
 
   // Load the infos of this contact.
   promise = std::promise<database::mysql_result>();
   ms->run_query_and_get_result(
-        "SELECT contact_id, info_key, info_value FROM cfg_contacts_infos",
-        &promise);
+      "SELECT contact_id, info_key, info_value FROM cfg_contacts_infos",
+      &promise);
 
   try {
     database::mysql_result res(promise.get_future().get());
 
     while (ms->fetch_row(res)) {
-      output->add_contact_info(
-                res.value_as_u32(0),
-                res.value_as_str(1),
-                res.value_as_str(2));
+      output->add_contact_info(res.value_as_u32(0), res.value_as_str(1),
+                               res.value_as_str(2));
     }
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     throw exceptions::msg()
-      << "notification: cannot load contacts infos from database: "
-      << e.what();
+        << "notification: cannot load contacts infos from database: "
+        << e.what();
   }
 }

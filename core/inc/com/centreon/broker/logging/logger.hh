@@ -17,35 +17,35 @@
 */
 
 #ifndef CCB_LOGGING_LOGGER_HH
-#  define CCB_LOGGING_LOGGER_HH
+#define CCB_LOGGING_LOGGER_HH
 
-#  include "com/centreon/broker/logging/defines.hh"
-#  include "com/centreon/broker/logging/temp_logger.hh"
+#include "com/centreon/broker/logging/defines.hh"
+#include "com/centreon/broker/logging/temp_logger.hh"
 
 CCB_BEGIN()
 
-namespace       logging {
-  /**
-   *  @class logger logger.hh "com/centreon/broker/logging/logger.hh"
-   *  @brief Log messages.
-   *
-   *  Messages can be sent in various forms and stored in multiple
-   *  facilities like syslog, files or standard output.
-   */
-  class         logger {
-  public:
-                logger(type log_type);
-                ~logger();
-    temp_logger operator()(level l) throw ();
+namespace logging {
+/**
+ *  @class logger logger.hh "com/centreon/broker/logging/logger.hh"
+ *  @brief Log messages.
+ *
+ *  Messages can be sent in various forms and stored in multiple
+ *  facilities like syslog, files or standard output.
+ */
+class logger {
+ public:
+  logger(type log_type);
+  ~logger();
+  temp_logger operator()(level l) throw();
 
-  private:
-                logger(logger const& l);
-    logger&     operator=(logger const& l);
+ private:
+  logger(logger const& l);
+  logger& operator=(logger const& l);
 
-    type        _type;
-  };
-}
+  type _type;
+};
+}  // namespace logging
 
 CCB_END()
 
-#endif // !CCB_LOGGING_LOGGER_HH
+#endif  // !CCB_LOGGING_LOGGER_HH

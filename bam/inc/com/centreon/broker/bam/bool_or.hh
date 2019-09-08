@@ -17,32 +17,32 @@
 */
 
 #ifndef CCB_BAM_BOOL_OR_HH
-#  define CCB_BAM_BOOL_OR_HH
+#define CCB_BAM_BOOL_OR_HH
 
-#  include "com/centreon/broker/bam/bool_binary_operator.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/bam/bool_binary_operator.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     bam {
-  /**
-   *  @class bool_or bool_or.hh "com/centreon/broker/bam/bool_or.hh"
-   *  @brief OR operator.
-   *
-   *  In the context of a KPI computation, bool_or represents a logical
-   *  OR between two bool_value.
-   */
-  class       bool_or : public bool_binary_operator {
-  public:
-              bool_or();
-              bool_or(bool_or const& right);
-              ~bool_or();
-    bool_or&  operator=(bool_or const& right);
-    double    value_hard();
-    double    value_soft();
-  };
-}
+namespace bam {
+/**
+ *  @class bool_or bool_or.hh "com/centreon/broker/bam/bool_or.hh"
+ *  @brief OR operator.
+ *
+ *  In the context of a KPI computation, bool_or represents a logical
+ *  OR between two bool_value.
+ */
+class bool_or : public bool_binary_operator {
+ public:
+  bool_or();
+  bool_or(bool_or const& right);
+  ~bool_or();
+  bool_or& operator=(bool_or const& right);
+  double value_hard();
+  double value_soft();
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_OR_HH
+#endif  // !CCB_BAM_BOOL_OR_HH

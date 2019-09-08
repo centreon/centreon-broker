@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <algorithm>
 #include "test/table_content.hh"
+#include <algorithm>
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::test;
@@ -33,9 +33,7 @@ table_content::table_content() : _columns(0) {}
  *  @param[in] other  Object to copy.
  */
 table_content::table_content(table_content const& other)
-  : _columns(other._columns),
-    _content(other._content),
-    _order_by(NULL) {}
+    : _columns(other._columns), _content(other._content), _order_by(NULL) {}
 
 /**
  *  Destructor.
@@ -71,8 +69,7 @@ std::vector<predicate>& table_content::operator[](int index) {
  *
  *  @param[in] index  Index of the row, starting at 0.
  */
-std::vector<predicate> const& table_content::operator[](
-                                               int index) const {
+std::vector<predicate> const& table_content::operator[](int index) const {
   return (_content[index]);
 }
 
@@ -106,7 +103,7 @@ void table_content::insert_row(predicate const* row) {
   for (int i(0); i < _columns; ++i)
     _content[index][i] = row[i];
   sort();
-  return ;
+  return;
 }
 
 /**
@@ -117,7 +114,7 @@ void table_content::insert_row(predicate const* row) {
 void table_content::set_order_by(table_content::order_by func) {
   _order_by = func;
   sort();
-  return ;
+  return;
 }
 
 /**
@@ -126,5 +123,5 @@ void table_content::set_order_by(table_content::order_by func) {
 void table_content::sort() {
   if (_order_by)
     std::sort(_content.begin(), _content.end(), *_order_by);
-  return ;
+  return;
 }

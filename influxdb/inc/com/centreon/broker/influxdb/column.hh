@@ -17,50 +17,44 @@
 */
 
 #ifndef CCB_INFLUXDB_COLUMN_HH
-#  define CCB_INFLUXDB_COLUMN_HH
+#define CCB_INFLUXDB_COLUMN_HH
 
 #include <string>
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace           influxdb {
-  /**
-   *  @class column column.hh "com/centreon/broker/influxdb/column.hh"
-   *  @brief Store the data for a column in the query.
-   */
-  class             column {
-  public:
-    enum            type {
-                    string,
-                    number
-    };
+namespace influxdb {
+/**
+ *  @class column column.hh "com/centreon/broker/influxdb/column.hh"
+ *  @brief Store the data for a column in the query.
+ */
+class column {
+ public:
+  enum type { string, number };
 
-                    column();
-                    column(
-                      std::string const& name,
-                      std::string const& value,
-                      bool is_flag,
-                      type col_type);
-                    column(column const& c);
-    column&         operator=(column const& c);
+  column();
+  column(std::string const& name,
+         std::string const& value,
+         bool is_flag,
+         type col_type);
+  column(column const& c);
+  column& operator=(column const& c);
 
-    std::string const&
-                    get_name() const;
-    std::string const&
-                    get_value() const;
-    bool            is_flag() const;
-    type            get_type() const;
-    static type     parse_type(std::string const& type);
+  std::string const& get_name() const;
+  std::string const& get_value() const;
+  bool is_flag() const;
+  type get_type() const;
+  static type parse_type(std::string const& type);
 
-  private:
-    std::string     _name;
-    std::string     _value;
-    bool            _is_flag;
-    type            _type;
-  };
-}
+ private:
+  std::string _name;
+  std::string _value;
+  bool _is_flag;
+  type _type;
+};
+}  // namespace influxdb
 
 CCB_END()
 
-#endif // !CCB_INFLUXDB_COLUMN_HH
+#endif  // !CCB_INFLUXDB_COLUMN_HH

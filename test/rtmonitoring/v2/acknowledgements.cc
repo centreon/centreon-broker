@@ -43,24 +43,22 @@ static void precheck(test::time_points& tpoints, char const* name) {
   ++check_number;
   std::cout << "check #" << check_number << " (" << name << ")\n";
   tpoints.store();
-  return ;
+  return;
 }
 
 /**
  *  Postcheck routine.
  */
-static void postcheck(
-              test::db& db,
-              test::predicate expected[][12]) {
+static void postcheck(test::db& db, test::predicate expected[][12]) {
   static std::string check_query(
-    "SELECT entry_time, host_id, service_id, author, comment_data,"
-    "       deletion_time, instance_id, notify_contacts,"
-    "       persistent_comment, state, sticky, type"
-    "  FROM acknowledgements"
-    "  ORDER BY entry_time ASC, host_id ASC, service_id ASC");
+      "SELECT entry_time, host_id, service_id, author, comment_data,"
+      "       deletion_time, instance_id, notify_contacts,"
+      "       persistent_comment, state, sticky, type"
+      "  FROM acknowledgements"
+      "  ORDER BY entry_time ASC, host_id ASC, service_id ASC");
   db.check_content(check_query, expected);
   std::cout << "  passed\n";
-  return ;
+  return;
 }
 
 /**
@@ -74,38 +72,31 @@ int main() {
 
   try {
     // Database.
-    char const* tables[] = {
-      "instances",
-      "hosts",
-      "services",
-      "acknowledgements",
-      NULL
-    };
+    char const* tables[] = {"instances", "hosts", "services",
+                            "acknowledgements", NULL};
     test::db db(DB_NAME, tables);
 
     // Monitoring broker.
     test::file cbd_cfg;
-    cbd_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
+    cbd_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
     cbd_cfg.set("BROKER_ID", "84");
     cbd_cfg.set("BROKER_NAME", TEST_NAME "-cbd");
     cbd_cfg.set("POLLER_ID", "42");
     cbd_cfg.set("POLLER_NAME", "my-poller");
     cbd_cfg.set("TCP_PORT", "5581");
     cbd_cfg.set("DB_NAME", DB_NAME);
-    cbd_cfg.set(
-      "SQL_ADDITIONAL",
-      "<write_filters>"
-      "  <category>neb:instance</category>"
-      "  <category>neb:instance_status</category>"
-      "  <category>neb:host</category>"
-      "  <category>neb:host_check</category>"
-      "  <category>neb:host_status</category>"
-      "  <category>neb:service</category>"
-      "  <category>neb:service_check</category>"
-      "  <category>neb:service_status</category>"
-      "  <category>neb:acknowledgement</category>"
-      "</write_filters>");
+    cbd_cfg.set("SQL_ADDITIONAL",
+                "<write_filters>"
+                "  <category>neb:instance</category>"
+                "  <category>neb:instance_status</category>"
+                "  <category>neb:host</category>"
+                "  <category>neb:host_check</category>"
+                "  <category>neb:host_status</category>"
+                "  <category>neb:service</category>"
+                "  <category>neb:service_check</category>"
+                "  <category>neb:service_status</category>"
+                "  <category>neb:acknowledgement</category>"
+                "</write_filters>");
     test::cbd broker;
     broker.set_config_file(cbd_cfg.generate());
     broker.start();
@@ -113,8 +104,7 @@ int main() {
 
     // Monitoring engine.
     test::file cbmod_cfg;
-    cbmod_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
+    cbmod_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
     cbmod_cfg.set("BROKER_ID", "83");
     cbmod_cfg.set("BROKER_NAME", TEST_NAME "-cbmod");
     cbmod_cfg.set("POLLER_ID", "42");
@@ -131,18 +121,16 @@ int main() {
     engine_config.generate_hosts(5);
     engine_config.generate_services(1);
     for (test::centengine_config::objlist::iterator
-           it(engine_config.get_hosts().begin()),
-           end(engine_config.get_hosts().end());
-         it != end;
-         ++it) {
+             it(engine_config.get_hosts().begin()),
+         end(engine_config.get_hosts().end());
+         it != end; ++it) {
       it->set("max_check_attempts", "1");
       it->set("passive_checks_enabled", "1");
     }
     for (test::centengine_config::objlist::iterator
-           it(engine_config.get_services().begin()),
-           end(engine_config.get_services().end());
-         it != end;
-         ++it) {
+             it(engine_config.get_services().begin()),
+         end(engine_config.get_services().end());
+         it != end; ++it) {
       it->set("max_check_attempts", "1");
       it->set("passive_checks_enabled", "1");
     }
@@ -153,10 +141,9 @@ int main() {
     test::time_points tpoints;
 
     // #1, default.
-    precheck(
-      tpoints,
-      "entry_time, host_id, service_id, author, comment_data,"
-      " instance_id, state, type");
+    precheck(tpoints,
+             "entry_time, host_id, service_id, author, comment_data,"
+             " instance_id, state, type");
     engine.start();
     test::sleep_for(2);
     tpoints.store();
@@ -164,26 +151,15 @@ int main() {
     test::sleep_for(2);
     tpoints.store();
     engine.extcmd().execute(
-      "ACKNOWLEDGE_HOST_PROBLEM;1;0;0;0;mkermagoret;myowncomment");
+        "ACKNOWLEDGE_HOST_PROBLEM;1;0;0;0;mkermagoret;myowncomment");
     test::sleep_for(2);
     tpoints.store();
     test::predicate expected[5][12] = {
-      {
-        test::predicate(tpoints.prelast(), tpoints.last() + 1),
-        1,
-        test::predicate(test::predicate::type_null),
-        "mkermagoret",
-        "myowncomment",
-        test::predicate(test::predicate::type_null),
-        42u,
-        false,
-        false,
-        1,
-        false,
-        0
-      },
-      { test::predicate() }
-    };
+        {test::predicate(tpoints.prelast(), tpoints.last() + 1), 1,
+         test::predicate(test::predicate::type_null), "mkermagoret",
+         "myowncomment", test::predicate(test::predicate::type_null), 42u,
+         false, false, 1, false, 0},
+        {test::predicate()}};
     postcheck(db, expected);
 
     // #2.
@@ -192,7 +168,7 @@ int main() {
     test::sleep_for(2);
     tpoints.store();
     engine.extcmd().execute(
-      "ACKNOWLEDGE_HOST_PROBLEM;3;2;0;0;Merethis;another comment");
+        "ACKNOWLEDGE_HOST_PROBLEM;3;2;0;0;Merethis;another comment");
     test::sleep_for(2);
     tpoints.store();
     expected[1][0] = test::predicate(tpoints.prelast(), tpoints.last() - 1);
@@ -216,7 +192,7 @@ int main() {
     test::sleep_for(2);
     tpoints.store();
     engine.extcmd().execute(
-      "ACKNOWLEDGE_SVC_PROBLEM;2;2;0;1;0;Centreon;default");
+        "ACKNOWLEDGE_SVC_PROBLEM;2;2;0;1;0;Centreon;default");
     test::sleep_for(2);
     tpoints.store();
     expected[2][0] = test::predicate(tpoints.prelast(), tpoints.last() - 1);
@@ -240,7 +216,7 @@ int main() {
     test::sleep_for(2);
     tpoints.store();
     engine.extcmd().execute(
-      "ACKNOWLEDGE_SVC_PROBLEM;5;5;0;0;1;admin;admin is admin");
+        "ACKNOWLEDGE_SVC_PROBLEM;5;5;0;0;1;admin;admin is admin");
     test::sleep_for(2);
     tpoints.store();
     expected[3][0] = test::predicate(tpoints.prelast(), tpoints.last() - 1);
@@ -272,11 +248,9 @@ int main() {
     error = false;
     db.set_remove_db_on_close(true);
     broker.stop();
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << "  " << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "  unknown exception\n";
   }
 

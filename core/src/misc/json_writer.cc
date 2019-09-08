@@ -16,23 +16,20 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sstream>
 #include "com/centreon/broker/misc/json_writer.hh"
+#include <sstream>
 
 using namespace com::centreon::broker::misc;
 
 /**
  *  Default constructor.
  */
-json_writer::json_writer() {
-}
+json_writer::json_writer() {}
 
 /**
  *  Destructor.
  */
-json_writer::~json_writer() {
-
-}
+json_writer::~json_writer() {}
 
 /**
  *  Get the constructed string.
@@ -155,9 +152,7 @@ void json_writer::merge(std::string const& val) {
  *  Put a comma, if needed.
  */
 void json_writer::_put_comma() {
-  if (!_string.empty()
-      && _string[_string.size() - 1] != ':'
-      && _string[_string.size() -1] != '{'
-      && _string[_string.size() -1] != '[')
+  if (!_string.empty() && _string[_string.size() - 1] != ':' &&
+      _string[_string.size() - 1] != '{' && _string[_string.size() - 1] != '[')
     _string += ',';
 }

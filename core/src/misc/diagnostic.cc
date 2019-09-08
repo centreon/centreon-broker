@@ -317,7 +317,8 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
           log_path.append(it->name());
         to_remove.push_back(log_path);
 
-        char const* args[]{"tail", "-c", "20000000", it->name().c_str(), nullptr};
+        char const* args[]{"tail", "-c", "20000000", it->name().c_str(),
+                           nullptr};
         misc::exec_process(args, true);
       }
   }

@@ -17,48 +17,45 @@
 */
 
 #ifndef CCB_BAM_META_SERVICE_STATUS_HH
-#  define CCB_BAM_META_SERVICE_STATUS_HH
+#define CCB_BAM_META_SERVICE_STATUS_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                bam {
-  /**
-   *  @class meta_service_status meta_service_status.hh "com/centreon/broker/bam/meta_service_status.hh"
-   *  @brief Update status of a meta-service.
-   *
-   *  Update the status of a meta-service. This will update the
-   *  meta_service table.
-   */
-  class                  meta_service_status : public io::data {
-  public:
-                         meta_service_status();
-                         meta_service_status(
-                           meta_service_status const& other);
-                         ~meta_service_status();
-    meta_service_status& operator=(meta_service_status const& other);
-    unsigned int         type() const;
-    static unsigned int  static_type();
+namespace bam {
+/**
+ *  @class meta_service_status meta_service_status.hh
+ * "com/centreon/broker/bam/meta_service_status.hh"
+ *  @brief Update status of a meta-service.
+ *
+ *  Update the status of a meta-service. This will update the
+ *  meta_service table.
+ */
+class meta_service_status : public io::data {
+ public:
+  meta_service_status();
+  meta_service_status(meta_service_status const& other);
+  ~meta_service_status();
+  meta_service_status& operator=(meta_service_status const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    unsigned int         meta_service_id;
-    bool                 state_changed;
-    double               value;
+  unsigned int meta_service_id;
+  bool state_changed;
+  double value;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void                 _internal_copy(
-                           meta_service_status const& other);
-  };
-}
+ private:
+  void _internal_copy(meta_service_status const& other);
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_META_SERVICE_STATUS_HH
+#endif  // !CCB_BAM_META_SERVICE_STATUS_HH

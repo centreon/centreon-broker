@@ -17,30 +17,29 @@
 */
 
 #ifndef CCB_STATS_SERIALIZER_HH
-#  define CCB_STATS_SERIALIZER_HH
+#define CCB_STATS_SERIALIZER_HH
 
-#  include <map>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/io/properties.hh"
+#include <map>
+#include <string>
+#include "com/centreon/broker/io/properties.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         stats {
-  /**
-   *  @class serializer serializer.hh "com/centreon/broker/stats/serializer.hh"
-   *  @brief Interface for serializer objects.
-   */
-  class           serializer {
-  public:
-    virtual       ~serializer() {}
+namespace stats {
+/**
+ *  @class serializer serializer.hh "com/centreon/broker/stats/serializer.hh"
+ *  @brief Interface for serializer objects.
+ */
+class serializer {
+ public:
+  virtual ~serializer() {}
 
-    virtual void  serialize(
-                    std::string& buffer,
-                    io::properties const& tree) const = 0;
-  };
-}
+  virtual void serialize(std::string& buffer,
+                         io::properties const& tree) const = 0;
+};
+}  // namespace stats
 
 CCB_END()
 
-#endif // !CCB_STATS_SERIALIZER_HH
+#endif  // !CCB_STATS_SERIALIZER_HH

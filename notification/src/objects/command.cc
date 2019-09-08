@@ -16,14 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/notification/utilities/qhash_func.hh"
+#include "com/centreon/broker/notification/objects/command.hh"
 #include <QRegExp>
 #include <QStringList>
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
-#include "com/centreon/broker/notification/objects/command.hh"
-#include "com/centreon/broker/notification/state.hh"
 #include "com/centreon/broker/notification/macro_generator.hh"
+#include "com/centreon/broker/notification/state.hh"
+#include "com/centreon/broker/notification/utilities/qhash_func.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -31,17 +31,16 @@ using namespace com::centreon::broker::notification::objects;
 const QRegExp command::_macro_regex("\\$(\\w+)\\$");
 
 // Forward declaration.
-static void single_pass_replace(
-              std::string &str,
-              macro_generator::macro_container const& macros);
+static void single_pass_replace(std::string& str,
+                                macro_generator::macro_container const& macros);
 
 /**
  *  Constructor from a base command string.
  *
  *  @param[in] base_command  The command from which to construct this object.
  */
-command::command(std::string const& base_command) :
-  _enable_shell(true), _base_command(base_command) {}
+command::command(std::string const& base_command)
+    : _enable_shell(true), _base_command(base_command) {}
 
 /**
  *  Copy constructor.
@@ -109,12 +108,11 @@ void command::set_name(std::string const& name) {
  *
  *  @return  A string containing the resolved command.
  */
-std::string command::resolve(
-                       contact::ptr const& cnt,
-                       node::ptr const& n,
-                       node_cache const& cache,
-                       state const& st,
-                       action const& act) {
+std::string command::resolve(contact::ptr const& cnt,
+                             node::ptr const& n,
+                             node_cache const& cache,
+                             state const& st,
+                             action const& act) {
   // Match all the macros with the wonderful magic of RegExp.
   QString base_command = QString::fromStdString(_base_command);
   macro_generator::macro_container macros;
@@ -127,17 +125,16 @@ std::string command::resolve(
     return (_base_command);
 
   logging::debug(logging::medium)
-    << "notification: found " << macros.size() << " macros";
+      << "notification: found " << macros.size() << " macros";
 
   // Generate each macro.
   try {
     macro_generator generator;
     generator.generate(macros, n->get_node_id(), *cnt, st, cache, act);
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     logging::error(logging::medium)
-      << "notification: could not resolve some macro in command '"
-      << _name << "': " << e.what();
+        << "notification: could not resolve some macro in command '" << _name
+        << "': " << e.what();
   }
 
   // Replace the macros by their values.
@@ -166,13 +163,12 @@ std::string command::resolve(
  *  @param[in] macros  The macros to replace.
  */
 static void single_pass_replace(
-              std::string& str,
-              macro_generator::macro_container const& macros) {
+    std::string& str,
+    macro_generator::macro_container const& macros) {
   std::vector<std::pair<std::string, std::string> > macro_list;
   for (macro_generator::macro_container::iterator it(macros.begin()),
-                                                  end(macros.end());
-       it != end;
-       ++it) {
+       end(macros.end());
+       it != end; ++it) {
     std::string key("$");
     key.append(it.key());
     key.append("$");
@@ -180,10 +176,9 @@ static void single_pass_replace(
   }
 
   for (std::vector<std::pair<std::string, std::string> >::const_iterator
-         it(macro_list.begin()),
-         end(macro_list.end());
-       it != end;
-       ++it) {
+           it(macro_list.begin()),
+       end(macro_list.end());
+       it != end; ++it) {
     size_t tmp(0);
     while ((tmp = str.find(it->first, tmp)) != std::string::npos) {
       str.replace(tmp, it->first.size(), it->second);

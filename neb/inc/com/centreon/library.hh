@@ -17,12 +17,12 @@
 */
 
 #ifndef CC_LIBRARY_HH
-#  define CC_LIBRARY_HH
+#define CC_LIBRARY_HH
 
-#  ifdef _WIN32
-#    include "com/centreon/library_win32.hh"
-#  else
-#    include "com/centreon/library_posix.hh"
-#  endif // Windows or POSIX implementation.
+#ifdef _WIN32
+#include "com/centreon/library_win32.hh"
+#else
+#include "com/centreon/library_posix.hh"
+#endif  // Windows or POSIX implementation.
 
-#endif // !CC_LIBRARY_HH
+#endif  // !CC_LIBRARY_HH

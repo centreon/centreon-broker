@@ -16,17 +16,17 @@
 ** For more information : contact@centreon.com
 */
 
+#include "test/db.hh"
 #include <stdlib.h>
-#include <fstream>
-#include <iostream>
-#include <map>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include <fstream>
+#include <iostream>
+#include <map>
 #include <set>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "test/db.hh"
 #include "test/predicate.hh"
 #include "test/vars.hh"
 
@@ -40,16 +40,15 @@ using namespace com::centreon::broker::test;
  *  @param[in]  table     Table name.
  *  @param[in]  base_dir  Scripts base directory.
  */
-static void add_db_script(
-              std::list<std::pair<std::string, std::string> >& list,
-              std::string const& table,
-              std::string const& base_dir) {
+static void add_db_script(std::list<std::pair<std::string, std::string> >& list,
+                          std::string const& table,
+                          std::string const& base_dir) {
   std::string path(base_dir);
   path.append("/");
   path.append(table);
   path.append(".sql");
   list.push_back(std::make_pair(table, path));
-  return ;
+  return;
 }
 
 /**
@@ -60,46 +59,40 @@ static void add_db_script(
  *                      all possible tables.
  *  @param[in] exclude  Exclude tables from being created.
  */
-db::db(
-      std::string const& name,
-      char const* const* include,
-      char const* const* exclude) : _remove_db_on_close(false) {
+db::db(std::string const& name,
+       char const* const* include,
+       char const* const* exclude)
+    : _remove_db_on_close(false) {
   // Find DB type.
   QString db_type;
   std::string db_subdir;
   if (!strcmp(DB_TYPE, "mysql")) {
     db_type = "QMYSQL";
     db_subdir = "mysql";
-  }
-  else if (!strcmp(DB_TYPE, "psql")
-           || !strcmp(DB_TYPE, "postgres")
-           || !strcmp(DB_TYPE, "postgresql")) {
+  } else if (!strcmp(DB_TYPE, "psql") || !strcmp(DB_TYPE, "postgres") ||
+             !strcmp(DB_TYPE, "postgresql")) {
     db_type = "QPSQL";
     db_subdir = "postgresql";
-  }
-  else if (!strcmp(DB_TYPE, "oci") || !strcmp(DB_TYPE, "oracle")) {
+  } else if (!strcmp(DB_TYPE, "oci") || !strcmp(DB_TYPE, "oracle")) {
     db_type = "QOCI";
     db_subdir = "oracle";
-  }
-  else
-    throw (exceptions::msg() << "unsupported database type: "
-           << DB_TYPE);
+  } else
+    throw(exceptions::msg() << "unsupported database type: " << DB_TYPE);
 
   // Open DB.
   {
     std::ostringstream oss;
     oss << this;
-    _db.reset(new QSqlDatabase(QSqlDatabase::addDatabase(
-                                               db_type,
-                                               oss.str().c_str())));
+    _db.reset(new QSqlDatabase(
+        QSqlDatabase::addDatabase(db_type, oss.str().c_str())));
   }
   _db->setHostName(DB_HOST);
   _db->setPassword(DB_PASSWORD);
   _db->setPort(strtoul(DB_PORT, NULL, 0));
   _db->setUserName(DB_USER);
   if (!_db->open())
-    throw (exceptions::msg() << "cannot initiate DB connection to '"
-           << name << "': " << _db->lastError().text());
+    throw(exceptions::msg() << "cannot initiate DB connection to '" << name
+                            << "': " << _db->lastError().text());
 
   // Drop DB.
   {
@@ -125,8 +118,8 @@ db::db(
   _db->close();
   _db->setDatabaseName(name.c_str());
   if (!_db->open())
-    throw (exceptions::msg() << "cannot reopen connection to DB '"
-           << name << "': " << _db->lastError().text());
+    throw(exceptions::msg() << "cannot reopen connection to DB '" << name
+                            << "': " << _db->lastError().text());
 
   // Build table creation script list. Order is important.
   std::list<std::pair<std::string, std::string> > tables;
@@ -268,9 +261,10 @@ db::db(
   // add_db_script(tables, "mod_bam_reporting_timeperiods", db_dir);
   // add_db_script(tables, "mod_bam_reporting_timeperiods_exceptions", db_dir);
   // add_db_script(tables, "mod_bam_reporting_timeperiods_exclusions", db_dir);
-  // add_db_script(tables, "mod_bam_reporting_relations_ba_timeperiods", db_dir);
-  // add_db_script(tables, "mod_bam_reporting_ba_events_durations", db_dir);
-  // add_db_script(tables, "mod_bam_reporting_ba_availabilities", db_dir);
+  // add_db_script(tables, "mod_bam_reporting_relations_ba_timeperiods",
+  // db_dir); add_db_script(tables, "mod_bam_reporting_ba_events_durations",
+  // db_dir); add_db_script(tables, "mod_bam_reporting_ba_availabilities",
+  // db_dir);
 
   // Only include valid tables.
   if (include) {
@@ -280,16 +274,14 @@ db::db(
       ++include;
     }
     for (std::list<std::pair<std::string, std::string> >::iterator
-           it(tables.begin()),
-           end(tables.end());
+             it(tables.begin()),
+         end(tables.end());
          it != end;)
       if (included.find(it->first) == included.end()) {
-        std::list<std::pair<std::string, std::string> >::iterator
-          to_erase(it);
+        std::list<std::pair<std::string, std::string> >::iterator to_erase(it);
         ++it;
         tables.erase(to_erase);
-      }
-      else
+      } else
         ++it;
   }
 
@@ -297,22 +289,20 @@ db::db(
   if (exclude) {
     while (*exclude)
       for (std::list<std::pair<std::string, std::string> >::iterator
-             it(tables.begin()),
-             end(tables.end());
-           it != end;
-           ++it)
+               it(tables.begin()),
+           end(tables.end());
+           it != end; ++it)
         if (it->first == *exclude) {
           tables.erase(it);
-          break ;
+          break;
         }
   }
 
   // Run table creation scripts.
   for (std::list<std::pair<std::string, std::string> >::iterator
-         it(tables.begin()),
-         end(tables.end());
-       it != end;
-       ++it)
+           it(tables.begin()),
+       end(tables.end());
+       it != end; ++it)
     _run_script(it->second.c_str());
 }
 
@@ -329,14 +319,13 @@ db::~db() {
  *  @param[in] query     SELECT query.
  *  @param[in] expected  Expected content.
  */
-void db::check_content(
-           std::string const& query,
-           table_content const& expected) {
+void db::check_content(std::string const& query,
+                       table_content const& expected) {
   // Run query.
   QSqlQuery q(*_db);
   if (!q.exec(query.c_str()))
-    throw (exceptions::msg() << "could not run query: "
-           << q.lastError().text() << " (query was " << query << ")");
+    throw(exceptions::msg() << "could not run query: " << q.lastError().text()
+                            << " (query was " << query << ")");
 
   // Browse data.
   int columns(expected.get_columns());
@@ -352,7 +341,7 @@ void db::check_content(
           << (q.value(i).isNull() ? "NULL" : q.value(i).toString())
           << ((i == columns - 1) ? "" : ", ");
       e << " (query was " << query << ")";
-      throw (e);
+      throw(e);
     }
     std::list<int> mismatching;
     for (int i(0); i < columns; ++i)
@@ -362,28 +351,24 @@ void db::check_content(
       exceptions::msg e;
       e << "row " << entry << " does not match expected values: ";
       QSqlRecord rec(q.record());
-      for (std::list<int>::const_iterator
-             it(mismatching.begin()),
-             end(mismatching.end());
-           it != end;
-           ++it) {
-        e << ((it == mismatching.begin()) ? "" : ", ")
-          << rec.fieldName(*it) << " "
-          << (q.value(*it).isNull() ? "NULL" : q.value(*it).toString())
+      for (std::list<int>::const_iterator it(mismatching.begin()),
+           end(mismatching.end());
+           it != end; ++it) {
+        e << ((it == mismatching.begin()) ? "" : ", ") << rec.fieldName(*it)
+          << " " << (q.value(*it).isNull() ? "NULL" : q.value(*it).toString())
           << " / " << expected[entry][*it];
       }
-      throw (e);
+      throw(e);
     }
     ++entry;
   }
 
   // Check if enough data was provided.
   if (entry != rows)
-    throw (exceptions::msg()
-           << "not enough data returned by query (query was "
-           << query << ")");
+    throw(exceptions::msg()
+          << "not enough data returned by query (query was " << query << ")");
 
-  return ;
+  return;
 }
 
 /**
@@ -404,8 +389,7 @@ void db::close() {
   _db.reset();
   QSqlDatabase::removeDatabase(connection_name);
 
-  return ;
-
+  return;
 }
 
 /**
@@ -426,9 +410,8 @@ QSqlDatabase* db::get_db() {
 void db::run(QString const& query, QString const& error_msg) {
   QSqlQuery q(*_db);
   if (!q.exec(query))
-    throw (exceptions::msg()
-           << error_msg << ": " << q.lastError().text());
-  return ;
+    throw(exceptions::msg() << error_msg << ": " << q.lastError().text());
+  return;
 }
 
 /**
@@ -438,7 +421,7 @@ void db::run(QString const& query, QString const& error_msg) {
  */
 void db::set_remove_db_on_close(bool val) {
   _remove_db_on_close = val;
-  return ;
+  return;
 }
 
 /**
@@ -453,9 +436,8 @@ void db::_run_script(char const* script_name) {
     std::ifstream ifs;
     ifs.open(script_name);
     if (ifs.fail())
-      throw (exceptions::msg()
-             << "cannot open SQL table creation script '"
-             << script_name << "'");
+      throw(exceptions::msg()
+            << "cannot open SQL table creation script '" << script_name << "'");
     char buffer[1024];
     std::streamsize rb;
     ifs.read(buffer, sizeof(buffer));
@@ -471,9 +453,9 @@ void db::_run_script(char const* script_name) {
   // Execute table creation script.
   QSqlQuery query(*_db);
   if (!query.exec(QString(table_creation_script)))
-    throw (exceptions::msg()
-           << "cannot run table creation script '" << script_name
-           << "': " << query.lastError().text().toStdString().c_str());
+    throw(exceptions::msg()
+          << "cannot run table creation script '" << script_name
+          << "': " << query.lastError().text().toStdString().c_str());
 
-  return ;
+  return;
 }

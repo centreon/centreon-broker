@@ -15,9 +15,9 @@
 **
 ** For more information : contact@centreon.com
 */
+#include "com/centreon/broker/database/mysql_result.hh"
 #include <cstdlib>
 #include <iostream>
-#include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
@@ -30,10 +30,10 @@ using namespace com::centreon::broker::database;
  * @param statement_id The statement id or 0 if it comes from a query.
  */
 mysql_result::mysql_result(mysql_connection* parent, int statement_id)
-  : _parent(parent),
-    _result(nullptr, mysql_free_result),
-    _row(nullptr),
-    _statement_id(statement_id) {}
+    : _parent(parent),
+      _result(nullptr, mysql_free_result),
+      _row(nullptr),
+      _statement_id(statement_id) {}
 
 /**
  *  Constructor
@@ -42,9 +42,7 @@ mysql_result::mysql_result(mysql_connection* parent, int statement_id)
  * @param result The result returned by the Mariadb Connector.
  */
 mysql_result::mysql_result(mysql_connection* parent, MYSQL_RES* result)
-  : _parent(parent),
-    _result(result, mysql_free_result),
-    _statement_id(0) {}
+    : _parent(parent), _result(result, mysql_free_result), _statement_id(0) {}
 
 /**
  *  Move Constructor
@@ -52,10 +50,10 @@ mysql_result::mysql_result(mysql_connection* parent, MYSQL_RES* result)
  * @param other Another result to move into this one.
  */
 mysql_result::mysql_result(mysql_result&& other)
-  : _parent(other._parent),
-    _result(other._result),
-    _row(other._row),
-    _statement_id(other._statement_id) {
+    : _parent(other._parent),
+      _result(other._result),
+      _row(other._row),
+      _statement_id(other._statement_id) {
   other._row = nullptr;
   other._result = nullptr;
   other._parent = nullptr;
@@ -112,8 +110,7 @@ bool mysql_result::value_as_bool(int idx) {
   else if (_row)
     retval = _row[idx] ? strtol(_row[idx], 0, 10) : 0;
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -131,8 +128,7 @@ std::string mysql_result::value_as_str(int idx) {
   else if (_row)
     retval = _row[idx];
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -150,8 +146,7 @@ float mysql_result::value_as_f32(int idx) {
   else if (_row)
     retval = _row[idx] ? atof(_row[idx]) : 0;
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -169,8 +164,7 @@ double mysql_result::value_as_f64(int idx) {
   else if (_row)
     retval = _row[idx] ? atof(_row[idx]) : 0;
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -188,8 +182,7 @@ int mysql_result::value_as_i32(int idx) {
   else if (_row)
     retval = _row[idx] ? strtol(_row[idx], 0, 10) : 0;
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -207,8 +200,7 @@ unsigned int mysql_result::value_as_u32(int idx) {
   else if (_row)
     retval = _row[idx] ? strtoul(_row[idx], 0, 10) : 0;
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -226,8 +218,7 @@ unsigned long long mysql_result::value_as_u64(int idx) {
   else if (_row)
     retval = _row[idx] ? strtoull(_row[idx], 0, 10) : 0;
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -245,8 +236,7 @@ bool mysql_result::value_is_null(int idx) {
   else if (_row)
     retval = (_row[idx] == 0);
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 

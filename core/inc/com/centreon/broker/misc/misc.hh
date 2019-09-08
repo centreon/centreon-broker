@@ -19,10 +19,10 @@
 #ifndef CCB_MISC_MISC_HH
 #define CCB_MISC_MISC_HH
 
-#  include <list>
-#  include <string>
-#  include <vector>
-#  include "com/centreon/broker/namespace.hh"
+#include <list>
+#include <string>
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -33,7 +33,7 @@ uint16_t crc16_ccitt(char const* data, unsigned int data_len);
 std::string exec(std::string const& cmd);
 int32_t exec_process(char const** argv, bool wait_for_completion);
 std::vector<char> from_hex(std::string const& str);
-}
+}  // namespace misc
 
 CCB_END()
 

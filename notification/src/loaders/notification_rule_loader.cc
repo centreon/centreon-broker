@@ -16,36 +16,35 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sstream>
+#include "com/centreon/broker/notification/loaders/notification_rule_loader.hh"
 #include <QSet>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/notification/loaders/notification_rule_loader.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
 notification_rule_loader::notification_rule_loader() {}
 
-void notification_rule_loader::load(
-                                 mysql* ms,
-                                 notification_rule_builder *output) {
+void notification_rule_loader::load(mysql* ms,
+                                    notification_rule_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!ms || !output)
     return;
 
   logging::debug(logging::medium)
-    << "notification: loading notification rules from the database";
+      << "notification: loading notification rules from the database";
 
   // Performance improvement, as we never go back.
-  //query.setForwardOnly(true);
+  // query.setForwardOnly(true);
 
   std::promise<database::mysql_result> promise;
   ms->run_query_and_get_result(
-        "SELECT rule_id, method_id, timeperiod_id, contact_id, "
-        "       host_id, service_id"
-        "  FROM rt_notification_rules",
-        &promise);
+      "SELECT rule_id, method_id, timeperiod_id, contact_id, "
+      "       host_id, service_id"
+      "  FROM rt_notification_rules",
+      &promise);
 
   try {
     database::mysql_result res(promise.get_future().get());
@@ -55,19 +54,17 @@ void notification_rule_loader::load(
       rule->set_method_id(res.value_as_u32(1));
       rule->set_timeperiod_id(res.value_as_u32(2));
       rule->set_contact_id(res.value_as_u32(3));
-      rule->set_node_id(node_id(res.value_as_u32(4),
-                                res.value_as_u32(5)));
+      rule->set_node_id(node_id(res.value_as_u32(4), res.value_as_u32(5)));
       logging::debug(logging::low)
-        << "notification: new rule " << rule->get_id()
-        << " affecting node (" << rule->get_node_id().get_host_id()
-        << ", " << rule->get_node_id().get_service_id()
-        << ") using method " << rule->get_method_id();
+          << "notification: new rule " << rule->get_id() << " affecting node ("
+          << rule->get_node_id().get_host_id() << ", "
+          << rule->get_node_id().get_service_id() << ") using method "
+          << rule->get_method_id();
       output->add_rule(res.value_as_u32(0), rule);
     }
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     throw exceptions::msg()
-      << "notification: cannot load notification rules from database: "
-      << e.what();
+        << "notification: cannot load notification rules from database: "
+        << e.what();
   }
 }

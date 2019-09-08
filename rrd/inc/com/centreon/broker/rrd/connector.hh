@@ -17,11 +17,11 @@
 */
 
 #ifndef CCB_RRD_CONNECTOR_HH
-#  define CCB_RRD_CONNECTOR_HH
+#define CCB_RRD_CONNECTOR_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -65,4 +65,4 @@ class connector : public io::endpoint {
 
 CCB_END()
 
-#endif // !CCB_RRD_CONNECTOR_HH
+#endif  // !CCB_RRD_CONNECTOR_HH

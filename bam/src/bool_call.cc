@@ -25,16 +25,14 @@ using namespace com::centreon::broker::bam;
  *
  *  @param[in] name  The name of the external expression.
  */
-bool_call::bool_call(std::string const& name)
-  : _name(name) {}
+bool_call::bool_call(std::string const& name) : _name(name) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-bool_call::bool_call(bool_call const& right)
-  : bool_value(right) {
+bool_call::bool_call(bool_call const& right) : bool_value(right) {
   _name = right._name;
   _expression = right._expression;
 }
@@ -122,9 +120,7 @@ void bool_call::set_expression(std::shared_ptr<bool_value> expression) {
  *
  *  @return  True if this was modified.
  */
-bool bool_call::child_has_update(
-                  computable* child,
-                  io::stream* visitor) {
+bool bool_call::child_has_update(computable* child, io::stream* visitor) {
   (void)child;
   (void)visitor;
   return (true);

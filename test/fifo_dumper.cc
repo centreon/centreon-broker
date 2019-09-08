@@ -16,20 +16,19 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <ctime>
-#include <unistd.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <iostream>
-#include <fstream>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <QProcess>
+#include <ctime>
+#include <fstream>
+#include <iostream>
 #include <sstream>
+#include "cbd.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "config.hh"
-#include "vars.hh"
-#include "cbd.hh"
 #include "generate.hh"
 #include "misc.hh"
 #include "vars.hh"
@@ -60,8 +59,7 @@ int main() {
 
     // Create the config influxdb xml file.
     test_file file;
-    file.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/fifo_dumper.xml.in");
+    file.set_template(PROJECT_SOURCE_DIR "/test/cfg/fifo_dumper.xml.in");
     file.set("RECEIVER_FILE", receiver_file);
     file.set("SENDER_FIFO", sender_fifo);
     std::string config_file = file.generate();
@@ -75,34 +73,29 @@ int main() {
     std::string command = "./util_write_into_file \"test\n\" " + sender_fifo;
     process->start(QString::fromStdString(command));
     if (process->waitForStarted() == false)
-      throw (exceptions::msg()
-             << "can't start the process to write into the sending fifo "
-             << process->errorString());
+      throw(exceptions::msg()
+            << "can't start the process to write into the sending fifo "
+            << process->errorString());
 
     sleep_for(3);
 
     std::ifstream ifs(receiver_file.c_str());
     if (!ifs.is_open())
-      throw (exceptions::msg()
-             << "can't open the receiving file");
+      throw(exceptions::msg() << "can't open the receiving file");
     char buf[4096];
     ifs.getline(buf, 4096);
     if (ifs.fail())
-      throw (exceptions::msg()
-             << "can't read the receiving fifo");
+      throw(exceptions::msg() << "can't read the receiving fifo");
     ifs.close();
     std::string got = buf;
     if (got != "test")
-      throw (exceptions::msg()
-             << "unexpected string received, got: " << got);
+      throw(exceptions::msg() << "unexpected string received, got: " << got);
 
     // Success.
     error = false;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
   }
 

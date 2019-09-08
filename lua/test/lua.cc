@@ -328,8 +328,7 @@ TEST_F(LuaAsioTest, SocketUnconnectedState) {
                "end\n\n"
                "function write(d)\n"
                "end\n\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("State: unconnected"));
@@ -356,8 +355,7 @@ TEST_F(LuaAsioTest, SocketConnectedState) {
                "end\n\n"
                "function write(d)\n"
                "end\n\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("State: connected"));
@@ -401,8 +399,7 @@ TEST_F(LuaTest, JsonEncode) {
       "end\n\n"
       "function write(d)\n"
       "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string result(ReadFile("/tmp/log"));
 
   ASSERT_NE(result.find("INFO: aa=>C:\\bonjour"), std::string::npos);
@@ -427,8 +424,7 @@ TEST_F(LuaTest, EmptyJsonEncode) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("INFO: empty array: []"), std::string::npos);
@@ -456,8 +452,7 @@ TEST_F(LuaTest, JsonEncodeEscape) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("INFO: 1=>d:\\bonjour le \"monde\""), std::string::npos);
@@ -490,8 +485,7 @@ TEST_F(LuaTest, JsonEncodeEvent) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string result{ReadFile("/tmp/log")};
 
   ASSERT_NE(result.find("INFO: category=>1"), std::string::npos);
@@ -517,8 +511,7 @@ TEST_F(LuaTest, CacheTest) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("host does not exist"), std::string::npos);
@@ -545,8 +538,7 @@ TEST_F(LuaTest, HostCacheTest) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("host is centreon"), std::string::npos);
@@ -575,8 +567,7 @@ TEST_F(LuaTest, ServiceCacheTest) {
       "end\n\n"
       "function write(d)\n"
       "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("service description is description"), std::string::npos);
@@ -617,8 +608,7 @@ TEST_F(LuaTest, IndexMetricCacheTest) {
       "end\n\n"
       "function write(d)\n"
       "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("service description is MyDescription"),
@@ -650,8 +640,7 @@ TEST_F(LuaTest, InstanceNameCacheTest) {
       "end\n\n"
       "function write(d)\n"
       "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("instance name is MyPoller"), std::string::npos);
@@ -679,8 +668,7 @@ TEST_F(LuaTest, MetricMappingCacheTest) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("metric id is 27"));
@@ -704,8 +692,7 @@ TEST_F(LuaTest, HostGroupCacheTestNameNotAvailable) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("host group is nil"), std::string::npos);
@@ -732,8 +719,7 @@ TEST_F(LuaTest, HostGroupCacheTestName) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("host group is centreon"), std::string::npos);
@@ -757,8 +743,7 @@ TEST_F(LuaTest, HostGroupCacheTestEmpty) {
       "end\n\n"
       "function write(d)\n"
       "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("host group is []"), std::string::npos);
@@ -809,8 +794,7 @@ TEST_F(LuaTest, HostGroupCacheTest) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("\"group_id\":17"));
@@ -835,8 +819,7 @@ TEST_F(LuaTest, ServiceGroupCacheTestNameNotAvailable) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("service group is nil"), std::string::npos);
@@ -863,8 +846,7 @@ TEST_F(LuaTest, ServiceGroupCacheTestName) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("service group is centreon"), std::string::npos);
@@ -888,8 +870,7 @@ TEST_F(LuaTest, ServiceGroupCacheTestEmpty) {
       "end\n\n"
       "function write(d)\n"
       "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_TRUE(lst.find("service group is []", std::string::npos));
@@ -945,8 +926,7 @@ TEST_F(LuaTest, ServiceGroupCacheTest) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("\"group_id\":17"));
@@ -1026,8 +1006,7 @@ TEST_F(LuaTest, SetNewInstance) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("service description nil"));
@@ -1063,8 +1042,7 @@ TEST_F(LuaTest, BamCacheTestBvBaRelation) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("member of bv 18"));
@@ -1099,8 +1077,7 @@ TEST_F(LuaTest, BamCacheTestBa) {
       "end\n\n"
       "function write(d)\n"
       "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("\"ba_name\":\"ba name\""));
@@ -1127,8 +1104,7 @@ TEST_F(LuaTest, BamCacheTestBaNil) {
                "end\n\n"
                "function write(d)\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("member of ba nil"));
@@ -1158,8 +1134,7 @@ TEST_F(LuaTest, BamCacheTestBv) {
       "end\n\n"
       "function write(d)\n"
       "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(std::string::npos, lst.find("\"bv_id\":10"));
@@ -1225,8 +1200,7 @@ TEST_F(LuaTest, ParsePerfdata) {
       "end\n\n"
       "function write(d)\n"
       "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
   size_t pos1 = lst.find("\"percent_packet_loss\":0");
   size_t pos2 = lst.find("\"rta\":0.8");
@@ -1293,8 +1267,7 @@ TEST_F(LuaTest, UpdatePath) {
                "function write(d)\n"
                "  return true\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("foo bar"), std::string::npos);
@@ -1317,8 +1290,7 @@ TEST_F(LuaTest, CheckPath) {
                "function write(d)\n"
                "  return true\n"
                "end\n");
-  std::unique_ptr<luabinding> binding(
-      new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string lst(ReadFile("/tmp/log"));
 
   ASSERT_NE(lst.find("/tmp/?.lua"), std::string::npos);

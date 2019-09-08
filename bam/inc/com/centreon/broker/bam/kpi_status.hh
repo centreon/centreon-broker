@@ -17,57 +17,54 @@
 */
 
 #ifndef CCB_BAM_KPI_STATUS_HH
-#  define CCB_BAM_KPI_STATUS_HH
+#define CCB_BAM_KPI_STATUS_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace        bam {
-  /**
-   *  @class kpi_status kpi_status.hh "com/centreon/broker/bam/kpi_status.hh"
-   *  @brief Update status of a KPI.
-   *
-   *  Update the status of a KPI, used to update the cfg_bam_kpi table.
-   */
-  class          kpi_status : public io::data {
-  public:
-                 kpi_status();
-                 kpi_status(kpi_status const& other);
-                 ~kpi_status();
-    kpi_status&  operator=(kpi_status const& other);
-    unsigned int type() const;
-    static unsigned int
-                 static_type();
+namespace bam {
+/**
+ *  @class kpi_status kpi_status.hh "com/centreon/broker/bam/kpi_status.hh"
+ *  @brief Update status of a KPI.
+ *
+ *  Update the status of a KPI, used to update the cfg_bam_kpi table.
+ */
+class kpi_status : public io::data {
+ public:
+  kpi_status();
+  kpi_status(kpi_status const& other);
+  ~kpi_status();
+  kpi_status& operator=(kpi_status const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    unsigned int kpi_id;
-    bool         in_downtime;
-    double       level_acknowledgement_hard;
-    double       level_acknowledgement_soft;
-    double       level_downtime_hard;
-    double       level_downtime_soft;
-    double       level_nominal_hard;
-    double       level_nominal_soft;
-    short        state_hard;
-    short        state_soft;
-    timestamp    last_state_change;
-    double       last_impact;
-    bool         valid;
+  unsigned int kpi_id;
+  bool in_downtime;
+  double level_acknowledgement_hard;
+  double level_acknowledgement_soft;
+  double level_downtime_hard;
+  double level_downtime_soft;
+  double level_nominal_hard;
+  double level_nominal_soft;
+  short state_hard;
+  short state_soft;
+  timestamp last_state_change;
+  double last_impact;
+  bool valid;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void         _internal_copy(kpi_status const& other);
-  };
-}
+ private:
+  void _internal_copy(kpi_status const& other);
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_KPI_STATUS_HH
+#endif  // !CCB_BAM_KPI_STATUS_HH

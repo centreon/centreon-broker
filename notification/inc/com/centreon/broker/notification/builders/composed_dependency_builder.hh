@@ -17,47 +17,42 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_COMPOSED_DEPENDENCY_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_COMPOSED_DEPENDENCY_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_COMPOSED_DEPENDENCY_BUILDER_HH
 
-#  include <vector>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/dependency.hh"
-#  include "com/centreon/broker/notification/builders/dependency_builder.hh"
-#  include "com/centreon/broker/notification/builders/composed_builder.hh"
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/composed_builder.hh"
+#include "com/centreon/broker/notification/builders/dependency_builder.hh"
+#include "com/centreon/broker/notification/objects/dependency.hh"
 
 CCB_BEGIN()
 
-namespace         notification {
-  /**
-   *  @class composed_dependency_builder composed_dependency_builder.hh "com/centreon/broker/notification/builders/composed_dependency_builder.hh"
-   *  @brief Composed dependency builder.
-   *
-   *  This class forward its method call to several other builders.
-   */
-  class           composed_dependency_builder
-                    : public composed_builder<dependency_builder> {
-  public:
-                  composed_dependency_builder();
+namespace notification {
+/**
+ *  @class composed_dependency_builder composed_dependency_builder.hh
+ * "com/centreon/broker/notification/builders/composed_dependency_builder.hh"
+ *  @brief Composed dependency builder.
+ *
+ *  This class forward its method call to several other builders.
+ */
+class composed_dependency_builder
+    : public composed_builder<dependency_builder> {
+ public:
+  composed_dependency_builder();
 
-    virtual void  add_dependency(
-                    unsigned int id,
-                    objects::dependency::ptr d);
-    virtual void  dependency_node_id_parent_relation(
-                    unsigned int dep_id,
-                    objects::node_id id);
-    virtual void  dependency_node_id_child_relation(
-                    unsigned int dep_id,
-                    objects::node_id id);
-    virtual void  set_notification_failure_options(
-                    unsigned int dep_id,
-                    std::string const& line);
-    virtual void  set_execution_failure_options(
-                    unsigned int dep_id,
-                    std::string const& line);
-  };
+  virtual void add_dependency(unsigned int id, objects::dependency::ptr d);
+  virtual void dependency_node_id_parent_relation(unsigned int dep_id,
+                                                  objects::node_id id);
+  virtual void dependency_node_id_child_relation(unsigned int dep_id,
+                                                 objects::node_id id);
+  virtual void set_notification_failure_options(unsigned int dep_id,
+                                                std::string const& line);
+  virtual void set_execution_failure_options(unsigned int dep_id,
+                                             std::string const& line);
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_COMPOSED_DEPENDENCY_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_COMPOSED_DEPENDENCY_BUILDER_HH

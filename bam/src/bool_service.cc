@@ -26,12 +26,12 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 bool_service::bool_service()
-  : _host_id(0),
-    _service_id(0),
-    _state_hard(0),
-    _state_soft(0),
-    _state_known(false),
-    _in_downtime(false) {}
+    : _host_id(0),
+      _service_id(0),
+      _state_hard(0),
+      _state_soft(0),
+      _state_known(false),
+      _in_downtime(false) {}
 
 /**
  *  Copy constructor.
@@ -39,7 +39,7 @@ bool_service::bool_service()
  *  @param[in] right Object to copy.
  */
 bool_service::bool_service(bool_service const& right)
-  : bool_value(right), service_listener(right) {
+    : bool_value(right), service_listener(right) {
   _internal_copy(right);
 }
 
@@ -75,9 +75,7 @@ bool_service& bool_service::operator=(bool_service const& right) {
  *
  *  @return             True.
  */
-bool bool_service::child_has_update(
-                     computable* child,
-                     io::stream* visitor) {
+bool bool_service::child_has_update(computable* child, io::stream* visitor) {
   (void)child;
   (void)visitor;
   return true;
@@ -108,7 +106,7 @@ unsigned int bool_service::get_service_id() const {
  */
 void bool_service::set_host_id(unsigned int host_id) {
   _host_id = host_id;
-  return ;
+  return;
 }
 
 /**
@@ -118,7 +116,7 @@ void bool_service::set_host_id(unsigned int host_id) {
  */
 void bool_service::set_service_id(unsigned int service_id) {
   _service_id = service_id;
-  return ;
+  return;
 }
 
 /**
@@ -128,11 +126,10 @@ void bool_service::set_service_id(unsigned int service_id) {
  *  @param[out] visitor  Object that will receive events.
  */
 void bool_service::service_update(
-                     std::shared_ptr<neb::service_status> const& status,
-                     io::stream* visitor) {
-  if (status
-      && status->host_id == _host_id
-      && status->service_id == _service_id) {
+    std::shared_ptr<neb::service_status> const& status,
+    io::stream* visitor) {
+  if (status && status->host_id == _host_id &&
+      status->service_id == _service_id) {
     _state_hard = status->last_hard_state;
     _state_soft = status->current_state;
     _state_known = true;
@@ -180,7 +177,7 @@ void bool_service::_internal_copy(bool_service const& right) {
   _state_soft = right._state_soft;
   _state_known = right._state_known;
   _in_downtime = right._in_downtime;
-  return ;
+  return;
 }
 
 /**

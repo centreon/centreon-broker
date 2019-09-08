@@ -16,23 +16,23 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/extcmd/json_command_parser.hh"
 #include <cstdlib>
-#include <sstream>
 #include <json11.hpp>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
-#include "com/centreon/broker/extcmd/json_command_parser.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::extcmd;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -40,7 +40,7 @@ using namespace com::centreon::broker::extcmd;
  *  @param[in,out] listener       Command listener.
  */
 json_command_parser::json_command_parser(command_listener& listener)
-  : command_parser(listener) {}
+    : command_parser(listener) {}
 
 /**
  *  Destructor.
@@ -57,9 +57,9 @@ json_command_parser::~json_command_parser() {}
  * @return  The number of characters parsed succesfully, 0 for none.
  */
 unsigned int json_command_parser::parse(
-               std::string const& buffer,
-               command_result& res,
-               std::shared_ptr<command_request>& request) {
+    std::string const& buffer,
+    command_result& res,
+    std::shared_ptr<command_request>& request) {
   res = command_result();
   request.reset();
 
@@ -70,10 +70,9 @@ unsigned int json_command_parser::parse(
     for (parsed = 0; parsed < buffer.size(); ++parsed) {
       if (buffer[parsed] == '{') {
         ++level;
-        break ;
-      }
-      else if (buffer[parsed] != ' ' && buffer[parsed] != '\n')
-        throw (exceptions::msg() << "expected '{'");
+        break;
+      } else if (buffer[parsed] != ' ' && buffer[parsed] != '\n')
+        throw(exceptions::msg() << "expected '{'");
     }
     // Didn't find opening '{'.
     if (level == 0)
@@ -84,7 +83,7 @@ unsigned int json_command_parser::parse(
       else if (buffer[parsed] == '}')
         --level;
       if (level == 0)
-        break ;
+        break;
     }
     // Didn't find closing '}'
     if (level != 0)
@@ -92,21 +91,21 @@ unsigned int json_command_parser::parse(
 
     // Found a (hopefully) valid json snippet. Try to parse it.
     std::string err;
-    json11::Json js{json11::Json::parse(buffer.substr(0, parsed + 1), err) };
+    json11::Json js{json11::Json::parse(buffer.substr(0, parsed + 1), err)};
     if (js.is_null() || !js.is_object()) {
-      throw (exceptions::msg() << "cannot parse json stream'");
+      throw(exceptions::msg() << "cannot parse json stream'");
     }
 
     json11::Json const& command_type{js["command_type"]};
 
     if (!command_type.is_string()) {
-      throw (exceptions::msg() << "couldn't find 'command_type'");
+      throw(exceptions::msg() << "couldn't find 'command_type'");
     }
 
     if (command_type.string_value() == "status") {
       json11::Json command_id{js["command_id"]};
       if (!command_id.is_string())
-        throw (exceptions::msg() << "couldn't find 'command_id'");
+        throw(exceptions::msg() << "couldn't find 'command_id'");
       _listener.command_status(command_id.string_value());
     } else if (command_type.string_value() == "execute") {
       json11::Json command{js["command"]};
@@ -115,7 +114,7 @@ unsigned int json_command_parser::parse(
 
       request.reset(new command_request);
       if (!command.is_string())
-        throw (exceptions::msg() << "couldn't find 'commands'");
+        throw(exceptions::msg() << "couldn't find 'commands'");
       request->cmd = command.string_value();
       if (!broker_id.is_string())
         throw exceptions::msg() << "couldn't find 'broker_id'";
@@ -129,17 +128,16 @@ unsigned int json_command_parser::parse(
         request->with_partial_result = with_partial_result.bool_value();
 
       logging::debug(logging::high)
-        << "command: sending request " << request->uuid << " ('" << request->cmd
-        << "') to endpoint '" << request->endp
-        << "' of Centreon Broker instance " << request->destination_id
-        << " with partial result "
-        << (request->with_partial_result ? "enabled" : "disabled");
+          << "command: sending request " << request->uuid << " ('"
+          << request->cmd << "') to endpoint '" << request->endp
+          << "' of Centreon Broker instance " << request->destination_id
+          << " with partial result "
+          << (request->with_partial_result ? "enabled" : "disabled");
       _listener.write(request);
       res = _listener.command_status(request->uuid);
-    }
-    else {
-      throw (exceptions::msg()
-             << "invalid command type: expected 'execute' or 'status' ");
+    } else {
+      throw(exceptions::msg()
+            << "invalid command type: expected 'execute' or 'status' ");
     }
   } catch (std::exception const& e) {
     // At this point, command request was not written to the command
@@ -159,10 +157,10 @@ unsigned int json_command_parser::parse(
  *  @return         The string.
  */
 std::string json_command_parser::write(command_result const& res) {
-  json11::Json writer = json11:: Json::object {
-    {"command_id", res.uuid},
-    {"command_code", res.code},
-    {"command_output", res.msg},
+  json11::Json writer = json11::Json::object{
+      {"command_id", res.uuid},
+      {"command_code", res.code},
+      {"command_output", res.msg},
   };
 
   return writer.dump();

@@ -17,42 +17,42 @@
 */
 
 #ifndef CCB_NEB_GROUP_HH
-#  define CCB_NEB_GROUP_HH
+#define CCB_NEB_GROUP_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        neb {
-  /**
-   *  @class group group.hh "com/centreon/broker/neb/group.hh"
-   *  @brief Base of host and service group classes.
-   *
-   *  The scheduling engine handles group. This can be service groups
-   *  or host groups for example.
-   *
-   *  @see host_group
-   *  @see service_group
-   */
-  class          group : public io::data {
-  public:
-                 group();
-                 group(group const& other);
-    virtual      ~group();
-    group&       operator=(group const& other);
+namespace neb {
+/**
+ *  @class group group.hh "com/centreon/broker/neb/group.hh"
+ *  @brief Base of host and service group classes.
+ *
+ *  The scheduling engine handles group. This can be service groups
+ *  or host groups for example.
+ *
+ *  @see host_group
+ *  @see service_group
+ */
+class group : public io::data {
+ public:
+  group();
+  group(group const& other);
+  virtual ~group();
+  group& operator=(group const& other);
 
-    bool         enabled;
-    unsigned int id;
-    std::string      name;
-    unsigned int poller_id;
+  bool enabled;
+  unsigned int id;
+  std::string name;
+  unsigned int poller_id;
 
-  private:
-    void         _internal_copy(group const& other);
-  };
-}
+ private:
+  void _internal_copy(group const& other);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_GROUP_HH
+#endif  // !CCB_NEB_GROUP_HH

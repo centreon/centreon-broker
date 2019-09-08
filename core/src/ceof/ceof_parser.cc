@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/ceof/ceof_parser.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker::ceof;
 
@@ -26,34 +26,28 @@ using namespace com::centreon::broker::ceof;
  *
  *  @param[in] str  The string to parse.
  */
-ceof_parser::ceof_parser(std::string const& str)
-  : _string(str) {
-
-}
+ceof_parser::ceof_parser(std::string const& str) : _string(str) {}
 
 /**
  *  Destructor.
  */
-ceof_parser::~ceof_parser() throw() {
-
-}
+ceof_parser::~ceof_parser() throw() {}
 
 /**
  *  Skip comments and whitespaces.
  *
  *  @param[in,out] actual  The actual index.
  */
-static void skip(
-              size_t& actual,
-              std::string const& string,
-              const char* characters) {
+static void skip(size_t& actual,
+                 std::string const& string,
+                 const char* characters) {
   actual = string.find_first_not_of(characters, actual);
   if (actual == std::string::npos)
-    return ;
+    return;
   if (string[actual] == '#') {
     actual = string.find_first_of('\n', actual);
     if (actual == std::string::npos)
-      return ;
+      return;
     ++actual;
     skip(actual, string, characters);
   }
@@ -87,58 +81,54 @@ ceof_iterator ceof_parser::parse() {
   while (actual != std::string::npos) {
     // Get the token.
     size_t end_of_token = _string.find_first_of(
-                            state == in_object_waiting_for_value ? "\n" : " \t\n",
-                            actual);
+        state == in_object_waiting_for_value ? "\n" : " \t\n", actual);
     if (end_of_token == std::string::npos)
       end_of_token = _string.size();
     std::string substr = _string.substr(actual, end_of_token - actual);
 
     switch (state) {
-    case waiting_for_define:
-      if (substr != "define")
-        throw (exceptions::msg() << "expected 'define' at position " << actual);
-      state = waiting_for_object_name;
-      break;
-    case waiting_for_object_name:
-      parent_token = _tokens.size();
-      _tokens.push_back(
-        ceof_token(ceof_token::object, substr, parent_token, -1));
-      state = waiting_for_object_opening;
-      break;
-    case waiting_for_object_opening:
-      if (substr != "{")
-        throw (exceptions::msg() << "expected '{' at position " << actual);
-      state = in_object_waiting_for_key;
-      break;
-    case in_object_waiting_for_key:
-      if (substr == "}")
-        state = waiting_for_define;
-      else {
+      case waiting_for_define:
+        if (substr != "define")
+          throw(exceptions::msg()
+                << "expected 'define' at position " << actual);
+        state = waiting_for_object_name;
+        break;
+      case waiting_for_object_name:
+        parent_token = _tokens.size();
         _tokens.push_back(
-          ceof_token(ceof_token::key, substr, _tokens.size(), parent_token));
-        state = in_object_waiting_for_value;
-      }
-      break;
-    case in_object_waiting_for_value:
-      if (substr == "}")
-        throw (exceptions::msg()
-               << "expected value instead of '{' at position " << actual);
-      size_t trimmed(substr.find_last_not_of(" \t"));
-      substr = substr.substr(
-                        0,
-                        (trimmed == std::string::npos)
-                        ? std::string::npos
-                        : trimmed + 1);
-      _tokens.push_back(
-        ceof_token(ceof_token::value, substr, _tokens.size(), parent_token));
-      state = in_object_waiting_for_key;
+            ceof_token(ceof_token::object, substr, parent_token, -1));
+        state = waiting_for_object_opening;
+        break;
+      case waiting_for_object_opening:
+        if (substr != "{")
+          throw(exceptions::msg() << "expected '{' at position " << actual);
+        state = in_object_waiting_for_key;
+        break;
+      case in_object_waiting_for_key:
+        if (substr == "}")
+          state = waiting_for_define;
+        else {
+          _tokens.push_back(ceof_token(ceof_token::key, substr, _tokens.size(),
+                                       parent_token));
+          state = in_object_waiting_for_value;
+        }
+        break;
+      case in_object_waiting_for_value:
+        if (substr == "}")
+          throw(exceptions::msg()
+                << "expected value instead of '{' at position " << actual);
+        size_t trimmed(substr.find_last_not_of(" \t"));
+        substr =
+            substr.substr(0, (trimmed == std::string::npos) ? std::string::npos
+                                                            : trimmed + 1);
+        _tokens.push_back(ceof_token(ceof_token::value, substr, _tokens.size(),
+                                     parent_token));
+        state = in_object_waiting_for_key;
     }
     // Skip to the next token.
     actual = end_of_token;
-    skip(
-      actual,
-      _string,
-      state == in_object_waiting_for_value ? " \t" : " \t\n");
+    skip(actual, _string,
+         state == in_object_waiting_for_value ? " \t" : " \t\n");
   }
 
   return (ceof_iterator(_tokens.begin(), _tokens.end()));

@@ -17,9 +17,9 @@
  *
  */
 
-#include <cmath>
-#include <gtest/gtest.h>
 #include "com/centreon/broker/neb/event_handler.hh"
+#include <gtest/gtest.h>
+#include <cmath>
 #include "randomize.hh"
 
 using namespace com::centreon::broker;
@@ -51,7 +51,7 @@ TEST_F(EventHandlerTest, Assignment) {
   evnt_hndlr2 = evnt_hndlr1;
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(evnt_hndlr1, &randvals2);
 
   // Compare objects with expected results.
@@ -69,7 +69,7 @@ TEST_F(EventHandlerTest, CopyConstructor) {
   neb::event_handler evnt_hndlr2(evnt_hndlr1);
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(evnt_hndlr1, &randvals2);
 
   // Compare objects with expected results.

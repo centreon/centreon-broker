@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/ceof/ceof_deserializer.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker::ceof;
 
@@ -27,13 +27,13 @@ using namespace com::centreon::broker::ceof;
  *  @param[in] it  The iterator to use.
  */
 ceof_deserializer::ceof_deserializer(ceof_iterator it)
-  : ceof_visitor(false, true) {
-  for (;!it.end();++it) {
+    : ceof_visitor(false, true) {
+  for (; !it.end(); ++it) {
     std::string key = it.get_value();
     ++it;
     if (!it.end()) {
-     std::string val = it.get_value();
-     _values[key] = val;
+      std::string val = it.get_value();
+      _values[key] = val;
     }
   }
 }
@@ -51,9 +51,7 @@ ceof_deserializer::~ceof_deserializer() throw() {}
  *  @return the value of this property.
  */
 std::string ceof_deserializer::deserialize(std::string const& name) {
-  std::map<std::string, std::string>::const_iterator found
-    = _values.find(name);
+  std::map<std::string, std::string>::const_iterator found = _values.find(name);
 
   return (found == _values.end() ? std::string() : found->second);
 }
-

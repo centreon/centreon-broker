@@ -16,6 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QVariant>
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
@@ -23,9 +26,6 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QVariant>
 #include <sstream>
 #include <vector>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -71,27 +71,23 @@ int main() {
 
     // Configuration files templates.
     cbmod_commander.set_file(tmpnam(NULL));
-    cbmod_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/correlation_to_sql_1.xml.in");
+    cbmod_cfg.set_template(PROJECT_SOURCE_DIR
+                           "/test/cfg/correlation_to_sql_1.xml.in");
     cbmod_cfg.set("DB_NAME", DB_NAME);
     cbmod_cfg.set("COMMAND_FILE", cbmod_commander.get_file());
-    cbd_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/correlation_to_sql_2.xml.in");
+    cbd_cfg.set_template(PROJECT_SOURCE_DIR
+                         "/test/cfg/correlation_to_sql_2.xml.in");
 
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, HOST_COUNT);
     for (std::list<host>::iterator it(hosts.begin()), end(hosts.end());
-         it != end;
-         ++it) {
+         it != end; ++it) {
       it->checks_enabled = 0;
       it->max_attempts = 1;
     }
     generate_services(services, hosts, SERVICES_BY_HOST);
-    for (std::list<service>::iterator
-           it(services.begin()),
-           end(services.end());
-         it != end;
-         ++it) {
+    for (std::list<service>::iterator it(services.begin()), end(services.end());
+         it != end; ++it) {
       it->checks_enabled = 0;
       it->max_attempts = 1;
     }
@@ -100,17 +96,14 @@ int main() {
     {
       std::ostringstream oss;
       oss << engine_commander.get_engine_config()
-          << "broker_module=" << CBMOD_PATH << " "
-          << cbmod_cfg.generate() << "\n";
+          << "broker_module=" << CBMOD_PATH << " " << cbmod_cfg.generate()
+          << "\n";
       additional_config = oss.str();
     }
 
     // Generate monitoring engine configuration files.
-    config_write(
-      engine_config_path.c_str(),
-      additional_config.c_str(),
-      &hosts,
-      &services);
+    config_write(engine_config_path.c_str(), additional_config.c_str(), &hosts,
+                 &services);
 
     // Start broker daemon.
     broker.set_config_file(cbd_cfg.generate());
@@ -157,9 +150,8 @@ int main() {
         unsigned int host_id((i / SERVICES_BY_HOST) + 1);
         unsigned int service_id(i + 1);
         std::ostringstream cmd;
-        cmd << "PROCESS_SERVICE_CHECK_RESULT;" << host_id << ";"
-            << service_id << ";0;output1-" << host_id << ";"
-            << service_id;
+        cmd << "PROCESS_SERVICE_CHECK_RESULT;" << host_id << ";" << service_id
+            << ";0;output1-" << host_id << ";" << service_id;
         engine_commander.execute(cmd.str());
       }
     }
@@ -171,17 +163,22 @@ int main() {
     // Step 2.
     {
       engine_commander.execute("PROCESS_HOST_CHECK_RESULT;1;1;output2-1");
-      engine_commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;1;1;output2-1-1");
-      engine_commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;2;output2-1-2");
+      engine_commander.execute(
+          "PROCESS_SERVICE_CHECK_RESULT;1;1;1;output2-1-1");
+      engine_commander.execute(
+          "PROCESS_SERVICE_CHECK_RESULT;1;2;2;output2-1-2");
       {
         std::ostringstream oss;
-        oss << "EXECUTE;84;correlationtosql1-nodeevents;SCHEDULE_HOST_DOWNTIME;2;"
+        oss << "EXECUTE;84;correlationtosql1-nodeevents;SCHEDULE_HOST_DOWNTIME;"
+               "2;"
             << t2 << ";" << (t2 + 3600)
             << ";1;0;3600;Merethis;Host #2 is going in downtime";
         cbmod_commander.execute(oss.str());
       }
-      engine_commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;3;2;output2-2-3");
-      engine_commander.execute("PROCESS_SERVICE_CHECK_RESULT;2;4;1;output2-2-4");
+      engine_commander.execute(
+          "PROCESS_SERVICE_CHECK_RESULT;2;3;2;output2-2-3");
+      engine_commander.execute(
+          "PROCESS_SERVICE_CHECK_RESULT;2;4;1;output2-2-4");
     }
     sleep_for(3);
 
@@ -192,19 +189,22 @@ int main() {
     {
       {
         std::ostringstream oss;
-        oss << "EXECUTE;84;correlationtosql1-nodeevents;SCHEDULE_SVC_DOWNTIME;1;1;"
+        oss << "EXECUTE;84;correlationtosql1-nodeevents;SCHEDULE_SVC_DOWNTIME;"
+               "1;1;"
             << t3 << ";" << (t3 + 2000)
             << ";1;0;2000;Centreon;Service #1-#1 is going in downtime";
         cbmod_commander.execute(oss.str());
       }
       cbmod_commander.execute(
-        "EXECUTE;84;correlationtosql1-nodeevents;ACKNOWLEDGE_SVC_PROBLEM;1;2;1;0;1;Broker;Ack SVC1-2");
-      engine_commander.execute(
-        "PROCESS_HOST_CHECK_RESULT;2;1;output3-2");
+          "EXECUTE;84;correlationtosql1-nodeevents;ACKNOWLEDGE_SVC_PROBLEM;1;2;"
+          "1;0;1;Broker;Ack SVC1-2");
+      engine_commander.execute("PROCESS_HOST_CHECK_RESULT;2;1;output3-2");
       cbmod_commander.execute(
-        "EXECUTE;84;correlationtosql1-nodeevents;ACKNOWLEDGE_SVC_PROBLEM;2;3;1;0;1;Engine;Ack SVC2-3");
+          "EXECUTE;84;correlationtosql1-nodeevents;ACKNOWLEDGE_SVC_PROBLEM;2;3;"
+          "1;0;1;Engine;Ack SVC2-3");
       cbmod_commander.execute(
-        "EXECUTE;84;correlationtosql1-nodeevents;ACKNOWLEDGE_SVC_PROBLEM;2;4;0;0;1;foo;Ack SVC2-4");
+          "EXECUTE;84;correlationtosql1-nodeevents;ACKNOWLEDGE_SVC_PROBLEM;2;4;"
+          "0;0;1;foo;Ack SVC2-4");
     }
     sleep_for(3);
 
@@ -213,12 +213,15 @@ int main() {
 
     // Step 4.
     {
-      engine_commander.execute("PROCESS_SERVICE_CHECK_RESULT;1;2;1;output4-1-2");
+      engine_commander.execute(
+          "PROCESS_SERVICE_CHECK_RESULT;1;2;1;output4-1-2");
       cbmod_commander.execute(
-        "EXECUTE;84;correlationtosql1-nodeevents;ACKNOWLEDGE_HOST_PROBLEM;2;2;0;1;Centreon Map;Ack HST2");
+          "EXECUTE;84;correlationtosql1-nodeevents;ACKNOWLEDGE_HOST_PROBLEM;2;"
+          "2;0;1;Centreon Map;Ack HST2");
       {
         std::ostringstream oss;
-        oss << "EXECUTE;84;correlationtosql1-nodeevents;SCHEDULE_SVC_DOWNTIME;2;4;"
+        oss << "EXECUTE;84;correlationtosql1-nodeevents;SCHEDULE_SVC_DOWNTIME;"
+               "2;4;"
             << t4 << ";" << (t4 + 1600)
             << ";0;0;1000;Merethis;Service #2-#4 is going in downtime";
         cbmod_commander.execute(oss.str());
@@ -233,83 +236,81 @@ int main() {
     {
       struct {
         unsigned int host_id;
-        time_t       start_time_low;
-        time_t       start_time_high;
-        bool         end_time_is_null;
-        time_t       end_time_low;
-        time_t       end_time_high;
-        short        state;
-        bool         ack_time_is_null;
-        time_t       ack_time_low;
-        time_t       ack_time_high;
-        bool         in_downtime;
-      } const          entries[] = {
-        /*
-        ** Host 1.
-        */
-        // Start = UP.
-        { 1, t0, t1, false, t2, t3, 0, true, 0, 0, false },
-        // Step 2 = UNREACHABLE.
-        { 1, t2, t3, true, 0, 0, 1, true, 0, 0, false },
+        time_t start_time_low;
+        time_t start_time_high;
+        bool end_time_is_null;
+        time_t end_time_low;
+        time_t end_time_high;
+        short state;
+        bool ack_time_is_null;
+        time_t ack_time_low;
+        time_t ack_time_high;
+        bool in_downtime;
+      } const entries[] = {/*
+                           ** Host 1.
+                           */
+                           // Start = UP.
+                           {1, t0, t1, false, t2, t3, 0, true, 0, 0, false},
+                           // Step 2 = UNREACHABLE.
+                           {1, t2, t3, true, 0, 0, 1, true, 0, 0, false},
 
-        /*
-        ** Host 2.
-        */
-        // Start = UP.
-        { 2, t0, t1, false, t2, t3, 0, true, 0, 0, false },
-        // Step 2 = DOWNTIME.
-        { 2, t2, t3, false, t3, t4, 0, true, 0, 0, true },
-        // Step 3 = DOWN, step 4 = ACK (STICKY).
-        { 2, t3, t4, true, 0, 0, 1, false, t4, t5, true },
+                           /*
+                           ** Host 2.
+                           */
+                           // Start = UP.
+                           {2, t0, t1, false, t2, t3, 0, true, 0, 0, false},
+                           // Step 2 = DOWNTIME.
+                           {2, t2, t3, false, t3, t4, 0, true, 0, 0, true},
+                           // Step 3 = DOWN, step 4 = ACK (STICKY).
+                           {2, t3, t4, true, 0, 0, 1, false, t4, t5, true},
 
-        /*
-        ** Host 3.
-        */
-        // Start = UP.
-        { 3, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+                           /*
+                           ** Host 3.
+                           */
+                           // Start = UP.
+                           {3, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-        /*
-        ** Host 4.
-        */
-        // Start = UP.
-        { 4, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+                           /*
+                           ** Host 4.
+                           */
+                           // Start = UP.
+                           {4, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-        /*
-        ** Host 5.
-        */
-        // Start = UP.
-        { 5, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+                           /*
+                           ** Host 5.
+                           */
+                           // Start = UP.
+                           {5, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-        /*
-        ** Host 6.
-        */
-        // Start = UP.
-        { 6, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+                           /*
+                           ** Host 6.
+                           */
+                           // Start = UP.
+                           {6, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-        /*
-        ** Host 7.
-        */
-        // Start = UP.
-        { 7, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+                           /*
+                           ** Host 7.
+                           */
+                           // Start = UP.
+                           {7, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-        /*
-        ** Host 8.
-        */
-        // Start = UP.
-        { 8, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+                           /*
+                           ** Host 8.
+                           */
+                           // Start = UP.
+                           {8, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-        /*
-        ** Host 9.
-        */
-        // Start = UP.
-        { 9, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+                           /*
+                           ** Host 9.
+                           */
+                           // Start = UP.
+                           {9, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-        /*
-        ** Host 10.
-        */
-        // Start = UP.
-        { 10, t0, t1, true, 0, 0, 0, true, 0, 0, false }
-      };
+                           /*
+                           ** Host 10.
+                           */
+                           // Start = UP.
+                           {10, t0, t1, true, 0, 0, 0, true, 0, 0, false}};
 
       // Get host state events.
       QSqlQuery q(*db.centreon_db());
@@ -317,70 +318,64 @@ int main() {
                   "       ack_time, in_downtime"
                   " FROM rt_hoststateevents"
                   " ORDER BY host_id, start_time"))
-        throw (exceptions::msg() << "cannot get host state events: "
-               << q.lastError().text());
+        throw(exceptions::msg()
+              << "cannot get host state events: " << q.lastError().text());
 
       // Compare DB with expected content.
-      for (unsigned int i(0);
-           i < sizeof(entries) / sizeof(*entries);
-           ++i) {
+      for (unsigned int i(0); i < sizeof(entries) / sizeof(*entries); ++i) {
         // Get next entry.
         if (!q.next())
-          throw (exceptions::msg()
-                 << "not enough host state events in DB: got " << i
-                 << ", expected "
-                 << (sizeof(entries) / sizeof(*entries)));
+          throw(exceptions::msg()
+                << "not enough host state events in DB: got " << i
+                << ", expected " << (sizeof(entries) / sizeof(*entries)));
 
         // Match entry.
-        if ((q.value(0).toUInt() != entries[i].host_id)
-            || (static_cast<time_t>(q.value(1).toLongLong())
-                < entries[i].start_time_low)
-            || (static_cast<time_t>(q.value(1).toLongLong())
-                > entries[i].start_time_high)
-            || (entries[i].end_time_is_null && !q.value(2).isNull())
-            || (!entries[i].end_time_is_null
-                && ((static_cast<time_t>(q.value(2).toLongLong())
-                     < entries[i].end_time_low)
-                    || (static_cast<time_t>(q.value(2).toLongLong())
-                        > entries[i].end_time_high)))
-            || (q.value(3).toInt() != entries[i].state)
-            || (entries[i].ack_time_is_null && !q.value(4).isNull())
-            || (!entries[i].ack_time_is_null
-                && ((static_cast<time_t>(q.value(4).toLongLong())
-                     < entries[i].ack_time_low)
-                    || (static_cast<time_t>(q.value(4).toLongLong())
-                        > entries[i].ack_time_high)))
-            || (static_cast<bool>(q.value(5).toInt())
-                != entries[i].in_downtime)) {
+        if ((q.value(0).toUInt() != entries[i].host_id) ||
+            (static_cast<time_t>(q.value(1).toLongLong()) <
+             entries[i].start_time_low) ||
+            (static_cast<time_t>(q.value(1).toLongLong()) >
+             entries[i].start_time_high) ||
+            (entries[i].end_time_is_null && !q.value(2).isNull()) ||
+            (!entries[i].end_time_is_null &&
+             ((static_cast<time_t>(q.value(2).toLongLong()) <
+               entries[i].end_time_low) ||
+              (static_cast<time_t>(q.value(2).toLongLong()) >
+               entries[i].end_time_high))) ||
+            (q.value(3).toInt() != entries[i].state) ||
+            (entries[i].ack_time_is_null && !q.value(4).isNull()) ||
+            (!entries[i].ack_time_is_null &&
+             ((static_cast<time_t>(q.value(4).toLongLong()) <
+               entries[i].ack_time_low) ||
+              (static_cast<time_t>(q.value(4).toLongLong()) >
+               entries[i].ack_time_high))) ||
+            (static_cast<bool>(q.value(5).toInt()) != entries[i].in_downtime)) {
           exceptions::msg e;
-          e << "invalid host state event entry #" << i
-            << ": got (host id " << q.value(0).toUInt()
-            << ", start time " << q.value(1).toUInt() << ", end time "
+          e << "invalid host state event entry #" << i << ": got (host id "
+            << q.value(0).toUInt() << ", start time " << q.value(1).toUInt()
+            << ", end time "
             << (q.value(2).isNull() ? "null" : q.value(2).toString())
             << ", state " << q.value(3).toInt() << ", ack time "
             << (q.value(4).isNull() ? "null" : q.value(4).toString())
             << ", in downtime " << q.value(5).toInt() << "), expected ("
-            << entries[i].host_id << ", " << entries[i].start_time_low
-            << ":" << entries[i].start_time_high << ", ";
+            << entries[i].host_id << ", " << entries[i].start_time_low << ":"
+            << entries[i].start_time_high << ", ";
           if (entries[i].end_time_is_null)
             e << "null";
           else
-            e << entries[i].end_time_low << ":"
-              << entries[i].end_time_high;
+            e << entries[i].end_time_low << ":" << entries[i].end_time_high;
           e << ", " << entries[i].state << ", ";
           if (entries[i].ack_time_is_null)
             e << "null";
           else
-            e << entries[i].ack_time_low << ":"
-              << entries[i].ack_time_high;
+            e << entries[i].ack_time_low << ":" << entries[i].ack_time_high;
           e << ", " << entries[i].in_downtime << ")";
-          throw (e);
+          throw(e);
         }
       }
 
       // No more results.
       if (q.next())
-        throw (exceptions::msg() << "too much host state events in DB");
+        throw(exceptions::msg() << "too much host state events in DB");
     }
 
     // Check service state events.
@@ -388,151 +383,150 @@ int main() {
       struct {
         unsigned int host_id;
         unsigned int service_id;
-        time_t       start_time_low;
-        time_t       start_time_high;
-        bool         end_time_is_null;
-        time_t       end_time_low;
-        time_t       end_time_high;
-        short        state;
-        bool         ack_time_is_null;
-        time_t       ack_time_low;
-        time_t       ack_time_high;
-        bool         in_downtime;
-      } const          entries[] = {
-        /*
-        ** Service 1-1.
-        */
-        // Start = OK.
-        { 1, 1, t0, t1, false, t2, t3, 0, true, 0, 0, false },
-        // Step 2 = WARNING.
-        { 1, 1, t2, t3, false, t3, t4, 1, true, 0, 0, false },
-        // Step 3 = DOWNTIME.
-        { 1, 1, t3, t4, true, 0, 0, 1, true, 0, 0, true },
+        time_t start_time_low;
+        time_t start_time_high;
+        bool end_time_is_null;
+        time_t end_time_low;
+        time_t end_time_high;
+        short state;
+        bool ack_time_is_null;
+        time_t ack_time_low;
+        time_t ack_time_high;
+        bool in_downtime;
+      } const entries[] = {
+          /*
+          ** Service 1-1.
+          */
+          // Start = OK.
+          {1, 1, t0, t1, false, t2, t3, 0, true, 0, 0, false},
+          // Step 2 = WARNING.
+          {1, 1, t2, t3, false, t3, t4, 1, true, 0, 0, false},
+          // Step 3 = DOWNTIME.
+          {1, 1, t3, t4, true, 0, 0, 1, true, 0, 0, true},
 
-        /*
-        ** Service 1-2.
-        */
-        // Start = OK.
-        { 1, 2, t0, t1, false, t2, t3, 0, true, 0, 0, false },
-        // Step 2 = CRITICAL, step 3 = ACK (STICKY).
-        { 1, 2, t2, t3, false, t4, t5, 2, false, t3, t4, false },
-        // Step 4 = WARNING.
-        { 1, 2, t4, t5, true, 0, 0, 1, false, t4, t5, false },
+          /*
+          ** Service 1-2.
+          */
+          // Start = OK.
+          {1, 2, t0, t1, false, t2, t3, 0, true, 0, 0, false},
+          // Step 2 = CRITICAL, step 3 = ACK (STICKY).
+          {1, 2, t2, t3, false, t4, t5, 2, false, t3, t4, false},
+          // Step 4 = WARNING.
+          {1, 2, t4, t5, true, 0, 0, 1, false, t4, t5, false},
 
-        /*
-        ** Service 2-3.
-        */
-        // Start = OK.
-        { 2, 3, t0, t1, false, t2, t3, 0, true, 0, 0, false },
-        // Step 2 = CRITICAL, step 3 = ACK (STICKY).
-        { 2, 3, t2, t3, true, 0, 0, 2, false, t3, t4, false },
+          /*
+          ** Service 2-3.
+          */
+          // Start = OK.
+          {2, 3, t0, t1, false, t2, t3, 0, true, 0, 0, false},
+          // Step 2 = CRITICAL, step 3 = ACK (STICKY).
+          {2, 3, t2, t3, true, 0, 0, 2, false, t3, t4, false},
 
-        /*
-        ** Service 2-4.
-        */
-        // Start = OK.
-        { 2, 4, t0, t1, false, t2, t3, 0, true, 0, 0, false },
-        // Step 2 = WARNING, step 3 = ACK (NORMAL).
-        { 2, 4, t2, t3, false, t4, t5, 1, false, t3, t4, false },
-        // Step 4 = DOWNTIME.
-        { 2, 4, t4, t5, true, 0, 0, 1, false, t4, t5, true },
+          /*
+          ** Service 2-4.
+          */
+          // Start = OK.
+          {2, 4, t0, t1, false, t2, t3, 0, true, 0, 0, false},
+          // Step 2 = WARNING, step 3 = ACK (NORMAL).
+          {2, 4, t2, t3, false, t4, t5, 1, false, t3, t4, false},
+          // Step 4 = DOWNTIME.
+          {2, 4, t4, t5, true, 0, 0, 1, false, t4, t5, true},
 
-	/*
-	** Service 3-5.
-	*/
-	// Start = OK.
-        { 3, 5, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 3-5.
+          */
+          // Start = OK.
+          {3, 5, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 3-6.
-	*/
-	// Start = OK.
-        { 3, 6, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 3-6.
+          */
+          // Start = OK.
+          {3, 6, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 4-7.
-	*/
-	// Start = OK.
-        { 4, 7, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 4-7.
+          */
+          // Start = OK.
+          {4, 7, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 4-8.
-	*/
-	// Start = OK.
-        { 4, 8, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 4-8.
+          */
+          // Start = OK.
+          {4, 8, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 5-9.
-	*/
-	// Start = OK.
-        { 5, 9, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 5-9.
+          */
+          // Start = OK.
+          {5, 9, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 5-10.
-	*/
-	// Start = OK.
-        { 5, 10, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 5-10.
+          */
+          // Start = OK.
+          {5, 10, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 6-11.
-	*/
-	// Start = OK.
-        { 6, 11, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 6-11.
+          */
+          // Start = OK.
+          {6, 11, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 6-12.
-	*/
-	// Start = OK.
-        { 6, 12, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 6-12.
+          */
+          // Start = OK.
+          {6, 12, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 7-13.
-	*/
-	// Start = OK.
-        { 7, 13, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 7-13.
+          */
+          // Start = OK.
+          {7, 13, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 7-14.
-	*/
-	// Start = OK.
-        { 7, 14, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 7-14.
+          */
+          // Start = OK.
+          {7, 14, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 8-15.
-	*/
-	// Start = OK.
-        { 8, 15, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 8-15.
+          */
+          // Start = OK.
+          {8, 15, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 8-16.
-	*/
-	// Start = OK.
-        { 8, 16, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 8-16.
+          */
+          // Start = OK.
+          {8, 16, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 9-17.
-	*/
-	// Start = OK.
-        { 9, 17, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 9-17.
+          */
+          // Start = OK.
+          {9, 17, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 9-18.
-	*/
-	// Start = OK.
-        { 9, 18, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 9-18.
+          */
+          // Start = OK.
+          {9, 18, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 10-19.
-	*/
-	// Start = OK.
-        { 10, 19, t0, t1, true, 0, 0, 0, true, 0, 0, false },
+          /*
+          ** Service 10-19.
+          */
+          // Start = OK.
+          {10, 19, t0, t1, true, 0, 0, 0, true, 0, 0, false},
 
-	/*
-	** Service 10-20.
-	*/
-	// Start = OK.
-        { 10, 20, t0, t1, true, 0, 0, 0, true, 0, 0, false }
-      };
+          /*
+          ** Service 10-20.
+          */
+          // Start = OK.
+          {10, 20, t0, t1, true, 0, 0, 0, true, 0, 0, false}};
 
       // Get service state events.
       QSqlQuery q(*db.centreon_db());
@@ -540,74 +534,66 @@ int main() {
                   "       state, ack_time, in_downtime"
                   " FROM rt_servicestateevents"
                   " ORDER BY host_id, service_id, start_time"))
-        throw (exceptions::msg() << "cannot get service state events: "
-               << q.lastError().text());
+        throw(exceptions::msg()
+              << "cannot get service state events: " << q.lastError().text());
 
       // Compare DB with expected content.
-      for (unsigned int i(0);
-           i < sizeof(entries) / sizeof(*entries);
-           ++i) {
+      for (unsigned int i(0); i < sizeof(entries) / sizeof(*entries); ++i) {
         // Get next entry.
         if (!q.next())
-          throw (exceptions::msg()
-                 << "not enough service state events in DB: got " << i
-                 << ", expected "
-                 << (sizeof(entries) / sizeof(*entries)));
+          throw(exceptions::msg()
+                << "not enough service state events in DB: got " << i
+                << ", expected " << (sizeof(entries) / sizeof(*entries)));
 
         // Match entry.
-        if ((q.value(0).toUInt() != entries[i].host_id)
-            || (q.value(1).toUInt() != entries[i].service_id)
-            || (static_cast<time_t>(q.value(2).toLongLong())
-                < entries[i].start_time_low)
-            || (static_cast<time_t>(q.value(2).toLongLong())
-                > entries[i].start_time_high)
-            || (entries[i].end_time_is_null && !q.value(3).isNull())
-            || (!entries[i].end_time_is_null
-                && ((static_cast<time_t>(q.value(3).toLongLong())
-                     < entries[i].end_time_low)
-                    || (static_cast<time_t>(q.value(3).toLongLong())
-                        > entries[i].end_time_high)))
-            || (q.value(4).toInt() != entries[i].state)
-            || (entries[i].ack_time_is_null && !q.value(5).isNull())
-            || (!entries[i].ack_time_is_null
-                && ((static_cast<time_t>(q.value(5).toLongLong())
-                     < entries[i].ack_time_low)
-                    || (static_cast<time_t>(q.value(5).toLongLong())
-                        > entries[i].ack_time_high)))
-            || (static_cast<bool>(q.value(6).toInt())
-                != entries[i].in_downtime)) {
+        if ((q.value(0).toUInt() != entries[i].host_id) ||
+            (q.value(1).toUInt() != entries[i].service_id) ||
+            (static_cast<time_t>(q.value(2).toLongLong()) <
+             entries[i].start_time_low) ||
+            (static_cast<time_t>(q.value(2).toLongLong()) >
+             entries[i].start_time_high) ||
+            (entries[i].end_time_is_null && !q.value(3).isNull()) ||
+            (!entries[i].end_time_is_null &&
+             ((static_cast<time_t>(q.value(3).toLongLong()) <
+               entries[i].end_time_low) ||
+              (static_cast<time_t>(q.value(3).toLongLong()) >
+               entries[i].end_time_high))) ||
+            (q.value(4).toInt() != entries[i].state) ||
+            (entries[i].ack_time_is_null && !q.value(5).isNull()) ||
+            (!entries[i].ack_time_is_null &&
+             ((static_cast<time_t>(q.value(5).toLongLong()) <
+               entries[i].ack_time_low) ||
+              (static_cast<time_t>(q.value(5).toLongLong()) >
+               entries[i].ack_time_high))) ||
+            (static_cast<bool>(q.value(6).toInt()) != entries[i].in_downtime)) {
           exceptions::msg e;
-          e << "invalid service state event entry #" << i
-            << ": got (host id " << q.value(0).toUInt()
-            << ", service id " << q.value(1).toUInt() << ", start time "
-            << q.value(2).toUInt() << ", end time "
+          e << "invalid service state event entry #" << i << ": got (host id "
+            << q.value(0).toUInt() << ", service id " << q.value(1).toUInt()
+            << ", start time " << q.value(2).toUInt() << ", end time "
             << (q.value(3).isNull() ? "null" : q.value(3).toString())
             << ", state " << q.value(4).toInt() << ", ack time "
             << (q.value(5).isNull() ? "null" : q.value(5).toString())
             << ", in downtime " << q.value(6).toInt() << "), expected ("
-            << entries[i].host_id << ", " << entries[i].service_id
-            << ", " << entries[i].start_time_low << ":"
-            << entries[i].start_time_high << ", ";
+            << entries[i].host_id << ", " << entries[i].service_id << ", "
+            << entries[i].start_time_low << ":" << entries[i].start_time_high
+            << ", ";
           if (entries[i].end_time_is_null)
             e << "null";
           else
-            e << entries[i].end_time_low << ":"
-              << entries[i].end_time_high;
+            e << entries[i].end_time_low << ":" << entries[i].end_time_high;
           e << ", " << entries[i].state << ", ";
           if (entries[i].ack_time_is_null)
             e << "null";
           else
-            e << entries[i].ack_time_low << ":"
-              << entries[i].ack_time_high;
+            e << entries[i].ack_time_low << ":" << entries[i].ack_time_high;
           e << ", " << entries[i].in_downtime << ")";
-          throw (e);
+          throw(e);
         }
       }
 
       // No more results.
       if (q.next())
-        throw (exceptions::msg()
-               << "too much service state events in DB");
+        throw(exceptions::msg() << "too much service state events in DB");
     }
 
     // Stop daemons.
@@ -621,12 +607,10 @@ int main() {
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
     db.set_remove_db_on_close(false);
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
     db.set_remove_db_on_close(false);
   }

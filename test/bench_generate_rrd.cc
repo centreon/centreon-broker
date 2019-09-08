@@ -16,14 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
+#include <sys/stat.h>
+#include <sys/time.h>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <sys/stat.h>
-#include <sys/time.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/cbd.hh"
 #include "test/misc.hh"
@@ -34,28 +34,26 @@ using namespace com::centreon::broker;
 /**
  *  Generate a configuration file with.
  */
-static void generate_cbd_conf(
-              std::string const& cbd_config_path,
-              unsigned int services,
-              unsigned int requests_per_service,
-              std::string const& metrics_path,
-              std::string const& status_path) {
+static void generate_cbd_conf(std::string const& cbd_config_path,
+                              unsigned int services,
+                              unsigned int requests_per_service,
+                              std::string const& metrics_path,
+                              std::string const& status_path) {
   std::ofstream ofs;
-  ofs.open(
-        cbd_config_path.c_str(),
-        std::ios_base::out | std::ios_base::trunc);
+  ofs.open(cbd_config_path.c_str(), std::ios_base::out | std::ios_base::trunc);
   if (ofs.fail())
-    throw (exceptions::msg()
-           << "cannot open cbd configuration file '"
-           << cbd_config_path << "'");
+    throw(exceptions::msg()
+          << "cannot open cbd configuration file '" << cbd_config_path << "'");
   ofs << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
       << "<centreonbroker>\n"
-      << "  <include>" PROJECT_SOURCE_DIR "/test/cfg/broker_modules.xml</include>\n"
+      << "  <include>" PROJECT_SOURCE_DIR
+         "/test/cfg/broker_modules.xml</include>\n"
       << "  <module>" BENCH_GENERATE_RRD_MOD_PATH "</module>\n"
       << "  <instance>42</instance>\n"
       << "  <instance_name>MyBroker</instance_name>\n"
       << "  <bench_services>" << services << "</bench_services>\n"
-      << "  <bench_requests_per_service>" << requests_per_service << "</bench_requests_per_service>\n"
+      << "  <bench_requests_per_service>" << requests_per_service
+      << "</bench_requests_per_service>\n"
       << "  <!--\n"
       << "  <logger>\n"
       << "    <type>file</type>\n"
@@ -75,7 +73,7 @@ static void generate_cbd_conf(
       << "  </output>\n"
       << "</centreonbroker>\n";
   ofs.close();
-  return ;
+  return;
 }
 
 /**
@@ -99,20 +97,16 @@ int main(int argc, char* argv[]) {
   try {
     // Check arguments.
     if (argc < 3)
-      throw (exceptions::msg() << "USAGE: " << argv[0]
-             << " <metrics> <updates_per_metric>");
+      throw(exceptions::msg()
+            << "USAGE: " << argv[0] << " <metrics> <updates_per_metric>");
 
     // Create RRD paths.
     mkdir(metrics_path.c_str(), S_IRWXU);
     mkdir(status_path.c_str(), S_IRWXU);
 
     // Write cbd configuration file for creation.
-    generate_cbd_conf(
-      cbd_config_path,
-      strtoul(argv[1], NULL, 0),
-      1,
-      metrics_path,
-      status_path);
+    generate_cbd_conf(cbd_config_path, strtoul(argv[1], NULL, 0), 1,
+                      metrics_path, status_path);
 
     // T1.
     timeval tv1;
@@ -128,12 +122,8 @@ int main(int argc, char* argv[]) {
     gettimeofday(&tv2, NULL);
 
     // Write cbd configuration file for update.
-    generate_cbd_conf(
-      cbd_config_path,
-      strtoul(argv[1], NULL, 0),
-      strtoul(argv[2], NULL, 0),
-      metrics_path,
-      status_path);
+    generate_cbd_conf(cbd_config_path, strtoul(argv[1], NULL, 0),
+                      strtoul(argv[2], NULL, 0), metrics_path, status_path);
 
     // T3.
     timeval tv3;
@@ -161,11 +151,9 @@ int main(int argc, char* argv[]) {
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
   }
 

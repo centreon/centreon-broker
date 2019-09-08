@@ -17,42 +17,40 @@
 */
 
 #ifndef CCB_CORRELATION_CONNECTOR_HH
-#  define CCB_CORRELATION_CONNECTOR_HH
+#define CCB_CORRELATION_CONNECTOR_HH
 
-#  include <memory>
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <memory>
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                        correlation {
-  /**
-   *  @class connector connector.hh "com/centreon/broker/correlation/connector.hh"
-   *  @brief Open a correlation stream.
-   *
-   *  Generate a correlation stream that will generation correlation
-   *  events (issue, issue parenting, host/service state events, ...).
-   */
-  class                          connector : public io::endpoint {
-  public:
-                                 connector(
-                                   std::string const& correlation_file,
-                                   bool passive = false,
-                                   std::shared_ptr<persistent_cache> cache
-                                   = std::shared_ptr<persistent_cache>());
-                                 connector(connector const& other);
-                                 ~connector();
-    connector&                   operator=(connector const& other);
-    std::shared_ptr<io::stream> open();
+namespace correlation {
+/**
+ *  @class connector connector.hh "com/centreon/broker/correlation/connector.hh"
+ *  @brief Open a correlation stream.
+ *
+ *  Generate a correlation stream that will generation correlation
+ *  events (issue, issue parenting, host/service state events, ...).
+ */
+class connector : public io::endpoint {
+ public:
+  connector(std::string const& correlation_file,
+            bool passive = false,
+            std::shared_ptr<persistent_cache> cache =
+                std::shared_ptr<persistent_cache>());
+  connector(connector const& other);
+  ~connector();
+  connector& operator=(connector const& other);
+  std::shared_ptr<io::stream> open();
 
-  private:
-    std::shared_ptr<persistent_cache>
-                                 _cache;
-    std::string                  _correlation_file;
-    bool                         _passive;
-  };
-}
+ private:
+  std::shared_ptr<persistent_cache> _cache;
+  std::string _correlation_file;
+  bool _passive;
+};
+}  // namespace correlation
 
 CCB_END()
 
-#endif // !CCB_CORRELATION_CONNECTOR_HH
+#endif  // !CCB_CORRELATION_CONNECTOR_HH

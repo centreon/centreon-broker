@@ -17,50 +17,48 @@
 */
 
 #ifndef CCB_CONFIG_APPLIER_MODULES_HH
-#  define CCB_CONFIG_APPLIER_MODULES_HH
+#define CCB_CONFIG_APPLIER_MODULES_HH
 
-#  include <list>
-#  include <string>
-#  include "com/centreon/broker/modules/loader.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <list>
+#include <string>
+#include "com/centreon/broker/modules/loader.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                     config {
-  namespace                   applier {
-    /**
-     *  @class modules modules.hh "com/centreon/broker/config/applier/modules.hh"
-     *  @brief Load necessary modules.
-     *
-     *  Load modules as per the configuration.
-     */
-    class                     modules {
-    public:
-      typedef                 broker::modules::loader::iterator
-                              iterator;
+namespace config {
+namespace applier {
+/**
+ *  @class modules modules.hh "com/centreon/broker/config/applier/modules.hh"
+ *  @brief Load necessary modules.
+ *
+ *  Load modules as per the configuration.
+ */
+class modules {
+ public:
+  typedef broker::modules::loader::iterator iterator;
 
-                              ~modules();
-      void                    apply(
-                                std::list<std::string> const& module_list,
-                                std::string const& module_dir,
-                                void const* arg = NULL);
-      iterator                begin();
-      iterator                end();
-      void                    discard();
-      static modules&         instance();
-      static void             load();
-      static void             unload();
+  ~modules();
+  void apply(std::list<std::string> const& module_list,
+             std::string const& module_dir,
+             void const* arg = NULL);
+  iterator begin();
+  iterator end();
+  void discard();
+  static modules& instance();
+  static void load();
+  static void unload();
 
-    private:
-                              modules();
-                              modules(modules const& m);
-      modules&                operator=(modules const& m);
+ private:
+  modules();
+  modules(modules const& m);
+  modules& operator=(modules const& m);
 
-      broker::modules::loader _loader;
-    };
-  }
-}
+  broker::modules::loader _loader;
+};
+}  // namespace applier
+}  // namespace config
 
 CCB_END()
 
-#endif // !CCB_CONFIG_APPLIER_MODULES_HH
+#endif  // !CCB_CONFIG_APPLIER_MODULES_HH

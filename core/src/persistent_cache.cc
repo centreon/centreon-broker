@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/persistent_cache.hh"
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
@@ -24,7 +25,6 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/opener.hh"
-#include "com/centreon/broker/persistent_cache.hh"
 
 using namespace com::centreon::broker;
 
@@ -34,7 +34,7 @@ using namespace com::centreon::broker;
  *  @param[in] cache_file  Path to the cache file.
  */
 persistent_cache::persistent_cache(std::string const& cache_file)
-  : _cache_file(cache_file) {
+    : _cache_file(cache_file) {
   _open();
 }
 
@@ -52,10 +52,10 @@ persistent_cache::~persistent_cache() {}
  */
 void persistent_cache::add(std::shared_ptr<io::data> const& d) {
   if (!_write_file)
-    throw (exceptions::msg() << "core: cache file '"
-           << _cache_file << "' is not open for writing");
+    throw(exceptions::msg() << "core: cache file '" << _cache_file
+                            << "' is not open for writing");
   _write_file->write(d);
-  return ;
+  return;
 }
 
 /**
@@ -72,21 +72,20 @@ void persistent_cache::commit() {
     _read_file.reset();
     if (::rename(_cache_file.c_str(), _old_file().c_str())) {
       char const* msg(strerror(errno));
-      throw (exceptions::msg() << "core: cache file '"
-             << _cache_file << "' could not be renamed to '"
-             << _old_file() << "': " << msg);
-    }
-    else if (::rename(_new_file().c_str(), _cache_file.c_str())) {
+      throw(exceptions::msg()
+            << "core: cache file '" << _cache_file
+            << "' could not be renamed to '" << _old_file() << "': " << msg);
+    } else if (::rename(_new_file().c_str(), _cache_file.c_str())) {
       // .old file will be renamed by the _open() method.
       char const* msg(strerror(errno));
-      throw (exceptions::msg() << "core: cache file '"
-             << _new_file() << "' could not be renamed to '"
-             << _cache_file << "': " << msg);
+      throw(exceptions::msg()
+            << "core: cache file '" << _new_file()
+            << "' could not be renamed to '" << _cache_file << "': " << msg);
     }
     // No error checking, this is a secondary issue.
     ::remove(_old_file().c_str());
   }
-  return ;
+  return;
 }
 
 /**
@@ -100,12 +99,11 @@ void persistent_cache::get(std::shared_ptr<io::data>& d) {
     _open();
   try {
     _read_file->read(d);
-  }
-  catch (exceptions::shutdown const& e) {
+  } catch (exceptions::shutdown const& e) {
     (void)e;
     d.reset();
   }
-  return ;
+  return;
 }
 
 /**
@@ -114,7 +112,7 @@ void persistent_cache::get(std::shared_ptr<io::data>& d) {
 void persistent_cache::rollback() {
   _write_file.reset();
   ::remove(_new_file().c_str());
-  return ;
+  return;
 }
 
 /**
@@ -124,8 +122,8 @@ void persistent_cache::rollback() {
  */
 void persistent_cache::transaction() {
   if (_write_file)
-    throw (exceptions::msg() << "core: cache file '"
-           << _cache_file << "' is already open for writing");
+    throw(exceptions::msg() << "core: cache file '" << _cache_file
+                            << "' is already open for writing");
   file::opener opnr;
   opnr.set_filename(_new_file());
   opnr.set_auto_delete(false);
@@ -135,7 +133,7 @@ void persistent_cache::transaction() {
   bs->set_substream(fs);
   bs->set_coarse(true);
   _write_file = std::static_pointer_cast<io::stream>(bs);
-  return ;
+  return;
 }
 
 /**

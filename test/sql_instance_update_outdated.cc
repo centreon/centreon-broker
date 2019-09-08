@@ -16,13 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QVariant>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/cbd.hh"
@@ -63,26 +63,23 @@ int main() {
     // Prepare monitoring engine configuration parameters.
     generate_hosts(hosts, 10);
     generate_services(services, hosts, 5);
-    cfg_cbmod.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/sql_instance_update_outdated_1.xml.in");
+    cfg_cbmod.set_template(PROJECT_SOURCE_DIR
+                           "/test/cfg/sql_instance_update_outdated_1.xml.in");
     std::string cbmod_loading;
     {
       std::ostringstream oss;
-      oss << "broker_module=" << CBMOD_PATH << " "
-          << cfg_cbmod.generate() << "\n";
+      oss << "broker_module=" << CBMOD_PATH << " " << cfg_cbmod.generate()
+          << "\n";
       cbmod_loading = oss.str();
     }
 
     // Generate monitoring engine configuration files.
-    config_write(
-      engine_config_path.c_str(),
-      cbmod_loading.c_str(),
-      &hosts,
-      &services);
+    config_write(engine_config_path.c_str(), cbmod_loading.c_str(), &hosts,
+                 &services);
 
     // Start Broker daemon.
-    cfg_cbd.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/sql_instance_update_outdated_2.xml.in");
+    cfg_cbd.set_template(PROJECT_SOURCE_DIR
+                         "/test/cfg/sql_instance_update_outdated_2.xml.in");
     cfg_cbd.set("INSTANCE_TIMEOUT", INSTANCE_TIMEOUT_STR);
     broker.set_config_file(cfg_cbd.generate());
     broker.start();
@@ -106,15 +103,14 @@ int main() {
     // Check for outdated instance
     {
       std::ostringstream query;
-      query << "SELECT COUNT(instance_id) from rt_instances where outdated = TRUE";
+      query << "SELECT COUNT(instance_id) from rt_instances where outdated = "
+               "TRUE";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg() << "cannot check outdated instances from DB: "
-               << q.lastError().text().toStdString().c_str());
-      if (!q.next()
-          || (q.value(0).toUInt() != 1)
-          || q.next())
-        throw (exceptions::msg() << "instance not outdated");
+        throw(exceptions::msg() << "cannot check outdated instances from DB: "
+                                << q.lastError().text().toStdString().c_str());
+      if (!q.next() || (q.value(0).toUInt() != 1) || q.next())
+        throw(exceptions::msg() << "instance not outdated");
     }
 
     // Check for outdated services.
@@ -124,13 +120,11 @@ int main() {
             << "  FROM rt_services WHERE state = " << STATE_UNKNOWN;
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg() << "cannot check outdated services from DB: "
-               << q.lastError().text().toStdString().c_str());
+        throw(exceptions::msg() << "cannot check outdated services from DB: "
+                                << q.lastError().text().toStdString().c_str());
 
-      if (!q.next()
-          || (q.value(0).toUInt() != 50)
-          || q.next())
-        throw (exceptions::msg() << "services not outdated");
+      if (!q.next() || (q.value(0).toUInt() != 50) || q.next())
+        throw(exceptions::msg() << "services not outdated");
     }
 
     // Check for outdated hosts.
@@ -140,13 +134,11 @@ int main() {
             << "  FROM rt_hosts WHERE state = " << HOST_UNREACHABLE;
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg() << "cannot check outdated hosts from DB: "
-               << q.lastError().text().toStdString().c_str());
+        throw(exceptions::msg() << "cannot check outdated hosts from DB: "
+                                << q.lastError().text().toStdString().c_str());
 
-      if (!q.next()
-          || (q.value(0).toUInt() != 10)
-          || q.next())
-        throw (exceptions::msg() << "hosts not outdated");
+      if (!q.next() || (q.value(0).toUInt() != 10) || q.next())
+        throw(exceptions::msg() << "hosts not outdated");
     }
 
     daemon.start();
@@ -155,16 +147,13 @@ int main() {
     // Check for living instance
     {
       std::ostringstream query;
-      query
-        << "SELECT COUNT(instance_id) FROM rt_instances WHERE outdated=0";
+      query << "SELECT COUNT(instance_id) FROM rt_instances WHERE outdated=0";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg() << "cannot check living instances from DB: "
-               << q.lastError().text().toStdString().c_str());
-      if (!q.next()
-          || (q.value(0).toUInt() != 1)
-          || q.next())
-        throw (exceptions::msg() << "living instance not updated");
+        throw(exceptions::msg() << "cannot check living instances from DB: "
+                                << q.lastError().text().toStdString().c_str());
+      if (!q.next() || (q.value(0).toUInt() != 1) || q.next())
+        throw(exceptions::msg() << "living instance not updated");
     }
 
     // Check for living services.
@@ -174,13 +163,11 @@ int main() {
             << "  FROM rt_services WHERE state != " << STATE_UNKNOWN;
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg() << "cannot check living services from DB: "
-               << q.lastError().text().toStdString().c_str());
+        throw(exceptions::msg() << "cannot check living services from DB: "
+                                << q.lastError().text().toStdString().c_str());
 
-      if (!q.next()
-          || (q.value(0).toUInt() != 50)
-          || q.next())
-        throw (exceptions::msg() << "living services not updated");
+      if (!q.next() || (q.value(0).toUInt() != 50) || q.next())
+        throw(exceptions::msg() << "living services not updated");
     }
 
     // Check for living hosts.
@@ -190,24 +177,20 @@ int main() {
             << "  FROM rt_hosts WHERE state != " << HOST_UNREACHABLE;
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg() << "cannot check living hosts from DB: "
-               << q.lastError().text().toStdString().c_str());
+        throw(exceptions::msg() << "cannot check living hosts from DB: "
+                                << q.lastError().text().toStdString().c_str());
 
-      if (!q.next()
-          || (q.value(0).toUInt() != 10)
-          || q.next())
-        throw (exceptions::msg() << "living hosts not updated");
+      if (!q.next() || (q.value(0).toUInt() != 10) || q.next())
+        throw(exceptions::msg() << "living hosts not updated");
     }
 
     // Success
     retval = EXIT_SUCCESS;
 
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
     db.set_remove_db_on_close(false);
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
     db.set_remove_db_on_close(false);
   }

@@ -55,9 +55,8 @@ run_queue& run_queue::operator=(run_queue const& obj) {
  */
 void run_queue::_rebuild_set() {
   for (std::set<action>::iterator it(_action_set.begin()),
-                                  end(_action_set.end());
-       it != end;
-       ++it) {
+       end(_action_set.end());
+       it != end; ++it) {
     _action_by_time.insert(std::make_pair(it->get_at(), &*it));
     _action_by_node.insert(std::make_pair(it->get_node_id(), &*it));
   }
@@ -69,11 +68,8 @@ void run_queue::_rebuild_set() {
  *  @param[out] obj  The object where to move the content of this queue.
  *  @param[in] until The max time of all moved object.
  */
-void run_queue::move_to_queue(
-                  run_queue& obj,
-                  time_t until) {
-  for (iterator it(begin()),
-                it_end(end());
+void run_queue::move_to_queue(run_queue& obj, time_t until) {
+  for (iterator it(begin()), it_end(end());
        it != it_end && it->first <= until;) {
     obj.run(it->first, *it->second);
     iterator tmp = it;
@@ -91,8 +87,7 @@ void run_queue::move_to_queue(
 void run_queue::run(time_t at, action a) {
   a.set_at(at);
 
-  std::pair<std::set<action>::iterator, bool> res
-      = _action_set.insert(a);
+  std::pair<std::set<action>::iterator, bool> res = _action_set.insert(a);
 
   _action_by_node.insert(std::make_pair(a.get_node_id(), &*res.first));
   _action_by_time.insert(std::make_pair(at, &*res.first));
@@ -173,9 +168,8 @@ void run_queue::remove(action const& a) {
     }
 
   // Erase from _action_by_time
-  std::pair<action_map::iterator,
-            action_map::iterator>
-      time_range = _action_by_time.equal_range(ptr->get_at());
+  std::pair<action_map::iterator, action_map::iterator> time_range =
+      _action_by_time.equal_range(ptr->get_at());
 
   for (; time_range.first != time_range.second; ++time_range.first)
     if (time_range.first->second == ptr) {

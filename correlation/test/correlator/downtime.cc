@@ -16,13 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <iostream>
 #include <QMap>
 #include <QPair>
+#include <cstdlib>
+#include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/correlation/node.hh"
+#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "test/correlator/common.hh"
 
@@ -55,7 +55,7 @@ int main() {
     c.set_state(state);
 
     // Send node status.
-    { // #1
+    {  // #1
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
@@ -64,7 +64,7 @@ int main() {
       ss->last_hard_state_change = 123456789;
       c.write(ss);
     }
-    { // #2
+    {  // #2
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
@@ -74,7 +74,7 @@ int main() {
       ss->scheduled_downtime_depth = 1;
       c.write(ss);
     }
-    { // #3
+    {  // #3
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
@@ -83,7 +83,7 @@ int main() {
       ss->last_hard_state_change = 123456791;
       c.write(ss);
     }
-    { // #4
+    {  // #4
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
@@ -93,7 +93,7 @@ int main() {
       ss->scheduled_downtime_depth = 1;
       c.write(ss);
     }
-    { // #5
+    {  // #5
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
@@ -103,7 +103,7 @@ int main() {
       ss->scheduled_downtime_depth = 1;
       c.write(ss);
     }
-    { // #6
+    {  // #6
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
@@ -113,7 +113,7 @@ int main() {
       ss->scheduled_downtime_depth = 1;
       c.write(ss);
     }
-    { // #7
+    {  // #7
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
@@ -133,73 +133,25 @@ int main() {
     add_state_service(content, -1, 2, 0, 42, false, 24, 123456789);
     add_issue(content, -1, 0, 42, 24, 123456789);
     // #2
-    add_state_service(
-      content,
-      -1,
-      2,
-      123456790,
-      42,
-      false,
-      24,
-      123456789);
+    add_state_service(content, -1, 2, 123456790, 42, false, 24, 123456789);
     add_state_service(content, -1, 2, 0, 42, true, 24, 123456790);
     // #3
-    add_state_service(
-      content,
-      -1,
-      2,
-      123456791,
-      42,
-      true,
-      24,
-      123456790);
+    add_state_service(content, -1, 2, 123456791, 42, true, 24, 123456790);
     add_state_service(content, -1, 0, 0, 42, false, 24, 123456791);
     add_issue(content, -1, 123456791, 42, 24, 123456789);
     // #4
-    add_state_service(
-      content,
-      -1,
-      0,
-      123456792,
-      42,
-      false,
-      24,
-      123456791);
+    add_state_service(content, -1, 0, 123456792, 42, false, 24, 123456791);
     add_state_service(content, -1, 0, 0, 42, true, 24, 123456792);
     // #5
-    add_state_service(
-      content,
-      -1,
-      0,
-      123456793,
-      42,
-      true,
-      24,
-      123456792);
+    add_state_service(content, -1, 0, 123456793, 42, true, 24, 123456792);
     add_state_service(content, -1, 2, 0, 42, true, 24, 123456793);
     add_issue(content, -1, 0, 42, 24, 123456793);
     // #6
-    add_state_service(
-      content,
-      -1,
-      2,
-      123456794,
-      42,
-      true,
-      24,
-      123456793);
+    add_state_service(content, -1, 2, 123456794, 42, true, 24, 123456793);
     add_state_service(content, -1, 0, 0, 42, true, 24, 123456794);
     add_issue(content, 0, 123456794, 42, 24, 123456793);
     // #7
-    add_state_service(
-      content,
-      -1,
-      0,
-      123456795,
-      42,
-      true,
-      24,
-      123456794);
+    add_state_service(content, -1, 0, 123456795, 42, true, 24, 123456794);
     add_state_service(content, -1, 0, 0, 42, false, 24, 123456795);
 
     // Check.
@@ -207,11 +159,9 @@ int main() {
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "unknown exception" << std::endl;
   }
 

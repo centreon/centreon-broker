@@ -17,31 +17,32 @@
 */
 
 #ifndef CCB_NOTIFICATION_LOADERS_NOTIFICATION_RULE_LOADER_HH
-#  define CCB_NOTIFICATION_LOADERS_NOTIFICATION_RULE_LOADER_HH
+#define CCB_NOTIFICATION_LOADERS_NOTIFICATION_RULE_LOADER_HH
 
-#  include <string>
-#  include "com/centreon/broker/mysql.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/builders/notification_rule_builder.hh"
+#include <string>
+#include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/notification_rule_builder.hh"
 
 CCB_BEGIN()
 
-namespace       notification {
-  /**
-   *  @class notification_rule_loader notification_rule_loader.hh "com/centreon/broker/notification/loaders/notification_rule_loader.hh"
-   *  @brief Loader for notification rules.
-   *
-   *  This loader loads the notifcation rules from the database.
-   */
-  class         notification_rule_loader {
-  public:
-                notification_rule_loader();
+namespace notification {
+/**
+ *  @class notification_rule_loader notification_rule_loader.hh
+ * "com/centreon/broker/notification/loaders/notification_rule_loader.hh"
+ *  @brief Loader for notification rules.
+ *
+ *  This loader loads the notifcation rules from the database.
+ */
+class notification_rule_loader {
+ public:
+  notification_rule_loader();
 
-    void        load(mysql* db, notification_rule_builder* output);
-  };
+  void load(mysql* db, notification_rule_builder* output);
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_LOADERS_NOTIFICATION_RULE_LOADER_HH
+#endif  // !CCB_NOTIFICATION_LOADERS_NOTIFICATION_RULE_LOADER_HH

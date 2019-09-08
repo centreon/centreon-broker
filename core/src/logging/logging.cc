@@ -21,10 +21,10 @@
 using namespace com::centreon::broker;
 
 /**************************************
-*                                     *
-*           Global Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Global Objects            *
+ *                                     *
+ **************************************/
 
 logging::logger logging::config(logging::config_type);
 logging::logger logging::debug(logging::debug_type);

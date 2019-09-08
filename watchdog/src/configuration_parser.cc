@@ -139,13 +139,12 @@ void configuration_parser::_parse_centreon_broker_element(
     executable = instance_executable.string_value();
 
   if (!_instances_configuration
-          .insert({
-              instance_name.string_value(),
-              instance_configuration(instance_name.string_value(),
-                                     executable,
-                                     instance_config.string_value(),
-                                     run.bool_value(), reload.bool_value(), 0)})
-          .second)
+           .insert({instance_name.string_value(),
+                    instance_configuration(
+                        instance_name.string_value(), executable,
+                        instance_config.string_value(), run.bool_value(),
+                        reload.bool_value(), 0)})
+           .second)
     throw exceptions::msg()
         << "instance '" << instance_name.string_value() << "' already exists";
 }

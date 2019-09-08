@@ -24,24 +24,22 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
-connector::connector()
-  : io::endpoint(false) {}
+connector::connector() : io::endpoint(false) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-connector::connector(connector const& other)
-  : io::endpoint(other) {
+connector::connector(connector const& other) : io::endpoint(other) {
   _internal_copy(other);
 }
 
@@ -69,30 +67,28 @@ connector& connector::operator=(connector const& other) {
  *  Set connection parameters.
  *
  */
-void connector::connect_to(
-                  std::string const& user,
-                  std::string const& passwd,
-                  std::string const& addr,
-                  unsigned short port,
-                  std::string const& db,
-                  unsigned int queries_per_transaction,
-                  std::string const& status_ts,
-                  std::vector<column> const& status_cols,
-                  std::string const& metric_ts,
-                  std::vector<column> const& metric_cols,
-                  std::shared_ptr<persistent_cache> const& cache) {
+void connector::connect_to(std::string const& user,
+                           std::string const& passwd,
+                           std::string const& addr,
+                           unsigned short port,
+                           std::string const& db,
+                           unsigned int queries_per_transaction,
+                           std::string const& status_ts,
+                           std::vector<column> const& status_cols,
+                           std::string const& metric_ts,
+                           std::vector<column> const& metric_cols,
+                           std::shared_ptr<persistent_cache> const& cache) {
   _user = user;
   _password = passwd;
   _addr = addr;
-  _port = port,
-  _db = db;
+  _port = port, _db = db;
   _queries_per_transaction = queries_per_transaction;
   _status_ts = status_ts;
   _status_cols = status_cols;
   _metric_ts = metric_ts;
   _metric_cols = metric_cols;
   _cache = cache;
-  return ;
+  return;
 }
 
 /**
@@ -102,25 +98,15 @@ void connector::connect_to(
  */
 std::shared_ptr<io::stream> connector::open() {
   return (std::shared_ptr<io::stream>(
-            new stream(
-                  _user,
-                  _password,
-                  _addr,
-                  _port,
-                  _db,
-                  _queries_per_transaction,
-                  _status_ts,
-                  _status_cols,
-                  _metric_ts,
-                  _metric_cols,
-                  _cache)));
+      new stream(_user, _password, _addr, _port, _db, _queries_per_transaction,
+                 _status_ts, _status_cols, _metric_ts, _metric_cols, _cache)));
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -139,5 +125,5 @@ void connector::_internal_copy(connector const& other) {
   _metric_ts = other._metric_ts;
   _metric_cols = other._metric_cols;
   _cache = other._cache;
-  return ;
+  return;
 }

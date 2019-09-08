@@ -17,39 +17,40 @@
 */
 
 #ifndef CCB_NOTIFICATION_LOADERS_DEPENDENCY_LOADER_HH
-#  define CCB_NOTIFICATION_LOADERS_DEPENDENCY_LOADER_HH
+#define CCB_NOTIFICATION_LOADERS_DEPENDENCY_LOADER_HH
 
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/mysql.hh"
-#  include "com/centreon/broker/notification/builders/dependency_builder.hh"
+#include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/dependency_builder.hh"
 
 CCB_BEGIN()
 
-namespace  notification {
-  /**
-   *  @class dependency_loader dependency_loader.hh "com/centreon/broker/notification/loaders/dependency_loader.hh"
-   *  @brief Loader for dependency objects.
-   *
-   *  This loader loads the dependencies from the database.
-   */
-  class    dependency_loader {
-  public:
-           dependency_loader();
+namespace notification {
+/**
+ *  @class dependency_loader dependency_loader.hh
+ * "com/centreon/broker/notification/loaders/dependency_loader.hh"
+ *  @brief Loader for dependency objects.
+ *
+ *  This loader loads the dependencies from the database.
+ */
+class dependency_loader {
+ public:
+  dependency_loader();
 
-    void   load(mysql* db, dependency_builder* output);
+  void load(mysql* db, dependency_builder* output);
 
-  private:
-    void   _load_relations(mysql* ms, dependency_builder& output);
-//    void   _load_relation(
-//             QSqlQuery& query, dependency_builder& output,
-//             std::string const& relation_id_name,
-//             std::string const& table,
-//             void (dependency_builder::*register_method)
-//                    (unsigned int, unsigned int));
-  };
+ private:
+  void _load_relations(mysql* ms, dependency_builder& output);
+  //    void   _load_relation(
+  //             QSqlQuery& query, dependency_builder& output,
+  //             std::string const& relation_id_name,
+  //             std::string const& table,
+  //             void (dependency_builder::*register_method)
+  //                    (unsigned int, unsigned int));
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_LOADERS_DEPENDENCY_LOADER_HH
+#endif  // !CCB_NOTIFICATION_LOADERS_DEPENDENCY_LOADER_HH

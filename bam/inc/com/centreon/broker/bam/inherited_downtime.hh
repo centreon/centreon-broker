@@ -17,47 +17,43 @@
 */
 
 #ifndef CCB_BAM_INHERITED_DOWNTIME_HH
-#  define CCB_BAM_INHERITED_DOWNTIME_HH
+#define CCB_BAM_INHERITED_DOWNTIME_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace        bam {
-  /**
-   *  @class ba_status ba_status.hh "com/centreon/broker/bam/ba_status.hh"
-   *  @brief Update status of a BA.
-   *
-   *
-   */
-  class          inherited_downtime : public io::data {
-  public:
-                 inherited_downtime();
-                 inherited_downtime(inherited_downtime const& other);
-                 ~inherited_downtime();
-    inherited_downtime&
-                 operator=(inherited_downtime const& other);
-    unsigned int type() const;
-    static unsigned int
-                 static_type();
+namespace bam {
+/**
+ *  @class ba_status ba_status.hh "com/centreon/broker/bam/ba_status.hh"
+ *  @brief Update status of a BA.
+ *
+ *
+ */
+class inherited_downtime : public io::data {
+ public:
+  inherited_downtime();
+  inherited_downtime(inherited_downtime const& other);
+  ~inherited_downtime();
+  inherited_downtime& operator=(inherited_downtime const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    unsigned int ba_id;
-    bool         in_downtime;
+  unsigned int ba_id;
+  bool in_downtime;
 
-    static mapping::entry const
-                 entries[];
-    static io::event_info::event_operations const
-                 operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void         _internal_copy(inherited_downtime const& other);
-  };
-}
+ private:
+  void _internal_copy(inherited_downtime const& other);
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_INHERITED_DOWNTIME_HH
+#endif  // !CCB_BAM_INHERITED_DOWNTIME_HH

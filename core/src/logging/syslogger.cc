@@ -16,16 +16,16 @@
 ** For more information : contact@centreon.com
 */
 
-#include <syslog.h>
 #include "com/centreon/broker/logging/syslogger.hh"
+#include <syslog.h>
 
 using namespace com::centreon::broker::logging;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -75,27 +75,27 @@ syslogger& syslogger::operator=(syslogger const& s) {
 void syslogger::log_msg(char const* msg,
                         unsigned int len,
                         type log_type,
-                        level l) throw () {
+                        level l) throw() {
   (void)len;
   (void)l;
   int priority;
   switch (log_type) {
-   case config_type:
-    priority = LOG_INFO;
-    break ;
-   case debug_type:
-    priority = LOG_DEBUG;
-    break ;
-   case error_type:
-    priority = LOG_ERR;
-    break ;
-   case info_type:
-   case perf_type:
-    priority = LOG_NOTICE;
-    break ;
-   default:
-    priority = LOG_WARNING;
+    case config_type:
+      priority = LOG_INFO;
+      break;
+    case debug_type:
+      priority = LOG_DEBUG;
+      break;
+    case error_type:
+      priority = LOG_ERR;
+      break;
+    case info_type:
+    case perf_type:
+      priority = LOG_NOTICE;
+      break;
+    default:
+      priority = LOG_WARNING;
   }
   syslog(priority, "%s", msg);
-  return ;
+  return;
 }

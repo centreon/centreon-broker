@@ -17,33 +17,32 @@
 */
 
 #ifndef CCB_NEB_STATISTICS_ACTIVE_SERVICES_LAST_HH
-#  define CCB_NEB_STATISTICS_ACTIVE_SERVICES_LAST_HH
+#define CCB_NEB_STATISTICS_ACTIVE_SERVICES_LAST_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/statistics/plugin.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/statistics/plugin.hh"
 
 CCB_BEGIN()
 
-namespace         neb {
-  namespace       statistics {
-    /**
-     *  @class active_services_last active_services_last.hh "com/centreon/broker/neb/statistics/active_services_last.hh"
-     *  @brief active_services_last statistics plugin.
-     */
-    class         active_services_last : public plugin {
-    public:
-                  active_services_last();
-                  active_services_last(
-                    active_services_last const& right);
-                  ~active_services_last();
-      active_services_last&
-                  operator=(active_services_last const& right);
-      void        run(std::string& output, std::string& perfdata);
-    };
-  }
-}
+namespace neb {
+namespace statistics {
+/**
+ *  @class active_services_last active_services_last.hh
+ * "com/centreon/broker/neb/statistics/active_services_last.hh"
+ *  @brief active_services_last statistics plugin.
+ */
+class active_services_last : public plugin {
+ public:
+  active_services_last();
+  active_services_last(active_services_last const& right);
+  ~active_services_last();
+  active_services_last& operator=(active_services_last const& right);
+  void run(std::string& output, std::string& perfdata);
+};
+}  // namespace statistics
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NE3CB_STATISTICS_ACTIVE_SERVICES_LAST_HH
+#endif  // !CCB_NE3CB_STATISTICS_ACTIVE_SERVICES_LAST_HH

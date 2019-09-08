@@ -17,40 +17,38 @@
 */
 
 #ifndef CCB_MISC_PROCESSING_SPEED_COMPUTER_HH
-#  define CCB_MISC_PROCESSING_SPEED_COMPUTER_HH
+#define CCB_MISC_PROCESSING_SPEED_COMPUTER_HH
 
-#  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace         misc {
-  /**
-   *  @class processing_speed_computer processing_speed_computer.hh "com/centreon/broker/misc/processing_speed_computer.hh"
-   *  @brief Compute processing speed.
-   */
-  class           processing_speed_computer {
-   public:
-                  processing_speed_computer();
-                  processing_speed_computer(
-                    processing_speed_computer const& right);
-                  ~processing_speed_computer() throw ();
-    processing_speed_computer&
-                  operator=(processing_speed_computer const& right);
+namespace misc {
+/**
+ *  @class processing_speed_computer processing_speed_computer.hh
+ * "com/centreon/broker/misc/processing_speed_computer.hh"
+ *  @brief Compute processing speed.
+ */
+class processing_speed_computer {
+ public:
+  processing_speed_computer();
+  processing_speed_computer(processing_speed_computer const& right);
+  ~processing_speed_computer() throw();
+  processing_speed_computer& operator=(processing_speed_computer const& right);
 
-    double        get_processing_speed() const;
-    void          tick(int events = 1);
-    timestamp     get_last_event_time() const;
+  double get_processing_speed() const;
+  void tick(int events = 1);
+  timestamp get_last_event_time() const;
 
-    static int const
-                  window_length = 30;
+  static int const window_length = 30;
 
-   private:
-    unsigned int  _event_by_seconds[window_length];
-    timestamp     _last_tick;
-  };
-}
+ private:
+  unsigned int _event_by_seconds[window_length];
+  timestamp _last_tick;
+};
+}  // namespace misc
 
 CCB_END()
 
-#endif // !CCB_MISC_PROCESSING_SPEED_COMPUTER_HH
+#endif  // !CCB_MISC_PROCESSING_SPEED_COMPUTER_HH

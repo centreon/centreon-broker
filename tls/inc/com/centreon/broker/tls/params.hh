@@ -17,63 +17,58 @@
 */
 
 #ifndef CCB_TLS_PARAMS_HH
-#  define CCB_TLS_PARAMS_HH
+#define CCB_TLS_PARAMS_HH
 
-#  include <gnutls/gnutls.h>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <gnutls/gnutls.h>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace           tls {
-  /**
-   *  @class params params.hh "com/centreon/broker/tls/params.hh"
-   *  @brief Configure parameters of a TLS connection (either incoming
-   *         or outgoing).
-   *
-   *  params is used by the TLS acceptor and the TLS connector classes
-   *  to configure the future TLS connections.
-   */
-  class             params {
-  public:
-    enum            connection_type {
-      CLIENT = 1,
-      SERVER
-    };
+namespace tls {
+/**
+ *  @class params params.hh "com/centreon/broker/tls/params.hh"
+ *  @brief Configure parameters of a TLS connection (either incoming
+ *         or outgoing).
+ *
+ *  params is used by the TLS acceptor and the TLS connector classes
+ *  to configure the future TLS connections.
+ */
+class params {
+ public:
+  enum connection_type { CLIENT = 1, SERVER };
 
-  public:
-                    params(connection_type type);
-    virtual         ~params();
-    void            apply(gnutls_session_t session);
-    void            load();
-    void            reset();
-    void            set_cert(
-                      std::string const& cert,
-                      std::string const& key);
-    void            set_compression(bool compress = false);
-    void            set_trusted_ca(std::string const& ca_cert);
-    void            validate_cert(gnutls_session_t session);
+ public:
+  params(connection_type type);
+  virtual ~params();
+  void apply(gnutls_session_t session);
+  void load();
+  void reset();
+  void set_cert(std::string const& cert, std::string const& key);
+  void set_compression(bool compress = false);
+  void set_trusted_ca(std::string const& ca_cert);
+  void validate_cert(gnutls_session_t session);
 
-  private:
-                    params(params const& p);
-    params&         operator=(params const& p);
-    void            _clean();
-    void            _init_anonymous();
+ private:
+  params(params const& p);
+  params& operator=(params const& p);
+  void _clean();
+  void _init_anonymous();
 
-    std::string     _ca;
-    std::string     _cert;
-    bool            _compress;
-    union {
-      gnutls_certificate_credentials_t cert;
-      gnutls_anon_client_credentials_t client;
-      gnutls_anon_server_credentials_t server;
-    }               _cred;
-    bool            _init;
-    std::string     _key;
-    connection_type _type;
-  };
-}
+  std::string _ca;
+  std::string _cert;
+  bool _compress;
+  union {
+    gnutls_certificate_credentials_t cert;
+    gnutls_anon_client_credentials_t client;
+    gnutls_anon_server_credentials_t server;
+  } _cred;
+  bool _init;
+  std::string _key;
+  connection_type _type;
+};
+}  // namespace tls
 
 CCB_END()
 
-#endif // !CCB_TLS_PARAMS_HH
+#endif  // !CCB_TLS_PARAMS_HH

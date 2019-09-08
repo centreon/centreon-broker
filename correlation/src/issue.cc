@@ -16,28 +16,24 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/issue.hh"
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
  */
 issue::issue()
-  : ack_time(-1),
-    end_time(-1),
-    host_id(0),
-    service_id(0),
-    start_time(0) {}
+    : ack_time(-1), end_time(-1), host_id(0), service_id(0), start_time(0) {}
 
 /**
  *  Copy constructor.
@@ -74,12 +70,10 @@ issue& issue::operator=(issue const& i) {
  *  @return true if both issues are equal.
  */
 bool issue::operator==(issue const& i) const {
-  return ((this == &i)
-          || ((ack_time == i.ack_time)
-              && (end_time == i.end_time)
-              && (host_id == i.host_id)
-              && (service_id == i.service_id)
-              && (start_time == i.start_time)));
+  return ((this == &i) ||
+          ((ack_time == i.ack_time) && (end_time == i.end_time) &&
+           (host_id == i.host_id) && (service_id == i.service_id) &&
+           (start_time == i.start_time)));
 }
 
 /**
@@ -108,14 +102,15 @@ unsigned int issue::type() const {
  *  @return  The event type.
  */
 unsigned int issue::static_type() {
-  return (io::events::data_type<io::events::correlation, correlation::de_issue>::value);
+  return (io::events::data_type<io::events::correlation,
+                                correlation::de_issue>::value);
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Copy internal members.
@@ -131,44 +126,34 @@ void issue::_internal_copy(issue const& i) {
   host_id = i.host_id;
   service_id = i.service_id;
   start_time = i.start_time;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const issue::entries[] = {
-  mapping::entry(
-    &issue::ack_time,
-    "ack_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &issue::end_time,
-    "end_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &issue::host_id,
-    "host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &issue::service_id,
-    "service_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &issue::start_time,
-    "start_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry()
-};
+    mapping::entry(&issue::ack_time,
+                   "ack_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&issue::end_time,
+                   "end_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&issue::host_id, "host_id", mapping::entry::invalid_on_zero),
+    mapping::entry(&issue::service_id,
+                   "service_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&issue::start_time,
+                   "start_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_issue() {
   return (new issue);
 }
-io::event_info::event_operations const issue::operations = {
-  &new_issue
-};
+io::event_info::event_operations const issue::operations = {&new_issue};

@@ -17,9 +17,9 @@
 */
 
 #ifndef CC_TASK_HH
-#  define CC_TASK_HH
+#define CC_TASK_HH
 
-#  include "com/centreon/namespace.hh"
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
@@ -30,15 +30,15 @@ CC_BEGIN()
  *  This class is an interface for piece of code to needs to be
  *  manage by the task manager.
  */
-class          task {
-public:
-               task();
-               task(task const& t);
-  virtual      ~task() throw ();
-  task&        operator=(task const& t);
+class task {
+ public:
+  task();
+  task(task const& t);
+  virtual ~task() throw();
+  task& operator=(task const& t);
   virtual void run();
 };
 
 CC_END()
 
-#endif // !CC_TASK_HH
+#endif  // !CC_TASK_HH

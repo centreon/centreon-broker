@@ -17,36 +17,34 @@
 */
 
 #ifndef CCB_STATS_PARSER_HH
-#  define CCB_STATS_PARSER_HH
+#define CCB_STATS_PARSER_HH
 
-#  include <map>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <map>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace   stats {
-  // Forward declaration.
-  class     config;
+namespace stats {
+// Forward declaration.
+class config;
 
-  /**
-   *  @class parser parser.hh "com/centreon/broker/stats/parser.hh"
-   *  @brief Parse a <stats> node.
-   *
-   *  Parse the <stats> node.
-   */
-  class     parser {
-  public:
-            parser();
-            parser(parser const& right);
-            ~parser() throw ();
-    parser& operator=(parser const& right);
-    void    parse(
-              config& cfg,
-              std::string const& content);
-  };
-}
+/**
+ *  @class parser parser.hh "com/centreon/broker/stats/parser.hh"
+ *  @brief Parse a <stats> node.
+ *
+ *  Parse the <stats> node.
+ */
+class parser {
+ public:
+  parser();
+  parser(parser const& right);
+  ~parser() throw();
+  parser& operator=(parser const& right);
+  void parse(config& cfg, std::string const& content);
+};
+}  // namespace stats
 
 CCB_END()
 
-#endif // !CCB_STATS_PARSER_HH
+#endif  // !CCB_STATS_PARSER_HH

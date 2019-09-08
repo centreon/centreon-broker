@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/services.hh"
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/services.hh"
 #include "com/centreon/engine/common.hh"
 #include "com/centreon/engine/globals.hh"
 
@@ -62,28 +62,25 @@ services& services::operator=(services const& right) {
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void services::run(
-              std::string& output,
-	      std::string& perfdata) {
+void services::run(std::string& output, std::string& perfdata) {
   // Count services ok / warning / unknown / critical.
-  unsigned int total[4] = { 0, 0, 0, 0 };
+  unsigned int total[4] = {0, 0, 0, 0};
   for (service_map::const_iterator
-         it{com::centreon::engine::service::services.begin()},
-         end{com::centreon::engine::service::services.end()};
-       it != end;
-       ++it)
+           it{com::centreon::engine::service::services.begin()},
+       end{com::centreon::engine::service::services.end()};
+       it != end; ++it)
     ++total[it->second->get_current_state()];
 
-  unsigned int not_ok{
-                 total[com::centreon::engine::service::state_warning]
-                 + total[com::centreon::engine::service::state_critical]
-                 + total[com::centreon::engine::service::state_unknown]};
+  unsigned int not_ok{total[com::centreon::engine::service::state_warning] +
+                      total[com::centreon::engine::service::state_critical] +
+                      total[com::centreon::engine::service::state_unknown]};
 
   // Output.
   std::ostringstream oss;
   oss << "Engine " << config::applier::state::instance().poller_name()
-      << " has " << total[com::centreon::engine::service::state_ok] << " services on status OK and "
-      << not_ok << " services on non-OK status";
+      << " has " << total[com::centreon::engine::service::state_ok]
+      << " services on status OK and " << not_ok
+      << " services on non-OK status";
   output = oss.str();
 
   // Perfdata.

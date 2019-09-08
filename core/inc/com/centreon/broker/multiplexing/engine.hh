@@ -17,62 +17,60 @@
 */
 
 #ifndef CCB_MULTIPLEXING_ENGINE_HH
-#  define CCB_MULTIPLEXING_ENGINE_HH
+#define CCB_MULTIPLEXING_ENGINE_HH
 
-#  include <memory>
-#  include <mutex>
-#  include "com/centreon/broker/multiplexing/hooker.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/persistent_cache.hh"
+#include <memory>
+#include <mutex>
+#include "com/centreon/broker/multiplexing/hooker.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/persistent_cache.hh"
 
 CCB_BEGIN()
 
-namespace           multiplexing {
-  // Forward declaration.
-  class             muxer;
+namespace multiplexing {
+// Forward declaration.
+class muxer;
 
-  /**
-   *  @class engine engine.hh "com/centreon/broker/multiplexing/engine.hh"
-   *  @brief Multiplexing engine.
-   *
-   *  Core multiplexing engine. Send events to and receive events from
-   *  muxer objects.
-   *
-   *  @see muxer
-   */
-  class             engine : public std::recursive_mutex {
-  public:
-                    ~engine();
-    void            clear();
-    void            hook(hooker& h, bool with_data = true);
-    static engine&  instance();
-    static void     load();
-    void            publish(std::shared_ptr<io::data> const& d);
-    void            start();
-    void            stop();
-    void            subscribe(muxer* subscriber);
-    void            unhook(hooker& h);
-    static void     unload();
-    void            unsubscribe(muxer* subscriber);
+/**
+ *  @class engine engine.hh "com/centreon/broker/multiplexing/engine.hh"
+ *  @brief Multiplexing engine.
+ *
+ *  Core multiplexing engine. Send events to and receive events from
+ *  muxer objects.
+ *
+ *  @see muxer
+ */
+class engine : public std::recursive_mutex {
+ public:
+  ~engine();
+  void clear();
+  void hook(hooker& h, bool with_data = true);
+  static engine& instance();
+  static void load();
+  void publish(std::shared_ptr<io::data> const& d);
+  void start();
+  void stop();
+  void subscribe(muxer* subscriber);
+  void unhook(hooker& h);
+  static void unload();
+  void unsubscribe(muxer* subscriber);
 
-  private:
-                    engine();
-                    engine(engine const& other);
-    engine&         operator=(engine const& other);
-    std::string     _cache_file_path() const;
-    void            _nop(std::shared_ptr<io::data> const& d);
-    void            _send_to_subscribers();
-    void            _write(std::shared_ptr<io::data> const& d);
-    void            _write_to_cache_file(std::shared_ptr<io::data> const& d);
+ private:
+  engine();
+  engine(engine const& other);
+  engine& operator=(engine const& other);
+  std::string _cache_file_path() const;
+  void _nop(std::shared_ptr<io::data> const& d);
+  void _send_to_subscribers();
+  void _write(std::shared_ptr<io::data> const& d);
+  void _write_to_cache_file(std::shared_ptr<io::data> const& d);
 
-    static engine*  _instance;
-    void (engine::* _write_func)(
-                      std::shared_ptr<io::data> const&);
-    std::unique_ptr<persistent_cache>
-                    _cache_file;
-  };
-}
+  static engine* _instance;
+  void (engine::*_write_func)(std::shared_ptr<io::data> const&);
+  std::unique_ptr<persistent_cache> _cache_file;
+};
+}  // namespace multiplexing
 
 CCB_END()
 
-#endif // !CCB_MULTIPLEXING_ENGINE_HH
+#endif  // !CCB_MULTIPLEXING_ENGINE_HH

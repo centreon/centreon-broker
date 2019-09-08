@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "test/predicate.hh"
 #include <cmath>
 #include <cstring>
-#include "test/predicate.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::test;
@@ -71,8 +71,7 @@ predicate::predicate(int val) : _range(false), _type(type_int) {
  *
  *  @param[in] val  String value.
  */
-predicate::predicate(char const* val)
-  : _range(false), _type(type_string) {
+predicate::predicate(char const* val) : _range(false), _type(type_string) {
   _val1.sval = val;
 }
 
@@ -90,8 +89,7 @@ predicate::predicate(time_t val) : _range(false), _type(type_timet) {
  *
  *  @param[in] val  Unsigned integer value.
  */
-predicate::predicate(unsigned int val)
-  : _range(false), _type(type_uint) {
+predicate::predicate(unsigned int val) : _range(false), _type(type_uint) {
   _val1.uival = val;
 }
 
@@ -102,7 +100,7 @@ predicate::predicate(unsigned int val)
  *  @param[in] val2  Second value.
  */
 predicate::predicate(time_t val1, time_t val2)
-  : _range(true), _type(type_timet) {
+    : _range(true), _type(type_timet) {
   _val1.tval = val1;
   _val2.tval = val2;
 }
@@ -113,8 +111,7 @@ predicate::predicate(time_t val1, time_t val2)
  *  @param[in] other  Object to copy.
  */
 predicate::predicate(predicate const& other)
-  : _range(other._range),
-    _type(other._type) {
+    : _range(other._range), _type(other._type) {
   memcpy(&_val1, &other._val1, sizeof(_val1));
   memcpy(&_val2, &other._val2, sizeof(_val2));
 }
@@ -149,10 +146,9 @@ predicate& predicate::operator=(predicate const& other) {
  *  @return True if other object matches this predicate.
  */
 bool predicate::operator==(predicate const& other) const {
-  return ((_range == other._range)
-          && (_type == other._type)
-          && !memcmp(&_val1, &other._val1, sizeof(_val1))
-          && !memcmp(&_val2, &other._val2, sizeof(_val2)));
+  return ((_range == other._range) && (_type == other._type) &&
+          !memcmp(&_val1, &other._val1, sizeof(_val1)) &&
+          !memcmp(&_val2, &other._val2, sizeof(_val2)));
 }
 
 /**
@@ -174,35 +170,27 @@ bool predicate::operator==(QVariant const& other) const {
     if (_type == type_double) {
       double d(other.toDouble());
       retval = (d >= _val1.dval) && (d <= _val2.dval);
-    }
-    else if (_type == type_int) {
+    } else if (_type == type_int) {
       int i(other.toInt());
       retval = (i >= _val1.ival) && (i <= _val2.ival);
-    }
-    else if (_type == type_timet) {
+    } else if (_type == type_timet) {
       time_t t(other.toLongLong());
       retval = (t >= _val1.tval) && (t <= _val2.tval);
-    }
-    else if (_type == type_uint) {
+    } else if (_type == type_uint) {
       unsigned int u(other.toUInt());
       retval = (u >= _val1.uival) && (u <= _val2.uival);
-    }
-    else
+    } else
       retval = false;
-  }
-  else if (_type == type_bool)
+  } else if (_type == type_bool)
     retval = (other.toBool() == _val1.bval);
   else if (_type == type_double) {
     double d(other.toDouble());
-    retval = (isnan(d) && isnan(_val1.dval))
-             || (isinf(d)
-                 && isinf(_val1.dval)
-                 && (std::signbit(d) == std::signbit(_val1.dval)))
-             || (std::isfinite(d)
-                 && std::isfinite(_val1.dval)
-                 && !(fabs(d - _val1.dval) > (0.01 * fabs(_val1.dval))));
-  }
-  else if (_type == type_int)
+    retval = (isnan(d) && isnan(_val1.dval)) ||
+             (isinf(d) && isinf(_val1.dval) &&
+              (std::signbit(d) == std::signbit(_val1.dval))) ||
+             (std::isfinite(d) && std::isfinite(_val1.dval) &&
+              !(fabs(d - _val1.dval) > (0.01 * fabs(_val1.dval))));
+  } else if (_type == type_int)
     retval = (other.toInt() == _val1.ival);
   else if (_type == type_string)
     retval = (other.toString() == _val1.sval);
@@ -299,17 +287,15 @@ bool predicate::is_valid() const {
  *
  *  @return The stringifier object.
  */
-misc::stringifier& operator<<(
-                     misc::stringifier& s,
-                     predicate const& p) {
+misc::stringifier& operator<<(misc::stringifier& s, predicate const& p) {
   if (!p.is_valid())
     s << "(invalid)";
   else if (p.is_null())
     s << "NULL";
   else if (p.is_range()) {
     if (p.get_value_type() == predicate::type_bool)
-      s << (p.get_value().bval ? "true" : "false")
-        << "-" << (p.get_value2().bval ? "true" : "false");
+      s << (p.get_value().bval ? "true" : "false") << "-"
+        << (p.get_value2().bval ? "true" : "false");
     else if (p.get_value_type() == predicate::type_double)
       s << p.get_value().dval << "-" << p.get_value2().dval;
     else if (p.get_value_type() == predicate::type_int)
@@ -320,8 +306,7 @@ misc::stringifier& operator<<(
       s << p.get_value().uival << "-" << p.get_value2().uival;
     else
       s << "(unsupported)";
-  }
-  else if (p.get_value_type() == predicate::type_bool)
+  } else if (p.get_value_type() == predicate::type_bool)
     s << (p.get_value().bval ? "true" : "false");
   else if (p.get_value_type() == predicate::type_double)
     s << p.get_value().dval;

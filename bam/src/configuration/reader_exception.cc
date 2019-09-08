@@ -16,7 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
-#include  "com/centreon/broker/bam/configuration/reader_exception.hh"
+#include "com/centreon/broker/bam/configuration/reader_exception.hh"
 
 using namespace com::centreon::broker::bam::configuration;
 
@@ -30,7 +30,8 @@ reader_exception::reader_exception() : msg() {}
  *
  *  @param[in] Other object
  */
-reader_exception::reader_exception(reader_exception const& other) : msg(other) {}
+reader_exception::reader_exception(reader_exception const& other)
+    : msg(other) {}
 
 /**
  *  Destructor

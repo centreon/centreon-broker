@@ -77,8 +77,7 @@ static pid_t exec_process(char const** argv) {
 
   // I'm your father
   if (son_pid) {
-  }
-  else {
+  } else {
     int res = execve(argv[0], const_cast<char**>(argv), nullptr);
     exit(res);
   }

@@ -17,67 +17,63 @@
 */
 
 #ifndef CCB_STORAGE_METRIC_HH
-#  define CCB_STORAGE_METRIC_HH
+#define CCB_STORAGE_METRIC_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/io/events.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/storage/internal.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/storage/internal.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace          storage {
+namespace storage {
+/**
+ *  @class metric metric.hh "com/centreon/broker/storage/metric.hh"
+ *  @brief Metric information.
+ *
+ *  Metric information, mainly used to update RRD files.
+ */
+class metric : public io::data {
+ public:
+  metric();
+  metric(metric const& m);
+  ~metric();
+  metric& operator=(metric const& m);
+  unsigned int type() const;
+
   /**
-   *  @class metric metric.hh "com/centreon/broker/storage/metric.hh"
-   *  @brief Metric information.
+   *  Get the type of this event.
    *
-   *  Metric information, mainly used to update RRD files.
+   *  @return  The event type.
    */
-  class            metric : public io::data {
-  public:
-                   metric();
-                   metric(metric const& m);
-                   ~metric();
-    metric&        operator=(metric const& m);
-    unsigned int   type() const;
+  static unsigned int static_type() {
+    return (
+        io::events::data_type<io::events::storage, storage::de_metric>::value);
+  }
 
-    /**
-     *  Get the type of this event.
-     *
-     *  @return  The event type.
-     */
-    static unsigned int
-                   static_type() {
-      return (io::events::data_type<
-                            io::events::storage,
-                            storage::de_metric>::value);
-    }
+  timestamp ctime;
+  unsigned int interval;
+  bool is_for_rebuild;
+  uint64_t metric_id;
+  std::string name;
+  int rrd_len;
+  double value;
+  short value_type;
+  uint64_t host_id;
+  uint64_t service_id;
 
-    timestamp      ctime;
-    unsigned int   interval;
-    bool           is_for_rebuild;
-    uint64_t   metric_id;
-    std::string        name;
-    int            rrd_len;
-    double         value;
-    short          value_type;
-    uint64_t   host_id;
-    uint64_t   service_id;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-    static mapping::entry const
-                    entries[];
-    static io::event_info::event_operations const
-                    operations;
-
-  private:
-    void           _internal_copy(metric const& m);
-  };
-}
+ private:
+  void _internal_copy(metric const& m);
+};
+}  // namespace storage
 
 CCB_END()
 
-#endif // !CCB_STORAGE_METRIC_HH
+#endif  // !CCB_STORAGE_METRIC_HH

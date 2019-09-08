@@ -17,50 +17,50 @@
 */
 
 #ifndef CCB_NOTIFICATION_NODE_ID_HH
-#  define CCB_NOTIFICATION_NODE_ID_HH
+#define CCB_NOTIFICATION_NODE_ID_HH
 
-#  include <QHash>
-#  include "com/centreon/broker/namespace.hh"
+#include <QHash>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         notification {
-  namespace       objects {
-    /**
-     *  @class node_id node_id.hh "com/centreon/broker/notification/objects/node_id.hh"
-     *  @brief Node id object.
-     *
-     *  This object contains the id of a node: a host id and an associated
-     *  service id.  Both the host id or the service id can be zero for service
-     *  associated with no hosts and inversely.
-     */
-    class           node_id {
-    public:
-                    node_id();
-                    node_id(node_id const& obj);
-      node_id&      operator=(node_id const& obj);
-                    explicit node_id(unsigned int host_id,
-                                     unsigned int service_id = 0);
-      bool          operator<(node_id const& obj) const throw();
-      bool          operator==(node_id const& obj) const throw();
-      bool          operator!=(node_id const& obj) const throw();
+namespace notification {
+namespace objects {
+/**
+ *  @class node_id node_id.hh
+ * "com/centreon/broker/notification/objects/node_id.hh"
+ *  @brief Node id object.
+ *
+ *  This object contains the id of a node: a host id and an associated
+ *  service id.  Both the host id or the service id can be zero for service
+ *  associated with no hosts and inversely.
+ */
+class node_id {
+ public:
+  node_id();
+  node_id(node_id const& obj);
+  node_id& operator=(node_id const& obj);
+  explicit node_id(unsigned int host_id, unsigned int service_id = 0);
+  bool operator<(node_id const& obj) const throw();
+  bool operator==(node_id const& obj) const throw();
+  bool operator!=(node_id const& obj) const throw();
 
-      unsigned int  get_host_id() const throw();
-      unsigned int  get_service_id() const throw();
-      bool          is_host() const throw();
-      bool          is_service() const throw();
-      node_id       to_host() const throw();
+  unsigned int get_host_id() const throw();
+  unsigned int get_service_id() const throw();
+  bool is_host() const throw();
+  bool is_service() const throw();
+  node_id to_host() const throw();
 
-    private:
-      unsigned int  _host_id;
-      unsigned int  _service_id;
-    };
+ private:
+  unsigned int _host_id;
+  unsigned int _service_id;
+};
 
-    // QHash function for hash and sets.
-    uint qHash(objects::node_id id);
-  }
-}
+// QHash function for hash and sets.
+uint qHash(objects::node_id id);
+}  // namespace objects
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_NODE_ID_HH
+#endif  // !CCB_NOTIFICATION_NODE_ID_HH

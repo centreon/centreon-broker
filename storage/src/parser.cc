@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/storage/parser.hh"
 #include <algorithm>
 #include <cctype>
 #include <cfloat>
@@ -24,16 +25,15 @@
 #include <cstring>
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
-#include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker::storage;
 
 /**************************************
-*                                     *
-*            Local Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *            Local Objects            *
+ *                                     *
+ **************************************/
 
 /**
  *  Extract a real value from a perfdata string.
@@ -43,9 +43,7 @@ using namespace com::centreon::broker::storage;
  *
  *  @return Extracted real value if successful, NaN otherwise.
  */
-static inline double extract_double(
-                       char const** str,
-                       bool skip = true) {
+static inline double extract_double(char const** str, bool skip = true) {
   double retval;
   char* tmp;
   if (isspace(**str))
@@ -63,8 +61,7 @@ static inline double extract_double(
         retval = NAN;
       *str = *str + (tmp - nb);
       free(nb);
-    }
-    else {
+    } else {
       retval = strtod(*str, &tmp);
       if (*str == tmp)
         retval = NAN;
@@ -85,17 +82,15 @@ static inline double extract_double(
  *                           otherwise.
  *  @param[in,out] str       Pointer to a perfdata string.
  */
-static inline void extract_range(
-                     double* low,
-                     double* high,
-                     bool* inclusive,
-                     char const** str) {
+static inline void extract_range(double* low,
+                                 double* high,
+                                 bool* inclusive,
+                                 char const** str) {
   // Exclusive range ?
   if ((**str) == '@') {
     *inclusive = true;
     ++*str;
-  }
-  else
+  } else
     *inclusive = false;
 
   // Low threshold value.
@@ -103,8 +98,7 @@ static inline void extract_range(
   if ('~' == **str) {
     low_value = -INFINITY;
     ++*str;
-  }
-  else
+  } else
     low_value = extract_double(str);
 
   // High threshold value.
@@ -113,13 +107,11 @@ static inline void extract_range(
     high_value = low_value;
     if (!std::isnan(low_value))
       low_value = 0.0;
-  }
-  else {
+  } else {
     ++*str;
     char const* ptr(*str);
     high_value = extract_double(str);
-    if (std::isnan(high_value)
-        && ((*str == ptr) || (*str == (ptr + 1))))
+    if (std::isnan(high_value) && ((*str == ptr) || (*str == (ptr + 1))))
       high_value = INFINITY;
   }
 
@@ -129,10 +121,10 @@ static inline void extract_range(
 }
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -150,9 +142,7 @@ parser::~parser() {}
  *  @param[in]  str Raw perfdata string.
  *  @param[out] pd  List of parsed metrics.
  */
-void parser::parse_perfdata(
-               std::string const& str,
-               std::list<perfdata>& pd) {
+void parser::parse_perfdata(std::string const& str, std::list<perfdata>& pd) {
   size_t start{str.find_first_not_of(" \n\r\t")};
 
   char const* buf{str.c_str() + start};
@@ -169,9 +159,8 @@ void parser::parse_perfdata(
     // Get metric name.
     bool in_quote{false};
     char const* end{tmp};
-    while (*end && (in_quote
-                      || (*end != '=' && !isspace(*end))
-                      || static_cast<unsigned char>(*end) >= 128)) {
+    while (*end && (in_quote || (*end != '=' && !isspace(*end)) ||
+                    static_cast<unsigned char>(*end) >= 128)) {
       if ('\'' == *end)
         in_quote = !in_quote;
       ++end;
@@ -200,16 +189,13 @@ void parser::parse_perfdata(
       if (strncmp(s, "a[", 2) == 0) {
         s += 2;
         p.value_type(perfdata::absolute);
-      }
-      else if (strncmp(s, "c[", 2) == 0) {
+      } else if (strncmp(s, "c[", 2) == 0) {
         s += 2;
         p.value_type(perfdata::counter);
-      }
-      else if (strncmp(s, "d[", 2) == 0) {
+      } else if (strncmp(s, "d[", 2) == 0) {
         s += 2;
         p.value_type(perfdata::derive);
-      }
-      else if (strncmp(s, "g[", 2) == 0) {
+      } else if (strncmp(s, "g[", 2) == 0) {
         s += 2;
         p.value_type(perfdata::gauge);
       }
@@ -219,7 +205,8 @@ void parser::parse_perfdata(
 
     // Check format.
     if (*tmp != '=') {
-      throw exceptions::perfdata() << "storage: invalid perfdata "
+      throw exceptions::perfdata()
+          << "storage: invalid perfdata "
              "format: equal sign not present or misplaced";
     }
     ++tmp;
@@ -227,8 +214,9 @@ void parser::parse_perfdata(
     // Extract value.
     p.value(extract_double(const_cast<char const**>(&tmp), false));
     if (std::isnan(p.value())) {
-      throw exceptions::perfdata() << "storage: invalid perfdata "
-             << "format: no numeric value after equal sign";
+      throw exceptions::perfdata()
+          << "storage: invalid perfdata "
+          << "format: no numeric value after equal sign";
     }
 
     // Extract unit.
@@ -255,11 +243,8 @@ void parser::parse_perfdata(
       double critical_high;
       double critical_low;
       bool critical_mode;
-      extract_range(
-        &critical_low,
-        &critical_high,
-        &critical_mode,
-        const_cast<const char**>(&tmp));
+      extract_range(&critical_low, &critical_high, &critical_mode,
+                    const_cast<const char**>(&tmp));
       p.critical(critical_high);
       p.critical_low(critical_low);
       p.critical_mode(critical_mode);
@@ -272,10 +257,11 @@ void parser::parse_perfdata(
     p.max(extract_double(const_cast<const char**>(&tmp)));
 
     // Log new perfdata.
-    logging::debug(logging::low) << "storage: got new perfdata (name="
-      << p.name() << ", value=" << p.value() << ", unit=" << p.unit()
-      << ", warning=" << p.warning() << ", critical=" << p.critical()
-      << ", min=" << p.min() << ", max=" << p.max() << ")";
+    logging::debug(logging::low)
+        << "storage: got new perfdata (name=" << p.name()
+        << ", value=" << p.value() << ", unit=" << p.unit()
+        << ", warning=" << p.warning() << ", critical=" << p.critical()
+        << ", min=" << p.min() << ", max=" << p.max() << ")";
 
     // Append to list.
     pd.push_back(p);

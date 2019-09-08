@@ -37,9 +37,7 @@ class FileSplitterDefault : public ::testing::Test {
                                    _file_factory, _fs_browser, 10000, true));
   }
 
-  void TearDown() override {
-    logging::manager::unload();
-  }
+  void TearDown() override { logging::manager::unload(); }
 
  protected:
   std::unique_ptr<file::splitter> _file;

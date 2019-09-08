@@ -27,15 +27,10 @@ using namespace com::centreon::broker::io;
  *  @param[in] value      The value of the property..
  *  @param[in] graphable  If the plugin is graphable.
  */
-property::property(
-            std::string const& name,
-            std::string const& value,
-            bool graphable)
-  : _name(name),
-    _value(value),
-    _graphable(graphable) {
-
-}
+property::property(std::string const& name,
+                   std::string const& value,
+                   bool graphable)
+    : _name(name), _value(value), _graphable(graphable) {}
 
 /**
  *  Copy constructor.
@@ -49,9 +44,7 @@ property::property(property const& right) {
 /**
  *  Destructor.
  */
-property::~property() throw () {
-
-}
+property::~property() throw() {}
 
 /**
  *  Copy operator.
@@ -92,7 +85,7 @@ std::string const& property::get_value() const throw() {
  *
  *  @return True if the plugin is graphable, otherwise false.
  */
-bool property::is_graphable() const throw () {
+bool property::is_graphable() const throw() {
   return (_graphable);
 }
 

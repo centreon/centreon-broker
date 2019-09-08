@@ -17,34 +17,35 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_COMPOSED_NOTIFICATION_RULE_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_COMPOSED_NOTIFICATION_RULE_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_COMPOSED_NOTIFICATION_RULE_BUILDER_HH
 
-#  include <vector>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/builders/notification_rule_builder.hh"
-#  include "com/centreon/broker/notification/builders/composed_builder.hh"
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/composed_builder.hh"
+#include "com/centreon/broker/notification/builders/notification_rule_builder.hh"
 
 CCB_BEGIN()
 
-namespace         notification {
-  /**
-   *  @class composed_notification_rule_builder composed_notification_rule_builder.hh "com/centreon/broker/notification/builders/composed_notification_rule_builder.hh"
-   *  @brief Composed notification rule builder.
-   *
-   *  This class forward its method call to several other builders.
-   */
-  class           composed_notification_rule_builder
-                    : public composed_builder<notification_rule_builder> {
-  public:
-                  composed_notification_rule_builder();
+namespace notification {
+/**
+ *  @class composed_notification_rule_builder
+ * composed_notification_rule_builder.hh
+ * "com/centreon/broker/notification/builders/composed_notification_rule_builder.hh"
+ *  @brief Composed notification rule builder.
+ *
+ *  This class forward its method call to several other builders.
+ */
+class composed_notification_rule_builder
+    : public composed_builder<notification_rule_builder> {
+ public:
+  composed_notification_rule_builder();
 
-    virtual void  add_rule(
-                    unsigned int rule_id,
-                    objects::notification_rule::ptr rule);
-  };
+  virtual void add_rule(unsigned int rule_id,
+                        objects::notification_rule::ptr rule);
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_COMPOSED_NOTIFICATION_RULE_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_COMPOSED_NOTIFICATION_RULE_BUILDER_HH

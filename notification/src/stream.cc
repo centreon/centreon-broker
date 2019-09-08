@@ -16,28 +16,28 @@
 ** For more information : contact@centreon.com
 */
 
-#include <ctime>
 #include <QPair>
+#include <ctime>
 //#include <QSqlDriver>
 //#include <QSqlError>
 //#include <QSqlField>
 //#include <QSqlRecord>
-#include <QTextStream>
-#include <QVector>
-#include <QMutexLocker>
 #include <QHash>
 #include <QMultiHash>
+#include <QMutexLocker>
+#include <QTextStream>
+#include <QVector>
+#include <limits>
 #include <mutex>
 #include <sstream>
-#include <limits>
-#include "com/centreon/engine/common.hh"
-#include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/notification/utilities/data_loggers.hh"
+#include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/notification/stream.hh"
+#include "com/centreon/broker/notification/utilities/data_loggers.hh"
+#include "com/centreon/engine/common.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -45,10 +45,10 @@ using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -62,57 +62,49 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in] check_replication       true to check replication status.
  *  @param[in] node_cache              A loaded node event cache.
  */
-stream::stream(
-          std::string const& type,
-          std::string const& host,
-          unsigned short port,
-          std::string const& user,
-          std::string const& password,
-          std::string const& centreon_db,
-          bool check_replication,
-          node_cache& cache)
-  : _node_cache(cache) {
+stream::stream(std::string const& type,
+               std::string const& host,
+               unsigned short port,
+               std::string const& user,
+               std::string const& password,
+               std::string const& centreon_db,
+               bool check_replication,
+               node_cache& cache)
+    : _node_cache(cache) {
   // Get the driver ID.
-    std::string t("QMYSQL");
-//  if (!type.compare("db2", Qt::CaseInsensitive))
-//    t = "QDB2";
-//  else if (!type.compare("ibase", Qt::CaseInsensitive)
-//           || !type.compare("interbase", Qt::CaseInsensitive))
-//    t = "QIBASE";
-//  else if (!type.compare("mysql", Qt::CaseInsensitive))
-//    t = "QMYSQL";
-//  else if (!type.compare("oci", Qt::CaseInsensitive)
-//           || !type.compare("oracle", Qt::CaseInsensitive))
-//    t = "QOCI";
-//  else if (!type.compare("odbc", Qt::CaseInsensitive))
-//    t = "QODBC";
-//  else if (!type.compare("psql", Qt::CaseInsensitive)
-//           || !type.compare("postgres", Qt::CaseInsensitive)
-//           || !type.compare("postgresql", Qt::CaseInsensitive))
-//    t = "QPSQL";
-//  else if (!type.compare("sqlite", Qt::CaseInsensitive))
-//    t = "QSQLITE";
-//  else if (!type.compare("tds", Qt::CaseInsensitive)
-//           || !type.compare("sybase", Qt::CaseInsensitive))
-//    t = "QTDS";
-//  else
-//    t = type;
+  std::string t("QMYSQL");
+  //  if (!type.compare("db2", Qt::CaseInsensitive))
+  //    t = "QDB2";
+  //  else if (!type.compare("ibase", Qt::CaseInsensitive)
+  //           || !type.compare("interbase", Qt::CaseInsensitive))
+  //    t = "QIBASE";
+  //  else if (!type.compare("mysql", Qt::CaseInsensitive))
+  //    t = "QMYSQL";
+  //  else if (!type.compare("oci", Qt::CaseInsensitive)
+  //           || !type.compare("oracle", Qt::CaseInsensitive))
+  //    t = "QOCI";
+  //  else if (!type.compare("odbc", Qt::CaseInsensitive))
+  //    t = "QODBC";
+  //  else if (!type.compare("psql", Qt::CaseInsensitive)
+  //           || !type.compare("postgres", Qt::CaseInsensitive)
+  //           || !type.compare("postgresql", Qt::CaseInsensitive))
+  //    t = "QPSQL";
+  //  else if (!type.compare("sqlite", Qt::CaseInsensitive))
+  //    t = "QSQLITE";
+  //  else if (!type.compare("tds", Qt::CaseInsensitive)
+  //           || !type.compare("sybase", Qt::CaseInsensitive))
+  //    t = "QTDS";
+  //  else
+  //    t = type;
 
   // Connection ID.
-//  QString id;
-//  id.setNum((qulonglong)this, 16);
+  //  QString id;
+  //  id.setNum((qulonglong)this, 16);
 
   // Open centreon database.
-  _open_db(
-    _centreon_db,
-    t,
-    host,
-    port,
-    user,
-    password,
-    centreon_db,
-//    id,
-    check_replication);
+  _open_db(_centreon_db, t, host, port, user, password, centreon_db,
+           //    id,
+           check_replication);
 
   // Create the process manager.
   process_manager::instance();
@@ -127,22 +119,21 @@ stream::stream(
  *
  *  @param[in] other  Object to copy.
  */
-stream::stream(stream const& other) : io::stream(other),
-  _node_cache(other._node_cache) {
+stream::stream(stream const& other)
+    : io::stream(other), _node_cache(other._node_cache) {
   _centreon_db = std::move(const_cast<stream&>(other)._centreon_db);
   // Connection ID.
-//  QString id;
-//  id.setNum((qulonglong)this, 16);
-//
-//  // Clone centreon database.
-//  _clone_db(_centreon_db, other._centreon_db, id);
+  //  QString id;
+  //  id.setNum((qulonglong)this, 16);
+  //
+  //  // Clone centreon database.
+  //  _clone_db(_centreon_db, other._centreon_db, id);
 
   // Create the process manager.
   process_manager::instance();
 
   // Move the notification scheduler thread from the first stream.
-  _notif_scheduler.reset(
-    const_cast<stream&>(other)._notif_scheduler.release());
+  _notif_scheduler.reset(const_cast<stream&>(other)._notif_scheduler.release());
   _notif_scheduler->start();
 }
 
@@ -151,19 +142,19 @@ stream::stream(stream const& other) : io::stream(other),
  */
 stream::~stream() {
   // Connection ID.
-//  QString id;
-//  id.setNum((qulonglong)this, 16);
-//
-//  {
-//    QMutexLocker lock(&global_lock);
-//    // Close database.
-//    if (_centreon_db->isOpen())
-//      _centreon_db->close();
-//    _centreon_db.reset();
-//  }
-//
-//  // Add this connection to the connections to be deleted.
-//  QSqlDatabase::removeDatabase(id);
+  //  QString id;
+  //  id.setNum((qulonglong)this, 16);
+  //
+  //  {
+  //    QMutexLocker lock(&global_lock);
+  //    // Close database.
+  //    if (_centreon_db->isOpen())
+  //      _centreon_db->close();
+  //    _centreon_db.reset();
+  //  }
+  //
+  //  // Add this connection to the connections to be deleted.
+  //  QSqlDatabase::removeDatabase(id);
 
   // Wait for the termination of the thread.
   _notif_scheduler->exit();
@@ -178,7 +169,7 @@ stream::~stream() {
  */
 void stream::initialize() {
   // Not used anymore.
-  return ;
+  return;
 }
 
 /**
@@ -192,8 +183,7 @@ void stream::initialize() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw (exceptions::shutdown()
-         << "attempt to read from a notification stream");
+  throw(exceptions::shutdown() << "attempt to read from a notification stream");
   return (true);
 }
 
@@ -202,7 +192,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
  */
 void stream::update() {
   _update_objects_from_db();
-  return ;
+  return;
 }
 
 /**
@@ -224,11 +214,14 @@ int stream::write(std::shared_ptr<io::data> const& data) {
 
   // Process events.
   if (data->type() == neb::host_status::static_type())
-    _process_host_status_event(*std::static_pointer_cast<neb::host_status>(data));
+    _process_host_status_event(
+        *std::static_pointer_cast<neb::host_status>(data));
   else if (data->type() == neb::service_status::static_type())
-    _process_service_status_event(*std::static_pointer_cast<neb::service_status>(data));
+    _process_service_status_event(
+        *std::static_pointer_cast<neb::service_status>(data));
   else if (data->type() == correlation::issue_parent::static_type())
-    _process_issue_parent_event(*std::static_pointer_cast<correlation::issue_parent>(data));
+    _process_issue_parent_event(
+        *std::static_pointer_cast<correlation::issue_parent>(data));
   else if (data->type() == neb::acknowledgement::static_type())
     _process_ack(*std::static_pointer_cast<neb::acknowledgement>(data));
   else if (data->type() == neb::downtime::static_type())
@@ -238,10 +231,10 @@ int stream::write(std::shared_ptr<io::data> const& data) {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Open a database connexion.
@@ -256,100 +249,84 @@ int stream::write(std::shared_ptr<io::data> const& data) {
  *  @param[in]  id                 An unique id identifying the connection.
  *  @param[in]  check_replication  True if we need to check the replication.
  */
-void stream::_open_db(
-               std::unique_ptr<mysql>& ms,
-               std::string const& t,
-               std::string const& host,
-               unsigned short port,
-               std::string const& user,
-               std::string const& password,
-               std::string const& db_name,
-               //QString const& id,
-               bool check_replication) {
+void stream::_open_db(std::unique_ptr<mysql>& ms,
+                      std::string const& t,
+                      std::string const& host,
+                      unsigned short port,
+                      std::string const& user,
+                      std::string const& password,
+                      std::string const& db_name,
+                      // QString const& id,
+                      bool check_replication) {
   int queries_per_transaction(1);
   // Add database connection.
-  ms.reset(new mysql(database_config(
-                   t,
-                   host,
-                   port,
-                   user,
-                   password,
-                   db_name,
-                   queries_per_transaction,
-                   check_replication,
-                   1)));
-//  try {
-//    if (t == "QMYSQL")
-//      db->setConnectOptions("CLIENT_FOUND_ROWS");
-//
-//    // Open database.
-//    db->setHostName(host);
-//    db->setPort(port);
-//    db->setUserName(user);
-//    db->setPassword(password);
-//    db->setDatabaseName(db_name);
+  ms.reset(new mysql(database_config(t, host, port, user, password, db_name,
+                                     queries_per_transaction, check_replication,
+                                     1)));
+  //  try {
+  //    if (t == "QMYSQL")
+  //      db->setConnectOptions("CLIENT_FOUND_ROWS");
+  //
+  //    // Open database.
+  //    db->setHostName(host);
+  //    db->setPort(port);
+  //    db->setUserName(user);
+  //    db->setPassword(password);
+  //    db->setDatabaseName(db_name);
 
-//    {
-//      QMutexLocker lock(&global_lock);
-//      if (!db->open())
-//        throw (exceptions::msg()
-//          << "notification: could not open SQL database: "
-//          << db->lastError().text());
-//    }
+  //    {
+  //      QMutexLocker lock(&global_lock);
+  //      if (!db->open())
+  //        throw (exceptions::msg()
+  //          << "notification: could not open SQL database: "
+  //          << db->lastError().text());
+  //    }
 
-    // Check that replication is OK.
+  // Check that replication is OK.
   if (check_replication) {
     logging::debug(logging::medium)
-      << "notification: checking replication status";
+        << "notification: checking replication status";
     std::promise<database::mysql_result> promise;
-    ms->run_query_and_get_result(
-            "SHOW SLAVE STATUS",
-            &promise);
+    ms->run_query_and_get_result("SHOW SLAVE STATUS", &promise);
     try {
       database::mysql_result res(promise.get_future().get());
       if (ms->fetch_row(res)) {
         for (int i(0); i < res.get_num_fields(); ++i) {
           std::string field(res.get_field_name(i));
-          if ((field == "Slave_IO_Running"
-               && res.value_as_str(i) != "Yes")
-              || (field == "Slave_SQL_Running"
-                  && res.value_as_str(i) != "Yes")
-              || (field == "Seconds_Behind_Master"
-                  && res.value_as_i32(i) != 0))
+          if ((field == "Slave_IO_Running" && res.value_as_str(i) != "Yes") ||
+              (field == "Slave_SQL_Running" && res.value_as_str(i) != "Yes") ||
+              (field == "Seconds_Behind_Master" && res.value_as_i32(i) != 0))
             throw exceptions::msg() << "notification: replication is not "
-                          "complete: " << field << "="
-                       << res.value_as_str(i);
+                                       "complete: "
+                                    << field << "=" << res.value_as_str(i);
         }
         logging::info(logging::medium)
-          << "notification: database replication is complete, "
-             "connection granted";
-      }
-      else {
+            << "notification: database replication is complete, "
+               "connection granted";
+      } else {
         logging::info(logging::medium)
-          << "notification: database is not under replication";
+            << "notification: database is not under replication";
       }
-    }
-    catch (std::exception const& e) {
+    } catch (std::exception const& e) {
       logging::info(logging::medium)
-        << "notification: could not check replication status";
+          << "notification: could not check replication status";
     }
-  }
-  else
+  } else
     logging::debug(logging::medium)
-      << "notification: NOT checking replication status";
-//  catch (...) {
-//    {
-//      QMutexLocker lock(&global_lock);
-//      // Close database if open.
-//      if (db->isOpen())
-//        db->close();
-//      db.reset();
-//    }
-//
-//    // Add this connection to the connections to be deleted.
-//    QSqlDatabase::removeDatabase(id);
-//    throw ;
-//  }
+        << "notification: NOT checking replication status";
+  //  catch (...) {
+  //    {
+  //      QMutexLocker lock(&global_lock);
+  //      // Close database if open.
+  //      if (db->isOpen())
+  //        db->close();
+  //      db.reset();
+  //    }
+  //
+  //    // Add this connection to the connections to be deleted.
+  //    QSqlDatabase::removeDatabase(id);
+  //    throw ;
+  //  }
 }
 
 /**
@@ -359,7 +336,7 @@ void stream::_open_db(
  *  @param[in] db_to_clone  A pointer to the db connection to clone.
  *  @param[in] id           An unique id identifiying the new connection.
  */
-//void stream::_clone_db(
+// void stream::_clone_db(
 //               std::unique_ptr<QSqlDatabase>& db,
 //               std::unique_ptr<QSqlDatabase> const& db_to_clone,
 //               QString const& id) {
@@ -405,9 +382,9 @@ void stream::_update_objects_from_db() {
  */
 void stream::_process_service_status_event(neb::service_status const& event) {
   logging::debug(logging::medium)
-    << "notification: processing status of service " << event.service_id
-    << " of host " << event.host_id << " (state "
-    << event.last_hard_state << ")";
+      << "notification: processing status of service " << event.service_id
+      << " of host " << event.host_id << " (state " << event.last_hard_state
+      << ")";
 
   node_id id(event.host_id, event.service_id);
   short old_hard_state;
@@ -421,9 +398,9 @@ void stream::_process_service_status_event(neb::service_status const& event) {
     std::unique_ptr<QWriteLocker> lock(_state.write_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
-      throw (exceptions::msg()
-        << "notification: got an unknown service id: "
-        << id.get_service_id() << ", host_id: " << id.get_host_id());
+      throw(exceptions::msg()
+            << "notification: got an unknown service id: "
+            << id.get_service_id() << ", host_id: " << id.get_host_id());
 
     // Save the old state and copy the current state.
     old_hard_state = n->get_hard_state();
@@ -432,12 +409,12 @@ void stream::_process_service_status_event(neb::service_status const& event) {
   }
 
   // From OK to NOT-OK
-  if (old_hard_state != event.last_hard_state
-      && old_hard_state == node_state::ok) {
+  if (old_hard_state != event.last_hard_state &&
+      old_hard_state == node_state::ok) {
     logging::debug(logging::medium)
-      << "notification: state of service " << event.service_id
-      << " of host " << event.host_id << " changed from 0 to "
-      << event.last_hard_state << ", scheduling notification attempt";
+        << "notification: state of service " << event.service_id << " of host "
+        << event.host_id << " changed from 0 to " << event.last_hard_state
+        << ", scheduling notification attempt";
     _notif_scheduler->remove_actions_of_node(id);
     action a;
     a.set_type(action::notification_processing);
@@ -451,7 +428,8 @@ void stream::_process_service_status_event(neb::service_status const& event) {
     _notif_scheduler->remove_actions_of_node(id);
     action a;
     a.set_type(action::notification_processing);
-    a.set_forwarded_type(action::notification_up);;
+    a.set_forwarded_type(action::notification_up);
+    ;
     a.set_node_id(id);
     _notif_scheduler->add_action_to_queue(when_to_schedule, a);
   }
@@ -464,8 +442,8 @@ void stream::_process_service_status_event(neb::service_status const& event) {
  */
 void stream::_process_host_status_event(neb::host_status const& event) {
   logging::debug(logging::medium)
-    << "notification: processing status of host " << event.host_id
-    << " (state " << event.last_hard_state << ")";
+      << "notification: processing status of host " << event.host_id
+      << " (state " << event.last_hard_state << ")";
 
   node_id id(event.host_id);
   short old_hard_state;
@@ -479,9 +457,8 @@ void stream::_process_host_status_event(neb::host_status const& event) {
     std::unique_ptr<QWriteLocker> lock(_state.write_lock());
     node::ptr n = _state.get_node_by_id(id);
     if (!n)
-      throw (exceptions::msg()
-        << "notification: got an unknown host id: "
-        << id.get_host_id());
+      throw(exceptions::msg()
+            << "notification: got an unknown host id: " << id.get_host_id());
 
     // Save the old state and copy the current state.
     old_hard_state = n->get_hard_state();
@@ -500,8 +477,8 @@ void stream::_process_host_status_event(neb::host_status const& event) {
     _notif_scheduler->add_action_to_queue(when_to_schedule, a);
   }
   // From NOT-OK to OK
-  else if(old_hard_state != event.last_hard_state &&
-          old_hard_state != node_state::ok) {
+  else if (old_hard_state != event.last_hard_state &&
+           old_hard_state != node_state::ok) {
     _notif_scheduler->remove_actions_of_node(id);
     action a;
     a.set_type(action::notification_processing);
@@ -517,7 +494,7 @@ void stream::_process_host_status_event(neb::host_status const& event) {
  *  @param event  The event to process.
  */
 void stream::_process_issue_parent_event(
-               correlation::issue_parent const& event) {
+    correlation::issue_parent const& event) {
   // Node IDs.
   node_id child_id(event.child_host_id, event.child_service_id);
   node_id parent_id(event.parent_host_id, event.parent_service_id);
@@ -528,22 +505,20 @@ void stream::_process_issue_parent_event(
   std::unique_ptr<QWriteLocker> lock(_state.write_lock());
   node::ptr n = _state.get_node_by_id(child_id);
   if (!n)
-    throw (exceptions::msg()
-           << "notification: got an unknown issue parent on node ("
-           << child_id.get_host_id() << ", "
-           << child_id.get_service_id() << ") by node ("
-           << parent_id.get_host_id() << ", "
-           << parent_id.get_service_id() << ")");
+    throw(exceptions::msg()
+          << "notification: got an unknown issue parent on node ("
+          << child_id.get_host_id() << ", " << child_id.get_service_id()
+          << ") by node (" << parent_id.get_host_id() << ", "
+          << parent_id.get_service_id() << ")");
 
   // Log message.
-  bool terminated_event((event.end_time != (time_t)-1)
-                        && (event.end_time != (time_t)0));
+  bool terminated_event((event.end_time != (time_t)-1) &&
+                        (event.end_time != (time_t)0));
   logging::debug(logging::medium)
-    << "notification: node (" << child_id.get_host_id() << ", "
-    << child_id.get_service_id() << ") "
-    << (terminated_event ? "had" : "has") << " parent issue from node ("
-    << parent_id.get_host_id() << ", " << parent_id.get_service_id()
-    << ")";
+      << "notification: node (" << child_id.get_host_id() << ", "
+      << child_id.get_service_id() << ") " << (terminated_event ? "had" : "has")
+      << " parent issue from node (" << parent_id.get_host_id() << ", "
+      << parent_id.get_service_id() << ")";
 
   // Add a parent relationship between correlated node.
   if (!terminated_event)
@@ -552,7 +527,7 @@ void stream::_process_issue_parent_event(
   else
     n->remove_parent(parent_id);
 
-  return ;
+  return;
 }
 
 /**
@@ -564,18 +539,18 @@ void stream::_process_ack(neb::acknowledgement const& event) {
   objects::node_id id(event.host_id, event.service_id);
 
   logging::debug(logging::medium)
-    << "notification: processing acknowledgement of node ("
-    << event.host_id << ", " << event.service_id << ")";
+      << "notification: processing acknowledgement of node (" << event.host_id
+      << ", " << event.service_id << ")";
 
   // End of ack.
   if (!event.deletion_time.is_null())
-    return ;
+    return;
 
   // Add the ack.
   if (event.notify_contacts &&
-        (!event.notify_only_if_not_already_acknowledged
-           || (event.notify_only_if_not_already_acknowledged
-                 && !_node_cache.node_acknowledged(id)))) {
+      (!event.notify_only_if_not_already_acknowledged ||
+       (event.notify_only_if_not_already_acknowledged &&
+        !_node_cache.node_acknowledged(id)))) {
     time_t when_to_schedule(::time(NULL) + 1);
     action a;
     a.set_type(action::notification_processing);
@@ -594,13 +569,13 @@ void stream::_process_downtime(neb::downtime const& event) {
   objects::node_id id(event.host_id, event.service_id);
 
   logging::debug(logging::medium)
-    << "notification: processing downtime of node ("
-    << event.host_id << ", " << event.service_id << ") starting at "
-    << event.start_time << " and ending at " << event.end_time;
+      << "notification: processing downtime of node (" << event.host_id << ", "
+      << event.service_id << ") starting at " << event.start_time
+      << " and ending at " << event.end_time;
 
   // End of downtime.
   if (!event.actual_end_time.is_null())
-    return ;
+    return;
 
   // Add the downtime.
   time_t when_to_schedule(::time(NULL) + 1);

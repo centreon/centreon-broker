@@ -17,50 +17,46 @@
 */
 
 #ifndef CCB_BAM_DIMENSION_TIMEPERIOD_EXCEPTION_HH
-#  define CCB_BAM_DIMENSION_TIMEPERIOD_EXCEPTION_HH
+#define CCB_BAM_DIMENSION_TIMEPERIOD_EXCEPTION_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        bam {
-  /**
-   *  @class dimension_timeperiod_exception dimension_timeperiod_exception.hh "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
-   *  @brief Timeperiod exception.
-   *
-   *  Declare a timeperiod exception.
-   */
-  class          dimension_timeperiod_exception : public io::data {
-  public:
-                 dimension_timeperiod_exception();
-                 dimension_timeperiod_exception(
-                   dimension_timeperiod_exception const& other);
-                 ~dimension_timeperiod_exception();
-    dimension_timeperiod_exception&
-                 operator=(dimension_timeperiod_exception const& other);
-    unsigned int type() const;
-    static unsigned int
-                 static_type();
+namespace bam {
+/**
+ *  @class dimension_timeperiod_exception dimension_timeperiod_exception.hh
+ * "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
+ *  @brief Timeperiod exception.
+ *
+ *  Declare a timeperiod exception.
+ */
+class dimension_timeperiod_exception : public io::data {
+ public:
+  dimension_timeperiod_exception();
+  dimension_timeperiod_exception(dimension_timeperiod_exception const& other);
+  ~dimension_timeperiod_exception();
+  dimension_timeperiod_exception& operator=(
+      dimension_timeperiod_exception const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    std::string      daterange;
-    std::string      timerange;
-    unsigned int timeperiod_id;
+  std::string daterange;
+  std::string timerange;
+  unsigned int timeperiod_id;
 
-    static mapping::entry const
-                 entries[];
-    static io::event_info::event_operations const
-                 operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void         _internal_copy(
-                   dimension_timeperiod_exception const& other);
-  };
-}
+ private:
+  void _internal_copy(dimension_timeperiod_exception const& other);
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_DIMENSION_TIMEPERIOD_EXCEPTION_HH
+#endif  // !CCB_BAM_DIMENSION_TIMEPERIOD_EXCEPTION_HH

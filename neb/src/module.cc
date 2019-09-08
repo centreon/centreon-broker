@@ -16,27 +16,24 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/module.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/module.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
 module::module()
-  : enabled(true),
-    loaded(false),
-    poller_id(0),
-    should_be_loaded(false) {}
+    : enabled(true), loaded(false), poller_id(0), should_be_loaded(false) {}
 
 /**
  *  Copy constructor.
@@ -86,10 +83,10 @@ unsigned int module::static_type() {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy data members.
@@ -103,43 +100,29 @@ void module::_internal_copy(module const& other) {
   loaded = other.loaded;
   poller_id = other.poller_id;
   should_be_loaded = other.should_be_loaded;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const module::entries[] = {
-  mapping::entry(
-    &module::args,
-    "args"),
-  mapping::entry(
-    &module::enabled,
-    ""),
-  mapping::entry(
-    &module::filename,
-    "filename"),
-  mapping::entry(
-    &module::poller_id,
-    "instance_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &module::loaded,
-    "loaded"),
-  mapping::entry(
-    &module::should_be_loaded,
-    "should_be_loaded"),
-  mapping::entry()
-};
+    mapping::entry(&module::args, "args"),
+    mapping::entry(&module::enabled, ""),
+    mapping::entry(&module::filename, "filename"),
+    mapping::entry(&module::poller_id,
+                   "instance_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&module::loaded, "loaded"),
+    mapping::entry(&module::should_be_loaded, "should_be_loaded"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_module() {
   return (new module);
 }
-io::event_info::event_operations const module::operations = {
-  &new_module
-};
+io::event_info::event_operations const module::operations = {&new_module};

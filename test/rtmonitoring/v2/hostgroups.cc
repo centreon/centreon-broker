@@ -44,33 +44,32 @@ static void precheck(test::time_points& tpoints, char const* name) {
   ++check_number;
   std::cout << "check #" << check_number << " (" << name << ")\n";
   tpoints.store();
-  return ;
+  return;
 }
 
 /**
  *  Postcheck routine.
  */
-static void postcheck(
-              test::centengine& engine,
-              test::time_points& tpoints,
-              test::db& db,
-              test::predicate expected_groups[][2],
-              test::predicate expected_members[][2]) {
+static void postcheck(test::centengine& engine,
+                      test::time_points& tpoints,
+                      test::db& db,
+                      test::predicate expected_groups[][2],
+                      test::predicate expected_members[][2]) {
   static std::string group_query(
-    "SELECT hostgroup_id, name"
-    "  FROM hostgroups"
-    "  ORDER BY hostgroup_id ASC");
+      "SELECT hostgroup_id, name"
+      "  FROM hostgroups"
+      "  ORDER BY hostgroup_id ASC");
   static std::string member_query(
-    "SELECT hostgroup_id, host_id"
-    "  FROM hosts_hostgroups"
-    "  ORDER BY hostgroup_id ASC, host_id ASC");
+      "SELECT hostgroup_id, host_id"
+      "  FROM hosts_hostgroups"
+      "  ORDER BY hostgroup_id ASC, host_id ASC");
   engine.reload();
   test::sleep_for(3);
   tpoints.store();
   db.check_content(group_query, expected_groups);
   db.check_content(member_query, expected_members);
   std::cout << "  passed\n";
-  return ;
+  return;
 }
 
 /**
@@ -85,32 +84,29 @@ int main() {
 
   try {
     // Database.
-    char const* tables[] = {
-      "instances", "hosts", "hostgroups", "hosts_hostgroups", NULL
-    };
+    char const* tables[] = {"instances", "hosts", "hostgroups",
+                            "hosts_hostgroups", NULL};
     test::db db(DB_NAME, tables);
 
     // Monitoring broker.
     test::file cbd_cfg;
-    cbd_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
+    cbd_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
     cbd_cfg.set("BROKER_ID", "84");
     cbd_cfg.set("BROKER_NAME", TEST_NAME "-cbd");
     cbd_cfg.set("POLLER_ID", "42");
     cbd_cfg.set("POLLER_NAME", "my-poller");
     cbd_cfg.set("TCP_PORT", "5573");
     cbd_cfg.set("DB_NAME", DB_NAME);
-    cbd_cfg.set(
-      "SQL_ADDITIONAL",
-      "<write_filters>"
-      "  <category>neb:instance</category>"
-      "  <category>neb:instance_status</category>"
-      "  <category>neb:host</category>"
-      "  <category>neb:host_check</category>"
-      "  <category>neb:host_status</category>"
-      "  <category>neb:host_group</category>"
-      "  <category>neb:host_group_member</category>"
-      "</write_filters>");
+    cbd_cfg.set("SQL_ADDITIONAL",
+                "<write_filters>"
+                "  <category>neb:instance</category>"
+                "  <category>neb:instance_status</category>"
+                "  <category>neb:host</category>"
+                "  <category>neb:host_check</category>"
+                "  <category>neb:host_status</category>"
+                "  <category>neb:host_group</category>"
+                "  <category>neb:host_group_member</category>"
+                "</write_filters>");
     test::cbd broker;
     broker.set_config_file(cbd_cfg.generate());
     broker.start();
@@ -118,8 +114,7 @@ int main() {
 
     // Monitoring engine.
     test::file cbmod_cfg;
-    cbmod_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
+    cbmod_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
     cbmod_cfg.set("BROKER_ID", "83");
     cbmod_cfg.set("BROKER_NAME", TEST_NAME "-cbmod");
     cbmod_cfg.set("POLLER_ID", "42");
@@ -130,8 +125,7 @@ int main() {
     engine_config.generate_hosts(10);
     engine_config.generate_services(2);
     for (int i(0); i < 5; ++i) {
-      test::centengine_object
-        group(test::centengine_object::hostgroup_type);
+      test::centengine_object group(test::centengine_object::hostgroup_type);
       {
         std::ostringstream group_name;
         group_name << "group" << i + 1;
@@ -159,33 +153,25 @@ int main() {
     precheck(tpoints, "hostgroups.insert");
     engine.start();
     test::sleep_for(1);
-    test::predicate expected_groups[][2] = {
-      { 1, "group1" },
-      { 2, "group2" },
-      { 3, "group3" },
-      { 4, "group4" },
-      { 5, "group5" },
-      { test::predicate() }
-    };
-    test::predicate expected_members[20][2] = {
-      { 1, 1 },
-      { 1, 2 },
-      { 2, 3 },
-      { 2, 4 },
-      { 3, 5 },
-      { 3, 6 },
-      { 4, 7 },
-      { 4, 8 },
-      { 5, 9 },
-      { 5, 10 },
-      { test::predicate() }
-    };
+    test::predicate expected_groups[][2] = {{1, "group1"}, {2, "group2"},
+                                            {3, "group3"}, {4, "group4"},
+                                            {5, "group5"}, {test::predicate()}};
+    test::predicate expected_members[20][2] = {{1, 1},
+                                               {1, 2},
+                                               {2, 3},
+                                               {2, 4},
+                                               {3, 5},
+                                               {3, 6},
+                                               {4, 7},
+                                               {4, 8},
+                                               {5, 9},
+                                               {5, 10},
+                                               {test::predicate()}};
     postcheck(engine, tpoints, db, expected_groups, expected_members);
 
     // Change host group name.
     precheck(tpoints, "hostgroups.update");
-    test::centengine_object&
-      hg(engine_config.get_host_groups().front());
+    test::centengine_object& hg(engine_config.get_host_groups().front());
     hg.set("hostgroup_name", "renamed");
     expected_groups[0][1] = "renamed";
     postcheck(engine, tpoints, db, expected_groups, expected_members);
@@ -223,10 +209,9 @@ int main() {
     // Remove all members.
     precheck(tpoints, "hostgroups.delete");
     for (test::centengine_config::objlist::iterator
-           it(engine_config.get_host_groups().begin()),
-           end(engine_config.get_host_groups().end());
-         it != end;
-         ++it)
+             it(engine_config.get_host_groups().begin()),
+         end(engine_config.get_host_groups().end());
+         it != end; ++it)
       it->set("members", "");
     expected_groups[0][0] = test::predicate();
     expected_members[0][0] = test::predicate();
@@ -236,11 +221,9 @@ int main() {
     error = false;
     db.set_remove_db_on_close(true);
     broker.stop();
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << "  " << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "  unknown exception\n";
   }
 

@@ -16,6 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
+#include <sys/stat.h>
+#include <QDateTime>
+#include <QFileInfo>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QVariant>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -24,13 +30,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
-#include <QDateTime>
-#include <QFileInfo>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QVariant>
 #include <sstream>
-#include <sys/stat.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
@@ -86,16 +86,15 @@ int main() {
     // Write cbmod configuration file.
     {
       std::ofstream ofs;
-      ofs.open(
-            cbmod_config_path.c_str(),
-            std::ios_base::out | std::ios_base::trunc);
+      ofs.open(cbmod_config_path.c_str(),
+               std::ios_base::out | std::ios_base::trunc);
       if (ofs.fail())
-        throw (exceptions::msg()
-               << "cannot open cbmod configuration file '"
-               << cbmod_config_path.c_str() << "'");
+        throw(exceptions::msg() << "cannot open cbmod configuration file '"
+                                << cbmod_config_path.c_str() << "'");
       ofs << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
           << "<centreonbroker>\n"
-          << "  <include>" PROJECT_SOURCE_DIR "/test/cfg/broker_modules.xml</include>\n"
+          << "  <include>" PROJECT_SOURCE_DIR
+             "/test/cfg/broker_modules.xml</include>\n"
           << "  <instance>42</instance>\n"
           << "  <instance_name>MyBroker</instance_name>\n"
           << "  <!--\n"
@@ -120,7 +119,9 @@ int main() {
           << "    <db_name>" DB_NAME "</db_name>\n"
           << "    <queries_per_transaction>0</queries_per_transaction>\n"
           << "    <length>2592000</length>\n"
-          << "    <rebuild_check_interval>" MONITORING_ENGINE_INTERVAL_LENGTH_STR "</rebuild_check_interval>\n"
+          << "    "
+             "<rebuild_check_interval>" MONITORING_ENGINE_INTERVAL_LENGTH_STR
+             "</rebuild_check_interval>\n"
           << "  </output>\n"
           << "  <output>\n"
           << "    <name>StorageToRRDUnitTest</name>\n"
@@ -148,18 +149,14 @@ int main() {
     int i(0);
     generate_hosts(hosts, HOST_COUNT);
     for (std::list<host>::iterator it(hosts.begin()), end(hosts.end());
-         it != end;
-         ++it) {
+         it != end; ++it) {
       it->host_check_command = new char[2];
       strcpy(it->host_check_command, (++i % 2 ? "1" : "2"));
     }
     i = 0;
     generate_services(services, hosts, SERVICES_BY_HOST);
-    for (std::list<service>::iterator
-           it(services.begin()),
-           end(services.end());
-         it != end;
-         ++it) {
+    for (std::list<service>::iterator it(services.begin()), end(services.end());
+         it != end; ++it) {
       it->service_check_command = new char[2];
       strcpy(it->service_check_command, (++i % 2 ? "1" : "2"));
     }
@@ -176,21 +173,18 @@ int main() {
       for (unsigned int i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
         std::ostringstream query;
         query << "INSERT INTO rt_index_data (host_id, service_id)"
-              << "  VALUES(" << (i - 1) / SERVICES_BY_HOST + 1 << ", "
-              << i << ")";
+              << "  VALUES(" << (i - 1) / SERVICES_BY_HOST + 1 << ", " << i
+              << ")";
         if (!q.exec(query.str().c_str()))
-          throw (exceptions::msg() << "cannot create index of service ("
-                 << (i - 1) / SERVICES_BY_HOST + 1 << ", " << i << ")");
+          throw(exceptions::msg()
+                << "cannot create index of service ("
+                << (i - 1) / SERVICES_BY_HOST + 1 << ", " << i << ")");
       }
     }
 
     // Generate monitoring engine configuration files.
-    config_write(
-      engine_config_path.c_str(),
-      engine_additional.c_str(),
-      &hosts,
-      &services,
-      &commands);
+    config_write(engine_config_path.c_str(), engine_additional.c_str(), &hosts,
+                 &services, &commands);
 
     // Start monitoring engine.
     std::string engine_config_file(engine_config_path);
@@ -204,31 +198,28 @@ int main() {
     {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT index_id FROM rt_index_data"))
-        throw (exceptions::msg() << "cannot get index list: "
-               << qPrintable(q.lastError().text()));
+        throw(exceptions::msg()
+              << "cannot get index list: " << qPrintable(q.lastError().text()));
       while (q.next())
         indexes[q.value(0).toUInt()];
       if (indexes.size() != HOST_COUNT * SERVICES_BY_HOST)
-        throw (exceptions::msg()
-               << "not enough entries in rt_index_data: got "
-               << indexes.size() << ", expected "
-               << HOST_COUNT * SERVICES_BY_HOST);
+        throw(exceptions::msg()
+              << "not enough entries in rt_index_data: got " << indexes.size()
+              << ", expected " << HOST_COUNT * SERVICES_BY_HOST);
     }
 
     // For each index, get the first entry time.
-    for (std::map<unsigned int, time_t>::iterator
-           it(indexes.begin()),
-           end(indexes.end());
-         it != end;
-         ++it) {
+    for (std::map<unsigned int, time_t>::iterator it(indexes.begin()),
+         end(indexes.end());
+         it != end; ++it) {
       std::ostringstream file_path;
       file_path << status_path << "/" << it->first << ".rrd";
       rrd_file graph;
       graph.load(file_path.str().c_str());
       if (graph.get_rras().empty() || graph.get_rras().front().empty())
-        throw (exceptions::msg() << "not enough data in status graph '"
-               << file_path.str().c_str() << "'");
-      it->second = graph.get_rras().front().begin() -> first;
+        throw(exceptions::msg() << "not enough data in status graph '"
+                                << file_path.str().c_str() << "'");
+      it->second = graph.get_rras().front().begin()->first;
     }
 
     // Get metrics list.
@@ -241,31 +232,28 @@ int main() {
             << "  ORDER BY i.host_id, i.service_id";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg() << "cannot get metric list: "
-               << qPrintable(q.lastError().text()));
+        throw(exceptions::msg() << "cannot get metric list: "
+                                << qPrintable(q.lastError().text()));
       i = 0;
       while (q.next())
         metrics[q.value(0).toUInt()].is_infinity = !(++i % 2);
       if (metrics.size() != HOST_COUNT * SERVICES_BY_HOST)
-        throw (exceptions::msg()
-               << "not enough entries in rt_metrics: got "
-               << metrics.size() << ", expected "
-               << HOST_COUNT * SERVICES_BY_HOST);
+        throw(exceptions::msg()
+              << "not enough entries in rt_metrics: got " << metrics.size()
+              << ", expected " << HOST_COUNT * SERVICES_BY_HOST);
     }
 
     // For each metric, get the first entry time.
-    for (std::map<unsigned int, metric_info>::iterator
-           it(metrics.begin()),
-           end(metrics.end());
-         it != end;
-         ++it) {
+    for (std::map<unsigned int, metric_info>::iterator it(metrics.begin()),
+         end(metrics.end());
+         it != end; ++it) {
       std::ostringstream file_path;
       file_path << metrics_path << "/" << it->first << ".rrd";
       rrd_file graph;
       graph.load(file_path.str().c_str());
       if (graph.get_rras().empty() || graph.get_rras().front().empty())
-        throw (exceptions::msg() << "not enough data in metrics graph '"
-               << file_path.str().c_str() << "'");
+        throw(exceptions::msg() << "not enough data in metrics graph '"
+                                << file_path.str().c_str() << "'");
       it->second.first_entry = graph.get_rras().front().begin()->first;
     }
 
@@ -277,8 +265,8 @@ int main() {
     {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec("UPDATE rt_index_data SET must_be_rebuild=1"))
-        throw (exceptions::msg() << "cannot launch rebuild from DB: "
-               << qPrintable(q.lastError().text()));
+        throw(exceptions::msg() << "cannot launch rebuild from DB: "
+                                << qPrintable(q.lastError().text()));
       sleep_for(15);
     }
 
@@ -287,105 +275,99 @@ int main() {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT COUNT(*)"
                   " FROM rt_index_data"
-                  " WHERE must_be_rebuild!=0")
-          || !q.next())
-        throw (exceptions::msg()
-               << "cannot check that rebuild successfully executed");
+                  " WHERE must_be_rebuild!=0") ||
+          !q.next())
+        throw(exceptions::msg()
+              << "cannot check that rebuild successfully executed");
       if (q.value(0).toUInt())
-        throw (exceptions::msg() << "rebuild did not succeed, "
-               << q.value(0).toUInt()
-               << " indexes are still waiting/being rebuild");
+        throw(exceptions::msg()
+              << "rebuild did not succeed, " << q.value(0).toUInt()
+              << " indexes are still waiting/being rebuild");
     }
 
     // Check status graphs.
-    for (std::map<unsigned int, time_t>::iterator
-           it(indexes.begin()),
-           end(indexes.end());
-         it != end;
-         ++it) {
+    for (std::map<unsigned int, time_t>::iterator it(indexes.begin()),
+         end(indexes.end());
+         it != end; ++it) {
       // Check file properties.
       std::ostringstream file_path;
       file_path << status_path << "/" << it->first << ".rrd";
       QFileInfo info(file_path.str().c_str());
       if (!info.exists())
-        throw (exceptions::msg() << "status file '"
-               << file_path.str().c_str() << "' does not exist");
-      else if (static_cast<time_t>(info.created().toTime_t())
-               < recreated_limit)
-        throw (exceptions::msg() << "status file '"
-               << file_path.str().c_str() << "' was created at "
-               << info.created().toTime_t()
-               << " whereas recreation limit is " << recreated_limit);
+        throw(exceptions::msg() << "status file '" << file_path.str().c_str()
+                                << "' does not exist");
+      else if (static_cast<time_t>(info.created().toTime_t()) < recreated_limit)
+        throw(exceptions::msg()
+              << "status file '" << file_path.str().c_str()
+              << "' was created at " << info.created().toTime_t()
+              << " whereas recreation limit is " << recreated_limit);
 
       // Check file content.
-      time_t data_low(it->second - 2592000 / 5 / MONITORING_ENGINE_INTERVAL_LENGTH);
-      time_t data_high(it->second + 2592000 * 5 * MONITORING_ENGINE_INTERVAL_LENGTH);
+      time_t data_low(it->second -
+                      2592000 / 5 / MONITORING_ENGINE_INTERVAL_LENGTH);
+      time_t data_high(it->second +
+                       2592000 * 5 * MONITORING_ENGINE_INTERVAL_LENGTH);
       rrd_file graph;
       graph.load(file_path.str().c_str());
       if (graph.get_rras().empty() || graph.get_rras().front().empty())
-        throw (exceptions::msg() << "status file '"
-               << file_path.str().c_str()
-               << "' does not have any data after rebuild");
-      else if ((graph.get_rras().front().begin()->first < data_low)
-               || (graph.get_rras().front().begin()->first > data_high))
-        throw (exceptions::msg()
-               << "data time mismatch in status file '"
-               << file_path.str().c_str() << "': got "
-               << graph.get_rras().front().begin()->first
-               << ", expected " << data_low << ":" << data_high);
+        throw(exceptions::msg() << "status file '" << file_path.str().c_str()
+                                << "' does not have any data after rebuild");
+      else if ((graph.get_rras().front().begin()->first < data_low) ||
+               (graph.get_rras().front().begin()->first > data_high))
+        throw(exceptions::msg()
+              << "data time mismatch in status file '"
+              << file_path.str().c_str() << "': got "
+              << graph.get_rras().front().begin()->first << ", expected "
+              << data_low << ":" << data_high);
     }
 
     // Check metrics graphs.
-    for (std::map<unsigned int, metric_info>::iterator
-           it(metrics.begin()),
-           end(metrics.end());
-         it != end;
-         ++it) {
+    for (std::map<unsigned int, metric_info>::iterator it(metrics.begin()),
+         end(metrics.end());
+         it != end; ++it) {
       // Check file properties.
       std::ostringstream file_path;
       file_path << metrics_path << "/" << it->first << ".rrd";
       QFileInfo info(file_path.str().c_str());
       if (!info.exists())
-        throw (exceptions::msg() << "metric file '"
-               << file_path.str().c_str() << "' does not exist");
-      else if (static_cast<time_t>(info.created().toTime_t())
-               < recreated_limit)
-        throw (exceptions::msg() << "metric file '"
-               << file_path.str().c_str() << "' was created at "
-               << info.created().toTime_t()
-               << " whereas recreation limit is " << recreated_limit);
+        throw(exceptions::msg() << "metric file '" << file_path.str().c_str()
+                                << "' does not exist");
+      else if (static_cast<time_t>(info.created().toTime_t()) < recreated_limit)
+        throw(exceptions::msg()
+              << "metric file '" << file_path.str().c_str()
+              << "' was created at " << info.created().toTime_t()
+              << " whereas recreation limit is " << recreated_limit);
 
       // Check file content.
-      time_t data_low(it->second.first_entry - 2592000 / 5 / MONITORING_ENGINE_INTERVAL_LENGTH);
-      time_t data_high(it->second.first_entry + 2592000 * 5 * MONITORING_ENGINE_INTERVAL_LENGTH);
+      time_t data_low(it->second.first_entry -
+                      2592000 / 5 / MONITORING_ENGINE_INTERVAL_LENGTH);
+      time_t data_high(it->second.first_entry +
+                       2592000 * 5 * MONITORING_ENGINE_INTERVAL_LENGTH);
       rrd_file graph;
       graph.load(file_path.str().c_str());
       if (graph.get_rras().empty() || graph.get_rras().front().empty())
-        throw (exceptions::msg() << "metric file '"
-               << file_path.str().c_str()
-               << "' does not have any data after rebuild");
-      else if ((graph.get_rras().front().begin()->first < data_low)
-               || (graph.get_rras().front().end()->first > data_high))
-        throw (exceptions::msg()
-               << "data time mismatch in metric file '"
-               << file_path.str().c_str() << "': got "
-               << graph.get_rras().front().begin()->first
-               << ", expected " << data_low << ":" << data_high);
-      else if (it->second.is_infinity
-               && !isinf(graph.get_rras().front().begin()->second))
-        throw (exceptions::msg()
-               << "graph rebuild does not handle infinity of file '"
-               << file_path.str().c_str() << "' ("
-               << graph.get_rras().front().begin()->second << ")");
+        throw(exceptions::msg() << "metric file '" << file_path.str().c_str()
+                                << "' does not have any data after rebuild");
+      else if ((graph.get_rras().front().begin()->first < data_low) ||
+               (graph.get_rras().front().end()->first > data_high))
+        throw(exceptions::msg()
+              << "data time mismatch in metric file '"
+              << file_path.str().c_str() << "': got "
+              << graph.get_rras().front().begin()->first << ", expected "
+              << data_low << ":" << data_high);
+      else if (it->second.is_infinity &&
+               !isinf(graph.get_rras().front().begin()->second))
+        throw(exceptions::msg()
+              << "graph rebuild does not handle infinity of file '"
+              << file_path.str().c_str() << "' ("
+              << graph.get_rras().front().begin()->second << ")");
     }
 
     // Success.
     error = false;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
   }
 

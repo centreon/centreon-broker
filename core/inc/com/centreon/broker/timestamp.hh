@@ -17,12 +17,12 @@
 */
 
 #ifndef CCB_TIMESTAMP_HH
-#  define CCB_TIMESTAMP_HH
+#define CCB_TIMESTAMP_HH
 
-#  include <ctime>
-#  include <istream>
-#  include <limits>
-#  include "com/centreon/broker/namespace.hh"
+#include <ctime>
+#include <istream>
+#include <limits>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -32,33 +32,33 @@ CCB_BEGIN()
  *
  *  Holds the time.
  */
-struct        timestamp {
-public:
+struct timestamp {
+ public:
   /**
    *  Default constructor.
    *
    *  Time is not defined.
    */
-              timestamp() : _sec((time_t)-1) {}
+  timestamp() : _sec((time_t)-1) {}
 
   /**
    *  Build from a time_t.
    *
    *  @param[in] t Time expressed in time_t.
    */
-              timestamp(std::time_t t) : _sec(t) {}
+  timestamp(std::time_t t) : _sec(t) {}
 
   /**
    *  Copy constructor.
    *
    *  @param[in] right Object to copy.
    */
-              timestamp(timestamp const& right) : _sec(right._sec) {}
+  timestamp(timestamp const& right) : _sec(right._sec) {}
 
   /**
    *  Destructor.
    */
-              ~timestamp() {}
+  ~timestamp() {}
 
   /**
    *  Assignment operator.
@@ -67,7 +67,7 @@ public:
    *
    *  @return This object.
    */
-  timestamp&  operator=(timestamp const& right) {
+  timestamp& operator=(timestamp const& right) {
     if (this != &right)
       _sec = right._sec;
     return (*this);
@@ -78,35 +78,26 @@ public:
    *
    *  @return Timestamp as time_t.
    */
-              operator std::time_t() const {
-    return (_sec);
-  }
+  operator std::time_t() const { return (_sec); }
 
   /**
    *  Get timestamp as time_t.
    *
    *  @return Timestamp as time_t.
    */
-  std::time_t get_time_t() const {
-    return (_sec);
-  }
+  std::time_t get_time_t() const { return (_sec); }
 
   /**
    *  Is this a null timestamp ?
    *
    *  @return  True if this is a null timestamp.
    */
-  bool is_null() const {
-    return ((_sec == (time_t)-1)
-            || (_sec == (time_t)0));
-  }
+  bool is_null() const { return ((_sec == (time_t)-1) || (_sec == (time_t)0)); }
 
   /**
    *  Clear the timestamp.
    */
-  void clear() {
-    _sec = (time_t)-1;
-  }
+  void clear() { _sec = (time_t)-1; }
 
   /**
    *  Comparison function.
@@ -130,9 +121,7 @@ public:
    *
    *  @return  A timestamp set to present time, present day.
    */
-  static timestamp now() {
-    return (::time(NULL));
-  }
+  static timestamp now() { return (::time(NULL)); }
 
   /**
    *  Return the upper time limit.
@@ -164,4 +153,4 @@ inline std::istream& operator>>(std::istream& stream, timestamp& ts) {
 
 CCB_END()
 
-#endif // !CCB_TIMESTAMP_HH
+#endif  // !CCB_TIMESTAMP_HH

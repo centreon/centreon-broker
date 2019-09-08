@@ -17,61 +17,56 @@
 */
 
 #ifndef CCB_EXTCMD_COMMAND_LISTENER_HH
-#  define CCB_EXTCMD_COMMAND_LISTENER_HH
+#define CCB_EXTCMD_COMMAND_LISTENER_HH
 
-#  include <map>
-#  include <mutex>
-#  include "com/centreon/broker/extcmd/command_result.hh"
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <map>
+#include <mutex>
+#include "com/centreon/broker/extcmd/command_result.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                 extcmd {
-  /**
-   *  @class command_listener command_listener.hh "com/centreon/broker/extcmd/command_listener.hh"
-   *  @brief Command listener.
-   *
-   *  Listen to status of ongoing commands and provide them for some
-   *  time. This is used by all command clients to fetch status of
-   *  pending commands.
-   */
-  class                   command_listener : public io::stream {
-  public:
-                          command_listener();
-                          ~command_listener();
-                          command_listener(command_listener const& other) = delete;
-    command_listener&     operator=(command_listener const& other) = delete;
-    command_result        command_status(
-                            std::string const& command_uuid);
-    bool                  read(
-                            std::shared_ptr<io::data>& d,
-                            time_t deadline = (time_t)-1);
-    int                   write(std::shared_ptr<io::data> const& d);
+namespace extcmd {
+/**
+ *  @class command_listener command_listener.hh
+ * "com/centreon/broker/extcmd/command_listener.hh"
+ *  @brief Command listener.
+ *
+ *  Listen to status of ongoing commands and provide them for some
+ *  time. This is used by all command clients to fetch status of
+ *  pending commands.
+ */
+class command_listener : public io::stream {
+ public:
+  command_listener();
+  ~command_listener();
+  command_listener(command_listener const& other) = delete;
+  command_listener& operator=(command_listener const& other) = delete;
+  command_result command_status(std::string const& command_uuid);
+  bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
+  int write(std::shared_ptr<io::data> const& d);
 
-  private:
-    struct                pending_command {
-      time_t              invalid_time;
-      std::string             uuid;
-      int                 code;
-      bool                with_partial_result;
-      std::list<std::string>  msgs;
-    };
-
-    void                  _check_invalid();
-    void                  _extract_command_result(
-                            command_result& res,
-                            pending_command& pending);
-
-    time_t                _next_invalid;
-    std::map<std::string, pending_command>
-                          _pending;
-    std::mutex _pendingm;
-    static int const      _request_timeout = 30;
-    static int const      _result_timeout = 60;
+ private:
+  struct pending_command {
+    time_t invalid_time;
+    std::string uuid;
+    int code;
+    bool with_partial_result;
+    std::list<std::string> msgs;
   };
-}
+
+  void _check_invalid();
+  void _extract_command_result(command_result& res, pending_command& pending);
+
+  time_t _next_invalid;
+  std::map<std::string, pending_command> _pending;
+  std::mutex _pendingm;
+  static int const _request_timeout = 30;
+  static int const _result_timeout = 60;
+};
+}  // namespace extcmd
 
 CCB_END()
 
-#endif // !CCB_EXTCMD_COMMAND_LISTENER_HH
+#endif  // !CCB_EXTCMD_COMMAND_LISTENER_HH

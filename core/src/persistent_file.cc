@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/persistent_file.hh"
 #include <memory>
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/file/opener.hh"
-#include "com/centreon/broker/persistent_file.hh"
 #include "com/centreon/broker/file/stream.hh"
 
 using namespace com::centreon::broker;
@@ -64,9 +64,7 @@ persistent_file::~persistent_file() {}
  *
  *  @return Always return true, as file never times out.
  */
-bool persistent_file::read(
-                        std::shared_ptr<io::data>& d,
-                        time_t deadline) {
+bool persistent_file::read(std::shared_ptr<io::data>& d, time_t deadline) {
   return (_substream->read(d, deadline));
 }
 
@@ -77,7 +75,7 @@ bool persistent_file::read(
  */
 void persistent_file::statistics(io::properties& tree) const {
   _substream->statistics(tree);
-  return ;
+  return;
 }
 
 /**

@@ -48,16 +48,15 @@ int main() {
     // Write cbd configuration file.
     {
       std::ofstream ofs;
-      ofs.open(
-            cbd_config_path.c_str(),
-            std::ios_base::out | std::ios_base::trunc);
+      ofs.open(cbd_config_path.c_str(),
+               std::ios_base::out | std::ios_base::trunc);
       if (ofs.fail())
-        throw (exceptions::msg()
-               << "cannot open cbd configuration file '"
-               << cbd_config_path.c_str() << "'");
+        throw(exceptions::msg() << "cannot open cbd configuration file '"
+                                << cbd_config_path.c_str() << "'");
       ofs << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
           << "<centreonbroker>\n"
-          << "  <include>" PROJECT_SOURCE_DIR "/test/cfg/broker_modules.xml</include>\n"
+          << "  <include>" PROJECT_SOURCE_DIR
+             "/test/cfg/broker_modules.xml</include>\n"
           << "  <!--\n"
           << "  <logger>\n"
           << "    <type>file</type>\n"
@@ -95,8 +94,8 @@ int main() {
       char buffer[BUFSIZ];
       std::ifstream ifs(stats_pipe.c_str());
       if (ifs.fail() || ifs.eof())
-        throw (exceptions::msg() << "cannot open statistics file '"
-               << stats_pipe.c_str() << "'");
+        throw(exceptions::msg()
+              << "cannot open statistics file '" << stats_pipe.c_str() << "'");
       while (!ifs.fail() && !ifs.eof()) {
         ifs.read(buffer, sizeof(buffer));
         data.append(buffer, ifs.gcount());
@@ -105,11 +104,9 @@ int main() {
 
     // Check that some data was read.
     error = data.empty();
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
   }
 

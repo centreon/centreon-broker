@@ -17,15 +17,18 @@
 */
 
 #ifndef CC_NAMESPACE_HH
-#  define CC_NAMESPACE_HH
+#define CC_NAMESPACE_HH
 
-#  ifndef CC_BEGIN
-#    define CC_BEGIN() namespace     com {      \
-                         namespace   centreon {
-#  endif // !CC_BEGIN
+#ifndef CC_BEGIN
+#define CC_BEGIN() \
+  namespace com {  \
+  namespace centreon {
+#endif  // !CC_BEGIN
 
-#  ifndef CC_END
-#    define CC_END() } }
-#  endif // !CC_END
+#ifndef CC_END
+#define CC_END() \
+  }              \
+  }
+#endif  // !CC_END
 
-#endif // !CC_NAMESPACE_HH
+#endif  // !CC_NAMESPACE_HH

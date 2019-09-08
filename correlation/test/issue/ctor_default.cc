@@ -32,11 +32,8 @@ int main() {
   correlation::issue i;
 
   // Check default construction.
-  return ((!i.ack_time.is_null())
-          || (!i.end_time.is_null())
-          || (i.host_id != 0)
-          || (i.service_id != 0)
-          || (i.start_time != 0)
-          || (i.type()
-              != io::events::data_type<io::events::correlation, correlation::de_issue>::value));
+  return ((!i.ack_time.is_null()) || (!i.end_time.is_null()) ||
+          (i.host_id != 0) || (i.service_id != 0) || (i.start_time != 0) ||
+          (i.type() != io::events::data_type<io::events::correlation,
+                                             correlation::de_issue>::value));
 }

@@ -17,45 +17,45 @@
 */
 
 #ifndef CCB_STORAGE_EXCEPTIONS_PERFDATA_HH
-#  define CCB_STORAGE_EXCEPTIONS_PERFDATA_HH
+#define CCB_STORAGE_EXCEPTIONS_PERFDATA_HH
 
-#  include "com/centreon/broker/exceptions/msg.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          storage {
-  namespace        exceptions {
-    /**
-     *  @class perfdata perfdata.hh "com/centreon/broker/storage/exceptions/perfdata.hh"
-     *  @brief Perfdata exception.
-     *
-     *  Exception thrown when handling performance data.
-     */
-    class          perfdata : public broker::exceptions::msg {
-    public:
-                   perfdata() throw ();
-                   perfdata(perfdata const& pd) throw ();
-                   ~perfdata() throw ();
-      perfdata&    operator=(perfdata const& pdf) throw ();
-      virtual broker::exceptions::msg*
-                   clone() const;
-      virtual void rethrow() const;
+namespace storage {
+namespace exceptions {
+/**
+ *  @class perfdata perfdata.hh
+ * "com/centreon/broker/storage/exceptions/perfdata.hh"
+ *  @brief Perfdata exception.
+ *
+ *  Exception thrown when handling performance data.
+ */
+class perfdata : public broker::exceptions::msg {
+ public:
+  perfdata() throw();
+  perfdata(perfdata const& pd) throw();
+  ~perfdata() throw();
+  perfdata& operator=(perfdata const& pdf) throw();
+  virtual broker::exceptions::msg* clone() const;
+  virtual void rethrow() const;
 
-      /**
-       *  Insert data in message.
-       *
-       *  @param[in] t Data to insert.
-       */
-      template     <typename T>
-      perfdata&    operator<<(T t) throw () {
-        broker::exceptions::msg::operator<<(t);
-        return (*this);
-      }
-    };
+  /**
+   *  Insert data in message.
+   *
+   *  @param[in] t Data to insert.
+   */
+  template <typename T>
+  perfdata& operator<<(T t) throw() {
+    broker::exceptions::msg::operator<<(t);
+    return (*this);
   }
-}
+};
+}  // namespace exceptions
+}  // namespace storage
 
 CCB_END()
 
-#endif // !CCB_STORAGE_EXCEPTIONS_PERFDATA_HH
+#endif  // !CCB_STORAGE_EXCEPTIONS_PERFDATA_HH

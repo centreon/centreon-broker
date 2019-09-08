@@ -27,18 +27,18 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 kpi_status::kpi_status()
-  : kpi_id(0),
-    in_downtime(false),
-    level_acknowledgement_hard(0.0),
-    level_acknowledgement_soft(0.0),
-    level_downtime_hard(0.0),
-    level_downtime_soft(0.0),
-    level_nominal_hard(100.0),
-    level_nominal_soft(100.0),
-    state_hard(0),
-    state_soft(0),
-    last_impact(0),
-    valid(true) {}
+    : kpi_id(0),
+      in_downtime(false),
+      level_acknowledgement_hard(0.0),
+      level_acknowledgement_soft(0.0),
+      level_downtime_hard(0.0),
+      level_downtime_soft(0.0),
+      level_nominal_hard(100.0),
+      level_nominal_soft(100.0),
+      state_hard(0),
+      state_soft(0),
+      last_impact(0),
+      valid(true) {}
 
 /**
  *  Copy constructor.
@@ -105,64 +105,41 @@ void kpi_status::_internal_copy(kpi_status const& other) {
   last_state_change = other.last_state_change;
   last_impact = other.last_impact;
   valid = other.valid;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const kpi_status::entries[] = {
-  mapping::entry(
-    &bam::kpi_status::kpi_id,
-    "kpi_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &bam::kpi_status::in_downtime,
-    "in_downtime"),
-  mapping::entry(
-    &bam::kpi_status::level_acknowledgement_hard,
-    "level_acknowledgement_hard"),
-  mapping::entry(
-    &bam::kpi_status::level_acknowledgement_soft,
-    "level_acknowledgement_soft"),
-  mapping::entry(
-    &bam::kpi_status::level_downtime_hard,
-    "level_downtime_hard"),
-  mapping::entry(
-    &bam::kpi_status::level_downtime_soft,
-    "level_downtime_soft"),
-  mapping::entry(
-    &bam::kpi_status::level_nominal_hard,
-    "level_nominal_hard"),
-  mapping::entry(
-    &bam::kpi_status::level_nominal_soft,
-    "level_nominal_soft"),
-  mapping::entry(
-    &bam::kpi_status::state_hard,
-    "state_hard"),
-  mapping::entry(
-    &bam::kpi_status::state_soft,
-    "state_soft"),
-  mapping::entry(
-    &bam::kpi_status::last_state_change,
-    "last_state_change"),
-  mapping::entry(
-    &bam::kpi_status::last_impact,
-    "last_impact"),
-  mapping::entry(
-    &bam::kpi_status::valid,
-    "valid"),
-  mapping::entry()
-};
+    mapping::entry(&bam::kpi_status::kpi_id,
+                   "kpi_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&bam::kpi_status::in_downtime, "in_downtime"),
+    mapping::entry(&bam::kpi_status::level_acknowledgement_hard,
+                   "level_acknowledgement_hard"),
+    mapping::entry(&bam::kpi_status::level_acknowledgement_soft,
+                   "level_acknowledgement_soft"),
+    mapping::entry(&bam::kpi_status::level_downtime_hard,
+                   "level_downtime_hard"),
+    mapping::entry(&bam::kpi_status::level_downtime_soft,
+                   "level_downtime_soft"),
+    mapping::entry(&bam::kpi_status::level_nominal_hard, "level_nominal_hard"),
+    mapping::entry(&bam::kpi_status::level_nominal_soft, "level_nominal_soft"),
+    mapping::entry(&bam::kpi_status::state_hard, "state_hard"),
+    mapping::entry(&bam::kpi_status::state_soft, "state_soft"),
+    mapping::entry(&bam::kpi_status::last_state_change, "last_state_change"),
+    mapping::entry(&bam::kpi_status::last_impact, "last_impact"),
+    mapping::entry(&bam::kpi_status::valid, "valid"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_kpi_status() {
   return (new kpi_status);
 }
 io::event_info::event_operations const kpi_status::operations = {
-  &new_kpi_status
-};
+    &new_kpi_status};

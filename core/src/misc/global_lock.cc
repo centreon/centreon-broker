@@ -21,9 +21,9 @@
 using namespace com::centreon::broker;
 
 /**************************************
-*                                     *
-*           Global Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Global Objects            *
+ *                                     *
+ **************************************/
 
 std::mutex misc::global_lock;

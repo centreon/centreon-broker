@@ -17,13 +17,13 @@
 */
 
 #ifndef CCB_BBDO_ACCEPTOR_HH
-#  define CCB_BBDO_ACCEPTOR_HH
+#define CCB_BBDO_ACCEPTOR_HH
 
-#  include <ctime>
-#  include <list>
-#  include <string>
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <ctime>
+#include <list>
+#include <string>
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -43,18 +43,21 @@ class stream;
  *  Accept incoming BBDO connections.
  */
 class acceptor : public io::endpoint {
-public:
-  acceptor(std::string const &name, bool negotiate,
-           std::string const &extensions, time_t timeout,
-           bool one_peer_retention_mode = false, bool coarse = false,
+ public:
+  acceptor(std::string const& name,
+           bool negotiate,
+           std::string const& extensions,
+           time_t timeout,
+           bool one_peer_retention_mode = false,
+           bool coarse = false,
            unsigned int ack_limit = 1000);
-  acceptor(acceptor const &other);
+  acceptor(acceptor const& other);
   ~acceptor();
-  acceptor &operator=(acceptor const &other);
+  acceptor& operator=(acceptor const& other);
   std::shared_ptr<io::stream> open() override;
-  void stats(io::properties &tree) override;
+  void stats(io::properties& tree) override;
 
-private:
+ private:
   unsigned int _negotiate_features(std::shared_ptr<io::stream> stream,
                                    std::shared_ptr<bbdo::stream> my_bbdo);
   void _open(std::shared_ptr<io::stream> stream);
@@ -67,8 +70,8 @@ private:
   time_t _timeout;
   unsigned int _ack_limit;
 };
-} // namespace bbdo
+}  // namespace bbdo
 
 CCB_END()
 
-#endif // !CCB_BBDO_ACCEPTOR_HH
+#endif  // !CCB_BBDO_ACCEPTOR_HH

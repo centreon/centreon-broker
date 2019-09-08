@@ -122,8 +122,8 @@ class FileSplitterConcurrent : public ::testing::Test {
   std::string _path;
 
   void _remove_files() {
-    std::list<std::string> entries =
-        misc::filesystem::dir_content_with_filter(RETENTION_DIR, RETENTION_FILE "*");
+    std::list<std::string> entries = misc::filesystem::dir_content_with_filter(
+        RETENTION_DIR, RETENTION_FILE "*");
     for (std::list<std::string>::iterator it{entries.begin()},
          end{entries.end()};
          it != end; ++it)

@@ -94,7 +94,7 @@ void input_buffer::erase(int bytes) {
       bytes = 0;
     }
   }
-  return ;
+  return;
 }
 
 /**
@@ -106,16 +106,15 @@ void input_buffer::erase(int bytes) {
  */
 void input_buffer::extract(std::string& output, int offset, int size) {
   // Find initial position.
-  std::list<std::shared_ptr<io::raw> >::const_iterator
-    it(_data.begin()), end(_data.end());
+  std::list<std::shared_ptr<io::raw> >::const_iterator it(_data.begin()),
+      end(_data.end());
   int it_offset(_first_offset);
   for (int remaining(offset); it != end; ++it, it_offset = 0) {
     int available((*it)->size() - it_offset);
     if (remaining < available) {
       it_offset += remaining;
-      break ;
-    }
-    else
+      break;
+    } else
       remaining -= available;
   }
 

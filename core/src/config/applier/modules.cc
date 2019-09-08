@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/config/applier/modules.hh"
 #include <cstdlib>
 #include <memory>
-#include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 
@@ -28,10 +28,10 @@ using namespace com::centreon::broker::config::applier;
 static modules* gl_modules = NULL;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Destructor.
@@ -47,33 +47,28 @@ modules::~modules() {
  *  @param[in] module_dir  Module directory.
  *  @param[in] arg         Module argument.
  */
-void modules::apply(
-                std::list<std::string> const& module_list,
-                std::string const& module_dir,
-                void const* arg) {
+void modules::apply(std::list<std::string> const& module_list,
+                    std::string const& module_dir,
+                    void const* arg) {
   // Lock multiplexing engine in case modules register hooks.
-  std::lock_guard<std::recursive_mutex>
-    lock(com::centreon::broker::multiplexing::engine::instance());
+  std::lock_guard<std::recursive_mutex> lock(
+      com::centreon::broker::multiplexing::engine::instance());
 
   // Load modules.
-  for (std::list<std::string>::const_iterator
-         it(module_list.begin()),
-         end(module_list.end());
-       it != end;
-       ++it) {
+  for (std::list<std::string>::const_iterator it(module_list.begin()),
+       end(module_list.end());
+       it != end; ++it) {
     logging::config(logging::high)
-      << "module applier: loading module '" << *it << "'";
+        << "module applier: loading module '" << *it << "'";
     _loader.load_file(*it, arg);
   }
   if (!module_dir.empty()) {
     logging::config(logging::high)
-      << "module applier: loading directory '" << module_dir << "'";
+        << "module applier: loading directory '" << module_dir << "'";
     _loader.load_dir(module_dir, arg);
-  }
-  else
-    logging::debug(logging::high)
-      << "module applier: no directory defined";
-  return ;
+  } else
+    logging::debug(logging::high) << "module applier: no directory defined";
+  return;
 }
 
 /**
@@ -90,7 +85,7 @@ modules::iterator modules::begin() {
  */
 void modules::discard() {
   _loader.unload();
-  return ;
+  return;
 }
 
 /**
@@ -117,7 +112,7 @@ modules& modules::instance() {
 void modules::load() {
   if (!gl_modules)
     gl_modules = new modules;
-  return ;
+  return;
 }
 
 /**
@@ -126,14 +121,14 @@ void modules::load() {
 void modules::unload() {
   delete gl_modules;
   gl_modules = NULL;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.

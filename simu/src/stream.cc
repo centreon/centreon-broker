@@ -15,22 +15,22 @@
 **
 ** For more information : contact@centreon.com
 */
+#include "com/centreon/broker/simu/stream.hh"
 #include <sstream>
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/simu/luabinding.hh"
-#include "com/centreon/broker/simu/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::simu;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -38,9 +38,8 @@ using namespace com::centreon::broker::simu;
  *  @param[in] addr                    Address to connect to
  *  @param[in] port                    port
  */
-stream::stream(
-          std::string const& lua_script,
-          std::map<std::string, misc::variant> const& conf_params) {
+stream::stream(std::string const& lua_script,
+               std::map<std::string, misc::variant> const& conf_params) {
   _luabinding = new luabinding(lua_script, conf_params);
 }
 

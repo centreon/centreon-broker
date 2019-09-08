@@ -17,12 +17,12 @@
 */
 
 #ifndef CCB_LUA_CONNECTOR_HH
-#  define CCB_LUA_CONNECTOR_HH
+#define CCB_LUA_CONNECTOR_HH
 
-#  include <map>
-#  include <memory>
-#  include "com/centreon/broker/misc/variant.hh"
-#  include "com/centreon/broker/io/endpoint.hh"
+#include <map>
+#include <memory>
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/misc/variant.hh"
 
 CCB_BEGIN()
 
@@ -53,4 +53,4 @@ class connector : public io::endpoint {
 
 CCB_END()
 
-#endif // !CCB_LUA_CONNECTOR_HH
+#endif  // !CCB_LUA_CONNECTOR_HH

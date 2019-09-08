@@ -17,38 +17,36 @@
 */
 
 #ifndef CCB_LUA_BROKER_LOG_HH
-#  define CCB_LUA_BROKER_LOG_HH
+#define CCB_LUA_BROKER_LOG_HH
 
-#  include "com/centreon/broker/lua/luabinding.hh"
+#include "com/centreon/broker/lua/luabinding.hh"
 
 CCB_BEGIN()
 
-namespace               lua {
-  /**
-   *  @class broker_log broker_log.hh "com/centreon/broker/lua/broker_log.hh"
-   *  @brief Class managing the Lua connector logs
-   *
-   *  This class manages the logs written from the Lua script.
-   */
-  class                 broker_log {
-   public:
-    static void         broker_log_reg(lua_State* L);
+namespace lua {
+/**
+ *  @class broker_log broker_log.hh "com/centreon/broker/lua/broker_log.hh"
+ *  @brief Class managing the Lua connector logs
+ *
+ *  This class manages the logs written from the Lua script.
+ */
+class broker_log {
+ public:
+  static void broker_log_reg(lua_State* L);
 
-    void                set_parameters(
-                          int level,
-                          std::string const& filename);
-    int                 get_level() const;
-    std::string const&  get_file() const;
+  void set_parameters(int level, std::string const& filename);
+  int get_level() const;
+  std::string const& get_file() const;
 
-   private:
-                        broker_log();
+ private:
+  broker_log();
 
-    // Data exchanged with the Lua interpreter
-    std::string         _file;
-    int                 _level;
-  };
-}
+  // Data exchanged with the Lua interpreter
+  std::string _file;
+  int _level;
+};
+}  // namespace lua
 
 CCB_END()
 
-#endif // !CCB_LUA_BROKER_LOG_HH
+#endif  // !CCB_LUA_BROKER_LOG_HH

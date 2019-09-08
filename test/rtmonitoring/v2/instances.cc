@@ -43,38 +43,35 @@ static void precheck(test::time_points& tpoints, char const* name) {
   ++check_number;
   std::cout << "check #" << check_number << " (" << name << ")\n";
   tpoints.store();
-  return ;
+  return;
 }
 
 /**
  *  Postcheck routine.
  */
-static void postcheck(
-              test::centengine& engine,
-              test::time_points& tpoints,
-              test::db& db,
-              test::predicate expected[][24]) {
+static void postcheck(test::centengine& engine,
+                      test::time_points& tpoints,
+                      test::db& db,
+                      test::predicate expected[][24]) {
   static std::string check_query(
-    "SELECT instance_id, name, active_host_checks,"
-    "       active_service_checks, check_hosts_freshness,"
-    "       check_services_freshness, deleted, end_time, engine,"
-    "       event_handlers, flap_detection, global_host_event_handler,"
-    "       global_service_event_handler, last_alive,"
-    "       last_command_check, notifications, obsess_over_hosts,"
-    "       obsess_over_services, outdated, passive_host_checks,"
-    "       passive_service_checks, pid, running, start_time"
-    // XXX : not checked yet       "       version"
-    "  FROM instances");
+      "SELECT instance_id, name, active_host_checks,"
+      "       active_service_checks, check_hosts_freshness,"
+      "       check_services_freshness, deleted, end_time, engine,"
+      "       event_handlers, flap_detection, global_host_event_handler,"
+      "       global_service_event_handler, last_alive,"
+      "       last_command_check, notifications, obsess_over_hosts,"
+      "       obsess_over_services, outdated, passive_host_checks,"
+      "       passive_service_checks, pid, running, start_time"
+      // XXX : not checked yet       "       version"
+      "  FROM instances");
   engine.reload();
   test::sleep_for(3);
   tpoints.store();
-  expected[0][13]
-    = test::predicate(tpoints.prelast(), tpoints.last() + 1);
-  expected[0][14]
-    = test::predicate(tpoints.prelast(), tpoints.last() + 1);
+  expected[0][13] = test::predicate(tpoints.prelast(), tpoints.last() + 1);
+  expected[0][14] = test::predicate(tpoints.prelast(), tpoints.last() + 1);
   db.check_content(check_query, expected);
   std::cout << "  passed\n";
-  return ;
+  return;
 }
 
 /**
@@ -88,25 +85,23 @@ int main() {
 
   try {
     // Database.
-    char const* tables[] = { "instances", NULL };
+    char const* tables[] = {"instances", NULL};
     test::db db(DB_NAME, tables);
 
     // Monitoring broker.
     test::file cbd_cfg;
-    cbd_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
+    cbd_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
     cbd_cfg.set("BROKER_ID", "84");
     cbd_cfg.set("BROKER_NAME", TEST_NAME "-cbd");
     cbd_cfg.set("POLLER_ID", "42");
     cbd_cfg.set("POLLER_NAME", "my-poller");
     cbd_cfg.set("TCP_PORT", "5571");
     cbd_cfg.set("DB_NAME", DB_NAME);
-    cbd_cfg.set(
-      "SQL_ADDITIONAL",
-      "<write_filters>"
-      "  <category>neb:instance</category>"
-      "  <category>neb:instance_status</category>"
-      "</write_filters>");
+    cbd_cfg.set("SQL_ADDITIONAL",
+                "<write_filters>"
+                "  <category>neb:instance</category>"
+                "  <category>neb:instance_status</category>"
+                "</write_filters>");
     test::cbd broker;
     broker.set_config_file(cbd_cfg.generate());
     broker.start();
@@ -114,8 +109,7 @@ int main() {
 
     // Monitoring engine.
     test::file cbmod_cfg;
-    cbmod_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
+    cbmod_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
     cbmod_cfg.set("BROKER_ID", "83");
     cbmod_cfg.set("BROKER_NAME", TEST_NAME "-cbmod");
     cbmod_cfg.set("POLLER_ID", "42");
@@ -144,22 +138,37 @@ int main() {
 
     // Check default entry.
     precheck(
-      tpoints,
-      "engine, last_alive, last_command_check, pid, running, start_time");
+        tpoints,
+        "engine, last_alive, last_command_check, pid, running, start_time");
     engine.start();
     test::sleep_for(1);
     tpoints.store();
     test::predicate expected[][24] = {
-      { 42u, "my-poller", false, false, false, false, false,
-        test::predicate(test::predicate::type_null), "Centreon Engine",
-        false, false, "", "",
-        test::predicate(tpoints.prelast(), tpoints.last() + 1),
-        test::predicate(test::predicate::type_null), false, false,
-        false, false, false, false,
-        true, // PID will be converted to boolean, any non-0 will match.
-        true, test::predicate(tpoints.prelast(), tpoints.last() + 1) },
-      { test::predicate() }
-    };
+        {42u,
+         "my-poller",
+         false,
+         false,
+         false,
+         false,
+         false,
+         test::predicate(test::predicate::type_null),
+         "Centreon Engine",
+         false,
+         false,
+         "",
+         "",
+         test::predicate(tpoints.prelast(), tpoints.last() + 1),
+         test::predicate(test::predicate::type_null),
+         false,
+         false,
+         false,
+         false,
+         false,
+         false,
+         true,  // PID will be converted to boolean, any non-0 will match.
+         true,
+         test::predicate(tpoints.prelast(), tpoints.last() + 1)},
+        {test::predicate()}};
     postcheck(engine, tpoints, db, expected);
 
     // Check name.
@@ -206,17 +215,14 @@ int main() {
 
     // Check global_host_event_handler.
     precheck(tpoints, "global_host_event_handler");
-    engine_config.set_directive(
-      "global_host_event_handler",
-      "default_command");
+    engine_config.set_directive("global_host_event_handler", "default_command");
     expected[0][11] = "default_command";
     postcheck(engine, tpoints, db, expected);
 
     // Check global_service_event_handler.
     precheck(tpoints, "global_service_event_handler");
-    engine_config.set_directive(
-      "global_service_event_handler",
-      "default_command");
+    engine_config.set_directive("global_service_event_handler",
+                                "default_command");
     expected[0][12] = "default_command";
     postcheck(engine, tpoints, db, expected);
 
@@ -263,13 +269,10 @@ int main() {
     tpoints.store();
     {
       test::predicate expected_end_time[][3] = {
-        { 42u, test::predicate(tpoints.prelast(), tpoints.last() + 1),
-          false },
-        { test::predicate() }
-      };
-      db.check_content(
-           "SELECT instance_id, end_time, running FROM instances",
-           expected_end_time);
+          {42u, test::predicate(tpoints.prelast(), tpoints.last() + 1), false},
+          {test::predicate()}};
+      db.check_content("SELECT instance_id, end_time, running FROM instances",
+                       expected_end_time);
     }
     std::cout << "  passed\n";
 
@@ -289,11 +292,9 @@ int main() {
     error = false;
     db.set_remove_db_on_close(true);
     broker.stop();
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << "  " << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "  unknown exception\n";
   }
 

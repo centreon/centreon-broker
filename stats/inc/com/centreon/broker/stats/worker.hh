@@ -17,53 +17,53 @@
 */
 
 #ifndef CCB_STATS_WORKER_HH
-#  define CCB_STATS_WORKER_HH
+#define CCB_STATS_WORKER_HH
 
-#  include <thread>
-#  include <string>
-#  include "com/centreon/broker/stats/config.hh"
+#include <string>
+#include <thread>
+#include "com/centreon/broker/stats/config.hh"
 
-namespace               com {
-  namespace             centreon {
-    namespace           broker {
-      // Forward declarations.
-      namespace         io {
-        class           properties;
-      }
-
-      namespace         stats {
-        /**
-         *  @class worker worker.hh "com/centreon/broker/stats/worker.hh"
-         *  @brief Statistics worker thread.
-         *
-         *  The worker thread will wait for readability on a FIFO file
-         *  and write to it statistics when available.
-         */
-        class           worker {
-         public:
-                        worker();
-                        ~worker() throw ();
-          void          exit();
-          void          run(std::string const& fifo_file);
-          void wait();
-
-         private:
-                        worker(worker const& right);
-          worker&       operator=(worker const& right);
-          void          _close();
-          bool          _open();
-          void _run();
-
-          std::string   _buffer;
-          int           _fd;
-          std::string   _fifo;
-          volatile bool _should_exit;
-
-          std::thread _thread;
-        };
-      }
-    }
-  }
+namespace com {
+namespace centreon {
+namespace broker {
+// Forward declarations.
+namespace io {
+class properties;
 }
 
-#endif // !CCB_STATS_WORKER_HH
+namespace stats {
+/**
+ *  @class worker worker.hh "com/centreon/broker/stats/worker.hh"
+ *  @brief Statistics worker thread.
+ *
+ *  The worker thread will wait for readability on a FIFO file
+ *  and write to it statistics when available.
+ */
+class worker {
+ public:
+  worker();
+  ~worker() throw();
+  void exit();
+  void run(std::string const& fifo_file);
+  void wait();
+
+ private:
+  worker(worker const& right);
+  worker& operator=(worker const& right);
+  void _close();
+  bool _open();
+  void _run();
+
+  std::string _buffer;
+  int _fd;
+  std::string _fifo;
+  volatile bool _should_exit;
+
+  std::thread _thread;
+};
+}  // namespace stats
+}  // namespace broker
+}  // namespace centreon
+}  // namespace com
+
+#endif  // !CCB_STATS_WORKER_HH

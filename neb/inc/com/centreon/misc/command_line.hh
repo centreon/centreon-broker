@@ -17,48 +17,46 @@
 */
 
 #ifndef CC_MISC_COMMAND_LINE_HH
-#  define CC_MISC_COMMAND_LINE_HH
+#define CC_MISC_COMMAND_LINE_HH
 
-#  include <string>
-#  include "com/centreon/namespace.hh"
+#include <string>
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace         misc {
-  /**
-   *  @class command_line command_line.hh "com/centreon/misc/command_line.hh"
-   *  @brief Provide method to split command line arguments into array.
-   *
-   *  Command line is a simple way to split command line arguments
-   *  into array.
-   */
-  class           command_line {
-  public:
-                  command_line();
-                  command_line(
-                    char const* cmdline,
-                    unsigned int size = 0);
-                  command_line(std::string const& cmdline);
-                  command_line(command_line const& right);
-                  ~command_line() throw ();
-    command_line& operator=(command_line const& right);
-    bool          operator==(command_line const& right) const throw ();
-    bool          operator!=(command_line const& right) const throw ();
-    int           get_argc() const throw ();
-    char**        get_argv() const throw ();
-    void          parse(char const* cmdline, unsigned int size = 0);
-    void          parse(std::string const& cmdline);
+namespace misc {
+/**
+ *  @class command_line command_line.hh "com/centreon/misc/command_line.hh"
+ *  @brief Provide method to split command line arguments into array.
+ *
+ *  Command line is a simple way to split command line arguments
+ *  into array.
+ */
+class command_line {
+ public:
+  command_line();
+  command_line(char const* cmdline, unsigned int size = 0);
+  command_line(std::string const& cmdline);
+  command_line(command_line const& right);
+  ~command_line() throw();
+  command_line& operator=(command_line const& right);
+  bool operator==(command_line const& right) const throw();
+  bool operator!=(command_line const& right) const throw();
+  int get_argc() const throw();
+  char** get_argv() const throw();
+  void parse(char const* cmdline, unsigned int size = 0);
+  void parse(std::string const& cmdline);
 
-  private:
-    void          _internal_copy(command_line const& right);
-    void          _release();
+ private:
+  void _internal_copy(command_line const& right);
+  void _release();
 
-    int           _argc;
-    char**        _argv;
-    size_t        _size;
-  };
-}
+  int _argc;
+  char** _argv;
+  size_t _size;
+};
+}  // namespace misc
 
 CC_END()
 
-#endif // !CC_MISC_COMMAND_LINE_HH
+#endif  // !CC_MISC_COMMAND_LINE_HH

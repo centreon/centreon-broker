@@ -17,8 +17,8 @@
  *
  */
 #include <arpa/inet.h>
-#include <fstream>
 #include <gtest/gtest.h>
+#include <fstream>
 #include <list>
 #include <memory>
 #include "com/centreon/broker/bbdo/stream.hh"
@@ -186,5 +186,6 @@ TEST_F(OutputTest, WriteLongService) {
       4717);
 
   // Check checksum
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535)), 10510);
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535)),
+            10510);
 }

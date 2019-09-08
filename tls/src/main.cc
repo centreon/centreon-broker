@@ -27,51 +27,46 @@ using namespace com::centreon::broker;
 static unsigned int instances(0);
 
 extern "C" {
-  /**
-   *  Module version symbol. Used to check for version mismatch.
-   */
-  char const* broker_module_version = CENTREON_BROKER_VERSION;
+/**
+ *  Module version symbol. Used to check for version mismatch.
+ */
+char const* broker_module_version = CENTREON_BROKER_VERSION;
 
-  /**
-   *  Module deinitialization routine.
-   */
-  void broker_module_deinit() {
-    // Decrement instance number.
-    if (!--instances) {
-      // Unregister TLS layer.
-      io::protocols::instance().unreg("TLS");
+/**
+ *  Module deinitialization routine.
+ */
+void broker_module_deinit() {
+  // Decrement instance number.
+  if (!--instances) {
+    // Unregister TLS layer.
+    io::protocols::instance().unreg("TLS");
 
-      // Cleanup.
-      tls::destroy();
-    }
-    return ;
+    // Cleanup.
+    tls::destroy();
   }
+  return;
+}
 
-  /**
-   *  Module initialization routine.
-   *
-   *  @param[in] arg Configuration object.
-   */
-  void broker_module_init(void const* arg) {
-    (void)arg;
+/**
+ *  Module initialization routine.
+ *
+ *  @param[in] arg Configuration object.
+ */
+void broker_module_init(void const* arg) {
+  (void)arg;
 
-    // Increment instance number.
-    if (!instances++) {
-      // TLS module.
-      logging::info(logging::high)
-        << "TLS: module for Centreon Broker "
-        << CENTREON_BROKER_VERSION;
+  // Increment instance number.
+  if (!instances++) {
+    // TLS module.
+    logging::info(logging::high)
+        << "TLS: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
-      // Initialization.
-      tls::initialize();
+    // Initialization.
+    tls::initialize();
 
-      // Register TLS layer.
-      io::protocols::instance().reg(
-                                  "TLS",
-                                  tls::factory(),
-                                  5,
-                                  5);
-    }
-    return ;
+    // Register TLS layer.
+    io::protocols::instance().reg("TLS", tls::factory(), 5, 5);
   }
+  return;
+}
 }

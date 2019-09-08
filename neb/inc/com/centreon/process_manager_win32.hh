@@ -17,13 +17,13 @@
 */
 
 #ifndef CC_PROCESS_MANAGER_WIN32_HH
-#  define CC_PROCESS_MANAGER_WIN32_HH
+#define CC_PROCESS_MANAGER_WIN32_HH
 
-#  include <poll.h>
-#  include "com/centreon/concurrency/mutex.hh"
-#  include "com/centreon/concurrency/thread.hh"
-#  include "com/centreon/namespace.hh"
-#  include "com/centreon/htable.hh"
+#include <poll.h>
+#include "com/centreon/concurrency/mutex.hh"
+#include "com/centreon/concurrency/thread.hh"
+#include "com/centreon/htable.hh"
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
@@ -31,40 +31,40 @@ class process;
 class process_listener;
 
 /**
- *  @class process_manager process_manager_win32.hh "com/centreon/process_manager_win32.hh"
+ *  @class process_manager process_manager_win32.hh
+ * "com/centreon/process_manager_win32.hh"
  *  @brief This class manage process.
  *
  *  This class is a singleton and manage process.
  */
-class                      process_manager
-  : public concurrency::thread {
-public:
-  void                     add(process* p);
-  static process_manager&  instance();
-  static void              load();
-  static void              unload();
+class process_manager : public concurrency::thread {
+ public:
+  void add(process* p);
+  static process_manager& instance();
+  static void load();
+  static void unload();
 
-private:
-                           process_manager();
-                           process_manager(process_manager const& p);
-                           ~process_manager() throw ();
-  process_manager&         operator=(process_manager const& p);
-  void                     _close_stream(HANDLE fd) throw ();
-  void                     _read_stream(HANDLE fd) throw ();
-  void                     _run();
-  void                     _update_list();
-  void                     _wait_processes() throw ();
+ private:
+  process_manager();
+  process_manager(process_manager const& p);
+  ~process_manager() throw();
+  process_manager& operator=(process_manager const& p);
+  void _close_stream(HANDLE fd) throw();
+  void _read_stream(HANDLE fd) throw();
+  void _run();
+  void _update_list();
+  void _wait_processes() throw();
 
-  HANDLE*                  _fds;
-  unsigned int             _fds_capacity;
-  unsigned int             _fds_size;
-  concurrency::mutex       _lock_processes;
+  HANDLE* _fds;
+  unsigned int _fds_capacity;
+  unsigned int _fds_size;
+  concurrency::mutex _lock_processes;
   htable<HANDLE, process*> _processes_fd;
   // htable<pid_t, process*>  _processes_pid;
-  bool                     _quit;
-  bool                     _update;
+  bool _quit;
+  bool _update;
 };
 
 CC_END()
 
-#endif // !CC_PROCESS_MANAGER_WIN32_HH
+#endif  // !CC_PROCESS_MANAGER_WIN32_HH

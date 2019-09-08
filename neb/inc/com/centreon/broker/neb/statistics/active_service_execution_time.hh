@@ -17,33 +17,33 @@
 */
 
 #ifndef CCB_NEB_STATISTICS_ACTIVE_SERVICE_EXECUTION_TIME_HH
-#  define CCB_NEB_STATISTICS_ACTIVE_SERVICE_EXECUTION_TIME_HH
+#define CCB_NEB_STATISTICS_ACTIVE_SERVICE_EXECUTION_TIME_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/statistics/plugin.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/statistics/plugin.hh"
 
 CCB_BEGIN()
 
-namespace         neb {
-  namespace       statistics {
-    /**
-     *  @class active_service_execution_time active_service_execution_time.hh "com/centreon/broker/neb/statistics/active_service_execution_time.hh"
-     *  @brief active_service_execution_time statistics plugin.
-     */
-    class         active_service_execution_time : public plugin {
-    public:
-                  active_service_execution_time();
-                  active_service_execution_time(
-                    active_service_execution_time const& right);
-                  ~active_service_execution_time();
-      active_service_execution_time&
-                  operator=(active_service_execution_time const& right);
-      void        run(std::string& output, std::string& perfdata);
-    };
-  }
-}
+namespace neb {
+namespace statistics {
+/**
+ *  @class active_service_execution_time active_service_execution_time.hh
+ * "com/centreon/broker/neb/statistics/active_service_execution_time.hh"
+ *  @brief active_service_execution_time statistics plugin.
+ */
+class active_service_execution_time : public plugin {
+ public:
+  active_service_execution_time();
+  active_service_execution_time(active_service_execution_time const& right);
+  ~active_service_execution_time();
+  active_service_execution_time& operator=(
+      active_service_execution_time const& right);
+  void run(std::string& output, std::string& perfdata);
+};
+}  // namespace statistics
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_ACTIVE_SERVICE_EXECUTION_TIME_HH
+#endif  // !CCB_NEB_STATISTICS_ACTIVE_SERVICE_EXECUTION_TIME_HH

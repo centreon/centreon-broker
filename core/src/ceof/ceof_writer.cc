@@ -23,9 +23,7 @@ using namespace com::centreon::broker::ceof;
 /**
  *  Default constructor.
  */
-ceof_writer::ceof_writer() {
-
-}
+ceof_writer::ceof_writer() {}
 
 /**
  *  Copy constructor.
@@ -53,9 +51,7 @@ ceof_writer& ceof_writer::operator=(ceof_writer const& other) {
 /**
  *  Destructor.
  */
-ceof_writer::~ceof_writer() throw() {
-
-}
+ceof_writer::~ceof_writer() throw() {}
 
 /**
  *  Open an object.

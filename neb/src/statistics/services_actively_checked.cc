@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/services_actively_checked.hh"
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/services_actively_checked.hh"
 #include "com/centreon/engine/globals.hh"
 
 using namespace com::centreon::broker;
@@ -30,15 +30,16 @@ using namespace com::centreon::broker::neb::statistics;
  *  Default constructor.
  */
 services_actively_checked::services_actively_checked()
-  : plugin("services_actively_checked") {}
+    : plugin("services_actively_checked") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-services_actively_checked::services_actively_checked(services_actively_checked const& right)
- : plugin(right) {}
+services_actively_checked::services_actively_checked(
+    services_actively_checked const& right)
+    : plugin(right) {}
 
 /**
  *  Destructor.
@@ -52,7 +53,8 @@ services_actively_checked::~services_actively_checked() {}
  *
  *  @return This object.
  */
-services_actively_checked& services_actively_checked::operator=(services_actively_checked const& right) {
+services_actively_checked& services_actively_checked::operator=(
+    services_actively_checked const& right) {
   plugin::operator=(right);
   return (*this);
 }
@@ -63,16 +65,14 @@ services_actively_checked& services_actively_checked::operator=(services_activel
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void services_actively_checked::run(
-              std::string& output,
-	      std::string& perfdata) {
+void services_actively_checked::run(std::string& output,
+                                    std::string& perfdata) {
   // Count services active checked.
   unsigned int total{0};
   for (service_map::const_iterator
-         it{com::centreon::engine::service::services.begin()},
-         end{com::centreon::engine::service::services.end()};
-       it != end;
-       ++it)
+           it{com::centreon::engine::service::services.begin()},
+       end{com::centreon::engine::service::services.end()};
+       it != end; ++it)
     if (it->second->get_checks_enabled())
       ++total;
 
@@ -87,5 +87,5 @@ void services_actively_checked::run(
   oss << "services_actively_checked=" << total;
   perfdata = oss.str();
 
-  return ;
+  return;
 }

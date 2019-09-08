@@ -17,100 +17,96 @@
 */
 
 #ifndef CCB_GRAPHITE_STREAM_HH
-#  define CCB_GRAPHITE_STREAM_HH
+#define CCB_GRAPHITE_STREAM_HH
 
-#  include <asio.hpp>
-#  include <deque>
-#  include <list>
-#  include <map>
-#  include <memory>
-#  include <mutex>
-#  include <utility>
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/multiplexing/hooker.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/storage/metric.hh"
-#  include "com/centreon/broker/storage/status.hh"
-#  include "com/centreon/broker/graphite/query.hh"
-#  include "com/centreon/broker/graphite/macro_cache.hh"
+#include <asio.hpp>
+#include <deque>
+#include <list>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <utility>
+#include "com/centreon/broker/graphite/macro_cache.hh"
+#include "com/centreon/broker/graphite/query.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/multiplexing/hooker.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/status.hh"
 
 #if ASIO_VERSION < 101200
 namespace asio {
-  typedef io_service io_context;
+typedef io_service io_context;
 }
 #endif
 
 CCB_BEGIN()
 
 // Forward declaration.
-class              database_config;
+class database_config;
 
-namespace          graphite {
-  /**
-   *  @class stream stream.hh "com/centreon/broker/graphite/stream.hh"
-   *  @brief Graphite stream.
-   *
-   *  Insert metrics/statuses into graphite.
-   */
-  class            stream : public io::stream {
-  public:
-                   stream(
-                     std::string const& metric_naming,
-                     std::string const& status_naming,
-                     std::string const& escape_string,
-                     std::string const& db_user,
-                     std::string const& db_password,
-                     std::string const& db_host,
-                     unsigned short db_port,
-                     unsigned int queries_per_transaction,
-                     std::shared_ptr<persistent_cache> const& cache);
-                   ~stream();
-    int            flush();
-    bool           read(std::shared_ptr<io::data>& d, time_t deadline);
-    void           statistics(io::properties& tree) const;
-    void           update();
-    int            write(std::shared_ptr<io::data> const& d);
+namespace graphite {
+/**
+ *  @class stream stream.hh "com/centreon/broker/graphite/stream.hh"
+ *  @brief Graphite stream.
+ *
+ *  Insert metrics/statuses into graphite.
+ */
+class stream : public io::stream {
+ public:
+  stream(std::string const& metric_naming,
+         std::string const& status_naming,
+         std::string const& escape_string,
+         std::string const& db_user,
+         std::string const& db_password,
+         std::string const& db_host,
+         unsigned short db_port,
+         unsigned int queries_per_transaction,
+         std::shared_ptr<persistent_cache> const& cache);
+  ~stream();
+  int flush();
+  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  void statistics(io::properties& tree) const;
+  void update();
+  int write(std::shared_ptr<io::data> const& d);
 
-  private:
-    // Database parameters
-    std::string    _metric_naming;
-    std::string    _status_naming;
-    std::string    _db_user;
-    std::string    _db_password;
-    std::string    _db_host;
-    unsigned short _db_port;
-    unsigned int   _queries_per_transaction;
+ private:
+  // Database parameters
+  std::string _metric_naming;
+  std::string _status_naming;
+  std::string _db_user;
+  std::string _db_password;
+  std::string _db_host;
+  unsigned short _db_port;
+  unsigned int _queries_per_transaction;
 
-    // Internal working members
-    int            _pending_queries;
-    unsigned int   _actual_query;
-    bool           _commit_flag;
+  // Internal working members
+  int _pending_queries;
+  unsigned int _actual_query;
+  bool _commit_flag;
 
-    // Status members
-    std::string    _status;
-    mutable std::mutex
-                   _statusm;
+  // Status members
+  std::string _status;
+  mutable std::mutex _statusm;
 
-    // Cache
-    macro_cache    _cache;
+  // Cache
+  macro_cache _cache;
 
-    // Query
-    query          _metric_query;
-    query          _status_query;
-    std::string    _query;
-    std::string    _auth_query;
-    std::unique_ptr<asio::ip::tcp::socket>
-                   _socket;
-    asio::io_context
-                   _io_context;
+  // Query
+  query _metric_query;
+  query _status_query;
+  std::string _query;
+  std::string _auth_query;
+  std::unique_ptr<asio::ip::tcp::socket> _socket;
+  asio::io_context _io_context;
 
-    // Process metric/status and generate query.
-    bool           _process_metric(storage::metric const& me);
-    bool           _process_status(storage::status const& st);
-    void           _commit();
-  };
-}
+  // Process metric/status and generate query.
+  bool _process_metric(storage::metric const& me);
+  bool _process_status(storage::status const& st);
+  void _commit();
+};
+}  // namespace graphite
 
 CCB_END()
 
-#endif // !CCB_GRAPHITE_STREAM_HH
+#endif  // !CCB_GRAPHITE_STREAM_HH

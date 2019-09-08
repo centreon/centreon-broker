@@ -17,15 +17,15 @@
 */
 
 #ifndef CC_PROCESS_MANAGER_POSIX_HH
-#  define CC_PROCESS_MANAGER_POSIX_HH
+#define CC_PROCESS_MANAGER_POSIX_HH
 
-#  include <list>
-#  include <map>
-#  include <poll.h>
-#  include "com/centreon/concurrency/mutex.hh"
-#  include "com/centreon/concurrency/thread.hh"
-#  include "com/centreon/namespace.hh"
-#  include "com/centreon/unordered_hash.hh"
+#include <poll.h>
+#include <list>
+#include <map>
+#include "com/centreon/concurrency/mutex.hh"
+#include "com/centreon/concurrency/thread.hh"
+#include "com/centreon/namespace.hh"
+#include "com/centreon/unordered_hash.hh"
 
 CC_BEGIN()
 
@@ -33,56 +33,52 @@ class process;
 class process_listener;
 
 /**
- *  @class process_manager process_manager_posix.hh "com/centreon/process_manager_posix.hh"
+ *  @class process_manager process_manager_posix.hh
+ * "com/centreon/process_manager_posix.hh"
  *  @brief This class manage process.
  *
  *  This class is a singleton and manage process.
  */
-class                     process_manager
-  : public concurrency::thread {
-public:
-  void                    add(process* p);
+class process_manager : public concurrency::thread {
+ public:
+  void add(process* p);
   static process_manager& instance();
-  static void             load();
-  static void             unload();
+  static void load();
+  static void unload();
 
-private:
-  struct                  orphan {
-                          orphan(pid_t _pid = 0, int _status = 0)
-                            : pid(_pid), status(_status) {}
-    pid_t                 pid;
-    int                   status;
+ private:
+  struct orphan {
+    orphan(pid_t _pid = 0, int _status = 0) : pid(_pid), status(_status) {}
+    pid_t pid;
+    int status;
   };
-                          process_manager();
-                          process_manager(process_manager const& p);
-                          ~process_manager() throw ();
-  process_manager&        operator=(process_manager const& p);
-  static void             _close(int& fd) throw ();
-  void                    _close_stream(int fd) throw ();
-  void                    _erase_timeout(process* p);
-  void                    _kill_processes_timeout() throw ();
-  unsigned int            _read_stream(int fd) throw ();
-  void                    _run();
-  void                    _update_ending_process(
-                            process* p,
-                            int status) throw ();
-  void                    _update_list();
-  void                    _wait_orphans_pid() throw ();
-  void                    _wait_processes() throw ();
+  process_manager();
+  process_manager(process_manager const& p);
+  ~process_manager() throw();
+  process_manager& operator=(process_manager const& p);
+  static void _close(int& fd) throw();
+  void _close_stream(int fd) throw();
+  void _erase_timeout(process* p);
+  void _kill_processes_timeout() throw();
+  unsigned int _read_stream(int fd) throw();
+  void _run();
+  void _update_ending_process(process* p, int status) throw();
+  void _update_list();
+  void _wait_orphans_pid() throw();
+  void _wait_processes() throw();
 
-  pollfd*                 _fds;
-  unsigned int            _fds_capacity;
-  int                     _fds_exit[2];
-  unsigned int            _fds_size;
-  concurrency::mutex      _lock_processes;
-  std::list<orphan>       _orphans_pid;
-  umap<int, process*>     _processes_fd;
-  umap<pid_t, process*>   _processes_pid;
-  std::multimap<unsigned int, process*>
-                          _processes_timeout;
-  bool                    _update;
+  pollfd* _fds;
+  unsigned int _fds_capacity;
+  int _fds_exit[2];
+  unsigned int _fds_size;
+  concurrency::mutex _lock_processes;
+  std::list<orphan> _orphans_pid;
+  umap<int, process*> _processes_fd;
+  umap<pid_t, process*> _processes_pid;
+  std::multimap<unsigned int, process*> _processes_timeout;
+  bool _update;
 };
 
 CC_END()
 
-#endif // !CC_PROCESS_MANAGER_POSIX_HH
+#endif  // !CC_PROCESS_MANAGER_POSIX_HH

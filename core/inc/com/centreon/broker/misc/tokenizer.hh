@@ -17,96 +17,92 @@
 */
 
 #ifndef CCB_MISC_TOKENIZER_HH
-#  define CCB_MISC_TOKENIZER_HH
+#define CCB_MISC_TOKENIZER_HH
 
-#  include <string>
-#  include <cstring>
-#  include <sstream>
-#  include <cstdlib>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/exceptions/msg.hh"
-#  include "com/centreon/broker/logging/logging.hh"
+#include <cstdlib>
+#include <cstring>
+#include <sstream>
+#include <string>
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        misc {
-  template <typename T>
+namespace misc {
+template <typename T>
+/**
+ *  Get a value from a stringstream.
+ *
+ *  @param[in] ss  The stringstream.
+ *
+ *  @return        The value.
+ */
+T from_string_stream(std::stringstream& ss) {
+  T ret;
+  ss >> ret;
+  return (ret);
+}
+
+template <>
+std::string from_string_stream(std::stringstream& ss);
+
+/**
+ *  @class tokenizer tokenizer.hh "com/centreon/broker/misc/tokenizer.hh"
+ *  @brief Simple tokenizer.
+ *
+ *  Tokenize like a tokenizer should.
+ */
+class tokenizer {
+ public:
+  tokenizer(std::string const& line, char separator = ';');
+  ~tokenizer();
+
   /**
-   *  Get a value from a stringstream.
+   *  Get the next token.
    *
-   *  @param[in] ss  The stringstream.
-   *
-   *  @return        The value.
+   *  @param[in] optional  Is the token optional.
    */
-  T from_string_stream(std::stringstream& ss) {
-    T ret;
-    ss >> ret;
+  template <typename T>
+  T get_next_token(bool optional = false) {
+    char* position = ::strchr(_index, _separator);
+
+    std::string arg;
+
+    if (position == NULL)
+      position = _line + ::strlen(_line);
+
+    arg = std::string(_index, position - _index);
+
+    if (arg.empty() && !optional)
+      throw(exceptions::msg() << "expected non optional argument " << _pos
+                              << " empty or not found");
+
+    std::stringstream ss;
+    ss << arg;
+    T ret = from_string_stream<T>(ss);
+    if (ss.fail())
+      throw(exceptions::msg() << "can't convert '" << ss.str()
+                              << "' to expected type for pos " << _pos);
+
+    _index = *position ? position + 1 : position;
+    ++_pos;
+
     return (ret);
   }
 
-  template <>
-  std::string from_string_stream(std::stringstream& ss);
+ private:
+  char* _line;
+  char _separator;
+  unsigned int _pos;
+  char* _index;
 
-  /**
-   *  @class tokenizer tokenizer.hh "com/centreon/broker/misc/tokenizer.hh"
-   *  @brief Simple tokenizer.
-   *
-   *  Tokenize like a tokenizer should.
-   */
-  class          tokenizer {
-  public:
-                 tokenizer(std::string const& line, char separator = ';');
-                 ~tokenizer();
-
-    /**
-     *  Get the next token.
-     *
-     *  @param[in] optional  Is the token optional.
-     */
-    template <typename T>
-    T            get_next_token(bool optional = false) {
-      char* position = ::strchr(_index, _separator);
-
-      std::string arg;
-
-      if (position == NULL)
-        position = _line + ::strlen(_line);
-
-      arg = std::string(_index, position - _index);
-
-      if (arg.empty() && !optional)
-        throw (exceptions::msg()
-               << "expected non optional argument "
-               << _pos << " empty or not found");
-
-      std::stringstream ss;
-      ss << arg;
-      T ret = from_string_stream<T>(ss);
-      if (ss.fail())
-        throw (exceptions::msg()
-               << "can't convert '" << ss.str()
-               << "' to expected type for pos " << _pos);
-
-      _index = *position ? position + 1 : position;
-      ++_pos;
-
-      return (ret);
-    }
-
-  private:
-    char*        _line;
-    char         _separator;
-    unsigned int
-                 _pos;
-    char*        _index;
-
-                 tokenizer();
-                 tokenizer(tokenizer const& other);
-    tokenizer&
-                 operator=(tokenizer const& other);
-  };
-}
+  tokenizer();
+  tokenizer(tokenizer const& other);
+  tokenizer& operator=(tokenizer const& other);
+};
+}  // namespace misc
 
 CCB_END()
 
-#endif // !CCB_MISC_TOKENIZER_HH
+#endif  // !CCB_MISC_TOKENIZER_HH

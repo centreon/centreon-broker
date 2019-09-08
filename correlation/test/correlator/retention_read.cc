@@ -16,15 +16,15 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <exception>
-#include <iostream>
 #include <QDir>
 #include <QFile>
 #include <QString>
+#include <cstdlib>
+#include <exception>
+#include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/correlation/parser.hh"
+#include "com/centreon/broker/correlation/stream.hh"
 #include "test/parser/common.hh"
 
 using namespace com::centreon::broker;
@@ -75,9 +75,9 @@ int main() {
     "<centreonbroker>\n"
     "  <host id=\"13\" since=\"123\" state=\"2\" />\n"
     "  <service id=\"21\" host=\"13\" since=\"34523\" state=\"3\" />\n"
-    "  <issue host=\"13\" service=\"21\" ack_time=\"32\" start_time=\"8236\" />\n"
-    "  <service id=\"33\" host=\"13\" since=\"751\" state=\"3\" />\n"
-    "  <issue host=\"13\" service=\"33\" ack_time=\"0\" start_time=\"234\" />\n"
+    "  <issue host=\"13\" service=\"21\" ack_time=\"32\" start_time=\"8236\"
+  />\n" "  <service id=\"33\" host=\"13\" since=\"751\" state=\"3\" />\n" "
+  <issue host=\"13\" service=\"33\" ack_time=\"0\" start_time=\"234\" />\n"
     "</centreonbroker>\n";
   QString retention_path(QDir::tempPath());
   retention_path.append("/broker_correlation_correlator_retention_read2");

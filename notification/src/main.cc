@@ -27,46 +27,42 @@ using namespace com::centreon::broker;
 static unsigned int instances(0);
 
 extern "C" {
-  /**
-   *  Module version symbol. Used to check for version mismatch.
-   */
-  char const* broker_module_version = CENTREON_BROKER_VERSION;
+/**
+ *  Module version symbol. Used to check for version mismatch.
+ */
+char const* broker_module_version = CENTREON_BROKER_VERSION;
 
-  /**
-   *  Module deinitialization routine.
-   */
-  void broker_module_deinit() {
-    // Decrement instance number.
-    if (!--instances) {
-      // Deregister notification layer.
-      io::protocols::instance().unreg("notification");
-    }
-    return ;
+/**
+ *  Module deinitialization routine.
+ */
+void broker_module_deinit() {
+  // Decrement instance number.
+  if (!--instances) {
+    // Deregister notification layer.
+    io::protocols::instance().unreg("notification");
+  }
+  return;
+}
+
+/**
+ *  Module initialization routine.
+ *
+ *  @param[in] arg Configuration object.
+ */
+void broker_module_init(void const* arg) {
+  (void)arg;
+
+  // Increment instance number.
+  if (!instances++) {
+    // Notification module.
+    logging::info(logging::high) << "notification: module for Centreon Broker "
+                                 << CENTREON_BROKER_VERSION;
+
+    // Register Notification layer.
+    io::protocols::instance().reg("notification", notification::factory(), 1,
+                                  7);
   }
 
-  /**
-   *  Module initialization routine.
-   *
-   *  @param[in] arg Configuration object.
-   */
-  void broker_module_init(void const* arg) {
-    (void)arg;
-
-    // Increment instance number.
-    if (!instances++) {
-      // Notification module.
-      logging::info(logging::high)
-        << "notification: module for Centreon Broker "
-        << CENTREON_BROKER_VERSION;
-
-      // Register Notification layer.
-      io::protocols::instance().reg(
-        "notification",
-        notification::factory(),
-        1,
-        7);
-    }
-
-    return ;
-  }
+  return;
+}
 }

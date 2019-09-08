@@ -17,30 +17,29 @@
 */
 
 #ifndef CCB_STATS_JSON_SERIALIZER_HH
-#  define CCB_STATS_JSON_SERIALIZER_HH
+#define CCB_STATS_JSON_SERIALIZER_HH
 
-#  include <string>
-#  include "com/centreon/broker/stats/serializer.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/stats/serializer.hh"
 
 CCB_BEGIN()
 
-namespace         stats {
-  /**
-   *  @class json_serializer json_serializer.hh "com/centreon/broker/stats/json_serializer.hh"
-   *  @brief Serialize in json format.
-   */
-  class           json_serializer : public serializer {
-  public:
-                  json_serializer();
-                  ~json_serializer();
+namespace stats {
+/**
+ *  @class json_serializer json_serializer.hh
+ * "com/centreon/broker/stats/json_serializer.hh"
+ *  @brief Serialize in json format.
+ */
+class json_serializer : public serializer {
+ public:
+  json_serializer();
+  ~json_serializer();
 
-    virtual void  serialize(
-                    std::string& buffer,
-                    io::properties const& tree) const;
-  };
-}
+  virtual void serialize(std::string& buffer, io::properties const& tree) const;
+};
+}  // namespace stats
 
 CCB_END()
 
-#endif // !CCB_STATS_JSON_SERIALIZER_HH
+#endif  // !CCB_STATS_JSON_SERIALIZER_HH

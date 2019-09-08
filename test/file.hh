@@ -17,41 +17,38 @@
 */
 
 #ifndef CCB_TEST_FILE_HH
-#  define CCB_TEST_FILE_HH
+#define CCB_TEST_FILE_HH
 
-#  include <map>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <map>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace              test {
-  /**
-   *  Test file.
-   */
-  class                file {
-  public:
-                       file();
-                       file(file const& other);
-                       ~file();
-    file&              operator=(file const& other);
-    void               close();
-    std::string const& generate();
-    void               set(
-                         std::string const& variable,
-                         std::string const& value);
-    void               set_template(std::string const& base_file);
+namespace test {
+/**
+ *  Test file.
+ */
+class file {
+ public:
+  file();
+  file(file const& other);
+  ~file();
+  file& operator=(file const& other);
+  void close();
+  std::string const& generate();
+  void set(std::string const& variable, std::string const& value);
+  void set_template(std::string const& base_file);
 
-  private:
-    void               _internal_copy(file const& other);
+ private:
+  void _internal_copy(file const& other);
 
-    std::string        _base_file;
-    std::string        _target_file;
-    std::map<std::string, std::string>
-                       _variables;
-  };
-}
+  std::string _base_file;
+  std::string _target_file;
+  std::map<std::string, std::string> _variables;
+};
+}  // namespace test
 
 CCB_END()
 
-#endif // !CCB_TEST_FILE_HH
+#endif  // !CCB_TEST_FILE_HH

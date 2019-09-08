@@ -16,27 +16,24 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/custom_variable_status.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
 custom_variable_status::custom_variable_status()
-  : host_id(0),
-    modified(true),
-    service_id(0),
-    update_time(0) {}
+    : host_id(0), modified(true), service_id(0), update_time(0) {}
 
 /**
  *  Copy constructor.
@@ -44,8 +41,8 @@ custom_variable_status::custom_variable_status()
  *  @param[in] other Object to copy.
  */
 custom_variable_status::custom_variable_status(
-                          custom_variable_status const& other)
-  : io::data(other) {
+    custom_variable_status const& other)
+    : io::data(other) {
   _internal_copy(other);
 }
 
@@ -62,7 +59,7 @@ custom_variable_status::~custom_variable_status() {}
  *  @return This object.
  */
 custom_variable_status& custom_variable_status::operator=(
-                          custom_variable_status const& other) {
+    custom_variable_status const& other) {
   if (this != &other) {
     io::data::operator=(other);
     _internal_copy(other);
@@ -85,66 +82,57 @@ unsigned int custom_variable_status::type() const {
  *  @return  The event type.
  */
 unsigned int custom_variable_status::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_custom_variable_status>::value);
+  return (io::events::data_type<io::events::neb,
+                                neb::de_custom_variable_status>::value);
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
  *
  *  @param[in] other  Object to copy.
  */
-void custom_variable_status::_internal_copy(custom_variable_status const& other) {
+void custom_variable_status::_internal_copy(
+    custom_variable_status const& other) {
   host_id = other.host_id;
   modified = other.modified;
   name = other.name;
   service_id = other.service_id;
   update_time = other.update_time;
   value = other.value;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const custom_variable_status::entries[] = {
-  mapping::entry(
-    &custom_variable_status::host_id,
-    "host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &custom_variable_status::modified,
-    "modified"),
-  mapping::entry(
-    &custom_variable_status::name,
-    "name"),
-  mapping::entry(
-    &custom_variable_status::service_id,
-    "service_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &custom_variable_status::update_time,
-    "update_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &custom_variable_status::value,
-    "value"),
-  mapping::entry()
-};
+    mapping::entry(&custom_variable_status::host_id,
+                   "host_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&custom_variable_status::modified, "modified"),
+    mapping::entry(&custom_variable_status::name, "name"),
+    mapping::entry(&custom_variable_status::service_id,
+                   "service_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&custom_variable_status::update_time,
+                   "update_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&custom_variable_status::value, "value"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_custom_var_status() {
   return (new custom_variable_status);
 }
 io::event_info::event_operations const custom_variable_status::operations = {
-  &new_custom_var_status
-};
+    &new_custom_var_status};

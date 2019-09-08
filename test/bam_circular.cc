@@ -16,13 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QVariant>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
@@ -81,14 +81,14 @@ int main() {
       std::list<service>::iterator s(services.begin());
       ++s;
       ++s;
-      delete [] s->description;
+      delete[] s->description;
       s->description = NULL;
       std::string str("ba_600");
       s->description = new char[str.size() + 1];
       strcpy(s->description, str.c_str());
       // Service (1, 4) is a virtual BA service.
       ++s;
-      delete [] s->description;
+      delete[] s->description;
       s->description = NULL;
       str = "ba_601";
       s->description = new char[str.size() + 1];
@@ -100,62 +100,62 @@ int main() {
     std::string additional_config;
     {
       std::ostringstream oss;
-      oss << "broker_module=" << CBMOD_PATH << " "
-          << cfg.generate() << "\n";
+      oss << "broker_module=" << CBMOD_PATH << " " << cfg.generate() << "\n";
       additional_config = oss.str();
     }
 
     // Generate monitoring engine configuration files.
-    config_write(
-      engine_config_path.c_str(),
-      additional_config.c_str(),
-      &hosts,
-      &services);
+    config_write(engine_config_path.c_str(), additional_config.c_str(), &hosts,
+                 &services);
 
     // Populate database.
     {
       char const* queries[] = {
-        "INSERT INTO cfg_organizations (organization_id, name,"
-        "            shortname)"
-        "  VALUES (1, '42', '42')",
-        "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
-        "  VALUES (1, '1', 1)",
-        "INSERT INTO cfg_services (service_id, service_description,"
-        "            organization_id)"
-        "  VALUES (1, 'svc1', 1),"
-        "         (2, 'svc2', 1),"
-        "         (3, 'ba_600', 1),"
-        "         (4, 'ba_601', 1)",
-        "INSERT INTO cfg_hosts_services_relations (host_host_id,"
-        "            service_service_id)"
-        "  VALUES (1, 1), (1, 2), (1, 3), (1, 4)",
-        "INSERT INTO cfg_bam_ba_types (ba_type_id, name, slug,"
-        "            description)"
-        "  VALUES (1, 'Default', 'default', 'Default type')",
-        "INSERT INTO cfg_bam (ba_id, name, level_w, level_c, activate,"
-        "            ba_type_id, organization_id)"
-        "  VALUES (600, 'BA600', 80, 90, 1, 1, 1),"
-        "         (601, 'BA601', 50, 60, 1, 1, 1)",
-        "INSERT INTO cfg_bam_poller_relations (ba_id, poller_id)"
-        "  VALUES (600, 42), (601, 42)",
-        "INSERT INTO cfg_bam_boolean (boolean_id, name, expression,"
-        "            bool_state, activate)"
-        "  VALUES (1000, 'boolexp1000', '{1 ba_600} {is} {CRITICAL}', 1, 1)",
-        "INSERT INTO cfg_bam_kpi (kpi_id, kpi_type, host_id,"
-        "            service_id, id_indicator_ba, id_ba, meta_id,"
-        "            boolean_id, config_type, drop_warning,"
-        "            drop_critical, drop_unknown, state_type, activate)"
-        "  VALUES (200, '0', 1, 1, NULL, 600, NULL, NULL, '0', 10, 20, 30, '1', '1'),"
-        "         (201, '0', 1, 2, NULL, 600, NULL, NULL, '0', 30, 40, 60, '1', '1'),"
-        "         (202, '1', NULL, NULL, 601, 600, NULL, NULL, '0', 50, 60, 70, '1', '1'),"
-        "         (203, '3', NULL, NULL, NULL, 601, NULL, 1000, '0', 60, 80, 90, '1', '1')",
-        NULL
-      };
+          "INSERT INTO cfg_organizations (organization_id, name,"
+          "            shortname)"
+          "  VALUES (1, '42', '42')",
+          "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
+          "  VALUES (1, '1', 1)",
+          "INSERT INTO cfg_services (service_id, service_description,"
+          "            organization_id)"
+          "  VALUES (1, 'svc1', 1),"
+          "         (2, 'svc2', 1),"
+          "         (3, 'ba_600', 1),"
+          "         (4, 'ba_601', 1)",
+          "INSERT INTO cfg_hosts_services_relations (host_host_id,"
+          "            service_service_id)"
+          "  VALUES (1, 1), (1, 2), (1, 3), (1, 4)",
+          "INSERT INTO cfg_bam_ba_types (ba_type_id, name, slug,"
+          "            description)"
+          "  VALUES (1, 'Default', 'default', 'Default type')",
+          "INSERT INTO cfg_bam (ba_id, name, level_w, level_c, activate,"
+          "            ba_type_id, organization_id)"
+          "  VALUES (600, 'BA600', 80, 90, 1, 1, 1),"
+          "         (601, 'BA601', 50, 60, 1, 1, 1)",
+          "INSERT INTO cfg_bam_poller_relations (ba_id, poller_id)"
+          "  VALUES (600, 42), (601, 42)",
+          "INSERT INTO cfg_bam_boolean (boolean_id, name, expression,"
+          "            bool_state, activate)"
+          "  VALUES (1000, 'boolexp1000', '{1 ba_600} {is} {CRITICAL}', 1, 1)",
+          "INSERT INTO cfg_bam_kpi (kpi_id, kpi_type, host_id,"
+          "            service_id, id_indicator_ba, id_ba, meta_id,"
+          "            boolean_id, config_type, drop_warning,"
+          "            drop_critical, drop_unknown, state_type, activate)"
+          "  VALUES (200, '0', 1, 1, NULL, 600, NULL, NULL, '0', 10, 20, 30, "
+          "'1', '1'),"
+          "         (201, '0', 1, 2, NULL, 600, NULL, NULL, '0', 30, 40, 60, "
+          "'1', '1'),"
+          "         (202, '1', NULL, NULL, 601, 600, NULL, NULL, '0', 50, 60, "
+          "70, '1', '1'),"
+          "         (203, '3', NULL, NULL, NULL, 601, NULL, 1000, '0', 60, 80, "
+          "90, '1', '1')",
+          NULL};
       for (int i(0); queries[i]; ++i) {
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(queries[i]))
-          throw (exceptions::msg() << "could not execute query: "
-                 << q.lastError().text() << " (" << queries[i] << ")");
+          throw(exceptions::msg()
+                << "could not execute query: " << q.lastError().text() << " ("
+                << queries[i] << ")");
       }
     }
 
@@ -171,26 +171,21 @@ int main() {
     // Check that no BA was computed.
     {
       QSqlQuery q(*db.centreon_db());
-      if (!q.exec(
-               "SELECT current_level"
-               "  FROM cfg_bam"
-               " WHERE current_level IS NOT NULL"))
-        throw (exceptions::msg()
-               << "could not retrieve current BA level: "
-               << q.lastError().text());
+      if (!q.exec("SELECT current_level"
+                  "  FROM cfg_bam"
+                  " WHERE current_level IS NOT NULL"))
+        throw(exceptions::msg() << "could not retrieve current BA level: "
+                                << q.lastError().text());
       if (q.next())
-        throw (exceptions::msg()
-               << "some BA was computed");
+        throw(exceptions::msg() << "some BA was computed");
     }
 
     // Success.
     error = false;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
     db.set_remove_db_on_close(false);
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
     db.set_remove_db_on_close(false);
   }

@@ -25,8 +25,7 @@ using namespace com::centreon::broker::bam;
  *
  *  @param[in] strict  Should the operator be strict?
  */
-bool_less_than::bool_less_than(bool strict)
-  : _strict(strict) {}
+bool_less_than::bool_less_than(bool strict) : _strict(strict) {}
 
 /**
  *  Copy constructor.
@@ -34,7 +33,7 @@ bool_less_than::bool_less_than(bool strict)
  *  @param[in] right Object to copy.
  */
 bool_less_than::bool_less_than(bool_less_than const& right)
-  : bool_binary_operator(right) {
+    : bool_binary_operator(right) {
   _strict = right._strict;
 }
 

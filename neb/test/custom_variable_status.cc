@@ -17,8 +17,8 @@
  *
  */
 
-#include <gtest/gtest.h>
 #include "com/centreon/broker/neb/custom_variable_status.hh"
+#include <gtest/gtest.h>
 #include "randomize.hh"
 
 using namespace com::centreon::broker;
@@ -50,12 +50,11 @@ TEST_F(CVarStatusTest, Assignment) {
   cvar_status2 = cvar_status1;
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(cvar_status1, &randvals2);
 
   // Compare objects with expected results.
-  int retval((cvar_status1 != randvals2)
-             || (cvar_status2 != randvals1));
+  int retval((cvar_status1 != randvals2) || (cvar_status2 != randvals1));
 
   // Compare objects with expected results.
   ASSERT_TRUE(cvar_status1 == randvals2);
@@ -72,7 +71,7 @@ TEST_F(CVarStatusTest, CopyConstructor) {
   neb::custom_variable_status cvar_status2(cvar_status1);
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(cvar_status1, &randvals2);
 
   // Compare objects with expected results.

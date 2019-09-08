@@ -17,38 +17,37 @@
 */
 
 #ifndef CCB_FILE_FS_BROWSER_HH
-#  define CCB_FILE_FS_BROWSER_HH
+#define CCB_FILE_FS_BROWSER_HH
 
-#  include <list>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <list>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace              file {
-  /**
-   *  @class fs_browser fs_browser.hh "com/centreon/broker/file/fs_browser.hh"
-   *  @brief File system browser.
-   *
-   *  Perform operations on file system.
-   */
-  class                fs_browser {
-   public:
-    typedef std::list<std::string> entry_list;
+namespace file {
+/**
+ *  @class fs_browser fs_browser.hh "com/centreon/broker/file/fs_browser.hh"
+ *  @brief File system browser.
+ *
+ *  Perform operations on file system.
+ */
+class fs_browser {
+ public:
+  typedef std::list<std::string> entry_list;
 
-                       fs_browser();
-    virtual            ~fs_browser();
-    virtual entry_list read_directory(
-                         std::string const& path,
-                         std::string const& filters = "") = 0;
-    virtual void       remove(std::string const& path) = 0;
+  fs_browser();
+  virtual ~fs_browser();
+  virtual entry_list read_directory(std::string const& path,
+                                    std::string const& filters = "") = 0;
+  virtual void remove(std::string const& path) = 0;
 
-   private:
-                       fs_browser(fs_browser const& other);
-    fs_browser&        operator=(fs_browser const& other);
-  };
-}
+ private:
+  fs_browser(fs_browser const& other);
+  fs_browser& operator=(fs_browser const& other);
+};
+}  // namespace file
 
 CCB_END()
 
-#endif // !CCB_FILE_FS_BROWSER_HH
+#endif  // !CCB_FILE_FS_BROWSER_HH

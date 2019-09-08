@@ -17,8 +17,8 @@
  *
  */
 
-#include <cmath>
 #include <gtest/gtest.h>
+#include <cmath>
 #include "com/centreon/broker/neb/event_handler.hh"
 #include "randomize.hh"
 
@@ -51,7 +51,7 @@ TEST_F(FlappingStatus, Assignment) {
   flappy2 = flappy1;
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(flappy1, &randvals2);
 
   // Compare objects with expected results.
@@ -69,7 +69,7 @@ TEST_F(FlappingStatus, CopyConstructor) {
   neb::flapping_status flappy2(flappy1);
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(flappy1, &randvals2);
 
   // Compare objects with expected results.

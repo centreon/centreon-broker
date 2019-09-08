@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/database_config.hh"
 #include <map>
 #include <string>
 #include "com/centreon/broker/config/parser.hh"
-#include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/exceptions/config.hh"
 
 using namespace com::centreon::broker;
@@ -28,9 +28,9 @@ using namespace com::centreon::broker;
  *  Default constructor.
  */
 database_config::database_config()
-  : _queries_per_transaction(1),
-    _check_replication(true),
-    _connections_count(1) {}
+    : _queries_per_transaction(1),
+      _check_replication(true),
+      _connections_count(1) {}
 
 /**
  *  Constructor.
@@ -49,25 +49,24 @@ database_config::database_config()
  *                                      status of the database should be
  *                                      checked.
  */
-database_config::database_config(
-                   std::string const& type,
-                   std::string const& host,
-                   unsigned short port,
-                   std::string const& user,
-                   std::string const& password,
-                   std::string const& name,
-                   int queries_per_transaction,
-                   bool check_replication,
-                   int connections_count)
-  : _type(type),
-    _host(host),
-    _port(port),
-    _user(user),
-    _password(password),
-    _name(name),
-    _queries_per_transaction(queries_per_transaction),
-    _check_replication(check_replication),
-    _connections_count(connections_count) {}
+database_config::database_config(std::string const& type,
+                                 std::string const& host,
+                                 unsigned short port,
+                                 std::string const& user,
+                                 std::string const& password,
+                                 std::string const& name,
+                                 int queries_per_transaction,
+                                 bool check_replication,
+                                 int connections_count)
+    : _type(type),
+      _host(host),
+      _port(port),
+      _user(user),
+      _password(password),
+      _name(name),
+      _queries_per_transaction(queries_per_transaction),
+      _check_replication(check_replication),
+      _connections_count(connections_count) {}
 
 /**
  *  Build a database configuration from a configuration set.
@@ -83,8 +82,8 @@ database_config::database_config(config::endpoint const& cfg) {
   if (it != end)
     _type = it->second;
   else
-    throw (exceptions::config() << "no 'db_type' defined for endpoint '"
-           << cfg.name << "'");
+    throw(exceptions::config()
+          << "no 'db_type' defined for endpoint '" << cfg.name << "'");
 
   // db_host
   it = cfg.params.find("db_host");
@@ -115,8 +114,8 @@ database_config::database_config(config::endpoint const& cfg) {
   if (it != end)
     _name = it->second;
   else
-    throw exceptions::config() << "no 'db_name' defined for endpoint '"
-           << cfg.name << "'";
+    throw exceptions::config()
+        << "no 'db_name' defined for endpoint '" << cfg.name << "'";
 
   // queries_per_transaction
   it = cfg.params.find("queries_per_transaction");
@@ -138,7 +137,6 @@ database_config::database_config(config::endpoint const& cfg) {
     _connections_count = std::stoul(it->second);
   else
     _connections_count = 1;
-
 }
 
 /**
@@ -162,8 +160,7 @@ database_config::~database_config() {}
  *
  *  @return This object.
  */
-database_config& database_config::operator=(
-                                    database_config const& other) {
+database_config& database_config::operator=(database_config const& other) {
   if (this != &other)
     _internal_copy(other);
   return (*this);

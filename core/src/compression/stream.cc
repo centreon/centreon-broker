@@ -30,10 +30,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::compression;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -42,7 +42,7 @@ using namespace com::centreon::broker::compression;
  *  @param[in] size  Compression buffer size.
  */
 stream::stream(int level, int size)
-  : _level(level), _shutdown(false), _size(size) {}
+    : _level(level), _shutdown(false), _size(size) {}
 
 /**
  *  Copy constructor.
@@ -61,7 +61,8 @@ stream::~stream() {
     _flush();
   }
   // Ignore exception whatever the error might be.
-  catch (...) {}
+  catch (...) {
+  }
 }
 
 /**
@@ -87,9 +88,7 @@ stream& stream::operator=(stream const& other) {
  *
  *  @return Respect io::stream::read()'s return value.
  */
-bool stream::read(
-               std::shared_ptr<io::data>& data,
-               time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
   // Clear existing content.
   data.reset();
 
@@ -112,27 +111,23 @@ bool stream::read(
         // Extract next chunk's size.
         {
           unsigned char const* buff((unsigned char const*)_rbuffer.data());
-          size = static_cast<uint32_t>((buff[0] << 24)
-                  | (buff[1] << 16)
-                  | (buff[2] << 8)
-                  | (buff[3]));
+          size = static_cast<uint32_t>((buff[0] << 24) | (buff[1] << 16) |
+                                       (buff[2] << 8) | (buff[3]));
         }
 
         // Check if size is within bounds.
         if ((size <= 0) || (size > max_data_size)) {
           // Skip corrupted data, one byte at a time.
           logging::error(logging::low)
-            << "compression: " << this
-            << " got corrupted packet size of " << size
-            << " bytes, not in the 0-" << max_data_size
-            << " range, skipping next byte";
+              << "compression: " << this << " got corrupted packet size of "
+              << size << " bytes, not in the 0-" << max_data_size
+              << " range, skipping next byte";
           if (!skipped)
-            logging::error(logging::high) << "compression: peer "
-              << peer() << " is sending corrupted data";
+            logging::error(logging::high) << "compression: peer " << peer()
+                                          << " is sending corrupted data";
           ++skipped;
           _rbuffer.pop(1);
-        }
-        else
+        } else
           corrupted = false;
       }
 
@@ -154,49 +149,45 @@ bool stream::read(
           logging::debug(logging::medium) << e.what();
         }
       }
-      if (!r->size()) { // No data or uncompressed size of 0 means corrupted input.
+      if (!r->size()) {  // No data or uncompressed size of 0 means corrupted
+                         // input.
         logging::error(logging::low)
-          << "compression: " << this
-          << " got corrupted compressed data, skipping next byte";
+            << "compression: " << this
+            << " got corrupted compressed data, skipping next byte";
         if (!skipped)
-          logging::error(logging::high) << "compression: peer "
-            << peer() << " is sending corrupted data";
+          logging::error(logging::high)
+              << "compression: peer " << peer() << " is sending corrupted data";
         ++skipped;
         _rbuffer.pop(1);
         corrupted = true;
-      }
-      else {
-        logging::debug(logging::low) << "compression: " << this
-          << " uncompressed " << size + sizeof(int32_t) << " bytes to "
-          << r->size() << " bytes";
+      } else {
+        logging::debug(logging::low)
+            << "compression: " << this << " uncompressed "
+            << size + sizeof(int32_t) << " bytes to " << r->size() << " bytes";
         data = r;
         _rbuffer.pop(size + sizeof(int32_t));
         corrupted = false;
       }
     }
     if (skipped)
-      logging::info(logging::high) << "compression: peer " << peer()
-        << " sent " << skipped
-        << " corrupted compressed bytes, resuming processing";
-  }
-  catch (exceptions::interrupt const& e) {
+      logging::info(logging::high)
+          << "compression: peer " << peer() << " sent " << skipped
+          << " corrupted compressed bytes, resuming processing";
+  } catch (exceptions::interrupt const& e) {
     (void)e;
     return true;
-  }
-  catch (exceptions::timeout const& e) {
+  } catch (exceptions::timeout const& e) {
     (void)e;
     return false;
-  }
-  catch (exceptions::shutdown const& e) {
+  } catch (exceptions::shutdown const& e) {
     _shutdown = true;
     if (!_wbuffer.empty()) {
       std::shared_ptr<io::raw> r(new io::raw);
       r.get()->get_buffer() = _wbuffer;
       data = r;
       _wbuffer.clear();
-    }
-    else
-      throw ;
+    } else
+      throw;
   }
 
   return true;
@@ -210,7 +201,7 @@ bool stream::read(
 void stream::statistics(io::properties& tree) const {
   if (_substream)
     _substream->statistics(tree);
-  return ;
+  return;
 }
 
 /**
@@ -239,7 +230,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
   // Check if substream is shutdown.
   if (_shutdown)
     throw exceptions::shutdown() << "cannot write to compression "
-           << "stream: sub-stream is already shutdown";
+                                 << "stream: sub-stream is already shutdown";
 
   // Process raw data only.
   if (d->type() == io::raw::static_type()) {
@@ -247,12 +238,14 @@ int stream::write(std::shared_ptr<io::data> const& d) {
 
     // Check length.
     if (r.size() > max_data_size)
-      throw exceptions::msg() << "cannot compress buffers longer than "
-             << max_data_size << " bytes: you should report this error "
-             << "to Centreon Broker developers";
+      throw exceptions::msg()
+          << "cannot compress buffers longer than " << max_data_size
+          << " bytes: you should report this error "
+          << "to Centreon Broker developers";
     else if (r.size() > 0) {
       // Append data to write buffer.
-      std::copy(r.get_buffer().begin(), r.get_buffer().end(), std::back_inserter(_wbuffer));
+      std::copy(r.get_buffer().begin(), r.get_buffer().end(),
+                std::back_inserter(_wbuffer));
 
       // Send compressed data if size limit is reached.
       if (_wbuffer.size() >= _size)
@@ -263,10 +256,10 @@ int stream::write(std::shared_ptr<io::data> const& d) {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Flush data accumulated in write buffer.
@@ -275,16 +268,17 @@ void stream::_flush() {
   // Check for shutdown stream.
   if (_shutdown)
     throw exceptions::shutdown() << "cannot flush compression "
-           << "stream: sub-stream is already shutdown";
+                                 << "stream: sub-stream is already shutdown";
 
   if (_wbuffer.size() > 0) {
     // Compress data.
     std::shared_ptr<io::raw> compressed(new io::raw);
     std::vector<char>& data(compressed->get_buffer());
     data = std::move(zlib::compress(_wbuffer, _level));
-    logging::debug(logging::low) << "compression: " << this
-      << " compressed " << _wbuffer.size() << " bytes to "
-      << compressed->size() << " bytes (level " << _level << ")";
+    logging::debug(logging::low)
+        << "compression: " << this << " compressed " << _wbuffer.size()
+        << " bytes to " << compressed->size() << " bytes (level " << _level
+        << ")";
     _wbuffer.clear();
 
     // Add compressed data size.
@@ -339,5 +333,5 @@ void stream::_internal_copy(stream const& other) {
   _rbuffer = other._rbuffer;
   _size = other._size;
   _wbuffer = other._wbuffer;
-  return ;
+  return;
 }

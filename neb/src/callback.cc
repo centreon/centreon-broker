@@ -16,19 +16,19 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/callback.hh"
 #include <cstdlib>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/neb/callback.hh"
 #include "com/centreon/engine/common.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
 
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -37,16 +37,16 @@ using namespace com::centreon::broker::neb;
  *  @param[in] handle   Module handle.
  *  @param[in] function Callback function.
  */
-callback::callback(int id, void* handle, int (* function)(int, void*))
-  : _function(function), _id(id) {
+callback::callback(int id, void* handle, int (*function)(int, void*))
+    : _function(function), _id(id) {
   if (neb_register_callback(_id, handle, 0, _function) != OK)
-    throw (exceptions::msg() << "callbacks: registration of callback "
-           << id << " failed");
+    throw(exceptions::msg()
+          << "callbacks: registration of callback " << id << " failed");
 }
 
 /**
  *  Destructor.
  */
-callback::~callback() throw () {
+callback::~callback() throw() {
   neb_deregister_callback(_id, _function);
 }

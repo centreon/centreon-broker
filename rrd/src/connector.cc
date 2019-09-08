@@ -16,40 +16,39 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/rrd/connector.hh"
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/rrd/connector.hh"
 #include "com/centreon/broker/rrd/output.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
 connector::connector()
-  : io::endpoint(false),
-    _cache_size(16),
-    _cached_port(0),
-    _ignore_update_errors(true),
-    _write_metrics(true),
-    _write_status(true) {}
+    : io::endpoint(false),
+      _cache_size(16),
+      _cached_port(0),
+      _ignore_update_errors(true),
+      _write_metrics(true),
+      _write_status(true) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-connector::connector(connector const& right)
-  : io::endpoint(right) {
+connector::connector(connector const& right) : io::endpoint(right) {
   _internal_copy(right);
 }
 
@@ -86,21 +85,12 @@ std::shared_ptr<io::stream> connector::open() {
         _cached_local, _write_metrics, _write_status));
   else if (_cached_port)
     retval = std::shared_ptr<io::stream>(new output(
-                                                _metrics_path,
-                                                _status_path,
-                                                _cache_size,
-                                                _ignore_update_errors,
-                                                _cached_port,
-                                                _write_metrics,
-                                                _write_status));
+        _metrics_path, _status_path, _cache_size, _ignore_update_errors,
+        _cached_port, _write_metrics, _write_status));
   else
-    retval = std::shared_ptr<io::stream>(new output(
-                                                _metrics_path,
-                                                _status_path,
-                                                _cache_size,
-                                                _ignore_update_errors,
-                                                _write_metrics,
-                                                _write_status));
+    retval = std::shared_ptr<io::stream>(
+        new output(_metrics_path, _status_path, _cache_size,
+                   _ignore_update_errors, _write_metrics, _write_status));
   return (retval);
 }
 
@@ -127,7 +117,7 @@ void connector::set_cached_local(std::string const& local_socket) {
  *
  *  @param[in] port rrdcached port.
  */
-void connector::set_cached_net(unsigned short port) throw () {
+void connector::set_cached_net(unsigned short port) throw() {
   _cached_port = port;
 }
 
@@ -137,7 +127,7 @@ void connector::set_cached_net(unsigned short port) throw () {
  *
  *  @param[in] ignore Set to true to ignore update errors.
  */
-void connector::set_ignore_update_errors(bool ignore) throw () {
+void connector::set_ignore_update_errors(bool ignore) throw() {
   _ignore_update_errors = ignore;
 }
 
@@ -164,7 +154,7 @@ void connector::set_status_path(std::string const& status_path) {
  *
  *  @param[in] write_metrics true if metrics must be written.
  */
-void connector::set_write_metrics(bool write_metrics) throw () {
+void connector::set_write_metrics(bool write_metrics) throw() {
   _write_metrics = write_metrics;
 }
 
@@ -173,15 +163,15 @@ void connector::set_write_metrics(bool write_metrics) throw () {
  *
  *  @param[in] write_status true if status must be written.
  */
-void connector::set_write_status(bool write_status) throw () {
+void connector::set_write_status(bool write_status) throw() {
   _write_status = write_status;
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -213,22 +203,21 @@ std::string connector::_real_path_of(std::string const& path) {
 
   // Resolution success.
   if (real_path) {
-    logging::info(logging::medium) << "RRD: path '" << path
-      << "' resolved as '" << real_path << "'";
+    logging::info(logging::medium)
+        << "RRD: path '" << path << "' resolved as '" << real_path << "'";
     try {
       retval = real_path;
-    }
-    catch (...) {
+    } catch (...) {
       free(real_path);
-      throw ;
+      throw;
     }
     free(real_path);
   }
   // Resolution failure.
   else {
     char const* msg{strerror(errno)};
-    logging::error(logging::high) << "RRD: could not resolve path '"
-      << path << "', using it as such: " << msg;
+    logging::error(logging::high) << "RRD: could not resolve path '" << path
+                                  << "', using it as such: " << msg;
     retval = path;
   }
 

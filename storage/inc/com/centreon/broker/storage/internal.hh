@@ -17,24 +17,24 @@
 */
 
 #ifndef CCB_STORAGE_INTERNAL_HH
-#  define CCB_STORAGE_INTERNAL_HH
+#define CCB_STORAGE_INTERNAL_HH
 
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace storage {
-  // Data elements.
-  enum data_element {
-    de_metric = 1,
-    de_rebuild,
-    de_remove_graph,
-    de_status,
-    de_index_mapping,
-    de_metric_mapping
-  };
-}
+// Data elements.
+enum data_element {
+  de_metric = 1,
+  de_rebuild,
+  de_remove_graph,
+  de_status,
+  de_index_mapping,
+  de_metric_mapping
+};
+}  // namespace storage
 
 CCB_END()
 
-#endif // !CCB_STORAGE_INTERNAL_HH
+#endif  // !CCB_STORAGE_INTERNAL_HH

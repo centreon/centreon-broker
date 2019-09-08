@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/total_hosts.hh"
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/total_hosts.hh"
 #include "com/centreon/engine/globals.hh"
 
 using namespace com::centreon::broker;
@@ -36,8 +36,7 @@ total_hosts::total_hosts() : plugin("total_hosts") {}
  *
  *  @param[in] right Object to copy.
  */
-total_hosts::total_hosts(total_hosts const& right)
- : plugin(right) {}
+total_hosts::total_hosts(total_hosts const& right) : plugin(right) {}
 
 /**
  *  Destructor.
@@ -62,9 +61,7 @@ total_hosts& total_hosts::operator=(total_hosts const& right) {
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void total_hosts::run(
-              std::string& output,
-	      std::string& perfdata) {
+void total_hosts::run(std::string& output, std::string& perfdata) {
   // Count hosts.
   unsigned int total(com::centreon::engine::host::hosts.size());
 

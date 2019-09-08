@@ -23,8 +23,7 @@
 // This utility executable is used to write into files in a portable way.
 // Usage: ./executable "what_to_write" filename
 int main(int argc, char** argv) {
-  if (argc != 3)
-  {
+  if (argc != 3) {
     std::cout << "usage: ./executable \"what_to_write\" filename" << std::endl;
     return (-1);
   }
@@ -38,8 +37,7 @@ int main(int argc, char** argv) {
   try {
     ofs.open(filename.c_str());
     ofs << content;
-  }
-  catch (std::exception e) {
+  } catch (std::exception e) {
     std::cerr << "could not write file: " << e.what() << std::endl;
     return (-1);
   }

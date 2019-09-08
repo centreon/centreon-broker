@@ -17,48 +17,44 @@
 */
 
 #ifndef CCB_TLS_STREAM_HH
-#  define CCB_TLS_STREAM_HH
+#define CCB_TLS_STREAM_HH
 
-#  include <gnutls/gnutls.h>
-#  include <vector>
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <gnutls/gnutls.h>
+#include <vector>
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace             tls {
-  /**
-   *  @class stream stream.hh "com/centreon/broker/tls/stream.hh"
-   *  @brief TLS wrapper of an underlying stream.
-   *
-   *  The TLS stream class wraps a lower layer stream and provides
-   *  encryption (and optionnally compression) over this stream. Those
-   *  functionnality are provided using the GNU TLS library
-   *  (http://www.gnu.org/software/gnutls).
-   */
-  class               stream : public io::stream {
-  public:
-                      stream(gnutls_session_t* session);
-                      ~stream();
-    bool              read(
-                        std::shared_ptr<io::data>& d,
-                        time_t deadline);
-    long long         read_encrypted(void* buffer, long long size);
-    int               write(std::shared_ptr<io::data> const& d);
-    long long         write_encrypted(
-                        void const* buffer,
-                        long long size);
+namespace tls {
+/**
+ *  @class stream stream.hh "com/centreon/broker/tls/stream.hh"
+ *  @brief TLS wrapper of an underlying stream.
+ *
+ *  The TLS stream class wraps a lower layer stream and provides
+ *  encryption (and optionnally compression) over this stream. Those
+ *  functionnality are provided using the GNU TLS library
+ *  (http://www.gnu.org/software/gnutls).
+ */
+class stream : public io::stream {
+ public:
+  stream(gnutls_session_t* session);
+  ~stream();
+  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  long long read_encrypted(void* buffer, long long size);
+  int write(std::shared_ptr<io::data> const& d);
+  long long write_encrypted(void const* buffer, long long size);
 
-  private:
-                      stream(stream const& other);
-    stream&           operator=(stream const& other);
+ private:
+  stream(stream const& other);
+  stream& operator=(stream const& other);
 
-    std::vector<char> _buffer;
-    time_t            _deadline;
-    gnutls_session_t* _session;
-  };
-}
+  std::vector<char> _buffer;
+  time_t _deadline;
+  gnutls_session_t* _session;
+};
+}  // namespace tls
 
 CCB_END()
 
-#endif // !CCB_TLS_STREAM_HH
+#endif  // !CCB_TLS_STREAM_HH

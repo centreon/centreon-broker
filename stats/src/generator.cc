@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/stats/generator.hh"
 #include <chrono>
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -23,7 +24,6 @@
 #include "com/centreon/broker/stats/builder.hh"
 #include "com/centreon/broker/stats/config.hh"
 #include "com/centreon/broker/stats/json_serializer.hh"
-#include "com/centreon/broker/stats/generator.hh"
 #include "com/centreon/broker/stats/metric.hh"
 
 using namespace com::centreon::broker;
@@ -37,7 +37,7 @@ generator::generator() : _should_exit{false} {}
 /**
  *  Destructor.
  */
-generator::~generator() throw () {}
+generator::~generator() throw() {}
 
 /**
  *  Request thread to exit ASAP.
@@ -52,7 +52,8 @@ void generator::exit() {
  *  @param[in] cfg         Stats configuration.
  *  @param[in] instance_id Instance ID.
  */
-void generator::run(config const& cfg __attribute__((unused)), unsigned int instance_id) {
+void generator::run(config const& cfg __attribute__((unused)),
+                    unsigned int instance_id) {
   // Set instance ID.
   _instance_id = instance_id;
 
@@ -74,28 +75,25 @@ void generator::_run() {
       time_t now(time(NULL));
       if (now < next_time) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
-        continue ;
+        continue;
       }
       next_time = now + 1;
 
       // Generate stats.
       logging::info(logging::medium)
-        << "stats: time has come to generate statistics";
+          << "stats: time has come to generate statistics";
       builder b;
       b.build(json_serializer());
-
     }
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     logging::error(logging::high)
-      << "stats: generator thread will exit due to the following error: "
-      << e.what();
-  }
-  catch (...) {
+        << "stats: generator thread will exit due to the following error: "
+        << e.what();
+  } catch (...) {
     logging::error(logging::high)
-      << "stats: generator thread will exit due to an unknown error";
+        << "stats: generator thread will exit due to an unknown error";
   }
-  return ;
+  return;
 }
 
 void generator::wait() {

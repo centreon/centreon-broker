@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/instance.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Default constructor.
@@ -35,11 +35,11 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 instance::instance()
-  : is_running(true),
-    pid(0),
-    poller_id(0),
-    program_end((time_t)-1),
-    program_start((time_t)-1) {}
+    : is_running(true),
+      pid(0),
+      poller_id(0),
+      program_end((time_t)-1),
+      program_start((time_t)-1) {}
 
 /**
  *  @brief Copy constructor.
@@ -91,10 +91,10 @@ unsigned int instance::static_type() {
 }
 
 /**************************************
-*                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *          Private Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Copy internal data of the instance object to the current
@@ -114,51 +114,35 @@ void instance::_internal_copy(instance const& other) {
   program_end = other.program_end;
   program_start = other.program_start;
   version = other.version;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const instance::entries[] = {
-  mapping::entry(
-    &instance::engine,
-    "engine"),
-  mapping::entry(
-    &instance::poller_id,
-    "instance_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &instance::name,
-    "name"),
-  mapping::entry(
-    &instance::is_running,
-    "running"),
-  mapping::entry(
-    &instance::pid,
-    "pid"),
-  mapping::entry(
-    &instance::program_end,
-    "end_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &instance::program_start,
-    "start_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &instance::version,
-    "version"),
-  mapping::entry()
-};
+    mapping::entry(&instance::engine, "engine"),
+    mapping::entry(&instance::poller_id,
+                   "instance_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&instance::name, "name"),
+    mapping::entry(&instance::is_running, "running"),
+    mapping::entry(&instance::pid, "pid"),
+    mapping::entry(&instance::program_end,
+                   "end_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&instance::program_start,
+                   "start_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&instance::version, "version"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_instance() {
   return (new instance);
 }
-io::event_info::event_operations const instance::operations = {
-  &new_instance
-};
+io::event_info::event_operations const instance::operations = {&new_instance};

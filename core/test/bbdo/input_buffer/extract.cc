@@ -37,7 +37,7 @@ class BbdoInputBufferExtract : public ::testing::Test {
 
  protected:
   bbdo::input_buffer _buffer;
-  std::string        _raw;
+  std::string _raw;
 };
 
 // Given a bbdo::input_buffer object filled with data

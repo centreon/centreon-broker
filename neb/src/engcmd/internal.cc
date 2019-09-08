@@ -17,21 +17,20 @@
 */
 
 #include "com/centreon/broker/neb/engcmd/internal.hh"
-#include "com/centreon/broker/neb/engcmd/factory.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/neb/engcmd/factory.hh"
 
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
-
 /**************************************
-*                                     *
-*           Global Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Global Objects            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Command file initialization routine.
@@ -40,13 +39,9 @@ using namespace com::centreon::broker::neb;
  */
 void engcmd::load() {
   // Register extcmd protocol.
-  io::protocols::instance().reg(
-                              "engcmd",
-                              engcmd::factory(),
-                              1,
-                              7);
+  io::protocols::instance().reg("engcmd", engcmd::factory(), 1, 7);
 
-  return ;
+  return;
 }
 
 /**
@@ -58,5 +53,5 @@ void engcmd::unload() {
   // Unregister protocol.
   io::protocols::instance().unreg("engcmd");
 
-  return ;
+  return;
 }

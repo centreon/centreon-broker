@@ -17,42 +17,42 @@
 */
 
 #ifndef CCB_NEB_GROUP_MEMBER_HH
-#  define CCB_NEB_GROUP_MEMBER_HH
+#define CCB_NEB_GROUP_MEMBER_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         neb {
-  /**
-   *  @class group_member group_member.h "com/centreon/broker/neb/group_member.hh"
-   *  @brief Member of a group.
-   *
-   *  Base class defining that a member is part of a group.
-   *
-   *  @see host_group_member
-   *  @see service_group_member
-   */
-  class           group_member : public io::data {
-  public:
-                  group_member();
-                  group_member(group_member const& other);
-    virtual       ~group_member();
-    group_member& operator=(group_member const& other);
+namespace neb {
+/**
+ *  @class group_member group_member.h "com/centreon/broker/neb/group_member.hh"
+ *  @brief Member of a group.
+ *
+ *  Base class defining that a member is part of a group.
+ *
+ *  @see host_group_member
+ *  @see service_group_member
+ */
+class group_member : public io::data {
+ public:
+  group_member();
+  group_member(group_member const& other);
+  virtual ~group_member();
+  group_member& operator=(group_member const& other);
 
-    bool          enabled;
-    unsigned int  group_id;
-    std::string       group_name;
-    unsigned int  host_id;
-    unsigned int  poller_id;
+  bool enabled;
+  unsigned int group_id;
+  std::string group_name;
+  unsigned int host_id;
+  unsigned int poller_id;
 
-  private:
-    void          _internal_copy(group_member const& other);
-  };
-}
+ private:
+  void _internal_copy(group_member const& other);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_GROUP_MEMBER_HH
+#endif  // !CCB_NEB_GROUP_MEMBER_HH

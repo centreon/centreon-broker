@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/hosts_flapping.hh"
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/hosts_flapping.hh"
 #include "com/centreon/engine/globals.hh"
 
 using namespace com::centreon::broker;
@@ -29,16 +29,14 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-hosts_flapping::hosts_flapping()
-  : plugin("hosts_flapping") {}
+hosts_flapping::hosts_flapping() : plugin("hosts_flapping") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-hosts_flapping::hosts_flapping(hosts_flapping const& right)
- : plugin(right) {}
+hosts_flapping::hosts_flapping(hosts_flapping const& right) : plugin(right) {}
 
 /**
  *  Destructor.
@@ -63,16 +61,12 @@ hosts_flapping& hosts_flapping::operator=(hosts_flapping const& right) {
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void hosts_flapping::run(
-              std::string& output,
-	      std::string& perfdata) {
+void hosts_flapping::run(std::string& output, std::string& perfdata) {
   // Count hosts are flapping.
   unsigned int total{0};
-  for (host_map::const_iterator
-         it{com::centreon::engine::host::hosts.begin()},
-         end{com::centreon::engine::host::hosts.end()};
-       it != end;
-       ++it)
+  for (host_map::const_iterator it{com::centreon::engine::host::hosts.begin()},
+       end{com::centreon::engine::host::hosts.end()};
+       it != end; ++it)
     if (it->second->get_is_flapping())
       ++total;
 

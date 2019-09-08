@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/time/timerange.hh"
 #include <cstring>
 #include <sstream>
 #include "com/centreon/broker/misc/string.hh"
-#include "com/centreon/broker/time/timerange.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::time;
@@ -31,10 +31,7 @@ using namespace com::centreon::broker::time;
  *  @param[in] end   The end time.
  */
 timerange::timerange(unsigned long start, unsigned long end)
-  : _end(end),
-    _start(start) {
-
-}
+    : _end(end), _start(start) {}
 
 /**
  *  Copy constructor.
@@ -48,9 +45,7 @@ timerange::timerange(timerange const& right) {
 /**
  *  Destructor.
  */
-timerange::~timerange() throw () {
-
-}
+timerange::~timerange() throw() {}
 
 /**
  *  Copy constructor.
@@ -74,7 +69,7 @@ timerange& timerange::operator=(timerange const& right) {
  *
  *  @return True if the object are the same, otherwise false.
  */
-bool timerange::operator==(timerange const& right) const throw () {
+bool timerange::operator==(timerange const& right) const throw() {
   return (_start == right._start && _end == right._end);
 }
 
@@ -85,7 +80,7 @@ bool timerange::operator==(timerange const& right) const throw () {
  *
  *  @return True if the object are not the same, otherwise false.
  */
-bool timerange::operator!=(timerange const& right) const throw () {
+bool timerange::operator!=(timerange const& right) const throw() {
   return (!operator==(right));
 }
 
@@ -96,7 +91,7 @@ bool timerange::operator!=(timerange const& right) const throw () {
  *
  *  @return True if this object is less than right.
  */
-bool timerange::operator<(timerange const& right) const throw () {
+bool timerange::operator<(timerange const& right) const throw() {
   if (_start != right._start)
     return (_start < right._start);
   return (_end < right._end);
@@ -107,7 +102,7 @@ bool timerange::operator<(timerange const& right) const throw () {
  *
  *  @return The end time.
  */
-unsigned long timerange::end() const throw () {
+unsigned long timerange::end() const throw() {
   return (_end);
 }
 
@@ -125,7 +120,7 @@ void timerange::end(unsigned long value) {
  *
  *  @return The start time.
  */
-unsigned long timerange::start() const throw () {
+unsigned long timerange::start() const throw() {
   return (_start);
 }
 
@@ -197,8 +192,7 @@ bool timerange::to_time_t(struct tm const& midnight,
   return (true);
 }
 
-static bool _build_time_t(std::string const& time_str,
-                          unsigned long& ret) {
+static bool _build_time_t(std::string const& time_str, unsigned long& ret) {
   std::size_t pos(time_str.find(':'));
   if (pos == std::string::npos)
     return (false);
@@ -216,11 +210,9 @@ bool timerange::build_timeranges_from_string(std::string const& line,
                                              std::list<timerange>& timeranges) {
   std::list<std::string> timeranges_str;
   misc::string::split(line, timeranges_str, ',');
-  for (std::list<std::string>::const_iterator
-         it(timeranges_str.begin()),
-         end(timeranges_str.end());
-       it != end;
-       ++it) {
+  for (std::list<std::string>::const_iterator it(timeranges_str.begin()),
+       end(timeranges_str.end());
+       it != end; ++it) {
     std::size_t pos(it->find('-'));
     if (pos == std::string::npos)
       return (false);
@@ -237,20 +229,17 @@ bool timerange::build_timeranges_from_string(std::string const& line,
 
 std::string timerange::to_string() const {
   std::ostringstream oss;
-  oss << (_start / 3600) << ":" << (_start % 3600) / 60
-      << "-"
-      << (_end / 3600) << ":" << (_end % 3600) / 60;
+  oss << (_start / 3600) << ":" << (_start % 3600) / 60 << "-" << (_end / 3600)
+      << ":" << (_end % 3600) / 60;
   return (oss.str());
 }
 
 std::string timerange::build_string_from_timeranges(
-                         std::list<timerange> const& timeranges) {
+    std::list<timerange> const& timeranges) {
   std::ostringstream oss;
-  for (std::list<time::timerange>::const_iterator
-         it = timeranges.begin(),
-         end = timeranges.end();
-       it != end;
-       ++it) {
+  for (std::list<time::timerange>::const_iterator it = timeranges.begin(),
+                                                  end = timeranges.end();
+       it != end; ++it) {
     if (!oss.str().empty())
       oss << ",";
     oss << it->to_string();

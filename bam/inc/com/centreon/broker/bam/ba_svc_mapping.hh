@@ -17,44 +17,40 @@
 */
 
 #ifndef CCB_BAM_BA_SVC_MAPPING_HH
-#  define CCB_BAM_BA_SVC_MAPPING_HH
+#define CCB_BAM_BA_SVC_MAPPING_HH
 
-#  include <map>
-#  include <string>
-#  include <utility>
-#  include "com/centreon/broker/namespace.hh"
+#include <map>
+#include <string>
+#include <utility>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace           bam {
-  /**
-   *  @class ba_svc_mapping ba_svc_mapping.hh "com/centreon/broker/bam/ba_svc_mapping.hh"
-   *  @brief Link BA ID to host name and service description.
-   *
-   *  Allow users to get a virtual BA host name and service description
-   *  by a BA ID.
-   */
-  class             ba_svc_mapping {
-  public:
-                    ba_svc_mapping();
-                    ba_svc_mapping(ba_svc_mapping const& other);
-                    ~ba_svc_mapping();
-    ba_svc_mapping& operator=(ba_svc_mapping const& other);
-    std::pair<std::string, std::string>
-                    get_service(unsigned int ba_id);
-    void            set(
-                      unsigned int ba_id,
-                      std::string const& hst,
-                      std::string const& svc);
+namespace bam {
+/**
+ *  @class ba_svc_mapping ba_svc_mapping.hh
+ * "com/centreon/broker/bam/ba_svc_mapping.hh"
+ *  @brief Link BA ID to host name and service description.
+ *
+ *  Allow users to get a virtual BA host name and service description
+ *  by a BA ID.
+ */
+class ba_svc_mapping {
+ public:
+  ba_svc_mapping();
+  ba_svc_mapping(ba_svc_mapping const& other);
+  ~ba_svc_mapping();
+  ba_svc_mapping& operator=(ba_svc_mapping const& other);
+  std::pair<std::string, std::string> get_service(unsigned int ba_id);
+  void set(unsigned int ba_id, std::string const& hst, std::string const& svc);
 
-  private:
-    void            _internal_copy(ba_svc_mapping const& other);
+ private:
+  void _internal_copy(ba_svc_mapping const& other);
 
-    std::map<unsigned int, std::pair<std::string, std::string> >
-                    _mapping;
-  };
-}
+  std::map<unsigned int, std::pair<std::string, std::string> > _mapping;
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_BA_SVC_MAPPING_HH
+#endif  // !CCB_BAM_BA_SVC_MAPPING_HH

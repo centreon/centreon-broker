@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bam/exp_parser.hh"
 #include <cstdlib>
 #include <sstream>
 #include <stack>
-#include "com/centreon/broker/bam/exp_parser.hh"
 #include "com/centreon/broker/bam/exp_tokenizer.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 
@@ -31,8 +31,7 @@ using namespace com::centreon::broker::bam;
  *
  *  @param[in] expression  Expression to parse.
  */
-exp_parser::exp_parser(std::string const& expression)
-  : _exp(expression) {
+exp_parser::exp_parser(std::string const& expression) : _exp(expression) {
   _precedence["&&"] = 2;
   _precedence["AND"] = 2;
   _precedence["||"] = 2;
@@ -133,16 +132,15 @@ exp_parser::notation const& exp_parser::get_postfix() {
         stack.pop();
       }
       if (stack.empty()) {
-        throw (exceptions::msg()
-               << "mismatched parentheses found while parsing "
-               << "the following expression: " << _exp);
+        throw(exceptions::msg() << "mismatched parentheses found while parsing "
+                                << "the following expression: " << _exp);
       }
 
       // Increment function arity.
       if (arity.empty()) {
-        throw (exceptions::msg()
-               << "found comma outside function call while parsing "
-               << "the following expression: " << _exp);
+        throw(exceptions::msg()
+              << "found comma outside function call while parsing "
+              << "the following expression: " << _exp);
       }
       ++arity.top();
 
@@ -154,14 +152,12 @@ exp_parser::notation const& exp_parser::get_postfix() {
       // Handle unary operators.
       if (can_be_unary && (token == "-")) {
         stack.push("-u");
-      }
-      else if (can_be_unary && ((token == "NOT") || (token == "!"))) {
+      } else if (can_be_unary && ((token == "NOT") || (token == "!"))) {
         stack.push("!");
-      }
-      else {
+      } else {
         // While there is an operator token o2 at the top of the stack...
-        while (!stack.empty()
-               && is_operator(stack.top())
+        while (!stack.empty() &&
+               is_operator(stack.top())
                // And o1's precedence is less than or equal to that of o2
                && (_precedence[token] <= (_precedence[stack.top()]))) {
           // Pop o2 off the operator stack, onto the output queue.
@@ -187,9 +183,8 @@ exp_parser::notation const& exp_parser::get_postfix() {
         stack.pop();
       }
       if (stack.empty()) {
-        throw (exceptions::msg()
-               << "mismatched parentheses found while parsing "
-               << "the following expression: " << _exp);
+        throw(exceptions::msg() << "mismatched parentheses found while parsing "
+                                << "the following expression: " << _exp);
       }
 
       // Pop left parenthesis off the stack.
@@ -222,9 +217,8 @@ exp_parser::notation const& exp_parser::get_postfix() {
     std::string token(stack.top());
     stack.pop();
     if (token == "(") {
-      throw (exceptions::msg()
-             << "mismatched parentheses found while parsing "
-             << "the following expression: " << _exp);
+      throw(exceptions::msg() << "mismatched parentheses found while parsing "
+                              << "the following expression: " << _exp);
     }
     // Or pop the operator onto the output queue.
     _postfix.push_back(token);
@@ -239,16 +233,10 @@ exp_parser::notation const& exp_parser::get_postfix() {
  *  @return True if token is a valid function name.
  */
 bool exp_parser::is_function(std::string const& token) {
-  return ((token == "HOSTSTATUS")
-          || (token == "SERVICESTATUS")
-          || (token == "METRICS")
-          || (token == "METRIC")
-          || (token == "AVERAGE")
-          || (token == "COUNT")
-          || (token == "MAX")
-          || (token == "MIN")
-          || (token == "SUM")
-          || (token == "CALL"));
+  return ((token == "HOSTSTATUS") || (token == "SERVICESTATUS") ||
+          (token == "METRICS") || (token == "METRIC") || (token == "AVERAGE") ||
+          (token == "COUNT") || (token == "MAX") || (token == "MIN") ||
+          (token == "SUM") || (token == "CALL"));
 }
 
 /**
@@ -257,27 +245,13 @@ bool exp_parser::is_function(std::string const& token) {
  *  @return True if token is a valid operator.
  */
 bool exp_parser::is_operator(std::string const& token) {
-  return ((token == "+")
-          || (token == "-")
-          || (token == "-u")
-          || (token == "*")
-          || (token == "/")
-          || (token == "%")
-          || (token == ">")
-          || (token == ">=")
-          || (token == "<")
-          || (token == "<=")
-          || (token == "==")
-          || (token == "IS")
-          || (token == "NOT")
-          || (token == "!=")
-          || (token == "!")
-          || (token == "AND")
-          || (token == "^")
-          || (token == "XOR")
-          || (token == "&&")
-          || (token == "OR")
-          || (token == "||"));
+  return ((token == "+") || (token == "-") || (token == "-u") ||
+          (token == "*") || (token == "/") || (token == "%") ||
+          (token == ">") || (token == ">=") || (token == "<") ||
+          (token == "<=") || (token == "==") || (token == "IS") ||
+          (token == "NOT") || (token == "!=") || (token == "!") ||
+          (token == "AND") || (token == "^") || (token == "XOR") ||
+          (token == "&&") || (token == "OR") || (token == "||"));
 }
 
 /**
@@ -289,5 +263,5 @@ void exp_parser::_internal_copy(exp_parser const& other) {
   _exp = other._exp;
   _postfix = other._postfix;
   _precedence = other._precedence;
-  return ;
+  return;
 }

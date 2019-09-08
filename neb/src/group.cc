@@ -21,10 +21,10 @@
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Default constructor.
@@ -67,10 +67,10 @@ group& group::operator=(group const& other) {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Copy internal members of the given object to the current
@@ -91,5 +91,5 @@ void group::_internal_copy(group const& other) {
   id = other.id;
   name = other.name;
   poller_id = other.poller_id;
-  return ;
+  return;
 }

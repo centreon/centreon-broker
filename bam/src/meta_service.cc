@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bam/meta_service.hh"
 #include <cmath>
 #include <ctime>
 #include <sstream>
-#include "com/centreon/broker/bam/meta_service.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/service_status.hh"

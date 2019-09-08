@@ -17,31 +17,32 @@
 */
 
 #ifndef CCB_NEB_STATISTICS_HOSTS_CHECKED_HH
-#  define CCB_NEB_STATISTICS_HOSTS_CHECKED_HH
+#define CCB_NEB_STATISTICS_HOSTS_CHECKED_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/statistics/plugin.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/statistics/plugin.hh"
 
 CCB_BEGIN()
 
-namespace            neb {
-  namespace          statistics {
-    /**
-     *  @class hosts_checked hosts_checked.hh "com/centreon/broker/neb/statistics/hosts_checked.hh"
-     *  @brief hosts_checked statistics plugin.
-     */
-    class            hosts_checked : public plugin {
-    public:
-                     hosts_checked();
-                     hosts_checked(hosts_checked const& right);
-                     ~hosts_checked();
-      hosts_checked& operator=(hosts_checked const& right);
-      void           run(std::string& output, std::string& perfdata);
-    };
-  }
-}
+namespace neb {
+namespace statistics {
+/**
+ *  @class hosts_checked hosts_checked.hh
+ * "com/centreon/broker/neb/statistics/hosts_checked.hh"
+ *  @brief hosts_checked statistics plugin.
+ */
+class hosts_checked : public plugin {
+ public:
+  hosts_checked();
+  hosts_checked(hosts_checked const& right);
+  ~hosts_checked();
+  hosts_checked& operator=(hosts_checked const& right);
+  void run(std::string& output, std::string& perfdata);
+};
+}  // namespace statistics
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_HOSTS_CHECKED_HH
+#endif  // !CCB_NEB_STATISTICS_HOSTS_CHECKED_HH

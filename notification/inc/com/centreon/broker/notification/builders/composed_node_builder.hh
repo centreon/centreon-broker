@@ -17,34 +17,33 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_COMPOSED_NODE_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_COMPOSED_NODE_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_COMPOSED_NODE_BUILDER_HH
 
-#  include <vector>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/node.hh"
-#  include "com/centreon/broker/notification/builders/node_builder.hh"
-#  include "com/centreon/broker/notification/builders/composed_builder.hh"
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/composed_builder.hh"
+#include "com/centreon/broker/notification/builders/node_builder.hh"
+#include "com/centreon/broker/notification/objects/node.hh"
 
 CCB_BEGIN()
 
-namespace         notification {
-  /**
-   *  @class composed_node_builder composed_node_builder.hh "com/centreon/broker/notification/builders/composed_node_builder.hh"
-   *  @brief Composed node builder.
-   *
-   *  This class forward its method call to several other builders.
-   */
-  class           composed_node_builder
-                    : public composed_builder<node_builder> {
-  public:
-                  composed_node_builder();
+namespace notification {
+/**
+ *  @class composed_node_builder composed_node_builder.hh
+ * "com/centreon/broker/notification/builders/composed_node_builder.hh"
+ *  @brief Composed node builder.
+ *
+ *  This class forward its method call to several other builders.
+ */
+class composed_node_builder : public composed_builder<node_builder> {
+ public:
+  composed_node_builder();
 
-    virtual void  add_node(
-                    objects::node::ptr node);
-  };
+  virtual void add_node(objects::node::ptr node);
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_COMPOSED_NODE_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_COMPOSED_NODE_BUILDER_HH

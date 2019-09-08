@@ -16,32 +16,30 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/ack.hh"
+#include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
-ack::ack()
-  : acknowledged_events(0) {}
+ack::ack() : acknowledged_events(0) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-ack::ack(ack const& other)
-  : io::data(other) {
+ack::ack(ack const& other) : io::data(other) {
   _internal_copy(other);
 }
 
@@ -75,10 +73,10 @@ unsigned int ack::type() const {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -87,27 +85,22 @@ unsigned int ack::type() const {
  */
 void ack::_internal_copy(ack const& other) {
   acknowledged_events = other.acknowledged_events;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const ack::entries[] = {
-  mapping::entry(
-    &ack::acknowledged_events,
-    "acknowledged_events"),
-  mapping::entry()
-};
+    mapping::entry(&ack::acknowledged_events, "acknowledged_events"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_ack() {
   return (new ack);
 }
-io::event_info::event_operations const ack::operations = {
-  &new_ack
-};
+io::event_info::event_operations const ack::operations = {&new_ack};

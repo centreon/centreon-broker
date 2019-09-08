@@ -34,8 +34,6 @@ int main() {
   n1.add_child(&n2);
 
   // Check.
-  return (n1.get_children().empty()
-          || (*n1.get_children().begin() != &n2)
-          || n2.get_parents().empty()
-          || (*n2.get_parents().begin() != &n1));
+  return (n1.get_children().empty() || (*n1.get_children().begin() != &n2) ||
+          n2.get_parents().empty() || (*n2.get_parents().begin() != &n1));
 }

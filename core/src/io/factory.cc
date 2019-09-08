@@ -16,17 +16,17 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/factory.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::io;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -82,13 +82,12 @@ bool factory::has_not_endpoint(config::endpoint& cfg) const {
  *
  *  @return New stream.
  */
-std::shared_ptr<stream> factory::new_stream(
-                                   std::shared_ptr<stream> to,
-                                   bool is_acceptor,
-                                   std::string const& proto_name) {
+std::shared_ptr<stream> factory::new_stream(std::shared_ptr<stream> to,
+                                            bool is_acceptor,
+                                            std::string const& proto_name) {
   (void)to;
   (void)is_acceptor;
   throw exceptions::msg() << proto_name
-         << ": protocol does not support feature negotiation";
+                          << ": protocol does not support feature negotiation";
   return std::shared_ptr<stream>();
 }

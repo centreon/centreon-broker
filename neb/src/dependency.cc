@@ -21,19 +21,16 @@
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
 dependency::dependency()
-  : dependent_host_id(0),
-    enabled(true),
-    host_id(0),
-    inherits_parent(false) {}
+    : dependent_host_id(0), enabled(true), host_id(0), inherits_parent(false) {}
 
 /**
  *  Copy constructor.
@@ -63,10 +60,10 @@ dependency& dependency::operator=(dependency const& dep) {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Copy internal data members.
@@ -83,5 +80,5 @@ void dependency::_internal_copy(dependency const& dep) {
   host_id = dep.host_id;
   inherits_parent = dep.inherits_parent;
   notification_failure_options = dep.notification_failure_options;
-  return ;
+  return;
 }

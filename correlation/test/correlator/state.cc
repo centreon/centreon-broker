@@ -16,14 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <iostream>
 #include <QMap>
 #include <QPair>
-#include "com/centreon/broker/multiplexing/engine.hh"
+#include <cstdlib>
+#include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/correlation/node.hh"
+#include "com/centreon/broker/correlation/stream.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "test/correlator/common.hh"
 
@@ -86,15 +86,7 @@ int main() {
     QList<std::shared_ptr<io::data> > content;
     add_state(content, -1, 0, 123456789, 42, false, 24, 0);
     add_state(content, -1, 2, -1, 42, false, 24, 123456789);
-    add_state(
-      content,
-      -1,
-      2,
-      123456790,
-      42,
-      false,
-      24,
-      123456789);
+    add_state(content, -1, 2, 123456790, 42, false, 24, 123456789);
     add_state(content, -1, 0, -1, 42, false, 24, 123456790);
 
     // Check.
@@ -102,11 +94,9 @@ int main() {
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "unknown exception" << std::endl;
   }
 

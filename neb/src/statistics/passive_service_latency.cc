@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/passive_service_latency.hh"
 #include <iomanip>
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/statistics/compute_value.hh"
-#include "com/centreon/broker/neb/statistics/passive_service_latency.hh"
 #include "com/centreon/engine/globals.hh"
 
 using namespace com::centreon::broker;
@@ -33,15 +33,16 @@ using namespace com::centreon::engine;
  *  Default constructor.
  */
 passive_service_latency::passive_service_latency()
-  : plugin("passive_service_latency") {}
+    : plugin("passive_service_latency") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-passive_service_latency::passive_service_latency(passive_service_latency const& right)
- : plugin(right) {}
+passive_service_latency::passive_service_latency(
+    passive_service_latency const& right)
+    : plugin(right) {}
 
 /**
  *  Destructor.
@@ -55,7 +56,8 @@ passive_service_latency::~passive_service_latency() {}
  *
  *  @return This object.
  */
-passive_service_latency& passive_service_latency::operator=(passive_service_latency const& right) {
+passive_service_latency& passive_service_latency::operator=(
+    passive_service_latency const& right) {
   plugin::operator=(right);
   return (*this);
 }
@@ -66,15 +68,11 @@ passive_service_latency& passive_service_latency::operator=(passive_service_late
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void passive_service_latency::run(
-              std::string& output,
-	      std::string& perfdata) {
+void passive_service_latency::run(std::string& output, std::string& perfdata) {
   compute_value<double> cv;
-  for (service_map::const_iterator
-         it{service::services.begin()},
-         end{service::services.end()};
-       it != end;
-       ++it)
+  for (service_map::const_iterator it{service::services.begin()},
+       end{service::services.end()};
+       it != end; ++it)
     if (it->second->get_check_type() == checkable::check_passive)
       cv << it->second->get_latency();
 
@@ -82,20 +80,21 @@ void passive_service_latency::run(
     // Output.
     std::ostringstream oss;
     oss << "Engine " << config::applier::state::instance().poller_name()
-        << " has an average passive service latency of "
-        << std::fixed << std::setprecision(2) << cv.avg() << "s";
+        << " has an average passive service latency of " << std::fixed
+        << std::setprecision(2) << cv.avg() << "s";
     output = oss.str();
 
     // Perfdata.
     oss.str("");
-    oss << "avg=" << cv.avg() << "s min=" << cv.min()
-        << "s max=" << cv.max() << "s";
+    oss << "avg=" << cv.avg() << "s min=" << cv.min() << "s max=" << cv.max()
+        << "s";
     perfdata = oss.str();
-  }
-  else {
+  } else {
     // Output.
-    output = "No passive service to compute passive service "
-      "latency on " + config::applier::state::instance().poller_name();
+    output =
+        "No passive service to compute passive service "
+        "latency on " +
+        config::applier::state::instance().poller_name();
   }
-  return ;
+  return;
 }

@@ -17,65 +17,62 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_MACRO_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_MACRO_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_MACRO_BUILDER_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        notification {
+namespace notification {
+/**
+ *  @class macro_builder macro_builder.hh
+ * "com/centreon/broker/notification/builders/macro_builder.hh"
+ *  @brief Macro builder interface.
+ *
+ *  This interface define what methods macro builders need to implement.
+ */
+class macro_builder {
+ public:
   /**
-   *  @class macro_builder macro_builder.hh "com/centreon/broker/notification/builders/macro_builder.hh"
-   *  @brief Macro builder interface.
-   *
-   *  This interface define what methods macro builders need to implement.
+   *  Virtual destructor.
    */
-  class          macro_builder {
-  public:
-    /**
-     *  Virtual destructor.
-     */
-    virtual      ~macro_builder() {}
+  virtual ~macro_builder() {}
 
-    /**
-     *  Add a global macro to the builder.
-     *
-     *  @param[in] macro_name   The macro name.
-     *  @param[in] macro_value  The macro value.
-     */
-    virtual void add_global_macro(
-                   std::string const& macro_name,
-                   std::string const& macro_value) {
-      (void)macro_name;
-      (void)macro_value;
-    }
+  /**
+   *  Add a global macro to the builder.
+   *
+   *  @param[in] macro_name   The macro name.
+   *  @param[in] macro_value  The macro value.
+   */
+  virtual void add_global_macro(std::string const& macro_name,
+                                std::string const& macro_value) {
+    (void)macro_name;
+    (void)macro_value;
+  }
 
-    /**
-     *  Add the date format of the macros to the builder.
-     *
-     *  @param[in] format  The date format.
-     */
-    virtual void add_date_format(int format) {
-      (void)format;
-    }
+  /**
+   *  Add the date format of the macros to the builder.
+   *
+   *  @param[in] format  The date format.
+   */
+  virtual void add_date_format(int format) { (void)format; }
 
-    /**
-     *  Add a resource macro to the builder.
-     *
-     *  @param[in] macro_name   The macro name.
-     *  @param[in] macro_value  The macro value.
-     */
-    virtual void add_resource_macro(
-                   std::string const& macro_name,
-                   std::string const& macro_value) {
-      (void)macro_name;
-      (void)macro_value;
-    }
-  };
+  /**
+   *  Add a resource macro to the builder.
+   *
+   *  @param[in] macro_name   The macro name.
+   *  @param[in] macro_value  The macro value.
+   */
+  virtual void add_resource_macro(std::string const& macro_name,
+                                  std::string const& macro_value) {
+    (void)macro_name;
+    (void)macro_value;
+  }
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_NODE_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_NODE_BUILDER_HH

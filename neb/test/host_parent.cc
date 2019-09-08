@@ -17,9 +17,9 @@
  *
  */
 
-#include <cmath>
-#include <gtest/gtest.h>
 #include "com/centreon/broker/neb/host_parent.hh"
+#include <gtest/gtest.h>
+#include <cmath>
 #include "randomize.hh"
 
 using namespace com::centreon::broker;
@@ -87,6 +87,7 @@ TEST_F(HostParentTest, DefaultConstructor) {
   ASSERT_TRUE(hprnt.enabled);
   ASSERT_EQ(hprnt.host_id, 0);
   ASSERT_EQ(hprnt.parent_id, 0);
-  ASSERT_FALSE(hprnt.type() !=
-        (io::events::data_type<io::events::neb, neb::de_host_parent>::value));
+  ASSERT_FALSE(
+      hprnt.type() !=
+      (io::events::data_type<io::events::neb, neb::de_host_parent>::value));
 }

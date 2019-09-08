@@ -16,23 +16,22 @@
 ** For more information : contact@centreon.com
 */
 
-#include <ctime>
-#include <iostream>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QVariant>
-#include <QTcpSocket>
 #include <QTcpServer>
+#include <QTcpSocket>
+#include <QVariant>
+#include <ctime>
+#include <iostream>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "test/config.hh"
 #include "test/cbd.hh"
-#include "test/vars.hh"
+#include "test/config.hh"
+#include "test/engine.hh"
+#include "test/engine_extcmd.hh"
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
-#include "test/engine.hh"
-#include "test/engine_extcmd.hh"
 
 using namespace com::centreon::broker;
 
@@ -78,8 +77,7 @@ int main() {
 
     // Create the config graphite xml file.
     test_file file;
-    file.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/graphite.xml.in");
+    file.set_template(PROJECT_SOURCE_DIR "/test/cfg/graphite.xml.in");
     file.set("MYSQL_DB_NAME", STORAGE_DB_NAME);
     file.set("GRAPHITE_DB_PORT", GRAPHITE_DB_PORT);
     file.set("GRAPHITE_DB_PASSWORD", GRAPHITE_DB_PASSWORD);
@@ -97,16 +95,12 @@ int main() {
     std::string additional_config;
     {
       std::ostringstream oss;
-      oss << commander.get_engine_config()
-          << "broker_module=" << CBMOD_PATH << " "
-          << config_file << "\n";
+      oss << commander.get_engine_config() << "broker_module=" << CBMOD_PATH
+          << " " << config_file << "\n";
       additional_config = oss.str();
     }
-    config_write(
-      engine_config_path.c_str(),
-      additional_config.c_str(),
-      &hosts,
-      &services);
+    config_write(engine_config_path.c_str(), additional_config.c_str(), &hosts,
+                 &services);
 
     std::string engine_config_file(engine_config_path);
     engine_config_file.append("/nagios.cfg");
@@ -116,15 +110,16 @@ int main() {
     sleep_for(3);
     time_t first_timestamp_possible = std::time(NULL);
     commander.execute(
-      "PROCESS_SERVICE_CHECK_RESULT;1;1;0;Submitted by unit test | graphite_test=0.80");
+        "PROCESS_SERVICE_CHECK_RESULT;1;1;0;Submitted by unit test | "
+        "graphite_test=0.80");
 
     if (!server.waitForNewConnection(8000 * MONITORING_ENGINE_INTERVAL_LENGTH))
       throw exceptions::msg()
-            << "no incoming connection to " << GRAPHITE_DB_PORT_S;
+          << "no incoming connection to " << GRAPHITE_DB_PORT_S;
     QTcpSocket* s = server.nextPendingConnection();
     if (!s)
       throw exceptions::msg()
-            << "no incoming connection to " << GRAPHITE_DB_PORT_S;
+          << "no incoming connection to " << GRAPHITE_DB_PORT_S;
     QByteArray array;
     while (s->isOpen() && s->waitForReadyRead())
       array.append(s->readAll());
@@ -132,13 +127,14 @@ int main() {
 
     time_t last_timestamp_possible = std::time(NULL);
     bool got = false;
-    QString auth_base64 = QByteArray(GRAPHITE_DB_USER ":" GRAPHITE_DB_PASSWORD).toBase64();
+    QString auth_base64 =
+        QByteArray(GRAPHITE_DB_USER ":" GRAPHITE_DB_PASSWORD).toBase64();
     // Check the data got for everything is okay.
-    for (;
-         first_timestamp_possible <= last_timestamp_possible;
+    for (; first_timestamp_possible <= last_timestamp_possible;
          ++first_timestamp_possible) {
       QString expected = expected_result;
-      expected.replace("$timestamp$", QString::number(first_timestamp_possible));
+      expected.replace("$timestamp$",
+                       QString::number(first_timestamp_possible));
       expected.replace("$auth$", auth_base64);
       if (expected == data) {
         got = true;
@@ -146,19 +142,14 @@ int main() {
       }
     }
     if (!got)
-      throw exceptions::msg()
-            << "incorrect graphite data: got: "
-            << data
-            << "\nexpected: "
-            << expected_result;
+      throw exceptions::msg() << "incorrect graphite data: got: " << data
+                              << "\nexpected: " << expected_result;
 
     // Success.
     error = false;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
   }
 

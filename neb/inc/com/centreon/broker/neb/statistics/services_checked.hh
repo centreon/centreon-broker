@@ -17,31 +17,32 @@
 */
 
 #ifndef CCB_NEB_STATISTICS_SERVICES_CHECKED_HH
-#  define CCB_NEB_STATISTICS_SERVICES_CHECKED_HH
+#define CCB_NEB_STATISTICS_SERVICES_CHECKED_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/statistics/plugin.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/statistics/plugin.hh"
 
 CCB_BEGIN()
 
-namespace               neb {
-  namespace             statistics {
-    /**
-     *  @class services_checked services_checked.hh "com/centreon/broker/neb/statistics/services_checked.hh"
-     *  @brief services_checked statistics plugin.
-     */
-    class               services_checked : public plugin {
-    public:
-                        services_checked();
-                        services_checked(services_checked const& right);
-                        ~services_checked();
-      services_checked& operator=(services_checked const& right);
-      void              run(std::string& output, std::string& perfdata);
-    };
-  }
-}
+namespace neb {
+namespace statistics {
+/**
+ *  @class services_checked services_checked.hh
+ * "com/centreon/broker/neb/statistics/services_checked.hh"
+ *  @brief services_checked statistics plugin.
+ */
+class services_checked : public plugin {
+ public:
+  services_checked();
+  services_checked(services_checked const& right);
+  ~services_checked();
+  services_checked& operator=(services_checked const& right);
+  void run(std::string& output, std::string& perfdata);
+};
+}  // namespace statistics
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_SERVICES_CHECKED_HH
+#endif  // !CCB_NEB_STATISTICS_SERVICES_CHECKED_HH

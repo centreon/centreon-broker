@@ -17,41 +17,37 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_COMMAND_BY_ID_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_COMMAND_BY_ID_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_COMMAND_BY_ID_BUILDER_HH
 
-#  include <string>
-#  include <QHash>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/node_id.hh"
-#  include "com/centreon/broker/notification/objects/command.hh"
-#  include "com/centreon/broker/notification/builders/command_builder.hh"
+#include <QHash>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/command_builder.hh"
+#include "com/centreon/broker/notification/objects/command.hh"
+#include "com/centreon/broker/notification/objects/node_id.hh"
 
 CCB_BEGIN()
 
-namespace         notification {
-  /**
-   *  @class command_by_id_builder command_by_id_builder.hh "com/centreon/broker/notification/builders/command_by_id_builder.hh"
-   *  @brief Command builder by id.
-   *
-   *  This class build a map of commands by their id.
-   */
-  class           command_by_id_builder
-                    : public command_builder {
-  public:
-                  command_by_id_builder(
-                    QHash<unsigned int, objects::command::ptr>& table);
+namespace notification {
+/**
+ *  @class command_by_id_builder command_by_id_builder.hh
+ * "com/centreon/broker/notification/builders/command_by_id_builder.hh"
+ *  @brief Command builder by id.
+ *
+ *  This class build a map of commands by their id.
+ */
+class command_by_id_builder : public command_builder {
+ public:
+  command_by_id_builder(QHash<unsigned int, objects::command::ptr>& table);
 
-    virtual void  add_command(
-                    unsigned int id,
-                    objects::command::ptr com);
+  virtual void add_command(unsigned int id, objects::command::ptr com);
 
-  private:
-    QHash<unsigned int, objects::command::ptr>&
-                  _table;
-  };
+ private:
+  QHash<unsigned int, objects::command::ptr>& _table;
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_COMMAND_BY_ID_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_COMMAND_BY_ID_BUILDER_HH

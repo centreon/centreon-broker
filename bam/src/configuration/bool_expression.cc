@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <string>
 #include "com/centreon/broker/bam/configuration/bool_expression.hh"
+#include <string>
 
 using namespace com::centreon::broker::bam::configuration;
 using namespace com::centreon::broker;
@@ -30,15 +30,11 @@ using namespace com::centreon::broker;
  *  @param[in] expression     BA expression.
  *  @param[in] impact_if      BA impact_if
  */
-bool_expression::bool_expression(
-                   unsigned int id,
-                   std::string const& name,
-                   std::string const& expression,
-                   bool impact_if)
-  : _id(id),
-    _name(name),
-    _expression(expression),
-    _impact_if(impact_if) {}
+bool_expression::bool_expression(unsigned int id,
+                                 std::string const& name,
+                                 std::string const& expression,
+                                 bool impact_if)
+    : _id(id), _name(name), _expression(expression), _impact_if(impact_if) {}
 
 /**
  *  Copy constructor.
@@ -46,10 +42,10 @@ bool_expression::bool_expression(
  *  @param[in] other  The object to copy.
  */
 bool_expression::bool_expression(bool_expression const& other)
-  : _id(other._id),
-    _name(other._name),
-    _expression(other._expression),
-    _impact_if(other._impact_if) {}
+    : _id(other._id),
+      _name(other._name),
+      _expression(other._expression),
+      _impact_if(other._impact_if) {}
 
 /**
  *  Destructor
@@ -81,10 +77,9 @@ bool_expression& bool_expression::operator=(bool_expression const& other) {
  *  @return True if this and other objects are equal.
  */
 bool bool_expression::operator==(bool_expression const& other) const {
-  return ((_id == other._id)
-          && (_name == other._name)
-          && (_expression == other._expression)
-          && (_impact_if == other._impact_if));
+  return ((_id == other._id) && (_name == other._name) &&
+          (_expression == other._expression) &&
+          (_impact_if == other._impact_if));
 }
 
 /**
@@ -160,7 +155,7 @@ void bool_expression::set_expression(std::string const& exp) {
  */
 void bool_expression::set_id(unsigned int id) {
   _id = id;
-  return ;
+  return;
 }
 
 /**

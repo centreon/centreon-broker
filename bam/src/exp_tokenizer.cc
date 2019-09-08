@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cctype>
 #include "com/centreon/broker/bam/exp_tokenizer.hh"
+#include <cctype>
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
@@ -27,7 +27,7 @@ using namespace com::centreon::broker::bam;
  *  Constructor.
  */
 exp_tokenizer::exp_tokenizer(std::string const& text)
-  : _current(0), _next(0), _text(text) {
+    : _current(0), _next(0), _text(text) {
   _size = _text.size();
 }
 
@@ -83,20 +83,16 @@ std::string exp_tokenizer::next() {
       if (_is_special_char()) {
         if ((_current + 1 < _size)
             // Double character exceptions: ==, !=, >=, <=.
-            && ((((_text[_current] == '=')
-                  || (_text[_current] == '!')
-                  || (_text[_current] == '<')
-                  || (_text[_current] == '>'))
-                 && (_text[_current + 1] == '='))
-            // Double character exceptions: ||, &&.
-                || (((_text[_current] == '|')
-                     || (_text[_current] == '&'))
-                    && (_text[_current] == _text[_current + 1])))) {
+            && ((((_text[_current] == '=') || (_text[_current] == '!') ||
+                  (_text[_current] == '<') || (_text[_current] == '>')) &&
+                 (_text[_current + 1] == '='))
+                // Double character exceptions: ||, &&.
+                || (((_text[_current] == '|') || (_text[_current] == '&')) &&
+                    (_text[_current] == _text[_current + 1])))) {
           retval.push_back(_text[_current]);
           retval.push_back(_text[_current + 1]);
           _next = _current + 2;
-        }
-        else {
+        } else {
           retval.push_back(_text[_current]);
           _next = _current + 1;
         }
@@ -115,8 +111,7 @@ std::string exp_tokenizer::next() {
  *
  *  @return Next token.
  */
-std::string exp_tokenizer::_extract_token()
-{
+std::string exp_tokenizer::_extract_token() {
   // Return value.
   std::string retval;
 
@@ -136,18 +131,11 @@ std::string exp_tokenizer::_extract_token()
 
     // If it's an operator or a constant, leave it as it is.
     // Otherwise this express the STATUS of a host/service.
-    if ((retval != "IS")
-        && (retval != "NOT")
-        && (retval != "AND")
-        && (retval != "XOR")
-        && (retval != "OR")
-        && (retval != "OK")
-        && (retval != "WARNING")
-        && (retval != "CRITICAL")
-        && (retval != "UNKNOWN")
-        && (retval != "UP")
-        && (retval != "DOWN")
-        && (retval != "UNREACHABLE")) {
+    if ((retval != "IS") && (retval != "NOT") && (retval != "AND") &&
+        (retval != "XOR") && (retval != "OR") && (retval != "OK") &&
+        (retval != "WARNING") && (retval != "CRITICAL") &&
+        (retval != "UNKNOWN") && (retval != "UP") && (retval != "DOWN") &&
+        (retval != "UNREACHABLE")) {
       // Host name is retrieved first.
       _queue.push("(");
       _queue.push(retval);
@@ -172,10 +160,9 @@ std::string exp_tokenizer::_extract_token()
     // Assert that ending brace was found.
     if ((_next < _size) && (_text[_next] == '}')) {
       ++_next;
-    }
-    else
-      throw (exceptions::msg() << "opening brace at position "
-             << _current << " has no ending brace ");
+    } else
+      throw(exceptions::msg() << "opening brace at position " << _current
+                              << " has no ending brace ");
   }
   // Extract classical token.
   else {
@@ -192,44 +179,39 @@ std::string exp_tokenizer::_extract_token()
  *
  *  @return Extracted token.
  */
-std::string exp_tokenizer::_extract_until(
-                             bool (exp_tokenizer::* predicate)()) {
+std::string exp_tokenizer::_extract_until(bool (exp_tokenizer::*predicate)()) {
   std::string retval;
   _next = _current;
   while ((_next < _size) && !(this->*predicate)()) {
     switch (_text[_next]) {
       case '\'':
-      case '"':
-        {
-          char quote(_text[_next]);
-          bool process_metachars(quote == '"');
-          bool quote_matched(false);
-          while ((++_next < _size)) {
-            if (_text[_next] == quote) {
-              quote_matched = true;
-              break ;
-            }
-            if (process_metachars && (_text[_next] == '\\')) {
-              ++_next;
-              if (_next < _size) {
-                retval.push_back(_text[_next]);
-              }
-            }
-            else {
+      case '"': {
+        char quote(_text[_next]);
+        bool process_metachars(quote == '"');
+        bool quote_matched(false);
+        while ((++_next < _size)) {
+          if (_text[_next] == quote) {
+            quote_matched = true;
+            break;
+          }
+          if (process_metachars && (_text[_next] == '\\')) {
+            ++_next;
+            if (_next < _size) {
               retval.push_back(_text[_next]);
             }
+          } else {
+            retval.push_back(_text[_next]);
           }
-          if (!quote_matched)
-            throw (exceptions::msg() << "unterminated "
-                   << (process_metachars ? "double" : "single")
-                   << " quote in the following expression: "
-                   << _text);
         }
-        break ;
+        if (!quote_matched)
+          throw(exceptions::msg()
+                << "unterminated " << (process_metachars ? "double" : "single")
+                << " quote in the following expression: " << _text);
+      } break;
       case '\\':
         if (++_next < _size)
           retval.push_back(_text[_next]);
-        break ;
+        break;
       default:
         retval.push_back(_text[_next]);
     }
@@ -250,7 +232,7 @@ void exp_tokenizer::_internal_copy(exp_tokenizer const& other) {
   _queue = other._queue;
   _size = other._size;
   _text = other._text;
-  return ;
+  return;
 }
 
 /**
@@ -313,5 +295,5 @@ void exp_tokenizer::_skip_ws() {
   while (isspace(_text[_current])) {
     ++_current;
   }
-  return ;
+  return;
 }

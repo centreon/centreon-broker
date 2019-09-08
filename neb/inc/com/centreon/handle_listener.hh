@@ -17,10 +17,10 @@
 */
 
 #ifndef CC_HANDLE_LISTENER_HH
-#  define CC_HANDLE_LISTENER_HH
+#define CC_HANDLE_LISTENER_HH
 
-#  include "com/centreon/namespace.hh"
-#  include "com/centreon/handle.hh"
+#include "com/centreon/handle.hh"
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
@@ -31,10 +31,10 @@ CC_BEGIN()
  *  This class is an interface to receive notification from
  *  handle_manager for specific handle.
  */
-class          handle_listener {
-public:
-               handle_listener();
-  virtual      ~handle_listener() throw ();
+class handle_listener {
+ public:
+  handle_listener();
+  virtual ~handle_listener() throw();
   virtual void error(handle& h) = 0;
   virtual void read(handle& h);
   virtual bool want_read(handle& h);
@@ -44,4 +44,4 @@ public:
 
 CC_END()
 
-#endif // !CC_HANDLE_LISTENER_HH
+#endif  // !CC_HANDLE_LISTENER_HH

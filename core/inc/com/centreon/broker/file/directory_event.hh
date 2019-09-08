@@ -17,56 +17,43 @@
 */
 
 #ifndef CCB_FILE_DIRECTORY_EVENT_HH
-#  define CCB_FILE_DIRECTORY_EVENT_HH
+#define CCB_FILE_DIRECTORY_EVENT_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        file {
-  /**
-   *  @class directory_event directory_event.hh "com/centreon/broker/file/directory_event.hh"
-   *  @brief Event of a watched directory.
-   *
-   *  This represents an event happening to a watched directory.
-   */
-  class          directory_event {
-  public:
-    enum         type {
-                 created,
-                 modified,
-                 deleted,
-                 directory_deleted
-    };
-    enum         file_type {
-                 directory,
-                 file,
-                 other
-    };
+namespace file {
+/**
+ *  @class directory_event directory_event.hh
+ * "com/centreon/broker/file/directory_event.hh"
+ *  @brief Event of a watched directory.
+ *
+ *  This represents an event happening to a watched directory.
+ */
+class directory_event {
+ public:
+  enum type { created, modified, deleted, directory_deleted };
+  enum file_type { directory, file, other };
 
-                 directory_event();
-                 directory_event(
-                   std::string const& path,
-                   type type,
-                   file_type ft);
-                 directory_event(directory_event const& o);
-    directory_event&
-                 operator=(directory_event const& o);
-                 ~directory_event();
+  directory_event();
+  directory_event(std::string const& path, type type, file_type ft);
+  directory_event(directory_event const& o);
+  directory_event& operator=(directory_event const& o);
+  ~directory_event();
 
-    std::string const&
-                 get_path() const;
-    type         get_type() const;
-    file_type    get_file_type() const;
+  std::string const& get_path() const;
+  type get_type() const;
+  file_type get_file_type() const;
 
-  private:
-    std::string  _path;
-    type         _type;
-    file_type    _file_type;
-  };
-}
+ private:
+  std::string _path;
+  type _type;
+  file_type _file_type;
+};
+}  // namespace file
 
 CCB_END()
 
-#endif // !CCB_FILE_DIRECTORY_EVENT_HH
+#endif  // !CCB_FILE_DIRECTORY_EVENT_HH

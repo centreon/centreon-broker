@@ -16,13 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QVariant>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/cbd.hh"
@@ -60,8 +60,7 @@ int main() {
 
     // Create the config xml file.
     test_file file;
-    file.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/sql_id_change.xml.in");
+    file.set_template(PROJECT_SOURCE_DIR "/test/cfg/sql_id_change.xml.in");
     file.set("DB_NAME", DB_NAME);
     std::string config_file = file.generate();
 
@@ -71,17 +70,13 @@ int main() {
     std::string cbmod_loading;
     {
       std::ostringstream oss;
-      oss << "broker_module=" << CBMOD_PATH << " "
-          << config_file;
+      oss << "broker_module=" << CBMOD_PATH << " " << config_file;
       cbmod_loading = oss.str();
     }
 
     // Generate monitoring engine configuration files.
-    config_write(
-      engine_config_path.c_str(),
-      cbmod_loading.c_str(),
-      &hosts,
-      &services);
+    config_write(engine_config_path.c_str(), cbmod_loading.c_str(), &hosts,
+                 &services);
 
     // Start engine.
     std::string engine_config_file(engine_config_path);
@@ -99,11 +94,8 @@ int main() {
 
     // Change the service ID.
     set_custom_variable(services.back(), "SERVICE_ID", "42");
-    config_write(
-      engine_config_path.c_str(),
-      cbmod_loading.c_str(),
-      &hosts,
-      &services);
+    config_write(engine_config_path.c_str(), cbmod_loading.c_str(), &hosts,
+                 &services);
 
     // Reload daemon.
     daemon.reload();
@@ -117,15 +109,12 @@ int main() {
                "  WHERE enabled = '1'";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg()
-               << "cannot read service count from DB at check #1: "
-               << q.lastError().text());
-      if (!q.next()
-          || (q.value(0).toUInt() != 1)
-          || q.next())
-        throw (exceptions::msg()
-               << "invalid service count at check #1: got "
-               << q.value(0).toUInt() << ", expected 1");
+        throw(exceptions::msg()
+              << "cannot read service count from DB at check #1: "
+              << q.lastError().text());
+      if (!q.next() || (q.value(0).toUInt() != 1) || q.next())
+        throw(exceptions::msg() << "invalid service count at check #1: got "
+                                << q.value(0).toUInt() << ", expected 1");
     }
 
     //
@@ -135,16 +124,13 @@ int main() {
     //
 
     // Rename service.
-    delete [] services.back().description;
+    delete[] services.back().description;
     services.back().description = NULL;
     services.back().description = ::strdup("42");
 
     // Write configuration.
-    config_write(
-      engine_config_path.c_str(),
-      cbmod_loading.c_str(),
-      &hosts,
-      &services);
+    config_write(engine_config_path.c_str(), cbmod_loading.c_str(), &hosts,
+                 &services);
 
     // Reload daemon.
     daemon.reload();
@@ -158,15 +144,12 @@ int main() {
                "  WHERE enabled = '1'";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg()
-               << "cannot read service count from DB at check #2: "
-               << q.lastError().text());
-      if (!q.next()
-          || (q.value(0).toUInt() != 1)
-          || q.next())
-        throw (exceptions::msg()
-               << "invalid service count at check #2: got "
-               << q.value(0).toUInt() << ", expected 1");
+        throw(exceptions::msg()
+              << "cannot read service count from DB at check #2: "
+              << q.lastError().text());
+      if (!q.next() || (q.value(0).toUInt() != 1) || q.next())
+        throw(exceptions::msg() << "invalid service count at check #2: got "
+                                << q.value(0).toUInt() << ", expected 1");
     }
 
     //
@@ -177,23 +160,20 @@ int main() {
     //
 
     // Rename service.
-    delete [] services.back().description;
+    delete[] services.back().description;
     services.back().description = NULL;
     services.back().description = ::strdup("84");
 
     // Create new service.
     generate_services(services, hosts, 1);
-    delete [] services.back().description;
+    delete[] services.back().description;
     services.back().description = NULL;
     services.back().description = ::strdup("42");
     set_custom_variable(services.back(), "SERVICE_ID", "2");
 
     // Write configuration.
-    config_write(
-      engine_config_path.c_str(),
-      cbmod_loading.c_str(),
-      &hosts,
-      &services);
+    config_write(engine_config_path.c_str(), cbmod_loading.c_str(), &hosts,
+                 &services);
 
     // Reload daemon.
     daemon.reload();
@@ -207,25 +187,20 @@ int main() {
                "  WHERE enabled = '1'";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg()
-               << "cannot read service count from DB at check #3: "
-               << q.lastError().text());
-      if (!q.next()
-          || (q.value(0).toUInt() != 2)
-          || q.next())
-        throw (exceptions::msg()
-               << "invalid service count at check #3: got "
-               << q.value(0).toUInt() << ", expected 2");
+        throw(exceptions::msg()
+              << "cannot read service count from DB at check #3: "
+              << q.lastError().text());
+      if (!q.next() || (q.value(0).toUInt() != 2) || q.next())
+        throw(exceptions::msg() << "invalid service count at check #3: got "
+                                << q.value(0).toUInt() << ", expected 2");
     }
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
     db.set_remove_db_on_close(false);
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
     db.set_remove_db_on_close(false);
   }

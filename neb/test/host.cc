@@ -17,9 +17,9 @@
  *
  */
 
-#include <cmath>
-#include <gtest/gtest.h>
 #include "com/centreon/broker/neb/host.hh"
+#include <gtest/gtest.h>
+#include <cmath>
 #include "randomize.hh"
 
 using namespace com::centreon::broker;

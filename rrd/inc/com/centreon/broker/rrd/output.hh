@@ -17,15 +17,15 @@
 */
 
 #ifndef CCB_RRD_OUTPUT_HH
-#  define CCB_RRD_OUTPUT_HH
+#define CCB_RRD_OUTPUT_HH
 
-#  include <list>
-#  include <memory>
-#  include <unordered_map>
-#  include <string>
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/rrd/backend.hh"
+#include <list>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/rrd/backend.hh"
 
 CCB_BEGIN()
 
@@ -83,4 +83,4 @@ class output : public io::stream {
 
 CCB_END()
 
-#endif // !CCB_RRD_OUTPUT_HH
+#endif  // !CCB_RRD_OUTPUT_HH

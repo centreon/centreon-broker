@@ -43,25 +43,23 @@ static void precheck(test::time_points& tpoints, char const* name) {
   ++check_number;
   std::cout << "check #" << check_number << " (" << name << ")\n";
   tpoints.store();
-  return ;
+  return;
 }
 
 /**
  *  Postcheck routine.
  */
-static void postcheck(
-              test::db& db,
-              test::predicate expected[][14]) {
+static void postcheck(test::db& db, test::predicate expected[][14]) {
   static std::string check_query(
-    "SELECT host_id, service_id, start_time, command_args,"
-    "       command_line, early_timeout, end_time, execution_time,"
-    "       output, return_code, state, state_type, timeout, type"
-    "  FROM eventhandlers"
-    "  ORDER BY start_time ASC, host_id ASC,"
-    "           COALESCE(service_id, 0) ASC");
+      "SELECT host_id, service_id, start_time, command_args,"
+      "       command_line, early_timeout, end_time, execution_time,"
+      "       output, return_code, state, state_type, timeout, type"
+      "  FROM eventhandlers"
+      "  ORDER BY start_time ASC, host_id ASC,"
+      "           COALESCE(service_id, 0) ASC");
   db.check_content(check_query, expected);
   std::cout << "  passed\n";
-  return ;
+  return;
 }
 
 /**
@@ -75,35 +73,29 @@ int main() {
 
   try {
     // Database.
-    char const* tables[] = {
-      "instances",
-      "hosts",
-      "services",
-      "eventhandlers",
-      NULL };
+    char const* tables[] = {"instances", "hosts", "services", "eventhandlers",
+                            NULL};
     test::db db(DB_NAME, tables);
 
     // Monitoring broker.
     test::file cbd_cfg;
-    cbd_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
+    cbd_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
     cbd_cfg.set("BROKER_ID", "84");
     cbd_cfg.set("BROKER_NAME", TEST_NAME "-cbd");
     cbd_cfg.set("POLLER_ID", "42");
     cbd_cfg.set("POLLER_NAME", "my-poller");
     cbd_cfg.set("TCP_PORT", "5585");
     cbd_cfg.set("DB_NAME", DB_NAME);
-    cbd_cfg.set(
-      "SQL_ADDITIONAL",
-      "<write_filters>"
-      "  <category>neb:instance</category>"
-      "  <category>neb:instance_status</category>"
-      "  <category>neb:host</category>"
-      "  <category>neb:host_status</category>"
-      "  <category>neb:service</category>"
-      "  <category>neb:service_status</category>"
-      "  <category>neb:event_handler</category>"
-      "</write_filters>");
+    cbd_cfg.set("SQL_ADDITIONAL",
+                "<write_filters>"
+                "  <category>neb:instance</category>"
+                "  <category>neb:instance_status</category>"
+                "  <category>neb:host</category>"
+                "  <category>neb:host_status</category>"
+                "  <category>neb:service</category>"
+                "  <category>neb:service_status</category>"
+                "  <category>neb:event_handler</category>"
+                "</write_filters>");
     test::cbd broker;
     broker.set_config_file(cbd_cfg.generate());
     broker.start();
@@ -111,8 +103,7 @@ int main() {
 
     // Monitoring engine.
     test::file cbmod_cfg;
-    cbmod_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
+    cbmod_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
     cbmod_cfg.set("BROKER_ID", "83");
     cbmod_cfg.set("BROKER_NAME", TEST_NAME "-cbmod");
     cbmod_cfg.set("POLLER_ID", "42");
@@ -121,18 +112,16 @@ int main() {
     cbmod_cfg.set("TCP_PORT", "5585");
     test::centengine_config engine_config;
     {
-      test::centengine_object
-        cmd(test::centengine_object::command_type);
+      test::centengine_object cmd(test::centengine_object::command_type);
       cmd.set("command_name", "test_command");
       cmd.set("command_line", MY_PLUGIN_PATH " $ARG1$ '$ARG2$'");
       engine_config.get_commands().push_back(cmd);
     }
     engine_config.generate_hosts(2);
     for (test::centengine_config::objlist::iterator
-           it(engine_config.get_hosts().begin()),
-           end(engine_config.get_hosts().end());
-         it != end;
-         ++it) {
+             it(engine_config.get_hosts().begin()),
+         end(engine_config.get_hosts().end());
+         it != end; ++it) {
       it->set("active_checks_enabled", "0");
       it->set("passive_checks_enabled", "1");
       it->set("max_check_attempts", "2");
@@ -141,10 +130,9 @@ int main() {
     }
     engine_config.generate_services(2);
     for (test::centengine_config::objlist::iterator
-           it(engine_config.get_services().begin()),
-           end(engine_config.get_services().end());
-         it != end;
-         ++it) {
+             it(engine_config.get_services().begin()),
+         end(engine_config.get_services().end());
+         it != end; ++it) {
       it->set("active_checks_enabled", "0");
       it->set("passive_checks_enabled", "1");
       it->set("max_check_attempts", "2");
@@ -164,10 +152,9 @@ int main() {
     test::time_points tpoints;
 
     // Check default entry.
-    precheck(
-      tpoints,
-      "host_id, service_id, start_time, command_args, command_line,"
-      " end_time, execution_time, output, return_code, state");
+    precheck(tpoints,
+             "host_id, service_id, start_time, command_args, command_line,"
+             " end_time, execution_time, output, return_code, state");
     engine.start();
     test::sleep_for(1);
     tpoints.store();
@@ -175,24 +162,11 @@ int main() {
     test::sleep_for(2);
     tpoints.store();
     test::predicate expected[5][14] = {
-      {
-        1u,
-        1u,
-        test::predicate(tpoints.prelast(), tpoints.last() + 1),
-        "0!service event handler",
-        MY_PLUGIN_PATH " 0 'service event handler'",
-        false,
-        test::predicate(tpoints.prelast(), tpoints.last() + 1),
-        test::predicate(0.0, 1.0),
-        "service event handler",
-        0,
-        2,
-        0,
-        5,
-        1
-      },
-      { test::predicate() }
-    };
+        {1u, 1u, test::predicate(tpoints.prelast(), tpoints.last() + 1),
+         "0!service event handler", MY_PLUGIN_PATH " 0 'service event handler'",
+         false, test::predicate(tpoints.prelast(), tpoints.last() + 1),
+         test::predicate(0.0, 1.0), "service event handler", 0, 2, 0, 5, 1},
+        {test::predicate()}};
     postcheck(db, expected);
 
     // Check state_type.
@@ -202,13 +176,11 @@ int main() {
     tpoints.store();
     expected[1][0] = 1u;
     expected[1][1] = 1u;
-    expected[1][2]
-      = test::predicate(tpoints.prelast(), tpoints.last() + 1);
+    expected[1][2] = test::predicate(tpoints.prelast(), tpoints.last() + 1);
     expected[1][3] = "0!service event handler";
     expected[1][4] = MY_PLUGIN_PATH " 0 'service event handler'";
     expected[1][5] = false;
-    expected[1][6]
-      = test::predicate(tpoints.prelast(), tpoints.last() + 1);
+    expected[1][6] = test::predicate(tpoints.prelast(), tpoints.last() + 1);
     expected[1][7] = test::predicate(0.0, 1.0);
     expected[1][8] = "service event handler";
     expected[1][9] = 0;
@@ -226,13 +198,11 @@ int main() {
     tpoints.store();
     expected[2][0] = 2u;
     expected[2][1] = test::predicate(test::predicate::type_null);
-    expected[2][2]
-      = test::predicate(tpoints.prelast(), tpoints.last() + 1);
+    expected[2][2] = test::predicate(tpoints.prelast(), tpoints.last() + 1);
     expected[2][3] = "0!host event handler";
     expected[2][4] = MY_PLUGIN_PATH " 0 'host event handler'";
     expected[2][5] = false;
-    expected[2][6]
-      = test::predicate(tpoints.prelast(), tpoints.last() + 1);
+    expected[2][6] = test::predicate(tpoints.prelast(), tpoints.last() + 1);
     expected[2][7] = test::predicate(0.0, 1.0);
     expected[2][8] = "host event handler";
     expected[2][9] = 0;
@@ -255,11 +225,9 @@ int main() {
     error = false;
     db.set_remove_db_on_close(true);
     broker.stop();
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << "  " << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "  unknown exception\n";
   }
 

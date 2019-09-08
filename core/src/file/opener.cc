@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/file/opener.hh"
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/file/opener.hh"
 #include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/file/stream.hh"
 
@@ -26,16 +26,16 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
  */
 opener::opener()
-  : io::endpoint(false), _auto_delete(true), _max_size(100000000) {}
+    : io::endpoint(false), _auto_delete(true), _max_size(100000000) {}
 
 /**
  *  Copy constructor.
@@ -43,10 +43,10 @@ opener::opener()
  *  @param[in] other  Object to copy.
  */
 opener::opener(opener const& other)
-  : io::endpoint(other),
-    _auto_delete(other._auto_delete),
-    _filename(other._filename),
-    _max_size(other._max_size) {}
+    : io::endpoint(other),
+      _auto_delete(other._auto_delete),
+      _filename(other._filename),
+      _max_size(other._max_size) {}
 
 /**
  *  Destructor.
@@ -79,10 +79,7 @@ std::shared_ptr<io::stream> opener::open() {
   // Open splitted file.
   splitter_factory f;
   std::unique_ptr<splitter> file(f.new_cfile_splitter(
-                                   _filename,
-                                   fs_file::open_read_write_truncate,
-                                   _max_size,
-                                   _auto_delete));
+      _filename, fs_file::open_read_write_truncate, _max_size, _auto_delete));
   std::shared_ptr<io::stream> retval(std::make_shared<stream>(file.get()));
   file.release();
   return retval;
@@ -95,7 +92,7 @@ std::shared_ptr<io::stream> opener::open() {
  */
 void opener::set_auto_delete(bool auto_delete) {
   _auto_delete = auto_delete;
-  return ;
+  return;
 }
 
 /**
@@ -105,7 +102,7 @@ void opener::set_auto_delete(bool auto_delete) {
  */
 void opener::set_filename(std::string const& filename) {
   _filename = filename;
-  return ;
+  return;
 }
 
 /**
@@ -115,5 +112,5 @@ void opener::set_filename(std::string const& filename) {
  */
 void opener::set_max_size(unsigned long long max) {
   _max_size = max;
-  return ;
+  return;
 }

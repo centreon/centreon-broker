@@ -17,30 +17,31 @@
 */
 
 #ifndef CCB_NOTIFICATION_LOADERS_COMMAND_LOADER_HH
-#  define CCB_NOTIFICATION_LOADERS_COMMAND_LOADER_HH
+#define CCB_NOTIFICATION_LOADERS_COMMAND_LOADER_HH
 
-#  include "com/centreon/broker/mysql.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/builders/command_builder.hh"
+#include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/command_builder.hh"
 
 CCB_BEGIN()
 
-namespace       notification {
-  /**
-   *  @class command_loader command_loader.hh "com/centreon/broker/notification/loaders/command_loader.hh"
-   *  @brief Loader for command objects.
-   *
-   *  This loader loads the commands from the database.
-   */
-  class         command_loader {
-  public:
-    command_loader();
+namespace notification {
+/**
+ *  @class command_loader command_loader.hh
+ * "com/centreon/broker/notification/loaders/command_loader.hh"
+ *  @brief Loader for command objects.
+ *
+ *  This loader loads the commands from the database.
+ */
+class command_loader {
+ public:
+  command_loader();
 
-    void        load(mysql* db, command_builder* output);
-  };
+  void load(mysql* db, command_builder* output);
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_LOADERS_COMMAND_LOADER_HH
+#endif  // !CCB_NOTIFICATION_LOADERS_COMMAND_LOADER_HH

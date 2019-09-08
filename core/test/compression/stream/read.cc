@@ -44,7 +44,9 @@ class CompressionStreamRead : public ::testing::Test {
   std::shared_ptr<io::raw> predefined_data() {
     std::shared_ptr<io::raw> r(new io::raw);
     for (int i(0); i < 1000; ++i)
-      std::copy(reinterpret_cast<char*>(&i), reinterpret_cast<char*>(&i) + sizeof(i), std::back_inserter(r->get_buffer()));
+      std::copy(reinterpret_cast<char*>(&i),
+                reinterpret_cast<char*>(&i) + sizeof(i),
+                std::back_inserter(r->get_buffer()));
     return r;
   }
 
@@ -90,7 +92,8 @@ TEST_F(CompressionStreamRead, NormalRead) {
   ASSERT_TRUE(retval);
   ASSERT_TRUE(d);
   ASSERT_EQ(d->type(), io::raw::static_type());
-  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(), predefined_data()->get_buffer());
+  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(),
+            predefined_data()->get_buffer());
 }
 
 // Given a compression stream
@@ -110,7 +113,8 @@ TEST_F(CompressionStreamRead, BufferIsReadBack) {
 
   // Then
   ASSERT_TRUE(retval);
-  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(), predefined_data()->get_buffer());
+  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(),
+            predefined_data()->get_buffer());
 }
 
 // Given a compression stream
@@ -130,9 +134,8 @@ TEST_F(CompressionStreamRead, Shutdown) {
 }
 
 // Given a compression stream
-// And the substream has a corrupted compressed data chunk before a valid data chunk
-// When read() is called
-// Then the valid data is extracted
+// And the substream has a corrupted compressed data chunk before a valid data
+// chunk When read() is called Then the valid data is extracted
 TEST_F(CompressionStreamRead, CorruptedData) {
   // Given
   _stream->write(predefined_data());
@@ -151,13 +154,13 @@ TEST_F(CompressionStreamRead, CorruptedData) {
   ASSERT_TRUE(retval);
   ASSERT_FALSE(!d);
   ASSERT_EQ(d->type(), io::raw::static_type());
-  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(), predefined_data()->get_buffer());
+  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(),
+            predefined_data()->get_buffer());
 }
 
 // Given a compression stream
-// And the substream has a corrupted compressed data chunk before a valid data chunk
-// When read() is called
-// Then the valid data is extracted
+// And the substream has a corrupted compressed data chunk before a valid data
+// chunk When read() is called Then the valid data is extracted
 TEST_F(CompressionStreamRead, CorruptedDataZippedPart) {
   // Given
   _stream->write(predefined_data());
@@ -176,13 +179,14 @@ TEST_F(CompressionStreamRead, CorruptedDataZippedPart) {
   ASSERT_TRUE(retval);
   ASSERT_FALSE(!d);
   ASSERT_EQ(d->type(), io::raw::static_type());
-  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(), predefined_data()->get_buffer());
+  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(),
+            predefined_data()->get_buffer());
 }
 
 // Given a compression stream
-// And the substream has data that indicates that the following fragment is greater than the allowed max size, followed by valid data
-// When read() is called
-// Then the valid data is extracted
+// And the substream has data that indicates that the following fragment is
+// greater than the allowed max size, followed by valid data When read() is
+// called Then the valid data is extracted
 TEST_F(CompressionStreamRead, FragmentGreaterThanMaxSize) {
   // Given
   _stream->write(predefined_data());
@@ -190,7 +194,8 @@ TEST_F(CompressionStreamRead, FragmentGreaterThanMaxSize) {
   _stream->write(predefined_data());
   _stream->flush();
   std::shared_ptr<io::raw>& buffer(_substream->get_buffer());
-  *static_cast<uint32_t*>(static_cast<void*>(buffer->data())) = htonl(0xFFFFFFFF);
+  *static_cast<uint32_t*>(static_cast<void*>(buffer->data())) =
+      htonl(0xFFFFFFFF);
 
   // When
   std::shared_ptr<io::data> d;
@@ -200,5 +205,6 @@ TEST_F(CompressionStreamRead, FragmentGreaterThanMaxSize) {
   ASSERT_TRUE(retval);
   ASSERT_FALSE(!d);
   ASSERT_EQ(d->type(), io::raw::static_type());
-  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(), predefined_data()->get_buffer());
+  ASSERT_EQ(std::static_pointer_cast<io::raw>(d)->get_buffer(),
+            predefined_data()->get_buffer());
 }

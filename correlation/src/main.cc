@@ -36,108 +36,81 @@ using namespace com::centreon::broker;
 static unsigned int instances(0);
 
 extern "C" {
-  /**
-   *  Module version symbol. Used to check for version mismatch.
-   */
-  char const* broker_module_version = CENTREON_BROKER_VERSION;
+/**
+ *  Module version symbol. Used to check for version mismatch.
+ */
+char const* broker_module_version = CENTREON_BROKER_VERSION;
 
-  /**
-   *  Module deinitialization routine.
-   */
-  void broker_module_deinit() {
-    // Decrement instance number.
-    if (!--instances) {
-      // Unregister correlation layer.
-      io::protocols::instance().unreg("correlation");
+/**
+ *  Module deinitialization routine.
+ */
+void broker_module_deinit() {
+  // Decrement instance number.
+  if (!--instances) {
+    // Unregister correlation layer.
+    io::protocols::instance().unreg("correlation");
 
-      // Remove events.
-      io::events::instance().unregister_category(io::events::correlation);
-    }
-    return ;
+    // Remove events.
+    io::events::instance().unregister_category(io::events::correlation);
   }
+  return;
+}
 
-  /**
-   *  Module initialization routine.
-   *
-   *  @param[in] arg Configuration argument.
-   */
-  void broker_module_init(void const* arg) {
-    (void)arg;
+/**
+ *  Module initialization routine.
+ *
+ *  @param[in] arg Configuration argument.
+ */
+void broker_module_init(void const* arg) {
+  (void)arg;
 
-    // Increment instance number.
-    if (!instances++) {
-      // Correlation module.
-      logging::info(logging::high)
-        << "correlation: module for Centreon Broker "
-        << CENTREON_BROKER_VERSION;
+  // Increment instance number.
+  if (!instances++) {
+    // Correlation module.
+    logging::info(logging::high) << "correlation: module for Centreon Broker "
+                                 << CENTREON_BROKER_VERSION;
 
-      // Register correlation layer.
-      io::protocols::instance().reg(
-        "correlation",
-        correlation::factory(),
-        1,
-        7);
+    // Register correlation layer.
+    io::protocols::instance().reg("correlation", correlation::factory(), 1, 7);
 
-      // Register category.
-      io::events& e(io::events::instance());
-      int correlation_category(e.register_category(
-                                   "correlation",
-                                   io::events::correlation));
-      if (correlation_category != io::events::correlation) {
-        e.unregister_category(correlation_category);
-        --instances;
-        throw (exceptions::msg() << "correlation: category "
-               << io::events::correlation
-               << " is already registered whereas it should be "
-               << "reserved for the correlation module");
-      }
-
-      // Register events.
-      {
-        e.register_event(
-            io::events::correlation,
-            correlation::de_engine_state,
-            io::event_info(
-                  "engine_state",
-                  &correlation::engine_state::operations,
-                  correlation::engine_state::entries));
-        e.register_event(
-            io::events::correlation,
-            correlation::de_state,
-            io::event_info(
-                  "state",
-                  &correlation::state::operations,
-                  correlation::state::entries,
-                  "rt_servicestateevents"));
-        e.register_event(
-            io::events::correlation,
-            correlation::de_issue,
-            io::event_info(
-                  "issue",
-                  &correlation::issue::operations,
-                  correlation::issue::entries,
-                  "rt_issues",
-                  "issues"));
-        e.register_event(
-            io::events::correlation,
-            correlation::de_issue_parent,
-            io::event_info(
-                  "issue_parent",
-                  &correlation::issue_parent::operations,
-                  correlation::issue_parent::entries,
-                  "rt_issues_issues_parents",
-                  "issues_issues_parents"));
-        e.register_event(
-            io::events::correlation,
-            correlation::de_log_issue,
-            io::event_info(
-                  "log_issue",
-                  &correlation::log_issue::operations,
-                  correlation::log_issue::entries,
-                  "log_logs",
-                  "logs"));
-      }
+    // Register category.
+    io::events& e(io::events::instance());
+    int correlation_category(
+        e.register_category("correlation", io::events::correlation));
+    if (correlation_category != io::events::correlation) {
+      e.unregister_category(correlation_category);
+      --instances;
+      throw(exceptions::msg()
+            << "correlation: category " << io::events::correlation
+            << " is already registered whereas it should be "
+            << "reserved for the correlation module");
     }
-    return ;
+
+    // Register events.
+    {
+      e.register_event(
+          io::events::correlation, correlation::de_engine_state,
+          io::event_info("engine_state", &correlation::engine_state::operations,
+                         correlation::engine_state::entries));
+      e.register_event(
+          io::events::correlation, correlation::de_state,
+          io::event_info("state", &correlation::state::operations,
+                         correlation::state::entries, "rt_servicestateevents"));
+      e.register_event(
+          io::events::correlation, correlation::de_issue,
+          io::event_info("issue", &correlation::issue::operations,
+                         correlation::issue::entries, "rt_issues", "issues"));
+      e.register_event(
+          io::events::correlation, correlation::de_issue_parent,
+          io::event_info("issue_parent", &correlation::issue_parent::operations,
+                         correlation::issue_parent::entries,
+                         "rt_issues_issues_parents", "issues_issues_parents"));
+      e.register_event(
+          io::events::correlation, correlation::de_log_issue,
+          io::event_info("log_issue", &correlation::log_issue::operations,
+                         correlation::log_issue::entries, "log_logs", "logs"));
+    }
   }
+  return;
+}
 }

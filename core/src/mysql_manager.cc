@@ -15,10 +15,10 @@
 **
 ** For more information : contact@centreon.com
 */
+#include "com/centreon/broker/mysql_manager.hh"
 #include <chrono>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/mysql_manager.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
@@ -33,9 +33,9 @@ mysql_manager& mysql_manager::instance() {
  *  Constructor
  */
 mysql_manager::mysql_manager()
-  : _current_thread(0),
-    _version(mysql::v2),
-    _stats_connections_timestamp(time(nullptr)) {}
+    : _current_thread(0),
+      _version(mysql::v2),
+      _stats_connections_timestamp(time(nullptr)) {}
 
 /**
  *  Destructor
@@ -45,9 +45,9 @@ mysql_manager::~mysql_manager() {
   std::lock_guard<std::mutex> cfg_lock(_cfg_mutex);
   std::lock_guard<std::mutex> err_lock(_err_mutex);
   for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
-       it(_connection.begin()), end(_connection.end());
-       it != end;
-       ++it) {
+           it(_connection.begin()),
+       end(_connection.end());
+       it != end; ++it) {
     while (!it->unique()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
@@ -57,14 +57,14 @@ mysql_manager::~mysql_manager() {
 }
 
 std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
-                      database_config const& db_cfg) {
+    database_config const& db_cfg) {
   std::vector<std::shared_ptr<mysql_connection>> retval;
   unsigned int connection_count(db_cfg.get_connections_count());
 
   if (_connection.size() == 0) {
     if (mysql_library_init(0, nullptr, nullptr))
       throw exceptions::msg()
-        << "mysql_manager: unable to initialize the MySQL connector";
+          << "mysql_manager: unable to initialize the MySQL connector";
   }
 
   {
@@ -83,7 +83,8 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
 
     // We are still missing threads in the configuration to return
     while (retval.size() < connection_count) {
-      std::shared_ptr<mysql_connection> c(std::make_shared<mysql_connection>(db_cfg));
+      std::shared_ptr<mysql_connection> c(
+          std::make_shared<mysql_connection>(db_cfg));
       _connection.push_back(c);
       retval.push_back(c);
     }
@@ -99,32 +100,28 @@ void mysql_manager::clear() {
     if (!conn.unique() && !conn->is_finished())
       try {
         conn->finish();
-      }
-      catch (std::exception const& e) {
+      } catch (std::exception const& e) {
         logging::info(logging::low)
-          << "mysql_manager: Unable to stop a connection: " << e.what();
+            << "mysql_manager: Unable to stop a connection: " << e.what();
       }
   }
-  logging::debug(logging::low)
-    << "mysql_manager: clear finished";
+  logging::debug(logging::low) << "mysql_manager: clear finished";
 }
 
 void mysql_manager::update_connections() {
   std::lock_guard<std::mutex> lock(_cfg_mutex);
   // If connections are still active but unique here, we can remove them
-  std::vector<std::shared_ptr<mysql_connection>>::iterator
-       it(_connection.begin());
+  std::vector<std::shared_ptr<mysql_connection>>::iterator it(
+      _connection.begin());
   while (it != _connection.end()) {
     if (it->unique() || (*it)->is_finished()) {
-      logging::info(logging::low)
-        << "mysql_manager: one connection removed";
+      logging::info(logging::low) << "mysql_manager: one connection removed";
       it = _connection.erase(it);
-    }
-    else
+    } else
       ++it;
   }
   logging::info(logging::medium)
-    << "mysql_manager: active connections: " << _connection.size();
+      << "mysql_manager: active connections: " << _connection.size();
 
   if (_connection.size() == 0)
     mysql_library_end();
@@ -161,12 +158,12 @@ std::map<std::string, std::string> mysql_manager::get_stats() {
     _stats_counts.resize(stats_connections_count);
     for (int i(0); i < stats_connections_count; ++i)
       _stats_counts[i] = _connection[i]->get_tasks_count();
-  }
-  else
+  } else
     delay = time(nullptr) - _stats_connections_timestamp;
 
   std::map<std::string, std::string> retval;
-  retval.insert(std::make_pair("delay since last check", std::to_string(delay)));
+  retval.insert(
+      std::make_pair("delay since last check", std::to_string(delay)));
   std::string key("waiting tasks in connection ");
   int key_len(key.size());
   for (int i(0); i < stats_connections_count; ++i) {

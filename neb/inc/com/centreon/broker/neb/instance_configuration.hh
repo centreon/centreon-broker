@@ -17,47 +17,45 @@
 */
 
 #ifndef CCB_NEB_INSTANCE_CONFIGURATION_HH
-#  define CCB_NEB_INSTANCE_CONFIGURATION_HH
+#define CCB_NEB_INSTANCE_CONFIGURATION_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace          neb {
-  /**
-   *  @class instance_configuration instance_configuration.hh "com/centreon/broker/neb/instance_configuration.hh"
-   *  @brief Information about the instance configuration.
-   *
-   *  An event of this class is sent when centreon engine has finished
-   *  reloading its configuration, either successfully or not.
-   */
-  class            instance_configuration : public io::data {
-  public:
-                   instance_configuration();
-                   instance_configuration(instance_configuration const& i);
-                   ~instance_configuration();
-    instance_configuration&
-                   operator=(instance_configuration const& i);
-    unsigned int   type() const;
+namespace neb {
+/**
+ *  @class instance_configuration instance_configuration.hh
+ * "com/centreon/broker/neb/instance_configuration.hh"
+ *  @brief Information about the instance configuration.
+ *
+ *  An event of this class is sent when centreon engine has finished
+ *  reloading its configuration, either successfully or not.
+ */
+class instance_configuration : public io::data {
+ public:
+  instance_configuration();
+  instance_configuration(instance_configuration const& i);
+  ~instance_configuration();
+  instance_configuration& operator=(instance_configuration const& i);
+  unsigned int type() const;
 
-    bool           loaded;
-    unsigned int   poller_id;
+  bool loaded;
+  unsigned int poller_id;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void           _internal_copy(instance_configuration const& i);
-  };
-}
+ private:
+  void _internal_copy(instance_configuration const& i);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_INSTANCE_CONFIGURATION_HH
+#endif  // !CCB_NEB_INSTANCE_CONFIGURATION_HH

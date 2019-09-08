@@ -17,49 +17,50 @@
 */
 
 #ifndef CC_CONCURRENCY_READ_WRITE_LOCK_WIN32_HH
-#  define CC_CONCURRENCY_READ_WRITE_LOCK_WIN32_HH
+#define CC_CONCURRENCY_READ_WRITE_LOCK_WIN32_HH
 
-#  include <windows.h>
-#  include "com/centreon/concurrency/condvar.hh"
-#  include "com/centreon/concurrency/mutex.hh"
-#  include "com/centreon/namespace.hh"
+#include <windows.h>
+#include "com/centreon/concurrency/condvar.hh"
+#include "com/centreon/concurrency/mutex.hh"
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace                 concurrency {
-  /**
-   *  @class read_write_lock read_write_lock_win32.hh "com/centreon/concurrency/read_write_lock.hh"
-   *  @brief Readers/writer lock.
-   *
-   *  Implementation of the readers/writer lock synchronization
-   *  primitive.
-   */
-  class                   read_write_lock {
-  public:
-                          read_write_lock();
-                          ~read_write_lock() throw ();
-    void                  read_lock();
-    bool                  read_lock(unsigned long timeout);
-    bool                  read_trylock();
-    void                  read_unlock();
-    void                  write_lock();
-    bool                  write_lock(unsigned long timeout);
-    bool                  write_trylock();
-    void                  write_unlock();
+namespace concurrency {
+/**
+ *  @class read_write_lock read_write_lock_win32.hh
+ * "com/centreon/concurrency/read_write_lock.hh"
+ *  @brief Readers/writer lock.
+ *
+ *  Implementation of the readers/writer lock synchronization
+ *  primitive.
+ */
+class read_write_lock {
+ public:
+  read_write_lock();
+  ~read_write_lock() throw();
+  void read_lock();
+  bool read_lock(unsigned long timeout);
+  bool read_trylock();
+  void read_unlock();
+  void write_lock();
+  bool write_lock(unsigned long timeout);
+  bool write_trylock();
+  void write_unlock();
 
-  private:
-                          read_write_lock(read_write_lock const& right);
-    read_write_lock&      operator=(read_write_lock const& right);
+ private:
+  read_write_lock(read_write_lock const& right);
+  read_write_lock& operator=(read_write_lock const& right);
 
-    condvar               _condvar;
-    mutex                 _mtx;
-    volatile unsigned int _readers;
-    volatile unsigned int _readers_waiting;
-    volatile bool         _writer;
-    volatile unsigned int _writers_waiting;
-  };
-}
+  condvar _condvar;
+  mutex _mtx;
+  volatile unsigned int _readers;
+  volatile unsigned int _readers_waiting;
+  volatile bool _writer;
+  volatile unsigned int _writers_waiting;
+};
+}  // namespace concurrency
 
 CC_END()
 
-#endif // !CC_CONCURRENCY_READ_WRITE_LOCK_WIN32_HH
+#endif  // !CC_CONCURRENCY_READ_WRITE_LOCK_WIN32_HH

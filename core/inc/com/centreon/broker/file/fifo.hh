@@ -17,40 +17,37 @@
 */
 
 #ifndef CCB_FILE_FIFO_HH
-#  define CCB_FILE_FIFO_HH
+#define CCB_FILE_FIFO_HH
 
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace              file {
-  /**
-   *  @class fifo fifo.hh "com/centreon/broker/file/fifo.hh"
-   *  @brief Fifo utility class.
-   *
-   *  This class manage a fifo.
-   */
-  class     fifo {
-   public:
-            fifo(std::string const& path);
-            ~fifo();
+namespace file {
+/**
+ *  @class fifo fifo.hh "com/centreon/broker/file/fifo.hh"
+ *  @brief Fifo utility class.
+ *
+ *  This class manage a fifo.
+ */
+class fifo {
+ public:
+  fifo(std::string const& path);
+  ~fifo();
 
-    std::string
-            read_line(int usecs_timeout = 3000000);
+  std::string read_line(int usecs_timeout = 3000000);
 
-   private:
-    void    _open_fifo();
+ private:
+  void _open_fifo();
 
-    std::string
-            _path;
-    int     _fd;
+  std::string _path;
+  int _fd;
 
-    std::string
-            _polled_line;
-  };
-}
+  std::string _polled_line;
+};
+}  // namespace file
 
 CCB_END()
 
-#endif // !CCB_FILE_FIFO_HH
+#endif  // !CCB_FILE_FIFO_HH

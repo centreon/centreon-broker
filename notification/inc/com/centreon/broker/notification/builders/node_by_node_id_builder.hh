@@ -17,39 +17,38 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_NODE_BY_NODE_ID_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_NODE_BY_NODE_ID_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_NODE_BY_NODE_ID_BUILDER_HH
 
-#  include <QSet>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/node_id.hh"
-#  include "com/centreon/broker/notification/builders/node_builder.hh"
+#include <QSet>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/node_builder.hh"
+#include "com/centreon/broker/notification/objects/node_id.hh"
 
 CCB_BEGIN()
 
-namespace           notification {
-  /**
-   *  @class node_set_builder node_set_builder.hh "com/centreon/broker/notification/builders/node_set_builder.hh"
-   *  @brief Build the set of node id.
-   *
-   *  This class build the set of all the node id of the db.
-   */
-  class             node_by_node_id_builder : public node_builder {
-  public:
-                    node_by_node_id_builder(
-                      QHash<objects::node_id, objects::node::ptr>& map);
-    virtual         ~node_by_node_id_builder() {}
+namespace notification {
+/**
+ *  @class node_set_builder node_set_builder.hh
+ * "com/centreon/broker/notification/builders/node_set_builder.hh"
+ *  @brief Build the set of node id.
+ *
+ *  This class build the set of all the node id of the db.
+ */
+class node_by_node_id_builder : public node_builder {
+ public:
+  node_by_node_id_builder(QHash<objects::node_id, objects::node::ptr>& map);
+  virtual ~node_by_node_id_builder() {}
 
-    virtual void    add_node(objects::node::ptr node);
+  virtual void add_node(objects::node::ptr node);
 
-  private:
-                    node_by_node_id_builder();
+ private:
+  node_by_node_id_builder();
 
-    QHash<objects::node_id, objects::node::ptr>&
-                    _map;
-  };
+  QHash<objects::node_id, objects::node::ptr>& _map;
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_NODE_BY_NODE_ID_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_NODE_BY_NODE_ID_BUILDER_HH

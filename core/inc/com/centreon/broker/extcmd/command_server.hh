@@ -17,72 +17,65 @@
 */
 
 #ifndef CCB_EXTCMD_COMMAND_SERVER_HH
-#  define CCB_EXTCMD_COMMAND_SERVER_HH
+#define CCB_EXTCMD_COMMAND_SERVER_HH
 
-#  include <asio.hpp>
-#  include <memory>
-#  include <string>
-#  include "com/centreon/broker/extcmd/command_listener.hh"
-#  include "com/centreon/broker/extcmd/command_parser.hh"
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <asio.hpp>
+#include <memory>
+#include <string>
+#include "com/centreon/broker/extcmd/command_listener.hh"
+#include "com/centreon/broker/extcmd/command_parser.hh"
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/namespace.hh"
 
 #if ASIO_VERSION < 101200
 namespace asio {
-  typedef io_service io_context;
+typedef io_service io_context;
 }
 #endif
 
 CCB_BEGIN()
 
 // Forward declaration.
-namespace               processing {
-  class                 bthread;
+namespace processing {
+class bthread;
 }
 
-namespace               extcmd {
-  // Forward declarations.
-  class                 command_listener;
-  class                 server_socket;
+namespace extcmd {
+// Forward declarations.
+class command_listener;
+class server_socket;
 
-  /**
-   *  @class command_server command_server.hh "com/centreon/broker/extcmd/command_server.hh"
-   *  @brief Command server.
-   *
-   *  Users whishing to send external commands should connect to a
-   *  command_server which is a Unix socket server.
-   */
-  class                 command_server : public io::endpoint {
-  public:
-    enum                protocol {
-                        plaintext,
-                        json
-    };
-                        command_server(
-                          protocol prot,
-                          std::string const& socket_file,
-                          std::shared_ptr<persistent_cache> cache);
-                        ~command_server();
-    std::shared_ptr<io::stream>
-                        open();
+/**
+ *  @class command_server command_server.hh
+ * "com/centreon/broker/extcmd/command_server.hh"
+ *  @brief Command server.
+ *
+ *  Users whishing to send external commands should connect to a
+ *  command_server which is a Unix socket server.
+ */
+class command_server : public io::endpoint {
+ public:
+  enum protocol { plaintext, json };
+  command_server(protocol prot,
+                 std::string const& socket_file,
+                 std::shared_ptr<persistent_cache> cache);
+  ~command_server();
+  std::shared_ptr<io::stream> open();
 
-  private:
-                        command_server(command_server const& other);
-    command_server&     operator=(command_server const& other);
+ private:
+  command_server(command_server const& other);
+  command_server& operator=(command_server const& other);
 
-    std::shared_ptr<command_listener>
-                        _listener;
-    std::shared_ptr<command_parser>
-                        _parser;
-    processing::bthread* _listener_thread;
-    protocol            _protocol;
-    asio::io_context    _io_context;
-    std::unique_ptr<asio::local::stream_protocol::socket>
-                        _socket;
-    std::string         _socket_file;
-  };
-}
+  std::shared_ptr<command_listener> _listener;
+  std::shared_ptr<command_parser> _parser;
+  processing::bthread* _listener_thread;
+  protocol _protocol;
+  asio::io_context _io_context;
+  std::unique_ptr<asio::local::stream_protocol::socket> _socket;
+  std::string _socket_file;
+};
+}  // namespace extcmd
 
 CCB_END()
 
-#endif // !CCB_EXTCMD_COMMAND_SERVER_HH
+#endif  // !CCB_EXTCMD_COMMAND_SERVER_HH

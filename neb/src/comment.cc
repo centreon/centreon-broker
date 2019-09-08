@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/comment.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Default constructor.
@@ -35,18 +35,18 @@ using namespace com::centreon::broker::neb;
  *  Set all members to their default value (0, NULL or equivalent).
  */
 comment::comment()
-  :  comment_type(0),
-     deletion_time(0),
-     entry_time(0),
-     entry_type(0),
-     expire_time(0),
-     expires(false),
-     host_id(0),
-     internal_id(0),
-     persistent(false),
-     poller_id(0),
-     service_id(0),
-     source(0) {}
+    : comment_type(0),
+      deletion_time(0),
+      entry_time(0),
+      entry_type(0),
+      expire_time(0),
+      expires(false),
+      host_id(0),
+      internal_id(0),
+      persistent(false),
+      poller_id(0),
+      service_id(0),
+      source(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -100,10 +100,10 @@ unsigned int comment::static_type() {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Copy internal data of the given object to the current
@@ -134,72 +134,47 @@ void comment::_internal_copy(comment const& other) {
   poller_id = other.poller_id;
   service_id = other.service_id;
   source = other.source;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const comment::entries[] = {
-  mapping::entry(
-    &comment::author,
-    "author"),
-  mapping::entry(
-    &comment::comment_type,
-    "type"),
-  mapping::entry(
-    &comment::data,
-    "data"),
-  mapping::entry(
-    &comment::deletion_time,
-    "deletion_time",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &comment::entry_time,
-    "entry_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &comment::entry_type,
-    "entry_type"),
-  mapping::entry(
-    &comment::expire_time,
-    "expire_time",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &comment::expires,
-    "expires"),
-  mapping::entry(
-    &comment::host_id,
-    "host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &comment::internal_id,
-    "internal_id"),
-  mapping::entry(
-    &comment::persistent,
-    "persistent"),
-  mapping::entry(
-    &comment::poller_id,
-    "instance_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &comment::service_id,
-    "service_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &comment::source,
-    "source"),
-  mapping::entry()
-};
+    mapping::entry(&comment::author, "author"),
+    mapping::entry(&comment::comment_type, "type"),
+    mapping::entry(&comment::data, "data"),
+    mapping::entry(&comment::deletion_time,
+                   "deletion_time",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&comment::entry_time,
+                   "entry_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&comment::entry_type, "entry_type"),
+    mapping::entry(&comment::expire_time,
+                   "expire_time",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&comment::expires, "expires"),
+    mapping::entry(&comment::host_id,
+                   "host_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&comment::internal_id, "internal_id"),
+    mapping::entry(&comment::persistent, "persistent"),
+    mapping::entry(&comment::poller_id,
+                   "instance_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&comment::service_id,
+                   "service_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&comment::source, "source"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_comment() {
   return (new comment);
 }
-io::event_info::event_operations const comment::operations = {
-  &new_comment
-};
+io::event_info::event_operations const comment::operations = {&new_comment};

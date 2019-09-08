@@ -17,53 +17,51 @@
 */
 
 #ifndef CCB_EXTCMD_COMMAND_REQUEST_HH
-#  define CCB_EXTCMD_COMMAND_REQUEST_HH
+#define CCB_EXTCMD_COMMAND_REQUEST_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                extcmd {
-  /**
-   *  @class command_request command_request.hh "com/centreon/broker/extcmd/command_request.hh"
-   *  @brief Represent an external command request.
-   *
-   *  This event is sent when an external command execution is
-   *  requested.
-   */
-  class                  command_request : public io::data {
-  public:
-                         command_request();
-                         command_request(command_request const& other);
-                         ~command_request();
-    command_request&     operator=(command_request const& other);
-    bool                 is_addressed_to(
-                           std::string const& endp_name) const;
-    void                 parse(std::string const& cmd);
-    unsigned int         type() const;
-    static unsigned int  static_type();
+namespace extcmd {
+/**
+ *  @class command_request command_request.hh
+ * "com/centreon/broker/extcmd/command_request.hh"
+ *  @brief Represent an external command request.
+ *
+ *  This event is sent when an external command execution is
+ *  requested.
+ */
+class command_request : public io::data {
+ public:
+  command_request();
+  command_request(command_request const& other);
+  ~command_request();
+  command_request& operator=(command_request const& other);
+  bool is_addressed_to(std::string const& endp_name) const;
+  void parse(std::string const& cmd);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    std::string              cmd;
-    std::string              endp;
-    std::string              uuid;
-    bool                 with_partial_result;
+  std::string cmd;
+  std::string endp;
+  std::string uuid;
+  bool with_partial_result;
 
-    static mapping::entry const
-                         entries[];
-    static io::event_info::event_operations const
-                         operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void                 _internal_copy(command_request const& other);
+ private:
+  void _internal_copy(command_request const& other);
 
-    static unsigned int  _id;
-  };
-}
+  static unsigned int _id;
+};
+}  // namespace extcmd
 
 CCB_END()
 
-#endif // !CCB_EXTCMD_COMMAND_REQUEST_HH
+#endif  // !CCB_EXTCMD_COMMAND_REQUEST_HH

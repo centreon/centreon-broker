@@ -17,43 +17,42 @@
 */
 
 #ifndef CCB_EXCEPTIONS_TIMEOUT_HH
-#  define CCB_EXCEPTIONS_TIMEOUT_HH
+#define CCB_EXCEPTIONS_TIMEOUT_HH
 
-#  include <exception>
-#  include "com/centreon/broker/misc/stringifier.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <exception>
+#include "com/centreon/broker/misc/stringifier.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace               exceptions {
-  /**
-   *  @class timeout timeout.hh "com/centreon/broker/exceptions/timeout.hh"
-   *  @brief Timeout exception.
-   *
-   *  Exception that is thrown upon timeout.
-   */
-  class                 timeout : private misc::stringifier,
-                                  public std::exception {
-   public:
-                        timeout();
-                        timeout(timeout const& other);
-    virtual             ~timeout() throw ();
-    timeout&            operator=(timeout const& other);
-    virtual char const* what() const throw ();
+namespace exceptions {
+/**
+ *  @class timeout timeout.hh "com/centreon/broker/exceptions/timeout.hh"
+ *  @brief Timeout exception.
+ *
+ *  Exception that is thrown upon timeout.
+ */
+class timeout : private misc::stringifier, public std::exception {
+ public:
+  timeout();
+  timeout(timeout const& other);
+  virtual ~timeout() throw();
+  timeout& operator=(timeout const& other);
+  virtual char const* what() const throw();
 
-    /**
-     *  Insert data in message.
-     *
-     *  @param[in] t  Data to insert.
-     */
-    template            <typename T>
-    timeout&            operator<<(T t) {
-      misc::stringifier::operator<<(t);
-      return (*this);
-    }
-  };
-}
+  /**
+   *  Insert data in message.
+   *
+   *  @param[in] t  Data to insert.
+   */
+  template <typename T>
+  timeout& operator<<(T t) {
+    misc::stringifier::operator<<(t);
+    return (*this);
+  }
+};
+}  // namespace exceptions
 
 CCB_END()
 
-#endif // !CCB_EXCEPTIONS_TIMEOUT_HH
+#endif  // !CCB_EXCEPTIONS_TIMEOUT_HH

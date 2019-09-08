@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/notification/utilities/qhash_func.hh"
 #include "com/centreon/broker/notification/builders/command_by_id_builder.hh"
+#include "com/centreon/broker/notification/utilities/qhash_func.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -28,8 +28,8 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in,out] table  The table to fill.
  */
 command_by_id_builder::command_by_id_builder(
-                        QHash<unsigned int, command::ptr>& table)
-  : _table(table) {}
+    QHash<unsigned int, command::ptr>& table)
+    : _table(table) {}
 
 /**
  *  Add a command to the builder.
@@ -37,8 +37,6 @@ command_by_id_builder::command_by_id_builder(
  *  @param[in] id The id of the command.
  *  @param[in] com The command.
  */
-void command_by_id_builder::add_command(
-                              unsigned int id,
-                              command::ptr com) {
+void command_by_id_builder::add_command(unsigned int id, command::ptr com) {
   _table[id] = com;
 }

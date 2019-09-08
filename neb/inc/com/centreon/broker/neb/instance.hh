@@ -17,54 +17,51 @@
 */
 
 #ifndef CCB_NEB_INSTANCE_HH
-#  define CCB_NEB_INSTANCE_HH
+#define CCB_NEB_INSTANCE_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace          neb {
-  /**
-   *  @class instance instance.hh "com/centreon/broker/neb/instance.hh"
-   *  @brief Information about Nagios process.
-   *
-   *  This class holds information about a Nagios process, like whether
-   *  it is running or not, in daemon mode or not, ...
-   */
-  class            instance : public io::data {
-  public:
-                   instance();
-                   instance(instance const& other);
-                   ~instance();
-    instance&      operator=(instance const& other);
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace neb {
+/**
+ *  @class instance instance.hh "com/centreon/broker/neb/instance.hh"
+ *  @brief Information about Nagios process.
+ *
+ *  This class holds information about a Nagios process, like whether
+ *  it is running or not, in daemon mode or not, ...
+ */
+class instance : public io::data {
+ public:
+  instance();
+  instance(instance const& other);
+  ~instance();
+  instance& operator=(instance const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    std::string        engine;
-    bool           is_running;
-    std::string        name;
-    unsigned int   pid;
-    unsigned int   poller_id;
-    timestamp      program_end;
-    timestamp      program_start;
-    std::string        version;
+  std::string engine;
+  bool is_running;
+  std::string name;
+  unsigned int pid;
+  unsigned int poller_id;
+  timestamp program_end;
+  timestamp program_start;
+  std::string version;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void           _internal_copy(instance const& other);
-  };
-}
+ private:
+  void _internal_copy(instance const& other);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_INSTANCE_HH
+#endif  // !CCB_NEB_INSTANCE_HH

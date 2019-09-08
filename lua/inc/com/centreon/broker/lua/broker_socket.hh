@@ -17,31 +17,32 @@
 */
 
 #ifndef CCB_LUA_BROKER_SOCKET_HH
-#  define CCB_LUA_BROKER_SOCKET_HH
+#define CCB_LUA_BROKER_SOCKET_HH
 
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/namespace.hh"
 
 extern "C" {
-#  include "lua.h"
-#  include "lauxlib.h"
-#  include "lualib.h"
+#include "lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
 }
 
 CCB_BEGIN()
 
-namespace               lua {
-  /**
-   *  @class broker_socket broker_socket.hh "com/centreon/broker/lua/broker_socket.hh"
-   *  @brief Class providing TCP socket to the lua interpreter
-   *
-   *  This class provides a binding to Lua to access TCP sockets.
-   */
-  class                 broker_socket {
-   public:
-    static void         broker_socket_reg(lua_State* L);
-  };
-}
+namespace lua {
+/**
+ *  @class broker_socket broker_socket.hh
+ * "com/centreon/broker/lua/broker_socket.hh"
+ *  @brief Class providing TCP socket to the lua interpreter
+ *
+ *  This class provides a binding to Lua to access TCP sockets.
+ */
+class broker_socket {
+ public:
+  static void broker_socket_reg(lua_State* L);
+};
+}  // namespace lua
 
 CCB_END()
 
-#endif // !CCB_LUA_BROKER_SOCKET_HH
+#endif  // !CCB_LUA_BROKER_SOCKET_HH
