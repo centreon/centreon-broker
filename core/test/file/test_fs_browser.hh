@@ -17,33 +17,29 @@
  *
  */
 #ifndef TEST_FS_BROWSER_HH
-#  define TEST_FS_BROWSER_HH
+#define TEST_FS_BROWSER_HH
 
-#  include <list>
-#  include "com/centreon/broker/file/fs_browser.hh"
+#include <list>
+#include "com/centreon/broker/file/fs_browser.hh"
 
-class              test_fs_browser : public com::centreon::broker::file::fs_browser {
+class test_fs_browser : public com::centreon::broker::file::fs_browser {
  public:
-                   test_fs_browser();
-                   ~test_fs_browser();
-  void             add_result(
-                     com::centreon::broker::file::fs_browser::entry_list const& result);
-  com::centreon::broker::file::fs_browser::entry_list
-                   read_directory(
-                     std::string const& path,
-                     std::string const& filters = "");
-  std::list<std::string> const&
-                   get_removed() const;
-  void             remove(std::string const& path);
+  test_fs_browser();
+  ~test_fs_browser();
+  void add_result(
+      com::centreon::broker::file::fs_browser::entry_list const& result);
+  com::centreon::broker::file::fs_browser::entry_list read_directory(
+      std::string const& path,
+      std::string const& filters = "");
+  std::list<std::string> const& get_removed() const;
+  void remove(std::string const& path);
 
  private:
-                   test_fs_browser(test_fs_browser const& other);
+  test_fs_browser(test_fs_browser const& other);
   test_fs_browser& operator=(test_fs_browser const& other);
 
-  std::list<std::string>
-                   _removed;
-  std::list<com::centreon::broker::file::fs_browser::entry_list>
-                   _results;
+  std::list<std::string> _removed;
+  std::list<com::centreon::broker::file::fs_browser::entry_list> _results;
 };
 
-#endif // !TEST_FS_BROWSER_HH
+#endif  // !TEST_FS_BROWSER_HH

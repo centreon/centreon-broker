@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/active_host_state_change.hh"
 #include <iomanip>
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/active_host_state_change.hh"
 #include "com/centreon/broker/neb/statistics/compute_value.hh"
 #include "com/centreon/engine/globals.hh"
 
@@ -33,15 +33,16 @@ using namespace com::centreon::engine;
  *  Default constructor.
  */
 active_host_state_change::active_host_state_change()
-  : plugin("active_host_state_change") {}
+    : plugin("active_host_state_change") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-active_host_state_change::active_host_state_change(active_host_state_change const& right)
- : plugin(right) {}
+active_host_state_change::active_host_state_change(
+    active_host_state_change const& right)
+    : plugin(right) {}
 
 /**
  *  Destructor.
@@ -55,7 +56,8 @@ active_host_state_change::~active_host_state_change() {}
  *
  *  @return This object.
  */
-active_host_state_change& active_host_state_change::operator=(active_host_state_change const& right) {
+active_host_state_change& active_host_state_change::operator=(
+    active_host_state_change const& right) {
   plugin::operator=(right);
   return (*this);
 }
@@ -66,15 +68,11 @@ active_host_state_change& active_host_state_change::operator=(active_host_state_
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void active_host_state_change::run(
-              std::string& output,
-	      std::string& perfdata) {
+void active_host_state_change::run(std::string& output, std::string& perfdata) {
   compute_value<double> cv;
-  for (host_map::const_iterator
-         it{com::centreon::engine::host::hosts.begin()},
-         end{com::centreon::engine::host::hosts.end()};
-       it != end;
-       ++it)
+  for (host_map::const_iterator it{com::centreon::engine::host::hosts.begin()},
+       end{com::centreon::engine::host::hosts.end()};
+       it != end; ++it)
     if (it->second->get_check_type() == checkable::check_active)
       cv << it->second->get_percent_state_change();
 
@@ -82,20 +80,21 @@ void active_host_state_change::run(
     // Output.
     std::ostringstream oss;
     oss << "Engine " << config::applier::state::instance().poller_name()
-        << " has an average active host state change of "
-        << std::fixed << std::setprecision(2) << cv.avg() << "%";
+        << " has an average active host state change of " << std::fixed
+        << std::setprecision(2) << cv.avg() << "%";
     output = oss.str();
 
     // Perfdata.
     oss.str("");
-    oss << "avg=" << cv.avg() << "% min=" << cv.min()
-        << "% max=" << cv.max() << "%";
+    oss << "avg=" << cv.avg() << "% min=" << cv.min() << "% max=" << cv.max()
+        << "%";
     perfdata = oss.str();
-  }
-  else {
+  } else {
     // Output.
-    output = "No active host to compute active host state "
-      "change on " + config::applier::state::instance().poller_name();
+    output =
+        "No active host to compute active host state "
+        "change on " +
+        config::applier::state::instance().poller_name();
   }
-  return ;
+  return;
 }

@@ -59,10 +59,9 @@ config& config::operator=(config const& right) {
  *
  *  @return The fifo path.
  */
-config::fifo_list const& config::get_fifo() const throw () {
+config::fifo_list const& config::get_fifo() const throw() {
   return (_fifos);
 }
-
 
 /**
  *  Add a fifo.
@@ -73,4 +72,3 @@ config::fifo_list const& config::get_fifo() const throw () {
 void config::add_fifo(std::string const& fifo) {
   _fifos.push_back(fifo);
 }
-

@@ -17,8 +17,8 @@
  *
  */
 
-#include <gtest/gtest.h>
 #include "com/centreon/broker/storage/remove_graph.hh"
+#include <gtest/gtest.h>
 
 using namespace com::centreon::broker;
 

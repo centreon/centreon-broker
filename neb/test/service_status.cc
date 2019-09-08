@@ -16,22 +16,18 @@
  * For more information : contact@centreon.com
  *
  */
+#include "com/centreon/broker/neb/service_status.hh"
 #include <gtest/gtest.h>
 #include <cmath>
 #include <cstdlib>
-#include "com/centreon/broker/neb/service_status.hh"
 #include "randomize.hh"
 
 using namespace com::centreon::broker;
 
 class ServiceStatus : public ::testing::Test {
-  void SetUp() {
-    randomize_init();
-  };
+  void SetUp() override { randomize_init(); };
 
-  void TearDown() {
-    randomize_cleanup();
-  };
+  void TearDown() override { randomize_cleanup(); };
 };
 
 /**
@@ -82,7 +78,6 @@ TEST_F(ServiceStatus, CopyCtor) {
   ASSERT_FALSE(ss1 != randvals2);
   ASSERT_FALSE(ss2 != randvals1);
 }
-
 
 /**
  *  Check service_status' default constructor.
@@ -141,4 +136,3 @@ TEST_F(ServiceStatus, DefaultCtor) {
   ASSERT_FALSE(!ss.service_description.empty());
   ASSERT_FALSE((ss.service_id != 0));
 }
-

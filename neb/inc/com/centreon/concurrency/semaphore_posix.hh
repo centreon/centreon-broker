@@ -17,38 +17,38 @@
 */
 
 #ifndef CC_CONCURRENCY_SEMAPHORE_POSIX_HH
-#  define CC_CONCURRENCY_SEMAPHORE_POSIX_HH
+#define CC_CONCURRENCY_SEMAPHORE_POSIX_HH
 
-#  include <semaphore.h>
-#  include "com/centreon/namespace.hh"
+#include <semaphore.h>
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace      concurrency {
-  /**
-   *  @class semaphore semaphore_posix.hh "com/centreon/concurrency/semaphore.hh"
-   *  @brief Implements a semaphore.
-   *
-   *  POSIX implementation of a semaphore.
-   */
-  class        semaphore {
-  public:
-               semaphore(unsigned int n = 0);
-               ~semaphore() throw ();
-    void       acquire();
-    bool       acquire(unsigned long timeout);
-    int        available();
-    void       release();
-    bool       try_acquire();
+namespace concurrency {
+/**
+ *  @class semaphore semaphore_posix.hh "com/centreon/concurrency/semaphore.hh"
+ *  @brief Implements a semaphore.
+ *
+ *  POSIX implementation of a semaphore.
+ */
+class semaphore {
+ public:
+  semaphore(unsigned int n = 0);
+  ~semaphore() throw();
+  void acquire();
+  bool acquire(unsigned long timeout);
+  int available();
+  void release();
+  bool try_acquire();
 
-  private:
-               semaphore(semaphore const& right);
-    semaphore& operator=(semaphore const& right);
+ private:
+  semaphore(semaphore const& right);
+  semaphore& operator=(semaphore const& right);
 
-    sem_t      _sem;
-  };
-}
+  sem_t _sem;
+};
+}  // namespace concurrency
 
 CC_END()
 
-#endif // !CC_CONCURRENCY_SEMAPHORE_POSIX_HH
+#endif  // !CC_CONCURRENCY_SEMAPHORE_POSIX_HH

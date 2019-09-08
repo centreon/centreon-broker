@@ -1006,11 +1006,11 @@ void stream::_rebuild_cache() {
         info.index_id = res.value_as_u32(0);
         unsigned int host_id(res.value_as_u32(1));
         unsigned int service_id(res.value_as_u32(2));
-        info.host_name = res.value_as_str(3).c_str();
+        info.host_name = res.value_as_str(3);
         info.rrd_retention = res.value_as_u32(4);
         if (!info.rrd_retention)
           info.rrd_retention = _rrd_len;
-        info.service_description = res.value_as_str(5).c_str();
+        info.service_description = res.value_as_str(5);
         if (db_v2)
           info.special = (res.value_as_u32(6) == 2);
         else
@@ -1055,13 +1055,13 @@ void stream::_rebuild_cache() {
         metric_info info;
         info.metric_id = res.value_as_u32(0);
         uint64_t index_id(res.value_as_u32(1));
-        std::string name(res.value_as_str(2).c_str());
+        std::string name(res.value_as_str(2));
         info.type = (res.value_is_null(3)
                          ? static_cast<unsigned int>(perfdata::automatic)
                          : res.value_as_u32(3));
         info.locked = res.value_as_bool(4);
         info.value = (res.value_is_null(5) ? NAN : res.value_as_f64(5));
-        info.unit_name = res.value_as_str(6).c_str();
+        info.unit_name = res.value_as_str(6);
         info.warn = (res.value_is_null(7) ? NAN : res.value_as_f64(7));
         info.warn_low = (res.value_is_null(8) ? NAN : res.value_as_f64(8));
         info.warn_mode = res.value_as_bool(9);

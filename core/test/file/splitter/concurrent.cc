@@ -101,7 +101,7 @@ class write_thread {
 
 class FileSplitterConcurrent : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     logging::manager::load();
 
     _path = RETENTION_DIR RETENTION_FILE;
@@ -113,7 +113,7 @@ class FileSplitterConcurrent : public ::testing::Test {
         _path, file::fs_file::open_read_write_truncate, _file_factory.release(),
         _fs_browser.release(), 10000, true));
   }
-  void TearDown() { logging::manager::unload(); }
+  void TearDown() override { logging::manager::unload(); }
 
  protected:
   std::unique_ptr<file::splitter> _file;
@@ -122,8 +122,8 @@ class FileSplitterConcurrent : public ::testing::Test {
   std::string _path;
 
   void _remove_files() {
-    std::list<std::string> entries =
-        misc::filesystem::dir_content_with_filter(RETENTION_DIR, RETENTION_FILE "*");
+    std::list<std::string> entries = misc::filesystem::dir_content_with_filter(
+        RETENTION_DIR, RETENTION_FILE "*");
     for (std::list<std::string>::iterator it{entries.begin()},
          end{entries.end()};
          it != end; ++it)

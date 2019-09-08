@@ -24,7 +24,7 @@ using namespace com::centreon::broker;
 
 class BbdoInputBufferErase : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     for (int i(1); i < 120; ++i) {
       char buffer[120];
       for (int j(0); j < i; ++j)
@@ -38,7 +38,7 @@ class BbdoInputBufferErase : public ::testing::Test {
 
  protected:
   bbdo::input_buffer _buffer;
-  std::string        _raw;
+  std::string _raw;
 };
 
 // Given a bbdo::input_buffer object filled with data

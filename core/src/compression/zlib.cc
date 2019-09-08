@@ -16,19 +16,19 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/compression/zlib.hh"
 #include <zlib.h>
 #include "com/centreon/broker/compression/stream.hh"
-#include "com/centreon/broker/compression/zlib.hh"
 #include "com/centreon/broker/exceptions/corruption.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::compression;
 
 /**************************************
-*                                     *
-*      Public Static Methods          *
-*                                     *
-**************************************/
+ *                                     *
+ *      Public Static Methods          *
+ *                                     *
+ **************************************/
 
 /**
  * Compression function
@@ -53,12 +53,9 @@ std::vector<char> zlib::compress(std::vector<char> const& data,
   int res;
   do {
     retval.resize(len + 4);
-    res = ::compress2(
-      reinterpret_cast<Bytef*>(retval.data()) + 4,
-      &len,
-      reinterpret_cast<Bytef const*>(&data[0]),
-      nbytes,
-      compression_level);
+    res = ::compress2(reinterpret_cast<Bytef*>(retval.data()) + 4, &len,
+                      reinterpret_cast<Bytef const*>(&data[0]), nbytes,
+                      compression_level);
 
     switch (res) {
       case Z_OK:
@@ -69,9 +66,8 @@ std::vector<char> zlib::compress(std::vector<char> const& data,
         retval[3] = (nbytes & 0xff);
         break;
       case Z_MEM_ERROR:
-        throw (exceptions::msg()
-          << "compression: not enough memory to compress "
-          << nbytes << " bytes");
+        throw(exceptions::msg() << "compression: not enough memory to compress "
+                                << nbytes << " bytes");
         break;
       case Z_BUF_ERROR:
         len <<= 1;
@@ -93,7 +89,7 @@ std::vector<char> zlib::compress(std::vector<char> const& data,
 std::vector<char> zlib::uncompress(unsigned char const* data, uLong nbytes) {
   if (!data) {
     logging::debug(logging::medium)
-      << "compression: attempting to uncompress null buffer";
+        << "compression: attempting to uncompress null buffer";
     return std::vector<char>();
   }
   if (nbytes <= 4) {
@@ -102,9 +98,9 @@ std::vector<char> zlib::uncompress(unsigned char const* data, uLong nbytes) {
       throw exceptions::corruption()
           << "compression: attempting to uncompress data with invalid size";
   }
-  ulong expected_size = (data[0] << 24) | (data[1] << 16)
-                     | (data[2] <<  8) | data[3];
-  ulong len = (expected_size > 1ul) ? expected_size: 1ul;
+  ulong expected_size =
+      (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
+  ulong len = (expected_size > 1ul) ? expected_size : 1ul;
   if (len > stream::max_data_size)
     throw exceptions::corruption()
         << "compression: data expected size is too big";
@@ -122,13 +118,13 @@ std::vector<char> zlib::uncompress(unsigned char const* data, uLong nbytes) {
       break;
     case Z_MEM_ERROR:
       throw exceptions::msg()
-        << "compression: not enough memory to uncompress " << nbytes
-        << " compressed bytes to " << len << " uncompressed bytes";
+          << "compression: not enough memory to uncompress " << nbytes
+          << " compressed bytes to " << len << " uncompressed bytes";
     case Z_BUF_ERROR:
     case Z_DATA_ERROR:
       throw exceptions::corruption()
-        << "compression: compressed input data is corrupted, "
-        << "unable to uncompress it";
+          << "compression: compressed input data is corrupted, "
+          << "unable to uncompress it";
   }
   return uncompressed_array;
 }

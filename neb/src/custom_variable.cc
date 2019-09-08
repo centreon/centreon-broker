@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/custom_variable.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -42,7 +42,7 @@ custom_variable::custom_variable() : enabled(true), var_type(0) {
  *  @param[in] other  Object to copy.
  */
 custom_variable::custom_variable(custom_variable const& other)
-  : custom_variable_status(other) {
+    : custom_variable_status(other) {
   _internal_copy(other);
 }
 
@@ -81,14 +81,15 @@ unsigned int custom_variable::type() const {
  *  @return  The event type.
  */
 unsigned int custom_variable::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_custom_variable>::value);
+  return (
+      io::events::data_type<io::events::neb, neb::de_custom_variable>::value);
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -99,54 +100,37 @@ void custom_variable::_internal_copy(custom_variable const& other) {
   default_value = other.default_value;
   enabled = other.enabled;
   var_type = other.var_type;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const custom_variable::entries[] = {
-  mapping::entry(
-    &custom_variable::enabled,
-    NULL),
-  mapping::entry(
-    &custom_variable::host_id,
-    "host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &custom_variable::modified,
-    "modified"),
-  mapping::entry(
-    &custom_variable::name,
-    "name"),
-  mapping::entry(
-    &custom_variable::service_id,
-    "service_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &custom_variable::update_time,
-    "update_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &custom_variable::var_type,
-    "type"),
-  mapping::entry(
-    &custom_variable::value,
-    "value"),
-  mapping::entry(
-    &custom_variable::default_value,
-    "default_value"),
-  mapping::entry()
-};
+    mapping::entry(&custom_variable::enabled, nullptr),
+    mapping::entry(&custom_variable::host_id,
+                   "host_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&custom_variable::modified, "modified"),
+    mapping::entry(&custom_variable::name, "name"),
+    mapping::entry(&custom_variable::service_id,
+                   "service_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&custom_variable::update_time,
+                   "update_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&custom_variable::var_type, "type"),
+    mapping::entry(&custom_variable::value, "value"),
+    mapping::entry(&custom_variable::default_value, "default_value"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_custom_var() {
   return (new custom_variable);
 }
 io::event_info::event_operations const custom_variable::operations = {
-  &new_custom_var
-};
+    &new_custom_var};

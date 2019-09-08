@@ -31,14 +31,13 @@ using namespace com::centreon::broker::correlation;
  *                                   mode.
  *  @param[in,out] cache             Endpoint persistent cache.
  */
-connector::connector(
-             std::string const& correlation_file,
-             bool passive,
-             std::shared_ptr<persistent_cache> cache)
-  : io::endpoint{false},
-    _cache{cache},
-    _correlation_file{correlation_file},
-    _passive{passive} {}
+connector::connector(std::string const& correlation_file,
+                     bool passive,
+                     std::shared_ptr<persistent_cache> cache)
+    : io::endpoint{false},
+      _cache{cache},
+      _correlation_file{correlation_file},
+      _passive{passive} {}
 
 /**
  *  Copy constructor.
@@ -46,10 +45,10 @@ connector::connector(
  *  @param[in] other  Object to copy.
  */
 connector::connector(connector const& other)
-  : io::endpoint(other),
-    _cache(other._cache),
-    _correlation_file(other._correlation_file),
-    _passive(other._passive) {}
+    : io::endpoint(other),
+      _cache(other._cache),
+      _correlation_file(other._correlation_file),
+      _passive(other._passive) {}
 
 /**
  *  Destructor.

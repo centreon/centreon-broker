@@ -16,13 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QVariant>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/cbd.hh"
@@ -63,17 +63,14 @@ int main() {
     std::string cbmod_loading;
     {
       std::ostringstream oss;
-      oss << "broker_module=" << CBMOD_PATH << " "
-          << PROJECT_SOURCE_DIR << "/test/cfg/bbdo_one_peer_retention_mode_1.xml\n";
+      oss << "broker_module=" << CBMOD_PATH << " " << PROJECT_SOURCE_DIR
+          << "/test/cfg/bbdo_one_peer_retention_mode_1.xml\n";
       cbmod_loading = oss.str();
     }
 
     // Generate monitoring engine configuration files.
-    config_write(
-      engine_config_path.c_str(),
-      cbmod_loading.c_str(),
-      &hosts,
-      &services);
+    config_write(engine_config_path.c_str(), cbmod_loading.c_str(), &hosts,
+                 &services);
 
     // Start engine.
     std::string engine_config_file(engine_config_path);
@@ -86,8 +83,8 @@ int main() {
     time_t cbd_start_time(time(NULL));
 
     // Start Broker daemon.
-    broker.set_config_file(
-      PROJECT_SOURCE_DIR "/test/cfg/bbdo_one_peer_retention_mode_2.xml");
+    broker.set_config_file(PROJECT_SOURCE_DIR
+                           "/test/cfg/bbdo_one_peer_retention_mode_2.xml");
     broker.start();
     sleep_for(20);
     broker.update();
@@ -105,12 +102,10 @@ int main() {
             << "  FROM rt_hosts";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg() << "cannot read host count from DB: "
-               << q.lastError().text());
-      if (!q.next()
-          || (q.value(0).toUInt() != 10)
-          || q.next())
-        throw (exceptions::msg() << "invalid host count");
+        throw(exceptions::msg()
+              << "cannot read host count from DB: " << q.lastError().text());
+      if (!q.next() || (q.value(0).toUInt() != 10) || q.next())
+        throw(exceptions::msg() << "invalid host count");
     }
 
     // Check service count.
@@ -120,13 +115,10 @@ int main() {
             << "  FROM rt_services";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg()
-               << "cannot read service count from DB: "
-               << q.lastError().text());
-      if (!q.next()
-          || (q.value(0).toUInt() != 50)
-          || q.next())
-        throw (exceptions::msg() << "invalid service count");
+        throw(exceptions::msg()
+              << "cannot read service count from DB: " << q.lastError().text());
+      if (!q.next() || (q.value(0).toUInt() != 50) || q.next())
+        throw(exceptions::msg() << "invalid service count");
     }
 
     // Check log entries.
@@ -137,22 +129,17 @@ int main() {
             << "  WHERE ctime<" << cbd_start_time;
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg()
-               << "cannot read log entry count from DB: "
-               << q.lastError().text());
-      if (!q.next()
-          || (q.value(0).toInt() <= 0)
-          || q.next())
-        throw (exceptions::msg() << "invalid logs count");
+        throw(exceptions::msg() << "cannot read log entry count from DB: "
+                                << q.lastError().text());
+      if (!q.next() || (q.value(0).toInt() <= 0) || q.next())
+        throw(exceptions::msg() << "invalid logs count");
     }
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
   }
 

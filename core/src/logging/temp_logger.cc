@@ -16,49 +16,47 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/logging/temp_logger.hh"
+#include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker::logging;
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 temp_logger::redir const temp_logger::_redir_nothing = {
-  &temp_logger::_nothing<bool>,
-  &temp_logger::_nothing<double>,
-  &temp_logger::_nothing<int>,
-  &temp_logger::_nothing<long>,
-  &temp_logger::_nothing<long long>,
-  &temp_logger::_nothing<std::string const&>,
-  &temp_logger::_nothing<unsigned int>,
-  &temp_logger::_nothing<unsigned long>,
-  &temp_logger::_nothing<unsigned long long>,
-  &temp_logger::_nothing<char const*>,
-  &temp_logger::_nothing<void const*>
-};
+    &temp_logger::_nothing<bool>,
+    &temp_logger::_nothing<double>,
+    &temp_logger::_nothing<int>,
+    &temp_logger::_nothing<long>,
+    &temp_logger::_nothing<long long>,
+    &temp_logger::_nothing<std::string const&>,
+    &temp_logger::_nothing<unsigned int>,
+    &temp_logger::_nothing<unsigned long>,
+    &temp_logger::_nothing<unsigned long long>,
+    &temp_logger::_nothing<char const*>,
+    &temp_logger::_nothing<void const*>};
 temp_logger::redir const temp_logger::_redir_stringifier = {
-  &temp_logger::_to_stringifier<bool>,
-  &temp_logger::_to_stringifier<double>,
-  &temp_logger::_to_stringifier<int>,
-  &temp_logger::_to_stringifier<long>,
-  &temp_logger::_to_stringifier<long long>,
-  &temp_logger::_to_stringifier<std::string const&>,
-  &temp_logger::_to_stringifier<unsigned int>,
-  &temp_logger::_to_stringifier<unsigned long>,
-  &temp_logger::_to_stringifier<unsigned long long>,
-  &temp_logger::_to_stringifier<char const*>,
-  &temp_logger::_to_stringifier<void const*>
-};
+    &temp_logger::_to_stringifier<bool>,
+    &temp_logger::_to_stringifier<double>,
+    &temp_logger::_to_stringifier<int>,
+    &temp_logger::_to_stringifier<long>,
+    &temp_logger::_to_stringifier<long long>,
+    &temp_logger::_to_stringifier<std::string const&>,
+    &temp_logger::_to_stringifier<unsigned int>,
+    &temp_logger::_to_stringifier<unsigned long>,
+    &temp_logger::_to_stringifier<unsigned long long>,
+    &temp_logger::_to_stringifier<char const*>,
+    &temp_logger::_to_stringifier<void const*>};
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -70,7 +68,7 @@ void temp_logger::_internal_copy(temp_logger const& t) {
   _redir = t._redir;
   t._redir = &_redir_nothing;
   _type = t._type;
-  return ;
+  return;
 }
 
 /**
@@ -81,7 +79,7 @@ void temp_logger::_internal_copy(temp_logger const& t) {
  *  @return This object.
  */
 template <typename T>
-temp_logger& temp_logger::_nothing(T t) throw () {
+temp_logger& temp_logger::_nothing(T t) throw() {
   (void)t;
   return (*this);
 }
@@ -94,26 +92,24 @@ temp_logger& temp_logger::_nothing(T t) throw () {
  *  @return This object.
  */
 template <typename T>
-temp_logger& temp_logger::_to_stringifier(T t) throw () {
+temp_logger& temp_logger::_to_stringifier(T t) throw() {
   misc::stringifier::operator<<(t);
   return (*this);
 }
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
-temp_logger::temp_logger(type log_type,
-                         level l,
-                         bool enable)
-  : _level(l),
-    _redir(enable ? &_redir_stringifier : &_redir_nothing),
-    _type(log_type) {}
+temp_logger::temp_logger(type log_type, level l, bool enable)
+    : _level(l),
+      _redir(enable ? &_redir_stringifier : &_redir_nothing),
+      _type(log_type) {}
 
 /**
  *  Copy constructor.
@@ -154,7 +150,7 @@ temp_logger& temp_logger::operator=(temp_logger const& t) {
  *
  *  @return This object.
  */
-temp_logger& temp_logger::operator<<(bool b) throw () {
+temp_logger& temp_logger::operator<<(bool b) throw() {
   return ((this->*(_redir->redirect_bool))(b));
 }
 
@@ -165,7 +161,7 @@ temp_logger& temp_logger::operator<<(bool b) throw () {
  *
  *  @return This object.
  */
-temp_logger& temp_logger::operator<<(double d) throw () {
+temp_logger& temp_logger::operator<<(double d) throw() {
   return ((this->*(_redir->redirect_double))(d));
 }
 
@@ -176,7 +172,7 @@ temp_logger& temp_logger::operator<<(double d) throw () {
  *
  *  @return This object.
  */
-temp_logger& temp_logger::operator<<(int i) throw () {
+temp_logger& temp_logger::operator<<(int i) throw() {
   return ((this->*(_redir->redirect_int))(i));
 }
 
@@ -187,7 +183,7 @@ temp_logger& temp_logger::operator<<(int i) throw () {
  *
  *  @return This object.
  */
-temp_logger& temp_logger::operator<<(long l) throw () {
+temp_logger& temp_logger::operator<<(long l) throw() {
   return ((this->*(_redir->redirect_long))(l));
 }
 
@@ -198,7 +194,7 @@ temp_logger& temp_logger::operator<<(long l) throw () {
  *
  *  @return This object.
  */
-temp_logger& temp_logger::operator<<(long long ll) throw () {
+temp_logger& temp_logger::operator<<(long long ll) throw() {
   return ((this->*(_redir->redirect_long_long))(ll));
 }
 
@@ -209,7 +205,7 @@ temp_logger& temp_logger::operator<<(long long ll) throw () {
  *
  *  @return This object.
  */
-temp_logger& temp_logger::operator<<(std::string const& q) throw () {
+temp_logger& temp_logger::operator<<(std::string const& q) throw() {
   return ((this->*(_redir->redirect_std_string))(q));
 }
 
@@ -220,7 +216,7 @@ temp_logger& temp_logger::operator<<(std::string const& q) throw () {
  *
  *  @return This object.
  */
-temp_logger& temp_logger::operator<<(unsigned int u) throw () {
+temp_logger& temp_logger::operator<<(unsigned int u) throw() {
   return ((this->*(_redir->redirect_unsigned_int))(u));
 }
 
@@ -231,7 +227,7 @@ temp_logger& temp_logger::operator<<(unsigned int u) throw () {
  *
  *  @return This object.
  */
-temp_logger& temp_logger::operator<<(unsigned long ul) throw () {
+temp_logger& temp_logger::operator<<(unsigned long ul) throw() {
   return ((this->*(_redir->redirect_unsigned_long))(ul));
 }
 
@@ -242,7 +238,7 @@ temp_logger& temp_logger::operator<<(unsigned long ul) throw () {
  *
  *  @return This object.
  */
-temp_logger& temp_logger::operator<<(unsigned long long ull) throw () {
+temp_logger& temp_logger::operator<<(unsigned long long ull) throw() {
   return ((this->*(_redir->redirect_unsigned_long_long))(ull));
 }
 
@@ -253,7 +249,7 @@ temp_logger& temp_logger::operator<<(unsigned long long ull) throw () {
  *
  *  @return This object.
  */
-temp_logger& temp_logger::operator<<(char const* str) throw () {
+temp_logger& temp_logger::operator<<(char const* str) throw() {
   return ((this->*(_redir->redirect_string))(str));
 }
 
@@ -264,6 +260,6 @@ temp_logger& temp_logger::operator<<(char const* str) throw () {
  *
  *  @return This object.
  */
-temp_logger& temp_logger::operator<<(void const* ptr) throw () {
+temp_logger& temp_logger::operator<<(void const* ptr) throw() {
   return ((this->*(_redir->redirect_pointer))(ptr));
 }

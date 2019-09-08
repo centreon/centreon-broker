@@ -17,35 +17,34 @@
 */
 
 #ifndef CCB_TEST_TIME_POINTS_HH
-#  define CCB_TEST_TIME_POINTS_HH
+#define CCB_TEST_TIME_POINTS_HH
 
-#  include <ctime>
-#  include <vector>
-#  include "com/centreon/broker/namespace.hh"
+#include <ctime>
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        test {
-  /**
-   *  Class used to store time points.
-   */
-  class          time_points {
-  public:
-                 time_points();
-                 time_points(time_points const& other);
-                 ~time_points();
-    time_points& operator=(time_points const& other);
-    time_t       operator[](int index) const;
-    time_t       last() const;
-    time_t       prelast() const;
-    void         store();
+namespace test {
+/**
+ *  Class used to store time points.
+ */
+class time_points {
+ public:
+  time_points();
+  time_points(time_points const& other);
+  ~time_points();
+  time_points& operator=(time_points const& other);
+  time_t operator[](int index) const;
+  time_t last() const;
+  time_t prelast() const;
+  void store();
 
-  private:
-    std::vector<time_t>
-                 _points;
-  };
-}
+ private:
+  std::vector<time_t> _points;
+};
+}  // namespace test
 
 CCB_END()
 
-#endif // !CCB_TEST_TIME_POINTS_HH
+#endif  // !CCB_TEST_TIME_POINTS_HH

@@ -53,7 +53,7 @@ TEST(StartStop, MultiplexingWorks) {
     s.get_muxer().set_write_filters(filters);
 
     // Send events through engine.
-    char const* messages[] = {MSG1, MSG2, NULL};
+    char const* messages[] = {MSG1, MSG2, nullptr};
     for (unsigned int i = 0; messages[i]; ++i) {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(messages[i]);

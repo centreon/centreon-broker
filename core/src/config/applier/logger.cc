@@ -16,31 +16,31 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <iostream>
-#include <fstream>
-#include <memory>
 #include "com/centreon/broker/config/applier/logger.hh"
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #ifdef CBMOD
-#  include "com/centreon/broker/neb/monitoring_logger.hh"
-#endif // CBMOD
+#include "com/centreon/broker/neb/monitoring_logger.hh"
+#endif  // CBMOD
 #include "com/centreon/broker/logging/syslogger.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
 
 // Class instance.
-static config::applier::logger* gl_logger = NULL;
+static config::applier::logger* gl_logger = nullptr;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Destructor.
@@ -56,28 +56,25 @@ logger::~logger() {
  */
 void logger::apply(std::list<config::logger> const& loggers) {
   // Log message.
-  logging::config(logging::high) << "log applier: applying "
-    << loggers.size() << " logging objects";
+  logging::config(logging::high)
+      << "log applier: applying " << loggers.size() << " logging objects";
 
   // Find which loggers are already created,
   // which should be created
   // and which should be deleted.
   std::list<config::logger> to_create;
-  std::map<config::logger, std::shared_ptr<logging::backend> >
-    to_delete(_backends);
-  std::map<config::logger, std::shared_ptr<logging::backend> >
-    to_keep;
+  std::map<config::logger, std::shared_ptr<logging::backend> > to_delete(
+      _backends);
+  std::map<config::logger, std::shared_ptr<logging::backend> > to_keep;
   for (std::list<config::logger>::const_iterator it = loggers.begin(),
-         end = loggers.end();
-       it != end;
-       ++it) {
+                                                 end = loggers.end();
+       it != end; ++it) {
     std::map<config::logger, std::shared_ptr<logging::backend> >::iterator
-      backend(to_delete.find(*it));
+        backend(to_delete.find(*it));
     if (backend != to_delete.end()) {
       to_keep.insert(*backend);
       to_delete.erase(backend);
-    }
-    else
+    } else
       to_create.push_back(*it);
   }
 
@@ -85,11 +82,11 @@ void logger::apply(std::list<config::logger> const& loggers) {
   _backends = to_keep;
 
   // Remove loggers that do not exist anymore.
-  for (std::map<config::logger, std::shared_ptr<logging::backend> >::const_iterator
-         it(to_delete.begin()),
-         end(to_delete.end());
-       it != end;
-       ++it)
+  for (std::map<config::logger,
+                std::shared_ptr<logging::backend> >::const_iterator
+           it(to_delete.begin()),
+       end(to_delete.end());
+       it != end; ++it)
     logging::manager::instance().log_on(*it->second, 0, logging::none);
 
   // Free some memory.
@@ -97,22 +94,16 @@ void logger::apply(std::list<config::logger> const& loggers) {
   to_keep.clear();
 
   // Create new backends.
-  for (std::list<config::logger>::const_iterator
-         it(to_create.begin()),
-         end(to_create.end());
-       it != end;
-       ++it) {
-    logging::config(logging::medium)
-      << "log applier: creating new logger";
+  for (std::list<config::logger>::const_iterator it(to_create.begin()),
+       end(to_create.end());
+       it != end; ++it) {
+    logging::config(logging::medium) << "log applier: creating new logger";
     std::shared_ptr<logging::backend> backend(_new_backend(*it));
     _backends[*it] = backend;
-    logging::manager::instance().log_on(
-      *backend,
-      it->types(),
-      it->level());
+    logging::manager::instance().log_on(*backend, it->types(), it->level());
   }
 
-  return ;
+  return;
 }
 
 /**
@@ -130,7 +121,7 @@ logger& logger::instance() {
 void logger::load() {
   if (!gl_logger)
     gl_logger = new logger;
-  return ;
+  return;
 }
 
 /**
@@ -138,15 +129,15 @@ void logger::load() {
  */
 void logger::unload() {
   delete gl_logger;
-  gl_logger = NULL;
-  return ;
+  gl_logger = nullptr;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -160,51 +151,47 @@ logger::logger() {}
  *
  *  @return New logging backend.
  */
-std::shared_ptr<logging::backend> logger::_new_backend(config::logger const& cfg) {
+std::shared_ptr<logging::backend> logger::_new_backend(
+    config::logger const& cfg) {
   std::shared_ptr<logging::backend> back;
   switch (cfg.type()) {
-  case config::logger::file:
-    {
+    case config::logger::file: {
       if (cfg.name().empty())
         throw exceptions::msg()
-               << "log applier: attempt to log on an empty file";
-      std::unique_ptr<logging::file>
-        file(new logging::file(cfg.name(), cfg.max_size()));
+            << "log applier: attempt to log on an empty file";
+      std::unique_ptr<logging::file> file(
+          new logging::file(cfg.name(), cfg.max_size()));
       back.reset(file.get());
       file.release();
-    }
-    break ;
-  case config::logger::monitoring:
-    {
+    } break;
+    case config::logger::monitoring: {
 #ifdef CBMOD
-      std::unique_ptr<neb::monitoring_logger>
-        monitoring(new neb::monitoring_logger);
+      std::unique_ptr<neb::monitoring_logger> monitoring(
+          new neb::monitoring_logger);
       back.reset(monitoring.get());
       monitoring.release();
 #else
-      logging::info(logging::high) << "log applier: monitoring"
-        " logger type is not supported in standalone mode";
-#endif // CBMOD
-    }
-    break ;
-  case config::logger::standard:
-    {
+      logging::info(logging::high)
+          << "log applier: monitoring"
+             " logger type is not supported in standalone mode";
+#endif  // CBMOD
+    } break;
+    case config::logger::standard: {
       if ((cfg.name() == "stderr") || (cfg.name() == "cerr"))
         back.reset(new logging::file(std::cerr, "cerr"));
       else if ((cfg.name() == "stdout") || (cfg.name() == "cout"))
         back.reset(new logging::file(std::cout, "cout"));
       else
-        throw (exceptions::msg() << "log applier: attempt to log on " \
-                 "an undefined output object");
+        throw(exceptions::msg() << "log applier: attempt to log on "
+                                   "an undefined output object");
 
-    }
-    break ;
-  case config::logger::syslog:
-    back.reset(new logging::syslogger(cfg.facility()));
-    break ;
-  default:
-    throw (exceptions::msg() << "log applier: attempt to create a " \
-             "logging object of unknown type");
+    } break;
+    case config::logger::syslog:
+      back.reset(new logging::syslogger(cfg.facility()));
+      break;
+    default:
+      throw(exceptions::msg() << "log applier: attempt to create a "
+                                 "logging object of unknown type");
   }
 
   return back;

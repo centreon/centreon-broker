@@ -17,33 +17,32 @@
 */
 
 #ifndef CCB_NEB_STATISTICS_HOSTS_ACTIVELY_CHECKED_HH
-#  define CCB_NEB_STATISTICS_HOSTS_ACTIVELY_CHECKED_HH
+#define CCB_NEB_STATISTICS_HOSTS_ACTIVELY_CHECKED_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/statistics/plugin.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/statistics/plugin.hh"
 
 CCB_BEGIN()
 
-namespace                neb {
-  namespace              statistics {
-    /**
-     *  @class hosts_actively_checked hosts_actively_checked.hh "com/centreon/broker/neb/statistics/hosts_actively_checked.hh"
-     *  @brief hosts_actively_checked statistics plugin.
-     */
-    class                hosts_actively_checked : public plugin {
-    public:
-                         hosts_actively_checked();
-                         hosts_actively_checked(
-                           hosts_actively_checked const& right);
-                         ~hosts_actively_checked();
-      hosts_actively_checked&
-                         operator=(hosts_actively_checked const& right);
-      void               run(std::string& output, std::string& perfdata);
-    };
-  }
-}
+namespace neb {
+namespace statistics {
+/**
+ *  @class hosts_actively_checked hosts_actively_checked.hh
+ * "com/centreon/broker/neb/statistics/hosts_actively_checked.hh"
+ *  @brief hosts_actively_checked statistics plugin.
+ */
+class hosts_actively_checked : public plugin {
+ public:
+  hosts_actively_checked();
+  hosts_actively_checked(hosts_actively_checked const& right);
+  ~hosts_actively_checked();
+  hosts_actively_checked& operator=(hosts_actively_checked const& right);
+  void run(std::string& output, std::string& perfdata);
+};
+}  // namespace statistics
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_HOSTS_ACTIVELY_CHECKED_HH
+#endif  // !CCB_NEB_STATISTICS_HOSTS_ACTIVELY_CHECKED_HH

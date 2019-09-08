@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/correlation/factory.hh"
 #include <cstring>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/correlation/connector.hh"
-#include "com/centreon/broker/correlation/factory.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
@@ -90,25 +90,25 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return New endpoint matching configuration.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-			 bool& is_acceptor,
-			 std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   // Find correlation file.
   std::string correlation_file;
   {
-    std::map<std::string, std::string>::const_iterator it{cfg.params.find("file")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("file")};
     if (it == cfg.params.end())
       throw exceptions::msg()
-	     << "correlation: no 'file' defined for endpoint '"
-	     << cfg.name << "'";
+          << "correlation: no 'file' defined for endpoint '" << cfg.name << "'";
     correlation_file = it->second;
   }
 
   // Check if this is a passive endpoint.
   bool passive;
   {
-    std::map<std::string, std::string>::const_iterator
-      it{cfg.params.find("passive")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("passive")};
     if (it != cfg.params.end())
       passive = config::parser::parse_boolean(it->second);
     else

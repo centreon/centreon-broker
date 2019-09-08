@@ -16,24 +16,24 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sstream>
+#include "com/centreon/broker/tcp/stream.hh"
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <sstream>
 #include <system_error>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
-#include "com/centreon/broker/tcp/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -42,11 +42,11 @@ using namespace com::centreon::broker::tcp;
  *  @param[in] name  Name of this connection.
  */
 stream::stream(asio::ip::tcp::socket* sock, std::string const& name)
-  : _name(name),
-    _parent(NULL),
-    _read_timeout(-1),
-    _socket(sock),
-    _write_timeout(-1) {
+    : _name(name),
+      _parent(nullptr),
+      _read_timeout(-1),
+      _socket(sock),
+      _write_timeout(-1) {
   _set_socket_options();
 }
 
@@ -56,14 +56,15 @@ stream::stream(asio::ip::tcp::socket* sock, std::string const& name)
 stream::~stream() {
   try {
     // Close the socket.
-    if (_socket.get())
+    if (_socket)
       _socket->close();
     // Remove from parent.
     if (_parent)
       _parent->remove_child(_name);
   }
   // Ignore exception, whatever the error might be.
-  catch (...) {}
+  catch (...) {
+  }
 }
 
 /**
@@ -73,8 +74,8 @@ stream::~stream() {
  */
 std::string stream::peer() const {
   std::ostringstream oss;
-  oss << "tcp://" << _socket->remote_endpoint().address().to_string()
-      << ":" << _socket->remote_endpoint().port();
+  oss << "tcp://" << _socket->remote_endpoint().address().to_string() << ":"
+      << _socket->remote_endpoint().port();
   return oss.str();
 }
 
@@ -86,18 +87,16 @@ std::string stream::peer() const {
  *
  *  @return Respects io::stream::read()'s return value.
  */
-bool stream::read(std::shared_ptr<io::data>& d,
-  time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   // Check that socket exist.
-  if (!_socket.get())
+  if (!_socket)
     _initialize_socket();
 
   // Set deadline.
   {
-    time_t now = ::time(NULL);
-    if (_read_timeout != -1
-        && (deadline == (time_t)-1
-            || now + _read_timeout < deadline))
+    time_t now = ::time(nullptr);
+    if (_read_timeout != -1 &&
+        (deadline == (time_t)-1 || now + _read_timeout < deadline))
       deadline = now + _read_timeout / 1000;
   }
 
@@ -109,9 +108,10 @@ bool stream::read(std::shared_ptr<io::data>& d,
   size_t len = asio::read(*_socket, b, asio::transfer_all(), err);
 
   if (err)
-    throw exceptions::msg() << "TCP peer '"
-                             << _name << "' err: " << err.message();
-  std::string s((std::istreambuf_iterator<char>(&b)), std::istreambuf_iterator<char>());
+    throw exceptions::msg()
+        << "TCP peer '" << _name << "' err: " << err.message();
+  std::string s((std::istreambuf_iterator<char>(&b)),
+                std::istreambuf_iterator<char>());
 
   std::shared_ptr<io::raw> data(new io::raw);
   std::copy(s.c_str(), s.c_str() + len, std::back_inserter(data->get_buffer()));
@@ -161,7 +161,7 @@ void stream::set_write_timeout(int secs) {
  */
 int stream::write(std::shared_ptr<io::data> const& d) {
   // Check that socket exist.
-  if (!_socket.get())
+  if (!_socket)
     _initialize_socket();
 
   // Check that data exists and should be processed.
@@ -169,26 +169,27 @@ int stream::write(std::shared_ptr<io::data> const& d) {
     return 1;
 
   if (d->type() == io::raw::static_type()) {
-    std::shared_ptr <io::raw> r(std::static_pointer_cast<io::raw>(d));
-    logging::debug(logging::low) << "TCP: write request of "
-                                 << r->size() << " bytes to peer '" << _name << "'";
+    std::shared_ptr<io::raw> r(std::static_pointer_cast<io::raw>(d));
+    logging::debug(logging::low) << "TCP: write request of " << r->size()
+                                 << " bytes to peer '" << _name << "'";
 
     std::error_code err;
 
-    asio::write(*_socket, asio::buffer(r->data(), r->size()), asio::transfer_all(), err);
+    asio::write(*_socket, asio::buffer(r->data(), r->size()),
+                asio::transfer_all(), err);
 
     if (err)
-      throw exceptions::msg() << "TCP: error while writing to peer '"
-                              << _name << "': " << err.message();
+      throw exceptions::msg() << "TCP: error while writing to peer '" << _name
+                              << "': " << err.message();
   }
   return 1;
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Initialize socket if it was not already initialized.
@@ -197,8 +198,8 @@ void stream::_initialize_socket() {
   _socket.reset(new asio::ip::tcp::socket{_io_context});
   {
     std::ostringstream oss;
-    oss << _socket->remote_endpoint().address().to_string()
-        << ":" << _socket->remote_endpoint().port();
+    oss << _socket->remote_endpoint().address().to_string() << ":"
+        << _socket->remote_endpoint().port();
     _name = oss.str();
   }
   if (_parent)
@@ -216,15 +217,10 @@ void stream::_set_socket_options() {
 
   // Set the write timeout option.
   if (_write_timeout >= 0) {
-
     struct timeval t;
     t.tv_sec = _write_timeout / 1000;
     t.tv_usec = _write_timeout % 1000;
-    ::setsockopt(
-        _socket->native_handle(),
-        SOL_SOCKET,
-        SO_SNDTIMEO,
-        &t,
-        sizeof(t));
+    ::setsockopt(_socket->native_handle(), SOL_SOCKET, SO_SNDTIMEO, &t,
+                 sizeof(t));
   }
 }

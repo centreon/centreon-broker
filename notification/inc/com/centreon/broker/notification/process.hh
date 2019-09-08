@@ -17,74 +17,67 @@
 */
 
 #ifndef CCB_NOTIFICATION_PROCESS_HH
-#  define CCB_NOTIFICATION_PROCESS_HH
+#define CCB_NOTIFICATION_PROCESS_HH
 
-#  include <memory>
-#  include <string>
-#  include <QProcess>
-#  include "com/centreon/broker/namespace.hh"
-#  include <QObject>
+#include <QObject>
+#include <QProcess>
+#include <memory>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
-namespace                          com {
-  namespace                        centreon {
-    namespace                      broker {
-      namespace                    notification {
-      // Forward declaration.
-      class               process_manager;
-      /**
-   *  @class process process.hh "com/centreon/broker/notification/process.hh"
-   *  @brief Represent a process being executed.
-   */
-      class               process : public QObject {
-        Q_OBJECT
+namespace com {
+namespace centreon {
+namespace broker {
+namespace notification {
+// Forward declaration.
+class process_manager;
+/**
+ *  @class process process.hh "com/centreon/broker/notification/process.hh"
+ *  @brief Represent a process being executed.
+ */
+class process : public QObject {
+  Q_OBJECT
 
-      public:
-                          process(int timeout = 0);
+ public:
+  process(int timeout = 0);
 
-        unsigned int      get_timeout() const throw();
-        bool              is_running() const;
-        void              kill();
+  unsigned int get_timeout() const throw();
+  bool is_running() const;
+  void kill();
 
-        bool              exec(
-                            std::string const& program,
-                            process_manager* manager = NULL);
+  bool exec(std::string const& program, process_manager* manager = NULL);
 
-        bool              is_timeout() const throw();
+  bool is_timeout() const throw();
 
-        bool              get_error(
-                            int& exit_code,
-                            std::string& error_output);
+  bool get_error(int& exit_code, std::string& error_output);
 
-      public slots:
-        void              start(QString const& command_line);
-        void              error();
-        void              finished();
-        void              timeouted();
+ public slots:
+  void start(QString const& command_line);
+  void error();
+  void finished();
+  void timeouted();
 
-      signals:
-        void              finished(process&);
-        void              timeouted(process&);
+ signals:
+  void finished(process&);
+  void timeouted(process&);
 
-      private:
-                          process(process const&);
-        process&          operator=(process const&);
+ private:
+  process(process const&);
+  process& operator=(process const&);
 
-        unsigned int      _timeout;
-        time_t            _start_time;
-        std::unique_ptr<QProcess>
-                          _process;
+  unsigned int _timeout;
+  time_t _start_time;
+  std::unique_ptr<QProcess> _process;
 
-        bool              _in_error;
-        QProcess::ProcessError
-                          _error;
-        QProcess::ExitStatus
-                          _status;
-        int               _exit_code;
-        std::string       _error_output;
-      };
-      }
-    }
-  }
-}
+  bool _in_error;
+  QProcess::ProcessError _error;
+  QProcess::ExitStatus _status;
+  int _exit_code;
+  std::string _error_output;
+};
+}  // namespace notification
+}  // namespace broker
+}  // namespace centreon
+}  // namespace com
 
-#endif // !CCB_NOTIFICATION_PROCESS_HH
+#endif  // !CCB_NOTIFICATION_PROCESS_HH

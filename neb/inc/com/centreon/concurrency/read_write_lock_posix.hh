@@ -17,42 +17,43 @@
 */
 
 #ifndef CC_CONCURRENCY_READ_WRITE_LOCK_POSIX_HH
-#  define CC_CONCURRENCY_READ_WRITE_LOCK_POSIX_HH
+#define CC_CONCURRENCY_READ_WRITE_LOCK_POSIX_HH
 
-#  include <pthread.h>
-#  include "com/centreon/namespace.hh"
+#include <pthread.h>
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace            concurrency {
-  /**
-   *  @class read_write_lock read_write_lock_posix.hh "com/centreon/concurrency/read_write_lock.hh"
-   *  @brief Readers/writer lock.
-   *
-   *  Implementation of the readers/writer lock synchronization
-   *  primitive.
-   */
-  class              read_write_lock {
-  public:
-                     read_write_lock();
-                     ~read_write_lock() throw ();
-    void             read_lock();
-    bool             read_lock(unsigned long timeout);
-    bool             read_trylock();
-    void             read_unlock();
-    void             write_lock();
-    bool             write_lock(unsigned long timeout);
-    bool             write_trylock();
-    void             write_unlock();
+namespace concurrency {
+/**
+ *  @class read_write_lock read_write_lock_posix.hh
+ * "com/centreon/concurrency/read_write_lock.hh"
+ *  @brief Readers/writer lock.
+ *
+ *  Implementation of the readers/writer lock synchronization
+ *  primitive.
+ */
+class read_write_lock {
+ public:
+  read_write_lock();
+  ~read_write_lock() throw();
+  void read_lock();
+  bool read_lock(unsigned long timeout);
+  bool read_trylock();
+  void read_unlock();
+  void write_lock();
+  bool write_lock(unsigned long timeout);
+  bool write_trylock();
+  void write_unlock();
 
-  private:
-                     read_write_lock(read_write_lock const& right);
-    read_write_lock& operator=(read_write_lock const& right);
+ private:
+  read_write_lock(read_write_lock const& right);
+  read_write_lock& operator=(read_write_lock const& right);
 
-    pthread_rwlock_t _rwl;
-  };
-}
+  pthread_rwlock_t _rwl;
+};
+}  // namespace concurrency
 
 CC_END()
 
-#endif // !CC_CONCURRENCY_READ_WRITE_LOCK_POSIX_HH
+#endif  // !CC_CONCURRENCY_READ_WRITE_LOCK_POSIX_HH

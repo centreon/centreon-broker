@@ -17,47 +17,43 @@
 */
 
 #ifndef CCB_STORAGE_REBUILD_HH
-#  define CCB_STORAGE_REBUILD_HH
+#define CCB_STORAGE_REBUILD_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          storage {
-  /**
-   *  @class rebuild rebuild.hh "com/centreon/broker/storage/rebuild.hh"
-   *  @brief Rebuild event.
-   *
-   *  This event is generated when some graph need to be rebuild.
-   */
-  class            rebuild : public io::data {
-  public:
-                   rebuild();
-                   rebuild(rebuild const& right);
-                   ~rebuild();
-    rebuild&       operator=(rebuild const& right);
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace storage {
+/**
+ *  @class rebuild rebuild.hh "com/centreon/broker/storage/rebuild.hh"
+ *  @brief Rebuild event.
+ *
+ *  This event is generated when some graph need to be rebuild.
+ */
+class rebuild : public io::data {
+ public:
+  rebuild();
+  rebuild(rebuild const& right);
+  ~rebuild();
+  rebuild& operator=(rebuild const& right);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    bool           end;
-    unsigned int   id;
-    bool           is_index;
+  bool end;
+  unsigned int id;
+  bool is_index;
 
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
-
-  private:
-    void           _internal_copy(rebuild const& right);
-  };
-}
+ private:
+  void _internal_copy(rebuild const& right);
+};
+}  // namespace storage
 
 CCB_END()
 
-#endif // !CCB_STORAGE_REBUILD_HH
+#endif  // !CCB_STORAGE_REBUILD_HH

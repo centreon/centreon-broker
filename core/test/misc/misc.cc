@@ -17,13 +17,14 @@
  *
  */
 
-#include <gtest/gtest.h>
 #include "com/centreon/broker/misc/misc.hh"
+#include <gtest/gtest.h>
 
 using namespace com::centreon::broker::misc;
 
 TEST(MiscTest, SimpleFromHex) {
-  std::string const str = "0102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F20";
+  std::string const str =
+      "0102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F20";
   std::vector<char> v{from_hex(str)};
   char value = 1;
   for (char c : v) {
@@ -33,7 +34,8 @@ TEST(MiscTest, SimpleFromHex) {
 }
 
 TEST(MiscTest, SimpleLowerFromHex) {
-  std::string const str = "a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0";
+  std::string const str =
+      "a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0";
   std::vector<char> v{from_hex(str)};
   char value = 0xa1;
   for (char c : v) {

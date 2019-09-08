@@ -16,20 +16,20 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/rrd/factory.hh"
 #include <memory>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/rrd/connector.hh"
-#include "com/centreon/broker/rrd/factory.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
 
 /**************************************
-*                                     *
-*            Local Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *            Local Objects            *
+ *                                     *
+ **************************************/
 
 /**
  *  Search for a property value.
@@ -39,15 +39,17 @@ using namespace com::centreon::broker::rrd;
  *  @param[in] thrw Should throw if value is not found.
  *  @param[in] def  Default value.
  */
-static std::string find_param(config::endpoint const &cfg,
-                              std::string const &key, bool thrw = true,
+static std::string find_param(config::endpoint const& cfg,
+                              std::string const& key,
+                              bool thrw = true,
                               std::string const& def = "") {
-  std::map<std::string, std::string>::const_iterator it{
-      cfg.params.find(key)};
+  std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it) {
     if (thrw)
-      throw exceptions::msg() << "RRD: no '" << key << "' defined " \
-               " for endpoint '" << cfg.name << "'";
+      throw exceptions::msg() << "RRD: no '" << key
+                              << "' defined "
+                                 " for endpoint '"
+                              << cfg.name << "'";
     else
       return def;
   }
@@ -55,10 +57,10 @@ static std::string find_param(config::endpoint const &cfg,
 }
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -119,9 +121,9 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return Endpoint matching the given configuration.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
   // Local socket path.
@@ -134,8 +136,8 @@ io::endpoint* factory::new_endpoint(
   // Get rrd creator cache size.
   unsigned int cache_size(16);
   {
-    std::map<std::string, std::string>::const_iterator
-      it{cfg.params.find("cache_size")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("cache_size")};
     if (it != cfg.params.end())
       cache_size = std::stoul(it->second);
   }
@@ -143,8 +145,8 @@ io::endpoint* factory::new_endpoint(
   // Should metrics be written ?
   bool write_metrics;
   {
-    std::map<std::string, std::string>::const_iterator
-      it(cfg.params.find("write_metrics"));
+    std::map<std::string, std::string>::const_iterator it(
+        cfg.params.find("write_metrics"));
     if (it != cfg.params.end())
       write_metrics = config::parser::parse_boolean(it->second);
     else
@@ -154,8 +156,8 @@ io::endpoint* factory::new_endpoint(
   // Should status be written ?
   bool write_status;
   {
-    std::map<std::string, std::string>::const_iterator
-      it{cfg.params.find("write_status")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("write_status")};
     if (it != cfg.params.end())
       write_status = config::parser::parse_boolean(it->second);
     else
@@ -167,15 +169,13 @@ io::endpoint* factory::new_endpoint(
                                          : ""};
 
   // Get status RRD path.
-  std::string status_path{write_status
-                      ? find_param(cfg, "status_path")
-                      : ""};
+  std::string status_path{write_status ? find_param(cfg, "status_path") : ""};
 
   // Ignore update errors (2.4.0-compatible behavior).
   bool ignore_update_errors;
   {
-    std::map<std::string, std::string>::const_iterator
-      it{cfg.params.find("ignore_update_errors")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("ignore_update_errors")};
     if (it != cfg.params.end())
       ignore_update_errors = config::parser::parse_boolean(it->second);
     else

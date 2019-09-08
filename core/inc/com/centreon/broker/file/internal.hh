@@ -17,15 +17,17 @@
 */
 
 #ifndef CCB_FILE_INTERNAL_HH
-#  define CCB_FILE_INTERNAL_HH
+#define CCB_FILE_INTERNAL_HH
+
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace              file {
-  void load();
-  void unload();
-}
+namespace file {
+void load();
+void unload();
+}  // namespace file
 
 CCB_END()
 
-#endif // !CCB_FILE_INTERNAL_HH
+#endif  // !CCB_FILE_INTERNAL_HH

@@ -16,13 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/lua/broker_socket.hh"
 #include <asio.hpp>
 #include <sstream>
-#include "com/centreon/broker/lua/broker_socket.hh"
 
 #if ASIO_VERSION < 101200
 namespace asio {
-  typedef io_service io_context;
+typedef io_service io_context;
 }
 #endif
 
@@ -46,9 +46,9 @@ enum {
  *
  *  @return 1
  */
-int l_broker_socket_constructor(lua_State * L) {
+int l_broker_socket_constructor(lua_State* L) {
   ip::tcp::socket** udata{static_cast<ip::tcp::socket**>(
-    lua_newuserdata(L, sizeof(ip::tcp::socket*)))};
+      lua_newuserdata(L, sizeof(ip::tcp::socket*)))};
   *udata = new ip::tcp::socket{ctx};
 
   socket_state = unconnected;
@@ -68,7 +68,7 @@ int l_broker_socket_constructor(lua_State * L) {
  */
 static int l_broker_socket_destructor(lua_State* L) {
   delete *static_cast<ip::tcp::socket**>(
-           luaL_checkudata(L, 1, "lua_broker_tcp_socket"));
+      luaL_checkudata(L, 1, "lua_broker_tcp_socket"));
 
   socket_state = unconnected;
   return 0;
@@ -83,7 +83,7 @@ static int l_broker_socket_destructor(lua_State* L) {
  */
 static int l_broker_socket_connect(lua_State* L) {
   ip::tcp::socket* socket{*static_cast<ip::tcp::socket**>(
-    luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
+      luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
   char const* addr{luaL_checkstring(L, 2)};
   int port{static_cast<int>(luaL_checknumber(L, 3))};
 
@@ -98,8 +98,8 @@ static int l_broker_socket_connect(lua_State* L) {
 
     std::error_code err{std::make_error_code(std::errc::host_unreachable)};
 
-    //it can resolve to multiple addresses like ipv4 and ipv6
-    //we need to try all to find the first available socket
+    // it can resolve to multiple addresses like ipv4 and ipv6
+    // we need to try all to find the first available socket
     while (err && it != end) {
       socket->connect(*it, err);
       ++it;
@@ -108,9 +108,8 @@ static int l_broker_socket_connect(lua_State* L) {
     if (err) {
       socket_state = unconnected;
       std::ostringstream ss;
-      ss << "broker_socket::connect: Couldn't connect to "
-         << addr << ":" << port
-         << ": " << err.message();
+      ss << "broker_socket::connect: Couldn't connect to " << addr << ":"
+         << port << ": " << err.message();
       luaL_error(L, ss.str().c_str());
     } else {
       socket_state = connected;
@@ -118,8 +117,7 @@ static int l_broker_socket_connect(lua_State* L) {
   } catch (std::system_error const& se) {
     socket_state = unconnected;
     std::ostringstream ss;
-    ss << "broker_socket::connect: Couldn't connect to "
-       << addr << ":" << port
+    ss << "broker_socket::connect: Couldn't connect to " << addr << ":" << port
        << ": " << se.what();
     luaL_error(L, ss.str().c_str());
   }
@@ -135,11 +133,7 @@ static int l_broker_socket_connect(lua_State* L) {
  */
 static int l_broker_socket_state(lua_State* L) {
   char const* ans[] = {
-    "unconnected",
-    "hostLookup",
-    "connecting",
-    "connected",
-    "closing",
+      "unconnected", "hostLookup", "connecting", "connected", "closing",
   };
   lua_pushstring(L, ans[socket_state]);
   return 1;
@@ -154,7 +148,7 @@ static int l_broker_socket_state(lua_State* L) {
  */
 static int l_broker_socket_write(lua_State* L) {
   ip::tcp::socket* socket{*static_cast<ip::tcp::socket**>(
-    luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
+      luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
   size_t len;
   char const* content(lua_tolstring(L, 2, &len));
   std::error_code err;
@@ -164,9 +158,8 @@ static int l_broker_socket_write(lua_State* L) {
   if (err) {
     std::ostringstream ss;
     ss << "broker_socket::write: Couldn't write to "
-       << socket->remote_endpoint().address().to_string()
-       << ":" << socket->remote_endpoint().port()
-       << ": " << err.message();
+       << socket->remote_endpoint().address().to_string() << ":"
+       << socket->remote_endpoint().port() << ": " << err.message();
     luaL_error(L, ss.str().c_str());
   }
 
@@ -182,19 +175,18 @@ static int l_broker_socket_write(lua_State* L) {
  */
 static int l_broker_socket_read(lua_State* L) {
   ip::tcp::socket* socket{*static_cast<ip::tcp::socket**>(
-    luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
+      luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
   std::error_code err;
 
   char* buff = new char[1024];
 
-  size_t len = socket->read_some( asio::buffer(buff, 1024), err);
+  size_t len = socket->read_some(asio::buffer(buff, 1024), err);
 
   if (err && err != asio::error::eof) {
     std::ostringstream ss;
     ss << "broker_socket::read: Couldn't read data from "
-       << socket->remote_endpoint().address().to_string()
-       << ":" << socket->remote_endpoint().port()
-       << ": " << err.message();
+       << socket->remote_endpoint().address().to_string() << ":"
+       << socket->remote_endpoint().port() << ": " << err.message();
     luaL_error(L, ss.str().c_str());
   } else if (!err) {
     lua_pushlstring(L, buff, len);
@@ -212,9 +204,8 @@ static int l_broker_socket_read(lua_State* L) {
  *  @return 0
  */
 static int l_broker_socket_close(lua_State* L) {
-  ip::tcp::socket* socket{
-                *static_cast<ip::tcp::socket**>(
-                  luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
+  ip::tcp::socket* socket{*static_cast<ip::tcp::socket**>(
+      luaL_checkudata(L, 1, "lua_broker_tcp_socket"))};
 
   socket_state = closing;
   socket->close();
@@ -229,16 +220,14 @@ static int l_broker_socket_close(lua_State* L) {
  *  @return The Lua interpreter as a lua_State*
  */
 void broker_socket::broker_socket_reg(lua_State* L) {
-  luaL_Reg s_broker_socket_regs[] = {
-    { "new", l_broker_socket_constructor },
-    { "__gc", l_broker_socket_destructor },
-    { "connect", l_broker_socket_connect },
-    { "get_state", l_broker_socket_state },
-    { "write", l_broker_socket_write },
-    { "read", l_broker_socket_read },
-    { "close", l_broker_socket_close },
-    { NULL, NULL }
-  };
+  luaL_Reg s_broker_socket_regs[] = {{"new", l_broker_socket_constructor},
+                                     {"__gc", l_broker_socket_destructor},
+                                     {"connect", l_broker_socket_connect},
+                                     {"get_state", l_broker_socket_state},
+                                     {"write", l_broker_socket_write},
+                                     {"read", l_broker_socket_read},
+                                     {"close", l_broker_socket_close},
+                                     {nullptr, nullptr}};
 
   // Create a metatable. It is not exposed to Lua. It is not
   // exposed to Lua. The "lua_broker" label is used by Lua

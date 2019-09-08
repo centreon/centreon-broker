@@ -16,20 +16,19 @@
 ** For more information : contact@centreon.com
 */
 
-#include <stdexcept>
-#include <sstream>
-#include <ctime>
-#include "com/centreon/broker/time/timezone_locker.hh"
 #include "com/centreon/broker/time/timeperiod.hh"
+#include <ctime>
+#include <sstream>
+#include <stdexcept>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/time/timezone_locker.hh"
 
 using namespace com::centreon::broker::time;
 
 /**
  *  Default constructor.
  */
-timeperiod::timeperiod() :
-  _id(0) {
+timeperiod::timeperiod() : _id(0) {
   _timeranges.resize(7);
   _exceptions.resize(daterange::daterange_types);
 }
@@ -56,44 +55,41 @@ timeperiod::timeperiod(timeperiod const& obj) {
  *  @param[in] friday      A string describing the friday timerange.
  *  @param[in] saturday    A string describing the saturday timerange.
  */
-timeperiod::timeperiod(
-      unsigned int id,
-      std::string const& name,
-      std::string const& alias,
-      std::string const& sunday,
-      std::string const& monday,
-      std::string const& tuesday,
-      std::string const& wednesday,
-      std::string const& thursday,
-      std::string const& friday,
-      std::string const& saturday)
-  : _id(id),
-    _alias(alias),
-    _timeperiod_name(name) {
+timeperiod::timeperiod(unsigned int id,
+                       std::string const& name,
+                       std::string const& alias,
+                       std::string const& sunday,
+                       std::string const& monday,
+                       std::string const& tuesday,
+                       std::string const& wednesday,
+                       std::string const& thursday,
+                       std::string const& friday,
+                       std::string const& saturday)
+    : _id(id), _alias(alias), _timeperiod_name(name) {
   _timeranges.resize(7);
   _exceptions.resize(daterange::daterange_types);
   std::vector<bool> success;
   if (!set_timerange(sunday, 0))
-    throw (exceptions::msg()
-           << "BAM: could not parse sunday for time period: " << id);
+    throw(exceptions::msg()
+          << "BAM: could not parse sunday for time period: " << id);
   if (!set_timerange(monday, 1))
-    throw (exceptions::msg()
-           << "BAM: could not parse monday for time period: " << id);
+    throw(exceptions::msg()
+          << "BAM: could not parse monday for time period: " << id);
   if (!set_timerange(tuesday, 2))
-    throw (exceptions::msg()
-           << "BAM: could not parse tuesday for time period: " << id);
+    throw(exceptions::msg()
+          << "BAM: could not parse tuesday for time period: " << id);
   if (!set_timerange(wednesday, 3))
-    throw (exceptions::msg()
-           << "BAM: could not parse wednesday for time period: " << id);
+    throw(exceptions::msg()
+          << "BAM: could not parse wednesday for time period: " << id);
   if (!set_timerange(thursday, 4))
-    throw (exceptions::msg()
-           << "BAM: could not parse thursday for time period: " << id);
+    throw(exceptions::msg()
+          << "BAM: could not parse thursday for time period: " << id);
   if (!set_timerange(friday, 5))
-    throw (exceptions::msg()
-           << "BAM: could not parse friday for time period: " << id);
+    throw(exceptions::msg()
+          << "BAM: could not parse friday for time period: " << id);
   if (!set_timerange(saturday, 6))
-    throw (exceptions::msg()
-           << "BAM: could not parse saturday for time period: " << id);
+    throw(exceptions::msg()
+          << "BAM: could not parse saturday for time period: " << id);
 }
 
 timeperiod timeperiod::operator=(timeperiod const& obj) {
@@ -151,8 +147,8 @@ void timeperiod::set_alias(std::string const& value) {
  *
  *  @return The timeperiod exceptions.
  */
-std::vector<std::list<daterange> > const&
-  timeperiod::get_exceptions() const throw() {
+std::vector<std::list<daterange> > const& timeperiod::get_exceptions() const
+    throw() {
   return (_exceptions);
 }
 
@@ -163,10 +159,10 @@ std::vector<std::list<daterange> > const&
  *
  *  @return          A lit of exceptions.
  */
-std::list<daterange> const&
-    timeperiod::get_exceptions_from_type(int type) const {
+std::list<daterange> const& timeperiod::get_exceptions_from_type(
+    int type) const {
   if (type < 0 || type > daterange::daterange_types)
-    throw (std::out_of_range("get_exceptions_from_type(): out of range"));
+    throw(std::out_of_range("get_exceptions_from_type(): out of range"));
   else
     return (_exceptions[type]);
 }
@@ -188,9 +184,8 @@ void timeperiod::add_exceptions(std::list<daterange> const& val) {
  *
  *  @return            True if the exception was correctly parsed.
  */
-bool timeperiod::add_exception(
-                   std::string const& days,
-                   std::string const& range) {
+bool timeperiod::add_exception(std::string const& days,
+                               std::string const& range) {
   // Concatenate days and range.
   std::stringstream ss;
   ss << days << " " << range;
@@ -216,7 +211,6 @@ std::vector<timeperiod::ptr> const& timeperiod::get_included() const throw() {
 void timeperiod::add_included(timeperiod::ptr val) {
   _include.push_back(val);
 }
-
 
 /**
  *  Get the excluded timeperiods.
@@ -259,8 +253,8 @@ void timeperiod::set_name(std::string const& value) {
  *
  *  @return The timeperiod timeranges.
  */
-std::vector<std::list<timerange> > const&
-  timeperiod::get_timeranges() const throw() {
+std::vector<std::list<timerange> > const& timeperiod::get_timeranges() const
+    throw() {
   return (_timeranges);
 }
 
@@ -270,8 +264,8 @@ std::vector<std::list<timerange> > const&
  *  @param day The day (from 0 to 6).
  *  @return The timerange on this day.
  */
-std::list<timerange> const&
-  timeperiod::get_timeranges_by_day(int day) const throw() {
+std::list<timerange> const& timeperiod::get_timeranges_by_day(int day) const
+    throw() {
   return (_timeranges[day]);
 }
 
@@ -283,12 +277,9 @@ std::list<timerange> const&
  *
  *  @return  True if the string is valid.
  */
-bool timeperiod::set_timerange(
-                   std::string const& timerange_text,
-                   int day) {
-  return (timerange::build_timeranges_from_string(
-                       timerange_text,
-                       _timeranges[day]));
+bool timeperiod::set_timerange(std::string const& timerange_text, int day) {
+  return (timerange::build_timeranges_from_string(timerange_text,
+                                                  _timeranges[day]));
 }
 
 /**
@@ -316,8 +307,8 @@ void timeperiod::set_timezone(std::string const& tz) {
  *  @return True if it is valid.
  */
 bool timeperiod::is_valid(time_t preferred_time) const {
-  return ((preferred_time != (time_t)-1)
-          && (get_next_valid(preferred_time) == preferred_time));
+  return ((preferred_time != (time_t)-1) &&
+          (get_next_valid(preferred_time) == preferred_time));
 }
 
 /**
@@ -328,7 +319,7 @@ bool timeperiod::is_valid(time_t preferred_time) const {
  */
 time_t timeperiod::get_next_valid(time_t preferred_time) const {
   // Set timezone.
-  timezone_locker tzlock(_timezone.empty() ? NULL : _timezone.c_str());
+  timezone_locker tzlock(_timezone.empty() ? nullptr : _timezone.c_str());
 
   // Check preferred_time.
   if (preferred_time != (time_t)-1) {
@@ -349,26 +340,21 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
     // already started plus 7 days ahead).
     for (int i(0); i < 8; ++i) {
       // Compute current day's midnight.
-      time_t day_start(timeperiod::add_round_days_to_midnight(
-                                     midnight,
-                                     i * 24 * 60 * 60));
+      time_t day_start(
+          timeperiod::add_round_days_to_midnight(midnight, i * 24 * 60 * 60));
       struct tm day_midnight;
       localtime_r(&day_start, &day_midnight);
 
       // Check all time ranges for this day of the week.
       time_t earliest_time((time_t)-1);
       for (std::list<timerange>::const_iterator
-             trange(get_timeranges_by_day((weekday + i) % 7).begin()),
-             trange_end(get_timeranges_by_day((weekday + i) % 7).end());
-           trange != trange_end;
-           ++trange) {
+               trange(get_timeranges_by_day((weekday + i) % 7).begin()),
+           trange_end(get_timeranges_by_day((weekday + i) % 7).end());
+           trange != trange_end; ++trange) {
         // Get range limits.
         time_t range_start((time_t)-1);
         time_t range_end((time_t)-1);
-        if (trange->to_time_t(
-                      day_midnight,
-                      range_start,
-                      range_end)) {
+        if (trange->to_time_t(day_midnight, range_start, range_end)) {
           // Range is out of bound.
           if (preferred_time < range_end) {
             time_t potential_time((time_t)-1);
@@ -383,8 +369,8 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
               potential_time = preferred_time;
 
             // Is this the earliest time found thus far ?
-            if ((earliest_time == (time_t)-1)
-                || (potential_time < earliest_time)) {
+            if ((earliest_time == (time_t)-1) ||
+                (potential_time < earliest_time)) {
               earliest_time = potential_time;
             }
           }
@@ -406,7 +392,7 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
  */
 time_t timeperiod::get_next_invalid(time_t preferred_time) const {
   // Set timezone.
-  timezone_locker tzlock(_timezone.empty() ? NULL : _timezone.c_str());
+  timezone_locker tzlock(_timezone.empty() ? nullptr : _timezone.c_str());
 
   // Check preferred_time.
   if (preferred_time != (time_t)-1) {
@@ -427,33 +413,27 @@ time_t timeperiod::get_next_invalid(time_t preferred_time) const {
     // already started plus 7 days ahead).
     for (int i(0); i < 8; ++i) {
       // Compute current day's midnight.
-      time_t day_start(timeperiod::add_round_days_to_midnight(
-                                     midnight,
-                                     i * 24 * 60 * 60));
-      time_t day_end(timeperiod::add_round_days_to_midnight(
-                                   day_start,
-                                   24 * 60 * 60));
+      time_t day_start(
+          timeperiod::add_round_days_to_midnight(midnight, i * 24 * 60 * 60));
+      time_t day_end(
+          timeperiod::add_round_days_to_midnight(day_start, 24 * 60 * 60));
       struct tm day_midnight;
       localtime_r(&day_start, &day_midnight);
 
       // Try to find an invalid time in all ranges.
-      time_t earliest_time(preferred_time > day_start ? preferred_time : day_start);
+      time_t earliest_time(preferred_time > day_start ? preferred_time
+                                                      : day_start);
       while (earliest_time < day_end) {
         bool invalid_in_all_periods(true);
         for (std::list<timerange>::const_iterator
-               trange(get_timeranges_by_day((weekday + i) % 7).begin()),
-               trange_end(get_timeranges_by_day((weekday + i) % 7).end());
-             trange != trange_end;
-             ++trange) {
+                 trange(get_timeranges_by_day((weekday + i) % 7).begin()),
+             trange_end(get_timeranges_by_day((weekday + i) % 7).end());
+             trange != trange_end; ++trange) {
           // Get range limits.
           time_t range_start((time_t)-1);
           time_t range_end((time_t)-1);
-          if (trange->to_time_t(
-                        day_midnight,
-                        range_start,
-                        range_end)
-              && (earliest_time >= range_start)
-              && (earliest_time < range_end)) {
+          if (trange->to_time_t(day_midnight, range_start, range_end) &&
+              (earliest_time >= range_start) && (earliest_time < range_end)) {
             invalid_in_all_periods = false;
             earliest_time = range_end;
           }
@@ -472,11 +452,11 @@ time_t timeperiod::get_next_invalid(time_t preferred_time) const {
  *  @param[in] start_time     The start of the range.
  *  @param[in] end_time       The end of the range.
  *
- *  @return                   The duration intersected from the tp and the range.
+ *  @return                   The duration intersected from the tp and the
+ * range.
  */
-unsigned int timeperiod::duration_intersect(
-                           time_t start_time,
-                           time_t end_time) const {
+unsigned int timeperiod::duration_intersect(time_t start_time,
+                                            time_t end_time) const {
   unsigned int duration(0);
   time_t current_start_time(start_time);
   time_t current_end_time(current_start_time);
@@ -488,14 +468,12 @@ unsigned int timeperiod::duration_intersect(
   while (true) {
     current_start_time = get_next_valid(current_end_time);
     current_end_time = get_next_invalid(current_start_time);
-    if ((current_start_time == (time_t)-1)
-        || (current_start_time > end_time))
-      break ;
+    if ((current_start_time == (time_t)-1) || (current_start_time > end_time))
+      break;
     if ((current_end_time == (time_t)-1) || (current_end_time > end_time)) {
       duration += std::difftime(end_time, current_start_time);
-      break ;
-    }
-    else
+      break;
+    } else
       duration += std::difftime(current_end_time, current_start_time);
   }
   return (duration);

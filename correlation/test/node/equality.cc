@@ -69,10 +69,6 @@ int main() {
   dn.current_state = 1;
 
   // Check equality.
-  return (!(bn == cn)
-          || (bn == dn)
-          || (cn == dn)
-          || !(bn == bn)
-          || !(cn == cn)
-          || !(dn == dn));
+  return (!(bn == cn) || (bn == dn) || (cn == dn) || !(bn == bn) ||
+          !(cn == cn) || !(dn == dn));
 }

@@ -17,36 +17,36 @@
 */
 
 #ifndef CCB_EXTCMD_JSON_COMMAND_PARSER_HH
-#  define CCB_EXTCMD_JSON_COMMAND_PARSER_HH
+#define CCB_EXTCMD_JSON_COMMAND_PARSER_HH
 
-#  include "com/centreon/broker/extcmd/command_parser.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/extcmd/command_parser.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         extcmd {
-  /**
-   *  @class json_command_parser json_command_parser.hh "com/centreon/broker/extcmd/json_command_parser.hh"
-   *  @brief Json command parser.
-   */
-  class           json_command_parser : public command_parser {
-  public:
-                  json_command_parser(command_listener& listener);
-    virtual       ~json_command_parser();
+namespace extcmd {
+/**
+ *  @class json_command_parser json_command_parser.hh
+ * "com/centreon/broker/extcmd/json_command_parser.hh"
+ *  @brief Json command parser.
+ */
+class json_command_parser : public command_parser {
+ public:
+  json_command_parser(command_listener& listener);
+  virtual ~json_command_parser();
 
-    unsigned int  parse(
-      std::string const& buffer,
-      command_result& res,
-      std::shared_ptr<command_request>& request);
+  unsigned int parse(std::string const& buffer,
+                     command_result& res,
+                     std::shared_ptr<command_request>& request);
 
-    std::string    write(command_result const& res);
+  std::string write(command_result const& res);
 
-  private:
-                  json_command_parser(json_command_parser const&);
-    json_command_parser& operator=(json_command_parser const&);
-  };
-}
+ private:
+  json_command_parser(json_command_parser const&);
+  json_command_parser& operator=(json_command_parser const&);
+};
+}  // namespace extcmd
 
 CCB_END()
 
-#endif // !CCB_EXTCMD_JSON_COMMAND_PARSER_HH
+#endif  // !CCB_EXTCMD_JSON_COMMAND_PARSER_HH

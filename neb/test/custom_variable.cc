@@ -17,20 +17,20 @@
  *
  */
 
-#include <gtest/gtest.h>
 #include "com/centreon/broker/neb/custom_variable.hh"
+#include <gtest/gtest.h>
 #include "randomize.hh"
 
 using namespace com::centreon::broker;
 
 class CVarTest : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     // Initialization.
     randomize_init();
   }
 
-  void TearDown() {
+  void TearDown() override {
     // Cleanup.
     randomize_cleanup();
   }
@@ -50,7 +50,7 @@ TEST_F(CVarTest, Assignment) {
   cvar2 = cvar1;
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(cvar1, &randvals2);
 
   // Compare objects with expected results.
@@ -68,7 +68,7 @@ TEST_F(CVarTest, CopyConstructor) {
   neb::custom_variable cvar2(cvar1);
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(cvar1, &randvals2);
 
   // Compare objects with expected results.

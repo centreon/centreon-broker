@@ -17,37 +17,38 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_NOTIFICATION_METHOD_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_NOTIFICATION_METHOD_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_NOTIFICATION_METHOD_BUILDER_HH
 
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/notification_method.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/objects/notification_method.hh"
 
 CCB_BEGIN()
 
-namespace           notification {
+namespace notification {
+/**
+ *  @class notification_method_builder notification_method_builder.hh
+ * "com/centreon/broker/notification/builders/notification_method_builder.hh"
+ */
+class notification_method_builder {
+ public:
+  virtual ~notification_method_builder() {}
+
   /**
-   *  @class notification_method_builder notification_method_builder.hh "com/centreon/broker/notification/builders/notification_method_builder.hh"
+   *  Add a notification method to the builder.
+   *
+   *  @param[in] method_id  The id of the notification method.
+   *  @param[in] method     The method.
    */
-  class             notification_method_builder {
-  public:
-    virtual         ~notification_method_builder() {}
+  virtual void add_notification_method(
+      unsigned int method_id,
+      objects::notification_method::ptr method) {
+    (void)method_id;
+    (void)method;
+  }
+};
 
-    /**
-     *  Add a notification method to the builder.
-     *
-     *  @param[in] method_id  The id of the notification method.
-     *  @param[in] method     The method.
-     */
-    virtual void    add_notification_method(
-                      unsigned int method_id,
-                      objects::notification_method::ptr method) {
-      (void)method_id;
-      (void)method;
-    }
-  };
-
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_NOTIFICATION_METHOD_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_NOTIFICATION_METHOD_BUILDER_HH

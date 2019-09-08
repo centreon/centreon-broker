@@ -17,49 +17,43 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_LINKER_HH
-#  define CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_LINKER_HH
+#define CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_LINKER_HH
 
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/node_id.hh"
-#  include "com/centreon/broker/time/timeperiod.hh"
-#  include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
+#include "com/centreon/broker/notification/objects/node_id.hh"
+#include "com/centreon/broker/time/timeperiod.hh"
 
 CCB_BEGIN()
 
-namespace       notification {
-  /**
-   *  @class timeperiod_linker timeperiod_linker.hh "com/centreon/broker/notification/builders/timeperiod_linker.hh"
-   *  @brief Timeperiod linker.
-   *
-   *  Links the timeperiod together.
-   */
-  class         timeperiod_linker
-                  : public timeperiod_builder {
-  public:
-    timeperiod_linker();
+namespace notification {
+/**
+ *  @class timeperiod_linker timeperiod_linker.hh
+ * "com/centreon/broker/notification/builders/timeperiod_linker.hh"
+ *  @brief Timeperiod linker.
+ *
+ *  Links the timeperiod together.
+ */
+class timeperiod_linker : public timeperiod_builder {
+ public:
+  timeperiod_linker();
 
-    void        add_timeperiod(
-                  unsigned int id,
-                  time::timeperiod::ptr con);
+  void add_timeperiod(unsigned int id, time::timeperiod::ptr con);
 
-    void        add_timeperiod_exception(
-                  unsigned int timeperiod_id,
-                  std::string const& days,
-                  std::string const& timerange);
-    void        add_timeperiod_exclude_relation(
-                  unsigned int timeperiod_id,
-                  unsigned int exclude_id);
-    void        add_timeperiod_include_relation(
-                  unsigned int timeperiod_id,
-                  unsigned int include_id);
+  void add_timeperiod_exception(unsigned int timeperiod_id,
+                                std::string const& days,
+                                std::string const& timerange);
+  void add_timeperiod_exclude_relation(unsigned int timeperiod_id,
+                                       unsigned int exclude_id);
+  void add_timeperiod_include_relation(unsigned int timeperiod_id,
+                                       unsigned int include_id);
 
-  private:
-    QHash<unsigned int, time::timeperiod::ptr>
-                  _table;
-  };
+ private:
+  QHash<unsigned int, time::timeperiod::ptr> _table;
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_LINKER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_LINKER_HH

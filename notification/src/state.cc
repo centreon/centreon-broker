@@ -16,29 +16,29 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/notification/utilities/qhash_func.hh"
 #include "com/centreon/broker/notification/state.hh"
 #include "com/centreon/broker/notification/utilities/data_loggers.hh"
+#include "com/centreon/broker/notification/utilities/qhash_func.hh"
 
-#include "com/centreon/broker/time/timeperiod.hh"
+#include "com/centreon/broker/notification/builders/command_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_command_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_contact_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_dependency_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_node_builder.hh"
-#include "com/centreon/broker/notification/builders/composed_timeperiod_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_notification_method_builder.hh"
 #include "com/centreon/broker/notification/builders/composed_notification_rule_builder.hh"
-#include "com/centreon/broker/notification/builders/command_by_id_builder.hh"
+#include "com/centreon/broker/notification/builders/composed_timeperiod_builder.hh"
 #include "com/centreon/broker/notification/builders/contact_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/dependency_by_node_id_builder.hh"
-#include "com/centreon/broker/notification/builders/node_set_builder.hh"
+#include "com/centreon/broker/notification/builders/global_macro_builder.hh"
 #include "com/centreon/broker/notification/builders/node_by_node_id_builder.hh"
+#include "com/centreon/broker/notification/builders/node_set_builder.hh"
+#include "com/centreon/broker/notification/builders/notification_method_by_id_builder.hh"
+#include "com/centreon/broker/notification/builders/notification_rule_by_id_builder.hh"
+#include "com/centreon/broker/notification/builders/notification_rule_by_node_builder.hh"
 #include "com/centreon/broker/notification/builders/timeperiod_by_id_builder.hh"
 #include "com/centreon/broker/notification/builders/timeperiod_linker.hh"
-#include "com/centreon/broker/notification/builders/notification_method_by_id_builder.hh"
-#include "com/centreon/broker/notification/builders/notification_rule_by_node_builder.hh"
-#include "com/centreon/broker/notification/builders/notification_rule_by_id_builder.hh"
-#include "com/centreon/broker/notification/builders/global_macro_builder.hh"
+#include "com/centreon/broker/time/timeperiod.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -46,8 +46,7 @@ using namespace com::centreon::broker::notification::objects;
 /**
  *  Default constructor.
  */
-state::state() :
-  _state_mutex(QReadWriteLock::Recursive) {}
+state::state() : _state_mutex(QReadWriteLock::Recursive) {}
 
 /**
  *  Copy constructor.
@@ -163,7 +162,8 @@ void state::update_objects_from_db(mysql& centreon_db) {
     // Get notification rules.
     notification_rule_loader nrl;
     composed_notification_rule_builder composed;
-    notification_rule_by_node_builder by_node_builder(_notification_rules_by_node);
+    notification_rule_by_node_builder by_node_builder(
+        _notification_rules_by_node);
     notification_rule_by_id_builder by_id_builder(_notification_rule_by_id);
     composed.push_back(by_node_builder);
     composed.push_back(by_id_builder);
@@ -178,20 +178,22 @@ void state::update_objects_from_db(mysql& centreon_db) {
 
   // Debug logging for all the data loaded.
 #ifndef NDEBUG
-    // data_logger::log_container("_nodes", _nodes);
-    // data_logger::log_container("_node_by_id", _node_by_id);
-    // data_logger::log_container("_commands", _commands);
-    // data_logger::log_container("_contacts", _contacts);
-    // data_logger::log_container("_dependency_by_child_id",
-    //                            _dependency_by_child_id);
-    // data_logger::log_container("_dependency_by_parent_id",
-    //                            _dependency_by_parent_id);
-    // data_logger::log_container("_timeperiod_by_id", _timeperiod_by_id);
-    // data_logger::log_container("_global_constant_macro", _global_constant_macros);
-    // data_logger::log_container("_notification_methods", _notification_methods);
-    // data_logger::log_container("_notification_rules_by_node", _notification_rules_by_node
+  // data_logger::log_container("_nodes", _nodes);
+  // data_logger::log_container("_node_by_id", _node_by_id);
+  // data_logger::log_container("_commands", _commands);
+  // data_logger::log_container("_contacts", _contacts);
+  // data_logger::log_container("_dependency_by_child_id",
+  //                            _dependency_by_child_id);
+  // data_logger::log_container("_dependency_by_parent_id",
+  //                            _dependency_by_parent_id);
+  // data_logger::log_container("_timeperiod_by_id", _timeperiod_by_id);
+  // data_logger::log_container("_global_constant_macro",
+  // _global_constant_macros);
+  // data_logger::log_container("_notification_methods", _notification_methods);
+  // data_logger::log_container("_notification_rules_by_node",
+  // _notification_rules_by_node
   // );
-#endif //!NDEBUG
+#endif  //! NDEBUG
 }
 
 /**
@@ -213,7 +215,7 @@ node::ptr state::get_node_by_id(node_id id) const {
  *  @return        A list of notification_rule::ptr associated to this node.
  */
 QList<notification_rule::ptr> state::get_notification_rules_by_node(
-                                       node_id id) const {
+    node_id id) const {
   return (_notification_rules_by_node.values(id));
 }
 
@@ -222,22 +224,24 @@ QList<notification_rule::ptr> state::get_notification_rules_by_node(
  *
  *  @param[in] id  The id of the notification rule.
  *
- *  @return        A notification_rule::ptr to the notification rule, or a null ptr.
+ *  @return        A notification_rule::ptr to the notification rule, or a null
+ * ptr.
  */
-notification_rule::ptr state::get_notification_rule_by_id(unsigned int id) const {
+notification_rule::ptr state::get_notification_rule_by_id(
+    unsigned int id) const {
   return (_notification_rule_by_id.value(id));
 }
-
 
 /**
  *  Get a notification method from its id.
  *
  *  @param[in] id  The notification method id.
  *
- *  @return        A notification_method::ptr the notification method, or a null notification_method::ptr.
+ *  @return        A notification_method::ptr the notification method, or a null
+ * notification_method::ptr.
  */
 notification_method::ptr state::get_notification_method_by_id(
-                                  unsigned int id) const {
+    unsigned int id) const {
   return (_notification_methods.value(id));
 }
 
@@ -246,10 +250,11 @@ notification_method::ptr state::get_notification_method_by_id(
  *
  *  @param[in] id    The id of the timeperiod.
  *
- *  @return          A timeperiod::ptr to the timeperiod, or a null timeperiod::ptr.
+ *  @return          A timeperiod::ptr to the timeperiod, or a null
+ * timeperiod::ptr.
  */
-::com::centreon::broker::time::timeperiod::ptr
-  state::get_timeperiod_by_id(unsigned int id) const {
+::com::centreon::broker::time::timeperiod::ptr state::get_timeperiod_by_id(
+    unsigned int id) const {
   return (_timeperiod_by_id.value(id));
 }
 
@@ -271,7 +276,8 @@ objects::contact::ptr state::get_contact_by_id(unsigned int id) const {
  *
  *  @return        A map of the contact infos.
  */
-QHash<std::string, std::string> state::get_contact_infos(unsigned int id) const {
+QHash<std::string, std::string> state::get_contact_infos(
+    unsigned int id) const {
   return (_contact_infos.value(id));
 }
 
@@ -295,7 +301,6 @@ std::unique_ptr<QReadLocker> state::read_lock() {
   return (std::unique_ptr<QReadLocker>(new QReadLocker(&_state_mutex)));
 }
 
-
 /**
  *  Get a write lock on this state.
  *
@@ -303,7 +308,6 @@ std::unique_ptr<QReadLocker> state::read_lock() {
  */
 std::unique_ptr<QWriteLocker> state::write_lock() {
   return (std::unique_ptr<QWriteLocker>(new QWriteLocker(&_state_mutex)));
-
 }
 
 /**
@@ -332,16 +336,15 @@ int state::get_date_format() const {
  *  @return        All the services of the host.
  */
 QList<objects::node::ptr> state::get_all_services_of_host(
-                                   objects::node_id id) const {
+    objects::node_id id) const {
   if (!id.is_host())
     return (QList<objects::node::ptr>());
   QList<objects::node::ptr> list;
   for (QHash<objects::node_id, objects::node::ptr>::const_iterator
-         it(_node_by_id.begin()),
-         end(_node_by_id.end());
+           it(_node_by_id.begin()),
+       end(_node_by_id.end());
        it != end; ++it)
-    if (it.key().get_host_id() == id.get_host_id() &&
-        it.key().is_service())
+    if (it.key().get_host_id() == id.get_host_id() && it.key().is_service())
       list.push_back(*it);
   return (list);
 }
@@ -356,14 +359,14 @@ QList<objects::node::ptr> state::get_all_services_of_host(
 QList<objects::node::ptr> state::get_all_hosts_in_state(short state) const {
   QList<objects::node::ptr> list;
   for (QHash<objects::node_id, objects::node::ptr>::const_iterator
-         it(_node_by_id.begin()),
-         end(_node_by_id.end());
+           it(_node_by_id.begin()),
+       end(_node_by_id.end());
        it != end; ++it)
     if (state == -1 && it.key().is_host() &&
-          (*it)->get_hard_state() != objects::node_state::host_up)
+        (*it)->get_hard_state() != objects::node_state::host_up)
       list.push_back(*it);
     else if (it.key().is_host() &&
-              (*it)->get_hard_state() == objects::node_state(state))
+             (*it)->get_hard_state() == objects::node_state(state))
       list.push_back(*it);
   return (list);
 }
@@ -378,14 +381,14 @@ QList<objects::node::ptr> state::get_all_hosts_in_state(short state) const {
 QList<objects::node::ptr> state::get_all_services_in_state(short state) const {
   QList<objects::node::ptr> list;
   for (QHash<objects::node_id, objects::node::ptr>::const_iterator
-         it(_node_by_id.begin()),
-         end(_node_by_id.end());
+           it(_node_by_id.begin()),
+       end(_node_by_id.end());
        it != end; ++it)
     if (state == -1 && it.key().is_service() &&
-          (*it)->get_hard_state() != objects::node_state::service_ok)
+        (*it)->get_hard_state() != objects::node_state::service_ok)
       list.push_back(*it);
     else if (it.key().is_service() &&
-              (*it)->get_hard_state() == objects::node_state(state))
+             (*it)->get_hard_state() == objects::node_state(state))
       list.push_back(*it);
   return (list);
 }

@@ -17,48 +17,45 @@
 */
 
 #ifndef CCB_STORAGE_METRIC_MAPPING_HH
-#  define CCB_STORAGE_METRIC_MAPPING_HH
+#define CCB_STORAGE_METRIC_MAPPING_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace          storage {
-  /**
-   *  @class metric_mapping metric_mapping.hh "com/centreon/broker/storage/metric_mapping.hh"
-   *  @brief Information about a metric stored in the database.
-   *
-   *  Used to provide more informations about the mapping of
-   *  the metrics to status.
-   */
-  class            metric_mapping : public io::data {
-  public:
-                   metric_mapping();
-                   metric_mapping(metric_mapping const& s);
-                   ~metric_mapping();
-    metric_mapping&
-                   operator=(metric_mapping const& s);
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace storage {
+/**
+ *  @class metric_mapping metric_mapping.hh
+ * "com/centreon/broker/storage/metric_mapping.hh"
+ *  @brief Information about a metric stored in the database.
+ *
+ *  Used to provide more informations about the mapping of
+ *  the metrics to status.
+ */
+class metric_mapping : public io::data {
+ public:
+  metric_mapping();
+  metric_mapping(metric_mapping const& s);
+  ~metric_mapping();
+  metric_mapping& operator=(metric_mapping const& s);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    unsigned int   index_id;
-    unsigned int   metric_id;
+  unsigned int index_id;
+  unsigned int metric_id;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void           _internal_copy(metric_mapping const& s);
-  };
-}
+ private:
+  void _internal_copy(metric_mapping const& s);
+};
+}  // namespace storage
 
 CCB_END()
 
-#endif // !CCB_STORAGE_METRIC_MAPPING_HH
+#endif  // !CCB_STORAGE_METRIC_MAPPING_HH

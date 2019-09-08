@@ -24,24 +24,22 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
-connector::connector()
-  : io::endpoint(false), _type(bam_monitoring_type) {}
+connector::connector() : io::endpoint(false), _type(bam_monitoring_type) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-connector::connector(connector const& other)
-  : io::endpoint(other) {
+connector::connector(connector const& other) : io::endpoint(other) {
   _internal_copy(other);
 }
 
@@ -68,16 +66,16 @@ connector& connector::operator=(connector const& other) {
 /**
  *  Set connection parameters.
  *
- *  @param[in] ext_cmd_file     The external command file to connect to Centreon Engine.
+ *  @param[in] ext_cmd_file     The external command file to connect to Centreon
+ * Engine.
  *  @param[in] db_cfg           Database configuration.
  *  @param[in] storage_db_name  Storage database name.
  *  @param[in] cache            The persistent cache.
  */
-void connector::connect_monitoring(
-                  std::string const& ext_cmd_file,
-                  database_config const& db_cfg,
-                  std::string const& storage_db_name,
-                  std::shared_ptr<persistent_cache> cache) {
+void connector::connect_monitoring(std::string const& ext_cmd_file,
+                                   database_config const& db_cfg,
+                                   std::string const& storage_db_name,
+                                   std::shared_ptr<persistent_cache> cache) {
   _type = bam_monitoring_type;
   _ext_cmd_file = ext_cmd_file;
   _db_cfg = db_cfg;
@@ -86,7 +84,7 @@ void connector::connect_monitoring(
     _storage_db_name = db_cfg.get_name();
   else
     _storage_db_name = storage_db_name;
-  return ;
+  return;
 }
 
 /**
@@ -98,7 +96,7 @@ void connector::connect_reporting(database_config const& db_cfg) {
   _type = bam_reporting_type;
   _db_cfg = db_cfg;
   _storage_db_name.clear();
-  return ;
+  return;
 }
 
 /**
@@ -108,25 +106,23 @@ void connector::connect_reporting(database_config const& db_cfg) {
  */
 std::shared_ptr<io::stream> connector::open() {
   if (_type == bam_reporting_type) {
-    std::shared_ptr<reporting_stream>
-      s(new reporting_stream(_db_cfg));
+    std::shared_ptr<reporting_stream> s(new reporting_stream(_db_cfg));
     return (std::static_pointer_cast<io::stream>(s));
-  }
-  else {
+  } else {
     database_config storage_db_cfg(_db_cfg);
     storage_db_cfg.set_name(_storage_db_name);
-    std::shared_ptr<monitoring_stream>
-      s(new monitoring_stream(_ext_cmd_file, _db_cfg, storage_db_cfg, _cache));
+    std::shared_ptr<monitoring_stream> s(
+        new monitoring_stream(_ext_cmd_file, _db_cfg, storage_db_cfg, _cache));
     s->initialize();
     return (std::static_pointer_cast<io::stream>(s));
   }
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -138,5 +134,5 @@ void connector::_internal_copy(connector const& other) {
   _storage_db_name = other._storage_db_name;
   _type = other._type;
   _cache = other._cache;
-  return ;
+  return;
 }

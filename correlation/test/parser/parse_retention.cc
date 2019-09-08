@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
+#include <QDir>
+#include <QFile>
 #include <cstdlib>
 #include <cstring>
 #include <exception>
 #include <iostream>
-#include <QDir>
-#include <QFile>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/correlation/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -48,15 +48,14 @@ int main() {
     "  <host id=\"42\" />\n"
     "  <service id=\"21\" host=\"13\" />\n"
     "  <service id=\"66\" host=\"42\" state=\"3\" />\n"
-    "  <issue ack_time=\"35\" host=\"42\" service=\"66\" start_time=\"9865\" />\n"
-    "  <service id=\"33\" host=\"13\" state=\"33\" />\n"
-    "  <issue ack_time=\"762\" host=\"13\" service=\"33\" start_time=\"2346213\" />\n"
-    "  <service id=\"12\" host=\"42\" state=\"2\" />\n"
-    "  <parent host=\"13\" parent=\"42\" />\n"
-    "  <dependency dependent_host=\"13\" dependent_service=\"21\"\n"
-    "              host=\"13\" service=\"33\" />\n"
-    "  <dependency dependent_host=\"42\" dependent_service=\"12\"\n"
-    "              host=\"13\" />\n"
+    "  <issue ack_time=\"35\" host=\"42\" service=\"66\" start_time=\"9865\"
+  />\n" "  <service id=\"33\" host=\"13\" state=\"33\" />\n" "  <issue
+  ack_time=\"762\" host=\"13\" service=\"33\" start_time=\"2346213\" />\n" "
+  <service id=\"12\" host=\"42\" state=\"2\" />\n" "  <parent host=\"13\"
+  parent=\"42\" />\n" "  <dependency dependent_host=\"13\"
+  dependent_service=\"21\"\n" "              host=\"13\" service=\"33\" />\n" "
+  <dependency dependent_host=\"42\" dependent_service=\"12\"\n" " host=\"13\"
+  />\n"
     "</centreonbroker>\n";
   QString file_path(QDir::tempPath());
   file_path.append("/broker_correlation_parser_parse_retention");

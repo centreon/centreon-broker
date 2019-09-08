@@ -21,24 +21,23 @@
 using namespace com::centreon::broker;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
 neb::group_member::group_member()
-  : enabled(true), group_id(0), host_id(0), poller_id(0) {}
+    : enabled(true), group_id(0), host_id(0), poller_id(0) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-neb::group_member::group_member(group_member const& other)
-  : io::data(other) {
+neb::group_member::group_member(group_member const& other) : io::data(other) {
   _internal_copy(other);
 }
 
@@ -54,8 +53,7 @@ neb::group_member::~group_member() {}
  *
  *  @return This object.
  */
-neb::group_member& neb::group_member::operator=(
-                                        group_member const& other) {
+neb::group_member& neb::group_member::operator=(group_member const& other) {
   if (this != &other) {
     io::data::operator=(other);
     _internal_copy(other);
@@ -64,10 +62,10 @@ neb::group_member& neb::group_member::operator=(
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Copy data members.
@@ -83,5 +81,5 @@ void neb::group_member::_internal_copy(group_member const& other) {
   group_name = other.group_name;
   host_id = other.host_id;
   poller_id = other.poller_id;
-  return ;
+  return;
 }

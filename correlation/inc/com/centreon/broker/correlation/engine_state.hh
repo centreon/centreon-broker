@@ -17,42 +17,40 @@
 */
 
 #ifndef CCB_CORRELATION_ENGINE_STATE_HH
-#  define CCB_CORRELATION_ENGINE_STATE_HH
+#define CCB_CORRELATION_ENGINE_STATE_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          correlation {
-  /**
-   *  @class engine_state engine_state.hh "com/centreon/broker/correlation/engine_state.hh"
-   *  @brief State of the correlation engine.
-   *
-   *  This class represent the state of the correlation engine.
-   */
-  class            engine_state : public io::data {
-  public:
-                   engine_state();
-                   engine_state(engine_state const& es);
-    virtual        ~engine_state();
-    engine_state&  operator=(engine_state const& es);
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace correlation {
+/**
+ *  @class engine_state engine_state.hh
+ * "com/centreon/broker/correlation/engine_state.hh"
+ *  @brief State of the correlation engine.
+ *
+ *  This class represent the state of the correlation engine.
+ */
+class engine_state : public io::data {
+ public:
+  engine_state();
+  engine_state(engine_state const& es);
+  virtual ~engine_state();
+  engine_state& operator=(engine_state const& es);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    unsigned int   poller_id;
-    bool           started;
+  unsigned int poller_id;
+  bool started;
 
-    static mapping::entry const
-                    entries[];
-    static io::event_info::event_operations const
-                    operations;
-  };
-}
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
+};
+}  // namespace correlation
 
 CCB_END()
 
-#endif // !CCB_CORRELATION_STATE_HH
+#endif  // !CCB_CORRELATION_STATE_HH

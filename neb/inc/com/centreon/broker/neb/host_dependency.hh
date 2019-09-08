@@ -17,39 +17,37 @@
 */
 
 #ifndef CCB_NEB_HOST_DEPENDENCY_HH
-#  define CCB_NEB_HOST_DEPENDENCY_HH
+#define CCB_NEB_HOST_DEPENDENCY_HH
 
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/neb/dependency.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/dependency.hh"
 
 CCB_BEGIN()
 
-namespace            neb {
-  /**
-   *  @class host_dependency host_dependency.hh "com/centreon/broker/neb/host_dependency.hh"
-   *  @brief Host dependency relationship.
-   *
-   *  Defines a dependency between two hosts.
-   */
-  class              host_dependency : public dependency {
-  public:
-                     host_dependency();
-                     host_dependency(host_dependency const& other);
-                     ~host_dependency();
-    host_dependency& operator=(host_dependency const& other);
-    unsigned int     type() const;
-    static unsigned int
-                     static_type();
+namespace neb {
+/**
+ *  @class host_dependency host_dependency.hh
+ * "com/centreon/broker/neb/host_dependency.hh"
+ *  @brief Host dependency relationship.
+ *
+ *  Defines a dependency between two hosts.
+ */
+class host_dependency : public dependency {
+ public:
+  host_dependency();
+  host_dependency(host_dependency const& other);
+  ~host_dependency();
+  host_dependency& operator=(host_dependency const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    static mapping::entry const
-                     entries[];
-    static io::event_info::event_operations const
-                     operations;
-  };
-}
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_HOST_DEPENDENCY_HH
+#endif  // !CCB_NEB_HOST_DEPENDENCY_HH

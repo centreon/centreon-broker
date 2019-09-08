@@ -16,14 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/time/timezone_manager.hh"
 #include <cstdlib>
 #include <ctime>
-#include "com/centreon/broker/time/timezone_manager.hh"
 
 using namespace com::centreon::broker::time;
 
 // Class instance.
-timezone_manager* timezone_manager::_instance(NULL);
+timezone_manager* timezone_manager::_instance(nullptr);
 
 /**
  *  Load singleton.
@@ -31,7 +31,7 @@ timezone_manager* timezone_manager::_instance(NULL);
 void timezone_manager::load() {
   if (!_instance)
     _instance = new timezone_manager;
-  return ;
+  return;
 }
 
 /**
@@ -54,7 +54,7 @@ void timezone_manager::pop_timezone() {
     // Set new timezone.
     _set_timezone(current_tz, _tz.empty() ? _base : _tz.top());
   }
-  return ;
+  return;
 }
 
 /**
@@ -73,7 +73,7 @@ void timezone_manager::push_timezone(char const* tz) {
   // Backup timezone.
   _tz.push(info);
 
-  return ;
+  return;
 }
 
 /**
@@ -88,14 +88,13 @@ void timezone_manager::unlock() {
  */
 void timezone_manager::unload() {
   delete _instance;
-  _instance = NULL;
+  _instance = nullptr;
 }
 
 /**
  *  Default constructor.
  */
-timezone_manager::timezone_manager()
-  : _timezone_manager_mutex{} {
+timezone_manager::timezone_manager() : _timezone_manager_mutex{} {
   char* base_tz(getenv("TZ"));
   _fill_tz_info(&_base, base_tz);
 }
@@ -106,9 +105,7 @@ timezone_manager::timezone_manager()
  *  @param[in] other  Object to copy.
  */
 timezone_manager::timezone_manager(timezone_manager const& other)
-  : _base(other._base),
-    _tz(other._tz),
-    _timezone_manager_mutex{} {}
+    : _base(other._base), _tz(other._tz), _timezone_manager_mutex{} {}
 
 /**
  *  Destructor.
@@ -122,8 +119,7 @@ timezone_manager::~timezone_manager() {}
  *
  *  @return This object.
  */
-timezone_manager& timezone_manager::operator=(
-                                      timezone_manager const& other) {
+timezone_manager& timezone_manager::operator=(timezone_manager const& other) {
   if (this != &other) {
     _base = other._base;
     _tz = other._tz;
@@ -137,16 +133,14 @@ timezone_manager& timezone_manager::operator=(
  *  @param[out] info    Timezone information.
  *  @param[in]  old_tz  Timezone string.
  */
-void timezone_manager::_fill_tz_info(
-                         timezone_manager::tz_info* info,
-                         char const* old_tz) {
+void timezone_manager::_fill_tz_info(timezone_manager::tz_info* info,
+                                     char const* old_tz) {
   if (old_tz) {
     info->is_set = true;
     info->tz_name = old_tz;
-  }
-  else
+  } else
     info->is_set = false;
-  return ;
+  return;
 }
 
 /**
@@ -155,17 +149,16 @@ void timezone_manager::_fill_tz_info(
  *  @param[in] from  Timezone information of the current timezone.
  *  @param[in] to    Timezone information of the new timezone.
  */
-void timezone_manager::_set_timezone(
-                         timezone_manager::tz_info const& from,
-                         timezone_manager::tz_info const& to) {
+void timezone_manager::_set_timezone(timezone_manager::tz_info const& from,
+                                     timezone_manager::tz_info const& to) {
   // Don't set new timezone if it's the same as the actual one.
-  if (!((!from.is_set && !to.is_set)
-        || (from.is_set && to.is_set && (from.tz_name == to.tz_name)))) {
+  if (!((!from.is_set && !to.is_set) ||
+        (from.is_set && to.is_set && (from.tz_name == to.tz_name)))) {
     if (to.is_set)
       setenv("TZ", to.tz_name.c_str(), 1);
     else
       unsetenv("TZ");
     tzset();
   }
-  return ;
+  return;
 }

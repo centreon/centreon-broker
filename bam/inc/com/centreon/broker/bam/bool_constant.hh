@@ -17,39 +17,37 @@
 */
 
 #ifndef CCB_BAM_BOOL_CONSTANT_HH
-#  define CCB_BAM_BOOL_CONSTANT_HH
+#define CCB_BAM_BOOL_CONSTANT_HH
 
-#  include "com/centreon/broker/bam/bool_value.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/bam/bool_value.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     bam {
-  /**
-   *  @class bool_and bool_and.hh "com/centreon/broker/bam/bool_and.hh"
-   *  @brief AND operator.
-   *
-   *  In the context of a KPI computation, bool_constant represents a constant
-   *  value (i.e '42').
-   */
-  class       bool_constant : public bool_value {
-  public:
-              bool_constant(double value);
-              bool_constant(bool_constant const& right);
-              ~bool_constant();
-    bool_constant& operator=(bool_constant const& right);
-    bool      child_has_update(
-                computable* child,
-                io::stream* visitor);
-    double    value_hard();
-    double    value_soft();
-    bool      state_known() const;
+namespace bam {
+/**
+ *  @class bool_and bool_and.hh "com/centreon/broker/bam/bool_and.hh"
+ *  @brief AND operator.
+ *
+ *  In the context of a KPI computation, bool_constant represents a constant
+ *  value (i.e '42').
+ */
+class bool_constant : public bool_value {
+ public:
+  bool_constant(double value);
+  bool_constant(bool_constant const& right);
+  ~bool_constant();
+  bool_constant& operator=(bool_constant const& right);
+  bool child_has_update(computable* child, io::stream* visitor);
+  double value_hard();
+  double value_soft();
+  bool state_known() const;
 
-  private:
-    double    _value;
-  };
-}
+ private:
+  double _value;
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_CONSTANT_HH
+#endif  // !CCB_BAM_BOOL_CONSTANT_HH

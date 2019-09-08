@@ -27,20 +27,18 @@ using namespace com::centreon::broker::neb::engcmd;
  *
  *  @param[in] name  The name of the endpoint.
  */
-endpoint::endpoint(
-            std::string const& name,
-            std::string const& command_module_path)
-  : io::endpoint(false),
-    _name(name),
-    _command_module_path(command_module_path) {}
+endpoint::endpoint(std::string const& name,
+                   std::string const& command_module_path)
+    : io::endpoint(false),
+      _name(name),
+      _command_module_path(command_module_path) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  The object to copy.
  */
-endpoint::endpoint(endpoint const& other)
-  : io::endpoint(false) {
+endpoint::endpoint(endpoint const& other) : io::endpoint(false) {
   endpoint::operator=(other);
 }
 

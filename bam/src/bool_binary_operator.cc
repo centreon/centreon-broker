@@ -24,21 +24,20 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 bool_binary_operator::bool_binary_operator()
-  : _left_hard(0.0),
-    _left_soft(0.0),
-    _right_hard(0.0),
-    _right_soft(0.0),
-    _state_known(false),
-    _in_downtime(false) {}
+    : _left_hard(0.0),
+      _left_soft(0.0),
+      _right_hard(0.0),
+      _right_soft(0.0),
+      _state_known(false),
+      _in_downtime(false) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-bool_binary_operator::bool_binary_operator(
-                        bool_binary_operator const& right)
-  : bool_value(right) {
+bool_binary_operator::bool_binary_operator(bool_binary_operator const& right)
+    : bool_value(right) {
   _internal_copy(right);
 }
 
@@ -55,7 +54,7 @@ bool_binary_operator::~bool_binary_operator() {}
  *  @return This object.
  */
 bool_binary_operator& bool_binary_operator::operator=(
-                                              bool_binary_operator const& right) {
+    bool_binary_operator const& right) {
   if (this != &right) {
     bool_value::operator=(right);
     _internal_copy(right);
@@ -71,9 +70,8 @@ bool_binary_operator& bool_binary_operator::operator=(
  *
  *  @return              True if the values of this object were modified.
  */
-bool bool_binary_operator::child_has_update(
-                             computable* child,
-                             io::stream* visitor) {
+bool bool_binary_operator::child_has_update(computable* child,
+                                            io::stream* visitor) {
   (void)visitor;
   bool retval(true);
 
@@ -87,8 +85,7 @@ bool bool_binary_operator::child_has_update(
         _left_soft = value_soft;
         retval = true;
       }
-    }
-    else if (child == _right.get()) {
+    } else if (child == _right.get()) {
       double value_hard(_right->value_hard());
       double value_soft(_right->value_soft());
       if ((_right_hard != value_hard) || (_right_soft == value_soft)) {
@@ -121,14 +118,13 @@ bool bool_binary_operator::child_has_update(
  *
  *  @param[in] left Left member of the boolean operator.
  */
-void bool_binary_operator::set_left(
-                             std::shared_ptr<bool_value> const& left) {
+void bool_binary_operator::set_left(std::shared_ptr<bool_value> const& left) {
   _left = left;
   _left_hard = _left->value_hard();
   _left_soft = _left->value_soft();
   _state_known = state_known();
   _in_downtime = in_downtime();
-  return ;
+  return;
 }
 
 /**
@@ -136,14 +132,13 @@ void bool_binary_operator::set_left(
  *
  *  @param[in] right Right member of the boolean operator.
  */
-void bool_binary_operator::set_right(
-                             std::shared_ptr<bool_value> const& right) {
+void bool_binary_operator::set_right(std::shared_ptr<bool_value> const& right) {
   _right = right;
   _right_hard = _right->value_hard();
   _right_soft = _right->value_soft();
   _state_known = state_known();
   _in_downtime = in_downtime();
-  return ;
+  return;
 }
 
 /**
@@ -151,8 +146,7 @@ void bool_binary_operator::set_right(
  *
  *  @param[in] right Object to copy.
  */
-void bool_binary_operator::_internal_copy(
-                             bool_binary_operator const& right) {
+void bool_binary_operator::_internal_copy(bool_binary_operator const& right) {
   _left = right._left;
   _left_hard = right._left_hard;
   _left_soft = right._left_soft;
@@ -161,7 +155,7 @@ void bool_binary_operator::_internal_copy(
   _right_soft = right._right_soft;
   _state_known = right._state_known;
   _in_downtime = right._in_downtime;
-  return ;
+  return;
 }
 
 /**
@@ -170,10 +164,7 @@ void bool_binary_operator::_internal_copy(
  *  @return  True if the state is known.
  */
 bool bool_binary_operator::state_known() const {
-  return (_left
-          && _right
-          && _left->state_known()
-          && _right->state_known());
+  return (_left && _right && _left->state_known() && _right->state_known());
 }
 
 /**
@@ -182,6 +173,5 @@ bool bool_binary_operator::state_known() const {
  *  @return  True if this expression is in downtime.
  */
 bool bool_binary_operator::in_downtime() const {
-  return ((_left && _left->in_downtime())
-          || (_right && _right->in_downtime()));
+  return ((_left && _left->in_downtime()) || (_right && _right->in_downtime()));
 }

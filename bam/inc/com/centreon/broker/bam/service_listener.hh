@@ -17,47 +17,46 @@
 */
 
 #ifndef CCB_BAM_SERVICE_LISTENER_HH
-#  define CCB_BAM_SERVICE_LISTENER_HH
+#define CCB_BAM_SERVICE_LISTENER_HH
 
-#  include <memory>
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <memory>
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 // Forward declarations.
-namespace             neb {
-  class               acknowledgement;
-  class               downtime;
-  class               service_status;
-}
+namespace neb {
+class acknowledgement;
+class downtime;
+class service_status;
+}  // namespace neb
 
-namespace             bam {
-  /**
-   *  @class service_listener service_listener.hh "com/centreon/broker/bam/service_listener.hh"
-   *  @brief Listen to service state change.
-   *
-   *  This interface is used by classes wishing to listen to service
-   *  state change.
-   */
-  class               service_listener {
-  public:
-                      service_listener();
-                      service_listener(service_listener const& other);
-    virtual           ~service_listener();
-    service_listener& operator=(service_listener const& other);
-    virtual void      service_update(
-                        std::shared_ptr<neb::service_status> const& status,
-                        io::stream* visitor = NULL);
-    virtual void      service_update(
-                        std::shared_ptr<neb::acknowledgement> const& ack,
-                        io::stream* visitor = NULL);
-    virtual void      service_update(
-                        std::shared_ptr<neb::downtime> const& dt,
-                        io::stream* visitor = NULL);
-  };
-}
+namespace bam {
+/**
+ *  @class service_listener service_listener.hh
+ * "com/centreon/broker/bam/service_listener.hh"
+ *  @brief Listen to service state change.
+ *
+ *  This interface is used by classes wishing to listen to service
+ *  state change.
+ */
+class service_listener {
+ public:
+  service_listener();
+  service_listener(service_listener const& other);
+  virtual ~service_listener();
+  service_listener& operator=(service_listener const& other);
+  virtual void service_update(
+      std::shared_ptr<neb::service_status> const& status,
+      io::stream* visitor = NULL);
+  virtual void service_update(std::shared_ptr<neb::acknowledgement> const& ack,
+                              io::stream* visitor = NULL);
+  virtual void service_update(std::shared_ptr<neb::downtime> const& dt,
+                              io::stream* visitor = NULL);
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_SERVICE_LISTENER_HH
+#endif  // !CCB_BAM_SERVICE_LISTENER_HH

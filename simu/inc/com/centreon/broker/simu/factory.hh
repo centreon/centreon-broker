@@ -17,35 +17,34 @@
 */
 
 #ifndef CCB_SIMU_FACTORY_HH
-#  define CCB_SIMU_FACTORY_HH
+#define CCB_SIMU_FACTORY_HH
 
-#  include "com/centreon/broker/io/factory.hh"
+#include "com/centreon/broker/io/factory.hh"
 
 CCB_BEGIN()
 
-namespace         simu {
-  /**
-   *  @class factory factory.hh "com/centreon/broker/simu/factory.hh"
-   *  @brief lua  layer factory.
-   *
-   *  Build lua layer objects.
-   */
-  class           factory : public io::factory {
-   public:
-                  factory();
-                  factory(factory const& other);
-                  ~factory();
-    factory&      operator=(factory const& other);
-    io::factory*  clone() const;
-    bool          has_endpoint(config::endpoint& cfg) const;
-    io::endpoint* new_endpoint(
-                    config::endpoint& cfg,
-                    bool& is_acceptor,
-                    std::shared_ptr<persistent_cache> cache
-                    = std::shared_ptr<persistent_cache>()) const;
-  };
-}
+namespace simu {
+/**
+ *  @class factory factory.hh "com/centreon/broker/simu/factory.hh"
+ *  @brief lua  layer factory.
+ *
+ *  Build lua layer objects.
+ */
+class factory : public io::factory {
+ public:
+  factory();
+  factory(factory const& other);
+  ~factory();
+  factory& operator=(factory const& other);
+  io::factory* clone() const;
+  bool has_endpoint(config::endpoint& cfg) const;
+  io::endpoint* new_endpoint(config::endpoint& cfg,
+                             bool& is_acceptor,
+                             std::shared_ptr<persistent_cache> cache =
+                                 std::shared_ptr<persistent_cache>()) const;
+};
+}  // namespace simu
 
 CCB_END()
 
-#endif // !CCB_SIMU_FACTORY_HH
+#endif  // !CCB_SIMU_FACTORY_HH

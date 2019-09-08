@@ -17,60 +17,58 @@
 */
 
 #ifndef CCB_EVENTS_INSTANCE_STATUS_HH
-#  define CCB_EVENTS_INSTANCE_STATUS_HH
+#define CCB_EVENTS_INSTANCE_STATUS_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/status.hh"
-#  include "com/centreon/broker/timestamp.hh"
+#include <string>
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/status.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace            neb {
-  /**
-   *  @class instance_status instance_status.hh "com/centreon/broker/neb/instance_status.hh"
-   *  @brief Information about Nagios process.
-   *
-   *  instance_status holds information about a scheduling
-   *  process, like whether it is running or not, in daemon mode
-   *  or not, ...
-   */
-  class              instance_status : public status {
-  public:
-                     instance_status();
-                     instance_status(instance_status const& other);
-                     ~instance_status();
-    instance_status& operator=(instance_status const& other);
-    unsigned int     type() const;
-    static unsigned int
-                     static_type();
+namespace neb {
+/**
+ *  @class instance_status instance_status.hh
+ * "com/centreon/broker/neb/instance_status.hh"
+ *  @brief Information about Nagios process.
+ *
+ *  instance_status holds information about a scheduling
+ *  process, like whether it is running or not, in daemon mode
+ *  or not, ...
+ */
+class instance_status : public status {
+ public:
+  instance_status();
+  instance_status(instance_status const& other);
+  ~instance_status();
+  instance_status& operator=(instance_status const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    bool             active_host_checks_enabled;
-    bool             active_service_checks_enabled;
-    bool             check_hosts_freshness;
-    bool             check_services_freshness;
-    std::string          global_host_event_handler;
-    std::string          global_service_event_handler;
-    timestamp        last_alive;
-    timestamp        last_command_check;
-    bool             obsess_over_hosts;
-    bool             obsess_over_services;
-    bool             passive_host_checks_enabled;
-    bool             passive_service_checks_enabled;
-    unsigned int     poller_id;
+  bool active_host_checks_enabled;
+  bool active_service_checks_enabled;
+  bool check_hosts_freshness;
+  bool check_services_freshness;
+  std::string global_host_event_handler;
+  std::string global_service_event_handler;
+  timestamp last_alive;
+  timestamp last_command_check;
+  bool obsess_over_hosts;
+  bool obsess_over_services;
+  bool passive_host_checks_enabled;
+  bool passive_service_checks_enabled;
+  unsigned int poller_id;
 
-    static mapping::entry const
-                     entries[];
-    static io::event_info::event_operations const
-                     operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void             _internal_copy(instance_status const& other);
-  };
-}
+ private:
+  void _internal_copy(instance_status const& other);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_EVENTS_INSTANCE_STATUS_HH
+#endif  // !CCB_EVENTS_INSTANCE_STATUS_HH

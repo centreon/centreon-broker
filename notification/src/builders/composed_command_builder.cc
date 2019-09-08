@@ -32,12 +32,8 @@ composed_command_builder::composed_command_builder() {}
  *  @param[in] id The id of the command.
  *  @param[in] com The command.
  */
-void composed_command_builder::add_command(
-                                 unsigned int id,
-                                 command::ptr com) {
-  for (composed_builder<command_builder>::iterator it(begin()),
-                                                   it_end(end());
-       it != it_end;
-       ++it)
+void composed_command_builder::add_command(unsigned int id, command::ptr com) {
+  for (composed_builder<command_builder>::iterator it(begin()), it_end(end());
+       it != it_end; ++it)
     (*it)->add_command(id, com);
 }

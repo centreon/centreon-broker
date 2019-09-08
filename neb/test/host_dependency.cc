@@ -17,8 +17,8 @@
  *
  */
 
-#include <cmath>
 #include <gtest/gtest.h>
+#include <cmath>
 #include "com/centreon/broker/neb/host.hh"
 #include "randomize.hh"
 
@@ -26,12 +26,12 @@ using namespace com::centreon::broker;
 
 class HostDependencyTest : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     // Initialization.
     randomize_init();
   }
 
-  void TearDown() {
+  void TearDown() override {
     // Cleanup.
     randomize_cleanup();
   }
@@ -91,6 +91,7 @@ TEST_F(HostDependencyTest, DefaultConstructor) {
   ASSERT_EQ(hdep.host_id, 0);
   ASSERT_FALSE(hdep.inherits_parent);
   ASSERT_TRUE(hdep.notification_failure_options.empty());
-  ASSERT_FALSE(hdep.type() !=
-        (io::events::data_type<io::events::neb, neb::de_host_dependency>::value));
+  ASSERT_FALSE(
+      hdep.type() !=
+      (io::events::data_type<io::events::neb, neb::de_host_dependency>::value));
 }

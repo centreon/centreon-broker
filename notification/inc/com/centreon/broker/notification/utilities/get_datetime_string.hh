@@ -17,38 +17,38 @@
 */
 
 #ifndef CCB_NOTIFICATION_UTILITIES_GET_DATETIME_STRING_HH
-#  define CCB_NOTIFICATION_UTILITIES_GET_DATETIME_STRING_HH
+#define CCB_NOTIFICATION_UTILITIES_GET_DATETIME_STRING_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace      notification {
-  namespace    utilities {
+namespace notification {
+namespace utilities {
 
-    std::string  get_datetime_string(time_t raw_time,
-                                     int max_length,
-                                     int type,
-                                     int format);
+std::string get_datetime_string(time_t raw_time,
+                                int max_length,
+                                int type,
+                                int format);
 
-    enum date_type {
-      long_date_time = 0,
-      short_date_time = 1,
-      short_date = 2,
-      short_time = 3,
-      http_date_time = 4
-    };
+enum date_type {
+  long_date_time = 0,
+  short_date_time = 1,
+  short_date = 2,
+  short_time = 3,
+  http_date_time = 4
+};
 
-    enum date_format {
-      date_format_us = 0,
-      date_format_euro = 1,
-      date_format_iso8601 = 2,
-      date_format_strict_iso8601
-    };
-  }
-}
+enum date_format {
+  date_format_us = 0,
+  date_format_euro = 1,
+  date_format_iso8601 = 2,
+  date_format_strict_iso8601
+};
+}  // namespace utilities
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_UTILITIES_GET_DATETIME_STRING_HH
+#endif  // !CCB_NOTIFICATION_UTILITIES_GET_DATETIME_STRING_HH

@@ -31,13 +31,12 @@ downtime_map::downtime_map() : _actual_downtime_id{1} {}
  *
  *  @param[in] other  The object to copy.
  */
-downtime_map::downtime_map(
-  downtime_map const& other)
-  : _actual_downtime_id(other._actual_downtime_id),
-    _downtimes(other._downtimes),
-    _downtime_id_by_nodes(other._downtime_id_by_nodes),
-    _recurring_downtimes(other._recurring_downtimes),
-    _recurring_downtime_id_by_nodes(other._recurring_downtime_id_by_nodes) {}
+downtime_map::downtime_map(downtime_map const& other)
+    : _actual_downtime_id(other._actual_downtime_id),
+      _downtimes(other._downtimes),
+      _downtime_id_by_nodes(other._downtime_id_by_nodes),
+      _recurring_downtimes(other._recurring_downtimes),
+      _recurring_downtime_id_by_nodes(other._recurring_downtime_id_by_nodes) {}
 
 /**
  *  Assignment operator.
@@ -60,9 +59,7 @@ downtime_map& downtime_map::operator=(downtime_map const& other) {
 /**
  *  Destructor.
  */
-downtime_map::~downtime_map() {
-
-}
+downtime_map::~downtime_map() {}
 
 /**
  *  Get a new downtime id.
@@ -80,13 +77,14 @@ unsigned int downtime_map::get_new_downtime_id() {
  *
  *  @return  A list of downtimes of this node.
  */
-std::list<downtime> downtime_map::get_all_downtimes_of_node(
-                                node_id id) const {
+std::list<downtime> downtime_map::get_all_downtimes_of_node(node_id id) const {
   std::list<downtime> ret;
   auto range(_downtime_id_by_nodes.equal_range(id));
 
   for (std::unordered_multimap<node_id, unsigned int>::const_iterator
-       it(range.first), end(range.second); it != end; ++it)
+           it(range.first),
+       end(range.second);
+       it != end; ++it)
     ret.push_back(_downtimes.at(it->second));
   return ret;
 }
@@ -99,12 +97,14 @@ std::list<downtime> downtime_map::get_all_downtimes_of_node(
  *  @return  A list of downtimes of this node.
  */
 std::list<downtime> downtime_map::get_all_recurring_downtimes_of_node(
-                                node_id id) const {
+    node_id id) const {
   std::list<downtime> ret;
   auto range(_recurring_downtime_id_by_nodes.equal_range(id));
 
   for (std::unordered_multimap<node_id, unsigned int>::const_iterator
-      it{range.first}, end{range.second}; it != end; ++it)
+           it{range.first},
+       end{range.second};
+       it != end; ++it)
     ret.push_back(_recurring_downtimes.at(it->second));
   return ret;
 }
@@ -120,7 +120,9 @@ void downtime_map::delete_downtime(downtime const& dwn) {
   node_id id{dwn.host_id, dwn.service_id};
   auto range(_downtime_id_by_nodes.equal_range(id));
   for (std::unordered_multimap<node_id, unsigned int>::const_iterator
-      it(range.first), end(range.second); it != end; ++it)
+           it(range.first),
+       end(range.second);
+       it != end; ++it)
     if (it->second == dwn.internal_id) {
       _downtime_id_by_nodes.erase(it);
       break;
@@ -130,7 +132,9 @@ void downtime_map::delete_downtime(downtime const& dwn) {
 
   range = _recurring_downtime_id_by_nodes.equal_range(id);
   for (std::unordered_multimap<node_id, unsigned int>::const_iterator
-      it{range.first}, end{range.second}; it != end; ++it)
+           it{range.first},
+       end{range.second};
+       it != end; ++it)
     if (it->second == dwn.internal_id) {
       _recurring_downtime_id_by_nodes.erase(it);
       break;
@@ -147,8 +151,7 @@ void downtime_map::add_downtime(downtime const& dwn) {
     _downtimes.insert({dwn.internal_id, dwn});
     _downtime_id_by_nodes.insert(
         {node_id(dwn.host_id, dwn.service_id), dwn.internal_id});
-  }
-  else {
+  } else {
     _recurring_downtimes.insert({dwn.internal_id, dwn});
     _recurring_downtime_id_by_nodes.insert(
         {node_id(dwn.host_id, dwn.service_id), dwn.internal_id});
@@ -186,8 +189,8 @@ downtime* downtime_map::get_downtime(unsigned int internal_id) {
  *  @return True or false.
  */
 bool downtime_map::is_recurring(unsigned int internal_id) const {
-  std::unordered_map<unsigned int, downtime>::const_iterator
-    found{_recurring_downtimes.find(internal_id)};
+  std::unordered_map<unsigned int, downtime>::const_iterator found{
+      _recurring_downtimes.find(internal_id)};
   return found != _recurring_downtimes.end();
 }
 
@@ -199,8 +202,9 @@ bool downtime_map::is_recurring(unsigned int internal_id) const {
 std::list<downtime> downtime_map::get_all_recurring_downtimes() const {
   std::list<downtime> retval;
   for (std::unordered_map<unsigned int, downtime>::const_iterator
-      it{_recurring_downtimes.begin()}, end{_recurring_downtimes.end()};
-      it != end; ++it)
+           it{_recurring_downtimes.begin()},
+       end{_recurring_downtimes.end()};
+       it != end; ++it)
     retval.push_back(it->second);
   return retval;
 }
@@ -213,12 +217,14 @@ std::list<downtime> downtime_map::get_all_recurring_downtimes() const {
 std::list<downtime> downtime_map::get_all_downtimes() const {
   std::list<downtime> ret;
   for (std::unordered_map<unsigned int, downtime>::const_iterator
-      it{_recurring_downtimes.begin()}, end{_recurring_downtimes.end()};
-      it != end; ++it)
+           it{_recurring_downtimes.begin()},
+       end{_recurring_downtimes.end()};
+       it != end; ++it)
     ret.push_back(it->second);
   for (std::unordered_map<unsigned int, downtime>::const_iterator
-      it{_downtimes.begin()}, end{_downtimes.end()};
-      it != end; ++it)
+           it{_downtimes.begin()},
+       end{_downtimes.end()};
+       it != end; ++it)
     ret.push_back(it->second);
   return ret;
 }
@@ -232,10 +238,9 @@ std::list<downtime> downtime_map::get_all_downtimes() const {
  */
 bool downtime_map::spawned_downtime_exist(unsigned int parent_id) const {
   for (std::unordered_map<unsigned int, neb::downtime>::const_iterator
-         it{_downtimes.begin()},
-         end{_downtimes.end()};
-       it != end;
-       ++it)
+           it{_downtimes.begin()},
+       end{_downtimes.end()};
+       it != end; ++it)
     if (it->second.triggered_by == parent_id)
       return true;
   return false;

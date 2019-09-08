@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/notification/process_manager.hh"
 #include <QStringList>
 #include "com/centreon/broker/notification/process.hh"
-#include "com/centreon/broker/notification/process_manager.hh"
 
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -59,9 +59,8 @@ void process_manager::release() {
  *  @param[in] command  The command to be executed.
  *  @param[in] timeout  The timeout of the command.
  */
-void process_manager::create_process(
-                        std::string const& command,
-                        unsigned int timeout) {
+void process_manager::create_process(std::string const& command,
+                                     unsigned int timeout) {
   // No memory leak possible because we set the parent of the process as us.
   process* pr(new process(timeout));
 
@@ -78,8 +77,7 @@ void process_manager::create_process(
 /**
  *  Default constructor.
  */
-process_manager::process_manager()
-  : _process_list_mutex{} {
+process_manager::process_manager() : _process_list_mutex{} {
   _thread.reset(new QThread);
   moveToThread(_thread.get());
 }
@@ -92,15 +90,13 @@ process_manager::process_manager()
  *  @param[in] process  The process that has finished execution.
  */
 void process_manager::process_finished(process& pr) {
-  logging::debug(logging::medium)
-    << "notification: a process has finished";
+  logging::debug(logging::medium) << "notification: a process has finished";
 
   std::string error_output;
   int exit_code;
   if (pr.get_error(exit_code, error_output))
     logging::error(logging::low)
-      << "notification: error while executing a process: "
-      << error_output;
+        << "notification: error while executing a process: " << error_output;
 
   std::lock_guard<std::recursive_mutex> lock(_process_list_mutex);
 
@@ -119,8 +115,7 @@ void process_manager::process_finished(process& pr) {
  *  @param[in] process  The process that has finished timeouted.
  */
 void process_manager::process_timeouted(process& process) {
-  logging::debug(logging::medium)
-    << "notification: a process has timeouted";
+  logging::debug(logging::medium) << "notification: a process has timeouted";
 
   process.kill();
   process_finished(process);

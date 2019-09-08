@@ -17,67 +17,59 @@
  *
  */
 #ifndef COMPRESSION_STREAM_MEMORY_STREAM_HH
-#  define COMPRESSION_STREAM_MEMORY_STREAM_HH
+#define COMPRESSION_STREAM_MEMORY_STREAM_HH
 
-#  include "com/centreon/broker/exceptions/shutdown.hh"
-#  include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/exceptions/shutdown.hh"
+#include "com/centreon/broker/io/stream.hh"
 
-class  CompressionStreamMemoryStream : public com::centreon::broker::io::stream {
+class CompressionStreamMemoryStream : public com::centreon::broker::io::stream {
  public:
-        CompressionStreamMemoryStream()
-    : _shutdown(false), _timeout(false) {}
+  CompressionStreamMemoryStream() : _shutdown(false), _timeout(false) {}
 
-  std::shared_ptr<com::centreon::broker::io::raw>&
-       get_buffer() {
+  std::shared_ptr<com::centreon::broker::io::raw>& get_buffer() {
     return _buffer;
   }
 
-  bool read(
-         std::shared_ptr<com::centreon::broker::io::data>& d,
-         time_t deadline = (time_t)-1) {
+  bool read(std::shared_ptr<com::centreon::broker::io::data>& d,
+            time_t deadline = (time_t)-1) {
     using namespace com::centreon::broker;
     (void)deadline;
     d.reset();
     if (_shutdown)
-      throw (exceptions::shutdown() << __FUNCTION__
-             << " is shutdown");
+      throw(exceptions::shutdown() << __FUNCTION__ << " is shutdown");
     else if (_timeout)
       return false;
     d = _buffer;
     _buffer = std::shared_ptr<io::raw>();
     if (!d)
-      throw (exceptions::shutdown() << __FUNCTION__
-             << " has no more data");
+      throw(exceptions::shutdown() << __FUNCTION__ << " has no more data");
     return true;
   }
 
-  int  write(std::shared_ptr<com::centreon::broker::io::data> const& d) {
+  int write(std::shared_ptr<com::centreon::broker::io::data> const& d) {
     using namespace com::centreon::broker;
     if (!d || d->type() != io::raw::static_type())
-      throw (exceptions::msg()
-             << "invalid data sent to " << __FUNCTION__);
+      throw(exceptions::msg() << "invalid data sent to " << __FUNCTION__);
     io::raw& e(*std::static_pointer_cast<io::raw>(d));
     if (!_buffer)
       _buffer.reset(new io::raw(e));
     else
-      std::copy(e.get_buffer().begin(), e.get_buffer().end(), std::back_inserter(_buffer->get_buffer()));
+      std::copy(e.get_buffer().begin(), e.get_buffer().end(),
+                std::back_inserter(_buffer->get_buffer()));
     return 1;
   }
 
-  void shutdown(bool shut_it_down = true) {
-    _shutdown = shut_it_down;
-  }
+  void shutdown(bool shut_it_down = true) { _shutdown = shut_it_down; }
 
   void timeout(bool time_it_out = true) {
     _timeout = time_it_out;
-    return ;
+    return;
   }
 
  private:
-  std::shared_ptr<com::centreon::broker::io::raw>
-       _buffer;
+  std::shared_ptr<com::centreon::broker::io::raw> _buffer;
   bool _shutdown;
   bool _timeout;
 };
 
-#endif // !COMPRESSION_STREAM_MEMORY_STREAM_HH
+#endif  // !COMPRESSION_STREAM_MEMORY_STREAM_HH

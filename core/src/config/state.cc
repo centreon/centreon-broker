@@ -22,10 +22,10 @@
 using namespace com::centreon::broker::config;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -74,17 +74,16 @@ void state::clear() {
   _event_queue_max_size = 10000;
   _flush_logs = true;
   _log_thread_id = false;
-  _log_timestamp
-    = com::centreon::broker::logging::file::with_timestamp();
-  _log_human_readable_timestamp
-    = com::centreon::broker::logging::file::with_human_redable_timestamp();
+  _log_timestamp = com::centreon::broker::logging::file::with_timestamp();
+  _log_human_readable_timestamp =
+      com::centreon::broker::logging::file::with_human_redable_timestamp();
   _loggers.clear();
   _module_dir.clear();
   _module_list.clear();
   _params.clear();
   _poller_id = 0;
   _poller_name.clear();
-  return ;
+  return;
 }
 
 /**
@@ -92,9 +91,9 @@ void state::clear() {
  *
  *  @param[in] id  Broker ID.
  */
-void state::broker_id(int id) throw () {
+void state::broker_id(int id) throw() {
   _broker_id = id;
-  return ;
+  return;
 }
 
 /**
@@ -102,7 +101,7 @@ void state::broker_id(int id) throw () {
  *
  *  @return Broker ID.
  */
-int state::broker_id() const throw () {
+int state::broker_id() const throw() {
   return (_broker_id);
 }
 
@@ -113,7 +112,7 @@ int state::broker_id() const throw () {
  */
 void state::broker_name(std::string const& name) {
   _broker_name = name;
-  return ;
+  return;
 }
 
 /**
@@ -121,7 +120,7 @@ void state::broker_name(std::string const& name) {
  *
  *  @return Broker name.
  */
-std::string const& state::broker_name() const throw () {
+std::string const& state::broker_name() const throw() {
   return (_broker_name);
 }
 
@@ -134,7 +133,7 @@ void state::cache_directory(std::string const& dir) {
   _cache_directory = dir;
   if (_cache_directory[_cache_directory.size() - 1] != '/')
     _cache_directory.append("/");
-  return ;
+  return;
 }
 
 /**
@@ -142,7 +141,7 @@ void state::cache_directory(std::string const& dir) {
  *
  *  @return Cache directory.
  */
-std::string const& state::cache_directory() const throw () {
+std::string const& state::cache_directory() const throw() {
   return (_cache_directory);
 }
 
@@ -153,7 +152,7 @@ std::string const& state::cache_directory() const throw () {
  */
 void state::command_file(std::string const& file) {
   _command_file = file;
-  return ;
+  return;
 }
 
 /**
@@ -174,7 +173,6 @@ void state::command_protocol(std::string const& prot) {
   _command_protocol = prot;
 }
 
-
 /**
  *  Get the command protocol.
  *
@@ -189,7 +187,7 @@ std::string const& state::command_protocol() const throw() {
  *
  *  @return Endpoint list.
  */
-std::list<endpoint>& state::endpoints() throw () {
+std::list<endpoint>& state::endpoints() throw() {
   return (_endpoints);
 }
 
@@ -198,7 +196,7 @@ std::list<endpoint>& state::endpoints() throw () {
  *
  *  @return Endpoint list.
  */
-std::list<endpoint> const& state::endpoints() const throw () {
+std::list<endpoint> const& state::endpoints() const throw() {
   return (_endpoints);
 }
 
@@ -207,7 +205,7 @@ std::list<endpoint> const& state::endpoints() const throw () {
  *
  *  @param[in] val Size limit.
  */
-void state::event_queue_max_size(int val) throw () {
+void state::event_queue_max_size(int val) throw() {
   _event_queue_max_size = val;
 }
 
@@ -216,7 +214,7 @@ void state::event_queue_max_size(int val) throw () {
  *
  *  @return The size limit.
  */
-int state::event_queue_max_size() const throw () {
+int state::event_queue_max_size() const throw() {
   return (_event_queue_max_size);
 }
 
@@ -225,9 +223,9 @@ int state::event_queue_max_size() const throw () {
  *
  *  @param[in] flush true to automatically flush log files.
  */
-void state::flush_logs(bool flush) throw () {
+void state::flush_logs(bool flush) throw() {
   _flush_logs = flush;
-  return ;
+  return;
 }
 
 /**
@@ -235,7 +233,7 @@ void state::flush_logs(bool flush) throw () {
  *
  *  @return true if logs must be automatically flushed.
  */
-bool state::flush_logs() const throw () {
+bool state::flush_logs() const throw() {
   return (_flush_logs);
 }
 
@@ -244,7 +242,7 @@ bool state::flush_logs() const throw () {
  *
  *  @return Logger list.
  */
-std::list<logger>& state::loggers() throw () {
+std::list<logger>& state::loggers() throw() {
   return (_loggers);
 }
 
@@ -253,9 +251,9 @@ std::list<logger>& state::loggers() throw () {
  *
  *  @param[in] log_id true to log thread IDs.
  */
-void state::log_thread_id(bool log_id) throw () {
+void state::log_thread_id(bool log_id) throw() {
   _log_thread_id = log_id;
-  return ;
+  return;
 }
 
 /**
@@ -263,7 +261,7 @@ void state::log_thread_id(bool log_id) throw () {
  *
  *  @return true if thread IDs must be logged.
  */
-bool state::log_thread_id() const throw () {
+bool state::log_thread_id() const throw() {
   return (_log_thread_id);
 }
 
@@ -272,9 +270,10 @@ bool state::log_thread_id() const throw () {
  *
  *  @param[in] log_time  Any acceptable value.
  */
-void state::log_timestamp(com::centreon::broker::logging::timestamp_type log_time) throw () {
+void state::log_timestamp(
+    com::centreon::broker::logging::timestamp_type log_time) throw() {
   _log_timestamp = log_time;
-  return ;
+  return;
 }
 
 /**
@@ -282,7 +281,8 @@ void state::log_timestamp(com::centreon::broker::logging::timestamp_type log_tim
  *
  *  @return Any acceptable value.
  */
-com::centreon::broker::logging::timestamp_type state::log_timestamp() const throw () {
+com::centreon::broker::logging::timestamp_type state::log_timestamp() const
+    throw() {
   return (_log_timestamp);
 }
 
@@ -291,11 +291,10 @@ com::centreon::broker::logging::timestamp_type state::log_timestamp() const thro
  *
  *  @param[in] human_log_time true to log a human readable timestamp.
  */
-void state::log_human_readable_timestamp(bool human_log_time) throw () {
+void state::log_human_readable_timestamp(bool human_log_time) throw() {
   _log_human_readable_timestamp = human_log_time;
-  return ;
+  return;
 }
-
 
 /**
  *  Get whether or not to log a human readable timestamp.
@@ -311,7 +310,7 @@ bool state::log_human_readable_timestamp() const throw() {
  *
  *  @return Logger list.
  */
-std::list<logger> const& state::loggers() const throw () {
+std::list<logger> const& state::loggers() const throw() {
   return (_loggers);
 }
 
@@ -320,7 +319,7 @@ std::list<logger> const& state::loggers() const throw () {
  *
  *  @return Module directory.
  */
-std::string const& state::module_directory() const throw () {
+std::string const& state::module_directory() const throw() {
   return (_module_dir);
 }
 
@@ -331,7 +330,7 @@ std::string const& state::module_directory() const throw () {
  */
 void state::module_directory(std::string const& dir) {
   _module_dir = dir;
-  return ;
+  return;
 }
 
 /**
@@ -339,7 +338,7 @@ void state::module_directory(std::string const& dir) {
  *
  *  @return Modifiable module list.
  */
-std::list<std::string>& state::module_list() throw () {
+std::list<std::string>& state::module_list() throw() {
   return (_module_list);
 }
 
@@ -348,7 +347,7 @@ std::list<std::string>& state::module_list() throw () {
  *
  *  @return Const module list.
  */
-std::list<std::string> const& state::module_list() const throw () {
+std::list<std::string> const& state::module_list() const throw() {
   return (_module_list);
 }
 
@@ -357,7 +356,7 @@ std::list<std::string> const& state::module_list() const throw () {
  *
  *  @return Additional parameters list.
  */
-std::map<std::string, std::string>& state::params() throw () {
+std::map<std::string, std::string>& state::params() throw() {
   return (_params);
 }
 
@@ -366,7 +365,7 @@ std::map<std::string, std::string>& state::params() throw () {
  *
  *  @return Additional parameters list.
  */
-std::map<std::string, std::string> const& state::params() const throw () {
+std::map<std::string, std::string> const& state::params() const throw() {
   return (_params);
 }
 
@@ -375,9 +374,9 @@ std::map<std::string, std::string> const& state::params() const throw () {
  *
  *  @param[in] id  Poller ID.
  */
-void state::poller_id(int id) throw () {
+void state::poller_id(int id) throw() {
   _poller_id = id;
-  return ;
+  return;
 }
 
 /**
@@ -385,7 +384,7 @@ void state::poller_id(int id) throw () {
  *
  *  @return Poller ID.
  */
-int state::poller_id() const throw () {
+int state::poller_id() const throw() {
   return (_poller_id);
 }
 
@@ -396,7 +395,7 @@ int state::poller_id() const throw () {
  */
 void state::poller_name(std::string const& name) {
   _poller_name = name;
-  return ;
+  return;
 }
 
 /**
@@ -404,15 +403,15 @@ void state::poller_name(std::string const& name) {
  *
  *  @return Poller name.
  */
-std::string const& state::poller_name() const throw () {
+std::string const& state::poller_name() const throw() {
   return (_poller_name);
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -436,5 +435,5 @@ void state::_internal_copy(state const& other) {
   _params = other._params;
   _poller_id = other._poller_id;
   _poller_name = other._poller_name;
-  return ;
+  return;
 }

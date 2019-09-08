@@ -16,37 +16,36 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sstream>
+#include "com/centreon/broker/notification/loaders/notification_method_loader.hh"
 #include <QSet>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/notification_method.hh"
-#include "com/centreon/broker/notification/loaders/notification_method_loader.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
 
 notification_method_loader::notification_method_loader() {}
 
-void notification_method_loader::load(
-                                   mysql *ms,
-                                   notification_method_builder *output) {
+void notification_method_loader::load(mysql* ms,
+                                      notification_method_builder* output) {
   // If we don't have any db or output, don't do anything.
   if (!ms || !output)
     return;
 
   logging::debug(logging::medium)
-    << "notification: loading notification methods from the database";
+      << "notification: loading notification methods from the database";
 
   // Performance improvement, as we never go back.
-  //query.setForwardOnly(true);
+  // query.setForwardOnly(true);
 
   std::promise<database::mysql_result> promise;
   ms->run_query_and_get_result(
-        "SELECT method_id, name, command_id, `interval`, status, "
-        "       types, start, end "
-        "  FROM cfg_notification_methods",
-        &promise);
+      "SELECT method_id, name, command_id, `interval`, status, "
+      "       types, start, end "
+      "  FROM cfg_notification_methods",
+      &promise);
 
   try {
     database::mysql_result res(promise.get_future().get());
@@ -60,14 +59,13 @@ void notification_method_loader::load(
       nm->set_start(res.value_as_u32(6));
       nm->set_end(res.value_as_u32(7));
       logging::debug(logging::low)
-        << "notification: new method " << res.value_as_u32(0)
-        << " ('" << nm->get_name() << "')";
+          << "notification: new method " << res.value_as_u32(0) << " ('"
+          << nm->get_name() << "')";
       output->add_notification_method(res.value_as_u32(0), nm);
     }
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     throw exceptions::msg()
-      << "notification: cannot load notification methods from database: "
-      << e.what();
+        << "notification: cannot load notification methods from database: "
+        << e.what();
   }
 }

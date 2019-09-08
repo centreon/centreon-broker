@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/generator/dummy.hh"
 #include "com/centreon/broker/generator/internal.hh"
+#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::generator;
@@ -35,8 +35,7 @@ dummy::dummy(unsigned int n) : number(n) {}
  *
  *  @param[in] other  Object to copy.
  */
-dummy::dummy(dummy const& other)
-  : io::data(other), number(other.number) {}
+dummy::dummy(dummy const& other) : io::data(other), number(other.number) {}
 
 /**
  *  Destructor.
@@ -72,14 +71,10 @@ unsigned int dummy::type() const {
 
 // Mapping.
 mapping::entry const dummy::entries[] = {
-  mapping::entry(&dummy::number, "number"),
-  mapping::entry()
-};
+    mapping::entry(&dummy::number, "number"), mapping::entry()};
 
 // Operations.
 static io::data* new_dummy() {
   return (new dummy());
 }
-io::event_info::event_operations const dummy::operations = {
-  &new_dummy
-};
+io::event_info::event_operations const dummy::operations = {&new_dummy};

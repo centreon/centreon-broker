@@ -17,40 +17,40 @@
 */
 
 #ifndef TEST_CBD_HH
-#  define TEST_CBD_HH
+#define TEST_CBD_HH
 
-#  include <QProcess>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <QProcess>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace       test {
-  /**
-   *  @class cbd cbd.hh "test/cbd.hh"
-   *  @brief Centreon Broker daemon.
-   *
-   *  Centreon Broker daemon.
-   */
-  class         cbd {
-  public:
-                cbd();
-                ~cbd();
-    void        set_config_file(std::string const& config_file);
-    void        start();
-    void        stop();
-    void        update();
-    void        wait();
+namespace test {
+/**
+ *  @class cbd cbd.hh "test/cbd.hh"
+ *  @brief Centreon Broker daemon.
+ *
+ *  Centreon Broker daemon.
+ */
+class cbd {
+ public:
+  cbd();
+  ~cbd();
+  void set_config_file(std::string const& config_file);
+  void start();
+  void stop();
+  void update();
+  void wait();
 
-  private:
-                cbd(cbd const& other);
-    cbd&        operator=(cbd const& other);
+ private:
+  cbd(cbd const& other);
+  cbd& operator=(cbd const& other);
 
-    std::string _config_file;
-    QProcess    _cbd;
-  };
-}
+  std::string _config_file;
+  QProcess _cbd;
+};
+}  // namespace test
 
 CCB_END()
 
-#endif // !TEST_CBD_HH
+#endif  // !TEST_CBD_HH

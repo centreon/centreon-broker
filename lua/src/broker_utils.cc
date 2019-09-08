@@ -16,13 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/lua/broker_utils.hh"
 #include <cstdlib>
 #include <cstring>
-#include <sstream>
 #include <json11.hpp>
-#include "com/centreon/broker/storage/parser.hh"
+#include <sstream>
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
-#include "com/centreon/broker/lua/broker_utils.hh"
+#include "com/centreon/broker/storage/parser.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
@@ -65,11 +65,10 @@ static void broker_json_encode_table(lua_State* L, std::ostringstream& oss) {
         oss << ']';
       }
     }
-  }
-  else {
+  } else {
     /* There are no key, the table is empty */
     oss << "[]";
-    return ;
+    return;
   }
 
   if (!array) {
@@ -96,42 +95,39 @@ static void broker_json_encode(lua_State* L, std::ostringstream& oss) {
     case LUA_TNUMBER:
       oss << lua_tostring(L, -1);
       break;
-    case LUA_TSTRING:
-      {
-        /* If the string contains '"', we must escape it */
-        char const* content(lua_tostring(L, -1));
-        size_t pos(strcspn(content, "\\\"\t\r\n"));
-        if (content[pos] != 0) {
-          std::string str(content);
-          char replacement[3] = "\\\\";
-          do {
-            switch (str[pos]) {
-              case '\\':
-                replacement[1] = '\\';
-                break;
-              case '"':
-                replacement[1] = '"';
-                break;
-              case '\t':
-                replacement[1] = 't';
-                break;
-              case '\r':
-                replacement[1] = 'r';
-                break;
-              case '\n':
-                replacement[1] = 'n';
-                break;
-            }
-            str.replace(pos, 1, replacement);
-            pos += 2;
-          } while ((pos = str.find_first_of("\\\"\t\r\n", pos))
-                    != std::string::npos);
-          oss << '"' << str << '"';
-        }
-        else
-          oss << '"' << content << '"';
-      }
-      break;
+    case LUA_TSTRING: {
+      /* If the string contains '"', we must escape it */
+      char const* content(lua_tostring(L, -1));
+      size_t pos(strcspn(content, "\\\"\t\r\n"));
+      if (content[pos] != 0) {
+        std::string str(content);
+        char replacement[3] = "\\\\";
+        do {
+          switch (str[pos]) {
+            case '\\':
+              replacement[1] = '\\';
+              break;
+            case '"':
+              replacement[1] = '"';
+              break;
+            case '\t':
+              replacement[1] = 't';
+              break;
+            case '\r':
+              replacement[1] = 'r';
+              break;
+            case '\n':
+              replacement[1] = 'n';
+              break;
+          }
+          str.replace(pos, 1, replacement);
+          pos += 2;
+        } while ((pos = str.find_first_of("\\\"\t\r\n", pos)) !=
+                 std::string::npos);
+        oss << '"' << str << '"';
+      } else
+        oss << '"' << content << '"';
+    } break;
     case LUA_TBOOLEAN:
       oss << (lua_toboolean(L, -1) ? "true" : "false");
       break;
@@ -184,8 +180,7 @@ static void broker_json_decode_array(lua_State* L, json11::Json const& it) {
 static void broker_json_decode_object(lua_State* L, json11::Json const& it) {
   int size(it.object_items().size());
   lua_createtable(L, 0, size);
-  for (auto cit(it.object_items().begin());
-       cit != it.object_items().end();
+  for (auto cit(it.object_items().begin()); cit != it.object_items().end();
        ++cit) {
     lua_pushstring(L, cit->first.c_str());
     broker_json_decode(L, cit->second);
@@ -201,44 +196,40 @@ static void broker_json_decode_object(lua_State* L, json11::Json const& it) {
  */
 static void broker_json_decode(lua_State* L, json11::Json const& it) {
   switch (it.type()) {
-    case json11::Json::STRING:
-      {
-        std::string str(it.string_value());
-        size_t pos(str.find_first_of("\\"));
-        while (pos != std::string::npos) {
-          switch (str[pos + 1]) {
-            case '\\':
-              str.replace(pos, 2, "\\");
-              break;
-            case '"':
-              str.replace(pos, 2, "\"");
-              break;
-            case 't':
-              str.replace(pos, 2, "\t");
-              break;
-            case 'r':
-              str.replace(pos, 2, "\r");
-              break;
-            case 'n':
-              str.replace(pos, 2, "\n");
-              break;
-          }
-          ++pos;
-          pos = str.find_first_of("\\", pos);
+    case json11::Json::STRING: {
+      std::string str(it.string_value());
+      size_t pos(str.find_first_of("\\"));
+      while (pos != std::string::npos) {
+        switch (str[pos + 1]) {
+          case '\\':
+            str.replace(pos, 2, "\\");
+            break;
+          case '"':
+            str.replace(pos, 2, "\"");
+            break;
+          case 't':
+            str.replace(pos, 2, "\t");
+            break;
+          case 'r':
+            str.replace(pos, 2, "\r");
+            break;
+          case 'n':
+            str.replace(pos, 2, "\n");
+            break;
         }
-        lua_pushstring(L, str.c_str());
+        ++pos;
+        pos = str.find_first_of("\\", pos);
       }
-      break;
-    case json11::Json::NUMBER:
-      {
-        double value(it.number_value());
-        int intvalue(it.int_value());
-        if (value == intvalue)
-          lua_pushinteger(L, intvalue);
-        else
-          lua_pushnumber(L, value);
-      }
-      break;
+      lua_pushstring(L, str.c_str());
+    } break;
+    case json11::Json::NUMBER: {
+      double value(it.number_value());
+      int intvalue(it.int_value());
+      if (value == intvalue)
+        lua_pushinteger(L, intvalue);
+      else
+        lua_pushnumber(L, value);
+    } break;
     case json11::Json::BOOL:
       lua_pushboolean(L, it.bool_value() ? 1 : 0);
       break;
@@ -283,18 +274,15 @@ static int l_broker_parse_perfdata(lua_State* L) {
   std::list<storage::perfdata> pds;
   try {
     p.parse_perfdata(perf_data, pds);
-  }
-  catch (storage::exceptions::perfdata const& e) {
+  } catch (storage::exceptions::perfdata const& e) {
     lua_pushnil(L);
     lua_pushstring(L, e.what());
     return 2;
   }
   lua_createtable(L, 0, pds.size());
-  for (std::list<storage::perfdata>::const_iterator
-         it(pds.begin()),
-         end(pds.end());
-       it != end;
-       ++it) {
+  for (std::list<storage::perfdata>::const_iterator it(pds.begin()),
+       end(pds.end());
+       it != end; ++it) {
     storage::perfdata const& pd(*it);
     lua_pushstring(L, pd.name().c_str());
     if (full) {
@@ -321,8 +309,7 @@ static int l_broker_parse_perfdata(lua_State* L) {
       lua_pushboolean(L, pd.critical_mode());
       lua_setfield(L, -2, "critical_mode");
       lua_settable(L, -3);
-    }
-    else {
+    } else {
       lua_pushnumber(L, pd.value());
       lua_settable(L, -3);
     }
@@ -337,13 +324,10 @@ static int l_broker_parse_perfdata(lua_State* L) {
  *  @return The Lua interpreter as a lua_State*
  */
 void broker_utils::broker_utils_reg(lua_State* L) {
-
-  luaL_Reg s_broker_regs[] = {
-    { "json_encode", l_broker_json_encode },
-    { "json_decode", l_broker_json_decode },
-    { "parse_perfdata", l_broker_parse_perfdata },
-    { NULL, NULL }
-  };
+  luaL_Reg s_broker_regs[] = {{"json_encode", l_broker_json_encode},
+                              {"json_decode", l_broker_json_decode},
+                              {"parse_perfdata", l_broker_parse_perfdata},
+                              {nullptr, nullptr}};
 
 #ifdef LUA51
   luaL_register(L, "broker", s_broker_regs);

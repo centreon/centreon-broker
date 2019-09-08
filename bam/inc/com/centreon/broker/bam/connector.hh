@@ -17,56 +17,49 @@
 */
 
 #ifndef CCB_BAM_CONNECTOR_HH
-#  define CCB_BAM_CONNECTOR_HH
+#define CCB_BAM_CONNECTOR_HH
 
-#  include <memory>
-#  include <string>
-#  include "com/centreon/broker/database_config.hh"
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <memory>
+#include <string>
+#include "com/centreon/broker/database_config.hh"
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace           bam {
-  /**
-   *  @class connector connector.hh "com/centreon/broker/bam/connector.hh"
-   *  @brief Connect to a database.
-   *
-   *  Send perfdata in a Centreon bam database.
-   */
-  class             connector : public io::endpoint {
-  public:
-                    connector();
-                    connector(connector const& other);
-                    ~connector();
-    connector&      operator=(connector const& other);
-    void            connect_monitoring(
-                      std::string const& ext_cmd_file,
-                      database_config const& db_cfg,
-                      std::string const& storage_db_name,
-                      std::shared_ptr<persistent_cache> cache);
-    void            connect_reporting(
-                      database_config const& db_cfg);
-    std::shared_ptr<io::stream>
-                    open();
+namespace bam {
+/**
+ *  @class connector connector.hh "com/centreon/broker/bam/connector.hh"
+ *  @brief Connect to a database.
+ *
+ *  Send perfdata in a Centreon bam database.
+ */
+class connector : public io::endpoint {
+ public:
+  connector();
+  connector(connector const& other);
+  ~connector();
+  connector& operator=(connector const& other);
+  void connect_monitoring(std::string const& ext_cmd_file,
+                          database_config const& db_cfg,
+                          std::string const& storage_db_name,
+                          std::shared_ptr<persistent_cache> cache);
+  void connect_reporting(database_config const& db_cfg);
+  std::shared_ptr<io::stream> open();
 
-   private:
-    enum            stream_type {
-      bam_monitoring_type = 1,
-      bam_reporting_type
-    };
+ private:
+  enum stream_type { bam_monitoring_type = 1, bam_reporting_type };
 
-    void            _internal_copy(connector const& other);
+  void _internal_copy(connector const& other);
 
-    database_config _db_cfg;
-    std::string     _ext_cmd_file;
-    std::string     _storage_db_name;
-    stream_type     _type;
-    std::shared_ptr<persistent_cache>
-                    _cache;
-  };
-}
+  database_config _db_cfg;
+  std::string _ext_cmd_file;
+  std::string _storage_db_name;
+  stream_type _type;
+  std::shared_ptr<persistent_cache> _cache;
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_CONNECTOR_HH
+#endif  // !CCB_BAM_CONNECTOR_HH

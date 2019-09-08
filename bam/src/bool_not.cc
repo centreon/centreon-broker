@@ -67,9 +67,7 @@ bool_not& bool_not::operator=(bool_not const& right) {
  *
  *  @return              True;
  */
-bool bool_not::child_has_update(
-                 computable* child,
-                 io::stream* visitor) {
+bool bool_not::child_has_update(computable* child, io::stream* visitor) {
   (void)child;
   (void)visitor;
   return (true);
@@ -82,7 +80,7 @@ bool bool_not::child_has_update(
  */
 void bool_not::set_value(std::shared_ptr<bool_value>& value) {
   _value = value;
-  return ;
+  return;
 }
 
 /**
@@ -110,7 +108,7 @@ double bool_not::value_soft() {
  */
 void bool_not::_internal_copy(bool_not const& right) {
   _value = right._value;
-  return ;
+  return;
 }
 
 /**

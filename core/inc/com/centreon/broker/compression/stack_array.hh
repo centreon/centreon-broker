@@ -17,39 +17,40 @@
 */
 
 #ifndef CCB_COMPRESSION_STACK_ARRAY_HH
-#  define CCB_COMPRESSION_STACK_ARRAY_HH
+#define CCB_COMPRESSION_STACK_ARRAY_HH
 
-#  include <string>
-#  include <vector>
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        compression {
-  /**
-   *  @class stack_array stack_array.hh "com/centreon/broker/compression/stack_array.hh"
-   *  @brief Array that behave like a stack.
-   *
-   *  Array that behave like a stack (push, pop). Low internal buffer
-   *  reallocation that is especially useful when decompressing data.
-   */
-  class          stack_array {
-   public:
-                 stack_array();
-                 stack_array(stack_array const& other);
-                 ~stack_array();
-    stack_array& operator=(stack_array const& other);
-    char const*  data() const;
-    void         pop(int bytes);
-    void         push(std::vector<char> const& buffer);
-    int          size() const;
+namespace compression {
+/**
+ *  @class stack_array stack_array.hh
+ * "com/centreon/broker/compression/stack_array.hh"
+ *  @brief Array that behave like a stack.
+ *
+ *  Array that behave like a stack (push, pop). Low internal buffer
+ *  reallocation that is especially useful when decompressing data.
+ */
+class stack_array {
+ public:
+  stack_array();
+  stack_array(stack_array const& other);
+  ~stack_array();
+  stack_array& operator=(stack_array const& other);
+  char const* data() const;
+  void pop(int bytes);
+  void push(std::vector<char> const& buffer);
+  int size() const;
 
-   private:
-    std::string  _buffer;
-    int          _offset;
-  };
-}
+ private:
+  std::string _buffer;
+  int _offset;
+};
+}  // namespace compression
 
 CCB_END()
 
-#endif // !CCB_COMPRESSION_STACK_ARRAY_HH
+#endif  // !CCB_COMPRESSION_STACK_ARRAY_HH

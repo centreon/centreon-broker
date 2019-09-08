@@ -17,12 +17,12 @@
 */
 
 #ifndef CC_PROCESS_HH
-#  define CC_PROCESS_HH
+#define CC_PROCESS_HH
 
-#  ifdef _WIN32
-#    include "com/centreon/process_win32.hh"
-#  else
-#    include "com/centreon/process_posix.hh"
-#  endif // Windows or POSIX implementation.
+#ifdef _WIN32
+#include "com/centreon/process_win32.hh"
+#else
+#include "com/centreon/process_posix.hh"
+#endif  // Windows or POSIX implementation.
 
-#endif // !CC_PROCESS_HH
+#endif  // !CC_PROCESS_HH

@@ -16,65 +16,55 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/influxdb/stream.hh"
 #include <sstream>
-#include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
+#include "com/centreon/broker/influxdb/influxdb12.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/metric.hh"
-#include "com/centreon/broker/influxdb/stream.hh"
-#include "com/centreon/broker/influxdb/influxdb12.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
  *
  */
-stream::stream(
-          std::string const& user,
-          std::string const& passwd,
-          std::string const& addr,
-          unsigned short port,
-          std::string const& db,
-          unsigned int queries_per_transaction,
-          std::string const& status_ts,
-          std::vector<column> const& status_cols,
-          std::string const& metric_ts,
-          std::vector<column> const& metric_cols,
-          std::shared_ptr<persistent_cache> const& cache)
-  : _user(user),
-    _password(passwd),
-    _address(addr),
-    _db(db),
-    _queries_per_transaction(queries_per_transaction == 0 ?
-                               1 : queries_per_transaction),
-    _pending_queries(0),
-    _actual_query(0),
-    _commit(false),
-    _cache(cache) {
-  _influx_db.reset(new influxdb12(
-                         user,
-                         passwd,
-                         addr,
-                         port,
-                         db,
-                         status_ts,
-                         status_cols,
-                         metric_ts,
-                         metric_cols,
-                         _cache));
+stream::stream(std::string const& user,
+               std::string const& passwd,
+               std::string const& addr,
+               unsigned short port,
+               std::string const& db,
+               unsigned int queries_per_transaction,
+               std::string const& status_ts,
+               std::vector<column> const& status_cols,
+               std::string const& metric_ts,
+               std::vector<column> const& metric_cols,
+               std::shared_ptr<persistent_cache> const& cache)
+    : _user(user),
+      _password(passwd),
+      _address(addr),
+      _db(db),
+      _queries_per_transaction(
+          queries_per_transaction == 0 ? 1 : queries_per_transaction),
+      _pending_queries(0),
+      _actual_query(0),
+      _commit(false),
+      _cache(cache) {
+  _influx_db.reset(new influxdb12(user, passwd, addr, port, db, status_ts,
+                                  status_cols, metric_ts, metric_cols, _cache));
 }
 
 /**
@@ -89,7 +79,7 @@ stream::~stream() {}
  */
 int stream::flush() {
   logging::debug(logging::medium)
-    << "influxdb: commiting " << _actual_query << " queries";
+      << "influxdb: commiting " << _actual_query << " queries";
   int ret(_pending_queries);
   _actual_query = 0;
   _pending_queries = 0;
@@ -109,8 +99,7 @@ int stream::flush() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw (exceptions::shutdown()
-         << "cannot read from InfluxDB database");
+  throw(exceptions::shutdown() << "cannot read from InfluxDB database");
   return true;
 }
 
@@ -147,15 +136,12 @@ int stream::write(std::shared_ptr<io::data> const& data) {
   _cache.write(data);
 
   // Process metric events.
-  if (data->type()
-        == io::events::data_type<io::events::storage,
-                                 storage::de_metric>::value) {
+  if (data->type() ==
+      io::events::data_type<io::events::storage, storage::de_metric>::value) {
     _influx_db->write(*std::static_pointer_cast<storage::metric const>(data));
     ++_actual_query;
-  }
-  else if (data->type()
-           == io::events::data_type<io::events::storage,
-                                    storage::de_status>::value) {
+  } else if (data->type() == io::events::data_type<io::events::storage,
+                                                   storage::de_status>::value) {
     _influx_db->write(*std::static_pointer_cast<storage::status const>(data));
     ++_actual_query;
   }

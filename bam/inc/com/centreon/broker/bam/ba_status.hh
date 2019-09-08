@@ -17,52 +17,49 @@
 */
 
 #ifndef CCB_BAM_BA_STATUS_HH
-#  define CCB_BAM_BA_STATUS_HH
+#define CCB_BAM_BA_STATUS_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace        bam {
-  /**
-   *  @class ba_status ba_status.hh "com/centreon/broker/bam/ba_status.hh"
-   *  @brief Update status of a BA.
-   *
-   *  Update the status of a BA, used to update the cfg_bam table.
-   */
-  class          ba_status : public io::data {
-  public:
-                 ba_status();
-                 ba_status(ba_status const& other);
-                 ~ba_status();
-    ba_status&   operator=(ba_status const& other);
-    unsigned int type() const;
-    static unsigned int
-                 static_type();
+namespace bam {
+/**
+ *  @class ba_status ba_status.hh "com/centreon/broker/bam/ba_status.hh"
+ *  @brief Update status of a BA.
+ *
+ *  Update the status of a BA, used to update the cfg_bam table.
+ */
+class ba_status : public io::data {
+ public:
+  ba_status();
+  ba_status(ba_status const& other);
+  ~ba_status();
+  ba_status& operator=(ba_status const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    unsigned int ba_id;
-    bool         in_downtime;
-    timestamp    last_state_change;
-    double       level_acknowledgement;
-    double       level_downtime;
-    double       level_nominal;
-    short        state;
-    bool         state_changed;
+  unsigned int ba_id;
+  bool in_downtime;
+  timestamp last_state_change;
+  double level_acknowledgement;
+  double level_downtime;
+  double level_nominal;
+  short state;
+  bool state_changed;
 
-    static mapping::entry const
-                 entries[];
-    static io::event_info::event_operations const
-                 operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void         _internal_copy(ba_status const& other);
-  };
-}
+ private:
+  void _internal_copy(ba_status const& other);
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_BA_STATUS_HH
+#endif  // !CCB_BAM_BA_STATUS_HH

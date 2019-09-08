@@ -17,53 +17,51 @@
 */
 
 #ifndef CCB_NEB_FLAPPING_STATUS_HH
-#  define CCB_NEB_FLAPPING_STATUS_HH
+#define CCB_NEB_FLAPPING_STATUS_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace            neb {
-  /**
-   *  @class flapping_status flapping_status.hh "com/centreon/broker/neb/flapping_status.hh"
-   *  @brief Store a flapping status.
-   *
-   *  Store flapping statuses.
-   */
-  class              flapping_status : public io::data {
-  public:
-                     flapping_status();
-                     flapping_status(flapping_status const& other);
-                     ~flapping_status();
-    flapping_status& operator=(flapping_status const& other);
-    unsigned int     type() const;
-    static unsigned int
-                     static_type();
+namespace neb {
+/**
+ *  @class flapping_status flapping_status.hh
+ * "com/centreon/broker/neb/flapping_status.hh"
+ *  @brief Store a flapping status.
+ *
+ *  Store flapping statuses.
+ */
+class flapping_status : public io::data {
+ public:
+  flapping_status();
+  flapping_status(flapping_status const& other);
+  ~flapping_status();
+  flapping_status& operator=(flapping_status const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    timestamp        event_time;
-    int              event_type;
-    short            flapping_type;
-    double           high_threshold;
-    unsigned int     host_id;
-    double           low_threshold;
-    double           percent_state_change;
-    short            reason_type;
-    unsigned int     service_id;
+  timestamp event_time;
+  int event_type;
+  short flapping_type;
+  double high_threshold;
+  unsigned int host_id;
+  double low_threshold;
+  double percent_state_change;
+  short reason_type;
+  unsigned int service_id;
 
-    static mapping::entry const
-                     entries[];
-    static io::event_info::event_operations const
-                     operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void             _internal_copy(flapping_status const& other);
-  };
-}
+ private:
+  void _internal_copy(flapping_status const& other);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_FLAPPING_STATUS_HH
+#endif  // !CCB_NEB_FLAPPING_STATUS_HH

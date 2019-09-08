@@ -17,38 +17,37 @@
 */
 
 #ifndef CCB_NEB_SERVICE_GROUP_HH
-#  define CCB_NEB_SERVICE_GROUP_HH
+#define CCB_NEB_SERVICE_GROUP_HH
 
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/group.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/group.hh"
 
 CCB_BEGIN()
 
-namespace               neb {
-  /**
-   *  @class service_group service_group.hh "com/centreon/broker/neb/service_group.hh"
-   *  @brief Represents a group of services.
-   *
-   *  Group of services within the scheduling engine.
-   */
-  class                 service_group : public group {
-  public:
-                        service_group();
-                        service_group(service_group const& other);
-                        ~service_group();
-    service_group&      operator=(service_group const& other);
-    unsigned int        type() const;
-    static unsigned int static_type();
+namespace neb {
+/**
+ *  @class service_group service_group.hh
+ * "com/centreon/broker/neb/service_group.hh"
+ *  @brief Represents a group of services.
+ *
+ *  Group of services within the scheduling engine.
+ */
+class service_group : public group {
+ public:
+  service_group();
+  service_group(service_group const& other);
+  ~service_group();
+  service_group& operator=(service_group const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    static mapping::entry const
-                        entries[];
-    static io::event_info::event_operations const
-                        operations;
-  };
-}
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_SERVICE_GROUP_HH
+#endif  // !CCB_NEB_SERVICE_GROUP_HH

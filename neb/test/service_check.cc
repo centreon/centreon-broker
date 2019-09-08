@@ -17,23 +17,19 @@
  *
  */
 
+#include "com/centreon/broker/neb/service_check.hh"
 #include <gtest/gtest.h>
 #include <cstdlib>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/service_check.hh"
 #include "randomize.hh"
 
 using namespace com::centreon::broker;
 
 class ServiceCheck : public ::testing::Test {
-  void SetUp() {
-    randomize_init();
-  };
+  void SetUp() override { randomize_init(); };
 
-  void TearDown() {
-    randomize_cleanup();
-  };
+  void TearDown() override { randomize_cleanup(); };
 };
 
 /**
@@ -97,6 +93,7 @@ TEST_F(ServiceCheck, DefaultCtor) {
   ASSERT_FALSE(schk.host_id != 0);
   ASSERT_FALSE(schk.next_check != 0);
   ASSERT_FALSE(schk.service_id != 0);
-  auto val(io::events::data_type<io::events::neb, neb::de_service_check>::value);
+  auto val(
+      io::events::data_type<io::events::neb, neb::de_service_check>::value);
   ASSERT_FALSE(schk.type() != val);
 }

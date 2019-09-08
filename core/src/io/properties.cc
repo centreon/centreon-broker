@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/properties.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker::io;
 
@@ -26,10 +26,7 @@ using namespace com::centreon::broker::io;
  *
  *  @param[in] name The properties name.
  */
-properties::properties(std::string const& name)
-  : _name(name) {
-
-}
+properties::properties(std::string const& name) : _name(name) {}
 
 /**
  *  Copy constructor.
@@ -43,9 +40,7 @@ properties::properties(properties const& right) {
 /**
  *  Destructor.
  */
-properties::~properties() throw () {
-
-}
+properties::~properties() throw() {}
 
 /**
  *  Copy operator.
@@ -157,10 +152,9 @@ properties::const_iterator properties::end() const {
  *  @return The property or throw exception.
  */
 property const& properties::get(std::string const& name) const {
-  std::map<std::string, property>::const_iterator
-    it(_properties.find(name));
+  std::map<std::string, property>::const_iterator it(_properties.find(name));
   if (it == _properties.end())
-    throw (exceptions::msg() << "property '" << name << "' not found");
+    throw(exceptions::msg() << "property '" << name << "' not found");
   return (it->second);
 }
 
@@ -170,11 +164,9 @@ property const& properties::get(std::string const& name) const {
  *  @param[in] other Properties that will be merged in this object.
  */
 void properties::merge(properties const& other) {
-  for (const_iterator it(other.begin()), end(other.end());
-       it != end;
-       ++it)
+  for (const_iterator it(other.begin()), end(other.end()); it != end; ++it)
     _properties[it->first] = it->second;
-  return ;
+  return;
 }
 
 /**
@@ -182,7 +174,7 @@ void properties::merge(properties const& other) {
  *
  *  @return The name.
  */
-std::string const& properties::name() const throw () {
+std::string const& properties::name() const throw() {
   return (_name);
 }
 
@@ -201,8 +193,6 @@ void properties::name(std::string const& name) {
  *  @param[in] name  The name of the property.
  *  @param[in] prop  The property.
  */
-void properties::add_property(
-                   std::string const& name,
-                   property const& prop) {
+void properties::add_property(std::string const& name, property const& prop) {
   (*this)[name] = prop;
 }

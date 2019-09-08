@@ -17,61 +17,60 @@
 */
 
 #ifndef CCB_IO_EVENT_INFO_HH
-#  define CCB_IO_EVENT_INFO_HH
+#define CCB_IO_EVENT_INFO_HH
 
-#  include <cstddef>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <cstddef>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 // Forward declaration.
-namespace                   mapping {
-  class                     entry;
+namespace mapping {
+class entry;
 }
 
-namespace                   io {
-  // Forward declaration.
-  class                     data;
+namespace io {
+// Forward declaration.
+class data;
 
-  /**
-   *  @class event_info event_info.hh "com/centreon/broker/io/event_info.hh"
-   *  @brief Provide information about an event.
-   *
-   *  This class is mostly used to provide information about a mapped
-   *  type. Various event manipulation engines (BBDO, SQL) use
-   *  information provided by this class.
-   */
-  class                     event_info {
-  public:
-    struct                  event_operations {
-      io::data* (*          constructor)();
-    };
-
-                            event_info(
-                              std::string const& name = "",
-                              event_operations const* ops = NULL,
-                              mapping::entry const* entries = NULL,
-                              std::string const& table = std::string(),
-                              std::string const& table_v2 = std::string());
-                            event_info(event_info const& other);
-                            ~event_info();
-    event_info&             operator=(event_info const& other);
-    mapping::entry const*   get_mapping() const;
-    std::string const&      get_name() const;
-    event_operations const& get_operations() const;
-    std::string const&      get_table() const;
-    std::string const&      get_table_v2() const;
-
-  private:
-    mapping::entry const*   _mapping;
-    std::string             _name;
-    event_operations const* _ops;
-    std::string             _table;
-    std::string             _table_v2;
+/**
+ *  @class event_info event_info.hh "com/centreon/broker/io/event_info.hh"
+ *  @brief Provide information about an event.
+ *
+ *  This class is mostly used to provide information about a mapped
+ *  type. Various event manipulation engines (BBDO, SQL) use
+ *  information provided by this class.
+ */
+class event_info {
+ public:
+  struct event_operations {
+    io::data* (*constructor)();
   };
-}
+
+  event_info(std::string const& name = "",
+             event_operations const* ops = NULL,
+             mapping::entry const* entries = NULL,
+             std::string const& table = std::string(),
+             std::string const& table_v2 = std::string());
+  event_info(event_info const& other);
+  ~event_info();
+  event_info& operator=(event_info const& other);
+  mapping::entry const* get_mapping() const;
+  std::string const& get_name() const;
+  event_operations const& get_operations() const;
+  std::string const& get_table() const;
+  std::string const& get_table_v2() const;
+
+ private:
+  mapping::entry const* _mapping;
+  std::string _name;
+  event_operations const* _ops;
+  std::string _table;
+  std::string _table_v2;
+};
+}  // namespace io
 
 CCB_END()
 
-#endif // !CCB_IO_EVENT_INFO_HH
+#endif  // !CCB_IO_EVENT_INFO_HH

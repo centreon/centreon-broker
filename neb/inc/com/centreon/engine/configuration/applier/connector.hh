@@ -18,39 +18,36 @@
 */
 
 #ifndef CCE_CONFIGURATION_APPLIER_CONNECTOR_HH
-#  define CCE_CONFIGURATION_APPLIER_CONNECTOR_HH
+#define CCE_CONFIGURATION_APPLIER_CONNECTOR_HH
 
-#  include <set>
-#  include "com/centreon/engine/namespace.hh"
+#include <set>
+#include "com/centreon/engine/namespace.hh"
 
 CCE_BEGIN()
 
-namespace               configuration {
-  // Forward declarations.
-  class                 connector;
-  class                 state;
+namespace configuration {
+// Forward declarations.
+class connector;
+class state;
 
-  namespace             applier {
-    class               connector {
-     public:
-                        connector();
-                        ~connector() throw ();
-      void              add_object(
-                          configuration::connector const& obj);
-      void              expand_objects(configuration::state& s);
-      void              modify_object(
-                          configuration::connector const& obj);
-      void              remove_object(
-                          configuration::connector const& obj);
-      void              resolve_object(
-                          configuration::connector const& obj);
-     private:
-                        connector(connector const& right);
-      connector&        operator=(connector const& right);
-    };
-  }
-}
+namespace applier {
+class connector {
+ public:
+  connector();
+  ~connector() throw();
+  void add_object(configuration::connector const& obj);
+  void expand_objects(configuration::state& s);
+  void modify_object(configuration::connector const& obj);
+  void remove_object(configuration::connector const& obj);
+  void resolve_object(configuration::connector const& obj);
+
+ private:
+  connector(connector const& right);
+  connector& operator=(connector const& right);
+};
+}  // namespace applier
+}  // namespace configuration
 
 CCE_END()
 
-#endif // !CCE_CONFIGURATION_APPLIER_CONNECTOR_HH
+#endif  // !CCE_CONFIGURATION_APPLIER_CONNECTOR_HH

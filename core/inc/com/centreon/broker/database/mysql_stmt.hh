@@ -17,77 +17,72 @@
 */
 
 #ifndef CCB_MYSQL_STMT_HH
-#  define CCB_MYSQL_STMT_HH
+#define CCB_MYSQL_STMT_HH
 
-#  include <map>
-#  include <memory>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/database/mysql_bind.hh"
+#include <map>
+#include <memory>
+#include "com/centreon/broker/database/mysql_bind.hh"
+#include "com/centreon/broker/io/data.hh"
 
 CCB_BEGIN()
 
-typedef                         std::map<std::string, int> mysql_bind_mapping;
+typedef std::map<std::string, int> mysql_bind_mapping;
 
-namespace                       database {
-  class                           mysql_stmt {
-   public:
-                                  mysql_stmt();
-                                  mysql_stmt(
-                                    std::string const& query,
-                                    bool named);
-                                  mysql_stmt(
-                                    std::string const& query,
-                                    mysql_bind_mapping const& bind_mapping = mysql_bind_mapping());
-                                  mysql_stmt(mysql_stmt&& other);
-    mysql_stmt&                   operator=(mysql_stmt const& other);
-    bool                          prepared() const;
-    int                           get_id() const;
-    std::unique_ptr<database::mysql_bind>
-                                  get_bind();
-    void                          operator<<(io::data const& d);
+namespace database {
+class mysql_stmt {
+ public:
+  mysql_stmt();
+  mysql_stmt(std::string const& query, bool named);
+  mysql_stmt(std::string const& query,
+             mysql_bind_mapping const& bind_mapping = mysql_bind_mapping());
+  mysql_stmt(mysql_stmt&& other);
+  mysql_stmt& operator=(mysql_stmt const& other);
+  bool prepared() const;
+  int get_id() const;
+  std::unique_ptr<database::mysql_bind> get_bind();
+  void operator<<(io::data const& d);
 
-    void                          bind_value_as_i32(int range, int value);
-    void                          bind_value_as_i32(std::string const& key, int value);
+  void bind_value_as_i32(int range, int value);
+  void bind_value_as_i32(std::string const& key, int value);
 
-    void                          bind_value_as_u32(int range, unsigned int value);
-    void                          bind_value_as_u32(std::string const& key, unsigned int value);
+  void bind_value_as_u32(int range, unsigned int value);
+  void bind_value_as_u32(std::string const& key, unsigned int value);
 
-    void                          bind_value_as_u64(int range, unsigned long long value);
-    void                          bind_value_as_u64(std::string const& key, unsigned long long value);
+  void bind_value_as_u64(int range, unsigned long long value);
+  void bind_value_as_u64(std::string const& key, unsigned long long value);
 
-    void                          bind_value_as_f32(int range, float value);
-    void                          bind_value_as_f32(std::string const& key, float value);
+  void bind_value_as_f32(int range, float value);
+  void bind_value_as_f32(std::string const& key, float value);
 
-    void                          bind_value_as_f64(int range, double value);
-    void                          bind_value_as_f64(std::string const& key, double value);
+  void bind_value_as_f64(int range, double value);
+  void bind_value_as_f64(std::string const& key, double value);
 
-    void                          bind_value_as_tiny(int range, char value);
-    void                          bind_value_as_tiny(std::string const& key, char value);
+  void bind_value_as_tiny(int range, char value);
+  void bind_value_as_tiny(std::string const& key, char value);
 
-    void                          bind_value_as_bool(int range, bool value);
-    void                          bind_value_as_bool(std::string const& key, bool value);
+  void bind_value_as_bool(int range, bool value);
+  void bind_value_as_bool(std::string const& key, bool value);
 
-    void                          bind_value_as_str(int range, std::string const& value);
-    void                          bind_value_as_str(std::string const& key, std::string const& value);
+  void bind_value_as_str(int range, std::string const& value);
+  void bind_value_as_str(std::string const& key, std::string const& value);
 
-    void                          bind_value_as_null(int range);
-    void                          bind_value_as_null(std::string const& key);
-    std::string const&            get_query() const;
-    int                           get_param_count() const;
+  void bind_value_as_null(int range);
+  void bind_value_as_null(std::string const& key);
+  std::string const& get_query() const;
+  int get_param_count() const;
 
-   private:
-    int                           _compute_param_count(std::string const& query);
+ private:
+  int _compute_param_count(std::string const& query);
 
-    int                           _id;
-    int                           _param_count;
-    std::string                   _query;
+  int _id;
+  int _param_count;
+  std::string _query;
 
-    std::unique_ptr<database::mysql_bind>
-                                  _bind;
-    mysql_bind_mapping            _bind_mapping;
-  };
-}
+  std::unique_ptr<database::mysql_bind> _bind;
+  mysql_bind_mapping _bind_mapping;
+};
+}  // namespace database
 
 CCB_END()
 
-#endif // CCB_MYSQL_STMT_HH
+#endif  // CCB_MYSQL_STMT_HH

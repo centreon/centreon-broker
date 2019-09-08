@@ -17,52 +17,52 @@
 */
 
 #ifndef CC_CONCURRENCY_THREAD_POSIX_HH
-#  define CC_CONCURRENCY_THREAD_POSIX_HH
+#define CC_CONCURRENCY_THREAD_POSIX_HH
 
-#  include <pthread.h>
-#  include "com/centreon/namespace.hh"
-#  include "com/centreon/concurrency/mutex_posix.hh"
+#include <pthread.h>
+#include "com/centreon/concurrency/mutex_posix.hh"
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace            concurrency {
-  typedef pthread_t thread_id;
+namespace concurrency {
+typedef pthread_t thread_id;
 
-  /**
-   *  @class thread thread_posix.hh "com/centreon/concurrency/thread.hh"
-   *  @brief POSIX thread wrapper.
-   *
-   *  Wrap POSIX thread library (pthreads) in a nice and easy to use
-   *  class.
-   */
-  class              thread {
-  public:
-                     thread();
-    virtual          ~thread() throw ();
-    void             exec();
-    static thread_id get_current_id() throw ();
-    static void      msleep(unsigned long msecs);
-    static void      nsleep(unsigned long nsecs);
-    static void      sleep(unsigned long secs);
-    static void      usleep(unsigned long usecs);
-    void             wait();
-    bool             wait(unsigned long timeout);
-    static void      yield() throw ();
+/**
+ *  @class thread thread_posix.hh "com/centreon/concurrency/thread.hh"
+ *  @brief POSIX thread wrapper.
+ *
+ *  Wrap POSIX thread library (pthreads) in a nice and easy to use
+ *  class.
+ */
+class thread {
+ public:
+  thread();
+  virtual ~thread() throw();
+  void exec();
+  static thread_id get_current_id() throw();
+  static void msleep(unsigned long msecs);
+  static void nsleep(unsigned long nsecs);
+  static void sleep(unsigned long secs);
+  static void usleep(unsigned long usecs);
+  void wait();
+  bool wait(unsigned long timeout);
+  static void yield() throw();
 
-  protected:
-    virtual void     _run() = 0;
+ protected:
+  virtual void _run() = 0;
 
-  private:
-                     thread(thread const& right);
-    thread&          operator=(thread const& right);
-    static void*     _execute(void* data);
+ private:
+  thread(thread const& right);
+  thread& operator=(thread const& right);
+  static void* _execute(void* data);
 
-    bool             _initialized;
-    mutable mutex    _mtx;
-    pthread_t        _th;
-  };
-}
+  bool _initialized;
+  mutable mutex _mtx;
+  pthread_t _th;
+};
+}  // namespace concurrency
 
 CC_END()
 
-#endif // !CC_CONCURRENCY_THREAD_POSIX_HH
+#endif  // !CC_CONCURRENCY_THREAD_POSIX_HH

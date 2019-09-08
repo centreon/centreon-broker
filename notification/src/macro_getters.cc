@@ -29,8 +29,8 @@ using namespace com::centreon::broker;
  *
  *  @return  The value of the macro.
  */
-template <> std::string notification::get_host_output<false>(
-                          macro_context const& context) {
+template <>
+std::string notification::get_host_output<false>(macro_context const& context) {
   std::string output{
       context.get_cache().get_host(context.get_id()).get_status().output};
   return output.substr(0, output.find_first_of('\n'));
@@ -45,8 +45,8 @@ template <> std::string notification::get_host_output<false>(
  *
  *  @return  The value of the macro.
  */
-template <> std::string notification::get_host_output<true>(
-                          macro_context const& context) {
+template <>
+std::string notification::get_host_output<true>(macro_context const& context) {
   std::string output{
       context.get_cache().get_host(context.get_id()).get_status().output};
   size_t found = output.find_first_of('\n');
@@ -64,8 +64,9 @@ template <> std::string notification::get_host_output<true>(
  *
  *  @return  The value of the macro.
  */
-template <> std::string notification::get_service_output<false>(
-                          macro_context const& context) {
+template <>
+std::string notification::get_service_output<false>(
+    macro_context const& context) {
   std::string output{
       context.get_cache().get_service(context.get_id()).get_status().output};
   return output.substr(0, output.find_first_of('\n'));
@@ -80,8 +81,9 @@ template <> std::string notification::get_service_output<false>(
  *
  *  @return  The value of the macro.
  */
-template <> std::string notification::get_service_output<true>(
-                          macro_context const& context) {
+template <>
+std::string notification::get_service_output<true>(
+    macro_context const& context) {
   std::string output{
       context.get_cache().get_service(context.get_id()).get_status().output};
   size_t found = output.find_first_of('\n');
@@ -98,10 +100,9 @@ template <> std::string notification::get_service_output<true>(
  *  @return  The value of the macro.
  */
 std::string com::centreon::broker::notification::get_host_state(
-              macro_context const& context) {
+    macro_context const& context) {
   short state =
-    context.get_cache().get_host(
-      context.get_id()).get_status().current_state;
+      context.get_cache().get_host(context.get_id()).get_status().current_state;
   if (state == objects::node_state::host_up)
     return ("UP");
   else if (state == objects::node_state::host_down)
@@ -118,10 +119,11 @@ std::string com::centreon::broker::notification::get_host_state(
  *  @return  The value of the macro.
  */
 std::string com::centreon::broker::notification::get_service_state(
-              macro_context const& context) {
-  short state =
-    context.get_cache().get_service(
-      context.get_id()).get_status().current_state;
+    macro_context const& context) {
+  short state = context.get_cache()
+                    .get_service(context.get_id())
+                    .get_status()
+                    .current_state;
   if (state == objects::node_state::service_ok)
     return ("OK");
   else if (state == objects::node_state::service_warning)
@@ -132,7 +134,6 @@ std::string com::centreon::broker::notification::get_service_state(
     return ("UNKNOWN");
 }
 
-
 /**
  *  Get the last state of a host.
  *
@@ -141,10 +142,9 @@ std::string com::centreon::broker::notification::get_service_state(
  *  @return  The value of the macro.
  */
 std::string com::centreon::broker::notification::get_last_host_state(
-              macro_context const& context) {
+    macro_context const& context) {
   short state =
-    context.get_cache().get_host(
-      context.get_id()).get_status().current_state;
+      context.get_cache().get_host(context.get_id()).get_status().current_state;
   if (state == objects::node_state::host_up)
     return ("UP");
   else if (state == objects::node_state::host_down)
@@ -161,10 +161,11 @@ std::string com::centreon::broker::notification::get_last_host_state(
  *  @return  The value of the macro.
  */
 std::string com::centreon::broker::notification::get_last_service_state(
-              macro_context const& context) {
-  short state =
-    context.get_cache().get_service(
-      context.get_id()).get_prev_status().current_state;
+    macro_context const& context) {
+  short state = context.get_cache()
+                    .get_service(context.get_id())
+                    .get_prev_status()
+                    .current_state;
   if (state == objects::node_state::service_ok)
     return ("OK");
   else if (state == objects::node_state::service_warning)
@@ -183,9 +184,9 @@ std::string com::centreon::broker::notification::get_last_service_state(
  *  @return  The value of the macro.
  */
 std::string com::centreon::broker::notification::get_host_state_type(
-              macro_context const& context) {
-  if (context.get_cache().get_host(
-        context.get_id()).get_status().state_type == 1)
+    macro_context const& context) {
+  if (context.get_cache().get_host(context.get_id()).get_status().state_type ==
+      1)
     return ("HARD");
   else
     return ("SOFT");
@@ -199,9 +200,11 @@ std::string com::centreon::broker::notification::get_host_state_type(
  *  @return  The value of the macro.
  */
 std::string com::centreon::broker::notification::get_service_state_type(
-              macro_context const& context) {
-  if (context.get_cache().get_service(
-        context.get_id()).get_status().state_type == 1)
+    macro_context const& context) {
+  if (context.get_cache()
+          .get_service(context.get_id())
+          .get_status()
+          .state_type == 1)
     return ("HARD");
   else
     return ("SOFT");
@@ -215,7 +218,7 @@ std::string com::centreon::broker::notification::get_service_state_type(
  *  @return  The value of the macro.
  */
 std::string com::centreon::broker::notification::null_getter(
-              macro_context const& context) {
+    macro_context const& context) {
   (void)context;
   return ("");
 }
@@ -228,10 +231,11 @@ std::string com::centreon::broker::notification::null_getter(
  *  @return  The value of the macro.
  */
 std::string com::centreon::broker::notification::get_host_duration(
-              macro_context const& context) {
-  time_t last_state_change =
-    context.get_cache().get_host(
-      context.get_id()).get_status().last_state_change;
+    macro_context const& context) {
+  time_t last_state_change = context.get_cache()
+                                 .get_host(context.get_id())
+                                 .get_status()
+                                 .last_state_change;
   // Get duration.
   time_t now(::time(NULL));
   unsigned long duration(now - last_state_change);
@@ -246,10 +250,7 @@ std::string com::centreon::broker::notification::get_host_duration(
 
   // Stringify duration.
   std::ostringstream oss;
-  oss << days << "d "
-      << hours << "h "
-      << minutes << "m "
-      << duration << "s";
+  oss << days << "d " << hours << "h " << minutes << "m " << duration << "s";
   return (oss.str());
 }
 
@@ -261,10 +262,11 @@ std::string com::centreon::broker::notification::get_host_duration(
  *  @return  The value of the macro.
  */
 std::string com::centreon::broker::notification::get_service_duration(
-              macro_context const& context) {
-  time_t last_state_change =
-    context.get_cache().get_service(
-      context.get_id()).get_status().last_state_change;
+    macro_context const& context) {
+  time_t last_state_change = context.get_cache()
+                                 .get_service(context.get_id())
+                                 .get_status()
+                                 .last_state_change;
   // Get duration.
   time_t now(::time(NULL));
   unsigned long duration(now - last_state_change);
@@ -279,10 +281,7 @@ std::string com::centreon::broker::notification::get_service_duration(
 
   // Stringify duration.
   std::ostringstream oss;
-  oss << days << "d "
-      << hours << "h "
-      << minutes << "m "
-      << duration << "s";
+  oss << days << "d " << hours << "h " << minutes << "m " << duration << "s";
   return (oss.str());
 }
 
@@ -294,11 +293,12 @@ std::string com::centreon::broker::notification::get_service_duration(
  *  @return  The value of the macro.
  */
 std::string com::centreon::broker::notification::get_host_duration_sec(
-             macro_context const& context) {
+    macro_context const& context) {
   time_t now(::time(NULL));
-  unsigned long duration(
-    now - context.get_cache().get_host(
-            context.get_id()).get_status().last_state_change);
+  unsigned long duration(now - context.get_cache()
+                                   .get_host(context.get_id())
+                                   .get_status()
+                                   .last_state_change);
   return (to_string<unsigned long, 0>(duration));
 }
 
@@ -310,7 +310,7 @@ std::string com::centreon::broker::notification::get_host_duration_sec(
  *  @return  The value of the macro.
  */
 std::string com::centreon::broker::notification::get_node_downtime_number(
-              macro_context const& context) {
+    macro_context const& context) {
   unsigned long num = context.get_cache().node_downtimes(context.get_id());
   return (to_string<unsigned long, 0>(num));
 }
@@ -323,11 +323,12 @@ std::string com::centreon::broker::notification::get_node_downtime_number(
  *  @return  The value of the macro.
  */
 std::string com::centreon::broker::notification::get_service_duration_sec(
-             macro_context const& context) {
+    macro_context const& context) {
   time_t now(::time(NULL));
-  unsigned long duration(
-    now - context.get_cache().get_service(
-            context.get_id()).get_status().last_state_change);
+  unsigned long duration(now - context.get_cache()
+                                   .get_service(context.get_id())
+                                   .get_status()
+                                   .last_state_change);
   return (to_string<unsigned long, 0>(duration));
 }
 
@@ -339,7 +340,7 @@ std::string com::centreon::broker::notification::get_service_duration_sec(
  *  @return  The value of the macro.
  */
 std::string com::centreon::broker::notification::get_timet_string(
-              macro_context const& context) {
+    macro_context const& context) {
   (void)context;
   return (to_string<time_t, 0>(::time(NULL)));
 }
@@ -352,7 +353,7 @@ std::string com::centreon::broker::notification::get_timet_string(
  *  @return  The value of the macro.
  */
 std::string com::centreon::broker::notification::get_notification_type(
-              macro_context const& context) {
+    macro_context const& context) {
   action::action_type type = context.get_action().get_type();
   if (type == action::notification_attempt)
     return ("PROBLEM");

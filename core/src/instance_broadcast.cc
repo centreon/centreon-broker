@@ -22,18 +22,16 @@
 using namespace com::centreon::broker;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
 instance_broadcast::instance_broadcast()
-  : broker_id(0),
-    enabled(true),
-    poller_id(0) {}
+    : broker_id(0), enabled(true), poller_id(0) {}
 
 /**
  *  Copy constructor.
@@ -41,7 +39,7 @@ instance_broadcast::instance_broadcast()
  *  @param[in] other  Object to copy.
  */
 instance_broadcast::instance_broadcast(instance_broadcast const& other)
-  : io::data(other) {
+    : io::data(other) {
   _internal_copy(other);
 }
 
@@ -58,7 +56,7 @@ instance_broadcast::~instance_broadcast() {}
  *  @return This object.
  */
 instance_broadcast& instance_broadcast::operator=(
-                                          instance_broadcast const& other) {
+    instance_broadcast const& other) {
   if (this != &other) {
     io::data::operator=(other);
     _internal_copy(other);
@@ -81,19 +79,16 @@ unsigned int instance_broadcast::type() const {
 void instance_broadcast::load() {
   io::events& e(io::events::instance());
   e.register_event(
-    io::events::internal,
-    io::events::de_instance_broadcast,
-      io::event_info(
-            "instance_broadcast",
-            &instance_broadcast::operations,
-            instance_broadcast::entries));
+      io::events::internal, io::events::de_instance_broadcast,
+      io::event_info("instance_broadcast", &instance_broadcast::operations,
+                     instance_broadcast::entries));
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -106,41 +101,31 @@ void instance_broadcast::_internal_copy(instance_broadcast const& other) {
   enabled = other.enabled;
   poller_id = other.poller_id;
   poller_name = other.poller_name;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const instance_broadcast::entries[] = {
-  mapping::entry(
-    &instance_broadcast::broker_id,
-    "broker_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &instance_broadcast::broker_name,
-    "broker_name"),
-  mapping::entry(
-    &instance_broadcast::enabled,
-    "enabled"),
-  mapping::entry(
-    &instance_broadcast::poller_id,
-    "poller_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &instance_broadcast::poller_name,
-    "poller_name"),
-  mapping::entry()
-};
+    mapping::entry(&instance_broadcast::broker_id,
+                   "broker_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&instance_broadcast::broker_name, "broker_name"),
+    mapping::entry(&instance_broadcast::enabled, "enabled"),
+    mapping::entry(&instance_broadcast::poller_id,
+                   "poller_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&instance_broadcast::poller_name, "poller_name"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_instance_broadcast() {
   return (new instance_broadcast);
 }
 io::event_info::event_operations const instance_broadcast::operations = {
-  &new_instance_broadcast
-};
+    &new_instance_broadcast};

@@ -16,16 +16,16 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/hooker.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 
 using namespace com::centreon::broker::multiplexing;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -37,7 +37,7 @@ hooker::hooker() : _registered(false) {}
  *
  *  @param[in] other  Object to copy.
  */
-//hooker::hooker(hooker const& other)
+// hooker::hooker(hooker const& other)
 //  : io::stream(other), _registered(false) {
 //  hook(other._registered);
 //}
@@ -54,7 +54,7 @@ hooker::~hooker() {}
  *
  *  @return This object.
  */
-//hooker& hooker::operator=(hooker const& other) {
+// hooker& hooker::operator=(hooker const& other) {
 //  if (this != &other) {
 //    io::stream::operator=(other);
 //    hook(other._registered);
@@ -71,10 +71,9 @@ void hooker::hook(bool should_hook) {
   if (_registered && !should_hook) {
     engine::instance().unhook(*this);
     _registered = false;
-  }
-  else if (!_registered && should_hook) {
+  } else if (!_registered && should_hook) {
     engine::instance().hook(*this);
     _registered = true;
   }
-  return ;
+  return;
 }

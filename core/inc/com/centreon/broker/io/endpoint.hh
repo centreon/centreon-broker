@@ -17,54 +17,51 @@
 */
 
 #ifndef CCB_IO_ENDPOINT_HH
-#  define CCB_IO_ENDPOINT_HH
+#define CCB_IO_ENDPOINT_HH
 
-#  include <memory>
-#  include <string>
-#  include <set>
-#  include "com/centreon/broker/io/properties.hh"
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <memory>
+#include <set>
+#include <string>
+#include "com/centreon/broker/io/properties.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 // Forward declaration.
-class                                persistent_cache;
+class persistent_cache;
 
-namespace                            io {
-  /**
-   *  @class endpoint endpoint.hh "com/centreon/broker/io/endpoint.hh"
-   *  @brief Base class of connectors and acceptors.
-   *
-   *  Endpoint are used to open data streams. Endpoints can be either
-   *  acceptors (which wait for incoming connections) or connectors
-   *  (that initiate connections).
-   */
-  class                              endpoint {
-   public:
-                                     endpoint(bool is_accptr);
-                                     endpoint(endpoint const& other);
-    virtual                          ~endpoint();
-    endpoint&                        operator=(endpoint const& other);
-    void                             from(
-                                       std::shared_ptr<endpoint> endp);
-    bool                             is_acceptor() const throw ();
-    bool                             is_connector() const throw ();
-    virtual std::shared_ptr<stream>  open() = 0;
-    virtual void                     stats(io::properties& tree);
-    void                             set_filter(
-                                       std::set<unsigned int> const& filter);
+namespace io {
+/**
+ *  @class endpoint endpoint.hh "com/centreon/broker/io/endpoint.hh"
+ *  @brief Base class of connectors and acceptors.
+ *
+ *  Endpoint are used to open data streams. Endpoints can be either
+ *  acceptors (which wait for incoming connections) or connectors
+ *  (that initiate connections).
+ */
+class endpoint {
+ public:
+  endpoint(bool is_accptr);
+  endpoint(endpoint const& other);
+  virtual ~endpoint();
+  endpoint& operator=(endpoint const& other);
+  void from(std::shared_ptr<endpoint> endp);
+  bool is_acceptor() const throw();
+  bool is_connector() const throw();
+  virtual std::shared_ptr<stream> open() = 0;
+  virtual void stats(io::properties& tree);
+  void set_filter(std::set<unsigned int> const& filter);
 
-   protected:
-    void                             _internal_copy(
-                                       endpoint const& other);
+ protected:
+  void _internal_copy(endpoint const& other);
 
-    std::shared_ptr<endpoint> _from;
-    bool                             _is_acceptor;
-    std::set<unsigned int>           _filter;
-  };
-}
+  std::shared_ptr<endpoint> _from;
+  bool _is_acceptor;
+  std::set<unsigned int> _filter;
+};
+}  // namespace io
 
 CCB_END()
 
-#endif // !CCB_IO_ENDPOINT_HH
+#endif  // !CCB_IO_ENDPOINT_HH

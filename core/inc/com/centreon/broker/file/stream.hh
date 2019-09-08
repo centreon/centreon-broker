@@ -17,48 +17,45 @@
 */
 
 #ifndef CCB_FILE_STREAM_HH
-#  define CCB_FILE_STREAM_HH
+#define CCB_FILE_STREAM_HH
 
-#  include <memory>
-#  include <mutex>
-#  include "com/centreon/broker/file/splitter.hh"
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <memory>
+#include <mutex>
+#include "com/centreon/broker/file/splitter.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace              file {
-  /**
-   *  @class stream stream.hh "com/centreon/broker/file/stream.hh"
-   *  @brief File stream.
-   *
-   *  Read and write data to a stream.
-   */
-  class                stream : public io::stream {
-   public:
-                       stream(splitter* file);
-                       ~stream();
-    std::string        peer() const;
-    bool               read(
-                         std::shared_ptr<io::data>& d,
-                         time_t deadline);
-    void               remove_all_files();
-    void               statistics(io::properties& tree) const;
-    int                write(std::shared_ptr<io::data> const& d);
+namespace file {
+/**
+ *  @class stream stream.hh "com/centreon/broker/file/stream.hh"
+ *  @brief File stream.
+ *
+ *  Read and write data to a stream.
+ */
+class stream : public io::stream {
+ public:
+  stream(splitter* file);
+  ~stream();
+  std::string peer() const;
+  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  void remove_all_files();
+  void statistics(io::properties& tree) const;
+  int write(std::shared_ptr<io::data> const& d);
 
-   private:
-                       stream(stream const& other);
-    stream&            operator=(stream const& other);
+ private:
+  stream(stream const& other);
+  stream& operator=(stream const& other);
 
-    std::unique_ptr<splitter>
-                       _file;
-    mutable std::mutex _mutex;
-    mutable long long  _last_read_offset;
-    mutable time_t     _last_time;
-    mutable long long  _last_write_offset;
-  };
-}
+  std::unique_ptr<splitter> _file;
+  mutable std::mutex _mutex;
+  mutable long long _last_read_offset;
+  mutable time_t _last_time;
+  mutable long long _last_write_offset;
+};
+}  // namespace file
 
 CCB_END()
 
-#endif // !CCB_FILE_STREAM_HH
+#endif  // !CCB_FILE_STREAM_HH

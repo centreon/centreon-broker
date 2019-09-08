@@ -16,13 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sstream>
-#include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/query_preparator.hh"
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/mysql.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
@@ -35,18 +35,17 @@ using namespace com::centreon::broker::database;
  *  @param[in] excluded  Fields excluded from the query.
  */
 query_preparator::query_preparator(
-                       unsigned int event_id,
-                       query_preparator::event_unique const& unique,
-                       query_preparator::excluded_fields const& excluded)
-  : _event_id(event_id), _excluded(excluded), _unique(unique) {}
+    unsigned int event_id,
+    query_preparator::event_unique const& unique,
+    query_preparator::excluded_fields const& excluded)
+    : _event_id(event_id), _excluded(excluded), _unique(unique) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-query_preparator::query_preparator(
-                       query_preparator const& other) {
+query_preparator::query_preparator(query_preparator const& other) {
   _event_id = other._event_id;
   _excluded = other._excluded;
   _unique = other._unique;
@@ -64,8 +63,7 @@ query_preparator::~query_preparator() {}
  *
  *  @return This object.
  */
-query_preparator& query_preparator::operator=(
-                       query_preparator const& other) {
+query_preparator& query_preparator::operator=(query_preparator const& other) {
   if (this != &other) {
     _event_id = other._event_id;
     _excluded = other._excluded;
@@ -84,12 +82,11 @@ query_preparator& query_preparator::operator=(
 mysql_stmt query_preparator::prepare_insert(mysql& ms, bool ignore) {
   std::map<std::string, int> bind_mapping;
   // Find event info.
-  io::event_info const*
-    info(io::events::instance().get_event_info(_event_id));
+  io::event_info const* info(io::events::instance().get_event_info(_event_id));
   if (!info)
-    throw (exceptions::msg()
-           << "could not prepare insertion query for event of type "
-           << _event_id << ": event is not registered");
+    throw(exceptions::msg()
+          << "could not prepare insertion query for event of type " << _event_id
+          << ": event is not registered");
 
   // Database schema version.
   bool schema_v2(ms.schema_version() == mysql::v2);
@@ -113,10 +110,9 @@ mysql_stmt query_preparator::prepare_insert(mysql& ms, bool ignore) {
       entry_name = entries[i].get_name_v2();
     else
       entry_name = entries[i].get_name();
-    if (!entry_name
-        || !entry_name[0]
-        || (_excluded.find(entry_name) != _excluded.end()))
-      continue ;
+    if (!entry_name || !entry_name[0] ||
+        (_excluded.find(entry_name) != _excluded.end()))
+      continue;
     query.append(entry_name);
     query.append(", ");
   }
@@ -130,10 +126,9 @@ mysql_stmt query_preparator::prepare_insert(mysql& ms, bool ignore) {
       entry_name = entries[i].get_name_v2();
     else
       entry_name = entries[i].get_name();
-    if (!entry_name
-        || !entry_name[0]
-        || (_excluded.find(entry_name) != _excluded.end()))
-      continue ;
+    if (!entry_name || !entry_name[0] ||
+        (_excluded.find(entry_name) != _excluded.end()))
+      continue;
     key = std::string(":");
     key.append(entry_name);
     bind_mapping.insert(std::make_pair(key, size++));
@@ -142,19 +137,15 @@ mysql_stmt query_preparator::prepare_insert(mysql& ms, bool ignore) {
   query.resize(query.size() - 1);
   query.append(")");
 
-  logging::debug(logging::low)
-    << "mysql: query_preparator: "
-    << query;
+  logging::debug(logging::low) << "mysql: query_preparator: " << query;
   // Prepare statement.
   mysql_stmt retval;
   try {
     retval = ms.prepare_query(query, bind_mapping);
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg()
-           << "could not prepare insertion query for event '"
-           << info->get_name() << "' in table '"
-           << info->get_table() << "': " << e.what());
+  } catch (std::exception const& e) {
+    throw(exceptions::msg()
+          << "could not prepare insertion query for event '" << info->get_name()
+          << "' in table '" << info->get_table() << "': " << e.what());
   }
   return retval;
 }
@@ -163,12 +154,11 @@ mysql_stmt query_preparator::prepare_insert_or_update(mysql& ms) {
   std::map<std::string, int> insert_bind_mapping;
   std::map<std::string, int> update_bind_mapping;
   // Find event info.
-  io::event_info const*
-    info(io::events::instance().get_event_info(_event_id));
+  io::event_info const* info(io::events::instance().get_event_info(_event_id));
   if (!info)
-    throw (exceptions::msg()
-           << "could not prepare insertion query for event of type "
-           << _event_id << ": event is not registered");
+    throw(exceptions::msg()
+          << "could not prepare insertion query for event of type " << _event_id
+          << ": event is not registered");
 
   // Database schema version.
   bool schema_v2(ms.schema_version() == mysql::v2);
@@ -188,10 +178,9 @@ mysql_stmt query_preparator::prepare_insert_or_update(mysql& ms) {
       entry_name = entries[i].get_name_v2();
     else
       entry_name = entries[i].get_name();
-    if (!entry_name
-        || !entry_name[0]
-        || (_excluded.find(entry_name) != _excluded.end()))
-      continue ;
+    if (!entry_name || !entry_name[0] ||
+        (_excluded.find(entry_name) != _excluded.end()))
+      continue;
     insert.append(entry_name);
     insert.append(",");
   }
@@ -206,10 +195,9 @@ mysql_stmt query_preparator::prepare_insert_or_update(mysql& ms) {
       entry_name = entries[i].get_name_v2();
     else
       entry_name = entries[i].get_name();
-    if (!entry_name
-        || !entry_name[0]
-        || (_excluded.find(entry_name) != _excluded.end()))
-      continue ;
+    if (!entry_name || !entry_name[0] ||
+        (_excluded.find(entry_name) != _excluded.end()))
+      continue;
     key = std::string(":");
     key.append(entry_name);
     if (_unique.find(entry_name) == _unique.end()) {
@@ -220,8 +208,7 @@ mysql_stmt query_preparator::prepare_insert_or_update(mysql& ms) {
       insert_bind_mapping.insert(std::make_pair(key, insert_size++));
       key[key.size() - 1] = '2';
       update_bind_mapping.insert(std::make_pair(key, update_size++));
-    }
-    else {
+    } else {
       insert.append("?,");
       insert_bind_mapping.insert(std::make_pair(key, insert_size++));
     }
@@ -232,25 +219,22 @@ mysql_stmt query_preparator::prepare_insert_or_update(mysql& ms) {
   insert.append(update);
 
   for (std::map<std::string, int>::const_iterator
-         it(update_bind_mapping.begin()),
-         end(update_bind_mapping.end());
-       it != end;
-       ++it)
-    insert_bind_mapping.insert(std::make_pair(it->first, it->second + insert_size));
+           it(update_bind_mapping.begin()),
+       end(update_bind_mapping.end());
+       it != end; ++it)
+    insert_bind_mapping.insert(
+        std::make_pair(it->first, it->second + insert_size));
 
-  logging::debug(logging::low)
-    << "mysql: query_preparator: "
-    << insert;
+  logging::debug(logging::low) << "mysql: query_preparator: " << insert;
   // Prepare statement.
   mysql_stmt retval;
   try {
     retval = ms.prepare_query(insert, insert_bind_mapping);
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg()
-           << "could not prepare insert or update query for event '"
-           << info->get_name() << "' in table '"
-           << info->get_table() << "': " << e.what());
+  } catch (std::exception const& e) {
+    throw(exceptions::msg()
+          << "could not prepare insert or update query for event '"
+          << info->get_name() << "' in table '" << info->get_table()
+          << "': " << e.what());
   }
   return retval;
 }
@@ -264,12 +248,11 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
   std::map<std::string, int> query_bind_mapping;
   std::map<std::string, int> where_bind_mapping;
   // Find event info.
-  io::event_info const*
-    info(io::events::instance().get_event_info(_event_id));
+  io::event_info const* info(io::events::instance().get_event_info(_event_id));
   if (!info)
-    throw (exceptions::msg()
-           << "could not prepare update query for event of type "
-           << _event_id << ": event is not registered");
+    throw(exceptions::msg()
+          << "could not prepare update query for event of type " << _event_id
+          << ": event is not registered");
 
   // Database schema version.
   bool schema_v2(ms.schema_version() == mysql::v2);
@@ -292,10 +275,9 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
       entry_name = entries[i].get_name_v2();
     else
       entry_name = entries[i].get_name();
-    if (!entry_name
-        || !entry_name[0]
-        || (_excluded.find(entry_name) != _excluded.end()))
-      continue ;
+    if (!entry_name || !entry_name[0] ||
+        (_excluded.find(entry_name) != _excluded.end()))
+      continue;
     // Standard field.
     if (_unique.find(entry_name) == _unique.end()) {
       query.append(entry_name);
@@ -323,23 +305,20 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
   query.resize(query.size() - 1);
   query.append(where, 0, where.size() - 5);
 
-  for (std::map<std::string, int>::iterator
-         it(where_bind_mapping.begin()),
-         end(where_bind_mapping.end());
-       it != end;
-       ++it)
-    query_bind_mapping.insert(std::make_pair(it->first, it->second + query_size));
+  for (std::map<std::string, int>::iterator it(where_bind_mapping.begin()),
+       end(where_bind_mapping.end());
+       it != end; ++it)
+    query_bind_mapping.insert(
+        std::make_pair(it->first, it->second + query_size));
 
   // Prepare statement.
   mysql_stmt retval;
   try {
     retval = ms.prepare_query(query, query_bind_mapping);
-  }
-  catch (std::exception const& e) {
-    throw (exceptions::msg()
-           << "could not prepare update query for event '"
-           << info->get_name() << "' on table '"
-           << info->get_table() << "': " << e.what());
+  } catch (std::exception const& e) {
+    throw(exceptions::msg()
+          << "could not prepare update query for event '" << info->get_name()
+          << "' on table '" << info->get_table() << "': " << e.what());
   }
   return retval;
 }
@@ -352,12 +331,11 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
 mysql_stmt query_preparator::prepare_delete(mysql& ms) {
   std::map<std::string, int> bind_mapping;
   // Find event info.
-  io::event_info const*
-    info(io::events::instance().get_event_info(_event_id));
+  io::event_info const* info(io::events::instance().get_event_info(_event_id));
   if (!info)
-    throw (exceptions::msg()
-           << "could not prepare deletion query for event of type "
-           << _event_id << ": event is not registered");
+    throw(exceptions::msg()
+          << "could not prepare deletion query for event of type " << _event_id
+          << ": event is not registered");
 
   // Database schema version.
   bool schema_v2(ms.schema_version() == mysql::v2);
@@ -370,11 +348,8 @@ mysql_stmt query_preparator::prepare_delete(mysql& ms) {
     query.append(info->get_table());
   query.append(" WHERE ");
   int size(0);
-  for (event_unique::const_iterator
-         it(_unique.begin()),
-         end(_unique.end());
-       it != end;
-       ++it) {
+  for (event_unique::const_iterator it(_unique.begin()), end(_unique.end());
+       it != end; ++it) {
     query.append("((");
     query.append(*it);
     query.append("=?");
@@ -383,7 +358,7 @@ mysql_stmt query_preparator::prepare_delete(mysql& ms) {
     key.append("1");
     bind_mapping.insert(std::make_pair(key, size++));
 
-    //query.append(*it);
+    // query.append(*it);
     query.append(") OR (");
     query.append(*it);
     query.append(" IS NULL AND ?");
@@ -393,18 +368,15 @@ mysql_stmt query_preparator::prepare_delete(mysql& ms) {
   }
   query.resize(query.size() - 5);
 
-
   // Prepare statement.
   mysql_stmt retval;
   try {
     retval = ms.prepare_query(query, bind_mapping);
-  }
-  catch (std::exception const& e) {
-    //FIXME DBR
-    throw (exceptions::msg()
-           << "could not prepare deletion query for event '"
-           << info->get_name() << "' on table '"
-           << info->get_table() << "': " << e.what());
+  } catch (std::exception const& e) {
+    // FIXME DBR
+    throw(exceptions::msg()
+          << "could not prepare deletion query for event '" << info->get_name()
+          << "' on table '" << info->get_table() << "': " << e.what());
   }
   return retval;
 }

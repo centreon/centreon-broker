@@ -17,77 +17,70 @@
 */
 
 #ifndef CCB_BAM_CONFIGURATION_APPLIER_META_SERVICE_HH
-#  define CCB_BAM_CONFIGURATION_APPLIER_META_SERVICE_HH
+#define CCB_BAM_CONFIGURATION_APPLIER_META_SERVICE_HH
 
-#  include <map>
-#  include <memory>
-#  include "com/centreon/broker/bam/configuration/meta_service.hh"
-#  include "com/centreon/broker/bam/configuration/state.hh"
-#  include "com/centreon/broker/bam/meta_service.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <map>
+#include <memory>
+#include "com/centreon/broker/bam/configuration/meta_service.hh"
+#include "com/centreon/broker/bam/configuration/state.hh"
+#include "com/centreon/broker/bam/meta_service.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 // Forward declarations.
-namespace             neb {
-  class               host;
-  class               service;
-}
+namespace neb {
+class host;
+class service;
+}  // namespace neb
 
-namespace             bam {
-  class               metric_book;
+namespace bam {
+class metric_book;
 
-  namespace           configuration {
-    namespace         applier {
-      /**
-       *  @class meta_service meta_service.hh "com/centreon/broker/bam/configuration/applier/meta_service.hh"
-       *  @brief Apply meta-services.
-       *
-       *  Create, update and delete meta-services.
-       */
-      class           meta_service {
-      public:
-                      meta_service();
-                      meta_service(meta_service const& other);
-                      ~meta_service();
-        meta_service& operator=(meta_service const& other);
-        void          apply(
-                        configuration::state::meta_services const& my_meta,
-                        metric_book& book);
-        std::shared_ptr<bam::meta_service>
-                      find_meta(unsigned int id);
+namespace configuration {
+namespace applier {
+/**
+ *  @class meta_service meta_service.hh
+ * "com/centreon/broker/bam/configuration/applier/meta_service.hh"
+ *  @brief Apply meta-services.
+ *
+ *  Create, update and delete meta-services.
+ */
+class meta_service {
+ public:
+  meta_service();
+  meta_service(meta_service const& other);
+  ~meta_service();
+  meta_service& operator=(meta_service const& other);
+  void apply(configuration::state::meta_services const& my_meta,
+             metric_book& book);
+  std::shared_ptr<bam::meta_service> find_meta(unsigned int id);
 
-      private:
-        struct applied {
-          configuration::meta_service         cfg;
-          std::shared_ptr<bam::meta_service> obj;
-        };
+ private:
+  struct applied {
+    configuration::meta_service cfg;
+    std::shared_ptr<bam::meta_service> obj;
+  };
 
-        void          _internal_copy(meta_service const& other);
-        std::shared_ptr<neb::host>
-                      _meta_host(unsigned int host_id);
-        std::shared_ptr<neb::service>
-                      _meta_service(
-                         unsigned int meta_id,
-                         unsigned int host_id,
-                         unsigned int service_id);
-        void          _modify_meta(
-                        bam::meta_service& obj,
-                        metric_book& book,
-                        configuration::meta_service const& old_cfg,
-                        configuration::meta_service const& new_cfg);
-        std::shared_ptr<bam::meta_service>
-                      _new_meta(
-                        configuration::meta_service const& cfg,
-                        metric_book& book);
+  void _internal_copy(meta_service const& other);
+  std::shared_ptr<neb::host> _meta_host(unsigned int host_id);
+  std::shared_ptr<neb::service> _meta_service(unsigned int meta_id,
+                                              unsigned int host_id,
+                                              unsigned int service_id);
+  void _modify_meta(bam::meta_service& obj,
+                    metric_book& book,
+                    configuration::meta_service const& old_cfg,
+                    configuration::meta_service const& new_cfg);
+  std::shared_ptr<bam::meta_service> _new_meta(
+      configuration::meta_service const& cfg,
+      metric_book& book);
 
-        std::map<unsigned int, applied>
-                      _applied;
-      };
-    }
-  }
-}
+  std::map<unsigned int, applied> _applied;
+};
+}  // namespace applier
+}  // namespace configuration
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_CONFIGURATION_APPLIER_META_SERVICE_HH
+#endif  // !CCB_BAM_CONFIGURATION_APPLIER_META_SERVICE_HH

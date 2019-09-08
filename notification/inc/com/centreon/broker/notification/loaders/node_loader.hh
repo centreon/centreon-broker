@@ -17,31 +17,32 @@
 */
 
 #ifndef CCB_NOTIFICATION_LOADERS_NODE_LOADER_HH
-#  define CCB_NOTIFICATION_LOADERS_NODE_LOADER_HH
+#define CCB_NOTIFICATION_LOADERS_NODE_LOADER_HH
 
-#  include <string>
-#  include "com/centreon/broker/mysql.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/builders/node_builder.hh"
+#include <string>
+#include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/node_builder.hh"
 
 CCB_BEGIN()
 
-namespace       notification {
-  /**
-   *  @class node_loader node_loader.hh "com/centreon/broker/notification/loaders/node_loader.hh"
-   *  @brief Loader for node objects.
-   *
-   *  This loader loads the nodes from the database.
-   */
-  class         node_loader {
-  public:
-                node_loader();
+namespace notification {
+/**
+ *  @class node_loader node_loader.hh
+ * "com/centreon/broker/notification/loaders/node_loader.hh"
+ *  @brief Loader for node objects.
+ *
+ *  This loader loads the nodes from the database.
+ */
+class node_loader {
+ public:
+  node_loader();
 
-    void        load(mysql* db, node_builder* output);
-  };
+  void load(mysql* db, node_builder* output);
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_LOADERS_NODE_LOADER_HH
+#endif  // !CCB_NOTIFICATION_LOADERS_NODE_LOADER_HH

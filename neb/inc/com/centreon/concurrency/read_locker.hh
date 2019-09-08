@@ -17,94 +17,90 @@
 */
 
 #ifndef CC_CONCURRENCY_READ_LOCKER_HH
-#  define CC_CONCURRENCY_READ_LOCKER_HH
+#define CC_CONCURRENCY_READ_LOCKER_HH
 
-#  include "com/centreon/concurrency/read_write_lock.hh"
-#  include "com/centreon/namespace.hh"
+#include "com/centreon/concurrency/read_write_lock.hh"
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace            concurrency {
+namespace concurrency {
+/**
+ *  @class read_locker read_locker.hh "com/centreon/concurrency/read_locker.hh"
+ *  @brief Handle read locking of a readers-writer lock.
+ *
+ *  Lock RWL upon creation and unlock it upon destruction.
+ */
+class read_locker {
+ public:
   /**
-   *  @class read_locker read_locker.hh "com/centreon/concurrency/read_locker.hh"
-   *  @brief Handle read locking of a readers-writer lock.
+   *  Constructor.
    *
-   *  Lock RWL upon creation and unlock it upon destruction.
+   *  @param[in] rwl Target RWL.
    */
-  class              read_locker {
-  public:
-    /**
-     *  Constructor.
-     *
-     *  @param[in] rwl Target RWL.
-     */
-                     read_locker(read_write_lock* rwl)
-      : _locked(false), _rwl(rwl) {
+  read_locker(read_write_lock* rwl) : _locked(false), _rwl(rwl) { relock(); }
+
+  /**
+   *  Copy constructor.
+   *
+   *  @param[in] right Object to copy.
+   */
+  read_locker(read_locker const& right) : _locked(false), _rwl(right._rwl) {
+    relock();
+  }
+
+  /**
+   *  Destructor.
+   */
+  ~read_locker() throw() {
+    try {
+      if (_locked)
+        unlock();
+    } catch (...) {
+    }
+  }
+
+  /**
+   *  Assignment operator.
+   *
+   *  @param[in] right Object to copy.
+   *
+   *  @return This object.
+   */
+  read_locker& operator=(read_locker const& right) {
+    if (this != &right) {
+      if (_locked)
+        unlock();
+      _rwl = right._rwl;
       relock();
     }
+    return (*this);
+  }
 
-    /**
-     *  Copy constructor.
-     *
-     *  @param[in] right Object to copy.
-     */
-                     read_locker(read_locker const& right)
-      : _locked(false), _rwl(right._rwl) {
-      relock();
-    }
+  /**
+   *  Relock.
+   */
+  void relock() {
+    _rwl->read_lock();
+    _locked = true;
+    return;
+  }
 
-    /**
-     *  Destructor.
-     */
-                     ~read_locker() throw () {
-      try {
-        if (_locked)
-          unlock();
-      }
-      catch (...) {}
-    }
+  /**
+   *  Unlock.
+   */
+  void unlock() {
+    _rwl->read_unlock();
+    _locked = false;
+    return;
+  }
 
-    /**
-     *  Assignment operator.
-     *
-     *  @param[in] right Object to copy.
-     *
-     *  @return This object.
-     */
-    read_locker&     operator=(read_locker const& right) {
-      if (this != &right) {
-        if (_locked)
-          unlock();
-        _rwl = right._rwl;
-        relock();
-      }
-      return (*this);
-    }
-
-    /**
-     *  Relock.
-     */
-    void             relock() {
-      _rwl->read_lock();
-      _locked = true;
-      return ;
-    }
-
-    /**
-     *  Unlock.
-     */
-    void             unlock() {
-      _rwl->read_unlock();
-      _locked = false;
-      return ;
-    }
-
-  private:
-    bool             _locked;
-    read_write_lock* _rwl;
-  };
-}
+ private:
+  bool _locked;
+  read_write_lock* _rwl;
+};
+}  // namespace concurrency
 
 CC_END()
 
-#endif // !CC_CONCURRENCY_READ_LOCKER_HH
+#endif  // !CC_CONCURRENCY_READ_LOCKER_HH

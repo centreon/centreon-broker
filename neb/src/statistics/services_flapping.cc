@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/services_flapping.hh"
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/services_flapping.hh"
 #include "com/centreon/engine/globals.hh"
 
 using namespace com::centreon::broker;
@@ -37,7 +37,7 @@ services_flapping::services_flapping() : plugin("services_flapping") {}
  *  @param[in] right Object to copy.
  */
 services_flapping::services_flapping(services_flapping const& right)
- : plugin(right) {}
+    : plugin(right) {}
 
 /**
  *  Destructor.
@@ -51,7 +51,8 @@ services_flapping::~services_flapping() {}
  *
  *  @return This object.
  */
-services_flapping& services_flapping::operator=(services_flapping const& right) {
+services_flapping& services_flapping::operator=(
+    services_flapping const& right) {
   plugin::operator=(right);
   return (*this);
 }
@@ -62,16 +63,13 @@ services_flapping& services_flapping::operator=(services_flapping const& right) 
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void services_flapping::run(
-              std::string& output,
-	      std::string& perfdata) {
+void services_flapping::run(std::string& output, std::string& perfdata) {
   // Count services are flapping.
   unsigned int total{0};
   for (service_map::const_iterator
-         it{com::centreon::engine::service::services.begin()},
-         end{com::centreon::engine::service::services.end()};
-       it != end;
-       ++it)
+           it{com::centreon::engine::service::services.begin()},
+       end{com::centreon::engine::service::services.end()};
+       it != end; ++it)
     if (it->second->get_is_flapping())
       ++total;
 
@@ -86,5 +84,5 @@ void services_flapping::run(
   oss << "services_flapping=" << total;
   perfdata = oss.str();
 
-  return ;
+  return;
 }

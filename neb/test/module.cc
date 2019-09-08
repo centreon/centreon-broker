@@ -17,25 +17,20 @@
  *
  */
 
+#include "com/centreon/broker/neb/module.hh"
 #include <gtest/gtest.h>
 #include <cstdlib>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/module.hh"
 #include "randomize.hh"
 
 using namespace com::centreon::broker;
 
 class Module : public ::testing::Test {
-  void SetUp() {
-    randomize_init();
-  };
+  void SetUp() override { randomize_init(); };
 
-  void TearDown() {
-    randomize_cleanup();
-  };
+  void TearDown() override { randomize_cleanup(); };
 };
-
 
 /**
  *  Check module's assignment operator.
@@ -54,14 +49,13 @@ TEST_F(Module, Assign) {
   mod2 = mod1;
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(mod1, &randvals2);
 
   // Compare objects with expected results.
   ASSERT_FALSE(mod1 != randvals2);
   ASSERT_FALSE(mod2 != randvals1);
 }
-
 
 /**
  *  Check module's copy constructor.
@@ -76,14 +70,13 @@ TEST_F(Module, CopyCtor) {
   neb::module mod2(mod1);
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(mod1, &randvals2);
 
   // Compare objects with expected results.
   ASSERT_FALSE(mod1 != randvals2);
   ASSERT_FALSE(mod2 != randvals1);
 }
-
 
 /**
  *  Check module's default constructor.

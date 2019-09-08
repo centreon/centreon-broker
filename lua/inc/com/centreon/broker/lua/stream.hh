@@ -17,46 +17,45 @@
 */
 
 #ifndef CCB_LUA_STREAM_HH
-#  define CCB_LUA_STREAM_HH
+#define CCB_LUA_STREAM_HH
 
-#  include <memory>
-#  include "com/centreon/broker/lua/macro_cache.hh"
-#  include "com/centreon/broker/misc/variant.hh"
+#include <memory>
+#include "com/centreon/broker/lua/macro_cache.hh"
+#include "com/centreon/broker/misc/variant.hh"
 
 CCB_BEGIN()
 
-namespace          lua {
+namespace lua {
 
-  // Forward declaration.
-  class luabinding;
+// Forward declaration.
+class luabinding;
 
-  /**
-   *  @class stream stream.hh "com/centreon/broker/lua/stream.hh"
-   *  @brief lua stream.
-   *
-   *  Stream events into lua database.
-   */
-  class             stream : public io::stream {
-  public:
-                    stream(
-                      std::string const& lua_script,
-                      std::map<std::string, misc::variant> const& conf_params,
-                      std::shared_ptr<persistent_cache> const& cache);
-    stream&         operator=(stream const& other) = delete;
-                    stream(stream const& other) = delete;
-                    ~stream();
-    bool            read(std::shared_ptr<io::data>& d, time_t deadline) override;
-    int             write(std::shared_ptr<io::data> const& d) override;
+/**
+ *  @class stream stream.hh "com/centreon/broker/lua/stream.hh"
+ *  @brief lua stream.
+ *
+ *  Stream events into lua database.
+ */
+class stream : public io::stream {
+ public:
+  stream(std::string const& lua_script,
+         std::map<std::string, misc::variant> const& conf_params,
+         std::shared_ptr<persistent_cache> const& cache);
+  stream& operator=(stream const& other) = delete;
+  stream(stream const& other) = delete;
+  ~stream();
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) override;
+  int write(std::shared_ptr<io::data> const& d) override;
 
-  private:
-    // Access to the Lua interpreter
-    luabinding*     _luabinding;
+ private:
+  // Access to the Lua interpreter
+  luabinding* _luabinding;
 
-    // Cache
-    macro_cache     _cache;
-  };
-}
+  // Cache
+  macro_cache _cache;
+};
+}  // namespace lua
 
 CCB_END()
 
-#endif // !CCB_LUA_STREAM_HH
+#endif  // !CCB_LUA_STREAM_HH

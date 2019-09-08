@@ -17,56 +17,53 @@
 */
 
 #ifndef CCB_EXTCMD_COMMAND_CLIENT_HH
-#  define CCB_EXTCMD_COMMAND_CLIENT_HH
+#define CCB_EXTCMD_COMMAND_CLIENT_HH
 
-#  include <asio.hpp>
-#  include <memory>
-#  include <string>
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <asio.hpp>
+#include <memory>
+#include <string>
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 #if ASIO_VERSION < 101200
 namespace asio {
-  typedef io_service io_context;
+typedef io_service io_context;
 }
 #endif
 
 CCB_BEGIN()
 
-namespace             extcmd {
-  // Forward declaration.
-  class               command_listener;
-  class               command_parser;
+namespace extcmd {
+// Forward declaration.
+class command_listener;
+class command_parser;
 
-  /**
-   *  @class command_client command_client.hh "com/centreon/broker/extcmd/command_client.hh"
-   *  @brief Command client.
-   *
-   *  This class represents a user connected to the command server.
-   */
-  class               command_client : public io::stream {
-  public:
-                      command_client(
-                        asio::local::stream_protocol::socket & socket,
-                        command_parser& parser);
-                      ~command_client();
-    bool              read(
-                        std::shared_ptr<io::data>& d,
-                        time_t deadline = (time_t)-1);
-    int               write(std::shared_ptr<io::data> const& d);
+/**
+ *  @class command_client command_client.hh
+ * "com/centreon/broker/extcmd/command_client.hh"
+ *  @brief Command client.
+ *
+ *  This class represents a user connected to the command server.
+ */
+class command_client : public io::stream {
+ public:
+  command_client(asio::local::stream_protocol::socket& socket,
+                 command_parser& parser);
+  ~command_client();
+  bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
+  int write(std::shared_ptr<io::data> const& d);
 
-  private:
-                      command_client(command_client const& other);
-    command_client&   operator=(command_client const& other);
+ private:
+  command_client(command_client const& other);
+  command_client& operator=(command_client const& other);
 
-    std::string       _buffer;
-    command_parser&   _parser;
-    asio::io_context  _io_context;
-    std::unique_ptr<asio::local::stream_protocol::socket>
-                      _socket;
-  };
-}
+  std::string _buffer;
+  command_parser& _parser;
+  asio::io_context _io_context;
+  std::unique_ptr<asio::local::stream_protocol::socket> _socket;
+};
+}  // namespace extcmd
 
 CCB_END()
 
-#endif // !CCB_EXTCMD_COMMAND_CLIENT_HH
+#endif  // !CCB_EXTCMD_COMMAND_CLIENT_HH

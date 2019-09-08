@@ -17,37 +17,35 @@
 */
 
 #ifndef CCB_GENERATOR_SENDER_HH
-#  define CCB_GENERATOR_SENDER_HH
+#define CCB_GENERATOR_SENDER_HH
 
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace              generator {
-  /**
-   *  @class sender sender.hh "com/centreon/broker/generator/sender.hh"
-   *  @brief Generate events.
-   *
-   *  Generate events.
-   */
-  class                sender : public io::stream {
-   public:
-                       sender();
-                       ~sender();
-    bool               read(
-                         std::shared_ptr<io::data>& d,
-                         time_t deadline);
-    int                write(std::shared_ptr<io::data> const& d);
+namespace generator {
+/**
+ *  @class sender sender.hh "com/centreon/broker/generator/sender.hh"
+ *  @brief Generate events.
+ *
+ *  Generate events.
+ */
+class sender : public io::stream {
+ public:
+  sender();
+  ~sender();
+  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  int write(std::shared_ptr<io::data> const& d);
 
-   private:
-                       sender(sender const& other);
-    sender&            operator=(sender const& other);
+ private:
+  sender(sender const& other);
+  sender& operator=(sender const& other);
 
-    unsigned int       _number;
-  };
-}
+  unsigned int _number;
+};
+}  // namespace generator
 
 CCB_END()
 
-#endif // !CCB_GENERATOR_SENDER_HH
+#endif  // !CCB_GENERATOR_SENDER_HH

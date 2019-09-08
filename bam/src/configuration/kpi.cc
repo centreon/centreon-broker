@@ -23,41 +23,40 @@ using namespace com::centreon::broker::bam::configuration;
 /**
  *  Constructor.
  */
-kpi::kpi(
-       unsigned int id,
-       short state_type,
-       unsigned int host_id,
-       unsigned int service_id,
-       unsigned int ba_id,
-       unsigned int indicator_ba,
-       unsigned int meta_id,
-       unsigned int boolexp_id,
-       short status,
-       short last_level,
-       bool downtimed,
-       bool acknowledged,
-       bool ignore_downtime,
-       bool ignore_acknowledgement,
-       double warning,
-       double critical,
-       double unknown)
-  : _id(id),
-    _state_type(state_type),
-    _host_id(host_id),
-    _service_id(service_id),
-    _ba_id(ba_id),
-    _indicator_ba_id(indicator_ba),
-    _meta_id(meta_id),
-    _boolexp_id(boolexp_id),
-    _status(status),
-    _last_level(last_level),
-    _downtimed(downtimed),
-    _acknowledged(acknowledged),
-    _ignore_downtime(ignore_downtime),
-    _ignore_acknowledgement(ignore_acknowledgement),
-    _impact_warning(warning),
-    _impact_critical(critical),
-    _impact_unknown(unknown) {}
+kpi::kpi(unsigned int id,
+         short state_type,
+         unsigned int host_id,
+         unsigned int service_id,
+         unsigned int ba_id,
+         unsigned int indicator_ba,
+         unsigned int meta_id,
+         unsigned int boolexp_id,
+         short status,
+         short last_level,
+         bool downtimed,
+         bool acknowledged,
+         bool ignore_downtime,
+         bool ignore_acknowledgement,
+         double warning,
+         double critical,
+         double unknown)
+    : _id(id),
+      _state_type(state_type),
+      _host_id(host_id),
+      _service_id(service_id),
+      _ba_id(ba_id),
+      _indicator_ba_id(indicator_ba),
+      _meta_id(meta_id),
+      _boolexp_id(boolexp_id),
+      _status(status),
+      _last_level(last_level),
+      _downtimed(downtimed),
+      _acknowledged(acknowledged),
+      _ignore_downtime(ignore_downtime),
+      _ignore_acknowledgement(ignore_acknowledgement),
+      _impact_warning(warning),
+      _impact_critical(critical),
+      _impact_unknown(unknown) {}
 
 /**
  *  Copy constructor.
@@ -65,24 +64,24 @@ kpi::kpi(
  *  @param[in] other The copy.
  */
 kpi::kpi(kpi const& other)
-  : _id(other._id),
-    _state_type(other._state_type),
-    _host_id(other._host_id),
-    _service_id(other._service_id),
-    _ba_id(other._ba_id),
-    _indicator_ba_id(other._indicator_ba_id),
-    _meta_id(other._meta_id),
-    _boolexp_id(other._boolexp_id),
-    _status(other._status),
-    _last_level(other._last_level),
-    _downtimed(other._downtimed),
-    _acknowledged(other._acknowledged),
-    _ignore_downtime(other._ignore_downtime),
-    _ignore_acknowledgement(other._ignore_acknowledgement),
-    _impact_warning(other._impact_warning),
-    _impact_critical(other._impact_critical),
-    _impact_unknown(other._impact_unknown),
-    _event(other._event) {}
+    : _id(other._id),
+      _state_type(other._state_type),
+      _host_id(other._host_id),
+      _service_id(other._service_id),
+      _ba_id(other._ba_id),
+      _indicator_ba_id(other._indicator_ba_id),
+      _meta_id(other._meta_id),
+      _boolexp_id(other._boolexp_id),
+      _status(other._status),
+      _last_level(other._last_level),
+      _downtimed(other._downtimed),
+      _acknowledged(other._acknowledged),
+      _ignore_downtime(other._ignore_downtime),
+      _ignore_acknowledgement(other._ignore_acknowledgement),
+      _impact_warning(other._impact_warning),
+      _impact_critical(other._impact_critical),
+      _impact_unknown(other._impact_unknown),
+      _event(other._event) {}
 
 /**
  *  Destructor.
@@ -128,24 +127,20 @@ kpi& kpi::operator=(kpi const& other) {
  *  @return True if both objects are equal.
  */
 bool kpi::operator==(kpi const& other) const {
-  return ((_id == other._id)
-          && (_state_type == other._state_type)
-          && (_host_id == other._host_id)
-          && (_service_id == other._service_id)
-          && (_ba_id == other._ba_id)
-          && (_indicator_ba_id == other._indicator_ba_id)
-          && (_meta_id == other._meta_id)
-          && (_boolexp_id == other._boolexp_id)
-          && (_status == other._status)
-          && (_last_level == other._last_level)
-          && (_downtimed == other._downtimed)
-          && (_acknowledged == other._acknowledged)
-          && (_ignore_downtime == other._ignore_downtime)
-          && (_ignore_acknowledgement == other._ignore_acknowledgement)
-          && (_impact_warning == other._impact_warning)
-          && (_impact_critical == other._impact_critical)
-          && (_impact_unknown == other._impact_unknown)
-          && (_event == other._event));
+  return ((_id == other._id) && (_state_type == other._state_type) &&
+          (_host_id == other._host_id) && (_service_id == other._service_id) &&
+          (_ba_id == other._ba_id) &&
+          (_indicator_ba_id == other._indicator_ba_id) &&
+          (_meta_id == other._meta_id) && (_boolexp_id == other._boolexp_id) &&
+          (_status == other._status) && (_last_level == other._last_level) &&
+          (_downtimed == other._downtimed) &&
+          (_acknowledged == other._acknowledged) &&
+          (_ignore_downtime == other._ignore_downtime) &&
+          (_ignore_acknowledgement == other._ignore_acknowledgement) &&
+          (_impact_warning == other._impact_warning) &&
+          (_impact_critical == other._impact_critical) &&
+          (_impact_unknown == other._impact_unknown) &&
+          (_event == other._event));
 }
 
 /**
@@ -409,7 +404,7 @@ void kpi::set_ba_id(unsigned int i) {
  */
 void kpi::set_indicator_ba_id(unsigned int ba_id) {
   _indicator_ba_id = ba_id;
-  return ;
+  return;
 }
 
 /**
@@ -419,7 +414,7 @@ void kpi::set_indicator_ba_id(unsigned int ba_id) {
  */
 void kpi::set_meta_id(unsigned int meta_id) {
   _meta_id = meta_id;
-  return ;
+  return;
 }
 
 /**
@@ -429,7 +424,7 @@ void kpi::set_meta_id(unsigned int meta_id) {
  */
 void kpi::set_boolexp_id(unsigned int boolexp_id) {
   _boolexp_id = boolexp_id;
-  return ;
+  return;
 }
 
 /**

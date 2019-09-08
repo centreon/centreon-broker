@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
-#include <limits>
-#include <QMutexLocker>
 #include "com/centreon/broker/notification/notification_scheduler.hh"
-#include "com/centreon/broker/notification/state.hh"
-#include "com/centreon/broker/notification/node_cache.hh"
+#include <QMutexLocker>
+#include <limits>
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/notification/node_cache.hh"
+#include "com/centreon/broker/notification/state.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -33,11 +33,11 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in] cache  The data cache object.
  */
 notification_scheduler::notification_scheduler(state& st, node_cache& cache)
-  : _should_exit{false},
-    _general_mutex{},
-    _state(st),
-    _cache (cache),
-    _started_flag{false} {}
+    : _should_exit{false},
+      _general_mutex{},
+      _state(st),
+      _cache(cache),
+      _started_flag{false} {}
 
 /**
  *  Called by the notification thread when it starts.
@@ -51,24 +51,21 @@ void notification_scheduler::run() {
     // if the queue is empty.
     time_t first_time = _queue.get_first_time();
     time_t now = ::time(NULL);
-    unsigned long wait_for = first_time == time_t(-1) ?
-                               std::numeric_limits<unsigned long>::max()
-                               : (first_time >= now) ?
-                                   (first_time - now) * 1000
-                                   : 0;
+    unsigned long wait_for =
+        first_time == time_t(-1)
+            ? std::numeric_limits<unsigned long>::max()
+            : (first_time >= now) ? (first_time - now) * 1000 : 0;
 
-    logging::debug(logging::medium)
-      << "notification: scheduler sleeping for "
-      << wait_for / 1000.0 << " seconds";
+    logging::debug(logging::medium) << "notification: scheduler sleeping for "
+                                    << wait_for / 1000.0 << " seconds";
 
     _general_condition.wait_for(lock, std::chrono::milliseconds(wait_for));
 
-    logging::debug(logging::medium)
-        << "notification: scheduler waking up";
+    logging::debug(logging::medium) << "notification: scheduler waking up";
 
     // The should exit flag was set - exit.
     if (_should_exit)
-      break ;
+      break;
 
     // Process the actions and release the mutex.
     _process_actions();
@@ -91,7 +88,7 @@ void notification_scheduler::wait() {
 /**
  *  Ask gracefully for the notification thread to exit.
  */
-void notification_scheduler::exit() throw () {
+void notification_scheduler::exit() throw() {
   // Set the should exit flag.
   {
     std::lock_guard<std::mutex> lock(_general_mutex);
@@ -141,9 +138,8 @@ void notification_scheduler::remove_actions_of_node(objects::node_id id) {
     std::vector<const action*> actions = _queue.get_actions_of_node(id);
     // Iterate over the actions to remove them.
     for (std::vector<const action*>::iterator it(actions.begin()),
-                                              end(actions.end());
-         it != end;
-         ++it)
+         end(actions.end());
+         it != end; ++it)
       _queue.remove(**it);
     // If we just deleted the first event, we need to wake
     // the scheduling thread.
@@ -169,8 +165,7 @@ void notification_scheduler::_process_actions() {
 
   // Iterate on the local queue.
   for (run_queue::iterator it(local_queue.begin()), end(local_queue.end());
-       it != end;
-       ++it) {
+       it != end; ++it) {
     // The action processing can add other actions to the queue.
     std::vector<std::pair<time_t, action> > spawned_actions;
     {
@@ -190,11 +185,10 @@ void notification_scheduler::_process_actions() {
  *  @param[in] actions  The actions to schedule.
  */
 void notification_scheduler::_schedule_actions(
-       std::vector<std::pair<time_t, action> > const& actions) {
+    std::vector<std::pair<time_t, action> > const& actions) {
   for (std::vector<std::pair<time_t, action> >::const_iterator
-          it(actions.begin()),
-          end(actions.end());
-       it != end;
-       ++it)
+           it(actions.begin()),
+       end(actions.end());
+       it != end; ++it)
     add_action_to_queue(it->first, it->second);
 }

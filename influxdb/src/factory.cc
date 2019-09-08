@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/influxdb/factory.hh"
 #include <cstring>
 #include <json11.hpp>
 #include <memory>
@@ -23,19 +24,18 @@
 #include <vector>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/influxdb/connector.hh"
-#include "com/centreon/broker/influxdb/factory.hh"
 #include "com/centreon/broker/influxdb/column.hh"
+#include "com/centreon/broker/influxdb/connector.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
 using namespace json11;
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 /**
  *  Find a parameter in configuration.
@@ -45,21 +45,20 @@ using namespace json11;
  *
  *  @return Property value.
  */
-static std::string find_param(
-                     config::endpoint const& cfg,
-                     std::string const& key) {
+static std::string find_param(config::endpoint const& cfg,
+                              std::string const& key) {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
     throw exceptions::msg() << "influxdb: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'";
+                            << "' defined for endpoint '" << cfg.name << "'";
   return it->second;
 }
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -125,9 +124,9 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return Endpoint matching the given configuration.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   std::string user(find_param(cfg, "db_user"));
   std::string passwd(find_param(cfg, "db_password"));
   std::string addr(find_param(cfg, "db_host"));
@@ -136,23 +135,24 @@ io::endpoint* factory::new_endpoint(
   unsigned short port(0);
   {
     std::stringstream ss;
-    std::map<std::string, std::string>::const_iterator
-      it{cfg.params.find("db_port")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("db_port")};
     if (it == cfg.params.end())
       port = 8086;
     else {
       ss << it->second;
       ss >> port;
       if (!ss.eof())
-        throw exceptions::msg() << "influxdb: couldn't parse port '" << ss.str()
-               << "' defined for endpoint '" << cfg.name << "'";
+        throw exceptions::msg()
+            << "influxdb: couldn't parse port '" << ss.str()
+            << "' defined for endpoint '" << cfg.name << "'";
     }
   }
 
   unsigned int queries_per_transaction(0);
   {
-    std::map<std::string, std::string>::const_iterator
-      it{cfg.params.find("queries_per_transaction")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("queries_per_transaction")};
     if (it != cfg.params.end())
       queries_per_transaction = std::stoul(it->second);
     else
@@ -168,32 +168,26 @@ io::endpoint* factory::new_endpoint(
     Json const& value{status_columns["value"]};
     Json const& is_tag{status_columns["is_tag"]};
     Json const& type{status_columns["type"]};
-    if (name.is_null() || !name.is_string() ||
-        name.string_value().empty() || !value.is_string() ||
-        value.string_value().empty())
+    if (name.is_null() || !name.is_string() || name.string_value().empty() ||
+        !value.is_string() || value.string_value().empty())
       throw exceptions::msg()
-             << "influxdb: couldn't get the configuration of a status column";
-    status_column_list.push_back(column(
-      name.string_value(),
-      value.string_value(),
-      is_tag.bool_value(),
-      column::parse_type(type.string_value())));
+          << "influxdb: couldn't get the configuration of a status column";
+    status_column_list.push_back(
+        column(name.string_value(), value.string_value(), is_tag.bool_value(),
+               column::parse_type(type.string_value())));
   } else if (status_columns.is_array()) {
-    for (Json const &object : status_columns.array_items()) {
+    for (Json const& object : status_columns.array_items()) {
       Json const& name{object["name"]};
       Json const& value{object["value"]};
       Json const& is_tag{object["is_tag"]};
       Json const& type{object["type"]};
-      if (name.is_null() || !name.is_string() ||
-          name.string_value().empty() || !value.is_string() ||
-          value.string_value().empty())
-        throw (exceptions::msg())
-          << "influxdb: couldn't get the configuration of a status column";
-      status_column_list.push_back(column(
-        name.string_value(),
-        value.string_value(),
-        is_tag.bool_value(),
-        column::parse_type(type.string_value())));
+      if (name.is_null() || !name.is_string() || name.string_value().empty() ||
+          !value.is_string() || value.string_value().empty())
+        throw(exceptions::msg())
+            << "influxdb: couldn't get the configuration of a status column";
+      status_column_list.push_back(
+          column(name.string_value(), value.string_value(), is_tag.bool_value(),
+                 column::parse_type(type.string_value())));
     }
   }
 
@@ -202,53 +196,38 @@ io::endpoint* factory::new_endpoint(
   std::vector<column> metric_column_list;
   Json const& metric_columns = cfg.cfg["metrics_column"];
   if (metric_columns.is_object()) {
-    Json const &name{metric_columns["name"]};
-    Json const &value{metric_columns["value"]};
-    Json const &is_tag{metric_columns["is_tag"]};
-    Json const &type{metric_columns["type"]};
-    if (name.is_null() || !name.is_string() ||
-        name.string_value().empty() || !value.is_string() ||
-        value.string_value().empty())
-      throw (exceptions::msg())
-        << "influxdb: couldn't get the configuration of a metric column";
-    metric_column_list.push_back(column(
-      name.string_value(),
-      value.string_value(),
-      is_tag.bool_value(),
-      column::parse_type(type.string_value())));
-  } else if (metric_columns.is_array()) {
-    for (Json const &object : metric_columns.array_items()) {
-      Json const &name{object["name"]};
-      Json const &value{object["value"]};
-      Json const &is_tag{object["is_tag"]};
-      Json const &type{object["type"]};
-      if (name.is_null() || !name.is_string() ||
-          name.string_value().empty() || !value.is_string() ||
-          value.string_value().empty())
-        throw (exceptions::msg())
+    Json const& name{metric_columns["name"]};
+    Json const& value{metric_columns["value"]};
+    Json const& is_tag{metric_columns["is_tag"]};
+    Json const& type{metric_columns["type"]};
+    if (name.is_null() || !name.is_string() || name.string_value().empty() ||
+        !value.is_string() || value.string_value().empty())
+      throw(exceptions::msg())
           << "influxdb: couldn't get the configuration of a metric column";
-      metric_column_list.push_back(column(
-        name.string_value(),
-        value.string_value(),
-        is_tag.bool_value(),
-        column::parse_type(type.string_value())));
+    metric_column_list.push_back(
+        column(name.string_value(), value.string_value(), is_tag.bool_value(),
+               column::parse_type(type.string_value())));
+  } else if (metric_columns.is_array()) {
+    for (Json const& object : metric_columns.array_items()) {
+      Json const& name{object["name"]};
+      Json const& value{object["value"]};
+      Json const& is_tag{object["is_tag"]};
+      Json const& type{object["type"]};
+      if (name.is_null() || !name.is_string() || name.string_value().empty() ||
+          !value.is_string() || value.string_value().empty())
+        throw(exceptions::msg())
+            << "influxdb: couldn't get the configuration of a metric column";
+      metric_column_list.push_back(
+          column(name.string_value(), value.string_value(), is_tag.bool_value(),
+                 column::parse_type(type.string_value())));
     }
   }
 
   // Connector.
   std::unique_ptr<influxdb::connector> c(new influxdb::connector);
-  c->connect_to(
-       user,
-       passwd,
-       addr,
-       port,
-       db,
-       queries_per_transaction,
-       status_timeseries,
-       status_column_list,
-       metric_timeseries,
-       metric_column_list,
-       cache);
+  c->connect_to(user, passwd, addr, port, db, queries_per_transaction,
+                status_timeseries, status_column_list, metric_timeseries,
+                metric_column_list, cache);
   is_acceptor = false;
   return (c.release());
 }

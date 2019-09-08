@@ -16,31 +16,31 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/state.hh"
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
  */
 state::state()
-  : ack_time(-1),
-    current_state(3),
-    end_time(-1),
-    host_id(0),
-    in_downtime(false),
-    poller_id(0),
-    service_id(0),
-    start_time(0) {}
+    : ack_time(-1),
+      current_state(3),
+      end_time(-1),
+      host_id(0),
+      in_downtime(false),
+      poller_id(0),
+      service_id(0),
+      start_time(0) {}
 
 /**
  *  Copy constructor.
@@ -77,14 +77,11 @@ state& state::operator=(state const& s) {
  *  @return       True of both objects are equal.
  */
 bool state::operator==(state const& s) const {
-  return ((this == &s)
-          || ((ack_time == s.ack_time)
-              && (current_state == s.current_state)
-              && (end_time == s.end_time)
-              && (host_id == s.host_id)
-              && (in_downtime == s.in_downtime)
-              && (service_id == s.service_id)
-              && (start_time == s.start_time)));
+  return ((this == &s) ||
+          ((ack_time == s.ack_time) && (current_state == s.current_state) &&
+           (end_time == s.end_time) && (host_id == s.host_id) &&
+           (in_downtime == s.in_downtime) && (service_id == s.service_id) &&
+           (start_time == s.start_time)));
 }
 
 /**
@@ -113,14 +110,15 @@ unsigned int state::type() const {
  *  @return  The event type.
  */
 unsigned int state::static_type() {
-  return (io::events::data_type<io::events::correlation, correlation::de_state>::value);
+  return (io::events::data_type<io::events::correlation,
+                                correlation::de_state>::value);
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members from the given object.
@@ -136,50 +134,36 @@ void state::_internal_copy(state const& s) {
   poller_id = s.poller_id;
   service_id = s.service_id;
   start_time = s.start_time;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const state::entries[] = {
-  mapping::entry(
-    &state::ack_time,
-    "ack_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &state::current_state,
-    "state"),
-  mapping::entry(
-    &state::end_time,
-    "end_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &state::host_id,
-    "host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &state::in_downtime,
-    "in_downtime"),
-  mapping::entry(
-    &state::service_id,
-    "service_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &state::start_time,
-    "start_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry()
-};
+    mapping::entry(&state::ack_time,
+                   "ack_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&state::current_state, "state"),
+    mapping::entry(&state::end_time,
+                   "end_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&state::host_id, "host_id", mapping::entry::invalid_on_zero),
+    mapping::entry(&state::in_downtime, "in_downtime"),
+    mapping::entry(&state::service_id,
+                   "service_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&state::start_time,
+                   "start_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_state() {
   return (new state);
 }
-io::event_info::event_operations const state::operations = {
-  &new_state
-};
+io::event_info::event_operations const state::operations = {&new_state};

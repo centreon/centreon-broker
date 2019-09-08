@@ -17,11 +17,11 @@
 */
 
 #ifndef CCB_STORAGE_EVENTS_HH
-#  define CCB_STORAGE_EVENTS_HH
+#define CCB_STORAGE_EVENTS_HH
 
-#  include "com/centreon/broker/storage/metric.hh"
-#  include "com/centreon/broker/storage/rebuild.hh"
-#  include "com/centreon/broker/storage/remove_graph.hh"
-#  include "com/centreon/broker/storage/status.hh"
+#include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/rebuild.hh"
+#include "com/centreon/broker/storage/remove_graph.hh"
+#include "com/centreon/broker/storage/status.hh"
 
-#endif // !CCB_STORAGE_EVENTS_HH
+#endif  // !CCB_STORAGE_EVENTS_HH

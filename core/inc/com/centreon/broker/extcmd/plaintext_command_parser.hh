@@ -17,36 +17,36 @@
 */
 
 #ifndef CCB_EXTCMD_PLAINTEXT_COMMAND_PARSER_HH
-#  define CCB_EXTCMD_PLAINTEXT_COMMAND_PARSER_HH
+#define CCB_EXTCMD_PLAINTEXT_COMMAND_PARSER_HH
 
-#  include "com/centreon/broker/extcmd/command_parser.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/extcmd/command_parser.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         extcmd {
-  /**
-   *  @class plaintext_command_parser plaintext_command_parser.hh "com/centreon/broker/extcmd/plaintext_command_parser.hh"
-   *  @brief Plaintext command parser.
-   */
-  class           plaintext_command_parser : public command_parser {
-  public:
-                  plaintext_command_parser(command_listener& listener);
-    virtual       ~plaintext_command_parser();
+namespace extcmd {
+/**
+ *  @class plaintext_command_parser plaintext_command_parser.hh
+ * "com/centreon/broker/extcmd/plaintext_command_parser.hh"
+ *  @brief Plaintext command parser.
+ */
+class plaintext_command_parser : public command_parser {
+ public:
+  plaintext_command_parser(command_listener& listener);
+  virtual ~plaintext_command_parser();
 
-    unsigned int  parse(
-      std::string const& buffer,
-      command_result& res,
-      std::shared_ptr<command_request>& request);
+  unsigned int parse(std::string const& buffer,
+                     command_result& res,
+                     std::shared_ptr<command_request>& request);
 
-    std::string    write(command_result const& res);
+  std::string write(command_result const& res);
 
-  private:
-                  plaintext_command_parser(plaintext_command_parser const&);
-    plaintext_command_parser& operator=(plaintext_command_parser const&);
-  };
-}
+ private:
+  plaintext_command_parser(plaintext_command_parser const&);
+  plaintext_command_parser& operator=(plaintext_command_parser const&);
+};
+}  // namespace extcmd
 
 CCB_END()
 
-#endif // !CCB_EXTCMD_PLAINTEXT_COMMAND_PARSER_HH
+#endif  // !CCB_EXTCMD_PLAINTEXT_COMMAND_PARSER_HH

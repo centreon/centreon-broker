@@ -32,13 +32,13 @@ state::state() {}
  *  @param[in] other  Object to copy.
  */
 state::state(state const& other)
-  : _ba_svc_mapping(other._ba_svc_mapping),
-    _bas(other._bas),
-    _kpis(other._kpis),
-    _bool_expressions(other._bool_expressions),
-    _hst_svc_mapping(other._hst_svc_mapping),
-    _meta_svc_mapping(other._meta_svc_mapping),
-    _meta_services(other._meta_services) {}
+    : _ba_svc_mapping(other._ba_svc_mapping),
+      _bas(other._bas),
+      _kpis(other._kpis),
+      _bool_expressions(other._bool_expressions),
+      _hst_svc_mapping(other._hst_svc_mapping),
+      _meta_svc_mapping(other._meta_svc_mapping),
+      _meta_services(other._meta_services) {}
 
 /**
  *  Destructor
@@ -56,7 +56,7 @@ state& state::operator=(state const& other) {
   if (this != &other) {
     _ba_svc_mapping = other._ba_svc_mapping;
     _bas = other._bas;
-    _kpis= other._kpis;
+    _kpis = other._kpis;
     _bool_expressions = other._bool_expressions;
     _hst_svc_mapping = other._hst_svc_mapping;
     _meta_svc_mapping = other._meta_svc_mapping;
@@ -73,7 +73,7 @@ void state::clear() {
   _kpis.clear();
   _bool_expressions.clear();
   _meta_services.clear();
-  return ;
+  return;
 }
 
 /**
@@ -144,7 +144,7 @@ bam::ba_svc_mapping const& state::get_meta_svc_mapping() const {
  *
  *  @return  The list of all the business activities.
  */
-state::bas & state::get_bas() {
+state::bas& state::get_bas() {
   return (_bas);
 }
 
@@ -153,7 +153,7 @@ state::bas & state::get_bas() {
  *
  *  @return  A list of kpis.
  */
-state::kpis & state::get_kpis() {
+state::kpis& state::get_kpis() {
   return (_kpis);
 }
 

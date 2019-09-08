@@ -17,43 +17,42 @@
 */
 
 #ifndef CCB_EXCEPTIONS_INTERRUPT_HH
-#  define CCB_EXCEPTIONS_INTERRUPT_HH
+#define CCB_EXCEPTIONS_INTERRUPT_HH
 
-#  include <exception>
-#  include "com/centreon/broker/misc/stringifier.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <exception>
+#include "com/centreon/broker/misc/stringifier.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace               exceptions {
-  /**
-   *  @class interrupt interrupt.hh "com/centreon/broker/exceptions/interrupt.hh"
-   *  @brief Interrupt exception.
-   *
-   *  Exception that is thrown upon interrupted action.
-   */
-  class                 interrupt : private misc::stringifier,
-                                    public std::exception {
-   public:
-                        interrupt();
-                        interrupt(interrupt const& other);
-    virtual             ~interrupt() throw ();
-    interrupt&          operator=(interrupt const& other);
-    virtual char const* what() const throw ();
+namespace exceptions {
+/**
+ *  @class interrupt interrupt.hh "com/centreon/broker/exceptions/interrupt.hh"
+ *  @brief Interrupt exception.
+ *
+ *  Exception that is thrown upon interrupted action.
+ */
+class interrupt : private misc::stringifier, public std::exception {
+ public:
+  interrupt();
+  interrupt(interrupt const& other);
+  virtual ~interrupt() throw();
+  interrupt& operator=(interrupt const& other);
+  virtual char const* what() const throw();
 
-    /**
-     *  Insert data in message.
-     *
-     *  @param[in] t  Data to insert.
-     */
-    template            <typename T>
-    interrupt&            operator<<(T t) {
-      misc::stringifier::operator<<(t);
-      return (*this);
-    }
-  };
-}
+  /**
+   *  Insert data in message.
+   *
+   *  @param[in] t  Data to insert.
+   */
+  template <typename T>
+  interrupt& operator<<(T t) {
+    misc::stringifier::operator<<(t);
+    return (*this);
+  }
+};
+}  // namespace exceptions
 
 CCB_END()
 
-#endif // !CCB_EXCEPTIONS_INTERRUPT_HH
+#endif  // !CCB_EXCEPTIONS_INTERRUPT_HH

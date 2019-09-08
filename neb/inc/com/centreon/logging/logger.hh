@@ -17,64 +17,54 @@
 */
 
 #ifndef CC_LOGGING_LOGGER_HH
-#  define CC_LOGGING_LOGGER_HH
+#define CC_LOGGING_LOGGER_HH
 
-#  include "com/centreon/logging/engine.hh"
-#  include "com/centreon/logging/temp_logger.hh"
-#  include "com/centreon/namespace.hh"
+#include "com/centreon/logging/engine.hh"
+#include "com/centreon/logging/temp_logger.hh"
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
 namespace logging {
-  enum    type_value {
-    type_info = (1ull << 61),
-    type_debug = (1ull << 62),
-    type_error = (1ull << 63)
-  };
+enum type_value {
+  type_info = (1ull << 61),
+  type_debug = (1ull << 62),
+  type_error = (1ull << 63)
+};
 
-  enum    verbosity_level {
-    low = 0,
-    medium = 1,
-    high = 2
-  };
-}
+enum verbosity_level { low = 0, medium = 1, high = 2 };
+}  // namespace logging
 
 CC_END()
 
-#  define log_info(verbose) \
-  for (unsigned int __com_centreon_logging_define_ui(0); \
-       !__com_centreon_logging_define_ui \
-       && com::centreon::logging::engine::instance().is_log( \
-               com::centreon::logging::type_info, \
-               verbose); \
-       ++__com_centreon_logging_define_ui) \
-    com::centreon::logging::temp_logger( \
-      com::centreon::logging::type_info, \
-      verbose) \
-        << "[info] "
+#define log_info(verbose)                                                \
+  for (unsigned int __com_centreon_logging_define_ui(0);                 \
+       !__com_centreon_logging_define_ui &&                              \
+       com::centreon::logging::engine::instance().is_log(                \
+           com::centreon::logging::type_info, verbose);                  \
+       ++__com_centreon_logging_define_ui)                               \
+  com::centreon::logging::temp_logger(com::centreon::logging::type_info, \
+                                      verbose)                           \
+      << "[info] "
 
-#  define log_debug(verbose) \
-  for (unsigned int __com_centreon_logging_define_ui(0); \
-       !__com_centreon_logging_define_ui \
-       && com::centreon::logging::engine::instance().is_log(   \
-               com::centreon::logging::type_debug, \
-               verbose); \
-       ++__com_centreon_logging_define_ui) \
-    com::centreon::logging::temp_logger( \
-      com::centreon::logging::type_debug, \
-      verbose) \
+#define log_debug(verbose)                                                \
+  for (unsigned int __com_centreon_logging_define_ui(0);                  \
+       !__com_centreon_logging_define_ui &&                               \
+       com::centreon::logging::engine::instance().is_log(                 \
+           com::centreon::logging::type_debug, verbose);                  \
+       ++__com_centreon_logging_define_ui)                                \
+  com::centreon::logging::temp_logger(com::centreon::logging::type_debug, \
+                                      verbose)                            \
       << "[debug] "
 
-#  define log_error(verbose) \
-  for (unsigned int __com_centreon_logging_define_ui(0); \
-       !__com_centreon_logging_define_ui \
-       && com::centreon::logging::engine::instance().is_log( \
-               com::centreon::logging::type_error, \
-               verbose); \
-       ++__com_centreon_logging_define_ui) \
-    com::centreon::logging::temp_logger( \
-      com::centreon::logging::type_error, \
-      verbose) \
+#define log_error(verbose)                                                \
+  for (unsigned int __com_centreon_logging_define_ui(0);                  \
+       !__com_centreon_logging_define_ui &&                               \
+       com::centreon::logging::engine::instance().is_log(                 \
+           com::centreon::logging::type_error, verbose);                  \
+       ++__com_centreon_logging_define_ui)                                \
+  com::centreon::logging::temp_logger(com::centreon::logging::type_error, \
+                                      verbose)                            \
       << "[error] "
 
-#endif // !CC_LOGGING_LOGGER_HH
+#endif  // !CC_LOGGING_LOGGER_HH

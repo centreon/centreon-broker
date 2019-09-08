@@ -99,7 +99,7 @@ TEST(Unhook, EngineWorks) {
 
     // Check subscriber content.
     {
-      char const* messages[] = {HOOKMSG1, MSG1, HOOKMSG2, MSG2, NULL};
+      char const* messages[] = {HOOKMSG1, MSG1, HOOKMSG2, MSG2, nullptr};
       for (unsigned int i = 0; messages[i]; ++i) {
         std::shared_ptr<io::data> d;
         s.get_muxer().read(d, 0);

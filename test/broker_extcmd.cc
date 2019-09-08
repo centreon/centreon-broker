@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdio>
-#include <QLocalSocket>
-#include <sstream>
-#include <unistd.h>
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "test/broker_extcmd.hh"
+#include <unistd.h>
+#include <QLocalSocket>
+#include <cstdio>
+#include <sstream>
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 
@@ -67,15 +67,13 @@ broker_extcmd& broker_extcmd::operator=(broker_extcmd const& other) {
  *
  *  @return True if command is pending.
  */
-bool broker_extcmd::execute(
-                      std::string const& query,
-                      bool wait_command) {
+bool broker_extcmd::execute(std::string const& query, bool wait_command) {
   // Connect to socket.
   QLocalSocket sockt;
   sockt.connectToServer(_file.c_str());
   if (!sockt.waitForConnected())
-    throw (exceptions::msg() << "could not connect to socket: "
-           << sockt.errorString());
+    throw(exceptions::msg()
+          << "could not connect to socket: " << sockt.errorString());
 
   // Write query and read result.
   {
@@ -97,7 +95,9 @@ bool broker_extcmd::execute(
     ::usleep(100000);
     _write(sockt, status_cmd);
     _read(sockt, id, pending, msg, query);
-  } while (wait_command && pending);
+  }
+  while (wait_command && pending)
+    ;
 
   // Close socket.
   sockt.close();
@@ -110,7 +110,7 @@ bool broker_extcmd::execute(
  *
  *  @return Command file.
  */
-std::string const& broker_extcmd::get_file() const throw () {
+std::string const& broker_extcmd::get_file() const throw() {
   return (_file);
 }
 
@@ -121,7 +121,7 @@ std::string const& broker_extcmd::get_file() const throw () {
  */
 void broker_extcmd::set_file(std::string const& file) {
   _file = file;
-  return ;
+  return;
 }
 
 /**
@@ -131,7 +131,7 @@ void broker_extcmd::set_file(std::string const& file) {
  */
 void broker_extcmd::_internal_copy(broker_extcmd const& other) {
   _file = other._file;
-  return ;
+  return;
 }
 
 /**
@@ -143,12 +143,11 @@ void broker_extcmd::_internal_copy(broker_extcmd const& other) {
  *  @param[out]    msg      Status message.
  *  @param[in]     query    Initial query.
  */
-void broker_extcmd::_read(
-                      QLocalSocket& sockt,
-                      unsigned int& id,
-                      bool& pending,
-                      std::string& msg,
-                      std::string const& query) {
+void broker_extcmd::_read(QLocalSocket& sockt,
+                          unsigned int& id,
+                          bool& pending,
+                          std::string& msg,
+                          std::string const& query) {
   char buffer[1000];
   sockt.waitForReadyRead();
   sockt.readLine(buffer, sizeof(buffer));
@@ -156,21 +155,21 @@ void broker_extcmd::_read(
     buffer[strlen(buffer) - 1] = '\0';
   char* limit1(strchr(buffer, ' '));
   if (!limit1)
-    throw (exceptions::msg() << "invalid result format (query was '"
-           << query << "': " << buffer);
+    throw(exceptions::msg()
+          << "invalid result format (query was '" << query << "': " << buffer);
   char* limit2(strchr(limit1 + 1, ' '));
   if (!limit2)
-    throw (exceptions::msg() << "invalid result format (query was '"
-           << query << "': " << buffer);
+    throw(exceptions::msg()
+          << "invalid result format (query was '" << query << "': " << buffer);
   *limit1 = '\0';
   *limit2 = '\0';
   id = strtoul(buffer, NULL, 0);
   unsigned int code(strtoul(limit1 + 1, NULL, 0));
   msg = limit2 + 1;
   if ((code != 0) && (code != 1))
-    throw (exceptions::msg() << "command execution failed: " << msg);
+    throw(exceptions::msg() << "command execution failed: " << msg);
   pending = (code == 1);
-  return ;
+  return;
 }
 
 /**
@@ -179,19 +178,17 @@ void broker_extcmd::_read(
  *  @param[in,out] sockt  Socket object.
  *  @param[in]     query  Query to send.
  */
-void broker_extcmd::_write(
-                      QLocalSocket& sockt,
-                      std::string const& query) {
+void broker_extcmd::_write(QLocalSocket& sockt, std::string const& query) {
   char const* buffer(query.c_str());
   int remaining(query.size());
   while (remaining > 0) {
     int wb(sockt.write(buffer, remaining));
     if (wb <= 0)
-      throw (exceptions::msg() << "cannot write query '"
-             << query << "' to socket '" << _file << "': "
-             << sockt.errorString());
+      throw(exceptions::msg()
+            << "cannot write query '" << query << "' to socket '" << _file
+            << "': " << sockt.errorString());
     buffer += wb;
     remaining -= wb;
   }
-  return ;
+  return;
 }

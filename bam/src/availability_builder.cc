@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <ctime>
 #include "com/centreon/broker/bam/availability_builder.hh"
+#include <ctime>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -27,24 +27,25 @@ using namespace com::centreon::broker::bam;
 /**
  *  Constructor.
  *
- *  @param[in] ending_point    The point from when the builder should stop to build the availability.
- *  @param[in] starting_point  The point from when the builder should build the availability.
+ *  @param[in] ending_point    The point from when the builder should stop to
+ * build the availability.
+ *  @param[in] starting_point  The point from when the builder should build the
+ * availability.
  */
-availability_builder::availability_builder(
-                        time_t ending_point,
-                        time_t starting_point /* = 0 */)
-  : _start(starting_point),
-    _end(ending_point),
-    _available(0),
-    _unavailable(0),
-    _degraded(0),
-    _unknown(0),
-    _downtime(0),
-    _alert_unavailable_opened(0),
-    _alert_degraded_opened(0),
-    _alert_unknown_opened(0),
-    _nb_downtime(0),
-    _timeperiods_is_default(false) {}
+availability_builder::availability_builder(time_t ending_point,
+                                           time_t starting_point /* = 0 */)
+    : _start(starting_point),
+      _end(ending_point),
+      _available(0),
+      _unavailable(0),
+      _degraded(0),
+      _unknown(0),
+      _downtime(0),
+      _alert_unavailable_opened(0),
+      _alert_degraded_opened(0),
+      _alert_unknown_opened(0),
+      _nb_downtime(0),
+      _timeperiods_is_default(false) {}
 
 /**
  *  Destructor
@@ -67,7 +68,8 @@ availability_builder::availability_builder(availability_builder const& other) {
  *
  *  @return  A reference to this object.
  */
-availability_builder& availability_builder::operator=(availability_builder const& other) {
+availability_builder& availability_builder::operator=(
+    availability_builder const& other) {
   if (this != &other) {
     _start = other._start;
     _end = other._end;
@@ -94,18 +96,18 @@ availability_builder& availability_builder::operator=(availability_builder const
  *  @param[in] was_in_downtime  Was the event in downtime?
  *  @param[in] tp               The timeperiod of the event.
  */
-void availability_builder::add_event(
-                             short status,
-                             time_t start, time_t end,
-                             bool was_in_downtime,
-                             time::timeperiod::ptr const& tp) {
+void availability_builder::add_event(short status,
+                                     time_t start,
+                                     time_t end,
+                                     bool was_in_downtime,
+                                     time::timeperiod::ptr const& tp) {
   // Check that the event was closed.
   if (end == 0)
     end = _end;
   // Check that the end of the event is not before the starting point of the
   // computing.
   if (end < _start)
-    return ;
+    return;
   // Check if event was opened "today".
   bool opened_today((start >= _start) && (start < _end));
   // Check that the event times are within the computed day.
@@ -117,31 +119,28 @@ void availability_builder::add_event(
   // Compute the sla_duration on the period.
   unsigned int sla_duration = tp->duration_intersect(start, end);
   if (sla_duration == (unsigned int)-1)
-    return ;
+    return;
 
   // Update the data.
   if (was_in_downtime) {
     _downtime += sla_duration;
     if (opened_today)
       ++_nb_downtime;
-  }
-  else {
+  } else {
     if (status == 0)
       _available += sla_duration;
     else if (status == 1) {
       _degraded += sla_duration;
       if (opened_today)
-	++_alert_degraded_opened;
-    }
-    else if (status == 2) {
+        ++_alert_degraded_opened;
+    } else if (status == 2) {
       _unavailable += sla_duration;
       if (opened_today)
-	++_alert_unavailable_opened;
-    }
-    else {
+        ++_alert_unavailable_opened;
+    } else {
       _unknown += sla_duration;
       if (opened_today)
-	++_alert_unknown_opened;
+        ++_alert_unknown_opened;
     }
   }
 }

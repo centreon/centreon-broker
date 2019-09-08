@@ -16,19 +16,19 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/extcmd/command_server.hh"
 #include "com/centreon/broker/extcmd/factory.hh"
 #include "com/centreon/broker/config/parser.hh"
+#include "com/centreon/broker/extcmd/command_server.hh"
 #include "com/centreon/broker/io/protocols.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::extcmd;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -91,22 +91,19 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return Endpoint matching configuration.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   is_acceptor = true;
   // Find the protocol to use.
   command_server::protocol prot = command_server::json;
-  std::map<std::string, std::string>::const_iterator
-    it{cfg.params.find("command_protocol")};
+  std::map<std::string, std::string>::const_iterator it{
+      cfg.params.find("command_protocol")};
   if (it != cfg.params.end()) {
     std::string command_prot{it->second};
     if (command_prot == "plaintext")
       prot = command_server::plaintext;
   }
 
-  return new command_server(
-                prot,
-                cfg.params["extcmd"],
-                cache);
+  return new command_server(prot, cfg.params["extcmd"], cache);
 }

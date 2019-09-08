@@ -17,39 +17,36 @@
 */
 
 #ifndef CCB_GENERATOR_ENDPOINT_HH
-#  define CCB_GENERATOR_ENDPOINT_HH
+#define CCB_GENERATOR_ENDPOINT_HH
 
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                        generator {
-  /**
-   *  @class endpoint endpoint.hh "com/centreon/broker/generator/endpoint.hh"
-   *  @brief Create generator stream.
-   *
-   *  Create a generator stream.
-   */
-  class                          endpoint : public io::endpoint {
-   public:
-    enum                         endpoint_type {
-      type_receiver = 1,
-      type_sender
-    };
+namespace generator {
+/**
+ *  @class endpoint endpoint.hh "com/centreon/broker/generator/endpoint.hh"
+ *  @brief Create generator stream.
+ *
+ *  Create a generator stream.
+ */
+class endpoint : public io::endpoint {
+ public:
+  enum endpoint_type { type_receiver = 1, type_sender };
 
-                                 endpoint(endpoint_type type);
-                                 ~endpoint();
-    std::shared_ptr<io::stream> open();
+  endpoint(endpoint_type type);
+  ~endpoint();
+  std::shared_ptr<io::stream> open();
 
-   private:
-                                 endpoint(endpoint const& other);
-    endpoint&                    operator=(endpoint const& other);
+ private:
+  endpoint(endpoint const& other);
+  endpoint& operator=(endpoint const& other);
 
-    endpoint_type                _type;
-  };
-}
+  endpoint_type _type;
+};
+}  // namespace generator
 
 CCB_END()
 
-#endif // !CCB_GENERATOR_ENDPOINT_HH
+#endif  // !CCB_GENERATOR_ENDPOINT_HH

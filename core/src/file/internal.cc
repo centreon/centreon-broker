@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/file/factory.hh"
 #include "com/centreon/broker/file/internal.hh"
+#include "com/centreon/broker/file/factory.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -32,12 +32,8 @@ void file::unload() {
 void file::load() {
   // File module.
   logging::info(logging::high)
-    << "file: module for Centreon Broker "
-    << CENTREON_BROKER_VERSION;
+      << "file: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
   // Register file layer.
-  io::protocols::instance().reg("file",
-    file::factory(),
-    1,
-    3);
+  io::protocols::instance().reg("file", file::factory(), 1, 3);
 }

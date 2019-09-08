@@ -17,44 +17,44 @@
 */
 
 #ifndef CCB_NEB_CHECK_HH
-#  define CCB_NEB_CHECK_HH
+#define CCB_NEB_CHECK_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace   neb {
-  /**
-   *  @class check check.hh "com/centreon/broker/neb/check.hh"
-   *  @brief Check that has been executed.
-   *
-   *  Once a check has been executed (the check itself, not
-   *  deduced information), this kind of event is sent.
-   *
-   *  @see host_check
-   *  @see service_check
-   */
-  class          check : public io::data {
-  public:
-                 check();
-                 check(check const& c);
-    virtual      ~check();
-    check&       operator=(check const& c);
+namespace neb {
+/**
+ *  @class check check.hh "com/centreon/broker/neb/check.hh"
+ *  @brief Check that has been executed.
+ *
+ *  Once a check has been executed (the check itself, not
+ *  deduced information), this kind of event is sent.
+ *
+ *  @see host_check
+ *  @see service_check
+ */
+class check : public io::data {
+ public:
+  check();
+  check(check const& c);
+  virtual ~check();
+  check& operator=(check const& c);
 
-    bool         active_checks_enabled;
-    short        check_type;
-    std::string      command_line;
-    unsigned int host_id;
-    timestamp    next_check;
+  bool active_checks_enabled;
+  short check_type;
+  std::string command_line;
+  unsigned int host_id;
+  timestamp next_check;
 
-  private:
-    void         _internal_copy(check const& c);
-  };
-}
+ private:
+  void _internal_copy(check const& c);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_CHECK_HH
+#endif  // !CCB_NEB_CHECK_HH

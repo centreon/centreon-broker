@@ -21,10 +21,10 @@
 using namespace com::centreon::broker::rrd;
 
 /**************************************
-*                                     *
-*            Public Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *            Public Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.

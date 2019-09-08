@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/simu/connector.hh"
 #include <fstream>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/simu/connector.hh"
 #include "com/centreon/broker/simu/stream.hh"
 
 using namespace com::centreon::broker;
@@ -28,8 +28,7 @@ using namespace com::centreon::broker::simu;
 /**
  *  Default constructor.
  */
-connector::connector()
-  : io::endpoint(false) {}
+connector::connector() : io::endpoint(false) {}
 
 /**
  *  Copy constructor.
@@ -37,9 +36,9 @@ connector::connector()
  *  @param[in] other  Object to copy.
  */
 connector::connector(connector const& other)
-  : io::endpoint(other),
-    _lua_script(other._lua_script),
-    _conf_params(other._conf_params) {}
+    : io::endpoint(other),
+      _lua_script(other._lua_script),
+      _conf_params(other._conf_params) {}
 
 /**
  *  Destructor.
@@ -70,8 +69,8 @@ connector& connector::operator=(connector const& other) {
  *                                     parameters
  */
 void connector::connect_to(
-                  std::string const& lua_script,
-                  std::map<std::string, misc::variant> const& cfg_params) {
+    std::string const& lua_script,
+    std::map<std::string, misc::variant> const& cfg_params) {
   _conf_params = cfg_params;
   _lua_script = lua_script;
 }
@@ -82,7 +81,5 @@ void connector::connect_to(
  *  @return a lua connection object.
  */
 std::shared_ptr<io::stream> connector::open() {
-  return std::shared_ptr<io::stream>(new stream(
-            _lua_script,
-            _conf_params));
+  return std::shared_ptr<io::stream>(new stream(_lua_script, _conf_params));
 }

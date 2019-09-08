@@ -17,12 +17,12 @@
 */
 
 #ifndef CCB_NOTIFICATION_QHASH_FUNC_HH
-#  define CCB_NOTIFICATION_QHASH_FUNC_HH
+#define CCB_NOTIFICATION_QHASH_FUNC_HH
 
-#  include <string>
-#  include <QtGlobal>
+#include <QtGlobal>
+#include <string>
 
 // QHash function for std::string
 uint qHash(std::string const& str);
 
-#endif // !CCB_NOTIFICATION_QHASH_FUNC_HH
+#endif  // !CCB_NOTIFICATION_QHASH_FUNC_HH

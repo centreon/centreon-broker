@@ -21,15 +21,15 @@
 using namespace com::centreon::broker::exceptions;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
-corruption::corruption()  {}
+corruption::corruption() {}
 
 /**
  *  Copy constructor.
@@ -37,12 +37,12 @@ corruption::corruption()  {}
  *  @param[in] other  Object to build from.
  */
 corruption::corruption(corruption const& other)
-  : com::centreon::broker::exceptions::msg(other) {}
+    : com::centreon::broker::exceptions::msg(other) {}
 
 /**
  *  Destructor.
  */
-corruption::~corruption() throw () {}
+corruption::~corruption() throw() {}
 
 /**
  *  Assignment operator overload.
@@ -51,7 +51,7 @@ corruption::~corruption() throw () {}
  *
  *  @return This instance.
  */
-corruption& corruption::operator=(corruption const& other)  {
+corruption& corruption::operator=(corruption const& other) {
   com::centreon::broker::exceptions::msg::operator=(other);
   return (*this);
 }

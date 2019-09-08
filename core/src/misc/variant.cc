@@ -16,8 +16,8 @@
  * For more information : contact@centreon.com
  */
 
-#include <cassert>
 #include "com/centreon/broker/misc/variant.hh"
+#include <cassert>
 
 using namespace com::centreon::broker::misc;
 
@@ -29,8 +29,7 @@ variant::variant() : _type{type_none} {}
 /**
  *  Constructor
  */
-variant::variant(char const* value)
-    : _type{type_string}, _str_value{value} {}
+variant::variant(char const* value) : _type{type_string}, _str_value{value} {}
 
 /**
  *  Constructor
@@ -92,7 +91,7 @@ variant::variant(variant const& var) : _type{var._type} {
       _dbl_value = var._dbl_value;
       break;
     case type_string:
-      new(&_str_value) std::string(var._str_value);
+      new (&_str_value) std::string(var._str_value);
       break;
     default:
       // If we enter here, it is a bug.
@@ -141,7 +140,7 @@ variant& variant::operator=(variant const& other) {
       _dbl_value = other._dbl_value;
       break;
     case type_string:
-      new(&_str_value) std::string(other._str_value);
+      new (&_str_value) std::string(other._str_value);
       break;
     default:
       // If we enter here, it is a bug.
@@ -191,8 +190,8 @@ int32_t variant::as_int() const {
 }
 
 /**
- *  Returns the variant as an unsigned int32. This method only works if the variant
- *  content is an int32, an uint32 or none.
+ *  Returns the variant as an unsigned int32. This method only works if the
+ * variant content is an int32, an uint32 or none.
  *
  * @return the value or 0 in the case of none.
  */
@@ -219,8 +218,8 @@ int64_t variant::as_long() const {
 }
 
 /**
- *  Returns the variant as an unsigned int64. This method only works if the variant
- *  content is an int64, an uint64 or none.
+ *  Returns the variant as an unsigned int64. This method only works if the
+ * variant content is an int64, an uint64 or none.
  *
  * @return the value or 0 in the case of none.
  */

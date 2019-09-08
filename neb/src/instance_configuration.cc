@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/instance_configuration.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Default constructor.
@@ -35,7 +35,7 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 instance_configuration::instance_configuration()
-  : loaded(false), poller_id(0) {}
+    : loaded(false), poller_id(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -44,8 +44,8 @@ instance_configuration::instance_configuration()
  *
  *  @param[in] i Object to copy.
  */
-instance_configuration::instance_configuration(
-  instance_configuration const& i) : io::data(i) {
+instance_configuration::instance_configuration(instance_configuration const& i)
+    : io::data(i) {
   _internal_copy(i);
 }
 
@@ -62,7 +62,7 @@ instance_configuration::~instance_configuration() {}
  *  @param[in] i Object to copy.
  */
 instance_configuration& instance_configuration::operator=(
-                                                  instance_configuration const& i) {
+    instance_configuration const& i) {
   if (this != &i) {
     io::data::operator=(i);
     _internal_copy(i);
@@ -76,39 +76,34 @@ instance_configuration& instance_configuration::operator=(
  *  @return The event_type.
  */
 unsigned int instance_configuration::type() const {
-  return (io::events::data_type<io::events::neb, neb::de_instance_configuration>::value);
+  return (io::events::data_type<io::events::neb,
+                                neb::de_instance_configuration>::value);
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const instance_configuration::entries[] = {
-  mapping::entry(
-    &instance_configuration::loaded,
-    "loaded"),
-  mapping::entry(
-    &instance_configuration::poller_id,
-    "poller_id"),
-  mapping::entry()
-};
+    mapping::entry(&instance_configuration::loaded, "loaded"),
+    mapping::entry(&instance_configuration::poller_id, "poller_id"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_ic() {
   return (new instance_configuration);
 }
 io::event_info::event_operations const instance_configuration::operations = {
-  &new_ic
-};
+    &new_ic};
 
 /**************************************
-*                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *          Private Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Copy internal data of the instance object to the current
@@ -119,9 +114,8 @@ io::event_info::event_operations const instance_configuration::operations = {
  *
  *  @param[in] i Object to copy.
  */
-void instance_configuration::_internal_copy(
-                               instance_configuration const& i) {
+void instance_configuration::_internal_copy(instance_configuration const& i) {
   loaded = i.loaded;
   poller_id = i.poller_id;
-  return ;
+  return;
 }

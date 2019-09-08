@@ -17,11 +17,11 @@
 */
 
 #ifndef CC_LIBRARY_POSIX_HH
-#  define CC_LIBRARY_POSIX_HH
+#define CC_LIBRARY_POSIX_HH
 
-#  include <dlfcn.h>
-#  include <string>
-#  include "com/centreon/namespace.hh"
+#include <dlfcn.h>
+#include <string>
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
@@ -31,27 +31,27 @@ CC_BEGIN()
  *
  *  Wrap standard library loader objects.
  */
-class                library {
-public:
-                     library(std::string const& filename);
-                     ~library() throw ();
-  std::string const& filename() const throw ();
-  bool               is_loaded() const throw ();
-  void               load();
-  void*              resolve(char const* symbol);
-  void*              resolve(std::string const& symbol);
-  void (*            resolve_proc(char const* symbol))();
-  void (*            resolve_proc(std::string const& symbol))();
-  void               unload();
+class library {
+ public:
+  library(std::string const& filename);
+  ~library() throw();
+  std::string const& filename() const throw();
+  bool is_loaded() const throw();
+  void load();
+  void* resolve(char const* symbol);
+  void* resolve(std::string const& symbol);
+  void (*resolve_proc(char const* symbol))();
+  void (*resolve_proc(std::string const& symbol))();
+  void unload();
 
-private:
-                     library(library const& right);
-  library&           operator=(library const& right);
+ private:
+  library(library const& right);
+  library& operator=(library const& right);
 
-  std::string        _filename;
-  void*              _handle;
+  std::string _filename;
+  void* _handle;
 };
 
 CC_END()
 
-#endif // !CC_LIBRARY_POSIX_HH
+#endif  // !CC_LIBRARY_POSIX_HH

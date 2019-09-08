@@ -17,27 +17,27 @@
 */
 
 #ifndef CCB_EXTCMD_INTERNAL_HH
-#  define CCB_EXTCMD_INTERNAL_HH
+#define CCB_EXTCMD_INTERNAL_HH
 
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 // Forward declarations.
-namespace     io {
-  class       data;
-  class       event_info;
-}
-namespace     mapping {
-  class       entry;
+namespace io {
+class data;
+class event_info;
+}  // namespace io
+namespace mapping {
+class entry;
 }
 
-namespace     extcmd {
-  // Load the command file endpoints.
-  void        load();
-  void        unload();
-}
+namespace extcmd {
+// Load the command file endpoints.
+void load();
+void unload();
+}  // namespace extcmd
 
 CCB_END()
 
-#endif // !CCB_EXTCMD_INTERNAL_HH
+#endif  // !CCB_EXTCMD_INTERNAL_HH

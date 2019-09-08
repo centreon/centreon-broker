@@ -17,55 +17,48 @@
 */
 
 #ifndef CCB_COMPRESSION_STREAM_HH
-#  define CCB_COMPRESSION_STREAM_HH
+#define CCB_COMPRESSION_STREAM_HH
 
-#  include <vector>
-#  include "com/centreon/broker/compression/stack_array.hh"
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <vector>
+#include "com/centreon/broker/compression/stack_array.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        compression {
-  /**
-   *  @class stream stream.hh "com/centreon/broker/compression/stream.hh"
-   *  @brief Compression stream.
-   *
-   *  Compress and uncompress data.
-   */
-  class          stream : public io::stream {
-   public:
-    static int const
-                 max_data_size = 100000000;
+namespace compression {
+/**
+ *  @class stream stream.hh "com/centreon/broker/compression/stream.hh"
+ *  @brief Compression stream.
+ *
+ *  Compress and uncompress data.
+ */
+class stream : public io::stream {
+ public:
+  static int const max_data_size = 100000000;
 
-                 stream(
-                   int level = -1,
-                   int size = 0);
-                 stream(stream const& other);
-                 ~stream();
-    stream&      operator=(stream const& other);
-    int          flush();
-    bool         read(
-                   std::shared_ptr<io::data>& d,
-                   time_t deadline = (time_t)-1);
-    void         statistics(io::properties& tree) const;
-    int          write(std::shared_ptr<io::data> const& d);
+  stream(int level = -1, int size = 0);
+  stream(stream const& other);
+  ~stream();
+  stream& operator=(stream const& other);
+  int flush();
+  bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
+  void statistics(io::properties& tree) const;
+  int write(std::shared_ptr<io::data> const& d);
 
-   private:
-    void         _flush();
-    void         _get_data(
-                   int size,
-                   time_t timeout);
-    void         _internal_copy(stream const& other);
+ private:
+  void _flush();
+  void _get_data(int size, time_t timeout);
+  void _internal_copy(stream const& other);
 
-    int          _level;
-    stack_array  _rbuffer;
-    bool         _shutdown;
-    int          _size;
-    std::vector<char> _wbuffer;
-  };
-}
+  int _level;
+  stack_array _rbuffer;
+  bool _shutdown;
+  int _size;
+  std::vector<char> _wbuffer;
+};
+}  // namespace compression
 
 CCB_END()
 
-#endif // !CCB_COMPRESSION_STREAM_HH
+#endif  // !CCB_COMPRESSION_STREAM_HH

@@ -31,12 +31,12 @@ timeout::timeout() {}
  *  @param[in] other  Object to build from.
  */
 timeout::timeout(timeout const& other)
-  : misc::stringifier(other), std::exception(other) {}
+    : misc::stringifier(other), std::exception(other) {}
 
 /**
  *  Destructor.
  */
-timeout::~timeout() throw () {}
+timeout::~timeout() throw() {}
 
 /**
  *  Assignment operator overload.
@@ -58,6 +58,6 @@ timeout& timeout::operator=(timeout const& other) {
  *
  *  @return Nul-terminated message.
  */
-char const* timeout::what() const throw () {
+char const* timeout::what() const throw() {
   return (misc::stringifier::data());
 }

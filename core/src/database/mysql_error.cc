@@ -20,11 +20,10 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 
-mysql_error::mysql_error()
-  : _message(""), _active(false), _fatal(false) {}
+mysql_error::mysql_error() : _message(""), _active(false), _fatal(false) {}
 
 mysql_error::mysql_error(char const* message, bool fatal)
-  : _message(message), _active(true), _fatal(fatal) {}
+    : _message(message), _active(true), _fatal(fatal) {}
 
 mysql_error::mysql_error(mysql_error&& other) {
   _message = move(other._message);

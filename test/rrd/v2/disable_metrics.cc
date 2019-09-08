@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <iostream>
+#include <sys/stat.h>
 #include <QDir>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <sys/stat.h>
+#include <cstdlib>
+#include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/misc/misc.hh"
 #include "test/cbd.hh"
@@ -53,33 +53,27 @@ int main() {
 
   try {
     // Database.
-    char const* tables[] = {
-      "instances",
-      "index_data",
-      "metrics",
-      "data_bin",
-      NULL
-    };
+    char const* tables[] = {"instances", "index_data", "metrics", "data_bin",
+                            NULL};
     test::db db(DB_NAME, tables);
     {
       char const* const queries[] = {
-        "INSERT INTO index_data (id, host_id, service_id)"
-        "  VALUES (100, 1, NULL),"
-        "         (101, 1, 1),"
-        "         (102, 1, 2),"
-        "         (103, 1, 3),"
-        "         (200, 2, NULL),"
-        "         (201, 2, 4),"
-        "         (202, 2, 5),"
-        "         (203, 2, 6)",
-        NULL
-      };
+          "INSERT INTO index_data (id, host_id, service_id)"
+          "  VALUES (100, 1, NULL),"
+          "         (101, 1, 1),"
+          "         (102, 1, 2),"
+          "         (103, 1, 3),"
+          "         (200, 2, NULL),"
+          "         (201, 2, 4),"
+          "         (202, 2, 5),"
+          "         (203, 2, 6)",
+          NULL};
       QSqlQuery q(*db.get_db());
       for (int i(0); queries[i]; ++i)
         if (!q.exec(queries[i]))
-          throw (exceptions::msg() << "cannot populate database: "
-                 << q.lastError().text() << " (query was "
-                 << queries[i] << ")");
+          throw(exceptions::msg()
+                << "cannot populate database: " << q.lastError().text()
+                << " (query was " << queries[i] << ")");
     }
 
     // Temporary paths.
@@ -90,8 +84,7 @@ int main() {
 
     // Monitoring broker.
     test::file cbd_cfg;
-    cbd_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/rrd.xml.in");
+    cbd_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/rrd.xml.in");
     cbd_cfg.set("BROKER_ID", "84");
     cbd_cfg.set("BROKER_NAME", TEST_NAME "-cbd");
     cbd_cfg.set("POLLER_ID", "42");
@@ -108,8 +101,7 @@ int main() {
 
     // Monitoring engine.
     test::file cbmod_cfg;
-    cbmod_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
+    cbmod_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
     cbmod_cfg.set("BROKER_ID", "83");
     cbmod_cfg.set("BROKER_NAME", TEST_NAME "-cbmod");
     cbmod_cfg.set("POLLER_ID", "42");
@@ -118,28 +110,25 @@ int main() {
     cbmod_cfg.set("TCP_PORT", "5587");
     test::centengine_config engine_config;
     {
-      test::centengine_object
-        cmd(test::centengine_object::command_type);
+      test::centengine_object cmd(test::centengine_object::command_type);
       cmd.set("command_name", "test_command");
       cmd.set("command_line", MY_PLUGIN_PATH " $ARG1$ '$ARG2$'");
       engine_config.get_commands().push_back(cmd);
     }
     engine_config.generate_hosts(2);
     for (test::centengine_config::objlist::iterator
-           it(engine_config.get_hosts().begin()),
-           end(engine_config.get_hosts().end());
-         it != end;
-         ++it) {
+             it(engine_config.get_hosts().begin()),
+         end(engine_config.get_hosts().end());
+         it != end; ++it) {
       it->set("active_checks_enabled", "1");
       it->set("check_command", "test_command!0!output|metric=42v");
       it->set("check_interval", "1");
     }
     engine_config.generate_services(3);
     for (test::centengine_config::objlist::iterator
-           it(engine_config.get_services().begin()),
-           end(engine_config.get_services().end());
-         it != end;
-         ++it) {
+             it(engine_config.get_services().begin()),
+         end(engine_config.get_services().end());
+         it != end; ++it) {
       it->set("active_checks_enabled", "1");
       it->set("check_command", "test_command!0!output|metric=42v");
       it->set("check_interval", "1");
@@ -155,24 +144,24 @@ int main() {
     engine.stop();
 
     // Check that no metric RRD file exist.
-    if (!QDir(metrics_path.c_str()).entryList(
-           QDir::AllEntries | QDir::NoDotAndDotDot).isEmpty())
-      throw (exceptions::msg() << "some metrics graphs were generated");
+    if (!QDir(metrics_path.c_str())
+             .entryList(QDir::AllEntries | QDir::NoDotAndDotDot)
+             .isEmpty())
+      throw(exceptions::msg() << "some metrics graphs were generated");
 
     // Check that some status RRD files exist.
-    if (QDir(status_path.c_str()).entryList(
-          QDir::AllEntries | QDir::NoDotAndDotDot).isEmpty())
-      throw (exceptions::msg() << "no status graphs were generated");
+    if (QDir(status_path.c_str())
+            .entryList(QDir::AllEntries | QDir::NoDotAndDotDot)
+            .isEmpty())
+      throw(exceptions::msg() << "no status graphs were generated");
 
     // Success.
     error = false;
     db.set_remove_db_on_close(true);
     broker.stop();
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "unknown exception\n";
   }
 

@@ -17,8 +17,8 @@
  *
  */
 
-#include <cmath>
 #include <gtest/gtest.h>
+#include <cmath>
 #include "com/centreon/broker/neb/host.hh"
 #include "randomize.hh"
 
@@ -26,12 +26,12 @@ using namespace com::centreon::broker;
 
 class HostCheckTest : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     // Initialization.
     randomize_init();
   }
 
-  void TearDown() {
+  void TearDown() override {
     // Cleanup.
     randomize_cleanup();
   }
@@ -88,6 +88,7 @@ TEST_F(HostCheckTest, DefaultConstructor) {
   ASSERT_TRUE(hchk.command_line.empty());
   ASSERT_FALSE((hchk.host_id != 0));
   ASSERT_FALSE((hchk.next_check != 0));
-  ASSERT_FALSE((hchk.type() !=
-        (io::events::data_type<io::events::neb, neb::de_host_check>::value)));
+  ASSERT_FALSE(
+      (hchk.type() !=
+       (io::events::data_type<io::events::neb, neb::de_host_check>::value)));
 }

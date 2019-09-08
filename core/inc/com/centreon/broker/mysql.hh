@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 #ifndef CCB_MYSQL_HH
-#  define CCB_MYSQL_HH
+#define CCB_MYSQL_HH
 
-#  include <atomic>
-#  include "com/centreon/broker/mysql_connection.hh"
+#include <atomic>
+#include "com/centreon/broker/mysql_connection.hh"
 
 CCB_BEGIN()
 
@@ -29,73 +29,67 @@ CCB_BEGIN()
  *
  *  Here is a binding to the C MySQL connector.
  */
-class                   mysql {
+class mysql {
  public:
-  enum                  version {
-    v2 = 2,
-    v3
-  };
-                        mysql(database_config const& db_cfg);
-                        ~mysql();
-  void                  prepare_statement(database::mysql_stmt const& stmt);
-  database::mysql_stmt  prepare_query(std::string const& query,
-                          mysql_bind_mapping const& bind_mapping = mysql_bind_mapping());
-  void                  commit(int thread_id = -1);
-  int                   run_query(
-                          std::string const& query,
-                          std::string const& error_msg = "", bool fatal = false,
-                          int thread = -1);
-  int                   run_query_and_get_result(
-                          std::string const& query,
-                          std::promise<database::mysql_result>* promise,
-                          int thread = -1);
-  int                   run_query_and_get_int(
-                          std::string const& query,
-                          std::promise<int>* promise, database::mysql_task::int_type type,
-                          int thread = -1);
+  enum version { v2 = 2, v3 };
+  mysql(database_config const& db_cfg);
+  ~mysql();
+  void prepare_statement(database::mysql_stmt const& stmt);
+  database::mysql_stmt prepare_query(
+      std::string const& query,
+      mysql_bind_mapping const& bind_mapping = mysql_bind_mapping());
+  void commit(int thread_id = -1);
+  int run_query(std::string const& query,
+                std::string const& error_msg = "",
+                bool fatal = false,
+                int thread = -1);
+  int run_query_and_get_result(std::string const& query,
+                               std::promise<database::mysql_result>* promise,
+                               int thread = -1);
+  int run_query_and_get_int(std::string const& query,
+                            std::promise<int>* promise,
+                            database::mysql_task::int_type type,
+                            int thread = -1);
 
-  int                   run_statement(
-                          database::mysql_stmt& stmt,
-                          std::string const& error_msg = "", bool fatal = false,
-                          int thread_id = -1);
+  int run_statement(database::mysql_stmt& stmt,
+                    std::string const& error_msg = "",
+                    bool fatal = false,
+                    int thread_id = -1);
 
-  int                   run_statement_and_get_result(
-                          database::mysql_stmt& stmt,
-                          std::promise<database::mysql_result>* promise,
-                          int thread_id = -1);
+  int run_statement_and_get_result(
+      database::mysql_stmt& stmt,
+      std::promise<database::mysql_result>* promise,
+      int thread_id = -1);
 
-  int                   run_statement_and_get_int(
-                          database::mysql_stmt& stmt,
-                          std::promise<int>* promise, database::mysql_task::int_type type,
-                          int thread_id = -1);
+  int run_statement_and_get_int(database::mysql_stmt& stmt,
+                                std::promise<int>* promise,
+                                database::mysql_task::int_type type,
+                                int thread_id = -1);
 
-  bool                  fetch_row(database::mysql_result& res);
-  int                   get_last_insert_id(int thread_id);
-  version               schema_version() const;
-  int                   connections_count() const;
-  bool                  commit_if_needed();
-  int                   choose_connection_by_name(std::string const& name);
-  int                   choose_connection_by_instance(int instance_id) const;
+  bool fetch_row(database::mysql_result& res);
+  int get_last_insert_id(int thread_id);
+  version schema_version() const;
+  int connections_count() const;
+  bool commit_if_needed();
+  int choose_connection_by_name(std::string const& name);
+  int choose_connection_by_instance(int instance_id) const;
 
  private:
-  static void           _initialize_mysql();
-  void                  _check_errors();
-  int                   _choose_best_connection();
+  static void _initialize_mysql();
+  void _check_errors();
+  int _choose_best_connection();
 
-  static std::atomic_int
-                        _count_ref;
+  static std::atomic_int _count_ref;
 
-  database_config       _db_cfg;
-  int                   _pending_queries;
+  database_config _db_cfg;
+  int _pending_queries;
 
-  std::vector<std::shared_ptr<mysql_connection>>
-                        _connection;
-  version               _version;
-  int                   _current_connection;
-  std::unordered_map<std::string, int>
-                        _connection_by_name;
+  std::vector<std::shared_ptr<mysql_connection>> _connection;
+  version _version;
+  int _current_connection;
+  std::unordered_map<std::string, int> _connection_by_name;
 };
 
 CCB_END()
 
-#  endif  //CCB_MYSQL_HH
+#endif  // CCB_MYSQL_HH

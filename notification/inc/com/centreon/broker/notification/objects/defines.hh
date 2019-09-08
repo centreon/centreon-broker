@@ -17,44 +17,43 @@
 */
 
 #ifndef CCB_NOTIFICATION_OBJECTS_DEFINES_HH
-#  define CCB_NOTIFICATION_OBJECTS_DEFINES_HH
+#define CCB_NOTIFICATION_OBJECTS_DEFINES_HH
 
-#  include "com/centreon/broker/namespace.hh"
-
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace               notification {
-  namespace             objects {
-    class               node_state {
-    public:
-      enum              state_type {
-        ok = 0,
-        host_up = 0,
-        host_down = 1,
-        host_unreachable = 2,
-        service_ok = 0,
-        service_warning = 1,
-        service_critical = 2,
-        service_unknown = 3
-      };
+namespace notification {
+namespace objects {
+class node_state {
+ public:
+  enum state_type {
+    ok = 0,
+    host_up = 0,
+    host_down = 1,
+    host_unreachable = 2,
+    service_ok = 0,
+    service_warning = 1,
+    service_critical = 2,
+    service_unknown = 3
+  };
 
-                        node_state();
-                        node_state(state_type type);
-                        node_state(short);
-                        node_state(int);
-                        node_state(node_state const& st);
-      node_state&       operator=(node_state const& st);
-      bool              operator==(node_state const& st) const throw();
-      bool              operator==(node_state::state_type type) const throw();
+  node_state();
+  node_state(state_type type);
+  node_state(short);
+  node_state(int);
+  node_state(node_state const& st);
+  node_state& operator=(node_state const& st);
+  bool operator==(node_state const& st) const throw();
+  bool operator==(node_state::state_type type) const throw();
 
-      operator          int() const throw();
+  operator int() const throw();
 
-      state_type        value;
-    };
-  }
-}
+  state_type value;
+};
+}  // namespace objects
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_OBJECTS_DEFINES_HH
+#endif  // !CCB_NOTIFICATION_OBJECTS_DEFINES_HH

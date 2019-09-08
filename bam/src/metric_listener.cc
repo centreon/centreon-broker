@@ -46,8 +46,7 @@ metric_listener::~metric_listener() {}
  *
  *  @return This object.
  */
-metric_listener& metric_listener::operator=(
-                                    metric_listener const& other) {
+metric_listener& metric_listener::operator=(metric_listener const& other) {
   (void)other;
   return (*this);
 }

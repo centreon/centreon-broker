@@ -17,45 +17,40 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_CONTACT_BY_ID_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_CONTACT_BY_ID_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_CONTACT_BY_ID_BUILDER_HH
 
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/node_id.hh"
-#  include "com/centreon/broker/notification/objects/contact.hh"
-#  include "com/centreon/broker/notification/builders/contact_builder.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/contact_builder.hh"
+#include "com/centreon/broker/notification/objects/contact.hh"
+#include "com/centreon/broker/notification/objects/node_id.hh"
 
 CCB_BEGIN()
 
-namespace       notification {
-  /**
-   *  @class contact_by_id_builder contact_by_id_builder.hh "com/centreon/broker/notification/builders/contact_by_id_builder.hh"
-   *  @brief Contact by id builder.
-   */
-  class         contact_by_id_builder
-                  : public contact_builder {
-  public:
-                contact_by_id_builder(
-                  QHash<unsigned int, objects::contact::ptr>& table,
-                  QHash<unsigned int, QHash<std::string, std::string> >& contact_infos);
+namespace notification {
+/**
+ *  @class contact_by_id_builder contact_by_id_builder.hh
+ * "com/centreon/broker/notification/builders/contact_by_id_builder.hh"
+ *  @brief Contact by id builder.
+ */
+class contact_by_id_builder : public contact_builder {
+ public:
+  contact_by_id_builder(
+      QHash<unsigned int, objects::contact::ptr>& table,
+      QHash<unsigned int, QHash<std::string, std::string> >& contact_infos);
 
-    void        add_contact(
-                  unsigned int id,
-                  objects::contact::ptr con);
+  void add_contact(unsigned int id, objects::contact::ptr con);
 
-    void        add_contact_info(
-                  unsigned int contact_id,
-                  std::string const& key,
-                  std::string const& value);
+  void add_contact_info(unsigned int contact_id,
+                        std::string const& key,
+                        std::string const& value);
 
-  private:
-    QHash<unsigned int, objects::contact::ptr>&
-                  _table;
-    QHash<unsigned int, QHash<std::string, std::string> >&
-                  _contact_infos;
-  };
+ private:
+  QHash<unsigned int, objects::contact::ptr>& _table;
+  QHash<unsigned int, QHash<std::string, std::string> >& _contact_infos;
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_CONTACT_BY_ID_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_CONTACT_BY_ID_BUILDER_HH

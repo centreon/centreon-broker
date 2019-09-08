@@ -17,75 +17,67 @@
 */
 
 #ifndef CCB_NEB_DOWNTIME_SCHEDULER_HH
-#  define CCB_NEB_DOWNTIME_SCHEDULER_HH
+#define CCB_NEB_DOWNTIME_SCHEDULER_HH
 
-#  include <map>
-#  include <thread>
-#  include <condition_variable>
-#  include <mutex>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/neb/downtime.hh"
+#include <condition_variable>
+#include <map>
+#include <mutex>
+#include <thread>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/downtime.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace             neb {
+namespace neb {
 
-  /**
-   *  @class downtime_scheduler downtime_scheduler.hh "com/centreon/broker/notification/downtime_scheduler.hh"
-   *  @brief The downtime scheduler.
-   *
-   *  Manage a thread that manages downtime end scheduling.
-   */
-  class        downtime_scheduler {
-  public:
-               downtime_scheduler();
+/**
+ *  @class downtime_scheduler downtime_scheduler.hh
+ * "com/centreon/broker/notification/downtime_scheduler.hh"
+ *  @brief The downtime scheduler.
+ *
+ *  Manage a thread that manages downtime end scheduling.
+ */
+class downtime_scheduler {
+ public:
+  downtime_scheduler();
 
-    void       start_and_wait();
-    void       quit() throw ();
-    void       add_downtime(
-                 timestamp start_time,
-                 timestamp end_time,
-                 downtime const& dwn);
-    void       remove_downtime(
-                 unsigned int internal_id);
-    void wait();
+  void start_and_wait();
+  void quit() throw();
+  void add_downtime(timestamp start_time,
+                    timestamp end_time,
+                    downtime const& dwn);
+  void remove_downtime(unsigned int internal_id);
+  void wait();
 
-  protected:
-    void       run();
+ protected:
+  void run();
 
-  private:
-    bool       _should_exit;
-    std::mutex _general_mutex;
-    std::condition_variable _general_condition;
+ private:
+  bool _should_exit;
+  std::mutex _general_mutex;
+  std::condition_variable _general_condition;
 
-    std::multimap<timestamp, unsigned int>
-               _downtime_starts;
-    std::multimap<timestamp, unsigned int>
-               _downtime_ends;
-    std::map<unsigned int, downtime>
-               _downtimes;
+  std::multimap<timestamp, unsigned int> _downtime_starts;
+  std::multimap<timestamp, unsigned int> _downtime_ends;
+  std::map<unsigned int, downtime> _downtimes;
 
-               downtime_scheduler(downtime_scheduler const& obj);
-    downtime_scheduler&
-               operator=(downtime_scheduler const& obj);
+  downtime_scheduler(downtime_scheduler const& obj);
+  downtime_scheduler& operator=(downtime_scheduler const& obj);
 
-    static timestamp
-               _get_first_timestamp(
-                 std::multimap<timestamp, unsigned int> const& list);
-    void       _process_downtimes();
-    static void
-               _start_downtime(downtime& dwn, io::stream* stream);
-    static void
-               _end_downtime(downtime& dwn, io::stream* stream);
+  static timestamp _get_first_timestamp(
+      std::multimap<timestamp, unsigned int> const& list);
+  void _process_downtimes();
+  static void _start_downtime(downtime& dwn, io::stream* stream);
+  static void _end_downtime(downtime& dwn, io::stream* stream);
 
-    std::thread _thread;
+  std::thread _thread;
 
-    // Accessed from the master
-    bool _started_flag;
-  };
-}
+  // Accessed from the master
+  bool _started_flag;
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_DOWNTIME_SCHEDULER_HH
+#endif  // !CCB_NEB_DOWNTIME_SCHEDULER_HH

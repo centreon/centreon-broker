@@ -26,17 +26,15 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-inherited_downtime::inherited_downtime()
-  : ba_id(0),
-    in_downtime(false) {}
+inherited_downtime::inherited_downtime() : ba_id(0), in_downtime(false) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other Object to copy.
  */
-inherited_downtime::inherited_downtime(
-                      inherited_downtime const& other) : io::data(other) {
+inherited_downtime::inherited_downtime(inherited_downtime const& other)
+    : io::data(other) {
   _internal_copy(other);
 }
 
@@ -53,7 +51,7 @@ inherited_downtime::~inherited_downtime() {}
  *  @return This object.
  */
 inherited_downtime& inherited_downtime::operator=(
-                      inherited_downtime const& other) {
+    inherited_downtime const& other) {
   if (this != &other) {
     io::data::operator=(other);
     _internal_copy(other);
@@ -76,7 +74,8 @@ unsigned int inherited_downtime::type() const {
  *  @return  The event type.
  */
 unsigned int inherited_downtime::static_type() {
-  return (io::events::data_type<io::events::bam, bam::de_inherited_downtime>::value);
+  return (io::events::data_type<io::events::bam,
+                                bam::de_inherited_downtime>::value);
 }
 
 /**
@@ -87,31 +86,26 @@ unsigned int inherited_downtime::static_type() {
 void inherited_downtime::_internal_copy(inherited_downtime const& other) {
   ba_id = other.ba_id;
   in_downtime = other.in_downtime;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const inherited_downtime::entries[] = {
-mapping::entry(
-    &bam::inherited_downtime::ba_id,
-    "ba_id",
-    mapping::entry::invalid_on_zero),
-mapping::entry(
-    &bam::inherited_downtime::in_downtime,
-    "in_downtime"),
-mapping::entry()
-};
+    mapping::entry(&bam::inherited_downtime::ba_id,
+                   "ba_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&bam::inherited_downtime::in_downtime, "in_downtime"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_inherited_downtime() {
   return (new inherited_downtime);
 }
 io::event_info::event_operations const inherited_downtime::operations = {
-  &new_inherited_downtime
-};
+    &new_inherited_downtime};

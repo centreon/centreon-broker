@@ -17,45 +17,43 @@
 */
 
 #ifndef CCB_STORAGE_REMOVE_GRAPH_HH
-#  define CCB_STORAGE_REMOVE_GRAPH_HH
+#define CCB_STORAGE_REMOVE_GRAPH_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          storage {
-  /**
-   *  @class remove_graph remove_graph.hh "com/centreon/broker/storage/remove_graph.hh"
-   *  @brief Remove a RRD graph.
-   *
-   *  Remove a RRD graph.
-   */
-  class            remove_graph : public io::data {
-  public:
-                   remove_graph();
-                   remove_graph(remove_graph const& right);
-                   ~remove_graph();
-    remove_graph&  operator=(remove_graph const& right);
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace storage {
+/**
+ *  @class remove_graph remove_graph.hh
+ * "com/centreon/broker/storage/remove_graph.hh"
+ *  @brief Remove a RRD graph.
+ *
+ *  Remove a RRD graph.
+ */
+class remove_graph : public io::data {
+ public:
+  remove_graph();
+  remove_graph(remove_graph const& right);
+  ~remove_graph();
+  remove_graph& operator=(remove_graph const& right);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    unsigned int   id;
-    bool           is_index;
+  unsigned int id;
+  bool is_index;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void           _internal_copy(remove_graph const& right);
-  };
-}
+ private:
+  void _internal_copy(remove_graph const& right);
+};
+}  // namespace storage
 
 CCB_END()
 
-#endif // !CCB_STORAGE_REMOVE_GRAPH_HH
+#endif  // !CCB_STORAGE_REMOVE_GRAPH_HH

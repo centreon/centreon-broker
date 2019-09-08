@@ -28,27 +28,25 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in,out] by_parent_id  The table of dependency by parent id to fill.
  */
 dependency_by_node_id_builder::dependency_by_node_id_builder(
-  QMultiHash<node_id, dependency::ptr>& by_child_id,
-  QMultiHash<node_id, dependency::ptr>& by_parent_id)
-  : _table_child_id(by_child_id),
-    _table_parent_id(by_parent_id) {}
+    QMultiHash<node_id, dependency::ptr>& by_child_id,
+    QMultiHash<node_id, dependency::ptr>& by_parent_id)
+    : _table_child_id(by_child_id), _table_parent_id(by_parent_id) {}
 
-void dependency_by_node_id_builder::add_dependency(
-                                      unsigned int id,
-                                      dependency::ptr d) {
+void dependency_by_node_id_builder::add_dependency(unsigned int id,
+                                                   dependency::ptr d) {
   _cache[id] = d;
 }
 
 void dependency_by_node_id_builder::dependency_node_id_parent_relation(
-                                      unsigned int dep_id,
-                                      node_id id) {
+    unsigned int dep_id,
+    node_id id) {
   if (_cache.contains(dep_id))
     _table_parent_id.insert(id, _cache[dep_id]);
 }
 
 void dependency_by_node_id_builder::dependency_node_id_child_relation(
-                                      unsigned int dep_id,
-                                      node_id id) {
+    unsigned int dep_id,
+    node_id id) {
   if (_cache.contains(dep_id))
     _table_child_id.insert(id, _cache[dep_id]);
 }

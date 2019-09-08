@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bam/configuration/applier/kpi.hh"
+#include "com/centreon/broker/bam/bool_expression.hh"
 #include "com/centreon/broker/bam/configuration/applier/ba.hh"
 #include "com/centreon/broker/bam/configuration/applier/bool_expression.hh"
-#include "com/centreon/broker/bam/configuration/applier/kpi.hh"
 #include "com/centreon/broker/bam/configuration/applier/meta_service.hh"
-#include "com/centreon/broker/bam/bool_expression.hh"
 #include "com/centreon/broker/bam/kpi_ba.hh"
 #include "com/centreon/broker/bam/kpi_boolexp.hh"
 #include "com/centreon/broker/bam/kpi_meta.hh"
@@ -39,11 +39,7 @@ using namespace com::centreon::broker::bam::configuration;
  *  Default constructor.
  */
 applier::kpi::kpi()
-  : _bas(NULL),
-    _book(NULL),
-    _boolexps(NULL),
-    _mapping(NULL),
-    _metas(NULL) {}
+    : _bas(nullptr), _book(nullptr), _boolexps(nullptr), _mapping(nullptr), _metas(nullptr) {}
 
 /**
  *  Copy constructor.
@@ -83,13 +79,12 @@ applier::kpi& applier::kpi::operator=(applier::kpi const& other) {
  *
  *  @return This object.
  */
-void applier::kpi::apply(
-                     bam::configuration::state::kpis const& my_kpis,
-                     hst_svc_mapping const& mapping,
-                     applier::ba& my_bas,
-                     applier::meta_service& my_metas,
-                     applier::bool_expression& my_boolexps,
-                     bam::service_book& book) {
+void applier::kpi::apply(bam::configuration::state::kpis const& my_kpis,
+                         hst_svc_mapping const& mapping,
+                         applier::ba& my_bas,
+                         applier::meta_service& my_metas,
+                         applier::bool_expression& my_boolexps,
+                         bam::service_book& book) {
   // Set internal parameters.
   _mapping = &mapping;
   _bas = &my_bas;
@@ -110,12 +105,10 @@ void applier::kpi::apply(
   bam::configuration::state::kpis to_create(my_kpis);
 
   // Iterate through configuration.
-  for (bam::configuration::state::kpis::iterator
-         it(to_create.begin()),
-         end(to_create.end());
+  for (bam::configuration::state::kpis::iterator it(to_create.begin()),
+       end(to_create.end());
        it != end;) {
-    std::map<unsigned int, applied>::iterator
-      cfg_it(to_delete.find(it->first));
+    std::map<unsigned int, applied>::iterator cfg_it(to_delete.find(it->first));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
       // Configuration mismatch, modify object
@@ -139,29 +132,23 @@ void applier::kpi::apply(
   //
 
   // Delete objects.
-  for (std::map<unsigned int, applied>::iterator
-         it(to_delete.begin()),
-         end(to_delete.end());
-       it != end;
-       ++it) {
+  for (std::map<unsigned int, applied>::iterator it(to_delete.begin()),
+       end(to_delete.end());
+       it != end; ++it) {
     logging::config(logging::medium)
-      << "BAM: removing KPI " << it->second.cfg.get_id();
+        << "BAM: removing KPI " << it->second.cfg.get_id();
     _remove_kpi(it->first);
   }
   to_delete.clear();
 
   // Create new objects.
-  for (bam::configuration::state::kpis::iterator
-         it(to_create.begin()),
-         end(to_create.end());
-       it != end;
-       ++it) {
-    if (!mapping.get_activated(
-                   it->second.get_host_id(),
-                   it->second.get_service_id())) {
-      logging::info(logging::medium)
-        << "BAM: ignoring kpi '" << it->first
-        << "' linked to a deactivated service";
+  for (bam::configuration::state::kpis::iterator it(to_create.begin()),
+       end(to_create.end());
+       it != end; ++it) {
+    if (!mapping.get_activated(it->second.get_host_id(),
+                               it->second.get_service_id())) {
+      logging::info(logging::medium) << "BAM: ignoring kpi '" << it->first
+                                     << "' linked to a deactivated service";
       continue;
     }
     try {
@@ -169,12 +156,10 @@ void applier::kpi::apply(
       applied& content(_applied[it->first]);
       content.cfg = it->second;
       content.obj = new_kpi;
-    }
-    catch (exceptions::config const& e) {
+    } catch (exceptions::config const& e) {
       // Log message.
       logging::error(logging::high)
-        << "BAM: could not create KPI " << it->first << ": "
-        << e.what();
+          << "BAM: could not create KPI " << it->first << ": " << e.what();
 
       _invalidate_ba(it->second);
     }
@@ -183,28 +168,24 @@ void applier::kpi::apply(
   //
   // OBJECT RESOLUTION
   //
-  for (std::map<unsigned int, applied>::const_iterator
-         kpi_it(_applied.begin()),
-         next_kpi_it(_applied.begin()),
-         kpi_end(_applied.end());
+  for (std::map<unsigned int, applied>::const_iterator kpi_it(_applied.begin()),
+       next_kpi_it(_applied.begin()), kpi_end(_applied.end());
        kpi_it != kpi_end; kpi_it = next_kpi_it) {
     ++next_kpi_it;
     configuration::kpi const& cfg(kpi_it->second.cfg);
     std::shared_ptr<bam::kpi> my_kpi(kpi_it->second.obj);
     try {
       _resolve_kpi(cfg, my_kpi);
-    }
-    catch (exceptions::config const& e) {
+    } catch (exceptions::config const& e) {
       // Log message.
       logging::error(logging::high)
-        << "BAM: could not resolve KPI " << cfg.get_id() << ": "
-        << e.what();
+          << "BAM: could not resolve KPI " << cfg.get_id() << ": " << e.what();
 
       _invalidate_ba(cfg);
     }
   }
 
-  return ;
+  return;
 }
 
 /**
@@ -225,7 +206,7 @@ void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
     ks->level_downtime_soft = 0.0;
     ks->level_nominal_hard = 0.0;
     ks->level_nominal_soft = 0.0;
-    ks->last_state_change = time(NULL);
+    ks->last_state_change = time(nullptr);
     ks->valid = false;
     multiplexing::publisher().write(ks);
   }
@@ -238,26 +219,23 @@ void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
   // applied.
 
   // Remove KPIs linked to BA of this KPI.
-  for (std::map<unsigned int, applied>::const_iterator
-         kpi_it(_applied.begin()),
-         kpi_end(_applied.end());
+  for (std::map<unsigned int, applied>::const_iterator kpi_it(_applied.begin()),
+       kpi_end(_applied.end());
        kpi_it != kpi_end;) {
     if (kpi_it->second.cfg.get_ba_id() == kpi.get_ba_id()) {
       unsigned int kpi_id(kpi_it->first);
       ++kpi_it;
       _remove_kpi(kpi_id);
-    }
-    else
+    } else
       ++kpi_it;
   }
 
   // Set BA as invalid.
-  std::shared_ptr<bam::ba>
-    my_ba(_bas->find_ba(kpi.get_ba_id()));
+  std::shared_ptr<bam::ba> my_ba(_bas->find_ba(kpi.get_ba_id()));
   if (my_ba)
     my_ba->set_valid(false);
 
-  return ;
+  return;
 }
 
 /**
@@ -266,13 +244,11 @@ void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
  *  @param[out] visitor  Object that will receive status.
  */
 void applier::kpi::visit(io::stream* visitor) {
-  for (std::map<unsigned int, applied>::iterator
-         it(_applied.begin()),
-         end(_applied.end());
-       it != end;
-       ++it)
+  for (std::map<unsigned int, applied>::iterator it(_applied.begin()),
+       end(_applied.end());
+       it != end; ++it)
     it->second.obj->visit(visitor);
-  return ;
+  return;
 }
 
 /**
@@ -287,7 +263,7 @@ void applier::kpi::_internal_copy(applier::kpi const& other) {
   _boolexps = other._boolexps;
   _mapping = other._mapping;
   _metas = other._metas;
-  return ;
+  return;
 }
 
 /**
@@ -298,14 +274,14 @@ void applier::kpi::_internal_copy(applier::kpi const& other) {
  *  @return New KPI object.
  */
 std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
-                                           configuration::kpi const& cfg) {
+    configuration::kpi const& cfg) {
   // Create KPI according to its type.
   std::shared_ptr<bam::kpi> my_kpi;
   if (cfg.is_service()) {
     logging::config(logging::medium)
-      << "BAM: creating new KPI " << cfg.get_id() << " of service ("
-      << cfg.get_host_id() << ", " << cfg.get_service_id()
-      << ") impacting BA " << cfg.get_ba_id();
+        << "BAM: creating new KPI " << cfg.get_id() << " of service ("
+        << cfg.get_host_id() << ", " << cfg.get_service_id()
+        << ") impacting BA " << cfg.get_ba_id();
     std::shared_ptr<bam::kpi_service> obj(new bam::kpi_service);
     obj->set_acknowledged(cfg.is_acknowledged());
     obj->set_downtimed(cfg.is_downtimed());
@@ -318,39 +294,34 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     obj->set_state_type(cfg.get_state_type());
     _book->listen(cfg.get_host_id(), cfg.get_service_id(), obj.get());
     my_kpi = std::static_pointer_cast<bam::kpi>(obj);
-  }
-  else if (cfg.is_ba()) {
+  } else if (cfg.is_ba()) {
     logging::config(logging::medium)
-      << "BAM: creating new KPI " << cfg.get_id() << " of BA "
-      << cfg.get_indicator_ba_id() << " impacting BA "
-      << cfg.get_ba_id();
+        << "BAM: creating new KPI " << cfg.get_id() << " of BA "
+        << cfg.get_indicator_ba_id() << " impacting BA " << cfg.get_ba_id();
     std::shared_ptr<bam::kpi_ba> obj(new bam::kpi_ba);
     obj->set_impact_critical(cfg.get_impact_critical());
     obj->set_impact_warning(cfg.get_impact_warning());
     my_kpi = std::static_pointer_cast<bam::kpi>(obj);
-  }
-  else if (cfg.is_meta()) {
+  } else if (cfg.is_meta()) {
     std::shared_ptr<bam::kpi_meta> obj(new bam::kpi_meta);
     logging::config(logging::medium)
-      << "BAM: creating new KPI " << cfg.get_id() << " of meta-service "
-      << cfg.get_meta_id() << " impacting BA " << cfg.get_ba_id();
+        << "BAM: creating new KPI " << cfg.get_id() << " of meta-service "
+        << cfg.get_meta_id() << " impacting BA " << cfg.get_ba_id();
     obj->set_impact_critical(cfg.get_impact_critical());
     obj->set_impact_warning(cfg.get_impact_warning());
     my_kpi = std::static_pointer_cast<bam::kpi>(obj);
-  }
-  else if (cfg.is_boolexp()) {
+  } else if (cfg.is_boolexp()) {
     logging::config(logging::medium)
-      << "BAM: creating new KPI " << cfg.get_id()
-      << " of boolean expression " << cfg.get_boolexp_id()
-      << " impacting BA " << cfg.get_ba_id();
+        << "BAM: creating new KPI " << cfg.get_id() << " of boolean expression "
+        << cfg.get_boolexp_id() << " impacting BA " << cfg.get_ba_id();
     std::shared_ptr<bam::kpi_boolexp> obj(new bam::kpi_boolexp);
     obj->set_impact(cfg.get_impact_critical());
     my_kpi = std::static_pointer_cast<bam::kpi>(obj);
-  }
-  else
-    throw (exceptions::config() << "create KPI " << cfg.get_id()
-           << " is neither related to a service, nor a BA,"
-           << " nor a meta-service, nor a boolean expression");
+  } else
+    throw(exceptions::config()
+          << "create KPI " << cfg.get_id()
+          << " is neither related to a service, nor a BA,"
+          << " nor a meta-service, nor a boolean expression");
 
   my_kpi->set_id(cfg.get_id());
 
@@ -363,54 +334,50 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
  * @param cfg The kpi configuration
  * @param kpi The Kpi itself.
  */
-void applier::kpi::_resolve_kpi(
-                     configuration::kpi const& cfg,
-                     std::shared_ptr<bam::kpi> kpi) {
-
+void applier::kpi::_resolve_kpi(configuration::kpi const& cfg,
+                                std::shared_ptr<bam::kpi> kpi) {
   // Find target BA.
-  std::shared_ptr<bam::ba>
-    my_ba(_bas->find_ba(cfg.get_ba_id()));
+  std::shared_ptr<bam::ba> my_ba(_bas->find_ba(cfg.get_ba_id()));
   if (!my_ba)
-    throw (exceptions::config()
-           << "target BA " << cfg.get_ba_id() << " does not exist");
+    throw(exceptions::config()
+          << "target BA " << cfg.get_ba_id() << " does not exist");
 
   if (cfg.is_ba()) {
-    std::shared_ptr<bam::kpi_ba> obj(std::static_pointer_cast<bam::kpi_ba>(kpi));
-    std::shared_ptr<bam::ba>
-      target(_bas->find_ba(cfg.get_indicator_ba_id()));
+    std::shared_ptr<bam::kpi_ba> obj(
+        std::static_pointer_cast<bam::kpi_ba>(kpi));
+    std::shared_ptr<bam::ba> target(_bas->find_ba(cfg.get_indicator_ba_id()));
     if (!target)
-      throw (exceptions::config() << "could not find source BA "
-             << cfg.get_indicator_ba_id());
+      throw(exceptions::config()
+            << "could not find source BA " << cfg.get_indicator_ba_id());
     obj->link_ba(target);
     target->add_parent(std::static_pointer_cast<bam::computable>(obj));
     logging::config(logging::medium)
-      << "BAM: Resolve KPI " << kpi->get_id() << " connections to its BA";
-  }
-  else if (cfg.is_meta()) {
-    std::shared_ptr<bam::kpi_meta> obj(std::static_pointer_cast<bam::kpi_meta>(kpi));
-    std::shared_ptr<bam::meta_service>
-      target(_metas->find_meta(cfg.get_meta_id()));
+        << "BAM: Resolve KPI " << kpi->get_id() << " connections to its BA";
+  } else if (cfg.is_meta()) {
+    std::shared_ptr<bam::kpi_meta> obj(
+        std::static_pointer_cast<bam::kpi_meta>(kpi));
+    std::shared_ptr<bam::meta_service> target(
+        _metas->find_meta(cfg.get_meta_id()));
     if (!target)
-      throw (exceptions::config()
-             << "could not find source meta-service "
-             << cfg.get_meta_id());
+      throw(exceptions::config()
+            << "could not find source meta-service " << cfg.get_meta_id());
     obj->link_meta(target);
     target->add_parent(std::static_pointer_cast<bam::computable>(obj));
-    logging::config(logging::medium)
-      << "BAM: Resolve KPI " << kpi->get_id() << " connections to its meta-service";
-  }
-  else if (cfg.is_boolexp()) {
-    std::shared_ptr<bam::kpi_boolexp> obj(std::static_pointer_cast<bam::kpi_boolexp>(kpi));
-    std::shared_ptr<bam::bool_expression>
-      target(_boolexps->find_boolexp(cfg.get_boolexp_id()));
+    logging::config(logging::medium) << "BAM: Resolve KPI " << kpi->get_id()
+                                     << " connections to its meta-service";
+  } else if (cfg.is_boolexp()) {
+    std::shared_ptr<bam::kpi_boolexp> obj(
+        std::static_pointer_cast<bam::kpi_boolexp>(kpi));
+    std::shared_ptr<bam::bool_expression> target(
+        _boolexps->find_boolexp(cfg.get_boolexp_id()));
     if (!target)
-      throw (exceptions::config()
-             << "could not find source boolean expression "
-             << cfg.get_boolexp_id());
+      throw(exceptions::config() << "could not find source boolean expression "
+                                 << cfg.get_boolexp_id());
     obj->link_boolexp(target);
     target->add_parent(std::static_pointer_cast<bam::computable>(obj));
     logging::config(logging::medium)
-      << "BAM: Resolve KPI " << kpi->get_id() << " connections to its boolean expression";
+        << "BAM: Resolve KPI " << kpi->get_id()
+        << " connections to its boolean expression";
   }
 
   // Link KPI with BA.
@@ -427,19 +394,16 @@ void applier::kpi::_resolve_kpi(
  *  @param[in] kpi_id  KPI ID.
  */
 void applier::kpi::_remove_kpi(unsigned int kpi_id) {
-  std::map<unsigned int, applied>::iterator
-    it(_applied.find(kpi_id));
+  std::map<unsigned int, applied>::iterator it(_applied.find(kpi_id));
   if (it != _applied.end()) {
     if (it->second.cfg.is_service())
-      _book->unlisten(
-               it->second.cfg.get_host_id(),
-               it->second.cfg.get_service_id(),
-               static_cast<kpi_service*>(it->second.obj.get()));
-    std::shared_ptr<bam::ba>
-      my_ba(_bas->find_ba(it->second.cfg.get_ba_id()));
+      _book->unlisten(it->second.cfg.get_host_id(),
+                      it->second.cfg.get_service_id(),
+                      static_cast<kpi_service*>(it->second.obj.get()));
+    std::shared_ptr<bam::ba> my_ba(_bas->find_ba(it->second.cfg.get_ba_id()));
     if (my_ba)
       my_ba->remove_impact(it->second.obj);
     _applied.erase(it);
   }
-  return ;
+  return;
 }

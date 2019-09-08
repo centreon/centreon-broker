@@ -483,8 +483,8 @@ void kpi_service::_open_new_event(io::stream* visitor,
   _event->impact_level =
       _event->in_downtime ? impacts.get_downtime() : impacts.get_nominal();
   _event->in_downtime = _downtimed;
-  _event->output = _output.c_str();
-  _event->perfdata = _perfdata.c_str();
+  _event->output = _output;
+  _event->perfdata = _perfdata;
   _event->start_time = _last_check;
   _event->status = _state_hard;
   if (visitor) {

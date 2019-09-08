@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/service_group_member.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/service_group_member.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -39,9 +39,8 @@ service_group_member::service_group_member() : service_id(0) {}
  *
  *  @param[in] other  Object to copy.
  */
-service_group_member::service_group_member(
-                        service_group_member const& other)
-  : group_member(other), service_id(other.service_id) {}
+service_group_member::service_group_member(service_group_member const& other)
+    : group_member(other), service_id(other.service_id) {}
 
 /**
  *  Destructor.
@@ -56,7 +55,7 @@ service_group_member::~service_group_member() {}
  *  @return This object.
  */
 service_group_member& service_group_member::operator=(
-                        service_group_member const& other) {
+    service_group_member const& other) {
   if (this != &other) {
     group_member::operator=(other);
     service_id = other.service_id;
@@ -79,46 +78,37 @@ unsigned int service_group_member::type() const {
  *  @return The class type.
  */
 unsigned int service_group_member::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_service_group_member>::value);
+  return (io::events::data_type<io::events::neb,
+                                neb::de_service_group_member>::value);
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const service_group_member::entries[] = {
-  mapping::entry(
-    &service_group_member::group_id,
-    "servicegroup_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &service_group_member::host_id,
-    "host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &service_group_member::service_id,
-    "service_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &service_group_member::enabled,
-    NULL),
-  mapping::entry(
-    &service_group_member::group_name,
-    NULL),
-  mapping::entry(
-    &service_group_member::poller_id,
-    NULL,
-    mapping::entry::invalid_on_zero),
-  mapping::entry()
-};
+    mapping::entry(&service_group_member::group_id,
+                   "servicegroup_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&service_group_member::host_id,
+                   "host_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&service_group_member::service_id,
+                   "service_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&service_group_member::enabled, nullptr),
+    mapping::entry(&service_group_member::group_name, nullptr),
+    mapping::entry(&service_group_member::poller_id,
+                   nullptr,
+                   mapping::entry::invalid_on_zero),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_service_group_member() {
   return (new service_group_member);
 }
 io::event_info::event_operations const service_group_member::operations = {
-  &new_service_group_member
-};
+    &new_service_group_member};

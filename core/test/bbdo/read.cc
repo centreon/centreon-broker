@@ -33,7 +33,7 @@
 //#include "com/centreon/broker/neb/service.hh"
 //#include "com/centreon/broker/modules/loader.hh"
 //
-//using namespace com::centreon::broker;
+// using namespace com::centreon::broker;
 //
 //// Valid empty event (a command_request).
 //#define EMPTY_EVENT "000E000800020000000000000000000000000000"
@@ -42,7 +42,7 @@
 //// This event is of invalid type.
 //#define INVALID_EVENT_TYPE "000000420042"
 //
-//class from_memory : public io::stream {
+// class from_memory : public io::stream {
 // public:
 //  from_memory() : sent_data(false), _memory() {}
 //  from_memory(std::vector<char> const& memory)
@@ -73,7 +73,7 @@
 //  std::vector<char> _memory;
 //};
 //
-//class ReadTest : public ::testing::Test {
+// class ReadTest : public ::testing::Test {
 // public:
 //  void SetUp() {
 //    // Initialization
@@ -96,7 +96,7 @@
 // *
 // *  @param packet  The packet.
 // */
-//static void prepend_checksum(std::vector<char>& packet) {
+// static void prepend_checksum(std::vector<char>& packet) {
 //  uint16_t checksum{htons(misc::crc16_ccitt(&packet[0], 6))};
 //  packet.insert(packet.begin(), (char*)&checksum,
 //                ((char*)&checksum) + sizeof(uint16_t));
@@ -106,7 +106,7 @@
 // *  Append an empty event at the end of the packet.
 // *  @param[in] packet  The empty raw event.
 // */
-//static void append_empty_valid_event(std::vector<char>& packet) {
+// static void append_empty_valid_event(std::vector<char>& packet) {
 //  std::vector<char> packet2{misc::from_hex(EMPTY_EVENT)};
 //  uint16_t checksum{htons(misc::crc16_ccitt(&packet2[0], 14))};
 //  packet2.insert(packet2.begin(), (char*)&checksum,
@@ -114,7 +114,7 @@
 //  packet.insert(packet.end(), packet2.begin(), packet2.end());
 //}
 //
-//TEST_F(ReadTest, EmptyEvent) {
+// TEST_F(ReadTest, EmptyEvent) {
 //  modules::loader l;
 //  l.load_file("./neb/10-neb.so");
 //
@@ -145,8 +145,8 @@
 ////  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 150)),
 ////            0x55667788);
 ////  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 260);
-////  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)), 12345u);
-////  ASSERT_EQ(std::string(&mem1[0] + 265), "Bonjour");
+////  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)),
+///12345u); /  ASSERT_EQ(std::string(&mem1[0] + 265), "Bonjour");
 ////
 ////  ASSERT_EQ(std::string(&mem1[0] + 265), "Bonjour");
 ////  svc->host_id = 78113;
@@ -156,9 +156,9 @@
 ////  std::vector<char> const& mem2 = memory_stream->get_memory();
 ////
 ////  ASSERT_EQ(mem2.size(), 276);
-////  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)), 78113u);
-////  // The size is 276 - 16: 16 is the header size.
-////  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 260);
+////  ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)),
+///78113u); /  // The size is 276 - 16: 16 is the header size. /
+///ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 260);
 ////
 ////  // Check checksum
 ////  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0])), 33491);
@@ -169,7 +169,7 @@
 ///**
 // *  Test a packet containing no event.
 // */
-//TEST_F(ReadTest, EmptyEvent1) {
+// TEST_F(ReadTest, EmptyEvent1) {
 //  std::vector<char> packet{misc::from_hex(EMPTY_EVENT)};
 //  uint16_t checksum{htons(misc::crc16_ccitt(&packet[0], 14))};
 //  packet.insert(packet.begin(), (char*)&checksum,
@@ -186,7 +186,7 @@
 ///**
 // *  Test a packet containing not enough data.
 // */
-//TEST_F(ReadTest, NotEnoughData) {
+// TEST_F(ReadTest, NotEnoughData) {
 //  std::vector<char> packet{misc::from_hex(NOT_ENOUGH_DATA_EVENT)};
 //  prepend_checksum(packet);
 //  std::shared_ptr<from_memory> memory_stream(new from_memory(packet));
@@ -199,12 +199,12 @@
 ///**
 // *  Test an event of invalid type.
 // */
-//TEST_F(ReadTest, InvalidEvent) {
+// TEST_F(ReadTest, InvalidEvent) {
 //  std::vector<char> packet{misc::from_hex(INVALID_EVENT_TYPE)};
 //  prepend_checksum(packet);
 //  append_empty_valid_event(packet);
-//  std::shared_ptr<from_memory> memory_stream = std::make_shared<from_memory>(packet);
-//  bbdo::stream stream;
+//  std::shared_ptr<from_memory> memory_stream =
+//  std::make_shared<from_memory>(packet); bbdo::stream stream;
 //  stream.set_coarse(true);
 //  stream.set_substream(memory_stream);
 //  std::shared_ptr<io::data> d;
@@ -222,7 +222,7 @@
 ///**
 // *  Test an event of with bad checksum.
 // */
-//TEST_F(ReadTest, InvalidChecksum) {
+// TEST_F(ReadTest, InvalidChecksum) {
 //  std::vector<char> packet{misc::from_hex(EMPTY_EVENT)};
 //  // Bogus checksum.
 //  char head[] = {42, 42};

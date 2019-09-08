@@ -26,21 +26,28 @@ using namespace com::centreon::broker;
 // Then parse() returns a valid ceof_iterator
 TEST(CeofCeofParserParse, Valid1) {
   ceof::ceof_parser p(
-    "define command {\n"
-    "    command_name                   centreon-discovery-nmap \n"
-    "    command_line                   perl /usr/lib/nagios/plugins/centreon-plugins/centreon_plugins.pl --plugin=discovery::nmap::plugin --mode=fastscan --range=\"$NETWORK$\" \n"
-    "}\n"
-    "define command {\n"
-    "    command_name                   centreon-discovery-toto\n"
-    "    command_line                   /usr/lib/nagios/plugins/check_centreon_dummy\n"
-    "}\n");
+      "define command {\n"
+      "    command_name                   centreon-discovery-nmap \n"
+      "    command_line                   perl "
+      "/usr/lib/nagios/plugins/centreon-plugins/centreon_plugins.pl "
+      "--plugin=discovery::nmap::plugin --mode=fastscan --range=\"$NETWORK$\" "
+      "\n"
+      "}\n"
+      "define command {\n"
+      "    command_name                   centreon-discovery-toto\n"
+      "    command_line                   "
+      "/usr/lib/nagios/plugins/check_centreon_dummy\n"
+      "}\n");
   ceof::ceof_iterator it(p.parse());
   ASSERT_EQ(it.get_value(), "command");
   ceof::ceof_iterator child(it.enter_children());
   ASSERT_EQ(child.get_value(), "command_name");
   ASSERT_EQ((++child).get_value(), "centreon-discovery-nmap");
   ASSERT_EQ((++child).get_value(), "command_line");
-  ASSERT_EQ((++child).get_value(), "perl /usr/lib/nagios/plugins/centreon-plugins/centreon_plugins.pl --plugin=discovery::nmap::plugin --mode=fastscan --range=\"$NETWORK$\"");
+  ASSERT_EQ(
+      (++child).get_value(),
+      "perl /usr/lib/nagios/plugins/centreon-plugins/centreon_plugins.pl "
+      "--plugin=discovery::nmap::plugin --mode=fastscan --range=\"$NETWORK$\"");
   ASSERT_TRUE((++child).end());
   ++it;
   ASSERT_EQ(it.get_value(), "command");
@@ -48,7 +55,8 @@ TEST(CeofCeofParserParse, Valid1) {
   ASSERT_EQ(child.get_value(), "command_name");
   ASSERT_EQ((++child).get_value(), "centreon-discovery-toto");
   ASSERT_EQ((++child).get_value(), "command_line");
-  ASSERT_EQ((++child).get_value(), "/usr/lib/nagios/plugins/check_centreon_dummy");
+  ASSERT_EQ((++child).get_value(),
+            "/usr/lib/nagios/plugins/check_centreon_dummy");
   ASSERT_TRUE((++child).end());
   ++it;
   ASSERT_TRUE(it.end());

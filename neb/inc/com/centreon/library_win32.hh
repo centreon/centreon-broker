@@ -17,11 +17,11 @@
 */
 
 #ifndef CC_LIBRARY_WIN32_HH
-#  define CC_LIBRARY_WIN32_HH
+#define CC_LIBRARY_WIN32_HH
 
-#  include <string>
-#  include <windows.h>
-#  include "com/centreon/namespace.hh"
+#include <windows.h>
+#include <string>
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
@@ -31,27 +31,27 @@ CC_BEGIN()
  *
  *  Wrap standard library loader objects.
  */
-class                library {
-public:
-                     library(std::string const& filename);
-                     ~library() throw ();
-  std::string const& filename() const throw ();
-  bool               is_loaded() const throw ();
-  void               load();
-  void*              resolve(char const* symbol);
-  void*              resolve(std::string const& symbol);
-  void (*            resolve_proc(char const* symbol))();
-  void (*            resolve_proc(std::string const& symbol))();
-  void               unload();
+class library {
+ public:
+  library(std::string const& filename);
+  ~library() throw();
+  std::string const& filename() const throw();
+  bool is_loaded() const throw();
+  void load();
+  void* resolve(char const* symbol);
+  void* resolve(std::string const& symbol);
+  void (*resolve_proc(char const* symbol))();
+  void (*resolve_proc(std::string const& symbol))();
+  void unload();
 
-private:
-                     library(library const& right);
-  library&           operator=(library const& right);
+ private:
+  library(library const& right);
+  library& operator=(library const& right);
 
-  std::string        _filename;
-  HMODULE            _handle;
+  std::string _filename;
+  HMODULE _handle;
 };
 
 CC_END()
 
-#endif // !CC_LIBRARY_WIN32_HH
+#endif  // !CC_LIBRARY_WIN32_HH

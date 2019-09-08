@@ -33,9 +33,7 @@ rebuild::rebuild() {}
  *
  *  @param[in] other  Object to copy.
  */
-rebuild::rebuild(
-    rebuild const& other)
-  : io::data(other) {
+rebuild::rebuild(rebuild const& other) : io::data(other) {
   _internal_copy(other);
 }
 
@@ -51,8 +49,7 @@ rebuild::~rebuild() {}
  *
  *  @return This object.
  */
-rebuild& rebuild::operator=(
-    rebuild const& other) {
+rebuild& rebuild::operator=(rebuild const& other) {
   if (this != &other) {
     io::data::operator=(other);
     _internal_copy(other);
@@ -67,8 +64,7 @@ rebuild& rebuild::operator=(
  *
  *  @return  True if the two objects are equal.
  */
-bool rebuild::operator==(
-    rebuild const& other) const {
+bool rebuild::operator==(rebuild const& other) const {
   return (bas_to_rebuild == other.bas_to_rebuild);
 }
 
@@ -87,8 +83,7 @@ unsigned int rebuild::type() const {
  *  @return Event type.
  */
 unsigned int rebuild::static_type() {
-  return (io::events::data_type<io::events::bam,
-                                bam::de_rebuild>::value);
+  return (io::events::data_type<io::events::bam, bam::de_rebuild>::value);
 }
 
 /**
@@ -96,30 +91,24 @@ unsigned int rebuild::static_type() {
  *
  *  @param[in] other Object to copy.
  */
-void rebuild::_internal_copy(
-    rebuild const& other) {
+void rebuild::_internal_copy(rebuild const& other) {
   bas_to_rebuild = other.bas_to_rebuild;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const rebuild::entries[] = {
-  mapping::entry(
-    &bam::rebuild::bas_to_rebuild,
-    "bas_to_rebuild"),
-  mapping::entry()
-};
+    mapping::entry(&bam::rebuild::bas_to_rebuild, "bas_to_rebuild"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_rebuild() {
   return (new rebuild);
 }
-io::event_info::event_operations const rebuild::operations = {
-  &new_rebuild
-};
+io::event_info::event_operations const rebuild::operations = {&new_rebuild};

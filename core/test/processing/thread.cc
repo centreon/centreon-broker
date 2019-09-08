@@ -37,11 +37,11 @@ class DummyThread : public bthread {
   }
 
   const char* _get_state() const override { return "test"; }
-  uint32_t _get_queued_events() { return 0; }
-  std::unordered_set<uint32_t> const& _get_write_filters() const {
+  uint32_t _get_queued_events() override { return 0; }
+  std::unordered_set<uint32_t> const& _get_write_filters() const override {
     return _filters;
   }
-  std::unordered_set<uint32_t> const& _get_read_filters() const {
+  std::unordered_set<uint32_t> const& _get_read_filters() const override {
     return _filters;
   }
 

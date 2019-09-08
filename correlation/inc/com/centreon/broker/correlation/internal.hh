@@ -17,23 +17,23 @@
 */
 
 #ifndef CCB_CORRELATION_INTERNAL_HH
-#  define CCB_CORRELATION_INTERNAL_HH
+#define CCB_CORRELATION_INTERNAL_HH
 
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace correlation {
-  // Data elements.
-  enum data_element {
-    de_engine_state = 1,
-    de_issue,
-    de_issue_parent,
-    de_state,
-    de_log_issue
-  };
-}
+// Data elements.
+enum data_element {
+  de_engine_state = 1,
+  de_issue,
+  de_issue_parent,
+  de_state,
+  de_log_issue
+};
+}  // namespace correlation
 
 CCB_END()
 
-#endif // !CCB_CORRELATION_INTERNAL_HH
+#endif  // !CCB_CORRELATION_INTERNAL_HH

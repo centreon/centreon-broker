@@ -17,50 +17,47 @@
 */
 
 #ifndef CCB_STORAGE_STATUS_HH
-#  define CCB_STORAGE_STATUS_HH
+#define CCB_STORAGE_STATUS_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace          storage {
-  /**
-   *  @class status status.hh "com/centreon/broker/storage/status.hh"
-   *  @brief Status data used to generate status graphs.
-   *
-   *  Status data event, mainly used to generate status graphs.
-   */
-  class            status : public io::data {
-  public:
-                   status();
-                   status(status const& s);
-                   ~status();
-    status&        operator=(status const& s);
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace storage {
+/**
+ *  @class status status.hh "com/centreon/broker/storage/status.hh"
+ *  @brief Status data used to generate status graphs.
+ *
+ *  Status data event, mainly used to generate status graphs.
+ */
+class status : public io::data {
+ public:
+  status();
+  status(status const& s);
+  ~status();
+  status& operator=(status const& s);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    timestamp      ctime;
-    unsigned int   index_id;
-    unsigned int   interval;
-    bool           is_for_rebuild;
-    timestamp      rrd_len;
-    short          state;
+  timestamp ctime;
+  unsigned int index_id;
+  unsigned int interval;
+  bool is_for_rebuild;
+  timestamp rrd_len;
+  short state;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void           _internal_copy(status const& s);
-  };
-}
+ private:
+  void _internal_copy(status const& s);
+};
+}  // namespace storage
 
 CCB_END()
 
-#endif // !CCB_STORAGE_STATUS_HH
+#endif  // !CCB_STORAGE_STATUS_HH

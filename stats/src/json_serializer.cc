@@ -37,24 +37,19 @@ json_serializer::~json_serializer() {}
  *  @param[out] buffer  The output buffer.
  *  @param[in] tree     The tree.
  */
-void json_serializer::serialize(
-                        std::string& buffer,
-                        io::properties const& tree) const {
+void json_serializer::serialize(std::string& buffer,
+                                io::properties const& tree) const {
   misc::json_writer writer;
   writer.open_object();
-  for (io::properties::const_iterator
-         it = tree.begin(),
-         end = tree.end();
-       it != end;
-       ++it) {
+  for (io::properties::const_iterator it = tree.begin(), end = tree.end();
+       it != end; ++it) {
     writer.add_key(it->second.get_name());
     writer.add_string(it->second.get_value());
   }
   for (io::properties::children_list::const_iterator
-         it = tree.children().begin(),
-         end = tree.children().end();
-        it != end;
-       ++it) {
+           it = tree.children().begin(),
+           end = tree.children().end();
+       it != end; ++it) {
     writer.add_key(it->first);
     std::string sub;
     serialize(sub, it->second);

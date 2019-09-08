@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sstream>
 #include "com/centreon/broker/bam/configuration/applier/meta_service.hh"
+#include <sstream>
 #include "com/centreon/broker/bam/metric_book.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -38,8 +38,7 @@ applier::meta_service::meta_service() {}
  *
  *  @param[in] other  Object to copy.
  */
-applier::meta_service::meta_service(
-                         applier::meta_service const& other) {
+applier::meta_service::meta_service(applier::meta_service const& other) {
   _internal_copy(other);
 }
 
@@ -56,7 +55,7 @@ applier::meta_service::~meta_service() {}
  *  @return This object.
  */
 applier::meta_service& applier::meta_service::operator=(
-                                                applier::meta_service const& other) {
+    applier::meta_service const& other) {
   if (this != &other)
     _internal_copy(other);
   return (*this);
@@ -68,9 +67,8 @@ applier::meta_service& applier::meta_service::operator=(
  *  @param[in]  my_meta  Meta-services to apply.
  *  @param[out] book     Metric book.
  */
-void applier::meta_service::apply(
-                              state::meta_services const& my_meta,
-                              metric_book& book) {
+void applier::meta_service::apply(state::meta_services const& my_meta,
+                                  metric_book& book) {
   //
   // DIFF
   //
@@ -88,12 +86,10 @@ void applier::meta_service::apply(
   std::list<configuration::meta_service> to_modify;
 
   // Iterate through configuration.
-  for (state::meta_services::iterator
-         it(to_create.begin()),
-         end(to_create.end());
+  for (state::meta_services::iterator it(to_create.begin()),
+       end(to_create.end());
        it != end;) {
-    std::map<unsigned int, applied>::iterator
-      cfg_it(to_delete.find(it->first));
+    std::map<unsigned int, applied>::iterator cfg_it(to_delete.find(it->first));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
       // Configuration mismatch, modify object.
@@ -114,18 +110,14 @@ void applier::meta_service::apply(
   //
 
   // Delete objects.
-  for (std::map<unsigned int, applied>::iterator
-         it(to_delete.begin()),
-         end(to_delete.end());
-       it != end;
-       ++it) {
+  for (std::map<unsigned int, applied>::iterator it(to_delete.begin()),
+       end(to_delete.end());
+       it != end; ++it) {
     logging::config(logging::medium)
-      << "BAM: removing meta-service " << it->second.cfg.get_id();
-    std::shared_ptr<neb::service>
-      s(_meta_service(
-          it->first,
-          it->second.cfg.get_host_id(),
-          it->second.cfg.get_service_id()));
+        << "BAM: removing meta-service " << it->second.cfg.get_id();
+    std::shared_ptr<neb::service> s(
+        _meta_service(it->first, it->second.cfg.get_host_id(),
+                      it->second.cfg.get_service_id()));
     s->enabled = false;
     book.unlisten(it->second.cfg.get_id(), it->second.obj.get());
     _applied.erase(it->first);
@@ -134,52 +126,41 @@ void applier::meta_service::apply(
   to_delete.clear();
 
   // Create new objects.
-  for (state::meta_services::iterator
-         it(to_create.begin()),
-         end(to_create.end());
-       it != end;
-       ++it) {
+  for (state::meta_services::iterator it(to_create.begin()),
+       end(to_create.end());
+       it != end; ++it) {
     logging::config(logging::medium)
-      << "BAM: creating meta-service " << it->first;
-    std::shared_ptr<bam::meta_service>
-      new_meta(_new_meta(it->second, book));
+        << "BAM: creating meta-service " << it->first;
+    std::shared_ptr<bam::meta_service> new_meta(_new_meta(it->second, book));
     applied& content(_applied[it->first]);
     content.cfg = it->second;
     content.obj = new_meta;
-    std::shared_ptr<neb::host>
-      h(_meta_host(it->second.get_host_id()));
+    std::shared_ptr<neb::host> h(_meta_host(it->second.get_host_id()));
     multiplexing::publisher().write(h);
-    std::shared_ptr<neb::service>
-      s(_meta_service(
-          it->first,
-          it->second.get_host_id(),
-          it->second.get_service_id()));
+    std::shared_ptr<neb::service> s(_meta_service(
+        it->first, it->second.get_host_id(), it->second.get_service_id()));
     multiplexing::publisher().write(s);
   }
 
   // Modify existing objects.
-  for (std::list<configuration::meta_service>::iterator
-         it(to_modify.begin()),
-         end(to_modify.end());
-       it != end;
-       ++it) {
-    std::map<unsigned int, applied>::iterator
-      pos(_applied.find(it->get_id()));
+  for (std::list<configuration::meta_service>::iterator it(to_modify.begin()),
+       end(to_modify.end());
+       it != end; ++it) {
+    std::map<unsigned int, applied>::iterator pos(_applied.find(it->get_id()));
     if (pos != _applied.end()) {
       logging::config(logging::medium)
-        << "BAM: modifying meta-service " << it->get_id();
+          << "BAM: modifying meta-service " << it->get_id();
       _modify_meta(*pos->second.obj, book, pos->second.cfg, *it);
       pos->second.cfg = *it;
-    }
-    else
+    } else
       logging::error(logging::high)
-        << "BAM: attempting to modify meta-service " << it->get_id()
-        << ", however associated object was not found. This is likely a"
-        << " software bug that you should report to Centreon Broker "
-        << "developers";
+          << "BAM: attempting to modify meta-service " << it->get_id()
+          << ", however associated object was not found. This is likely a"
+          << " software bug that you should report to Centreon Broker "
+          << "developers";
   }
 
-  return ;
+  return;
 }
 
 /**
@@ -190,12 +171,10 @@ void applier::meta_service::apply(
  *  @return Shared pointer to the applied meta-service object.
  */
 std::shared_ptr<bam::meta_service> applier::meta_service::find_meta(
-                                                             unsigned int id) {
-  std::map<unsigned int, applied>::iterator
-    it(_applied.find(id));
-  return ((it != _applied.end())
-          ? it->second.obj
-          : std::shared_ptr<bam::meta_service>());
+    unsigned int id) {
+  std::map<unsigned int, applied>::iterator it(_applied.find(id));
+  return ((it != _applied.end()) ? it->second.obj
+                                 : std::shared_ptr<bam::meta_service>());
 }
 
 /**
@@ -203,10 +182,9 @@ std::shared_ptr<bam::meta_service> applier::meta_service::find_meta(
  *
  *  @param[in] other  Object to copy.
  */
-void applier::meta_service::_internal_copy(
-                              applier::meta_service const& other) {
+void applier::meta_service::_internal_copy(applier::meta_service const& other) {
   _applied = other._applied;
-  return ;
+  return;
 }
 
 /**
@@ -217,13 +195,13 @@ void applier::meta_service::_internal_copy(
  *  @return Virtual meta-service host.
  */
 std::shared_ptr<neb::host> applier::meta_service::_meta_host(
-                                                     unsigned int host_id) {
+    unsigned int host_id) {
   std::shared_ptr<neb::host> h(new neb::host);
   h->host_id = host_id;
   h->host_name = "_Module_Meta";
-  h->last_update = time(NULL);
-  h->poller_id
-    = com::centreon::broker::config::applier::state::instance().poller_id();
+  h->last_update = time(nullptr);
+  h->poller_id =
+      com::centreon::broker::config::applier::state::instance().poller_id();
   return (h);
 }
 
@@ -237,18 +215,18 @@ std::shared_ptr<neb::host> applier::meta_service::_meta_host(
  *  @return Virtual BA service.
  */
 std::shared_ptr<neb::service> applier::meta_service::_meta_service(
-                                                        unsigned int meta_id,
-                                                        unsigned int host_id,
-                                                        unsigned int service_id) {
+    unsigned int meta_id,
+    unsigned int host_id,
+    unsigned int service_id) {
   std::shared_ptr<neb::service> s(new neb::service);
   s->host_id = host_id;
   s->service_id = service_id;
   {
     std::ostringstream oss;
     oss << "meta_" << meta_id;
-    s->service_description = oss.str().c_str();
+    s->service_description = oss.str();
   }
-  s->last_update = time(NULL);
+  s->last_update = time(nullptr);
   return (s);
 }
 
@@ -261,31 +239,29 @@ std::shared_ptr<neb::service> applier::meta_service::_meta_service(
  *  @param[in]     new_cfg  New configuration.
  */
 void applier::meta_service::_modify_meta(
-                              bam::meta_service& obj,
-                              metric_book& book,
-                              configuration::meta_service const& old_cfg,
-                              configuration::meta_service const& new_cfg) {
+    bam::meta_service& obj,
+    metric_book& book,
+    configuration::meta_service const& old_cfg,
+    configuration::meta_service const& new_cfg) {
   // Remove old metrics from 1) the book and from 2) the meta-service.
   for (configuration::meta_service::metric_container::const_iterator
-         it(old_cfg.get_metrics().begin()),
-         end(old_cfg.get_metrics().end());
-       it != end;
-       ++it) {
+           it(old_cfg.get_metrics().begin()),
+       end(old_cfg.get_metrics().end());
+       it != end; ++it) {
     logging::config(logging::low)
-      << "BAM: meta-service " << obj.get_id()
-      << " does not depend of metric " << *it << " anymore";
+        << "BAM: meta-service " << obj.get_id() << " does not depend of metric "
+        << *it << " anymore";
     book.unlisten(*it, &obj);
     obj.remove_metric(*it);
   }
 
   // Add new metrics to 1) the book and to 2) the meta-service.
   for (configuration::meta_service::metric_container::const_iterator
-         it(new_cfg.get_metrics().begin()),
-         end(new_cfg.get_metrics().end());
-       it != end;
-       ++it) {
+           it(new_cfg.get_metrics().begin()),
+       end(new_cfg.get_metrics().end());
+       it != end; ++it) {
     logging::config(logging::low)
-      << "BAM: meta-service " << obj.get_id() << " uses metric " << *it;
+        << "BAM: meta-service " << obj.get_id() << " uses metric " << *it;
     book.listen(*it, &obj);
     obj.add_metric(*it);
   }
@@ -308,7 +284,7 @@ void applier::meta_service::_modify_meta(
   obj.set_level_warning(new_cfg.get_level_warning());
   obj.set_level_critical(new_cfg.get_level_critical());
 
-  return ;
+  return;
 }
 
 /**
@@ -318,8 +294,8 @@ void applier::meta_service::_modify_meta(
  *  @param[out] book  Metric listener book.
  */
 std::shared_ptr<bam::meta_service> applier::meta_service::_new_meta(
-                                                             configuration::meta_service const& cfg,
-                                                             metric_book& book) {
+    configuration::meta_service const& cfg,
+    metric_book& book) {
   std::shared_ptr<bam::meta_service> meta(new bam::meta_service);
   _modify_meta(*meta, book, configuration::meta_service(), cfg);
   return (meta);

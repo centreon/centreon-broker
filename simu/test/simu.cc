@@ -16,16 +16,16 @@
 ** For more information : contact@centreon.com
 */
 
-#include <fstream>
 #include <gtest/gtest.h>
+#include <fstream>
 #include <list>
 #include <memory>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/instance_broadcast.hh"
-#include "com/centreon/broker/simu/luabinding.hh"
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/events.hh"
+#include "com/centreon/broker/simu/luabinding.hh"
 #include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
@@ -34,17 +34,14 @@ using namespace com::centreon::broker::simu;
 
 class SimuGenericTest : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     try {
       config::applier::init();
-    }
-    catch (std::exception const& e) {
-      (void) e;
+    } catch (std::exception const& e) {
+      (void)e;
     }
   }
-  void TearDown() {
-    config::applier::deinit();
-  }
+  void TearDown() override { config::applier::deinit(); }
 
   void CreateScript(std::string const& filename, std::string const& content) {
     std::ofstream oss(filename);
@@ -71,10 +68,8 @@ class SimuGenericTest : public ::testing::Test {
 // Then an exception is thrown
 TEST_F(SimuGenericTest, MissingScript) {
   std::map<std::string, misc::variant> conf;
-  ASSERT_THROW(
-    new luabinding(
-      "/tmp/this_script_does_not_exist.lua", conf),
-		exceptions::msg);
+  ASSERT_THROW(new luabinding("/tmp/this_script_does_not_exist.lua", conf),
+               exceptions::msg);
 }
 
 // When a lua script with error such as number divided by nil is loaded
@@ -82,11 +77,10 @@ TEST_F(SimuGenericTest, MissingScript) {
 TEST_F(SimuGenericTest, FaultyScript) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/faulty.lua");
-  CreateScript(filename, "local a = { 1, 2, 3 }\n"
-                         "local b = 18 / a[4]");
-  ASSERT_THROW(
-    new luabinding(filename, conf),
-    exceptions::msg);
+  CreateScript(filename,
+               "local a = { 1, 2, 3 }\n"
+               "local b = 18 / a[4]");
+  ASSERT_THROW(new luabinding(filename, conf), exceptions::msg);
   RemoveFile(filename);
 }
 
@@ -96,8 +90,7 @@ TEST_F(SimuGenericTest, WithoutInit) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/without_init.lua");
   CreateScript(filename, "local a = { 1, 2, 3 }\n");
-  ASSERT_THROW(
-    new luabinding(filename, conf), exceptions::msg);
+  ASSERT_THROW(new luabinding(filename, conf), exceptions::msg);
   RemoveFile(filename);
 }
 
@@ -105,14 +98,12 @@ TEST_F(SimuGenericTest, WithoutInit) {
 // Then an exception is thrown
 TEST_F(SimuGenericTest, IncompleteScript) {
   std::string filename("/tmp/bad_init.lua");
-  CreateScript(filename, "function init()\n"
-                         "end\n"
-                         "local a = { 1, 2, 3 }\n");
+  CreateScript(filename,
+               "function init()\n"
+               "end\n"
+               "local a = { 1, 2, 3 }\n");
   std::map<std::string, misc::variant> conf;
-  ASSERT_THROW(new luabinding(
-                     filename,
-                     conf),
-                  exceptions::msg);
+  ASSERT_THROW(new luabinding(filename, conf), exceptions::msg);
   RemoveFile(filename);
 }
 
@@ -120,15 +111,14 @@ TEST_F(SimuGenericTest, IncompleteScript) {
 // Then an exception is thrown
 TEST_F(SimuGenericTest, ReadReturnValue1) {
   std::string filename("/tmp/bad_read.lua");
-  CreateScript(filename, "function init()\n"
-                         "end\n"
-                         "function read()\n"
-                         "return 2\n"
-                         "end\n");
+  CreateScript(filename,
+               "function init()\n"
+               "end\n"
+               "function read()\n"
+               "return 2\n"
+               "end\n");
   std::map<std::string, misc::variant> conf;
-  std::unique_ptr<luabinding> lb(new luabinding(
-                     filename,
-                     conf));
+  std::unique_ptr<luabinding> lb(new luabinding(filename, conf));
   std::shared_ptr<io::data> d;
   ASSERT_THROW(lb->read(d), exceptions::msg);
   RemoveFile(filename);
@@ -138,15 +128,14 @@ TEST_F(SimuGenericTest, ReadReturnValue1) {
 // Then no exception is thrown
 TEST_F(SimuGenericTest, ReadReturnValue2) {
   std::string filename("/tmp/good_read.lua");
-  CreateScript(filename, "function init()\n"
-                         "end\n"
-                         "function read()\n"
-                         "return nil\n"
-                         "end\n");
+  CreateScript(filename,
+               "function init()\n"
+               "end\n"
+               "function read()\n"
+               "return nil\n"
+               "end\n");
   std::map<std::string, misc::variant> conf;
-  std::unique_ptr<luabinding> lb(new luabinding(
-                     filename,
-                     conf));
+  std::unique_ptr<luabinding> lb(new luabinding(filename, conf));
   std::shared_ptr<io::data> d;
   ASSERT_FALSE(lb->read(d));
   RemoveFile(filename);
@@ -158,15 +147,14 @@ TEST_F(SimuGenericTest, ReadReturnValue2) {
 // And read() returns false
 TEST_F(SimuGenericTest, ReadReturnValue3) {
   std::string filename("/tmp/good_read.lua");
-  CreateScript(filename, "function init()\n"
-                         "end\n"
-                         "function read()\n"
-                         "return { a='toto' }\n"
-                         "end\n");
+  CreateScript(filename,
+               "function init()\n"
+               "end\n"
+               "function read()\n"
+               "return { a='toto' }\n"
+               "end\n");
   std::map<std::string, misc::variant> conf;
-  std::unique_ptr<luabinding> lb(new luabinding(
-                     filename,
-                     conf));
+  std::unique_ptr<luabinding> lb(new luabinding(filename, conf));
   std::shared_ptr<io::data> d;
   ASSERT_FALSE(lb->read(d));
   RemoveFile(filename);
@@ -178,24 +166,23 @@ TEST_F(SimuGenericTest, ReadReturnValue3) {
 // And read() returns true
 TEST_F(SimuGenericTest, ReadReturnValue4) {
   std::string filename("/tmp/good_read.lua");
-  CreateScript(filename, "function init()\n"
-                         "end\n"
-                         "function read()\n"
-                         "return { _type=65559,\n"
-                                  "service_id=1,\n"
-                                  "ctime=1536659255,\n"
-                                  "host_id=2,\n"
-                                  "element=23,\n"
-                                  "category=1,\n"
-                                  "description=\"Super description\"\n"
-                         "}\n"
-                         "end\n");
+  CreateScript(filename,
+               "function init()\n"
+               "end\n"
+               "function read()\n"
+               "return { _type=65559,\n"
+               "service_id=1,\n"
+               "ctime=1536659255,\n"
+               "host_id=2,\n"
+               "element=23,\n"
+               "category=1,\n"
+               "description=\"Super description\"\n"
+               "}\n"
+               "end\n");
   std::map<std::string, misc::variant> conf;
   modules::loader l;
   l.load_file("./neb/10-neb.so");
-  std::unique_ptr<luabinding> lb(new luabinding(
-                     filename,
-                     conf));
+  std::unique_ptr<luabinding> lb(new luabinding(filename, conf));
   std::shared_ptr<io::data> d;
   ASSERT_TRUE(lb->read(d));
   RemoveFile(filename);
@@ -212,27 +199,26 @@ TEST_F(SimuGenericTest, ReadReturnValue4) {
 // And read() returns true
 TEST_F(SimuGenericTest, ReadReturnCustomVariable) {
   std::string filename("/tmp/good_read.lua");
-  CreateScript(filename, "function init()\n"
-                         "end\n"
-                         "function read()\n"
-                         "  return {\n"
-                         "    service_id=498,\n"
-                         "    _type=65539,\n"
-                         "    update_time=1538146454,\n"
-                         "    modified=false,\n"
-                         "    host_id=31,\n"
-                         "    element=3,\n"
-                         "    name=\"PROCESSNAME\",\n"
-                         "    category=1,\n"
-                         "    value=\"centengine\",\n"
-                         "    default_value=\"centengine\"}\n"
-                         "end\n");
+  CreateScript(filename,
+               "function init()\n"
+               "end\n"
+               "function read()\n"
+               "  return {\n"
+               "    service_id=498,\n"
+               "    _type=65539,\n"
+               "    update_time=1538146454,\n"
+               "    modified=false,\n"
+               "    host_id=31,\n"
+               "    element=3,\n"
+               "    name=\"PROCESSNAME\",\n"
+               "    category=1,\n"
+               "    value=\"centengine\",\n"
+               "    default_value=\"centengine\"}\n"
+               "end\n");
   std::map<std::string, misc::variant> conf;
   modules::loader l;
   l.load_file("./neb/10-neb.so");
-  std::unique_ptr<luabinding> lb(new luabinding(
-                     filename,
-                     conf));
+  std::unique_ptr<luabinding> lb(new luabinding(filename, conf));
   std::shared_ptr<io::data> d;
   ASSERT_TRUE(lb->read(d));
   RemoveFile(filename);

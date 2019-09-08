@@ -17,35 +17,35 @@
 */
 
 #ifndef CCB_INFLUXDB_INFLUXDB_JSON_PRINTER_HH
-#  define CCB_INFLUXDB_INFLUXDB_JSON_PRINTER_HH
+#define CCB_INFLUXDB_INFLUXDB_JSON_PRINTER_HH
 
-#  include <sstream>
-#  include <string>
-#  include <memory>
-#  include "com/centreon/broker/namespace.hh"
+#include <memory>
+#include <sstream>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace influxdb {
-  /**
-   *  @class json_printer json_printer.hh "com/centreon/broker/influxdb/json_printer.hh"
-   *  @brief Json printer stream.
-   *
-   *  Print json.
-   */
-  class         json_printer {
-  public:
-                json_printer();
-                ~json_printer();
-                json_printer(json_printer const&);
+/**
+ *  @class json_printer json_printer.hh
+ * "com/centreon/broker/influxdb/json_printer.hh"
+ *  @brief Json printer stream.
+ *
+ *  Print json.
+ */
+class json_printer {
+ public:
+  json_printer();
+  ~json_printer();
+  json_printer(json_printer const&);
   json_printer& operator=(json_printer const&);
 
-  void          clear();
-  std::string const&
-                get_data() const;
-  size_t        get_size() const;
+  void clear();
+  std::string const& get_data() const;
+  size_t get_size() const;
 
-  inline  void add_tag(std::string const& name) {
+  inline void add_tag(std::string const& name) {
     if (!name.empty())
       _data.append("\"").append(name).append("\":");
   }
@@ -89,11 +89,11 @@ namespace influxdb {
     return (*this);
   }
 
-  private:
-    std::string _data;
-  };
-}
+ private:
+  std::string _data;
+};
+}  // namespace influxdb
 
 CCB_END()
 
-#endif // !CCB_INFLUXDB_INFLUXDB_JSON_PRINTER_HH
+#endif  // !CCB_INFLUXDB_INFLUXDB_JSON_PRINTER_HH

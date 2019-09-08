@@ -17,61 +17,56 @@
 */
 
 #ifndef CCB_IO_PROPERTIES_HH
-#  define CCB_IO_PROPERTIES_HH
+#define CCB_IO_PROPERTIES_HH
 
-#  include <list>
-#  include <map>
-#  include <string>
-#  include "com/centreon/broker/io/property.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <list>
+#include <map>
+#include <string>
+#include "com/centreon/broker/io/property.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace              io {
-  /**
-   *  @class properties properties.hh "com/centreon/broker/io/properties.hh"
-   *  @brief Properties of endpoints.
-   *
-   *  This class is used to gather information about endpoints.
-   */
-  class                properties {
-  public:
-    typedef std::map<std::string, property>::iterator iterator;
-    typedef std::map<std::string, property>::const_iterator const_iterator;
-    typedef std::list<std::pair<std::string, properties> > children_list;
+namespace io {
+/**
+ *  @class properties properties.hh "com/centreon/broker/io/properties.hh"
+ *  @brief Properties of endpoints.
+ *
+ *  This class is used to gather information about endpoints.
+ */
+class properties {
+ public:
+  typedef std::map<std::string, property>::iterator iterator;
+  typedef std::map<std::string, property>::const_iterator const_iterator;
+  typedef std::list<std::pair<std::string, properties> > children_list;
 
-                       properties(std::string const& name = "");
-                       properties(properties const& right);
-                       ~properties() throw ();
-    properties&        operator=(properties const& right);
-    property const&    operator[](std::string const& name) const;
-    property&          operator[](std::string const& name);
-    iterator           begin();
-    const_iterator     begin() const;
-    children_list const&
-                       children() const;
-    children_list&     children();
-    void               add_child(
-                         io::properties const& child,
-                         std::string const& name = std::string());
-    iterator           end();
-    const_iterator     end() const;
-    property const&    get(std::string const& name) const;
-    void               merge(properties const& other);
-    std::string const& name() const throw ();
-    void               name(std::string const& name);
-    void               add_property(
-                         std::string const& name,
-                         property const& prop);
+  properties(std::string const& name = "");
+  properties(properties const& right);
+  ~properties() throw();
+  properties& operator=(properties const& right);
+  property const& operator[](std::string const& name) const;
+  property& operator[](std::string const& name);
+  iterator begin();
+  const_iterator begin() const;
+  children_list const& children() const;
+  children_list& children();
+  void add_child(io::properties const& child,
+                 std::string const& name = std::string());
+  iterator end();
+  const_iterator end() const;
+  property const& get(std::string const& name) const;
+  void merge(properties const& other);
+  std::string const& name() const throw();
+  void name(std::string const& name);
+  void add_property(std::string const& name, property const& prop);
 
-  private:
-    children_list      _children;
-    std::string        _name;
-    std::map<std::string, property>
-                       _properties;
-  };
-}
+ private:
+  children_list _children;
+  std::string _name;
+  std::map<std::string, property> _properties;
+};
+}  // namespace io
 
 CCB_END()
 
-#endif // !CCB_IO_PROPERTIES_HH
+#endif  // !CCB_IO_PROPERTIES_HH

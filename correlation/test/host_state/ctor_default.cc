@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/host_state.hh"
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
@@ -32,14 +32,10 @@ int main() {
   correlation::host_state hs;
 
   // Check default construction.
-  return ((hs.ack_time != -1)
-          || (hs.current_state != 3)
-          || (hs.end_time != 0)
-          || (hs.host_id != 0)
-          || (hs.in_downtime != false)
-	  || (hs.poller_id != 0)
-          || (hs.service_id != 0)
-          || (hs.start_time != 0)
-          || (hs.type()
-              != io::events::data_type<io::events::correlation, correlation::de_host_state>::value));
+  return (
+      (hs.ack_time != -1) || (hs.current_state != 3) || (hs.end_time != 0) ||
+      (hs.host_id != 0) || (hs.in_downtime != false) || (hs.poller_id != 0) ||
+      (hs.service_id != 0) || (hs.start_time != 0) ||
+      (hs.type() != io::events::data_type<io::events::correlation,
+                                          correlation::de_host_state>::value));
 }

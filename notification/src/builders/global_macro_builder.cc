@@ -16,26 +16,24 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/notification/utilities/qhash_func.hh"
 #include "com/centreon/broker/notification/builders/global_macro_builder.hh"
+#include "com/centreon/broker/notification/utilities/qhash_func.hh"
 
 using namespace com::centreon::broker::notification;
 
 global_macro_builder::global_macro_builder(
-                        QHash<std::string, std::string>& global_macros,
-                        int& date_format)
-  : _global_macros(global_macros),
-    _date_format(date_format) {}
+    QHash<std::string, std::string>& global_macros,
+    int& date_format)
+    : _global_macros(global_macros), _date_format(date_format) {}
 
 /**
-*  Add a macro to the builder.
-*
-*  @param[in] macro_name   The macro name.
-*  @param[in] macro_value  The macro value.
-*/
-void global_macro_builder::add_global_macro(
-                             std::string const& macro_name,
-                             std::string const& macro_value) {
+ *  Add a macro to the builder.
+ *
+ *  @param[in] macro_name   The macro name.
+ *  @param[in] macro_value  The macro value.
+ */
+void global_macro_builder::add_global_macro(std::string const& macro_name,
+                                            std::string const& macro_value) {
   _global_macros.insert(macro_name, macro_value);
 }
 
@@ -54,8 +52,7 @@ void global_macro_builder::add_date_format(int format) {
  *  @param[in] macro_name   The macro name.
  *  @param[in] macro_value  The macro value.
  */
-void global_macro_builder::add_resource_macro(
-                             std::string const& macro_name,
-                             std::string const& macro_value) {
+void global_macro_builder::add_resource_macro(std::string const& macro_name,
+                                              std::string const& macro_value) {
   _global_macros.insert(macro_name, macro_value);
 }

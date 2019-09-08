@@ -17,10 +17,10 @@
 */
 
 #ifndef CC_UNIQUE_ARRAY_PTR_HH
-#  define CC_UNIQUE_ARRAY_PTR_HH
+#define CC_UNIQUE_ARRAY_PTR_HH
 
-#  include <cstddef>
-#  include "com/centreon/namespace.hh"
+#include <cstddef>
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
@@ -30,10 +30,10 @@ CC_BEGIN()
  *
  *  Provide similar feature as unique_ptr but for array pointers.
  */
-template     <typename T>
-class        unique_array_ptr {
+template <typename T>
+class unique_array_ptr {
  private:
-  T*         _ptr;
+  T* _ptr;
 
  public:
   /**
@@ -41,23 +41,19 @@ class        unique_array_ptr {
    *
    *  @param[in] t Array pointer.
    */
-             unique_array_ptr(T* t = NULL) : _ptr(t) {}
+  unique_array_ptr(T* t = NULL) : _ptr(t) {}
 
   /**
    *  Copy constructor.
    *
    *  @param[in] uap Object to copy.
    */
-             unique_array_ptr(unique_array_ptr& uap) : _ptr(uap._ptr) {
-    uap._ptr = NULL;
-  }
+  unique_array_ptr(unique_array_ptr& uap) : _ptr(uap._ptr) { uap._ptr = NULL; }
 
   /**
    *  Destructor.
    */
-             ~unique_array_ptr() {
-    delete [] _ptr;
-  }
+  ~unique_array_ptr() { delete[] _ptr; }
 
   /**
    *  Assignment operator.
@@ -79,9 +75,7 @@ class        unique_array_ptr {
    *
    *  @return Dereferenced pointer.
    */
-  T&         operator*() {
-    return (*_ptr);
-  }
+  T& operator*() { return (*_ptr); }
 
   /**
    *  Array access operator.
@@ -90,25 +84,21 @@ class        unique_array_ptr {
    *
    *  @return Element at position idx.
    */
-  T&         operator[](unsigned int idx) {
-    return (_ptr[idx]);
-  }
+  T& operator[](unsigned int idx) { return (_ptr[idx]); }
 
   /**
    *  Get the pointer associated with this object.
    *
    *  @return Pointer associated with this object.
    */
-  T*         get() const {
-    return (_ptr);
-  }
+  T* get() const { return (_ptr); }
 
   /**
    *  Release the associated pointer and release it.
    *
    *  @return Pointer associated with this object.
    */
-  T*         release() {
+  T* release() {
     T* tmp(_ptr);
     _ptr = NULL;
     return (tmp);
@@ -119,13 +109,13 @@ class        unique_array_ptr {
    *
    *  @param[in] ptr New pointer (can be NULL).
    */
-  void       reset(T* t = NULL) {
-    delete [] _ptr;
+  void reset(T* t = NULL) {
+    delete[] _ptr;
     _ptr = t;
-    return ;
+    return;
   }
 };
 
 CC_END()
 
-#endif // !CC_UNIQUE_ARRAY_PTR_HH
+#endif  // !CC_UNIQUE_ARRAY_PTR_HH

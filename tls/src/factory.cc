@@ -16,21 +16,21 @@
 ** For more information : contact@centreon.com
 */
 
-#include <memory>
+#include "com/centreon/broker/tls/factory.hh"
 #include <cstring>
+#include <memory>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/tls/acceptor.hh"
 #include "com/centreon/broker/tls/connector.hh"
-#include "com/centreon/broker/tls/factory.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tls;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -80,7 +80,7 @@ io::factory* factory::clone() const {
 bool factory::has_endpoint(config::endpoint& cfg) const {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find("tls")};
   return cfg.params.end() != it && strncasecmp(it->second.c_str(), "auto", 5) &&
-          config::parser::parse_boolean(it->second);
+         config::parser::parse_boolean(it->second);
 }
 
 /**
@@ -92,10 +92,9 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  */
 bool factory::has_not_endpoint(config::endpoint& cfg) const {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find("tls")};
-  return (it != cfg.params.end()
-      && strcasecmp(it->second.c_str(), "auto"))
-          ? !has_endpoint(cfg)
-          : false;
+  return (it != cfg.params.end() && strcasecmp(it->second.c_str(), "auto"))
+             ? !has_endpoint(cfg)
+             : false;
 }
 
 /**
@@ -109,9 +108,9 @@ bool factory::has_not_endpoint(config::endpoint& cfg) const {
  *  @return New endpoint object.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
   // Find TLS parameters (optional).
@@ -121,7 +120,8 @@ io::endpoint* factory::new_endpoint(
   std::string public_cert;
   {
     // Is TLS enabled ?
-    std::map<std::string, std::string>::const_iterator it{cfg.params.find("tls")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("tls")};
     if (it != cfg.params.end()) {
       tls = config::parser::parse_boolean(it->second);
       if (tls) {
@@ -162,10 +162,9 @@ io::endpoint* factory::new_endpoint(
  *
  *  @return New stream.
  */
-std::shared_ptr<io::stream> factory::new_stream(
-                                        std::shared_ptr<io::stream> to,
-                                        bool is_acceptor,
-                                        std::string const& proto_name) {
+std::shared_ptr<io::stream> factory::new_stream(std::shared_ptr<io::stream> to,
+                                                bool is_acceptor,
+                                                std::string const& proto_name) {
   (void)proto_name;
   return is_acceptor ? acceptor().open(to) : connector().open(to);
 }

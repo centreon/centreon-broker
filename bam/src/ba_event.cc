@@ -27,10 +27,7 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 ba_event::ba_event()
-  : ba_id(0),
-    first_level(0),
-    in_downtime(false),
-    status(3) {}
+    : ba_id(0), first_level(0), in_downtime(false), status(3) {}
 
 /**
  *  Copy constructor.
@@ -69,14 +66,10 @@ ba_event& ba_event::operator=(ba_event const& other) {
  *  @return  True if the two objects are equal.
  */
 bool ba_event::operator==(ba_event const& other) const {
-  return ((ba_id == other.ba_id)
-          && (first_level == other.first_level)
-          && (end_time == other.end_time)
-          && (in_downtime == other.in_downtime)
-          && (start_time == other.start_time)
-          && (status == other.status));
+  return ((ba_id == other.ba_id) && (first_level == other.first_level) &&
+          (end_time == other.end_time) && (in_downtime == other.in_downtime) &&
+          (start_time == other.start_time) && (status == other.status));
 }
-
 
 /**
  *  Get the event type.
@@ -108,43 +101,29 @@ void ba_event::_internal_copy(ba_event const& other) {
   in_downtime = other.in_downtime;
   start_time = other.start_time;
   status = other.status;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const ba_event::entries[] = {
-  mapping::entry(
-    &bam::ba_event::ba_id,
-    "ba_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &bam::ba_event::first_level,
-    "first_level"),
-  mapping::entry(
-    &bam::ba_event::end_time,
-    "end_time"),
-  mapping::entry(
-    &bam::ba_event::in_downtime,
-    "in_downtime"),
-  mapping::entry(
-    &bam::ba_event::start_time,
-    "start_time"),
-  mapping::entry(
-    &bam::ba_event::status,
-    "status"),
-  mapping::entry()
-};
+    mapping::entry(&bam::ba_event::ba_id,
+                   "ba_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&bam::ba_event::first_level, "first_level"),
+    mapping::entry(&bam::ba_event::end_time, "end_time"),
+    mapping::entry(&bam::ba_event::in_downtime, "in_downtime"),
+    mapping::entry(&bam::ba_event::start_time, "start_time"),
+    mapping::entry(&bam::ba_event::status, "status"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_ba_event() {
   return (new ba_event);
 }
-io::event_info::event_operations const ba_event::operations = {
-  &new_ba_event
-};
+io::event_info::event_operations const ba_event::operations = {&new_ba_event};

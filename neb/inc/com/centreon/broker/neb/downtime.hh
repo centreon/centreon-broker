@@ -17,81 +17,77 @@
 */
 
 #ifndef CCB_NEB_DOWNTIME_HH
-#  define CCB_NEB_DOWNTIME_HH
+#define CCB_NEB_DOWNTIME_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/io/events.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/internal.hh"
-#  include "com/centreon/broker/timestamp.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/internal.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace               neb {
+namespace neb {
+/**
+ *  @class downtime downtime.hh "com/centreon/broker/neb/downtime.hh"
+ *  @brief Represents a downtime inside Nagios.
+ *
+ *  A user may have the ability to define downtimes, which are
+ *  time periods inside which some host or service shall not
+ *  generate any notification. This can occur when a system
+ *  administrator perform maintenance on a server for example.
+ */
+class downtime : public io::data {
+ public:
+  downtime();
+  downtime(downtime const& other);
+  ~downtime();
+  downtime& operator=(downtime const& other);
+  unsigned int type() const;
+  bool operator==(downtime const& other) const;
+
   /**
-   *  @class downtime downtime.hh "com/centreon/broker/neb/downtime.hh"
-   *  @brief Represents a downtime inside Nagios.
+   *  Get the type of this event.
    *
-   *  A user may have the ability to define downtimes, which are
-   *  time periods inside which some host or service shall not
-   *  generate any notification. This can occur when a system
-   *  administrator perform maintenance on a server for example.
+   *  @return  The event type.
    */
-  class                 downtime : public io::data {
-  public:
-                        downtime();
-                        downtime(downtime const& other);
-                        ~downtime();
-    downtime&           operator=(downtime const& other);
-    unsigned int        type() const;
-    bool                operator==(downtime const& other) const;
+  static unsigned int static_type() {
+    return (io::events::data_type<io::events::neb, neb::de_downtime>::value);
+  }
 
-    /**
-     *  Get the type of this event.
-     *
-     *  @return  The event type.
-     */
-    static unsigned int static_type() {
-      return (io::events::data_type<
-                            io::events::neb,
-                            neb::de_downtime>::value);
-    }
+  timestamp actual_end_time;
+  timestamp actual_start_time;
+  std::string author;
+  std::string comment;
+  timestamp deletion_time;
+  short downtime_type;
+  timestamp duration;
+  timestamp end_time;
+  timestamp entry_time;
+  bool fixed;
+  unsigned int host_id;
+  unsigned int internal_id;
+  unsigned int poller_id;
+  unsigned int service_id;
+  timestamp start_time;
+  unsigned int triggered_by;
+  bool was_cancelled;
+  bool was_started;
+  bool is_recurring;
+  std::string recurring_timeperiod;
+  short come_from;
 
-    timestamp           actual_end_time;
-    timestamp           actual_start_time;
-    std::string             author;
-    std::string             comment;
-    timestamp           deletion_time;
-    short               downtime_type;
-    timestamp           duration;
-    timestamp           end_time;
-    timestamp           entry_time;
-    bool                fixed;
-    unsigned int        host_id;
-    unsigned int        internal_id;
-    unsigned int        poller_id;
-    unsigned int        service_id;
-    timestamp           start_time;
-    unsigned int        triggered_by;
-    bool                was_cancelled;
-    bool                was_started;
-    bool                is_recurring;
-    std::string             recurring_timeperiod;
-    short               come_from;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-    static mapping::entry const
-                        entries[];
-    static io::event_info::event_operations const
-                        operations;
-
-  private:
-    void                _internal_copy(downtime const& other);
-  };
-}
+ private:
+  void _internal_copy(downtime const& other);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_DOWNTIME_HH
+#endif  // !CCB_NEB_DOWNTIME_HH

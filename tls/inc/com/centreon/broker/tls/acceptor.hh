@@ -17,49 +17,46 @@
 */
 
 #ifndef CCB_TLS_ACCEPTOR_HH
-#  define CCB_TLS_ACCEPTOR_HH
+#define CCB_TLS_ACCEPTOR_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         tls {
-  /**
-   *  @class acceptor acceptor.hh "com/centreon/broker/tls/acceptor.hh"
-   *  @brief Perform TLS verification on top of another acceptor.
-   *
-   *  Within the process of accepting an incoming client, the TLS
-   *  acceptor class will provide encryption to the lower stream. Using
-   *  this class is really simple : build the object, set some
-   *  properties and call open(). Then use it just like you'd use
-   *  another io::stream. Encryption will be automatically provided on
-   *  the returned accepted streams.
-   */
-  class           acceptor : public io::endpoint {
-  public:
-                  acceptor(
-                    std::string const& cert = std::string(),
-                    std::string const& key = std::string(),
-                    std::string const& ca = std::string());
-                  acceptor(acceptor const& right);
-                  ~acceptor();
-    acceptor&     operator=(acceptor const& right);
-    std::shared_ptr<io::stream>
-                  open();
-    std::shared_ptr<io::stream>
-                  open(std::shared_ptr<io::stream> lower);
+namespace tls {
+/**
+ *  @class acceptor acceptor.hh "com/centreon/broker/tls/acceptor.hh"
+ *  @brief Perform TLS verification on top of another acceptor.
+ *
+ *  Within the process of accepting an incoming client, the TLS
+ *  acceptor class will provide encryption to the lower stream. Using
+ *  this class is really simple : build the object, set some
+ *  properties and call open(). Then use it just like you'd use
+ *  another io::stream. Encryption will be automatically provided on
+ *  the returned accepted streams.
+ */
+class acceptor : public io::endpoint {
+ public:
+  acceptor(std::string const& cert = std::string(),
+           std::string const& key = std::string(),
+           std::string const& ca = std::string());
+  acceptor(acceptor const& right);
+  ~acceptor();
+  acceptor& operator=(acceptor const& right);
+  std::shared_ptr<io::stream> open();
+  std::shared_ptr<io::stream> open(std::shared_ptr<io::stream> lower);
 
-  private:
-    void          _internal_copy(acceptor const& right);
+ private:
+  void _internal_copy(acceptor const& right);
 
-    std::string   _ca;
-    std::string   _cert;
-    std::string   _key;
-  };
-}
+  std::string _ca;
+  std::string _cert;
+  std::string _key;
+};
+}  // namespace tls
 
 CCB_END()
 
-#endif // !CCB_TLS_ACCEPTOR_HH
+#endif  // !CCB_TLS_ACCEPTOR_HH

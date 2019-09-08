@@ -16,13 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <iostream>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QStringList>
 #include <QVariant>
+#include <cstdlib>
+#include <iostream>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/vars.hh"
@@ -41,8 +41,7 @@ int main(int argc, char* argv[]) {
   try {
     // Extract command-line.
     if (argc < 3)
-      throw (exceptions::msg() << "USAGE: " << argv[0]
-             << " <dbname> <baid>");
+      throw(exceptions::msg() << "USAGE: " << argv[0] << " <dbname> <baid>");
     std::string db_name(argv[1]);
     unsigned int ba_id(strtoul(argv[2], NULL, 0));
 
@@ -54,8 +53,8 @@ int main(int argc, char* argv[]) {
     db.setPassword(DB_PASSWORD);
     db.setDatabaseName(db_name.c_str());
     if (!db.open())
-      throw (exceptions::msg() << "could not open DB: "
-             << db.lastError().text());
+      throw(exceptions::msg()
+            << "could not open DB: " << db.lastError().text());
 
     // Fetch result.
     QSqlQuery q(db);
@@ -65,28 +64,23 @@ int main(int argc, char* argv[]) {
           << "  FROM mod_bam"
           << "  WHERE ba_id=" << ba_id;
       if (!q.exec(oss.str().c_str()) || !q.next())
-        throw (exceptions::msg()
-               << "could not get status of BA "
-               << ba_id << ": " << q.lastError().text());
+        throw(exceptions::msg() << "could not get status of BA " << ba_id
+                                << ": " << q.lastError().text());
     }
 
     // Plugin result.
     retval = q.value(0).toInt();
-    std::cout << "BA " << ba_id << " has state " << retval
-              << " and level " << q.value(1).toFloat()
+    std::cout << "BA " << ba_id << " has state " << retval << " and level "
+              << q.value(1).toFloat()
               << "|BA_Level=" << static_cast<int>(q.value(1).toFloat())
               << "%\n";
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "unknown exception\n";
   }
   QStringList l(QSqlDatabase::connectionNames());
-  for (QStringList::const_iterator it(l.begin()), end(l.end());
-       it != end;
-       ++it)
+  for (QStringList::const_iterator it(l.begin()), end(l.end()); it != end; ++it)
     QSqlDatabase::removeDatabase(*it);
   return (retval);
 }

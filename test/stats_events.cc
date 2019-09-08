@@ -16,6 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
+#include <sys/stat.h>
+#include <unistd.h>
+#include <QCoreApplication>
+#include <QDir>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QTextCodec>
+#include <QVariant>
 #include <cfloat>
 #include <cmath>
 #include <cstdio>
@@ -23,15 +31,7 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
-#include <QCoreApplication>
-#include <QDir>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QTextCodec>
-#include <QVariant>
 #include <sstream>
-#include <sys/stat.h>
-#include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
@@ -86,19 +86,18 @@ int main(int argc, char* argv[]) {
     // Write cbmod configuration file.
     {
       std::ofstream ofs;
-      ofs.open(
-            cbmod_config_path.c_str(),
-            std::ios_base::out | std::ios_base::trunc);
+      ofs.open(cbmod_config_path.c_str(),
+               std::ios_base::out | std::ios_base::trunc);
       if (ofs.fail())
-        throw (exceptions::msg()
-               << "cannot open cbmod configuration file '"
-               << cbmod_config_path.c_str() << "'");
+        throw(exceptions::msg() << "cannot open cbmod configuration file '"
+                                << cbmod_config_path.c_str() << "'");
       ofs << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
           << "<centreonbroker>\n"
-          << "  <include>" PROJECT_SOURCE_DIR "/test/cfg/broker_modules.xml</include>\n"
+          << "  <include>" PROJECT_SOURCE_DIR
+             "/test/cfg/broker_modules.xml</include>\n"
           << "  <instance>" << INSTANCE_ID << "</instance>\n"
           << "  <instance_name>MyBroker</instance_name>\n"
-        // << "  <!--\n"
+          // << "  <!--\n"
           << "  <logger>\n"
           << "    <type>file</type>\n"
           << "    <name>cbmod.log</name>\n"
@@ -108,7 +107,7 @@ int main(int argc, char* argv[]) {
           << "    <info>1</info>\n"
           << "    <level>3</level>\n"
           << "  </logger>\n"
-        // << "  -->\n"
+          // << "  -->\n"
           << "  <stats>\n"
           << "    <remote>\n"
           << "      <dumper_tag>CentralBroker</dumper_tag>\n"
@@ -247,7 +246,8 @@ int main(int argc, char* argv[]) {
           << "          <name>total_service_state_change</name>\n"
           << "        </service>\n"
           << "      </metrics>\n"
-          << "      <interval>" << MONITORING_ENGINE_INTERVAL_LENGTH << "</interval>\n"
+          << "      <interval>" << MONITORING_ENGINE_INTERVAL_LENGTH
+          << "</interval>\n"
           << "    </remote>\n"
           << "  </stats>\n"
           << "  <output>\n"
@@ -271,7 +271,8 @@ int main(int argc, char* argv[]) {
           << "  <output>\n"
           << "    <type>dumper</type>\n"
           << "    <tagname>CentralBroker</tagname>\n"
-          << "    <path>" << metrics_path << "/$INSTANCEID$.stats" << "</path>\n"
+          << "    <path>" << metrics_path << "/$INSTANCEID$.stats"
+          << "</path>\n"
           << "  </output>\n"
           << "</centreonbroker>\n";
       ofs.close();
@@ -280,8 +281,7 @@ int main(int argc, char* argv[]) {
     std::string additional_config;
     {
       std::ostringstream oss;
-      oss << "broker_module=" << CBMOD_PATH << " " << cbmod_config_path
-          << "\n";
+      oss << "broker_module=" << CBMOD_PATH << " " << cbmod_config_path << "\n";
       additional_config = oss.str();
     }
 
@@ -293,8 +293,8 @@ int main(int argc, char* argv[]) {
         query << "INSERT INTO rt_index_data (host_id, service_id)"
               << "  VALUES (" << 1 << ", " << i << ")";
         if (!q.exec(query.str().c_str()))
-          throw (exceptions::msg() << "cannot create index of service ("
-                 << 1 << ", " << i << ")");
+          throw(exceptions::msg()
+                << "cannot create index of service (" << 1 << ", " << i << ")");
       }
     }
 
@@ -303,16 +303,14 @@ int main(int argc, char* argv[]) {
     {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT index_id FROM rt_index_data ORDER BY service_id ASC"))
-        throw (exceptions::msg() << "cannot get index list: "
-               << qPrintable(q.lastError().text()));
+        throw(exceptions::msg()
+              << "cannot get index list: " << qPrintable(q.lastError().text()));
       while (q.next())
         indexes.push_back(q.value(0).toUInt());
     }
 
     // Generate monitoring engine configuration files.
-    config_write(
-      engine_config_path.c_str(),
-      additional_config.c_str());
+    config_write(engine_config_path.c_str(), additional_config.c_str());
 
     // Start monitoring engine.
     std::string engine_config_file(engine_config_path);
@@ -329,57 +327,52 @@ int main(int argc, char* argv[]) {
             << "  FROM rt_metrics";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query.str().c_str()))
-        throw (exceptions::msg() << "cannot get metric list: "
-               << qPrintable(q.lastError().text()));
+        throw(exceptions::msg() << "cannot get metric list: "
+                                << qPrintable(q.lastError().text()));
       while (q.next())
         metrics.push_back(q.value(0).toUInt());
-      if (metrics.size() != 64) // XXX: this should be 75 if passive hosts/services are available
-        throw (exceptions::msg() << "invalid metrics count (got "
-               << metrics.size() << ", expected 64)");
+      if (metrics.size() !=
+          64)  // XXX: this should be 75 if passive hosts/services are available
+        throw(exceptions::msg() << "invalid metrics count (got "
+                                << metrics.size() << ", expected 64)");
     }
 
     // Check data_bin table.
     {
-      for (std::list<unsigned int>::const_iterator
-             it(metrics.begin()),
-             end(metrics.end());
-           it != end;
-           ++it) {
+      for (std::list<unsigned int>::const_iterator it(metrics.begin()),
+           end(metrics.end());
+           it != end; ++it) {
         std::ostringstream query;
         query << "SELECT COUNT(*)"
               << "  FROM log_data_bin"
               << "  WHERE id_metric=" << *it;
         QSqlQuery q(*db.centreon_db());
-        if (!q.exec(query.str().c_str())
-            || !q.next()
-            || !q.value(0).toUInt())
-          throw (exceptions::msg() << "data_bin is invalid for metric "
-                 << *it << ": " << qPrintable(q.lastError().text()));
+        if (!q.exec(query.str().c_str()) || !q.next() || !q.value(0).toUInt())
+          throw(exceptions::msg() << "data_bin is invalid for metric " << *it
+                                  << ": " << qPrintable(q.lastError().text()));
       }
     }
 
     // Check that metrics RRD files exist.
-    for (std::list<unsigned int>::const_iterator
-           it(metrics.begin()),
-           end(metrics.end());
-         it != end;
-         ++it) {
+    for (std::list<unsigned int>::const_iterator it(metrics.begin()),
+         end(metrics.end());
+         it != end; ++it) {
       std::ostringstream path;
       path << metrics_path << "/" << *it << ".rrd";
       if (access(path.str().c_str(), F_OK))
-        throw (exceptions::msg() << "metrics RRD file '"
-               << path.str().c_str() << "' does not exist");
+        throw(exceptions::msg() << "metrics RRD file '" << path.str().c_str()
+                                << "' does not exist");
       rrd_file f;
       f.load(path.str().c_str());
 
       // Check content.
       if (f.get_rras().size() != 2)
-        throw (exceptions::msg() << "metrics RRD file '"
-               << path.str().c_str() << "' does not have two RRAs");
+        throw(exceptions::msg() << "metrics RRD file '" << path.str().c_str()
+                                << "' does not have two RRAs");
       if (f.get_rras().front().size() < 2)
-        throw (exceptions::msg() << "metrics RRD file '"
-               << path.str().c_str()
-               << "' does not have enough entries in its first RRA");
+        throw(exceptions::msg()
+              << "metrics RRD file '" << path.str().c_str()
+              << "' does not have enough entries in its first RRA");
     }
 
     // Check data from dumper.
@@ -387,19 +380,17 @@ int main(int argc, char* argv[]) {
       std::string path(metrics_path + "/" INSTANCE_ID ".stats");
       std::ifstream ifs(path.c_str());
       if (ifs.fail() || ifs.eof())
-        throw (exceptions::msg() << "cannot open statistics file '"
-               << path << "'");
+        throw(exceptions::msg()
+              << "cannot open statistics file '" << path << "'");
       if (!ifs.get() || !ifs.good())
-        throw (exceptions::msg() << "the statistics file is empty");
+        throw(exceptions::msg() << "the statistics file is empty");
     }
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
   }
 

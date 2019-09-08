@@ -17,38 +17,37 @@
 */
 
 #ifndef CCB_CEOF_CEOF_WRITER_HH
-#  define CCB_CEOF_CEOF_WRITER_HH
+#define CCB_CEOF_CEOF_WRITER_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace   ceof {
-  /**
-   *  @class ceof_writer ceof_writer.hh "com/centreon/broker/ceof/ceof_writer.hh"
-   *  @brief Centreon Engine Object File writer.
-   */
-  class          ceof_writer {
-  public:
-                 ceof_writer();
-                 ceof_writer(ceof_writer const& other);
-   ceof_writer&  operator=(ceof_writer const& other);
-                 ~ceof_writer() throw();
+namespace ceof {
+/**
+ *  @class ceof_writer ceof_writer.hh "com/centreon/broker/ceof/ceof_writer.hh"
+ *  @brief Centreon Engine Object File writer.
+ */
+class ceof_writer {
+ public:
+  ceof_writer();
+  ceof_writer(ceof_writer const& other);
+  ceof_writer& operator=(ceof_writer const& other);
+  ~ceof_writer() throw();
 
-   void          open_object(std::string const& object_type);
-   void          add_key(std::string const& key);
-   void          add_value(std::string const& value);
-   void          close_object();
+  void open_object(std::string const& object_type);
+  void add_key(std::string const& key);
+  void add_value(std::string const& value);
+  void close_object();
 
-   std::string const&
-                 get_string() const throw();
+  std::string const& get_string() const throw();
 
-  private:
-    std::string  _str;
-  };
-}
+ private:
+  std::string _str;
+};
+}  // namespace ceof
 
 CCB_END()
 
-#endif // !CCB_CEOF_CEOF_WRITER_HH
+#endif  // !CCB_CEOF_CEOF_WRITER_HH

@@ -21,10 +21,10 @@
 using namespace com::centreon::broker::exceptions;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -37,12 +37,12 @@ shutdown::shutdown() {}
  *  @param[in] other  Object to copy.
  */
 shutdown::shutdown(shutdown const& other)
-  : com::centreon::broker::exceptions::msg(other) {}
+    : com::centreon::broker::exceptions::msg(other) {}
 
 /**
  *  Destructor.
  */
-shutdown::~shutdown() throw () {}
+shutdown::~shutdown() throw() {}
 
 /**
  *  Assignment operator.

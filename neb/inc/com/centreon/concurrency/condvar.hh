@@ -17,12 +17,12 @@
 */
 
 #ifndef CC_CONCURRENCY_CONDVAR_HH
-#  define CC_CONCURRENCY_CONDVAR_HH
+#define CC_CONCURRENCY_CONDVAR_HH
 
-#  ifdef _WIN32
-#    include "com/centreon/concurrency/condvar_win32.hh"
-#  else
-#    include "com/centreon/concurrency/condvar_posix.hh"
-#  endif // Windows or POSIX implementation.
+#ifdef _WIN32
+#include "com/centreon/concurrency/condvar_win32.hh"
+#else
+#include "com/centreon/concurrency/condvar_posix.hh"
+#endif  // Windows or POSIX implementation.
 
-#endif // !CC_CONCURRENCY_CONDVAR_HH
+#endif  // !CC_CONCURRENCY_CONDVAR_HH

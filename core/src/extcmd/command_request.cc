@@ -16,28 +16,27 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include "com/centreon/broker/misc/uuid.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
+#include <cstdlib>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/internal.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/misc/uuid.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::extcmd;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
 command_request::command_request()
-  : uuid(misc::Uuid().to_string()), with_partial_result(false) {
-}
+    : uuid(misc::Uuid().to_string()), with_partial_result(false) {}
 
 /**
  *  Copy constructor.
@@ -45,7 +44,7 @@ command_request::command_request()
  *  @param[in] other  Object to copy.
  */
 command_request::command_request(command_request const& other)
-  : io::data(other) {
+    : io::data(other) {
   _internal_copy(other);
 }
 
@@ -61,8 +60,7 @@ command_request::~command_request() {}
  *
  *  @return This object.
  */
-command_request& command_request::operator=(
-                                    command_request const& other) {
+command_request& command_request::operator=(command_request const& other) {
   if (this != &other) {
     io::data::operator=(other);
     _internal_copy(other);
@@ -78,8 +76,8 @@ command_request& command_request::operator=(
  *  @return True if command request is addressed to specific endpoint.
  */
 bool command_request::is_addressed_to(std::string const& endp_name) const {
-  return (!destination_id || (destination_id == io::data::broker_id))
-          && endp == endp_name;
+  return (!destination_id || (destination_id == io::data::broker_id)) &&
+         endp == endp_name;
 }
 
 /**
@@ -94,22 +92,24 @@ void command_request::parse(std::string const& cmdline) {
   std::size_t delim1;
   delim1 = cmdline.find_first_of(';');
   if (delim1 == std::string::npos)
-    throw (exceptions::msg() << "invalid command format: expected "
-           << "<BROKERID>;<TARGETENDPOINT>;<CMD>[;<ARG1>[;<ARG2>...]]");
-  destination_id = strtoul(cmdline.substr(0, delim1).c_str(), NULL, 0);
+    throw(exceptions::msg()
+          << "invalid command format: expected "
+          << "<BROKERID>;<TARGETENDPOINT>;<CMD>[;<ARG1>[;<ARG2>...]]");
+  destination_id = strtoul(cmdline.substr(0, delim1).c_str(), nullptr, 0);
 
   // Get target endpoint.
   std::size_t delim2;
   delim2 = cmdline.find_first_of(';', delim1 + 1);
   if (delim2 == std::string::npos)
-    throw (exceptions::msg() << "invalid command format: expected "
-           << "<BROKERID>;<TARGETENDPOINT>;<CMD>[;<ARG1>[;<ARG2>...]]");
-  endp = cmdline.substr(delim1 + 1, delim2 - delim1 - 1).c_str();
+    throw(exceptions::msg()
+          << "invalid command format: expected "
+          << "<BROKERID>;<TARGETENDPOINT>;<CMD>[;<ARG1>[;<ARG2>...]]");
+  endp = cmdline.substr(delim1 + 1, delim2 - delim1 - 1);
 
   // Get command.
-  cmd = cmdline.substr(delim2 + 1).c_str();
+  cmd = cmdline.substr(delim2 + 1);
 
-  return ;
+  return;
 }
 
 /**
@@ -127,15 +127,15 @@ unsigned int command_request::type() const {
  *  @return The event type.
  */
 unsigned int command_request::static_type() {
-  return (io::events::data_type<io::events::extcmd, io::events::de_command_request>::value);
+  return (io::events::data_type<io::events::extcmd,
+                                io::events::de_command_request>::value);
 }
 
-
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -147,37 +147,29 @@ void command_request::_internal_copy(command_request const& other) {
   endp = other.endp;
   uuid = other.uuid;
   with_partial_result = other.with_partial_result;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const command_request::entries[] = {
-  mapping::entry(
-    &command_request::cmd,
-    "cmd"),
-  mapping::entry(
-    &command_request::endp,
-    "endp"),
-  mapping::entry(
-    &command_request::uuid,
-    "uuid",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &command_request::with_partial_result,
-    "with_partial_result"),
-  mapping::entry()
-};
+    mapping::entry(&command_request::cmd, "cmd"),
+    mapping::entry(&command_request::endp, "endp"),
+    mapping::entry(&command_request::uuid,
+                   "uuid",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&command_request::with_partial_result,
+                   "with_partial_result"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_command_request() {
   return (new command_request);
 }
 io::event_info::event_operations const command_request::operations = {
-  &new_command_request
-};
+    &new_command_request};

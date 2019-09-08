@@ -17,31 +17,32 @@
 */
 
 #ifndef CCB_NEB_STATISTICS_TOTAL_HOSTS_HH
-#  define CCB_NEB_STATISTICS_TOTAL_HOSTS_HH
+#define CCB_NEB_STATISTICS_TOTAL_HOSTS_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/statistics/plugin.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/statistics/plugin.hh"
 
 CCB_BEGIN()
 
-namespace             neb {
-  namespace           statistics {
-    /**
-     *  @class total_hosts total_hosts.hh "com/centreon/broker/neb/statistics/total_hosts.hh"
-     *  @brief Total_hosts statistics plugin.
-     */
-    class             total_hosts : public plugin {
-    public:
-                      total_hosts();
-                      total_hosts(total_hosts const& right);
-                      ~total_hosts();
-      total_hosts&    operator=(total_hosts const& right);
-      void            run(std::string& output, std::string& perfdata);
-    };
-  }
-}
+namespace neb {
+namespace statistics {
+/**
+ *  @class total_hosts total_hosts.hh
+ * "com/centreon/broker/neb/statistics/total_hosts.hh"
+ *  @brief Total_hosts statistics plugin.
+ */
+class total_hosts : public plugin {
+ public:
+  total_hosts();
+  total_hosts(total_hosts const& right);
+  ~total_hosts();
+  total_hosts& operator=(total_hosts const& right);
+  void run(std::string& output, std::string& perfdata);
+};
+}  // namespace statistics
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_TOTAL_HOSTS_HH
+#endif  // !CCB_NEB_STATISTICS_TOTAL_HOSTS_HH

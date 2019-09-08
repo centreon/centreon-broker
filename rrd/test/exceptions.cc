@@ -17,14 +17,14 @@
 */
 
 #include <gtest/gtest.h>
+#include <unistd.h>
 #include <cstdlib>
 #include <ctime>
 #include <memory>
-#include <unistd.h>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/rrd/lib.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
 #include "com/centreon/broker/rrd/exceptions/update.hh"
+#include "com/centreon/broker/rrd/lib.hh"
 
 using namespace com::centreon::broker;
 
@@ -42,18 +42,15 @@ TEST(RrdExceptions, OpenClone) {
   std::unique_ptr<exceptions::msg> clone(e.clone());
 
   // Check that clone object was properly constructed.
-  int retval(!clone.get()
-             || strcmp("foo4277454654249841-1bar", clone->what()));
+  int retval(!clone || strcmp("foo4277454654249841-1bar", clone->what()));
 
   // Check that this is really an open error.
   if (!retval) {
     try {
-      static_cast<rrd::exceptions::open *>(clone.get())->rethrow();
-    }
-    catch (rrd::exceptions::open const& e) {
-      (void)e; // We're good.
-    }
-    catch (...) {
+      static_cast<rrd::exceptions::open*>(clone.get())->rethrow();
+    } catch (rrd::exceptions::open const& e) {
+      (void)e;  // We're good.
+    } catch (...) {
       retval |= 1;
     }
   }
@@ -69,18 +66,14 @@ TEST(RrdExceptions, OpenRethrow) {
   try {
     try {
       // Initial throw.
-      throw (rrd::exceptions::open()
-        << "foobar" << 42 << -789654123ll);
+      throw(rrd::exceptions::open() << "foobar" << 42 << -789654123ll);
       retval |= 1;
+    } catch (exceptions::msg const& e) {  // Proper catch.
+      // e.rethrow();
     }
-    catch (exceptions::msg const& e) { // Proper catch.
-      //e.rethrow();
-    }
-  }
-  catch (rrd::exceptions::open const& e) { // Catch rethrown exception.
+  } catch (rrd::exceptions::open const& e) {  // Catch rethrown exception.
     retval |= strcmp(e.what(), "foobar42-789654123");
-  }
-  catch (...) {
+  } catch (...) {
     retval |= 1;
   }
 
@@ -95,45 +88,37 @@ TEST(RrdExceptions, OpenThrow) {
   // First throw.
   try {
     try {
-      throw (rrd::exceptions::open()
-        << "foobar" << 42 << -789654ll);
+      throw(rrd::exceptions::open() << "foobar" << 42 << -789654ll);
       retval |= 1;
-    }
-    catch (rrd::exceptions::open const& e) {
+    } catch (rrd::exceptions::open const& e) {
       retval |= strcmp(e.what(), "foobar42-789654");
     }
-  }
-  catch (...) {
+  } catch (...) {
     retval |= 1;
   }
 
   // Second throw.
   try {
     try {
-      throw (rrd::exceptions::open()
-        << "baz" << 42 << "qux" << -789410l);
+      throw(rrd::exceptions::open() << "baz" << 42 << "qux" << -789410l);
       retval |= 1;
-    }
-    catch (exceptions::msg const& e) {
+    } catch (exceptions::msg const& e) {
       retval |= strcmp(e.what(), "baz42qux-789410");
     }
-  }
-  catch (...) {
+  } catch (...) {
     retval |= 1;
   }
 
   // Third throw.
   try {
     try {
-      throw (rrd::exceptions::open()
-        << "foobarbazqux" << -74125896321445ll << 36);
+      throw(rrd::exceptions::open()
+            << "foobarbazqux" << -74125896321445ll << 36);
       retval |= 1;
-    }
-    catch (std::exception const& e) {
+    } catch (std::exception const& e) {
       retval |= strcmp(e.what(), "foobarbazqux-7412589632144536");
     }
-  }
-  catch (...) {
+  } catch (...) {
     retval |= 1;
   }
 
@@ -155,16 +140,14 @@ TEST(RrdExceptions, UpdateClone) {
   std::unique_ptr<exceptions::msg> clone(e.clone());
 
   // Check that clone object was properly constructed.
-  int retval(!clone.get()
-             || strcmp("foo4277454654249841-1bar", clone->what()));
+  int retval(!clone || strcmp("foo4277454654249841-1bar", clone->what()));
 
   // Check that this is really an open error.
   if (!retval) {
     try {
-      static_cast<rrd::exceptions::update *>(clone.get())->rethrow();
-    }
-    catch (rrd::exceptions::update const& e) {
-      (void)e; // We're good.
+      static_cast<rrd::exceptions::update*>(clone.get())->rethrow();
+    } catch (rrd::exceptions::update const& e) {
+      (void)e;  // We're good.
     }
 
     catch (...) {
@@ -183,18 +166,14 @@ TEST(RrdExceptions, UpdateRethrow) {
   try {
     try {
       // Initial throw.
-      throw (rrd::exceptions::update()
-        << "foobar" << 42 << -789654123ll);
+      throw(rrd::exceptions::update() << "foobar" << 42 << -789654123ll);
       retval |= 1;
+    } catch (exceptions::msg const& e) {  // Proper catch.
+      // e.rethrow();
     }
-    catch (exceptions::msg const& e) { // Proper catch.
-      //e.rethrow();
-    }
-  }
-  catch (rrd::exceptions::update const& e) { // Catch rethrown exception.
+  } catch (rrd::exceptions::update const& e) {  // Catch rethrown exception.
     retval |= strcmp(e.what(), "foobar42-789654123");
-  }
-  catch (...) {
+  } catch (...) {
     retval |= 1;
   }
 
@@ -209,45 +188,37 @@ TEST(RrdExceptions, UpdateThrow) {
   // First throw.
   try {
     try {
-      throw (rrd::exceptions::update()
-        << "foobar" << 42 << -789654ll);
+      throw(rrd::exceptions::update() << "foobar" << 42 << -789654ll);
       retval |= 1;
-    }
-    catch (rrd::exceptions::update const& e) {
+    } catch (rrd::exceptions::update const& e) {
       retval |= strcmp(e.what(), "foobar42-789654");
     }
-  }
-  catch (...) {
+  } catch (...) {
     retval |= 1;
   }
 
   // Second throw.
   try {
     try {
-      throw (rrd::exceptions::update()
-        << "baz" << 42 << "qux" << -789410l);
+      throw(rrd::exceptions::update() << "baz" << 42 << "qux" << -789410l);
       retval |= 1;
-    }
-    catch (exceptions::msg const& e) {
+    } catch (exceptions::msg const& e) {
       retval |= strcmp(e.what(), "baz42qux-789410");
     }
-  }
-  catch (...) {
+  } catch (...) {
     retval |= 1;
   }
 
   // Third throw.
   try {
     try {
-      throw (rrd::exceptions::update()
-        << "foobarbazqux" << -74125896321445ll << 36);
+      throw(rrd::exceptions::update()
+            << "foobarbazqux" << -74125896321445ll << 36);
       retval |= 1;
-    }
-    catch (std::exception const& e) {
+    } catch (std::exception const& e) {
       retval |= strcmp(e.what(), "foobarbazqux-7412589632144536");
     }
-  }
-  catch (...) {
+  } catch (...) {
     retval |= 1;
   }
 

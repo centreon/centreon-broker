@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sstream>
+#include "com/centreon/broker/notification/loaders/node_loader.hh"
 #include <QSet>
+#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/notification/loaders/node_loader.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -39,16 +39,14 @@ void node_loader::load(mysql* ms, node_builder* output) {
     return;
 
   logging::debug(logging::medium)
-    << "notification: loading nodes from the database";
+      << "notification: loading nodes from the database";
 
   // Performance improvement, as we never go back.
-//  query.setForwardOnly(true);
+  //  query.setForwardOnly(true);
 
   // Load hosts.
   std::promise<database::mysql_result> promise;
-  ms->run_query_and_get_result(
-        "SELECT host_id FROM cfg_hosts",
-        &promise);
+  ms->run_query_and_get_result("SELECT host_id FROM cfg_hosts", &promise);
 
   try {
     database::mysql_result res(promise.get_future().get());
@@ -57,24 +55,22 @@ void node_loader::load(mysql* ms, node_builder* output) {
       node::ptr n(new node);
       n->set_node_id(node_id(host_id));
       logging::config(logging::low)
-        << "notification: loading host " << host_id << " from database";
+          << "notification: loading host " << host_id << " from database";
       output->add_node(n);
     }
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     throw exceptions::msg()
-      << "notification: cannot load hosts from database: "
-      << e.what();
+        << "notification: cannot load hosts from database: " << e.what();
   }
 
   promise = std::promise<database::mysql_result>();
   // Load services.
   ms->run_query_and_get_result(
-        "SELECT hsr.host_host_id, hsr.service_service_id"
-        "  FROM cfg_hosts_services_relations AS hsr"
-        "  LEFT JOIN cfg_services AS s"
-        "    ON hsr.service_service_id=s.service_id",
-        &promise);
+      "SELECT hsr.host_host_id, hsr.service_service_id"
+      "  FROM cfg_hosts_services_relations AS hsr"
+      "  LEFT JOIN cfg_services AS s"
+      "    ON hsr.service_service_id=s.service_id",
+      &promise);
 
   try {
     database::mysql_result res(promise.get_future().get());
@@ -83,14 +79,13 @@ void node_loader::load(mysql* ms, node_builder* output) {
       unsigned int service_id = res.value_as_u32(1);
       node::ptr n(new node);
       n->set_node_id(node_id(host_id, service_id));
-      logging::config(logging::low) << "notification: loading service ("
-        << host_id << ", " << service_id << ") from database";
+      logging::config(logging::low)
+          << "notification: loading service (" << host_id << ", " << service_id
+          << ") from database";
       output->add_node(n);
     }
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     throw exceptions::msg()
-      << "notification: cannot load services from database: "
-      << e.what();
+        << "notification: cannot load services from database: " << e.what();
   }
 }

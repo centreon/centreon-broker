@@ -17,89 +17,85 @@
 */
 
 #ifndef CCB_BAM_AVAILABILITY_THREAD_HH
-#  define CCB_BAM_AVAILABILITY_THREAD_HH
+#define CCB_BAM_AVAILABILITY_THREAD_HH
 
-#  include <mutex>
-#  include <thread>
-#  include <condition_variable>
-#  include <memory>
-#  include <string>
-#  include "com/centreon/broker/mysql.hh"
-#  include "com/centreon/broker/database_config.hh"
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/bam/timeperiod_map.hh"
-#  include "com/centreon/broker/time/timeperiod.hh"
-#  include "com/centreon/broker/bam/availability_builder.hh"
+#include <condition_variable>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <thread>
+#include "com/centreon/broker/bam/availability_builder.hh"
+#include "com/centreon/broker/bam/timeperiod_map.hh"
+#include "com/centreon/broker/database_config.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/time/timeperiod.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-class               database_query;
+class database_query;
 
-namespace           bam {
-  /**
-   *  @class availability_thread availability_thread.hh "com/centreon/broker/bam/availability_thread.hh"
-   *  @brief Availability thread
-   *
-   */
-  class             availability_thread {
-  public:
-                    availability_thread(
-                      database_config const& db_cfg,
+namespace bam {
+/**
+ *  @class availability_thread availability_thread.hh
+ * "com/centreon/broker/bam/availability_thread.hh"
+ *  @brief Availability thread
+ *
+ */
+class availability_thread {
+ public:
+  availability_thread(database_config const& db_cfg,
                       timeperiod_map& shared_map);
-                    ~availability_thread();
-    virtual void    run();
-    void            terminate();
-    void            start_and_wait();
+  ~availability_thread();
+  virtual void run();
+  void terminate();
+  void start_and_wait();
 
-    std::unique_ptr<std::unique_lock<std::mutex>>
-                    lock();
+  std::unique_ptr<std::unique_lock<std::mutex>> lock();
 
-    void            rebuild_availabilities(std::string const& bas_to_rebuild);
-    void wait();
+  void rebuild_availabilities(std::string const& bas_to_rebuild);
+  void wait();
 
-  private:
-                    availability_thread(availability_thread const& other);
-    availability_thread&
-                    operator=(availability_thread const& other) const;
+ private:
+  availability_thread(availability_thread const& other);
+  availability_thread& operator=(availability_thread const& other) const;
 
-    void            _delete_all_availabilities();
-    void            _build_availabilities(time_t midnight);
-    void            _build_daily_availabilities(
-                      int thread_id,
-                      time_t day_start,
-                      time_t day_end);
-    void            _write_availability(
-                      int thread_id,
-                      availability_builder const& builder,
-                      unsigned int ba_id,
-                      time_t day_start,
-                      unsigned int timeperiod_id);
+  void _delete_all_availabilities();
+  void _build_availabilities(time_t midnight);
+  void _build_daily_availabilities(int thread_id,
+                                   time_t day_start,
+                                   time_t day_end);
+  void _write_availability(int thread_id,
+                           availability_builder const& builder,
+                           unsigned int ba_id,
+                           time_t day_start,
+                           unsigned int timeperiod_id);
 
-    time_t          _compute_next_midnight();
-    time_t          _compute_start_of_day(time_t when);
+  time_t _compute_next_midnight();
+  time_t _compute_start_of_day(time_t when);
 
-    void            _open_database();
-    void            _close_database();
+  void _open_database();
+  void _close_database();
 
-    std::thread _thread;
+  std::thread _thread;
 
-    // Checked from master
-    bool _started_flag;
+  // Checked from master
+  bool _started_flag;
 
-    std::unique_ptr<mysql> _mysql;
-    database_config _db_cfg;
-    timeperiod_map& _shared_tps;
+  std::unique_ptr<mysql> _mysql;
+  database_config _db_cfg;
+  timeperiod_map& _shared_tps;
 
-    std::mutex _mutex;
-    bool            _should_exit;
-    bool            _should_rebuild_all;
-    std::string         _bas_to_rebuild;
-    std::condition_variable _wait;
-  };
-}
+  std::mutex _mutex;
+  bool _should_exit;
+  bool _should_rebuild_all;
+  std::string _bas_to_rebuild;
+  std::condition_variable _wait;
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_AVAILABILITY_THREAD_HH
+#endif  // !CCB_BAM_AVAILABILITY_THREAD_HH

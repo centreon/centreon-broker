@@ -22,28 +22,27 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage::exceptions;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
-perfdata::perfdata() throw () {}
+perfdata::perfdata() throw() {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] pd Object to copy.
  */
-perfdata::perfdata(perfdata const& pd) throw ()
-  : broker::exceptions::msg(pd) {}
+perfdata::perfdata(perfdata const& pd) throw() : broker::exceptions::msg(pd) {}
 
 /**
  *  Destructor.
  */
-perfdata::~perfdata() throw () {}
+perfdata::~perfdata() throw() {}
 
 /**
  *  Assignment operator.
@@ -52,7 +51,7 @@ perfdata::~perfdata() throw () {}
  *
  *  @return This object.
  */
-perfdata& perfdata::operator=(perfdata const& pd) throw () {
+perfdata& perfdata::operator=(perfdata const& pd) throw() {
   broker::exceptions::msg::operator=(pd);
   return (*this);
 }
@@ -70,6 +69,6 @@ exceptions::msg* perfdata::clone() const {
  *  Rethrow the exception.
  */
 void perfdata::rethrow() const {
-  throw (*this);
-  return ;
+  throw(*this);
+  return;
 }

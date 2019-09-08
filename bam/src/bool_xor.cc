@@ -30,8 +30,7 @@ bool_xor::bool_xor() {}
  *
  *  @param[in] right Object to copy.
  */
-bool_xor::bool_xor(bool_xor const& right)
-  : bool_binary_operator(right) {}
+bool_xor::bool_xor(bool_xor const& right) : bool_binary_operator(right) {}
 
 /**
  *  Destructor.
@@ -56,8 +55,7 @@ bool_xor& bool_xor::operator=(bool_xor const& right) {
  *  @return Evaluation of the expression with hard values.
  */
 double bool_xor::value_hard() {
-  return ((!_left_hard && _right_hard)
-          || (_left_hard && !_right_hard));
+  return ((!_left_hard && _right_hard) || (_left_hard && !_right_hard));
 }
 
 /**
@@ -66,6 +64,5 @@ double bool_xor::value_hard() {
  *  @return Evaluation of the expression with soft values.
  */
 double bool_xor::value_soft() {
-  return ((!_left_soft && _right_soft)
-          || (_left_soft && !_right_soft));
+  return ((!_left_soft && _right_soft) || (_left_soft && !_right_soft));
 }

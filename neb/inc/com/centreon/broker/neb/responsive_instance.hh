@@ -17,43 +17,41 @@
 */
 
 #ifndef CCB_NEB_RESPONSIVE_INSTANCE_HH
-#  define CCB_NEB_RESPONSIVE_INSTANCE_HH
+#define CCB_NEB_RESPONSIVE_INSTANCE_HH
 
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
 
 CCB_BEGIN()
 
-namespace          neb {
-  /**
-   *  @class responsive_instance responsive_instance.hh "com/centreon/broker/neb/responsive_instance.hh"
-   *  @brief Information about a missing instance.
-   *
-   *  An event of this class is emitted by Centreon Broker if an engine instance
-   *  does not give any sign of life or if it gives some back again.
-   */
-  class            responsive_instance : public io::data {
-  public:
-                   responsive_instance();
-                   responsive_instance(responsive_instance const& i);
-                   ~responsive_instance();
-    responsive_instance&
-                   operator=(responsive_instance const& i);
-    unsigned int   type() const;
+namespace neb {
+/**
+ *  @class responsive_instance responsive_instance.hh
+ * "com/centreon/broker/neb/responsive_instance.hh"
+ *  @brief Information about a missing instance.
+ *
+ *  An event of this class is emitted by Centreon Broker if an engine instance
+ *  does not give any sign of life or if it gives some back again.
+ */
+class responsive_instance : public io::data {
+ public:
+  responsive_instance();
+  responsive_instance(responsive_instance const& i);
+  ~responsive_instance();
+  responsive_instance& operator=(responsive_instance const& i);
+  unsigned int type() const;
 
-    unsigned int   poller_id;
-    bool           responsive;
+  unsigned int poller_id;
+  bool responsive;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void           _internal_copy(responsive_instance const& i);
-  };
-}
+ private:
+  void _internal_copy(responsive_instance const& i);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_RESPONSIVE_INSTANCE_HH
+#endif  // !CCB_NEB_RESPONSIVE_INSTANCE_HH

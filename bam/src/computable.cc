@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <vector>
 #include "com/centreon/broker/bam/computable.hh"
+#include <vector>
 
 using namespace com::centreon::broker::bam;
 
@@ -58,10 +58,9 @@ computable& computable::operator=(computable const& right) {
  *
  *  @param[in] parent Parent node.
  */
-void computable::add_parent(
-                   std::shared_ptr<computable> const& parent) {
+void computable::add_parent(std::shared_ptr<computable> const& parent) {
   _parents.push_back(std::weak_ptr<computable>(parent));
-  return ;
+  return;
 }
 
 /**
@@ -76,11 +75,9 @@ void computable::propagate_update(io::stream* visitor) {
   std::vector<bool> filter;
   filter.resize(_parents.size());
   unsigned int i = 0;
-  for (std::list<std::weak_ptr<computable> >::iterator
-         it(_parents.begin()),
-         end(_parents.end());
-       it != end;
-       ++it) {
+  for (std::list<std::weak_ptr<computable> >::iterator it(_parents.begin()),
+       end(_parents.end());
+       it != end; ++it) {
     std::shared_ptr<computable> ptr = it->lock();
     if (ptr)
       filter[i++] = ptr->child_has_update(this, visitor);
@@ -88,17 +85,15 @@ void computable::propagate_update(io::stream* visitor) {
       ++i;
   }
   i = 0;
-  for (std::list<std::weak_ptr<computable> >::iterator
-         it(_parents.begin()),
-         end(_parents.end());
-       it != end;
-       ++it)
+  for (std::list<std::weak_ptr<computable> >::iterator it(_parents.begin()),
+       end(_parents.end());
+       it != end; ++it)
     if (filter[i++] == true) {
       std::shared_ptr<computable> ptr = it->lock();
       if (ptr)
         ptr->propagate_update(visitor);
     }
-  return ;
+  return;
 }
 
 /**
@@ -106,18 +101,15 @@ void computable::propagate_update(io::stream* visitor) {
  *
  *  @param[in] parent Parent node.
  */
-void computable::remove_parent(
-                   std::shared_ptr<computable> const& parent) {
-  for (std::list<std::weak_ptr<computable> >::iterator
-         it(_parents.begin()),
-         end(_parents.end());
-       it != end;
-       ++it)
+void computable::remove_parent(std::shared_ptr<computable> const& parent) {
+  for (std::list<std::weak_ptr<computable> >::iterator it(_parents.begin()),
+       end(_parents.end());
+       it != end; ++it)
     if (it->lock().get() == parent.get()) {
       _parents.erase(it);
-      break ;
+      break;
     }
-  return ;
+  return;
 }
 
 /**
@@ -127,5 +119,5 @@ void computable::remove_parent(
  */
 void computable::_internal_copy(computable const& right) {
   _parents = right._parents;
-  return ;
+  return;
 }

@@ -17,42 +17,40 @@
 */
 
 #ifndef CCB_NEB_HOST_GROUP_MEMBER_HH
-#  define CCB_NEB_HOST_GROUP_MEMBER_HH
+#define CCB_NEB_HOST_GROUP_MEMBER_HH
 
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/group_member.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/group_member.hh"
 
 CCB_BEGIN()
 
-namespace               neb {
-  /**
-   *  @class host_group_member host_group_member.hh "com/centreon/broker/neb/host_group_member.hh"
-   *  @brief Member of a host group.
-   *
-   *  Base class defining that an host is part of a host group.
-   *
-   *  @see host
-   *  @see host_group
-   */
-  class                 host_group_member : public group_member {
-  public:
-                        host_group_member();
-                        host_group_member(
-                          host_group_member const& other);
-    virtual             ~host_group_member();
-    host_group_member&  operator=(host_group_member const& other);
-    unsigned int        type() const;
-    static unsigned int static_type();
+namespace neb {
+/**
+ *  @class host_group_member host_group_member.hh
+ * "com/centreon/broker/neb/host_group_member.hh"
+ *  @brief Member of a host group.
+ *
+ *  Base class defining that an host is part of a host group.
+ *
+ *  @see host
+ *  @see host_group
+ */
+class host_group_member : public group_member {
+ public:
+  host_group_member();
+  host_group_member(host_group_member const& other);
+  virtual ~host_group_member();
+  host_group_member& operator=(host_group_member const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    static mapping::entry const
-                        entries[];
-    static io::event_info::event_operations const
-                        operations;
-  };
-}
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_HOST_GROUP_MEMBER_HH
+#endif  // !CCB_NEB_HOST_GROUP_MEMBER_HH

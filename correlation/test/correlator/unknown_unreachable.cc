@@ -16,16 +16,16 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <iostream>
 #include <QMap>
 #include <QPair>
-#include "com/centreon/broker/multiplexing/engine.hh"
+#include <cstdlib>
+#include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/node.hh"
+#include "com/centreon/broker/correlation/stream.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/neb/host_status.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "test/correlator/common.hh"
@@ -78,7 +78,7 @@ int main() {
     }
 
     // Send node status.
-    { // #1
+    {  // #1
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 56;
       ss->service_id = 13;
@@ -87,7 +87,7 @@ int main() {
       ss->last_hard_state_change = 123456789;
       c.write(ss);
     }
-    { // #2
+    {  // #2
       std::shared_ptr<neb::host_status> hs(new neb::host_status);
       hs->host_id = 90;
       hs->state_type = 1;
@@ -95,7 +95,7 @@ int main() {
       hs->last_hard_state_change = 123456790;
       c.write(hs);
     }
-    { // #3
+    {  // #3
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
@@ -104,7 +104,7 @@ int main() {
       ss->last_hard_state_change = 123456791;
       c.write(ss);
     }
-    { // #4
+    {  // #4
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 56;
       ss->service_id = 13;
@@ -113,7 +113,7 @@ int main() {
       ss->last_hard_state_change = 123456792;
       c.write(ss);
     }
-    { // #5
+    {  // #5
       std::shared_ptr<neb::host_status> hs(new neb::host_status);
       hs->host_id = 90;
       hs->state_type = 1;
@@ -121,7 +121,7 @@ int main() {
       hs->last_hard_state_change = 123456793;
       c.write(hs);
     }
-    { // #6
+    {  // #6
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
@@ -147,71 +147,23 @@ int main() {
     add_state(content, -1, 0, 123456791, 42, false, 24, 0);
     add_state(content, -1, 2, -1, 42, false, 24, 123456791);
     add_issue(content, -1, -1, 42, 24, 123456791);
-    add_issue_parent(
-      content,
-      56,
-      13,
-      123456789,
-      -1,
-      42,
-      24,
-      123456791,
-      123456791);
-    add_issue_parent(
-      content,
-      90,
-      0,
-      123456790,
-      -1,
-      42,
-      24,
-      123456791,
-      123456791);
+    add_issue_parent(content, 56, 13, 123456789, -1, 42, 24, 123456791,
+                     123456791);
+    add_issue_parent(content, 90, 0, 123456790, -1, 42, 24, 123456791,
+                     123456791);
     // #4
-    add_state(
-      content,
-      -1,
-      2,
-      123456792,
-      56,
-      false,
-      13,
-      123456789);
+    add_state(content, -1, 2, 123456792, 56, false, 13, 123456789);
     add_state(content, -1, 1, -1, 56, false, 13, 123456792);
     // #5
     add_state(content, -1, 1, 123456793, 90, false, 0, 123456790);
     add_state(content, -1, 2, -1, 90, false, 0, 123456793);
     // #6
-    add_state(
-      content,
-      -1,
-      2,
-      123456794,
-      42,
-      false,
-      24,
-      123456791);
+    add_state(content, -1, 2, 123456794, 42, false, 24, 123456791);
     add_state(content, -1, 0, -1, 42, false, 24, 123456794);
-    add_issue_parent(
-      content,
-      56,
-      13,
-      123456789,
-      123456794,
-      42,
-      24,
-      123456791,
-      123456791);
-    add_issue_parent(
-      content,
-      90,
-      0,
-      123456790,
-      123456794,
-      42,
-      24,
-      123456791,
-      123456791);
+    add_issue_parent(content, 56, 13, 123456789, 123456794, 42, 24, 123456791,
+                     123456791);
+    add_issue_parent(content, 90, 0, 123456790, 123456794, 42, 24, 123456791,
+                     123456791);
     add_issue(content, -1, 123456794, 42, 24, 123456791);
 
     // Check.
@@ -219,11 +171,9 @@ int main() {
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "unknown exception" << std::endl;
   }
 

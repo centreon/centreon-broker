@@ -17,37 +17,33 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_BY_ID_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_BY_ID_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_BY_ID_BUILDER_HH
 
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/node_id.hh"
-#  include "com/centreon/broker/time/timeperiod.hh"
-#  include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
+#include "com/centreon/broker/notification/objects/node_id.hh"
+#include "com/centreon/broker/time/timeperiod.hh"
 
 CCB_BEGIN()
 
-namespace       notification {
-  /**
-   *  @class timeperiod_by_id_builder timeperiod_by_id_builder.hh "com/centreon/broker/notification/builders/timeperiod_by_id_builder.hh"
-   *  @brief Timeperiod by id builder.
-   */
-  class         timeperiod_by_id_builder
-                  : public timeperiod_builder {
-  public:
-    timeperiod_by_id_builder(
-      QHash<unsigned int, time::timeperiod::ptr>& table);
+namespace notification {
+/**
+ *  @class timeperiod_by_id_builder timeperiod_by_id_builder.hh
+ * "com/centreon/broker/notification/builders/timeperiod_by_id_builder.hh"
+ *  @brief Timeperiod by id builder.
+ */
+class timeperiod_by_id_builder : public timeperiod_builder {
+ public:
+  timeperiod_by_id_builder(QHash<unsigned int, time::timeperiod::ptr>& table);
 
-    void        add_timeperiod(
-                  unsigned int id,
-                  time::timeperiod::ptr con);
+  void add_timeperiod(unsigned int id, time::timeperiod::ptr con);
 
-  private:
-    QHash<unsigned int, time::timeperiod::ptr>&
-                  _table;
-  };
+ private:
+  QHash<unsigned int, time::timeperiod::ptr>& _table;
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_BY_ID_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_TIMEPERIOD_BY_ID_BUILDER_HH

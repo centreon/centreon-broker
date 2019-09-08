@@ -16,30 +16,30 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/stats/worker.hh"
+#include <fcntl.h>
+#include <poll.h>
+#include <time.h>
+#include <unistd.h>
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
-#include <fcntl.h>
 #include <iomanip>
-#include <poll.h>
 #include <sstream>
-#include <time.h>
-#include <unistd.h>
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/stats/builder.hh"
-#include "com/centreon/broker/stats/worker.hh"
 #include "com/centreon/broker/stats/json_serializer.hh"
 
 using namespace com::centreon::broker::stats;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -49,14 +49,14 @@ worker::worker() : _fd(-1) {}
 /**
  *  Destructor.
  */
-worker::~worker() throw () {}
+worker::~worker() throw() {}
 
 /**
  *  Set the exit flag.
  */
 void worker::exit() {
   _should_exit = true;
-  return ;
+  return;
 }
 
 /**
@@ -80,10 +80,10 @@ void worker::run(std::string const& fifo_file) {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Close FIFO fd.
@@ -93,7 +93,7 @@ void worker::_close() {
     close(_fd);
     _fd = -1;
   }
-  return ;
+  return;
 }
 
 /**
@@ -107,12 +107,10 @@ bool worker::_open() {
   if (_fd < 0) {
     if (errno != ENXIO) {
       char const* msg(strerror(errno));
-      throw (exceptions::msg() << "cannot open FIFO file: " << msg);
-    }
-    else
+      throw(exceptions::msg() << "cannot open FIFO file: " << msg);
+    } else
       retval = false;
-  }
-  else
+  } else
     retval = true;
   return (retval);
 }
@@ -128,7 +126,7 @@ void worker::_run() {
         _close();
         usleep(100000);
         if (!_open())
-          continue ;
+          continue;
       }
 
       // FD sets.
@@ -145,19 +143,19 @@ void worker::_run() {
         // Unrecoverable.
         if (errno != EINTR) {
           char const* msg(strerror(errno));
-          throw (exceptions::msg() << "multiplexing failure: " << msg);
+          throw(exceptions::msg() << "multiplexing failure: " << msg);
         }
-      }
-      else if (flagged > 0) {
+      } else if (flagged > 0) {
         // FD error.
         if ((fds.revents & (POLLERR | POLLNVAL | POLLHUP)))
-          throw (exceptions::msg() << "FIFO fd has pending error");
+          throw(exceptions::msg() << "FIFO fd has pending error");
         // Readable.
         else if ((fds.revents & POLLOUT)) {
           if (_buffer.empty()) {
             // Generate statistics.
             builder stats_builder;
-            stats_builder.build(static_cast<serializer const &>(json_serializer()));
+            stats_builder.build(
+                static_cast<serializer const&>(json_serializer()));
             _buffer = stats_builder.data();
           }
 
@@ -170,15 +168,13 @@ void worker::_run() {
         }
       }
     }
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     logging::error(logging::high)
-      << "stats: FIFO thread will exit due to the following error: "
-      << e.what();
-  }
-  catch (...) {
+        << "stats: FIFO thread will exit due to the following error: "
+        << e.what();
+  } catch (...) {
     logging::error(logging::high)
-      << "stats: FIFO thread will exit due to an unknown error";
+        << "stats: FIFO thread will exit due to an unknown error";
   }
   ::unlink(_fifo.c_str());
 }

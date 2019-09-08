@@ -17,35 +17,32 @@
 */
 
 #ifndef CCB_NEB_CALLBACK_HH
-#  define CCB_NEB_CALLBACK_HH
+#define CCB_NEB_CALLBACK_HH
 
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     neb {
-  /**
-   *  @class callback callback.hh "com/centreon/broker/neb/callback.hh"
-   *  @brief Manager NEB callbacks.
-   *
-   *  Handle callback registration/deregistration with Nagios.
-   */
-  class       callback {
-  public:
-              callback(
-                int id,
-                void* handle,
-                int (* function)(int, void*));
-              ~callback() throw ();
+namespace neb {
+/**
+ *  @class callback callback.hh "com/centreon/broker/neb/callback.hh"
+ *  @brief Manager NEB callbacks.
+ *
+ *  Handle callback registration/deregistration with Nagios.
+ */
+class callback {
+ public:
+  callback(int id, void* handle, int (*function)(int, void*));
+  ~callback() throw();
 
-  private:
-              callback(callback const& right);
-    callback& operator=(callback const& right);
+ private:
+  callback(callback const& right);
+  callback& operator=(callback const& right);
 
-    int (*    _function)(int, void*);
-    int       _id;
-  };
-}
+  int (*_function)(int, void*);
+  int _id;
+};
+}  // namespace neb
 
 CCB_END()
 

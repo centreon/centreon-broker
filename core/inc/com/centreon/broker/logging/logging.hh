@@ -17,22 +17,22 @@
 */
 
 #ifndef CCB_LOGGING_LOGGING_HH
-#  define CCB_LOGGING_LOGGING_HH
+#define CCB_LOGGING_LOGGING_HH
 
-#  include "com/centreon/broker/logging/logger.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/logging/logger.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace       logging {
-  // Standard logging objects.
-  extern logger config;
-  extern logger debug;
-  extern logger error;
-  extern logger info;
-  extern logger perf;
-}
+namespace logging {
+// Standard logging objects.
+extern logger config;
+extern logger debug;
+extern logger error;
+extern logger info;
+extern logger perf;
+}  // namespace logging
 
 CCB_END()
 
-#endif // !CCB_LOGGING_LOGGING_HH
+#endif  // !CCB_LOGGING_LOGGING_HH

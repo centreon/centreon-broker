@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bbdo/acceptor.hh"
 #include <algorithm>
 #include <memory>
 #include <sstream>
-#include "com/centreon/broker/bbdo/acceptor.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
@@ -32,10 +32,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -52,22 +52,21 @@ using namespace com::centreon::broker::bbdo;
  *  @param[in] ack_limit               The number of event received before
  *                                     an ack needs to be sent.
  */
-acceptor::acceptor(
-            std::string const& name,
-            bool negotiate,
-            std::string const& extensions,
-            time_t timeout,
-            bool one_peer_retention_mode,
-            bool coarse,
-            unsigned int ack_limit)
-  : io::endpoint(!one_peer_retention_mode),
-    _coarse(coarse),
-    _extensions(extensions),
-    _name(name),
-    _negotiate(negotiate),
-    _one_peer_retention_mode(one_peer_retention_mode),
-    _timeout(timeout),
-    _ack_limit(ack_limit) {
+acceptor::acceptor(std::string const& name,
+                   bool negotiate,
+                   std::string const& extensions,
+                   time_t timeout,
+                   bool one_peer_retention_mode,
+                   bool coarse,
+                   unsigned int ack_limit)
+    : io::endpoint(!one_peer_retention_mode),
+      _coarse(coarse),
+      _extensions(extensions),
+      _name(name),
+      _negotiate(negotiate),
+      _one_peer_retention_mode(one_peer_retention_mode),
+      _timeout(timeout),
+      _ack_limit(ack_limit) {
   if ((_timeout == (time_t)-1) || (_timeout == 0))
     _timeout = 3;
 }
@@ -78,14 +77,14 @@ acceptor::acceptor(
  *  @param[in] other  Object to copy.
  */
 acceptor::acceptor(acceptor const& other)
-  : io::endpoint(other),
-    _coarse(other._coarse),
-    _extensions(other._extensions),
-    _name(other._name),
-    _negotiate(other._negotiate),
-    _one_peer_retention_mode(other._one_peer_retention_mode),
-    _timeout(other._timeout),
-    _ack_limit(other._ack_limit) {}
+    : io::endpoint(other),
+      _coarse(other._coarse),
+      _extensions(other._extensions),
+      _name(other._name),
+      _negotiate(other._negotiate),
+      _one_peer_retention_mode(other._one_peer_retention_mode),
+      _timeout(other._timeout),
+      _ack_limit(other._ack_limit) {}
 
 /**
  *  Destructor.
@@ -159,5 +158,5 @@ void acceptor::stats(io::properties& tree) {
   p.set_graphable(false);
   if (_from)
     _from->stats(tree);
-  return ;
+  return;
 }

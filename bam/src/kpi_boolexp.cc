@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bam/kpi_boolexp.hh"
 #include "com/centreon/broker/bam/bool_expression.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
-#include "com/centreon/broker/bam/kpi_boolexp.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -67,15 +67,13 @@ kpi_boolexp& kpi_boolexp::operator=(kpi_boolexp const& other) {
  *
  *  @return True if the values of this object were modified.
  */
-bool kpi_boolexp::child_has_update(
-                    computable* child,
-                    io::stream* visitor) {
+bool kpi_boolexp::child_has_update(computable* child, io::stream* visitor) {
   // It is useless to maintain a cache of boolean expression values in
   // this class, as the bool_expression class already cache most of them.
   if (child == _boolexp.get()) {
     // Logging.
-    logging::debug(logging::low) << "BAM: boolean expression KPI "
-      << _id << " is getting notified of child update";
+    logging::debug(logging::low) << "BAM: boolean expression KPI " << _id
+                                 << " is getting notified of child update";
 
     // Generate status event.
     visit(visitor);
@@ -110,7 +108,7 @@ double kpi_boolexp::get_impact() const {
  */
 void kpi_boolexp::impact_hard(impact_values& hard_impact) {
   _fill_impact(hard_impact);
-  return ;
+  return;
 }
 
 /**
@@ -120,7 +118,7 @@ void kpi_boolexp::impact_hard(impact_values& hard_impact) {
  */
 void kpi_boolexp::impact_soft(impact_values& soft_impact) {
   _fill_impact(soft_impact);
-  return ;
+  return;
 }
 
 /**
@@ -129,10 +127,9 @@ void kpi_boolexp::impact_soft(impact_values& soft_impact) {
  *
  *  @param[in] my_boolexp  Linked boolean expression.
  */
-void kpi_boolexp::link_boolexp(
-                    std::shared_ptr<bool_expression>& my_boolexp) {
+void kpi_boolexp::link_boolexp(std::shared_ptr<bool_expression>& my_boolexp) {
   _boolexp = my_boolexp;
-  return ;
+  return;
 }
 
 /**
@@ -142,7 +139,7 @@ void kpi_boolexp::link_boolexp(
  */
 void kpi_boolexp::set_impact(double impact) {
   _impact = impact;
-  return ;
+  return;
 }
 
 /**
@@ -174,7 +171,7 @@ void kpi_boolexp::visit(io::stream* visitor) {
         _open_new_event(visitor, values.get_nominal(), state);
       // If state changed, close event and open a new one.
       else if (state != _event->status) {
-        _event->end_time = ::time(NULL);
+        _event->end_time = ::time(nullptr);
         visitor->write(std::static_pointer_cast<io::data>(_event));
         _event.reset();
         _open_new_event(visitor, values.get_nominal(), state);
@@ -217,7 +214,7 @@ void kpi_boolexp::_fill_impact(impact_values& impact) {
   impact.set_nominal(nominal);
   impact.set_acknowledgement(0.0);
   impact.set_downtime(0.0);
-  return ;
+  return;
 }
 
 /**
@@ -229,7 +226,7 @@ void kpi_boolexp::_internal_copy(kpi_boolexp const& other) {
   _boolexp = other._boolexp;
   _event = other._event;
   _impact = other._impact;
-  return ;
+  return;
 }
 
 /**
@@ -239,23 +236,22 @@ void kpi_boolexp::_internal_copy(kpi_boolexp const& other) {
  *  @param[in]  impact   Current impact of this KPI.
  *  @param[in]  state    Boolean expression state.
  */
-void kpi_boolexp::_open_new_event(
-                    io::stream* visitor,
-                    int impact,
-                    short state) {
+void kpi_boolexp::_open_new_event(io::stream* visitor,
+                                  int impact,
+                                  short state) {
   _event.reset(new kpi_event);
   _event->kpi_id = _id;
   _event->impact_level = impact;
   _event->in_downtime = false;
   _event->output = "BAM boolean expression computed by Centreon Broker";
   _event->perfdata = "";
-  _event->start_time = time(NULL);
+  _event->start_time = time(nullptr);
   _event->status = state;
   if (visitor) {
     std::shared_ptr<io::data> ke(new kpi_event(*_event));
     visitor->write(ke);
   }
-  return ;
+  return;
 }
 
 /**

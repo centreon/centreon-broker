@@ -33,15 +33,14 @@ ceof_token::ceof_token() {}
  *  @param[in] token_number  The number of the token.
  *  @param[in] parent        The index of the parent token.
  */
-ceof_token::ceof_token(
-              token_type type,
-              std::string const& val,
-              int token_number,
-              int parent)
-  : _type(type),
-    _value(val),
-    _token_number(token_number),
-    _parent_token(parent) {}
+ceof_token::ceof_token(token_type type,
+                       std::string const& val,
+                       int token_number,
+                       int parent)
+    : _type(type),
+      _value(val),
+      _token_number(token_number),
+      _parent_token(parent) {}
 
 /**
  *  Copy constructor.
@@ -75,16 +74,14 @@ ceof_token& ceof_token::operator=(ceof_token const& other) {
 /**
  *  Destructor.
  */
-ceof_token::~ceof_token() throw() {
-
-}
+ceof_token::~ceof_token() throw() {}
 
 /**
  *  Get the type of this token.
  *
  *  @return  The type of this token.
  */
-ceof_token::token_type  ceof_token::get_type() const throw() {
+ceof_token::token_type ceof_token::get_type() const throw() {
   return (_type);
 }
 

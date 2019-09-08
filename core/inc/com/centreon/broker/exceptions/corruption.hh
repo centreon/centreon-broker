@@ -17,41 +17,42 @@
 */
 
 #ifndef CCB_EXCEPTIONS_CORRUPTION_HH
-#  define CCB_EXCEPTIONS_CORRUPTION_HH
+#define CCB_EXCEPTIONS_CORRUPTION_HH
 
-#  include "com/centreon/broker/exceptions/msg.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     exceptions {
-  /**
-   *  @class corruption corruption.hh "com/centreon/broker/exceptions/corruption.hh"
-   *  @brief Shutdown exception class.
-   *
-   *  This exception is thrown when someone attemps to read from a
-   *  stream that has been corruption.
-   */
-  class       corruption : public msg {
-  public:
-              corruption();
-              corruption(corruption const& other);
-              ~corruption() throw ();
-    corruption& operator=(corruption const& other);
+namespace exceptions {
+/**
+ *  @class corruption corruption.hh
+ * "com/centreon/broker/exceptions/corruption.hh"
+ *  @brief Shutdown exception class.
+ *
+ *  This exception is thrown when someone attemps to read from a
+ *  stream that has been corruption.
+ */
+class corruption : public msg {
+ public:
+  corruption();
+  corruption(corruption const& other);
+  ~corruption() throw();
+  corruption& operator=(corruption const& other);
 
-    /**
-     *  Insert data in message.
-     *
-     *  @param[in] t Data to insert.
-     */
-    template  <typename T>
-    corruption& operator<<(T t) throw () {
-      msg::operator<<(t);
-      return (*this);
-    }
-  };
-}
+  /**
+   *  Insert data in message.
+   *
+   *  @param[in] t Data to insert.
+   */
+  template <typename T>
+  corruption& operator<<(T t) throw() {
+    msg::operator<<(t);
+    return (*this);
+  }
+};
+}  // namespace exceptions
 
 CCB_END()
 
-#endif // !CCB_EXCEPTIONS_CORRUPTION_HH
+#endif  // !CCB_EXCEPTIONS_CORRUPTION_HH

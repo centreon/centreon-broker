@@ -16,20 +16,23 @@
 ** For more information : contact@centreon.com
 */
 
-#include <ctime>
+#include "com/centreon/broker/logging/file.hh"
 #include <climits>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <iostream>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/file.hh"
 
 using namespace com::centreon::broker::logging;
 
 // Messages.
-#define LOG_CLOSE_STR "Centreon Broker " CENTREON_BROKER_VERSION " log file closed\n"
-#define LOG_OPEN_STR "Centreon Broker " CENTREON_BROKER_VERSION " log file opened\n"
-#define LOG_ROTATION_STR "Centreon Broker " CENTREON_BROKER_VERSION " log file rotation\n"
+#define LOG_CLOSE_STR \
+  "Centreon Broker " CENTREON_BROKER_VERSION " log file closed\n"
+#define LOG_OPEN_STR \
+  "Centreon Broker " CENTREON_BROKER_VERSION " log file opened\n"
+#define LOG_ROTATION_STR \
+  "Centreon Broker " CENTREON_BROKER_VERSION " log file rotation\n"
 
 // Should file flush output at each log entry.
 bool file::_with_flush(true);
@@ -41,10 +44,10 @@ timestamp_type file::_with_timestamp(second_timestamp);
 bool file::_with_human_readable_timestamp(false);
 
 /**************************************
-*                                     *
-*           Local objects.            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Local objects.            *
+ *                                     *
+ **************************************/
 
 // These templates are used to compute the maximum printing size of any
 // integer.
@@ -58,15 +61,15 @@ struct ll_width<0ull> {
 };
 template <typename T>
 struct integer_width {
-  static unsigned int const value
-    = 2 + ll_width<((((1ull << (sizeof(T) * 8 - 1)) - 1) << 1) | 1)>::value;
+  static unsigned int const value =
+      2 + ll_width<((((1ull << (sizeof(T) * 8 - 1)) - 1) << 1) | 1)>::value;
 };
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Regular file constructor.
@@ -75,29 +78,29 @@ struct integer_width {
  *  @param[in] max  Maximum file size of log file.
  */
 file::file(std::string const& path, uint64_t max)
-  : _file_special(std::cout), _filename{path}, _max(0), _special(false), _written(0) {
+    : _file_special(std::cout),
+      _filename{path},
+      _max(0),
+      _special(false),
+      _written(0) {
   try {
     _file.open(_filename, std::ofstream::out | std::ofstream::app);
   } catch (std::system_error se) {
-    throw exceptions::msg() << "log: could not open file '" << path
-                             << "': " << se.what();
+    throw exceptions::msg()
+        << "log: could not open file '" << path << "': " << se.what();
   }
 
   if (!max)
     _max = ULLONG_MAX;
   else
-    _max = ((max < 1000000) ? 1000000 : max)
-           - sizeof(LOG_ROTATION_STR) + 1;
+    _max = ((max < 1000000) ? 1000000 : max) - sizeof(LOG_ROTATION_STR) + 1;
   _write(LOG_OPEN_STR);
   _file.flush();
   _written = _file.tellp();
 }
 
-file::file(std::ostream & stream, std::string const& filename)
-  : _special(true),
-    _file_special(stream),
-    _filename{filename} {
-}
+file::file(std::ostream& stream, std::string const& filename)
+    : _special(true), _file_special(stream), _filename{filename} {}
 
 /**
  *  Destructor.
@@ -124,32 +127,31 @@ file::~file() {
 void file::log_msg(char const* msg,
                    unsigned int len,
                    type log_type,
-                   level l) throw () {
+                   level l) throw() {
   (void)len;
   (void)l;
   if (msg) {
     char const* prefix;
     switch (log_type) {
-     case config_type:
-      prefix = "config:  ";
-      break ;
-     case debug_type:
-      prefix = "debug:   ";
-      break ;
-     case error_type:
-      prefix = "error:   ";
-      break ;
-     case info_type:
-      prefix = "info:    ";
-      break ;
-    case perf_type:
-      prefix = "perf:    ";
-      break ;
-     default:
-      prefix = "unknown: ";
+      case config_type:
+        prefix = "config:  ";
+        break;
+      case debug_type:
+        prefix = "debug:   ";
+        break;
+      case error_type:
+        prefix = "error:   ";
+        break;
+      case info_type:
+        prefix = "info:    ";
+        break;
+      case perf_type:
+        prefix = "perf:    ";
+        break;
+      default:
+        prefix = "unknown: ";
     }
-    if ((_with_timestamp != no_timestamp)
-        || _with_human_readable_timestamp) {
+    if ((_with_timestamp != no_timestamp) || _with_human_readable_timestamp) {
       struct timespec ts;
       memset(&ts, 0, sizeof(ts));
       clock_gettime(CLOCK_REALTIME, &ts);
@@ -157,23 +159,16 @@ void file::log_msg(char const* msg,
       // 10 comes from the limits of nanoseconds (9) + dot (1).
       char buffer[integer_width<time_t>::value + 10];
       if (_with_timestamp == nano_timestamp)
-        snprintf(
-          buffer,
-          sizeof(buffer),
-          "%llu.%09li",
-          static_cast<unsigned long long>(ts.tv_sec),
-          ts.tv_nsec);
+        snprintf(buffer, sizeof(buffer), "%llu.%09li",
+                 static_cast<unsigned long long>(ts.tv_sec), ts.tv_nsec);
       else
-        snprintf(
-          buffer,
-          sizeof(buffer),
-          "%llu",
-          static_cast<unsigned long long>(ts.tv_sec));
+        snprintf(buffer, sizeof(buffer), "%llu",
+                 static_cast<unsigned long long>(ts.tv_sec));
       _write(buffer);
       _write("] ");
       if (_with_human_readable_timestamp) {
         _write("[");
-        time_t now = std::time(NULL);
+        time_t now = std::time(nullptr);
         // ctime never write more than 26 characters
         char human_readable_date[26];
         ctime_r(&now, human_readable_date);
@@ -185,11 +180,8 @@ void file::log_msg(char const* msg,
       _write("[");
       // 2 characters for 0x
       char buffer[integer_width<unsigned long long>::value + 2];
-      snprintf(
-        buffer,
-        sizeof(buffer),
-        "0x%llx",
-        (unsigned long long)(pthread_self()));
+      snprintf(buffer, sizeof(buffer), "0x%llx",
+               (unsigned long long)(pthread_self()));
       _write(buffer);
       _write("] ");
     }
@@ -208,7 +200,7 @@ void file::log_msg(char const* msg,
  *
  *  @return true if files should be flushed.
  */
-bool file::with_flush() throw () {
+bool file::with_flush() throw() {
   return (_with_flush);
 }
 
@@ -217,7 +209,7 @@ bool file::with_flush() throw () {
  *
  *  @param[in] enable true to enable file flushing.
  */
-void file::with_flush(bool enable) throw () {
+void file::with_flush(bool enable) throw() {
   _with_flush = enable;
 }
 
@@ -226,7 +218,7 @@ void file::with_flush(bool enable) throw () {
  *
  *  @return true if thread ID should be printed.
  */
-bool file::with_thread_id() throw () {
+bool file::with_thread_id() throw() {
   return (_with_thread_id);
 }
 
@@ -235,7 +227,7 @@ bool file::with_thread_id() throw () {
  *
  *  @param[in] enable true to enable thread ID printing.
  */
-void file::with_thread_id(bool enable) throw () {
+void file::with_thread_id(bool enable) throw() {
   _with_thread_id = enable;
 }
 
@@ -244,7 +236,7 @@ void file::with_thread_id(bool enable) throw () {
  *
  *  @return Any acceptable value.
  */
-timestamp_type file::with_timestamp() throw () {
+timestamp_type file::with_timestamp() throw() {
   return (_with_timestamp);
 }
 
@@ -253,7 +245,7 @@ timestamp_type file::with_timestamp() throw () {
  *
  *  @param[in] ts_type  Any acceptable value.
  */
-void file::with_timestamp(timestamp_type ts_type) throw () {
+void file::with_timestamp(timestamp_type ts_type) throw() {
   _with_timestamp = ts_type;
 }
 
@@ -276,10 +268,10 @@ void file::with_human_redable_timestamp(bool enable) throw() {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Reopen log file.
@@ -308,7 +300,7 @@ void file::_reopen() {
  *
  *  @param[in] data Data to write.
  */
-void file::_write(char const* data) throw () {
+void file::_write(char const* data) throw() {
   // Check sizes.
   std::streamsize to_write(strlen(data));
   if (!_special && (_written + to_write > _max))

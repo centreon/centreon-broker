@@ -17,21 +17,21 @@
  *
  */
 
-#include <cmath>
-#include <gtest/gtest.h>
 #include "com/centreon/broker/neb/host.hh"
+#include <gtest/gtest.h>
+#include <cmath>
 #include "randomize.hh"
 
 using namespace com::centreon::broker;
 
 class HostTest : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     // Initialization.
     randomize_init();
   }
 
-  void TearDown() {
+  void TearDown() override {
     // Cleanup.
     randomize_cleanup();
   }

@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/generator/sender.hh"
 #include <memory>
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/generator/dummy.hh"
-#include "com/centreon/broker/generator/sender.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::generator;
@@ -43,7 +43,7 @@ sender::~sender() {}
  *  @return True.
  */
 bool sender::read(std::shared_ptr<io::data>& d, time_t deadline) {
-  (void) deadline;
+  (void)deadline;
   d = std::make_shared<dummy>(dummy(++_number));
   return true;
 }
@@ -56,8 +56,7 @@ bool sender::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *  @return This method will throw.
  */
 int sender::write(std::shared_ptr<io::data> const& d) {
-  (void) d;
-  throw (exceptions::shutdown()
-    << "cannot write to event sender (generator)");
+  (void)d;
+  throw(exceptions::shutdown() << "cannot write to event sender (generator)");
   return 1;
 }

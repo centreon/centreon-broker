@@ -16,10 +16,10 @@
  * For more information : contact@centreon.com
  *
  */
-#include <cstring>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <cstring>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -74,9 +74,7 @@ int main(int argc, char* argv[]) {
     for (unsigned int i(0); i < 10000; ++i) {
       unsigned int current(0);
       while (!retval && (current < sizeof(buffer) - 1)) {
-        qint64 wb(f.write(
-                      buffer + current,
-                      sizeof(buffer) - 1 - current));
+        qint64 wb(f.write(buffer + current, sizeof(buffer) - 1 - current));
         if (wb <= 0)
           retval = 1;
         else {
@@ -110,13 +108,10 @@ int main(int argc, char* argv[]) {
 
     if (!retval) {
       // Compare data.
-      unsigned int cb(((raw->size() - rawc)
-                         < (sizeof(buffer) - 1 - bufferc))
-                      ? (raw->size() - rawc)
-                      : (sizeof(buffer) - 1 - bufferc));
-      retval |= memcmp(raw->QByteArray::data() + rawc,
-                       buffer + bufferc,
-                       cb);
+      unsigned int cb(((raw->size() - rawc) < (sizeof(buffer) - 1 - bufferc))
+                          ? (raw->size() - rawc)
+                          : (sizeof(buffer) - 1 - bufferc));
+      retval |= memcmp(raw->QByteArray::data() + rawc, buffer + bufferc, cb);
 
       // Adjust buffers.
       bufferc += cb;
@@ -134,8 +129,7 @@ int main(int argc, char* argv[]) {
     std::shared_ptr<io::data> d;
     fs.read(d, (time_t)-1);
     retval |= 1;
-  }
-  catch (io::exceptions::shutdown const& s) {
+  } catch (io::exceptions::shutdown const& s) {
     (void)s;
   }
 

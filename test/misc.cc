@@ -16,16 +16,16 @@
 ** For more information : contact@centreon.com
 */
 
+#include "test/misc.hh"
+#include <unistd.h>
+#include <QDir>
+#include <QStringList>
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <QDir>
-#include <QStringList>
 #include <sstream>
-#include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "test/misc.hh"
 #include "test/vars.hh"
 
 using namespace com::centreon::broker;
@@ -37,11 +37,8 @@ using namespace com::centreon::broker;
  */
 void test::recursive_remove(std::string const& dir_path) {
   QStringList entries(QDir(dir_path.c_str()).entryList());
-  for (QStringList::const_iterator
-         it(entries.begin()),
-         end(entries.end());
-       it != end;
-       ++it) {
+  for (QStringList::const_iterator it(entries.begin()), end(entries.end());
+       it != end; ++it) {
     std::ostringstream oss;
     oss << dir_path << "/" << it->toStdString();
     ::remove(oss.str().c_str());

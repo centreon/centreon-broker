@@ -17,21 +17,21 @@
 */
 
 #ifndef CCB_NEB_ENGCMD_INTERNAL_HH
-#  define CCB_NEB_ENGCMD_INTERNAL_HH
+#define CCB_NEB_ENGCMD_INTERNAL_HH
 
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                 neb {
-  namespace               engcmd {
+namespace neb {
+namespace engcmd {
 
-  // Load/unload of engcmd.
-  void                    load();
-  void                    unload();
-  }
-}
+// Load/unload of engcmd.
+void load();
+void unload();
+}  // namespace engcmd
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_ENGCMD_INTERNAL_HH
+#endif  // !CCB_NEB_ENGCMD_INTERNAL_HH

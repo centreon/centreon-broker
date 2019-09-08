@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/extcmd/command_listener.hh"
 #include <sstream>
 #include "com/centreon/broker/exceptions/shutdown.hh"
-#include "com/centreon/broker/extcmd/command_listener.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
 
@@ -43,14 +43,14 @@ command_listener::~command_listener() {}
  *  @return Command result.
  */
 command_result command_listener::command_status(
-                                   std::string const& command_uuid) {
+    std::string const& command_uuid) {
   // Check for entries that should be removed from cache.
   _check_invalid();
 
   command_result res;
   std::unique_lock<std::mutex> lock(_pendingm);
-  std::map<std::string, pending_command>::iterator
-    it(_pending.find(command_uuid));
+  std::map<std::string, pending_command>::iterator it(
+      _pending.find(command_uuid));
   // Command result exists.
   if (it != _pending.end())
     _extract_command_result(res, it->second);
@@ -63,7 +63,7 @@ command_result command_listener::command_status(
     std::ostringstream oss;
     oss << "\"Command " << command_uuid
         << " is not available (invalid command ID, timeout, ?)\"";
-    res.msg = oss.str().c_str();
+    res.msg = oss.str();
   }
   return res;
 }
@@ -76,12 +76,10 @@ command_result command_listener::command_status(
  *
  *  @return This method will throw.
  */
-bool command_listener::read(
-                         std::shared_ptr<io::data>& d,
-                         time_t deadline) {
+bool command_listener::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw (exceptions::shutdown() << "cannot read from command listener");
+  throw(exceptions::shutdown() << "cannot read from command listener");
   return (true);
 }
 
@@ -97,14 +95,14 @@ int command_listener::write(std::shared_ptr<io::data> const& d) {
 
   // Command request, store it in the cache.
   if (d->type() == command_request::static_type()) {
-    command_request const& req(*std::static_pointer_cast<command_request const>(d));
+    command_request const& req(
+        *std::static_pointer_cast<command_request const>(d));
     std::lock_guard<std::mutex> lock(_pendingm);
-    std::map<std::string, pending_command>::iterator
-      it(_pending.find(req.uuid));
+    std::map<std::string, pending_command>::iterator it(
+        _pending.find(req.uuid));
     if (it == _pending.end()) {
-      pending_command&
-        p(_pending[req.uuid]);
-      p.invalid_time = time(NULL) + _request_timeout;
+      pending_command& p(_pending[req.uuid]);
+      p.invalid_time = time(nullptr) + _request_timeout;
       p.uuid = req.uuid;
       p.code = 1;
       p.with_partial_result = req.with_partial_result;
@@ -114,13 +112,13 @@ int command_listener::write(std::shared_ptr<io::data> const& d) {
   }
   // Command result, store it in the cache.
   else if (d->type() == command_result::static_type()) {
-    command_result const& res(*std::static_pointer_cast<command_result const>(d));
+    command_result const& res(
+        *std::static_pointer_cast<command_result const>(d));
     std::lock_guard<std::mutex> lock(_pendingm);
-    pending_command&
-      p(_pending[res.uuid]);
+    pending_command& p(_pending[res.uuid]);
     p.code = res.code;
     p.msgs.push_back(res.msg);
-    p.invalid_time = time(NULL) + _result_timeout;
+    p.invalid_time = time(nullptr) + _result_timeout;
     if (p.invalid_time < _next_invalid)
       _next_invalid = p.invalid_time;
   }
@@ -135,36 +133,31 @@ int command_listener::write(std::shared_ptr<io::data> const& d) {
  *  Check for invalid entries in cache.
  */
 void command_listener::_check_invalid() {
-  time_t now(time(NULL));
+  time_t now(time(nullptr));
   _next_invalid = now + 24 * 60 * 60;
   std::lock_guard<std::mutex> lock(_pendingm);
-  for (std::map<std::string, pending_command>::iterator
-         it(_pending.begin()),
-         end(_pending.end());
+  for (std::map<std::string, pending_command>::iterator it(_pending.begin()),
+       end(_pending.end());
        it != end;) {
     if (it->second.invalid_time < now) {
-      if (it->second.code == 1) { // Pending.
+      if (it->second.code == 1) {  // Pending.
         it->second.invalid_time = now + _result_timeout;
         it->second.code = -1;
         it->second.msgs.clear();
         it->second.msgs.push_back("\"Command timeout\"");
         ++it;
-      }
-      else {
-        std::map<std::string, pending_command>::iterator
-          to_delete(it);
+      } else {
+        std::map<std::string, pending_command>::iterator to_delete(it);
         ++it;
         _pending.erase(to_delete);
       }
-    }
-    else if (it->second.invalid_time < _next_invalid) {
+    } else if (it->second.invalid_time < _next_invalid) {
       _next_invalid = it->second.invalid_time;
       ++it;
-    }
-    else
+    } else
       ++it;
   }
-  return ;
+  return;
 }
 
 /**
@@ -173,9 +166,8 @@ void command_listener::_check_invalid() {
  *  @param[out]    res      Command result.
  *  @param[in,out] pending  Pending command.
  */
-void command_listener::_extract_command_result(
-                         command_result& res,
-                         pending_command& pending) {
+void command_listener::_extract_command_result(command_result& res,
+                                               pending_command& pending) {
   // Set basic properties.
   res.code = pending.code;
   res.uuid = pending.uuid;
@@ -184,10 +176,9 @@ void command_listener::_extract_command_result(
     // Merge results if necessary.
     if (!pending.with_partial_result && (pending.msgs.size() != 1)) {
       std::string msg;
-      for (std::list<std::string>::const_iterator
-             it(pending.msgs.begin()), end(pending.msgs.end());
-           it != end;
-           ++it) {
+      for (std::list<std::string>::const_iterator it(pending.msgs.begin()),
+           end(pending.msgs.end());
+           it != end; ++it) {
         msg.append(*it);
       }
       pending.msgs.clear();
@@ -201,5 +192,5 @@ void command_listener::_extract_command_result(
     if (pending.with_partial_result)
       pending.msgs.pop_front();
   }
-  return ;
+  return;
 }

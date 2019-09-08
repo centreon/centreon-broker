@@ -16,19 +16,19 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/generator/factory.hh"
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/generator/factory.hh"
 #include "com/centreon/broker/generator/endpoint.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::generator;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -76,8 +76,8 @@ io::factory* factory::clone() const {
  *  @return True if configuration matches any of the generator streams.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  return ((cfg.type == "generator_receiver")
-          || (cfg.type == "generator_sender"));
+  return ((cfg.type == "generator_receiver") ||
+          (cfg.type == "generator_sender"));
 }
 
 /**
@@ -90,9 +90,9 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return Acceptor matching configuration.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
   // Generate opener.

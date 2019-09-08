@@ -42,26 +42,24 @@ static int check_number(0);
 static void precheck(char const* name) {
   ++check_number;
   std::cout << "check #" << check_number << " (" << name << ")\n";
-  return ;
+  return;
 }
 
 /**
  *  Postcheck routine.
  */
-static void postcheck(
-              test::db& db,
-              test::predicate expected[][8]) {
+static void postcheck(test::db& db, test::predicate expected[][8]) {
   static std::string check_query(
-    "SELECT dependent_host_id, dependent_service_id, host_id,"
-    "       service_id, dependency_period, execution_failure_options,"
-    "       inherits_parent, notification_failure_options"
-    "  FROM services_services_dependencies"
-    "  ORDER BY dependent_host_id ASC, dependent_service_id ASC,"
-    "           host_id ASC, service_id ASC,"
-    "           execution_failure_options ASC");
+      "SELECT dependent_host_id, dependent_service_id, host_id,"
+      "       service_id, dependency_period, execution_failure_options,"
+      "       inherits_parent, notification_failure_options"
+      "  FROM services_services_dependencies"
+      "  ORDER BY dependent_host_id ASC, dependent_service_id ASC,"
+      "           host_id ASC, service_id ASC,"
+      "           execution_failure_options ASC");
   db.check_content(check_query, expected);
   std::cout << "  passed\n";
-  return ;
+  return;
 }
 
 /**
@@ -75,38 +73,31 @@ int main() {
 
   try {
     // Database.
-    char const* tables[] = {
-      "instances",
-      "hosts",
-      "services",
-      "services_services_dependencies",
-      NULL
-    };
+    char const* tables[] = {"instances", "hosts", "services",
+                            "services_services_dependencies", NULL};
     test::db db(DB_NAME, tables);
 
     // Monitoring broker.
     test::file cbd_cfg;
-    cbd_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
+    cbd_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
     cbd_cfg.set("BROKER_ID", "84");
     cbd_cfg.set("BROKER_NAME", TEST_NAME "-cbd");
     cbd_cfg.set("POLLER_ID", "42");
     cbd_cfg.set("POLLER_NAME", "my-poller");
     cbd_cfg.set("TCP_PORT", "5580");
     cbd_cfg.set("DB_NAME", DB_NAME);
-    cbd_cfg.set(
-      "SQL_ADDITIONAL",
-      "<write_filters>"
-      "  <category>neb:instance</category>"
-      "  <category>neb:instance_status</category>"
-      "  <category>neb:host</category>"
-      "  <category>neb:host_check</category>"
-      "  <category>neb:host_status</category>"
-      "  <category>neb:service</category>"
-      "  <category>neb:service_check</category>"
-      "  <category>neb:service_status</category>"
-      "  <category>neb:service_dependency</category>"
-      "</write_filters>");
+    cbd_cfg.set("SQL_ADDITIONAL",
+                "<write_filters>"
+                "  <category>neb:instance</category>"
+                "  <category>neb:instance_status</category>"
+                "  <category>neb:host</category>"
+                "  <category>neb:host_check</category>"
+                "  <category>neb:host_status</category>"
+                "  <category>neb:service</category>"
+                "  <category>neb:service_check</category>"
+                "  <category>neb:service_status</category>"
+                "  <category>neb:service_dependency</category>"
+                "</write_filters>");
     test::cbd broker;
     broker.set_config_file(cbd_cfg.generate());
     broker.start();
@@ -114,8 +105,7 @@ int main() {
 
     // Monitoring engine.
     test::file cbmod_cfg;
-    cbmod_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
+    cbmod_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
     cbmod_cfg.set("BROKER_ID", "83");
     cbmod_cfg.set("BROKER_NAME", TEST_NAME "-cbmod");
     cbmod_cfg.set("POLLER_ID", "42");
@@ -132,28 +122,25 @@ int main() {
 
     // Check default entry.
     precheck(
-      "dependent_host_id, dependent_service_id, "
-      "host_id, service_id");
+        "dependent_host_id, dependent_service_id, "
+        "host_id, service_id");
     engine.start();
     test::sleep_for(2);
     test::predicate expected[][8] = {
-      { 1, 1, 2, 2, "default_timeperiod", "", false, "dopu" },
-      { 1, 1, 2, 2, "default_timeperiod", "copuw", false, "" },
-      { 4, 4, 5, 5, "default_timeperiod", "", false, "dopu" },
-      { 4, 4, 5, 5, "default_timeperiod", "copuw", false, "" },
-      { test::predicate() }
-    };
+        {1, 1, 2, 2, "default_timeperiod", "", false, "dopu"},
+        {1, 1, 2, 2, "default_timeperiod", "copuw", false, ""},
+        {4, 4, 5, 5, "default_timeperiod", "", false, "dopu"},
+        {4, 4, 5, 5, "default_timeperiod", "copuw", false, ""},
+        {test::predicate()}};
     postcheck(db, expected);
 
     // Success.
     error = false;
     db.set_remove_db_on_close(true);
     broker.stop();
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << "  " << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "  unknown exception\n";
   }
 

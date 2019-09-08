@@ -24,21 +24,19 @@
  *
  *  Respect the io::stream interface for benchmark purpose.
  */
-class           bench_stream : public com::centreon::broker::io::stream {
-public:
-                bench_stream();
-                ~bench_stream();
+class bench_stream : public com::centreon::broker::io::stream {
+ public:
+  bench_stream();
+  ~bench_stream();
   unsigned long get_write_events() const;
   unsigned long get_write_size() const;
-  bool          read(
-                  std::shared_ptr<com::centreon::broker::io::data>& d,
-                  time_t deadline);
-  void          reset_bench();
-  int           write(
-                  std::shared_ptr<com::centreon::broker::io::data> const& d);
+  bool read(std::shared_ptr<com::centreon::broker::io::data>& d,
+            time_t deadline);
+  void reset_bench();
+  int write(std::shared_ptr<com::centreon::broker::io::data> const& d);
 
-private:
-                bench_stream(bench_stream const& other);
+ private:
+  bench_stream(bench_stream const& other);
   bench_stream& operator=(bench_stream const& other);
 
   unsigned long _write_events;

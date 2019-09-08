@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/active_service_latency.hh"
 #include <iomanip>
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/active_service_latency.hh"
 #include "com/centreon/broker/neb/statistics/compute_value.hh"
 #include "com/centreon/engine/globals.hh"
 
@@ -33,15 +33,16 @@ using namespace com::centreon::engine;
  *  Default constructor.
  */
 active_service_latency::active_service_latency()
-  : plugin("active_service_latency") {}
+    : plugin("active_service_latency") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-active_service_latency::active_service_latency(active_service_latency const& right)
- : plugin(right) {}
+active_service_latency::active_service_latency(
+    active_service_latency const& right)
+    : plugin(right) {}
 
 /**
  *  Destructor.
@@ -55,7 +56,8 @@ active_service_latency::~active_service_latency() {}
  *
  *  @return This object.
  */
-active_service_latency& active_service_latency::operator=(active_service_latency const& right) {
+active_service_latency& active_service_latency::operator=(
+    active_service_latency const& right) {
   plugin::operator=(right);
   return (*this);
 }
@@ -66,15 +68,11 @@ active_service_latency& active_service_latency::operator=(active_service_latency
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void active_service_latency::run(
-              std::string& output,
-	      std::string& perfdata) {
+void active_service_latency::run(std::string& output, std::string& perfdata) {
   compute_value<double> cv;
-  for (service_map::const_iterator
-         it{service::services.begin()},
-         end{service::services.end()};
-       it != end;
-       ++it)
+  for (service_map::const_iterator it{service::services.begin()},
+       end{service::services.end()};
+       it != end; ++it)
     if (it->second->get_check_type() == checkable::check_active)
       cv << it->second->get_latency();
 
@@ -82,20 +80,21 @@ void active_service_latency::run(
     // Output.
     std::ostringstream oss;
     oss << "Engine " << config::applier::state::instance().poller_name()
-        << " has an average active service latency of "
-        << std::fixed << std::setprecision(2) << cv.avg() << "s";
+        << " has an average active service latency of " << std::fixed
+        << std::setprecision(2) << cv.avg() << "s";
     output = oss.str();
 
     // Perfdata.
     oss.str("");
-    oss << "avg=" << cv.avg() << "s min=" << cv.min()
-        << "s max=" << cv.max() << "s";
+    oss << "avg=" << cv.avg() << "s min=" << cv.min() << "s max=" << cv.max()
+        << "s";
     perfdata = oss.str();
-  }
-  else {
+  } else {
     // Output.
-    output = "No active service to compute active service "
-      "latency on " + config::applier::state::instance().poller_name();
+    output =
+        "No active service to compute active service "
+        "latency on " +
+        config::applier::state::instance().poller_name();
   }
-  return ;
+  return;
 }

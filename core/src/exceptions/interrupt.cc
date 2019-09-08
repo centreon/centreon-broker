@@ -31,12 +31,12 @@ interrupt::interrupt() {}
  *  @param[in] other  Object to build from.
  */
 interrupt::interrupt(interrupt const& other)
-  : misc::stringifier(other), std::exception(other) {}
+    : misc::stringifier(other), std::exception(other) {}
 
 /**
  *  Destructor.
  */
-interrupt::~interrupt() throw () {}
+interrupt::~interrupt() throw() {}
 
 /**
  *  Assignment operator overload.
@@ -58,6 +58,6 @@ interrupt& interrupt::operator=(interrupt const& other) {
  *
  *  @return Nul-terminated message.
  */
-char const* interrupt::what() const throw () {
+char const* interrupt::what() const throw() {
   return (misc::stringifier::data());
 }

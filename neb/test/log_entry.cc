@@ -17,25 +17,20 @@
  *
  */
 
+#include "com/centreon/broker/neb/log_entry.hh"
 #include <gtest/gtest.h>
 #include <cstdlib>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/log_entry.hh"
 #include "randomize.hh"
 
 using namespace com::centreon::broker;
 
 class LogEntry : public ::testing::Test {
-  void SetUp() {
-    randomize_init();
-  };
+  void SetUp() override { randomize_init(); };
 
-  void TearDown() {
-    randomize_cleanup();
-  };
+  void TearDown() override { randomize_cleanup(); };
 };
-
 
 /**
  *  Check log_entry's assignment operator.
@@ -54,7 +49,7 @@ TEST_F(LogEntry, Assign) {
   le2 = le1;
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(le1, &randvals2);
 
   // Compare objects with expected results.
@@ -65,7 +60,7 @@ TEST_F(LogEntry, Assign) {
 /**
  *  Check log_entry's copy constructor.
  */
-TEST_F(LogEntry,CopyCtor) {
+TEST_F(LogEntry, CopyCtor) {
   // Object #1.
   neb::log_entry le1;
   std::vector<randval> randvals1;
@@ -75,7 +70,7 @@ TEST_F(LogEntry,CopyCtor) {
   neb::log_entry le2(le1);
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(le1, &randvals2);
 
   // Compare objects with expected results.
@@ -86,7 +81,7 @@ TEST_F(LogEntry,CopyCtor) {
 /**
  *  Check log_entry's default constructor.
  */
-TEST_F(LogEntry,DefaultCtor) {
+TEST_F(LogEntry, DefaultCtor) {
   // Object.
   neb::log_entry le;
 

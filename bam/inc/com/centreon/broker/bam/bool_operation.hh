@@ -17,46 +17,45 @@
 */
 
 #ifndef CCB_BAM_BOOL_OPERATION_HH
-#  define CCB_BAM_BOOL_OPERATION_HH
+#define CCB_BAM_BOOL_OPERATION_HH
 
-#  include <string>
-#  include "com/centreon/broker/bam/bool_binary_operator.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/bam/bool_binary_operator.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     bam {
-  /**
-   *  @class bool_operation bool_operation.hh "com/centreon/broker/bam/bool_operation.hh"
-   *  @brief Boolean operation.
-   *
-   *  In the context of a KPI computation, bool_operation represents a
-   *  mathematical operation between two bool_value.
-   */
-  class       bool_operation : public bool_binary_operator {
-  public:
-              bool_operation(std::string const& op);
-              bool_operation(bool_operation const& right);
-              ~bool_operation();
-    bool_operation&
-              operator=(bool_operation const& right);
-    double    value_hard();
-    double    value_soft();
-    bool      state_known() const;
+namespace bam {
+/**
+ *  @class bool_operation bool_operation.hh
+ * "com/centreon/broker/bam/bool_operation.hh"
+ *  @brief Boolean operation.
+ *
+ *  In the context of a KPI computation, bool_operation represents a
+ *  mathematical operation between two bool_value.
+ */
+class bool_operation : public bool_binary_operator {
+ public:
+  bool_operation(std::string const& op);
+  bool_operation(bool_operation const& right);
+  ~bool_operation();
+  bool_operation& operator=(bool_operation const& right);
+  double value_hard();
+  double value_soft();
+  bool state_known() const;
 
-  private:
-    enum      operation_type {
-      addition,
-      substraction,
-      multiplication,
-      division,
-      modulo
-    };
-    operation_type
-              _type;
+ private:
+  enum operation_type {
+    addition,
+    substraction,
+    multiplication,
+    division,
+    modulo
   };
-}
+  operation_type _type;
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_OR_HH
+#endif  // !CCB_BAM_BOOL_OR_HH

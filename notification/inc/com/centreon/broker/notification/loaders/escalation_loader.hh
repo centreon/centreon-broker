@@ -17,45 +17,45 @@
 */
 
 #ifndef CCB_NOTIFICATION_LOADERS_ESCALATION_LOADER_HH
-#  define CCB_NOTIFICATION_LOADERS_ESCALATION_LOADER_HH
+#define CCB_NOTIFICATION_LOADERS_ESCALATION_LOADER_HH
 
-#  include <QSqlDatabase>
-#  include <QSqlQuery>
-#  include <string>
-#  include <vector>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/builders/escalation_builder.hh"
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <string>
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/escalation_builder.hh"
 
 CCB_BEGIN()
 
-namespace       notification {
-  /**
-   *  @class escalation_loader escalation_loader.hh "com/centreon/broker/notification/loaders/escalation_loader.hh"
-   *  @brief Loader for escalation objects.
-   *
-   *  This loader loads the escalations from the database.
-   */
-  class         escalation_loader {
-  public:
-    escalation_loader();
+namespace notification {
+/**
+ *  @class escalation_loader escalation_loader.hh
+ * "com/centreon/broker/notification/loaders/escalation_loader.hh"
+ *  @brief Loader for escalation objects.
+ *
+ *  This loader loads the escalations from the database.
+ */
+class escalation_loader {
+ public:
+  escalation_loader();
 
-    void        load(QSqlDatabase* db, escalation_builder* output);
+  void load(QSqlDatabase* db, escalation_builder* output);
 
-  private:
-    std::vector<std::string> _rows;
+ private:
+  std::vector<std::string> _rows;
 
-    void        _load_relations(QSqlQuery& query,
-                                escalation_builder& output);
-    void        _load_relation(QSqlQuery& query,
-                               escalation_builder& output,
-                               std::string const& relation_id_name,
-                               std::string const& table,
-                               void (escalation_builder::*register_method)
-                               (unsigned int, unsigned int));
-  };
+  void _load_relations(QSqlQuery& query, escalation_builder& output);
+  void _load_relation(
+      QSqlQuery& query,
+      escalation_builder& output,
+      std::string const& relation_id_name,
+      std::string const& table,
+      void (escalation_builder::*register_method)(unsigned int, unsigned int));
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_LOADERS_ESCALATION_LOADER_HH
+#endif  // !CCB_NOTIFICATION_LOADERS_ESCALATION_LOADER_HH

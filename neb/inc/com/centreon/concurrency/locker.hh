@@ -17,80 +17,76 @@
 */
 
 #ifndef CC_CONCURRENCY_LOCKER_HH
-#  define CC_CONCURRENCY_LOCKER_HH
+#define CC_CONCURRENCY_LOCKER_HH
 
-#  include "com/centreon/namespace.hh"
-#  include "com/centreon/concurrency/mutex.hh"
+#include "com/centreon/concurrency/mutex.hh"
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace   concurrency {
+namespace concurrency {
+/**
+ *  @class locker locker.hh "com/centreon/concurrency/locker.hh"
+ *  @brief Provide a simple way to lock ans un lock mutex.
+ *
+ *  Allow simple method to lock and unlock mutex.
+ */
+class locker {
+ public:
   /**
-   *  @class locker locker.hh "com/centreon/concurrency/locker.hh"
-   *  @brief Provide a simple way to lock ans un lock mutex.
+   *  Default constructor.
    *
-   *  Allow simple method to lock and unlock mutex.
+   *  @param[in] m  The mutex to lock.
    */
-  class     locker {
-  public:
-    /**
-     *  Default constructor.
-     *
-     *  @param[in] m  The mutex to lock.
-     */
-            locker(mutex* m = NULL)
-      : _is_lock(false),
-        _m(m) {
-      if (_m)
-        relock();
+  locker(mutex* m = NULL) : _is_lock(false), _m(m) {
+    if (_m)
+      relock();
+  }
+
+  /**
+   *  Default destructor.
+   */
+  ~locker() throw() {
+    if (_is_lock)
+      unlock();
+  }
+
+  /**
+   *  Get the mutex.
+   *
+   *  @return The internal mutex.
+   */
+  mutex* get_mutex() const throw() { return (_m); }
+
+  /**
+   *  Lock the internal mutex.
+   */
+  void relock() {
+    if (_m) {
+      _is_lock = true;
+      _m->lock();
     }
+  }
 
-    /**
-     *  Default destructor.
-     */
-            ~locker() throw () {
-      if (_is_lock)
-        unlock();
+  /**
+   *  Unlock the internal mutex.
+   */
+  void unlock() {
+    if (_m) {
+      _m->unlock();
+      _is_lock = false;
     }
+  }
 
-    /**
-     *  Get the mutex.
-     *
-     *  @return The internal mutex.
-     */
-    mutex*  get_mutex() const throw() {
-      return (_m);
-    }
+ private:
+  locker(locker const& right);
+  locker& operator=(locker const& right);
 
-    /**
-     *  Lock the internal mutex.
-     */
-    void    relock() {
-      if (_m) {
-        _is_lock = true;
-        _m->lock();
-      }
-    }
-
-    /**
-     *  Unlock the internal mutex.
-     */
-    void    unlock() {
-      if (_m) {
-        _m->unlock();
-        _is_lock = false;
-      }
-    }
-
-  private:
-            locker(locker const& right);
-    locker& operator=(locker const& right);
-
-    bool   _is_lock;
-    mutex* _m;
-  };
-}
+  bool _is_lock;
+  mutex* _m;
+};
+}  // namespace concurrency
 
 CC_END()
 
-#endif // !CC_CONCURRENCY_LOCKER_HH
+#endif  // !CC_CONCURRENCY_LOCKER_HH

@@ -21,19 +21,19 @@
 using namespace com::centreon::broker::config;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
 endpoint::endpoint()
-  : buffering_timeout(0),
-    read_timeout((time_t)-1),
-    retry_interval(30),
-    cache_enabled(false) {}
+    : buffering_timeout(0),
+      read_timeout((time_t)-1),
+      retry_interval(30),
+      cache_enabled(false) {}
 
 /**
  *  Copy constructor.
@@ -70,17 +70,13 @@ endpoint& endpoint::operator=(endpoint const& other) {
  *  @return True if both objects are equal, false otherwise.
  */
 bool endpoint::operator==(endpoint const& other) const {
-  return ((type == other.type)
-          && (buffering_timeout == other.buffering_timeout)
-          && (read_timeout == other.read_timeout)
-          && (retry_interval == other.retry_interval)
-          && (name == other.name)
-          && (failovers == other.failovers)
-          && (read_filters == other.read_filters)
-          && (write_filters == other.write_filters)
-          && (params == other.params)
-          && (cache_enabled == other.cache_enabled)
-          && (cfg == other.cfg));
+  return (
+      (type == other.type) && (buffering_timeout == other.buffering_timeout) &&
+      (read_timeout == other.read_timeout) &&
+      (retry_interval == other.retry_interval) && (name == other.name) &&
+      (failovers == other.failovers) && (read_filters == other.read_filters) &&
+      (write_filters == other.write_filters) && (params == other.params) &&
+      (cache_enabled == other.cache_enabled) && (cfg == other.cfg));
 }
 
 /**
@@ -125,11 +121,8 @@ bool endpoint::operator<(endpoint const& other) const {
     return (cfg < other.cfg);
 
   // Need to check all parameters one by one.
-  std::map<std::string, std::string>::const_iterator it1{
-      params.begin()},
-      it2{other.params.begin()},
-      end1{params.end()},
-      end2{other.params.end()};
+  std::map<std::string, std::string>::const_iterator it1{params.begin()},
+      it2{other.params.begin()}, end1{params.end()}, end2{other.params.end()};
   while (it1 != end1 && it2 != end2) {
     if (it1->first != it2->first)
       return it1->first < it2->first;
@@ -142,10 +135,10 @@ bool endpoint::operator<(endpoint const& other) const {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Copy data members.
@@ -168,5 +161,5 @@ void endpoint::_internal_copy(endpoint const& other) {
   write_filters = other.write_filters;
   cache_enabled = other.cache_enabled;
   cfg = other.cfg;
-  return ;
+  return;
 }

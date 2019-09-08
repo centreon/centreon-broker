@@ -17,35 +17,35 @@
 */
 
 #ifndef CCB_MULTIPLEXING_HOOKER_HH
-#  define CCB_MULTIPLEXING_HOOKER_HH
+#define CCB_MULTIPLEXING_HOOKER_HH
 
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        multiplexing {
-  /**
-   *  @class hooker hooker.hh "com/centreon/broker/multiplexing/hooker.hh"
-   *  @brief Hook object.
-   *
-   *  Place a hook on the multiplexing engine.
-   */
-  class          hooker : public io::stream {
-  public:
-                 hooker();
-                 hooker(hooker const& other) = delete;
-    hooker&      operator=(hooker const& other) = delete;
-    virtual      ~hooker();
-    void         hook(bool should_hook);
-    virtual void starting() = 0;
-    virtual void stopping() = 0;
+namespace multiplexing {
+/**
+ *  @class hooker hooker.hh "com/centreon/broker/multiplexing/hooker.hh"
+ *  @brief Hook object.
+ *
+ *  Place a hook on the multiplexing engine.
+ */
+class hooker : public io::stream {
+ public:
+  hooker();
+  hooker(hooker const& other) = delete;
+  hooker& operator=(hooker const& other) = delete;
+  virtual ~hooker();
+  void hook(bool should_hook);
+  virtual void starting() = 0;
+  virtual void stopping() = 0;
 
-  protected:
-    bool         _registered;
-  };
-}
+ protected:
+  bool _registered;
+};
+}  // namespace multiplexing
 
 CCB_END()
 
-#endif // !CCB_MULTIPLEXING_HOOKER_HH
+#endif  // !CCB_MULTIPLEXING_HOOKER_HH
