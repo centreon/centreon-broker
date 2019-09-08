@@ -16,22 +16,22 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/graphite/factory.hh"
 #include <cstring>
 #include <memory>
 #include <sstream>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/graphite/connector.hh"
-#include "com/centreon/broker/graphite/factory.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::graphite;
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 /**
  *  Find a parameter in configuration.
@@ -41,13 +41,12 @@ using namespace com::centreon::broker::graphite;
  *
  *  @return Property value.
  */
-static std::string find_param(
-                     config::endpoint const& cfg,
-                     std::string const& key) {
+static std::string find_param(config::endpoint const& cfg,
+                              std::string const& key) {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
     throw exceptions::msg() << "graphite: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'";
+                            << "' defined for endpoint '" << cfg.name << "'";
   return it->second;
 }
 
@@ -60,10 +59,9 @@ static std::string find_param(
  *
  *  @return Property value.
  */
-static std::string get_string_param(
-              config::endpoint const& cfg,
-              std::string const& key,
-              std::string const& def) {
+static std::string get_string_param(config::endpoint const& cfg,
+                                    std::string const& key,
+                                    std::string const& def) {
   std::map<std::string, std::string>::const_iterator it(cfg.params.find(key));
   if (cfg.params.end() == it)
     return def;
@@ -80,10 +78,9 @@ static std::string get_string_param(
  *
  *  @return Property value.
  */
-static unsigned int get_uint_param(
-             config::endpoint const& cfg,
-             std::string const& key,
-             unsigned int def) {
+static unsigned int get_uint_param(config::endpoint const& cfg,
+                                   std::string const& key,
+                                   unsigned int def) {
   std::map<std::string, std::string>::const_iterator it(cfg.params.find(key));
   if (cfg.params.end() == it)
     return (def);
@@ -92,10 +89,10 @@ static unsigned int get_uint_param(
 }
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -161,37 +158,25 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return Endpoint matching the given configuration.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   std::string db_host(find_param(cfg, "db_host"));
-  unsigned short db_port(
-    get_uint_param(cfg, "db_port", 2003));
-  std::string db_user(
-    get_string_param(cfg, "db_user", ""));
-  std::string db_password(
-    get_string_param(cfg, "db_password", ""));
+  unsigned short db_port(get_uint_param(cfg, "db_port", 2003));
+  std::string db_user(get_string_param(cfg, "db_user", ""));
+  std::string db_password(get_string_param(cfg, "db_password", ""));
   unsigned int queries_per_transaction(
-    get_uint_param(cfg, "queries_per_transaction", 1));
+      get_uint_param(cfg, "queries_per_transaction", 1));
   std::string metric_naming(
-    get_string_param(cfg, "metric_naming", "centreon.metrics.$METRICID$"));
+      get_string_param(cfg, "metric_naming", "centreon.metrics.$METRICID$"));
   std::string status_naming(
-    get_string_param(cfg, "status_naming", "centreon.statuses.$INDEXID$"));
-  std::string escape_string(
-    get_string_param(cfg, "escape_string", "_"));
+      get_string_param(cfg, "status_naming", "centreon.statuses.$INDEXID$"));
+  std::string escape_string(get_string_param(cfg, "escape_string", "_"));
 
   // Connector.
   std::unique_ptr<graphite::connector> c(new graphite::connector);
-  c->connect_to(
-       metric_naming,
-       status_naming,
-       escape_string,
-       db_user,
-       db_password,
-       db_host,
-       db_port,
-       queries_per_transaction,
-       cache);
+  c->connect_to(metric_naming, status_naming, escape_string, db_user,
+                db_password, db_host, db_port, queries_per_transaction, cache);
   is_acceptor = false;
   return (c.release());
 }

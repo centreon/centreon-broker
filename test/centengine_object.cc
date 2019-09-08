@@ -26,48 +26,46 @@ using namespace com::centreon::broker::test;
  *
  *  @param[in] type  Object type.
  */
-centengine_object::centengine_object(
-                     centengine_object::object_type type)
-  : _type(type) {
+centengine_object::centengine_object(centengine_object::object_type type)
+    : _type(type) {
   switch (_type) {
-  case command_type:
-    set("command_line", MY_PLUGIN_PATH " 0");
-    break ;
-  case contact_type:
-    set("host_notification_period", "default_timeperiod");
-    set("host_notification_commands", "default_command");
-    set("service_notification_period", "default_timeperiod");
-    set("service_notification_commands", "default_command");
-    break ;
-  case host_type:
-    set("address", "localhost");
-    set("active_checks_enabled", "0");
-    set("check_command", "default_command");
-    set("max_check_attempts", "3");
-    set("check_interval", "5");
-    set("retry_interval", "3");
-    set("check_period", "default_timeperiod");
-    set("event_handler_enabled", "0");
-    set("passive_checks_enabled", "0");
-    set("notification_interval", "10");
-    set("notification_period", "default_timeperiod");
-    set("contacts", "default_contact");
-    break ;
-  case service_type:
-    set("active_checks_enabled", "0");
-    set("check_command", "default_command");
-    set("max_check_attempts", "3");
-    set("check_interval", "5");
-    set("retry_interval", "3");
-    set("check_period", "default_timeperiod");
-    set("event_handler_enabled", "0");
-    set("passive_checks_enabled", "0");
-    set("notification_interval", "10");
-    set("notification_period", "default_timeperiod");
-    set("contacts", "default_contact");
-    break ;
-  default:
-    ; // No default for other objects.
+    case command_type:
+      set("command_line", MY_PLUGIN_PATH " 0");
+      break;
+    case contact_type:
+      set("host_notification_period", "default_timeperiod");
+      set("host_notification_commands", "default_command");
+      set("service_notification_period", "default_timeperiod");
+      set("service_notification_commands", "default_command");
+      break;
+    case host_type:
+      set("address", "localhost");
+      set("active_checks_enabled", "0");
+      set("check_command", "default_command");
+      set("max_check_attempts", "3");
+      set("check_interval", "5");
+      set("retry_interval", "3");
+      set("check_period", "default_timeperiod");
+      set("event_handler_enabled", "0");
+      set("passive_checks_enabled", "0");
+      set("notification_interval", "10");
+      set("notification_period", "default_timeperiod");
+      set("contacts", "default_contact");
+      break;
+    case service_type:
+      set("active_checks_enabled", "0");
+      set("check_command", "default_command");
+      set("max_check_attempts", "3");
+      set("check_interval", "5");
+      set("retry_interval", "3");
+      set("check_period", "default_timeperiod");
+      set("event_handler_enabled", "0");
+      set("passive_checks_enabled", "0");
+      set("notification_interval", "10");
+      set("notification_period", "default_timeperiod");
+      set("contacts", "default_contact");
+      break;
+    default:;  // No default for other objects.
   }
 }
 
@@ -77,7 +75,7 @@ centengine_object::centengine_object(
  *  @param[in] other  Object to copy.
  */
 centengine_object::centengine_object(centengine_object const& other)
-  : _type(other._type), _variables(other._variables) {}
+    : _type(other._type), _variables(other._variables) {}
 
 /**
  *  Destructor.
@@ -92,7 +90,7 @@ centengine_object::~centengine_object() {}
  *  @return This object.
  */
 centengine_object& centengine_object::operator=(
-                     centengine_object const& other) {
+    centengine_object const& other) {
   if (this != &other) {
     _type = other._type;
     _variables = other._variables;
@@ -108,8 +106,8 @@ centengine_object& centengine_object::operator=(
  *  @return Variable value. Empty if not set.
  */
 std::string centengine_object::get(std::string const& variable) const {
-  std::map<std::string, std::string>::const_iterator
-    it(_variables.find(variable));
+  std::map<std::string, std::string>::const_iterator it(
+      _variables.find(variable));
   return ((it == _variables.end()) ? "" : it->second);
 }
 
@@ -118,7 +116,8 @@ std::string centengine_object::get(std::string const& variable) const {
  *
  *  @return Object variables.
  */
-std::map<std::string, std::string> const& centengine_object::get_variables() const {
+std::map<std::string, std::string> const& centengine_object::get_variables()
+    const {
   return (_variables);
 }
 
@@ -137,12 +136,11 @@ centengine_object::object_type centengine_object::get_type() const {
  *  @param[in] variable  Variable name.
  *  @param[in] value     Variable value.
  */
-void centengine_object::set(
-                          std::string const& variable,
-                          std::string const& value) {
+void centengine_object::set(std::string const& variable,
+                            std::string const& value) {
   if (value.empty())
     _variables.erase(variable);
   else
     _variables[variable] = value;
-  return ;
+  return;
 }

@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/node_cache.hh"
 #include <memory>
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/neb/node_cache.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -34,11 +34,11 @@ node_cache::node_cache() {}
  *  @param[in] other  Object to copy.
  */
 node_cache::node_cache(node_cache const& other)
-  : _hosts(other._hosts),
-    _services(other._services),
-    _host_statuses(other._host_statuses),
-    _service_statuses(other._service_statuses),
-    _names_to_node(other._names_to_node) {}
+    : _hosts(other._hosts),
+      _services(other._services),
+      _host_statuses(other._host_statuses),
+      _service_statuses(other._service_statuses),
+      _names_to_node(other._names_to_node) {}
 
 /**
  *  Destructor.
@@ -52,8 +52,7 @@ node_cache::~node_cache() {}
  *
  *  @return This object.
  */
-node_cache& node_cache::operator=(
-  node_cache const& other) {
+node_cache& node_cache::operator=(node_cache const& other) {
   if (this != &other) {
     _hosts = other._hosts;
     _services = other._services;
@@ -71,19 +70,17 @@ node_cache& node_cache::operator=(
  */
 void node_cache::write(std::shared_ptr<io::data> const& d) {
   if (!d)
-    return ;
+    return;
 
   if (d->type() == neb::host::static_type()) {
     _process_host(*std::static_pointer_cast<neb::host const>(d));
-  }
-  else if (d->type() == neb::service::static_type()) {
+  } else if (d->type() == neb::service::static_type()) {
     _process_service(*std::static_pointer_cast<neb::service const>(d));
-  }
-  else if (d->type() == neb::host_status::static_type()) {
+  } else if (d->type() == neb::host_status::static_type()) {
     _process_host_status(*std::static_pointer_cast<neb::host_status const>(d));
-  }
-  else if (d->type() == neb::service_status::static_type()) {
-    _process_service_status(*std::static_pointer_cast<neb::service_status const>(d));
+  } else if (d->type() == neb::service_status::static_type()) {
+    _process_service_status(
+        *std::static_pointer_cast<neb::service_status const>(d));
   }
 }
 
@@ -93,31 +90,27 @@ void node_cache::write(std::shared_ptr<io::data> const& d) {
  *  @param[in] cache  The cache.
  */
 void node_cache::serialize(std::shared_ptr<persistent_cache> cache) {
-  if (cache.get() == NULL)
-    return ;
+  if (cache == nullptr)
+    return;
   for (std::unordered_map<node_id, neb::host>::const_iterator
-         it = _hosts.begin(),
-         end = _hosts.end();
-       it != end;
-       ++it)
+           it = _hosts.begin(),
+           end = _hosts.end();
+       it != end; ++it)
     cache->add(std::make_shared<neb::host>(it->second));
   for (std::unordered_map<node_id, neb::service>::const_iterator
-         it = _services.begin(),
-         end = _services.end();
-       it != end;
-       ++it)
+           it = _services.begin(),
+           end = _services.end();
+       it != end; ++it)
     cache->add(std::make_shared<neb::service>(it->second));
   for (std::unordered_map<node_id, neb::host_status>::const_iterator
-         it = _host_statuses.begin(),
-         end = _host_statuses.end();
-       it != end;
-       ++it)
+           it = _host_statuses.begin(),
+           end = _host_statuses.end();
+       it != end; ++it)
     cache->add(std::make_shared<neb::host_status>(it->second));
   for (std::unordered_map<node_id, neb::service_status>::const_iterator
-         it = _service_statuses.begin(),
-         end = _service_statuses.end();
-       it != end;
-       ++it)
+           it = _service_statuses.begin(),
+           end = _service_statuses.end();
+       it != end; ++it)
     cache->add(std::make_shared<neb::service_status>(it->second));
 }
 
@@ -129,13 +122,11 @@ void node_cache::serialize(std::shared_ptr<persistent_cache> cache) {
  *
  *  @return  The node id.
  */
-node_id node_cache::get_node_by_names(
-          std::string const& host_name,
-          std::string const& service_description) {
-  std::unordered_map<std::pair<std::string, std::string>, node_id>::const_iterator
-    found{_names_to_node.find(std::make_pair(
-                                host_name,
-                                service_description))};
+node_id node_cache::get_node_by_names(std::string const& host_name,
+                                      std::string const& service_description) {
+  std::unordered_map<std::pair<std::string, std::string>,
+                     node_id>::const_iterator found{
+      _names_to_node.find(std::make_pair(host_name, service_description))};
   if (found != _names_to_node.end())
     return found->second;
   else
@@ -170,7 +161,7 @@ unsigned short node_cache::get_current_state(node_id id) {
  */
 neb::host_status* node_cache::get_host_status(node_id id) {
   std::unordered_map<node_id, neb::host_status>::iterator found{
-    _host_statuses.find(id)};
+      _host_statuses.find(id)};
   return found != _host_statuses.end() ? &found->second : nullptr;
 }
 
@@ -183,7 +174,7 @@ neb::host_status* node_cache::get_host_status(node_id id) {
  */
 neb::service_status* node_cache::get_service_status(node_id id) {
   std::unordered_map<node_id, neb::service_status>::iterator found{
-    _service_statuses.find(id)};
+      _service_statuses.find(id)};
   return found != _service_statuses.end() ? &found->second : nullptr;
 }
 
@@ -192,11 +183,9 @@ neb::service_status* node_cache::get_service_status(node_id id) {
  *
  *  @param[in] hst  The host event.
  */
-void node_cache::_process_host(
-                   neb::host const& hst) {
+void node_cache::_process_host(neb::host const& hst) {
   logging::debug(logging::medium)
-    << "node events: processing host declaration for ("
-    << hst.host_id << ")";
+      << "node events: processing host declaration for (" << hst.host_id << ")";
   _hosts[node_id(hst.host_id)] = hst;
   _names_to_node[std::make_pair(hst.host_name, "")] = node_id(hst.host_id);
 }
@@ -206,14 +195,13 @@ void node_cache::_process_host(
  *
  *  @param[in] svc  The service event.
  */
-void node_cache::_process_service(
-                   neb::service const& svc) {
+void node_cache::_process_service(neb::service const& svc) {
   logging::debug(logging::medium)
-    << "node events: processing service declaration for ("
-    << svc.host_id << ", " << svc.service_id << ")";
+      << "node events: processing service declaration for (" << svc.host_id
+      << ", " << svc.service_id << ")";
   _services[node_id(svc.host_id, svc.service_id)] = svc;
-  _names_to_node[std::make_pair(svc.host_name, svc.service_description)]
-    = node_id(svc.host_id, svc.service_id);
+  _names_to_node[std::make_pair(svc.host_name, svc.service_description)] =
+      node_id(svc.host_id, svc.service_id);
 }
 
 /**
@@ -221,14 +209,12 @@ void node_cache::_process_service(
  *
  *  @param[in] hst  Host status event.
  */
-void node_cache::_process_host_status(
-                   neb::host_status const& hst) {
+void node_cache::_process_host_status(neb::host_status const& hst) {
   logging::debug(logging::medium)
-    << "node events: processing host status for ("
-    << hst.host_id << ")";
+      << "node events: processing host status for (" << hst.host_id << ")";
   node_id id(hst.host_id);
   _host_statuses[id] = hst;
-  return ;
+  return;
 }
 
 /**
@@ -236,12 +222,11 @@ void node_cache::_process_host_status(
  *
  *  @param[in] sst  Service status event.
  */
-void node_cache::_process_service_status(
-                   neb::service_status const& sst) {
+void node_cache::_process_service_status(neb::service_status const& sst) {
   logging::debug(logging::medium)
-    << "node events: processing service status for ("
-    << sst.host_id << ", " << sst.service_id  << ")";
+      << "node events: processing service status for (" << sst.host_id << ", "
+      << sst.service_id << ")";
   node_id id(sst.host_id, sst.service_id);
   _service_statuses[id] = sst;
-  return ;
+  return;
 }

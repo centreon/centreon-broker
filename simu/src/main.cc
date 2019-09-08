@@ -27,42 +27,38 @@ using namespace com::centreon::broker;
 static unsigned int instances(0);
 
 extern "C" {
-  /**
-   *  Module version symbol. Used to check for version mismatch.
-   */
-  char const* broker_module_version = CENTREON_BROKER_VERSION;
+/**
+ *  Module version symbol. Used to check for version mismatch.
+ */
+char const* broker_module_version = CENTREON_BROKER_VERSION;
 
-  /**
-   *  Module deinitialization routine.
-   */
-  void broker_module_deinit() {
-    // Decrement instance number.
-    if (!--instances) {
-      // Unregister generic simu module.
-      io::protocols::instance().unreg("simu");
-    }
+/**
+ *  Module deinitialization routine.
+ */
+void broker_module_deinit() {
+  // Decrement instance number.
+  if (!--instances) {
+    // Unregister generic simu module.
+    io::protocols::instance().unreg("simu");
   }
+}
 
-  /**
-   *  Module initialization routine.
-   *
-   *  @param[in] arg Configuration object.
-   */
-  void broker_module_init(void const* arg) {
-    (void)arg;
+/**
+ *  Module initialization routine.
+ *
+ *  @param[in] arg Configuration object.
+ */
+void broker_module_init(void const* arg) {
+  (void)arg;
 
-    // Increment instance number.
-    if (!instances++) {
-      // generic simu module.
-      logging::info(logging::high)
-        << "simu: module for Centreon Broker "
-        << CENTREON_BROKER_VERSION;
+  // Increment instance number.
+  if (!instances++) {
+    // generic simu module.
+    logging::info(logging::high)
+        << "simu: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
-      // Register simu layer.
-      io::protocols::instance().reg("simu",
-        simu::factory(),
-        1,
-        7);
-    }
+    // Register simu layer.
+    io::protocols::instance().reg("simu", simu::factory(), 1, 7);
   }
+}
 }

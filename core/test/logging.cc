@@ -16,14 +16,14 @@
  * For more information : contact@centreon.com
  *
  */
-#include <cstdio>
-#include <fstream>
+#include "com/centreon/broker/logging/logging.hh"
 #include <gtest/gtest.h>
 #include <regex.h>
 #include <sys/types.h>
+#include <cstdio>
+#include <fstream>
 #include <thread>
 #include "com/centreon/broker/logging/file.hh"
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/misc/misc.hh"
 
@@ -48,14 +48,14 @@ class LoggingManager : public ::testing::Test {
     status = ::regcomp(&r, reg.c_str(), REG_EXTENDED);
 
     if (status != 0) {
-      char *err = new char[128];
+      char* err = new char[128];
       regerror(status, &r, err, 128);
       std::cout << "cannot compile regex :" << err << std::endl;
       delete err;
       return false;
     }
-    
-    status = ::regexec(&r, line.c_str(), 0, NULL, 0);
+
+    status = ::regexec(&r, line.c_str(), 0, nullptr, 0);
     ::regfree(&r);
 
     return status == 0;
@@ -67,7 +67,7 @@ class LoggingManager : public ::testing::Test {
    *  @param[out] b      Backend to write to.
    *  @param[in]  msg_nb Number of messages to write.
    */
-  void write_log_messages(logging::backend* b, unsigned int msg_nb=4) {
+  void write_log_messages(logging::backend* b, unsigned int msg_nb = 4) {
     // First message.
     b->log_msg(MSG1 "\n", sizeof(MSG1), logging::config_type, logging::high);
     if (msg_nb <= 1)
@@ -196,8 +196,8 @@ TEST_F(LoggingManager, Multiple) {
   std::string line2;
 
   std::getline(infile, line1);
-  ASSERT_TRUE(line1  == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+  ASSERT_TRUE(line1 == "Centreon Broker " CENTREON_BROKER_VERSION
+                       " log file opened");
   std::getline(infile, line1);
   ASSERT_TRUE(check_line(line1, std::string{"^[a-z]+: +" MSG1 "$"}));
   std::getline(infile, line1);
@@ -208,8 +208,8 @@ TEST_F(LoggingManager, Multiple) {
   ASSERT_TRUE(check_line(line1, std::string{"^[a-z]+: +" MSG4 "$"}));
 
   std::getline(infile2, line2);
-  ASSERT_TRUE(line2  == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+  ASSERT_TRUE(line2 == "Centreon Broker " CENTREON_BROKER_VERSION
+                       " log file opened");
   std::getline(infile2, line2);
   ASSERT_TRUE(check_line(line2, std::string{"^[a-z]+: +" MSG1 "$"}));
   std::getline(infile2, line2);
@@ -269,14 +269,14 @@ TEST_F(LoggingManager, Cross) {
   std::string line3;
 
   std::getline(infile, line1);
-  ASSERT_TRUE(line1  == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+  ASSERT_TRUE(line1 == "Centreon Broker " CENTREON_BROKER_VERSION
+                       " log file opened");
   std::getline(infile, line1);
   ASSERT_TRUE(check_line(line1, std::string{"^[a-z]+: +" MSG1 "$"}));
 
   std::getline(infile2, line2);
-  ASSERT_TRUE(line2  == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+  ASSERT_TRUE(line2 == "Centreon Broker " CENTREON_BROKER_VERSION
+                       " log file opened");
   std::getline(infile2, line2);
   ASSERT_TRUE(check_line(line2, std::string{"^[a-z]+: +" MSG1 "$"}));
   std::getline(infile2, line2);
@@ -287,8 +287,8 @@ TEST_F(LoggingManager, Cross) {
   ASSERT_TRUE(check_line(line2, std::string{"^[a-z]+: +" MSG6 "$"}));
 
   std::getline(infile3, line3);
-  ASSERT_TRUE(line3  == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+  ASSERT_TRUE(line3 == "Centreon Broker " CENTREON_BROKER_VERSION
+                       " log file opened");
   std::getline(infile3, line3);
   ASSERT_TRUE(check_line(line3, std::string{"^[a-z]+: +" MSG4 "$"}));
   std::getline(infile3, line3);
@@ -348,8 +348,8 @@ TEST_F(LoggingManager, BacklogUnlog) {
   std::string line2;
 
   std::getline(infile, line1);
-  ASSERT_TRUE(line1  == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+  ASSERT_TRUE(line1 == "Centreon Broker " CENTREON_BROKER_VERSION
+                       " log file opened");
   std::getline(infile, line1);
   ASSERT_TRUE(check_line(line1, std::string{"^[a-z]+: +" MSG1 "$"}));
   std::getline(infile, line1);
@@ -368,8 +368,8 @@ TEST_F(LoggingManager, BacklogUnlog) {
   ASSERT_TRUE(check_line(line1, std::string{"^[a-z]+: +" MSG4 "$"}));
 
   std::getline(infile2, line2);
-  ASSERT_TRUE(line2  == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+  ASSERT_TRUE(line2 == "Centreon Broker " CENTREON_BROKER_VERSION
+                       " log file opened");
   std::getline(infile2, line2);
   ASSERT_TRUE(check_line(line2, std::string{"^[a-z]+: +" MSG1 "$"}));
   std::getline(infile2, line2);
@@ -401,16 +401,24 @@ TEST_F(LoggingManager, Everything) {
   std::string line;
 
   std::getline(infile, line);
-  ASSERT_TRUE(line  == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+  ASSERT_TRUE(line == "Centreon Broker " CENTREON_BROKER_VERSION
+                      " log file opened");
   std::getline(infile, line);
-  ASSERT_TRUE(check_line(line, std::string{"^\\[[0-9]*\\] \\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG1 "$"}));
+  ASSERT_TRUE(check_line(
+      line,
+      std::string{"^\\[[0-9]*\\] \\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG1 "$"}));
   std::getline(infile, line);
-  ASSERT_TRUE(check_line(line, std::string{"^\\[[0-9]*\\] \\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG2 "$"}));
+  ASSERT_TRUE(check_line(
+      line,
+      std::string{"^\\[[0-9]*\\] \\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG2 "$"}));
   std::getline(infile, line);
-  ASSERT_TRUE(check_line(line, std::string{"^\\[[0-9]*\\] \\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG3 "$"}));
+  ASSERT_TRUE(check_line(
+      line,
+      std::string{"^\\[[0-9]*\\] \\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG3 "$"}));
   std::getline(infile, line);
-  ASSERT_TRUE(check_line(line, std::string{"^\\[[0-9]*\\] \\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG4 "$"}));
+  ASSERT_TRUE(check_line(
+      line,
+      std::string{"^\\[[0-9]*\\] \\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG4 "$"}));
 
   // Remove file.
   std::remove(file_path.c_str());
@@ -435,21 +443,19 @@ TEST_F(LoggingManager, MaxSize) {
   for (unsigned int i = 0; i < 200000; ++i)
     write_log_messages(&f);
 
-
   std::ifstream ifs(file_path, std::ios::binary);
   ASSERT_TRUE(ifs.good());
   std::streampos begin{ifs.tellg()};
-  ifs.seekg (0, std::ios::end);
+  ifs.seekg(0, std::ios::end);
   std::streampos end{ifs.tellg()};
-  std::streampos fsize1(end-begin);
+  std::streampos fsize1(end - begin);
 
   std::ifstream ifs2(file_path, std::ios::binary);
   ASSERT_TRUE(ifs2.good());
   std::streampos begin2{ifs2.tellg()};
   ifs2.seekg(0, std::ios::end);
   std::streampos end2{ifs2.tellg()};
-  std::streampos fsize2(end2-begin2);
-
+  std::streampos fsize2(end2 - begin2);
 
   ASSERT_TRUE(fsize1 >= 0);
   ASSERT_TRUE(fsize2 >= 0);
@@ -478,7 +484,7 @@ TEST_F(LoggingManager, Nothing) {
   std::string line;
   std::getline(infile, line);
   ASSERT_TRUE(line == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+                      " log file opened");
   std::getline(infile, line);
   ASSERT_TRUE(check_line(line, std::string{"^[a-z]*: *" MSG1 "$"}));
   std::getline(infile, line);
@@ -509,15 +515,19 @@ TEST_F(LoggingManager, ThreadId) {
   std::string line;
   std::getline(infile, line);
   ASSERT_TRUE(line == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+                      " log file opened");
   std::getline(infile, line);
-  ASSERT_TRUE(check_line(line, std::string{"^\\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG1 "$"}));
+  ASSERT_TRUE(check_line(
+      line, std::string{"^\\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG1 "$"}));
   std::getline(infile, line);
-  ASSERT_TRUE(check_line(line, std::string{"^\\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG2 "$"}));
+  ASSERT_TRUE(check_line(
+      line, std::string{"^\\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG2 "$"}));
   std::getline(infile, line);
-  ASSERT_TRUE(check_line(line, std::string{"^\\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG3 "$"}));
+  ASSERT_TRUE(check_line(
+      line, std::string{"^\\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG3 "$"}));
   std::getline(infile, line);
-  ASSERT_TRUE(check_line(line, std::string{"^\\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG4 "$"}));
+  ASSERT_TRUE(check_line(
+      line, std::string{"^\\[0x[0-9abcdef]*\\] [a-zA-Z]*: *" MSG4 "$"}));
 
   // Remove file.
   std::remove(file_path.c_str());
@@ -540,15 +550,19 @@ TEST_F(LoggingManager, Timestamp) {
   std::string line;
   std::getline(infile, line);
   ASSERT_TRUE(line == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+                      " log file opened");
   std::getline(infile, line);
-  ASSERT_TRUE(check_line(line, std::string{"^\\[[0-9]*\\] [a-zA-Z]*: *" MSG1 "$"}));
+  ASSERT_TRUE(
+      check_line(line, std::string{"^\\[[0-9]*\\] [a-zA-Z]*: *" MSG1 "$"}));
   std::getline(infile, line);
-  ASSERT_TRUE(check_line(line, std::string{"^\\[[0-9]*\\] [a-zA-Z]*: *" MSG2 "$"}));
+  ASSERT_TRUE(
+      check_line(line, std::string{"^\\[[0-9]*\\] [a-zA-Z]*: *" MSG2 "$"}));
   std::getline(infile, line);
-  ASSERT_TRUE(check_line(line, std::string{"^\\[[0-9]*\\] [a-zA-Z]*: *" MSG3 "$"}));
+  ASSERT_TRUE(
+      check_line(line, std::string{"^\\[[0-9]*\\] [a-zA-Z]*: *" MSG3 "$"}));
   std::getline(infile, line);
-  ASSERT_TRUE(check_line(line, std::string{"^\\[[0-9]*\\] [a-zA-Z]*: *" MSG4 "$"}));
+  ASSERT_TRUE(
+      check_line(line, std::string{"^\\[[0-9]*\\] [a-zA-Z]*: *" MSG4 "$"}));
 }
 
 TEST_F(LoggingManager, Copied) {
@@ -567,18 +581,13 @@ TEST_F(LoggingManager, Copied) {
   // Add logging object.
   logging::manager::instance().log_on(
       f,
-      logging::config_type
-          | logging::debug_type
-          | logging::error_type
-          | logging::info_type,
+      logging::config_type | logging::debug_type | logging::error_type |
+          logging::info_type,
       logging::low);
 
   // Create and destroy temp_logger objects.
   {
-    logging::temp_logger tl1(
-        logging::config_type,
-        logging::high,
-        true);
+    logging::temp_logger tl1(logging::config_type, logging::high, true);
     logging::temp_logger tl2(tl1);
   }
 
@@ -589,7 +598,7 @@ TEST_F(LoggingManager, Copied) {
   std::string line;
   std::getline(infile, line);
   ASSERT_TRUE(line == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+                      " log file opened");
   std::getline(infile, line);
   ASSERT_TRUE(check_line(line, std::string{"^config:  $"}));
 
@@ -613,29 +622,24 @@ TEST_F(LoggingManager, Disabled) {
   // Add logging object.
   logging::manager::instance().log_on(
       f,
-      logging::config_type
-          | logging::debug_type
-          | logging::error_type
-          | logging::info_type,
+      logging::config_type | logging::debug_type | logging::error_type |
+          logging::info_type,
       logging::low);
 
   // Create and destroy temp_logger.
   {
-    logging::temp_logger tl(
-        logging::config_type,
-        logging::high,
-        false);
+    logging::temp_logger tl(logging::config_type, logging::high, false);
     tl << true << 42 << "a random string";
   }
 
-    // At this point, nothing should have been written in the logs.
-    logging::manager::unload();
+  // At this point, nothing should have been written in the logs.
+  logging::manager::unload();
 
   std::ifstream infile{file_path};
   std::string line;
   std::getline(infile, line);
   ASSERT_TRUE(line == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+                      " log file opened");
   // Remove file.
   std::remove(file_path.c_str());
 }
@@ -655,19 +659,12 @@ TEST_F(LoggingManager, Enabled) {
   // Add logging object.
   logging::manager::instance().log_on(
       f,
-      logging::config_type
-          | logging::debug_type
-          | logging::error_type
-          | logging::info_type,
+      logging::config_type | logging::debug_type | logging::error_type |
+          logging::info_type,
       logging::low);
 
   // Create and destroy temp_logger.
-  {
-    logging::temp_logger tl(
-        logging::config_type,
-        logging::high,
-        true);
-  }
+  { logging::temp_logger tl(logging::config_type, logging::high, true); }
 
   // At this point, an empty line should have been logged.
   logging::manager::unload();
@@ -676,7 +673,7 @@ TEST_F(LoggingManager, Enabled) {
   std::string line;
   std::getline(infile, line);
   ASSERT_TRUE(line == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+                      " log file opened");
   std::getline(infile, line);
   ASSERT_TRUE(check_line(line, std::string{"^config:  $"}));
 
@@ -700,18 +697,13 @@ TEST_F(LoggingManager, Insertion) {
   // Add logging object.
   logging::manager::instance().log_on(
       f,
-      logging::config_type
-          | logging::debug_type
-          | logging::error_type
-          | logging::info_type,
+      logging::config_type | logging::debug_type | logging::error_type |
+          logging::info_type,
       logging::low);
 
   // Create and destroy temp_logger objects.
   {
-    logging::temp_logger tl(
-        logging::config_type,
-        logging::high,
-        true);
+    logging::temp_logger tl(logging::config_type, logging::high, true);
     tl << true << 42 << "my own random string" << -789527845245ll;
   }
 
@@ -722,9 +714,10 @@ TEST_F(LoggingManager, Insertion) {
   std::string line;
   std::getline(infile, line);
   ASSERT_TRUE(line == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+                      " log file opened");
   std::getline(infile, line);
-  ASSERT_TRUE(check_line(line, std::string{"^config:  true42my own random string-789527845245$"}));
+  ASSERT_TRUE(check_line(
+      line, std::string{"^config:  true42my own random string-789527845245$"}));
 
   // Remove file.
   std::remove(file_path.c_str());
@@ -739,7 +732,7 @@ TEST_F(LoggingManager, Insertion) {
 static void log_messages() {
   for (unsigned int i = 0; i < WRITE_COUNT; ++i)
     logging::error(logging::high) << MESSAGE;
-  return ;
+  return;
 }
 
 /**
@@ -772,7 +765,6 @@ TEST_F(LoggingManager, Concurrent) {
   for (unsigned int i = 0; i < 50; ++i)
     pool.push_back(std::thread(log_messages));
 
-
   // Wait for tasks to finish.
   for (unsigned int i = 0; i < 50; ++i)
     pool[i].join();
@@ -784,9 +776,9 @@ TEST_F(LoggingManager, Concurrent) {
   std::string line;
   std::getline(infile, line);
   ASSERT_TRUE(line == "Centreon Broker " CENTREON_BROKER_VERSION
-                  " log file opened");
+                      " log file opened");
 
-  while(std::getline(infile, line))
+  while (std::getline(infile, line))
     ASSERT_TRUE(check_line(line, std::string{".*" MESSAGE ".*"}));
 
   // Remove temp file.

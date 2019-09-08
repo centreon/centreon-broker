@@ -17,41 +17,41 @@
 */
 
 #ifndef CC_CONCURRENCY_CONDVAR_WIN32_HH
-#  define CC_CONCURRENCY_CONDVAR_WIN32_HH
+#define CC_CONCURRENCY_CONDVAR_WIN32_HH
 
-#  include <windows.h>
-#  include "com/centreon/namespace.hh"
+#include <windows.h>
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace              concurrency {
-  // Forward declaration.
-  class                mutex;
+namespace concurrency {
+// Forward declaration.
+class mutex;
 
-  /**
-   *  @class condvar condvar_win32.hh "com/centreon/concurrency/condvar.hh"
-   *  @brief Simple thread synchronization.
-   *
-   *  Provide condition variable for synchronization between threads.
-   */
-  class                condvar {
-  public:
-                       condvar();
-                       ~condvar() throw ();
-    void               wait(mutex* mutx);
-    bool               wait(mutex* mutx, unsigned long timeout);
-    void               wake_all();
-    void               wake_one();
+/**
+ *  @class condvar condvar_win32.hh "com/centreon/concurrency/condvar.hh"
+ *  @brief Simple thread synchronization.
+ *
+ *  Provide condition variable for synchronization between threads.
+ */
+class condvar {
+ public:
+  condvar();
+  ~condvar() throw();
+  void wait(mutex* mutx);
+  bool wait(mutex* mutx, unsigned long timeout);
+  void wake_all();
+  void wake_one();
 
-  private:
-                       condvar(condvar const& cv);
-    condvar&           operator=(condvar const& cv);
-    bool               _wait(mutex* mutx, DWORD timeout);
+ private:
+  condvar(condvar const& cv);
+  condvar& operator=(condvar const& cv);
+  bool _wait(mutex* mutx, DWORD timeout);
 
-    CONDITION_VARIABLE _cond;
-  };
-}
+  CONDITION_VARIABLE _cond;
+};
+}  // namespace concurrency
 
 CC_END()
 
-#endif // !CC_CONCURRENCY_CONDVAR_WIN32_HH
+#endif  // !CC_CONCURRENCY_CONDVAR_WIN32_HH

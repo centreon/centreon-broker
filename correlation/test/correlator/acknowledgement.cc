@@ -16,15 +16,15 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <iostream>
+#include "com/centreon/broker/neb/acknowledgement.hh"
 #include <QMap>
 #include <QPair>
-#include "com/centreon/broker/multiplexing/engine.hh"
+#include <cstdlib>
+#include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/correlation/node.hh"
-#include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/correlation/stream.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "test/correlator/common.hh"
 
@@ -66,7 +66,7 @@ int main() {
     c.set_state(state);
 
     // Send node status.
-    { // #1
+    {  // #1
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
@@ -74,16 +74,15 @@ int main() {
       ss->last_hard_state_change = 123456789;
       c.write(ss);
     }
-    { // #2
-      std::shared_ptr<neb::acknowledgement>
-        ack(new neb::acknowledgement);
+    {  // #2
+      std::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement);
       ack->host_id = 42;
       ack->service_id = 24;
       ack->entry_time = 123456790;
       ack->is_sticky = false;
       c.write(ack);
     }
-    { // #3
+    {  // #3
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
@@ -91,16 +90,15 @@ int main() {
       ss->last_hard_state_change = 123456791;
       c.write(ss);
     }
-    { // #4
-      std::shared_ptr<neb::acknowledgement>
-        ack(new neb::acknowledgement);
+    {  // #4
+      std::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement);
       ack->host_id = 42;
       ack->service_id = 24;
       ack->entry_time = 123456792;
       ack->is_sticky = true;
       c.write(ack);
     }
-    { // #5
+    {  // #5
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
@@ -108,7 +106,7 @@ int main() {
       ss->last_hard_state_change = 123456793;
       c.write(ss);
     }
-    { // #6
+    {  // #6
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
@@ -116,15 +114,14 @@ int main() {
       ss->last_hard_state_change = 123456794;
       c.write(ss);
     }
-    { // #7
-      std::shared_ptr<neb::acknowledgement>
-        ack(new neb::acknowledgement);
+    {  // #7
+      std::shared_ptr<neb::acknowledgement> ack(new neb::acknowledgement);
       ack->host_id = 42;
       ack->service_id = 24;
       ack->entry_time = 123456795;
       c.write(ack);
     }
-    { // #8
+    {  // #8
       std::shared_ptr<neb::service_status> ss(new neb::service_status);
       ss->host_id = 42;
       ss->service_id = 24;
@@ -145,85 +142,21 @@ int main() {
     add_state(content, -1, 2, 123456790, 42, false, 24, 123456789);
     add_state(content, 123456790, 2, -1, 42, false, 24, 123456790);
     // #3
-    add_state(
-      content,
-      123456790,
-      2,
-      123456791,
-      42,
-      false,
-      24,
-      123456790);
-    add_state(
-      content,
-      -1,
-      1,
-      -1,
-      42,
-      false,
-      24,
-      123456791);
+    add_state(content, 123456790, 2, 123456791, 42, false, 24, 123456790);
+    add_state(content, -1, 1, -1, 42, false, 24, 123456791);
     // #4
-    add_state(
-      content,
-      -1,
-      1,
-      123456792,
-      42,
-      false,
-      24,
-      123456791);
-    add_state(
-      content,
-      123456792,
-      1,
-      -1,
-      42,
-      false,
-      24,
-      123456792);
+    add_state(content, -1, 1, 123456792, 42, false, 24, 123456791);
+    add_state(content, 123456792, 1, -1, 42, false, 24, 123456792);
     // #5
-    add_state(
-      content,
-      123456792,
-      1,
-      123456793,
-      42,
-      false,
-      24,
-      123456792);
-    add_state(
-      content,
-      123456793,
-      2,
-      -1,
-      42,
-      false,
-      24,
-      123456793);
+    add_state(content, 123456792, 1, 123456793, 42, false, 24, 123456792);
+    add_state(content, 123456793, 2, -1, 42, false, 24, 123456793);
     // #6
-    add_state(
-      content,
-      123456793,
-      2,
-      123456794,
-      42,
-      false,
-      24,
-      123456793);
+    add_state(content, 123456793, 2, 123456794, 42, false, 24, 123456793);
     add_state(content, -1, 0, -1, 42, false, 24, 123456794);
     add_issue(content, 123456790, 123456794, 42, 24, 123456789);
     // #7, should not change anything
     // #8
-    add_state(
-      content,
-      -1,
-      0,
-      123456796,
-      42,
-      false,
-      24,
-      123456794);
+    add_state(content, -1, 0, 123456796, 42, false, 24, 123456794);
     add_state(content, -1, 1, -1, 42, false, 24, 123456796);
     add_issue(content, -1, -1, 42, 24, 123456796);
 
@@ -232,11 +165,9 @@ int main() {
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "unknown exception" << std::endl;
   }
 

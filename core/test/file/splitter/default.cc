@@ -27,7 +27,7 @@ using namespace com::centreon::broker;
 
 class FileSplitterDefault : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     logging::manager::load();
     _path = "queue";
     _file_factory = new test_file_factory();
@@ -37,9 +37,7 @@ class FileSplitterDefault : public ::testing::Test {
                                    _file_factory, _fs_browser, 10000, true));
   }
 
-  void TearDown() {
-    logging::manager::unload();
-  }
+  void TearDown() override { logging::manager::unload(); }
 
  protected:
   std::unique_ptr<file::splitter> _file;

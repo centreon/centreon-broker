@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/graphite/macro_cache.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -29,8 +29,8 @@ using namespace com::centreon::broker::graphite;
  *  @param[in] cache  Persistent cache used by the macro cache.
  */
 macro_cache::macro_cache(std::shared_ptr<persistent_cache> const& cache)
-  : _cache(cache) {
-  if (_cache.get() != NULL) {
+    : _cache(cache) {
+  if (_cache != nullptr) {
     std::shared_ptr<io::data> d;
     do {
       _cache->get(d);
@@ -43,13 +43,13 @@ macro_cache::macro_cache(std::shared_ptr<persistent_cache> const& cache)
  *  Destructor.
  */
 macro_cache::~macro_cache() {
-  if (_cache.get() != NULL) {
+  if (_cache != nullptr) {
     try {
       _save_to_disk();
     } catch (std::exception const& e) {
       logging::error(logging::medium)
-        << "graphite: macro cache couldn't save data to disk: '"
-        << e.what() << "'";
+          << "graphite: macro cache couldn't save data to disk: '" << e.what()
+          << "'";
     }
   }
 }
@@ -62,13 +62,12 @@ macro_cache::~macro_cache() {
  *  @return               The status mapping.
  */
 storage::index_mapping const& macro_cache::get_index_mapping(
-                                 uint64_t index_id) const {
-  std::unordered_map<uint64_t, storage::index_mapping>::const_iterator
-    found(_index_mappings.find(index_id));
+    uint64_t index_id) const {
+  std::unordered_map<uint64_t, storage::index_mapping>::const_iterator found(
+      _index_mappings.find(index_id));
   if (found == _index_mappings.end())
     throw exceptions::msg()
-           << "graphite: could not find host/service of index "
-           << index_id;
+        << "graphite: could not find host/service of index " << index_id;
   return found->second;
 }
 
@@ -80,12 +79,12 @@ storage::index_mapping const& macro_cache::get_index_mapping(
  *  @return               The metric mapping.
  */
 storage::metric_mapping const& macro_cache::get_metric_mapping(
-                                 uint64_t metric_id) const {
-  std::unordered_map<uint64_t, storage::metric_mapping>::const_iterator
-    found(_metric_mappings.find(metric_id));
+    uint64_t metric_id) const {
+  std::unordered_map<uint64_t, storage::metric_mapping>::const_iterator found(
+      _metric_mappings.find(metric_id));
   if (found == _metric_mappings.end())
     throw exceptions::msg()
-           << "graphite: could not find index of metric " << metric_id;
+        << "graphite: could not find index of metric " << metric_id;
   return found->second;
 }
 
@@ -97,12 +96,11 @@ storage::metric_mapping const& macro_cache::get_metric_mapping(
  *  @return             The name of the host.
  */
 std::string const& macro_cache::get_host_name(uint64_t host_id) const {
-  std::unordered_map<uint64_t, neb::host>::const_iterator
-    found(_hosts.find(host_id));
+  std::unordered_map<uint64_t, neb::host>::const_iterator found(
+      _hosts.find(host_id));
   if (found == _hosts.end())
     throw exceptions::msg()
-           << "graphite: could not find information on host "
-           << host_id;
+        << "graphite: could not find information on host " << host_id;
   return found->second.host_name;
 }
 
@@ -115,14 +113,15 @@ std::string const& macro_cache::get_host_name(uint64_t host_id) const {
  *  @return             The description of the service.
  */
 std::string const& macro_cache::get_service_description(
-                 uint64_t host_id,
-                 uint64_t service_id) const {
-  std::unordered_map<std::pair<uint64_t, uint64_t>, neb::service>::const_iterator
-    found(_services.find({host_id, service_id}));
+    uint64_t host_id,
+    uint64_t service_id) const {
+  std::unordered_map<std::pair<uint64_t, uint64_t>,
+                     neb::service>::const_iterator
+      found(_services.find({host_id, service_id}));
   if (found == _services.end())
     throw exceptions::msg()
-           << "graphite: could not find information on service ("
-           << host_id << ", " << service_id << ")";
+        << "graphite: could not find information on service (" << host_id
+        << ", " << service_id << ")";
   return found->second.service_description;
 }
 
@@ -134,12 +133,11 @@ std::string const& macro_cache::get_service_description(
  *  @return   The name of the instance.
  */
 std::string const& macro_cache::get_instance(uint64_t instance_id) const {
-  std::unordered_map<uint64_t, neb::instance>::const_iterator
-    found(_instances.find(instance_id));
+  std::unordered_map<uint64_t, neb::instance>::const_iterator found(
+      _instances.find(instance_id));
   if (found == _instances.end())
     throw exceptions::msg()
-           << "graphite: could not find information on instance "
-           << instance_id;
+        << "graphite: could not find information on instance " << instance_id;
   return found->second.name;
 }
 
@@ -150,7 +148,7 @@ std::string const& macro_cache::get_instance(uint64_t instance_id) const {
  */
 void macro_cache::write(std::shared_ptr<io::data> const& data) {
   if (!data)
-    return ;
+    return;
 
   if (data->type() == neb::instance::static_type())
     _process_instance(*std::static_pointer_cast<neb::instance const>(data));
@@ -159,9 +157,11 @@ void macro_cache::write(std::shared_ptr<io::data> const& data) {
   else if (data->type() == neb::service::static_type())
     _process_service(*std::static_pointer_cast<neb::service const>(data));
   else if (data->type() == storage::index_mapping::static_type())
-    _process_index_mapping(*std::static_pointer_cast<storage::index_mapping const>(data));
+    _process_index_mapping(
+        *std::static_pointer_cast<storage::index_mapping const>(data));
   else if (data->type() == storage::metric_mapping::static_type())
-    _process_metric_mapping(*std::static_pointer_cast<storage::metric_mapping const>(data));
+    _process_metric_mapping(
+        *std::static_pointer_cast<storage::metric_mapping const>(data));
 }
 
 /**
@@ -216,38 +216,33 @@ void macro_cache::_save_to_disk() {
   _cache->transaction();
 
   for (std::unordered_map<uint64_t, neb::instance>::const_iterator
-         it(_instances.begin()),
-         end(_instances.end());
-       it != end;
-       ++it)
+           it(_instances.begin()),
+       end(_instances.end());
+       it != end; ++it)
     _cache->add(std::make_shared<neb::instance>(it->second));
 
   for (std::unordered_map<uint64_t, neb::host>::const_iterator
-         it(_hosts.begin()),
-         end(_hosts.end());
-       it != end;
-       ++it)
+           it(_hosts.begin()),
+       end(_hosts.end());
+       it != end; ++it)
     _cache->add(std::make_shared<neb::host>(it->second));
 
-  for (std::unordered_map<std::pair<uint64_t, uint64_t>, neb::service>::const_iterator
-         it(_services.begin()),
-         end(_services.end());
-       it != end;
-       ++it)
+  for (std::unordered_map<std::pair<uint64_t, uint64_t>,
+                          neb::service>::const_iterator it(_services.begin()),
+       end(_services.end());
+       it != end; ++it)
     _cache->add(std::make_shared<neb::service>(it->second));
 
   for (std::unordered_map<uint64_t, storage::index_mapping>::const_iterator
-         it(_index_mappings.begin()),
-         end(_index_mappings.end());
-       it != end;
-       ++it)
+           it(_index_mappings.begin()),
+       end(_index_mappings.end());
+       it != end; ++it)
     _cache->add(std::make_shared<storage::index_mapping>(it->second));
 
   for (std::unordered_map<uint64_t, storage::metric_mapping>::const_iterator
-         it(_metric_mappings.begin()),
-         end(_metric_mappings.end());
-       it != end;
-       ++it)
+           it(_metric_mappings.begin()),
+       end(_metric_mappings.end());
+       it != end; ++it)
     _cache->add(std::make_shared<storage::metric_mapping>(it->second));
 
   _cache->commit();

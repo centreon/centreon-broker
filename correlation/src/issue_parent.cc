@@ -16,31 +16,31 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
  */
 issue_parent::issue_parent()
-  : child_host_id(0),
-    child_service_id(0),
-    child_start_time(0),
-    end_time(-1),
-    parent_host_id(0),
-    parent_service_id(0),
-    parent_start_time(0),
-    start_time(0) {}
+    : child_host_id(0),
+      child_service_id(0),
+      child_start_time(0),
+      end_time(-1),
+      parent_host_id(0),
+      parent_service_id(0),
+      parent_start_time(0),
+      start_time(0) {}
 
 /**
  *  Copy constructor.
@@ -84,14 +84,15 @@ unsigned int issue_parent::type() const {
  *  @return  The event type.
  */
 unsigned int issue_parent::static_type() {
-  return (io::events::data_type<io::events::correlation, correlation::de_issue_parent>::value);
+  return (io::events::data_type<io::events::correlation,
+                                correlation::de_issue_parent>::value);
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members to this object.
@@ -107,58 +108,46 @@ void issue_parent::_internal_copy(issue_parent const& ip) {
   parent_service_id = ip.parent_service_id;
   parent_start_time = ip.parent_start_time;
   start_time = ip.start_time;
-  return ;
+  return;
 }
 
-
-
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const issue_parent::entries[] = {
-  mapping::entry(
-    &issue_parent::child_host_id,
-    "child_host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &issue_parent::child_service_id,
-    "child_service_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &issue_parent::child_start_time,
-    "child_start_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &issue_parent::end_time,
-    "end_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &issue_parent::parent_host_id,
-    "parent_host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &issue_parent::parent_service_id,
-    "parent_service_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &issue_parent::parent_start_time,
-    "parent_start_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &issue_parent::start_time,
-    "start_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry()
-};
+    mapping::entry(&issue_parent::child_host_id,
+                   "child_host_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&issue_parent::child_service_id,
+                   "child_service_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&issue_parent::child_start_time,
+                   "child_start_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&issue_parent::end_time,
+                   "end_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&issue_parent::parent_host_id,
+                   "parent_host_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&issue_parent::parent_service_id,
+                   "parent_service_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&issue_parent::parent_start_time,
+                   "parent_start_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&issue_parent::start_time,
+                   "start_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_issue_parent() {
   return (new issue_parent);
 }
 io::event_info::event_operations const issue_parent::operations = {
-  &new_issue_parent
-};
+    &new_issue_parent};

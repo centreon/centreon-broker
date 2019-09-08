@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/tls/stream.hh"
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
@@ -24,16 +25,15 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/tls/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tls;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Constructor.
@@ -45,7 +45,7 @@ using namespace com::centreon::broker::tls;
  *                   encryption that should be used.
  */
 stream::stream(gnutls_session_t* sess)
-  : _deadline((time_t)-1), _session(sess) {}
+    : _deadline((time_t)-1), _session(sess) {}
 
 /**
  *  @brief Destructor.
@@ -56,14 +56,15 @@ stream::stream(gnutls_session_t* sess)
 stream::~stream() {
   if (_session) {
     try {
-      _deadline = time(NULL) + 30; // XXX : use connection timeout
+      _deadline = time(nullptr) + 30;  // XXX : use connection timeout
       gnutls_bye(*_session, GNUTLS_SHUT_RDWR);
       gnutls_deinit(*_session);
       delete (_session);
-      _session = NULL;
+      _session = nullptr;
     }
     // Ignore exception whatever the error might be.
-    catch (...) {}
+    catch (...) {
+    }
   }
 }
 
@@ -88,24 +89,19 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   _deadline = deadline;
   std::shared_ptr<io::raw> buffer(new io::raw);
   buffer->resize(BUFSIZ);
-  int ret(gnutls_record_recv(
-            *_session,
-            buffer->data(),
-            buffer->size()));
+  int ret(gnutls_record_recv(*_session, buffer->data(), buffer->size()));
   if (ret < 0) {
     if ((ret != GNUTLS_E_INTERRUPTED) && (ret != GNUTLS_E_AGAIN))
-      throw (exceptions::msg() << "TLS: could not receive data: "
-             << gnutls_strerror(ret));
+      throw(exceptions::msg()
+            << "TLS: could not receive data: " << gnutls_strerror(ret));
     else
       return false;
-  }
-  else if (ret) {
+  } else if (ret) {
     buffer->resize(ret);
     d = buffer;
     return true;
-  }
-  else
-    throw (exceptions::msg() << "TLS session is terminated");
+  } else
+    throw(exceptions::msg() << "TLS session is terminated");
   return false;
 }
 
@@ -125,11 +121,11 @@ long long stream::read_encrypted(void* buffer, long long size) {
     timed_out = !_substream->read(d, _deadline);
     if (d && d->type() == io::raw::static_type()) {
       io::raw* r(static_cast<io::raw*>(d.get()));
-      std::copy(r->data(), r->data() + r->size() - 1, std::back_inserter(_buffer));
+      std::copy(r->data(), r->data() + r->size() - 1,
+                std::back_inserter(_buffer));
       //_buffer.append(r->data(), r->size());
-    }
-    else if (timed_out)
-      break ;
+    } else if (timed_out)
+      break;
   }
 
   // Transfer data.
@@ -138,17 +134,14 @@ long long stream::read_encrypted(void* buffer, long long size) {
     if (timed_out) {
       gnutls_transport_set_errno(*_session, EAGAIN);
       return -1;
-    }
-    else {
+    } else {
       return 0;
     }
-  }
-  else if (size >= rb) {
+  } else if (size >= rb) {
     memcpy(buffer, _buffer.data(), rb);
     _buffer.clear();
     return rb;
-  }
-  else {
+  } else {
     memcpy(buffer, _buffer.data(), size);
     _buffer.erase(_buffer.begin(), _buffer.begin() + (size - 1));
     //_buffer.remove(0, size);
@@ -175,13 +168,10 @@ int stream::write(std::shared_ptr<io::data> const& d) {
     char const* ptr(packet->const_data());
     int size(packet->size());
     while (size > 0) {
-      int ret(gnutls_record_send(
-                *_session,
-                ptr,
-                size));
+      int ret(gnutls_record_send(*_session, ptr, size));
       if (ret < 0)
-        throw (exceptions::msg() << "TLS: could not send data: "
-               << gnutls_strerror(ret));
+        throw(exceptions::msg()
+              << "TLS: could not send data: " << gnutls_strerror(ret));
       ptr += ret;
       size -= ret;
     }
@@ -198,11 +188,11 @@ int stream::write(std::shared_ptr<io::data> const& d) {
  *
  *  @return Number of bytes written.
  */
-long long stream::write_encrypted(
-                    void const* buffer,
-                    long long size) {
+long long stream::write_encrypted(void const* buffer, long long size) {
   std::shared_ptr<io::raw> r(new io::raw);
-  std::copy(static_cast<char const*>(buffer), static_cast<char const*>(buffer) + size, std::back_inserter(r->get_buffer()));
+  std::copy(static_cast<char const*>(buffer),
+            static_cast<char const*>(buffer) + size,
+            std::back_inserter(r->get_buffer()));
   _substream->write(r);
   _substream->flush();
   return size;

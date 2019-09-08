@@ -17,36 +17,35 @@
 */
 
 #ifndef CCB_MULTIPLEXING_PUBLISHER_HH
-#  define CCB_MULTIPLEXING_PUBLISHER_HH
+#define CCB_MULTIPLEXING_PUBLISHER_HH
 
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        multiplexing {
-  /**
-   *  @class publisher publisher.hh "com/centreon/broker/multiplexing/publisher.hh"
-   *  @brief Publish events to the multiplexing engine.
-   *
-   *  Publish events written to the publisher to the multiplexing
-   *  engine.
-   *
-   *  @see engine
-   */
-  class          publisher : public io::stream {
-  public:
-                 publisher();
-                 publisher(publisher const& other);
-                 ~publisher() throw ();
-    publisher&   operator=(publisher const& other);
-    bool         read(
-                   std::shared_ptr<io::data>& d,
-                   time_t deadline = (time_t)-1);
-    int          write(std::shared_ptr<io::data> const& d);
-  };
-}
+namespace multiplexing {
+/**
+ *  @class publisher publisher.hh
+ * "com/centreon/broker/multiplexing/publisher.hh"
+ *  @brief Publish events to the multiplexing engine.
+ *
+ *  Publish events written to the publisher to the multiplexing
+ *  engine.
+ *
+ *  @see engine
+ */
+class publisher : public io::stream {
+ public:
+  publisher();
+  publisher(publisher const& other);
+  ~publisher() throw();
+  publisher& operator=(publisher const& other);
+  bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
+  int write(std::shared_ptr<io::data> const& d);
+};
+}  // namespace multiplexing
 
 CCB_END()
 
-#endif // !CCB_MULTIPLEXING_PUBLISHER_HH
+#endif  // !CCB_MULTIPLEXING_PUBLISHER_HH

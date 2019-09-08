@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <iostream>
 #include <QMap>
 #include <QPair>
+#include <cstdlib>
+#include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -70,15 +70,13 @@ int main() {
 
     // Compare states.
     if (c.get_state() != state)
-      throw (exceptions::msg() << "state mismatch");
+      throw(exceptions::msg() << "state mismatch");
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "unknown exception" << std::endl;
   }
 

@@ -15,17 +15,17 @@
 **
 ** For more information : contact@centreon.com
 */
-#include <iostream>
 #include "com/centreon/broker/io/endpoint.hh"
+#include <iostream>
 #include "com/centreon/broker/persistent_cache.hh"
 
 using namespace com::centreon::broker::io;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -77,7 +77,7 @@ void endpoint::from(std::shared_ptr<endpoint> endp) {
  *
  *  @return true if endpoint is an acceptor.
  */
-bool endpoint::is_acceptor() const throw () {
+bool endpoint::is_acceptor() const throw() {
   return _is_acceptor;
 }
 
@@ -86,7 +86,7 @@ bool endpoint::is_acceptor() const throw () {
  *
  *  @return true if endpoint is a connector.
  */
-bool endpoint::is_connector() const throw () {
+bool endpoint::is_connector() const throw() {
   return !_is_acceptor;
 }
 
@@ -115,12 +115,11 @@ void endpoint::set_filter(std::set<unsigned int> const& filter) {
     _from->set_filter(filter);
 }
 
-
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -130,5 +129,5 @@ void endpoint::set_filter(std::set<unsigned int> const& filter) {
 void endpoint::_internal_copy(endpoint const& other) {
   _from = other._from;
   _is_acceptor = other._is_acceptor;
-  return ;
+  return;
 }

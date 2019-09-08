@@ -17,9 +17,9 @@
  *
  */
 
+#include "com/centreon/broker/neb/set_log_data.hh"
 #include <gtest/gtest.h>
 #include "com/centreon/broker/neb/log_entry.hh"
-#include "com/centreon/broker/neb/set_log_data.hh"
 
 using namespace com::centreon::broker;
 
@@ -28,7 +28,8 @@ uint64_t com::centreon::engine::get_host_id(std::string const& name) {
   return 1;
 }
 
-uint64_t com::centreon::engine::get_service_id(std::string const& host, std::string const& svc) {
+uint64_t com::centreon::engine::get_service_id(std::string const& host,
+                                               std::string const& svc) {
   return 1;
 }
 
@@ -38,19 +39,20 @@ TEST(SetLogData, Default) {
 
   // Parse a service alert line.
   neb::set_log_data(le,
-                    "EXTERNAL COMMAND: SCHEDULE_FORCED_SVC_CHECK;MyHost;MyService;1428930446");
+                    "EXTERNAL COMMAND: "
+                    "SCHEDULE_FORCED_SVC_CHECK;MyHost;MyService;1428930446");
 
   // Check that it was properly parsed.
   ASSERT_FALSE(le.host_name != "");
-  ASSERT_FALSE(le.log_type != 0); // Default.
-  ASSERT_FALSE(le.msg_type != 5); // Default.
-  ASSERT_FALSE(le.output
-      != "EXTERNAL COMMAND: SCHEDULE_FORCED_SVC_CHECK;MyHost;MyService;1428930446");
+  ASSERT_FALSE(le.log_type != 0);  // Default.
+  ASSERT_FALSE(le.msg_type != 5);  // Default.
+  ASSERT_FALSE(le.output !=
+               "EXTERNAL COMMAND: "
+               "SCHEDULE_FORCED_SVC_CHECK;MyHost;MyService;1428930446");
   ASSERT_FALSE(le.retry != 0);
   ASSERT_FALSE(le.service_description != "");
   ASSERT_FALSE(le.status != 0);
 }
-
 
 /**
  *  Check that a host alert log is properly parsed.
@@ -62,16 +64,16 @@ TEST(SetLogData, HostAlert) {
   neb::log_entry le;
 
   // Parse a host alert line.
-  neb::set_log_data(le,
-                    "HOST ALERT: myserver;UNREACHABLE;HARD;4;Time to live exceeded");
+  neb::set_log_data(
+      le, "HOST ALERT: myserver;UNREACHABLE;HARD;4;Time to live exceeded");
 
   // Check that it was properly parsed.
   ASSERT_FALSE(le.host_name != "myserver");
-  ASSERT_FALSE(le.log_type != 1); // HARD
-  ASSERT_FALSE(le.msg_type != 1); // HOST ALERT
+  ASSERT_FALSE(le.log_type != 1);  // HARD
+  ASSERT_FALSE(le.msg_type != 1);  // HOST ALERT
   ASSERT_FALSE(le.output != "Time to live exceeded");
   ASSERT_FALSE(le.retry != 4);
-  ASSERT_FALSE(le.status != 2); // UNREACHABLE
+  ASSERT_FALSE(le.status != 2);  // UNREACHABLE
 }
 
 /**
@@ -82,36 +84,30 @@ TEST(SetLogData, InititalHostState) {
     // #1
     {
       neb::log_entry le;
-      neb::set_log_data(
-        le,
-        "INITIAL HOST STATE: myserver;UP;HARD;1;PING OK");
+      neb::set_log_data(le, "INITIAL HOST STATE: myserver;UP;HARD;1;PING OK");
       ASSERT_FALSE(le.host_name != "myserver");
-      ASSERT_FALSE(le.log_type != 1); // HARD
-      ASSERT_FALSE(le.msg_type != 9); // INITIAL HOST STATE
+      ASSERT_FALSE(le.log_type != 1);  // HARD
+      ASSERT_FALSE(le.msg_type != 9);  // INITIAL HOST STATE
       ASSERT_FALSE(le.output != "PING OK");
       ASSERT_FALSE(le.retry != 1);
-      ASSERT_FALSE(le.status != 0); // UP
+      ASSERT_FALSE(le.status != 0);  // UP
     }
 
     // #2
     {
       neb::log_entry le;
-      neb::set_log_data(
-        le,
-        "INITIAL HOST STATE: SERVER007;UNKNOWN;SOFT;2;");
-        ASSERT_FALSE(le.host_name != "SERVER007");
-        ASSERT_FALSE(le.log_type != 0); // SOFT
-        ASSERT_FALSE(le.msg_type != 9); // INITIAL HOST STATE
-        ASSERT_FALSE(le.output != "");
-        ASSERT_FALSE(le.retry != 2);
-        ASSERT_FALSE(le.status != 3); // UNKNOWN
+      neb::set_log_data(le, "INITIAL HOST STATE: SERVER007;UNKNOWN;SOFT;2;");
+      ASSERT_FALSE(le.host_name != "SERVER007");
+      ASSERT_FALSE(le.log_type != 0);  // SOFT
+      ASSERT_FALSE(le.msg_type != 9);  // INITIAL HOST STATE
+      ASSERT_FALSE(le.output != "");
+      ASSERT_FALSE(le.retry != 2);
+      ASSERT_FALSE(le.status != 3);  // UNKNOWN
     }
-  }
-  catch (...) {
+  } catch (...) {
     ASSERT_TRUE(false);
   }
 }
-
 
 /**
  *  Check that an initial service state log is properly parsed.
@@ -121,19 +117,20 @@ TEST(SetLogData, InititalServiceState) {
   neb::log_entry le;
 
   // Parse an initial service state line.
-  neb::set_log_data(le,
-                    "INITIAL SERVICE STATE: myserver;myservice;UNKNOWN;SOFT;1;ERROR when getting SNMP version");
+  neb::set_log_data(
+      le,
+      "INITIAL SERVICE STATE: myserver;myservice;UNKNOWN;SOFT;1;ERROR when "
+      "getting SNMP version");
 
   // Check that it was properly parsed.
   ASSERT_FALSE(le.host_name != "myserver");
-  ASSERT_FALSE(le.log_type != 0); // SOFT
-  ASSERT_FALSE(le.msg_type != 8); // INITIAL SERVICE STATE
+  ASSERT_FALSE(le.log_type != 0);  // SOFT
+  ASSERT_FALSE(le.msg_type != 8);  // INITIAL SERVICE STATE
   ASSERT_FALSE(le.output != "ERROR when getting SNMP version");
   ASSERT_FALSE(le.retry != 1);
   ASSERT_FALSE(le.service_description != "myservice");
-  ASSERT_FALSE(le.status != 3); // UNKNOWN
+  ASSERT_FALSE(le.status != 3);  // UNKNOWN
 }
-
 
 /**
  *  Check that a service alert log is properly parsed.
@@ -144,7 +141,7 @@ TEST(SetLogData, ServiceALert) {
 
   // Parse a service alert line.
   neb::set_log_data(le,
-    "SERVICE ALERT: myserver;myservice;WARNING;SOFT;3;CPU 84%");
+                    "SERVICE ALERT: myserver;myservice;WARNING;SOFT;3;CPU 84%");
 
   // Check that it was properly parsed.
   ASSERT_FALSE(le.host_name != "myserver");

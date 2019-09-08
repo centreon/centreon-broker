@@ -17,8 +17,8 @@
  *
  */
 
-#include <cstdlib>
 #include <gtest/gtest.h>
+#include <cstdlib>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 
@@ -43,11 +43,9 @@ TEST(Publisher, Read) {
     std::shared_ptr<io::data> d;
     p.read(d);
     error = true;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     error = false;
-  }
-  catch (...) {
+  } catch (...) {
     error = true;
   }
 

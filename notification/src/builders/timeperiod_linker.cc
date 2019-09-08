@@ -25,8 +25,7 @@ using namespace com::centreon::broker::time;
 /**
  *  Default constructor.
  */
-timeperiod_linker::timeperiod_linker()
-  {}
+timeperiod_linker::timeperiod_linker() {}
 
 /**
  *  Add a timeperiod to the builder.
@@ -34,9 +33,7 @@ timeperiod_linker::timeperiod_linker()
  *  @param[in] id   The id of the timeperiod.
  *  @param[in] con  The timeperiod to add.
  */
-void timeperiod_linker::add_timeperiod(
-                          unsigned int id,
-                          timeperiod::ptr con) {
+void timeperiod_linker::add_timeperiod(unsigned int id, timeperiod::ptr con) {
   _table[id] = con;
 }
 
@@ -47,16 +44,14 @@ void timeperiod_linker::add_timeperiod(
  *  @param[in] days           The days in the exception.
  *  @param[in] timerange      The timerange of the exception.
  */
-void timeperiod_linker::add_timeperiod_exception(
-                          unsigned int timeperiod_id,
-                          std::string const& days,
-                          std::string const& timerange) {
-  QHash<unsigned int, time::timeperiod::ptr>::iterator found
-    = _table.find(timeperiod_id);
+void timeperiod_linker::add_timeperiod_exception(unsigned int timeperiod_id,
+                                                 std::string const& days,
+                                                 std::string const& timerange) {
+  QHash<unsigned int, time::timeperiod::ptr>::iterator found =
+      _table.find(timeperiod_id);
   if (found == _table.end())
-    throw (exceptions::msg()
-             << "timeperiod_linker: couldn't find timeperiod '"
-             << timeperiod_id << "'' for exception");
+    throw(exceptions::msg() << "timeperiod_linker: couldn't find timeperiod '"
+                            << timeperiod_id << "'' for exception");
   (*found)->add_exception(days, timerange);
 }
 
@@ -67,20 +62,18 @@ void timeperiod_linker::add_timeperiod_exception(
  *  @param[in] exclude_id     The id of the timeperiod excluded.
  */
 void timeperiod_linker::add_timeperiod_exclude_relation(
-                          unsigned int timeperiod_id,
-                          unsigned int exclude_id) {
-  QHash<unsigned int, time::timeperiod::ptr>::iterator found
-    = _table.find(timeperiod_id);
-  QHash<unsigned int, time::timeperiod::ptr>::iterator excluded
-    = _table.find(exclude_id);
+    unsigned int timeperiod_id,
+    unsigned int exclude_id) {
+  QHash<unsigned int, time::timeperiod::ptr>::iterator found =
+      _table.find(timeperiod_id);
+  QHash<unsigned int, time::timeperiod::ptr>::iterator excluded =
+      _table.find(exclude_id);
   if (found == _table.end())
-    throw (exceptions::msg()
-             << "timeperiod_linker: couldn't find timeperiod '"
-             << timeperiod_id << "'' for exclusion");
+    throw(exceptions::msg() << "timeperiod_linker: couldn't find timeperiod '"
+                            << timeperiod_id << "'' for exclusion");
   if (excluded == _table.end())
-    throw (exceptions::msg()
-             << "timeperiod_linker: couldn't find timeperiod '"
-             << exclude_id << "'' for excluded timeperiod");
+    throw(exceptions::msg() << "timeperiod_linker: couldn't find timeperiod '"
+                            << exclude_id << "'' for excluded timeperiod");
   (*found)->add_excluded(*excluded);
 }
 
@@ -91,19 +84,17 @@ void timeperiod_linker::add_timeperiod_exclude_relation(
  *  @param[in] include_id     The id of the timeperiod included.
  */
 void timeperiod_linker::add_timeperiod_include_relation(
-                          unsigned int timeperiod_id,
-                          unsigned int include_id) {
-  QHash<unsigned int, time::timeperiod::ptr>::iterator found
-    = _table.find(timeperiod_id);
-  QHash<unsigned int, time::timeperiod::ptr>::iterator included
-    = _table.find(include_id);
+    unsigned int timeperiod_id,
+    unsigned int include_id) {
+  QHash<unsigned int, time::timeperiod::ptr>::iterator found =
+      _table.find(timeperiod_id);
+  QHash<unsigned int, time::timeperiod::ptr>::iterator included =
+      _table.find(include_id);
   if (found == _table.end())
-    throw (exceptions::msg()
-             << "timeperiod_linker: couldn't find timeperiod '"
-             << timeperiod_id << "'' for inclusion");
+    throw(exceptions::msg() << "timeperiod_linker: couldn't find timeperiod '"
+                            << timeperiod_id << "'' for inclusion");
   if (included == _table.end())
-    throw (exceptions::msg()
-             << "timeperiod_linker: couldn't find timeperiod '"
-             << include_id << "'' for included timeperiod");
+    throw(exceptions::msg() << "timeperiod_linker: couldn't find timeperiod '"
+                            << include_id << "'' for included timeperiod");
   (*found)->add_excluded(*included);
 }

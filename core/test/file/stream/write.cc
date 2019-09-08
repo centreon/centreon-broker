@@ -92,7 +92,8 @@ int main(int argc, char* argv[]) {
     else {
       current += rb;
       if (current == sizeof(buffer)) {
-        retval |= memcmp(buffer, "0123456789abcdefghijklmnopqrstuvwxyz", sizeof(buffer));
+        retval |= memcmp(buffer, "0123456789abcdefghijklmnopqrstuvwxyz",
+                         sizeof(buffer));
         ++count;
         current = 0;
       }

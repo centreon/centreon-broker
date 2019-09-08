@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
+#include <sys/stat.h>
+#include <unistd.h>
+#include <QFile>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QVariant>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
 #include <iostream>
-#include <QFile>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QVariant>
 #include <sstream>
-#include <sys/stat.h>
-#include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/cbd.hh"
 #include "test/config.hh"
@@ -79,12 +79,10 @@ static bool auto_queue_file_exists(std::string const& cache_dir) {
 static bool instance_is_up_to_date(test_db& db, int limit) {
   time_t min_valid(time(NULL) - limit);
   QSqlQuery q(*db.centreon_db());
-  return (q.exec(
-              "SELECT last_alive"
-              "  FROM rt_instances"
-              "  WHERE instance_id=42")
-          && q.next()
-          && (q.value(0).toLongLong() >= min_valid));
+  return (q.exec("SELECT last_alive"
+                 "  FROM rt_instances"
+                 "  WHERE instance_id=42") &&
+          q.next() && (q.value(0).toLongLong() >= min_valid));
 }
 
 /**
@@ -112,18 +110,17 @@ int main() {
     db.open(DB_NAME);
 
     // Create cache directory.
-    if (mkdir(
-          cache_dir.c_str(),
-          S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH))
-      throw (exceptions::msg() << "cannot create cache directory '"
-             << cache_dir << "'");
+    if (mkdir(cache_dir.c_str(),
+              S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH))
+      throw(exceptions::msg()
+            << "cannot create cache directory '" << cache_dir << "'");
 
     // Write Broker configuration files.
-    cbmod_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/automatic_retention_1.xml.in");
+    cbmod_cfg.set_template(PROJECT_SOURCE_DIR
+                           "/test/cfg/automatic_retention_1.xml.in");
     cbmod_cfg.set("CACHE_DIRECTORY", cache_dir);
-    cbd_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/automatic_retention_2.xml.in");
+    cbd_cfg.set_template(PROJECT_SOURCE_DIR
+                         "/test/cfg/automatic_retention_2.xml.in");
     cbd_cfg.set("CACHE_DIRECTORY", cache_dir);
     cbd_cfg.set("DB_NAME", DB_NAME);
 
@@ -133,17 +130,13 @@ int main() {
     std::string cbmod_loading;
     {
       std::ostringstream oss;
-      oss << "broker_module=" << CBMOD_PATH << " "
-          << cbmod_cfg.generate();
+      oss << "broker_module=" << CBMOD_PATH << " " << cbmod_cfg.generate();
       cbmod_loading = oss.str();
     }
 
     // Generate monitoring engine configuration files.
-    config_write(
-      engine_config_path.c_str(),
-      cbmod_loading.c_str(),
-      &hosts,
-      &services);
+    config_write(engine_config_path.c_str(), cbmod_loading.c_str(), &hosts,
+                 &services);
 
     // STEP #1.
 
@@ -156,8 +149,7 @@ int main() {
 
     // Check that automatic retention file exists.
     if (!auto_queue_file_exists(cache_dir))
-      throw (exceptions::msg()
-             << "queue file does not exist at step #1");
+      throw(exceptions::msg() << "queue file does not exist at step #1");
 
     // STEP #2.
 
@@ -168,15 +160,11 @@ int main() {
 
     // Check that automatic retention file does not exist.
     if (auto_queue_file_exists(cache_dir))
-      throw (exceptions::msg()
-             << "queue file exists at step #2");
+      throw(exceptions::msg() << "queue file exists at step #2");
 
     // Check that instance is up to date.
-    if (!instance_is_up_to_date(
-           db,
-           5 * MONITORING_ENGINE_INTERVAL_LENGTH))
-      throw (exceptions::msg()
-             << "instance is not up to date at step #2");
+    if (!instance_is_up_to_date(db, 5 * MONITORING_ENGINE_INTERVAL_LENGTH))
+      throw(exceptions::msg() << "instance is not up to date at step #2");
 
     // STEP #3.
 
@@ -186,8 +174,7 @@ int main() {
 
     // Check that automatic retention file exists.
     if (!auto_queue_file_exists(cache_dir))
-      throw (exceptions::msg()
-             << "queue file does not exist at step #3");
+      throw(exceptions::msg() << "queue file does not exist at step #3");
 
     // STEP #4.
 
@@ -196,13 +183,11 @@ int main() {
 
     // Check that automatic retention file exists.
     if (!auto_queue_file_exists(cache_dir))
-      throw (exceptions::msg()
-             << "queue file does not exist at step #4");
+      throw(exceptions::msg() << "queue file does not exist at step #4");
 
     // Check that memory file exists.
     if (!auto_memory_file_exists(cache_dir))
-      throw (exceptions::msg()
-             << "memory file does not exist at step #4");
+      throw(exceptions::msg() << "memory file does not exist at step #4");
 
     // STEP #5.
 
@@ -215,20 +200,15 @@ int main() {
 
     // Check that automatic retention file does not exist."
     if (auto_queue_file_exists(cache_dir))
-      throw (exceptions::msg()
-             << "queue file exists at step #5");
+      throw(exceptions::msg() << "queue file exists at step #5");
 
     // Check that memory file does not exist.
     if (auto_memory_file_exists(cache_dir))
-      throw (exceptions::msg()
-             << "memory file exists at step #5");
+      throw(exceptions::msg() << "memory file exists at step #5");
 
     // Check that instance is up to date.
-    if (!instance_is_up_to_date(
-           db,
-           5 * MONITORING_ENGINE_INTERVAL_LENGTH))
-      throw (exceptions::msg()
-             << "instance is not up to date at step #5");
+    if (!instance_is_up_to_date(db, 5 * MONITORING_ENGINE_INTERVAL_LENGTH))
+      throw(exceptions::msg() << "instance is not up to date at step #5");
 
     // Stop Centreon Engine.
     daemon.stop();
@@ -239,11 +219,9 @@ int main() {
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
   }
 

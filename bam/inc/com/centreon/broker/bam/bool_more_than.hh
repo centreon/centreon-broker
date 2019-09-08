@@ -17,36 +17,35 @@
 */
 
 #ifndef CCB_BAM_BOOL_MORE_THAN_HH
-#  define CCB_BAM_BOOL_MORE_THAN_HH
+#define CCB_BAM_BOOL_MORE_THAN_HH
 
-#  include "com/centreon/broker/bam/bool_binary_operator.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/bam/bool_binary_operator.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     bam {
-  /**
-   *  @class bool_or bool_or.hh "com/centreon/broker/bam/bool_or.hh"
-   *  @brief OR operator.
-   *
-   *  In the context of a KPI computation, bool_or represents a logical
-   *  OR between two bool_value.
-   */
-  class       bool_more_than : public bool_binary_operator {
-  public:
-              bool_more_than(bool strict = false);
-              bool_more_than(bool_more_than const& right);
-              ~bool_more_than();
-    bool_more_than&
-              operator=(bool_more_than const& right);
-    double    value_hard();
-    double    value_soft();
+namespace bam {
+/**
+ *  @class bool_or bool_or.hh "com/centreon/broker/bam/bool_or.hh"
+ *  @brief OR operator.
+ *
+ *  In the context of a KPI computation, bool_or represents a logical
+ *  OR between two bool_value.
+ */
+class bool_more_than : public bool_binary_operator {
+ public:
+  bool_more_than(bool strict = false);
+  bool_more_than(bool_more_than const& right);
+  ~bool_more_than();
+  bool_more_than& operator=(bool_more_than const& right);
+  double value_hard();
+  double value_soft();
 
-  private:
-    bool      _strict;
-  };
-}
+ private:
+  bool _strict;
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_MORE_THAN_HH
+#endif  // !CCB_BAM_BOOL_MORE_THAN_HH

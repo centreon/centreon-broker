@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bam/meta_service.hh"
 #include <cmath>
 #include <ctime>
 #include <sstream>
-#include "com/centreon/broker/bam/meta_service.hh"
 #include "com/centreon/broker/bam/meta_service_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/service_status.hh"
@@ -402,7 +402,7 @@ void meta_service::_send_service_status(io::stream* visitor,
   if (!visitor)
     return;
 
-  time_t now(::time(NULL));
+  time_t now(::time(nullptr));
 
   // Once every minutes, of if the state just changed.
   if (state_has_changed || _last_service_status_sent.is_null() ||
@@ -421,20 +421,20 @@ void meta_service::_send_service_status(io::stream* visitor,
     status->has_been_checked = true;
     status->host_id = _host_id;
     status->is_flapping = false;
-    status->last_check = time(NULL);
+    status->last_check = time(nullptr);
     status->last_hard_state = new_state;
     status->last_hard_state_change = status->last_check;
     status->last_state_change = status->last_check;
     // status->last_time_critical = XXX;
     // status->last_time_unknown = XXX;
     // status->last_time_warning = XXX;
-    status->last_update = time(NULL);
+    status->last_update = time(nullptr);
     status->latency = 0.0;
     status->max_check_attempts = 1;
     status->obsess_over = false;
-    status->output = get_output().c_str();
+    status->output = get_output();
     // status->percent_state_chagne = XXX;
-    status->perf_data = get_perfdata().c_str();
+    status->perf_data = get_perfdata();
     status->retry_interval = 0;
     status->service_id = _service_id;
     status->should_be_scheduled = false;

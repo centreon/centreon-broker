@@ -17,28 +17,29 @@
 */
 
 #ifndef CCB_INSTANCE_BROADCAST_HH
-#  define CCB_INSTANCE_BROADCAST_HH
+#define CCB_INSTANCE_BROADCAST_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/io/events.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 /**
- *  @class instance_broadcast instance_broadcast.hh "com/centreon/broker/instance_broadcast.hh"
+ *  @class instance_broadcast instance_broadcast.hh
+ * "com/centreon/broker/instance_broadcast.hh"
  *  @brief Broadcast the instance information at startup.
  */
-class                  instance_broadcast : public io::data {
-public:
-                       instance_broadcast();
-                       instance_broadcast(instance_broadcast const& other);
-                       ~instance_broadcast();
-  instance_broadcast&  operator=(instance_broadcast const& other);
-  unsigned int         type() const;
+class instance_broadcast : public io::data {
+ public:
+  instance_broadcast();
+  instance_broadcast(instance_broadcast const& other);
+  ~instance_broadcast();
+  instance_broadcast& operator=(instance_broadcast const& other);
+  unsigned int type() const;
 
   /**
    *  Get the event type.
@@ -46,28 +47,25 @@ public:
    *  @return The event type.
    */
   static unsigned int static_type() {
-    return (io::events::data_type<
-                          io::events::internal,
-                          io::events::de_instance_broadcast>::value);
+    return (io::events::data_type<io::events::internal,
+                                  io::events::de_instance_broadcast>::value);
   }
 
-  unsigned int        broker_id;
-  std::string             broker_name;
-  bool                enabled;
-  unsigned int        poller_id;
-  std::string             poller_name;
+  unsigned int broker_id;
+  std::string broker_name;
+  bool enabled;
+  unsigned int poller_id;
+  std::string poller_name;
 
-  static mapping::entry const
-                      entries[];
-  static io::event_info::event_operations const
-                      operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  static void         load();
+  static void load();
 
-private:
-  void                _internal_copy(instance_broadcast const& other);
+ private:
+  void _internal_copy(instance_broadcast const& other);
 };
 
 CCB_END()
 
-#endif // !CCB_INSTANCE_BROADCAST_HH
+#endif  // !CCB_INSTANCE_BROADCAST_HH

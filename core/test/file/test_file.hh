@@ -17,48 +17,45 @@
  *
  */
 #ifndef TEST_FILE_HH
-#  define TEST_FILE_HH
+#define TEST_FILE_HH
 
-#  include <map>
-#  include <string>
-#  include "com/centreon/broker/file/fs_file.hh"
+#include <map>
+#include <string>
+#include "com/centreon/broker/file/fs_file.hh"
 
-class          test_file : public com::centreon::broker::file::fs_file {
+class test_file : public com::centreon::broker::file::fs_file {
  public:
-               test_file(std::string* content);
-               ~test_file();
-  void         close();
-  long         read(void* buffer, long max_size);
-  void         seek(
-                 long offset,
-                 com::centreon::broker::file::fs_file::seek_whence whence);
-  long         tell();
-  long         write(void const* buffer, long size);
+  test_file(std::string* content);
+  ~test_file();
+  void close();
+  long read(void* buffer, long max_size);
+  void seek(long offset,
+            com::centreon::broker::file::fs_file::seek_whence whence);
+  long tell();
+  long write(void const* buffer, long size);
 
  private:
-               test_file(test_file const& other);
-  test_file&   operator=(test_file const& other);
+  test_file(test_file const& other);
+  test_file& operator=(test_file const& other);
 
   std::string* _content;
-  int          _pos;
+  int _pos;
 };
 
-class                test_file_factory : public com::centreon::broker::file::fs_file_factory {
+class test_file_factory : public com::centreon::broker::file::fs_file_factory {
  public:
-                     test_file_factory();
-                     ~test_file_factory();
-  std::string&       get(std::string const& path);
-  com::centreon::broker::file::fs_file*
-                     new_fs_file(
-                       std::string const& path,
-                       com::centreon::broker::file::fs_file::open_mode mode);
+  test_file_factory();
+  ~test_file_factory();
+  std::string& get(std::string const& path);
+  com::centreon::broker::file::fs_file* new_fs_file(
+      std::string const& path,
+      com::centreon::broker::file::fs_file::open_mode mode);
 
  private:
-                     test_file_factory(test_file_factory& other);
+  test_file_factory(test_file_factory& other);
   test_file_factory& operator=(test_file_factory& other);
 
-  std::map<std::string, std::string>
-                     _files;
+  std::map<std::string, std::string> _files;
 };
 
-#endif // !TEST_FILE_HH
+#endif  // !TEST_FILE_HH

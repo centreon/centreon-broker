@@ -17,50 +17,49 @@
 */
 
 #ifndef CCB_BAM_EXP_PARSER_HH
-#  define CCB_BAM_EXP_PARSER_HH
+#define CCB_BAM_EXP_PARSER_HH
 
-#  include <list>
-#  include <map>
-#  include <string>
-#  include <vector>
-#  include "com/centreon/broker/namespace.hh"
+#include <list>
+#include <map>
+#include <string>
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace           bam {
-  /**
-   *  @class exp_parser exp_parser.hh "com/centreon/broker/bam/exp_parser.hh"
-   *  @brief Expression parser.
-   *
-   *  An expression parser for interpreting BAM expressions. More
-   *  precisely it uses the shunting-yard algorithm to convert infix
-   *  expressions to postfix. These should be later processed by
-   *  the exp_builder to get a syntax tree.
-   *
-   *  @see exp_builder
-   */
-  class             exp_parser {
-  public:
-    typedef std::list<std::string> notation;
+namespace bam {
+/**
+ *  @class exp_parser exp_parser.hh "com/centreon/broker/bam/exp_parser.hh"
+ *  @brief Expression parser.
+ *
+ *  An expression parser for interpreting BAM expressions. More
+ *  precisely it uses the shunting-yard algorithm to convert infix
+ *  expressions to postfix. These should be later processed by
+ *  the exp_builder to get a syntax tree.
+ *
+ *  @see exp_builder
+ */
+class exp_parser {
+ public:
+  typedef std::list<std::string> notation;
 
-                    exp_parser(std::string const& expression);
-                    exp_parser(exp_parser const& other);
-                    ~exp_parser();
-    exp_parser&     operator=(exp_parser const& other);
-    notation const& get_postfix();
-    static bool     is_function(std::string const& token);
-    static bool     is_operator(std::string const& token);
+  exp_parser(std::string const& expression);
+  exp_parser(exp_parser const& other);
+  ~exp_parser();
+  exp_parser& operator=(exp_parser const& other);
+  notation const& get_postfix();
+  static bool is_function(std::string const& token);
+  static bool is_operator(std::string const& token);
 
-  private:
-    void            _internal_copy(exp_parser const& other);
+ private:
+  void _internal_copy(exp_parser const& other);
 
-    std::string     _exp;
-    std::map<std::string, int>
-                    _precedence;
-    notation        _postfix;
-  };
-}
+  std::string _exp;
+  std::map<std::string, int> _precedence;
+  notation _postfix;
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_EXP_PARSER_HH
+#endif  // !CCB_BAM_EXP_PARSER_HH

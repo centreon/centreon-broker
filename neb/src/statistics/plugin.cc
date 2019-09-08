@@ -60,6 +60,6 @@ plugin& plugin::operator=(plugin const& right) {
  *
  *  @return The plugin name.
  */
-std::string const& plugin::name() const throw () {
+std::string const& plugin::name() const throw() {
   return (_name);
 }

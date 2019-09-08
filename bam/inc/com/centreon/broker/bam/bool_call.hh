@@ -17,53 +17,45 @@
 */
 
 #ifndef CCB_BAM_BOOL_CALL_HH
-#  define CCB_BAM_BOOL_CALL_HH
+#define CCB_BAM_BOOL_CALL_HH
 
-#  include <memory>
-#  include <string>
-#  include "com/centreon/broker/bam/bool_value.hh"
-#  include "com/centreon/broker/bam/bool_expression.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <memory>
+#include <string>
+#include "com/centreon/broker/bam/bool_expression.hh"
+#include "com/centreon/broker/bam/bool_value.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     bam {
-  /**
-   *  @class bool_call bool_call.hh "com/centreon/broker/bam/bool_call.hh"
-   *  @brief Bool Call.
-   *
-   *  In the context of a KPI computation, bool_call represents a call
-   *  to an external expression.
-   */
-  class       bool_call : public bool_value {
-  public:
-    typedef std::shared_ptr<bool_call>
-              ptr;
+namespace bam {
+/**
+ *  @class bool_call bool_call.hh "com/centreon/broker/bam/bool_call.hh"
+ *  @brief Bool Call.
+ *
+ *  In the context of a KPI computation, bool_call represents a call
+ *  to an external expression.
+ */
+class bool_call : public bool_value {
+ public:
+  typedef std::shared_ptr<bool_call> ptr;
 
-              bool_call(std::string const& name);
-              bool_call(bool_call const& right);
-              ~bool_call();
-    bool_call&
-              operator=(bool_call const& right);
-    double    value_hard();
-    double    value_soft();
-    bool      state_known() const;
-    std::string const&
-              get_name() const;
-    void      set_expression(std::shared_ptr<bool_value> expression);
-    bool      child_has_update(
-                computable* child,
-                io::stream* visitor = NULL);
+  bool_call(std::string const& name);
+  bool_call(bool_call const& right);
+  ~bool_call();
+  bool_call& operator=(bool_call const& right);
+  double value_hard();
+  double value_soft();
+  bool state_known() const;
+  std::string const& get_name() const;
+  void set_expression(std::shared_ptr<bool_value> expression);
+  bool child_has_update(computable* child, io::stream* visitor = NULL);
 
-  private:
-    std::string
-              _name;
-    std::shared_ptr<bool_value>
-              _expression;
-
-  };
-}
+ private:
+  std::string _name;
+  std::shared_ptr<bool_value> _expression;
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_CALL_HH
+#endif  // !CCB_BAM_BOOL_CALL_HH

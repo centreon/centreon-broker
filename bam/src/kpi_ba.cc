@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/bam/ba.hh"
 #include "com/centreon/broker/bam/kpi_ba.hh"
+#include "com/centreon/broker/bam/ba.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -66,15 +66,13 @@ kpi_ba& kpi_ba::operator=(kpi_ba const& right) {
  *
  *  @return True if the values of this object were modified.
  */
-bool kpi_ba::child_has_update(
-               computable* child,
-               io::stream* visitor) {
+bool kpi_ba::child_has_update(computable* child, io::stream* visitor) {
   // It is useless to maintain a cache of BA values in this class, as
   // the ba class already cache most of them.
   if (child == _ba.get()) {
     // Logging.
-    logging::debug(logging::low) << "BAM: BA KPI " << _id
-      << " is getting notified of child update";
+    logging::debug(logging::low)
+        << "BAM: BA KPI " << _id << " is getting notified of child update";
 
     // Generate status event.
     visit(visitor);
@@ -106,12 +104,9 @@ double kpi_ba::get_impact_warning() const {
  *  @param[out] hard_impact Hard impacts.
  */
 void kpi_ba::impact_hard(impact_values& hard_impact) {
-  _fill_impact(
-    hard_impact,
-    _ba->get_state_hard(),
-    _ba->get_ack_impact_hard(),
-    _ba->get_downtime_impact_hard());
-  return ;
+  _fill_impact(hard_impact, _ba->get_state_hard(), _ba->get_ack_impact_hard(),
+               _ba->get_downtime_impact_hard());
+  return;
 }
 
 /**
@@ -120,12 +115,9 @@ void kpi_ba::impact_hard(impact_values& hard_impact) {
  *  @param[out] soft_impact Soft impacts.
  */
 void kpi_ba::impact_soft(impact_values& soft_impact) {
-  _fill_impact(
-    soft_impact,
-    _ba->get_state_soft(),
-    _ba->get_ack_impact_soft(),
-    _ba->get_downtime_impact_soft());
-  return ;
+  _fill_impact(soft_impact, _ba->get_state_soft(), _ba->get_ack_impact_soft(),
+               _ba->get_downtime_impact_soft());
+  return;
 }
 
 /**
@@ -135,7 +127,7 @@ void kpi_ba::impact_soft(impact_values& soft_impact) {
  */
 void kpi_ba::link_ba(std::shared_ptr<ba>& my_ba) {
   _ba = my_ba;
-  return ;
+  return;
 }
 
 /**
@@ -145,7 +137,7 @@ void kpi_ba::link_ba(std::shared_ptr<ba>& my_ba) {
  */
 void kpi_ba::set_impact_critical(double impact) {
   _impact_critical = impact;
-  return ;
+  return;
 }
 
 /**
@@ -155,7 +147,7 @@ void kpi_ba::set_impact_critical(double impact) {
  */
 void kpi_ba::set_impact_warning(double impact) {
   _impact_warning = impact;
-  return ;
+  return;
 }
 
 /**
@@ -186,29 +178,23 @@ void kpi_ba::visit(io::stream* visitor) {
       // BA event state.
       ba_event* bae(_ba->get_ba_event());
       short ba_state(bae ? bae->status : 0);
-      timestamp last_ba_update(bae ? bae->start_time : timestamp(time(NULL)));
+      timestamp last_ba_update(bae ? bae->start_time : timestamp(time(nullptr)));
 
       // If no event was cached, create one.
       if (!_event) {
-        if ((last_ba_update.get_time_t() != (time_t)-1)
-            && (last_ba_update.get_time_t() != (time_t)0))
-          _open_new_event(
-            visitor,
-            hard_values.get_nominal(),
-            ba_state,
-            last_ba_update);
+        if ((last_ba_update.get_time_t() != (time_t)-1) &&
+            (last_ba_update.get_time_t() != (time_t)0))
+          _open_new_event(visitor, hard_values.get_nominal(), ba_state,
+                          last_ba_update);
       }
       // If state changed, close event and open a new one.
-      else if ((_ba->get_in_downtime() != _event->in_downtime)
-               || (ba_state != _event->status)) {
+      else if ((_ba->get_in_downtime() != _event->in_downtime) ||
+               (ba_state != _event->status)) {
         _event->end_time = last_ba_update;
         visitor->write(std::static_pointer_cast<io::data>(_event));
         _event.reset();
-        _open_new_event(
-          visitor,
-          hard_values.get_nominal(),
-          ba_state,
-          last_ba_update);
+        _open_new_event(visitor, hard_values.get_nominal(), ba_state,
+                        last_ba_update);
       }
     }
 
@@ -228,9 +214,8 @@ void kpi_ba::visit(io::stream* visitor) {
       status->last_impact = hard_values.get_nominal();
       visitor->write(std::static_pointer_cast<io::data>(status));
     }
-
   }
-  return ;
+  return;
 }
 
 /**
@@ -241,11 +226,10 @@ void kpi_ba::visit(io::stream* visitor) {
  *  @param[in]  acknowledgement Acknowledgement impact of the BA.
  *  @param[in]  downtime        Downtime impact of the BA.
  */
-void kpi_ba::_fill_impact(
-               impact_values& impact,
-               short state,
-               double acknowledgement,
-               double downtime) {
+void kpi_ba::_fill_impact(impact_values& impact,
+                          short state,
+                          double acknowledgement,
+                          double downtime) {
   // Get nominal impact from state.
   double nominal;
   if (0 == state)
@@ -270,7 +254,7 @@ void kpi_ba::_fill_impact(
   else if (downtime > 100.0)
     downtime = 100.0;
   impact.set_downtime(downtime * nominal / 100.0);
-  return ;
+  return;
 }
 
 /**
@@ -283,7 +267,7 @@ void kpi_ba::_internal_copy(kpi_ba const& right) {
   _event = right._event;
   _impact_critical = right._impact_critical;
   _impact_warning = right._impact_warning;
-  return ;
+  return;
 }
 
 /**
@@ -294,24 +278,23 @@ void kpi_ba::_internal_copy(kpi_ba const& right) {
  *  @param[in]  ba_state          BA state.
  *  @param[in]  event_start_time  Event start time.
  */
-void kpi_ba::_open_new_event(
-               io::stream* visitor,
-               int impact,
-               short ba_state,
-               timestamp event_start_time) {
+void kpi_ba::_open_new_event(io::stream* visitor,
+                             int impact,
+                             short ba_state,
+                             timestamp event_start_time) {
   _event.reset(new kpi_event);
   _event->kpi_id = _id;
   _event->impact_level = impact;
   _event->in_downtime = _ba->get_in_downtime();
-  _event->output = _ba->get_output().c_str();
-  _event->perfdata = _ba->get_perfdata().c_str();
+  _event->output = _ba->get_output();
+  _event->perfdata = _ba->get_perfdata();
   _event->start_time = event_start_time;
   _event->status = ba_state;
   if (visitor) {
     std::shared_ptr<io::data> ke(new kpi_event(*_event));
     visitor->write(ke);
   }
-  return ;
+  return;
 }
 
 /**

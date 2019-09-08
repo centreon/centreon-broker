@@ -32,13 +32,11 @@ composed_timeperiod_builder::composed_timeperiod_builder() {}
  *  @param[in] id The id of the timeperiod.
  *  @param[in] tperiod The timeperiod.
  */
-void composed_timeperiod_builder::add_timeperiod(
-                                    unsigned int id,
-                                    timeperiod::ptr tperiod) {
+void composed_timeperiod_builder::add_timeperiod(unsigned int id,
+                                                 timeperiod::ptr tperiod) {
   for (composed_builder<timeperiod_builder>::iterator it(begin()),
-                                                      it_end(end());
-       it != it_end;
-       ++it)
+       it_end(end());
+       it != it_end; ++it)
     (*it)->add_timeperiod(id, tperiod);
 }
 
@@ -50,13 +48,12 @@ void composed_timeperiod_builder::add_timeperiod(
  *  @param[in] timerange      The timerange of the exception.
  */
 void composed_timeperiod_builder::add_timeperiod_exception(
-                                    unsigned int timeperiod_id,
-                                    std::string const& days,
-                                    std::string const& timerange) {
+    unsigned int timeperiod_id,
+    std::string const& days,
+    std::string const& timerange) {
   for (composed_builder<timeperiod_builder>::iterator it(begin()),
-                                                      it_end(end());
-       it != it_end;
-       ++it)
+       it_end(end());
+       it != it_end; ++it)
     (*it)->add_timeperiod_exception(timeperiod_id, days, timerange);
 }
 
@@ -67,12 +64,11 @@ void composed_timeperiod_builder::add_timeperiod_exception(
  *  @param[in] exclude_id     The id of the timeperiod excluded.
  */
 void composed_timeperiod_builder::add_timeperiod_exclude_relation(
-                                    unsigned int timeperiod_id,
-                                    unsigned int exclude_id) {
+    unsigned int timeperiod_id,
+    unsigned int exclude_id) {
   for (composed_builder<timeperiod_builder>::iterator it(begin()),
-                                                      it_end(end());
-       it != it_end;
-       ++it)
+       it_end(end());
+       it != it_end; ++it)
     (*it)->add_timeperiod_exclude_relation(timeperiod_id, exclude_id);
 }
 
@@ -83,11 +79,10 @@ void composed_timeperiod_builder::add_timeperiod_exclude_relation(
  *  @param[in] include_id     The id of the timeperiod included.
  */
 void composed_timeperiod_builder::add_timeperiod_include_relation(
-                                    unsigned int timeperiod_id,
-                                    unsigned int include_id) {
+    unsigned int timeperiod_id,
+    unsigned int include_id) {
   for (composed_builder<timeperiod_builder>::iterator it(begin()),
-                                                      it_end(end());
-       it != it_end;
-       ++it)
+       it_end(end());
+       it != it_end; ++it)
     (*it)->add_timeperiod_include_relation(timeperiod_id, include_id);
 }

@@ -36,20 +36,17 @@ using namespace com::centreon::broker::lua;
  *  @param[in] conf_params A hash table with user parameters
  *  @param[in] cache the persistent cache.
  */
-luabinding::luabinding(
-              std::string const& lua_script,
-              std::map<std::string, misc::variant> const& conf_params,
-              macro_cache const& cache)
-  : _lua_script(lua_script),
-    _cache(cache),
-    _total(0) {
+luabinding::luabinding(std::string const& lua_script,
+                       std::map<std::string, misc::variant> const& conf_params,
+                       macro_cache const& cache)
+    : _lua_script(lua_script), _cache(cache), _total(0) {
   size_t pos(lua_script.find_last_of('/'));
   std::string path(lua_script.substr(0, pos));
   _L = _load_interpreter();
   _update_lua_path(path);
 
   logging::debug(logging::medium)
-    << "lua: initializing the Lua virtual machine";
+      << "lua: initializing the Lua virtual machine";
 
   _load_script();
   _init_script(conf_params);
@@ -113,38 +110,35 @@ void luabinding::_load_script() {
   if (luaL_loadfile(_L, _lua_script.c_str()) != 0) {
     char const* error_msg(lua_tostring(_L, -1));
     throw exceptions::msg()
-      << "lua: '" << _lua_script << "' could not be loaded: "
-      << error_msg;
+        << "lua: '" << _lua_script << "' could not be loaded: " << error_msg;
   }
 
   // Script compilation
   if (lua_pcall(_L, 0, 0, 0) != 0) {
     throw exceptions::msg()
-      << "lua: '" << _lua_script << "' could not be compiled";
+        << "lua: '" << _lua_script << "' could not be compiled";
   }
 
   // Checking for init() availability: this function is mandatory
   lua_getglobal(_L, "init");
   if (!lua_isfunction(_L, lua_gettop(_L)))
-   throw exceptions::msg()
-     << "lua: '" << _lua_script << "' init() global function is missing";
+    throw exceptions::msg()
+        << "lua: '" << _lua_script << "' init() global function is missing";
 
   // Checking for write() availability: this function is mandatory
   lua_getglobal(_L, "write");
   if (!lua_isfunction(_L, lua_gettop(_L)))
-   throw exceptions::msg()
-     << "lua: '" << _lua_script
-     << "' write() global function is missing";
+    throw exceptions::msg()
+        << "lua: '" << _lua_script << "' write() global function is missing";
 
   // Checking for filter() availability: this function is optional
   lua_getglobal(_L, "filter");
   if (!lua_isfunction(_L, lua_gettop(_L))) {
     logging::debug(logging::medium)
-      << "lua: filter() global function is missing, "
-      << "the write() function will be called for each event";
+        << "lua: filter() global function is missing, "
+        << "the write() function will be called for each event";
     _filter = false;
-  }
-  else
+  } else
     _filter = true;
 }
 
@@ -156,7 +150,8 @@ void luabinding::_load_script() {
  *  informations needed by the script to work.
  *
  */
-void luabinding::_init_script(std::map<std::string, misc::variant> const& conf_params) {
+void luabinding::_init_script(
+    std::map<std::string, misc::variant> const& conf_params) {
   lua_getglobal(_L, "init");
   lua_newtable(_L);
   for (std::map<std::string, misc::variant>::const_iterator
@@ -183,18 +178,17 @@ void luabinding::_init_script(std::map<std::string, misc::variant> const& conf_p
         break;
       case misc::variant::type_string:
         lua_pushstring(_L, it->first.c_str());
-          lua_pushstring(_L, it->second.as_string().c_str());
-          lua_rawset(_L, -3);
-          break;
-          default:
-          /* Should not arrive */
-          assert(1==0);
+        lua_pushstring(_L, it->second.as_string().c_str());
+        lua_rawset(_L, -3);
+        break;
+      default:
+        /* Should not arrive */
+        assert(1 == 0);
     }
   }
   if (lua_pcall(_L, 1, 0, 0) != 0)
     throw exceptions::msg()
-      << "lua: error running function `init'"
-      << lua_tostring(_L, -1);
+        << "lua: error running function `init'" << lua_tostring(_L, -1);
 }
 
 /**
@@ -226,15 +220,14 @@ int luabinding::write(std::shared_ptr<io::data> const& data) {
 
     if (lua_pcall(_L, 2, 1, 0) != 0)
       throw exceptions::msg()
-        << "lua: error while running function `filter()': "
-        << lua_tostring(_L, -1);
+          << "lua: error while running function `filter()': "
+          << lua_tostring(_L, -1);
 
     if (!lua_isboolean(_L, -1))
-      throw exceptions:: msg()
-        << "lua: `filter' must return a boolean";
+      throw exceptions::msg() << "lua: `filter' must return a boolean";
     execute_write = lua_toboolean(_L, -1);
     logging::debug(logging::medium)
-      << "lua: `filter' returned " << ((execute_write) ? "true" : "false");
+        << "lua: `filter' returned " << ((execute_write) ? "true" : "false");
     lua_pop(_L, -1);
   }
 
@@ -263,12 +256,10 @@ int luabinding::write(std::shared_ptr<io::data> const& data) {
 
   if (lua_pcall(_L, 1, 1, 0) != 0)
     throw exceptions::msg()
-      << "lua: error running function `write'"
-      << lua_tostring(_L, -1);
+        << "lua: error running function `write'" << lua_tostring(_L, -1);
 
   if (!lua_isboolean(_L, -1))
-    throw exceptions:: msg()
-      << "lua: `write' must return a boolean";
+    throw exceptions::msg() << "lua: `write' must return a boolean";
   int acknowledge = lua_toboolean(_L, -1);
   lua_pop(_L, -1);
 
@@ -277,7 +268,7 @@ int luabinding::write(std::shared_ptr<io::data> const& data) {
   if (acknowledge) {
     retval = _total;
     logging::debug(logging::medium)
-      << "lua: " << _total << " events acknowledged.";
+        << "lua: " << _total << " events acknowledged.";
     _total = 0;
   }
   return retval;
@@ -290,122 +281,106 @@ int luabinding::write(std::shared_ptr<io::data> const& data) {
  *  @param d The event to convert.
  */
 void luabinding::_parse_entries(io::data const& d) {
-  io::event_info const*
-    info(io::events::instance().get_event_info(d.type()));
+  io::event_info const* info(io::events::instance().get_event_info(d.type()));
   if (info) {
     for (mapping::entry const* current_entry(info->get_mapping());
-         !current_entry->is_null();
-         ++current_entry) {
+         !current_entry->is_null(); ++current_entry) {
       char const* entry_name(current_entry->get_name_v2());
       if (entry_name && entry_name[0]) {
         lua_pushstring(_L, entry_name);
         switch (current_entry->get_type()) {
-        case mapping::source::BOOL:
-          lua_pushboolean(_L, current_entry->get_bool(d));
-          break ;
-        case mapping::source::DOUBLE:
-          lua_pushnumber(_L, current_entry->get_double(d));
-          break ;
-        case mapping::source::INT:
-          switch (current_entry->get_attribute()) {
-          case mapping::entry::invalid_on_zero:
-            {
-              int val(current_entry->get_int(d));
-              if (val == 0)
-                lua_pushnil(_L);
-              else
-                lua_pushinteger(_L, val);
+          case mapping::source::BOOL:
+            lua_pushboolean(_L, current_entry->get_bool(d));
+            break;
+          case mapping::source::DOUBLE:
+            lua_pushnumber(_L, current_entry->get_double(d));
+            break;
+          case mapping::source::INT:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                int val(current_entry->get_int(d));
+                if (val == 0)
+                  lua_pushnil(_L);
+                else
+                  lua_pushinteger(_L, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                int val(current_entry->get_int(d));
+                if (val == -1)
+                  lua_pushnil(_L);
+                else
+                  lua_pushinteger(_L, val);
+              } break;
+              default:
+                lua_pushinteger(_L, current_entry->get_int(d));
             }
             break;
-          case mapping::entry::invalid_on_minus_one:
-            {
-              int val(current_entry->get_int(d));
-              if (val == -1)
+          case mapping::source::SHORT:
+            lua_pushinteger(_L, current_entry->get_short(d));
+            break;
+          case mapping::source::STRING:
+            if (current_entry->get_attribute() ==
+                mapping::entry::invalid_on_zero) {
+              std::string val{current_entry->get_string(d)};
+              if (val.empty())
                 lua_pushnil(_L);
               else
-                lua_pushinteger(_L, val);
+                lua_pushstring(_L, val.c_str());
+            } else
+              lua_pushstring(_L, current_entry->get_string(d).c_str());
+            break;
+          case mapping::source::TIME:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                time_t val = current_entry->get_time(d);
+                if (val == 0)
+                  lua_pushnil(_L);
+                else
+                  lua_pushinteger(_L, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                time_t val = current_entry->get_time(d);
+                if (val == -1)
+                  lua_pushnil(_L);
+                else
+                  lua_pushinteger(_L, val);
+              } break;
+              default:
+                lua_pushinteger(_L, current_entry->get_time(d));
             }
             break;
-          default:
-            lua_pushinteger(_L, current_entry->get_int(d));
-          }
-          break ;
-        case mapping::source::SHORT:
-          lua_pushinteger(_L, current_entry->get_short(d));
-          break ;
-        case mapping::source::STRING:
-          if (current_entry->get_attribute()
-              == mapping::entry::invalid_on_zero) {
-            std::string val{current_entry->get_string(d)};
-            if (val.empty())
-              lua_pushnil(_L);
-            else
-              lua_pushstring(_L, val.c_str());
-          }
-          else
-            lua_pushstring(_L, current_entry->get_string(d).c_str());
-          break;
-        case mapping::source::TIME:
-          switch (current_entry->get_attribute()) {
-          case mapping::entry::invalid_on_zero:
-            {
-              time_t val = current_entry->get_time(d);
-              if (val == 0)
-                lua_pushnil(_L);
-              else
-                lua_pushinteger(_L, val);
+          case mapping::source::UINT:
+            switch (current_entry->get_attribute()) {
+              case mapping::entry::invalid_on_zero: {
+                unsigned int val = current_entry->get_uint(d);
+                if (val == 0)
+                  lua_pushnil(_L);
+                else
+                  lua_pushinteger(_L, val);
+              } break;
+              case mapping::entry::invalid_on_minus_one: {
+                unsigned int val = current_entry->get_uint(d);
+                if (val == static_cast<unsigned int>(-1))
+                  lua_pushnil(_L);
+                else
+                  lua_pushinteger(_L, val);
+              } break;
+              default:
+                lua_pushinteger(_L, current_entry->get_uint(d));
             }
-            break ;
-          case mapping::entry::invalid_on_minus_one:
-            {
-              time_t val = current_entry->get_time(d);
-              if (val == -1)
-                lua_pushnil(_L);
-              else
-                lua_pushinteger(_L, val);
-            }
-            break ;
-          default:
-            lua_pushinteger(_L, current_entry->get_time(d));
-          }
-          break ;
-        case mapping::source::UINT:
-          switch (current_entry->get_attribute()) {
-          case mapping::entry::invalid_on_zero:
-            {
-              unsigned int val = current_entry->get_uint(d);
-              if (val == 0)
-                lua_pushnil(_L);
-              else
-                lua_pushinteger(_L, val);
-            }
-            break ;
-          case mapping::entry::invalid_on_minus_one:
-            {
-              unsigned int val = current_entry->get_uint(d);
-              if (val == static_cast<unsigned int>(-1))
-                lua_pushnil(_L);
-              else
-                lua_pushinteger(_L, val);
-            }
-            break ;
-          default :
-            lua_pushinteger(_L, current_entry->get_uint(d));
-          }
-          break ;
-        default: // Error in one of the mappings.
-          throw (exceptions::msg() << "invalid mapping for object "
-                 << "of type '" << info->get_name() << "': "
-                 << current_entry->get_type()
-                 << " is not a known type ID");
+            break;
+          default:  // Error in one of the mappings.
+            throw(exceptions::msg() << "invalid mapping for object "
+                                    << "of type '" << info->get_name()
+                                    << "': " << current_entry->get_type()
+                                    << " is not a known type ID");
         }
         lua_rawset(_L, -3);
       }
     }
-  }
-  else
-    throw (exceptions::msg() << "cannot bind object of type "
-           << d.type() << " to database query: mapping does not exist");
+  } else
+    throw(exceptions::msg() << "cannot bind object of type " << d.type()
+                            << " to database query: mapping does not exist");
 }
 
 /**

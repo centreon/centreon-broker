@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/influxdb/column.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::influxdb;
@@ -25,8 +25,7 @@ using namespace com::centreon::broker::influxdb;
 /**
  *  Create an empty column.
  */
-column::column()
-  : _is_flag(false) {}
+column::column() : _is_flag(false) {}
 
 /**
  *  Create a column.
@@ -36,15 +35,11 @@ column::column()
  *  @param[in] is_flag   Is the column a flag?
  *  @param[in] col_type  Is the value of this column a string or a number?
  */
-column::column(
-          std::string const& name,
-          std::string const& value,
-          bool is_flag,
-          type col_type)
-  : _name(name),
-    _value(value),
-    _is_flag(is_flag),
-    _type(col_type) {}
+column::column(std::string const& name,
+               std::string const& value,
+               bool is_flag,
+               type col_type)
+    : _name(name), _value(value), _is_flag(is_flag), _type(col_type) {}
 
 /**
  *  Copy constructor.
@@ -123,6 +118,6 @@ column::type column::parse_type(std::string const& type) {
     return (string);
   else if (type == "number")
     return (number);
-  throw (exceptions::msg()
-         << "influxdb: couldn't parse column type '" << type << "'");
+  throw(exceptions::msg() << "influxdb: couldn't parse column type '" << type
+                          << "'");
 }

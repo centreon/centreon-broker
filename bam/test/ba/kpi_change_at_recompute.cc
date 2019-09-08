@@ -33,7 +33,7 @@ using namespace com::centreon::broker;
 
 class BamBA : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     // Initialization.
     config::applier::init();
 
@@ -41,7 +41,7 @@ class BamBA : public ::testing::Test {
     _state.reset(new bam::configuration::state);
   }
 
-  void TearDown() {
+  void TearDown() override {
     // Cleanup.
     config::applier::deinit();
   }
@@ -69,7 +69,7 @@ TEST_F(BamBA, CopyAssign) {
   test_ba->add_impact(kpi);
   kpi->add_parent(test_ba);
 
-  time_t now(time(NULL));
+  time_t now(time(nullptr));
   std::shared_ptr<neb::service_status> ss(new neb::service_status);
   ss->host_id = 1;
   ss->service_id = 1;
@@ -113,7 +113,7 @@ TEST_F(BamBA, Recompute) {
   // Change KPI state as much time as needed to trigger a
   // recomputation. Note that the loop must terminate on a odd number
   // for the test to be correct.
-  time_t now(time(NULL));
+  time_t now(time(nullptr));
   for (int i(0); i < 100 + 2; ++i) {
     std::shared_ptr<neb::service_status> ss(new neb::service_status);
     ss->host_id = 1;
@@ -179,7 +179,7 @@ TEST_F(BamBA, ImpactState) {
   // Change KPI state as much time as needed to trigger a
   // recomputation. Note that the loop must terminate on a odd number
   // for the test to be correct.
-  time_t now(time(NULL));
+  time_t now(time(nullptr));
 
   std::shared_ptr<neb::service_status> ss(new neb::service_status);
   ss->service_id = 1;

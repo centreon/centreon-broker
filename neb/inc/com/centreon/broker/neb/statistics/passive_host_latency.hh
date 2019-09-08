@@ -17,33 +17,32 @@
 */
 
 #ifndef CCB_NEB_STATISTICS_PASSIVE_HOST_LATENCY_HH
-#  define CCB_NEB_STATISTICS_PASSIVE_HOST_LATENCY_HH
+#define CCB_NEB_STATISTICS_PASSIVE_HOST_LATENCY_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/statistics/plugin.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/statistics/plugin.hh"
 
 CCB_BEGIN()
 
-namespace         neb {
-  namespace       statistics {
-    /**
-     *  @class passive_host_latency passive_host_latency.hh "com/centreon/broker/neb/statistics/passive_host_latency.hh"
-     *  @brief passive_host_latency statistics plugin.
-     */
-    class         passive_host_latency : public plugin {
-    public:
-                  passive_host_latency();
-                  passive_host_latency(
-                    passive_host_latency const& right);
-                  ~passive_host_latency();
-      passive_host_latency&
-                  operator=(passive_host_latency const& right);
-      void        run(std::string& output, std::string& perfdata);
-    };
-  }
-}
+namespace neb {
+namespace statistics {
+/**
+ *  @class passive_host_latency passive_host_latency.hh
+ * "com/centreon/broker/neb/statistics/passive_host_latency.hh"
+ *  @brief passive_host_latency statistics plugin.
+ */
+class passive_host_latency : public plugin {
+ public:
+  passive_host_latency();
+  passive_host_latency(passive_host_latency const& right);
+  ~passive_host_latency();
+  passive_host_latency& operator=(passive_host_latency const& right);
+  void run(std::string& output, std::string& perfdata);
+};
+}  // namespace statistics
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_PASSIVE_HOST_LATENCY_HH
+#endif  // !CCB_NEB_STATISTICS_PASSIVE_HOST_LATENCY_HH

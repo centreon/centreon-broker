@@ -17,39 +17,39 @@
 */
 
 #ifndef CC_CONCURRENCY_CONDVAR_POSIX_HH
-#  define CC_CONCURRENCY_CONDVAR_POSIX_HH
+#define CC_CONCURRENCY_CONDVAR_POSIX_HH
 
-#  include <climits>
-#  include <pthread.h>
-#  include "com/centreon/namespace.hh"
-#  include "com/centreon/concurrency/mutex_posix.hh"
+#include <pthread.h>
+#include <climits>
+#include "com/centreon/concurrency/mutex_posix.hh"
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace          concurrency {
-  /**
-   *  @class condvar condvar_posix.hh "com/centreon/concurrency/condvar.hh"
-   *  @brief Allow simple threads synchronization.
-   *
-   *  Provide condition variable for synchronization between threads.
-   */
-  class            condvar {
-  public:
-                   condvar();
-                   ~condvar() throw ();
-    void           wait(mutex* mtx);
-    bool           wait(mutex* mtx, unsigned long timeout);
-    void           wake_all();
-    void           wake_one();
+namespace concurrency {
+/**
+ *  @class condvar condvar_posix.hh "com/centreon/concurrency/condvar.hh"
+ *  @brief Allow simple threads synchronization.
+ *
+ *  Provide condition variable for synchronization between threads.
+ */
+class condvar {
+ public:
+  condvar();
+  ~condvar() throw();
+  void wait(mutex* mtx);
+  bool wait(mutex* mtx, unsigned long timeout);
+  void wake_all();
+  void wake_one();
 
-  private:
-                   condvar(condvar const& right);
-    condvar&       operator=(condvar const& right);
+ private:
+  condvar(condvar const& right);
+  condvar& operator=(condvar const& right);
 
-    pthread_cond_t _cnd;
-  };
-}
+  pthread_cond_t _cnd;
+};
+}  // namespace concurrency
 
 CC_END()
 
-#endif // !CC_CONCURRENCY_CONDVAR_POSIX_HH
+#endif  // !CC_CONCURRENCY_CONDVAR_POSIX_HH

@@ -46,8 +46,7 @@ hst_svc_mapping::~hst_svc_mapping() {}
  *
  *  @return This object.
  */
-hst_svc_mapping& hst_svc_mapping::operator=(
-                                    hst_svc_mapping const& other) {
+hst_svc_mapping& hst_svc_mapping::operator=(hst_svc_mapping const& other) {
   if (this != &other)
     _internal_copy(other);
   return (*this);
@@ -60,8 +59,7 @@ hst_svc_mapping& hst_svc_mapping::operator=(
  *
  *  @return Host ID, 0 if it was not found.
  */
-unsigned int hst_svc_mapping::get_host_id(
-                                std::string const& hst) const {
+unsigned int hst_svc_mapping::get_host_id(std::string const& hst) const {
   return (get_service_id(hst, "").first);
 }
 
@@ -75,11 +73,11 @@ unsigned int hst_svc_mapping::get_host_id(
  *          was not found.
  */
 std::pair<unsigned int, unsigned int> hst_svc_mapping::get_service_id(
-                                                         std::string const& hst,
-                                                         std::string const& svc) const {
+    std::string const& hst,
+    std::string const& svc) const {
   std::map<std::pair<std::string, std::string>,
            std::pair<unsigned int, unsigned int> >::const_iterator
-    it(_mapping.find(std::make_pair(hst, svc)));
+      it(_mapping.find(std::make_pair(hst, svc)));
   return ((it != _mapping.end()) ? it->second : std::make_pair(0u, 0u));
 }
 
@@ -89,11 +87,9 @@ std::pair<unsigned int, unsigned int> hst_svc_mapping::get_service_id(
  *  @param[in] hst      Host name.
  *  @param[in] host_id  Host ID.
  */
-void hst_svc_mapping::set_host(
-                        std::string const& hst,
-                        unsigned int host_id) {
+void hst_svc_mapping::set_host(std::string const& hst, unsigned int host_id) {
   set_service(hst, "", host_id, 0u, true);
-  return ;
+  return;
 }
 
 /**
@@ -104,15 +100,14 @@ void hst_svc_mapping::set_host(
  *  @param[in] host_id     Host ID.
  *  @param[in] service_id  Service ID.
  */
-void hst_svc_mapping::set_service(
-                        std::string const& hst,
-                        std::string const& svc,
-                        unsigned int host_id,
-                        unsigned int service_id,
-                        bool activated) {
+void hst_svc_mapping::set_service(std::string const& hst,
+                                  std::string const& svc,
+                                  unsigned int host_id,
+                                  unsigned int service_id,
+                                  bool activated) {
   _mapping[std::make_pair(hst, svc)] = std::make_pair(host_id, service_id);
   _activated_mapping[std::make_pair(host_id, service_id)] = activated;
-  return ;
+  return;
 }
 
 /**
@@ -123,11 +118,10 @@ void hst_svc_mapping::set_service(
  *
  *  @return                 True if activated.
  */
-bool hst_svc_mapping::get_activated (
-                        unsigned int hst_id,
-                        unsigned int service_id) const {
-  std::map<std::pair<unsigned int, unsigned int>, bool>::const_iterator
-        it (_activated_mapping.find(std::make_pair(hst_id, service_id)));
+bool hst_svc_mapping::get_activated(unsigned int hst_id,
+                                    unsigned int service_id) const {
+  std::map<std::pair<unsigned int, unsigned int>, bool>::const_iterator it(
+      _activated_mapping.find(std::make_pair(hst_id, service_id)));
   return (it == _activated_mapping.end() ? true : it->second);
 }
 
@@ -139,11 +133,10 @@ bool hst_svc_mapping::get_activated (
  *  @param[in] host_id      The id of the host.
  *  @param[in] service_id   The id of the service.
  */
-void hst_svc_mapping::register_metric(
-                        unsigned int metric_id,
-                        std::string const& metric_name,
-                        unsigned int host_id,
-                        unsigned int service_id) {
+void hst_svc_mapping::register_metric(unsigned int metric_id,
+                                      std::string const& metric_name,
+                                      unsigned int host_id,
+                                      unsigned int service_id) {
   _metrics[std::make_pair(host_id, service_id)][metric_name] = metric_id;
   _metric_by_name.insert(std::make_pair(metric_name, metric_id));
 }
@@ -160,30 +153,28 @@ void hst_svc_mapping::register_metric(
  *
  *  @return  A list of found metric ids.
  */
-std::set<unsigned int>
-                  hst_svc_mapping::get_metric_ids(
-                   std::string const& metric_name,
-                   unsigned int host_id,
-                   unsigned int service_id) const {
+std::set<unsigned int> hst_svc_mapping::get_metric_ids(
+    std::string const& metric_name,
+    unsigned int host_id,
+    unsigned int service_id) const {
   std::set<unsigned int> retval;
 
   if (host_id != 0 || service_id != 0) {
     std::map<std::pair<unsigned int, unsigned int>,
-              std::map<std::string, unsigned int> >::const_iterator
-      metrics_found = _metrics.find(std::make_pair(host_id, service_id));
+             std::map<std::string, unsigned int> >::const_iterator
+        metrics_found = _metrics.find(std::make_pair(host_id, service_id));
     if (metrics_found == _metrics.end())
       return (retval);
 
-    std::map<std::string, unsigned int>::const_iterator
-      metric_found = metrics_found->second.find(metric_name);
+    std::map<std::string, unsigned int>::const_iterator metric_found =
+        metrics_found->second.find(metric_name);
 
     if (metric_found != metrics_found->second.end())
       retval.insert(metric_found->second);
-  }
-  else {
+  } else {
     std::pair<std::multimap<std::string, unsigned int>::const_iterator,
               std::multimap<std::string, unsigned int>::const_iterator>
-      found = _metric_by_name.equal_range(metric_name);
+        found = _metric_by_name.equal_range(metric_name);
     for (; found.first != found.second; ++found.first)
       retval.insert(found.first->second);
   }
@@ -201,5 +192,5 @@ void hst_svc_mapping::_internal_copy(hst_svc_mapping const& other) {
   _activated_mapping = other._activated_mapping;
   _metrics = other._metrics;
   _metric_by_name = other._metric_by_name;
-  return ;
+  return;
 }

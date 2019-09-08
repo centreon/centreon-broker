@@ -34,8 +34,7 @@ service_book::service_book() {}
  *
  *  @param[in] other  Object to copy.
  */
-service_book::service_book(service_book const& other)
-  : _book(other._book) {}
+service_book::service_book(service_book const& other) : _book(other._book) {}
 
 /**
  *  Destructor.
@@ -62,14 +61,11 @@ service_book& service_book::operator=(service_book const& other) {
  *  @param[in]     service_id  Service ID.
  *  @param[in,out] listnr      Service listener.
  */
-void service_book::listen(
-                     unsigned int host_id,
-                     unsigned int service_id,
-                     service_listener* listnr) {
-  _book.insert(std::make_pair(
-                      std::make_pair(host_id, service_id),
-                      listnr));
-  return ;
+void service_book::listen(unsigned int host_id,
+                          unsigned int service_id,
+                          service_listener* listnr) {
+  _book.insert(std::make_pair(std::make_pair(host_id, service_id), listnr));
+  return;
 }
 
 /**
@@ -79,20 +75,19 @@ void service_book::listen(
  *  @param[in] service_id  Service ID.
  *  @param[in] listnr      Service listener.
  */
-void service_book::unlisten(
-                     unsigned int host_id,
-                     unsigned int service_id,
-                     service_listener* listnr) {
-  std::pair<multimap::iterator, multimap::iterator>
-    range(_book.equal_range(std::make_pair(host_id, service_id)));
+void service_book::unlisten(unsigned int host_id,
+                            unsigned int service_id,
+                            service_listener* listnr) {
+  std::pair<multimap::iterator, multimap::iterator> range(
+      _book.equal_range(std::make_pair(host_id, service_id)));
   while (range.first != range.second) {
     if (range.first->second == listnr) {
       _book.erase(range.first);
-      break ;
+      break;
     }
     ++range.first;
   }
-  return ;
+  return;
 }
 
 /**
@@ -101,18 +96,15 @@ void service_book::unlisten(
  *  @param[in]  ss       Service status.
  *  @param[out] visitor  Object that will receive events.
  */
-void service_book::update(
-                     std::shared_ptr<neb::service_status> const& ss,
-                     io::stream* visitor) {
-  std::pair<multimap::iterator, multimap::iterator>
-    range(_book.equal_range(std::make_pair(
-                                   ss->host_id,
-                                   ss->service_id)));
+void service_book::update(std::shared_ptr<neb::service_status> const& ss,
+                          io::stream* visitor) {
+  std::pair<multimap::iterator, multimap::iterator> range(
+      _book.equal_range(std::make_pair(ss->host_id, ss->service_id)));
   while (range.first != range.second) {
     range.first->second->service_update(ss, visitor);
     ++range.first;
   }
-  return ;
+  return;
 }
 
 /**
@@ -122,18 +114,15 @@ void service_book::update(
  *  @param[in]  ack      Acknowledgement.
  *  @param[out] visitor  Object that will receive events.
  */
-void service_book::update(
-                     std::shared_ptr<neb::acknowledgement> const& ack,
-                     io::stream* visitor) {
-  std::pair<multimap::iterator, multimap::iterator>
-    range(_book.equal_range(std::make_pair(
-                                   ack->host_id,
-                                   ack->service_id)));
+void service_book::update(std::shared_ptr<neb::acknowledgement> const& ack,
+                          io::stream* visitor) {
+  std::pair<multimap::iterator, multimap::iterator> range(
+      _book.equal_range(std::make_pair(ack->host_id, ack->service_id)));
   while (range.first != range.second) {
     range.first->second->service_update(ack, visitor);
     ++range.first;
   }
-  return ;
+  return;
 }
 
 /**
@@ -143,16 +132,13 @@ void service_book::update(
  *  @param[in]  dt       Downtime.
  *  @param[out] visitor  Object that will receive events.
  */
-void service_book::update(
-                     std::shared_ptr<neb::downtime> const& dt,
-                     io::stream* visitor) {
-  std::pair<multimap::iterator, multimap::iterator>
-    range(_book.equal_range(std::make_pair(
-                                   dt->host_id,
-                                   dt->service_id)));
+void service_book::update(std::shared_ptr<neb::downtime> const& dt,
+                          io::stream* visitor) {
+  std::pair<multimap::iterator, multimap::iterator> range(
+      _book.equal_range(std::make_pair(dt->host_id, dt->service_id)));
   while (range.first != range.second) {
     range.first->second->service_update(dt, visitor);
     ++range.first;
   }
-  return ;
+  return;
 }

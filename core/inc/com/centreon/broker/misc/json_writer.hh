@@ -17,47 +17,47 @@
 */
 
 #ifndef CCB_MISC_JSON_WRITER_HH
-#  define CCB_MISC_JSON_WRITER_HH
+#define CCB_MISC_JSON_WRITER_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace misc {
-  /**
-   *  @class json_writer json_writer.hh "com/centreon/json/json_writer.hh"
-   *  @brief Simple json writer.
-   */
-  class                    json_writer {
-  public:
-                           json_writer();
-                           ~json_writer();
+/**
+ *  @class json_writer json_writer.hh "com/centreon/json/json_writer.hh"
+ *  @brief Simple json writer.
+ */
+class json_writer {
+ public:
+  json_writer();
+  ~json_writer();
 
-    std::string const&     get_string() const;
+  std::string const& get_string() const;
 
-    void                   open_object();
-    void                   close_object();
-    void                   open_array();
-    void                   close_array();
-    void                   add_key(std::string const& key);
-    void                   add_string(std::string const& str);
-    void                   add_number(long long number);
-    void                   add_double(double number);
-    void                   add_null();
-    void                   add_boolean(bool value);
-    void                   merge(std::string const& val);
+  void open_object();
+  void close_object();
+  void open_array();
+  void close_array();
+  void add_key(std::string const& key);
+  void add_string(std::string const& str);
+  void add_number(long long number);
+  void add_double(double number);
+  void add_null();
+  void add_boolean(bool value);
+  void merge(std::string const& val);
 
-  private:
-    std::string            _string;
+ private:
+  std::string _string;
 
-    void                   _put_comma();
+  void _put_comma();
 
-                           json_writer(json_writer const&);
-    json_writer&           operator=(json_writer const&);
-  };
-} // namespace json
+  json_writer(json_writer const&);
+  json_writer& operator=(json_writer const&);
+};
+}  // namespace misc
 
 CCB_END()
 
-#endif // !CCB_MISC_JSON_WRITER_HH
+#endif  // !CCB_MISC_JSON_WRITER_HH

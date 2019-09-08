@@ -17,39 +17,33 @@
  *
  */
 #include <gtest/gtest.h>
-#include "com/centreon/broker/file/splitter.hh"
-#include "com/centreon/broker/logging/manager.hh"
 #include "../test_file.hh"
 #include "../test_fs_browser.hh"
+#include "com/centreon/broker/file/splitter.hh"
+#include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker;
 
-class  FileSplitterMoreThanMaxSize : public ::testing::Test {
+class FileSplitterMoreThanMaxSize : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     logging::manager::load();
     _path = "/var/lib/centreon-broker/queue";
     _file_factory = new test_file_factory();
     _fs_browser = new test_fs_browser();
-    _file.reset(new file::splitter(
-                            _path,
-                            file::fs_file::open_read_write_truncate,
-                            _file_factory,
-                            _fs_browser,
-                            10000,
-                            true));
-    return ;
+    _file.reset(new file::splitter(_path,
+                                   file::fs_file::open_read_write_truncate,
+                                   _file_factory, _fs_browser, 10000, true));
+    return;
   }
 
-  void TearDown() {
-    logging::manager::unload();
-  };
+  void TearDown() override { logging::manager::unload(); };
 
  protected:
   std::unique_ptr<file::splitter> _file;
-  test_file_factory*            _file_factory;
-  test_fs_browser*              _fs_browser;
-  std::string                   _path;
+  test_file_factory* _file_factory;
+  test_fs_browser* _fs_browser;
+  std::string _path;
 };
 
 // Given a splitter object configured with a max_size of 10000

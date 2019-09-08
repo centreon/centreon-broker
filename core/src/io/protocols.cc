@@ -16,28 +16,28 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/io/protocols.hh"
 #include <cstdlib>
 #include <memory>
-#include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker::io;
 
 // Class instance.
-static protocols* gl_protocols = NULL;
+static protocols* gl_protocols = nullptr;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Destructor.
  */
 protocols::~protocols() {
-  logging::info(logging::low) << "protocols: destruction ("
-    << _protocols.size() << " protocols still registered)";
+  logging::info(logging::low) << "protocols: destruction (" << _protocols.size()
+                              << " protocols still registered)";
 }
 
 /**
@@ -45,7 +45,8 @@ protocols::~protocols() {
  *
  *  @return Iterator to the beginning of the protocol list.
  */
-std::map<std::string, protocols::protocol>::const_iterator protocols::begin() const {
+std::map<std::string, protocols::protocol>::const_iterator protocols::begin()
+    const {
   return _protocols.begin();
 }
 
@@ -54,7 +55,8 @@ std::map<std::string, protocols::protocol>::const_iterator protocols::begin() co
  *
  *  @return Iterator to the end of the protocol list.
  */
-std::map<std::string, protocols::protocol>::const_iterator protocols::end() const {
+std::map<std::string, protocols::protocol>::const_iterator protocols::end()
+    const {
   return _protocols.end();
 }
 
@@ -84,11 +86,10 @@ void protocols::load() {
  *  @param[in] osi_from     OSI layer this protocol supports.
  *  @param[in] osi_to       OSI layer this protocol supports.
  */
-void protocols::reg(
-                  std::string const& name,
-                  factory const& fac,
-                  unsigned short osi_from,
-                  unsigned short osi_to) {
+void protocols::reg(std::string const& name,
+                    factory const& fac,
+                    unsigned short osi_from,
+                    unsigned short osi_to) {
   // Set protocol structure.
   protocol p;
   p.endpntfactry = std::shared_ptr<factory>(fac.clone());
@@ -97,8 +98,8 @@ void protocols::reg(
 
   // Register protocol in protocol list.
   logging::info(logging::low)
-    << "protocols: registering protocol '" << name << "' (layers "
-    << osi_from << "-" << osi_to << ")";
+      << "protocols: registering protocol '" << name << "' (layers " << osi_from
+      << "-" << osi_to << ")";
   _protocols[name] = p;
 }
 
@@ -117,15 +118,15 @@ void protocols::unload() {
  */
 void protocols::unreg(std::string const& name) {
   logging::info(logging::low)
-    << "protocols: unregistering protocol '" << name << "'";
+      << "protocols: unregistering protocol '" << name << "'";
   _protocols.erase(name);
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.

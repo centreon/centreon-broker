@@ -17,40 +17,40 @@
 */
 
 #ifndef CCB_STATS_METRIC_HH
-#  define CCB_STATS_METRIC_HH
+#define CCB_STATS_METRIC_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace              stats {
-  /**
-   *  @class metric metric.hh "com/centreon/broker/stats/metric.hh"
-   *  @brief Configuration of a metric.
-   *
-   *  Holds parameters of a statistic metric.
-   */
-  class                metric {
-  public:
-                       metric();
-                       metric(metric const& right);
-                       ~metric();
-    metric&            operator=(metric const& right);
-    unsigned int       get_host_id() const throw ();
-    std::string const& get_name() const throw ();
-    unsigned int       get_service_id() const throw ();
-    void               set_host_id(unsigned int host_id) throw ();
-    void               set_name(std::string const& name);
-    void               set_service_id(unsigned int service_id) throw ();
+namespace stats {
+/**
+ *  @class metric metric.hh "com/centreon/broker/stats/metric.hh"
+ *  @brief Configuration of a metric.
+ *
+ *  Holds parameters of a statistic metric.
+ */
+class metric {
+ public:
+  metric();
+  metric(metric const& right);
+  ~metric();
+  metric& operator=(metric const& right);
+  unsigned int get_host_id() const throw();
+  std::string const& get_name() const throw();
+  unsigned int get_service_id() const throw();
+  void set_host_id(unsigned int host_id) throw();
+  void set_name(std::string const& name);
+  void set_service_id(unsigned int service_id) throw();
 
-  private:
-    unsigned int       _host_id;
-    std::string        _name;
-    unsigned int       _service_id;
-  };
-}
+ private:
+  unsigned int _host_id;
+  std::string _name;
+  unsigned int _service_id;
+};
+}  // namespace stats
 
 CCB_END()
 
-#endif // !CCB_STATS_METRIC_HH
+#endif  // !CCB_STATS_METRIC_HH

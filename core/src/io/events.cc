@@ -24,7 +24,7 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::io;
 
 // Class instance.
-static events* _instance(NULL);
+static events* _instance(nullptr);
 
 /**************************************
  *                                     *
@@ -55,7 +55,7 @@ void events::load() {
 void events::unload() {
   // Delete operator is NULL-aware.
   delete _instance;
-  _instance = NULL;
+  _instance = nullptr;
 }
 
 /**
@@ -195,7 +195,7 @@ event_info const* events::get_event_info(unsigned int type) {
     if (ite != itc->second.events.end())
       return &ite->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**

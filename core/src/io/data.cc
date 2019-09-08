@@ -23,10 +23,10 @@ using namespace com::centreon::broker::io;
 unsigned int data::broker_id(0);
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -39,8 +39,7 @@ data::data() : source_id(broker_id), destination_id(0) {}
  *  @param[in] other  Object to copy.
  */
 data::data(data const& other)
-  : source_id(other.source_id),
-    destination_id(other.destination_id) {}
+    : source_id(other.source_id), destination_id(other.destination_id) {}
 
 /**
  *  Destructor.

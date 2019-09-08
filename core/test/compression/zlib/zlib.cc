@@ -16,14 +16,14 @@
  * For more information : contact@centreon.com
  *
  */
-#include <gtest/gtest.h>
 #include "com/centreon/broker/compression/zlib.hh"
+#include <gtest/gtest.h>
 
 using namespace com::centreon::broker::compression;
 
-class  CompressionZlib : public ::testing::Test {
+class CompressionZlib : public ::testing::Test {
  public:
-  void SetUp() {}
+  void SetUp() override {}
 };
 
 // Given a simple buffer
@@ -36,9 +36,8 @@ TEST_F(CompressionZlib, Simple) {
   // When
   std::vector<char> compressed(zlib::compress(data, -1));
   std::vector<char> uncompressed(
-    zlib::uncompress(
-      reinterpret_cast<unsigned char const*>(&compressed[0]),
-      compressed.size()));
+      zlib::uncompress(reinterpret_cast<unsigned char const*>(&compressed[0]),
+                       compressed.size()));
 
   // Then
   ASSERT_EQ(uncompressed, data);

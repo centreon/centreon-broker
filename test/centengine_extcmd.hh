@@ -17,9 +17,9 @@
 */
 
 #ifndef TEST_CENTENGINE_EXTCMD_HH
-#  define TEST_CENTENGINE_EXTCMD_HH
+#define TEST_CENTENGINE_EXTCMD_HH
 
-#  include <string>
+#include <string>
 
 /**
  *  @class centengine_extcmd centengine_extcmd.hh "test/centengine_extcmd.hh"
@@ -27,21 +27,21 @@
  *
  *  Handle Centreon Engine external command file access.
  */
-class                centengine_extcmd {
-public:
-                     centengine_extcmd();
-                     centengine_extcmd(centengine_extcmd const& other);
-                     ~centengine_extcmd();
+class centengine_extcmd {
+ public:
+  centengine_extcmd();
+  centengine_extcmd(centengine_extcmd const& other);
+  ~centengine_extcmd();
   centengine_extcmd& operator=(centengine_extcmd const& other);
-  void               execute(std::string const& query);
-  std::string        get_engine_config() const;
-  std::string const& get_file() const throw ();
-  void               set_file(std::string const& file);
+  void execute(std::string const& query);
+  std::string get_engine_config() const;
+  std::string const& get_file() const throw();
+  void set_file(std::string const& file);
 
-private:
-  void               _internal_copy(centengine_extcmd const& other);
+ private:
+  void _internal_copy(centengine_extcmd const& other);
 
-  std::string        _file;
+  std::string _file;
 };
 
-#endif // !TEST_CENTENGINE_EXTCMD_HH
+#endif  // !TEST_CENTENGINE_EXTCMD_HH

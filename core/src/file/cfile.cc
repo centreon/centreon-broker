@@ -16,19 +16,19 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/file/cfile.hh"
 #include <cerrno>
 #include <cstring>
-#include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 
 using namespace com::centreon::broker::file;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Open a file.
@@ -37,7 +37,7 @@ using namespace com::centreon::broker::file;
  *  @param[in] mode  Open mode.
  */
 cfile::cfile(std::string const& path, fs_file::open_mode mode)
-  : _stream(NULL), _path(path), _mode(mode) {
+    : _stream(nullptr), _path(path), _mode(mode) {
   _open();
 }
 
@@ -55,25 +55,25 @@ void cfile::_open() {
   // Compute cfile's mode.
   char const* cfile_mode;
   switch (_mode) {
-   case fs_file::open_write:
-    cfile_mode = "w";
-    break ;
-   case fs_file::open_read_write_truncate:
-    cfile_mode = "w+";
-    break ;
-   case fs_file::open_read_write_no_create:
-    cfile_mode = "r+";
-    break ;
-   default:
-    cfile_mode = "r";
+    case fs_file::open_write:
+      cfile_mode = "w";
+      break;
+    case fs_file::open_read_write_truncate:
+      cfile_mode = "w+";
+      break;
+    case fs_file::open_read_write_no_create:
+      cfile_mode = "r+";
+      break;
+    default:
+      cfile_mode = "r";
   };
 
   // Open file.
   _stream = fopen(_path.c_str(), cfile_mode);
   if (!_stream) {
     char const* msg(strerror(errno));
-    throw (exceptions::msg() << "cannot open '" << _path << "' (mode "
-           << cfile_mode << "): " << msg);
+    throw(exceptions::msg() << "cannot open '" << _path << "' (mode "
+                            << cfile_mode << "): " << msg);
   }
 }
 
@@ -83,7 +83,7 @@ void cfile::_open() {
 void cfile::close() {
   if (_stream) {
     fclose(_stream);
-    _stream = NULL;
+    _stream = nullptr;
   }
 }
 
@@ -101,12 +101,12 @@ long cfile::read(void* buffer, long max_size) {
   size_t retval(fread(buffer, 1, max_size, _stream));
   if (retval == 0) {
     if (feof(_stream))
-      throw (exceptions::shutdown() << "end of file reached");
+      throw(exceptions::shutdown() << "end of file reached");
     else if ((EAGAIN == errno) || (EINTR == errno))
       retval = 0;
     else {
       char const* msg(strerror(errno));
-      throw (exceptions::msg() << "error while reading file: " << msg);
+      throw(exceptions::msg() << "error while reading file: " << msg);
     }
   }
   return (retval);
@@ -124,29 +124,28 @@ void cfile::seek(long offset, fs_file::seek_whence whence) {
   // Compute cfile's whence.
   int seek_whence;
   switch (whence) {
-   case fs_file::seek_current:
-    seek_whence = SEEK_CUR;
-    break ;
-   case fs_file::seek_end:
-    seek_whence = SEEK_END;
-    break ;
-   default:
-    seek_whence = SEEK_SET;
+    case fs_file::seek_current:
+      seek_whence = SEEK_CUR;
+      break;
+    case fs_file::seek_end:
+      seek_whence = SEEK_END;
+      break;
+    default:
+      seek_whence = SEEK_SET;
   };
 
   // Seek.
   int retval;
-  while ((retval = fseek(_stream, offset, seek_whence))
-         && (EAGAIN == errno)
-         && (EINTR == errno))
+  while ((retval = fseek(_stream, offset, seek_whence)) && (EAGAIN == errno) &&
+         (EINTR == errno))
     ;
   if (retval) {
     char const* msg(strerror(errno));
-    throw (exceptions::msg() << "cannot seek in file to position ("
-           << seek_whence << ", " << offset << "): " << msg);
+    throw(exceptions::msg() << "cannot seek in file to position ("
+                            << seek_whence << ", " << offset << "): " << msg);
   }
 
-  return ;
+  return;
 }
 
 /**
@@ -160,8 +159,7 @@ long cfile::tell() {
   long retval(ftell(_stream));
   if (-1 == retval) {
     char const* msg(strerror(errno));
-    throw (exceptions::msg() << "cannot tell position in file: "
-           << msg);
+    throw(exceptions::msg() << "cannot tell position in file: " << msg);
   }
   return (retval);
 }
@@ -180,8 +178,8 @@ long cfile::write(void const* buffer, long size) {
   size_t retval(fwrite(buffer, 1, size, _stream));
   if (ferror(_stream)) {
     char const* msg(strerror(errno));
-    throw (exceptions::msg() << "cannot write " << size
-           << " bytes to file: " << msg);
+    throw(exceptions::msg()
+          << "cannot write " << size << " bytes to file: " << msg);
   }
   return (retval);
 }
@@ -194,9 +192,8 @@ long cfile::write(void const* buffer, long size) {
  *
  *  @return A new cfile object.
  */
-cfile* cfile_factory::new_cfile(
-                        std::string const& path,
-                        fs_file::open_mode mode) {
+cfile* cfile_factory::new_cfile(std::string const& path,
+                                fs_file::open_mode mode) {
   return (new cfile(path, mode));
 }
 
@@ -208,8 +205,7 @@ cfile* cfile_factory::new_cfile(
  *
  *  @return A new cfile object.
  */
-fs_file* cfile_factory::new_fs_file(
-                          std::string const& path,
-                          fs_file::open_mode mode) {
+fs_file* cfile_factory::new_fs_file(std::string const& path,
+                                    fs_file::open_mode mode) {
   return (new_cfile(path, mode));
 }

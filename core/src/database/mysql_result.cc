@@ -15,9 +15,9 @@
 **
 ** For more information : contact@centreon.com
 */
+#include "com/centreon/broker/database/mysql_result.hh"
 #include <cstdlib>
 #include <iostream>
-#include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
@@ -30,10 +30,10 @@ using namespace com::centreon::broker::database;
  * @param statement_id The statement id or 0 if it comes from a query.
  */
 mysql_result::mysql_result(mysql_connection* parent, int statement_id)
-  : _parent(parent),
-    _result(nullptr, mysql_free_result),
-    _row(nullptr),
-    _statement_id(statement_id) {}
+    : _parent(parent),
+      _result(nullptr, mysql_free_result),
+      _row(nullptr),
+      _statement_id(statement_id) {}
 
 /**
  *  Constructor
@@ -42,9 +42,7 @@ mysql_result::mysql_result(mysql_connection* parent, int statement_id)
  * @param result The result returned by the Mariadb Connector.
  */
 mysql_result::mysql_result(mysql_connection* parent, MYSQL_RES* result)
-  : _parent(parent),
-    _result(result, mysql_free_result),
-    _statement_id(0) {}
+    : _parent(parent), _result(result, mysql_free_result), _statement_id(0) {}
 
 /**
  *  Move Constructor
@@ -52,10 +50,10 @@ mysql_result::mysql_result(mysql_connection* parent, MYSQL_RES* result)
  * @param other Another result to move into this one.
  */
 mysql_result::mysql_result(mysql_result&& other)
-  : _parent(other._parent),
-    _result(other._result),
-    _row(other._row),
-    _statement_id(other._statement_id) {
+    : _parent(other._parent),
+      _result(other._result),
+      _row(other._row),
+      _statement_id(other._statement_id) {
   other._row = nullptr;
   other._result = nullptr;
   other._parent = nullptr;
@@ -107,13 +105,12 @@ MYSQL_RES* mysql_result::get() {
  */
 bool mysql_result::value_as_bool(int idx) {
   bool retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_as_bool(idx);
   else if (_row)
-    retval = _row[idx] ? strtol(_row[idx], 0, 10) : 0;
+    retval = _row[idx] ? strtol(_row[idx], nullptr, 10) : 0;
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -126,13 +123,12 @@ bool mysql_result::value_as_bool(int idx) {
  */
 std::string mysql_result::value_as_str(int idx) {
   std::string retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_as_str(idx);
   else if (_row)
     retval = _row[idx];
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -145,13 +141,12 @@ std::string mysql_result::value_as_str(int idx) {
  */
 float mysql_result::value_as_f32(int idx) {
   float retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_as_f32(idx);
   else if (_row)
     retval = _row[idx] ? atof(_row[idx]) : 0;
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -164,13 +159,12 @@ float mysql_result::value_as_f32(int idx) {
  */
 double mysql_result::value_as_f64(int idx) {
   double retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_as_f64(idx);
   else if (_row)
     retval = _row[idx] ? atof(_row[idx]) : 0;
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -183,13 +177,12 @@ double mysql_result::value_as_f64(int idx) {
  */
 int mysql_result::value_as_i32(int idx) {
   int retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_as_i32(idx);
   else if (_row)
-    retval = _row[idx] ? strtol(_row[idx], 0, 10) : 0;
+    retval = _row[idx] ? strtol(_row[idx], nullptr, 10) : 0;
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -202,13 +195,12 @@ int mysql_result::value_as_i32(int idx) {
  */
 unsigned int mysql_result::value_as_u32(int idx) {
   unsigned int retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_as_u32(idx);
   else if (_row)
-    retval = _row[idx] ? strtoul(_row[idx], 0, 10) : 0;
+    retval = _row[idx] ? strtoul(_row[idx], nullptr, 10) : 0;
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -221,13 +213,12 @@ unsigned int mysql_result::value_as_u32(int idx) {
  */
 unsigned long long mysql_result::value_as_u64(int idx) {
   unsigned long long retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_as_u64(idx);
   else if (_row)
-    retval = _row[idx] ? strtoull(_row[idx], 0, 10) : 0;
+    retval = _row[idx] ? strtoull(_row[idx], nullptr, 10) : 0;
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -240,13 +231,12 @@ unsigned long long mysql_result::value_as_u64(int idx) {
  */
 bool mysql_result::value_is_null(int idx) {
   bool retval;
-  if (_bind.get())
+  if (_bind)
     retval = _bind->value_is_null(idx);
   else if (_row)
-    retval = (_row[idx] == 0);
+    retval = (_row[idx] == nullptr);
   else
-    throw exceptions::msg()
-      << "mysql: No row fetched in result";
+    throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
 }
 
@@ -256,10 +246,10 @@ bool mysql_result::value_is_null(int idx) {
  * @return true if it is empty, false otherwise.
  */
 bool mysql_result::is_empty() const {
-  if (_bind.get())
+  if (_bind)
     return _bind->is_empty();
   else
-    return _row == NULL;
+    return _row == nullptr;
 }
 
 /**
@@ -268,7 +258,7 @@ bool mysql_result::is_empty() const {
  * @return an integer.
  */
 int mysql_result::get_rows_count() const {
-  if (_bind.get())
+  if (_bind)
     return _bind->get_rows_count();
   else
     return mysql_num_rows(_result.get());

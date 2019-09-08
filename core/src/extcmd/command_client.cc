@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/extcmd/command_client.hh"
 #include <cstdlib>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
-#include "com/centreon/broker/extcmd/command_client.hh"
 #include "com/centreon/broker/extcmd/command_listener.hh"
 #include "com/centreon/broker/extcmd/command_parser.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
@@ -32,10 +32,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::extcmd;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -43,10 +43,9 @@ using namespace com::centreon::broker::extcmd;
  *  @param[in]     native_socket  Client socket.
  *  @param[in,out] parser         Command parser.
  */
-command_client::command_client(
-                  asio::local::stream_protocol::socket & socket,
-                  command_parser& parser)
-  : _parser(parser) {
+command_client::command_client(asio::local::stream_protocol::socket& socket,
+                               command_parser& parser)
+    : _parser(parser) {
   _socket.reset(&socket);
 }
 
@@ -54,7 +53,7 @@ command_client::command_client(
  *  Destructor.
  */
 command_client::~command_client() {
-  if (_socket.get())
+  if (_socket)
     _socket->close();
 }
 
@@ -66,13 +65,11 @@ command_client::~command_client() {
  *
  *  @return Respect io::stream's read() return value.
  */
-bool command_client::read(
-                       std::shared_ptr<io::data>& d,
-                       time_t deadline) {
+bool command_client::read(std::shared_ptr<io::data>& d, time_t deadline) {
   std::error_code err;
 
   // Check that socket exist.
-  if (!_socket.get())
+  if (!_socket)
     throw exceptions::shutdown() << "socket does not exist";
 
   // Read commands from socket.
@@ -87,13 +84,14 @@ bool command_client::read(
     if (err)
       throw exceptions::shutdown() << "command: client disconnected";
 
-    std::string s((std::istreambuf_iterator<char>(&b)), std::istreambuf_iterator<char>());
+    std::string s((std::istreambuf_iterator<char>(&b)),
+                  std::istreambuf_iterator<char>());
     _buffer.append(s.c_str(), len);
 
-    if ((deadline == (time_t)-1) || (time(NULL) < deadline))
+    if ((deadline == (time_t)-1) || (time(nullptr) < deadline))
       ;
     else
-      break ;
+      break;
   }
 
   // External command parsed.
@@ -106,11 +104,11 @@ bool command_client::read(
     std::string result_str = _parser.write(res);
     int pos(0), remaining(result_str.size());
     while (remaining > 0) {
-      size_t wb = asio::write(*_socket, buffer(result_str), asio::transfer_all(), err);
+      size_t wb =
+          asio::write(*_socket, buffer(result_str), asio::transfer_all(), err);
       if (err)
-        throw (exceptions::msg()
-               << "could not write command result to client: "
-               << err.message());
+        throw(exceptions::msg()
+              << "could not write command result to client: " << err.message());
       pos += wb;
       remaining -= wb;
     }
@@ -129,10 +127,9 @@ bool command_client::read(
  *
  *  @return This method will throw.
  */
-int command_client::write(
-                      std::shared_ptr<io::data> const& d) {
+int command_client::write(std::shared_ptr<io::data> const& d) {
   (void)d;
-  throw (exceptions::shutdown()
-         << "command: cannot write event to command client");
+  throw(exceptions::shutdown()
+        << "command: cannot write event to command client");
   return (1);
 }

@@ -27,7 +27,7 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 dimension_truncate_table_signal::dimension_truncate_table_signal()
-  : update_started(true) {}
+    : update_started(true) {}
 
 /**
  *  Copy constructor.
@@ -36,7 +36,7 @@ dimension_truncate_table_signal::dimension_truncate_table_signal()
  */
 dimension_truncate_table_signal::dimension_truncate_table_signal(
     dimension_truncate_table_signal const& other)
-  : io::data(other) {
+    : io::data(other) {
   _internal_copy(other);
 }
 
@@ -53,7 +53,7 @@ dimension_truncate_table_signal::~dimension_truncate_table_signal() {}
  *  @return This object.
  */
 dimension_truncate_table_signal& dimension_truncate_table_signal::operator=(
-                                                                    dimension_truncate_table_signal const& other) {
+    dimension_truncate_table_signal const& other) {
   if (this != &other) {
     io::data::operator=(other);
     _internal_copy(other);
@@ -69,7 +69,7 @@ dimension_truncate_table_signal& dimension_truncate_table_signal::operator=(
  *  @return  True if the two objects are equal.
  */
 bool dimension_truncate_table_signal::operator==(
-                                        dimension_truncate_table_signal const& other) const {
+    dimension_truncate_table_signal const& other) const {
   return (update_started == other.update_started);
 }
 
@@ -88,8 +88,9 @@ unsigned int dimension_truncate_table_signal::type() const {
  *  @return Event type.
  */
 unsigned int dimension_truncate_table_signal::static_type() {
-  return (io::events::data_type<io::events::bam,
-                                bam::de_dimension_truncate_table_signal>::value);
+  return (
+      io::events::data_type<io::events::bam,
+                            bam::de_dimension_truncate_table_signal>::value);
 }
 
 /**
@@ -100,27 +101,25 @@ unsigned int dimension_truncate_table_signal::static_type() {
 void dimension_truncate_table_signal::_internal_copy(
     dimension_truncate_table_signal const& other) {
   update_started = other.update_started;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const dimension_truncate_table_signal::entries[] = {
-  mapping::entry(
-    &bam::dimension_truncate_table_signal::update_started,
-    "update_started"),
-  mapping::entry()
-};
+    mapping::entry(&bam::dimension_truncate_table_signal::update_started,
+                   "update_started"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_dimension_truncate_table_signal() {
   return (new dimension_truncate_table_signal);
 }
-io::event_info::event_operations const dimension_truncate_table_signal::operations = {
-  &new_dimension_truncate_table_signal
-};
+io::event_info::event_operations const
+    dimension_truncate_table_signal::operations = {
+        &new_dimension_truncate_table_signal};

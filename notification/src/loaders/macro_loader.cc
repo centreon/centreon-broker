@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/notification/loaders/macro_loader.hh"
+#include <sstream>
 #include <utility>
 #include <vector>
-#include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/notification/loaders/macro_loader.hh"
 #include "com/centreon/broker/notification/utilities/get_datetime_string.hh"
 
 using namespace com::centreon::broker::notification;
@@ -43,10 +43,10 @@ void macro_loader::load(mysql* ms, macro_builder* output) {
     return;
 
   logging::debug(logging::medium)
-    << "notification: loading macros from the database";
+      << "notification: loading macros from the database";
 
   // Performance improvement, as we never go back.
-  //query.setForwardOnly(true);
+  // query.setForwardOnly(true);
 
   // Load global, constant macro.
   /*if (!query.exec(
@@ -56,7 +56,8 @@ void macro_loader::load(mysql* ms, macro_builder* output) {
                "       service_perfdata_file, temp_path, date_format"
                " FROM cfg_engine"))
     throw (exceptions::msg()
-           << "notification: cannot load global monitoring options from database: "
+           << "notification: cannot load global monitoring options from
+  database: "
            << query.lastError().text());
   if (!query.next()) {
     logging::config(logging::medium)
@@ -115,10 +116,10 @@ void macro_loader::load(mysql* ms, macro_builder* output) {
   // Load global resource macros.
   std::promise<database::mysql_result> promise;
   ms->run_query_and_get_result(
-        "SELECT resource_name, resource_line"
-        "  FROM cfg_resources"
-        "  WHERE resource_activate = '1'",
-        &promise);
+      "SELECT resource_name, resource_line"
+      "  FROM cfg_resources"
+      "  WHERE resource_activate = '1'",
+      &promise);
 
   try {
     database::mysql_result res(promise.get_future().get());
@@ -129,15 +130,12 @@ void macro_loader::load(mysql* ms, macro_builder* output) {
       macro_name.erase(0, 1);
       macro_name.erase(macro_name.size() - 1);
       logging::config(logging::low) << "notification: loading resource macro ("
-        << macro_name << ") from database";
-      output->add_resource_macro(
-                macro_name,
-                res.value_as_str(1));
+                                    << macro_name << ") from database";
+      output->add_resource_macro(macro_name, res.value_as_str(1));
     }
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     throw exceptions::msg()
-      << "notification: cannot load resource macros from database: "
-      << e.what();
+        << "notification: cannot load resource macros from database: "
+        << e.what();
   }
 }

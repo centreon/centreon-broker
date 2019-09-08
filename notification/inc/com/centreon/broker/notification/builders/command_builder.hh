@@ -17,43 +17,42 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_COMMAND_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_COMMAND_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_COMMAND_BUILDER_HH
 
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/command.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/objects/command.hh"
 
 CCB_BEGIN()
 
-namespace         notification {
+namespace notification {
+/**
+ *  @class command_builder command_builder.hh
+ * "com/centreon/broker/notification/builders/command_builder.hh"
+ *  @brief Command builder interface.
+ *
+ *  This interface define what methods command builders need to implement.
+ */
+class command_builder {
+ public:
   /**
-   *  @class command_builder command_builder.hh "com/centreon/broker/notification/builders/command_builder.hh"
-   *  @brief Command builder interface.
-   *
-   *  This interface define what methods command builders need to implement.
+   *  Virtual destructor.
    */
-  class           command_builder {
-  public:
-    /**
-     *  Virtual destructor.
-     */
-    virtual       ~command_builder() {}
+  virtual ~command_builder() {}
 
-    /**
-     *  Add a command to the builder.
-     *
-     *  @param[in] id The id of the command.
-     *  @param[in] com The command.
-     */
-    virtual void  add_command(
-                    unsigned int id,
-                    objects::command::ptr com) {
-      (void)id;
-      (void)com;
-    }
-  };
+  /**
+   *  Add a command to the builder.
+   *
+   *  @param[in] id The id of the command.
+   *  @param[in] com The command.
+   */
+  virtual void add_command(unsigned int id, objects::command::ptr com) {
+    (void)id;
+    (void)com;
+  }
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_COMMAND_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_COMMAND_BUILDER_HH

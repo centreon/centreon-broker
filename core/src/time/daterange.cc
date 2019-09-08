@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/time/daterange.hh"
 #include <cstdio>
 #include <cstring>
-#include "com/centreon/broker/time/daterange.hh"
 
 using namespace com::centreon::broker::time;
 
@@ -28,20 +28,18 @@ using namespace com::centreon::broker::time;
  *  @param[in] type The date range type.
  */
 daterange::daterange(type_range type)
- :_month_end(0),
-  _month_start(0),
-  _month_day_end(0),
-  _month_day_start(0),
-  _skip_interval(0),
-  _type(type),
-  _week_day_end(0),
-  _week_day_start(0),
-  _week_day_end_offset(0),
-  _week_day_start_offset(0),
-  _year_end(0),
-  _year_start(0) {
-
-}
+    : _month_end(0),
+      _month_start(0),
+      _month_day_end(0),
+      _month_day_start(0),
+      _skip_interval(0),
+      _type(type),
+      _week_day_end(0),
+      _week_day_start(0),
+      _week_day_end_offset(0),
+      _week_day_start_offset(0),
+      _year_end(0),
+      _year_start(0) {}
 
 /**
  *  Copy constructor.
@@ -55,9 +53,7 @@ daterange::daterange(daterange const& right) {
 /**
  *  Destructor.
  */
-daterange::~daterange() {
-
-}
+daterange::~daterange() {}
 
 /**
  *  Copy operator.
@@ -92,20 +88,18 @@ daterange& daterange::operator=(daterange const& right) {
  *
  *  @return True if object is the same, otherwise false.
  */
-bool daterange::operator==(daterange const& right) const throw () {
-  return (_month_end == right._month_end
-          && _month_start == right._month_start
-          && _month_day_end == right._month_day_end
-          && _month_day_start == right._month_day_start
-          && _skip_interval == right._skip_interval
-          && _timeranges == right._timeranges
-          && _type == right._type
-          && _week_day_end == right._week_day_end
-          && _week_day_start == right._week_day_start
-          && _week_day_end_offset == right._week_day_end_offset
-          && _week_day_start_offset == right._week_day_start_offset
-          && _year_end == right._year_end
-          && _year_start == right._year_start);
+bool daterange::operator==(daterange const& right) const throw() {
+  return (_month_end == right._month_end &&
+          _month_start == right._month_start &&
+          _month_day_end == right._month_day_end &&
+          _month_day_start == right._month_day_start &&
+          _skip_interval == right._skip_interval &&
+          _timeranges == right._timeranges && _type == right._type &&
+          _week_day_end == right._week_day_end &&
+          _week_day_start == right._week_day_start &&
+          _week_day_end_offset == right._week_day_end_offset &&
+          _week_day_start_offset == right._week_day_start_offset &&
+          _year_end == right._year_end && _year_start == right._year_start);
 }
 
 /**
@@ -115,7 +109,7 @@ bool daterange::operator==(daterange const& right) const throw () {
  *
  *  @return True if object is not the same, otherwise false.
  */
-bool daterange::operator!=(daterange const& right) const throw () {
+bool daterange::operator!=(daterange const& right) const throw() {
   return (!operator==(right));
 }
 
@@ -126,7 +120,7 @@ bool daterange::operator!=(daterange const& right) const throw () {
  *
  *  @return True if this object is less than right.
  */
-bool daterange::operator<(daterange const& right) const throw () {
+bool daterange::operator<(daterange const& right) const throw() {
   if (_month_end != right._month_end)
     return (_month_end < right._month_end);
   else if (_month_start != right._month_start)
@@ -168,7 +162,7 @@ void daterange::month_end(unsigned int value) {
  *
  *  @return The month_end value.
  */
-unsigned int daterange::month_end() const throw () {
+unsigned int daterange::month_end() const throw() {
   return (_month_end);
 }
 
@@ -186,7 +180,7 @@ void daterange::month_start(unsigned int value) {
  *
  *  @return The month_start value.
  */
-unsigned int daterange::month_start() const throw () {
+unsigned int daterange::month_start() const throw() {
   return (_month_start);
 }
 
@@ -204,7 +198,7 @@ void daterange::month_day_end(int value) {
  *
  *  @return The month_day_end value.
  */
-int daterange::month_day_end() const throw () {
+int daterange::month_day_end() const throw() {
   return (_month_day_end);
 }
 
@@ -222,7 +216,7 @@ void daterange::month_day_start(int value) {
  *
  *  @return The month_day_start value.
  */
-int daterange::month_day_start() const throw () {
+int daterange::month_day_start() const throw() {
   return (_month_day_start);
 }
 
@@ -240,7 +234,7 @@ void daterange::skip_interval(unsigned int value) {
  *
  *  @return The skip_interval value.
  */
-unsigned int daterange::skip_interval() const throw () {
+unsigned int daterange::skip_interval() const throw() {
   return (_skip_interval);
 }
 
@@ -258,7 +252,7 @@ void daterange::timeranges(std::list<timerange> const& value) {
  *
  *  @param[in] value The new timeranges value.
  */
-std::list<timerange> const& daterange::timeranges() const throw () {
+std::list<timerange> const& daterange::timeranges() const throw() {
   return (_timeranges);
 }
 
@@ -276,7 +270,7 @@ void daterange::type(type_range value) {
  *
  *  @return The type value.
  */
-daterange::type_range daterange::type() const throw () {
+daterange::type_range daterange::type() const throw() {
   return (_type);
 }
 
@@ -294,7 +288,7 @@ void daterange::week_day_end(unsigned int value) {
  *
  *  @return The week_day_end value.
  */
-unsigned int daterange::week_day_end() const throw () {
+unsigned int daterange::week_day_end() const throw() {
   return (_week_day_end);
 }
 
@@ -312,7 +306,7 @@ void daterange::week_day_start(unsigned int value) {
  *
  *  @return The week_day_start value.
  */
-unsigned int daterange::week_day_start() const throw () {
+unsigned int daterange::week_day_start() const throw() {
   return (_week_day_start);
 }
 
@@ -330,7 +324,7 @@ void daterange::week_day_end_offset(int value) {
  *
  *  @return The week_day_end_offset value.
  */
-int daterange::week_day_end_offset() const throw () {
+int daterange::week_day_end_offset() const throw() {
   return (_week_day_end_offset);
 }
 
@@ -348,7 +342,7 @@ void daterange::week_day_start_offset(int value) {
  *
  *  @return The week_day_start_offset value.
  */
-int daterange::week_day_start_offset() const throw () {
+int daterange::week_day_start_offset() const throw() {
   return (_week_day_start_offset);
 }
 
@@ -366,7 +360,7 @@ void daterange::year_end(unsigned int value) {
  *
  *  @return The year_end value.
  */
-unsigned int daterange::year_end() const throw () {
+unsigned int daterange::year_end() const throw() {
   return (_year_end);
 }
 
@@ -384,7 +378,7 @@ void daterange::year_start(unsigned int value) {
  *
  *  @return The year_start value.
  */
-unsigned int daterange::year_start() const throw () {
+unsigned int daterange::year_start() const throw() {
   return (_year_start);
 }
 
@@ -433,10 +427,9 @@ static time_t _add_round_days_to_midnight(time_t midnight, time_t skip) {
  *
  *  @return Requested timestamp, (time_t)-1 if conversion failed.
  */
-static time_t calculate_time_from_day_of_month(
-                int year,
-                int month,
-                int monthday) {
+static time_t calculate_time_from_day_of_month(int year,
+                                               int month,
+                                               int monthday) {
   time_t midnight;
   tm t;
 
@@ -470,8 +463,7 @@ static time_t calculate_time_from_day_of_month(
       t.tm_mday = day;
       t.tm_isdst = -1;
       midnight = mktime(&t);
-    } while ((midnight == (time_t)-1)
-             || (t.tm_mon != month));
+    } while ((midnight == (time_t)-1) || (t.tm_mon != month));
 
     // Now that we know the last day, back up more.
     t.tm_mon = month;
@@ -501,11 +493,10 @@ static time_t calculate_time_from_day_of_month(
  *
  *  @return Requested timestamp, (time_t)-1 if conversion failed.
  */
-static time_t calculate_time_from_weekday_of_month(
-                int year,
-                int month,
-                int weekday,
-                int weekday_offset) {
+static time_t calculate_time_from_weekday_of_month(int year,
+                                                   int month,
+                                                   int weekday,
+                                                   int weekday_offset) {
   // Compute first day of month (to get weekday).
   tm t;
   t.tm_sec = 0;
@@ -555,8 +546,7 @@ static time_t calculate_time_from_weekday_of_month(
       t.tm_mday = days + 1;
       t.tm_isdst = -1;
       midnight = mktime(&t);
-    } while ((midnight == (time_t)-1)
-             || (t.tm_mon != month));
+    } while ((midnight == (time_t)-1) || (t.tm_mon != month));
 
     // Now that we know the last instance of the weekday, back up more.
     days = ((weekday_offset + 1) * 7);
@@ -585,8 +575,7 @@ static time_t calculate_time_from_weekday_of_month(
  *
  *  @return True on success, otherwise false.
  */
-bool daterange::_calendar_date_to_time_t(time_t& start,
-                                         time_t& end) const {
+bool daterange::_calendar_date_to_time_t(time_t& start, time_t& end) const {
   tm t;
   t.tm_sec = 0;
   t.tm_min = 0;
@@ -595,7 +584,7 @@ bool daterange::_calendar_date_to_time_t(time_t& start,
 
   t.tm_mday = _month_day_start;
   t.tm_mon = _month_start;
-  t.tm_year =  _year_start - 1900;
+  t.tm_year = _year_start - 1900;
   if ((start = mktime(&t)) == (time_t)-1)
     return (false);
 
@@ -616,8 +605,7 @@ bool daterange::_calendar_date_to_time_t(time_t& start,
     if ((end = mktime(&t)) == (time_t)-1)
       return (false);
     ++end;
-  }
-  else
+  } else
     end = (time_t)-1;
 
   return (true);
@@ -637,14 +625,15 @@ bool daterange::_month_date_to_time_t(time_info const& ti,
                                       time_t& end) const {
   // what year should we use?
   int year = ti.preftime.tm_year;
-  //int year(std::max(ti.preftime.tm_year, ti.curtime.tm_year));
+  // int year(std::max(ti.preftime.tm_year, ti.curtime.tm_year));
   // advance an additional year if we already passed
   // the end month date
   /*if (_month_end < ti.curtime.tm_mon
       || (_month_end == ti.curtime.tm_mon
           && _month_day_end < ti.curtime.tm_mday))
     ++year;*/
-  start = calculate_time_from_day_of_month(year, _month_start, _month_day_start);
+  start =
+      calculate_time_from_day_of_month(year, _month_start, _month_day_start);
 
   // start date was bad.
   if (!start)
@@ -654,7 +643,7 @@ bool daterange::_month_date_to_time_t(time_info const& ti,
   end = calculate_time_from_day_of_month(year, _month_end, _month_day_end);
   // advance a year if necessary: august 5 - february 2
   if (end < start)
-    end = calculate_time_from_day_of_month( ++year, _month_end, _month_day_end);
+    end = calculate_time_from_day_of_month(++year, _month_end, _month_day_end);
 
   // end date was bad - see if we can handle the error
   if (!end) {
@@ -717,8 +706,7 @@ bool daterange::_month_day_to_time_t(time_info const& ti,
       ++year;
     }
     end = calculate_time_from_day_of_month(year, month, 0);
-  }
-  else
+  } else
     end = _add_round_days_to_midnight(end, 24 * 60 * 60);
   return (true);
 }
@@ -733,36 +721,27 @@ bool daterange::_month_day_to_time_t(time_info const& ti,
  *  @return True on success, otherwise false.
  */
 bool daterange::_month_week_day_to_time_t(time_info const& ti,
-                                         time_t& start,
-                                         time_t& end) const {
+                                          time_t& start,
+                                          time_t& end) const {
   // What year should we use?
-  int year  = ti.preftime.tm_year;
+  int year = ti.preftime.tm_year;
 
   while (true) {
     // Calculate time of specified weekday of specific month.
     start = calculate_time_from_weekday_of_month(
-              year,
-              _month_start,
-              _week_day_start,
-              _week_day_start_offset);
+        year, _month_start, _week_day_start, _week_day_start_offset);
     if ((time_t)-1 == start)
       return (false);
 
     // Use same year as was calculated for start time above.
-    end = calculate_time_from_weekday_of_month(
-            year,
-            _month_end,
-            _week_day_end,
-            _week_day_end_offset);
+    end = calculate_time_from_weekday_of_month(year, _month_end, _week_day_end,
+                                               _week_day_end_offset);
 
     // Advance a year if necessary :
     // thursday 2 august - monday 3 february
     if ((end != (time_t)-1) && (end < start))
       end = calculate_time_from_weekday_of_month(
-              year + 1,
-              _month_end,
-              _week_day_end,
-              _week_day_end_offset);
+          year + 1, _month_end, _week_day_end, _week_day_end_offset);
 
     if ((time_t)-1 == end) {
       // End date can't be helped, so skip it.
@@ -776,25 +755,20 @@ bool daterange::_month_week_day_to_time_t(time_info const& ti,
       if (_month_end != 11) {
         end_month = _month_end + 1;
         end_year = year;
-      }
-      else {
+      } else {
         end_month = 0;
         end_year = year + 1;
       }
-      end = calculate_time_from_day_of_month(
-              end_year,
-              end_month,
-              0);
+      end = calculate_time_from_day_of_month(end_year, end_month, 0);
       if ((time_t)-1 == end)
         return (false);
-    }
-    else
+    } else
       end = _add_round_days_to_midnight(end, 24 * 60 * 60);
 
     // We should have an interval that includes or is above
     // preferred time.
     if (ti.preferred_time < end)
-      break ;
+      break;
     // Advance to next year if we've passed this month
     // weekday already this year.
     else
@@ -824,18 +798,12 @@ bool daterange::_week_day_to_time_t(time_info const& ti,
 
   while (true) {
     // Calculate time of specified weekday of month.
-    start = calculate_time_from_weekday_of_month(
-              year,
-              month,
-              _week_day_start,
-              _week_day_start_offset);
+    start = calculate_time_from_weekday_of_month(year, month, _week_day_start,
+                                                 _week_day_start_offset);
 
     // Use same year and month as was calculated for start time above.
-    end = calculate_time_from_weekday_of_month(
-            year,
-            month,
-            _week_day_end,
-            _week_day_end_offset);
+    end = calculate_time_from_weekday_of_month(year, month, _week_day_end,
+                                               _week_day_end_offset);
     if (end == (time_t)-1) {
       // End date can't be helped, so skip it.
       if (_week_day_end_offset < 0)
@@ -848,26 +816,22 @@ bool daterange::_week_day_to_time_t(time_info const& ti,
       if (month != 11) {
         end_month = month + 1;
         end_year = year;
-      }
-      else {
+      } else {
         end_month = 0;
         end_year = year + 1;
       }
       end = calculate_time_from_day_of_month(end_year, end_month, 0);
-    }
-    else
+    } else
       end = _add_round_days_to_midnight(end, 24 * 60 * 60);
 
     // Error checking.
-    if (((time_t)-1 == start)
-        || ((time_t)-1 == end)
-        || (start > end))
+    if (((time_t)-1 == start) || ((time_t)-1 == end) || (start > end))
       return (false);
 
     // We should have an interval that includes or is above
     // preferred time.
     if (ti.preferred_time < end)
-      break ;
+      break;
     // Advance to next month (or year) if we've passed this weekday of
     // this month already.
     else {
@@ -908,23 +872,23 @@ bool daterange::to_time_t(time_t const preferred_time,
   ti.midnight = mktime(&ti.preftime);
 
   switch (_type) {
-  case calendar_date:
-    ret = _calendar_date_to_time_t(start, end);
-    break;
-  case month_date:
-    ret = _month_date_to_time_t(ti, start, end);
-    break;
-  case month_day:
-    ret = _month_day_to_time_t(ti, start, end);
-    break;
-  case month_week_day:
-    ret = _month_week_day_to_time_t(ti, start, end);
-    break;
-  case week_day:
-    ret = _week_day_to_time_t(ti, start, end);
-    break;
-  default:
-    break;
+    case calendar_date:
+      ret = _calendar_date_to_time_t(start, end);
+      break;
+    case month_date:
+      ret = _month_date_to_time_t(ti, start, end);
+      break;
+    case month_day:
+      ret = _month_day_to_time_t(ti, start, end);
+      break;
+    case month_week_day:
+      ret = _month_week_day_to_time_t(ti, start, end);
+      break;
+    case week_day:
+      ret = _week_day_to_time_t(ti, start, end);
+      break;
+    default:
+      break;
   }
   if (!ret)
     return (false);
@@ -935,17 +899,15 @@ bool daterange::to_time_t(time_t const preferred_time,
     if (start < ti.preferred_time) {
       // How many days have passed between skip start date
       // and preferred time ?
-      unsigned long days((ti.midnight - (unsigned long)start)
-                         / (3600 * 24));
+      unsigned long days((ti.midnight - (unsigned long)start) / (3600 * 24));
 
       // Advance start date to next skip day
       if (!(days % _skip_interval))
         start = _add_round_days_to_midnight(start, days * 24 * 60 * 60);
       else
         start = _add_round_days_to_midnight(
-                  start,
-                  ((days - (days % _skip_interval) + _skip_interval)
-                   * 24 * 60 * 60));
+            start,
+            ((days - (days % _skip_interval) + _skip_interval) * 24 * 60 * 60));
     }
   }
 
@@ -981,23 +943,10 @@ bool daterange::to_time_t(time_t const preferred_time,
  *
  *  @return True on success, otherwise false.
  */
-static bool _get_month_id(
-          std::string const& name,
-          unsigned int& id) {
+static bool _get_month_id(std::string const& name, unsigned int& id) {
   static std::string const months[] = {
-    "january",
-    "february",
-    "march",
-    "april",
-    "may",
-    "june",
-    "july",
-    "august",
-    "september",
-    "october",
-    "november",
-    "december"
-  };
+      "january", "february", "march",     "april",   "may",      "june",
+      "july",    "august",   "september", "october", "november", "december"};
   for (id = 0; id < sizeof(months) / sizeof(months[0]); ++id)
     if (name == months[id])
       return (true);
@@ -1012,18 +961,10 @@ static bool _get_month_id(
  *
  *  @return True on success, otherwise false.
  */
-static bool _get_day_id(
-          std::string const& name,
-          unsigned int& id) {
-  static std::string const days[] = {
-    "sunday",
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday"
-  };
+static bool _get_day_id(std::string const& name, unsigned int& id) {
+  static std::string const days[] = {"sunday",    "monday",   "tuesday",
+                                     "wednesday", "thursday", "friday",
+                                     "saturday"};
   for (id = 0; id < sizeof(days) / sizeof(days[0]); ++id)
     if (name == days[id])
       return (true);
@@ -1050,48 +991,22 @@ bool daterange::build_calendar_date(std::string const& line,
   unsigned int year_end(0);
   unsigned int skip_interval(0);
 
-  if ((ret = sscanf(
-               line.c_str(),
-               "%4u-%2u-%2u - %4u-%2u-%2u / %u %n",
-               &year_start,
-               &month_start,
-               &month_day_start,
-               &year_end,
-               &month_end,
-               &month_day_end,
-               &skip_interval,
-               &pos)) == 7)
+  if ((ret = sscanf(line.c_str(), "%4u-%2u-%2u - %4u-%2u-%2u / %u %n",
+                    &year_start, &month_start, &month_day_start, &year_end,
+                    &month_end, &month_day_end, &skip_interval, &pos)) == 7)
     ;
-  else if ((ret = sscanf(
-                    line.c_str(),
-                    "%4u-%2u-%2u - %4u-%2u-%2u %n",
-                    &year_start,
-                    &month_start,
-                    &month_day_start,
-                    &year_end,
-                    &month_end,
-                    &month_day_end,
-                    &pos)) == 6)
+  else if ((ret = sscanf(line.c_str(), "%4u-%2u-%2u - %4u-%2u-%2u %n",
+                         &year_start, &month_start, &month_day_start, &year_end,
+                         &month_end, &month_day_end, &pos)) == 6)
     ;
-  else if ((ret = sscanf(
-                    line.c_str(),
-                    "%4u-%2u-%2u / %u %n",
-                    &year_start,
-                    &month_start,
-                    &month_day_start,
-                    &skip_interval,
-                    &pos)) == 4) {
+  else if ((ret = sscanf(line.c_str(), "%4u-%2u-%2u / %u %n", &year_start,
+                         &month_start, &month_day_start, &skip_interval,
+                         &pos)) == 4) {
     year_end = 0;
     month_end = 0;
     month_day_end = 0;
-  }
-  else if ((ret = sscanf(
-                    line.c_str(),
-                    "%4u-%2u-%2u %n",
-                    &year_start,
-                    &month_start,
-                    &month_day_start,
-                    &pos)) == 3) {
+  } else if ((ret = sscanf(line.c_str(), "%4u-%2u-%2u %n", &year_start,
+                           &month_start, &month_day_start, &pos)) == 3) {
     year_end = year_start;
     month_end = month_start;
     month_day_end = month_day_start;
@@ -1099,8 +1014,7 @@ bool daterange::build_calendar_date(std::string const& line,
 
   if (ret) {
     std::list<timerange> timeranges;
-    if (!timerange::build_timeranges_from_string(line.substr(pos),
-                                                 timeranges))
+    if (!timerange::build_timeranges_from_string(line.substr(pos), timeranges))
       return (false);
 
     daterange range(daterange::calendar_date);
@@ -1145,57 +1059,35 @@ bool daterange::build_other_date(std::string const& line,
   if (line.size() > 1024)
     return (false);
 
-  if (sscanf(
-        line.c_str(),
-        "%[a-z] %d %[a-z] - %[a-z] %d %[a-z] / %u %n",
-        buffer[0],
-        &week_day_start_offset,
-        buffer[1],
-        buffer[2],
-        &week_day_end_offset,
-        buffer[3],
-        &skip_interval,
-        &pos) == 7) {
+  if (sscanf(line.c_str(), "%[a-z] %d %[a-z] - %[a-z] %d %[a-z] / %u %n",
+             buffer[0], &week_day_start_offset, buffer[1], buffer[2],
+             &week_day_end_offset, buffer[3], &skip_interval, &pos) == 7) {
     // wednesday 1 january - thursday 2 july / 3
-    if (_get_day_id(buffer[0], week_day_start)
-        && _get_month_id(buffer[1], month_start)
-        && _get_day_id(buffer[2], week_day_end)
-        && _get_month_id(buffer[3], month_end))
+    if (_get_day_id(buffer[0], week_day_start) &&
+        _get_month_id(buffer[1], month_start) &&
+        _get_day_id(buffer[2], week_day_end) &&
+        _get_month_id(buffer[3], month_end))
       type = daterange::month_week_day;
-  }
-  else if (sscanf(
-             line.c_str(),
-             "%[a-z] %d - %[a-z] %d / %u %n",
-             buffer[0],
-             &month_day_start,
-             buffer[1],
-             &month_day_end,
-             &skip_interval,
-             &pos) == 5) {
+  } else if (sscanf(line.c_str(), "%[a-z] %d - %[a-z] %d / %u %n", buffer[0],
+                    &month_day_start, buffer[1], &month_day_end, &skip_interval,
+                    &pos) == 5) {
     // monday 2 - thursday 3 / 2
-    if (_get_day_id(buffer[0], week_day_start)
-        && _get_day_id(buffer[1], week_day_end)) {
+    if (_get_day_id(buffer[0], week_day_start) &&
+        _get_day_id(buffer[1], week_day_end)) {
       week_day_start_offset = month_day_start;
       week_day_end_offset = month_day_end;
       type = daterange::week_day;
     }
     // february 1 - march 15 / 3
-    else if (_get_month_id(buffer[0], month_start)
-       && _get_month_id(buffer[1], month_end))
+    else if (_get_month_id(buffer[0], month_start) &&
+             _get_month_id(buffer[1], month_end))
       type = daterange::month_date;
     // day 4 - 6 / 2
-    else if (!strcmp(buffer[0], "day")
-             && !strcmp(buffer[1], "day"))
+    else if (!strcmp(buffer[0], "day") && !strcmp(buffer[1], "day"))
       type = daterange::month_day;
-  }
-  else if (sscanf(
-             line.c_str(),
-             "%[a-z] %d - %d / %u %n",
-             buffer[0],
-             &month_day_start,
-             &month_day_end,
-             &skip_interval,
-             &pos) == 4) {
+  } else if (sscanf(line.c_str(), "%[a-z] %d - %d / %u %n", buffer[0],
+                    &month_day_start, &month_day_end, &skip_interval,
+                    &pos) == 4) {
     // thursday 2 - 4
     if (_get_day_id(buffer[0], week_day_start)) {
       week_day_start_offset = month_day_start;
@@ -1211,31 +1103,17 @@ bool daterange::build_other_date(std::string const& line,
     // day 1 - 4
     else if (!strcmp(buffer[0], "day"))
       type = daterange::month_day;
-  }
-  else if (sscanf(
-             line.c_str(),
-             "%[a-z] %d %[a-z] - %[a-z] %d %[a-z] %n",
-             buffer[0],
-             &week_day_start_offset,
-             buffer[1],
-             buffer[2],
-             &week_day_end_offset,
-             buffer[3],
-             &pos) == 6) {
+  } else if (sscanf(line.c_str(), "%[a-z] %d %[a-z] - %[a-z] %d %[a-z] %n",
+                    buffer[0], &week_day_start_offset, buffer[1], buffer[2],
+                    &week_day_end_offset, buffer[3], &pos) == 6) {
     // wednesday 1 january - thursday 2 july
-    if (_get_day_id(buffer[0], week_day_start)
-        && _get_month_id(buffer[1], month_start)
-        && _get_day_id(buffer[2], week_day_end)
-        && _get_month_id(buffer[3], month_end))
+    if (_get_day_id(buffer[0], week_day_start) &&
+        _get_month_id(buffer[1], month_start) &&
+        _get_day_id(buffer[2], week_day_end) &&
+        _get_month_id(buffer[3], month_end))
       type = daterange::month_week_day;
-  }
-  else if (sscanf(
-             line.c_str(),
-             "%[a-z] %d - %d %n",
-             buffer[0],
-             &month_day_start,
-             &month_day_end,
-             &pos) == 3) {
+  } else if (sscanf(line.c_str(), "%[a-z] %d - %d %n", buffer[0],
+                    &month_day_start, &month_day_end, &pos) == 3) {
     // thursday 2 - 4
     if (_get_day_id(buffer[0], week_day_start)) {
       week_day_start_offset = month_day_start;
@@ -1251,53 +1129,34 @@ bool daterange::build_other_date(std::string const& line,
     // day 1 - 4
     else if (!strcmp(buffer[0], "day"))
       type = daterange::month_day;
-  }
-  else if (sscanf(
-             line.c_str(),
-             "%[a-z] %d - %[a-z] %d %n",
-             buffer[0],
-             &month_day_start,
-             buffer[1],
-             &month_day_end,
-             &pos) == 4) {
+  } else if (sscanf(line.c_str(), "%[a-z] %d - %[a-z] %d %n", buffer[0],
+                    &month_day_start, buffer[1], &month_day_end, &pos) == 4) {
     // monday 2 - thursday 3
-    if (_get_day_id(buffer[0], week_day_start)
-        && _get_day_id(buffer[1], week_day_end)) {
+    if (_get_day_id(buffer[0], week_day_start) &&
+        _get_day_id(buffer[1], week_day_end)) {
       week_day_start_offset = month_day_start;
       week_day_end_offset = month_day_end;
       type = daterange::week_day;
     }
     // february 1 - march 15
-    else if (_get_month_id(buffer[0], month_start)
-       && _get_month_id(buffer[1], month_end))
+    else if (_get_month_id(buffer[0], month_start) &&
+             _get_month_id(buffer[1], month_end))
       type = daterange::month_date;
     // day 1 - day 5
-    else if (!strcmp(buffer[0], "day")
-             && !strcmp(buffer[1], "day"))
+    else if (!strcmp(buffer[0], "day") && !strcmp(buffer[1], "day"))
       type = daterange::month_day;
-  }
-  else if (sscanf(
-             line.c_str(),
-             "%[a-z] %d %[a-z] %n",
-             buffer[0],
-             &week_day_start_offset,
-             buffer[1],
-             &pos) == 3) {
+  } else if (sscanf(line.c_str(), "%[a-z] %d %[a-z] %n", buffer[0],
+                    &week_day_start_offset, buffer[1], &pos) == 3) {
     // thursday 3 february
-    if (_get_day_id(buffer[0], week_day_start)
-        && _get_month_id(buffer[1], month_start)) {
+    if (_get_day_id(buffer[0], week_day_start) &&
+        _get_month_id(buffer[1], month_start)) {
       month_end = month_start;
       week_day_end = week_day_start;
       week_day_end_offset = week_day_start_offset;
       type = daterange::month_week_day;
     }
-  }
-  else if (sscanf(
-             line.c_str(),
-             "%[a-z] %d %n",
-             buffer[0],
-             &month_day_start,
-             &pos) == 2) {
+  } else if (sscanf(line.c_str(), "%[a-z] %d %n", buffer[0], &month_day_start,
+                    &pos) == 2) {
     // thursday 2
     if (_get_day_id(buffer[0], week_day_start)) {
       week_day_start_offset = month_day_start;
@@ -1323,22 +1182,19 @@ bool daterange::build_other_date(std::string const& line,
     if (type == daterange::month_day) {
       range.month_day_start(month_day_start);
       range.month_day_end(month_day_end);
-    }
-    else if (type == daterange::month_week_day) {
+    } else if (type == daterange::month_week_day) {
       range.month_start(month_start);
       range.week_day_start(week_day_start);
       range.week_day_start_offset(week_day_start_offset);
       range.month_end(month_end);
       range.week_day_end(week_day_end);
       range.week_day_end_offset(week_day_end_offset);
-    }
-    else if (type == daterange::week_day) {
+    } else if (type == daterange::week_day) {
       range.week_day_start(week_day_start);
       range.week_day_start_offset(week_day_start_offset);
       range.week_day_end(week_day_end);
       range.week_day_end_offset(week_day_end_offset);
-    }
-    else if (type == daterange::month_date) {
+    } else if (type == daterange::month_date) {
       range.month_start(month_start);
       range.month_day_start(month_day_start);
       range.month_end(month_end);
@@ -1347,8 +1203,7 @@ bool daterange::build_other_date(std::string const& line,
     range.skip_interval(skip_interval);
 
     std::list<timerange> timeranges;
-    if (!timerange::build_timeranges_from_string(line.substr(pos),
-                                                 timeranges))
+    if (!timerange::build_timeranges_from_string(line.substr(pos), timeranges))
       return (false);
 
     range.timeranges(timeranges);
@@ -1368,7 +1223,8 @@ bool daterange::build_other_date(std::string const& line,
  *
  *  @return           True if the string was correctly parsed.
  */
-bool daterange::build_dateranges_from_string(std::string const& value,
-                             std::vector<std::list<daterange> >& list) {
+bool daterange::build_dateranges_from_string(
+    std::string const& value,
+    std::vector<std::list<daterange> >& list) {
   return (build_calendar_date(value, list) || build_other_date(value, list));
 }

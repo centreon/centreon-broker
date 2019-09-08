@@ -17,39 +17,38 @@
 */
 
 #ifndef CCB_ENGCMD_FACTORY_HH
-#  define CCB_ENGCMD_FACTORY_HH
+#define CCB_ENGCMD_FACTORY_HH
 
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/io/factory.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/io/factory.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         neb {
-namespace         engcmd {
-  /**
-   *  @class factory factory.hh "com/centreon/broker/engcmd/factory.hh"
-   *  @brief Engine command factory.
-   *
-   *  Build engine command endpoints.
-   */
-  class           factory : public io::factory {
-  public:
-                  factory();
-                  factory(factory const& other);
-                  ~factory();
-    factory&      operator=(factory const& other);
-    io::factory*  clone() const;
-    bool          has_endpoint(config::endpoint& cfg) const;
-    io::endpoint* new_endpoint(
-                    config::endpoint& cfg,
-                    bool& is_acceptor,
-                    std::shared_ptr<persistent_cache> cache
-                    = std::shared_ptr<persistent_cache>()) const;
-  };
-}
-}
+namespace neb {
+namespace engcmd {
+/**
+ *  @class factory factory.hh "com/centreon/broker/engcmd/factory.hh"
+ *  @brief Engine command factory.
+ *
+ *  Build engine command endpoints.
+ */
+class factory : public io::factory {
+ public:
+  factory();
+  factory(factory const& other);
+  ~factory();
+  factory& operator=(factory const& other);
+  io::factory* clone() const;
+  bool has_endpoint(config::endpoint& cfg) const;
+  io::endpoint* new_endpoint(config::endpoint& cfg,
+                             bool& is_acceptor,
+                             std::shared_ptr<persistent_cache> cache =
+                                 std::shared_ptr<persistent_cache>()) const;
+};
+}  // namespace engcmd
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_ENGCMD_FACTORY_HH
+#endif  // !CCB_ENGCMD_FACTORY_HH

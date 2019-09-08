@@ -17,31 +17,25 @@
 */
 
 #ifndef CCB_TLS_INTERNAL_HH
-#  define CCB_TLS_INTERNAL_HH
+#define CCB_TLS_INTERNAL_HH
 
-#  include <gnutls/gnutls.h>
-#  include <sys/types.h>
+#include <gnutls/gnutls.h>
+#include <sys/types.h>
 
 CCB_BEGIN()
 
-namespace                    tls {
-  // Data.
-  extern unsigned char const dh_params_2048[];
-  extern gnutls_dh_params_t  dh_params;
+namespace tls {
+// Data.
+extern unsigned char const dh_params_2048[];
+extern gnutls_dh_params_t dh_params;
 
-  // Code.
-  void                       destroy();
-  void                       initialize();
-  ssize_t                    pull_helper(
-                               gnutls_transport_ptr_t ptr,
-                               void* data,
-                               size_t size);
-  ssize_t                    push_helper(
-                               gnutls_transport_ptr_t ptr,
-                               void const* data,
-                               size_t size);
-}
+// Code.
+void destroy();
+void initialize();
+ssize_t pull_helper(gnutls_transport_ptr_t ptr, void* data, size_t size);
+ssize_t push_helper(gnutls_transport_ptr_t ptr, void const* data, size_t size);
+}  // namespace tls
 
 CCB_END()
 
-#endif // !CCB_TLS_INTERNAL_HH
+#endif  // !CCB_TLS_INTERNAL_HH

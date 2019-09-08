@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdio>
-#include <cstdlib>
-#include <iostream>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/config.hh"
@@ -58,15 +58,12 @@ int main() {
     generate_hosts(hosts, 10);
     generate_services(services, hosts, 2);
     std::string additional_config;
-    additional_config = "broker_module=" CBMOD_PATH " "
-                        PROJECT_SOURCE_DIR "/test/cfg/sql_cleanup.xml\n";
+    additional_config = "broker_module=" CBMOD_PATH " " PROJECT_SOURCE_DIR
+                        "/test/cfg/sql_cleanup.xml\n";
 
     // Generate monitoring engine configuration files.
-    config_write(
-      engine_config_path.c_str(),
-      additional_config.c_str(),
-      &hosts,
-      &services);
+    config_write(engine_config_path.c_str(), additional_config.c_str(), &hosts,
+                 &services);
 
     // Start monitoring engine.
     std::string engine_config_file(engine_config_path);
@@ -79,9 +76,8 @@ int main() {
     {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec("UPDATE rt_instances SET deleted=TRUE"))
-        throw (exceptions::msg()
-               << "could not flag instances as deleted: "
-               << q.lastError().text());
+        throw(exceptions::msg() << "could not flag instances as deleted: "
+                                << q.lastError().text());
     }
 
     // Let cleanup thread work.
@@ -91,40 +87,38 @@ int main() {
     {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT COUNT(*) FROM rt_hosts") || !q.next())
-        throw (exceptions::msg() << "could not fetch host count: "
-               << q.lastError().text());
+        throw(exceptions::msg()
+              << "could not fetch host count: " << q.lastError().text());
       if (q.value(0).toInt())
-        throw (exceptions::msg() << q.value(0).toInt()
-               << " hosts still in database");
+        throw(exceptions::msg()
+              << q.value(0).toInt() << " hosts still in database");
     }
     // Check services table.
     {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT COUNT(*) FROM rt_services") || !q.next())
-        throw (exceptions::msg() << "could not fetch service count: "
-               << q.lastError().text());
+        throw(exceptions::msg()
+              << "could not fetch service count: " << q.lastError().text());
       if (q.value(0).toInt())
-        throw (exceptions::msg() << q.value(0).toInt()
-               << " services still in database");
+        throw(exceptions::msg()
+              << q.value(0).toInt() << " services still in database");
     }
     // Check modules table.
     {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT COUNT(*) FROM rt_modules") || !q.next())
-        throw (exceptions::msg() << "could not fetch modules count: "
-               << q.lastError().text());
+        throw(exceptions::msg()
+              << "could not fetch modules count: " << q.lastError().text());
       if (q.value(0).toInt())
-        throw (exceptions::msg() << q.value(0).toInt()
-               << " modules still in database");
+        throw(exceptions::msg()
+              << q.value(0).toInt() << " modules still in database");
     }
 
     // Success.
     error = false;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
   }
 

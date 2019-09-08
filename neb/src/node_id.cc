@@ -23,9 +23,7 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-node_id::node_id() :
-  _host_id(0),
-  _service_id(0) {}
+node_id::node_id() : _host_id(0), _service_id(0) {}
 
 /**
  *  Copy constructor.
@@ -68,11 +66,8 @@ bool node_id::operator==(node_id const& other) const throw() {
  *  @param[in] host_id    The host id of this node. 0 if none.
  *  @param[in] service_id  The service id of this node. 0 if none.
  */
-node_id::node_id(
-           uint64_t host_id,
-           uint64_t service_id) :
-  _host_id{host_id},
-  _service_id{service_id} {}
+node_id::node_id(uint64_t host_id, uint64_t service_id)
+    : _host_id{host_id}, _service_id{service_id} {}
 
 /**
  *  Comparison operator.

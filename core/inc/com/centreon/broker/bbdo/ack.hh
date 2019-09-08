@@ -17,55 +17,51 @@
 */
 
 #ifndef CCB_BBDO_ACK_HH
-#  define CCB_BBDO_ACK_HH
+#define CCB_BBDO_ACK_HH
 
-#  include "com/centreon/broker/bbdo/internal.hh"
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/io/events.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/bbdo/internal.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace               bbdo {
+namespace bbdo {
+/**
+ *  @class ack ack.hh "com/centreon/broker/bbdo/ack.hh"
+ *  @brief An ack event sent between two bbdo's endpoint.
+ *
+ *  This is used for high-level event acknowledgement.
+ */
+class ack : public io::data {
+ public:
+  ack();
+  ack(ack const& other);
+  ~ack();
+  ack& operator=(ack const& other);
+  unsigned int type() const;
+
   /**
-   *  @class ack ack.hh "com/centreon/broker/bbdo/ack.hh"
-   *  @brief An ack event sent between two bbdo's endpoint.
+   *  Get the event type.
    *
-   *  This is used for high-level event acknowledgement.
+   *  @return The event type.
    */
-  class                 ack : public io::data {
-  public:
-                        ack();
-                        ack(ack const& other);
-                        ~ack();
-    ack&                operator=(ack const& other);
-    unsigned int        type() const;
+  static unsigned int static_type() {
+    return (io::events::data_type<io::events::bbdo, bbdo::de_ack>::value);
+  }
 
-    /**
-     *  Get the event type.
-     *
-     *  @return The event type.
-     */
-    static unsigned int static_type() {
-      return (io::events::data_type<
-                            io::events::bbdo,
-                            bbdo::de_ack>::value);
-    }
+  unsigned int acknowledged_events;
 
-    unsigned int        acknowledged_events;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-    static mapping::entry const
-                        entries[];
-    static io::event_info::event_operations const
-                        operations;
-
-  private:
-    void                _internal_copy(ack const& right);
-  };
-}
+ private:
+  void _internal_copy(ack const& right);
+};
+}  // namespace bbdo
 
 CCB_END()
 
-#endif // !CCB_BBDO_VERSION_RESPONSE_HH
+#endif  // !CCB_BBDO_VERSION_RESPONSE_HH

@@ -37,6 +37,5 @@ int main() {
   n1.remove_depended(&n2);
 
   // Check.
-  return (!n1.get_dependeds().empty()
-          || !n2.get_dependencies().empty());
+  return (!n1.get_dependeds().empty() || !n2.get_dependencies().empty());
 }

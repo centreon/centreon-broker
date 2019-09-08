@@ -17,41 +17,41 @@
 */
 
 #ifndef CCB_EXCEPTIONS_SHUTDOWN_HH
-#  define CCB_EXCEPTIONS_SHUTDOWN_HH
+#define CCB_EXCEPTIONS_SHUTDOWN_HH
 
-#  include "com/centreon/broker/exceptions/msg.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     exceptions {
-  /**
-   *  @class shutdown shutdown.hh "com/centreon/broker/exceptions/shutdown.hh"
-   *  @brief Shutdown exception class.
-   *
-   *  This exception is thrown when someone attemps to read from a
-   *  stream that has been shutdown.
-   */
-  class       shutdown : public msg {
-  public:
-              shutdown();
-              shutdown(shutdown const& other);
-              ~shutdown() throw ();
-    shutdown& operator=(shutdown const& other);
+namespace exceptions {
+/**
+ *  @class shutdown shutdown.hh "com/centreon/broker/exceptions/shutdown.hh"
+ *  @brief Shutdown exception class.
+ *
+ *  This exception is thrown when someone attemps to read from a
+ *  stream that has been shutdown.
+ */
+class shutdown : public msg {
+ public:
+  shutdown();
+  shutdown(shutdown const& other);
+  ~shutdown() throw();
+  shutdown& operator=(shutdown const& other);
 
-    /**
-     *  Insert data in message.
-     *
-     *  @param[in] t Data to insert.
-     */
-    template  <typename T>
-    shutdown& operator<<(T t) throw () {
-      msg::operator<<(t);
-      return (*this);
-    }
-  };
-}
+  /**
+   *  Insert data in message.
+   *
+   *  @param[in] t Data to insert.
+   */
+  template <typename T>
+  shutdown& operator<<(T t) throw() {
+    msg::operator<<(t);
+    return (*this);
+  }
+};
+}  // namespace exceptions
 
 CCB_END()
 
-#endif // !CCB_EXCEPTIONS_SHUTDOWN_HH
+#endif  // !CCB_EXCEPTIONS_SHUTDOWN_HH

@@ -16,28 +16,28 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstddef>
 #include "com/centreon/broker/mapping/entry.hh"
+#include <cstddef>
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::mapping;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
 entry::entry()
-  : _attribute(always_valid),
-    _name(NULL),
-    _name_v2(NULL),
-    _ptr(NULL),
-    _serialize(false),
-    _type(source::UNKNOWN) {}
+    : _attribute(always_valid),
+      _name(nullptr),
+      _name_v2(nullptr),
+      _ptr(nullptr),
+      _serialize(false),
+      _type(source::UNKNOWN) {}
 
 /**
  *  Copy constructor.
@@ -45,12 +45,12 @@ entry::entry()
  *  @param[in] other  Object to copy.
  */
 entry::entry(entry const& other)
-  : _name(other._name),
-    _name_v2(other._name_v2),
-    _ptr(other._ptr),
-    _serialize(other._serialize),
-    _source(other._source),
-    _type(other._type) {}
+    : _name(other._name),
+      _name_v2(other._name_v2),
+      _ptr(other._ptr),
+      _serialize(other._serialize),
+      _source(other._source),
+      _type(other._type) {}
 
 /**
  *  Destructor.

@@ -17,32 +17,32 @@
 */
 
 #ifndef CCB_BAM_BOOL_AND_HH
-#  define CCB_BAM_BOOL_AND_HH
+#define CCB_BAM_BOOL_AND_HH
 
-#  include "com/centreon/broker/bam/bool_binary_operator.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/bam/bool_binary_operator.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     bam {
-  /**
-   *  @class bool_and bool_and.hh "com/centreon/broker/bam/bool_and.hh"
-   *  @brief AND operator.
-   *
-   *  In the context of a KPI computation, bool_and represents a logical
-   *  AND between two bool_value.
-   */
-  class       bool_and : public bool_binary_operator {
-  public:
-              bool_and();
-              bool_and(bool_and const& right);
-              ~bool_and();
-    bool_and& operator=(bool_and const& right);
-    double    value_hard();
-    double    value_soft();
-  };
-}
+namespace bam {
+/**
+ *  @class bool_and bool_and.hh "com/centreon/broker/bam/bool_and.hh"
+ *  @brief AND operator.
+ *
+ *  In the context of a KPI computation, bool_and represents a logical
+ *  AND between two bool_value.
+ */
+class bool_and : public bool_binary_operator {
+ public:
+  bool_and();
+  bool_and(bool_and const& right);
+  ~bool_and();
+  bool_and& operator=(bool_and const& right);
+  double value_hard();
+  double value_soft();
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_AND_HH
+#endif  // !CCB_BAM_BOOL_AND_HH

@@ -16,19 +16,19 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/file/factory.hh"
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/file/factory.hh"
 #include "com/centreon/broker/file/opener.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -78,10 +78,9 @@ io::factory* factory::clone() const {
 bool factory::has_endpoint(config::endpoint& cfg) const {
   bool retval;
   if (cfg.type == "file") {
-    cfg.params["coarse"] = "yes"; // File won't respond to any salutation.
+    cfg.params["coarse"] = "yes";  // File won't respond to any salutation.
     retval = true;
-  }
-  else
+  } else
     retval = false;
   return (retval);
 }
@@ -96,18 +95,20 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return Acceptor matching configuration.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
   // Find path to the file.
   std::string filename;
   {
-    std::map<std::string, std::string>::const_iterator it{cfg.params.find("path")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("path")};
     if (it == cfg.params.end())
       throw exceptions::msg() << "file: no 'path' defined for file "
-             "endpoint '" << cfg.name << "'";
+                                 "endpoint '"
+                              << cfg.name << "'";
     filename = it->second;
   }
 

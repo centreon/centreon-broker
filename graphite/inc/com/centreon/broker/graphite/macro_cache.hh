@@ -17,21 +17,21 @@
 */
 
 #ifndef CCB_GRAPHITE_MACRO_CACHE_HH
-#  define CCB_GRAPHITE_MACRO_CACHE_HH
+#define CCB_GRAPHITE_MACRO_CACHE_HH
 
-#  include <map>
-#  include <memory>
-#  include <string>
-#  include <unordered_map>
-#  include "com/centreon/broker/io/factory.hh"
-#  include "com/centreon/broker/misc/pair.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/host.hh"
-#  include "com/centreon/broker/neb/instance.hh"
-#  include "com/centreon/broker/neb/service.hh"
-#  include "com/centreon/broker/persistent_cache.hh"
-#  include "com/centreon/broker/storage/index_mapping.hh"
-#  include "com/centreon/broker/storage/metric_mapping.hh"
+#include <map>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include "com/centreon/broker/io/factory.hh"
+#include "com/centreon/broker/misc/pair.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/host.hh"
+#include "com/centreon/broker/neb/instance.hh"
+#include "com/centreon/broker/neb/service.hh"
+#include "com/centreon/broker/persistent_cache.hh"
+#include "com/centreon/broker/storage/index_mapping.hh"
+#include "com/centreon/broker/storage/metric_mapping.hh"
 
 CCB_BEGIN()
 
@@ -77,4 +77,4 @@ class macro_cache {
 
 CCB_END()
 
-#endif // !CCB_GRAPHITE_MACRO_CACHE_HH
+#endif  // !CCB_GRAPHITE_MACRO_CACHE_HH

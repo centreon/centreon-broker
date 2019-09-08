@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
-#include "com/centreon/broker/multiplexing/subscriber.hh"
 
 using namespace com::centreon::broker::multiplexing;
 
@@ -28,10 +28,8 @@ using namespace com::centreon::broker::multiplexing;
  *  @param[in] name        Name associated to the muxer.
  *  @param[in] persistent  Whether or not the muxer is persistent.
  */
-subscriber::subscriber(
-              std::string const& name,
-              bool persistent)
-  : _muxer(new muxer(name, persistent)) {
+subscriber::subscriber(std::string const& name, bool persistent)
+    : _muxer(new muxer(name, persistent)) {
   multiplexing::engine::instance().subscribe(_muxer.get());
 }
 

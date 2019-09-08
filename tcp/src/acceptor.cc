@@ -16,29 +16,26 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/tcp/acceptor.hh"
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/tcp/acceptor.hh"
 #include "com/centreon/broker/tcp/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
 acceptor::acceptor()
-  : io::endpoint(true),
-    _port(0),
-    _read_timeout(-1),
-    _write_timeout(-1) {}
+    : io::endpoint(true), _port(0), _read_timeout(-1), _write_timeout(-1) {}
 
 /**
  *  Destructor.
@@ -72,15 +69,15 @@ std::shared_ptr<io::stream> acceptor::open() {
   // Listen on port.
   std::lock_guard<std::mutex> lock(_mutex);
 
-  if (!_socket.get())
+  if (!_socket)
     _socket.reset(new asio::ip::tcp::socket(_io_context));
 
-  asio::ip::tcp::acceptor acceptor(_io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), _port));
+  asio::ip::tcp::acceptor acceptor(
+      _io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), _port));
   acceptor.accept(*_socket);
 
   // Accept client.
-  std::shared_ptr<stream>
-    incoming{new stream{_socket.get(), ""}};
+  std::shared_ptr<stream> incoming{new stream{_socket.get(), ""}};
 
   logging::info(logging::medium) << "TCP: new client connected";
   incoming->set_parent(this);
@@ -96,11 +93,9 @@ std::shared_ptr<io::stream> acceptor::open() {
  */
 void acceptor::remove_child(std::string const& child) {
   std::lock_guard<std::mutex> lock(_childrenm);
-  for (std::list<std::string>::iterator
-         it(_children.begin()),
-         end(_children.end());
-       it != end;
-       ++it)
+  for (std::list<std::string>::iterator it(_children.begin()),
+       end(_children.end());
+       it != end; ++it)
     if (*it == child) {
       _children.erase(it);
       break;
@@ -137,11 +132,9 @@ void acceptor::stats(io::properties& tree) {
   std::lock_guard<std::mutex> children_lock(_childrenm);
   std::ostringstream oss;
   oss << _children.size() << ": ";
-  for (std::list<std::string>::const_iterator
-         it(_children.begin()),
-         end(_children.end());
-       it != end;
-       ++it)
+  for (std::list<std::string>::const_iterator it(_children.begin()),
+       end(_children.end());
+       it != end; ++it)
     oss << ", " << *it;
   io::property& p(tree["peers"]);
   p.set_name("peers");

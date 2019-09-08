@@ -23,10 +23,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::io;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -110,14 +110,14 @@ void stream::update() {}
  *
  *  @return           True if event is valid.
  */
-bool stream::validate(
-               std::shared_ptr<io::data> const& d,
-               std::string const& error) {
+bool stream::validate(std::shared_ptr<io::data> const& d,
+                      std::string const& error) {
   if (!d) {
     logging::error(logging::medium)
-      << error << ": received a null event. This should never happen. "
-                   "This is likely a software bug that you should report "
-                   "to Centreon Broker developers.";
+        << error
+        << ": received a null event. This should never happen. "
+           "This is likely a software bug that you should report "
+           "to Centreon Broker developers.";
     return false;
   }
   return true;

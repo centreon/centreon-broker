@@ -17,12 +17,12 @@
 */
 
 #ifndef CCB_CORRELATION_EVENTS_HH
-#  define CCB_CORRELATION_EVENTS_HH
+#define CCB_CORRELATION_EVENTS_HH
 
-#  include "com/centreon/broker/correlation/engine_state.hh"
-#  include "com/centreon/broker/correlation/state.hh"
-#  include "com/centreon/broker/correlation/issue.hh"
-#  include "com/centreon/broker/correlation/issue_parent.hh"
-#  include "com/centreon/broker/correlation/log_issue.hh"
+#include "com/centreon/broker/correlation/engine_state.hh"
+#include "com/centreon/broker/correlation/issue.hh"
+#include "com/centreon/broker/correlation/issue_parent.hh"
+#include "com/centreon/broker/correlation/log_issue.hh"
+#include "com/centreon/broker/correlation/state.hh"
 
-#endif // !CCB_CORRELATION_EVENTS_HH
+#endif  // !CCB_CORRELATION_EVENTS_HH

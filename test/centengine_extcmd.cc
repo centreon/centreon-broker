@@ -16,21 +16,21 @@
 ** For more information : contact@centreon.com
 */
 
+#include "test/centengine_extcmd.hh"
 #include <cstdio>
 #include <fstream>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/misc/misc.hh"
-#include "test/centengine_extcmd.hh"
 #include "test/misc.hh"
 
 using namespace com::centreon::broker;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -63,7 +63,7 @@ centengine_extcmd::~centengine_extcmd() {
  *  @return This object.
  */
 centengine_extcmd& centengine_extcmd::operator=(
-                     centengine_extcmd const& other) {
+    centengine_extcmd const& other) {
   if (this != &other)
     _internal_copy(other);
   return (*this);
@@ -78,11 +78,11 @@ void centengine_extcmd::execute(std::string const& query) {
   std::ofstream ofs;
   ofs.open(_file.c_str(), std::ios_base::out | std::ios_base::app);
   if (ofs.fail())
-    throw (exceptions::msg() << "cannot open command file '"
-           << _file.c_str() << "'");
+    throw(exceptions::msg()
+          << "cannot open command file '" << _file.c_str() << "'");
   ofs << "[" << time(NULL) << "] " << query << "\n";
   ofs.close();
-  return ;
+  return;
 }
 
 /**
@@ -102,7 +102,7 @@ std::string centengine_extcmd::get_engine_config() const {
  *
  *  @return External command file path.
  */
-std::string const& centengine_extcmd::get_file() const throw () {
+std::string const& centengine_extcmd::get_file() const throw() {
   return (_file);
 }
 
@@ -113,14 +113,14 @@ std::string const& centengine_extcmd::get_file() const throw () {
  */
 void centengine_extcmd::set_file(std::string const& file) {
   _file = file;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -129,5 +129,5 @@ void centengine_extcmd::set_file(std::string const& file) {
  */
 void centengine_extcmd::_internal_copy(centengine_extcmd const& other) {
   _file = other._file;
-  return ;
+  return;
 }

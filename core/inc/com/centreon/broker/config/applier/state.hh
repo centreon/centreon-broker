@@ -17,47 +17,45 @@
 */
 
 #ifndef CCB_CONFIG_APPLIER_STATE_HH
-#  define CCB_CONFIG_APPLIER_STATE_HH
+#define CCB_CONFIG_APPLIER_STATE_HH
 
-#  include <string>
-#  include "com/centreon/broker/config/state.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/config/state.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                config {
-  namespace              applier {
-    /**
-     *  @class state state.hh "com/centreon/broker/config/applier/state.hh"
-     *  @brief Apply a configuration.
-     *
-     *  Apply some configuration state.
-     */
-    class                state {
-    public:
-                         ~state();
-      void               apply(
-                           config::state const& s,
-                           bool run_mux = true);
-      std::string const& cache_dir() const throw ();
-      static state&      instance();
-      static void        load();
-      unsigned int       poller_id() const throw ();
-      std::string const& poller_name() const throw ();
-      static void        unload();
+namespace config {
+namespace applier {
+/**
+ *  @class state state.hh "com/centreon/broker/config/applier/state.hh"
+ *  @brief Apply a configuration.
+ *
+ *  Apply some configuration state.
+ */
+class state {
+ public:
+  ~state();
+  void apply(config::state const& s, bool run_mux = true);
+  std::string const& cache_dir() const throw();
+  static state& instance();
+  static void load();
+  unsigned int poller_id() const throw();
+  std::string const& poller_name() const throw();
+  static void unload();
 
-    private:
-                         state();
-                         state(state const& other);
-      state&             operator=(state const& other);
+ private:
+  state();
+  state(state const& other);
+  state& operator=(state const& other);
 
-      std::string        _cache_dir;
-      unsigned int       _poller_id;
-      std::string        _poller_name;
-    };
-  }
-}
+  std::string _cache_dir;
+  unsigned int _poller_id;
+  std::string _poller_name;
+};
+}  // namespace applier
+}  // namespace config
 
 CCB_END()
 
-#endif // !CCB_CONFIG_APPLIER_STATE_HH
+#endif  // !CCB_CONFIG_APPLIER_STATE_HH

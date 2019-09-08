@@ -17,37 +17,36 @@
 */
 
 #ifndef CCB_NEB_NODE_EVENTS_FACTORY_HH
-#  define CCB_NEB_NODE_EVENTS_FACTORY_HH
+#define CCB_NEB_NODE_EVENTS_FACTORY_HH
 
-#  include "com/centreon/broker/io/factory.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/factory.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         neb {
-  /**
-   *  @class node_events_factory node_events_factory.hh "com/centreon/broker/neb/node_events_factory.hh"
-   *  @brief Node events factory.
-   *
-   *  Build node events objects.
-   */
-  class           node_events_factory : public io::factory {
-  public:
-                  node_events_factory();
-                  node_events_factory(node_events_factory const& other);
-                  ~node_events_factory();
-    node_events_factory&
-                  operator=(node_events_factory const& other);
-    io::factory*  clone() const;
-    bool          has_endpoint(config::endpoint& cfg) const;
-    io::endpoint* new_endpoint(
-                    config::endpoint& cfg,
-                    bool& is_acceptor,
-                    std::shared_ptr<persistent_cache> cache
-                    = std::shared_ptr<persistent_cache>()) const;
-  };
-}
+namespace neb {
+/**
+ *  @class node_events_factory node_events_factory.hh
+ * "com/centreon/broker/neb/node_events_factory.hh"
+ *  @brief Node events factory.
+ *
+ *  Build node events objects.
+ */
+class node_events_factory : public io::factory {
+ public:
+  node_events_factory();
+  node_events_factory(node_events_factory const& other);
+  ~node_events_factory();
+  node_events_factory& operator=(node_events_factory const& other);
+  io::factory* clone() const;
+  bool has_endpoint(config::endpoint& cfg) const;
+  io::endpoint* new_endpoint(config::endpoint& cfg,
+                             bool& is_acceptor,
+                             std::shared_ptr<persistent_cache> cache =
+                                 std::shared_ptr<persistent_cache>()) const;
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_NODE_EVENTS_FACTORY_HH
+#endif  // !CCB_NEB_NODE_EVENTS_FACTORY_HH

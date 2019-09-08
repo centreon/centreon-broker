@@ -17,35 +17,34 @@
 */
 
 #ifndef CCB_INFLUXDB_FACTORY_HH
-#  define CCB_INFLUXDB_FACTORY_HH
+#define CCB_INFLUXDB_FACTORY_HH
 
-#  include "com/centreon/broker/io/factory.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/factory.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         influxdb {
-  /**
-   *  @class factory factory.hh "com/centreon/broker/influxdb/factory.hh"
-   *  @brief Influxdb layer factory.
-   *
-   *  Build Influxdb layer objects.
-   */
-  class           factory : public io::factory {
-  public:
-                  factory();
-                  factory(factory const& other);
-                  ~factory();
-    factory&      operator=(factory const& other);
-    io::factory*  clone() const;
-    bool          has_endpoint(config::endpoint& cfg) const;
-    io::endpoint* new_endpoint(
-                    config::endpoint& cfg,
-                    bool& is_acceptor,
-                    std::shared_ptr<persistent_cache> cache) const;
-  };
-}
+namespace influxdb {
+/**
+ *  @class factory factory.hh "com/centreon/broker/influxdb/factory.hh"
+ *  @brief Influxdb layer factory.
+ *
+ *  Build Influxdb layer objects.
+ */
+class factory : public io::factory {
+ public:
+  factory();
+  factory(factory const& other);
+  ~factory();
+  factory& operator=(factory const& other);
+  io::factory* clone() const;
+  bool has_endpoint(config::endpoint& cfg) const;
+  io::endpoint* new_endpoint(config::endpoint& cfg,
+                             bool& is_acceptor,
+                             std::shared_ptr<persistent_cache> cache) const;
+};
+}  // namespace influxdb
 
 CCB_END()
 
-#endif // !CCB_INFLUXDB_FACTORY_HH
+#endif  // !CCB_INFLUXDB_FACTORY_HH

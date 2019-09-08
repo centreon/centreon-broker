@@ -27,16 +27,13 @@
 
 struct test_server_connection {
   asio::ip::tcp::socket socket;
-  char *buf;
+  char* buf;
 
-  test_server_connection(asio::io_context& ctx, size_t max_buf) :
-    socket{ctx} {
-      buf = new char[max_buf];
+  test_server_connection(asio::io_context& ctx, size_t max_buf) : socket{ctx} {
+    buf = new char[max_buf];
   }
 
-  ~test_server_connection() {
-    delete[] buf;
-  }
+  ~test_server_connection() { delete[] buf; }
 };
 
 class test_server {
@@ -50,7 +47,7 @@ class test_server {
   std::atomic_bool const& get_init_done() { return _init_done; };
   std::atomic_bool const& get_bind_ok() { return _bind_ok; };
 
-  bool add_client(asio::ip::tcp::socket & sock, asio::io_context& io);
+  bool add_client(asio::ip::tcp::socket& sock, asio::io_context& io);
 
  private:
   void start_accept();
@@ -61,9 +58,10 @@ class test_server {
   void start_read(std::list<test_server_connection>::iterator& con);
 
   void handle_read(std::list<test_server_connection>::iterator con_handle,
-                   std::error_code const& err, size_t bytes_transfered);
+                   std::error_code const& err,
+                   size_t bytes_transfered);
 
-  std::unique_ptr<asio::io_context>_ctx;
+  std::unique_ptr<asio::io_context> _ctx;
   std::unique_ptr<asio::ip::tcp::acceptor> _acceptor;
   std::list<test_server_connection> _connections;
   std::atomic_size_t _num_connections;

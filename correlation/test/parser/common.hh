@@ -17,16 +17,15 @@
 */
 
 #ifndef PARSER_COMMON_HH
-#  define PARSER_COMMON_HH
+#define PARSER_COMMON_HH
 
-#  include <QMap>
-#  include <QPair>
-#  include "com/centreon/broker/correlation/node.hh"
+#include <QMap>
+#include <QPair>
+#include "com/centreon/broker/correlation/node.hh"
 
-void compare_states(
-       QMap<QPair<unsigned int, unsigned int>,
-         com::centreon::broker::correlation::node> const& n1,
-       QMap<QPair<unsigned int, unsigned int>,
-         com::centreon::broker::correlation::node> const& n2);
+void compare_states(QMap<QPair<unsigned int, unsigned int>,
+                         com::centreon::broker::correlation::node> const& n1,
+                    QMap<QPair<unsigned int, unsigned int>,
+                         com::centreon::broker::correlation::node> const& n2);
 
-#endif // !PARSER_COMMON_HH
+#endif  // !PARSER_COMMON_HH

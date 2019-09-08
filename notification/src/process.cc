@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/notification/process.hh"
 #include <QObject>
 #include <QStringList>
-#include "com/centreon/broker/notification/process.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/process_manager.hh"
 
@@ -30,10 +30,10 @@ using namespace com::centreon::broker::notification;
  *  @param[in] timeout  The timeout of this process, default 0 (none).
  */
 process::process(int timeout /* = 0 */)
-  : _timeout(timeout),
-    _process(new QProcess),
-    _in_error(false),
-    _exit_code(-1) {}
+    : _timeout(timeout),
+      _process(new QProcess),
+      _in_error(false),
+      _exit_code(-1) {}
 
 /**
  *  Get the timeout of this process.
@@ -78,11 +78,8 @@ void process::kill() {
  *
  *  @return  True if an error ocurred.
  */
-bool process::get_error(
-                int& exit_code,
-                std::string& error_output) {
-  if (_in_error)
-  {
+bool process::get_error(int& exit_code, std::string& error_output) {
+  if (_in_error) {
     exit_code = _exit_code;
     error_output = _error_output;
     return (true);
@@ -103,9 +100,8 @@ bool process::get_error(
  *
  *  @return                 True of the process was started.
  */
-bool process::exec(
-                std::string const& program,
-                process_manager* manager /* = NULL */) {
+bool process::exec(std::string const& program,
+                   process_manager* manager /* = NULL */) {
   if (is_running())
     return (false);
 
@@ -114,28 +110,18 @@ bool process::exec(
   if (manager) {
     _process->moveToThread(&manager->get_thread());
     moveToThread(&manager->get_thread());
-    QProcess::connect(
-                this,
-                SIGNAL(finished(process&)),
-                manager,
-                SLOT(process_finished(process&)));
+    QProcess::connect(this, SIGNAL(finished(process&)), manager,
+                      SLOT(process_finished(process&)));
     if (_timeout != 0) {
       QTimer* timer(new QTimer(this));
       timer->setSingleShot(true);
-      connect(
-        this,
-        SIGNAL(timeouted(process&)),
-        manager,
-        SLOT(process_timeouted(process&)));
+      connect(this, SIGNAL(timeouted(process&)), manager,
+              SLOT(process_timeouted(process&)));
       connect(timer, SIGNAL(timeout()), this, SLOT(timeouted()));
     }
-    QMetaObject::invokeMethod(
-                   this,
-                   "start",
-                   Qt::QueuedConnection,
-                   Q_ARG(QString, program.c_str()));
-  }
-  else {
+    QMetaObject::invokeMethod(this, "start", Qt::QueuedConnection,
+                              Q_ARG(QString, program.c_str()));
+  } else {
     return (_process->execute(program.c_str()) == 0);
   }
   return (true);
@@ -147,16 +133,12 @@ bool process::exec(
  *  @param[in] command_line  The command to execute.
  */
 void process::start(QString const& command_line) {
-  QProcess::connect(
-             _process.get(),
-             SIGNAL(QProcess::finished(int, QProcess::ExitStatus)),
-             this,
-             SLOT(finished()));
-  QProcess::connect(
-             _process.get(),
-             SIGNAL(QProcess::error(QProcess::ProcessError)),
-             this,
-             SLOT(error()));
+  QProcess::connect(_process.get(),
+                    SIGNAL(QProcess::finished(int, QProcess::ExitStatus)), this,
+                    SLOT(finished()));
+  QProcess::connect(_process.get(),
+                    SIGNAL(QProcess::error(QProcess::ProcessError)), this,
+                    SLOT(error()));
   _process->start(command_line);
   _process->closeWriteChannel();
   _process->closeReadChannel(QProcess::StandardOutput);
@@ -169,7 +151,6 @@ void process::error() {
   _in_error = true;
   _error = _process->error();
 }
-
 
 /**
  *  The process was finished.

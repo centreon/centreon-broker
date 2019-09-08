@@ -17,15 +17,15 @@
 */
 
 #ifndef CC_CONCURRENCY_SEMAPHORE_HH
-#  define CC_CONCURRENCY_SEMAPHORE_HH
+#define CC_CONCURRENCY_SEMAPHORE_HH
 
-#  include <semaphore.h>
-#  include "com/centreon/namespace.hh"
+#include <semaphore.h>
+#include "com/centreon/namespace.hh"
 
-#  ifdef _WIN32
-#    include "com/centreon/concurrency/semaphore_win32.hh"
-#  else
-#    include "com/centreon/concurrency/semaphore_posix.hh"
-#  endif // Windows or POSIX implementation.
+#ifdef _WIN32
+#include "com/centreon/concurrency/semaphore_win32.hh"
+#else
+#include "com/centreon/concurrency/semaphore_posix.hh"
+#endif  // Windows or POSIX implementation.
 
-#endif // !CC_CONCURRENCY_SEMAPHORE_HH
+#endif  // !CC_CONCURRENCY_SEMAPHORE_HH

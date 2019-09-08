@@ -39,14 +39,16 @@ test_server::test_server()
       _init_done{false},
       _bind_ok{false} {
   _answer_reply.insert({"PING\n", "PONG\n"});
-  _answer_reply.insert({"HEAD /centreon?pretty HTTP/1.1\\r\\nHost: "
-                        "127.0.0.1:9200\\r\\nAccept: */*\\r\\n\\r\\n",
-                        "HTTP/1.1 200 OK"});
-  _answer_reply.insert({"PUT /centreon/_mapping/metrics?pretty "
-                        "HTTP/1.1\\r\\nHost: 127.0.0.1:9200\\r\\n"
-                        "Accept: */*\\r\\nContent-Type: "
-                        "application/json\\r\\n'",
-                        "HTTP/1.1 200 OK"});
+  _answer_reply.insert(
+      {"HEAD /centreon?pretty HTTP/1.1\\r\\nHost: "
+       "127.0.0.1:9200\\r\\nAccept: */*\\r\\n\\r\\n",
+       "HTTP/1.1 200 OK"});
+  _answer_reply.insert(
+      {"PUT /centreon/_mapping/metrics?pretty "
+       "HTTP/1.1\\r\\nHost: 127.0.0.1:9200\\r\\n"
+       "Accept: */*\\r\\nContent-Type: "
+       "application/json\\r\\n'",
+       "HTTP/1.1 200 OK"});
 }
 
 void test_server::init() {
@@ -101,8 +103,7 @@ void test_server::handle_accept(
 void test_server::start_read(std::list<test_server_connection>::iterator& con) {
   auto handler = std::bind(&test_server::handle_read, this, con,
                            std::placeholders::_1, std::placeholders::_2);
-  con->socket.async_read_some(asio::buffer(con->buf, buff_size),
-    handler);
+  con->socket.async_read_some(asio::buffer(con->buf, buff_size), handler);
 }
 
 void test_server::handle_read(
@@ -114,9 +115,7 @@ void test_server::handle_read(
 
     bool key_found{false};
     con_handle->buf[bytes_transfered] = 0;
-    for (auto it(_answer_reply.begin()),
-              end(_answer_reply.end());
-         it != end;
+    for (auto it(_answer_reply.begin()), end(_answer_reply.end()); it != end;
          ++it) {
       std::string const& s{con_handle->buf};
       if (s.find(it->first) != std::string::npos) {
@@ -143,7 +142,8 @@ void test_server::handle_read(
   }
 }
 
-bool test_server::add_client(asio::ip::tcp::socket& sock, asio::io_context& io) {
+bool test_server::add_client(asio::ip::tcp::socket& sock,
+                             asio::io_context& io) {
   asio::ip::tcp::resolver resolver{io};
   asio::ip::tcp::resolver::query query{"127.0.0.1", std::to_string(4242)};
 
@@ -170,7 +170,7 @@ bool test_server::add_client(asio::ip::tcp::socket& sock, asio::io_context& io) 
 
 class AsioTest : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     buf = new char[buff_size];
 
     std::thread t{[&] {
@@ -183,7 +183,7 @@ class AsioTest : public ::testing::Test {
     while (!_server.get_init_done())
       ;
   }
-  void TearDown() {
+  void TearDown() override {
     if (_server.get_init_done())
       _server.stop();
     _thread.join();

@@ -43,23 +43,21 @@ static void precheck(test::time_points& tpoints, char const* name) {
   ++check_number;
   std::cout << "check #" << check_number << " (" << name << ")\n";
   tpoints.store();
-  return ;
+  return;
 }
 
 /**
  *  Postcheck routine.
  */
-static void postcheck(
-              test::db& db,
-              test::predicate expected[][8]) {
+static void postcheck(test::db& db, test::predicate expected[][8]) {
   static std::string check_query(
-    "SELECT host_id, service_id, name, default_value, modified, type,"
-    "       update_time, value"
-    "  FROM customvariables"
-    "  ORDER BY host_id ASC, COALESCE(service_id, 0) ASC, name ASC");
+      "SELECT host_id, service_id, name, default_value, modified, type,"
+      "       update_time, value"
+      "  FROM customvariables"
+      "  ORDER BY host_id ASC, COALESCE(service_id, 0) ASC, name ASC");
   db.check_content(check_query, expected);
   std::cout << "  passed\n";
-  return ;
+  return;
 }
 
 /**
@@ -73,37 +71,32 @@ int main() {
 
   try {
     // Database.
-    char const* tables[] = {
-      "instances",
-      "hosts",
-      "services",
-      "customvariables", NULL };
+    char const* tables[] = {"instances", "hosts", "services", "customvariables",
+                            NULL};
     test::db db(DB_NAME, tables);
 
     // Monitoring broker.
     test::file cbd_cfg;
-    cbd_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
+    cbd_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
     cbd_cfg.set("BROKER_ID", "84");
     cbd_cfg.set("BROKER_NAME", TEST_NAME "-cbd");
     cbd_cfg.set("POLLER_ID", "42");
     cbd_cfg.set("POLLER_NAME", "my-poller");
     cbd_cfg.set("TCP_PORT", "5582");
     cbd_cfg.set("DB_NAME", DB_NAME);
-    cbd_cfg.set(
-      "SQL_ADDITIONAL",
-      "<write_filters>"
-      "  <category>neb:instance</category>"
-      "  <category>neb:instance_status</category>"
-      "  <category>neb:host</category>"
-      "  <category>neb:host_check</category>"
-      "  <category>neb:host_status</category>"
-      "  <category>neb:service</category>"
-      "  <category>neb:service_check</category>"
-      "  <category>neb:service_status</category>"
-      "  <category>neb:custom_variable</category>"
-      "  <category>neb:custom_variable_status</category>"
-      "</write_filters>");
+    cbd_cfg.set("SQL_ADDITIONAL",
+                "<write_filters>"
+                "  <category>neb:instance</category>"
+                "  <category>neb:instance_status</category>"
+                "  <category>neb:host</category>"
+                "  <category>neb:host_check</category>"
+                "  <category>neb:host_status</category>"
+                "  <category>neb:service</category>"
+                "  <category>neb:service_check</category>"
+                "  <category>neb:service_status</category>"
+                "  <category>neb:custom_variable</category>"
+                "  <category>neb:custom_variable_status</category>"
+                "</write_filters>");
     test::cbd broker;
     broker.set_config_file(cbd_cfg.generate());
     broker.start();
@@ -111,8 +104,7 @@ int main() {
 
     // Monitoring engine.
     test::file cbmod_cfg;
-    cbmod_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
+    cbmod_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
     cbmod_cfg.set("BROKER_ID", "83");
     cbmod_cfg.set("BROKER_NAME", TEST_NAME "-cbmod");
     cbmod_cfg.set("POLLER_ID", "42");
@@ -138,65 +130,29 @@ int main() {
     test::sleep_for(1);
     tpoints.store();
     test::predicate expected[][8] = {
-      {
-        1,
-        test::predicate(test::predicate::type_null),
-        "MYVAR",
-        "42",
-        false,
-        0,
-        test::predicate(tpoints.prelast(), tpoints.last() + 1),
-        "42"
-      },
-      {
-        1,
-        1,
-        "MYSVC1VAR",
-        "isfantastic",
-        false,
-        1,
-        test::predicate(tpoints.prelast(), tpoints.last() + 1),
-        "isfantastic"
-      },
-      {
-        2,
-        test::predicate(test::predicate::type_null),
-        "MYVAR",
-        "3612",
-        false,
-        0,
-        test::predicate(tpoints.prelast(), tpoints.last() + 1),
-        "3612"
-      },
-      {
-        2,
-        2,
-        "MYSVC2VAR",
-        "foobar",
-        false,
-        1,
-        test::predicate(tpoints.prelast(), tpoints.last() + 1),
-        "foobar"
-      },
-      { test::predicate() }
-    };
+        {1, test::predicate(test::predicate::type_null), "MYVAR", "42", false,
+         0, test::predicate(tpoints.prelast(), tpoints.last() + 1), "42"},
+        {1, 1, "MYSVC1VAR", "isfantastic", false, 1,
+         test::predicate(tpoints.prelast(), tpoints.last() + 1), "isfantastic"},
+        {2, test::predicate(test::predicate::type_null), "MYVAR", "3612", false,
+         0, test::predicate(tpoints.prelast(), tpoints.last() + 1), "3612"},
+        {2, 2, "MYSVC2VAR", "foobar", false, 1,
+         test::predicate(tpoints.prelast(), tpoints.last() + 1), "foobar"},
+        {test::predicate()}};
     postcheck(db, expected);
 
     // Check default_value, modified, update_time, value.
     precheck(tpoints, "customvariables.update");
+    engine.extcmd().execute("CHANGE_CUSTOM_HOST_VAR;1;MYVAR;a new value");
     engine.extcmd().execute(
-      "CHANGE_CUSTOM_HOST_VAR;1;MYVAR;a new value");
-    engine.extcmd().execute(
-      "CHANGE_CUSTOM_SVC_VAR;2;2;MYSVC2VAR;Brand New Value");
+        "CHANGE_CUSTOM_SVC_VAR;2;2;MYSVC2VAR;Brand New Value");
     test::sleep_for(2);
     tpoints.store();
     expected[0][4] = true;
-    expected[0][6]
-      = test::predicate(tpoints.prelast(), tpoints.last() + 1);
+    expected[0][6] = test::predicate(tpoints.prelast(), tpoints.last() + 1);
     expected[0][7] = "a new value";
     expected[3][4] = true;
-    expected[3][6]
-      = test::predicate(tpoints.prelast(), tpoints.last() + 1);
+    expected[3][6] = test::predicate(tpoints.prelast(), tpoints.last() + 1);
     expected[3][7] = "Brand New Value";
     postcheck(db, expected);
 
@@ -221,11 +177,9 @@ int main() {
     error = false;
     db.set_remove_db_on_close(true);
     broker.stop();
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << "  " << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "  unknown exception\n";
   }
 

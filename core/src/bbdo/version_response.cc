@@ -16,26 +16,26 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
+#include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
 version_response::version_response()
-  : bbdo_major(BBDO_VERSION_MAJOR),
-    bbdo_minor(BBDO_VERSION_MINOR),
-    bbdo_patch(BBDO_VERSION_PATCH) {}
+    : bbdo_major(BBDO_VERSION_MAJOR),
+      bbdo_minor(BBDO_VERSION_MINOR),
+      bbdo_patch(BBDO_VERSION_PATCH) {}
 
 /**
  *  Copy constructor.
@@ -43,7 +43,7 @@ version_response::version_response()
  *  @param[in] other  Object to copy.
  */
 version_response::version_response(version_response const& other)
-  : io::data(other) {
+    : io::data(other) {
   _internal_copy(other);
 }
 
@@ -59,8 +59,7 @@ version_response::~version_response() {}
  *
  *  @return This object.
  */
-version_response& version_response::operator=(
-                                      version_response const& other) {
+version_response& version_response::operator=(version_response const& other) {
   if (this != &other) {
     io::data::operator=(other);
     _internal_copy(other);
@@ -78,10 +77,10 @@ unsigned int version_response::type() const {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -93,36 +92,26 @@ void version_response::_internal_copy(version_response const& other) {
   bbdo_minor = other.bbdo_minor;
   bbdo_patch = other.bbdo_patch;
   extensions = other.extensions;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const version_response::entries[] = {
-  mapping::entry(
-    &version_response::bbdo_major,
-    "major"),
-  mapping::entry(
-    &version_response::bbdo_minor,
-    "minor"),
-  mapping::entry(
-    &version_response::bbdo_patch,
-    "patch"),
-  mapping::entry(
-    &version_response::extensions,
-    "extensions"),
-  mapping::entry()
-};
+    mapping::entry(&version_response::bbdo_major, "major"),
+    mapping::entry(&version_response::bbdo_minor, "minor"),
+    mapping::entry(&version_response::bbdo_patch, "patch"),
+    mapping::entry(&version_response::extensions, "extensions"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_version_response() {
   return (new version_response);
 }
 io::event_info::event_operations const version_response::operations = {
-  &new_version_response
-};
+    &new_version_response};

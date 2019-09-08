@@ -17,49 +17,47 @@
 */
 
 #ifndef CCB_STORAGE_CONNECTOR_HH
-#  define CCB_STORAGE_CONNECTOR_HH
+#define CCB_STORAGE_CONNECTOR_HH
 
-#  include "com/centreon/broker/database_config.hh"
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/database_config.hh"
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace           storage {
-  /**
-   *  @class connector connector.hh "com/centreon/broker/storage/connector.hh"
-   *  @brief Connect to a database.
-   *
-   *  Send perfdata in a Centreon Storage database.
-   */
-  class             connector : public io::endpoint {
-  public:
-                    connector();
-                    connector(connector const& other);
-                    ~connector();
-    connector&      operator=(connector const& other);
-    void            connect_to(
-                      database_config const& db_cfg,
-                      unsigned int rrd_len,
-                      unsigned int interval_length,
-                      unsigned int rebuild_check_interval,
-                      bool store_in_data_bin = true,
-                      bool insert_in_index_data = false);
-    std::shared_ptr<io::stream>
-                    open();
+namespace storage {
+/**
+ *  @class connector connector.hh "com/centreon/broker/storage/connector.hh"
+ *  @brief Connect to a database.
+ *
+ *  Send perfdata in a Centreon Storage database.
+ */
+class connector : public io::endpoint {
+ public:
+  connector();
+  connector(connector const& other);
+  ~connector();
+  connector& operator=(connector const& other);
+  void connect_to(database_config const& db_cfg,
+                  unsigned int rrd_len,
+                  unsigned int interval_length,
+                  unsigned int rebuild_check_interval,
+                  bool store_in_data_bin = true,
+                  bool insert_in_index_data = false);
+  std::shared_ptr<io::stream> open();
 
-   private:
-    void            _internal_copy(connector const& other);
+ private:
+  void _internal_copy(connector const& other);
 
-    database_config _db_cfg;
-    bool            _insert_in_index_data;
-    unsigned int    _interval_length;
-    unsigned int    _rebuild_check_interval;
-    unsigned int    _rrd_len;
-    bool            _store_in_data_bin;
-  };
-}
+  database_config _db_cfg;
+  bool _insert_in_index_data;
+  unsigned int _interval_length;
+  unsigned int _rebuild_check_interval;
+  unsigned int _rrd_len;
+  bool _store_in_data_bin;
+};
+}  // namespace storage
 
 CCB_END()
 
-#endif // !CCB_STORAGE_CONNECTOR_HH
+#endif  // !CCB_STORAGE_CONNECTOR_HH

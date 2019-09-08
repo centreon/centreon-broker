@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bam/bool_metric.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/metric.hh"
-#include "com/centreon/broker/bam/bool_metric.hh"
 
 using namespace com::centreon::broker::bam;
 
@@ -27,14 +27,13 @@ using namespace com::centreon::broker::bam;
  *
  *  @param[in] metric_name  The name of the metric.
  */
-bool_metric::bool_metric(
-               std::string const& metric_name,
-               unsigned int host_id,
-               unsigned int service_id) :
-  _metric_name(metric_name),
-  _value(false),
-  _host_id(host_id),
-  _service_id(service_id) {}
+bool_metric::bool_metric(std::string const& metric_name,
+                         unsigned int host_id,
+                         unsigned int service_id)
+    : _metric_name(metric_name),
+      _value(false),
+      _host_id(host_id),
+      _service_id(service_id) {}
 
 /**
  *  Copy constructor.
@@ -42,13 +41,14 @@ bool_metric::bool_metric(
  *  @param[in] right Object to copy.
  */
 bool_metric::bool_metric(bool_metric const& right)
-  : bool_value(right), metric_listener(right),
-    _metric_name(right._metric_name),
-    _value(right._value),
-    _host_id(right._host_id),
-    _service_id(right._service_id),
-    _resolved_metric_ids(right._resolved_metric_ids),
-    _unknown_state_metrics(right._unknown_state_metrics) {}
+    : bool_value(right),
+      metric_listener(right),
+      _metric_name(right._metric_name),
+      _value(right._value),
+      _host_id(right._host_id),
+      _service_id(right._service_id),
+      _resolved_metric_ids(right._resolved_metric_ids),
+      _unknown_state_metrics(right._unknown_state_metrics) {}
 
 /**
  *  Destructor.
@@ -83,9 +83,7 @@ bool_metric& bool_metric::operator=(bool_metric const& right) {
  *
  *  @return True if the parent was modified.
  */
-bool bool_metric::child_has_update(
-                    computable* child,
-                    io::stream* visitor) {
+bool bool_metric::child_has_update(computable* child, io::stream* visitor) {
   (void)child;
   (void)visitor;
   return (true);
@@ -97,9 +95,8 @@ bool bool_metric::child_has_update(
  *  @param[in] m        The metric update.
  *  @param[in]visitor   A visitor.
  */
-void bool_metric::metric_update(
-                    std::shared_ptr<storage::metric> const& m,
-                    io::stream* visitor) {
+void bool_metric::metric_update(std::shared_ptr<storage::metric> const& m,
+                                io::stream* visitor) {
   if (!_metric_matches(*m))
     return;
 
@@ -173,11 +170,10 @@ unsigned int bool_metric::get_service_id() const {
  */
 void bool_metric::resolve_metrics(hst_svc_mapping const& mappings) {
   std::set<unsigned int> ids =
-    mappings.get_metric_ids(_metric_name, _host_id, _service_id);
+      mappings.get_metric_ids(_metric_name, _host_id, _service_id);
   if (ids.empty())
     logging::error(logging::high)
-           << "bam: could not find metric ids for metric '"
-           << _metric_name << "'";
+        << "bam: could not find metric ids for metric '" << _metric_name << "'";
   _resolved_metric_ids = ids;
   _unknown_state_metrics = ids;
 }
@@ -201,13 +197,12 @@ std::map<unsigned int, double> const& bool_metric::values() const {
 }
 
 /**
-*  Get if the ids of the metric matches ours.
-*
-*  @param[in] m  The metric.
-*
-*  @return  True if it matches.
-*/
+ *  Get if the ids of the metric matches ours.
+ *
+ *  @param[in] m  The metric.
+ *
+ *  @return  True if it matches.
+ */
 bool bool_metric::_metric_matches(storage::metric const& m) const {
-  return (_resolved_metric_ids.find(m.metric_id)
-          != _resolved_metric_ids.end());
+  return (_resolved_metric_ids.find(m.metric_id) != _resolved_metric_ids.end());
 }

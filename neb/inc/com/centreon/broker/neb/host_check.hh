@@ -17,40 +17,37 @@
 */
 
 #ifndef CCB_NEB_HOST_CHECK_HH
-#  define CCB_NEB_HOST_CHECK_HH
+#define CCB_NEB_HOST_CHECK_HH
 
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/neb/check.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/check.hh"
 
 CCB_BEGIN()
 
-namespace          neb {
-  /**
-   *  @class host_check host_check.hh "com/centreon/broker/neb/host_check.hh"
-   *  @brief Check that has been executed on a host.
-   *
-   *  Once a check has been executed on a host, an object of this class
-   *  is sent.
-   */
-  class            host_check : public check {
-  public:
-                   host_check();
-                   host_check(host_check const& other);
-    virtual        ~host_check();
-    host_check&    operator=(host_check const& other);
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace neb {
+/**
+ *  @class host_check host_check.hh "com/centreon/broker/neb/host_check.hh"
+ *  @brief Check that has been executed on a host.
+ *
+ *  Once a check has been executed on a host, an object of this class
+ *  is sent.
+ */
+class host_check : public check {
+ public:
+  host_check();
+  host_check(host_check const& other);
+  virtual ~host_check();
+  host_check& operator=(host_check const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
-  };
-}
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_HOST_CHECK_HH
+#endif  // !CCB_NEB_HOST_CHECK_HH

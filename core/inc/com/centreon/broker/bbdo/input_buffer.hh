@@ -17,49 +17,46 @@
 */
 
 #ifndef CCB_BBDO_INPUT_BUFFER_HH
-#  define CCB_BBDO_INPUT_BUFFER_HH
+#define CCB_BBDO_INPUT_BUFFER_HH
 
-#  include <list>
-#  include <memory>
-#  include <string>
-#  include "com/centreon/broker/io/raw.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <list>
+#include <memory>
+#include <string>
+#include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         bbdo {
-  /**
-   *  @class input_buffer input_buffer.hh "com/centreon/broker/bbdo/input_buffer.hh"
-   *  @brief Bufferize BBDO input data.
-   *
-   *  This class bufferizes BBDO input data in a performance-optimal
-   *  container. It also provides an optimized data-fetching interface
-   *  for the BBDO decoder.
-   */
-  class           input_buffer {
-   public:
-                  input_buffer();
-                  input_buffer(input_buffer const& other);
-                  ~input_buffer();
-    input_buffer& operator=(input_buffer const& other);
-    void          append(std::shared_ptr<io::raw> const& d);
-    void          erase(int bytes);
-    void          extract(
-                    std::string& output,
-                    int offset,
-                    int size);
-    int           size() const;
+namespace bbdo {
+/**
+ *  @class input_buffer input_buffer.hh
+ * "com/centreon/broker/bbdo/input_buffer.hh"
+ *  @brief Bufferize BBDO input data.
+ *
+ *  This class bufferizes BBDO input data in a performance-optimal
+ *  container. It also provides an optimized data-fetching interface
+ *  for the BBDO decoder.
+ */
+class input_buffer {
+ public:
+  input_buffer();
+  input_buffer(input_buffer const& other);
+  ~input_buffer();
+  input_buffer& operator=(input_buffer const& other);
+  void append(std::shared_ptr<io::raw> const& d);
+  void erase(int bytes);
+  void extract(std::string& output, int offset, int size);
+  int size() const;
 
-   private:
-    void          _internal_copy(input_buffer const& other);
+ private:
+  void _internal_copy(input_buffer const& other);
 
-    std::list<std::shared_ptr<io::raw> >
-                  _data;
-    int           _first_offset;
-    int           _size;
-  };
-}
+  std::list<std::shared_ptr<io::raw> > _data;
+  int _first_offset;
+  int _size;
+};
+}  // namespace bbdo
 
 CCB_END()
 
-#endif // !CCB_BBDO_INPUT_BUFFER_HH
+#endif  // !CCB_BBDO_INPUT_BUFFER_HH

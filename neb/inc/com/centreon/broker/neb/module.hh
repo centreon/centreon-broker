@@ -17,51 +17,48 @@
 */
 
 #ifndef CCB_NEB_MODULE_HH
-#  define CCB_NEB_MODULE_HH
+#define CCB_NEB_MODULE_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          neb {
-  /**
-   *  @class module module.hh "com/centreon/broker/neb/module.hh"
-   *  @brief Represents a module loaded in a Nagios instance.
-   *
-   *  The scheduling engine supports modules that extend its
-   *  original features. This class describes such modules.
-   */
-  class            module : public io::data {
-  public:
-                   module();
-                   module(module const& other);
-                   ~module();
-    module&        operator=(module const& other);
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace neb {
+/**
+ *  @class module module.hh "com/centreon/broker/neb/module.hh"
+ *  @brief Represents a module loaded in a Nagios instance.
+ *
+ *  The scheduling engine supports modules that extend its
+ *  original features. This class describes such modules.
+ */
+class module : public io::data {
+ public:
+  module();
+  module(module const& other);
+  ~module();
+  module& operator=(module const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    std::string        args;
-    bool           enabled;
-    std::string        filename;
-    bool           loaded;
-    unsigned int   poller_id;
-    bool           should_be_loaded;
+  std::string args;
+  bool enabled;
+  std::string filename;
+  bool loaded;
+  unsigned int poller_id;
+  bool should_be_loaded;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void           _internal_copy(module const& other);
-  };
-}
+ private:
+  void _internal_copy(module const& other);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_MODULE_HH
+#endif  // !CCB_NEB_MODULE_HH

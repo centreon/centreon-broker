@@ -17,50 +17,48 @@
 */
 
 #ifndef CCB_STATS_GENERATOR_HH
-#  define CCB_STATS_GENERATOR_HH
+#define CCB_STATS_GENERATOR_HH
 
-#  include <atomic>
-#  include <thread>
-#  include <map>
-#  include <utility>
+#include <atomic>
+#include <map>
+#include <thread>
+#include <utility>
 
-namespace               com {
-  namespace             centreon {
-    namespace           broker {
-      namespace         stats {
-        // Forward declaration.
-        class           config;
+namespace com {
+namespace centreon {
+namespace broker {
+namespace stats {
+// Forward declaration.
+class config;
 
-        /**
-         *  @class generator generator.hh "com/centreon/broker/stats/generator.hh"
-         *  @brief Generate statistics about Broker.
-         *
-         *  Standalone thread that generates statistics about Broker at
-         *  regular interval.
-         */
-        class           generator {
-        public:
-                        generator();
-                        ~generator() throw ();
-          void          exit();
-          void          run(
-                          config const& cfg,
-                          unsigned int instance_id);
-          void wait();
+/**
+ *  @class generator generator.hh "com/centreon/broker/stats/generator.hh"
+ *  @brief Generate statistics about Broker.
+ *
+ *  Standalone thread that generates statistics about Broker at
+ *  regular interval.
+ */
+class generator {
+ public:
+  generator();
+  ~generator() throw();
+  void exit();
+  void run(config const& cfg, unsigned int instance_id);
+  void wait();
 
-        private:
-                        generator(generator const& right);
-          generator&    operator=(generator const& right);
-          void          _run();
+ private:
+  generator(generator const& right);
+  generator& operator=(generator const& right);
+  void _run();
 
-          unsigned int  _instance_id;
-          std::atomic<bool> _should_exit;
+  unsigned int _instance_id;
+  std::atomic<bool> _should_exit;
 
-          std::thread _thread;
-        };
-      }
-    }
-  }
-}
+  std::thread _thread;
+};
+}  // namespace stats
+}  // namespace broker
+}  // namespace centreon
+}  // namespace com
 
-#endif // !CCB_STATS_GENERATOR_HH
+#endif  // !CCB_STATS_GENERATOR_HH

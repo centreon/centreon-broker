@@ -17,66 +17,63 @@
 */
 
 #ifndef CCB_NEB_STATISTICS_COMPUTE_VALUE_HH
-#  define CCB_NEB_STATISTICS_COMPUTE_VALUE_HH
+#define CCB_NEB_STATISTICS_COMPUTE_VALUE_HH
 
-#  include <limits>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <limits>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace            neb {
-  namespace          statistics {
-    /**
-     *  @class compute_value compute_value.hh "com/centreon/broker/neb/statistics/compute_value.hh"
-     *  @brief
-     */
-    template<typename T>
-    class            compute_value {
-    public:
-                     compute_value()
-        : _max(std::numeric_limits<T>::min()),
-          _min(std::numeric_limits<T>::max()),
-          _size(0),
-          _sum(0) {}
-                     compute_value(compute_value const& right) {
-        operator=(right);
-      }
-                     ~compute_value() {}
-      compute_value& operator=(compute_value const& right) {
-        if (this != &right) {
-          _max = right._max;
-          _min = right._min;
-          _size = right._size;
-          _sum = right._sum;
-        }
-        return (*this);
-      }
-      compute_value& operator<<(T value) {
-        if (value < _min)
-          _min = value;
-        if (value > _max)
-          _max = value;
-        _sum += value;
-        ++_size;
-        return (*this);
-      }
-      T              avg() const throw () {
-        return (_size ? _sum / _size : 0);
-      }
-      T              max() const throw () { return (_max); }
-      T              min() const throw () { return (_min); }
-      unsigned int   size() const throw () { return (_size); }
-
-    private:
-      T              _max;
-      T              _min;
-      unsigned int   _size;
-      T              _sum;
-    };
+namespace neb {
+namespace statistics {
+/**
+ *  @class compute_value compute_value.hh
+ * "com/centreon/broker/neb/statistics/compute_value.hh"
+ *  @brief
+ */
+template <typename T>
+class compute_value {
+ public:
+  compute_value()
+      : _max(std::numeric_limits<T>::min()),
+        _min(std::numeric_limits<T>::max()),
+        _size(0),
+        _sum(0) {}
+  compute_value(compute_value const& right) { operator=(right); }
+  ~compute_value() {}
+  compute_value& operator=(compute_value const& right) {
+    if (this != &right) {
+      _max = right._max;
+      _min = right._min;
+      _size = right._size;
+      _sum = right._sum;
+    }
+    return (*this);
   }
-}
+  compute_value& operator<<(T value) {
+    if (value < _min)
+      _min = value;
+    if (value > _max)
+      _max = value;
+    _sum += value;
+    ++_size;
+    return (*this);
+  }
+  T avg() const throw() { return (_size ? _sum / _size : 0); }
+  T max() const throw() { return (_max); }
+  T min() const throw() { return (_min); }
+  unsigned int size() const throw() { return (_size); }
+
+ private:
+  T _max;
+  T _min;
+  unsigned int _size;
+  T _sum;
+};
+}  // namespace statistics
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_COMPUTE_VALUE_HH
+#endif  // !CCB_NEB_STATISTICS_COMPUTE_VALUE_HH

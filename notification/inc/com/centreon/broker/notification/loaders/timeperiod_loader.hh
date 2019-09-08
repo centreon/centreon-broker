@@ -17,32 +17,33 @@
 */
 
 #ifndef CCB_NOTIFICATION_LOADERS_TIMEPERIOD_LOADER_HH
-#  define CCB_NOTIFICATION_LOADERS_TIMEPERIOD_LOADER_HH
+#define CCB_NOTIFICATION_LOADERS_TIMEPERIOD_LOADER_HH
 
-#  include "com/centreon/broker/mysql.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
+#include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/timeperiod_builder.hh"
 
 CCB_BEGIN()
 
-namespace       notification {
-  /**
-   *  @class timeperiod_loader timeperiod_loader.hh "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
-   *  @brief Loader for timeperiod objects.
-   *
-   *  This loader loads the timeperiods from the database.
-   */
-  class         timeperiod_loader {
-  public:
-                timeperiod_loader();
+namespace notification {
+/**
+ *  @class timeperiod_loader timeperiod_loader.hh
+ * "com/centreon/broker/notification/loaders/timeperiod_loader.hh"
+ *  @brief Loader for timeperiod objects.
+ *
+ *  This loader loads the timeperiods from the database.
+ */
+class timeperiod_loader {
+ public:
+  timeperiod_loader();
 
-    void        load(mysql* ms, timeperiod_builder* output);
+  void load(mysql* ms, timeperiod_builder* output);
 
-  private:
-  };
+ private:
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_LOADERS_TIMEPERIOD_LOADER_HH
+#endif  // !CCB_NOTIFICATION_LOADERS_TIMEPERIOD_LOADER_HH

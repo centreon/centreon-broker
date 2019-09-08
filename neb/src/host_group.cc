@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_group.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Default constructor.
@@ -83,34 +83,26 @@ unsigned int host_group::static_type() {
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const host_group::entries[] = {
-  mapping::entry(
-    &host_group::id,
-    "hostgroup_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &host_group::name,
-    "name"),
-  mapping::entry(
-    &host_group::enabled,
-    NULL),
-  mapping::entry(
-    &host_group::poller_id,
-    NULL,
-    mapping::entry::invalid_on_zero),
-  mapping::entry()
-};
+    mapping::entry(&host_group::id,
+                   "hostgroup_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&host_group::name, "name"),
+    mapping::entry(&host_group::enabled, nullptr),
+    mapping::entry(&host_group::poller_id,
+                   nullptr,
+                   mapping::entry::invalid_on_zero),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_host_group() {
   return (new host_group);
 }
 io::event_info::event_operations const host_group::operations = {
-  &new_host_group
-};
+    &new_host_group};

@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/active_service_state_change.hh"
 #include <iomanip>
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/active_service_state_change.hh"
 #include "com/centreon/broker/neb/statistics/compute_value.hh"
 #include "com/centreon/engine/globals.hh"
 
@@ -32,15 +32,16 @@ using namespace com::centreon::engine;
  *  Default constructor.
  */
 active_service_state_change::active_service_state_change()
-  : plugin("active_service_state_change") {}
+    : plugin("active_service_state_change") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-active_service_state_change::active_service_state_change(active_service_state_change const& right)
- : plugin(right) {}
+active_service_state_change::active_service_state_change(
+    active_service_state_change const& right)
+    : plugin(right) {}
 
 /**
  *  Destructor.
@@ -54,7 +55,8 @@ active_service_state_change::~active_service_state_change() {}
  *
  *  @return This object.
  */
-active_service_state_change& active_service_state_change::operator=(active_service_state_change const& right) {
+active_service_state_change& active_service_state_change::operator=(
+    active_service_state_change const& right) {
   plugin::operator=(right);
   return (*this);
 }
@@ -65,15 +67,12 @@ active_service_state_change& active_service_state_change::operator=(active_servi
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void active_service_state_change::run(
-              std::string& output,
-	      std::string& perfdata) {
+void active_service_state_change::run(std::string& output,
+                                      std::string& perfdata) {
   compute_value<double> cv;
-  for (service_map::const_iterator
-         it{service::services.begin()},
-         end{service::services.end()};
-       it != end;
-       ++it)
+  for (service_map::const_iterator it{service::services.begin()},
+       end{service::services.end()};
+       it != end; ++it)
     if (it->second->get_check_type() == checkable::check_active)
       cv << it->second->get_percent_state_change();
 
@@ -81,20 +80,21 @@ void active_service_state_change::run(
     // Output.
     std::ostringstream oss;
     oss << "Engine " << config::applier::state::instance().poller_name()
-        << " has an average active service state change of "
-        << std::fixed << std::setprecision(2) << cv.avg() << "%";
+        << " has an average active service state change of " << std::fixed
+        << std::setprecision(2) << cv.avg() << "%";
     output = oss.str();
 
     // Perfdata.
     oss.str("");
-    oss << "avg=" << cv.avg() << "% min=" << cv.min()
-        << "% max=" << cv.max() << "%";
+    oss << "avg=" << cv.avg() << "% min=" << cv.min() << "% max=" << cv.max()
+        << "%";
     perfdata = oss.str();
-  }
-  else {
+  } else {
     // Output.
-    output = "No active service to compute active service state "
-      "change on " + config::applier::state::instance().poller_name();
+    output =
+        "No active service to compute active service state "
+        "change on " +
+        config::applier::state::instance().poller_name();
   }
-  return ;
+  return;
 }

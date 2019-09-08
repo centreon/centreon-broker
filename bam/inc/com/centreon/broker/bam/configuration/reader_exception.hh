@@ -17,30 +17,31 @@
 */
 
 #ifndef CCB_CONFIGURATION_READER_EXCEPTION_HH
-#  define CCB_CONFIGURATION_READER_EXCEPTION_HH
+#define CCB_CONFIGURATION_READER_EXCEPTION_HH
 
-#  include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 CCB_BEGIN()
 
-namespace               bam {
-  namespace             configuration {
-    /**
-     *  @class reader_exception reader_exception.hh "com/centreon/broker/bam/configuration/reader_exception.hh"
-     *  @brief Exception thrown when the reader fails to read from a database
-     *
-     *  Reader_exception.
-     */
-    class                reader_exception : public exceptions::msg {
-    public:
-                         reader_exception();
-                         reader_exception(const reader_exception&);
-                         ~reader_exception() throw ();
-      reader_exception&  operator=(reader_exception const& other);
-    };
-  }
-}
+namespace bam {
+namespace configuration {
+/**
+ *  @class reader_exception reader_exception.hh
+ * "com/centreon/broker/bam/configuration/reader_exception.hh"
+ *  @brief Exception thrown when the reader fails to read from a database
+ *
+ *  Reader_exception.
+ */
+class reader_exception : public exceptions::msg {
+ public:
+  reader_exception();
+  reader_exception(const reader_exception&);
+  ~reader_exception() throw();
+  reader_exception& operator=(reader_exception const& other);
+};
+}  // namespace configuration
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_CONFIGURATION_READER_EXCEPTION_HH
+#endif  // !CCB_CONFIGURATION_READER_EXCEPTION_HH

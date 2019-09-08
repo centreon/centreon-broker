@@ -17,45 +17,43 @@
 */
 
 #ifndef CCB_NEB_SERVICE_DEPENDENCY_HH
-#  define CCB_NEB_SERVICE_DEPENDENCY_HH
+#define CCB_NEB_SERVICE_DEPENDENCY_HH
 
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/dependency.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/dependency.hh"
 
 CCB_BEGIN()
 
-namespace               neb {
-  /**
-   *  @class service_dependency service_dependency.hh "com/centreon/broker/neb/service_dependency.hh"
-   *  @brief Service dependency relationship.
-   *
-   *  Defines a dependency between two services.
-   */
-  class                 service_dependency : public dependency {
-  public:
-                        service_dependency();
-                        service_dependency(
-                          service_dependency const& other);
-                        ~service_dependency();
-    service_dependency& operator=(service_dependency const& other);
-    unsigned int        type() const;
-    static unsigned int static_type();
+namespace neb {
+/**
+ *  @class service_dependency service_dependency.hh
+ * "com/centreon/broker/neb/service_dependency.hh"
+ *  @brief Service dependency relationship.
+ *
+ *  Defines a dependency between two services.
+ */
+class service_dependency : public dependency {
+ public:
+  service_dependency();
+  service_dependency(service_dependency const& other);
+  ~service_dependency();
+  service_dependency& operator=(service_dependency const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    unsigned int        dependent_service_id;
-    unsigned int        service_id;
+  unsigned int dependent_service_id;
+  unsigned int service_id;
 
-    static mapping::entry const
-                        entries[];
-    static io::event_info::event_operations const
-                        operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void                _internal_copy(service_dependency const& other);
-  };
-}
+ private:
+  void _internal_copy(service_dependency const& other);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_SERVICE_DEPENDENCY_HH
+#endif  // !CCB_NEB_SERVICE_DEPENDENCY_HH

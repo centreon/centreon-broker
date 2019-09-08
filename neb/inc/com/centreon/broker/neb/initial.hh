@@ -17,16 +17,16 @@
 */
 
 #ifndef CCB_NEB_INITIAL_HH_
-# define CCB_NEB_INITIAL_HH_
+#define CCB_NEB_INITIAL_HH_
 
-namespace       com {
-  namespace     centreon {
-    namespace   broker {
-      namespace neb {
-        void    send_initial_configuration();
-      }
-    }
-  }
+namespace com {
+namespace centreon {
+namespace broker {
+namespace neb {
+void send_initial_configuration();
 }
+}  // namespace broker
+}  // namespace centreon
+}  // namespace com
 
 #endif /* !CCB_NEB_INITIAL_HH_ */

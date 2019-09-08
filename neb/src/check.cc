@@ -21,19 +21,16 @@
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
 check::check()
-  : active_checks_enabled(false),
-    check_type(0),
-    host_id(0),
-        next_check(0) {}
+    : active_checks_enabled(false), check_type(0), host_id(0), next_check(0) {}
 
 /**
  *  Copy constructor.
@@ -65,10 +62,10 @@ check& check::operator=(check const& c) {
 }
 
 /**************************************
-*                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *          Private Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data of the given object to the current instance.
@@ -80,6 +77,6 @@ void check::_internal_copy(check const& c) {
   check_type = c.check_type;
   command_line = c.command_line;
   host_id = c.host_id;
-    next_check = c.next_check;
-  return ;
+  next_check = c.next_check;
+  return;
 }

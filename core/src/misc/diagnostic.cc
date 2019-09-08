@@ -106,7 +106,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
       diagnostic_log.error(true);
       diagnostic_log.info(true);
       diagnostic_log.level(logging::low);
-      diagnostic_log.name(diagnostic_log_path.c_str());
+      diagnostic_log.name(diagnostic_log_path);
       diagnostic_log.type(config::logger::file);
       diagnostic_state.loggers().push_back(diagnostic_log);
     }
@@ -267,7 +267,7 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
     config::parser parsr;
     config::state conf;
     try {
-      conf = parsr.parse(it->c_str());
+      conf = parsr.parse(*it);
     } catch (std::exception const& e) {
       logging::error(logging::high) << "diagnostic: configuration file '" << *it
                                     << "' parsing failed: " << e.what();
@@ -317,7 +317,8 @@ void diagnostic::generate(std::vector<std::string> const& cfg_files,
           log_path.append(it->name());
         to_remove.push_back(log_path);
 
-        char const* args[]{"tail", "-c", "20000000", it->name().c_str(), nullptr};
+        char const* args[]{"tail", "-c", "20000000", it->name().c_str(),
+                           nullptr};
         misc::exec_process(args, true);
       }
   }

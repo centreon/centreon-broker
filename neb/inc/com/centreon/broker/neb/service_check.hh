@@ -17,42 +17,40 @@
 */
 
 #ifndef CCB_NEB_SERVICE_CHECK_HH
-#  define CCB_NEB_SERVICE_CHECK_HH
+#define CCB_NEB_SERVICE_CHECK_HH
 
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/check.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/check.hh"
 
 CCB_BEGIN()
 
-namespace          neb {
-  /**
-   *  @class service_check service_check.hh "com/centreon/broker/neb/service_check.hh"
-   *  @brief Check that has been executed on a service.
-   *
-   *  Once a check has been executed on a service, an object of
-   *  this class is sent.
-   */
-  class            service_check : public check {
-  public:
-                   service_check();
-                   service_check(service_check const& other);
-    virtual        ~service_check();
-    service_check& operator=(service_check const& other);
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace neb {
+/**
+ *  @class service_check service_check.hh
+ * "com/centreon/broker/neb/service_check.hh"
+ *  @brief Check that has been executed on a service.
+ *
+ *  Once a check has been executed on a service, an object of
+ *  this class is sent.
+ */
+class service_check : public check {
+ public:
+  service_check();
+  service_check(service_check const& other);
+  virtual ~service_check();
+  service_check& operator=(service_check const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    unsigned int   service_id;
+  unsigned int service_id;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
-  };
-}
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_SERVICE_CHECK_HH
+#endif  // !CCB_NEB_SERVICE_CHECK_HH

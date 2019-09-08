@@ -17,17 +17,15 @@
 */
 
 #ifndef CCB_GENERATOR_INTERNAL_HH
-#  define CCB_GENERATOR_INTERNAL_HH
+#define CCB_GENERATOR_INTERNAL_HH
 
 CCB_BEGIN()
 
 namespace generator {
-  // Data elements.
-  enum data_element {
-    de_dummy = 1
-  };
-}
+// Data elements.
+enum data_element { de_dummy = 1 };
+}  // namespace generator
 
 CCB_END()
 
-#endif // !CCB_GENERATOR_INTERNAL_HH
+#endif  // !CCB_GENERATOR_INTERNAL_HH

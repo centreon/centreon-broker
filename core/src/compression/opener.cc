@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
-#include <memory>
 #include "com/centreon/broker/compression/opener.hh"
+#include <memory>
 #include "com/centreon/broker/compression/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::compression;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -40,9 +40,7 @@ opener::opener() : io::endpoint(false), _level(-1), _size(0) {}
  *  @param[in] o Object to copy.
  */
 opener::opener(opener const& o)
-  : io::endpoint(o),
-    _level(o._level),
-    _size(o._size) {}
+    : io::endpoint(o), _level(o._level), _size(o._size) {}
 
 /**
  *  Destructor.
@@ -84,7 +82,7 @@ std::shared_ptr<io::stream> opener::open() {
  */
 void opener::set_level(int level) {
   _level = level;
-  return ;
+  return;
 }
 
 /**
@@ -95,22 +93,21 @@ void opener::set_level(int level) {
  */
 void opener::set_size(unsigned int size) {
   _size = size;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *          Private Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Open a compression stream.
  *
  *  @return New compression object.
  */
-std::shared_ptr<io::stream> opener::_open(
-  std::shared_ptr<io::stream> base) {
+std::shared_ptr<io::stream> opener::_open(std::shared_ptr<io::stream> base) {
   std::shared_ptr<io::stream> retval;
   if (base) {
     retval.reset(new stream(_level, _size));

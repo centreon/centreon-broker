@@ -17,43 +17,40 @@
 */
 
 #ifndef CCB_NEB_HOST_PARENT_HH
-#  define CCB_NEB_HOST_PARENT_HH
+#define CCB_NEB_HOST_PARENT_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          neb {
-  /**
-   *  @class host_parent host_parent.hh "com/centreon/broker/neb/host_parent.hh"
-   *  @brief Define a parent of a host.
-   *
-   *  Define a certain host to be the parent of another host.
-   */
-  class            host_parent : public io::data {
-  public:
-                   host_parent();
-                   host_parent(host_parent const& other);
-                   ~host_parent();
-    host_parent&   operator=(host_parent const& other);
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace neb {
+/**
+ *  @class host_parent host_parent.hh "com/centreon/broker/neb/host_parent.hh"
+ *  @brief Define a parent of a host.
+ *
+ *  Define a certain host to be the parent of another host.
+ */
+class host_parent : public io::data {
+ public:
+  host_parent();
+  host_parent(host_parent const& other);
+  ~host_parent();
+  host_parent& operator=(host_parent const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    bool           enabled;
-    unsigned int   host_id;
-    unsigned int   parent_id;
+  bool enabled;
+  unsigned int host_id;
+  unsigned int parent_id;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
-  };
-}
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_HOST_PARENT_HH
+#endif  // !CCB_NEB_HOST_PARENT_HH

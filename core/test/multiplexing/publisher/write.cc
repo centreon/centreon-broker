@@ -69,7 +69,7 @@ TEST(Publisher, Write) {
     }
 
     // Check data.
-    char const* messages[] = {MSG1, MSG2, NULL};
+    char const* messages[] = {MSG1, MSG2, nullptr};
     for (unsigned int i = 0; messages[i]; ++i) {
       std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);

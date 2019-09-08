@@ -17,7 +17,7 @@
 */
 
 #ifndef CCB_NEB_NODE_ID_HH
-#  define CCB_NEB_NODE_ID_HH
+#define CCB_NEB_NODE_ID_HH
 
 #include <cstdint>
 #include <functional>
@@ -25,38 +25,37 @@
 
 CCB_BEGIN()
 
-namespace         neb {
-  /**
-   *  @class node_id node_id.hh "com/centreon/broker/neb/node_id.hh"
-   *  @brief Node id object.
-   *
-   *  This object contains the id of a node: a host id and an associated
-   *  service id.  Both the host id or the service id can be zero for service
-   *  associated with no hosts and inversely.
-   */
-  class           node_id {
-  public:
-                  node_id();
-                  node_id(node_id const& obj);
-    node_id&      operator=(node_id const& obj);
-    bool operator==(node_id const& other) const throw();
-                  explicit node_id(uint64_t host_id,
-                                   uint64_t service_id = 0);
-    bool          operator<(node_id const& obj) const throw();
-    bool          operator!=(node_id const& obj) const throw();
+namespace neb {
+/**
+ *  @class node_id node_id.hh "com/centreon/broker/neb/node_id.hh"
+ *  @brief Node id object.
+ *
+ *  This object contains the id of a node: a host id and an associated
+ *  service id.  Both the host id or the service id can be zero for service
+ *  associated with no hosts and inversely.
+ */
+class node_id {
+ public:
+  node_id();
+  node_id(node_id const& obj);
+  node_id& operator=(node_id const& obj);
+  bool operator==(node_id const& other) const throw();
+  explicit node_id(uint64_t host_id, uint64_t service_id = 0);
+  bool operator<(node_id const& obj) const throw();
+  bool operator!=(node_id const& obj) const throw();
 
-    uint64_t  get_host_id() const throw();
-    uint64_t  get_service_id() const throw();
-    bool          is_host() const throw();
-    bool          is_service() const throw();
-    node_id       to_host() const throw();
-    bool          empty() const throw();
+  uint64_t get_host_id() const throw();
+  uint64_t get_service_id() const throw();
+  bool is_host() const throw();
+  bool is_service() const throw();
+  node_id to_host() const throw();
+  bool empty() const throw();
 
-  private:
-    uint64_t  _host_id;
-    uint64_t  _service_id;
-  };
-}
+ private:
+  uint64_t _host_id;
+  uint64_t _service_id;
+};
+}  // namespace neb
 
 CCB_END()
 
@@ -91,4 +90,4 @@ struct hash<com::centreon::broker::neb::node_id> {
 };
 }  // namespace std
 
-#endif // !CCB_NEB_NODE_ID_HH
+#endif  // !CCB_NEB_NODE_ID_HH

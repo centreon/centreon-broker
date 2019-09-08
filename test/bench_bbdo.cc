@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
+#include <sys/time.h>
+#include <QCoreApplication>
 #include <cstdlib>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
-#include <QCoreApplication>
-#include <sys/time.h>
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/config/applier/init.hh"
@@ -50,14 +50,13 @@ static void send_events(io::stream* s) {
 
     // Compute current time.
     clock_gettime(CLOCK_REALTIME, &ts);
-  } while ((ts.tv_sec < limit.tv_sec)
-           || ((ts.tv_sec == limit.tv_sec)
-               && (ts.tv_nsec < limit.tv_nsec)));
+  } while ((ts.tv_sec < limit.tv_sec) ||
+           ((ts.tv_sec == limit.tv_sec) && (ts.tv_nsec < limit.tv_nsec)));
 
   // Forced commit (might be needed by the compression).
   s->write(std::shared_ptr<io::data>());
 
-  return ;
+  return;
 }
 
 /**
@@ -66,15 +65,13 @@ static void send_events(io::stream* s) {
  *  @param[in] bbdos  BBDO stream.
  *  @param[in] bbdob  BBDO benchmark.
  */
-static void benchmark_stream(
-              bbdo::stream& bbdos,
-              bench_stream& bbdob) {
+static void benchmark_stream(bbdo::stream& bbdos, bench_stream& bbdob) {
   // Benchmark BBDO stream.
   std::cout << "  BBDO\n";
   send_events(&bbdos);
   std::cout << "  - events  " << bbdob.get_write_events() << "\n"
             << "  - size    " << bbdob.get_write_size() << "\n";
-  return ;
+  return;
 }
 
 /**
@@ -114,8 +111,8 @@ int main(int argc, char* argv[]) {
   std::cout << "\nBench #3 (optimized compression)\n";
   {
     bbdo::stream bbdos;
-    std::shared_ptr<compression::stream>
-      bbdoc(new compression::stream(9, 1000000));
+    std::shared_ptr<compression::stream> bbdoc(
+        new compression::stream(9, 1000000));
     std::shared_ptr<bench_stream> bbdob(new bench_stream);
     bbdos.set_substream(bbdoc);
     bbdoc->set_substream(bbdob);

@@ -17,68 +17,66 @@
 */
 
 #ifndef CC_CONCURRENCY_WRITE_LOCKER_HH
-#  define CC_CONCURRENCY_WRITE_LOCKER_HH
+#define CC_CONCURRENCY_WRITE_LOCKER_HH
 
-#  include "com/centreon/concurrency/read_write_lock.hh"
-#  include "com/centreon/namespace.hh"
+#include "com/centreon/concurrency/read_write_lock.hh"
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace            concurrency {
+namespace concurrency {
+/**
+ *  @class write_locker write_locker.hh
+ * "com/centreon/concurrency/write_locker.hh"
+ *  @brief Handle write locking of a readers-writer lock.
+ *
+ *  Lock RWL upon creation and unlock it upon destruction.
+ */
+class write_locker {
+ public:
   /**
-   *  @class write_locker write_locker.hh "com/centreon/concurrency/write_locker.hh"
-   *  @brief Handle write locking of a readers-writer lock.
-   *
-   *  Lock RWL upon creation and unlock it upon destruction.
+   *  Constructor.
    */
-  class              write_locker {
-  public:
-    /**
-     *  Constructor.
-     */
-                     write_locker(read_write_lock* rwl)
-      : _locked(false), _rwl(rwl) {
-      relock();
+  write_locker(read_write_lock* rwl) : _locked(false), _rwl(rwl) { relock(); }
+
+  /**
+   *  Destructor.
+   */
+  ~write_locker() throw() {
+    try {
+      if (_locked)
+        unlock();
+    } catch (...) {
     }
+  }
 
-    /**
-     *  Destructor.
-     */
-                     ~write_locker() throw () {
-      try {
-        if (_locked)
-          unlock();
-      }
-      catch (...) {}
-    }
+  /**
+   *  Relock.
+   */
+  void relock() {
+    _rwl->write_lock();
+    _locked = true;
+    return;
+  }
 
-    /**
-     *  Relock.
-     */
-    void             relock() {
-      _rwl->write_lock();
-      _locked = true;
-      return ;
-    }
+  /**
+   *  Unlock.
+   */
+  void unlock() {
+    _rwl->write_unlock();
+    _locked = false;
+    return;
+  }
 
-    /**
-     *  Unlock.
-     */
-    void             unlock() {
-      _rwl->write_unlock();
-      _locked = false;
-      return ;
-    }
+ private:
+  write_locker(write_locker const& right);
+  write_locker& operator=(write_locker const& right);
 
-  private:
-                     write_locker(write_locker const& right);
-    write_locker&    operator=(write_locker const& right);
-
-    bool             _locked;
-    read_write_lock* _rwl;
-  };
-}
+  bool _locked;
+  read_write_lock* _rwl;
+};
+}  // namespace concurrency
 
 CC_END()
 
-#endif // !CC_CONCURRENCY_WRITE_LOCKER_HH
+#endif  // !CC_CONCURRENCY_WRITE_LOCKER_HH

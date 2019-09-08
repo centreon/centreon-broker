@@ -42,22 +42,20 @@ static int check_number(0);
 static void precheck(char const* name) {
   ++check_number;
   std::cout << "check #" << check_number << " (" << name << ")\n";
-  return ;
+  return;
 }
 
 /**
  *  Postcheck routine.
  */
-static void postcheck(
-              test::db& db,
-              test::predicate expected[][2]) {
+static void postcheck(test::db& db, test::predicate expected[][2]) {
   static std::string check_query(
-    "SELECT parent_id, child_id"
-    "  FROM hosts_hosts_parents"
-    "  ORDER BY parent_id ASC, child_id ASC");
+      "SELECT parent_id, child_id"
+      "  FROM hosts_hosts_parents"
+      "  ORDER BY parent_id ASC, child_id ASC");
   db.check_content(check_query, expected);
   std::cout << "  passed\n";
-  return ;
+  return;
 }
 
 /**
@@ -71,34 +69,27 @@ int main() {
 
   try {
     // Database.
-    char const* tables[] = {
-      "instances",
-      "hosts",
-      "hosts_hosts_parents",
-      NULL
-    };
+    char const* tables[] = {"instances", "hosts", "hosts_hosts_parents", NULL};
     test::db db(DB_NAME, tables);
 
     // Monitoring broker.
     test::file cbd_cfg;
-    cbd_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
+    cbd_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
     cbd_cfg.set("BROKER_ID", "84");
     cbd_cfg.set("BROKER_NAME", TEST_NAME "-cbd");
     cbd_cfg.set("POLLER_ID", "42");
     cbd_cfg.set("POLLER_NAME", "my-poller");
     cbd_cfg.set("TCP_PORT", "5579");
     cbd_cfg.set("DB_NAME", DB_NAME);
-    cbd_cfg.set(
-      "SQL_ADDITIONAL",
-      "<write_filters>"
-      "  <category>neb:instance</category>"
-      "  <category>neb:instance_status</category>"
-      "  <category>neb:host</category>"
-      "  <category>neb:host_check</category>"
-      "  <category>neb:host_status</category>"
-      "  <category>neb:host_parent</category>"
-      "</write_filters>");
+    cbd_cfg.set("SQL_ADDITIONAL",
+                "<write_filters>"
+                "  <category>neb:instance</category>"
+                "  <category>neb:instance_status</category>"
+                "  <category>neb:host</category>"
+                "  <category>neb:host_check</category>"
+                "  <category>neb:host_status</category>"
+                "  <category>neb:host_parent</category>"
+                "</write_filters>");
     test::cbd broker;
     broker.set_config_file(cbd_cfg.generate());
     broker.start();
@@ -106,8 +97,7 @@ int main() {
 
     // Monitoring engine.
     test::file cbmod_cfg;
-    cbmod_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
+    cbmod_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
     cbmod_cfg.set("BROKER_ID", "83");
     cbmod_cfg.set("BROKER_NAME", TEST_NAME "-cbmod");
     cbmod_cfg.set("POLLER_ID", "42");
@@ -129,12 +119,7 @@ int main() {
     engine.start();
     test::sleep_for(2);
     test::predicate expected[][2] = {
-      { 1, 2 },
-      { 1, 3 },
-      { 1, 4 },
-      { 4, 5 },
-      { test::predicate() }
-    };
+        {1, 2}, {1, 3}, {1, 4}, {4, 5}, {test::predicate()}};
     postcheck(db, expected);
 
     // Remove one child.
@@ -159,11 +144,9 @@ int main() {
     error = false;
     db.set_remove_db_on_close(true);
     broker.stop();
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << "  " << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "  unknown exception\n";
   }
 

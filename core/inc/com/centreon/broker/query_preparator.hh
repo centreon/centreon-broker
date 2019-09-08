@@ -17,48 +17,45 @@
 */
 
 #ifndef CCB_QUERY_PREPARATOR_HH
-#  define CCB_QUERY_PREPARATOR_HH
+#define CCB_QUERY_PREPARATOR_HH
 
-#  include <map>
-#  include <set>
-#  include "com/centreon/broker/mysql.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <map>
+#include <set>
+#include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 /**
- *  @class query_preparator query_preparator.hh "com/centreon/broker/query_preparator.hh"
+ *  @class query_preparator query_preparator.hh
+ * "com/centreon/broker/query_preparator.hh"
  *  @brief Prepare database queries.
  *
  *  Prepare queries using event mappings.
  */
-class                  query_preparator {
-public:
+class query_preparator {
+ public:
   typedef std::set<std::string> excluded_fields;
   typedef std::set<std::string> doubled_fields;
   typedef std::set<std::string> event_unique;
 
-                       query_preparator(
-                         unsigned int event_id,
-                         event_unique const& unique = event_unique(),
-                         excluded_fields const& excluded
-                         = excluded_fields());
-                       query_preparator(
-                         query_preparator const& other);
-                       ~query_preparator();
+  query_preparator(unsigned int event_id,
+                   event_unique const& unique = event_unique(),
+                   excluded_fields const& excluded = excluded_fields());
+  query_preparator(query_preparator const& other);
+  ~query_preparator();
   query_preparator& operator=(query_preparator const& other);
   database::mysql_stmt prepare_insert(mysql& q, bool ignore = false);
   database::mysql_stmt prepare_update(mysql& q);
   database::mysql_stmt prepare_insert_or_update(mysql& ms);
   database::mysql_stmt prepare_delete(mysql& q);
 
-private:
-  unsigned int         _event_id;
-  excluded_fields
-                       _excluded;
-  event_unique         _unique;
+ private:
+  unsigned int _event_id;
+  excluded_fields _excluded;
+  event_unique _unique;
 };
 
 CCB_END()
 
-#endif // !CCB_QUERY_PREPARATOR_HH
+#endif  // !CCB_QUERY_PREPARATOR_HH

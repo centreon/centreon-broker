@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/service_group.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/service_group.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Default constructor.
@@ -44,8 +44,7 @@ service_group::service_group() {}
  *
  *  @param[in] other  Object to copy.
  */
-service_group::service_group(service_group const& other)
-  : group(other) {}
+service_group::service_group(service_group const& other) : group(other) {}
 
 /**
  *  Destructor.
@@ -86,34 +85,26 @@ unsigned int service_group::static_type() {
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const service_group::entries[] = {
-  mapping::entry(
-    &service_group::id,
-    "servicegroup_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &service_group::name,
-    "name"),
-  mapping::entry(
-    &service_group::enabled,
-    NULL),
-  mapping::entry(
-    &service_group::poller_id,
-    NULL,
-    mapping::entry::invalid_on_zero),
-  mapping::entry()
-};
+    mapping::entry(&service_group::id,
+                   "servicegroup_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&service_group::name, "name"),
+    mapping::entry(&service_group::enabled, nullptr),
+    mapping::entry(&service_group::poller_id,
+                   nullptr,
+                   mapping::entry::invalid_on_zero),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_service_group() {
   return (new service_group);
 }
 io::event_info::event_operations const service_group::operations = {
-  &new_service_group
-};
+    &new_service_group};

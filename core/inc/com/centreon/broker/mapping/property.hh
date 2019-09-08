@@ -17,9 +17,9 @@
 */
 
 #ifndef CCB_MAPPING_PROPERTY_HH
-#  define CCB_MAPPING_PROPERTY_HH
+#define CCB_MAPPING_PROPERTY_HH
 
-#  include "com/centreon/broker/mapping/source.hh"
+#include "com/centreon/broker/mapping/source.hh"
 
 CCB_BEGIN()
 
@@ -359,4 +359,4 @@ class property : public source {
 
 CCB_END()
 
-#endif // !CCB_MAPPING_PROPERTY_HH
+#endif  // !CCB_MAPPING_PROPERTY_HH

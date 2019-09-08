@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/total_service_state_change.hh"
 #include <iomanip>
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/statistics/compute_value.hh"
-#include "com/centreon/broker/neb/statistics/total_service_state_change.hh"
 #include "com/centreon/engine/globals.hh"
 
 using namespace com::centreon::broker;
@@ -32,17 +32,16 @@ using namespace com::centreon::broker::neb::statistics;
  *  Default constructor.
  */
 total_service_state_change::total_service_state_change()
-  : plugin("total_service_state_change") {}
+    : plugin("total_service_state_change") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-total_service_state_change::total_service_state_change(total_service_state_change const& right)
-  : plugin(right) {
-
-}
+total_service_state_change::total_service_state_change(
+    total_service_state_change const& right)
+    : plugin(right) {}
 
 /**
  *  Destructor.
@@ -56,7 +55,8 @@ total_service_state_change::~total_service_state_change() {}
  *
  *  @return This object.
  */
-total_service_state_change& total_service_state_change::operator=(total_service_state_change const& right) {
+total_service_state_change& total_service_state_change::operator=(
+    total_service_state_change const& right) {
   plugin::operator=(right);
   return (*this);
 }
@@ -67,35 +67,32 @@ total_service_state_change& total_service_state_change::operator=(total_service_
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void total_service_state_change::run(
-              std::string& output,
-	      std::string& perfdata) {
+void total_service_state_change::run(std::string& output,
+                                     std::string& perfdata) {
   if (!com::centreon::engine::service::services.empty()) {
     compute_value<double> cv;
     for (service_map::const_iterator
-           it{com::centreon::engine::service::services.begin()},
-           end{com::centreon::engine::service::services.end()};
-         it != end;
-         ++it)
+             it{com::centreon::engine::service::services.begin()},
+         end{com::centreon::engine::service::services.end()};
+         it != end; ++it)
       cv << it->second->get_percent_state_change();
 
     // Output.
     std::ostringstream oss;
     oss << "Engine " << config::applier::state::instance().poller_name()
-        << " has an average service state change of "
-        << std::fixed << std::setprecision(2) << cv.avg() << "%";
+        << " has an average service state change of " << std::fixed
+        << std::setprecision(2) << cv.avg() << "%";
     output = oss.str();
 
     // Perfdata.
     oss.str("");
-    oss << "avg=" << cv.avg() << "% min=" << cv.min()
-        << "% max=" << cv.max() << "%";
+    oss << "avg=" << cv.avg() << "% min=" << cv.min() << "% max=" << cv.max()
+        << "%";
     perfdata = oss.str();
-  }
-  else {
+  } else {
     // Output.
-    output = "No service to compute total service state change on "
-      + config::applier::state::instance().poller_name();
+    output = "No service to compute total service state change on " +
+             config::applier::state::instance().poller_name();
   }
-  return ;
+  return;
 }

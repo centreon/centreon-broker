@@ -50,10 +50,6 @@ int main() {
   ss3.start_time = 456887;
 
   // Check.
-  return (!(ss1 == ss2)
-          || (ss1 == ss3)
-          || (ss2 == ss3)
-          || !(ss1 == ss1)
-          || !(ss2 == ss2)
-          || !(ss3 == ss3));
+  return (!(ss1 == ss2) || (ss1 == ss3) || (ss2 == ss3) || !(ss1 == ss1) ||
+          !(ss2 == ss2) || !(ss3 == ss3));
 }

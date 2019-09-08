@@ -17,18 +17,18 @@
 */
 
 #ifndef CCB_TEST_MISC_HH
-#  define CCB_TEST_MISC_HH
+#define CCB_TEST_MISC_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     test {
-  void        recursive_remove(std::string const& dir_path);
-  void        sleep_for(int units);
-}
+namespace test {
+void recursive_remove(std::string const& dir_path);
+void sleep_for(int units);
+}  // namespace test
 
 CCB_END()
 
-#endif // !CCB_TEST_MISC_HH
+#endif  // !CCB_TEST_MISC_HH

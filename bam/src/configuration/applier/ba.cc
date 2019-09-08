@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sstream>
 #include "com/centreon/broker/bam/configuration/applier/ba.hh"
+#include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -66,9 +66,8 @@ applier::ba& applier::ba::operator=(applier::ba const& other) {
  *  @param[in] my_bas  BAs to apply.
  *  @param[in] book    The service book.
  */
-void applier::ba::apply(
-                    bam::configuration::state::bas const& my_bas,
-                    service_book& book) {
+void applier::ba::apply(bam::configuration::state::bas const& my_bas,
+                        service_book& book) {
   //
   // DIFF
   //
@@ -86,12 +85,10 @@ void applier::ba::apply(
   std::list<bam::configuration::ba> to_modify;
 
   // Iterate through configuration.
-  for (bam::configuration::state::bas::iterator
-         it(to_create.begin()),
-         end(to_create.end());
+  for (bam::configuration::state::bas::iterator it(to_create.begin()),
+       end(to_create.end());
        it != end;) {
-    std::map<unsigned int, applied>::iterator
-      cfg_it(to_delete.find(it->first));
+    std::map<unsigned int, applied>::iterator cfg_it(to_delete.find(it->first));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
       // Configuration mismatch, modify object.
@@ -112,85 +109,65 @@ void applier::ba::apply(
   //
 
   // Delete objects.
-  for (std::map<unsigned int, applied>::iterator
-         it(to_delete.begin()),
-         end(to_delete.end());
-       it != end;
-       ++it) {
-    logging::config(logging::medium)
-      << "BAM: removing BA " << it->first;
-    std::shared_ptr<neb::service>
-      s(_ba_service(
-          it->first,
-          it->second.cfg.get_host_id(),
-          it->second.cfg.get_service_id()));
+  for (std::map<unsigned int, applied>::iterator it(to_delete.begin()),
+       end(to_delete.end());
+       it != end; ++it) {
+    logging::config(logging::medium) << "BAM: removing BA " << it->first;
+    std::shared_ptr<neb::service> s(
+        _ba_service(it->first, it->second.cfg.get_host_id(),
+                    it->second.cfg.get_service_id()));
     s->enabled = false;
-    book.unlisten(
-           it->second.cfg.get_host_id(),
-           it->second.cfg.get_service_id(),
-           static_cast<bam::ba*>(it->second.obj.get()));
+    book.unlisten(it->second.cfg.get_host_id(), it->second.cfg.get_service_id(),
+                  static_cast<bam::ba*>(it->second.obj.get()));
     _applied.erase(it->first);
     multiplexing::publisher().write(s);
   }
   to_delete.clear();
 
   // Create new objects.
-  for (bam::configuration::state::bas::iterator
-         it(to_create.begin()),
-         end(to_create.end());
-       it != end;
-       ++it) {
-    logging::config(logging::medium) << "BAM: creating BA "
-      << it->first << " ('" << it->second.get_name() << "')";
+  for (bam::configuration::state::bas::iterator it(to_create.begin()),
+       end(to_create.end());
+       it != end; ++it) {
+    logging::config(logging::medium) << "BAM: creating BA " << it->first
+                                     << " ('" << it->second.get_name() << "')";
     std::shared_ptr<bam::ba> new_ba(_new_ba(it->second, book));
     applied& content(_applied[it->first]);
     content.cfg = it->second;
     content.obj = new_ba;
-    std::shared_ptr<neb::host>
-      h(_ba_host(it->second.get_host_id()));
+    std::shared_ptr<neb::host> h(_ba_host(it->second.get_host_id()));
     multiplexing::publisher().write(h);
-    std::shared_ptr<neb::service>
-      s(_ba_service(
-          it->first,
-          it->second.get_host_id(),
-          it->second.get_service_id()));
+    std::shared_ptr<neb::service> s(_ba_service(
+        it->first, it->second.get_host_id(), it->second.get_service_id()));
     multiplexing::publisher().write(s);
   }
 
   // Modify existing objects.
-  for (std::list<bam::configuration::ba>::iterator
-         it(to_modify.begin()),
-         end(to_modify.end());
-       it != end;
-       ++it) {
-    std::map<unsigned int, applied>::iterator
-      pos(_applied.find(it->get_id()));
+  for (std::list<bam::configuration::ba>::iterator it(to_modify.begin()),
+       end(to_modify.end());
+       it != end; ++it) {
+    std::map<unsigned int, applied>::iterator pos(_applied.find(it->get_id()));
     if (pos != _applied.end()) {
-      logging::config(logging::medium)
-        << "BAM: modifying BA " << it->get_id();
+      logging::config(logging::medium) << "BAM: modifying BA " << it->get_id();
       pos->second.obj->set_name(it->get_name());
       pos->second.obj->set_level_warning(it->get_warning_level());
       pos->second.obj->set_level_critical(it->get_critical_level());
       pos->second.cfg = *it;
-    }
-    else
+    } else
       logging::error(logging::high)
-        << "BAM: attempting to modify BA " << it->get_id()
-        << ", however associated object was not found. This is likely a"
-        << " software bug that you should report to Centreon Broker "
-        << "developers";
+          << "BAM: attempting to modify BA " << it->get_id()
+          << ", however associated object was not found. This is likely a"
+          << " software bug that you should report to Centreon Broker "
+          << "developers";
   }
 
   // Set all BA objects as valid. Invalid BAs will be reset as invalid
   // on KPI application.
-  for (std::map<unsigned int, applied>::iterator
-         it(_applied.begin()),
-         end(_applied.end());
-       it != end;
-       ++it)
+  for (std::map<unsigned int, applied>::iterator it(_applied.begin()),
+       end(_applied.end());
+       it != end; ++it)
     it->second.obj->set_valid(true);
 
-  return ;
+  return;
 }
 
 /**
@@ -201,11 +178,8 @@ void applier::ba::apply(
  *  @return Shared pointer to the applied BA object.
  */
 std::shared_ptr<bam::ba> applier::ba::find_ba(unsigned int id) {
-  std::map<unsigned int, applied>::iterator
-    it(_applied.find(id));
-  return ((it != _applied.end())
-          ? it->second.obj
-          : std::shared_ptr<bam::ba>());
+  std::map<unsigned int, applied>::iterator it(_applied.find(id));
+  return ((it != _applied.end()) ? it->second.obj : std::shared_ptr<bam::ba>());
 }
 
 /**
@@ -214,13 +188,11 @@ std::shared_ptr<bam::ba> applier::ba::find_ba(unsigned int id) {
  *  @param[out] visitor  Visitor that will receive status.
  */
 void applier::ba::visit(io::stream* visitor) {
-  for (std::map<unsigned int, applied>::iterator
-         it(_applied.begin()),
-         end(_applied.end());
-       it != end;
-       ++it)
+  for (std::map<unsigned int, applied>::iterator it(_applied.begin()),
+       end(_applied.end());
+       it != end; ++it)
     it->second.obj->visit(visitor);
-  return ;
+  return;
 }
 
 /**
@@ -230,18 +202,17 @@ void applier::ba::visit(io::stream* visitor) {
  *
  *  @return Virtual BA host.
  */
-std::shared_ptr<neb::host> applier::ba::_ba_host(
-                                           unsigned int host_id) {
+std::shared_ptr<neb::host> applier::ba::_ba_host(unsigned int host_id) {
   std::shared_ptr<neb::host> h(new neb::host);
-  h->poller_id
-    = com::centreon::broker::config::applier::state::instance().poller_id();
+  h->poller_id =
+      com::centreon::broker::config::applier::state::instance().poller_id();
   h->host_id = host_id;
   {
     std::ostringstream oss;
     oss << "_Module_BAM_" << h->poller_id;
-    h->host_name = oss.str().c_str();
+    h->host_name = oss.str();
   }
-  h->last_update = time(NULL);
+  h->last_update = time(nullptr);
   return (h);
 }
 
@@ -255,18 +226,18 @@ std::shared_ptr<neb::host> applier::ba::_ba_host(
  *  @return Virtual BA service.
  */
 std::shared_ptr<neb::service> applier::ba::_ba_service(
-                                              unsigned int ba_id,
-                                              unsigned int host_id,
-                                              unsigned int service_id) {
+    unsigned int ba_id,
+    unsigned int host_id,
+    unsigned int service_id) {
   std::shared_ptr<neb::service> s(new neb::service);
   s->host_id = host_id;
   s->service_id = service_id;
   {
     std::ostringstream oss;
     oss << "ba_" << ba_id;
-    s->service_description = oss.str().c_str();
+    s->service_description = oss.str();
   }
-  s->last_update = time(NULL);
+  s->last_update = time(nullptr);
   return (s);
 }
 
@@ -277,7 +248,7 @@ std::shared_ptr<neb::service> applier::ba::_ba_service(
  */
 void applier::ba::_internal_copy(applier::ba const& other) {
   _applied = other._applied;
-  return ;
+  return;
 }
 
 /**
@@ -287,9 +258,8 @@ void applier::ba::_internal_copy(applier::ba const& other) {
  *
  *  @return New BA object.
  */
-std::shared_ptr<bam::ba> applier::ba::_new_ba(
-                                         configuration::ba const& cfg,
-                                         service_book& book) {
+std::shared_ptr<bam::ba> applier::ba::_new_ba(configuration::ba const& cfg,
+                                              service_book& book) {
   std::shared_ptr<bam::ba> obj(new bam::ba(false));
   obj->set_id(cfg.get_id());
   obj->set_host_id(cfg.get_host_id());
@@ -311,11 +281,9 @@ std::shared_ptr<bam::ba> applier::ba::_new_ba(
  */
 void applier::ba::save_to_cache(persistent_cache& cache) {
   cache.transaction();
-  for (std::map<unsigned int, applied>::const_iterator
-       it = _applied.begin(),
-       end = _applied.end();
-       it != end;
-       ++it) {
+  for (std::map<unsigned int, applied>::const_iterator it = _applied.begin(),
+                                                       end = _applied.end();
+       it != end; ++it) {
     it->second.obj->save_inherited_downtime(cache);
   }
   cache.commit();
@@ -331,12 +299,13 @@ void applier::ba::load_from_cache(persistent_cache& cache) {
   cache.get(d);
   while (d) {
     if (d->type() != inherited_downtime::static_type())
-      continue ;
-    inherited_downtime const& dwn = *std::static_pointer_cast<inherited_downtime const>(d);
+      continue;
+    inherited_downtime const& dwn =
+        *std::static_pointer_cast<inherited_downtime const>(d);
     std::map<unsigned int, applied>::iterator found = _applied.find(dwn.ba_id);
     if (found != _applied.end()) {
       logging::debug(logging::medium)
-        << "BAM: found an inherited downtime for BA " << found->first;
+          << "BAM: found an inherited downtime for BA " << found->first;
       found->second.obj->set_inherited_downtime(dwn);
     }
     cache.get(d);

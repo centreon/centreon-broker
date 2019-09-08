@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/acknowledgement.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief acknowledgement default constructor.
@@ -36,15 +36,15 @@ using namespace com::centreon::broker::neb;
  *  default value (0, NULL or equivalent).
  */
 acknowledgement::acknowledgement()
-  : acknowledgement_type(0),
-    host_id(0),
-    is_sticky(false),
-    notify_contacts(false),
-    notify_only_if_not_already_acknowledged(false),
-    persistent_comment(false),
-    poller_id(0),
-    service_id(0),
-    state(0) {}
+    : acknowledgement_type(0),
+      host_id(0),
+      is_sticky(false),
+      notify_contacts(false),
+      notify_only_if_not_already_acknowledged(false),
+      persistent_comment(false),
+      poller_id(0),
+      service_id(0),
+      state(0) {}
 
 /**
  *  @brief acknowledgement copy constructor.
@@ -54,7 +54,7 @@ acknowledgement::acknowledgement()
  *  @param[in] other  Object to copy.
  */
 acknowledgement::acknowledgement(acknowledgement const& other)
-  : io::data(other) {
+    : io::data(other) {
   _internal_copy(other);
 }
 
@@ -89,10 +89,10 @@ unsigned int acknowledgement::type() const {
 }
 
 /**************************************
-*                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *          Private Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Copy internal data of the given object to the current
@@ -117,74 +117,51 @@ void acknowledgement::_internal_copy(acknowledgement const& other) {
   host_id = other.host_id;
   is_sticky = other.is_sticky;
   notify_contacts = other.notify_contacts;
-  notify_only_if_not_already_acknowledged
-    = other.notify_only_if_not_already_acknowledged;
+  notify_only_if_not_already_acknowledged =
+      other.notify_only_if_not_already_acknowledged;
   persistent_comment = other.persistent_comment;
   poller_id = other.poller_id;
   service_id = other.service_id;
   state = other.state;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const acknowledgement::entries[] = {
-  mapping::entry(
-    &acknowledgement::acknowledgement_type,
-    "type"),
-  mapping::entry(
-    &acknowledgement::author,
-    "author"),
-  mapping::entry(
-    &acknowledgement::comment,
-    "comment_data"),
-  mapping::entry(
-    &acknowledgement::deletion_time,
-    "deletion_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &acknowledgement::entry_time,
-    "entry_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &acknowledgement::host_id,
-    "host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &acknowledgement::poller_id,
-    "instance_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &acknowledgement::is_sticky,
-    "sticky"),
-  mapping::entry(
-    &acknowledgement::notify_contacts,
-    "notify_contacts"),
-  mapping::entry(
-    &acknowledgement::persistent_comment,
-    "persistent_comment"),
-  mapping::entry(
-    &acknowledgement::service_id,
-    "service_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &acknowledgement::state,
-    "state"),
-  mapping::entry(
-    &acknowledgement::notify_only_if_not_already_acknowledged,
-    ""),
-  mapping::entry()
-};
+    mapping::entry(&acknowledgement::acknowledgement_type, "type"),
+    mapping::entry(&acknowledgement::author, "author"),
+    mapping::entry(&acknowledgement::comment, "comment_data"),
+    mapping::entry(&acknowledgement::deletion_time,
+                   "deletion_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&acknowledgement::entry_time,
+                   "entry_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&acknowledgement::host_id,
+                   "host_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&acknowledgement::poller_id,
+                   "instance_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&acknowledgement::is_sticky, "sticky"),
+    mapping::entry(&acknowledgement::notify_contacts, "notify_contacts"),
+    mapping::entry(&acknowledgement::persistent_comment, "persistent_comment"),
+    mapping::entry(&acknowledgement::service_id,
+                   "service_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&acknowledgement::state, "state"),
+    mapping::entry(&acknowledgement::notify_only_if_not_already_acknowledged,
+                   ""),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_ack() {
   return (new acknowledgement);
 }
-io::event_info::event_operations const acknowledgement::operations = {
-  &new_ack
-};
+io::event_info::event_operations const acknowledgement::operations = {&new_ack};

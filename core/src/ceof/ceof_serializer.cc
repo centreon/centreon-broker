@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/ceof/ceof_serializer.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker::ceof;
 
@@ -26,11 +26,8 @@ using namespace com::centreon::broker::ceof;
  *
  *  @param[in,out] writer        The writer to use.
  */
-ceof_serializer::ceof_serializer(
-                   ceof_writer& writer)
-  : ceof_visitor(true, false), _writer(writer) {
-
-}
+ceof_serializer::ceof_serializer(ceof_writer& writer)
+    : ceof_visitor(true, false), _writer(writer) {}
 
 /**
  *  Destructor.
@@ -43,9 +40,8 @@ ceof_serializer::~ceof_serializer() throw() {}
  *  @param[in] name  The name.
  *  @param[in] value The value.
  */
-void ceof_serializer::serialize(
-                        std::string const& name,
-                        std::string const& value) {
+void ceof_serializer::serialize(std::string const& name,
+                                std::string const& value) {
   _writer.add_key(name);
   _writer.add_value(value);
 }

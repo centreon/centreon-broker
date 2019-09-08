@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/storage/rebuild.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
-#include "com/centreon/broker/storage/rebuild.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -78,14 +78,15 @@ unsigned int rebuild::type() const {
  *  @return  The event type.
  */
 unsigned int rebuild::static_type() {
-  return (io::events::data_type<io::events::storage, storage::de_rebuild>::value);
+  return (
+      io::events::data_type<io::events::storage, storage::de_rebuild>::value);
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -96,34 +97,23 @@ void rebuild::_internal_copy(rebuild const& right) {
   end = right.end;
   id = right.id;
   is_index = right.is_index;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const rebuild::entries[] = {
-  mapping::entry(
-    &rebuild::end,
-    "end"),
-  mapping::entry(
-    &rebuild::id,
-    "id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &rebuild::is_index,
-    "is_index"),
-  mapping::entry()
-};
+    mapping::entry(&rebuild::end, "end"),
+    mapping::entry(&rebuild::id, "id", mapping::entry::invalid_on_zero),
+    mapping::entry(&rebuild::is_index, "is_index"), mapping::entry()};
 
 // Operations.
 static io::data* new_rebuild() {
   return (new rebuild);
 }
-io::event_info::event_operations const rebuild::operations = {
-  &new_rebuild
-};
+io::event_info::event_operations const rebuild::operations = {&new_rebuild};

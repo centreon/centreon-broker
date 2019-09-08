@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "test/bench_generate_rrd_mod.hh"
 #include <QDomDocument>
 #include <QDomElement>
 #include "com/centreon/broker/config/state.hh"
-#include "test/bench_generate_rrd_mod.hh"
 
 static benchmark* thread(NULL);
 
@@ -43,30 +43,30 @@ static unsigned int _get_param(std::string const& param) {
 }
 
 extern "C" {
-  /**
-   *  Module deinitialization routine.
-   */
-  void broker_module_deinit() {
-    delete thread;
-    thread = NULL;
-    return ;
-  }
+/**
+ *  Module deinitialization routine.
+ */
+void broker_module_deinit() {
+  delete thread;
+  thread = NULL;
+  return;
+}
 
-  /**
-   *  Module initialization routine.
-   *
-   *  @param[in] arg Configuration object.
-   */
-  void broker_module_init(config::state const* cfg) {
-    std::map<std::string, std::string>::const_iterator it1, it2;
-    it1 = cfg->params().find("bench_services");
-    it2 = cfg->params().find("bench_requests_per_service");
-    if (it1 != cfg->params().end() && it2 != cfg->params().end()) {
-      unsigned int services(_get_param(it1->second));
-      unsigned int requests_per_service(_get_param(it2->second));
-      thread = new benchmark(services, requests_per_service);
-      thread->start();
-    }
-    return ;
+/**
+ *  Module initialization routine.
+ *
+ *  @param[in] arg Configuration object.
+ */
+void broker_module_init(config::state const* cfg) {
+  std::map<std::string, std::string>::const_iterator it1, it2;
+  it1 = cfg->params().find("bench_services");
+  it2 = cfg->params().find("bench_requests_per_service");
+  if (it1 != cfg->params().end() && it2 != cfg->params().end()) {
+    unsigned int services(_get_param(it1->second));
+    unsigned int requests_per_service(_get_param(it2->second));
+    thread = new benchmark(services, requests_per_service);
+    thread->start();
   }
+  return;
+}
 }

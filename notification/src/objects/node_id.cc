@@ -16,18 +16,16 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/notification/objects/node_id.hh"
 #include <QHash>
 #include <QPair>
-#include "com/centreon/broker/notification/objects/node_id.hh"
 
 using namespace com::centreon::broker::notification::objects;
 
 /**
  *  Default constructor.
  */
-node_id::node_id() :
-  _host_id(0),
-  _service_id(0) {}
+node_id::node_id() : _host_id(0), _service_id(0) {}
 
 /**
  *  Copy constructor.
@@ -59,11 +57,8 @@ node_id& node_id::operator=(node_id const& obj) {
  *  @param[in] host_id    The host id of this node. 0 if none.
  *  @param[in] service_id  The service id of this node. 0 if none.
  */
-node_id::node_id(
-           unsigned int host_id,
-           unsigned int service_id) :
-  _host_id(host_id),
-  _service_id(service_id) {}
+node_id::node_id(unsigned int host_id, unsigned int service_id)
+    : _host_id(host_id), _service_id(service_id) {}
 
 /**
  *  Comparison operator.
@@ -154,6 +149,5 @@ node_id node_id::to_host() const throw() {
  *  @return        An identifier for this node_id usable in hashtable.
  */
 uint com::centreon::broker::notification::objects::qHash(node_id id) {
-  return (qHash(qMakePair(id.get_host_id(),
-                          id.get_service_id())));
+  return (qHash(qMakePair(id.get_host_id(), id.get_service_id())));
 }

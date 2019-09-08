@@ -17,47 +17,45 @@
 */
 
 #ifndef CC_LOGGING_SYSLOGGER_HH
-#  define CC_LOGGING_SYSLOGGER_HH
+#define CC_LOGGING_SYSLOGGER_HH
 
-#  include <string>
-#  include "com/centreon/logging/backend.hh"
-#  include "com/centreon/namespace.hh"
+#include <string>
+#include "com/centreon/logging/backend.hh"
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace              logging {
-  /**
-   *  @class syslogger syslogger.hh "com/centreon/logging/syslogger.hh"
-   *  @brief Log messages to syslog.
-   */
-  class                syslogger : public backend {
-  public:
-                       syslogger(
-                         std::string const& id,
-                         int facility,
-                         bool is_sync = true,
-                         bool show_pid = true,
-                         time_precision show_timestamp = second,
-                         bool show_thread_id = false);
-                       ~syslogger() throw ();
-    void               close() throw ();
-    void               log(
-                         unsigned long long types,
-                         unsigned int verbose,
-                         char const* msg,
-                         unsigned int size) throw ();
-    void               open();
-    void               reopen();
+namespace logging {
+/**
+ *  @class syslogger syslogger.hh "com/centreon/logging/syslogger.hh"
+ *  @brief Log messages to syslog.
+ */
+class syslogger : public backend {
+ public:
+  syslogger(std::string const& id,
+            int facility,
+            bool is_sync = true,
+            bool show_pid = true,
+            time_precision show_timestamp = second,
+            bool show_thread_id = false);
+  ~syslogger() throw();
+  void close() throw();
+  void log(unsigned long long types,
+           unsigned int verbose,
+           char const* msg,
+           unsigned int size) throw();
+  void open();
+  void reopen();
 
-  private:
-                       syslogger(syslogger const& right);
-    syslogger&         operator=(syslogger const& right);
+ private:
+  syslogger(syslogger const& right);
+  syslogger& operator=(syslogger const& right);
 
-    int                _facility;
-    std::string        _id;
-  };
-}
+  int _facility;
+  std::string _id;
+};
+}  // namespace logging
 
 CC_END()
 
-#endif // !CC_LOGGING_SYSLOGGER_HH
+#endif  // !CC_LOGGING_SYSLOGGER_HH

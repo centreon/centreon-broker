@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
-#include "com/centreon/broker/storage/remove_graph.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -39,8 +39,7 @@ remove_graph::remove_graph() : id(0), is_index(0) {}
  *
  *  @param[in] right Object to copy.
  */
-remove_graph::remove_graph(remove_graph const& right)
-  : io::data(right) {
+remove_graph::remove_graph(remove_graph const& right) : io::data(right) {
   _internal_copy(right);
 }
 
@@ -79,14 +78,15 @@ unsigned int remove_graph::type() const {
  *  @return  The event type.
  */
 unsigned int remove_graph::static_type() {
-  return (io::events::data_type<io::events::storage, storage::de_remove_graph>::value);
+  return (io::events::data_type<io::events::storage,
+                                storage::de_remove_graph>::value);
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -96,31 +96,23 @@ unsigned int remove_graph::static_type() {
 void remove_graph::_internal_copy(remove_graph const& right) {
   id = right.id;
   is_index = right.is_index;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const remove_graph::entries[] = {
-  mapping::entry(
-    &remove_graph::id,
-    "id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &remove_graph::is_index,
-    "is_end"),
-  mapping::entry()
-};
+    mapping::entry(&remove_graph::id, "id", mapping::entry::invalid_on_zero),
+    mapping::entry(&remove_graph::is_index, "is_end"), mapping::entry()};
 
 // Operations.
 static io::data* new_remove_graph() {
   return (new remove_graph);
 }
 io::event_info::event_operations const remove_graph::operations = {
-  &new_remove_graph
-};
+    &new_remove_graph};

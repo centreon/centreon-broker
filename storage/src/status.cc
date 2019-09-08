@@ -16,29 +16,29 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/storage/status.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
-#include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
 status::status()
-  : ctime(0),
-    index_id(0),
-    interval(0),
-    is_for_rebuild(false),
-    rrd_len(0),
-    state(0) {}
+    : ctime(0),
+      index_id(0),
+      interval(0),
+      is_for_rebuild(false),
+      rrd_len(0),
+      state(0) {}
 
 /**
  *  Copy constructor.
@@ -82,14 +82,15 @@ unsigned int status::type() const {
  *  @return  The event type.
  */
 unsigned int status::static_type() {
-  return (io::events::data_type<io::events::storage, storage::de_status>::value);
+  return (
+      io::events::data_type<io::events::storage, storage::de_status>::value);
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -103,44 +104,31 @@ void status::_internal_copy(status const& s) {
   is_for_rebuild = s.is_for_rebuild;
   rrd_len = s.rrd_len;
   state = s.state;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const status::entries[] = {
-  mapping::entry(
-    &status::ctime,
-    "ctime",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &status::index_id,
-    "index_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &status::interval,
-    "interval"),
-  mapping::entry(
-    &status::rrd_len,
-    "rrd_len"),
-  mapping::entry(
-    &status::state,
-    "state"),
-  mapping::entry(
-    &status::is_for_rebuild,
-    "is_for_rebuild"),
-  mapping::entry()
-};
+    mapping::entry(&status::ctime,
+                   "ctime",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&status::index_id,
+                   "index_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&status::interval, "interval"),
+    mapping::entry(&status::rrd_len, "rrd_len"),
+    mapping::entry(&status::state, "state"),
+    mapping::entry(&status::is_for_rebuild, "is_for_rebuild"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_status() {
   return (new status);
 }
-io::event_info::event_operations const status::operations = {
-  &new_status
-};
+io::event_info::event_operations const status::operations = {&new_status};

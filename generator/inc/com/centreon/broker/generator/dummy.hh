@@ -17,54 +17,51 @@
 */
 
 #ifndef CCB_GENERATOR_DUMMY_HH
-#  define CCB_GENERATOR_DUMMY_HH
+#define CCB_GENERATOR_DUMMY_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/io/events.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/generator/internal.hh"
+#include "com/centreon/broker/generator/internal.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace               generator {
+namespace generator {
+/**
+ *  @class dummy dummy.hh "com/centreon/broker/generator/dummy.hh"
+ *  @brief Dummy generated event.
+ *
+ *  This is the base event transmitted by the generator module. It
+ *  contains a monotonic incremental integer used to verify that the
+ *  event order is not broken.
+ */
+class dummy : public io::data {
+ public:
+  dummy(unsigned int number = 0);
+  dummy(dummy const& other);
+  ~dummy();
+  dummy& operator=(dummy const& other);
+  unsigned int type() const;
+
   /**
-   *  @class dummy dummy.hh "com/centreon/broker/generator/dummy.hh"
-   *  @brief Dummy generated event.
+   *  Get the type of this event.
    *
-   *  This is the base event transmitted by the generator module. It
-   *  contains a monotonic incremental integer used to verify that the
-   *  event order is not broken.
+   *  @return  The event type.
    */
-  class                 dummy : public io::data {
-   public:
-                        dummy(unsigned int number = 0);
-                        dummy(dummy const& other);
-                        ~dummy();
-    dummy&              operator=(dummy const& other);
-    unsigned int        type() const;
+  static unsigned int static_type() {
+    return (io::events::data_type<io::events::generator,
+                                  generator::de_dummy>::value);
+  }
 
-    /**
-     *  Get the type of this event.
-     *
-     *  @return  The event type.
-     */
-    static unsigned int static_type() {
-      return (io::events::data_type<
-                            io::events::generator,
-                            generator::de_dummy>::value);
-    }
+  unsigned int number;
 
-    unsigned int        number;
-
-    static mapping::entry const
-                        entries[];
-    static io::event_info::event_operations const
-                        operations;
-  };
-}
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
+};
+}  // namespace generator
 
 CCB_END()
 
-#endif // !CCB_GENERATOR_DUMMY_HH
+#endif  // !CCB_GENERATOR_DUMMY_HH

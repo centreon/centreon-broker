@@ -17,31 +17,32 @@
 */
 
 #ifndef CCB_NOTIFICATION_LOADERS_CONTACT_LOADER_HH
-#  define CCB_NOTIFICATION_LOADERS_CONTACT_LOADER_HH
+#define CCB_NOTIFICATION_LOADERS_CONTACT_LOADER_HH
 
-#  include <string>
-#  include "com/centreon/broker/notification/builders/contact_builder.hh"
-#  include "com/centreon/broker/mysql.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/contact_builder.hh"
 
 CCB_BEGIN()
 
-namespace  notification {
-  /**
-   *  @class contact_loader contact_loader.hh "com/centreon/broker/notification/loaders/contact_loader.hh"
-   *  @brief Loader for contact objects.
-   *
-   *  This loader loads the contacts from the database.
-   */
-  class    contact_loader {
-  public:
-           contact_loader();
+namespace notification {
+/**
+ *  @class contact_loader contact_loader.hh
+ * "com/centreon/broker/notification/loaders/contact_loader.hh"
+ *  @brief Loader for contact objects.
+ *
+ *  This loader loads the contacts from the database.
+ */
+class contact_loader {
+ public:
+  contact_loader();
 
-    void   load(mysql* db, contact_builder* output);
-  };
+  void load(mysql* db, contact_builder* output);
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_LOADERS_CONTACT_LOADER_HH
+#endif  // !CCB_NOTIFICATION_LOADERS_CONTACT_LOADER_HH

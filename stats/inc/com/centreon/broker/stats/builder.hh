@@ -17,45 +17,44 @@
 */
 
 #ifndef CCB_STATS_BUILDER_HH
-#  define CCB_STATS_BUILDER_HH
+#define CCB_STATS_BUILDER_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/properties.hh"
-#  include "com/centreon/broker/stats/serializer.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/io/properties.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/stats/serializer.hh"
 
 CCB_BEGIN()
 
 // Forward declarations.
-namespace                 processing {
-  class                   bthread;
+namespace processing {
+class bthread;
 }
 
-namespace                 stats {
-  /**
-   *  @class builder builder.hh "com/centreon/broker/stats/builder.hh"
-   *  @brief Parse a <stats> node.
-   */
-  class                   builder {
-  public:
-                          builder();
-                          builder(builder const& right);
-                          ~builder() throw ();
-    builder&              operator=(builder const& right);
-    void                  build(serializer const& srz);
-    std::string const&    data() const throw ();
-    io::properties const& root() const throw ();
+namespace stats {
+/**
+ *  @class builder builder.hh "com/centreon/broker/stats/builder.hh"
+ *  @brief Parse a <stats> node.
+ */
+class builder {
+ public:
+  builder();
+  builder(builder const& right);
+  ~builder() throw();
+  builder& operator=(builder const& right);
+  void build(serializer const& srz);
+  std::string const& data() const throw();
+  io::properties const& root() const throw();
 
-  private:
-    static std::string    _generate_stats_for_endpoint(
-                            processing::bthread* fo,
-                            io::properties& tree);
+ private:
+  static std::string _generate_stats_for_endpoint(processing::bthread* fo,
+                                                  io::properties& tree);
 
-    std::string           _data;
-    io::properties        _root;
-  };
-}
+  std::string _data;
+  io::properties _root;
+};
+}  // namespace stats
 
 CCB_END()
 
-#endif // !CCB_STATS_BUILDER_HH
+#endif  // !CCB_STATS_BUILDER_HH

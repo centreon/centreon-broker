@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sstream>
 #include "com/centreon/broker/influxdb/json_printer.hh"
+#include <sstream>
 
 using namespace com::centreon::broker::influxdb;
 
@@ -31,9 +31,7 @@ json_printer::json_printer() {
 /**
  *  Destructor.
  */
-json_printer::~json_printer() {
-
-}
+json_printer::~json_printer() {}
 
 /**
  *  Copy constructor.
@@ -64,7 +62,6 @@ json_printer& json_printer::operator=(json_printer const& other) {
 void json_printer::clear() {
   _data.clear();
 }
-
 
 /**
  *  Get the resulting string.

@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/passive_host_state_change.hh"
 #include <iomanip>
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/passive_host_state_change.hh"
 #include "com/centreon/broker/neb/statistics/compute_value.hh"
 #include "com/centreon/engine/globals.hh"
 
@@ -33,15 +33,16 @@ using namespace com::centreon::engine;
  *  Default constructor.
  */
 passive_host_state_change::passive_host_state_change()
-  : plugin("passive_host_state_change") {}
+    : plugin("passive_host_state_change") {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
  */
-passive_host_state_change::passive_host_state_change(passive_host_state_change const& right)
- : plugin(right) {}
+passive_host_state_change::passive_host_state_change(
+    passive_host_state_change const& right)
+    : plugin(right) {}
 
 /**
  *  Destructor.
@@ -55,7 +56,8 @@ passive_host_state_change::~passive_host_state_change() {}
  *
  *  @return This object.
  */
-passive_host_state_change& passive_host_state_change::operator=(passive_host_state_change const& right) {
+passive_host_state_change& passive_host_state_change::operator=(
+    passive_host_state_change const& right) {
   plugin::operator=(right);
   return (*this);
 }
@@ -66,15 +68,11 @@ passive_host_state_change& passive_host_state_change::operator=(passive_host_sta
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void passive_host_state_change::run(
-              std::string& output,
-	      std::string& perfdata) {
+void passive_host_state_change::run(std::string& output,
+                                    std::string& perfdata) {
   compute_value<double> cv;
-  for (host_map::const_iterator
-         it{host::hosts.begin()},
-         end{host::hosts.end()};
-       it != end;
-       ++it)
+  for (host_map::const_iterator it{host::hosts.begin()}, end{host::hosts.end()};
+       it != end; ++it)
     if (it->second->get_check_type() == checkable::check_passive)
       cv << it->second->get_percent_state_change();
 
@@ -82,20 +80,21 @@ void passive_host_state_change::run(
     // Output.
     std::ostringstream oss;
     oss << "Engine " << config::applier::state::instance().poller_name()
-        << " has an average passive host state change of "
-        << std::fixed << std::setprecision(2) << cv.avg() << "%";
+        << " has an average passive host state change of " << std::fixed
+        << std::setprecision(2) << cv.avg() << "%";
     output = oss.str();
 
     // Perfdata.
     oss.str("");
-    oss << "avg=" << cv.avg() << "% min=" << cv.min()
-        << "% max=" << cv.max() << "%";
+    oss << "avg=" << cv.avg() << "% min=" << cv.min() << "% max=" << cv.max()
+        << "%";
     perfdata = oss.str();
-  }
-  else {
+  } else {
     // Output.
-    output = "No passive host to compute passive host "
-      "state change on " + config::applier::state::instance().poller_name();
+    output =
+        "No passive host to compute passive host "
+        "state change on " +
+        config::applier::state::instance().poller_name();
   }
-  return ;
+  return;
 }

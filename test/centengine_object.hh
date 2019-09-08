@@ -17,52 +17,47 @@
 */
 
 #ifndef CCB_TEST_CENTENGINE_OBJECT_HH
-#  define CCB_TEST_CENTENGINE_OBJECT_HH
+#define CCB_TEST_CENTENGINE_OBJECT_HH
 
-#  include <map>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <map>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace              test {
-  /**
-   *  Centreon Engine configuration object.
-   */
-  class                centengine_object {
-  public:
-    enum               object_type {
-      command_type = 1,
-      contact_type,
-      host_type,
-      hostdependency_type,
-      hostgroup_type,
-      service_type,
-      servicedependency_type,
-      servicegroup_type,
-      timeperiod_type
-    };
-
-                       centengine_object(object_type type);
-                       centengine_object(
-                         centengine_object const& other);
-                       ~centengine_object();
-    centengine_object& operator=(centengine_object const& other);
-    std::string        get(std::string const& variable) const;
-    std::map<std::string, std::string> const&
-                       get_variables() const;
-    object_type        get_type() const;
-    void               set(
-                         std::string const& variable,
-                         std::string const& value);
-
-  private:
-    object_type        _type;
-    std::map<std::string, std::string>
-                       _variables;
+namespace test {
+/**
+ *  Centreon Engine configuration object.
+ */
+class centengine_object {
+ public:
+  enum object_type {
+    command_type = 1,
+    contact_type,
+    host_type,
+    hostdependency_type,
+    hostgroup_type,
+    service_type,
+    servicedependency_type,
+    servicegroup_type,
+    timeperiod_type
   };
-}
+
+  centengine_object(object_type type);
+  centengine_object(centengine_object const& other);
+  ~centengine_object();
+  centengine_object& operator=(centengine_object const& other);
+  std::string get(std::string const& variable) const;
+  std::map<std::string, std::string> const& get_variables() const;
+  object_type get_type() const;
+  void set(std::string const& variable, std::string const& value);
+
+ private:
+  object_type _type;
+  std::map<std::string, std::string> _variables;
+};
+}  // namespace test
 
 CCB_END()
 
-#endif // !CCB_TEST_CENTENGINE_OBJECT_HH
+#endif  // !CCB_TEST_CENTENGINE_OBJECT_HH

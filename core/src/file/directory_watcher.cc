@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
-#include <sys/select.h>
+#include "com/centreon/broker/file/directory_watcher.hh"
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/inotify.h>
 #include <sys/ioctl.h>
-#include <sys/types.h>
+#include <sys/select.h>
 #include <sys/stat.h>
-#include <string.h>
-#include <errno.h>
+#include <sys/types.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/file/directory_watcher.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -36,13 +36,12 @@ using namespace com::centreon::broker::file;
 /**
  * Default constructor.
  */
-directory_watcher::directory_watcher()
-  : _timeout(0) {
+directory_watcher::directory_watcher() : _timeout(0) {
   if ((_inotify_instance_id = ::inotify_init()) == -1) {
     int err = errno;
-    throw (exceptions::msg()
-           << "directory_watcher: couldn't create inotify instance: '"
-           << ::strerror(err) << "'");
+    throw(exceptions::msg()
+          << "directory_watcher: couldn't create inotify instance: '"
+          << ::strerror(err) << "'");
   }
 }
 
@@ -59,18 +58,16 @@ directory_watcher::~directory_watcher() {
  *  @param[in] directory  The directory to add.
  */
 void directory_watcher::add_directory(std::string const& directory) {
-  int id = ::inotify_add_watch(
-                _inotify_instance_id,
-                directory.c_str(),
-                IN_CREATE | IN_MODIFY | IN_DELETE | IN_DELETE_SELF);
+  int id =
+      ::inotify_add_watch(_inotify_instance_id, directory.c_str(),
+                          IN_CREATE | IN_MODIFY | IN_DELETE | IN_DELETE_SELF);
   if (id == -1) {
     int err = errno;
-    throw (exceptions::msg()
-           << "directory_watcher: couldn't add directory: '"
-           << ::strerror(err) << "'");
+    throw(exceptions::msg() << "directory_watcher: couldn't add directory: '"
+                            << ::strerror(err) << "'");
   }
 
-  char *real_path = ::realpath(directory.c_str(), NULL);
+  char* real_path = ::realpath(directory.c_str(), nullptr);
   _path_to_id[real_path] = id;
   _id_to_path[id] = real_path;
   ::free(real_path);
@@ -84,17 +81,16 @@ void directory_watcher::add_directory(std::string const& directory) {
  *  @param[in] directory  The directory to remove.
  */
 void directory_watcher::remove_directory(std::string const& directory) {
-  char *real_path = ::realpath(directory.c_str(), NULL);
+  char* real_path = ::realpath(directory.c_str(), nullptr);
   std::map<std::string, int>::iterator it(_path_to_id.find(real_path));
   ::free(real_path);
   if (it == _path_to_id.end())
-    return ;
+    return;
 
   if (::inotify_rm_watch(_inotify_instance_id, it->second) == -1) {
     int err = errno;
-    throw (exceptions::msg()
-           << "directory_watcher: couldn't remove directory: '"
-           << ::strerror(err) << "'");
+    throw(exceptions::msg() << "directory_watcher: couldn't remove directory: '"
+                            << ::strerror(err) << "'");
   }
 
   _id_to_path.erase(it->second);
@@ -127,12 +123,8 @@ std::vector<directory_event> directory_watcher::get_events() {
   FD_SET(_inotify_instance_id, &set);
   tv.tv_sec = _timeout / 1000;
   tv.tv_usec = (_timeout % 1000) * 1000;
-  ::select(
-    _inotify_instance_id + 1,
-    &set,
-    NULL,
-    NULL,
-    _timeout != 0 ? &tv : NULL);
+  ::select(_inotify_instance_id + 1, &set, nullptr, nullptr,
+           _timeout != 0 ? &tv : nullptr);
 
   if (!FD_ISSET(_inotify_instance_id, &set))
     return (ret);
@@ -141,28 +133,25 @@ std::vector<directory_event> directory_watcher::get_events() {
   int buf_size;
   if (ioctl(_inotify_instance_id, FIONREAD, &buf_size) == -1) {
     int err = errno;
-    throw (exceptions::msg()
-           << "directory_watcher: couldn't read events: '"
-           << ::strerror(err) << "'");
+    throw(exceptions::msg() << "directory_watcher: couldn't read events: '"
+                            << ::strerror(err) << "'");
   }
   logging::debug(logging::medium)
-    << "file: directory watcher getting events of size " << buf_size;
-  char *buf = new char[buf_size];
+      << "file: directory watcher getting events of size " << buf_size;
+  char* buf = new char[buf_size];
   int len = ::read(_inotify_instance_id, buf, buf_size);
   if (len == -1) {
     int err = errno;
-    delete [] buf;
-    throw (exceptions::msg()
-           << "directory_watcher: couldn't read events: '"
-           << ::strerror(err) << "'");
+    delete[] buf;
+    throw(exceptions::msg() << "directory_watcher: couldn't read events: '"
+                            << ::strerror(err) << "'");
   }
 
   // Iterate over all the events.
   struct inotify_event const* event;
-  for (char* ev = buf;
-       ev < buf + len;
+  for (char* ev = buf; ev < buf + len;
        ev += sizeof(struct inotify_event) + event->len) {
-    event = (const struct inotify_event*) buf;
+    event = (const struct inotify_event*)buf;
     directory_event::type event_type;
     if (event->mask & IN_CREATE)
       event_type = directory_event::created;
@@ -173,25 +162,25 @@ std::vector<directory_event> directory_watcher::get_events() {
     else if (event->mask & IN_DELETE_SELF)
       event_type = directory_event::directory_deleted;
     else
-      continue ;
+      continue;
 
     std::map<int, std::string>::const_iterator found_path(
-                                                 _id_to_path.find(event->wd));
+        _id_to_path.find(event->wd));
     if (found_path == _id_to_path.end())
-      break ;
+      break;
 
     std::string name = found_path->second + "/" + event->name;
 
     // Check if it's a file or a directory.
     directory_event::file_type ft = directory_event::other;
-    if (event_type != directory_event::deleted
-          && event_type != directory_event::directory_deleted) {
+    if (event_type != directory_event::deleted &&
+        event_type != directory_event::directory_deleted) {
       struct stat st;
       if (::lstat(name.c_str(), &st) == -1) {
         const char* error = ::strerror(errno);
-        throw (exceptions::msg()
-               << "directory_watcher: couldn't check the file type: '"
-               << error << "'");
+        throw(exceptions::msg()
+              << "directory_watcher: couldn't check the file type: '" << error
+              << "'");
       }
       ft = directory_event::other;
       if (S_ISDIR(st.st_mode))
@@ -202,8 +191,8 @@ std::vector<directory_event> directory_watcher::get_events() {
 
     ret.push_back(directory_event(name, event_type, ft));
     logging::debug(logging::medium)
-      << "file: directory watcher getting an event for path '"
-      << name << "' and type " << event_type;
+        << "file: directory watcher getting an event for path '" << name
+        << "' and type " << event_type;
   }
 
   return (ret);

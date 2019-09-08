@@ -17,62 +17,59 @@
 */
 
 #ifndef CCB_NEB_LOG_ENTRY_HH
-#  define CCB_NEB_LOG_ENTRY_HH
+#define CCB_NEB_LOG_ENTRY_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace          neb {
-  /**
-   *  @class log_entry log_entry.hh "com/centreon/broker/neb/log_entry.hh"
-   *  @brief Log message.
-   *
-   *  From time to time, the scheduling engine generates a log
-   *  message. These messages can be useful, especially when
-   *  investigating problems. This class holds all information
-   *  related to a log entry.
-   */
-  class            log_entry : public io::data {
-  public:
-                   log_entry();
-                   log_entry(log_entry const& other);
-                   ~log_entry();
-    log_entry&     operator=(const log_entry& other);
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace neb {
+/**
+ *  @class log_entry log_entry.hh "com/centreon/broker/neb/log_entry.hh"
+ *  @brief Log message.
+ *
+ *  From time to time, the scheduling engine generates a log
+ *  message. These messages can be useful, especially when
+ *  investigating problems. This class holds all information
+ *  related to a log entry.
+ */
+class log_entry : public io::data {
+ public:
+  log_entry();
+  log_entry(log_entry const& other);
+  ~log_entry();
+  log_entry& operator=(const log_entry& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    timestamp      c_time;
-    unsigned int   host_id;
-    std::string        host_name;
-    timestamp      issue_start_time;
-    short          log_type;
-    short          msg_type;
-    std::string        notification_cmd;
-    std::string        notification_contact;
-    std::string        output;
-    std::string        poller_name;
-    int            retry;
-    std::string        service_description;
-    unsigned int   service_id;
-    short          status;
+  timestamp c_time;
+  unsigned int host_id;
+  std::string host_name;
+  timestamp issue_start_time;
+  short log_type;
+  short msg_type;
+  std::string notification_cmd;
+  std::string notification_contact;
+  std::string output;
+  std::string poller_name;
+  int retry;
+  std::string service_description;
+  unsigned int service_id;
+  short status;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void           _internal_copy(log_entry const& other);
-  };
-}
+ private:
+  void _internal_copy(log_entry const& other);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_LOG_ENTRY_HH
+#endif  // !CCB_NEB_LOG_ENTRY_HH

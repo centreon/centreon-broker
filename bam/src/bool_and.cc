@@ -30,8 +30,7 @@ bool_and::bool_and() {}
  *
  *  @param[in] right Object to copy.
  */
-bool_and::bool_and(bool_and const& right)
-  : bool_binary_operator(right) {}
+bool_and::bool_and(bool_and const& right) : bool_binary_operator(right) {}
 
 /**
  *  Destructor.

@@ -17,66 +17,60 @@
 */
 
 #ifndef CCB_CORE_TIME_TIMEZONE_MANAGER_HH
-#  define CCB_CORE_TIME_TIMEZONE_MANAGER_HH
+#define CCB_CORE_TIME_TIMEZONE_MANAGER_HH
 
-#  include <stack>
-#  include <string>
-#  include <mutex>
-#  include "com/centreon/broker/namespace.hh"
+#include <mutex>
+#include <stack>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace time {
 /**
- *  @class timezone_manager timezone_manager.hh "com/centreon/broker/time/timezone_manager.hh"
+ *  @class timezone_manager timezone_manager.hh
+ * "com/centreon/broker/time/timezone_manager.hh"
  *  @brief Manage timezone changes.
  *
  *  This class handle timezone change. This can either be setting a new
  *  timezone or restoring a previous one.
  */
-  class                      timezone_manager {
-  public:
-    static void              load();
-    void                     lock();
-    void                     pop_timezone();
-    void                     push_timezone(char const* tz);
-    void                     unlock();
-    static void              unload();
+class timezone_manager {
+ public:
+  static void load();
+  void lock();
+  void pop_timezone();
+  void push_timezone(char const* tz);
+  void unlock();
+  static void unload();
 
   /**
    *  Get class instance.
    *
    *  @return Class instance.
    */
-    static timezone_manager& instance() {
-      return (*_instance);
-    }
+  static timezone_manager& instance() { return (*_instance); }
 
-  private:
-    struct                   tz_info {
-      bool                   is_set;
-      std::string            tz_name;
-    };
-
-                             timezone_manager();
-                             timezone_manager(
-                               timezone_manager const& other);
-                             ~timezone_manager();
-    timezone_manager&        operator=(timezone_manager const& other);
-    void                     _fill_tz_info(
-                               tz_info* info,
-                               char const* old_tz);
-    void                     _set_timezone(
-                               tz_info const& from,
-                               tz_info const& to);
-
-    tz_info                  _base;
-    static timezone_manager* _instance;
-    std::stack<tz_info>      _tz;
-    std::recursive_mutex     _timezone_manager_mutex;
+ private:
+  struct tz_info {
+    bool is_set;
+    std::string tz_name;
   };
-}
+
+  timezone_manager();
+  timezone_manager(timezone_manager const& other);
+  ~timezone_manager();
+  timezone_manager& operator=(timezone_manager const& other);
+  void _fill_tz_info(tz_info* info, char const* old_tz);
+  void _set_timezone(tz_info const& from, tz_info const& to);
+
+  tz_info _base;
+  static timezone_manager* _instance;
+  std::stack<tz_info> _tz;
+  std::recursive_mutex _timezone_manager_mutex;
+};
+}  // namespace time
 
 CCB_END()
 
-#endif // !CCB_CORE_TIME_TIMEZONE_MANAGER_HH
+#endif  // !CCB_CORE_TIME_TIMEZONE_MANAGER_HH

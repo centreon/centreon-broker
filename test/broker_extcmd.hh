@@ -17,10 +17,10 @@
 */
 
 #ifndef TEST_BROKER_EXTCMD_HH
-#  define TEST_BROKER_EXTCMD_HH
+#define TEST_BROKER_EXTCMD_HH
 
-#  include <QLocalSocket>
-#  include <string>
+#include <QLocalSocket>
+#include <string>
 
 /**
  *  @class broker_extcmd broker_extcmd.hh "test/broker_extcmd.hh"
@@ -28,31 +28,26 @@
  *
  *  Handle Centreon Broker external command file access.
  */
-class                broker_extcmd {
-public:
-                     broker_extcmd();
-                     broker_extcmd(broker_extcmd const& other);
-                     ~broker_extcmd();
-  broker_extcmd&     operator=(broker_extcmd const& other);
-  bool               execute(
-                       std::string const& query,
-                       bool wait_command = true);
-  std::string const& get_file() const throw ();
-  void               set_file(std::string const& file);
+class broker_extcmd {
+ public:
+  broker_extcmd();
+  broker_extcmd(broker_extcmd const& other);
+  ~broker_extcmd();
+  broker_extcmd& operator=(broker_extcmd const& other);
+  bool execute(std::string const& query, bool wait_command = true);
+  std::string const& get_file() const throw();
+  void set_file(std::string const& file);
 
-private:
-  void               _internal_copy(broker_extcmd const& other);
-  void               _read(
-                       QLocalSocket& sockt,
-                       unsigned int& id,
-                       bool& pending,
-                       std::string& msg,
-                       std::string const& query = std::string());
-  void               _write(
-                       QLocalSocket& sockt,
-                       std::string const& query);
+ private:
+  void _internal_copy(broker_extcmd const& other);
+  void _read(QLocalSocket& sockt,
+             unsigned int& id,
+             bool& pending,
+             std::string& msg,
+             std::string const& query = std::string());
+  void _write(QLocalSocket& sockt, std::string const& query);
 
-  std::string        _file;
+  std::string _file;
 };
 
-#endif // !TEST_BROKER_EXTCMD_HH
+#endif  // !TEST_BROKER_EXTCMD_HH

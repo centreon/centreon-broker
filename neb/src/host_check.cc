@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_check.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -77,36 +77,25 @@ unsigned int host_check::static_type() {
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const host_check::entries[] = {
-  mapping::entry(
-    &host_check::active_checks_enabled,
-    ""),
-  mapping::entry(
-    &host_check::check_type,
-    ""),
-  mapping::entry(
-    &host_check::host_id,
-    "host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &host_check::next_check,
-    ""),
-  mapping::entry(
-    &host_check::command_line,
-    "command_line"),
-  mapping::entry()
-};
+    mapping::entry(&host_check::active_checks_enabled, ""),
+    mapping::entry(&host_check::check_type, ""),
+    mapping::entry(&host_check::host_id,
+                   "host_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&host_check::next_check, ""),
+    mapping::entry(&host_check::command_line, "command_line"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_host_check() {
   return (new host_check);
 }
 io::event_info::event_operations const host_check::operations = {
-  &new_host_check
-};
+    &new_host_check};

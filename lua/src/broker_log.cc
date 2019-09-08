@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/lua/broker_log.hh"
 #include <fstream>
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/lua/broker_log.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
@@ -44,21 +44,20 @@ static int l_broker_log_destructor(lua_State* L) {
  */
 static int l_broker_log_set_parameters(lua_State* L) {
   broker_log* bl(
-    *static_cast<broker_log**>(luaL_checkudata(L, 1, "lua_broker_log")));
+      *static_cast<broker_log**>(luaL_checkudata(L, 1, "lua_broker_log")));
   int level(lua_tointeger(L, 2));
   char const* text(lua_tostring(L, 3));
   if (level < 0 || level > 3)
-    luaL_error(
-      L,
-      "set_parameters expects the first argument to be 0, 1, 2 or 3.");
+    luaL_error(L,
+               "set_parameters expects the first argument to be 0, 1, 2 or 3.");
 
   bl->set_parameters(level, text);
   return 0;
 }
 
 int _log_func(logging::logger& log_func, lua_State* L, const char* header) {
-  broker_log* bl(*static_cast<broker_log**>(
-                   luaL_checkudata(L, 1, "lua_broker_log")));
+  broker_log* bl(
+      *static_cast<broker_log**>(luaL_checkudata(L, 1, "lua_broker_log")));
   int level(lua_tointeger(L, 2));
   char const* text(lua_tostring(L, 3));
   if (level <= bl->get_level()) {
@@ -69,10 +68,9 @@ int _log_func(logging::logger& log_func, lua_State* L, const char* header) {
       of.open(bl->get_file().c_str(), std::ios_base::app);
       if (of.fail())
         logging::error(logging::medium)
-          << "Unable to open the log file '"
-          << bl->get_file() << "'";
+            << "Unable to open the log file '" << bl->get_file() << "'";
       else {
-        time_t now(time(NULL));
+        time_t now(time(nullptr));
         struct tm tmp;
         localtime_r(&now, &tmp);
         char buf[80];
@@ -124,18 +122,17 @@ static int l_broker_log_warning(lua_State* L) {
  *  @return The Lua interpreter as a lua_State*
  */
 void broker_log::broker_log_reg(lua_State* L) {
-  broker_log **udata(
-    static_cast<broker_log **>(lua_newuserdata(L, sizeof(broker_log*))));
+  broker_log** udata(
+      static_cast<broker_log**>(lua_newuserdata(L, sizeof(broker_log*))));
   *udata = new broker_log();
 
   luaL_Reg s_broker_log_regs[] = {
-    { "__gc", l_broker_log_destructor },
-    { "set_parameters", l_broker_log_set_parameters },
-    { "info", l_broker_log_info },
-    { "error", l_broker_log_error },
-    { "warning", l_broker_log_warning },
-    { NULL, NULL }
-  };
+      {"__gc", l_broker_log_destructor},
+      {"set_parameters", l_broker_log_set_parameters},
+      {"info", l_broker_log_info},
+      {"error", l_broker_log_error},
+      {"warning", l_broker_log_warning},
+      {nullptr, nullptr}};
 
   // Create a metatable. It is not exposed to Lua. It is not
   // exposed to Lua. The "lua_broker" label is used by Lua

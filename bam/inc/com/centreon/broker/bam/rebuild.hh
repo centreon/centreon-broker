@@ -17,46 +17,43 @@
 */
 
 #ifndef CCB_BAM_REBUILD_HH
-#  define CCB_BAM_REBUILD_HH
+#define CCB_BAM_REBUILD_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          bam {
-  /**
-   *  @class rebuild rebuild.hh "com/centreon/broker/bam/rebuild.hh"
-   *  @brief ask for a rebuild.
-   *
-   *  This data event represent a rebuild asked.
-   */
-  class            rebuild : public io::data {
-  public:
-                   rebuild();
-                   ~rebuild();
-                   rebuild(rebuild const&);
-    rebuild&       operator=(rebuild const&);
-    bool           operator==(rebuild const& other) const;
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace bam {
+/**
+ *  @class rebuild rebuild.hh "com/centreon/broker/bam/rebuild.hh"
+ *  @brief ask for a rebuild.
+ *
+ *  This data event represent a rebuild asked.
+ */
+class rebuild : public io::data {
+ public:
+  rebuild();
+  ~rebuild();
+  rebuild(rebuild const&);
+  rebuild& operator=(rebuild const&);
+  bool operator==(rebuild const& other) const;
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    std::string        bas_to_rebuild;
+  std::string bas_to_rebuild;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void           _internal_copy(rebuild const& other);
-  };
-}
+ private:
+  void _internal_copy(rebuild const& other);
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_REBUILD_HH
+#endif  // !CCB_BAM_REBUILD_HH

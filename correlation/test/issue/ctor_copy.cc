@@ -45,14 +45,9 @@ int main() {
   i1.start_time = 456887;
 
   // Check.
-  return ((i1.ack_time != 1684474)
-          || (i1.end_time != 5478963)
-          || (i1.host_id != 983)
-          || (i1.service_id != 211)
-          || (i1.start_time != 456887)
-          || (i2.ack_time != 248578)
-          || (i2.end_time != 7456987)
-          || (i2.host_id != 21)
-          || (i2.service_id != 42)
-          || (i2.start_time != 123456789));
+  return ((i1.ack_time != 1684474) || (i1.end_time != 5478963) ||
+          (i1.host_id != 983) || (i1.service_id != 211) ||
+          (i1.start_time != 456887) || (i2.ack_time != 248578) ||
+          (i2.end_time != 7456987) || (i2.host_id != 21) ||
+          (i2.service_id != 42) || (i2.start_time != 123456789));
 }

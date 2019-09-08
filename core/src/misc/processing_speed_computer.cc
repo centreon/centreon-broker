@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstring>
 #include "com/centreon/broker/misc/processing_speed_computer.hh"
+#include <cstring>
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -26,11 +26,8 @@ using namespace com::centreon::broker::misc;
  *  Default constructor.
  */
 processing_speed_computer::processing_speed_computer()
-  : _last_tick(timestamp::now()) {
-  ::memset(
-      _event_by_seconds,
-      0,
-      window_length * sizeof(*_event_by_seconds));
+    : _last_tick(timestamp::now()) {
+  ::memset(_event_by_seconds, 0, window_length * sizeof(*_event_by_seconds));
 }
 
 /**
@@ -39,17 +36,15 @@ processing_speed_computer::processing_speed_computer()
  *  @param[in] right  The object to copy.
  */
 processing_speed_computer::processing_speed_computer(
-                             processing_speed_computer const& right) {
-  ::memcpy(
-      _event_by_seconds,
-      right._event_by_seconds,
-      window_length * sizeof(*_event_by_seconds));
+    processing_speed_computer const& right) {
+  ::memcpy(_event_by_seconds, right._event_by_seconds,
+           window_length * sizeof(*_event_by_seconds));
 }
 
 /**
  *  Destructor.
  */
-processing_speed_computer::~processing_speed_computer() throw () {}
+processing_speed_computer::~processing_speed_computer() throw() {}
 
 /**
  *  Assignment operator.
@@ -59,12 +54,10 @@ processing_speed_computer::~processing_speed_computer() throw () {}
  *  @return           Reference to this object.
  */
 processing_speed_computer& processing_speed_computer::operator=(
-                             processing_speed_computer const& right) {
+    processing_speed_computer const& right) {
   if (this != &right) {
-    ::memcpy(
-        _event_by_seconds,
-        right._event_by_seconds,
-        window_length * sizeof(*_event_by_seconds));
+    ::memcpy(_event_by_seconds, right._event_by_seconds,
+             window_length * sizeof(*_event_by_seconds));
   }
   return (*this);
 }
@@ -101,10 +94,8 @@ void processing_speed_computer::tick(int events) {
   if (!_last_tick.is_null() && (now > _last_tick)) {
     int step(now - _last_tick);
     if ((step < window_length) && (step > 0))
-      ::memmove(
-          _event_by_seconds + step,
-          _event_by_seconds,
-          (window_length - step) * sizeof(*_event_by_seconds));
+      ::memmove(_event_by_seconds + step, _event_by_seconds,
+                (window_length - step) * sizeof(*_event_by_seconds));
     else
       step = window_length;
     ::memset(_event_by_seconds, 0, step * sizeof(*_event_by_seconds));
@@ -116,7 +107,7 @@ void processing_speed_computer::tick(int events) {
   // Update the last tick.
   _last_tick = now;
 
-  return ;
+  return;
 }
 
 /**

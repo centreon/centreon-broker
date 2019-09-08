@@ -17,42 +17,42 @@
 */
 
 #ifndef CCB_EXCEPTIONS_CONFIG_HH
-#  define CCB_EXCEPTIONS_CONFIG_HH
+#define CCB_EXCEPTIONS_CONFIG_HH
 
-#  include "com/centreon/broker/exceptions/msg.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace    exceptions {
-  /**
-   *  @class config config.hh "com/centreon/broker/exceptions/config.hh"
-   *  @brief Configuration exception.
-   *
-   *  Such exceptions are thrown in case of configuration errors.
-   */
-  class      config : public msg {
-  public:
-             config();
-             config(config const& other);
-             ~config() throw ();
-    config&  operator=(config const& other);
+namespace exceptions {
+/**
+ *  @class config config.hh "com/centreon/broker/exceptions/config.hh"
+ *  @brief Configuration exception.
+ *
+ *  Such exceptions are thrown in case of configuration errors.
+ */
+class config : public msg {
+ public:
+  config();
+  config(config const& other);
+  ~config() throw();
+  config& operator=(config const& other);
 
-    /**
-     *  Insert data in message.
-     *
-     *  @param[in] t  Data to insert.
-     *
-     *  @return This object.
-     */
-    template <typename T>
-    config&  operator<<(T t) {
-      msg::operator<<(t);
-      return (*this);
-    }
-  };
-}
+  /**
+   *  Insert data in message.
+   *
+   *  @param[in] t  Data to insert.
+   *
+   *  @return This object.
+   */
+  template <typename T>
+  config& operator<<(T t) {
+    msg::operator<<(t);
+    return (*this);
+  }
+};
+}  // namespace exceptions
 
 CCB_END()
 
-#endif // !CCB_EXCEPTIONS_CONFIG_HH
+#endif  // !CCB_EXCEPTIONS_CONFIG_HH

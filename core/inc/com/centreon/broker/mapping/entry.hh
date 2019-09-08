@@ -17,10 +17,10 @@
 */
 
 #ifndef CCB_MAPPING_ENTRY_HH
-#  define CCB_MAPPING_ENTRY_HH
+#define CCB_MAPPING_ENTRY_HH
 
-#  include <memory>
-#  include "com/centreon/broker/mapping/property.hh"
+#include <memory>
+#include "com/centreon/broker/mapping/property.hh"
 
 CCB_BEGIN()
 
@@ -105,4 +105,4 @@ class entry {
 
 CCB_END()
 
-#endif // !CCB_MAPPING_ENTRY_HH
+#endif  // !CCB_MAPPING_ENTRY_HH

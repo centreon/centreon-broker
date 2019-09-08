@@ -17,51 +17,48 @@
 */
 
 #ifndef CCB_CORRELATION_ISSUE_HH
-#  define CCB_CORRELATION_ISSUE_HH
+#define CCB_CORRELATION_ISSUE_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace          correlation {
-  /**
-   *  @class issue issue.hh "com/centreon/broker/correlation/issue.hh"
-   *  @brief Issue event.
-   *
-   *  Update or create an issue.
-   */
-  class            issue : public io::data {
-  public:
-                   issue();
-                   issue(issue const& i);
-                   ~issue();
-    issue&         operator=(issue const& i);
-    bool           operator==(issue const& i) const;
-    bool           operator!=(issue const& i) const;
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace correlation {
+/**
+ *  @class issue issue.hh "com/centreon/broker/correlation/issue.hh"
+ *  @brief Issue event.
+ *
+ *  Update or create an issue.
+ */
+class issue : public io::data {
+ public:
+  issue();
+  issue(issue const& i);
+  ~issue();
+  issue& operator=(issue const& i);
+  bool operator==(issue const& i) const;
+  bool operator!=(issue const& i) const;
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    timestamp      ack_time;
-    timestamp      end_time;
-    unsigned int   host_id;
-    unsigned int   service_id;
-    timestamp      start_time;
+  timestamp ack_time;
+  timestamp end_time;
+  unsigned int host_id;
+  unsigned int service_id;
+  timestamp start_time;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void           _internal_copy(issue const& i);
-  };
-}
+ private:
+  void _internal_copy(issue const& i);
+};
+}  // namespace correlation
 
 CCB_END()
 
-#endif // !CCB_CORRELATION_ISSUE_HH
+#endif  // !CCB_CORRELATION_ISSUE_HH

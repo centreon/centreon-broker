@@ -17,36 +17,35 @@
 */
 
 #ifndef CCB_GENERATOR_FACTORY_HH
-#  define CCB_GENERATOR_FACTORY_HH
+#define CCB_GENERATOR_FACTORY_HH
 
-#  include "com/centreon/broker/io/factory.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/factory.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         generator {
-  /**
-   *  @class factory factory.hh "com/centreon/broker/generator/factory.hh"
-   *  @brief Generator streams factory.
-   *
-   *  Build generator objects.
-   */
-  class           factory : public io::factory {
-   public:
-                  factory();
-                  factory(factory const& other);
-                  ~factory();
-    factory&      operator=(factory const& other);
-    io::factory*  clone() const;
-    bool          has_endpoint(config::endpoint& cfg) const;
-    io::endpoint* new_endpoint(
-                    config::endpoint& cfg,
-                    bool& is_acceptor,
-                    std::shared_ptr<persistent_cache> cache
-                    = std::shared_ptr<persistent_cache>()) const;
-  };
-}
+namespace generator {
+/**
+ *  @class factory factory.hh "com/centreon/broker/generator/factory.hh"
+ *  @brief Generator streams factory.
+ *
+ *  Build generator objects.
+ */
+class factory : public io::factory {
+ public:
+  factory();
+  factory(factory const& other);
+  ~factory();
+  factory& operator=(factory const& other);
+  io::factory* clone() const;
+  bool has_endpoint(config::endpoint& cfg) const;
+  io::endpoint* new_endpoint(config::endpoint& cfg,
+                             bool& is_acceptor,
+                             std::shared_ptr<persistent_cache> cache =
+                                 std::shared_ptr<persistent_cache>()) const;
+};
+}  // namespace generator
 
 CCB_END()
 
-#endif // !CCB_GENERATOR_FACTORY_HH
+#endif  // !CCB_GENERATOR_FACTORY_HH

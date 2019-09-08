@@ -17,91 +17,85 @@
 */
 
 #ifndef CCB_BAM_CONFIGURATION_META_SERVICE_HH
-#  define CCB_BAM_CONFIGURATION_META_SERVICE_HH
+#define CCB_BAM_CONFIGURATION_META_SERVICE_HH
 
-#  include <list>
-#  include <set>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <list>
+#include <set>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                bam {
-  namespace              configuration {
-    /**
-     *  @class meta_service meta_service.hh "com/centreon/broker/bam/configuration/meta_service.hh"
-     *  @brief Meta-service configuration state.
-     *
-     *  The meta_service class is used to store configuration read from
-     *  the database.
-     */
-    class                meta_service {
-    public:
-      typedef            std::list<unsigned int>
-                         metric_container;
-      typedef            std::set<std::pair<unsigned int, unsigned int> >
-                         service_container;
+namespace bam {
+namespace configuration {
+/**
+ *  @class meta_service meta_service.hh
+ * "com/centreon/broker/bam/configuration/meta_service.hh"
+ *  @brief Meta-service configuration state.
+ *
+ *  The meta_service class is used to store configuration read from
+ *  the database.
+ */
+class meta_service {
+ public:
+  typedef std::list<unsigned int> metric_container;
+  typedef std::set<std::pair<unsigned int, unsigned int> > service_container;
 
-                         meta_service(
-                           unsigned int id = 0,
-                           std::string const& name = "",
-                           std::string const& computation = "",
-                           double warning_level = 0.0,
-                           double critical_level = 0.0,
-                           std::string const& filter = "",
-                           std::string const& metric = "");
-                         meta_service(meta_service const& other);
-                         ~meta_service();
-      meta_service&      operator=(meta_service const& other);
-      bool               operator==(meta_service const& other) const;
-      bool               operator!=(meta_service const& other) const;
+  meta_service(unsigned int id = 0,
+               std::string const& name = "",
+               std::string const& computation = "",
+               double warning_level = 0.0,
+               double critical_level = 0.0,
+               std::string const& filter = "",
+               std::string const& metric = "");
+  meta_service(meta_service const& other);
+  ~meta_service();
+  meta_service& operator=(meta_service const& other);
+  bool operator==(meta_service const& other) const;
+  bool operator!=(meta_service const& other) const;
 
-      std::string const& get_computation() const;
-      unsigned int       get_id() const;
-      unsigned int       get_host_id() const;
-      unsigned int       get_service_id() const;
-      double             get_level_critical() const;
-      double             get_level_warning() const;
-      std::string const& get_metric_name() const;
-      metric_container const&
-                         get_metrics() const;
-      std::string const& get_name() const;
-      std::string const& get_service_filter() const;
-      service_container const&
-                         get_services() const;
+  std::string const& get_computation() const;
+  unsigned int get_id() const;
+  unsigned int get_host_id() const;
+  unsigned int get_service_id() const;
+  double get_level_critical() const;
+  double get_level_warning() const;
+  std::string const& get_metric_name() const;
+  metric_container const& get_metrics() const;
+  std::string const& get_name() const;
+  std::string const& get_service_filter() const;
+  service_container const& get_services() const;
 
-      void               add_metric(unsigned int metric_id);
-      void               add_service(
-                           unsigned int host_id,
-                           unsigned int service_id);
-      void               set_computation(std::string const& function);
-      void               set_id(unsigned int id);
-      void               set_host_id(unsigned int host_id);
-      void               set_service_id(unsigned int service_id);
-      void               set_level_critical(double level);
-      void               set_level_warning(double level);
-      void               set_metric_name(std::string const& metric);
-      void               set_name(std::string const& name);
-      void               set_service_filter(std::string const& filter);
+  void add_metric(unsigned int metric_id);
+  void add_service(unsigned int host_id, unsigned int service_id);
+  void set_computation(std::string const& function);
+  void set_id(unsigned int id);
+  void set_host_id(unsigned int host_id);
+  void set_service_id(unsigned int service_id);
+  void set_level_critical(double level);
+  void set_level_warning(double level);
+  void set_metric_name(std::string const& metric);
+  void set_name(std::string const& name);
+  void set_service_filter(std::string const& filter);
 
-    private:
-      void               _internal_copy(meta_service const& other);
+ private:
+  void _internal_copy(meta_service const& other);
 
-      std::string        _computation;
-      unsigned int       _id;
-      unsigned int       _host_id;
-      unsigned int       _service_id;
-      double             _level_critical;
-      double             _level_warning;
-      std::string        _metric_name;
-      metric_container   _metrics;
-      std::string        _name;
-      std::string        _service_filter;
-      service_container  _services;
-    };
-  }
-}
+  std::string _computation;
+  unsigned int _id;
+  unsigned int _host_id;
+  unsigned int _service_id;
+  double _level_critical;
+  double _level_warning;
+  std::string _metric_name;
+  metric_container _metrics;
+  std::string _name;
+  std::string _service_filter;
+  service_container _services;
+};
+}  // namespace configuration
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_CONFIGURATION_META_SERVICE_HH
+#endif  // !CCB_BAM_CONFIGURATION_META_SERVICE_HH

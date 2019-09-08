@@ -26,14 +26,13 @@
 
 using namespace com::centreon::broker;
 
-class   CompressionStreamWrite : public ::testing::Test {
+class CompressionStreamWrite : public ::testing::Test {
  public:
-  void  SetUp() override {
+  void SetUp() override {
     try {
       config::applier::init();
-    }
-    catch (std::exception const& e) {
-      (void) e;
+    } catch (std::exception const& e) {
+      (void)e;
     }
     _stream.reset(new compression::stream(-1, 20000));
     _substream.reset(new CompressionStreamMemoryStream());
@@ -51,15 +50,15 @@ class   CompressionStreamWrite : public ::testing::Test {
     std::shared_ptr<io::raw> r(new io::raw);
     r->get_buffer().reserve(1000 * sizeof(int));
     for (int i(0); i < 1000; ++i)
-      std::copy(reinterpret_cast<char*>(&i), reinterpret_cast<char*>(&i) + sizeof(i), std::back_inserter(r->get_buffer()));
+      std::copy(reinterpret_cast<char*>(&i),
+                reinterpret_cast<char*>(&i) + sizeof(i),
+                std::back_inserter(r->get_buffer()));
     return r;
   }
 
  protected:
-  std::shared_ptr<compression::stream>
-        _stream;
-  std::shared_ptr<CompressionStreamMemoryStream>
-        _substream;
+  std::shared_ptr<compression::stream> _stream;
+  std::shared_ptr<CompressionStreamMemoryStream> _substream;
 };
 
 // Given a compression stream
@@ -155,9 +154,8 @@ TEST_F(CompressionStreamWrite, TooMuchData) {
 }
 
 // Given a compression stream
-// And the substream thrown a shutdown exception during a read() call of the compression stream
-// When write() is called
-// Then it throws a shutdown exception
+// And the substream thrown a shutdown exception during a read() call of the
+// compression stream When write() is called Then it throws a shutdown exception
 TEST_F(CompressionStreamWrite, WriteOnShutdown) {
   // Given
   _substream->shutdown(true);

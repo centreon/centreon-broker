@@ -45,15 +45,13 @@ static void precheck(test::time_points& tpoints, char const* name) {
   ++check_number;
   std::cout << "check #" << check_number << " (" << name << ")\n";
   tpoints.store();
-  return ;
+  return;
 }
 
 /**
  *  Postcheck routine.
  */
-static void postcheck(
-              test::db& db,
-              test::predicate expected[][14]) {
+static void postcheck(test::db& db, test::predicate expected[][14]) {
   /*
   ** entry_type
   **   user            = 1
@@ -70,16 +68,16 @@ static void postcheck(
   **   service = 2
   */
   static std::string check_query(
-    "SELECT host_id, service_id, entry_time, author, data,"
-    "       deletion_time, entry_type, expire_time, expires,"
-    "       instance_id, internal_id, persistent, source, type"
-    "  FROM comments"
-    "  ORDER BY host_id ASC,"
-    "    COALESCE(service_id, 0) ASC,"
-    "    entry_time ASC");
+      "SELECT host_id, service_id, entry_time, author, data,"
+      "       deletion_time, entry_type, expire_time, expires,"
+      "       instance_id, internal_id, persistent, source, type"
+      "  FROM comments"
+      "  ORDER BY host_id ASC,"
+      "    COALESCE(service_id, 0) ASC,"
+      "    entry_time ASC");
   db.check_content(check_query, expected);
   std::cout << "  passed\n";
-  return ;
+  return;
 }
 
 /**
@@ -93,34 +91,26 @@ int main() {
 
   try {
     // Database.
-    char const* tables[] = {
-      "instances",
-      "hosts",
-      "services",
-      "comments",
-      NULL
-    };
+    char const* tables[] = {"instances", "hosts", "services", "comments", NULL};
     test::db db(DB_NAME, tables);
 
     // Monitoring broker.
     test::file cbd_cfg;
-    cbd_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
+    cbd_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
     cbd_cfg.set("BROKER_ID", "84");
     cbd_cfg.set("BROKER_NAME", TEST_NAME "-cbd");
     cbd_cfg.set("POLLER_ID", "42");
     cbd_cfg.set("POLLER_NAME", "my-poller");
     cbd_cfg.set("TCP_PORT", "5583");
     cbd_cfg.set("DB_NAME", DB_NAME);
-    cbd_cfg.set(
-      "SQL_ADDITIONAL",
-      "<write_filters>"
-      "  <category>neb:instance</category>"
-      "  <category>neb:instance_status</category>"
-      "  <category>neb:host</category>"
-      "  <category>neb:service</category>"
-      "  <category>neb:comment</category>"
-      "</write_filters>");
+    cbd_cfg.set("SQL_ADDITIONAL",
+                "<write_filters>"
+                "  <category>neb:instance</category>"
+                "  <category>neb:instance_status</category>"
+                "  <category>neb:host</category>"
+                "  <category>neb:service</category>"
+                "  <category>neb:comment</category>"
+                "</write_filters>");
     test::cbd broker;
     broker.set_config_file(cbd_cfg.generate());
     broker.start();
@@ -128,8 +118,7 @@ int main() {
 
     // Monitoring engine.
     test::file cbmod_cfg;
-    cbmod_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
+    cbmod_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
     cbmod_cfg.set("BROKER_ID", "83");
     cbmod_cfg.set("BROKER_NAME", TEST_NAME "-cbmod");
     cbmod_cfg.set("POLLER_ID", "42");
@@ -146,36 +135,22 @@ int main() {
     test::time_points tpoints;
 
     // Check default entry.
-    precheck(
-      tpoints,
-      "host_id, service_id, entry_time, author, data, instance_id,"
-      " internal_id");
+    precheck(tpoints,
+             "host_id, service_id, entry_time, author, data, instance_id,"
+             " internal_id");
     engine.start();
     test::sleep_for(1);
     tpoints.store();
-    engine.extcmd().execute(
-      "ADD_SVC_COMMENT;1;1;0;Merethis;This Is A Comment");
+    engine.extcmd().execute("ADD_SVC_COMMENT;1;1;0;Merethis;This Is A Comment");
     test::sleep_for(2);
     tpoints.store();
     test::predicate expected[10][14] = {
-      {
-        1,
-        1,
-        test::predicate(tpoints.prelast(), tpoints.last() + 1),
-        "Merethis",
-        "This Is A Comment",
-        test::predicate(test::predicate::type_null),
-        1,
-        test::predicate(test::predicate::type_null),
-        false,
-        42u,
-        1,
-        false,
-        1,
-        2
-      },
-      { test::predicate() }
-    };
+        {1, 1, test::predicate(tpoints.prelast(), tpoints.last() + 1),
+         "Merethis", "This Is A Comment",
+         test::predicate(test::predicate::type_null), 1,
+         test::predicate(test::predicate::type_null), false, 42u, 1, false, 1,
+         2},
+        {test::predicate()}};
     postcheck(db, expected);
 
     // Check type.
@@ -185,8 +160,7 @@ int main() {
     tpoints.store();
     expected[1][0] = 2;
     expected[1][1] = test::predicate(test::predicate::type_null);
-    expected[1][2]
-      = test::predicate(tpoints.prelast(), tpoints.last() + 1);
+    expected[1][2] = test::predicate(tpoints.prelast(), tpoints.last() + 1);
     expected[1][3] = "admin";
     expected[1][4] = "My Comment !";
     expected[1][5] = test::predicate(test::predicate::type_null);
@@ -204,13 +178,13 @@ int main() {
     // Check persistent.
     precheck(tpoints, "persistent");
     engine.extcmd().execute(
-      "ADD_SVC_COMMENT;2;3;1;Super Happy User;This product is off the hook !");
+        "ADD_SVC_COMMENT;2;3;1;Super Happy User;This product is off the hook "
+        "!");
     test::sleep_for(2);
     tpoints.store();
     expected[2][0] = 2;
     expected[2][1] = 3;
-    expected[2][2]
-      = test::predicate(tpoints.prelast(), tpoints.last() + 1);
+    expected[2][2] = test::predicate(tpoints.prelast(), tpoints.last() + 1);
     expected[2][3] = "Super Happy User";
     expected[2][4] = "This product is off the hook !";
     expected[2][5] = test::predicate(test::predicate::type_null);
@@ -232,8 +206,8 @@ int main() {
       time_t start_time(time(NULL));
       time_t end_time(start_time + 3600);
       std::ostringstream cmd;
-      cmd << "SCHEDULE_SVC_DOWNTIME;2;3;" << start_time
-          << ";" << end_time << ";1;0;3600;root;foobar comment";
+      cmd << "SCHEDULE_SVC_DOWNTIME;2;3;" << start_time << ";" << end_time
+          << ";1;0;3600;root;foobar comment";
       engine.extcmd().execute(cmd.str());
       test::sleep_for(4);
       tpoints.store();
@@ -241,28 +215,19 @@ int main() {
       localtime_r(&start_time, &start_tm);
       struct tm end_tm;
       localtime_r(&end_time, &end_tm);
-      sprintf(
-        dt_cmmnt,
-        "This service has been scheduled for fixed downtime from "
-        "%02d-%02d-%04d %02d:%02d:%02d to %02d-%02d-%04d %02d:%02d:%02d "
-        "Notifications for the service will not be sent out during that time period.",
-        start_tm.tm_mon + 1,
-        start_tm.tm_mday,
-        start_tm.tm_year + 1900,
-        start_tm.tm_hour,
-        start_tm.tm_min,
-        start_tm.tm_sec,
-        end_tm.tm_mon + 1,
-        end_tm.tm_mday,
-        end_tm.tm_year + 1900,
-        end_tm.tm_hour,
-        end_tm.tm_min,
-        end_tm.tm_sec);
+      sprintf(dt_cmmnt,
+              "This service has been scheduled for fixed downtime from "
+              "%02d-%02d-%04d %02d:%02d:%02d to %02d-%02d-%04d %02d:%02d:%02d "
+              "Notifications for the service will not be sent out during that "
+              "time period.",
+              start_tm.tm_mon + 1, start_tm.tm_mday, start_tm.tm_year + 1900,
+              start_tm.tm_hour, start_tm.tm_min, start_tm.tm_sec,
+              end_tm.tm_mon + 1, end_tm.tm_mday, end_tm.tm_year + 1900,
+              end_tm.tm_hour, end_tm.tm_min, end_tm.tm_sec);
     }
     expected[3][0] = 2;
     expected[3][1] = 3;
-    expected[3][2]
-      = test::predicate(tpoints.prelast(), tpoints.last() + 1);
+    expected[3][2] = test::predicate(tpoints.prelast(), tpoints.last() + 1);
     expected[3][3] = "(Centreon Engine Process)";
     expected[3][4] = dt_cmmnt;
     expected[3][5] = test::predicate(test::predicate::type_null);
@@ -299,11 +264,9 @@ int main() {
     error = false;
     db.set_remove_db_on_close(true);
     broker.stop();
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << "  " << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "  unknown exception\n";
   }
 

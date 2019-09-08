@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bbdo/stream.hh"
 #include <algorithm>
 #include "com/centreon/broker/bbdo/ack.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
-#include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/protocols.hh"
@@ -31,10 +31,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -53,7 +53,7 @@ stream::stream()
  *
  *  @param[in] other  Object to copy.
  */
-//stream::stream(stream const& other)
+// stream::stream(stream const& other)
 //    : io::stream(other),
 //      input(other),
 //      output(other),
@@ -64,7 +64,8 @@ stream::stream()
 //      _timeout(other._timeout),
 //      _acknowledged_events(other._acknowledged_events),
 //      _ack_limit(other._ack_limit),
-//      _events_received_since_last_ack(other._events_received_since_last_ack) {}
+//      _events_received_since_last_ack(other._events_received_since_last_ack)
+//      {}
 
 /**
  *  Destructor.
@@ -116,7 +117,7 @@ void stream::negotiate(stream::negotiation_type neg) {
   if (_timeout == (time_t)-1)
     deadline = (time_t)-1;
   else
-    deadline = time(NULL) + _timeout;
+    deadline = time(nullptr) + _timeout;
   read_any(d, deadline);
   if (!d || (d->type() != version_response::static_type()))
     throw(exceptions::msg()
@@ -173,8 +174,9 @@ void stream::negotiate(stream::negotiation_type neg) {
              proto_end{io::protocols::instance().end()};
              proto_it != proto_end; ++proto_it)
           if (proto_it->first == *it) {
-            std::shared_ptr<io::stream> s{proto_it->second.endpntfactry->new_stream(
-                _substream, neg == negotiate_second, *it)};
+            std::shared_ptr<io::stream> s{
+                proto_it->second.endpntfactry->new_stream(
+                    _substream, neg == negotiate_second, *it)};
             set_substream(s);
             break;
           }
@@ -253,15 +255,12 @@ void stream::set_timeout(int timeout) {
  */
 void stream::statistics(io::properties& tree) const {
   tree.add_property(
-         "bbdo_input_ack_limit",
-         io::property(
-               "bbdo_input_ack_limit",
-               misc::string::get(_ack_limit)));
+      "bbdo_input_ack_limit",
+      io::property("bbdo_input_ack_limit", misc::string::get(_ack_limit)));
   tree.add_property(
-         "bbdo_unacknowledged_events",
-         io::property(
-               "bbdo_unacknowledged_events",
-               misc::string::get(_events_received_since_last_ack)));
+      "bbdo_unacknowledged_events",
+      io::property("bbdo_unacknowledged_events",
+                   misc::string::get(_events_received_since_last_ack)));
   output::statistics(tree);
 }
 

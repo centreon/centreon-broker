@@ -16,15 +16,15 @@
 ** For more information : contact@centreon.com
 */
 
+#include <fcntl.h>
+#include <rrd.h>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
-#include <fcntl.h>
-#include <rrd.h>
 #include <sstream>
 #ifdef __linux__
-#  include <sys/sendfile.h>
-#endif // Linux
+#include <sys/sendfile.h>
+#endif  // Linux
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -43,13 +43,11 @@ using namespace com::centreon::broker::rrd;
  *  @param[in] tmpl_path  The template path.
  *  @param[in] cache_size The maximum number of cache element.
  */
-creator::creator(
-           std::string const& tmpl_path,
-           unsigned int cache_size)
-  : _cache_size(cache_size), _tmpl_path(tmpl_path) {
+creator::creator(std::string const& tmpl_path, unsigned int cache_size)
+    : _cache_size(cache_size), _tmpl_path(tmpl_path) {
   logging::debug(logging::medium)
-    << "RRD: file creator will maintain at most " << _cache_size
-    << " templates in '" << _tmpl_path << "'";
+      << "RRD: file creator will maintain at most " << _cache_size
+      << " templates in '" << _tmpl_path << "'";
 }
 
 /**
@@ -88,19 +86,18 @@ creator& creator::operator=(creator const& right) {
  *  Clear cache and remove template file.
  */
 void creator::clear() {
-  for (std::map<tmpl_info, fd_info>::const_iterator
-         it(_fds.begin()), end(_fds.end());
-       it != end;
-       ++it) {
+  for (std::map<tmpl_info, fd_info>::const_iterator it(_fds.begin()),
+       end(_fds.end());
+       it != end; ++it) {
     tmpl_info info(it->first);
     ::close(it->second.fd);
     std::ostringstream oss;
-    oss << _tmpl_path << "/tmpl_" << info.length << "_" << info.step
-        << "_" << info.value_type << ".rrd";
+    oss << _tmpl_path << "/tmpl_" << info.length << "_" << info.step << "_"
+        << info.value_type << ".rrd";
     ::remove(oss.str().c_str());
   }
   _fds.clear();
-  return ;
+  return;
 }
 
 /**
@@ -114,17 +111,16 @@ void creator::clear() {
  *                        which data will be fed into the RRD.
  *  @param[in] value_type Type of the metric.
  */
-void creator::create(
-                std::string const& filename,
-                unsigned int length,
-                time_t from,
-                unsigned int step,
-                short value_type) {
+void creator::create(std::string const& filename,
+                     unsigned int length,
+                     time_t from,
+                     unsigned int step,
+                     short value_type) {
   // Fill template informations.
   if (!step)
-    step = 5 * 60; // Default to every 5 minutes.
+    step = 5 * 60;  // Default to every 5 minutes.
   if (!length)
-    length = 31 * 24 * 60 * 60; // Default to one month long.
+    length = 31 * 24 * 60 * 60;  // Default to one month long.
   tmpl_info info;
   info.length = length;
   info.step = step;
@@ -139,8 +135,8 @@ void creator::create(
   // Create new entry.
   else if (_fds.size() < _cache_size) {
     std::ostringstream oss;
-    oss << _tmpl_path << "/tmpl_" << length << "_" << step
-        << "_" << value_type << ".rrd";
+    oss << _tmpl_path << "/tmpl_" << length << "_" << step << "_" << value_type
+        << ".rrd";
     std::string tmpl_filename(oss.str());
 
     // Create new template.
@@ -150,16 +146,16 @@ void creator::create(
     struct stat s;
     if (stat(tmpl_filename.c_str(), &s) < 0) {
       char const* msg(strerror(errno));
-      throw (exceptions::open() << "RRD: could not create template file '"
-             << tmpl_filename << "': " << msg);
+      throw(exceptions::open() << "RRD: could not create template file '"
+                               << tmpl_filename << "': " << msg);
     }
 
     // Get template file fd.
     int in_fd(open(tmpl_filename.c_str(), O_RDONLY));
     if (in_fd < 0) {
       char const* msg(strerror(errno));
-      throw (exceptions::open() << "RRD: could not open template file '"
-             << tmpl_filename << "': " << msg);
+      throw(exceptions::open() << "RRD: could not open template file '"
+                               << tmpl_filename << "': " << msg);
     }
 
     // Store fd informations into the cache.
@@ -185,14 +181,12 @@ void creator::_duplicate(std::string const& filename, fd_info const& in_fd) {
   // Remove previous file.
   remove(filename.c_str());
 
-  int out_fd(open(
-               filename.c_str(),
-               O_CREAT | O_TRUNC | O_WRONLY,
-               S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH));
+  int out_fd(open(filename.c_str(), O_CREAT | O_TRUNC | O_WRONLY,
+                  S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH));
   if (out_fd < 0) {
     char const* msg(strerror(errno));
-    throw (exceptions::open() << "RRD: could not create file '"
-           << filename << "': " << msg);
+    throw(exceptions::open()
+          << "RRD: could not create file '" << filename << "': " << msg);
   }
 
 #ifdef __linux__
@@ -207,14 +201,13 @@ void creator::_duplicate(std::string const& filename, fd_info const& in_fd) {
   if (!fallback) {
     if (ret < 0) {
       char const* msg(strerror(errno));
-      throw (exceptions::open() << "RRD: could not create file '"
-             << filename << "': " << msg);
+      throw(exceptions::open()
+            << "RRD: could not create file '" << filename << "': " << msg);
     }
     // Good to go with the sendfile syscall.
     _sendfile(out_fd, in_fd.fd, ret, in_fd.size, filename);
-  }
-  else
-#endif // Linux
+  } else
+#endif  // Linux
     // We must fallback to the read/write combo.
     _read_write(out_fd, in_fd.fd, in_fd.size, filename);
 
@@ -231,12 +224,11 @@ void creator::_duplicate(std::string const& filename, fd_info const& in_fd) {
  *  @param[in] step       Time interval between each record.
  *  @param[in] value_type Type of the metric.
  */
-void creator::_open(
-                std::string const& filename,
-                unsigned int length,
-                time_t from,
-                unsigned int step,
-                short value_type) {
+void creator::_open(std::string const& filename,
+                    unsigned int length,
+                    time_t from,
+                    unsigned int step,
+                    short value_type) {
   /* Find step of RRD file if already existing. */
   /* XXX : why is it here ?
   rrd_info_t* rrdinfo(rrd_info_r(_filename));
@@ -261,19 +253,19 @@ void creator::_open(
     std::ostringstream oss;
     oss << "DS:value:";
     switch (value_type) {
-     case storage::perfdata::absolute:
-      oss << "ABSOLUTE";
-      break ;
-     case storage::perfdata::counter:
-      oss << "COUNTER";
-      break ;
-     case storage::perfdata::derive:
-      oss << "DERIVE";
-      break ;
-     default:
-      oss << "GAUGE";
+      case storage::perfdata::absolute:
+        oss << "ABSOLUTE";
+        break;
+      case storage::perfdata::counter:
+        oss << "COUNTER";
+        break;
+      case storage::perfdata::derive:
+        oss << "DERIVE";
+        break;
+      default:
+        oss << "GAUGE";
     };
-    oss << ":"<< step * 10 << ":U:U";
+    oss << ":" << step * 10 << ":U:U";
     ds = oss.str();
     argv[argc++] = ds.c_str();
   }
@@ -297,24 +289,19 @@ void creator::_open(
   }
 
   // Debug message.
-  argv[argc] = NULL;
-  logging::debug(logging::high) << "RRD: opening file '" << filename
-    << "' (" << argv[0] << ", " << argv[1] << ", "
-    << (argv[2] ? argv[2] : "(null)") << ", step 1, from "
-    << from << ")";
+  argv[argc] = nullptr;
+  logging::debug(logging::high)
+      << "RRD: opening file '" << filename << "' (" << argv[0] << ", "
+      << argv[1] << ", " << (argv[2] ? argv[2] : "(null)") << ", step 1, from "
+      << from << ")";
 
   // Create RRD file.
   rrd_clear_error();
-  if (rrd_create_r(
-        filename.c_str(),
-        1,
-        from,
-        argc,
-        argv))
-    throw (exceptions::open() << "RRD: could not create file '"
-             << filename << "': " << rrd_get_error());
+  if (rrd_create_r(filename.c_str(), 1, from, argc, argv))
+    throw(exceptions::open() << "RRD: could not create file '" << filename
+                             << "': " << rrd_get_error());
 
-  return ;
+  return;
 }
 
 /**
@@ -325,16 +312,15 @@ void creator::_open(
  *  @param[in] size     Size to transfer.
  *  @param[in] filename Path to the file being created.
  */
-void creator::_read_write(
-                int out_fd,
-                int in_fd,
-                ssize_t size,
-                std::string const& filename) {
+void creator::_read_write(int out_fd,
+                          int in_fd,
+                          ssize_t size,
+                          std::string const& filename) {
   // Reset position of in_fd.
   if (lseek(in_fd, 0, SEEK_SET) == (off_t)-1) {
     char const* msg(strerror(errno));
-    throw (exceptions::open() << "RRD: could not create file '"
-           << filename << "': " << msg);
+    throw(exceptions::open()
+          << "RRD: could not create file '" << filename << "': " << msg);
   }
 
   char buffer[4096];
@@ -345,10 +331,10 @@ void creator::_read_write(
     if (rb <= 0) {
       if (errno != EAGAIN) {
         char const* msg(strerror(errno));
-        throw (exceptions::open() << "RRD: could not create file '"
-               << filename << "': " << msg);
+        throw(exceptions::open()
+              << "RRD: could not create file '" << filename << "': " << msg);
       }
-      continue ;
+      continue;
     }
 
     // Write to out_fd.
@@ -358,18 +344,17 @@ void creator::_read_write(
       if (ret <= 0) {
         if (errno != EAGAIN) {
           char const* msg(strerror(errno));
-          throw (exceptions::open() << "RRD: could not create file '"
-                 << filename << "': " << msg);
+          throw(exceptions::open()
+                << "RRD: could not create file '" << filename << "': " << msg);
         }
-      }
-      else
+      } else
         wb += ret;
     }
 
     // Update total transfered bytes.
     transfered += wb;
   }
-  return ;
+  return;
 }
 
 #ifdef __linux__
@@ -382,28 +367,23 @@ void creator::_read_write(
  *  @param[in] size               Total size to transfer.
  *  @param[in] filename           Path to the file being created.
  */
-void creator::_sendfile(
-                 int out_fd,
-                 int in_fd,
-                 off_t already_transfered,
-                 ssize_t size,
-                 std::string const& filename) {
+void creator::_sendfile(int out_fd,
+                        int in_fd,
+                        off_t already_transfered,
+                        ssize_t size,
+                        std::string const& filename) {
   ssize_t total(already_transfered);
   while (total < size) {
     already_transfered = total;
-    ssize_t ret = ::sendfile(
-                      out_fd,
-                      in_fd,
-                      &already_transfered,
-                      size - already_transfered);
+    ssize_t ret = ::sendfile(out_fd, in_fd, &already_transfered,
+                             size - already_transfered);
     if ((ret <= 0) && (errno != EAGAIN)) {
       char const* msg(strerror(errno));
-      throw (exceptions::open() << "RRD: could not create file '"
-             << filename << "': " << msg);
-    }
-    else if (ret > 0)
+      throw(exceptions::open()
+            << "RRD: could not create file '" << filename << "': " << msg);
+    } else if (ret > 0)
       total += ret;
   }
-  return ;
+  return;
 }
-#endif // Linux
+#endif  // Linux

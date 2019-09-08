@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
+#include <sys/stat.h>
+#include <unistd.h>
 #include <cerrno>
 #include <cstring>
 #include <memory>
 #include <vector>
-#include <sys/stat.h>
-#include <unistd.h>
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -44,116 +44,110 @@ static std::vector<std::shared_ptr<stats::worker> > workers_fifo;
  */
 static void unload_workers() {
   for (std::vector<std::shared_ptr<stats::worker> >::iterator
-         it = workers_fifo.begin(),
-         end = workers_fifo.end();
-       it != end;
-       ++it) {
+           it = workers_fifo.begin(),
+           end = workers_fifo.end();
+       it != end; ++it) {
     (*it)->exit();
     (*it)->wait();
     it->reset();
   }
-  if (worker_dumper.get()) {
+  if (worker_dumper) {
     // Terminate thread.
     worker_dumper->exit();
     worker_dumper->wait();
     worker_dumper.reset();
   }
-  return ;
+  return;
 }
 
 extern "C" {
-  /**
-   *  Module version symbol. Used to check for version mismatch.
-   */
-  char const* broker_module_version = CENTREON_BROKER_VERSION;
+/**
+ *  Module version symbol. Used to check for version mismatch.
+ */
+char const* broker_module_version = CENTREON_BROKER_VERSION;
 
-  /**
-   *  Module deinitialization routine.
-   */
-  void broker_module_deinit() {
-    // Decrement instance number.
-    if (!--instances)
-      unload_workers();
-    return ;
-  }
+/**
+ *  Module deinitialization routine.
+ */
+void broker_module_deinit() {
+  // Decrement instance number.
+  if (!--instances)
+    unload_workers();
+  return;
+}
 
-  /**
-   *  Module initialization routine.
-   *
-   *  @param[in] arg Configuration argument.
-   */
-  void broker_module_init(void const* arg) {
-    // Increment instance number.
-    if (!instances++) {
-      // Stats module.
-      logging::info(logging::high)
-        << "stats: module for Centreon Broker "
-        << CENTREON_BROKER_VERSION;
+/**
+ *  Module initialization routine.
+ *
+ *  @param[in] arg Configuration argument.
+ */
+void broker_module_init(void const* arg) {
+  // Increment instance number.
+  if (!instances++) {
+    // Stats module.
+    logging::info(logging::high)
+        << "stats: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
-      // Check that stats are enabled.
-      config::state const& base_cfg(*static_cast<config::state const*>(arg));
-      bool loaded(false);
-      std::map<std::string, std::string>::const_iterator
-        it(base_cfg.params().find("stats"));
-      if (it != base_cfg.params().end()) {
-        try {
-          // Parse configuration.
-          stats::config stats_cfg;
-          {
-            stats::parser p;
-            p.parse(stats_cfg, it->second);
-          }
+    // Check that stats are enabled.
+    config::state const& base_cfg(*static_cast<config::state const*>(arg));
+    bool loaded(false);
+    std::map<std::string, std::string>::const_iterator it(
+        base_cfg.params().find("stats"));
+    if (it != base_cfg.params().end()) {
+      try {
+        // Parse configuration.
+        stats::config stats_cfg;
+        {
+          stats::parser p;
+          p.parse(stats_cfg, it->second);
+        }
 
-          // File configured, load stats engine.
-          for (stats::config::fifo_list::const_iterator
+        // File configured, load stats engine.
+        for (stats::config::fifo_list::const_iterator
                  it = stats_cfg.get_fifo().begin(),
                  end = stats_cfg.get_fifo().end();
-               it != end;
-               ++it) {
-            // Does file exist and is a FIFO ?
-            struct stat s;
-            std::string fifo_path = *it;
-            // Stat failed, probably because of inexistant file.
-            if (stat(fifo_path.c_str(), &s) != 0) {
+             it != end; ++it) {
+          // Does file exist and is a FIFO ?
+          struct stat s;
+          std::string fifo_path = *it;
+          // Stat failed, probably because of inexistant file.
+          if (stat(fifo_path.c_str(), &s) != 0) {
+            char const* msg(strerror(errno));
+            logging::config(logging::medium)
+                << "stats: cannot stat() '" << fifo_path << "': " << msg;
+
+            // Create FIFO.
+            if (mkfifo(fifo_path.c_str(),
+                       S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH) != 0) {
               char const* msg(strerror(errno));
-              logging::config(logging::medium) << "stats: cannot stat() '"
-                << fifo_path << "': " << msg;
-
-              // Create FIFO.
-              if (mkfifo(
-                    fifo_path.c_str(),
-                    S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH)
-                  != 0) {
-                char const* msg(strerror(errno));
-                throw (exceptions::msg() << "cannot create FIFO '"
-                       << fifo_path << "': " << msg);
-              }
+              throw(exceptions::msg()
+                    << "cannot create FIFO '" << fifo_path << "': " << msg);
             }
-            else if (!S_ISFIFO(s.st_mode))
-              throw (exceptions::msg() <<  "file '" << fifo_path
-                     << "' exists but is not a FIFO");
+          } else if (!S_ISFIFO(s.st_mode))
+            throw(exceptions::msg()
+                  << "file '" << fifo_path << "' exists but is not a FIFO");
 
-            // Create thread.
-            workers_fifo.push_back(std::make_shared<stats::worker>());
-            workers_fifo.back()->run(fifo_path);
-          }
-          loaded = true;
+          // Create thread.
+          workers_fifo.push_back(std::make_shared<stats::worker>());
+          workers_fifo.back()->run(fifo_path);
         }
-        catch (std::exception const& e) {
-          logging::config(logging::high) << "stats: "
-            "engine loading failure: " << e.what();
-        }
-        catch (...) {
-          logging::config(logging::high) << "stats: "
-            "engine loading failure";
-        }
-      }
-      if (!loaded) {
-        unload_workers();
-        logging::config(logging::high) << "stats: invalid stats "
-          "configuration, stats engine is NOT loaded";
+        loaded = true;
+      } catch (std::exception const& e) {
+        logging::config(logging::high) << "stats: "
+                                          "engine loading failure: "
+                                       << e.what();
+      } catch (...) {
+        logging::config(logging::high) << "stats: "
+                                          "engine loading failure";
       }
     }
-    return ;
+    if (!loaded) {
+      unload_workers();
+      logging::config(logging::high)
+          << "stats: invalid stats "
+             "configuration, stats engine is NOT loaded";
+    }
   }
+  return;
+}
 }

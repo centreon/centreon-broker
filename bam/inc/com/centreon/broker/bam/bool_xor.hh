@@ -17,32 +17,32 @@
 */
 
 #ifndef CCB_BAM_BOOL_XOR_HH
-#  define CCB_BAM_BOOL_XOR_HH
+#define CCB_BAM_BOOL_XOR_HH
 
-#  include "com/centreon/broker/bam/bool_binary_operator.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/bam/bool_binary_operator.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     bam {
-  /**
-   *  @class bool_xor bool_xor.hh "com/centreon/broker/bam/bool_xor.hh"
-   *  @brief XOR operator.
-   *
-   *  In the context of a KPI computation, bool_xor represents a logical
-   *  XOR between two bool_value.
-   */
-  class       bool_xor : public bool_binary_operator {
-  public:
-              bool_xor();
-              bool_xor(bool_xor const& right);
-              ~bool_xor();
-    bool_xor& operator=(bool_xor const& right);
-    double    value_hard();
-    double    value_soft();
-  };
-}
+namespace bam {
+/**
+ *  @class bool_xor bool_xor.hh "com/centreon/broker/bam/bool_xor.hh"
+ *  @brief XOR operator.
+ *
+ *  In the context of a KPI computation, bool_xor represents a logical
+ *  XOR between two bool_value.
+ */
+class bool_xor : public bool_binary_operator {
+ public:
+  bool_xor();
+  bool_xor(bool_xor const& right);
+  ~bool_xor();
+  bool_xor& operator=(bool_xor const& right);
+  double value_hard();
+  double value_soft();
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_XOR_HH
+#endif  // !CCB_BAM_BOOL_XOR_HH

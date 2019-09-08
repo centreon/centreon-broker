@@ -17,22 +17,22 @@
 */
 
 #ifndef CC_HANDLE_HH
-#  define CC_HANDLE_HH
+#define CC_HANDLE_HH
 
-#  ifdef _WIN32
-#    include <windows.h>
-#  endif // _WIN32
-#  include "com/centreon/namespace.hh"
+#ifdef _WIN32
+#include <windows.h>
+#endif  // _WIN32
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-#  ifdef _WIN32
+#ifdef _WIN32
 typedef HANDLE native_handle;
 native_handle const native_handle_null = NULL;
-#  else
+#else
 typedef int native_handle;
 native_handle const native_handle_null = -1;
-#  endif // _WIN32
+#endif  // _WIN32
 
 /**
  *  @class handle handle.hh "com/centreon/handle.hh"
@@ -40,13 +40,13 @@ native_handle const native_handle_null = -1;
  *
  *  This class is an interface for system handle.
  */
-class                   handle {
-public:
-                        handle();
-                        handle(handle const& right);
-  virtual               ~handle() throw ();
-  handle&               operator=(handle const& right);
-  virtual void          close() = 0;
+class handle {
+ public:
+  handle();
+  handle(handle const& right);
+  virtual ~handle() throw();
+  handle& operator=(handle const& right);
+  virtual void close() = 0;
   virtual native_handle get_native_handle() = 0;
   virtual unsigned long read(void* data, unsigned long size) = 0;
   virtual unsigned long write(void const* data, unsigned long size) = 0;
@@ -54,4 +54,4 @@ public:
 
 CC_END()
 
-#endif // !CC_HANDLE_HH
+#endif  // !CC_HANDLE_HH

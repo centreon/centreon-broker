@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cmath>
 #include "com/centreon/broker/bam/bool_operation.hh"
+#include <cmath>
 
 using namespace com::centreon::broker::bam;
 
@@ -47,7 +47,7 @@ bool_operation::bool_operation(std::string const& op) {
  *  @param[in] right Object to copy.
  */
 bool_operation::bool_operation(bool_operation const& right)
-  : bool_binary_operator(right) {
+    : bool_binary_operator(right) {
   _type = right._type;
 }
 
@@ -78,18 +78,17 @@ bool_operation& bool_operation::operator=(bool_operation const& right) {
  */
 double bool_operation::value_hard() {
   switch (_type) {
-  case addition:
-    return (_left_hard + _right_hard);
-  case substraction:
-    return (_left_hard - _right_hard);
-  case multiplication:
-    return (_left_hard * _right_hard);
-  case division:
-    if (std::fabs(_right_hard) < COMPARE_EPSILON)
-      return (NAN);
-    return (_left_hard / _right_hard);
-  case modulo:
-    {
+    case addition:
+      return (_left_hard + _right_hard);
+    case substraction:
+      return (_left_hard - _right_hard);
+    case multiplication:
+      return (_left_hard * _right_hard);
+    case division:
+      if (std::fabs(_right_hard) < COMPARE_EPSILON)
+        return (NAN);
+      return (_left_hard / _right_hard);
+    case modulo: {
       long long left_val(static_cast<long long>(_left_hard));
       long long right_val(static_cast<long long>(_right_hard));
       if (right_val == 0)
@@ -107,18 +106,17 @@ double bool_operation::value_hard() {
  */
 double bool_operation::value_soft() {
   switch (_type) {
-  case addition:
-    return (_left_soft + _right_soft);
-  case substraction:
-    return (_left_soft - _right_soft);
-  case multiplication:
-    return (_left_soft * _right_soft);
-  case division:
-    if (std::fabs(_right_soft) < COMPARE_EPSILON)
-      return (NAN);
-    return (_left_soft / _right_soft);
-  case modulo:
-    {
+    case addition:
+      return (_left_soft + _right_soft);
+    case substraction:
+      return (_left_soft - _right_soft);
+    case multiplication:
+      return (_left_soft * _right_soft);
+    case division:
+      if (std::fabs(_right_soft) < COMPARE_EPSILON)
+        return (NAN);
+      return (_left_soft / _right_soft);
+    case modulo: {
       long long left_val(static_cast<long long>(_left_soft));
       long long right_val(static_cast<long long>(_right_soft));
       if (right_val == 0)
@@ -136,10 +134,9 @@ double bool_operation::value_soft() {
  */
 bool bool_operation::state_known() const {
   bool known = bool_binary_operator::state_known();
-  if (known
-      && (_type == division || _type == modulo)
-      && ((std::fabs(_right_hard) < COMPARE_EPSILON)
-          || std::fabs(_right_soft) < COMPARE_EPSILON))
+  if (known && (_type == division || _type == modulo) &&
+      ((std::fabs(_right_hard) < COMPARE_EPSILON) ||
+       std::fabs(_right_soft) < COMPARE_EPSILON))
     return (false);
   else
     return (known);

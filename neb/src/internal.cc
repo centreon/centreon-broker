@@ -21,10 +21,10 @@
 using namespace com::centreon::broker;
 
 /**************************************
-*                                     *
-*           Global Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Global Objects            *
+ *                                     *
+ **************************************/
 
 // Configuration file name.
 std::string neb::gl_configuration_file;

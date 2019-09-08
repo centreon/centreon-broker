@@ -17,53 +17,50 @@
 */
 
 #ifndef CC_LOGGING_TEMP_LOGGER_HH
-#  define CC_LOGGING_TEMP_LOGGER_HH
+#define CC_LOGGING_TEMP_LOGGER_HH
 
-#  include <string>
-#  include "com/centreon/logging/engine.hh"
-#  include "com/centreon/namespace.hh"
-#  include "com/centreon/misc/stringifier.hh"
+#include <string>
+#include "com/centreon/logging/engine.hh"
+#include "com/centreon/misc/stringifier.hh"
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace                     logging {
-    struct                    setprecision {
-                              setprecision(int val = -1)
-                                : precision(val) {}
-      int                     precision;
-    };
+namespace logging {
+struct setprecision {
+  setprecision(int val = -1) : precision(val) {}
+  int precision;
+};
 
-  /**
-   *  @class temp_logger temp_logger.hh "com/centreon/logging/temp_logger.hh"
-   *  @brief Log messages.
-   *
-   *  Used to buffering log messages before writing them into backends.
-   */
-  class                       temp_logger {
-  public:
-                              temp_logger(
-                                unsigned long long types,
-                                unsigned int verbose) throw ();
-                              temp_logger(temp_logger const& right);
-    virtual                   ~temp_logger() throw ();
-    temp_logger&              operator=(temp_logger const& right);
-    temp_logger&              operator<<(setprecision const& obj) throw ();
-    template<typename T>
-    temp_logger&              operator<<(T obj) throw () {
-      _buffer << obj;
-      return (*this);
-    }
+/**
+ *  @class temp_logger temp_logger.hh "com/centreon/logging/temp_logger.hh"
+ *  @brief Log messages.
+ *
+ *  Used to buffering log messages before writing them into backends.
+ */
+class temp_logger {
+ public:
+  temp_logger(unsigned long long types, unsigned int verbose) throw();
+  temp_logger(temp_logger const& right);
+  virtual ~temp_logger() throw();
+  temp_logger& operator=(temp_logger const& right);
+  temp_logger& operator<<(setprecision const& obj) throw();
+  template <typename T>
+  temp_logger& operator<<(T obj) throw() {
+    _buffer << obj;
+    return (*this);
+  }
 
-  private:
-    temp_logger&              _internal_copy(temp_logger const& right);
+ private:
+  temp_logger& _internal_copy(temp_logger const& right);
 
-    misc::stringifier         _buffer;
-    engine&                   _engine;
-    unsigned long long        _type;
-    unsigned int              _verbose;
-  };
-}
+  misc::stringifier _buffer;
+  engine& _engine;
+  unsigned long long _type;
+  unsigned int _verbose;
+};
+}  // namespace logging
 
 CC_END()
 
-#endif // !CC_LOGGING_TEMP_LOGGER_HH
+#endif  // !CC_LOGGING_TEMP_LOGGER_HH

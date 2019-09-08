@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/file/stream.hh"
 #include <cstdio>
 #include <limits>
 #include <sstream>
-#include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/misc/string.hh"
 
@@ -27,10 +27,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::file;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -38,10 +38,7 @@ using namespace com::centreon::broker::file;
  *  @param[in] file  Splitted file on which the stream will operate.
  */
 stream::stream(splitter* file)
-  : _file(file),
-    _last_read_offset(0),
-    _last_time(0),
-    _last_write_offset(0) {}
+    : _file(file), _last_read_offset(0), _last_time(0), _last_write_offset(0) {}
 
 /**
  *  Destructor.
@@ -104,33 +101,30 @@ void stream::statistics(io::properties& tree) const {
   // Easy to print.
   std::ostringstream oss;
   {
-    tree.add_property(
-           "file_read_path",
-           io::property("file_read_path", misc::string::get(rid)));
+    tree.add_property("file_read_path",
+                      io::property("file_read_path", misc::string::get(rid)));
   }
   {
     tree.add_property(
-           "file_read_offset",
-           io::property("file_read_offset", misc::string::get(roffset)));
+        "file_read_offset",
+        io::property("file_read_offset", misc::string::get(roffset)));
+  }
+  {
+    tree.add_property("file_write_path",
+                      io::property("file_write_path", misc::string::get(wid)));
   }
   {
     tree.add_property(
-           "file_write_path",
-           io::property("file_write_path", misc::string::get(wid)));
+        "file_write_offset",
+        io::property("file_write_offset", misc::string::get(woffset)));
   }
   {
     tree.add_property(
-           "file_write_offset",
-           io::property("file_write_offset", misc::string::get(woffset)));
-  }
-  {
-    tree.add_property(
-           "file_max_size",
-           io::property(
-                 "file_max_size",
-                 max_file_size != std::numeric_limits<long>::max()
-                 ? misc::string::get(max_file_size)
-                 : "unlimited"));
+        "file_max_size",
+        io::property("file_max_size",
+                     max_file_size != std::numeric_limits<long>::max()
+                         ? misc::string::get(max_file_size)
+                         : "unlimited"));
   }
 
   // Need computation.
@@ -141,19 +135,17 @@ void stream::statistics(io::properties& tree) const {
     io::property& p(tree["file_percent_processed"]);
     p.set_name("file_percent_processed");
     oss.str("");
-    if (((rid != wid)
-         && max_file_size == std::numeric_limits<long>::max())
-        || !fwoffset) {
+    if (((rid != wid) && max_file_size == std::numeric_limits<long>::max()) ||
+        !fwoffset) {
       oss << "unknown";
-    }
-    else {
+    } else {
       oss << 100.0 * froffset / fwoffset << "%";
       write_time_expected = true;
     }
     p.set_value(oss.str());
   }
   if (write_time_expected) {
-    time_t now(time(NULL));
+    time_t now(time(nullptr));
 
     if (_last_time && (now != _last_time)) {
       time_t eta(0);
@@ -162,8 +154,8 @@ void stream::statistics(io::properties& tree) const {
         oss.str("");
         p.set_name("file_expected_terminated_at");
 
-        unsigned long long
-          div(froffset + _last_write_offset - _last_read_offset - fwoffset);
+        unsigned long long div(froffset + _last_write_offset -
+                               _last_read_offset - fwoffset);
         if (div == 0)
           oss << "file not processed fast enough to terminate";
         else {
@@ -177,10 +169,8 @@ void stream::statistics(io::properties& tree) const {
         io::property& p(tree["file_expected_max_size"]);
         oss.str("");
         p.set_name("file_expected_max_size");
-        oss << fwoffset
-               + (fwoffset - _last_write_offset)
-               * (eta - now)
-               / (now - _last_time);
+        oss << fwoffset + (fwoffset - _last_write_offset) * (eta - now) /
+                              (now - _last_time);
 
         p.set_value(oss.str());
         p.set_graphable(false);
@@ -192,7 +182,7 @@ void stream::statistics(io::properties& tree) const {
     _last_write_offset = fwoffset;
   }
 
-  return ;
+  return;
 }
 
 /**

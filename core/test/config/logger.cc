@@ -16,8 +16,8 @@
  * For more information : contact@centreon.com
  *
  */
-#include <gtest/gtest.h>
 #include "com/centreon/broker/config/logger.hh"
+#include <gtest/gtest.h>
 
 using namespace com::centreon::broker;
 

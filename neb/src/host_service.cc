@@ -21,10 +21,10 @@
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Default constructor.
@@ -32,22 +32,22 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 host_service::host_service()
-  : check_freshness(false),
-    default_active_checks_enabled(false),
-    default_event_handler_enabled(false),
-    default_flap_detection_enabled(false),
-    default_notifications_enabled(false),
-    default_passive_checks_enabled(false),
-    first_notification_delay(0.0),
-    freshness_threshold(0.0),
-    high_flap_threshold(0.0),
-    low_flap_threshold(0.0),
-    notification_interval(0.0),
-    notify_on_downtime(false),
-    notify_on_flapping(false),
-    notify_on_recovery(false),
-    retain_nonstatus_information(false),
-    retain_status_information(false) {}
+    : check_freshness(false),
+      default_active_checks_enabled(false),
+      default_event_handler_enabled(false),
+      default_flap_detection_enabled(false),
+      default_notifications_enabled(false),
+      default_passive_checks_enabled(false),
+      first_notification_delay(0.0),
+      freshness_threshold(0.0),
+      high_flap_threshold(0.0),
+      low_flap_threshold(0.0),
+      notification_interval(0.0),
+      notify_on_downtime(false),
+      notify_on_flapping(false),
+      notify_on_recovery(false),
+      retain_nonstatus_information(false),
+      retain_status_information(false) {}
 
 /**
  *  @brief Copy constructor.
@@ -80,10 +80,10 @@ host_service& host_service::operator=(host_service const& other) {
 }
 
 /**************************************
-*                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *          Private Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Copy all internal data of the host_service object to the
@@ -118,5 +118,5 @@ void host_service::_internal_copy(host_service const& other) {
   notify_on_recovery = other.notify_on_recovery;
   retain_nonstatus_information = other.retain_nonstatus_information;
   retain_status_information = other.retain_status_information;
-  return ;
+  return;
 }

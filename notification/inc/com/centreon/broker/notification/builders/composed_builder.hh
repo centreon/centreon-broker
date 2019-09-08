@@ -17,57 +17,48 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_COMPOSED_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_COMPOSED_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_COMPOSED_BUILDER_HH
 
-#  include <vector>
-#  include "com/centreon/broker/namespace.hh"
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         notification {
-  /**
-   *  @class composed_builder composed_builder.hh "com/centreon/broker/notification/builders/composed_builder.hh"
-   *  @tparam T The builder type for the underlying builders.
-   *  @brief Base for composed builders.
-   *
-   *  This class provides facilities for composed builders.
-   */
-  template <typename T>
-  class           composed_builder : public T {
-  public:
-    typedef std::vector<T*> vector_type;
-    typedef typename vector_type::iterator iterator;
-    typedef typename vector_type::const_iterator const_iterator;
+namespace notification {
+/**
+ *  @class composed_builder composed_builder.hh
+ * "com/centreon/broker/notification/builders/composed_builder.hh"
+ *  @tparam T The builder type for the underlying builders.
+ *  @brief Base for composed builders.
+ *
+ *  This class provides facilities for composed builders.
+ */
+template <typename T>
+class composed_builder : public T {
+ public:
+  typedef std::vector<T*> vector_type;
+  typedef typename vector_type::iterator iterator;
+  typedef typename vector_type::const_iterator const_iterator;
 
-                  composed_builder() {}
-    virtual       ~composed_builder() {}
+  composed_builder() {}
+  virtual ~composed_builder() {}
 
-    void          push_back(T& builder) {
-      _builders.push_back(&builder);
-    }
+  void push_back(T& builder) { _builders.push_back(&builder); }
 
-    iterator      begin() {
-      return (_builders.begin());
-    }
+  iterator begin() { return (_builders.begin()); }
 
-    const_iterator begin() const {
-      return (_builders.begin());
-    }
+  const_iterator begin() const { return (_builders.begin()); }
 
-    iterator       end() {
-      return (_builders.end());
-    }
+  iterator end() { return (_builders.end()); }
 
-    const_iterator end() const {
-      return (_builders.end());
-    }
+  const_iterator end() const { return (_builders.end()); }
 
-  private:
-    std::vector<T*> _builders;
-  };
+ private:
+  std::vector<T*> _builders;
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_COMPOSED_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_COMPOSED_BUILDER_HH

@@ -16,29 +16,29 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/rrd/lib.hh"
+#include <fcntl.h>
+#include <rrd.h>
+#include <unistd.h>
 #include <cctype>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
-#include <fcntl.h>
-#include <rrd.h>
 #include <sstream>
-#include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
 #include "com/centreon/broker/rrd/exceptions/update.hh"
-#include "com/centreon/broker/rrd/lib.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -47,7 +47,7 @@ using namespace com::centreon::broker::rrd;
  *  @param[in] cache_size The maximum number of cache element.
  */
 lib::lib(std::string const& tmpl_path, unsigned int cache_size)
-  : _creator(tmpl_path, cache_size) {}
+    : _creator(tmpl_path, cache_size) {}
 
 /**
  *  Copy constructor.
@@ -55,7 +55,7 @@ lib::lib(std::string const& tmpl_path, unsigned int cache_size)
  *  @param[in] l Object to copy.
  */
 lib::lib(lib const& l)
-  : backend(l), _creator(l._creator), _filename(l._filename) {}
+    : backend(l), _creator(l._creator), _filename(l._filename) {}
 
 /**
  *  Destructor.
@@ -82,7 +82,7 @@ lib& lib::operator=(lib const& l) {
  *  With the librrd backend, this method does nothing.
  */
 void lib::begin() {
-  return ;
+  return;
 }
 
 /**
@@ -90,7 +90,7 @@ void lib::begin() {
  */
 void lib::clean() {
   _creator.clear();
-  return ;
+  return;
 }
 
 /**
@@ -98,7 +98,7 @@ void lib::clean() {
  */
 void lib::close() {
   _filename.clear();
-  return ;
+  return;
 }
 
 /**
@@ -107,7 +107,7 @@ void lib::close() {
  *  With the librrd backend, the method does nothing.
  */
 void lib::commit() {
-  return ;
+  return;
 }
 
 /**
@@ -121,13 +121,13 @@ void lib::open(std::string const& filename) {
 
   // Check that the file exists.
   if (access(filename.c_str(), F_OK))
-    throw (exceptions::open() << "RRD: file '"
-             << filename << "' does not exist");
+    throw(exceptions::open()
+          << "RRD: file '" << filename << "' does not exist");
 
   // Remember information for further operations.
   _filename = filename;
 
-  return ;
+  return;
 }
 
 /**
@@ -140,12 +140,11 @@ void lib::open(std::string const& filename) {
  *  @param[in] step       Time interval between each record.
  *  @param[in] value_type Type of the metric.
  */
-void lib::open(
-            std::string const& filename,
-            unsigned int length,
-            time_t from,
-            unsigned int step,
-            short value_type) {
+void lib::open(std::string const& filename,
+               unsigned int length,
+               time_t from,
+               unsigned int step,
+               short value_type) {
   // Close previous file.
   this->close();
 
@@ -153,7 +152,7 @@ void lib::open(
   _filename = filename;
   _creator.create(filename, length, from, step, value_type);
 
-  return ;
+  return;
 }
 
 /**
@@ -164,10 +163,10 @@ void lib::open(
 void lib::remove(std::string const& filename) {
   if (::remove(filename.c_str())) {
     char const* msg(strerror(errno));
-    logging::error(logging::high) << "RRD: could not remove file '"
-      << filename << "': " << msg;
+    logging::error(logging::high)
+        << "RRD: could not remove file '" << filename << "': " << msg;
   }
-  return ;
+  return;
 }
 
 /**
@@ -186,13 +185,11 @@ void lib::update(time_t t, std::string const& value) {
 
     iss >> std::noskipws >> f;
 
-    if(iss.eof() && !iss.fail())
+    if (iss.eof() && !iss.fail())
       oss << t << ":" << value;
     else {
-      logging::error(logging::low)
-        << "RRD: ignored update non-float value '"
-        << value << "' in file '"
-        << _filename;
+      logging::error(logging::low) << "RRD: ignored update non-float value '"
+                                   << value << "' in file '" << _filename;
       return;
     }
     arg = oss.str();
@@ -201,29 +198,24 @@ void lib::update(time_t t, std::string const& value) {
   // Set argument table.
   char const* argv[2];
   argv[0] = arg.c_str();
-  argv[1] = NULL;
+  argv[1] = nullptr;
 
   // Debug message.
-  logging::debug(logging::high) << "RRD: updating file '"
-    << _filename << "' (" << argv[0] << ")";
+  logging::debug(logging::high)
+      << "RRD: updating file '" << _filename << "' (" << argv[0] << ")";
 
   // Update RRD file.
   rrd_clear_error();
-  if (rrd_update_r(
-        _filename.c_str(),
-        NULL,
-        sizeof(argv) / sizeof(*argv) - 1,
-        argv)) {
+  if (rrd_update_r(_filename.c_str(), nullptr, sizeof(argv) / sizeof(*argv) - 1,
+                   argv)) {
     char const* msg(rrd_get_error());
     if (!strstr(msg, "illegal attempt to update using time"))
-      throw (exceptions::update()
-             << "RRD: failed to update value in file '"
-             << _filename << "': " << msg);
+      throw(exceptions::update() << "RRD: failed to update value in file '"
+                                 << _filename << "': " << msg);
     else
       logging::error(logging::low)
-        << "RRD: ignored update error in file '"
-        << _filename << "': " << msg;
+          << "RRD: ignored update error in file '" << _filename << "': " << msg;
   }
 
-  return ;
+  return;
 }

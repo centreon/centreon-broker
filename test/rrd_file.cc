@@ -16,17 +16,17 @@
 ** For more information : contact@centreon.com
 */
 
+#include "test/rrd_file.hh"
+#include <rrd.h>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <rrd.h>
-#include "test/rrd_file.hh"
 
 /**************************************
-*                                     *
-*           Local Functions           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Local Functions           *
+ *                                     *
+ **************************************/
 
 /**
  *  Helper callback for RRD file dump.
@@ -41,10 +41,10 @@ static size_t dump_callback(void const* data, size_t size, void* ptr) {
 }
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -92,7 +92,7 @@ void rrd_file::add_data(void const* data, size_t size) {
     _process_line(_buffer.c_str());
     _buffer.erase(0, pos + 1);
   }
-  return ;
+  return;
 }
 
 /**
@@ -100,7 +100,7 @@ void rrd_file::add_data(void const* data, size_t size) {
  *
  *  @return Loaded RRAs.
  */
-std::list<std::map<time_t, double> > const& rrd_file::get_rras() const throw () {
+std::list<std::map<time_t, double> > const& rrd_file::get_rras() const throw() {
   return (_rras);
 }
 
@@ -112,14 +112,14 @@ std::list<std::map<time_t, double> > const& rrd_file::get_rras() const throw () 
 void rrd_file::load(char const* file) {
   _in_rra = false;
   rrd_dump_cb_r(file, 0, &dump_callback, this);
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -128,7 +128,7 @@ void rrd_file::load(char const* file) {
  */
 void rrd_file::_internal_copy(rrd_file const& right) {
   _rras = right._rras;
-  return ;
+  return;
 }
 
 /**
@@ -141,8 +141,7 @@ void rrd_file::_process_line(char const* line) {
   if (!strcmp(line, "<rra>")) {
     _rras.push_back(std::map<time_t, double>());
     _in_rra = true;
-  }
-  else if (!strcmp(line, "</rra>"))
+  } else if (!strcmp(line, "</rra>"))
     _in_rra = false;
   else if (_in_rra && !strncmp(line, "<!-- ", 5)) {
     line = strchr(line, '/') + 2;
@@ -158,5 +157,5 @@ void rrd_file::_process_line(char const* line) {
         _rras.back()[t] = v;
     }
   }
-  return ;
+  return;
 }

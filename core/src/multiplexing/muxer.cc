@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/multiplexing/muxer.hh"
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -23,21 +24,21 @@
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/multiplexing/engine.hh"
-#include "com/centreon/broker/multiplexing/muxer.hh"
-#include "com/centreon/broker/persistent_file.hh"
 #include "com/centreon/broker/misc/string.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/persistent_file.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
 
-unsigned int muxer::_event_queue_max_size = std::numeric_limits<unsigned int>::max();
+unsigned int muxer::_event_queue_max_size =
+    std::numeric_limits<unsigned int>::max();
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -47,17 +48,12 @@ unsigned int muxer::_event_queue_max_size = std::numeric_limits<unsigned int>::m
  *  @param[in] persistent  Whether or not this muxer should backup
  *                         unprocessed events in a persistent storage.
  */
-muxer::muxer(
-         std::string const& name,
-         bool persistent)
-  : _events_size(0),
-    _name(name),
-    _persistent(persistent) {
+muxer::muxer(std::string const& name, bool persistent)
+    : _events_size(0), _name(name), _persistent(persistent) {
   // Load head queue file back in memory.
   if (_persistent) {
     try {
-      std::unique_ptr<io::stream>
-        mf(new persistent_file(_memory_file()));
+      std::unique_ptr<io::stream> mf(new persistent_file(_memory_file()));
       std::shared_ptr<io::data> e;
       while (true) {
         e.reset();
@@ -67,8 +63,7 @@ muxer::muxer(
           ++_events_size;
         }
       }
-    }
-    catch (exceptions::shutdown const& e) {
+    } catch (exceptions::shutdown const& e) {
       // Memory file was properly read back in memory.
       (void)e;
     }
@@ -86,12 +81,11 @@ muxer::muxer(
       e.reset();
       _get_event_from_file(e);
       if (!e)
-        break ;
+        break;
       _events.push_back(e);
       ++_events_size;
     } while (_events_size < event_queue_max_size());
-  }
-  catch (exceptions::shutdown const& e) {
+  } catch (exceptions::shutdown const& e) {
     // Queue file was entirely read back.
     (void)e;
   }
@@ -99,9 +93,8 @@ muxer::muxer(
 
   // Log messages.
   logging::info(logging::low)
-    << "multiplexing: '" << _name << "' start with " << _events_size
-    << " in queue and the queue file is "
-    << (_file.get() ? "enable" : "disable");
+      << "multiplexing: '" << _name << "' start with " << _events_size
+      << " in queue and the queue file is " << (_file ? "enable" : "disable");
 }
 
 /**
@@ -118,18 +111,18 @@ muxer::~muxer() {
  */
 void muxer::ack_events(int count) {
   // Remove acknowledged events.
-  logging::debug(logging::low)
-    << "multiplexing: acknowledging " << count << " events from "
-    << _name << " event queue";
+  logging::debug(logging::low) << "multiplexing: acknowledging " << count
+                               << " events from " << _name << " event queue";
   if (count) {
     std::lock_guard<std::mutex> lock(_mutex);
     for (int i(0); (i < count) && !_events.empty(); ++i) {
       if (_events.begin() == _pos) {
-        logging::error(logging::high) << "multiplexing: attempt to "
-          << "acknowledge more events than available in " << _name
-          << " event queue: " << count << " requested, " << i
-          << " acknowledged";
-        break ;
+        logging::error(logging::high)
+            << "multiplexing: attempt to "
+            << "acknowledge more events than available in " << _name
+            << " event queue: " << count << " requested, " << i
+            << " acknowledged";
+        break;
       }
       _events.pop_front();
       --_events_size;
@@ -141,7 +134,7 @@ void muxer::ack_events(int count) {
       e.reset();
       _get_event_from_file(e);
       if (!e)
-        break ;
+        break;
       _push_to_queue(e);
     }
   }
@@ -152,7 +145,7 @@ void muxer::ack_events(int count) {
  *
  *  @param[in] max  The size limit.
  */
-void muxer::event_queue_max_size(unsigned int max) throw () {
+void muxer::event_queue_max_size(unsigned int max) throw() {
   if (!max)
     max = std::numeric_limits<unsigned int>::max();
   _event_queue_max_size = max;
@@ -163,7 +156,7 @@ void muxer::event_queue_max_size(unsigned int max) throw () {
  *
  *  @return The size limit.
  */
-unsigned int muxer::event_queue_max_size() throw () {
+unsigned int muxer::event_queue_max_size() throw() {
   return _event_queue_max_size;
 }
 
@@ -177,15 +170,14 @@ void muxer::publish(std::shared_ptr<io::data> const& event) {
     std::lock_guard<std::mutex> lock(_mutex);
     // Check if we should process this event.
     if (_write_filters.find(event->type()) == _write_filters.end())
-      return ;
+      return;
     // Check if the event queue limit is reach.
     if (_events_size >= event_queue_max_size()) {
       // Try to create file if is necessary.
-      if (!_file.get())
+      if (!_file)
         _file.reset(new persistent_file(_queue_file()));
       _file->write(event);
-    }
-    else
+    } else
       _push_to_queue(event);
   }
 }
@@ -198,9 +190,7 @@ void muxer::publish(std::shared_ptr<io::data> const& event) {
  *
  *  @return Respect io::stream::read()'s return value.
  */
-bool muxer::read(
-              std::shared_ptr<io::data>& event,
-              time_t deadline) {
+bool muxer::read(std::shared_ptr<io::data>& event, time_t deadline) {
   bool timed_out(false);
   std::unique_lock<std::mutex> lock(_mutex);
 
@@ -210,8 +200,9 @@ bool muxer::read(
     if ((time_t)-1 == deadline)
       _cv.wait(lock);
     else {
-      time_t now(time(NULL));
-      timed_out = _cv.wait_for(lock, std::chrono::seconds(deadline - now)) == std::cv_status::timeout;
+      time_t now(time(nullptr));
+      timed_out = _cv.wait_for(lock, std::chrono::seconds(deadline - now)) ==
+                  std::cv_status::timeout;
     }
     if (_pos != _events.end()) {
       event = *_pos;
@@ -219,8 +210,7 @@ bool muxer::read(
       lock.unlock();
       if (event)
         timed_out = false;
-    }
-    else
+    } else
       event.reset();
   }
   // Data is available, no need to wait.
@@ -286,8 +276,8 @@ unsigned int muxer::get_event_queue_size() const {
  */
 void muxer::nack_events() {
   logging::debug(logging::low)
-    << "multiplexing: reprocessing unacknowledged events from "
-    << _name << " event queue";
+      << "multiplexing: reprocessing unacknowledged events from " << _name
+      << " event queue";
   std::lock_guard<std::mutex> lock(_mutex);
   _pos = _events.begin();
 }
@@ -304,10 +294,8 @@ void muxer::statistics(io::properties& tree) const {
   // Queue file mode.
   bool queue_file_enabled(_file.get());
   tree.add_property(
-         "queue_file_enabled",
-         io::property(
-               "queue_file_enabled",
-               queue_file_enabled ? "yes" : "no"));
+      "queue_file_enabled",
+      io::property("queue_file_enabled", queue_file_enabled ? "yes" : "no"));
   if (queue_file_enabled) {
     io::properties queue_file;
     _file->statistics(queue_file);
@@ -316,16 +304,13 @@ void muxer::statistics(io::properties& tree) const {
 
   // Unacknowledged events count.
   int unacknowledged(0);
-  for (std::list<std::shared_ptr<io::data> >::const_iterator
-         it(_events.begin());
-       it != _pos;
-       ++it)
+  for (std::list<std::shared_ptr<io::data> >::const_iterator it(
+           _events.begin());
+       it != _pos; ++it)
     ++unacknowledged;
   tree.add_property(
-         "unacknowledged_events",
-         io::property(
-               "unacknowledged_events",
-               misc::string::get(unacknowledged)));
+      "unacknowledged_events",
+      io::property("unacknowledged_events", misc::string::get(unacknowledged)));
 }
 
 /**
@@ -376,10 +361,10 @@ std::string muxer::queue_file(std::string const& name) {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Release all events stored within the internal list.
@@ -389,18 +374,16 @@ void muxer::_clean() {
   _file.reset();
   if (_persistent && !_events.empty()) {
     try {
-      std::unique_ptr<io::stream>
-        mf(new persistent_file(_memory_file()));
+      std::unique_ptr<io::stream> mf(new persistent_file(_memory_file()));
       while (!_events.empty()) {
         mf->write(_events.front());
         _events.pop_front();
         --_events_size;
       }
-    }
-    catch (std::exception const& e) {
+    } catch (std::exception const& e) {
       logging::error(logging::high)
-        << "multiplexing: could not backup memory queue of '" << _name
-        << "': " << e.what();
+          << "multiplexing: could not backup memory queue of '" << _name
+          << "': " << e.what();
     }
   }
   _events.clear();
@@ -416,13 +399,12 @@ void muxer::_clean() {
 void muxer::_get_event_from_file(std::shared_ptr<io::data>& event) {
   event.reset();
   // If file exist, try to get the last event.
-  if (_file.get()) {
+  if (_file) {
     try {
       do {
         _file->read(event);
       } while (!event);
-    }
-    catch (exceptions::shutdown const& e) {
+    } catch (exceptions::shutdown const& e) {
       // The file end was reach.
       (void)e;
       _file.reset();
@@ -468,7 +450,7 @@ std::string muxer::_queue_file() const {
  */
 void muxer::remove_queue_files() {
   logging::info(logging::low)
-    << "multiplexing: '" << _queue_file() << "' removed";
+      << "multiplexing: '" << _queue_file() << "' removed";
 
   /* Here _file is already destroyed */
   persistent_file file(_queue_file());

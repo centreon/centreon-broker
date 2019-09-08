@@ -17,35 +17,34 @@
 */
 
 #ifndef CCB_GRAPHITE_FACTORY_HH
-#  define CCB_GRAPHITE_FACTORY_HH
+#define CCB_GRAPHITE_FACTORY_HH
 
-#  include "com/centreon/broker/io/factory.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/factory.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         graphite {
-  /**
-   *  @class factory factory.hh "com/centreon/broker/graphite/factory.hh"
-   *  @brief Graphite layer factory.
-   *
-   *  Build Graphite layer objects.
-   */
-  class           factory : public io::factory {
-  public:
-                  factory();
-                  factory(factory const& other);
-                  ~factory();
-    factory&      operator=(factory const& other);
-    io::factory*  clone() const;
-    bool          has_endpoint(config::endpoint& cfg) const;
-    io::endpoint* new_endpoint(
-                    config::endpoint& cfg,
-                    bool& is_acceptor,
-                    std::shared_ptr<persistent_cache> cache) const;
-  };
-}
+namespace graphite {
+/**
+ *  @class factory factory.hh "com/centreon/broker/graphite/factory.hh"
+ *  @brief Graphite layer factory.
+ *
+ *  Build Graphite layer objects.
+ */
+class factory : public io::factory {
+ public:
+  factory();
+  factory(factory const& other);
+  ~factory();
+  factory& operator=(factory const& other);
+  io::factory* clone() const;
+  bool has_endpoint(config::endpoint& cfg) const;
+  io::endpoint* new_endpoint(config::endpoint& cfg,
+                             bool& is_acceptor,
+                             std::shared_ptr<persistent_cache> cache) const;
+};
+}  // namespace graphite
 
 CCB_END()
 
-#endif // !CCB_GRAPHITE_FACTORY_HH
+#endif  // !CCB_GRAPHITE_FACTORY_HH

@@ -16,19 +16,19 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
-#include "com/centreon/broker/multiplexing/publisher.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -45,7 +45,7 @@ publisher::publisher(publisher const& other) : io::stream(other) {}
 /**
  *  Destructor.
  */
-publisher::~publisher() throw () {}
+publisher::~publisher() throw() {}
 
 /**
  *  Assignment operator.
@@ -71,7 +71,7 @@ publisher& publisher::operator=(publisher const& other) {
 bool publisher::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw (exceptions::shutdown() << "cannot read from publisher");
+  throw(exceptions::shutdown() << "cannot read from publisher");
   return (true);
 }
 

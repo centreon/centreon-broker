@@ -19,49 +19,49 @@
 */
 
 #ifndef CCE_COMMANDS_ENVIRONMENT_HH
-#  define CCE_COMMANDS_ENVIRONMENT_HH
+#define CCE_COMMANDS_ENVIRONMENT_HH
 
-#  include <string>
-#  include "com/centreon/engine/namespace.hh"
+#include <string>
+#include "com/centreon/engine/namespace.hh"
 
 CCE_BEGIN()
 
-namespace        commands {
-  /**
-   *  @class process environment.hh "com/centreon/environment.hh"
-   *  @brief Allow to get and manage environment.
-   *
-   *  This class allow to get and set environment.
-   */
-  class          environment {
-  public:
-                 environment(char** env = NULL);
-                 environment(environment const& right);
-                 ~environment() throw ();
-    environment& operator=(environment const& right);
-    bool         operator==(environment const& right) const throw ();
-    bool         operator!=(environment const& right) const throw ();
-    void         add(char const* line);
-    void         add(char const* name, char const* value);
-    void         add(std::string const& line);
-    void         add(std::string const& name, std::string const& value);
-    char**       data() throw ();
+namespace commands {
+/**
+ *  @class process environment.hh "com/centreon/environment.hh"
+ *  @brief Allow to get and manage environment.
+ *
+ *  This class allow to get and set environment.
+ */
+class environment {
+ public:
+  environment(char** env = NULL);
+  environment(environment const& right);
+  ~environment() throw();
+  environment& operator=(environment const& right);
+  bool operator==(environment const& right) const throw();
+  bool operator!=(environment const& right) const throw();
+  void add(char const* line);
+  void add(char const* name, char const* value);
+  void add(std::string const& line);
+  void add(std::string const& name, std::string const& value);
+  char** data() throw();
 
-  private:
-    void         _internal_copy(environment const& right);
-    void         _realoc_buffer(unsigned int size);
-    void         _realoc_env(unsigned int size);
-    void         _rebuild_env();
+ private:
+  void _internal_copy(environment const& right);
+  void _realoc_buffer(unsigned int size);
+  void _realoc_env(unsigned int size);
+  void _rebuild_env();
 
-    char*        _buffer;
-    char**       _env;
-    unsigned int _pos_buffer;
-    unsigned int _pos_env;
-    unsigned int _size_buffer;
-    unsigned int _size_env;
-  };
-}
+  char* _buffer;
+  char** _env;
+  unsigned int _pos_buffer;
+  unsigned int _pos_env;
+  unsigned int _size_buffer;
+  unsigned int _size_env;
+};
+}  // namespace commands
 
 CCE_END()
 
-#endif // !CC_COMMANDS_ENVIRONMENT_HH
+#endif  // !CC_COMMANDS_ENVIRONMENT_HH

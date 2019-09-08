@@ -17,58 +17,57 @@
 */
 
 #ifndef CCB_BBDO_VERSION_RESPONSE_HH
-#  define CCB_BBDO_VERSION_RESPONSE_HH
+#define CCB_BBDO_VERSION_RESPONSE_HH
 
-#  include <string>
-#  include "com/centreon/broker/bbdo/internal.hh"
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/io/events.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/bbdo/internal.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace               bbdo {
+namespace bbdo {
+/**
+ *  @class version_response version_response.hh
+ * "com/centreon/broker/bbdo/version_response.hh"
+ *  @brief Send protocol version used by endpoint.
+ *
+ *  Send protocol version used by endpoint.
+ */
+class version_response : public io::data {
+ public:
+  version_response();
+  version_response(version_response const& other);
+  ~version_response();
+  version_response& operator=(version_response const& other);
+  unsigned int type() const;
+
   /**
-   *  @class version_response version_response.hh "com/centreon/broker/bbdo/version_response.hh"
-   *  @brief Send protocol version used by endpoint.
+   *  Get the event type.
    *
-   *  Send protocol version used by endpoint.
+   *  @return The event type.
    */
-  class                 version_response : public io::data {
-  public:
-                        version_response();
-                        version_response(version_response const& other);
-                        ~version_response();
-    version_response&   operator=(version_response const& other);
-    unsigned int        type() const;
+  static unsigned int static_type() {
+    return io::events::data_type<io::events::bbdo,
+                                 bbdo::de_version_response>::value;
+  }
 
-    /**
-     *  Get the event type.
-     *
-     *  @return The event type.
-     */
-    static unsigned int static_type() {
-      return io::events::data_type<io::events::bbdo,
-                                   bbdo::de_version_response>::value;
-    }
+  short bbdo_major;
+  short bbdo_minor;
+  short bbdo_patch;
+  std::string extensions;
 
-    short               bbdo_major;
-    short               bbdo_minor;
-    short               bbdo_patch;
-    std::string         extensions;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-    static mapping::entry const
-                        entries[];
-    static io::event_info::event_operations const
-                        operations;
-
-  private:
-    void                _internal_copy(version_response const& right);
-  };
-}
+ private:
+  void _internal_copy(version_response const& right);
+};
+}  // namespace bbdo
 
 CCB_END()
 
-#endif // !CCB_BBDO_VERSION_RESPONSE_HH
+#endif  // !CCB_BBDO_VERSION_RESPONSE_HH

@@ -17,29 +17,26 @@
 */
 
 #ifndef CCB_BBDO_INTERNAL_HH
-#  define CCB_BBDO_INTERNAL_HH
+#define CCB_BBDO_INTERNAL_HH
 
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/namespace.hh"
 
-#  define BBDO_HEADER_SIZE 16
-#  define BBDO_VERSION_MAJOR 2
-#  define BBDO_VERSION_MINOR 0
-#  define BBDO_VERSION_PATCH 0
+#define BBDO_HEADER_SIZE 16
+#define BBDO_VERSION_MAJOR 2
+#define BBDO_VERSION_MINOR 0
+#define BBDO_VERSION_PATCH 0
 
 CCB_BEGIN()
 
-namespace                 bbdo {
-  // Data elements.
-  enum {
-    de_version_response = 1,
-    de_ack
-  };
+namespace bbdo {
+// Data elements.
+enum { de_version_response = 1, de_ack };
 
-  // Load/unload of BBDO protocol.
-  void                    load();
-  void                    unload();
-}
+// Load/unload of BBDO protocol.
+void load();
+void unload();
+}  // namespace bbdo
 
 CCB_END()
 
-#endif // !CCB_BBDO_INTERNAL_HH
+#endif  // !CCB_BBDO_INTERNAL_HH

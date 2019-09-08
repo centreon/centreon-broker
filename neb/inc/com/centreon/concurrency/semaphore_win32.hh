@@ -17,38 +17,38 @@
 */
 
 #ifndef CC_CONCURRENCY_SEMAPHORE_WIN32_HH
-#  define CC_CONCURRENCY_SEMAPHORE_WIN32_HH
+#define CC_CONCURRENCY_SEMAPHORE_WIN32_HH
 
-#  include <windows.h>
-#  include "com/centreon/namespace.hh"
+#include <windows.h>
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace      concurrency {
-  /**
-   *  @class semaphore semaphore_win32.hh "com/centreon/concurrency/semaphore.hh"
-   *  @brief Implements a semaphore.
-   *
-   *  Win32 implementation of a semaphore.
-   */
-  class        semaphore {
-  public:
-               semaphore(unsigned int n = 0);
-               ~semaphore() throw ();
-    void       acquire();
-    bool       acquire(unsigned long timeout);
-    int        available();
-    void       release();
-    bool       try_acquire();
+namespace concurrency {
+/**
+ *  @class semaphore semaphore_win32.hh "com/centreon/concurrency/semaphore.hh"
+ *  @brief Implements a semaphore.
+ *
+ *  Win32 implementation of a semaphore.
+ */
+class semaphore {
+ public:
+  semaphore(unsigned int n = 0);
+  ~semaphore() throw();
+  void acquire();
+  bool acquire(unsigned long timeout);
+  int available();
+  void release();
+  bool try_acquire();
 
-  private:
-               semaphore(semaphore const& s);
-    semaphore& operator=(semaphore const& s);
+ private:
+  semaphore(semaphore const& s);
+  semaphore& operator=(semaphore const& s);
 
-    HANDLE     _sem;
-  };
-}
+  HANDLE _sem;
+};
+}  // namespace concurrency
 
 CC_END()
 
-#endif // !CC_CONCURRENCY_SEMAPHORE_WIN32_HH
+#endif  // !CC_CONCURRENCY_SEMAPHORE_WIN32_HH

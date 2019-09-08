@@ -17,17 +17,17 @@
 */
 
 #ifndef CCB_MISC_GLOBAL_LOCK_HH_
-# define CCB_MISC_GLOBAL_LOCK_HH_
+#define CCB_MISC_GLOBAL_LOCK_HH_
 
-# include <mutex>
-# include "com/centreon/broker/namespace.hh"
+#include <mutex>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace       misc {
-  extern std::mutex global_lock;
+namespace misc {
+extern std::mutex global_lock;
 }
 
 CCB_END()
 
-#endif // !CCB_MISC_GLOBAL_LOCK_HH_
+#endif  // !CCB_MISC_GLOBAL_LOCK_HH_

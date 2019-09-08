@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/hosts.hh"
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/hosts.hh"
 #include "com/centreon/engine/common.hh"
 #include "com/centreon/engine/globals.hh"
 
@@ -62,16 +62,12 @@ hosts& hosts::operator=(hosts const& right) {
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void hosts::run(
-              std::string& output,
-	      std::string& perfdata) {
+void hosts::run(std::string& output, std::string& perfdata) {
   // Count hosts up / down / unreachable.
-  unsigned int total[3] = { 0, 0, 0 };
-  for (host_map::const_iterator
-         it{com::centreon::engine::host::hosts.begin()},
-         end{com::centreon::engine::host::hosts.end()};
-       it != end;
-       ++it)
+  unsigned int total[3] = {0, 0, 0};
+  for (host_map::const_iterator it{com::centreon::engine::host::hosts.begin()},
+       end{com::centreon::engine::host::hosts.end()};
+       it != end; ++it)
     ++total[it->second->get_current_state()];
 
   unsigned int not_up{total[com::centreon::engine::host::state_down] +
@@ -80,14 +76,15 @@ void hosts::run(
   // Output.
   std::ostringstream oss;
   oss << "Engine " << config::applier::state::instance().poller_name()
-      << " has " << total[com::centreon::engine::host::state_up] << " hosts on status UP and "
-      << not_up << " hosts on non-UP status";
+      << " has " << total[com::centreon::engine::host::state_up]
+      << " hosts on status UP and " << not_up << " hosts on non-UP status";
   output = oss.str();
 
   // Perfdata.
   oss.str("");
   oss << "up=" << total[com::centreon::engine::host::state_up]
       << " down=" << total[com::centreon::engine::host::state_down]
-      << " unreachable=" << total[com::centreon::engine::host::state_unreachable];
+      << " unreachable="
+      << total[com::centreon::engine::host::state_unreachable];
   perfdata = oss.str();
 }

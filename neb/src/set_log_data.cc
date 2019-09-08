@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/set_log_data.hh"
 #include <cstdlib>
 #include <cstring>
-#include "com/centreon/broker/neb/log_entry.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/set_log_data.hh"
+#include "com/centreon/broker/neb/log_entry.hh"
 #include "com/centreon/engine/host.hh"
 #include "com/centreon/engine/service.hh"
 
@@ -33,7 +33,7 @@ using namespace com::centreon::broker;
 static char* log_extract_first(char* str, char** lasts) {
   char* data(strtok_r(str, ";", lasts));
   if (!data)
-    throw (exceptions::msg() << "log: data extraction failed");
+    throw(exceptions::msg() << "log: data extraction failed");
   return (data);
 }
 
@@ -41,9 +41,9 @@ static char* log_extract_first(char* str, char** lasts) {
  *  Extract following elements of a log string.
  */
 static char* log_extract(char** lasts) {
-  char* data(strtok_r(NULL, ";", lasts));
+  char* data(strtok_r(nullptr, ";", lasts));
   if (!data)
-    throw (exceptions::msg() << "log: data extraction failed");
+    throw(exceptions::msg() << "log: data extraction failed");
   return (data);
 }
 
@@ -77,8 +77,7 @@ static int notification_status_id(char const* status) {
     if (it != std::string::npos)
       substatus.erase(it);
     id = status_id(substatus.c_str());
-  }
-  else
+  } else
     id = status_id(status);
   return (id);
 }
@@ -102,7 +101,7 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
   // Duplicate string so that we can split it with strtok_r.
   char* datadup(strdup(log_data));
   if (!datadup)
-    throw (exceptions::msg() << "log: data extraction failed");
+    throw(exceptions::msg() << "log: data extraction failed");
 
   try {
     char* lasts;
@@ -119,18 +118,16 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       le.service_description = log_extract(&lasts);
       le.status = status_id(log_extract(&lasts));
       le.log_type = type_id(log_extract(&lasts));
-      le.retry = strtol(log_extract(&lasts), NULL, 10);
+      le.retry = strtol(log_extract(&lasts), nullptr, 10);
       le.output = log_extract(&lasts);
-    }
-    else if (!strcmp(datadup, "HOST ALERT")) {
+    } else if (!strcmp(datadup, "HOST ALERT")) {
       le.msg_type = 1;
       le.host_name = log_extract_first(lasts, &lasts);
       le.status = status_id(log_extract(&lasts));
       le.log_type = type_id(log_extract(&lasts));
-      le.retry = strtol(log_extract(&lasts), NULL, 10);
+      le.retry = strtol(log_extract(&lasts), nullptr, 10);
       le.output = log_extract(&lasts);
-    }
-    else if (!strcmp(datadup, "SERVICE NOTIFICATION")) {
+    } else if (!strcmp(datadup, "SERVICE NOTIFICATION")) {
       le.msg_type = 2;
       le.notification_contact = log_extract_first(lasts, &lasts);
       le.host_name = log_extract(&lasts);
@@ -138,33 +135,29 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       le.status = notification_status_id(log_extract(&lasts));
       le.notification_cmd = log_extract(&lasts);
       le.output = log_extract(&lasts);
-    }
-    else if (!strcmp(datadup, "HOST NOTIFICATION")) {
+    } else if (!strcmp(datadup, "HOST NOTIFICATION")) {
       le.msg_type = 3;
       le.notification_contact = log_extract_first(lasts, &lasts);
       le.host_name = log_extract(&lasts);
       le.status = notification_status_id(log_extract(&lasts));
       le.notification_cmd = log_extract(&lasts);
       le.output = log_extract(&lasts);
-    }
-    else if (!strcmp(datadup, "INITIAL HOST STATE")) {
+    } else if (!strcmp(datadup, "INITIAL HOST STATE")) {
       le.msg_type = 9;
       le.host_name = log_extract_first(lasts, &lasts);
       le.status = status_id(log_extract(&lasts));
       le.log_type = type_id(log_extract(&lasts));
-      le.retry = strtol(log_extract(&lasts), NULL, 10);
+      le.retry = strtol(log_extract(&lasts), nullptr, 10);
       le.output = log_extract(&lasts);
-    }
-    else if (!strcmp(datadup, "INITIAL SERVICE STATE")) {
+    } else if (!strcmp(datadup, "INITIAL SERVICE STATE")) {
       le.msg_type = 8;
       le.host_name = log_extract_first(lasts, &lasts);
       le.service_description = log_extract(&lasts);
       le.status = status_id(log_extract(&lasts));
       le.log_type = type_id(log_extract(&lasts));
-      le.retry = strtol(log_extract(&lasts), NULL, 10);
+      le.retry = strtol(log_extract(&lasts), nullptr, 10);
       le.output = log_extract(&lasts);
-    }
-    else if (!strcmp(datadup, "EXTERNAL COMMAND")) {
+    } else if (!strcmp(datadup, "EXTERNAL COMMAND")) {
       char* data(log_extract_first(lasts, &lasts));
       if (!strcmp(data, "ACKNOWLEDGE_SVC_PROBLEM")) {
         le.msg_type = 10;
@@ -175,8 +168,7 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
         log_extract(&lasts);
         le.notification_contact = log_extract(&lasts);
         le.output = log_extract(&lasts);
-      }
-      else if (!strcmp(data, "ACKNOWLEDGE_HOST_PROBLEM")) {
+      } else if (!strcmp(data, "ACKNOWLEDGE_HOST_PROBLEM")) {
         le.msg_type = 11;
         le.host_name = log_extract(&lasts);
         log_extract(&lasts);
@@ -184,27 +176,22 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
         log_extract(&lasts);
         le.notification_contact = log_extract(&lasts);
         le.output = log_extract(&lasts);
-      }
-      else {
+      } else {
         le.msg_type = 5;
         le.output = log_data;
       }
-    }
-    else if (!strcmp(datadup, "Warning")) {
+    } else if (!strcmp(datadup, "Warning")) {
       le.msg_type = 4;
       le.output = lasts;
-    }
-    else {
+    } else {
       le.msg_type = 5;
       le.output = log_data;
     }
+  } catch (...) {
   }
-  catch (...) {}
   free(datadup);
 
   // Set host and service IDs.
   le.host_id = engine::get_host_id(le.host_name);
-  le.service_id = engine::get_service_id(
-                    le.host_name,
-                    le.service_description);
+  le.service_id = engine::get_service_id(le.host_name, le.service_description);
 }

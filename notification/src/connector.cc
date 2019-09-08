@@ -23,18 +23,16 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::notification;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
  */
 connector::connector(std::shared_ptr<persistent_cache> cache)
-  : io::endpoint(false),
-    _cache(cache),
-    _node_cache(_cache) {}
+    : io::endpoint(false), _cache(cache), _node_cache(_cache) {}
 
 /**
  *  Copy constructor.
@@ -42,16 +40,16 @@ connector::connector(std::shared_ptr<persistent_cache> cache)
  *  @param[in] c Object to copy.
  */
 connector::connector(connector const& c)
-  : io::endpoint(c),
-    _check_replication(c._check_replication),
-    _centreon_db(c._centreon_db),
-    _host(c._host),
-    _password(c._password),
-    _port(c._port),
-    _type(c._type),
-    _user(c._user),
-    _cache(c._cache),
-    _node_cache(c._node_cache) {}
+    : io::endpoint(c),
+      _check_replication(c._check_replication),
+      _centreon_db(c._centreon_db),
+      _host(c._host),
+      _password(c._password),
+      _port(c._port),
+      _type(c._type),
+      _user(c._user),
+      _cache(c._cache),
+      _node_cache(c._node_cache) {}
 
 /**
  *  Destructor.
@@ -92,14 +90,13 @@ connector& connector::operator=(connector const& c) {
  *  @param[in] centreon_db             Database name.
  *  @param[in] check_replication       true to check replication status.
  */
-void connector::connect_to(
-                  std::string const& type,
-                  std::string const& host,
-                  unsigned short port,
-                  std::string const& user,
-                  std::string const& password,
-                  std::string const& centreon_db,
-                  bool check_replication) {
+void connector::connect_to(std::string const& type,
+                           std::string const& host,
+                           unsigned short port,
+                           std::string const& user,
+                           std::string const& password,
+                           std::string const& centreon_db,
+                           bool check_replication) {
   _check_replication = check_replication;
   _centreon_db = centreon_db;
   _host = host;
@@ -107,7 +104,7 @@ void connector::connect_to(
   _port = port;
   _type = type;
   _user = user;
-  return ;
+  return;
 }
 
 /**
@@ -116,13 +113,7 @@ void connector::connect_to(
  *  @return Notification stream object.
  */
 std::shared_ptr<io::stream> connector::open() {
-  return (std::shared_ptr<io::stream>(new stream(
-                                             _type,
-                                             _host,
-                                             _port,
-                                             _user,
-                                             _password,
-                                             _centreon_db,
-                                             _check_replication,
-                                             _node_cache)));
+  return (std::shared_ptr<io::stream>(
+      new stream(_type, _host, _port, _user, _password, _centreon_db,
+                 _check_replication, _node_cache)));
 }

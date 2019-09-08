@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
-#include <memory>
 #include "com/centreon/broker/neb/engcmd/factory.hh"
-#include "com/centreon/broker/neb/engcmd/endpoint.hh"
+#include <memory>
 #include "com/centreon/broker/config/parser.hh"
-#include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/neb/engcmd/endpoint.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb::engcmd;
@@ -34,21 +34,20 @@ using namespace com::centreon::broker::neb::engcmd;
  *
  *  @return Property value.
  */
-static std::string const& find_param(
-                        config::endpoint const& cfg,
-                        std::string const& key) {
+static std::string const& find_param(config::endpoint const& cfg,
+                                     std::string const& key) {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
     throw exceptions::msg() << "engcmd: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'";
+                            << "' defined for endpoint '" << cfg.name << "'";
   return it->second;
 }
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -111,13 +110,13 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return Endpoint matching configuration.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
   std::string command_module_path{find_param(cfg, "command_module_path")};
-  std::unique_ptr<io::endpoint>
-    end{new endpoint(cfg.name, command_module_path)};
+  std::unique_ptr<io::endpoint> end{
+      new endpoint(cfg.name, command_module_path)};
   is_acceptor = false;
   return end.release();
 }

@@ -17,33 +17,33 @@
 */
 
 #ifndef CCB_LOGGING_SYSLOGGER_HH_
-# define CCB_LOGGING_SYSLOGGER_HH_
+#define CCB_LOGGING_SYSLOGGER_HH_
 
-# include <syslog.h>
-# include "com/centreon/broker/logging/backend.hh"
-# include "com/centreon/broker/namespace.hh"
+#include <syslog.h>
+#include "com/centreon/broker/logging/backend.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace      logging {
-  /**
-   *  @class syslogger syslogger.hh "com/centreon/broker/logging/syslogger.hh"
-   *  @brief Log messages to syslog.
-   *
-   *  Log messages to a configured facility of syslog.
-   */
-  class        syslogger : public backend {
-   public:
-               syslogger(int facility = LOG_LOCAL0);
-               syslogger(syslogger const& s);
-               ~syslogger();
-    syslogger& operator=(syslogger const& s);
-    void       log_msg(char const* msg,
-                 unsigned int len,
-                 type log_type,
-                 level l) throw ();
-  };
-}
+namespace logging {
+/**
+ *  @class syslogger syslogger.hh "com/centreon/broker/logging/syslogger.hh"
+ *  @brief Log messages to syslog.
+ *
+ *  Log messages to a configured facility of syslog.
+ */
+class syslogger : public backend {
+ public:
+  syslogger(int facility = LOG_LOCAL0);
+  syslogger(syslogger const& s);
+  ~syslogger();
+  syslogger& operator=(syslogger const& s);
+  void log_msg(char const* msg,
+               unsigned int len,
+               type log_type,
+               level l) throw();
+};
+}  // namespace logging
 
 CCB_END()
 

@@ -30,7 +30,7 @@ using namespace com::centreon::broker::processing;
 
 class ProcessingTest : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     try {
       config::applier::init();
     } catch (std::exception const& e) {
@@ -42,7 +42,7 @@ class ProcessingTest : public ::testing::Test {
     _acceptor.reset(new acceptor(endpoint, "temporary_endpoint"));
   }
 
-  void TearDown() {
+  void TearDown() override {
     _acceptor.reset();
     config::applier::deinit();
   }

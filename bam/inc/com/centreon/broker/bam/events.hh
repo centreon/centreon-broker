@@ -17,23 +17,23 @@
 */
 
 #ifndef CCB_BAM_EVENTS_HH
-#  define CCB_BAM_EVENTS_HH
+#define CCB_BAM_EVENTS_HH
 
-#  include "com/centreon/broker/bam/ba_status.hh"
-#  include "com/centreon/broker/bam/kpi_status.hh"
-#  include "com/centreon/broker/bam/meta_service_status.hh"
-#  include "com/centreon/broker/bam/ba_event.hh"
-#  include "com/centreon/broker/bam/kpi_event.hh"
-#  include "com/centreon/broker/bam/ba_duration_event.hh"
-#  include "com/centreon/broker/bam/dimension_ba_event.hh"
-#  include "com/centreon/broker/bam/dimension_kpi_event.hh"
-#  include "com/centreon/broker/bam/dimension_ba_bv_relation_event.hh"
-#  include "com/centreon/broker/bam/dimension_bv_event.hh"
-#  include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
-#  include "com/centreon/broker/bam/rebuild.hh"
-#  include "com/centreon/broker/bam/dimension_timeperiod.hh"
-#  include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
-#  include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
-#  include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
+#include "com/centreon/broker/bam/ba_duration_event.hh"
+#include "com/centreon/broker/bam/ba_event.hh"
+#include "com/centreon/broker/bam/ba_status.hh"
+#include "com/centreon/broker/bam/dimension_ba_bv_relation_event.hh"
+#include "com/centreon/broker/bam/dimension_ba_event.hh"
+#include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
+#include "com/centreon/broker/bam/dimension_bv_event.hh"
+#include "com/centreon/broker/bam/dimension_kpi_event.hh"
+#include "com/centreon/broker/bam/dimension_timeperiod.hh"
+#include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
+#include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
+#include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
+#include "com/centreon/broker/bam/kpi_event.hh"
+#include "com/centreon/broker/bam/kpi_status.hh"
+#include "com/centreon/broker/bam/meta_service_status.hh"
+#include "com/centreon/broker/bam/rebuild.hh"
 
-#endif // !CCB_BAM_EVENTS_HH
+#endif  // !CCB_BAM_EVENTS_HH

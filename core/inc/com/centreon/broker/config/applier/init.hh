@@ -17,18 +17,18 @@
 */
 
 #ifndef CCB_CONFIG_APPLIER_INIT_HH_
-# define CCB_CONFIG_APPLIER_INIT_HH_
+#define CCB_CONFIG_APPLIER_INIT_HH_
 
-# include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace   config {
-  namespace applier {
-    void    deinit();
-    void    init();
-  }
-}
+namespace config {
+namespace applier {
+void deinit();
+void init();
+}  // namespace applier
+}  // namespace config
 
 CCB_END()
 

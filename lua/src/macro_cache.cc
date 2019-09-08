@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/lua/macro_cache.hh"
 #include <unordered_set>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/lua/macro_cache.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::logging;
@@ -31,9 +31,8 @@ using namespace com::centreon::broker::lua;
  *  @param[in] cache  Persistent cache used by the macro cache.
  */
 macro_cache::macro_cache(std::shared_ptr<persistent_cache> const& cache)
-  : _cache(cache), _services{}
-{
-  if (_cache.get() != NULL) {
+    : _cache(cache), _services{} {
+  if (_cache != nullptr) {
     std::shared_ptr<io::data> d;
     do {
       _cache->get(d);
@@ -46,13 +45,13 @@ macro_cache::macro_cache(std::shared_ptr<persistent_cache> const& cache)
  *  Destructor.
  */
 macro_cache::~macro_cache() {
-  if (_cache.get() != NULL) {
+  if (_cache != nullptr) {
     try {
       _save_to_disk();
     } catch (std::exception const& e) {
       logging::error(logging::medium)
-        << "lua: macro cache couldn't save data to disk: '"
-        << e.what() << "'";
+          << "lua: macro cache couldn't save data to disk: '" << e.what()
+          << "'";
     }
   }
 }
@@ -65,13 +64,12 @@ macro_cache::~macro_cache() {
  *  @return               The status mapping.
  */
 storage::index_mapping const& macro_cache::get_index_mapping(
-                                 unsigned int index_id) const {
-  std::unordered_map<uint64_t, storage::index_mapping>::const_iterator
-    found{_index_mappings.find(index_id)};
+    unsigned int index_id) const {
+  std::unordered_map<uint64_t, storage::index_mapping>::const_iterator found{
+      _index_mappings.find(index_id)};
   if (found == _index_mappings.end())
     throw exceptions::msg()
-           << "lua: could not find host/service of index "
-           << index_id;
+        << "lua: could not find host/service of index " << index_id;
   return found->second;
 }
 
@@ -83,12 +81,12 @@ storage::index_mapping const& macro_cache::get_index_mapping(
  *  @return               The metric mapping.
  */
 storage::metric_mapping const& macro_cache::get_metric_mapping(
-                                 unsigned int metric_id) const {
-  std::unordered_map<uint64_t, storage::metric_mapping>::const_iterator
-    found{_metric_mappings.find(metric_id)};
+    unsigned int metric_id) const {
+  std::unordered_map<uint64_t, storage::metric_mapping>::const_iterator found{
+      _metric_mappings.find(metric_id)};
   if (found == _metric_mappings.end())
     throw exceptions::msg()
-           << "lua: could not find index of metric " << metric_id;
+        << "lua: could not find index of metric " << metric_id;
   return found->second;
 }
 
@@ -127,12 +125,12 @@ macro_cache::get_host_group_members() const {
  *  @return             The name of the host group.
  */
 std::string const& macro_cache::get_host_group_name(uint64_t id) const {
-  std::unordered_map<uint64_t, neb::host_group>::const_iterator
-    found{_host_groups.find(id)};
+  std::unordered_map<uint64_t, neb::host_group>::const_iterator found{
+      _host_groups.find(id)};
 
   if (found == _host_groups.end())
     throw exceptions::msg()
-           << "lua: could not find information on host group " << id;
+        << "lua: could not find information on host group " << id;
   return found->second.name;
 }
 
@@ -145,14 +143,14 @@ std::string const& macro_cache::get_host_group_name(uint64_t id) const {
  *  @return             The description of the service.
  */
 std::string const& macro_cache::get_service_description(
-                 uint64_t host_id,
-                 uint64_t service_id) const {
-  std::unordered_map<std::pair<uint64_t, uint64_t>, neb::service>::const_iterator
-    found{_services.find({host_id, service_id})};
+    uint64_t host_id,
+    uint64_t service_id) const {
+  std::unordered_map<std::pair<uint64_t, uint64_t>,
+                     neb::service>::const_iterator found{
+      _services.find({host_id, service_id})};
   if (found == _services.end())
-    throw exceptions::msg()
-           << "lua: could not find information on service ("
-           << host_id << ", " << service_id << ")";
+    throw exceptions::msg() << "lua: could not find information on service ("
+                            << host_id << ", " << service_id << ")";
   return found->second.service_description;
 }
 
@@ -178,12 +176,12 @@ macro_cache::get_service_group_members() const {
  *  @return            The name of the service group.
  */
 std::string const& macro_cache::get_service_group_name(uint64_t id) const {
-  std::unordered_map<uint64_t, neb::service_group>::const_iterator
-    found{_service_groups.find(id)};
+  std::unordered_map<uint64_t, neb::service_group>::const_iterator found{
+      _service_groups.find(id)};
 
   if (found == _service_groups.end())
     throw exceptions::msg()
-           << "lua: could not find information on service group " << id;
+        << "lua: could not find information on service group " << id;
   return found->second.name;
 }
 
@@ -195,12 +193,11 @@ std::string const& macro_cache::get_service_group_name(uint64_t id) const {
  *  @return   The name of the instance.
  */
 std::string const& macro_cache::get_instance(uint64_t instance_id) const {
-  std::unordered_map<uint64_t, neb::instance>::const_iterator
-    found{_instances.find(instance_id)};
+  std::unordered_map<uint64_t, neb::instance>::const_iterator found{
+      _instances.find(instance_id)};
   if (found == _instances.end())
     throw exceptions::msg()
-           << "lua: could not find information on instance "
-           << instance_id;
+        << "lua: could not find information on instance " << instance_id;
   return found->second.name;
 }
 
@@ -211,7 +208,7 @@ std::string const& macro_cache::get_instance(uint64_t instance_id) const {
  * events.
  */
 std::unordered_multimap<uint64_t, bam::dimension_ba_bv_relation_event> const&
-       macro_cache::get_dimension_ba_bv_relation_events() const {
+macro_cache::get_dimension_ba_bv_relation_events() const {
   return _dimension_ba_bv_relation_events;
 }
 
@@ -223,13 +220,12 @@ std::unordered_multimap<uint64_t, bam::dimension_ba_bv_relation_event> const&
  * @return a reference to the dimension_ba_event.
  */
 bam::dimension_ba_event const& macro_cache::get_dimension_ba_event(
-       uint64_t ba_id) const {
-  std::unordered_map<uint64_t, bam::dimension_ba_event>::const_iterator
-    found{_dimension_ba_events.find(ba_id)};
+    uint64_t ba_id) const {
+  std::unordered_map<uint64_t, bam::dimension_ba_event>::const_iterator found{
+      _dimension_ba_events.find(ba_id)};
   if (found == _dimension_ba_events.end())
     throw exceptions::msg()
-           << "lua: could not find information on dimension ba event "
-           << ba_id;
+        << "lua: could not find information on dimension ba event " << ba_id;
   return found->second;
 }
 
@@ -241,13 +237,12 @@ bam::dimension_ba_event const& macro_cache::get_dimension_ba_event(
  * @return a reference to the dimension_bv_event.
  */
 bam::dimension_bv_event const& macro_cache::get_dimension_bv_event(
-       uint64_t bv_id) const {
-  std::unordered_map<uint64_t, bam::dimension_bv_event>::const_iterator
-    found{_dimension_bv_events.find(bv_id)};
+    uint64_t bv_id) const {
+  std::unordered_map<uint64_t, bam::dimension_bv_event>::const_iterator found{
+      _dimension_bv_events.find(bv_id)};
   if (found == _dimension_bv_events.end())
     throw exceptions::msg()
-           << "lua: could not find information on dimension bv event "
-           << bv_id;
+        << "lua: could not find information on dimension bv event " << bv_id;
   return found->second;
 }
 
@@ -258,7 +253,7 @@ bam::dimension_bv_event const& macro_cache::get_dimension_bv_event(
  */
 void macro_cache::write(std::shared_ptr<io::data> const& data) {
   if (!data)
-    return ;
+    return;
 
   if (data->type() == neb::instance::static_type())
     _process_instance(*std::static_pointer_cast<neb::instance const>(data));
@@ -267,28 +262,36 @@ void macro_cache::write(std::shared_ptr<io::data> const& data) {
   else if (data->type() == neb::host_group::static_type())
     _process_host_group(*std::static_pointer_cast<neb::host_group const>(data));
   else if (data->type() == neb::host_group_member::static_type())
-    _process_host_group_member(*std::static_pointer_cast<neb::host_group_member const>(data));
+    _process_host_group_member(
+        *std::static_pointer_cast<neb::host_group_member const>(data));
   else if (data->type() == neb::service::static_type())
     _process_service(*std::static_pointer_cast<neb::service const>(data));
   else if (data->type() == neb::service_group::static_type())
-    _process_service_group(*std::static_pointer_cast<neb::service_group const>(data));
+    _process_service_group(
+        *std::static_pointer_cast<neb::service_group const>(data));
   else if (data->type() == neb::service_group_member::static_type())
     _process_service_group_member(
-      *std::static_pointer_cast<neb::service_group_member const>(data));
+        *std::static_pointer_cast<neb::service_group_member const>(data));
   else if (data->type() == storage::index_mapping::static_type())
-    _process_index_mapping(*std::static_pointer_cast<storage::index_mapping const>(data));
+    _process_index_mapping(
+        *std::static_pointer_cast<storage::index_mapping const>(data));
   else if (data->type() == storage::metric_mapping::static_type())
-    _process_metric_mapping(*std::static_pointer_cast<storage::metric_mapping const>(data));
+    _process_metric_mapping(
+        *std::static_pointer_cast<storage::metric_mapping const>(data));
   else if (data->type() == bam::dimension_ba_event::static_type())
-    _process_dimension_ba_event(*std::static_pointer_cast<bam::dimension_ba_event const>(data));
+    _process_dimension_ba_event(
+        *std::static_pointer_cast<bam::dimension_ba_event const>(data));
   else if (data->type() == bam::dimension_ba_bv_relation_event::static_type())
     _process_dimension_ba_bv_relation_event(
-      *std::static_pointer_cast<bam::dimension_ba_bv_relation_event const>(data));
+        *std::static_pointer_cast<bam::dimension_ba_bv_relation_event const>(
+            data));
   else if (data->type() == bam::dimension_bv_event::static_type())
-    _process_dimension_bv_event(*std::static_pointer_cast<bam::dimension_bv_event const>(data));
+    _process_dimension_bv_event(
+        *std::static_pointer_cast<bam::dimension_bv_event const>(data));
   else if (data->type() == bam::dimension_truncate_table_signal::static_type())
     _process_dimension_truncate_table_signal(
-      *std::static_pointer_cast<bam::dimension_truncate_table_signal const>(data));
+        *std::static_pointer_cast<bam::dimension_truncate_table_signal const>(
+            data));
 }
 
 /**
@@ -300,15 +303,13 @@ void macro_cache::_process_instance(neb::instance const& in) {
   unsigned int poller_id(in.poller_id);
 
   std::unordered_set<uint64_t> hosts_removed;
-  for (std::unordered_map<uint64_t, neb::host>::iterator
-         it{_hosts.begin()},
-         end{_hosts.end()};
-       it != end; ) {
+  for (std::unordered_map<uint64_t, neb::host>::iterator it{_hosts.begin()},
+       end{_hosts.end()};
+       it != end;) {
     if (it->second.poller_id == poller_id) {
       hosts_removed.insert(it->second.host_id);
       it = _hosts.erase(it);
-    }
-    else
+    } else
       ++it;
   }
 
@@ -321,14 +322,13 @@ void macro_cache::_process_instance(neb::instance const& in) {
 
   std::unordered_set<std::pair<uint64_t, uint64_t>> services_removed;
   for (std::unordered_map<std::pair<uint64_t, uint64_t>, neb::service>::iterator
-         it(_services.begin()),
-         end(_services.end());
-       it != end; ) {
+           it(_services.begin()),
+       end(_services.end());
+       it != end;) {
     if (hosts_removed.count(it->second.host_id)) {
       services_removed.insert(it->first);
       it = _services.erase(it);
-    }
-    else
+    } else
       ++it;
   }
 
@@ -342,7 +342,7 @@ void macro_cache::_process_instance(neb::instance const& in) {
  */
 void macro_cache::_process_host(neb::host const& h) {
   logging::debug(logging::medium)
-    << "lua: processing host '" << h.host_name << "' of id " << h.host_id;
+      << "lua: processing host '" << h.host_name << "' of id " << h.host_id;
   _hosts[h.host_id] = h;
 }
 
@@ -353,7 +353,7 @@ void macro_cache::_process_host(neb::host const& h) {
  */
 void macro_cache::_process_host_group(neb::host_group const& hg) {
   logging::debug(logging::medium)
-    << "lua: processing host group '" << hg.name << "' of id " << hg.id;
+      << "lua: processing host group '" << hg.name << "' of id " << hg.id;
   if (hg.enabled)
     _host_groups[hg.id] = hg;
 }
@@ -364,11 +364,11 @@ void macro_cache::_process_host_group(neb::host_group const& hg) {
  *  @param hgm  The event.
  */
 void macro_cache::_process_host_group_member(
-       neb::host_group_member const& hgm) {
+    neb::host_group_member const& hgm) {
   logging::debug(logging::medium)
-    << "lua: processing host group member "
-    << " (group_name: '" << hgm.group_name << "', group_id: " << hgm.group_id
-    << ", host_id: " << hgm.host_id << ")";
+      << "lua: processing host group member "
+      << " (group_name: '" << hgm.group_name << "', group_id: " << hgm.group_id
+      << ", host_id: " << hgm.host_id << ")";
   if (hgm.enabled)
     _host_group_members[{hgm.host_id, hgm.group_id}] = hgm;
   else
@@ -382,8 +382,9 @@ void macro_cache::_process_host_group_member(
  */
 void macro_cache::_process_service(neb::service const& s) {
   logging::debug(logging::medium)
-    << "lua: processing service (" << s.host_id << ", " << s.service_id << ") "
-    << "(description: " << s.service_description << ")";
+      << "lua: processing service (" << s.host_id << ", " << s.service_id
+      << ") "
+      << "(description: " << s.service_description << ")";
   _services[{s.host_id, s.service_id}] = s;
 }
 
@@ -394,7 +395,7 @@ void macro_cache::_process_service(neb::service const& s) {
  */
 void macro_cache::_process_service_group(neb::service_group const& sg) {
   logging::debug(logging::medium)
-    << "lua: processing service group '" << sg.name << "' of id " << sg.id;
+      << "lua: processing service group '" << sg.name << "' of id " << sg.id;
   if (sg.enabled)
     _service_groups[sg.id] = sg;
 }
@@ -405,16 +406,18 @@ void macro_cache::_process_service_group(neb::service_group const& sg) {
  *  @param sgm  The event.
  */
 void macro_cache::_process_service_group_member(
-       neb::service_group_member const& sgm) {
+    neb::service_group_member const& sgm) {
   logging::debug(logging::medium)
-    << "lua: processing service group member "
-    << " (group_name: '" << sgm.group_name << "', group_id: " << sgm.group_id
-    << ", host_id: " << sgm.host_id
-    << ", service_id: " << sgm.service_id << ")";
+      << "lua: processing service group member "
+      << " (group_name: '" << sgm.group_name << "', group_id: " << sgm.group_id
+      << ", host_id: " << sgm.host_id << ", service_id: " << sgm.service_id
+      << ")";
   if (sgm.enabled)
-    _service_group_members[std::make_tuple(sgm.host_id, sgm.service_id, sgm.group_id)] = sgm;
+    _service_group_members[std::make_tuple(sgm.host_id, sgm.service_id,
+                                           sgm.group_id)] = sgm;
   else
-    _service_group_members.erase(std::make_tuple(sgm.host_id, sgm.service_id, sgm.group_id));
+    _service_group_members.erase(
+        std::make_tuple(sgm.host_id, sgm.service_id, sgm.group_id));
 }
 
 /**
@@ -424,9 +427,9 @@ void macro_cache::_process_service_group_member(
  */
 void macro_cache::_process_index_mapping(storage::index_mapping const& im) {
   logging::debug(logging::medium)
-    << "lua: processing index mapping (index_id: " << im.index_id
-    << ", host_id: " << im.host_id
-    << ", service_id: " << im.service_id << ")";
+      << "lua: processing index mapping (index_id: " << im.index_id
+      << ", host_id: " << im.host_id << ", service_id: " << im.service_id
+      << ")";
   _index_mappings[im.index_id] = im;
 }
 
@@ -437,8 +440,8 @@ void macro_cache::_process_index_mapping(storage::index_mapping const& im) {
  */
 void macro_cache::_process_metric_mapping(storage::metric_mapping const& mm) {
   logging::debug(logging::medium)
-    << "lua: processing metric mapping (metric_id: " << mm.metric_id
-    << ", index_id: " << mm.index_id << ")";
+      << "lua: processing metric mapping (metric_id: " << mm.metric_id
+      << ", index_id: " << mm.index_id << ")";
   _metric_mappings[mm.metric_id] = mm;
 }
 
@@ -448,9 +451,9 @@ void macro_cache::_process_metric_mapping(storage::metric_mapping const& mm) {
  *  @param dbae  The event.
  */
 void macro_cache::_process_dimension_ba_event(
-                    bam::dimension_ba_event const& dbae) {
+    bam::dimension_ba_event const& dbae) {
   logging::debug(logging::medium)
-    << "lua: processing dimension ba event of id " << dbae.ba_id;
+      << "lua: processing dimension ba event of id " << dbae.ba_id;
   _dimension_ba_events[dbae.ba_id] = dbae;
 }
 
@@ -460,10 +463,11 @@ void macro_cache::_process_dimension_ba_event(
  *  @param rel  The event.
  */
 void macro_cache::_process_dimension_ba_bv_relation_event(
-                    bam::dimension_ba_bv_relation_event const& rel) {
+    bam::dimension_ba_bv_relation_event const& rel) {
   logging::debug(logging::medium)
-    << "lua: processing dimension ba bv relation event "
-    << "(ba_id: " << rel.ba_id << ", " << "bv_id: " << rel.bv_id << ")";
+      << "lua: processing dimension ba bv relation event "
+      << "(ba_id: " << rel.ba_id << ", "
+      << "bv_id: " << rel.bv_id << ")";
   _dimension_ba_bv_relation_events.insert({rel.ba_id, rel});
 }
 
@@ -473,9 +477,9 @@ void macro_cache::_process_dimension_ba_bv_relation_event(
  *  @param rel  The event.
  */
 void macro_cache::_process_dimension_bv_event(
-                    bam::dimension_bv_event const& dbve) {
+    bam::dimension_bv_event const& dbve) {
   logging::debug(logging::medium)
-    << "lua: processing dimension bv event of id " << dbve.bv_id;
+      << "lua: processing dimension bv event of id " << dbve.bv_id;
   _dimension_bv_events[dbve.bv_id] = dbve;
 }
 
@@ -485,9 +489,9 @@ void macro_cache::_process_dimension_bv_event(
  * @param trunc  The event.
  */
 void macro_cache::_process_dimension_truncate_table_signal(
-                    bam::dimension_truncate_table_signal const& trunc) {
+    bam::dimension_truncate_table_signal const& trunc) {
   logging::debug(logging::medium)
-    << "lua: processing dimension truncate table signal";
+      << "lua: processing dimension truncate table signal";
 
   if (trunc.update_started) {
     _dimension_ba_events.clear();
@@ -503,88 +507,79 @@ void macro_cache::_save_to_disk() {
   _cache->transaction();
 
   for (std::unordered_map<uint64_t, neb::instance>::const_iterator
-         it(_instances.begin()),
-         end(_instances.end());
-       it != end;
-       ++it)
+           it(_instances.begin()),
+       end(_instances.end());
+       it != end; ++it)
     _cache->add(std::make_shared<neb::instance>(it->second));
 
   for (std::unordered_map<uint64_t, neb::host>::const_iterator
-         it(_hosts.begin()),
-         end(_hosts.end());
-       it != end;
-       ++it)
+           it(_hosts.begin()),
+       end(_hosts.end());
+       it != end; ++it)
     _cache->add(std::make_shared<neb::host>(it->second));
 
   for (std::unordered_map<uint64_t, neb::host_group>::const_iterator
-         it(_host_groups.begin()),
-         end(_host_groups.end());
-       it != end;
-       ++it)
+           it(_host_groups.begin()),
+       end(_host_groups.end());
+       it != end; ++it)
     _cache->add(std::make_shared<neb::host_group>(it->second));
 
-  for (std::map<std::pair<uint64_t, uint64_t>, neb::host_group_member>::const_iterator
-         it(_host_group_members.begin()),
-         end(_host_group_members.end());
-       it != end;
-       ++it)
+  for (std::map<std::pair<uint64_t, uint64_t>,
+                neb::host_group_member>::const_iterator
+           it(_host_group_members.begin()),
+       end(_host_group_members.end());
+       it != end; ++it)
     _cache->add(std::make_shared<neb::host_group_member>(it->second));
 
-  for (std::unordered_map<std::pair<uint64_t, uint64_t>, neb::service>::const_iterator
-         it(_services.begin()),
-         end(_services.end());
-       it != end;
-       ++it)
+  for (std::unordered_map<std::pair<uint64_t, uint64_t>,
+                          neb::service>::const_iterator it(_services.begin()),
+       end(_services.end());
+       it != end; ++it)
     _cache->add(std::make_shared<neb::service>(it->second));
 
   for (std::unordered_map<uint64_t, neb::service_group>::const_iterator
-         it(_service_groups.begin()),
-         end(_service_groups.end());
-       it != end;
-       ++it)
+           it(_service_groups.begin()),
+       end(_service_groups.end());
+       it != end; ++it)
     _cache->add(std::make_shared<neb::service_group>(it->second));
 
   for (std::map<std::tuple<uint64_t, uint64_t, uint64_t>,
-             neb::service_group_member>::const_iterator
-         it{_service_group_members.begin()},
-         end{_service_group_members.end()};
-       it != end;
-       ++it)
+                neb::service_group_member>::const_iterator
+           it{_service_group_members.begin()},
+       end{_service_group_members.end()};
+       it != end; ++it)
     _cache->add(std::make_shared<neb::service_group_member>(it->second));
 
   for (std::unordered_map<uint64_t, storage::index_mapping>::const_iterator
-         it(_index_mappings.begin()),
-         end(_index_mappings.end());
-       it != end;
-       ++it)
+           it(_index_mappings.begin()),
+       end(_index_mappings.end());
+       it != end; ++it)
     _cache->add(std::make_shared<storage::index_mapping>(it->second));
 
   for (std::unordered_map<uint64_t, storage::metric_mapping>::const_iterator
-         it(_metric_mappings.begin()),
-         end(_metric_mappings.end());
-       it != end;
-       ++it)
+           it(_metric_mappings.begin()),
+       end(_metric_mappings.end());
+       it != end; ++it)
     _cache->add(std::make_shared<storage::metric_mapping>(it->second));
 
   for (std::unordered_map<uint64_t, bam::dimension_ba_event>::const_iterator
-         it(_dimension_ba_events.begin()),
-         end(_dimension_ba_events.end());
-       it != end;
-       ++it)
+           it(_dimension_ba_events.begin()),
+       end(_dimension_ba_events.end());
+       it != end; ++it)
     _cache->add(std::make_shared<bam::dimension_ba_event>(it->second));
 
-  for (std::unordered_multimap<uint64_t, bam::dimension_ba_bv_relation_event>::const_iterator
-         it(_dimension_ba_bv_relation_events.begin()),
-         end(_dimension_ba_bv_relation_events.end());
-       it != end;
-       ++it)
-    _cache->add(std::make_shared<bam::dimension_ba_bv_relation_event>(it->second));
+  for (std::unordered_multimap<
+           uint64_t, bam::dimension_ba_bv_relation_event>::const_iterator
+           it(_dimension_ba_bv_relation_events.begin()),
+       end(_dimension_ba_bv_relation_events.end());
+       it != end; ++it)
+    _cache->add(
+        std::make_shared<bam::dimension_ba_bv_relation_event>(it->second));
 
   for (std::unordered_map<uint64_t, bam::dimension_bv_event>::const_iterator
-         it(_dimension_bv_events.begin()),
-         end(_dimension_bv_events.end());
-       it != end;
-       ++it)
+           it(_dimension_bv_events.begin()),
+       end(_dimension_bv_events.end());
+       it != end; ++it)
     _cache->add(std::make_shared<bam::dimension_bv_event>(it->second));
 
   _cache->commit();

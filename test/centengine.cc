@@ -16,14 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
+#include "test/centengine.hh"
+#include <sys/stat.h>
 #include <csignal>
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
-#include <sys/stat.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/misc/misc.hh"
-#include "test/centengine.hh"
 #include "test/centengine_config.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
@@ -32,10 +32,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::test;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -78,7 +78,7 @@ void centengine::reload() {
   pid_t pid(_engine.pid());
   if ((pid != (pid_t)0) && (pid != (pid_t)-1))
     kill(pid, SIGHUP);
-  return ;
+  return;
 }
 
 /**
@@ -94,7 +94,7 @@ void centengine::start() {
     _engine.start(MONITORING_ENGINE, args);
     _engine.waitForStarted();
   }
-  return ;
+  return;
 }
 
 /**
@@ -109,7 +109,7 @@ void centengine::stop() {
       _engine.waitForFinished(-1);
     }
   }
-  return ;
+  return;
 }
 
 /**
@@ -121,20 +121,17 @@ void centengine::_write_cfg() {
   {
     std::ostringstream oss;
     oss << _config_path << "/centengine.cfg";
-    ofs.open(
-          oss.str().c_str(),
-          std::ios_base::out | std::ios_base::trunc);
+    ofs.open(oss.str().c_str(), std::ios_base::out | std::ios_base::trunc);
     if (ofs.fail())
-      throw (exceptions::msg() << "cannot open configuration file '"
-             << _config_path << "'");
+      throw(exceptions::msg()
+            << "cannot open configuration file '" << _config_path << "'");
   }
 
   // Write configured directives.
   for (std::map<std::string, std::string>::const_iterator
-         it(_config->get_directives().begin()),
-         end(_config->get_directives().end());
-       it != end;
-       ++it)
+           it(_config->get_directives().begin()),
+       end(_config->get_directives().end());
+       it != end; ++it)
     ofs << it->first << "=" << it->second << "\n";
 
   // Subconfiguration files.
@@ -196,8 +193,8 @@ void centengine::_write_cfg() {
       << "cfg_file=" << misc_file << "\n";
 
   // cbmod.
-  ofs << "broker_module=" << CBMOD_PATH << " "
-      << _config->get_cbmod_cfg_file() << "\n";
+  ofs << "broker_module=" << CBMOD_PATH << " " << _config->get_cbmod_cfg_file()
+      << "\n";
 
   // External command.
   ofs << _extcmd.get_engine_config();
@@ -209,90 +206,72 @@ void centengine::_write_cfg() {
   ofs.close();
 
   // Hosts.
-  ofs.open(
-        hosts_file.c_str(),
-        std::ios_base::out | std::ios_base::trunc);
+  ofs.open(hosts_file.c_str(), std::ios_base::out | std::ios_base::trunc);
   if (ofs.fail())
-    throw (exceptions::msg()
-           << "cannot open hosts configuration file in '"
-           << _config_path << "'");
+    throw(exceptions::msg() << "cannot open hosts configuration file in '"
+                            << _config_path << "'");
   _write_objs(ofs, _config->get_hosts());
   ofs.close();
 
   // Services.
-  ofs.open(
-        services_file.c_str(),
-        std::ios_base::out | std::ios_base::trunc);
+  ofs.open(services_file.c_str(), std::ios_base::out | std::ios_base::trunc);
   if (ofs.fail())
-    throw (exceptions::msg()
-           << "cannot open services configuration file in '"
-           << _config_path << "'");
+    throw(exceptions::msg() << "cannot open services configuration file in '"
+                            << _config_path << "'");
   _write_objs(ofs, _config->get_services());
   ofs.close();
 
   // Commands.
-  ofs.open(
-        commands_file.c_str(),
-        std::ios_base::out | std::ios_base::trunc);
+  ofs.open(commands_file.c_str(), std::ios_base::out | std::ios_base::trunc);
   if (ofs.fail())
-    throw (exceptions::msg()
-           << "cannot open commands configuration file in '"
-           << _config_path << "'");
+    throw(exceptions::msg() << "cannot open commands configuration file in '"
+                            << _config_path << "'");
   _write_objs(ofs, _config->get_commands());
   ofs.close();
 
   // Host dependencies.
-  ofs.open(
-        host_dependencies_file.c_str(),
-        std::ios_base::out | std::ios_base::trunc);
+  ofs.open(host_dependencies_file.c_str(),
+           std::ios_base::out | std::ios_base::trunc);
   if (ofs.fail())
-    throw (exceptions::msg()
-           << "cannot open host dependencies configuration file in '"
-           << _config_path << "'");
+    throw(exceptions::msg()
+          << "cannot open host dependencies configuration file in '"
+          << _config_path << "'");
   _write_objs(ofs, _config->get_host_dependencies());
   ofs.close();
 
   // Service dependencies.
-  ofs.open(
-        service_dependencies_file.c_str(),
-        std::ios_base::out | std::ios_base::trunc);
+  ofs.open(service_dependencies_file.c_str(),
+           std::ios_base::out | std::ios_base::trunc);
   if (ofs.fail())
-    throw (exceptions::msg()
-           << "cannot open service dependencies configuration file in '"
-           << _config_path << "'");
+    throw(exceptions::msg()
+          << "cannot open service dependencies configuration file in '"
+          << _config_path << "'");
   _write_objs(ofs, _config->get_service_dependencies());
   ofs.close();
 
   // Host groups.
-  ofs.open(
-        host_groups_file.c_str(),
-        std::ios_base::out | std::ios_base::trunc);
+  ofs.open(host_groups_file.c_str(), std::ios_base::out | std::ios_base::trunc);
   if (ofs.fail())
-    throw (exceptions::msg()
-           << "cannot open host groups configuration file in '"
-           << _config_path << "'");
+    throw(exceptions::msg() << "cannot open host groups configuration file in '"
+                            << _config_path << "'");
   _write_objs(ofs, _config->get_host_groups());
   ofs.close();
 
   // Service groups.
-  ofs.open(
-        service_groups_file.c_str(),
-        std::ios_base::out | std::ios_base::trunc);
+  ofs.open(service_groups_file.c_str(),
+           std::ios_base::out | std::ios_base::trunc);
   if (ofs.fail())
-    throw (exceptions::msg()
-           << "cannot open service groups configuration file in '"
-           << _config_path << "'");
+    throw(exceptions::msg()
+          << "cannot open service groups configuration file in '"
+          << _config_path << "'");
   _write_objs(ofs, _config->get_service_groups());
   ofs.close();
 
   // Misc.
-  ofs.open(
-        misc_file.c_str(),
-        std::ios_base::out | std::ios_base::trunc);
+  ofs.open(misc_file.c_str(), std::ios_base::out | std::ios_base::trunc);
   if (ofs.fail())
-    throw (exceptions::msg()
-           << "cannot open misc configuration file in '"
-           << _config_path << "'");
+    throw(exceptions::msg()
+          << "cannot open misc configuration file in '" << _config_path << "'");
   _write_objs(ofs, _config->get_contacts());
   _write_objs(ofs, _config->get_timeperiods());
   ofs.close();
@@ -304,55 +283,51 @@ void centengine::_write_cfg() {
  *  @param[out] ofs   Output stream.
  *  @param[in]  objs  Objects.
  */
-void centengine::_write_objs(
-                   std::ofstream& ofs,
-                   centengine_config::objlist const& objs) {
-  for (centengine_config::objlist::const_iterator
-         it_obj(objs.begin()),
-         end_obj(objs.end());
-       it_obj != end_obj;
-       ++it_obj) {
+void centengine::_write_objs(std::ofstream& ofs,
+                             centengine_config::objlist const& objs) {
+  for (centengine_config::objlist::const_iterator it_obj(objs.begin()),
+       end_obj(objs.end());
+       it_obj != end_obj; ++it_obj) {
     ofs << "define ";
     switch (it_obj->get_type()) {
-    case centengine_object::command_type:
-      ofs << "command";
-      break ;
-    case centengine_object::contact_type:
-      ofs << "contact";
-      break ;
-    case centengine_object::host_type:
-      ofs << "host";
-      break ;
-    case centengine_object::hostdependency_type:
-      ofs << "hostdependency";
-      break ;
-    case centengine_object::hostgroup_type:
-      ofs << "hostgroup";
-      break ;
-    case centengine_object::service_type:
-      ofs << "service";
-      break ;
-    case centengine_object::servicedependency_type:
-      ofs << "servicedependency";
-      break ;
-    case centengine_object::servicegroup_type:
-      ofs << "servicegroup";
-      break ;
-    case centengine_object::timeperiod_type:
-      ofs << "timeperiod";
-      break ;
-    default:
-      throw (exceptions::msg() << "invalid object type "
-             << it_obj->get_type());
+      case centengine_object::command_type:
+        ofs << "command";
+        break;
+      case centengine_object::contact_type:
+        ofs << "contact";
+        break;
+      case centengine_object::host_type:
+        ofs << "host";
+        break;
+      case centengine_object::hostdependency_type:
+        ofs << "hostdependency";
+        break;
+      case centengine_object::hostgroup_type:
+        ofs << "hostgroup";
+        break;
+      case centengine_object::service_type:
+        ofs << "service";
+        break;
+      case centengine_object::servicedependency_type:
+        ofs << "servicedependency";
+        break;
+      case centengine_object::servicegroup_type:
+        ofs << "servicegroup";
+        break;
+      case centengine_object::timeperiod_type:
+        ofs << "timeperiod";
+        break;
+      default:
+        throw(exceptions::msg()
+              << "invalid object type " << it_obj->get_type());
     };
     ofs << " {\n";
     for (std::map<std::string, std::string>::const_iterator
-           it_prop(it_obj->get_variables().begin()),
-           end_prop(it_obj->get_variables().end());
-         it_prop != end_prop;
-         ++it_prop)
+             it_prop(it_obj->get_variables().begin()),
+         end_prop(it_obj->get_variables().end());
+         it_prop != end_prop; ++it_prop)
       ofs << it_prop->first << "  " << it_prop->second << "\n";
     ofs << "}\n";
   }
-  return ;
+  return;
 }

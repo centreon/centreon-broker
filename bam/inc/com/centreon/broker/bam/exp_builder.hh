@@ -17,63 +17,58 @@
 */
 
 #ifndef CCB_BAM_EXP_BUILDER_HH
-#  define CCB_BAM_EXP_BUILDER_HH
+#define CCB_BAM_EXP_BUILDER_HH
 
-#  include <list>
-#  include <stack>
-#  include "com/centreon/broker/bam/bool_call.hh"
-#  include "com/centreon/broker/bam/bool_metric.hh"
-#  include "com/centreon/broker/bam/bool_service.hh"
-#  include "com/centreon/broker/bam/exp_parser.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <list>
+#include <stack>
+#include "com/centreon/broker/bam/bool_call.hh"
+#include "com/centreon/broker/bam/bool_metric.hh"
+#include "com/centreon/broker/bam/bool_service.hh"
+#include "com/centreon/broker/bam/exp_parser.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                   bam {
-  /**
-   *  @class exp_builder exp_builder.hh "com/centreon/broker/bam/exp_builder.hh"
-   *  @brief Convert expression to syntax tree.
-   *
-   *  Build a syntax tree from the postfix notation of an expression and
-   *  return hooking elements.
-   */
-  class                     exp_builder {
-  public:
-    typedef std::list<bool_call::ptr> list_call;
-    typedef std::list<bool_metric::ptr> list_metric;
-    typedef std::list<bool_service::ptr> list_service;
-    typedef std::pair<bool_value::ptr, std::string> any_operand;
+namespace bam {
+/**
+ *  @class exp_builder exp_builder.hh "com/centreon/broker/bam/exp_builder.hh"
+ *  @brief Convert expression to syntax tree.
+ *
+ *  Build a syntax tree from the postfix notation of an expression and
+ *  return hooking elements.
+ */
+class exp_builder {
+ public:
+  typedef std::list<bool_call::ptr> list_call;
+  typedef std::list<bool_metric::ptr> list_metric;
+  typedef std::list<bool_service::ptr> list_service;
+  typedef std::pair<bool_value::ptr, std::string> any_operand;
 
-                            exp_builder(
-                              exp_parser::notation const& postfix,
-                              hst_svc_mapping const& mapping);
-                            ~exp_builder();
-    list_call const&        get_calls() const;
-    list_metric const&      get_metrics() const;
-    list_service const&     get_services() const;
-    bool_value::ptr         get_tree() const;
+  exp_builder(exp_parser::notation const& postfix,
+              hst_svc_mapping const& mapping);
+  ~exp_builder();
+  list_call const& get_calls() const;
+  list_metric const& get_metrics() const;
+  list_service const& get_services() const;
+  bool_value::ptr get_tree() const;
 
-  private:
-                            exp_builder(exp_builder const& other);
-    exp_builder&            operator=(exp_builder const& other);
-    void                    _check_arity(
-                              std::string const& func,
-                              int expected,
-                              int given);
-    bool                    _is_static_function(
-                              std::string const& str) const;
-    bool_value::ptr         _pop_operand();
-    std::string             _pop_string();
+ private:
+  exp_builder(exp_builder const& other);
+  exp_builder& operator=(exp_builder const& other);
+  void _check_arity(std::string const& func, int expected, int given);
+  bool _is_static_function(std::string const& str) const;
+  bool_value::ptr _pop_operand();
+  std::string _pop_string();
 
-    hst_svc_mapping const&  _mapping;
-    list_call               _calls;
-    list_metric             _metrics;
-    list_service            _services;
-    std::stack<any_operand> _operands;
-    bool_value::ptr         _tree;
-  };
-}
+  hst_svc_mapping const& _mapping;
+  list_call _calls;
+  list_metric _metrics;
+  list_service _services;
+  std::stack<any_operand> _operands;
+  bool_value::ptr _tree;
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_EXP_BUILDER_HH
+#endif  // !CCB_BAM_EXP_BUILDER_HH

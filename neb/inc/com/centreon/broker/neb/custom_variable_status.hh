@@ -17,53 +17,49 @@
 */
 
 #ifndef CCB_NEB_CUSTOM_VARIABLE_STATUS_HH
-#  define CCB_NEB_CUSTOM_VARIABLE_STATUS_HH
+#define CCB_NEB_CUSTOM_VARIABLE_STATUS_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace                   neb {
-  /**
-   *  @class custom_variable_status custom_variable_status.hh "com/centreon/broker/neb/custom_variable_status.hh"
-   *  @brief Custom variable update.
-   *
-   *  The value of a custom variable has changed.
-   */
-  class                     custom_variable_status : public io::data {
-  public:
-                            custom_variable_status();
-                            custom_variable_status(
-                              custom_variable_status const& other);
-    virtual                 ~custom_variable_status();
-    custom_variable_status& operator=(
-                              custom_variable_status const& other);
-    virtual unsigned int    type() const;
-    static unsigned int     static_type();
+namespace neb {
+/**
+ *  @class custom_variable_status custom_variable_status.hh
+ * "com/centreon/broker/neb/custom_variable_status.hh"
+ *  @brief Custom variable update.
+ *
+ *  The value of a custom variable has changed.
+ */
+class custom_variable_status : public io::data {
+ public:
+  custom_variable_status();
+  custom_variable_status(custom_variable_status const& other);
+  virtual ~custom_variable_status();
+  custom_variable_status& operator=(custom_variable_status const& other);
+  virtual unsigned int type() const;
+  static unsigned int static_type();
 
-    unsigned int            host_id;
-    bool                    modified;
-    std::string                 name;
-    unsigned int            service_id;
-    timestamp               update_time;
-    std::string                 value;
+  unsigned int host_id;
+  bool modified;
+  std::string name;
+  unsigned int service_id;
+  timestamp update_time;
+  std::string value;
 
-    static mapping::entry const
-                            entries[];
-    static io::event_info::event_operations const
-                            operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void                    _internal_copy(
-                              custom_variable_status const& other);
-  };
-}
+ private:
+  void _internal_copy(custom_variable_status const& other);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_CUSTOM_VARIABLE_STATUS_HH
+#endif  // !CCB_NEB_CUSTOM_VARIABLE_STATUS_HH

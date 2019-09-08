@@ -17,49 +17,49 @@
 */
 
 #ifndef CC_CONCURRENCY_THREAD_WIN32_HH
-#  define CC_CONCURRENCY_THREAD_WIN32_HH
+#define CC_CONCURRENCY_THREAD_WIN32_HH
 
-#  include <windows.h>
-#  include "com/centreon/namespace.hh"
+#include <windows.h>
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace            concurrency {
-  typedef HANDLE thread_id;
+namespace concurrency {
+typedef HANDLE thread_id;
 
-  /**
-   *  @class thread thread_win32.hh "com/centreon/concurrency/thread.hh"
-   *  @brief Win32 thread wrapper.
-   *
-   *  Wrap Win32 threads in a nice and easy to use class.
-   */
-  class              thread {
-  public:
-                     thread();
-    virtual          ~thread() throw ();
-    void             exec();
-    static thread_id get_current_id() throw ();
-    static void      msleep(unsigned long msecs);
-    static void      nsleep(unsigned long nsecs);
-    static void      sleep(unsigned long secs);
-    static void      usleep(unsigned long usecs);
-    void             wait();
-    bool             wait(unsigned long timeout);
-    static void      yield() throw ();
+/**
+ *  @class thread thread_win32.hh "com/centreon/concurrency/thread.hh"
+ *  @brief Win32 thread wrapper.
+ *
+ *  Wrap Win32 threads in a nice and easy to use class.
+ */
+class thread {
+ public:
+  thread();
+  virtual ~thread() throw();
+  void exec();
+  static thread_id get_current_id() throw();
+  static void msleep(unsigned long msecs);
+  static void nsleep(unsigned long nsecs);
+  static void sleep(unsigned long secs);
+  static void usleep(unsigned long usecs);
+  void wait();
+  bool wait(unsigned long timeout);
+  static void yield() throw();
 
-  protected:
-    virtual void     _run() = 0;
+ protected:
+  virtual void _run() = 0;
 
-  private:
-                     thread(thread const& t);
-    thread&          operator=(thread const& t);
-    void             _close() throw ();
-    static DWORD     _helper(void* data);
+ private:
+  thread(thread const& t);
+  thread& operator=(thread const& t);
+  void _close() throw();
+  static DWORD _helper(void* data);
 
-    HANDLE           _th;
-  };
-}
+  HANDLE _th;
+};
+}  // namespace concurrency
 
 CC_END()
 
-#endif // !CC_CONCURRENCY_THREAD_WIN32_HH
+#endif  // !CC_CONCURRENCY_THREAD_WIN32_HH
