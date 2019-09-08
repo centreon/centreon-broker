@@ -17,43 +17,42 @@
 */
 
 #ifndef CCB_NEB_NODE_EVENTS_CONNECTOR_HH
-#  define CCB_NEB_NODE_EVENTS_CONNECTOR_HH
+#define CCB_NEB_NODE_EVENTS_CONNECTOR_HH
 
-#  include <memory>
-#  include <string>
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/database_config.hh"
+#include <memory>
+#include <string>
+#include "com/centreon/broker/database_config.hh"
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                        neb {
-  /**
-   *  @class node_events_connector node_events_connector.hh "com/centreon/broker/neb/node_events_connector.hh"
-   *  @brief Open a correlation stream.
-   *
-   *  Generate a correlation stream that will generation correlation
-   *  events (issue, issue parenting, host/service state events, ...).
-   */
-  class                          node_events_connector : public io::endpoint {
-  public:
-                                 node_events_connector(
-                                   std::string const& name,
-                                   std::shared_ptr<persistent_cache> cache,
-                                   std::string const& config_file);
-                                 node_events_connector(node_events_connector const& other);
-                                 ~node_events_connector();
-    node_events_connector&       operator=(node_events_connector const& other);
-    std::shared_ptr<io::stream>  open();
+namespace neb {
+/**
+ *  @class node_events_connector node_events_connector.hh
+ * "com/centreon/broker/neb/node_events_connector.hh"
+ *  @brief Open a correlation stream.
+ *
+ *  Generate a correlation stream that will generation correlation
+ *  events (issue, issue parenting, host/service state events, ...).
+ */
+class node_events_connector : public io::endpoint {
+ public:
+  node_events_connector(std::string const& name,
+                        std::shared_ptr<persistent_cache> cache,
+                        std::string const& config_file);
+  node_events_connector(node_events_connector const& other);
+  ~node_events_connector();
+  node_events_connector& operator=(node_events_connector const& other);
+  std::shared_ptr<io::stream> open();
 
-  private:
-    std::shared_ptr<persistent_cache>
-                                 _cache;
-    std::string                  _config_file;
-    std::string                  _name;
-  };
-}
+ private:
+  std::shared_ptr<persistent_cache> _cache;
+  std::string _config_file;
+  std::string _name;
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_NODE_EVENTS_CONNECTOR_HH
+#endif  // !CCB_NEB_NODE_EVENTS_CONNECTOR_HH

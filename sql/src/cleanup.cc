@@ -168,8 +168,8 @@ void cleanup::_run() {
     }
 
     // Sleep a while.
-    time_t target(time(NULL) + _interval);
-    while (!should_exit() && target > time(NULL))
+    time_t target(time(nullptr) + _interval);
+    while (!should_exit() && target > time(nullptr))
       sleep(1);
   }
 }

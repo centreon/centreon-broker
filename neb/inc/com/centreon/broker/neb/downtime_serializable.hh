@@ -17,51 +17,46 @@
 */
 
 #ifndef CCB_NEB_DOWNTIME_SERIALIZABLE_HH
-#  define CCB_NEB_DOWNTIME_SERIALIZABLE_HH
+#define CCB_NEB_DOWNTIME_SERIALIZABLE_HH
 
-#  include <string>
-#  include <istream>
-#  include <memory>
-#  include <ostream>
-#  include <string>
-#  include "com/centreon/broker/neb/downtime.hh"
-#  include "com/centreon/broker/ceof/ceof_serializable.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <istream>
+#include <memory>
+#include <ostream>
+#include <string>
+#include "com/centreon/broker/ceof/ceof_serializable.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/downtime.hh"
 
 CCB_BEGIN()
 
-namespace   neb {
-  /**
-   *  @class downtime_serializable downtime_serializable.hh "com/centreon/broker/neb/downtime_serializable.hh"
-   *  @brief Represent a serializable Centreon Engine Object File downtime.
-   */
-  class          downtime_serializable
-                   : public ceof::ceof_serializable {
-  public:
-                 downtime_serializable();
-                 downtime_serializable(
-                 downtime_serializable const& other);
-    downtime_serializable&
-                 operator=(downtime_serializable const& other);
-    virtual      ~downtime_serializable();
+namespace neb {
+/**
+ *  @class downtime_serializable downtime_serializable.hh
+ * "com/centreon/broker/neb/downtime_serializable.hh"
+ *  @brief Represent a serializable Centreon Engine Object File downtime.
+ */
+class downtime_serializable : public ceof::ceof_serializable {
+ public:
+  downtime_serializable();
+  downtime_serializable(downtime_serializable const& other);
+  downtime_serializable& operator=(downtime_serializable const& other);
+  virtual ~downtime_serializable();
 
-    template <typename U, U (downtime::* member)>
-    std::string  get_downtime_member() const;
+  template <typename U, U(downtime::*member)>
+  std::string get_downtime_member() const;
 
-    template <typename U, U (downtime::* member)>
-    void         set_downtime_member(std::string const& val);
+  template <typename U, U(downtime::*member)>
+  void set_downtime_member(std::string const& val);
 
-    std::shared_ptr<downtime>
-                 get_downtime() const;
+  std::shared_ptr<downtime> get_downtime() const;
 
-    virtual void visit(ceof::ceof_visitor& visitor);
+  virtual void visit(ceof::ceof_visitor& visitor);
 
-  private:
-    std::shared_ptr<downtime>
-                _downtime;
-  };
-}
+ private:
+  std::shared_ptr<downtime> _downtime;
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_TIMEPERIOD_SERIALIZABLE_HH
+#endif  // !CCB_NEB_TIMEPERIOD_SERIALIZABLE_HH

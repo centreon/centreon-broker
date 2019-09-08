@@ -17,38 +17,37 @@
 */
 
 #ifndef CCB_SIMU_CONNECTOR_HH
-#  define CCB_SIMU_CONNECTOR_HH
+#define CCB_SIMU_CONNECTOR_HH
 
-#  include <map>
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/misc/variant.hh"
+#include <map>
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/misc/variant.hh"
 
 CCB_BEGIN()
 
-namespace                        simu {
-  /**
-   *  @class connector connector.hh "com/centreon/broker/simu/connector.hh"
-   *  @brief Connect to a lua interpreter.
-   *
-   *  Send events to a lua interpreter.
-   */
-  class                          connector : public io::endpoint {
-  public:
-                                 connector();
-                                 connector(connector const& other);
-                                 ~connector();
-    connector&                   operator=(connector const& other);
-    void                         connect_to(
-                                   std::string const& lua_script,
-                                   std::map<std::string, misc::variant> const& cfg_params);
-    std::shared_ptr<io::stream> open();
+namespace simu {
+/**
+ *  @class connector connector.hh "com/centreon/broker/simu/connector.hh"
+ *  @brief Connect to a lua interpreter.
+ *
+ *  Send events to a lua interpreter.
+ */
+class connector : public io::endpoint {
+ public:
+  connector();
+  connector(connector const& other);
+  ~connector();
+  connector& operator=(connector const& other);
+  void connect_to(std::string const& lua_script,
+                  std::map<std::string, misc::variant> const& cfg_params);
+  std::shared_ptr<io::stream> open();
 
-  private:
-    std::string                  _lua_script;
-    std::map<std::string, misc::variant>      _conf_params;
-  };
-}
+ private:
+  std::string _lua_script;
+  std::map<std::string, misc::variant> _conf_params;
+};
+}  // namespace simu
 
 CCB_END()
 
-#endif // !CCB_SIMU_CONNECTOR_HH
+#endif  // !CCB_SIMU_CONNECTOR_HH

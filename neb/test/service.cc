@@ -17,22 +17,18 @@
  *
  */
 
+#include "com/centreon/broker/neb/service.hh"
 #include <gtest/gtest.h>
 #include <cmath>
 #include <cstdlib>
-#include "com/centreon/broker/neb/service.hh"
 #include "randomize.hh"
 
 using namespace com::centreon::broker;
 
 class Service : public ::testing::Test {
-  void SetUp() {
-    randomize_init();
-  };
+  void SetUp() override { randomize_init(); };
 
-  void TearDown() {
-    randomize_cleanup();
-  };
+  void TearDown() override { randomize_cleanup(); };
 };
 
 /**
@@ -60,7 +56,6 @@ TEST_F(Service, Assign) {
   ASSERT_FALSE(s2 != randvals1);
 }
 
-
 /**
  *  Check service's copy constructor.
  */
@@ -81,7 +76,6 @@ TEST_F(Service, CopyCtor) {
   ASSERT_FALSE(s1 != randvals2);
   ASSERT_FALSE(s2 != randvals1);
 }
-
 
 /**
  *  Check service's default constructor.

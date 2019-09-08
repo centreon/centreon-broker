@@ -16,17 +16,17 @@
  * For more information : contact@centreon.com
  *
  */
+#include "hooker.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
-#include "hooker.hh"
 
 using namespace com::centreon::broker;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -38,7 +38,7 @@ hooker::hooker() {}
  *
  *  @param[in] other  Object to copy.
  */
-//hooker::hooker(hooker const& other)
+// hooker::hooker(hooker const& other)
 //  : multiplexing::hooker(other), _queue(other._queue) {}
 
 /**
@@ -96,9 +96,7 @@ int hooker::write(std::shared_ptr<io::data> const& d) {
     std::shared_ptr<io::raw> raw(new io::raw);
     raw->append(HOOKMSG2);
     _queue.push(std::static_pointer_cast<io::data>(raw));
-  }
-  else
-    throw exceptions::msg()
-           << "hooker test object is shutdown";
+  } else
+    throw exceptions::msg() << "hooker test object is shutdown";
   return 1;
 }

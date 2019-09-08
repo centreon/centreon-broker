@@ -17,38 +17,38 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_NOTIFICATION_RULE_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_NOTIFICATION_RULE_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_NOTIFICATION_RULE_BUILDER_HH
 
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/node_id.hh"
-#  include "com/centreon/broker/notification/objects/notification_rule.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/objects/node_id.hh"
+#include "com/centreon/broker/notification/objects/notification_rule.hh"
 
 CCB_BEGIN()
 
-namespace           notification {
+namespace notification {
+/**
+ *  @class notification_rule_builder notification_rule_builder.hh
+ * "com/centreon/broker/notification/builders/notification_rule_builder.hh"
+ */
+class notification_rule_builder {
+ public:
+  virtual ~notification_rule_builder() {}
+
   /**
-   *  @class notification_rule_builder notification_rule_builder.hh "com/centreon/broker/notification/builders/notification_rule_builder.hh"
+   *  Add a notification rule to the builder.
+   *
+   *  @param[in] rule_id  The id of the notification rule.
+   *  @param[in] rule     The rule.
    */
-  class             notification_rule_builder {
-  public:
-    virtual         ~notification_rule_builder() {}
+  virtual void add_rule(unsigned int rule_id,
+                        objects::notification_rule::ptr rule) {
+    (void)rule_id;
+    (void)rule;
+  }
+};
 
-    /**
-     *  Add a notification rule to the builder.
-     *
-     *  @param[in] rule_id  The id of the notification rule.
-     *  @param[in] rule     The rule.
-     */
-    virtual void    add_rule(
-                      unsigned int rule_id,
-                      objects::notification_rule::ptr rule) {
-      (void)rule_id;
-      (void)rule;
-    }
-  };
-
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_NOTIFICATION_RULE_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_NOTIFICATION_RULE_BUILDER_HH

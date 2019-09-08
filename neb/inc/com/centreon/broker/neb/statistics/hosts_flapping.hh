@@ -17,31 +17,32 @@
 */
 
 #ifndef CCB_NEB_STATISTICS_HOSTS_FLAPPING_HH
-#  define CCB_NEB_STATISTICS_HOSTS_FLAPPING_HH
+#define CCB_NEB_STATISTICS_HOSTS_FLAPPING_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/statistics/plugin.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/statistics/plugin.hh"
 
 CCB_BEGIN()
 
-namespace             neb {
-  namespace           statistics {
-    /**
-     *  @class hosts_flapping hosts_flapping.hh "com/centreon/broker/neb/statistics/hosts_flapping.hh"
-     *  @brief hosts_flapping statistics plugin.
-     */
-    class             hosts_flapping : public plugin {
-    public:
-                      hosts_flapping();
-                      hosts_flapping(hosts_flapping const& right);
-                      ~hosts_flapping();
-      hosts_flapping& operator=(hosts_flapping const& right);
-      void            run(std::string& output, std::string& perfdata);
-    };
-  }
-}
+namespace neb {
+namespace statistics {
+/**
+ *  @class hosts_flapping hosts_flapping.hh
+ * "com/centreon/broker/neb/statistics/hosts_flapping.hh"
+ *  @brief hosts_flapping statistics plugin.
+ */
+class hosts_flapping : public plugin {
+ public:
+  hosts_flapping();
+  hosts_flapping(hosts_flapping const& right);
+  ~hosts_flapping();
+  hosts_flapping& operator=(hosts_flapping const& right);
+  void run(std::string& output, std::string& perfdata);
+};
+}  // namespace statistics
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_HOSTS_FLAPPING_HH
+#endif  // !CCB_NEB_STATISTICS_HOSTS_FLAPPING_HH

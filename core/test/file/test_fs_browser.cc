@@ -24,15 +24,14 @@ test_fs_browser::test_fs_browser() {}
 
 test_fs_browser::~test_fs_browser() {}
 
-void test_fs_browser::add_result(
-                        file::fs_browser::entry_list const& result) {
+void test_fs_browser::add_result(file::fs_browser::entry_list const& result) {
   _results.push_back(result);
-  return ;
+  return;
 }
 
 file::fs_browser::entry_list test_fs_browser::read_directory(
-                                                std::string const& path,
-                                                std::string const& filters) {
+    std::string const& path,
+    std::string const& filters) {
   (void)path;
   (void)filters;
   file::fs_browser::entry_list retval;
@@ -49,5 +48,5 @@ std::list<std::string> const& test_fs_browser::get_removed() const {
 
 void test_fs_browser::remove(std::string const& path) {
   _removed.push_back(path);
-  return ;
+  return;
 }

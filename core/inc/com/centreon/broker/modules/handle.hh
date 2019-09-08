@@ -17,49 +17,47 @@
 */
 
 #ifndef CCB_MODULES_HANDLE_HH
-#  define CCB_MODULES_HANDLE_HH
+#define CCB_MODULES_HANDLE_HH
 
-#  include <dlfcn.h>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <dlfcn.h>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace              modules {
-  /**
-   *  @class handle handle.hh "com/centreon/broker/modules/handle.hh"
-   *  @brief Plugin library handle.
-   *
-   *  Centreon Broker can load plugins. This class represents such
-   *  plugins.
-   */
-  class                handle {
-  public:
-                       handle();
-                       handle(handle const& other);
-                       ~handle();
-    handle&            operator=(handle const& other);
-    void               close();
-    bool               is_open() const;
-    void               open(
-                         std::string const& filename,
-                         void const* arg = NULL);
-    void               update(void const* arg = NULL);
+namespace modules {
+/**
+ *  @class handle handle.hh "com/centreon/broker/modules/handle.hh"
+ *  @brief Plugin library handle.
+ *
+ *  Centreon Broker can load plugins. This class represents such
+ *  plugins.
+ */
+class handle {
+ public:
+  handle();
+  handle(handle const& other);
+  ~handle();
+  handle& operator=(handle const& other);
+  void close();
+  bool is_open() const;
+  void open(std::string const& filename, void const* arg = NULL);
+  void update(void const* arg = NULL);
 
-    static char const* deinitialization;
-    static char const* initialization;
-    static char const* updatization;
-    static char const* versionning;
+  static char const* deinitialization;
+  static char const* initialization;
+  static char const* updatization;
+  static char const* versionning;
 
-  private:
-    void               _init(void const* arg = NULL);
-    void               _check_version();
+ private:
+  void _init(void const* arg = NULL);
+  void _check_version();
 
-    std::string _filename;
-    void* _handle;
-  };
-}
+  std::string _filename;
+  void* _handle;
+};
+}  // namespace modules
 
 CCB_END()
 
-#endif // !CCB_MODULES_HANDLE_HH
+#endif  // !CCB_MODULES_HANDLE_HH

@@ -17,18 +17,18 @@
 */
 
 #ifndef CCB_TCP_ACCEPTOR_HH
-#  define CCB_TCP_ACCEPTOR_HH
+#define CCB_TCP_ACCEPTOR_HH
 
-#  include <asio.hpp>
-#  include <list>
-#  include <memory>
-#  include <mutex>
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <asio.hpp>
+#include <list>
+#include <memory>
+#include <mutex>
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/namespace.hh"
 
 #if ASIO_VERSION < 101200
 namespace asio {
-  typedef io_service io_context;
+typedef io_service io_context;
 }
 #endif
 
@@ -47,8 +47,7 @@ class acceptor : public io::endpoint {
   ~acceptor();
   void add_child(std::string const& child);
   void listen_on(unsigned short port);
-  std::shared_ptr<io::stream>
-  open();
+  std::shared_ptr<io::stream> open();
   void remove_child(std::string const& child);
   void set_read_timeout(int secs);
   void set_write_timeout(int secs);
@@ -67,8 +66,8 @@ class acceptor : public io::endpoint {
   asio::io_context _io_context;
   int _write_timeout;
 };
-}
+}  // namespace tcp
 
 CCB_END()
 
-#endif // !CCB_TCP_ACCEPTOR_HH
+#endif  // !CCB_TCP_ACCEPTOR_HH

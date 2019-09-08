@@ -16,14 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QVariant>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
 #include <iostream>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/cbd.hh"
@@ -48,12 +48,10 @@ using namespace com::centreon::broker;
 static bool instance_is_up_to_date(test_db& db, int limit) {
   time_t min_valid(time(NULL) - limit);
   QSqlQuery q(*db.centreon_db());
-  return (q.exec(
-              "SELECT last_alive"
-              "  FROM rt_instances"
-              "  WHERE instance_id=42")
-          && q.next()
-          && (q.value(0).toLongLong() >= min_valid));
+  return (q.exec("SELECT last_alive"
+                 "  FROM rt_instances"
+                 "  WHERE instance_id=42") &&
+          q.next() && (q.value(0).toLongLong() >= min_valid));
 }
 
 /**
@@ -82,15 +80,15 @@ int main() {
     db.open(DB_NAME);
 
     // Write Broker configuration files.
-    cbmod_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/failover_to_tcp_1.xml.in");
-    cbd_cfg1.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/failover_to_tcp_2.xml.in");
+    cbmod_cfg.set_template(PROJECT_SOURCE_DIR
+                           "/test/cfg/failover_to_tcp_1.xml.in");
+    cbd_cfg1.set_template(PROJECT_SOURCE_DIR
+                          "/test/cfg/failover_to_tcp_2.xml.in");
     cbd_cfg1.set("INSTANCE_ID", "43");
     cbd_cfg1.set("INSTANCE_NAME", "my_cbd1");
     cbd_cfg1.set("PORT", "5680");
-    cbd_cfg2.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/failover_to_tcp_2.xml.in");
+    cbd_cfg2.set_template(PROJECT_SOURCE_DIR
+                          "/test/cfg/failover_to_tcp_2.xml.in");
     cbd_cfg2.set("INSTANCE_ID", "44");
     cbd_cfg2.set("INSTANCE_NAME", "my_cbd2");
     cbd_cfg2.set("PORT", "5690");
@@ -101,17 +99,13 @@ int main() {
     std::string additional_config;
     {
       std::ostringstream oss;
-      oss << "broker_module="
-          << CBMOD_PATH << " " << cbmod_cfg.generate();
+      oss << "broker_module=" << CBMOD_PATH << " " << cbmod_cfg.generate();
       additional_config = oss.str();
     }
 
     // Generate monitoring engine configuration files.
-    config_write(
-      engine_config_path.c_str(),
-      additional_config.c_str(),
-      &hosts,
-      &services);
+    config_write(engine_config_path.c_str(), additional_config.c_str(), &hosts,
+                 &services);
 
     // STEP #1.
     std::cout << "step #1\n";
@@ -130,8 +124,7 @@ int main() {
 
     // Check that instance is up to date.
     if (!instance_is_up_to_date(db, 10))
-      throw (exceptions::msg()
-             << "instance is not up to date at step #1");
+      throw(exceptions::msg() << "instance is not up to date at step #1");
 
     // STEP #2.
     std::cout << "step #2\n";
@@ -146,8 +139,7 @@ int main() {
 
     // Check that instance is up to date.
     if (!instance_is_up_to_date(db, 10))
-      throw (exceptions::msg()
-             << "instance is not up to date at step #2");
+      throw(exceptions::msg() << "instance is not up to date at step #2");
 
     // STEP #3.
     std::cout << "step #3\n";
@@ -161,8 +153,7 @@ int main() {
 
     // Check that instance is up to date.
     if (!instance_is_up_to_date(db, 10))
-      throw (exceptions::msg()
-             << "instance is not up to date at step #3");
+      throw(exceptions::msg() << "instance is not up to date at step #3");
 
     // Terminate monitoring engine.
     daemon.stop();
@@ -173,11 +164,9 @@ int main() {
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
   }
 

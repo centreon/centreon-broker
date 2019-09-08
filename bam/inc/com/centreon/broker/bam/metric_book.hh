@@ -17,53 +17,48 @@
 */
 
 #ifndef CCB_BAM_METRIC_BOOK_HH
-#  define CCB_BAM_METRIC_BOOK_HH
+#define CCB_BAM_METRIC_BOOK_HH
 
-#  include <map>
-#  include <memory>
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <map>
+#include <memory>
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 // Forward declaration.
-namespace         storage {
-  class           metric;
+namespace storage {
+class metric;
 }
 
-namespace         bam {
-  // Forward declarations.
-  class           metric_listener;
+namespace bam {
+// Forward declarations.
+class metric_listener;
 
-  /**
-   *  @class metric_book metric_book.hh "com/centreon/broker/bam/metric_book.hh"
-   *  @brief Propagate metric updates.
-   *
-   *  Propagate updates of metrics to metric listeners.
-   */
-  class           metric_book {
-  public:
-                  metric_book();
-                  metric_book(metric_book const& other);
-                  ~metric_book();
-    metric_book&  operator=(metric_book const& other);
-    void          listen(
-                    unsigned int metric_id,
-                    metric_listener* listnr);
-    void          unlisten(
-                    unsigned int metric_id,
-                    metric_listener* listnr);
-    void          update(
-                    std::shared_ptr<storage::metric> const& m,
-                    io::stream* visitor = NULL);
+/**
+ *  @class metric_book metric_book.hh "com/centreon/broker/bam/metric_book.hh"
+ *  @brief Propagate metric updates.
+ *
+ *  Propagate updates of metrics to metric listeners.
+ */
+class metric_book {
+ public:
+  metric_book();
+  metric_book(metric_book const& other);
+  ~metric_book();
+  metric_book& operator=(metric_book const& other);
+  void listen(unsigned int metric_id, metric_listener* listnr);
+  void unlisten(unsigned int metric_id, metric_listener* listnr);
+  void update(std::shared_ptr<storage::metric> const& m,
+              io::stream* visitor = NULL);
 
-  private:
-    typedef std::multimap<unsigned int, metric_listener*> multimap;
+ private:
+  typedef std::multimap<unsigned int, metric_listener*> multimap;
 
-    multimap      _book;
-  };
-}
+  multimap _book;
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_METRIC_BOOK_HH
+#endif  // !CCB_BAM_METRIC_BOOK_HH

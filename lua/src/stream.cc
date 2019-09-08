@@ -15,22 +15,22 @@
 **
 ** For more information : contact@centreon.com
 */
+#include "com/centreon/broker/lua/stream.hh"
 #include <sstream>
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/luabinding.hh"
-#include "com/centreon/broker/lua/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::lua;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -38,11 +38,10 @@ using namespace com::centreon::broker::lua;
  *  @param[in] addr                    Address to connect to
  *  @param[in] port                    port
  */
-stream::stream(
-          std::string const& lua_script,
-          std::map<std::string, misc::variant> const& conf_params,
-          std::shared_ptr<persistent_cache> const& cache)
-  : _cache(cache) {
+stream::stream(std::string const& lua_script,
+               std::map<std::string, misc::variant> const& conf_params,
+               std::shared_ptr<persistent_cache> const& cache)
+    : _cache(cache) {
   _luabinding = new luabinding(lua_script, conf_params, _cache);
 }
 
@@ -64,7 +63,7 @@ stream::~stream() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw (exceptions::shutdown() << "cannot read from lua generic connector");
+  throw(exceptions::shutdown() << "cannot read from lua generic connector");
 }
 
 /**

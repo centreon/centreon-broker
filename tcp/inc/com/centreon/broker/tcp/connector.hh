@@ -25,7 +25,7 @@
 
 #if ASIO_VERSION < 101200
 namespace asio {
-  typedef io_service io_context;
+typedef io_service io_context;
 }
 #endif
 

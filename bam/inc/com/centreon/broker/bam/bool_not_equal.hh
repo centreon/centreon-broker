@@ -17,32 +17,33 @@
 */
 
 #ifndef CCB_BAM_BOOL_NOT_EQUAL_HH
-#  define CCB_BAM_BOOL_NOT_EQUAL_HH
+#define CCB_BAM_BOOL_NOT_EQUAL_HH
 
-#  include "com/centreon/broker/bam/bool_binary_operator.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/bam/bool_binary_operator.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace           bam {
-  /**
-   *  @class bool_not_equal bool_not_equal.hh "com/centreon/broker/bam/bool_not_equal.hh"
-   *  @brief Not-equal (!=) operator.
-   *
-   *  In the context of expression computation, bool_not_equal checks
-   *  whether or not two operands are not equal.
-   */
-  class             bool_not_equal : public bool_binary_operator {
-  public:
-                    bool_not_equal();
-                    bool_not_equal(bool_not_equal const& other);
-                    ~bool_not_equal();
-    bool_not_equal& operator=(bool_not_equal const& other);
-    double          value_hard();
-    double          value_soft();
-  };
-}
+namespace bam {
+/**
+ *  @class bool_not_equal bool_not_equal.hh
+ * "com/centreon/broker/bam/bool_not_equal.hh"
+ *  @brief Not-equal (!=) operator.
+ *
+ *  In the context of expression computation, bool_not_equal checks
+ *  whether or not two operands are not equal.
+ */
+class bool_not_equal : public bool_binary_operator {
+ public:
+  bool_not_equal();
+  bool_not_equal(bool_not_equal const& other);
+  ~bool_not_equal();
+  bool_not_equal& operator=(bool_not_equal const& other);
+  double value_hard();
+  double value_soft();
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_NOT_EQUAL_HH
+#endif  // !CCB_BAM_BOOL_NOT_EQUAL_HH

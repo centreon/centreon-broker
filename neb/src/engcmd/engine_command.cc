@@ -16,15 +16,15 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdio>
+#include "com/centreon/broker/neb/engcmd/engine_command.hh"
 #include <dlfcn.h>
+#include <cstdio>
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/extcmd/command_listener.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
-#include "com/centreon/broker/neb/engcmd/engine_command.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 
 using namespace com::centreon::broker::neb::engcmd;
@@ -131,7 +131,7 @@ void engine_command::_load_command_engine_module() {
  */
 void engine_command::_execute_command(std::string const cmd) {
   char buff[32];
-  int ret = ::snprintf(buff, 32, "[%li]", ::time(NULL));
+  int ret = ::snprintf(buff, 32, "[%li]", ::time(nullptr));
   if (ret < 0 || ret >= 32)
     return;
 

@@ -27,8 +27,8 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in,out] set  The set to fill.
  */
 node_by_node_id_builder::node_by_node_id_builder(
-                           QHash<objects::node_id, objects::node::ptr>& map)
-  : _map(map) {}
+    QHash<objects::node_id, objects::node::ptr>& map)
+    : _map(map) {}
 
 /**
  *  Add a node to the builder.

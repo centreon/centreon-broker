@@ -17,37 +17,37 @@
 */
 
 #ifndef CCB_IO_DATA_HH
-#  define CCB_IO_DATA_HH
+#define CCB_IO_DATA_HH
 
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                  io {
-  /**
-   *  @class data data.hh "com/centreon/broker/io/data.hh"
-   *  @brief Data abstraction.
-   *
-   *  Data is the core element that is transmitted through Centreon
-   *  Broker. It is an interface that is implemented by all specific
-   *  module data that wish to be transmitted by the multiplexing
-   *  engine.
-   */
-  class                    data {
-  public:
-                           data();
-                           data(data const& other);
-    virtual                ~data();
-    data&                  operator=(data const& other);
-    virtual unsigned int   type() const = 0;
+namespace io {
+/**
+ *  @class data data.hh "com/centreon/broker/io/data.hh"
+ *  @brief Data abstraction.
+ *
+ *  Data is the core element that is transmitted through Centreon
+ *  Broker. It is an interface that is implemented by all specific
+ *  module data that wish to be transmitted by the multiplexing
+ *  engine.
+ */
+class data {
+ public:
+  data();
+  data(data const& other);
+  virtual ~data();
+  data& operator=(data const& other);
+  virtual unsigned int type() const = 0;
 
-    unsigned int           source_id;
-    unsigned int           destination_id;
+  unsigned int source_id;
+  unsigned int destination_id;
 
-    static unsigned int    broker_id;
-  };
-}
+  static unsigned int broker_id;
+};
+}  // namespace io
 
 CCB_END()
 
-#endif // !CCB_IO_DATA_HH
+#endif  // !CCB_IO_DATA_HH

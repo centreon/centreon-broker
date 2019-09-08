@@ -16,15 +16,14 @@
  * For more information : contact@centreon.com
  *
  */
+#include "test_file.hh"
 #include <cstring>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
-#include "test_file.hh"
 
 using namespace com::centreon::broker;
 
-test_file::test_file(std::string* content)
-  : _content(content), _pos(0) {}
+test_file::test_file(std::string* content) : _content(content), _pos(0) {}
 
 test_file::~test_file() {}
 
@@ -33,7 +32,7 @@ void test_file::close() {}
 long test_file::read(void* buffer, long max_size) {
   long size(_content->size() - _pos);
   if (!size)
-    throw (exceptions::shutdown() << "end of file");
+    throw(exceptions::shutdown() << "end of file");
   else if (max_size < size)
     size = max_size;
   memcpy(buffer, _content->data() + _pos, size);
@@ -43,17 +42,17 @@ long test_file::read(void* buffer, long max_size) {
 
 void test_file::seek(long offset, file::fs_file::seek_whence whence) {
   switch (whence) {
-   case seek_start:
-    _pos = offset;
-    break ;
-   case seek_current:
-    _pos += offset;
-    break ;
-   case seek_end:
-    _pos = _content->size() - 1 + offset;
-    break;
+    case seek_start:
+      _pos = offset;
+      break;
+    case seek_current:
+      _pos += offset;
+      break;
+    case seek_end:
+      _pos = _content->size() - 1 + offset;
+      break;
   };
-  return ;
+  return;
 }
 
 long test_file::tell() {
@@ -70,16 +69,14 @@ test_file_factory::test_file_factory() {}
 test_file_factory::~test_file_factory() {}
 
 std::string& test_file_factory::get(std::string const& path) {
-  std::map<std::string, std::string>::iterator
-    it(_files.find(path));
+  std::map<std::string, std::string>::iterator it(_files.find(path));
   if (it == _files.end())
-    throw (exceptions::msg() << "file " << path << " does not exist");
+    throw(exceptions::msg() << "file " << path << " does not exist");
   return (it->second);
 }
 
-file::fs_file* test_file_factory::new_fs_file(
-                                    std::string const& path,
-                                    file::fs_file::open_mode mode) {
+file::fs_file* test_file_factory::new_fs_file(std::string const& path,
+                                              file::fs_file::open_mode mode) {
   (void)mode;
   return (new test_file(&_files[path]));
 }

@@ -17,23 +17,19 @@
  *
  */
 
+#include "com/centreon/broker/neb/service_dependency.hh"
 #include <gtest/gtest.h>
 #include <cstdlib>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/service_dependency.hh"
 #include "randomize.hh"
 
 using namespace com::centreon::broker;
 
 class ServiceDependency : public ::testing::Test {
-  void SetUp() {
-    randomize_init();
-  };
+  void SetUp() override { randomize_init(); };
 
-  void TearDown() {
-    randomize_cleanup();
-  };
+  void TearDown() override { randomize_cleanup(); };
 };
 
 /**
@@ -53,14 +49,13 @@ TEST_F(ServiceDependency, Assign) {
   sdep2 = sdep1;
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(sdep1, &randvals2);
 
   // Compare objects with expected results.
   ASSERT_FALSE(sdep1 != randvals2);
   ASSERT_FALSE(sdep2 != randvals1);
 }
-
 
 /**
  *  Check service_dependency's copy constructor.
@@ -75,7 +70,7 @@ TEST_F(ServiceDependency, CopyCtor) {
   neb::service_dependency sdep2(sdep1);
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(sdep1, &randvals2);
 
   // Compare objects with expected results.
@@ -101,6 +96,7 @@ TEST_F(ServiceDependency, DefaultCtor) {
   ASSERT_FALSE(sdep.inherits_parent != false);
   ASSERT_FALSE(!sdep.notification_failure_options.empty());
   ASSERT_FALSE(sdep.service_id != 0);
-  auto val(io::events::data_type<io::events::neb, neb::de_service_dependency>::value);
+  auto val(io::events::data_type<io::events::neb,
+                                 neb::de_service_dependency>::value);
   ASSERT_FALSE(sdep.type() != val);
 }

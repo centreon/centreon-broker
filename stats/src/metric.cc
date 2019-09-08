@@ -60,7 +60,7 @@ metric& metric::operator=(metric const& right) {
  *
  *  @return The host id.
  */
-unsigned int metric::get_host_id() const throw () {
+unsigned int metric::get_host_id() const throw() {
   return (_host_id);
 }
 
@@ -69,7 +69,7 @@ unsigned int metric::get_host_id() const throw () {
  *
  *  @return The service name.
  */
-std::string const& metric::get_name() const throw () {
+std::string const& metric::get_name() const throw() {
   return (_name);
 }
 
@@ -78,7 +78,7 @@ std::string const& metric::get_name() const throw () {
  *
  *  @return The service id.
  */
-unsigned int metric::get_service_id() const throw () {
+unsigned int metric::get_service_id() const throw() {
   return (_service_id);
 }
 
@@ -87,7 +87,7 @@ unsigned int metric::get_service_id() const throw () {
  *
  *  @param[in] host_id The host id.
  */
-void metric::set_host_id(unsigned int host_id) throw () {
+void metric::set_host_id(unsigned int host_id) throw() {
   _host_id = host_id;
 }
 
@@ -105,6 +105,6 @@ void metric::set_name(std::string const& name) {
  *
  *  @param[in] service_id The service id.
  */
-void metric::set_service_id(unsigned int service_id) throw () {
+void metric::set_service_id(unsigned int service_id) throw() {
   _service_id = service_id;
 }

@@ -17,45 +17,43 @@
 */
 
 #ifndef CCB_NEB_SERVICE_GROUP_MEMBER_HH
-#  define CCB_NEB_SERVICE_GROUP_MEMBER_HH
+#define CCB_NEB_SERVICE_GROUP_MEMBER_HH
 
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/group_member.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/group_member.hh"
 
 CCB_BEGIN()
 
-namespace                 neb {
-  /**
-   *  @class service_group_member service_group_member.hh "com/centreon/broker/neb/service_group_member.hh"
-   *  @brief Member of a service group.
-   *
-   *  Base class defining that a service is part of a service
-   *  group.
-   *
-   *  @see service
-   *  @see service_group
-   */
-  class                   service_group_member : public group_member {
-  public:
-                          service_group_member();
-                          service_group_member(
-                            service_group_member const& other);
-    virtual               ~service_group_member();
-    service_group_member& operator=(service_group_member const& other);
-    unsigned int          type() const;
-    static unsigned int   static_type();
+namespace neb {
+/**
+ *  @class service_group_member service_group_member.hh
+ * "com/centreon/broker/neb/service_group_member.hh"
+ *  @brief Member of a service group.
+ *
+ *  Base class defining that a service is part of a service
+ *  group.
+ *
+ *  @see service
+ *  @see service_group
+ */
+class service_group_member : public group_member {
+ public:
+  service_group_member();
+  service_group_member(service_group_member const& other);
+  virtual ~service_group_member();
+  service_group_member& operator=(service_group_member const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    unsigned int          service_id;
+  unsigned int service_id;
 
-    static mapping::entry const
-                          entries[];
-    static io::event_info::event_operations const
-                          operations;
-  };
-}
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_SERVICE_GROUP_MEMBER_HH
+#endif  // !CCB_NEB_SERVICE_GROUP_MEMBER_HH

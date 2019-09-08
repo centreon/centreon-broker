@@ -26,52 +26,46 @@ using namespace com::centreon::broker::notification::objects;
  */
 composed_dependency_builder::composed_dependency_builder() {}
 
-void composed_dependency_builder::add_dependency(
-                                    unsigned int id,
-                                    dependency::ptr d) {
+void composed_dependency_builder::add_dependency(unsigned int id,
+                                                 dependency::ptr d) {
   for (composed_builder<dependency_builder>::iterator it(begin()),
-                                                      it_end(end());
-       it != it_end;
-       ++it)
+       it_end(end());
+       it != it_end; ++it)
     (*it)->add_dependency(id, d);
 }
 
 void composed_dependency_builder::dependency_node_id_parent_relation(
-                                    unsigned int dep_id,
-                                    node_id id) {
+    unsigned int dep_id,
+    node_id id) {
   for (composed_builder<dependency_builder>::iterator it(begin()),
-                                                      it_end(end());
-       it != it_end;
-       ++it)
+       it_end(end());
+       it != it_end; ++it)
     (*it)->dependency_node_id_parent_relation(dep_id, id);
 }
 
 void composed_dependency_builder::dependency_node_id_child_relation(
-                                    unsigned int dep_id,
-                                    node_id id) {
+    unsigned int dep_id,
+    node_id id) {
   for (composed_builder<dependency_builder>::iterator it(begin()),
-                                                      it_end(end());
-       it != it_end;
-       ++it)
+       it_end(end());
+       it != it_end; ++it)
     (*it)->dependency_node_id_child_relation(dep_id, id);
 }
 
 void composed_dependency_builder::set_notification_failure_options(
-                                    unsigned int dep_id,
-                                    std::string const& line) {
+    unsigned int dep_id,
+    std::string const& line) {
   for (composed_builder<dependency_builder>::iterator it(begin()),
-                                                      it_end(end());
-       it != it_end;
-       ++it)
+       it_end(end());
+       it != it_end; ++it)
     (*it)->set_notification_failure_options(dep_id, line);
 }
 
 void composed_dependency_builder::set_execution_failure_options(
-                                    unsigned int dep_id,
-                                    std::string const& line) {
+    unsigned int dep_id,
+    std::string const& line) {
   for (composed_builder<dependency_builder>::iterator it(begin()),
-                                                      it_end(end());
-       it != it_end;
-       ++it)
+       it_end(end());
+       it != it_end; ++it)
     (*it)->set_execution_failure_options(dep_id, line);
 }

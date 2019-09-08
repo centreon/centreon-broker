@@ -60,7 +60,7 @@ static time_t string_to_time_t(std::string const& data) {
   if (!ptr)
     throw exceptions::msg() << "invalid date format";
   t.tm_isdst = -1;  // Not set by strptime().
-  time::timezone_locker tzlock((*ptr == ' ') ? ptr + 1 : NULL);
+  time::timezone_locker tzlock((*ptr == ' ') ? ptr + 1 : nullptr);
   return mktime(&t);
 }
 
@@ -143,12 +143,12 @@ static void parse_file(char const* filename, options& opt) {
 
 class BamTime : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     config::applier::init();
     time::timezone_manager::load();
   }
 
-  void TearDown() {
+  void TearDown() override {
     time::timezone_manager::unload();
     config::applier::deinit();
   }

@@ -17,66 +17,65 @@
 */
 
 #ifndef CCB_LUA_LUABINDING_HH
-#  define CCB_LUA_LUABINDING_HH
+#define CCB_LUA_LUABINDING_HH
 
-#  include <map>
-#  include "com/centreon/broker/misc/variant.hh"
-#  include "com/centreon/broker/lua/macro_cache.hh"
+#include <map>
+#include "com/centreon/broker/lua/macro_cache.hh"
+#include "com/centreon/broker/misc/variant.hh"
 
 extern "C" {
-#  include "lua.h"
-#  include "lauxlib.h"
-#  include "lualib.h"
+#include "lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
 }
 
 CCB_BEGIN()
 
-namespace               lua {
-  /**
-   *  @class luabinding luabinding.hh "com/centreon/broker/luabinding/luabinding.hh"
-   *  @brief Class managing exchange with the the lua interpreter.
-   *
-   *  Expose an api to simplify exchanges with the Lua interpreter.
-   */
-  class                 luabinding {
-   public:
-                        luabinding(
-                          std::string const& lua_script,
-                          std::map<std::string, misc::variant> const& conf_params,
-                          macro_cache const& cache);
-                        ~luabinding();
-    bool                has_filter() const;
-    int                 write(std::shared_ptr<io::data> const& data);
+namespace lua {
+/**
+ *  @class luabinding luabinding.hh
+ * "com/centreon/broker/luabinding/luabinding.hh"
+ *  @brief Class managing exchange with the the lua interpreter.
+ *
+ *  Expose an api to simplify exchanges with the Lua interpreter.
+ */
+class luabinding {
+ public:
+  luabinding(std::string const& lua_script,
+             std::map<std::string, misc::variant> const& conf_params,
+             macro_cache const& cache);
+  ~luabinding();
+  bool has_filter() const;
+  int write(std::shared_ptr<io::data> const& data);
 
-   private:
-                        luabinding(luabinding const& other);
-    luabinding&         operator=(luabinding const& other);
-    lua_State*          _load_interpreter();
-    void                _load_script();
-    void                _init_script(
-                          std::map<std::string, misc::variant> const& conf_params);
-    void                _update_lua_path(std::string const& path);
+ private:
+  luabinding(luabinding const& other);
+  luabinding& operator=(luabinding const& other);
+  lua_State* _load_interpreter();
+  void _load_script();
+  void _init_script(std::map<std::string, misc::variant> const& conf_params);
+  void _update_lua_path(std::string const& path);
 
-    // Event conversion to Lua table.
-    void                _parse_entries(io::data const& d);
+  // Event conversion to Lua table.
+  void _parse_entries(io::data const& d);
 
-    // The Lua state machine.
-    lua_State*          _L;
+  // The Lua state machine.
+  lua_State* _L;
 
-    // True if there is a filter() function in the Lua script.
-    bool                _filter;
+  // True if there is a filter() function in the Lua script.
+  bool _filter;
 
-    // The Lua script name.
-    std::string const&  _lua_script;
+  // The Lua script name.
+  std::string const& _lua_script;
 
-    // The cache.
-    macro_cache const&  _cache;
+  // The cache.
+  macro_cache const& _cache;
 
-    // Count on events
-    int                 _total;
-  };
-}
+  // Count on events
+  int _total;
+};
+}  // namespace lua
 
 CCB_END()
 
-#endif // !CCB_LUA_LUA_HH
+#endif  // !CCB_LUA_LUA_HH

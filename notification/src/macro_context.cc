@@ -29,17 +29,12 @@ using namespace com::centreon::broker::notification;
  *  @param[in] cache  Node cache.
  *  @param[in] act    The notification action.
  */
-macro_context::macro_context(
-                 objects::node_id id,
-                 objects::contact const& cnt,
-                 state const& st,
-                 node_cache const& cache,
-                 action const& act)
-  : _id(id),
-    _cnt(cnt),
-    _st(st),
-    _cache(cache),
-    _act(act) {}
+macro_context::macro_context(objects::node_id id,
+                             objects::contact const& cnt,
+                             state const& st,
+                             node_cache const& cache,
+                             action const& act)
+    : _id(id), _cnt(cnt), _st(st), _cache(cache), _act(act) {}
 
 /**
  *  Get the if of the node being notified.

@@ -17,33 +17,33 @@
 */
 
 #ifndef CCB_LUA_BROKER_CACHE_HH
-#  define CCB_LUA_BROKER_CACHE_HH
+#define CCB_LUA_BROKER_CACHE_HH
 
-#include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/lua/macro_cache.hh"
+#include "com/centreon/broker/namespace.hh"
 
 extern "C" {
-#  include "lua.h"
-#  include "lauxlib.h"
-#  include "lualib.h"
+#include "lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
 }
 
 CCB_BEGIN()
 
-namespace               lua {
-  /**
-   *  @class broker_cache broker_cache.hh "com/centreon/broker/lua/broker_cache.hh"
-   *  @brief Class providing cache access to the lua interpreter
-   *
-   *  This class provides a binding to Lua to access cache.
-   */
-  class                 broker_cache {
-   public:
-    static void         broker_cache_reg(lua_State* L,
-                                         macro_cache const& cache);
-  };
-}
+namespace lua {
+/**
+ *  @class broker_cache broker_cache.hh
+ * "com/centreon/broker/lua/broker_cache.hh"
+ *  @brief Class providing cache access to the lua interpreter
+ *
+ *  This class provides a binding to Lua to access cache.
+ */
+class broker_cache {
+ public:
+  static void broker_cache_reg(lua_State* L, macro_cache const& cache);
+};
+}  // namespace lua
 
 CCB_END()
 
-#endif // !CCB_LUA_BROKER_CACHE_HH
+#endif  // !CCB_LUA_BROKER_CACHE_HH

@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
+#include <QDir>
+#include <QFile>
 #include <cstdlib>
 #include <cstring>
 #include <exception>
 #include <iostream>
-#include <QDir>
-#include <QFile>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/correlation/parser.hh"
 #include "test/parser/common.hh"
@@ -40,20 +40,20 @@ int main() {
 
   // Write file.
   char const* file_content =
-    "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
-    "<centreonbroker>\n"
-    "  <host id=\"13\" state=\"1\" />\n"
-    "  <host id=\"42\" />\n"
-    "  <service id=\"21\" host=\"13\" />\n"
-    "  <service id=\"66\" host=\"42\" state=\"3\" />\n"
-    "  <service id=\"33\" host=\"13\" />\n"
-    "  <service id=\"12\" host=\"42\" state=\"2\" />\n"
-    "  <parent host=\"13\" parent_host=\"42\" />\n"
-    "  <dependency dependent_host=\"13\" dependent_service=\"21\"\n"
-    "              host=\"13\" service=\"33\" />\n"
-    "  <dependency dependent_host=\"42\" dependent_service=\"12\"\n"
-    "              host=\"13\" />\n"
-    "</centreonbroker>\n";
+      "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
+      "<centreonbroker>\n"
+      "  <host id=\"13\" state=\"1\" />\n"
+      "  <host id=\"42\" />\n"
+      "  <service id=\"21\" host=\"13\" />\n"
+      "  <service id=\"66\" host=\"42\" state=\"3\" />\n"
+      "  <service id=\"33\" host=\"13\" />\n"
+      "  <service id=\"12\" host=\"42\" state=\"2\" />\n"
+      "  <parent host=\"13\" parent_host=\"42\" />\n"
+      "  <dependency dependent_host=\"13\" dependent_service=\"21\"\n"
+      "              host=\"13\" service=\"33\" />\n"
+      "  <dependency dependent_host=\"42\" dependent_service=\"12\"\n"
+      "              host=\"13\" />\n"
+      "</centreonbroker>\n";
   QString file_path(QDir::tempPath());
   file_path.append("/broker_correlation_parser_parse_non_retention");
   ::remove(file_path.toStdString().c_str());
@@ -111,11 +111,9 @@ int main() {
 
     // Success.
     error = false;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
   }
 

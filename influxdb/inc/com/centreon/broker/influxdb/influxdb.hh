@@ -17,52 +17,52 @@
 */
 
 #ifndef CCB_INFLUXDB_INFLUXDB_HH
-#  define CCB_INFLUXDB_INFLUXDB_HH
+#define CCB_INFLUXDB_INFLUXDB_HH
 
-#  include <string>
-#  include <memory>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/storage/metric.hh"
-#  include "com/centreon/broker/storage/status.hh"
+#include <memory>
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/status.hh"
 
 CCB_BEGIN()
 
-namespace         influxdb {
+namespace influxdb {
+/**
+ *  @class influxdb influxdb.hh "com/centreon/broker/influxdb/influxdb.hh"
+ *  @brief Interface for influxdb connection manager.
+ *
+ *  This object is an interface all influxdb connection manager needs
+ *  to implements.
+ */
+class influxdb {
+ public:
+  virtual ~influxdb() {}
+
   /**
-   *  @class influxdb influxdb.hh "com/centreon/broker/influxdb/influxdb.hh"
-   *  @brief Interface for influxdb connection manager.
-   *
-   *  This object is an interface all influxdb connection manager needs
-   *  to implements.
+   *  Clear all the events pending.
    */
-  class           influxdb {
-  public:
-    virtual       ~influxdb() {}
+  virtual void clear() = 0;
 
-    /**
-     *  Clear all the events pending.
-     */
-    virtual void  clear() = 0;
+  /**
+   *  Write an event to the queue of event pending.
+   *  @param[in] m  The event.
+   */
+  virtual void write(storage::metric const& m) = 0;
 
-    /**
-     *  Write an event to the queue of event pending.
-     *  @param[in] m  The event.
-     */
-    virtual void  write(storage::metric const& m) = 0;
+  /**
+   *  Write an event to the queue of event pending.
+   *  @param[in] m  The event.
+   */
+  virtual void write(storage::status const& m) = 0;
 
-    /**
-     *  Write an event to the queue of event pending.
-     *  @param[in] m  The event.
-     */
-    virtual void  write(storage::status const& m) = 0;
-
-    /**
-     *  Commit all the events pending to the db.
-     */
-    virtual void  commit() = 0;
-  };
-}
+  /**
+   *  Commit all the events pending to the db.
+   */
+  virtual void commit() = 0;
+};
+}  // namespace influxdb
 
 CCB_END()
 
-#endif // !CCB_INFLUXDB_INFLUXDB_HH
+#endif  // !CCB_INFLUXDB_INFLUXDB_HH

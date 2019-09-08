@@ -17,48 +17,44 @@
 */
 
 #ifndef CCB_BAM_DIMENSION_TIMEPERIOD_EXCLUSION_HH
-#  define CCB_BAM_DIMENSION_TIMEPERIOD_EXCLUSION_HH
+#define CCB_BAM_DIMENSION_TIMEPERIOD_EXCLUSION_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        bam {
-  /**
-   *  @class dimension_timeperiod_exclusion dimension_timeperiod_exclusion.hh "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
-   *  @brief Timeperiod exclusion.
-   *
-   *  Declare a timeperiod exclusion.
-   */
-  class          dimension_timeperiod_exclusion : public io::data {
-  public:
-                 dimension_timeperiod_exclusion();
-                 dimension_timeperiod_exclusion(
-                   dimension_timeperiod_exclusion const& other);
-                 ~dimension_timeperiod_exclusion();
-    dimension_timeperiod_exclusion&
-                 operator=(dimension_timeperiod_exclusion const& other);
-    unsigned int type() const;
-    static unsigned int
-                 static_type();
+namespace bam {
+/**
+ *  @class dimension_timeperiod_exclusion dimension_timeperiod_exclusion.hh
+ * "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
+ *  @brief Timeperiod exclusion.
+ *
+ *  Declare a timeperiod exclusion.
+ */
+class dimension_timeperiod_exclusion : public io::data {
+ public:
+  dimension_timeperiod_exclusion();
+  dimension_timeperiod_exclusion(dimension_timeperiod_exclusion const& other);
+  ~dimension_timeperiod_exclusion();
+  dimension_timeperiod_exclusion& operator=(
+      dimension_timeperiod_exclusion const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    unsigned int excluded_timeperiod_id;
-    unsigned int timeperiod_id;
+  unsigned int excluded_timeperiod_id;
+  unsigned int timeperiod_id;
 
-    static mapping::entry const
-                 entries[];
-    static io::event_info::event_operations const
-                 operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void         _internal_copy(
-                   dimension_timeperiod_exclusion const& other);
-  };
-}
+ private:
+  void _internal_copy(dimension_timeperiod_exclusion const& other);
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_DIMENSION_TIMEPERIOD_EXCLUSION_HH
+#endif  // !CCB_BAM_DIMENSION_TIMEPERIOD_EXCLUSION_HH

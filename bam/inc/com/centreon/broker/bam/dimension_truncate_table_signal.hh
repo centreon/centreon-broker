@@ -17,51 +17,46 @@
 */
 
 #ifndef CCB_BAM_DIMENSION_TRUNCATE_TABLE_SIGNAL_HH
-#  define CCB_BAM_DIMENSION_TRUNCATE_TABLE_SIGNAL_HH
+#define CCB_BAM_DIMENSION_TRUNCATE_TABLE_SIGNAL_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace                bam {
-  /**
-   *  @class dimension_truncate_table_signal dimension_truncate_table_signal.hh "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
-   *  @brief Dimension truncate table signal
-   *
-   *  This empty data signals the reporting stream
-   *  to truncate the dimension tables.
-   */
-  class                  dimension_truncate_table_signal : public io::data {
-  public:
-                         dimension_truncate_table_signal();
-                         dimension_truncate_table_signal(
-                           dimension_truncate_table_signal const& other);
-                         ~dimension_truncate_table_signal();
-    dimension_truncate_table_signal&
-                         operator=(
-                           dimension_truncate_table_signal const& other);
-    bool                 operator==(
-                           dimension_truncate_table_signal const& other) const;
-    unsigned int         type() const;
-    static unsigned int  static_type();
+namespace bam {
+/**
+ *  @class dimension_truncate_table_signal dimension_truncate_table_signal.hh
+ * "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
+ *  @brief Dimension truncate table signal
+ *
+ *  This empty data signals the reporting stream
+ *  to truncate the dimension tables.
+ */
+class dimension_truncate_table_signal : public io::data {
+ public:
+  dimension_truncate_table_signal();
+  dimension_truncate_table_signal(dimension_truncate_table_signal const& other);
+  ~dimension_truncate_table_signal();
+  dimension_truncate_table_signal& operator=(
+      dimension_truncate_table_signal const& other);
+  bool operator==(dimension_truncate_table_signal const& other) const;
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    bool                 update_started;
+  bool update_started;
 
-    static mapping::entry const
-                         entries[];
-    static io::event_info::event_operations const
-                         operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void                 _internal_copy(
-                           dimension_truncate_table_signal const& other);
-  };
-}
+ private:
+  void _internal_copy(dimension_truncate_table_signal const& other);
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_DIMENSION_TRUNCATE_TABLE_SIGNAL_HH
+#endif  // !CCB_BAM_DIMENSION_TRUNCATE_TABLE_SIGNAL_HH

@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bbdo/factory.hh"
 #include "com/centreon/broker/bbdo/acceptor.hh"
 #include "com/centreon/broker/bbdo/connector.hh"
-#include "com/centreon/broker/bbdo/factory.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/io/protocols.hh"
 
@@ -26,10 +26,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -94,19 +94,19 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return Endpoint matching configuration.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
   // Return value.
-  io::endpoint* retval{NULL};
+  io::endpoint* retval{nullptr};
 
   // Coarse endpoint ?
   bool coarse{false};
   {
-    std::map<std::string, std::string>::const_iterator
-      it(cfg.params.find("coarse"));
+    std::map<std::string, std::string>::const_iterator it(
+        cfg.params.find("coarse"));
     if (it != cfg.params.end())
       coarse = config::parser::parse_boolean(it->second);
   }
@@ -115,10 +115,9 @@ io::endpoint* factory::new_endpoint(
   bool negotiate{false};
   std::string extensions;
   if (!coarse) {
-    std::map<std::string, std::string>::const_iterator
-      it(cfg.params.find("negotiation"));
-    if ((it != cfg.params.end())
-        && (it->second == "no"))
+    std::map<std::string, std::string>::const_iterator it(
+        cfg.params.find("negotiation"));
+    if ((it != cfg.params.end()) && (it->second == "no"))
       negotiate = false;
     else {
       negotiate = true;
@@ -129,8 +128,8 @@ io::endpoint* factory::new_endpoint(
   // Ack limit.
   unsigned int ack_limit{1000};
   {
-    std::map<std::string, std::string>::const_iterator
-      it(cfg.params.find("ack_limit"));
+    std::map<std::string, std::string>::const_iterator it(
+        cfg.params.find("ack_limit"));
     if (it != cfg.params.end())
       ack_limit = std::stoul(it->second);
   }
@@ -139,36 +138,26 @@ io::endpoint* factory::new_endpoint(
   if (is_acceptor) {
     // One peer retention mode ?
     bool one_peer_retention_mode{false};
-    std::map<std::string, std::string>::const_iterator
-      it(cfg.params.find("one_peer_retention_mode"));
+    std::map<std::string, std::string>::const_iterator it(
+        cfg.params.find("one_peer_retention_mode"));
     if (it != cfg.params.end())
       one_peer_retention_mode = config::parser::parse_boolean(it->second);
     if (one_peer_retention_mode)
       is_acceptor = false;
-    retval = new bbdo::acceptor(
-                         cfg.name,
-                         negotiate,
-                         extensions,
-                         cfg.read_timeout,
-                         one_peer_retention_mode,
-                         coarse,
-                         ack_limit);
-  }
-  else
-    retval = new bbdo::connector(
-                         negotiate,
-                         extensions,
-                         cfg.read_timeout,
-                         coarse,
-                         ack_limit);
+    retval =
+        new bbdo::acceptor(cfg.name, negotiate, extensions, cfg.read_timeout,
+                           one_peer_retention_mode, coarse, ack_limit);
+  } else
+    retval = new bbdo::connector(negotiate, extensions, cfg.read_timeout,
+                                 coarse, ack_limit);
   return retval;
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Get available extensions for an endpoint.
@@ -178,14 +167,12 @@ io::endpoint* factory::new_endpoint(
 std::string factory::_extensions(config::endpoint& cfg) const {
   std::string extensions;
   for (std::map<std::string, io::protocols::protocol>::const_iterator
-         it{io::protocols::instance().begin()},
-         end{io::protocols::instance().end()};
-       it != end;
-       ++it) {
-    if (it->second.osi_from > 1
-        && it->second.osi_to < 7
-        && !it->second.endpntfactry->has_endpoint(cfg)
-        && !it->second.endpntfactry->has_not_endpoint(cfg)) {
+           it{io::protocols::instance().begin()},
+       end{io::protocols::instance().end()};
+       it != end; ++it) {
+    if (it->second.osi_from > 1 && it->second.osi_to < 7 &&
+        !it->second.endpntfactry->has_endpoint(cfg) &&
+        !it->second.endpntfactry->has_not_endpoint(cfg)) {
       if (!extensions.empty())
         extensions.append(" ");
       extensions.append(it->first);

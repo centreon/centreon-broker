@@ -17,47 +17,45 @@
 */
 
 #ifndef CCB_NEB_CUSTOM_VARIABLE_HH
-#  define CCB_NEB_CUSTOM_VARIABLE_HH
+#define CCB_NEB_CUSTOM_VARIABLE_HH
 
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/neb/custom_variable_status.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/custom_variable_status.hh"
 
 CCB_BEGIN()
 
-namespace            neb {
-  /**
-   *  @class custom_variable custom_variable.hh "com/centreon/broker/neb/custom_variable.hh"
-   *  @brief Custom variable definition.
-   *
-   *  Nagios allows users to declare variables attached to a
-   *  specific host or service.
-   */
-  class              custom_variable : public custom_variable_status {
-  public:
-                     custom_variable();
-                     custom_variable(custom_variable const& other);
-                     ~custom_variable();
-    custom_variable& operator=(custom_variable const& other);
-    unsigned int     type() const;
-    static unsigned int
-                     static_type();
+namespace neb {
+/**
+ *  @class custom_variable custom_variable.hh
+ * "com/centreon/broker/neb/custom_variable.hh"
+ *  @brief Custom variable definition.
+ *
+ *  Nagios allows users to declare variables attached to a
+ *  specific host or service.
+ */
+class custom_variable : public custom_variable_status {
+ public:
+  custom_variable();
+  custom_variable(custom_variable const& other);
+  ~custom_variable();
+  custom_variable& operator=(custom_variable const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    std::string          default_value;
-    bool             enabled;
-    short            var_type;
+  std::string default_value;
+  bool enabled;
+  short var_type;
 
-    static mapping::entry const
-                     entries[];
-    static io::event_info::event_operations const
-                     operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void             _internal_copy(custom_variable const& other);
-  };
-}
+ private:
+  void _internal_copy(custom_variable const& other);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_CUSTOM_VARIABLE_HH
+#endif  // !CCB_NEB_CUSTOM_VARIABLE_HH

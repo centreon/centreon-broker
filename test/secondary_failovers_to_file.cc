@@ -16,15 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QVariant>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
 #include <iostream>
-#include <sstream>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "test/cbd.hh"
@@ -67,16 +66,15 @@ int main() {
     // Write cbmod configuration file.
     {
       std::ofstream ofs;
-      ofs.open(
-            cbmod_config_path.c_str(),
-            std::ios_base::out | std::ios_base::trunc);
+      ofs.open(cbmod_config_path.c_str(),
+               std::ios_base::out | std::ios_base::trunc);
       if (ofs.fail())
-        throw (exceptions::msg()
-               << "cannot open cbmod configuration file '"
-               << cbmod_config_path.c_str() << "'");
+        throw(exceptions::msg() << "cannot open cbmod configuration file '"
+                                << cbmod_config_path.c_str() << "'");
       ofs << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
           << "<centreonbroker>\n"
-          << "  <include>" PROJECT_SOURCE_DIR "/test/cfg/broker_modules.xml</include>\n"
+          << "  <include>" PROJECT_SOURCE_DIR
+             "/test/cfg/broker_modules.xml</include>\n"
           << "  <instance>42</instance>\n"
           << "  <instance_name>MyBroker</instance_name>\n"
           << "  <!--\n"
@@ -93,8 +91,12 @@ int main() {
           << "  <output>\n"
           << "    <name>SecondaryFailoversToFile-TCP</name>\n"
           << "    <failover>SecondaryFailoversToFile-NodeEvents</failover>\n"
-          << "    <secondary_failover>SecondaryFailoversToFile-File1</secondary_failover>\n"
-          << "    <secondary_failover>SecondaryFailoversToFile-File2</secondary_failover>\n"
+          << "    "
+             "<secondary_failover>SecondaryFailoversToFile-File1</"
+             "secondary_failover>\n"
+          << "    "
+             "<secondary_failover>SecondaryFailoversToFile-File2</"
+             "secondary_failover>\n"
           << "    <type>tcp</type>\n"
           << "    <host>localhost</host>\n"
           << "    <port>5680</port>\n"
@@ -129,17 +131,14 @@ int main() {
     std::string additional_config;
     {
       std::ostringstream oss;
-      oss << commander.get_engine_config()
-          << "broker_module=" << CBMOD_PATH << " " << cbmod_config_path;
+      oss << commander.get_engine_config() << "broker_module=" << CBMOD_PATH
+          << " " << cbmod_config_path;
       additional_config = oss.str();
     }
 
     // Generate monitoring engine configuration files.
-    config_write(
-      engine_config_path.c_str(),
-      additional_config.c_str(),
-      &hosts,
-      &services);
+    config_write(engine_config_path.c_str(), additional_config.c_str(), &hosts,
+                 &services);
 
     // Start engine.
     std::string engine_config_file(engine_config_path);
@@ -175,21 +174,17 @@ int main() {
     file.close();
 
     if (secondary_file1.empty() || secondary_file2.empty())
-      throw (
-        com::centreon::broker::exceptions::msg()
-          << "a retention file was empty");
+      throw(com::centreon::broker::exceptions::msg()
+            << "a retention file was empty");
 
     if (secondary_file1 != secondary_file2)
-      throw (
-        com::centreon::broker::exceptions::msg()
-          << "secondary retention files are not the same");
+      throw(com::centreon::broker::exceptions::msg()
+            << "secondary retention files are not the same");
 
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
   }
 

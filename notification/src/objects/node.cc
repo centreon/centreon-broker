@@ -23,14 +23,13 @@ using namespace com::centreon::broker::notification::objects;
 /**
  *  Default constructor.
  */
-node::node() :
-  _notification_number(0),
-  _notifications_enabled(true),
-  _notification_interval(0),
-  _last_notification_time(0),
-  _hard_state(),
-  _soft_state()
-  {}
+node::node()
+    : _notification_number(0),
+      _notifications_enabled(true),
+      _notification_interval(0),
+      _last_notification_time(0),
+      _hard_state(),
+      _soft_state() {}
 
 /**
  *  Copy constructor.
@@ -157,10 +156,10 @@ void node::set_node_id(node_id id) throw() {
 }
 
 /**
-  *  Get the correlated parents of this node.
-  *
-  *  @return  A set containing the correlated parents of this node.
-  */
+ *  Get the correlated parents of this node.
+ *
+ *  @return  A set containing the correlated parents of this node.
+ */
 std::set<node_id> const& node::get_parents() const throw() {
   return (_parents);
 }
@@ -247,4 +246,3 @@ double node::get_notification_interval() const throw() {
 void node::set_notification_interval(double val) throw() {
   _notification_interval = val;
 }
-

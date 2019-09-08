@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bbdo/connector.hh"
 #include <algorithm>
 #include <memory>
-#include "com/centreon/broker/bbdo/connector.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
@@ -31,10 +31,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -43,20 +43,20 @@ using namespace com::centreon::broker::bbdo;
  *  @param[in] extensions Available extensions.
  *  @param[in] timeout    Timeout.
  *  @param[in] coarse     Is this connection coarse?
- *  @param[in] ack_limit  The number of event received before an ack needs to be sent.
+ *  @param[in] ack_limit  The number of event received before an ack needs to be
+ * sent.
  */
-connector::connector(
-             bool negotiate,
-             std::string const& extensions,
-             time_t timeout,
-             bool coarse,
-             unsigned int ack_limit)
-  : io::endpoint{false},
-    _coarse{coarse},
-    _extensions{extensions},
-    _negotiate{negotiate},
-    _timeout{timeout},
-    _ack_limit{ack_limit} {
+connector::connector(bool negotiate,
+                     std::string const& extensions,
+                     time_t timeout,
+                     bool coarse,
+                     unsigned int ack_limit)
+    : io::endpoint{false},
+      _coarse{coarse},
+      _extensions{extensions},
+      _negotiate{negotiate},
+      _timeout{timeout},
+      _ack_limit{ack_limit} {
   if (_timeout == (time_t)-1 || _timeout == 0)
     _timeout = 3;
 }
@@ -67,12 +67,12 @@ connector::connector(
  *  @param[in] other Object to copy.
  */
 connector::connector(connector const& other)
-  : io::endpoint{other},
-    _coarse{other._coarse},
-    _extensions{other._extensions},
-    _negotiate{other._negotiate},
-    _timeout{other._timeout},
-    _ack_limit{other._ack_limit} {}
+    : io::endpoint{other},
+      _coarse{other._coarse},
+      _extensions{other._extensions},
+      _negotiate{other._negotiate},
+      _timeout{other._timeout},
+      _ack_limit{other._ack_limit} {}
 
 /**
  *  Destructor.
@@ -116,10 +116,10 @@ std::shared_ptr<io::stream> connector::open() {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Open the connector.
@@ -127,7 +127,7 @@ std::shared_ptr<io::stream> connector::open() {
  *  @return Open stream.
  */
 std::shared_ptr<io::stream> connector::_open(
-                               std::shared_ptr<io::stream> stream) {
+    std::shared_ptr<io::stream> stream) {
   std::shared_ptr<bbdo::stream> bbdo_stream;
   if (stream) {
     bbdo_stream = std::make_shared<bbdo::stream>();

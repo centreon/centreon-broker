@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include <ctime>
 #include "com/centreon/broker/bam/bool_expression.hh"
+#include <ctime>
 #include "com/centreon/broker/bam/bool_value.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -28,9 +28,7 @@ using namespace com::centreon::broker;
 /**
  *  Default constructor.
  */
-bool_expression::bool_expression()
-  : _id(0),
-    _impact_if(true) {}
+bool_expression::bool_expression() : _id(0), _impact_if(true) {}
 
 /**
  *  Copy constructor.
@@ -38,7 +36,7 @@ bool_expression::bool_expression()
  *  @param[in] other  Object to copy.
  */
 bool_expression::bool_expression(bool_expression const& other)
-  : computable(other) {
+    : computable(other) {
   _internal_copy(other);
 }
 
@@ -54,8 +52,7 @@ bool_expression::~bool_expression() {}
  *
  *  @return This object.
  */
-bool_expression& bool_expression::operator=(
-                                    bool_expression const& other) {
+bool_expression& bool_expression::operator=(bool_expression const& other) {
   if (this != &other) {
     computable::operator=(other);
     _internal_copy(other);
@@ -71,16 +68,14 @@ bool_expression& bool_expression::operator=(
  *
  *  @return True if the values of this object were modified.
  */
-bool bool_expression::child_has_update(
-                        computable* child,
-                        io::stream* visitor) {
+bool bool_expression::child_has_update(computable* child, io::stream* visitor) {
   (void)visitor;
   // It is useless to maintain a cache of expression values in this
   // class, as the bool_* classes already cache most of them.
   if (child == _expression.get()) {
     // Logging.
     logging::debug(logging::low) << "BAM: boolean expression " << _id
-      << " is getting notified of child update";
+                                 << " is getting notified of child update";
   }
   return (true);
 }
@@ -91,9 +86,7 @@ bool bool_expression::child_has_update(
  *  @return Either OK (0) or CRITICAL (2).
  */
 short bool_expression::get_state() const {
-  return ((_expression->value_hard() == _impact_if)
-          ? 2
-          : 0);
+  return ((_expression->value_hard() == _impact_if) ? 2 : 0);
 }
 
 /**
@@ -129,9 +122,9 @@ std::shared_ptr<bool_value> bool_expression::get_expression() const {
  *  @param[in] expression Boolean expression.
  */
 void bool_expression::set_expression(
-                        std::shared_ptr<bool_value> const& expression) {
+    std::shared_ptr<bool_value> const& expression) {
   _expression = expression;
-  return ;
+  return;
 }
 
 /**
@@ -141,7 +134,7 @@ void bool_expression::set_expression(
  */
 void bool_expression::set_id(unsigned int id) {
   _id = id;
-  return ;
+  return;
 }
 
 /**
@@ -152,7 +145,7 @@ void bool_expression::set_id(unsigned int id) {
  */
 void bool_expression::set_impact_if(bool impact_if) {
   _impact_if = impact_if;
-  return ;
+  return;
 }
 
 /**
@@ -164,5 +157,5 @@ void bool_expression::_internal_copy(bool_expression const& right) {
   _expression = right._expression;
   _id = right._id;
   _impact_if = right._impact_if;
-  return ;
+  return;
 }

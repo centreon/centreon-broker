@@ -17,49 +17,46 @@
 */
 
 #ifndef CCB_BAM_BOOL_NOT_HH
-#  define CCB_BAM_BOOL_NOT_HH
+#define CCB_BAM_BOOL_NOT_HH
 
-#  include <memory>
-#  include "com/centreon/broker/bam/bool_value.hh"
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <memory>
+#include "com/centreon/broker/bam/bool_value.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     bam {
-  // Forward declaration.
-  class       bool_value;
+namespace bam {
+// Forward declaration.
+class bool_value;
 
-  /**
-   *  @class bool_not bool_not.hh "com/centreon/broker/bam/bool_not.hh"
-   *  @brief NOT boolean operator.
-   *
-   *  In the context of a KPI computation, bool_not represents a logical
-   *  NOT on a bool_value.
-   */
-  class       bool_not : public bool_value {
-  public:
-              bool_not(bool_value::ptr val = bool_value::ptr());
-              bool_not(bool_not const& right);
-              ~bool_not();
-    bool_not& operator=(bool_not const& right);
-    bool      child_has_update(
-                computable* child,
-                io::stream* visitor = NULL);
-    void      set_value(std::shared_ptr<bool_value>& value);
-    double    value_hard();
-    double    value_soft();
-    bool      state_known() const;
-    bool      in_downtime() const;
+/**
+ *  @class bool_not bool_not.hh "com/centreon/broker/bam/bool_not.hh"
+ *  @brief NOT boolean operator.
+ *
+ *  In the context of a KPI computation, bool_not represents a logical
+ *  NOT on a bool_value.
+ */
+class bool_not : public bool_value {
+ public:
+  bool_not(bool_value::ptr val = bool_value::ptr());
+  bool_not(bool_not const& right);
+  ~bool_not();
+  bool_not& operator=(bool_not const& right);
+  bool child_has_update(computable* child, io::stream* visitor = NULL);
+  void set_value(std::shared_ptr<bool_value>& value);
+  double value_hard();
+  double value_soft();
+  bool state_known() const;
+  bool in_downtime() const;
 
-  private:
-    void      _internal_copy(bool_not const& right);
+ private:
+  void _internal_copy(bool_not const& right);
 
-    bool_value::ptr
-              _value;
-  };
-}
+  bool_value::ptr _value;
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_NOT_HH
+#endif  // !CCB_BAM_BOOL_NOT_HH

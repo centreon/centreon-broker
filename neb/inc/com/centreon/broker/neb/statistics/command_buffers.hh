@@ -17,31 +17,32 @@
 */
 
 #ifndef CCB_NEB_STATISTICS_COMMAND_BUFFERS_HH
-#  define CCB_NEB_STATISTICS_COMMAND_BUFFERS_HH
+#define CCB_NEB_STATISTICS_COMMAND_BUFFERS_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/statistics/plugin.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/statistics/plugin.hh"
 
 CCB_BEGIN()
 
-namespace              neb {
-  namespace            statistics {
-    /**
-     *  @class command_buffers command_buffers.hh "com/centreon/broker/neb/statistics/command_buffers.hh"
-     *  @brief command_buffers statistics plugin.
-     */
-    class              command_buffers : public plugin {
-    public:
-                       command_buffers();
-                       command_buffers(command_buffers const& right);
-                       ~command_buffers();
-      command_buffers& operator=(command_buffers const& right);
-      void             run(std::string& output, std::string& perfdata);
-    };
-  }
-}
+namespace neb {
+namespace statistics {
+/**
+ *  @class command_buffers command_buffers.hh
+ * "com/centreon/broker/neb/statistics/command_buffers.hh"
+ *  @brief command_buffers statistics plugin.
+ */
+class command_buffers : public plugin {
+ public:
+  command_buffers();
+  command_buffers(command_buffers const& right);
+  ~command_buffers();
+  command_buffers& operator=(command_buffers const& right);
+  void run(std::string& output, std::string& perfdata);
+};
+}  // namespace statistics
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_COMMAND_BUFFERS_HH
+#endif  // !CCB_NEB_STATISTICS_COMMAND_BUFFERS_HH

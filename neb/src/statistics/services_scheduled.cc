@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/services_scheduled.hh"
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/services_scheduled.hh"
 #include "com/centreon/engine/globals.hh"
 
 using namespace com::centreon::broker::neb;
@@ -36,7 +36,7 @@ services_scheduled::services_scheduled() : plugin("services_scheduled") {}
  *  @param[in] right Object to copy.
  */
 services_scheduled::services_scheduled(services_scheduled const& right)
- : plugin(right) {}
+    : plugin(right) {}
 
 /**
  *  Destructor.
@@ -50,7 +50,8 @@ services_scheduled::~services_scheduled() {}
  *
  *  @return This object.
  */
-services_scheduled& services_scheduled::operator=(services_scheduled const& right) {
+services_scheduled& services_scheduled::operator=(
+    services_scheduled const& right) {
   plugin::operator=(right);
   return (*this);
 }
@@ -61,16 +62,13 @@ services_scheduled& services_scheduled::operator=(services_scheduled const& righ
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void services_scheduled::run(
-              std::string& output,
-	      std::string& perfdata) {
+void services_scheduled::run(std::string& output, std::string& perfdata) {
   // Count services scheduled.
   unsigned int total{0};
   for (service_map::const_iterator
-         it{com::centreon::engine::service::services.begin()},
-         end{com::centreon::engine::service::services.end()};
-       it != end;
-       ++it)
+           it{com::centreon::engine::service::services.begin()},
+       end{com::centreon::engine::service::services.end()};
+       it != end; ++it)
     if (it->second->get_should_be_scheduled())
       ++total;
 
@@ -85,5 +83,5 @@ void services_scheduled::run(
   oss << "services_scheduled=" << total;
   perfdata = oss.str();
 
-  return ;
+  return;
 }

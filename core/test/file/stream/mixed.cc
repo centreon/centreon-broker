@@ -16,12 +16,12 @@
  * For more information : contact@centreon.com
  *
  */
-#include <cstring>
-#include <iostream>
 #include <QByteArray>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <cstring>
+#include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -65,9 +65,8 @@ static int read_some(file::stream& f, unsigned int count) {
 
     // Check content.
     if (nb.toUInt() != ++already_read) {
-      std::cerr << "expected: " << already_read
-        << " got: " << nb.toUInt()
-        << " string: '" << nb.data() << "'" << std::endl;
+      std::cerr << "expected: " << already_read << " got: " << nb.toUInt()
+                << " string: '" << nb.data() << "'" << std::endl;
       retval |= 1;
     }
   }
@@ -136,8 +135,7 @@ int main(int argc, char* argv[]) {
     std::shared_ptr<io::data> d;
     fs.read(d, (time_t)-1);
     retval |= 1;
-  }
-  catch (io::exceptions::shutdown const& s) {
+  } catch (io::exceptions::shutdown const& s) {
     (void)s;
   }
 

@@ -32,8 +32,7 @@ metric_book::metric_book() {}
  *
  *  @param[in] other  Object to copy.
  */
-metric_book::metric_book(metric_book const& other)
-  : _book(other._book) {}
+metric_book::metric_book(metric_book const& other) : _book(other._book) {}
 
 /**
  *  Destructor.
@@ -59,11 +58,9 @@ metric_book& metric_book::operator=(metric_book const& other) {
  *  @param[in]     metric_id  Metric ID.
  *  @param[in,out] listnr     Metric listener.
  */
-void metric_book::listen(
-                     unsigned int metric_id,
-                     metric_listener* listnr) {
+void metric_book::listen(unsigned int metric_id, metric_listener* listnr) {
   _book.insert(std::make_pair(metric_id, listnr));
-  return ;
+  return;
 }
 
 /**
@@ -72,19 +69,17 @@ void metric_book::listen(
  *  @param[in] metric_id  Metric ID.
  *  @param[in] listnr      Metric listener.
  */
-void metric_book::unlisten(
-                     unsigned int metric_id,
-                     metric_listener* listnr) {
-  std::pair<multimap::iterator, multimap::iterator>
-    range(_book.equal_range(metric_id));
+void metric_book::unlisten(unsigned int metric_id, metric_listener* listnr) {
+  std::pair<multimap::iterator, multimap::iterator> range(
+      _book.equal_range(metric_id));
   while (range.first != range.second) {
     if (range.first->second == listnr) {
       _book.erase(range.first);
-      break ;
+      break;
     }
     ++range.first;
   }
-  return ;
+  return;
 }
 
 /**
@@ -93,14 +88,13 @@ void metric_book::unlisten(
  *  @param[in]  m        Metric status.
  *  @param[out] visitor  Object that will receive events.
  */
-void metric_book::update(
-                    std::shared_ptr<storage::metric> const& m,
-                    io::stream* visitor) {
-  std::pair<multimap::iterator, multimap::iterator>
-    range(_book.equal_range(m->metric_id));
+void metric_book::update(std::shared_ptr<storage::metric> const& m,
+                         io::stream* visitor) {
+  std::pair<multimap::iterator, multimap::iterator> range(
+      _book.equal_range(m->metric_id));
   while (range.first != range.second) {
     range.first->second->metric_update(m, visitor);
     ++range.first;
   }
-  return ;
+  return;
 }

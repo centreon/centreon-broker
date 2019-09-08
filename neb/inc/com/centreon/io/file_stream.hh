@@ -17,61 +17,54 @@
 */
 
 #ifndef CC_IO_FILE_STREAM_HH
-#  define CC_IO_FILE_STREAM_HH
+#define CC_IO_FILE_STREAM_HH
 
-#  include <cstdio>
-#  include <string>
-#  include "com/centreon/handle.hh"
-#  include "com/centreon/namespace.hh"
+#include <cstdio>
+#include <string>
+#include "com/centreon/handle.hh"
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace         io {
-  /**
-   *  @class file_stream file_stream.hh "com/centreon/io/file_stream.hh"
-   *  @brief Wrapper of libc's FILE streams.
-   *
-   *  Wrap standard FILE stream objects.
-   */
-  class           file_stream : public handle {
-  public:
-                  file_stream(
-                    FILE* stream = NULL,
-                    bool auto_close = false);
-                  ~file_stream() throw ();
-    void          close();
-    static void   copy(char const* src, char const* dst);
-    static void   copy(
-                    std::string const& src,
-                    std::string const& dst);
-    static bool   exists(char const* path);
-    static bool   exists(std::string const& path);
-    void          flush();
-    native_handle get_native_handle();
-    void          open(char const* path, char const* mode);
-    void          open(std::string const& path, char const* mode);
-    unsigned long read(void* data, unsigned long size);
-    static bool   remove(char const* path);
-    static bool   remove(std::string const& path);
-    static bool   rename(
-                    char const* old_filename,
-                    char const* new_filename);
-    static bool   rename(
-                    std::string const& old_filename,
-                    std::string const& new_filename);
-    unsigned long size();
-    static char*  temp_path();
-    unsigned long write(void const* data, unsigned long size);
+namespace io {
+/**
+ *  @class file_stream file_stream.hh "com/centreon/io/file_stream.hh"
+ *  @brief Wrapper of libc's FILE streams.
+ *
+ *  Wrap standard FILE stream objects.
+ */
+class file_stream : public handle {
+ public:
+  file_stream(FILE* stream = NULL, bool auto_close = false);
+  ~file_stream() throw();
+  void close();
+  static void copy(char const* src, char const* dst);
+  static void copy(std::string const& src, std::string const& dst);
+  static bool exists(char const* path);
+  static bool exists(std::string const& path);
+  void flush();
+  native_handle get_native_handle();
+  void open(char const* path, char const* mode);
+  void open(std::string const& path, char const* mode);
+  unsigned long read(void* data, unsigned long size);
+  static bool remove(char const* path);
+  static bool remove(std::string const& path);
+  static bool rename(char const* old_filename, char const* new_filename);
+  static bool rename(std::string const& old_filename,
+                     std::string const& new_filename);
+  unsigned long size();
+  static char* temp_path();
+  unsigned long write(void const* data, unsigned long size);
 
-  private:
-                  file_stream(file_stream const& fs);
-    file_stream&  operator=(file_stream const& fs);
+ private:
+  file_stream(file_stream const& fs);
+  file_stream& operator=(file_stream const& fs);
 
-    bool          _auto_close;
-    FILE*         _stream;
-  };
-}
+  bool _auto_close;
+  FILE* _stream;
+};
+}  // namespace io
 
 CC_END()
 
-#endif // !CC_IO_FILE_STREAM_HH
+#endif  // !CC_IO_FILE_STREAM_HH

@@ -21,10 +21,10 @@
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Default constructor.
@@ -32,9 +32,9 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 status::status()
-  : event_handler_enabled(false),
-    flap_detection_enabled(false),
-    notifications_enabled(false) {}
+    : event_handler_enabled(false),
+      flap_detection_enabled(false),
+      notifications_enabled(false) {}
 
 /**
  *  @brief Copy constructor.
@@ -68,10 +68,10 @@ status& status::operator=(status const& s) {
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Copy members of the given Status object to the current
@@ -86,5 +86,5 @@ void status::_internal_copy(status const& s) {
   event_handler_enabled = s.event_handler_enabled;
   flap_detection_enabled = s.flap_detection_enabled;
   notifications_enabled = s.notifications_enabled;
-  return ;
+  return;
 }

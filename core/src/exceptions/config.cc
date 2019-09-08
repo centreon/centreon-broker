@@ -35,7 +35,7 @@ config::config(config const& other) : msg(other) {}
 /**
  *  Destructor.
  */
-config::~config() throw () {}
+config::~config() throw() {}
 
 /**
  *  Assignment operator.

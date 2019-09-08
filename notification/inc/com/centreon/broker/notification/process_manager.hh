@@ -17,55 +17,54 @@
 */
 
 #ifndef CCB_NOTIFICATION_PROCESS_MANAGER_HH
-#  define CCB_NOTIFICATION_PROCESS_MANAGER_HH
+#define CCB_NOTIFICATION_PROCESS_MANAGER_HH
 
-#  include <memory>
-#  include <list>
-#  include <set>
-#  include <string>
-#  include <mutex>
-#  include <QThread>
-#  include "com/centreon/broker/notification/process.hh"
+#include <QThread>
+#include <list>
+#include <memory>
+#include <mutex>
+#include <set>
+#include <string>
+#include "com/centreon/broker/notification/process.hh"
 
-namespace                          com {
-  namespace                        centreon {
-    namespace                      broker {
-      namespace                    notification {
-        /**
-         *  @class process_manager process_manager.hh "com/centreon/broker/notification/processprocess_manager.hh"
-         *  @brief Manage the processes.
-         */
-        class                      process_manager : public QObject {
-          Q_OBJECT
+namespace com {
+namespace centreon {
+namespace broker {
+namespace notification {
+/**
+ *  @class process_manager process_manager.hh
+ * "com/centreon/broker/notification/processprocess_manager.hh"
+ *  @brief Manage the processes.
+ */
+class process_manager : public QObject {
+  Q_OBJECT
 
-        public:
-          static process_manager&  instance();
-          static void              release();
+ public:
+  static process_manager& instance();
+  static void release();
 
-          void                     create_process(
-                                     std::string const& command,
-                                     unsigned int timeout = 0);
+  void create_process(std::string const& command, unsigned int timeout = 0);
 
-          QThread&                 get_thread();
+  QThread& get_thread();
 
-        public slots:
-          void                     process_finished(process&);
-          void                     process_timeouted(process&);
+ public slots:
+  void process_finished(process&);
+  void process_timeouted(process&);
 
-        private:
-          static process_manager*  _instance_ptr;
-                                   process_manager();
-                                   process_manager(process_manager const&);
-          process_manager&         operator=(process_manager const&);
+ private:
+  static process_manager* _instance_ptr;
+  process_manager();
+  process_manager(process_manager const&);
+  process_manager& operator=(process_manager const&);
 
-          std::recursive_mutex _process_list_mutex;
-          std::set<process*>       _process_list;
+  std::recursive_mutex _process_list_mutex;
+  std::set<process*> _process_list;
 
-          std::unique_ptr<QThread>   _thread;
-        };
-      }
-    }
-  }
-}
+  std::unique_ptr<QThread> _thread;
+};
+}  // namespace notification
+}  // namespace broker
+}  // namespace centreon
+}  // namespace com
 
-#endif // !CCB_NOTIFICATION_PROCESS_MANAGER_HH
+#endif  // !CCB_NOTIFICATION_PROCESS_MANAGER_HH

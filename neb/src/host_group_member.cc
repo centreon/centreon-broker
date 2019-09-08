@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_group_member.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -40,7 +40,7 @@ host_group_member::host_group_member() {}
  *  @param[in] other  Object to copy.
  */
 host_group_member::host_group_member(host_group_member const& other)
-  : group_member(other) {}
+    : group_member(other) {}
 
 /**
  *  Destructor.
@@ -55,7 +55,7 @@ host_group_member::~host_group_member() {}
  *  @return This object.
  */
 host_group_member& host_group_member::operator=(
-                     host_group_member const& other) {
+    host_group_member const& other) {
   group_member::operator=(other);
   return (*this);
 }
@@ -75,42 +75,34 @@ unsigned int host_group_member::type() const {
  *  @return Class type.
  */
 unsigned int host_group_member::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_host_group_member>::value);
+  return (
+      io::events::data_type<io::events::neb, neb::de_host_group_member>::value);
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const host_group_member::entries[] = {
-  mapping::entry(
-    &host_group_member::group_id,
-    "hostgroup_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &host_group_member::host_id,
-    "host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &host_group_member::enabled,
-    NULL),
-  mapping::entry(
-    &host_group_member::group_name,
-    NULL),
-  mapping::entry(
-    &host_group_member::poller_id,
-    NULL,
-    mapping::entry::invalid_on_zero),
-  mapping::entry()
-};
+    mapping::entry(&host_group_member::group_id,
+                   "hostgroup_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&host_group_member::host_id,
+                   "host_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&host_group_member::enabled, nullptr),
+    mapping::entry(&host_group_member::group_name, nullptr),
+    mapping::entry(&host_group_member::poller_id,
+                   nullptr,
+                   mapping::entry::invalid_on_zero),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_host_group_member() {
   return (new host_group_member);
 }
 io::event_info::event_operations const host_group_member::operations = {
-  &new_host_group_member
-};
+    &new_host_group_member};

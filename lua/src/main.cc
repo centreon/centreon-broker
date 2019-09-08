@@ -27,42 +27,38 @@ using namespace com::centreon::broker;
 static unsigned int instances(0);
 
 extern "C" {
-  /**
-   *  Module version symbol. Used to check for version mismatch.
-   */
-  char const* broker_module_version = CENTREON_BROKER_VERSION;
+/**
+ *  Module version symbol. Used to check for version mismatch.
+ */
+char const* broker_module_version = CENTREON_BROKER_VERSION;
 
-  /**
-   *  Module deinitialization routine.
-   */
-  void broker_module_deinit() {
-    // Decrement instance number.
-    if (!--instances) {
-      // Unregister generic lua module.
-      io::protocols::instance().unreg("lua");
-    }
+/**
+ *  Module deinitialization routine.
+ */
+void broker_module_deinit() {
+  // Decrement instance number.
+  if (!--instances) {
+    // Unregister generic lua module.
+    io::protocols::instance().unreg("lua");
   }
+}
 
-  /**
-   *  Module initialization routine.
-   *
-   *  @param[in] arg Configuration object.
-   */
-  void broker_module_init(void const* arg) {
-    (void)arg;
+/**
+ *  Module initialization routine.
+ *
+ *  @param[in] arg Configuration object.
+ */
+void broker_module_init(void const* arg) {
+  (void)arg;
 
-    // Increment instance number.
-    if (!instances++) {
-      // generic lua module.
-      logging::info(logging::high)
-        << "lua: module for Centreon Broker "
-        << CENTREON_BROKER_VERSION;
+  // Increment instance number.
+  if (!instances++) {
+    // generic lua module.
+    logging::info(logging::high)
+        << "lua: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
-      // Register lua layer.
-      io::protocols::instance().reg("lua",
-        lua::factory(),
-        1,
-        7);
-    }
+    // Register lua layer.
+    io::protocols::instance().reg("lua", lua::factory(), 1, 7);
   }
+}
 }

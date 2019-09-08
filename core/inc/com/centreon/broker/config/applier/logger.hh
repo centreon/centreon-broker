@@ -17,47 +17,45 @@
 */
 
 #ifndef CCB_CONFIG_APPLIER_LOGGER_HH
-#  define CCB_CONFIG_APPLIER_LOGGER_HH
+#define CCB_CONFIG_APPLIER_LOGGER_HH
 
-#  include <list>
-#  include <map>
-#  include <memory>
-#  include "com/centreon/broker/config/logger.hh"
-#  include "com/centreon/broker/logging/backend.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <list>
+#include <map>
+#include <memory>
+#include "com/centreon/broker/config/logger.hh"
+#include "com/centreon/broker/logging/backend.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace            config {
-  namespace          applier {
-    /**
-     *  @class logger logger.hh "com/centreon/broker/config/applier/logger.hh"
-     *  @brief Open and close loggers.
-     *
-     *  According to some configuration, open and close logging objects
-     *  as requested.
-     */
-    class            logger {
-    public:
-                     ~logger();
-      void           apply(std::list<config::logger> const& loggers);
-      static logger& instance();
-      static void    load();
-      static void    unload();
+namespace config {
+namespace applier {
+/**
+ *  @class logger logger.hh "com/centreon/broker/config/applier/logger.hh"
+ *  @brief Open and close loggers.
+ *
+ *  According to some configuration, open and close logging objects
+ *  as requested.
+ */
+class logger {
+ public:
+  ~logger();
+  void apply(std::list<config::logger> const& loggers);
+  static logger& instance();
+  static void load();
+  static void unload();
 
-    private:
-                     logger();
-                     logger(logger const& l);
-      logger&        operator=(logger const& l);
-      std::shared_ptr<logging::backend>
-                     _new_backend(config::logger const& cfg);
+ private:
+  logger();
+  logger(logger const& l);
+  logger& operator=(logger const& l);
+  std::shared_ptr<logging::backend> _new_backend(config::logger const& cfg);
 
-      std::map<config::logger, std::shared_ptr<logging::backend>>
-                     _backends;
-    };
-  }
-}
+  std::map<config::logger, std::shared_ptr<logging::backend>> _backends;
+};
+}  // namespace applier
+}  // namespace config
 
 CCB_END()
 
-#endif // !CCB_CONFIG_APPLIER_LOGGER_HH
+#endif  // !CCB_CONFIG_APPLIER_LOGGER_HH

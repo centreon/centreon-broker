@@ -16,21 +16,21 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/compression/factory.hh"
 #include <cstring>
 #include <memory>
-#include "com/centreon/broker/config/parser.hh"
-#include "com/centreon/broker/compression/factory.hh"
 #include "com/centreon/broker/compression/opener.hh"
 #include "com/centreon/broker/compression/stream.hh"
+#include "com/centreon/broker/config/parser.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::compression;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -78,11 +78,10 @@ io::factory* factory::clone() const {
  *  @return True if the configuration matches the compression layer.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  std::map<std::string, std::string>::const_iterator
-    it{cfg.params.find("compression")};
-  return cfg.params.end() != it
-         && strcasecmp(it->second.c_str(), "auto")
-         && config::parser::parse_boolean(it->second);
+  std::map<std::string, std::string>::const_iterator it{
+      cfg.params.find("compression")};
+  return cfg.params.end() != it && strcasecmp(it->second.c_str(), "auto") &&
+         config::parser::parse_boolean(it->second);
 }
 
 /**
@@ -94,8 +93,8 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *          layer.
  */
 bool factory::has_not_endpoint(config::endpoint& cfg) const {
-  std::map<std::string, std::string>::const_iterator
-    it{cfg.params.find("compression")};
+  std::map<std::string, std::string>::const_iterator it{
+      cfg.params.find("compression")};
   return (it != cfg.params.end() && strcasecmp(it->second.c_str(), "auto"))
              ? !has_endpoint(cfg)
              : false;
@@ -111,16 +110,16 @@ bool factory::has_not_endpoint(config::endpoint& cfg) const {
  *  @return New endpoint object.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   (void)is_acceptor;
   (void)cache;
 
   // Get compression level.
   int level{-1};
-  std::map<std::string, std::string>::const_iterator
-    it{cfg.params.find("compression_level")};
+  std::map<std::string, std::string>::const_iterator it{
+      cfg.params.find("compression_level")};
   if (it != cfg.params.end())
     level = std::stol(it->second);
 
@@ -146,10 +145,9 @@ io::endpoint* factory::new_endpoint(
  *
  *  @return New compression stream.
  */
-std::shared_ptr<io::stream> factory::new_stream(
-                                        std::shared_ptr<io::stream> to,
-                                        bool is_acceptor,
-                                        std::string const& proto_name) {
+std::shared_ptr<io::stream> factory::new_stream(std::shared_ptr<io::stream> to,
+                                                bool is_acceptor,
+                                                std::string const& proto_name) {
   (void)is_acceptor;
   (void)proto_name;
   std::shared_ptr<io::stream> s{std::make_shared<stream>()};

@@ -17,27 +17,26 @@
 */
 
 #ifndef CCB_NOTIFICATION_NODE_HH
-#  define CCB_NOTIFICATION_NODE_HH
+#define CCB_NOTIFICATION_NODE_HH
 
-#  include <ctime>
-#  include "com/centreon/broker/namespace.hh"
+#include <ctime>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        notification {
-  namespace      objects {
+namespace notification {
+namespace objects {
 
-    struct         record {
-      record(const char* name, unsigned int index) :
-        name(name), index(index) {}
-      record() : name(NULL), index(0) {}
+struct record {
+  record(const char* name, unsigned int index) : name(name), index(index) {}
+  record() : name(NULL), index(0) {}
 
-      const char*  name;
-      unsigned int index;
-    };
-  }
-}
+  const char* name;
+  unsigned int index;
+};
+}  // namespace objects
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_NODE_HH
+#endif  // !CCB_NOTIFICATION_NODE_HH

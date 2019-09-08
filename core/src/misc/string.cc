@@ -71,7 +71,7 @@ bool string::split(std::string& line,
 
   last_pos = line.find_last_not_of(whitespaces, delim_pos - 1);
   if (last_pos == std::string::npos)
-    *key = NULL;
+    *key = nullptr;
   else {
     first_pos = line.find_first_not_of(whitespaces);
     line[last_pos + 1] = '\0';
@@ -80,7 +80,7 @@ bool string::split(std::string& line,
 
   first_pos = line.find_first_not_of(whitespaces, delim_pos + 1);
   if (first_pos == std::string::npos)
-    *value = NULL;
+    *value = nullptr;
   else {
     last_pos = line.find_last_not_of(whitespaces);
     line[last_pos + 1] = '\0';

@@ -21,10 +21,10 @@
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Default constructor.
@@ -32,37 +32,37 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 host_service_status::host_service_status()
-  : acknowledged(false),
-    acknowledgement_type(0),
-    active_checks_enabled(false),
-    check_interval(0.0),
-    check_type(0),
-    current_check_attempt(0),
-    current_state(4), // Pending
-    downtime_depth(0),
-    enabled(true),
-    execution_time(0.0),
-    has_been_checked(false),
-    host_id(0),
-    is_flapping(false),
-    last_check(0),
-    last_hard_state(4), // Pending
-    last_hard_state_change(0),
-    last_notification(0),
-    last_state_change(0),
-    last_update(0),
-    latency(0.0),
-    max_check_attempts(0),
-    next_check(0),
-    next_notification(0),
-    no_more_notifications(false),
-    notification_number(0),
-    obsess_over(false),
-    passive_checks_enabled(false),
-    percent_state_change(0.0),
-    retry_interval(0.0),
-    should_be_scheduled(false),
-    state_type(0) {}
+    : acknowledged(false),
+      acknowledgement_type(0),
+      active_checks_enabled(false),
+      check_interval(0.0),
+      check_type(0),
+      current_check_attempt(0),
+      current_state(4),  // Pending
+      downtime_depth(0),
+      enabled(true),
+      execution_time(0.0),
+      has_been_checked(false),
+      host_id(0),
+      is_flapping(false),
+      last_check(0),
+      last_hard_state(4),  // Pending
+      last_hard_state_change(0),
+      last_notification(0),
+      last_state_change(0),
+      last_update(0),
+      latency(0.0),
+      max_check_attempts(0),
+      next_check(0),
+      next_notification(0),
+      no_more_notifications(false),
+      notification_number(0),
+      obsess_over(false),
+      passive_checks_enabled(false),
+      percent_state_change(0.0),
+      retry_interval(0.0),
+      should_be_scheduled(false),
+      state_type(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -72,7 +72,7 @@ host_service_status::host_service_status()
  *  @param[in] hss Object to copy.
  */
 host_service_status::host_service_status(host_service_status const& hss)
-  : status(hss) {
+    : status(hss) {
   _internal_copy(hss);
 }
 
@@ -90,17 +90,18 @@ host_service_status::~host_service_status() {}
  *
  *  @return This object.
  */
-host_service_status& host_service_status::operator=(host_service_status const& hss) {
+host_service_status& host_service_status::operator=(
+    host_service_status const& hss) {
   status::operator=(hss);
   _internal_copy(hss);
   return (*this);
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Copy internal data of the given object to the current
@@ -148,5 +149,5 @@ void host_service_status::_internal_copy(host_service_status const& hss) {
   retry_interval = hss.retry_interval;
   should_be_scheduled = hss.should_be_scheduled;
   state_type = hss.state_type;
-  return ;
+  return;
 }

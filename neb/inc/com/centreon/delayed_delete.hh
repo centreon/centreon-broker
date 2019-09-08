@@ -17,10 +17,10 @@
 */
 
 #ifndef CC_DELAYED_DELETE_HH
-#  define CC_DELAYED_DELETE_HH
+#define CC_DELAYED_DELETE_HH
 
-#  include <cstddef>
-#  include "com/centreon/namespace.hh"
+#include <cstddef>
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
@@ -35,30 +35,27 @@ CC_BEGIN()
  *
  *  @see task_manager
  */
-template          <typename T>
-class             delayed_delete : public task {
-public:
+template <typename T>
+class delayed_delete : public task {
+ public:
   /**
    *  Default constructor.
    *
    *  @param[in] ptr Pointer to delete.
    */
-                  delayed_delete(T* ptr) : _ptr(ptr) {}
+  delayed_delete(T* ptr) : _ptr(ptr) {}
 
   /**
    *  Copy constructor.
    *
    *  @param[in] dd Object to copy.
    */
-                  delayed_delete(delayed_delete const& dd)
-    : task(dd) {
-    _internal_copy(dd);
-  }
+  delayed_delete(delayed_delete const& dd) : task(dd) { _internal_copy(dd); }
 
   /**
    *  Destructor.
    */
-                  ~delayed_delete() throw () {}
+  ~delayed_delete() throw() {}
 
   /**
    *  Assignment operator.
@@ -78,26 +75,26 @@ public:
   /**
    *  Delete pointer.
    */
-  void            run() {
+  void run() {
     delete _ptr;
     _ptr = NULL;
-    return ;
+    return;
   }
 
-private:
+ private:
   /**
    *  Copy internal data members.
    *
    *  @param[in] dd Object to copy.
    */
-  void            _internal_copy(delayed_delete const& dd) {
+  void _internal_copy(delayed_delete const& dd) {
     _ptr = dd._ptr;
-    return ;
+    return;
   }
 
-  T*              _ptr;
+  T* _ptr;
 };
 
 CC_END()
 
-#endif // !CC_DELAYED_DELETE_HH
+#endif  // !CC_DELAYED_DELETE_HH

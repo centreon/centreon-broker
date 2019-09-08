@@ -16,7 +16,7 @@
 ** For more information : contact@centreon.com
 */
 #ifndef CCB_MYSQL_RESULT_HH
-#  define CCB_MYSQL_RESULT_HH
+#define CCB_MYSQL_RESULT_HH
 
 #include <memory>
 #include "com/centreon/broker/database/mysql_bind.hh"
@@ -25,60 +25,54 @@ CCB_BEGIN()
 
 class mysql_connection;
 
-namespace                       database {
-  /**
-   *  @class mysql mysql.hh "com/centreon/broker/storage/mysql.hh"
-   *  @brief Class managing the mysql connection
-   *
-   *  Here is a binding to the C MYSQL_RES. This is useful because of the
-   *  delete functionality that must call the mysql_free_result() function.
-   */
-  class                         mysql_result {
-   public:
-                                mysql_result(
-                                  mysql_connection* parent,
-                                  int statement = 0);
-                                mysql_result(
-                                  mysql_connection* parent,
-                                  MYSQL_RES* res);
-                                mysql_result(mysql_result&& other);
-                                ~mysql_result();
-    mysql_result&               operator=(mysql_result const& other);
-    bool                        value_as_bool(int idx);
-    float                       value_as_f32(int idx);
-    double                      value_as_f64(int idx);
-    int                         value_as_i32(int idx);
-    std::string                 value_as_str(int idx);
-    unsigned int                value_as_u32(int idx);
-    unsigned long long          value_as_u64(int idx);
-    bool                        value_is_null(int idx);
-    bool                        is_empty() const;
-    int                         get_rows_count() const;
-    void                        set(MYSQL_RES* res);
-    MYSQL_RES*                  get();
-    void                        set_bind(std::unique_ptr<database::mysql_bind>&& bind);
-    std::unique_ptr<database::mysql_bind>&
-                                get_bind();
-    void                        set_row(MYSQL_ROW row);
-    int                         get_statement_id() const;
-    mysql_connection*           get_connection();
-    int                         get_num_fields() const;
-    char const*                 get_field_name(int idx) const;
+namespace database {
+/**
+ *  @class mysql mysql.hh "com/centreon/broker/storage/mysql.hh"
+ *  @brief Class managing the mysql connection
+ *
+ *  Here is a binding to the C MYSQL_RES. This is useful because of the
+ *  delete functionality that must call the mysql_free_result() function.
+ */
+class mysql_result {
+ public:
+  mysql_result(mysql_connection* parent, int statement = 0);
+  mysql_result(mysql_connection* parent, MYSQL_RES* res);
+  mysql_result(mysql_result&& other);
+  ~mysql_result();
+  mysql_result& operator=(mysql_result const& other);
+  bool value_as_bool(int idx);
+  float value_as_f32(int idx);
+  double value_as_f64(int idx);
+  int value_as_i32(int idx);
+  std::string value_as_str(int idx);
+  unsigned int value_as_u32(int idx);
+  unsigned long long value_as_u64(int idx);
+  bool value_is_null(int idx);
+  bool is_empty() const;
+  int get_rows_count() const;
+  void set(MYSQL_RES* res);
+  MYSQL_RES* get();
+  void set_bind(std::unique_ptr<database::mysql_bind>&& bind);
+  std::unique_ptr<database::mysql_bind>& get_bind();
+  void set_row(MYSQL_ROW row);
+  int get_statement_id() const;
+  mysql_connection* get_connection();
+  int get_num_fields() const;
+  char const* get_field_name(int idx) const;
 
-   private:
-    mysql_connection*           _parent;
-    std::shared_ptr<MYSQL_RES>  _result;
+ private:
+  mysql_connection* _parent;
+  std::shared_ptr<MYSQL_RES> _result;
 
-    // The row contains the result for a simple query (no statement).
-    MYSQL_ROW                   _row;
+  // The row contains the result for a simple query (no statement).
+  MYSQL_ROW _row;
 
-    // the bind and the statement_id are filled in both or empty both.
-    std::unique_ptr<database::mysql_bind>
-                                _bind;
-    int                         _statement_id;
-  };
-}
+  // the bind and the statement_id are filled in both or empty both.
+  std::unique_ptr<database::mysql_bind> _bind;
+  int _statement_id;
+};
+}  // namespace database
 
 CCB_END()
 
-#  endif  //CCB_MYSQL_RESULT_HH
+#endif  // CCB_MYSQL_RESULT_HH

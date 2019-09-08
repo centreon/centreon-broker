@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/lua/factory.hh"
 #include <cstring>
 #include <json11.hpp>
 #include <memory>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/lua/connector.hh"
-#include "com/centreon/broker/lua/factory.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
@@ -35,13 +35,12 @@ using namespace json11;
  *
  *  @return Property value.
  */
-static std::string find_param(
-                     config::endpoint const& cfg,
-                     std::string const& key) {
+static std::string find_param(config::endpoint const& cfg,
+                              std::string const& key) {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
-    throw exceptions::msg() << "lua: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'";
+    throw exceptions::msg()
+        << "lua: no '" << key << "' defined for endpoint '" << cfg.name << "'";
   return it->second;
 }
 
@@ -109,9 +108,9 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return New endpoint.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   std::map<std::string, misc::variant> conf_map;
   std::string err;
 
@@ -119,26 +118,26 @@ io::endpoint* factory::new_endpoint(
   Json const& js{cfg.cfg["lua_parameter"]};
 
   if (!err.empty())
-    throw exceptions::msg()
-      << "lua: couldn't read a configuration json";
+    throw exceptions::msg() << "lua: couldn't read a configuration json";
 
   if (js.is_object()) {
-    Json const &name{js["name"]};
-    Json const &type{js["type"]};
-    Json const &value{js["value"]};
+    Json const& name{js["name"]};
+    Json const& type{js["type"]};
+    Json const& value{js["value"]};
 
     if (name.string_value().empty())
       throw exceptions::msg()
-        << "lua: couldn't read a configuration field because"
-        << " its name is empty";
+          << "lua: couldn't read a configuration field because"
+          << " its name is empty";
     if (value.string_value().empty())
       throw exceptions::msg()
-        << "lua: couldn't read a configuration field because"
-        << "' configuration field because its value is empty";
-    std::string t((type.string_value().empty())
-                  ? "string" : type.string_value());
+          << "lua: couldn't read a configuration field because"
+          << "' configuration field because its value is empty";
+    std::string t((type.string_value().empty()) ? "string"
+                                                : type.string_value());
     if (t == "string" || t == "password")
-      conf_map.insert({name.string_value(), misc::variant(value.string_value())});
+      conf_map.insert(
+          {name.string_value(), misc::variant(value.string_value())});
     else if (t == "number") {
       bool ko = false;
       size_t pos;
@@ -156,7 +155,7 @@ io::endpoint* factory::new_endpoint(
       if (ko) {
         try {
           double val = std::stod(v, &pos);
-          if (pos == v.size()) // All the string is read
+          if (pos == v.size())  // All the string is read
             conf_map.insert({name.string_value(), misc::variant(val)});
           else
             ko = true;
@@ -170,23 +169,24 @@ io::endpoint* factory::new_endpoint(
             << value.string_value() << ") as a number";
     }
   } else if (js.is_array()) {
-    for (Json const &obj : js.array_items()) {
-      Json const &name{obj["name"]};
-      Json const &type{obj["type"]};
-      Json const &value{obj["value"]};
+    for (Json const& obj : js.array_items()) {
+      Json const& name{obj["name"]};
+      Json const& type{obj["type"]};
+      Json const& value{obj["value"]};
 
       if (name.string_value().empty())
         throw exceptions::msg()
-          << "lua: couldn't read a configuration field because"
-          << " its name is empty";
+            << "lua: couldn't read a configuration field because"
+            << " its name is empty";
       if (value.string_value().empty())
         throw exceptions::msg()
-          << "lua: couldn't read a configuration field because"
-          << "' configuration field because its value is empty";
-      std::string t((type.string_value().empty())
-                    ? "string" : type.string_value());
+            << "lua: couldn't read a configuration field because"
+            << "' configuration field because its value is empty";
+      std::string t((type.string_value().empty()) ? "string"
+                                                  : type.string_value());
       if (t == "string" || t == "password")
-        conf_map.insert({name.string_value(), misc::variant(value.string_value())});
+        conf_map.insert(
+            {name.string_value(), misc::variant(value.string_value())});
       else if (t == "number") {
         try {
           int val = std::stol(value.string_value());

@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "test/centengine_config.hh"
 #include <cstring>
 #include <sstream>
 #include "com/centreon/engine/objects.hh"
-#include "test/centengine_config.hh"
 #include "test/vars.hh"
 
 using namespace com::centreon::broker;
@@ -112,10 +112,8 @@ centengine_config::~centengine_config() {}
  *          get_hosts().end() otherwise.
  */
 centengine_config::objlist::iterator centengine_config::find_host(
-                                       std::string const& host_name) {
-  for (objlist::iterator it(_hosts.begin()), end(_hosts.end());
-       it != end;
-       ++it)
+    std::string const& host_name) {
+  for (objlist::iterator it(_hosts.begin()), end(_hosts.end()); it != end; ++it)
     if (it->get("host_name") == host_name)
       return (it);
   return (_hosts.end());
@@ -131,13 +129,12 @@ centengine_config::objlist::iterator centengine_config::find_host(
  *          get_services().end() otherwise.
  */
 centengine_config::objlist::iterator centengine_config::find_service(
-                                       std::string const& host_name,
-                                       std::string const& service_description) {
-  for (objlist::iterator it(_services.begin()), end(_services.end());
-       it != end;
+    std::string const& host_name,
+    std::string const& service_description) {
+  for (objlist::iterator it(_services.begin()), end(_services.end()); it != end;
        ++it)
-    if ((it->get("host_name") == host_name)
-        && (it->get("service_description") == service_description))
+    if ((it->get("host_name") == host_name) &&
+        (it->get("service_description") == service_description))
       return (it);
   return (_services.end());
 }
@@ -148,9 +145,8 @@ centengine_config::objlist::iterator centengine_config::find_service(
  *  @param[in] dependent_host  Name of dependent host.
  *  @param[in] depended_host   Name of depended host.
  */
-void centengine_config::host_depends_on(
-                          std::string const& dependent_host,
-                          std::string const& depended_host) {
+void centengine_config::host_depends_on(std::string const& dependent_host,
+                                        std::string const& depended_host) {
   centengine_object obj(centengine_object::hostdependency_type);
   obj.set("dependent_host_name", dependent_host);
   obj.set("host_name", depended_host);
@@ -159,7 +155,7 @@ void centengine_config::host_depends_on(
   obj.set("notification_failure_options", "a");
   obj.set("execution_failure_options", "a");
   _host_deps.push_back(obj);
-  return ;
+  return;
 }
 
 /**
@@ -168,9 +164,8 @@ void centengine_config::host_depends_on(
  *  @param[in] parent_host  Parent host.
  *  @param[in] child_host   Child host.
  */
-void centengine_config::host_parent_of(
-                          std::string const& parent_host,
-                          std::string const& child_host) {
+void centengine_config::host_parent_of(std::string const& parent_host,
+                                       std::string const& child_host) {
   objlist::iterator it(find_host(child_host));
   if (it != _hosts.end()) {
     std::string parents(it->get("parents"));
@@ -182,7 +177,7 @@ void centengine_config::host_parent_of(
       it->set("parents", parents);
     }
   }
-  return ;
+  return;
 }
 
 /**
@@ -208,7 +203,7 @@ void centengine_config::generate_commands(int count) {
     _commands.push_back(new_command);
   }
 
-  return ;
+  return;
 }
 
 /**
@@ -235,7 +230,7 @@ void centengine_config::generate_hosts(int count) {
     _hosts.push_back(new_host);
   }
 
-  return ;
+  return;
 }
 
 /**
@@ -247,8 +242,7 @@ void centengine_config::generate_hosts(int count) {
 void centengine_config::generate_services(int services_per_host) {
   static int id(0);
 
-  for (objlist::iterator it(++_hosts.begin()), end(_hosts.end());
-       it != end;
+  for (objlist::iterator it(++_hosts.begin()), end(_hosts.end()); it != end;
        ++it) {
     for (int i(0); i < services_per_host; ++i) {
       // Generate service description.
@@ -268,7 +262,7 @@ void centengine_config::generate_services(int services_per_host) {
     }
   }
 
-  return ;
+  return;
 }
 
 /**
@@ -321,7 +315,8 @@ centengine_config::objlist const& centengine_config::get_contacts() const {
  *
  *  @return Directives map.
  */
-std::map<std::string, std::string> const& centengine_config::get_directives() const {
+std::map<std::string, std::string> const& centengine_config::get_directives()
+    const {
   return (_directives);
 }
 
@@ -357,7 +352,8 @@ centengine_config::objlist& centengine_config::get_host_dependencies() {
  *
  *  @return Non-modifiable host dependency list.
  */
-centengine_config::objlist const& centengine_config::get_host_dependencies() const {
+centengine_config::objlist const& centengine_config::get_host_dependencies()
+    const {
   return (_host_deps);
 }
 
@@ -411,7 +407,8 @@ centengine_config::objlist& centengine_config::get_service_dependencies() {
  *
  *  @return Non-modifiable service dependency list.
  */
-centengine_config::objlist const& centengine_config::get_service_dependencies() const {
+centengine_config::objlist const& centengine_config::get_service_dependencies()
+    const {
   return (_service_deps);
 }
 
@@ -429,7 +426,8 @@ centengine_config::objlist& centengine_config::get_service_groups() {
  *
  *  @return Non-modifiable host group list.
  */
-centengine_config::objlist const& centengine_config::get_service_groups() const {
+centengine_config::objlist const& centengine_config::get_service_groups()
+    const {
   return (_service_groups);
 }
 
@@ -460,17 +458,17 @@ centengine_config::objlist const& centengine_config::get_timeperiods() const {
  *  @param[in] depended_service   Depended service.
  */
 void centengine_config::service_depends_on(
-                          std::string const& dependent_host,
-                          std::string const& dependent_service,
-                          std::string const& depended_host,
-                          std::string const& depended_service) {
+    std::string const& dependent_host,
+    std::string const& dependent_service,
+    std::string const& depended_host,
+    std::string const& depended_service) {
   centengine_object obj(centengine_object::servicedependency_type);
   obj.set("dependent_host_name", dependent_host);
   obj.set("dependent_service_description", dependent_service);
   obj.set("host_name", depended_host);
   obj.set("service_description", depended_service);
   _service_deps.push_back(obj);
-  return ;
+  return;
 }
 
 /**
@@ -478,10 +476,9 @@ void centengine_config::service_depends_on(
  *
  *  @param[in] cfg_path  Path to the configuration file.
  */
-void centengine_config::set_cbmod_cfg_file(
-                          std::string const& cfg_path) {
+void centengine_config::set_cbmod_cfg_file(std::string const& cfg_path) {
   _cbmod_cfg = cfg_path;
-  return ;
+  return;
 }
 
 /**
@@ -490,9 +487,8 @@ void centengine_config::set_cbmod_cfg_file(
  *  @param[in] directive  Directive name.
  *  @param[in] value      Directive value.
  */
-void centengine_config::set_directive(
-                          std::string const& directive,
-                          std::string const& value) {
+void centengine_config::set_directive(std::string const& directive,
+                                      std::string const& value) {
   _directives[directive] = value;
-  return ;
+  return;
 }

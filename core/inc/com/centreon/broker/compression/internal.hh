@@ -17,17 +17,17 @@
 */
 
 #ifndef CCB_COMPRESSION_INTERNAL_HH
-#  define CCB_COMPRESSION_INTERNAL_HH
+#define CCB_COMPRESSION_INTERNAL_HH
 
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace compression {
-  void    load();
-  void    unload();
-}
+void load();
+void unload();
+}  // namespace compression
 
 CCB_END()
 
-#endif // !CCB_COMPRESSION_INTERNAL_HH
+#endif  // !CCB_COMPRESSION_INTERNAL_HH

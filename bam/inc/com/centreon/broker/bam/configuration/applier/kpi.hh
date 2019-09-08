@@ -17,81 +17,72 @@
 */
 
 #ifndef CCB_BAM_CONFIGURATION_APPLIER_KPI_HH
-#  define CCB_BAM_CONFIGURATION_APPLIER_KPI_HH
+#define CCB_BAM_CONFIGURATION_APPLIER_KPI_HH
 
-#  include <map>
-#  include <memory>
-#  include "com/centreon/broker/bam/kpi.hh"
-#  include "com/centreon/broker/bam/configuration/kpi.hh"
-#  include "com/centreon/broker/bam/configuration/state.hh"
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <map>
+#include <memory>
+#include "com/centreon/broker/bam/configuration/kpi.hh"
+#include "com/centreon/broker/bam/configuration/state.hh"
+#include "com/centreon/broker/bam/kpi.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     bam {
-  // Forward declaration.
-  class       service_book;
+namespace bam {
+// Forward declaration.
+class service_book;
 
-  namespace   configuration {
-    namespace applier {
-      // Forward declarations.
-      class   ba;
-      class   bool_expression;
-      class   meta_service;
+namespace configuration {
+namespace applier {
+// Forward declarations.
+class ba;
+class bool_expression;
+class meta_service;
 
-      /**
-       *  @class kpi kpi.hh "com/centreon/broker/bam/configuration/applier/kpi.hh"
-       *  @brief Apply KPI configuration.
-       *
-       *  Take the configuration of KPIs and apply it.
-       */
-      class   kpi {
-      public:
-              kpi();
-              kpi(kpi const& other);
-              ~kpi();
-        kpi&  operator=(kpi const& other);
-        void  apply(
-                configuration::state::kpis const& my_kpis,
-                hst_svc_mapping const& mapping,
-                ba& my_bas,
-                meta_service& my_metas,
-                bool_expression& my_boolexps,
-                service_book& book);
-        void  visit(io::stream* visitor);
+/**
+ *  @class kpi kpi.hh "com/centreon/broker/bam/configuration/applier/kpi.hh"
+ *  @brief Apply KPI configuration.
+ *
+ *  Take the configuration of KPIs and apply it.
+ */
+class kpi {
+ public:
+  kpi();
+  kpi(kpi const& other);
+  ~kpi();
+  kpi& operator=(kpi const& other);
+  void apply(configuration::state::kpis const& my_kpis,
+             hst_svc_mapping const& mapping,
+             ba& my_bas,
+             meta_service& my_metas,
+             bool_expression& my_boolexps,
+             service_book& book);
+  void visit(io::stream* visitor);
 
-      private:
-        struct applied {
-          configuration::kpi         cfg;
-          std::shared_ptr<bam::kpi> obj;
-        };
+ private:
+  struct applied {
+    configuration::kpi cfg;
+    std::shared_ptr<bam::kpi> obj;
+  };
 
-        void  _internal_copy(kpi const& other);
-        std::shared_ptr<bam::kpi>
-              _new_kpi(configuration::kpi const& cfg);
-        void  _invalidate_ba(configuration::kpi const& cfg);
-        void  _remove_kpi(unsigned int kpi_id);
-        void  _resolve_kpi(
-                configuration::kpi const& cfg,
-                std::shared_ptr<bam::kpi>);
+  void _internal_copy(kpi const& other);
+  std::shared_ptr<bam::kpi> _new_kpi(configuration::kpi const& cfg);
+  void _invalidate_ba(configuration::kpi const& cfg);
+  void _remove_kpi(unsigned int kpi_id);
+  void _resolve_kpi(configuration::kpi const& cfg, std::shared_ptr<bam::kpi>);
 
-        std::map<unsigned int, applied>
-              _applied;
-        ba*   _bas;
-        service_book*
-              _book;
-        bool_expression*
-              _boolexps;
-        hst_svc_mapping const*
-              _mapping;
-        meta_service*
-              _metas;
-      };
-    }
-  }
-}
+  std::map<unsigned int, applied> _applied;
+  ba* _bas;
+  service_book* _book;
+  bool_expression* _boolexps;
+  hst_svc_mapping const* _mapping;
+  meta_service* _metas;
+};
+}  // namespace applier
+}  // namespace configuration
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_CONFIGURATION_APPLIER_KPI_HH
+#endif  // !CCB_BAM_CONFIGURATION_APPLIER_KPI_HH

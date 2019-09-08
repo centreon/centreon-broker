@@ -16,21 +16,21 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/storage/factory.hh"
 #include <cstring>
 #include <memory>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/storage/connector.hh"
-#include "com/centreon/broker/storage/factory.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 /**
  *  Find a parameter in configuration.
@@ -40,21 +40,20 @@ using namespace com::centreon::broker::storage;
  *
  *  @return Property value.
  */
-static std::string const& find_param(
-                        config::endpoint const& cfg,
-                        std::string const& key) {
+static std::string const& find_param(config::endpoint const& cfg,
+                                     std::string const& key) {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
     throw exceptions::msg() << "storage: no '" << key
-           << "' defined for endpoint '" << cfg.name << "'";
+                            << "' defined for endpoint '" << cfg.name << "'";
   return it->second;
 }
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -120,19 +119,20 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return Endpoint matching the given configuration.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   (void)cache;
 
   // Find RRD length.
-  unsigned int rrd_length{static_cast<unsigned int>(std::stoul(find_param(cfg, "length")))};
+  unsigned int rrd_length{
+      static_cast<unsigned int>(std::stoul(find_param(cfg, "length")))};
 
   // Find interval length if set.
   unsigned int interval_length{0};
   {
-    std::map<std::string, std::string>::const_iterator
-      it{cfg.params.find("interval")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("interval")};
     if (it != cfg.params.end())
       interval_length = std::stoul(it->second);
     if (!interval_length)
@@ -145,8 +145,8 @@ io::endpoint* factory::new_endpoint(
   // Rebuild check interval.
   unsigned int rebuild_check_interval(0);
   {
-    std::map<std::string, std::string>::const_iterator
-      it{cfg.params.find("rebuild_check_interval")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("rebuild_check_interval")};
     if (it != cfg.params.end())
       rebuild_check_interval = std::stoul(it->second);
     else
@@ -156,8 +156,8 @@ io::endpoint* factory::new_endpoint(
   // Store or not in data_bin.
   bool store_in_data_bin(true);
   {
-    std::map<std::string, std::string>::const_iterator
-      it{cfg.params.find("store_in_data_bin")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("store_in_data_bin")};
     if (it != cfg.params.end())
       store_in_data_bin = config::parser::parse_boolean(it->second);
   }
@@ -165,21 +165,16 @@ io::endpoint* factory::new_endpoint(
   // Insert entries or not in index_data.
   bool insert_in_index_data(false);
   {
-    std::map<std::string, std::string>::const_iterator
-      it{cfg.params.find("insert_in_index_data")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("insert_in_index_data")};
     if (it != cfg.params.end())
       insert_in_index_data = config::parser::parse_boolean(it->second);
   }
 
   // Connector.
   std::unique_ptr<storage::connector> c(new storage::connector);
-  c->connect_to(
-       db_cfg,
-       rrd_length,
-       interval_length,
-       rebuild_check_interval,
-       store_in_data_bin,
-       insert_in_index_data);
+  c->connect_to(db_cfg, rrd_length, interval_length, rebuild_check_interval,
+                store_in_data_bin, insert_in_index_data);
   is_acceptor = false;
   return c.release();
 }

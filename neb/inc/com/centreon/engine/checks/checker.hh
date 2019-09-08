@@ -18,28 +18,28 @@
 */
 
 #ifndef CCE_CHECKS_CHECKER_HH
-#  define CCE_CHECKS_CHECKER_HH
+#define CCE_CHECKS_CHECKER_HH
 
-#  include <queue>
-#  include "com/centreon/concurrency/mutex.hh"
-#  include "com/centreon/engine/checks.hh"
-#  include "com/centreon/engine/commands/command.hh"
-#  include "com/centreon/engine/commands/command_listener.hh"
-#  include "com/centreon/engine/commands/result.hh"
-#  include "com/centreon/engine/host.hh"
-#  include "com/centreon/engine/namespace.hh"
-#  include "com/centreon/engine/service.hh"
+#include <queue>
+#include "com/centreon/concurrency/mutex.hh"
+#include "com/centreon/engine/checks.hh"
+#include "com/centreon/engine/commands/command.hh"
+#include "com/centreon/engine/commands/command_listener.hh"
+#include "com/centreon/engine/commands/result.hh"
+#include "com/centreon/engine/host.hh"
+#include "com/centreon/engine/namespace.hh"
+#include "com/centreon/engine/service.hh"
 
 CCE_BEGIN()
 
-namespace                checks {
-  /**
-   *  @class checks checks.hh
-   *  @brief Run object and reap the result.
-   *
-   *  Checker is a singleton to run host or service and reap the
-   *  result.
-   */
+namespace checks {
+/**
+ *  @class checks checks.hh
+ *  @brief Run object and reap the result.
+ *
+ *  Checker is a singleton to run host or service and reap the
+ *  result.
+ */
 class checker : public commands::command_listener {
  public:
   static checker& instance();
@@ -82,8 +82,8 @@ class checker : public commands::command_listener {
   std::queue<check_result> _to_reap;
   std::unordered_map<uint64_t, check_result> _to_reap_partial;
 };
-}
+}  // namespace checks
 
 CCE_END()
 
-#endif // !CCE_CHECKS_CHECKER_HH
+#endif  // !CCE_CHECKS_CHECKER_HH

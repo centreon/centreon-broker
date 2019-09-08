@@ -17,39 +17,38 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_NODE_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_NODE_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_NODE_BUILDER_HH
 
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/node.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/objects/node.hh"
 
 CCB_BEGIN()
 
-namespace        notification {
+namespace notification {
+/**
+ *  @class node_builder node_builder.hh
+ * "com/centreon/broker/notification/builders/node_builder.hh"
+ *  @brief Node builder interface.
+ *
+ *  This interface define what methods node builders need to implement.
+ */
+class node_builder {
+ public:
   /**
-   *  @class node_builder node_builder.hh "com/centreon/broker/notification/builders/node_builder.hh"
-   *  @brief Node builder interface.
-   *
-   *  This interface define what methods node builders need to implement.
+   *  Virtual destructor.
    */
-  class          node_builder {
-  public:
-    /**
-     *  Virtual destructor.
-     */
-    virtual      ~node_builder() {}
+  virtual ~node_builder() {}
 
-    /**
-     *  Add a node to the builder.
-     *
-     *  @param[in] node The node.
-     */
-    virtual void add_node(objects::node::ptr node) {
-      (void)node;
-    }
-  };
+  /**
+   *  Add a node to the builder.
+   *
+   *  @param[in] node The node.
+   */
+  virtual void add_node(objects::node::ptr node) { (void)node; }
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_NODE_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_NODE_BUILDER_HH

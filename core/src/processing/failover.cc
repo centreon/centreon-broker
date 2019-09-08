@@ -302,7 +302,7 @@ void failover::run() {
         // If both timed out, sleep a while.
         d.reset();
         if (timed_out_stream && timed_out_muxer) {
-          time_t now(time(NULL));
+          time_t now(time(nullptr));
           int we(0);
           if (should_commit) {
             should_commit = false;
@@ -451,7 +451,7 @@ bool failover::wait(unsigned long time) {
  *  @return  The state of the failover.
  */
 const char* failover::_get_state() const {
-  char const* ret = NULL;
+  char const* ret = nullptr;
   if (_streamm.try_lock_for(std::chrono::milliseconds(10))) {
     if (!_stream)
       ret = "connecting";

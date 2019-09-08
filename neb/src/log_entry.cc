@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/log_entry.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*          Public Methods             *
-*                                     *
-**************************************/
+ *                                     *
+ *          Public Methods             *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Default constructor.
@@ -35,14 +35,14 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 log_entry::log_entry()
-  : c_time(0),
-    host_id(0),
-    issue_start_time(0),
-    log_type(0),
-    msg_type(5),
-    retry(0),
-    service_id(0),
-    status(0) {}
+    : c_time(0),
+      host_id(0),
+      issue_start_time(0),
+      log_type(0),
+      msg_type(5),
+      retry(0),
+      service_id(0),
+      status(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -94,10 +94,10 @@ unsigned int log_entry::static_type() {
 }
 
 /**************************************
-*                                     *
-*          Private Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *          Private Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Copy all internal data of the given object to the current
@@ -123,76 +123,51 @@ void log_entry::_internal_copy(log_entry const& le) {
   service_description = le.service_description;
   service_id = le.service_id;
   status = le.status;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const log_entry::entries[] = {
-  mapping::entry(
-    &log_entry::c_time,
-    "ctime"),
-  mapping::entry(
-    &log_entry::host_id,
-    "host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &log_entry::host_name,
-    "host_name"),
-  mapping::entry(
-    &log_entry::poller_name,
-    "instance_name"),
-  mapping::entry(
-    &log_entry::issue_start_time,
-    "",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &log_entry::log_type,
-    "type"),
-  mapping::entry(
-    &log_entry::msg_type,
-    "msg_type"),
-  mapping::entry(
-    &log_entry::notification_cmd,
-    NULL,
-    mapping::entry::always_valid,
-    true,
-    "notification_cmd"),
-  mapping::entry(
-    &log_entry::notification_contact,
-    NULL,
-    mapping::entry::always_valid,
-    true,
-    "notification_contact"),
-  mapping::entry(
-    &log_entry::retry,
-    "retry"),
-  mapping::entry(
-    &log_entry::service_description,
-    "service_description",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &log_entry::service_id,
-    "service_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &log_entry::status,
-    "status"),
-  mapping::entry(
-    &log_entry::output,
-    "output"),
-  mapping::entry()
-};
+    mapping::entry(&log_entry::c_time, "ctime"),
+    mapping::entry(&log_entry::host_id,
+                   "host_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&log_entry::host_name, "host_name"),
+    mapping::entry(&log_entry::poller_name, "instance_name"),
+    mapping::entry(&log_entry::issue_start_time,
+                   "",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&log_entry::log_type, "type"),
+    mapping::entry(&log_entry::msg_type, "msg_type"),
+    mapping::entry(&log_entry::notification_cmd,
+                   nullptr,
+                   mapping::entry::always_valid,
+                   true,
+                   "notification_cmd"),
+    mapping::entry(&log_entry::notification_contact,
+                   nullptr,
+                   mapping::entry::always_valid,
+                   true,
+                   "notification_contact"),
+    mapping::entry(&log_entry::retry, "retry"),
+    mapping::entry(&log_entry::service_description,
+                   "service_description",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&log_entry::service_id,
+                   "service_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&log_entry::status, "status"),
+    mapping::entry(&log_entry::output, "output"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_log_entry() {
   return (new log_entry);
 }
-io::event_info::event_operations const log_entry::operations = {
-  &new_log_entry
-};
+io::event_info::event_operations const log_entry::operations = {&new_log_entry};

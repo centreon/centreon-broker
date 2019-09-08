@@ -17,37 +17,34 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_NOTIFICATION_RULE_BY_ID_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_NOTIFICATION_RULE_BY_ID_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_NOTIFICATION_RULE_BY_ID_BUILDER_HH
 
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/node_id.hh"
-#  include "com/centreon/broker/notification/objects/notification_rule.hh"
-#  include "com/centreon/broker/notification/builders/notification_rule_builder.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/notification_rule_builder.hh"
+#include "com/centreon/broker/notification/objects/node_id.hh"
+#include "com/centreon/broker/notification/objects/notification_rule.hh"
 
 CCB_BEGIN()
 
-namespace       notification {
-  /**
-   *  @class notification_rule_by_id_builder notification_rule_by_id_builder.hh "com/centreon/broker/notification/builders/notification_rule_by_id_builder.hh"
-   *  @brief Notification rule by id builder.
-   */
-  class         notification_rule_by_id_builder
-                  : public notification_rule_builder {
-  public:
-    notification_rule_by_id_builder(
+namespace notification {
+/**
+ *  @class notification_rule_by_id_builder notification_rule_by_id_builder.hh
+ * "com/centreon/broker/notification/builders/notification_rule_by_id_builder.hh"
+ *  @brief Notification rule by id builder.
+ */
+class notification_rule_by_id_builder : public notification_rule_builder {
+ public:
+  notification_rule_by_id_builder(
       QHash<unsigned int, objects::notification_rule::ptr>& table);
 
-    void        add_rule(
-                  unsigned int id,
-                  objects::notification_rule::ptr con);
+  void add_rule(unsigned int id, objects::notification_rule::ptr con);
 
-  private:
-    QHash<unsigned int, objects::notification_rule::ptr>&
-                  _table;
-  };
+ private:
+  QHash<unsigned int, objects::notification_rule::ptr>& _table;
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_NOTIFICATION_RULE_BY_ID_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_NOTIFICATION_RULE_BY_ID_BUILDER_HH

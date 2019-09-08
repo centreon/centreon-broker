@@ -17,36 +17,33 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_COMPOSED_COMMAND_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_COMPOSED_COMMAND_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_COMPOSED_COMMAND_BUILDER_HH
 
-#  include <vector>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/command.hh"
-#  include "com/centreon/broker/notification/builders/command_builder.hh"
-#  include "com/centreon/broker/notification/builders/composed_builder.hh"
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/command_builder.hh"
+#include "com/centreon/broker/notification/builders/composed_builder.hh"
+#include "com/centreon/broker/notification/objects/command.hh"
 
 CCB_BEGIN()
 
-namespace         notification {
-  /**
-   *  @class composed_command_builder composed_command_builder.hh "com/centreon/broker/notification/builders/composed_command_builder.hh"
-   *  @brief Composed command builder.
-   *
-   *  This class forward its method call to several other builders.
-   */
-  class           composed_command_builder
-                    : public composed_builder<command_builder> {
-  public:
-                  composed_command_builder();
+namespace notification {
+/**
+ *  @class composed_command_builder composed_command_builder.hh
+ * "com/centreon/broker/notification/builders/composed_command_builder.hh"
+ *  @brief Composed command builder.
+ *
+ *  This class forward its method call to several other builders.
+ */
+class composed_command_builder : public composed_builder<command_builder> {
+ public:
+  composed_command_builder();
 
-    virtual void  add_command(
-                    unsigned int id,
-                    objects::command::ptr com);
+  virtual void add_command(unsigned int id, objects::command::ptr com);
+};
 
-  };
-
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_COMPOSED_COMMAND_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_COMPOSED_COMMAND_BUILDER_HH

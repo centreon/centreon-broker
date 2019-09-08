@@ -22,10 +22,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::extcmd;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -33,7 +33,7 @@ using namespace com::centreon::broker::extcmd;
  *  @param[in,out] listener       Command listener.
  */
 command_parser::command_parser(command_listener& listener)
-  : _listener(listener) {}
+    : _listener(listener) {}
 
 /**
  *  Destructor.

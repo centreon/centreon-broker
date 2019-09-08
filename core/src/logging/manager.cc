@@ -16,26 +16,26 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/logging/manager.hh"
 #include <cstdlib>
 #include <cstring>
-#include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker::logging;
 
 /**************************************
-*                                     *
-*           Private Objects           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Objects           *
+ *                                     *
+ **************************************/
 
 // Class instance.
-manager* manager::_instance(NULL);
+manager* manager::_instance(nullptr);
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -50,21 +50,19 @@ manager::manager() {
  */
 void manager::_compute_optimizations() {
   memset(_limits, 0, sizeof(_limits));
-  for (std::vector<manager_backend>::const_iterator
-         it = _backends.begin(),
-         end = _backends.end();
-       it != end;
-       ++it)
+  for (std::vector<manager_backend>::const_iterator it = _backends.begin(),
+                                                    end = _backends.end();
+       it != end; ++it)
     for (unsigned int i = 1; i <= static_cast<unsigned int>(it->l); ++i)
       _limits[i] |= it->types;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Destructor.
@@ -79,7 +77,7 @@ manager::~manager() {}
  *
  *  @return Temporary logging object.
  */
-temp_logger manager::get_temp_logger(type t, level l) throw () {
+temp_logger manager::get_temp_logger(type t, level l) throw() {
   return (temp_logger(t, l, (_limits[l] & t)));
 }
 
@@ -98,7 +96,7 @@ manager& manager::instance() {
 void manager::load() {
   if (!_instance)
     _instance = new manager;
-  return ;
+  return;
 }
 
 /**
@@ -112,18 +110,16 @@ void manager::load() {
 void manager::log_msg(char const* msg,
                       unsigned int len,
                       type t,
-                      level l) throw () {
+                      level l) throw() {
   std::lock_guard<std::mutex> lock(_backendsm);
-  for (std::vector<manager_backend>::iterator
-         it = _backends.begin(),
-         end = _backends.end();
-       it != end;
-       ++it)
+  for (std::vector<manager_backend>::iterator it = _backends.begin(),
+                                              end = _backends.end();
+       it != end; ++it)
     if (msg && (it->types & t) && (it->l >= l)) {
       std::lock_guard<backend> lock(*it->b);
       it->b->log_msg(msg, len, t, l);
     }
-  return ;
+  return;
 }
 
 /**
@@ -136,9 +132,7 @@ void manager::log_msg(char const* msg,
  *                          OR of multiple logging::type.
  *  @param[in] min_priority Minimal priority of messages to be logged.
  */
-void manager::log_on(backend& b,
-                     unsigned int types,
-                     level min_priority) {
+void manager::log_on(backend& b, unsigned int types, level min_priority) {
   std::lock_guard<std::mutex> lock(_backendsm);
 
   // Either add backend to list.
@@ -148,15 +142,12 @@ void manager::log_on(backend& b,
     p.l = min_priority;
     p.types = types;
     _backends.push_back(p);
-    for (unsigned int i = 1;
-         i <= static_cast<unsigned int>(min_priority);
-         ++i)
+    for (unsigned int i = 1; i <= static_cast<unsigned int>(min_priority); ++i)
       _limits[i] |= types;
   }
   // Or remove it.
   else {
-    for (std::vector<manager_backend>::iterator
-           it = _backends.begin();
+    for (std::vector<manager_backend>::iterator it = _backends.begin();
          it != _backends.end();)
       if (it->b == &b)
         it = _backends.erase(it);
@@ -165,7 +156,7 @@ void manager::log_on(backend& b,
     _compute_optimizations();
   }
 
-  return ;
+  return;
 }
 
 /**
@@ -173,6 +164,6 @@ void manager::log_on(backend& b,
  */
 void manager::unload() {
   delete _instance;
-  _instance = NULL;
-  return ;
+  _instance = nullptr;
+  return;
 }

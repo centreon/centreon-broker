@@ -49,18 +49,11 @@ int main() {
   hs1.start_time = 456887;
 
   // Check.
-  return ((hs1.ack_time != 834957)
-          || (hs1.current_state != 1)
-          || (hs1.end_time != 5478963)
-          || (hs1.host_id != 983)
-          || (hs1.in_downtime != false)
-          || (hs1.service_id != 471)
-          || (hs1.start_time != 456887)
-          || (hs2.ack_time != 6762)
-          || (hs2.current_state != 2)
-          || (hs2.end_time != 7456987)
-          || (hs2.host_id != 21)
-          || (hs2.in_downtime != true)
-          || (hs2.service_id != 0)
-          || (hs2.start_time != 123456789));
+  return ((hs1.ack_time != 834957) || (hs1.current_state != 1) ||
+          (hs1.end_time != 5478963) || (hs1.host_id != 983) ||
+          (hs1.in_downtime != false) || (hs1.service_id != 471) ||
+          (hs1.start_time != 456887) || (hs2.ack_time != 6762) ||
+          (hs2.current_state != 2) || (hs2.end_time != 7456987) ||
+          (hs2.host_id != 21) || (hs2.in_downtime != true) ||
+          (hs2.service_id != 0) || (hs2.start_time != 123456789));
 }

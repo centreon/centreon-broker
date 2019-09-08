@@ -17,43 +17,42 @@
 */
 
 #ifndef CCB_IO_PROPERTY_HH
-#  define CCB_IO_PROPERTY_HH
+#define CCB_IO_PROPERTY_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace              io {
-  /**
-   *  @class property property.hh "com/centreon/broker/io/property.hh"
-   *  @brief Single property.
-   *
-   *  Value and attributes of a single property.
-   */
-  class                property {
-  public:
-                       property(
-                         std::string const& name = "",
-                         std::string const& value = "",
-                         bool graphable = false);
-                       property(property const& right);
-                       ~property() throw ();
-    property&          operator=(property const& right);
-    std::string const& get_name() const throw();
-    std::string const& get_value() const throw();
-    bool               is_graphable() const throw ();
-    void               set_name(std::string const& name);
-    void               set_value(std::string const& value);
-    void               set_graphable(bool graphable = true);
+namespace io {
+/**
+ *  @class property property.hh "com/centreon/broker/io/property.hh"
+ *  @brief Single property.
+ *
+ *  Value and attributes of a single property.
+ */
+class property {
+ public:
+  property(std::string const& name = "",
+           std::string const& value = "",
+           bool graphable = false);
+  property(property const& right);
+  ~property() throw();
+  property& operator=(property const& right);
+  std::string const& get_name() const throw();
+  std::string const& get_value() const throw();
+  bool is_graphable() const throw();
+  void set_name(std::string const& name);
+  void set_value(std::string const& value);
+  void set_graphable(bool graphable = true);
 
-  private:
-    std::string        _name;
-    std::string        _value;
-    bool               _graphable;
-  };
-}
+ private:
+  std::string _name;
+  std::string _value;
+  bool _graphable;
+};
+}  // namespace io
 
 CCB_END()
 
-#endif // !CCB_IO_PROPERTY_HH
+#endif  // !CCB_IO_PROPERTY_HH

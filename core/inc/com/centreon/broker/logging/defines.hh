@@ -17,38 +17,29 @@
 */
 
 #ifndef CCB_LOGGING_DEFINES_HH
-#  define CCB_LOGGING_DEFINES_HH
+#define CCB_LOGGING_DEFINES_HH
 
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 namespace logging {
-  // Log levels.
-  enum    level {
-    none = 0,
-    high,
-    medium,
-    low
-  };
+// Log levels.
+enum level { none = 0, high, medium, low };
 
-  // Timestamp types.
-  enum    timestamp_type {
-    no_timestamp = 0,
-    second_timestamp,
-    nano_timestamp
-  };
+// Timestamp types.
+enum timestamp_type { no_timestamp = 0, second_timestamp, nano_timestamp };
 
-  // Log types.
-  enum    type {
-    config_type = 1,
-    debug_type = 2,
-    error_type = 4,
-    info_type = 8,
-    perf_type = 16
-  };
-}
+// Log types.
+enum type {
+  config_type = 1,
+  debug_type = 2,
+  error_type = 4,
+  info_type = 8,
+  perf_type = 16
+};
+}  // namespace logging
 
 CCB_END()
 
-#endif // !CCB_LOGGING_DEFINES_HH
+#endif  // !CCB_LOGGING_DEFINES_HH

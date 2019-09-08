@@ -17,45 +17,45 @@
 */
 
 #ifndef CCB_BAM_METRIC_LISTENER_HH
-#  define CCB_BAM_METRIC_LISTENER_HH
+#define CCB_BAM_METRIC_LISTENER_HH
 
-#  include <memory>
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <memory>
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 // Forward declaration.
-namespace             storage {
-  class               metric;
+namespace storage {
+class metric;
 }
 
-namespace             bam {
+namespace bam {
+/**
+ *  @class metric_listener metric_listener.hh
+ * "com/centreon/broker/bam/metric_listener.hh"
+ *  @brief Listen to metric state change.
+ *
+ *  This interface is used by classes wishing to listen to metric
+ *  state change.
+ */
+class metric_listener {
+ public:
+  metric_listener();
+  metric_listener(metric_listener const& other);
+  virtual ~metric_listener();
+  metric_listener& operator=(metric_listener const& other);
+
   /**
-   *  @class metric_listener metric_listener.hh "com/centreon/broker/bam/metric_listener.hh"
-   *  @brief Listen to metric state change.
+   *  Notify of metric update.
    *
-   *  This interface is used by classes wishing to listen to metric
-   *  state change.
+   *  @param[in] status Metric status.
    */
-  class               metric_listener {
-  public:
-                      metric_listener();
-                      metric_listener(metric_listener const& other);
-    virtual           ~metric_listener();
-    metric_listener&  operator=(metric_listener const& other);
-
-    /**
-     *  Notify of metric update.
-     *
-     *  @param[in] status Metric status.
-     */
-    virtual void      metric_update(
-                        std::shared_ptr<storage::metric> const& m,
-                        io::stream* visitor = NULL) = 0;
-  };
-}
+  virtual void metric_update(std::shared_ptr<storage::metric> const& m,
+                             io::stream* visitor = NULL) = 0;
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_METRIC_LISTENER_HH
+#endif  // !CCB_BAM_METRIC_LISTENER_HH

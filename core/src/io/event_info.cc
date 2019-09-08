@@ -30,17 +30,16 @@ using namespace com::centreon::broker::io;
  *  @param[in] table     SQL table of event (if any).
  *  @param[in] table_v2  SQL table of event in version 2.x (if any).
  */
-event_info::event_info(
-              std::string const& name,
-              event_info::event_operations const* ops,
-              mapping::entry const* entries,
-              std::string const& table,
-              std::string const& table_v2)
-  : _mapping(entries),
-    _name(name),
-    _ops(ops),
-    _table(table),
-    _table_v2(table_v2) {}
+event_info::event_info(std::string const& name,
+                       event_info::event_operations const* ops,
+                       mapping::entry const* entries,
+                       std::string const& table,
+                       std::string const& table_v2)
+    : _mapping(entries),
+      _name(name),
+      _ops(ops),
+      _table(table),
+      _table_v2(table_v2) {}
 
 /**
  *  Copy constructor.
@@ -48,11 +47,11 @@ event_info::event_info(
  *  @param[in] other  Object to copy.
  */
 event_info::event_info(event_info const& other)
-  : _mapping(other._mapping),
-    _name(other._name),
-    _ops(other._ops),
-    _table(other._table),
-    _table_v2(other._table_v2) {}
+    : _mapping(other._mapping),
+      _name(other._name),
+      _ops(other._ops),
+      _table(other._table),
+      _table_v2(other._table_v2) {}
 
 /**
  *  Destructor.

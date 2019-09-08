@@ -16,14 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <iostream>
 #include <QMap>
 #include <QPair>
-#include "com/centreon/broker/multiplexing/engine.hh"
+#include <cstdlib>
+#include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/correlation/node.hh"
+#include "com/centreon/broker/correlation/stream.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "test/correlator/common.hh"
 
@@ -93,11 +93,9 @@ int main() {
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "unknown exception" << std::endl;
   }
 

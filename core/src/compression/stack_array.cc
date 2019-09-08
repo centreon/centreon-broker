@@ -31,7 +31,7 @@ stack_array::stack_array() : _offset(0) {}
  *  @param[in] other  Object to copy.
  */
 stack_array::stack_array(stack_array const& other)
-  : _buffer(other._buffer), _offset(other._offset) {}
+    : _buffer(other._buffer), _offset(other._offset) {}
 
 /**
  *  Destructor.

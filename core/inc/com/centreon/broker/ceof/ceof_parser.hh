@@ -17,39 +17,38 @@
 */
 
 #ifndef CCB_CEOF_CEOF_PARSER_HH
-#  define CCB_CEOF_CEOF_PARSER_HH
+#define CCB_CEOF_CEOF_PARSER_HH
 
-#  include <string>
-#  include <vector>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/ceof/ceof_iterator.hh"
-#  include "com/centreon/broker/ceof/ceof_token.hh"
+#include <string>
+#include <vector>
+#include "com/centreon/broker/ceof/ceof_iterator.hh"
+#include "com/centreon/broker/ceof/ceof_token.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace   ceof {
-  /**
-   *  @class ceof_parser ceof_parser.hh "com/centreon/broker/ceof/ceof_parser.hh"
-   *  @brief Centreon Engine Object File parser.
-   */
-  class          ceof_parser {
-  public:
-                 ceof_parser(std::string const& str);
-                 ~ceof_parser() throw();
+namespace ceof {
+/**
+ *  @class ceof_parser ceof_parser.hh "com/centreon/broker/ceof/ceof_parser.hh"
+ *  @brief Centreon Engine Object File parser.
+ */
+class ceof_parser {
+ public:
+  ceof_parser(std::string const& str);
+  ~ceof_parser() throw();
 
-   ceof_iterator parse();
+  ceof_iterator parse();
 
-  private:
-    std::string  _string;
+ private:
+  std::string _string;
 
-    std::vector<ceof_token>
-                 _tokens;
+  std::vector<ceof_token> _tokens;
 
-                 ceof_parser(ceof_parser const& other);
-    ceof_parser& operator=(ceof_parser const& other);
-  };
-}
+  ceof_parser(ceof_parser const& other);
+  ceof_parser& operator=(ceof_parser const& other);
+};
+}  // namespace ceof
 
 CCB_END()
 
-#endif // !CCB_CEOF_CEOF_PARSER_HH
+#endif  // !CCB_CEOF_CEOF_PARSER_HH

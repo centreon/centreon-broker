@@ -17,46 +17,45 @@
 */
 
 #ifndef CCB_RRD_EXCEPTIONS_UPDATE_HH_
-# define CCB_RRD_EXCEPTIONS_UPDATE_HH_
+#define CCB_RRD_EXCEPTIONS_UPDATE_HH_
 
-# include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/exceptions/msg.hh"
 
-namespace                com {
-  namespace              centreon {
-    namespace            broker {
-      namespace          rrd {
-        namespace        exceptions {
-          /**
-           *  @class update update.hh "com/centreon/broker/rrd/exceptions/update.hh"
-           *  @brief Update error.
-           *
-           *  Exception thrown when unable to update an RRD file.
-           */
-          class          update : public broker::exceptions::msg {
-           public:
-                         update() throw ();
-                         update(update const& u) throw ();
-                         ~update() throw ();
-            update&      operator=(update const& u) throw ();
-            virtual broker::exceptions::msg*
-                         clone() const;
-            virtual void rethrow() const;
+namespace com {
+namespace centreon {
+namespace broker {
+namespace rrd {
+namespace exceptions {
+/**
+ *  @class update update.hh "com/centreon/broker/rrd/exceptions/update.hh"
+ *  @brief Update error.
+ *
+ *  Exception thrown when unable to update an RRD file.
+ */
+class update : public broker::exceptions::msg {
+ public:
+  update() throw();
+  update(update const& u) throw();
+  ~update() throw();
+  update& operator=(update const& u) throw();
+  virtual broker::exceptions::msg* clone() const;
+  virtual void rethrow() const;
 
-            /**
-             *  Insert data in message.
-             *
-             *  @param[in] t Data to insert.
-             */
-            template     <typename T>
-            update&      operator<<(T t) throw () {
-              broker::exceptions::msg::operator<<(t);
-              return (*this);
-            }
-          };
-        }
-      }
-    }
+  /**
+   *  Insert data in message.
+   *
+   *  @param[in] t Data to insert.
+   */
+  template <typename T>
+  update& operator<<(T t) throw() {
+    broker::exceptions::msg::operator<<(t);
+    return (*this);
   }
-}
+};
+}  // namespace exceptions
+}  // namespace rrd
+}  // namespace broker
+}  // namespace centreon
+}  // namespace com
 
 #endif /* !CCB_RRD_EXCEPTIONS_UPDATE_HH_ */

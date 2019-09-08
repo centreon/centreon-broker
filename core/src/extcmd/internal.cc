@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/extcmd/internal.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
-#include "com/centreon/broker/extcmd/internal.hh"
 #include "com/centreon/broker/extcmd/factory.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
@@ -28,12 +28,11 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::extcmd;
 
-
 /**************************************
-*                                     *
-*           Global Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Global Objects            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Command file initialization routine.
@@ -44,32 +43,21 @@ void extcmd::load() {
   io::events& e(io::events::instance());
 
   // Register extcmd protocol.
-  io::protocols::instance().reg(
-                              "extcmd",
-                              extcmd::factory(),
-                              1,
-                              7);
+  io::protocols::instance().reg("extcmd", extcmd::factory(), 1, 7);
 
   // Register extcmd category.
   e.register_category("extcmd", io::events::extcmd);
 
   // Register event.
   e.register_event(
-    io::events::extcmd,
-    io::events::de_command_request,
-      io::event_info(
-            "command_request",
-            &command_request::operations,
-            command_request::entries));
-  e.register_event(
-    io::events::extcmd,
-    io::events::de_command_result,
-      io::event_info(
-            "command_result",
-            &command_result::operations,
-            command_result::entries));
+      io::events::extcmd, io::events::de_command_request,
+      io::event_info("command_request", &command_request::operations,
+                     command_request::entries));
+  e.register_event(io::events::extcmd, io::events::de_command_result,
+                   io::event_info("command_result", &command_result::operations,
+                                  command_result::entries));
 
-  return ;
+  return;
 }
 
 /**
@@ -84,5 +72,5 @@ void extcmd::unload() {
   // Unregister category.
   io::events::instance().unregister_category(io::events::extcmd);
 
-  return ;
+  return;
 }

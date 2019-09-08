@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
-#include <random>
-#include <cstring>
 #include <com/centreon/broker/misc/uuid.hh>
+#include <cstring>
+#include <random>
 
 using namespace com::centreon::broker;
 
@@ -28,7 +28,6 @@ misc::Uuid::Uuid() {
   std::uniform_int_distribution<uint32_t> dist32(0, UINT32_MAX);
   std::uniform_int_distribution<uint16_t> dist16(0, UINT16_MAX);
   std::uniform_int_distribution<uint8_t> dist8(0, UINT8_MAX);
-
 
   _time_low = dist32(rd);
   _time_mid = dist16(rd);
@@ -68,8 +67,8 @@ std::string misc::Uuid::to_string() const {
 
   c = snprintf(&uuid[0], 37, "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
                _time_low, _time_mid, _time_hi_and_version,
-               _clock_seq_hi_and_reserved, _clock_seq_low, _node[0],
-               _node[1], _node[2], _node[3], _node[4], _node[5]);
+               _clock_seq_hi_and_reserved, _clock_seq_low, _node[0], _node[1],
+               _node[2], _node[3], _node[4], _node[5]);
 
   if (c < 0)
     return std::string();

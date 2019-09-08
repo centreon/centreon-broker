@@ -21,28 +21,27 @@
 using namespace com::centreon::broker::exceptions;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
-msg::msg()  {}
+msg::msg() {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to build from.
  */
-msg::msg(msg const& other)
-  : misc::stringifier(other), std::exception(other) {}
+msg::msg(msg const& other) : misc::stringifier(other), std::exception(other) {}
 
 /**
  *  Destructor.
  */
-msg::~msg() throw () {}
+msg::~msg() throw() {}
 
 /**
  *  Assignment operator overload.
@@ -51,7 +50,7 @@ msg::~msg() throw () {}
  *
  *  @return This instance.
  */
-msg& msg::operator=(msg const& other)  {
+msg& msg::operator=(msg const& other) {
   misc::stringifier::operator=(other);
   std::exception::operator=(other);
   return (*this);
@@ -62,6 +61,6 @@ msg& msg::operator=(msg const& other)  {
  *
  *  @return Nul-terminated message.
  */
-char const* msg::what() const throw () {
+char const* msg::what() const throw() {
   return (misc::stringifier::data());
 }

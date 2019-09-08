@@ -17,39 +17,39 @@
 */
 
 #ifndef CCB_FILE_OPENER_HH
-#  define CCB_FILE_OPENER_HH
+#define CCB_FILE_OPENER_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                        file {
-  /**
-   *  @class opener opener.hh "com/centreon/broker/file/opener.hh"
-   *  @brief Open a file stream.
-   *
-   *  Open a file stream.
-   */
-  class                          opener : public io::endpoint {
-   public:
-                                 opener();
-                                 opener(opener const& other);
-                                 ~opener();
-    opener&                      operator=(opener const& other);
-    std::shared_ptr<io::stream>  open();
-    void                         set_auto_delete(bool auto_delete);
-    void                         set_filename(std::string const& filename);
-    void                         set_max_size(unsigned long long max);
+namespace file {
+/**
+ *  @class opener opener.hh "com/centreon/broker/file/opener.hh"
+ *  @brief Open a file stream.
+ *
+ *  Open a file stream.
+ */
+class opener : public io::endpoint {
+ public:
+  opener();
+  opener(opener const& other);
+  ~opener();
+  opener& operator=(opener const& other);
+  std::shared_ptr<io::stream> open();
+  void set_auto_delete(bool auto_delete);
+  void set_filename(std::string const& filename);
+  void set_max_size(unsigned long long max);
 
-   private:
-    bool                         _auto_delete;
-    std::string                  _filename;
-    unsigned long long           _max_size;
-  };
-}
+ private:
+  bool _auto_delete;
+  std::string _filename;
+  unsigned long long _max_size;
+};
+}  // namespace file
 
 CCB_END()
 
-#endif // !CCB_FILE_OPENER_HH
+#endif  // !CCB_FILE_OPENER_HH

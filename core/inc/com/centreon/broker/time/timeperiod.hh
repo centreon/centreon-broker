@@ -17,136 +17,114 @@
 */
 
 #ifndef CCB_CORE_TIME_TIMEPERIOD_HH
-#  define CCB_CORE_TIME_TIMEPERIOD_HH
+#define CCB_CORE_TIME_TIMEPERIOD_HH
 
-#  include <string>
-#  include <vector>
-#  include <memory>
-#  include <list>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/time/timerange.hh"
-#  include "com/centreon/broker/time/daterange.hh"
+#include <list>
+#include <memory>
+#include <string>
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/time/daterange.hh"
+#include "com/centreon/broker/time/timerange.hh"
 
 CCB_BEGIN()
 
-namespace             time {
-  /**
-   *  @class timeperiod timeperiod.hh "com/centreon/broker/time/timeperiod.hh"
-   *  @brief Timeperiod object.
-   *
-   *  The object containing a timeperiod.
-   */
-  class                 timeperiod {
-  public:
-                        DECLARE_SHARED_PTR(timeperiod);
+namespace time {
+/**
+ *  @class timeperiod timeperiod.hh "com/centreon/broker/time/timeperiod.hh"
+ *  @brief Timeperiod object.
+ *
+ *  The object containing a timeperiod.
+ */
+class timeperiod {
+ public:
+  DECLARE_SHARED_PTR(timeperiod);
 
-    class               exclusion_backup {
-    public:
-                        exclusion_backup(timeperiod* tp) {
+  class exclusion_backup {
+   public:
+    exclusion_backup(timeperiod* tp) {
       _tp = tp;
       _exclusions = _tp->_exclude;
       _tp->_exclude.clear();
     }
 
-                        ~exclusion_backup() {
-      _tp->_exclude = _exclusions;
-    }
+    ~exclusion_backup() { _tp->_exclude = _exclusions; }
 
-    std::vector<timeperiod::ptr>::const_iterator
-                        begin() {
+    std::vector<timeperiod::ptr>::const_iterator begin() {
       return (_exclusions.begin());
     }
 
-    std::vector<timeperiod::ptr>::const_iterator
-                        end() {
+    std::vector<timeperiod::ptr>::const_iterator end() {
       return (_exclusions.end());
     }
 
-    private:
-      timeperiod*       _tp;
-      std::vector<timeperiod::ptr>
-                        _exclusions;
-    };
-
-    friend class        exclusion_backup;
-
-                        timeperiod();
-                        timeperiod(
-                          unsigned int id,
-                          std::string const& name,
-                          std::string const& alias,
-                          std::string const& sunday,
-                          std::string const& monday,
-                          std::string const& tuesday,
-                          std::string const& wednesday,
-                          std::string const& thursday,
-                          std::string const& friday,
-                          std::string const& saturday);
-                        timeperiod(timeperiod const& obj);
-                        timeperiod operator=(timeperiod const& obj);
-
-    unsigned int        get_id() const throw();
-    void                set_id(unsigned int id) throw();
-
-    std::string const&  get_alias() const throw();
-    void                set_alias(std::string const& value);
-
-    std::vector<std::list<daterange> > const&
-                        get_exceptions() const throw();
-    std::list<daterange> const&
-                        get_exceptions_from_type(int type) const;
-    void                add_exceptions(std::list<daterange> const& val);
-    bool                add_exception(
-                          std::string const& days,
-                          std::string const& range);
-
-    std::vector<ptr> const&
-                        get_included() const throw();
-    void                add_included(ptr val);
-    std::vector<ptr> const&
-                        get_excluded() const throw();
-    void                add_excluded(ptr val);
-
-    std::string const&  get_name() const throw();
-    void                set_name(std::string const& value);
-
-    std::vector<std::list<timerange> > const&
-                        get_timeranges() const throw();
-    bool                set_timerange(
-                          std::string const& timerange_text,
-                          int day);
-    std::list<timerange> const&
-                        get_timeranges_by_day(int day) const throw();
-
-    std::string const&  get_timezone() const throw();
-    void                set_timezone(std::string const& tz);
-
-    bool                is_valid(time_t preferred_time) const;
-    time_t              get_next_valid(time_t preferred_time) const;
-    time_t              get_next_invalid(time_t preferred_time) const;
-
-    unsigned int        duration_intersect(
-                          time_t start_time,
-                          time_t end_time) const;
-
-    static time_t       add_round_days_to_midnight(
-                          time_t midnight,
-                          long long skip);
-
-  private:
-    unsigned int        _id;
-    std::string         _alias;
-    std::vector<std::list<daterange> >
-                        _exceptions;
-    std::vector<ptr>    _exclude;
-    std::vector<ptr>    _include;
-    std::string         _timeperiod_name;
-    std::vector<std::list<timerange> >
-                        _timeranges;
-    std::string         _timezone;
+   private:
+    timeperiod* _tp;
+    std::vector<timeperiod::ptr> _exclusions;
   };
-}
+
+  friend class exclusion_backup;
+
+  timeperiod();
+  timeperiod(unsigned int id,
+             std::string const& name,
+             std::string const& alias,
+             std::string const& sunday,
+             std::string const& monday,
+             std::string const& tuesday,
+             std::string const& wednesday,
+             std::string const& thursday,
+             std::string const& friday,
+             std::string const& saturday);
+  timeperiod(timeperiod const& obj);
+  timeperiod operator=(timeperiod const& obj);
+
+  unsigned int get_id() const throw();
+  void set_id(unsigned int id) throw();
+
+  std::string const& get_alias() const throw();
+  void set_alias(std::string const& value);
+
+  std::vector<std::list<daterange> > const& get_exceptions() const throw();
+  std::list<daterange> const& get_exceptions_from_type(int type) const;
+  void add_exceptions(std::list<daterange> const& val);
+  bool add_exception(std::string const& days, std::string const& range);
+
+  std::vector<ptr> const& get_included() const throw();
+  void add_included(ptr val);
+  std::vector<ptr> const& get_excluded() const throw();
+  void add_excluded(ptr val);
+
+  std::string const& get_name() const throw();
+  void set_name(std::string const& value);
+
+  std::vector<std::list<timerange> > const& get_timeranges() const throw();
+  bool set_timerange(std::string const& timerange_text, int day);
+  std::list<timerange> const& get_timeranges_by_day(int day) const throw();
+
+  std::string const& get_timezone() const throw();
+  void set_timezone(std::string const& tz);
+
+  bool is_valid(time_t preferred_time) const;
+  time_t get_next_valid(time_t preferred_time) const;
+  time_t get_next_invalid(time_t preferred_time) const;
+
+  unsigned int duration_intersect(time_t start_time, time_t end_time) const;
+
+  static time_t add_round_days_to_midnight(time_t midnight, long long skip);
+
+ private:
+  unsigned int _id;
+  std::string _alias;
+  std::vector<std::list<daterange> > _exceptions;
+  std::vector<ptr> _exclude;
+  std::vector<ptr> _include;
+  std::string _timeperiod_name;
+  std::vector<std::list<timerange> > _timeranges;
+  std::string _timezone;
+};
+}  // namespace time
 
 CCB_END()
 
-#endif // !CCB_CORE_TIME_TIMEPERIOD_HH
+#endif  // !CCB_CORE_TIME_TIMEPERIOD_HH

@@ -89,7 +89,8 @@ static void apply_new_configuration(configuration const& cfg) {
   for (std::set<std::string>::const_iterator it(to_delete.begin()),
        end(to_delete.end());
        it != end; ++it) {
-    std::unordered_map<std::string, instance*>::iterator found(instances.find(*it));
+    std::unordered_map<std::string, instance*>::iterator found(
+        instances.find(*it));
     if (found != instances.end()) {
       instance* to_remove{found->second};
       instances.erase(found);
@@ -157,11 +158,11 @@ static void set_signal_handlers() {
   ::sigemptyset(&sig.sa_mask);
   ::sigfillset(&sig.sa_mask);
   sig.sa_flags = 0;
-  if (::sigaction(SIGTERM, &sig, NULL) < 0 ||
-      ::sigaction(SIGINT, &sig, NULL) < 0 ||
-      ::sigaction(SIGHUP, &sig, NULL) < 0)
+  if (::sigaction(SIGTERM, &sig, nullptr) < 0 ||
+      ::sigaction(SIGINT, &sig, nullptr) < 0 ||
+      ::sigaction(SIGHUP, &sig, nullptr) < 0)
     throw com::centreon::broker::exceptions::msg()
-          << "can't set the signal handlers";
+        << "can't set the signal handlers";
 }
 
 /**
@@ -188,8 +189,7 @@ int main(int argc, char** argv) {
   try {
     configuration_parser parser;
     config = parser.parse(config_filename);
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << "ERROR: could not parse the configuration file '"
               << config_filename << "': " << e.what() << '\n';
     logging::error(logging::medium)
@@ -212,7 +212,9 @@ int main(int argc, char** argv) {
       stopped_pid = waitpid(0, &status, WNOHANG);
       if (stopped_pid > 0) {
         for (std::unordered_map<std::string, instance*>::iterator
-               it = instances.begin(), end = instances.end(); it != end; ++it) {
+                 it = instances.begin(),
+                 end = instances.end();
+             it != end; ++it) {
           instance* inst{it->second};
           if (inst->get_pid() == stopped_pid)
             inst->restart();
@@ -226,12 +228,11 @@ int main(int argc, char** argv) {
         freq++;
         if (freq / instances.size() > 5) {
           logging::error(logging::medium)
-              << "watchdog: cbd seems to stop too many times, you must look at its configuration. The watchdog loop is slow down";
-        }
-        else
+              << "watchdog: cbd seems to stop too many times, you must look at "
+                 "its configuration. The watchdog loop is slow down";
+        } else
           timeout = 0;
-      }
-      else
+      } else
         freq = 0;
 
       if (sighup) {
@@ -263,8 +264,9 @@ int main(int argc, char** argv) {
   }
 
   for (std::unordered_map<std::string, instance*>::iterator
-      it{instances.begin()}, end{instances.end()};
-      it != end; ++it) {
+           it{instances.begin()},
+       end{instances.end()};
+       it != end; ++it) {
     it->second->stop();
   }
   // Load the log manager.

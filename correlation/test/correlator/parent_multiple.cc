@@ -16,16 +16,16 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <iostream>
 #include <QMap>
 #include <QPair>
-#include "com/centreon/broker/multiplexing/engine.hh"
+#include <cstdlib>
+#include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/correlation/issue.hh"
 #include "com/centreon/broker/correlation/issue_parent.hh"
 #include "com/centreon/broker/correlation/node.hh"
+#include "com/centreon/broker/correlation/stream.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "test/correlator/common.hh"
 
@@ -160,66 +160,18 @@ int main() {
     add_issue(content, -1, -1, 90, 42, 123456790);
     add_issue(content, -1, -1, 42, 24, 123456791);
     add_issue(content, -1, -1, 213, 8, 123456792);
-    add_issue_parent(
-      content,
-      42,
-      24,
-      123456791,
-      -1,
-      213,
-      8,
-      123456792,
-      123456792);
-    add_issue_parent(
-      content,
-      42,
-      24,
-      123456791,
-      -1,
-      56,
-      13,
-      123456789,
-      123456792);
-    add_issue_parent(
-      content,
-      42,
-      24,
-      123456791,
-      -1,
-      90,
-      42,
-      123456790,
-      123456792);
-    add_issue_parent(
-      content,
-      42,
-      24,
-      123456791,
-      123456793,
-      56,
-      13,
-      123456789,
-      123456792);
-    add_issue_parent(
-      content,
-      42,
-      24,
-      123456791,
-      123456793,
-      90,
-      42,
-      123456790,
-      123456792);
-    add_issue_parent(
-      content,
-      42,
-      24,
-      123456791,
-      123456793,
-      213,
-      8,
-      123456792,
-      123456792);
+    add_issue_parent(content, 42, 24, 123456791, -1, 213, 8, 123456792,
+                     123456792);
+    add_issue_parent(content, 42, 24, 123456791, -1, 56, 13, 123456789,
+                     123456792);
+    add_issue_parent(content, 42, 24, 123456791, -1, 90, 42, 123456790,
+                     123456792);
+    add_issue_parent(content, 42, 24, 123456791, 123456793, 56, 13, 123456789,
+                     123456792);
+    add_issue_parent(content, 42, 24, 123456791, 123456793, 90, 42, 123456790,
+                     123456792);
+    add_issue_parent(content, 42, 24, 123456791, 123456793, 213, 8, 123456792,
+                     123456792);
     add_issue(content, -1, 123456793, 56, 13, 123456789);
     add_issue(content, -1, 123456794, 42, 24, 123456791);
     add_issue(content, -1, 123456795, 90, 42, 123456790);
@@ -230,11 +182,9 @@ int main() {
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "unknown exception" << std::endl;
   }
 

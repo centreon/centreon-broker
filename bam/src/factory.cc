@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bam/factory.hh"
 #include <cstring>
 #include <memory>
 #include "com/centreon/broker/bam/connector.hh"
-#include "com/centreon/broker/bam/factory.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -28,10 +28,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -102,9 +102,9 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return Endpoint matching the given configuration.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   // Find DB parameters.
   database_config db_cfg(cfg);
 
@@ -114,19 +114,18 @@ io::endpoint* factory::new_endpoint(
   // External command file.
   std::string ext_cmd_file;
   if (!is_bam_bi) {
-    std::map<std::string, std::string>::const_iterator
-      it = cfg.params.find("command_file");
+    std::map<std::string, std::string>::const_iterator it =
+        cfg.params.find("command_file");
     if (it == cfg.params.end() || it->second.empty())
-      throw exceptions::msg()
-             << "BAM: command_file parameter not set";
+      throw exceptions::msg() << "BAM: command_file parameter not set";
     ext_cmd_file = it->second;
   }
 
   // Storage database name.
   std::string storage_db_name;
   {
-    std::map<std::string, std::string>::const_iterator
-      it(cfg.params.find("storage_db_name"));
+    std::map<std::string, std::string>::const_iterator it(
+        cfg.params.find("storage_db_name"));
     if (it != cfg.params.end())
       storage_db_name = it->second;
   }

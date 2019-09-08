@@ -16,23 +16,23 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/database/mysql_column.hh"
 #include <cassert>
 #include <cstring>
 #include <iostream>
-#include "com/centreon/broker/database/mysql_column.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 
 mysql_column::mysql_column(int type, int row_count, int size)
- : _type(type),
-  _row_count(row_count),
-  _str_size(size),
-  _vector(nullptr),
-  _is_null(row_count),
-  _error(row_count),
-  _length(row_count) {
+    : _type(type),
+      _row_count(row_count),
+      _str_size(size),
+      _vector(nullptr),
+      _is_null(row_count),
+      _error(row_count),
+      _length(row_count) {
   if (type == MYSQL_TYPE_STRING && row_count && size) {
     char** vector(static_cast<char**>(malloc(_row_count * sizeof(char*))));
     for (int i = 0; i < _row_count; ++i) {
@@ -58,13 +58,13 @@ mysql_column::~mysql_column() {
 }
 
 mysql_column::mysql_column(mysql_column&& other)
- : _type(other._type),
-   _row_count(other._row_count),
-   _str_size(other._str_size),
-   _vector(other._vector),
-   _is_null(other._is_null),
-   _error(other._error),
-   _length(other._length) {
+    : _type(other._type),
+      _row_count(other._row_count),
+      _str_size(other._str_size),
+      _vector(other._vector),
+      _is_null(other._is_null),
+      _error(other._error),
+      _length(other._length) {
   other._vector = nullptr;
 }
 
@@ -81,7 +81,6 @@ mysql_column& mysql_column::operator=(mysql_column const& other) {
   if (_vector)
     free(_vector);
   if (other._vector) {
-
     int size;
     switch (_type) {
       case MYSQL_TYPE_STRING:
@@ -115,13 +114,11 @@ mysql_column& mysql_column::operator=(mysql_column const& other) {
       for (int i(0); i < _row_count; ++i)
         strncpy(vector[i], ovector[i], _str_size);
       _vector = vector;
-    }
-    else {
+    } else {
       _vector = malloc(size);
       memcpy(_vector, other._vector, size);
     }
-  }
-  else
+  } else
     _vector = nullptr;
   return *this;
 }

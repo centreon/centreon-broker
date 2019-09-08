@@ -17,10 +17,10 @@
 */
 
 #ifndef CC_PROCESS_LISTENER_HH
-#  define CC_PROCESS_LISTENER_HH
+#define CC_PROCESS_LISTENER_HH
 
-#  include "com/centreon/namespace.hh"
-#  include "com/centreon/process.hh"
+#include "com/centreon/namespace.hh"
+#include "com/centreon/process.hh"
 
 CC_BEGIN()
 
@@ -30,14 +30,14 @@ CC_BEGIN()
  *
  *  This class provide interface to notify process events.
  */
-class          process_listener {
-public:
-  virtual      ~process_listener() throw () {}
-  virtual void data_is_available(process& p) throw () = 0;
-  virtual void data_is_available_err(process& p) throw () = 0;
-  virtual void finished(process& p) throw () = 0;
+class process_listener {
+ public:
+  virtual ~process_listener() throw() {}
+  virtual void data_is_available(process& p) throw() = 0;
+  virtual void data_is_available_err(process& p) throw() = 0;
+  virtual void finished(process& p) throw() = 0;
 };
 
 CC_END()
 
-#endif // !CC_PROCESS_LISTENER_HH
+#endif  // !CC_PROCESS_LISTENER_HH

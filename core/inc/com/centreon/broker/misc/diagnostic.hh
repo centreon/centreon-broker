@@ -17,34 +17,33 @@
 */
 
 #ifndef CCB_MISC_DIAGNOSTIC_HH
-#  define CCB_MISC_DIAGNOSTIC_HH
+#define CCB_MISC_DIAGNOSTIC_HH
 
-#  include <string>
-#  include <vector>
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace       misc {
-  /**
-   *  @class diagnostic diagnostic.hh "com/centreon/broker/misc/diagnostic.hh"
-   *  @brief Generate diagnostic files.
-   *
-   *  Generate diagnostic files to resolve Centreon Broker issues.
-   */
-  class         diagnostic {
-  public:
-                diagnostic();
-                diagnostic(diagnostic const& right);
-                ~diagnostic() throw ();
-    diagnostic& operator=(diagnostic const& right);
-    void        generate(
-                  std::vector<std::string> const& cfg_files,
-                  std::string const& out_file = "");
-    static int exec_process(char const** argv, bool wait_for_completion);
-  };
-}
+namespace misc {
+/**
+ *  @class diagnostic diagnostic.hh "com/centreon/broker/misc/diagnostic.hh"
+ *  @brief Generate diagnostic files.
+ *
+ *  Generate diagnostic files to resolve Centreon Broker issues.
+ */
+class diagnostic {
+ public:
+  diagnostic();
+  diagnostic(diagnostic const& right);
+  ~diagnostic() throw();
+  diagnostic& operator=(diagnostic const& right);
+  void generate(std::vector<std::string> const& cfg_files,
+                std::string const& out_file = "");
+  static int exec_process(char const** argv, bool wait_for_completion);
+};
+}  // namespace misc
 
 CCB_END()
 
-#endif // !CCB_MISC_DIAGNOSTIC_HH
+#endif  // !CCB_MISC_DIAGNOSTIC_HH

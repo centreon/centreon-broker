@@ -100,8 +100,9 @@ state parser::parse(std::string const& file) {
                    object, "broker_name", retval, &state::broker_name,
                    &Json::is_string, &Json::string_value))
         ;
-      else if (get_conf<int, state>(object, "poller_id", retval, &state::poller_id,
-                                    &Json::is_number, &Json::int_value))
+      else if (get_conf<int, state>(object, "poller_id", retval,
+                                    &state::poller_id, &Json::is_number,
+                                    &Json::int_value))
         ;
       else if (get_conf<std::string const&, state>(
                    object, "poller_name", retval, &state::poller_name,
@@ -127,7 +128,8 @@ state parser::parse(std::string const& file) {
                                      &state::log_thread_id, &Json::is_bool,
                                      &Json::bool_value))
         ;
-      else if (get_conf<bool, state>(object, "log_human_readable_timestamp", retval,
+      else if (get_conf<bool, state>(object, "log_human_readable_timestamp",
+                                     retval,
                                      &state::log_human_readable_timestamp,
                                      &Json::is_bool, &Json::bool_value))
         ;

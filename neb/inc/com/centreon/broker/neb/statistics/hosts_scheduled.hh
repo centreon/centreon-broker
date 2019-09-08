@@ -17,31 +17,32 @@
 */
 
 #ifndef CCB_NEB_STATISTICS_HOSTS_SCHEDULED_HH
-#  define CCB_NEB_STATISTICS_HOSTS_SCHEDULED_HH
+#define CCB_NEB_STATISTICS_HOSTS_SCHEDULED_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/statistics/plugin.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/statistics/plugin.hh"
 
 CCB_BEGIN()
 
-namespace              neb {
-  namespace            statistics {
-    /**
-     *  @class hosts_scheduled hosts_scheduled.hh "com/centreon/broker/neb/statistics/hosts_scheduled.hh"
-     *  @brief hosts_scheduled statistics plugin.
-     */
-    class              hosts_scheduled : public plugin {
-    public:
-                       hosts_scheduled();
-                       hosts_scheduled(hosts_scheduled const& right);
-                       ~hosts_scheduled();
-      hosts_scheduled& operator=(hosts_scheduled const& right);
-      void             run(std::string& output, std::string& perfdata);
-    };
-  }
-}
+namespace neb {
+namespace statistics {
+/**
+ *  @class hosts_scheduled hosts_scheduled.hh
+ * "com/centreon/broker/neb/statistics/hosts_scheduled.hh"
+ *  @brief hosts_scheduled statistics plugin.
+ */
+class hosts_scheduled : public plugin {
+ public:
+  hosts_scheduled();
+  hosts_scheduled(hosts_scheduled const& right);
+  ~hosts_scheduled();
+  hosts_scheduled& operator=(hosts_scheduled const& right);
+  void run(std::string& output, std::string& perfdata);
+};
+}  // namespace statistics
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_HOSTS_SCHEDULED_HH
+#endif  // !CCB_NEB_STATISTICS_HOSTS_SCHEDULED_HH

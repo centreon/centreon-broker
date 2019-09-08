@@ -20,82 +20,72 @@
 #include "com/centreon/broker/generator/dummy.hh"
 #include "com/centreon/broker/generator/factory.hh"
 #include "com/centreon/broker/generator/internal.hh"
-#include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 
 // Load count.
 namespace {
-  unsigned int instances(0);
-  char const* generator_module("generator");
-}
+unsigned int instances(0);
+char const* generator_module("generator");
+}  // namespace
 
 extern "C" {
-  /**
-   *  Module version symbol. Used to check for version mismatch.
-   */
-  char const* broker_module_version = CENTREON_BROKER_VERSION;
+/**
+ *  Module version symbol. Used to check for version mismatch.
+ */
+char const* broker_module_version = CENTREON_BROKER_VERSION;
 
-  /**
-   *  Module deinitialization routine.
-   */
-  void broker_module_deinit() {
-    // Decrement instance number.
-    if (!--instances) {
-      // Deregister storage layer.
-      io::protocols::instance().unreg(generator_module);
-      // Deregister generator events.
-      io::events::instance().unregister_category(io::events::generator);
-    }
-    return ;
+/**
+ *  Module deinitialization routine.
+ */
+void broker_module_deinit() {
+  // Decrement instance number.
+  if (!--instances) {
+    // Deregister storage layer.
+    io::protocols::instance().unreg(generator_module);
+    // Deregister generator events.
+    io::events::instance().unregister_category(io::events::generator);
   }
+  return;
+}
 
-  /**
-   *  Module initialization routine.
-   *
-   *  @param[in] arg  Configuration object.
-   */
-  void broker_module_init(void const* arg) {
-    (void)arg;
+/**
+ *  Module initialization routine.
+ *
+ *  @param[in] arg  Configuration object.
+ */
+void broker_module_init(void const* arg) {
+  (void)arg;
 
-    // Increment instance number.
-    if (!instances++) {
-      // generator module.
-      logging::info(logging::high)
-        << "generator: module for Centreon Broker "
-        << CENTREON_BROKER_VERSION;
+  // Increment instance number.
+  if (!instances++) {
+    // generator module.
+    logging::info(logging::high)
+        << "generator: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
-      // Register storage layer.
-      io::protocols::instance().reg(
-                                  generator_module,
-                                  generator::factory(),
-                                  1,
-                                  7);
+    // Register storage layer.
+    io::protocols::instance().reg(generator_module, generator::factory(), 1, 7);
 
-      io::events& e(io::events::instance());
+    io::events& e(io::events::instance());
 
-      // Register category.
-      int category(e.register_category("generator", io::events::generator));
-      if (category != io::events::generator) {
-        e.unregister_category(category);
-        --instances;
-        throw (exceptions::msg() << "generator: category "
-               << io::events::generator
-               << " is already registered whereas it should be "
-               << "reserved for the generator module");
-      }
-
-      // Register bam events.
-      e.register_event(
-          io::events::generator,
-          generator::de_dummy,
-          io::event_info(
-                "dummy",
-                &generator::dummy::operations,
-                generator::dummy::entries));
+    // Register category.
+    int category(e.register_category("generator", io::events::generator));
+    if (category != io::events::generator) {
+      e.unregister_category(category);
+      --instances;
+      throw(exceptions::msg() << "generator: category " << io::events::generator
+                              << " is already registered whereas it should be "
+                              << "reserved for the generator module");
     }
-    return ;
+
+    // Register bam events.
+    e.register_event(io::events::generator, generator::de_dummy,
+                     io::event_info("dummy", &generator::dummy::operations,
+                                    generator::dummy::entries));
   }
+  return;
+}
 }

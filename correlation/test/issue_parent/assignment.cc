@@ -52,20 +52,13 @@ int main() {
   ip1.start_time = 456887;
 
   // Check.
-  return ((ip1.child_host_id != 3)
-          || (ip1.child_service_id != 548784)
-          || (ip1.child_start_time != 215)
-          || (ip1.end_time != 5478963)
-          || (ip1.parent_host_id != 100)
-          || (ip1.parent_service_id != 787844)
-          || (ip1.parent_start_time != 666)
-          || (ip1.start_time != 456887)
-          || (ip2.child_host_id != 48745748)
-          || (ip2.child_service_id != 1)
-          || (ip2.child_start_time != static_cast<time_t>(3148514254u))
-          || (ip2.end_time != 7456987)
-          || (ip2.parent_host_id != 4578)
-          || (ip2.parent_service_id != 42)
-          || (ip2.parent_start_time != 72115)
-          || (ip2.start_time != 123456789));
+  return ((ip1.child_host_id != 3) || (ip1.child_service_id != 548784) ||
+          (ip1.child_start_time != 215) || (ip1.end_time != 5478963) ||
+          (ip1.parent_host_id != 100) || (ip1.parent_service_id != 787844) ||
+          (ip1.parent_start_time != 666) || (ip1.start_time != 456887) ||
+          (ip2.child_host_id != 48745748) || (ip2.child_service_id != 1) ||
+          (ip2.child_start_time != static_cast<time_t>(3148514254u)) ||
+          (ip2.end_time != 7456987) || (ip2.parent_host_id != 4578) ||
+          (ip2.parent_service_id != 42) || (ip2.parent_start_time != 72115) ||
+          (ip2.start_time != 123456789));
 }

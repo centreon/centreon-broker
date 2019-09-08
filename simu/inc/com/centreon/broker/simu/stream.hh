@@ -17,43 +17,42 @@
 */
 
 #ifndef CCB_SIMU_STREAM_HH
-#  define CCB_SIMU_STREAM_HH
+#define CCB_SIMU_STREAM_HH
 
-#  include <memory>
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/misc/variant.hh"
+#include <memory>
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/misc/variant.hh"
 
 CCB_BEGIN()
 
-namespace          simu {
+namespace simu {
 
-  // Forward declaration.
-  class luabinding;
+// Forward declaration.
+class luabinding;
 
-  /**
-   *  @class stream stream.hh "com/centreon/broker/simu/stream.hh"
-   *  @brief lua stream.
-   *
-   *  Stream events into lua database.
-   */
-  class             stream : public io::stream {
-  public:
-                    stream(
-                      std::string const& lua_script,
-                      std::map<std::string, misc::variant> const& conf_params);
-                    ~stream();
-    bool            read(std::shared_ptr<io::data>& d, time_t deadline);
-    int             write(std::shared_ptr<io::data> const& d);
+/**
+ *  @class stream stream.hh "com/centreon/broker/simu/stream.hh"
+ *  @brief lua stream.
+ *
+ *  Stream events into lua database.
+ */
+class stream : public io::stream {
+ public:
+  stream(std::string const& lua_script,
+         std::map<std::string, misc::variant> const& conf_params);
+  ~stream();
+  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  int write(std::shared_ptr<io::data> const& d);
 
-  private:
-    stream&         operator=(stream const& other);
-                    stream(stream const& other);
+ private:
+  stream& operator=(stream const& other);
+  stream(stream const& other);
 
-    // Access to the Lua interpreter
-    luabinding*     _luabinding;
-  };
-}
+  // Access to the Lua interpreter
+  luabinding* _luabinding;
+};
+}  // namespace simu
 
 CCB_END()
 
-#endif // !CCB_SIMU_STREAM_HH
+#endif  // !CCB_SIMU_STREAM_HH

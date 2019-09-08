@@ -46,8 +46,7 @@ service_listener::~service_listener() {}
  *
  *  @return This object.
  */
-service_listener& service_listener::operator=(
-                                      service_listener const& other) {
+service_listener& service_listener::operator=(service_listener const& other) {
   (void)other;
   return (*this);
 }
@@ -59,11 +58,11 @@ service_listener& service_listener::operator=(
  *  @param[out] visitor  Visitor.
  */
 void service_listener::service_update(
-                         std::shared_ptr<neb::service_status> const& status,
-                         io::stream* visitor) {
+    std::shared_ptr<neb::service_status> const& status,
+    io::stream* visitor) {
   (void)status;
   (void)visitor;
-  return ;
+  return;
 }
 
 /**
@@ -73,11 +72,11 @@ void service_listener::service_update(
  *  @param[out] visitor  Visitor.
  */
 void service_listener::service_update(
-                         std::shared_ptr<neb::acknowledgement> const& ack,
-                         io::stream* visitor) {
+    std::shared_ptr<neb::acknowledgement> const& ack,
+    io::stream* visitor) {
   (void)ack;
   (void)visitor;
-  return ;
+  return;
 }
 
 /**
@@ -86,10 +85,9 @@ void service_listener::service_update(
  *  @param[in]  dt       Downtime.
  *  @param[out] visitor  Visitor.
  */
-void service_listener::service_update(
-                         std::shared_ptr<neb::downtime> const& dt,
-                         io::stream* visitor) {
+void service_listener::service_update(std::shared_ptr<neb::downtime> const& dt,
+                                      io::stream* visitor) {
   (void)dt;
   (void)visitor;
-  return ;
+  return;
 }

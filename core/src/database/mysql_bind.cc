@@ -16,17 +16,17 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/database/mysql_bind.hh"
 #include <cassert>
 #include <cfloat>
 #include <cmath>
 #include <cstring>
 #include <iostream>
+#include "com/centreon/broker/database/mysql_column.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/mysql.hh"
-#include "com/centreon/broker/database/mysql_bind.hh"
-#include "com/centreon/broker/database/mysql_column.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
@@ -43,9 +43,7 @@ mysql_bind::mysql_bind() {
  *               is 0. So, no reservation is made.
  */
 mysql_bind::mysql_bind(int size, int length)
- : _bind(size),
-   _column(size),
-   _typed(size) {
+    : _bind(size), _column(size), _typed(size) {
   if (length) {
     for (int i(0); i < size; ++i) {
       _bind[i].buffer_type = MYSQL_TYPE_STRING;
@@ -69,7 +67,6 @@ void mysql_bind::set_size(int size, int length) {
       _column[i].set_length(length);
 
     _bind[i].buffer = _column[i].get_buffer();
-
   }
 }
 
@@ -100,7 +97,7 @@ void mysql_bind::set_value_as_str(int range, std::string const& value) {
 
 void mysql_bind::set_value_as_tiny(int range, char value) {
   assert(static_cast<unsigned int>(range) < _bind.size());
-  //if (range >= _bind.size())
+  // if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
     _prepare_type(range, MYSQL_TYPE_TINY);
@@ -122,7 +119,7 @@ void mysql_bind::set_value_as_bool(int range, bool value) {
 
 void mysql_bind::set_value_as_i32(int range, int value) {
   assert(static_cast<unsigned int>(range) < _bind.size());
-  //if (range >= _bind.size())
+  // if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
     _prepare_type(range, MYSQL_TYPE_LONG);
@@ -140,14 +137,13 @@ int mysql_bind::value_as_i32(int range) const {
   else if (_bind[range].buffer_type == MYSQL_TYPE_STRING) {
     int retval(strtol(static_cast<char*>(_bind[range].buffer), nullptr, 10));
     return retval;
-  }
-  else
-    assert("This field is not an int" == 0);
+  } else
+    assert("This field is not an int" == nullptr);
 }
 
 void mysql_bind::set_value_as_u32(int range, unsigned int value) {
   assert(static_cast<unsigned int>(range) < _bind.size());
-  //if (range >= _bind.size())
+  // if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
     _prepare_type(range, MYSQL_TYPE_LONG);
@@ -163,16 +159,16 @@ unsigned int mysql_bind::value_as_u32(int range) const {
   if (_bind[range].buffer_type == MYSQL_TYPE_LONG)
     return *static_cast<unsigned int*>(_bind[range].buffer);
   else if (_bind[range].buffer_type == MYSQL_TYPE_STRING) {
-    unsigned int retval(strtoul(static_cast<char*>(_bind[range].buffer), nullptr, 10));
+    unsigned int retval(
+        strtoul(static_cast<char*>(_bind[range].buffer), nullptr, 10));
     return retval;
-  }
-  else
-    assert("This field is not an unsigned int" == 0);
+  } else
+    assert("This field is not an unsigned int" == nullptr);
 }
 
 void mysql_bind::set_value_as_u64(int range, unsigned long long value) {
   assert(static_cast<unsigned int>(range) < _bind.size());
-  //if (range >= _bind.size())
+  // if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
     _prepare_type(range, MYSQL_TYPE_LONGLONG);
@@ -188,11 +184,11 @@ unsigned long long mysql_bind::value_as_u64(int range) const {
   if (_bind[range].buffer_type == MYSQL_TYPE_LONGLONG)
     return *static_cast<unsigned int*>(_bind[range].buffer);
   else if (_bind[range].buffer_type == MYSQL_TYPE_STRING) {
-    unsigned long long retval(strtoul(static_cast<char*>(_bind[range].buffer), nullptr, 10));
+    unsigned long long retval(
+        strtoul(static_cast<char*>(_bind[range].buffer), nullptr, 10));
     return retval;
-  }
-  else
-    assert("This field is not an unsigned long int" == 0);
+  } else
+    assert("This field is not an unsigned long int" == nullptr);
 }
 
 /**
@@ -223,9 +219,8 @@ float mysql_bind::value_as_f32(int range) const {
   else if (_bind[range].buffer_type == MYSQL_TYPE_STRING) {
     double retval(strtof(static_cast<char*>(_bind[range].buffer), nullptr));
     return retval;
-  }
-  else
-    assert("This field is not a float" == 0);
+  } else
+    assert("This field is not a float" == nullptr);
 }
 
 /**
@@ -256,27 +251,26 @@ double mysql_bind::value_as_f64(int range) const {
   else if (_bind[range].buffer_type == MYSQL_TYPE_STRING) {
     double retval(strtod(static_cast<char*>(_bind[range].buffer), nullptr));
     return retval;
-  }
-  else
-    assert("This field is not a doube" == 0);
+  } else
+    assert("This field is not a doube" == nullptr);
 }
 
 void mysql_bind::set_value_as_null(int range) {
   assert(static_cast<unsigned int>(range) < _bind.size());
-  //if (range >= _bind.size())
+  // if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
     _prepare_type(range, MYSQL_TYPE_NULL);
   //_bind[range].buffer_type = MYSQL_TYPE_NULL;
-  //FIXME DBR; If data are given in column-wise, this type should fail and
+  // FIXME DBR; If data are given in column-wise, this type should fail and
   // we will have to set the is_null vector.
   _bind[range].is_null = _column[range].is_null_buffer();
   _bind[range].length = _column[range].length_buffer();
 }
 
 bool mysql_bind::value_is_null(int range) const {
-  return (_column[range].is_null()
-          || _bind[range].buffer_type == MYSQL_TYPE_NULL);
+  return (_column[range].is_null() ||
+          _bind[range].buffer_type == MYSQL_TYPE_NULL);
 }
 
 void mysql_bind::debug() {
@@ -284,66 +278,67 @@ void mysql_bind::debug() {
   int size(_bind.size());
   for (int i(0); i < size; ++i) {
     switch (_bind[i].buffer_type) {
-      case MYSQL_TYPE_LONGLONG:
-        {
-          std::cout << "LONGLONG : "
-            << " : " << "BL: " << _bind[i].buffer_length
-            << " NULL: " << (*_bind[i].is_null ? "1" : "0")
-            << " : " << *static_cast<long long*>(_column[i].get_buffer()) << std::endl;
-        }
-        break;
-      case MYSQL_TYPE_LONG:
-        {
-          std::cout << "LONG : "
-            << " : " << "BL: " << _bind[i].buffer_length
-            << " NULL: " << (*_bind[i].is_null ? "1" : "0")
-            << " : " << *static_cast<int*>(_column[i].get_buffer()) << std::endl;
-        }
-        break;
-      case MYSQL_TYPE_TINY:
-        {
-          std::cout << "TINY : "
-            << " : " << "BL: " << _bind[i].buffer_length
-            << " NULL: " << (*_bind[i].is_null ? "1" : "0")
-            << " : " << *static_cast<char*>(_column[i].get_buffer()) << std::endl;
-        }
-        break;
+      case MYSQL_TYPE_LONGLONG: {
+        std::cout << "LONGLONG : "
+                  << " : "
+                  << "BL: " << _bind[i].buffer_length
+                  << " NULL: " << (*_bind[i].is_null ? "1" : "0") << " : "
+                  << *static_cast<long long*>(_column[i].get_buffer())
+                  << std::endl;
+      } break;
+      case MYSQL_TYPE_LONG: {
+        std::cout << "LONG : "
+                  << " : "
+                  << "BL: " << _bind[i].buffer_length
+                  << " NULL: " << (*_bind[i].is_null ? "1" : "0") << " : "
+                  << *static_cast<int*>(_column[i].get_buffer()) << std::endl;
+      } break;
+      case MYSQL_TYPE_TINY: {
+        std::cout << "TINY : "
+                  << " : "
+                  << "BL: " << _bind[i].buffer_length
+                  << " NULL: " << (*_bind[i].is_null ? "1" : "0") << " : "
+                  << *static_cast<char*>(_column[i].get_buffer()) << std::endl;
+      } break;
       case MYSQL_TYPE_NULL:
         std::cout << "NULL : "
-            << " : " << "BL: " << _bind[i].buffer_length;
+                  << " : "
+                  << "BL: " << _bind[i].buffer_length;
         break;
       case MYSQL_TYPE_ENUM:
         std::cout << "ENUM : "
-            << " : " << "BL: " << _bind[i].buffer_length
-            << " : " << *static_cast<char**>(_column[i].get_buffer()) << std::endl;
+                  << " : "
+                  << "BL: " << _bind[i].buffer_length << " : "
+                  << *static_cast<char**>(_column[i].get_buffer()) << std::endl;
         break;
       case MYSQL_TYPE_STRING:
         std::cout << "STRING : "
-            << " : " << "BL: " << _bind[i].buffer_length
-            << " NULL: " << (*_bind[i].is_null ? "1" : "0")
-            << " : " << *static_cast<char**>(_column[i].get_buffer()) << std::endl;
+                  << " : "
+                  << "BL: " << _bind[i].buffer_length
+                  << " NULL: " << (*_bind[i].is_null ? "1" : "0") << " : "
+                  << *static_cast<char**>(_column[i].get_buffer()) << std::endl;
         break;
-      case MYSQL_TYPE_DOUBLE:
-        {
-          std::cout << "DOUBLE : "
-            << " : " << "BL: " << _bind[i].buffer_length
-            << " NULL: " << (*_bind[i].is_null ? "1" : "0")
-            << " : " << *static_cast<double*>(_column[i].get_buffer()) << std::endl;
-        }
-        break;
-      case MYSQL_TYPE_FLOAT:
-        {
-          std::cout << "FLOAT : "
-            << " : " << "BL: " << _bind[i].buffer_length
-            << " NULL: " << (*_bind[i].is_null ? "1" : "0")
-            << " : " << *static_cast<float*>(_column[i].get_buffer()) << std::endl;
-        }
-        break;
+      case MYSQL_TYPE_DOUBLE: {
+        std::cout << "DOUBLE : "
+                  << " : "
+                  << "BL: " << _bind[i].buffer_length
+                  << " NULL: " << (*_bind[i].is_null ? "1" : "0") << " : "
+                  << *static_cast<double*>(_column[i].get_buffer())
+                  << std::endl;
+      } break;
+      case MYSQL_TYPE_FLOAT: {
+        std::cout << "FLOAT : "
+                  << " : "
+                  << "BL: " << _bind[i].buffer_length
+                  << " NULL: " << (*_bind[i].is_null ? "1" : "0") << " : "
+                  << *static_cast<float*>(_column[i].get_buffer()) << std::endl;
+      } break;
       default:
         std::cout << _bind[i].buffer_type << " : "
-          << " : " << "BL: " << _bind[i].buffer_length
-          << " : " << "TYPE NOT MANAGED...\n";
-        assert(1 == 0);   // Should not arrive...
+                  << " : "
+                  << "BL: " << _bind[i].buffer_length << " : "
+                  << "TYPE NOT MANAGED...\n";
+        assert(1 == 0);  // Should not arrive...
         break;
     }
     std::cout << std::endl;

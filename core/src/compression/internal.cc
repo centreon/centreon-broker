@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/compression/factory.hh"
 #include "com/centreon/broker/compression/internal.hh"
+#include "com/centreon/broker/compression/factory.hh"
 #include "com/centreon/broker/io/protocols.hh"
 
 using namespace com::centreon::broker;
@@ -27,12 +27,8 @@ using namespace com::centreon::broker;
  */
 void compression::load() {
   // Register compression layer.
-  io::protocols::instance().reg(
-                              "compression",
-                              compression::factory(),
-                              6,
-                              6);
-  return ;
+  io::protocols::instance().reg("compression", compression::factory(), 6, 6);
+  return;
 }
 
 /**
@@ -41,5 +37,5 @@ void compression::load() {
 void compression::unload() {
   // Unregister compression layer.
   io::protocols::instance().unreg("compression");
-  return ;
+  return;
 }

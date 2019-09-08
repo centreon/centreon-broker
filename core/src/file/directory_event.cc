@@ -24,9 +24,7 @@ using namespace com::centreon::broker::file;
 /**
  *  Default constructor.
  */
-directory_event::directory_event() {
-
-}
+directory_event::directory_event() {}
 
 /**
  *  Constructor.
@@ -35,12 +33,10 @@ directory_event::directory_event() {
  *  @param[in] type       The type of this directory event.
  *  @param[in] file_type  The type of the file of this directory event.
  */
-directory_event::directory_event(std::string const& path, type type, file_type ftp)
-  : _path(path),
-    _type(type),
-    _file_type(ftp) {
-
-}
+directory_event::directory_event(std::string const& path,
+                                 type type,
+                                 file_type ftp)
+    : _path(path), _type(type), _file_type(ftp) {}
 
 /**
  *  Copy constructor.
@@ -48,10 +44,7 @@ directory_event::directory_event(std::string const& path, type type, file_type f
  *  @param[in] o  The object to copy.
  */
 directory_event::directory_event(directory_event const& o)
-  : _path(o._path),
-    _type(o._type),
-    _file_type(o._file_type) {
-}
+    : _path(o._path), _type(o._type), _file_type(o._file_type) {}
 
 /**
  *  Assignment operator.
@@ -72,9 +65,7 @@ directory_event& directory_event::operator=(directory_event const& o) {
 /**
  *  Destructor.
  */
-directory_event::~directory_event() {
-
-}
+directory_event::~directory_event() {}
 
 /**
  *  Get the fullpath of this event.

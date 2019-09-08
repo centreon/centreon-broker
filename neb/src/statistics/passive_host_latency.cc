@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/passive_host_latency.hh"
 #include <iomanip>
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/statistics/compute_value.hh"
-#include "com/centreon/broker/neb/statistics/passive_host_latency.hh"
 #include "com/centreon/engine/globals.hh"
 
 using namespace com::centreon::broker;
@@ -32,8 +32,7 @@ using namespace com::centreon::engine;
 /**
  *  Default constructor.
  */
-passive_host_latency::passive_host_latency()
-  : plugin("passive_host_latency") {}
+passive_host_latency::passive_host_latency() : plugin("passive_host_latency") {}
 
 /**
  *  Copy constructor.
@@ -41,7 +40,7 @@ passive_host_latency::passive_host_latency()
  *  @param[in] right Object to copy.
  */
 passive_host_latency::passive_host_latency(passive_host_latency const& right)
- : plugin(right) {}
+    : plugin(right) {}
 
 /**
  *  Destructor.
@@ -55,7 +54,8 @@ passive_host_latency::~passive_host_latency() {}
  *
  *  @return This object.
  */
-passive_host_latency& passive_host_latency::operator=(passive_host_latency const& right) {
+passive_host_latency& passive_host_latency::operator=(
+    passive_host_latency const& right) {
   plugin::operator=(right);
   return (*this);
 }
@@ -66,15 +66,10 @@ passive_host_latency& passive_host_latency::operator=(passive_host_latency const
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void passive_host_latency::run(
-              std::string& output,
-	      std::string& perfdata) {
+void passive_host_latency::run(std::string& output, std::string& perfdata) {
   compute_value<double> cv;
-  for (host_map::const_iterator
-         it{host::hosts.begin()},
-         end{host::hosts.end()};
-       it != end;
-       ++it)
+  for (host_map::const_iterator it{host::hosts.begin()}, end{host::hosts.end()};
+       it != end; ++it)
     if (it->second->get_check_type() == checkable::check_passive)
       cv << it->second->get_latency();
 
@@ -82,20 +77,21 @@ void passive_host_latency::run(
     // Output.
     std::ostringstream oss;
     oss << "Engine " << config::applier::state::instance().poller_name()
-        << " has an average passive host latency of "
-        << std::fixed << std::setprecision(2) << cv.avg() << "s";
+        << " has an average passive host latency of " << std::fixed
+        << std::setprecision(2) << cv.avg() << "s";
     output = oss.str();
 
     // Perfdata.
     oss.str("");
-    oss << "avg=" << cv.avg() << "s min=" << cv.min()
-        << "s max=" << cv.max() << "s";
+    oss << "avg=" << cv.avg() << "s min=" << cv.min() << "s max=" << cv.max()
+        << "s";
     perfdata = oss.str();
-  }
-  else {
+  } else {
     // Output.
-    output = "No passive host to compute passive host "
-      "latency on " + config::applier::state::instance().poller_name();
+    output =
+        "No passive host to compute passive host "
+        "latency on " +
+        config::applier::state::instance().poller_name();
   }
-  return ;
+  return;
 }

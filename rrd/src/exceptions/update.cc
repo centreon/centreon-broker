@@ -22,28 +22,27 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd::exceptions;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
-update::update() throw () {}
+update::update() throw() {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] u Object to copy.
  */
-update::update(update const& u) throw ()
-  : broker::exceptions::msg(u) {}
+update::update(update const& u) throw() : broker::exceptions::msg(u) {}
 
 /**
  *  Destructor.
  */
-update::~update() throw () {}
+update::~update() throw() {}
 
 /**
  *  Assignment operator.
@@ -52,7 +51,7 @@ update::~update() throw () {}
  *
  *  @return This object.
  */
-update& update::operator=(update const& u) throw () {
+update& update::operator=(update const& u) throw() {
   broker::exceptions::msg::operator=(u);
   return (*this);
 }
@@ -70,6 +69,6 @@ exceptions::msg* update::clone() const {
  *  Rethrow the exception.
  */
 void update::rethrow() const {
-  throw (*this);
-  return ;
+  throw(*this);
+  return;
 }

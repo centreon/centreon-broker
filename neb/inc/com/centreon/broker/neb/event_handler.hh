@@ -17,60 +17,58 @@
 */
 
 #ifndef CCB_NEB_EVENT_HANDLER_HH
-#  define CCB_NEB_EVENT_HANDLER_HH
+#define CCB_NEB_EVENT_HANDLER_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace          neb {
-  /**
-   *  @class event_handler event_handler.hh "com/centreon/broker/neb/event_handler.hh"
-   *  @brief Represents an event handler inside the scheduling engine.
-   *
-   *  Event handlers, as their name suggests, are executed upon
-   *  the detection of some events by the scheduling engine.
-   */
-  class            event_handler : public io::data {
-  public:
-                   event_handler();
-                   event_handler(event_handler const& other);
-                   ~event_handler();
-    event_handler& operator=(event_handler const& other);
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace neb {
+/**
+ *  @class event_handler event_handler.hh
+ * "com/centreon/broker/neb/event_handler.hh"
+ *  @brief Represents an event handler inside the scheduling engine.
+ *
+ *  Event handlers, as their name suggests, are executed upon
+ *  the detection of some events by the scheduling engine.
+ */
+class event_handler : public io::data {
+ public:
+  event_handler();
+  event_handler(event_handler const& other);
+  ~event_handler();
+  event_handler& operator=(event_handler const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    std::string        command_args;
-    std::string        command_line;
-    bool           early_timeout;
-    timestamp      end_time;
-    double         execution_time;
-    short          handler_type;
-    unsigned int   host_id;
-    std::string        output;
-    short          return_code;
-    unsigned int   service_id;
-    timestamp      start_time;
-    short          state;
-    short          state_type;
-    short          timeout;
+  std::string command_args;
+  std::string command_line;
+  bool early_timeout;
+  timestamp end_time;
+  double execution_time;
+  short handler_type;
+  unsigned int host_id;
+  std::string output;
+  short return_code;
+  unsigned int service_id;
+  timestamp start_time;
+  short state;
+  short state_type;
+  short timeout;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void           _internal_copy(event_handler const& other);
-  };
-}
+ private:
+  void _internal_copy(event_handler const& other);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_EVENT_HANDLER_HH
+#endif  // !CCB_NEB_EVENT_HANDLER_HH

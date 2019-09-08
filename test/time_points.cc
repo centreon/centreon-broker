@@ -30,8 +30,7 @@ time_points::time_points() {}
  *
  *  @param[in] other  Object to copy.
  */
-time_points::time_points(time_points const& other)
-  : _points(other._points) {}
+time_points::time_points(time_points const& other) : _points(other._points) {}
 
 /**
  *  Destructor.
@@ -85,5 +84,5 @@ time_t time_points::prelast() const {
  */
 void time_points::store() {
   _points.push_back(time(NULL));
-  return ;
+  return;
 }

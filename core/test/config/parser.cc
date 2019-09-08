@@ -16,13 +16,13 @@
  * For more information : contact@centreon.com
  *
  */
+#include "com/centreon/broker/config/parser.hh"
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <string>
-#include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/misc/misc.hh"
 
@@ -41,73 +41,73 @@ TEST(parser, endpoint) {
   // Open file.
   FILE* file_stream(fopen(config_file.c_str(), "w"));
   if (!file_stream)
-    throw (exceptions::msg() << "could not open '"
-                             << config_file.c_str() << "'");
+    throw(exceptions::msg()
+          << "could not open '" << config_file.c_str() << "'");
 
   // Data.
   std::string data;
   data =
-   "\n{"
-   "  \"centreonBroker\": {\n"
-   "    \"input\": {\n"
-   "      \"name\": \"CentreonInput\",\n"
-   "      \"type\": \"tcp\",\n"
-   "      \"port\": \"5668\",\n"
-   "      \"protocol\": \"ndo\",\n"
-   "      \"compression\": \"yes\"\n"
-   "    },\n"
-   "    \"output\": [\n"
-   "      {\n"
-   "        \"name\": \"CentreonDatabase\",\n"
-   "        \"type\": \"sql\",\n"
-   "        \"db_type\": \"mysql\",\n"
-   "        \"db_host\": \"localhost\",\n"
-   "        \"db_port\": \"3306\",\n"
-   "        \"db_user\": \"centreon\",\n"
-   "        \"db_password\": \"merethis\",\n"
-   "        \"db_name\": \"centreon_storage\",\n"
-   "        \"failover\": \"CentreonRetention\",\n"
-   "        \"secondary_failover\": [\n"
-   "          \"CentreonSecondaryFailover1\",\n"
-   "          \"CentreonSecondaryFailover2\"\n"
-   "        ],\n"
-   "        \"buffering_timeout\": \"10\",\n"
-   "        \"read_timeout\": \"5\",\n"
-   "        \"retry_interval\": \"300\"\n"
-   "      },\n"
-   "      {\n"
-   "        \"name\": \"CentreonRetention\",\n"
-   "        \"type\": \"file\",\n"
-   "        \"path\": \"retention.dat\",\n"
-   "        \"protocol\": \"ndo\"\n"
-   "      },\n"
-   "      {\n"
-   "        \"name\": \"CentreonSecondaryFailover1\",\n"
-   "        \"type\": \"file\",\n"
-   "        \"path\": \"retention.dat\",\n"
-   "        \"protocol\": \"ndo\"\n"
-   "      },\n"
-   "      {\n"
-   "        \"name\": \"CentreonSecondaryFailover2\",\n"
-   "        \"type\": \"file\",\n"
-   "        \"path\": \"retention.dat\",\n"
-   "        \"protocol\": \"ndo\"\n"
-   "      }\n"
-   "    ]\n"
-   "  }\n"
-   "}\n";
+      "\n{"
+      "  \"centreonBroker\": {\n"
+      "    \"input\": {\n"
+      "      \"name\": \"CentreonInput\",\n"
+      "      \"type\": \"tcp\",\n"
+      "      \"port\": \"5668\",\n"
+      "      \"protocol\": \"ndo\",\n"
+      "      \"compression\": \"yes\"\n"
+      "    },\n"
+      "    \"output\": [\n"
+      "      {\n"
+      "        \"name\": \"CentreonDatabase\",\n"
+      "        \"type\": \"sql\",\n"
+      "        \"db_type\": \"mysql\",\n"
+      "        \"db_host\": \"localhost\",\n"
+      "        \"db_port\": \"3306\",\n"
+      "        \"db_user\": \"centreon\",\n"
+      "        \"db_password\": \"merethis\",\n"
+      "        \"db_name\": \"centreon_storage\",\n"
+      "        \"failover\": \"CentreonRetention\",\n"
+      "        \"secondary_failover\": [\n"
+      "          \"CentreonSecondaryFailover1\",\n"
+      "          \"CentreonSecondaryFailover2\"\n"
+      "        ],\n"
+      "        \"buffering_timeout\": \"10\",\n"
+      "        \"read_timeout\": \"5\",\n"
+      "        \"retry_interval\": \"300\"\n"
+      "      },\n"
+      "      {\n"
+      "        \"name\": \"CentreonRetention\",\n"
+      "        \"type\": \"file\",\n"
+      "        \"path\": \"retention.dat\",\n"
+      "        \"protocol\": \"ndo\"\n"
+      "      },\n"
+      "      {\n"
+      "        \"name\": \"CentreonSecondaryFailover1\",\n"
+      "        \"type\": \"file\",\n"
+      "        \"path\": \"retention.dat\",\n"
+      "        \"protocol\": \"ndo\"\n"
+      "      },\n"
+      "      {\n"
+      "        \"name\": \"CentreonSecondaryFailover2\",\n"
+      "        \"type\": \"file\",\n"
+      "        \"path\": \"retention.dat\",\n"
+      "        \"protocol\": \"ndo\"\n"
+      "      }\n"
+      "    ]\n"
+      "  }\n"
+      "}\n";
 
   // Write data.
   if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
-    throw (exceptions::msg() << "could not write content of '"
-                             << config_file.c_str() << "'");
+    throw(exceptions::msg()
+          << "could not write content of '" << config_file.c_str() << "'");
 
   // Close file.
   fclose(file_stream);
 
   // Parse.
   config::parser p;
-  config::state s{p.parse(config_file.c_str())};
+  config::state s{p.parse(config_file)};
 
   // Remove temporary file.
   ::remove(config_file.c_str());
@@ -170,54 +170,53 @@ TEST(parser, endpoint) {
  *  @return EXIT_SUCCESS on success.
  */
 TEST(parser, logger) {
-
   // File name.
   std::string config_file(misc::temp_path());
 
   // Open file.
   FILE* file_stream(fopen(config_file.c_str(), "w"));
   if (!file_stream)
-    throw (exceptions::msg() << "could not open '"
-                             << config_file.c_str() << "'");
+    throw(exceptions::msg()
+          << "could not open '" << config_file.c_str() << "'");
   // Data.
   std::string data;
   data =
-    "{\n"
-    "  \"centreonBroker\": {\n"
-    "    \"logger\": [\n"
-    "      {\n"
-    "        \"type\": \"file\",\n"
-    "        \"name\": \"my_log_file\",\n"
-    "        \"config\": true,\n"
-    "        \"debug\": false,\n"
-    "        \"error\": true,\n"
-    "        \"info\": false,\n"
-    "        \"level\": \"2\"\n"
-    "      },"
-    "      {"
-    "        \"type\": \"standard\",\n"
-    "        \"name\": \"stderr\",\n"
-    "        \"config\": false,\n"
-    "        \"error\": true,\n"
-    "        \"debug\": false,\n"
-    "        \"info\": true,\n"
-    "        \"level\": \"3\"\n"
-    "      }\n"
-    "    ]\n"
-    "  }\n"
-    "}\n";
+      "{\n"
+      "  \"centreonBroker\": {\n"
+      "    \"logger\": [\n"
+      "      {\n"
+      "        \"type\": \"file\",\n"
+      "        \"name\": \"my_log_file\",\n"
+      "        \"config\": true,\n"
+      "        \"debug\": false,\n"
+      "        \"error\": true,\n"
+      "        \"info\": false,\n"
+      "        \"level\": \"2\"\n"
+      "      },"
+      "      {"
+      "        \"type\": \"standard\",\n"
+      "        \"name\": \"stderr\",\n"
+      "        \"config\": false,\n"
+      "        \"error\": true,\n"
+      "        \"debug\": false,\n"
+      "        \"info\": true,\n"
+      "        \"level\": \"3\"\n"
+      "      }\n"
+      "    ]\n"
+      "  }\n"
+      "}\n";
 
   // Write data.
   if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
-    throw (exceptions::msg() << "could not write content of '"
-                             << config_file.c_str() << "'");
+    throw(exceptions::msg()
+          << "could not write content of '" << config_file.c_str() << "'");
 
   // Close file.
   fclose(file_stream);
 
   // Parse.
   config::parser p;
-  config::state s{p.parse(config_file.c_str())};
+  config::state s{p.parse(config_file)};
 
   // Remove temporary file.
   ::remove(config_file.c_str());
@@ -254,37 +253,37 @@ TEST(parser, logger) {
  *  @return EXIT_SUCCESS on success.
  */
 TEST(parser, global) {
-
   // File name.
   std::string config_file(misc::temp_path());
 
   // Open file.
   FILE* file_stream(fopen(config_file.c_str(), "w"));
   if (!file_stream)
-  throw (exceptions::msg() << "could not open '"
-  << config_file.c_str() << "'");
+    throw(exceptions::msg()
+          << "could not open '" << config_file.c_str() << "'");
   // Data.
   std::string data;
   data =
-  "{\n"
-  "  \"centreonBroker\": {\n"
-  "     \"broker_id\": 1,\n"
-  "     \"broker_name\": \"central-broker-master\",\n"
-  "     \"poller_id\": 1,\n"
-  "     \"poller_name\": \"Central\",\n"
-  "     \"module_directory\": \"/usr/share/centreon/lib/centreon-broker\",\n"
-  "     \"log_timestamp\": true,\n"
-  "     \"event_queue_max_size\": 100000,\n"
-  "     \"command_file\": \"/var/lib/centreon-broker/command.sock\",\n"
-  "     \"cache_directory\": \"/var/lib/centreon-broker\",\n"
-  "     \"log_thread_id\": false\n"
-  "  }\n"
-  "}\n";
+      "{\n"
+      "  \"centreonBroker\": {\n"
+      "     \"broker_id\": 1,\n"
+      "     \"broker_name\": \"central-broker-master\",\n"
+      "     \"poller_id\": 1,\n"
+      "     \"poller_name\": \"Central\",\n"
+      "     \"module_directory\": "
+      "\"/usr/share/centreon/lib/centreon-broker\",\n"
+      "     \"log_timestamp\": true,\n"
+      "     \"event_queue_max_size\": 100000,\n"
+      "     \"command_file\": \"/var/lib/centreon-broker/command.sock\",\n"
+      "     \"cache_directory\": \"/var/lib/centreon-broker\",\n"
+      "     \"log_thread_id\": false\n"
+      "  }\n"
+      "}\n";
 
   // Write data.
   if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
-  throw (exceptions::msg() << "could not write content of '"
-  << config_file.c_str() << "'");
+    throw(exceptions::msg()
+          << "could not write content of '" << config_file.c_str() << "'");
 
   // Close file.
   fclose(file_stream);

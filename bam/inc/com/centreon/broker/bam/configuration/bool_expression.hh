@@ -17,56 +17,56 @@
 */
 
 #ifndef BAM_CCB_CONFIGURATION_BOOL_EXPRESSION_HH
-#  define BAM_CCB_CONFIGURATION_BOOL_EXPRESSION_HH
+#define BAM_CCB_CONFIGURATION_BOOL_EXPRESSION_HH
 
-#  include <list>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/bam/kpi_event.hh"
+#include <list>
+#include <string>
+#include "com/centreon/broker/bam/kpi_event.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                   bam {
-  namespace                 configuration {
-    /**
-     *  @class bool_expression bool_expression.hh  "com/centreon/broker/bam/configuration/bool_expression.h"
-     *  @brief A pseudo-kpi triggered by a the value of a boolean expression.
-     *
-     *  Configuration of a boolean expression, later used to impact one
-     *  or more BA.
-     */
-    class                   bool_expression {
-    public:
-                            bool_expression(
-                              unsigned int id = 0,
-                              std::string const& name = "",
-                              std::string const& expression = "",
-                              bool impact_if = false);
-                            bool_expression(bool_expression const& other);
-                            ~bool_expression();
-      bool_expression&      operator=(bool_expression const& other);
-      bool                  operator==(bool_expression const& other) const;
-      bool                  operator!=(bool_expression const& other) const;
+namespace bam {
+namespace configuration {
+/**
+ *  @class bool_expression bool_expression.hh
+ * "com/centreon/broker/bam/configuration/bool_expression.h"
+ *  @brief A pseudo-kpi triggered by a the value of a boolean expression.
+ *
+ *  Configuration of a boolean expression, later used to impact one
+ *  or more BA.
+ */
+class bool_expression {
+ public:
+  bool_expression(unsigned int id = 0,
+                  std::string const& name = "",
+                  std::string const& expression = "",
+                  bool impact_if = false);
+  bool_expression(bool_expression const& other);
+  ~bool_expression();
+  bool_expression& operator=(bool_expression const& other);
+  bool operator==(bool_expression const& other) const;
+  bool operator!=(bool_expression const& other) const;
 
-      unsigned int          get_id() const;
-      std::string const&    get_name() const;
-      std::string const&    get_expression() const;
-      bool                  get_impact_if() const;
+  unsigned int get_id() const;
+  std::string const& get_name() const;
+  std::string const& get_expression() const;
+  bool get_impact_if() const;
 
-      void                  set_name(std::string const& name);
-      void                  set_expression(std::string const& s);
-      void                  set_id(unsigned int id);
-      void                  set_impact_if(bool b);
+  void set_name(std::string const& name);
+  void set_expression(std::string const& s);
+  void set_id(unsigned int id);
+  void set_impact_if(bool b);
 
-    private:
-      unsigned int          _id;
-      std::string           _name;
-      std::string           _expression;
-      bool                  _impact_if;
-    };
-  }
-}
+ private:
+  unsigned int _id;
+  std::string _name;
+  std::string _expression;
+  bool _impact_if;
+};
+}  // namespace configuration
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_CONFIGURATION_BOOL_EXPRESSION_HH
+#endif  // !CCB_BAM_CONFIGURATION_BOOL_EXPRESSION_HH

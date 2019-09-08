@@ -17,39 +17,36 @@
 */
 
 #ifndef CCB_NOTIFICATION_BUILDERS_COMPOSED_CONTACT_BUILDER_HH
-#  define CCB_NOTIFICATION_BUILDERS_COMPOSED_CONTACT_BUILDER_HH
+#define CCB_NOTIFICATION_BUILDERS_COMPOSED_CONTACT_BUILDER_HH
 
-#  include <vector>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/contact.hh"
-#  include "com/centreon/broker/notification/builders/contact_builder.hh"
-#  include "com/centreon/broker/notification/builders/composed_builder.hh"
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/composed_builder.hh"
+#include "com/centreon/broker/notification/builders/contact_builder.hh"
+#include "com/centreon/broker/notification/objects/contact.hh"
 
 CCB_BEGIN()
 
-namespace         notification {
-  /**
-   *  @class composed_contact_builder composed_contact_builder.hh "com/centreon/broker/notification/builders/composed_contact_builder.hh"
-   *  @brief Composed contact builder.
-   *
-   *  This class forward its method call to several other builders.
-   */
-  class           composed_contact_builder
-                    : public composed_builder<contact_builder> {
-  public:
-                  composed_contact_builder();
+namespace notification {
+/**
+ *  @class composed_contact_builder composed_contact_builder.hh
+ * "com/centreon/broker/notification/builders/composed_contact_builder.hh"
+ *  @brief Composed contact builder.
+ *
+ *  This class forward its method call to several other builders.
+ */
+class composed_contact_builder : public composed_builder<contact_builder> {
+ public:
+  composed_contact_builder();
 
-    virtual void  add_contact(
-                    unsigned int id,
-                    objects::contact::ptr con);
-    virtual void  add_contact_info(
-                    unsigned int contact_id,
-                    std::string const& key,
-                    std::string const& value);
-  };
+  virtual void add_contact(unsigned int id, objects::contact::ptr con);
+  virtual void add_contact_info(unsigned int contact_id,
+                                std::string const& key,
+                                std::string const& value);
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_BUILDERS_COMPOSED_CONTACT_BUILDER_HH
+#endif  // !CCB_NOTIFICATION_BUILDERS_COMPOSED_CONTACT_BUILDER_HH

@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi_meta.hh"
+#include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi_status.hh"
 #include "com/centreon/broker/bam/meta_service.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -67,15 +67,13 @@ kpi_meta& kpi_meta::operator=(kpi_meta const& other) {
  *
  *  @return True if the values of this object were modified.
  */
-bool kpi_meta::child_has_update(
-                 computable* child,
-                 io::stream* visitor) {
+bool kpi_meta::child_has_update(computable* child, io::stream* visitor) {
   // It is useless to maintain a cache of meta-service values in this
   // class, as the meta_service class already cache most of them.
   if (child == _meta.get()) {
     // Logging.
     logging::debug(logging::low) << "BAM: meta-service KPI " << _id
-      << " is getting notified of child update";
+                                 << " is getting notified of child update";
 
     // Generate status event.
     visit(visitor);
@@ -108,7 +106,7 @@ double kpi_meta::get_impact_warning() const {
  */
 void kpi_meta::impact_hard(impact_values& hard_impact) {
   _fill_impact(hard_impact);
-  return ;
+  return;
 }
 
 /**
@@ -118,7 +116,7 @@ void kpi_meta::impact_hard(impact_values& hard_impact) {
  */
 void kpi_meta::impact_soft(impact_values& soft_impact) {
   _fill_impact(soft_impact);
-  return ;
+  return;
 }
 
 /**
@@ -128,7 +126,7 @@ void kpi_meta::impact_soft(impact_values& soft_impact) {
  */
 void kpi_meta::link_meta(std::shared_ptr<meta_service>& my_meta) {
   _meta = my_meta;
-  return ;
+  return;
 }
 
 /**
@@ -138,7 +136,7 @@ void kpi_meta::link_meta(std::shared_ptr<meta_service>& my_meta) {
  */
 void kpi_meta::set_impact_critical(double impact) {
   _impact_critical = impact;
-  return ;
+  return;
 }
 
 /**
@@ -148,7 +146,7 @@ void kpi_meta::set_impact_critical(double impact) {
  */
 void kpi_meta::set_impact_warning(double impact) {
   _impact_warning = impact;
-  return ;
+  return;
 }
 
 /**
@@ -180,7 +178,7 @@ void kpi_meta::visit(io::stream* visitor) {
         _open_new_event(visitor, values.get_nominal(), state);
       // If state changed, close event and open a new one.
       else if (state != _event->status) {
-        _event->end_time = ::time(NULL);
+        _event->end_time = ::time(nullptr);
         visitor->write(std::static_pointer_cast<io::data>(_event));
         _event.reset();
         _open_new_event(visitor, values.get_nominal(), state);
@@ -203,7 +201,6 @@ void kpi_meta::visit(io::stream* visitor) {
       status->last_impact = values.get_nominal();
       visitor->write(std::static_pointer_cast<io::data>(status));
     }
-
   }
 }
 
@@ -225,7 +222,7 @@ void kpi_meta::_fill_impact(impact_values& impact) {
   impact.set_nominal(nominal);
   impact.set_acknowledgement(0.0);
   impact.set_downtime(0.0);
-  return ;
+  return;
 }
 
 /**
@@ -238,7 +235,7 @@ void kpi_meta::_internal_copy(kpi_meta const& other) {
   _event = other._event;
   _impact_critical = other._impact_critical;
   _impact_warning = other._impact_warning;
-  return ;
+  return;
 }
 
 /**
@@ -248,23 +245,20 @@ void kpi_meta::_internal_copy(kpi_meta const& other) {
  *  @param[in]  impact   Current impact of this KPI.
  *  @param[in]  state    Meta-service state.
  */
-void kpi_meta::_open_new_event(
-                 io::stream* visitor,
-                 int impact,
-                 short state) {
+void kpi_meta::_open_new_event(io::stream* visitor, int impact, short state) {
   _event.reset(new kpi_event);
   _event->kpi_id = _id;
   _event->impact_level = impact;
   _event->in_downtime = false;
-  _event->output = _meta->get_output().c_str();
-  _event->perfdata = _meta->get_perfdata().c_str();
-  _event->start_time = time(NULL); // XXX _ba->get_last_service_update();
+  _event->output = _meta->get_output();
+  _event->perfdata = _meta->get_perfdata();
+  _event->start_time = time(nullptr);  // XXX _ba->get_last_service_update();
   _event->status = state;
   if (visitor) {
     std::shared_ptr<io::data> ke(new kpi_event(*_event));
     visitor->write(ke);
   }
-  return ;
+  return;
 }
 
 /**

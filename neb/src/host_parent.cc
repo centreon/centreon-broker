@@ -16,26 +16,23 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/host_parent.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
-host_parent::host_parent()
-  : enabled(true),
-    host_id(0),
-    parent_id(0) {}
+host_parent::host_parent() : enabled(true), host_id(0), parent_id(0) {}
 
 /**
  *  Copy constructor.
@@ -43,10 +40,10 @@ host_parent::host_parent()
  *  @param[in] other  Object to copy.
  */
 host_parent::host_parent(host_parent const& other)
-  : io::data(other),
-    enabled(other.enabled),
-    host_id(other.host_id),
-    parent_id(other.parent_id) {}
+    : io::data(other),
+      enabled(other.enabled),
+      host_id(other.host_id),
+      parent_id(other.parent_id) {}
 
 /**
  *  Destructor.
@@ -89,31 +86,25 @@ unsigned int host_parent::static_type() {
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const host_parent::entries[] = {
-  mapping::entry(
-    &host_parent::enabled,
-    ""),
-  mapping::entry(
-    &host_parent::host_id,
-    "child_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &host_parent::parent_id,
-    "parent_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry()
-};
+    mapping::entry(&host_parent::enabled, ""),
+    mapping::entry(&host_parent::host_id,
+                   "child_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&host_parent::parent_id,
+                   "parent_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_host_parent() {
   return (new host_parent);
 }
 io::event_info::event_operations const host_parent::operations = {
-  &new_host_parent
-};
+    &new_host_parent};

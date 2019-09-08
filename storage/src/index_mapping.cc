@@ -16,35 +16,31 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/storage/index_mapping.hh"
 #include <cmath>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
-#include "com/centreon/broker/storage/index_mapping.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
-index_mapping::index_mapping()
-  : index_id(0),
-    host_id(0),
-    service_id(0) {}
+index_mapping::index_mapping() : index_id(0), host_id(0), service_id(0) {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
-index_mapping::index_mapping(index_mapping const& other)
-  : io::data(other) {
+index_mapping::index_mapping(index_mapping const& other) : io::data(other) {
   _internal_copy(other);
 }
 
@@ -83,14 +79,15 @@ unsigned int index_mapping::type() const {
  *  @return  The event type.
  */
 unsigned int index_mapping::static_type() {
-  return (io::events::data_type<io::events::storage, storage::de_index_mapping>::value);
+  return (io::events::data_type<io::events::storage,
+                                storage::de_index_mapping>::value);
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -101,36 +98,31 @@ void index_mapping::_internal_copy(index_mapping const& other) {
   index_id = other.index_id;
   host_id = other.host_id;
   service_id = other.service_id;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const index_mapping::entries[] = {
-  mapping::entry(
-    &index_mapping::index_id,
-    "index_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &index_mapping::host_id,
-    "host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &index_mapping::service_id,
-    "service_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry()
-};
+    mapping::entry(&index_mapping::index_id,
+                   "index_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&index_mapping::host_id,
+                   "host_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&index_mapping::service_id,
+                   "service_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_index_mapping() {
   return (new index_mapping);
 }
 io::event_info::event_operations const index_mapping::operations = {
-  &new_index_mapping
-};
+    &new_index_mapping};

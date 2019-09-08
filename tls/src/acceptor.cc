@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/tls/acceptor.hh"
 #include <gnutls/gnutls.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/tls/acceptor.hh"
 #include "com/centreon/broker/tls/internal.hh"
 #include "com/centreon/broker/tls/params.hh"
 #include "com/centreon/broker/tls/stream.hh"
@@ -28,10 +28,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::tls;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -40,11 +40,10 @@ using namespace com::centreon::broker::tls;
  *  @param[in] key  Key file.
  *  @param[in] ca   Trusted CA's certificate.
  */
-acceptor::acceptor(
-            std::string const& cert,
-            std::string const& key,
-            std::string const& ca)
-  : io::endpoint(true), _ca(ca), _cert(cert), _key(key) {}
+acceptor::acceptor(std::string const& cert,
+                   std::string const& key,
+                   std::string const& ca)
+    : io::endpoint(true), _ca(ca), _cert(cert), _key(key) {}
 
 /**
  *  Copy constructor.
@@ -108,8 +107,7 @@ std::shared_ptr<io::stream> acceptor::open() {
  *
  *  @return Encrypted stream.
  */
-std::shared_ptr<io::stream> acceptor::open(
-                                         std::shared_ptr<io::stream> lower) {
+std::shared_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
   std::shared_ptr<io::stream> s;
   if (lower) {
     int ret;
@@ -129,28 +127,27 @@ std::shared_ptr<io::stream> acceptor::open(
       ret = gnutls_init(session, GNUTLS_SERVER | GNUTLS_NONBLOCK);
 #else
       ret = gnutls_init(session, GNUTLS_SERVER);
-#endif // GNUTLS_NONBLOCK
+#endif  // GNUTLS_NONBLOCK
       if (ret != GNUTLS_E_SUCCESS)
-	throw (exceptions::msg() << "TLS: cannot initialize session: "
-               << gnutls_strerror(ret));
+        throw(exceptions::msg()
+              << "TLS: cannot initialize session: " << gnutls_strerror(ret));
 
       // Apply TLS parameters.
       p.apply(*session);
 
       // Create stream object.
       s = std::shared_ptr<io::stream>(new stream(session));
-    }
-    catch (...) {
+    } catch (...) {
       gnutls_deinit(*session);
       delete (session);
-      throw ;
+      throw;
     }
     s->set_substream(lower);
 
     // Bind the TLS session with the stream from the lower layer.
 #if GNUTLS_VERSION_NUMBER < 0x020C00
     gnutls_transport_set_lowat(*session, 0);
-#endif // GNU TLS < 2.12.0
+#endif  // GNU TLS < 2.12.0
     gnutls_transport_set_pull_function(*session, pull_helper);
     gnutls_transport_set_push_function(*session, push_helper);
     gnutls_transport_set_ptr(*session, s.get());
@@ -161,8 +158,8 @@ std::shared_ptr<io::stream> acceptor::open(
       ret = gnutls_handshake(*session);
     } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
     if (ret != GNUTLS_E_SUCCESS)
-      throw (exceptions::msg() << "TLS: handshake failed: "
-             << gnutls_strerror(ret));
+      throw(exceptions::msg()
+            << "TLS: handshake failed: " << gnutls_strerror(ret));
     logging::debug(logging::medium) << "TLS: successful handshake";
 
     // Check certificate.
@@ -173,10 +170,10 @@ std::shared_ptr<io::stream> acceptor::open(
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -187,5 +184,5 @@ void acceptor::_internal_copy(acceptor const& right) {
   _ca = right._ca;
   _cert = right._cert;
   _key = right._key;
-  return ;
+  return;
 }

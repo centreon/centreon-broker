@@ -17,11 +17,11 @@
  *
  */
 
-#include <cmath>
+#include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include <gtest/gtest.h>
+#include <cmath>
 #include <list>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 
@@ -105,7 +105,6 @@ TEST(StoragePerfdata, Assign) {
   ASSERT_FALSE(!p2.warning_mode());
 }
 
-
 /**
  *  Check that the perfdata copy constructor works properly.
  */
@@ -169,7 +168,6 @@ TEST(StoragePerfdata, CopyCtor) {
   ASSERT_FALSE(!p2.warning_mode());
 }
 
-
 /**
  *  Check that the perfdata object properly default constructs.
  *
@@ -194,7 +192,6 @@ TEST(StoragePerfdata, DefaultCtor) {
   ASSERT_FALSE(p.warning_mode());
 }
 
-
 // Given a storage::parser object
 // When parse_perfdata() is called with a valid perfdata string
 // Then perfdata are returned in a list
@@ -203,9 +200,7 @@ TEST(StorageParserParsePerfdata, Simple1) {
   // Parse perfdata.
   std::list<storage::perfdata> lst;
   storage::parser p;
-  p.parse_perfdata(
-    "time=2.45698s;2.000000;5.000000;0.000000;10.000000",
-    lst);
+  p.parse_perfdata("time=2.45698s;2.000000;5.000000;0.000000;10.000000", lst);
 
   // Assertions.
   ASSERT_EQ(lst.size(), 1u);
@@ -252,10 +247,10 @@ TEST(StorageParserParsePerfdata, Complex1) {
   std::list<storage::perfdata> list;
   storage::parser p;
   p.parse_perfdata(
-    "time=2.45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; "
-    "infotraffic=18x;;;; a[foo]=1234;10;11: c[bar]=1234;~:10;20:30 "
-    "baz=1234;@10:20; 'q u x'=9queries_per_second;@10:;@5:;0;100",
-    list);
+      "time=2.45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; "
+      "infotraffic=18x;;;; a[foo]=1234;10;11: c[bar]=1234;~:10;20:30 "
+      "baz=1234;@10:20; 'q u x'=9queries_per_second;@10:;@5:;0;100",
+      list);
 
   // Assertions.
   ASSERT_EQ(list.size(), 7u);
@@ -356,9 +351,8 @@ TEST(StorageParserParsePerfdata, Loop) {
   for (unsigned int i(0); i < 10000; ++i) {
     // Parse perfdata string.
     list.clear();
-    p.parse_perfdata(
-      "c[time]=2.45698s;2.000000;5.000000;0.000000;10.000000",
-      list);
+    p.parse_perfdata("c[time]=2.45698s;2.000000;5.000000;0.000000;10.000000",
+                     list);
 
     // Assertions.
     ASSERT_EQ(list.size(), 1u);
@@ -388,9 +382,8 @@ TEST(StorageParserParsePerfdata, Incorrect1) {
   storage::parser p;
 
   // Attempt to parse perfdata.
-  ASSERT_THROW(
-    { p.parse_perfdata("metric1= 10 metric2=42", list); },
-    com::centreon::broker::storage::exceptions::perfdata);
+  ASSERT_THROW({ p.parse_perfdata("metric1= 10 metric2=42", list); },
+               com::centreon::broker::storage::exceptions::perfdata);
 }
 
 // Given a storage::parser object
@@ -402,9 +395,8 @@ TEST(StorageParserParsePerfdata, Incorrect2) {
   storage::parser p;
 
   // Then
-  ASSERT_THROW(
-    { p.parse_perfdata("metric=kb/s", list); },
-    com::centreon::broker::storage::exceptions::perfdata);
+  ASSERT_THROW({ p.parse_perfdata("metric=kb/s", list); },
+               com::centreon::broker::storage::exceptions::perfdata);
 }
 
 TEST(StorageParserParsePerfdata, LabelWithSpaces) {
@@ -433,9 +425,9 @@ TEST(StorageParserParsePerfdata, Complex2) {
   std::list<storage::perfdata> list;
   storage::parser p;
   p.parse_perfdata(
-    "time=2,45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; "
-    "infotraffic=18,6x;;;; a[foo]=1234,17;10;11: c[bar]=1234,147;~:10;20:30",
-    list);
+      "time=2,45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; "
+      "infotraffic=18,6x;;;; a[foo]=1234,17;10;11: c[bar]=1234,147;~:10;20:30",
+      list);
 
   // Assertions.
   ASSERT_EQ(list.size(), 5u);

@@ -17,45 +17,46 @@
 */
 
 #ifndef CCB_NOTIFICATION_CONTACT_HH
-#  define CCB_NOTIFICATION_CONTACT_HH
+#define CCB_NOTIFICATION_CONTACT_HH
 
-#  include <map>
-#  include <vector>
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/objects/defines.hh"
-#  include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
+#include <map>
+#include <string>
+#include <vector>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/objects/defines.hh"
+#include "com/centreon/broker/notification/utilities/ptr_typedef.hh"
 
 CCB_BEGIN()
 
-namespace   notification {
-  namespace objects {
-    /**
-     *  @class contact contact.hh "com/centreon/broker/notification/objects/contact.hh"
-     *  @brief Contact object.
-     *
-     *  The object containing a contact.
-     */
-    class                      contact {
-    public:
-                               DECLARE_SHARED_PTR(contact);
+namespace notification {
+namespace objects {
+/**
+ *  @class contact contact.hh
+ * "com/centreon/broker/notification/objects/contact.hh"
+ *  @brief Contact object.
+ *
+ *  The object containing a contact.
+ */
+class contact {
+ public:
+  DECLARE_SHARED_PTR(contact);
 
-                               contact();
-                               contact(contact const& obj);
-                               contact& operator=(contact const& obj);
+  contact();
+  contact(contact const& obj);
+  contact& operator=(contact const& obj);
 
-      unsigned int             get_id() const throw();
-      void                     set_id(unsigned int);
-      std::string const&       get_description() const throw();
-      void                     set_description(std::string const& desc);
+  unsigned int get_id() const throw();
+  void set_id(unsigned int);
+  std::string const& get_description() const throw();
+  void set_description(std::string const& desc);
 
-    private:
-      unsigned int             _id;
-      std::string              _description;
-    };
-  }
-}
+ private:
+  unsigned int _id;
+  std::string _description;
+};
+}  // namespace objects
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_CONTACT_HH
+#endif  // !CCB_NOTIFICATION_CONTACT_HH

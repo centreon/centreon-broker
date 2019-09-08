@@ -44,7 +44,7 @@ static void precheck(test::time_points& tpoints, char const* name) {
   ++check_number;
   std::cout << "check #" << check_number << " (" << name << ")\n";
   tpoints.store();
-  return ;
+  return;
 }
 
 /**
@@ -52,48 +52,46 @@ static void precheck(test::time_points& tpoints, char const* name) {
  *
  *  This routine applies mostly to status properties.
  */
-static void postcheck(
-              test::time_points& tpoints,
-              test::db& db,
-              test::predicate expected[][81]) {
+static void postcheck(test::time_points& tpoints,
+                      test::db& db,
+                      test::predicate expected[][81]) {
   static std::string check_query(
-    "SELECT host_id, service_id, description, acknowledged,"
-    "       acknowledgement_type, action_url, active_checks,"
-    "       check_attempt, check_command, check_freshness,"
-    "       check_interval, check_period, check_type, checked,"
-    "       command_line, default_active_checks,"
-    "       default_event_handler_enabled,"
-    "       default_flap_detection, default_notify,"
-    "       default_passive_checks, enabled, event_handler,"
-    "       event_handler_enabled, execution_time,"
-    "       first_notification_delay,"
-    "       flap_detection, flap_detection_on_critical,"
-    "       flap_detection_on_ok, flap_detection_on_unknown,"
-    "       flap_detection_on_warning, flapping, freshness_threshold,"
-    "       high_flap_threshold, icon_image, icon_image_alt,"
-    "       last_check, last_hard_state, last_hard_state_change,"
-    "       last_notification, last_state_change, last_time_critical,"
-    "       last_time_ok, last_time_unknown, last_time_warning,"
-    "       last_update, latency, low_flap_threshold,"
-    "       max_check_attempts, next_check,"
-    "       next_notification, no_more_notifications, notes, notes_url,"
-    "       notification_interval, notification_number,"
-    "       notification_period, notify, notify_on_critical,"
-    "       notify_on_downtime, notify_on_flapping, notify_on_recovery,"
-    "       notify_on_unknown, notify_on_warning, obsess_over_service,"
-    "       output, passive_checks, percent_state_change, perfdata,"
-    "       real_state, retain_nonstatus_information,"
-    "       retain_status_information, retry_interval,"
-    "       scheduled_downtime_depth, should_be_scheduled,"
-    "       stalk_on_critical, stalk_on_ok, stalk_on_unknown,"
-    "       stalk_on_warning, state, state_type, volatile"
-    "  FROM services"
-    "  ORDER BY host_id ASC, service_id ASC");
-  expected[0][44]
-    = test::predicate(tpoints.prelast(), tpoints.last() + 1);
+      "SELECT host_id, service_id, description, acknowledged,"
+      "       acknowledgement_type, action_url, active_checks,"
+      "       check_attempt, check_command, check_freshness,"
+      "       check_interval, check_period, check_type, checked,"
+      "       command_line, default_active_checks,"
+      "       default_event_handler_enabled,"
+      "       default_flap_detection, default_notify,"
+      "       default_passive_checks, enabled, event_handler,"
+      "       event_handler_enabled, execution_time,"
+      "       first_notification_delay,"
+      "       flap_detection, flap_detection_on_critical,"
+      "       flap_detection_on_ok, flap_detection_on_unknown,"
+      "       flap_detection_on_warning, flapping, freshness_threshold,"
+      "       high_flap_threshold, icon_image, icon_image_alt,"
+      "       last_check, last_hard_state, last_hard_state_change,"
+      "       last_notification, last_state_change, last_time_critical,"
+      "       last_time_ok, last_time_unknown, last_time_warning,"
+      "       last_update, latency, low_flap_threshold,"
+      "       max_check_attempts, next_check,"
+      "       next_notification, no_more_notifications, notes, notes_url,"
+      "       notification_interval, notification_number,"
+      "       notification_period, notify, notify_on_critical,"
+      "       notify_on_downtime, notify_on_flapping, notify_on_recovery,"
+      "       notify_on_unknown, notify_on_warning, obsess_over_service,"
+      "       output, passive_checks, percent_state_change, perfdata,"
+      "       real_state, retain_nonstatus_information,"
+      "       retain_status_information, retry_interval,"
+      "       scheduled_downtime_depth, should_be_scheduled,"
+      "       stalk_on_critical, stalk_on_ok, stalk_on_unknown,"
+      "       stalk_on_warning, state, state_type, volatile"
+      "  FROM services"
+      "  ORDER BY host_id ASC, service_id ASC");
+  expected[0][44] = test::predicate(tpoints.prelast(), tpoints.last() + 1);
   db.check_content(check_query, expected);
   std::cout << "  passed\n";
-  return ;
+  return;
 }
 
 /**
@@ -103,16 +101,15 @@ static void postcheck(
  *  configuration file gets regenerated and the monitoring engine is
  *  reloaded.
  */
-static void postcheck(
-              test::centengine& engine,
-              test::time_points& tpoints,
-              test::db& db,
-              test::predicate expected[][81]) {
+static void postcheck(test::centengine& engine,
+                      test::time_points& tpoints,
+                      test::db& db,
+                      test::predicate expected[][81]) {
   engine.reload();
   test::sleep_for(3);
   tpoints.store();
   postcheck(tpoints, db, expected);
-  return ;
+  return;
 }
 
 /**
@@ -126,31 +123,29 @@ int main() {
 
   try {
     // Database.
-    char const* tables[] = { "instances", "hosts", "services", NULL };
+    char const* tables[] = {"instances", "hosts", "services", NULL};
     test::db db(DB_NAME, tables);
 
     // Monitoring broker.
     test::file cbd_cfg;
-    cbd_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
+    cbd_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/sql.xml.in");
     cbd_cfg.set("BROKER_ID", "84");
     cbd_cfg.set("BROKER_NAME", TEST_NAME "-cbd");
     cbd_cfg.set("POLLER_ID", "42");
     cbd_cfg.set("POLLER_NAME", "my-poller");
     cbd_cfg.set("TCP_PORT", "5575");
     cbd_cfg.set("DB_NAME", DB_NAME);
-    cbd_cfg.set(
-      "SQL_ADDITIONAL",
-      "<write_filters>"
-      "  <category>neb:instance</category>"
-      "  <category>neb:instance_status</category>"
-      "  <category>neb:host</category>"
-      "  <category>neb:host_check</category>"
-      "  <category>neb:host_status</category>"
-      "  <category>neb:service</category>"
-      "  <category>neb:service_check</category>"
-      "  <category>neb:service_status</category>"
-      "</write_filters>");
+    cbd_cfg.set("SQL_ADDITIONAL",
+                "<write_filters>"
+                "  <category>neb:instance</category>"
+                "  <category>neb:instance_status</category>"
+                "  <category>neb:host</category>"
+                "  <category>neb:host_check</category>"
+                "  <category>neb:host_status</category>"
+                "  <category>neb:service</category>"
+                "  <category>neb:service_check</category>"
+                "  <category>neb:service_status</category>"
+                "</write_filters>");
     test::cbd broker;
     broker.set_config_file(cbd_cfg.generate());
     broker.start();
@@ -158,8 +153,7 @@ int main() {
 
     // Monitoring engine.
     test::file cbmod_cfg;
-    cbmod_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
+    cbmod_cfg.set_template(PROJECT_SOURCE_DIR "/test/cfg/tcp.xml.in");
     cbmod_cfg.set("BROKER_ID", "83");
     cbmod_cfg.set("BROKER_NAME", TEST_NAME "-cbmod");
     cbmod_cfg.set("POLLER_ID", "42");
@@ -172,20 +166,18 @@ int main() {
     engine_config.set_cbmod_cfg_file(cbmod_cfg.generate());
     {
       for (test::centengine_config::objlist::iterator
-             it(engine_config.get_hosts().begin()),
-             end(engine_config.get_hosts().end());
-           it != end;
-           ++it) {
+               it(engine_config.get_hosts().begin()),
+           end(engine_config.get_hosts().end());
+           it != end; ++it) {
         it->set("active_checks_enabled", "0");
       }
     }
     {
       int i(0);
       for (test::centengine_config::objlist::iterator
-             it(engine_config.get_services().begin()),
-             end(engine_config.get_services().end());
-           it != end;
-           ++it, ++i) {
+               it(engine_config.get_services().begin()),
+           end(engine_config.get_services().end());
+           it != end; ++it, ++i) {
         it->set("active_checks_enabled", "0");
         it->set("check_command", "default_command");
         it->set("check_freshness", "0");
@@ -218,42 +210,92 @@ int main() {
     engine.start();
     test::sleep_for(1);
     test::predicate expected[][81] = {
-      { 1, 1, "1", false,
-        0, "", false,
-        1, "default_command", false,
-        5.0, false, 0, false,
-        test::predicate(test::predicate::type_null), false,
-        false,
-        false, false,
-        false, true, "",
-        false, 0.0,
-        0.0,
-        false, false,
-        false, false,
-        false, false, 0.0,
-        0.0, "", "",
-        test::predicate(test::predicate::type_null), 0, test::predicate(test::predicate::type_null),
-        test::predicate(test::predicate::type_null), test::predicate(test::predicate::type_null), test::predicate(test::predicate::type_null),
-        test::predicate(test::predicate::type_null), test::predicate(test::predicate::type_null), test::predicate(test::predicate::type_null),
-        test::predicate(tpoints.last(), tpoints.last() + 2), 0.0, 0.0,
-        5, test::predicate(test::predicate::type_null),
-        test::predicate(test::predicate::type_null), false, "", "",
-        5, 0,
-        "", false, false,
-        false, false, false,
-        false, false, false,
-        "", false, test::predicate(0.0, 100.0), "",
-        test::predicate(test::predicate::type_null), false,
-        false, 1.0,
-        0, false,
-        false, false, false,
-        false, 4, 1, false },
-      { test::predicate() },
-      { test::predicate() },
-      { test::predicate() },
-      { test::predicate() },
-      { test::predicate() }
-    };
+        {1,
+         1,
+         "1",
+         false,
+         0,
+         "",
+         false,
+         1,
+         "default_command",
+         false,
+         5.0,
+         false,
+         0,
+         false,
+         test::predicate(test::predicate::type_null),
+         false,
+         false,
+         false,
+         false,
+         false,
+         true,
+         "",
+         false,
+         0.0,
+         0.0,
+         false,
+         false,
+         false,
+         false,
+         false,
+         false,
+         0.0,
+         0.0,
+         "",
+         "",
+         test::predicate(test::predicate::type_null),
+         0,
+         test::predicate(test::predicate::type_null),
+         test::predicate(test::predicate::type_null),
+         test::predicate(test::predicate::type_null),
+         test::predicate(test::predicate::type_null),
+         test::predicate(test::predicate::type_null),
+         test::predicate(test::predicate::type_null),
+         test::predicate(test::predicate::type_null),
+         test::predicate(tpoints.last(), tpoints.last() + 2),
+         0.0,
+         0.0,
+         5,
+         test::predicate(test::predicate::type_null),
+         test::predicate(test::predicate::type_null),
+         false,
+         "",
+         "",
+         5,
+         0,
+         "",
+         false,
+         false,
+         false,
+         false,
+         false,
+         false,
+         false,
+         false,
+         "",
+         false,
+         test::predicate(0.0, 100.0),
+         "",
+         test::predicate(test::predicate::type_null),
+         false,
+         false,
+         1.0,
+         0,
+         false,
+         false,
+         false,
+         false,
+         false,
+         4,
+         1,
+         false},
+        {test::predicate()},
+        {test::predicate()},
+        {test::predicate()},
+        {test::predicate()},
+        {test::predicate()}};
     std::string ids_str[5];
     ids_str[0] = "1";
     for (int i(1); i < 5; ++i) {
@@ -285,8 +327,7 @@ int main() {
     // Check check_command.
     precheck(tpoints, "check_command");
     {
-      test::centengine_object
-        cmd(test::centengine_object::command_type);
+      test::centengine_object cmd(test::centengine_object::command_type);
       cmd.set("command_name", "test_command");
       cmd.set("command_line", MY_PLUGIN_PATH " $ARG1$ $ARG2$");
       engine_config.get_commands().push_back(cmd);
@@ -314,8 +355,7 @@ int main() {
     // Check check_period.
     precheck(tpoints, "check_period #1");
     {
-      test::centengine_object
-        tp(test::centengine_object::timeperiod_type);
+      test::centengine_object tp(test::centengine_object::timeperiod_type);
       tp.set("timeperiod_name", "test_timeperiod");
       tp.set("alias", "test_timeperiod");
       tp.set("monday", "00:00-24:00");
@@ -336,16 +376,14 @@ int main() {
     postcheck(engine, tpoints, db, expected);
 
     // Check event_handler_enabled.
-    precheck(
-      tpoints,
-      "event_handler_enabled, default_event_handler_enabled #1");
+    precheck(tpoints,
+             "event_handler_enabled, default_event_handler_enabled #1");
     s.set("event_handler_enabled", "1");
     expected[0][16] = true;
     expected[0][22] = true;
     postcheck(engine, tpoints, db, expected);
-    precheck(
-      tpoints,
-      "event_handler_enabled, default_event_handler_enabled #2");
+    precheck(tpoints,
+             "event_handler_enabled, default_event_handler_enabled #2");
     s.set("event_handler_enabled", "0");
     expected[0][16] = false;
     expected[0][22] = false;
@@ -560,103 +598,136 @@ int main() {
     // checked, command_line, execution_time,
     // last_check, last_time_ok, latency, next_check, output,
     // perfdata, state, state_type.
-    precheck(
-      tpoints,
-      "active_checks, default_active_checks, should_be_scheduled, "
-      "checked, command_line, execution_time, "
-      "last_check, last_time_ok, latency, next_check, output, "
-      "perfdata, state, state_type");
+    precheck(tpoints,
+             "active_checks, default_active_checks, should_be_scheduled, "
+             "checked, command_line, execution_time, "
+             "last_check, last_time_ok, latency, next_check, output, "
+             "perfdata, state, state_type");
     s.set("active_checks_enabled", "1");
     s.set("check_command", "test_command!0!mypluginoutput|metric=42v");
-    expected[0][6] = true; // active_checks
-    expected[0][8] = "test_command!0!mypluginoutput|metric=42v"; // check_command
-    expected[0][13] = true; // checked
-    expected[0][14] = MY_PLUGIN_PATH " 0 mypluginoutput|metric=42v"; // command_line
-    expected[0][15] = true; // default_active_checks
-    expected[0][23] = test::predicate(0.0, 1.0); // execution_time
-    expected[0][45] = test::predicate(0.0, 1.0); // latency
-    expected[0][64] = "mypluginoutput\n"; // output
-    expected[0][67] = "metric=42v"; // perfdata
-    expected[0][73] = true; // should_be_scheduled
-    expected[0][78] = 0; // state, OK
-    expected[0][79] = 1; // state_type, HARD
+    expected[0][6] = true;  // active_checks
+    expected[0][8] =
+        "test_command!0!mypluginoutput|metric=42v";  // check_command
+    expected[0][13] = true;                          // checked
+    expected[0][14] =
+        MY_PLUGIN_PATH " 0 mypluginoutput|metric=42v";  // command_line
+    expected[0][15] = true;                             // default_active_checks
+    expected[0][23] = test::predicate(0.0, 1.0);        // execution_time
+    expected[0][45] = test::predicate(0.0, 1.0);        // latency
+    expected[0][64] = "mypluginoutput\n";               // output
+    expected[0][67] = "metric=42v";                     // perfdata
+    expected[0][73] = true;                             // should_be_scheduled
+    expected[0][78] = 0;                                // state, OK
+    expected[0][79] = 1;                                // state_type, HARD
     engine.reload();
     test::sleep_for(3);
     tpoints.store();
-    expected[0][35] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_check
-    expected[0][37] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_hard_state_change
-    expected[0][39] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_state_change
-    expected[0][41] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_time_ok
-    expected[0][48] = test::predicate(tpoints.last() - 1, tpoints.last() + 2 * MONITORING_ENGINE_INTERVAL_LENGTH + 1); // next_check
+    expected[0][35] =
+        test::predicate(tpoints.prelast(), tpoints.last() + 1);  // last_check
+    expected[0][37] = test::predicate(
+        tpoints.prelast(), tpoints.last() + 1);  // last_hard_state_change
+    expected[0][39] = test::predicate(tpoints.prelast(),
+                                      tpoints.last() + 1);  // last_state_change
+    expected[0][41] =
+        test::predicate(tpoints.prelast(), tpoints.last() + 1);  // last_time_ok
+    expected[0][48] =
+        test::predicate(tpoints.last() - 1,
+                        tpoints.last() + 2 * MONITORING_ENGINE_INTERVAL_LENGTH +
+                            1);  // next_check
     postcheck(tpoints, db, expected);
 
     // Check check_type, last_state_change, last_time_warning.
-    precheck(
-      tpoints,
-      "check_type, last_state_change, last_time_warning");
+    precheck(tpoints, "check_type, last_state_change, last_time_warning");
     s.set("active_checks_enabled", "0");
-    expected[0][6] = false; // active_checks
-    expected[0][15] = false; // default_active_checks
-    expected[0][73] = false; // should_be_scheduled
+    expected[0][6] = false;   // active_checks
+    expected[0][15] = false;  // default_active_checks
+    expected[0][73] = false;  // should_be_scheduled
     engine.reload();
     test::sleep_for(2);
     tpoints.store();
-    engine.extcmd().execute("PROCESS_SERVICE_CHECK_RESULT;1;renamed;1;mypluginoutput|metric=42v");
-    expected[0][12] = 1; // check_type, PASSIVE
-    expected[0][35] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_check
-    expected[0][39] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_state_change
-    expected[0][43] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_time_warning
-    expected[0][48] = test::predicate(tpoints.last(), tpoints.last() + 2 * MONITORING_ENGINE_INTERVAL_LENGTH + 1); // next_check
-    expected[0][78] = 1; // state, WARNING
-    expected[0][79] = 0; // state_type, SOFT
+    engine.extcmd().execute(
+        "PROCESS_SERVICE_CHECK_RESULT;1;renamed;1;mypluginoutput|metric=42v");
+    expected[0][12] = 1;  // check_type, PASSIVE
+    expected[0][35] =
+        test::predicate(tpoints.prelast(), tpoints.last() + 1);  // last_check
+    expected[0][39] = test::predicate(tpoints.prelast(),
+                                      tpoints.last() + 1);  // last_state_change
+    expected[0][43] = test::predicate(tpoints.prelast(),
+                                      tpoints.last() + 1);  // last_time_warning
+    expected[0][48] = test::predicate(
+        tpoints.last(), tpoints.last() + 2 * MONITORING_ENGINE_INTERVAL_LENGTH +
+                            1);  // next_check
+    expected[0][78] = 1;         // state, WARNING
+    expected[0][79] = 0;         // state_type, SOFT
     test::sleep_for(2);
     postcheck(tpoints, db, expected);
 
     // Check check_attempt, last_hard_state, last_hard_state_change.
     precheck(tpoints, "check_attempt, last_hard_state, last_hard_state_change");
-    engine.extcmd().execute("PROCESS_SERVICE_CHECK_RESULT;1;renamed;1;mypluginoutput|metric=42v");
+    engine.extcmd().execute(
+        "PROCESS_SERVICE_CHECK_RESULT;1;renamed;1;mypluginoutput|metric=42v");
     test::sleep_for(2);
     tpoints.store();
-    expected[0][7] = 2; // check_attempt
-    expected[0][35] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_check
-    expected[0][36] = 1; // last_hard_state, WARNING
-    expected[0][37] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_hard_state_change
-    expected[0][43] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_time_warning
-    expected[0][48] = test::predicate(tpoints.last(), tpoints.last() + 2 * MONITORING_ENGINE_INTERVAL_LENGTH + 1); // next_check
-    expected[0][79] = 1; // state_type, HARD
+    expected[0][7] = 2;  // check_attempt
+    expected[0][35] =
+        test::predicate(tpoints.prelast(), tpoints.last() + 1);  // last_check
+    expected[0][36] = 1;  // last_hard_state, WARNING
+    expected[0][37] = test::predicate(
+        tpoints.prelast(), tpoints.last() + 1);  // last_hard_state_change
+    expected[0][43] = test::predicate(tpoints.prelast(),
+                                      tpoints.last() + 1);  // last_time_warning
+    expected[0][48] = test::predicate(
+        tpoints.last(), tpoints.last() + 2 * MONITORING_ENGINE_INTERVAL_LENGTH +
+                            1);  // next_check
+    expected[0][79] = 1;         // state_type, HARD
     postcheck(tpoints, db, expected);
 
     // Check last_time_critical.
     precheck(tpoints, "last_time_critical");
-    engine.extcmd().execute("PROCESS_SERVICE_CHECK_RESULT;1;renamed;2;mypluginoutput|metric=42v");
+    engine.extcmd().execute(
+        "PROCESS_SERVICE_CHECK_RESULT;1;renamed;2;mypluginoutput|metric=42v");
     test::sleep_for(2);
     tpoints.store();
-    expected[0][35] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_check
-    expected[0][36] = 2; // last_hard_state, CRITICAL
-    expected[0][37] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_hard_state_change
-    expected[0][39] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_state_change
-    expected[0][40] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_time_critical
-    expected[0][48] = test::predicate(tpoints.last(), tpoints.last() + 2 * MONITORING_ENGINE_INTERVAL_LENGTH + 1); // next_check
-    expected[0][78] = 2; // state, CRITICAL
+    expected[0][35] =
+        test::predicate(tpoints.prelast(), tpoints.last() + 1);  // last_check
+    expected[0][36] = 2;  // last_hard_state, CRITICAL
+    expected[0][37] = test::predicate(
+        tpoints.prelast(), tpoints.last() + 1);  // last_hard_state_change
+    expected[0][39] = test::predicate(tpoints.prelast(),
+                                      tpoints.last() + 1);  // last_state_change
+    expected[0][40] = test::predicate(
+        tpoints.prelast(), tpoints.last() + 1);  // last_time_critical
+    expected[0][48] = test::predicate(
+        tpoints.last(), tpoints.last() + 2 * MONITORING_ENGINE_INTERVAL_LENGTH +
+                            1);  // next_check
+    expected[0][78] = 2;         // state, CRITICAL
     postcheck(tpoints, db, expected);
 
     // Check last_time_unknown.
     precheck(tpoints, "last_time_unknown");
-    engine.extcmd().execute("PROCESS_SERVICE_CHECK_RESULT;1;renamed;3;mypluginoutput|metric=42v");
+    engine.extcmd().execute(
+        "PROCESS_SERVICE_CHECK_RESULT;1;renamed;3;mypluginoutput|metric=42v");
     test::sleep_for(2);
     tpoints.store();
-    expected[0][35] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_check
-    expected[0][36] = 3; // last_hard_state, UNKNOWN
-    expected[0][37] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_hard_state_change
-    expected[0][39] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_state_change
-    expected[0][42] = test::predicate(tpoints.prelast(), tpoints.last() + 1); // last_time_unknown
-    expected[0][48] = test::predicate(tpoints.last(), tpoints.last() + 2 * MONITORING_ENGINE_INTERVAL_LENGTH + 1); // next_check
-    expected[0][78] = 3; // state, UNKNOWN
+    expected[0][35] =
+        test::predicate(tpoints.prelast(), tpoints.last() + 1);  // last_check
+    expected[0][36] = 3;  // last_hard_state, UNKNOWN
+    expected[0][37] = test::predicate(
+        tpoints.prelast(), tpoints.last() + 1);  // last_hard_state_change
+    expected[0][39] = test::predicate(tpoints.prelast(),
+                                      tpoints.last() + 1);  // last_state_change
+    expected[0][42] = test::predicate(tpoints.prelast(),
+                                      tpoints.last() + 1);  // last_time_unknown
+    expected[0][48] = test::predicate(
+        tpoints.last(), tpoints.last() + 2 * MONITORING_ENGINE_INTERVAL_LENGTH +
+                            1);  // next_check
+    expected[0][78] = 3;         // state, UNKNOWN
     postcheck(tpoints, db, expected);
 
     // Check acknowledged.
     precheck(tpoints, "acknowledged");
-    engine.extcmd().execute("ACKNOWLEDGE_SVC_PROBLEM;1;renamed;0;0;1;user;comment");
+    engine.extcmd().execute(
+        "ACKNOWLEDGE_SVC_PROBLEM;1;renamed;0;0;1;user;comment");
     test::sleep_for(2);
     expected[0][3] = true;
     expected[0][4] = 1;
@@ -664,7 +735,8 @@ int main() {
 
     // Check acknowledgement_type.
     precheck(tpoints, "acknowledgement_type");
-    engine.extcmd().execute("ACKNOWLEDGE_SVC_PROBLEM;1;renamed;2;0;1;user;comment");
+    engine.extcmd().execute(
+        "ACKNOWLEDGE_SVC_PROBLEM;1;renamed;2;0;1;user;comment");
     test::sleep_for(2);
     expected[0][4] = 2;
     postcheck(tpoints, db, expected);
@@ -674,12 +746,12 @@ int main() {
     {
       time_t now(time(NULL));
       std::ostringstream ss1;
-      ss1 << "SCHEDULE_SVC_DOWNTIME;1;renamed;" << now << ";"
-         << now + 3600 << ";1;0;3600;admin;comment";
+      ss1 << "SCHEDULE_SVC_DOWNTIME;1;renamed;" << now << ";" << now + 3600
+          << ";1;0;3600;admin;comment";
       engine.extcmd().execute(ss1.str());
       std::ostringstream ss2;
-      ss2 << "SCHEDULE_SVC_DOWNTIME;1;renamed;" << now << ";"
-          << now + 7200 << ";1;0;7200;admin;comment";
+      ss2 << "SCHEDULE_SVC_DOWNTIME;1;renamed;" << now << ";" << now + 7200
+          << ";1;0;7200;admin;comment";
       engine.extcmd().execute(ss2.str());
     }
     test::sleep_for(2);
@@ -718,11 +790,9 @@ int main() {
     error = false;
     db.set_remove_db_on_close(true);
     broker.stop();
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << "  " << e.what() << "\n";
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "  unknown exception\n";
   }
 

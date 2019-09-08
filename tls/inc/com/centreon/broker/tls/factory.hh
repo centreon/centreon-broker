@@ -17,42 +17,39 @@
 */
 
 #ifndef CCB_TLS_FACTORY_HH
-#  define CCB_TLS_FACTORY_HH
+#define CCB_TLS_FACTORY_HH
 
-#  include "com/centreon/broker/io/factory.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/factory.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace          tls {
-  /**
-   *  @class factory factory.hh "com/centreon/broker/tls/factory.hh"
-   *  @brief TLS security layer factory.
-   *
-   *  Build TLS security objects.
-   */
-  class            factory : public io::factory {
-  public:
-                   factory();
-                   factory(factory const& other);
-                   ~factory();
-    factory&       operator=(factory const& other);
-    io::factory*   clone() const;
-    bool           has_endpoint(config::endpoint& cfg) const;
-    bool           has_not_endpoint(config::endpoint& cfg) const;
-    io::endpoint*  new_endpoint(
-                     config::endpoint& cfg,
-                     bool& is_acceptor,
-                     std::shared_ptr<persistent_cache> cache
-                     = std::shared_ptr<persistent_cache>()) const;
-    std::shared_ptr<io::stream>
-                   new_stream(
-                     std::shared_ptr<io::stream> to,
-                     bool is_acceptor,
-                     std::string const& proto_name);
-  };
-}
+namespace tls {
+/**
+ *  @class factory factory.hh "com/centreon/broker/tls/factory.hh"
+ *  @brief TLS security layer factory.
+ *
+ *  Build TLS security objects.
+ */
+class factory : public io::factory {
+ public:
+  factory();
+  factory(factory const& other);
+  ~factory();
+  factory& operator=(factory const& other);
+  io::factory* clone() const;
+  bool has_endpoint(config::endpoint& cfg) const;
+  bool has_not_endpoint(config::endpoint& cfg) const;
+  io::endpoint* new_endpoint(config::endpoint& cfg,
+                             bool& is_acceptor,
+                             std::shared_ptr<persistent_cache> cache =
+                                 std::shared_ptr<persistent_cache>()) const;
+  std::shared_ptr<io::stream> new_stream(std::shared_ptr<io::stream> to,
+                                         bool is_acceptor,
+                                         std::string const& proto_name);
+};
+}  // namespace tls
 
 CCB_END()
 
-#endif // !CCB_TLS_FACTORY_HH
+#endif  // !CCB_TLS_FACTORY_HH

@@ -17,11 +17,11 @@
  *
  */
 
+#include "com/centreon/broker/storage/metric.hh"
 #include <gtest/gtest.h>
 #include <cmath>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
-#include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker;
@@ -138,7 +138,8 @@ TEST(StorageMetric, DefaultCtor) {
   // Build object.
   storage::metric m;
 
-  auto val(io::events::data_type<io::events::storage, storage::de_metric>::value);
+  auto val(
+      io::events::data_type<io::events::storage, storage::de_metric>::value);
 
   // Check properties values.
   ASSERT_FALSE(m.ctime != 0);

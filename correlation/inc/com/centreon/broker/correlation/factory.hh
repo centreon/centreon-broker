@@ -17,36 +17,35 @@
 */
 
 #ifndef CCB_CORRELATION_FACTORY_HH
-#  define CCB_CORRELATION_FACTORY_HH
+#define CCB_CORRELATION_FACTORY_HH
 
-#  include "com/centreon/broker/io/factory.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/factory.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         correlation {
-  /**
-   *  @class factory factory.hh "com/centreon/broker/correlation/factory.hh"
-   *  @brief Build correlation endpoints.
-   *
-   *  Build correlation endpoints from a configuration object.
-   */
-  class           factory : public io::factory {
-  public:
-                  factory();
-                  factory(factory const& other);
-                  ~factory();
-    factory&      operator=(factory const& other);
-    io::factory*  clone() const;
-    bool          has_endpoint(config::endpoint& cfg) const;
-    io::endpoint* new_endpoint(
-                    config::endpoint& cfg,
-                    bool& is_acceptor,
-                    std::shared_ptr<persistent_cache> cache
-                    = std::shared_ptr<persistent_cache>()) const;
-  };
-}
+namespace correlation {
+/**
+ *  @class factory factory.hh "com/centreon/broker/correlation/factory.hh"
+ *  @brief Build correlation endpoints.
+ *
+ *  Build correlation endpoints from a configuration object.
+ */
+class factory : public io::factory {
+ public:
+  factory();
+  factory(factory const& other);
+  ~factory();
+  factory& operator=(factory const& other);
+  io::factory* clone() const;
+  bool has_endpoint(config::endpoint& cfg) const;
+  io::endpoint* new_endpoint(config::endpoint& cfg,
+                             bool& is_acceptor,
+                             std::shared_ptr<persistent_cache> cache =
+                                 std::shared_ptr<persistent_cache>()) const;
+};
+}  // namespace correlation
 
 CCB_END()
 
-#endif // !CCB_CORRELATION_FACTORY_HH
+#endif  // !CCB_CORRELATION_FACTORY_HH

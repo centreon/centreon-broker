@@ -17,35 +17,35 @@
 */
 
 #ifndef CCB_BBDO_OUTPUT_HH
-#  define CCB_BBDO_OUTPUT_HH
+#define CCB_BBDO_OUTPUT_HH
 
-#  include <memory>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <memory>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        bbdo {
-  /**
-   *  @class output output.hh "com/centreon/broker/bbdo/output.hh"
-   *  @brief BBDO output destination.
-   *
-   *  The class converts events to an output stream using the BBDO
-   *  (Broker Binary Data Objects) protocol.
-   */
-  class          output : virtual public io::stream {
-   public:
-                 output();
-                 output(output const& other) = delete;
-    virtual      ~output();
-    output&      operator=(output const& other) = delete;
-    int          flush();
-    void         statistics(io::properties& tree) const;
-    virtual int  write(std::shared_ptr<io::data> const& e);
-  };
-}
+namespace bbdo {
+/**
+ *  @class output output.hh "com/centreon/broker/bbdo/output.hh"
+ *  @brief BBDO output destination.
+ *
+ *  The class converts events to an output stream using the BBDO
+ *  (Broker Binary Data Objects) protocol.
+ */
+class output : virtual public io::stream {
+ public:
+  output();
+  output(output const& other) = delete;
+  virtual ~output();
+  output& operator=(output const& other) = delete;
+  int flush();
+  void statistics(io::properties& tree) const;
+  virtual int write(std::shared_ptr<io::data> const& e);
+};
+}  // namespace bbdo
 
 CCB_END()
 
-#endif // !CCB_BBDO_OUTPUT_HH
+#endif  // !CCB_BBDO_OUTPUT_HH

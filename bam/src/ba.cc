@@ -466,7 +466,7 @@ void ba::visit(io::stream* visitor) {
     if (!_event) {
       if ((_last_kpi_update.get_time_t() == (time_t)-1) ||
           (_last_kpi_update.get_time_t() == (time_t)0))
-        _last_kpi_update = time(NULL);
+        _last_kpi_update = time(nullptr);
       _open_new_event(visitor, hard_state);
     }
     // If state changed, close event and open a new one.
@@ -526,7 +526,7 @@ void ba::visit(io::stream* visitor) {
       // status->last_time_critical = XXX;
       // status->last_time_unknown = XXX;
       // status->last_time_warning = XXX;
-      status->last_update = time(NULL);
+      status->last_update = time(nullptr);
       status->latency = 0.0;
       status->max_check_attempts = 1;
       status->obsess_over = false;
@@ -535,7 +535,7 @@ void ba::visit(io::stream* visitor) {
         oss << "BA : Business Activity " << _id
             << " - current_level = " << static_cast<int>(normalize(_level_hard))
             << "%";
-        status->output = oss.str().c_str();
+        status->output = oss.str();
       }
       // status->percent_state_chagne = XXX;
       {
@@ -543,7 +543,7 @@ void ba::visit(io::stream* visitor) {
         oss << "BA_Level=" << static_cast<int>(normalize(_level_hard)) << "%;"
             << static_cast<int>(_level_warning) << ";"
             << static_cast<int>(_level_critical) << ";0;100";
-        status->perf_data = oss.str().c_str();
+        status->perf_data = oss.str();
       }
       status->retry_interval = 0;
       // status->service_description = XXX;
@@ -601,7 +601,7 @@ void ba::service_update(std::shared_ptr<neb::downtime> const& dt,
  *  @param[in] cache  The cache.
  */
 void ba::save_inherited_downtime(persistent_cache& cache) const {
-  if (_inherited_downtime.get())
+  if (_inherited_downtime)
     cache.add(std::shared_ptr<inherited_downtime>(
         new inherited_downtime(*_inherited_downtime)));
 }
@@ -764,7 +764,7 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   // Case 1: state not ok, every child in downtime, no actual downtime.
   //         Put the BA in downtime.
   bool state_ok(!get_state_hard());
-  if (!state_ok && every_kpi_in_downtime && !_inherited_downtime.get()) {
+  if (!state_ok && every_kpi_in_downtime && !_inherited_downtime) {
     _inherited_downtime.reset(new inherited_downtime);
     _inherited_downtime->ba_id = _id;
     _inherited_downtime->in_downtime = true;

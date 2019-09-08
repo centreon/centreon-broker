@@ -17,60 +17,57 @@
 */
 
 #ifndef CCB_BAM_BOOL_SERVICE_HH
-#  define CCB_BAM_BOOL_SERVICE_HH
+#define CCB_BAM_BOOL_SERVICE_HH
 
-#  include <memory>
-#  include "com/centreon/broker/bam/bool_value.hh"
-#  include "com/centreon/broker/bam/service_listener.hh"
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <memory>
+#include "com/centreon/broker/bam/bool_value.hh"
+#include "com/centreon/broker/bam/service_listener.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace         bam {
-  /**
-   *  @class bool_service bool_service.hh "com/centreon/broker/bam/bool_service.hh"
-   *  @brief Evaluation of a service state.
-   *
-   *  This class compares the state of a service to compute a boolean
-   *  value.
-   */
-  class           bool_service : public bool_value,
-                                 public service_listener {
-  public:
-    typedef std::shared_ptr<bool_service> ptr;
+namespace bam {
+/**
+ *  @class bool_service bool_service.hh
+ * "com/centreon/broker/bam/bool_service.hh"
+ *  @brief Evaluation of a service state.
+ *
+ *  This class compares the state of a service to compute a boolean
+ *  value.
+ */
+class bool_service : public bool_value, public service_listener {
+ public:
+  typedef std::shared_ptr<bool_service> ptr;
 
-                  bool_service();
-                  bool_service(bool_service const& right);
-                  ~bool_service();
-    bool_service& operator=(bool_service const& right);
-    bool          child_has_update(
-                    computable* child,
-                    io::stream* visitor = NULL);
-    unsigned int  get_host_id() const;
-    unsigned int  get_service_id() const;
-    void          set_host_id(unsigned int host_id);
-    void          set_service_id(unsigned int service_id);
-    void          service_update(
-                    std::shared_ptr<neb::service_status> const& status,
-                    io::stream* visitor = NULL);
-    double        value_hard();
-    double        value_soft();
-    bool          state_known() const;
-    bool          in_downtime() const;
+  bool_service();
+  bool_service(bool_service const& right);
+  ~bool_service();
+  bool_service& operator=(bool_service const& right);
+  bool child_has_update(computable* child, io::stream* visitor = NULL);
+  unsigned int get_host_id() const;
+  unsigned int get_service_id() const;
+  void set_host_id(unsigned int host_id);
+  void set_service_id(unsigned int service_id);
+  void service_update(std::shared_ptr<neb::service_status> const& status,
+                      io::stream* visitor = NULL);
+  double value_hard();
+  double value_soft();
+  bool state_known() const;
+  bool in_downtime() const;
 
-  private:
-    void          _internal_copy(bool_service const& right);
+ private:
+  void _internal_copy(bool_service const& right);
 
-    unsigned int  _host_id;
-    unsigned int  _service_id;
-    short         _state_hard;
-    short         _state_soft;
-    bool          _state_known;
-    bool          _in_downtime;
-  };
-}
+  unsigned int _host_id;
+  unsigned int _service_id;
+  short _state_hard;
+  short _state_soft;
+  bool _state_known;
+  bool _in_downtime;
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_SERVICE_HH
+#endif  // !CCB_BAM_BOOL_SERVICE_HH

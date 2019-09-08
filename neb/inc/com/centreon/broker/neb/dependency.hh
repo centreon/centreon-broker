@@ -17,44 +17,44 @@
 */
 
 #ifndef CCB_NEB_DEPENDENCY_HH
-#  define CCB_NEB_DEPENDENCY_HH
+#define CCB_NEB_DEPENDENCY_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        neb {
-  /**
-   *  @class dependency dependency.hh "com/centreon/broker/neb/dependency.hh"
-   *  @brief Dependency relationship.
-   *
-   *  Defines a dependency between two objects.
-   *
-   *  @see host_dependency
-   *  @see service_dependency
-   */
-  class          dependency : public io::data {
-  public:
-                 dependency();
-                 dependency(dependency const& dep);
-    virtual      ~dependency();
-    dependency&  operator=(dependency const& dep);
+namespace neb {
+/**
+ *  @class dependency dependency.hh "com/centreon/broker/neb/dependency.hh"
+ *  @brief Dependency relationship.
+ *
+ *  Defines a dependency between two objects.
+ *
+ *  @see host_dependency
+ *  @see service_dependency
+ */
+class dependency : public io::data {
+ public:
+  dependency();
+  dependency(dependency const& dep);
+  virtual ~dependency();
+  dependency& operator=(dependency const& dep);
 
-    std::string      dependency_period;
-    unsigned int dependent_host_id;
-    bool         enabled;
-    std::string      execution_failure_options;
-    unsigned int host_id;
-    bool         inherits_parent;
-    std::string      notification_failure_options;
+  std::string dependency_period;
+  unsigned int dependent_host_id;
+  bool enabled;
+  std::string execution_failure_options;
+  unsigned int host_id;
+  bool inherits_parent;
+  std::string notification_failure_options;
 
-  private:
-    void         _internal_copy(dependency const& dep);
-  };
-}
+ private:
+  void _internal_copy(dependency const& dep);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_DEPENDENCY_HH
+#endif  // !CCB_NEB_DEPENDENCY_HH

@@ -17,11 +17,11 @@
 */
 
 #ifndef CCB_BBDO_CONNECTOR_HH
-#  define CCB_BBDO_CONNECTOR_HH
+#define CCB_BBDO_CONNECTOR_HH
 
-#  include <ctime>
-#  include "com/centreon/broker/io/endpoint.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <ctime>
+#include "com/centreon/broker/io/endpoint.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -33,15 +33,18 @@ namespace bbdo {
  *  Initiate direct BBDO protocol connections.
  */
 class connector : public io::endpoint {
-public:
-  connector(bool negotiate, std::string const &extensions, time_t timeout,
-            bool coarse = false, unsigned int ack_limit = 1000);
-  connector(connector const &other);
+ public:
+  connector(bool negotiate,
+            std::string const& extensions,
+            time_t timeout,
+            bool coarse = false,
+            unsigned int ack_limit = 1000);
+  connector(connector const& other);
   ~connector();
-  connector &operator=(connector const &other);
+  connector& operator=(connector const& other);
   std::shared_ptr<io::stream> open();
 
-private:
+ private:
   std::shared_ptr<io::stream> _open(std::shared_ptr<io::stream> stream);
 
   bool _coarse;
@@ -50,8 +53,8 @@ private:
   time_t _timeout;
   unsigned int _ack_limit;
 };
-} // namespace bbdo
+}  // namespace bbdo
 
 CCB_END()
 
-#endif // !CCB_BBDO_CONNECTOR_HH
+#endif  // !CCB_BBDO_CONNECTOR_HH

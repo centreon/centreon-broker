@@ -42,9 +42,8 @@ int main() {
     // Parse file.
     QMap<QPair<unsigned int, unsigned int>, node> parsed;
     correlation::parser p;
-    p.parse(
-        PROJECT_SOURCE_DIR "/correlation/test/parser/parse_include.xml",
-        parsed);
+    p.parse(PROJECT_SOURCE_DIR "/correlation/test/parser/parse_include.xml",
+            parsed);
 
     // Expected result.
     QMap<QPair<unsigned int, unsigned int>, node> expected;
@@ -74,11 +73,9 @@ int main() {
 
     // Success.
     error = false;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
   }
 

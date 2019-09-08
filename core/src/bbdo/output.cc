@@ -16,30 +16,30 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bbdo/output.hh"
 #include <arpa/inet.h>
+#include <stdint.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#include <stdint.h>
 #include "com/centreon/broker/bbdo/internal.hh"
-#include "com/centreon/broker/bbdo/output.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/misc/misc.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
 /**************************************
-*                                     *
-*          Static Functions           *
-*                                     *
-**************************************/
+ *                                     *
+ *          Static Functions           *
+ *                                     *
+ **************************************/
 
 /**
  *  Get a boolean from an object.
@@ -56,7 +56,7 @@ static void get_boolean(io::data const& t,
  */
 static void get_double(io::data const& t,
                        mapping::entry const& member,
-                        std::vector<char>& buffer) {
+                       std::vector<char>& buffer) {
   char str[32];
   size_t strsz(snprintf(str, sizeof(str), "%f", member.get_double(t)) + 1);
   if (strsz > sizeof(str))
@@ -80,7 +80,7 @@ static void get_integer(io::data const& t,
  */
 static void get_short(io::data const& t,
                       mapping::entry const& member,
-                        std::vector<char>& buffer) {
+                      std::vector<char>& buffer) {
   uint16_t value(htons(member.get_short(t)));
   char* v(reinterpret_cast<char*>(&value));
   std::copy(v, v + sizeof(value), std::back_inserter(buffer));
@@ -91,9 +91,10 @@ static void get_short(io::data const& t,
  */
 static void get_string(io::data const& t,
                        mapping::entry const& member,
-                        std::vector<char>& buffer) {
+                       std::vector<char>& buffer) {
   std::string const& tmp(member.get_string(t));
-  std::copy(tmp.c_str(), tmp.c_str() + tmp.size() + 1, std::back_inserter(buffer));
+  std::copy(tmp.c_str(), tmp.c_str() + tmp.size() + 1,
+            std::back_inserter(buffer));
 }
 
 /**
@@ -101,7 +102,7 @@ static void get_string(io::data const& t,
  */
 static void get_timestamp(io::data const& t,
                           mapping::entry const& member,
-                        std::vector<char>& buffer) {
+                          std::vector<char>& buffer) {
   uint64_t ts(member.get_time(t).get_time_t());
   uint32_t high{htonl(ts >> 32)};
   uint32_t low{htonl(ts & 0xffffffff)};
@@ -116,7 +117,7 @@ static void get_timestamp(io::data const& t,
  */
 static void get_uint(io::data const& t,
                      mapping::entry const& member,
-                        std::vector<char>& buffer) {
+                     std::vector<char>& buffer) {
   uint32_t value{htonl(member.get_uint(t))};
   char* v{reinterpret_cast<char*>(&value)};
   std::copy(v, v + sizeof(value), std::back_inserter(buffer));
@@ -131,8 +132,7 @@ static void get_uint(io::data const& t,
  */
 static io::raw* serialize(io::data const& e) {
   // Get event info (mapping).
-  io::event_info const*
-    info(io::events::instance().get_event_info(e.type()));
+  io::event_info const* info(io::events::instance().get_event_info(e.type()));
   if (info) {
     // Serialization buffer.
     std::unique_ptr<io::raw> buffer(new io::raw);
@@ -141,14 +141,12 @@ static io::raw* serialize(io::data const& e) {
     // Reserve space for the BBDO header.
     unsigned int beginning(data.size());
     data.resize(data.size() + BBDO_HEADER_SIZE);
-    *(static_cast<uint32_t*>(static_cast<void*>(
-                               data.data() + beginning + 4)))
-      = htonl(e.type());
+    *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning + 4))) =
+        htonl(e.type());
 
     // Serialize properties of the object.
     for (mapping::entry const* current_entry(info->get_mapping());
-         !current_entry->is_null();
-         ++current_entry) {
+         !current_entry->is_null(); ++current_entry) {
       // Skip entries that should not be serialized.
       if (current_entry->get_serialize())
         switch (current_entry->get_type()) {
@@ -181,75 +179,66 @@ static io::raw* serialize(io::data const& e) {
         }
 
       // Packet splitting.
-      while (static_cast<unsigned int>(data.size())
-             >= (beginning + BBDO_HEADER_SIZE + 0xFFFF)) {
+      while (static_cast<unsigned int>(data.size()) >=
+             (beginning + BBDO_HEADER_SIZE + 0xFFFF)) {
         // Set size.
-        *(static_cast<uint16_t*>(static_cast<void*>(
-                                   data.data() + beginning)) + 1)
-          = 0xFFFF;
+        *(static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning)) +
+          1) = 0xFFFF;
 
         // Source and destination
-        *(static_cast<uint32_t*>(static_cast<void*>(
-                                   data.data() + beginning)) + 2)
-          = htonl(e.source_id);
+        *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) +
+          2) = htonl(e.source_id);
 
-        *(static_cast<uint32_t*>(static_cast<void*>(
-                                   data.data() + beginning)) + 3)
-          = htonl(e.destination_id);
+        *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) +
+          3) = htonl(e.destination_id);
 
         // Set checksum.
-        uint16_t chksum(misc::crc16_ccitt(
-                          data.data() + beginning + 2,
-                          BBDO_HEADER_SIZE - 2));
-        *static_cast<uint16_t*>(static_cast<void*>(
-                                  data.data() + beginning))
-          = htons(chksum);
+        uint16_t chksum(misc::crc16_ccitt(data.data() + beginning + 2,
+                                          BBDO_HEADER_SIZE - 2));
+        *static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning)) =
+            htons(chksum);
 
         // Create new header.
         beginning += BBDO_HEADER_SIZE + 0xFFFF;
         char header[BBDO_HEADER_SIZE];
         memset(header, 0, sizeof(header));
-        *reinterpret_cast<uint32_t*>(header + 4)
-          = htonl(e.type());
+        *reinterpret_cast<uint32_t*>(header + 4) = htonl(e.type());
         std::vector<char>::iterator it{data.begin() + beginning};
         data.insert(it, header, header + sizeof(header) - 1);
       }
     }
 
     // Set (last) packet size.
-    *(static_cast<uint16_t*>(static_cast<void*>(
-                               data.data() + beginning)) + 1)
-      = htons(data.size() - beginning - BBDO_HEADER_SIZE);
+    *(static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning)) + 1) =
+        htons(data.size() - beginning - BBDO_HEADER_SIZE);
 
     // Source and destination.
-    *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) + 2)
-      = htonl(e.source_id);
+    *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) + 2) =
+        htonl(e.source_id);
 
-    *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) + 3)
-      = htonl(e.destination_id);
+    *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning)) + 3) =
+        htonl(e.destination_id);
 
     // Checksum.
-    uint16_t chksum(misc::crc16_ccitt(
-                      data.data() + beginning + 2,
-                      BBDO_HEADER_SIZE - 2));
-    *static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning))
-      = htons(chksum);
+    uint16_t chksum(
+        misc::crc16_ccitt(data.data() + beginning + 2, BBDO_HEADER_SIZE - 2));
+    *static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning)) =
+        htons(chksum);
 
     return buffer.release();
-  }
-  else
+  } else
     logging::info(logging::high)
-      << "BBDO: cannot serialize event of ID " << e.type()
-      << ": event was not registered and will therefore be ignored";
+        << "BBDO: cannot serialize event of ID " << e.type()
+        << ": event was not registered and will therefore be ignored";
 
-  return NULL;
+  return nullptr;
 }
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -295,8 +284,9 @@ int output::write(std::shared_ptr<io::data> const& e) {
   // Check if data exists.
   std::shared_ptr<io::raw> serialized(serialize(*e));
   if (serialized) {
-    logging::debug(logging::medium) << "BBDO: serialized event of type "
-      << e->type() << " to " << serialized->size() << " bytes";
+    logging::debug(logging::medium)
+        << "BBDO: serialized event of type " << e->type() << " to "
+        << serialized->size() << " bytes";
     _substream->write(serialized);
   }
 

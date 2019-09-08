@@ -17,48 +17,48 @@
 */
 
 #ifndef CCB_BAM_CONFIGURATION_READER_HH
-#  define CCB_BAM_CONFIGURATION_READER_HH
+#define CCB_BAM_CONFIGURATION_READER_HH
 
-#  include <string>
-#  include "com/centreon/broker/bam/configuration/state.hh"
-#  include "com/centreon/broker/database_config.hh"
-#  include "com/centreon/broker/mysql.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <string>
+#include "com/centreon/broker/bam/configuration/state.hh"
+#include "com/centreon/broker/database_config.hh"
+#include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace               bam {
-  namespace             configuration {
-    /**
-     *  @class reader reader.hh "com/centreon/broker/bam/configuration/reader.hh"
-     *  @brief Using the dbinfo to access the database, load state_obj
-     *         with configuration.
-     *
-     *  Extract the database content to a configuration state usable by
-     *  the BAM engine.
-     */
-    class               reader {
-    public:
-                        reader(mysql& centreon_db);
-                        ~reader();
-      void              read(state& state_obj);
+namespace bam {
+namespace configuration {
+/**
+ *  @class reader reader.hh "com/centreon/broker/bam/configuration/reader.hh"
+ *  @brief Using the dbinfo to access the database, load state_obj
+ *         with configuration.
+ *
+ *  Extract the database content to a configuration state usable by
+ *  the BAM engine.
+ */
+class reader {
+ public:
+  reader(mysql& centreon_db);
+  ~reader();
+  void read(state& state_obj);
 
-    private:
-                        reader(reader const& other);
-      reader&           operator=(reader const& other);
-      void              _load(state::kpis& kpis);
-      void              _load(state::bas& bas, ba_svc_mapping& mapping);
-      void              _load(state::bool_exps& bool_exps);
-      void              _load(state::meta_services& meta_services);
-      void              _load(bam::hst_svc_mapping& mapping);
-      void              _load_dimensions();
+ private:
+  reader(reader const& other);
+  reader& operator=(reader const& other);
+  void _load(state::kpis& kpis);
+  void _load(state::bas& bas, ba_svc_mapping& mapping);
+  void _load(state::bool_exps& bool_exps);
+  void _load(state::meta_services& meta_services);
+  void _load(bam::hst_svc_mapping& mapping);
+  void _load_dimensions();
 
-      mysql&            _mysql;
-      unsigned int      _poller_organization_id;
-    };
-  }
-}
+  mysql& _mysql;
+  unsigned int _poller_organization_id;
+};
+}  // namespace configuration
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_CONFIGURATION_READER_HH
+#endif  // !CCB_BAM_CONFIGURATION_READER_HH

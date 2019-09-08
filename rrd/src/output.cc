@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/rrd/output.hh"
 #include <cstdlib>
 #include <iomanip>
 #include <sstream>
@@ -27,7 +28,6 @@
 #include "com/centreon/broker/rrd/exceptions/open.hh"
 #include "com/centreon/broker/rrd/exceptions/update.hh"
 #include "com/centreon/broker/rrd/lib.hh"
-#include "com/centreon/broker/rrd/output.hh"
 #include "com/centreon/broker/storage/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
@@ -36,10 +36,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Standard constructor.
@@ -55,23 +55,19 @@ using namespace com::centreon::broker::rrd;
  *  @param[in] write_status         Set to true if status graph must be
  *                                  written.
  */
-output::output(
-          std::string const& metrics_path,
-          std::string const& status_path,
-          unsigned int cache_size,
-          bool ignore_update_errors,
-          bool write_metrics,
-          bool write_status)
-  : _backend(new lib(
-                   (!metrics_path.empty()
-                    ? metrics_path
-                    : status_path),
-                   cache_size)),
-    _ignore_update_errors(ignore_update_errors),
-    _metrics_path(metrics_path),
-    _status_path(status_path),
-    _write_metrics(write_metrics),
-    _write_status(write_status) {}
+output::output(std::string const& metrics_path,
+               std::string const& status_path,
+               unsigned int cache_size,
+               bool ignore_update_errors,
+               bool write_metrics,
+               bool write_status)
+    : _backend(new lib((!metrics_path.empty() ? metrics_path : status_path),
+                       cache_size)),
+      _ignore_update_errors(ignore_update_errors),
+      _metrics_path(metrics_path),
+      _status_path(status_path),
+      _write_metrics(write_metrics),
+      _write_status(write_status) {}
 
 /**
  *  Local socket constructor.
@@ -86,21 +82,19 @@ output::output(
  *  @param[in] write_status         Set to true if status graph must be
  *                                  written.
  */
-output::output(
-          std::string const& metrics_path,
-          std::string const& status_path,
-          unsigned int cache_size,
-          bool ignore_update_errors,
-          std::string const& local,
-          bool write_metrics,
-          bool write_status)
-  : _ignore_update_errors(ignore_update_errors),
-    _metrics_path(metrics_path),
-    _status_path(status_path),
-    _write_metrics(write_metrics),
-    _write_status(write_status) {
-  std::unique_ptr<cached>
-    rrdcached(new cached(metrics_path, cache_size));
+output::output(std::string const& metrics_path,
+               std::string const& status_path,
+               unsigned int cache_size,
+               bool ignore_update_errors,
+               std::string const& local,
+               bool write_metrics,
+               bool write_status)
+    : _ignore_update_errors(ignore_update_errors),
+      _metrics_path(metrics_path),
+      _status_path(status_path),
+      _write_metrics(write_metrics),
+      _write_status(write_status) {
+  std::unique_ptr<cached> rrdcached(new cached(metrics_path, cache_size));
   rrdcached->connect_local(local);
   _backend.reset(rrdcached.release());
 }
@@ -118,21 +112,19 @@ output::output(
  *  @param[in] write_status         Set to true if status graph must be
  *                                  written.
  */
-output::output(
-          std::string const& metrics_path,
-          std::string const& status_path,
-          unsigned int cache_size,
-          bool ignore_update_errors,
-          unsigned short port,
-          bool write_metrics,
-          bool write_status)
-  : _ignore_update_errors(ignore_update_errors),
-    _metrics_path(metrics_path),
-    _status_path(status_path),
-    _write_metrics(write_metrics),
-    _write_status(write_status) {
-  std::unique_ptr<cached>
-    rrdcached(new cached(metrics_path, cache_size));
+output::output(std::string const& metrics_path,
+               std::string const& status_path,
+               unsigned int cache_size,
+               bool ignore_update_errors,
+               unsigned short port,
+               bool write_metrics,
+               bool write_status)
+    : _ignore_update_errors(ignore_update_errors),
+      _metrics_path(metrics_path),
+      _status_path(status_path),
+      _write_metrics(write_metrics),
+      _write_status(write_status) {
+  std::unique_ptr<cached> rrdcached(new cached(metrics_path, cache_size));
   rrdcached->connect_remote("localhost", port);
   _backend.reset(rrdcached.release());
 }
@@ -153,8 +145,8 @@ output::~output() {}
 bool output::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw (com::centreon::broker::exceptions::shutdown()
-         << "cannot read from RRD stream");
+  throw(com::centreon::broker::exceptions::shutdown()
+        << "cannot read from RRD stream");
   return (true);
 }
 
@@ -162,9 +154,9 @@ bool output::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *  Update backend after a sigup.
  */
 void output::update() {
-  if (_backend.get())
+  if (_backend)
     _backend->clean();
-  return ;
+  return;
 }
 
 /**
@@ -182,11 +174,11 @@ int output::write(std::shared_ptr<io::data> const& d) {
   if (d->type() == storage::metric::static_type()) {
     if (_write_metrics) {
       // Debug message.
-      std::shared_ptr<storage::metric>
-        e(std::static_pointer_cast<storage::metric>(d));
-      logging::debug(logging::medium) << "RRD: new data for metric "
-        << e->metric_id << " (time " << e->ctime << ") "
-        << (e->is_for_rebuild ? " for rebuild" : "");
+      std::shared_ptr<storage::metric> e(
+          std::static_pointer_cast<storage::metric>(d));
+      logging::debug(logging::medium)
+          << "RRD: new data for metric " << e->metric_id << " (time "
+          << e->ctime << ") " << (e->is_for_rebuild ? " for rebuild" : "");
 
       // Metric path.
       std::string metric_path;
@@ -197,21 +189,15 @@ int output::write(std::shared_ptr<io::data> const& d) {
       }
 
       // Check that metric is not being rebuild.
-      rebuild_cache::iterator
-        it(_metrics_rebuild.find(metric_path));
+      rebuild_cache::iterator it(_metrics_rebuild.find(metric_path));
       if (e->is_for_rebuild || it == _metrics_rebuild.end()) {
         // Write metrics RRD.
         try {
           _backend->open(metric_path);
-        }
-        catch (exceptions::open const& b) {
+        } catch (exceptions::open const& b) {
           time_t interval(e->interval ? e->interval : 60);
-          _backend->open(
-            metric_path,
-            e->rrd_len,
-            e->ctime - 1,
-            interval,
-            e->value_type);
+          _backend->open(metric_path, e->rrd_len, e->ctime - 1, interval,
+                         e->value_type);
         }
         std::ostringstream oss;
         if (e->value_type == storage::perfdata::counter)
@@ -221,20 +207,18 @@ int output::write(std::shared_ptr<io::data> const& d) {
         else
           oss << std::fixed << e->value;
         _backend->update(e->ctime, oss.str());
-      }
-      else
+      } else
         // Cache value.
         it->second.push_back(d);
     }
-  }
-  else if (d->type() == storage::status::static_type()) {
+  } else if (d->type() == storage::status::static_type()) {
     if (_write_status) {
       // Debug message.
-      std::shared_ptr<storage::status>
-        e(std::static_pointer_cast<storage::status>(d));
+      std::shared_ptr<storage::status> e(
+          std::static_pointer_cast<storage::status>(d));
       logging::debug(logging::medium)
-        << "RRD: new status data for index " << e->index_id << " ("
-        << e->state << ") " << (e->is_for_rebuild ? "for rebuild" : "");
+          << "RRD: new status data for index " << e->index_id << " ("
+          << e->state << ") " << (e->is_for_rebuild ? "for rebuild" : "");
 
       // Status path.
       std::string status_path;
@@ -245,20 +229,14 @@ int output::write(std::shared_ptr<io::data> const& d) {
       }
 
       // Check that status is not begin rebuild.
-      rebuild_cache::iterator
-        it(_status_rebuild.find(status_path.c_str()));
+      rebuild_cache::iterator it(_status_rebuild.find(status_path));
       if (e->is_for_rebuild || it == _status_rebuild.end()) {
         // Write status RRD.
         try {
           _backend->open(status_path);
-        }
-        catch (exceptions::open const& b) {
+        } catch (exceptions::open const& b) {
           time_t interval(e->interval ? e->interval : 60);
-          _backend->open(
-            status_path,
-            e->rrd_len,
-            e->ctime - 1,
-            interval);
+          _backend->open(status_path, e->rrd_len, e->ctime - 1, interval);
         }
         std::ostringstream oss;
         if (e->state == 0)
@@ -268,35 +246,32 @@ int output::write(std::shared_ptr<io::data> const& d) {
         else if (e->state == 2)
           oss << 0;
         _backend->update(e->ctime, oss.str());
-      }
-      else
+      } else
         // Cache value.
         it->second.push_back(d);
     }
-  }
-  else if (d->type() == storage::rebuild::static_type()) {
+  } else if (d->type() == storage::rebuild::static_type()) {
     // Debug message.
-    std::shared_ptr<storage::rebuild>
-      e(std::static_pointer_cast<storage::rebuild>(d));
-    logging::debug(logging::medium) << "RRD: rebuild request for "
-      << (e->is_index ? "index " : "metric ") << e->id
-      << (e->end ? "(end)" : "(start)");
+    std::shared_ptr<storage::rebuild> e(
+        std::static_pointer_cast<storage::rebuild>(d));
+    logging::debug(logging::medium)
+        << "RRD: rebuild request for " << (e->is_index ? "index " : "metric ")
+        << e->id << (e->end ? "(end)" : "(start)");
 
     // Generate path.
     std::string path;
     {
       std::ostringstream oss;
-      oss << (e->is_index ? _status_path : _metrics_path)
-          << e->id << ".rrd";
+      oss << (e->is_index ? _status_path : _metrics_path) << e->id << ".rrd";
       path = oss.str();
     }
 
     // Rebuild is starting.
     if (!e->end) {
       if (e->is_index)
-        _status_rebuild[path.c_str()];
+        _status_rebuild[path];
       else
-        _metrics_rebuild[path.c_str()];
+        _metrics_rebuild[path];
       _backend->remove(path);
     }
     // Rebuild is ending.
@@ -306,14 +281,13 @@ int output::write(std::shared_ptr<io::data> const& d) {
       {
         rebuild_cache::iterator it;
         if (e->is_index) {
-          it = _status_rebuild.find(path.c_str());
+          it = _status_rebuild.find(path);
           if (it != _status_rebuild.end()) {
             l = it->second;
             _status_rebuild.erase(it);
           }
-        }
-        else {
-          it = _metrics_rebuild.find(path.c_str());
+        } else {
+          it = _metrics_rebuild.find(path);
           if (it != _metrics_rebuild.end()) {
             l = it->second;
             _metrics_rebuild.erase(it);
@@ -327,27 +301,25 @@ int output::write(std::shared_ptr<io::data> const& d) {
         l.pop_front();
       }
     }
-  }
-  else if (d->type() == storage::remove_graph::static_type()) {
+  } else if (d->type() == storage::remove_graph::static_type()) {
     // Debug message.
-    std::shared_ptr<storage::remove_graph>
-      e(std::static_pointer_cast<storage::remove_graph>(d));
-    logging::debug(logging::medium) << "RRD: remove graph request for "
-      << (e->is_index ? "index " : "metric ") << e->id;
+    std::shared_ptr<storage::remove_graph> e(
+        std::static_pointer_cast<storage::remove_graph>(d));
+    logging::debug(logging::medium)
+        << "RRD: remove graph request for "
+        << (e->is_index ? "index " : "metric ") << e->id;
 
     // Generate path.
     std::string path;
     {
       std::ostringstream oss;
-      oss << (e->is_index ? _status_path : _metrics_path)
-          << e->id << ".rrd";
+      oss << (e->is_index ? _status_path : _metrics_path) << e->id << ".rrd";
       path = oss.str();
     }
 
     // Remove data from cache.
-    rebuild_cache&
-      cache(e->is_index ? _status_rebuild : _metrics_rebuild);
-    rebuild_cache::iterator it(cache.find(path.c_str()));
+    rebuild_cache& cache(e->is_index ? _status_rebuild : _metrics_rebuild);
+    rebuild_cache::iterator it(cache.find(path));
     if (it != cache.end())
       cache.erase(it);
 

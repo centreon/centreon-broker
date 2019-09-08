@@ -17,43 +17,42 @@
 */
 
 #ifndef CCB_EXCEPTIONS_MSG_HH_
-# define CCB_EXCEPTIONS_MSG_HH_
+#define CCB_EXCEPTIONS_MSG_HH_
 
-# include <exception>
-# include "com/centreon/broker/misc/stringifier.hh"
+#include <exception>
+#include "com/centreon/broker/misc/stringifier.hh"
 
 CCB_BEGIN()
 
-namespace               exceptions {
-  /**
-   *  @class msg msg.hh "com/centreon/broker/exceptions/msg.hh"
-   *  @brief Base class of exceptions thrown in Centreon Broker.
-   *
-   *  msg is a simple exception class that is only associated with a
-   *  message. msg accepts multiple types on input.
-   */
-  class                 msg : private misc::stringifier,
-			      public std::exception {
-   public:
-                        msg();
-                        msg(msg const& other);
-    virtual             ~msg() throw ();
-    msg&                operator=(msg const& other);
-    virtual char const* what() const throw ();
+namespace exceptions {
+/**
+ *  @class msg msg.hh "com/centreon/broker/exceptions/msg.hh"
+ *  @brief Base class of exceptions thrown in Centreon Broker.
+ *
+ *  msg is a simple exception class that is only associated with a
+ *  message. msg accepts multiple types on input.
+ */
+class msg : private misc::stringifier, public std::exception {
+ public:
+  msg();
+  msg(msg const& other);
+  virtual ~msg() throw();
+  msg& operator=(msg const& other);
+  virtual char const* what() const throw();
 
-    /**
-     *  Insert data in message.
-     *
-     *  @param[in] t Data to insert.
-     */
-    template            <typename T>
-    msg&                operator<<(T t) {
-      *(misc::stringifier*)this << t;
-      return (*this);
-    }
-  };
-}
+  /**
+   *  Insert data in message.
+   *
+   *  @param[in] t Data to insert.
+   */
+  template <typename T>
+  msg& operator<<(T t) {
+    *(misc::stringifier*)this << t;
+    return (*this);
+  }
+};
+}  // namespace exceptions
 
 CCB_END()
 
-#endif // !CCB_EXCEPTIONS_MSG_HH
+#endif  // !CCB_EXCEPTIONS_MSG_HH

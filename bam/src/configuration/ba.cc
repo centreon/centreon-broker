@@ -30,19 +30,18 @@ using namespace com::centreon::broker::bam::configuration;
  *  @param[in] critical_level BA critical_level.
  *  @param[in] inherit_kpi_downtime  Should the BA inherit kpi's downtimes?
  */
-ba::ba(
-      unsigned int id,
-      std::string const& name,
-      double warning_level,
-      double critical_level,
-      bool inherit_kpi_downtime):
-  _id(id),
-  _host_id(0),
-  _service_id(0),
-  _name(name),
-  _warning_level(warning_level),
-  _critical_level(critical_level),
-  _inherit_kpi_downtime(inherit_kpi_downtime) {}
+ba::ba(unsigned int id,
+       std::string const& name,
+       double warning_level,
+       double critical_level,
+       bool inherit_kpi_downtime)
+    : _id(id),
+      _host_id(0),
+      _service_id(0),
+      _name(name),
+      _warning_level(warning_level),
+      _critical_level(critical_level),
+      _inherit_kpi_downtime(inherit_kpi_downtime) {}
 
 /**
  *  Copy constructor.
@@ -50,14 +49,14 @@ ba::ba(
  *  @param[in] other The original object.
  */
 ba::ba(ba const& other)
-  : _id(other._id),
-    _host_id(other._host_id),
-    _service_id(other._service_id),
-    _name(other._name),
-    _warning_level(other._warning_level),
-    _critical_level(other._critical_level),
-    _event(other._event),
-    _inherit_kpi_downtime (other._inherit_kpi_downtime) {}
+    : _id(other._id),
+      _host_id(other._host_id),
+      _service_id(other._service_id),
+      _name(other._name),
+      _warning_level(other._warning_level),
+      _critical_level(other._critical_level),
+      _event(other._event),
+      _inherit_kpi_downtime(other._inherit_kpi_downtime) {}
 
 /**
  *  Destructor.
@@ -76,7 +75,7 @@ ba& ba::operator=(ba const& other) {
     _id = other._id;
     _host_id = other._host_id;
     _service_id = other._service_id;
-    _name =  other._name;
+    _name = other._name;
     _warning_level = other._warning_level;
     _critical_level = other._critical_level;
     _event = other._event;
@@ -93,14 +92,12 @@ ba& ba::operator=(ba const& other) {
  *  @return True if this object and right are totally equal.
  */
 bool ba::operator==(ba const& right) const {
-  return ((_id == right._id)
-          && (_host_id == right._host_id)
-          && (_service_id == right._service_id)
-          && (_name == right._name)
-          && (_warning_level == right._warning_level)
-          && (_critical_level == right._critical_level)
-          && (_event == right._event)
-          && (_inherit_kpi_downtime == right._inherit_kpi_downtime));
+  return ((_id == right._id) && (_host_id == right._host_id) &&
+          (_service_id == right._service_id) && (_name == right._name) &&
+          (_warning_level == right._warning_level) &&
+          (_critical_level == right._critical_level) &&
+          (_event == right._event) &&
+          (_inherit_kpi_downtime == right._inherit_kpi_downtime));
 }
 
 /**

@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/initial.hh"
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
@@ -25,7 +26,6 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
 #include "com/centreon/broker/neb/events.hh"
-#include "com/centreon/broker/neb/initial.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/engine/broker.hh"
 #include "com/centreon/engine/common.hh"
@@ -44,84 +44,77 @@ using namespace com::centreon::broker;
 
 // NEB module list.
 extern "C" {
-  nebmodule* neb_module_list;
+nebmodule* neb_module_list;
 }
 
 /**************************************
-*                                     *
-*          Static Functions           *
-*                                     *
-**************************************/
+ *                                     *
+ *          Static Functions           *
+ *                                     *
+ **************************************/
 
 /**
  *  Send to the global publisher the list of custom variables.
  */
 static void send_custom_variables_list() {
   // Start log message.
-  logging::info(logging::medium)
-    << "init: beginning custom variables dump";
+  logging::info(logging::medium) << "init: beginning custom variables dump";
 
   // Iterate through all hosts.
   for (host_map::iterator it{com::centreon::engine::host::hosts.begin()},
-                          end{com::centreon::engine::host::hosts.end()};
+       end{com::centreon::engine::host::hosts.end()};
        it != end; ++it) {
     // Send all custom variables.
     for (com::centreon::engine::map_customvar::const_iterator
-           cit{it->second->custom_variables.begin()},
-           cend{it->second->custom_variables.end()};
-         cit != cend;
-         ++cit) {
+             cit{it->second->custom_variables.begin()},
+         cend{it->second->custom_variables.end()};
+         cit != cend; ++cit) {
       std::string name{cit->first};
       if (cit->second.is_sent()) {
         // Fill callback struct.
         nebstruct_custom_variable_data nscvd;
         memset(&nscvd, 0, sizeof(nscvd));
         nscvd.type = NEBTYPE_HOSTCUSTOMVARIABLE_ADD;
-        nscvd.timestamp.tv_sec = time(NULL);
+        nscvd.timestamp.tv_sec = time(nullptr);
         nscvd.var_name = const_cast<char*>(name.c_str());
         nscvd.var_value = const_cast<char*>(cit->second.get_value().c_str());
         nscvd.object_ptr = it->second.get();
 
         // Callback.
-        neb::callback_custom_variable(
-               NEBCALLBACK_CUSTOM_VARIABLE_DATA,
-               &nscvd);
+        neb::callback_custom_variable(NEBCALLBACK_CUSTOM_VARIABLE_DATA, &nscvd);
       }
     }
   }
 
   // Iterate through all services.
-  for (service_map::iterator it{com::centreon::engine::service::services.begin()},
-                            end{com::centreon::engine::service::services.end()};
+  for (service_map::iterator
+           it{com::centreon::engine::service::services.begin()},
+       end{com::centreon::engine::service::services.end()};
        it != end; ++it) {
     // Send all custom variables.
     for (com::centreon::engine::map_customvar::const_iterator
-           cit{it->second->custom_variables.begin()},
-           cend{it->second->custom_variables.end()};
-         cit != cend;
-         ++cit) {
+             cit{it->second->custom_variables.begin()},
+         cend{it->second->custom_variables.end()};
+         cit != cend; ++cit) {
       std::string name{cit->first};
       if (cit->second.is_sent()) {
         // Fill callback struct.
         nebstruct_custom_variable_data nscvd;
         memset(&nscvd, 0, sizeof(nscvd));
         nscvd.type = NEBTYPE_SERVICECUSTOMVARIABLE_ADD;
-        nscvd.timestamp.tv_sec = time(NULL);
+        nscvd.timestamp.tv_sec = time(nullptr);
         nscvd.var_name = const_cast<char*>(name.c_str());
         nscvd.var_value = const_cast<char*>(cit->second.get_value().c_str());
         nscvd.object_ptr = it->second.get();
 
         // Callback.
-        neb::callback_custom_variable(
-               NEBCALLBACK_CUSTOM_VARIABLE_DATA,
-               &nscvd);
+        neb::callback_custom_variable(NEBCALLBACK_CUSTOM_VARIABLE_DATA, &nscvd);
       }
     }
   }
 
   // End log message.
-  logging::info(logging::medium)
-    << "init: end of custom variables dump";
+  logging::info(logging::medium) << "init: end of custom variables dump";
 }
 
 /**
@@ -131,19 +124,27 @@ static void send_downtimes_list() {
   // Start log message.
   logging::info(logging::medium) << "init: beginning downtimes dump";
 
-  std::multimap<time_t, std::shared_ptr<com::centreon::engine::downtimes::downtime>> const&
-    dts{com::centreon::engine::downtimes::downtime_manager::instance().get_scheduled_downtimes()};
+  std::multimap<
+      time_t,
+      std::shared_ptr<com::centreon::engine::downtimes::downtime>> const& dts{
+      com::centreon::engine::downtimes::downtime_manager::instance()
+          .get_scheduled_downtimes()};
   // Iterate through all downtimes.
   for (auto p : dts) {
     // Fill callback struct.
     nebstruct_downtime_data nsdd;
     memset(&nsdd, 0, sizeof(nsdd));
     nsdd.type = NEBTYPE_DOWNTIME_ADD;
-    nsdd.timestamp.tv_sec = time(NULL);
+    nsdd.timestamp.tv_sec = time(nullptr);
     nsdd.downtime_type = p.second->get_type();
     nsdd.host_name = p.second->get_hostname().c_str();
-    nsdd.service_description = p.second->get_type() == SERVICE_DOWNTIME ?
-      std::static_pointer_cast<com::centreon::engine::downtimes::service_downtime>(p.second)->get_service_description().c_str() : nullptr;
+    nsdd.service_description =
+        p.second->get_type() == SERVICE_DOWNTIME
+            ? std::static_pointer_cast<
+                  com::centreon::engine::downtimes::service_downtime>(p.second)
+                  ->get_service_description()
+                  .c_str()
+            : nullptr;
     nsdd.entry_time = p.second->get_entry_time();
     nsdd.author_name = p.second->get_author().c_str();
     nsdd.comment_data = p.second->get_comment().c_str();
@@ -168,46 +169,39 @@ static void send_downtimes_list() {
  */
 static void send_host_dependencies_list() {
   // Start log message.
-  logging::info(logging::medium)
-    << "init: beginning host dependencies dump";
+  logging::info(logging::medium) << "init: beginning host dependencies dump";
 
   try {
     // Loop through all dependencies.
     for (hostdependency_mmap::const_iterator
-           it{com::centreon::engine::hostdependency::hostdependencies.begin()},
-           end{com::centreon::engine::hostdependency::hostdependencies.end()};
-         it != end;
-         ++it) {
+             it{com::centreon::engine::hostdependency::hostdependencies
+                    .begin()},
+         end{com::centreon::engine::hostdependency::hostdependencies.end()};
+         it != end; ++it) {
       // Fill callback struct.
       nebstruct_adaptive_dependency_data nsadd;
       memset(&nsadd, 0, sizeof(nsadd));
       nsadd.type = NEBTYPE_HOSTDEPENDENCY_ADD;
       nsadd.flags = NEBFLAG_NONE;
       nsadd.attr = NEBATTR_NONE;
-      nsadd.timestamp.tv_sec = time(NULL);
+      nsadd.timestamp.tv_sec = time(nullptr);
       nsadd.object_ptr = it->second.get();
 
       // Callback.
-      neb::callback_dependency(
-             NEBCALLBACK_ADAPTIVE_DEPENDENCY_DATA,
-             &nsadd);
+      neb::callback_dependency(NEBCALLBACK_ADAPTIVE_DEPENDENCY_DATA, &nsadd);
     }
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     logging::error(logging::high)
-      << "init: error occurred while dumping host dependencies: "
-      << e.what();
-  }
-  catch (...) {
+        << "init: error occurred while dumping host dependencies: " << e.what();
+  } catch (...) {
     logging::error(logging::high)
-      << "init: unknown error occurred while dumping host dependencies";
+        << "init: unknown error occurred while dumping host dependencies";
   }
 
   // End log message.
-  logging::info(logging::medium)
-    << "init: end of host dependencies dump";
+  logging::info(logging::medium) << "init: end of host dependencies dump";
 
-  return ;
+  return;
 }
 
 /**
@@ -215,15 +209,13 @@ static void send_host_dependencies_list() {
  */
 static void send_host_group_list() {
   // Start log message.
-  logging::info(logging::medium)
-    << "init: beginning host group dump";
+  logging::info(logging::medium) << "init: beginning host group dump";
 
   // Loop through all host groups.
   for (hostgroup_map::const_iterator
-         it{com::centreon::engine::hostgroup::hostgroups.begin()},
-         end{com::centreon::engine::hostgroup::hostgroups.end()};
-       it != end;
-       ++it) {
+           it{com::centreon::engine::hostgroup::hostgroups.begin()},
+       end{com::centreon::engine::hostgroup::hostgroups.end()};
+       it != end; ++it) {
     // Fill callback struct.
     nebstruct_group_data nsgd;
     memset(&nsgd, 0, sizeof(nsgd));
@@ -234,11 +226,9 @@ static void send_host_group_list() {
     neb::callback_group(NEBCALLBACK_GROUP_DATA, &nsgd);
 
     // Dump host group members.
-    for (host_map_unsafe::const_iterator
-           hit{it->second->members.begin()},
-           hend{it->second->members.end()};
-         hit != hend;
-         ++hit) {
+    for (host_map_unsafe::const_iterator hit{it->second->members.begin()},
+         hend{it->second->members.end()};
+         hit != hend; ++hit) {
       // Fill callback struct.
       nebstruct_group_member_data nsgmd;
       memset(&nsgmd, 0, sizeof(nsgmd));
@@ -252,8 +242,7 @@ static void send_host_group_list() {
   }
 
   // End log message.
-  logging::info(logging::medium)
-    << "init: end of host group dump";
+  logging::info(logging::medium) << "init: end of host group dump";
 }
 
 /**
@@ -264,11 +253,9 @@ static void send_host_list() {
   logging::info(logging::medium) << "init: beginning host dump";
 
   // Loop through all hosts.
-  for (host_map::iterator
-         it{com::centreon::engine::host::hosts.begin()},
-         end{com::centreon::engine::host::hosts.end()};
-       it != end;
-       ++it) {
+  for (host_map::iterator it{com::centreon::engine::host::hosts.begin()},
+       end{com::centreon::engine::host::hosts.end()};
+       it != end; ++it) {
     // Fill callback struct.
     nebstruct_adaptive_host_data nsahd;
     memset(&nsahd, 0, sizeof(nsahd));
@@ -295,24 +282,20 @@ static void send_host_parents_list() {
 
   try {
     // Loop through all hosts.
-    for (host_map::iterator
-           it{com::centreon::engine::host::hosts.begin()},
-           end{com::centreon::engine::host::hosts.end()};
-         it != end;
-         ++it) {
+    for (host_map::iterator it{com::centreon::engine::host::hosts.begin()},
+         end{com::centreon::engine::host::hosts.end()};
+         it != end; ++it) {
       // Loop through all parents.
-      for (host_map_unsafe::iterator
-             pit{it->second->parent_hosts.begin()},
-             pend{it->second->parent_hosts.end()};
-           pit != pend;
-           ++pit) {
+      for (host_map_unsafe::iterator pit{it->second->parent_hosts.begin()},
+           pend{it->second->parent_hosts.end()};
+           pit != pend; ++pit) {
         // Fill callback struct.
         nebstruct_relation_data nsrd;
         memset(&nsrd, 0, sizeof(nsrd));
         nsrd.type = NEBTYPE_PARENT_ADD;
         nsrd.flags = NEBFLAG_NONE;
         nsrd.attr = NEBATTR_NONE;
-        nsrd.timestamp.tv_sec = time(NULL);
+        nsrd.timestamp.tv_sec = time(nullptr);
         nsrd.hst = pit->second;
         nsrd.dep_hst = it->second.get();
 
@@ -320,15 +303,12 @@ static void send_host_parents_list() {
         neb::callback_relation(NEBTYPE_PARENT_ADD, &nsrd);
       }
     }
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     logging::error(logging::high)
-      << "init: error occurred while dumping host parents: "
-      << e.what();
-  }
-  catch (...) {
+        << "init: error occurred while dumping host parents: " << e.what();
+  } catch (...) {
     logging::error(logging::high)
-      << "init: unknown error occurred while dumping host parents";
+        << "init: unknown error occurred while dumping host parents";
   }
 
   // End log message.
@@ -340,8 +320,7 @@ static void send_host_parents_list() {
  */
 static void send_module_list() {
   // Start log message.
-  logging::info(logging::medium)
-    << "init: beginning modules dump";
+  logging::info(logging::medium) << "init: beginning modules dump";
 
   // Browse module list.
   for (nebmodule* nm(neb_module_list); nm; nm = nm->next)
@@ -367,44 +346,39 @@ static void send_module_list() {
  */
 static void send_service_dependencies_list() {
   // Start log message.
-  logging::info(logging::medium)
-    << "init: beginning service dependencies dump";
+  logging::info(logging::medium) << "init: beginning service dependencies dump";
 
   try {
     // Loop through all dependencies.
     for (servicedependency_mmap::const_iterator
-           it{com::centreon::engine::servicedependency::servicedependencies.begin()},
-           end{com::centreon::engine::servicedependency::servicedependencies.end()};
-         it != end;
-         ++it) {
+             it{com::centreon::engine::servicedependency::servicedependencies
+                    .begin()},
+         end{com::centreon::engine::servicedependency::servicedependencies
+                 .end()};
+         it != end; ++it) {
       // Fill callback struct.
       nebstruct_adaptive_dependency_data nsadd;
       memset(&nsadd, 0, sizeof(nsadd));
       nsadd.type = NEBTYPE_SERVICEDEPENDENCY_ADD;
       nsadd.flags = NEBFLAG_NONE;
       nsadd.attr = NEBATTR_NONE;
-      nsadd.timestamp.tv_sec = time(NULL);
+      nsadd.timestamp.tv_sec = time(nullptr);
       nsadd.object_ptr = it->second.get();
 
       // Callback.
-      neb::callback_dependency(
-             NEBCALLBACK_ADAPTIVE_DEPENDENCY_DATA,
-             &nsadd);
+      neb::callback_dependency(NEBCALLBACK_ADAPTIVE_DEPENDENCY_DATA, &nsadd);
     }
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     logging::error(logging::high)
-      << "init: error occurred while dumping service dependencies: "
-      << e.what();
-  }
-  catch (...) {
+        << "init: error occurred while dumping service dependencies: "
+        << e.what();
+  } catch (...) {
     logging::error(logging::high) << "init: unknown error occurred "
-      << "while dumping service dependencies";
+                                  << "while dumping service dependencies";
   }
 
   // End log message.
-  logging::info(logging::medium)
-    << "init: end of service dependencies dump";
+  logging::info(logging::medium) << "init: end of service dependencies dump";
 }
 
 /**
@@ -412,15 +386,13 @@ static void send_service_dependencies_list() {
  */
 static void send_service_group_list() {
   // Start log message.
-  logging::info(logging::medium)
-    << "init: beginning service group dump";
+  logging::info(logging::medium) << "init: beginning service group dump";
 
   // Loop through all service groups.
   for (servicegroup_map::const_iterator
-         it{com::centreon::engine::servicegroup::servicegroups.begin()},
-         end{com::centreon::engine::servicegroup::servicegroups.end()};
-       it != end;
-       ++it) {
+           it{com::centreon::engine::servicegroup::servicegroups.begin()},
+       end{com::centreon::engine::servicegroup::servicegroups.end()};
+       it != end; ++it) {
     // Fill callback struct.
     nebstruct_group_data nsgd;
     memset(&nsgd, 0, sizeof(nsgd));
@@ -431,11 +403,9 @@ static void send_service_group_list() {
     neb::callback_group(NEBCALLBACK_GROUP_DATA, &nsgd);
 
     // Dump service group members.
-    for (service_map_unsafe::const_iterator
-           sit{it->second->members.begin()},
-           send{it->second->members.end()};
-         sit != send;
-         ++sit) {
+    for (service_map_unsafe::const_iterator sit{it->second->members.begin()},
+         send{it->second->members.end()};
+         sit != send; ++sit) {
       // Fill callback struct.
       nebstruct_group_member_data nsgmd;
       memset(&nsgmd, 0, sizeof(nsgmd));
@@ -461,10 +431,9 @@ static void send_service_list() {
 
   // Loop through all services.
   for (service_map::const_iterator
-         it{com::centreon::engine::service::services.begin()},
-         end{com::centreon::engine::service::services.end()};
-       it != end;
-       ++it) {
+           it{com::centreon::engine::service::services.begin()},
+       end{com::centreon::engine::service::services.end()};
+       it != end; ++it) {
     // Fill callback struct.
     nebstruct_adaptive_service_data nsasd;
     memset(&nsasd, 0, sizeof(nsasd));
@@ -487,19 +456,19 @@ static void send_service_list() {
  */
 static void send_instance_configuration() {
   logging::info(logging::medium)
-    << "init: sending initial instance configuration loading event";
-  std::shared_ptr<neb::instance_configuration>
-    ic(new neb::instance_configuration);
+      << "init: sending initial instance configuration loading event";
+  std::shared_ptr<neb::instance_configuration> ic(
+      new neb::instance_configuration);
   ic->loaded = true;
   ic->poller_id = config::applier::state::instance().poller_id();
   neb::gl_publisher.write(ic);
 }
 
 /**************************************
-*                                     *
-*          Global Functions           *
-*                                     *
-**************************************/
+ *                                     *
+ *          Global Functions           *
+ *                                     *
+ **************************************/
 
 /**
  *  Send initial configuration to the global publisher.

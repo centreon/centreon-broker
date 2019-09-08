@@ -17,59 +17,50 @@
 */
 
 #ifndef CCB_NEB_DOWNTIME_MAP_HH
-#  define CCB_NEB_DOWNTIME_MAP_HH
+#define CCB_NEB_DOWNTIME_MAP_HH
 
-#  include <unordered_map>
-#  include "com/centreon/broker/neb/downtime.hh"
-#  include "com/centreon/broker/neb/node_id.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/misc/pair.hh"
+#include <unordered_map>
+#include "com/centreon/broker/misc/pair.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/downtime.hh"
+#include "com/centreon/broker/neb/node_id.hh"
 
 CCB_BEGIN()
 
-namespace   neb {
-  /**
-   *  @class downtime_map downtime_map.hh "com/centreon/broker/neb/downtime_map.hh"
-   *  @brief Map of downtimes.
-   */
-  class          downtime_map {
-  public:
-                 downtime_map();
-                 downtime_map(
-                   downtime_map const& other);
-    downtime_map&
-                 operator=(downtime_map const& other);
-    virtual      ~downtime_map();
+namespace neb {
+/**
+ *  @class downtime_map downtime_map.hh
+ * "com/centreon/broker/neb/downtime_map.hh"
+ *  @brief Map of downtimes.
+ */
+class downtime_map {
+ public:
+  downtime_map();
+  downtime_map(downtime_map const& other);
+  downtime_map& operator=(downtime_map const& other);
+  virtual ~downtime_map();
 
-    unsigned int get_new_downtime_id();
-    std::list<downtime>
-                 get_all_downtimes_of_node(node_id id) const;
-    std::list<downtime>
-                 get_all_recurring_downtimes_of_node(node_id id) const;
-    void         delete_downtime(downtime const& dwn);
-    void         add_downtime(downtime const& dwn);
-    downtime*    get_downtime(unsigned int internal_id);
-    bool         is_recurring(unsigned int internal_id) const;
-    std::list<downtime>
-                 get_all_recurring_downtimes() const;
-    std::list<downtime>
-                 get_all_downtimes() const;
-    bool         spawned_downtime_exist(unsigned int parent_id) const;
+  unsigned int get_new_downtime_id();
+  std::list<downtime> get_all_downtimes_of_node(node_id id) const;
+  std::list<downtime> get_all_recurring_downtimes_of_node(node_id id) const;
+  void delete_downtime(downtime const& dwn);
+  void add_downtime(downtime const& dwn);
+  downtime* get_downtime(unsigned int internal_id);
+  bool is_recurring(unsigned int internal_id) const;
+  std::list<downtime> get_all_recurring_downtimes() const;
+  std::list<downtime> get_all_downtimes() const;
+  bool spawned_downtime_exist(unsigned int parent_id) const;
 
-  private:
-    unsigned int _actual_downtime_id;
-    std::unordered_map<unsigned int, downtime>
-                 _downtimes;
-    std::unordered_multimap<node_id, unsigned int>
-                 _downtime_id_by_nodes;
-    std::unordered_map<unsigned int, downtime>
-                 _recurring_downtimes;
-    std::unordered_multimap<node_id, unsigned int>
-                 _recurring_downtime_id_by_nodes;
-
-  };
-}
+ private:
+  unsigned int _actual_downtime_id;
+  std::unordered_map<unsigned int, downtime> _downtimes;
+  std::unordered_multimap<node_id, unsigned int> _downtime_id_by_nodes;
+  std::unordered_map<unsigned int, downtime> _recurring_downtimes;
+  std::unordered_multimap<node_id, unsigned int>
+      _recurring_downtime_id_by_nodes;
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_DOWNTIME_MAP_HH
+#endif  // !CCB_NEB_DOWNTIME_MAP_HH

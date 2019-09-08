@@ -17,36 +17,36 @@
 */
 
 #ifndef CCB_BAM_BOOL_LESS_THAN_HH
-#  define CCB_BAM_BOOL_LESS_THAN_HH
+#define CCB_BAM_BOOL_LESS_THAN_HH
 
-#  include "com/centreon/broker/bam/bool_binary_operator.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/bam/bool_binary_operator.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace     bam {
-  /**
-   *  @class bool_less_than bool_less_than.hh "com/centreon/broker/bam/bool_less_than.hh"
-   *  @brief Less than operator.
-   *
-   *  In the context of a KPI computation, bool_les_than represents a logical
-   *  less than between two bool_value.
-   */
-  class       bool_less_than : public bool_binary_operator {
-  public:
-              bool_less_than(bool strict = false);
-              bool_less_than(bool_less_than const& right);
-              ~bool_less_than();
-    bool_less_than&
-              operator=(bool_less_than const& right);
-    double    value_hard();
-    double    value_soft();
+namespace bam {
+/**
+ *  @class bool_less_than bool_less_than.hh
+ * "com/centreon/broker/bam/bool_less_than.hh"
+ *  @brief Less than operator.
+ *
+ *  In the context of a KPI computation, bool_les_than represents a logical
+ *  less than between two bool_value.
+ */
+class bool_less_than : public bool_binary_operator {
+ public:
+  bool_less_than(bool strict = false);
+  bool_less_than(bool_less_than const& right);
+  ~bool_less_than();
+  bool_less_than& operator=(bool_less_than const& right);
+  double value_hard();
+  double value_soft();
 
-  private:
-    bool      _strict;
-  };
-}
+ private:
+  bool _strict;
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_BOOL_LESS_THAN_HH
+#endif  // !CCB_BAM_BOOL_LESS_THAN_HH

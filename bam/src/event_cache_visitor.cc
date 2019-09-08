@@ -40,22 +40,19 @@ event_cache_visitor::~event_cache_visitor() {}
  */
 void event_cache_visitor::commit_to(io::stream& to) {
   for (std::vector<std::shared_ptr<io::data> >::const_iterator
-         it(_others.begin()),
-         end(_others.end());
-       it != end;
-       ++it)
+           it(_others.begin()),
+       end(_others.end());
+       it != end; ++it)
     to.write(*it);
   for (std::vector<std::shared_ptr<io::data> >::const_iterator
-         it(_ba_events.begin()),
-         end(_ba_events.end());
-       it != end;
-       ++it)
+           it(_ba_events.begin()),
+       end(_ba_events.end());
+       it != end; ++it)
     to.write(*it);
   for (std::vector<std::shared_ptr<io::data> >::const_iterator
-         it(_kpi_events.begin()),
-         end(_kpi_events.end());
-       it != end;
-       ++it)
+           it(_kpi_events.begin()),
+       end(_kpi_events.end());
+       it != end; ++it)
     to.write(*it);
   _others.clear();
   _ba_events.clear();
@@ -70,9 +67,7 @@ void event_cache_visitor::commit_to(io::stream& to) {
  *
  *  @return This method will throw.
  */
-bool event_cache_visitor::read(
-                            std::shared_ptr<io::data>& d,
-                            time_t deadline) {
+bool event_cache_visitor::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
   return true;
@@ -89,13 +84,11 @@ int event_cache_visitor::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "event_cache_visitor"))
     return (1);
 
-  if (d->type()
-      == io::events::data_type<io::events::bam,
-                               bam::de_ba_event>::value)
+  if (d->type() ==
+      io::events::data_type<io::events::bam, bam::de_ba_event>::value)
     _ba_events.push_back(d);
-  else if (d->type()
-           == io::events::data_type<io::events::bam,
-                                    bam::de_kpi_event>::value)
+  else if (d->type() ==
+           io::events::data_type<io::events::bam, bam::de_kpi_event>::value)
     _kpi_events.push_back(d);
   else
     _others.push_back(d);

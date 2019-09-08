@@ -16,15 +16,15 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <exception>
-#include <iostream>
 #include <QDir>
 #include <QFile>
 #include <QString>
+#include <cstdlib>
+#include <exception>
+#include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
-#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/correlation/parser.hh"
+#include "com/centreon/broker/correlation/stream.hh"
 #include "com/centreon/broker/neb/host_status.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "test/parser/common.hh"

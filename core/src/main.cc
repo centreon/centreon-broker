@@ -38,10 +38,10 @@
 using namespace com::centreon::broker;
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Main config file.
 static std::vector<std::string> gl_mainconfigfiles;
@@ -60,8 +60,7 @@ static void hup_handler(int signum) {
   signal(SIGHUP, SIG_IGN);
 
   // Log message.
-  logging::config(logging::high)
-    << "main: configuration update requested";
+  logging::config(logging::high) << "main: configuration update requested";
 
   try {
     // Parse configuration file.
@@ -72,27 +71,24 @@ static void hup_handler(int signum) {
       // Apply resulting configuration.
       config::applier::state::instance().apply(conf);
       gl_state = conf;
-    }
-    catch (std::exception const& e) {
-      logging::error(logging::high) << "main: configuration update "
-        << "could not succeed, reloading previous configuration: "
-        << e.what();
+    } catch (std::exception const& e) {
+      logging::error(logging::high)
+          << "main: configuration update "
+          << "could not succeed, reloading previous configuration: "
+          << e.what();
+      config::applier::state::instance().apply(gl_state);
+    } catch (...) {
+      logging::error(logging::high)
+          << "main: configuration update "
+          << "could not succeed, reloading previous configuration";
       config::applier::state::instance().apply(gl_state);
     }
-    catch (...) {
-      logging::error(logging::high) << "main: configuration update "
-        << "could not succeed, reloading previous configuration";
-      config::applier::state::instance().apply(gl_state);
-    }
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     logging::config(logging::high)
-      << "main: configuration update failed: "
-      << e.what();
-  }
-  catch (...) {
+        << "main: configuration update failed: " << e.what();
+  } catch (...) {
     logging::config(logging::high)
-      << "main: configuration update failed: unknown exception";
+        << "main: configuration update failed: unknown exception";
   }
 
   // Reenable SIGHUP handler.
@@ -113,20 +109,20 @@ static void term_handler(int signum, siginfo_t* info, void* data) {
 
   // Log message.
   logging::info(logging::high)
-    << "main: termination request received by process id "
-    << info->si_pid << " with real user id " << info->si_uid;
+      << "main: termination request received by process id " << info->si_pid
+      << " with real user id " << info->si_uid;
 
   // Ask event loop to quit.
   // FIXME DBR
   exit(0);
-  //QCoreApplication::exit(0);
+  // QCoreApplication::exit(0);
 }
 
 /**************************************
-*                                     *
-*          Public Functions           *
-*                                     *
-**************************************/
+ *                                     *
+ *          Public Functions           *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Program entry point.
@@ -147,11 +143,11 @@ int main(int argc, char* argv[]) {
   int retval(0);
 
   // Qt application object.
-  //QCoreApplication app(argc, argv);
-  //QTextCodec* utf8_codec(QTextCodec::codecForName("UTF-8"));
-  //if (utf8_codec)
+  // QCoreApplication app(argc, argv);
+  // QTextCodec* utf8_codec(QTextCodec::codecForName("UTF-8"));
+  // if (utf8_codec)
   //  QTextCodec::setCodecForCStrings(utf8_codec);
-  //else
+  // else
   //  logging::error(logging::high)
   //    << "core: could not find UTF-8 codec, strings will be "
   //       "interpreted using the current locale";
@@ -203,71 +199,67 @@ int main(int argc, char* argv[]) {
       default_state.loggers().push_back(default_log);
 
       // Apply configuration.
-      config::applier::logger::instance().apply(
-        default_state.loggers());
+      config::applier::logger::instance().apply(default_state.loggers());
     }
 
     // Check parameters requirements.
     if (diagnose) {
       if (gl_mainconfigfiles.empty()) {
         logging::error(logging::high)
-          << "diagnostic: no configuration file provided: "
-          << "DIAGNOSTIC FILE MIGHT NOT BE USEFUL";
+            << "diagnostic: no configuration file provided: "
+            << "DIAGNOSTIC FILE MIGHT NOT BE USEFUL";
       }
       misc::diagnostic diag;
       diag.generate(gl_mainconfigfiles);
-    }
-    else if (help) {
-      logging::info(logging::high) << "USAGE: " << argv[0]
-        << " [-c] [-d] [-D] [-h] [-v] [<configfile>]";
+    } else if (help) {
+      logging::info(logging::high)
+          << "USAGE: " << argv[0] << " [-c] [-d] [-D] [-h] [-v] [<configfile>]";
       logging::info(logging::high) << "  -c  Check configuration file.";
       logging::info(logging::high) << "  -d  Enable debug mode.";
       logging::info(logging::high) << "  -D  Generate a diagnostic file.";
       logging::info(logging::high) << "  -h  Print this help.";
+      logging::info(logging::high) << "  -v  Print Centreon Broker version.";
       logging::info(logging::high)
-        << "  -v  Print Centreon Broker version.";
-      logging::info(logging::high) << "Centreon Broker "
-        << CENTREON_BROKER_VERSION;
+          << "Centreon Broker " << CENTREON_BROKER_VERSION;
       logging::info(logging::high) << "Copyright 2009-2018 Centreon";
-      logging::info(logging::high) << "License ASL 2.0 " \
-        "<http://www.apache.org/licenses/LICENSE-2.0>";
+      logging::info(logging::high)
+          << "License ASL 2.0 "
+             "<http://www.apache.org/licenses/LICENSE-2.0>";
       retval = 0;
-    }
-    else if (version) {
-      logging::info(logging::high) << "Centreon Broker "
-        << CENTREON_BROKER_VERSION;
+    } else if (version) {
+      logging::info(logging::high)
+          << "Centreon Broker " << CENTREON_BROKER_VERSION;
       retval = 0;
-    }
-    else if (gl_mainconfigfiles.empty()) {
-      logging::error(logging::high) << "USAGE: " << argv[0]
-        << " [-c] [-d] [-D] [-h] [-v] [<configfile>]";
+    } else if (gl_mainconfigfiles.empty()) {
+      logging::error(logging::high)
+          << "USAGE: " << argv[0] << " [-c] [-d] [-D] [-h] [-v] [<configfile>]";
       retval = 1;
-    }
-    else {
-//      app.setApplicationName("Centreon Broker");
-//#if QT_VERSION >= 0x040400
-//      app.setApplicationVersion(CENTREON_BROKER_VERSION);
-//#endif // Qt >= 4.4.0
-//      app.setOrganizationDomain("centreon.com");
-//      app.setOrganizationName("Centreon");
+    } else {
+      //      app.setApplicationName("Centreon Broker");
+      //#if QT_VERSION >= 0x040400
+      //      app.setApplicationVersion(CENTREON_BROKER_VERSION);
+      //#endif // Qt >= 4.4.0
+      //      app.setOrganizationDomain("centreon.com");
+      //      app.setOrganizationName("Centreon");
       logging::info(logging::medium)
-        << "Centreon Broker " << CENTREON_BROKER_VERSION;
+          << "Centreon Broker " << CENTREON_BROKER_VERSION;
       logging::info(logging::medium) << "Copyright 2009-2018 Centreon";
-      logging::info(logging::medium) << "License ASL 2.0 " \
-        "<http://www.apache.org/licenses/LICENSE-2.0>";
-//#if QT_VERSION >= 0x040400
-//      logging::info(logging::low) << "PID: " << app.applicationPid();
-//#endif // Qt >= 4.4.0
-//      logging::info(logging::medium)
-//        << "Qt compilation version " << QT_VERSION_STR;
-//      logging::info(logging::medium)
-//        << "Qt runtime version " << qVersion();
-//      logging::info(logging::medium) << "  Build Key: "
-//        << QLibraryInfo::buildKey();
-//      logging::info(logging::medium) << "  Licensee: "
-//        << QLibraryInfo::licensee();
-//      logging::info(logging::medium) << "  Licensed Products: "
-//        << QLibraryInfo::licensedProducts();
+      logging::info(logging::medium)
+          << "License ASL 2.0 "
+             "<http://www.apache.org/licenses/LICENSE-2.0>";
+      //#if QT_VERSION >= 0x040400
+      //      logging::info(logging::low) << "PID: " << app.applicationPid();
+      //#endif // Qt >= 4.4.0
+      //      logging::info(logging::medium)
+      //        << "Qt compilation version " << QT_VERSION_STR;
+      //      logging::info(logging::medium)
+      //        << "Qt runtime version " << qVersion();
+      //      logging::info(logging::medium) << "  Build Key: "
+      //        << QLibraryInfo::buildKey();
+      //      logging::info(logging::medium) << "  Licensee: "
+      //        << QLibraryInfo::licensee();
+      //      logging::info(logging::medium) << "  Licensed Products: "
+      //        << QLibraryInfo::licensedProducts();
 
       // Reset locale.
       setlocale(LC_NUMERIC, "C");
@@ -280,21 +272,18 @@ int main(int argc, char* argv[]) {
         // Verification modifications.
         if (check) {
           // Loggers.
-          for (std::list<config::logger>::iterator
-                 it(conf.loggers().begin()),
-                 end(conf.loggers().end());
-               it != end;
-               ++it)
+          for (std::list<config::logger>::iterator it(conf.loggers().begin()),
+               end(conf.loggers().end());
+               it != end; ++it)
             it->types(0);
           conf.loggers().push_back(default_state.loggers().front());
         }
 
         // Add debug output if in debug mode.
         if (debug)
-          conf.loggers().insert(
-                           conf.loggers().end(),
-                           default_state.loggers().begin(),
-                           default_state.loggers().end());
+          conf.loggers().insert(conf.loggers().end(),
+                                default_state.loggers().begin(),
+                                default_state.loggers().end());
 
         // Apply resulting configuration totally or partially.
         config::applier::state::instance().apply(conf, !check);
@@ -305,8 +294,7 @@ int main(int argc, char* argv[]) {
       if (signal(SIGHUP, hup_handler) == SIG_ERR) {
         char const* err(strerror(errno));
         logging::info(logging::high)
-          << "main: could not register configuration update handler: "
-          << err;
+            << "main: could not register configuration update handler: " << err;
       }
 
       // Init signal handler.
@@ -316,16 +304,16 @@ int main(int argc, char* argv[]) {
       sigterm_act.sa_flags = SA_SIGINFO | SA_RESETHAND;
 
       // Set termination handler.
-      if (sigaction(SIGTERM, &sigterm_act, NULL) < 0)
+      if (sigaction(SIGTERM, &sigterm_act, nullptr) < 0)
         logging::info(logging::high)
-          << "main: could not register termination handler";
+            << "main: could not register termination handler";
 
       // Launch event loop.
       if (!check)
         while (true) {
           std::this_thread::sleep_for(std::chrono::seconds(1));
         }
-        //retval = app.exec();
+      // retval = app.exec();
       else
         retval = EXIT_SUCCESS;
     }
@@ -337,8 +325,7 @@ int main(int argc, char* argv[]) {
   }
   // Unknown exception.
   catch (...) {
-    logging::error(logging::high)
-      << "main: unknown error, aborting execution";
+    logging::error(logging::high) << "main: unknown error, aborting execution";
     retval = EXIT_FAILURE;
   }
 

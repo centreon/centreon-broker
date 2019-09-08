@@ -17,20 +17,20 @@
  *
  */
 
-#  include <cstdio>
-#  include <cstdlib>
-#  include <cstring>
-#  include <list>
-#  include <vector>
-#  include "com/centreon/broker/exceptions/msg.hh"
-#  include "com/centreon/broker/io/events.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/mapping/source.hh"
-#  include "com/centreon/broker/mapping/property.hh"
-#  include "com/centreon/broker/neb/events.hh"
-#  include "com/centreon/broker/neb/internal.hh"
-#  include "randomize.hh"
+#include "randomize.hh"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <list>
+#include <vector>
+#include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/mapping/property.hh"
+#include "com/centreon/broker/mapping/source.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/events.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 static std::list<char*> generated;
 
@@ -178,6 +178,6 @@ void randomize_cleanup() {
   io::events::unload();
 }
 
-} // Namespace broker
-} // Namespace centreon
-} // Namespace com
+}  // Namespace broker
+}  // Namespace centreon
+}  // Namespace com

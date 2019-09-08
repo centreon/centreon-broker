@@ -24,10 +24,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -40,7 +40,7 @@ engine_state::engine_state() : started(false) {}
  *  @param[in] es Object to copy.
  */
 engine_state::engine_state(engine_state const& es)
-  : io::data(es), poller_id(es.poller_id), started(es.started) {}
+    : io::data(es), poller_id(es.poller_id), started(es.started) {}
 
 /**
  *  Destructor.
@@ -78,27 +78,23 @@ unsigned int engine_state::type() const {
  *  @return  The event type.
  */
 unsigned int engine_state::static_type() {
-  return (io::events::data_type<io::events::correlation, correlation::de_engine_state>::value);
+  return (io::events::data_type<io::events::correlation,
+                                correlation::de_engine_state>::value);
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const engine_state::entries[] = {
-  mapping::entry(
-    &engine_state::started,
-    "started"),
-  mapping::entry()
-};
+    mapping::entry(&engine_state::started, "started"), mapping::entry()};
 
 // Operations.
 static io::data* new_engine_state() {
   return (new engine_state);
 }
 io::event_info::event_operations const engine_state::operations = {
-  &new_engine_state
-};
+    &new_engine_state};

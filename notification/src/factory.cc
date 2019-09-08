@@ -16,20 +16,20 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/notification/factory.hh"
 #include <memory>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/notification/connector.hh"
-#include "com/centreon/broker/notification/factory.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::notification;
 
 /**************************************
-*                                     *
-*            Local Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *            Local Objects            *
+ *                                     *
+ **************************************/
 
 /**
  *  Find a parameter in configuration.
@@ -39,8 +39,8 @@ using namespace com::centreon::broker::notification;
  *
  *  @return Property value.
  */
-static std::string const &find_param(config::endpoint const &cfg,
-                                     std::string const &key) {
+static std::string const& find_param(config::endpoint const& cfg,
+                                     std::string const& key) {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find(key)};
   if (cfg.params.end() == it)
     throw exceptions::msg() << "notification: no '" << key
@@ -49,10 +49,10 @@ static std::string const &find_param(config::endpoint const &cfg,
 }
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -118,9 +118,9 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *  @return New endpoint.
  */
 io::endpoint* factory::new_endpoint(
-                         config::endpoint& cfg,
-                         bool& is_acceptor,
-                         std::shared_ptr<persistent_cache> cache) const {
+    config::endpoint& cfg,
+    bool& is_acceptor,
+    std::shared_ptr<persistent_cache> cache) const {
   // Find DB type.
   std::string type(find_param(cfg, "db_type"));
 
@@ -143,8 +143,8 @@ io::endpoint* factory::new_endpoint(
   // Check replication status ?
   bool check_replication{true};
   {
-    std::map<std::string, std::string>::const_iterator
-      it{cfg.params.find("check_replication")};
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("check_replication")};
     if (it != cfg.params.end())
       check_replication = config::parser::parse_boolean(it->second);
   }

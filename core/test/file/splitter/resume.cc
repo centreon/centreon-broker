@@ -17,17 +17,17 @@
  *
  */
 #include <gtest/gtest.h>
+#include "../test_file.hh"
+#include "../test_fs_browser.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/logging/manager.hh"
-#include "../test_file.hh"
-#include "../test_fs_browser.hh"
 
 using namespace com::centreon::broker;
 
 class FileSplitterResume : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     logging::manager::load();
 
     _path = "/var/lib/centreon-broker/queue";
@@ -42,8 +42,7 @@ class FileSplitterResume : public ::testing::Test {
       std::ostringstream oss;
       oss << _path << i;
       f.reset(_file_factory->new_fs_file(
-                               oss.str(),
-                               file::fs_file::open_read_write_truncate));
+          oss.str(), file::fs_file::open_read_write_truncate));
       f->write(buffer, sizeof(buffer));
     }
 
@@ -51,8 +50,7 @@ class FileSplitterResume : public ::testing::Test {
     std::string last_file(_path);
     last_file.append("10");
     f.reset(_file_factory->new_fs_file(
-                             last_file,
-                             file::fs_file::open_read_write_truncate));
+        last_file, file::fs_file::open_read_write_truncate));
     memset(buffer, 10, sizeof(buffer));
     f->write(buffer, 108);
     f.reset();
@@ -67,24 +65,18 @@ class FileSplitterResume : public ::testing::Test {
     _fs_browser->add_result(list);
 
     // Create new splitter.
-    _file.reset(new file::splitter(
-                            _path,
-                            file::fs_file::open_read_write_truncate,
-                            _file_factory,
-                            _fs_browser,
-                            10000,
-                            true));
+    _file.reset(new file::splitter(_path,
+                                   file::fs_file::open_read_write_truncate,
+                                   _file_factory, _fs_browser, 10000, true));
   }
 
-  void TearDown() {
-      logging::manager::unload();
-  };
+  void TearDown() override { logging::manager::unload(); };
 
  protected:
   std::unique_ptr<file::splitter> _file;
-  test_file_factory*            _file_factory;
-  test_fs_browser*              _fs_browser;
-  std::string                   _path;
+  test_file_factory* _file_factory;
+  test_fs_browser* _fs_browser;
+  std::string _path;
 };
 
 // Given existing file parts, from 2 to 10

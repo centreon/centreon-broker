@@ -16,12 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/config/applier/init.hh"
 #include <cstdlib>
 #include <memory>
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/compression/internal.hh"
 #include "com/centreon/broker/config/applier/endpoint.hh"
-#include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
@@ -37,10 +37,10 @@
 using namespace com::centreon::broker;
 
 /**************************************
-*                                     *
-*           Global Functions          *
-*                                     *
-**************************************/
+ *                                     *
+ *           Global Functions          *
+ *                                     *
+ **************************************/
 
 /**
  *  Unload necessary structures.
@@ -60,7 +60,7 @@ void config::applier::deinit() {
   io::events::unload();
   time::timezone_manager::unload();
   logging::manager::unload();
-  return ;
+  return;
 }
 
 /**
@@ -83,5 +83,5 @@ void config::applier::init() {
   config::applier::endpoint::load();
   config::applier::state::load();
 
-  return ;
+  return;
 }

@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/active_host_latency.hh"
 #include <iomanip>
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/active_host_latency.hh"
 #include "com/centreon/broker/neb/statistics/compute_value.hh"
 #include "com/centreon/engine/globals.hh"
 
@@ -32,8 +32,7 @@ using namespace com::centreon::engine;
 /**
  *  Default constructor.
  */
-active_host_latency::active_host_latency()
-  : plugin("active_host_latency") {}
+active_host_latency::active_host_latency() : plugin("active_host_latency") {}
 
 /**
  *  Copy constructor.
@@ -41,7 +40,7 @@ active_host_latency::active_host_latency()
  *  @param[in] right Object to copy.
  */
 active_host_latency::active_host_latency(active_host_latency const& right)
- : plugin(right) {}
+    : plugin(right) {}
 
 /**
  *  Destructor.
@@ -55,7 +54,8 @@ active_host_latency::~active_host_latency() {}
  *
  *  @return This object.
  */
-active_host_latency& active_host_latency::operator=(active_host_latency const& right) {
+active_host_latency& active_host_latency::operator=(
+    active_host_latency const& right) {
   plugin::operator=(right);
   return (*this);
 }
@@ -66,15 +66,11 @@ active_host_latency& active_host_latency::operator=(active_host_latency const& r
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void active_host_latency::run(
-              std::string& output,
-	      std::string& perfdata) {
+void active_host_latency::run(std::string& output, std::string& perfdata) {
   compute_value<double> cv;
-  for (host_map::const_iterator
-         it{com::centreon::engine::host::hosts.begin()},
-         end{com::centreon::engine::host::hosts.end()};
-       it != end;
-       ++it)
+  for (host_map::const_iterator it{com::centreon::engine::host::hosts.begin()},
+       end{com::centreon::engine::host::hosts.end()};
+       it != end; ++it)
     if (it->second->get_check_type() == checkable::check_active)
       cv << it->second->get_latency();
 
@@ -82,20 +78,21 @@ void active_host_latency::run(
     // Output.
     std::ostringstream oss;
     oss << "Engine " << config::applier::state::instance().poller_name()
-        << " has an average active host latency of "
-        << std::fixed << std::setprecision(2) << cv.avg() << "s";
+        << " has an average active host latency of " << std::fixed
+        << std::setprecision(2) << cv.avg() << "s";
     output = oss.str();
 
     // Perfdata.
     oss.str("");
-    oss << "avg=" << cv.avg() << "s min=" << cv.min()
-        << "s max=" << cv.max() << "s";
+    oss << "avg=" << cv.avg() << "s min=" << cv.min() << "s max=" << cv.max()
+        << "s";
     perfdata = oss.str();
-  }
-  else {
+  } else {
     // Output.
-    output = "No active host to compute active host "
-      "latency on " + config::applier::state::instance().poller_name();
+    output =
+        "No active host to compute active host "
+        "latency on " +
+        config::applier::state::instance().poller_name();
   }
-  return ;
+  return;
 }

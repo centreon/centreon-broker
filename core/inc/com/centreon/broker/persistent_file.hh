@@ -17,40 +17,38 @@
 */
 
 #ifndef CCB_PERSISTENT_FILE_HH
-#  define CCB_PERSISTENT_FILE_HH
+#define CCB_PERSISTENT_FILE_HH
 
-#  include "com/centreon/broker/file/stream.hh"
-#  include "com/centreon/broker/io/stream.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/file/stream.hh"
+#include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
 /**
- *  @class persistent_file persistent_file.hh "com/centreon/broker/persistent_file.hh"
+ *  @class persistent_file persistent_file.hh
+ * "com/centreon/broker/persistent_file.hh"
  *  @brief On-disk file.
  *
  *  On-disk file that uses multiple streams to write serialized data.
  *  It uses BBDO, compression and file streams.
  */
-class              persistent_file : public io::stream {
+class persistent_file : public io::stream {
  public:
-                   persistent_file(std::string const& path);
-                   ~persistent_file();
-  bool             read(
-                     std::shared_ptr<io::data>& d,
-                     time_t deadline = (time_t)-1);
-  void             remove_all_files();
-  void             statistics(io::properties& tree) const;
-  int              write(std::shared_ptr<io::data> const& d);
+  persistent_file(std::string const& path);
+  ~persistent_file();
+  bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
+  void remove_all_files();
+  void statistics(io::properties& tree) const;
+  int write(std::shared_ptr<io::data> const& d);
 
  private:
-                   persistent_file(persistent_file const& other);
+  persistent_file(persistent_file const& other);
   persistent_file& operator=(persistent_file const& other);
 
-  std::shared_ptr<file::stream>
-                   _splitter;
+  std::shared_ptr<file::stream> _splitter;
 };
 
 CCB_END()
 
-#endif // !CCB_PERSISTENT_FILE_HH
+#endif  // !CCB_PERSISTENT_FILE_HH

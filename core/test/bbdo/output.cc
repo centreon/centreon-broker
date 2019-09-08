@@ -17,8 +17,8 @@
  *
  */
 #include <arpa/inet.h>
-#include <fstream>
 #include <gtest/gtest.h>
+#include <fstream>
 #include <list>
 #include <memory>
 #include "com/centreon/broker/bbdo/stream.hh"
@@ -36,9 +36,10 @@ using namespace com::centreon::broker::misc;
 class into_memory : public io::stream {
  public:
   into_memory() : sent_data(false), _memory() {}
-  ~into_memory() {}
+  ~into_memory() override {}
 
-  bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1) {
+  bool read(std::shared_ptr<io::data>& d,
+            time_t deadline = (time_t)-1) override {
     (void)deadline;
     if (sent_data)
       throw exceptions::msg() << "shutdown";
@@ -49,7 +50,7 @@ class into_memory : public io::stream {
     return true;
   }
 
-  int write(std::shared_ptr<io::data> const& d) {
+  int write(std::shared_ptr<io::data> const& d) override {
     _memory = std::static_pointer_cast<io::raw>(d)->get_buffer();
     return 1;
   }
@@ -63,7 +64,7 @@ class into_memory : public io::stream {
 
 class OutputTest : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     try {
       config::applier::init();
     } catch (std::exception const& e) {
@@ -73,7 +74,7 @@ class OutputTest : public ::testing::Test {
         std::make_shared<persistent_cache>("/tmp/broker_test_cache"));
   }
 
-  void TearDown() {
+  void TearDown() override {
     // The cache must be destroyed before the applier deinit() call.
     config::applier::deinit();
   }
@@ -185,5 +186,6 @@ TEST_F(OutputTest, WriteLongService) {
       4717);
 
   // Check checksum
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535)), 10510);
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535)),
+            10510);
 }

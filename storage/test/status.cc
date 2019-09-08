@@ -17,10 +17,10 @@
  *
  */
 
+#include "com/centreon/broker/storage/status.hh"
 #include <gtest/gtest.h>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
-#include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
 
@@ -108,7 +108,8 @@ TEST(StorageStatus, CopyCtor) {
   ASSERT_FALSE(s2.interval != 24);
   ASSERT_FALSE(s2.is_for_rebuild != true);
   ASSERT_FALSE(s2.rrd_len != 180);
-  ASSERT_FALSE(s2.state != 1);;
+  ASSERT_FALSE(s2.state != 1);
+  ;
 }
 
 /**
@@ -118,7 +119,8 @@ TEST(StorageStatus, DefaultCtor) {
   // Build object.
   storage::status s;
 
-  auto val(io::events::data_type<io::events::storage, storage::de_status>::value);
+  auto val(
+      io::events::data_type<io::events::storage, storage::de_status>::value);
 
   // Check properties values.
   ASSERT_FALSE(s.ctime != 0);
@@ -127,5 +129,6 @@ TEST(StorageStatus, DefaultCtor) {
   ASSERT_FALSE(s.is_for_rebuild != false);
   ASSERT_FALSE(s.rrd_len != 0);
   ASSERT_FALSE(s.state != 0);
-  ASSERT_FALSE(s.type() != val);;
+  ASSERT_FALSE(s.type() != val);
+  ;
 }

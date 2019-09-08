@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/ack.hh"
 #include "com/centreon/broker/bbdo/factory.hh"
-#include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -29,10 +29,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
 
 /**************************************
-*                                     *
-*           Global Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Global Objects            *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief BBDO initialization routine.
@@ -45,36 +45,23 @@ void bbdo::load() {
   int bbdo_category(e.register_category("bbdo", io::events::bbdo));
   if (bbdo_category != io::events::bbdo) {
     e.unregister_category(bbdo_category);
-    throw (exceptions::msg() << "BBDO: category " << io::events::bbdo
-           << " is already registered whereas it should be "
-           << "reserved for the BBDO core");
+    throw(exceptions::msg() << "BBDO: category " << io::events::bbdo
+                            << " is already registered whereas it should be "
+                            << "reserved for the BBDO core");
   }
 
   // Register BBDO events.
   e.register_event(
-      io::events::bbdo,
-      bbdo::de_version_response,
-      io::event_info(
-            "version_response",
-            &version_response::operations,
-            version_response::entries));
-  e.register_event(
-      io::events::bbdo,
-      bbdo::de_ack,
-      io::event_info(
-            "ack",
-            &ack::operations,
-            ack::entries));
-
+      io::events::bbdo, bbdo::de_version_response,
+      io::event_info("version_response", &version_response::operations,
+                     version_response::entries));
+  e.register_event(io::events::bbdo, bbdo::de_ack,
+                   io::event_info("ack", &ack::operations, ack::entries));
 
   // Register BBDO protocol.
-  io::protocols::instance().reg(
-                              "BBDO",
-                              bbdo::factory(),
-                              7,
-                              7);
+  io::protocols::instance().reg("BBDO", bbdo::factory(), 7, 7);
 
-  return ;
+  return;
 }
 
 /**
@@ -89,5 +76,5 @@ void bbdo::unload() {
   // Unregister category.
   io::events::instance().unregister_category(io::events::bbdo);
 
-  return ;
+  return;
 }

@@ -32,8 +32,7 @@ bool_constant::bool_constant(double val) : _value(val) {}
  *
  *  @param[in] right Object to copy.
  */
-bool_constant::bool_constant(bool_constant const& right)
-  : bool_value(right) {
+bool_constant::bool_constant(bool_constant const& right) : bool_value(right) {
   _value = right._value;
 }
 
@@ -65,9 +64,7 @@ bool_constant& bool_constant::operator=(bool_constant const& right) {
  *
  *  @return True if the parent was modified.
  */
-bool bool_constant::child_has_update(
-                      computable* child,
-                      io::stream* visitor) {
+bool bool_constant::child_has_update(computable* child, io::stream* visitor) {
   (void)child;
   (void)visitor;
   return (true);

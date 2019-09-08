@@ -16,23 +16,23 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/extcmd/plaintext_command_parser.hh"
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/extcmd/command_request.hh"
 #include "com/centreon/broker/extcmd/command_result.hh"
-#include "com/centreon/broker/extcmd/plaintext_command_parser.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::extcmd;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -40,7 +40,7 @@ using namespace com::centreon::broker::extcmd;
  *  @param[in,out] listener       Command listener.
  */
 plaintext_command_parser::plaintext_command_parser(command_listener& listener)
-  : command_parser(listener) {}
+    : command_parser(listener) {}
 
 /**
  *  Destructor.
@@ -57,9 +57,9 @@ plaintext_command_parser::~plaintext_command_parser() {}
  * @return  The number of characters parsed succesfully, 0 for none.
  */
 unsigned int plaintext_command_parser::parse(
-               std::string const& buffer,
-               command_result& res,
-               std::shared_ptr<command_request>& request) {
+    std::string const& buffer,
+    command_result& res,
+    std::shared_ptr<command_request>& request) {
   request.reset();
   size_t delimiter(buffer.find_first_of('\n'));
   if (delimiter != std::string::npos) {
@@ -80,18 +80,17 @@ unsigned int plaintext_command_parser::parse(
         request.reset(new command_request);
         request->parse(cmd.substr(::strlen(execute_cmd)));
         logging::debug(logging::high)
-          << "command: sending request " << request->uuid << " ('" << request->cmd
-          << "') to endpoint '" << request->endp
-          << "' of Centreon Broker instance " << request->destination_id;
+            << "command: sending request " << request->uuid << " ('"
+            << request->cmd << "') to endpoint '" << request->endp
+            << "' of Centreon Broker instance " << request->destination_id;
         _listener.write(request);
         res = _listener.command_status(request->uuid);
-      }
-      else
-        throw (exceptions::msg() << "invalid command format: expected "
-               << "either STATUS;<CMDID> or "
-               << "EXECUTE;<BROKERID>;<ENDPOINTNAME>;<CMD>[;ARG1[;ARG2...]]");
-    }
-    catch (std::exception const& e) {
+      } else
+        throw(exceptions::msg()
+              << "invalid command format: expected "
+              << "either STATUS;<CMDID> or "
+              << "EXECUTE;<BROKERID>;<ENDPOINTNAME>;<CMD>[;ARG1[;ARG2...]]");
+    } catch (std::exception const& e) {
       // At this point, command request was not written to the command
       // listener, so it not necessary to write command result either.
       res.uuid = "";
@@ -112,7 +111,7 @@ unsigned int plaintext_command_parser::parse(
  */
 std::string plaintext_command_parser::write(command_result const& res) {
   std::ostringstream oss;
-  oss << res.uuid << " " << std::hex << std::showbase
-      << res.code << " " << res.msg << "\n";
+  oss << res.uuid << " " << std::hex << std::showbase << res.code << " "
+      << res.msg << "\n";
   return oss.str();
 }

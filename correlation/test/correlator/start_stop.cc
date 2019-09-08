@@ -16,14 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cstdlib>
-#include <iostream>
 #include <QList>
 #include <QMap>
 #include <QPair>
-#include "com/centreon/broker/multiplexing/engine.hh"
+#include <cstdlib>
+#include <iostream>
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/correlation/stream.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "test/correlator/common.hh"
 
 using namespace com::centreon::broker;
@@ -48,9 +48,7 @@ int main() {
 
   try {
     // Create correlator.
-    {
-      correlation::stream c("", std::shared_ptr<persistent_cache>(), false);
-    }
+    { correlation::stream c("", std::shared_ptr<persistent_cache>(), false); }
 
     // Check correlation content.
     multiplexing::engine::instance().stop();
@@ -64,11 +62,9 @@ int main() {
 
     // Success.
     retval = EXIT_SUCCESS;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cout << e.what() << std::endl;
-  }
-  catch (...) {
+  } catch (...) {
     std::cout << "unknown exception" << std::endl;
   }
 

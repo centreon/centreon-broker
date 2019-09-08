@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/notification/loaders/command_loader.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/notification/objects/command.hh"
-#include "com/centreon/broker/notification/loaders/command_loader.hh"
 
 using namespace com::centreon::broker::notification;
 using namespace com::centreon::broker::notification::objects;
@@ -38,18 +38,18 @@ void command_loader::load(mysql* ms, command_builder* output) {
     return;
 
   logging::debug(logging::medium)
-    << "notification: loading commands from the database";
+      << "notification: loading commands from the database";
 
   // Performance improvement, as we never go back.
-  //query.setForwardOnly(true);
+  // query.setForwardOnly(true);
 
   // Load the commands
   std::promise<database::mysql_result> promise;
   ms->run_query_and_get_result(
-        "SELECT command_id, connector_id, command_name, command_line,"
-        "       command_type, enable_shell"
-        "  FROM cfg_commands",
-        &promise);
+      "SELECT command_id, connector_id, command_name, command_line,"
+      "       command_type, enable_shell"
+      "  FROM cfg_commands",
+      &promise);
   try {
     database::mysql_result res(promise.get_future().get());
     while (ms->fetch_row(res)) {
@@ -61,10 +61,8 @@ void command_loader::load(mysql* ms, command_builder* output) {
 
       output->add_command(id, com);
     }
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     throw exceptions::msg()
-      << "notification: cannot load commands from database: "
-      << e.what();
+        << "notification: cannot load commands from database: " << e.what();
   }
 }

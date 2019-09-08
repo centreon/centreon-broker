@@ -17,20 +17,20 @@
 */
 
 #ifndef CCB_NEB_SET_LOG_DATA_HH_
-# define CCB_NEB_SET_LOG_DATA_HH_
+#define CCB_NEB_SET_LOG_DATA_HH_
 
-# include "com/centreon/broker/neb/log_entry.hh"
-# include "com/centreon/engine/host.hh"
-# include "com/centreon/engine/service.hh"
+#include "com/centreon/broker/neb/log_entry.hh"
+#include "com/centreon/engine/host.hh"
+#include "com/centreon/engine/service.hh"
 
-namespace       com {
-  namespace     centreon {
-    namespace   broker {
-      namespace neb {
-        void    set_log_data(neb::log_entry& le, char const* log_data);
-      }
-    }
-  }
+namespace com {
+namespace centreon {
+namespace broker {
+namespace neb {
+void set_log_data(neb::log_entry& le, char const* log_data);
 }
+}  // namespace broker
+}  // namespace centreon
+}  // namespace com
 
 #endif /* !CCB_NEB_SET_LOG_DATA_HH_ */

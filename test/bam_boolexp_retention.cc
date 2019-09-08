@@ -16,22 +16,22 @@
 ** For more information : contact@centreon.com
 */
 
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QVariant>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <QSqlError>
-#include <QSqlQuery>
-#include <QVariant>
 #include <sstream>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "test/cbd.hh"
 #include "test/config.hh"
 #include "test/engine.hh"
 #include "test/engine_extcmd.hh"
 #include "test/generate.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
-#include "test/cbd.hh"
 
 using namespace com::centreon::broker;
 
@@ -65,83 +65,75 @@ static bool double_equals(double d1, double d2) {
 /**
  *  Check content of the cfg_bam table.
  */
-static void check_bas(
-              QSqlDatabase& db,
-              ba_state const* bas,
-              size_t count) {
+static void check_bas(QSqlDatabase& db, ba_state const* bas, size_t count) {
   static int iteration(-1);
   ++iteration;
   QString query(
-            "SELECT ba_id, current_level, downtime, acknowledged"
-            "  FROM cfg_bam"
-            "  ORDER BY ba_id");
+      "SELECT ba_id, current_level, downtime, acknowledged"
+      "  FROM cfg_bam"
+      "  ORDER BY ba_id");
   QSqlQuery q(db);
   if (!q.exec(query))
-    throw (exceptions::msg() << "could not fetch BAs at iteration "
-           << iteration << ": " << q.lastError().text());
+    throw(exceptions::msg() << "could not fetch BAs at iteration " << iteration
+                            << ": " << q.lastError().text());
   for (size_t i(0); i < count; ++i) {
     if (!q.next())
-      throw (exceptions::msg() << "not enough BAs at iteration "
-             << iteration << ": got " << i << ", expected " << count);
-    if (!double_equals(q.value(1).toDouble(), bas[i].current_level)
-        || !double_equals(q.value(2).toDouble(), bas[i].downtime)
-        || !double_equals(q.value(3).toDouble(), bas[i].acknowledged))
-      throw (exceptions::msg() << "invalid BA " << q.value(0).toUInt()
-             << " at iteration " << iteration << ": got (level "
-             << q.value(1).toDouble() << ", downtime "
-             << q.value(2).toDouble() << ", acknowledged "
-             << q.value(3).toDouble() << "), expected ("
-             << bas[i].current_level << ", " << bas[i].downtime << ", "
-             << bas[i].acknowledged << ")");
+      throw(exceptions::msg() << "not enough BAs at iteration " << iteration
+                              << ": got " << i << ", expected " << count);
+    if (!double_equals(q.value(1).toDouble(), bas[i].current_level) ||
+        !double_equals(q.value(2).toDouble(), bas[i].downtime) ||
+        !double_equals(q.value(3).toDouble(), bas[i].acknowledged))
+      throw(exceptions::msg()
+            << "invalid BA " << q.value(0).toUInt() << " at iteration "
+            << iteration << ": got (level " << q.value(1).toDouble()
+            << ", downtime " << q.value(2).toDouble() << ", acknowledged "
+            << q.value(3).toDouble() << "), expected (" << bas[i].current_level
+            << ", " << bas[i].downtime << ", " << bas[i].acknowledged << ")");
   }
   if (q.next())
-    throw (exceptions::msg() << "too much BAs at iteration "
-           << iteration << ": expected " << count);
-  return ;
+    throw(exceptions::msg() << "too much BAs at iteration " << iteration
+                            << ": expected " << count);
+  return;
 }
 
 /**
  *  Check content of the cfg_bam_kpi table.
  */
-static void check_kpis(
-              QSqlDatabase& db,
-              kpi_state const* kpis,
-              size_t count) {
+static void check_kpis(QSqlDatabase& db, kpi_state const* kpis, size_t count) {
   static int iteration(-1);
   ++iteration;
   QString query(
-            "SELECT kpi_id, state_type, current_status, last_level,"
-            "       downtime, acknowledged"
-            "  FROM cfg_bam_kpi"
-            "  ORDER BY kpi_id");
+      "SELECT kpi_id, state_type, current_status, last_level,"
+      "       downtime, acknowledged"
+      "  FROM cfg_bam_kpi"
+      "  ORDER BY kpi_id");
   QSqlQuery q(db);
   if (!q.exec(query))
-    throw (exceptions::msg() << "could not fetch KPIs at iteration "
-           << iteration << ": " << q.lastError().text());
+    throw(exceptions::msg() << "could not fetch KPIs at iteration " << iteration
+                            << ": " << q.lastError().text());
   for (size_t i(0); i < count; ++i) {
     if (!q.next())
-      throw (exceptions::msg() << "not enough KPIs at iteration "
-             << iteration << ": got " << i << ", expected " << count);
-    if ((q.value(1).toInt() != kpis[i].state_type)
-        || (q.value(2).toInt() != kpis[i].state)
-        || !double_equals(q.value(3).toDouble(), kpis[i].last_level)
-        || !double_equals(q.value(4).toDouble(), kpis[i].downtime)
-        || !double_equals(q.value(5).toDouble(), kpis[i].acknowledged))
-      throw (exceptions::msg() << "invalid KPI " << q.value(0).toUInt()
-             << " at iteration " << iteration << ": got (state type "
-             << q.value(1).toInt() << ", state "
-             << q.value(2).toInt() << ", level "
-             << q.value(3).toDouble() << ", downtime "
-             << q.value(4).toDouble() << ", acknowledged "
-             << q.value(5).toDouble() << "), expected ("
-             << kpis[i].state_type << ", " << kpis[i].state
-             << ", " << kpis[i].last_level << ", " << kpis[i].downtime
-             << ", " << kpis[i].acknowledged << ")");
+      throw(exceptions::msg() << "not enough KPIs at iteration " << iteration
+                              << ": got " << i << ", expected " << count);
+    if ((q.value(1).toInt() != kpis[i].state_type) ||
+        (q.value(2).toInt() != kpis[i].state) ||
+        !double_equals(q.value(3).toDouble(), kpis[i].last_level) ||
+        !double_equals(q.value(4).toDouble(), kpis[i].downtime) ||
+        !double_equals(q.value(5).toDouble(), kpis[i].acknowledged))
+      throw(exceptions::msg()
+            << "invalid KPI " << q.value(0).toUInt() << " at iteration "
+            << iteration << ": got (state type " << q.value(1).toInt()
+            << ", state " << q.value(2).toInt() << ", level "
+            << q.value(3).toDouble() << ", downtime " << q.value(4).toDouble()
+            << ", acknowledged " << q.value(5).toDouble() << "), expected ("
+            << kpis[i].state_type << ", " << kpis[i].state << ", "
+            << kpis[i].last_level << ", " << kpis[i].downtime << ", "
+            << kpis[i].acknowledged << ")");
   }
   if (q.next())
-    throw (exceptions::msg() << "too much KPIs at iteration "
-           << iteration << ": expected " << count);
-  return ;
+    throw(exceptions::msg() << "too much KPIs at iteration " << iteration
+                            << ": expected " << count);
+  return;
 }
 
 /**
@@ -172,11 +164,8 @@ int main() {
     // Generate standard hosts and services.
     generate_hosts(hosts, HOST_COUNT);
     generate_services(services, hosts, SERVICES_BY_HOST);
-    for (std::list<service>::iterator
-           it(services.begin()),
-           end(services.end());
-         it != end;
-         ++it) {
+    for (std::list<service>::iterator it(services.begin()), end(services.end());
+         it != end; ++it) {
       it->accept_passive_service_checks = 1;
       it->checks_enabled = 0;
       it->max_attempts = 1;
@@ -224,11 +213,8 @@ int main() {
     }
 
     // Update properties of all services.
-    for (std::list<service>::iterator
-           it(services.begin()),
-           end(services.end());
-         it != end;
-         ++it) {
+    for (std::list<service>::iterator it(services.begin()), end(services.end());
+         it != end; ++it) {
       it->accept_passive_service_checks = 1;
       it->checks_enabled = 0;
       it->max_attempts = 1;
@@ -245,28 +231,23 @@ int main() {
     }
 
     commander.set_file(tmpnam(NULL));
-    monitoring_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/bam_boolexp_retention1.xml.in");
+    monitoring_cfg.set_template(PROJECT_SOURCE_DIR
+                                "/test/cfg/bam_boolexp_retention1.xml.in");
     std::string additional_config;
     {
       std::ostringstream oss;
-      oss << commander.get_engine_config()
-          << "broker_module=" << CBMOD_PATH << " "
-          << monitoring_cfg.generate() << "\n";
+      oss << commander.get_engine_config() << "broker_module=" << CBMOD_PATH
+          << " " << monitoring_cfg.generate() << "\n";
       additional_config = oss.str();
     }
 
     // Generate monitoring engine configuration files.
-    config_write(
-      engine_config_path.c_str(),
-      additional_config.c_str(),
-      &hosts,
-      &services,
-      &commands);
+    config_write(engine_config_path.c_str(), additional_config.c_str(), &hosts,
+                 &services, &commands);
 
     // Generate broker config files.
-    broker_cfg.set_template(
-      PROJECT_SOURCE_DIR "/test/cfg/bam_boolexp_retention2.xml.in");
+    broker_cfg.set_template(PROJECT_SOURCE_DIR
+                            "/test/cfg/bam_boolexp_retention2.xml.in");
     broker_cfg.set("COMMAND_FILE", commander.get_file());
     broker_cfg.set("DB_NAME_CENTREON", CENTREON_DB_NAME);
     broker_cfg.set("DB_NAME_BI", BI_DB_NAME);
@@ -275,33 +256,34 @@ int main() {
     // Create organization.
     {
       QString query;
-      query = "INSERT INTO cfg_organizations (organization_id, name, shortname)"
-              "  VALUES (1, '42', '42')";
+      query =
+          "INSERT INTO cfg_organizations (organization_id, name, shortname)"
+          "  VALUES (1, '42', '42')";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not create organization: "
-               << q.lastError().text());
+        throw(exceptions::msg()
+              << "could not create organization: " << q.lastError().text());
     }
 
     // Create timeperiods.
     {
       QString query;
-      query = "INSERT INTO cfg_timeperiods (tp_id, tp_name, tp_alias, "
-              "            tp_sunday, tp_monday, tp_tuesday,"
-              "            tp_wednesday, tp_thursday, tp_friday, "
-              "            tp_saturday, organization_id)"
-              "  VALUES (1, '24x7', '24x7', '00:00-24:00',"
-              "          '00:00-24:00', '00:00-24:00', '00:00-24:00',"
-              "          '00:00-24:00', '00:00-24:00', '00:00-24:00', 1)";
+      query =
+          "INSERT INTO cfg_timeperiods (tp_id, tp_name, tp_alias, "
+          "            tp_sunday, tp_monday, tp_tuesday,"
+          "            tp_wednesday, tp_thursday, tp_friday, "
+          "            tp_saturday, organization_id)"
+          "  VALUES (1, '24x7', '24x7', '00:00-24:00',"
+          "          '00:00-24:00', '00:00-24:00', '00:00-24:00',"
+          "          '00:00-24:00', '00:00-24:00', '00:00-24:00', 1)";
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not create timeperiods: "
-               << q.lastError().text());
+        throw(exceptions::msg()
+              << "could not create timeperiods: " << q.lastError().text());
     }
 
     // Create host/service entries.
     {
-
       for (int i(1); i <= HOST_COUNT; ++i) {
         {
           std::ostringstream oss;
@@ -309,31 +291,32 @@ int main() {
               << "  VALUES (" << i << ", '" << i << "', 1)";
           QSqlQuery q(*db.centreon_db());
           if (!q.exec(oss.str().c_str()))
-            throw (exceptions::msg() << "could not create host "
-                   << i << ": " << q.lastError().text());
+            throw(exceptions::msg() << "could not create host " << i << ": "
+                                    << q.lastError().text());
         }
         for (int j((i - 1) * SERVICES_BY_HOST + 1), limit(i * SERVICES_BY_HOST);
-             j <= limit;
-             ++j) {
+             j <= limit; ++j) {
           {
             std::ostringstream oss;
-            oss << "INSERT INTO cfg_services (service_id, service_description, organization_id)"
+            oss << "INSERT INTO cfg_services (service_id, service_description, "
+                   "organization_id)"
                 << "  VALUES (" << j << ", '" << j << "', 1)";
             QSqlQuery q(*db.centreon_db());
             if (!q.exec(oss.str().c_str()))
-              throw (exceptions::msg() << "could not create service ("
-                     << i << ", " << j << "): "
-                     << q.lastError().text());
+              throw(exceptions::msg()
+                    << "could not create service (" << i << ", " << j
+                    << "): " << q.lastError().text());
           }
           {
             std::ostringstream oss;
-            oss << "INSERT INTO cfg_hosts_services_relations (host_host_id, service_service_id)"
+            oss << "INSERT INTO cfg_hosts_services_relations (host_host_id, "
+                   "service_service_id)"
                 << "  VALUES (" << i << ", " << j << ")";
             QSqlQuery q(*db.centreon_db());
             if (!q.exec(oss.str().c_str()))
-              throw (exceptions::msg() << "could not link service "
-                     << j << " to host " << i << ": "
-                     << q.lastError().text());
+              throw(exceptions::msg()
+                    << "could not link service " << j << " to host " << i
+                    << ": " << q.lastError().text());
           }
         }
       }
@@ -343,57 +326,56 @@ int main() {
     {
       {
         QString query(
-                  "INSERT INTO cfg_bam_ba_types (ba_type_id, name,"
-                  "            slug, description)"
-                  "  VALUES (1, 'Default', 'default', 'Default type')");
+            "INSERT INTO cfg_bam_ba_types (ba_type_id, name,"
+            "            slug, description)"
+            "  VALUES (1, 'Default', 'default', 'Default type')");
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
-          throw (exceptions::msg() << "could not create BA types: "
-                 << q.lastError().text());
+          throw(exceptions::msg()
+                << "could not create BA types: " << q.lastError().text());
       }
       {
         QString query(
-                  "INSERT INTO cfg_bam (ba_id, name, level_w, level_c,"
-                  "            activate, id_reporting_period,"
-                  "            ba_type_id, organization_id)"
-                  "  VALUES (1, 'BA1', 90, 80, 1, 1, 1, 1)");
+            "INSERT INTO cfg_bam (ba_id, name, level_w, level_c,"
+            "            activate, id_reporting_period,"
+            "            ba_type_id, organization_id)"
+            "  VALUES (1, 'BA1', 90, 80, 1, 1, 1, 1)");
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
-          throw (exceptions::msg() << "could not create BAs: "
-                 << q.lastError().text());
+          throw(exceptions::msg()
+                << "could not create BAs: " << q.lastError().text());
       }
       {
         QString query;
-        query = "INSERT INTO cfg_bam_poller_relations (ba_id, poller_id)"
-                "  VALUES (1, 42)";
+        query =
+            "INSERT INTO cfg_bam_poller_relations (ba_id, poller_id)"
+            "  VALUES (1, 42)";
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
-          throw (exceptions::msg()
-                 << "could not create BAs / poller relations: "
-                 << q.lastError().text());
+          throw(exceptions::msg() << "could not create BAs / poller relations: "
+                                  << q.lastError().text());
       }
 
       // Create associated services.
       {
         QString query(
-                  "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
-                  "  VALUES (1001, 'virtual_ba_host', 1)");
+            "INSERT INTO cfg_hosts (host_id, host_name, organization_id)"
+            "  VALUES (1001, 'virtual_ba_host', 1)");
         QSqlQuery q(*db.centreon_db());
         if (!q.exec(query))
-          throw (exceptions::msg()
-                 << "could not create virtual BA host: "
-                 << q.lastError().text());
+          throw(exceptions::msg() << "could not create virtual BA host: "
+                                  << q.lastError().text());
       }
       for (int i(1); i <= BA_COUNT; ++i) {
         {
           std::ostringstream oss;
-          oss << "INSERT INTO cfg_services (service_id, service_description, organization_id)"
+          oss << "INSERT INTO cfg_services (service_id, service_description, "
+                 "organization_id)"
               << "  VALUES (" << 1000 + i << ", 'ba_" << i << "', 1)";
           QSqlQuery q(*db.centreon_db());
           if (!q.exec(oss.str().c_str()))
-            throw (exceptions::msg()
-                   << "could not create virtual service of BA "
-                   << i << ": " << q.lastError().text());
+            throw(exceptions::msg() << "could not create virtual service of BA "
+                                    << i << ": " << q.lastError().text());
         }
         {
           std::ostringstream oss;
@@ -402,10 +384,10 @@ int main() {
               << "  VALUES (1001, " << 1000 + i << ")";
           QSqlQuery q(*db.centreon_db());
           if (!q.exec(oss.str().c_str()))
-            throw (exceptions::msg()
-                   << "could not create link between virtual host "
-                   << "and virtual service of BA " << i << ": "
-                   << q.lastError().text());
+            throw(exceptions::msg()
+                  << "could not create link between virtual host "
+                  << "and virtual service of BA " << i << ": "
+                  << q.lastError().text());
         }
       }
     }
@@ -413,31 +395,32 @@ int main() {
     // Create boolean expressions.
     {
       QString query(
-                "INSERT INTO cfg_bam_boolean (boolean_id, name,"
-                "            expression, bool_state, activate)"
-                "  VALUES (1, 'BoolExp1', '{1 1} {is} {OK}', 0, 1)");
+          "INSERT INTO cfg_bam_boolean (boolean_id, name,"
+          "            expression, bool_state, activate)"
+          "  VALUES (1, 'BoolExp1', '{1 1} {is} {OK}', 0, 1)");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not create boolexps: "
-               << q.lastError().text());
+        throw(exceptions::msg()
+              << "could not create boolexps: " << q.lastError().text());
     }
 
     // Create KPIs.
     {
       QString query(
-                "INSERT INTO cfg_bam_kpi (kpi_id, kpi_type, host_id,"
-                "            service_id, id_indicator_ba, id_ba,"
-                "            meta_id, boolean_id, config_type,"
-                "            drop_warning, drop_warning_impact_id,"
-                "            drop_critical, drop_critical_impact_id,"
-                "            drop_unknown, drop_unknown_impact_id,"
-                "            ignore_downtime, ignore_acknowledged,"
-                "            state_type, activate)"
-                "  VALUES (1, '3', NULL, NULL, NULL, 1, NULL, 1, '0', 10, NULL, 75, NULL, 99, NULL, '0', '0', '1', '1')");
+          "INSERT INTO cfg_bam_kpi (kpi_id, kpi_type, host_id,"
+          "            service_id, id_indicator_ba, id_ba,"
+          "            meta_id, boolean_id, config_type,"
+          "            drop_warning, drop_warning_impact_id,"
+          "            drop_critical, drop_critical_impact_id,"
+          "            drop_unknown, drop_unknown_impact_id,"
+          "            ignore_downtime, ignore_acknowledged,"
+          "            state_type, activate)"
+          "  VALUES (1, '3', NULL, NULL, NULL, 1, NULL, 1, '0', 10, NULL, 75, "
+          "NULL, 99, NULL, '0', '0', '1', '1')");
       QSqlQuery q(*db.centreon_db());
       if (!q.exec(query))
-        throw (exceptions::msg() << "could not create KPIs: "
-               << q.lastError().text());
+        throw(exceptions::msg()
+              << "could not create KPIs: " << q.lastError().text());
     }
 
     // Start monitoring engine and broker.
@@ -456,14 +439,12 @@ int main() {
     time_t t1(time(NULL));
     std::cout << "T1: " << t1 << "\n";
     {
-      ba_state const bas[] = {
-        { 100.0, 0.0, 0.0 }
-      };
+      ba_state const bas[] = {{100.0, 0.0, 0.0}};
       check_bas(*db.centreon_db(), bas, sizeof(bas) / sizeof(*bas));
     }
     {
       kpi_state const kpis[] = {
-        { 1, 0, 0.0, 0.0, 0.0 },
+          {1, 0, 0.0, 0.0, 0.0},
       };
       check_kpis(*db.centreon_db(), kpis, sizeof(kpis) / sizeof(*kpis));
     }
@@ -478,14 +459,12 @@ int main() {
     time_t t2(time(NULL));
     std::cout << "T2: " << t2 << "\n";
     {
-      ba_state const bas[] = {
-        { 25.0, 0.0, 0.0 }
-      };
+      ba_state const bas[] = {{25.0, 0.0, 0.0}};
       check_bas(*db.centreon_db(), bas, sizeof(bas) / sizeof(*bas));
     }
     {
       kpi_state const kpis[] = {
-        { 1, 2, 75.0, 0.0, 0.0 },
+          {1, 2, 75.0, 0.0, 0.0},
       };
       check_kpis(*db.centreon_db(), kpis, sizeof(kpis) / sizeof(*kpis));
     }
@@ -501,15 +480,13 @@ int main() {
     // Check that the kpi didn't change.
     std::cout << "T3: " << t3 << "\n";
     {
-      ba_state const bas[] = {
-        // Impacted by services.
-        { 25.0, 0.0, 0.0 }
-      };
+      ba_state const bas[] = {// Impacted by services.
+                              {25.0, 0.0, 0.0}};
       check_bas(*db.centreon_db(), bas, sizeof(bas) / sizeof(*bas));
     }
     {
       kpi_state const kpis[] = {
-        { 1, 2, 75.0, 0.0, 0.0 },
+          {1, 2, 75.0, 0.0, 0.0},
       };
       check_kpis(*db.centreon_db(), kpis, sizeof(kpis) / sizeof(*kpis));
     }
@@ -524,26 +501,22 @@ int main() {
     time_t t4(time(NULL));
     std::cout << "T4: " << t4 << "\n";
     {
-      ba_state const bas[] = {
-        { 100.0, 0.0, 0.0 }
-      };
+      ba_state const bas[] = {{100.0, 0.0, 0.0}};
       check_bas(*db.centreon_db(), bas, sizeof(bas) / sizeof(*bas));
     }
     {
       kpi_state const kpis[] = {
-        { 1, 0, 0.0, 0.0, 0.0 },
+          {1, 0, 0.0, 0.0, 0.0},
       };
       check_kpis(*db.centreon_db(), kpis, sizeof(kpis) / sizeof(*kpis));
     }
 
     // Success.
     error = false;
-  }
-  catch (std::exception const& e) {
+  } catch (std::exception const& e) {
     std::cerr << e.what() << std::endl;
     db.set_remove_db_on_close(false);
-  }
-  catch (...) {
+  } catch (...) {
     std::cerr << "unknown exception" << std::endl;
     db.set_remove_db_on_close(false);
   }

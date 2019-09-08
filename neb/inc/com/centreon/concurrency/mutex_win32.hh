@@ -17,41 +17,41 @@
 */
 
 #ifndef CC_CONCURRENCY_MUTEX_WIN32_HH
-#  define CC_CONCURRENCY_MUTEX_WIN32_HH
+#define CC_CONCURRENCY_MUTEX_WIN32_HH
 
-#  include <windows.h>
-#  include "com/centreon/namespace.hh"
+#include <windows.h>
+#include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-namespace            concurrency {
-  /**
-   *  @class mutex mutex_win32.hh "com/centreon/concurrency/mutex.hh"
-   *  @brief Implements a mutex.
-   *
-   *  Win32-base implementation of a mutex (intra-process
-   *  synchronisation). On Windows the mutex class is a critical
-   *  section and should not be confused with a Win32 mutex which is
-   *  used for inter-process synchronisation.
-   */
-  class              mutex {
-    friend class     condvar;
+namespace concurrency {
+/**
+ *  @class mutex mutex_win32.hh "com/centreon/concurrency/mutex.hh"
+ *  @brief Implements a mutex.
+ *
+ *  Win32-base implementation of a mutex (intra-process
+ *  synchronisation). On Windows the mutex class is a critical
+ *  section and should not be confused with a Win32 mutex which is
+ *  used for inter-process synchronisation.
+ */
+class mutex {
+  friend class condvar;
 
-  public:
-                     mutex();
-                     ~mutex() throw ();
-    void             lock();
-    bool             trylock();
-    void             unlock();
+ public:
+  mutex();
+  ~mutex() throw();
+  void lock();
+  bool trylock();
+  void unlock();
 
-  private:
-                     mutex(mutex const& right);
-    mutex&           operator=(mutex const& right);
+ private:
+  mutex(mutex const& right);
+  mutex& operator=(mutex const& right);
 
-    CRITICAL_SECTION _csection;
-  };
-}
+  CRITICAL_SECTION _csection;
+};
+}  // namespace concurrency
 
 CC_END()
 
-#endif // !CC_CONCURRENCY_MUTEX_WIN32_HH
+#endif  // !CC_CONCURRENCY_MUTEX_WIN32_HH

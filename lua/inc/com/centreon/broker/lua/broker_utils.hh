@@ -17,31 +17,32 @@
 */
 
 #ifndef CCB_LUA_BROKER_UTILS_HH
-#  define CCB_LUA_BROKER_UTILS_HH
+#define CCB_LUA_BROKER_UTILS_HH
 
 #include "com/centreon/broker/namespace.hh"
 
 extern "C" {
-#  include "lua.h"
-#  include "lauxlib.h"
-#  include "lualib.h"
+#include "lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
 }
 
 CCB_BEGIN()
 
-namespace               lua {
-  /**
-   *  @class broker_utils broker_utils.hh "com/centreon/broker/lua/broker_utils.hh"
-   *  @brief Class providing several functions to the lua interpreter
-   *
-   *  This class provides a binding to Lua to several useful functions.
-   */
-  class                 broker_utils {
-   public:
-    static void         broker_utils_reg(lua_State* L);
-  };
-}
+namespace lua {
+/**
+ *  @class broker_utils broker_utils.hh
+ * "com/centreon/broker/lua/broker_utils.hh"
+ *  @brief Class providing several functions to the lua interpreter
+ *
+ *  This class provides a binding to Lua to several useful functions.
+ */
+class broker_utils {
+ public:
+  static void broker_utils_reg(lua_State* L);
+};
+}  // namespace lua
 
 CCB_END()
 
-#endif // !CCB_LUA_BROKER_UTILS_HH
+#endif  // !CCB_LUA_BROKER_UTILS_HH

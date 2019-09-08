@@ -40,7 +40,7 @@ static std::list<std::string> array_to_list(char const* array[]) {
 TEST(BamExpParserGetPostfix, Valid1) {
   bam::exp_parser p("HOSTSTATUS(Host, Service) IS OK");
   char const* expected[] = {"Host", "Service", "HOSTSTATUS", "2",
-                            "OK",   "IS",      NULL};
+                            "OK",   "IS",      nullptr};
   ASSERT_EQ(p.get_postfix(), array_to_list(expected));
 }
 
@@ -56,7 +56,7 @@ TEST(BamExpParserGetPostfix, Valid2) {
       "Service", "METRIC",  "3", "AVERAGE",      "2",
       "limit",   "METRICS", "1", "limit_offset", "METRICS",
       "1",       "SUM",     "2", "42",           "+",
-      ">=",      NULL};
+      ">=",      nullptr};
   ASSERT_EQ(p.get_postfix(), array_to_list(expected));
 }
 
@@ -69,7 +69,7 @@ TEST(BamExpParserGetPostfix, Valid3) {
   char const* expected[] = {
       "Host1", "Service1", "SERVICESTATUS", "2", "OK", "IS",
       "Host2", "Service2", "SERVICESTATUS", "2", "OK", "IS",
-      "AND",   NULL};
+      "AND",   nullptr};
   ASSERT_EQ(p.get_postfix(), array_to_list(expected));
 }
 
@@ -85,7 +85,7 @@ TEST(BamExpParserGetPostfix, Valid4) {
                             "42",      "36",         "+",
                             "MyHost2", "MyService2", "SERVICESTATUS",
                             "2",       "==",         "||",
-                            NULL};
+                            nullptr};
   ASSERT_EQ(p.get_postfix(), array_to_list(expected));
 }
 
@@ -119,7 +119,7 @@ TEST(BamExpParserGetPostfix, Valid5) {
                             "OK",
                             "NOT",
                             "OR",
-                            NULL};
+                            nullptr};
   ASSERT_EQ(p.get_postfix(), array_to_list(expected));
 }
 
@@ -133,7 +133,7 @@ TEST(BamExpParserGetPostfix, Valid6) {
   char const* expected[] = {
       "Host1", "Service1", "SERVICESTATUS", "2", "OK", "IS",
       "Host2", "Service2", "SERVICESTATUS", "2", "OK", "IS",
-      "XOR",   NULL};
+      "XOR",   nullptr};
   ASSERT_EQ(p.get_postfix(), array_to_list(expected));
 }
 
@@ -143,7 +143,7 @@ TEST(BamExpParserGetPostfix, Valid6) {
 TEST(BamExpParserGetPostfix, UnaryNot) {
   bam::exp_parser p("HOSTSTATUS(Host, Service) IS NOT OK");
   char const* expected[] = {"Host", "Service", "HOSTSTATUS", "2",
-                            "OK",   "!",       "IS",         NULL};
+                            "OK",   "!",       "IS",         nullptr};
   ASSERT_EQ(p.get_postfix(), array_to_list(expected));
 }
 
@@ -153,7 +153,7 @@ TEST(BamExpParserGetPostfix, UnaryNot) {
 TEST(BamExpParserGetPostfix, UnaryMinus) {
   bam::exp_parser p("HOSTSTATUS(Host, Service) IS - OK");
   char const* expected[] = {"Host", "Service", "HOSTSTATUS", "2",
-                            "OK",   "-u",      "IS",         NULL};
+                            "OK",   "-u",      "IS",         nullptr};
   ASSERT_EQ(p.get_postfix(), array_to_list(expected));
 }
 
@@ -167,7 +167,7 @@ TEST(BamExpParserGetPostfix, Copy) {
   bam::exp_parser p_assign("");
   p_assign = p_copy;
   char const* expected[] = {"Host", "Service", "HOSTSTATUS", "2",
-                            "OK",   "IS",      NULL};
+                            "OK",   "IS",      nullptr};
   ASSERT_EQ(p_copy.get_postfix(), array_to_list(expected));
   ASSERT_EQ(p_assign.get_postfix(), array_to_list(expected));
 }

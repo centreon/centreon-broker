@@ -17,31 +17,32 @@
 */
 
 #ifndef CCB_NOTIFICATION_LOADERS_NOTIFICATION_METHOD_LOADER_HH
-#  define CCB_NOTIFICATION_LOADERS_NOTIFICATION_METHOD_LOADER_HH
+#define CCB_NOTIFICATION_LOADERS_NOTIFICATION_METHOD_LOADER_HH
 
-#  include <string>
-#  include "com/centreon/broker/mysql.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/notification/builders/notification_method_builder.hh"
+#include <string>
+#include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/notification/builders/notification_method_builder.hh"
 
 CCB_BEGIN()
 
-namespace       notification {
-  /**
-   *  @class notification_method_loader notification_method_loader.hh "com/centreon/broker/notification/loaders/notification_method_loader.hh"
-   *  @brief Loader for notification method objects.
-   *
-   *  This loader loads the notifcation methods from the database.
-   */
-  class         notification_method_loader {
-  public:
-                notification_method_loader();
+namespace notification {
+/**
+ *  @class notification_method_loader notification_method_loader.hh
+ * "com/centreon/broker/notification/loaders/notification_method_loader.hh"
+ *  @brief Loader for notification method objects.
+ *
+ *  This loader loads the notifcation methods from the database.
+ */
+class notification_method_loader {
+ public:
+  notification_method_loader();
 
-    void        load(mysql* db, notification_method_builder* output);
-  };
+  void load(mysql* db, notification_method_builder* output);
+};
 
-}
+}  // namespace notification
 
 CCB_END()
 
-#endif // !CCB_NOTIFICATION_LOADERS_NOTIFICATION_METHOD_LOADER_HH
+#endif  // !CCB_NOTIFICATION_LOADERS_NOTIFICATION_METHOD_LOADER_HH

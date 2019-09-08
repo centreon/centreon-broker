@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/total_services.hh"
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/total_services.hh"
 #include "com/centreon/engine/globals.hh"
 
 using namespace com::centreon::broker;
@@ -36,8 +36,7 @@ total_services::total_services() : plugin("total_services") {}
  *
  *  @param[in] right Object to copy.
  */
-total_services::total_services(total_services const& right)
-  : plugin(right) {}
+total_services::total_services(total_services const& right) : plugin(right) {}
 
 /**
  *  Destructor.
@@ -62,9 +61,7 @@ total_services& total_services::operator=(total_services const& right) {
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void total_services::run(
-              std::string& output,
-	      std::string& perfdata) {
+void total_services::run(std::string& output, std::string& perfdata) {
   // Count services.
   size_t total{com::centreon::engine::service::services.size()};
 

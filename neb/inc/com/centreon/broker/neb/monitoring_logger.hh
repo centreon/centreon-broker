@@ -17,37 +17,37 @@
 */
 
 #ifndef CCB_NEB_MONITORING_LOGGER_HH
-#  define CCB_NEB_MONITORING_LOGGER_HH
+#define CCB_NEB_MONITORING_LOGGER_HH
 
-#  include "com/centreon/broker/logging/backend.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/logging/backend.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace              neb {
-  /**
-   *  @class monitoring_logger monitoring_logger.hh "com/centreon/broker/neb/monitoring_logger.hh"
-   *  @brief Log messages to the monitoring engine's log file.
-   *
-   *  Log messages to the monitoring engine's log file.
-   */
-  class                monitoring_logger : public logging::backend {
-  public:
-                       monitoring_logger();
-                       monitoring_logger(monitoring_logger const& ml);
-                       ~monitoring_logger();
-    monitoring_logger& operator=(monitoring_logger const& ml);
-    void               log_msg(
-                         char const* msg,
-                         unsigned int len,
-                         logging::type log_type,
-                         logging::level l) throw ();
+namespace neb {
+/**
+ *  @class monitoring_logger monitoring_logger.hh
+ * "com/centreon/broker/neb/monitoring_logger.hh"
+ *  @brief Log messages to the monitoring engine's log file.
+ *
+ *  Log messages to the monitoring engine's log file.
+ */
+class monitoring_logger : public logging::backend {
+ public:
+  monitoring_logger();
+  monitoring_logger(monitoring_logger const& ml);
+  ~monitoring_logger();
+  monitoring_logger& operator=(monitoring_logger const& ml);
+  void log_msg(char const* msg,
+               unsigned int len,
+               logging::type log_type,
+               logging::level l) throw();
 
-  private:
-    void               _internal_copy(monitoring_logger const& ml);
-  };
-}
+ private:
+  void _internal_copy(monitoring_logger const& ml);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_MONITORING_LOGGER_HH
+#endif  // !CCB_NEB_MONITORING_LOGGER_HH

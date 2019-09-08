@@ -17,25 +17,20 @@
  *
  */
 
+#include "com/centreon/broker/neb/instance.hh"
 #include <gtest/gtest.h>
 #include <cstdlib>
 #include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "randomize.hh"
 
 using namespace com::centreon::broker;
 
 class Instance : public ::testing::Test {
-  void SetUp() {
-    randomize_init();
-  };
+  void SetUp() override { randomize_init(); };
 
-  void TearDown() {
-    randomize_cleanup();
-  };
+  void TearDown() override { randomize_cleanup(); };
 };
-
 
 /**
  *  Check instance's assignment operator.
@@ -54,7 +49,7 @@ TEST_F(Instance, Assign) {
   i2 = i1;
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(i1, &randvals2);
 
   // Compare objects with expected results.
@@ -75,14 +70,13 @@ TEST_F(Instance, CopyCtor) {
   neb::instance i2(i1);
 
   // Reset object #1.
-  std::vector <randval> randvals2;
+  std::vector<randval> randvals2;
   randomize(i1, &randvals2);
 
   // Compare objects with expected results.
   ASSERT_FALSE(i1 != randvals2);
   ASSERT_FALSE(i2 != randvals1);
 }
-
 
 /**
  *  Check instance's default constructor.
@@ -91,7 +85,7 @@ TEST_F(Instance, DefaultCtor) {
   // Object.
   neb::instance i;
 
-  auto val(io::events::data_type<io::events::neb,neb::de_instance>::value);
+  auto val(io::events::data_type<io::events::neb, neb::de_instance>::value);
 
   // Check.
   ASSERT_FALSE(i.source_id != 0);

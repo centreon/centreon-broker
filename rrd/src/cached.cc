@@ -16,14 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/rrd/cached.hh"
+#include <unistd.h>
 #include <asio.hpp>
 #include <cerrno>
 #include <cstdlib>
 #include <sstream>
-#include <unistd.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/rrd/cached.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
 #include "com/centreon/broker/rrd/exceptions/update.hh"
 #include "com/centreon/broker/rrd/lib.hh"
@@ -33,10 +33,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::rrd;
 
 /**************************************
-*                                     *
-*            Public Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *            Public Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
@@ -45,8 +45,7 @@ using namespace com::centreon::broker::rrd;
  *  @param[in] cache_size The maximum number of cache element.
  */
 cached::cached(std::string const& tmpl_path, unsigned int cache_size)
-  : _batch(false),
-    _lib(tmpl_path, cache_size) {}
+    : _batch(false), _lib(tmpl_path, cache_size) {}
 
 /**
  *  Destructor.
@@ -61,13 +60,12 @@ void cached::begin() {
   _batch = true;
   std::string buffer{"BATCH\n"};
   if (_type == cached::tcp)
-    _send_to_cached<std::shared_ptr<ip::tcp::socket> &>(buffer,
-      _tcp_socket);
+    _send_to_cached<std::shared_ptr<ip::tcp::socket>&>(buffer, _tcp_socket);
   else
-    _send_to_cached<std::shared_ptr<local::stream_protocol::socket> &>(buffer,
-      _local_socket);
+    _send_to_cached<std::shared_ptr<local::stream_protocol::socket>&>(
+        buffer, _local_socket);
 
-  return ;
+  return;
 }
 
 /**
@@ -94,11 +92,10 @@ void cached::commit() {
     _batch = false;
     std::string buffer{".\n"};
     if (_type == cached::tcp)
-      _send_to_cached<std::shared_ptr<ip::tcp::socket> &>(buffer,
-        _tcp_socket);
+      _send_to_cached<std::shared_ptr<ip::tcp::socket>&>(buffer, _tcp_socket);
     else
-      _send_to_cached<std::shared_ptr<local::stream_protocol::socket> &>(buffer,
-        _local_socket);
+      _send_to_cached<std::shared_ptr<local::stream_protocol::socket>&>(
+          buffer, _local_socket);
   }
 }
 
@@ -112,20 +109,20 @@ void cached::connect_local(std::string const& name) {
 
   local::stream_protocol::endpoint ep("/tmp/foobar");
   local::stream_protocol::socket* ls(
-    new local::stream_protocol::socket{_io_context});
+      new local::stream_protocol::socket{_io_context});
   _local_socket.reset(ls);
 
-   try {
+  try {
     _local_socket->connect(ep);
   } catch (std::system_error const& se) {
-     broker::exceptions::msg e;
-     e << "RRD: could not connect to local socket '" << name
-       << ": " << se.what();
-     _local_socket.reset();
-     throw (e);
+    broker::exceptions::msg e;
+    e << "RRD: could not connect to local socket '" << name << ": "
+      << se.what();
+    _local_socket.reset();
+    throw(e);
   }
 
-  return ;
+  return;
 }
 
 /**
@@ -134,18 +131,13 @@ void cached::connect_local(std::string const& name) {
  *  @param[in] address Server address.
  *  @param[in] port    Port to connect to.
  */
-void cached::connect_remote(
-               std::string const& address,
-               unsigned short port) {
+void cached::connect_remote(std::string const& address, unsigned short port) {
   // Create socket object.
   asio::ip::tcp::socket* ts{new asio::ip::tcp::socket{_io_context}};
   _tcp_socket.reset(ts);
 
   asio::ip::tcp::resolver resolver{_io_context};
-  asio::ip::tcp::resolver::query query{
-    address,
-    std::to_string(port)
-  };
+  asio::ip::tcp::resolver::query query{address, std::to_string(port)};
 
   try {
     asio::ip::tcp::resolver::iterator it{resolver.resolve(query)};
@@ -153,8 +145,8 @@ void cached::connect_remote(
 
     std::error_code err{std::make_error_code(std::errc::host_unreachable)};
 
-    //it can resolve to multiple addresses like ipv4 and ipv6
-    //we need to try all to find the first available socket
+    // it can resolve to multiple addresses like ipv4 and ipv6
+    // we need to try all to find the first available socket
     while (err && it != end) {
       _tcp_socket->connect(*it, err);
       ++it;
@@ -162,23 +154,22 @@ void cached::connect_remote(
 
     if (err) {
       broker::exceptions::msg e;
-      e << "RRD: could not connect to remote server '" << address
-        << ":" << port << "': " << err.message();
+      e << "RRD: could not connect to remote server '" << address << ":" << port
+        << "': " << err.message();
       _tcp_socket.reset();
       throw e;
     }
 
     asio::socket_base::keep_alive option{true};
     _tcp_socket->set_option(option);
-  }
-  catch (std::system_error const& se) {
+  } catch (std::system_error const& se) {
     broker::exceptions::msg e;
-    e << "RRD: could not resolve remote server '" << address
-      << ":" << port << "': " << se.what();
+    e << "RRD: could not resolve remote server '" << address << ":" << port
+      << "': " << se.what();
     _tcp_socket.reset();
-    throw (e);
+    throw(e);
   }
-  return ;
+  return;
 }
 
 /**
@@ -192,8 +183,8 @@ void cached::open(std::string const& filename) {
 
   // Check that the file exists.
   if (access(filename.c_str(), F_OK))
-    throw (exceptions::open() << "RRD: file '" << filename
-             << "' does not exist");
+    throw(exceptions::open()
+          << "RRD: file '" << filename << "' does not exist");
 
   // Remember information for further operations.
   _filename = filename;
@@ -209,12 +200,11 @@ void cached::open(std::string const& filename) {
  *  @param[in] step       Time interval between each record.
  *  @param[in] value_type Type of the metric.
  */
-void cached::open(
-               std::string const& filename,
-               unsigned int length,
-               time_t from,
-               unsigned int step,
-               short value_type) {
+void cached::open(std::string const& filename,
+                  unsigned int length,
+                  time_t from,
+                  unsigned int step,
+                  short value_type) {
   // Close previous file.
   this->close();
 
@@ -239,20 +229,19 @@ void cached::remove(std::string const& filename) {
 
   try {
     if (_type == cached::tcp)
-      _send_to_cached<std::shared_ptr<ip::tcp::socket> &>(oss.str(),
-        _tcp_socket);
+      _send_to_cached<std::shared_ptr<ip::tcp::socket>&>(oss.str(),
+                                                         _tcp_socket);
     else
-      _send_to_cached<std::shared_ptr<local::stream_protocol::socket> &>(
-        oss.str(), _local_socket);
-  }
-  catch (broker::exceptions::msg const& e) {
+      _send_to_cached<std::shared_ptr<local::stream_protocol::socket>&>(
+          oss.str(), _local_socket);
+  } catch (broker::exceptions::msg const& e) {
     logging::error(logging::medium) << e.what();
   }
 
   if (::remove(filename.c_str())) {
     char const* msg(strerror(errno));
-    logging::error(logging::high) << "RRD: could not remove file '"
-      << filename << "': " << msg;
+    logging::error(logging::high)
+        << "RRD: could not remove file '" << filename << "': " << msg;
   }
 }
 
@@ -265,35 +254,32 @@ void cached::remove(std::string const& filename) {
 void cached::update(time_t t, std::string const& value) {
   // Build rrdcached command.
   std::ostringstream oss;
-  oss << "UPDATE " << _filename << " " << t
-      << ":" << value << "\n";
+  oss << "UPDATE " << _filename << " " << t << ":" << value << "\n";
 
   // Send command.
-  logging::debug(logging::high) << "RRD: updating file '"
-    << _filename << "' (" << oss.str() << ")";
+  logging::debug(logging::high)
+      << "RRD: updating file '" << _filename << "' (" << oss.str() << ")";
   try {
     if (_type == cached::tcp)
-      _send_to_cached<std::shared_ptr<ip::tcp::socket> &>(oss.str(),
-        _tcp_socket);
+      _send_to_cached<std::shared_ptr<ip::tcp::socket>&>(oss.str(),
+                                                         _tcp_socket);
     else
-      _send_to_cached<std::shared_ptr<local::stream_protocol::socket> &>(
-        oss.str(), _local_socket);
-  }
-  catch (broker::exceptions::msg const& e) {
+      _send_to_cached<std::shared_ptr<local::stream_protocol::socket>&>(
+          oss.str(), _local_socket);
+  } catch (broker::exceptions::msg const& e) {
     if (!strstr(e.what(), "illegal attempt to update using time"))
-      throw (exceptions::update() << e.what());
+      throw(exceptions::update() << e.what());
     else
-      logging::error(logging::low)
-        << "RRD: ignored update error in file '"
-        << _filename << "': " << e.what() + 5;
+      logging::error(logging::low) << "RRD: ignored update error in file '"
+                                   << _filename << "': " << e.what() + 5;
   }
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Send data to rrdcached.
@@ -301,20 +287,22 @@ void cached::update(time_t t, std::string const& value) {
  *  @param[in] command Command to send.
  *  @param[in] size    Size of command. If 0, set to strlen(command).
  */
-template<typename T>
+template <typename T>
 void cached::_send_to_cached(std::string const& command, T const& socket) {
   std::error_code err;
 
   // Check socket.
   if (!socket.get())
-    throw (broker::exceptions::msg() << "RRD: attempt to communicate " \
+    throw(broker::exceptions::msg()
+          << "RRD: attempt to communicate "
              "with rrdcached without connecting first");
 
   asio::write(*socket, asio::buffer(command), asio::transfer_all(), err);
 
   if (err)
-      throw broker::exceptions::msg() << "RRD: error while sending " \
-               "command to rrdcached: " << err.message();
+    throw broker::exceptions::msg() << "RRD: error while sending "
+                                       "command to rrdcached: "
+                                    << err.message();
 
   // Read response.
   if (!_batch) {
@@ -324,8 +312,9 @@ void cached::_send_to_cached(std::string const& command, T const& socket) {
     asio::read_until(*socket, stream, '\n', err);
 
     if (err)
-      throw (broker::exceptions::msg() << "RRD: error while getting "
-               "response from rrdcached: " << err.message());
+      throw(broker::exceptions::msg() << "RRD: error while getting "
+                                         "response from rrdcached: "
+                                      << err.message());
 
     std::istream is(&stream);
     std::getline(is, line);
@@ -333,16 +322,15 @@ void cached::_send_to_cached(std::string const& command, T const& socket) {
     int lines = std::stoi(line);
 
     if (lines < 0)
-      throw (broker::exceptions::msg()
-             << "RRD: rrdcached query failed on file '"
-             << _filename << "' (" << command << "): "
-             << line);
+      throw(broker::exceptions::msg()
+            << "RRD: rrdcached query failed on file '" << _filename << "' ("
+            << command << "): " << line);
     while (lines > 0) {
       asio::read_until(*socket, stream, '\n', err);
       if (err)
-        throw (broker::exceptions::msg() << "RRD: error while getting "
-          << "response from rrdcached for file '" << _filename
-          << "': " << err.message());
+        throw(broker::exceptions::msg() << "RRD: error while getting "
+                                        << "response from rrdcached for file '"
+                                        << _filename << "': " << err.message());
 
       std::istream is(&stream);
       std::getline(is, line);

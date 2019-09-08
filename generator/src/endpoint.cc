@@ -29,7 +29,7 @@ using namespace com::centreon::broker::generator;
  *  @param[in] type  Kind of stream to create in open().
  */
 endpoint::endpoint(endpoint::endpoint_type type)
-  : io::endpoint(false), _type(type) {}
+    : io::endpoint(false), _type(type) {}
 
 /**
  *  Destructor.

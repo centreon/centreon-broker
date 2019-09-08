@@ -17,51 +17,50 @@
 */
 
 #ifndef CCB_BAM_BA_DURATION_EVENT_HH
-#  define CCB_BAM_BA_DURATION_EVENT_HH
+#define CCB_BAM_BA_DURATION_EVENT_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/timestamp.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
 
-namespace        bam {
-  /**
-   *  @class ba_duration_event ba_duration_event.hh "com/centreon/broker/bam/ba_duration_event.hh"
-   *  @brief Ba duration event
-   *
-   */
-  class                 ba_duration_event : public io::data {
-  public:
-                        ba_duration_event();
-                        ba_duration_event(ba_duration_event const& other);
-                        ~ba_duration_event();
-    ba_duration_event&  operator=(ba_duration_event const& other);
-    bool                operator==(ba_duration_event const& other) const;
-    unsigned int        type() const;
-    static unsigned int static_type();
+namespace bam {
+/**
+ *  @class ba_duration_event ba_duration_event.hh
+ * "com/centreon/broker/bam/ba_duration_event.hh"
+ *  @brief Ba duration event
+ *
+ */
+class ba_duration_event : public io::data {
+ public:
+  ba_duration_event();
+  ba_duration_event(ba_duration_event const& other);
+  ~ba_duration_event();
+  ba_duration_event& operator=(ba_duration_event const& other);
+  bool operator==(ba_duration_event const& other) const;
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    unsigned int        ba_id;
-    timestamp           real_start_time;
-    timestamp           end_time;
-    timestamp           start_time;
-    unsigned int        duration;
-    unsigned int        sla_duration;
-    unsigned int        timeperiod_id;
-    bool                timeperiod_is_default;
+  unsigned int ba_id;
+  timestamp real_start_time;
+  timestamp end_time;
+  timestamp start_time;
+  unsigned int duration;
+  unsigned int sla_duration;
+  unsigned int timeperiod_id;
+  bool timeperiod_is_default;
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void                _internal_copy(ba_duration_event const& other);
-  };
-}
+ private:
+  void _internal_copy(ba_duration_event const& other);
+};
+}  // namespace bam
 
 CCB_END()
 
-#endif // !CCB_BAM_BA_DURATION_EVENT_HH
+#endif  // !CCB_BAM_BA_DURATION_EVENT_HH

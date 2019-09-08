@@ -24,10 +24,7 @@ using namespace com::centreon::broker::notification::objects;
  *  Default constructor.
  */
 notification_method::notification_method()
-  : _command_id(0),
-    _interval(0),
-    _start(0),
-    _end(0) {}
+    : _command_id(0), _interval(0), _start(0), _end(0) {}
 
 /**
  *  Copy constructor.
@@ -46,7 +43,7 @@ notification_method::notification_method(notification_method const& obj) {
  *  @return         A reference to this object.
  */
 notification_method& notification_method::operator=(
-                                            notification_method const& obj) {
+    notification_method const& obj) {
   if (this != &obj) {
     _name = obj._name;
     _command_id = obj._command_id;
@@ -193,20 +190,18 @@ void notification_method::set_end(unsigned int val) throw() {
  *
  *  @return                 True if the notification is allowed.
  */
-bool notification_method::should_be_notified_for(
-                            node_state state,
-                            bool is_service) const {
+bool notification_method::should_be_notified_for(node_state state,
+                                                 bool is_service) const {
   if (state == node_state::ok)
     return (_status.find_first_of('o') != std::string::npos);
   if (is_service) {
     if (state == node_state::service_warning)
-        return (_status.find_first_of('w') != std::string::npos);
-      else if (state == node_state::service_critical)
-        return (_status.find_first_of('c') != std::string::npos);
-      else if (state == node_state::service_unknown)
-        return (_status.find_first_of('u') != std::string::npos);
-  }
-  else {
+      return (_status.find_first_of('w') != std::string::npos);
+    else if (state == node_state::service_critical)
+      return (_status.find_first_of('c') != std::string::npos);
+    else if (state == node_state::service_unknown)
+      return (_status.find_first_of('u') != std::string::npos);
+  } else {
     if (state == node_state::host_down)
       return (_status.find_first_of('d') != std::string::npos);
     else if (state == node_state::host_unreachable)
@@ -222,7 +217,8 @@ bool notification_method::should_be_notified_for(
  *
  *  @return          True if the notification is allowed.
  */
-bool notification_method::should_be_notified_for(action::action_type type) const {
+bool notification_method::should_be_notified_for(
+    action::action_type type) const {
   if (type == action::notification_attempt)
     return (_types.find_first_of('n') != std::string::npos);
   else if (type == action::notification_up)

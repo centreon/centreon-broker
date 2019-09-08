@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/command_buffers.hh"
 #include <pthread.h>
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/command_buffers.hh"
 #include "com/centreon/engine/globals.hh"
 
 using namespace com::centreon::broker;
@@ -30,8 +30,7 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-command_buffers::command_buffers()
-  : plugin("command_buffers") {}
+command_buffers::command_buffers() : plugin("command_buffers") {}
 
 /**
  *  Copy constructor.
@@ -39,7 +38,7 @@ command_buffers::command_buffers()
  *  @param[in] right Object to copy.
  */
 command_buffers::command_buffers(command_buffers const& right)
- : plugin(right) {}
+    : plugin(right) {}
 
 /**
  *  Destructor.
@@ -90,5 +89,5 @@ void command_buffers::run(std::string& output __attribute__((unused)),
   // oss << "used=" << used << " high=" << high << " total=" << total;
   // perfdata = oss.str();
 
-  return ;
+  return;
 }

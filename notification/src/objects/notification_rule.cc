@@ -24,10 +24,7 @@ using namespace com::centreon::broker::notification::objects;
  *  Default constructor.
  */
 notification_rule::notification_rule()
-  : _id(0),
-    _method_id(0),
-    _timeperiod_id(0),
-    _contact_id(0) {}
+    : _id(0), _method_id(0), _timeperiod_id(0), _contact_id(0) {}
 
 /**
  *  Copy constructor.
@@ -144,4 +141,3 @@ node_id notification_rule::get_node_id() const throw() {
 void notification_rule::set_node_id(node_id val) throw() {
   _node_id = val;
 }
-

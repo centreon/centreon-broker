@@ -27,8 +27,7 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 dimension_ba_bv_relation_event::dimension_ba_bv_relation_event()
-  : ba_id(0),
-    bv_id(0) {}
+    : ba_id(0), bv_id(0) {}
 
 /**
  *  Copy constructor.
@@ -37,7 +36,7 @@ dimension_ba_bv_relation_event::dimension_ba_bv_relation_event()
  */
 dimension_ba_bv_relation_event::dimension_ba_bv_relation_event(
     dimension_ba_bv_relation_event const& other)
-  : io::data(other) {
+    : io::data(other) {
   _internal_copy(other);
 }
 
@@ -71,8 +70,7 @@ dimension_ba_bv_relation_event& dimension_ba_bv_relation_event::operator=(
  */
 bool dimension_ba_bv_relation_event::operator==(
     dimension_ba_bv_relation_event const& other) const {
-  return ((ba_id == other.ba_id)
-          && (bv_id == other.bv_id));
+  return ((ba_id == other.ba_id) && (bv_id == other.bv_id));
 }
 
 /**
@@ -103,33 +101,29 @@ void dimension_ba_bv_relation_event::_internal_copy(
     dimension_ba_bv_relation_event const& other) {
   ba_id = other.ba_id;
   bv_id = other.bv_id;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const dimension_ba_bv_relation_event::entries[] = {
-  mapping::entry(
-    &bam::dimension_ba_bv_relation_event::ba_id,
-    "ba_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &bam::dimension_ba_bv_relation_event::bv_id,
-    "bv_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry()
-};
+    mapping::entry(&bam::dimension_ba_bv_relation_event::ba_id,
+                   "ba_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&bam::dimension_ba_bv_relation_event::bv_id,
+                   "bv_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_dimension_ba_bv_relation_event() {
   return (new dimension_ba_bv_relation_event);
 }
 io::event_info::event_operations const
-  dimension_ba_bv_relation_event::operations = {
-  &new_dimension_ba_bv_relation_event
-};
+    dimension_ba_bv_relation_event::operations = {
+        &new_dimension_ba_bv_relation_event};

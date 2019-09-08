@@ -17,31 +17,32 @@
 */
 
 #ifndef CCB_NEB_STATISTICS_SERVICES_FLAPPING_HH
-#  define CCB_NEB_STATISTICS_SERVICES_FLAPPING_HH
+#define CCB_NEB_STATISTICS_SERVICES_FLAPPING_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/statistics/plugin.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/statistics/plugin.hh"
 
 CCB_BEGIN()
 
-namespace                neb {
-  namespace              statistics {
-    /**
-     *  @class services_flapping services_flapping.hh "com/centreon/broker/neb/statistics/services_flapping.hh"
-     *  @brief services_flapping statistics plugin.
-     */
-    class                services_flapping : public plugin {
-    public:
-                         services_flapping();
-                         services_flapping(services_flapping const& right);
-                         ~services_flapping();
-      services_flapping& operator=(services_flapping const& right);
-      void               run(std::string& output, std::string& perfdata);
-    };
-  }
-}
+namespace neb {
+namespace statistics {
+/**
+ *  @class services_flapping services_flapping.hh
+ * "com/centreon/broker/neb/statistics/services_flapping.hh"
+ *  @brief services_flapping statistics plugin.
+ */
+class services_flapping : public plugin {
+ public:
+  services_flapping();
+  services_flapping(services_flapping const& right);
+  ~services_flapping();
+  services_flapping& operator=(services_flapping const& right);
+  void run(std::string& output, std::string& perfdata);
+};
+}  // namespace statistics
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_SERVICES_FLAPPING_HH
+#endif  // !CCB_NEB_STATISTICS_SERVICES_FLAPPING_HH

@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/passive_hosts_last.hh"
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/passive_hosts_last.hh"
 #include "com/centreon/engine/globals.hh"
 
 using namespace com::centreon::broker;
@@ -30,8 +30,7 @@ using namespace com::centreon::engine;
 /**
  *  Default constructor.
  */
-passive_hosts_last::passive_hosts_last()
-  : plugin("passive_hosts_last") {}
+passive_hosts_last::passive_hosts_last() : plugin("passive_hosts_last") {}
 
 /**
  *  Copy constructor.
@@ -39,7 +38,7 @@ passive_hosts_last::passive_hosts_last()
  *  @param[in] right Object to copy.
  */
 passive_hosts_last::passive_hosts_last(passive_hosts_last const& right)
- : plugin(right) {}
+    : plugin(right) {}
 
 /**
  *  Destructor.
@@ -53,7 +52,8 @@ passive_hosts_last::~passive_hosts_last() {}
  *
  *  @return This object.
  */
-passive_hosts_last& passive_hosts_last::operator=(passive_hosts_last const& right) {
+passive_hosts_last& passive_hosts_last::operator=(
+    passive_hosts_last const& right) {
   plugin::operator=(right);
   return (*this);
 }
@@ -64,19 +64,14 @@ passive_hosts_last& passive_hosts_last::operator=(passive_hosts_last const& righ
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void passive_hosts_last::run(
-              std::string& output,
-	      std::string& perfdata) {
+void passive_hosts_last::run(std::string& output, std::string& perfdata) {
   unsigned int last_checked_1{0};
   unsigned int last_checked_5{0};
   unsigned int last_checked_15{0};
   unsigned int last_checked_60{0};
-  time_t now{time(NULL)};
-  for (host_map::const_iterator
-         it{host::hosts.begin()},
-         end{host::hosts.end()};
-       it != end;
-       ++it) {
+  time_t now{time(nullptr)};
+  for (host_map::const_iterator it{host::hosts.begin()}, end{host::hosts.end()};
+       it != end; ++it) {
     if (it->second->get_check_type() == checkable::check_passive) {
       int diff(now - it->second->get_last_check());
       if (diff <= 60 * 60) {
@@ -95,8 +90,9 @@ void passive_hosts_last::run(
 
   // Output.
   std::ostringstream oss;
-  oss << "Engine " << config::applier::state::instance().poller_name() << " received "
-      << last_checked_5 << " passive checks during the last 5 minutes";
+  oss << "Engine " << config::applier::state::instance().poller_name()
+      << " received " << last_checked_5
+      << " passive checks during the last 5 minutes";
   output = oss.str();
 
   // Perfdata.
@@ -107,5 +103,5 @@ void passive_hosts_last::run(
       << " passive_hosts_last_60=" << last_checked_60;
   perfdata = oss.str();
 
-  return ;
+  return;
 }

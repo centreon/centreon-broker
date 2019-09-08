@@ -17,38 +17,38 @@
 */
 
 #ifndef CCB_CONFIG_PARSER_HH
-#  define CCB_CONFIG_PARSER_HH
+#define CCB_CONFIG_PARSER_HH
 
-#  include <json11.hpp>
-#  include <string>
-#  include "com/centreon/broker/config/state.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include <json11.hpp>
+#include <string>
+#include "com/centreon/broker/config/state.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace       config {
-  /**
-   *  @class parser parser.hh "com/centreon/broker/config/parser.hh"
-   *  @brief Parse configuration file.
-   *
-   *  Parse a configuration file and generate appropriate objects for further
-   *  handling.
-   */
-  class         parser {
-  public:
-                parser();
-                parser(parser const& other) = delete;
-                ~parser();
-    parser&     operator=(parser const& other) = delete;
-    state       parse(std::string const& file);
-    static bool parse_boolean(std::string const& value);
+namespace config {
+/**
+ *  @class parser parser.hh "com/centreon/broker/config/parser.hh"
+ *  @brief Parse configuration file.
+ *
+ *  Parse a configuration file and generate appropriate objects for further
+ *  handling.
+ */
+class parser {
+ public:
+  parser();
+  parser(parser const& other) = delete;
+  ~parser();
+  parser& operator=(parser const& other) = delete;
+  state parse(std::string const& file);
+  static bool parse_boolean(std::string const& value);
 
-  private:
-    void        _parse_endpoint(json11::Json const& elem, endpoint& e);
-    void        _parse_logger(json11::Json const& elem, logger& l);
-  };
-}
+ private:
+  void _parse_endpoint(json11::Json const& elem, endpoint& e);
+  void _parse_logger(json11::Json const& elem, logger& l);
+};
+}  // namespace config
 
 CCB_END()
 
-#endif // !CCB_CONFIG_PARSER_HH
+#endif  // !CCB_CONFIG_PARSER_HH

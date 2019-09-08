@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/bam/kpi_event.hh"
+#include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
@@ -27,10 +27,7 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 kpi_event::kpi_event()
-  : kpi_id(0),
-    impact_level(0),
-    in_downtime(false),
-    status(3) {}
+    : kpi_id(0), impact_level(0), in_downtime(false), status(3) {}
 
 /**
  *  Copy constructor.
@@ -69,14 +66,11 @@ kpi_event& kpi_event::operator=(kpi_event const& other) {
  *  @return  True if the two objects are equal.
  */
 bool kpi_event::operator==(kpi_event const& other) const {
-  return ((end_time == other.end_time)
-          && (kpi_id == other.kpi_id)
-          && (impact_level == other.impact_level)
-          && (in_downtime == other.in_downtime)
-          && (output == other.output)
-          && (perfdata == other.perfdata)
-          && (start_time == other.start_time)
-          && (status == other.status));
+  return ((end_time == other.end_time) && (kpi_id == other.kpi_id) &&
+          (impact_level == other.impact_level) &&
+          (in_downtime == other.in_downtime) && (output == other.output) &&
+          (perfdata == other.perfdata) && (start_time == other.start_time) &&
+          (status == other.status));
 }
 
 /**
@@ -111,49 +105,31 @@ void kpi_event::_internal_copy(kpi_event const& other) {
   perfdata = other.perfdata;
   start_time = other.start_time;
   status = other.status;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const kpi_event::entries[] = {
-  mapping::entry(
-    &bam::kpi_event::kpi_id,
-    "kpi_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &bam::kpi_event::end_time,
-    "end_time"),
-  mapping::entry(
-    &bam::kpi_event::impact_level,
-    "impact_level"),
-  mapping::entry(
-    &bam::kpi_event::in_downtime,
-    "in_downtime"),
-  mapping::entry(
-    &bam::kpi_event::output,
-    "first_output"),
-  mapping::entry(
-    &bam::kpi_event::perfdata,
-    "first_perfdata"),
-  mapping::entry(
-    &bam::kpi_event::start_time,
-    "start_time"),
-  mapping::entry(
-    &bam::kpi_event::status,
-    "status"),
-  mapping::entry()
-};
+    mapping::entry(&bam::kpi_event::kpi_id,
+                   "kpi_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&bam::kpi_event::end_time, "end_time"),
+    mapping::entry(&bam::kpi_event::impact_level, "impact_level"),
+    mapping::entry(&bam::kpi_event::in_downtime, "in_downtime"),
+    mapping::entry(&bam::kpi_event::output, "first_output"),
+    mapping::entry(&bam::kpi_event::perfdata, "first_perfdata"),
+    mapping::entry(&bam::kpi_event::start_time, "start_time"),
+    mapping::entry(&bam::kpi_event::status, "status"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_kpi_event() {
   return (new kpi_event);
 }
-io::event_info::event_operations const kpi_event::operations = {
-  &new_kpi_event
-};
+io::event_info::event_operations const kpi_event::operations = {&new_kpi_event};

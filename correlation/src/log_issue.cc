@@ -16,25 +16,23 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/correlation/log_issue.hh"
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Constructor.
  */
-log_issue::log_issue()
-  : host_id(0),
-    service_id(0) {}
+log_issue::log_issue() : host_id(0), service_id(0) {}
 
 /**
  *  Copy constructor.
@@ -71,11 +69,10 @@ log_issue& log_issue::operator=(log_issue const& i) {
  *  @return true if both issues are equal.
  */
 bool log_issue::operator==(log_issue const& i) const {
-  return ((this == &i)
-          || ((log_ctime == i.log_ctime)
-              && (host_id == i.host_id)
-              && (service_id == i.service_id)
-              && (issue_start_time == i.issue_start_time)));
+  return ((this == &i) ||
+          ((log_ctime == i.log_ctime) && (host_id == i.host_id) &&
+           (service_id == i.service_id) &&
+           (issue_start_time == i.issue_start_time)));
 }
 
 /**
@@ -104,14 +101,15 @@ unsigned int log_issue::type() const {
  *  @return  The event type.
  */
 unsigned int log_issue::static_type() {
-  return (io::events::data_type<io::events::correlation, correlation::de_log_issue>::value);
+  return (io::events::data_type<io::events::correlation,
+                                correlation::de_log_issue>::value);
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  @brief Copy internal members.
@@ -126,40 +124,33 @@ void log_issue::_internal_copy(log_issue const& i) {
   host_id = i.host_id;
   service_id = i.service_id;
   issue_start_time = i.issue_start_time;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const log_issue::entries[] = {
-  mapping::entry(
-    &log_issue::log_ctime,
-    "log_ctime",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry(
-    &log_issue::host_id,
-    "host_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &log_issue::service_id,
-    "service_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &log_issue::issue_start_time,
-    "issue_start_time",
-    mapping::entry::invalid_on_minus_one),
-  mapping::entry()
-};
+    mapping::entry(&log_issue::log_ctime,
+                   "log_ctime",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry(&log_issue::host_id,
+                   "host_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&log_issue::service_id,
+                   "service_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&log_issue::issue_start_time,
+                   "issue_start_time",
+                   mapping::entry::invalid_on_minus_one),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_log_issue() {
   return (new log_issue);
 }
-io::event_info::event_operations const log_issue::operations = {
-  &new_log_issue
-};
+io::event_info::event_operations const log_issue::operations = {&new_log_issue};

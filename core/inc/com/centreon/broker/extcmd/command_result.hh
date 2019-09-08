@@ -17,47 +17,46 @@
 */
 
 #ifndef CCB_EXTCMD_COMMAND_RESULT_HH
-#  define CCB_EXTCMD_COMMAND_RESULT_HH
+#define CCB_EXTCMD_COMMAND_RESULT_HH
 
-#  include <string>
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
+#include <string>
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace                extcmd {
-  /**
-   *  @class command_result command_result.hh "com/centreon/broker/extcmd/command_result.hh"
-   *  @brief Represent an external command result.
-   *
-   *  This event is sent when an external command was executed, either
-   *  successfully or not.
-   */
-  class                  command_result : public io::data {
-  public:
-                         command_result();
-                         command_result(command_result const& other);
-                         ~command_result();
-    command_result&      operator=(command_result const& other);
-    unsigned int         type() const;
-    static unsigned int  static_type();
+namespace extcmd {
+/**
+ *  @class command_result command_result.hh
+ * "com/centreon/broker/extcmd/command_result.hh"
+ *  @brief Represent an external command result.
+ *
+ *  This event is sent when an external command was executed, either
+ *  successfully or not.
+ */
+class command_result : public io::data {
+ public:
+  command_result();
+  command_result(command_result const& other);
+  ~command_result();
+  command_result& operator=(command_result const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    int                  code;
-    std::string              uuid;
-    std::string              msg;
+  int code;
+  std::string uuid;
+  std::string msg;
 
-    static mapping::entry const
-                         entries[];
-    static io::event_info::event_operations const
-                         operations;
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
 
-  private:
-    void                 _internal_copy(command_result const& other);
-  };
-}
+ private:
+  void _internal_copy(command_result const& other);
+};
+}  // namespace extcmd
 
 CCB_END()
 
-#endif // !CCB_EXTCMD_COMMAND_RESULT_HH
+#endif  // !CCB_EXTCMD_COMMAND_RESULT_HH

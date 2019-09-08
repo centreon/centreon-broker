@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/notification/utilities/qhash_func.hh"
+#include <QByteArray>
 #include <QHash>
 #include <QString>
-#include <QByteArray>
-#include "com/centreon/broker/notification/utilities/qhash_func.hh"
 
 /**
  *  QHash function for std::string.

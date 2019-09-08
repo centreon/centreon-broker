@@ -16,11 +16,11 @@
 ** For more information : contact@centreon.com
 */
 
+#include "test/file.hh"
 #include <cstdio>
 #include <fstream>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/misc/misc.hh"
-#include "test/file.hh"
 #include "test/misc.hh"
 #include "test/vars.hh"
 
@@ -36,15 +36,13 @@ file::file() {
   _variables["CBMOD_PATH"] = CBMOD_PATH;
   _variables["MY_PLUGIN_PATH"] = MY_PLUGIN_PATH;
   _variables["MY_PLUGIN_BAM_PATH"] = MY_PLUGIN_BAM_PATH;
-  _variables["BENCH_GENERATE_RRD_MOD_PATH"]
-    = BENCH_GENERATE_RRD_MOD_PATH;
+  _variables["BENCH_GENERATE_RRD_MOD_PATH"] = BENCH_GENERATE_RRD_MOD_PATH;
   _variables["MONITORING_ENGINE"] = MONITORING_ENGINE;
-  _variables["MONITORING_ENGINE_ADDITIONAL"]
-    = MONITORING_ENGINE_ADDITIONAL;
-  _variables["MONITORING_ENGINE_INTERVAL_LENGTH"]
-    = MONITORING_ENGINE_INTERVAL_LENGTH_STR;
-  _variables["MONITORING_ENGINE_INTERVAL_LENGTH_STR"]
-    = MONITORING_ENGINE_INTERVAL_LENGTH_STR;
+  _variables["MONITORING_ENGINE_ADDITIONAL"] = MONITORING_ENGINE_ADDITIONAL;
+  _variables["MONITORING_ENGINE_INTERVAL_LENGTH"] =
+      MONITORING_ENGINE_INTERVAL_LENGTH_STR;
+  _variables["MONITORING_ENGINE_INTERVAL_LENGTH_STR"] =
+      MONITORING_ENGINE_INTERVAL_LENGTH_STR;
   _variables["DB_TYPE"] = DB_TYPE;
   _variables["DB_HOST"] = DB_HOST;
   _variables["DB_PORT"] = DB_PORT;
@@ -91,7 +89,7 @@ void file::close() {
     ::remove(_target_file.c_str());
     _target_file.clear();
   }
-  return ;
+  return;
 }
 
 /**
@@ -109,8 +107,8 @@ std::string const& file::generate() {
     std::ifstream ifs;
     ifs.open(_base_file.c_str());
     if (!ifs.good())
-      throw (exceptions::msg() << "could not open base file '"
-             << _base_file << "'");
+      throw(exceptions::msg()
+            << "could not open base file '" << _base_file << "'");
     char buffer[4096];
     while (ifs.good()) {
       ifs.read(buffer, sizeof(buffer));
@@ -124,17 +122,16 @@ std::string const& file::generate() {
   while (start != std::string::npos) {
     size_t end(content.find_first_of('@', start + 1));
     if (std::string::npos == end)
-      throw (exceptions::msg()
-             << "non-terminated variable (\"@VAR@\") in base file '"
-             << _base_file << "' at offset " << start << " " << content.substr(start));
+      throw(exceptions::msg()
+            << "non-terminated variable (\"@VAR@\") in base file '"
+            << _base_file << "' at offset " << start << " "
+            << content.substr(start));
     std::string var(content.substr(start + 1, end - start - 1));
-    std::map<std::string, std::string>::const_iterator
-      it(_variables.find(var));
+    std::map<std::string, std::string>::const_iterator it(_variables.find(var));
     if (it != _variables.end()) {
       content.replace(start, end - start + 1, it->second);
       start += it->second.size();
-    }
-    else {
+    } else {
       content.erase(start, end - start + 1);
     }
     start = content.find_first_of('@', start);
@@ -143,20 +140,17 @@ std::string const& file::generate() {
   // Write target file.
   _target_file = misc::temp_path();
   std::ofstream ofs;
-  ofs.open(
-        _target_file.c_str(),
-        std::ios_base::out | std::ios_base::trunc);
+  ofs.open(_target_file.c_str(), std::ios_base::out | std::ios_base::trunc);
   if (!ofs.good()) {
     ofs.close();
     close();
-    throw (exceptions::msg() << "could not open target file");
+    throw(exceptions::msg() << "could not open target file");
   }
   ofs.write(content.c_str(), content.size());
   if (!ofs.good()) {
     ofs.close();
     close();
-    throw (exceptions::msg()
-           << "could not write content to target file");
+    throw(exceptions::msg() << "could not write content to target file");
   }
   ofs.close();
   return (_target_file);
@@ -168,11 +162,9 @@ std::string const& file::generate() {
  *  @param[in] variable  Variable name.
  *  @param[in] value     Value.
  */
-void file::set(
-             std::string const& variable,
-             std::string const& value) {
+void file::set(std::string const& variable, std::string const& value) {
   _variables[variable] = value;
-  return ;
+  return;
 }
 
 /**
@@ -183,7 +175,7 @@ void file::set(
  */
 void file::set_template(std::string const& base_file) {
   _base_file = base_file;
-  return ;
+  return;
 }
 
 /**
@@ -194,5 +186,5 @@ void file::set_template(std::string const& base_file) {
 void file::_internal_copy(file const& other) {
   _base_file = other._base_file;
   _variables = other._variables;
-  return ;
+  return;
 }

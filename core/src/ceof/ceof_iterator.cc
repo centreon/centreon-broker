@@ -23,9 +23,7 @@ using namespace com::centreon::broker::ceof;
 /**
  *  Default constructor.
  */
-ceof_iterator::ceof_iterator() {
-
-}
+ceof_iterator::ceof_iterator() {}
 
 /**
  *  Constructor.
@@ -34,11 +32,9 @@ ceof_iterator::ceof_iterator() {
  *  @param[in] token_number  The number of tokens.
  */
 ceof_iterator::ceof_iterator(
-                 std::vector<ceof_token>::const_iterator const& begin,
-                 std::vector<ceof_token>::const_iterator const& end)
-  : _token_it(begin),
-    _token_end(end) {
-}
+    std::vector<ceof_token>::const_iterator const& begin,
+    std::vector<ceof_token>::const_iterator const& end)
+    : _token_it(begin), _token_end(end) {}
 
 /**
  *  Copy constructor.
@@ -68,9 +64,7 @@ ceof_iterator& ceof_iterator::operator=(ceof_iterator const& other) {
 /**
  *  Destructor.
  */
-ceof_iterator::~ceof_iterator() throw() {
-
-}
+ceof_iterator::~ceof_iterator() throw() {}
 
 /**
  *  Comparison operator.
@@ -91,7 +85,7 @@ bool ceof_iterator::operator==(ceof_iterator const& other) const throw() {
  *  @return           True if the object are not equal.
  */
 bool ceof_iterator::operator!=(ceof_iterator const& other) const throw() {
-  return (!operator ==(other));
+  return (!operator==(other));
 }
 
 /**
@@ -103,9 +97,8 @@ bool ceof_iterator::operator!=(ceof_iterator const& other) const throw() {
  */
 ceof_iterator& ceof_iterator::operator++() throw() {
   int parent_token = _token_it->get_parent_token();
-  for (++_token_it;
-       (_token_it != _token_end)
-       && (_token_it->get_parent_token() != parent_token);
+  for (++_token_it; (_token_it != _token_end) &&
+                    (_token_it->get_parent_token() != parent_token);
        ++_token_it)
     ;
   return (*this);
@@ -138,8 +131,7 @@ bool ceof_iterator::has_children() const throw() {
   int token_number = _token_it->get_token_number();
   std::vector<ceof_token>::const_iterator it = _token_it;
   ++it;
-  return ((it != _token_end)
-          && (it->get_parent_token() == token_number));
+  return ((it != _token_end) && (it->get_parent_token() == token_number));
 }
 
 /**
@@ -148,9 +140,8 @@ bool ceof_iterator::has_children() const throw() {
  *  @return  An iterator to the children.
  */
 ceof_iterator ceof_iterator::enter_children() const throw() {
-  return (has_children()
-          ? ceof_iterator(_token_it + 1, _token_end)
-          : ceof_iterator());
+  return (has_children() ? ceof_iterator(_token_it + 1, _token_end)
+                         : ceof_iterator());
 }
 
 /**

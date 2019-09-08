@@ -27,9 +27,7 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 dimension_ba_timeperiod_relation::dimension_ba_timeperiod_relation()
-  : ba_id(0),
-    timeperiod_id(0),
-    is_default(false) {}
+    : ba_id(0), timeperiod_id(0), is_default(false) {}
 
 /**
  *  Copy constructor.
@@ -38,7 +36,7 @@ dimension_ba_timeperiod_relation::dimension_ba_timeperiod_relation()
  */
 dimension_ba_timeperiod_relation::dimension_ba_timeperiod_relation(
     dimension_ba_timeperiod_relation const& other)
-  : io::data(other) {
+    : io::data(other) {
   _internal_copy(other);
 }
 
@@ -72,9 +70,8 @@ dimension_ba_timeperiod_relation& dimension_ba_timeperiod_relation::operator=(
  */
 bool dimension_ba_timeperiod_relation::operator==(
     dimension_ba_timeperiod_relation const& other) const {
-  return ((ba_id == other.ba_id)
-          && (timeperiod_id == other.timeperiod_id)
-          && (is_default == other.is_default));
+  return ((ba_id == other.ba_id) && (timeperiod_id == other.timeperiod_id) &&
+          (is_default == other.is_default));
 }
 
 /**
@@ -92,8 +89,9 @@ unsigned int dimension_ba_timeperiod_relation::type() const {
  *  @return Event type.
  */
 unsigned int dimension_ba_timeperiod_relation::static_type() {
-  return (io::events::data_type<io::events::bam,
-                                bam::de_dimension_ba_timeperiod_relation>::value);
+  return (
+      io::events::data_type<io::events::bam,
+                            bam::de_dimension_ba_timeperiod_relation>::value);
 }
 
 /**
@@ -106,35 +104,31 @@ void dimension_ba_timeperiod_relation::_internal_copy(
   ba_id = other.ba_id;
   timeperiod_id = other.timeperiod_id;
   is_default = other.is_default;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const dimension_ba_timeperiod_relation::entries[] = {
-  mapping::entry(
-    &bam::dimension_ba_timeperiod_relation::ba_id,
-    "ba_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &bam::dimension_ba_timeperiod_relation::timeperiod_id,
-    "timeperiod_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &bam::dimension_ba_timeperiod_relation::is_default,
-    "is_default"),
-  mapping::entry()
-};
+    mapping::entry(&bam::dimension_ba_timeperiod_relation::ba_id,
+                   "ba_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&bam::dimension_ba_timeperiod_relation::timeperiod_id,
+                   "timeperiod_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&bam::dimension_ba_timeperiod_relation::is_default,
+                   "is_default"),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_dimension_ba_timeperiod_relation() {
   return (new dimension_ba_timeperiod_relation);
 }
-io::event_info::event_operations const dimension_ba_timeperiod_relation::operations = {
-  &new_dimension_ba_timeperiod_relation
-};
+io::event_info::event_operations const
+    dimension_ba_timeperiod_relation::operations = {
+        &new_dimension_ba_timeperiod_relation};

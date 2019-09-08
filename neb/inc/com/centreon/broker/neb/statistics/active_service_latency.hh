@@ -17,32 +17,32 @@
 */
 
 #ifndef CCB_NEB_STATISTICS_ACTIVE_SERVICE_LATENCY_HH
-#  define CCB_NEB_STATISTICS_ACTIVE_SERVICE_LATENCY_HH
+#define CCB_NEB_STATISTICS_ACTIVE_SERVICE_LATENCY_HH
 
-#  include <string>
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/statistics/plugin.hh"
+#include <string>
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/statistics/plugin.hh"
 
 CCB_BEGIN()
 
-namespace         neb {
-  namespace       statistics {
-    /**
-     *  @class active_service_latency active_service_latency.hh "com/centreon/broker/neb/statistics/active_service_latency.hh"
-     *  @brief active_service_latency statistics plugin.
-     */
-    class         active_service_latency : public plugin {
-    public:
-                  active_service_latency();
-                  active_service_latency(active_service_latency const& right);
-                  ~active_service_latency();
-      active_service_latency&
-                  operator=(active_service_latency const& right);
-      void        run(std::string& output, std::string& perfdata);
-    };
-  }
-}
+namespace neb {
+namespace statistics {
+/**
+ *  @class active_service_latency active_service_latency.hh
+ * "com/centreon/broker/neb/statistics/active_service_latency.hh"
+ *  @brief active_service_latency statistics plugin.
+ */
+class active_service_latency : public plugin {
+ public:
+  active_service_latency();
+  active_service_latency(active_service_latency const& right);
+  ~active_service_latency();
+  active_service_latency& operator=(active_service_latency const& right);
+  void run(std::string& output, std::string& perfdata);
+};
+}  // namespace statistics
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_STATISTICS_ACTIVE_SERVICE_LATENCY_HH
+#endif  // !CCB_NEB_STATISTICS_ACTIVE_SERVICE_LATENCY_HH

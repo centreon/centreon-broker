@@ -16,25 +16,24 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/storage/metric_mapping.hh"
 #include <cmath>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
-#include "com/centreon/broker/storage/metric_mapping.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
  */
-metric_mapping::metric_mapping()
-  : index_id(0), metric_id(0) {}
+metric_mapping::metric_mapping() : index_id(0), metric_id(0) {}
 
 /**
  *  Copy constructor.
@@ -78,14 +77,15 @@ unsigned int metric_mapping::type() const {
  *  @return  The event type.
  */
 unsigned int metric_mapping::static_type() {
-  return (io::events::data_type<io::events::storage, storage::de_metric_mapping>::value);
+  return (io::events::data_type<io::events::storage,
+                                storage::de_metric_mapping>::value);
 }
 
 /**************************************
-*                                     *
-*           Private Methods           *
-*                                     *
-**************************************/
+ *                                     *
+ *           Private Methods           *
+ *                                     *
+ **************************************/
 
 /**
  *  Copy internal data members.
@@ -95,32 +95,28 @@ unsigned int metric_mapping::static_type() {
 void metric_mapping::_internal_copy(metric_mapping const& m) {
   index_id = m.index_id;
   metric_id = m.metric_id;
-  return ;
+  return;
 }
 
 /**************************************
-*                                     *
-*           Static Objects            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Static Objects            *
+ *                                     *
+ **************************************/
 
 // Mapping.
 mapping::entry const metric_mapping::entries[] = {
-  mapping::entry(
-    &metric_mapping::index_id,
-    "index_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry(
-    &metric_mapping::metric_id,
-    "metric_id",
-    mapping::entry::invalid_on_zero),
-  mapping::entry()
-};
+    mapping::entry(&metric_mapping::index_id,
+                   "index_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry(&metric_mapping::metric_id,
+                   "metric_id",
+                   mapping::entry::invalid_on_zero),
+    mapping::entry()};
 
 // Operations.
 static io::data* new_metric_mapping() {
   return (new metric_mapping);
 }
 io::event_info::event_operations const metric_mapping::operations = {
-  &new_metric_mapping
-};
+    &new_metric_mapping};

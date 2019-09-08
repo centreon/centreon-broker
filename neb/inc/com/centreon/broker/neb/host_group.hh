@@ -17,39 +17,36 @@
 */
 
 #ifndef CCB_NEB_HOST_GROUP_HH
-#  define CCB_NEB_HOST_GROUP_HH
+#define CCB_NEB_HOST_GROUP_HH
 
-#  include "com/centreon/broker/io/event_info.hh"
-#  include "com/centreon/broker/mapping/entry.hh"
-#  include "com/centreon/broker/namespace.hh"
-#  include "com/centreon/broker/neb/group.hh"
+#include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/group.hh"
 
 CCB_BEGIN()
 
-namespace          neb {
-  /**
-   *  @class host_group host_group.hh "com/centreon/broker/neb/host_group.hh"
-   *  @brief Represents a group of hosts.
-   *
-   *  A group of hosts within the scheduling engine.
-   */
-  class            host_group : public group {
-  public:
-                   host_group();
-                   host_group(host_group const& other);
-                   ~host_group();
-    host_group&    operator=(host_group const& other);
-    unsigned int   type() const;
-    static unsigned int
-                   static_type();
+namespace neb {
+/**
+ *  @class host_group host_group.hh "com/centreon/broker/neb/host_group.hh"
+ *  @brief Represents a group of hosts.
+ *
+ *  A group of hosts within the scheduling engine.
+ */
+class host_group : public group {
+ public:
+  host_group();
+  host_group(host_group const& other);
+  ~host_group();
+  host_group& operator=(host_group const& other);
+  unsigned int type() const;
+  static unsigned int static_type();
 
-    static mapping::entry const
-                   entries[];
-    static io::event_info::event_operations const
-                   operations;
-  };
-}
+  static mapping::entry const entries[];
+  static io::event_info::event_operations const operations;
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_HOST_GROUP_HH
+#endif  // !CCB_NEB_HOST_GROUP_HH

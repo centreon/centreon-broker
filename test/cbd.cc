@@ -16,18 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
+#include "test/cbd.hh"
 #include <csignal>
 #include <cstdlib>
-#include "test/cbd.hh"
 #include "test/vars.hh"
 
 using namespace com::centreon::broker::test;
 
 /**************************************
-*                                     *
-*           Public Methods            *
-*                                     *
-**************************************/
+ *                                     *
+ *           Public Methods            *
+ *                                     *
+ **************************************/
 
 /**
  *  Default constructor.
@@ -48,7 +48,7 @@ cbd::~cbd() {
  */
 void cbd::set_config_file(std::string const& config_file) {
   _config_file = config_file;
-  return ;
+  return;
 }
 
 /**
@@ -61,7 +61,7 @@ void cbd::start() {
     _cbd.start(CBD_PATH, args);
     _cbd.waitForStarted();
   }
-  return ;
+  return;
 }
 
 /**
@@ -76,7 +76,7 @@ void cbd::stop() {
       _cbd.waitForFinished(-1);
     }
   }
-  return ;
+  return;
 }
 
 /**
@@ -86,7 +86,7 @@ void cbd::update() {
   pid_t pid(_cbd.pid());
   if ((pid != (pid_t)0) && (pid != (pid_t)-1))
     kill(pid, SIGHUP);
-  return ;
+  return;
 }
 
 /**
@@ -95,5 +95,5 @@ void cbd::update() {
 void cbd::wait() {
   if (_cbd.state() != QProcess::NotRunning)
     _cbd.waitForFinished(-1);
-  return ;
+  return;
 }

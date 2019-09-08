@@ -16,10 +16,10 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/neb/statistics/hosts_scheduled.hh"
 #include <sstream>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/neb/internal.hh"
-#include "com/centreon/broker/neb/statistics/hosts_scheduled.hh"
 #include "com/centreon/engine/globals.hh"
 
 using namespace com::centreon::broker;
@@ -29,8 +29,7 @@ using namespace com::centreon::broker::neb::statistics;
 /**
  *  Default constructor.
  */
-hosts_scheduled::hosts_scheduled()
-  : plugin("hosts_scheduled") {}
+hosts_scheduled::hosts_scheduled() : plugin("hosts_scheduled") {}
 
 /**
  *  Copy constructor.
@@ -38,9 +37,7 @@ hosts_scheduled::hosts_scheduled()
  *  @param[in] right Object to copy.
  */
 hosts_scheduled::hosts_scheduled(hosts_scheduled const& right)
- : plugin(right) {
-
-}
+    : plugin(right) {}
 
 /**
  *  Destructor.
@@ -65,16 +62,12 @@ hosts_scheduled& hosts_scheduled::operator=(hosts_scheduled const& right) {
  *  @param[out] output   The output return by the plugin.
  *  @param[out] perfdata The perf data return by the plugin.
  */
-void hosts_scheduled::run(
-              std::string& output,
-	      std::string& perfdata) {
+void hosts_scheduled::run(std::string& output, std::string& perfdata) {
   // Count hosts scheduled.
   unsigned int total(0);
-  for (host_map::const_iterator
-         it{com::centreon::engine::host::hosts.begin()},
-         end{com::centreon::engine::host::hosts.end()};
-       it != end;
-       ++it)
+  for (host_map::const_iterator it{com::centreon::engine::host::hosts.begin()},
+       end{com::centreon::engine::host::hosts.end()};
+       it != end; ++it)
     if (it->second->get_should_be_scheduled())
       ++total;
 
@@ -89,5 +82,5 @@ void hosts_scheduled::run(
   oss << "hosts_scheduled=" << total;
   perfdata = oss.str();
 
-  return ;
+  return;
 }

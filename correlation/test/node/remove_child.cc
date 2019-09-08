@@ -37,6 +37,5 @@ int main() {
   n1.remove_child(&n2);
 
   // Check.
-  return (!n1.get_children().empty()
-          || !n2.get_parents().empty());
+  return (!n1.get_children().empty() || !n2.get_parents().empty());
 }

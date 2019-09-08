@@ -16,9 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
+#include "test/bench_stream.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
-#include "test/bench_stream.hh"
 
 using namespace com::centreon::broker;
 
@@ -60,9 +60,7 @@ unsigned long bench_stream::get_write_size() const {
  *
  *  @return True.
  */
-bool bench_stream::read(
-                     std::shared_ptr<io::data>& d,
-                     time_t deadline) {
+bool bench_stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.clear();
   return (true);
@@ -74,7 +72,7 @@ bool bench_stream::read(
 void bench_stream::reset_bench() {
   _write_events = 0;
   _write_size = 0;
-  return ;
+  return;
 }
 
 /**
@@ -85,8 +83,7 @@ void bench_stream::reset_bench() {
  *  @return Number of events processed (1).
  */
 int bench_stream::write(std::shared_ptr<io::data> const& d) {
-  if (!d.isNull()
-      && (d->type() == io::raw::static_type())) {
+  if (!d.isNull() && (d->type() == io::raw::static_type())) {
     std::shared_ptr<io::raw> r(d.staticCast<io::raw>());
     ++_write_events;
     _write_size += r->size();

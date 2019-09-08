@@ -17,41 +17,41 @@
 */
 
 #ifndef CCB_NEB_STATUS_HH
-#  define CCB_NEB_STATUS_HH
+#define CCB_NEB_STATUS_HH
 
-#  include "com/centreon/broker/io/data.hh"
-#  include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
-namespace        neb {
-  /**
-   *  @class status status.hh "com/centreon/broker/neb/status.hh"
-   *  @brief Root class of status events.
-   *
-   *  This is the root class of status events : host, program and
-   *  service status events.
-   *
-   *  @see host_status
-   *  @see program_status
-   *  @see service_status
-   */
-  class          status : public io::data {
-  public:
-                 status();
-                 status(status const& s);
-    virtual      ~status();
-    status&      operator=(status const& s);
+namespace neb {
+/**
+ *  @class status status.hh "com/centreon/broker/neb/status.hh"
+ *  @brief Root class of status events.
+ *
+ *  This is the root class of status events : host, program and
+ *  service status events.
+ *
+ *  @see host_status
+ *  @see program_status
+ *  @see service_status
+ */
+class status : public io::data {
+ public:
+  status();
+  status(status const& s);
+  virtual ~status();
+  status& operator=(status const& s);
 
-    bool         event_handler_enabled;
-    bool         flap_detection_enabled;
-    bool         notifications_enabled;
+  bool event_handler_enabled;
+  bool flap_detection_enabled;
+  bool notifications_enabled;
 
-  private:
-    void         _internal_copy(status const& s);
-  };
-}
+ private:
+  void _internal_copy(status const& s);
+};
+}  // namespace neb
 
 CCB_END()
 
-#endif // !CCB_NEB_STATUS_HH
+#endif  // !CCB_NEB_STATUS_HH
