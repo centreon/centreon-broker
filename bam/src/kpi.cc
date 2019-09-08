@@ -72,7 +72,7 @@ unsigned int kpi::get_id() const {
  *  @return Last state change.
  */
 timestamp kpi::get_last_state_change() const {
-  return (_event ? _event->start_time : timestamp(time(NULL)));
+  return (_event ? _event->start_time : timestamp(time(nullptr)));
 }
 
 /**
@@ -101,7 +101,7 @@ void kpi::set_initial_event(kpi_event const& e) {
     // then close the initial event and open a new event.
     if (new_impact_level != _event->impact_level &&
         _event->impact_level != -1) {
-      time_t now = ::time(NULL);
+      time_t now = ::time(nullptr);
       std::shared_ptr<kpi_event> new_event(new kpi_event(e));
       new_event->end_time = now;
       _initial_events.push_back(new_event);

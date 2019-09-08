@@ -34,7 +34,7 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
 
 // Class instance.
-static config::applier::logger* gl_logger = NULL;
+static config::applier::logger* gl_logger = nullptr;
 
 /**************************************
  *                                     *
@@ -129,7 +129,7 @@ void logger::load() {
  */
 void logger::unload() {
   delete gl_logger;
-  gl_logger = NULL;
+  gl_logger = nullptr;
   return;
 }
 

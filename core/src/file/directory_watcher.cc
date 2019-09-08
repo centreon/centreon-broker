@@ -67,7 +67,7 @@ void directory_watcher::add_directory(std::string const& directory) {
                             << ::strerror(err) << "'");
   }
 
-  char* real_path = ::realpath(directory.c_str(), NULL);
+  char* real_path = ::realpath(directory.c_str(), nullptr);
   _path_to_id[real_path] = id;
   _id_to_path[id] = real_path;
   ::free(real_path);
@@ -81,7 +81,7 @@ void directory_watcher::add_directory(std::string const& directory) {
  *  @param[in] directory  The directory to remove.
  */
 void directory_watcher::remove_directory(std::string const& directory) {
-  char* real_path = ::realpath(directory.c_str(), NULL);
+  char* real_path = ::realpath(directory.c_str(), nullptr);
   std::map<std::string, int>::iterator it(_path_to_id.find(real_path));
   ::free(real_path);
   if (it == _path_to_id.end())
@@ -123,8 +123,8 @@ std::vector<directory_event> directory_watcher::get_events() {
   FD_SET(_inotify_instance_id, &set);
   tv.tv_sec = _timeout / 1000;
   tv.tv_usec = (_timeout % 1000) * 1000;
-  ::select(_inotify_instance_id + 1, &set, NULL, NULL,
-           _timeout != 0 ? &tv : NULL);
+  ::select(_inotify_instance_id + 1, &set, nullptr, nullptr,
+           _timeout != 0 ? &tv : nullptr);
 
   if (!FD_ISSET(_inotify_instance_id, &set))
     return (ret);

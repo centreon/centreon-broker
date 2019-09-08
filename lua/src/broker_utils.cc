@@ -327,7 +327,7 @@ void broker_utils::broker_utils_reg(lua_State* L) {
   luaL_Reg s_broker_regs[] = {{"json_encode", l_broker_json_encode},
                               {"json_decode", l_broker_json_decode},
                               {"parse_perfdata", l_broker_parse_perfdata},
-                              {NULL, NULL}};
+                              {nullptr, nullptr}};
 
 #ifdef LUA51
   luaL_register(L, "broker", s_broker_regs);

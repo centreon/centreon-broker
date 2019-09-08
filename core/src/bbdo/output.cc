@@ -231,7 +231,7 @@ static io::raw* serialize(io::data const& e) {
         << "BBDO: cannot serialize event of ID " << e.type()
         << ": event was not registered and will therefore be ignored";
 
-  return NULL;
+  return nullptr;
 }
 
 /**************************************

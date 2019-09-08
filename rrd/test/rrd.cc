@@ -54,7 +54,7 @@ TEST_F(Rrd, Create) {
 
   // RRD library object.
   rrd::lib lib("/tmp", 16);
-  lib.open(file_path, 90 * 24 * 60 * 60, time(NULL) - 7 * 24 * 60 * 60, 60);
+  lib.open(file_path, 90 * 24 * 60 * 60, time(nullptr) - 7 * 24 * 60 * 60, 60);
 
   // Check file exists.
   bool file_exists(!access(file_path.c_str(), F_OK));
@@ -72,7 +72,7 @@ TEST_F(Rrd, Remove) {
 
   // RRD library object.
   rrd::lib lib("/tmp", 16);
-  lib.open(file_path, 90 * 24 * 60 * 60, time(NULL) - 7 * 24 * 60 * 60, 60);
+  lib.open(file_path, 90 * 24 * 60 * 60, time(nullptr) - 7 * 24 * 60 * 60, 60);
 
   lib.remove(file_path);
 
@@ -92,9 +92,9 @@ TEST_F(Rrd, UpdateOK) {
 
   // RRD library object.
   rrd::lib lib("/tmp", 16);
-  lib.open(file_path, 90 * 24 * 60 * 60, time(NULL) - 7 * 24 * 60 * 60, 60);
+  lib.open(file_path, 90 * 24 * 60 * 60, time(nullptr) - 7 * 24 * 60 * 60, 60);
 
-  time_t now{std::time(0)};
+  time_t now{std::time(nullptr)};
   lib.update(now, "4.5");
   lib.update(now, "34.5");
   lib.update(now, "54.5");
@@ -116,9 +116,9 @@ TEST_F(Rrd, UpdateNOK) {
 
   // RRD library object.
   rrd::lib lib("/tmp", 16);
-  lib.open(file_path, 90 * 24 * 60 * 60, time(NULL) - 7 * 24 * 60 * 60, 60);
+  lib.open(file_path, 90 * 24 * 60 * 60, time(nullptr) - 7 * 24 * 60 * 60, 60);
 
-  time_t now{std::time(0)};
+  time_t now{std::time(nullptr)};
   lib.update(now, "");
   lib.update(now, "test");
   lib.update(now, "-ewq6we6");

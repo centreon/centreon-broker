@@ -41,7 +41,7 @@ command_server::command_server(protocol prot,
                                std::string const& socket_file,
                                std::shared_ptr<persistent_cache> cache)
     : io::endpoint(true),
-      _listener_thread(NULL),
+      _listener_thread(nullptr),
       _protocol(prot),
       _socket_file(socket_file) {
   (void)cache;

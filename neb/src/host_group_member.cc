@@ -93,10 +93,10 @@ mapping::entry const host_group_member::entries[] = {
     mapping::entry(&host_group_member::host_id,
                    "host_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&host_group_member::enabled, NULL),
-    mapping::entry(&host_group_member::group_name, NULL),
+    mapping::entry(&host_group_member::enabled, nullptr),
+    mapping::entry(&host_group_member::group_name, nullptr),
     mapping::entry(&host_group_member::poller_id,
-                   NULL,
+                   nullptr,
                    mapping::entry::invalid_on_zero),
     mapping::entry()};
 

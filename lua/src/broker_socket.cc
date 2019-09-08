@@ -227,7 +227,7 @@ void broker_socket::broker_socket_reg(lua_State* L) {
                                      {"write", l_broker_socket_write},
                                      {"read", l_broker_socket_read},
                                      {"close", l_broker_socket_close},
-                                     {NULL, NULL}};
+                                     {nullptr, nullptr}};
 
   // Create a metatable. It is not exposed to Lua. It is not
   // exposed to Lua. The "lua_broker" label is used by Lua

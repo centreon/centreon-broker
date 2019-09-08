@@ -42,7 +42,7 @@ node::node() {
   service_id = 0;
   in_downtime = false;
   current_state = 0;
-  start_time = time(NULL);
+  start_time = time(nullptr);
 }
 
 /**

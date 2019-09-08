@@ -24,7 +24,7 @@
 using namespace com::centreon::broker::io;
 
 // Class instance.
-static protocols* gl_protocols = NULL;
+static protocols* gl_protocols = nullptr;
 
 /**************************************
  *                                     *

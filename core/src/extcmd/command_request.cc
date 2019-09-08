@@ -95,7 +95,7 @@ void command_request::parse(std::string const& cmdline) {
     throw(exceptions::msg()
           << "invalid command format: expected "
           << "<BROKERID>;<TARGETENDPOINT>;<CMD>[;<ARG1>[;<ARG2>...]]");
-  destination_id = strtoul(cmdline.substr(0, delim1).c_str(), NULL, 0);
+  destination_id = strtoul(cmdline.substr(0, delim1).c_str(), nullptr, 0);
 
   // Get target endpoint.
   std::size_t delim2;

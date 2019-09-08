@@ -117,7 +117,7 @@ void stream::negotiate(stream::negotiation_type neg) {
   if (_timeout == (time_t)-1)
     deadline = (time_t)-1;
   else
-    deadline = time(NULL) + _timeout;
+    deadline = time(nullptr) + _timeout;
   read_any(d, deadline);
   if (!d || (d->type() != version_response::static_type()))
     throw(exceptions::msg()

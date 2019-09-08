@@ -36,7 +36,7 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
 
 // Class instance.
-static state* gl_state = NULL;
+static state* gl_state = nullptr;
 
 /**************************************
  *                                     *
@@ -222,7 +222,7 @@ std::string const& state::poller_name() const throw() {
  */
 void state::unload() {
   delete gl_state;
-  gl_state = NULL;
+  gl_state = nullptr;
   return;
 }
 

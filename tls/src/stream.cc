@@ -56,11 +56,11 @@ stream::stream(gnutls_session_t* sess)
 stream::~stream() {
   if (_session) {
     try {
-      _deadline = time(NULL) + 30;  // XXX : use connection timeout
+      _deadline = time(nullptr) + 30;  // XXX : use connection timeout
       gnutls_bye(*_session, GNUTLS_SHUT_RDWR);
       gnutls_deinit(*_session);
       delete (_session);
-      _session = NULL;
+      _session = nullptr;
     }
     // Ignore exception whatever the error might be.
     catch (...) {

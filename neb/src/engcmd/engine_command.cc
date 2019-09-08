@@ -131,7 +131,7 @@ void engine_command::_load_command_engine_module() {
  */
 void engine_command::_execute_command(std::string const cmd) {
   char buff[32];
-  int ret = ::snprintf(buff, 32, "[%li]", ::time(NULL));
+  int ret = ::snprintf(buff, 32, "[%li]", ::time(nullptr));
   if (ret < 0 || ret >= 32)
     return;
 

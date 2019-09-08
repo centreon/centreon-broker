@@ -37,7 +37,7 @@ using namespace com::centreon::broker::file;
  *  @param[in] mode  Open mode.
  */
 cfile::cfile(std::string const& path, fs_file::open_mode mode)
-    : _stream(NULL), _path(path), _mode(mode) {
+    : _stream(nullptr), _path(path), _mode(mode) {
   _open();
 }
 
@@ -83,7 +83,7 @@ void cfile::_open() {
 void cfile::close() {
   if (_stream) {
     fclose(_stream);
-    _stream = NULL;
+    _stream = nullptr;
   }
 }
 

@@ -43,7 +43,7 @@ using namespace com::centreon::broker::tcp;
  */
 stream::stream(asio::ip::tcp::socket* sock, std::string const& name)
     : _name(name),
-      _parent(NULL),
+      _parent(nullptr),
       _read_timeout(-1),
       _socket(sock),
       _write_timeout(-1) {
@@ -94,7 +94,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
 
   // Set deadline.
   {
-    time_t now = ::time(NULL);
+    time_t now = ::time(nullptr);
     if (_read_timeout != -1 &&
         (deadline == (time_t)-1 || now + _read_timeout < deadline))
       deadline = now + _read_timeout / 1000;

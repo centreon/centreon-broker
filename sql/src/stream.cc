@@ -50,7 +50,7 @@ using namespace com::centreon::broker::database;
 
 // Processing tables.
 void (stream::*const stream::_correlation_processing_table[])(
-    std::shared_ptr<io::data> const&) = {NULL,
+    std::shared_ptr<io::data> const&) = {nullptr,
                                          &stream::_process_engine,
                                          &stream::_process_issue,
                                          &stream::_process_issue_parent,
@@ -58,7 +58,7 @@ void (stream::*const stream::_correlation_processing_table[])(
                                          &stream::_process_log_issue};
 void (stream::*const stream::_neb_processing_table[])(
     std::shared_ptr<io::data> const&) = {
-    NULL,
+    nullptr,
     &stream::_process_acknowledgement,
     &stream::_process_comment,
     &stream::_process_custom_variable,
@@ -319,7 +319,7 @@ void stream::_clean_tables(unsigned int instance_id) {
            " JOIN hosts AS h"
            " ON c.host_id=h.host_id"
            " SET c.deletion_time="
-        << time(NULL) << " WHERE h.instance_id=" << instance_id
+        << time(nullptr) << " WHERE h.instance_id=" << instance_id
         << " AND c.persistent=0"
            " AND (c.deletion_time IS NULL OR c.deletion_time=0)";
     _transversal_mysql.run_query(
@@ -627,7 +627,7 @@ void stream::_process_engine(std::shared_ptr<io::data> const& e) {
 
   // Close issues.
   if (es.started) {
-    time_t now(time(NULL));
+    time_t now(time(nullptr));
     {
       std::ostringstream ss;
       ss << "UPDATE " << (db_v2 ? "issues" : "rt_issues")
@@ -774,7 +774,7 @@ void stream::_process_host_check(std::shared_ptr<io::data> const& e) {
   // Cast object.
   neb::host_check const& hc(*static_cast<neb::host_check const*>(e.get()));
 
-  time_t now(time(NULL));
+  time_t now(time(nullptr));
   if (hc.check_type                 // - passive result
       || !hc.active_checks_enabled  // - active checks are disabled,
                                     //   status might not be updated
@@ -1144,7 +1144,7 @@ void stream::_process_host_status(std::shared_ptr<io::data> const& e) {
   // Processed object.
   neb::host_status const& hs(*static_cast<neb::host_status const*>(e.get()));
 
-  time_t now(time(NULL));
+  time_t now(time(nullptr));
   if (hs.check_type                 // - passive result
       || !hs.active_checks_enabled  // - active checks are disabled,
                                     //   status might not be updated
@@ -1628,7 +1628,7 @@ void stream::_process_service_check(std::shared_ptr<io::data> const& e) {
   neb::service_check const& sc(
       *static_cast<neb::service_check const*>(e.get()));
 
-  time_t now(time(NULL));
+  time_t now(time(nullptr));
   if (sc.check_type                 // - passive result
       || !sc.active_checks_enabled  // - active checks are disabled,
                                     //   status might not be updated
@@ -1969,7 +1969,7 @@ void stream::_process_service_status(std::shared_ptr<io::data> const& e) {
   neb::service_status const& ss(
       *static_cast<neb::service_status const*>(e.get()));
 
-  time_t now(time(NULL));
+  time_t now(time(nullptr));
   if (ss.check_type                 // - passive result
       || !ss.active_checks_enabled  // - active checks are disabled,
                                     //   status might not be updated
@@ -2086,7 +2086,7 @@ void stream::_update_hosts_and_services_of_unresponsive_instances() {
     return;
 
   if (_stored_timestamps.size() == 0 ||
-      std::difftime(std::time(NULL), _oldest_timestamp) <= _instance_timeout)
+      std::difftime(std::time(nullptr), _oldest_timestamp) <= _instance_timeout)
     return;
 
   // Update unresponsive instances which were responsive

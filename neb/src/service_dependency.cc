@@ -125,7 +125,7 @@ mapping::entry const service_dependency::entries[] = {
                    mapping::entry::invalid_on_zero),
     mapping::entry(&service_dependency::inherits_parent, "inherits_parent"),
     mapping::entry(&service_dependency::notification_failure_options,
-                   NULL,
+                   nullptr,
                    mapping::entry::always_valid,
                    true,
                    "notification_failure_options"),

@@ -158,9 +158,9 @@ static void set_signal_handlers() {
   ::sigemptyset(&sig.sa_mask);
   ::sigfillset(&sig.sa_mask);
   sig.sa_flags = 0;
-  if (::sigaction(SIGTERM, &sig, NULL) < 0 ||
-      ::sigaction(SIGINT, &sig, NULL) < 0 ||
-      ::sigaction(SIGHUP, &sig, NULL) < 0)
+  if (::sigaction(SIGTERM, &sig, nullptr) < 0 ||
+      ::sigaction(SIGINT, &sig, nullptr) < 0 ||
+      ::sigaction(SIGHUP, &sig, nullptr) < 0)
     throw com::centreon::broker::exceptions::msg()
         << "can't set the signal handlers";
 }

@@ -292,7 +292,7 @@ void rebuilder::_rebuild_metric(mysql& ms,
   // Database schema version.
   bool db_v2(ms.schema_version() == mysql::v2);
 
-  time_t start(time(NULL) - length);
+  time_t start(time(nullptr) - length);
 
   try {
     // Get data.

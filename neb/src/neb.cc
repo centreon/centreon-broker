@@ -55,7 +55,7 @@ NEB_API_VERSION(CURRENT_NEB_API_VERSION)
 
 static bool gl_initialized_qt(false);
 static int gl_qt_argc;
-static char const* gl_qt_argv[2] = {"CentreonBrokerModule", NULL};
+static char const* gl_qt_argv[2] = {"CentreonBrokerModule", nullptr};
 
 /**************************************
  *                                     *
@@ -108,7 +108,7 @@ int nebmodule_deinit(int flags, int reason) {
 
     // Deregister Qt application object.
     // if (gl_initialized_qt) {
-    com::centreon::engine::timed_event* te(NULL);
+    com::centreon::engine::timed_event* te(nullptr);
     for (timed_event_list::iterator
              it{com::centreon::engine::timed_event::event_list_high.begin()},
          end{com::centreon::engine::timed_event::event_list_high.end()};
@@ -276,8 +276,8 @@ int nebmodule_init(int flags, char const* args, void* handle) {
         void* data;
       } val;
       val.code = &process_qcore;
-      schedule_new_event(EVENT_USER_FUNCTION, 1, time(NULL) + 1, 1, 1, NULL, 1,
-                         val.data, NULL, 0);
+      schedule_new_event(EVENT_USER_FUNCTION, 1, time(nullptr) + 1, 1, 1, nullptr, 1,
+                         val.data, nullptr, 0);
     }
   } catch (std::exception const& e) {
     logging::error(logging::high) << "main: cbmod loading failed: " << e.what();

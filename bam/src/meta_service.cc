@@ -402,7 +402,7 @@ void meta_service::_send_service_status(io::stream* visitor,
   if (!visitor)
     return;
 
-  time_t now(::time(NULL));
+  time_t now(::time(nullptr));
 
   // Once every minutes, of if the state just changed.
   if (state_has_changed || _last_service_status_sent.is_null() ||
@@ -421,14 +421,14 @@ void meta_service::_send_service_status(io::stream* visitor,
     status->has_been_checked = true;
     status->host_id = _host_id;
     status->is_flapping = false;
-    status->last_check = time(NULL);
+    status->last_check = time(nullptr);
     status->last_hard_state = new_state;
     status->last_hard_state_change = status->last_check;
     status->last_state_change = status->last_check;
     // status->last_time_critical = XXX;
     // status->last_time_unknown = XXX;
     // status->last_time_warning = XXX;
-    status->last_update = time(NULL);
+    status->last_update = time(nullptr);
     status->latency = 0.0;
     status->max_check_attempts = 1;
     status->obsess_over = false;

@@ -69,7 +69,7 @@ void active_hosts_last::run(std::string& output, std::string& perfdata) {
   unsigned int last_checked_5(0);
   unsigned int last_checked_15(0);
   unsigned int last_checked_60(0);
-  time_t now(time(NULL));
+  time_t now(time(nullptr));
   for (host_map::const_iterator it{com::centreon::engine::host::hosts.begin()},
        end{com::centreon::engine::host::hosts.end()};
        it != end; ++it) {

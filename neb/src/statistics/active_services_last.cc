@@ -69,7 +69,7 @@ void active_services_last::run(std::string& output, std::string& perfdata) {
   unsigned int last_checked_5(0);
   unsigned int last_checked_15(0);
   unsigned int last_checked_60(0);
-  time_t now(time(NULL));
+  time_t now(time(nullptr));
   for (service_map::const_iterator it{service::services.begin()},
        end{service::services.end()};
        it != end; ++it) {

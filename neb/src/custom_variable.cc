@@ -111,7 +111,7 @@ void custom_variable::_internal_copy(custom_variable const& other) {
 
 // Mapping.
 mapping::entry const custom_variable::entries[] = {
-    mapping::entry(&custom_variable::enabled, NULL),
+    mapping::entry(&custom_variable::enabled, nullptr),
     mapping::entry(&custom_variable::host_id,
                    "host_id",
                    mapping::entry::invalid_on_zero),

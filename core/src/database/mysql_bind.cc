@@ -138,7 +138,7 @@ int mysql_bind::value_as_i32(int range) const {
     int retval(strtol(static_cast<char*>(_bind[range].buffer), nullptr, 10));
     return retval;
   } else
-    assert("This field is not an int" == 0);
+    assert("This field is not an int" == nullptr);
 }
 
 void mysql_bind::set_value_as_u32(int range, unsigned int value) {
@@ -163,7 +163,7 @@ unsigned int mysql_bind::value_as_u32(int range) const {
         strtoul(static_cast<char*>(_bind[range].buffer), nullptr, 10));
     return retval;
   } else
-    assert("This field is not an unsigned int" == 0);
+    assert("This field is not an unsigned int" == nullptr);
 }
 
 void mysql_bind::set_value_as_u64(int range, unsigned long long value) {
@@ -188,7 +188,7 @@ unsigned long long mysql_bind::value_as_u64(int range) const {
         strtoul(static_cast<char*>(_bind[range].buffer), nullptr, 10));
     return retval;
   } else
-    assert("This field is not an unsigned long int" == 0);
+    assert("This field is not an unsigned long int" == nullptr);
 }
 
 /**
@@ -220,7 +220,7 @@ float mysql_bind::value_as_f32(int range) const {
     double retval(strtof(static_cast<char*>(_bind[range].buffer), nullptr));
     return retval;
   } else
-    assert("This field is not a float" == 0);
+    assert("This field is not a float" == nullptr);
 }
 
 /**
@@ -252,7 +252,7 @@ double mysql_bind::value_as_f64(int range) const {
     double retval(strtod(static_cast<char*>(_bind[range].buffer), nullptr));
     return retval;
   } else
-    assert("This field is not a doube" == 0);
+    assert("This field is not a doube" == nullptr);
 }
 
 void mysql_bind::set_value_as_null(int range) {

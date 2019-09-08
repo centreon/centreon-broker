@@ -33,9 +33,9 @@ using namespace com::centreon::broker::mapping;
  */
 entry::entry()
     : _attribute(always_valid),
-      _name(NULL),
-      _name_v2(NULL),
-      _ptr(NULL),
+      _name(nullptr),
+      _name_v2(nullptr),
+      _ptr(nullptr),
       _serialize(false),
       _type(source::UNKNOWN) {}
 

@@ -322,7 +322,7 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
 }
 
 void reporting_stream::_close_all_events() {
-  time_t now(::time(NULL));
+  time_t now(::time(nullptr));
   std::ostringstream query;
 
   query << "UPDATE mod_bam_reporting_ba_events"

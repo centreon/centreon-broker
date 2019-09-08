@@ -145,7 +145,7 @@ void stream::statistics(io::properties& tree) const {
     p.set_value(oss.str());
   }
   if (write_time_expected) {
-    time_t now(time(NULL));
+    time_t now(time(nullptr));
 
     if (_last_time && (now != _last_time)) {
       time_t eta(0);

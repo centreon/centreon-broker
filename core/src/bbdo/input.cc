@@ -69,7 +69,7 @@ static unsigned int set_double(io::data& t,
     throw(exceptions::msg() << "BBDO: cannot extract double value: "
                             << "not terminating '\0' in remaining " << size
                             << " bytes of packet");
-  member.set_double(t, strtod(str, NULL));
+  member.set_double(t, strtod(str, nullptr));
   return (len + 1);
 }
 
@@ -222,7 +222,7 @@ static io::data* unserialize(unsigned int event_type,
         << "BBDO: cannot unserialize event of ID " << event_type
         << ": event was not registered and will therefore be ignored";
 
-  return (NULL);
+  return (nullptr);
 }
 
 /**************************************

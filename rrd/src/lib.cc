@@ -198,7 +198,7 @@ void lib::update(time_t t, std::string const& value) {
   // Set argument table.
   char const* argv[2];
   argv[0] = arg.c_str();
-  argv[1] = NULL;
+  argv[1] = nullptr;
 
   // Debug message.
   logging::debug(logging::high)
@@ -206,7 +206,7 @@ void lib::update(time_t t, std::string const& value) {
 
   // Update RRD file.
   rrd_clear_error();
-  if (rrd_update_r(_filename.c_str(), NULL, sizeof(argv) / sizeof(*argv) - 1,
+  if (rrd_update_r(_filename.c_str(), nullptr, sizeof(argv) / sizeof(*argv) - 1,
                    argv)) {
     char const* msg(rrd_get_error());
     if (!strstr(msg, "illegal attempt to update using time"))

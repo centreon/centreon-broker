@@ -75,8 +75,8 @@ std::string fifo::read_line(int usecs_timeout) {
   FD_SET(_fd, &polled_fd);
   tv.tv_sec = usecs_timeout / 1000000;
   tv.tv_usec = usecs_timeout % 1000000;
-  if (::select(_fd + 1, &polled_fd, NULL, NULL,
-               ((usecs_timeout == -1) ? NULL : &tv)) == -1) {
+  if (::select(_fd + 1, &polled_fd, nullptr, nullptr,
+               ((usecs_timeout == -1) ? nullptr : &tv)) == -1) {
     char const* msg = ::strerror(errno);
     throw(exceptions::msg()
           << "fifo: can't poll file '" << _path << "': " << msg);

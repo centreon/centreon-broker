@@ -108,7 +108,7 @@ bool mysql_result::value_as_bool(int idx) {
   if (_bind)
     retval = _bind->value_as_bool(idx);
   else if (_row)
-    retval = _row[idx] ? strtol(_row[idx], 0, 10) : 0;
+    retval = _row[idx] ? strtol(_row[idx], nullptr, 10) : 0;
   else
     throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
@@ -180,7 +180,7 @@ int mysql_result::value_as_i32(int idx) {
   if (_bind)
     retval = _bind->value_as_i32(idx);
   else if (_row)
-    retval = _row[idx] ? strtol(_row[idx], 0, 10) : 0;
+    retval = _row[idx] ? strtol(_row[idx], nullptr, 10) : 0;
   else
     throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
@@ -198,7 +198,7 @@ unsigned int mysql_result::value_as_u32(int idx) {
   if (_bind)
     retval = _bind->value_as_u32(idx);
   else if (_row)
-    retval = _row[idx] ? strtoul(_row[idx], 0, 10) : 0;
+    retval = _row[idx] ? strtoul(_row[idx], nullptr, 10) : 0;
   else
     throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
@@ -216,7 +216,7 @@ unsigned long long mysql_result::value_as_u64(int idx) {
   if (_bind)
     retval = _bind->value_as_u64(idx);
   else if (_row)
-    retval = _row[idx] ? strtoull(_row[idx], 0, 10) : 0;
+    retval = _row[idx] ? strtoull(_row[idx], nullptr, 10) : 0;
   else
     throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
@@ -234,7 +234,7 @@ bool mysql_result::value_is_null(int idx) {
   if (_bind)
     retval = _bind->value_is_null(idx);
   else if (_row)
-    retval = (_row[idx] == 0);
+    retval = (_row[idx] == nullptr);
   else
     throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;
@@ -249,7 +249,7 @@ bool mysql_result::is_empty() const {
   if (_bind)
     return _bind->is_empty();
   else
-    return _row == NULL;
+    return _row == nullptr;
 }
 
 /**

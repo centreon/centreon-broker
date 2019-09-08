@@ -27,9 +27,9 @@ using namespace com::centreon::broker::misc;
  *  @param[in] separator  The seperator.
  */
 tokenizer::tokenizer(std::string const& line, char separator /*= ';'*/)
-    : _separator(separator), _pos(0), _index(0) {
+    : _separator(separator), _pos(0), _index(nullptr) {
   _line = ::strdup(line.c_str());
-  if (_line == NULL)
+  if (_line == nullptr)
     throw(exceptions::msg() << "can't allocate line for tokenizer");
   _index = _line;
 }

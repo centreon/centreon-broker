@@ -289,7 +289,7 @@ void creator::_open(std::string const& filename,
   }
 
   // Debug message.
-  argv[argc] = NULL;
+  argv[argc] = nullptr;
   logging::debug(logging::high)
       << "RRD: opening file '" << filename << "' (" << argv[0] << ", "
       << argv[1] << ", " << (argv[2] ? argv[2] : "(null)") << ", step 1, from "

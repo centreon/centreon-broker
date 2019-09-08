@@ -102,7 +102,7 @@ int command_listener::write(std::shared_ptr<io::data> const& d) {
         _pending.find(req.uuid));
     if (it == _pending.end()) {
       pending_command& p(_pending[req.uuid]);
-      p.invalid_time = time(NULL) + _request_timeout;
+      p.invalid_time = time(nullptr) + _request_timeout;
       p.uuid = req.uuid;
       p.code = 1;
       p.with_partial_result = req.with_partial_result;
@@ -118,7 +118,7 @@ int command_listener::write(std::shared_ptr<io::data> const& d) {
     pending_command& p(_pending[res.uuid]);
     p.code = res.code;
     p.msgs.push_back(res.msg);
-    p.invalid_time = time(NULL) + _result_timeout;
+    p.invalid_time = time(nullptr) + _result_timeout;
     if (p.invalid_time < _next_invalid)
       _next_invalid = p.invalid_time;
   }
@@ -133,7 +133,7 @@ int command_listener::write(std::shared_ptr<io::data> const& d) {
  *  Check for invalid entries in cache.
  */
 void command_listener::_check_invalid() {
-  time_t now(time(NULL));
+  time_t now(time(nullptr));
   _next_invalid = now + 24 * 60 * 60;
   std::lock_guard<std::mutex> lock(_pendingm);
   for (std::map<std::string, pending_command>::iterator it(_pending.begin()),

@@ -62,7 +62,7 @@ void params::apply(gnutls_session_t session) {
       session,
       (_compress ? "NORMAL:+ANON-DH:%COMPAT"
                  : "NORMAL:+ANON-DH:+COMP-DEFLATE:%COMPAT"),
-      NULL);
+      nullptr);
   if (ret != GNUTLS_E_SUCCESS)
     throw(exceptions::msg() << "TLS: encryption parameter application failed: "
                             << gnutls_strerror(ret));

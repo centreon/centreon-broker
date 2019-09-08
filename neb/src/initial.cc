@@ -75,7 +75,7 @@ static void send_custom_variables_list() {
         nebstruct_custom_variable_data nscvd;
         memset(&nscvd, 0, sizeof(nscvd));
         nscvd.type = NEBTYPE_HOSTCUSTOMVARIABLE_ADD;
-        nscvd.timestamp.tv_sec = time(NULL);
+        nscvd.timestamp.tv_sec = time(nullptr);
         nscvd.var_name = const_cast<char*>(name.c_str());
         nscvd.var_value = const_cast<char*>(cit->second.get_value().c_str());
         nscvd.object_ptr = it->second.get();
@@ -102,7 +102,7 @@ static void send_custom_variables_list() {
         nebstruct_custom_variable_data nscvd;
         memset(&nscvd, 0, sizeof(nscvd));
         nscvd.type = NEBTYPE_SERVICECUSTOMVARIABLE_ADD;
-        nscvd.timestamp.tv_sec = time(NULL);
+        nscvd.timestamp.tv_sec = time(nullptr);
         nscvd.var_name = const_cast<char*>(name.c_str());
         nscvd.var_value = const_cast<char*>(cit->second.get_value().c_str());
         nscvd.object_ptr = it->second.get();
@@ -135,7 +135,7 @@ static void send_downtimes_list() {
     nebstruct_downtime_data nsdd;
     memset(&nsdd, 0, sizeof(nsdd));
     nsdd.type = NEBTYPE_DOWNTIME_ADD;
-    nsdd.timestamp.tv_sec = time(NULL);
+    nsdd.timestamp.tv_sec = time(nullptr);
     nsdd.downtime_type = p.second->get_type();
     nsdd.host_name = p.second->get_hostname().c_str();
     nsdd.service_description =
@@ -184,7 +184,7 @@ static void send_host_dependencies_list() {
       nsadd.type = NEBTYPE_HOSTDEPENDENCY_ADD;
       nsadd.flags = NEBFLAG_NONE;
       nsadd.attr = NEBATTR_NONE;
-      nsadd.timestamp.tv_sec = time(NULL);
+      nsadd.timestamp.tv_sec = time(nullptr);
       nsadd.object_ptr = it->second.get();
 
       // Callback.
@@ -295,7 +295,7 @@ static void send_host_parents_list() {
         nsrd.type = NEBTYPE_PARENT_ADD;
         nsrd.flags = NEBFLAG_NONE;
         nsrd.attr = NEBATTR_NONE;
-        nsrd.timestamp.tv_sec = time(NULL);
+        nsrd.timestamp.tv_sec = time(nullptr);
         nsrd.hst = pit->second;
         nsrd.dep_hst = it->second.get();
 
@@ -362,7 +362,7 @@ static void send_service_dependencies_list() {
       nsadd.type = NEBTYPE_SERVICEDEPENDENCY_ADD;
       nsadd.flags = NEBFLAG_NONE;
       nsadd.attr = NEBATTR_NONE;
-      nsadd.timestamp.tv_sec = time(NULL);
+      nsadd.timestamp.tv_sec = time(nullptr);
       nsadd.object_ptr = it->second.get();
 
       // Callback.

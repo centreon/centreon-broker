@@ -99,10 +99,10 @@ mapping::entry const service_group_member::entries[] = {
     mapping::entry(&service_group_member::service_id,
                    "service_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&service_group_member::enabled, NULL),
-    mapping::entry(&service_group_member::group_name, NULL),
+    mapping::entry(&service_group_member::enabled, nullptr),
+    mapping::entry(&service_group_member::group_name, nullptr),
     mapping::entry(&service_group_member::poller_id,
-                   NULL,
+                   nullptr,
                    mapping::entry::invalid_on_zero),
     mapping::entry()};
 

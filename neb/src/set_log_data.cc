@@ -41,7 +41,7 @@ static char* log_extract_first(char* str, char** lasts) {
  *  Extract following elements of a log string.
  */
 static char* log_extract(char** lasts) {
-  char* data(strtok_r(NULL, ";", lasts));
+  char* data(strtok_r(nullptr, ";", lasts));
   if (!data)
     throw(exceptions::msg() << "log: data extraction failed");
   return (data);
@@ -118,14 +118,14 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       le.service_description = log_extract(&lasts);
       le.status = status_id(log_extract(&lasts));
       le.log_type = type_id(log_extract(&lasts));
-      le.retry = strtol(log_extract(&lasts), NULL, 10);
+      le.retry = strtol(log_extract(&lasts), nullptr, 10);
       le.output = log_extract(&lasts);
     } else if (!strcmp(datadup, "HOST ALERT")) {
       le.msg_type = 1;
       le.host_name = log_extract_first(lasts, &lasts);
       le.status = status_id(log_extract(&lasts));
       le.log_type = type_id(log_extract(&lasts));
-      le.retry = strtol(log_extract(&lasts), NULL, 10);
+      le.retry = strtol(log_extract(&lasts), nullptr, 10);
       le.output = log_extract(&lasts);
     } else if (!strcmp(datadup, "SERVICE NOTIFICATION")) {
       le.msg_type = 2;
@@ -147,7 +147,7 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       le.host_name = log_extract_first(lasts, &lasts);
       le.status = status_id(log_extract(&lasts));
       le.log_type = type_id(log_extract(&lasts));
-      le.retry = strtol(log_extract(&lasts), NULL, 10);
+      le.retry = strtol(log_extract(&lasts), nullptr, 10);
       le.output = log_extract(&lasts);
     } else if (!strcmp(datadup, "INITIAL SERVICE STATE")) {
       le.msg_type = 8;
@@ -155,7 +155,7 @@ void neb::set_log_data(neb::log_entry& le, char const* log_data) {
       le.service_description = log_extract(&lasts);
       le.status = status_id(log_extract(&lasts));
       le.log_type = type_id(log_extract(&lasts));
-      le.retry = strtol(log_extract(&lasts), NULL, 10);
+      le.retry = strtol(log_extract(&lasts), nullptr, 10);
       le.output = log_extract(&lasts);
     } else if (!strcmp(datadup, "EXTERNAL COMMAND")) {
       char* data(log_extract_first(lasts, &lasts));

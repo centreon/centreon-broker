@@ -47,7 +47,7 @@ static std::vector<muxer*> _muxers;
 static std::mutex _muxersm;
 
 // Class instance.
-engine* engine::_instance(NULL);
+engine* engine::_instance(nullptr);
 
 // Data queue.
 static std::queue<std::shared_ptr<io::data> > _kiew;
@@ -275,7 +275,7 @@ void engine::unload() {
     _instance->_cache_file->commit();
 
   delete _instance;
-  _instance = NULL;
+  _instance = nullptr;
 }
 
 /**

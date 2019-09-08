@@ -99,7 +99,7 @@ splitter::splitter(std::string const& path,
     char const* ptr(it->c_str() + base_name.size());
     int val(0);
     if (*ptr) {  // Not, empty, conversion needed.
-      char* endptr(NULL);
+      char* endptr(nullptr);
       val = strtol(ptr, &endptr, 10);
       if (endptr && *endptr)  // Invalid conversion.
         continue;

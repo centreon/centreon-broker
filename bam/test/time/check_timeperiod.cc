@@ -60,7 +60,7 @@ static time_t string_to_time_t(std::string const& data) {
   if (!ptr)
     throw exceptions::msg() << "invalid date format";
   t.tm_isdst = -1;  // Not set by strptime().
-  time::timezone_locker tzlock((*ptr == ' ') ? ptr + 1 : NULL);
+  time::timezone_locker tzlock((*ptr == ' ') ? ptr + 1 : nullptr);
   return mktime(&t);
 }
 

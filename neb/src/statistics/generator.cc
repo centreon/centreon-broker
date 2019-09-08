@@ -220,7 +220,7 @@ void generator::remove(uint64_t host_id, uint64_t service_id) {
  *  Execute all plugins.
  */
 void generator::run() {
-  time_t now(time(NULL));
+  time_t now(time(nullptr));
   for (std::map<std::pair<uint64_t, uint64_t>,
                 std::shared_ptr<plugin> >::const_iterator
            it(_registers.begin()),

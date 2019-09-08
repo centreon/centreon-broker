@@ -29,7 +29,7 @@ using namespace com::centreon::broker::logging;
  **************************************/
 
 // Class instance.
-manager* manager::_instance(NULL);
+manager* manager::_instance(nullptr);
 
 /**************************************
  *                                     *
@@ -164,6 +164,6 @@ void manager::log_on(backend& b, unsigned int types, level min_priority) {
  */
 void manager::unload() {
   delete _instance;
-  _instance = NULL;
+  _instance = nullptr;
   return;
 }

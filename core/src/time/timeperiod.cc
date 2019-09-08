@@ -319,7 +319,7 @@ bool timeperiod::is_valid(time_t preferred_time) const {
  */
 time_t timeperiod::get_next_valid(time_t preferred_time) const {
   // Set timezone.
-  timezone_locker tzlock(_timezone.empty() ? NULL : _timezone.c_str());
+  timezone_locker tzlock(_timezone.empty() ? nullptr : _timezone.c_str());
 
   // Check preferred_time.
   if (preferred_time != (time_t)-1) {
@@ -392,7 +392,7 @@ time_t timeperiod::get_next_valid(time_t preferred_time) const {
  */
 time_t timeperiod::get_next_invalid(time_t preferred_time) const {
   // Set timezone.
-  timezone_locker tzlock(_timezone.empty() ? NULL : _timezone.c_str());
+  timezone_locker tzlock(_timezone.empty() ? nullptr : _timezone.c_str());
 
   // Check preferred_time.
   if (preferred_time != (time_t)-1) {

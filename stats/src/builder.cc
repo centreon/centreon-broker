@@ -92,7 +92,7 @@ void builder::build(serializer const& srz) {
         io::property("version", misc::string::get(CENTREON_BROKER_VERSION)));
     _root.add_property("pid", io::property("pid", misc::string::get(getpid())));
     _root.add_property("now",
-                       io::property("now", misc::string::get(::time(NULL))));
+                       io::property("now", misc::string::get(::time(nullptr))));
 
     std::string asio_version{std::to_string(ASIO_VERSION / 100000)};
     asio_version.append(".")

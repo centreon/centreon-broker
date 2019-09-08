@@ -30,7 +30,7 @@ using namespace com::centreon::broker::influxdb;
  *  Create an empty query.
  */
 line_protocol_query::line_protocol_query()
-    : _type(line_protocol_query::unknown), _cache(NULL) {}
+    : _type(line_protocol_query::unknown), _cache(nullptr) {}
 
 /**
  *  Constructor.
@@ -91,7 +91,7 @@ line_protocol_query::line_protocol_query(std::string const& timeseries,
       _append_compiled_string("=");
       // field value
       if (it->get_type() == column::number)
-        _compile_scheme(it->get_value(), NULL);
+        _compile_scheme(it->get_value(), nullptr);
       else if (it->get_type() == column::string)
         _compile_scheme(it->get_value(), &line_protocol_query::escape_value);
     }
@@ -99,7 +99,7 @@ line_protocol_query::line_protocol_query(std::string const& timeseries,
     _append_compiled_string(" ");
 
   // timestamp
-  _compile_scheme("$TIME$", NULL);
+  _compile_scheme("$TIME$", nullptr);
   _append_compiled_string("\n");
 }
 

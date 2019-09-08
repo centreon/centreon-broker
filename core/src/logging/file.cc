@@ -168,7 +168,7 @@ void file::log_msg(char const* msg,
       _write("] ");
       if (_with_human_readable_timestamp) {
         _write("[");
-        time_t now = std::time(NULL);
+        time_t now = std::time(nullptr);
         // ctime never write more than 26 characters
         char human_readable_date[26];
         ctime_r(&now, human_readable_date);

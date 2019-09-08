@@ -274,7 +274,7 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
             << ": host name and service description were not found";
       } else {
         std::ostringstream oss;
-        time_t now(time(NULL));
+        time_t now(time(nullptr));
         oss << "[" << now << "] SCHEDULE_FORCED_SVC_CHECK;" << ba_svc_name.first
             << ";" << ba_svc_name.second << ";" << now;
         _write_external_command(oss.str());
@@ -465,7 +465,7 @@ void monitoring_stream::_write_external_command(std::string cmd) {
  *  Get inherited downtime from the cache.
  */
 void monitoring_stream::_read_cache() {
-  if (_cache == NULL)
+  if (_cache == nullptr)
     return;
 
   _applier.load_from_cache(*_cache);
@@ -475,7 +475,7 @@ void monitoring_stream::_read_cache() {
  *  Save inherited downtime to the cache.
  */
 void monitoring_stream::_write_cache() {
-  if (_cache == NULL) {
+  if (_cache == nullptr) {
     logging::debug(logging::medium) << "BAM: no cache configured";
     return;
   }

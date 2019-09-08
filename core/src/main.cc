@@ -304,7 +304,7 @@ int main(int argc, char* argv[]) {
       sigterm_act.sa_flags = SA_SIGINFO | SA_RESETHAND;
 
       // Set termination handler.
-      if (sigaction(SIGTERM, &sigterm_act, NULL) < 0)
+      if (sigaction(SIGTERM, &sigterm_act, nullptr) < 0)
         logging::info(logging::high)
             << "main: could not register termination handler";
 

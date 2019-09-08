@@ -23,7 +23,7 @@
 using namespace com::centreon::broker::time;
 
 // Class instance.
-timezone_manager* timezone_manager::_instance(NULL);
+timezone_manager* timezone_manager::_instance(nullptr);
 
 /**
  *  Load singleton.
@@ -88,7 +88,7 @@ void timezone_manager::unlock() {
  */
 void timezone_manager::unload() {
   delete _instance;
-  _instance = NULL;
+  _instance = nullptr;
 }
 
 /**

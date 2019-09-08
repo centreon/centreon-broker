@@ -200,7 +200,7 @@ bool muxer::read(std::shared_ptr<io::data>& event, time_t deadline) {
     if ((time_t)-1 == deadline)
       _cv.wait(lock);
     else {
-      time_t now(time(NULL));
+      time_t now(time(nullptr));
       timed_out = _cv.wait_for(lock, std::chrono::seconds(deadline - now)) ==
                   std::cv_status::timeout;
     }

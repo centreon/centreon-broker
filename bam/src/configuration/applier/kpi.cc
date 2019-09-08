@@ -39,7 +39,7 @@ using namespace com::centreon::broker::bam::configuration;
  *  Default constructor.
  */
 applier::kpi::kpi()
-    : _bas(NULL), _book(NULL), _boolexps(NULL), _mapping(NULL), _metas(NULL) {}
+    : _bas(nullptr), _book(nullptr), _boolexps(nullptr), _mapping(nullptr), _metas(nullptr) {}
 
 /**
  *  Copy constructor.
@@ -206,7 +206,7 @@ void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
     ks->level_downtime_soft = 0.0;
     ks->level_nominal_hard = 0.0;
     ks->level_nominal_soft = 0.0;
-    ks->last_state_change = time(NULL);
+    ks->last_state_change = time(nullptr);
     ks->valid = false;
     multiplexing::publisher().write(ks);
   }

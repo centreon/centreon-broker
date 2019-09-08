@@ -96,9 +96,9 @@ mapping::entry const service_group::entries[] = {
                    "servicegroup_id",
                    mapping::entry::invalid_on_zero),
     mapping::entry(&service_group::name, "name"),
-    mapping::entry(&service_group::enabled, NULL),
+    mapping::entry(&service_group::enabled, nullptr),
     mapping::entry(&service_group::poller_id,
-                   NULL,
+                   nullptr,
                    mapping::entry::invalid_on_zero),
     mapping::entry()};
 

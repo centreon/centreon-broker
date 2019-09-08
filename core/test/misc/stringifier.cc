@@ -85,12 +85,12 @@ TEST(Stringifier, double) {
   // First insertion.
   misc::stringifier s1;
   s1 << -36.0;
-  ASSERT_FALSE(fabs(strtod(s1.data(), NULL) + 36.0) > 0.1);
+  ASSERT_FALSE(fabs(strtod(s1.data(), nullptr) + 36.0) > 0.1);
 
   // Second insertions.
   misc::stringifier s2;
   s2 << 75697.248;
-  ASSERT_FALSE(fabs(strtod(s2.data(), NULL) - 75697.248) > 0.1);
+  ASSERT_FALSE(fabs(strtod(s2.data(), nullptr) - 75697.248) > 0.1);
 }
 
 TEST(Stringifier, int) {
@@ -143,7 +143,7 @@ TEST(Stringifier, pointer) {
   s << &s;
 
   // Check content.
-  ASSERT_FALSE(&s != (void*)strtoull(s.data(), NULL, 0));
+  ASSERT_FALSE(&s != (void*)strtoull(s.data(), nullptr, 0));
 }
 
 TEST(Stringifier, reset) {
@@ -174,7 +174,7 @@ TEST(Stringifier, string) {
   ASSERT_STREQ(s.data(), "foo bar baz qux");
 
   // Third insertion.
-  s << static_cast<char const*>(NULL);
+  s << static_cast<char const*>(nullptr);
   ASSERT_STREQ(s.data(), "foo bar baz qux(null)");
 }
 

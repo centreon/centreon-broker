@@ -88,7 +88,7 @@ bool command_client::read(std::shared_ptr<io::data>& d, time_t deadline) {
                   std::istreambuf_iterator<char>());
     _buffer.append(s.c_str(), len);
 
-    if ((deadline == (time_t)-1) || (time(NULL) < deadline))
+    if ((deadline == (time_t)-1) || (time(nullptr) < deadline))
       ;
     else
       break;

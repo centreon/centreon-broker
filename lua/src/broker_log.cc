@@ -70,7 +70,7 @@ int _log_func(logging::logger& log_func, lua_State* L, const char* header) {
         logging::error(logging::medium)
             << "Unable to open the log file '" << bl->get_file() << "'";
       else {
-        time_t now(time(NULL));
+        time_t now(time(nullptr));
         struct tm tmp;
         localtime_r(&now, &tmp);
         char buf[80];
@@ -132,7 +132,7 @@ void broker_log::broker_log_reg(lua_State* L) {
       {"info", l_broker_log_info},
       {"error", l_broker_log_error},
       {"warning", l_broker_log_warning},
-      {NULL, NULL}};
+      {nullptr, nullptr}};
 
   // Create a metatable. It is not exposed to Lua. It is not
   // exposed to Lua. The "lua_broker" label is used by Lua

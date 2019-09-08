@@ -417,7 +417,7 @@ void broker_cache::broker_cache_reg(lua_State* L, macro_cache const& cache) {
       {"get_service_description", l_broker_cache_get_service_description},
       {"get_servicegroup_name", l_broker_cache_get_servicegroup_name},
       {"get_servicegroups", l_broker_cache_get_servicegroups},
-      {NULL, NULL}};
+      {nullptr, nullptr}};
 
   // Create a metatable. It is not exposed to Lua.
   // The "lua_broker" label is used by Lua internally to identify things.

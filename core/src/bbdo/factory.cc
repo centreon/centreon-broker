@@ -100,7 +100,7 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   // Return value.
-  io::endpoint* retval{NULL};
+  io::endpoint* retval{nullptr};
 
   // Coarse endpoint ?
   bool coarse{false};

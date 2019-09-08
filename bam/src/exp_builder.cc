@@ -109,7 +109,7 @@ exp_builder::exp_builder(exp_parser::notation const& postfix,
               << "internal expression parsing "
               << "error: no arity placed after function name in "
               << "postfix notation");
-      int arity(std::strtol(it->c_str(), NULL, 0));
+      int arity(std::strtol(it->c_str(), nullptr, 0));
 
       // Host status.
       if (func == "HOSTSTATUS") {
@@ -300,7 +300,7 @@ bool_value::ptr exp_builder::_pop_operand() {
     else if (value_str == "UNREACHABLE")
       value = 2;
     else
-      value = std::strtod(value_str.c_str(), NULL);
+      value = std::strtod(value_str.c_str(), nullptr);
     retval.reset(new bool_constant(value));
   } else
     retval = _operands.top().first;

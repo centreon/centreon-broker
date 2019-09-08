@@ -85,7 +85,7 @@ void stored_timestamp::set_state(state_type state) throw() {
  *  Update the internal timestamp to now.
  */
 void stored_timestamp::update_timestamp() throw() {
-  _ts = timestamp(std::time(NULL));
+  _ts = timestamp(std::time(nullptr));
 }
 
 /**
@@ -114,5 +114,5 @@ void stored_timestamp::set_timestamp(timestamp ts) throw() {
  * @return true if the timestamp is outdated.
  */
 bool stored_timestamp::timestamp_outdated(unsigned int timeout) const throw() {
-  return (std::difftime(std::time(NULL), _ts) > timeout);
+  return (std::difftime(std::time(nullptr), _ts) > timeout);
 }

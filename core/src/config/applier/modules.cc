@@ -25,7 +25,7 @@
 using namespace com::centreon::broker::config::applier;
 
 // Class instance.
-static modules* gl_modules = NULL;
+static modules* gl_modules = nullptr;
 
 /**************************************
  *                                     *
@@ -120,7 +120,7 @@ void modules::load() {
  */
 void modules::unload() {
   delete gl_modules;
-  gl_modules = NULL;
+  gl_modules = nullptr;
   return;
 }
 

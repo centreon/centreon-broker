@@ -199,7 +199,7 @@ std::shared_ptr<neb::host> applier::meta_service::_meta_host(
   std::shared_ptr<neb::host> h(new neb::host);
   h->host_id = host_id;
   h->host_name = "_Module_Meta";
-  h->last_update = time(NULL);
+  h->last_update = time(nullptr);
   h->poller_id =
       com::centreon::broker::config::applier::state::instance().poller_id();
   return (h);
@@ -226,7 +226,7 @@ std::shared_ptr<neb::service> applier::meta_service::_meta_service(
     oss << "meta_" << meta_id;
     s->service_description = oss.str();
   }
-  s->last_update = time(NULL);
+  s->last_update = time(nullptr);
   return (s);
 }
 

@@ -170,7 +170,7 @@ timestamp downtime_scheduler::_get_first_timestamp(
  * downtimes.
  */
 void downtime_scheduler::_process_downtimes() {
-  timestamp now = ::time(NULL);
+  timestamp now = ::time(nullptr);
   multiplexing::publisher pblsh;
   for (std::multimap<timestamp, unsigned int>::iterator
            it = _downtime_starts.begin(),
@@ -202,7 +202,7 @@ void downtime_scheduler::_process_downtimes() {
  *  @param[out] stream  The stream to write the downtime to.
  */
 void downtime_scheduler::_start_downtime(downtime& dwn, io::stream* stream) {
-  dwn.actual_start_time = ::time(NULL);
+  dwn.actual_start_time = ::time(nullptr);
   logging::debug(logging::medium)
       << "node events: starting downtime (" << dwn.start_time << "-"
       << dwn.end_time << ") on node (" << dwn.host_id << ", " << dwn.service_id
@@ -219,7 +219,7 @@ void downtime_scheduler::_start_downtime(downtime& dwn, io::stream* stream) {
  *  @param[out] stream  The stream to write the downtime to.
  */
 void downtime_scheduler::_end_downtime(downtime& dwn, io::stream* stream) {
-  dwn.actual_end_time = ::time(NULL);
+  dwn.actual_end_time = ::time(nullptr);
   logging::debug(logging::medium)
       << "node events: stopping downtime (" << dwn.start_time << "-"
       << dwn.end_time << ") on node (" << dwn.host_id << ", " << dwn.service_id

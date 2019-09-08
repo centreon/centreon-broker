@@ -55,7 +55,7 @@ class LoggingManager : public ::testing::Test {
       return false;
     }
 
-    status = ::regexec(&r, line.c_str(), 0, NULL, 0);
+    status = ::regexec(&r, line.c_str(), 0, nullptr, 0);
     ::regfree(&r);
 
     return status == 0;

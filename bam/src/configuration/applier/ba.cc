@@ -212,7 +212,7 @@ std::shared_ptr<neb::host> applier::ba::_ba_host(unsigned int host_id) {
     oss << "_Module_BAM_" << h->poller_id;
     h->host_name = oss.str();
   }
-  h->last_update = time(NULL);
+  h->last_update = time(nullptr);
   return (h);
 }
 
@@ -237,7 +237,7 @@ std::shared_ptr<neb::service> applier::ba::_ba_service(
     oss << "ba_" << ba_id;
     s->service_description = oss.str();
   }
-  s->last_update = time(NULL);
+  s->last_update = time(nullptr);
   return (s);
 }
 

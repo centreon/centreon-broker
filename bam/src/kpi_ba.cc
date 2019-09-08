@@ -178,7 +178,7 @@ void kpi_ba::visit(io::stream* visitor) {
       // BA event state.
       ba_event* bae(_ba->get_ba_event());
       short ba_state(bae ? bae->status : 0);
-      timestamp last_ba_update(bae ? bae->start_time : timestamp(time(NULL)));
+      timestamp last_ba_update(bae ? bae->start_time : timestamp(time(nullptr)));
 
       // If no event was cached, create one.
       if (!_event) {

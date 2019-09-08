@@ -69,10 +69,10 @@ void generator::run(config const& cfg __attribute__((unused)),
  */
 void generator::_run() {
   try {
-    time_t next_time(time(NULL) + 1);
+    time_t next_time(time(nullptr) + 1);
     while (!_should_exit) {
       // Wait for appropriate time.
-      time_t now(time(NULL));
+      time_t now(time(nullptr));
       if (now < next_time) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         continue;

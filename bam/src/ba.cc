@@ -466,7 +466,7 @@ void ba::visit(io::stream* visitor) {
     if (!_event) {
       if ((_last_kpi_update.get_time_t() == (time_t)-1) ||
           (_last_kpi_update.get_time_t() == (time_t)0))
-        _last_kpi_update = time(NULL);
+        _last_kpi_update = time(nullptr);
       _open_new_event(visitor, hard_state);
     }
     // If state changed, close event and open a new one.
@@ -526,7 +526,7 @@ void ba::visit(io::stream* visitor) {
       // status->last_time_critical = XXX;
       // status->last_time_unknown = XXX;
       // status->last_time_warning = XXX;
-      status->last_update = time(NULL);
+      status->last_update = time(nullptr);
       status->latency = 0.0;
       status->max_check_attempts = 1;
       status->obsess_over = false;

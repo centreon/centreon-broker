@@ -41,7 +41,7 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
 
 // Class instance.
-static config::applier::endpoint* gl_endpoint = NULL;
+static config::applier::endpoint* gl_endpoint = nullptr;
 
 /**************************************
  *                                     *
@@ -202,7 +202,7 @@ void endpoint::discard() {
       logging::debug(logging::low) << "endpoint applier: " << _endpoints.size()
                                    << " endpoint threads remaining";
       lock.unlock();
-      time_t now(time(NULL));
+      time_t now(time(nullptr));
 
       // FIXME DBR: no more events without qt
       // do {
@@ -277,7 +277,7 @@ void endpoint::load() {
  */
 void endpoint::unload() {
   delete gl_endpoint;
-  gl_endpoint = NULL;
+  gl_endpoint = nullptr;
   return;
 }
 

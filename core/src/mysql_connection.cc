@@ -162,7 +162,7 @@ void mysql_connection::_statement(mysql_task* t) {
     mysql_manager::instance().set_error("statement not prepared");
     return;
   }
-  MYSQL_BIND* bb(NULL);
+  MYSQL_BIND* bb(nullptr);
   if (task->bind)
     bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
 
@@ -216,7 +216,7 @@ void mysql_connection::_statement_res(mysql_task* t) {
     task->promise->set_exception(std::make_exception_ptr<exceptions::msg>(e));
     return;
   }
-  MYSQL_BIND* bb(NULL);
+  MYSQL_BIND* bb(nullptr);
   if (task->bind)
     bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
 
@@ -254,7 +254,7 @@ void mysql_connection::_statement_res(mysql_task* t) {
         mysql_result res(this, task->statement_id);
         MYSQL_STMT* stmt(_stmt[task->statement_id]);
         MYSQL_RES* prepare_meta_result(mysql_stmt_result_metadata(stmt));
-        if (prepare_meta_result == NULL) {
+        if (prepare_meta_result == nullptr) {
           if (mysql_stmt_errno(stmt)) {
             exceptions::msg e;
             e << mysql_stmt_error(stmt);
@@ -305,7 +305,7 @@ void mysql_connection::_statement_int(mysql_task* t) {
     task->promise->set_exception(std::make_exception_ptr<exceptions::msg>(e));
     return;
   }
-  MYSQL_BIND* bb(NULL);
+  MYSQL_BIND* bb(nullptr);
   if (task->bind)
     bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
 
@@ -418,11 +418,11 @@ std::string mysql_connection::_get_stack() {
 
 void mysql_connection::_run() {
   std::unique_lock<std::mutex> locker(_result_mutex);
-  _conn = mysql_init(NULL);
+  _conn = mysql_init(nullptr);
   if (!_conn) {
     mysql_manager::instance().set_error(::mysql_error(_conn));
   } else if (!mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
-                                 _pwd.c_str(), _name.c_str(), _port, NULL,
+                                 _pwd.c_str(), _name.c_str(), _port, nullptr,
                                  CLIENT_FOUND_ROWS)) {
     mysql_manager::instance().set_error(::mysql_error(_conn));
   }
@@ -470,7 +470,7 @@ void mysql_connection::_run() {
 /******************************************************************************/
 
 mysql_connection::mysql_connection(database_config const& db_cfg)
-    : _conn(NULL),
+    : _conn(nullptr),
       _finished(false),
       _host(db_cfg.get_host()),
       _user(db_cfg.get_user()),

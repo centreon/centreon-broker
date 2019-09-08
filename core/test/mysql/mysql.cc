@@ -87,7 +87,7 @@ TEST_F(DatabaseStorageTest, SendDataBin) {
                          "centreon_storage", 5, true, 5);
   std::unique_ptr<mysql> ms(new mysql(db_cfg));
   std::ostringstream oss;
-  int now(time(NULL));
+  int now(time(nullptr));
   oss << "INSERT INTO data_bin (id_metric, ctime, status, value) VALUES "
       << "(1, " << now << ", '0', 2.5)";
   int thread_id(ms->run_query(oss.str(), "PROBLEME", true));
@@ -129,7 +129,7 @@ TEST_F(DatabaseStorageTest, PrepareQuery) {
 
   std::unique_ptr<mysql> ms(new mysql(db_cfg));
   std::ostringstream nss;
-  nss << "metric_name - " << time(NULL);
+  nss << "metric_name - " << time(nullptr);
   mysql_stmt stmt(ms->prepare_query(oss.str()));
   stmt.bind_value_as_i32(0, 19);
   stmt.bind_value_as_str(1, nss.str());
@@ -181,7 +181,7 @@ TEST_F(DatabaseStorageTest, PrepareQueryBadQuery) {
 
   std::unique_ptr<mysql> ms(new mysql(db_cfg));
   std::ostringstream nss;
-  nss << "metric_name - " << time(NULL);
+  nss << "metric_name - " << time(nullptr);
   mysql_stmt stmt(ms->prepare_query(oss.str()));
   stmt.bind_value_as_i32(0, 19);
   stmt.bind_value_as_str(1, nss.str());
@@ -257,7 +257,7 @@ TEST_F(DatabaseStorageTest, LastInsertId) {
   database_config db_cfg("MySQL", "127.0.0.1", 3306, "root", "root",
                          "centreon_storage", 5, true, 5);
   std::ostringstream nss;
-  nss << "metric_name - " << time(NULL) << "bis";
+  nss << "metric_name - " << time(nullptr) << "bis";
 
   std::ostringstream oss;
   oss << "INSERT INTO metrics"
@@ -310,7 +310,7 @@ TEST_F(DatabaseStorageTest, PrepareQuerySync) {
 
   std::unique_ptr<mysql> ms(new mysql(db_cfg));
   std::ostringstream nss;
-  nss << "metric_name - " << time(NULL) << "bis2";
+  nss << "metric_name - " << time(nullptr) << "bis2";
   mysql_stmt stmt(ms->prepare_query(oss.str()));
   stmt.bind_value_as_i32(0, 19);
   stmt.bind_value_as_str(1, nss.str());
@@ -397,8 +397,8 @@ TEST_F(DatabaseStorageTest, InstanceStatement) {
   neb::instance inst;
   inst.poller_id = 1;
   inst.name = "Central";
-  inst.program_start = time(NULL) - 100;
-  inst.program_end = time(NULL) - 1;
+  inst.program_start = time(nullptr) - 100;
+  inst.program_end = time(nullptr) - 1;
   inst.version = "1.8.1";
 
   inst_insupdate << inst;
@@ -413,7 +413,7 @@ TEST_F(DatabaseStorageTest, InstanceStatement) {
   ms->run_statement(inst_insupdate, "", false, 0);
 
   // Update
-  inst.program_end = time(NULL);
+  inst.program_end = time(nullptr);
   inst_insupdate << inst;
   ms->run_statement(inst_insupdate, "", false, 0);
 
@@ -542,7 +542,7 @@ TEST_F(DatabaseStorageTest, CustomVarStatement) {
 
   neb::custom_variable cv;
   cv.service_id = 498;
-  cv.update_time = time(NULL);
+  cv.update_time = time(nullptr);
   cv.modified = false;
   cv.host_id = 31;
   cv.name = "PROCESSNAME";
@@ -561,7 +561,7 @@ TEST_F(DatabaseStorageTest, CustomVarStatement) {
   ms->run_statement(cv_insert_or_update, "", false, 0);
 
   // Update
-  cv.update_time = time(NULL) + 1;
+  cv.update_time = time(nullptr) + 1;
   cv_insert_or_update << cv;
   ms->run_statement(cv_insert_or_update, "", false, 0);
 
@@ -631,7 +631,7 @@ TEST_F(DatabaseStorageTest, LogStatement) {
   le.notification_cmd = "";
   le.status = 0;
   le.host_name = "";
-  le.c_time = time(NULL);
+  le.c_time = time(nullptr);
 
   // Deletion
   std::promise<int> promise;
@@ -673,7 +673,7 @@ TEST_F(DatabaseStorageTest, InstanceStatusStatement) {
   is.check_services_freshness = true;
   is.global_host_event_handler = "";
   is.global_service_event_handler = "";
-  is.last_alive = time(NULL) - 5;
+  is.last_alive = time(nullptr) - 5;
   is.obsess_over_hosts = false;
   is.obsess_over_services = false;
   is.passive_host_checks_enabled = true;
@@ -753,12 +753,12 @@ TEST_F(DatabaseStorageTest, HostStatusStatement) {
   hs.execution_time = 0.159834;
   hs.has_been_checked = true;
   hs.host_id = 24;
-  hs.last_check = time(NULL) - 3;
+  hs.last_check = time(nullptr) - 3;
   hs.last_hard_state = 0;
-  hs.last_update = time(NULL) - 300;
+  hs.last_update = time(nullptr) - 300;
   hs.latency = 0.001;
   hs.max_check_attempts = 3;
-  hs.next_check = time(NULL) + 50;
+  hs.next_check = time(nullptr) + 50;
   hs.obsess_over = true;
   hs.output = "OK - 10.0.2.15: rta 0,020ms, lost 0%\n";
   hs.perf_data =
@@ -887,10 +887,10 @@ TEST_F(DatabaseStorageTest, ServiceStatusStatement) {
   mysql_stmt service_status_update(qp.prepare_update(*ms));
 
   neb::service_status ss;
-  ss.last_time_critical = time(NULL) - 1000;
-  ss.last_time_ok = time(NULL) - 50;
-  ss.last_time_unknown = time(NULL) - 1500;
-  ss.last_time_warning = time(NULL) - 500;
+  ss.last_time_critical = time(nullptr) - 1000;
+  ss.last_time_ok = time(nullptr) - 50;
+  ss.last_time_unknown = time(nullptr) - 1500;
+  ss.last_time_warning = time(nullptr) - 500;
   ss.service_id = 318;
   ss.host_id = 24;
 
@@ -962,7 +962,7 @@ TEST_F(DatabaseStorageTest, SelectStatement) {
   std::unique_ptr<mysql> ms(new mysql(db_cfg));
   std::string query("SELECT value,status FROM data_bin WHERE ctime >= ?");
   mysql_stmt select_stmt(ms->prepare_query(query));
-  select_stmt.bind_value_as_u64(0, time(NULL) - 20);
+  select_stmt.bind_value_as_u64(0, time(nullptr) - 20);
   std::promise<mysql_result> promise;
   ms->run_statement_and_get_result(select_stmt, &promise);
   mysql_result res(promise.get_future().get());
@@ -1003,7 +1003,7 @@ TEST_F(DatabaseStorageTest, DowntimeStatement) {
   mysql_stmt downtime_insupdate(mysql_stmt(oss.str(), true));
   ms->prepare_statement(downtime_insupdate);
 
-  time_t now(time(NULL));
+  time_t now(time(nullptr));
 
   neb::downtime d;
   d.actual_end_time = now;

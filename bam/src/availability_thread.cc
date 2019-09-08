@@ -63,7 +63,7 @@ void availability_thread::run() {
     try {
       // Calculate the duration until next midnight.
       time_t midnight = _compute_next_midnight();
-      unsigned long wait_for = std::difftime(midnight, ::time(NULL));
+      unsigned long wait_for = std::difftime(midnight, ::time(nullptr));
       logging::debug(logging::medium)
           << "BAM-BI: availability thread sleeping for " << wait_for
           << " seconds.";
@@ -78,7 +78,7 @@ void availability_thread::run() {
       // Open the database.
       _open_database();
 
-      _build_availabilities(_compute_start_of_day(::time(NULL)));
+      _build_availabilities(_compute_start_of_day(::time(nullptr)));
       _should_rebuild_all = false;
       _bas_to_rebuild.clear();
 
@@ -419,7 +419,7 @@ void availability_thread::_write_availability(
  */
 time_t availability_thread::_compute_next_midnight() {
   return (time::timeperiod::add_round_days_to_midnight(
-      _compute_start_of_day(::time(NULL)), 3600 * 24));
+      _compute_start_of_day(::time(nullptr)), 3600 * 24));
 }
 
 /**

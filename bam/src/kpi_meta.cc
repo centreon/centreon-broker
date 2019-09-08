@@ -178,7 +178,7 @@ void kpi_meta::visit(io::stream* visitor) {
         _open_new_event(visitor, values.get_nominal(), state);
       // If state changed, close event and open a new one.
       else if (state != _event->status) {
-        _event->end_time = ::time(NULL);
+        _event->end_time = ::time(nullptr);
         visitor->write(std::static_pointer_cast<io::data>(_event));
         _event.reset();
         _open_new_event(visitor, values.get_nominal(), state);
@@ -252,7 +252,7 @@ void kpi_meta::_open_new_event(io::stream* visitor, int impact, short state) {
   _event->in_downtime = false;
   _event->output = _meta->get_output();
   _event->perfdata = _meta->get_perfdata();
-  _event->start_time = time(NULL);  // XXX _ba->get_last_service_update();
+  _event->start_time = time(nullptr);  // XXX _ba->get_last_service_update();
   _event->status = state;
   if (visitor) {
     std::shared_ptr<io::data> ke(new kpi_event(*_event));
