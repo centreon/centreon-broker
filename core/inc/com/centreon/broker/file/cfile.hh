@@ -34,7 +34,10 @@ namespace file {
  */
 class cfile : public fs_file {
  public:
+  cfile() = delete;
+  cfile(cfile const& other) = delete;
   cfile(std::string const& path, fs_file::open_mode mode);
+  cfile& operator=(cfile const& other) = delete;
   ~cfile();
   void close();
   long read(void* buffer, long max_size);
@@ -43,8 +46,6 @@ class cfile : public fs_file {
   long write(void const* buffer, long size);
 
  private:
-  cfile(cfile const& right);
-  cfile& operator=(cfile const& right);
   void _open();
 
   FILE* _stream;
