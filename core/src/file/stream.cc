@@ -99,39 +99,25 @@ void stream::statistics(json11::Json::object& tree) const {
   long woffset(_file->get_woffset());
 
   // Easy to print.
-  std::ostringstream oss;
-  {
-    tree["file_read_path"] = misc::string::get(rid);
-  }
-  {
-    tree["file_read_offset"] = misc::string::get(roffset);
-  }
-  {
-    tree["file_write_path"] = misc::string::get(wid);
-  }
-  {
-    tree["file_write_offset"] = misc::string::get(woffset);
-  }
-  {
-    tree["file_max_size"] = (max_file_size != std::numeric_limits<long>::max())
-                         ? misc::string::get(max_file_size)
-                         : "unlimited";
-  }
+  tree["file_read_path"] = rid;
+  tree["file_read_offset"] = static_cast<double>(roffset);
+  tree["file_write_path"] =  wid;
+  tree["file_write_offset"] = static_cast<double>(woffset);
+  if (max_file_size != std::numeric_limits<long>::max())
+    tree["file_max_size"] = static_cast<double>(max_file_size);
+  else
+    tree["file_max_size"] = "unlimited";
 
   // Need computation.
   bool write_time_expected(false);
   long long froffset(roffset + rid * static_cast<long long>(max_file_size));
   long long fwoffset(woffset + wid * static_cast<long long>(max_file_size));
-  {
-    oss.str("");
-    if (((rid != wid) && max_file_size == std::numeric_limits<long>::max()) ||
-        !fwoffset) {
-      oss << "unknown";
-    } else {
-      oss << 100.0 * froffset / fwoffset << "%";
-      write_time_expected = true;
-    }
-    tree["file_percent_processed"] = oss.str();
+  if (((rid != wid) && max_file_size == std::numeric_limits<long>::max()) ||
+      !fwoffset) {
+    tree["file_percent_processed"] = "unknown";
+  } else {
+    tree["file_percent_processed"] = 100.0 * froffset / fwoffset;
+    write_time_expected = true;
   }
   if (write_time_expected) {
     time_t now(time(nullptr));
@@ -139,24 +125,21 @@ void stream::statistics(json11::Json::object& tree) const {
     if (_last_time && (now != _last_time)) {
       time_t eta(0);
       {
-        oss.str("");
         unsigned long long div(froffset + _last_write_offset -
                                _last_read_offset - fwoffset);
         if (div == 0)
-          oss << "file not processed fast enough to terminate";
+          tree["file_expected_terminated_at"] =
+              "file not processed fast enough to terminate";
         else {
           eta = now + (fwoffset - froffset) * (now - _last_time) / div;
-          oss << eta;
+          tree["file_expected_terminated_at"] = static_cast<double >(eta);
         }
-        tree["file_expected_terminated_at"] = oss.str();
       }
 
       if (max_file_size == std::numeric_limits<long>::max()) {
-        oss.str("");
-        oss << fwoffset + (fwoffset - _last_write_offset) * (eta - now) /
-                              (now - _last_time);
-
-        tree["file_expected_max_size"] = oss.str();
+        tree["file_expected_max_size"] = static_cast<double>(
+            fwoffset + (fwoffset - _last_write_offset) * (eta - now) /
+                              (now - _last_time));
       }
     }
 
