@@ -89,7 +89,7 @@ splitter::splitter(std::string const& path,
   _wid = 0;
   size_t offset{base_dir.size() + base_name.size()};
   for (std::string &f : parts) {
-    const char* ptr{f.c_str() + offset};
+    const char* ptr{f.c_str() + offset + 1};
     int val = 0;
     if (*ptr) { // Not empty, conversion needed.
       char* endptr(nullptr);
@@ -239,10 +239,16 @@ long splitter::write(void const* buffer, long size) {
     long wb(_wfile->write(buffer, remaining));
     remaining -= wb;
     _woffset += wb;
-    buffer = static_cast<char const*>(buffer) + wb;
+    //buffer = static_cast<char const*>(buffer) + wb;
   }
-
   return size;
+}
+
+/**
+ *  Flush the write stream.
+ */
+void splitter::flush() {
+  _wfile->flush();
 }
 
 /**

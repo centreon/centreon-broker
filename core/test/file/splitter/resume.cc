@@ -30,6 +30,11 @@ class FileSplitterResume : public ::testing::Test {
   void SetUp() override {
     logging::manager::load();
 
+    std::list<std::string> lst{
+        misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
+    for (std::string const& f : lst)
+      std::remove(f.c_str());
+
     _path = "/tmp/queue";
     _file_factory = new file::cfile_factory();
 
@@ -96,6 +101,7 @@ TEST_F(FileSplitterResume, ResumeWrite) {
   // Then
   std::string last_file(_path);
   last_file.append("10");
+  _file->flush();
   ASSERT_EQ(misc::filesystem::file_size(last_file), 108u + 2000u);
 }
 

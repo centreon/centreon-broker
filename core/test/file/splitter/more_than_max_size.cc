@@ -29,17 +29,22 @@ class FileSplitterMoreThanMaxSize : public ::testing::Test {
   void SetUp() override {
     logging::manager::load();
     _path = "/tmp/queue";
-    _file_factory = new file::cfile_factory();
+    {
+      std::list<std::string> parts{
+          misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
+      for (std::string const& f : parts)
+        std::remove(f.c_str());
+    }
+    file::cfile_factory* file_factory = new file::cfile_factory();
     _file.reset(new file::splitter(_path,
                                    file::fs_file::open_read_write_truncate,
-                                   _file_factory, 10000, true));
+                                   file_factory, 10000, true));
   }
 
   void TearDown() override { logging::manager::unload(); };
 
  protected:
   std::unique_ptr<file::splitter> _file;
-  file::cfile_factory* _file_factory;
   std::string _path;
 };
 
@@ -56,6 +61,9 @@ TEST_F(FileSplitterMoreThanMaxSize, MoreThanMaxSizeToNextFile) {
 
   // When
   _file->write(buffer, sizeof(buffer));
+
+  // We force the writing to be done
+  _file->flush();
 
   // Then
   std::string first_file{_path};

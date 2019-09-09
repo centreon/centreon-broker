@@ -47,7 +47,8 @@ class splitter : public fs_file {
   void remove_all_files();
   void seek(long offset, fs_file::seek_whence whence = fs_file::seek_start);
   long tell();
-  long write(void const* buffer, long size);
+  long write(void const* buffer, long size) override;
+  void flush() override;
 
   std::string get_file_path(int id = 0) const;
   long get_max_file_size() const;

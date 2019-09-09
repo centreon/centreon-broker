@@ -43,7 +43,8 @@ class cfile : public fs_file {
   long read(void* buffer, long max_size);
   void seek(long offset, fs_file::seek_whence = fs_file::seek_start);
   long tell();
-  long write(void const* buffer, long size);
+  long write(void const* buffer, long size) override;
+  void flush() override;
 
  private:
   void _open();

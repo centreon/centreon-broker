@@ -29,7 +29,12 @@ class FileSplitterSplit : public ::testing::Test {
   void SetUp() override {
     logging::manager::load();
 
-    _path = "/var/lib/centreon-broker/queue";
+    _path = "/tmp/queue";
+    {
+      std::list<std::string> parts{misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
+      for (std::string const& f : parts)
+        std::remove(f.c_str());
+    }
     _file_factory = new file::cfile_factory();
     _file.reset(new file::splitter(_path,
                                    file::fs_file::open_read_write_truncate,
@@ -39,7 +44,7 @@ class FileSplitterSplit : public ::testing::Test {
       buffer[i] = i;
     for (int i(0); i < 10001; ++i)
       _file->write(buffer, sizeof(buffer));
-    return;
+    _file->flush();
   }
 
   void TearDown() override { logging::manager::unload(); }

@@ -111,7 +111,7 @@ long cfile::read(void* buffer, long max_size) {
       throw(exceptions::msg() << "error while reading file: " << msg);
     }
   }
-  return (retval);
+  return retval;
 }
 
 /**
@@ -165,7 +165,7 @@ long cfile::tell() {
     char const* msg(strerror(errno));
     throw(exceptions::msg() << "cannot tell position in file: " << msg);
   }
-  return (retval);
+  return retval;
 }
 
 /**
@@ -183,10 +183,17 @@ long cfile::write(void const* buffer, long size) {
   size_t retval(fwrite(buffer, 1, size, _stream));
   if (ferror(_stream)) {
     char const* msg(strerror(errno));
-    throw(exceptions::msg()
-          << "cannot write " << size << " bytes to file: " << msg);
+    throw exceptions::msg()
+          << "cannot write " << size << " bytes to file: " << msg;
   }
-  return (retval);
+  return retval;
+}
+
+/**
+ *  Flush the opened stream.
+ */
+void cfile::flush() {
+  fflush(_stream);
 }
 
 /**
@@ -199,7 +206,7 @@ long cfile::write(void const* buffer, long size) {
  */
 cfile* cfile_factory::new_cfile(std::string const& path,
                                 fs_file::open_mode mode) {
-  return (new cfile(path, mode));
+  return new cfile(path, mode);
 }
 
 /**
@@ -212,5 +219,5 @@ cfile* cfile_factory::new_cfile(std::string const& path,
  */
 fs_file* cfile_factory::new_fs_file(std::string const& path,
                                     fs_file::open_mode mode) {
-  return (new_cfile(path, mode));
+  return new_cfile(path, mode);
 }
