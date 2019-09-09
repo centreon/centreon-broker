@@ -20,12 +20,13 @@
 #include <arpa/inet.h>
 #include <cstdlib>
 #include <limits>
+#include <list>
 #include <memory>
 #include <sstream>
+#include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/cfile.hh"
-#include "com/centreon/broker/file/stl_fs_browser.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -38,8 +39,6 @@ using namespace com::centreon::broker::file;
  *  @param[in] mode           Ignored. Files will always be open
  *                            read/write.
  *  @param[in] file_factory   fs_file_factory to work with single files.
- *  @param[in] fs             fs_browser object to manipulate file
- *                            system.
  *  @param[in] max_file_size  Maximum single file size.
  *  @param[in] auto_delete    True to delete file parts as they are
  *                            read.
@@ -47,13 +46,11 @@ using namespace com::centreon::broker::file;
 splitter::splitter(std::string const& path,
                    fs_file::open_mode mode,
                    fs_file_factory* file_factory,
-                   fs_browser* fs,
                    long max_file_size,
                    bool auto_delete)
     : _auto_delete{auto_delete},
       _base_path{path},
       _file_factory{file_factory},
-      _fs{fs},
       _max_file_size{max_file_size},
       _rfile{},
       _rid{0},
@@ -86,19 +83,15 @@ splitter::splitter(std::string const& path,
       base_name = _base_path.substr(last_slash + 1);
     }
   }
-  fs_browser::entry_list parts;
-  {
-    std::string name_pattern(base_name);
-    name_pattern.append("*");
-    parts = _fs->read_directory(base_dir, name_pattern);
-  }
+  std::list<std::string> parts{
+      misc::filesystem::dir_content_with_filter(base_dir, base_name + '*')};
   _rid = std::numeric_limits<int>::max();
   _wid = 0;
-  for (fs_browser::entry_list::iterator it(parts.begin()), end(parts.end());
-       it != end; ++it) {
-    char const* ptr(it->c_str() + base_name.size());
-    int val(0);
-    if (*ptr) {  // Not, empty, conversion needed.
+  size_t offset{base_dir.size() + base_name.size()};
+  for (std::string &f : parts) {
+    const char* ptr{f.c_str() + offset + 1};
+    int val = 0;
+    if (*ptr) { // Not empty, conversion needed.
       char* endptr(nullptr);
       val = strtol(ptr, &endptr, 10);
       if (endptr && *endptr)  // Invalid conversion.
@@ -110,6 +103,7 @@ splitter::splitter(std::string const& path,
     if (val > _wid)
       _wid = val;
   }
+
   if ((_rid == std::numeric_limits<int>::max()) || (_rid < 0))
     _rid = 0;
 
@@ -160,7 +154,7 @@ long splitter::read(void* buffer, long max_size) {
     logging::debug(logging::low)
         << "file: read " << rb << " bytes from '" << get_file_path(_rid) << "'";
     _roffset += rb;
-    return (rb);
+    return rb;
   } catch (exceptions::shutdown const& e) {
     (void)e;
 
@@ -173,7 +167,7 @@ long splitter::read(void* buffer, long max_size) {
     if (_auto_delete) {
       logging::info(logging::high)
           << "file: end of file '" << file_path << "' reached, erasing file";
-      _fs->remove(file_path);
+      std::remove(file_path.c_str());
     } else {
       logging::info(logging::high) << "file: end of file '" << file_path
                                    << "' reached, NOT erasing file";
@@ -187,7 +181,7 @@ long splitter::read(void* buffer, long max_size) {
     else {
       ++_rid;
       _open_read_file();
-      return (read(buffer, max_size));
+      return read(buffer, max_size);
     }
   }
 }
@@ -210,7 +204,7 @@ void splitter::seek(long offset, fs_file::seek_whence whence) {
  *  @return Current position in file.
  */
 long splitter::tell() {
-  return (_roffset);
+  return _roffset;
 }
 
 /**
@@ -245,10 +239,16 @@ long splitter::write(void const* buffer, long size) {
     long wb(_wfile->write(buffer, remaining));
     remaining -= wb;
     _woffset += wb;
-    buffer = static_cast<char const*>(buffer) + wb;
+    //buffer = static_cast<char const*>(buffer) + wb;
   }
+  return size;
+}
 
-  return (size);
+/**
+ *  Flush the write stream.
+ */
+void splitter::flush() {
+  _wfile->flush();
 }
 
 /**
@@ -260,9 +260,9 @@ std::string splitter::get_file_path(int id) const {
   if (id) {
     std::ostringstream oss;
     oss << _base_path << id;
-    return (oss.str());
+    return oss.str();
   } else
-    return (_base_path);
+    return _base_path;
 }
 
 /**
@@ -271,7 +271,7 @@ std::string splitter::get_file_path(int id) const {
  *  @return Max file size.
  */
 long splitter::get_max_file_size() const {
-  return (_max_file_size);
+  return _max_file_size;
 }
 
 /**
@@ -280,7 +280,7 @@ long splitter::get_max_file_size() const {
  *  @return Current read ID.
  */
 int splitter::get_rid() const {
-  return (_rid);
+  return _rid;
 }
 
 /**
@@ -289,7 +289,7 @@ int splitter::get_rid() const {
  *  @return Current read offset.
  */
 long splitter::get_roffset() const {
-  return (_roffset);
+  return _roffset;
 }
 
 /**
@@ -298,7 +298,7 @@ long splitter::get_roffset() const {
  *  @return Current write ID.
  */
 int splitter::get_wid() const {
-  return (_wid);
+  return _wid;
 }
 
 /**
@@ -307,7 +307,7 @@ int splitter::get_wid() const {
  *  @return Current write offset.
  */
 long splitter::get_woffset() const {
-  return (_woffset);
+  return _woffset;
 }
 
 /**
@@ -327,15 +327,10 @@ void splitter::remove_all_files() {
       base_name = _base_path.substr(last_slash + 1);
     }
   }
-  fs_browser::entry_list parts;
-  {
-    std::string name_pattern(base_name);
-    name_pattern.append("*");
-    parts = _fs->read_directory(base_dir, name_pattern);
-  }
-  for (fs_browser::entry_list::iterator it(parts.begin()), end(parts.end());
-       it != end; ++it)
-    _fs->remove(base_dir + '/' + *it);
+  std::list<std::string> parts{
+      misc::filesystem::dir_content_with_filter(base_dir, base_name + '*')};
+  for (std::string const& f : parts)
+    std::remove(f.c_str());
 }
 
 /**
@@ -356,8 +351,6 @@ void splitter::_open_read_file() {
   }
   _roffset = 2 * sizeof(uint32_t);
   _rfile->seek(_roffset);
-
-  return;
 }
 
 /**
@@ -401,8 +394,6 @@ void splitter::_open_write_file() {
       size += _wfile->write(header.bytes + size, sizeof(header) - size);
     _woffset = 2 * sizeof(uint32_t);
   }
-
-  return;
 }
 
 /**
@@ -415,7 +406,7 @@ void splitter::_open_write_file() {
  */
 fs_file* splitter_factory::new_fs_file(std::string const& path,
                                        fs_file::open_mode mode) {
-  return (new_cfile_splitter(path, mode));
+  return new_cfile_splitter(path, mode);
 }
 
 /**
@@ -434,8 +425,7 @@ splitter* splitter_factory::new_cfile_splitter(std::string const& path,
                                                long max_file_size,
                                                bool auto_delete) {
   std::unique_ptr<fs_file_factory> f(new cfile_factory());
-  std::unique_ptr<fs_browser> b(new stl_fs_browser());
-  splitter* s(new splitter(path, mode, f.release(), b.release(), max_file_size,
+  splitter* s(new splitter(path, mode, f.release(), max_file_size,
                            auto_delete));
-  return (s);
+  return s;
 }

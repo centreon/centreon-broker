@@ -17,11 +17,11 @@
  *
  */
 #include <gtest/gtest.h>
-#include "../test_file.hh"
-#include "../test_fs_browser.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
+#include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#include "com/centreon/broker/misc/filesystem.hh"
 
 using namespace com::centreon::broker;
 
@@ -30,9 +30,13 @@ class FileSplitterResume : public ::testing::Test {
   void SetUp() override {
     logging::manager::load();
 
-    _path = "/var/lib/centreon-broker/queue";
-    _fs_browser = new test_fs_browser();
-    _file_factory = new test_file_factory();
+    std::list<std::string> lst{
+        misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
+    for (std::string const& f : lst)
+      std::remove(f.c_str());
+
+    _path = "/tmp/queue";
+    _file_factory = new file::cfile_factory();
 
     // Create 7 files.
     std::unique_ptr<file::fs_file> f;
@@ -55,27 +59,17 @@ class FileSplitterResume : public ::testing::Test {
     f->write(buffer, 108);
     f.reset();
 
-    // Set entries of FS browser.
-    file::fs_browser::entry_list list;
-    for (int i(2); i <= 10; ++i) {
-      std::ostringstream oss;
-      oss << "queue" << i;
-      list.push_back(oss.str());
-    }
-    _fs_browser->add_result(list);
-
     // Create new splitter.
     _file.reset(new file::splitter(_path,
                                    file::fs_file::open_read_write_truncate,
-                                   _file_factory, _fs_browser, 10000, true));
+                                   _file_factory, 10000, true));
   }
 
   void TearDown() override { logging::manager::unload(); };
 
  protected:
   std::unique_ptr<file::splitter> _file;
-  test_file_factory* _file_factory;
-  test_fs_browser* _fs_browser;
+  file::cfile_factory* _file_factory;
   std::string _path;
 };
 
@@ -107,7 +101,8 @@ TEST_F(FileSplitterResume, ResumeWrite) {
   // Then
   std::string last_file(_path);
   last_file.append("10");
-  ASSERT_EQ(_file_factory->get(last_file).size(), 108u + 2000u);
+  _file->flush();
+  ASSERT_EQ(misc::filesystem::file_size(last_file), 108u + 2000u);
 }
 
 // Given existing files parts, from 2 to 10
@@ -122,11 +117,9 @@ TEST_F(FileSplitterResume, AutoDelete) {
   ASSERT_THROW(_file->read(buffer, 1), exceptions::shutdown);
 
   // Then
-  std::list<std::string> removed;
   for (int i(2); i <= 10; ++i) {
     std::ostringstream oss;
     oss << _path << i;
-    removed.push_back(oss.str());
+    ASSERT_FALSE(misc::filesystem::file_exists(oss.str()));
   }
-  ASSERT_EQ(removed, _fs_browser->get_removed());
 }

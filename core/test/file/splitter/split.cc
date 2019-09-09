@@ -17,8 +17,8 @@
  *
  */
 #include <gtest/gtest.h>
-#include "../test_file.hh"
-#include "../test_fs_browser.hh"
+#include "com/centreon/broker/file/cfile.hh"
+#include "com/centreon/broker/misc/filesystem.hh"
 #include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/logging/manager.hh"
 
@@ -29,26 +29,29 @@ class FileSplitterSplit : public ::testing::Test {
   void SetUp() override {
     logging::manager::load();
 
-    _path = "/var/lib/centreon-broker/queue";
-    _file_factory = new test_file_factory();
-    _fs_browser = new test_fs_browser();
+    _path = "/tmp/queue";
+    {
+      std::list<std::string> parts{misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
+      for (std::string const& f : parts)
+        std::remove(f.c_str());
+    }
+    _file_factory = new file::cfile_factory();
     _file.reset(new file::splitter(_path,
                                    file::fs_file::open_read_write_truncate,
-                                   _file_factory, _fs_browser, 10008, true));
+                                   _file_factory, 10008, true));
     char buffer[10];
     for (int i(0); i < 10; ++i)
       buffer[i] = i;
     for (int i(0); i < 10001; ++i)
       _file->write(buffer, sizeof(buffer));
-    return;
+    _file->flush();
   }
 
   void TearDown() override { logging::manager::unload(); }
 
  protected:
   std::unique_ptr<file::splitter> _file;
-  test_file_factory* _file_factory;
-  test_fs_browser* _fs_browser;
+  file::cfile_factory* _file_factory;
   std::string _path;
 };
 
@@ -59,15 +62,15 @@ class FileSplitterSplit : public ::testing::Test {
 // And the last file is 18 bytes long
 TEST_F(FileSplitterSplit, MultipleFilesCreated) {
   // Then
-  ASSERT_EQ(_file_factory->get(_path).size(), 10008u);
+  ASSERT_EQ(misc::filesystem::file_size(_path), 10008u);
   for (int i(1); i < 10; ++i) {
     std::ostringstream oss;
     oss << _path << i;
-    ASSERT_EQ(_file_factory->get(oss.str()).size(), 10008u);
+    ASSERT_EQ(misc::filesystem::file_size(oss.str()), 10008u);
   }
   std::string last_file(_path);
   last_file.append("10");
-  ASSERT_EQ(_file_factory->get(last_file).size(), 18u);
+  ASSERT_EQ(misc::filesystem::file_size(last_file), 18u);
 }
 
 // Given a splitter object configured with a max_size of 10008

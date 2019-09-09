@@ -23,7 +23,6 @@
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/file/splitter.hh"
-#include "com/centreon/broker/file/stl_fs_browser.hh"
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/misc/filesystem.hh"
@@ -53,8 +52,10 @@ class read_thread {
     do {
       try {
         std::lock_guard<std::mutex> lock(mutex);
-        ret = _file->read(_buf.data() + _current, _size);
+        ret = _file->read(_buf.data() + _current, _size - _current);
         _current += ret;
+        std::cout << "ret = " << ret << "\nsize = " << _size << "\ncurrent = " << _current << '\n';
+        ASSERT_TRUE(_current <= _size);
       } catch (...) {
       }
       usleep(100);
@@ -106,19 +107,16 @@ class FileSplitterConcurrent : public ::testing::Test {
 
     _path = RETENTION_DIR RETENTION_FILE;
     _remove_files();
-    _file_factory.reset(new cfile_factory());
-    _fs_browser.reset(new stl_fs_browser());
+    cfile_factory* file_factory{new cfile_factory()};
 
-    _file.reset(new file::splitter(
-        _path, file::fs_file::open_read_write_truncate, _file_factory.release(),
-        _fs_browser.release(), 10000, true));
+    _file.reset(new file::splitter(_path,
+                                   file::fs_file::open_read_write_truncate,
+                                   file_factory, 10000, true));
   }
   void TearDown() override { logging::manager::unload(); }
 
  protected:
   std::unique_ptr<file::splitter> _file;
-  std::unique_ptr<cfile_factory> _file_factory;
-  std::unique_ptr<stl_fs_browser> _fs_browser;
   std::string _path;
 
   void _remove_files() {
@@ -158,6 +156,7 @@ TEST_F(FileSplitterConcurrent, DefaultFile) {
 // And when we call the remove_all_files() method
 // Then all the created files are removed.
 TEST_F(FileSplitterConcurrent, MultipleFilesCreated) {
+  _file->remove_all_files();
   write_thread wt(_file.get(), BIG);
   read_thread rt(_file.get(), BIG);
 
@@ -176,6 +175,6 @@ TEST_F(FileSplitterConcurrent, MultipleFilesCreated) {
   // Then
   _file->remove_all_files();
   std::list<std::string> entries =
-      misc::filesystem::dir_content_with_filter(RETENTION_DIR, RETENTION_FILE);
+      misc::filesystem::dir_content_with_filter(RETENTION_DIR, RETENTION_FILE "*");
   ASSERT_EQ(entries.size(), 0);
 }
