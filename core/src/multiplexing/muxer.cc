@@ -293,7 +293,7 @@ void muxer::statistics(json11::Json::object& tree) const {
 
   // Queue file mode.
   bool queue_file_enabled(_file.get());
-  tree["queue_file_enabled"] = queue_file_enabled ? "yes" : "no";
+  tree["queue_file_enabled"] = queue_file_enabled == true;
   if (queue_file_enabled) {
     json11::Json::object queue_file;
     _file->statistics(queue_file);
@@ -306,7 +306,7 @@ void muxer::statistics(json11::Json::object& tree) const {
            _events.begin());
        it != _pos; ++it)
     ++unacknowledged;
-  tree["unacknowledged_events"] = misc::string::get(unacknowledged);
+  tree["unacknowledged_events"] = unacknowledged;
 }
 
 /**
