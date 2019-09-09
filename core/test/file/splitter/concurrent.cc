@@ -107,11 +107,9 @@ class FileSplitterConcurrent : public ::testing::Test {
 
     _path = RETENTION_DIR RETENTION_FILE;
     _remove_files();
-    cfile_factory* file_factory{new cfile_factory()};
 
-    _file.reset(new file::splitter(_path,
-                                   file::fs_file::open_read_write_truncate,
-                                   file_factory, 10000, true));
+    _file.reset(new file::splitter(
+        _path, file::fs_file::open_read_write_truncate, 10000, true));
   }
   void TearDown() override { logging::manager::unload(); }
 

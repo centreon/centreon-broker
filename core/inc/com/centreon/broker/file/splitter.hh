@@ -38,7 +38,6 @@ class splitter : public fs_file {
  public:
   splitter(std::string const& path,
            fs_file::open_mode mode,
-           fs_file_factory* file_factory,
            long max_file_size = 100000000,
            bool auto_delete = false);
   ~splitter();
@@ -65,7 +64,6 @@ class splitter : public fs_file {
 
   bool _auto_delete;
   std::string _base_path;
-  std::unique_ptr<fs_file_factory> _file_factory;
   long _max_file_size;
   std::shared_ptr<fs_file> _rfile;
   int _rid;
@@ -73,21 +71,6 @@ class splitter : public fs_file {
   std::shared_ptr<fs_file> _wfile;
   int _wid;
   long _woffset;
-};
-
-/**
- *  @class splitter_factory splitter.hh "com/centreon/broker/file/splitter.hh"
- *  @brief Create new file splitter.
- *
- *  Factory to create new file splitter.
- */
-class splitter_factory : public fs_file_factory {
- public:
-  fs_file* new_fs_file(std::string const& path, fs_file::open_mode mode);
-  splitter* new_cfile_splitter(std::string const& path,
-                               fs_file::open_mode mode,
-                               long max_file_size = 100000000,
-                               bool auto_delete = false);
 };
 }  // namespace file
 
