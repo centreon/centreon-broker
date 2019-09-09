@@ -98,8 +98,6 @@ void cfile::close() {
  */
 long cfile::read(void* buffer, long max_size) {
   assert(_stream);
-//  if (!_stream)
-//    _open();
   size_t retval(fread(buffer, 1, max_size, _stream));
   if (retval == 0) {
     if (feof(_stream))
@@ -122,8 +120,6 @@ long cfile::read(void* buffer, long max_size) {
  */
 void cfile::seek(long offset, fs_file::seek_whence whence) {
   assert(_stream);
-//  if (!_stream)
-//    _open();
   // Compute cfile's whence.
   int seek_whence;
   switch (whence) {
@@ -158,8 +154,6 @@ void cfile::seek(long offset, fs_file::seek_whence whence) {
  */
 long cfile::tell() {
   assert(_stream);
-//  if (!_stream)
-//    _open();
   long retval(ftell(_stream));
   if (-1 == retval) {
     char const* msg(strerror(errno));
@@ -178,8 +172,6 @@ long cfile::tell() {
  */
 long cfile::write(void const* buffer, long size) {
   assert(_stream);
-//  if (!_stream)
-//    _open();
   size_t retval(fwrite(buffer, 1, size, _stream));
   if (ferror(_stream)) {
     char const* msg(strerror(errno));
