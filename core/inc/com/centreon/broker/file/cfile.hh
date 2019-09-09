@@ -53,18 +53,6 @@ class cfile : public fs_file {
   std::string _path;
   open_mode _mode;
 };
-
-/**
- *  @class cfile_factory cfile.hh "com/centreon/broker/file/cfile.hh"
- *  @brief Build a new cfile.
- *
- *  Build a new cfile.
- */
-class cfile_factory : public fs_file_factory {
- public:
-  cfile* new_cfile(std::string const& path, fs_file::open_mode mode);
-  fs_file* new_fs_file(std::string const& path, fs_file::open_mode mode);
-};
 }  // namespace file
 
 CCB_END()

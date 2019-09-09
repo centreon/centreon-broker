@@ -187,29 +187,3 @@ long cfile::write(void const* buffer, long size) {
 void cfile::flush() {
   fflush(_stream);
 }
-
-/**
- *  Create a new cfile.
- *
- *  @param[in] path  Path to file.
- *  @param[in] mode  Open mode.
- *
- *  @return A new cfile object.
- */
-cfile* cfile_factory::new_cfile(std::string const& path,
-                                fs_file::open_mode mode) {
-  return new cfile(path, mode);
-}
-
-/**
- *  Create a new cfile.
- *
- *  @param[in] path  Path to file.
- *  @param[in] mode  Open mode.
- *
- *  @return A new cfile object.
- */
-fs_file* cfile_factory::new_fs_file(std::string const& path,
-                                    fs_file::open_mode mode) {
-  return new_cfile(path, mode);
-}

@@ -77,11 +77,8 @@ opener& opener::operator=(opener const& other) {
  */
 std::shared_ptr<io::stream> opener::open() {
   // Open splitted file.
-  splitter_factory f;
-  std::unique_ptr<splitter> file(f.new_cfile_splitter(
+  std::shared_ptr<io::stream> retval = std::make_shared<stream>(new splitter(
       _filename, fs_file::open_read_write_truncate, _max_size, _auto_delete));
-  std::shared_ptr<io::stream> retval(std::make_shared<stream>(file.get()));
-  file.release();
   return retval;
 }
 

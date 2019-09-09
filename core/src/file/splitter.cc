@@ -38,19 +38,16 @@ using namespace com::centreon::broker::file;
  *  @param[in] path           Base path to file.
  *  @param[in] mode           Ignored. Files will always be open
  *                            read/write.
- *  @param[in] file_factory   fs_file_factory to work with single files.
  *  @param[in] max_file_size  Maximum single file size.
  *  @param[in] auto_delete    True to delete file parts as they are
  *                            read.
  */
 splitter::splitter(std::string const& path,
                    fs_file::open_mode mode,
-                   fs_file_factory* file_factory,
                    long max_file_size,
                    bool auto_delete)
     : _auto_delete{auto_delete},
       _base_path{path},
-      _file_factory{file_factory},
       _max_file_size{max_file_size},
       _rfile{},
       _rid{0},
@@ -344,9 +341,8 @@ void splitter::_open_read_file() {
     _rfile = _wfile;
   // Otherwise open next file.
   else {
-    std::string file_path(get_file_path(_rid));
-    std::shared_ptr<fs_file> new_file(_file_factory->new_fs_file(
-        file_path, fs_file::open_read_write_no_create));
+    std::string file_path{get_file_path(_rid)};
+    std::shared_ptr<fs_file> new_file{std::make_shared<cfile>(file_path, fs_file::open_read_write_no_create)};
     _rfile = new_file;
   }
   _roffset = 2 * sizeof(uint32_t);
@@ -368,11 +364,9 @@ void splitter::_open_write_file() {
     logging::info(logging::high)
         << "file: opening new file '" << file_path.c_str() << "'";
     try {
-      _wfile.reset(_file_factory->new_fs_file(
-          file_path, fs_file::open_read_write_no_create));
+      _wfile.reset(new cfile(file_path, fs_file::open_read_write_no_create));
     } catch (exceptions::msg const& e) {
-      _wfile.reset(_file_factory->new_fs_file(
-          file_path, fs_file::open_read_write_truncate));
+      _wfile.reset(new cfile(file_path, fs_file::open_read_write_truncate));
     }
   }
 
@@ -396,36 +390,3 @@ void splitter::_open_write_file() {
   }
 }
 
-/**
- *  Build a new default splitter.
- *
- *  @param[in] path  Path to file.
- *  @param[in] mode  Open mode (ignored).
- *
- *  @return A new default splitter.
- */
-fs_file* splitter_factory::new_fs_file(std::string const& path,
-                                       fs_file::open_mode mode) {
-  return new_cfile_splitter(path, mode);
-}
-
-/**
- *  Build a new cfile splitter.
- *
- *  @param[in] path           Path to file.
- *  @param[in] mode           Open mode (ignored).
- *  @param[in] max_file_size  Max single file size.
- *  @param[in] auto_delete    True to delete file parts as they are
- *                            read.
- *
- *  @return A new cfile splitter.
- */
-splitter* splitter_factory::new_cfile_splitter(std::string const& path,
-                                               fs_file::open_mode mode,
-                                               long max_file_size,
-                                               bool auto_delete) {
-  std::unique_ptr<fs_file_factory> f(new cfile_factory());
-  splitter* s(new splitter(path, mode, f.release(), max_file_size,
-                           auto_delete));
-  return s;
-}
