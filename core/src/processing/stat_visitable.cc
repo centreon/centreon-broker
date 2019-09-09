@@ -78,34 +78,18 @@ static std::string dump_filters(std::unordered_set<uint32_t> const& filters) {
  *
  *  @param[in] tree  Tree of information.
  */
-void stat_visitable::stats(io::properties& tree) {
+void stat_visitable::stats(json11::Json::object& tree) {
   std::lock_guard<std::mutex> lock(_stat_mutex);
-  tree.add_property("state", io::property("state", _get_state()));
-  tree.add_property(
-      "read_filters",
-      io::property("read_filters", dump_filters(_get_read_filters())));
-  tree.add_property(
-      "write_filters",
-      io::property("write_filters", dump_filters(_get_write_filters())));
-  tree.add_property(
-      "event_processing_speed",
-      io::property(
-          "event_processing_speed",
-          misc::string::get(_event_processing_speed.get_processing_speed())));
-  tree.add_property("last_connection_attempt",
-                    io::property("last_connection_attempt",
-                                 misc::string::get(_last_connection_attempt)));
-  tree.add_property("last_connection_success",
-                    io::property("last_connection_success",
-                                 misc::string::get(_last_connection_success)));
-  tree.add_property(
-      "last_event_at",
-      io::property(
-          "last_event_at",
-          misc::string::get(_event_processing_speed.get_last_event_time())));
-  tree.add_property(
-      "queued_events",
-      io::property("queued_events", misc::string::get(_get_queued_events())));
+  tree["state"] = _get_state();
+  tree["read_filters"] = dump_filters(_get_read_filters());
+  tree["write_filters"]  = dump_filters(_get_write_filters());
+  tree["event_processing_speed"] =
+    misc::string::get(_event_processing_speed.get_processing_speed());
+  tree["last_connection_attempt"] = misc::string::get(_last_connection_attempt);
+  tree["last_connection_success"] = misc::string::get(_last_connection_success);
+  tree["last_event_at"] =
+    misc::string::get(_event_processing_speed.get_last_event_time());
+  tree["queued_events"] = misc::string::get(_get_queued_events());
 
   // Forward the stats.
   _forward_statistic(tree);
@@ -167,6 +151,6 @@ void stat_visitable::tick(unsigned int events) {
  *
  *  @param[in] tree  The tree gathering the stats.
  */
-void stat_visitable::_forward_statistic(io::properties& tree) {
+void stat_visitable::_forward_statistic(json11::Json::object& tree) {
   (void)tree;
 }

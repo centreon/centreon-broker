@@ -29,7 +29,8 @@ TEST(Filesystem, Mkpath) {
 
 TEST(Filesystem, DirContent) {
   system(
-      "touch /tmp/foo/a /tmp/foo/ar /tmp/foo/ca /tmp/foo/bar/aa "
+      "rm -fr /tmp/foo && mkdir -p /tmp/foo/bar/incredible "
+      "&& touch /tmp/foo/a /tmp/foo/ar /tmp/foo/ca /tmp/foo/bar/aa "
       "/tmp/foo/bar/bb /tmp/foo/bar/incredible/cc");
   std::list<std::string> lst{dir_content("/tmp/foo", true)};
   ASSERT_EQ(lst.size(), 6u);

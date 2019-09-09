@@ -287,19 +287,17 @@ void muxer::nack_events() {
  *
  *  @param[out] buffer Output buffer.
  */
-void muxer::statistics(io::properties& tree) const {
+void muxer::statistics(json11::Json::object& tree) const {
   // Lock object.
   std::lock_guard<std::mutex> lock(_mutex);
 
   // Queue file mode.
   bool queue_file_enabled(_file.get());
-  tree.add_property(
-      "queue_file_enabled",
-      io::property("queue_file_enabled", queue_file_enabled ? "yes" : "no"));
+  tree["queue_file_enabled"] = queue_file_enabled ? "yes" : "no";
   if (queue_file_enabled) {
-    io::properties queue_file;
+    json11::Json::object queue_file;
     _file->statistics(queue_file);
-    tree.add_child(queue_file, "queue_file");
+    tree["queue_file"] = queue_file;
   }
 
   // Unacknowledged events count.
@@ -308,9 +306,7 @@ void muxer::statistics(io::properties& tree) const {
            _events.begin());
        it != _pos; ++it)
     ++unacknowledged;
-  tree.add_property(
-      "unacknowledged_events",
-      io::property("unacknowledged_events", misc::string::get(unacknowledged)));
+  tree["unacknowledged_events"] = misc::string::get(unacknowledged);
 }
 
 /**

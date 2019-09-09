@@ -22,7 +22,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include "com/centreon/broker/io/properties.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -50,7 +49,7 @@ class endpoint {
   bool is_acceptor() const throw();
   bool is_connector() const throw();
   virtual std::shared_ptr<stream> open() = 0;
-  virtual void stats(io::properties& tree);
+  virtual void stats(json11::Json::object& tree);
   void set_filter(std::set<unsigned int> const& filter);
 
  protected:

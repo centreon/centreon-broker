@@ -29,29 +29,42 @@ set(STATS "15-stats")
 set(STATS "${STATS}" PARENT_SCOPE)
 add_library("${STATS}" SHARED
   # Sources.
-  "${SRC_DIR}/builder.cc"
-  "${SRC_DIR}/config.cc"
-  "${SRC_DIR}/generator.cc"
-  "${SRC_DIR}/main.cc"
-  "${SRC_DIR}/metric.cc"
-  "${SRC_DIR}/parser.cc"
-  "${SRC_DIR}/json_serializer.cc"
-  "${SRC_DIR}/worker.cc"
+  ${SRC_DIR}/builder.cc
+  ${SRC_DIR}/config.cc
+  ${SRC_DIR}/generator.cc
+  ${SRC_DIR}/main.cc
+  ${SRC_DIR}/metric.cc
+  ${SRC_DIR}/parser.cc
+  ${SRC_DIR}/worker.cc
   # Headers.
-  "${INC_DIR}/builder.hh"
-  "${INC_DIR}/config.hh"
-  "${INC_DIR}/generator.hh"
-  "${INC_DIR}/metric.hh"
-  "${INC_DIR}/parser.hh"
-  "${INC_DIR}/serializer.hh"
-  "${INC_DIR}/json_serializer.hh"
-  "${INC_DIR}/worker.hh"
+  ${INC_DIR}/builder.hh
+  ${INC_DIR}/config.hh
+  ${INC_DIR}/generator.hh
+  ${INC_DIR}/metric.hh
+  ${INC_DIR}/parser.hh
+  ${INC_DIR}/worker.hh
 )
 add_dependencies("${STATS}" Asio)
 set_target_properties("${STATS}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS}")
 target_link_libraries("${STATS}")
+
+# Testing.
+if (WITH_TESTING)
+  set(
+    TESTS_SOURCES
+    ${TESTS_SOURCES}
+    ${TEST_DIR}/stats.cc
+    PARENT_SCOPE
+  )
+  set(
+    TESTS_LIBRARIES
+    ${TESTS_LIBRARIES}
+    ${STATS}
+    PARENT_SCOPE
+  )
+endif(WITH_TESTING)
 
 # Install rule.
 install(TARGETS "${STATS}"

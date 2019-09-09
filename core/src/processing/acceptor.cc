@@ -205,7 +205,7 @@ std::unordered_set<uint32_t> const& acceptor::_get_write_filters() const {
  *
  *  @param[in] tree  The tree.
  */
-void acceptor::_forward_statistic(io::properties& tree) {
+void acceptor::_forward_statistic(json11::Json::object& tree) {
   // Get statistic of acceptor.
   _endp->stats(tree);
   // Get statistics of feeders
@@ -213,9 +213,9 @@ void acceptor::_forward_statistic(io::properties& tree) {
            it(_feeders.begin()),
        end(_feeders.end());
        it != end; ++it) {
-    io::properties subtree;
+    json11::Json::object subtree;
     (*it)->stats(subtree);
-    tree.add_child(subtree, (*it)->get_name());
+    tree[(*it)->get_name()] = subtree;
   }
 }
 

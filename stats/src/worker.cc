@@ -31,7 +31,6 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/stats/builder.hh"
-#include "com/centreon/broker/stats/json_serializer.hh"
 
 using namespace com::centreon::broker::stats;
 
@@ -154,8 +153,7 @@ void worker::_run() {
           if (_buffer.empty()) {
             // Generate statistics.
             builder stats_builder;
-            stats_builder.build(
-                static_cast<serializer const&>(json_serializer()));
+            stats_builder.build();
             _buffer = stats_builder.data();
           }
 

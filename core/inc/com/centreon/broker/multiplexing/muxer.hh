@@ -20,6 +20,7 @@
 #define CCB_MULTIPLEXING_MUXER_HH
 
 #include <condition_variable>
+#include <list>
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -60,7 +61,7 @@ class muxer : public io::stream {
   unsigned int get_event_queue_size() const;
   void nack_events();
   void remove_queue_files();
-  void statistics(io::properties& tree) const;
+  void statistics(json11::Json::object& tree) const;
   void wake();
   int write(std::shared_ptr<io::data> const& d);
 

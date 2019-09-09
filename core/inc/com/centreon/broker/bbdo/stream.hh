@@ -48,7 +48,7 @@ class stream : public input, public output {
   void set_coarse(bool coarse);
   void set_negotiate(bool negotiate, std::string const& extensions = "");
   void set_timeout(int timeout);
-  void statistics(io::properties& tree) const override;
+  void statistics(json11::Json::object& tree) const override;
   int write(std::shared_ptr<io::data> const& d) override;
   void acknowledge_events(unsigned int events) override;
   void send_event_acknowledgement();

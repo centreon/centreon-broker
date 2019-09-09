@@ -55,7 +55,7 @@ class acceptor : public io::endpoint {
   ~acceptor();
   acceptor& operator=(acceptor const& other);
   std::shared_ptr<io::stream> open() override;
-  void stats(io::properties& tree) override;
+  void stats(json11::Json::object& tree) override;
 
  private:
   unsigned int _negotiate_features(std::shared_ptr<io::stream> stream,

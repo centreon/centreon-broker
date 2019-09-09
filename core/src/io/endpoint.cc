@@ -95,7 +95,7 @@ bool endpoint::is_connector() const throw() {
  *
  *  @param[out] tree Properties tree.
  */
-void endpoint::stats(io::properties& tree) {
+void endpoint::stats(json11::Json::object& tree) {
   if (_from)
     _from->stats(tree);
 }

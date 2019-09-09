@@ -51,7 +51,7 @@ class acceptor : public io::endpoint {
   void remove_child(std::string const& child);
   void set_read_timeout(int secs);
   void set_write_timeout(int secs);
-  void stats(io::properties& tree);
+  void stats(json11::Json::object& tree);
 
  private:
   acceptor(acceptor const& other);

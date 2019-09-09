@@ -187,7 +187,7 @@ std::unordered_set<uint32_t> const& feeder::_get_write_filters() const {
  *
  *  @param[in] tree  The statistic tree.
  */
-void feeder::_forward_statistic(io::properties& tree) {
+void feeder::_forward_statistic(json11::Json::object& tree) {
   if (_client_mutex.try_lock_shared_for(300)) {
     if (_client)
       _client->statistics(tree);
