@@ -279,7 +279,7 @@ bool luabinding::_parse_event(std::shared_ptr<io::data>& d) {
               break;
             case mapping::source::SHORT:
               current_entry->set_short(*t,
-                                       static_cast<short>(it->second.as_int()));
+                                       static_cast<short>(it->second.as_long()));
               break;
             case mapping::source::STRING:
               current_entry->set_string(*t, it->second.as_string());
