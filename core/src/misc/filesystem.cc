@@ -41,12 +41,19 @@ std::list<std::string> filesystem::dir_content(std::string const& path,
   DIR* dir{opendir(path.c_str())};
   if (dir) {
     struct dirent* ent;
+    bool add_slash;
+    if (path.size() > 0 && path[path.size() - 1] == '/')
+      add_slash = false;
+    else
+      add_slash = true;
     while ((ent = readdir(dir))) {
       if (strncmp(ent->d_name, ".", 2) == 0 ||
           strncmp(ent->d_name, "..", 3) == 0)
         continue;
       std::string fullname{path};
-      fullname.append("/").append(ent->d_name);
+      if (add_slash)
+        fullname.append("/");
+      fullname.append(ent->d_name);
       if (recursive && ent->d_type == DT_DIR) {
         std::list<std::string> res{filesystem::dir_content(fullname, true)};
         retval.splice(retval.end(), res);
@@ -89,6 +96,21 @@ std::list<std::string> filesystem::dir_content_with_filter(
       retval.push_back(std::move(f));
   }
   return retval;
+}
+
+/**
+ *  Check if the file exists.
+ *
+ * @param path The file name
+ *
+ * @return a boolean.
+ */
+bool filesystem::file_exists(std::string const& path) {
+  struct stat info;
+  if (stat(path.c_str(), &info) != 0)
+    return false;
+
+  return info.st_mode & S_IFREG;
 }
 
 /**

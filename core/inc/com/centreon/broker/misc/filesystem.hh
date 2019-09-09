@@ -30,6 +30,7 @@ namespace filesystem {
 std::list<std::string> dir_content(std::string const& path, bool recursive);
 std::list<std::string> dir_content_with_filter(std::string const& path,
                                                std::string const& filter);
+bool file_exists(std::string const& path);
 bool dir_exists(std::string const& path);
 bool mkpath(std::string const& path);
 int64_t file_size(std::string const& path);

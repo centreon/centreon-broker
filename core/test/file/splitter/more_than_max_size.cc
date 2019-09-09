@@ -17,10 +17,10 @@
  *
  */
 #include <gtest/gtest.h>
-#include "../test_file.hh"
-#include "../test_fs_browser.hh"
+#include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#include "com/centreon/broker/misc/filesystem.hh"
 
 using namespace com::centreon::broker;
 
@@ -28,21 +28,23 @@ class FileSplitterMoreThanMaxSize : public ::testing::Test {
  public:
   void SetUp() override {
     logging::manager::load();
-    _path = "/var/lib/centreon-broker/queue";
-    _file_factory = new test_file_factory();
-    _fs_browser = new test_fs_browser();
+    _path = "/tmp/queue";
+    {
+      std::list<std::string> parts{
+          misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
+      for (std::string const& f : parts)
+        std::remove(f.c_str());
+    }
+    file::cfile_factory* file_factory = new file::cfile_factory();
     _file.reset(new file::splitter(_path,
                                    file::fs_file::open_read_write_truncate,
-                                   _file_factory, _fs_browser, 10000, true));
-    return;
+                                   file_factory, 10000, true));
   }
 
   void TearDown() override { logging::manager::unload(); };
 
  protected:
   std::unique_ptr<file::splitter> _file;
-  test_file_factory* _file_factory;
-  test_fs_browser* _fs_browser;
   std::string _path;
 };
 
@@ -60,12 +62,15 @@ TEST_F(FileSplitterMoreThanMaxSize, MoreThanMaxSizeToNextFile) {
   // When
   _file->write(buffer, sizeof(buffer));
 
+  // We force the writing to be done
+  _file->flush();
+
   // Then
-  std::string first_file(_path);
-  ASSERT_EQ(_file_factory->get(first_file).size(), 9u);
-  std::string second_file(_path);
+  std::string first_file{_path};
+  ASSERT_EQ(misc::filesystem::file_size(first_file), 9u);
+  std::string second_file{_path};
   second_file.append("1");
-  ASSERT_EQ(_file_factory->get(second_file).size(), sizeof(buffer) + 8);
+  ASSERT_EQ(misc::filesystem::file_size(second_file), sizeof(buffer) + 8);
 }
 
 // Given a splitter object configured with a max_size of 10000

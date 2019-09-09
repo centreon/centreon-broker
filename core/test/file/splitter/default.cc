@@ -17,11 +17,11 @@
  *
  */
 #include <gtest/gtest.h>
-#include "../test_file.hh"
-#include "../test_fs_browser.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
+#include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/file/splitter.hh"
 #include "com/centreon/broker/logging/manager.hh"
+#include "com/centreon/broker/misc/filesystem.hh"
 
 using namespace com::centreon::broker;
 
@@ -29,20 +29,24 @@ class FileSplitterDefault : public ::testing::Test {
  public:
   void SetUp() override {
     logging::manager::load();
-    _path = "queue";
-    _file_factory = new test_file_factory();
-    _fs_browser = new test_fs_browser();
-    _file.reset(new file::splitter(_path,
-                                   file::fs_file::open_read_write_truncate,
-                                   _file_factory, _fs_browser, 10000, true));
+    _path = "/tmp/queue";
+    {
+      std::list<std::string> parts{misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
+      for (std::string const& f : parts)
+        std::remove(f.c_str());
+    }
+    file::cfile_factory* file_factory = new file::cfile_factory();
+    _file = new file::splitter(_path, file::fs_file::open_read_write_truncate,
+                               file_factory, 10000, true);
   }
 
-  void TearDown() override { logging::manager::unload(); }
+  void TearDown() override {
+    delete _file;
+    logging::manager::unload();
+  }
 
  protected:
-  std::unique_ptr<file::splitter> _file;
-  test_file_factory* _file_factory;
-  test_fs_browser* _fs_browser;
+  file::splitter* _file;
   std::string _path;
 };
 
@@ -51,7 +55,8 @@ class FileSplitterDefault : public ::testing::Test {
 // Then a file is created with a size of 8 bytes
 TEST_F(FileSplitterDefault, DefaultFile) {
   // Then
-  ASSERT_EQ(_file_factory->get(_path).size(), 8u);
+  ASSERT_TRUE(_file->get_file_path(_file->get_wid()) == "/tmp/queue");
+  ASSERT_EQ(_file->get_woffset(), 8u);
 }
 
 // Given a splitter object
@@ -72,8 +77,8 @@ TEST_F(FileSplitterDefault, WriteReturnsNumberOfBytes) {
 TEST_F(FileSplitterDefault, FirstReadNoDataAndRemove) {
   // Then
   char buffer[10];
-  ASSERT_THROW(_file->read(buffer, sizeof(buffer)), exceptions::shutdown);
+  ASSERT_THROW(_file->read(buffer, sizeof(buffer)), exceptions::msg);
   std::list<std::string> removed;
   removed.push_back(_path);
-  ASSERT_EQ(_fs_browser->get_removed(), removed);
+  ASSERT_FALSE(misc::filesystem::file_exists(_path));
 }

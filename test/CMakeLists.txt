@@ -86,14 +86,6 @@ add_executable(ut
         ${TESTS_DIR}/file/splitter/permission_denied.cc
         ${TESTS_DIR}/file/splitter/resume.cc
         ${TESTS_DIR}/file/splitter/split.cc
-        #${TESTS_DIR}/file/stream/max_size.cc
-        #${TESTS_DIR}/file/stream/mixed.cc
-        #${TESTS_DIR}/file/stream/read.cc
-        #${TESTS_DIR}/file/stream/write.cc
-        ${TESTS_DIR}/file/test_file.hh
-        ${TESTS_DIR}/file/test_file.cc
-        ${TESTS_DIR}/file/test_fs_browser.hh
-        ${TESTS_DIR}/file/test_fs_browser.cc
         ${TESTS_DIR}/misc/exec.cc
         ${TESTS_DIR}/misc/filesystem.cc
         ${TESTS_DIR}/misc/misc.cc
