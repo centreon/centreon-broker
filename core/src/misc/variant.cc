@@ -238,9 +238,12 @@ uint64_t variant::as_ulong() const {
  * @return the value or 0 in the case of none.
  */
 double variant::as_double() const {
-  assert(_type == type_double || _type == type_none);
+  assert(_type == type_double || _type == type_none || _type == type_ulong ||
+         _type == type_long);
   if (_type == type_none)
     return 0;
+  else if (_type == type_ulong || _type == type_long)
+    return static_cast<double>(_long_value);
   else
     return _dbl_value;
 }
