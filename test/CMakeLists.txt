@@ -50,6 +50,7 @@ include_directories(${source_dir}/googletest/include)
 # Tests directory.
 set(TESTS_DIR ${PROJECT_SOURCE_DIR}/core/test)
 set(BAM_TESTS_DIR ${PROJECT_SOURCE_DIR}/bam/test)
+set(WDOG_TESTS_DIR ${PROJECT_SOURCE_DIR}/watchdog/test)
 
 # Include directories.
 include_directories(${PROJECT_SOURCE_DIR}/bam/inc)
@@ -58,10 +59,12 @@ include_directories(${PROJECT_SOURCE_DIR}/lua/inc)
 include_directories(${PROJECT_SOURCE_DIR}/neb/inc)
 include_directories(${PROJECT_SOURCE_DIR}/rrd/inc)
 include_directories(${PROJECT_SOURCE_DIR}/simu/inc)
+include_directories(${PROJECT_SOURCE_DIR}/stats/inc)
 
 # needed by module.cc
 add_definitions(-DCENTREON_BROKER_TEST_MODULE_PATH="${CMAKE_BINARY_DIR}/test/")
 add_definitions(-DCENTREON_BROKER_BAM_TEST_PATH="${BAM_TESTS_DIR}")
+add_definitions(-DCENTREON_BROKER_WD_TEST="${WDOG_TESTS_DIR}")
 
 add_library(null_module SHARED ${TEST_DIR}/modules/null_module.cc)
 add_library(bad_version_module SHARED ${TEST_DIR}/modules/bad_version_module.cc)

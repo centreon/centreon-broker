@@ -265,7 +265,7 @@ int output::flush() {
  *
  *  @param[out] tree Output tree.
  */
-void output::statistics(io::properties& tree) const {
+void output::statistics(json11::Json::object& tree) const {
   if (_substream)
     _substream->statistics(tree);
 }

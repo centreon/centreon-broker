@@ -495,10 +495,10 @@ std::unordered_set<uint32_t> const& failover::_get_write_filters() const {
  *
  *  @param[in] tree  The tree.
  */
-void failover::_forward_statistic(io::properties& tree) {
+void failover::_forward_statistic(json11::Json::object& tree) {
   {
     std::lock_guard<std::mutex> lock(_statusm);
-    tree.add_property("status", io::property("status", _status));
+    tree["status"] = _status;
   }
   {
     std::unique_lock<std::timed_mutex> stream_lock(_streamm, std::defer_lock);
@@ -506,13 +506,13 @@ void failover::_forward_statistic(io::properties& tree) {
       if (_stream)
         _stream->statistics(tree);
     } else
-      tree.add_property("status", io::property("status", "busy"));
+      tree["status"] = "busy";
   }
   _subscriber->get_muxer().statistics(tree);
-  io::properties subtree;
+  json11::Json::object subtree;
   if (_failover)
     _failover->stats(subtree);
-  tree.add_child(subtree, "failover");
+  tree["failover"] = subtree;
 }
 
 /**************************************

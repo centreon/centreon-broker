@@ -49,7 +49,7 @@ class monitoring_stream : public io::stream {
   int flush();
   void initialize();
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
-  void statistics(io::properties& tree) const;
+  void statistics(json11::Json::object& tree) const;
   void update();
   int write(std::shared_ptr<io::data> const& d);
 

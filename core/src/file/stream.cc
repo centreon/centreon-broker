@@ -90,7 +90,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @param[out] buffer Output buffer.
  */
-void stream::statistics(io::properties& tree) const {
+void stream::statistics(json11::Json::object& tree) const {
   // Get base properties.
   long max_file_size(_file->get_max_file_size());
   int rid(_file->get_rid());
@@ -101,30 +101,21 @@ void stream::statistics(io::properties& tree) const {
   // Easy to print.
   std::ostringstream oss;
   {
-    tree.add_property("file_read_path",
-                      io::property("file_read_path", misc::string::get(rid)));
+    tree["file_read_path"] = misc::string::get(rid);
   }
   {
-    tree.add_property(
-        "file_read_offset",
-        io::property("file_read_offset", misc::string::get(roffset)));
+    tree["file_read_offset"] = misc::string::get(roffset);
   }
   {
-    tree.add_property("file_write_path",
-                      io::property("file_write_path", misc::string::get(wid)));
+    tree["file_write_path"] = misc::string::get(wid);
   }
   {
-    tree.add_property(
-        "file_write_offset",
-        io::property("file_write_offset", misc::string::get(woffset)));
+    tree["file_write_offset"] = misc::string::get(woffset);
   }
   {
-    tree.add_property(
-        "file_max_size",
-        io::property("file_max_size",
-                     max_file_size != std::numeric_limits<long>::max()
+    tree["file_max_size"] = (max_file_size != std::numeric_limits<long>::max())
                          ? misc::string::get(max_file_size)
-                         : "unlimited"));
+                         : "unlimited";
   }
 
   // Need computation.
@@ -132,8 +123,6 @@ void stream::statistics(io::properties& tree) const {
   long long froffset(roffset + rid * static_cast<long long>(max_file_size));
   long long fwoffset(woffset + wid * static_cast<long long>(max_file_size));
   {
-    io::property& p(tree["file_percent_processed"]);
-    p.set_name("file_percent_processed");
     oss.str("");
     if (((rid != wid) && max_file_size == std::numeric_limits<long>::max()) ||
         !fwoffset) {
@@ -142,7 +131,7 @@ void stream::statistics(io::properties& tree) const {
       oss << 100.0 * froffset / fwoffset << "%";
       write_time_expected = true;
     }
-    p.set_value(oss.str());
+    tree["file_percent_processed"] = oss.str();
   }
   if (write_time_expected) {
     time_t now(time(nullptr));
@@ -150,10 +139,7 @@ void stream::statistics(io::properties& tree) const {
     if (_last_time && (now != _last_time)) {
       time_t eta(0);
       {
-        io::property& p(tree["file_expected_terminated_at"]);
         oss.str("");
-        p.set_name("file_expected_terminated_at");
-
         unsigned long long div(froffset + _last_write_offset -
                                _last_read_offset - fwoffset);
         if (div == 0)
@@ -162,18 +148,15 @@ void stream::statistics(io::properties& tree) const {
           eta = now + (fwoffset - froffset) * (now - _last_time) / div;
           oss << eta;
         }
-        p.set_value(oss.str());
+        tree["file_expected_terminated_at"] = oss.str();
       }
 
       if (max_file_size == std::numeric_limits<long>::max()) {
-        io::property& p(tree["file_expected_max_size"]);
         oss.str("");
-        p.set_name("file_expected_max_size");
         oss << fwoffset + (fwoffset - _last_write_offset) * (eta - now) /
                               (now - _last_time);
 
-        p.set_value(oss.str());
-        p.set_graphable(false);
+        tree["file_expected_max_size"] = oss.str();
       }
     }
 

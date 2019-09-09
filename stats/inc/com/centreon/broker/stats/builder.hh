@@ -19,10 +19,9 @@
 #ifndef CCB_STATS_BUILDER_HH
 #define CCB_STATS_BUILDER_HH
 
+#include <json11.hpp>
 #include <string>
-#include "com/centreon/broker/io/properties.hh"
 #include "com/centreon/broker/namespace.hh"
-#include "com/centreon/broker/stats/serializer.hh"
 
 CCB_BEGIN()
 
@@ -42,16 +41,16 @@ class builder {
   builder(builder const& right);
   ~builder() throw();
   builder& operator=(builder const& right);
-  void build(serializer const& srz);
+  void build();
   std::string const& data() const throw();
-  io::properties const& root() const throw();
+  json11::Json const& root() const throw();
 
  private:
   static std::string _generate_stats_for_endpoint(processing::bthread* fo,
-                                                  io::properties& tree);
+                                                  json11::Json::object& tree);
 
   std::string _data;
-  io::properties _root;
+  json11::Json _root;
 };
 }  // namespace stats
 

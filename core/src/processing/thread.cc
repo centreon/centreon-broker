@@ -18,7 +18,6 @@
 
 #include "com/centreon/broker/processing/thread.hh"
 #include <iostream>
-#include "com/centreon/broker/io/properties.hh"
 
 using namespace com::centreon::broker::processing;
 
