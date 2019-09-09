@@ -23,7 +23,6 @@
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/file/cfile.hh"
 #include "com/centreon/broker/file/splitter.hh"
-#include "com/centreon/broker/file/stl_fs_browser.hh"
 #include "com/centreon/broker/file/stream.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/misc/filesystem.hh"
