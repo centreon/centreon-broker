@@ -254,9 +254,9 @@ void stream::set_timeout(int timeout) {
  *  @param[out] tree Output tree.
  */
 void stream::statistics(json11::Json::object& tree) const {
-  tree["bbdo_input_ack_limit"] = misc::string::get(_ack_limit);
+  tree["bbdo_input_ack_limit"] = static_cast<double>(_ack_limit);
   tree["bbdo_unacknowledged_events"] =
-      misc::string::get(_events_received_since_last_ack);
+    static_cast<double>(_events_received_since_last_ack);
 
   output::statistics(tree);
 }
