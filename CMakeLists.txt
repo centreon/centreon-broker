@@ -404,12 +404,10 @@ set(LIBROKER_SOURCES
         ${SRC_DIR}/file/directory_watcher.cc
         ${SRC_DIR}/file/factory.cc
         ${SRC_DIR}/file/fifo.cc
-        ${SRC_DIR}/file/fs_browser.cc
         ${SRC_DIR}/file/fs_file.cc
         ${SRC_DIR}/file/internal.cc
         ${SRC_DIR}/file/opener.cc
         ${SRC_DIR}/file/splitter.cc
-        ${SRC_DIR}/file/stl_fs_browser.cc
         ${SRC_DIR}/file/stream.cc
         ${SRC_DIR}/instance_broadcast.cc
         ${SRC_DIR}/io/data.cc
@@ -524,12 +522,10 @@ set(LIBROKER_SOURCES
         ${INC_DIR}/file/directory_watcher.hh
         ${INC_DIR}/file/factory.hh
         ${INC_DIR}/file/fifo.hh
-        ${INC_DIR}/file/fs_browser.hh
         ${INC_DIR}/file/fs_file.hh
         ${INC_DIR}/file/internal.hh
         ${INC_DIR}/file/opener.hh
         ${INC_DIR}/file/splitter.hh
-        ${INC_DIR}/file/stl_fs_browser.hh
         ${INC_DIR}/file/stream.hh
         ${INC_DIR}/instance_broadcast.hh
         ${INC_DIR}/io/data.hh

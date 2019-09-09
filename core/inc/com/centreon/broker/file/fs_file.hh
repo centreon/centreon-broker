@@ -48,6 +48,7 @@ class fs_file {
   virtual void seek(long offset, seek_whence whence = seek_start) = 0;
   virtual long tell() = 0;
   virtual long write(void const* buffer, long size) = 0;
+  virtual void flush() = 0;
 
  private:
   fs_file(fs_file const& other);

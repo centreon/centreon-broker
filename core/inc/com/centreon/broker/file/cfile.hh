@@ -34,17 +34,19 @@ namespace file {
  */
 class cfile : public fs_file {
  public:
+  cfile() = delete;
+  cfile(cfile const& other) = delete;
   cfile(std::string const& path, fs_file::open_mode mode);
+  cfile& operator=(cfile const& other) = delete;
   ~cfile();
   void close();
   long read(void* buffer, long max_size);
   void seek(long offset, fs_file::seek_whence = fs_file::seek_start);
   long tell();
-  long write(void const* buffer, long size);
+  long write(void const* buffer, long size) override;
+  void flush() override;
 
  private:
-  cfile(cfile const& right);
-  cfile& operator=(cfile const& right);
   void _open();
 
   FILE* _stream;
