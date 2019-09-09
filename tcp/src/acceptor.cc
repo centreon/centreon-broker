@@ -128,7 +128,7 @@ void acceptor::set_write_timeout(int secs) {
  *
  *  @param[out] tree Buffer in which statistics will be written.
  */
-void acceptor::stats(io::properties& tree) {
+void acceptor::stats(json11::Json::object& tree) {
   std::lock_guard<std::mutex> children_lock(_childrenm);
   std::ostringstream oss;
   oss << _children.size() << ": ";
@@ -136,7 +136,5 @@ void acceptor::stats(io::properties& tree) {
        end(_children.end());
        it != end; ++it)
     oss << ", " << *it;
-  io::property& p(tree["peers"]);
-  p.set_name("peers");
-  p.set_value(oss.str());
+  tree["peers"] = oss.str();
 }

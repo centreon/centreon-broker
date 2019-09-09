@@ -41,7 +41,7 @@ class output : virtual public io::stream {
   virtual ~output();
   output& operator=(output const& other) = delete;
   int flush();
-  void statistics(io::properties& tree) const;
+  void statistics(json11::Json::object& tree) const;
   virtual int write(std::shared_ptr<io::data> const& e);
 };
 }  // namespace bbdo

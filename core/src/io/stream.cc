@@ -93,7 +93,7 @@ void stream::set_substream(std::shared_ptr<stream> substream) {
  *
  *  @param[out] tree Output tree.
  */
-void stream::statistics(io::properties& tree) const {
+void stream::statistics(json11::Json::object& tree) const {
   (void)tree;
 }
 

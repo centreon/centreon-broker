@@ -19,6 +19,7 @@
 #ifndef CCB_EXTCMD_COMMAND_LISTENER_HH
 #define CCB_EXTCMD_COMMAND_LISTENER_HH
 
+#include <list>
 #include <map>
 #include <mutex>
 #include "com/centreon/broker/extcmd/command_result.hh"

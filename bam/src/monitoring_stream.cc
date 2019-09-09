@@ -155,10 +155,10 @@ bool monitoring_stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @param[out] tree Output tree.
  */
-void monitoring_stream::statistics(io::properties& tree) const {
+void monitoring_stream::statistics(json11::Json::object& tree) const {
   std::lock_guard<std::mutex> lock(_statusm);
   if (!_status.empty())
-    tree.add_property("status", io::property("status", _status));
+    tree["status"] = _status;
 }
 
 /**

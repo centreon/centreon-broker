@@ -19,11 +19,11 @@
 #ifndef CCB_IO_STREAM_HH
 #define CCB_IO_STREAM_HH
 
+#include <json11.hpp>
 #include <ctime>
 #include <memory>
 #include <string>
 #include "com/centreon/broker/io/data.hh"
-#include "com/centreon/broker/io/properties.hh"
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -59,7 +59,7 @@ class stream {
   virtual bool read(std::shared_ptr<io::data>& d,
                     time_t deadline = (time_t)-1) = 0;
   virtual void set_substream(std::shared_ptr<stream> substream);
-  virtual void statistics(io::properties& tree) const;
+  virtual void statistics(json11::Json::object& tree) const;
   virtual void update();
   bool validate(std::shared_ptr<io::data> const& d, std::string const& error);
   virtual int write(std::shared_ptr<data> const& d) = 0;

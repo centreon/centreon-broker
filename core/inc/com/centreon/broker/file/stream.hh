@@ -41,7 +41,7 @@ class stream : public io::stream {
   std::string peer() const;
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
   void remove_all_files();
-  void statistics(io::properties& tree) const;
+  void statistics(json11::Json::object& tree) const;
   int write(std::shared_ptr<io::data> const& d);
 
  private:

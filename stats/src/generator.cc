@@ -23,7 +23,6 @@
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/stats/builder.hh"
 #include "com/centreon/broker/stats/config.hh"
-#include "com/centreon/broker/stats/json_serializer.hh"
 #include "com/centreon/broker/stats/metric.hh"
 
 using namespace com::centreon::broker;
@@ -83,7 +82,7 @@ void generator::_run() {
       logging::info(logging::medium)
           << "stats: time has come to generate statistics";
       builder b;
-      b.build(json_serializer());
+      b.build();
     }
   } catch (std::exception const& e) {
     logging::error(logging::high)

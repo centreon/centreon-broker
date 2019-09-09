@@ -151,11 +151,8 @@ std::shared_ptr<io::stream> acceptor::open() {
  *
  *  @param[out] tree Properties tree.
  */
-void acceptor::stats(io::properties& tree) {
-  io::property& p(tree["one_peer_retention_mode"]);
-  p.set_name("one_peer_retention_mode");
-  p.set_value(_one_peer_retention_mode ? "true" : "false");
-  p.set_graphable(false);
+void acceptor::stats(json11::Json::object& tree) {
+  tree["one_peer_retention_mode"] = _one_peer_retention_mode ? "true" : "false";
   if (_from)
     _from->stats(tree);
   return;

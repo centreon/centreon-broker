@@ -198,7 +198,7 @@ bool stream::read(std::shared_ptr<io::data>& data, time_t deadline) {
  *
  *  @param[out] buffer Output buffer.
  */
-void stream::statistics(io::properties& tree) const {
+void stream::statistics(json11::Json::object& tree) const {
   if (_substream)
     _substream->statistics(tree);
   return;

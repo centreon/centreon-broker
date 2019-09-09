@@ -19,10 +19,10 @@
 #ifndef CCB_PROCESSING_STAT_VISITABLE_HH
 #define CCB_PROCESSING_STAT_VISITABLE_HH
 
+#include <json11.hpp>
 #include <mutex>
 #include <string>
 #include <unordered_set>
-#include "com/centreon/broker/io/properties.hh"
 #include "com/centreon/broker/misc/processing_speed_computer.hh"
 #include "com/centreon/broker/timestamp.hh"
 
@@ -41,7 +41,7 @@ class stat_visitable {
 
   std::string const& get_name() const;
   void set_last_error(std::string const& last_error);
-  virtual void stats(io::properties& tree);
+  virtual void stats(json11::Json::object& tree);
   void set_last_connection_attempt(timestamp last_connection_attempt);
   void set_last_connection_success(timestamp last_connection_success);
   void tick(uint32_t events = 1);
@@ -54,7 +54,7 @@ class stat_visitable {
   virtual uint32_t _get_queued_events() = 0;
   virtual std::unordered_set<uint32_t> const& _get_read_filters() const = 0;
   virtual std::unordered_set<uint32_t> const& _get_write_filters() const = 0;
-  virtual void _forward_statistic(io::properties& tree);
+  virtual void _forward_statistic(json11::Json::object& tree);
 
  private:
   std::string _last_error;

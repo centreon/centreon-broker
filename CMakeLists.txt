@@ -415,8 +415,6 @@ set(LIBROKER_SOURCES
         ${SRC_DIR}/io/event_info.cc
         ${SRC_DIR}/io/events.cc
         ${SRC_DIR}/io/factory.cc
-        ${SRC_DIR}/io/properties.cc
-        ${SRC_DIR}/io/property.cc
         ${SRC_DIR}/io/protocols.cc
         ${SRC_DIR}/io/raw.cc
         ${SRC_DIR}/io/stream.cc
@@ -432,7 +430,6 @@ set(LIBROKER_SOURCES
         ${SRC_DIR}/misc/diagnostic.cc
         ${SRC_DIR}/misc/filesystem.cc
         ${SRC_DIR}/misc/global_lock.cc
-        ${SRC_DIR}/misc/json_writer.cc
         ${SRC_DIR}/misc/misc.cc
         ${SRC_DIR}/misc/processing_speed_computer.cc
         ${SRC_DIR}/misc/string.cc
@@ -533,8 +530,6 @@ set(LIBROKER_SOURCES
         ${INC_DIR}/io/event_info.hh
         ${INC_DIR}/io/events.hh
         ${INC_DIR}/io/factory.hh
-        ${INC_DIR}/io/properties.hh
-        ${INC_DIR}/io/property.hh
         ${INC_DIR}/io/protocols.hh
         ${INC_DIR}/io/raw.hh
         ${INC_DIR}/io/stream.hh
@@ -552,7 +547,6 @@ set(LIBROKER_SOURCES
         ${INC_DIR}/misc/diagnostic.hh
         ${INC_DIR}/misc/filesystem.hh
         ${INC_DIR}/misc/global_lock.hh
-        ${INC_DIR}/misc/json_writer.hh
         ${INC_DIR}/misc/misc.hh
         ${INC_DIR}/misc/pair.hh
         ${INC_DIR}/misc/processing_speed_computer.hh

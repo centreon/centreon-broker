@@ -20,6 +20,7 @@
 #define CCB_PROCESSING_ACCEPTOR_HH
 
 #include <ctime>
+#include <list>
 #include <memory>
 #include <string>
 #include "com/centreon/broker/namespace.hh"
@@ -59,7 +60,7 @@ class acceptor : public bthread {
   virtual uint32_t _get_queued_events();
   std::unordered_set<uint32_t> const& _get_read_filters() const override;
   std::unordered_set<uint32_t> const& _get_write_filters() const override;
-  virtual void _forward_statistic(io::properties& tree);
+  virtual void _forward_statistic(json11::Json::object& tree);
 
  private:
   acceptor(acceptor const& other);
