@@ -34,15 +34,11 @@ class FileSplitterPermissionDenied : public ::testing::Test {
     logging::manager::load();
 
     _path = FILE_WITH_BAD_PERMISSION;
-    _file_factory.reset(new splitter_factory());
-
-    return;
   }
 
   void TearDown() override { logging::manager::unload(); }
 
  protected:
-  std::unique_ptr<splitter_factory> _file_factory;
   std::string _path;
 };
 
@@ -50,7 +46,7 @@ class FileSplitterPermissionDenied : public ::testing::Test {
 // When we create a splitter to a file with insufficient access
 // Then the creation does not crash
 TEST_F(FileSplitterPermissionDenied, DefaultFile) {
-  ASSERT_THROW(_file_factory->new_cfile_splitter(
+  ASSERT_THROW(new splitter(
                    _path, file::fs_file::open_read_write_truncate, 10000, true),
                exceptions::msg);
 }

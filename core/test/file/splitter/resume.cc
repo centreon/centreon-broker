@@ -34,9 +34,7 @@ class FileSplitterResume : public ::testing::Test {
         misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
     for (std::string const& f : lst)
       std::remove(f.c_str());
-
     _path = "/tmp/queue";
-    _file_factory = new file::cfile_factory();
 
     // Create 7 files.
     std::unique_ptr<file::fs_file> f;
@@ -45,16 +43,14 @@ class FileSplitterResume : public ::testing::Test {
       memset(buffer, i, sizeof(buffer));
       std::ostringstream oss;
       oss << _path << i;
-      f.reset(_file_factory->new_fs_file(
-          oss.str(), file::fs_file::open_read_write_truncate));
+      f.reset(new file::cfile(oss.str(), file::fs_file::open_read_write_truncate));
       f->write(buffer, sizeof(buffer));
     }
 
     // Create the last file.
     std::string last_file(_path);
     last_file.append("10");
-    f.reset(_file_factory->new_fs_file(
-        last_file, file::fs_file::open_read_write_truncate));
+    f.reset(new file::cfile(last_file, file::fs_file::open_read_write_truncate));
     memset(buffer, 10, sizeof(buffer));
     f->write(buffer, 108);
     f.reset();
@@ -62,14 +58,13 @@ class FileSplitterResume : public ::testing::Test {
     // Create new splitter.
     _file.reset(new file::splitter(_path,
                                    file::fs_file::open_read_write_truncate,
-                                   _file_factory, 10000, true));
+                                   10000, true));
   }
 
   void TearDown() override { logging::manager::unload(); };
 
  protected:
   std::unique_ptr<file::splitter> _file;
-  file::cfile_factory* _file_factory;
   std::string _path;
 };
 
