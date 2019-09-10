@@ -879,13 +879,11 @@ void stream::_insert_perfdatas() {
     {
       metric_value& mv(_perfdata_queue.front());
       query.precision(10);
-      query << std::scientific << "INSERT INTO "
-            << (db_v2 ? "data_bin" : "log_data_bin") << "  ("
-            << (db_v2 ? "id_metric" : "metric_id")
-            << "   , ctime, status, value)"
-               "  VALUES ("
-            << mv.metric_id << ", " << mv.c_time << ", '" << mv.status
-            << "', '";
+      query << std::scientific << "INSERT INTO data_bin "
+               "(id_metric,ctime,status,value)"
+               " VALUES ("
+            << mv.metric_id << "," << mv.c_time << ",'" << mv.status
+            << "',";
       if (std::isinf(mv.value))
         query << ((mv.value < 0.0) ? -FLT_MAX : FLT_MAX);
       else if (std::isnan(mv.value))
@@ -899,8 +897,8 @@ void stream::_insert_perfdatas() {
     // Insert perfdata in data_bin.
     while (!_perfdata_queue.empty()) {
       metric_value& mv(_perfdata_queue.front());
-      query << ", (" << mv.metric_id << ", " << mv.c_time << ", '" << mv.status
-            << "', ";
+      query << ",(" << mv.metric_id << "," << mv.c_time << ",'" << mv.status
+            << "',";
       if (std::isinf(mv.value))
         query << ((mv.value < 0.0) ? -FLT_MAX : FLT_MAX);
       else if (std::isnan(mv.value))
@@ -912,7 +910,8 @@ void stream::_insert_perfdatas() {
     }
 
     // Execute query.
-    _mysql.run_query(query.str(), "storage: could not insert data in data_bin");
+    _mysql.run_query(query.str(),
+                     "storage: could not insert data in data_bin: ");
     if (_mysql.commit_if_needed())
       _set_ack_events();
 
