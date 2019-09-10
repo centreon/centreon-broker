@@ -82,10 +82,10 @@ variant::variant(variant const& var) : _type{var._type} {
       _uint_value = var._uint_value;
       break;
     case type_long:
-      _int_value = var._int_value;
+      _long_value = var._long_value;
       break;
     case type_ulong:
-      _uint_value = var._uint_value;
+      _ulong_value = var._ulong_value;
       break;
     case type_double:
       _dbl_value = var._dbl_value;
