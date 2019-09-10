@@ -98,6 +98,7 @@ set(NEB_SOURCES
 
 # Static library.
 add_library("nebbase" STATIC ${NEB_SOURCES})
+add_dependencies("nebbase" json11_lib)
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-fPIC" COMPILER_HAS_FPIC)
 if (COMPILER_HAS_FPIC)

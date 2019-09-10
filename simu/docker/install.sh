@@ -22,3 +22,14 @@ mkdir -p "$stat"
 
 rsync -avzt $path/lua /usr/share/centreon-broker/
 cp $path/etc/* /etc/centreon-broker/
+
+# Some cleanup
+if [[ -f "/tmp/simu.log" ]] ; then
+  echo "Simu logs removed"
+  rm /tmp/simu.log
+fi
+
+if [[ -f "/var/log/centreon-broker/central-broker-master.log" ]] ; then
+  echo "Broker logs removed"
+  rm /var/log/centreon-broker/central-broker-master.log
+fi
