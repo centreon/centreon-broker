@@ -17,16 +17,18 @@
  *
  */
 
-#ifndef CCB_STATS_WORKER_HH
-#define CCB_STATS_WORKER_HH
+#ifndef CCB_STATS_WORKER_POOL_HH
+#define CCB_STATS_WORKER_POOL_HH
 
 #include <string>
 #include <thread>
+#include "com/centreon/broker/stats/worker.hh"
 
 namespace com {
 namespace centreon {
 namespace broker {
 namespace stats {
+
 /**
  *  @class worker worker.hh "com/centreon/broker/stats/worker.hh"
  *  @brief Statistics worker thread.
@@ -34,33 +36,19 @@ namespace stats {
  *  The worker thread will wait for readability on a FIFO file
  *  and write to it statistics when available.
  */
-class worker {
+class worker_pool {
  public:
-  worker();
-  ~worker() throw();
+  worker_pool();
 
-  worker(worker const& right) = delete;
-  worker& operator=(worker const& right) = delete;
-
-  void exit();
-  void run(std::string const& fifo_file);
-  void wait();
+  void add_worker(std::string const& fifo);
+  void cleanup();
 
  private:
-  void _close();
-  bool _open();
-  void _run();
-
-  std::string _buffer;
-  int _fd;
-  std::string _fifo;
-  volatile bool _should_exit;
-
-  std::thread _thread;
+  std::vector<std::shared_ptr<stats::worker> > _workers_fifo;
 };
 }  // namespace stats
 }  // namespace broker
 }  // namespace centreon
 }  // namespace com
 
-#endif  // !CCB_STATS_WORKER_HH
+#endif  // !CCB_STATS_WORKER_POOL_HH

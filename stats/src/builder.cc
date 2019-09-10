@@ -1,20 +1,21 @@
 /*
-** Copyright 2013-2015,2017 Centreon
-**
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-**
-**     http://www.apache.org/licenses/LICENSE-2.0
-**
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
-**
-** For more information : contact@centreon.com
-*/
+ * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more information : contact@centreon.com
+ *
+ */
 
 #include "com/centreon/broker/stats/builder.hh"
 #include <time.h>
@@ -113,8 +114,8 @@ void builder::build() {
        it != end; ++it) {
     json11::Json::object subtree;
     subtree["state"] = "loaded";
-    subtree["size"] = misc::string::get(misc::filesystem::file_size(it->first))
-      + "B";
+    subtree["size"] =
+        misc::string::get(misc::filesystem::file_size(it->first)) + "B";
     object["module" + it->first] = subtree;
   }
 
@@ -195,12 +196,11 @@ std::string builder::_generate_stats_for_endpoint(processing::bthread* fo,
   json11::Json::object child;
   json11::Json::object parent{{endpoint, child}};
 
-
   // Add memory and queue file.
-  child["queue_file_path"] = com::centreon::broker::multiplexing::muxer::queue_file(
-      fo->get_name());
-  child["memory_file_path"] = com::centreon::broker::multiplexing::muxer::memory_file(
-                       fo->get_name());
+  child["queue_file_path"] =
+      com::centreon::broker::multiplexing::muxer::queue_file(fo->get_name());
+  child["memory_file_path"] =
+      com::centreon::broker::multiplexing::muxer::memory_file(fo->get_name());
 
   // Gather statistic.
   fo->stats(child);
