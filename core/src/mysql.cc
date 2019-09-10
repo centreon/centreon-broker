@@ -36,19 +36,6 @@ mysql::mysql(database_config const& db_cfg)
       _current_connection(0) {
   mysql_manager& mgr(mysql_manager::instance());
   _connection = mgr.get_connections(db_cfg);
-
-  try {
-    std::promise<mysql_result> promise;
-    run_query_and_get_result("SELECT instance_id FROM instances LIMIT 1",
-                             &promise);
-    _version = v2;
-    promise.get_future().get();
-    logging::info(logging::low)
-        << "mysql: database is using version 2 of Centreon schema";
-  } catch (std::exception const& e) {
-    logging::info(logging::low)
-        << "mysql: database is using version 3 of Centreon schema";
-  }
 }
 
 /**
