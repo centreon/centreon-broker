@@ -30,19 +30,16 @@ set(STATS "${STATS}" PARENT_SCOPE)
 add_library("${STATS}" SHARED
   # Sources.
   ${SRC_DIR}/builder.cc
-  ${SRC_DIR}/config.cc
-  ${SRC_DIR}/generator.cc
   ${SRC_DIR}/main.cc
-  ${SRC_DIR}/metric.cc
   ${SRC_DIR}/parser.cc
   ${SRC_DIR}/worker.cc
+  ${SRC_DIR}/worker_pool.cc
   # Headers.
   ${INC_DIR}/builder.hh
-  ${INC_DIR}/config.hh
-  ${INC_DIR}/generator.hh
-  ${INC_DIR}/metric.hh
   ${INC_DIR}/parser.hh
   ${INC_DIR}/worker.hh
+  ${INC_DIR}/worker_pool.hh
+
 )
 add_dependencies("${STATS}" Asio)
 set_target_properties("${STATS}" PROPERTIES

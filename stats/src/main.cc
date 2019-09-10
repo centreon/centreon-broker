@@ -1,34 +1,28 @@
 /*
-** Copyright 2012-2013 Centreon
-**
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-**
-**     http://www.apache.org/licenses/LICENSE-2.0
-**
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
-**
-** For more information : contact@centreon.com
-*/
+ * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more information : contact@centreon.com
+ *
+ */
 
-#include <sys/stat.h>
-#include <unistd.h>
-#include <cerrno>
-#include <cstring>
-#include <memory>
 #include <vector>
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/stats/config.hh"
-#include "com/centreon/broker/stats/generator.hh"
 #include "com/centreon/broker/stats/parser.hh"
-#include "com/centreon/broker/stats/worker.hh"
+#include "com/centreon/broker/stats/worker_pool.hh"
 
 using namespace com::centreon::broker;
 
@@ -36,29 +30,8 @@ using namespace com::centreon::broker;
 static unsigned int instances(0);
 
 // Worker.
-static std::unique_ptr<stats::generator> worker_dumper;
-static std::vector<std::shared_ptr<stats::worker> > workers_fifo;
-
-/**
- *  Unload current statistics workers.
- */
-static void unload_workers() {
-  for (std::vector<std::shared_ptr<stats::worker> >::iterator
-           it = workers_fifo.begin(),
-           end = workers_fifo.end();
-       it != end; ++it) {
-    (*it)->exit();
-    (*it)->wait();
-    it->reset();
-  }
-  if (worker_dumper) {
-    // Terminate thread.
-    worker_dumper->exit();
-    worker_dumper->wait();
-    worker_dumper.reset();
-  }
-  return;
-}
+//static std::vector<std::shared_ptr<stats::worker> > workers_fifo;
+stats::worker_pool pool;
 
 extern "C" {
 /**
@@ -71,8 +44,9 @@ char const* broker_module_version = CENTREON_BROKER_VERSION;
  */
 void broker_module_deinit() {
   // Decrement instance number.
-  if (!--instances)
-    unload_workers();
+  if (!--instances) {
+    pool.cleanup();
+  }
   return;
 }
 
@@ -96,40 +70,18 @@ void broker_module_init(void const* arg) {
     if (it != base_cfg.params().end()) {
       try {
         // Parse configuration.
-        stats::config stats_cfg;
+        std::vector<std::string> stats_cfg;
         {
           stats::parser p;
           p.parse(stats_cfg, it->second);
         }
 
         // File configured, load stats engine.
-        for (stats::config::fifo_list::const_iterator
-                 it = stats_cfg.get_fifo().begin(),
-                 end = stats_cfg.get_fifo().end();
+        for (std::vector<std::string>::const_iterator
+                 it = stats_cfg.begin(),
+                 end = stats_cfg.end();
              it != end; ++it) {
-          // Does file exist and is a FIFO ?
-          struct stat s;
-          std::string fifo_path = *it;
-          // Stat failed, probably because of inexistant file.
-          if (stat(fifo_path.c_str(), &s) != 0) {
-            char const* msg(strerror(errno));
-            logging::config(logging::medium)
-                << "stats: cannot stat() '" << fifo_path << "': " << msg;
-
-            // Create FIFO.
-            if (mkfifo(fifo_path.c_str(),
-                       S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH) != 0) {
-              char const* msg(strerror(errno));
-              throw(exceptions::msg()
-                    << "cannot create FIFO '" << fifo_path << "': " << msg);
-            }
-          } else if (!S_ISFIFO(s.st_mode))
-            throw(exceptions::msg()
-                  << "file '" << fifo_path << "' exists but is not a FIFO");
-
-          // Create thread.
-          workers_fifo.push_back(std::make_shared<stats::worker>());
-          workers_fifo.back()->run(fifo_path);
+          pool.add_worker(*it);
         }
         loaded = true;
       } catch (std::exception const& e) {
@@ -142,7 +94,7 @@ void broker_module_init(void const* arg) {
       }
     }
     if (!loaded) {
-      unload_workers();
+      pool.cleanup();
       logging::config(logging::high)
           << "stats: invalid stats "
              "configuration, stats engine is NOT loaded";
