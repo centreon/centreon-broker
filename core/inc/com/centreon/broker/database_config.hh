@@ -52,6 +52,7 @@ class database_config {
   database_config(database_config const& other);
   ~database_config();
   database_config& operator=(database_config const& other);
+  bool operator==(database_config const& other);
 
   std::string const& get_type() const;
   std::string const& get_host() const;
