@@ -127,7 +127,6 @@ extern "C" void event_statistics(void* args) {
   // Avoid exception propagation in C code.
   catch (...) {
   }
-  return;
 }
 
 /**
