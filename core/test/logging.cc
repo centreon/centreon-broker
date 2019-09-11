@@ -41,6 +41,14 @@ using namespace com::centreon::broker;
 
 class LoggingManager : public ::testing::Test {
  public:
+  void SetUp() override {
+    logging::manager::load();
+  }
+
+  void TearDown() override {
+    logging::manager::unload();
+  }
+
   bool check_line(std::string const& line, std::string const& reg) {
     regex_t r;
     int status;
@@ -110,9 +118,6 @@ class LoggingManager : public ::testing::Test {
  *  @return 0 on success.
  */
 TEST_F(LoggingManager, Simple) {
-  // Initialization.
-  logging::manager::load();
-
   // Log file path.
   std::string file_path{misc::temp_path()};
   std::remove(file_path.c_str());
@@ -131,9 +136,6 @@ TEST_F(LoggingManager, Simple) {
 
   // Write log messages.
   write_log_messages(&f, 4);
-
-  // Unload manager.
-  logging::manager::unload();
 
   // Check file content.
   std::ifstream infile(file_path);
@@ -155,9 +157,6 @@ TEST_F(LoggingManager, Simple) {
 }
 
 TEST_F(LoggingManager, Multiple) {
-  // Initialization.
-  logging::manager::load();
-
   // Log file path.
   std::string file_path1(misc::temp_path());
   std::string file_path2(misc::temp_path());
@@ -186,9 +185,6 @@ TEST_F(LoggingManager, Multiple) {
 
   // Write log messages.
   write_log_messages(&logging::manager::instance(), 4);
-
-  // Unload manager.
-  logging::manager::unload();
 
   std::ifstream infile(file_path1);
   std::ifstream infile2(file_path2);
@@ -225,9 +221,6 @@ TEST_F(LoggingManager, Multiple) {
 }
 
 TEST_F(LoggingManager, Cross) {
-  // Initialization.
-  logging::manager::load();
-
   // Log file path.
   std::string file_path1(misc::temp_path());
   std::string file_path2(misc::temp_path());
@@ -256,9 +249,6 @@ TEST_F(LoggingManager, Cross) {
 
   // Write log messages.
   write_log_messages(&logging::manager::instance(), 8);
-
-  // Unload manager.
-  logging::manager::unload();
 
   // Check files content.
   std::ifstream infile(file_path1);
@@ -301,9 +291,6 @@ TEST_F(LoggingManager, Cross) {
 }
 
 TEST_F(LoggingManager, BacklogUnlog) {
-  // Initialization.
-  logging::manager::load();
-
   // Log file path.
   std::string file_path1(misc::temp_path());
   std::string file_path2(misc::temp_path());
@@ -338,9 +325,6 @@ TEST_F(LoggingManager, BacklogUnlog) {
 
   // Write more messages.
   write_log_messages(&logging::manager::instance(), 4);
-
-  // Unload manager.
-  logging::manager::unload();
 
   std::ifstream infile(file_path1);
   std::ifstream infile2(file_path2);
@@ -566,9 +550,6 @@ TEST_F(LoggingManager, Timestamp) {
 }
 
 TEST_F(LoggingManager, Copied) {
-  // Initialization.
-  logging::manager::load();
-
   // Log file path.
   std::string file_path(misc::temp_path());
   std::remove(file_path.c_str());
@@ -591,9 +572,6 @@ TEST_F(LoggingManager, Copied) {
     logging::temp_logger tl2(tl1);
   }
 
-  // At this point, an empty line should have been logged.
-  logging::manager::unload();
-
   std::ifstream infile{file_path};
   std::string line;
   std::getline(infile, line);
@@ -607,9 +585,6 @@ TEST_F(LoggingManager, Copied) {
 }
 
 TEST_F(LoggingManager, Disabled) {
-  // Initialization.
-  logging::manager::load();
-
   // Log file path.
   std::string file_path(misc::temp_path());
   std::remove(file_path.c_str());
@@ -632,9 +607,6 @@ TEST_F(LoggingManager, Disabled) {
     tl << true << 42 << "a random string";
   }
 
-  // At this point, nothing should have been written in the logs.
-  logging::manager::unload();
-
   std::ifstream infile{file_path};
   std::string line;
   std::getline(infile, line);
@@ -645,8 +617,6 @@ TEST_F(LoggingManager, Disabled) {
 }
 
 TEST_F(LoggingManager, Enabled) {
-  // Initialization.
-  logging::manager::load();
   // Log file path.
   std::string file_path(misc::temp_path());
   std::remove(file_path.c_str());
@@ -666,9 +636,6 @@ TEST_F(LoggingManager, Enabled) {
   // Create and destroy temp_logger.
   { logging::temp_logger tl(logging::config_type, logging::high, true); }
 
-  // At this point, an empty line should have been logged.
-  logging::manager::unload();
-
   std::ifstream infile{file_path};
   std::string line;
   std::getline(infile, line);
@@ -682,9 +649,6 @@ TEST_F(LoggingManager, Enabled) {
 }
 
 TEST_F(LoggingManager, Insertion) {
-  // Initialization.
-  logging::manager::load();
-
   // Log file path.
   std::string file_path(misc::temp_path());
   std::remove(file_path.c_str());
@@ -706,9 +670,6 @@ TEST_F(LoggingManager, Insertion) {
     logging::temp_logger tl(logging::config_type, logging::high, true);
     tl << true << 42 << "my own random string" << -789527845245ll;
   }
-
-  // At this point, an empty line should have been logged.
-  logging::manager::unload();
 
   std::ifstream infile{file_path};
   std::string line;
@@ -744,9 +705,6 @@ static void log_messages() {
  *  @return 0 on success.
  */
 TEST_F(LoggingManager, Concurrent) {
-  // Initialization.
-  logging::manager::load();
-
   // Build filename.
   std::string filename(misc::temp_path());
 

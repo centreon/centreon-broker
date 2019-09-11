@@ -34,14 +34,24 @@ using namespace com::centreon::broker;
 #define MSG3 "last message with qux"
 #define MSG4 "no this is the last message"
 
+class StartStop : public testing::Test {
+ public:
+  void SetUp() override {
+    config::applier::init();
+  }
+
+  void TearDown() override {
+    config::applier::deinit();
+  }
+};
+
 /**
  *  Check that multiplexing engine works properly.
  *
  *  @return 0 on success.
  */
-TEST(StartStop, MultiplexingWorks) {
+TEST_F(StartStop, MultiplexingWorks) {
   // Initialization.
-  config::applier::init();
   bool error{true};
 
   try {
@@ -132,9 +142,6 @@ TEST(StartStop, MultiplexingWorks) {
   } catch (...) {
     std::cerr << "unknown exception\n";
   }
-
-  // Cleanup.
-  config::applier::deinit();
 
   // Return.
   ASSERT_FALSE(error);

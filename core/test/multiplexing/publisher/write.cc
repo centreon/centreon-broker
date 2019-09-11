@@ -32,13 +32,21 @@ using namespace com::centreon::broker;
 #define MSG1 "0123456789abcdef"
 #define MSG2 "foo bar baz qux"
 
+class PublisherWrite : public testing::Test {
+ public:
+  void SetUp() override {
+    config::applier::init();
+  }
+
+  void TearDown() override {
+    config::applier::deinit();
+  }
+};
+
 /**
  *  We should be able to read from publisher.
  */
-TEST(Publisher, Write) {
-  // Initialization.
-  config::applier::init();
-
+TEST_F(PublisherWrite, Write) {
   int retval{0};
   {
     // Publisher.
@@ -81,9 +89,6 @@ TEST(Publisher, Write) {
       }
     }
   }
-  // Cleanup.
-  config::applier::deinit();
-
   // Return.
   ASSERT_EQ(retval, 0);
 }
