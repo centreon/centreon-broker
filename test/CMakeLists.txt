@@ -18,28 +18,15 @@
 
 include(ExternalProject)
 
-set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/3rdparty)
-
 set(GOOGLE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-if (${BUILD_OFFLINE})
-    ExternalProject_Add(googletest
-            SOURCE_DIR ${CMAKE_BINARY_DIR}/3rdparty/src/googletest
-            TIMEOUT 10
-            INSTALL_COMMAND ""
-            LOG_DOWNLOAD ON
-            LOG_CONFIGURE ON
-            LOG_BUILD ON
-            CMAKE_ARGS -DCMAKE_CXX_FLAGS=${GOOGLE_CXX_FLAGS} -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
-else ()
-    ExternalProject_Add(googletest
-            GIT_REPOSITORY https://github.com/google/googletest/
-            TIMEOUT 10
-            INSTALL_COMMAND ""
-            LOG_DOWNLOAD ON
-            LOG_CONFIGURE ON
-            LOG_BUILD ON
-            CMAKE_ARGS -DCMAKE_CXX_FLAGS=${GOOGLE_CXX_FLAGS} -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
-endif ()
+ExternalProject_Add(googletest
+  GIT_REPOSITORY https://github.com/google/googletest/
+  TIMEOUT 10
+  INSTALL_COMMAND ""
+  LOG_DOWNLOAD ON
+  LOG_CONFIGURE ON
+  LOG_BUILD ON
+  CMAKE_ARGS -DCMAKE_CXX_FLAGS=${GOOGLE_CXX_FLAGS} -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
 
 ExternalProject_Get_Property(googletest source_dir)
 ExternalProject_Get_Property(googletest binary_dir)
@@ -65,70 +52,72 @@ include_directories(${PROJECT_SOURCE_DIR}/stats/inc)
 add_definitions(-DCENTREON_BROKER_TEST_MODULE_PATH="${CMAKE_BINARY_DIR}/test/")
 add_definitions(-DCENTREON_BROKER_BAM_TEST_PATH="${BAM_TESTS_DIR}")
 add_definitions(-DCENTREON_BROKER_WD_TEST="${WDOG_TESTS_DIR}")
+add_definitions(-DCENTREON_BROKER_LUA_SCRIPT_PATH="${PROJECT_SOURCE_DIR}/lua/test")
+add_definitions(-DCENTREON_BROKER_NEB_TEST="${PROJECT_SOURCE_DIR}/neb/test")
 
 add_library(null_module SHARED ${TEST_DIR}/modules/null_module.cc)
 add_library(bad_version_module SHARED ${TEST_DIR}/modules/bad_version_module.cc)
 # Unit test executable.
 add_executable(ut
-        # Core sources.
-        ${TESTS_DIR}/bbdo/input_buffer/erase.cc
-        ${TESTS_DIR}/bbdo/input_buffer/extract.cc
-        ${TESTS_DIR}/bbdo/output.cc
-        ${TESTS_DIR}/bbdo/read.cc
-        ${TESTS_DIR}/ceof/ceof_parser/parse.cc
-        ${TESTS_DIR}/compression/stream/memory_stream.hh
-        ${TESTS_DIR}/compression/stream/read.cc
-        ${TESTS_DIR}/compression/stream/write.cc
-        ${TESTS_DIR}/compression/zlib/zlib.cc
-        ${TESTS_DIR}/config/logger.cc
-        ${TESTS_DIR}/config/parser.cc
-        ${TESTS_DIR}/config/parser.cc
-        ${TESTS_DIR}/file/splitter/concurrent.cc
-        ${TESTS_DIR}/file/splitter/default.cc
-        ${TESTS_DIR}/file/splitter/more_than_max_size.cc
-        ${TESTS_DIR}/file/splitter/permission_denied.cc
-        ${TESTS_DIR}/file/splitter/resume.cc
-        ${TESTS_DIR}/file/splitter/split.cc
-        ${TESTS_DIR}/misc/exec.cc
-        ${TESTS_DIR}/misc/filesystem.cc
-        ${TESTS_DIR}/misc/misc.cc
-        ${TESTS_DIR}/misc/string.cc
-        ${TESTS_DIR}/misc/stringifier.cc
-        ${TESTS_DIR}/modules/module.cc
-        ${TESTS_DIR}/multiplexing/engine/hook.cc
-        ${TESTS_DIR}/multiplexing/engine/hooker.cc
-        ${TESTS_DIR}/multiplexing/engine/start_stop.cc
-        ${TESTS_DIR}/multiplexing/engine/unhook.cc
-        ${TESTS_DIR}/multiplexing/muxer/read.cc
-        ${TESTS_DIR}/multiplexing/publisher/read.cc
-        ${TESTS_DIR}/multiplexing/publisher/write.cc
-        ${TESTS_DIR}/multiplexing/subscriber/ctor_default.cc
-        ${TESTS_DIR}/mysql/mysql.cc
-        ${TESTS_DIR}/processing/acceptor.cc
-        ${TESTS_DIR}/processing/temporary_endpoint.cc
-        ${TESTS_DIR}/processing/temporary_stream.cc
-        ${TESTS_DIR}/processing/thread.cc
-        ${TESTS_DIR}/exceptions.cc
-        ${TESTS_DIR}/io.cc
-        ${TESTS_DIR}/logging.cc
-        ${TESTS_DIR}/main.cc
-        ${TESTS_DIR}/test_server.cc
-        # Module sources.
-        ${TESTS_SOURCES}
-        )
+  # Core sources.
+  ${TESTS_DIR}/bbdo/input_buffer/erase.cc
+  ${TESTS_DIR}/bbdo/input_buffer/extract.cc
+  ${TESTS_DIR}/bbdo/output.cc
+  ${TESTS_DIR}/bbdo/read.cc
+  ${TESTS_DIR}/ceof/ceof_parser/parse.cc
+  ${TESTS_DIR}/compression/stream/memory_stream.hh
+  ${TESTS_DIR}/compression/stream/read.cc
+  ${TESTS_DIR}/compression/stream/write.cc
+  ${TESTS_DIR}/compression/zlib/zlib.cc
+  ${TESTS_DIR}/config/logger.cc
+  ${TESTS_DIR}/config/parser.cc
+  ${TESTS_DIR}/config/parser.cc
+  ${TESTS_DIR}/file/splitter/concurrent.cc
+  ${TESTS_DIR}/file/splitter/default.cc
+  ${TESTS_DIR}/file/splitter/more_than_max_size.cc
+  ${TESTS_DIR}/file/splitter/permission_denied.cc
+  ${TESTS_DIR}/file/splitter/resume.cc
+  ${TESTS_DIR}/file/splitter/split.cc
+  ${TESTS_DIR}/misc/exec.cc
+  ${TESTS_DIR}/misc/filesystem.cc
+  ${TESTS_DIR}/misc/misc.cc
+  ${TESTS_DIR}/misc/string.cc
+  ${TESTS_DIR}/misc/stringifier.cc
+  ${TESTS_DIR}/modules/module.cc
+  ${TESTS_DIR}/multiplexing/engine/hook.cc
+  ${TESTS_DIR}/multiplexing/engine/hooker.cc
+  ${TESTS_DIR}/multiplexing/engine/start_stop.cc
+  ${TESTS_DIR}/multiplexing/engine/unhook.cc
+  ${TESTS_DIR}/multiplexing/muxer/read.cc
+  ${TESTS_DIR}/multiplexing/publisher/read.cc
+  ${TESTS_DIR}/multiplexing/publisher/write.cc
+  ${TESTS_DIR}/multiplexing/subscriber/ctor_default.cc
+  ${TESTS_DIR}/mysql/mysql.cc
+  ${TESTS_DIR}/processing/acceptor.cc
+  ${TESTS_DIR}/processing/temporary_endpoint.cc
+  ${TESTS_DIR}/processing/temporary_stream.cc
+  ${TESTS_DIR}/processing/thread.cc
+  ${TESTS_DIR}/exceptions.cc
+  ${TESTS_DIR}/io.cc
+  ${TESTS_DIR}/logging.cc
+  ${TESTS_DIR}/main.cc
+  ${TESTS_DIR}/test_server.cc
+  # Module sources.
+  ${TESTS_SOURCES}
+  )
 
 set_target_properties("ut" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 
 add_dependencies(ut googletest)
 target_link_libraries(ut gtest ${TESTS_LIBRARIES} ${NEB} rokerbase roker
-        pthread gcov)
+  pthread gcov)
 add_test(NAME tests COMMAND ut)
 
 if (WITH_COVERAGE)
-    set(COVERAGE_EXCLUDES '*/test/*' '/usr/include/*' '${CMAKE_BINARY_DIR}/*')
-    SETUP_TARGET_FOR_COVERAGE(
-            NAME test-coverage
-            EXECUTABLE ut
-            DEPENDENCIES ut
-    )
+  set(COVERAGE_EXCLUDES '*/test/*' '/usr/include/*' '${CMAKE_BINARY_DIR}/*')
+  SETUP_TARGET_FOR_COVERAGE(
+    NAME test-coverage
+    EXECUTABLE ut
+    DEPENDENCIES ut
+  )
 endif ()
