@@ -63,6 +63,23 @@ connector& connector::operator=(connector const& other) {
 }
 
 /**
+ *  Comparaison operator for test purpose.
+ *
+ *  @param[in] other  Object to compare
+ *
+ *  @return This object.
+ */
+bool connector::operator==(const connector& other) {
+  if (this != &other) {
+    return _db_cfg == other._db_cfg && _rrd_len == other._rrd_len &&
+           _rebuild_check_interval == other._rebuild_check_interval &&
+           _store_in_data_bin == other._store_in_data_bin &&
+           _insert_in_index_data == other._insert_in_index_data;
+  }
+  return true;
+}
+
+/**
  *  Set connection parameters.
  *
  *  @param[in] db_cfg                  Database configuration.

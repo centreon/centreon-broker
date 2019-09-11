@@ -71,6 +71,7 @@ target_link_libraries("${STORAGE}")
 set(
   TESTS_SOURCES
   ${TESTS_SOURCES}
+  ${TEST_DIR}/connector.cc
   ${TEST_DIR}/metric.cc
   ${TEST_DIR}/perfdata.cc
   ${TEST_DIR}/rebuild.cc

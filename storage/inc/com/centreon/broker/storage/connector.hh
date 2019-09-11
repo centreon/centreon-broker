@@ -38,6 +38,7 @@ class connector : public io::endpoint {
   connector(connector const& other);
   ~connector();
   connector& operator=(connector const& other);
+  bool operator==(connector const& other);
   void connect_to(database_config const& db_cfg,
                   unsigned int rrd_len,
                   unsigned int interval_length,

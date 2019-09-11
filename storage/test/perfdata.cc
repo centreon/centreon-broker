@@ -27,6 +27,30 @@
 
 using namespace com::centreon::broker;
 
+TEST(StoragePerfdataException, All) {
+  bool success{false};
+  try {
+    throw storage::exceptions::perfdata() << "test exception";
+  } catch (storage::exceptions::perfdata const& e) {
+    storage::exceptions::perfdata ex1;
+    storage::exceptions::perfdata ex2;
+
+    ex1 = e;
+
+    try {
+      ex1.rethrow();
+    }
+    catch (storage::exceptions::perfdata const& e) {
+      exceptions::msg *msg{e.clone()};
+      if (std::string{msg->what()} == "test exception")
+        success = true;
+      delete msg;
+    }
+  }
+
+  ASSERT_TRUE(success);
+}
+
 /**
  *  Check that the perfdata assignment operator works properly.
  */
@@ -395,6 +419,7 @@ TEST_F(StorageParserParsePerfdata, Incorrect1) {
                com::centreon::broker::storage::exceptions::perfdata);
 }
 
+
 // Given a storage::parser object
 // When parse_perfdata() is called with a metric without value but with unit
 // Then it throws a storage::exceptions::perfdata
@@ -429,17 +454,38 @@ TEST_F(StorageParserParsePerfdata, LabelWithSpaces) {
   ASSERT_TRUE(expected == *it);
 }
 
+TEST_F(StorageParserParsePerfdata, LabelWithSpacesMultiline) {
+  // Parse perfdata.
+  std::list<storage::perfdata> lst;
+  storage::parser p;
+  p.parse_perfdata("  'foo  bar   '=2s;2;5;;", lst);
+
+  // Assertions.
+  ASSERT_EQ(lst.size(), 1u);
+  std::list<storage::perfdata>::const_iterator it(lst.begin());
+  storage::perfdata expected;
+  expected.name("foo  bar");
+  expected.value_type(storage::perfdata::gauge);
+  expected.value(2);
+  expected.unit("s");
+  expected.warning(2.0);
+  expected.warning_low(0.0);
+  expected.critical(5.0);
+  expected.critical_low(0.0);
+  ASSERT_TRUE(expected == *it);
+}
+
 TEST_F(StorageParserParsePerfdata, Complex2) {
   // Parse perfdata.
   std::list<storage::perfdata> list;
   storage::parser p;
   p.parse_perfdata(
-      "time=2,45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; "
-      "infotraffic=18,6x;;;; a[foo]=1234,17;10;11: c[bar]=1234,147;~:10;20:30",
+      "'  \n time'=2,45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; g[test]=8x;;;;"
+      " infotraffic=18,6x;;;; a[foo]=1234,17;10;11: c[bar]=1234,147;~:10;20:30",
       list);
 
   // Assertions.
-  ASSERT_EQ(list.size(), 5u);
+  ASSERT_EQ(list.size(), 6u);
   std::list<storage::perfdata>::const_iterator it(list.begin());
   storage::perfdata expected;
 
@@ -450,6 +496,7 @@ TEST_F(StorageParserParsePerfdata, Complex2) {
   expected.unit("s");
   expected.max(INFINITY);
   ASSERT_TRUE(expected == *it);
+  ASSERT_FALSE(expected != *it);
   ++it;
 
   // #2.
@@ -462,18 +509,30 @@ TEST_F(StorageParserParsePerfdata, Complex2) {
   expected.warning_low(0.0);
   expected.min(-INFINITY);
   ASSERT_TRUE(expected == *it);
+  ASSERT_FALSE(expected != *it);
   ++it;
 
   // #3.
+  expected = storage::perfdata();
+  expected.name("test");
+  expected.value_type(storage::perfdata::gauge);
+  expected.value(8);
+  expected.unit("x");
+  ASSERT_TRUE(expected == *it);
+  ASSERT_FALSE(expected != *it);
+  ++it;
+
+  // #4.
   expected = storage::perfdata();
   expected.name("infotraffic");
   expected.value_type(storage::perfdata::gauge);
   expected.value(18.6);
   expected.unit("x");
   ASSERT_TRUE(expected == *it);
+  ASSERT_FALSE(expected != *it);
   ++it;
 
-  // #4.
+  // #5.
   expected = storage::perfdata();
   expected.name("foo");
   expected.value_type(storage::perfdata::absolute);
@@ -483,9 +542,10 @@ TEST_F(StorageParserParsePerfdata, Complex2) {
   expected.critical(INFINITY);
   expected.critical_low(11.0);
   ASSERT_TRUE(expected == *it);
+  ASSERT_FALSE(expected != *it);
   ++it;
 
-  // #5.
+  // #6.
   expected = storage::perfdata();
   expected.name("bar");
   expected.value_type(storage::perfdata::counter);
@@ -495,5 +555,6 @@ TEST_F(StorageParserParsePerfdata, Complex2) {
   expected.critical(30.0);
   expected.critical_low(20.0);
   ASSERT_TRUE(expected == *it);
+  ASSERT_FALSE(expected != *it);
   ++it;
 }
