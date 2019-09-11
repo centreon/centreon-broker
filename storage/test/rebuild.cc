@@ -19,6 +19,8 @@
 
 #include "com/centreon/broker/storage/rebuild.hh"
 #include <gtest/gtest.h>
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/storage/internal.hh"
 
 using namespace com::centreon::broker;
 
@@ -93,4 +95,16 @@ TEST(StorageRebuild, DefaultCtor) {
   ASSERT_FALSE(!r.end);
   ASSERT_FALSE(r.id != 0);
   ASSERT_FALSE(r.is_index);
+}
+
+/**
+ *  Check that the remove_graph object properly return is type
+ */
+TEST(StorageRebuild, ReturnType) {
+  storage::rebuild r;
+  auto val = io::events::data_type<io::events::storage,
+                                   storage::de_rebuild>::value;
+
+  ASSERT_TRUE(r.static_type() == val);
+  ASSERT_TRUE(r.type() == val);
 }

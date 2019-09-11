@@ -19,6 +19,8 @@
 
 #include "com/centreon/broker/storage/remove_graph.hh"
 #include <gtest/gtest.h>
+#include <com/centreon/broker/io/events.hh>
+#include <com/centreon/broker/storage/internal.hh>
 
 using namespace com::centreon::broker;
 
@@ -83,4 +85,16 @@ TEST(StorageRemoveGraph, DefaultCtor) {
   // Check properties values.
   ASSERT_FALSE(r.id != 0);
   ASSERT_FALSE(r.is_index);
+}
+
+/**
+ *  Check that the remove_graph object properly return is type
+ */
+TEST(StorageRemoveGraph, ReturnType) {
+  storage::remove_graph r;
+  auto val = io::events::data_type<io::events::storage,
+                                   storage::de_remove_graph>::value;
+
+  ASSERT_TRUE(r.static_type() == val);
+  ASSERT_TRUE(r.type() == val);
 }
