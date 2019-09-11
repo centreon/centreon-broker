@@ -288,17 +288,12 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
     }
     // Part of ID field.
     else {
-      where.append("((");
+      where.append("(");
       where.append(entry_name);
-      where.append("=?) OR (");
+      where.append("=?) AND ");
       key = std::string(":");
       key.append(entry_name);
       key.append("1");
-      where_bind_mapping.insert(std::make_pair(key, where_size++));
-      where.append(entry_name);
-      where.append(" IS NULL AND ?");
-      where.append(" IS NULL)) AND ");
-      key[key.size() - 1] = '2';
       where_bind_mapping.insert(std::make_pair(key, where_size++));
     }
   }
