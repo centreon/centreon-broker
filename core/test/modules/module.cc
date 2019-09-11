@@ -47,18 +47,25 @@ bool check_for(std::string const& module,
   }
 }
 
+class Modules : public testing::Test {
+ public:
+  void SetUp() override {
+    config::applier::init();
+  }
+
+  void TearDown() override {
+    config::applier::deinit();
+  }
+};
+
 /**
  *  Verify that the module version checks work.
  */
-TEST(Modules, load) {
+TEST_F(Modules, load) {
   // Initialization.
-  config::applier::init();
-
   ASSERT_TRUE(check_for(CENTREON_BROKER_TEST_MODULE_PATH "./libnull_module.so",
                         "undefined symbol: broker_module_version"));
   ASSERT_TRUE(check_for(CENTREON_BROKER_TEST_MODULE_PATH
                         "./libbad_version_module.so",
                         "version mismatch in"));
-
-  config::applier::deinit();
 }

@@ -24,14 +24,22 @@
 
 using namespace com::centreon::broker;
 
+class PublisherRead : public testing::Test {
+ public:
+  void SetUp() override {
+    config::applier::init();
+  }
+
+  void TearDown() override {
+    config::applier::deinit();
+  }
+};
+
 /**
  *  We should not be able to read from publisher.
  *
  */
-TEST(Publisher, Read) {
-  // Initialization.
-  config::applier::init();
-
+TEST_F(PublisherRead, Read) {
   // Error flag.
   bool error(true);
 
@@ -48,9 +56,6 @@ TEST(Publisher, Read) {
   } catch (...) {
     error = true;
   }
-
-  // Cleanup.
-  config::applier::deinit();
 
   // Return.
   ASSERT_FALSE(error);

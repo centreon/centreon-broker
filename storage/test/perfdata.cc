@@ -192,11 +192,20 @@ TEST(StoragePerfdata, DefaultCtor) {
   ASSERT_FALSE(p.warning_mode());
 }
 
+class StorageParserParsePerfdata : public testing::Test {
+ public:
+  void SetUp() override {
+    config::applier::init();
+  }
+  void TearDown() override {
+    config::applier::deinit();
+  };
+};
+
 // Given a storage::parser object
 // When parse_perfdata() is called with a valid perfdata string
 // Then perfdata are returned in a list
-TEST(StorageParserParsePerfdata, Simple1) {
-  config::applier::init();
+TEST_F(StorageParserParsePerfdata, Simple1) {
   // Parse perfdata.
   std::list<storage::perfdata> lst;
   storage::parser p;
@@ -219,7 +228,7 @@ TEST(StorageParserParsePerfdata, Simple1) {
   ASSERT_TRUE(expected == *it);
 }
 
-TEST(StorageParserParsePerfdata, Simple2) {
+TEST_F(StorageParserParsePerfdata, Simple2) {
   // Parse perfdata.
   std::list<storage::perfdata> list;
   storage::parser p;
@@ -242,7 +251,7 @@ TEST(StorageParserParsePerfdata, Simple2) {
   ASSERT_TRUE(expected == *it);
 }
 
-TEST(StorageParserParsePerfdata, Complex1) {
+TEST_F(StorageParserParsePerfdata, Complex1) {
   // Parse perfdata.
   std::list<storage::perfdata> list;
   storage::parser p;
@@ -342,7 +351,7 @@ TEST(StorageParserParsePerfdata, Complex1) {
 // Given a storage::parser object
 // When parse_perfdata() is called multiple time with valid strings
 // Then the corresponding perfdata list is returned
-TEST(StorageParserParsePerfdata, Loop) {
+TEST_F(StorageParserParsePerfdata, Loop) {
   // Objects.
   std::list<storage::perfdata> list;
   storage::parser p;
@@ -376,7 +385,7 @@ TEST(StorageParserParsePerfdata, Loop) {
 // Given a storage::parser object
 // When parse_perfdata() is called with an invalid string
 // Then it throws a storage::exceptions::perfdata
-TEST(StorageParserParsePerfdata, Incorrect1) {
+TEST_F(StorageParserParsePerfdata, Incorrect1) {
   // Objects.
   std::list<storage::perfdata> list;
   storage::parser p;
@@ -389,7 +398,7 @@ TEST(StorageParserParsePerfdata, Incorrect1) {
 // Given a storage::parser object
 // When parse_perfdata() is called with a metric without value but with unit
 // Then it throws a storage::exceptions::perfdata
-TEST(StorageParserParsePerfdata, Incorrect2) {
+TEST_F(StorageParserParsePerfdata, Incorrect2) {
   // Given
   std::list<storage::perfdata> list;
   storage::parser p;
@@ -399,7 +408,7 @@ TEST(StorageParserParsePerfdata, Incorrect2) {
                com::centreon::broker::storage::exceptions::perfdata);
 }
 
-TEST(StorageParserParsePerfdata, LabelWithSpaces) {
+TEST_F(StorageParserParsePerfdata, LabelWithSpaces) {
   // Parse perfdata.
   std::list<storage::perfdata> lst;
   storage::parser p;
@@ -420,7 +429,7 @@ TEST(StorageParserParsePerfdata, LabelWithSpaces) {
   ASSERT_TRUE(expected == *it);
 }
 
-TEST(StorageParserParsePerfdata, Complex2) {
+TEST_F(StorageParserParsePerfdata, Complex2) {
   // Parse perfdata.
   std::list<storage::perfdata> list;
   storage::parser p;
