@@ -17,7 +17,6 @@
 */
 
 #include "com/centreon/broker/processing/thread.hh"
-#include <iostream>
 
 using namespace com::centreon::broker::processing;
 
@@ -104,17 +103,14 @@ bool bthread::wait(unsigned long timeout_ms) {
 
   bool retval;
   if (res == std::cv_status::no_timeout) {
-    std::cout << "bthread::wait " << timeout_ms << " no timeout\n";
     // Thread execution correctly stopped.
     std::lock_guard<std::mutex> lk(_should_exitm);
     _should_exit = false;
-    std::cout << "         join\n";
     _thread.join();
     retval = true;
-  } else {
-    std::cout << "bthread::wait " << timeout_ms << " timeout\n";
+  } else
     retval = false;
-  }
+
   return retval;
 }
 
