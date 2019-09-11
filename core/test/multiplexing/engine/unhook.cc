@@ -35,13 +35,19 @@ using namespace com::centreon::broker;
 #define MSG2 "foo bar baz"
 #define MSG3 "last message with qux"
 
+class Unhook : public testing::Test {
+ public:
+  void SetUp() override { config::applier::init(); }
+
+  void TearDown() override { config::applier::deinit(); }
+};
+
 /**
  *  Check that multiplexing engine works properly.
  *
  */
-TEST(Unhook, EngineWorks) {
+TEST_F(Unhook, EngineWorks) {
   // Initialization.
-  config::applier::init();
   bool error(true);
 
   try {
@@ -125,7 +131,5 @@ TEST(Unhook, EngineWorks) {
     std::cerr << "unknown exception\n";
   }
 
-  // Cleanup.
-  config::applier::deinit();
   ASSERT_FALSE(error);
 }
