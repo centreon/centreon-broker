@@ -133,7 +133,6 @@ void host::_internal_copy(host const& other) {
   stalk_on_up = other.stalk_on_up;
   statusmap_image = other.statusmap_image;
   timezone = other.timezone;
-  return;
 }
 
 /**
@@ -151,7 +150,6 @@ void host::_zero_initialize() {
   stalk_on_down = false;
   stalk_on_unreachable = false;
   stalk_on_up = false;
-  return;
 }
 
 /**************************************
