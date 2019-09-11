@@ -71,5 +71,5 @@ TEST_F(ProcessingTest, StartWithFilterStop) {
   std::this_thread::sleep_for(std::chrono::milliseconds(1500));
   ASSERT_NO_THROW(_acceptor->exit());
   time_t now1{time(nullptr)};
-  ASSERT_TRUE(now1 >= now + 2);
+  ASSERT_TRUE(now1 <= now + 3);
 }
