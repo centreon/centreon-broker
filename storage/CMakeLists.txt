@@ -65,8 +65,8 @@ add_library("${STORAGE}" SHARED
 add_dependencies("${STORAGE}" json11_lib)
 set_target_properties("${STORAGE}" PROPERTIES
     PREFIX ""
-    COMPILE_FLAGS "${MYSQL_CFLAGS}")
-target_link_libraries("${STORAGE}")
+    COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
+target_link_libraries("${STORAGE}" conflictmgr)
 
 # Testing.
 set(

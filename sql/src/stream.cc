@@ -36,6 +36,7 @@
 #include "com/centreon/engine/common.hh"
 #include "com/centreon/engine/host.hh"
 #include "com/centreon/engine/service.hh"
+#include "com/centreon/broker/sql/conflict_manager.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -193,15 +194,7 @@ void stream::_clean_tables(unsigned int instance_id) {
       << "SQL: disable hosts and services (instance_id: " << instance_id << ")";
   // Disable hosts and services.
   std::ostringstream oss;
-  oss << "UPDATE " << (db_v2 ? "hosts" : "rt_hosts")
-      << " AS h"
-         " LEFT JOIN "
-      << (db_v2 ? "services" : "rt_services")
-      << " AS s"
-         " ON h.host_id = s.host_id"
-         " SET h.enabled=0, s.enabled=0"
-         " WHERE h.instance_id="
-      << instance_id;
+  oss << "UPDATE hosts AS h LEFT JOIN services AS s ON h.host_id = s.host_id SET h.enabled=0, s.enabled=0 WHERE h.instance_id=" << instance_id;
   _mysql.run_query(oss.str(),
                    "SQL: could not clean hosts and services tables: ", false,
                    thread_id);
@@ -2206,6 +2199,9 @@ stream::stream(database_config const& dbcfg,
 
   // Run cleanup thread.
   _cleanup_thread.start();
+
+  conflict_manager::instance().init(dbcfg);
+  std::cout << "CONFLICT MANAGER SQL: " << &conflict_manager::instance() << std::endl;
 }
 
 /**
@@ -2280,7 +2276,8 @@ int stream::write(std::shared_ptr<io::data> const& data) {
   unsigned short cat(io::events::category_of_type(type));
   unsigned short elem(io::events::element_of_type(type));
   if (cat == io::events::neb)
-    (this->*(_neb_processing_table[elem]))(data);
+    conflict_manager::instance().send_event(conflict_manager::sql, data);
+    //(this->*(_neb_processing_table[elem]))(data);
   else if (cat == io::events::correlation)
     (this->*(_correlation_processing_table[elem]))(data);
 
@@ -2288,13 +2285,14 @@ int stream::write(std::shared_ptr<io::data> const& data) {
   logging::debug(logging::low)
       << "SQL: " << _pending_events << " events have not yet been acknowledged";
 
-  int retval(_ack_events);
-  _ack_events = 0;
-  logging::debug(logging::low) << "SQL: ack events count: " << retval;
-  if (retval)
-    // Update hosts and services of stopped instances
-    _update_hosts_and_services_of_unresponsive_instances();
-  // Commit.
+//  int retval(_ack_events);
+//  _ack_events = 0;
+//  logging::debug(logging::low) << "SQL: ack events count: " << retval;
+//  if (retval)
+//    // Update hosts and services of stopped instances
+//    _update_hosts_and_services_of_unresponsive_instances();
+//  // Commit.
 
-  return retval;
+  return conflict_manager::instance().get_acks(conflict_manager::sql);
+  //return retval;
 }

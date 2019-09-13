@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <iostream>
 #include "com/centreon/broker/storage/stream.hh"
 #include <cfloat>
 #include <cmath>
@@ -109,6 +110,8 @@ stream::stream(database_config const& db_cfg,
       _rrd_len(rrd_len ? rrd_len : 15552000),
       _store_in_db(store_in_db),
       _mysql(db_cfg) {
+  sql::conflict_manager::instance().wait_for_init();
+  std::cout << "CONFLICT MANAGER STORAGE: " << &sql::conflict_manager::instance() << std::endl;
   // Prepare queries.
   _prepare();
 }
@@ -422,10 +425,7 @@ void stream::_check_deleted_index() {
     std::list<unsigned long long> metrics_to_delete;
     {
       std::ostringstream oss;
-      oss << "SELECT metric_id"
-             "  FROM "
-          << (db_v2 ? "metrics" : "rt_metrics")
-          << "  WHERE index_id=" << index_id;
+      oss << "SELECT metric_id FROM metrics WHERE index_id=" << index_id;
 
       std::promise<database::mysql_result> promise;
       _mysql.run_query_and_get_result(oss.str(), &promise);

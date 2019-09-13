@@ -217,7 +217,7 @@ step[23].count = {
   instance = step[1].count.instance,
   service = step[8].count.service,
   log = 50,
-  continue = true,
+  continue = false,
 }
 
 -- Ba status
