@@ -45,6 +45,10 @@ class acceptor : public io::endpoint {
  public:
   acceptor();
   ~acceptor();
+
+  acceptor(acceptor const& other) = delete;
+  acceptor& operator=(acceptor const& other) = delete;
+
   void add_child(std::string const& child);
   void listen_on(unsigned short port);
   std::shared_ptr<io::stream> open();
@@ -54,16 +58,13 @@ class acceptor : public io::endpoint {
   void stats(json11::Json::object& tree);
 
  private:
-  acceptor(acceptor const& other);
-  acceptor& operator=(acceptor const& other);
-
   std::list<std::string> _children;
   std::mutex _childrenm;
   std::mutex _mutex;
   unsigned short _port;
   int _read_timeout;
-  std::unique_ptr<asio::ip::tcp::socket> _socket;
   asio::io_context _io_context;
+  std::unique_ptr<asio::ip::tcp::socket> _socket;
   int _write_timeout;
 };
 }  // namespace tcp

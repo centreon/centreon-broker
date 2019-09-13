@@ -47,6 +47,7 @@ include_directories(${PROJECT_SOURCE_DIR}/neb/inc)
 include_directories(${PROJECT_SOURCE_DIR}/rrd/inc)
 include_directories(${PROJECT_SOURCE_DIR}/simu/inc)
 include_directories(${PROJECT_SOURCE_DIR}/stats/inc)
+include_directories(${PROJECT_SOURCE_DIR}/tcp/inc)
 
 # needed by module.cc
 add_definitions(-DCENTREON_BROKER_TEST_MODULE_PATH="${CMAKE_BINARY_DIR}/test/")
