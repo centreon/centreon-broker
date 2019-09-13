@@ -23,6 +23,7 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/storage/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/rrd/inc")
+include_directories("${PROJECT_SOURCE_DIR}/sql/inc")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/storage")
 
 # Storage module.

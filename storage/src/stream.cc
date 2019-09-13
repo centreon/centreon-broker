@@ -40,6 +40,7 @@
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
+#include "com/centreon/broker/sql/conflict_manager.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -309,11 +310,20 @@ int stream::write(std::shared_ptr<io::data> const& data) {
           // Find metric_id.
           unsigned int metric_type(pd.value_type());
           bool metric_locked(false);
-          unsigned int metric_id(_find_metric_id(
-              index_id, pd.name(), pd.unit(), pd.warning(), pd.warning_low(),
-              pd.warning_mode(), pd.critical(), pd.critical_low(),
-              pd.critical_mode(), pd.min(), pd.max(), pd.value(), &metric_type,
-              &metric_locked));
+          unsigned int metric_id(_find_metric_id(index_id,
+                                                 pd.name(),
+                                                 pd.unit(),
+                                                 pd.warning(),
+                                                 pd.warning_low(),
+                                                 pd.warning_mode(),
+                                                 pd.critical(),
+                                                 pd.critical_low(),
+                                                 pd.critical_mode(),
+                                                 pd.min(),
+                                                 pd.max(),
+                                                 pd.value(),
+                                                 &metric_type,
+                                                 &metric_locked));
 
           if (_store_in_db) {
             // Append perfdata to queue.
@@ -589,8 +599,7 @@ unsigned int stream::_find_index_id(uint64_t host_id,
       _update_index_data_stmt.bind_value_as_str(0, host_name);
       _update_index_data_stmt.bind_value_as_str(1, service_desc);
       _update_index_data_stmt.bind_value_as_str(2, special ? "1" : "0");
-      _update_index_data_stmt.bind_value_as_i32(3, host_id);
-      _update_index_data_stmt.bind_value_as_i32(4, service_id);
+      _update_index_data_stmt.bind_value_as_i32(3, it->second.index_id);
 
       _mysql.run_statement(
           _update_index_data_stmt, "UPDATE index_data", true,
@@ -689,6 +698,7 @@ unsigned int stream::_find_index_id(uint64_t host_id,
  *  be found, insert an entry in the database.
  *
  *  @param[in]     index_id    Index ID of the metric.
+ *  @param[in]     host_id     Host ID needed to know what thread to use
  *  @param[in]     metric_name Name of the metric.
  *  @param[in]     unit_name   Metric unit.
  *  @param[in]     warn        High warning threshold.
@@ -764,7 +774,11 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
       _update_metrics_stmt.bind_value_as_i32(10, it->second.metric_id);
 
       // Only use the thread_id 0
-      _mysql.run_statement(_update_metrics_stmt, "UPDATE metrics", true);
+      int thread_id = _mysql.run_statement(_update_metrics_stmt,
+                           "UPDATE metrics",
+                           true);
+      _mysql.commit(thread_id);
+
       if (_mysql.commit_if_needed())
         _set_ack_events();
 
@@ -920,45 +934,22 @@ void stream::_insert_perfdatas() {
  *  Prepare queries.
  */
 void stream::_prepare() {
-  // Database schema version.
-  bool db_v2(_mysql.schema_version() == mysql::v2);
-
   // Prepare metrics update query.
   std::ostringstream query;
-  query << "UPDATE " << (db_v2 ? "metrics" : "rt_metrics")
-        << " SET unit_name=?,"
-           "     warn=?,"
-           "     warn_low=?,"
-           "     warn_threshold_mode=?,"
-           "     crit=?,"
-           "     crit_low=?,"
-           "     crit_threshold_mode=?,"
-           "     min=?,"
-           "     max=?,"
-           "     current_value=?"
-           "  WHERE metric_id=?";
-  _update_metrics_stmt = _mysql.prepare_query(query.str());
+  _update_metrics_stmt = _mysql.prepare_query(
+      "UPDATE metrics SET "
+      "unit_name=?,warn=?,warn_low=?,warn_threshold_mode=?,crit=?,crit_low=?,"
+      "crit_threshold_mode=?,min=?,max=?,current_value=? WHERE metric_id=?");
 
-  query.str("");
-  query << "INSERT INTO " << (db_v2 ? "metrics" : "rt_metrics")
-        << "  (index_id, metric_name, unit_name, warn, warn_low,"
-           "   warn_threshold_mode, crit, crit_low, "
-           "   crit_threshold_mode, min, max, current_value,"
-           "   data_source_type)"
-           " VALUES (?, ?, ?, ?, "
-           "         ?, ?, ?, "
-           "         ?, ?, ?, ?, "
-           "         ?, ?)";
-  _insert_metrics_stmt = _mysql.prepare_query(query.str());
+  _insert_metrics_stmt = _mysql.prepare_query(
+      "INSERT INTO metrics "
+      "(index_id,metric_name,unit_name,warn,warn_low,warn_threshold_mode,crit,"
+      "crit_low,crit_threshold_mode,min,max,current_value,data_source_type) "
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
-  query.str("");
-  query << "UPDATE " << (db_v2 ? "index_data" : "rt_index_data")
-        << "  SET host_name=?,"
-           "    service_description=?,"
-           "    special=?"
-           "  WHERE host_id=?"
-           "    AND service_id=?";
-  _update_index_data_stmt = _mysql.prepare_query(query.str());
+  _update_index_data_stmt = _mysql.prepare_query(
+      "UPDATE index_data SET host_name=?,service_description=?,special=? WHERE "
+      "id=?");
 
   // Build cache.
   _rebuild_cache();
@@ -984,15 +975,8 @@ void stream::_rebuild_cache() {
   // Fill index cache.
   {
     // Execute query.
-    std::ostringstream query;
-    query << "SELECT " << (db_v2 ? "id" : "index_id")
-          << "       , host_id, service_id, host_name,"
-             "       rrd_retention, service_description, special,"
-             "       locked"
-             " FROM "
-          << (db_v2 ? "index_data" : "rt_index_data");
     std::promise<database::mysql_result> promise;
-    _mysql.run_query_and_get_result(query.str(), &promise);
+    _mysql.run_query_and_get_result("SELECT id,host_id,service_id,host_name,rrd_retention,service_description,special,locked FROM index_data", &promise);
     try {
       database::mysql_result res(promise.get_future().get());
 

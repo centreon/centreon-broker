@@ -29,6 +29,7 @@ set(SQL "${SQL}" PARENT_SCOPE)
 add_library("${SQL}" SHARED
   # Sources.
   "${SRC_DIR}/cleanup.cc"
+  "${SRC_DIR}/conflict_manager.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
@@ -36,6 +37,7 @@ add_library("${SQL}" SHARED
   "${SRC_DIR}/stored_timestamp.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/sql/cleanup.hh"
+  "${INC_DIR}/com/centreon/broker/sql/conflict_manager.hh"
   "${INC_DIR}/com/centreon/broker/sql/connector.hh"
   "${INC_DIR}/com/centreon/broker/sql/factory.hh"
   "${INC_DIR}/com/centreon/broker/sql/stream.hh"

@@ -2230,7 +2230,7 @@ int stream::flush() {
   // Commit transaction.
   logging::info(logging::medium) << "SQL: committing transaction";
   _mysql.commit();
-  int retval(_ack_events + _pending_events);
+  int retval = _ack_events + _pending_events;
   _ack_events = 0;
   _pending_events = 0;
   return retval;
