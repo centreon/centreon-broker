@@ -41,19 +41,20 @@ namespace tcp {
 class connector : public io::endpoint {
  public:
   connector();
-  connector(connector const& other);
   ~connector();
-  connector& operator=(connector const& other);
+
+  connector& operator=(connector const& other) = delete;
+  connector(connector const& other) = delete;
+
   void connect_to(std::string const& host, unsigned short port);
   std::shared_ptr<io::stream> open();
   void set_read_timeout(int secs);
   void set_write_timeout(int secs);
 
  private:
-  void _internal_copy(connector const& other);
-
   std::string _host;
   unsigned short _port;
+ private:
   int _read_timeout;
   int _write_timeout;
   asio::io_context _io_context;

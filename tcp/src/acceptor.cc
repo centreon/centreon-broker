@@ -1,20 +1,21 @@
 /*
-** Copyright 2011-2013,2015,2017 Centreon
-**
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-**
-**     http://www.apache.org/licenses/LICENSE-2.0
-**
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
-**
-** For more information : contact@centreon.com
-*/
+ * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more information : contact@centreon.com
+ *
+ */
 
 #include "com/centreon/broker/tcp/acceptor.hh"
 #include <sstream>
@@ -35,7 +36,7 @@ using namespace com::centreon::broker::tcp;
  *  Default constructor.
  */
 acceptor::acceptor()
-    : io::endpoint(true), _port(0), _read_timeout(-1), _write_timeout(-1) {}
+    : io::endpoint(true), _port(0), _read_timeout(-1), _write_timeout(-1), _io_context{}, _socket{new asio::ip::tcp::socket{_io_context}} {}
 
 /**
  *  Destructor.
@@ -72,12 +73,19 @@ std::shared_ptr<io::stream> acceptor::open() {
   if (!_socket)
     _socket.reset(new asio::ip::tcp::socket(_io_context));
 
-  asio::ip::tcp::acceptor acceptor(
-      _io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), _port));
-  acceptor.accept(*_socket);
+  try {
+    asio::ip::tcp::acceptor acceptor(
+        _io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), _port));
+    acceptor.accept(*_socket);
+  } catch (std::system_error se ){
+    throw exceptions::msg()
+        << "TCP: error while waiting client on port: " << _port
+        << " " << se.what();
+  }
 
   // Accept client.
-  std::shared_ptr<stream> incoming{new stream{_socket.get(), ""}};
+  std::shared_ptr<stream> incoming{new stream{_io_context, _socket.get(), ""}};
+  _socket.release();
 
   logging::info(logging::medium) << "TCP: new client connected";
   incoming->set_parent(this);

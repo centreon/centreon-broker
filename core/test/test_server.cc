@@ -115,9 +115,9 @@ void test_server::handle_read(
 
     bool key_found{false};
     con_handle->buf[bytes_transfered] = 0;
+    std::string const& s{con_handle->buf};
     for (auto it(_answer_reply.begin()), end(_answer_reply.end()); it != end;
          ++it) {
-      std::string const& s{con_handle->buf};
       if (s.find(it->first) != std::string::npos) {
         asio::write(con_handle->socket, asio::buffer(it->second),
                     asio::transfer_all(), err);
@@ -126,10 +126,18 @@ void test_server::handle_read(
       }
     }
 
-    if (!key_found)
-      asio::write(con_handle->socket,
-                  asio::buffer(std::string{"Unknow command"}),
-                  asio::transfer_all(), err);
+    if (!key_found) {
+      if (s.find("SERV_DELAY\n") != std::string::npos) {
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        asio::write(con_handle->socket,
+                    asio::buffer(std::string{"PONG\n"}),
+                    asio::transfer_all(), err);
+      } else {
+        asio::write(con_handle->socket,
+                    asio::buffer(std::string{"Unknow command"}),
+                    asio::transfer_all(), err);
+      }
+    }
   }
 
   if (!err) {
