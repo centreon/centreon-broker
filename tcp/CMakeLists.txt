@@ -48,6 +48,24 @@ add_library("${TCP}" SHARED
 add_dependencies("${TCP}" Asio)
 set_target_properties("${TCP}" PROPERTIES PREFIX "")
 
+# Testing.
+if (WITH_TESTING)
+  set(
+    TESTS_SOURCES
+    ${TESTS_SOURCES}
+    ${TEST_DIR}/acceptor.cc
+    ${TEST_DIR}/connector.cc
+    ${TEST_DIR}/factory.cc
+    PARENT_SCOPE
+  )
+  set(
+    TESTS_LIBRARIES
+    ${TESTS_LIBRARIES}
+    ${TCP}
+    PARENT_SCOPE
+  )
+endif(WITH_TESTING)
+
 # Install rule.
 install(TARGETS "${TCP}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
