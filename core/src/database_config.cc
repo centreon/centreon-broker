@@ -55,7 +55,7 @@ database_config::database_config(std::string const& type,
                                  std::string const& user,
                                  std::string const& password,
                                  std::string const& name,
-                                 int queries_per_transaction,
+                                 uint32_t queries_per_transaction,
                                  bool check_replication,
                                  int connections_count)
     : _type(type),
@@ -163,7 +163,7 @@ database_config::~database_config() {}
 database_config& database_config::operator=(database_config const& other) {
   if (this != &other)
     _internal_copy(other);
-  return (*this);
+  return *this;
 }
 /**
  *  Comparaison operator.
@@ -190,7 +190,7 @@ bool database_config::operator==(database_config const& other) {
  *  @return The DB type.
  */
 std::string const& database_config::get_type() const {
-  return (_type);
+  return _type;
 }
 
 /**
@@ -199,7 +199,7 @@ std::string const& database_config::get_type() const {
  *  @return The DB host
  */
 std::string const& database_config::get_host() const {
-  return (_host);
+  return _host;
 }
 
 /**
@@ -208,7 +208,7 @@ std::string const& database_config::get_host() const {
  *  @return The connection port.
  */
 unsigned short database_config::get_port() const {
-  return (_port);
+  return _port;
 }
 
 /**
@@ -217,7 +217,7 @@ unsigned short database_config::get_port() const {
  *  @return The user.
  */
 std::string const& database_config::get_user() const {
-  return (_user);
+  return _user;
 }
 
 /**
@@ -226,7 +226,7 @@ std::string const& database_config::get_user() const {
  *  @return The password.
  */
 std::string const& database_config::get_password() const {
-  return (_password);
+  return _password;
 }
 
 /**
@@ -235,7 +235,7 @@ std::string const& database_config::get_password() const {
  *  @return The database name.
  */
 std::string const& database_config::get_name() const {
-  return (_name);
+  return _name;
 }
 
 /**
@@ -243,8 +243,8 @@ std::string const& database_config::get_name() const {
  *
  *  @return Number of queries per transaction.
  */
-int database_config::get_queries_per_transaction() const {
-  return (_queries_per_transaction);
+uint32_t database_config::get_queries_per_transaction() const {
+  return _queries_per_transaction;
 }
 
 /**
@@ -253,7 +253,7 @@ int database_config::get_queries_per_transaction() const {
  *  @return Database replication check flag.
  */
 bool database_config::get_check_replication() const {
-  return (_check_replication);
+  return _check_replication;
 }
 
 /**
@@ -262,7 +262,7 @@ bool database_config::get_check_replication() const {
  *  @return Number of connections.
  */
 int database_config::get_connections_count() const {
-  return (_connections_count);
+  return _connections_count;
 }
 
 /**

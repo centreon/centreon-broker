@@ -18,7 +18,6 @@
 
 #include "com/centreon/broker/sql/stream.hh"
 #include <ctime>
-#include <iostream>
 #include <limits>
 #include <sstream>
 #include "com/centreon/broker/correlation/events.hh"
@@ -2200,8 +2199,7 @@ stream::stream(database_config const& dbcfg,
   // Run cleanup thread.
   _cleanup_thread.start();
 
-  conflict_manager::instance().init(dbcfg);
-  std::cout << "CONFLICT MANAGER SQL: " << &conflict_manager::instance() << std::endl;
+  conflict_manager::init(dbcfg);
 }
 
 /**

@@ -33,8 +33,10 @@ conflict_manager& conflict_manager::instance() {
 }
 
 conflict_manager::conflict_manager(database_config const& dbcfg)
-    : _exit{false}, _mysql{dbcfg} {
-  _thread = std::thread(&conflict_manager::_callback, this);
+    : _exit{false},
+      _mysql{dbcfg},
+      _max_pending_queries{dbcfg.get_queries_per_transaction()} {
+  _thread = std::move(std::thread(&conflict_manager::_callback, this));
 }
 
 /**
@@ -77,7 +79,8 @@ void conflict_manager::_callback() {
           return _pending_queries == _max_pending_queries;
         }))
       logging::info(logging::low)
-          << "conflict_manager: sending max pending queries.";
+          << "conflict_manager: sending max pending queries ("
+          << _max_pending_queries << ").";
     else
       logging::info(logging::low)
           << "conflict_manager: timeout reached - sending " << _pending_queries
@@ -113,4 +116,37 @@ void conflict_manager::send_event(conflict_manager::stream_type c,
     _queue[c].push_back(false);
     _neb_events[elem].push_back(std::make_pair(e, &_queue[c].back()));
   }
+}
+
+/**
+ *  This method is called from the stream and returns how many events should
+ *  be released. By the way, it removed those objects from the queue.
+ *
+ * @param c
+ *
+ * @return the number of events to ack.
+ */
+int32_t conflict_manager::get_acks(stream_type c) {
+  std::lock_guard<std::mutex> lk(_loop_m);
+  int32_t retval = 0;
+  while (!_queue[c].empty() && _queue[c].front()) {
+    _queue[c].pop_front();
+    retval++;
+  }
+  _pending_queries -= retval;
+  return retval;
+}
+
+/**
+ *  Set all the booleans pointed by lst to true. The impact is that the
+ *  associated queue sees several of its booleans changed to true.
+ *
+ * @param lst A list of pairs of events and bool*
+ */
+void conflict_manager::_set_booleans(
+    std::list<std::pair<std::shared_ptr<io::data>, bool*> >& lst) {
+  for (auto& p : lst) {
+    *p.second = true;
+  }
+  lst.clear();
 }

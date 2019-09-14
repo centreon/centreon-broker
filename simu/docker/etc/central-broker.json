@@ -17,7 +17,7 @@
         "debug": false,
         "error": true,
         "info": true,
-        "level": "medium",
+        "level": "high",
         "type": "file"
       },
       "input": {

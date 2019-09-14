@@ -76,42 +76,11 @@ void conflict_manager::_process_instances() {
   _mysql.commit();
 
   /* We just have to set the booleans */
-  _set_booleans(_neb_events[neb::instance::static_type()]);
-}
-
-/**
- *  Set all the booleans pointed by lst to true. The impact is that the
- *  associated queue sees several of its booleans changed to true.
- *
- * @param lst A list of pairs of events and bool*
- */
-void conflict_manager::_set_booleans(
-    std::list<std::pair<std::shared_ptr<io::data>, bool*> >& lst) {
-  for (auto p : lst)
-    *p.second = true;
-  lst.clear();
+  _set_booleans(_neb_events[static_cast<uint16_t>(neb::instance::static_type())]);
 }
 
 void conflict_manager::_clean_tables(uint32_t instance_id) {}
 
 bool conflict_manager::_is_valid_poller(uint32_t instance_id) {
   return true;
-}
-
-/**
- *  This method is called from the stream and returns how many events should
- *  be released. By the way, it removed those objects from the queue.
- *
- * @param c
- *
- * @return the number of events to ack.
- */
-int32_t conflict_manager::get_acks(stream_type c) {
-  std::lock_guard<std::mutex> lk(_loop_m);
-  int32_t retval;
-  while (!_queue[c].empty() && _queue[c].front()) {
-    _queue[c].pop_front();
-    retval++;
-  }
-  return retval;
 }

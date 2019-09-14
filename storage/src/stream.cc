@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include <iostream>
 #include "com/centreon/broker/storage/stream.hh"
 #include <cfloat>
 #include <cmath>
@@ -110,8 +109,7 @@ stream::stream(database_config const& db_cfg,
       _rrd_len(rrd_len ? rrd_len : 15552000),
       _store_in_db(store_in_db),
       _mysql(db_cfg) {
-  sql::conflict_manager::instance().wait_for_init();
-  std::cout << "CONFLICT MANAGER STORAGE: " << &sql::conflict_manager::instance() << std::endl;
+  sql::conflict_manager::wait_for_init();
   // Prepare queries.
   _prepare();
 }
