@@ -34,8 +34,9 @@ conflict_manager& conflict_manager::instance() {
 
 conflict_manager::conflict_manager(database_config const& dbcfg)
     : _exit{false},
-      _mysql{dbcfg},
-      _max_pending_queries{dbcfg.get_queries_per_transaction()} {
+      _max_pending_queries{dbcfg.get_queries_per_transaction()},
+      _pending_queries{0},
+      _mysql{dbcfg} {
   _thread = std::move(std::thread(&conflict_manager::_callback, this));
 }
 
@@ -92,6 +93,11 @@ void conflict_manager::_callback() {
     if (!_neb_events[static_cast<uint16_t>(neb::instance::static_type())]
              .empty())
       _process_instances();
+
+    /* Then come hosts */
+    if (!_neb_events[static_cast<uint16_t>(neb::host::static_type())]
+             .empty())
+      _process_hosts();
   }
 }
 

@@ -47,8 +47,7 @@ class builder {
   json11::Json const& root() const throw();
 
  private:
-  static std::string _generate_stats_for_endpoint(processing::bthread* fo,
-                                                  json11::Json::object& tree);
+  static std::string _generate_stats_for_endpoint(processing::bthread* fo);
 
   std::string _data;
   json11::Json _root;

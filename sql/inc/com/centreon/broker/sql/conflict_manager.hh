@@ -17,13 +17,14 @@
 */
 #ifndef CCB_SQL_CONFLICT_MANAGER_HH
 #define CCB_SQL_CONFLICT_MANAGER_HH
-#include <condition_variable>
 #include <array>
+#include <condition_variable>
 #include <deque>
 #include <list>
-#include <mutex>
 #include <memory>
+#include <mutex>
 #include <thread>
+#include <unordered_map>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/mysql.hh"
@@ -55,17 +56,19 @@ class conflict_manager {
    * So they will know when their events will be released. */
   std::array<std::deque<bool>, 2> _queue;
 
-  mysql _mysql;
-
   mutable std::mutex _loop_m;
   std::condition_variable _loop_cv;
+  bool _exit;
   uint32_t _max_pending_queries;
   uint32_t _pending_queries;
-  bool _exit;
+  mysql _mysql;
 
   std::thread _thread;
 
+  std::unordered_map<unsigned int, unsigned int> _cache_host_instance;
+
   database::mysql_stmt _instance_insupdate;
+  database::mysql_stmt _host_insupdate;
 
   conflict_manager(database_config const& dbcfg);
   conflict_manager() = delete;
@@ -77,6 +80,7 @@ class conflict_manager {
       std::list<std::pair<std::shared_ptr<io::data>, bool*> >& lst);
 
   void _process_instances();
+  void _process_hosts();
   void _clean_tables(uint32_t instance_id);
   bool _is_valid_poller(uint32_t instance_id);
 

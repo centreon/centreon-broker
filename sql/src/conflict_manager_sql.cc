@@ -24,6 +24,10 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::sql;
 
+void conflict_manager::_clean_tables(uint32_t instance_id) {}
+
+bool conflict_manager::_is_valid_poller(uint32_t instance_id) { return true; }
+
 /**
  *  Process an instance event. The thread executing the command is controlled
  *  so that queries depending on this one will be made by the same thread.
@@ -67,20 +71,67 @@ void conflict_manager::_process_instances() {
       _instance_insupdate << i;
 
       _mysql.run_statement(_instance_insupdate,
-                            oss.str(),
-                            true,
-                            _mysql.choose_connection_by_instance(i.poller_id));
+                           oss.str(),
+                           true,
+                           _mysql.choose_connection_by_instance(i.poller_id));
     }
   }
   /* All the stuff on instances are done, we commit. */
   _mysql.commit();
 
   /* We just have to set the booleans */
-  _set_booleans(_neb_events[static_cast<uint16_t>(neb::instance::static_type())]);
+  _set_booleans(_neb_events[elem]);
 }
 
-void conflict_manager::_clean_tables(uint32_t instance_id) {}
+/**
+ *  Process an host event.
+ *
+ *  @param[in] e Uncasted host.
+ */
+void conflict_manager::_process_hosts() {
 
-bool conflict_manager::_is_valid_poller(uint32_t instance_id) {
-  return true;
+  uint16_t elem{static_cast<uint16_t>(neb::host::static_type())};
+  for (std::list<std::pair<std::shared_ptr<io::data>, bool*> >::iterator
+           it(_neb_events[elem].begin()),
+       end(_neb_events[elem].end());
+       it != end;
+       ++it) {
+    neb::host& h(*static_cast<neb::host*>(it->first.get()));
+
+    // Log message.
+    logging::info(logging::medium) << "SQL: processing host event"
+                                      " (poller: " << h.poller_id
+                                   << ", id: " << h.host_id
+                                   << ", name: " << h.host_name << ")";
+
+    // Processing
+    if (_is_valid_poller(h.poller_id)) {
+      if (h.host_id) {
+        // Prepare queries.
+        if (!_host_insupdate.prepared()) {
+          query_preparator::event_unique unique;
+          unique.insert("host_id");
+          query_preparator qp(neb::host::static_type(), unique);
+          _host_insupdate = qp.prepare_insert_or_update(_mysql);
+        }
+
+        // Process object.
+        std::ostringstream oss;
+        oss << "SQL: could not store host (poller: " << h.poller_id
+            << ", host: " << h.host_id << "): ";
+
+        _host_insupdate << h;
+        _mysql.run_statement(_host_insupdate,
+                             oss.str(),
+                             true,
+                             _mysql.choose_connection_by_instance(h.poller_id));
+
+        // Fill the cache...
+        _cache_host_instance[h.host_id] = h.poller_id;
+      } else
+        logging::error(logging::high) << "SQL: host '" << h.host_name
+                                      << "' of poller " << h.poller_id
+                                      << " has no ID";
+    }
+  }
 }
