@@ -49,10 +49,10 @@ stream::stream(asio::io_context& ctx,
                std::string const& name)
     : _name(name),
       _parent(nullptr),
-      _read_timeout(-1),
+      _io_context(ctx),
       _socket(sock),
-      _write_timeout(-1),
-      _io_context{ctx} {
+      _read_timeout(-1),
+      _write_timeout(-1) {
   _set_socket_options();
 }
 
@@ -87,14 +87,14 @@ std::string stream::peer() const {
 
 enum reason { reason_no, reason_timer, reason_socket };
 
-static void timer_cb(std::atomic_uint8_t *reason,
+static void timer_cb(std::atomic<uint8_t>* reason,
                      std::error_code* return_error,
                      std::error_code err) {
   *reason = reason_timer;
   *return_error = err;
 }
 
-static void read_cb(std::atomic_uint8_t *reason,
+static void read_cb(std::atomic<uint8_t>* reason,
                     asio::system_timer* tmr,
                     std::error_code* return_error,
                     std::size_t* return_len,
@@ -120,7 +120,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   if (!_socket)
     _initialize_socket();
 
-  std::atomic_uint8_t reason{reason_no};
+  std::atomic<uint8_t> reason{reason_no};
   // Set deadline.
   {
     time_t now = ::time(nullptr);
@@ -139,7 +139,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   std::error_code timer_err;
   std::shared_ptr<io::raw> data{std::static_pointer_cast<io::raw>(d)};
 
-  std::vector<char>& buffer{data->get_buffer()};
+  std::vector<char>& buffer = data->get_buffer();
   buffer.resize(2048);
   std::size_t len{0};
   _socket->async_read_some(
@@ -158,11 +158,12 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
       break;
     if (read_err)
       timer.cancel();
-    if (timer_err)
+    if (timer_err) {
       if (timer_err != std::errc::operation_canceled)
         timer_err.clear();
       else
         _socket->cancel();
+    }
   }
 
   if (timer_err)
