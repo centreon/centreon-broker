@@ -40,6 +40,15 @@ void conflict_manager::_prepare_hg_insupdate_statement() {
   }
 }
 
+void conflict_manager::_prepare_sg_insupdate_statement() {
+  if (!_service_group_insupdate.prepared()) {
+    query_preparator::event_unique unique;
+    unique.insert("servicegroup_id");
+    query_preparator qp(neb::service_group::static_type(), unique);
+    _service_group_insupdate = qp.prepare_insert_or_update(_mysql);
+  }
+}
+
 void conflict_manager::_process_acknowledgement() {}
 
 /**
@@ -443,7 +452,63 @@ void conflict_manager::_process_log() {}
 void conflict_manager::_process_module() {}
 void conflict_manager::_process_service_check() {}
 void conflict_manager::_process_service_dependency() {}
-void conflict_manager::_process_service_group() {}
+
+/**
+ *  Process a service group event.
+ *
+ *  @param[in] e Uncasted service group.
+ */
+void conflict_manager::_process_service_group() {
+  int conn = _mysql.choose_best_connection();
+
+  while (true) {
+    auto& p = _events.front();
+    std::shared_ptr<io::data> d{p.first};
+
+    if (d->type() != neb::service_group::static_type())
+      break;
+
+    // Cast object.
+    neb::service_group const& sg(
+        *static_cast<neb::service_group const*>(d.get()));
+
+    // Insert/update group.
+    if (sg.enabled) {
+      logging::info(logging::medium) << "SQL: enabling service group " << sg.id
+                                     << " ('" << sg.name << "') on instance "
+                                     << sg.poller_id;
+      _prepare_sg_insupdate_statement();
+
+      std::stringstream oss;
+      oss << "SQL: could not store service group (poller: " << sg.poller_id
+          << ", group: " << sg.id << "): ";
+
+      _service_group_insupdate << sg;
+      _mysql.run_statement(_service_group_insupdate, oss.str(), true, conn);
+    }
+    // Delete group.
+    else {
+      logging::info(logging::medium) << "SQL: disabling service group " << sg.id
+                                     << " ('" << sg.name << "') on instance "
+                                     << sg.poller_id;
+
+      // Delete group members.
+      {
+        std::ostringstream oss;
+        oss << "DELETE services_servicegroups"
+            << "  FROM services_servicegroups"
+            << "  LEFT JOIN hosts"
+            << "    ON services_servicegroups.host_id=hosts.host_id"
+            << "  WHERE services_servicegroups.servicegroup_id=" << sg.id
+            << "    AND hosts.instance_id=" << sg.poller_id;
+        _mysql.run_query(oss.str(), "SQL: ", false, conn);
+      }
+    }
+    *p.second = true;
+    _events.pop_front();
+  }
+}
+
 void conflict_manager::_process_service_group_member() {}
 
 /**

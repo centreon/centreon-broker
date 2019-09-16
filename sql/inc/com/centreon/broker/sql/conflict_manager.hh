@@ -74,6 +74,7 @@ class conflict_manager {
   database::mysql_stmt _host_insupdate;
   database::mysql_stmt _instance_insupdate;
   database::mysql_stmt _service_insupdate;
+  database::mysql_stmt _service_group_insupdate;
 
   conflict_manager(database_config const& dbcfg);
   conflict_manager() = delete;
@@ -112,6 +113,7 @@ class conflict_manager {
   void _clean_tables(uint32_t instance_id);
   bool _is_valid_poller(uint32_t instance_id);
   void _prepare_hg_insupdate_statement();
+  void _prepare_sg_insupdate_statement();
 
  public:
   enum stream_type {
