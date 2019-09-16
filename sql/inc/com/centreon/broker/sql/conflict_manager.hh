@@ -32,29 +32,26 @@
 CCB_BEGIN()
 namespace sql {
 class conflict_manager {
+  static void (conflict_manager::*const _neb_processing_table[])();
   static conflict_manager* _singleton;
   static std::mutex _init_m;
   static std::condition_variable _init_cv;
 
   /* When events arrive in the conflict_manager, two things are done.
-   * A boolean is inserted at the end of the queue with the value false.
+   * A boolean is inserted at the end of the timeline with the value false.
    * A pair is made with the event and a pointer to the boolean.
-   * This pair is inserted following the event category in the array.
-   * In each case of the array we have a list containing events of the same
-   * type.
-   * The idea behind all of this is we can treat events by type. When an event
-   * is done, we have access to the boolean stored in the queue to set it to
+   * This pair is inserted following at the end of the queue.
+   * The idea behind all of this is we can treat events by order. When an event
+   * is done, we have access to the boolean stored in the timeline to set it to
    * true.
    * And later, the stream that sent events will know how many events can be
-   * released
-   * from the retention queue. */
-  std::array<std::list<std::pair<std::shared_ptr<io::data>, bool*> >, 27>
-      _neb_events;
+   * released from the retention queue. */
+  std::deque<std::pair<std::shared_ptr<io::data>, bool*> > _events;
 
   /* Since the sql and storage streams use this conflict_manager, we must
    * manage two queues, the first for sql and the second one for storage.
    * So they will know when their events will be released. */
-  std::array<std::deque<bool>, 2> _queue;
+  std::array<std::deque<bool>, 2> _timeline;
 
   mutable std::mutex _loop_m;
   std::condition_variable _loop_cv;
@@ -67,8 +64,15 @@ class conflict_manager {
 
   std::unordered_map<unsigned int, unsigned int> _cache_host_instance;
 
-  database::mysql_stmt _instance_insupdate;
+  database::mysql_stmt _comment_insupdate;
+  database::mysql_stmt _custom_variable_delete;
+  database::mysql_stmt _custom_variable_insupdate;
+  database::mysql_stmt _custom_variable_status_update;
+  database::mysql_stmt _host_group_insupdate;
+  database::mysql_stmt _host_group_member_delete;
+  database::mysql_stmt _host_group_member_insert;
   database::mysql_stmt _host_insupdate;
+  database::mysql_stmt _instance_insupdate;
 
   conflict_manager(database_config const& dbcfg);
   conflict_manager() = delete;
@@ -76,13 +80,37 @@ class conflict_manager {
   conflict_manager(conflict_manager const& other) = delete;
   bool _should_exit() const;
   void _callback();
-  void _set_booleans(
-      std::list<std::pair<std::shared_ptr<io::data>, bool*> >& lst);
 
-  void _process_instances();
-  void _process_hosts();
+  void _process_acknowledgement();
+  void _process_comment();
+  void _process_custom_variable();
+  void _process_custom_variable_status();
+  void _process_downtime();
+  void _process_event_handler();
+  void _process_flapping_status();
+  void _process_host_check();
+  void _process_host_dependency();
+  void _process_host_group();
+  void _process_host_group_member();
+  void _process_host();
+  void _process_host_parent();
+  void _process_host_status();
+  void _process_instance();
+  void _process_instance_status();
+  void _process_log();
+  void _process_module();
+  void _process_service_check();
+  void _process_service_dependency();
+  void _process_service_group();
+  void _process_service_group_member();
+  void _process_service();
+  void _process_service_status();
+  void _process_instance_configuration();
+  void _process_responsive_instance();
+
   void _clean_tables(uint32_t instance_id);
   bool _is_valid_poller(uint32_t instance_id);
+  void _prepare_hg_insupdate_statement();
 
  public:
   enum stream_type {

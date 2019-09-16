@@ -254,6 +254,9 @@ void stream::_process_host(std::shared_ptr<io::data> const& e) {
  *  @return Number of events acknowledged.
  */
 int stream::write(std::shared_ptr<io::data> const& data) {
+  // FIXME DBR
+  return 0;
+
   ++_pending_events;
   logging::info(logging::low)
       << "storage: write pending_events = " << _pending_events;

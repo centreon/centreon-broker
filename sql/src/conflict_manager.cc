@@ -27,6 +27,36 @@ conflict_manager* conflict_manager::_singleton = nullptr;
 std::mutex conflict_manager::_init_m;
 std::condition_variable conflict_manager::_init_cv;
 
+void (conflict_manager::*const conflict_manager::_neb_processing_table[])() = {
+    nullptr,
+    &conflict_manager::_process_acknowledgement,
+    &conflict_manager::_process_comment,
+    &conflict_manager::_process_custom_variable,
+    &conflict_manager::_process_custom_variable_status,
+    &conflict_manager::_process_downtime,
+    &conflict_manager::_process_event_handler,
+    &conflict_manager::_process_flapping_status,
+    &conflict_manager::_process_host_check,
+    &conflict_manager::_process_host_dependency,
+    &conflict_manager::_process_host_group,
+    &conflict_manager::_process_host_group_member,
+    &conflict_manager::_process_host,
+    &conflict_manager::_process_host_parent,
+    &conflict_manager::_process_host_status,
+    &conflict_manager::_process_instance,
+    &conflict_manager::_process_instance_status,
+    &conflict_manager::_process_log,
+    &conflict_manager::_process_module,
+    &conflict_manager::_process_service_check,
+    &conflict_manager::_process_service_dependency,
+    &conflict_manager::_process_service_group,
+    &conflict_manager::_process_service_group_member,
+    &conflict_manager::_process_service,
+    &conflict_manager::_process_service_status,
+    &conflict_manager::_process_instance_configuration,
+    &conflict_manager::_process_responsive_instance,
+};
+
 conflict_manager& conflict_manager::instance() {
   assert(_singleton);
   return *_singleton;
@@ -87,18 +117,16 @@ void conflict_manager::_callback() {
           << "conflict_manager: timeout reached - sending " << _pending_queries
           << " queries.";
 
-    /* Instance is the base of our world. It represents a poller. Receiving
-     * an instance event tells us an events is restarting. So it's time
-     * of changes... */
-    if (!_neb_events[static_cast<uint16_t>(neb::instance::static_type())]
-             .empty())
-      _process_instances();
-
-    /* Then come hosts */
-    if (!_neb_events[static_cast<uint16_t>(neb::host::static_type())]
-             .empty())
-      _process_hosts();
+    while (!_events.empty()) {
+      std::shared_ptr<io::data> d{_events.front().first};
+      uint32_t type{d->type()};
+      uint16_t cat{io::events::category_of_type(type)};
+      uint16_t elem{io::events::element_of_type(type)};
+      if (cat == io::events::neb)
+        (this->*(_neb_processing_table[elem]))();
+    }
   }
+  _mysql.commit();
 }
 
 /**
@@ -113,15 +141,10 @@ bool conflict_manager::_should_exit() const {
 
 void conflict_manager::send_event(conflict_manager::stream_type c,
                                   std::shared_ptr<io::data> const& e) {
-  uint32_t type = e->type();
-  unsigned short cat = io::events::category_of_type(type);
-  unsigned short elem = io::events::element_of_type(type);
-  if (cat == io::events::neb) {
-    std::lock_guard<std::mutex> lk(_loop_m);
-    _pending_queries++;
-    _queue[c].push_back(false);
-    _neb_events[elem].push_back(std::make_pair(e, &_queue[c].back()));
-  }
+  std::lock_guard<std::mutex> lk(_loop_m);
+  _pending_queries++;
+  _timeline[c].push_back(false);
+  _events.push_back({e, &_timeline[c].back()});
 }
 
 /**
@@ -135,24 +158,10 @@ void conflict_manager::send_event(conflict_manager::stream_type c,
 int32_t conflict_manager::get_acks(stream_type c) {
   std::lock_guard<std::mutex> lk(_loop_m);
   int32_t retval = 0;
-  while (!_queue[c].empty() && _queue[c].front()) {
-    _queue[c].pop_front();
+  while (!_timeline[c].empty() && _timeline[c].front()) {
+    _timeline[c].pop_front();
     retval++;
   }
   _pending_queries -= retval;
   return retval;
-}
-
-/**
- *  Set all the booleans pointed by lst to true. The impact is that the
- *  associated queue sees several of its booleans changed to true.
- *
- * @param lst A list of pairs of events and bool*
- */
-void conflict_manager::_set_booleans(
-    std::list<std::pair<std::shared_ptr<io::data>, bool*> >& lst) {
-  for (auto& p : lst) {
-    *p.second = true;
-  }
-  lst.clear();
 }

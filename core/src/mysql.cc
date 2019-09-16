@@ -147,7 +147,7 @@ int mysql::run_query(std::string const& query,
   _check_errors();
   if (thread_id < 0)
     // Here, we use _current_thread
-    thread_id = _choose_best_connection();
+    thread_id = choose_best_connection();
 
   _connection[thread_id]->run_query(query, error_msg, fatal);
   return thread_id;
@@ -173,7 +173,7 @@ int mysql::run_query_and_get_result(std::string const& query,
   _check_errors();
   if (thread_id < 0)
     // Here, we use _current_thread
-    thread_id = _choose_best_connection();
+    thread_id = choose_best_connection();
 
   _connection[thread_id]->run_query_and_get_result(query, promise);
   return thread_id;
@@ -202,7 +202,7 @@ int mysql::run_query_and_get_int(std::string const& query,
   _check_errors();
   if (thread_id < 0)
     // Here, we use _current_thread
-    thread_id = _choose_best_connection();
+    thread_id = choose_best_connection();
 
   _connection[thread_id]->run_query_and_get_int(query, promise, type);
   return thread_id;
@@ -228,7 +228,7 @@ int mysql::run_statement(database::mysql_stmt& stmt,
   _check_errors();
   if (thread_id < 0)
     // Here, we use _current_thread
-    thread_id = _choose_best_connection();
+    thread_id = choose_best_connection();
 
   _connection[thread_id]->run_statement(stmt, error_msg, fatal);
   return thread_id;
@@ -256,7 +256,7 @@ int mysql::run_statement_and_get_result(database::mysql_stmt& stmt,
   _check_errors();
   if (thread_id < 0)
     // Here, we use _current_thread
-    thread_id = _choose_best_connection();
+    thread_id = choose_best_connection();
 
   _connection[thread_id]->run_statement_and_get_result(stmt, promise);
   return thread_id;
@@ -285,7 +285,7 @@ int mysql::run_statement_and_get_int(database::mysql_stmt& stmt,
   _check_errors();
   if (thread_id < 0)
     // Here, we use _current_thread
-    thread_id = _choose_best_connection();
+    thread_id = choose_best_connection();
 
   _connection[thread_id]->run_statement_and_get_int(stmt, promise, type);
   return thread_id;
@@ -342,14 +342,14 @@ int mysql::connections_count() const {
 }
 
 /**
- *  _choose_best_connection
+ *  choose_best_connection
  *
  * This method compares the connections activity and returns the index of
  * the best one to execute a new query.
  *
  * @return an integer.
  */
-int mysql::_choose_best_connection() {
+int mysql::choose_best_connection() {
   /* We work with _current_connection to avoid always working with the same
    * connections. */
   int retval(_current_connection);

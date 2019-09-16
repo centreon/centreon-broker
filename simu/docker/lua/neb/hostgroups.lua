@@ -36,7 +36,7 @@ local hostgroups = {
     local cursor, error_str = conn["storage"]:execute([[SELECT hostgroup_id from hostgroups ORDER BY hostgroup_id]])
     local row = cursor:fetch({}, "a")
     local id = 1
-    while row do
+    while row and id <= 10 do
       broker_log:info(1, "Check for hostgroup " .. id)
       if tonumber(row.hostgroup_id) ~= id then
         broker_log:error(0, "Row found hostgroup_id = "

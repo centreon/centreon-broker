@@ -43,6 +43,8 @@ class stream : public io::stream {
          unsigned int cleanup_check_interval,
          unsigned int instance_timeout,
          bool with_state_events);
+  stream(stream const& other) = delete;
+  stream& operator=(stream const& other) = delete;
   ~stream();
   int flush();
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
@@ -50,8 +52,6 @@ class stream : public io::stream {
   int write(std::shared_ptr<io::data> const& d);
 
  private:
-  stream(stream const& other);
-  stream& operator=(stream const& other);
   void _cache_clean();
   void _cache_create();
   void _prepare_hg_insupdate_statement();

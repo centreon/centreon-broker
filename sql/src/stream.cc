@@ -2192,6 +2192,12 @@ stream::stream(database_config const& dbcfg,
       _pending_events(0),
       _with_state_events(with_state_events),
       _instance_timeout(instance_timeout),
+      _transversal_mysql(database_config(dbcfg.get_type(),
+                                         dbcfg.get_host(),
+                                         dbcfg.get_port(),
+                                         dbcfg.get_user(),
+                                         dbcfg.get_password(),
+                                         dbcfg.get_name())),
       _oldest_timestamp(std::numeric_limits<time_t>::max()) {
   // Get oudated instances.
   _get_all_outdated_instances_from_db();
