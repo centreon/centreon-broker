@@ -62,9 +62,9 @@ class stream : public io::stream {
 
   std::string _name;
   acceptor* _parent;
-  int _read_timeout;
   asio::io_context& _io_context;
   std::unique_ptr<asio::ip::tcp::socket> _socket;
+  int _read_timeout;
   int _write_timeout;
 };
 }  // namespace tcp
