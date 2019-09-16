@@ -73,6 +73,7 @@ class conflict_manager {
   database::mysql_stmt _host_group_member_insert;
   database::mysql_stmt _host_insupdate;
   database::mysql_stmt _instance_insupdate;
+  database::mysql_stmt _service_insupdate;
 
   conflict_manager(database_config const& dbcfg);
   conflict_manager() = delete;

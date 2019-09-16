@@ -445,7 +445,52 @@ void conflict_manager::_process_service_check() {}
 void conflict_manager::_process_service_dependency() {}
 void conflict_manager::_process_service_group() {}
 void conflict_manager::_process_service_group_member() {}
-void conflict_manager::_process_service() {}
+
+/**
+ *  Process a service event.
+ *
+ *  @param[in] e Uncasted service.
+ */
+void conflict_manager::_process_service() {
+  auto& p = _events.front();
+  std::shared_ptr<io::data> d{p.first};
+
+  // Processed object.
+  neb::service const& s(*static_cast<neb::service const*>(d.get()));
+
+  // Log message.
+  logging::info(logging::medium)
+      << "SQL: processing service event "
+         "(host id: "
+      << s.host_id << ", service_id: " << s.service_id
+      << ", description: " << s.service_description << ")";
+
+  // Processing.
+  if (s.host_id && s.service_id) {
+    // Prepare queries.
+    if (!_service_insupdate.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("host_id");
+      unique.insert("service_id");
+      query_preparator qp(neb::service::static_type(), unique);
+      logging::debug(logging::medium) << "mysql: PREPARE INSERT ON SERVICES";
+      _service_insupdate = qp.prepare_insert_or_update(_mysql);
+    }
+
+    std::ostringstream oss;
+    oss << "SQL: could not store service (host: " << s.host_id
+        << ", service: " << s.service_id << "): ";
+    _service_insupdate << s;
+    _mysql.run_statement(
+        _service_insupdate, oss.str(), true,
+        _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]));
+  } else
+    logging::error(logging::high) << "SQL: service '" << s.service_description
+                                  << "' has no host ID or no service ID";
+  *p.second = true;
+  _events.pop_front();
+}
+
 void conflict_manager::_process_service_status() {
   while (true) {
     std::pair<std::shared_ptr<io::data>, bool*>& p = _events.front();
