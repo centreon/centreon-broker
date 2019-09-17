@@ -193,17 +193,15 @@ std::string builder::_generate_stats_for_endpoint(processing::bthread* fo,
                                                   json11::Json::object& tree) {
   // Header.
   std::string endpoint = std::string("endpoint ") + fo->get_name();
-  json11::Json::object child;
-  json11::Json::object parent{{endpoint, child}};
 
   // Add memory and queue file.
-  child["queue_file_path"] =
+  tree["queue_file_path"] =
       com::centreon::broker::multiplexing::muxer::queue_file(fo->get_name());
-  child["memory_file_path"] =
+  tree["memory_file_path"] =
       com::centreon::broker::multiplexing::muxer::memory_file(fo->get_name());
 
   // Gather statistic.
-  fo->stats(child);
+  fo->stats(tree);
 
   return (endpoint);
 }
