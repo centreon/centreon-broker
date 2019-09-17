@@ -86,34 +86,33 @@ TEST_F(StatsTest, Builder) {
 
 TEST_F(StatsTest, BuilderWithModules) {
   stats::builder build;
-  /*
-    config::applier::modules::instance().apply(std::list<std::string>{},
-                                               "./storage/", nullptr);
-    config::applier::modules::instance().apply(std::list<std::string>{},
-                                               "./neb/", nullptr);
-    config::applier::modules::instance().apply(std::list<std::string>{},
-                                               "./lua/", nullptr);
+  config::applier::modules::instance().apply(std::list<std::string>{},
+                                             "./storage/", nullptr);
+  config::applier::modules::instance().apply(std::list<std::string>{},
+                                             "./neb/", nullptr);
+  config::applier::modules::instance().apply(std::list<std::string>{},
+                                             "./lua/", nullptr);
 
-    build.build();
+  build.build();
 
-    std::string err;
-    json11::Json const& result{json11::Json::parse(build.data(), err)};
+  std::string err;
+  json11::Json const& result{json11::Json::parse(build.data(), err)};
 
-    ASSERT_TRUE(err.empty());
-    ASSERT_TRUE(result.is_object());
-    ASSERT_EQ(result["version"],misc::string::get(CENTREON_BROKER_VERSION));
-    ASSERT_EQ(result["pid"], misc::string::get(getpid()));
-    ASSERT_TRUE(result["now"].is_string());
-    ASSERT_TRUE(result["asio_version"].is_string());
-    ASSERT_TRUE(result["mysql manager"].is_object());
-    ASSERT_TRUE(result["mysql manager"]["delay since last check"].is_string());
+  ASSERT_TRUE(err.empty());
+  ASSERT_TRUE(result.is_object());
+  ASSERT_EQ(result["version"],misc::string::get(CENTREON_BROKER_VERSION));
+  ASSERT_EQ(result["pid"], misc::string::get(getpid()));
+  ASSERT_TRUE(result["now"].is_string());
+  ASSERT_TRUE(result["asio_version"].is_string());
+  ASSERT_TRUE(result["mysql manager"].is_object());
+  ASSERT_TRUE(result["mysql manager"]["delay since last check"].is_string());
 
-    ASSERT_EQ(result["module./neb/10-neb.so"]["state"].string_value(),
+  ASSERT_EQ(result["module./neb/10-neb.so"]["state"].string_value(),
+  "loaded");
+  ASSERT_EQ(result["module./storage/20-storage.so"]["state"].string_value(),
     "loaded");
-    ASSERT_EQ(result["module./storage/20-storage.so"]["state"].string_value(),
-      "loaded");
-    ASSERT_EQ(result["module./lua/70-lua.so"]["state"].string_value(),
-    "loaded");*/
+  ASSERT_EQ(result["module./lua/70-lua.so"]["state"].string_value(),
+  "loaded");
 }
 
 class st : public io::stream {
@@ -257,6 +256,8 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
   ASSERT_TRUE(result["asio_version"].is_string());
   ASSERT_TRUE(result["mysql manager"].is_object());
   ASSERT_TRUE(result["mysql manager"]["delay since last check"].is_string());
+  ASSERT_TRUE(result["endpoint CentreonDatabase"]["status"].string_value() == "connected");
+  ASSERT_TRUE(result["endpoint CentreonDatabase"]["status"].string_value() == "connected");
 
   std::cout << result.dump() << std::endl;
 }
