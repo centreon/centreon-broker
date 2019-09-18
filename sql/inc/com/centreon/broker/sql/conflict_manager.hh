@@ -49,6 +49,15 @@ class conflict_manager {
     service_servicegroups = 1 << 3,
   };
 
+  struct index_info {
+    std::string host_name;
+    uint32_t index_id;
+    bool locked;
+    uint32_t rrd_retention;
+    std::string service_description;
+    bool special;
+  };
+
   static void (conflict_manager::*const _neb_processing_table[])();
   static conflict_manager* _singleton;
   static std::mutex _init_m;
@@ -87,7 +96,8 @@ class conflict_manager {
   std::thread _thread;
 
   std::unordered_map<uint32_t, uint32_t> _cache_host_instance;
-  std::unordered_map<std::pair<uint64_t, std::uint64_t>, std::size_t> _cache_svc_cmd;
+  std::unordered_map<std::pair<std::uint64_t, std::uint64_t>, std::size_t> _cache_svc_cmd;
+  std::unordered_map<std::pair<uint64_t, uint64_t>, index_info> _index_cache;
 
   database::mysql_stmt _comment_insupdate;
   database::mysql_stmt _custom_variable_delete;
@@ -138,6 +148,7 @@ class conflict_manager {
   void _process_instance_configuration();
   void _process_responsive_instance();
 
+  void _load_caches();
   void _clean_tables(uint32_t instance_id);
   bool _is_valid_poller(uint32_t instance_id);
   void _prepare_hg_insupdate_statement();

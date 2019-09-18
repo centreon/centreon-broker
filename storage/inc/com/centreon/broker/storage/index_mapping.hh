@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015 - 2019 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -39,15 +39,16 @@ namespace storage {
 class index_mapping : public io::data {
  public:
   index_mapping();
+  index_mapping(uint32_t index_id, uint32_t host_id, uint32_t service_id);
   index_mapping(index_mapping const& other);
   ~index_mapping();
   index_mapping& operator=(index_mapping const& other);
   unsigned int type() const;
   static unsigned int static_type();
 
-  unsigned int index_id;
-  unsigned int host_id;
-  unsigned int service_id;
+  uint32_t index_id;
+  uint32_t host_id;
+  uint32_t service_id;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

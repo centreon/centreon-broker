@@ -65,6 +65,24 @@ struct hash<std::pair<uint64_t, uint64_t>> {
     return high_bits;
   }
 };
+
+template <>
+struct hash<std::pair<uint32_t, std::string>> {
+  size_t operator()(std::pair<uint32_t, std::string> const& kt) const {
+    size_t hash = 0;
+    hash_combine(hash, kt.first);
+    hash_combine(hash, kt.second);
+    return hash;
+  }
+  // taken from boost::hash_combine:
+  // https://www.boost.org/doc/libs/1_55_0/doc/html/hash/reference.html#boost.hash_combine
+  template <class T>
+  inline static void hash_combine(std::size_t& seed, const T& v) {
+    std::hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+  }
+};
+
 }  // namespace std
 
 #endif /* CCB_NEB_STRING_PAIR_HH */

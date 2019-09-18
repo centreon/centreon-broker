@@ -16,9 +16,11 @@
 ** For more information : contact@centreon.com
 */
 #include <cassert>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/sql/conflict_manager.hh"
 #include "com/centreon/broker/neb/events.hh"
+#include "com/centreon/broker/storage/index_mapping.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::sql;
@@ -106,10 +108,56 @@ void conflict_manager::init_sql(database_config const& dbcfg) {
   _singleton->_action.resize(_singleton->_mysql.connections_count());
 }
 
+void conflict_manager::_load_caches() {
+  // Fill index cache.
+  {
+    std::lock_guard<std::mutex> lk(_loop_m);
+    // Execute query.
+    std::promise<database::mysql_result> promise;
+    _mysql.run_query_and_get_result(
+        "SELECT "
+        "id,host_id,service_id,host_name,rrd_retention,service_description,"
+        "special,locked FROM index_data",
+        &promise);
+    try {
+      database::mysql_result res(promise.get_future().get());
+
+      // Loop through result set.
+      while (_mysql.fetch_row(res)) {
+        index_info info;
+        info.index_id = res.value_as_u32(0);
+        uint32_t host_id(res.value_as_u32(1));
+        uint32_t service_id(res.value_as_u32(2));
+        info.host_name = res.value_as_str(3);
+        info.rrd_retention = res.value_as_u32(4);
+        if (!info.rrd_retention)
+          info.rrd_retention = _rrd_len;
+        info.service_description = res.value_as_str(5);
+        info.special = (res.value_as_u32(6) == 2);
+        info.locked = res.value_as_bool(7);
+        logging::debug(logging::high)
+            << "storage: loaded index " << info.index_id << " of (" << host_id
+            << ", " << service_id << ")";
+        _index_cache[{host_id, service_id}] = info;
+
+        // Create the metric mapping.
+        std::shared_ptr<storage::index_mapping> im{std::make_shared<storage::index_mapping>(info.index_id, host_id, service_id)};
+        multiplexing::publisher pblshr;
+        pblshr.write(im);
+      }
+    } catch (std::exception const& e) {
+      throw broker::exceptions::msg()
+          << "storage: could not fetch index list from data DB: " << e.what();
+    }
+  }
+
+}
+
 /**
  *  The main loop of the conflict_manager
  */
 void conflict_manager::_callback() {
+  _load_caches();
   while (!_should_exit()) {
     std::unique_lock<std::mutex> lk(_loop_m);
 
@@ -139,6 +187,12 @@ void conflict_manager::_callback() {
 //        if (type == neb::service_status::static_type())
 //          _storage_process_service_status();
 //      }
+      else {
+        logging::info(logging::low)
+          << "conflict_manager: event of type " << type << "throw away";
+        *std::get<2>(_events.front()) = true;
+        _events.pop_front();
+      }
     }
   }
   _mysql.commit();

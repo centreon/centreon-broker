@@ -22,6 +22,7 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/sql/src")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
+include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 
 # conflict_manager library.
 add_library("conflictmgr" STATIC

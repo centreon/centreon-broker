@@ -36,6 +36,18 @@ using namespace com::centreon::broker::storage;
 index_mapping::index_mapping() : index_id(0), host_id(0), service_id(0) {}
 
 /**
+ *  Constructor
+ *
+ * @param index_id
+ * @param host_id
+ * @param service_id
+ */
+index_mapping::index_mapping(uint32_t index_id,
+                             uint32_t host_id,
+                             uint32_t service_id)
+    : index_id{index_id}, host_id{host_id}, service_id{service_id} {}
+
+/**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
