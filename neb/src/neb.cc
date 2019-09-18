@@ -49,14 +49,6 @@ NEB_API_VERSION(CURRENT_NEB_API_VERSION)
 
 /**************************************
  *                                     *
- *           Static Objects            *
- *                                     *
- **************************************/
-
-static bool gl_initialized_qt(false);
-
-/**************************************
- *                                     *
  *          Static Functions           *
  *                                     *
  **************************************/
@@ -105,7 +97,6 @@ int nebmodule_deinit(int flags, int reason) {
     com::centreon::broker::config::applier::deinit();
 
     // Deregister Qt application object.
-    // if (gl_initialized_qt) {
     com::centreon::engine::timed_event* te(nullptr);
     for (timed_event_list::iterator
              it{com::centreon::engine::timed_event::event_list_high.begin()},
@@ -178,23 +169,7 @@ int nebmodule_init(int flags, char const* args, void* handle) {
         "proper data stream that can then be parsed by Centreon "
         "Broker's cbd.");
 
-    // Initialize Qt if not already done by parent process.
-    //      if (!QCoreApplication::instance()) {
-    gl_initialized_qt = true;
-    //        new QCoreApplication(gl_qt_argc, (char**)gl_qt_argv);
     signal(SIGCHLD, SIG_DFL);
-    //        QTextCodec* utf8_codec(QTextCodec::codecForName("UTF-8"));
-    //        if (utf8_codec)
-    //          QTextCodec::setCodecForCStrings(utf8_codec);
-    //        else
-    //          logging::error(logging::high)
-    //            << "core: could not find UTF-8 codec, strings will be "
-    //               "interpreted using the current locale";
-    //      }
-    // Qt already loaded.
-    //      else
-    //        logging::info(logging::high)
-    //          << "core: Qt was already loaded";
 
     // Reset locale.
     setlocale(LC_NUMERIC, "C");
@@ -268,15 +243,13 @@ int nebmodule_init(int flags, char const* args, void* handle) {
             NEBCALLBACK_LOG_DATA, neb::gl_mod_handle, &neb::callback_log)));
 
     // Process Qt events if necessary.
-    if (gl_initialized_qt) {
-      union {
-        void (*code)(void*);
-        void* data;
-      } val;
-      val.code = &process_qcore;
-      schedule_new_event(EVENT_USER_FUNCTION, 1, time(nullptr) + 1, 1, 1, nullptr, 1,
-                         val.data, nullptr, 0);
-    }
+    union {
+      void (*code)(void*);
+      void* data;
+    } val;
+    val.code = &process_qcore;
+    schedule_new_event(EVENT_USER_FUNCTION, 1, time(nullptr) + 1, 1, 1, nullptr, 1,
+                       val.data, nullptr, 0);
   } catch (std::exception const& e) {
     logging::error(logging::high) << "main: cbmod loading failed: " << e.what();
     nebmodule_deinit(0, 0);
