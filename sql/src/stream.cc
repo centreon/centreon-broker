@@ -2199,11 +2199,11 @@ stream::stream(database_config const& dbcfg,
                                          dbcfg.get_password(),
                                          dbcfg.get_name())),
       _oldest_timestamp(std::numeric_limits<time_t>::max()) {
-  // Get oudated instances.
-  _get_all_outdated_instances_from_db();
-
-  // Run cleanup thread.
-  _cleanup_thread.start();
+//  // Get oudated instances.
+//  _get_all_outdated_instances_from_db();
+//
+//  // Run cleanup thread.
+//  _cleanup_thread.start();
 
   conflict_manager::init_sql(dbcfg);
 }
@@ -2228,11 +2228,12 @@ int stream::flush() {
   _update_hosts_and_services_of_unresponsive_instances();
 
   // Commit transaction.
-  logging::info(logging::medium) << "SQL: committing transaction";
-  _mysql.commit();
-  int retval = _ack_events + _pending_events;
-  _ack_events = 0;
-  _pending_events = 0;
+//  logging::info(logging::medium) << "SQL: committing transaction";
+//  _mysql.commit();
+  int retval = conflict_manager::instance().get_acks(conflict_manager::sql);
+//  int retval = _ack_events + _pending_events;
+//  _ack_events = 0;
+//  _pending_events = 0;
   return retval;
 }
 
@@ -2297,6 +2298,7 @@ int stream::write(std::shared_ptr<io::data> const& data) {
 //    _update_hosts_and_services_of_unresponsive_instances();
 //  // Commit.
 
-  return conflict_manager::instance().get_acks(conflict_manager::sql);
+  return 0;
+  //return conflict_manager::instance().get_acks(conflict_manager::sql);
   //return retval;
 }
