@@ -27,6 +27,7 @@
 #include <unordered_map>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/misc/pair.hh"
 #include "com/centreon/broker/mysql.hh"
 
 CCB_BEGIN()
@@ -85,7 +86,8 @@ class conflict_manager {
 
   std::thread _thread;
 
-  std::unordered_map<unsigned int, unsigned int> _cache_host_instance;
+  std::unordered_map<uint32_t, uint32_t> _cache_host_instance;
+  std::unordered_map<std::pair<uint64_t, std::uint64_t>, std::size_t> _cache_svc_cmd;
 
   database::mysql_stmt _comment_insupdate;
   database::mysql_stmt _custom_variable_delete;
@@ -96,6 +98,7 @@ class conflict_manager {
   database::mysql_stmt _host_group_member_insert;
   database::mysql_stmt _host_insupdate;
   database::mysql_stmt _instance_insupdate;
+  database::mysql_stmt _service_check_update;
   database::mysql_stmt _service_insupdate;
   database::mysql_stmt _service_group_insupdate;
 

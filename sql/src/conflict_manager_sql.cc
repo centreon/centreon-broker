@@ -453,7 +453,75 @@ void conflict_manager::_process_instance() {
 void conflict_manager::_process_instance_status() {}
 void conflict_manager::_process_log() {}
 void conflict_manager::_process_module() {}
-void conflict_manager::_process_service_check() {}
+
+/**
+ *  Process a service check event.
+ *
+ *  @param[in] e Uncasted service check.
+ */
+void conflict_manager::_process_service_check() {
+  auto& p = _events.front();
+  std::shared_ptr<io::data> d{std::get<0>(p)};
+
+  // Cast object.
+  neb::service_check const& sc(
+      *static_cast<neb::service_check const*>(d.get()));
+
+  time_t now{time(nullptr)};
+  if (sc.check_type  // - passive result
+      ||
+      !sc.active_checks_enabled  // - active checks are disabled,
+                                 //   status might not be updated
+                                 // - normal case
+      ||
+      (sc.next_check >= now - 5 * 60) || !sc.next_check) {  // - initial state
+    // Apply to DB.
+    logging::info(logging::medium)
+        << "SQL: processing service check event (host: " << sc.host_id
+        << ", service: " << sc.service_id << ", command: " << sc.command_line
+        << ")";
+
+    // Prepare queries.
+    if (!_service_check_update.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("host_id");
+      unique.insert("service_id");
+      query_preparator qp(neb::service_check::static_type(), unique);
+      _service_check_update = qp.prepare_update(_mysql);
+    }
+
+    // Processing.
+    bool store = true;
+    size_t str_hash = std::hash<std::string> {} (sc.command_line);
+    // Did the command changed since last time?
+    if (_cache_svc_cmd[{sc.host_id, sc.service_id}] != str_hash)
+      _cache_svc_cmd[std::make_pair(sc.host_id, sc.service_id)] = str_hash;
+    else
+      store = false;
+
+    if (store) {
+      _service_check_update << sc;
+      std::promise<int> promise;
+      std::stringstream oss;
+      oss << "SQL: could not store service check command (host: " << sc.host_id
+          << ", service: " << sc.service_id << "): ";
+      _mysql.run_statement(_service_check_update,
+                           oss.str(),
+                           true,
+                           _mysql.choose_connection_by_instance(
+                               _cache_host_instance[sc.host_id]));
+    }
+  } else
+    // Do nothing.
+    logging::info(logging::medium)
+        << "SQL: not processing service check event (host: " << sc.host_id
+        << ", service: " << sc.service_id << ", command: " << sc.command_line
+        << ", check_type: " << sc.check_type
+        << ", next_check: " << sc.next_check << ", now: " << now << ")";
+  *std::get<2>(p) = true;
+  _events.pop_front();
+}
+
 void conflict_manager::_process_service_dependency() {}
 
 /**
