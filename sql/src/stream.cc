@@ -911,7 +911,7 @@ void stream::_process_host_group(std::shared_ptr<io::data> const& e) {
   // Cast object.
   neb::host_group const& hg(*static_cast<neb::host_group const*>(e.get()));
 
-  int thread_id(_mysql.choose_connection_by_instance(hg.poller_id));
+  _mysql.choose_connection_by_instance(hg.poller_id);
   // Only process groups for v2 schema.
   if (_mysql.schema_version() != mysql::v2)
     logging::info(logging::medium)
@@ -2183,6 +2183,12 @@ stream::stream(database_config const& dbcfg,
                unsigned int instance_timeout,
                bool with_state_events)
     : _mysql(dbcfg),
+      _transversal_mysql(database_config(dbcfg.get_type(),
+                                         dbcfg.get_host(),
+                                         dbcfg.get_port(),
+                                         dbcfg.get_user(),
+                                         dbcfg.get_password(),
+                                         dbcfg.get_name())),
       _cleanup_thread(dbcfg.get_type(),
                       dbcfg.get_host(),
                       dbcfg.get_port(),
@@ -2194,13 +2200,7 @@ stream::stream(database_config const& dbcfg,
       _pending_events(0),
       _with_state_events(with_state_events),
       _instance_timeout(instance_timeout),
-      _oldest_timestamp(std::numeric_limits<time_t>::max()),
-      _transversal_mysql(database_config(dbcfg.get_type(),
-                                         dbcfg.get_host(),
-                                         dbcfg.get_port(),
-                                         dbcfg.get_user(),
-                                         dbcfg.get_password(),
-                                         dbcfg.get_name())) {
+      _oldest_timestamp(std::numeric_limits<time_t>::max()) {
   // Get oudated instances.
   _get_all_outdated_instances_from_db();
 

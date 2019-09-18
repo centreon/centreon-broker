@@ -38,8 +38,8 @@ using namespace com::centreon::broker::extcmd;
 engine_command::engine_command(std::string const& name,
                                std::string const& command_module_path)
     : _name(name),
-      _command_module_path(command_module_path),
       _handle{nullptr},
+      _command_module_path(command_module_path),
       _process_external_command(nullptr) {
   _load_command_engine_module();
 }

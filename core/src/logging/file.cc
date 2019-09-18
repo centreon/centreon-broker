@@ -85,7 +85,7 @@ file::file(std::string const& path, uint64_t max)
       _written(0) {
   try {
     _file.open(_filename, std::ofstream::out | std::ofstream::app);
-  } catch (std::system_error se) {
+  } catch (std::system_error const& se) {
     throw exceptions::msg()
         << "log: could not open file '" << path << "': " << se.what();
   }
@@ -100,7 +100,7 @@ file::file(std::string const& path, uint64_t max)
 }
 
 file::file(std::ostream& stream, std::string const& filename)
-    : _special(true), _file_special(stream), _filename{filename} {}
+    : _file_special(stream), _filename{filename}, _special(true) {}
 
 /**
  *  Destructor.
@@ -187,11 +187,12 @@ void file::log_msg(char const* msg,
     }
     _write(prefix);
     _write(msg);
-    if (_with_flush)
+    if (_with_flush) {
       if (_special)
         _file_special.flush();
       else
         _file.flush();
+    }
   }
 }
 

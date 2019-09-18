@@ -82,11 +82,11 @@ TEST_F(HostCheckTest, DefaultConstructor) {
   neb::host_check hchk;
 
   // Check.
-  ASSERT_EQ(hchk.source_id, 0);
-  ASSERT_EQ(hchk.destination_id, 0);
+  ASSERT_EQ(hchk.source_id, 0u);
+  ASSERT_EQ(hchk.destination_id, 0u);
   ASSERT_FALSE(hchk.active_checks_enabled);
   ASSERT_TRUE(hchk.command_line.empty());
-  ASSERT_FALSE((hchk.host_id != 0));
+  ASSERT_FALSE((hchk.host_id != 0u));
   ASSERT_FALSE((hchk.next_check != 0));
   ASSERT_FALSE(
       (hchk.type() !=

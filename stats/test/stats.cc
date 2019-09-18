@@ -122,7 +122,8 @@ class st : public io::stream {
     throw exceptions::shutdown() << "cannot read from connector";
   }
 
-  virtual int write(std::shared_ptr<io::data> const& d) override {
+  virtual int write(std::shared_ptr<io::data> const& d
+                    __attribute__((__unused__))) override {
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
     return 1;
   }
@@ -142,14 +143,20 @@ class fact : public io::factory {
 
   factory* clone() const override { return new fact(*this); }
 
-  bool has_endpoint(config::endpoint& cfg) const override { return true; }
+  bool has_endpoint(config::endpoint& cfg
+                    __attribute__((__unused__))) const override {
+    return true;
+  }
 
-  bool has_not_endpoint(config::endpoint& cfg) const override { return false; }
+  bool has_not_endpoint(config::endpoint& cfg
+                        __attribute__((__unused__))) const override {
+    return false;
+  }
 
   io::endpoint* new_endpoint(
-      config::endpoint& cfg,
-      bool& is_acceptor,
-      std::shared_ptr<persistent_cache> cache =
+      config::endpoint& cfg __attribute__((__unused__)),
+      bool& is_acceptor __attribute__((__unused__)),
+      __attribute__((__unused__)) std::shared_ptr<persistent_cache> cache =
           std::shared_ptr<persistent_cache>()) const override {
     endp* p{new endp()};
     return p;

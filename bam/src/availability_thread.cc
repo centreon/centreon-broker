@@ -34,12 +34,12 @@ using namespace com::centreon::broker::bam;
  */
 availability_thread::availability_thread(database_config const& db_cfg,
                                          timeperiod_map& shared_map)
-    : _db_cfg(db_cfg),
+    : _started_flag{false},
+      _db_cfg(db_cfg),
       _shared_tps(shared_map),
       _mutex{},
       _should_exit(false),
-      _should_rebuild_all(false),
-      _started_flag{false} {}
+      _should_rebuild_all(false){}
 
 /**
  *  Destructor.

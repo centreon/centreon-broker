@@ -212,13 +212,13 @@ TEST_F(AsioTest, Ping) {
   asio::io_context io;
   asio::ip::tcp::socket s1{io}, s2{io};
 
-  ASSERT_EQ(_server.get_num_connections(), 0);
+  ASSERT_EQ(_server.get_num_connections(), 0u);
   ASSERT_TRUE(_server.add_client(s1, io));
   std::this_thread::sleep_for(std::chrono::milliseconds{timeout_ms});
-  ASSERT_EQ(_server.get_num_connections(), 1);
+  ASSERT_EQ(_server.get_num_connections(), 1u);
   ASSERT_TRUE(_server.add_client(s2, io));
   std::this_thread::sleep_for(std::chrono::milliseconds{timeout_ms});
-  ASSERT_EQ(_server.get_num_connections(), 2);
+  ASSERT_EQ(_server.get_num_connections(), 2u);
 
   std::error_code err;
   asio::write(s1, asio::buffer(std::string{"PING\n"}), asio::transfer_all(),
@@ -239,10 +239,10 @@ TEST_F(AsioTest, Ping) {
 
   s1.close();
   std::this_thread::sleep_for(std::chrono::milliseconds{timeout_ms});
-  ASSERT_EQ(_server.get_num_connections(), 1);
+  ASSERT_EQ(_server.get_num_connections(), 1u);
   s2.close();
   std::this_thread::sleep_for(std::chrono::milliseconds{timeout_ms});
-  ASSERT_EQ(_server.get_num_connections(), 0);
+  ASSERT_EQ(_server.get_num_connections(), 0u);
 
   return;
 }

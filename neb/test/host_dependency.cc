@@ -82,13 +82,13 @@ TEST_F(HostDependencyTest, DefaultConstructor) {
   neb::host_dependency hdep;
 
   // Check.
-  ASSERT_EQ(hdep.source_id, 0);
-  ASSERT_EQ(hdep.destination_id, 0);
+  ASSERT_EQ(hdep.source_id, 0u);
+  ASSERT_EQ(hdep.destination_id, 0u);
   ASSERT_TRUE(hdep.dependency_period == "");
-  ASSERT_EQ(hdep.dependent_host_id, 0);
+  ASSERT_EQ(hdep.dependent_host_id, 0u);
   ASSERT_TRUE(hdep.enabled);
   ASSERT_TRUE(hdep.execution_failure_options.empty());
-  ASSERT_EQ(hdep.host_id, 0);
+  ASSERT_EQ(hdep.host_id, 0u);
   ASSERT_FALSE(hdep.inherits_parent);
   ASSERT_TRUE(hdep.notification_failure_options.empty());
   ASSERT_FALSE(

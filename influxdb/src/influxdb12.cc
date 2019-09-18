@@ -121,10 +121,10 @@ void influxdb12::commit() {
 
   std::string answer;
 
-  while (true) {
+  do {
     asio::streambuf b;
 
-    size_t len = asio::read(*_socket, b, asio::transfer_all(), err);
+    asio::read(*_socket, b, asio::transfer_all(), err);
 
     if (err)
       throw exceptions::msg()
@@ -135,10 +135,7 @@ void influxdb12::commit() {
     std::string s((std::istreambuf_iterator<char>(&b)),
                   std::istreambuf_iterator<char>());
     answer.append(s);
-
-    if (_check_answer_string(answer) == true)
-      break;
-  }
+  } while (!_check_answer_string(answer));
   _socket->close();
   _query.clear();
 }

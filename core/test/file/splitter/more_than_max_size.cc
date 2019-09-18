@@ -68,7 +68,8 @@ TEST_F(FileSplitterMoreThanMaxSize, MoreThanMaxSizeToNextFile) {
   ASSERT_EQ(misc::filesystem::file_size(first_file), 9u);
   std::string second_file{_path};
   second_file.append("1");
-  ASSERT_EQ(misc::filesystem::file_size(second_file), sizeof(buffer) + 8);
+  ASSERT_EQ(misc::filesystem::file_size(second_file),
+            static_cast<int64_t>(8 + sizeof(buffer)));
 }
 
 // Given a splitter object configured with a max_size of 10000
