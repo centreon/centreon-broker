@@ -54,9 +54,6 @@ TEST_F(CVarStatusTest, Assignment) {
   randomize(cvar_status1, &randvals2);
 
   // Compare objects with expected results.
-  int retval((cvar_status1 != randvals2) || (cvar_status2 != randvals1));
-
-  // Compare objects with expected results.
   ASSERT_TRUE(cvar_status1 == randvals2);
   ASSERT_TRUE(cvar_status2 == randvals1);
 }
@@ -84,13 +81,13 @@ TEST_F(CVarStatusTest, DefaultConstructor) {
   neb::custom_variable_status cvar_status;
 
   // Check.
-  ASSERT_EQ(cvar_status.source_id, 0);
-  ASSERT_EQ(cvar_status.destination_id, 0);
-  ASSERT_EQ(cvar_status.host_id, 0);
+  ASSERT_EQ(cvar_status.source_id, 0u);
+  ASSERT_EQ(cvar_status.destination_id, 0u);
+  ASSERT_EQ(cvar_status.host_id, 0u);
   ASSERT_EQ(cvar_status.modified, true);
   ASSERT_EQ(cvar_status.name, "");
-  ASSERT_EQ(cvar_status.service_id, 0);
-  ASSERT_EQ(cvar_status.update_time, 0);
+  ASSERT_EQ(cvar_status.service_id, 0u);
+  ASSERT_EQ(cvar_status.update_time, 0u);
   ASSERT_EQ(cvar_status.value, "");
 
   ASSERT_TRUE(cvar_status.type() ==

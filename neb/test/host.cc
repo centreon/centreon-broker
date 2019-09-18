@@ -82,8 +82,8 @@ TEST_F(HostTest, DefaultConstructor) {
   neb::host h;
 
   // Check.
-  ASSERT_EQ(h.source_id, 0);
-  ASSERT_EQ(h.destination_id, 0);
+  ASSERT_EQ(h.source_id, 0u);
+  ASSERT_EQ(h.destination_id, 0u);
   ASSERT_FALSE(h.acknowledged);
   ASSERT_EQ(h.acknowledgement_type, 0);
   ASSERT_TRUE(h.action_url.empty());

@@ -82,11 +82,11 @@ TEST_F(HostParentTest, DefaultConstructor) {
   neb::host_parent hprnt;
 
   // Check.
-  ASSERT_EQ(hprnt.source_id, 0);
-  ASSERT_EQ(hprnt.destination_id, 0);
+  ASSERT_EQ(hprnt.source_id, 0u);
+  ASSERT_EQ(hprnt.destination_id, 0u);
   ASSERT_TRUE(hprnt.enabled);
-  ASSERT_EQ(hprnt.host_id, 0);
-  ASSERT_EQ(hprnt.parent_id, 0);
+  ASSERT_EQ(hprnt.host_id, 0u);
+  ASSERT_EQ(hprnt.parent_id, 0u);
   ASSERT_FALSE(
       hprnt.type() !=
       (io::events::data_type<io::events::neb, neb::de_host_parent>::value));

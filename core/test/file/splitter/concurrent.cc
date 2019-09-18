@@ -174,5 +174,5 @@ TEST_F(FileSplitterConcurrent, MultipleFilesCreated) {
   _file->remove_all_files();
   std::list<std::string> entries =
       misc::filesystem::dir_content_with_filter(RETENTION_DIR, RETENTION_FILE "*");
-  ASSERT_EQ(entries.size(), 0);
+  ASSERT_EQ(entries.size(), 0u);
 }

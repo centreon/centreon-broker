@@ -81,15 +81,15 @@ TEST_F(CVarTest, DefaultConstructor) {
   neb::custom_variable cvar;
 
   // Check.
-  ASSERT_EQ(cvar.source_id, 0);
-  ASSERT_EQ(cvar.destination_id, 0);
+  ASSERT_EQ(cvar.source_id, 0u);
+  ASSERT_EQ(cvar.destination_id, 0u);
   ASSERT_TRUE(cvar.default_value.empty());
   ASSERT_TRUE(cvar.enabled);
-  ASSERT_EQ(cvar.host_id, 0);
+  ASSERT_EQ(cvar.host_id, 0u);
   ASSERT_EQ(cvar.modified, false);
   ASSERT_EQ(cvar.name, "");
-  ASSERT_EQ(cvar.service_id, 0);
-  ASSERT_EQ(cvar.update_time, 0);
+  ASSERT_EQ(cvar.service_id, 0u);
+  ASSERT_EQ(cvar.update_time, 0u);
   ASSERT_EQ(cvar.value, "");
   ASSERT_EQ(cvar.var_type, 0);
 

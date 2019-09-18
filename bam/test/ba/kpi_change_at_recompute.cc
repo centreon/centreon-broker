@@ -18,7 +18,6 @@
 
 #include <gtest/gtest.h>
 #include <cstdlib>
-#include <iostream>
 #include <memory>
 #include <stack>
 #include <vector>
@@ -84,9 +83,9 @@ TEST_F(BamBA, CopyAssign) {
   ba_assign = ba_copy;
 
   ASSERT_EQ(ba_assign.get_state_hard(), 2);
-  ASSERT_EQ(ba_assign.get_id(), 42);
-  ASSERT_EQ(ba_assign.get_service_id(), 42);
-  ASSERT_EQ(ba_assign.get_host_id(), 42);
+  ASSERT_EQ(ba_assign.get_id(), 42u);
+  ASSERT_EQ(ba_assign.get_service_id(), 42u);
+  ASSERT_EQ(ba_assign.get_host_id(), 42u);
   ASSERT_EQ(ba_assign.get_name(), "test");
   ASSERT_EQ(ba_assign.get_output(), "BA : test - current_level = 0%");
   ASSERT_EQ(ba_assign.get_perfdata(), "BA_Level=0%;0;0;0;100 BA_Downtime=0");
@@ -162,7 +161,7 @@ TEST_F(BamBA, ImpactState) {
   std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
   kpis.push_back(s3);
 
-  for (int i = 0; i < kpis.size(); i++) {
+  for (size_t i = 0; i < kpis.size(); i++) {
     kpis[i]->set_host_id(i + 1);
     kpis[i]->set_service_id(1);
     kpis[i]->set_impact_warning(10);
@@ -185,7 +184,7 @@ TEST_F(BamBA, ImpactState) {
   ss->service_id = 1;
 
   for (int i = 0; i < 2; i++) {
-    for (int j = 0; j < kpis.size(); j++) {
+    for (size_t j = 0; j < kpis.size(); j++) {
       ss->last_check = now + 1;
       ss->host_id = j + 1;
       ss->last_hard_state = i + 1;

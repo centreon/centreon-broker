@@ -77,7 +77,7 @@ std::shared_ptr<io::stream> acceptor::open() {
     asio::ip::tcp::acceptor acceptor(
         _io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), _port));
     acceptor.accept(*_socket);
-  } catch (std::system_error se ){
+  } catch (std::system_error const& se ){
     throw exceptions::msg()
         << "TCP: error while waiting client on port: " << _port
         << " " << se.what();

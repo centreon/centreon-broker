@@ -94,7 +94,7 @@ std::shared_ptr<io::stream> command_server::open() {
     local::stream_protocol::endpoint ep(_socket_file);
     local::stream_protocol::acceptor acceptor(_io_context, ep);
     acceptor.accept(*_socket);
-  } catch (std::system_error se) {
+  } catch (std::system_error const& se) {
     throw exceptions::msg()
         << "command: error while waiting on client on file '" << _socket_file
         << "': " << se.what();

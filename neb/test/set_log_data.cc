@@ -24,11 +24,14 @@
 using namespace com::centreon::broker;
 
 // Engine stubs
-uint64_t com::centreon::engine::get_host_id(std::string const& name) {
+uint64_t com::centreon::engine::get_host_id(__attribute__((__unused__))
+                                            std::string const& name) {
   return 1;
 }
 
-uint64_t com::centreon::engine::get_service_id(std::string const& host,
+uint64_t com::centreon::engine::get_service_id(__attribute__((__unused__))
+                                               std::string const& host,
+                                               __attribute__((__unused__))
                                                std::string const& svc) {
   return 1;
 }

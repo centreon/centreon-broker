@@ -54,8 +54,6 @@ NEB_API_VERSION(CURRENT_NEB_API_VERSION)
  **************************************/
 
 static bool gl_initialized_qt(false);
-static int gl_qt_argc;
-static char const* gl_qt_argv[2] = {"CentreonBrokerModule", nullptr};
 
 /**************************************
  *                                     *
