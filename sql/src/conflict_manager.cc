@@ -18,8 +18,9 @@
 #include <cassert>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
-#include "com/centreon/broker/sql/conflict_manager.hh"
+#include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/events.hh"
+#include "com/centreon/broker/sql/conflict_manager.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
 
 using namespace com::centreon::broker;
@@ -183,10 +184,8 @@ void conflict_manager::_callback() {
         if (cat == io::events::neb)
           (this->*(_neb_processing_table[elem]))();
       }
-//      else {
-//        if (type == neb::service_status::static_type())
-//          _storage_process_service_status();
-//      }
+      else if (type == neb::service_status::static_type())
+        _storage_process_service_status();
       else {
         logging::info(logging::low)
           << "conflict_manager: event of type " << type << "throw away";

@@ -29,6 +29,7 @@ add_library("conflictmgr" STATIC
   # Sources.
   "${SRC_DIR}/conflict_manager.cc"
   "${SRC_DIR}/conflict_manager_sql.cc"
+  "${SRC_DIR}/conflict_manager_storage.cc"
 
   # Headers.
   "${INC_DIR}/com/centreon/broker/sql/conflict_manager.hh"

@@ -31,6 +31,11 @@
 #include "com/centreon/broker/mysql.hh"
 
 CCB_BEGIN()
+/* Forward declarations */
+namespace neb {
+class service_status;
+}
+
 namespace sql {
 class conflict_manager {
   /* Forward declarations */
@@ -56,6 +61,22 @@ class conflict_manager {
     uint32_t rrd_retention;
     std::string service_description;
     bool special;
+  };
+
+  struct metric_info {
+    bool locked;
+    uint32_t metric_id;
+    uint32_t type;
+    double value;
+    std::string unit_name;
+    double warn;
+    double warn_low;
+    bool warn_mode;
+    double crit;
+    double crit_low;
+    bool crit_mode;
+    double min;
+    double max;
   };
 
   static void (conflict_manager::*const _neb_processing_table[])();
@@ -96,8 +117,10 @@ class conflict_manager {
   std::thread _thread;
 
   std::unordered_map<uint32_t, uint32_t> _cache_host_instance;
-  std::unordered_map<std::pair<std::uint64_t, std::uint64_t>, std::size_t> _cache_svc_cmd;
+  std::unordered_map<std::pair<uint64_t, uint64_t>, size_t> _cache_svc_cmd;
   std::unordered_map<std::pair<uint64_t, uint64_t>, index_info> _index_cache;
+  std::unordered_map<std::pair<uint32_t, std::string>, metric_info>
+      _metric_cache;
 
   database::mysql_stmt _comment_insupdate;
   database::mysql_stmt _custom_variable_delete;
@@ -109,10 +132,14 @@ class conflict_manager {
   database::mysql_stmt _host_insupdate;
   database::mysql_stmt _instance_insupdate;
   database::mysql_stmt _service_check_update;
+  database::mysql_stmt _service_group_insupdate;
   database::mysql_stmt _service_group_member_delete;
   database::mysql_stmt _service_group_member_insert;
   database::mysql_stmt _service_insupdate;
-  database::mysql_stmt _service_group_insupdate;
+  database::mysql_stmt _service_status_update;
+
+  database::mysql_stmt _index_data_insert;
+  database::mysql_stmt _metrics_insert;
 
   conflict_manager(database_config const& dbcfg);
   conflict_manager() = delete;
@@ -147,6 +174,8 @@ class conflict_manager {
   void _process_service_status();
   void _process_instance_configuration();
   void _process_responsive_instance();
+
+  void _storage_process_service_status();
 
   void _load_caches();
   void _clean_tables(uint32_t instance_id);

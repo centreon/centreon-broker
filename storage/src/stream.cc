@@ -139,6 +139,7 @@ int stream::flush() {
   logging::debug(logging::medium)
       << "storage: flush ack events count: " << retval;
   _update_status("");
+//  int32_t retval =  sql::conflict_manager::instance().get_acks(sql::conflict_manager::storage);
   return retval;
 }
 
@@ -172,9 +173,9 @@ void stream::statistics(json11::Json::object& tree) const {
  *  Rebuild index and metrics cache.
  */
 void stream::update() {
-  _check_deleted_index();
-  _rebuild_cache();
-  _host_instance_cache_create();
+//  _check_deleted_index();
+//  _rebuild_cache();
+//  _host_instance_cache_create();
 }
 
 /**

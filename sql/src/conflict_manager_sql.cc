@@ -693,11 +693,11 @@ void conflict_manager::_process_service() {
   neb::service const& s(*static_cast<neb::service const*>(d.get()));
 
   // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing service event "
-         "(host id: "
-      << s.host_id << ", service_id: " << s.service_id
-      << ", description: " << s.service_description << ")";
+  logging::info(logging::medium) << "SQL: processing service event "
+                                    "(host id: " << s.host_id
+                                 << ", service_id: " << s.service_id
+                                 << ", description: " << s.service_description
+                                 << ")";
 
   // Processing.
   if (s.host_id && s.service_id) {
@@ -731,17 +731,54 @@ void conflict_manager::_process_service() {
  *  @param[in] e Uncasted service status.
  */
 void conflict_manager::_process_service_status() {
-  while (true) {
-    auto& p = _events.front();
-    std::shared_ptr<io::data> d{std::get<0>(p)};
+  auto& p = _events.front();
+  std::shared_ptr<io::data> d{std::get<0>(p)};
+  // Processed object.
+  neb::service_status const& ss{
+      *static_cast<neb::service_status const*>(d.get())};
 
-    if (!d || d->type() != neb::host_group::static_type())
-      break;
+  time_t now = time(nullptr);
+  if (ss.check_type ||           // - passive result
+      !ss.active_checks_enabled  // - active checks are disabled,
+                                 //   status might not be updated
+      ||                         // - normal case
+      (ss.next_check >= now - 5 * 60) ||
+      !ss.next_check) {  // - initial state
+    // Apply to DB.
+    logging::info(logging::medium)
+        << "SQL: processing service status event (host: " << ss.host_id
+        << ", service: " << ss.service_id << ", last check: " << ss.last_check
+        << ", state (" << ss.current_state << ", " << ss.state_type << "))";
 
-  //neb::service_status& ss = *static_cast<neb::service_status*>(p.first.get());
-    *std::get<2>(p) = true;
-    _events.pop_front();
-  }
+    // Prepare queries.
+    if (!_service_status_update.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("host_id");
+      unique.insert("service_id");
+      query_preparator qp(neb::service_status::static_type(), unique);
+      _service_status_update = qp.prepare_update(_mysql);
+    }
+
+    // Processing.
+    _service_status_update << ss;
+    std::ostringstream oss;
+    oss << "SQL: could not store service status (host: " << ss.host_id << ", "
+        << ss.service_id << ") ";
+    _mysql.run_statement(
+        _service_status_update,
+        oss.str(),
+        true,
+        _mysql.choose_connection_by_instance(_cache_host_instance[ss.host_id]));
+  } else
+    // Do nothing.
+    logging::info(logging::medium)
+        << "SQL: not processing service status event (host: " << ss.host_id
+        << ", service: " << ss.service_id << ", check_type: " << ss.check_type
+        << ", last check: " << ss.last_check
+        << ", next_check: " << ss.next_check << ", now: " << now << ", state ("
+        << ss.current_state << ", " << ss.state_type << "))";
+  *std::get<2>(p) = true;
+  _events.pop_front();
 }
 
 void conflict_manager::_process_instance_configuration() {}
