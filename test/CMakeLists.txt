@@ -59,6 +59,10 @@ add_definitions(-DCENTREON_BROKER_NEB_TEST="${PROJECT_SOURCE_DIR}/neb/test")
 add_library(null_module SHARED ${TEST_DIR}/modules/null_module.cc)
 add_library(bad_version_module SHARED ${TEST_DIR}/modules/bad_version_module.cc)
 # Unit test executable.
+if (WITH_SQL_TESTS)
+  set(TEST_SOURCES ${TESTS_SOURCES} ${TESTS_DIR}/mysql/mysql.cc)
+endif (WITH_SQL_TESTS)
+
 add_executable(ut
   # Core sources.
   ${TESTS_DIR}/bbdo/input_buffer/erase.cc
@@ -93,7 +97,6 @@ add_executable(ut
   ${TESTS_DIR}/multiplexing/publisher/read.cc
   ${TESTS_DIR}/multiplexing/publisher/write.cc
   ${TESTS_DIR}/multiplexing/subscriber/ctor_default.cc
-  ${TESTS_DIR}/mysql/mysql.cc
   ${TESTS_DIR}/processing/acceptor.cc
   ${TESTS_DIR}/processing/temporary_endpoint.cc
   ${TESTS_DIR}/processing/temporary_stream.cc

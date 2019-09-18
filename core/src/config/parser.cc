@@ -93,7 +93,9 @@ state parser::parse(std::string const& file) {
   if (js.is_object() && js["centreonBroker"].is_object()) {
     for (std::pair<std::string const, Json> const& object :
          js["centreonBroker"].object_items()) {
-      if (get_conf<int, state>(object, "broker_id", retval, &state::broker_id,
+      if (object.first == "command_file" && object.second.is_object())
+        ;
+      else if (get_conf<int, state>(object, "broker_id", retval, &state::broker_id,
                                &Json::is_number, &Json::int_value))
         ;
       else if (get_conf<std::string const&, state>(
@@ -268,7 +270,29 @@ void parser::_parse_endpoint(Json const& elem, endpoint& e) {
  */
 void parser::_parse_logger(Json const& elem, logger& l) {
   for (std::pair<std::string const, Json> const& object : elem.object_items()) {
-    if (get_conf<bool, logger>(object, "config", l, &logger::config,
+    if (object.first == "config" && object.second.is_string()) {
+
+    } else if (object.first == "debug" && object.second.is_string()) {
+      if (object.second.string_value() == "yes")
+        l.config(true);
+      else
+        l.config(false);
+    } else if (object.first == "error" && object.second.is_string()) {
+      if (object.second.string_value() == "yes")
+        l.config(true);
+      else
+        l.config(false);
+    }  else if (object.first == "info" && object.second.is_string()) {
+      if (object.second.string_value() == "yes")
+        l.config(true);
+      else
+        l.config(false);
+    } else if (object.first == "perf" && object.second.is_string()) {
+      if (object.second.string_value() == "yes")
+        l.config(true);
+      else
+        l.config(false);
+    } else if (get_conf<bool, logger>(object, "config", l, &logger::config,
                                &Json::is_bool, &Json::bool_value))
       ;
     else if (get_conf<bool, logger>(object, "debug", l, &logger::debug,
@@ -278,9 +302,6 @@ void parser::_parse_logger(Json const& elem, logger& l) {
                                     &Json::is_bool, &Json::bool_value))
       ;
     else if (get_conf<bool, logger>(object, "info", l, &logger::info,
-                                    &Json::is_bool, &Json::bool_value))
-      ;
-    else if (get_conf<bool, logger>(object, "perf", l, &logger::perf,
                                     &Json::is_bool, &Json::bool_value))
       ;
     else if (get_conf<bool, logger>(object, "perf", l, &logger::perf,

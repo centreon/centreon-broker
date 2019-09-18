@@ -263,10 +263,8 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
   ASSERT_TRUE(result["asio_version"].is_string());
   ASSERT_TRUE(result["mysql manager"].is_object());
   ASSERT_TRUE(result["mysql manager"]["delay since last check"].is_string());
-  ASSERT_TRUE(result["endpoint CentreonDatabase"]["status"].string_value() == "connected");
-  ASSERT_TRUE(result["endpoint CentreonDatabase"]["status"].string_value() == "connected");
-
-  std::cout << result.dump() << std::endl;
+  ASSERT_TRUE(result["endpoint CentreonDatabase"]["state"].string_value() == "connected");
+  ASSERT_TRUE(result["endpoint CentreonDatabase"]["state"].string_value() == "connected");
 }
 
 TEST_F(StatsTest, CopyCtor) {
