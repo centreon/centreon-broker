@@ -103,7 +103,7 @@ void conflict_manager::init_sql(database_config const& dbcfg) {
   std::lock_guard<std::mutex> lk(_init_m);
   _singleton = new conflict_manager(dbcfg);
   _init_cv.notify_all();
-  //_singleton->_action.resize(_singleton->_mysql.connections_count());
+  _singleton->_action.resize(_singleton->_mysql.connections_count());
 }
 
 /**

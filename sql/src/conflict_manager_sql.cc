@@ -216,6 +216,7 @@ void conflict_manager::_process_host_dependency() {}
  */
 void conflict_manager::_process_host_group() {
   int conn = _mysql.choose_best_connection();
+  _finish_action(-1, actions::hosts);
 
   while (true) {
     auto& p = _events.front();
@@ -239,6 +240,7 @@ void conflict_manager::_process_host_group() {
 
       _host_group_insupdate << hg;
       _mysql.run_statement(_host_group_insupdate, oss.str(), true, conn);
+      _add_action(conn, actions::host_hostgroups);
     }
     // Delete group.
     else {
@@ -370,6 +372,9 @@ void conflict_manager::_process_host() {
   // Processing
   if (_is_valid_poller(h.poller_id)) {
     if (h.host_id) {
+      int32_t conn = _mysql.choose_connection_by_instance(h.poller_id);
+      _finish_action(-1, actions::host_hostgroups);
+
       // Prepare queries.
       if (!_host_insupdate.prepared()) {
         query_preparator::event_unique unique;
@@ -386,8 +391,8 @@ void conflict_manager::_process_host() {
       _host_insupdate << h;
       _mysql.run_statement(_host_insupdate,
                            oss.str(),
-                           true,
-                           _mysql.choose_connection_by_instance(h.poller_id));
+                           true, conn);
+      _add_action(conn, actions::hosts);
 
       // Fill the cache...
       _cache_host_instance[h.host_id] = h.poller_id;
@@ -580,7 +585,100 @@ void conflict_manager::_process_service_group() {
   }
 }
 
-void conflict_manager::_process_service_group_member() {}
+/**
+ *  Process a service group member event.
+ *
+ *  @param[in] e Uncasted service group member.
+ */
+void conflict_manager::_process_service_group_member() {
+  auto& p = _events.front();
+  std::shared_ptr<io::data> d{std::get<0>(p)};
+
+  // Cast object.
+  neb::service_group_member const& sgm(
+      *static_cast<neb::service_group_member const*>(d.get()));
+
+  // Only process groups for v2 schema.
+  if (sgm.enabled) {
+    // Log message.
+    logging::info(logging::medium) << "SQL: enabling membership of service ("
+                                   << sgm.host_id << ", " << sgm.service_id
+                                   << ") to service group " << sgm.group_id
+                                   << " on instance " << sgm.poller_id;
+
+    // We only need to try to insert in this table as the
+    // host_id/service_id/servicegroup_id combo should be UNIQUE.
+    if (!_service_group_member_insert.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("servicegroup_id");
+      unique.insert("host_id");
+      unique.insert("service_id");
+      query_preparator qp(neb::service_group_member::static_type(), unique);
+      _service_group_member_insert = qp.prepare_insert(_mysql);
+    }
+    _service_group_member_insert << sgm;
+
+    std::promise<mysql_result> promise;
+
+    _mysql.run_statement_and_get_result(_service_group_member_insert, &promise);
+    try {
+      promise.get_future().get();
+    }
+    catch (std::exception const& e) {
+      logging::error(logging::low) << "SQL: host group not defined: "
+                                   << e.what();
+
+      _prepare_sg_insupdate_statement();
+
+      neb::service_group sg;
+      sg.id = sgm.group_id;
+      sg.name = sgm.group_name;
+      sg.enabled = true;
+      sg.poller_id = sgm.poller_id;
+
+      std::ostringstream oss;
+      oss << "SQL: could not store service group (poller: " << sg.poller_id
+          << ", group: " << sg.id << "): ";
+
+      _service_group_insupdate << sg;
+      _mysql.run_statement(_service_group_insupdate, oss.str(), false);
+
+      oss.str("");
+      oss << "SQL: could not store service group membership (poller: "
+          << sgm.poller_id << ", host: " << sgm.host_id
+          << ", service: " << sgm.service_id << ", group: " << sgm.group_id
+          << "): ";
+      _service_group_member_insert << sgm;
+      _mysql.run_statement(_service_group_member_insert, oss.str(), false);
+    }
+  }
+  // Delete.
+  else {
+    // Log message.
+    logging::info(logging::medium) << "SQL: disabling membership of service ("
+                                   << sgm.host_id << ", " << sgm.service_id
+                                   << ") to service group " << sgm.group_id
+                                   << " on instance " << sgm.poller_id;
+
+    if (!_service_group_member_delete.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("servicegroup_id");
+      unique.insert("host_id");
+      unique.insert("service_id");
+      query_preparator qp(neb::service_group_member::static_type(), unique);
+      _service_group_member_delete = qp.prepare_delete(_mysql);
+    }
+    std::ostringstream oss;
+    oss << "SQL: cannot delete membership of service (" << sgm.host_id << ", "
+        << sgm.service_id << ") to service group " << sgm.group_id
+        << " on instance " << sgm.poller_id << ": ";
+
+    _service_group_member_delete << sgm;
+    _mysql.run_statement(_service_group_member_delete, oss.str(), true);
+  }
+  *std::get<2>(p) = true;
+  _events.pop_front();
+}
 
 /**
  *  Process a service event.
