@@ -40,6 +40,14 @@ class conflict_manager {
   };
 
  private:
+  enum actions {
+    none = 0,
+    hosts = 1,
+    host_hostgroups = 1 << 1,
+    services = 1 << 2,
+    service_servicegroups = 1 << 3,
+  };
+
   static void (conflict_manager::*const _neb_processing_table[])();
   static conflict_manager* _singleton;
   static std::mutex _init_m;
@@ -62,6 +70,9 @@ class conflict_manager {
    * manage two queues, the first for sql and the second one for storage.
    * So they will know when their events will be released. */
   std::array<std::deque<bool>, 2> _timeline;
+
+  /* Current actions by connection */
+  std::vector<uint32_t> _action;
 
   mutable std::mutex _loop_m;
   std::condition_variable _loop_cv;
@@ -126,6 +137,8 @@ class conflict_manager {
   bool _is_valid_poller(uint32_t instance_id);
   void _prepare_hg_insupdate_statement();
   void _prepare_sg_insupdate_statement();
+  void _finish_action(int32_t conn, actions action);
+  void _add_action(int32_t conn, actions action);
 
  public:
   static void init_sql(database_config const& dbcfg);

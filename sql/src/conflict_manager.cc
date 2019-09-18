@@ -180,3 +180,45 @@ int32_t conflict_manager::get_acks(stream_type c) {
   _pending_queries -= retval;
   return retval;
 }
+
+/**
+ *  Take a look if a given action is done on a mysql connection. If it is
+ *  done, the method waits for tasks on this connection to be finished and
+ *  clear the flag.
+ *  In case of a conn < 0, the methods checks all the connections.
+ *
+ * @param conn The connection number or a negative number to check all the
+ *             connections
+ * @param action An action.
+ */
+void conflict_manager::_finish_action(int32_t conn, actions action) {
+  if (conn < 0) {
+    for (std::size_t i = 0; i < _action.size(); i++) {
+      if (_action[i] & action) {
+        _mysql.commit(i);
+        _action[i] = actions::none;
+      }
+    }
+  }
+  else if (_action[conn] & action) {
+    _mysql.commit(conn);
+    _action[conn] = actions::none;
+  }
+}
+
+/**
+ *  Add an action on the connection conn in the list of current actions.
+ *  If conn < 0, the action is added to all the connections.
+ *
+ * @param conn The connection number or a negative number to add to all the
+ *             connections
+ * @param action An action.
+ */
+void conflict_manager::_add_action(int32_t conn, actions action) {
+  if (conn < 0) {
+    for (uint32_t& v : _action)
+      v |= action;
+  }
+  else
+    _action[conn] |= actions::none;
+}
