@@ -149,6 +149,10 @@ void cached::connect_remote(std::string const& address, unsigned short port) {
     // we need to try all to find the first available socket
     while (err && it != end) {
       _tcp_socket->connect(*it, err);
+
+      if (err)
+        _tcp_socket->close();
+
       ++it;
     }
 

@@ -129,8 +129,7 @@ void test_server::handle_read(
     if (!key_found) {
       if (s.find("SERV_DELAY\n") != std::string::npos) {
         std::this_thread::sleep_for(std::chrono::seconds(2));
-        asio::write(con_handle->socket,
-                    asio::buffer(std::string{"PONG\n"}),
+        asio::write(con_handle->socket, asio::buffer(std::string{"PONG\n"}),
                     asio::transfer_all(), err);
       } else {
         asio::write(con_handle->socket,
@@ -153,7 +152,7 @@ void test_server::handle_read(
 bool test_server::add_client(asio::ip::tcp::socket& sock,
                              asio::io_context& io) {
   asio::ip::tcp::resolver resolver{io};
-  asio::ip::tcp::resolver::query query{"127.0.0.1", std::to_string(4242)};
+  asio::ip::tcp::resolver::query query{"localhost", std::to_string(4242)};
 
   try {
     asio::ip::tcp::resolver::iterator it{resolver.resolve(query)};
@@ -164,6 +163,10 @@ bool test_server::add_client(asio::ip::tcp::socket& sock,
     // we need to try all to find the first available socket
     while (err && it != end) {
       sock.connect(*it, err);
+
+      if (err)
+        sock.close();
+
       ++it;
     }
 
