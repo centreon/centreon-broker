@@ -91,6 +91,10 @@ stream::stream(std::string const& metric_naming,
     // we need to try all to find the first available socket
     while (err && it != end) {
       _socket->connect(*it, err);
+
+      if (err)
+        _socket->close();
+
       ++it;
     }
 

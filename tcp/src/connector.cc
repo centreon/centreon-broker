@@ -83,6 +83,10 @@ std::shared_ptr<io::stream> connector::open() {
     // we need to try all to find the first available socket
     while (err && it != end) {
       sock->connect(*it, err);
+
+      if (err)
+        sock->close();
+
       ++it;
     }
 

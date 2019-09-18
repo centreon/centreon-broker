@@ -102,6 +102,10 @@ static int l_broker_socket_connect(lua_State* L) {
     // we need to try all to find the first available socket
     while (err && it != end) {
       socket->connect(*it, err);
+
+      if (err)
+        socket->close();
+
       ++it;
     }
 
