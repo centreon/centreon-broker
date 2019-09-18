@@ -127,12 +127,18 @@ void conflict_manager::_callback() {
           << " queries.";
 
     while (!_events.empty()) {
-      std::shared_ptr<io::data> d{_events.front().first};
+      std::shared_ptr<io::data> d{std::get<0>(_events.front())};
       uint32_t type{d->type()};
       uint16_t cat{io::events::category_of_type(type)};
       uint16_t elem{io::events::element_of_type(type)};
-      if (cat == io::events::neb)
-        (this->*(_neb_processing_table[elem]))();
+      if (std::get<1>(_events.front()) == sql) {
+        if (cat == io::events::neb)
+          (this->*(_neb_processing_table[elem]))();
+      }
+//      else {
+//        if (type == neb::service_status::static_type())
+//          _storage_process_service_status();
+//      }
     }
   }
   _mysql.commit();
@@ -153,7 +159,7 @@ void conflict_manager::send_event(conflict_manager::stream_type c,
   std::lock_guard<std::mutex> lk(_loop_m);
   _pending_queries++;
   _timeline[c].push_back(false);
-  _events.push_back({e, &_timeline[c].back()});
+  _events.push_back(std::make_tuple(e, c, &_timeline[c].back()));
 }
 
 /**

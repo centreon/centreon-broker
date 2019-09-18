@@ -32,6 +32,14 @@
 CCB_BEGIN()
 namespace sql {
 class conflict_manager {
+  /* Forward declarations */
+ public:
+  enum stream_type {
+    sql,
+    storage
+  };
+
+ private:
   static void (conflict_manager::*const _neb_processing_table[])();
   static conflict_manager* _singleton;
   static std::mutex _init_m;
@@ -39,14 +47,16 @@ class conflict_manager {
 
   /* When events arrive in the conflict_manager, two things are done.
    * A boolean is inserted at the end of the timeline with the value false.
-   * A pair is made with the event and a pointer to the boolean.
-   * This pair is inserted following at the end of the queue.
+   * A tuple is made with the event, the stream_type and a pointer to the
+   * boolean.
+   * This tuple is inserted at the end of the queue.
    * The idea behind all of this is we can treat events by order. When an event
    * is done, we have access to the boolean stored in the timeline to set it to
    * true.
    * And later, the stream that sent events will know how many events can be
    * released from the retention queue. */
-  std::deque<std::pair<std::shared_ptr<io::data>, bool*> > _events;
+  std::deque<std::tuple<std::shared_ptr<io::data>, stream_type, bool*> >
+      _events;
 
   /* Since the sql and storage streams use this conflict_manager, we must
    * manage two queues, the first for sql and the second one for storage.
@@ -118,11 +128,6 @@ class conflict_manager {
   void _prepare_sg_insupdate_statement();
 
  public:
-  enum stream_type {
-    sql,
-    storage
-  };
-
   static void init_sql(database_config const& dbcfg);
   static bool init_storage(uint32_t rrd_len, uint32_t interval_length);
   static conflict_manager& instance();

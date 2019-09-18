@@ -27,9 +27,13 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 using namespace com::centreon::broker::sql;
 
-void conflict_manager::_clean_tables(uint32_t instance_id) {}
+void conflict_manager::_clean_tables(uint32_t instance_id
+                                     __attribute__((unused))) {}
 
-bool conflict_manager::_is_valid_poller(uint32_t instance_id) { return true; }
+bool conflict_manager::_is_valid_poller(uint32_t instance_id
+                                        __attribute__((unused))) {
+  return true;
+}
 
 void conflict_manager::_prepare_hg_insupdate_statement() {
   if (!_host_group_insupdate.prepared()) {
@@ -58,15 +62,15 @@ void conflict_manager::_process_acknowledgement() {}
  */
 void conflict_manager::_process_comment() {
   auto& p = _events.front();
-  std::shared_ptr<io::data> d{p.first};
+  std::shared_ptr<io::data> d{std::get<0>(p)};
 
   // Cast object.
   neb::comment const& cmmnt{*static_cast<neb::comment const*>(d.get())};
 
   // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing comment of poller " << cmmnt.poller_id << " on ("
-      << cmmnt.host_id << ", " << cmmnt.service_id << ")";
+  logging::info(logging::medium) << "SQL: processing comment of poller "
+                                 << cmmnt.poller_id << " on (" << cmmnt.host_id
+                                 << ", " << cmmnt.service_id << ")";
 
   // Prepare queries.
   if (!_comment_insupdate.prepared()) {
@@ -89,7 +93,7 @@ void conflict_manager::_process_comment() {
 
   _comment_insupdate << cmmnt;
   _mysql.run_statement(_comment_insupdate, oss.str(), true);
-  *p.second = true;
+  *std::get<2>(p) = true;
   _events.pop_front();
 }
 
@@ -99,12 +103,12 @@ void conflict_manager::_process_comment() {
  *  @param[in] e Uncasted custom variable.
  */
 void conflict_manager::_process_custom_variable() {
-  std::pair<std::shared_ptr<io::data>, bool*>& p = _events.front();
-  std::shared_ptr<io::data> d{p.first};
+  auto& p = _events.front();
+  std::shared_ptr<io::data> d{std::get<0>(p)};
 
   // Cast object.
-  neb::custom_variable const& cv(
-      *static_cast<neb::custom_variable const*>(d.get()));
+  neb::custom_variable const& cv{
+      *static_cast<neb::custom_variable const*>(d.get())};
 
   // Prepare queries.
   if (!_custom_variable_insupdate.prepared() ||
@@ -146,7 +150,7 @@ void conflict_manager::_process_custom_variable() {
         true,
         _mysql.choose_connection_by_instance(_cache_host_instance[cv.host_id]));
   }
-  *p.second = true;
+  *std::get<2>(p) = true;
   _events.pop_front();
 }
 
@@ -156,8 +160,8 @@ void conflict_manager::_process_custom_variable() {
  *  @param[in] e Uncasted custom variable status.
  */
 void conflict_manager::_process_custom_variable_status() {
-  std::pair<std::shared_ptr<io::data>, bool*>& p = _events.front();
-  std::shared_ptr<io::data> d{p.first};
+  auto& p = _events.front();
+  std::shared_ptr<io::data> d{std::get<0>(p)};
   // Cast object.
   neb::custom_variable_status const& cvs(
       *static_cast<neb::custom_variable_status const*>(d.get()));
@@ -195,7 +199,7 @@ void conflict_manager::_process_custom_variable_status() {
         << ", host: " << cvs.host_id << ", service: " << cvs.service_id
         << "): " << e.what();
   }
-  *p.second = true;
+  *std::get<2>(p) = true;
   _events.pop_front();
 }
 
@@ -214,11 +218,10 @@ void conflict_manager::_process_host_group() {
   int conn = _mysql.choose_best_connection();
 
   while (true) {
-    std::pair<std::shared_ptr<io::data>, bool*>& p = _events.front();
-    std::shared_ptr<io::data> d{p.first};
-    uint32_t type{d->type()};
+    auto& p = _events.front();
+    std::shared_ptr<io::data> d{std::get<0>(p)};
 
-    if (type != neb::host_group::static_type())
+    if (!d || d->type() != neb::host_group::static_type())
       break;
 
     // Cast object.
@@ -255,7 +258,7 @@ void conflict_manager::_process_host_group() {
         _mysql.run_query(oss.str(), "SQL: ", false, conn);
       }
     }
-    *p.second = true;
+    *std::get<2>(p) = true;
     _events.pop_front();
   }
 }
@@ -266,8 +269,8 @@ void conflict_manager::_process_host_group() {
  *  @param[in] e Uncasted host group member.
  */
 void conflict_manager::_process_host_group_member() {
-  std::pair<std::shared_ptr<io::data>, bool*>& p = _events.front();
-  std::shared_ptr<io::data> d{p.first};
+  auto& p = _events.front();
+  std::shared_ptr<io::data> d{std::get<0>(p)};
 
   // Cast object.
   neb::host_group_member const& hgm(
@@ -345,7 +348,7 @@ void conflict_manager::_process_host_group_member() {
     _host_group_member_delete << hgm;
     _mysql.run_statement(_host_group_member_delete, oss.str(), true);
   }
-  *p.second = true;
+  *std::get<2>(p) = true;
   _events.pop_front();
 }
 
@@ -355,8 +358,8 @@ void conflict_manager::_process_host_group_member() {
  *  @param[in] e Uncasted host.
  */
 void conflict_manager::_process_host() {
-  std::pair<std::shared_ptr<io::data>, bool*>& p = _events.front();
-  neb::host& h = *static_cast<neb::host*>(p.first.get());
+  auto& p = _events.front();
+  neb::host& h = *static_cast<neb::host*>(std::get<0>(p).get());
 
   // Log message.
   logging::info(logging::medium) << "SQL: processing host event"
@@ -392,7 +395,7 @@ void conflict_manager::_process_host() {
       logging::error(logging::high) << "SQL: host '" << h.host_name
                                     << "' of poller " << h.poller_id
                                     << " has no ID";
-    *p.second = true;
+    *std::get<2>(p) = true;
     _events.pop_front();
   }
 }
@@ -407,8 +410,8 @@ void conflict_manager::_process_host_status() {}
  *  @param[in] e Uncasted instance.
  */
 void conflict_manager::_process_instance() {
-  std::pair<std::shared_ptr<io::data>, bool*>& p = _events.front();
-  neb::instance& i(*static_cast<neb::instance*>(p.first.get()));
+  auto& p = _events.front();
+  neb::instance& i(*static_cast<neb::instance*>(std::get<0>(p).get()));
 
   // Log message.
   logging::info(logging::medium) << "SQL: processing poller event "
@@ -443,7 +446,7 @@ void conflict_manager::_process_instance() {
   }
 
   /* We just have to set the boolean */
-  *p.second = true;
+  *std::get<2>(p) = true;
   _events.pop_front();
 }
 
@@ -463,7 +466,7 @@ void conflict_manager::_process_service_group() {
 
   while (true) {
     auto& p = _events.front();
-    std::shared_ptr<io::data> d{p.first};
+    std::shared_ptr<io::data> d{std::get<0>(p)};
 
     if (d->type() != neb::service_group::static_type())
       break;
@@ -504,7 +507,7 @@ void conflict_manager::_process_service_group() {
         _mysql.run_query(oss.str(), "SQL: ", false, conn);
       }
     }
-    *p.second = true;
+    *std::get<2>(p) = true;
     _events.pop_front();
   }
 }
@@ -518,7 +521,7 @@ void conflict_manager::_process_service_group_member() {}
  */
 void conflict_manager::_process_service() {
   auto& p = _events.front();
-  std::shared_ptr<io::data> d{p.first};
+  std::shared_ptr<io::data> d{std::get<0>(p)};
 
   // Processed object.
   neb::service const& s(*static_cast<neb::service const*>(d.get()));
@@ -552,21 +555,26 @@ void conflict_manager::_process_service() {
   } else
     logging::error(logging::high) << "SQL: service '" << s.service_description
                                   << "' has no host ID or no service ID";
-  *p.second = true;
+  *std::get<2>(p) = true;
   _events.pop_front();
 }
 
+/**
+ *  Process a service status event.
+ *
+ *  @param[in] e Uncasted service status.
+ */
 void conflict_manager::_process_service_status() {
   while (true) {
-    std::pair<std::shared_ptr<io::data>, bool*>& p = _events.front();
-    std::shared_ptr<io::data> d{p.first};
-    uint32_t type{d->type()};
+    auto& p = _events.front();
+    std::shared_ptr<io::data> d{std::get<0>(p)};
 
-    if (type != neb::host_group::static_type())
+    if (!d || d->type() != neb::host_group::static_type())
       break;
 
   //neb::service_status& ss = *static_cast<neb::service_status*>(p.first.get());
-  break;
+    *std::get<2>(p) = true;
+    _events.pop_front();
   }
 }
 
