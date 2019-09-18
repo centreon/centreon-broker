@@ -565,7 +565,7 @@ void conflict_manager::_process_service_status() {
     if (type != neb::host_group::static_type())
       break;
 
-  neb::service_status& ss = *static_cast<neb::service_status*>(p.first.get());
+  //neb::service_status& ss = *static_cast<neb::service_status*>(p.first.get());
   break;
   }
 }

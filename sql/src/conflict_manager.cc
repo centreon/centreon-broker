@@ -71,12 +71,16 @@ conflict_manager::conflict_manager(database_config const& dbcfg)
 }
 
 /**
- *  For the connector that does not initialize the conflict_manager, this
- *  function is useful to wait.
+ * For the connector that does not initialize the conflict_manager, this
+ * function is useful to wait.
+ *
+ * @param rrd_len
+ * @param interval_length
  *
  * @return true if all went OK.
  */
-bool conflict_manager::wait_for_init() {
+bool conflict_manager::init_storage(uint32_t rrd_len,
+                                    uint32_t interval_length) {
   int count = 0;
 
   std::unique_lock<std::mutex> lk(_init_m);
@@ -84,17 +88,22 @@ bool conflict_manager::wait_for_init() {
   while (count < 10) {
     /* The loop is waiting for 1s or for _mysql to be initialized */
     if (_init_cv.wait_for(
-            lk, std::chrono::seconds(1), [&]() { return _singleton != nullptr; }))
+            lk, std::chrono::seconds(1), [&]() { return _singleton != nullptr; })) {
+      std::lock_guard<std::mutex> lk(conflict_manager::instance()._loop_m);
+      conflict_manager::instance()._rrd_len = rrd_len;
+      conflict_manager::instance()._interval_length = interval_length;
       return true;
+    }
     count++;
   }
   return false;
 }
 
-void conflict_manager::init(database_config const& dbcfg) {
+void conflict_manager::init_sql(database_config const& dbcfg) {
   std::lock_guard<std::mutex> lk(_init_m);
   _singleton = new conflict_manager(dbcfg);
   _init_cv.notify_all();
+  //_singleton->_action.resize(_singleton->_mysql.connections_count());
 }
 
 /**

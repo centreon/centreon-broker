@@ -53,23 +53,52 @@ include(cmake/tool.cmake)
 option(BUILD_OFFLINE "Build offline" OFF)
 
 if (${BUILD_OFFLINE})
-  set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY EP_UPDATE_DISCONNECTED 1)
+  ExternalProject_Add(json11_lib
+      SOURCE_DIR ${CMAKE_BINARY_DIR}/json11_lib-prefix/src/json11_lib
+      TIMEOUT 10
+      INSTALL_COMMAND ""
+      LOG_DOWNLOAD ON
+      LOG_CONFIGURE ON
+      LOG_BUILD ON)
+  ExternalProject_Add(Asio
+      SOURCE_DIR ${CMAKE_BINARY_DIR}/Asio-prefix/src/Asio
+      TIMEOUT 10
+      CONFIGURE_COMMAND ""
+      BUILD_COMMAND ""
+      INSTALL_COMMAND ""
+      LOG_DOWNLOAD ON)
+else ()
+  ExternalProject_Add(json11_lib
+      GIT_REPOSITORY https://github.com/dropbox/json11/
+      TIMEOUT 10
+      INSTALL_COMMAND ""
+      LOG_DOWNLOAD ON
+      LOG_CONFIGURE ON
+      LOG_BUILD ON)
+  ExternalProject_Add(Asio
+      GIT_REPOSITORY https://github.com/chriskohlhoff/asio/
+      TIMEOUT 10
+      CONFIGURE_COMMAND ""
+      BUILD_COMMAND ""
+      INSTALL_COMMAND ""
+      LOG_DOWNLOAD ON)
 endif ()
+#  set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY EP_UPDATE_DISCONNECTED 1)
 
-ExternalProject_Add(json11_lib
-  GIT_REPOSITORY https://github.com/dropbox/json11/
-  TIMEOUT 10
-  INSTALL_COMMAND ""
-  LOG_DOWNLOAD ON
-  LOG_CONFIGURE ON
-  LOG_BUILD ON)
-ExternalProject_Add(Asio
-  GIT_REPOSITORY https://github.com/chriskohlhoff/asio/
-  TIMEOUT 10
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND ""
-  LOG_DOWNLOAD ON)
+#ExternalProject_Add(json11_lib
+#  GIT_REPOSITORY https://github.com/dropbox/json11/
+#  TIMEOUT 10
+#  INSTALL_COMMAND ""
+#  LOG_DOWNLOAD ON
+#  LOG_CONFIGURE ON
+#  LOG_BUILD ON)
+#ExternalProject_Add(Asio
+#  GIT_REPOSITORY https://github.com/chriskohlhoff/asio/
+#  TIMEOUT 10
+#  CONFIGURE_COMMAND ""
+#  BUILD_COMMAND ""
+#  INSTALL_COMMAND ""
+#  LOG_DOWNLOAD ON)
 
 ExternalProject_Get_Property(json11_lib source_dir)
 ExternalProject_Get_Property(json11_lib binary_dir)

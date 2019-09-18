@@ -2205,7 +2205,7 @@ stream::stream(database_config const& dbcfg,
   // Run cleanup thread.
   _cleanup_thread.start();
 
-  conflict_manager::init(dbcfg);
+  conflict_manager::init_sql(dbcfg);
 }
 
 /**

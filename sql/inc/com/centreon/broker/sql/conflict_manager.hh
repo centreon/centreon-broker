@@ -59,6 +59,8 @@ class conflict_manager {
   uint32_t _max_pending_queries;
   uint32_t _pending_queries;
   mysql _mysql;
+  uint32_t _rrd_len;
+  uint32_t _interval_length;
 
   std::thread _thread;
 
@@ -121,8 +123,8 @@ class conflict_manager {
     storage
   };
 
-  static void init(database_config const& dbcfg);
-  static bool wait_for_init();
+  static void init_sql(database_config const& dbcfg);
+  static bool init_storage(uint32_t rrd_len, uint32_t interval_length);
   static conflict_manager& instance();
 
   void send_event(stream_type c, std::shared_ptr<io::data> const& e);

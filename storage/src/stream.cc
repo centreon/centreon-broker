@@ -109,7 +109,7 @@ stream::stream(database_config const& db_cfg,
       _rrd_len(rrd_len ? rrd_len : 15552000),
       _store_in_db(store_in_db),
       _mysql(db_cfg) {
-  sql::conflict_manager::wait_for_init();
+  sql::conflict_manager::init_storage(_rrd_len, _interval_length);
   // Prepare queries.
   _prepare();
 }
