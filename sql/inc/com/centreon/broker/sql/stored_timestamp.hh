@@ -41,6 +41,8 @@ class stored_timestamp {
   stored_timestamp(stored_timestamp const& right) throw();
   ~stored_timestamp() throw();
 
+  stored_timestamp& operator=(stored_timestamp const& right) = default;
+
   unsigned int get_id() const throw();
   state_type get_state() const throw();
   void set_state(state_type state) throw();

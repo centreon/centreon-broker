@@ -202,7 +202,6 @@ void endpoint::discard() {
       logging::debug(logging::low) << "endpoint applier: " << _endpoints.size()
                                    << " endpoint threads remaining";
       lock.unlock();
-      time_t now(time(nullptr));
 
       // FIXME DBR: no more events without qt
       // do {

@@ -86,7 +86,7 @@ TEST(WatchdogTest, SimpleConfig) {
       "}"};
   create_conf("/tmp/simple-conf.json", content);
   char const* arg[]{"watchdog/cbwd", "/tmp/simple-conf.json", nullptr};
-  int res = com::centreon::broker::misc::exec_process(arg, false);
+  com::centreon::broker::misc::exec_process(arg, false);
   std::string r =
       misc::exec("ps ax | grep tester | grep -v grep | awk '{print $1}'");
   std::list<std::string> lst = misc::string::split(r, '\n');
@@ -175,7 +175,7 @@ TEST(WatchdogTest, SimpleConfigUpdated) {
   create_conf("/tmp/simple-conf.json", content1);
   char const* arg[]{"watchdog/cbwd", "/tmp/simple-conf.json", nullptr};
 
-  int res = com::centreon::broker::misc::exec_process(arg, false);
+  com::centreon::broker::misc::exec_process(arg, false);
   std::string r = misc::exec(
       "ps ax | grep tester-echo | grep -v grep | grep -v defunc | awk '{print "
       "$1}'");

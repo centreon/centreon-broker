@@ -82,17 +82,17 @@ TEST_F(FlappingStatus, DefaultConstructor) {
   neb::flapping_status flappy;
 
   // Check.
-  ASSERT_EQ(flappy.source_id, 0);
-  ASSERT_EQ(flappy.destination_id, 0);
-  ASSERT_EQ(flappy.event_time, 0);
+  ASSERT_EQ(flappy.source_id, 0u);
+  ASSERT_EQ(flappy.destination_id, 0u);
+  ASSERT_EQ(flappy.event_time, 0u);
   ASSERT_EQ(flappy.event_type, 0);
   ASSERT_EQ(flappy.flapping_type, 0);
   ASSERT_TRUE(fabs(flappy.high_threshold) < 0.000001);
-  ASSERT_EQ(flappy.host_id, 0);
+  ASSERT_EQ(flappy.host_id, 0u);
   ASSERT_TRUE(fabs(flappy.low_threshold) < 0.000001);
   ASSERT_TRUE(fabs(flappy.percent_state_change) < 0.000001);
   ASSERT_EQ(flappy.reason_type, 0);
-  ASSERT_EQ(flappy.service_id, 0);
+  ASSERT_EQ(flappy.service_id, 0u);
   ASSERT_TRUE(
       flappy.type() ==
       (io::events::data_type<io::events::neb, neb::de_flapping_status>::value));

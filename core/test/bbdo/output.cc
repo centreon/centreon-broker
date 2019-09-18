@@ -107,13 +107,13 @@ TEST_F(OutputTest, WriteService) {
   }
   std::cout << '\n';
 
-  ASSERT_EQ(mem1.size(), 276);
+  ASSERT_EQ(mem1.size(), 276u);
   // The size is 276 - 16: 16 is the header size.
   ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 146)),
-            0x11223344);
+            0x11223344u);
   ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 150)),
-            0x55667788);
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 260);
+            0x55667788u);
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 260u);
   ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)), 12345u);
   ASSERT_EQ(std::string(&mem1[0] + 265), "Bonjour");
 
@@ -124,13 +124,13 @@ TEST_F(OutputTest, WriteService) {
   stm.write(svc);
   std::vector<char> const& mem2 = memory_stream->get_memory();
 
-  ASSERT_EQ(mem2.size(), 276);
+  ASSERT_EQ(mem2.size(), 276u);
   ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)), 78113u);
   // The size is 276 - 16: 16 is the header size.
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 260);
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 260u);
 
   // Check checksum
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0])), 33491);
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0])), 33491u);
 
   ASSERT_EQ(std::string(&mem1[0] + 265), "Conjour");
   l.unload();
@@ -167,14 +167,14 @@ TEST_F(OutputTest, WriteLongService) {
   stm.write(svc);
   std::vector<char> const& mem1 = memory_stream->get_memory();
 
-  ASSERT_EQ(mem1.size(), 70284);
+  ASSERT_EQ(mem1.size(), 70284u);
 
   // The buffer is too big. So it is splitted into several -- here 2 -- buffers.
   // The are concatenated, keeped into the same block, but a new header is
   // inserted in the "middle" of the buffer: Something like this:
   //     HEADER | BUFFER1 | HEADER | BUFFER2
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 0xffff);
-  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0])), 48152);
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 2)), 0xffffu);
+  ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0])), 48152u);
 
   ASSERT_EQ(htonl(*reinterpret_cast<uint32_t const*>(&mem1[0] + 91)), 12u);
 
@@ -183,9 +183,9 @@ TEST_F(OutputTest, WriteLongService) {
   //      So 70284 = 16         + 0xffff + 16         + 4717
   ASSERT_EQ(
       htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535 + 2)),
-      4717);
+      4717u);
 
   // Check checksum
   ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535)),
-            10510);
+            10510u);
 }

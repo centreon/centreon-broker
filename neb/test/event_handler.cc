@@ -82,19 +82,19 @@ TEST_F(EventHandlerTest, DefaultConstructor) {
   neb::event_handler evnt_hndlr;
 
   // Check.
-  ASSERT_EQ(evnt_hndlr.source_id, 0);
-  ASSERT_EQ(evnt_hndlr.destination_id, 0);
+  ASSERT_EQ(evnt_hndlr.source_id, 0u);
+  ASSERT_EQ(evnt_hndlr.destination_id, 0u);
   ASSERT_EQ(evnt_hndlr.command_args, "");
   ASSERT_EQ(evnt_hndlr.command_line, "");
-  ASSERT_EQ(evnt_hndlr.early_timeout, 0);
-  ASSERT_EQ(evnt_hndlr.end_time, 0);
+  ASSERT_EQ(evnt_hndlr.early_timeout, 0u);
+  ASSERT_EQ(evnt_hndlr.end_time, 0u);
   ASSERT_TRUE(fabs(evnt_hndlr.execution_time) < 0.000001);
   ASSERT_EQ(evnt_hndlr.handler_type, 0);
-  ASSERT_EQ(evnt_hndlr.host_id, 0);
+  ASSERT_EQ(evnt_hndlr.host_id, 0u);
   ASSERT_EQ(evnt_hndlr.output, "");
   ASSERT_EQ(evnt_hndlr.return_code, 0);
-  ASSERT_EQ(evnt_hndlr.service_id, 0);
-  ASSERT_EQ(evnt_hndlr.start_time, 0);
+  ASSERT_EQ(evnt_hndlr.service_id, 0u);
+  ASSERT_EQ(evnt_hndlr.start_time, 0u);
   ASSERT_EQ(evnt_hndlr.state, 0);
   ASSERT_EQ(evnt_hndlr.state_type, 0);
   ASSERT_EQ(evnt_hndlr.timeout, 0);

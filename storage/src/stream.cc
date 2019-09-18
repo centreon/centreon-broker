@@ -871,9 +871,6 @@ void stream::_insert_perfdatas() {
     // Status.
     _update_status("status=inserting performance data\n");
 
-    // Database schema version.
-    bool db_v2(_mysql.schema_version() == mysql::v2);
-
     // Insert first entry.
     std::ostringstream query;
     {

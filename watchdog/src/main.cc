@@ -203,7 +203,6 @@ int main(int argc, char** argv) {
   try {
     set_signal_handlers();
     apply_new_configuration(config);
-    int max_fd = 0;
     while (!should_exit) {
       int timeout = 5;
       int freq = 0;

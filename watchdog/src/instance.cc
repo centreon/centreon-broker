@@ -71,8 +71,6 @@ void instance::merge_configuration(instance_configuration const& new_config) {
  * @return the pid.
  */
 static pid_t exec_process(char const** argv) {
-  int status;
-
   pid_t son_pid{fork()};
 
   // I'm your father

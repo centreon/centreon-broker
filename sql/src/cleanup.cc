@@ -57,10 +57,11 @@ cleanup::cleanup(std::string const& db_type,
       _db_user(db_user),
       _db_password(db_password),
       _db_name(db_name),
+      _interval(cleanup_interval),
       _start_stop_m{},
       _started{false},
-      _interval(cleanup_interval),
       _should_exit{false} {}
+
 
 /**
  *  Destructor.
