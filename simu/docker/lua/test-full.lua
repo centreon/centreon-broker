@@ -96,7 +96,7 @@ step[7].count = {
   comment = 50,
   host = step[2].count.host,
   instance = step[2].count.instance,
-  continue = true,
+  continue = false,
 }
 
 -- Services per host          => 20
@@ -119,7 +119,7 @@ step[10].count = {
   host = step[2].count.host,
   service = step[8].count.service,
   servicegroup = 20,
-  continue = false,
+  continue = true,
 }
 
 -- Service checks
@@ -127,7 +127,7 @@ step[11].count = {
   service = step[8].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
-  continue = true,
+  continue = false,
 }
 
 -- Services status per host          => 20
@@ -303,11 +303,13 @@ function init(conf)
     error("No connection to database")
   end
 
+  simu.conn["storage"]:setautocommit(1)
   simu.conn["cfg"] = env:connect('centreon', conf['login'], conf['password'], conf['db_addr'], 3306)
   if not simu.conn["cfg"] then
     broker_log:error(0, "No connection to cfg database")
     error("No connection to cfg database")
   end
+  simu.conn["cfg"]:setautocommit(1)
 
   -- Some clean up
   clean_tables()

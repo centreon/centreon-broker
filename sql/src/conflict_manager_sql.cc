@@ -15,6 +15,7 @@
 **
 ** For more information : contact@centreon.com
 */
+#include <cassert>
 #include <sstream>
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -105,6 +106,7 @@ void conflict_manager::_process_comment() {
  */
 void conflict_manager::_process_custom_variable() {
   int conn = _mysql.choose_best_connection();
+  _finish_action(-1, actions::custom_variables);
   while (!_events.empty()) {
     auto& p = _events.front();
     std::shared_ptr<io::data> d{std::get<0>(p)};
@@ -170,7 +172,6 @@ void conflict_manager::_process_custom_variable() {
 void conflict_manager::_process_custom_variable_status() {
   int conn = _mysql.choose_best_connection();
   _finish_action(-1, actions::custom_variables);
-
   while (!_events.empty()) {
     auto& p = _events.front();
     std::shared_ptr<io::data> d{std::get<0>(p)};
@@ -179,47 +180,88 @@ void conflict_manager::_process_custom_variable_status() {
       break;
 
     // Cast object.
-    neb::custom_variable_status const& cvs(
-        *static_cast<neb::custom_variable_status const*>(d.get()));
-
-    // Log message.
-    logging::info(logging::medium)
-        << "SQL: processing custom variable status event (host: " << cvs.host_id
-        << ", service: " << cvs.service_id << ", name: " << cvs.name
-        << ", update time: " << cvs.update_time << ")";
+    neb::custom_variable_status const& cv{
+        *static_cast<neb::custom_variable_status const*>(d.get())};
 
     // Prepare queries.
-    if (!_custom_variable_status_update.prepared()) {
+    if (!_custom_variable_status_insupdate.prepared()) {
       query_preparator::event_unique unique;
       unique.insert("host_id");
       unique.insert("name");
       unique.insert("service_id");
       query_preparator qp(neb::custom_variable_status::static_type(), unique);
-      _custom_variable_status_update = qp.prepare_update(_mysql);
+      _custom_variable_status_insupdate = qp.prepare_insert_or_update(_mysql);
     }
 
-    // Processing.
-    _custom_variable_status_update << cvs;
-    std::promise<int> promise;
-    _mysql.run_statement_and_get_int(
-        _custom_variable_status_update, &promise, mysql_task::AFFECTED_ROWS, conn);
-    try {
-      if (promise.get_future().get() != 1)
-        logging::error(logging::medium)
-            << "SQL: custom variable (" << cvs.host_id << ", " << cvs.service_id
-            << ", " << cvs.name
-            << ") was not updated because it was not found in database";
-    }
-    catch (std::exception const& e) {
-      throw exceptions::msg() << "SQL: could not update custom variable (name: "
-                              << cvs.name << ", host: " << cvs.host_id
-                              << ", service: " << cvs.service_id
-                              << "): " << e.what();
-    }
+    logging::info(logging::medium) << "SQL: enabling custom variable '"
+                                   << cv.name << "' of (" << cv.host_id
+                                   << ", " << cv.service_id << ")";
+    std::ostringstream oss;
+    oss << "SQL: could not store custom variable (name: " << cv.name
+        << ", host: " << cv.host_id << ", service: " << cv.service_id
+        << "): ";
+
+    _custom_variable_status_insupdate << cv;
+    _mysql.run_statement(_custom_variable_status_insupdate, oss.str(), true, conn);
+    _add_action(conn, actions::custom_variables);
     *std::get<2>(p) = true;
     _events.pop_front();
   }
 }
+
+//void conflict_manager::_process_custom_variable_status() {
+//  int conn = _mysql.choose_best_connection();
+//  _finish_action(-1, actions::custom_variables);
+//
+//  while (!_events.empty()) {
+//    auto& p = _events.front();
+//    std::shared_ptr<io::data> d{std::get<0>(p)};
+//
+//    if (!d || d->type() != neb::custom_variable_status::static_type())
+//      break;
+//
+//    // Cast object.
+//    neb::custom_variable_status const& cvs(
+//        *static_cast<neb::custom_variable_status const*>(d.get()));
+//
+//    // Log message.
+//    logging::info(logging::medium)
+//        << "SQL: processing custom variable status event (host: " << cvs.host_id
+//        << ", service: " << cvs.service_id << ", name: " << cvs.name
+//        << ", update time: " << cvs.update_time << ")";
+//
+//    // Prepare queries.
+//    if (!_custom_variable_status_update.prepared()) {
+//      query_preparator::event_unique unique;
+//      unique.insert("host_id");
+//      unique.insert("name");
+//      unique.insert("service_id");
+//      query_preparator qp(neb::custom_variable_status::static_type(), unique);
+//      _custom_variable_status_update = qp.prepare_update(_mysql);
+//    }
+//
+//    // Processing.
+//    _custom_variable_status_update << cvs;
+//    std::promise<int> promise;
+//    _mysql.run_statement_and_get_int(
+//        _custom_variable_status_update, &promise, mysql_task::AFFECTED_ROWS, conn);
+//    try {
+//      if (promise.get_future().get() != 1)
+//        logging::error(logging::medium)
+//            << "SQL: custom variable (" << cvs.host_id << ", " << cvs.service_id
+//            << ", " << cvs.name
+//            << ") was not updated because it was not found in database";
+//    }
+//    catch (std::exception const& e) {
+//      throw exceptions::msg() << "SQL: could not update custom variable (name: "
+//                              << cvs.name << ", host: " << cvs.host_id
+//                              << ", service: " << cvs.service_id
+//                              << "): " << e.what();
+//    }
+//    *std::get<2>(p) = true;
+//    _events.pop_front();
+//  }
+//}
 
 void conflict_manager::_process_downtime() {}
 void conflict_manager::_process_event_handler() {}
@@ -332,7 +374,9 @@ void conflict_manager::_process_host_group_member() {
         hg.id = hgm.group_id;
         hg.name = hgm.group_name;
         hg.enabled = true;
+        assert(_cache_host_instance[hgm.host_id]);
         hg.poller_id = _cache_host_instance[hgm.host_id];
+        assert(hg.poller_id);
 
         std::ostringstream oss;
         oss << "SQL: could not store host group (poller: " << hg.poller_id
@@ -532,7 +576,8 @@ void conflict_manager::_process_service_check() {
       std::stringstream oss;
       oss << "SQL: could not store service check command (host: " << sc.host_id
           << ", service: " << sc.service_id << "): ";
-      int32_t conn = _cache_host_instance[sc.host_id];
+      assert(_cache_host_instance[sc.host_id]);
+      int32_t conn = _mysql.choose_connection_by_instance(_cache_host_instance[sc.host_id]);
       _mysql.run_statement(_service_check_update,
                            oss.str(),
                            true, conn);
@@ -717,6 +762,7 @@ void conflict_manager::_process_service() {
 
   // Processed object.
   neb::service const& s(*static_cast<neb::service const*>(d.get()));
+  assert(_cache_host_instance[s.host_id]);
   int32_t conn =
       _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]);
 
@@ -759,52 +805,52 @@ void conflict_manager::_process_service() {
  */
 void conflict_manager::_process_service_status() {
   auto& p = _events.front();
-  std::shared_ptr<io::data> d{std::get<0>(p)};
-  // Processed object.
-  neb::service_status const& ss{
-      *static_cast<neb::service_status const*>(d.get())};
-
-  time_t now = time(nullptr);
-  if (ss.check_type ||           // - passive result
-      !ss.active_checks_enabled  // - active checks are disabled,
-                                 //   status might not be updated
-      ||                         // - normal case
-      (ss.next_check >= now - 5 * 60) ||
-      !ss.next_check) {  // - initial state
-    // Apply to DB.
-    logging::info(logging::medium)
-        << "SQL: processing service status event (host: " << ss.host_id
-        << ", service: " << ss.service_id << ", last check: " << ss.last_check
-        << ", state (" << ss.current_state << ", " << ss.state_type << "))";
-
-    // Prepare queries.
-    if (!_service_status_update.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("host_id");
-      unique.insert("service_id");
-      query_preparator qp(neb::service_status::static_type(), unique);
-      _service_status_update = qp.prepare_update(_mysql);
-    }
-
-    // Processing.
-    _service_status_update << ss;
-    std::ostringstream oss;
-    oss << "SQL: could not store service status (host: " << ss.host_id << ", "
-        << ss.service_id << ") ";
-    int32_t conn =
-        _mysql.choose_connection_by_instance(_cache_host_instance[ss.host_id]);
-    _mysql.run_statement(
-        _service_status_update,
-        oss.str(),
-        true, conn);
-  } else
-    // Do nothing.
-    logging::info(logging::medium)
-        << "SQL: not processing service status event (host: " << ss.host_id
-        << ", service: " << ss.service_id << ", check_type: " << ss.check_type
-        << ", last check: " << ss.last_check
-        << ", next_check: " << ss.next_check << ", now: " << now << ", state ("
-        << ss.current_state << ", " << ss.state_type << "))";
+//  std::shared_ptr<io::data> d{std::get<0>(p)};
+//  // Processed object.
+//  neb::service_status const& ss{
+//      *static_cast<neb::service_status const*>(d.get())};
+//
+//  time_t now = time(nullptr);
+//  if (ss.check_type ||           // - passive result
+//      !ss.active_checks_enabled  // - active checks are disabled,
+//                                 //   status might not be updated
+//      ||                         // - normal case
+//      (ss.next_check >= now - 5 * 60) ||
+//      !ss.next_check) {  // - initial state
+//    // Apply to DB.
+//    logging::info(logging::medium)
+//        << "SQL: processing service status event (host: " << ss.host_id
+//        << ", service: " << ss.service_id << ", last check: " << ss.last_check
+//        << ", state (" << ss.current_state << ", " << ss.state_type << "))";
+//
+//    // Prepare queries.
+//    if (!_service_status_update.prepared()) {
+//      query_preparator::event_unique unique;
+//      unique.insert("host_id");
+//      unique.insert("service_id");
+//      query_preparator qp(neb::service_status::static_type(), unique);
+//      _service_status_update = qp.prepare_update(_mysql);
+//    }
+//
+//    // Processing.
+//    _service_status_update << ss;
+//    std::ostringstream oss;
+//    oss << "SQL: could not store service status (host: " << ss.host_id << ", "
+//        << ss.service_id << ") ";
+//    int32_t conn =
+//        _mysql.choose_connection_by_instance(_cache_host_instance[ss.host_id]);
+//    _mysql.run_statement(
+//        _service_status_update,
+//        oss.str(),
+//        true, conn);
+//  } else
+//    // Do nothing.
+//    logging::info(logging::medium)
+//        << "SQL: not processing service status event (host: " << ss.host_id
+//        << ", service: " << ss.service_id << ", check_type: " << ss.check_type
+//        << ", last check: " << ss.last_check
+//        << ", next_check: " << ss.next_check << ", now: " << now << ", state ("
+//        << ss.current_state << ", " << ss.state_type << "))";
   *std::get<2>(p) = true;
   _events.pop_front();
 }

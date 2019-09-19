@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 #include <cassert>
+#include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -24,6 +25,7 @@
 #include "com/centreon/broker/storage/index_mapping.hh"
 
 using namespace com::centreon::broker;
+using namespace com::centreon::broker::database;
 using namespace com::centreon::broker::sql;
 
 conflict_manager* conflict_manager::_singleton = nullptr;
@@ -111,8 +113,10 @@ void conflict_manager::init_sql(database_config const& dbcfg) {
 
 void conflict_manager::_load_caches() {
   // Fill index cache.
+  std::lock_guard<std::mutex> lk(_loop_m);
+
+  /* index_data => _index_cache */
   {
-    std::lock_guard<std::mutex> lk(_loop_m);
     // Execute query.
     std::promise<database::mysql_result> promise;
     _mysql.run_query_and_get_result(
@@ -136,22 +140,81 @@ void conflict_manager::_load_caches() {
         info.service_description = res.value_as_str(5);
         info.special = (res.value_as_u32(6) == 2);
         info.locked = res.value_as_bool(7);
-        logging::debug(logging::high)
-            << "storage: loaded index " << info.index_id << " of (" << host_id
-            << ", " << service_id << ")";
+        logging::debug(logging::high) << "storage: loaded index "
+                                      << info.index_id << " of (" << host_id
+                                      << ", " << service_id << ")";
         _index_cache[{host_id, service_id}] = info;
 
         // Create the metric mapping.
-        std::shared_ptr<storage::index_mapping> im{std::make_shared<storage::index_mapping>(info.index_id, host_id, service_id)};
+        std::shared_ptr<storage::index_mapping> im{
+            std::make_shared<storage::index_mapping>(
+                info.index_id, host_id, service_id)};
         multiplexing::publisher pblshr;
         pblshr.write(im);
       }
-    } catch (std::exception const& e) {
+    }
+    catch (std::exception const& e) {
       throw broker::exceptions::msg()
           << "storage: could not fetch index list from data DB: " << e.what();
     }
   }
 
+  /* hosts => _cache_host_instance */
+  {
+    _cache_host_instance.clear();
+
+    std::promise<mysql_result> promise;
+    _mysql.run_query_and_get_result("SELECT host_id, instance_id FROM hosts",
+                                    &promise);
+
+    try {
+      mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res))
+        _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+          << "SQL: could not get the list of host/instance pairs: " << e.what();
+    }
+  }
+
+  /* hostgroups => _hostgroup_cache */
+  {
+    _hostgroup_cache.clear();
+
+    std::promise<mysql_result> promise;
+    _mysql.run_query_and_get_result("SELECT hostgroup_id FROM hostgroups",
+                                    &promise);
+
+    try {
+      mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res))
+        _hostgroup_cache.insert(res.value_as_u32(0));
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+          << "SQL: could not get the list of hostgroups id: " << e.what();
+    }
+  }
+
+  /* servicegroups => _servicegroup_cache */
+  {
+    _servicegroup_cache.clear();
+
+    std::promise<mysql_result> promise;
+    _mysql.run_query_and_get_result("SELECT servicegroup_id FROM servicegroups",
+                                    &promise);
+
+    try {
+      mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res))
+        _servicegroup_cache.insert(res.value_as_u32(0));
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+          << "SQL: could not get the list of servicegroups id: " << e.what();
+    }
+  }
 }
 
 /**
@@ -184,8 +247,8 @@ void conflict_manager::_callback() {
         if (cat == io::events::neb)
           (this->*(_neb_processing_table[elem]))();
       }
-      else if (type == neb::service_status::static_type())
-        _storage_process_service_status();
+      //else if (type == neb::service_status::static_type())
+      //  _storage_process_service_status();
       else {
         logging::info(logging::low)
           << "conflict_manager: event of type " << type << "throw away";
