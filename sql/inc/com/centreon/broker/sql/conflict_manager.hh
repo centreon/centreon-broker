@@ -25,6 +25,7 @@
 #include <mutex>
 #include <thread>
 #include <unordered_map>
+#include <unordered_set>
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/misc/pair.hh"
@@ -52,8 +53,9 @@ class conflict_manager {
     hostgroups = 1 << 1,
     host_hostgroups = 1 << 2,
     services = 1 << 3,
-    service_servicegroups = 1 << 4,
-    custom_variables = 1 << 5,
+    servicegroups = 1 << 4,
+    service_servicegroups = 1 << 5,
+    custom_variables = 1 << 6,
   };
 
   struct index_info {
@@ -123,6 +125,8 @@ class conflict_manager {
   std::unordered_map<std::pair<uint64_t, uint64_t>, index_info> _index_cache;
   std::unordered_map<std::pair<uint32_t, std::string>, metric_info>
       _metric_cache;
+  std::unordered_set<uint32_t> _hostgroup_cache;
+  std::unordered_set<uint32_t> _servicegroup_cache;
 
   database::mysql_stmt _comment_insupdate;
   database::mysql_stmt _custom_variable_delete;

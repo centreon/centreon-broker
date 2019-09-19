@@ -41,8 +41,8 @@ class comment : public io::data {
   comment(comment const& other);
   ~comment();
   comment& operator=(comment const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   std::string author;
   short comment_type;
@@ -52,11 +52,11 @@ class comment : public io::data {
   short entry_type;
   timestamp expire_time;
   bool expires;
-  unsigned int host_id;
-  unsigned int internal_id;
+  uint32_t host_id;
+  uint32_t internal_id;
   bool persistent;
-  unsigned int poller_id;
-  unsigned int service_id;
+  uint32_t poller_id;
+  uint32_t service_id;
   short source;
 
   static mapping::entry const entries[];

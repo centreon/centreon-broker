@@ -258,6 +258,7 @@ void conflict_manager::_process_host_group() {
       _host_group_insupdate << hg;
       _mysql.run_statement(_host_group_insupdate, oss.str(), true, conn);
       _add_action(conn, actions::hostgroups);
+      _hostgroup_cache.insert(hg.id);
     }
     // Delete group.
     else {
@@ -275,6 +276,7 @@ void conflict_manager::_process_host_group() {
             << "  WHERE hosts_hostgroups.hostgroup_id=" << hg.id
             << "    AND hosts.instance_id=" << hg.poller_id;
         _mysql.run_query(oss.str(), "SQL: ", false, conn);
+        _hostgroup_cache.erase(hg.id);
       }
     }
     *std::get<2>(p) = true;
@@ -291,11 +293,6 @@ void conflict_manager::_process_host_group_member() {
   int conn = _mysql.choose_best_connection();
   _finish_action(-1, actions::hostgroups | actions::hosts);
 
-//    auto& p = _events.front();
-//    std::shared_ptr<io::data> d{std::get<0>(p)};
-//    *std::get<2>(p) = true;
-//    _events.pop_front();
-//    return;
   while (!_events.empty()) {
     auto& p = _events.front();
     std::shared_ptr<io::data> d{std::get<0>(p)};
@@ -323,16 +320,12 @@ void conflict_manager::_process_host_group_member() {
         query_preparator qp(neb::host_group_member::static_type(), unique);
         _host_group_member_insert = qp.prepare_insert(_mysql);
       }
-      _host_group_member_insert << hgm;
 
-      std::promise<mysql_result> promise;
-      _mysql.run_statement_and_get_result(_host_group_member_insert, &promise, conn);
-      try {
-        promise.get_future().get();
-      }
-      catch (std::exception const& e) {
+      /* If the group does not exist, we create it. */
+      if (_hostgroup_cache.find(hgm.group_id) == _hostgroup_cache.end()) {
         logging::error(logging::low)
-            << "SQL: host group member insertion failed: " << e.what();
+            << "SQL: host group " << hgm.group_id
+            << " does not exist - insertion before insertion of members";
         _prepare_hg_insupdate_statement();
 
         neb::host_group hg;
@@ -347,14 +340,14 @@ void conflict_manager::_process_host_group_member() {
 
         _host_group_insupdate << hg;
         _mysql.run_statement(_host_group_insupdate, oss.str(), false, conn);
-
-        oss.str("");
-        oss << "SQL: could not store host group membership (poller: "
-            << hgm.poller_id << ", host: " << hgm.host_id
-            << ", group: " << hgm.group_id << "): ";
-        _host_group_member_insert << hgm;
-        _mysql.run_statement(_host_group_member_insert, oss.str(), false, conn);
       }
+
+      _host_group_member_insert << hgm;
+      std::ostringstream oss;
+      oss << "SQL: could not store host group membership (poller: "
+          << hgm.poller_id << ", host: " << hgm.host_id
+          << ", group: " << hgm.group_id << "): ";
+      _mysql.run_statement(_host_group_member_insert, oss.str(), false, conn);
     }
     // Delete.
     else {
@@ -539,11 +532,10 @@ void conflict_manager::_process_service_check() {
       std::stringstream oss;
       oss << "SQL: could not store service check command (host: " << sc.host_id
           << ", service: " << sc.service_id << "): ";
+      int32_t conn = _cache_host_instance[sc.host_id];
       _mysql.run_statement(_service_check_update,
                            oss.str(),
-                           true,
-                           _mysql.choose_connection_by_instance(
-                               _cache_host_instance[sc.host_id]));
+                           true, conn);
     }
   } else
     // Do nothing.
@@ -564,7 +556,7 @@ void conflict_manager::_process_service_dependency() {}
  *  @param[in] e Uncasted service group.
  */
 void conflict_manager::_process_service_group() {
-  int conn = _mysql.choose_best_connection();
+  int32_t conn = _mysql.choose_best_connection();
 
   while (!_events.empty()) {
     auto& p = _events.front();
@@ -590,6 +582,8 @@ void conflict_manager::_process_service_group() {
 
       _service_group_insupdate << sg;
       _mysql.run_statement(_service_group_insupdate, oss.str(), true, conn);
+      _add_action(conn, actions::servicegroups);
+      _servicegroup_cache.insert(sg.id);
     }
     // Delete group.
     else {
@@ -607,6 +601,7 @@ void conflict_manager::_process_service_group() {
             << "  WHERE services_servicegroups.servicegroup_id=" << sg.id
             << "    AND hosts.instance_id=" << sg.poller_id;
         _mysql.run_query(oss.str(), "SQL: ", false, conn);
+        _servicegroup_cache.erase(sg.id);
       }
     }
     *std::get<2>(p) = true;
@@ -620,93 +615,95 @@ void conflict_manager::_process_service_group() {
  *  @param[in] e Uncasted service group member.
  */
 void conflict_manager::_process_service_group_member() {
-  auto& p = _events.front();
-  std::shared_ptr<io::data> d{std::get<0>(p)};
+  int32_t conn = _mysql.choose_best_connection();
+  _finish_action(-1, actions::servicegroups | actions::services);
 
-  // Cast object.
-  neb::service_group_member const& sgm(
-      *static_cast<neb::service_group_member const*>(d.get()));
+  while (!_events.empty()) {
+    auto& p = _events.front();
+    std::shared_ptr<io::data> d{std::get<0>(p)};
 
-  // Only process groups for v2 schema.
-  if (sgm.enabled) {
-    // Log message.
-    logging::info(logging::medium) << "SQL: enabling membership of service ("
-                                   << sgm.host_id << ", " << sgm.service_id
-                                   << ") to service group " << sgm.group_id
-                                   << " on instance " << sgm.poller_id;
+    if (!d || d->type() != neb::service_group_member::static_type())
+      break;
 
-    // We only need to try to insert in this table as the
-    // host_id/service_id/servicegroup_id combo should be UNIQUE.
-    if (!_service_group_member_insert.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("servicegroup_id");
-      unique.insert("host_id");
-      unique.insert("service_id");
-      query_preparator qp(neb::service_group_member::static_type(), unique);
-      _service_group_member_insert = qp.prepare_insert(_mysql);
-    }
-    _service_group_member_insert << sgm;
+    // Cast object.
+    neb::service_group_member const& sgm(
+        *static_cast<neb::service_group_member const*>(d.get()));
 
-    std::promise<mysql_result> promise;
+    if (sgm.enabled) {
+      // Log message.
+      logging::info(logging::medium) << "SQL: enabling membership of service ("
+                                     << sgm.host_id << ", " << sgm.service_id
+                                     << ") to service group " << sgm.group_id
+                                     << " on instance " << sgm.poller_id;
 
-    _mysql.run_statement_and_get_result(_service_group_member_insert, &promise);
-    try {
-      promise.get_future().get();
-    }
-    catch (std::exception const& e) {
-      logging::error(logging::low) << "SQL: host group not defined: "
-                                   << e.what();
+      // We only need to try to insert in this table as the
+      // host_id/service_id/servicegroup_id combo should be UNIQUE.
+      if (!_service_group_member_insert.prepared()) {
+        query_preparator::event_unique unique;
+        unique.insert("servicegroup_id");
+        unique.insert("host_id");
+        unique.insert("service_id");
+        query_preparator qp(neb::service_group_member::static_type(), unique);
+        _service_group_member_insert = qp.prepare_insert(_mysql);
+      }
 
-      _prepare_sg_insupdate_statement();
+      /* If the group does not exist, we create it. */
+      if (_servicegroup_cache.find(sgm.group_id) == _servicegroup_cache.end()) {
+        logging::error(logging::low)
+            << "SQL: service group " << sgm.group_id
+            << " does not exist - insertion before insertion of members";
+        _prepare_sg_insupdate_statement();
 
-      neb::service_group sg;
-      sg.id = sgm.group_id;
-      sg.name = sgm.group_name;
-      sg.enabled = true;
-      sg.poller_id = sgm.poller_id;
+        neb::service_group sg;
+        sg.id = sgm.group_id;
+        sg.name = sgm.group_name;
+        sg.enabled = true;
+        sg.poller_id = sgm.poller_id;
 
+        std::ostringstream oss;
+        oss << "SQL: could not store service group (poller: " << sg.poller_id
+            << ", group: " << sg.id << "): ";
+
+        _service_group_insupdate << sg;
+        _mysql.run_statement(_service_group_insupdate, oss.str(), false, conn);
+      }
+
+      _service_group_member_insert << sgm;
       std::ostringstream oss;
-      oss << "SQL: could not store service group (poller: " << sg.poller_id
-          << ", group: " << sg.id << "): ";
-
-      _service_group_insupdate << sg;
-      _mysql.run_statement(_service_group_insupdate, oss.str(), false);
-
-      oss.str("");
       oss << "SQL: could not store service group membership (poller: "
           << sgm.poller_id << ", host: " << sgm.host_id
           << ", service: " << sgm.service_id << ", group: " << sgm.group_id
           << "): ";
-      _service_group_member_insert << sgm;
-      _mysql.run_statement(_service_group_member_insert, oss.str(), false);
+      _mysql.run_statement(
+          _service_group_member_insert, oss.str(), false, conn);
     }
-  }
-  // Delete.
-  else {
-    // Log message.
-    logging::info(logging::medium) << "SQL: disabling membership of service ("
-                                   << sgm.host_id << ", " << sgm.service_id
-                                   << ") to service group " << sgm.group_id
-                                   << " on instance " << sgm.poller_id;
+    // Delete.
+    else {
+      // Log message.
+      logging::info(logging::medium) << "SQL: disabling membership of service ("
+                                     << sgm.host_id << ", " << sgm.service_id
+                                     << ") to service group " << sgm.group_id
+                                     << " on instance " << sgm.poller_id;
 
-    if (!_service_group_member_delete.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("servicegroup_id");
-      unique.insert("host_id");
-      unique.insert("service_id");
-      query_preparator qp(neb::service_group_member::static_type(), unique);
-      _service_group_member_delete = qp.prepare_delete(_mysql);
+      if (!_service_group_member_delete.prepared()) {
+        query_preparator::event_unique unique;
+        unique.insert("servicegroup_id");
+        unique.insert("host_id");
+        unique.insert("service_id");
+        query_preparator qp(neb::service_group_member::static_type(), unique);
+        _service_group_member_delete = qp.prepare_delete(_mysql);
+      }
+      std::ostringstream oss;
+      oss << "SQL: cannot delete membership of service (" << sgm.host_id << ", "
+          << sgm.service_id << ") to service group " << sgm.group_id
+          << " on instance " << sgm.poller_id << ": ";
+
+      _service_group_member_delete << sgm;
+      _mysql.run_statement(_service_group_member_delete, oss.str(), true, conn);
     }
-    std::ostringstream oss;
-    oss << "SQL: cannot delete membership of service (" << sgm.host_id << ", "
-        << sgm.service_id << ") to service group " << sgm.group_id
-        << " on instance " << sgm.poller_id << ": ";
-
-    _service_group_member_delete << sgm;
-    _mysql.run_statement(_service_group_member_delete, oss.str(), true);
+    *std::get<2>(p) = true;
+    _events.pop_front();
   }
-  *std::get<2>(p) = true;
-  _events.pop_front();
 }
 
 /**
@@ -720,6 +717,8 @@ void conflict_manager::_process_service() {
 
   // Processed object.
   neb::service const& s(*static_cast<neb::service const*>(d.get()));
+  int32_t conn =
+      _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]);
 
   // Log message.
   logging::info(logging::medium) << "SQL: processing service event "
@@ -745,8 +744,7 @@ void conflict_manager::_process_service() {
         << ", service: " << s.service_id << "): ";
     _service_insupdate << s;
     _mysql.run_statement(
-        _service_insupdate, oss.str(), true,
-        _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]));
+        _service_insupdate, oss.str(), true, conn);
   } else
     logging::error(logging::high) << "SQL: service '" << s.service_description
                                   << "' has no host ID or no service ID";
@@ -793,11 +791,12 @@ void conflict_manager::_process_service_status() {
     std::ostringstream oss;
     oss << "SQL: could not store service status (host: " << ss.host_id << ", "
         << ss.service_id << ") ";
+    int32_t conn =
+        _mysql.choose_connection_by_instance(_cache_host_instance[ss.host_id]);
     _mysql.run_statement(
         _service_status_update,
         oss.str(),
-        true,
-        _mysql.choose_connection_by_instance(_cache_host_instance[ss.host_id]));
+        true, conn);
   } else
     // Do nothing.
     logging::info(logging::medium)
