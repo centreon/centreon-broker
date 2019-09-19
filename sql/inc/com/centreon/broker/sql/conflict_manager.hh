@@ -53,6 +53,7 @@ class conflict_manager {
     host_hostgroups = 1 << 2,
     services = 1 << 3,
     service_servicegroups = 1 << 4,
+    custom_variables = 1 << 5,
   };
 
   struct index_info {

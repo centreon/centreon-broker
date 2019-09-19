@@ -66,6 +66,7 @@ void conflict_manager::_process_comment() {
 
   // Cast object.
   neb::comment const& cmmnt{*static_cast<neb::comment const*>(d.get())};
+  int32_t conn = _mysql.choose_connection_by_instance(cmmnt.poller_id);
 
   // Log message.
   logging::info(logging::medium) << "SQL: processing comment of poller "
@@ -92,7 +93,7 @@ void conflict_manager::_process_comment() {
       << ", internal ID: " << cmmnt.internal_id << "): ";
 
   _comment_insupdate << cmmnt;
-  _mysql.run_statement(_comment_insupdate, oss.str(), true);
+  _mysql.run_statement(_comment_insupdate, oss.str(), true, conn);
   *std::get<2>(p) = true;
   _events.pop_front();
 }
@@ -103,55 +104,62 @@ void conflict_manager::_process_comment() {
  *  @param[in] e Uncasted custom variable.
  */
 void conflict_manager::_process_custom_variable() {
-  auto& p = _events.front();
-  std::shared_ptr<io::data> d{std::get<0>(p)};
+  int conn = _mysql.choose_best_connection();
+  while (!_events.empty()) {
+    auto& p = _events.front();
+    std::shared_ptr<io::data> d{std::get<0>(p)};
 
-  // Cast object.
-  neb::custom_variable const& cv{
-      *static_cast<neb::custom_variable const*>(d.get())};
+    if (!d || d->type() != neb::custom_variable::static_type())
+      break;
 
-  // Prepare queries.
-  if (!_custom_variable_insupdate.prepared() ||
-      !_custom_variable_delete.prepared()) {
-    query_preparator::event_unique unique;
-    unique.insert("host_id");
-    unique.insert("name");
-    unique.insert("service_id");
-    query_preparator qp(neb::custom_variable::static_type(), unique);
-    _custom_variable_insupdate = qp.prepare_insert_or_update(_mysql);
-    _custom_variable_delete = qp.prepare_delete(_mysql);
+    // Cast object.
+    neb::custom_variable const& cv{
+        *static_cast<neb::custom_variable const*>(d.get())};
+
+    // Prepare queries.
+    if (!_custom_variable_insupdate.prepared() ||
+        !_custom_variable_delete.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("host_id");
+      unique.insert("name");
+      unique.insert("service_id");
+      query_preparator qp(neb::custom_variable::static_type(), unique);
+      _custom_variable_insupdate = qp.prepare_insert_or_update(_mysql);
+      _custom_variable_delete = qp.prepare_delete(_mysql);
+    }
+
+    // Processing.
+    if (cv.enabled) {
+      logging::info(logging::medium) << "SQL: enabling custom variable '"
+                                     << cv.name << "' of (" << cv.host_id
+                                     << ", " << cv.service_id << ")";
+      std::ostringstream oss;
+      oss << "SQL: could not store custom variable (name: " << cv.name
+          << ", host: " << cv.host_id << ", service: " << cv.service_id
+          << "): ";
+
+      _custom_variable_insupdate << cv;
+      _mysql.run_statement(_custom_variable_insupdate, oss.str(), true, conn);
+      _add_action(conn, actions::custom_variables);
+    } else {
+      logging::info(logging::medium) << "SQL: disabling custom variable '"
+                                     << cv.name << "' of (" << cv.host_id
+                                     << ", " << cv.service_id << ")";
+      _custom_variable_delete.bind_value_as_i32(":host_id", cv.host_id);
+      _custom_variable_delete.bind_value_as_i32(":service_id", cv.service_id);
+      _custom_variable_delete.bind_value_as_str(":name", cv.name);
+
+      std::ostringstream oss;
+      oss << "SQL: could not remove custom variable (host: " << cv.host_id
+          << ", service: " << cv.service_id << ", name '" << cv.name << "'): ";
+      _mysql.run_statement(_custom_variable_delete,
+                           oss.str(),
+                           true, conn);
+      _add_action(conn, actions::custom_variables);
+    }
+    *std::get<2>(p) = true;
+    _events.pop_front();
   }
-
-  // Processing.
-  if (cv.enabled) {
-    logging::info(logging::medium) << "SQL: enabling custom variable '"
-                                   << cv.name << "' of (" << cv.host_id << ", "
-                                   << cv.service_id << ")";
-    std::ostringstream oss;
-    oss << "SQL: could not store custom variable (name: " << cv.name
-        << ", host: " << cv.host_id << ", service: " << cv.service_id << "): ";
-
-    _custom_variable_insupdate << cv;
-    _mysql.run_statement(_custom_variable_insupdate, oss.str(), true);
-  } else {
-    logging::info(logging::medium) << "SQL: disabling custom variable '"
-                                   << cv.name << "' of (" << cv.host_id << ", "
-                                   << cv.service_id << ")";
-    _custom_variable_delete.bind_value_as_i32(":host_id", cv.host_id);
-    _custom_variable_delete.bind_value_as_i32(":service_id", cv.service_id);
-    _custom_variable_delete.bind_value_as_str(":name", cv.name);
-
-    std::ostringstream oss;
-    oss << "SQL: could not remove custom variable (host: " << cv.host_id
-        << ", service: " << cv.service_id << ", name '" << cv.name << "'): ";
-    _mysql.run_statement(
-        _custom_variable_delete,
-        oss.str(),
-        true,
-        _mysql.choose_connection_by_instance(_cache_host_instance[cv.host_id]));
-  }
-  *std::get<2>(p) = true;
-  _events.pop_front();
 }
 
 /**
@@ -160,47 +168,57 @@ void conflict_manager::_process_custom_variable() {
  *  @param[in] e Uncasted custom variable status.
  */
 void conflict_manager::_process_custom_variable_status() {
-  auto& p = _events.front();
-  std::shared_ptr<io::data> d{std::get<0>(p)};
-  // Cast object.
-  neb::custom_variable_status const& cvs(
-      *static_cast<neb::custom_variable_status const*>(d.get()));
+  int conn = _mysql.choose_best_connection();
+  _finish_action(-1, actions::custom_variables);
 
-  // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing custom variable status event (host: " << cvs.host_id
-      << ", service: " << cvs.service_id << ", name: " << cvs.name
-      << ", update time: " << cvs.update_time << ")";
+  while (!_events.empty()) {
+    auto& p = _events.front();
+    std::shared_ptr<io::data> d{std::get<0>(p)};
 
-  // Prepare queries.
-  if (!_custom_variable_status_update.prepared()) {
-    query_preparator::event_unique unique;
-    unique.insert("host_id");
-    unique.insert("name");
-    unique.insert("service_id");
-    query_preparator qp(neb::custom_variable_status::static_type(), unique);
-    _custom_variable_status_update = qp.prepare_update(_mysql);
+    if (!d || d->type() != neb::custom_variable_status::static_type())
+      break;
+
+    // Cast object.
+    neb::custom_variable_status const& cvs(
+        *static_cast<neb::custom_variable_status const*>(d.get()));
+
+    // Log message.
+    logging::info(logging::medium)
+        << "SQL: processing custom variable status event (host: " << cvs.host_id
+        << ", service: " << cvs.service_id << ", name: " << cvs.name
+        << ", update time: " << cvs.update_time << ")";
+
+    // Prepare queries.
+    if (!_custom_variable_status_update.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("host_id");
+      unique.insert("name");
+      unique.insert("service_id");
+      query_preparator qp(neb::custom_variable_status::static_type(), unique);
+      _custom_variable_status_update = qp.prepare_update(_mysql);
+    }
+
+    // Processing.
+    _custom_variable_status_update << cvs;
+    std::promise<int> promise;
+    _mysql.run_statement_and_get_int(
+        _custom_variable_status_update, &promise, mysql_task::AFFECTED_ROWS, conn);
+    try {
+      if (promise.get_future().get() != 1)
+        logging::error(logging::medium)
+            << "SQL: custom variable (" << cvs.host_id << ", " << cvs.service_id
+            << ", " << cvs.name
+            << ") was not updated because it was not found in database";
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg() << "SQL: could not update custom variable (name: "
+                              << cvs.name << ", host: " << cvs.host_id
+                              << ", service: " << cvs.service_id
+                              << "): " << e.what();
+    }
+    *std::get<2>(p) = true;
+    _events.pop_front();
   }
-
-  // Processing.
-  _custom_variable_status_update << cvs;
-  std::promise<int> promise;
-  _mysql.run_statement_and_get_int(
-      _custom_variable_status_update, &promise, mysql_task::AFFECTED_ROWS);
-  try {
-    if (promise.get_future().get() != 1)
-      logging::error(logging::medium)
-          << "SQL: custom variable (" << cvs.host_id << ", " << cvs.service_id
-          << ", " << cvs.name
-          << ") was not updated because it was not found in database";
-  } catch (std::exception const& e) {
-    throw exceptions::msg()
-        << "SQL: could not update custom variable (name: " << cvs.name
-        << ", host: " << cvs.host_id << ", service: " << cvs.service_id
-        << "): " << e.what();
-  }
-  *std::get<2>(p) = true;
-  _events.pop_front();
 }
 
 void conflict_manager::_process_downtime() {}
