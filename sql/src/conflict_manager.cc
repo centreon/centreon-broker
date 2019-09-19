@@ -79,12 +79,14 @@ conflict_manager::conflict_manager(database_config const& dbcfg)
  * For the connector that does not initialize the conflict_manager, this
  * function is useful to wait.
  *
+ * @param store_in_db
  * @param rrd_len
  * @param interval_length
  *
  * @return true if all went OK.
  */
-bool conflict_manager::init_storage(uint32_t rrd_len,
+bool conflict_manager::init_storage(bool store_in_db,
+                                    uint32_t rrd_len,
                                     uint32_t interval_length) {
   int count = 0;
 
@@ -95,6 +97,7 @@ bool conflict_manager::init_storage(uint32_t rrd_len,
     if (_init_cv.wait_for(
             lk, std::chrono::seconds(1), [&]() { return _singleton != nullptr; })) {
       std::lock_guard<std::mutex> lk(conflict_manager::instance()._loop_m);
+      conflict_manager::instance()._store_in_db = store_in_db;
       conflict_manager::instance()._rrd_len = rrd_len;
       conflict_manager::instance()._interval_length = interval_length;
       return true;
@@ -223,6 +226,7 @@ void conflict_manager::_load_caches() {
 void conflict_manager::_callback() {
   _load_caches();
   while (!_should_exit()) {
+    _insert_perfdatas();
     std::unique_lock<std::mutex> lk(_loop_m);
 
     /* The loop is waiting for 1s or for _pending_queries to be equal to
@@ -247,8 +251,8 @@ void conflict_manager::_callback() {
         if (cat == io::events::neb)
           (this->*(_neb_processing_table[elem]))();
       }
-      //else if (type == neb::service_status::static_type())
-      //  _storage_process_service_status();
+      else if (type == neb::service_status::static_type())
+        _storage_process_service_status();
       else {
         logging::info(logging::low)
           << "conflict_manager: event of type " << type << "throw away";

@@ -805,52 +805,52 @@ void conflict_manager::_process_service() {
  */
 void conflict_manager::_process_service_status() {
   auto& p = _events.front();
-//  std::shared_ptr<io::data> d{std::get<0>(p)};
-//  // Processed object.
-//  neb::service_status const& ss{
-//      *static_cast<neb::service_status const*>(d.get())};
-//
-//  time_t now = time(nullptr);
-//  if (ss.check_type ||           // - passive result
-//      !ss.active_checks_enabled  // - active checks are disabled,
-//                                 //   status might not be updated
-//      ||                         // - normal case
-//      (ss.next_check >= now - 5 * 60) ||
-//      !ss.next_check) {  // - initial state
-//    // Apply to DB.
-//    logging::info(logging::medium)
-//        << "SQL: processing service status event (host: " << ss.host_id
-//        << ", service: " << ss.service_id << ", last check: " << ss.last_check
-//        << ", state (" << ss.current_state << ", " << ss.state_type << "))";
-//
-//    // Prepare queries.
-//    if (!_service_status_update.prepared()) {
-//      query_preparator::event_unique unique;
-//      unique.insert("host_id");
-//      unique.insert("service_id");
-//      query_preparator qp(neb::service_status::static_type(), unique);
-//      _service_status_update = qp.prepare_update(_mysql);
-//    }
-//
-//    // Processing.
-//    _service_status_update << ss;
-//    std::ostringstream oss;
-//    oss << "SQL: could not store service status (host: " << ss.host_id << ", "
-//        << ss.service_id << ") ";
-//    int32_t conn =
-//        _mysql.choose_connection_by_instance(_cache_host_instance[ss.host_id]);
-//    _mysql.run_statement(
-//        _service_status_update,
-//        oss.str(),
-//        true, conn);
-//  } else
-//    // Do nothing.
-//    logging::info(logging::medium)
-//        << "SQL: not processing service status event (host: " << ss.host_id
-//        << ", service: " << ss.service_id << ", check_type: " << ss.check_type
-//        << ", last check: " << ss.last_check
-//        << ", next_check: " << ss.next_check << ", now: " << now << ", state ("
-//        << ss.current_state << ", " << ss.state_type << "))";
+  std::shared_ptr<io::data> d{std::get<0>(p)};
+  // Processed object.
+  neb::service_status const& ss{
+      *static_cast<neb::service_status const*>(d.get())};
+
+  time_t now = time(nullptr);
+  if (ss.check_type ||           // - passive result
+      !ss.active_checks_enabled  // - active checks are disabled,
+                                 //   status might not be updated
+      ||                         // - normal case
+      ss.next_check >= now - 5 * 60 ||
+      !ss.next_check) {  // - initial state
+    // Apply to DB.
+    logging::info(logging::medium)
+        << "SQL: processing service status event (host: " << ss.host_id
+        << ", service: " << ss.service_id << ", last check: " << ss.last_check
+        << ", state (" << ss.current_state << ", " << ss.state_type << "))";
+
+    // Prepare queries.
+    if (!_service_status_update.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("host_id");
+      unique.insert("service_id");
+      query_preparator qp(neb::service_status::static_type(), unique);
+      _service_status_update = qp.prepare_update(_mysql);
+    }
+
+    // Processing.
+    _service_status_update << ss;
+    std::ostringstream oss;
+    oss << "SQL: could not store service status (host: " << ss.host_id << ", "
+        << ss.service_id << ") ";
+    int32_t conn =
+        _mysql.choose_connection_by_instance(_cache_host_instance[ss.host_id]);
+    _mysql.run_statement(
+        _service_status_update,
+        oss.str(),
+        true, conn);
+  } else
+    // Do nothing.
+    logging::info(logging::medium)
+        << "SQL: not processing service status event (host: " << ss.host_id
+        << ", service: " << ss.service_id << ", check_type: " << ss.check_type
+        << ", last check: " << ss.last_check
+        << ", next_check: " << ss.next_check << ", now: " << now << ", state ("
+        << ss.current_state << ", " << ss.state_type << "))";
   *std::get<2>(p) = true;
   _events.pop_front();
 }

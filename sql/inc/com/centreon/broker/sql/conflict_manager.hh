@@ -82,6 +82,12 @@ class conflict_manager {
     double min;
     double max;
   };
+  struct metric_value {
+    time_t c_time;
+    uint32_t metric_id;
+    short status;
+    double value;
+  };
 
   static void (conflict_manager::*const _neb_processing_table[])();
   static conflict_manager* _singleton;
@@ -115,6 +121,7 @@ class conflict_manager {
   uint32_t _max_pending_queries;
   uint32_t _pending_queries;
   mysql _mysql;
+  bool _store_in_db;
   uint32_t _rrd_len;
   uint32_t _interval_length;
 
@@ -127,6 +134,7 @@ class conflict_manager {
       _metric_cache;
   std::unordered_set<uint32_t> _hostgroup_cache;
   std::unordered_set<uint32_t> _servicegroup_cache;
+  std::deque<metric_value> _perfdata_queue;
 
   database::mysql_stmt _comment_insupdate;
   database::mysql_stmt _custom_variable_delete;
@@ -191,10 +199,13 @@ class conflict_manager {
   void _finish_action(int32_t conn, uint32_t action);
   void _finish_actions();
   void _add_action(int32_t conn, actions action);
+  void _insert_perfdatas();
 
  public:
   static void init_sql(database_config const& dbcfg);
-  static bool init_storage(uint32_t rrd_len, uint32_t interval_length);
+  static bool init_storage(bool store_in_db,
+                           uint32_t rrd_len,
+                           uint32_t interval_length);
   static conflict_manager& instance();
 
   void send_event(stream_type c, std::shared_ptr<io::data> const& e);
