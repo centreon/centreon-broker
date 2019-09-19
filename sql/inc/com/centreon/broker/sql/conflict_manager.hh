@@ -49,9 +49,10 @@ class conflict_manager {
   enum actions {
     none = 0,
     hosts = 1,
-    host_hostgroups = 1 << 1,
-    services = 1 << 2,
-    service_servicegroups = 1 << 3,
+    hostgroups = 1 << 1,
+    host_hostgroups = 1 << 2,
+    services = 1 << 3,
+    service_servicegroups = 1 << 4,
   };
 
   struct index_info {
@@ -182,7 +183,8 @@ class conflict_manager {
   bool _is_valid_poller(uint32_t instance_id);
   void _prepare_hg_insupdate_statement();
   void _prepare_sg_insupdate_statement();
-  void _finish_action(int32_t conn, actions action);
+  void _finish_action(int32_t conn, uint32_t action);
+  void _finish_actions();
   void _add_action(int32_t conn, actions action);
 
  public:

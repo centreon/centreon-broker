@@ -62,7 +62,7 @@ add_dependencies("${SQL}" json11_lib)
 set_target_properties("${SQL}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
-target_link_libraries("${SQL}" conflictmgr)
+#target_link_libraries("${SQL}" conflictmgr)
 
 # Install rule.
 install(TARGETS "${SQL}"

@@ -149,14 +149,14 @@ void stream::_host_instance_cache_create() {
  * @param instance_id Poller instance id
  */
 void stream::_clean_empty_host_groups(int instance_id) {
-  logging::debug(logging::low)
-      << "SQL: remove empty host groups (instance_id:" << instance_id << ")";
-  _transversal_mysql.run_query(
-      "DELETE hg FROM hostgroups AS hg"
-      " LEFT JOIN hosts_hostgroups AS hhg"
-      " ON hg.hostgroup_id=hhg.hostgroup_id"
-      " WHERE hhg.hostgroup_id IS NULL",
-      "SQL: could not remove empty host groups", false);
+//  logging::debug(logging::low)
+//      << "SQL: remove empty host groups (instance_id:" << instance_id << ")";
+//  _transversal_mysql.run_query(
+//      "DELETE hg FROM hostgroups AS hg"
+//      " LEFT JOIN hosts_hostgroups AS hhg"
+//      " ON hg.hostgroup_id=hhg.hostgroup_id"
+//      " WHERE hhg.hostgroup_id IS NULL",
+//      "SQL: could not remove empty host groups", false);
 }
 
 /**
@@ -165,15 +165,15 @@ void stream::_clean_empty_host_groups(int instance_id) {
  * @param instance_id Poller instance id
  */
 void stream::_clean_empty_service_groups(int instance_id) {
-  logging::debug(logging::low)
-      << "SQL: remove empty service groups (instance_id:" << instance_id << ")";
-
-  _transversal_mysql.run_query(
-      "DELETE sg FROM servicegroups AS sg"
-      " LEFT JOIN services_servicegroups as ssg"
-      " ON sg.servicegroup_id=ssg.servicegroup_id"
-      " WHERE ssg.servicegroup_id IS NULL",
-      "SQL: could not remove empty service groups", false);
+//  logging::debug(logging::low)
+//      << "SQL: remove empty service groups (instance_id:" << instance_id << ")";
+//
+//  _transversal_mysql.run_query(
+//      "DELETE sg FROM servicegroups AS sg"
+//      " LEFT JOIN services_servicegroups as ssg"
+//      " ON sg.servicegroup_id=ssg.servicegroup_id"
+//      " WHERE ssg.servicegroup_id IS NULL",
+//      "SQL: could not remove empty service groups", false);
 }
 
 /**
@@ -185,156 +185,156 @@ void stream::_clean_empty_service_groups(int instance_id) {
  *  @param[in] instance_id Instance ID to remove.
  */
 void stream::_clean_tables(unsigned int instance_id) {
-  // Database version.
-  bool db_v2(_mysql.schema_version() == mysql::v2);
-
-  int thread_id(_mysql.choose_connection_by_instance(instance_id));
-  logging::debug(logging::low)
-      << "SQL: disable hosts and services (instance_id: " << instance_id << ")";
-  // Disable hosts and services.
-  std::ostringstream oss;
-  oss << "UPDATE hosts AS h LEFT JOIN services AS s ON h.host_id = s.host_id SET h.enabled=0, s.enabled=0 WHERE h.instance_id=" << instance_id;
-  _mysql.run_query(oss.str(),
-                   "SQL: could not clean hosts and services tables: ", false,
-                   thread_id);
-  _mysql.commit(thread_id);
-
-  // Remove host group memberships.
-  if (db_v2) {
-    logging::debug(logging::low)
-        << "SQL: remove host group memberships (instance_id:" << instance_id
-        << ")";
-    oss.str("");
-    oss << "DELETE hosts_hostgroups"
-        << " FROM hosts_hostgroups"
-        << " LEFT JOIN hosts"
-        << " ON hosts_hostgroups.host_id=hosts.host_id"
-        << " WHERE hosts.instance_id=" << instance_id;
-    _transversal_mysql.run_query(
-        oss.str(),
-        "SQL: could not clean host groups memberships table: ", false);
-  }
-
-  // Remove service group memberships
-  if (db_v2) {
-    logging::debug(logging::low)
-        << "SQL: remove service group memberships (instance_id:" << instance_id
-        << ")";
-    oss.str("");
-    oss << "DELETE services_servicegroups"
-        << " FROM services_servicegroups"
-        << " LEFT JOIN hosts"
-        << "   ON services_servicegroups.host_id=hosts.host_id"
-        << " WHERE hosts.instance_id=" << instance_id;
-    _transversal_mysql.run_query(
-        oss.str(),
-        "SQL: could not clean service groups memberships table: ", false);
-  }
-
-  // Remove host groups.
-  if (db_v2)
-    _clean_empty_host_groups(instance_id);
-
-  // Remove service groups.
-  if (db_v2)
-    _clean_empty_service_groups(instance_id);
-
-  // Remove host dependencies.
-  logging::debug(logging::low)
-      << "SQL: remove host dependencies (instance_id:" << instance_id << ")";
-  oss.str("");
-  oss << "DELETE hhd FROM hosts_hosts_dependencies AS hhd"
-         " INNER JOIN hosts as h"
-         " ON hhd.host_id=h.host_id OR hhd.dependent_host_id=h.host_id"
-         " WHERE h.instance_id="
-      << instance_id;
-  _transversal_mysql.run_query(
-      oss.str(), "SQL: could not clean host dependencies table: ", false);
-
-  // Remove host parents.
-  logging::debug(logging::low)
-      << "SQL: remove host parents (instance_id:" << instance_id << ")";
-  oss.str("");
-  oss << "DELETE hhp FROM hosts_hosts_parents AS hhp"
-         " INNER JOIN hosts as h"
-         " ON hhp.child_id=h.host_id OR hhp.parent_id=h.host_id"
-         " WHERE h.instance_id="
-      << instance_id;
-  _transversal_mysql.run_query(
-      oss.str(), "SQL: could not clean host parents table: ", false);
-
-  // Remove service dependencies.
-  logging::debug(logging::low)
-      << "SQL: remove service dependencies (instance_id:" << instance_id << ")";
-  oss.str("");
-  oss << "DELETE ssd FROM services_services_dependencies AS ssd"
-         " INNER JOIN services as s"
-         " ON ssd.service_id=s.service_id OR "
-         "ssd.dependent_service_id=s.service_id"
-         " INNER JOIN hosts as h"
-         " ON s.host_id=h.host_id"
-         " WHERE h.instance_id="
-      << instance_id;
-  _transversal_mysql.run_query(
-      oss.str(), "SQL: could not clean service dependencies table: ", false);
-
-  // Remove list of modules.
-  logging::debug(logging::low)
-      << "SQL: remove list of modules (instance_id:" << instance_id << ")";
-  oss.str("");
-  oss << "DELETE FROM " << (db_v2 ? "modules" : "rt_modules")
-      << " WHERE instance_id=" << instance_id;
-  _transversal_mysql.run_query(oss.str(),
-                               "SQL: could not clean modules table: ", false);
-
-  // Cancellation of downtimes.
-  logging::debug(logging::low)
-      << "SQL: Cancellation of downtimes (instance_id:" << instance_id << ")";
-  oss.str("");
-  oss << "UPDATE downtimes AS d"
-         " INNER JOIN hosts AS h"
-         " ON d.host_id=h.host_id"
-         " SET d.cancelled=1"
-         " WHERE d.actual_end_time IS NULL"
-         " AND d.cancelled=0"
-         " AND h.instance_id="
-      << instance_id;
-  _transversal_mysql.run_query(oss.str(),
-                               "SQL: could not clean downtimes table: ", false);
-
-  // Remove comments.
-  if (db_v2) {
-    logging::debug(logging::low)
-        << "SQL: remove comments (instance_id:" << instance_id << ")";
-    oss.str("");
-    oss << "UPDATE comments AS c"
-           " JOIN hosts AS h"
-           " ON c.host_id=h.host_id"
-           " SET c.deletion_time="
-        << time(nullptr) << " WHERE h.instance_id=" << instance_id
-        << " AND c.persistent=0"
-           " AND (c.deletion_time IS NULL OR c.deletion_time=0)";
-    _transversal_mysql.run_query(
-        oss.str(), "SQL: could not clean comments table: ", false);
-  }
-
-  // Remove custom variables. No need to choose the good instance, there are
-  // no constraint between custom variables and instances.
-  logging::debug(logging::low)
-      << "SQL: remove custom variables (instance_id:" << instance_id << ")";
-  oss.str("");
-  oss << "DELETE cv"
-      << " FROM " << (db_v2 ? "customvariables" : "rt_customvariables")
-      << "  AS cv"
-         " INNER JOIN "
-      << (db_v2 ? "hosts" : "rt_hosts")
-      << " AS h"
-         "  ON cv.host_id = h.host_id"
-         " WHERE h.instance_id="
-      << instance_id;
-
-  _transversal_mysql.run_query(
-      oss.str(), "SQL: could not clean custom variables table: ", false);
+//  // Database version.
+//  bool db_v2(_mysql.schema_version() == mysql::v2);
+//
+//  int thread_id(_mysql.choose_connection_by_instance(instance_id));
+//  logging::debug(logging::low)
+//      << "SQL: disable hosts and services (instance_id: " << instance_id << ")";
+//  // Disable hosts and services.
+//  std::ostringstream oss;
+//  oss << "UPDATE hosts AS h LEFT JOIN services AS s ON h.host_id = s.host_id SET h.enabled=0, s.enabled=0 WHERE h.instance_id=" << instance_id;
+//  _mysql.run_query(oss.str(),
+//                   "SQL: could not clean hosts and services tables: ", false,
+//                   thread_id);
+//  _mysql.commit(thread_id);
+//
+//  // Remove host group memberships.
+//  if (db_v2) {
+//    logging::debug(logging::low)
+//        << "SQL: remove host group memberships (instance_id:" << instance_id
+//        << ")";
+//    oss.str("");
+//    oss << "DELETE hosts_hostgroups"
+//        << " FROM hosts_hostgroups"
+//        << " LEFT JOIN hosts"
+//        << " ON hosts_hostgroups.host_id=hosts.host_id"
+//        << " WHERE hosts.instance_id=" << instance_id;
+//    _transversal_mysql.run_query(
+//        oss.str(),
+//        "SQL: could not clean host groups memberships table: ", false);
+//  }
+//
+//  // Remove service group memberships
+//  if (db_v2) {
+//    logging::debug(logging::low)
+//        << "SQL: remove service group memberships (instance_id:" << instance_id
+//        << ")";
+//    oss.str("");
+//    oss << "DELETE services_servicegroups"
+//        << " FROM services_servicegroups"
+//        << " LEFT JOIN hosts"
+//        << "   ON services_servicegroups.host_id=hosts.host_id"
+//        << " WHERE hosts.instance_id=" << instance_id;
+//    _transversal_mysql.run_query(
+//        oss.str(),
+//        "SQL: could not clean service groups memberships table: ", false);
+//  }
+//
+//  // Remove host groups.
+//  if (db_v2)
+//    _clean_empty_host_groups(instance_id);
+//
+//  // Remove service groups.
+//  if (db_v2)
+//    _clean_empty_service_groups(instance_id);
+//
+//  // Remove host dependencies.
+//  logging::debug(logging::low)
+//      << "SQL: remove host dependencies (instance_id:" << instance_id << ")";
+//  oss.str("");
+//  oss << "DELETE hhd FROM hosts_hosts_dependencies AS hhd"
+//         " INNER JOIN hosts as h"
+//         " ON hhd.host_id=h.host_id OR hhd.dependent_host_id=h.host_id"
+//         " WHERE h.instance_id="
+//      << instance_id;
+//  _transversal_mysql.run_query(
+//      oss.str(), "SQL: could not clean host dependencies table: ", false);
+//
+//  // Remove host parents.
+//  logging::debug(logging::low)
+//      << "SQL: remove host parents (instance_id:" << instance_id << ")";
+//  oss.str("");
+//  oss << "DELETE hhp FROM hosts_hosts_parents AS hhp"
+//         " INNER JOIN hosts as h"
+//         " ON hhp.child_id=h.host_id OR hhp.parent_id=h.host_id"
+//         " WHERE h.instance_id="
+//      << instance_id;
+//  _transversal_mysql.run_query(
+//      oss.str(), "SQL: could not clean host parents table: ", false);
+//
+//  // Remove service dependencies.
+//  logging::debug(logging::low)
+//      << "SQL: remove service dependencies (instance_id:" << instance_id << ")";
+//  oss.str("");
+//  oss << "DELETE ssd FROM services_services_dependencies AS ssd"
+//         " INNER JOIN services as s"
+//         " ON ssd.service_id=s.service_id OR "
+//         "ssd.dependent_service_id=s.service_id"
+//         " INNER JOIN hosts as h"
+//         " ON s.host_id=h.host_id"
+//         " WHERE h.instance_id="
+//      << instance_id;
+//  _transversal_mysql.run_query(
+//      oss.str(), "SQL: could not clean service dependencies table: ", false);
+//
+//  // Remove list of modules.
+//  logging::debug(logging::low)
+//      << "SQL: remove list of modules (instance_id:" << instance_id << ")";
+//  oss.str("");
+//  oss << "DELETE FROM " << (db_v2 ? "modules" : "rt_modules")
+//      << " WHERE instance_id=" << instance_id;
+//  _transversal_mysql.run_query(oss.str(),
+//                               "SQL: could not clean modules table: ", false);
+//
+//  // Cancellation of downtimes.
+//  logging::debug(logging::low)
+//      << "SQL: Cancellation of downtimes (instance_id:" << instance_id << ")";
+//  oss.str("");
+//  oss << "UPDATE downtimes AS d"
+//         " INNER JOIN hosts AS h"
+//         " ON d.host_id=h.host_id"
+//         " SET d.cancelled=1"
+//         " WHERE d.actual_end_time IS NULL"
+//         " AND d.cancelled=0"
+//         " AND h.instance_id="
+//      << instance_id;
+//  _transversal_mysql.run_query(oss.str(),
+//                               "SQL: could not clean downtimes table: ", false);
+//
+//  // Remove comments.
+//  if (db_v2) {
+//    logging::debug(logging::low)
+//        << "SQL: remove comments (instance_id:" << instance_id << ")";
+//    oss.str("");
+//    oss << "UPDATE comments AS c"
+//           " JOIN hosts AS h"
+//           " ON c.host_id=h.host_id"
+//           " SET c.deletion_time="
+//        << time(nullptr) << " WHERE h.instance_id=" << instance_id
+//        << " AND c.persistent=0"
+//           " AND (c.deletion_time IS NULL OR c.deletion_time=0)";
+//    _transversal_mysql.run_query(
+//        oss.str(), "SQL: could not clean comments table: ", false);
+//  }
+//
+//  // Remove custom variables. No need to choose the good instance, there are
+//  // no constraint between custom variables and instances.
+//  logging::debug(logging::low)
+//      << "SQL: remove custom variables (instance_id:" << instance_id << ")";
+//  oss.str("");
+//  oss << "DELETE cv"
+//      << " FROM " << (db_v2 ? "customvariables" : "rt_customvariables")
+//      << "  AS cv"
+//         " INNER JOIN "
+//      << (db_v2 ? "hosts" : "rt_hosts")
+//      << " AS h"
+//         "  ON cv.host_id = h.host_id"
+//         " WHERE h.instance_id="
+//      << instance_id;
+//
+//  _transversal_mysql.run_query(
+//      oss.str(), "SQL: could not clean custom variables table: ", false);
 }
 
 /**
@@ -410,35 +410,35 @@ void stream::_process_acknowledgement(std::shared_ptr<io::data> const& e) {
  *  @param[in] e  Uncasted comment.
  */
 void stream::_process_comment(std::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::comment const& cmmnt(*std::static_pointer_cast<neb::comment const>(e));
-
-  // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing comment of poller " << cmmnt.poller_id << " on ("
-      << cmmnt.host_id << ", " << cmmnt.service_id << ")";
-
-  // Prepare queries.
-  if (!_comment_insupdate.prepared()) {
-    query_preparator::event_unique unique;
-    unique.insert("host_id");
-    unique.insert("service_id");
-    unique.insert("entry_time");
-    unique.insert("instance_id");
-    unique.insert("internal_id");
-    query_preparator qp(neb::comment::static_type(), unique);
-    _comment_insupdate = qp.prepare_insert_or_update(_transversal_mysql);
-  }
-
-  // Processing.
-  std::ostringstream oss;
-  oss << "SQL: could not store comment (poller: " << cmmnt.poller_id
-      << ", host: " << cmmnt.host_id << ", service: " << cmmnt.service_id
-      << ", entry time: " << cmmnt.entry_time
-      << ", internal ID: " << cmmnt.internal_id << "): ";
-
-  _comment_insupdate << cmmnt;
-  _transversal_mysql.run_statement(_comment_insupdate, oss.str(), true);
+//  // Cast object.
+//  neb::comment const& cmmnt(*std::static_pointer_cast<neb::comment const>(e));
+//
+//  // Log message.
+//  logging::info(logging::medium)
+//      << "SQL: processing comment of poller " << cmmnt.poller_id << " on ("
+//      << cmmnt.host_id << ", " << cmmnt.service_id << ")";
+//
+//  // Prepare queries.
+//  if (!_comment_insupdate.prepared()) {
+//    query_preparator::event_unique unique;
+//    unique.insert("host_id");
+//    unique.insert("service_id");
+//    unique.insert("entry_time");
+//    unique.insert("instance_id");
+//    unique.insert("internal_id");
+//    query_preparator qp(neb::comment::static_type(), unique);
+//    _comment_insupdate = qp.prepare_insert_or_update(_transversal_mysql);
+//  }
+//
+//  // Processing.
+//  std::ostringstream oss;
+//  oss << "SQL: could not store comment (poller: " << cmmnt.poller_id
+//      << ", host: " << cmmnt.host_id << ", service: " << cmmnt.service_id
+//      << ", entry time: " << cmmnt.entry_time
+//      << ", internal ID: " << cmmnt.internal_id << "): ";
+//
+//  _comment_insupdate << cmmnt;
+//  _transversal_mysql.run_statement(_comment_insupdate, oss.str(), true);
 }
 
 /**
@@ -447,51 +447,51 @@ void stream::_process_comment(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted custom variable.
  */
 void stream::_process_custom_variable(std::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::custom_variable const& cv(
-      *static_cast<neb::custom_variable const*>(e.get()));
-
-  // Prepare queries.
-  if (!_custom_variable_insupdate.prepared() ||
-      !_custom_variable_delete.prepared()) {
-    query_preparator::event_unique unique;
-    unique.insert("host_id");
-    unique.insert("name");
-    unique.insert("service_id");
-    query_preparator qp(neb::custom_variable::static_type(), unique);
-    _custom_variable_insupdate =
-        qp.prepare_insert_or_update(_transversal_mysql);
-    _custom_variable_delete = qp.prepare_delete(_transversal_mysql);
-  }
-
-  // Processing.
-  if (cv.enabled) {
-    logging::info(logging::medium)
-        << "SQL: enabling custom variable '" << cv.name << "' of ("
-        << cv.host_id << ", " << cv.service_id << ")";
-    std::ostringstream oss;
-    oss << "SQL: could not store custom variable (name: " << cv.name
-        << ", host: " << cv.host_id << ", service: " << cv.service_id << "): ";
-
-    _custom_variable_insupdate << cv;
-    _transversal_mysql.run_statement(_custom_variable_insupdate, oss.str(),
-                                     true);
-  } else {
-    logging::info(logging::medium)
-        << "SQL: disabling custom variable '" << cv.name << "' of ("
-        << cv.host_id << ", " << cv.service_id << ")";
-    _custom_variable_delete.bind_value_as_i32(":host_id", cv.host_id);
-    _custom_variable_delete.bind_value_as_i32(":service_id", cv.service_id);
-    _custom_variable_delete.bind_value_as_str(":name", cv.name);
-
-    std::ostringstream oss;
-    oss << "SQL: could not remove custom variable (host: " << cv.host_id
-        << ", service: " << cv.service_id << ", name '" << cv.name << "'): ";
-    _transversal_mysql.run_statement(
-        _custom_variable_delete, oss.str(), true,
-        _transversal_mysql.choose_connection_by_instance(
-            _cache_host_instance[cv.host_id]));
-  }
+//  // Cast object.
+//  neb::custom_variable const& cv(
+//      *static_cast<neb::custom_variable const*>(e.get()));
+//
+//  // Prepare queries.
+//  if (!_custom_variable_insupdate.prepared() ||
+//      !_custom_variable_delete.prepared()) {
+//    query_preparator::event_unique unique;
+//    unique.insert("host_id");
+//    unique.insert("name");
+//    unique.insert("service_id");
+//    query_preparator qp(neb::custom_variable::static_type(), unique);
+//    _custom_variable_insupdate =
+//        qp.prepare_insert_or_update(_transversal_mysql);
+//    _custom_variable_delete = qp.prepare_delete(_transversal_mysql);
+//  }
+//
+//  // Processing.
+//  if (cv.enabled) {
+//    logging::info(logging::medium)
+//        << "SQL: enabling custom variable '" << cv.name << "' of ("
+//        << cv.host_id << ", " << cv.service_id << ")";
+//    std::ostringstream oss;
+//    oss << "SQL: could not store custom variable (name: " << cv.name
+//        << ", host: " << cv.host_id << ", service: " << cv.service_id << "): ";
+//
+//    _custom_variable_insupdate << cv;
+//    _transversal_mysql.run_statement(_custom_variable_insupdate, oss.str(),
+//                                     true);
+//  } else {
+//    logging::info(logging::medium)
+//        << "SQL: disabling custom variable '" << cv.name << "' of ("
+//        << cv.host_id << ", " << cv.service_id << ")";
+//    _custom_variable_delete.bind_value_as_i32(":host_id", cv.host_id);
+//    _custom_variable_delete.bind_value_as_i32(":service_id", cv.service_id);
+//    _custom_variable_delete.bind_value_as_str(":name", cv.name);
+//
+//    std::ostringstream oss;
+//    oss << "SQL: could not remove custom variable (host: " << cv.host_id
+//        << ", service: " << cv.service_id << ", name '" << cv.name << "'): ";
+//    _transversal_mysql.run_statement(
+//        _custom_variable_delete, oss.str(), true,
+//        _transversal_mysql.choose_connection_by_instance(
+//            _cache_host_instance[cv.host_id]));
+//  }
 }
 
 /**
@@ -501,43 +501,43 @@ void stream::_process_custom_variable(std::shared_ptr<io::data> const& e) {
  */
 void stream::_process_custom_variable_status(
     std::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::custom_variable_status const& cvs(
-      *static_cast<neb::custom_variable_status const*>(e.get()));
-
-  // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing custom variable status event (host: " << cvs.host_id
-      << ", service: " << cvs.service_id << ", name: " << cvs.name
-      << ", update time: " << cvs.update_time << ")";
-
-  // Prepare queries.
-  if (!_custom_variable_status_update.prepared()) {
-    query_preparator::event_unique unique;
-    unique.insert("host_id");
-    unique.insert("name");
-    unique.insert("service_id");
-    query_preparator qp(neb::custom_variable_status::static_type(), unique);
-    _custom_variable_status_update = qp.prepare_update(_transversal_mysql);
-  }
-
-  // Processing.
-  _custom_variable_status_update << cvs;
-  std::promise<int> promise;
-  _transversal_mysql.run_statement_and_get_int(
-      _custom_variable_status_update, &promise, mysql_task::AFFECTED_ROWS);
-  try {
-    if (promise.get_future().get() != 1)
-      logging::error(logging::medium)
-          << "SQL: custom variable (" << cvs.host_id << ", " << cvs.service_id
-          << ", " << cvs.name
-          << ") was not updated because it was not found in database";
-  } catch (std::exception const& e) {
-    throw exceptions::msg()
-        << "SQL: could not update custom variable (name: " << cvs.name
-        << ", host: " << cvs.host_id << ", service: " << cvs.service_id
-        << "): " << e.what();
-  }
+//  // Cast object.
+//  neb::custom_variable_status const& cvs(
+//      *static_cast<neb::custom_variable_status const*>(e.get()));
+//
+//  // Log message.
+//  logging::info(logging::medium)
+//      << "SQL: processing custom variable status event (host: " << cvs.host_id
+//      << ", service: " << cvs.service_id << ", name: " << cvs.name
+//      << ", update time: " << cvs.update_time << ")";
+//
+//  // Prepare queries.
+//  if (!_custom_variable_status_update.prepared()) {
+//    query_preparator::event_unique unique;
+//    unique.insert("host_id");
+//    unique.insert("name");
+//    unique.insert("service_id");
+//    query_preparator qp(neb::custom_variable_status::static_type(), unique);
+//    _custom_variable_status_update = qp.prepare_update(_transversal_mysql);
+//  }
+//
+//  // Processing.
+//  _custom_variable_status_update << cvs;
+//  std::promise<int> promise;
+//  _transversal_mysql.run_statement_and_get_int(
+//      _custom_variable_status_update, &promise, mysql_task::AFFECTED_ROWS);
+//  try {
+//    if (promise.get_future().get() != 1)
+//      logging::error(logging::medium)
+//          << "SQL: custom variable (" << cvs.host_id << ", " << cvs.service_id
+//          << ", " << cvs.name
+//          << ") was not updated because it was not found in database";
+//  } catch (std::exception const& e) {
+//    throw exceptions::msg()
+//        << "SQL: could not update custom variable (name: " << cvs.name
+//        << ", host: " << cvs.host_id << ", service: " << cvs.service_id
+//        << "): " << e.what();
+//  }
 }
 
 /**
@@ -546,59 +546,59 @@ void stream::_process_custom_variable_status(
  *  @param[in] e Uncasted downtime.
  */
 void stream::_process_downtime(std::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::downtime const& d(*static_cast<neb::downtime const*>(e.get()));
-
-  // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing downtime event (poller: " << d.poller_id
-      << ", host: " << d.host_id << ", service: " << d.service_id
-      << ", start time: " << d.start_time << ", end_time: " << d.end_time
-      << ", actual start time: " << d.actual_start_time
-      << ", actual end time: " << d.actual_end_time
-      << ", duration: " << d.duration << ", entry time: " << d.entry_time
-      << ", deletion time: " << d.deletion_time << ")";
-
-  // Check if poller is valid.
-  if (_is_valid_poller(d.poller_id)) {
-    // Prepare queries.
-    if (!_downtime_insupdate.prepared()) {
-      std::ostringstream oss;
-      oss << "INSERT INTO "
-          << ((_transversal_mysql.schema_version() == mysql::v2)
-                  ? "downtimes"
-                  : "rt_downtimes")
-          << " (actual_end_time, "
-             "actual_start_time, "
-             "author, type, deletion_time, duration, end_time, entry_time, "
-             "fixed, host_id, instance_id, internal_id, service_id, "
-             "start_time, triggered_by, cancelled, started, comment_data) "
-             "VALUES(:actual_end_time,:actual_start_time,:author,:type,:"
-             "deletion_time,:duration,:end_time,:entry_time,:fixed,:host_id,:"
-             "instance_id,:internal_id,:service_id,:start_time,:triggered_by,:"
-             "cancelled,:started,:comment_data) ON DUPLICATE KEY UPDATE "
-             "actual_end_time=GREATEST(COALESCE(actual_end_time, -1), "
-             ":actual_end_time),"
-             "actual_start_time=COALESCE(actual_start_time, "
-             ":actual_start_time),"
-             "author=:author, cancelled=:cancelled, comment_data=:comment_data,"
-             "deletion_time=:deletion_time, duration=:duration, "
-             "end_time=:end_time,"
-             "fixed=:fixed, host_id=:host_id, service_id=:service_id,"
-             "start_time=:start_time, started=:started,"
-             "triggered_by=:triggered_by, type=:type";
-      _downtime_insupdate = mysql_stmt(oss.str(), true);
-      _transversal_mysql.prepare_statement(_downtime_insupdate);
-    }
-
-    // Process object.
-    std::ostringstream oss;
-    oss << "SQL: could not store downtime (poller: " << d.poller_id
-        << ", host: " << d.host_id << ", service: " << d.service_id << "): ";
-
-    _downtime_insupdate << d;
-    _transversal_mysql.run_statement(_downtime_insupdate, oss.str(), true);
-  }
+//  // Cast object.
+//  neb::downtime const& d(*static_cast<neb::downtime const*>(e.get()));
+//
+//  // Log message.
+//  logging::info(logging::medium)
+//      << "SQL: processing downtime event (poller: " << d.poller_id
+//      << ", host: " << d.host_id << ", service: " << d.service_id
+//      << ", start time: " << d.start_time << ", end_time: " << d.end_time
+//      << ", actual start time: " << d.actual_start_time
+//      << ", actual end time: " << d.actual_end_time
+//      << ", duration: " << d.duration << ", entry time: " << d.entry_time
+//      << ", deletion time: " << d.deletion_time << ")";
+//
+//  // Check if poller is valid.
+//  if (_is_valid_poller(d.poller_id)) {
+//    // Prepare queries.
+//    if (!_downtime_insupdate.prepared()) {
+//      std::ostringstream oss;
+//      oss << "INSERT INTO "
+//          << ((_transversal_mysql.schema_version() == mysql::v2)
+//                  ? "downtimes"
+//                  : "rt_downtimes")
+//          << " (actual_end_time, "
+//             "actual_start_time, "
+//             "author, type, deletion_time, duration, end_time, entry_time, "
+//             "fixed, host_id, instance_id, internal_id, service_id, "
+//             "start_time, triggered_by, cancelled, started, comment_data) "
+//             "VALUES(:actual_end_time,:actual_start_time,:author,:type,:"
+//             "deletion_time,:duration,:end_time,:entry_time,:fixed,:host_id,:"
+//             "instance_id,:internal_id,:service_id,:start_time,:triggered_by,:"
+//             "cancelled,:started,:comment_data) ON DUPLICATE KEY UPDATE "
+//             "actual_end_time=GREATEST(COALESCE(actual_end_time, -1), "
+//             ":actual_end_time),"
+//             "actual_start_time=COALESCE(actual_start_time, "
+//             ":actual_start_time),"
+//             "author=:author, cancelled=:cancelled, comment_data=:comment_data,"
+//             "deletion_time=:deletion_time, duration=:duration, "
+//             "end_time=:end_time,"
+//             "fixed=:fixed, host_id=:host_id, service_id=:service_id,"
+//             "start_time=:start_time, started=:started,"
+//             "triggered_by=:triggered_by, type=:type";
+//      _downtime_insupdate = mysql_stmt(oss.str(), true);
+//      _transversal_mysql.prepare_statement(_downtime_insupdate);
+//    }
+//
+//    // Process object.
+//    std::ostringstream oss;
+//    oss << "SQL: could not store downtime (poller: " << d.poller_id
+//        << ", host: " << d.host_id << ", service: " << d.service_id << "): ";
+//
+//    _downtime_insupdate << d;
+//    _transversal_mysql.run_statement(_downtime_insupdate, oss.str(), true);
+//  }
 }
 
 /**
@@ -682,35 +682,35 @@ void stream::_process_event_handler(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted flapping status.
  */
 void stream::_process_flapping_status(std::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::flapping_status const& fs(
-      *static_cast<neb::flapping_status const*>(e.get()));
-
-  // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing flapping status event (host: " << fs.host_id
-      << ", service: " << fs.service_id << ", entry time " << fs.event_time
-      << ")";
-
-  // Prepare queries.
-  if (!_flapping_status_insupdate.prepared()) {
-    query_preparator::event_unique unique;
-    unique.insert("host_id");
-    unique.insert("service_id");
-    unique.insert("event_time");
-    query_preparator qp(neb::flapping_status::static_type(), unique);
-    _flapping_status_insupdate =
-        qp.prepare_insert_or_update(_transversal_mysql);
-  }
-
-  // Processing.
-  std::ostringstream oss;
-  oss << "SQL: could not store flapping status (host: " << fs.host_id
-      << ", service: " << fs.service_id << ", event time: " << fs.event_time
-      << "): ";
-
-  _flapping_status_insupdate << fs;
-  _transversal_mysql.run_statement(_flapping_status_insupdate, oss.str(), true);
+//  // Cast object.
+//  neb::flapping_status const& fs(
+//      *static_cast<neb::flapping_status const*>(e.get()));
+//
+//  // Log message.
+//  logging::info(logging::medium)
+//      << "SQL: processing flapping status event (host: " << fs.host_id
+//      << ", service: " << fs.service_id << ", entry time " << fs.event_time
+//      << ")";
+//
+//  // Prepare queries.
+//  if (!_flapping_status_insupdate.prepared()) {
+//    query_preparator::event_unique unique;
+//    unique.insert("host_id");
+//    unique.insert("service_id");
+//    unique.insert("event_time");
+//    query_preparator qp(neb::flapping_status::static_type(), unique);
+//    _flapping_status_insupdate =
+//        qp.prepare_insert_or_update(_transversal_mysql);
+//  }
+//
+//  // Processing.
+//  std::ostringstream oss;
+//  oss << "SQL: could not store flapping status (host: " << fs.host_id
+//      << ", service: " << fs.service_id << ", event time: " << fs.event_time
+//      << "): ";
+//
+//  _flapping_status_insupdate << fs;
+//  _transversal_mysql.run_statement(_flapping_status_insupdate, oss.str(), true);
 }
 
 /**
@@ -831,67 +831,67 @@ void stream::_process_host_check(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted host dependency.
  */
 void stream::_process_host_dependency(std::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::host_dependency const& hd(
-      *static_cast<neb::host_dependency const*>(e.get()));
-
-  // Insert/Update.
-  if (hd.enabled) {
-    logging::info(logging::medium)
-        << "SQL: enabling host dependency of " << hd.dependent_host_id << " on "
-        << hd.host_id;
-
-    // Prepare queries.
-    if (!_host_dependency_insupdate.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("host_id");
-      unique.insert("dependent_host_id");
-      query_preparator qp(neb::host_dependency::static_type(), unique);
-      _host_dependency_insupdate =
-          qp.prepare_insert_or_update(_transversal_mysql);
-    }
-
-    // Process object.
-    std::ostringstream oss;
-    oss << "SQL: could not store host dependency (host: " << hd.host_id
-        << ", dependent host: " << hd.dependent_host_id << "): ";
-
-    _host_dependency_insupdate << hd;
-    _transversal_mysql.run_statement(_host_dependency_insupdate, oss.str(),
-                                     true);
-  }
-  // Delete.
-  else {
-    logging::info(logging::medium)
-        << "SQL: removing host dependency of " << hd.dependent_host_id << " on "
-        << hd.host_id;
-    std::ostringstream oss;
-    oss << "DELETE FROM "
-        << ((_transversal_mysql.schema_version() == mysql::v2)
-                ? "hosts_hosts_dependencies"
-                : "rt_hosts_hosts_dependencies")
-        << "  WHERE dependent_host_id=" << hd.dependent_host_id
-        << "    AND host_id=" << hd.host_id;
-    _transversal_mysql.run_query(oss.str(), "SQL: ", true);
-  }
+//  // Cast object.
+//  neb::host_dependency const& hd(
+//      *static_cast<neb::host_dependency const*>(e.get()));
+//
+//  // Insert/Update.
+//  if (hd.enabled) {
+//    logging::info(logging::medium)
+//        << "SQL: enabling host dependency of " << hd.dependent_host_id << " on "
+//        << hd.host_id;
+//
+//    // Prepare queries.
+//    if (!_host_dependency_insupdate.prepared()) {
+//      query_preparator::event_unique unique;
+//      unique.insert("host_id");
+//      unique.insert("dependent_host_id");
+//      query_preparator qp(neb::host_dependency::static_type(), unique);
+//      _host_dependency_insupdate =
+//          qp.prepare_insert_or_update(_transversal_mysql);
+//    }
+//
+//    // Process object.
+//    std::ostringstream oss;
+//    oss << "SQL: could not store host dependency (host: " << hd.host_id
+//        << ", dependent host: " << hd.dependent_host_id << "): ";
+//
+//    _host_dependency_insupdate << hd;
+//    _transversal_mysql.run_statement(_host_dependency_insupdate, oss.str(),
+//                                     true);
+//  }
+//  // Delete.
+//  else {
+//    logging::info(logging::medium)
+//        << "SQL: removing host dependency of " << hd.dependent_host_id << " on "
+//        << hd.host_id;
+//    std::ostringstream oss;
+//    oss << "DELETE FROM "
+//        << ((_transversal_mysql.schema_version() == mysql::v2)
+//                ? "hosts_hosts_dependencies"
+//                : "rt_hosts_hosts_dependencies")
+//        << "  WHERE dependent_host_id=" << hd.dependent_host_id
+//        << "    AND host_id=" << hd.host_id;
+//    _transversal_mysql.run_query(oss.str(), "SQL: ", true);
+//  }
 }
 
 void stream::_prepare_hg_insupdate_statement() {
-  if (!_host_group_insupdate.prepared()) {
-    query_preparator::event_unique unique;
-    unique.insert("hostgroup_id");
-    query_preparator qp(neb::host_group::static_type(), unique);
-    _host_group_insupdate = qp.prepare_insert_or_update(_transversal_mysql);
-  }
+//  if (!_host_group_insupdate.prepared()) {
+//    query_preparator::event_unique unique;
+//    unique.insert("hostgroup_id");
+//    query_preparator qp(neb::host_group::static_type(), unique);
+//    _host_group_insupdate = qp.prepare_insert_or_update(_transversal_mysql);
+//  }
 }
 
 void stream::_prepare_sg_insupdate_statement() {
-  if (!_service_group_insupdate.prepared()) {
-    query_preparator::event_unique unique;
-    unique.insert("servicegroup_id");
-    query_preparator qp(neb::service_group::static_type(), unique);
-    _service_group_insupdate = qp.prepare_insert_or_update(_transversal_mysql);
-  }
+//  if (!_service_group_insupdate.prepared()) {
+//    query_preparator::event_unique unique;
+//    unique.insert("servicegroup_id");
+//    query_preparator qp(neb::service_group::static_type(), unique);
+//    _service_group_insupdate = qp.prepare_insert_or_update(_transversal_mysql);
+//  }
 }
 
 /**
@@ -900,47 +900,47 @@ void stream::_prepare_sg_insupdate_statement() {
  *  @param[in] e Uncasted host group.
  */
 void stream::_process_host_group(std::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::host_group const& hg(*static_cast<neb::host_group const*>(e.get()));
-
-  _mysql.choose_connection_by_instance(hg.poller_id);
-  // Only process groups for v2 schema.
-  if (_mysql.schema_version() != mysql::v2)
-    logging::info(logging::medium)
-        << "SQL: discarding host group event (group '" << hg.name
-        << "' of instance " << hg.poller_id << ")";
-  // Insert/update group.
-  else if (hg.enabled) {
-    logging::info(logging::medium)
-        << "SQL: enabling host group " << hg.id << " ('" << hg.name
-        << "') on instance " << hg.poller_id;
-    _prepare_hg_insupdate_statement();
-
-    std::ostringstream oss;
-    oss << "SQL: could not store host group (poller: " << hg.poller_id
-        << ", group: " << hg.id << "): ";
-
-    _host_group_insupdate << hg;
-    _transversal_mysql.run_statement(_host_group_insupdate, oss.str(), true);
-  }
-  // Delete group.
-  else {
-    logging::info(logging::medium)
-        << "SQL: disabling host group " << hg.id << " ('" << hg.name
-        << "' on instance " << hg.poller_id;
-
-    // Delete group members.
-    {
-      std::ostringstream oss;
-      oss << "DELETE hosts_hostgroups"
-          << "  FROM hosts_hostgroups"
-          << "  LEFT JOIN hosts"
-          << "    ON hosts_hostgroups.host_id=hosts.host_id"
-          << "  WHERE hosts_hostgroups.hostgroup_id=" << hg.id
-          << "    AND hosts.instance_id=" << hg.poller_id;
-      _transversal_mysql.run_query(oss.str(), "SQL: ", false);
-    }
-  }
+//  // Cast object.
+//  neb::host_group const& hg(*static_cast<neb::host_group const*>(e.get()));
+//
+//  int thread_id(_mysql.choose_connection_by_instance(hg.poller_id));
+//  // Only process groups for v2 schema.
+//  if (_mysql.schema_version() != mysql::v2)
+//    logging::info(logging::medium)
+//        << "SQL: discarding host group event (group '" << hg.name
+//        << "' of instance " << hg.poller_id << ")";
+//  // Insert/update group.
+//  else if (hg.enabled) {
+//    logging::info(logging::medium)
+//        << "SQL: enabling host group " << hg.id << " ('" << hg.name
+//        << "') on instance " << hg.poller_id;
+//    _prepare_hg_insupdate_statement();
+//
+//    std::ostringstream oss;
+//    oss << "SQL: could not store host group (poller: " << hg.poller_id
+//        << ", group: " << hg.id << "): ";
+//
+//    _host_group_insupdate << hg;
+//    _transversal_mysql.run_statement(_host_group_insupdate, oss.str(), true);
+//  }
+//  // Delete group.
+//  else {
+//    logging::info(logging::medium)
+//        << "SQL: disabling host group " << hg.id << " ('" << hg.name
+//        << "' on instance " << hg.poller_id;
+//
+//    // Delete group members.
+//    {
+//      std::ostringstream oss;
+//      oss << "DELETE hosts_hostgroups"
+//          << "  FROM hosts_hostgroups"
+//          << "  LEFT JOIN hosts"
+//          << "    ON hosts_hostgroups.host_id=hosts.host_id"
+//          << "  WHERE hosts_hostgroups.hostgroup_id=" << hg.id
+//          << "    AND hosts.instance_id=" << hg.poller_id;
+//      _transversal_mysql.run_query(oss.str(), "SQL: ", false);
+//    }
+//  }
 }
 
 /**
@@ -949,91 +949,91 @@ void stream::_process_host_group(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted host group member.
  */
 void stream::_process_host_group_member(std::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::host_group_member const& hgm(
-      *static_cast<neb::host_group_member const*>(e.get()));
-
-  // Only process groups for v2 schema.
-  if (_transversal_mysql.schema_version() != mysql::v2)
-    logging::info(logging::medium)
-        << "SQL: discarding membership of host " << hgm.host_id
-        << " to host group " << hgm.group_id << " on instance "
-        << hgm.poller_id;
-  // Insert.
-  else if (hgm.enabled) {
-    // Log message.
-    logging::info(logging::medium)
-        << "SQL: enabling membership of host " << hgm.host_id
-        << " to host group " << hgm.group_id << " on instance "
-        << hgm.poller_id;
-
-    // We only need to try to insert in this table as the
-    // host_id/hostgroup_id should be UNIQUE.
-    if (!_host_group_member_insert.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("hostgroup_id");
-      unique.insert("host_id");
-      query_preparator qp(neb::host_group_member::static_type(), unique);
-      _host_group_member_insert = qp.prepare_insert(_transversal_mysql);
-    }
-    _host_group_member_insert << hgm;
-
-    std::promise<mysql_result> promise;
-    _transversal_mysql.run_statement_and_get_result(_host_group_member_insert,
-                                                    &promise);
-    try {
-      promise.get_future().get();
-    } catch (std::exception const& e) {
-      logging::error(logging::low)
-          << "SQL: host group member insertion failed: " << e.what();
-      _prepare_hg_insupdate_statement();
-
-      neb::host_group hg;
-      hg.id = hgm.group_id;
-      hg.name = hgm.group_name;
-      hg.enabled = true;
-      hg.poller_id = _cache_host_instance[hgm.host_id];
-
-      std::ostringstream oss;
-      oss << "SQL: could not store host group (poller: " << hg.poller_id
-          << ", group: " << hg.id << "): ";
-
-      _host_group_insupdate << hg;
-      _transversal_mysql.run_statement(_host_group_insupdate, oss.str(), false);
-
-      oss.str("");
-      oss << "SQL: could not store host group membership (poller: "
-          << hgm.poller_id << ", host: " << hgm.host_id
-          << ", group: " << hgm.group_id << "): ";
-      _host_group_member_insert << hgm;
-      _transversal_mysql.run_statement(_host_group_member_insert, oss.str(),
-                                       false);
-    }
-  }
-  // Delete.
-  else {
-    // Log message.
-    logging::info(logging::medium)
-        << "SQL: disabling membership of host " << hgm.host_id
-        << " to host group " << hgm.group_id << " on instance "
-        << hgm.poller_id;
-
-    if (!_host_group_member_delete.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("hostgroup_id");
-      unique.insert("host_id");
-      query_preparator qp(neb::host_group_member::static_type(), unique);
-      _host_group_member_delete = qp.prepare_delete(_transversal_mysql);
-    }
-    std::ostringstream oss;
-    oss << "SQL: cannot delete membership of host " << hgm.host_id
-        << " to host group " << hgm.group_id << " on instance " << hgm.poller_id
-        << ": ";
-
-    _host_group_member_delete << hgm;
-    _transversal_mysql.run_statement(_host_group_member_delete, oss.str(),
-                                     true);
-  }
+//  // Cast object.
+//  neb::host_group_member const& hgm(
+//      *static_cast<neb::host_group_member const*>(e.get()));
+//
+//  // Only process groups for v2 schema.
+//  if (_transversal_mysql.schema_version() != mysql::v2)
+//    logging::info(logging::medium)
+//        << "SQL: discarding membership of host " << hgm.host_id
+//        << " to host group " << hgm.group_id << " on instance "
+//        << hgm.poller_id;
+//  // Insert.
+//  else if (hgm.enabled) {
+//    // Log message.
+//    logging::info(logging::medium)
+//        << "SQL: enabling membership of host " << hgm.host_id
+//        << " to host group " << hgm.group_id << " on instance "
+//        << hgm.poller_id;
+//
+//    // We only need to try to insert in this table as the
+//    // host_id/hostgroup_id should be UNIQUE.
+//    if (!_host_group_member_insert.prepared()) {
+//      query_preparator::event_unique unique;
+//      unique.insert("hostgroup_id");
+//      unique.insert("host_id");
+//      query_preparator qp(neb::host_group_member::static_type(), unique);
+//      _host_group_member_insert = qp.prepare_insert(_transversal_mysql);
+//    }
+//    _host_group_member_insert << hgm;
+//
+//    std::promise<mysql_result> promise;
+//    _transversal_mysql.run_statement_and_get_result(_host_group_member_insert,
+//                                                    &promise);
+//    try {
+//      promise.get_future().get();
+//    } catch (std::exception const& e) {
+//      logging::error(logging::low)
+//          << "SQL: host group member insertion failed: " << e.what();
+//      _prepare_hg_insupdate_statement();
+//
+//      neb::host_group hg;
+//      hg.id = hgm.group_id;
+//      hg.name = hgm.group_name;
+//      hg.enabled = true;
+//      hg.poller_id = _cache_host_instance[hgm.host_id];
+//
+//      std::ostringstream oss;
+//      oss << "SQL: could not store host group (poller: " << hg.poller_id
+//          << ", group: " << hg.id << "): ";
+//
+//      _host_group_insupdate << hg;
+//      _transversal_mysql.run_statement(_host_group_insupdate, oss.str(), false);
+//
+//      oss.str("");
+//      oss << "SQL: could not store host group membership (poller: "
+//          << hgm.poller_id << ", host: " << hgm.host_id
+//          << ", group: " << hgm.group_id << "): ";
+//      _host_group_member_insert << hgm;
+//      _transversal_mysql.run_statement(_host_group_member_insert, oss.str(),
+//                                       false);
+//    }
+//  }
+//  // Delete.
+//  else {
+//    // Log message.
+//    logging::info(logging::medium)
+//        << "SQL: disabling membership of host " << hgm.host_id
+//        << " to host group " << hgm.group_id << " on instance "
+//        << hgm.poller_id;
+//
+//    if (!_host_group_member_delete.prepared()) {
+//      query_preparator::event_unique unique;
+//      unique.insert("hostgroup_id");
+//      unique.insert("host_id");
+//      query_preparator qp(neb::host_group_member::static_type(), unique);
+//      _host_group_member_delete = qp.prepare_delete(_transversal_mysql);
+//    }
+//    std::ostringstream oss;
+//    oss << "SQL: cannot delete membership of host " << hgm.host_id
+//        << " to host group " << hgm.group_id << " on instance " << hgm.poller_id
+//        << ": ";
+//
+//    _host_group_member_delete << hgm;
+//    _transversal_mysql.run_statement(_host_group_member_delete, oss.str(),
+//                                     true);
+//  }
 }
 
 /**
@@ -1042,47 +1042,47 @@ void stream::_process_host_group_member(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted host parent.
  */
 void stream::_process_host_parent(std::shared_ptr<io::data> const& e) {
-  neb::host_parent const& hp(*static_cast<neb::host_parent const*>(e.get()));
-
-  // Enable parenting.
-  if (hp.enabled) {
-    // Log message.
-    logging::info(logging::medium)
-        << "SQL: host " << hp.parent_id << " is parent of host " << hp.host_id;
-
-    // Prepare queries.
-    if (!_host_parent_insert.prepared()) {
-      query_preparator qp(neb::host_parent::static_type());
-      _host_parent_insert = qp.prepare_insert(_transversal_mysql, true);
-    }
-
-    // Insert.
-    std::ostringstream oss;
-    oss << "SQL: could not store host parentship (child host: " << hp.host_id
-        << ", parent host: " << hp.parent_id << "): ";
-
-    _host_parent_insert << hp;
-    _transversal_mysql.run_statement(_host_parent_insert, oss.str(), false);
-  }
-  // Disable parenting.
-  else {
-    logging::info(logging::medium)
-        << "SQL: host " << hp.parent_id << " is not parent of host "
-        << hp.host_id << " anymore";
-
-    // Prepare queries.
-    if (!_host_parent_delete.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("child_id");
-      unique.insert("parent_id");
-      query_preparator qp(neb::host_parent::static_type(), unique);
-      _host_parent_delete = qp.prepare_delete(_transversal_mysql);
-    }
-
-    // Delete.
-    _host_parent_delete << hp;
-    _transversal_mysql.run_statement(_host_parent_delete, "SQL: ", false);
-  }
+//  neb::host_parent const& hp(*static_cast<neb::host_parent const*>(e.get()));
+//
+//  // Enable parenting.
+//  if (hp.enabled) {
+//    // Log message.
+//    logging::info(logging::medium)
+//        << "SQL: host " << hp.parent_id << " is parent of host " << hp.host_id;
+//
+//    // Prepare queries.
+//    if (!_host_parent_insert.prepared()) {
+//      query_preparator qp(neb::host_parent::static_type());
+//      _host_parent_insert = qp.prepare_insert(_transversal_mysql, true);
+//    }
+//
+//    // Insert.
+//    std::ostringstream oss;
+//    oss << "SQL: could not store host parentship (child host: " << hp.host_id
+//        << ", parent host: " << hp.parent_id << "): ";
+//
+//    _host_parent_insert << hp;
+//    _transversal_mysql.run_statement(_host_parent_insert, oss.str(), false);
+//  }
+//  // Disable parenting.
+//  else {
+//    logging::info(logging::medium)
+//        << "SQL: host " << hp.parent_id << " is not parent of host "
+//        << hp.host_id << " anymore";
+//
+//    // Prepare queries.
+//    if (!_host_parent_delete.prepared()) {
+//      query_preparator::event_unique unique;
+//      unique.insert("child_id");
+//      unique.insert("parent_id");
+//      query_preparator qp(neb::host_parent::static_type(), unique);
+//      _host_parent_delete = qp.prepare_delete(_transversal_mysql);
+//    }
+//
+//    // Delete.
+//    _host_parent_delete << hp;
+//    _transversal_mysql.run_statement(_host_parent_delete, "SQL: ", false);
+//  }
 }
 
 /**
@@ -1690,56 +1690,56 @@ void stream::_process_service_check(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted service dependency.
  */
 void stream::_process_service_dependency(std::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::service_dependency const& sd(
-      *static_cast<neb::service_dependency const*>(e.get()));
-
-  // Insert/Update.
-  if (sd.enabled) {
-    logging::info(logging::medium)
-        << "SQL: enabling service dependency of (" << sd.dependent_host_id
-        << ", " << sd.dependent_service_id << ") on (" << sd.host_id << ", "
-        << sd.service_id << ")";
-
-    // Prepare queries.
-    if (!_service_dependency_insupdate.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("dependent_host_id");
-      unique.insert("dependent_service_id");
-      unique.insert("host_id");
-      unique.insert("service_id");
-      query_preparator qp(neb::service_dependency::static_type(), unique);
-      _service_dependency_insupdate =
-          qp.prepare_insert_or_update(_transversal_mysql);
-    }
-
-    // Process object.
-    std::ostringstream oss;
-    oss << "SQL: could not store service dependency (host: " << sd.host_id
-        << ", service: " << sd.service_id
-        << ", dependent host: " << sd.dependent_host_id
-        << ", dependent service: " << sd.dependent_service_id << "): ";
-    _service_dependency_insupdate << sd;
-    _transversal_mysql.run_statement(_service_dependency_insupdate, oss.str(),
-                                     true);
-  }
-  // Delete.
-  else {
-    logging::info(logging::medium)
-        << "SQL: removing service dependency of (" << sd.dependent_host_id
-        << ", " << sd.dependent_service_id << ") on (" << sd.host_id << ", "
-        << sd.service_id << ")";
-    std::ostringstream oss;
-    oss << "DELETE FROM "
-        << ((_transversal_mysql.schema_version() == mysql::v2)
-                ? "services_services_dependencies"
-                : "rt_services_services_dependencies")
-        << "  WHERE dependent_host_id=" << sd.dependent_host_id
-        << "    AND dependent_service_id=" << sd.dependent_service_id
-        << "    AND host_id=" << sd.host_id
-        << "    AND service_id=" << sd.service_id;
-    _transversal_mysql.run_query(oss.str(), "SQL: ", false);
-  }
+//  // Cast object.
+//  neb::service_dependency const& sd(
+//      *static_cast<neb::service_dependency const*>(e.get()));
+//
+//  // Insert/Update.
+//  if (sd.enabled) {
+//    logging::info(logging::medium)
+//        << "SQL: enabling service dependency of (" << sd.dependent_host_id
+//        << ", " << sd.dependent_service_id << ") on (" << sd.host_id << ", "
+//        << sd.service_id << ")";
+//
+//    // Prepare queries.
+//    if (!_service_dependency_insupdate.prepared()) {
+//      query_preparator::event_unique unique;
+//      unique.insert("dependent_host_id");
+//      unique.insert("dependent_service_id");
+//      unique.insert("host_id");
+//      unique.insert("service_id");
+//      query_preparator qp(neb::service_dependency::static_type(), unique);
+//      _service_dependency_insupdate =
+//          qp.prepare_insert_or_update(_transversal_mysql);
+//    }
+//
+//    // Process object.
+//    std::ostringstream oss;
+//    oss << "SQL: could not store service dependency (host: " << sd.host_id
+//        << ", service: " << sd.service_id
+//        << ", dependent host: " << sd.dependent_host_id
+//        << ", dependent service: " << sd.dependent_service_id << "): ";
+//    _service_dependency_insupdate << sd;
+//    _transversal_mysql.run_statement(_service_dependency_insupdate, oss.str(),
+//                                     true);
+//  }
+//  // Delete.
+//  else {
+//    logging::info(logging::medium)
+//        << "SQL: removing service dependency of (" << sd.dependent_host_id
+//        << ", " << sd.dependent_service_id << ") on (" << sd.host_id << ", "
+//        << sd.service_id << ")";
+//    std::ostringstream oss;
+//    oss << "DELETE FROM "
+//        << ((_transversal_mysql.schema_version() == mysql::v2)
+//                ? "services_services_dependencies"
+//                : "rt_services_services_dependencies")
+//        << "  WHERE dependent_host_id=" << sd.dependent_host_id
+//        << "    AND dependent_service_id=" << sd.dependent_service_id
+//        << "    AND host_id=" << sd.host_id
+//        << "    AND service_id=" << sd.service_id;
+//    _transversal_mysql.run_query(oss.str(), "SQL: ", false);
+//  }
 }
 
 /**
@@ -1748,47 +1748,47 @@ void stream::_process_service_dependency(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted service group.
  */
 void stream::_process_service_group(std::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::service_group const& sg(
-      *static_cast<neb::service_group const*>(e.get()));
-
-  // Only process groups for v2 schema.
-  if (_transversal_mysql.schema_version() != mysql::v2)
-    logging::info(logging::medium)
-        << "SQL: discarding service group event (group '" << sg.name
-        << "' of instance " << sg.poller_id << ")";
-  // Insert/update group.
-  else if (sg.enabled) {
-    logging::info(logging::medium)
-        << "SQL: enabling service group " << sg.id << " ('" << sg.name
-        << "') on instance " << sg.poller_id;
-    _prepare_sg_insupdate_statement();
-
-    std::stringstream oss;
-    oss << "SQL: could not store service group (poller: " << sg.poller_id
-        << ", group: " << sg.id << "): ";
-
-    _service_group_insupdate << sg;
-    _transversal_mysql.run_statement(_service_group_insupdate, oss.str(), true);
-  }
-  // Delete group.
-  else {
-    logging::info(logging::medium)
-        << "SQL: disabling service group " << sg.id << " ('" << sg.name
-        << "') on instance " << sg.poller_id;
-
-    // Delete group members.
-    {
-      std::ostringstream oss;
-      oss << "DELETE services_servicegroups"
-          << "  FROM services_servicegroups"
-          << "  LEFT JOIN hosts"
-          << "    ON services_servicegroups.host_id=hosts.host_id"
-          << "  WHERE services_servicegroups.servicegroup_id=" << sg.id
-          << "    AND hosts.instance_id=" << sg.poller_id;
-      _transversal_mysql.run_query(oss.str(), "SQL: ", false);
-    }
-  }
+//  // Cast object.
+//  neb::service_group const& sg(
+//      *static_cast<neb::service_group const*>(e.get()));
+//
+//  // Only process groups for v2 schema.
+//  if (_transversal_mysql.schema_version() != mysql::v2)
+//    logging::info(logging::medium)
+//        << "SQL: discarding service group event (group '" << sg.name
+//        << "' of instance " << sg.poller_id << ")";
+//  // Insert/update group.
+//  else if (sg.enabled) {
+//    logging::info(logging::medium)
+//        << "SQL: enabling service group " << sg.id << " ('" << sg.name
+//        << "') on instance " << sg.poller_id;
+//    _prepare_sg_insupdate_statement();
+//
+//    std::stringstream oss;
+//    oss << "SQL: could not store service group (poller: " << sg.poller_id
+//        << ", group: " << sg.id << "): ";
+//
+//    _service_group_insupdate << sg;
+//    _transversal_mysql.run_statement(_service_group_insupdate, oss.str(), true);
+//  }
+//  // Delete group.
+//  else {
+//    logging::info(logging::medium)
+//        << "SQL: disabling service group " << sg.id << " ('" << sg.name
+//        << "') on instance " << sg.poller_id;
+//
+//    // Delete group members.
+//    {
+//      std::ostringstream oss;
+//      oss << "DELETE services_servicegroups"
+//          << "  FROM services_servicegroups"
+//          << "  LEFT JOIN hosts"
+//          << "    ON services_servicegroups.host_id=hosts.host_id"
+//          << "  WHERE services_servicegroups.servicegroup_id=" << sg.id
+//          << "    AND hosts.instance_id=" << sg.poller_id;
+//      _transversal_mysql.run_query(oss.str(), "SQL: ", false);
+//    }
+//  }
 }
 
 /**
@@ -1797,97 +1797,97 @@ void stream::_process_service_group(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted service group member.
  */
 void stream::_process_service_group_member(std::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::service_group_member const& sgm(
-      *static_cast<neb::service_group_member const*>(e.get()));
-
-  // Only process groups for v2 schema.
-  if (_transversal_mysql.schema_version() != mysql::v2)
-    logging::info(logging::medium)
-        << "SQL: discarding membership of service (" << sgm.host_id << ", "
-        << sgm.service_id << ") to service group " << sgm.group_id
-        << " on instance " << sgm.poller_id;
-  // Insert.
-  else if (sgm.enabled) {
-    // Log message.
-    logging::info(logging::medium)
-        << "SQL: enabling membership of service (" << sgm.host_id << ", "
-        << sgm.service_id << ") to service group " << sgm.group_id
-        << " on instance " << sgm.poller_id;
-
-    // We only need to try to insert in this table as the
-    // host_id/service_id/servicegroup_id combo should be UNIQUE.
-    if (!_service_group_member_insert.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("servicegroup_id");
-      unique.insert("host_id");
-      unique.insert("service_id");
-      query_preparator qp(neb::service_group_member::static_type(), unique);
-      _service_group_member_insert = qp.prepare_insert(_transversal_mysql);
-    }
-    _service_group_member_insert << sgm;
-
-    std::promise<mysql_result> promise;
-
-    _transversal_mysql.run_statement_and_get_result(
-        _service_group_member_insert, &promise);
-    try {
-      promise.get_future().get();
-    } catch (std::exception const& e) {
-      logging::error(logging::low)
-          << "SQL: host group not defined: " << e.what();
-
-      _prepare_sg_insupdate_statement();
-
-      neb::service_group sg;
-      sg.id = sgm.group_id;
-      sg.name = sgm.group_name;
-      sg.enabled = true;
-      sg.poller_id = sgm.poller_id;
-
-      std::ostringstream oss;
-      oss << "SQL: could not store service group (poller: " << sg.poller_id
-          << ", group: " << sg.id << "): ";
-
-      _service_group_insupdate << sg;
-      _transversal_mysql.run_statement(_service_group_insupdate, oss.str(),
-                                       false);
-
-      oss.str("");
-      oss << "SQL: could not store service group membership (poller: "
-          << sgm.poller_id << ", host: " << sgm.host_id
-          << ", service: " << sgm.service_id << ", group: " << sgm.group_id
-          << "): ";
-      _service_group_member_insert << sgm;
-      _transversal_mysql.run_statement(_service_group_member_insert, oss.str(),
-                                       false);
-    }
-  }
-  // Delete.
-  else {
-    // Log message.
-    logging::info(logging::medium)
-        << "SQL: disabling membership of service (" << sgm.host_id << ", "
-        << sgm.service_id << ") to service group " << sgm.group_id
-        << " on instance " << sgm.poller_id;
-
-    if (!_service_group_member_delete.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("servicegroup_id");
-      unique.insert("host_id");
-      unique.insert("service_id");
-      query_preparator qp(neb::service_group_member::static_type(), unique);
-      _service_group_member_delete = qp.prepare_delete(_transversal_mysql);
-    }
-    std::ostringstream oss;
-    oss << "SQL: cannot delete membership of service (" << sgm.host_id << ", "
-        << sgm.service_id << ") to service group " << sgm.group_id
-        << " on instance " << sgm.poller_id << ": ";
-
-    _service_group_member_delete << sgm;
-    _transversal_mysql.run_statement(_service_group_member_delete, oss.str(),
-                                     true);
-  }
+//  // Cast object.
+//  neb::service_group_member const& sgm(
+//      *static_cast<neb::service_group_member const*>(e.get()));
+//
+//  // Only process groups for v2 schema.
+//  if (_transversal_mysql.schema_version() != mysql::v2)
+//    logging::info(logging::medium)
+//        << "SQL: discarding membership of service (" << sgm.host_id << ", "
+//        << sgm.service_id << ") to service group " << sgm.group_id
+//        << " on instance " << sgm.poller_id;
+//  // Insert.
+//  else if (sgm.enabled) {
+//    // Log message.
+//    logging::info(logging::medium)
+//        << "SQL: enabling membership of service (" << sgm.host_id << ", "
+//        << sgm.service_id << ") to service group " << sgm.group_id
+//        << " on instance " << sgm.poller_id;
+//
+//    // We only need to try to insert in this table as the
+//    // host_id/service_id/servicegroup_id combo should be UNIQUE.
+//    if (!_service_group_member_insert.prepared()) {
+//      query_preparator::event_unique unique;
+//      unique.insert("servicegroup_id");
+//      unique.insert("host_id");
+//      unique.insert("service_id");
+//      query_preparator qp(neb::service_group_member::static_type(), unique);
+//      _service_group_member_insert = qp.prepare_insert(_transversal_mysql);
+//    }
+//    _service_group_member_insert << sgm;
+//
+//    std::promise<mysql_result> promise;
+//
+//    _transversal_mysql.run_statement_and_get_result(
+//        _service_group_member_insert, &promise);
+//    try {
+//      promise.get_future().get();
+//    } catch (std::exception const& e) {
+//      logging::error(logging::low)
+//          << "SQL: host group not defined: " << e.what();
+//
+//      _prepare_sg_insupdate_statement();
+//
+//      neb::service_group sg;
+//      sg.id = sgm.group_id;
+//      sg.name = sgm.group_name;
+//      sg.enabled = true;
+//      sg.poller_id = sgm.poller_id;
+//
+//      std::ostringstream oss;
+//      oss << "SQL: could not store service group (poller: " << sg.poller_id
+//          << ", group: " << sg.id << "): ";
+//
+//      _service_group_insupdate << sg;
+//      _transversal_mysql.run_statement(_service_group_insupdate, oss.str(),
+//                                       false);
+//
+//      oss.str("");
+//      oss << "SQL: could not store service group membership (poller: "
+//          << sgm.poller_id << ", host: " << sgm.host_id
+//          << ", service: " << sgm.service_id << ", group: " << sgm.group_id
+//          << "): ";
+//      _service_group_member_insert << sgm;
+//      _transversal_mysql.run_statement(_service_group_member_insert, oss.str(),
+//                                       false);
+//    }
+//  }
+//  // Delete.
+//  else {
+//    // Log message.
+//    logging::info(logging::medium)
+//        << "SQL: disabling membership of service (" << sgm.host_id << ", "
+//        << sgm.service_id << ") to service group " << sgm.group_id
+//        << " on instance " << sgm.poller_id;
+//
+//    if (!_service_group_member_delete.prepared()) {
+//      query_preparator::event_unique unique;
+//      unique.insert("servicegroup_id");
+//      unique.insert("host_id");
+//      unique.insert("service_id");
+//      query_preparator qp(neb::service_group_member::static_type(), unique);
+//      _service_group_member_delete = qp.prepare_delete(_transversal_mysql);
+//    }
+//    std::ostringstream oss;
+//    oss << "SQL: cannot delete membership of service (" << sgm.host_id << ", "
+//        << sgm.service_id << ") to service group " << sgm.group_id
+//        << " on instance " << sgm.poller_id << ": ";
+//
+//    _service_group_member_delete << sgm;
+//    _transversal_mysql.run_statement(_service_group_member_delete, oss.str(),
+//                                     true);
+//  }
 }
 
 /**
@@ -2175,29 +2175,23 @@ stream::stream(database_config const& dbcfg,
                unsigned int instance_timeout,
                bool with_state_events)
     : _mysql(dbcfg),
-      _transversal_mysql(database_config(dbcfg.get_type(),
-                                         dbcfg.get_host(),
-                                         dbcfg.get_port(),
-                                         dbcfg.get_user(),
-                                         dbcfg.get_password(),
-                                         dbcfg.get_name())),
-      _cleanup_thread(dbcfg.get_type(),
-                      dbcfg.get_host(),
-                      dbcfg.get_port(),
-                      dbcfg.get_user(),
-                      dbcfg.get_password(),
-                      dbcfg.get_name(),
-                      cleanup_check_interval),
+//      _cleanup_thread(dbcfg.get_type(),
+//                      dbcfg.get_host(),
+//                      dbcfg.get_port(),
+//                      dbcfg.get_user(),
+//                      dbcfg.get_password(),
+//                      dbcfg.get_name(),
+//                      cleanup_check_interval),
       _ack_events(0),
       _pending_events(0),
       _with_state_events(with_state_events),
       _instance_timeout(instance_timeout),
-      _transversal_mysql(database_config(dbcfg.get_type(),
-                                         dbcfg.get_host(),
-                                         dbcfg.get_port(),
-                                         dbcfg.get_user(),
-                                         dbcfg.get_password(),
-                                         dbcfg.get_name())),
+//      _transversal_mysql(database_config(dbcfg.get_type(),
+//                                         dbcfg.get_host(),
+//                                         dbcfg.get_port(),
+//                                         dbcfg.get_user(),
+//                                         dbcfg.get_password(),
+//                                         dbcfg.get_name())),
       _oldest_timestamp(std::numeric_limits<time_t>::max()) {
 //  // Get oudated instances.
 //  _get_all_outdated_instances_from_db();
@@ -2213,7 +2207,7 @@ stream::stream(database_config const& dbcfg,
  */
 stream::~stream() {
   // Stop cleanup thread.
-  _cleanup_thread.exit();
+  //_cleanup_thread.exit();
   logging::debug(logging::low) << "SQL: sql stream is closed.";
   mysql_manager::instance().clear();
 }

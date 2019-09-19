@@ -216,9 +216,8 @@ void conflict_manager::_process_host_dependency() {}
  */
 void conflict_manager::_process_host_group() {
   int conn = _mysql.choose_best_connection();
-  _finish_action(-1, actions::hosts);
 
-  while (true) {
+  while (!_events.empty()) {
     auto& p = _events.front();
     std::shared_ptr<io::data> d{std::get<0>(p)};
 
@@ -240,7 +239,7 @@ void conflict_manager::_process_host_group() {
 
       _host_group_insupdate << hg;
       _mysql.run_statement(_host_group_insupdate, oss.str(), true, conn);
-      _add_action(conn, actions::host_hostgroups);
+      _add_action(conn, actions::hostgroups);
     }
     // Delete group.
     else {
@@ -271,87 +270,100 @@ void conflict_manager::_process_host_group() {
  *  @param[in] e Uncasted host group member.
  */
 void conflict_manager::_process_host_group_member() {
-  auto& p = _events.front();
-  std::shared_ptr<io::data> d{std::get<0>(p)};
+  int conn = _mysql.choose_best_connection();
+  _finish_action(-1, actions::hostgroups | actions::hosts);
 
-  // Cast object.
-  neb::host_group_member const& hgm(
-      *static_cast<neb::host_group_member const*>(d.get()));
+//    auto& p = _events.front();
+//    std::shared_ptr<io::data> d{std::get<0>(p)};
+//    *std::get<2>(p) = true;
+//    _events.pop_front();
+//    return;
+  while (!_events.empty()) {
+    auto& p = _events.front();
+    std::shared_ptr<io::data> d{std::get<0>(p)};
 
-  if (hgm.enabled) {
-    // Log message.
-    logging::info(logging::medium) << "SQL: enabling membership of host "
-                                   << hgm.host_id << " to host group "
-                                   << hgm.group_id << " on instance "
-                                   << hgm.poller_id;
+    if (!d || d->type() != neb::host_group_member::static_type())
+      break;
 
-    // We only need to try to insert in this table as the
-    // host_id/hostgroup_id should be UNIQUE.
-    if (!_host_group_member_insert.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("hostgroup_id");
-      unique.insert("host_id");
-      query_preparator qp(neb::host_group_member::static_type(), unique);
-      _host_group_member_insert = qp.prepare_insert(_mysql);
-    }
-    _host_group_member_insert << hgm;
+    // Cast object.
+    neb::host_group_member const& hgm(
+        *static_cast<neb::host_group_member const*>(d.get()));
 
-    std::promise<mysql_result> promise;
-    _mysql.run_statement_and_get_result(_host_group_member_insert, &promise);
-    try {
-      promise.get_future().get();
-    }
-    catch (std::exception const& e) {
-      logging::error(logging::low)
-          << "SQL: host group member insertion failed: " << e.what();
-      _prepare_hg_insupdate_statement();
+    if (hgm.enabled) {
+      // Log message.
+      logging::info(logging::medium) << "SQL: enabling membership of host "
+                                     << hgm.host_id << " to host group "
+                                     << hgm.group_id << " on instance "
+                                     << hgm.poller_id;
 
-      neb::host_group hg;
-      hg.id = hgm.group_id;
-      hg.name = hgm.group_name;
-      hg.enabled = true;
-      hg.poller_id = _cache_host_instance[hgm.host_id];
-
-      std::ostringstream oss;
-      oss << "SQL: could not store host group (poller: " << hg.poller_id
-          << ", group: " << hg.id << "): ";
-
-      _host_group_insupdate << hg;
-      _mysql.run_statement(_host_group_insupdate, oss.str(), false);
-
-      oss.str("");
-      oss << "SQL: could not store host group membership (poller: "
-          << hgm.poller_id << ", host: " << hgm.host_id
-          << ", group: " << hgm.group_id << "): ";
+      // We only need to try to insert in this table as the
+      // host_id/hostgroup_id should be UNIQUE.
+      if (!_host_group_member_insert.prepared()) {
+        query_preparator::event_unique unique;
+        unique.insert("hostgroup_id");
+        unique.insert("host_id");
+        query_preparator qp(neb::host_group_member::static_type(), unique);
+        _host_group_member_insert = qp.prepare_insert(_mysql);
+      }
       _host_group_member_insert << hgm;
-      _mysql.run_statement(_host_group_member_insert, oss.str(), false);
-    }
-  }
-  // Delete.
-  else {
-    // Log message.
-    logging::info(logging::medium) << "SQL: disabling membership of host "
-                                   << hgm.host_id << " to host group "
-                                   << hgm.group_id << " on instance "
-                                   << hgm.poller_id;
 
-    if (!_host_group_member_delete.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("hostgroup_id");
-      unique.insert("host_id");
-      query_preparator qp(neb::host_group_member::static_type(), unique);
-      _host_group_member_delete = qp.prepare_delete(_mysql);
-    }
-    std::ostringstream oss;
-    oss << "SQL: cannot delete membership of host " << hgm.host_id
-        << " to host group " << hgm.group_id << " on instance " << hgm.poller_id
-        << ": ";
+      std::promise<mysql_result> promise;
+      _mysql.run_statement_and_get_result(_host_group_member_insert, &promise, conn);
+      try {
+        promise.get_future().get();
+      }
+      catch (std::exception const& e) {
+        logging::error(logging::low)
+            << "SQL: host group member insertion failed: " << e.what();
+        _prepare_hg_insupdate_statement();
 
-    _host_group_member_delete << hgm;
-    _mysql.run_statement(_host_group_member_delete, oss.str(), true);
+        neb::host_group hg;
+        hg.id = hgm.group_id;
+        hg.name = hgm.group_name;
+        hg.enabled = true;
+        hg.poller_id = _cache_host_instance[hgm.host_id];
+
+        std::ostringstream oss;
+        oss << "SQL: could not store host group (poller: " << hg.poller_id
+            << ", group: " << hg.id << "): ";
+
+        _host_group_insupdate << hg;
+        _mysql.run_statement(_host_group_insupdate, oss.str(), false, conn);
+
+        oss.str("");
+        oss << "SQL: could not store host group membership (poller: "
+            << hgm.poller_id << ", host: " << hgm.host_id
+            << ", group: " << hgm.group_id << "): ";
+        _host_group_member_insert << hgm;
+        _mysql.run_statement(_host_group_member_insert, oss.str(), false, conn);
+      }
+    }
+    // Delete.
+    else {
+      // Log message.
+      logging::info(logging::medium) << "SQL: disabling membership of host "
+                                     << hgm.host_id << " to host group "
+                                     << hgm.group_id << " on instance "
+                                     << hgm.poller_id;
+
+      if (!_host_group_member_delete.prepared()) {
+        query_preparator::event_unique unique;
+        unique.insert("hostgroup_id");
+        unique.insert("host_id");
+        query_preparator qp(neb::host_group_member::static_type(), unique);
+        _host_group_member_delete = qp.prepare_delete(_mysql);
+      }
+      std::ostringstream oss;
+      oss << "SQL: cannot delete membership of host " << hgm.host_id
+          << " to host group " << hgm.group_id << " on instance "
+          << hgm.poller_id << ": ";
+
+      _host_group_member_delete << hgm;
+      _mysql.run_statement(_host_group_member_delete, oss.str(), true, conn);
+    }
+    *std::get<2>(p) = true;
+    _events.pop_front();
   }
-  *std::get<2>(p) = true;
-  _events.pop_front();
 }
 
 /**
@@ -373,7 +385,6 @@ void conflict_manager::_process_host() {
   if (_is_valid_poller(h.poller_id)) {
     if (h.host_id) {
       int32_t conn = _mysql.choose_connection_by_instance(h.poller_id);
-      _finish_action(-1, actions::host_hostgroups);
 
       // Prepare queries.
       if (!_host_insupdate.prepared()) {
@@ -537,7 +548,7 @@ void conflict_manager::_process_service_dependency() {}
 void conflict_manager::_process_service_group() {
   int conn = _mysql.choose_best_connection();
 
-  while (true) {
+  while (!_events.empty()) {
     auto& p = _events.front();
     std::shared_ptr<io::data> d{std::get<0>(p)};
 

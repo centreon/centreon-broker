@@ -96,22 +96,22 @@ static inline int check_equality(double a, double b) {
  *                                     not.
  */
 stream::stream(database_config const& db_cfg,
-               unsigned int rrd_len,
-               unsigned int interval_length,
-               unsigned int rebuild_check_interval,
+               uint32_t rrd_len,
+               uint32_t interval_length,
+               uint32_t rebuild_check_interval __attribute__((unused)),
                bool store_in_db,
                bool insert_in_index_data)
     : _insert_in_index_data(insert_in_index_data),
       _interval_length(interval_length),
       _ack_events(0),
       _pending_events(0),
-      _rebuilder(db_cfg, rebuild_check_interval, rrd_len, interval_length),
+      //_rebuilder(db_cfg, rebuild_check_interval, rrd_len, interval_length),
       _rrd_len(rrd_len ? rrd_len : 15552000),
       _store_in_db(store_in_db),
       _mysql(db_cfg) {
   sql::conflict_manager::init_storage(_rrd_len, _interval_length);
   // Prepare queries.
-  _prepare();
+  //_prepare();
 }
 
 /**
@@ -128,18 +128,20 @@ stream::~stream() {
  *  @return Number of events acknowledged.
  */
 int stream::flush() {
-  logging::info(logging::low) << "storage: committing transaction";
-  _update_status("status=committing current transaction\n");
-  _insert_perfdatas();
-  _mysql.commit();
+//  logging::info(logging::low) << "storage: committing transaction";
+//  _update_status("status=committing current transaction\n");
+//  _insert_perfdatas();
+//  _mysql.commit();
+//
+//  int retval(_ack_events + _pending_events);
+//  _ack_events = 0;
+//  _pending_events = 0;
+//  logging::debug(logging::medium)
+//      << "storage: flush ack events count: " << retval;
+//  _update_status("");
 
-  int retval(_ack_events + _pending_events);
-  _ack_events = 0;
-  _pending_events = 0;
-  logging::debug(logging::medium)
-      << "storage: flush ack events count: " << retval;
-  _update_status("");
-//  int32_t retval =  sql::conflict_manager::instance().get_acks(sql::conflict_manager::storage);
+  int32_t retval = sql::conflict_manager::instance().get_acks(
+      sql::conflict_manager::storage);
   return retval;
 }
 
@@ -154,7 +156,7 @@ int stream::flush() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw(broker::exceptions::shutdown() << "cannot read from a storage stream");
+  throw broker::exceptions::shutdown() << "cannot read from a storage stream";
   return true;
 }
 
@@ -936,25 +938,25 @@ void stream::_insert_perfdatas() {
  *  Prepare queries.
  */
 void stream::_prepare() {
-  // Prepare metrics update query.
-  std::ostringstream query;
-  _update_metrics_stmt = _mysql.prepare_query(
-      "UPDATE metrics SET "
-      "unit_name=?,warn=?,warn_low=?,warn_threshold_mode=?,crit=?,crit_low=?,"
-      "crit_threshold_mode=?,min=?,max=?,current_value=? WHERE metric_id=?");
-
-  _insert_metrics_stmt = _mysql.prepare_query(
-      "INSERT INTO metrics "
-      "(index_id,metric_name,unit_name,warn,warn_low,warn_threshold_mode,crit,"
-      "crit_low,crit_threshold_mode,min,max,current_value,data_source_type) "
-      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
-
-  _update_index_data_stmt = _mysql.prepare_query(
-      "UPDATE index_data SET host_name=?,service_description=?,special=? WHERE "
-      "id=?");
-
-  // Build cache.
-  _rebuild_cache();
+//  // Prepare metrics update query.
+//  std::ostringstream query;
+//  _update_metrics_stmt = _mysql.prepare_query(
+//      "UPDATE metrics SET "
+//      "unit_name=?,warn=?,warn_low=?,warn_threshold_mode=?,crit=?,crit_low=?,"
+//      "crit_threshold_mode=?,min=?,max=?,current_value=? WHERE metric_id=?");
+//
+//  _insert_metrics_stmt = _mysql.prepare_query(
+//      "INSERT INTO metrics "
+//      "(index_id,metric_name,unit_name,warn,warn_low,warn_threshold_mode,crit,"
+//      "crit_low,crit_threshold_mode,min,max,current_value,data_source_type) "
+//      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+//
+//  _update_index_data_stmt = _mysql.prepare_query(
+//      "UPDATE index_data SET host_name=?,service_description=?,special=? WHERE "
+//      "id=?");
+//
+//  // Build cache.
+//  _rebuild_cache();
 }
 
 /**

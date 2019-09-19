@@ -96,7 +96,7 @@ step[7].count = {
   comment = 50,
   host = step[2].count.host,
   instance = step[2].count.instance,
-  continue = true,
+  continue = false,
 }
 
 -- Services per host          => 20

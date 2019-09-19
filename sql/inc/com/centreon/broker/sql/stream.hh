@@ -110,7 +110,7 @@ class stream : public io::stream {
   static void (stream::*const _neb_processing_table[])(
       std::shared_ptr<io::data> const&);
   mysql _mysql;
-  mysql _transversal_mysql;
+//  mysql _transversal_mysql;
 
   // Cache
   database::mysql_stmt _acknowledgement_insupdate;
@@ -150,7 +150,7 @@ class stream : public io::stream {
   database::mysql_stmt _service_state_insupdate;
   database::mysql_stmt _service_status_update;
   std::set<unsigned int> _cache_deleted_instance_id;
-  cleanup _cleanup_thread;
+//  cleanup _cleanup_thread;
   int _ack_events;
   int _pending_events;
   bool _with_state_events;

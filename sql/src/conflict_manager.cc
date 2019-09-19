@@ -193,8 +193,8 @@ void conflict_manager::_callback() {
         _events.pop_front();
       }
     }
+    _finish_actions();
   }
-  _mysql.commit();
 }
 
 /**
@@ -244,7 +244,7 @@ int32_t conflict_manager::get_acks(stream_type c) {
  *             connections
  * @param action An action.
  */
-void conflict_manager::_finish_action(int32_t conn, actions action) {
+void conflict_manager::_finish_action(int32_t conn, uint32_t action) {
   if (conn < 0) {
     for (std::size_t i = 0; i < _action.size(); i++) {
       if (_action[i] & action) {
@@ -257,6 +257,12 @@ void conflict_manager::_finish_action(int32_t conn, actions action) {
     _mysql.commit(conn);
     _action[conn] = actions::none;
   }
+}
+
+void conflict_manager::_finish_actions() {
+  _mysql.commit();
+  for (uint32_t& v : _action)
+    v = actions::none;
 }
 
 /**
@@ -273,5 +279,5 @@ void conflict_manager::_add_action(int32_t conn, actions action) {
       v |= action;
   }
   else
-    _action[conn] |= actions::none;
+    _action[conn] |= action;
 }

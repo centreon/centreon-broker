@@ -14,7 +14,7 @@
       "logger": {
         "name": "/var/log/centreon-broker/central-broker-master.log",
         "config": true,
-        "debug": false,
+        "debug": true,
         "error": true,
         "info": true,
         "level": "high",
@@ -90,34 +90,6 @@
         "insert_in_index_data": "1",
         "connections_count": "3",
         "type": "storage"
-      },
-      {
-        "name": "centreon-bam-monitoring",
-        "type": "bam",
-        "cache": "yes",
-        "db_name": "centreon",
-        "db_type": "mysql",
-        "db_host": "172.17.0.1",
-        "db_user": "root",
-        "db_password": "root",
-        "db_port": "3306",
-        "storage_db_name": "centreon_storage",
-        "queries_per_transaction": "0",
-        "command_file": "/var/lib/centreon-engine/rw/centengine.cmd"
-      },
-      {
-        "name": "centreon-bam-reporting",
-        "type": "bam_bi",
-        "db_name": "centreon_storage",
-        "db_type": "mysql",
-        "db_host": "172.17.0.1",
-        "db_user": "root",
-        "db_password": "root",
-        "db_port": "3306",
-        "queries_per_transaction": "0",
-        "filters": {
-          "category": "bam"
-        }
       }
     ],
       "stats": {
