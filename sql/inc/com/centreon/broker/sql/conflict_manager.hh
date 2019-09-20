@@ -148,6 +148,7 @@ class conflict_manager {
   database::mysql_stmt _host_group_member_delete;
   database::mysql_stmt _host_group_member_insert;
   database::mysql_stmt _host_insupdate;
+  database::mysql_stmt _host_status_update;
   database::mysql_stmt _instance_insupdate;
   database::mysql_stmt _log_insert;
   database::mysql_stmt _service_check_update;

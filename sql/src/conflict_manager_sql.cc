@@ -553,7 +553,60 @@ void conflict_manager::_process_host() {
 }
 
 void conflict_manager::_process_host_parent() {}
-void conflict_manager::_process_host_status() {}
+
+/**
+ *  Process a host status event.
+ *
+ *  @param[in] e Uncasted host status.
+ */
+void conflict_manager::_process_host_status() {
+  auto& p = _events.front();
+
+  // Processed object.
+  neb::host_status const& hs(
+      *static_cast<neb::host_status const*>(std::get<0>(p).get()));
+
+  time_t now = time(nullptr);
+  if (hs.check_type ||                  // - passive result
+      !hs.active_checks_enabled ||      // - active checks are disabled,
+                                        //   status might not be updated
+      hs.next_check >= now - 5 * 60 ||  // - normal case
+      !hs.next_check) {                 // - initial state
+    // Apply to DB.
+    logging::info(logging::medium) << "SQL: processing host status event (id: "
+                                   << hs.host_id
+                                   << ", last check: " << hs.last_check
+                                   << ", state (" << hs.current_state << ", "
+                                   << hs.state_type << "))";
+
+    // Prepare queries.
+    if (!_host_status_update.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("host_id");
+      query_preparator qp(neb::host_status::static_type(), unique);
+      _host_status_update = qp.prepare_update(_mysql);
+    }
+
+    // Processing.
+    _host_status_update << hs;
+    std::ostringstream oss;
+    oss << "SQL: could not store host status (host: " << hs.host_id << "): ";
+    _mysql.run_statement(
+        _host_status_update,
+        oss.str(),
+        true,
+        _mysql.choose_connection_by_instance(_cache_host_instance[hs.host_id]));
+  } else
+    // Do nothing.
+    logging::info(logging::medium)
+        << "SQL: not processing host status event (id: " << hs.host_id
+        << ", check type: " << hs.check_type
+        << ", last check: " << hs.last_check
+        << ", next check: " << hs.next_check << ", now: " << now << ", state ("
+        << hs.current_state << ", " << hs.state_type << "))";
+  *std::get<2>(p) = true;
+  _events.pop_front();
+}
 
 /**
  *  Process an instance event. The thread executing the command is controlled
