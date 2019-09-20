@@ -172,7 +172,7 @@ step[17].count = {
   service = step[8].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
-  continue = false,
+  continue = true,
 }
 
 -- Flapping status
@@ -180,7 +180,7 @@ step[18].count = {
   service = step[8].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
-  continue = true,
+  continue = false,
 }
 
 -- Host dependency
