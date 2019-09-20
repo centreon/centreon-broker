@@ -54,7 +54,51 @@ void conflict_manager::_prepare_sg_insupdate_statement() {
   }
 }
 
-void conflict_manager::_process_acknowledgement() {}
+/**
+ *  Process an acknowledgement event.
+ *
+ *  @param[in] e Uncasted acknowledgement.
+ */
+void conflict_manager::_process_acknowledgement() {
+  auto& p = _events.front();
+  std::shared_ptr<io::data> d{std::get<0>(p)};
+
+  // Cast object.
+  neb::acknowledgement const& ack =
+      *static_cast<neb::acknowledgement const*>(d.get());
+
+  // Log message.
+  logging::info(logging::medium)
+      << "SQL: processing acknowledgement event (poller: " << ack.poller_id
+      << ", host: " << ack.host_id << ", service: " << ack.service_id
+      << ", entry time: " << ack.entry_time
+      << ", deletion time: " << ack.deletion_time << ")";
+
+  // Processing.
+  if (_is_valid_poller(ack.poller_id)) {
+    // Prepare queries.
+    if (!_acknowledgement_insupdate.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("entry_time");
+      unique.insert("host_id");
+      unique.insert("service_id");
+      query_preparator qp(neb::acknowledgement::static_type(), unique);
+      _acknowledgement_insupdate = qp.prepare_insert_or_update(_mysql);
+    }
+
+    // Process object.
+    std::ostringstream oss;
+    oss << "SQL: could not store acknowledgement (poller: " << ack.poller_id
+        << ", host: " << ack.host_id << ", service: " << ack.service_id
+        << ", entry time: " << ack.entry_time << "): ";
+
+    _acknowledgement_insupdate << ack;
+    _mysql.run_statement(_acknowledgement_insupdate, oss.str(), true,
+                         _mysql.choose_connection_by_instance(ack.poller_id));
+  }
+  *std::get<2>(p) = true;
+  _events.pop_front();
+}
 
 /**
  *  Process a comment event.
@@ -276,7 +320,48 @@ void conflict_manager::_process_downtime() {
   }
 }
 
-void conflict_manager::_process_event_handler() {}
+/**
+ *  Process an event handler event.
+ *
+ *  @param[in] e Uncasted event handler.
+ */
+void conflict_manager::_process_event_handler() {
+  auto& p = _events.front();
+  std::shared_ptr<io::data> d{std::get<0>(p)};
+  // Cast object.
+  neb::event_handler const& eh =
+      *static_cast<neb::event_handler const*>(d.get());
+
+  // Log message.
+  logging::info(logging::medium)
+      << "SQL: processing event handler event (host: " << eh.host_id
+      << ", service: " << eh.service_id << ", start time " << eh.start_time
+      << ")";
+
+  // Prepare queries.
+  if (!_event_handler_insupdate.prepared()) {
+    query_preparator::event_unique unique;
+    unique.insert("host_id");
+    unique.insert("service_id");
+    unique.insert("start_time");
+    query_preparator qp(neb::event_handler::static_type(), unique);
+    _event_handler_insupdate = qp.prepare_insert_or_update(_mysql);
+  }
+
+  // Processing.
+  std::ostringstream oss;
+  oss << "SQL: could not store event handler (host: " << eh.host_id
+      << ", service: " << eh.service_id << ", start time: " << eh.start_time
+      << "): ";
+
+  _event_handler_insupdate << eh;
+  _mysql.run_statement(
+      _event_handler_insupdate, oss.str(), true,
+      _mysql.choose_connection_by_instance(_cache_host_instance[eh.host_id]));
+  *std::get<2>(p) = true;
+  _events.pop_front();
+}
+
 void conflict_manager::_process_flapping_status() {}
 
 /**

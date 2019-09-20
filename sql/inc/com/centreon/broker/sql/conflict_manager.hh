@@ -138,11 +138,13 @@ class conflict_manager {
   std::unordered_set<uint32_t> _servicegroup_cache;
   std::deque<metric_value> _perfdata_queue;
 
+  database::mysql_stmt _acknowledgement_insupdate;
   database::mysql_stmt _comment_insupdate;
   database::mysql_stmt _custom_variable_delete;
   database::mysql_stmt _custom_variable_insupdate;
   database::mysql_stmt _custom_variable_status_insupdate;
   database::mysql_stmt _downtime_insupdate;
+  database::mysql_stmt _event_handler_insupdate;
   database::mysql_stmt _host_check_update;
   database::mysql_stmt _host_group_insupdate;
   database::mysql_stmt _host_group_member_delete;
