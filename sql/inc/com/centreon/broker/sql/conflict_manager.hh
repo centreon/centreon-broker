@@ -49,13 +49,14 @@ class conflict_manager {
  private:
   enum actions {
     none = 0,
-    hosts = 1,
-    hostgroups = 1 << 1,
-    host_hostgroups = 1 << 2,
-    services = 1 << 3,
-    servicegroups = 1 << 4,
-    service_servicegroups = 1 << 5,
-    custom_variables = 1 << 6,
+    instances = 1,
+    hosts = 1 << 1,
+    hostgroups = 1 << 2,
+    host_hostgroups = 1 << 3,
+    services = 1 << 4,
+    servicegroups = 1 << 5,
+    service_servicegroups = 1 << 6,
+    custom_variables = 1 << 7,
   };
 
   struct index_info {
@@ -140,6 +141,7 @@ class conflict_manager {
   database::mysql_stmt _custom_variable_delete;
   database::mysql_stmt _custom_variable_insupdate;
   database::mysql_stmt _custom_variable_status_insupdate;
+  database::mysql_stmt _downtime_insupdate;
   database::mysql_stmt _host_group_insupdate;
   database::mysql_stmt _host_group_member_delete;
   database::mysql_stmt _host_group_member_insert;

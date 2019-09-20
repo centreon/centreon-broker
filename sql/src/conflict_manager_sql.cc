@@ -209,61 +209,73 @@ void conflict_manager::_process_custom_variable_status() {
   }
 }
 
-//void conflict_manager::_process_custom_variable_status() {
-//  int conn = _mysql.choose_best_connection();
-//  _finish_action(-1, actions::custom_variables);
-//
-//  while (!_events.empty()) {
-//    auto& p = _events.front();
-//    std::shared_ptr<io::data> d{std::get<0>(p)};
-//
-//    if (!d || d->type() != neb::custom_variable_status::static_type())
-//      break;
-//
-//    // Cast object.
-//    neb::custom_variable_status const& cvs(
-//        *static_cast<neb::custom_variable_status const*>(d.get()));
-//
-//    // Log message.
-//    logging::info(logging::medium)
-//        << "SQL: processing custom variable status event (host: " << cvs.host_id
-//        << ", service: " << cvs.service_id << ", name: " << cvs.name
-//        << ", update time: " << cvs.update_time << ")";
-//
-//    // Prepare queries.
-//    if (!_custom_variable_status_update.prepared()) {
-//      query_preparator::event_unique unique;
-//      unique.insert("host_id");
-//      unique.insert("name");
-//      unique.insert("service_id");
-//      query_preparator qp(neb::custom_variable_status::static_type(), unique);
-//      _custom_variable_status_update = qp.prepare_update(_mysql);
-//    }
-//
-//    // Processing.
-//    _custom_variable_status_update << cvs;
-//    std::promise<int> promise;
-//    _mysql.run_statement_and_get_int(
-//        _custom_variable_status_update, &promise, mysql_task::AFFECTED_ROWS, conn);
-//    try {
-//      if (promise.get_future().get() != 1)
-//        logging::error(logging::medium)
-//            << "SQL: custom variable (" << cvs.host_id << ", " << cvs.service_id
-//            << ", " << cvs.name
-//            << ") was not updated because it was not found in database";
-//    }
-//    catch (std::exception const& e) {
-//      throw exceptions::msg() << "SQL: could not update custom variable (name: "
-//                              << cvs.name << ", host: " << cvs.host_id
-//                              << ", service: " << cvs.service_id
-//                              << "): " << e.what();
-//    }
-//    *std::get<2>(p) = true;
-//    _events.pop_front();
-//  }
-//}
+/**
+ *  Process a downtime event.
+ *
+ *  @param[in] e Uncasted downtime.
+ */
+void conflict_manager::_process_downtime() {
+  int conn = _mysql.choose_best_connection();
+  _finish_action(-1, actions::hosts | actions::instances);
 
-void conflict_manager::_process_downtime() {}
+  while (!_events.empty()) {
+    auto& p = _events.front();
+    std::shared_ptr<io::data> d{std::get<0>(p)};
+
+    if (!d || d->type() != neb::downtime::static_type())
+      break;
+
+    // Cast object.
+    neb::downtime const& dd = *static_cast<neb::downtime const*>(d.get());
+
+    // Log message.
+    logging::info(logging::medium)
+        << "SQL: processing downtime event (poller: " << dd.poller_id
+        << ", host: " << dd.host_id << ", service: " << dd.service_id
+        << ", start time: " << dd.start_time << ", end_time: " << dd.end_time
+        << ", actual start time: " << dd.actual_start_time
+        << ", actual end time: " << dd.actual_end_time
+        << ", duration: " << dd.duration << ", entry time: " << dd.entry_time
+        << ", deletion time: " << dd.deletion_time << ")";
+
+    // Check if poller is valid.
+    if (_is_valid_poller(dd.poller_id)) {
+      // Prepare queries.
+      if (!_downtime_insupdate.prepared()) {
+        _downtime_insupdate = mysql_stmt(
+            "INSERT INTO downtimes (actual_end_time,actual_start_time,author,"
+            "type,deletion_time,duration,end_time,entry_time,"
+            "fixed,host_id,instance_id,internal_id,service_id,"
+            "start_time,triggered_by,cancelled,started,comment_data) "
+            "VALUES(:actual_end_time,:actual_start_time,:author,:type,"
+            ":deletion_time,:duration,:end_time,:entry_time,:fixed,:host_id,"
+            ":instance_id,:internal_id,:service_id,:start_time,"
+            ":triggered_by,:cancelled,:started,:comment_data) "
+            "ON DUPLICATE KEY UPDATE "
+            "actual_end_time=GREATEST(COALESCE(actual_end_time,-1),"
+            ":actual_end_time),actual_start_time=COALESCE(actual_start_time,"
+            ":actual_start_time),author=:author,cancelled=:cancelled,"
+            "comment_data=:comment_data,deletion_time=:deletion_time,duration="
+            ":duration,end_time=:end_time,fixed=:fixed,host_id=:host_id,"
+            "service_id=:service_id,start_time=:start_time,started=:started,"
+            "triggered_by=:triggered_by, type=:type",
+            true);
+        _mysql.prepare_statement(_downtime_insupdate);
+      }
+
+      // Process object.
+      std::ostringstream oss;
+      oss << "SQL: could not store downtime (poller: " << dd.poller_id
+          << ", host: " << dd.host_id << ", service: " << dd.service_id << "): ";
+
+      _downtime_insupdate << dd;
+      _mysql.run_statement(_downtime_insupdate, oss.str(), true, conn);
+    }
+    *std::get<2>(p) = true;
+    _events.pop_front();
+  }
+}
+
 void conflict_manager::_process_event_handler() {}
 void conflict_manager::_process_flapping_status() {}
 void conflict_manager::_process_host_check() {}
@@ -510,10 +522,11 @@ void conflict_manager::_process_instance() {
     oss << "SQL: could not store poller (poller: " << i.poller_id << "): ";
     _instance_insupdate << i;
 
+    int32_t conn = _mysql.choose_connection_by_instance(i.poller_id);
     _mysql.run_statement(_instance_insupdate,
                          oss.str(),
-                         true,
-                         _mysql.choose_connection_by_instance(i.poller_id));
+                         true, conn);
+    _add_action(conn, actions::instances);
   }
 
   /* We just have to set the boolean */

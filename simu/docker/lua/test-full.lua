@@ -136,13 +136,13 @@ step[12].count = {
   host = step[2].count.host,
   instance = step[2].count.instance,
   metric = 2,
-  continue = false,
+  continue = true,
 }
 
 -- Downtimes per host
 step[13].count = {
   host = 5,
-  continue = true,
+  continue = false,
 }
 
 -- Host checks and logs per instance
