@@ -278,7 +278,76 @@ void conflict_manager::_process_downtime() {
 
 void conflict_manager::_process_event_handler() {}
 void conflict_manager::_process_flapping_status() {}
-void conflict_manager::_process_host_check() {}
+
+/**
+ *  Process an host check event.
+ *
+ *  @param[in] e Uncasted host check.
+ */
+void conflict_manager::_process_host_check() {
+  while (!_events.empty()) {
+    auto& p = _events.front();
+    std::shared_ptr<io::data> d{std::get<0>(p)};
+
+    if (!d || d->type() != neb::host_check::static_type())
+      break;
+
+    // Cast object.
+    neb::host_check const& hc = *static_cast<neb::host_check const*>(d.get());
+
+    time_t now = time(nullptr);
+    if (hc.check_type ||                  // - passive result
+        !hc.active_checks_enabled ||      // - active checks are disabled,
+                                          //   status might not be updated
+        hc.next_check >= now - 5 * 60 ||  // - normal case
+        !hc.next_check) {                 // - initial state
+      // Apply to DB.
+      logging::info(logging::medium)
+          << "SQL: processing host check event (host: " << hc.host_id
+          << ", command: " << hc.command_line << ")";
+
+      // Prepare queries.
+      if (!_host_check_update.prepared()) {
+        query_preparator::event_unique unique;
+        unique.insert("host_id");
+        query_preparator qp(neb::host_check::static_type(), unique);
+        _host_check_update = qp.prepare_update(_mysql);
+      }
+
+      // Processing.
+      bool store;
+      size_t str_hash = std::hash<std::string> {}
+      (hc.command_line);
+      // Did the command changed since last time?
+      if (_cache_hst_cmd[hc.host_id] != str_hash) {
+        store = true;
+        _cache_hst_cmd[hc.host_id] = str_hash;
+      }
+      else
+        store = false;
+
+      if (store) {
+        int32_t conn = _mysql.choose_connection_by_instance(
+            _cache_host_instance[hc.host_id]);
+        _host_check_update << hc;
+
+        std::promise<int> promise;
+        std::ostringstream oss;
+        oss << "SQL: could not store host check (host: " << hc.host_id << "): ";
+        _mysql.run_statement(_host_check_update, oss.str(), true, conn);
+      }
+    } else
+      // Do nothing.
+      logging::info(logging::medium)
+          << "SQL: not processing host check event (host: " << hc.host_id
+          << ", command: " << hc.command_line
+          << ", check type: " << hc.check_type
+          << ", next check: " << hc.next_check << ", now: " << now << ")";
+    *std::get<2>(p) = true;
+    _events.pop_front();
+  }
+}
+
 void conflict_manager::_process_host_dependency() {}
 
 /**
@@ -535,7 +604,46 @@ void conflict_manager::_process_instance() {
 }
 
 void conflict_manager::_process_instance_status() {}
-void conflict_manager::_process_log() {}
+
+/**
+ *  Process a log event.
+ *
+ *  @param[in] e Uncasted log.
+ */
+void conflict_manager::_process_log() {
+  int conn = _mysql.choose_best_connection();
+
+  while (!_events.empty()) {
+    auto& p = _events.front();
+    std::shared_ptr<io::data> d{std::get<0>(p)};
+
+    if (!d || d->type() != neb::log_entry::static_type())
+      break;
+
+    // Fetch proper structure.
+    neb::log_entry const& le(*static_cast<neb::log_entry const*>(d.get()));
+
+    // Log message.
+    logging::info(logging::medium) << "SQL: processing log of poller '"
+                                   << le.poller_name << "' generated at "
+                                   << le.c_time << " (type " << le.msg_type
+                                   << ")";
+
+    // Prepare query.
+    if (!_log_insert.prepared()) {
+      query_preparator qp(neb::log_entry::static_type());
+      _log_insert = qp.prepare_insert(_mysql);
+    }
+
+    // Run query.
+    _log_insert << le;
+    _mysql.run_statement(_log_insert, "SQL: ", conn);
+    /* We just have to set the boolean */
+    *std::get<2>(p) = true;
+    _events.pop_front();
+  }
+}
+
 void conflict_manager::_process_module() {}
 
 /**

@@ -129,6 +129,7 @@ class conflict_manager {
   std::thread _thread;
 
   std::unordered_map<uint32_t, uint32_t> _cache_host_instance;
+  std::unordered_map<uint64_t, size_t> _cache_hst_cmd;
   std::unordered_map<std::pair<uint64_t, uint64_t>, size_t> _cache_svc_cmd;
   std::unordered_map<std::pair<uint64_t, uint64_t>, index_info> _index_cache;
   std::unordered_map<std::pair<uint32_t, std::string>, metric_info>
@@ -142,11 +143,13 @@ class conflict_manager {
   database::mysql_stmt _custom_variable_insupdate;
   database::mysql_stmt _custom_variable_status_insupdate;
   database::mysql_stmt _downtime_insupdate;
+  database::mysql_stmt _host_check_update;
   database::mysql_stmt _host_group_insupdate;
   database::mysql_stmt _host_group_member_delete;
   database::mysql_stmt _host_group_member_insert;
   database::mysql_stmt _host_insupdate;
   database::mysql_stmt _instance_insupdate;
+  database::mysql_stmt _log_insert;
   database::mysql_stmt _service_check_update;
   database::mysql_stmt _service_group_insupdate;
   database::mysql_stmt _service_group_member_delete;

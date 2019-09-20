@@ -142,7 +142,7 @@ step[12].count = {
 -- Downtimes per host
 step[13].count = {
   host = 5,
-  continue = false,
+  continue = true,
 }
 
 -- Host checks and logs per instance
@@ -156,7 +156,7 @@ step[14].count = {
 step[15].count = {
   host = step[2].count.host,
   instance = step[1].count.instance,
-  continue = true,
+  continue = false,
 }
 
 -- Acknowledgements
