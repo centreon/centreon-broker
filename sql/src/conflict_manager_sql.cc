@@ -476,7 +476,62 @@ void conflict_manager::_process_host_check() {
   }
 }
 
-void conflict_manager::_process_host_dependency() {}
+/**
+ *  Process a host dependency event.
+ *
+ *  @param[in] e Uncasted host dependency.
+ */
+void conflict_manager::_process_host_dependency() {
+  int32_t conn = _mysql.choose_best_connection();
+  _finish_action(-1, actions::hosts);
+
+  while (!_events.empty()) {
+    auto& p = _events.front();
+    std::shared_ptr<io::data> d{std::get<0>(p)};
+    // Cast object.
+    neb::host_dependency const& hd =
+        *static_cast<neb::host_dependency const*>(d.get());
+
+    // Insert/Update.
+    if (hd.enabled) {
+      logging::info(logging::medium) << "SQL: enabling host dependency of "
+                                     << hd.dependent_host_id << " on "
+                                     << hd.host_id;
+
+      // Prepare queries.
+      if (!_host_dependency_insupdate.prepared()) {
+        query_preparator::event_unique unique;
+        unique.insert("host_id");
+        unique.insert("dependent_host_id");
+        query_preparator qp(neb::host_dependency::static_type(), unique);
+        _host_dependency_insupdate = qp.prepare_insert_or_update(_mysql);
+      }
+
+      // Process object.
+      std::ostringstream oss;
+      oss << "SQL: could not store host dependency (host: " << hd.host_id
+          << ", dependent host: " << hd.dependent_host_id << "): ";
+
+      _host_dependency_insupdate << hd;
+      _mysql.run_statement(_host_dependency_insupdate, oss.str(), true, conn);
+      _add_action(conn, actions::host_dependencies);
+    }
+    // Delete.
+    else {
+      logging::info(logging::medium) << "SQL: removing host dependency of "
+                                     << hd.dependent_host_id << " on "
+                                     << hd.host_id;
+      std::ostringstream oss;
+      oss << "DELETE FROM hosts_hosts_dependencies"
+          << "  WHERE dependent_host_id=" << hd.dependent_host_id
+          << "    AND host_id=" << hd.host_id;
+      _mysql.run_query(oss.str(), "SQL: ", true, conn);
+      _add_action(conn, actions::host_dependencies);
+    }
+    *std::get<2>(p) = true;
+    _events.pop_front();
+  }
+}
 
 /**
  *  Process a host group event.
@@ -636,6 +691,7 @@ void conflict_manager::_process_host_group_member() {
  *  @param[in] e Uncasted host.
  */
 void conflict_manager::_process_host() {
+  _finish_action(-1, actions::host_dependencies);
   auto& p = _events.front();
   neb::host& h = *static_cast<neb::host*>(std::get<0>(p).get());
 
