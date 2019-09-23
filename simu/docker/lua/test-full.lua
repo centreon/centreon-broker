@@ -5,6 +5,7 @@ local blue = string.char(27) .. "[34m"
 local red = string.char(27) .. "[31m"
 local green = string.char(27) .. "[32m"
 local yellow = string.char(27) .. "[33m"
+local purple = string.char(27) .. "[35m"
 local reset = string.char(27) .. "[0m"
 
 local simu = {
@@ -142,6 +143,7 @@ step[12].count = {
 -- Downtimes per host
 step[13].count = {
   host = 5,
+  disabled = false,
   continue = true,
 }
 
@@ -187,7 +189,7 @@ step[18].count = {
 step[19].count = {
   host = step[2].count.host,
   instance = step[2].count.instance,
-  continue = true,
+  continue = false,
 }
 
 -- Host parent
@@ -208,7 +210,7 @@ step[21].count = {
 -- Instance status
 step[22].count = {
   instance = step[1].count.instance,
-  continue = true,
+  continue = false,
 }
 
 -- Logs
@@ -324,30 +326,46 @@ function read()
 
     -- Building step in db
     if step[simu.step_build] then
-      broker_log:info(0, "Build Step " .. simu.step_build)
-      print(green .. "BUILD step " .. simu.step_build .. " " .. reset .. step[simu.step_build].name)
-      step[simu.step_build].build(simu.stack, step[simu.step_build].count, simu.conn)
-      print("   stack size " .. #simu.stack)
+      if step[simu.step_build].count.disabled then
+        print(purple .. 'BUILD step ' .. simu.step_build .. ' disabled ' .. reset .. '(' .. step[simu.step_build].name .. ')')
+        broker_log:info(0, 'Build Step ' .. simu.step_build .. ' disabled')
+      else
+        broker_log:info(0, "Build Step " .. simu.step_build)
+        print(green .. "BUILD step " .. simu.step_build .. " " .. reset .. step[simu.step_build].name)
+        step[simu.step_build].build(simu.stack, step[simu.step_build].count, simu.conn)
+        print("   stack size " .. #simu.stack)
+      end
       simu.step_build = simu.step_build + 1
     end
   end
 
   -- Check of step in db
   if simu.step_check < simu.step_build or not step[simu.step_check].count.continue then
-    if step[simu.step_check].check(simu.conn, step[simu.step_check].count) then
-      print(blue .. "CHECK " .. reset .. step[simu.step_check].name .. " DONE")
-      if not step[simu.step_check].count.continue then
-        broker_log:info(0, "No more step")
-        simu.finish = os.clock()
-        print(yellow .. "Execution duration: " .. reset .. (simu.finish - simu.start) .. "s")
-        local output = os.capture("ps ax | grep \"\\<cbd\\>\" | grep -v grep | awk '{print $1}' ", 1)
-        if output ~= "" then
-          broker_log:info(0, "SEND COMMAND: kill " .. output)
-          os.execute("kill -9 " .. output)
-        end
-      end
+    local cont = true
+    if step[simu.step_check].count.disabled then
+      print(purple .. "NO CHECK ON " .. reset .. step[simu.step_check].name)
+      broker_log:info(0, "No check on " .. step[simu.step_check].name)
       simu.step_check = simu.step_check + 1
       broker_log:info(0, "Check Step " .. simu.step_check)
+    else
+      if step[simu.step_check].check(simu.conn, step[simu.step_check].count) then
+        print(blue .. "CHECK " .. reset .. step[simu.step_check].name .. " DONE")
+        cont = step[simu.step_check].count.continue
+        simu.step_check = simu.step_check + 1
+        broker_log:info(0, "Check Step " .. simu.step_check)
+      end
+    end
+
+    if not cont then
+      broker_log:info(0, "No more step")
+      simu.finish = os.clock()
+      print(yellow .. "Execution duration: " .. reset .. (simu.finish - simu.start) .. "s")
+      local output = os.capture("ps ax | grep \"\\<cbd\\>\" | grep -v grep | awk '{print $1}' ", 1)
+      if output ~= "" then
+        broker_log:info(0, "SEND COMMAND: kill " .. output)
+        os.execute("kill -9 " .. output)
+      end
+    else
     end
   end
 
