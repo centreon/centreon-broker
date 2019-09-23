@@ -19,9 +19,9 @@
 
 #include "com/centreon/broker/tcp/connector.hh"
 #include <gtest/gtest.h>
-#include <thread>
 #include <chrono>
 #include <com/centreon/broker/tcp/stream.hh>
+#include <thread>
 #include "../../core/test/test_server.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -116,10 +116,8 @@ TEST_F(TcpConnector, ReadAfterTimeout) {
   io->write(data);
 
   ASSERT_FALSE(io->read(data2, ::time(nullptr) + 1));
-  while(!io->read(data2, ::time(nullptr) + 1)) {
-    std::cout << "sleep" << std::endl;
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  }
+  while (!io->read(data2, ::time(nullptr) + 1))
+    ;
 
   std::vector<char> vec{std::static_pointer_cast<io::raw>(data2)->get_buffer()};
   std::string str{vec.begin(), vec.end()};

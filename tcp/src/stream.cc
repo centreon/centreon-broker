@@ -21,7 +21,6 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <atomic>
-#include <functional>
 #include <sstream>
 #include <system_error>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -95,7 +94,7 @@ std::string stream::peer() const {
  */
 
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
-  auto bytes_available = [](asio::ip::tcp::socket &socket) -> std::size_t {
+  auto bytes_available = [](asio::ip::tcp::socket& socket) -> std::size_t {
     asio::socket_base::bytes_readable command(true);
     socket.io_control(command);
     std::size_t bytes_readable = command.get();
@@ -115,11 +114,11 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   }
 
   d.reset();
-  //check for timeout
+  // check for timeout
   if (bytes_available(*_socket) <= 0) {
     while (bytes_available(*_socket) <= 0) {
       // Disconnected socket with no data.
-      if ((deadline != (time_t)-1) && (time(NULL) >= deadline))
+      if ((deadline != (time_t)-1) && (time(nullptr) >= deadline))
         return (false);
 
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -136,7 +135,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   std::vector<char>& buffer = data->get_buffer();
   buffer.resize(len);
 
-  _socket->read_some(asio::buffer(buffer, len),read_err);
+  _socket->read_some(asio::buffer(buffer, len), read_err);
 
   if (read_err)
     throw exceptions::msg()
