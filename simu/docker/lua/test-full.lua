@@ -196,7 +196,7 @@ step[19].count = {
 step[20].count = {
   host = step[2].count.host,
   instance = step[2].count.instance,
-  continue = false,
+  continue = true,
 }
 
 -- Service dependency
@@ -204,7 +204,7 @@ step[21].count = {
   service = step[8].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
-  continue = false,
+  continue = true,
 }
 
 -- Instance status
