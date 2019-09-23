@@ -260,7 +260,7 @@ void conflict_manager::_process_custom_variable_status() {
  */
 void conflict_manager::_process_downtime() {
   int conn = _mysql.choose_best_connection();
-  _finish_action(-1, actions::hosts | actions::instances);
+  _finish_action(-1, actions::hosts | actions::host_parents | actions::host_dependencies);
 
   while (!_events.empty()) {
     auto& p = _events.front();
@@ -314,6 +314,7 @@ void conflict_manager::_process_downtime() {
 
       _downtime_insupdate << dd;
       _mysql.run_statement(_downtime_insupdate, oss.str(), true, conn);
+      _add_action(conn, actions::downtimes);
     }
     *std::get<2>(p) = true;
     _events.pop_front();
@@ -398,11 +399,12 @@ void conflict_manager::_process_flapping_status() {
       << "): ";
 
   _flapping_status_insupdate << fs;
+  int32_t conn = _mysql.choose_connection_by_instance(_cache_host_instance[fs.host_id]);
   _mysql.run_statement(
       _flapping_status_insupdate,
       oss.str(),
-      true,
-      _mysql.choose_connection_by_instance(_cache_host_instance[fs.host_id]));
+      true, conn);
+  _add_action(conn, actions::hosts);
   *std::get<2>(p) = true;
   _events.pop_front();
 }
@@ -413,6 +415,9 @@ void conflict_manager::_process_flapping_status() {
  *  @param[in] e Uncasted host check.
  */
 void conflict_manager::_process_host_check() {
+  _finish_action(
+      -1,
+      actions::downtimes | actions::host_dependencies | actions::host_parents);
   while (!_events.empty()) {
     auto& p = _events.front();
     std::shared_ptr<io::data> d{std::get<0>(p)};
@@ -463,6 +468,7 @@ void conflict_manager::_process_host_check() {
         std::ostringstream oss;
         oss << "SQL: could not store host check (host: " << hc.host_id << "): ";
         _mysql.run_statement(_host_check_update, oss.str(), true, conn);
+        _add_action(conn, actions::hosts);
       }
     } else
       // Do nothing.
@@ -483,7 +489,7 @@ void conflict_manager::_process_host_check() {
  */
 void conflict_manager::_process_host_dependency() {
   int32_t conn = _mysql.choose_best_connection();
-  _finish_action(-1, actions::hosts);
+  _finish_action(-1, actions::hosts | actions::host_parents | actions::downtimes | actions::host_dependencies);
 
   while (!_events.empty()) {
     auto& p = _events.front();
@@ -696,8 +702,9 @@ void conflict_manager::_process_host_group_member() {
  */
 void conflict_manager::_process_host() {
   _finish_action(-1,
-                 actions::host_dependencies | actions::host_parent |
-                     actions::service_dependencies | actions::service_parent);
+                 actions::host_dependencies | actions::host_parents |
+                     actions::downtimes | actions::service_dependencies |
+                     actions::service_parents);
   auto& p = _events.front();
   neb::host& h = *static_cast<neb::host*>(std::get<0>(p).get());
 
@@ -749,7 +756,7 @@ void conflict_manager::_process_host() {
  */
 void conflict_manager::_process_host_parent() {
   int32_t conn = _mysql.choose_best_connection();
-  _finish_action(-1, actions::hosts);
+  _finish_action(-1, actions::hosts | actions::host_dependencies | actions::downtimes);
 
   while (!_events.empty()) {
     auto& p = _events.front();
@@ -779,7 +786,7 @@ void conflict_manager::_process_host_parent() {
 
       _host_parent_insert << hp;
       _mysql.run_statement(_host_parent_insert, oss.str(), false, conn);
-      _add_action(conn, actions::host_parent);
+      _add_action(conn, actions::host_parents);
     }
     // Disable parenting.
     else {
@@ -799,7 +806,7 @@ void conflict_manager::_process_host_parent() {
       // Delete.
       _host_parent_delete << hp;
       _mysql.run_statement(_host_parent_delete, "SQL: ", false, conn);
-      _add_action(conn, actions::host_parent);
+      _add_action(conn, actions::host_parents);
     }
     *std::get<2>(p) = true;
     _events.pop_front();
@@ -812,6 +819,9 @@ void conflict_manager::_process_host_parent() {
  *  @param[in] e Uncasted host status.
  */
 void conflict_manager::_process_host_status() {
+  _finish_action(
+      -1,
+      actions::downtimes | actions::host_dependencies | actions::host_parents);
   auto& p = _events.front();
 
   // Processed object.
@@ -843,11 +853,13 @@ void conflict_manager::_process_host_status() {
     _host_status_update << hs;
     std::ostringstream oss;
     oss << "SQL: could not store host status (host: " << hs.host_id << "): ";
+    int32_t conn =
+        _mysql.choose_connection_by_instance(_cache_host_instance[hs.host_id]);
     _mysql.run_statement(
         _host_status_update,
         oss.str(),
-        true,
-        _mysql.choose_connection_by_instance(_cache_host_instance[hs.host_id]));
+        true, conn);
+    _add_action(conn, actions::hosts);
   } else
     // Do nothing.
     logging::info(logging::medium)
@@ -908,7 +920,48 @@ void conflict_manager::_process_instance() {
   _events.pop_front();
 }
 
-void conflict_manager::_process_instance_status() {}
+/**
+ *  Process an instance status event. To work on an instance status, we must
+ *  be sure the instance already exists in the database. So this query must
+ *  be done by the same thread as the one that created the instance.
+ *
+ *  @param[in] e Uncasted instance status.
+ */
+void conflict_manager::_process_instance_status() {
+  // Cast object.
+  auto& p = _events.front();
+  neb::instance_status& is =
+      *static_cast<neb::instance_status*>(std::get<0>(p).get());
+
+  // Log message.
+  logging::info(logging::medium)
+      << "SQL: processing poller status event (id: " << is.poller_id
+      << ", last alive: " << is.last_alive << ")";
+
+  // Processing.
+  if (_is_valid_poller(is.poller_id)) {
+    // Prepare queries.
+    if (!_instance_status_insupdate.prepared()) {
+      query_preparator::event_unique unique;
+      unique.insert("instance_id");
+      query_preparator qp(neb::instance_status::static_type(), unique);
+      _instance_status_insupdate = qp.prepare_insert_or_update(_mysql);
+    }
+
+    // Process object.
+    _instance_status_insupdate << is;
+    std::ostringstream oss;
+    oss << "SQL: could not update poller (poller: " << is.poller_id
+        << "): ";
+    _mysql.run_statement(
+        _instance_status_insupdate,
+        oss.str(), true,
+        _mysql.choose_connection_by_instance(is.poller_id));
+  }
+  *std::get<2>(p) = true;
+  _events.pop_front();
+}
+
 
 /**
  *  Process a log event.
@@ -1026,7 +1079,7 @@ void conflict_manager::_process_service_check() {
  */
 void conflict_manager::_process_service_dependency() {
   int32_t conn = _mysql.choose_best_connection();
-  _finish_action(-1, actions::hosts);
+  _finish_action(-1, actions::hosts | actions::host_dependencies);
 
   while (!_events.empty()) {
     auto& p = _events.front();
@@ -1338,6 +1391,7 @@ void conflict_manager::_process_service_status() {
         _service_status_update,
         oss.str(),
         true, conn);
+    _add_action(conn, actions::hosts);
   } else
     // Do nothing.
     logging::info(logging::medium)

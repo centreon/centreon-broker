@@ -58,9 +58,10 @@ class conflict_manager {
     service_servicegroups = 1 << 6,
     custom_variables = 1 << 7,
     host_dependencies = 1 << 8,
-    host_parent = 1 << 9,
+    host_parents = 1 << 9,
     service_dependencies = 1 << 10,
-    service_parent = 1 << 11,
+    service_parents = 1 << 11,
+    downtimes = 1 << 12,
   };
 
   struct index_info {
@@ -160,6 +161,7 @@ class conflict_manager {
   database::mysql_stmt _host_parent_insert;
   database::mysql_stmt _host_status_update;
   database::mysql_stmt _instance_insupdate;
+  database::mysql_stmt _instance_status_insupdate;
   database::mysql_stmt _log_insert;
   database::mysql_stmt _service_check_update;
   database::mysql_stmt _service_dependency_insupdate;
