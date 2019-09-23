@@ -695,7 +695,9 @@ void conflict_manager::_process_host_group_member() {
  *  @param[in] e Uncasted host.
  */
 void conflict_manager::_process_host() {
-  _finish_action(-1, actions::host_dependencies);
+  _finish_action(-1,
+                 actions::host_dependencies | actions::host_parent |
+                     actions::service_dependencies | actions::service_parent);
   auto& p = _events.front();
   neb::host& h = *static_cast<neb::host*>(std::get<0>(p).get());
 
@@ -1017,7 +1019,76 @@ void conflict_manager::_process_service_check() {
   _events.pop_front();
 }
 
-void conflict_manager::_process_service_dependency() {}
+/**
+ *  Process a service dependency event.
+ *
+ *  @param[in] e Uncasted service dependency.
+ */
+void conflict_manager::_process_service_dependency() {
+  int32_t conn = _mysql.choose_best_connection();
+  _finish_action(-1, actions::hosts);
+
+  while (!_events.empty()) {
+    auto& p = _events.front();
+    std::shared_ptr<io::data> d{std::get<0>(p)};
+
+    if (!d || d->type() != neb::service_dependency::static_type())
+      break;
+
+    // Cast object.
+    neb::service_dependency const& sd(
+        *static_cast<neb::service_dependency const*>(d.get()));
+
+    // Insert/Update.
+    if (sd.enabled) {
+      logging::info(logging::medium) << "SQL: enabling service dependency of ("
+                                     << sd.dependent_host_id << ", "
+                                     << sd.dependent_service_id << ") on ("
+                                     << sd.host_id << ", " << sd.service_id
+                                     << ")";
+
+      // Prepare queries.
+      if (!_service_dependency_insupdate.prepared()) {
+        query_preparator::event_unique unique;
+        unique.insert("dependent_host_id");
+        unique.insert("dependent_service_id");
+        unique.insert("host_id");
+        unique.insert("service_id");
+        query_preparator qp(neb::service_dependency::static_type(), unique);
+        _service_dependency_insupdate = qp.prepare_insert_or_update(_mysql);
+      }
+
+      // Process object.
+      std::ostringstream oss;
+      oss << "SQL: could not store service dependency (host: " << sd.host_id
+          << ", service: " << sd.service_id
+          << ", dependent host: " << sd.dependent_host_id
+          << ", dependent service: " << sd.dependent_service_id << "): ";
+      _service_dependency_insupdate << sd;
+      _mysql.run_statement(
+          _service_dependency_insupdate, oss.str(), true, conn);
+      _add_action(conn, actions::service_dependencies);
+    }
+    // Delete.
+    else {
+      logging::info(logging::medium) << "SQL: removing service dependency of ("
+                                     << sd.dependent_host_id << ", "
+                                     << sd.dependent_service_id << ") on ("
+                                     << sd.host_id << ", " << sd.service_id
+                                     << ")";
+      std::ostringstream oss;
+      oss << "DELETE FROM services_services_dependencies"
+             " WHERE dependent_host_id=" << sd.dependent_host_id
+          << " AND dependent_service_id=" << sd.dependent_service_id
+          << " AND host_id=" << sd.host_id
+          << " AND service_id=" << sd.service_id;
+      _mysql.run_query(oss.str(), "SQL: ", false, conn);
+      _add_action(conn, actions::service_dependencies);
+    }
+    *std::get<2>(p) = true;
+    _events.pop_front();
+  }
+}
 
 /**
  *  Process a service group event.
