@@ -85,27 +85,6 @@ std::string stream::peer() const {
   return oss.str();
 }
 
-enum reason { reason_no, reason_timer, reason_socket };
-
-static void timer_cb(std::atomic<uint8_t>* reason,
-                     std::error_code* return_error,
-                     std::error_code err) {
-  *reason = reason_timer;
-  *return_error = err;
-}
-
-static void read_cb(std::atomic<uint8_t>* reason,
-                    asio::system_timer* tmr,
-                    std::error_code* return_error,
-                    std::size_t* return_len,
-                    std::error_code err,
-                    std::size_t bytes_transferred) {
-  *reason = reason_socket;
-  tmr->cancel();
-  *return_error = err;
-  *return_len = bytes_transferred;
-}
-
 /**
  *  Read data with timeout.
  *
@@ -116,11 +95,17 @@ static void read_cb(std::atomic<uint8_t>* reason,
  */
 
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
+  auto bytes_available = [](asio::ip::tcp::socket &socket) -> std::size_t {
+    asio::socket_base::bytes_readable command(true);
+    socket.io_control(command);
+    std::size_t bytes_readable = command.get();
+    return bytes_readable;
+  };
+
   // Check that socket exist.
   if (!_socket)
     _initialize_socket();
 
-  std::atomic<uint8_t> reason{reason_no};
   // Set deadline.
   {
     time_t now = ::time(nullptr);
@@ -129,51 +114,33 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
       deadline = now + _read_timeout;
   }
 
-  asio::system_timer timer{_io_context};
-  if (deadline != -1)
-    timer.expires_at(std::chrono::system_clock::from_time_t(deadline));
+  d.reset();
+  //check for timeout
+  if (bytes_available(*_socket) <= 0) {
+    while (bytes_available(*_socket) <= 0) {
+      // Disconnected socket with no data.
+      if ((deadline != (time_t)-1) && (time(NULL) >= deadline))
+        return (false);
 
-  d.reset(new io::raw());
-
-  std::error_code read_err;
-  std::error_code timer_err;
-  std::shared_ptr<io::raw> data{std::static_pointer_cast<io::raw>(d)};
-
-  std::vector<char>& buffer = data->get_buffer();
-  buffer.resize(2048);
-  std::size_t len{0};
-  _socket->async_read_some(
-      asio::buffer(buffer, 2048),
-      std::bind(read_cb, &reason, &timer, &read_err, &len, std::placeholders::_1,
-                std::placeholders::_2));
-  if (deadline != -1)
-    timer.async_wait(
-      std::bind(timer_cb, &reason, &timer_err, std::placeholders::_1));
-
-  _io_context.reset();
-  while (_io_context.run_one()) {
-    if (reason == reason_timer && !timer_err)
-      break;
-    if (reason == reason_socket && !read_err)
-      break;
-    if (read_err)
-      timer.cancel();
-    if (timer_err) {
-      if (timer_err != std::errc::operation_canceled)
-        timer_err.clear();
-      else
-        _socket->cancel();
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
   }
 
-  if (timer_err)
-    throw exceptions::msg()
-        << "TCP peer '" << _name << "' err: " << timer_err.message();
+  d.reset(new io::raw());
+  std::size_t len{bytes_available(*_socket)};
+
+  std::error_code read_err;
+
+  std::shared_ptr<io::raw> data{std::static_pointer_cast<io::raw>(d)};
+
+  std::vector<char>& buffer = data->get_buffer();
+  buffer.resize(len);
+
+  _socket->read_some(asio::buffer(buffer, len),read_err);
+
   if (read_err)
     throw exceptions::msg()
         << "TCP peer '" << _name << "' err: " << read_err.message();
-  if (deadline != -1)
-    timer.cancel();
 
   if (len) {
     buffer.resize(len);

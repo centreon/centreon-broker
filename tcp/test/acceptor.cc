@@ -133,3 +133,36 @@ TEST_F(TcpAcceptor, Multiple) {
     t.join();
   }
 }
+
+TEST_F(TcpAcceptor, BigSend) {
+  tcp::acceptor acc;
+
+  acc.listen_on(4242);
+
+  std::thread t{[] {
+    tcp::connector con;
+    con.connect_to("127.0.0.1", 4242);
+    std::shared_ptr<io::stream> str{con.open()};
+    std::shared_ptr<io::raw> data{new io::raw()};
+    std::shared_ptr<io::data> data_read;
+    for (int i = 0 ; i < 1024; i++) {
+      data->append("0123456789");
+    }
+    data->append("01234");
+    str->write(data);
+  }};
+  std::shared_ptr<io::stream> io{acc.open()};
+  std::shared_ptr<io::raw> data{new io::raw()};
+  std::shared_ptr<io::data> data_read;
+  io->read(data_read, time(NULL) + 5);
+
+  std::vector<char> vec{std::static_pointer_cast<io::raw>(data_read)->get_buffer()};
+  std::string str{vec.begin(), vec.end()};
+
+  data->append("TEST\n");
+  io->write(data);
+
+  ASSERT_TRUE(str.length() == 10245);
+
+  t.join();
+}
