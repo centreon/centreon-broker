@@ -58,6 +58,7 @@ class conflict_manager {
     service_servicegroups = 1 << 6,
     custom_variables = 1 << 7,
     host_dependencies = 1 << 8,
+    host_parent = 1 << 9,
   };
 
   struct index_info {
@@ -153,6 +154,8 @@ class conflict_manager {
   database::mysql_stmt _host_group_member_delete;
   database::mysql_stmt _host_group_member_insert;
   database::mysql_stmt _host_insupdate;
+  database::mysql_stmt _host_parent_delete;
+  database::mysql_stmt _host_parent_insert;
   database::mysql_stmt _host_status_update;
   database::mysql_stmt _instance_insupdate;
   database::mysql_stmt _log_insert;

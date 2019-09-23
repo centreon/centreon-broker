@@ -488,6 +488,10 @@ void conflict_manager::_process_host_dependency() {
   while (!_events.empty()) {
     auto& p = _events.front();
     std::shared_ptr<io::data> d{std::get<0>(p)};
+
+    if (!d || d->type() != neb::host_dependency::static_type())
+      break;
+
     // Cast object.
     neb::host_dependency const& hd =
         *static_cast<neb::host_dependency const*>(d.get());
@@ -736,7 +740,69 @@ void conflict_manager::_process_host() {
   }
 }
 
-void conflict_manager::_process_host_parent() {}
+/**
+ *  Process a host parent event.
+ *
+ *  @param[in] e Uncasted host parent.
+ */
+void conflict_manager::_process_host_parent() {
+  int32_t conn = _mysql.choose_best_connection();
+  _finish_action(-1, actions::hosts);
+
+  while (!_events.empty()) {
+    auto& p = _events.front();
+    std::shared_ptr<io::data> d{std::get<0>(p)};
+
+    if (!d || d->type() != neb::host_parent::static_type())
+      break;
+
+    neb::host_parent const& hp(*static_cast<neb::host_parent const*>(d.get()));
+
+    // Enable parenting.
+    if (hp.enabled) {
+      // Log message.
+      logging::info(logging::medium) << "SQL: host " << hp.parent_id
+                                     << " is parent of host " << hp.host_id;
+
+      // Prepare queries.
+      if (!_host_parent_insert.prepared()) {
+        query_preparator qp(neb::host_parent::static_type());
+        _host_parent_insert = qp.prepare_insert(_mysql, true);
+      }
+
+      // Insert.
+      std::ostringstream oss;
+      oss << "SQL: could not store host parentship (child host: " << hp.host_id
+          << ", parent host: " << hp.parent_id << "): ";
+
+      _host_parent_insert << hp;
+      _mysql.run_statement(_host_parent_insert, oss.str(), false, conn);
+      _add_action(conn, actions::host_parent);
+    }
+    // Disable parenting.
+    else {
+      logging::info(logging::medium) << "SQL: host " << hp.parent_id
+                                     << " is not parent of host " << hp.host_id
+                                     << " anymore";
+
+      // Prepare queries.
+      if (!_host_parent_delete.prepared()) {
+        query_preparator::event_unique unique;
+        unique.insert("child_id");
+        unique.insert("parent_id");
+        query_preparator qp(neb::host_parent::static_type(), unique);
+        _host_parent_delete = qp.prepare_delete(_mysql);
+      }
+
+      // Delete.
+      _host_parent_delete << hp;
+      _mysql.run_statement(_host_parent_delete, "SQL: ", false, conn);
+      _add_action(conn, actions::host_parent);
+    }
+    *std::get<2>(p) = true;
+    _events.pop_front();
+  }
+}
 
 /**
  *  Process a host status event.

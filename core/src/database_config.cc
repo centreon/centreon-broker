@@ -16,11 +16,12 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/database_config.hh"
 #include <map>
 #include <string>
 #include "com/centreon/broker/config/parser.hh"
+#include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/exceptions/config.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 
@@ -119,9 +120,18 @@ database_config::database_config(config::endpoint const& cfg) {
 
   // queries_per_transaction
   it = cfg.params.find("queries_per_transaction");
-  if (it != end)
-    _queries_per_transaction = std::stoul(it->second);
-  else
+  if (it != end) {
+    try {
+      _queries_per_transaction = std::stoul(it->second);
+    }
+    catch (std::exception const& e) {
+      logging::error(logging::high) << "queries_per_transaction is a number "
+                                       "but must be given as a string. Unable "
+                                       "to read the value '" << it->second
+                                    << "' - value 10000 taken by default.";
+      _queries_per_transaction = 10000;
+    }
+  } else
     _queries_per_transaction = 20000;
 
   // check_replication
