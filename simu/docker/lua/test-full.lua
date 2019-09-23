@@ -189,14 +189,14 @@ step[18].count = {
 step[19].count = {
   host = step[2].count.host,
   instance = step[2].count.instance,
-  continue = false,
+  continue = true,
 }
 
 -- Host parent
 step[20].count = {
   host = step[2].count.host,
   instance = step[2].count.instance,
-  continue = true,
+  continue = false,
 }
 
 -- Service dependency
