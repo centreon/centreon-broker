@@ -19,22 +19,18 @@
 
 #include "com/centreon/broker/tcp/acceptor.hh"
 #include <gtest/gtest.h>
+#include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/tcp/connector.hh"
-#include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
 
 class TcpAcceptor : public testing::Test {
  public:
-  void SetUp(void) override {
-    logging::manager::load();
-  }
+  void SetUp(void) override { logging::manager::load(); }
 
-  void TearDown(void) override {
-    logging::manager::unload();
-  }
+  void TearDown(void) override { logging::manager::unload(); }
 };
 
 TEST_F(TcpAcceptor, BadPort) {
@@ -64,7 +60,8 @@ TEST_F(TcpAcceptor, Simple) {
   std::shared_ptr<io::data> data_read;
   io->read(data_read);
 
-  std::vector<char> vec{std::static_pointer_cast<io::raw>(data_read)->get_buffer()};
+  std::vector<char> vec{
+      std::static_pointer_cast<io::raw>(data_read)->get_buffer()};
   std::string str{vec.begin(), vec.end()};
   ASSERT_TRUE(str == "TEST\n");
 
@@ -145,7 +142,7 @@ TEST_F(TcpAcceptor, BigSend) {
     std::shared_ptr<io::stream> str{con.open()};
     std::shared_ptr<io::raw> data{new io::raw()};
     std::shared_ptr<io::data> data_read;
-    for (int i = 0 ; i < 1024; i++) {
+    for (int i = 0; i < 1024; i++) {
       data->append("0123456789");
     }
     data->append("01234");
@@ -154,9 +151,10 @@ TEST_F(TcpAcceptor, BigSend) {
   std::shared_ptr<io::stream> io{acc.open()};
   std::shared_ptr<io::raw> data{new io::raw()};
   std::shared_ptr<io::data> data_read;
-  io->read(data_read, time(NULL) + 5);
+  io->read(data_read, time(nullptr) + 5);
 
-  std::vector<char> vec{std::static_pointer_cast<io::raw>(data_read)->get_buffer()};
+  std::vector<char> vec{
+      std::static_pointer_cast<io::raw>(data_read)->get_buffer()};
   std::string str{vec.begin(), vec.end()};
 
   data->append("TEST\n");
