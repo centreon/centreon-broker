@@ -25,12 +25,12 @@ local step = {
   require('neb.hostgroup_members'),                 --  4
   require('neb.custom_variables'),                  --  5
   require('neb.custom_variable_status'),            --  6
-  require('neb.comments'),                          --  7
-  require('neb.services'),                          --  8
-  require('neb.servicegroups'),                     --  9
-  require('neb.servicegroup_members'),              -- 10
-  require('neb.service_checks'),                    -- 11
-  require('neb.service_status'),                    -- 12
+  require('neb.services'),                          --  7
+  require('neb.servicegroups'),                     --  8
+  require('neb.servicegroup_members'),              --  9
+  require('neb.service_checks'),                    -- 10
+  require('neb.service_status'),                    -- 11
+  require('neb.comments'),                          -- 12
   require('neb.downtimes'),                         -- 13
   require('neb.host_checks'),                       -- 14
   require('neb.host_status'),                       -- 15
@@ -92,16 +92,8 @@ step[6].count = {
   continue = true,
 }
 
--- Comments per host
-step[7].count = {
-  comment = 50,
-  host = step[2].count.host,
-  instance = step[2].count.instance,
-  continue = true,
-}
-
 -- Services per host          => 20
-step[8].count = {
+step[7].count = {
   service = 50,
   host = step[2].count.host,
   instance = step[2].count.instance,
@@ -109,35 +101,44 @@ step[8].count = {
 }
 
 -- Servicegroups
-step[9].count = {
+step[8].count = {
   servicegroup = 20,
   continue = true,
 }
 
 -- Servicegroups members
-step[10].count = {
+step[9].count = {
   instance = step[2].count.instance,
   host = step[2].count.host,
-  service = step[8].count.service,
+  service = step[7].count.service,
   servicegroup = 20,
   continue = true,
 }
 
 -- Service checks
-step[11].count = {
-  service = step[8].count.service,
+step[10].count = {
+  service = step[7].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
   continue = true,
 }
 
 -- Services status per host          => 20
-step[12].count = {
-  service = step[8].count.service,
+step[11].count = {
+  service = step[7].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
   metric = 2,
   continue = true,
+}
+
+-- Comments per host
+step[12].count = {
+  comment = 50,
+  host = step[2].count.host,
+  instance = step[2].count.instance,
+  continue = true,
+  disabled = false,
 }
 
 -- Downtimes per host
@@ -163,7 +164,7 @@ step[15].count = {
 
 -- Acknowledgements
 step[16].count = {
-  service = step[8].count.service,
+  service = step[7].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
   continue = true,
@@ -171,7 +172,7 @@ step[16].count = {
 
 -- Event handler
 step[17].count = {
-  service = step[8].count.service,
+  service = step[7].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
   continue = true,
@@ -179,7 +180,7 @@ step[17].count = {
 
 -- Flapping status
 step[18].count = {
-  service = step[8].count.service,
+  service = step[7].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
   continue = true,
@@ -201,7 +202,7 @@ step[20].count = {
 
 -- Service dependency
 step[21].count = {
-  service = step[8].count.service,
+  service = step[7].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
   continue = true,
@@ -217,7 +218,7 @@ step[22].count = {
 step[23].count = {
   host = step[2].count.host,
   instance = step[1].count.instance,
-  service = step[8].count.service,
+  service = step[7].count.service,
   log = 50,
   continue = false,
 }

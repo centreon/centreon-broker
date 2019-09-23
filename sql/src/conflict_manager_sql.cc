@@ -106,11 +106,16 @@ void conflict_manager::_process_acknowledgement() {
  *  @param[in] e  Uncasted comment.
  */
 void conflict_manager::_process_comment() {
+  _finish_action(-1,
+                 actions::hosts | actions::host_parents |
+                     actions::host_dependencies |
+                     actions::service_dependencies);
   auto& p = _events.front();
   std::shared_ptr<io::data> d{std::get<0>(p)};
 
   // Cast object.
   neb::comment const& cmmnt{*static_cast<neb::comment const*>(d.get())};
+
   int32_t conn = _mysql.choose_connection_by_instance(cmmnt.poller_id);
 
   // Log message.
@@ -260,7 +265,10 @@ void conflict_manager::_process_custom_variable_status() {
  */
 void conflict_manager::_process_downtime() {
   int conn = _mysql.choose_best_connection();
-  _finish_action(-1, actions::hosts | actions::host_parents | actions::host_dependencies);
+  _finish_action(-1,
+                 actions::hosts | actions::host_parents |
+                     actions::host_dependencies |
+                     actions::service_dependencies);
 
   while (!_events.empty()) {
     auto& p = _events.front();
@@ -417,7 +425,7 @@ void conflict_manager::_process_flapping_status() {
 void conflict_manager::_process_host_check() {
   _finish_action(
       -1,
-      actions::downtimes | actions::host_dependencies | actions::host_parents |
+      actions::downtimes | actions::comments | actions::host_dependencies | actions::host_parents |
       actions::service_dependencies);
   while (!_events.empty()) {
     auto& p = _events.front();
@@ -490,7 +498,10 @@ void conflict_manager::_process_host_check() {
  */
 void conflict_manager::_process_host_dependency() {
   int32_t conn = _mysql.choose_best_connection();
-  _finish_action(-1, actions::hosts | actions::host_parents | actions::downtimes | actions::host_dependencies | actions::service_dependencies);
+  _finish_action(-1,
+                 actions::hosts | actions::host_parents | actions::comments |
+                     actions::downtimes | actions::host_dependencies |
+                     actions::service_dependencies);
 
   while (!_events.empty()) {
     auto& p = _events.front();
@@ -704,7 +715,8 @@ void conflict_manager::_process_host_group_member() {
 void conflict_manager::_process_host() {
   _finish_action(-1,
                  actions::host_dependencies | actions::host_parents |
-                     actions::downtimes | actions::service_dependencies);
+                     actions::downtimes | actions::comments |
+                     actions::service_dependencies);
   auto& p = _events.front();
   neb::host& h = *static_cast<neb::host*>(std::get<0>(p).get());
 
@@ -756,7 +768,9 @@ void conflict_manager::_process_host() {
  */
 void conflict_manager::_process_host_parent() {
   int32_t conn = _mysql.choose_best_connection();
-  _finish_action(-1, actions::hosts | actions::host_dependencies | actions::downtimes);
+  _finish_action(-1,
+                 actions::hosts | actions::host_dependencies |
+                     actions::comments | actions::downtimes);
 
   while (!_events.empty()) {
     auto& p = _events.front();
@@ -819,9 +833,9 @@ void conflict_manager::_process_host_parent() {
  *  @param[in] e Uncasted host status.
  */
 void conflict_manager::_process_host_status() {
-  _finish_action(
-      -1,
-      actions::downtimes | actions::host_dependencies | actions::host_parents);
+  _finish_action(-1,
+                 actions::downtimes | actions::comments |
+                     actions::host_dependencies | actions::host_parents);
   auto& p = _events.front();
 
   // Processed object.
@@ -1013,10 +1027,10 @@ void conflict_manager::_process_module() {}
  *  @param[in] e Uncasted service check.
  */
 void conflict_manager::_process_service_check() {
-  _finish_action(
-      -1,
-      actions::downtimes | actions::host_dependencies | actions::host_parents |
-      actions::service_dependencies);
+  _finish_action(-1,
+                 actions::downtimes | actions::comments |
+                     actions::host_dependencies | actions::host_parents |
+                     actions::service_dependencies);
   auto& p = _events.front();
   std::shared_ptr<io::data> d{std::get<0>(p)};
 
@@ -1088,7 +1102,7 @@ void conflict_manager::_process_service_dependency() {
   int32_t conn = _mysql.choose_best_connection();
   _finish_action(-1,
                  actions::hosts | actions::host_parents | actions::downtimes |
-                     actions::host_dependencies |
+                     actions::comments | actions::host_dependencies |
                      actions::service_dependencies);
 
   while (!_events.empty()) {
@@ -1316,8 +1330,8 @@ void conflict_manager::_process_service_group_member() {
  */
 void conflict_manager::_process_service() {
   _finish_action(-1,
-                 actions::host_parents | actions::downtimes |
-                     actions::host_dependencies |
+                 actions::host_parents | actions::comments |
+                     actions::downtimes | actions::host_dependencies |
                      actions::service_dependencies);
   auto& p = _events.front();
   std::shared_ptr<io::data> d{std::get<0>(p)};
@@ -1367,8 +1381,8 @@ void conflict_manager::_process_service() {
  */
 void conflict_manager::_process_service_status() {
   _finish_action(-1,
-                 actions::host_parents | actions::downtimes |
-                     actions::host_dependencies |
+                 actions::host_parents | actions::comments |
+                     actions::downtimes | actions::host_dependencies |
                      actions::service_dependencies);
   auto& p = _events.front();
   std::shared_ptr<io::data> d{std::get<0>(p)};
