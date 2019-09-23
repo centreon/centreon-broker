@@ -211,15 +211,12 @@ step[21].count = {
 -- Instance status
 step[22].count = {
   instance = step[1].count.instance,
-  continue = false,
+  continue = true,
 }
 
 -- Logs
 step[23].count = {
-  host = step[2].count.host,
-  instance = step[1].count.instance,
-  service = step[7].count.service,
-  log = 50,
+  log = 100,
   continue = false,
 }
 
