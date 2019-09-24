@@ -290,11 +290,15 @@ TEST_F(StatsTest, CopyCtor) {
 TEST_F(StatsTest, Parser) {
   stats::parser parser;
   std::vector<std::string> result;
+  std::vector<std::string> result2;
 
   parser.parse(result, "{}");
   ASSERT_TRUE(result.size() == 0);
   parser.parse(result, "{ \"json_fifo\":\"/tmp/test.txt\" }");
   ASSERT_TRUE(result.size() == 1);
+  ASSERT_TRUE(result2.size() == 0);
+  parser.parse(result2, "[{ \"json_fifo\":\"/tmp/test.txt\" }]");
+  ASSERT_TRUE(result2.size() == 1);
 
   ASSERT_THROW(parser.parse(result, "ds{ahsjklhdasjhdaskjh"), exceptions::msg);
 }

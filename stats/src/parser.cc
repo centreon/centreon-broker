@@ -42,14 +42,25 @@ parser::~parser() throw() {}
  */
 void parser::parse(std::vector<std::string>& cfg, std::string const& content) {
   std::string err;
+  auto json_fifo = [&cfg](Json const& js) -> void {
+    if (js.is_string() && !js.string_value().empty())
+      cfg.push_back(js.string_value());
+  };
 
   Json const& js{Json::parse(content, err)};
   if (!err.empty())
     throw(exceptions::msg() << "stats: invalid json file");
 
-  Json const& json_fifo{js["json_fifo"]};
-  if (json_fifo.is_string() && !json_fifo.string_value().empty())
-    cfg.push_back(json_fifo.string_value());
+  if (js.is_object()) {
+    Json const& field{js["json_fifo"]};
+    json_fifo(field);
+  } else if (js.is_array()) {
+    for (auto it = js.array_items().begin(), end = js.array_items().end();
+         it != end; ++it) {
+      Json const& field{(*it)["json_fifo"]};
+      json_fifo(field);
+    }
+  }
 
   return;
 }
