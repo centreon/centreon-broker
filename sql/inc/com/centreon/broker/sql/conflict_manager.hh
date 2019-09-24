@@ -165,6 +165,7 @@ class conflict_manager {
   database::mysql_stmt _instance_insupdate;
   database::mysql_stmt _instance_status_insupdate;
   database::mysql_stmt _log_insert;
+  database::mysql_stmt _module_insert;
   database::mysql_stmt _service_check_update;
   database::mysql_stmt _service_dependency_insupdate;
   database::mysql_stmt _service_group_insupdate;

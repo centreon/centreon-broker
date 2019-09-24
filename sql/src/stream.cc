@@ -1113,39 +1113,39 @@ void stream::_process_log(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted module.
  */
 void stream::_process_module(std::shared_ptr<io::data> const& e) {
-  // Cast object.
-  neb::module const& m(*static_cast<neb::module const*>(e.get()));
-
-  // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing module event (poller: " << m.poller_id
-      << ", filename: " << m.filename
-      << ", loaded: " << (m.loaded ? "yes" : "no") << ")";
-
-  // Processing.
-  if (_is_valid_poller(m.poller_id)) {
-    // Prepare queries.
-    if (!_module_insert.prepared()) {
-      query_preparator qp(neb::module::static_type());
-      _module_insert = qp.prepare_insert(_mysql);
-    }
-
-    std::ostringstream oss;
-    // Process object.
-    if (m.enabled) {
-      oss << "SQL: could not store module (poller: " << m.poller_id << "): ";
-      _module_insert << m;
-      _mysql.run_statement(_module_insert, oss.str(), true,
-                           _mysql.choose_connection_by_instance(m.poller_id));
-    } else {
-      oss << "DELETE FROM "
-          << ((_mysql.schema_version() == mysql::v2) ? "modules" : "rt_modules")
-          << "  WHERE instance_id=" << m.poller_id << "    AND filename='"
-          << m.filename << "'";
-      _mysql.run_query(oss.str(), "SQL: ", false,
-                       _mysql.choose_connection_by_instance(m.poller_id));
-    }
-  }
+//  // Cast object.
+//  neb::module const& m(*static_cast<neb::module const*>(e.get()));
+//
+//  // Log message.
+//  logging::info(logging::medium)
+//      << "SQL: processing module event (poller: " << m.poller_id
+//      << ", filename: " << m.filename
+//      << ", loaded: " << (m.loaded ? "yes" : "no") << ")";
+//
+//  // Processing.
+//  if (_is_valid_poller(m.poller_id)) {
+//    // Prepare queries.
+//    if (!_module_insert.prepared()) {
+//      query_preparator qp(neb::module::static_type());
+//      _module_insert = qp.prepare_insert(_mysql);
+//    }
+//
+//    std::ostringstream oss;
+//    // Process object.
+//    if (m.enabled) {
+//      oss << "SQL: could not store module (poller: " << m.poller_id << "): ";
+//      _module_insert << m;
+//      _mysql.run_statement(_module_insert, oss.str(), true,
+//                           _mysql.choose_connection_by_instance(m.poller_id));
+//    } else {
+//      oss << "DELETE FROM "
+//          << ((_mysql.schema_version() == mysql::v2) ? "modules" : "rt_modules")
+//          << "  WHERE instance_id=" << m.poller_id << "    AND filename='"
+//          << m.filename << "'";
+//      _mysql.run_query(oss.str(), "SQL: ", false,
+//                       _mysql.choose_connection_by_instance(m.poller_id));
+//    }
+//  }
 }
 
 /**

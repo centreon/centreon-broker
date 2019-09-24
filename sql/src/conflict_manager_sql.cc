@@ -1012,14 +1012,61 @@ void conflict_manager::_process_log() {
 
     // Run query.
     _log_insert << le;
-    _mysql.run_statement(_log_insert, "SQL: ", conn);
+    _mysql.run_statement(_log_insert, "SQL: ", true, conn);
     /* We just have to set the boolean */
     *std::get<2>(p) = true;
     _events.pop_front();
   }
 }
 
-void conflict_manager::_process_module() {}
+/**
+ *  Process a module event. We must take care of the thread id sending the
+ *  query because the modules table has a constraint on instances.instance_id
+ *
+ *  @param[in] e Uncasted module.
+ */
+void conflict_manager::_process_module() {
+  auto& p = _events.front();
+  std::shared_ptr<io::data> d{std::get<0>(p)};
+
+  // Cast object.
+  neb::module const& m = *static_cast<neb::module const*>(d.get());
+  int32_t conn = _mysql.choose_connection_by_instance(m.poller_id);
+
+  // Log message.
+  logging::info(logging::medium)
+      << "SQL: processing module event (poller: " << m.poller_id
+      << ", filename: " << m.filename
+      << ", loaded: " << (m.loaded ? "yes" : "no") << ")";
+
+  // Processing.
+  if (_is_valid_poller(m.poller_id)) {
+    // Prepare queries.
+    if (!_module_insert.prepared()) {
+      query_preparator qp(neb::module::static_type());
+      _module_insert = qp.prepare_insert(_mysql);
+    }
+
+    std::ostringstream oss;
+    // Process object.
+    if (m.enabled) {
+      oss << "SQL: could not store module (poller: " << m.poller_id << "): ";
+      _module_insert << m;
+      _mysql.run_statement(_module_insert, oss.str(), true,
+                           conn);
+      _add_action(conn, actions::modules);
+    } else {
+      oss << "DELETE FROM "
+          << ((_mysql.schema_version() == mysql::v2) ? "modules" : "rt_modules")
+          << "  WHERE instance_id=" << m.poller_id << "    AND filename='"
+          << m.filename << "'";
+      _mysql.run_query(oss.str(), "SQL: ", false, conn);
+      _add_action(conn, actions::modules);
+    }
+  }
+  *std::get<2>(p) = true;
+  _events.pop_front();
+}
 
 /**
  *  Process a service check event.
@@ -1316,7 +1363,7 @@ void conflict_manager::_process_service_group_member() {
           << " on instance " << sgm.poller_id << ": ";
 
       _service_group_member_delete << sgm;
-      _mysql.run_statement(_service_group_member_delete, oss.str(), true, conn);
+      _mysql.run_statement(_service_group_member_delete, oss.str(), false, conn);
     }
     *std::get<2>(p) = true;
     _events.pop_front();

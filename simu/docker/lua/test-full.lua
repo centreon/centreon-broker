@@ -249,6 +249,14 @@ step[28].count = {
   continue = false,
 }
 
+local function round(val, decimal)
+  if decimal then
+    return math.floor( (val * 10^decimal) + 0.5) / (10^decimal)
+  else
+    return math.floor(val+0.5)
+  end
+end
+
 function os.capture(cmd, raw)
   local f = assert(io.popen(cmd, 'r'))
   local s = assert(f:read('*a'))
@@ -314,6 +322,7 @@ function init(conf)
   -- Some clean up
   clean_tables()
   simu.start = os.clock()
+  simu.previous_time = simu.start
 end
 
 function read()
@@ -347,7 +356,9 @@ function read()
       broker_log:info(0, "Check Step " .. simu.step_check)
     else
       if step[simu.step_check].check(simu.conn, step[simu.step_check].count) then
-        print(blue .. "CHECK " .. reset .. step[simu.step_check].name .. " DONE")
+        local now = os.clock()
+        print(blue .. "CHECK " .. reset .. step[simu.step_check].name .. " DONE in " .. blue .. round(now - simu.previous_time, 3) .. 's' .. reset)
+        simu.previous_time = now
         cont = step[simu.step_check].count.continue
         simu.step_check = simu.step_check + 1
         broker_log:info(0, "Check Step " .. simu.step_check)

@@ -134,7 +134,8 @@ void builder::build() {
              end(endp_applier.endpoints_end());
              it != end; ++it) {
           json11::Json::object p;
-          std::string endpoint_name = _generate_stats_for_endpoint(it->second);
+          std::string endpoint_name =
+              _generate_stats_for_endpoint(it->second, p);
           object[endpoint_name] = p;
         }
       else
@@ -188,7 +189,8 @@ json11::Json const& builder::root() const throw() {
  *
  *  @return            Name of the endpoint.
  */
-std::string builder::_generate_stats_for_endpoint(processing::bthread* fo) {
+std::string builder::_generate_stats_for_endpoint(processing::bthread* fo,
+    json11::Json::object& tree) {
   // Header.
   std::string endpoint = std::string("endpoint ") + fo->get_name();
 
