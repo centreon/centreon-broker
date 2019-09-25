@@ -55,20 +55,20 @@ step[1].count = {
   continue = true,
 }
 
--- Hosts per instance         => 312
+-- Hosts per instance         => 12
 step[2].count = {
   host = 10,
   instance = step[1].count.instance,
   continue = true,
 }
 
--- Hostgroups
+-- Hostgroups                 => 10
 step[3].count = {
   group = 10,
   continue = true,
 }
 
--- Hostgroups members
+-- Hostgroups members         => 11
 step[4].count = {
   host = step[2].count.host,
   instance = step[2].count.instance,
@@ -76,7 +76,7 @@ step[4].count = {
   continue = true,
 }
 
--- Custom variables per host  =>
+-- Custom variables per host  => 3
 step[5].count = {
   cv = 30,
   host = step[2].count.host,
@@ -84,7 +84,7 @@ step[5].count = {
   continue = true,
 }
 
--- Custom variables status per host  =>
+-- Custom variables status per host  => 4
 step[6].count = {
   cv = 30,
   host = step[2].count.host,
@@ -92,7 +92,7 @@ step[6].count = {
   continue = true,
 }
 
--- Services per host          => 20
+-- Services per host          => 23
 step[7].count = {
   service = 50,
   host = step[2].count.host,
@@ -100,13 +100,13 @@ step[7].count = {
   continue = true,
 }
 
--- Servicegroups
+-- Servicegroups              => 21
 step[8].count = {
   servicegroup = 20,
   continue = true,
 }
 
--- Servicegroups members
+-- Servicegroups members      => 22
 step[9].count = {
   instance = step[2].count.instance,
   host = step[2].count.host,
@@ -115,7 +115,7 @@ step[9].count = {
   continue = true,
 }
 
--- Service checks
+-- Service checks             => 19
 step[10].count = {
   service = step[7].count.service,
   host = step[2].count.host,
@@ -123,7 +123,7 @@ step[10].count = {
   continue = true,
 }
 
--- Services status per host          => 20
+-- Services status per host          => 24
 step[11].count = {
   service = step[7].count.service,
   host = step[2].count.host,

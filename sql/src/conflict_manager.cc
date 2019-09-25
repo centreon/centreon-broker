@@ -94,8 +94,9 @@ bool conflict_manager::init_storage(bool store_in_db,
 
   while (count < 10) {
     /* The loop is waiting for 1s or for _mysql to be initialized */
-    if (_init_cv.wait_for(
-            lk, std::chrono::seconds(1), [&]() { return _singleton != nullptr; })) {
+    if (_init_cv.wait_for(lk, std::chrono::seconds(1), [&]() {
+          return _singleton != nullptr;
+        })) {
       std::lock_guard<std::mutex> lk(conflict_manager::instance()._loop_m);
       conflict_manager::instance()._store_in_db = store_in_db;
       conflict_manager::instance()._rrd_len = rrd_len;

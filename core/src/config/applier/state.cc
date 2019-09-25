@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cstdio>
 #include "com/centreon/broker/config/applier/state.hh"
 #include <cstdlib>
 #include <cstring>
@@ -194,6 +195,10 @@ state& state::instance() {
  *  Load singleton.
  */
 void state::load() {
+
+  FILE *f = fopen("/tmp/events-publish.txt", "w");
+  fclose(f);
+
   if (!gl_state)
     gl_state = new state;
 }
