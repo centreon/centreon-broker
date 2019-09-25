@@ -1863,7 +1863,8 @@ void stream::update() {
  *
  *  @return Number of events acknowledged.
  */
-int stream::write(std::shared_ptr<io::data> const& data) {
+int32_t stream::write(std::shared_ptr<io::data> const& data) {
+  int32_t retval;
   // Take this event into account.
   ++_pending_events;
   if (!validate(data, "SQL"))
@@ -1874,24 +1875,17 @@ int stream::write(std::shared_ptr<io::data> const& data) {
   uint16_t cat{io::events::category_of_type(type)};
   uint16_t elem{io::events::element_of_type(type)};
   if (cat == io::events::neb)
-    conflict_manager::instance().send_event(conflict_manager::sql, data);
+    retval = conflict_manager::instance().send_event(conflict_manager::sql, data);
     //(this->*(_neb_processing_table[elem]))(data);
-  else if (cat == io::events::correlation)
-    (this->*(_correlation_processing_table[elem]))(data);
+  else
+    return 1;
+  //else if (cat == io::events::correlation)
+  //  (this->*(_correlation_processing_table[elem]))(data);
 
   // Event acknowledgement.
   logging::debug(logging::low)
       << "SQL: " << _pending_events << " events have not yet been acknowledged";
 
-//  int retval(_ack_events);
-//  _ack_events = 0;
-//  logging::debug(logging::low) << "SQL: ack events count: " << retval;
-//  if (retval)
-//    // Update hosts and services of stopped instances
-//    _update_hosts_and_services_of_unresponsive_instances();
-//  // Commit.
-
-  return 0;
-  //return conflict_manager::instance().get_acks(conflict_manager::sql);
-  //return retval;
+  _pending_events -= retval;
+  return retval;
 }

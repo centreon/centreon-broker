@@ -107,7 +107,7 @@ void conflict_manager::_process_acknowledgement() {
  */
 void conflict_manager::_process_comment() {
   _finish_action(-1,
-                 actions::hosts | actions::host_parents |
+                 actions::hosts | actions::host_parents | actions::instances |
                      actions::host_dependencies |
                      actions::service_dependencies);
   auto& p = _events.front();

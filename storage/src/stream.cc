@@ -257,13 +257,18 @@ void stream::_process_host(std::shared_ptr<io::data> const& e) {
  *  @return Number of events acknowledged.
  */
 int stream::write(std::shared_ptr<io::data> const& data) {
-  sql::conflict_manager::instance().send_event(sql::conflict_manager::storage, data);
-  return 0;
-  ++_pending_events;
-  logging::info(logging::low)
-      << "storage: write pending_events = " << _pending_events;
   if (!validate(data, "storage"))
     return 0;
+  ++_pending_events;
+  int32_t retval = sql::conflict_manager::instance().send_event(sql::conflict_manager::storage, data);
+  _pending_events -= retval;
+
+  // Event acknowledgement.
+  logging::debug(logging::low) << "storage: " << _pending_events
+                               << " events have not yet been acknowledged";
+
+  return retval;
+
 
   // Process service status events.
   if (data->type() == neb::service_status::static_type()) {
@@ -369,14 +374,6 @@ int stream::write(std::shared_ptr<io::data> const& data) {
   else if (data->type() == neb::host::static_type())
     _process_host(data);
 
-  // Event acknowledgement.
-  logging::debug(logging::low) << "storage: " << _pending_events
-                               << " events have not yet been acknowledged";
-
-  int retval(_ack_events);
-  _ack_events = 0;
-  logging::debug(logging::low) << "storage: ack events count: " << retval;
-  return retval;
 }
 
 /**************************************

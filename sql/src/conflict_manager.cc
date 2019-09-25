@@ -275,12 +275,27 @@ bool conflict_manager::_should_exit() const {
   return _exit;
 }
 
-void conflict_manager::send_event(conflict_manager::stream_type c,
+/**
+ *  Method to send event to the conflict manager.
+ *
+ * @param c The connector responsible of the event (sql or storage)
+ * @param e The event
+ *
+ * @return The number of events to ack.
+ */
+int32_t conflict_manager::send_event(conflict_manager::stream_type c,
                                   std::shared_ptr<io::data> const& e) {
   std::lock_guard<std::mutex> lk(_loop_m);
   _pending_queries++;
   _timeline[c].push_back(false);
   _events.push_back(std::make_tuple(e, c, &_timeline[c].back()));
+  int32_t retval = 0;
+  while (!_timeline[c].empty() && _timeline[c].front()) {
+    _timeline[c].pop_front();
+    retval++;
+  }
+  _pending_queries -= retval;
+  return retval;
 }
 
 /**

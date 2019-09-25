@@ -230,7 +230,7 @@ class conflict_manager {
                            uint32_t interval_length);
   static conflict_manager& instance();
 
-  void send_event(stream_type c, std::shared_ptr<io::data> const& e);
+  int32_t send_event(stream_type c, std::shared_ptr<io::data> const& e);
   int32_t get_acks(stream_type c);
 };
 }  // namespace sql
