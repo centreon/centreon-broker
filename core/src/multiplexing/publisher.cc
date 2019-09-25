@@ -36,28 +36,9 @@ using namespace com::centreon::broker::multiplexing;
 publisher::publisher() {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-publisher::publisher(publisher const& other) : io::stream(other) {}
-
-/**
  *  Destructor.
  */
 publisher::~publisher() throw() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-publisher& publisher::operator=(publisher const& other) {
-  io::stream::operator=(other);
-  return (*this);
-}
 
 /**
  *  @brief Read data.
@@ -71,8 +52,8 @@ publisher& publisher::operator=(publisher const& other) {
 bool publisher::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw(exceptions::shutdown() << "cannot read from publisher");
-  return (true);
+  throw exceptions::shutdown() << "cannot read from publisher";
+  return true;
 }
 
 /**
@@ -86,5 +67,5 @@ bool publisher::read(std::shared_ptr<io::data>& d, time_t deadline) {
  */
 int publisher::write(std::shared_ptr<io::data> const& d) {
   engine::instance().publish(d);
-  return (1);
+  return 1;
 }

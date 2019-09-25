@@ -188,7 +188,7 @@ TEST_F(SimuGenericTest, ReadReturnValue4) {
   RemoveFile(filename);
   neb::service* svc(static_cast<neb::service*>(d.get()));
   ASSERT_TRUE(svc->type() == 65559);
-  ASSERT_EQ(svc->host_id, 2);
+  ASSERT_EQ(svc->host_id, 2U);
   std::cout << "service description: " << svc->service_description;
   ASSERT_TRUE(svc->service_description == "Super description");
 }
@@ -224,6 +224,6 @@ TEST_F(SimuGenericTest, ReadReturnCustomVariable) {
   RemoveFile(filename);
   neb::custom_variable* cv(static_cast<neb::custom_variable*>(d.get()));
   ASSERT_TRUE(cv->type() == 65539);
-  ASSERT_EQ(cv->host_id, 31);
+  ASSERT_EQ(cv->host_id, 31U);
   ASSERT_TRUE(cv->enabled);
 }

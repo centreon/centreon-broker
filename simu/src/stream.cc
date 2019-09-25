@@ -71,6 +71,6 @@ int stream::write(std::shared_ptr<io::data> const& d) {
  *
  *  @return This method will throw.
  */
-bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
+bool stream::read(std::shared_ptr<io::data>& d, time_t deadline __attribute__((unused))) {
   return _luabinding->read(d);
 }

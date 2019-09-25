@@ -16,17 +16,18 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/multiplexing/engine.hh"
-#include <unistd.h>
 #include <cassert>
+#include <cstdio>
 #include <cstdlib>
-#include <queue>
+#include <unistd.h>
 #include <utility>
 #include <vector>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
+#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
@@ -37,23 +38,9 @@ using namespace com::centreon::broker::multiplexing;
  *                                     *
  **************************************/
 
-// Hooks.
-static std::vector<std::pair<hooker*, bool> > _hooks;
-static std::vector<std::pair<hooker*, bool> >::iterator _hooks_begin;
-static std::vector<std::pair<hooker*, bool> >::iterator _hooks_end;
-
-// Subscriber.
-static std::vector<muxer*> _muxers;
-static std::mutex _muxersm;
-
 // Class instance.
 engine* engine::_instance(nullptr);
-
-// Data queue.
-static std::queue<std::shared_ptr<io::data> > _kiew;
-
-// Processing flag.
-static bool _processing(false);
+std::mutex engine::_load_m;
 
 /**************************************
  *                                     *
@@ -81,9 +68,9 @@ void engine::clear() {
  *  @param[in] with_data  Write data to hook.
  */
 void engine::hook(hooker& h, bool with_data) {
-  std::lock_guard<std::recursive_mutex> lock(*this);
+  std::lock_guard<std::mutex> lock(_engine_m);
 
-  _hooks.push_back(std::make_pair(&h, with_data));
+  _hooks.push_back({&h, with_data});
   _hooks_begin = _hooks.begin();
   _hooks_end = _hooks.end();
 }
@@ -102,6 +89,7 @@ engine& engine::instance() {
  *  Load engine instance.
  */
 void engine::load() {
+  std::lock_guard<std::mutex> lk(_load_m);
   if (!_instance)
     _instance = new engine;
 }
@@ -113,11 +101,19 @@ void engine::load() {
  */
 void engine::publish(std::shared_ptr<io::data> const& e) {
   // Lock mutex.
-  std::lock_guard<std::recursive_mutex> lock(*this);
+  std::lock_guard<std::mutex> lock(_engine_m);
+  _publish(e);
+}
 
+/**
+ *  Send an event to all subscribers. It must be used from this class, and
+ *  _engine_m must be locked previously. Otherwise use engine::publish().
+ *
+ *  @param[in] e  Event to publish.
+ */
+void engine::_publish(std::shared_ptr<io::data> const& e) {
   // Store object for further processing.
   _kiew.push(e);
-
   // Processing function.
   (this->*_write_func)(e);
 }
@@ -131,7 +127,7 @@ void engine::start() {
     logging::debug(logging::high) << "multiplexing: starting";
     _write_func = &engine::_write;
 
-    std::lock_guard<std::recursive_mutex> lock(*this);
+    std::lock_guard<std::mutex> lock(_engine_m);
     // Local queue.
     std::queue<std::shared_ptr<io::data> > kiew;
     // Get events from the cache file to the local queue.
@@ -144,7 +140,8 @@ void engine::start() {
           break;
         kiew.push(d);
       }
-    } catch (std::exception const& e) {
+    }
+    catch (std::exception const& e) {
       logging::error(logging::medium)
           << "multiplexing: couldn't read cache file: " << e.what();
     }
@@ -158,7 +155,8 @@ void engine::start() {
     // Notify hooks of multiplexing loop start.
     for (std::vector<std::pair<hooker*, bool> >::iterator it(_hooks_begin),
          end(_hooks_end);
-         it != end; ++it) {
+         it != end;
+         ++it) {
       it->first->starting();
 
       // Read events from hook.
@@ -169,9 +167,10 @@ void engine::start() {
           _kiew.push(d);
           it->first->read(d, 0);
         }
-      } catch (std::exception const& e) {
-        logging::error(logging::low)
-            << "multiplexing: cannot read from hook: " << e.what();
+      }
+      catch (std::exception const& e) {
+        logging::error(logging::low) << "multiplexing: cannot read from hook: "
+                                     << e.what();
       }
     }
 
@@ -180,7 +179,7 @@ void engine::start() {
 
     // Send events queued while multiplexing was stopped.
     while (!kiew.empty()) {
-      publish(kiew.front());
+      _publish(kiew.front());
       kiew.pop();
     }
   }
@@ -193,10 +192,11 @@ void engine::stop() {
   if (_write_func != &engine::_nop) {
     // Notify hooks of multiplexing loop end.
     logging::debug(logging::high) << "multiplexing: stopping";
-    std::unique_lock<std::recursive_mutex> lock(*this);
+    std::unique_lock<std::mutex> lock(_engine_m);
     for (std::vector<std::pair<hooker*, bool> >::iterator it(_hooks_begin),
          end(_hooks_end);
-         it != end; ++it) {
+         it != end;
+         ++it) {
       it->first->stopping();
 
       // Read events from hook.
@@ -207,7 +207,8 @@ void engine::stop() {
           _kiew.push(d);
           it->first->read(d);
         }
-      } catch (...) {
+      }
+      catch (...) {
       }
     }
 
@@ -228,7 +229,8 @@ void engine::stop() {
     try {
       _cache_file.reset(new persistent_cache(_cache_file_path()));
       _cache_file->transaction();
-    } catch (std::exception const& e) {
+    }
+    catch (std::exception const& e) {
       logging::error(logging::medium)
           << "multiplexing: could not open cache file: " << e.what();
       _cache_file.reset();
@@ -245,7 +247,7 @@ void engine::stop() {
  *  @param[in] subscriber  Subscriber.
  */
 void engine::subscribe(muxer* subscriber) {
-  std::lock_guard<std::mutex> lock(_muxersm);
+  std::lock_guard<std::mutex> lock(_muxers_m);
   _muxers.push_back(subscriber);
 }
 
@@ -255,7 +257,7 @@ void engine::subscribe(muxer* subscriber) {
  *  @param[in] h  Hook.
  */
 void engine::unhook(hooker& h) {
-  std::lock_guard<std::recursive_mutex> lock(*this);
+  std::lock_guard<std::mutex> lock(_engine_m);
   for (std::vector<std::pair<hooker*, bool> >::iterator it(_hooks_begin);
        it != _hooks.end();)
     if (it->first == &h)
@@ -270,6 +272,7 @@ void engine::unhook(hooker& h) {
  *  Unload class instance.
  */
 void engine::unload() {
+  std::lock_guard<std::mutex> lk(_load_m);
   // Commit the cache file, if needed.
   if (_instance && _instance->_cache_file.get())
     _instance->_cache_file->commit();
@@ -284,9 +287,10 @@ void engine::unload() {
  *  @param[in] subscriber  Subscriber.
  */
 void engine::unsubscribe(muxer* subscriber) {
-  std::lock_guard<std::mutex> lock(_muxersm);
+  std::lock_guard<std::mutex> lock(_muxers_m);
   for (std::vector<muxer*>::iterator it(_muxers.begin()), end(_muxers.end());
-       it != end; ++it)
+       it != end;
+       ++it)
     if (*it == subscriber) {
       _muxers.erase(it);
       break;
@@ -302,11 +306,14 @@ void engine::unsubscribe(muxer* subscriber) {
 /**
  *  Default constructor.
  */
-engine::engine() : std::recursive_mutex{}, _write_func(&engine::_nop) {
-  // Initialize hook iterators.
-  _hooks_begin = _hooks.begin();
-  _hooks_end = _hooks.end();
-}
+engine::engine()
+    : _hooks{},
+      _hooks_begin{_hooks.begin()},
+      _hooks_end{_hooks.end()},
+      _engine_m{},
+      _muxers{},
+      _muxers_m{},
+      _write_func(&engine::_nop) {}
 
 /**
  *  Generate path to the multiplexing engine cache file.
@@ -324,61 +331,47 @@ std::string engine::_cache_file_path() const {
  *
  *  @param[in] d  Unused.
  */
-void engine::_nop(std::shared_ptr<io::data> const& d) {
-  (void)d;
-}
+void engine::_nop(std::shared_ptr<io::data> const& d) { (void)d; }
 
 /**
  *  Send queued events to subscribers.
  */
 void engine::_send_to_subscribers() {
   // Process all queued events.
-  std::lock_guard<std::mutex> lock(_muxersm);
+  std::lock_guard<std::mutex> lock(_muxers_m);
   while (!_kiew.empty()) {
     // Send object to every subscriber.
-    for (std::vector<muxer*>::iterator it(_muxers.begin()), end(_muxers.end());
-         it != end; ++it)
-      (*it)->publish(_kiew.front());
+    for (muxer* m : _muxers)
+      m->publish(_kiew.front());
     _kiew.pop();
   }
 }
 
 /**
- *  Publish event.
+ *  The real event publication is done here. This method is just called by
+ *  the publish method. No need of a lock, it is already owned by the publish
+ *  method.
  *
- *  @param[in] d  Data to publish.
+ *  @param[in] e  Data to publish.
  */
 void engine::_write(std::shared_ptr<io::data> const& e) {
-  if (!_processing) {
-    // Set processing flag.
-    _processing = true;
-
-    try {
-      // Send object to every hook.
-      for (std::vector<std::pair<hooker*, bool> >::iterator it(_hooks_begin),
-           end(_hooks_end);
-           it != end; ++it)
-        if (it->second) {
-          it->first->write(e);
-          std::shared_ptr<io::data> d;
-          it->first->read(d);
-          while (d) {
-            _kiew.push(d);
-            it->first->read(d);
-          }
-        }
-
-      // Send events to subscribers.
-      _send_to_subscribers();
-
-      // Reset processing flag.
-      _processing = false;
-    } catch (...) {
-      // Reset processing flag.
-      _processing = false;
-      throw;
+  // Send object to every hook.
+  for (std::vector<std::pair<hooker*, bool> >::iterator it(_hooks_begin),
+       end(_hooks_end);
+       it != end;
+       ++it)
+    if (it->second) {
+      it->first->write(e);
+      std::shared_ptr<io::data> d;
+      it->first->read(d);
+      while (d) {
+        _kiew.push(d);
+        it->first->read(d);
+      }
     }
-  }
+
+  // Send events to subscribers.
+  _send_to_subscribers();
 }
 
 /**
@@ -390,7 +383,8 @@ void engine::_write_to_cache_file(std::shared_ptr<io::data> const& d) {
   try {
     if (_cache_file)
       _cache_file->add(d);
-  } catch (std::exception const& e) {
+  }
+  catch (std::exception const& e) {
     logging::error(logging::medium)
         << "multiplexing: could not write to cache file: " << e.what();
   }

@@ -51,7 +51,7 @@ class mysql_bind {
   void set_value_as_f64(int range, double value);
   void set_value_as_null(int range);
   void set_value_as_tiny(int range, char value);
-  char* const value_as_str(int range) const;
+  char* value_as_str(int range);
   void set_value_as_str(int range, std::string const& value);
   int get_size() const;
   bool value_is_null(int range) const;
