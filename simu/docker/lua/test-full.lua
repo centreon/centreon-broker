@@ -208,13 +208,13 @@ step[21].count = {
   continue = true,
 }
 
--- Instance status
+-- Instance status    => 16
 step[22].count = {
   instance = step[1].count.instance,
   continue = true,
 }
 
--- Logs
+-- Logs               => 17
 step[23].count = {
   log = 100,
   continue = false,

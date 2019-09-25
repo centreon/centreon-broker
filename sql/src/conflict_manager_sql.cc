@@ -158,6 +158,10 @@ void conflict_manager::_process_custom_variable() {
   _finish_action(-1, actions::custom_variables);
   while (!_events.empty()) {
     auto& p = _events.front();
+
+    if (std::get<1>(p) != stream_type::sql)
+      break;
+
     std::shared_ptr<io::data> d{std::get<0>(p)};
 
     if (!d || d->type() != neb::custom_variable::static_type())
@@ -223,6 +227,10 @@ void conflict_manager::_process_custom_variable_status() {
   _finish_action(-1, actions::custom_variables);
   while (!_events.empty()) {
     auto& p = _events.front();
+
+    if (std::get<1>(p) != stream_type::sql)
+      break;
+
     std::shared_ptr<io::data> d{std::get<0>(p)};
 
     if (!d || d->type() != neb::custom_variable_status::static_type())
@@ -272,6 +280,10 @@ void conflict_manager::_process_downtime() {
 
   while (!_events.empty()) {
     auto& p = _events.front();
+
+    if (std::get<1>(p) != stream_type::sql)
+      break;
+
     std::shared_ptr<io::data> d{std::get<0>(p)};
 
     if (!d || d->type() != neb::downtime::static_type())
@@ -429,6 +441,10 @@ void conflict_manager::_process_host_check() {
       actions::service_dependencies);
   while (!_events.empty()) {
     auto& p = _events.front();
+
+    if (std::get<1>(p) != stream_type::sql)
+      break;
+
     std::shared_ptr<io::data> d{std::get<0>(p)};
 
     if (!d || d->type() != neb::host_check::static_type())
@@ -505,6 +521,10 @@ void conflict_manager::_process_host_dependency() {
 
   while (!_events.empty()) {
     auto& p = _events.front();
+
+    if (std::get<1>(p) != stream_type::sql)
+      break;
+
     std::shared_ptr<io::data> d{std::get<0>(p)};
 
     if (!d || d->type() != neb::host_dependency::static_type())
@@ -565,6 +585,10 @@ void conflict_manager::_process_host_group() {
 
   while (!_events.empty()) {
     auto& p = _events.front();
+
+    if (std::get<1>(p) != stream_type::sql)
+      break;
+
     std::shared_ptr<io::data> d{std::get<0>(p)};
 
     if (!d || d->type() != neb::host_group::static_type())
@@ -623,6 +647,10 @@ void conflict_manager::_process_host_group_member() {
 
   while (!_events.empty()) {
     auto& p = _events.front();
+
+    if (std::get<1>(p) != stream_type::sql)
+      break;
+
     std::shared_ptr<io::data> d{std::get<0>(p)};
 
     if (!d || d->type() != neb::host_group_member::static_type())
@@ -774,6 +802,10 @@ void conflict_manager::_process_host_parent() {
 
   while (!_events.empty()) {
     auto& p = _events.front();
+
+    if (std::get<1>(p) != stream_type::sql)
+      break;
+
     std::shared_ptr<io::data> d{std::get<0>(p)};
 
     if (!d || d->type() != neb::host_parent::static_type())
@@ -990,6 +1022,10 @@ void conflict_manager::_process_log() {
 
   while (!_events.empty()) {
     auto& p = _events.front();
+
+    if (std::get<1>(p) != stream_type::sql)
+      break;
+
     std::shared_ptr<io::data> d{std::get<0>(p)};
 
     if (!d || d->type() != neb::log_entry::static_type())
@@ -1154,6 +1190,10 @@ void conflict_manager::_process_service_dependency() {
 
   while (!_events.empty()) {
     auto& p = _events.front();
+
+    if (std::get<1>(p) != stream_type::sql)
+      break;
+
     std::shared_ptr<io::data> d{std::get<0>(p)};
 
     if (!d || d->type() != neb::service_dependency::static_type())
@@ -1224,6 +1264,10 @@ void conflict_manager::_process_service_group() {
 
   while (!_events.empty()) {
     auto& p = _events.front();
+
+    if (std::get<1>(p) != stream_type::sql)
+      break;
+
     std::shared_ptr<io::data> d{std::get<0>(p)};
 
     if (d->type() != neb::service_group::static_type())
@@ -1284,6 +1328,10 @@ void conflict_manager::_process_service_group_member() {
 
   while (!_events.empty()) {
     auto& p = _events.front();
+
+    if (std::get<1>(p) != stream_type::sql)
+      break;
+
     std::shared_ptr<io::data> d{std::get<0>(p)};
 
     if (!d || d->type() != neb::service_group_member::static_type())

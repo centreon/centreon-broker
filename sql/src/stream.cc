@@ -1822,9 +1822,11 @@ int stream::flush() {
 //  logging::info(logging::medium) << "SQL: committing transaction";
 //  _mysql.commit();
   int retval = conflict_manager::instance().get_acks(conflict_manager::sql);
-//  int retval = _ack_events + _pending_events;
-//  _ack_events = 0;
-//  _pending_events = 0;
+  _pending_events -= retval;
+
+  // Event acknowledgement.
+  logging::debug(logging::low)
+      << "SQL: " << _pending_events << " events have not yet been acknowledged";
   return retval;
 }
 
@@ -1839,8 +1841,8 @@ int stream::flush() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw(exceptions::shutdown() << "cannot read from SQL database");
-  return (true);
+  throw exceptions::shutdown() << "cannot read from SQL database";
+  return true;
 }
 
 /**
@@ -1868,9 +1870,9 @@ int stream::write(std::shared_ptr<io::data> const& data) {
     return 0;
 
   // Process event.
-  unsigned int type(data->type());
-  unsigned short cat(io::events::category_of_type(type));
-  unsigned short elem(io::events::element_of_type(type));
+  uint32_t type{data->type()};
+  uint16_t cat{io::events::category_of_type(type)};
+  uint16_t elem{io::events::element_of_type(type)};
   if (cat == io::events::neb)
     conflict_manager::instance().send_event(conflict_manager::sql, data);
     //(this->*(_neb_processing_table[elem]))(data);

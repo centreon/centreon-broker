@@ -100,7 +100,6 @@ void engine::load() {
  *  @param[in] e  Event to publish.
  */
 void engine::publish(std::shared_ptr<io::data> const& e) {
-
   // Lock mutex.
   std::lock_guard<std::mutex> lock(_engine_m);
   _publish(e);

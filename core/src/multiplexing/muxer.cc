@@ -424,15 +424,6 @@ std::string muxer::_memory_file() const {
  *  @param[in] event  New event.
  */
 void muxer::_push_to_queue(std::shared_ptr<io::data> const& event) {
-            //FIXME DBR
-//            if (event) {
-//            static std::map<std::pair<std::thread::id, uint64_t>, uint32_t> counter;
-//              uint64_t key = reinterpret_cast<uint64_t>(event.get());
-//              std::pair<std::thread::id, uint64_t> p =
-//                  std::make_pair(std::this_thread::get_id(), key);
-//              if (++counter[p] >= 2) std::cout << "PUSH_TO_QUEUE PAS BON thread: " << p.first << "\n";
-//            }
-
   bool pos_has_no_more_to_read(_pos == _events.end());
   _events.push_back(event);
   ++_events_size;
