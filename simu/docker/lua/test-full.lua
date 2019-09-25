@@ -270,6 +270,8 @@ end
 
 function clean_tables()
   local queries = {
+    -- We delete comments
+    { "storage", "DELETE FROM comments" },
     -- This table can grow up quickly, so we clean it
     { "storage", "DELETE FROM data_bin" },
     { "storage", "DELETE FROM metrics" },
@@ -277,8 +279,6 @@ function clean_tables()
     { "storage", "DELETE FROM hostgroups" },
     -- We delete custom variables
     { "storage", "DELETE FROM customvariables" },
-    -- We delete comments
-    { "storage", "DELETE FROM comments" },
     -- We want hostgroups without hosts associated
     { "storage", "INSERT INTO hostgroups (name) VALUES ('hostgroup_12')" },
     { "storage", "INSERT INTO hostgroups (name) VALUES ('hostgroup_13')" },
