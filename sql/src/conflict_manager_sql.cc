@@ -974,13 +974,16 @@ void conflict_manager::_process_instance() {
  *  @param[in] e Uncasted instance status.
  */
 void conflict_manager::_process_instance_status() {
-  _finish_action(-1,
-                 actions::hosts | actions::acknowledgements | actions::modules |
-                     actions::downtimes | actions::comments);
   // Cast object.
   auto& p = _events.front();
   neb::instance_status& is =
       *static_cast<neb::instance_status*>(std::get<0>(p).get());
+  int32_t conn = _mysql.choose_connection_by_instance(is.poller_id);
+
+  _finish_action(conn, actions::hosts);
+  _finish_action(-1,
+                 actions::acknowledgements | actions::modules |
+                     actions::downtimes | actions::comments);
 
   // Log message.
   logging::info(logging::medium)
@@ -1004,8 +1007,8 @@ void conflict_manager::_process_instance_status() {
         << "): ";
     _mysql.run_statement(
         _instance_status_insupdate,
-        oss.str(), true,
-        _mysql.choose_connection_by_instance(is.poller_id));
+        oss.str(), true, conn);
+    _add_action(conn, actions::instances);
   }
   *std::get<2>(p) = true;
   _events.pop_front();
