@@ -60,7 +60,6 @@ void config::applier::deinit() {
   io::events::unload();
   time::timezone_manager::unload();
   logging::manager::unload();
-  return;
 }
 
 /**
@@ -82,6 +81,4 @@ void config::applier::init() {
   config::applier::logger::load();
   config::applier::endpoint::load();
   config::applier::state::load();
-
-  return;
 }

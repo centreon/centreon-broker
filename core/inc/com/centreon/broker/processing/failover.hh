@@ -57,6 +57,8 @@ class failover : public bthread {
   failover(std::shared_ptr<io::endpoint> endp,
            std::shared_ptr<multiplexing::subscriber> sbscrbr,
            std::string const& name);
+  failover(failover const& other) = delete;
+  failover& operator=(failover const& other) = delete;
   ~failover();
   void add_secondary_endpoint(std::shared_ptr<io::endpoint> endp);
   void exit();
@@ -79,8 +81,6 @@ class failover : public bthread {
   virtual void _forward_statistic(json11::Json::object& tree);
 
  private:
-  failover(failover const& other);
-  failover& operator=(failover const& other);
   void _launch_failover();
   void _update_status(std::string const& status);
 
@@ -98,11 +98,11 @@ class failover : public bthread {
 
   // Status.
   std::string _status;
-  mutable std::mutex _statusm;
+  mutable std::mutex _status_m;
 
   // Stream.
   std::shared_ptr<io::stream> _stream;
-  mutable std::timed_mutex _streamm;
+  mutable std::timed_mutex _stream_m;
 };
 }  // namespace processing
 

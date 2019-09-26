@@ -37,7 +37,7 @@ class stream : public io::stream {
  public:
   static int const max_data_size = 100000000;
 
-  stream(int level = -1, int size = 0);
+  stream(int level = -1, size_t size = 0);
   stream(stream const& other);
   ~stream();
   stream& operator=(stream const& other);
@@ -54,7 +54,7 @@ class stream : public io::stream {
   int _level;
   stack_array _rbuffer;
   bool _shutdown;
-  int _size;
+  size_t _size;
   std::vector<char> _wbuffer;
 };
 }  // namespace compression

@@ -369,7 +369,7 @@ void mysql_connection::_fetch_row_sync(mysql_task* t) {
   }
 }
 
-void mysql_connection::_finish(mysql_task* t) {
+void mysql_connection::_finish(mysql_task* t __attribute__((unused))) {
   _finished = true;
 }
 

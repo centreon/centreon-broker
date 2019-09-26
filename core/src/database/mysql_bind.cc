@@ -80,9 +80,9 @@ void mysql_bind::_prepare_type(int range, enum enum_field_types type) {
   _column[range].set_type(type);
 }
 
-char* const mysql_bind::value_as_str(int range) const {
+char* mysql_bind::value_as_str(int range) {
   assert(_bind[range].buffer_type == MYSQL_TYPE_STRING);
-  return static_cast<char* const>(_bind[range].buffer);
+  return static_cast<char*>(_bind[range].buffer);
 }
 
 void mysql_bind::set_value_as_str(int range, std::string const& value) {

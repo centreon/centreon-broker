@@ -241,7 +241,7 @@ void mysql_stmt::operator<<(io::data const& d) {
                 //                bind_value_as_null(field);
                 //              else
                 bind_value_as_u32(field, v);
-                //              break;
+                break;
               case mapping::entry::invalid_on_minus_one:
                 if (v == (unsigned int)-1)
                   bind_value_as_null(field);

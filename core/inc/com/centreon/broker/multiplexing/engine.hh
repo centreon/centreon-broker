@@ -19,6 +19,7 @@
 #ifndef CCB_MULTIPLEXING_ENGINE_HH
 #define CCB_MULTIPLEXING_ENGINE_HH
 
+#include <queue>
 #include <memory>
 #include <mutex>
 #include "com/centreon/broker/multiplexing/hooker.hh"
@@ -40,13 +41,44 @@ class muxer;
  *
  *  @see muxer
  */
-class engine : public std::recursive_mutex {
+class engine {
+  static engine* _instance;
+  std::unique_ptr<persistent_cache> _cache_file;
+
+  // Data queue.
+  std::queue<std::shared_ptr<io::data> > _kiew;
+
+  // Hooks
+  std::vector<std::pair<hooker*, bool> > _hooks;
+  std::vector<std::pair<hooker*, bool> >::iterator _hooks_begin;
+  std::vector<std::pair<hooker*, bool> >::iterator _hooks_end;
+
+  // Mutex to lock _kiew and _hooks
+  std::mutex _engine_m;
+
+  // Subscriber.
+  std::vector<muxer*> _muxers;
+  std::mutex _muxers_m;
+
+  engine();
+  std::string _cache_file_path() const;
+  void _nop(std::shared_ptr<io::data> const& d);
+  void _send_to_subscribers();
+  void _write(std::shared_ptr<io::data> const& d);
+  void _write_to_cache_file(std::shared_ptr<io::data> const& d);
+  void _publish(std::shared_ptr<io::data> const& d);
+
+  void (engine::*_write_func)(std::shared_ptr<io::data> const&);
+
  public:
+  engine(engine const& other) = delete;
+  engine& operator=(engine const& other) = delete;
   ~engine();
   void clear();
   void hook(hooker& h, bool with_data = true);
   static engine& instance();
   static void load();
+  static std::mutex _load_m;
   void publish(std::shared_ptr<io::data> const& d);
   void start();
   void stop();
@@ -54,20 +86,6 @@ class engine : public std::recursive_mutex {
   void unhook(hooker& h);
   static void unload();
   void unsubscribe(muxer* subscriber);
-
- private:
-  engine();
-  engine(engine const& other);
-  engine& operator=(engine const& other);
-  std::string _cache_file_path() const;
-  void _nop(std::shared_ptr<io::data> const& d);
-  void _send_to_subscribers();
-  void _write(std::shared_ptr<io::data> const& d);
-  void _write_to_cache_file(std::shared_ptr<io::data> const& d);
-
-  static engine* _instance;
-  void (engine::*_write_func)(std::shared_ptr<io::data> const&);
-  std::unique_ptr<persistent_cache> _cache_file;
 };
 }  // namespace multiplexing
 

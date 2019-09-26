@@ -30,37 +30,12 @@ using namespace com::centreon::broker::multiplexing;
 /**
  *  Default constructor.
  */
-hooker::hooker() : _registered(false) {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-// hooker::hooker(hooker const& other)
-//  : io::stream(other), _registered(false) {
-//  hook(other._registered);
-//}
+hooker::hooker() : _registered{false} {}
 
 /**
  *  Destructor.
  */
 hooker::~hooker() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-// hooker& hooker::operator=(hooker const& other) {
-//  if (this != &other) {
-//    io::stream::operator=(other);
-//    hook(other._registered);
-//  }
-//  return (*this);
-//}
 
 /**
  *  Enable or disable hooking.
@@ -75,5 +50,4 @@ void hooker::hook(bool should_hook) {
     engine::instance().hook(*this);
     _registered = true;
   }
-  return;
 }
