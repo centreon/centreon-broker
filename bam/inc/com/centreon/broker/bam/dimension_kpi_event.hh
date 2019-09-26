@@ -48,9 +48,9 @@ class dimension_kpi_event : public io::data {
   unsigned kpi_id;
   unsigned int ba_id;
   std::string ba_name;
-  uint64_t host_id;
+  uint32_t host_id;
   std::string host_name;
-  uint64_t service_id;
+  uint32_t service_id;
   std::string service_description;
   unsigned int kpi_ba_id;
   std::string kpi_ba_name;

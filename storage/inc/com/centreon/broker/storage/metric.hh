@@ -58,13 +58,13 @@ class metric : public io::data {
   timestamp ctime;
   unsigned int interval;
   bool is_for_rebuild;
-  uint64_t metric_id;
+  uint32_t metric_id;
   std::string name;
   int rrd_len;
   double value;
   short value_type;
-  uint64_t host_id;
-  uint64_t service_id;
+  uint32_t host_id;
+  uint32_t service_id;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
