@@ -314,24 +314,24 @@ void stream::_clean_tables(unsigned int instance_id) {
  *
  *  @return True if instance is valid.
  */
-bool stream::_is_valid_poller(unsigned int poller_id) {
-  // Check if poller is deleted.
-  bool deleted(false);
-  if (_cache_deleted_instance_id.find(poller_id) !=
-      _cache_deleted_instance_id.end()) {
-    logging::info(logging::low)
-        << "SQL: discarding some event related to a deleted poller ("
-        << poller_id << ")";
-    deleted = true;
-  }
-
-  // Update poller timestamp.
-  if (!deleted)
-    _update_timestamp(poller_id);
-
-  // Return whether poller is valid or not.
-  return !deleted;
-}
+//bool stream::_is_valid_poller(unsigned int poller_id) {
+//  // Check if poller is deleted.
+//  bool deleted(false);
+//  if (_cache_deleted_instance_id.find(poller_id) !=
+//      _cache_deleted_instance_id.end()) {
+//    logging::info(logging::low)
+//        << "SQL: discarding some event related to a deleted poller ("
+//        << poller_id << ")";
+//    deleted = true;
+//  }
+//
+//  // Update poller timestamp.
+//  if (!deleted)
+//    _update_timestamp(poller_id);
+//
+//  // Return whether poller is valid or not.
+//  return !deleted;
+//}
 
 /**
  *  Process a correlation engine event.
@@ -705,149 +705,6 @@ void stream::_process_log_issue(std::shared_ptr<io::data> const& e) {
   (void)e;
 }
 
-/**
- *  Update the store of living instance timestamps.
- *
- *  @param instance_id The id of the instance to have its timestamp updated.
- */
-void stream::_update_timestamp(unsigned int instance_id) {
-  stored_timestamp::state_type s(stored_timestamp::responsive);
-
-  // Find the state of an existing timestamp of it exists.
-  std::unordered_map<unsigned int, stored_timestamp>::iterator found =
-      _stored_timestamps.find(instance_id);
-  if (found != _stored_timestamps.end())
-    s = found->second.get_state();
-
-  // Update a suddenly alive instance
-  if (s == stored_timestamp::unresponsive) {
-    _update_hosts_and_services_of_instance(instance_id, true);
-    s = stored_timestamp::responsive;
-  }
-
-  // Insert the timestamp and its state in the store.
-  stored_timestamp& timestamp = _stored_timestamps[instance_id];
-  timestamp = stored_timestamp(instance_id, s);
-  if (_oldest_timestamp > timestamp.get_timestamp())
-    _oldest_timestamp = timestamp.get_timestamp();
-}
-
-/**
- *  Get all the outdated instances from the database and store them.
- */
-void stream::_get_all_outdated_instances_from_db() {
-  std::ostringstream ss;
-  ss << "SELECT instance_id"
-     << "  FROM "
-     << ((_mysql.schema_version() == mysql::v2) ? "instances" : "rt_instances")
-     << " WHERE outdated=TRUE";
-  std::promise<mysql_result> promise;
-  _mysql.run_query_and_get_result(ss.str(), &promise);
-  try {
-    mysql_result res(promise.get_future().get());
-    while (_mysql.fetch_row(res)) {
-      unsigned int instance_id = res.value_as_i32(0);
-      stored_timestamp& ts = _stored_timestamps[instance_id];
-      ts = stored_timestamp(instance_id, stored_timestamp::unresponsive);
-      ts.set_timestamp(timestamp(std::numeric_limits<time_t>::max()));
-    }
-  } catch (std::exception const& e) {
-    throw exceptions::msg()
-        << "SQL: could not get the list of outdated instances: " << e.what();
-  }
-}
-
-/**
- *  Update all the hosts and services of unresponsive instances.
- */
-void stream::_update_hosts_and_services_of_unresponsive_instances() {
-  // Log message.
-  logging::debug(logging::medium) << "SQL: checking for outdated instances";
-
-  // Don't do anything if timeout is deactivated.
-  if (_instance_timeout == 0)
-    return;
-
-  if (_stored_timestamps.size() == 0 ||
-      std::difftime(std::time(nullptr), _oldest_timestamp) <= _instance_timeout)
-    return;
-
-  // Update unresponsive instances which were responsive
-  for (std::unordered_map<unsigned int, stored_timestamp>::iterator
-           it = _stored_timestamps.begin(),
-           end = _stored_timestamps.end();
-       it != end; ++it) {
-    if (it->second.get_state() == stored_timestamp::responsive &&
-        it->second.timestamp_outdated(_instance_timeout)) {
-      it->second.set_state(stored_timestamp::unresponsive);
-      _update_hosts_and_services_of_instance(it->second.get_id(), false);
-    }
-  }
-
-  // Update new oldest timestamp
-  _oldest_timestamp = timestamp(std::numeric_limits<time_t>::max());
-  for (std::unordered_map<unsigned int, stored_timestamp>::iterator
-           it = _stored_timestamps.begin(),
-           end = _stored_timestamps.end();
-       it != end; ++it) {
-    if (it->second.get_state() == stored_timestamp::responsive &&
-        _oldest_timestamp > it->second.get_timestamp())
-      _oldest_timestamp = it->second.get_timestamp();
-  }
-}
-
-/**
- *  Update the hosts and services of one instance.
- *
- *  @param[in] id         The instance id.
- *  @param[in] responsive True if the instance is responsive, false otherwise.
- */
-void stream::_update_hosts_and_services_of_instance(unsigned int id,
-                                                    bool responsive) {
-  bool db_v2(_mysql.schema_version() == mysql::v2);
-  std::ostringstream ss;
-  if (responsive) {
-    ss << "UPDATE " << (db_v2 ? "instances" : "rt_instances")
-       << "  SET outdated=FALSE"
-       << "  WHERE instance_id=" << id;
-    _mysql.run_query(ss.str(), "SQL: could not restore outdated instance",
-                     false, _mysql.choose_connection_by_instance(id));
-    ss.str("");
-    ss.clear();
-    ss << "UPDATE " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
-       << "  LEFT JOIN " << (db_v2 ? "services" : "rt_services") << "    AS s"
-       << "    ON h.host_id=s.host_id"
-       << "  SET h.state=h.real_state,"
-       << "      s.state=s.real_state"
-       << "  WHERE h.instance_id = " << id;
-    _mysql.run_query(ss.str(), "SQL: could not restore outdated instance",
-                     false, _mysql.choose_connection_by_instance(id));
-  } else {
-    ss << "UPDATE " << (db_v2 ? "instances" : "rt_instances")
-       << "  SET outdated=TRUE"
-       << "  WHERE instance_id=" << id;
-    _mysql.run_query(ss.str(), "SQL: could not outdate instance", false,
-                     _mysql.choose_connection_by_instance(id));
-    ss.str("");
-    ss.clear();
-    ss << "UPDATE " << (db_v2 ? "hosts" : "rt_hosts") << " AS h"
-       << "  LEFT JOIN " << (db_v2 ? "services" : "rt_services") << "    AS s"
-       << "    ON h.host_id=s.host_id"
-       << "  SET h.real_state=h.state,"
-       << "      s.real_state=s.state,"
-       << "      h.state=" << com::centreon::engine::host::state_unreachable
-       << ","
-       << "      s.state=" << com::centreon::engine::service::state_unknown
-       << "  WHERE h.instance_id=" << id;
-    _mysql.run_query(ss.str(), "SQL: could not outdate instance", false,
-                     _mysql.choose_connection_by_instance(id));
-  }
-  std::shared_ptr<neb::responsive_instance> ri(new neb::responsive_instance);
-  ri->poller_id = id;
-  ri->responsive = responsive;
-  multiplexing::publisher().write(ri);
-}
-
 /**************************************
  *                                     *
  *           Public Methods            *
@@ -875,22 +732,20 @@ stream::stream(database_config const& dbcfg,
 //                      cleanup_check_interval),
       _ack_events(0),
       _pending_events(0),
-      _with_state_events(with_state_events),
-      _instance_timeout(instance_timeout),
+      _with_state_events(with_state_events) {
 //      _transversal_mysql(database_config(dbcfg.get_type(),
 //                                         dbcfg.get_host(),
 //                                         dbcfg.get_port(),
 //                                         dbcfg.get_user(),
 //                                         dbcfg.get_password(),
 //                                         dbcfg.get_name())),
-      _oldest_timestamp(std::numeric_limits<time_t>::max()) {
+//      _oldest_timestamp(std::numeric_limits<time_t>::max()) {
 //  // Get oudated instances.
-//  _get_all_outdated_instances_from_db();
 //
 //  // Run cleanup thread.
 //  _cleanup_thread.start();
 
-  conflict_manager::init_sql(dbcfg);
+  conflict_manager::init_sql(dbcfg, instance_timeout);
 }
 
 /**
@@ -910,7 +765,7 @@ stream::~stream() {
  */
 int stream::flush() {
   // Update hosts and services of stopped instances
-  _update_hosts_and_services_of_unresponsive_instances();
+  //_update_hosts_and_services_of_unresponsive_instances();
 
   // Commit transaction.
 //  logging::info(logging::medium) << "SQL: committing transaction";

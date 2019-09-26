@@ -30,6 +30,7 @@
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/misc/pair.hh"
 #include "com/centreon/broker/mysql.hh"
+#include "com/centreon/broker/sql/stored_timestamp.hh"
 
 CCB_BEGIN()
 /* Forward declarations */
@@ -130,12 +131,14 @@ class conflict_manager {
   uint32_t _max_pending_queries;
   uint32_t _pending_queries;
   mysql _mysql;
+  uint32_t _instance_timeout;
   bool _store_in_db;
   uint32_t _rrd_len;
   uint32_t _interval_length;
 
   std::thread _thread;
 
+  std::unordered_set<uint32_t> _cache_deleted_instance_id;
   std::unordered_map<uint32_t, uint32_t> _cache_host_instance;
   std::unordered_map<uint64_t, size_t> _cache_hst_cmd;
   std::unordered_map<std::pair<uint64_t, uint64_t>, size_t> _cache_svc_cmd;
@@ -145,6 +148,8 @@ class conflict_manager {
   std::unordered_set<uint32_t> _hostgroup_cache;
   std::unordered_set<uint32_t> _servicegroup_cache;
   std::deque<metric_value> _perfdata_queue;
+  timestamp _oldest_timestamp;
+  std::unordered_map<uint32_t, stored_timestamp> _stored_timestamps;
 
   database::mysql_stmt _acknowledgement_insupdate;
   database::mysql_stmt _comment_insupdate;
@@ -178,12 +183,17 @@ class conflict_manager {
   database::mysql_stmt _index_data_insert;
   database::mysql_stmt _metrics_insert;
 
-  conflict_manager(database_config const& dbcfg);
+  conflict_manager(database_config const& dbcfg, uint32_t instance_timeout);
   conflict_manager() = delete;
   conflict_manager& operator=(conflict_manager const& other) = delete;
   conflict_manager(conflict_manager const& other) = delete;
   bool _should_exit() const;
   void _callback();
+
+  void _update_hosts_and_services_of_unresponsive_instances();
+  void _update_hosts_and_services_of_instance(uint32_t id, bool responsive);
+  void _update_timestamp(uint32_t instance_id);
+  bool _is_valid_poller(uint32_t instance_id);
 
   void _process_acknowledgement();
   void _process_comment();
@@ -216,7 +226,6 @@ class conflict_manager {
 
   void _load_caches();
   void _clean_tables(uint32_t instance_id);
-  bool _is_valid_poller(uint32_t instance_id);
   void _prepare_hg_insupdate_statement();
   void _prepare_sg_insupdate_statement();
   void _finish_action(int32_t conn, uint32_t action);
@@ -225,7 +234,7 @@ class conflict_manager {
   void _insert_perfdatas();
 
  public:
-  static void init_sql(database_config const& dbcfg);
+  static void init_sql(database_config const& dbcfg, uint32_t instance_timeout);
   static bool init_storage(bool store_in_db,
                            uint32_t rrd_len,
                            uint32_t interval_length);

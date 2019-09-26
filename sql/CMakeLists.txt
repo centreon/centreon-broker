@@ -30,9 +30,11 @@ add_library("conflictmgr" STATIC
   "${SRC_DIR}/conflict_manager.cc"
   "${SRC_DIR}/conflict_manager_sql.cc"
   "${SRC_DIR}/conflict_manager_storage.cc"
+  "${SRC_DIR}/stored_timestamp.cc"
 
   # Headers.
   "${INC_DIR}/com/centreon/broker/sql/conflict_manager.hh"
+  "${INC_DIR}/com/centreon/broker/sql/stored_timestamp.hh"
 )
 set(CONFLICTMGR "conflictmgr" PARENT_SCOPE)
 set_target_properties(conflictmgr PROPERTIES

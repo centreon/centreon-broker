@@ -67,11 +67,14 @@ conflict_manager& conflict_manager::instance() {
   return *_singleton;
 }
 
-conflict_manager::conflict_manager(database_config const& dbcfg)
+conflict_manager::conflict_manager(database_config const& dbcfg,
+                                   uint32_t instance_timeout)
     : _exit{false},
       _max_pending_queries{dbcfg.get_queries_per_transaction()},
       _pending_queries{0},
-      _mysql{dbcfg} {
+      _mysql{dbcfg},
+      _instance_timeout{instance_timeout},
+      _oldest_timestamp{std::numeric_limits<time_t>::max()} {
   _thread = std::move(std::thread(&conflict_manager::_callback, this));
 }
 
@@ -108,9 +111,10 @@ bool conflict_manager::init_storage(bool store_in_db,
   return false;
 }
 
-void conflict_manager::init_sql(database_config const& dbcfg) {
+void conflict_manager::init_sql(database_config const& dbcfg,
+                                uint32_t instance_timeout) {
   std::lock_guard<std::mutex> lk(_init_m);
-  _singleton = new conflict_manager(dbcfg);
+  _singleton = new conflict_manager(dbcfg, instance_timeout);
   _init_cv.notify_all();
   _singleton->_action.resize(_singleton->_mysql.connections_count());
 }
@@ -118,6 +122,27 @@ void conflict_manager::init_sql(database_config const& dbcfg) {
 void conflict_manager::_load_caches() {
   // Fill index cache.
   std::lock_guard<std::mutex> lk(_loop_m);
+
+  /* get all outdated instances from the database => _stored_timestamps */
+  {
+    std::string query{"SELECT instance_id FROM instances WHERE outdated=TRUE"};
+    std::promise<mysql_result> promise;
+    _mysql.run_query_and_get_result(query, &promise);
+    try {
+      mysql_result res(promise.get_future().get());
+      while (_mysql.fetch_row(res)) {
+        uint32_t instance_id = res.value_as_i32(0);
+        _stored_timestamps.insert({instance_id, stored_timestamp(instance_id, stored_timestamp::unresponsive)});
+        stored_timestamp& ts = _stored_timestamps[instance_id];
+        ts.set_timestamp(timestamp(std::numeric_limits<time_t>::max()));
+      }
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+          << "conflict_manager: could not get the list of outdated instances: "
+          << e.what();
+    }
+  }
 
   /* index_data => _index_cache */
   {
@@ -268,6 +293,9 @@ void conflict_manager::_callback() {
       logging::debug(logging::high)
           << "conflict_manager: acknowledgement - still " << _pending_queries
           << " not acknowledged";
+
+    /* Are there unresonsive instances? */
+    _update_hosts_and_services_of_unresponsive_instances();
   }
 }
 

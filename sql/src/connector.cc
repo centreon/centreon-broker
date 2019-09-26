@@ -38,17 +38,17 @@ connector::connector() : io::endpoint(false) {}
  *
  *  @param[in] other  Object to copy.
  */
-connector::connector(connector const& other)
-    : io::endpoint(other),
-      _cleanup_check_interval(other._cleanup_check_interval),
-      _dbcfg(other._dbcfg),
-      _instance_timeout(other._instance_timeout),
-      _with_state_events(other._with_state_events) {}
+//connector::connector(connector const& other)
+//    : io::endpoint(other),
+//      _cleanup_check_interval(other._cleanup_check_interval),
+//      _dbcfg(other._dbcfg),
+//      _instance_timeout(other._instance_timeout),
+//      _with_state_events(other._with_state_events) {}
 
 /**
  *  Destructor.
  */
-connector::~connector() {}
+//connector::~connector() {}
 
 /**
  *  Assignment operator.
@@ -57,16 +57,16 @@ connector::~connector() {}
  *
  *  @return This object.
  */
-connector& connector::operator=(connector const& other) {
-  if (this != &other) {
-    io::endpoint::operator=(other);
-    _cleanup_check_interval = other._cleanup_check_interval;
-    _dbcfg = other._dbcfg;
-    _instance_timeout = other._instance_timeout;
-    _with_state_events = other._with_state_events;
-  }
-  return (*this);
-}
+//connector& connector::operator=(connector const& other) {
+//  if (this != &other) {
+//    io::endpoint::operator=(other);
+//    _cleanup_check_interval = other._cleanup_check_interval;
+//    _dbcfg = other._dbcfg;
+//    _instance_timeout = other._instance_timeout;
+//    _with_state_events = other._with_state_events;
+//  }
+//  return (*this);
+//}
 
 /**
  *  Set connection parameters.

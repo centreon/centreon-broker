@@ -615,6 +615,16 @@ set(DAEMON cbd)
 add_executable(${DAEMON} ${SRC_DIR}/main.cc)
 add_dependencies(${DAEMON} Asio)
 
+#if (WITH_COVERAGE AND WITH_MODULE_SIMU)
+#  add_definitions("-DCOVERAGE")
+#  set(COVERAGE_EXCLUDES '*/test/*' '/usr/include/*' '${CMAKE_BINARY_DIR}/*')
+#  SETUP_TARGET_FOR_COVERAGE(
+#    NAME simu-coverage
+#    EXECUTABLE cbd /etc/centreon-broker/central-broker.json
+#    DEPENDENCIES cbd
+#  )
+#endif ()
+
 if (CMAKE_COMPILER_IS_GNUCXX)
   # Flags needed to include all symbols in binary.
   target_link_libraries("${DAEMON}"

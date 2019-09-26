@@ -60,7 +60,6 @@ class stream : public io::stream {
   void _clean_empty_service_groups(int poller_id);
   void _clean_tables(unsigned int instance_id);
   void _host_instance_cache_create();
-  bool _is_valid_poller(unsigned int poller_id);
   void _process_engine(std::shared_ptr<io::data> const& e);
   void _process_host_state(std::shared_ptr<io::data> const& e);
   void _process_issue(std::shared_ptr<io::data> const& e);
@@ -127,8 +126,6 @@ class stream : public io::stream {
   bool _with_state_events;
   unsigned int _instance_timeout;
 
-  std::unordered_map<unsigned int, stored_timestamp> _stored_timestamps;
-  timestamp _oldest_timestamp;
   std::map<unsigned int, unsigned int> _cache_host_instance;
   std::map<unsigned int, size_t> _cache_hst_cmd;
   std::map<std::pair<unsigned int, unsigned int>, size_t> _cache_svc_cmd;
