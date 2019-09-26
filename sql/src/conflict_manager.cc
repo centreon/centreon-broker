@@ -119,9 +119,29 @@ void conflict_manager::init_sql(database_config const& dbcfg,
   _singleton->_action.resize(_singleton->_mysql.connections_count());
 }
 
+void conflict_manager::_load_deleted_instances() {
+  _cache_deleted_instance_id.clear();
+  std::string query{"SELECT instance_id FROM instances WHERE deleted=1"};
+  std::promise<mysql_result> promise;
+  _mysql.run_query_and_get_result(query, &promise);
+  try {
+    mysql_result res(promise.get_future().get());
+    while (_mysql.fetch_row(res))
+      _cache_deleted_instance_id.insert(res.value_as_u32(0));
+  }
+  catch (std::exception const& e) {
+    throw exceptions::msg()
+        << "conflict_manager: could not get list of deleted instances: "
+        << e.what();
+  }
+}
+
 void conflict_manager::_load_caches() {
   // Fill index cache.
   std::lock_guard<std::mutex> lk(_loop_m);
+
+  /* get deleted cache of instance ids => _cache_deleted_instance_id */
+  _load_deleted_instances();
 
   /* get all outdated instances from the database => _stored_timestamps */
   {
@@ -193,7 +213,7 @@ void conflict_manager::_load_caches() {
     _cache_host_instance.clear();
 
     std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result("SELECT host_id, instance_id FROM hosts",
+    _mysql.run_query_and_get_result("SELECT host_id,instance_id FROM hosts",
                                     &promise);
 
     try {
@@ -244,6 +264,9 @@ void conflict_manager::_load_caches() {
           << "SQL: could not get the list of servicegroups id: " << e.what();
     }
   }
+
+  _cache_svc_cmd.clear();
+  _cache_hst_cmd.clear();
 }
 
 /**

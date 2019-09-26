@@ -224,6 +224,7 @@ class conflict_manager {
 
   void _storage_process_service_status();
 
+  void _load_deleted_instances();
   void _load_caches();
   void _clean_tables(uint32_t instance_id);
   void _prepare_hg_insupdate_statement();

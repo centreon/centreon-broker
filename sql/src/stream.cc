@@ -64,56 +64,6 @@ void (stream::*const stream::_correlation_processing_table[])(
  **************************************/
 
 /**
- *  Clean the deleted cache of instance ids.
- */
-void stream::_cache_clean() {
-  _cache_deleted_instance_id.clear();
-}
-
-/**
- *  Create the deleted cache of instance ids.
- */
-void stream::_cache_create() {
-  std::ostringstream ss;
-  ss << "SELECT instance_id"
-     << "  FROM "
-     << ((_mysql.schema_version() == mysql::v2) ? "instances" : "rt_instances")
-     << " WHERE deleted=1";
-
-  std::promise<mysql_result> promise;
-  _mysql.run_query_and_get_result(ss.str(), &promise);
-  try {
-    mysql_result res(promise.get_future().get());
-    while (_mysql.fetch_row(res))
-      _cache_deleted_instance_id.insert(res.value_as_u32(0));
-  } catch (std::exception const& e) {
-    throw exceptions::msg()
-        << "SQL: could not get list of deleted instances: " << e.what();
-  }
-}
-
-/**
- * Create the cache to link host id to instance id.
- */
-void stream::_host_instance_cache_create() {
-  _cache_host_instance.clear();
-  std::ostringstream oss;
-
-  std::promise<mysql_result> promise;
-  _mysql.run_query_and_get_result("SELECT host_id, instance_id FROM hosts",
-                                  &promise);
-
-  try {
-    mysql_result res(promise.get_future().get());
-    while (_mysql.fetch_row(res))
-      _cache_host_instance[res.value_as_u32(0)] = res.value_as_u32(1);
-  } catch (std::exception const& e) {
-    throw exceptions::msg()
-        << "SQL: could not get the list of host/instance pairs: " << e.what();
-  }
-}
-
-/**
  *  Remove host groups with no members from host groups table.
  *
  * @param instance_id Poller instance id
@@ -370,24 +320,6 @@ void stream::_process_engine(std::shared_ptr<io::data> const& e) {
   }
 }
 
-void stream::_prepare_hg_insupdate_statement() {
-//  if (!_host_group_insupdate.prepared()) {
-//    query_preparator::event_unique unique;
-//    unique.insert("hostgroup_id");
-//    query_preparator qp(neb::host_group::static_type(), unique);
-//    _host_group_insupdate = qp.prepare_insert_or_update(_transversal_mysql);
-//  }
-}
-
-void stream::_prepare_sg_insupdate_statement() {
-//  if (!_service_group_insupdate.prepared()) {
-//    query_preparator::event_unique unique;
-//    unique.insert("servicegroup_id");
-//    query_preparator qp(neb::service_group::static_type(), unique);
-//    _service_group_insupdate = qp.prepare_insert_or_update(_transversal_mysql);
-//  }
-}
-
 /**
  *  Process a host state event.
  *
@@ -436,35 +368,35 @@ void stream::_process_host_state(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted issue.
  */
 void stream::_process_issue(std::shared_ptr<io::data> const& e) {
-  // Issue object.
-  correlation::issue const& i(*static_cast<correlation::issue const*>(e.get()));
-
-  // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing issue event (node: (" << i.host_id << ", "
-      << i.service_id << "), start time: " << i.start_time
-      << ", end_time: " << i.end_time << ", ack time: " << i.ack_time << ")";
-
-  // Prepare queries.
-  if (!_issue_insupdate.prepared()) {
-    query_preparator::event_unique unique;
-    unique.insert("host_id");
-    unique.insert("service_id");
-    unique.insert("start_time");
-    query_preparator qp(correlation::issue::static_type(), unique);
-    _issue_insupdate = qp.prepare_insert_or_update(_mysql);
-  }
-
-  // Processing.
-  std::ostringstream oss;
-  oss << "SQL: could not store issue (host: " << i.host_id
-      << ", service: " << i.service_id << ", start time: " << i.start_time
-      << "): ";
-
-  _issue_insupdate << i;
-  _mysql.run_statement(
-      _issue_insupdate, oss.str(), true,
-      _mysql.choose_connection_by_instance(_cache_host_instance[i.host_id]));
+//  // Issue object.
+//  correlation::issue const& i(*static_cast<correlation::issue const*>(e.get()));
+//
+//  // Log message.
+//  logging::info(logging::medium)
+//      << "SQL: processing issue event (node: (" << i.host_id << ", "
+//      << i.service_id << "), start time: " << i.start_time
+//      << ", end_time: " << i.end_time << ", ack time: " << i.ack_time << ")";
+//
+//  // Prepare queries.
+//  if (!_issue_insupdate.prepared()) {
+//    query_preparator::event_unique unique;
+//    unique.insert("host_id");
+//    unique.insert("service_id");
+//    unique.insert("start_time");
+//    query_preparator qp(correlation::issue::static_type(), unique);
+//    _issue_insupdate = qp.prepare_insert_or_update(_mysql);
+//  }
+//
+//  // Processing.
+//  std::ostringstream oss;
+//  oss << "SQL: could not store issue (host: " << i.host_id
+//      << ", service: " << i.service_id << ", start time: " << i.start_time
+//      << "): ";
+//
+//  _issue_insupdate << i;
+//  _mysql.run_statement(
+//      _issue_insupdate, oss.str(), true,
+//      _mysql.choose_connection_by_instance(_cache_host_instance[i.host_id]));
 }
 
 /**
@@ -473,156 +405,156 @@ void stream::_process_issue(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted issue parent.
  */
 void stream::_process_issue_parent(std::shared_ptr<io::data> const& e) {
-  // Issue parent object.
-  correlation::issue_parent const& ip(
-      *static_cast<correlation::issue_parent const*>(e.get()));
-
-  // Log message.
-  logging::info(logging::medium)
-      << "SQL: processing issue parent "
-         "event (child: ("
-      << ip.child_host_id << ", " << ip.child_service_id << ", "
-      << ip.child_start_time << "), parent: (" << ip.parent_host_id << ", "
-      << ip.parent_service_id << ", " << ip.parent_start_time
-      << "), start time: " << ip.start_time << ", end time: " << ip.end_time
-      << ")";
-
-  // Database schema version.
-  bool db_v2(_mysql.schema_version() == mysql::v2);
-
-  // Prepare queries.
-  if (!_issue_parent_insert.prepared() || !_issue_parent_update.prepared()) {
-    {
-      std::ostringstream ss;
-      ss << "INSERT INTO "
-         << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
-         << "  (child_id, end_time, start_time, parent_id)"
-            "  VALUES (:child_id, :end_time, :start_time, :parent_id)";
-      _issue_parent_insert = _mysql.prepare_query(ss.str());
-    }
-    {
-      std::ostringstream ss;
-      ss << "UPDATE "
-         << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
-         << "  SET end_time=:end_time"
-            "  WHERE child_id=:child_id"
-            "    AND start_time=:start_time"
-            "    AND parent_id=:parent_id";
-      _issue_parent_update = _mysql.prepare_query(ss.str());
-    }
-  }
-
-  int child_id;
-  int parent_id;
-
-  // Get child ID.
-  {
-    std::ostringstream query;
-    query << "SELECT issue_id"
-          << "  FROM " << (db_v2 ? "issues" : "rt_issues")
-          << "  WHERE host_id=" << ip.child_host_id << " AND service_id";
-    if (ip.child_service_id)
-      query << "=" << ip.child_service_id;
-    else
-      query << " IS NULL";
-    query << " AND start_time=" << ip.child_start_time;
-
-    std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result(
-        query.str(), &promise,
-        _mysql.choose_connection_by_instance(
-            _cache_host_instance[ip.child_host_id]));
-    try {
-      mysql_result res(promise.get_future().get());
-      if (!_mysql.fetch_row(res))
-        throw exceptions::msg() << "child issue does not exist";
-
-      child_id = res.value_as_i32(0);
-      logging::debug(logging::low)
-          << "SQL: child issue ID of (" << ip.child_host_id << ", "
-          << ip.child_service_id << ", " << ip.child_start_time << ") is "
-          << child_id;
-    } catch (std::exception const& e) {
-      throw exceptions::msg()
-          << "SQL: could not fetch child issue "
-             "ID (host: "
-          << ip.child_host_id << ", service: " << ip.child_service_id
-          << ", start: " << ip.child_start_time << "): " << e.what();
-    }
-  }
-
-  // Get parent ID.
-  {
-    std::ostringstream query;
-    query << "SELECT issue_id"
-             "  FROM "
-          << (db_v2 ? "issues" : "rt_issues")
-          << "  WHERE host_id=" << ip.parent_host_id << "    AND service_id";
-    if (ip.parent_service_id)
-      query << "=" << ip.parent_service_id;
-    else
-      query << " IS NULL";
-    query << " AND start_time=" << ip.parent_start_time;
-
-    std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result(
-        query.str(), &promise,
-        _mysql.choose_connection_by_instance(
-            _cache_host_instance[ip.parent_host_id]));
-    try {
-      mysql_result res(promise.get_future().get());
-      if (!_mysql.fetch_row(res))
-        throw(exceptions::msg() << "parent issue does not exist");
-
-      parent_id = res.value_as_i32(0);
-      logging::debug(logging::low)
-          << "SQL: parent issue ID of (" << ip.parent_host_id << ", "
-          << ip.parent_service_id << ", " << ip.parent_start_time << ") is "
-          << parent_id;
-    } catch (std::exception const& e) {
-      throw exceptions::msg()
-          << "SQL: could not fetch parent issue "
-             "ID (host: "
-          << ip.parent_host_id << ", service: " << ip.parent_service_id
-          << ", start: " << ip.parent_start_time << "): " << e.what();
-    }
-  }
-
-  // End of parenting.
-  if (ip.end_time != (time_t)-1) {
-    _issue_parent_update.bind_value_as_u32(":end_time",
-                                           static_cast<long long>(ip.end_time));
-  } else
-    _issue_parent_update.bind_value_as_null(":end_time");
-  _issue_parent_update.bind_value_as_i32(":child_id", child_id);
-  _issue_parent_update.bind_value_as_u32(":start_time",
-                                         static_cast<long long>(ip.start_time));
-  _issue_parent_update.bind_value_as_i32(":parent_id", parent_id);
-  logging::debug(logging::low)
-      << "SQL: updating issue parenting between child " << child_id
-      << " and parent " << parent_id << " (start: " << ip.start_time
-      << ", end: " << ip.end_time << ")";
-  std::promise<int> promise;
-  _mysql.run_statement_and_get_int(_issue_parent_update, &promise,
-                                   mysql_task::AFFECTED_ROWS);
-  try {
-    if (promise.get_future().get() <= 0) {
-      if (ip.end_time != (time_t)-1)
-        _issue_parent_insert.bind_value_as_u32(
-            ":end_time", static_cast<long long>(ip.end_time));
-      else
-        _issue_parent_insert.bind_value_as_null(":end_time");
-      logging::debug(logging::low)
-          << "SQL: inserting issue parenting between child " << child_id
-          << " and parent " << parent_id << " (start: " << ip.start_time
-          << ", end: " << ip.end_time << ")";
-      _mysql.run_statement(_issue_parent_insert,
-                           "SQL: issue parent insert query failed");
-    }
-  } catch (std::exception const& e) {
-    throw exceptions::msg()
-        << "SQL: issue parent update query failed: " << e.what();
-  }
+//  // Issue parent object.
+//  correlation::issue_parent const& ip(
+//      *static_cast<correlation::issue_parent const*>(e.get()));
+//
+//  // Log message.
+//  logging::info(logging::medium)
+//      << "SQL: processing issue parent "
+//         "event (child: ("
+//      << ip.child_host_id << ", " << ip.child_service_id << ", "
+//      << ip.child_start_time << "), parent: (" << ip.parent_host_id << ", "
+//      << ip.parent_service_id << ", " << ip.parent_start_time
+//      << "), start time: " << ip.start_time << ", end time: " << ip.end_time
+//      << ")";
+//
+//  // Database schema version.
+//  bool db_v2(_mysql.schema_version() == mysql::v2);
+//
+//  // Prepare queries.
+//  if (!_issue_parent_insert.prepared() || !_issue_parent_update.prepared()) {
+//    {
+//      std::ostringstream ss;
+//      ss << "INSERT INTO "
+//         << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
+//         << "  (child_id, end_time, start_time, parent_id)"
+//            "  VALUES (:child_id, :end_time, :start_time, :parent_id)";
+//      _issue_parent_insert = _mysql.prepare_query(ss.str());
+//    }
+//    {
+//      std::ostringstream ss;
+//      ss << "UPDATE "
+//         << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
+//         << "  SET end_time=:end_time"
+//            "  WHERE child_id=:child_id"
+//            "    AND start_time=:start_time"
+//            "    AND parent_id=:parent_id";
+//      _issue_parent_update = _mysql.prepare_query(ss.str());
+//    }
+//  }
+//
+//  int child_id;
+//  int parent_id;
+//
+//  // Get child ID.
+//  {
+//    std::ostringstream query;
+//    query << "SELECT issue_id"
+//          << "  FROM " << (db_v2 ? "issues" : "rt_issues")
+//          << "  WHERE host_id=" << ip.child_host_id << " AND service_id";
+//    if (ip.child_service_id)
+//      query << "=" << ip.child_service_id;
+//    else
+//      query << " IS NULL";
+//    query << " AND start_time=" << ip.child_start_time;
+//
+//    std::promise<mysql_result> promise;
+//    _mysql.run_query_and_get_result(
+//        query.str(), &promise,
+//        _mysql.choose_connection_by_instance(
+//            _cache_host_instance[ip.child_host_id]));
+//    try {
+//      mysql_result res(promise.get_future().get());
+//      if (!_mysql.fetch_row(res))
+//        throw exceptions::msg() << "child issue does not exist";
+//
+//      child_id = res.value_as_i32(0);
+//      logging::debug(logging::low)
+//          << "SQL: child issue ID of (" << ip.child_host_id << ", "
+//          << ip.child_service_id << ", " << ip.child_start_time << ") is "
+//          << child_id;
+//    } catch (std::exception const& e) {
+//      throw exceptions::msg()
+//          << "SQL: could not fetch child issue "
+//             "ID (host: "
+//          << ip.child_host_id << ", service: " << ip.child_service_id
+//          << ", start: " << ip.child_start_time << "): " << e.what();
+//    }
+//  }
+//
+//  // Get parent ID.
+//  {
+//    std::ostringstream query;
+//    query << "SELECT issue_id"
+//             "  FROM "
+//          << (db_v2 ? "issues" : "rt_issues")
+//          << "  WHERE host_id=" << ip.parent_host_id << "    AND service_id";
+//    if (ip.parent_service_id)
+//      query << "=" << ip.parent_service_id;
+//    else
+//      query << " IS NULL";
+//    query << " AND start_time=" << ip.parent_start_time;
+//
+//    std::promise<mysql_result> promise;
+//    _mysql.run_query_and_get_result(
+//        query.str(), &promise,
+//        _mysql.choose_connection_by_instance(
+//            _cache_host_instance[ip.parent_host_id]));
+//    try {
+//      mysql_result res(promise.get_future().get());
+//      if (!_mysql.fetch_row(res))
+//        throw(exceptions::msg() << "parent issue does not exist");
+//
+//      parent_id = res.value_as_i32(0);
+//      logging::debug(logging::low)
+//          << "SQL: parent issue ID of (" << ip.parent_host_id << ", "
+//          << ip.parent_service_id << ", " << ip.parent_start_time << ") is "
+//          << parent_id;
+//    } catch (std::exception const& e) {
+//      throw exceptions::msg()
+//          << "SQL: could not fetch parent issue "
+//             "ID (host: "
+//          << ip.parent_host_id << ", service: " << ip.parent_service_id
+//          << ", start: " << ip.parent_start_time << "): " << e.what();
+//    }
+//  }
+//
+//  // End of parenting.
+//  if (ip.end_time != (time_t)-1) {
+//    _issue_parent_update.bind_value_as_u32(":end_time",
+//                                           static_cast<long long>(ip.end_time));
+//  } else
+//    _issue_parent_update.bind_value_as_null(":end_time");
+//  _issue_parent_update.bind_value_as_i32(":child_id", child_id);
+//  _issue_parent_update.bind_value_as_u32(":start_time",
+//                                         static_cast<long long>(ip.start_time));
+//  _issue_parent_update.bind_value_as_i32(":parent_id", parent_id);
+//  logging::debug(logging::low)
+//      << "SQL: updating issue parenting between child " << child_id
+//      << " and parent " << parent_id << " (start: " << ip.start_time
+//      << ", end: " << ip.end_time << ")";
+//  std::promise<int> promise;
+//  _mysql.run_statement_and_get_int(_issue_parent_update, &promise,
+//                                   mysql_task::AFFECTED_ROWS);
+//  try {
+//    if (promise.get_future().get() <= 0) {
+//      if (ip.end_time != (time_t)-1)
+//        _issue_parent_insert.bind_value_as_u32(
+//            ":end_time", static_cast<long long>(ip.end_time));
+//      else
+//        _issue_parent_insert.bind_value_as_null(":end_time");
+//      logging::debug(logging::low)
+//          << "SQL: inserting issue parenting between child " << child_id
+//          << " and parent " << parent_id << " (start: " << ip.start_time
+//          << ", end: " << ip.end_time << ")";
+//      _mysql.run_statement(_issue_parent_insert,
+//                           "SQL: issue parent insert query failed");
+//    }
+//  } catch (std::exception const& e) {
+//    throw exceptions::msg()
+//        << "SQL: issue parent update query failed: " << e.what();
+//  }
 }
 
 /**
@@ -650,37 +582,37 @@ void stream::_process_notification(std::shared_ptr<io::data> const& e
  *  @param[in] e Uncasted service state.
  */
 void stream::_process_service_state(std::shared_ptr<io::data> const& e) {
-  // Log message.
-  correlation::state const& s(*static_cast<correlation::state const*>(e.get()));
-  logging::info(logging::medium)
-      << "SQL: processing service state event (host: " << s.host_id
-      << ", service: " << s.service_id << ", state: " << s.current_state
-      << ", start time: " << s.start_time << ", end time: " << s.end_time
-      << ")";
-
-  // Processing.
-  if (_with_state_events) {
-    // Prepare queries.
-    if (!_service_state_insupdate.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("host_id");
-      unique.insert("service_id");
-      unique.insert("start_time");
-      query_preparator qp(correlation::state::static_type(), unique);
-      _service_state_insupdate = qp.prepare_insert_or_update(_mysql);
-    }
-
-    // Process object.
-    std::ostringstream oss;
-    oss << "SQL: could not store service state event (host: " << s.host_id
-        << ", service: " << s.service_id << ", start time: " << s.start_time
-        << "): ";
-
-    _service_state_insupdate << s;
-    _mysql.run_statement(
-        _service_state_insupdate, oss.str(), true,
-        _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]));
-  }
+//  // Log message.
+//  correlation::state const& s(*static_cast<correlation::state const*>(e.get()));
+//  logging::info(logging::medium)
+//      << "SQL: processing service state event (host: " << s.host_id
+//      << ", service: " << s.service_id << ", state: " << s.current_state
+//      << ", start time: " << s.start_time << ", end time: " << s.end_time
+//      << ")";
+//
+//  // Processing.
+//  if (_with_state_events) {
+//    // Prepare queries.
+//    if (!_service_state_insupdate.prepared()) {
+//      query_preparator::event_unique unique;
+//      unique.insert("host_id");
+//      unique.insert("service_id");
+//      unique.insert("start_time");
+//      query_preparator qp(correlation::state::static_type(), unique);
+//      _service_state_insupdate = qp.prepare_insert_or_update(_mysql);
+//    }
+//
+//    // Process object.
+//    std::ostringstream oss;
+//    oss << "SQL: could not store service state event (host: " << s.host_id
+//        << ", service: " << s.service_id << ", start time: " << s.start_time
+//        << "): ";
+//
+//    _service_state_insupdate << s;
+//    _mysql.run_statement(
+//        _service_state_insupdate, oss.str(), true,
+//        _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]));
+//  }
 }
 
 /**
@@ -730,7 +662,6 @@ stream::stream(database_config const& dbcfg,
 //                      dbcfg.get_password(),
 //                      dbcfg.get_name(),
 //                      cleanup_check_interval),
-      _ack_events(0),
       _pending_events(0),
       _with_state_events(with_state_events) {
 //      _transversal_mysql(database_config(dbcfg.get_type(),
@@ -798,11 +729,11 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *  Update internal stream cache.
  */
 void stream::update() {
-  _cache_clean();
-  _cache_create();
-  _host_instance_cache_create();
-  _cache_svc_cmd.clear();
-  _cache_hst_cmd.clear();
+  //_cache_clean();
+  //_cache_create();
+  //_host_instance_cache_create();
+  //_cache_svc_cmd.clear();
+  //_cache_hst_cmd.clear();
 }
 
 /**

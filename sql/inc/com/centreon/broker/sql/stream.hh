@@ -52,14 +52,9 @@ class stream : public io::stream {
   int write(std::shared_ptr<io::data> const& d);
 
  private:
-  void _cache_clean();
-  void _cache_create();
-  void _prepare_hg_insupdate_statement();
-  void _prepare_sg_insupdate_statement();
   void _clean_empty_host_groups(int poller_id);
   void _clean_empty_service_groups(int poller_id);
   void _clean_tables(unsigned int instance_id);
-  void _host_instance_cache_create();
   void _process_engine(std::shared_ptr<io::data> const& e);
   void _process_host_state(std::shared_ptr<io::data> const& e);
   void _process_issue(std::shared_ptr<io::data> const& e);
@@ -73,64 +68,25 @@ class stream : public io::stream {
                               database::mysql_stmt& up_stmt,
                               T& t,
                               int thread_id = -1);
-  void _update_timestamp(unsigned int instance_id);
-  void _get_all_outdated_instances_from_db();
-  void _update_hosts_and_services_of_unresponsive_instances();
-  void _update_hosts_and_services_of_instance(unsigned int id, bool responsive);
 
   static void (stream::*const _correlation_processing_table[])(
       std::shared_ptr<io::data> const&);
   mysql _mysql;
 
   // Cache
-  database::mysql_stmt _acknowledgement_insupdate;
-  database::mysql_stmt _comment_insupdate;
-  database::mysql_stmt _custom_variable_insupdate;
-  database::mysql_stmt _custom_variable_delete;
-  database::mysql_stmt _custom_variable_status_update;
-  database::mysql_stmt _downtime_insupdate;
   database::mysql_stmt _empty_host_groups_delete;
   database::mysql_stmt _empty_service_groups_delete;
-  database::mysql_stmt _event_handler_insupdate;
-  database::mysql_stmt _flapping_status_insupdate;
-  database::mysql_stmt _host_insupdate;
-  database::mysql_stmt _host_check_update;
-  database::mysql_stmt _host_dependency_insupdate;
-  database::mysql_stmt _host_group_insupdate;
-  database::mysql_stmt _host_group_member_insert;
-  database::mysql_stmt _host_group_member_delete;
-  database::mysql_stmt _host_parent_insert;
   database::mysql_stmt _host_parent_select;
-  database::mysql_stmt _host_parent_delete;
   database::mysql_stmt _host_state_insupdate;
-  database::mysql_stmt _host_status_update;
-  database::mysql_stmt _instance_insupdate;
   database::mysql_stmt _instance_status_update;
   database::mysql_stmt _issue_insupdate;
   database::mysql_stmt _issue_parent_insert;
   database::mysql_stmt _issue_parent_update;
-  database::mysql_stmt _log_insert;
-  database::mysql_stmt _module_insert;
-  database::mysql_stmt _service_insupdate;
-  database::mysql_stmt _service_check_update;
-  database::mysql_stmt _service_dependency_insupdate;
-  database::mysql_stmt _service_group_insupdate;
-  database::mysql_stmt _service_group_member_insert;
-  database::mysql_stmt _service_group_member_delete;
   database::mysql_stmt _service_state_insupdate;
-  database::mysql_stmt _service_status_update;
-  std::set<unsigned int> _cache_deleted_instance_id;
 //  cleanup _cleanup_thread;
-  int _ack_events;
   int _pending_events;
   bool _with_state_events;
-  unsigned int _instance_timeout;
-
-  std::map<unsigned int, unsigned int> _cache_host_instance;
-  std::map<unsigned int, size_t> _cache_hst_cmd;
-  std::map<std::pair<unsigned int, unsigned int>, size_t> _cache_svc_cmd;
   mutable std::mutex _stat_mutex;
-  bool _enable_cmd_cache;
 };
 }  // namespace sql
 
