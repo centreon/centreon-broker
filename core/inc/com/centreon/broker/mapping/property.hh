@@ -144,18 +144,6 @@ class property : public source {
   }
 
   /**
-   *  Unsigned long integer constructor.
-   *
-   *  @param[in]  l Unsigned long integer property.
-   *  @param[out] t If not NULL, set to ULONG.
-   */
-  property(uint64_t(T::*l), source_type* t) {
-    _prop.l = l;
-    if (t)
-      *t = ULONG;
-  }
-
-  /**
    *  Copy constructor.
    *
    *  @param[in] other Object to copy.
