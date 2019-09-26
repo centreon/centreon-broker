@@ -193,7 +193,7 @@ void query::_compile_naming_scheme(std::string const& naming_scheme,
     if (macro == "$METRICID$") {
       _throw_on_invalid(metric);
       _compiled_getters.push_back(
-          &query::_get_member<uint64_t, storage::metric,
+          &query::_get_member<uint32_t, storage::metric,
                               &storage::metric::metric_id>);
     } else if (macro == "$INSTANCE$")
       _compiled_getters.push_back(&query::_get_instance);

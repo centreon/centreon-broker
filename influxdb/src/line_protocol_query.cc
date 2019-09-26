@@ -312,7 +312,7 @@ void line_protocol_query::_compile_scheme(
     if (macro == "$METRICID$") {
       _throw_on_invalid(metric);
       _append_compiled_getter(
-          &line_protocol_query::_get_member<uint64_t, storage::metric,
+          &line_protocol_query::_get_member<uint32_t , storage::metric,
                                             &storage::metric::metric_id>,
           escaper);
     } else if (macro == "$INSTANCE$")
