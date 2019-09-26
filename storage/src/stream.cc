@@ -142,6 +142,11 @@ int stream::flush() {
 
   int32_t retval = sql::conflict_manager::instance().get_acks(
       sql::conflict_manager::storage);
+  _pending_events -= retval;
+
+  // Event acknowledgement.
+  logging::debug(logging::low) << "storage: " << _pending_events
+                               << " events have not yet been acknowledged";
   return retval;
 }
 
@@ -260,14 +265,10 @@ int stream::write(std::shared_ptr<io::data> const& data) {
   if (!validate(data, "storage"))
     return 0;
   ++_pending_events;
-  int32_t retval = sql::conflict_manager::instance().send_event(sql::conflict_manager::storage, data);
-  _pending_events -= retval;
+  sql::conflict_manager::instance().send_event(sql::conflict_manager::storage,
+                                               data);
 
-  // Event acknowledgement.
-  logging::debug(logging::low) << "storage: " << _pending_events
-                               << " events have not yet been acknowledged";
-
-  return retval;
+  return 0;
 
 
   // Process service status events.

@@ -248,20 +248,26 @@ void conflict_manager::_callback() {
       uint32_t type{d->type()};
       uint16_t cat{io::events::category_of_type(type)};
       uint16_t elem{io::events::element_of_type(type)};
-      if (std::get<1>(_events.front()) == sql) {
-        if (cat == io::events::neb)
+      if (std::get<1>(_events.front()) == sql && cat == io::events::neb)
           (this->*(_neb_processing_table[elem]))();
-      }
-      else if (type == neb::service_status::static_type())
-        _storage_process_service_status();
+      else if (std::get<1>(_events.front()) == storage &&
+               type == neb::service_status::static_type())
+          _storage_process_service_status();
       else {
         logging::info(logging::low)
-          << "conflict_manager: event of type " << type << "throw away";
+          << "conflict_manager: event of type " << type << " throw away";
         *std::get<2>(_events.front()) = true;
         _events.pop_front();
       }
     }
     _finish_actions();
+    if (_pending_queries == 0)
+      logging::debug(logging::high)
+          << "conflict_manager: acknowledgement - no pending events";
+    else
+      logging::debug(logging::high)
+          << "conflict_manager: acknowledgement - still " << _pending_queries
+          << " not acknowledged";
   }
 }
 
@@ -283,19 +289,12 @@ bool conflict_manager::_should_exit() const {
  *
  * @return The number of events to ack.
  */
-int32_t conflict_manager::send_event(conflict_manager::stream_type c,
+void conflict_manager::send_event(conflict_manager::stream_type c,
                                   std::shared_ptr<io::data> const& e) {
   std::lock_guard<std::mutex> lk(_loop_m);
   _pending_queries++;
   _timeline[c].push_back(false);
   _events.push_back(std::make_tuple(e, c, &_timeline[c].back()));
-  int32_t retval = 0;
-  while (!_timeline[c].empty() && _timeline[c].front()) {
-    _timeline[c].pop_front();
-    retval++;
-  }
-  _pending_queries -= retval;
-  return retval;
 }
 
 /**
@@ -308,12 +307,8 @@ int32_t conflict_manager::send_event(conflict_manager::stream_type c,
  */
 int32_t conflict_manager::get_acks(stream_type c) {
   std::lock_guard<std::mutex> lk(_loop_m);
-  int32_t retval = 0;
-  while (!_timeline[c].empty() && _timeline[c].front()) {
-    _timeline[c].pop_front();
-    retval++;
-  }
-  _pending_queries -= retval;
+  int32_t retval = _ack[c];
+  _ack[c] = 0;
   return retval;
 }
 
@@ -346,6 +341,17 @@ void conflict_manager::_finish_actions() {
   _mysql.commit();
   for (uint32_t& v : _action)
     v = actions::none;
+  for (stream_type c : {sql, storage}) {
+    int32_t retval = 0;
+    while (!_timeline[c].empty() && _timeline[c].front()) {
+      _timeline[c].pop_front();
+      retval++;
+    }
+    _pending_queries -= retval;
+    _ack[c] = retval;
+  }
+  logging::debug(logging::high) << "conflict_manager: still " << _pending_queries
+    << " not acknowledged";
 }
 
 /**

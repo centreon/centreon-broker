@@ -1821,7 +1821,7 @@ int stream::flush() {
   // Commit transaction.
 //  logging::info(logging::medium) << "SQL: committing transaction";
 //  _mysql.commit();
-  int retval = conflict_manager::instance().get_acks(conflict_manager::sql);
+  int32_t retval = conflict_manager::instance().get_acks(conflict_manager::sql);
   _pending_events -= retval;
 
   // Event acknowledgement.
@@ -1864,28 +1864,14 @@ void stream::update() {
  *  @return Number of events acknowledged.
  */
 int32_t stream::write(std::shared_ptr<io::data> const& data) {
-  int32_t retval;
-  // Take this event into account.
-  ++_pending_events;
   if (!validate(data, "SQL"))
     return 0;
 
+  // Take this event into account.
+  ++_pending_events;
+
   // Process event.
-  uint32_t type{data->type()};
-  uint16_t cat{io::events::category_of_type(type)};
-  uint16_t elem{io::events::element_of_type(type)};
-  if (cat == io::events::neb)
-    retval = conflict_manager::instance().send_event(conflict_manager::sql, data);
-    //(this->*(_neb_processing_table[elem]))(data);
-  else
-    return 1;
-  //else if (cat == io::events::correlation)
-  //  (this->*(_correlation_processing_table[elem]))(data);
+  conflict_manager::instance().send_event(conflict_manager::sql, data);
 
-  // Event acknowledgement.
-  logging::debug(logging::low)
-      << "SQL: " << _pending_events << " events have not yet been acknowledged";
-
-  _pending_events -= retval;
-  return retval;
+  return 0;
 }

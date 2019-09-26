@@ -119,6 +119,7 @@ class conflict_manager {
    * manage two queues, the first for sql and the second one for storage.
    * So they will know when their events will be released. */
   std::array<std::deque<bool>, 2> _timeline;
+  std::array<int32_t, 2> _ack;
 
   /* Current actions by connection */
   std::vector<uint32_t> _action;
@@ -230,7 +231,7 @@ class conflict_manager {
                            uint32_t interval_length);
   static conflict_manager& instance();
 
-  int32_t send_event(stream_type c, std::shared_ptr<io::data> const& e);
+  void send_event(stream_type c, std::shared_ptr<io::data> const& e);
   int32_t get_acks(stream_type c);
 };
 }  // namespace sql
