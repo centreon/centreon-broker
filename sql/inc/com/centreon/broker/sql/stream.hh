@@ -61,40 +61,14 @@ class stream : public io::stream {
   void _clean_tables(unsigned int instance_id);
   void _host_instance_cache_create();
   bool _is_valid_poller(unsigned int poller_id);
-  void _process_acknowledgement(std::shared_ptr<io::data> const& e);
-  void _process_comment(std::shared_ptr<io::data> const& e);
-  void _process_custom_variable(std::shared_ptr<io::data> const& e);
-  void _process_custom_variable_status(std::shared_ptr<io::data> const& e);
-  void _process_downtime(std::shared_ptr<io::data> const& e);
   void _process_engine(std::shared_ptr<io::data> const& e);
-  void _process_event_handler(std::shared_ptr<io::data> const& e);
-  void _process_flapping_status(std::shared_ptr<io::data> const& e);
-  void _process_host(std::shared_ptr<io::data> const& e);
-  void _process_host_check(std::shared_ptr<io::data> const& e);
-  void _process_host_dependency(std::shared_ptr<io::data> const& e);
-  void _process_host_group(std::shared_ptr<io::data> const& e);
-  void _process_host_group_member(std::shared_ptr<io::data> const& e);
-  void _process_host_parent(std::shared_ptr<io::data> const& e);
   void _process_host_state(std::shared_ptr<io::data> const& e);
-  void _process_host_status(std::shared_ptr<io::data> const& e);
-  void _process_instance(std::shared_ptr<io::data> const& e);
-  void _process_instance_configuration(std::shared_ptr<io::data> const& e);
-  void _process_instance_status(std::shared_ptr<io::data> const& e);
   void _process_issue(std::shared_ptr<io::data> const& e);
   void _process_issue_parent(std::shared_ptr<io::data> const& e);
-  void _process_log(std::shared_ptr<io::data> const& e);
-  void _process_module(std::shared_ptr<io::data> const& e);
   void _process_notification(std::shared_ptr<io::data> const& e);
-  void _process_service(std::shared_ptr<io::data> const& e);
-  void _process_service_check(std::shared_ptr<io::data> const& e);
-  void _process_service_dependency(std::shared_ptr<io::data> const& e);
-  void _process_service_group(std::shared_ptr<io::data> const& e);
-  void _process_service_group_member(std::shared_ptr<io::data> const& e);
   void _process_service_state(std::shared_ptr<io::data> const& e);
-  void _process_service_status(std::shared_ptr<io::data> const& e);
   void _process_state(std::shared_ptr<io::data> const& e);
   void _process_log_issue(std::shared_ptr<io::data> const& e);
-  void _process_responsive_instance(std::shared_ptr<io::data> const& e);
   template <typename T>
   void _update_on_none_insert(database::mysql_stmt& ins_stmt,
                               database::mysql_stmt& up_stmt,
@@ -107,10 +81,7 @@ class stream : public io::stream {
 
   static void (stream::*const _correlation_processing_table[])(
       std::shared_ptr<io::data> const&);
-  static void (stream::*const _neb_processing_table[])(
-      std::shared_ptr<io::data> const&);
   mysql _mysql;
-//  mysql _transversal_mysql;
 
   // Cache
   database::mysql_stmt _acknowledgement_insupdate;

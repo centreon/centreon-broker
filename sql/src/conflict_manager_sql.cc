@@ -1014,7 +1014,6 @@ void conflict_manager::_process_instance_status() {
   _events.pop_front();
 }
 
-
 /**
  *  Process a log event.
  *
@@ -1534,5 +1533,25 @@ void conflict_manager::_process_service_status() {
   _events.pop_front();
 }
 
-void conflict_manager::_process_instance_configuration() {}
-void conflict_manager::_process_responsive_instance() {}
+/**
+ *  Process an instance configuration event.
+ *
+ *  @param[in] e  Uncasted instance configuration.
+ */
+void conflict_manager::_process_instance_configuration() {
+  auto& p = _events.front();
+  /* Nothing to do */
+  *std::get<2>(p) = true;
+  _events.pop_front();
+}
+
+/**
+ *  Process a responsive instance event.
+ *
+ */
+void conflict_manager::_process_responsive_instance() {
+  auto& p = _events.front();
+  /* Nothing to do */
+  *std::get<2>(p) = true;
+  _events.pop_front();
+}
