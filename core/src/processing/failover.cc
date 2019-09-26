@@ -121,7 +121,7 @@ void failover::run() {
 
   // Thread should be aware of external exit requests.
   do {
-    // This try/catch block handle any errors of the current thread
+    // This try/catch block handles any error of the current thread
     // objects. In case of an exception, it is responsible to launch
     // failovers of this failover.
     try {
@@ -131,7 +131,7 @@ void failover::run() {
       {
         std::shared_ptr<io::stream> s(_endpoint->open());
         {
-          std::lock_guard<std::timed_mutex> stream_lock(_streamm);
+          std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
           _stream = s;
         }
         _initialized = true;
@@ -207,12 +207,10 @@ void failover::run() {
       bool should_commit(false);
       std::shared_ptr<io::data> d;
       while (!should_exit()) {
-        // Process events.
-        // QCoreApplication::processEvents();
 
         // Check for update.
         if (_update) {
-          std::lock_guard<std::timed_mutex> stream_lock(_streamm);
+          std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
           _stream->update();
           _update = false;
         }
@@ -225,7 +223,7 @@ void failover::run() {
               << "failover: reading event from endpoint '" << _name << "'";
           _update_status("reading event from stream");
           try {
-            std::lock_guard<std::timed_mutex> stream_lock(_streamm);
+            std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
             timed_out_stream = !_stream->read(d, 0);
           } catch (exceptions::shutdown const& e) {
             logging::debug(logging::medium)
@@ -269,8 +267,10 @@ void failover::run() {
                                          << _name << "'";
             _update_status("writing event to stream");
             int we(0);
+
             try {
-              std::lock_guard<std::timed_mutex> stream_lock(_streamm);
+              std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
+
               we = _stream->write(d);
             } catch (exceptions::shutdown const& e) {
               logging::debug(logging::medium)
@@ -307,11 +307,11 @@ void failover::run() {
           if (should_commit) {
             should_commit = false;
             _next_timeout = now + 1;
-            std::lock_guard<std::timed_mutex> stream_lock(_streamm);
+            std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
             we = _stream->flush();
           } else if (now >= _next_timeout) {
             _next_timeout = now + 1;
-            std::lock_guard<std::timed_mutex> stream_lock(_streamm);
+            std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
             we = _stream->flush();
           }
           _subscriber->get_muxer().ack_events(we);
@@ -323,7 +323,7 @@ void failover::run() {
     catch (std::exception const& e) {
       logging::error(logging::high) << e.what();
       {
-        std::lock_guard<std::timed_mutex> stream_lock(_streamm);
+        std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
         _stream.reset();
       }
       _launch_failover();
@@ -335,7 +335,7 @@ void failover::run() {
           << "software bug that should be reported to Centreon Broker "
              "developers";
       {
-        std::lock_guard<std::timed_mutex> stream_lock(_streamm);
+        std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
         _stream.reset();
       }
       _launch_failover();
@@ -344,7 +344,7 @@ void failover::run() {
 
     // Clear stream.
     {
-      std::lock_guard<std::timed_mutex> stream_lock(_streamm);
+      std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
       _stream.reset();
     }
 
@@ -368,7 +368,7 @@ void failover::run() {
 
   // Clear stream.
   {
-    std::lock_guard<std::timed_mutex> stream_lock(_streamm);
+    std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
     _stream.reset();
   }
 
@@ -452,12 +452,12 @@ bool failover::wait(unsigned long time) {
  */
 const char* failover::_get_state() const {
   char const* ret = nullptr;
-  if (_streamm.try_lock_for(std::chrono::milliseconds(10))) {
+  if (_stream_m.try_lock_for(std::chrono::milliseconds(10))) {
     if (!_stream)
       ret = "connecting";
     else
       ret = "connected";
-    _streamm.unlock();
+    _stream_m.unlock();
   } else
     ret = "blocked";
   return ret;
@@ -497,11 +497,11 @@ std::unordered_set<uint32_t> const& failover::_get_write_filters() const {
  */
 void failover::_forward_statistic(json11::Json::object& tree) {
   {
-    std::lock_guard<std::mutex> lock(_statusm);
+    std::lock_guard<std::mutex> lock(_status_m);
     tree["status"] = _status;
   }
   {
-    std::unique_lock<std::timed_mutex> stream_lock(_streamm, std::defer_lock);
+    std::unique_lock<std::timed_mutex> stream_lock(_stream_m, std::defer_lock);
     if (stream_lock.try_lock_for(std::chrono::milliseconds(100))) {
       if (_stream)
         _stream->statistics(tree);
@@ -541,6 +541,6 @@ void failover::_launch_failover() {
  *  @param[in] status New status.
  */
 void failover::_update_status(std::string const& status) {
-  std::lock_guard<std::mutex> lock(_statusm);
+  std::lock_guard<std::mutex> lock(_status_m);
   _status = status;
 }

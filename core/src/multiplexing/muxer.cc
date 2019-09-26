@@ -145,9 +145,9 @@ void muxer::ack_events(int count) {
  *
  *  @param[in] max  The size limit.
  */
-void muxer::event_queue_max_size(unsigned int max) throw() {
+void muxer::event_queue_max_size(uint32_t max) noexcept {
   if (!max)
-    max = std::numeric_limits<unsigned int>::max();
+    max = std::numeric_limits<uint32_t>::max();
   _event_queue_max_size = max;
 }
 
@@ -156,7 +156,7 @@ void muxer::event_queue_max_size(unsigned int max) throw() {
  *
  *  @return The size limit.
  */
-unsigned int muxer::event_queue_max_size() throw() {
+unsigned int muxer::event_queue_max_size() noexcept {
   return _event_queue_max_size;
 }
 
@@ -219,6 +219,7 @@ bool muxer::read(std::shared_ptr<io::data>& event, time_t deadline) {
     ++_pos;
     lock.unlock();
   }
+
   return !timed_out;
 }
 
@@ -426,6 +427,7 @@ void muxer::_push_to_queue(std::shared_ptr<io::data> const& event) {
   bool pos_has_no_more_to_read(_pos == _events.end());
   _events.push_back(event);
   ++_events_size;
+
   if (pos_has_no_more_to_read) {
     _pos = --_events.end();
     _cv.notify_one();

@@ -50,9 +50,12 @@ modules::~modules() {
 void modules::apply(std::list<std::string> const& module_list,
                     std::string const& module_dir,
                     void const* arg) {
-  // Lock multiplexing engine in case modules register hooks.
-  std::lock_guard<std::recursive_mutex> lock(
-      com::centreon::broker::multiplexing::engine::instance());
+  // FIXME DBR: Very strange those lines of code. The hook and unhook methods
+  // are already locked, why add a lock?
+
+//  // Lock multiplexing engine in case modules register hooks.
+//  std::lock_guard<std::recursive_mutex> lock(
+//      com::centreon::broker::multiplexing::engine::instance());
 
   // Load modules.
   for (std::list<std::string>::const_iterator it(module_list.begin()),
@@ -68,7 +71,6 @@ void modules::apply(std::list<std::string> const& module_list,
     _loader.load_dir(module_dir, arg);
   } else
     logging::debug(logging::high) << "module applier: no directory defined";
-  return;
 }
 
 /**

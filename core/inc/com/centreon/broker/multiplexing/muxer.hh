@@ -48,9 +48,11 @@ class muxer : public io::stream {
   typedef std::unordered_set<uint32_t> filters;
 
   muxer(std::string const& name, bool persistent = false);
+  muxer(muxer const& other) = delete;
+  muxer& operator=(muxer const& other) = delete;
   ~muxer();
   void ack_events(int count);
-  static void event_queue_max_size(unsigned int max) throw();
+  static void event_queue_max_size(uint32_t max) noexcept;
   static unsigned int event_queue_max_size() throw();
   void publish(std::shared_ptr<io::data> const& d);
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
@@ -69,8 +71,6 @@ class muxer : public io::stream {
   static std::string queue_file(std::string const& name);
 
  private:
-  muxer(muxer const& other);
-  muxer& operator=(muxer const& other);
   void _clean();
   void _get_event_from_file(std::shared_ptr<io::data>& event);
   std::string _memory_file() const;

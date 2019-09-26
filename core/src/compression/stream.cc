@@ -41,7 +41,7 @@ using namespace com::centreon::broker::compression;
  *  @param[in] level Compression level.
  *  @param[in] size  Compression buffer size.
  */
-stream::stream(int level, int size)
+stream::stream(int level, size_t size)
     : _level(level), _shutdown(false), _size(size) {}
 
 /**
@@ -333,5 +333,4 @@ void stream::_internal_copy(stream const& other) {
   _rbuffer = other._rbuffer;
   _size = other._size;
   _wbuffer = other._wbuffer;
-  return;
 }

@@ -178,7 +178,7 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
  *  @return Cache directory.
  */
 std::string const& state::cache_dir() const throw() {
-  return (_cache_dir);
+  return _cache_dir;
 }
 
 /**
@@ -187,7 +187,7 @@ std::string const& state::cache_dir() const throw() {
  *  @return Class instance.
  */
 state& state::instance() {
-  return (*gl_state);
+  return *gl_state;
 }
 
 /**
@@ -196,7 +196,6 @@ state& state::instance() {
 void state::load() {
   if (!gl_state)
     gl_state = new state;
-  return;
 }
 
 /**
@@ -205,7 +204,7 @@ void state::load() {
  *  @return Poller ID of this Broker instance.
  */
 unsigned int state::poller_id() const throw() {
-  return (_poller_id);
+  return _poller_id;
 }
 
 /**
@@ -214,7 +213,7 @@ unsigned int state::poller_id() const throw() {
  *  @return Poller name of this Broker instance.
  */
 std::string const& state::poller_name() const throw() {
-  return (_poller_name);
+  return _poller_name;
 }
 
 /**
@@ -223,7 +222,6 @@ std::string const& state::poller_name() const throw() {
 void state::unload() {
   delete gl_state;
   gl_state = nullptr;
-  return;
 }
 
 /**************************************
