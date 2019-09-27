@@ -30,8 +30,183 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
 using namespace com::centreon::broker::sql;
 
-void conflict_manager::_clean_tables(uint32_t instance_id
-                                     __attribute__((unused))) {}
+/**
+ *  @brief Clean tables with data associated to the instance.
+ *
+ *  Rather than delete appropriate entries in tables, they are instead
+ *  deactivated using a specific flag.
+ *
+ *  @param[in] instance_id Instance ID to remove.
+ */
+void conflict_manager::_clean_tables(uint32_t instance_id) {
+  /* Database version. */
+
+  int32_t conn = _mysql.choose_connection_by_instance(instance_id);
+  logging::debug(logging::low)
+      << "conflict_manager: disable hosts and services (instance_id: "
+      << instance_id << ")";
+  /* Disable hosts and services. */
+  std::ostringstream oss;
+  oss << "UPDATE hosts AS h LEFT JOIN services AS s ON h.host_id = s.host_id "
+         "SET h.enabled=0, s.enabled=0 WHERE h.instance_id=" << instance_id;
+  _mysql.run_query(
+      oss.str(),
+      "conflict_manager: could not clean hosts and services tables: ",
+      false,
+      conn);
+  _add_action(conn, actions::hosts);
+
+  /* Remove host group memberships. */
+  logging::debug(logging::low)
+      << "conflict_manager: remove host group memberships (instance_id:"
+      << instance_id << ")";
+  oss.str("");
+  oss << "DELETE hosts_hostgroups FROM hosts_hostgroups LEFT JOIN hosts ON "
+         "hosts_hostgroups.host_id=hosts.host_id WHERE hosts.instance_id="
+      << instance_id;
+  _mysql.run_query(
+      oss.str(),
+      "conflict_manager: could not clean host groups memberships table: ", false, conn);
+  _add_action(conn, actions::hostgroups);
+
+  /* Remove service group memberships */
+  logging::debug(logging::low)
+      << "conflict_manager: remove service group memberships (instance_id:"
+      << instance_id << ")";
+  oss.str("");
+  oss << "DELETE services_servicegroups FROM services_servicegroups LEFT JOIN "
+         "hosts ON services_servicegroups.host_id=hosts.host_id WHERE "
+         "hosts.instance_id=" << instance_id;
+  _mysql.run_query(oss.str(),
+                   "SQL: could not clean service groups memberships table: ",
+                   false,
+                   conn);
+  _add_action(conn, actions::servicegroups);
+
+  /* Remove host groups. */
+  logging::debug(logging::low)
+      << "conflict_manager: remove empty host groups (instance_id:"
+      << instance_id << ")";
+  _mysql.run_query(
+      "DELETE hg FROM hostgroups AS hg LEFT JOIN hosts_hostgroups AS hhg ON "
+      "hg.hostgroup_id=hhg.hostgroup_id WHERE hhg.hostgroup_id IS NULL",
+      "conflict_manager: could not remove empty host groups",
+      false,
+      conn);
+  _add_action(conn, actions::hostgroups);
+
+  /* Remove service groups. */
+  logging::debug(logging::low)
+      << "conflict_manager: remove empty service groups (instance_id:"
+      << instance_id << ")";
+
+  _mysql.run_query(
+      "DELETE sg FROM servicegroups AS sg LEFT JOIN services_servicegroups as "
+      "ssg ON sg.servicegroup_id=ssg.servicegroup_id WHERE ssg.servicegroup_id "
+      "IS NULL",
+      "conflict_manager: could not remove empty service groups",
+      false,
+      conn);
+  _add_action(conn, actions::servicegroups);
+
+  /* Remove host dependencies. */
+  logging::debug(logging::low)
+      << "conflict_manager: remove host dependencies (instance_id:"
+      << instance_id << ")";
+  oss.str("");
+  oss << "DELETE hhd FROM hosts_hosts_dependencies AS hhd INNER JOIN hosts as "
+         "h ON hhd.host_id=h.host_id OR hhd.dependent_host_id=h.host_id WHERE "
+         "h.instance_id=" << instance_id;
+  _mysql.run_query(
+      oss.str(), "conflict_manager: could not clean host dependencies table: ", false, conn);
+  _add_action(conn, actions::host_dependencies);
+
+  /* Remove host parents. */
+  logging::debug(logging::low)
+      << "conflict_manager: remove host parents (instance_id:" << instance_id
+      << ")";
+  oss.str("");
+  oss << "DELETE hhp FROM hosts_hosts_parents AS hhp INNER JOIN hosts as h ON "
+         "hhp.child_id=h.host_id OR hhp.parent_id=h.host_id WHERE "
+         "h.instance_id=" << instance_id;
+  _mysql.run_query(oss.str(),
+                   "conflict_manager: could not clean host parents table: ",
+                   false,
+                   conn);
+  _add_action(conn, actions::host_parents);
+
+  /* Remove service dependencies. */
+  logging::debug(logging::low)
+      << "conflict_manager: remove service dependencies (instance_id:"
+      << instance_id << ")";
+  oss.str("");
+  oss << "DELETE ssd FROM services_services_dependencies AS ssd"
+         " INNER JOIN services as s"
+         " ON ssd.service_id=s.service_id OR "
+         "ssd.dependent_service_id=s.service_id"
+         " INNER JOIN hosts as h"
+         " ON s.host_id=h.host_id"
+         " WHERE h.instance_id="
+      << instance_id;
+  _mysql.run_query(
+      oss.str(), "SQL: could not clean service dependencies table: ", false, conn);
+  _add_action(conn, actions::service_dependencies);
+
+  /* Remove list of modules. */
+  logging::debug(logging::low)
+      << "SQL: remove list of modules (instance_id:" << instance_id << ")";
+  oss.str("");
+  oss << "DELETE FROM modules WHERE instance_id=" << instance_id;
+  _mysql.run_query(oss.str(),
+                   "conflict_manager: could not clean modules table: ",
+                   false,
+                   conn);
+  _add_action(conn, actions::modules);
+
+  // Cancellation of downtimes.
+  logging::debug(logging::low)
+      << "SQL: Cancellation of downtimes (instance_id:" << instance_id << ")";
+  oss.str("");
+  oss << "UPDATE downtimes AS d INNER JOIN hosts AS h ON d.host_id=h.host_id "
+         "SET d.cancelled=1 WHERE d.actual_end_time IS NULL AND d.cancelled=0 "
+         "AND h.instance_id=" << instance_id;
+  _mysql.run_query(oss.str(),
+                   "conflict_manager: could not clean downtimes table: ",
+                   false,
+                   conn);
+  _add_action(conn, actions::downtimes);
+
+  // Remove comments.
+  logging::debug(logging::low)
+      << "conflict_manager: remove comments (instance_id:" << instance_id
+      << ")";
+  oss.str("");
+  oss << "UPDATE comments AS c JOIN hosts AS h ON c.host_id=h.host_id SET "
+         "c.deletion_time=" << time(nullptr)
+      << " WHERE h.instance_id=" << instance_id
+      << " AND c.persistent=0 AND (c.deletion_time IS NULL OR "
+         "c.deletion_time=0)";
+  _mysql.run_query(oss.str(),
+                   "conflict_manager: could not clean comments table: ",
+                   false,
+                   conn);
+  _add_action(conn, actions::comments);
+
+  // Remove custom variables. No need to choose the good instance, there are
+  // no constraint between custom variables and instances.
+  logging::debug(logging::low)
+      << "conflict_manager: remove custom variables (instance_id:"
+      << instance_id << ")";
+  oss.str("");
+  oss << "DELETE cv FROM customvariables AS cv INNER JOIN hosts AS h ON "
+         "cv.host_id = h.host_id WHERE h.instance_id=" << instance_id;
+
+  _mysql.run_query(oss.str(),
+                   "conflict_manager: could not clean custom variables table: ",
+                   false,
+                   conn);
+  _add_action(conn, actions::custom_variables);
+}
 
 /**
  *  Update all the hosts and services of unresponsive instances.
@@ -1048,6 +1223,12 @@ void conflict_manager::_process_host_status() {
 void conflict_manager::_process_instance() {
   auto& p = _events.front();
   neb::instance& i(*static_cast<neb::instance*>(std::get<0>(p).get()));
+  int32_t conn = _mysql.choose_connection_by_instance(i.poller_id);
+  _finish_action(conn, actions::hosts);
+  _finish_action(-1,
+                 actions::acknowledgements | actions::modules |
+                     actions::downtimes | actions::comments |
+                     actions::servicegroups | actions::hostgroups | actions::service_dependencies | actions::host_dependencies);
 
   // Log message.
   logging::info(logging::medium) << "SQL: processing poller event "
@@ -1075,7 +1256,6 @@ void conflict_manager::_process_instance() {
     oss << "SQL: could not store poller (poller: " << i.poller_id << "): ";
     _instance_insupdate << i;
 
-    int32_t conn = _mysql.choose_connection_by_instance(i.poller_id);
     _mysql.run_statement(_instance_insupdate, oss.str(), true, conn);
     _add_action(conn, actions::instances);
   }

@@ -64,226 +64,6 @@ void (stream::*const stream::_correlation_processing_table[])(
  **************************************/
 
 /**
- *  Remove host groups with no members from host groups table.
- *
- * @param instance_id Poller instance id
- */
-void stream::_clean_empty_host_groups(int instance_id) {
-//  logging::debug(logging::low)
-//      << "SQL: remove empty host groups (instance_id:" << instance_id << ")";
-//  _transversal_mysql.run_query(
-//      "DELETE hg FROM hostgroups AS hg"
-//      " LEFT JOIN hosts_hostgroups AS hhg"
-//      " ON hg.hostgroup_id=hhg.hostgroup_id"
-//      " WHERE hhg.hostgroup_id IS NULL",
-//      "SQL: could not remove empty host groups", false);
-}
-
-/**
- *  Remove service groups with no members from service groups table.
- *
- * @param instance_id Poller instance id
- */
-void stream::_clean_empty_service_groups(int instance_id) {
-//  logging::debug(logging::low)
-//      << "SQL: remove empty service groups (instance_id:" << instance_id << ")";
-//
-//  _transversal_mysql.run_query(
-//      "DELETE sg FROM servicegroups AS sg"
-//      " LEFT JOIN services_servicegroups as ssg"
-//      " ON sg.servicegroup_id=ssg.servicegroup_id"
-//      " WHERE ssg.servicegroup_id IS NULL",
-//      "SQL: could not remove empty service groups", false);
-}
-
-/**
- *  @brief Clean tables with data associated to the instance.
- *
- *  Rather than delete appropriate entries in tables, they are instead
- *  deactivated using a specific flag.
- *
- *  @param[in] instance_id Instance ID to remove.
- */
-void stream::_clean_tables(unsigned int instance_id) {
-//  // Database version.
-//  bool db_v2(_mysql.schema_version() == mysql::v2);
-//
-//  int thread_id(_mysql.choose_connection_by_instance(instance_id));
-//  logging::debug(logging::low)
-//      << "SQL: disable hosts and services (instance_id: " << instance_id << ")";
-//  // Disable hosts and services.
-//  std::ostringstream oss;
-//  oss << "UPDATE hosts AS h LEFT JOIN services AS s ON h.host_id = s.host_id SET h.enabled=0, s.enabled=0 WHERE h.instance_id=" << instance_id;
-//  _mysql.run_query(oss.str(),
-//                   "SQL: could not clean hosts and services tables: ", false,
-//                   thread_id);
-//  _mysql.commit(thread_id);
-//
-//  // Remove host group memberships.
-//  if (db_v2) {
-//    logging::debug(logging::low)
-//        << "SQL: remove host group memberships (instance_id:" << instance_id
-//        << ")";
-//    oss.str("");
-//    oss << "DELETE hosts_hostgroups"
-//        << " FROM hosts_hostgroups"
-//        << " LEFT JOIN hosts"
-//        << " ON hosts_hostgroups.host_id=hosts.host_id"
-//        << " WHERE hosts.instance_id=" << instance_id;
-//    _transversal_mysql.run_query(
-//        oss.str(),
-//        "SQL: could not clean host groups memberships table: ", false);
-//  }
-//
-//  // Remove service group memberships
-//  if (db_v2) {
-//    logging::debug(logging::low)
-//        << "SQL: remove service group memberships (instance_id:" << instance_id
-//        << ")";
-//    oss.str("");
-//    oss << "DELETE services_servicegroups"
-//        << " FROM services_servicegroups"
-//        << " LEFT JOIN hosts"
-//        << "   ON services_servicegroups.host_id=hosts.host_id"
-//        << " WHERE hosts.instance_id=" << instance_id;
-//    _transversal_mysql.run_query(
-//        oss.str(),
-//        "SQL: could not clean service groups memberships table: ", false);
-//  }
-//
-//  // Remove host groups.
-//  if (db_v2)
-//    _clean_empty_host_groups(instance_id);
-//
-//  // Remove service groups.
-//  if (db_v2)
-//    _clean_empty_service_groups(instance_id);
-//
-//  // Remove host dependencies.
-//  logging::debug(logging::low)
-//      << "SQL: remove host dependencies (instance_id:" << instance_id << ")";
-//  oss.str("");
-//  oss << "DELETE hhd FROM hosts_hosts_dependencies AS hhd"
-//         " INNER JOIN hosts as h"
-//         " ON hhd.host_id=h.host_id OR hhd.dependent_host_id=h.host_id"
-//         " WHERE h.instance_id="
-//      << instance_id;
-//  _transversal_mysql.run_query(
-//      oss.str(), "SQL: could not clean host dependencies table: ", false);
-//
-//  // Remove host parents.
-//  logging::debug(logging::low)
-//      << "SQL: remove host parents (instance_id:" << instance_id << ")";
-//  oss.str("");
-//  oss << "DELETE hhp FROM hosts_hosts_parents AS hhp"
-//         " INNER JOIN hosts as h"
-//         " ON hhp.child_id=h.host_id OR hhp.parent_id=h.host_id"
-//         " WHERE h.instance_id="
-//      << instance_id;
-//  _transversal_mysql.run_query(
-//      oss.str(), "SQL: could not clean host parents table: ", false);
-//
-//  // Remove service dependencies.
-//  logging::debug(logging::low)
-//      << "SQL: remove service dependencies (instance_id:" << instance_id << ")";
-//  oss.str("");
-//  oss << "DELETE ssd FROM services_services_dependencies AS ssd"
-//         " INNER JOIN services as s"
-//         " ON ssd.service_id=s.service_id OR "
-//         "ssd.dependent_service_id=s.service_id"
-//         " INNER JOIN hosts as h"
-//         " ON s.host_id=h.host_id"
-//         " WHERE h.instance_id="
-//      << instance_id;
-//  _transversal_mysql.run_query(
-//      oss.str(), "SQL: could not clean service dependencies table: ", false);
-//
-//  // Remove list of modules.
-//  logging::debug(logging::low)
-//      << "SQL: remove list of modules (instance_id:" << instance_id << ")";
-//  oss.str("");
-//  oss << "DELETE FROM " << (db_v2 ? "modules" : "rt_modules")
-//      << " WHERE instance_id=" << instance_id;
-//  _transversal_mysql.run_query(oss.str(),
-//                               "SQL: could not clean modules table: ", false);
-//
-//  // Cancellation of downtimes.
-//  logging::debug(logging::low)
-//      << "SQL: Cancellation of downtimes (instance_id:" << instance_id << ")";
-//  oss.str("");
-//  oss << "UPDATE downtimes AS d"
-//         " INNER JOIN hosts AS h"
-//         " ON d.host_id=h.host_id"
-//         " SET d.cancelled=1"
-//         " WHERE d.actual_end_time IS NULL"
-//         " AND d.cancelled=0"
-//         " AND h.instance_id="
-//      << instance_id;
-//  _transversal_mysql.run_query(oss.str(),
-//                               "SQL: could not clean downtimes table: ", false);
-//
-//  // Remove comments.
-//  if (db_v2) {
-//    logging::debug(logging::low)
-//        << "SQL: remove comments (instance_id:" << instance_id << ")";
-//    oss.str("");
-//    oss << "UPDATE comments AS c"
-//           " JOIN hosts AS h"
-//           " ON c.host_id=h.host_id"
-//           " SET c.deletion_time="
-//        << time(nullptr) << " WHERE h.instance_id=" << instance_id
-//        << " AND c.persistent=0"
-//           " AND (c.deletion_time IS NULL OR c.deletion_time=0)";
-//    _transversal_mysql.run_query(
-//        oss.str(), "SQL: could not clean comments table: ", false);
-//  }
-//
-//  // Remove custom variables. No need to choose the good instance, there are
-//  // no constraint between custom variables and instances.
-//  logging::debug(logging::low)
-//      << "SQL: remove custom variables (instance_id:" << instance_id << ")";
-//  oss.str("");
-//  oss << "DELETE cv"
-//      << " FROM " << (db_v2 ? "customvariables" : "rt_customvariables")
-//      << "  AS cv"
-//         " INNER JOIN "
-//      << (db_v2 ? "hosts" : "rt_hosts")
-//      << " AS h"
-//         "  ON cv.host_id = h.host_id"
-//         " WHERE h.instance_id="
-//      << instance_id;
-//
-//  _transversal_mysql.run_query(
-//      oss.str(), "SQL: could not clean custom variables table: ", false);
-}
-
-/**
- *  Check if an instance is a valid instance.
- *
- *  @param[in] poller_id  Instance ID.
- *
- *  @return True if instance is valid.
- */
-//bool stream::_is_valid_poller(unsigned int poller_id) {
-//  // Check if poller is deleted.
-//  bool deleted(false);
-//  if (_cache_deleted_instance_id.find(poller_id) !=
-//      _cache_deleted_instance_id.end()) {
-//    logging::info(logging::low)
-//        << "SQL: discarding some event related to a deleted poller ("
-//        << poller_id << ")";
-//    deleted = true;
-//  }
-//
-//  // Update poller timestamp.
-//  if (!deleted)
-//    _update_timestamp(poller_id);
-//
-//  // Return whether poller is valid or not.
-//  return !deleted;
-//}
-
-/**
  *  Process a correlation engine event.
  *
  *  @param[in] e Uncasted correlation engine event.
@@ -695,12 +475,6 @@ stream::~stream() {
  *  @return Number of events acknowledged.
  */
 int stream::flush() {
-  // Update hosts and services of stopped instances
-  //_update_hosts_and_services_of_unresponsive_instances();
-
-  // Commit transaction.
-//  logging::info(logging::medium) << "SQL: committing transaction";
-//  _mysql.commit();
   int32_t retval = conflict_manager::instance().get_acks(conflict_manager::sql);
   _pending_events -= retval;
 
@@ -728,13 +502,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
 /**
  *  Update internal stream cache.
  */
-void stream::update() {
-  //_cache_clean();
-  //_cache_create();
-  //_host_instance_cache_create();
-  //_cache_svc_cmd.clear();
-  //_cache_hst_cmd.clear();
-}
+void stream::update() {}
 
 /**
  *  Write an event.
@@ -749,9 +517,7 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
 
   // Take this event into account.
   ++_pending_events;
-
   // Process event.
   conflict_manager::instance().send_event(conflict_manager::sql, data);
-
   return 0;
 }

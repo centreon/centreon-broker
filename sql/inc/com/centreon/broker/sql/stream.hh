@@ -52,9 +52,6 @@ class stream : public io::stream {
   int write(std::shared_ptr<io::data> const& d);
 
  private:
-  void _clean_empty_host_groups(int poller_id);
-  void _clean_empty_service_groups(int poller_id);
-  void _clean_tables(unsigned int instance_id);
   void _process_engine(std::shared_ptr<io::data> const& e);
   void _process_host_state(std::shared_ptr<io::data> const& e);
   void _process_issue(std::shared_ptr<io::data> const& e);
@@ -63,11 +60,11 @@ class stream : public io::stream {
   void _process_service_state(std::shared_ptr<io::data> const& e);
   void _process_state(std::shared_ptr<io::data> const& e);
   void _process_log_issue(std::shared_ptr<io::data> const& e);
-  template <typename T>
-  void _update_on_none_insert(database::mysql_stmt& ins_stmt,
-                              database::mysql_stmt& up_stmt,
-                              T& t,
-                              int thread_id = -1);
+//  template <typename T>
+//  void _update_on_none_insert(database::mysql_stmt& ins_stmt,
+//                              database::mysql_stmt& up_stmt,
+//                              T& t,
+//                              int thread_id = -1);
 
   static void (stream::*const _correlation_processing_table[])(
       std::shared_ptr<io::data> const&);

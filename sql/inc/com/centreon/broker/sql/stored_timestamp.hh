@@ -50,7 +50,7 @@ class stored_timestamp {
   stored_timestamp(stored_timestamp const& right) noexcept;
   ~stored_timestamp() noexcept = default;
 
-  stored_timestamp& operator=(stored_timestamp const& right) = default;
+  stored_timestamp& operator=(stored_timestamp const&) = default;
 
   uint32_t get_id() const noexcept;
   state_type get_state() const noexcept;

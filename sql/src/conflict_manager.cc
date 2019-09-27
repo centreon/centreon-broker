@@ -152,7 +152,9 @@ void conflict_manager::_load_caches() {
       mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res)) {
         uint32_t instance_id = res.value_as_i32(0);
-        _stored_timestamps.insert({instance_id, stored_timestamp(instance_id, stored_timestamp::unresponsive)});
+        _stored_timestamps.insert(
+            {instance_id,
+             stored_timestamp(instance_id, stored_timestamp::unresponsive)});
         stored_timestamp& ts = _stored_timestamps[instance_id];
         ts.set_timestamp(timestamp(std::numeric_limits<time_t>::max()));
       }
