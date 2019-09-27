@@ -35,9 +35,9 @@ namespace sql {
 class connector : public io::endpoint {
  public:
   connector();
-  connector(connector const& other);
-  ~connector();
-  connector& operator=(connector const& other);
+  connector(connector const& other) = delete;
+  ~connector() = default;
+  connector& operator=(connector const& other) = delete;
   void connect_to(database_config const& dbcfg,
                   unsigned int cleanup_check_interval = 0,
                   unsigned int instance_timeout = 15,

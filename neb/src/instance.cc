@@ -87,7 +87,7 @@ unsigned int instance::type() const {
  *  @return  The event type.
  */
 unsigned int instance::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_instance>::value);
+  return io::events::data_type<io::events::neb, neb::de_instance>::value;
 }
 
 /**************************************

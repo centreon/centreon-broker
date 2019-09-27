@@ -25,8 +25,8 @@ using namespace com::centreon::broker::sql;
 /**
  *  Default constructor. Create a stored timestamp updated to now.
  */
-stored_timestamp::stored_timestamp() throw()
-    : _id(0), _ts(), _state(responsive) {
+stored_timestamp::stored_timestamp() noexcept
+    : _instance_id{0}, _ts(), _state{responsive} {
   update_timestamp();
 }
 
@@ -36,8 +36,8 @@ stored_timestamp::stored_timestamp() throw()
  *  @param id Id of the instance associated with this timestamp.
  *  @param s  State of the instance associated with this timestamp.
  */
-stored_timestamp::stored_timestamp(unsigned int id, state_type s) throw()
-    : _id(id), _state(s) {
+stored_timestamp::stored_timestamp(uint32_t id, state_type s) noexcept
+    : _instance_id{id}, _state{s} {
   update_timestamp();
 }
 
@@ -46,21 +46,16 @@ stored_timestamp::stored_timestamp(unsigned int id, state_type s) throw()
  *
  *  @param[in] right Te stored_timestamp to copy.
  */
-stored_timestamp::stored_timestamp(stored_timestamp const& right) throw()
-    : _id(right._id), _ts(right._ts), _state(right._state) {}
-
-/**
- *  Destructor.
- */
-stored_timestamp::~stored_timestamp() throw() {}
+stored_timestamp::stored_timestamp(stored_timestamp const& right) noexcept
+    : _instance_id{right._instance_id}, _ts{right._ts}, _state{right._state} {}
 
 /**
  *  Get the the id of the instance associated with this timestamp.
  *
  *  @return The id of the instance associated with this timestamp.
  */
-unsigned int stored_timestamp::get_id() const throw() {
-  return (_id);
+uint32_t stored_timestamp::get_id() const noexcept {
+  return _instance_id;
 }
 
 /**
@@ -68,8 +63,8 @@ unsigned int stored_timestamp::get_id() const throw() {
  *
  *  @return The state of the instance associated with this timestamp.
  */
-stored_timestamp::state_type stored_timestamp::get_state() const throw() {
-  return (_state);
+stored_timestamp::state_type stored_timestamp::get_state() const noexcept {
+  return _state;
 }
 
 /**
@@ -77,14 +72,14 @@ stored_timestamp::state_type stored_timestamp::get_state() const throw() {
  *
  *  @param[in] state the new state.
  */
-void stored_timestamp::set_state(state_type state) throw() {
+void stored_timestamp::set_state(state_type state) noexcept {
   _state = state;
 }
 
 /**
  *  Update the internal timestamp to now.
  */
-void stored_timestamp::update_timestamp() throw() {
+void stored_timestamp::update_timestamp() noexcept {
   _ts = timestamp(std::time(nullptr));
 }
 
@@ -93,8 +88,8 @@ void stored_timestamp::update_timestamp() throw() {
  *
  *  @return The timestamp.
  */
-timestamp stored_timestamp::get_timestamp() const throw() {
-  return (_ts);
+timestamp stored_timestamp::get_timestamp() const noexcept {
+  return _ts;
 }
 
 /**
@@ -102,7 +97,7 @@ timestamp stored_timestamp::get_timestamp() const throw() {
  *
  *  @param[in] ts The timestamp to set.
  */
-void stored_timestamp::set_timestamp(timestamp ts) throw() {
+void stored_timestamp::set_timestamp(timestamp ts) noexcept {
   _ts = ts;
 }
 
@@ -113,6 +108,6 @@ void stored_timestamp::set_timestamp(timestamp ts) throw() {
  *
  * @return true if the timestamp is outdated.
  */
-bool stored_timestamp::timestamp_outdated(unsigned int timeout) const throw() {
-  return (std::difftime(std::time(nullptr), _ts) > timeout);
+bool stored_timestamp::timestamp_outdated(uint32_t timeout) const noexcept {
+  return std::difftime(std::time(nullptr), _ts) > timeout;
 }

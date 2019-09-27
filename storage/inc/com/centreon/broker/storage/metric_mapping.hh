@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015 - 2019 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ namespace storage {
 class metric_mapping : public io::data {
  public:
   metric_mapping();
+  metric_mapping(uint32_t index_id, uint32_t metric_id);
   metric_mapping(metric_mapping const& s);
   ~metric_mapping();
   metric_mapping& operator=(metric_mapping const& s);

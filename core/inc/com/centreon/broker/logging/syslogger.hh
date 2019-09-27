@@ -35,9 +35,9 @@ namespace logging {
 class syslogger : public backend {
  public:
   syslogger(int facility = LOG_LOCAL0);
-  syslogger(syslogger const& s);
+  syslogger(syslogger const& s) = delete;
   ~syslogger();
-  syslogger& operator=(syslogger const& s);
+  syslogger& operator=(syslogger const& s) = delete;
   void log_msg(char const* msg,
                unsigned int len,
                type log_type,

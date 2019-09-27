@@ -519,7 +519,7 @@ TEST_F(DatabaseStorageTest, HostStatement) {
   promise_r = std::promise<mysql_result>();
   ms->run_query_and_get_result("SELECT host_id FROM hosts", &promise_r);
   res = promise_r.get_future().get();
-  for (int i(0); i < 2; ++i) {
+  for (int i = 0; i < 2; ++i) {
     ASSERT_TRUE(ms->fetch_row(res));
     int v(res.value_as_i32(0));
     ASSERT_TRUE(v == 1 || v == 24);

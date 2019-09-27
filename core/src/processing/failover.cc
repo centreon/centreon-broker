@@ -270,7 +270,6 @@ void failover::run() {
 
             try {
               std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
-
               we = _stream->write(d);
             } catch (exceptions::shutdown const& e) {
               logging::debug(logging::medium)

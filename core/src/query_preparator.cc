@@ -288,17 +288,12 @@ mysql_stmt query_preparator::prepare_update(mysql& ms) {
     }
     // Part of ID field.
     else {
-      where.append("((");
+      where.append("(");
       where.append(entry_name);
-      where.append("=?) OR (");
+      where.append("=?) AND ");
       key = std::string(":");
       key.append(entry_name);
       key.append("1");
-      where_bind_mapping.insert(std::make_pair(key, where_size++));
-      where.append(entry_name);
-      where.append(" IS NULL AND ?");
-      where.append(" IS NULL)) AND ");
-      key[key.size() - 1] = '2';
       where_bind_mapping.insert(std::make_pair(key, where_size++));
     }
   }
@@ -337,34 +332,21 @@ mysql_stmt query_preparator::prepare_delete(mysql& ms) {
           << "could not prepare deletion query for event of type " << _event_id
           << ": event is not registered");
 
-  // Database schema version.
-  bool schema_v2(ms.schema_version() == mysql::v2);
-
   // Prepare query.
   std::string query("DELETE FROM ");
-  if (schema_v2)
-    query.append(info->get_table_v2());
-  else
-    query.append(info->get_table());
+  query.append(info->get_table_v2());
   query.append(" WHERE ");
-  int size(0);
+  int size = 0;
   for (event_unique::const_iterator it(_unique.begin()), end(_unique.end());
        it != end; ++it) {
-    query.append("((");
+    query.append("(");
     query.append(*it);
     query.append("=?");
     std::string key(":");
     key.append(*it);
-    key.append("1");
     bind_mapping.insert(std::make_pair(key, size++));
 
-    // query.append(*it);
-    query.append(") OR (");
-    query.append(*it);
-    query.append(" IS NULL AND ?");
-    query.append(" IS NULL)) AND ");
-    key[key.size() - 1] = '2';
-    bind_mapping.insert(std::make_pair(key, size++));
+    query.append(") AND ");
   }
   query.resize(query.size() - 5);
 

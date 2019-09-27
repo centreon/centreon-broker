@@ -41,6 +41,30 @@ status::status()
       state(0) {}
 
 /**
+ *  Constructor.
+ *
+ * @param ctime
+ * @param index_id
+ * @param interval
+ * @param is_for_rebuild
+ * @param rrd_len
+ * @param state
+ * @param Unknown
+ */
+status::status(timestamp const& ctime,
+               uint32_t index_id,
+               uint32_t interval,
+               bool is_for_rebuild,
+               timestamp const& rrd_len,
+               int16_t state)
+    : ctime{ctime},
+      index_id{index_id},
+      interval{interval},
+      is_for_rebuild{is_for_rebuild},
+      rrd_len{rrd_len},
+      state{state} {}
+
+/**
  *  Copy constructor.
  *
  *  @param[in] s Object to copy.

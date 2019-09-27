@@ -41,9 +41,9 @@ namespace logging {
 class backend : public std::mutex {
  public:
   backend();
-  backend(backend const& b);
-  virtual ~backend();
-  backend& operator=(backend const& b);
+  backend(backend const& b) = delete;
+  virtual ~backend() = default;
+  backend& operator=(backend const& b) = delete;
   virtual void log_msg(char const* msg,
                        unsigned int len,
                        type log_type,
