@@ -22,6 +22,24 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/sql/src")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
+include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
+
+# conflict_manager library.
+add_library("conflictmgr" STATIC
+  # Sources.
+  "${SRC_DIR}/conflict_manager.cc"
+  "${SRC_DIR}/conflict_manager_sql.cc"
+  "${SRC_DIR}/conflict_manager_storage.cc"
+  "${SRC_DIR}/stored_timestamp.cc"
+
+  # Headers.
+  "${INC_DIR}/com/centreon/broker/sql/conflict_manager.hh"
+  "${INC_DIR}/com/centreon/broker/sql/stored_timestamp.hh"
+)
+set(CONFLICTMGR "conflictmgr" PARENT_SCOPE)
+set_target_properties(conflictmgr PROPERTIES
+    COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
+add_dependencies(conflictmgr json11_lib)
 
 # SQL module.
 set(SQL "80-sql")
@@ -29,6 +47,7 @@ set(SQL "${SQL}" PARENT_SCOPE)
 add_library("${SQL}" SHARED
   # Sources.
   "${SRC_DIR}/cleanup.cc"
+  "${SRC_DIR}/conflict_manager.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
@@ -44,8 +63,8 @@ add_library("${SQL}" SHARED
 add_dependencies("${SQL}" json11_lib)
 set_target_properties("${SQL}" PROPERTIES
     PREFIX ""
-    COMPILE_FLAGS "${MYSQL_CFLAGS}")
-target_link_libraries("${SQL}")
+    COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
+#target_link_libraries("${SQL}" conflictmgr)
 
 # Install rule.
 install(TARGETS "${SQL}"

@@ -35,9 +35,9 @@ namespace neb {
 class monitoring_logger : public logging::backend {
  public:
   monitoring_logger();
-  monitoring_logger(monitoring_logger const& ml);
+  monitoring_logger(monitoring_logger const& ml) = delete;
   ~monitoring_logger();
-  monitoring_logger& operator=(monitoring_logger const& ml);
+  monitoring_logger& operator=(monitoring_logger const& ml) = delete;
   void log_msg(char const* msg,
                unsigned int len,
                logging::type log_type,

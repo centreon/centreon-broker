@@ -14,10 +14,10 @@
       "logger": {
         "name": "/var/log/centreon-broker/central-broker-master.log",
         "config": true,
-        "debug": false,
+        "debug": true,
         "error": true,
         "info": true,
-        "level": "medium",
+        "level": "high",
         "type": "file"
       },
       "input": {

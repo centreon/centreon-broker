@@ -127,7 +127,7 @@ class mysql_connection {
   std::string _name;
   int _port;
   bool _started;
-  int _qps;
+  uint32_t _qps;
   bool _need_commit;
 };
 

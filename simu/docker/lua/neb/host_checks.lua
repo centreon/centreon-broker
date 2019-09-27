@@ -63,7 +63,7 @@ local hosts = {
     local id = 1
     local instance_id = 1
     while row do
-      broker_log:info(1, "Check for host " .. id)
+      broker_log:info(1, "Check for host check " .. id)
       if tonumber(row.host_id) ~= id or row.command_line ~= "super_command_de_check" then
         broker_log:error(0, "Row found host_id = "
             .. row.host_id .. " command_line = " .. tostring(row.command_line)
@@ -89,10 +89,11 @@ local hosts = {
     local id = 1
     local instance_id = 1
     while row do
-      broker_log:info(1, "Check for host " .. id)
+      broker_log:info(1, "Check for host check " .. id)
       if tonumber(row.host_id) ~= id or row.output ~= "A check has been executed" then
         broker_log:error(0, "Row found host_id = "
-            .. row.host_id .. " output = " .. tostring(row.output))
+            .. row.host_id .. " instead of " .. id .. " ; output = " .. tostring(row.output)
+            .. " instead of 'A check has been executed'")
         retval = false
         break
       end

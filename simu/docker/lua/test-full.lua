@@ -5,6 +5,7 @@ local blue = string.char(27) .. "[34m"
 local red = string.char(27) .. "[31m"
 local green = string.char(27) .. "[32m"
 local yellow = string.char(27) .. "[33m"
+local purple = string.char(27) .. "[35m"
 local reset = string.char(27) .. "[0m"
 
 local simu = {
@@ -24,12 +25,12 @@ local step = {
   require('neb.hostgroup_members'),                 --  4
   require('neb.custom_variables'),                  --  5
   require('neb.custom_variable_status'),            --  6
-  require('neb.comments'),                          --  7
-  require('neb.services'),                          --  8
-  require('neb.servicegroups'),                     --  9
-  require('neb.servicegroup_members'),              -- 10
-  require('neb.service_checks'),                    -- 11
-  require('neb.service_status'),                    -- 12
+  require('neb.services'),                          --  7
+  require('neb.servicegroups'),                     --  8
+  require('neb.servicegroup_members'),              --  9
+  require('neb.service_checks'),                    -- 10
+  require('neb.service_status'),                    -- 11
+  require('neb.comments'),                          -- 12
   require('neb.downtimes'),                         -- 13
   require('neb.host_checks'),                       -- 14
   require('neb.host_status'),                       -- 15
@@ -54,20 +55,20 @@ step[1].count = {
   continue = true,
 }
 
--- Hosts per instance         => 312
+-- Hosts per instance         => 12
 step[2].count = {
   host = 10,
   instance = step[1].count.instance,
   continue = true,
 }
 
--- Hostgroups
+-- Hostgroups                 => 10
 step[3].count = {
   group = 10,
   continue = true,
 }
 
--- Hostgroups members
+-- Hostgroups members         => 11
 step[4].count = {
   host = step[2].count.host,
   instance = step[2].count.instance,
@@ -75,7 +76,7 @@ step[4].count = {
   continue = true,
 }
 
--- Custom variables per host  =>
+-- Custom variables per host  => 3
 step[5].count = {
   cv = 30,
   host = step[2].count.host,
@@ -83,7 +84,7 @@ step[5].count = {
   continue = true,
 }
 
--- Custom variables status per host  =>
+-- Custom variables status per host  => 4
 step[6].count = {
   cv = 30,
   host = step[2].count.host,
@@ -91,57 +92,59 @@ step[6].count = {
   continue = true,
 }
 
--- Comments per host
+-- Services per host          => 23
 step[7].count = {
-  comment = 50,
-  host = step[2].count.host,
-  instance = step[2].count.instance,
-  continue = true,
-}
-
--- Services per host          => 20
-step[8].count = {
   service = 50,
   host = step[2].count.host,
   instance = step[2].count.instance,
   continue = true,
 }
 
--- Servicegroups
+-- Servicegroups              => 21
+step[8].count = {
+  servicegroup = 20,
+  continue = true,
+}
+
+-- Servicegroups members      => 22
 step[9].count = {
+  instance = step[2].count.instance,
+  host = step[2].count.host,
+  service = step[7].count.service,
   servicegroup = 20,
   continue = true,
 }
 
--- Servicegroups members
+-- Service checks             => 19
 step[10].count = {
-  instance = step[2].count.instance,
+  service = step[7].count.service,
   host = step[2].count.host,
-  service = step[8].count.service,
-  servicegroup = 20,
+  instance = step[2].count.instance,
   continue = true,
 }
 
--- Service checks
+-- Services status per host          => 24
 step[11].count = {
-  service = step[8].count.service,
-  host = step[2].count.host,
-  instance = step[2].count.instance,
-  continue = true,
-}
-
--- Services status per host          => 20
-step[12].count = {
-  service = step[8].count.service,
+  service = step[7].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
   metric = 2,
   continue = true,
 }
 
+-- Comments per host
+step[12].count = {
+  comment = 50,
+  host = step[2].count.host,
+  instance = step[2].count.instance,
+  continue = true,
+  disabled = false,
+}
+
 -- Downtimes per host
 step[13].count = {
   host = 5,
+  disabled = false,
   continue = true,
 }
 
@@ -161,7 +164,7 @@ step[15].count = {
 
 -- Acknowledgements
 step[16].count = {
-  service = step[8].count.service,
+  service = step[7].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
   continue = true,
@@ -169,7 +172,7 @@ step[16].count = {
 
 -- Event handler
 step[17].count = {
-  service = step[8].count.service,
+  service = step[7].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
   continue = true,
@@ -177,7 +180,7 @@ step[17].count = {
 
 -- Flapping status
 step[18].count = {
-  service = step[8].count.service,
+  service = step[7].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
   continue = true,
@@ -199,24 +202,22 @@ step[20].count = {
 
 -- Service dependency
 step[21].count = {
-  service = step[8].count.service,
+  service = step[7].count.service,
   host = step[2].count.host,
   instance = step[2].count.instance,
   continue = true,
 }
 
--- Instance status
+-- Instance status    => 16
 step[22].count = {
   instance = step[1].count.instance,
   continue = true,
 }
 
--- Logs
+-- Logs               => 17
 step[23].count = {
-  host = step[2].count.host,
-  instance = step[1].count.instance,
-  service = step[8].count.service,
-  log = 50,
+  log = 100,
+  continue = false,
 }
 
 -- Ba status
@@ -248,6 +249,14 @@ step[28].count = {
   continue = false,
 }
 
+local function round(val, decimal)
+  if decimal then
+    return math.floor( (val * 10^decimal) + 0.5) / (10^decimal)
+  else
+    return math.floor(val+0.5)
+  end
+end
+
 function os.capture(cmd, raw)
   local f = assert(io.popen(cmd, 'r'))
   local s = assert(f:read('*a'))
@@ -261,6 +270,8 @@ end
 
 function clean_tables()
   local queries = {
+    -- We delete comments
+    { "storage", "DELETE FROM comments" },
     -- This table can grow up quickly, so we clean it
     { "storage", "DELETE FROM data_bin" },
     { "storage", "DELETE FROM metrics" },
@@ -268,8 +279,6 @@ function clean_tables()
     { "storage", "DELETE FROM hostgroups" },
     -- We delete custom variables
     { "storage", "DELETE FROM customvariables" },
-    -- We delete comments
-    { "storage", "DELETE FROM comments" },
     -- We want hostgroups without hosts associated
     { "storage", "INSERT INTO hostgroups (name) VALUES ('hostgroup_12')" },
     { "storage", "INSERT INTO hostgroups (name) VALUES ('hostgroup_13')" },
@@ -302,15 +311,18 @@ function init(conf)
     error("No connection to database")
   end
 
+  simu.conn["storage"]:setautocommit(1)
   simu.conn["cfg"] = env:connect('centreon', conf['login'], conf['password'], conf['db_addr'], 3306)
   if not simu.conn["cfg"] then
     broker_log:error(0, "No connection to cfg database")
     error("No connection to cfg database")
   end
+  simu.conn["cfg"]:setautocommit(1)
 
   -- Some clean up
   clean_tables()
   simu.start = os.clock()
+  simu.previous_time = simu.start
 end
 
 function read()
@@ -321,30 +333,48 @@ function read()
 
     -- Building step in db
     if step[simu.step_build] then
-      broker_log:info(0, "Build Step " .. simu.step_build)
-      print(green .. "BUILD step " .. simu.step_build .. " " .. reset .. step[simu.step_build].name)
-      step[simu.step_build].build(simu.stack, step[simu.step_build].count, simu.conn)
-      print("   stack size " .. #simu.stack)
+      if step[simu.step_build].count.disabled then
+        print(purple .. 'BUILD step ' .. simu.step_build .. ' disabled ' .. reset .. '(' .. step[simu.step_build].name .. ')')
+        broker_log:info(0, 'Build Step ' .. simu.step_build .. ' disabled')
+      else
+        broker_log:info(0, "Build Step " .. simu.step_build)
+        print(green .. "BUILD step " .. simu.step_build .. " " .. reset .. step[simu.step_build].name)
+        step[simu.step_build].build(simu.stack, step[simu.step_build].count, simu.conn)
+        print("   stack size " .. #simu.stack)
+      end
       simu.step_build = simu.step_build + 1
     end
   end
 
   -- Check of step in db
   if simu.step_check < simu.step_build or not step[simu.step_check].count.continue then
-    if step[simu.step_check].check(simu.conn, step[simu.step_check].count) then
-      print(blue .. "CHECK " .. reset .. step[simu.step_check].name .. " DONE")
-      if not step[simu.step_check].count.continue then
-        broker_log:info(0, "No more step")
-        simu.finish = os.clock()
-        print(yellow .. "Execution duration: " .. reset .. (simu.finish - simu.start) .. "s")
-        local output = os.capture("ps ax | grep \"\\<cbd\\>\" | grep -v grep | awk '{print $1}' ", 1)
-        if output ~= "" then
-          broker_log:info(0, "SEND COMMAND: kill " .. output)
-          os.execute("kill -9 " .. output)
-        end
-      end
+    local cont = true
+    if step[simu.step_check].count.disabled then
+      print(purple .. "NO CHECK ON " .. reset .. step[simu.step_check].name)
+      broker_log:info(0, "No check on " .. step[simu.step_check].name)
       simu.step_check = simu.step_check + 1
       broker_log:info(0, "Check Step " .. simu.step_check)
+    else
+      if step[simu.step_check].check(simu.conn, step[simu.step_check].count) then
+        local now = os.clock()
+        print(blue .. "CHECK " .. reset .. step[simu.step_check].name .. " DONE in " .. blue .. round(now - simu.previous_time, 3) .. 's' .. reset)
+        simu.previous_time = now
+        cont = step[simu.step_check].count.continue
+        simu.step_check = simu.step_check + 1
+        broker_log:info(0, "Check Step " .. simu.step_check)
+      end
+    end
+
+    if not cont then
+      broker_log:info(0, "No more step")
+      simu.finish = os.clock()
+      print(yellow .. "Execution duration: " .. reset .. (simu.finish - simu.start) .. "s")
+      local output = os.capture("ps ax | grep \"\\<cbd\\>\" | grep -v grep | awk '{print $1}' ", 1)
+      if output ~= "" then
+        broker_log:info(0, "SEND COMMAND: kill " .. output)
+        os.execute("kill -9 " .. output)
+      end
+    else
     end
   end
 

@@ -38,31 +38,9 @@ using namespace com::centreon::broker::neb;
 monitoring_logger::monitoring_logger() {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] ml Object to copy.
- */
-monitoring_logger::monitoring_logger(monitoring_logger const& ml)
-    : logging::backend(ml) {}
-
-/**
  *  Destructor.
  */
 monitoring_logger::~monitoring_logger() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] ml Object to copy.
- *
- *  @return This object.
- */
-monitoring_logger& monitoring_logger::operator=(monitoring_logger const& ml) {
-  if (this != &ml) {
-    backend::operator=(ml);
-  }
-  return (*this);
-}
 
 /**
  *  Log message in the engine's log.

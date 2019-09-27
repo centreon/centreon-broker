@@ -40,6 +40,7 @@
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
+#include "com/centreon/broker/sql/conflict_manager.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -95,21 +96,22 @@ static inline int check_equality(double a, double b) {
  *                                     not.
  */
 stream::stream(database_config const& db_cfg,
-               unsigned int rrd_len,
-               unsigned int interval_length,
-               unsigned int rebuild_check_interval,
+               uint32_t rrd_len,
+               uint32_t interval_length,
+               uint32_t rebuild_check_interval __attribute__((unused)),
                bool store_in_db,
                bool insert_in_index_data)
     : _insert_in_index_data(insert_in_index_data),
       _interval_length(interval_length),
       _ack_events(0),
       _pending_events(0),
-      _rebuilder(db_cfg, rebuild_check_interval, rrd_len, interval_length),
+      //_rebuilder(db_cfg, rebuild_check_interval, rrd_len, interval_length),
       _rrd_len(rrd_len ? rrd_len : 15552000),
       _store_in_db(store_in_db),
       _mysql(db_cfg) {
+  sql::conflict_manager::init_storage(store_in_db, _rrd_len, _interval_length);
   // Prepare queries.
-  _prepare();
+  //_prepare();
 }
 
 /**
@@ -126,17 +128,25 @@ stream::~stream() {
  *  @return Number of events acknowledged.
  */
 int stream::flush() {
-  logging::info(logging::low) << "storage: committing transaction";
-  _update_status("status=committing current transaction\n");
-  _insert_perfdatas();
-  _mysql.commit();
+//  logging::info(logging::low) << "storage: committing transaction";
+//  _update_status("status=committing current transaction\n");
+//  _insert_perfdatas();
+//  _mysql.commit();
+//
+//  int retval(_ack_events + _pending_events);
+//  _ack_events = 0;
+//  _pending_events = 0;
+//  logging::debug(logging::medium)
+//      << "storage: flush ack events count: " << retval;
+//  _update_status("");
 
-  int retval(_ack_events + _pending_events);
-  _ack_events = 0;
-  _pending_events = 0;
-  logging::debug(logging::medium)
-      << "storage: flush ack events count: " << retval;
-  _update_status("");
+  int32_t retval = sql::conflict_manager::instance().get_acks(
+      sql::conflict_manager::storage);
+  _pending_events -= retval;
+
+  // Event acknowledgement.
+  logging::debug(logging::low) << "storage: " << _pending_events
+                               << " events have not yet been acknowledged";
   return retval;
 }
 
@@ -151,7 +161,7 @@ int stream::flush() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw(broker::exceptions::shutdown() << "cannot read from a storage stream");
+  throw broker::exceptions::shutdown() << "cannot read from a storage stream";
   return true;
 }
 
@@ -170,9 +180,9 @@ void stream::statistics(json11::Json::object& tree) const {
  *  Rebuild index and metrics cache.
  */
 void stream::update() {
-  _check_deleted_index();
-  _rebuild_cache();
-  _host_instance_cache_create();
+//  _check_deleted_index();
+//  _rebuild_cache();
+//  _host_instance_cache_create();
 }
 
 /**
@@ -252,11 +262,14 @@ void stream::_process_host(std::shared_ptr<io::data> const& e) {
  *  @return Number of events acknowledged.
  */
 int stream::write(std::shared_ptr<io::data> const& data) {
-  ++_pending_events;
-  logging::info(logging::low)
-      << "storage: write pending_events = " << _pending_events;
   if (!validate(data, "storage"))
     return 0;
+  ++_pending_events;
+  sql::conflict_manager::instance().send_event(sql::conflict_manager::storage,
+                                               data);
+
+  return 0;
+
 
   // Process service status events.
   if (data->type() == neb::service_status::static_type()) {
@@ -309,11 +322,20 @@ int stream::write(std::shared_ptr<io::data> const& data) {
           // Find metric_id.
           unsigned int metric_type(pd.value_type());
           bool metric_locked(false);
-          unsigned int metric_id(_find_metric_id(
-              index_id, pd.name(), pd.unit(), pd.warning(), pd.warning_low(),
-              pd.warning_mode(), pd.critical(), pd.critical_low(),
-              pd.critical_mode(), pd.min(), pd.max(), pd.value(), &metric_type,
-              &metric_locked));
+          unsigned int metric_id(_find_metric_id(index_id,
+                                                 pd.name(),
+                                                 pd.unit(),
+                                                 pd.warning(),
+                                                 pd.warning_low(),
+                                                 pd.warning_mode(),
+                                                 pd.critical(),
+                                                 pd.critical_low(),
+                                                 pd.critical_mode(),
+                                                 pd.min(),
+                                                 pd.max(),
+                                                 pd.value(),
+                                                 &metric_type,
+                                                 &metric_locked));
 
           if (_store_in_db) {
             // Append perfdata to queue.
@@ -353,14 +375,6 @@ int stream::write(std::shared_ptr<io::data> const& data) {
   else if (data->type() == neb::host::static_type())
     _process_host(data);
 
-  // Event acknowledgement.
-  logging::debug(logging::low) << "storage: " << _pending_events
-                               << " events have not yet been acknowledged";
-
-  int retval(_ack_events);
-  _ack_events = 0;
-  logging::debug(logging::low) << "storage: ack events count: " << retval;
-  return retval;
 }
 
 /**************************************
@@ -412,10 +426,7 @@ void stream::_check_deleted_index() {
     std::list<unsigned long long> metrics_to_delete;
     {
       std::ostringstream oss;
-      oss << "SELECT metric_id"
-             "  FROM "
-          << (db_v2 ? "metrics" : "rt_metrics")
-          << "  WHERE index_id=" << index_id;
+      oss << "SELECT metric_id FROM metrics WHERE index_id=" << index_id;
 
       std::promise<database::mysql_result> promise;
       _mysql.run_query_and_get_result(oss.str(), &promise);
@@ -589,8 +600,7 @@ unsigned int stream::_find_index_id(uint64_t host_id,
       _update_index_data_stmt.bind_value_as_str(0, host_name);
       _update_index_data_stmt.bind_value_as_str(1, service_desc);
       _update_index_data_stmt.bind_value_as_str(2, special ? "1" : "0");
-      _update_index_data_stmt.bind_value_as_i32(3, host_id);
-      _update_index_data_stmt.bind_value_as_i32(4, service_id);
+      _update_index_data_stmt.bind_value_as_i32(3, it->second.index_id);
 
       _mysql.run_statement(
           _update_index_data_stmt, "UPDATE index_data", true,
@@ -689,6 +699,7 @@ unsigned int stream::_find_index_id(uint64_t host_id,
  *  be found, insert an entry in the database.
  *
  *  @param[in]     index_id    Index ID of the metric.
+ *  @param[in]     host_id     Host ID needed to know what thread to use
  *  @param[in]     metric_name Name of the metric.
  *  @param[in]     unit_name   Metric unit.
  *  @param[in]     warn        High warning threshold.
@@ -764,7 +775,11 @@ uint64_t stream::_find_metric_id(uint64_t index_id,
       _update_metrics_stmt.bind_value_as_i32(10, it->second.metric_id);
 
       // Only use the thread_id 0
-      _mysql.run_statement(_update_metrics_stmt, "UPDATE metrics", true);
+      int thread_id = _mysql.run_statement(_update_metrics_stmt,
+                           "UPDATE metrics",
+                           true);
+      _mysql.commit(thread_id);
+
       if (_mysql.commit_if_needed())
         _set_ack_events();
 
@@ -920,48 +935,25 @@ void stream::_insert_perfdatas() {
  *  Prepare queries.
  */
 void stream::_prepare() {
-  // Database schema version.
-  bool db_v2(_mysql.schema_version() == mysql::v2);
-
-  // Prepare metrics update query.
-  std::ostringstream query;
-  query << "UPDATE " << (db_v2 ? "metrics" : "rt_metrics")
-        << " SET unit_name=?,"
-           "     warn=?,"
-           "     warn_low=?,"
-           "     warn_threshold_mode=?,"
-           "     crit=?,"
-           "     crit_low=?,"
-           "     crit_threshold_mode=?,"
-           "     min=?,"
-           "     max=?,"
-           "     current_value=?"
-           "  WHERE metric_id=?";
-  _update_metrics_stmt = _mysql.prepare_query(query.str());
-
-  query.str("");
-  query << "INSERT INTO " << (db_v2 ? "metrics" : "rt_metrics")
-        << "  (index_id, metric_name, unit_name, warn, warn_low,"
-           "   warn_threshold_mode, crit, crit_low, "
-           "   crit_threshold_mode, min, max, current_value,"
-           "   data_source_type)"
-           " VALUES (?, ?, ?, ?, "
-           "         ?, ?, ?, "
-           "         ?, ?, ?, ?, "
-           "         ?, ?)";
-  _insert_metrics_stmt = _mysql.prepare_query(query.str());
-
-  query.str("");
-  query << "UPDATE " << (db_v2 ? "index_data" : "rt_index_data")
-        << "  SET host_name=?,"
-           "    service_description=?,"
-           "    special=?"
-           "  WHERE host_id=?"
-           "    AND service_id=?";
-  _update_index_data_stmt = _mysql.prepare_query(query.str());
-
-  // Build cache.
-  _rebuild_cache();
+//  // Prepare metrics update query.
+//  std::ostringstream query;
+//  _update_metrics_stmt = _mysql.prepare_query(
+//      "UPDATE metrics SET "
+//      "unit_name=?,warn=?,warn_low=?,warn_threshold_mode=?,crit=?,crit_low=?,"
+//      "crit_threshold_mode=?,min=?,max=?,current_value=? WHERE metric_id=?");
+//
+//  _insert_metrics_stmt = _mysql.prepare_query(
+//      "INSERT INTO metrics "
+//      "(index_id,metric_name,unit_name,warn,warn_low,warn_threshold_mode,crit,"
+//      "crit_low,crit_threshold_mode,min,max,current_value,data_source_type) "
+//      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+//
+//  _update_index_data_stmt = _mysql.prepare_query(
+//      "UPDATE index_data SET host_name=?,service_description=?,special=? WHERE "
+//      "id=?");
+//
+//  // Build cache.
+//  _rebuild_cache();
 }
 
 /**
@@ -984,15 +976,8 @@ void stream::_rebuild_cache() {
   // Fill index cache.
   {
     // Execute query.
-    std::ostringstream query;
-    query << "SELECT " << (db_v2 ? "id" : "index_id")
-          << "       , host_id, service_id, host_name,"
-             "       rrd_retention, service_description, special,"
-             "       locked"
-             " FROM "
-          << (db_v2 ? "index_data" : "rt_index_data");
     std::promise<database::mysql_result> promise;
-    _mysql.run_query_and_get_result(query.str(), &promise);
+    _mysql.run_query_and_get_result("SELECT id,host_id,service_id,host_name,rrd_retention,service_description,special,locked FROM index_data", &promise);
     try {
       database::mysql_result res(promise.get_future().get());
 

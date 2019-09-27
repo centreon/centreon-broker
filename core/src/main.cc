@@ -118,6 +118,16 @@ static void term_handler(int signum, siginfo_t* info, void* data) {
   // QCoreApplication::exit(0);
 }
 
+#ifdef COVERAGE
+void __gcov_flush(void);
+
+void dump_coverage(int signum __attribute__((unused))) {
+  /* dump coverage data on receiving SIGUSR1 */
+  __gcov_flush();
+  exit(0);
+}
+#endif
+
 /**************************************
  *                                     *
  *          Public Functions           *
@@ -289,6 +299,18 @@ int main(int argc, char* argv[]) {
         config::applier::state::instance().apply(conf, !check);
         gl_state = conf;
       }
+
+#ifdef COVERAGE
+      struct sigaction new_action, old_action;
+
+      new_action.sa_handler = dump_coverage;
+      sigemptyset(&new_action.sa_mask);
+      new_action.sa_flags = 0;
+
+      sigaction(SIGUSR1, nullptr, &old_action);
+      if (old_action.sa_handler != SIG_IGN)
+        sigaction(SIGUSR1, &new_action, nullptr);
+#endif
 
       // Set configuration update handler.
       if (signal(SIGHUP, hup_handler) == SIG_ERR) {

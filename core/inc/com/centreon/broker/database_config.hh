@@ -45,7 +45,7 @@ class database_config {
                   std::string const& user,
                   std::string const& password,
                   std::string const& name,
-                  int queries_per_transaction = 1,
+                  uint32_t queries_per_transaction = 1,
                   bool check_replication = true,
                   int connections_count = 1);
   database_config(config::endpoint const& cfg);
@@ -60,7 +60,7 @@ class database_config {
   std::string const& get_user() const;
   std::string const& get_password() const;
   std::string const& get_name() const;
-  int get_queries_per_transaction() const;
+  uint32_t get_queries_per_transaction() const;
   bool get_check_replication() const;
   int get_connections_count() const;
 
