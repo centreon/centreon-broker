@@ -37,31 +37,10 @@ syslogger::syslogger(int facility) {
 }
 
 /**
- *  Copy constructor.
- *
- *  @param[in] s Unused.
- */
-syslogger::syslogger(syslogger const& s) : backend(s) {
-  (void)s;
-}
-
-/**
  *  Destructor.
  */
 syslogger::~syslogger() {
   closelog();
-}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] s Unused.
- *
- *  @return This object..
- */
-syslogger& syslogger::operator=(syslogger const& s) {
-  backend::operator=(s);
-  return (*this);
 }
 
 /**

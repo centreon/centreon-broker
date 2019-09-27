@@ -33,26 +33,16 @@ local hostgroups = {
     local now = os.time()
     broker_log:info(0, "CHECK HOSTGROUPS")
     local retval = true
-    local cursor, error_str = conn["storage"]:execute([[SELECT hostgroup_id from hostgroups ORDER BY hostgroup_id]])
+    local cursor, error_str = conn["storage"]:execute([[SELECT count(*) from hostgroups where hostgroup_id <= 10]])
     local row = cursor:fetch({}, "a")
-    local id = 1
-    while row do
-      broker_log:info(1, "Check for hostgroup " .. id)
-      if tonumber(row.hostgroup_id) ~= id then
-        broker_log:error(0, "Row found hostgroup_id = "
-            .. row.hostgroup_id
-            .. " instead of hostgroup_id = " .. id)
-        retval = false
-        break
-      end
-      id = id + 1
-      row = cursor:fetch({}, "a")
-    end
-
-    if id <= hostgroup_count then
-      broker_log:info(0, "CHECK HOSTGROUPS => NOT FINISHED")
+    broker_log:info(1, "Check for hostgroup")
+    if tonumber(row["count(*)"]) ~= 10 then
+      broker_log:error(0, "We should have 10 rows in hostgroups whose id is between 1 and 10. We have "
+          .. row["count(*)"]
+          .. " of them")
       retval = false
     end
+
     if not retval then
       broker_log:info(0, "CHECK HOSTGROUPS => NOT DONE")
     else

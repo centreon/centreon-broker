@@ -35,14 +35,9 @@ namespace storage {
  *  Status data event, mainly used to generate status graphs.
  */
 class status : public io::data {
- public:
-  status();
-  status(status const& s);
-  ~status();
-  status& operator=(status const& s);
-  unsigned int type() const;
-  static unsigned int static_type();
+  void _internal_copy(status const& s);
 
+ public:
   timestamp ctime;
   unsigned int index_id;
   unsigned int interval;
@@ -53,8 +48,18 @@ class status : public io::data {
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
 
- private:
-  void _internal_copy(status const& s);
+  status();
+  status(timestamp const& ctime,
+         uint32_t index_id,
+         uint32_t interval,
+         bool is_for_rebuild,
+         timestamp const& rrd_len,
+         int16_t state);
+  status(status const& s);
+  ~status();
+  status& operator=(status const& s);
+  unsigned int type() const;
+  static unsigned int static_type();
 };
 }  // namespace storage
 

@@ -34,27 +34,31 @@ namespace sql {
  */
 class stored_timestamp {
  public:
-  enum state_type { responsive, unresponsive };
-
-  stored_timestamp() throw();
-  stored_timestamp(unsigned int id, state_type s) throw();
-  stored_timestamp(stored_timestamp const& right) throw();
-  ~stored_timestamp() throw();
-
-  stored_timestamp& operator=(stored_timestamp const& right) = default;
-
-  unsigned int get_id() const throw();
-  state_type get_state() const throw();
-  void set_state(state_type state) throw();
-  void update_timestamp() throw();
-  timestamp get_timestamp() const throw();
-  void set_timestamp(timestamp ts) throw();
-  bool timestamp_outdated(unsigned int timeout) const throw();
+  enum state_type {
+    responsive,
+    unresponsive
+  };
 
  private:
-  unsigned int _id;
+  uint32_t _instance_id;
   timestamp _ts;
   state_type _state;
+
+ public:
+  stored_timestamp() noexcept;
+  stored_timestamp(uint32_t id, state_type s) noexcept;
+  stored_timestamp(stored_timestamp const& right) noexcept;
+  ~stored_timestamp() noexcept = default;
+
+  stored_timestamp& operator=(stored_timestamp const&) = default;
+
+  uint32_t get_id() const noexcept;
+  state_type get_state() const noexcept;
+  void set_state(state_type state) noexcept;
+  void update_timestamp() noexcept;
+  timestamp get_timestamp() const noexcept;
+  void set_timestamp(timestamp ts) noexcept;
+  bool timestamp_outdated(uint32_t timeout) const noexcept;
 };
 }  // namespace sql
 

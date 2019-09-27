@@ -40,6 +40,9 @@ local instance_status = {
     end
   end,
   check = function (conn, count)
+    if not _instance_status.finish then
+      return false
+    end
     local poller_count = count.instance
     broker_log:info(0, "CHECK INSTANCES STATUS with poller_count = " .. poller_count)
     local retval = true

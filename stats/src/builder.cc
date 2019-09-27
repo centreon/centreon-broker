@@ -190,7 +190,7 @@ json11::Json const& builder::root() const throw() {
  *  @return            Name of the endpoint.
  */
 std::string builder::_generate_stats_for_endpoint(processing::bthread* fo,
-                                                  json11::Json::object& tree) {
+    json11::Json::object& tree) {
   // Header.
   std::string endpoint = std::string("endpoint ") + fo->get_name();
 
@@ -203,5 +203,5 @@ std::string builder::_generate_stats_for_endpoint(processing::bthread* fo,
   // Gather statistic.
   fo->stats(tree);
 
-  return (endpoint);
+  return endpoint;
 }

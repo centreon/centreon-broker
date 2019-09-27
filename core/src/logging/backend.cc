@@ -29,30 +29,4 @@ using namespace com::centreon::broker::logging;
 /**
  *  Default constructor.
  */
-backend::backend() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] b Unused.
- */
-backend::backend(backend const& b) {
-  (void)b;
-}
-
-/**
- *  Destructor.
- */
-backend::~backend() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] b Unused.
- *
- *  @return This object..
- */
-backend& backend::operator=(backend const& b) {
-  (void)b;
-  return (*this);
-}
+backend::backend() : std::mutex{} {}

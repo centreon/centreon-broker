@@ -36,6 +36,15 @@ using namespace com::centreon::broker::storage;
 metric_mapping::metric_mapping() : index_id(0), metric_id(0) {}
 
 /**
+ *  Constructor
+ *
+ * @param index_id
+ * @param metric_id
+ */
+metric_mapping::metric_mapping(uint32_t index_id, uint32_t metric_id)
+    : index_id{index_id}, metric_id{metric_id} {}
+
+/**
  *  Copy constructor.
  *
  *  @param[in] m Object to copy.
@@ -115,8 +124,6 @@ mapping::entry const metric_mapping::entries[] = {
     mapping::entry()};
 
 // Operations.
-static io::data* new_metric_mapping() {
-  return (new metric_mapping);
-}
+static io::data* new_metric_mapping() { return (new metric_mapping); }
 io::event_info::event_operations const metric_mapping::operations = {
     &new_metric_mapping};

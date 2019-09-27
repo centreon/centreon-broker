@@ -28,7 +28,7 @@
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/namespace.hh"
-#include "com/centreon/broker/storage/rebuilder.hh"
+//#include "com/centreon/broker/storage/rebuilder.hh"
 
 CCB_BEGIN()
 
@@ -132,7 +132,7 @@ class stream : public io::stream {
   std::map<std::pair<uint64_t, std::string>, metric_info> _metric_cache;
   std::deque<metric_value> _perfdata_queue;
   std::map<unsigned int, unsigned int> _cache_host_instance;
-  rebuilder _rebuilder;
+  //rebuilder _rebuilder;
   unsigned int _rrd_len;
   std::string _status;
   mutable std::mutex _statusm;

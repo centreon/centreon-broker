@@ -107,7 +107,7 @@ local service_status = {
     local row = cursor:fetch({}, "a")
     if row then
       if tonumber(row['count(*)']) ~= 5 * service_count * host_count * count.metric then
-        broker_log:error(0, "index_data not complete")
+        broker_log:error(0, "index_data not complete, we have " .. row['count(*)'] .. " rows and not " .. tostring(5 * service_count * host_count * count.metric) .. " as expected")
         retval = false
       end
     end
