@@ -49,11 +49,6 @@ stored_timestamp::stored_timestamp(uint32_t id, state_type s) noexcept
 stored_timestamp::stored_timestamp(stored_timestamp const& right) noexcept
     : _instance_id{right._instance_id}, _ts{right._ts}, _state{right._state} {}
 
-///**
-// *  Destructor.
-// */
-//stored_timestamp::~stored_timestamp() noexcept {}
-
 /**
  *  Get the the id of the instance associated with this timestamp.
  *
