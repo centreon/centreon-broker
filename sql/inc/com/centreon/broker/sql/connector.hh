@@ -39,16 +39,18 @@ class connector : public io::endpoint {
   ~connector() = default;
   connector& operator=(connector const& other) = delete;
   void connect_to(database_config const& dbcfg,
-                  unsigned int cleanup_check_interval = 0,
-                  unsigned int instance_timeout = 15,
+                  uint32_t cleanup_check_interval = 0,
+                  uint32_t loop_timeout = 10,
+                  uint32_t instance_timeout = 15,
                   bool with_state_events = false,
                   bool enable_command_cache = false);
   std::shared_ptr<io::stream> open();
 
  private:
-  unsigned int _cleanup_check_interval;
+  uint32_t _cleanup_check_interval;
   database_config _dbcfg;
-  unsigned int _instance_timeout;
+  uint32_t _loop_timeout;
+  uint32_t _instance_timeout;
   bool _with_state_events;
   bool _enable_cmd_cache;
 };

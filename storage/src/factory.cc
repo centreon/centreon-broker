@@ -61,30 +61,6 @@ static std::string const& find_param(config::endpoint const& cfg,
 factory::factory() {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-factory::factory(factory const& other) : io::factory(other) {}
-
-/**
- *  Destructor.
- */
-factory::~factory() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-factory& factory::operator=(factory const& other) {
-  io::factory::operator=(other);
-  return *this;
-}
-
-/**
  *  Clone this object.
  *
  *  @return Exact copy of this factory.
@@ -125,11 +101,11 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   // Find RRD length.
-  unsigned int rrd_length{
-      static_cast<unsigned int>(std::stoul(find_param(cfg, "length")))};
+  uint32_t rrd_length{
+      static_cast<uint32_t>(std::stoul(find_param(cfg, "length")))};
 
   // Find interval length if set.
-  unsigned int interval_length{0};
+  uint32_t interval_length{0};
   {
     std::map<std::string, std::string>::const_iterator it{
         cfg.params.find("interval")};
@@ -143,7 +119,7 @@ io::endpoint* factory::new_endpoint(
   database_config db_cfg(cfg);
 
   // Rebuild check interval.
-  unsigned int rebuild_check_interval(0);
+  uint32_t rebuild_check_interval(0);
   {
     std::map<std::string, std::string>::const_iterator it{
         cfg.params.find("rebuild_check_interval")};
@@ -162,19 +138,10 @@ io::endpoint* factory::new_endpoint(
       store_in_data_bin = config::parser::parse_boolean(it->second);
   }
 
-  // Insert entries or not in index_data.
-  bool insert_in_index_data(false);
-  {
-    std::map<std::string, std::string>::const_iterator it{
-        cfg.params.find("insert_in_index_data")};
-    if (it != cfg.params.end())
-      insert_in_index_data = config::parser::parse_boolean(it->second);
-  }
-
   // Connector.
   std::unique_ptr<storage::connector> c(new storage::connector);
   c->connect_to(db_cfg, rrd_length, interval_length, rebuild_check_interval,
-                store_in_data_bin, insert_in_index_data);
+                store_in_data_bin);
   is_acceptor = false;
   return c.release();
 }
