@@ -516,3 +516,13 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
   conflict_manager::instance().send_event(conflict_manager::sql, data);
   return 0;
 }
+
+/**
+ *  Get endpoint statistics.
+ *
+ *  @param[out] tree Output tree.
+ */
+void stream::statistics(json11::Json::object& tree) const {
+  json11::Json::object obj{conflict_manager::instance().get_statistics()};
+  tree["conflict_manager"] = obj;
+}

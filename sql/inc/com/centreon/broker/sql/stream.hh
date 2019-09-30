@@ -38,37 +38,6 @@ namespace sql {
  *  Stream events into SQL database.
  */
 class stream : public io::stream {
- public:
-  stream(database_config const& dbcfg,
-         uint32_t cleanup_check_interval,
-         uint32_t loop_timeout,
-         uint32_t instance_timeout,
-         bool with_state_events);
-  stream(stream const& other) = delete;
-  stream& operator=(stream const& other) = delete;
-  ~stream();
-  int flush();
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
-  void update();
-  int write(std::shared_ptr<io::data> const& d);
-
- private:
-  void _process_engine(std::shared_ptr<io::data> const& e);
-  void _process_host_state(std::shared_ptr<io::data> const& e);
-  void _process_issue(std::shared_ptr<io::data> const& e);
-  void _process_issue_parent(std::shared_ptr<io::data> const& e);
-  void _process_notification(std::shared_ptr<io::data> const& e);
-  void _process_service_state(std::shared_ptr<io::data> const& e);
-  void _process_state(std::shared_ptr<io::data> const& e);
-  void _process_log_issue(std::shared_ptr<io::data> const& e);
-//  template <typename T>
-//  void _update_on_none_insert(database::mysql_stmt& ins_stmt,
-//                              database::mysql_stmt& up_stmt,
-//                              T& t,
-//                              int thread_id = -1);
-
-  static void (stream::*const _correlation_processing_table[])(
-      std::shared_ptr<io::data> const&);
   mysql _mysql;
 
   // Cache
@@ -85,6 +54,34 @@ class stream : public io::stream {
   int _pending_events;
   bool _with_state_events;
   mutable std::mutex _stat_mutex;
+
+  void _process_engine(std::shared_ptr<io::data> const& e);
+  void _process_host_state(std::shared_ptr<io::data> const& e);
+  void _process_issue(std::shared_ptr<io::data> const& e);
+  void _process_issue_parent(std::shared_ptr<io::data> const& e);
+  void _process_notification(std::shared_ptr<io::data> const& e);
+  void _process_service_state(std::shared_ptr<io::data> const& e);
+  void _process_state(std::shared_ptr<io::data> const& e);
+  void _process_log_issue(std::shared_ptr<io::data> const& e);
+
+  static void (stream::*const _correlation_processing_table[])(
+      std::shared_ptr<io::data> const&);
+
+ public:
+  stream(database_config const& dbcfg,
+         uint32_t cleanup_check_interval,
+         uint32_t loop_timeout,
+         uint32_t instance_timeout,
+         bool with_state_events);
+  stream(stream const& other) = delete;
+  stream& operator=(stream const& other) = delete;
+  ~stream();
+  int flush();
+  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  void update();
+  int write(std::shared_ptr<io::data> const& d);
+  void statistics(json11::Json::object& tree) const;
+
 };
 }  // namespace sql
 
