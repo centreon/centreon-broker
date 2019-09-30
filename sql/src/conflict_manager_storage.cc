@@ -33,6 +33,26 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::sql;
 
 /**
+ *  Check that the floating point values are the same number or are NaN or are
+ *  INFINITY at the same time. The idea is to check if a is changed into b, did
+ *  it really change?
+ *
+ *  @param[in] a Floating point value.
+ *  @param[in] b Floating point value.
+ *
+ *  @return true if they are equal, false otherwise.
+ */
+static inline bool check_equality(double a, double b) {
+  static const double eps = 0.000001;
+  if (a == b)
+    return true;
+  if (std::isnan(a) && std::isnan(b))
+    return true;
+  if (fabs(a - b) < eps)
+    return true;
+  return false;
+}
+/**
  *  Process a service status event.
  *
  *  @param[in] e Uncasted service status.
@@ -94,7 +114,9 @@ void conflict_manager::_storage_process_service_status() {
       rrd_len = _rrd_len;
 
       /* Create the metric mapping. */
-      std::shared_ptr<storage::index_mapping> im{std::make_shared<storage::index_mapping>(index_id, host_id, service_id)};
+      std::shared_ptr<storage::index_mapping> im{
+          std::make_shared<storage::index_mapping>(
+              index_id, host_id, service_id)};
       multiplexing::publisher pblshr;
       pblshr.write(im);
     }
@@ -137,13 +159,20 @@ void conflict_manager::_storage_process_service_status() {
           uint32_t metric_id;
           if (it == _metric_cache.end()) {
             /* Let's insert it */
-            if (!_metrics_insert.prepared())
+            if (!_metrics_insert.prepared()) {
               _metrics_insert = _mysql.prepare_query(
                   "INSERT INTO metrics "
                   "(index_id,metric_name,unit_name,warn,warn_low,"
                   "warn_threshold_mode,crit,"
                   "crit_low,crit_threshold_mode,min,max,current_value,"
                   "data_source_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+
+              _metrics_update = _mysql.prepare_query(
+                  "UPDATE metrics SET "
+                  "unit_name=?,warn=?,warn_low=?,warn_threshold_mode=?,crit=?,"
+                  "crit_low=?,crit_threshold_mode=?,min=?,max=?,current_value=?"
+                  " WHERE metric_id=?");
+            }
 
             _metrics_insert.bind_value_as_i32(0, index_id);
             _metrics_insert.bind_value_as_str(1, pd.name());
@@ -170,7 +199,8 @@ void conflict_manager::_storage_process_service_status() {
             _mysql.run_statement_and_get_int(
                 _metrics_insert,
                 &promise,
-                database::mysql_task::LAST_INSERT_ID, conn);
+                database::mysql_task::LAST_INSERT_ID,
+                conn);
             try {
               metric_id = promise.get_future().get();
 
@@ -193,17 +223,55 @@ void conflict_manager::_storage_process_service_status() {
                                .max = pd.max()};
 
               _metric_cache[{index_id, pd.name()}] = info;
-
             }
             catch (std::exception const& e) {
-              throw broker::exceptions::msg() << "storage: insertion of "
-                                                 "metric '" << pd.name()
-                                              << "' of index " << index_id
-                                              << " failed: " << e.what();
+              throw broker::exceptions::msg()
+                  << "storage: insertion of metric '" << pd.name()
+                  << "' of index " << index_id << " failed: " << e.what();
             }
           } else {
             /* We have the metric in the cache */
             metric_id = it->second.metric_id;
+
+            logging::debug(logging::low) << "storage: found metric "
+                                         << it->second.metric_id << " of ("
+                                         << index_id << ", " << pd.name()
+                                         << ") in cache";
+            // Should we update metrics ?
+            if (!check_equality(it->second.value, pd.value()) ||
+                it->second.unit_name != pd.unit() ||
+                !check_equality(it->second.warn, pd.warning()) ||
+                !check_equality(it->second.warn_low, pd.warning_low()) ||
+                it->second.warn_mode != pd.warning_mode() ||
+                !check_equality(it->second.crit, pd.critical()) ||
+                !check_equality(it->second.crit_low, pd.critical_low()) ||
+                it->second.crit_mode != pd.critical_mode() ||
+                !check_equality(it->second.min, pd.min()) ||
+                !check_equality(it->second.max, pd.max())) {
+              logging::info(logging::medium)
+                  << "storage: updating metric " << it->second.metric_id
+                  << " of (" << index_id << ", " << pd.name()
+                  << ") (unit: " << pd.unit()
+                  << ", warning: " << pd.warning_low() << ":" << pd.warning()
+                  << ", critical: " << pd.critical_low() << ":" << pd.critical()
+                  << ", min: " << pd.min() << ", max: " << pd.max() << ")";
+              // Update metrics table.
+              _metrics_update.bind_value_as_str(0, pd.unit());
+              _metrics_update.bind_value_as_f32(1, pd.warning());
+              _metrics_update.bind_value_as_f32(2, pd.warning_low());
+              _metrics_update.bind_value_as_tiny(3, pd.warning_mode());
+              _metrics_update.bind_value_as_f32(4, pd.critical());
+              _metrics_update.bind_value_as_f32(5, pd.critical_low());
+              _metrics_update.bind_value_as_tiny(6, pd.critical_mode());
+              _metrics_update.bind_value_as_f32(7, pd.min());
+              _metrics_update.bind_value_as_f32(8, pd.max());
+              _metrics_update.bind_value_as_f32(9, pd.value());
+              _metrics_update.bind_value_as_i32(10, it->second.metric_id);
+
+              // Only use the thread_id 0
+              _mysql.run_statement(
+                  _metrics_update, "UPDATE metrics", false, conn);
+            }
           }
           std::shared_ptr<storage::metric_mapping> mm =
               std::make_shared<storage::metric_mapping>(index_id, metric_id);
@@ -220,7 +288,8 @@ void conflict_manager::_storage_process_service_status() {
             _perfdata_queue.push_back(val);
           }
         }
-      } catch (storage::exceptions::perfdata const& e) {
+      }
+      catch (storage::exceptions::perfdata const& e) {
         logging::error(logging::medium)
           << "storage: error while parsing perfdata of service ("
           << host_id << ", " << service_id << "): " << e.what();
@@ -247,11 +316,9 @@ void conflict_manager::_insert_perfdatas() {
     {
       metric_value& mv(_perfdata_queue.front());
       query.precision(10);
-      query << std::scientific << "INSERT INTO data_bin "
-               "(id_metric,ctime,status,value)"
-               " VALUES ("
-            << mv.metric_id << "," << mv.c_time << ",'" << mv.status
-            << "',";
+      query << std::scientific
+            << "INSERT INTO data_bin (id_metric,ctime,status,value) VALUES ("
+            << mv.metric_id << "," << mv.c_time << ",'" << mv.status << "',";
       if (std::isinf(mv.value))
         query << ((mv.value < 0.0) ? -FLT_MAX : FLT_MAX);
       else if (std::isnan(mv.value))

@@ -43,12 +43,14 @@ connector::connector() : io::endpoint(false) {}
  *  @param[in] with_state_events       Enable state events ?
  */
 void connector::connect_to(database_config const& dbcfg,
-                           unsigned int cleanup_check_interval,
-                           unsigned int instance_timeout,
+                           uint32_t cleanup_check_interval,
+                           uint32_t loop_timeout,
+                           uint32_t instance_timeout,
                            bool with_state_events,
                            bool enable_cmd_cache) {
   _cleanup_check_interval = cleanup_check_interval;
   _dbcfg = dbcfg;
+  _loop_timeout = loop_timeout;
   _instance_timeout = instance_timeout;
   _with_state_events = with_state_events;
   _enable_cmd_cache = enable_cmd_cache;
@@ -60,6 +62,9 @@ void connector::connect_to(database_config const& dbcfg,
  *  @return SQL connection object.
  */
 std::shared_ptr<io::stream> connector::open() {
-  return std::shared_ptr<io::stream>(new stream(
-      _dbcfg, _cleanup_check_interval, _instance_timeout, _with_state_events));
+  return std::shared_ptr<io::stream>(new stream(_dbcfg,
+                                                _cleanup_check_interval,
+                                                _loop_timeout,
+                                                _instance_timeout,
+                                                _with_state_events));
 }
