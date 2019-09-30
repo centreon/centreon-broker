@@ -144,7 +144,8 @@ class conflict_manager {
   int32_t _pending_events;
   bool _cv_timeout;
   int32_t _still_pending_events;
-  int32_t _delay_for_queries; // in microseconds
+  int32_t _delay_for_input;
+  int32_t _delay_for_output;
 
   std::unordered_set<uint32_t> _cache_deleted_instance_id;
   std::unordered_map<uint32_t, uint32_t> _cache_host_instance;

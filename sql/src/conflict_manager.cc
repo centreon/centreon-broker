@@ -324,6 +324,8 @@ void conflict_manager::_callback() {
         logging::info(logging::low)
             << "conflict_manager: main loop initialized with a timeout of "
             << _loop_timeout << " seconds.";
+        std::chrono::system_clock::time_point now0 =
+            std::chrono::system_clock::now();
         std::unique_lock<std::mutex> lk(_loop_m);
         /* The loop is waiting for 1s or for _pending_queries to be equal to
          * _max_pending_queries */
@@ -388,7 +390,8 @@ void conflict_manager::_callback() {
         {
           std::lock_guard<std::mutex> lk(_stat_m);
           _still_pending_events = _events.size();
-          _delay_for_queries = std::chrono::duration_cast<std::chrono::microseconds>(now2 - now1).count();
+          _delay_for_input = std::chrono::duration_cast<std::chrono::milliseconds>(now1 - now0).count();
+          _delay_for_output = std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now1).count();
         }
       }
     }
@@ -510,6 +513,7 @@ json11::Json::object conflict_manager::get_statistics() {
   std::lock_guard<std::mutex> lk(_stat_m);
   retval["acked events"] = _pending_events - _still_pending_events;
   retval["max_event_size reached"] = !_cv_timeout;
-  retval["time to send to the db"] = std::to_string(_delay_for_queries) + "microseconds";
+  retval["delay for input events"] = std::to_string(_delay_for_input) + " ms";
+  retval["delay for output events"] = std::to_string(_delay_for_output) + " ms";
   return retval;
 }
