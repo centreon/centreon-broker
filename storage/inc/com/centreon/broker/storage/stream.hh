@@ -46,32 +46,31 @@ namespace storage {
 class stream : public io::stream {
  public:
   stream(database_config const& db_cfg,
-         unsigned int rrd_len,
-         unsigned int interval_length,
-         unsigned int rebuild_check_interval,
-         bool store_in_db = true,
-         bool insert_in_index_data = false);
+         uint32_t rrd_len,
+         uint32_t interval_length,
+         uint32_t rebuild_check_interval,
+         bool store_in_db = true);
   ~stream();
-  int flush();
+  int32_t flush();
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
   void statistics(json11::Json::object& tree) const;
   void update();
-  int write(std::shared_ptr<io::data> const& d);
-  void ack_pending_events(int v);
+  int32_t write(std::shared_ptr<io::data> const& d);
+  void ack_pending_events(int32_t v);
 
  private:
   struct index_info {
     std::string host_name;
-    unsigned int index_id;
+    uint32_t index_id;
     bool locked;
-    unsigned int rrd_retention;
+    uint32_t rrd_retention;
     std::string service_description;
     bool special;
   };
   struct metric_info {
     bool locked;
-    unsigned int metric_id;
-    unsigned int type;
+    uint32_t metric_id;
+    uint32_t type;
     double value;
     std::string unit_name;
     double warn;
@@ -85,7 +84,7 @@ class stream : public io::stream {
   };
   struct metric_value {
     time_t c_time;
-    unsigned int metric_id;
+    uint32_t metric_id;
     short status;
     double value;
   };
@@ -94,11 +93,11 @@ class stream : public io::stream {
   stream& operator=(stream const& other);
   void _check_deleted_index();
   void _delete_metrics(std::list<unsigned long long> const& metrics_to_delete);
-  unsigned int _find_index_id(uint64_t host_id,
+  uint32_t _find_index_id(uint64_t host_id,
                               uint64_t service_id,
                               std::string const& host_name,
                               std::string const& service_desc,
-                              unsigned int* rrd_len,
+                              uint32_t* rrd_len,
                               bool* locked);
   uint64_t _find_metric_id(uint64_t index_id,
                            std::string metric_name,
@@ -112,7 +111,7 @@ class stream : public io::stream {
                            double min,
                            double max,
                            double value,
-                           unsigned int* type,
+                           uint32_t* type,
                            bool* locked);
   void _host_instance_cache_create();
   void _insert_perfdatas_new();
@@ -125,15 +124,14 @@ class stream : public io::stream {
   void _set_ack_events();
 
   std::map<std::pair<uint64_t, uint64_t>, index_info> _index_cache;
-  bool _insert_in_index_data;
-  unsigned int _interval_length;
-  int _ack_events;
-  int _pending_events;
+  uint32_t _interval_length;
+  int32_t _ack_events;
+  int32_t _pending_events;
   std::map<std::pair<uint64_t, std::string>, metric_info> _metric_cache;
   std::deque<metric_value> _perfdata_queue;
-  std::map<unsigned int, unsigned int> _cache_host_instance;
+  std::map<uint32_t, uint32_t> _cache_host_instance;
   //rebuilder _rebuilder;
-  unsigned int _rrd_len;
+  uint32_t _rrd_len;
   std::string _status;
   mutable std::mutex _statusm;
   bool _store_in_db;

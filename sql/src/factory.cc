@@ -105,7 +105,7 @@ io::endpoint* factory::new_endpoint(
   database_config dbcfg(cfg);
 
   // Cleanup check interval.
-  unsigned int cleanup_check_interval(0);
+  uint32_t cleanup_check_interval(0);
   {
     std::map<std::string, std::string>::const_iterator it{
         cfg.params.find("cleanup_check_interval")};
@@ -121,9 +121,24 @@ io::endpoint* factory::new_endpoint(
       enable_cmd_cache = std::stoul(it->second);
   }
 
+  // Loop timeout
+  // By default, 10 seconds
+  uint32_t loop_timeout{10};
+  {
+    std::map<std::string, std::string>::const_iterator it(
+        cfg.params.find("loop_timeout"));
+    if (it != cfg.params.end())
+      try {
+        loop_timeout = std::stoul(it->second);
+      }
+    catch (std::exception const& e) {
+      throw exceptions::msg() << "sql: Unable to read the 'loop_timeout' key"
+                                 " that should be a delay in seconds";
+    }
+  }
   // Instance timeout
   // By default, 5 minutes.
-  unsigned int instance_timeout(5 * 60);
+  uint32_t instance_timeout(5 * 60);
   {
     std::map<std::string, std::string>::const_iterator it(
         cfg.params.find("instance_timeout"));
@@ -142,7 +157,11 @@ io::endpoint* factory::new_endpoint(
 
   // Connector.
   std::unique_ptr<sql::connector> c{new sql::connector};
-  c->connect_to(dbcfg, cleanup_check_interval, instance_timeout, wse,
+  c->connect_to(dbcfg,
+                cleanup_check_interval,
+                loop_timeout,
+                instance_timeout,
+                wse,
                 enable_cmd_cache);
   is_acceptor = false;
   return c.release();
