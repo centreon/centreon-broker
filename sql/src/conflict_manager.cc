@@ -327,19 +327,30 @@ void conflict_manager::_callback() {
         std::unique_lock<std::mutex> lk(_loop_m);
         /* The loop is waiting for 1s or for _pending_queries to be equal to
          * _max_pending_queries */
+        bool timeout = false;
         if (_loop_cv.wait_for(
                 lk, std::chrono::seconds(_loop_timeout), [this]() {
-                  return _pending_queries == _max_pending_queries;
+                  return _pending_queries >= _max_pending_queries;
                 }))
           logging::info(logging::low)
               << "conflict_manager: sending max pending queries ("
               << _max_pending_queries << ").";
-        else
+        else {
           logging::info(logging::low)
               << "conflict_manager: timeout reached - sending "
               << _pending_queries << " queries.";
+          timeout = true;
+        }
 
+        /* Get some stats */
+        {
+          std::lock_guard<std::mutex> lk(_stat_m);
+          _pending_events = _events.size();
+          _cv_timeout = timeout;
+        }
         /* Time to clear the queue */
+        std::chrono::system_clock::time_point now1 =
+            std::chrono::system_clock::now();
         while (!_events.empty()) {
           std::shared_ptr<io::data> d{std::get<0>(_events.front())};
           uint32_t type{d->type()};
@@ -370,6 +381,15 @@ void conflict_manager::_callback() {
 
         /* Are there unresonsive instances? */
         _update_hosts_and_services_of_unresponsive_instances();
+        std::chrono::system_clock::time_point now2 =
+            std::chrono::system_clock::now();
+
+        /* Get some stats */
+        {
+          std::lock_guard<std::mutex> lk(_stat_m);
+          _still_pending_events = _events.size();
+          _delay_for_queries = std::chrono::duration_cast<std::chrono::microseconds>(now2 - now1).count();
+        }
       }
     }
     catch (std::exception const& e) {
@@ -483,4 +503,13 @@ void conflict_manager::exit() {
   std::lock_guard<std::mutex> lock(_loop_m);
   _exit = true;
   _thread.join();
+}
+
+json11::Json::object conflict_manager::get_statistics() {
+  json11::Json::object retval;
+  std::lock_guard<std::mutex> lk(_stat_m);
+  retval["acked events"] = _pending_events - _still_pending_events;
+  retval["max_event_size reached"] = !_cv_timeout;
+  retval["time to send to the db"] = std::to_string(_delay_for_queries) + "microseconds";
+  return retval;
 }
