@@ -19,7 +19,7 @@
 # Global options.
 set(INC_DIR "${PROJECT_SOURCE_DIR}/influxdb/inc")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/influxdb/src")
-set(TEST_DIR "${PROJECT_SOURCE_DIR}/test")
+set(TEST_DIR "${PROJECT_SOURCE_DIR}/influxdb/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
@@ -34,7 +34,6 @@ add_library("${INFLUXDB}" SHARED
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/influxdb12.cc"
-  "${SRC_DIR}/json_printer.cc"
   "${SRC_DIR}/line_protocol_query.cc"
   "${SRC_DIR}/macro_cache.cc"
   "${SRC_DIR}/main.cc"
@@ -45,7 +44,6 @@ add_library("${INFLUXDB}" SHARED
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/influxdb.hh"
   "${INC_DIR}/influxdb12.hh"
-  "${INC_DIR}/json_printer.hh"
   "${INC_DIR}/line_protocol_query.hh"
   "${INC_DIR}/macro_cache.hh"
   "${INC_DIR}/stream.hh"
@@ -56,9 +54,24 @@ set_target_properties("${INFLUXDB}" PROPERTIES PREFIX "")
 
 # Testing.
 if (WITH_TESTING)
-  set(TEST_LIBRARIES "${NEB}" "${INFLUXDB}" "roker")
+  set(
+    TESTS_SOURCES
+    ${TESTS_SOURCES}
+    ${TEST_DIR}/column.cc
+    ${TEST_DIR}/factory.cc
+    ${TEST_DIR}/influxdb12.cc
+    ${TEST_DIR}/line_protocol_query.cc
+    ${TEST_DIR}/stream.cc
+    PARENT_SCOPE
+  )
+  set(
+    TESTS_LIBRARIES
+    ${TESTS_LIBRARIES}
+    ${INFLUXDB}
+    PARENT_SCOPE
+  )
+endif(WITH_TESTING)
 
-endif ()
 
 # Install rule.
 install(TARGETS "${INFLUXDB}"
