@@ -17,12 +17,9 @@
 */
 
 #include "com/centreon/broker/influxdb/influxdb12.hh"
-#include <algorithm>
 #include <iterator>
-#include <sstream>
 #include <vector>
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/influxdb/json_printer.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
 
@@ -120,11 +117,16 @@ void influxdb12::commit() {
   // Receive the server answer.
 
   std::string answer;
+  std::size_t total_read{0}, read_size{2048};
 
   do {
-    asio::streambuf b;
+    answer.resize(read_size);
 
-    asio::read(*_socket, b, asio::transfer_all(), err);
+    total_read += _socket->read_some(asio::buffer(&answer[total_read], read_size - total_read), err);
+    if (total_read == read_size)
+      total_read += 2048;
+
+    answer.resize(total_read);
 
     if (err)
       throw exceptions::msg()
@@ -132,9 +134,7 @@ void influxdb12::commit() {
           << _socket->remote_endpoint().address().to_string() << "' and port '"
           << _socket->remote_endpoint().port() << "': " << err.message();
 
-    std::string s((std::istreambuf_iterator<char>(&b)),
-                  std::istreambuf_iterator<char>());
-    answer.append(s);
+
   } while (!_check_answer_string(answer));
   _socket->close();
   _query.clear();

@@ -34,9 +34,9 @@ namespace influxdb {
 class factory : public io::factory {
  public:
   factory();
-  factory(factory const& other);
-  ~factory();
-  factory& operator=(factory const& other);
+  factory(factory const& other) = default;
+  ~factory() = default;
+  factory& operator=(factory const& other) = delete;
   io::factory* clone() const;
   bool has_endpoint(config::endpoint& cfg) const;
   io::endpoint* new_endpoint(config::endpoint& cfg,

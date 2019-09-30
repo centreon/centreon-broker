@@ -115,11 +115,6 @@ void stream::statistics(json11::Json::object& tree) const {
 }
 
 /**
- *  Do nothing.
- */
-void stream::update() {}
-
-/**
  *  Write an event.
  *
  *  @param[in] data Event pointer.
