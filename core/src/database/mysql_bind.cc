@@ -86,7 +86,7 @@ char* mysql_bind::value_as_str(int range) {
 }
 
 void mysql_bind::set_value_as_str(int range, std::string const& value) {
-  assert(static_cast<unsigned int>(range) < _bind.size());
+  assert(static_cast<uint32_t>(range) < _bind.size());
   if (!_prepared(range))
     _prepare_type(range, MYSQL_TYPE_STRING);
   _column[range].set_value(value);
@@ -96,7 +96,7 @@ void mysql_bind::set_value_as_str(int range, std::string const& value) {
 }
 
 void mysql_bind::set_value_as_tiny(int range, char value) {
-  assert(static_cast<unsigned int>(range) < _bind.size());
+  assert(static_cast<uint32_t>(range) < _bind.size());
   // if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
@@ -118,7 +118,7 @@ void mysql_bind::set_value_as_bool(int range, bool value) {
 }
 
 void mysql_bind::set_value_as_i32(int range, int value) {
-  assert(static_cast<unsigned int>(range) < _bind.size());
+  assert(static_cast<uint32_t>(range) < _bind.size());
   // if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
@@ -141,8 +141,8 @@ int mysql_bind::value_as_i32(int range) const {
     assert("This field is not an int" == nullptr);
 }
 
-void mysql_bind::set_value_as_u32(int range, unsigned int value) {
-  assert(static_cast<unsigned int>(range) < _bind.size());
+void mysql_bind::set_value_as_u32(int range, uint32_t value) {
+  assert(static_cast<uint32_t>(range) < _bind.size());
   // if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
@@ -155,19 +155,19 @@ void mysql_bind::set_value_as_u32(int range, unsigned int value) {
   _bind[range].length = _column[range].length_buffer();
 }
 
-unsigned int mysql_bind::value_as_u32(int range) const {
+uint32_t mysql_bind::value_as_u32(int range) const {
   if (_bind[range].buffer_type == MYSQL_TYPE_LONG)
-    return *static_cast<unsigned int*>(_bind[range].buffer);
+    return *static_cast<uint32_t*>(_bind[range].buffer);
   else if (_bind[range].buffer_type == MYSQL_TYPE_STRING) {
-    unsigned int retval(
+    uint32_t retval(
         strtoul(static_cast<char*>(_bind[range].buffer), nullptr, 10));
     return retval;
   } else
-    assert("This field is not an unsigned int" == nullptr);
+    assert("This field is not an uint32_t" == nullptr);
 }
 
 void mysql_bind::set_value_as_u64(int range, unsigned long long value) {
-  assert(static_cast<unsigned int>(range) < _bind.size());
+  assert(static_cast<uint32_t>(range) < _bind.size());
   // if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
@@ -182,7 +182,7 @@ void mysql_bind::set_value_as_u64(int range, unsigned long long value) {
 
 unsigned long long mysql_bind::value_as_u64(int range) const {
   if (_bind[range].buffer_type == MYSQL_TYPE_LONGLONG)
-    return *static_cast<unsigned int*>(_bind[range].buffer);
+    return *static_cast<uint32_t*>(_bind[range].buffer);
   else if (_bind[range].buffer_type == MYSQL_TYPE_STRING) {
     unsigned long long retval(
         strtoul(static_cast<char*>(_bind[range].buffer), nullptr, 10));
@@ -204,7 +204,7 @@ void mysql_bind::set_value_as_f32(int range, float value) {
     set_value_as_null(range);
     return;
   }
-  assert(static_cast<unsigned int>(range) < _bind.size());
+  assert(static_cast<uint32_t>(range) < _bind.size());
   if (!_prepared(range))
     _prepare_type(range, MYSQL_TYPE_FLOAT);
   _column[range].set_value<float>(value);
@@ -236,7 +236,7 @@ void mysql_bind::set_value_as_f64(int range, double value) {
     set_value_as_null(range);
     return;
   }
-  assert(static_cast<unsigned int>(range) < _bind.size());
+  assert(static_cast<uint32_t>(range) < _bind.size());
   if (!_prepared(range))
     _prepare_type(range, MYSQL_TYPE_DOUBLE);
   _column[range].set_value<double>(value);
@@ -256,7 +256,7 @@ double mysql_bind::value_as_f64(int range) const {
 }
 
 void mysql_bind::set_value_as_null(int range) {
-  assert(static_cast<unsigned int>(range) < _bind.size());
+  assert(static_cast<uint32_t>(range) < _bind.size());
   // if (range >= _bind.size())
   //  set_size(range + 1);
   if (!_prepared(range))
