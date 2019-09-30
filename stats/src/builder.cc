@@ -85,9 +85,9 @@ void builder::build() {
 
   // General.
   {
-    object["version"] = misc::string::get(CENTREON_BROKER_VERSION);
-    object["pid"] = misc::string::get(getpid());
-    object["now"] = misc::string::get(::time(nullptr));
+    object["version"] = CENTREON_BROKER_VERSION;
+    object["pid"] = getpid();
+    object["now"] = std::to_string(::time(nullptr));
 
     std::string asio_version{std::to_string(ASIO_VERSION / 100000)};
     asio_version.append(".")
@@ -95,6 +95,11 @@ void builder::build() {
         .append(".")
         .append(std::to_string(ASIO_VERSION % 100));
     object["asio_version"] = asio_version;
+  }
+
+  // Engine.
+  {
+
   }
 
   // Mysql manager.
@@ -115,7 +120,7 @@ void builder::build() {
     json11::Json::object subtree;
     subtree["state"] = "loaded";
     subtree["size"] =
-        misc::string::get(misc::filesystem::file_size(it->first)) + "B";
+        std::to_string(misc::filesystem::file_size(it->first)) + "B";
     object["module" + it->first] = subtree;
   }
 

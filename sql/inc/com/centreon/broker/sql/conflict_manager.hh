@@ -139,6 +139,14 @@ class conflict_manager {
 
   std::thread _thread;
 
+  /* Stats */
+  std::mutex _stat_m;
+  int32_t _pending_events;
+  bool _cv_timeout;
+  int32_t _still_pending_events;
+  int32_t _delay_for_input;
+  int32_t _delay_for_output;
+
   std::unordered_set<uint32_t> _cache_deleted_instance_id;
   std::unordered_map<uint32_t, uint32_t> _cache_host_instance;
   std::unordered_map<uint64_t, size_t> _cache_hst_cmd;
@@ -247,6 +255,7 @@ class conflict_manager {
                            uint32_t interval_length);
   static conflict_manager& instance();
   void exit();
+  json11::Json::object get_statistics();
 
   void send_event(stream_type c, std::shared_ptr<io::data> const& e);
   int32_t get_acks(stream_type c);
