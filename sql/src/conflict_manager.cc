@@ -272,6 +272,39 @@ void conflict_manager::_load_caches() {
 
   _cache_svc_cmd.clear();
   _cache_hst_cmd.clear();
+
+  /* metrics => _metric_cache */
+  {
+    _metric_cache.clear();
+
+    std::promise<mysql_result> promise;
+    _mysql.run_query_and_get_result("SELECT metric_id,index_id,metric_name,unit_name,warn,warn_low,warn_threshold_mode,crit,crit_low,crit_threshold_mode,min,max,current_value,data_source_type FROM metrics", &promise);
+
+    try {
+      mysql_result res{promise.get_future().get()};
+      while (_mysql.fetch_row(res)) {
+        metric_info info;
+          info.metric_id = res.value_as_u32(0);
+          info.locked = false;
+          info.unit_name = res.value_as_str(3);
+          info.warn = res.value_as_f32(4);
+          info.warn_low = res.value_as_f32(5);
+          info.warn_mode = res.value_as_i32(6);
+          info.crit = res.value_as_f32(7);
+          info.crit_low = res.value_as_f32(8);
+          info.crit_mode = res.value_as_i32(9);
+          info.min = res.value_as_f32(10);
+          info.max = res.value_as_f32(11);
+          info.value = res.value_as_f32(12);
+          info.type = res.value_as_str(13)[0] - '0';
+        _metric_cache[{res.value_as_u32(1), res.value_as_str(2)}] = info;
+      }
+    }
+    catch (std::exception const& e) {
+      throw exceptions::msg()
+        << "conflict_manager: could not get the list of metrics: " << e.what();
+    }
+  }
 }
 
 /**
