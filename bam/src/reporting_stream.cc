@@ -53,14 +53,7 @@ using namespace com::centreon::broker::database;
 /**
  *  Constructor.
  *
- *  @param[in] db_type                 BAM DB type.
- *  @param[in] db_host                 BAM DB host.
- *  @param[in] db_port                 BAM DB port.
- *  @param[in] db_user                 BAM DB user.
- *  @param[in] db_password             BAM DB password.
- *  @param[in] db_name                 BAM DB name.
- *  @param[in] queries_per_transaction Queries per transaction.
- *  @param[in] check_replication       true to check replication status.
+ *  @param[in] db_cfg                  BAM DB configuration.
  */
 reporting_stream::reporting_stream(database_config const& db_cfg)
     : _ack_events(0), _pending_events(0), _mysql(db_cfg) {
@@ -449,10 +442,9 @@ void reporting_stream::_prepare() {
   std::string query;
 
   query =
-      "INSERT INTO mod_bam_reporting_ba_events (ba_id, "
-      "            first_level, start_time, end_time, status, in_downtime)"
-      "  VALUES (?, ?,"
-      "          ?, ?, ?, ?)";
+      "INSERT INTO mod_bam_reporting_ba_events (ba_id,"
+      "first_level,start_time,end_time,status,in_downtime)"
+      " VALUES(?,?,?,?,?,?)";
   _ba_full_event_insert = _mysql.prepare_query(query);
 
   query =

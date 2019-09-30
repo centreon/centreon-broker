@@ -3,8 +3,10 @@ local _ba_event = {}
 local function build(ba_id)
   local now = os.time()
   local retval = {
-    ba_id = ba_id,
+    category = 6,
+    element = 4,
     _type = 393220,
+    ba_id = ba_id,
     first_level = 1,
     end_time = now,
     in_downtime = 0,
