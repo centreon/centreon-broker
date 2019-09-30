@@ -59,6 +59,9 @@ class influxdb12 : public influxdb::influxdb {
              macro_cache const& cache);
   ~influxdb12();
 
+  influxdb12(influxdb12 const& f) = delete;
+  influxdb12& operator=(influxdb12 const& f) = delete;
+
   void clear();
   void write(storage::metric const& m);
   void write(storage::status const& s);
@@ -88,9 +91,6 @@ class influxdb12 : public influxdb::influxdb {
                        std::vector<column> const& status_cols,
                        std::string const& metric_ts,
                        std::vector<column> const& metric_cols);
-
-  influxdb12(influxdb12 const& f);
-  influxdb12& operator=(influxdb12 const& f);
 };
 }  // namespace influxdb
 

@@ -25,7 +25,7 @@ using namespace com::centreon::broker::influxdb;
 /**
  *  Create an empty column.
  */
-column::column() : _is_flag(false) {}
+column::column() : _is_flag(false), _type{column::number} {}
 
 /**
  *  Create a column.

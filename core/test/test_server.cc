@@ -32,23 +32,32 @@ typedef io_service io_context;
 }
 #endif
 test_server::test_server()
-    : _ctx{nullptr},
-      _acceptor{nullptr},
-      _connections{},
-      _num_connections{0},
-      _init_done{false},
-      _bind_ok{false} {
+  : _ctx{nullptr},
+    _acceptor{nullptr},
+    _connections{},
+    _num_connections{0},
+    _init_done{false},
+    _bind_ok{false} {
   _answer_reply.insert({"PING\n", "PONG\n"});
   _answer_reply.insert(
-      {"HEAD /centreon?pretty HTTP/1.1\\r\\nHost: "
-       "127.0.0.1:9200\\r\\nAccept: */*\\r\\n\\r\\n",
-       "HTTP/1.1 200 OK"});
+    {"HEAD /centreon?pretty HTTP/1.1\\r\\nHost: "
+     "127.0.0.1:9200\\r\\nAccept: */*\\r\\n\\r\\n",
+     "HTTP/1.1 200 OK"});
   _answer_reply.insert(
-      {"PUT /centreon/_mapping/metrics?pretty "
-       "HTTP/1.1\\r\\nHost: 127.0.0.1:9200\\r\\n"
-       "Accept: */*\\r\\nContent-Type: "
-       "application/json\\r\\n'",
-       "HTTP/1.1 200 OK"});
+    {"PUT /centreon/_mapping/metrics?pretty "
+     "HTTP/1.1\\r\\nHost: 127.0.0.1:9200\\r\\n"
+     "Accept: */*\\r\\nContent-Type: "
+     "application/json\\r\\n'",
+     "HTTP/1.1 200 OK"});
+  _answer_reply.insert(
+    {"POST /write?u=centreon&p=pass&db=centreon&precision=s HTTP/1.0",
+     "HTTP/1.0 204 No Content\n"});
+  _answer_reply.insert(
+    {"POST /write?u=centreon&p=fail1&db=centreon&precision=s HTTP/1.0",
+     "HTTP/1.1 204 OK\n"});
+  _answer_reply.insert(
+    {"POST /write?u=centreon&p=fail2&db=centreon&precision=s HTTP/1.0",
+     "HTTP/1.1 200\n"});
 }
 
 void test_server::init() {
@@ -58,7 +67,7 @@ void test_server::init() {
 
 void test_server::run() {
   asio::ip::tcp::endpoint ep =
-      asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 4242);
+    asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 4242);
   _acceptor->open(ep.protocol());
   _acceptor->set_option(asio::ip::tcp::acceptor::reuse_address(true));
   try {
@@ -79,15 +88,15 @@ void test_server::run() {
 
 void test_server::start_accept() {
   std::list<test_server_connection>::iterator con_handle =
-      _connections.emplace(_connections.begin(), *_ctx, buff_size);
+    _connections.emplace(_connections.begin(), *_ctx, buff_size);
   auto handler = std::bind(&test_server::handle_accept, this, con_handle,
                            std::placeholders::_1);
   _acceptor->async_accept(con_handle->socket, handler);
 }
 
 void test_server::handle_accept(
-    std::list<test_server_connection>::iterator con_handle,
-    std::error_code const& err) {
+  std::list<test_server_connection>::iterator con_handle,
+  std::error_code const& err) {
   if (!err) {
     ++_num_connections;
     std::cout << "Connection from: "
@@ -107,9 +116,9 @@ void test_server::start_read(std::list<test_server_connection>::iterator& con) {
 }
 
 void test_server::handle_read(
-    std::list<test_server_connection>::iterator con_handle,
-    std::error_code const& err,
-    size_t bytes_transfered) {
+  std::list<test_server_connection>::iterator con_handle,
+  std::error_code const& err,
+  size_t bytes_transfered) {
   if (bytes_transfered > 0) {
     std::error_code err;
 
@@ -132,8 +141,10 @@ void test_server::handle_read(
         asio::write(con_handle->socket, asio::buffer(std::string{"PONG\n"}),
                     asio::transfer_all(), err);
       } else {
+        //unknow command mirror the command
+        std::string const& s{con_handle->buf};
         asio::write(con_handle->socket,
-                    asio::buffer(std::string{"Unknow command"}),
+                    asio::buffer(s),
                     asio::transfer_all(), err);
       }
     }
@@ -191,8 +202,7 @@ class AsioTest : public ::testing::Test {
 
     _thread = std::move(t);
 
-    while (!_server.get_init_done())
-      ;
+    while (!_server.get_init_done());
   }
   void TearDown() override {
     if (_server.get_init_done())

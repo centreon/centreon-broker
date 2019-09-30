@@ -35,33 +35,9 @@ using namespace com::centreon::broker::influxdb;
 connector::connector() : io::endpoint(false) {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-connector::connector(connector const& other) : io::endpoint(other) {
-  _internal_copy(other);
-}
-
-/**
  *  Destructor.
  */
 connector::~connector() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-connector& connector::operator=(connector const& other) {
-  if (this != &other) {
-    io::endpoint::operator=(other);
-    _internal_copy(other);
-  }
-  return (*this);
-}
 
 /**
  *  Set connection parameters.
@@ -100,30 +76,4 @@ std::shared_ptr<io::stream> connector::open() {
   return (std::shared_ptr<io::stream>(
       new stream(_user, _password, _addr, _port, _db, _queries_per_transaction,
                  _status_ts, _status_cols, _metric_ts, _metric_cols, _cache)));
-}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void connector::_internal_copy(connector const& other) {
-  _user = other._user;
-  _password = other._password;
-  _addr = other._addr;
-  _port = other._port;
-  _db = other._db;
-  _queries_per_transaction = other._queries_per_transaction;
-  _status_ts = other._status_ts;
-  _status_cols = other._status_cols;
-  _metric_ts = other._metric_ts;
-  _metric_cols = other._metric_cols;
-  _cache = other._cache;
-  return;
 }

@@ -37,9 +37,9 @@ namespace influxdb {
 class connector : public io::endpoint {
  public:
   connector();
-  connector(connector const& other);
   ~connector();
-  connector& operator=(connector const& other);
+  connector(connector const& other) = delete;
+  connector& operator=(connector const& other) = delete;
   void connect_to(std::string const& user,
                   std::string const& passwd,
                   std::string const& addr,
@@ -65,8 +65,6 @@ class connector : public io::endpoint {
   std::string _metric_ts;
   std::vector<column> _metric_cols;
   std::shared_ptr<persistent_cache> _cache;
-
-  void _internal_copy(connector const& other);
 };
 }  // namespace influxdb
 
