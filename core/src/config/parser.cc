@@ -251,9 +251,13 @@ void parser::_parse_endpoint(Json const& elem, endpoint& e) {
       if (object.second.is_object() && object.second["category"].is_array())
         for (auto& cat : object.second["category"].array_items())
           (e.*member).insert(cat.string_value());
-      else if (object.second.is_string() && object.second["all"].is_string()) {
+      else if (object.second.is_object() && object.second["category"].is_string())
+        (e.*member).insert(object.second["category"].string_value());
+      else if (object.second.is_string() && object.second.string_value() == "all")
         (e.*member).insert("all");
-      }
+      else
+        throw exceptions::msg() << "config parser: cannot parse key "
+                                   "'filters':  value is invalid";
     } else if (object.first == "cache")
       e.cache_enabled = parse_boolean(object.second.string_value());
     else if (object.first == "type")

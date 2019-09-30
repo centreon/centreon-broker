@@ -217,7 +217,7 @@ step[22].count = {
 -- Logs               => 17
 step[23].count = {
   log = 100,
-  continue = false,
+  continue = true,
 }
 
 -- Ba status
