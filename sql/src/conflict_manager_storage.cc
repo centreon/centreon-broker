@@ -146,6 +146,22 @@ void conflict_manager::_storage_process_service_status() {
     multiplexing::publisher().write(status);
 
     if (!ss.perf_data.empty()) {
+      /* Statements preparations */
+      if (!_metrics_insert.prepared()) {
+        _metrics_insert = _mysql.prepare_query(
+            "INSERT INTO metrics "
+            "(index_id,metric_name,unit_name,warn,warn_low,"
+            "warn_threshold_mode,crit,"
+            "crit_low,crit_threshold_mode,min,max,current_value,"
+            "data_source_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+
+        _metrics_update = _mysql.prepare_query(
+            "UPDATE metrics SET "
+            "unit_name=?,warn=?,warn_low=?,warn_threshold_mode=?,crit=?,"
+            "crit_low=?,crit_threshold_mode=?,min=?,max=?,current_value=?"
+            " WHERE metric_id=?");
+      }
+
       /* Parse perfdata. */
       std::list<storage::perfdata> pds;
       storage::parser p;
@@ -159,21 +175,6 @@ void conflict_manager::_storage_process_service_status() {
           uint32_t metric_id;
           if (it == _metric_cache.end()) {
             /* Let's insert it */
-            if (!_metrics_insert.prepared()) {
-              _metrics_insert = _mysql.prepare_query(
-                  "INSERT INTO metrics "
-                  "(index_id,metric_name,unit_name,warn,warn_low,"
-                  "warn_threshold_mode,crit,"
-                  "crit_low,crit_threshold_mode,min,max,current_value,"
-                  "data_source_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
-
-              _metrics_update = _mysql.prepare_query(
-                  "UPDATE metrics SET "
-                  "unit_name=?,warn=?,warn_low=?,warn_threshold_mode=?,crit=?,"
-                  "crit_low=?,crit_threshold_mode=?,min=?,max=?,current_value=?"
-                  " WHERE metric_id=?");
-            }
-
             _metrics_insert.bind_value_as_i32(0, index_id);
             _metrics_insert.bind_value_as_str(1, pd.name());
             _metrics_insert.bind_value_as_str(2, pd.unit());
