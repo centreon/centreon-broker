@@ -8,8 +8,8 @@ local function build(kpi_id)
     end_time = 0,
     impact_level = 1,
     in_downtime = 2,
-    first_output = 1,
-    first_perfdata = 0,
+    first_output = "first output",
+    first_perfdata = "0p;0;100",
     start_time = 30,
     status = 1,
   }
