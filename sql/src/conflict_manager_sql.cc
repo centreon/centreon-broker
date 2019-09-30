@@ -361,7 +361,7 @@ void conflict_manager::_prepare_sg_insupdate_statement() {
  *
  *  @param[in] e Uncasted acknowledgement.
  */
-void conflict_manager::_process_acknowledgement() {
+int32_t conflict_manager::_process_acknowledgement() {
   auto& p = _events.front();
   std::shared_ptr<io::data> d{std::get<0>(p)};
 
@@ -400,8 +400,8 @@ void conflict_manager::_process_acknowledgement() {
                          oss.str(),
                          true, conn);
   }
-  *std::get<2>(p) = true;
-  _events.pop_front();
+  _pop_event(p);
+  return 1;
 }
 
 /**
@@ -409,7 +409,7 @@ void conflict_manager::_process_acknowledgement() {
  *
  *  @param[in] e  Uncasted comment.
  */
-void conflict_manager::_process_comment() {
+int32_t conflict_manager::_process_comment() {
   _finish_action(-1,
                  actions::hosts | actions::host_parents | actions::instances |
                      actions::host_dependencies |
@@ -448,8 +448,8 @@ void conflict_manager::_process_comment() {
 
   _comment_insupdate << cmmnt;
   _mysql.run_statement(_comment_insupdate, oss.str(), true, conn);
-  *std::get<2>(p) = true;
-  _events.pop_front();
+  _pop_event(p);
+  return 1;
 }
 
 /**
@@ -457,10 +457,12 @@ void conflict_manager::_process_comment() {
  *
  *  @param[in] e Uncasted custom variable.
  */
-void conflict_manager::_process_custom_variable() {
+int32_t conflict_manager::_process_custom_variable() {
+  int32_t retval = 0;
   int conn = _mysql.choose_best_connection();
   _finish_action(-1, actions::custom_variables);
-  while (!_events.empty()) {
+  int32_t count = _get_events_size();
+  while (count-- > 0) {
     auto& p = _events.front();
 
     if (std::get<1>(p) != stream_type::sql)
@@ -514,9 +516,10 @@ void conflict_manager::_process_custom_variable() {
       _mysql.run_statement(_custom_variable_delete, oss.str(), true, conn);
       _add_action(conn, actions::custom_variables);
     }
-    *std::get<2>(p) = true;
-    _events.pop_front();
+    _pop_event(p);
+    retval++;
   }
+  return retval;
 }
 
 /**
@@ -524,10 +527,12 @@ void conflict_manager::_process_custom_variable() {
  *
  *  @param[in] e Uncasted custom variable status.
  */
-void conflict_manager::_process_custom_variable_status() {
+int32_t conflict_manager::_process_custom_variable_status() {
+  int32_t retval = 0;
   int conn = _mysql.choose_best_connection();
   _finish_action(-1, actions::custom_variables);
-  while (!_events.empty()) {
+  int32_t count = _get_events_size();
+  while (count-- > 0) {
     auto& p = _events.front();
 
     if (std::get<1>(p) != stream_type::sql)
@@ -563,9 +568,10 @@ void conflict_manager::_process_custom_variable_status() {
     _mysql.run_statement(
         _custom_variable_status_insupdate, oss.str(), true, conn);
     _add_action(conn, actions::custom_variables);
-    *std::get<2>(p) = true;
-    _events.pop_front();
+    _pop_event(p);
+    retval++;
   }
+  return retval;
 }
 
 /**
@@ -573,14 +579,16 @@ void conflict_manager::_process_custom_variable_status() {
  *
  *  @param[in] e Uncasted downtime.
  */
-void conflict_manager::_process_downtime() {
+int32_t conflict_manager::_process_downtime() {
+  int32_t retval = 0;
   int conn = _mysql.choose_best_connection();
   _finish_action(-1,
                  actions::hosts | actions::host_parents |
                      actions::host_dependencies |
                      actions::service_dependencies);
 
-  while (!_events.empty()) {
+  int32_t count = _get_events_size();
+  while (count-- > 0) {
     auto& p = _events.front();
 
     if (std::get<1>(p) != stream_type::sql)
@@ -639,9 +647,10 @@ void conflict_manager::_process_downtime() {
       _mysql.run_statement(_downtime_insupdate, oss.str(), true, conn);
       _add_action(conn, actions::downtimes);
     }
-    *std::get<2>(p) = true;
-    _events.pop_front();
+    _pop_event(p);
+    retval++;
   }
+  return retval;
 }
 
 /**
@@ -649,7 +658,7 @@ void conflict_manager::_process_downtime() {
  *
  *  @param[in] e Uncasted event handler.
  */
-void conflict_manager::_process_event_handler() {
+int32_t conflict_manager::_process_event_handler() {
   auto& p = _events.front();
   std::shared_ptr<io::data> d{std::get<0>(p)};
   // Cast object.
@@ -684,8 +693,8 @@ void conflict_manager::_process_event_handler() {
       oss.str(),
       true,
       _mysql.choose_connection_by_instance(_cache_host_instance[eh.host_id]));
-  *std::get<2>(p) = true;
-  _events.pop_front();
+  _pop_event(p);
+  return 1;
 }
 
 /**
@@ -693,7 +702,7 @@ void conflict_manager::_process_event_handler() {
  *
  *  @param[in] e Uncasted flapping status.
  */
-void conflict_manager::_process_flapping_status() {
+int32_t conflict_manager::_process_flapping_status() {
   auto& p = _events.front();
   std::shared_ptr<io::data> d{std::get<0>(p)};
   // Cast object.
@@ -727,8 +736,8 @@ void conflict_manager::_process_flapping_status() {
       _mysql.choose_connection_by_instance(_cache_host_instance[fs.host_id]);
   _mysql.run_statement(_flapping_status_insupdate, oss.str(), true, conn);
   _add_action(conn, actions::hosts);
-  *std::get<2>(p) = true;
-  _events.pop_front();
+  _pop_event(p);
+  return 1;
 }
 
 /**
@@ -736,12 +745,14 @@ void conflict_manager::_process_flapping_status() {
  *
  *  @param[in] e Uncasted host check.
  */
-void conflict_manager::_process_host_check() {
+int32_t conflict_manager::_process_host_check() {
+  int32_t retval = 0;
   _finish_action(-1,
                  actions::downtimes | actions::comments |
                      actions::host_dependencies | actions::host_parents |
                      actions::service_dependencies);
-  while (!_events.empty()) {
+  int32_t count = _get_events_size();
+  while (count-- > 0) {
     auto& p = _events.front();
 
     if (std::get<1>(p) != stream_type::sql)
@@ -803,9 +814,10 @@ void conflict_manager::_process_host_check() {
           << ", command: " << hc.command_line
           << ", check type: " << hc.check_type
           << ", next check: " << hc.next_check << ", now: " << now << ")";
-    *std::get<2>(p) = true;
-    _events.pop_front();
+    _pop_event(p);
+    retval++;
   }
+  return retval;
 }
 
 /**
@@ -813,14 +825,16 @@ void conflict_manager::_process_host_check() {
  *
  *  @param[in] e Uncasted host dependency.
  */
-void conflict_manager::_process_host_dependency() {
+int32_t conflict_manager::_process_host_dependency() {
+  int32_t retval = 0;
   int32_t conn = _mysql.choose_best_connection();
   _finish_action(-1,
                  actions::hosts | actions::host_parents | actions::comments |
                      actions::downtimes | actions::host_dependencies |
                      actions::service_dependencies);
 
-  while (!_events.empty()) {
+  int32_t count = _get_events_size();
+  while (count-- > 0) {
     auto& p = _events.front();
 
     if (std::get<1>(p) != stream_type::sql)
@@ -871,9 +885,10 @@ void conflict_manager::_process_host_dependency() {
       _mysql.run_query(oss.str(), "SQL: ", true, conn);
       _add_action(conn, actions::host_dependencies);
     }
-    *std::get<2>(p) = true;
-    _events.pop_front();
+    _pop_event(p);
+    retval++;
   }
+  return retval;
 }
 
 /**
@@ -881,10 +896,12 @@ void conflict_manager::_process_host_dependency() {
  *
  *  @param[in] e Uncasted host group.
  */
-void conflict_manager::_process_host_group() {
+int32_t conflict_manager::_process_host_group() {
+  int32_t retval = 0;
   int conn = _mysql.choose_best_connection();
 
-  while (!_events.empty()) {
+  int32_t count = _get_events_size();
+  while (count-- > 0) {
     auto& p = _events.front();
 
     if (std::get<1>(p) != stream_type::sql)
@@ -932,9 +949,10 @@ void conflict_manager::_process_host_group() {
         _hostgroup_cache.erase(hg.id);
       }
     }
-    *std::get<2>(p) = true;
-    _events.pop_front();
+    _pop_event(p);
+    retval++;
   }
+  return retval;
 }
 
 /**
@@ -942,11 +960,13 @@ void conflict_manager::_process_host_group() {
  *
  *  @param[in] e Uncasted host group member.
  */
-void conflict_manager::_process_host_group_member() {
+int32_t conflict_manager::_process_host_group_member() {
+  int32_t retval = 0;
   int conn = _mysql.choose_best_connection();
   _finish_action(-1, actions::hostgroups | actions::hosts);
 
-  while (!_events.empty()) {
+  int32_t count = _get_events_size();
+  while (count-- > 0) {
     auto& p = _events.front();
 
     if (std::get<1>(p) != stream_type::sql)
@@ -1031,9 +1051,10 @@ void conflict_manager::_process_host_group_member() {
       _host_group_member_delete << hgm;
       _mysql.run_statement(_host_group_member_delete, oss.str(), true, conn);
     }
-    *std::get<2>(p) = true;
-    _events.pop_front();
+    _pop_event(p);
+    retval++;
   }
+  return retval;
 }
 
 /**
@@ -1041,7 +1062,7 @@ void conflict_manager::_process_host_group_member() {
  *
  *  @param[in] e Uncasted host.
  */
-void conflict_manager::_process_host() {
+int32_t conflict_manager::_process_host() {
   _finish_action(-1,
                  actions::host_dependencies | actions::host_parents |
                      actions::downtimes | actions::comments |
@@ -1083,9 +1104,9 @@ void conflict_manager::_process_host() {
       logging::error(logging::high) << "SQL: host '" << h.host_name
                                     << "' of poller " << h.poller_id
                                     << " has no ID";
-    *std::get<2>(p) = true;
-    _events.pop_front();
   }
+  _pop_event(p);
+  return 1;
 }
 
 /**
@@ -1093,13 +1114,15 @@ void conflict_manager::_process_host() {
  *
  *  @param[in] e Uncasted host parent.
  */
-void conflict_manager::_process_host_parent() {
+int32_t conflict_manager::_process_host_parent() {
+  int32_t retval = 0;
   int32_t conn = _mysql.choose_best_connection();
   _finish_action(-1,
                  actions::hosts | actions::host_dependencies |
                      actions::comments | actions::downtimes);
 
-  while (!_events.empty()) {
+  int32_t count = _get_events_size();
+  while (count-- > 0) {
     auto& p = _events.front();
 
     if (std::get<1>(p) != stream_type::sql)
@@ -1153,9 +1176,10 @@ void conflict_manager::_process_host_parent() {
       _mysql.run_statement(_host_parent_delete, "SQL: ", false, conn);
       _add_action(conn, actions::host_parents);
     }
-    *std::get<2>(p) = true;
-    _events.pop_front();
+    _pop_event(p);
+    retval++;
   }
+  return retval;
 }
 
 /**
@@ -1163,7 +1187,7 @@ void conflict_manager::_process_host_parent() {
  *
  *  @param[in] e Uncasted host status.
  */
-void conflict_manager::_process_host_status() {
+int32_t conflict_manager::_process_host_status() {
   _finish_action(-1,
                  actions::downtimes | actions::comments |
                      actions::host_dependencies | actions::host_parents);
@@ -1210,8 +1234,8 @@ void conflict_manager::_process_host_status() {
         << ", last check: " << hs.last_check
         << ", next check: " << hs.next_check << ", now: " << now << ", state ("
         << hs.current_state << ", " << hs.state_type << "))";
-  *std::get<2>(p) = true;
-  _events.pop_front();
+  _pop_event(p);
+  return 1;
 }
 
 /**
@@ -1220,7 +1244,7 @@ void conflict_manager::_process_host_status() {
  *
  *  @param[in] e Uncasted instance.
  */
-void conflict_manager::_process_instance() {
+int32_t conflict_manager::_process_instance() {
   auto& p = _events.front();
   neb::instance& i(*static_cast<neb::instance*>(std::get<0>(p).get()));
   int32_t conn = _mysql.choose_connection_by_instance(i.poller_id);
@@ -1261,8 +1285,8 @@ void conflict_manager::_process_instance() {
   }
 
   /* We just have to set the boolean */
-  *std::get<2>(p) = true;
-  _events.pop_front();
+  _pop_event(p);
+  return 1;
 }
 
 /**
@@ -1272,7 +1296,7 @@ void conflict_manager::_process_instance() {
  *
  *  @param[in] e Uncasted instance status.
  */
-void conflict_manager::_process_instance_status() {
+int32_t conflict_manager::_process_instance_status() {
   // Cast object.
   auto& p = _events.front();
   neb::instance_status& is =
@@ -1306,8 +1330,8 @@ void conflict_manager::_process_instance_status() {
     _mysql.run_statement(_instance_status_insupdate, oss.str(), true, conn);
     _add_action(conn, actions::instances);
   }
-  *std::get<2>(p) = true;
-  _events.pop_front();
+  _pop_event(p);
+  return 1;
 }
 
 /**
@@ -1315,10 +1339,12 @@ void conflict_manager::_process_instance_status() {
  *
  *  @param[in] e Uncasted log.
  */
-void conflict_manager::_process_log() {
+int32_t conflict_manager::_process_log() {
+  int32_t retval = 0;
   int conn = _mysql.choose_best_connection();
 
-  while (!_events.empty()) {
+  int32_t count = _get_events_size();
+  while (count-- > 0) {
     auto& p = _events.front();
 
     if (std::get<1>(p) != stream_type::sql)
@@ -1348,9 +1374,10 @@ void conflict_manager::_process_log() {
     _log_insert << le;
     _mysql.run_statement(_log_insert, "SQL: ", true, conn);
     /* We just have to set the boolean */
-    *std::get<2>(p) = true;
-    _events.pop_front();
+    _pop_event(p);
+    retval++;
   }
+  return retval;
 }
 
 /**
@@ -1359,7 +1386,7 @@ void conflict_manager::_process_log() {
  *
  *  @param[in] e Uncasted module.
  */
-void conflict_manager::_process_module() {
+int32_t conflict_manager::_process_module() {
   auto& p = _events.front();
   std::shared_ptr<io::data> d{std::get<0>(p)};
 
@@ -1397,8 +1424,8 @@ void conflict_manager::_process_module() {
       _add_action(conn, actions::modules);
     }
   }
-  *std::get<2>(p) = true;
-  _events.pop_front();
+  _pop_event(p);
+  return 1;
 }
 
 /**
@@ -1406,7 +1433,7 @@ void conflict_manager::_process_module() {
  *
  *  @param[in] e Uncasted service check.
  */
-void conflict_manager::_process_service_check() {
+int32_t conflict_manager::_process_service_check() {
   _finish_action(-1,
                  actions::downtimes | actions::comments |
                      actions::host_dependencies | actions::host_parents |
@@ -1469,8 +1496,8 @@ void conflict_manager::_process_service_check() {
         << ", service: " << sc.service_id << ", command: " << sc.command_line
         << ", check_type: " << sc.check_type
         << ", next_check: " << sc.next_check << ", now: " << now << ")";
-  *std::get<2>(p) = true;
-  _events.pop_front();
+  _pop_event(p);
+  return 1;
 }
 
 /**
@@ -1478,14 +1505,16 @@ void conflict_manager::_process_service_check() {
  *
  *  @param[in] e Uncasted service dependency.
  */
-void conflict_manager::_process_service_dependency() {
+int32_t conflict_manager::_process_service_dependency() {
+  int32_t retval = 0;
   int32_t conn = _mysql.choose_best_connection();
   _finish_action(-1,
                  actions::hosts | actions::host_parents | actions::downtimes |
                      actions::comments | actions::host_dependencies |
                      actions::service_dependencies);
 
-  while (!_events.empty()) {
+  int32_t count = _get_events_size();
+  while (count-- > 0) {
     auto& p = _events.front();
 
     if (std::get<1>(p) != stream_type::sql)
@@ -1546,9 +1575,10 @@ void conflict_manager::_process_service_dependency() {
       _mysql.run_query(oss.str(), "SQL: ", false, conn);
       _add_action(conn, actions::service_dependencies);
     }
-    *std::get<2>(p) = true;
-    _events.pop_front();
+    _pop_event(p);
+    retval++;
   }
+  return retval;
 }
 
 /**
@@ -1556,10 +1586,12 @@ void conflict_manager::_process_service_dependency() {
  *
  *  @param[in] e Uncasted service group.
  */
-void conflict_manager::_process_service_group() {
+int32_t conflict_manager::_process_service_group() {
+  int32_t retval = 0;
   int32_t conn = _mysql.choose_best_connection();
 
-  while (!_events.empty()) {
+  int32_t count = _get_events_size();
+  while (count-- > 0) {
     auto& p = _events.front();
 
     if (std::get<1>(p) != stream_type::sql)
@@ -1609,9 +1641,10 @@ void conflict_manager::_process_service_group() {
         _servicegroup_cache.erase(sg.id);
       }
     }
-    *std::get<2>(p) = true;
-    _events.pop_front();
+    _pop_event(p);
+    retval++;
   }
+  return retval;
 }
 
 /**
@@ -1619,11 +1652,13 @@ void conflict_manager::_process_service_group() {
  *
  *  @param[in] e Uncasted service group member.
  */
-void conflict_manager::_process_service_group_member() {
+int32_t conflict_manager::_process_service_group_member() {
+  int32_t retval = 0;
   int32_t conn = _mysql.choose_best_connection();
   _finish_action(-1, actions::servicegroups | actions::services);
 
-  while (!_events.empty()) {
+  int32_t count = _get_events_size();
+  while (count-- > 0) {
     auto& p = _events.front();
 
     if (std::get<1>(p) != stream_type::sql)
@@ -1711,9 +1746,10 @@ void conflict_manager::_process_service_group_member() {
       _mysql.run_statement(
           _service_group_member_delete, oss.str(), false, conn);
     }
-    *std::get<2>(p) = true;
-    _events.pop_front();
+    _pop_event(p);
+    retval++;
   }
+  return retval;
 }
 
 /**
@@ -1721,7 +1757,7 @@ void conflict_manager::_process_service_group_member() {
  *
  *  @param[in] e Uncasted service.
  */
-void conflict_manager::_process_service() {
+int32_t conflict_manager::_process_service() {
   _finish_action(-1,
                  actions::host_parents | actions::comments |
                      actions::downtimes | actions::host_dependencies |
@@ -1762,8 +1798,8 @@ void conflict_manager::_process_service() {
   } else
     logging::error(logging::high) << "SQL: service '" << s.service_description
                                   << "' has no host ID or no service ID";
-  *std::get<2>(p) = true;
-  _events.pop_front();
+  _pop_event(p);
+  return 1;
 }
 
 /**
@@ -1771,7 +1807,7 @@ void conflict_manager::_process_service() {
  *
  *  @param[in] e Uncasted service status.
  */
-void conflict_manager::_process_service_status() {
+int32_t conflict_manager::_process_service_status() {
   _finish_action(-1,
                  actions::host_parents | actions::comments |
                      actions::downtimes | actions::host_dependencies |
@@ -1821,8 +1857,8 @@ void conflict_manager::_process_service_status() {
         << ", last check: " << ss.last_check
         << ", next_check: " << ss.next_check << ", now: " << now << ", state ("
         << ss.current_state << ", " << ss.state_type << "))";
-  *std::get<2>(p) = true;
-  _events.pop_front();
+  _pop_event(p);
+  return 1;
 }
 
 /**
@@ -1830,20 +1866,20 @@ void conflict_manager::_process_service_status() {
  *
  *  @param[in] e  Uncasted instance configuration.
  */
-void conflict_manager::_process_instance_configuration() {
+int32_t conflict_manager::_process_instance_configuration() {
   auto& p = _events.front();
   /* Nothing to do */
-  *std::get<2>(p) = true;
-  _events.pop_front();
+  _pop_event(p);
+  return 1;
 }
 
 /**
  *  Process a responsive instance event.
  *
  */
-void conflict_manager::_process_responsive_instance() {
+int32_t conflict_manager::_process_responsive_instance() {
   auto& p = _events.front();
   /* Nothing to do */
-  *std::get<2>(p) = true;
-  _events.pop_front();
+  _pop_event(p);
+  return 1;
 }
