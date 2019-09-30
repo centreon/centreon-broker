@@ -40,8 +40,9 @@ namespace sql {
 class stream : public io::stream {
  public:
   stream(database_config const& dbcfg,
-         unsigned int cleanup_check_interval,
-         unsigned int instance_timeout,
+         uint32_t cleanup_check_interval,
+         uint32_t loop_timeout,
+         uint32_t instance_timeout,
          bool with_state_events);
   stream(stream const& other) = delete;
   stream& operator=(stream const& other) = delete;

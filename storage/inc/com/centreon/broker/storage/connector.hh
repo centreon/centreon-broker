@@ -33,29 +33,24 @@ namespace storage {
  *  Send perfdata in a Centreon Storage database.
  */
 class connector : public io::endpoint {
+  database_config _db_cfg;
+  uint32_t _interval_length;
+  uint32_t _rebuild_check_interval;
+  uint32_t _rrd_len;
+  bool _store_in_data_bin;
+
  public:
   connector();
-  connector(connector const& other);
-  ~connector();
-  connector& operator=(connector const& other);
+  connector(connector const& other) = delete;
+  ~connector() = default;
+  connector& operator=(connector const& other) = delete;
   bool operator==(connector const& other);
   void connect_to(database_config const& db_cfg,
-                  unsigned int rrd_len,
-                  unsigned int interval_length,
-                  unsigned int rebuild_check_interval,
-                  bool store_in_data_bin = true,
-                  bool insert_in_index_data = false);
+                  uint32_t rrd_len,
+                  uint32_t interval_length,
+                  uint32_t rebuild_check_interval,
+                  bool store_in_data_bin = true);
   std::shared_ptr<io::stream> open();
-
- private:
-  void _internal_copy(connector const& other);
-
-  database_config _db_cfg;
-  bool _insert_in_index_data;
-  unsigned int _interval_length;
-  unsigned int _rebuild_check_interval;
-  unsigned int _rrd_len;
-  bool _store_in_data_bin;
 };
 }  // namespace storage
 

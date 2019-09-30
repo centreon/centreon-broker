@@ -388,6 +388,7 @@ void conflict_manager::_process_acknowledgement() {
       _acknowledgement_insupdate = qp.prepare_insert_or_update(_mysql);
     }
 
+    int32_t conn = _mysql.choose_connection_by_instance(ack.poller_id);
     // Process object.
     std::ostringstream oss;
     oss << "SQL: could not store acknowledgement (poller: " << ack.poller_id
@@ -397,8 +398,7 @@ void conflict_manager::_process_acknowledgement() {
     _acknowledgement_insupdate << ack;
     _mysql.run_statement(_acknowledgement_insupdate,
                          oss.str(),
-                         true,
-                         _mysql.choose_connection_by_instance(ack.poller_id));
+                         true, conn);
   }
   *std::get<2>(p) = true;
   _events.pop_front();

@@ -34,35 +34,6 @@ using namespace com::centreon::broker::storage;
 connector::connector() : io::endpoint(false) {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-connector::connector(connector const& other) : io::endpoint(other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-connector::~connector() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-connector& connector::operator=(connector const& other) {
-  if (this != &other) {
-    io::endpoint::operator=(other);
-    _internal_copy(other);
-  }
-  return (*this);
-}
-
-/**
  *  Comparaison operator for test purpose.
  *
  *  @param[in] other  Object to compare
@@ -73,8 +44,7 @@ bool connector::operator==(const connector& other) {
   if (this != &other) {
     return _db_cfg == other._db_cfg && _rrd_len == other._rrd_len &&
            _rebuild_check_interval == other._rebuild_check_interval &&
-           _store_in_data_bin == other._store_in_data_bin &&
-           _insert_in_index_data == other._insert_in_index_data;
+           _store_in_data_bin == other._store_in_data_bin;
   }
   return true;
 }
@@ -89,21 +59,17 @@ bool connector::operator==(const connector& other) {
  *                                     must check for graph rebuild.
  *  @param[in] store_in_data_bin       True to store performance data in
  *                                     the data_bin table.
- *  @param[in] insert_in_index_data    Create entries in index_data.
  */
 void connector::connect_to(database_config const& db_cfg,
-                           unsigned int rrd_len,
-                           unsigned int interval_length,
-                           unsigned int rebuild_check_interval,
-                           bool store_in_data_bin,
-                           bool insert_in_index_data) {
+                           uint32_t rrd_len,
+                           uint32_t interval_length,
+                           uint32_t rebuild_check_interval,
+                           bool store_in_data_bin) {
   _db_cfg = db_cfg;
   _rrd_len = rrd_len;
   _interval_length = interval_length;
   _rebuild_check_interval = rebuild_check_interval;
   _store_in_data_bin = store_in_data_bin;
-  _insert_in_index_data = insert_in_index_data;
-  return;
 }
 
 /**
@@ -115,28 +81,10 @@ void connector::connect_to(database_config const& db_cfg,
  *  @return Storage connection object.
  */
 std::shared_ptr<io::stream> connector::open() {
-  return (std::shared_ptr<io::stream>(
-      new stream(_db_cfg, _rrd_len, _interval_length, _rebuild_check_interval,
-                 _store_in_data_bin, _insert_in_index_data)));
-}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void connector::_internal_copy(connector const& other) {
-  _db_cfg = other._db_cfg;
-  _insert_in_index_data = other._insert_in_index_data;
-  _interval_length = other._interval_length;
-  _rebuild_check_interval = other._rebuild_check_interval;
-  _rrd_len = other._rrd_len;
-  _store_in_data_bin = other._store_in_data_bin;
-  return;
+  return std::shared_ptr<io::stream>(
+      std::make_shared<stream>(_db_cfg,
+                               _rrd_len,
+                               _interval_length,
+                               _rebuild_check_interval,
+                               _store_in_data_bin));
 }

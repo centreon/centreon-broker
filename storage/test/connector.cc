@@ -26,21 +26,6 @@
 
 using namespace com::centreon::broker;
 
-TEST(StorageConnector, Connector) {
-  storage::connector con;
-  storage::connector con2;
-  database_config cfg;
-
-  con.connect_to(cfg, 5, 6, 7);
-  con2 = con;
-
-  storage::connector con3{con2};
-
-  ASSERT_TRUE(con == con3);
-  ASSERT_TRUE(con2 == con3);
-  ASSERT_TRUE(con == con);
-}
-
 TEST(StorageFactory, Factory) {
   std::shared_ptr<persistent_cache> cache;
   config::endpoint cfg;
@@ -59,7 +44,7 @@ TEST(StorageFactory, Factory) {
 
   database_config db_cfg(cfg);
   storage::connector con;
-  con.connect_to(cfg, 42, 60, 300, true, false);
+  con.connect_to(cfg, 42, 60, 300, true);
 
   ASSERT_TRUE(*endp == con);
 
@@ -85,14 +70,13 @@ TEST(StorageFactory, FactoryWithFullConf) {
   cfg.params["interval"] = "43";
   cfg.params["rebuild_check_interval"] = "44";
   cfg.params["store_in_data_bin"] = "0";
-  cfg.params["insert_in_index_data"] = "1";
   ASSERT_FALSE(factory.has_endpoint(cfg));
   cfg.type = "storage";
   storage::connector *endp = static_cast<storage::connector *>(factory.new_endpoint(cfg, is_acceptor, cache));
 
   database_config db_cfg(cfg);
   storage::connector con;
-  con.connect_to(cfg, 42, 43, 44, false, true);
+  con.connect_to(cfg, 42, 43, 44, false);
 
   ASSERT_TRUE(*endp == con);
 

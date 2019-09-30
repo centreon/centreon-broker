@@ -68,8 +68,10 @@ conflict_manager& conflict_manager::instance() {
 }
 
 conflict_manager::conflict_manager(database_config const& dbcfg,
+                                   uint32_t loop_timeout,
                                    uint32_t instance_timeout)
     : _exit{false},
+      _loop_timeout{loop_timeout},
       _max_pending_queries{dbcfg.get_queries_per_transaction()},
       _pending_queries{0},
       _mysql{dbcfg},
@@ -112,11 +114,12 @@ bool conflict_manager::init_storage(bool store_in_db,
 }
 
 void conflict_manager::init_sql(database_config const& dbcfg,
+                                uint32_t loop_timeout,
                                 uint32_t instance_timeout) {
   std::lock_guard<std::mutex> lk(_init_m);
-  _singleton = new conflict_manager(dbcfg, instance_timeout);
-  _init_cv.notify_all();
+  _singleton = new conflict_manager(dbcfg, loop_timeout, instance_timeout);
   _singleton->_action.resize(_singleton->_mysql.connections_count());
+  _init_cv.notify_all();
 }
 
 void conflict_manager::_load_deleted_instances() {
@@ -276,52 +279,71 @@ void conflict_manager::_load_caches() {
  */
 void conflict_manager::_callback() {
   _load_caches();
-  while (!_should_exit()) {
-    _insert_perfdatas();
-    std::unique_lock<std::mutex> lk(_loop_m);
 
-    /* The loop is waiting for 1s or for _pending_queries to be equal to
-     * _max_pending_queries */
-    if (_loop_cv.wait_for(lk, std::chrono::seconds(1), [this]() {
-          return _pending_queries == _max_pending_queries;
-        }))
-      logging::info(logging::low)
-          << "conflict_manager: sending max pending queries ("
-          << _max_pending_queries << ").";
-    else
-      logging::info(logging::low)
-          << "conflict_manager: timeout reached - sending " << _pending_queries
-          << " queries.";
+  do {
+    try {
+      while (!_should_exit()) {
+        /* Time to send perfdatas to rrd ; no lock needed, it is this thread
+         * that
+         * fill this queue. */
+        _insert_perfdatas();
 
-    while (!_events.empty()) {
-      std::shared_ptr<io::data> d{std::get<0>(_events.front())};
-      uint32_t type{d->type()};
-      uint16_t cat{io::events::category_of_type(type)};
-      uint16_t elem{io::events::element_of_type(type)};
-      if (std::get<1>(_events.front()) == sql && cat == io::events::neb)
-          (this->*(_neb_processing_table[elem]))();
-      else if (std::get<1>(_events.front()) == storage &&
-               type == neb::service_status::static_type())
-          _storage_process_service_status();
-      else {
         logging::info(logging::low)
-          << "conflict_manager: event of type " << type << " throw away";
-        *std::get<2>(_events.front()) = true;
-        _events.pop_front();
+            << "conflict_manager: main loop initialized with a timeout of "
+            << _loop_timeout << " seconds.";
+        std::unique_lock<std::mutex> lk(_loop_m);
+        /* The loop is waiting for 1s or for _pending_queries to be equal to
+         * _max_pending_queries */
+        if (_loop_cv.wait_for(
+                lk, std::chrono::seconds(_loop_timeout), [this]() {
+                  return _pending_queries == _max_pending_queries;
+                }))
+          logging::info(logging::low)
+              << "conflict_manager: sending max pending queries ("
+              << _max_pending_queries << ").";
+        else
+          logging::info(logging::low)
+              << "conflict_manager: timeout reached - sending "
+              << _pending_queries << " queries.";
+
+        /* Time to clear the queue */
+        while (!_events.empty()) {
+          std::shared_ptr<io::data> d{std::get<0>(_events.front())};
+          uint32_t type{d->type()};
+          uint16_t cat{io::events::category_of_type(type)};
+          uint16_t elem{io::events::element_of_type(type)};
+          if (std::get<1>(_events.front()) == sql && cat == io::events::neb)
+            (this->*(_neb_processing_table[elem]))();
+          else if (std::get<1>(_events.front()) == storage &&
+                   type == neb::service_status::static_type())
+            _storage_process_service_status();
+          else {
+            logging::info(logging::low) << "conflict_manager: event of type "
+                                        << type << " throw away";
+            *std::get<2>(_events.front()) = true;
+            _events.pop_front();
+          }
+        }
+
+        /* Here, just before looping, we commit. */
+        _finish_actions();
+        if (_pending_queries == 0)
+          logging::debug(logging::high)
+              << "conflict_manager: acknowledgement - no pending events";
+        else
+          logging::debug(logging::high)
+              << "conflict_manager: acknowledgement - still "
+              << _pending_queries << " not acknowledged";
+
+        /* Are there unresonsive instances? */
+        _update_hosts_and_services_of_unresponsive_instances();
       }
     }
-    _finish_actions();
-    if (_pending_queries == 0)
-      logging::debug(logging::high)
-          << "conflict_manager: acknowledgement - no pending events";
-    else
-      logging::debug(logging::high)
-          << "conflict_manager: acknowledgement - still " << _pending_queries
-          << " not acknowledged";
-
-    /* Are there unresonsive instances? */
-    _update_hosts_and_services_of_unresponsive_instances();
-  }
+    catch (std::exception const& e) {
+      logging::error(logging::high)
+          << "conflict_manager: error in the main loop: " << e.what();
+    }
+  } while (!_should_exit());
 }
 
 /**
@@ -422,4 +444,10 @@ void conflict_manager::_add_action(int32_t conn, actions action) {
   }
   else
     _action[conn] |= action;
+}
+
+void conflict_manager::exit() {
+  std::lock_guard<std::mutex> lock(_loop_m);
+  _exit = true;
+  _thread.join();
 }

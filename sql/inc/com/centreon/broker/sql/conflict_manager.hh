@@ -126,8 +126,9 @@ class conflict_manager {
   std::vector<uint32_t> _action;
 
   mutable std::mutex _loop_m;
-  std::condition_variable _loop_cv;
   bool _exit;
+  uint32_t _loop_timeout;
+  std::condition_variable _loop_cv;
   uint32_t _max_pending_queries;
   uint32_t _pending_queries;
   mysql _mysql;
@@ -182,8 +183,11 @@ class conflict_manager {
 
   database::mysql_stmt _index_data_insert;
   database::mysql_stmt _metrics_insert;
+  database::mysql_stmt _metrics_update;
 
-  conflict_manager(database_config const& dbcfg, uint32_t instance_timeout);
+  conflict_manager(database_config const& dbcfg,
+                   uint32_t loop_timeout,
+                   uint32_t instance_timeout);
   conflict_manager() = delete;
   conflict_manager& operator=(conflict_manager const& other) = delete;
   conflict_manager(conflict_manager const& other) = delete;
@@ -235,11 +239,14 @@ class conflict_manager {
   void _insert_perfdatas();
 
  public:
-  static void init_sql(database_config const& dbcfg, uint32_t instance_timeout);
+  static void init_sql(database_config const& dbcfg,
+                       uint32_t loop_timeout,
+                       uint32_t instance_timeout);
   static bool init_storage(bool store_in_db,
                            uint32_t rrd_len,
                            uint32_t interval_length);
   static conflict_manager& instance();
+  void exit();
 
   void send_event(stream_type c, std::shared_ptr<io::data> const& e);
   int32_t get_acks(stream_type c);

@@ -431,8 +431,9 @@ void stream::_process_log_issue(std::shared_ptr<io::data> const& e) {
  *  @param[in] with_state_events       With state events.
  */
 stream::stream(database_config const& dbcfg,
-               unsigned int cleanup_check_interval,
-               unsigned int instance_timeout,
+               uint32_t cleanup_check_interval,
+               uint32_t loop_timeout,
+               uint32_t instance_timeout,
                bool with_state_events)
     : _mysql(dbcfg),
 //      _cleanup_thread(dbcfg.get_type(),
@@ -442,21 +443,14 @@ stream::stream(database_config const& dbcfg,
 //                      dbcfg.get_password(),
 //                      dbcfg.get_name(),
 //                      cleanup_check_interval),
-      _pending_events(0),
+      _pending_events{0},
       _with_state_events(with_state_events) {
-//      _transversal_mysql(database_config(dbcfg.get_type(),
-//                                         dbcfg.get_host(),
-//                                         dbcfg.get_port(),
-//                                         dbcfg.get_user(),
-//                                         dbcfg.get_password(),
-//                                         dbcfg.get_name())),
-//      _oldest_timestamp(std::numeric_limits<time_t>::max()) {
 //  // Get oudated instances.
 //
 //  // Run cleanup thread.
 //  _cleanup_thread.start();
 
-  conflict_manager::init_sql(dbcfg, instance_timeout);
+  conflict_manager::init_sql(dbcfg, loop_timeout, instance_timeout);
 }
 
 /**
@@ -466,6 +460,7 @@ stream::~stream() {
   // Stop cleanup thread.
   //_cleanup_thread.exit();
   logging::debug(logging::low) << "SQL: sql stream is closed.";
+  conflict_manager::instance().exit();
   mysql_manager::instance().clear();
 }
 
