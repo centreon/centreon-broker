@@ -77,7 +77,7 @@ TEST_F(StatsTest, Builder) {
   ASSERT_TRUE(err.empty());
   ASSERT_TRUE(result.is_object());
   ASSERT_EQ(result["version"], misc::string::get(CENTREON_BROKER_VERSION));
-  ASSERT_EQ(result["pid"], misc::string::get(getpid()));
+  ASSERT_EQ(result["pid"], getpid());
   ASSERT_TRUE(result["now"].is_string());
   ASSERT_TRUE(result["asio_version"].is_string());
   ASSERT_TRUE(result["mysql manager"].is_object());
@@ -100,8 +100,8 @@ TEST_F(StatsTest, BuilderWithModules) {
 
   ASSERT_TRUE(err.empty());
   ASSERT_TRUE(result.is_object());
-  ASSERT_EQ(result["version"],misc::string::get(CENTREON_BROKER_VERSION));
-  ASSERT_EQ(result["pid"], misc::string::get(getpid()));
+  ASSERT_EQ(result["version"],CENTREON_BROKER_VERSION);
+  ASSERT_EQ(result["pid"], getpid());
   ASSERT_TRUE(result["now"].is_string());
   ASSERT_TRUE(result["asio_version"].is_string());
   ASSERT_TRUE(result["mysql manager"].is_object());
@@ -257,8 +257,8 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
 
   ASSERT_TRUE(err.empty());
   ASSERT_TRUE(result.is_object());
-  ASSERT_EQ(result["version"], misc::string::get(CENTREON_BROKER_VERSION));
-  ASSERT_EQ(result["pid"], misc::string::get(getpid()));
+  ASSERT_EQ(result["version"].string_value(), CENTREON_BROKER_VERSION);
+  ASSERT_EQ(result["pid"].number_value(), getpid());
   ASSERT_TRUE(result["now"].is_string());
   ASSERT_TRUE(result["asio_version"].is_string());
   ASSERT_TRUE(result["mysql manager"].is_object());
@@ -279,8 +279,8 @@ TEST_F(StatsTest, CopyCtor) {
 
   ASSERT_TRUE(err.empty());
   ASSERT_TRUE(result.is_object());
-  ASSERT_EQ(result["version"], misc::string::get(CENTREON_BROKER_VERSION));
-  ASSERT_EQ(result["pid"], misc::string::get(getpid()));
+  ASSERT_EQ(result["version"].string_value(), CENTREON_BROKER_VERSION);
+  ASSERT_EQ(result["pid"].number_value(), getpid());
   ASSERT_TRUE(result["now"].is_string());
   ASSERT_TRUE(result["asio_version"].is_string());
   ASSERT_TRUE(result["mysql manager"].is_object());
@@ -326,8 +326,8 @@ TEST_F(StatsTest, Worker) {
 
   ASSERT_TRUE(err.empty());
   ASSERT_TRUE(result.is_object());
-  ASSERT_EQ(result["version"], misc::string::get(CENTREON_BROKER_VERSION));
-  ASSERT_EQ(result["pid"], misc::string::get(getpid()));
+  ASSERT_EQ(result["version"].string_value(), CENTREON_BROKER_VERSION);
+  ASSERT_EQ(result["pid"].number_value(), getpid());
   ASSERT_TRUE(result["now"].is_string());
   ASSERT_TRUE(result["asio_version"].is_string());
   ASSERT_TRUE(result["mysql manager"].is_object());
@@ -370,8 +370,8 @@ TEST_F(StatsTest, WorkerPool) {
 
   ASSERT_TRUE(err.empty());
   ASSERT_TRUE(result.is_object());
-  ASSERT_EQ(result["version"], misc::string::get(CENTREON_BROKER_VERSION));
-  ASSERT_EQ(result["pid"], misc::string::get(getpid()));
+  ASSERT_EQ(result["version"].string_value(), CENTREON_BROKER_VERSION);
+  ASSERT_EQ(result["pid"].number_value(), getpid());
   ASSERT_TRUE(result["now"].is_string());
   ASSERT_TRUE(result["asio_version"].is_string());
   ASSERT_TRUE(result["mysql manager"].is_object());
