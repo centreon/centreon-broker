@@ -40,19 +40,21 @@ add_executable("${WATCHDOG}"
 )
 target_link_libraries("${WATCHDOG}" "roker")
 
-# Testing.
-set(
-  TESTS_SOURCES
-  ${TESTS_SOURCES}
-  "${TEST_DIR}/watchdog.cc"
-  PARENT_SCOPE
-)
-set(
-  TESTS_LIBRARIES
-  ${TESTS_LIBRARIES}
-  "${STORAGE}"
-  PARENT_SCOPE
-)
+if (WITH_WATCHDOG_TESTS)
+  # Testing.
+  set(
+    TESTS_SOURCES
+    ${TESTS_SOURCES}
+    "${TEST_DIR}/watchdog.cc"
+    PARENT_SCOPE
+  )
+  set(
+    TESTS_LIBRARIES
+    ${TESTS_LIBRARIES}
+    "${STORAGE}"
+    PARENT_SCOPE
+  )
+endif (WITH_SQL_TESTS)
 
 # Install rule.
 install(TARGETS "${WATCHDOG}"
