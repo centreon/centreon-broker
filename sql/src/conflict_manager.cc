@@ -32,35 +32,34 @@ conflict_manager* conflict_manager::_singleton = nullptr;
 std::mutex conflict_manager::_init_m;
 std::condition_variable conflict_manager::_init_cv;
 
-void (conflict_manager::*const conflict_manager::_neb_processing_table[])() = {
-    nullptr,
-    &conflict_manager::_process_acknowledgement,
-    &conflict_manager::_process_comment,
-    &conflict_manager::_process_custom_variable,
-    &conflict_manager::_process_custom_variable_status,
-    &conflict_manager::_process_downtime,
-    &conflict_manager::_process_event_handler,
-    &conflict_manager::_process_flapping_status,
-    &conflict_manager::_process_host_check,
-    &conflict_manager::_process_host_dependency,
-    &conflict_manager::_process_host_group,
-    &conflict_manager::_process_host_group_member,
-    &conflict_manager::_process_host,
-    &conflict_manager::_process_host_parent,
-    &conflict_manager::_process_host_status,
-    &conflict_manager::_process_instance,
-    &conflict_manager::_process_instance_status,
-    &conflict_manager::_process_log,
-    &conflict_manager::_process_module,
-    &conflict_manager::_process_service_check,
-    &conflict_manager::_process_service_dependency,
-    &conflict_manager::_process_service_group,
-    &conflict_manager::_process_service_group_member,
-    &conflict_manager::_process_service,
-    &conflict_manager::_process_service_status,
-    &conflict_manager::_process_instance_configuration,
-    &conflict_manager::_process_responsive_instance,
-};
+int32_t (conflict_manager::*const conflict_manager::_neb_processing_table[])() =
+    {nullptr,
+     &conflict_manager::_process_acknowledgement,
+     &conflict_manager::_process_comment,
+     &conflict_manager::_process_custom_variable,
+     &conflict_manager::_process_custom_variable_status,
+     &conflict_manager::_process_downtime,
+     &conflict_manager::_process_event_handler,
+     &conflict_manager::_process_flapping_status,
+     &conflict_manager::_process_host_check,
+     &conflict_manager::_process_host_dependency,
+     &conflict_manager::_process_host_group,
+     &conflict_manager::_process_host_group_member,
+     &conflict_manager::_process_host,
+     &conflict_manager::_process_host_parent,
+     &conflict_manager::_process_host_status,
+     &conflict_manager::_process_instance,
+     &conflict_manager::_process_instance_status,
+     &conflict_manager::_process_log,
+     &conflict_manager::_process_module,
+     &conflict_manager::_process_service_check,
+     &conflict_manager::_process_service_dependency,
+     &conflict_manager::_process_service_group,
+     &conflict_manager::_process_service_group_member,
+     &conflict_manager::_process_service,
+     &conflict_manager::_process_service_status,
+     &conflict_manager::_process_instance_configuration,
+     &conflict_manager::_process_responsive_instance, };
 
 conflict_manager& conflict_manager::instance() {
   assert(_singleton);
@@ -76,6 +75,9 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
       _pending_queries{0},
       _mysql{dbcfg},
       _instance_timeout{instance_timeout},
+      _still_pending_events{},
+      _loop_duration{},
+      _speed{},
       _oldest_timestamp{std::numeric_limits<time_t>::max()} {
   _thread = std::move(std::thread(&conflict_manager::_callback, this));
 }
@@ -278,7 +280,12 @@ void conflict_manager::_load_caches() {
     _metric_cache.clear();
 
     std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result("SELECT metric_id,index_id,metric_name,unit_name,warn,warn_low,warn_threshold_mode,crit,crit_low,crit_threshold_mode,min,max,current_value,data_source_type FROM metrics", &promise);
+    _mysql.run_query_and_get_result(
+        "SELECT "
+        "metric_id,index_id,metric_name,unit_name,warn,warn_low,warn_threshold_"
+        "mode,crit,crit_low,crit_threshold_mode,min,max,current_value,data_"
+        "source_type FROM metrics",
+        &promise);
 
     try {
       mysql_result res{promise.get_future().get()};
@@ -324,50 +331,97 @@ void conflict_manager::_callback() {
         logging::info(logging::low)
             << "conflict_manager: main loop initialized with a timeout of "
             << _loop_timeout << " seconds.";
+
         std::chrono::system_clock::time_point now0 =
             std::chrono::system_clock::now();
         std::unique_lock<std::mutex> lk(_loop_m);
-        /* The loop is waiting for 1s or for _pending_queries to be equal to
-         * _max_pending_queries */
-        bool timeout = false;
-        if (_loop_cv.wait_for(
-                lk, std::chrono::seconds(_loop_timeout), [this]() {
-                  return _pending_queries >= _max_pending_queries;
-                }))
-          logging::info(logging::low)
-              << "conflict_manager: sending max pending queries ("
-              << _max_pending_queries << ").";
-        else {
-          logging::info(logging::low)
-              << "conflict_manager: timeout reached - sending "
-              << _pending_queries << " queries.";
-          timeout = true;
-        }
 
-        /* Get some stats */
-        {
-          std::lock_guard<std::mutex> lk(_stat_m);
-          _pending_events = _events.size();
-          _cv_timeout = timeout;
-        }
-        /* Time to clear the queue */
-        std::chrono::system_clock::time_point now1 =
-            std::chrono::system_clock::now();
-        while (!_events.empty()) {
+        uint32_t count = 0;
+        int32_t timeout = 0;
+        int32_t timeout_limit = _loop_timeout * 1000;
+        std::chrono::system_clock::time_point previous_time(now0);
+
+        /* Let's wait for some events before entering in the loop */
+        if (_loop_cv.wait_for(lk, std::chrono::seconds(1), [this]() {
+              return !_events.empty();
+            }))
+          logging::info(logging::low)
+              << "conflict_manager: events to send to the database received.";
+        else
+          logging::info(logging::low)
+              << "conflict_manager: timeout reached while waiting for events.";
+
+        /* During this loop, connectors still fill the queue when they receive
+         * new events. To allow that, we have to release the mutex. We have the
+         * chance that the queue does not move old objects when it adds new
+         * ones. So when we access to events already there, we don't have to
+         * maintain the lock.
+         * We just set the lock when we have to pop the events (when they are
+         * recorded on the DB).
+         * The loop is hold by three conditions that are:
+         * - events.empty() no more events to treat.
+         * - count < _max_pending_queries: we don't want to commit everytimes,
+         *   so we keep this count to know if we reached the
+         *   _max_pending_queries parameter.
+         * - timeout < timeout_limit: If the loop lives to long, we interrupt it
+         *   it is necessary for cleanup operations.
+         */
+        while (!_events.empty() && count < _max_pending_queries &&
+               timeout < timeout_limit) {
           std::shared_ptr<io::data> d{std::get<0>(_events.front())};
+          lk.unlock();
           uint32_t type{d->type()};
           uint16_t cat{io::events::category_of_type(type)};
           uint16_t elem{io::events::element_of_type(type)};
           if (std::get<1>(_events.front()) == sql && cat == io::events::neb)
-            (this->*(_neb_processing_table[elem]))();
+            count += (this->*(_neb_processing_table[elem]))();
           else if (std::get<1>(_events.front()) == storage &&
                    type == neb::service_status::static_type())
-            _storage_process_service_status();
+            count += _storage_process_service_status();
           else {
             logging::info(logging::low) << "conflict_manager: event of type "
                                         << type << " throw away";
             *std::get<2>(_events.front()) = true;
             _events.pop_front();
+            count++;
+          }
+          std::chrono::system_clock::time_point now1 =
+              std::chrono::system_clock::now();
+
+          timeout = std::chrono::duration_cast<std::chrono::milliseconds>(
+              now1 - now0).count();
+          lk.lock();
+          if (_events.empty()) {
+            logging::debug(logging::low) << "conflict_manager: no more events "
+                                            "in the loop, let's wait for them";
+            /* There is no more events to send to the DB, let's wait for new
+             * ones. */
+            if (_loop_cv.wait_for(lk, std::chrono::seconds(1), [this]() {
+                  return !_events.empty();
+                }))
+              logging::info(logging::low) << "conflict_manager: new events to "
+                                             "send to the database received.";
+            else
+              logging::info(logging::low) << "conflict_manager: timeout "
+                                             "reached while waiting for "
+                                             "new events.";
+          }
+
+          if (std::chrono::duration_cast<std::chrono::milliseconds>(
+                  now1 - previous_time).count() > 1000) {
+            previous_time = now1;
+            /* Get some stats */
+            {
+              std::lock_guard<std::mutex> lk(_stat_m);
+              _still_pending_events = _events.size();
+              _loop_duration =
+                  std::chrono::duration_cast<std::chrono::milliseconds>(
+                      now1 - now0).count();
+              if (_loop_duration > 0)
+                _speed = (count * 1000.0) / _loop_duration;
+              else
+                _speed = NAN;
+            }
           }
         }
 
@@ -390,8 +444,13 @@ void conflict_manager::_callback() {
         {
           std::lock_guard<std::mutex> lk(_stat_m);
           _still_pending_events = _events.size();
-          _delay_for_input = std::chrono::duration_cast<std::chrono::milliseconds>(now1 - now0).count();
-          _delay_for_output = std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now1).count();
+          _loop_duration =
+              std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now0)
+                  .count();
+          if (_loop_duration > 0)
+            _speed = (count * 1000.0) / _loop_duration;
+          else
+            _speed = NAN;
         }
       }
     }
@@ -426,6 +485,7 @@ void conflict_manager::send_event(conflict_manager::stream_type c,
   _pending_queries++;
   _timeline[c].push_back(false);
   _events.push_back(std::make_tuple(e, c, &_timeline[c].back()));
+  _loop_cv.notify_all();
 }
 
 /**
@@ -468,6 +528,12 @@ void conflict_manager::_finish_action(int32_t conn, uint32_t action) {
   }
 }
 
+/**
+ *  The main objective of this method is to commit queries sent to the db.
+ *  When the commit is done (all the connections commit), we count how
+ *  many events can be acknowledged. So we can also update the number of pending
+ *  events.
+ */
 void conflict_manager::_finish_actions() {
   _mysql.commit();
   for (uint32_t& v : _action)
@@ -511,9 +577,15 @@ void conflict_manager::exit() {
 json11::Json::object conflict_manager::get_statistics() {
   json11::Json::object retval;
   std::lock_guard<std::mutex> lk(_stat_m);
-  retval["acked events"] = _pending_events - _still_pending_events;
-  retval["max_event_size reached"] = !_cv_timeout;
-  retval["delay for input events"] = std::to_string(_delay_for_input) + " ms";
-  retval["delay for output events"] = std::to_string(_delay_for_output) + " ms";
+  retval["pending events"] = _still_pending_events;
+  retval["loop duration"] = std::to_string(_loop_duration) + " ms";
+  retval["speed"] = std::to_string(_speed) + " events/s";
   return retval;
+}
+
+void conflict_manager::_pop_event(
+    std::tuple<std::shared_ptr<io::data>, stream_type, bool*>& p) {
+  std::lock_guard<std::mutex> lk(_loop_m);
+  *std::get<2>(p) = true;
+  _events.pop_front();
 }

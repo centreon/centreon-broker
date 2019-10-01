@@ -98,7 +98,7 @@ class conflict_manager {
     double value;
   };
 
-  static void (conflict_manager::*const _neb_processing_table[])();
+  static int32_t (conflict_manager::*const _neb_processing_table[])();
   static conflict_manager* _singleton;
   static std::mutex _init_m;
   static std::condition_variable _init_cv;
@@ -117,18 +117,21 @@ class conflict_manager {
       _events;
 
   /* Since the sql and storage streams use this conflict_manager, we must
-   * manage two queues, the first for sql and the second one for storage.
+   * manage two queues, the first one for sql and the second one for storage.
    * So they will know when their events will be released. */
   std::array<std::deque<bool>, 2> _timeline;
+
+  /* This array stores how many events for each connector have been
+   * acknowledged. */
   std::array<int32_t, 2> _ack;
 
   /* Current actions by connection */
   std::vector<uint32_t> _action;
 
   mutable std::mutex _loop_m;
+  std::condition_variable _loop_cv;
   bool _exit;
   uint32_t _loop_timeout;
-  std::condition_variable _loop_cv;
   uint32_t _max_pending_queries;
   uint32_t _pending_queries;
   mysql _mysql;
@@ -141,11 +144,9 @@ class conflict_manager {
 
   /* Stats */
   std::mutex _stat_m;
-  int32_t _pending_events;
-  bool _cv_timeout;
   int32_t _still_pending_events;
-  int32_t _delay_for_input;
-  int32_t _delay_for_output;
+  int32_t _loop_duration;
+  int32_t _speed;
 
   std::unordered_set<uint32_t> _cache_deleted_instance_id;
   std::unordered_map<uint32_t, uint32_t> _cache_host_instance;
@@ -207,34 +208,34 @@ class conflict_manager {
   void _update_timestamp(uint32_t instance_id);
   bool _is_valid_poller(uint32_t instance_id);
 
-  void _process_acknowledgement();
-  void _process_comment();
-  void _process_custom_variable();
-  void _process_custom_variable_status();
-  void _process_downtime();
-  void _process_event_handler();
-  void _process_flapping_status();
-  void _process_host_check();
-  void _process_host_dependency();
-  void _process_host_group();
-  void _process_host_group_member();
-  void _process_host();
-  void _process_host_parent();
-  void _process_host_status();
-  void _process_instance();
-  void _process_instance_status();
-  void _process_log();
-  void _process_module();
-  void _process_service_check();
-  void _process_service_dependency();
-  void _process_service_group();
-  void _process_service_group_member();
-  void _process_service();
-  void _process_service_status();
-  void _process_instance_configuration();
-  void _process_responsive_instance();
+  int32_t _process_acknowledgement();
+  int32_t _process_comment();
+  int32_t _process_custom_variable();
+  int32_t _process_custom_variable_status();
+  int32_t _process_downtime();
+  int32_t _process_event_handler();
+  int32_t _process_flapping_status();
+  int32_t _process_host_check();
+  int32_t _process_host_dependency();
+  int32_t _process_host_group();
+  int32_t _process_host_group_member();
+  int32_t _process_host();
+  int32_t _process_host_parent();
+  int32_t _process_host_status();
+  int32_t _process_instance();
+  int32_t _process_instance_status();
+  int32_t _process_log();
+  int32_t _process_module();
+  int32_t _process_service_check();
+  int32_t _process_service_dependency();
+  int32_t _process_service_group();
+  int32_t _process_service_group_member();
+  int32_t _process_service();
+  int32_t _process_service_status();
+  int32_t _process_instance_configuration();
+  int32_t _process_responsive_instance();
 
-  void _storage_process_service_status();
+  int32_t _storage_process_service_status();
 
   void _load_deleted_instances();
   void _load_caches();
@@ -245,6 +246,11 @@ class conflict_manager {
   void _finish_actions();
   void _add_action(int32_t conn, actions action);
   void _insert_perfdatas();
+  void _pop_event(std::tuple<std::shared_ptr<io::data>, stream_type, bool*>& p);
+  std::size_t inline _get_events_size() const {
+    std::lock_guard<std::mutex> lk(_loop_m);
+    return _events.size();
+  }
 
  public:
   static void init_sql(database_config const& dbcfg,
