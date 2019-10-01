@@ -360,6 +360,8 @@ void conflict_manager::_prepare_sg_insupdate_statement() {
  *  Process an acknowledgement event.
  *
  *  @param[in] e Uncasted acknowledgement.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_acknowledgement() {
   auto& p = _events.front();
@@ -408,6 +410,8 @@ int32_t conflict_manager::_process_acknowledgement() {
  *  Process a comment event.
  *
  *  @param[in] e  Uncasted comment.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_comment() {
   _finish_action(-1,
@@ -456,6 +460,8 @@ int32_t conflict_manager::_process_comment() {
  *  Process a custom variable event.
  *
  *  @param[in] e Uncasted custom variable.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_custom_variable() {
   int32_t retval = 0;
@@ -526,6 +532,8 @@ int32_t conflict_manager::_process_custom_variable() {
  *  Process a custom variable status event.
  *
  *  @param[in] e Uncasted custom variable status.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_custom_variable_status() {
   int32_t retval = 0;
@@ -578,6 +586,8 @@ int32_t conflict_manager::_process_custom_variable_status() {
  *  Process a downtime event.
  *
  *  @param[in] e Uncasted downtime.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_downtime() {
   int32_t retval = 0;
@@ -657,6 +667,8 @@ int32_t conflict_manager::_process_downtime() {
  *  Process an event handler event.
  *
  *  @param[in] e Uncasted event handler.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_event_handler() {
   auto& p = _events.front();
@@ -701,6 +713,8 @@ int32_t conflict_manager::_process_event_handler() {
  *  Process a flapping status event.
  *
  *  @param[in] e Uncasted flapping status.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_flapping_status() {
   auto& p = _events.front();
@@ -744,6 +758,8 @@ int32_t conflict_manager::_process_flapping_status() {
  *  Process an host check event.
  *
  *  @param[in] e Uncasted host check.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_host_check() {
   int32_t retval = 0;
@@ -824,6 +840,8 @@ int32_t conflict_manager::_process_host_check() {
  *  Process a host dependency event.
  *
  *  @param[in] e Uncasted host dependency.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_host_dependency() {
   int32_t retval = 0;
@@ -895,6 +913,8 @@ int32_t conflict_manager::_process_host_dependency() {
  *  Process a host group event.
  *
  *  @param[in] e Uncasted host group.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_host_group() {
   int32_t retval = 0;
@@ -959,6 +979,8 @@ int32_t conflict_manager::_process_host_group() {
  *  Process a host group member event.
  *
  *  @param[in] e Uncasted host group member.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_host_group_member() {
   int32_t retval = 0;
@@ -1061,6 +1083,8 @@ int32_t conflict_manager::_process_host_group_member() {
  *  Process an host event.
  *
  *  @param[in] e Uncasted host.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_host() {
   _finish_action(-1,
@@ -1113,6 +1137,8 @@ int32_t conflict_manager::_process_host() {
  *  Process a host parent event.
  *
  *  @param[in] e Uncasted host parent.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_host_parent() {
   int32_t retval = 0;
@@ -1186,6 +1212,8 @@ int32_t conflict_manager::_process_host_parent() {
  *  Process a host status event.
  *
  *  @param[in] e Uncasted host status.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_host_status() {
   _finish_action(-1,
@@ -1243,6 +1271,8 @@ int32_t conflict_manager::_process_host_status() {
  *  so that queries depending on this one will be made by the same thread.
  *
  *  @param[in] e Uncasted instance.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_instance() {
   auto& p = _events.front();
@@ -1295,6 +1325,8 @@ int32_t conflict_manager::_process_instance() {
  *  be done by the same thread as the one that created the instance.
  *
  *  @param[in] e Uncasted instance status.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_instance_status() {
   // Cast object.
@@ -1338,6 +1370,8 @@ int32_t conflict_manager::_process_instance_status() {
  *  Process a log event.
  *
  *  @param[in] e Uncasted log.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_log() {
   int32_t retval = 0;
@@ -1385,6 +1419,8 @@ int32_t conflict_manager::_process_log() {
  *  query because the modules table has a constraint on instances.instance_id
  *
  *  @param[in] e Uncasted module.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_module() {
   auto& p = _events.front();
@@ -1432,6 +1468,8 @@ int32_t conflict_manager::_process_module() {
  *  Process a service check event.
  *
  *  @param[in] e Uncasted service check.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_service_check() {
   _finish_action(-1,
@@ -1504,6 +1542,8 @@ int32_t conflict_manager::_process_service_check() {
  *  Process a service dependency event.
  *
  *  @param[in] e Uncasted service dependency.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_service_dependency() {
   int32_t retval = 0;
@@ -1585,6 +1625,8 @@ int32_t conflict_manager::_process_service_dependency() {
  *  Process a service group event.
  *
  *  @param[in] e Uncasted service group.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_service_group() {
   int32_t retval = 0;
@@ -1651,6 +1693,8 @@ int32_t conflict_manager::_process_service_group() {
  *  Process a service group member event.
  *
  *  @param[in] e Uncasted service group member.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_service_group_member() {
   int32_t retval = 0;
@@ -1756,6 +1800,8 @@ int32_t conflict_manager::_process_service_group_member() {
  *  Process a service event.
  *
  *  @param[in] e Uncasted service.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_service() {
   _finish_action(-1,
@@ -1806,6 +1852,8 @@ int32_t conflict_manager::_process_service() {
  *  Process a service status event.
  *
  *  @param[in] e Uncasted service status.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_service_status() {
   _finish_action(-1,
@@ -1865,6 +1913,8 @@ int32_t conflict_manager::_process_service_status() {
  *  Process an instance configuration event.
  *
  *  @param[in] e  Uncasted instance configuration.
+ *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_instance_configuration() {
   auto& p = _events.front();
@@ -1876,6 +1926,7 @@ int32_t conflict_manager::_process_instance_configuration() {
 /**
  *  Process a responsive instance event.
  *
+ * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_responsive_instance() {
   auto& p = _events.front();

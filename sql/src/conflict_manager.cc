@@ -280,7 +280,12 @@ void conflict_manager::_load_caches() {
     _metric_cache.clear();
 
     std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result("SELECT metric_id,index_id,metric_name,unit_name,warn,warn_low,warn_threshold_mode,crit,crit_low,crit_threshold_mode,min,max,current_value,data_source_type FROM metrics", &promise);
+    _mysql.run_query_and_get_result(
+        "SELECT "
+        "metric_id,index_id,metric_name,unit_name,warn,warn_low,warn_threshold_"
+        "mode,crit,crit_low,crit_threshold_mode,min,max,current_value,data_"
+        "source_type FROM metrics",
+        &promise);
 
     try {
       mysql_result res{promise.get_future().get()};
@@ -334,7 +339,35 @@ void conflict_manager::_callback() {
         uint32_t count = 0;
         int32_t timeout = 0;
         int32_t timeout_limit = _loop_timeout * 1000;
-        while (!_events.empty() && count < _max_pending_queries && timeout < timeout_limit) {
+        std::chrono::system_clock::time_point previous_time(now0);
+
+        /* Let's wait for some events before entering in the loop */
+        if (_loop_cv.wait_for(lk, std::chrono::seconds(1), [this]() {
+              return !_events.empty();
+            }))
+          logging::info(logging::low)
+              << "conflict_manager: events to send to the database received.";
+        else
+          logging::info(logging::low)
+              << "conflict_manager: timeout reached while waiting for events.";
+
+        /* During this loop, connectors still fill the queue when they receive
+         * new events. To allow that, we have to release the mutex. We have the
+         * chance that the queue does not move old objects when it adds new
+         * ones. So when we access to events already there, we don't have to
+         * maintain the lock.
+         * We just set the lock when we have to pop the events (when they are
+         * recorded on the DB).
+         * The loop is hold by three conditions that are:
+         * - events.empty() no more events to treat.
+         * - count < _max_pending_queries: we don't want to commit everytimes,
+         *   so we keep this count to know if we reached the
+         *   _max_pending_queries parameter.
+         * - timeout < timeout_limit: If the loop lives to long, we interrupt it
+         *   it is necessary for cleanup operations.
+         */
+        while (!_events.empty() && count < _max_pending_queries &&
+               timeout < timeout_limit) {
           std::shared_ptr<io::data> d{std::get<0>(_events.front())};
           lk.unlock();
           uint32_t type{d->type()};
@@ -352,9 +385,44 @@ void conflict_manager::_callback() {
             _events.pop_front();
             count++;
           }
+          std::chrono::system_clock::time_point now1 =
+              std::chrono::system_clock::now();
+
           timeout = std::chrono::duration_cast<std::chrono::milliseconds>(
-              std::chrono::system_clock::now() - now0).count();
+              now1 - now0).count();
           lk.lock();
+          if (_events.empty()) {
+            logging::debug(logging::low) << "conflict_manager: no more events "
+                                            "in the loop, let's wait for them";
+            /* There is no more events to send to the DB, let's wait for new
+             * ones. */
+            if (_loop_cv.wait_for(lk, std::chrono::seconds(1), [this]() {
+                  return !_events.empty();
+                }))
+              logging::info(logging::low) << "conflict_manager: new events to "
+                                             "send to the database received.";
+            else
+              logging::info(logging::low) << "conflict_manager: timeout "
+                                             "reached while waiting for "
+                                             "new events.";
+          }
+
+          if (std::chrono::duration_cast<std::chrono::milliseconds>(
+                  now1 - previous_time).count() > 1000) {
+            previous_time = now1;
+            /* Get some stats */
+            {
+              std::lock_guard<std::mutex> lk(_stat_m);
+              _still_pending_events = _events.size();
+              _loop_duration =
+                  std::chrono::duration_cast<std::chrono::milliseconds>(
+                      now1 - now0).count();
+              if (_loop_duration > 0)
+                _speed = (count * 1000.0) / _loop_duration;
+              else
+                _speed = NAN;
+            }
+          }
         }
 
         /* Here, just before looping, we commit. */
@@ -376,7 +444,9 @@ void conflict_manager::_callback() {
         {
           std::lock_guard<std::mutex> lk(_stat_m);
           _still_pending_events = _events.size();
-          _loop_duration = std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now0).count();
+          _loop_duration =
+              std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now0)
+                  .count();
           if (_loop_duration > 0)
             _speed = (count * 1000.0) / _loop_duration;
           else
@@ -415,6 +485,7 @@ void conflict_manager::send_event(conflict_manager::stream_type c,
   _pending_queries++;
   _timeline[c].push_back(false);
   _events.push_back(std::make_tuple(e, c, &_timeline[c].back()));
+  _loop_cv.notify_all();
 }
 
 /**
@@ -457,6 +528,12 @@ void conflict_manager::_finish_action(int32_t conn, uint32_t action) {
   }
 }
 
+/**
+ *  The main objective of this method is to commit queries sent to the db.
+ *  When the commit is done (all the connections commit), we count how
+ *  many events can be acknowledged. So we can also update the number of pending
+ *  events.
+ */
 void conflict_manager::_finish_actions() {
   _mysql.commit();
   for (uint32_t& v : _action)

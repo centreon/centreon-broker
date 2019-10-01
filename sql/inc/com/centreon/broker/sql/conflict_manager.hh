@@ -117,15 +117,19 @@ class conflict_manager {
       _events;
 
   /* Since the sql and storage streams use this conflict_manager, we must
-   * manage two queues, the first for sql and the second one for storage.
+   * manage two queues, the first one for sql and the second one for storage.
    * So they will know when their events will be released. */
   std::array<std::deque<bool>, 2> _timeline;
+
+  /* This array stores how many events for each connector have been
+   * acknowledged. */
   std::array<int32_t, 2> _ack;
 
   /* Current actions by connection */
   std::vector<uint32_t> _action;
 
   mutable std::mutex _loop_m;
+  std::condition_variable _loop_cv;
   bool _exit;
   uint32_t _loop_timeout;
   uint32_t _max_pending_queries;
