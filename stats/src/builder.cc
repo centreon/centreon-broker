@@ -97,11 +97,6 @@ void builder::build() {
     object["asio_version"] = asio_version;
   }
 
-  // Engine.
-  {
-
-  }
-
   // Mysql manager.
   {
     std::map<std::string, std::string> stats(

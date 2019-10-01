@@ -57,7 +57,7 @@ static inline bool check_equality(double a, double b) {
  *
  *  @param[in] e Uncasted service status.
  */
-void conflict_manager::_storage_process_service_status() {
+int32_t conflict_manager::_storage_process_service_status() {
   logging::debug(logging::low) << "storage: process_service_status...";
 
   auto& p = _events.front();
@@ -298,8 +298,8 @@ void conflict_manager::_storage_process_service_status() {
     }
   }
 
-  *std::get<2>(p) = true;
-  _events.pop_front();
+  _pop_event(p);
+  return 1;
 }
 
 /**
