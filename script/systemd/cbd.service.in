@@ -23,7 +23,7 @@ After=centreon.service
 ReloadPropagatedFrom=centreon.service
 
 [Service]
-ExecStart=@PREFIX_BIN@/cbwd @PREFIX_CONF@/watchdog.xml
+ExecStart=@PREFIX_BIN@/cbwd @PREFIX_CONF@/watchdog.json
 ExecReload=/bin/kill -HUP $MAINPID
 Type=simple
 User=centreon-broker
