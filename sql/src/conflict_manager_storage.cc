@@ -22,12 +22,13 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/sql/conflict_manager.hh"
+#include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
+#include "com/centreon/broker/storage/metric.hh"
+#include "com/centreon/broker/storage/metric_mapping.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/status.hh"
-#include "com/centreon/broker/storage/metric_mapping.hh"
-#include "com/centreon/broker/storage/exceptions/perfdata.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::sql;
@@ -288,6 +289,25 @@ int32_t conflict_manager::_storage_process_service_status() {
             val.value = pd.value();
             _perfdata_queue.push_back(val);
           }
+
+          // Send perfdata event to processing.
+          std::shared_ptr<storage::metric> perf{
+              std::make_shared<storage::metric>(
+                  ss.host_id,
+                  ss.service_id,
+                  pd.name(),
+                  ss.last_check,
+                  static_cast<uint32_t>(ss.check_interval * _interval_length),
+                  false,
+                  metric_id,
+                  rrd_len,
+                  pd.value(),
+                  pd.value_type())};
+          logging::debug(logging::high)
+              << "storage: generating perfdata event for metric "
+              << perf->metric_id << " (name " << perf->name << ", ctime "
+              << perf->ctime << ", value " << perf->value << ")";
+          multiplexing::publisher().write(perf);
         }
       }
       catch (storage::exceptions::perfdata const& e) {
