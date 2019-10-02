@@ -196,9 +196,6 @@ state& state::instance() {
  */
 void state::load() {
 
-  FILE *f = fopen("/tmp/events-publish.txt", "w");
-  fclose(f);
-
   if (!gl_state)
     gl_state = new state;
 }
