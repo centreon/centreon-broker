@@ -67,65 +67,13 @@ metric::metric(uint32_t host_id,
       service_id{service_id} {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] m Object to copy.
- */
-//metric::metric(metric const& m) : io::data(m) {
-//  _internal_copy(m);
-//}
-
-/**
- *  Destructor.
- */
-//metric::~metric() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] m Object to copy.
- *
- *  @return This object.
- */
-//metric& metric::operator=(metric const& m) {
-//  io::data::operator=(m);
-//  _internal_copy(m);
-//  return *this;
-//}
-
-/**
  *  Get the event type.
  *
  *  @return The event type.
  */
-unsigned int metric::type() const {
+uint32_t metric::type() const {
   return metric::static_type();
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] m Object to copy.
- */
-//void metric::_internal_copy(metric const& m) {
-//  ctime = m.ctime;
-//  interval = m.interval;
-//  is_for_rebuild = m.is_for_rebuild;
-//  metric_id = m.metric_id;
-//  name = m.name;
-//  rrd_len = m.rrd_len;
-//  value = m.value;
-//  value_type = m.value_type;
-//  host_id = m.host_id;
-//  service_id = m.service_id;
-//  return;
-//}
 
 /**************************************
  *                                     *

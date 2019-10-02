@@ -53,20 +53,20 @@ class metric : public io::data {
   metric(metric const& m) = delete;
   ~metric() = default;
   metric& operator=(metric const& m) = delete;
-  unsigned int type() const;
+  uint32_t type() const;
 
   /**
    *  Get the type of this event.
    *
    *  @return  The event type.
    */
-  static unsigned int static_type() {
+  static uint32_t static_type() {
     return io::events::data_type<io::events::storage,
                                  storage::de_metric>::value;
   }
 
   timestamp ctime;
-  unsigned int interval;
+  uint32_t interval;
   bool is_for_rebuild;
   uint32_t metric_id;
   std::string name;
