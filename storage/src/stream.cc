@@ -125,7 +125,8 @@ stream::stream(
     _store_in_db(store_in_db),
     _db(db_cfg),
     _data_bin_insert(_db),
-    _update_metrics(_db) {
+    _update_metrics(_db),
+    _index_data_insert(_db) {
   // Prepare queries.
   _prepare();
 
@@ -535,10 +536,10 @@ unsigned int stream::_find_index_id(
     it(_index_cache.find(std::make_pair(host_id, service_id)));
 
   // Special.
-  bool special(!strncmp(
+  int32_t special(strncmp(
                   host_name.toStdString().c_str(),
                   BAM_NAME,
-                  sizeof(BAM_NAME) - 1));
+                  sizeof(BAM_NAME) - 1) == 0 ? 1 : 0);
 
   // Found in cache.
   if (it != _index_cache.end()) {
@@ -606,22 +607,24 @@ unsigned int stream::_find_index_id(
         << "storage: creating new index for (" << host_id << ", "
         << service_id << ")";
       // Build query.
-      std::ostringstream oss;
-      oss << "INSERT INTO " << (db_v2 ? "index_data" : "rt_index_data")
-          << "  (host_id, host_name, service_id, service_description,"
-             "   must_be_rebuild, special)"
-             "  VALUES (" << host_id << ", :host_name, " << service_id
-          << ", :service_description, " << (db_v2 ? "'0'" : "0")
-          << ", :special)";
-      database_query q(_db);
+      if (!_index_data_insert.prepared()) {
+        std::ostringstream oss;
+        oss << "INSERT INTO index_data (host_id, host_name, service_id,"
+               " service_description, must_be_rebuild, special)"
+               " VALUES (:host_id, :host_name, :service_id, :service_description, :must_be_rebuild, :special)";
+      _index_data_insert.prepare(oss.str());
+      }
       try {
-        q.prepare(oss.str());
-        q.bind_value(":host_name", host_name);
-        q.bind_value(":service_description", service_desc);
-        q.bind_value(":special", special);
+        _index_data_insert.bind_value(":host_id", host_id);
+        _index_data_insert.bind_value(":host_name", host_name);
+        _index_data_insert.bind_value(":service_id", service_id);
+        _index_data_insert.bind_value(":service_description", service_desc);
+        _index_data_insert.bind_value(":must_be_rebuild", "0");
+        QString sp(QString::number(special));
+        _index_data_insert.bind_value(":special", sp);
 
         // Execute query.
-        q.run_statement();
+        _index_data_insert.run_statement();
       }
       catch (std::exception const& e) {
         throw (broker::exceptions::msg() << "storage: insertion of "
@@ -631,8 +634,8 @@ unsigned int stream::_find_index_id(
 
       // Fetch insert ID with query if possible.
       if (!_db.get_qt_driver()->hasFeature(QSqlDriver::LastInsertId)
-          || !(retval = q.last_insert_id().toUInt())) {
-        q.finish();
+          || !(retval = _index_data_insert.last_insert_id().toUInt())) {
+        _index_data_insert.finish();
         std::ostringstream oss2;
         oss2 << "SELECT " << (db_v2 ? "id" : "index_id")
              << "  FROM " << (db_v2 ? "index_data" : "rt_index_data")
