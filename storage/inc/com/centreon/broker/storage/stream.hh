@@ -143,6 +143,7 @@ namespace          storage {
     database       _db;
     database_query _data_bin_insert;
     database_query _update_metrics;
+    database_query _index_data_insert;
   };
 }
 
