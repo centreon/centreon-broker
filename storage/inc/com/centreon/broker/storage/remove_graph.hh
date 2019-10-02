@@ -36,21 +36,19 @@ namespace storage {
  */
 class remove_graph : public io::data {
  public:
-  remove_graph();
-  remove_graph(remove_graph const& right);
-  ~remove_graph();
-  remove_graph& operator=(remove_graph const& right);
-  unsigned int type() const;
-  static unsigned int static_type();
+  remove_graph() = default;
+  remove_graph(uint32_t index_id, bool is_index);
+  remove_graph(remove_graph const& right) = delete;
+  ~remove_graph() = default;
+  remove_graph& operator=(remove_graph const& right) = delete;
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int id;
+  uint32_t id;
   bool is_index;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
-
- private:
-  void _internal_copy(remove_graph const& right);
 };
 }  // namespace storage
 

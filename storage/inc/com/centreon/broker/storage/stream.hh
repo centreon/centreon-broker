@@ -45,8 +45,7 @@ namespace storage {
  */
 class stream : public io::stream {
  public:
-  stream(database_config const& db_cfg,
-         uint32_t rrd_len,
+  stream(uint32_t rrd_len,
          uint32_t interval_length,
          uint32_t rebuild_check_interval,
          bool store_in_db = true);
@@ -116,7 +115,6 @@ class stream : public io::stream {
   void _host_instance_cache_create();
   void _insert_perfdatas_new();
   void _insert_perfdatas();
-  void _prepare();
   void _process_host(std::shared_ptr<io::data> const& e);
   void _process_instance(std::shared_ptr<io::data> const& e);
   void _rebuild_cache();
@@ -135,11 +133,6 @@ class stream : public io::stream {
   std::string _status;
   mutable std::mutex _statusm;
   bool _store_in_db;
-  database::mysql_stmt _update_metrics_stmt;
-  database::mysql_stmt _insert_metrics_stmt;
-  database::mysql_stmt _update_index_data_stmt;
-  database::mysql_stmt _data_bin_insert;
-  mysql _mysql;
 };
 }  // namespace storage
 

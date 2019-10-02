@@ -82,8 +82,7 @@ void connector::connect_to(database_config const& db_cfg,
  */
 std::shared_ptr<io::stream> connector::open() {
   return std::shared_ptr<io::stream>(
-      std::make_shared<stream>(_db_cfg,
-                               _rrd_len,
+      std::make_shared<stream>(_rrd_len,
                                _interval_length,
                                _rebuild_check_interval,
                                _store_in_data_bin));
