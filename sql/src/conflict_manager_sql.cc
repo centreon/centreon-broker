@@ -1127,7 +1127,10 @@ int32_t conflict_manager::_process_host() {
       _add_action(conn, actions::hosts);
 
       // Fill the cache...
-      _cache_host_instance[h.host_id] = h.poller_id;
+      if (h.enabled)
+        _cache_host_instance[h.host_id] = h.poller_id;
+      else
+        _cache_host_instance.erase(h.host_id);
     } else
       logging::error(logging::high) << "SQL: host '" << h.host_name
                                     << "' of poller " << h.poller_id
