@@ -1021,34 +1021,38 @@ int32_t conflict_manager::_process_host_group_member() {
       }
 
       /* If the group does not exist, we create it. */
-      if (_hostgroup_cache.find(hgm.group_id) == _hostgroup_cache.end()) {
-        logging::error(logging::low)
-            << "SQL: host group " << hgm.group_id
-            << " does not exist - insertion before insertion of members";
-        _prepare_hg_insupdate_statement();
+      if (_cache_host_instance[hgm.host_id]) {
+        if (_hostgroup_cache.find(hgm.group_id) == _hostgroup_cache.end()) {
+          logging::error(logging::low)
+              << "SQL: host group " << hgm.group_id
+              << " does not exist - insertion before insertion of members";
+          _prepare_hg_insupdate_statement();
 
-        neb::host_group hg;
-        hg.id = hgm.group_id;
-        hg.name = hgm.group_name;
-        hg.enabled = true;
-        assert(_cache_host_instance[hgm.host_id]);
-        hg.poller_id = _cache_host_instance[hgm.host_id];
-        assert(hg.poller_id);
+          neb::host_group hg;
+          hg.id = hgm.group_id;
+          hg.name = hgm.group_name;
+          hg.enabled = true;
+          hg.poller_id = _cache_host_instance[hgm.host_id];
 
+          std::ostringstream oss;
+          oss << "SQL: could not store host group (poller: " << hg.poller_id
+              << ", group: " << hg.id << "): ";
+
+          _host_group_insupdate << hg;
+          _mysql.run_statement(_host_group_insupdate, oss.str(), false, conn);
+        }
+
+        _host_group_member_insert << hgm;
         std::ostringstream oss;
-        oss << "SQL: could not store host group (poller: " << hg.poller_id
-            << ", group: " << hg.id << "): ";
-
-        _host_group_insupdate << hg;
-        _mysql.run_statement(_host_group_insupdate, oss.str(), false, conn);
-      }
-
-      _host_group_member_insert << hgm;
-      std::ostringstream oss;
-      oss << "SQL: could not store host group membership (poller: "
-          << hgm.poller_id << ", host: " << hgm.host_id
-          << ", group: " << hgm.group_id << "): ";
-      _mysql.run_statement(_host_group_member_insert, oss.str(), false, conn);
+        oss << "SQL: could not store host group membership (poller: "
+            << hgm.poller_id << ", host: " << hgm.host_id
+            << ", group: " << hgm.group_id << "): ";
+        _mysql.run_statement(_host_group_member_insert, oss.str(), false, conn);
+      } else
+        logging::error(logging::medium)
+            << "SQL: host with host_id = " << hgm.host_id
+            << " does not exist - unable to store "
+               "unexisting host in a hostgroup. You should restart centengine.";
     }
     // Delete.
     else {
@@ -1517,15 +1521,23 @@ int32_t conflict_manager::_process_service_check() {
       store = false;
 
     if (store) {
+      if (_cache_host_instance[sc.host_id]) {
       _service_check_update << sc;
       std::promise<int> promise;
       std::stringstream oss;
       oss << "SQL: could not store service check command (host: " << sc.host_id
           << ", service: " << sc.service_id << "): ";
-      assert(_cache_host_instance[sc.host_id]);
       int32_t conn = _mysql.choose_connection_by_instance(
           _cache_host_instance[sc.host_id]);
       _mysql.run_statement(_service_check_update, oss.str(), true, conn);
+      }
+      else
+        logging::error(logging::medium) << "SQL: host with host_id = "
+                                        << sc.host_id
+                                        << " does not exist - unable to store "
+                                           "service command check of that "
+                                           "host. You should restart "
+                                           "centengine";
     }
   } else
     // Do nothing.
@@ -1813,7 +1825,7 @@ int32_t conflict_manager::_process_service() {
 
   // Processed object.
   neb::service const& s(*static_cast<neb::service const*>(d.get()));
-  assert(_cache_host_instance[s.host_id]);
+  if (_cache_host_instance[s.host_id]) {
   int32_t conn =
       _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]);
 
@@ -1844,6 +1856,12 @@ int32_t conflict_manager::_process_service() {
   } else
     logging::error(logging::high) << "SQL: service '" << s.service_description
                                   << "' has no host ID or no service ID";
+  }
+  else
+    logging::error(logging::medium)
+        << "SQL: host with host_id = " << s.host_id
+        << " does not exist - unable to store "
+           "service of that host. You should restart centengine";
   _pop_event(p);
   return 1;
 }

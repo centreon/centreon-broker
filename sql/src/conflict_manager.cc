@@ -396,7 +396,7 @@ void conflict_manager::_callback() {
                                             "in the loop, let's wait for them";
             /* There is no more events to send to the DB, let's wait for new
              * ones. */
-            if (_loop_cv.wait_for(lk, std::chrono::seconds(1), [this]() {
+            if (_loop_cv.wait_for(lk, std::chrono::milliseconds(timeout_limit - timeout), [this]() {
                   return !_events.empty();
                 }))
               logging::info(logging::low) << "conflict_manager: new events to "
@@ -420,7 +420,7 @@ void conflict_manager::_callback() {
               if (_loop_duration > 0)
                 _speed = (count * 1000.0) / _loop_duration;
               else
-                _speed = NAN;
+                _speed = 0;
             }
           }
         }
@@ -450,7 +450,7 @@ void conflict_manager::_callback() {
           if (_loop_duration > 0)
             _speed = (count * 1000.0) / _loop_duration;
           else
-            _speed = NAN;
+            _speed = 0;
         }
       }
     }
