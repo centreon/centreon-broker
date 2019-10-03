@@ -78,7 +78,7 @@ bool kpi_event::operator==(kpi_event const& other) const {
  *
  *  @return Event type.
  */
-unsigned int kpi_event::type() const {
+uint32_t kpi_event::type() const {
   return (kpi_event::static_type());
 }
 
@@ -87,7 +87,7 @@ unsigned int kpi_event::type() const {
  *
  *  @return Event type.
  */
-unsigned int kpi_event::static_type() {
+uint32_t kpi_event::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_kpi_event>::value);
 }
 

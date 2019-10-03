@@ -59,7 +59,7 @@ class host_service_status : public status {
   std::string event_handler;
   double execution_time;
   bool has_been_checked;
-  unsigned int host_id;
+  uint32_t host_id;
   bool is_flapping;
   timestamp last_check;
   short last_hard_state;

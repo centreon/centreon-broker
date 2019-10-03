@@ -44,7 +44,7 @@ class temp_logger : private misc::stringifier {
     temp_logger& (temp_logger::*redirect_long)(long)throw();
     temp_logger& (temp_logger::*redirect_long_long)(long long)throw();
     temp_logger& (temp_logger::*redirect_std_string)(std::string const&)throw();
-    temp_logger& (temp_logger::*redirect_unsigned_int)(unsigned int)throw();
+    temp_logger& (temp_logger::*redirect_unsigned_int)(uint32_t)throw();
     temp_logger& (temp_logger::*redirect_unsigned_long)(unsigned long)throw();
     temp_logger& (temp_logger::*redirect_unsigned_long_long)(
         unsigned long long)throw();
@@ -73,7 +73,7 @@ class temp_logger : private misc::stringifier {
   temp_logger& operator<<(long l) throw();
   temp_logger& operator<<(long long ll) throw();
   temp_logger& operator<<(std::string const& q) throw();
-  temp_logger& operator<<(unsigned int u) throw();
+  temp_logger& operator<<(uint32_t u) throw();
   temp_logger& operator<<(unsigned long ul) throw();
   temp_logger& operator<<(unsigned long long ull) throw();
   temp_logger& operator<<(char const* str) throw();

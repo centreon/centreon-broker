@@ -41,8 +41,8 @@ class custom_variable : public custom_variable_status {
   custom_variable(custom_variable const& other);
   ~custom_variable();
   custom_variable& operator=(custom_variable const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   std::string default_value;
   bool enabled;

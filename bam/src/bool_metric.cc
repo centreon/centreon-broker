@@ -28,8 +28,8 @@ using namespace com::centreon::broker::bam;
  *  @param[in] metric_name  The name of the metric.
  */
 bool_metric::bool_metric(std::string const& metric_name,
-                         unsigned int host_id,
-                         unsigned int service_id)
+                         uint32_t host_id,
+                         uint32_t service_id)
     : _metric_name(metric_name),
       _value(false),
       _host_id(host_id),
@@ -150,7 +150,7 @@ std::string const& bool_metric::get_name() const {
  *
  *  @return  The host id.
  */
-unsigned int bool_metric::get_host_id() const {
+uint32_t bool_metric::get_host_id() const {
   return (_host_id);
 }
 
@@ -159,7 +159,7 @@ unsigned int bool_metric::get_host_id() const {
  *
  *  @return  The service id.
  */
-unsigned int bool_metric::get_service_id() const {
+uint32_t bool_metric::get_service_id() const {
   return (_service_id);
 }
 
@@ -169,7 +169,7 @@ unsigned int bool_metric::get_service_id() const {
  *  @param[in] mappings  The mapping of every metric.
  */
 void bool_metric::resolve_metrics(hst_svc_mapping const& mappings) {
-  std::set<unsigned int> ids =
+  std::set<uint32_t> ids =
       mappings.get_metric_ids(_metric_name, _host_id, _service_id);
   if (ids.empty())
     logging::error(logging::high)
@@ -183,7 +183,7 @@ void bool_metric::resolve_metrics(hst_svc_mapping const& mappings) {
  *
  *  @return  Resolved metrics.
  */
-std::set<unsigned int> const& bool_metric::get_resolved_metrics() const {
+std::set<uint32_t> const& bool_metric::get_resolved_metrics() const {
   return (_resolved_metric_ids);
 }
 
@@ -192,7 +192,7 @@ std::set<unsigned int> const& bool_metric::get_resolved_metrics() const {
  *
  *  @return  All values.
  */
-std::map<unsigned int, double> const& bool_metric::values() const {
+std::map<uint32_t, double> const& bool_metric::values() const {
   return (_values);
 }
 

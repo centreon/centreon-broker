@@ -44,7 +44,7 @@ using namespace com::centreon::broker;
 
 // Load count.
 namespace {
-unsigned int instances(0);
+uint32_t instances(0);
 char const* bam_module("bam");
 }  // namespace
 

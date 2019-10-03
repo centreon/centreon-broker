@@ -42,9 +42,8 @@ TEST(StorageFactory, Factory) {
   cfg.type = "storage";
   storage::connector *endp = static_cast<storage::connector *>(factory.new_endpoint(cfg, is_acceptor, cache));
 
-  database_config db_cfg(cfg);
   storage::connector con;
-  con.connect_to(cfg, 42, 60, 300, true);
+  con.connect_to(42, 60, 300, true);
 
   ASSERT_TRUE(*endp == con);
 
@@ -74,9 +73,8 @@ TEST(StorageFactory, FactoryWithFullConf) {
   cfg.type = "storage";
   storage::connector *endp = static_cast<storage::connector *>(factory.new_endpoint(cfg, is_acceptor, cache));
 
-  database_config db_cfg(cfg);
   storage::connector con;
-  con.connect_to(cfg, 42, 43, 44, false);
+  con.connect_to(42, 43, 44, false);
 
   ASSERT_TRUE(*endp == con);
 

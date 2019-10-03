@@ -178,7 +178,7 @@ int node_cache::write(std::shared_ptr<io::data> const& data) {
   if (!validate(data, "node_cache"))
     return (1);
 
-  unsigned int type = data->type();
+  uint32_t type = data->type();
   if (type == neb::host::static_type())
     update(*std::static_pointer_cast<neb::host>(data));
   else if (type == neb::host_status::static_type())
@@ -346,7 +346,7 @@ bool node_cache::node_in_downtime(objects::node_id node) const {
  *
  *  @return          Number of active downtimes associated to a node.
  */
-unsigned int node_cache::node_downtimes(objects::node_id node) const {
+uint32_t node_cache::node_downtimes(objects::node_id node) const {
   return (_downtime_id_by_nodes.count(node));
 }
 
@@ -382,7 +382,7 @@ void node_cache::_save_cache() {
            end = _acknowledgements.end();
        it != end; ++it)
     serialized_data.push_back(std::make_shared<neb::acknowledgement>(*it));
-  for (QHash<unsigned int, neb::downtime>::const_iterator
+  for (QHash<uint32_t, neb::downtime>::const_iterator
            it = _downtimes.begin(),
            end = _downtimes.end();
        it != end; ++it)

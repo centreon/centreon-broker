@@ -126,7 +126,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Ack limit.
-  unsigned int ack_limit{1000};
+  uint32_t ack_limit{1000};
   {
     std::map<std::string, std::string>::const_iterator it(
         cfg.params.find("ack_limit"));

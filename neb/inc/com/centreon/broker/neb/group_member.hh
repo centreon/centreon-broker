@@ -43,10 +43,10 @@ class group_member : public io::data {
   group_member& operator=(group_member const& other);
 
   bool enabled;
-  unsigned int group_id;
+  uint32_t group_id;
   std::string group_name;
-  unsigned int host_id;
-  unsigned int poller_id;
+  uint32_t host_id;
+  uint32_t poller_id;
 
  private:
   void _internal_copy(group_member const& other);

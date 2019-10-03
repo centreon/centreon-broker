@@ -39,9 +39,9 @@ class responsive_instance : public io::data {
   responsive_instance(responsive_instance const& i);
   ~responsive_instance();
   responsive_instance& operator=(responsive_instance const& i);
-  unsigned int type() const;
+  uint32_t type() const;
 
-  unsigned int poller_id;
+  uint32_t poller_id;
   bool responsive;
 
   static mapping::entry const entries[];

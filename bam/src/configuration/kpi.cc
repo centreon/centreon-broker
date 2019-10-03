@@ -23,14 +23,14 @@ using namespace com::centreon::broker::bam::configuration;
 /**
  *  Constructor.
  */
-kpi::kpi(unsigned int id,
+kpi::kpi(uint32_t id,
          short state_type,
-         unsigned int host_id,
-         unsigned int service_id,
-         unsigned int ba_id,
-         unsigned int indicator_ba,
-         unsigned int meta_id,
-         unsigned int boolexp_id,
+         uint32_t host_id,
+         uint32_t service_id,
+         uint32_t ba_id,
+         uint32_t indicator_ba,
+         uint32_t meta_id,
+         uint32_t boolexp_id,
          short status,
          short last_level,
          bool downtimed,
@@ -168,7 +168,7 @@ unsigned kpi::get_id() const {
  *
  *  @param id The id to set to the kpi.
  */
-void kpi::set_id(unsigned int id) {
+void kpi::set_id(uint32_t id) {
   _id = id;
 }
 
@@ -186,7 +186,7 @@ short kpi::get_state_type() const {
  *
  *  @return  The host id.
  */
-unsigned int kpi::get_host_id() const {
+uint32_t kpi::get_host_id() const {
   return (_host_id);
 }
 
@@ -195,7 +195,7 @@ unsigned int kpi::get_host_id() const {
  *
  *  @return  The service id.
  */
-unsigned int kpi::get_service_id() const {
+uint32_t kpi::get_service_id() const {
   return (_service_id);
 }
 
@@ -240,7 +240,7 @@ bool kpi::is_boolexp() const {
  *
  *  @return The id of the business activity.
  */
-unsigned int kpi::get_ba_id() const {
+uint32_t kpi::get_ba_id() const {
   return (_ba_id);
 }
 
@@ -249,7 +249,7 @@ unsigned int kpi::get_ba_id() const {
  *
  *  @return The ID of the BA attached to this KPI.
  */
-unsigned int kpi::get_indicator_ba_id() const {
+uint32_t kpi::get_indicator_ba_id() const {
   return (_indicator_ba_id);
 }
 
@@ -258,7 +258,7 @@ unsigned int kpi::get_indicator_ba_id() const {
  *
  *  @return Meta-ID of this KPI.
  */
-unsigned int kpi::get_meta_id() const {
+uint32_t kpi::get_meta_id() const {
   return (_meta_id);
 }
 
@@ -267,7 +267,7 @@ unsigned int kpi::get_meta_id() const {
  *
  *  @return Boolean expression ID of this KPI.
  */
-unsigned int kpi::get_boolexp_id() const {
+uint32_t kpi::get_boolexp_id() const {
   return (_boolexp_id);
 }
 
@@ -375,7 +375,7 @@ void kpi::set_state_type(short s) {
  *
  *  @param[in] i Set the host id.
  */
-void kpi::set_host_id(unsigned int i) {
+void kpi::set_host_id(uint32_t i) {
   _host_id = i;
 }
 
@@ -384,7 +384,7 @@ void kpi::set_host_id(unsigned int i) {
  *
  *  @param[in] i The service id
  */
-void kpi::set_service_id(unsigned int i) {
+void kpi::set_service_id(uint32_t i) {
   _service_id = i;
 }
 
@@ -393,7 +393,7 @@ void kpi::set_service_id(unsigned int i) {
  *
  *  @param[in] i The business activity id.
  */
-void kpi::set_ba_id(unsigned int i) {
+void kpi::set_ba_id(uint32_t i) {
   _ba_id = i;
 }
 
@@ -402,7 +402,7 @@ void kpi::set_ba_id(unsigned int i) {
  *
  *  @param[in] ba_id BA ID.
  */
-void kpi::set_indicator_ba_id(unsigned int ba_id) {
+void kpi::set_indicator_ba_id(uint32_t ba_id) {
   _indicator_ba_id = ba_id;
   return;
 }
@@ -412,7 +412,7 @@ void kpi::set_indicator_ba_id(unsigned int ba_id) {
  *
  *  @param[in] meta_id  Meta-service ID.
  */
-void kpi::set_meta_id(unsigned int meta_id) {
+void kpi::set_meta_id(uint32_t meta_id) {
   _meta_id = meta_id;
   return;
 }
@@ -422,7 +422,7 @@ void kpi::set_meta_id(unsigned int meta_id) {
  *
  *  @param[in] boolexp_id  Boolean expression ID.
  */
-void kpi::set_boolexp_id(unsigned int boolexp_id) {
+void kpi::set_boolexp_id(uint32_t boolexp_id) {
   _boolexp_id = boolexp_id;
   return;
 }

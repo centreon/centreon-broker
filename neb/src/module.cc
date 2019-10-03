@@ -69,7 +69,7 @@ module& module::operator=(module const& other) {
  *
  *  @return The event_type.
  */
-unsigned int module::type() const {
+uint32_t module::type() const {
   return (module::static_type());
 }
 
@@ -78,7 +78,7 @@ unsigned int module::type() const {
  *
  *  @return  The event type.
  */
-unsigned int module::static_type() {
+uint32_t module::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_module>::value);
 }
 

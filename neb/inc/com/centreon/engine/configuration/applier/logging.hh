@@ -63,7 +63,7 @@ class logging {
   com::centreon::logging::file* _debug;
   unsigned long long _debug_level;
   unsigned long _debug_max_size;
-  unsigned int _debug_verbosity;
+  uint32_t _debug_verbosity;
   com::centreon::logging::file* _log;
   com::centreon::logging::file* _stderr;
   com::centreon::logging::file* _stdout;

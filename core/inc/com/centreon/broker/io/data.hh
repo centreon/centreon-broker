@@ -39,12 +39,12 @@ class data {
   data(data const& other);
   virtual ~data();
   data& operator=(data const& other);
-  virtual unsigned int type() const = 0;
+  virtual uint32_t type() const = 0;
 
-  unsigned int source_id;
-  unsigned int destination_id;
+  uint32_t source_id;
+  uint32_t destination_id;
 
-  static unsigned int broker_id;
+  static uint32_t broker_id;
 };
 }  // namespace io
 

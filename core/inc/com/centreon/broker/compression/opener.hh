@@ -39,13 +39,13 @@ class opener : public io::endpoint {
   opener& operator=(opener const& o);
   std::shared_ptr<io::stream> open();
   void set_level(int level = -1);
-  void set_size(unsigned int size = 0);
+  void set_size(uint32_t size = 0);
 
  private:
   std::shared_ptr<io::stream> _open(std::shared_ptr<io::stream> stream);
 
   int _level;
-  unsigned int _size;
+  uint32_t _size;
 };
 }  // namespace compression
 

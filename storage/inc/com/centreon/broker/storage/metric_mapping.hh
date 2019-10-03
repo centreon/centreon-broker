@@ -43,11 +43,11 @@ class metric_mapping : public io::data {
   metric_mapping(metric_mapping const& s);
   ~metric_mapping();
   metric_mapping& operator=(metric_mapping const& s);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int index_id;
-  unsigned int metric_id;
+  uint32_t index_id;
+  uint32_t metric_id;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

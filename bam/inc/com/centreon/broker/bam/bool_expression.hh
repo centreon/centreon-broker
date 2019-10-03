@@ -48,7 +48,7 @@ class bool_expression : public computable {
   bool state_known() const;
   void set_expression(std::shared_ptr<bool_value> const& expression);
   std::shared_ptr<bool_value> get_expression() const;
-  void set_id(unsigned int id);
+  void set_id(uint32_t id);
   void set_impact_if(bool impact_if);
   bool in_downtime() const;
 
@@ -56,7 +56,7 @@ class bool_expression : public computable {
   void _internal_copy(bool_expression const& right);
 
   std::shared_ptr<bool_value> _expression;
-  unsigned int _id;
+  uint32_t _id;
   bool _impact_if;
 };
 }  // namespace bam

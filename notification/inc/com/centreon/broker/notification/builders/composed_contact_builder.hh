@@ -39,8 +39,8 @@ class composed_contact_builder : public composed_builder<contact_builder> {
  public:
   composed_contact_builder();
 
-  virtual void add_contact(unsigned int id, objects::contact::ptr con);
-  virtual void add_contact_info(unsigned int contact_id,
+  virtual void add_contact(uint32_t id, objects::contact::ptr con);
+  virtual void add_contact_info(uint32_t contact_id,
                                 std::string const& key,
                                 std::string const& value);
 };

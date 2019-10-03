@@ -42,21 +42,21 @@ class generator {
   generator(generator const& right);
   ~generator();
   generator& operator=(generator const& right);
-  void add(unsigned int host_id,
-           unsigned int service_id,
+  void add(uint32_t host_id,
+           uint32_t service_id,
            std::shared_ptr<plugin> plugin);
-  void add(unsigned int host_id,
-           unsigned int service_id,
+  void add(uint32_t host_id,
+           uint32_t service_id,
            std::string const& name);
   void clear();
-  unsigned int interval() const throw();
-  void interval(unsigned int value);
+  uint32_t interval() const throw();
+  void interval(uint32_t value);
   void remove(uint64_t host_id, uint64_t service_id);
   void run();
   void set(config::state const& config);
 
  private:
-  unsigned int _interval;
+  uint32_t _interval;
   std::map<std::string, std::shared_ptr<plugin>> _plugins;
   std::map<std::pair<uint64_t, uint64_t>, std::shared_ptr<plugin>> _registers;
 };

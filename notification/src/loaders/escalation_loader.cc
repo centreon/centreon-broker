@@ -55,7 +55,7 @@ void escalation_loader::load(QSqlDatabase* db, escalation_builder* output) {
 
   while (query.next()) {
     escalation::ptr esc(new escalation);
-    unsigned int id = query.value(0).toUInt();
+    uint32_t id = query.value(0).toUInt();
 
     esc->set_first_notification(query.value(3).toUInt());
     esc->set_last_notification(query.value(4).toUInt());
@@ -125,7 +125,7 @@ void escalation_loader::_load_relation(
     escalation_builder& output,
     std::string const& relation_id_name,
     std::string const& table,
-    void (escalation_builder::*register_method)(unsigned int, unsigned int)) {
+    void (escalation_builder::*register_method)(uint32_t, uint32_t)) {
   std::stringstream ss;
   ss << "SELECT escalation_esc_id, " << relation_id_name << " FROM " << table;
   if (!query.exec(ss.str().c_str()))
@@ -133,8 +133,8 @@ void escalation_loader::_load_relation(
                             << " in loader: " << query.lastError().text());
 
   while (query.next()) {
-    unsigned int id = query.value(0).toUInt();
-    unsigned int associated_id = query.value(1).toUInt();
+    uint32_t id = query.value(0).toUInt();
+    uint32_t associated_id = query.value(1).toUInt();
 
     (output.*register_method)(id, associated_id);
   }

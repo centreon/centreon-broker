@@ -126,7 +126,7 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
   if (first_application)
     first_application = false;
   else {
-    unsigned int module_count(0);
+    uint32_t module_count(0);
     for (modules::iterator it(modules::instance().begin()),
          end(modules::instance().end());
          it != end; ++it)
@@ -205,7 +205,7 @@ void state::load() {
  *
  *  @return Poller ID of this Broker instance.
  */
-unsigned int state::poller_id() const throw() {
+uint32_t state::poller_id() const throw() {
   return _poller_id;
 }
 

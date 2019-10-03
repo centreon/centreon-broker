@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
     }
     generate_hosts(hosts, HOST_COUNT);
     {
-      unsigned int i(0);
+      uint32_t i(0);
       for (std::list<host>::iterator it(hosts.begin()), end(hosts.end());
            it != end; ++it) {
         char str[2];
@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
     }
     generate_services(services, hosts, SERVICES_BY_HOST);
     {
-      unsigned int i(0);
+      uint32_t i(0);
       for (std::list<service>::iterator it(services.begin()),
            end(services.end());
            it != end; ++it) {
@@ -220,7 +220,7 @@ int main(int argc, char* argv[]) {
     {
       QSqlQuery q(*db.centreon_db());
       // Host does not have status graph (yet).
-      // for (unsigned int i(0); i < HOST_COUNT; ++i) {
+      // for (uint32_t i(0); i < HOST_COUNT; ++i) {
       //   std::ostringstream query;
       //   query << "INSERT INTO rt_index_data (host_id, service_id)"
       //         << "  VALUES (" << i + 1 << ", NULL)";
@@ -228,7 +228,7 @@ int main(int argc, char* argv[]) {
       //     throw (exceptions::msg() << "cannot create index of host "
       //            << i + 1 << ": " << qPrintable(q.lastError().text()));
       // }
-      for (unsigned int i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
+      for (uint32_t i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
         std::ostringstream query;
         query << "INSERT INTO rt_index_data (host_id, service_id)"
               << "  VALUES (" << i << ", " << i << ")";
@@ -239,7 +239,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Get index list.
-    std::list<unsigned int> indexes;
+    std::list<uint32_t> indexes;
     {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT index_id FROM rt_index_data"))
@@ -293,7 +293,7 @@ int main(int argc, char* argv[]) {
     sleep_for(15);
 
     // Check metrics table.
-    std::list<unsigned int> metrics;
+    std::list<uint32_t> metrics;
     {
       std::ostringstream query;
       query << "SELECT m.metric_id, m.metric_name, m.data_source_type,"
@@ -307,7 +307,7 @@ int main(int argc, char* argv[]) {
       if (!q.exec(query.str().c_str()))
         throw(exceptions::msg() << "cannot get metric list: "
                                 << qPrintable(q.lastError().text()));
-      for (unsigned int i(0); i < HOST_COUNT * SERVICES_BY_HOST; ++i) {
+      for (uint32_t i(0); i < HOST_COUNT * SERVICES_BY_HOST; ++i) {
         if (!(i % 6))
           continue;
         if (!q.next())
@@ -315,7 +315,7 @@ int main(int argc, char* argv[]) {
                 << "not enough entry in metrics (" << i << " expected 10)");
         metrics.push_back(q.value(0).toUInt());
         QString metric_name(q.value(1).toString());
-        unsigned int data_source_type(q.value(2).toUInt());
+        uint32_t data_source_type(q.value(2).toUInt());
         QString unit_name(q.value(3).toString());
         double warning(q.value(4).toDouble());
         double warning_low(q.value(5).toDouble());
@@ -389,7 +389,7 @@ int main(int argc, char* argv[]) {
 
     // Check data_bin table.
     {
-      for (std::list<unsigned int>::const_iterator it(metrics.begin()),
+      for (std::list<uint32_t>::const_iterator it(metrics.begin()),
            end(metrics.end());
            it != end; ++it) {
         std::ostringstream query;
@@ -405,8 +405,8 @@ int main(int argc, char* argv[]) {
     }
 
     // Check that status RRD files exist.
-    unsigned int i(0);
-    for (std::list<unsigned int>::const_iterator it(indexes.begin()),
+    uint32_t i(0);
+    for (std::list<uint32_t>::const_iterator it(indexes.begin()),
          end(indexes.end());
          it != end; ++it) {
       std::ostringstream path;
@@ -418,7 +418,7 @@ int main(int argc, char* argv[]) {
 
     // Check that metrics RRD files exist.
     i = 0;
-    for (std::list<unsigned int>::const_iterator it(metrics.begin()),
+    for (std::list<uint32_t>::const_iterator it(metrics.begin()),
          end(metrics.end());
          it != end; ++it, ++i) {
       std::ostringstream path;

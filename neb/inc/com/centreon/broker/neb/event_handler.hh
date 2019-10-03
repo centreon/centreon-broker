@@ -43,8 +43,8 @@ class event_handler : public io::data {
   event_handler(event_handler const& other);
   ~event_handler();
   event_handler& operator=(event_handler const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   std::string command_args;
   std::string command_line;
@@ -52,10 +52,10 @@ class event_handler : public io::data {
   timestamp end_time;
   double execution_time;
   short handler_type;
-  unsigned int host_id;
+  uint32_t host_id;
   std::string output;
   short return_code;
-  unsigned int service_id;
+  uint32_t service_id;
   timestamp start_time;
   short state;
   short state_type;

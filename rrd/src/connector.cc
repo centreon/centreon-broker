@@ -99,7 +99,7 @@ std::shared_ptr<io::stream> connector::open() {
  *
  *  @param[in] cache_size The rrd creator cache size.
  */
-void connector::set_cache_size(unsigned int cache_size) {
+void connector::set_cache_size(uint32_t cache_size) {
   _cache_size = cache_size;
 }
 

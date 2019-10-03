@@ -40,10 +40,10 @@ class ba_event : public io::data {
   ~ba_event();
   ba_event& operator=(ba_event const& other);
   bool operator==(ba_event const& other) const;
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int ba_id;
+  uint32_t ba_id;
   double first_level;
   timestamp end_time;
   bool in_downtime;

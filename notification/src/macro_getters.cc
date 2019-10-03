@@ -241,11 +241,11 @@ std::string com::centreon::broker::notification::get_host_duration(
   unsigned long duration(now - last_state_change);
 
   // Break down duration.
-  unsigned int days(duration / (24 * 60 * 60));
+  uint32_t days(duration / (24 * 60 * 60));
   duration %= (24 * 60 * 60);
-  unsigned int hours(duration / (60 * 60));
+  uint32_t hours(duration / (60 * 60));
   duration %= (60 * 60);
-  unsigned int minutes(duration / 60);
+  uint32_t minutes(duration / 60);
   duration %= 60;
 
   // Stringify duration.
@@ -272,11 +272,11 @@ std::string com::centreon::broker::notification::get_service_duration(
   unsigned long duration(now - last_state_change);
 
   // Break down duration.
-  unsigned int days(duration / (24 * 60 * 60));
+  uint32_t days(duration / (24 * 60 * 60));
   duration %= (24 * 60 * 60);
-  unsigned int hours(duration / (60 * 60));
+  uint32_t hours(duration / (60 * 60));
   duration %= (60 * 60);
-  unsigned int minutes(duration / 60);
+  uint32_t minutes(duration / 60);
   duration %= 60;
 
   // Stringify duration.

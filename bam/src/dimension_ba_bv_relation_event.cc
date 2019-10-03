@@ -78,7 +78,7 @@ bool dimension_ba_bv_relation_event::operator==(
  *
  *  @return Event type.
  */
-unsigned int dimension_ba_bv_relation_event::type() const {
+uint32_t dimension_ba_bv_relation_event::type() const {
   return (dimension_ba_bv_relation_event::static_type());
 }
 
@@ -87,7 +87,7 @@ unsigned int dimension_ba_bv_relation_event::type() const {
  *
  *  @return Event type.
  */
-unsigned int dimension_ba_bv_relation_event::static_type() {
+uint32_t dimension_ba_bv_relation_event::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_dimension_ba_bv_relation_event>::value);
 }

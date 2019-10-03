@@ -41,12 +41,12 @@ class manager : public backend {
   struct manager_backend {
     backend* b;
     level l;
-    unsigned int types;
+    uint32_t types;
   };
   std::vector<manager_backend> _backends;
   std::mutex _backendsm;
   static manager* _instance;
-  unsigned int _limits[4];
+  uint32_t _limits[4];
   manager();
   manager(manager const& m);
   manager& operator=(manager const& m);
@@ -57,9 +57,9 @@ class manager : public backend {
   temp_logger get_temp_logger(type t, level l) throw();
   static manager& instance();
   static void load();
-  void log_msg(char const* msg, unsigned int len, type t, level l) throw();
+  void log_msg(char const* msg, uint32_t len, type t, level l) throw();
   void log_on(backend& b,
-              unsigned int types = config_type | debug_type | error_type |
+              uint32_t types = config_type | debug_type | error_type |
                                    info_type | perf_type,
               level min_priority = medium);
   static void unload();

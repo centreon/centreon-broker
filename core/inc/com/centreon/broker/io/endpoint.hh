@@ -50,14 +50,14 @@ class endpoint {
   bool is_connector() const throw();
   virtual std::shared_ptr<stream> open() = 0;
   virtual void stats(json11::Json::object& tree);
-  void set_filter(std::set<unsigned int> const& filter);
+  void set_filter(std::set<uint32_t> const& filter);
 
  protected:
   void _internal_copy(endpoint const& other);
 
   std::shared_ptr<endpoint> _from;
   bool _is_acceptor;
-  std::set<unsigned int> _filter;
+  std::set<uint32_t> _filter;
 };
 }  // namespace io
 

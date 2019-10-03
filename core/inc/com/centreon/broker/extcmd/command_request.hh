@@ -44,8 +44,8 @@ class command_request : public io::data {
   command_request& operator=(command_request const& other);
   bool is_addressed_to(std::string const& endp_name) const;
   void parse(std::string const& cmd);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   std::string cmd;
   std::string endp;
@@ -58,7 +58,7 @@ class command_request : public io::data {
  private:
   void _internal_copy(command_request const& other);
 
-  static unsigned int _id;
+  static uint32_t _id;
 };
 }  // namespace extcmd
 

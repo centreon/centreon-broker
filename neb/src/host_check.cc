@@ -63,7 +63,7 @@ host_check& host_check::operator=(host_check const& other) {
  *
  *  @return The event type.
  */
-unsigned int host_check::type() const {
+uint32_t host_check::type() const {
   return (host_check::static_type());
 }
 
@@ -72,7 +72,7 @@ unsigned int host_check::type() const {
  *
  *  @return  The event type.
  */
-unsigned int host_check::static_type() {
+uint32_t host_check::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_host_check>::value);
 }
 

@@ -187,14 +187,14 @@ int mysql_result::value_as_i32(int idx) {
 }
 
 /**
- *  Accessor to a column unsigned int value
+ *  Accessor to a column uint32_t value
  *
  * @param idx The index of the column
  *
- * @return an unsigned int
+ * @return an uint32_t
  */
-unsigned int mysql_result::value_as_u32(int idx) {
-  unsigned int retval;
+uint32_t mysql_result::value_as_u32(int idx) {
+  uint32_t retval;
   if (_bind)
     retval = _bind->value_as_u32(idx);
   else if (_row)

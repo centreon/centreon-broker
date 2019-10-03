@@ -110,7 +110,7 @@ int main() {
     c.stopping();
 
     // Read retention state.
-    QMap<QPair<unsigned int, unsigned int>, node> retained;
+    QMap<QPair<uint32_t, uint32_t>, node> retained;
     parser p;
     p.parse(config_path, false, retained);
     p.parse(retention_path, true, retained);

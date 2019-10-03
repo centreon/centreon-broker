@@ -144,21 +144,21 @@ void downtime_serializable::visit(ceof::ceof_visitor& visitor) {
       &downtime_serializable::set_downtime_member<bool, &downtime::fixed>);
   visitor.visit(
       *this, "host_id",
-      &downtime_serializable::get_downtime_member<unsigned int,
+      &downtime_serializable::get_downtime_member<uint32_t,
                                                   &downtime::host_id>,
-      &downtime_serializable::set_downtime_member<unsigned int,
+      &downtime_serializable::set_downtime_member<uint32_t,
                                                   &downtime::host_id>);
   visitor.visit(
       *this, "internal_id",
-      &downtime_serializable::get_downtime_member<unsigned int,
+      &downtime_serializable::get_downtime_member<uint32_t,
                                                   &downtime::internal_id>,
-      &downtime_serializable::set_downtime_member<unsigned int,
+      &downtime_serializable::set_downtime_member<uint32_t,
                                                   &downtime::internal_id>);
   visitor.visit(
       *this, "service_id",
-      &downtime_serializable::get_downtime_member<unsigned int,
+      &downtime_serializable::get_downtime_member<uint32_t,
                                                   &downtime::service_id>,
-      &downtime_serializable::set_downtime_member<unsigned int,
+      &downtime_serializable::set_downtime_member<uint32_t,
                                                   &downtime::service_id>);
   visitor.visit(
       *this, "start_time",
@@ -168,9 +168,9 @@ void downtime_serializable::visit(ceof::ceof_visitor& visitor) {
                                                   &downtime::start_time>);
   visitor.visit(
       *this, "triggered_by",
-      &downtime_serializable::get_downtime_member<unsigned int,
+      &downtime_serializable::get_downtime_member<uint32_t,
                                                   &downtime::triggered_by>,
-      &downtime_serializable::set_downtime_member<unsigned int,
+      &downtime_serializable::set_downtime_member<uint32_t,
                                                   &downtime::triggered_by>);
   visitor.visit(
       *this, "was_cancelled",

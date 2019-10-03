@@ -54,7 +54,7 @@ class mysql_column {
  private:
   int _type;
   int _row_count;
-  unsigned int _str_size;
+  uint32_t _str_size;
   void* _vector;
   std::vector<my_bool> _is_null;
   std::vector<my_bool> _error;

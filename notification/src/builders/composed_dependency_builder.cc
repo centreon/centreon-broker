@@ -26,7 +26,7 @@ using namespace com::centreon::broker::notification::objects;
  */
 composed_dependency_builder::composed_dependency_builder() {}
 
-void composed_dependency_builder::add_dependency(unsigned int id,
+void composed_dependency_builder::add_dependency(uint32_t id,
                                                  dependency::ptr d) {
   for (composed_builder<dependency_builder>::iterator it(begin()),
        it_end(end());
@@ -35,7 +35,7 @@ void composed_dependency_builder::add_dependency(unsigned int id,
 }
 
 void composed_dependency_builder::dependency_node_id_parent_relation(
-    unsigned int dep_id,
+    uint32_t dep_id,
     node_id id) {
   for (composed_builder<dependency_builder>::iterator it(begin()),
        it_end(end());
@@ -44,7 +44,7 @@ void composed_dependency_builder::dependency_node_id_parent_relation(
 }
 
 void composed_dependency_builder::dependency_node_id_child_relation(
-    unsigned int dep_id,
+    uint32_t dep_id,
     node_id id) {
   for (composed_builder<dependency_builder>::iterator it(begin()),
        it_end(end());
@@ -53,7 +53,7 @@ void composed_dependency_builder::dependency_node_id_child_relation(
 }
 
 void composed_dependency_builder::set_notification_failure_options(
-    unsigned int dep_id,
+    uint32_t dep_id,
     std::string const& line) {
   for (composed_builder<dependency_builder>::iterator it(begin()),
        it_end(end());
@@ -62,7 +62,7 @@ void composed_dependency_builder::set_notification_failure_options(
 }
 
 void composed_dependency_builder::set_execution_failure_options(
-    unsigned int dep_id,
+    uint32_t dep_id,
     std::string const& line) {
   for (composed_builder<dependency_builder>::iterator it(begin()),
        it_end(end());

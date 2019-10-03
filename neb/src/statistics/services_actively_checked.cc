@@ -68,7 +68,7 @@ services_actively_checked& services_actively_checked::operator=(
 void services_actively_checked::run(std::string& output,
                                     std::string& perfdata) {
   // Count services active checked.
-  unsigned int total{0};
+  uint32_t total{0};
   for (service_map::const_iterator
            it{com::centreon::engine::service::services.begin()},
        end{com::centreon::engine::service::services.end()};

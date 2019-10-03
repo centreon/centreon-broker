@@ -51,7 +51,7 @@ class escalation_loader {
       escalation_builder& output,
       std::string const& relation_id_name,
       std::string const& table,
-      void (escalation_builder::*register_method)(unsigned int, unsigned int));
+      void (escalation_builder::*register_method)(uint32_t, uint32_t));
 };
 
 }  // namespace notification

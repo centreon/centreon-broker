@@ -29,7 +29,7 @@ CCB_BEGIN()
 namespace misc {
 std::string temp_path();
 std::list<std::string> split(std::string const& str, char sep);
-uint16_t crc16_ccitt(char const* data, unsigned int data_len);
+uint16_t crc16_ccitt(char const* data, uint32_t data_len);
 std::string exec(std::string const& cmd);
 int32_t exec_process(char const** argv, bool wait_for_completion);
 std::vector<char> from_hex(std::string const& str);

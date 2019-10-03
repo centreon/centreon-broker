@@ -40,23 +40,23 @@ class downtime_map {
   downtime_map& operator=(downtime_map const& other);
   virtual ~downtime_map();
 
-  unsigned int get_new_downtime_id();
+  uint32_t get_new_downtime_id();
   std::list<downtime> get_all_downtimes_of_node(node_id id) const;
   std::list<downtime> get_all_recurring_downtimes_of_node(node_id id) const;
   void delete_downtime(downtime const& dwn);
   void add_downtime(downtime const& dwn);
-  downtime* get_downtime(unsigned int internal_id);
-  bool is_recurring(unsigned int internal_id) const;
+  downtime* get_downtime(uint32_t internal_id);
+  bool is_recurring(uint32_t internal_id) const;
   std::list<downtime> get_all_recurring_downtimes() const;
   std::list<downtime> get_all_downtimes() const;
-  bool spawned_downtime_exist(unsigned int parent_id) const;
+  bool spawned_downtime_exist(uint32_t parent_id) const;
 
  private:
-  unsigned int _actual_downtime_id;
-  std::unordered_map<unsigned int, downtime> _downtimes;
-  std::unordered_multimap<node_id, unsigned int> _downtime_id_by_nodes;
-  std::unordered_map<unsigned int, downtime> _recurring_downtimes;
-  std::unordered_multimap<node_id, unsigned int>
+  uint32_t _actual_downtime_id;
+  std::unordered_map<uint32_t, downtime> _downtimes;
+  std::unordered_multimap<node_id, uint32_t> _downtime_id_by_nodes;
+  std::unordered_map<uint32_t, downtime> _recurring_downtimes;
+  std::unordered_multimap<node_id, uint32_t>
       _recurring_downtime_id_by_nodes;
 };
 }  // namespace neb

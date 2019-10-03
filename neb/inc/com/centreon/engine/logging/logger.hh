@@ -88,7 +88,7 @@ enum verbosity_level { basic = 0u, more = 1u, most = 2u };
 CCE_END()
 
 #define logger(type, verbose)                                            \
-  for (unsigned int __com_centreon_engine_logging_define_ui(0);          \
+  for (uint32_t __com_centreon_engine_logging_define_ui(0);          \
        !__com_centreon_engine_logging_define_ui &&                       \
        com::centreon::logging::engine::instance().is_log(type, verbose); \
        ++__com_centreon_engine_logging_define_ui)                        \

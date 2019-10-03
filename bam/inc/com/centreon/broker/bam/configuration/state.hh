@@ -42,10 +42,10 @@ namespace configuration {
 class state {
  public:
   /* Typedefs */
-  typedef std::map<unsigned int, ba> bas;
-  typedef std::map<unsigned int, kpi> kpis;
-  typedef std::map<unsigned int, bool_expression> bool_exps;
-  typedef std::map<unsigned int, meta_service> meta_services;
+  typedef std::map<uint32_t, ba> bas;
+  typedef std::map<uint32_t, kpi> kpis;
+  typedef std::map<uint32_t, bool_expression> bool_exps;
+  typedef std::map<uint32_t, meta_service> meta_services;
 
   state();
   state(state const& other);

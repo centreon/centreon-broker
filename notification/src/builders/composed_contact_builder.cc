@@ -32,7 +32,7 @@ composed_contact_builder::composed_contact_builder() {}
  *  @param[in] id The id of the contact.
  *  @param[in] con The contact.
  */
-void composed_contact_builder::add_contact(unsigned int id, contact::ptr con) {
+void composed_contact_builder::add_contact(uint32_t id, contact::ptr con) {
   for (composed_builder<contact_builder>::iterator it(begin()), end_it(end());
        it != end_it; ++it)
     (*it)->add_contact(id, con);
@@ -45,7 +45,7 @@ void composed_contact_builder::add_contact(unsigned int id, contact::ptr con) {
  *  @param[in] key         The key of the contact info.
  *  @param[in] value       The value of the contact info.
  */
-void composed_contact_builder::add_contact_info(unsigned int contact_id,
+void composed_contact_builder::add_contact_info(uint32_t contact_id,
                                                 std::string const& key,
                                                 std::string const& value) {
   for (composed_builder<contact_builder>::iterator it(begin()), end_it(end());

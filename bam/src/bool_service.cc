@@ -86,7 +86,7 @@ bool bool_service::child_has_update(computable* child, io::stream* visitor) {
  *
  *  @return Host ID.
  */
-unsigned int bool_service::get_host_id() const {
+uint32_t bool_service::get_host_id() const {
   return (_host_id);
 }
 
@@ -95,7 +95,7 @@ unsigned int bool_service::get_host_id() const {
  *
  *  @return Service ID.
  */
-unsigned int bool_service::get_service_id() const {
+uint32_t bool_service::get_service_id() const {
   return (_service_id);
 }
 
@@ -104,7 +104,7 @@ unsigned int bool_service::get_service_id() const {
  *
  *  @param[in] host_id Host ID.
  */
-void bool_service::set_host_id(unsigned int host_id) {
+void bool_service::set_host_id(uint32_t host_id) {
   _host_id = host_id;
   return;
 }
@@ -114,7 +114,7 @@ void bool_service::set_host_id(unsigned int host_id) {
  *
  *  @param[in] service_id Service ID.
  */
-void bool_service::set_service_id(unsigned int service_id) {
+void bool_service::set_service_id(uint32_t service_id) {
   _service_id = service_id;
   return;
 }

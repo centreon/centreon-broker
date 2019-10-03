@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/storage/index_mapping.hh"
 #include <cmath>
+#include "com/centreon/broker/storage/index_mapping.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
 
@@ -29,11 +29,6 @@ using namespace com::centreon::broker::storage;
  *           Public Methods            *
  *                                     *
  **************************************/
-
-/**
- *  Default constructor.
- */
-index_mapping::index_mapping() : index_id(0), host_id(0), service_id(0) {}
 
 /**
  *  Constructor
@@ -48,40 +43,11 @@ index_mapping::index_mapping(uint32_t index_id,
     : index_id{index_id}, host_id{host_id}, service_id{service_id} {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-index_mapping::index_mapping(index_mapping const& other) : io::data(other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-index_mapping::~index_mapping() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-index_mapping& index_mapping::operator=(index_mapping const& other) {
-  if (this != &other) {
-    io::data::operator=(other);
-    _internal_copy(other);
-  }
-  return (*this);
-}
-
-/**
  *  Get the event type.
  *
  *  @return The event type.
  */
-unsigned int index_mapping::type() const {
+uint32_t index_mapping::type() const {
   return (index_mapping::static_type());
 }
 
@@ -90,27 +56,9 @@ unsigned int index_mapping::type() const {
  *
  *  @return  The event type.
  */
-unsigned int index_mapping::static_type() {
-  return (io::events::data_type<io::events::storage,
-                                storage::de_index_mapping>::value);
-}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void index_mapping::_internal_copy(index_mapping const& other) {
-  index_id = other.index_id;
-  host_id = other.host_id;
-  service_id = other.service_id;
-  return;
+uint32_t index_mapping::static_type() {
+  return io::events::data_type<io::events::storage,
+                               storage::de_index_mapping>::value;
 }
 
 /**************************************

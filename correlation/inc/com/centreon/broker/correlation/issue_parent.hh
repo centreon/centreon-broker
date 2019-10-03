@@ -41,15 +41,15 @@ class issue_parent : public io::data {
   issue_parent(issue_parent const& ip);
   ~issue_parent();
   issue_parent& operator=(issue_parent const& ip);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int child_host_id;
-  unsigned int child_service_id;
+  uint32_t child_host_id;
+  uint32_t child_service_id;
   timestamp child_start_time;
   timestamp end_time;
-  unsigned int parent_host_id;
-  unsigned int parent_service_id;
+  uint32_t parent_host_id;
+  uint32_t parent_service_id;
   timestamp parent_start_time;
   timestamp start_time;
 

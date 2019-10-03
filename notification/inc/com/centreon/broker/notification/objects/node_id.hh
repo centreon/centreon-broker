@@ -40,20 +40,20 @@ class node_id {
   node_id();
   node_id(node_id const& obj);
   node_id& operator=(node_id const& obj);
-  explicit node_id(unsigned int host_id, unsigned int service_id = 0);
+  explicit node_id(uint32_t host_id, uint32_t service_id = 0);
   bool operator<(node_id const& obj) const throw();
   bool operator==(node_id const& obj) const throw();
   bool operator!=(node_id const& obj) const throw();
 
-  unsigned int get_host_id() const throw();
-  unsigned int get_service_id() const throw();
+  uint32_t get_host_id() const throw();
+  uint32_t get_service_id() const throw();
   bool is_host() const throw();
   bool is_service() const throw();
   node_id to_host() const throw();
 
  private:
-  unsigned int _host_id;
-  unsigned int _service_id;
+  uint32_t _host_id;
+  uint32_t _service_id;
 };
 
 // QHash function for hash and sets.

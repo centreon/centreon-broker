@@ -48,9 +48,9 @@ class backend {
   virtual void commit() = 0;
   virtual void open(std::string const& filename) = 0;
   virtual void open(std::string const& filename,
-                    unsigned int length,
+                    uint32_t length,
                     time_t from,
-                    unsigned int step,
+                    uint32_t step,
                     short value_type = 0) = 0;
   virtual void remove(std::string const& filename) = 0;
   virtual void update(time_t t, std::string const& value) = 0;

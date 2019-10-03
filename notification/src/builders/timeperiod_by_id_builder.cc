@@ -27,7 +27,7 @@ using namespace com::centreon::broker::time;
  *  @param[in] table  The table to fill.
  */
 timeperiod_by_id_builder::timeperiod_by_id_builder(
-    QHash<unsigned int, timeperiod::ptr>& table)
+    QHash<uint32_t, timeperiod::ptr>& table)
     : _table(table) {}
 
 /**
@@ -36,7 +36,7 @@ timeperiod_by_id_builder::timeperiod_by_id_builder(
  *  @param[in] id   The id of the timeperiod.
  *  @param[in] con  The timeperiod to add.
  */
-void timeperiod_by_id_builder::add_timeperiod(unsigned int id,
+void timeperiod_by_id_builder::add_timeperiod(uint32_t id,
                                               timeperiod::ptr con) {
   _table[id] = con;
 }

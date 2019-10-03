@@ -45,7 +45,7 @@ class command_builder {
    *  @param[in] id The id of the command.
    *  @param[in] com The command.
    */
-  virtual void add_command(unsigned int id, objects::command::ptr com) {
+  virtual void add_command(uint32_t id, objects::command::ptr com) {
     (void)id;
     (void)com;
   }

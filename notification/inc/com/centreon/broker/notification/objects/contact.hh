@@ -45,13 +45,13 @@ class contact {
   contact(contact const& obj);
   contact& operator=(contact const& obj);
 
-  unsigned int get_id() const throw();
-  void set_id(unsigned int);
+  uint32_t get_id() const throw();
+  void set_id(uint32_t);
   std::string const& get_description() const throw();
   void set_description(std::string const& desc);
 
  private:
-  unsigned int _id;
+  uint32_t _id;
   std::string _description;
 };
 }  // namespace objects

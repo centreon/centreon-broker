@@ -39,11 +39,11 @@ class rebuild : public io::data {
   rebuild(rebuild const& right);
   ~rebuild();
   rebuild& operator=(rebuild const& right);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   bool end;
-  unsigned int id;
+  uint32_t id;
   bool is_index;
 
   static mapping::entry const entries[];

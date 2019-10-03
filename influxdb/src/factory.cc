@@ -126,7 +126,7 @@ io::endpoint* factory::new_endpoint(
     }
   }
 
-  unsigned int queries_per_transaction(0);
+  uint32_t queries_per_transaction(0);
   {
     std::map<std::string, std::string>::const_iterator it{
         cfg.params.find("queries_per_transaction")};

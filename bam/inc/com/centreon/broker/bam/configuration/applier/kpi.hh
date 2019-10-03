@@ -69,10 +69,10 @@ class kpi {
   void _internal_copy(kpi const& other);
   std::shared_ptr<bam::kpi> _new_kpi(configuration::kpi const& cfg);
   void _invalidate_ba(configuration::kpi const& cfg);
-  void _remove_kpi(unsigned int kpi_id);
+  void _remove_kpi(uint32_t kpi_id);
   void _resolve_kpi(configuration::kpi const& cfg, std::shared_ptr<bam::kpi>);
 
-  std::map<unsigned int, applied> _applied;
+  std::map<uint32_t, applied> _applied;
   ba* _bas;
   service_book* _book;
   bool_expression* _boolexps;

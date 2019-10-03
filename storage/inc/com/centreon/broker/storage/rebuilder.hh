@@ -36,24 +36,24 @@ namespace storage {
 class rebuilder {
  public:
   rebuilder(database_config const& db_cfg,
-            unsigned int rebuild_check_interval = 600,
-            unsigned int rrd_length = 15552000,
-            unsigned int interval_length = 60);
+            uint32_t rebuild_check_interval = 600,
+            uint32_t rrd_length = 15552000,
+            uint32_t interval_length = 60);
   ~rebuilder();
-  unsigned int get_rebuild_check_interval() const throw();
-  unsigned int get_rrd_length() const throw();
+  uint32_t get_rebuild_check_interval() const throw();
+  uint32_t get_rrd_length() const throw();
 
  private:
   // Local types.
   struct index_info {
-    unsigned int index_id;
-    unsigned int host_id;
-    unsigned int service_id;
-    unsigned int rrd_retention;
+    uint32_t index_id;
+    uint32_t host_id;
+    uint32_t service_id;
+    uint32_t rrd_retention;
   };
 
   struct metric_info {
-    unsigned int metric_id;
+    uint32_t metric_id;
     std::string metric_name;
     short metric_type;
   };
@@ -62,24 +62,24 @@ class rebuilder {
   rebuilder& operator=(rebuilder const& other);
   void _next_index_to_rebuild(index_info& info, mysql& ms);
   void _rebuild_metric(mysql& ms,
-                       unsigned int metric_id,
-                       unsigned int host_id,
-                       unsigned int service_id,
+                       uint32_t metric_id,
+                       uint32_t host_id,
+                       uint32_t service_id,
                        std::string const& metric_name,
                        short metric_type,
-                       unsigned int interval,
+                       uint32_t interval,
                        unsigned length);
-  void _rebuild_status(mysql& ms, unsigned int index_id, unsigned int interval);
-  void _send_rebuild_event(bool end, unsigned int id, bool is_index);
-  void _set_index_rebuild(mysql& db, unsigned int index_id, short state);
+  void _rebuild_status(mysql& ms, uint32_t index_id, uint32_t interval);
+  void _send_rebuild_event(bool end, uint32_t id, bool is_index);
+  void _set_index_rebuild(mysql& db, uint32_t index_id, short state);
   void _run();
 
   std::unique_ptr<std::thread> _thread;
   database_config _db_cfg;
   std::shared_ptr<mysql_connection> _connection;
-  unsigned int _interval_length;
-  unsigned int _rebuild_check_interval;
-  unsigned int _rrd_len;
+  uint32_t _interval_length;
+  uint32_t _rebuild_check_interval;
+  uint32_t _rrd_len;
   std::condition_variable _cond_should_exit;
   std::mutex _mutex_should_exit;
   volatile bool _should_exit;

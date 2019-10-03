@@ -46,11 +46,11 @@ class kpi : public computable {
   kpi(kpi const& right);
   virtual ~kpi();
   kpi& operator=(kpi const& right);
-  unsigned int get_id() const;
+  uint32_t get_id() const;
   timestamp get_last_state_change() const;
   virtual void impact_hard(impact_values& hard_impact) = 0;
   virtual void impact_soft(impact_values& soft_impact) = 0;
-  void set_id(unsigned int id);
+  void set_id(uint32_t id);
   virtual void set_initial_event(kpi_event const& e);
   virtual void visit(io::stream* visitor) = 0;
   virtual bool in_downtime() const;
@@ -59,7 +59,7 @@ class kpi : public computable {
   void commit_initial_events(io::stream* visitor);
 
  protected:
-  unsigned int _id;
+  uint32_t _id;
   std::shared_ptr<kpi_event> _event;
   std::vector<std::shared_ptr<kpi_event> > _initial_events;
 };

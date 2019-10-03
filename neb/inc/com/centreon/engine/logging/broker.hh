@@ -41,9 +41,9 @@ class broker : public com::centreon::logging::backend {
   broker& operator=(broker const& right);
   void close() throw() override;
   void log(unsigned long long types,
-           unsigned int verbose,
+           uint32_t verbose,
            char const* msg,
-           unsigned int size) throw() override;
+           uint32_t size) throw() override;
   void open() override;
   void reopen() override;
 

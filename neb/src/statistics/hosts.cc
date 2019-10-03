@@ -64,13 +64,13 @@ hosts& hosts::operator=(hosts const& right) {
  */
 void hosts::run(std::string& output, std::string& perfdata) {
   // Count hosts up / down / unreachable.
-  unsigned int total[3] = {0, 0, 0};
+  uint32_t total[3] = {0, 0, 0};
   for (host_map::const_iterator it{com::centreon::engine::host::hosts.begin()},
        end{com::centreon::engine::host::hosts.end()};
        it != end; ++it)
     ++total[it->second->get_current_state()];
 
-  unsigned int not_up{total[com::centreon::engine::host::state_down] +
+  uint32_t not_up{total[com::centreon::engine::host::state_down] +
                       total[com::centreon::engine::host::state_unreachable]};
 
   // Output.

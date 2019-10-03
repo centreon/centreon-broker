@@ -50,7 +50,7 @@ stream::stream(std::string const& metric_naming,
                std::string const& db_password,
                std::string const& db_host,
                unsigned short db_port,
-               unsigned int queries_per_transaction,
+               uint32_t queries_per_transaction,
                std::shared_ptr<persistent_cache> const& cache)
     : _metric_naming{metric_naming},
       _status_naming{status_naming},

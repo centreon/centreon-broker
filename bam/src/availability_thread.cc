@@ -273,20 +273,20 @@ void availability_thread::_build_daily_availabilities(int thread_id,
   _mysql->run_query_and_get_result(query.str(), &promise, thread_id);
 
   // Create a builder for each ba_id and associated timeperiod_id.
-  std::map<std::pair<unsigned int, unsigned int>, availability_builder>
+  std::map<std::pair<uint32_t, uint32_t>, availability_builder>
       builders;
   try {
     database::mysql_result res(promise.get_future().get());
     while (_mysql->fetch_row(res)) {
-      unsigned int ba_id = res.value_as_i32(1);
-      unsigned int timeperiod_id = res.value_as_i32(6);
+      uint32_t ba_id = res.value_as_i32(1);
+      uint32_t timeperiod_id = res.value_as_i32(6);
       // Find the timeperiod.
       time::timeperiod::ptr tp = _shared_tps.get_timeperiod(timeperiod_id);
       // No timeperiod found, skip.
       if (!tp)
         continue;
       // Find the builder.
-      std::map<std::pair<unsigned int, unsigned int>,
+      std::map<std::pair<uint32_t, uint32_t>,
                availability_builder>::iterator found =
           builders.find(std::make_pair(ba_id, timeperiod_id));
       // No builders found, create one.
@@ -326,7 +326,7 @@ void availability_thread::_build_daily_availabilities(int thread_id,
   try {
     database::mysql_result res(promise.get_future().get());
     while (_mysql->fetch_row(res)) {
-      unsigned int ba_id = res.value_as_i32(1);
+      uint32_t ba_id = res.value_as_i32(1);
       // Get all the timeperiods associated with the ba of this event.
       std::vector<std::pair<time::timeperiod::ptr, bool>> tps =
           _shared_tps.get_timeperiods_by_ba_id(ba_id);
@@ -334,9 +334,9 @@ void availability_thread::_build_daily_availabilities(int thread_id,
                it(tps.begin()),
            end(tps.end());
            it != end; ++it) {
-        unsigned int tp_id = it->first->get_id();
+        uint32_t tp_id = it->first->get_id();
         // Find the builder.
-        std::map<std::pair<unsigned int, unsigned int>,
+        std::map<std::pair<uint32_t, uint32_t>,
                  availability_builder>::iterator found =
             builders.find(std::make_pair(ba_id, tp_id));
         // No builders found, create one.
@@ -362,7 +362,7 @@ void availability_thread::_build_daily_availabilities(int thread_id,
   }
 
   // For each builder, write the availabilities.
-  for (std::map<std::pair<unsigned int, unsigned int>,
+  for (std::map<std::pair<uint32_t, uint32_t>,
                 availability_builder>::const_iterator it = builders.begin(),
                                                       end = builders.end();
        it != end; ++it)
@@ -382,9 +382,9 @@ void availability_thread::_build_daily_availabilities(int thread_id,
 void availability_thread::_write_availability(
     int thread_id,
     availability_builder const& builder,
-    unsigned int ba_id,
+    uint32_t ba_id,
     time_t day_start,
-    unsigned int timeperiod_id) {
+    uint32_t timeperiod_id) {
   logging::debug(logging::low)
       << "BAM-BI: availability thread writing availability for "
          "BA "

@@ -52,7 +52,7 @@ syslogger::~syslogger() {
  *  @param[in] l        Priority of this message.
  */
 void syslogger::log_msg(char const* msg,
-                        unsigned int len,
+                        uint32_t len,
                         type log_type,
                         level l) throw() {
   (void)len;

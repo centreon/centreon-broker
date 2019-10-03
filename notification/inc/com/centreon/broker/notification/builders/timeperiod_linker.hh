@@ -38,18 +38,18 @@ class timeperiod_linker : public timeperiod_builder {
  public:
   timeperiod_linker();
 
-  void add_timeperiod(unsigned int id, time::timeperiod::ptr con);
+  void add_timeperiod(uint32_t id, time::timeperiod::ptr con);
 
-  void add_timeperiod_exception(unsigned int timeperiod_id,
+  void add_timeperiod_exception(uint32_t timeperiod_id,
                                 std::string const& days,
                                 std::string const& timerange);
-  void add_timeperiod_exclude_relation(unsigned int timeperiod_id,
-                                       unsigned int exclude_id);
-  void add_timeperiod_include_relation(unsigned int timeperiod_id,
-                                       unsigned int include_id);
+  void add_timeperiod_exclude_relation(uint32_t timeperiod_id,
+                                       uint32_t exclude_id);
+  void add_timeperiod_include_relation(uint32_t timeperiod_id,
+                                       uint32_t include_id);
 
  private:
-  QHash<unsigned int, time::timeperiod::ptr> _table;
+  QHash<uint32_t, time::timeperiod::ptr> _table;
 };
 
 }  // namespace notification

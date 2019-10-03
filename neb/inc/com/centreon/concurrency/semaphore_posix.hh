@@ -33,7 +33,7 @@ namespace concurrency {
  */
 class semaphore {
  public:
-  semaphore(unsigned int n = 0);
+  semaphore(uint32_t n = 0);
   ~semaphore() throw();
   void acquire();
   bool acquire(unsigned long timeout);

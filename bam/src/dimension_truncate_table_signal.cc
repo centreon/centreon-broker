@@ -78,7 +78,7 @@ bool dimension_truncate_table_signal::operator==(
  *
  *  @return Event type.
  */
-unsigned int dimension_truncate_table_signal::type() const {
+uint32_t dimension_truncate_table_signal::type() const {
   return (dimension_truncate_table_signal::static_type());
 }
 
@@ -87,7 +87,7 @@ unsigned int dimension_truncate_table_signal::type() const {
  *
  *  @return Event type.
  */
-unsigned int dimension_truncate_table_signal::static_type() {
+uint32_t dimension_truncate_table_signal::static_type() {
   return (
       io::events::data_type<io::events::bam,
                             bam::de_dimension_truncate_table_signal>::value);

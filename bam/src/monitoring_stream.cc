@@ -378,7 +378,7 @@ void monitoring_stream::_prepare() {
  */
 void monitoring_stream::_rebuild() {
   // Get the list of the BAs that should be rebuild.
-  std::vector<unsigned int> bas_to_rebuild;
+  std::vector<uint32_t> bas_to_rebuild;
   {
     std::ostringstream query;
     query << "SELECT ba_id"
@@ -406,7 +406,7 @@ void monitoring_stream::_rebuild() {
   std::shared_ptr<rebuild> r(new rebuild);
   {
     std::ostringstream oss;
-    for (std::vector<unsigned int>::const_iterator it(bas_to_rebuild.begin()),
+    for (std::vector<uint32_t>::const_iterator it(bas_to_rebuild.begin()),
          end(bas_to_rebuild.end());
          it != end; ++it)
       oss << *it << ", ";

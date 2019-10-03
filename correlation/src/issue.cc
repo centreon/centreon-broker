@@ -92,7 +92,7 @@ bool issue::operator!=(issue const& i) const {
  *
  *  @return The event type.
  */
-unsigned int issue::type() const {
+uint32_t issue::type() const {
   return (issue::static_type());
 }
 
@@ -101,7 +101,7 @@ unsigned int issue::type() const {
  *
  *  @return  The event type.
  */
-unsigned int issue::static_type() {
+uint32_t issue::static_type() {
   return (io::events::data_type<io::events::correlation,
                                 correlation::de_issue>::value);
 }

@@ -38,7 +38,7 @@ enum verbosity_level { low = 0, medium = 1, high = 2 };
 CC_END()
 
 #define log_info(verbose)                                                \
-  for (unsigned int __com_centreon_logging_define_ui(0);                 \
+  for (uint32_t __com_centreon_logging_define_ui(0);                 \
        !__com_centreon_logging_define_ui &&                              \
        com::centreon::logging::engine::instance().is_log(                \
            com::centreon::logging::type_info, verbose);                  \
@@ -48,7 +48,7 @@ CC_END()
       << "[info] "
 
 #define log_debug(verbose)                                                \
-  for (unsigned int __com_centreon_logging_define_ui(0);                  \
+  for (uint32_t __com_centreon_logging_define_ui(0);                  \
        !__com_centreon_logging_define_ui &&                               \
        com::centreon::logging::engine::instance().is_log(                 \
            com::centreon::logging::type_debug, verbose);                  \
@@ -58,7 +58,7 @@ CC_END()
       << "[debug] "
 
 #define log_error(verbose)                                                \
-  for (unsigned int __com_centreon_logging_define_ui(0);                  \
+  for (uint32_t __com_centreon_logging_define_ui(0);                  \
        !__com_centreon_logging_define_ui &&                               \
        com::centreon::logging::engine::instance().is_log(                 \
            com::centreon::logging::type_error, verbose);                  \

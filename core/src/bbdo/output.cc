@@ -113,7 +113,7 @@ static void get_timestamp(io::data const& t,
 }
 
 /**
- *  Get an unsigned integer from an object.
+ *  Get an uint32_teger from an object.
  */
 static void get_uint(io::data const& t,
                      mapping::entry const& member,
@@ -139,7 +139,7 @@ static io::raw* serialize(io::data const& e) {
     std::vector<char>& data(buffer->get_buffer());
 
     // Reserve space for the BBDO header.
-    unsigned int beginning(data.size());
+    uint32_t beginning(data.size());
     data.resize(data.size() + BBDO_HEADER_SIZE);
     *(static_cast<uint32_t*>(static_cast<void*>(data.data() + beginning + 4))) =
         htonl(e.type());
@@ -179,7 +179,7 @@ static io::raw* serialize(io::data const& e) {
         }
 
       // Packet splitting.
-      while (static_cast<unsigned int>(data.size()) >=
+      while (static_cast<uint32_t>(data.size()) >=
              (beginning + BBDO_HEADER_SIZE + 0xFFFF)) {
         // Set size.
         *(static_cast<uint16_t*>(static_cast<void*>(data.data() + beginning)) +

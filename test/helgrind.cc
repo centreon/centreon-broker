@@ -29,9 +29,9 @@
 
 static char const* valgrind_arg = "--tool=helgrind";
 static char const* db_name = "CENTREON_BROKER_TEST_HELGRIND";
-static unsigned int service_number = 5;
-static unsigned int host_number = 5;
-static unsigned int command_number = 10;
+static uint32_t service_number = 5;
+static uint32_t host_number = 5;
+static uint32_t command_number = 10;
 
 using namespace com::centreon::broker;
 

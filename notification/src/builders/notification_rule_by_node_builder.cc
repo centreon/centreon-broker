@@ -37,7 +37,7 @@ notification_rule_by_node_builder::notification_rule_by_node_builder(
  *  @param[in] con  The rule to add.
  */
 void notification_rule_by_node_builder::add_rule(
-    unsigned int rule_id,
+    uint32_t rule_id,
     objects::notification_rule::ptr rule) {
   (void)rule_id;
   _map.insert(rule->get_node_id(), rule);

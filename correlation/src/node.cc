@@ -322,7 +322,7 @@ void node::remove_parent(node* n) {
  *
  *  @return  A pair of host_id, service_id.
  */
-std::pair<unsigned int, unsigned int> node::get_id() const {
+std::pair<uint32_t, uint32_t> node::get_id() const {
   return (std::make_pair(host_id, service_id));
 }
 
@@ -567,7 +567,7 @@ void node::serialize(persistent_cache& cache) const {
   if (my_issue)
     cache.add(std::make_shared<issue>(*my_issue));
   cache.add(std::make_shared<correlation::state>(*this));
-  for (std::map<unsigned int, neb::downtime>::const_iterator
+  for (std::map<uint32_t, neb::downtime>::const_iterator
            it = downtimes.begin(),
            end = downtimes.end();
        it != end; ++it)
@@ -680,7 +680,7 @@ correlation::state node::_open_state_event(timestamp start_time) const {
   st.host_id = host_id;
   st.current_state = current_state;
   timestamp earliest_downtime;
-  for (std::map<unsigned int, neb::downtime>::const_iterator
+  for (std::map<uint32_t, neb::downtime>::const_iterator
            it(downtimes.begin()),
        end(downtimes.end());
        it != end; ++it)

@@ -52,22 +52,22 @@ class meta_service : public computable, public metric_listener {
   meta_service(meta_service const& other);
   ~meta_service();
   meta_service& operator=(meta_service const& other);
-  void add_metric(unsigned int metric_id);
+  void add_metric(uint32_t metric_id);
   bool child_has_update(computable* child, io::stream* visitor = NULL);
-  unsigned int get_id() const;
-  unsigned int get_host_id() const;
-  unsigned int get_service_id() const;
+  uint32_t get_id() const;
+  uint32_t get_host_id() const;
+  uint32_t get_service_id() const;
   std::string get_output() const;
   std::string get_perfdata() const;
   short get_state() const;
   void metric_update(std::shared_ptr<storage::metric> const& m,
                      io::stream* visitor = NULL);
-  void remove_metric(unsigned int metric_id);
+  void remove_metric(uint32_t metric_id);
   void recompute();
   void set_computation(computation_type type);
-  void set_id(unsigned int id);
-  void set_host_id(unsigned int host_id);
-  void set_service_id(unsigned int service_id);
+  void set_id(uint32_t id);
+  void set_host_id(uint32_t host_id);
+  void set_service_id(uint32_t service_id);
   void set_level_critical(double level);
   void set_level_warning(double level);
   void visit(io::stream* visitor, bool& changed_state);
@@ -81,13 +81,13 @@ class meta_service : public computable, public metric_listener {
   void _send_service_status(io::stream* visitor, bool state_has_changed);
 
   computation_type _computation;
-  unsigned int _id;
-  unsigned int _host_id;
-  unsigned int _service_id;
+  uint32_t _id;
+  uint32_t _host_id;
+  uint32_t _service_id;
   short _last_state;
   double _level_critical;
   double _level_warning;
-  std::unordered_map<unsigned int, double> _metrics;
+  std::unordered_map<uint32_t, double> _metrics;
   int _recompute_count;
   double _value;
   timestamp _last_service_status_sent;

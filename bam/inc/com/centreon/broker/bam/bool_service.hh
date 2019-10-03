@@ -45,10 +45,10 @@ class bool_service : public bool_value, public service_listener {
   ~bool_service();
   bool_service& operator=(bool_service const& right);
   bool child_has_update(computable* child, io::stream* visitor = NULL);
-  unsigned int get_host_id() const;
-  unsigned int get_service_id() const;
-  void set_host_id(unsigned int host_id);
-  void set_service_id(unsigned int service_id);
+  uint32_t get_host_id() const;
+  uint32_t get_service_id() const;
+  void set_host_id(uint32_t host_id);
+  void set_service_id(uint32_t service_id);
   void service_update(std::shared_ptr<neb::service_status> const& status,
                       io::stream* visitor = NULL);
   double value_hard();
@@ -59,8 +59,8 @@ class bool_service : public bool_value, public service_listener {
  private:
   void _internal_copy(bool_service const& right);
 
-  unsigned int _host_id;
-  unsigned int _service_id;
+  uint32_t _host_id;
+  uint32_t _service_id;
   short _state_hard;
   short _state_soft;
   bool _state_known;

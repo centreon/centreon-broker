@@ -44,7 +44,7 @@ using namespace com::centreon::broker::rrd;
  *  @param[in] tmpl_path  The template path.
  *  @param[in] cache_size The maximum number of cache element.
  */
-cached::cached(std::string const& tmpl_path, unsigned int cache_size)
+cached::cached(std::string const& tmpl_path, uint32_t cache_size)
     : _batch(false), _lib(tmpl_path, cache_size) {}
 
 /**
@@ -205,9 +205,9 @@ void cached::open(std::string const& filename) {
  *  @param[in] value_type Type of the metric.
  */
 void cached::open(std::string const& filename,
-                  unsigned int length,
+                  uint32_t length,
                   time_t from,
-                  unsigned int step,
+                  uint32_t step,
                   short value_type) {
   // Close previous file.
   this->close();

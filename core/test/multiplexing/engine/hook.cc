@@ -70,7 +70,7 @@ TEST_F(Hook, EngineWorks) {
     // Send events through engine.
     {
       char const* messages[] = {MSG1, MSG2, nullptr};
-      for (unsigned int i = 0; messages[i]; ++i) {
+      for (uint32_t i = 0; messages[i]; ++i) {
         std::shared_ptr<io::raw> data(new io::raw);
         data->append(messages[i]);
         multiplexing::engine::instance().publish(
@@ -112,7 +112,7 @@ TEST_F(Hook, EngineWorks) {
     {
       char const* messages[] = {HOOKMSG1, MSG1,     HOOKMSG2, MSG2, HOOKMSG2,
                                 MSG3,     HOOKMSG2, HOOKMSG3, nullptr};
-      for (unsigned int i = 0; messages[i]; ++i) {
+      for (uint32_t i = 0; messages[i]; ++i) {
         std::shared_ptr<io::data> d;
         s.get_muxer().read(d, 0);
         if (!d || (d->type() != io::raw::static_type()))

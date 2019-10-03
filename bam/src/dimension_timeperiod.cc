@@ -79,7 +79,7 @@ bool dimension_timeperiod::operator==(dimension_timeperiod const& other) const {
  *
  *  @return Event type.
  */
-unsigned int dimension_timeperiod::type() const {
+uint32_t dimension_timeperiod::type() const {
   return (dimension_timeperiod::static_type());
 }
 
@@ -88,7 +88,7 @@ unsigned int dimension_timeperiod::type() const {
  *
  *  @return Event type.
  */
-unsigned int dimension_timeperiod::static_type() {
+uint32_t dimension_timeperiod::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_dimension_timeperiod>::value);
 }

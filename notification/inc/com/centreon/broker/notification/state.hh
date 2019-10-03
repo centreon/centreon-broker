@@ -58,16 +58,16 @@ class state {
   std::unique_ptr<QWriteLocker> write_lock();
 
   objects::node::ptr get_node_by_id(objects::node_id) const;
-  time::timeperiod::ptr get_timeperiod_by_id(unsigned int id) const;
+  time::timeperiod::ptr get_timeperiod_by_id(uint32_t id) const;
   QList<objects::notification_rule::ptr> get_notification_rules_by_node(
       objects::node_id id) const;
   objects::notification_method::ptr get_notification_method_by_id(
-      unsigned int id) const;
+      uint32_t id) const;
   objects::notification_rule::ptr get_notification_rule_by_id(
-      unsigned int id) const;
-  objects::contact::ptr get_contact_by_id(unsigned int id) const;
-  QHash<std::string, std::string> get_contact_infos(unsigned int id) const;
-  objects::command::ptr get_command_by_id(unsigned int id) const;
+      uint32_t id) const;
+  objects::contact::ptr get_contact_by_id(uint32_t id) const;
+  QHash<std::string, std::string> get_contact_infos(uint32_t id) const;
+  objects::command::ptr get_command_by_id(uint32_t id) const;
   QHash<std::string, std::string> const& get_global_macros() const;
   QList<objects::node::ptr> get_all_services_of_host(objects::node_id id) const;
   QList<objects::node::ptr> get_all_hosts_in_state(short state) const;
@@ -77,18 +77,18 @@ class state {
  private:
   QSet<objects::node_id> _nodes;
   QHash<objects::node_id, objects::node::ptr> _node_by_id;
-  QHash<unsigned int, objects::command::ptr> _commands;
-  QHash<unsigned int, objects::contact::ptr> _contacts;
-  QHash<unsigned int, QHash<std::string, std::string> > _contact_infos;
+  QHash<uint32_t, objects::command::ptr> _commands;
+  QHash<uint32_t, objects::contact::ptr> _contacts;
+  QHash<uint32_t, QHash<std::string, std::string> > _contact_infos;
   QMultiHash<objects::node_id, objects::dependency::ptr>
       _dependency_by_child_id;
   QMultiHash<objects::node_id, objects::dependency::ptr>
       _dependency_by_parent_id;
-  QHash<unsigned int, time::timeperiod::ptr> _timeperiod_by_id;
-  QHash<unsigned int, objects::notification_method::ptr> _notification_methods;
+  QHash<uint32_t, time::timeperiod::ptr> _timeperiod_by_id;
+  QHash<uint32_t, objects::notification_method::ptr> _notification_methods;
   QMultiHash<objects::node_id, objects::notification_rule::ptr>
       _notification_rules_by_node;
-  QHash<unsigned int, objects::notification_rule::ptr> _notification_rule_by_id;
+  QHash<uint32_t, objects::notification_rule::ptr> _notification_rule_by_id;
 
   int _date_format;
   QHash<std::string, std::string> _global_constant_macros;

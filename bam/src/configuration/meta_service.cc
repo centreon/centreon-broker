@@ -31,7 +31,7 @@ using namespace com::centreon::broker::bam::configuration;
  *  @param[in] filter          Service description filter (SQL LIKE).
  *  @param[in] metric          Metric name.
  */
-meta_service::meta_service(unsigned int id,
+meta_service::meta_service(uint32_t id,
                            std::string const& name,
                            std::string const& computation,
                            double warning_level,
@@ -118,7 +118,7 @@ std::string const& meta_service::get_computation() const {
  *
  *  @return This meta-service ID.
  */
-unsigned int meta_service::get_id() const {
+uint32_t meta_service::get_id() const {
   return (_id);
 }
 
@@ -127,7 +127,7 @@ unsigned int meta_service::get_id() const {
  *
  *  @return Virtual host ID.
  */
-unsigned int meta_service::get_host_id() const {
+uint32_t meta_service::get_host_id() const {
   return (_host_id);
 }
 
@@ -136,7 +136,7 @@ unsigned int meta_service::get_host_id() const {
  *
  *  @return Virtual service ID.
  */
-unsigned int meta_service::get_service_id() const {
+uint32_t meta_service::get_service_id() const {
   return (_service_id);
 }
 
@@ -216,7 +216,7 @@ meta_service::service_container const& meta_service::get_services() const {
  *
  *  @param[in] metric_id  Metric ID.
  */
-void meta_service::add_metric(unsigned int metric_id) {
+void meta_service::add_metric(uint32_t metric_id) {
   _metrics.push_back(metric_id);
   return;
 }
@@ -227,7 +227,7 @@ void meta_service::add_metric(unsigned int metric_id) {
  *  @param[in] host_id     Host ID.
  *  @param[in] service_id  Service ID.
  */
-void meta_service::add_service(unsigned int host_id, unsigned int service_id) {
+void meta_service::add_service(uint32_t host_id, uint32_t service_id) {
   _services.insert(std::make_pair(host_id, service_id));
   return;
 }
@@ -248,7 +248,7 @@ void meta_service::set_computation(std::string const& function) {
  *
  *  @param[in] id  Meta-service ID.
  */
-void meta_service::set_id(unsigned int id) {
+void meta_service::set_id(uint32_t id) {
   _id = id;
   return;
 }
@@ -258,7 +258,7 @@ void meta_service::set_id(unsigned int id) {
  *
  *  @param[in] host_id  Virtual host ID.
  */
-void meta_service::set_host_id(unsigned int host_id) {
+void meta_service::set_host_id(uint32_t host_id) {
   _host_id = host_id;
   return;
 }
@@ -268,7 +268,7 @@ void meta_service::set_host_id(unsigned int host_id) {
  *
  *  @param[in] service_id  Virtual service ID.
  */
-void meta_service::set_service_id(unsigned int service_id) {
+void meta_service::set_service_id(uint32_t service_id) {
   _service_id = service_id;
   return;
 }

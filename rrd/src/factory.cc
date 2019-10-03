@@ -134,7 +134,7 @@ io::endpoint* factory::new_endpoint(
       std::stoul(find_param(cfg, "port", false, "0")))};
 
   // Get rrd creator cache size.
-  unsigned int cache_size(16);
+  uint32_t cache_size(16);
   {
     std::map<std::string, std::string>::const_iterator it{
         cfg.params.find("cache_size")};

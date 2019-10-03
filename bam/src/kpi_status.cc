@@ -74,7 +74,7 @@ kpi_status& kpi_status::operator=(kpi_status const& other) {
  *
  *  @return Event type.
  */
-unsigned int kpi_status::type() const {
+uint32_t kpi_status::type() const {
   return (kpi_status::static_type());
 }
 
@@ -83,7 +83,7 @@ unsigned int kpi_status::type() const {
  *
  *  @return Event type.
  */
-unsigned int kpi_status::static_type() {
+uint32_t kpi_status::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_kpi_status>::value);
 }
 /**

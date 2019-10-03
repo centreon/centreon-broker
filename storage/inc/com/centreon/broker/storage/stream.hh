@@ -49,13 +49,13 @@ class stream : public io::stream {
          uint32_t interval_length,
          uint32_t rebuild_check_interval,
          bool store_in_db = true);
+  stream(stream const&) = delete;
+  stream& operator=(stream const&) = delete;
   ~stream();
   int32_t flush();
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
   void statistics(json11::Json::object& tree) const;
-  void update();
   int32_t write(std::shared_ptr<io::data> const& d);
-  void ack_pending_events(int32_t v);
 
  private:
   struct index_info {
@@ -88,51 +88,11 @@ class stream : public io::stream {
     double value;
   };
 
-  stream(stream const& other);
-  stream& operator=(stream const& other);
-  void _check_deleted_index();
-  void _delete_metrics(std::list<unsigned long long> const& metrics_to_delete);
-  uint32_t _find_index_id(uint64_t host_id,
-                              uint64_t service_id,
-                              std::string const& host_name,
-                              std::string const& service_desc,
-                              uint32_t* rrd_len,
-                              bool* locked);
-  uint64_t _find_metric_id(uint64_t index_id,
-                           std::string metric_name,
-                           std::string const& unit_name,
-                           double warn,
-                           double warn_low,
-                           bool warn_mode,
-                           double crit,
-                           double crit_low,
-                           bool crit_mode,
-                           double min,
-                           double max,
-                           double value,
-                           uint32_t* type,
-                           bool* locked);
-  void _host_instance_cache_create();
-  void _insert_perfdatas_new();
-  void _insert_perfdatas();
-  void _process_host(std::shared_ptr<io::data> const& e);
-  void _process_instance(std::shared_ptr<io::data> const& e);
-  void _rebuild_cache();
   void _update_status(std::string const& status);
-  void _set_ack_events();
-
-  std::map<std::pair<uint64_t, uint64_t>, index_info> _index_cache;
-  uint32_t _interval_length;
-  int32_t _ack_events;
   int32_t _pending_events;
-  std::map<std::pair<uint64_t, std::string>, metric_info> _metric_cache;
-  std::deque<metric_value> _perfdata_queue;
-  std::map<uint32_t, uint32_t> _cache_host_instance;
   //rebuilder _rebuilder;
-  uint32_t _rrd_len;
   std::string _status;
   mutable std::mutex _statusm;
-  bool _store_in_db;
 };
 }  // namespace storage
 

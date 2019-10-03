@@ -170,7 +170,7 @@ int main() {
     // Insert entries in index_data.
     {
       QSqlQuery q(*db.centreon_db());
-      for (unsigned int i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
+      for (uint32_t i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
         std::ostringstream query;
         query << "INSERT INTO rt_index_data (host_id, service_id)"
               << "  VALUES(" << (i - 1) / SERVICES_BY_HOST + 1 << ", " << i
@@ -194,7 +194,7 @@ int main() {
     sleep_for(30);
 
     // Get index list.
-    std::map<unsigned int, time_t> indexes;
+    std::map<uint32_t, time_t> indexes;
     {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT index_id FROM rt_index_data"))
@@ -209,7 +209,7 @@ int main() {
     }
 
     // For each index, get the first entry time.
-    for (std::map<unsigned int, time_t>::iterator it(indexes.begin()),
+    for (std::map<uint32_t, time_t>::iterator it(indexes.begin()),
          end(indexes.end());
          it != end; ++it) {
       std::ostringstream file_path;
@@ -223,7 +223,7 @@ int main() {
     }
 
     // Get metrics list.
-    std::map<unsigned int, metric_info> metrics;
+    std::map<uint32_t, metric_info> metrics;
     {
       std::ostringstream query;
       query << "SELECT m.metric_id"
@@ -244,7 +244,7 @@ int main() {
     }
 
     // For each metric, get the first entry time.
-    for (std::map<unsigned int, metric_info>::iterator it(metrics.begin()),
+    for (std::map<uint32_t, metric_info>::iterator it(metrics.begin()),
          end(metrics.end());
          it != end; ++it) {
       std::ostringstream file_path;
@@ -286,7 +286,7 @@ int main() {
     }
 
     // Check status graphs.
-    for (std::map<unsigned int, time_t>::iterator it(indexes.begin()),
+    for (std::map<uint32_t, time_t>::iterator it(indexes.begin()),
          end(indexes.end());
          it != end; ++it) {
       // Check file properties.
@@ -322,7 +322,7 @@ int main() {
     }
 
     // Check metrics graphs.
-    for (std::map<unsigned int, metric_info>::iterator it(metrics.begin()),
+    for (std::map<uint32_t, metric_info>::iterator it(metrics.begin()),
          end(metrics.end());
          it != end; ++it) {
       // Check file properties.

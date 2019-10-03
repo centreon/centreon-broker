@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
       std::string packet;
       build_bbdo_version_packet(packet, 9, 9, 9, "");
       char const* ptr(packet.data());
-      unsigned int size(packet.size());
+      uint32_t size(packet.size());
       while (size != 0) {
         qint64 wb(sockt->write(ptr, size));
         if (wb == -1)
@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
       std::string packet;
       build_bbdo_version_packet(packet, 9, 9, 9, "");
       char const* ptr(packet.data());
-      unsigned int size(packet.size());
+      uint32_t size(packet.size());
       while (size != 0) {
         qint64 wb(sockt.write(ptr, size));
         if (wb == -1)

@@ -39,7 +39,7 @@ int my_system_r(nagios_macros* mac,
                 int* early_timeout,
                 double* exectime,
                 std::string& output,
-                unsigned int max_output_length);
+                uint32_t max_output_length);
 // same like unix ctime without the '\n' at the end of the string.
 char const* my_ctime(time_t const* t);
 

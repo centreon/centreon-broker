@@ -41,11 +41,11 @@ namespace concurrency {
  */
 class thread_pool {
  public:
-  thread_pool(unsigned int max_thread_count = 0);
+  thread_pool(uint32_t max_thread_count = 0);
   ~thread_pool() throw();
-  unsigned int get_current_task_running() const throw();
-  unsigned int get_max_thread_count() const throw();
-  void set_max_thread_count(unsigned int max);
+  uint32_t get_current_task_running() const throw();
+  uint32_t get_max_thread_count() const throw();
+  void set_max_thread_count(uint32_t max);
   void start(runnable* r);
   void wait_for_done();
 
@@ -71,8 +71,8 @@ class thread_pool {
 
   condvar _cnd_pool;
   condvar _cnd_thread;
-  unsigned int _current_task_running;
-  unsigned int _max_thread_count;
+  uint32_t _current_task_running;
+  uint32_t _max_thread_count;
   mutable mutex _mtx_pool;
   mutable mutex _mtx_thread;
 #ifndef _WIN32

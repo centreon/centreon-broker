@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
     if (argc < 3)
       throw(exceptions::msg() << "USAGE: " << argv[0] << " <dbname> <baid>");
     std::string db_name(argv[1]);
-    unsigned int ba_id(strtoul(argv[2], NULL, 0));
+    uint32_t ba_id(strtoul(argv[2], NULL, 0));
 
     // Open database.
     QSqlDatabase db(QSqlDatabase::addDatabase("QMYSQL"));

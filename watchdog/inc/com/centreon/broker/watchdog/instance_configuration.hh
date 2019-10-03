@@ -38,7 +38,7 @@ class instance_configuration {
                          std::string const& config_file,
                          bool should_run,
                          bool should_reload,
-                         unsigned int seconds_per_tentative);
+                         uint32_t seconds_per_tentative);
   ~instance_configuration();
   instance_configuration(instance_configuration const& other);
   instance_configuration& operator=(instance_configuration const& other);
@@ -60,7 +60,7 @@ class instance_configuration {
   std::string _config_file;
   bool _run;
   bool _reload;
-  unsigned int _seconds_per_tentative;
+  uint32_t _seconds_per_tentative;
 };
 }  // namespace watchdog
 

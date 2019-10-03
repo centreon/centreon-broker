@@ -53,14 +53,14 @@ class muxer : public io::stream {
   ~muxer();
   void ack_events(int count);
   static void event_queue_max_size(uint32_t max) noexcept;
-  static unsigned int event_queue_max_size() throw();
+  static uint32_t event_queue_max_size() throw();
   void publish(std::shared_ptr<io::data> const& d);
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
   void set_read_filters(filters const& fltrs);
   void set_write_filters(filters const& fltrs);
   filters const& get_read_filters() const;
   filters const& get_write_filters() const;
-  unsigned int get_event_queue_size() const;
+  uint32_t get_event_queue_size() const;
   void nack_events();
   void remove_queue_files();
   void statistics(json11::Json::object& tree) const;
@@ -79,8 +79,8 @@ class muxer : public io::stream {
 
   std::condition_variable _cv;
   std::list<std::shared_ptr<io::data>> _events;
-  unsigned int _events_size;
-  static unsigned int _event_queue_max_size;
+  uint32_t _events_size;
+  static uint32_t _event_queue_max_size;
   std::unique_ptr<persistent_file> _file;
   mutable std::mutex _mutex;
   std::string _name;

@@ -43,7 +43,7 @@ using namespace com::centreon::broker::rrd;
  *  @param[in] tmpl_path  The template path.
  *  @param[in] cache_size The maximum number of cache element.
  */
-creator::creator(std::string const& tmpl_path, unsigned int cache_size)
+creator::creator(std::string const& tmpl_path, uint32_t cache_size)
     : _cache_size(cache_size), _tmpl_path(tmpl_path) {
   logging::debug(logging::medium)
       << "RRD: file creator will maintain at most " << _cache_size
@@ -112,9 +112,9 @@ void creator::clear() {
  *  @param[in] value_type Type of the metric.
  */
 void creator::create(std::string const& filename,
-                     unsigned int length,
+                     uint32_t length,
                      time_t from,
-                     unsigned int step,
+                     uint32_t step,
                      short value_type) {
   // Fill template informations.
   if (!step)
@@ -225,9 +225,9 @@ void creator::_duplicate(std::string const& filename, fd_info const& in_fd) {
  *  @param[in] value_type Type of the metric.
  */
 void creator::_open(std::string const& filename,
-                    unsigned int length,
+                    uint32_t length,
                     time_t from,
-                    unsigned int step,
+                    uint32_t step,
                     short value_type) {
   /* Find step of RRD file if already existing. */
   /* XXX : why is it here ?

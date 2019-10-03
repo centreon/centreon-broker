@@ -117,7 +117,7 @@ void command_request::parse(std::string const& cmdline) {
  *
  *  @return The event type.
  */
-unsigned int command_request::type() const {
+uint32_t command_request::type() const {
   return (command_request::static_type());
 }
 
@@ -126,7 +126,7 @@ unsigned int command_request::type() const {
  *
  *  @return The event type.
  */
-unsigned int command_request::static_type() {
+uint32_t command_request::static_type() {
   return (io::events::data_type<io::events::extcmd,
                                 io::events::de_command_request>::value);
 }

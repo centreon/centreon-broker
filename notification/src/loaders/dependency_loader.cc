@@ -65,7 +65,7 @@ void dependency_loader::load(mysql* ms, dependency_builder* output) {
     database::mysql_result res(promise.get_future().get());
     while (ms->fetch_row(res)) {
       dependency::ptr dep(new dependency);
-      unsigned int id = res.value_as_u32(0);
+      uint32_t id = res.value_as_u32(0);
       dep->set_inherits_parent(res.value_as_bool(1));
       dep_execution_failure_options.push_back(
           std::make_pair(id, res.value_as_str(2)));
@@ -191,7 +191,7 @@ void dependency_loader::_load_relations(mysql* ms, dependency_builder& output) {
 //       dependency_builder& output,
 //       std::string const& relation_id_name,
 //       std::string const& table,
-//       void (dependency_builder::*register_method)(unsigned int, unsigned
+//       void (dependency_builder::*register_method)(uint32_t, unsigned
 //       int)) {
 //  std::stringstream ss;
 //  ss << "SELECT dependency_dep_id, " << relation_id_name << " FROM " << table;
@@ -201,8 +201,8 @@ void dependency_loader::_load_relations(mysql* ms, dependency_builder& output) {
 //      << query.lastError().text());
 //
 //  while (query.next()) {
-//    unsigned int id = query.value(0).toUInt();
-//    unsigned int associated_id = query.value(1).toUInt();
+//    uint32_t id = query.value(0).toUInt();
+//    uint32_t associated_id = query.value(1).toUInt();
 //
 //    (output.*register_method)(id, associated_id);
 //  }

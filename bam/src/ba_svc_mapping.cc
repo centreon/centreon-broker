@@ -58,8 +58,8 @@ ba_svc_mapping& ba_svc_mapping::operator=(ba_svc_mapping const& other) {
  *  @return A pair of host name/service description.
  */
 std::pair<std::string, std::string> ba_svc_mapping::get_service(
-    unsigned int ba_id) {
-  std::map<unsigned int, std::pair<std::string, std::string> >::const_iterator
+    uint32_t ba_id) {
+  std::map<uint32_t, std::pair<std::string, std::string> >::const_iterator
       it(_mapping.find(ba_id));
   return ((it != _mapping.end())
               ? it->second
@@ -73,7 +73,7 @@ std::pair<std::string, std::string> ba_svc_mapping::get_service(
  *  @param[in] hst    Host ID.
  *  @param[in] svc    Service ID.
  */
-void ba_svc_mapping::set(unsigned int ba_id,
+void ba_svc_mapping::set(uint32_t ba_id,
                          std::string const& hst,
                          std::string const& svc) {
   _mapping[ba_id] = std::make_pair(hst, svc);

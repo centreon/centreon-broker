@@ -69,7 +69,7 @@ host_group& host_group::operator=(host_group const& other) {
  *
  *  @return This object type.
  */
-unsigned int host_group::type() const {
+uint32_t host_group::type() const {
   return (static_type());
 }
 
@@ -78,7 +78,7 @@ unsigned int host_group::type() const {
  *
  *  @return Class type.
  */
-unsigned int host_group::static_type() {
+uint32_t host_group::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_host_group>::value);
 }
 

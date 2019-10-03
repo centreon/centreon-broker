@@ -28,7 +28,7 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in,out] table  The table to fill.
  */
 command_by_id_builder::command_by_id_builder(
-    QHash<unsigned int, command::ptr>& table)
+    QHash<uint32_t, command::ptr>& table)
     : _table(table) {}
 
 /**
@@ -37,6 +37,6 @@ command_by_id_builder::command_by_id_builder(
  *  @param[in] id The id of the command.
  *  @param[in] com The command.
  */
-void command_by_id_builder::add_command(unsigned int id, command::ptr com) {
+void command_by_id_builder::add_command(uint32_t id, command::ptr com) {
   _table[id] = com;
 }

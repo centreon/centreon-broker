@@ -41,13 +41,13 @@ class ba_svc_mapping {
   ba_svc_mapping(ba_svc_mapping const& other);
   ~ba_svc_mapping();
   ba_svc_mapping& operator=(ba_svc_mapping const& other);
-  std::pair<std::string, std::string> get_service(unsigned int ba_id);
-  void set(unsigned int ba_id, std::string const& hst, std::string const& svc);
+  std::pair<std::string, std::string> get_service(uint32_t ba_id);
+  void set(uint32_t ba_id, std::string const& hst, std::string const& svc);
 
  private:
   void _internal_copy(ba_svc_mapping const& other);
 
-  std::map<unsigned int, std::pair<std::string, std::string> > _mapping;
+  std::map<uint32_t, std::pair<std::string, std::string> > _mapping;
 };
 }  // namespace bam
 

@@ -42,7 +42,7 @@ std::string url_encode(std::string const& value);
 extern "C" {
 #endif  // C++
 
-int grab_contact_address_macro(unsigned int macro_num,
+int grab_contact_address_macro(uint32_t macro_num,
                                com::centreon::engine::contact* temp_contact,
                                std::string& output);
 int grab_standard_contactgroup_macro(

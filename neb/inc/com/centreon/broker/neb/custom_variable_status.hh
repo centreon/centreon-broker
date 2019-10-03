@@ -42,13 +42,13 @@ class custom_variable_status : public io::data {
   custom_variable_status(custom_variable_status const& other);
   virtual ~custom_variable_status();
   custom_variable_status& operator=(custom_variable_status const& other);
-  virtual unsigned int type() const;
-  static unsigned int static_type();
+  virtual uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int host_id;
+  uint32_t host_id;
   bool modified;
   std::string name;
-  unsigned int service_id;
+  uint32_t service_id;
   timestamp update_time;
   std::string value;
 

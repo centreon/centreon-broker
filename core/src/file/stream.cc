@@ -169,7 +169,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
 
     // Get data.
     char const* memory;
-    unsigned int size;
+    uint32_t size;
     {
       io::raw* data(static_cast<io::raw*>(d.get()));
       memory = data->data();

@@ -203,7 +203,7 @@ void params::set_trusted_ca(std::string const& ca_cert) {
 void params::validate_cert(gnutls_session_t session) {
   if (!_ca.empty()) {
     int ret;
-    unsigned int status;
+    uint32_t status;
     ret = gnutls_certificate_verify_peers2(session, &status);
     if (ret != GNUTLS_E_SUCCESS)
       throw(exceptions::msg()

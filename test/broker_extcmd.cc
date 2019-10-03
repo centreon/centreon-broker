@@ -81,7 +81,7 @@ bool broker_extcmd::execute(std::string const& query, bool wait_command) {
     oss << query << "\n";
     _write(sockt, oss.str());
   }
-  unsigned int id;
+  uint32_t id;
   bool pending;
   std::string msg;
   _read(sockt, id, pending, msg, query);
@@ -144,7 +144,7 @@ void broker_extcmd::_internal_copy(broker_extcmd const& other) {
  *  @param[in]     query    Initial query.
  */
 void broker_extcmd::_read(QLocalSocket& sockt,
-                          unsigned int& id,
+                          uint32_t& id,
                           bool& pending,
                           std::string& msg,
                           std::string const& query) {
@@ -164,7 +164,7 @@ void broker_extcmd::_read(QLocalSocket& sockt,
   *limit1 = '\0';
   *limit2 = '\0';
   id = strtoul(buffer, NULL, 0);
-  unsigned int code(strtoul(limit1 + 1, NULL, 0));
+  uint32_t code(strtoul(limit1 + 1, NULL, 0));
   msg = limit2 + 1;
   if ((code != 0) && (code != 1))
     throw(exceptions::msg() << "command execution failed: " << msg);

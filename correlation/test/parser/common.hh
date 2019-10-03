@@ -23,9 +23,9 @@
 #include <QPair>
 #include "com/centreon/broker/correlation/node.hh"
 
-void compare_states(QMap<QPair<unsigned int, unsigned int>,
+void compare_states(QMap<QPair<uint32_t, uint32_t>,
                          com::centreon::broker::correlation::node> const& n1,
-                    QMap<QPair<unsigned int, unsigned int>,
+                    QMap<QPair<uint32_t, uint32_t>,
                          com::centreon::broker::correlation::node> const& n2);
 
 #endif  // !PARSER_COMMON_HH

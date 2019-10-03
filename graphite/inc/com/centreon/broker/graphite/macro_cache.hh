@@ -42,8 +42,27 @@ namespace graphite {
  *  @brief Data cache for graphite macro.
  */
 class macro_cache {
+  std::shared_ptr<persistent_cache> _cache;
+  std::unordered_map<uint64_t, std::shared_ptr<neb::instance> > _instances;
+  std::unordered_map<uint64_t, std::shared_ptr<neb::host> > _hosts;
+  std::unordered_map<std::pair<uint64_t, uint64_t>,
+                     std::shared_ptr<neb::service> > _services;
+  std::unordered_map<uint64_t, std::shared_ptr<storage::index_mapping> >
+      _index_mappings;
+  std::unordered_map<uint64_t, std::shared_ptr<storage::metric_mapping> >
+      _metric_mappings;
+
+  void _process_instance(std::shared_ptr<io::data> const& data);
+  void _process_host(std::shared_ptr<io::data> const& data);
+  void _process_service(std::shared_ptr<io::data> const& data);
+  void _process_index_mapping(std::shared_ptr<io::data> const& data);
+  void _process_metric_mapping(std::shared_ptr<io::data> const& data);
+  void _save_to_disk();
+
  public:
   macro_cache(std::shared_ptr<persistent_cache> const& cache);
+  macro_cache(macro_cache const& f) = delete;
+  macro_cache& operator=(macro_cache const& f) = delete;
   ~macro_cache();
 
   void write(std::shared_ptr<io::data> const& data);
@@ -54,24 +73,6 @@ class macro_cache {
   std::string const& get_service_description(uint64_t host_id,
                                              uint64_t service_id) const;
   std::string const& get_instance(uint64_t instance_id) const;
-
- private:
-  macro_cache(macro_cache const& f);
-  macro_cache& operator=(macro_cache const& f);
-
-  void _process_instance(neb::instance const& in);
-  void _process_host(neb::host const& h);
-  void _process_service(neb::service const& s);
-  void _process_index_mapping(storage::index_mapping const& im);
-  void _process_metric_mapping(storage::metric_mapping const& mm);
-  void _save_to_disk();
-
-  std::shared_ptr<persistent_cache> _cache;
-  std::unordered_map<uint64_t, neb::instance> _instances;
-  std::unordered_map<uint64_t, neb::host> _hosts;
-  std::unordered_map<std::pair<uint64_t, uint64_t>, neb::service> _services;
-  std::unordered_map<uint64_t, storage::index_mapping> _index_mappings;
-  std::unordered_map<uint64_t, storage::metric_mapping> _metric_mappings;
 };
 }  // namespace graphite
 
