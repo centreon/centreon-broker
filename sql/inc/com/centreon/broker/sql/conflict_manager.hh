@@ -65,6 +65,8 @@ class conflict_manager {
     service_servicegroups = 1 << 13,
     servicegroups = 1 << 14,
     services = 1 << 15,
+    index_data = 1 << 16,
+    metrics = 1 << 17,
   };
 
   struct index_info {
@@ -207,6 +209,7 @@ class conflict_manager {
   void _update_hosts_and_services_of_instance(uint32_t id, bool responsive);
   void _update_timestamp(uint32_t instance_id);
   bool _is_valid_poller(uint32_t instance_id);
+  void _check_deleted_index();
 
   int32_t _process_acknowledgement();
   int32_t _process_comment();

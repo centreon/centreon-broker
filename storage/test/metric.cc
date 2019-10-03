@@ -29,106 +29,19 @@ using namespace com::centreon::broker;
 /**
  *  Check that the metric assignment operator works properly.
  */
-TEST(StorageMetric, Assign) {
+TEST(StorageMetric, SpecificConstructor) {
   // First object.
-  storage::metric m1;
-  m1.ctime = 123456789;
-  m1.interval = 42;
-  m1.is_for_rebuild = true;
-  m1.metric_id = 24;
-  m1.name = "foo";
-  m1.rrd_len = 180;
-  m1.value = 4242.0;
-  m1.value_type = 1;
-
-  // Second object.
-  storage::metric m2;
-  m2.ctime = 654123;
-  m2.interval = 78;
-  m2.is_for_rebuild = false;
-  m2.metric_id = 33;
-  m2.name = "bar";
-  m2.rrd_len = 666;
-  m2.value = 987.0;
-  m2.value_type = 3;
-
-  // Assignment.
-  m2 = m1;
-
-  // Change first object.
-  m1.ctime = 741258;
-  m1.interval = 36;
-  m1.is_for_rebuild = false;
-  m1.metric_id = 12;
-  m1.name = "baz";
-  m1.rrd_len = 900;
-  m1.value = 1234.0;
-  m1.value_type = 2;
+  storage::metric m1(1, 14, "foo", 123456789, 42, true, 24, 180, 4242.0, 1);
 
   // Check objects properties values.
-  ASSERT_FALSE(m1.ctime != 741258);
-  ASSERT_FALSE(m1.interval != 36);
-  ASSERT_FALSE(m1.is_for_rebuild != false);
-  ASSERT_FALSE(m1.metric_id != 12);
-  ASSERT_FALSE(m1.name != "baz");
-  ASSERT_FALSE(m1.rrd_len != 900);
-  ASSERT_FALSE(fabs(m1.value - 1234.0) > 0.00001);
-  ASSERT_FALSE(m1.value_type != 2);
-  ASSERT_FALSE(m2.ctime != 123456789);
-  ASSERT_FALSE(m2.interval != 42);
-  ASSERT_FALSE(m2.is_for_rebuild != true);
-  ASSERT_FALSE(m2.metric_id != 24);
-  ASSERT_FALSE(m2.name != "foo");
-  ASSERT_FALSE(m2.rrd_len != 180);
-  ASSERT_FALSE(fabs(m2.value - 4242.0) > 0.00001);
-  ASSERT_FALSE(m2.value_type != 1);
-}
-
-/**
- *  Check that the metric copy constructor works properly.
- */
-TEST(StorageMetric, CopyCtor) {
-  // First object.
-  storage::metric m1;
-  m1.ctime = 123456789;
-  m1.interval = 42;
-  m1.is_for_rebuild = true;
-  m1.metric_id = 24;
-  m1.name = "foobar";
-  m1.rrd_len = 180;
-  m1.value = 4242.0;
-  m1.value_type = 3;
-
-  // Second object.
-  storage::metric m2(m1);
-
-  // Change first object.
-  m1.ctime = 741258;
-  m1.interval = 36;
-  m1.is_for_rebuild = false;
-  m1.metric_id = 12;
-  m1.name = "bazqux";
-  m1.rrd_len = 900;
-  m1.value = 1234.0;
-  m1.value_type = 2;
-
-  // Check objects properties values.
-  ASSERT_FALSE(m1.ctime != 741258);
-  ASSERT_FALSE(m1.interval != 36);
-  ASSERT_FALSE(m1.is_for_rebuild != false);
-  ASSERT_FALSE(m1.metric_id != 12);
-  ASSERT_FALSE(m1.name != "bazqux");
-  ASSERT_FALSE(m1.rrd_len != 900);
-  ASSERT_FALSE(fabs(m1.value - 1234.0) > 0.00001);
-  ASSERT_FALSE(m1.value_type != 2);
-  ASSERT_FALSE(m2.ctime != 123456789);
-  ASSERT_FALSE(m2.interval != 42);
-  ASSERT_FALSE(m2.is_for_rebuild != true);
-  ASSERT_FALSE(m2.metric_id != 24);
-  ASSERT_FALSE(m2.name != "foobar");
-  ASSERT_FALSE(m2.rrd_len != 180);
-  ASSERT_FALSE(fabs(m2.value - 4242.0) > 0.00001);
-  ASSERT_FALSE(m2.value_type != 3);
+  ASSERT_FALSE(m1.ctime != 123456789);
+  ASSERT_FALSE(m1.interval != 42);
+  ASSERT_FALSE(m1.is_for_rebuild != true);
+  ASSERT_FALSE(m1.metric_id != 24);
+  ASSERT_FALSE(m1.name != "foo");
+  ASSERT_FALSE(m1.rrd_len != 180);
+  ASSERT_FALSE(fabs(m1.value - 4242.0) > 0.00001);
+  ASSERT_FALSE(m1.value_type != 1);
 }
 
 /**

@@ -27,52 +27,11 @@ using namespace com::centreon::broker;
 /**
  *  Check that remove_graph's assignment operator.
  */
-TEST(StorageRemoveGraph, Assign) {
+TEST(StorageRemoveGraph, Constructor) {
   // Base object.
-  storage::remove_graph r1;
-  r1.id = 42;
-  r1.is_index = false;
-
-  // Second object.
-  storage::remove_graph r2;
-  r2.id = 234573485;
-  r2.is_index = true;
-
-  // Assignment.
-  r2 = r1;
-
-  // Reset base object.
-  r1.id = 36;
-  r1.is_index = true;
-
-  // Check.
-  ASSERT_FALSE(r1.id != 36);
-  ASSERT_FALSE(!r1.is_index);
-  ASSERT_FALSE(r2.id != 42);
-  ASSERT_FALSE(r2.is_index);
-}
-
-/**
- *  Check that remove_graph copy constructor works properly.
- */
-TEST(StorageRemoveGraph, CopyCtor) {
-  // Base object.
-  storage::remove_graph r1;
-  r1.id = 42;
-  r1.is_index = false;
-
-  // Copy object.
-  storage::remove_graph r2(r1);
-
-  // Reset base object.
-  r1.id = 36;
-  r1.is_index = true;
-
-  // Check.
-  ASSERT_FALSE(r1.id != 36);
-  ASSERT_FALSE(!r1.is_index);
-  ASSERT_FALSE(r2.id != 42);
-  ASSERT_FALSE(r2.is_index);
+  storage::remove_graph r1(42, false);
+  ASSERT_TRUE(r1.id == 42);
+  ASSERT_FALSE(r1.is_index);
 }
 
 /**
