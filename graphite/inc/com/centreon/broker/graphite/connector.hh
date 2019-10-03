@@ -35,9 +35,9 @@ namespace graphite {
 class connector : public io::endpoint {
  public:
   connector();
-  connector(connector const& other);
-  ~connector();
-  connector& operator=(connector const& other);
+  connector(connector const& other) = delete;
+  connector& operator=(connector const& other) = delete;
+  ~connector() = default;
   void connect_to(std::string const& metric_naming,
                   std::string const& status_naming,
                   std::string const& escape_string,
@@ -59,8 +59,6 @@ class connector : public io::endpoint {
   unsigned short _port;
   uint32_t _queries_per_transaction;
   std::shared_ptr<persistent_cache> _persistent_cache;
-
-  void _internal_copy(connector const& other);
 };
 }  // namespace graphite
 

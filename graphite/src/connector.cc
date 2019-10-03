@@ -33,34 +33,6 @@ using namespace com::centreon::broker::graphite;
  */
 connector::connector() : io::endpoint(false) {}
 
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-connector::connector(connector const& other) : io::endpoint(other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-connector::~connector() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-connector& connector::operator=(connector const& other) {
-  if (this != &other) {
-    io::endpoint::operator=(other);
-    _internal_copy(other);
-  }
-  return (*this);
-}
 
 /**
  *  Set connection parameters.
@@ -95,28 +67,4 @@ std::shared_ptr<io::stream> connector::open() {
   return (std::shared_ptr<io::stream>(new stream(
       _metric_naming, _status_naming, _escape_string, _user, _password, _addr,
       _port, _queries_per_transaction, _persistent_cache)));
-}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void connector::_internal_copy(connector const& other) {
-  _escape_string = other._escape_string;
-  _metric_naming = other._metric_naming;
-  _status_naming = other._status_naming;
-  _user = other._user;
-  _password = other._password;
-  _addr = other._addr;
-  _port = other._port;
-  _queries_per_transaction = other._queries_per_transaction;
-  _persistent_cache = other._persistent_cache;
-  return;
 }

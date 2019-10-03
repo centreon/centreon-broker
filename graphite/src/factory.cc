@@ -84,8 +84,16 @@ static uint32_t get_uint_param(config::endpoint const& cfg,
   std::map<std::string, std::string>::const_iterator it(cfg.params.find(key));
   if (cfg.params.end() == it)
     return (def);
-  else
-    return std::stoul(it->second);
+  else {
+    try {
+      return std::stoul(it->second);
+    } catch (std::exception const& ex) {
+      throw exceptions::msg() << "graphite: '" << key
+                              << "' must be numeric for endpoint '" << cfg.name << "'";
+    }
+  }
+
+  return 0;
 }
 
 /**************************************
@@ -93,35 +101,6 @@ static uint32_t get_uint_param(config::endpoint const& cfg,
  *           Public Methods            *
  *                                     *
  **************************************/
-
-/**
- *  Default constructor.
- */
-factory::factory() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-factory::factory(factory const& other) : io::factory(other) {}
-
-/**
- *  Destructor.
- */
-factory::~factory() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-factory& factory::operator=(factory const& other) {
-  io::factory::operator=(other);
-  return *this;
-}
 
 /**
  *  Clone this object.
@@ -140,12 +119,12 @@ io::factory* factory::clone() const {
  *  @return true if the configuration matches the storage layer.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  bool is_ifdb{!strncasecmp(cfg.type.c_str(), "graphite", 9)};
-  if (is_ifdb) {
+  bool is_gpdb{!strncasecmp(cfg.type.c_str(), "graphite", 9)};
+  if (is_gpdb) {
     cfg.params["cache"] = "yes";
     cfg.cache_enabled = true;
   }
-  return is_ifdb;
+  return is_gpdb;
 }
 
 /**

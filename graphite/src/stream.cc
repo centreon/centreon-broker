@@ -162,12 +162,6 @@ void stream::statistics(json11::Json::object& tree) const {
     tree["status"] = _status;
 }
 
-/*
- * Do nothing.
- */
-void stream::update() {
-  return;
-}
 
 /**
  *  Write an event.

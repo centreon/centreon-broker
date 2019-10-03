@@ -48,9 +48,21 @@ set_target_properties("${GRAPHITE}" PROPERTIES PREFIX "")
 
 # Testing.
 if (WITH_TESTING)
-  set(TEST_LIBRARIES "${NEB}" "${GRAPHITE}" "roker")
-
-endif ()
+  set(
+    TESTS_SOURCES
+    ${TESTS_SOURCES}
+    ${TEST_DIR}/query.cc
+    ${TEST_DIR}/factory.cc
+    ${TEST_DIR}/stream.cc
+    PARENT_SCOPE
+  )
+  set(
+    TESTS_LIBRARIES
+    ${TESTS_LIBRARIES}
+    ${GRAPHITE}
+    PARENT_SCOPE
+  )
+endif(WITH_TESTING)
 
 # Install rule.
 install(TARGETS "${GRAPHITE}"
