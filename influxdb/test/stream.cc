@@ -191,7 +191,17 @@ TEST_F(InfluxDBStream, NullData) {
   std::vector<influxdb::column> mcolumns;
   std::vector<influxdb::column> scolumns;
   std::shared_ptr<io::data> data;
-  influxdb::stream st("centreon", "pass", "localhost", 4242, "centreon", 9, "host_status", scolumns, "host_metrics", mcolumns, cache);
+  influxdb::stream st("centreon",
+                      "pass",
+                      "localhost",
+                      4242,
+                      "centreon",
+                      9,
+                      "host_status",
+                      scolumns,
+                      "host_metrics",
+                      mcolumns,
+                      cache);
 
   std::shared_ptr<io::data> d1{nullptr};
   ASSERT_FALSE(st.write(d1));
@@ -203,7 +213,17 @@ TEST_F(InfluxDBStream, FlushStatusOK) {
   std::vector<influxdb::column> mcolumns;
   std::vector<influxdb::column> scolumns;
   std::shared_ptr<io::data> data;
-  influxdb::stream st("centreon", "pass", "localhost", 4242, "centreon", 9, "host_status", scolumns, "host_metrics", mcolumns, cache);
+  influxdb::stream st("centreon",
+                      "pass",
+                      "localhost",
+                      4242,
+                      "centreon",
+                      9,
+                      "host_status",
+                      scolumns,
+                      "host_metrics",
+                      mcolumns,
+                      cache);
 
   s1 = new storage::status;
   s2 = new storage::status;

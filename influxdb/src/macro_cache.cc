@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2015,2019 Centreon
+** Copyright 2011-2015, 2019 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -160,7 +160,7 @@ void macro_cache::write(std::shared_ptr<io::data> const& data) {
 /**
  *  Process an instance event.
  *
- *  @param in  The event.
+ *  @param data  The event.
  */
 void macro_cache::_process_instance(std::shared_ptr<io::data> const& data) {
   auto const& in = std::static_pointer_cast<neb::instance>(data);
@@ -170,7 +170,7 @@ void macro_cache::_process_instance(std::shared_ptr<io::data> const& data) {
 /**
  *  Process a host event.
  *
- *  @param h  The event.
+ *  @param data  The event.
  */
 void macro_cache::_process_host(std::shared_ptr<io::data> const& data) {
   auto const& h = std::static_pointer_cast<neb::host>(data);
@@ -180,7 +180,7 @@ void macro_cache::_process_host(std::shared_ptr<io::data> const& data) {
 /**
  *  Process a service event.
  *
- *  @param s  The event.
+ *  @param data  The event.
  */
 void macro_cache::_process_service(std::shared_ptr<io::data> const& data) {
   auto const& s = std::static_pointer_cast<neb::service>(data);
