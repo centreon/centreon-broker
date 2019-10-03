@@ -188,7 +188,6 @@ TEST_F(InfluxDBStream, Flush) {
 
 TEST_F(InfluxDBStream, NullData) {
   std::shared_ptr<persistent_cache> cache;
-  storage::metric *m1, *m2, *m3;
   std::vector<influxdb::column> mcolumns;
   std::vector<influxdb::column> scolumns;
   std::shared_ptr<io::data> data;

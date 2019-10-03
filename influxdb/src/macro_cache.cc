@@ -46,7 +46,8 @@ macro_cache::~macro_cache() {
   if (_cache != nullptr) {
     try {
       _save_to_disk();
-    } catch (std::exception const& e) {
+    }
+    catch (std::exception const& e) {
       logging::error(logging::medium)
           << "influxdb: macro cache couldn't save data to disk: '" << e.what()
           << "'";
@@ -61,12 +62,12 @@ macro_cache::~macro_cache() {
  *
  *  @return               The status mapping.
  */
-storage::index_mapping const& macro_cache::get_index_mapping(
-    uint64_t index_id) const {
-  auto found = _index_mappings.find(index_id);
+storage::index_mapping const& macro_cache::get_index_mapping(uint64_t index_id)
+    const {
+  auto const found = _index_mappings.find(index_id);
   if (found == _index_mappings.end())
-    throw exceptions::msg()
-        << "influxdb: could not find host/service of index " << index_id;
+    throw exceptions::msg() << "influxdb: could not find host/service of index "
+                            << index_id;
   return *found->second.get();
 }
 
@@ -79,12 +80,11 @@ storage::index_mapping const& macro_cache::get_index_mapping(
  */
 storage::metric_mapping const& macro_cache::get_metric_mapping(
     uint64_t metric_id) const {
-  std::unordered_map<uint64_t, storage::metric_mapping>::const_iterator found{
-      _metric_mappings.find(metric_id)};
+  auto const found = _metric_mappings.find(metric_id);
   if (found == _metric_mappings.end())
-    throw exceptions::msg()
-        << "influxdb: could not find index of metric " << metric_id;
-  return found->second;
+    throw exceptions::msg() << "influxdb: could not find index of metric "
+                            << metric_id;
+  return *found->second.get();
 }
 
 /**
@@ -95,12 +95,11 @@ storage::metric_mapping const& macro_cache::get_metric_mapping(
  *  @return             The name of the host.
  */
 std::string const& macro_cache::get_host_name(uint64_t host_id) const {
-  std::unordered_map<uint64_t, neb::host>::const_iterator found{
-      _hosts.find(host_id)};
+  auto const found = _hosts.find(host_id);
   if (found == _hosts.end())
-    throw exceptions::msg()
-        << "influxdb: could not find information on host " << host_id;
-  return found->second.host_name;
+    throw exceptions::msg() << "influxdb: could not find information on host "
+                            << host_id;
+  return found->second->host_name;
 }
 
 /**
@@ -111,17 +110,15 @@ std::string const& macro_cache::get_host_name(uint64_t host_id) const {
  *
  *  @return             The description of the service.
  */
-std::string const& macro_cache::get_service_description(
-    uint64_t host_id,
-    uint64_t service_id) const {
-  std::unordered_map<std::pair<uint64_t, uint64_t>,
-                     neb::service>::const_iterator found{
-      _services.find({host_id, service_id})};
+std::string const& macro_cache::get_service_description(uint64_t host_id,
+                                                        uint64_t service_id)
+    const {
+  auto const found = _services.find({host_id, service_id});
   if (found == _services.end())
     throw exceptions::msg()
         << "influxdb: could not find information on service (" << host_id
         << ", " << service_id << ")";
-  return found->second.service_description;
+  return found->second->service_description;
 }
 
 /**
@@ -132,12 +129,11 @@ std::string const& macro_cache::get_service_description(
  *  @return   The name of the instance.
  */
 std::string const& macro_cache::get_instance(uint64_t instance_id) const {
-  std::unordered_map<uint64_t, neb::instance>::const_iterator found{
-      _instances.find(instance_id)};
+  auto const found = _instances.find(instance_id);
   if (found == _instances.end())
     throw exceptions::msg()
         << "influxdb: could not find information on instance " << instance_id;
-  return found->second.name;
+  return found->second->name;
 }
 
 /**
@@ -150,16 +146,15 @@ void macro_cache::write(std::shared_ptr<io::data> const& data) {
     return;
 
   if (data->type() == neb::instance::static_type())
-    _process_instance(*std::static_pointer_cast<neb::instance const>(data));
+    _process_instance(data);
   else if (data->type() == neb::host::static_type())
-    _process_host(*std::static_pointer_cast<neb::host const>(data));
+    _process_host(data);
   else if (data->type() == neb::service::static_type())
-    _process_service(*std::static_pointer_cast<neb::service const>(data));
+    _process_service(data);
   else if (data->type() == storage::index_mapping::static_type())
     _process_index_mapping(data);
   else if (data->type() == storage::metric_mapping::static_type())
-    _process_metric_mapping(
-        *std::static_pointer_cast<storage::metric_mapping const>(data));
+    _process_metric_mapping(data);
 }
 
 /**
@@ -167,8 +162,9 @@ void macro_cache::write(std::shared_ptr<io::data> const& data) {
  *
  *  @param in  The event.
  */
-void macro_cache::_process_instance(neb::instance const& in) {
-  _instances[in.poller_id] = in;
+void macro_cache::_process_instance(std::shared_ptr<io::data> const& data) {
+  auto const& in = std::static_pointer_cast<neb::instance>(data);
+  _instances[in->poller_id] = in;
 }
 
 /**
@@ -176,8 +172,9 @@ void macro_cache::_process_instance(neb::instance const& in) {
  *
  *  @param h  The event.
  */
-void macro_cache::_process_host(neb::host const& h) {
-  _hosts[h.host_id] = h;
+void macro_cache::_process_host(std::shared_ptr<io::data> const& data) {
+  auto const& h = std::static_pointer_cast<neb::host>(data);
+  _hosts[h->host_id] = h;
 }
 
 /**
@@ -185,8 +182,9 @@ void macro_cache::_process_host(neb::host const& h) {
  *
  *  @param s  The event.
  */
-void macro_cache::_process_service(neb::service const& s) {
-  _services[{s.host_id, s.service_id}] = s;
+void macro_cache::_process_service(std::shared_ptr<io::data> const& data) {
+  auto const& s = std::static_pointer_cast<neb::service>(data);
+  _services[{s->host_id, s->service_id}] = s;
 }
 
 /**
@@ -194,9 +192,9 @@ void macro_cache::_process_service(neb::service const& s) {
  *
  *  @param im  The event.
  */
-void macro_cache::_process_index_mapping(std::shared_ptr<io::data> const& data) {
-  std::shared_ptr<storage::index_mapping> const& im =
-      std::static_pointer_cast<storage::index_mapping>(data);
+void macro_cache::_process_index_mapping(
+    std::shared_ptr<io::data> const& data) {
+  auto const& im = std::static_pointer_cast<storage::index_mapping>(data);
   _index_mappings[im->index_id] = im;
 }
 
@@ -205,8 +203,10 @@ void macro_cache::_process_index_mapping(std::shared_ptr<io::data> const& data) 
  *
  *  @param mm  The event.
  */
-void macro_cache::_process_metric_mapping(storage::metric_mapping const& mm) {
-  _metric_mappings[mm.metric_id] = mm;
+void macro_cache::_process_metric_mapping(
+    std::shared_ptr<io::data> const& data) {
+  auto const& mm = std::static_pointer_cast<storage::metric_mapping>(data);
+  _metric_mappings[mm->metric_id] = mm;
 }
 
 /**
@@ -215,33 +215,23 @@ void macro_cache::_process_metric_mapping(storage::metric_mapping const& mm) {
 void macro_cache::_save_to_disk() {
   _cache->transaction();
 
-  for (std::unordered_map<uint64_t, neb::instance>::const_iterator
-           it{_instances.begin()},
-       end{_instances.end()};
-       it != end; ++it)
-    _cache->add(std::make_shared<neb::instance>(it->second));
+  for (auto it = _instances.begin(), end = _instances.end(); it != end; ++it)
+    _cache->add(it->second);
 
-  for (std::unordered_map<uint64_t, neb::host>::const_iterator
-           it{_hosts.begin()},
-       end{_hosts.end()};
-       it != end; ++it)
-    _cache->add(std::make_shared<neb::host>(it->second));
+  for (auto it = _hosts.begin(), end = _hosts.end(); it != end; ++it)
+    _cache->add(it->second);
 
-  for (std::unordered_map<std::pair<uint64_t, uint64_t>,
-                          neb::service>::const_iterator it(_services.begin()),
-       end(_services.end());
-       it != end; ++it)
-    _cache->add(std::make_shared<neb::service>(it->second));
+  for (auto it(_services.begin()), end(_services.end()); it != end; ++it)
+    _cache->add(it->second);
 
   for (auto it(_index_mappings.begin()), end(_index_mappings.end()); it != end;
        ++it)
     _cache->add(it->second);
 
-  for (std::unordered_map<uint64_t, storage::metric_mapping>::const_iterator
-           it(_metric_mappings.begin()),
-       end(_metric_mappings.end());
-       it != end; ++it)
-    _cache->add(std::make_shared<storage::metric_mapping>(it->second));
+  for (auto it = _metric_mappings.begin(), end = _metric_mappings.end();
+       it != end;
+       ++it)
+    _cache->add(it->second);
 
   _cache->commit();
 }
