@@ -52,9 +52,6 @@ class index_mapping : public io::data {
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
-
- private:
-  //void _internal_copy(index_mapping const& other);
 };
 }  // namespace storage
 

@@ -70,7 +70,7 @@ storage::index_mapping const& macro_cache::get_index_mapping(uint32_t index_id)
   if (found == _index_mappings.end())
     throw exceptions::msg() << "lua: could not find host/service of index "
                             << index_id;
-  return *found->second.get();
+  return *found->second;
 }
 
 /**
@@ -86,7 +86,7 @@ storage::metric_mapping const& macro_cache::get_metric_mapping(
   if (found == _metric_mappings.end())
     throw exceptions::msg() << "lua: could not find index of metric "
                             << metric_id;
-  return *found->second.get();
+  return *found->second;
 }
 
 /**
@@ -221,7 +221,7 @@ bam::dimension_ba_event const& macro_cache::get_dimension_ba_event(
   if (found == _dimension_ba_events.end())
     throw exceptions::msg()
         << "lua: could not find information on dimension ba event " << ba_id;
-  return *found->second.get();
+  return *found->second;
 }
 
 /**
@@ -237,7 +237,7 @@ bam::dimension_bv_event const& macro_cache::get_dimension_bv_event(
   if (found == _dimension_bv_events.end())
     throw exceptions::msg()
         << "lua: could not find information on dimension bv event " << bv_id;
-  return *found->second.get();
+  return *found->second;
 }
 
 /**

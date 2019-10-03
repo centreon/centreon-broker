@@ -407,21 +407,19 @@ void conflict_manager::_callback() {
                                              "new events.";
           }
 
+          /* Get some stats every seconds */
           if (std::chrono::duration_cast<std::chrono::milliseconds>(
                   now1 - previous_time).count() > 1000) {
             previous_time = now1;
-            /* Get some stats */
-            {
-              std::lock_guard<std::mutex> lk(_stat_m);
-              _still_pending_events = _events.size();
-              _loop_duration =
-                  std::chrono::duration_cast<std::chrono::milliseconds>(
-                      now1 - now0).count();
-              if (_loop_duration > 0)
-                _speed = (count * 1000.0) / _loop_duration;
-              else
-                _speed = 0;
-            }
+            std::lock_guard<std::mutex> lk(_stat_m);
+            _still_pending_events = _events.size();
+            _loop_duration =
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    now1 - now0).count();
+            if (_loop_duration > 0)
+              _speed = (count * 1000.0) / _loop_duration;
+            else
+              _speed = 0;
           }
         }
 

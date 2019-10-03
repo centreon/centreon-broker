@@ -68,7 +68,7 @@ storage::index_mapping const& macro_cache::get_index_mapping(uint64_t index_id)
   if (found == _index_mappings.end())
     throw exceptions::msg() << "influxdb: could not find host/service of index "
                             << index_id;
-  return *found->second.get();
+  return *found->second;
 }
 
 /**
@@ -84,7 +84,7 @@ storage::metric_mapping const& macro_cache::get_metric_mapping(
   if (found == _metric_mappings.end())
     throw exceptions::msg() << "influxdb: could not find index of metric "
                             << metric_id;
-  return *found->second.get();
+  return *found->second;
 }
 
 /**
