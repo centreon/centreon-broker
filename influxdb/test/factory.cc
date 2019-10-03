@@ -66,7 +66,6 @@ TEST(InfluxDBFactory, StatusException) {
   influxdb::factory fact;
   config::endpoint cfg;
   std::shared_ptr<persistent_cache> cache;
-  io::endpoint* edp;
   bool is_acceptor;
 
   cfg.type = "influxdb";
@@ -182,7 +181,6 @@ TEST(InfluxDBFactory, MetricException) {
   influxdb::factory fact;
   config::endpoint cfg;
   std::shared_ptr<persistent_cache> cache;
-  io::endpoint* edp;
   bool is_acceptor;
   delete fact.clone();
 
