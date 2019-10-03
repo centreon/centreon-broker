@@ -63,6 +63,7 @@ set(WDOG_TESTS_DIR ${PROJECT_SOURCE_DIR}/watchdog/test)
 # Include directories.
 include_directories(${PROJECT_SOURCE_DIR}/bam/inc)
 include_directories(${PROJECT_SOURCE_DIR}/storage/inc)
+include_directories(${PROJECT_SOURCE_DIR}/graphite/inc)
 include_directories(${PROJECT_SOURCE_DIR}/influxdb/inc)
 include_directories(${PROJECT_SOURCE_DIR}/lua/inc)
 include_directories(${PROJECT_SOURCE_DIR}/neb/inc)
@@ -141,7 +142,7 @@ target_link_libraries(ut gtest ${TESTS_LIBRARIES} ${NEB} rokerbase roker
 add_test(NAME tests COMMAND ut)
 
 if (WITH_COVERAGE)
-  set(COVERAGE_EXCLUDES '*/test/*' '/usr/include/*' '${CMAKE_BINARY_DIR}/*')
+  set(COVERAGE_EXCLUDES '*/main.cc' '*/test/*' '/usr/include/*' '${CMAKE_BINARY_DIR}/*')
   SETUP_TARGET_FOR_COVERAGE(
     NAME test-coverage
     EXECUTABLE ut

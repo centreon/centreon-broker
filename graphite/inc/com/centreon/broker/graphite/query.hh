@@ -45,9 +45,10 @@ class query {
         std::string const& escape_string,
         data_type type,
         macro_cache const& cache);
-  query(query const& other);
-  ~query();
-  query& operator=(query const& other);
+  ~query() = default;
+
+  query(query const& other) = delete;
+  query& operator=(query const& other) = delete;
 
   std::string generate_metric(storage::metric const& me);
   std::string generate_status(storage::status const& st);
@@ -75,7 +76,6 @@ class query {
   template <typename U, std::string(U::*member)>
   void _get_string_member(io::data const& d, std::ostream& is);
   void _get_string(io::data const& d, std::ostream& is);
-  void _get_null(io::data const& d, std::ostream& is);
   void _get_dollar_sign(io::data const& d, std::ostream& is);
   uint64_t _get_index_id(io::data const& d);
   void _get_index_id(io::data const& d, std::ostream& is);
