@@ -44,13 +44,13 @@ class stream : public input, public output {
   void negotiate(negotiation_type neg);
   bool read(std::shared_ptr<io::data>& d,
             time_t deadline = (time_t)-1) override;
-  void set_ack_limit(unsigned int limit);
+  void set_ack_limit(uint32_t limit);
   void set_coarse(bool coarse);
   void set_negotiate(bool negotiate, std::string const& extensions = "");
   void set_timeout(int timeout);
   void statistics(json11::Json::object& tree) const override;
   int write(std::shared_ptr<io::data> const& d) override;
-  void acknowledge_events(unsigned int events) override;
+  void acknowledge_events(uint32_t events) override;
   void send_event_acknowledgement();
 
  private:
@@ -59,9 +59,9 @@ class stream : public input, public output {
   bool _negotiate;
   bool _negotiated;
   int _timeout;
-  unsigned int _acknowledged_events;
-  unsigned int _ack_limit;
-  unsigned int _events_received_since_last_ack;
+  uint32_t _acknowledged_events;
+  uint32_t _ack_limit;
+  uint32_t _events_received_since_last_ack;
 };
 }  // namespace bbdo
 

@@ -43,7 +43,7 @@ class process_manager : public QObject {
   static process_manager& instance();
   static void release();
 
-  void create_process(std::string const& command, unsigned int timeout = 0);
+  void create_process(std::string const& command, uint32_t timeout = 0);
 
   QThread& get_thread();
 

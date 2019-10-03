@@ -64,7 +64,7 @@ inherited_downtime& inherited_downtime::operator=(
  *
  *  @return Event type.
  */
-unsigned int inherited_downtime::type() const {
+uint32_t inherited_downtime::type() const {
   return (inherited_downtime::static_type());
 }
 
@@ -73,7 +73,7 @@ unsigned int inherited_downtime::type() const {
  *
  *  @return  The event type.
  */
-unsigned int inherited_downtime::static_type() {
+uint32_t inherited_downtime::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_inherited_downtime>::value);
 }

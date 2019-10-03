@@ -65,7 +65,7 @@ class node : public correlation::state {
   void remove_depended(node* n);
   void remove_dependency(node* n);
   void remove_parent(node* n);
-  std::pair<unsigned int, unsigned int> get_id() const;
+  std::pair<uint32_t, uint32_t> get_id() const;
   bool all_parents_with_issues_and_get_start_time(timestamp& start_time) const;
 
   void manage_status(short status,
@@ -85,7 +85,7 @@ class node : public correlation::state {
 
   std::unique_ptr<issue> my_issue;
   std::unique_ptr<neb::acknowledgement> acknowledgement;
-  std::map<unsigned int, neb::downtime> downtimes;
+  std::map<uint32_t, neb::downtime> downtimes;
 
  private:
   void _internal_copy(node const& other);

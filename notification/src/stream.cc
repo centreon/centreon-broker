@@ -207,7 +207,7 @@ int stream::write(std::shared_ptr<io::data> const& data) {
   if (!validate(data, "notification"))
     return (1);
 
-  unsigned int retval(1);
+  uint32_t retval(1);
 
   // Update node cache.
   _node_cache.write(data);

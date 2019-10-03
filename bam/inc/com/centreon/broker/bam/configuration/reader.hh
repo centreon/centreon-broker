@@ -54,7 +54,7 @@ class reader {
   void _load_dimensions();
 
   mysql& _mysql;
-  unsigned int _poller_organization_id;
+  uint32_t _poller_organization_id;
 };
 }  // namespace configuration
 }  // namespace bam

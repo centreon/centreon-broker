@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     file::stream fs(filename);
 
     // Write data in file.
-    for (unsigned int i = 0; i < 10000; ++i)
+    for (uint32_t i = 0; i < 10000; ++i)
       fs.write(data);
   }
 
@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
   // Skip header.
   {
     char header[8];
-    unsigned int current(0);
+    uint32_t current(0);
     while (current != sizeof(header)) {
       f.waitForReadyRead(-1);
       current += f.read(header + current, sizeof(header - current));
@@ -82,8 +82,8 @@ int main(int argc, char* argv[]) {
 
   // Read and compare data.
   char buffer[36];
-  unsigned int count(0);
-  unsigned int current(0);
+  uint32_t count(0);
+  uint32_t current(0);
   while (!retval && (count < 10000)) {
     f.waitForReadyRead(-1);
     qint64 rb(f.read(buffer + current, sizeof(buffer) - current));

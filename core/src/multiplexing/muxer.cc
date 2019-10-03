@@ -31,8 +31,8 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
 
-unsigned int muxer::_event_queue_max_size =
-    std::numeric_limits<unsigned int>::max();
+uint32_t muxer::_event_queue_max_size =
+    std::numeric_limits<uint32_t>::max();
 
 /**************************************
  *                                     *
@@ -156,7 +156,7 @@ void muxer::event_queue_max_size(uint32_t max) noexcept {
  *
  *  @return The size limit.
  */
-unsigned int muxer::event_queue_max_size() noexcept {
+uint32_t muxer::event_queue_max_size() noexcept {
   return _event_queue_max_size;
 }
 
@@ -267,7 +267,7 @@ muxer::filters const& muxer::get_write_filters() const {
  *
  *  @return  The size of the event queue.
  */
-unsigned int muxer::get_event_queue_size() const {
+uint32_t muxer::get_event_queue_size() const {
   std::lock_guard<std::mutex> lock(_mutex);
   return _events.size();
 }

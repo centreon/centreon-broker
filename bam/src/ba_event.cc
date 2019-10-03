@@ -76,7 +76,7 @@ bool ba_event::operator==(ba_event const& other) const {
  *
  *  @return Event type.
  */
-unsigned int ba_event::type() const {
+uint32_t ba_event::type() const {
   return (ba_event::static_type());
 }
 
@@ -85,7 +85,7 @@ unsigned int ba_event::type() const {
  *
  *  @return Event type.
  */
-unsigned int ba_event::static_type() {
+uint32_t ba_event::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_ba_event>::value);
 }
 

@@ -59,7 +59,7 @@ class bool_expression {
              hst_svc_mapping const& mapping,
              service_book& book,
              metric_book& metric_book);
-  std::shared_ptr<bam::bool_expression> find_boolexp(unsigned int id);
+  std::shared_ptr<bam::bool_expression> find_boolexp(uint32_t id);
 
  private:
   struct applied {
@@ -75,7 +75,7 @@ class bool_expression {
       configuration::bool_expression const& cfg);
   void _resolve_expression_calls();
 
-  std::map<unsigned int, applied> _applied;
+  std::map<uint32_t, applied> _applied;
 };
 }  // namespace applier
 }  // namespace configuration

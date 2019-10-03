@@ -54,10 +54,10 @@ class read_write_lock {
 
   condvar _condvar;
   mutex _mtx;
-  volatile unsigned int _readers;
-  volatile unsigned int _readers_waiting;
+  volatile uint32_t _readers;
+  volatile uint32_t _readers_waiting;
   volatile bool _writer;
-  volatile unsigned int _writers_waiting;
+  volatile uint32_t _writers_waiting;
 };
 }  // namespace concurrency
 

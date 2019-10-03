@@ -61,16 +61,16 @@ class hostescalation : public object {
   void escalation_period(std::string const& period);
   std::string const& escalation_period() const throw();
   bool escalation_period_defined() const throw();
-  void first_notification(unsigned int n) throw();
+  void first_notification(uint32_t n) throw();
   uint32_t first_notification() const throw();
   set_string& hostgroups() throw();
   set_string const& hostgroups() const throw();
   set_string& hosts() throw();
   set_string const& hosts() const throw();
-  void last_notification(unsigned int n) throw();
-  unsigned int last_notification() const throw();
-  void notification_interval(unsigned int interval);
-  unsigned int notification_interval() const throw();
+  void last_notification(uint32_t n) throw();
+  uint32_t last_notification() const throw();
+  void notification_interval(uint32_t interval);
+  uint32_t notification_interval() const throw();
   bool notification_interval_defined() const throw();
   Uuid const& uuid() const;
 
@@ -80,20 +80,20 @@ class hostescalation : public object {
   bool _set_contactgroups(std::string const& value);
   bool _set_escalation_options(std::string const& value);
   bool _set_escalation_period(std::string const& value);
-  bool _set_first_notification(unsigned int value);
+  bool _set_first_notification(uint32_t value);
   bool _set_hostgroups(std::string const& value);
   bool _set_hosts(std::string const& value);
-  bool _set_last_notification(unsigned int value);
-  bool _set_notification_interval(unsigned int value);
+  bool _set_last_notification(uint32_t value);
+  bool _set_notification_interval(uint32_t value);
 
   group<set_string> _contactgroups;
   opt<unsigned short> _escalation_options;
   opt<std::string> _escalation_period;
-  opt<unsigned int> _first_notification;
+  opt<uint32_t> _first_notification;
   group<set_string> _hostgroups;
   group<set_string> _hosts;
-  opt<unsigned int> _last_notification;
-  opt<unsigned int> _notification_interval;
+  opt<uint32_t> _last_notification;
+  opt<uint32_t> _notification_interval;
   static std::unordered_map<std::string, setter_func> const _setters;
   Uuid _uuid;
 };

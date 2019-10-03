@@ -128,14 +128,14 @@ void downtime_scheduler::add_downtime(timestamp start_time,
  *
  *  @param[in] internal_id  The id of the downtime/
  */
-void downtime_scheduler::remove_downtime(unsigned int internal_id) {
+void downtime_scheduler::remove_downtime(uint32_t internal_id) {
   // Lock the mutex.
   std::lock_guard<std::mutex> lock(_general_mutex);
 
-  std::map<unsigned int, downtime>::iterator found =
+  std::map<uint32_t, downtime>::iterator found =
       _downtimes.find(internal_id);
   if (found != _downtimes.end()) {
-    for (std::multimap<timestamp, unsigned int>::iterator
+    for (std::multimap<timestamp, uint32_t>::iterator
              it = _downtime_starts.begin(),
              tmp = it, end = _downtime_starts.end();
          it != end; it = tmp) {
@@ -143,7 +143,7 @@ void downtime_scheduler::remove_downtime(unsigned int internal_id) {
       if (it->second == internal_id)
         _downtime_starts.erase(it);
     }
-    for (std::multimap<timestamp, unsigned int>::iterator
+    for (std::multimap<timestamp, uint32_t>::iterator
              it = _downtime_ends.begin(),
              tmp = it, end = _downtime_ends.end();
          it != end; it = tmp) {
@@ -161,7 +161,7 @@ void downtime_scheduler::remove_downtime(unsigned int internal_id) {
  *  @return  The first timestamp, or a null timestamp.
  */
 timestamp downtime_scheduler::_get_first_timestamp(
-    std::multimap<timestamp, unsigned int> const& list) {
+    std::multimap<timestamp, uint32_t> const& list) {
   return (list.begin() != list.end() ? list.begin()->first : timestamp());
 }
 
@@ -172,7 +172,7 @@ timestamp downtime_scheduler::_get_first_timestamp(
 void downtime_scheduler::_process_downtimes() {
   timestamp now = ::time(nullptr);
   multiplexing::publisher pblsh;
-  for (std::multimap<timestamp, unsigned int>::iterator
+  for (std::multimap<timestamp, uint32_t>::iterator
            it = _downtime_starts.begin(),
            tmp = it, end = _downtime_starts.end();
        it != end; it = tmp) {
@@ -182,7 +182,7 @@ void downtime_scheduler::_process_downtimes() {
     ++tmp;
     _downtime_starts.erase(it);
   }
-  for (std::multimap<timestamp, unsigned int>::iterator
+  for (std::multimap<timestamp, uint32_t>::iterator
            it = _downtime_ends.begin(),
            tmp = it, end = _downtime_ends.end();
        it != end; it = tmp) {

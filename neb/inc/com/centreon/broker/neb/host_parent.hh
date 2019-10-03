@@ -39,12 +39,12 @@ class host_parent : public io::data {
   host_parent(host_parent const& other);
   ~host_parent();
   host_parent& operator=(host_parent const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   bool enabled;
-  unsigned int host_id;
-  unsigned int parent_id;
+  uint32_t host_id;
+  uint32_t parent_id;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

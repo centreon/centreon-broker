@@ -43,8 +43,8 @@ class index_mapping : public io::data {
   index_mapping(index_mapping const& other) = delete;
   ~index_mapping() = default;
   index_mapping& operator=(index_mapping const& other) = delete;
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   uint32_t index_id;
   uint32_t host_id;

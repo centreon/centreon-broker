@@ -58,7 +58,7 @@ void timeperiod_loader::load(mysql* ms, timeperiod_builder* output) {
     database::mysql_result res(promise.get_future().get());
     while (ms->fetch_row(res)) {
       timeperiod::ptr tperiod(new timeperiod);
-      unsigned int timeperiod_id = res.value_as_u32(0);
+      uint32_t timeperiod_id = res.value_as_u32(0);
       tperiod->set_name(res.value_as_str(1));
       tperiod->set_alias(res.value_as_str(2));
       tperiod->set_timerange(res.value_as_str(3), 0);
@@ -86,7 +86,7 @@ void timeperiod_loader::load(mysql* ms, timeperiod_builder* output) {
   try {
     database::mysql_result res(promise.get_future().get());
     while (ms->fetch_row(res)) {
-      unsigned int timeperiod_id = res.value_as_u32(1);
+      uint32_t timeperiod_id = res.value_as_u32(1);
       std::string days = res.value_as_str(2);
       std::string timerange = res.value_as_str(3);
       output->add_timeperiod_exception(timeperiod_id, days, timerange);

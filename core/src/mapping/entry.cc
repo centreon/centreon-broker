@@ -81,7 +81,7 @@ entry& entry::operator=(entry const& other) {
  *
  *  @return Entry attribute.
  */
-unsigned int entry::get_attribute() const {
+uint32_t entry::get_attribute() const {
   return (_attribute);
 }
 
@@ -183,18 +183,18 @@ timestamp const& entry::get_time(io::data const& d) const {
  *
  *  @return Entry type.
  */
-unsigned int entry::get_type() const {
+uint32_t entry::get_type() const {
   return _type;
 }
 
 /**
- *  Get the unsigned integer value.
+ *  Get the uint32_teger value.
  *
  *  @param[in] d Object to work on.
  *
- *  @return The unsigned integer value.
+ *  @return The uint32_teger value.
  */
-unsigned int entry::get_uint(io::data const& d) const {
+uint32_t entry::get_uint(io::data const& d) const {
   return _ptr->get_uint(d);
 }
 
@@ -279,12 +279,12 @@ void entry::set_time(io::data& d, timestamp const& value) const {
 }
 
 /**
- *  Set the unsigned integer value.
+ *  Set the uint32_teger value.
  *
  *  @param[out] d     Object to work on.
  *  @param[in]  value New value.
  */
-void entry::set_uint(io::data& d, unsigned int value) const {
+void entry::set_uint(io::data& d, uint32_t value) const {
   _ptr->set_uint(d, value);
 }
 

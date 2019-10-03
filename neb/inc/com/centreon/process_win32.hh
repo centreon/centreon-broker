@@ -46,26 +46,26 @@ class process {
   virtual ~process() throw();
   void enable_stream(stream s, bool enable);
   timestamp const& end_time() const throw();
-  void exec(char const* cmd, char** env = NULL, unsigned int timeout = 0);
-  void exec(std::string const& cmd, unsigned int timeout = 0);
+  void exec(char const* cmd, char** env = NULL, uint32_t timeout = 0);
+  void exec(std::string const& cmd, uint32_t timeout = 0);
   int exit_code() const throw();
   status exit_status() const throw();
   void kill();
-  unsigned int read(void* data, unsigned int size);
-  unsigned int read_err(void* data, unsigned int size);
+  uint32_t read(void* data, uint32_t size);
+  uint32_t read_err(void* data, uint32_t size);
   timestamp const& start_time() const throw();
   void terminate();
   void wait();
   bool wait(unsigned long timeout);
-  unsigned int write(std::string const& data);
-  unsigned int write(void const* data, unsigned int size);
+  uint32_t write(std::string const& data);
+  uint32_t write(void const* data, uint32_t size);
 
  private:
   process(process const& p);
   process& operator=(process const& p);
   void _close(HANDLE& fd) throw();
   static void _pipe(HANDLE* rh, HANDLE* wh);
-  unsigned int _read(HANDLE h, void* data, unsigned int size);
+  uint32_t _read(HANDLE h, void* data, uint32_t size);
   static BOOL _terminate_window(HWND hwnd, LPARAM proc_id);
   bool _wait(DWORD timeout, int* exit_code);
 
@@ -80,7 +80,7 @@ class process {
   PROCESS_INFORMATION* _process;
   timestamp _start_time;
   HANDLE _stream[3];
-  unsigned int _timeout;
+  uint32_t _timeout;
 };
 
 CC_END()

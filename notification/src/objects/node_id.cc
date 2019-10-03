@@ -57,7 +57,7 @@ node_id& node_id::operator=(node_id const& obj) {
  *  @param[in] host_id    The host id of this node. 0 if none.
  *  @param[in] service_id  The service id of this node. 0 if none.
  */
-node_id::node_id(unsigned int host_id, unsigned int service_id)
+node_id::node_id(uint32_t host_id, uint32_t service_id)
     : _host_id(host_id), _service_id(service_id) {}
 
 /**
@@ -101,7 +101,7 @@ bool node_id::operator!=(node_id const& obj) const throw() {
  *
  *  @return  The host id of this node. 0 if none.
  */
-unsigned int node_id::get_host_id() const throw() {
+uint32_t node_id::get_host_id() const throw() {
   return (_host_id);
 }
 
@@ -110,7 +110,7 @@ unsigned int node_id::get_host_id() const throw() {
  *
  *  @return  The service id of this node. 0 if none.
  */
-unsigned int node_id::get_service_id() const throw() {
+uint32_t node_id::get_service_id() const throw() {
   return (_service_id);
 }
 

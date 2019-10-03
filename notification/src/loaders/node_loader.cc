@@ -51,7 +51,7 @@ void node_loader::load(mysql* ms, node_builder* output) {
   try {
     database::mysql_result res(promise.get_future().get());
     while (ms->fetch_row(res)) {
-      unsigned int host_id = res.value_as_u32(0);
+      uint32_t host_id = res.value_as_u32(0);
       node::ptr n(new node);
       n->set_node_id(node_id(host_id));
       logging::config(logging::low)
@@ -75,8 +75,8 @@ void node_loader::load(mysql* ms, node_builder* output) {
   try {
     database::mysql_result res(promise.get_future().get());
     while (ms->fetch_row(res)) {
-      unsigned int host_id = res.value_as_u32(0);
-      unsigned int service_id = res.value_as_u32(1);
+      uint32_t host_id = res.value_as_u32(0);
+      uint32_t service_id = res.value_as_u32(1);
       node::ptr n(new node);
       n->set_node_id(node_id(host_id, service_id));
       logging::config(logging::low)

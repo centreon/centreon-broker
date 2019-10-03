@@ -74,7 +74,7 @@ responsive_instance& responsive_instance::operator=(
  *
  *  @return The event_type.
  */
-unsigned int responsive_instance::type() const {
+uint32_t responsive_instance::type() const {
   return (io::events::data_type<io::events::neb,
                                 neb::de_responsive_instance>::value);
 }

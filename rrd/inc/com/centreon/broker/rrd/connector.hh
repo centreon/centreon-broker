@@ -39,7 +39,7 @@ class connector : public io::endpoint {
   ~connector();
   connector& operator=(connector const& right);
   std::shared_ptr<io::stream> open();
-  void set_cache_size(unsigned int cache_size);
+  void set_cache_size(uint32_t cache_size);
   void set_cached_local(std::string const& local_socket);
   void set_cached_net(unsigned short port) throw();
   void set_ignore_update_errors(bool ignore) throw();
@@ -52,7 +52,7 @@ class connector : public io::endpoint {
   void _internal_copy(connector const& right);
   std::string _real_path_of(std::string const& path);
 
-  unsigned int _cache_size;
+  uint32_t _cache_size;
   std::string _cached_local;
   unsigned short _cached_port;
   bool _ignore_update_errors;

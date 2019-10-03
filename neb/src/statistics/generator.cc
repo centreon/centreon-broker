@@ -145,15 +145,15 @@ generator& generator::operator=(generator const& right) {
  *  @param[in] service_id The service id.
  *  @param[in] plugin     The plugin to add.
  */
-void generator::add(unsigned int host_id,
-                    unsigned int service_id,
+void generator::add(uint32_t host_id,
+                    uint32_t service_id,
                     std::shared_ptr<plugin> plugin) {
   if (!host_id)
     throw(exceptions::msg() << "stats: invalid plugin host id");
   if (!service_id)
     throw(exceptions::msg() << "stats: invalid plugin service id");
 
-  std::pair<unsigned int, unsigned int> ids(
+  std::pair<uint32_t, uint32_t> ids(
       std::make_pair(host_id, service_id));
   _registers.insert(std::make_pair(ids, plugin));
   return;
@@ -166,8 +166,8 @@ void generator::add(unsigned int host_id,
  *  @param[in] service_id The service id.
  *  @param[in] name       The plugin name.
  */
-void generator::add(unsigned int host_id,
-                    unsigned int service_id,
+void generator::add(uint32_t host_id,
+                    uint32_t service_id,
                     std::string const& name) {
   std::map<std::string, std::shared_ptr<plugin> >::const_iterator it(
       _plugins.find(name));
@@ -190,7 +190,7 @@ void generator::clear() {
  *
  *  @return The interval to generate statistics.
  */
-unsigned int generator::interval() const throw() {
+uint32_t generator::interval() const throw() {
   return (_interval);
 }
 
@@ -199,7 +199,7 @@ unsigned int generator::interval() const throw() {
  *
  *  @param[in] interval The interval to generate statistics.
  */
-void generator::interval(unsigned int value) {
+void generator::interval(uint32_t value) {
   _interval = value;
 }
 

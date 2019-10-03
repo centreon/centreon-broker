@@ -27,7 +27,7 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in] map  The map to fill.
  */
 notification_method_by_id_builder::notification_method_by_id_builder(
-    QHash<unsigned int, objects::notification_method::ptr>& map)
+    QHash<uint32_t, objects::notification_method::ptr>& map)
     : _map(map) {}
 
 /**
@@ -37,7 +37,7 @@ notification_method_by_id_builder::notification_method_by_id_builder(
  *  @param[in] method     The method.
  */
 void notification_method_by_id_builder::add_notification_method(
-    unsigned int method_id,
+    uint32_t method_id,
     notification_method::ptr method) {
   _map[method_id] = method;
 }

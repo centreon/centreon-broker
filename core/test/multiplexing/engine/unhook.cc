@@ -106,7 +106,7 @@ TEST_F(Unhook, EngineWorks) {
     // Check subscriber content.
     {
       char const* messages[] = {HOOKMSG1, MSG1, HOOKMSG2, MSG2, nullptr};
-      for (unsigned int i = 0; messages[i]; ++i) {
+      for (uint32_t i = 0; messages[i]; ++i) {
         std::shared_ptr<io::data> d;
         s.get_muxer().read(d, 0);
         if (!d || d->type() != io::raw::static_type())

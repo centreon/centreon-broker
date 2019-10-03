@@ -40,10 +40,10 @@ class inherited_downtime : public io::data {
   inherited_downtime(inherited_downtime const& other);
   ~inherited_downtime();
   inherited_downtime& operator=(inherited_downtime const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int ba_id;
+  uint32_t ba_id;
   bool in_downtime;
 
   static mapping::entry const entries[];

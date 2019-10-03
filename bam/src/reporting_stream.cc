@@ -249,7 +249,7 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
                                                   char const* table,
                                                   char const* id) {
   // Get events to close.
-  std::list<std::pair<unsigned int, time_t>> events;
+  std::list<std::pair<uint32_t, time_t>> events;
   {
     std::ostringstream query;
     query << "SELECT e1." << id << ", e1.start_time"
@@ -273,7 +273,7 @@ void reporting_stream::_close_inconsistent_events(char const* event_type,
   }
 
   // Close each event.
-  for (std::list<std::pair<unsigned int, time_t>>::const_iterator
+  for (std::list<std::pair<uint32_t, time_t>>::const_iterator
            it(events.begin()),
        end(events.end());
        it != end; ++it) {

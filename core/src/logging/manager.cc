@@ -53,7 +53,7 @@ void manager::_compute_optimizations() {
   for (std::vector<manager_backend>::const_iterator it = _backends.begin(),
                                                     end = _backends.end();
        it != end; ++it)
-    for (unsigned int i = 1; i <= static_cast<unsigned int>(it->l); ++i)
+    for (uint32_t i = 1; i <= static_cast<uint32_t>(it->l); ++i)
       _limits[i] |= it->types;
   return;
 }
@@ -108,7 +108,7 @@ void manager::load() {
  *  @param[in] l   Log level.
  */
 void manager::log_msg(char const* msg,
-                      unsigned int len,
+                      uint32_t len,
                       type t,
                       level l) throw() {
   std::lock_guard<std::mutex> lock(_backendsm);
@@ -132,7 +132,7 @@ void manager::log_msg(char const* msg,
  *                          OR of multiple logging::type.
  *  @param[in] min_priority Minimal priority of messages to be logged.
  */
-void manager::log_on(backend& b, unsigned int types, level min_priority) {
+void manager::log_on(backend& b, uint32_t types, level min_priority) {
   std::lock_guard<std::mutex> lock(_backendsm);
 
   // Either add backend to list.
@@ -142,7 +142,7 @@ void manager::log_on(backend& b, unsigned int types, level min_priority) {
     p.l = min_priority;
     p.types = types;
     _backends.push_back(p);
-    for (unsigned int i = 1; i <= static_cast<unsigned int>(min_priority); ++i)
+    for (uint32_t i = 1; i <= static_cast<uint32_t>(min_priority); ++i)
       _limits[i] |= types;
   }
   // Or remove it.

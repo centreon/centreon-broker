@@ -62,10 +62,10 @@ class timestamp {
 
  private:
   void _internal_copy(timestamp const& right);
-  static void _transfer(time_t* secs, unsigned int* usecs);
+  static void _transfer(time_t* secs, uint32_t* usecs);
 
   time_t _secs;
-  unsigned int _usecs;
+  uint32_t _usecs;
 };
 
 CC_END()

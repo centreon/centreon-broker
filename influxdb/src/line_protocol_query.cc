@@ -319,7 +319,7 @@ void line_protocol_query::_compile_scheme(
       _append_compiled_getter(&line_protocol_query::_get_instance, escaper);
     else if (macro == "$INSTANCEID$")
       _append_compiled_getter(
-          &line_protocol_query::_get_member<unsigned int, io::data,
+          &line_protocol_query::_get_member<uint32_t, io::data,
                                             &io::data::source_id>,
           escaper);
     else if (macro == "$HOST$")
@@ -437,7 +437,7 @@ void line_protocol_query::_get_dollar_sign(io::data const& d,
  *
  *  @return       The index id.
  */
-unsigned int line_protocol_query::_get_index_id(io::data const& d) {
+uint32_t line_protocol_query::_get_index_id(io::data const& d) {
   if (_type == status)
     return (static_cast<storage::status const&>(d).index_id);
   else if (_type == metric)
@@ -466,7 +466,7 @@ void line_protocol_query::_get_index_id(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void line_protocol_query::_get_host(io::data const& d, std::ostream& is) {
-  unsigned int index_id = _get_index_id(d);
+  uint32_t index_id = _get_index_id(d);
   is << _cache->get_host_name(_cache->get_index_mapping(index_id).host_id);
   return;
 }
@@ -478,7 +478,7 @@ void line_protocol_query::_get_host(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void line_protocol_query::_get_host_id(io::data const& d, std::ostream& is) {
-  unsigned int index_id = _get_index_id(d);
+  uint32_t index_id = _get_index_id(d);
   is << _cache->get_index_mapping(index_id).host_id;
   return;
 }
@@ -490,7 +490,7 @@ void line_protocol_query::_get_host_id(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void line_protocol_query::_get_service(io::data const& d, std::ostream& is) {
-  unsigned int index_id = _get_index_id(d);
+  uint32_t index_id = _get_index_id(d);
   storage::index_mapping const& stm(_cache->get_index_mapping(index_id));
   is << _cache->get_service_description(stm.host_id, stm.service_id);
   return;
@@ -503,7 +503,7 @@ void line_protocol_query::_get_service(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void line_protocol_query::_get_service_id(io::data const& d, std::ostream& is) {
-  unsigned int index_id = _get_index_id(d);
+  uint32_t index_id = _get_index_id(d);
   is << _cache->get_index_mapping(index_id).service_id;
   return;
 }

@@ -53,7 +53,7 @@ void command_loader::load(mysql* ms, command_builder* output) {
   try {
     database::mysql_result res(promise.get_future().get());
     while (ms->fetch_row(res)) {
-      unsigned int id = res.value_as_u32(0);
+      uint32_t id = res.value_as_u32(0);
       std::string base_command = res.value_as_str(3);
       command::ptr com(new command(base_command));
       com->set_name(res.value_as_str(2));

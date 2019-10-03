@@ -39,7 +39,7 @@ class monitoring_logger : public logging::backend {
   ~monitoring_logger();
   monitoring_logger& operator=(monitoring_logger const& ml) = delete;
   void log_msg(char const* msg,
-               unsigned int len,
+               uint32_t len,
                logging::type log_type,
                logging::level l) throw();
 

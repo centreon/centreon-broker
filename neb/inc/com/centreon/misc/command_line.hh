@@ -35,7 +35,7 @@ namespace misc {
 class command_line {
  public:
   command_line();
-  command_line(char const* cmdline, unsigned int size = 0);
+  command_line(char const* cmdline, uint32_t size = 0);
   command_line(std::string const& cmdline);
   command_line(command_line const& right);
   ~command_line() throw();
@@ -44,7 +44,7 @@ class command_line {
   bool operator!=(command_line const& right) const throw();
   int get_argc() const throw();
   char** get_argv() const throw();
-  void parse(char const* cmdline, unsigned int size = 0);
+  void parse(char const* cmdline, uint32_t size = 0);
   void parse(std::string const& cmdline);
 
  private:

@@ -79,10 +79,10 @@ class host : public object {
   opt<time_t> const& last_time_unreachable() const throw();
   opt<time_t> const& last_time_up() const throw();
   opt<std::string> const& long_plugin_output() const throw();
-  opt<unsigned int> const& max_attempts() const throw();
+  opt<uint32_t> const& max_attempts() const throw();
   opt<unsigned long> const& modified_attributes() const throw();
   opt<time_t> const& next_check() const throw();
-  opt<unsigned int> const& normal_check_interval() const throw();
+  opt<uint32_t> const& normal_check_interval() const throw();
   opt<std::string> const& notification_period() const throw();
   opt<bool> const& notifications_enabled() const throw();
   opt<bool> const& notified_on_down() const throw();
@@ -94,7 +94,7 @@ class host : public object {
   opt<std::string> const& plugin_output() const throw();
   opt<bool> const& problem_has_been_acknowledged() const throw();
   opt<int> const& process_performance_data() const throw();
-  opt<unsigned int> const& retry_check_interval() const throw();
+  opt<uint32_t> const& retry_check_interval() const throw();
   opt<std::vector<int> > const& state_history() const throw();
   opt<int> const& state_type() const throw();
 
@@ -140,10 +140,10 @@ class host : public object {
   bool _set_last_time_unreachable(time_t value);
   bool _set_last_time_up(time_t value);
   bool _set_long_plugin_output(std::string const& value);
-  bool _set_max_attempts(unsigned int value);
+  bool _set_max_attempts(uint32_t value);
   bool _set_modified_attributes(unsigned long value);
   bool _set_next_check(time_t value);
-  bool _set_normal_check_interval(unsigned int value);
+  bool _set_normal_check_interval(uint32_t value);
   bool _set_notification_period(std::string const& value);
   bool _set_notifications_enabled(bool value);
   bool _set_notified_on_down(bool value);
@@ -155,7 +155,7 @@ class host : public object {
   bool _set_plugin_output(std::string const& value);
   bool _set_problem_has_been_acknowledged(bool value);
   bool _set_process_performance_data(int value);
-  bool _set_retry_check_interval(unsigned int value);
+  bool _set_retry_check_interval(uint32_t value);
   bool _set_state_history(std::string const& value);
   bool _set_state_type(int value);
 
@@ -195,10 +195,10 @@ class host : public object {
   opt<time_t> _last_time_unreachable;
   opt<time_t> _last_time_up;
   opt<std::string> _long_plugin_output;
-  opt<unsigned int> _max_attempts;
+  opt<uint32_t> _max_attempts;
   opt<unsigned long> _modified_attributes;
   opt<time_t> _next_check;
-  opt<unsigned int> _normal_check_interval;
+  opt<uint32_t> _normal_check_interval;
   opt<std::string> _notification_period;
   opt<bool> _notifications_enabled;
   opt<bool> _notified_on_down;
@@ -210,7 +210,7 @@ class host : public object {
   opt<std::string> _plugin_output;
   opt<bool> _problem_has_been_acknowledged;
   opt<int> _process_performance_data;
-  opt<unsigned int> _retry_check_interval;
+  opt<uint32_t> _retry_check_interval;
   static setters const _setters[];
   opt<std::vector<int> > _state_history;
   opt<int> _state_type;

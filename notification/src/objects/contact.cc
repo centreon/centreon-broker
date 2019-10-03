@@ -55,7 +55,7 @@ contact& contact::operator=(contact const& obj) {
  *
  *  @return  The id of this contact.
  */
-unsigned int contact::get_id() const throw() {
+uint32_t contact::get_id() const throw() {
   return (_id);
 }
 
@@ -64,7 +64,7 @@ unsigned int contact::get_id() const throw() {
  *
  *  @param[in] id  The id of this contact.
  */
-void contact::set_id(unsigned int id) {
+void contact::set_id(uint32_t id) {
   _id = id;
 }
 

@@ -86,7 +86,7 @@ comment& comment::operator=(comment const& other) {
  *
  *  @return This object type.
  */
-unsigned int comment::type() const {
+uint32_t comment::type() const {
   return (static_type());
 }
 
@@ -95,7 +95,7 @@ unsigned int comment::type() const {
  *
  *  @return The type of this class.
  */
-unsigned int comment::static_type() {
+uint32_t comment::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_comment>::value);
 }
 

@@ -63,12 +63,12 @@ class compute_value {
   T avg() const throw() { return (_size ? _sum / _size : 0); }
   T max() const throw() { return (_max); }
   T min() const throw() { return (_min); }
-  unsigned int size() const throw() { return (_size); }
+  uint32_t size() const throw() { return (_size); }
 
  private:
   T _max;
   T _min;
-  unsigned int _size;
+  uint32_t _size;
   T _sum;
 };
 }  // namespace statistics

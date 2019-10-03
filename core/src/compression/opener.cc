@@ -91,7 +91,7 @@ void opener::set_level(int level) {
  *  @param[in] size Compression buffer size (default is 0 which means no
  *                  buffering).
  */
-void opener::set_size(unsigned int size) {
+void opener::set_size(uint32_t size) {
   _size = size;
   return;
 }

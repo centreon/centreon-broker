@@ -34,7 +34,7 @@ temp_logger::redir const temp_logger::_redir_nothing = {
     &temp_logger::_nothing<long>,
     &temp_logger::_nothing<long long>,
     &temp_logger::_nothing<std::string const&>,
-    &temp_logger::_nothing<unsigned int>,
+    &temp_logger::_nothing<uint32_t>,
     &temp_logger::_nothing<unsigned long>,
     &temp_logger::_nothing<unsigned long long>,
     &temp_logger::_nothing<char const*>,
@@ -46,7 +46,7 @@ temp_logger::redir const temp_logger::_redir_stringifier = {
     &temp_logger::_to_stringifier<long>,
     &temp_logger::_to_stringifier<long long>,
     &temp_logger::_to_stringifier<std::string const&>,
-    &temp_logger::_to_stringifier<unsigned int>,
+    &temp_logger::_to_stringifier<uint32_t>,
     &temp_logger::_to_stringifier<unsigned long>,
     &temp_logger::_to_stringifier<unsigned long long>,
     &temp_logger::_to_stringifier<char const*>,
@@ -216,7 +216,7 @@ temp_logger& temp_logger::operator<<(std::string const& q) throw() {
  *
  *  @return This object.
  */
-temp_logger& temp_logger::operator<<(unsigned int u) throw() {
+temp_logger& temp_logger::operator<<(uint32_t u) throw() {
   return ((this->*(_redir->redirect_unsigned_int))(u));
 }
 

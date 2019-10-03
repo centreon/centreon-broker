@@ -75,7 +75,7 @@ class LoggingManager : public ::testing::Test {
    *  @param[out] b      Backend to write to.
    *  @param[in]  msg_nb Number of messages to write.
    */
-  void write_log_messages(logging::backend* b, unsigned int msg_nb = 4) {
+  void write_log_messages(logging::backend* b, uint32_t msg_nb = 4) {
     // First message.
     b->log_msg(MSG1 "\n", sizeof(MSG1), logging::config_type, logging::high);
     if (msg_nb <= 1)
@@ -424,7 +424,7 @@ TEST_F(LoggingManager, MaxSize) {
   f.with_timestamp(logging::no_timestamp);
 
   // Write log messages.
-  for (unsigned int i = 0; i < 200000; ++i)
+  for (uint32_t i = 0; i < 200000; ++i)
     write_log_messages(&f);
 
   std::ifstream ifs(file_path, std::ios::binary);
@@ -691,7 +691,7 @@ TEST_F(LoggingManager, Insertion) {
  *  Log some messages.
  */
 static void log_messages() {
-  for (unsigned int i = 0; i < WRITE_COUNT; ++i)
+  for (uint32_t i = 0; i < WRITE_COUNT; ++i)
     logging::error(logging::high) << MESSAGE;
   return;
 }
@@ -720,11 +720,11 @@ TEST_F(LoggingManager, Concurrent) {
 
   // launch threads.
   std::vector<std::thread> pool;
-  for (unsigned int i = 0; i < 50; ++i)
+  for (uint32_t i = 0; i < 50; ++i)
     pool.push_back(std::thread(log_messages));
 
   // Wait for tasks to finish.
-  for (unsigned int i = 0; i < 50; ++i)
+  for (uint32_t i = 0; i < 50; ++i)
     pool[i].join();
 
   // Remove backend from logging.

@@ -44,8 +44,8 @@ class instance_status : public status {
   instance_status(instance_status const& other);
   ~instance_status();
   instance_status& operator=(instance_status const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   bool active_host_checks_enabled;
   bool active_service_checks_enabled;
@@ -59,7 +59,7 @@ class instance_status : public status {
   bool obsess_over_services;
   bool passive_host_checks_enabled;
   bool passive_service_checks_enabled;
-  unsigned int poller_id;
+  uint32_t poller_id;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

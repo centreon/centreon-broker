@@ -53,15 +53,15 @@ bool file::_with_human_readable_timestamp(false);
 // integer.
 template <unsigned long long ll>
 struct ll_width {
-  static unsigned int const value = 1 + ll_width<ll / 10>::value;
+  static uint32_t const value = 1 + ll_width<ll / 10>::value;
 };
 template <>
 struct ll_width<0ull> {
-  static unsigned int const value = 1;
+  static uint32_t const value = 1;
 };
 template <typename T>
 struct integer_width {
-  static unsigned int const value =
+  static uint32_t const value =
       2 + ll_width<((((1ull << (sizeof(T) * 8 - 1)) - 1) << 1) | 1)>::value;
 };
 
@@ -125,7 +125,7 @@ file::~file() {
  *  @param[in] l        Log level.
  */
 void file::log_msg(char const* msg,
-                   unsigned int len,
+                   uint32_t len,
                    type log_type,
                    level l) throw() {
   (void)len;

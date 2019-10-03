@@ -66,7 +66,7 @@ downtime_map::~downtime_map() {}
  *
  *  @return  A new downtime id.
  */
-unsigned int downtime_map::get_new_downtime_id() {
+uint32_t downtime_map::get_new_downtime_id() {
   return _actual_downtime_id++;
 }
 
@@ -81,7 +81,7 @@ std::list<downtime> downtime_map::get_all_downtimes_of_node(node_id id) const {
   std::list<downtime> ret;
   auto range(_downtime_id_by_nodes.equal_range(id));
 
-  for (std::unordered_multimap<node_id, unsigned int>::const_iterator
+  for (std::unordered_multimap<node_id, uint32_t>::const_iterator
            it(range.first),
        end(range.second);
        it != end; ++it)
@@ -101,7 +101,7 @@ std::list<downtime> downtime_map::get_all_recurring_downtimes_of_node(
   std::list<downtime> ret;
   auto range(_recurring_downtime_id_by_nodes.equal_range(id));
 
-  for (std::unordered_multimap<node_id, unsigned int>::const_iterator
+  for (std::unordered_multimap<node_id, uint32_t>::const_iterator
            it{range.first},
        end{range.second};
        it != end; ++it)
@@ -119,7 +119,7 @@ void downtime_map::delete_downtime(downtime const& dwn) {
 
   node_id id{dwn.host_id, dwn.service_id};
   auto range(_downtime_id_by_nodes.equal_range(id));
-  for (std::unordered_multimap<node_id, unsigned int>::const_iterator
+  for (std::unordered_multimap<node_id, uint32_t>::const_iterator
            it(range.first),
        end(range.second);
        it != end; ++it)
@@ -131,7 +131,7 @@ void downtime_map::delete_downtime(downtime const& dwn) {
   _recurring_downtimes.erase(dwn.internal_id);
 
   range = _recurring_downtime_id_by_nodes.equal_range(id);
-  for (std::unordered_multimap<node_id, unsigned int>::const_iterator
+  for (std::unordered_multimap<node_id, uint32_t>::const_iterator
            it{range.first},
        end{range.second};
        it != end; ++it)
@@ -168,8 +168,8 @@ void downtime_map::add_downtime(downtime const& dwn) {
  *
  *  @return  Pointer to this downtime, or a null pointer.
  */
-downtime* downtime_map::get_downtime(unsigned int internal_id) {
-  std::unordered_map<unsigned int, downtime>::iterator found{
+downtime* downtime_map::get_downtime(uint32_t internal_id) {
+  std::unordered_map<uint32_t, downtime>::iterator found{
       _downtimes.find(internal_id)};
   if (found != _downtimes.end())
     return &found->second;
@@ -188,8 +188,8 @@ downtime* downtime_map::get_downtime(unsigned int internal_id) {
  *
  *  @return True or false.
  */
-bool downtime_map::is_recurring(unsigned int internal_id) const {
-  std::unordered_map<unsigned int, downtime>::const_iterator found{
+bool downtime_map::is_recurring(uint32_t internal_id) const {
+  std::unordered_map<uint32_t, downtime>::const_iterator found{
       _recurring_downtimes.find(internal_id)};
   return found != _recurring_downtimes.end();
 }
@@ -201,7 +201,7 @@ bool downtime_map::is_recurring(unsigned int internal_id) const {
  */
 std::list<downtime> downtime_map::get_all_recurring_downtimes() const {
   std::list<downtime> retval;
-  for (std::unordered_map<unsigned int, downtime>::const_iterator
+  for (std::unordered_map<uint32_t, downtime>::const_iterator
            it{_recurring_downtimes.begin()},
        end{_recurring_downtimes.end()};
        it != end; ++it)
@@ -216,12 +216,12 @@ std::list<downtime> downtime_map::get_all_recurring_downtimes() const {
  */
 std::list<downtime> downtime_map::get_all_downtimes() const {
   std::list<downtime> ret;
-  for (std::unordered_map<unsigned int, downtime>::const_iterator
+  for (std::unordered_map<uint32_t, downtime>::const_iterator
            it{_recurring_downtimes.begin()},
        end{_recurring_downtimes.end()};
        it != end; ++it)
     ret.push_back(it->second);
-  for (std::unordered_map<unsigned int, downtime>::const_iterator
+  for (std::unordered_map<uint32_t, downtime>::const_iterator
            it{_downtimes.begin()},
        end{_downtimes.end()};
        it != end; ++it)
@@ -236,8 +236,8 @@ std::list<downtime> downtime_map::get_all_downtimes() const {
  *
  *  @return               True if a spawned downtime exist.
  */
-bool downtime_map::spawned_downtime_exist(unsigned int parent_id) const {
-  for (std::unordered_map<unsigned int, neb::downtime>::const_iterator
+bool downtime_map::spawned_downtime_exist(uint32_t parent_id) const {
+  for (std::unordered_map<uint32_t, neb::downtime>::const_iterator
            it{_downtimes.begin()},
        end{_downtimes.end()};
        it != end; ++it)

@@ -69,9 +69,9 @@ class availability_thread {
                                    time_t day_end);
   void _write_availability(int thread_id,
                            availability_builder const& builder,
-                           unsigned int ba_id,
+                           uint32_t ba_id,
                            time_t day_start,
-                           unsigned int timeperiod_id);
+                           uint32_t timeperiod_id);
 
   time_t _compute_next_midnight();
   time_t _compute_start_of_day(time_t when);

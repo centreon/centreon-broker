@@ -80,7 +80,7 @@ bool dimension_ba_event::operator==(dimension_ba_event const& other) const {
  *
  *  @return Event type.
  */
-unsigned int dimension_ba_event::type() const {
+uint32_t dimension_ba_event::type() const {
   return (dimension_ba_event::static_type());
 }
 
@@ -89,7 +89,7 @@ unsigned int dimension_ba_event::type() const {
  *
  *  @return Event type.
  */
-unsigned int dimension_ba_event::static_type() {
+uint32_t dimension_ba_event::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_dimension_ba_event>::value);
 }

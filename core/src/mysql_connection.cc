@@ -455,7 +455,7 @@ void mysql_connection::_run() {
     }
   }
   logging::debug(logging::low) << "mysql_connection::_run finished";
-  for (std::unordered_map<unsigned int, MYSQL_STMT*>::iterator
+  for (std::unordered_map<uint32_t, MYSQL_STMT*>::iterator
            it(_stmt.begin()),
        end(_stmt.end());
        it != end; ++it)

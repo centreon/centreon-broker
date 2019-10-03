@@ -40,10 +40,10 @@ class ba_status : public io::data {
   ba_status(ba_status const& other);
   ~ba_status();
   ba_status& operator=(ba_status const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int ba_id;
+  uint32_t ba_id;
   bool in_downtime;
   timestamp last_state_change;
   double level_acknowledgement;

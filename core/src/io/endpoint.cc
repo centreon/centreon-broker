@@ -109,7 +109,7 @@ void endpoint::stats(json11::Json::object& tree) {
  *
  *  @param[in] filter  The filter.
  */
-void endpoint::set_filter(std::set<unsigned int> const& filter) {
+void endpoint::set_filter(std::set<uint32_t> const& filter) {
   _filter = filter;
   if (_from)
     _from->set_filter(filter);

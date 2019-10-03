@@ -33,7 +33,7 @@ composed_notification_method_builder::composed_notification_method_builder() {}
  *  @param[in] method     The method.
  */
 void composed_notification_method_builder::add_notification_method(
-    unsigned int method_id,
+    uint32_t method_id,
     notification_method::ptr method) {
   for (composed_builder<notification_method_builder>::iterator it(begin()),
        it_end(end());

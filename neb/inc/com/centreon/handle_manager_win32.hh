@@ -49,7 +49,7 @@ class handle_manager {
   void link(task_manager* tm);
   void multiplex();
   bool remove(handle* h);
-  unsigned int remove(handle_listener* hl);
+  uint32_t remove(handle_listener* hl);
 
  private:
   void _internal_copy(handle_manager const& right);

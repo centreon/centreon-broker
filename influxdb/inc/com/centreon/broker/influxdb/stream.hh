@@ -51,7 +51,7 @@ class stream : public io::stream {
          std::string const& addr,
          unsigned short port,
          std::string const& db,
-         unsigned int queries_per_transaction,
+         uint32_t queries_per_transaction,
          std::string const& status_ts,
          std::vector<column> const& status_cols,
          std::string const& metric_ts,
@@ -69,12 +69,12 @@ class stream : public io::stream {
   std::string _password;
   std::string _address;
   std::string _db;
-  unsigned int _queries_per_transaction;
+  uint32_t _queries_per_transaction;
   std::unique_ptr<influxdb> _influx_db;
 
   // Internal working members
   int _pending_queries;
-  unsigned int _actual_query;
+  uint32_t _actual_query;
   bool _commit;
 
   // Cache

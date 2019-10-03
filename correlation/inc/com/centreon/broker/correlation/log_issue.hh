@@ -42,12 +42,12 @@ class log_issue : public io::data {
   log_issue& operator=(log_issue const& i);
   bool operator==(log_issue const& i) const;
   bool operator!=(log_issue const& i) const;
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   timestamp log_ctime;
-  unsigned int host_id;
-  unsigned int service_id;
+  uint32_t host_id;
+  uint32_t service_id;
   timestamp issue_start_time;
 
   static mapping::entry const entries[];

@@ -36,7 +36,7 @@ namespace rrd {
  */
 class lib : public backend {
  public:
-  lib(std::string const& tmpl_path, unsigned int cache_size);
+  lib(std::string const& tmpl_path, uint32_t cache_size);
   lib(lib const& l);
   ~lib();
   lib& operator=(lib const& l);
@@ -46,9 +46,9 @@ class lib : public backend {
   void commit();
   void open(std::string const& filename);
   void open(std::string const& filename,
-            unsigned int length,
+            uint32_t length,
             time_t from,
-            unsigned int step,
+            uint32_t step,
             short value_type = 0);
   void remove(std::string const& filename);
   void update(time_t t, std::string const& value);

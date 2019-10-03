@@ -41,9 +41,9 @@ class syslogger : public backend {
   ~syslogger() throw();
   void close() throw();
   void log(unsigned long long types,
-           unsigned int verbose,
+           uint32_t verbose,
            char const* msg,
-           unsigned int size) throw();
+           uint32_t size) throw();
   void open();
   void reopen();
 

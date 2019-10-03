@@ -64,7 +64,7 @@ services_scheduled& services_scheduled::operator=(
  */
 void services_scheduled::run(std::string& output, std::string& perfdata) {
   // Count services scheduled.
-  unsigned int total{0};
+  uint32_t total{0};
   for (service_map::const_iterator
            it{com::centreon::engine::service::services.begin()},
        end{com::centreon::engine::service::services.end()};

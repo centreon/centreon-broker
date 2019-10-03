@@ -153,7 +153,7 @@ bool daterange::operator<(daterange const& right) const throw() {
  *
  *  @param[in] value The new month_end value.
  */
-void daterange::month_end(unsigned int value) {
+void daterange::month_end(uint32_t value) {
   _month_end = value;
 }
 
@@ -162,7 +162,7 @@ void daterange::month_end(unsigned int value) {
  *
  *  @return The month_end value.
  */
-unsigned int daterange::month_end() const throw() {
+uint32_t daterange::month_end() const throw() {
   return (_month_end);
 }
 
@@ -171,7 +171,7 @@ unsigned int daterange::month_end() const throw() {
  *
  *  @param[in] value The new month_start value.
  */
-void daterange::month_start(unsigned int value) {
+void daterange::month_start(uint32_t value) {
   _month_start = value;
 }
 
@@ -180,7 +180,7 @@ void daterange::month_start(unsigned int value) {
  *
  *  @return The month_start value.
  */
-unsigned int daterange::month_start() const throw() {
+uint32_t daterange::month_start() const throw() {
   return (_month_start);
 }
 
@@ -225,7 +225,7 @@ int daterange::month_day_start() const throw() {
  *
  *  @param[in] value The new skip_interval value.
  */
-void daterange::skip_interval(unsigned int value) {
+void daterange::skip_interval(uint32_t value) {
   _skip_interval = value;
 }
 
@@ -234,7 +234,7 @@ void daterange::skip_interval(unsigned int value) {
  *
  *  @return The skip_interval value.
  */
-unsigned int daterange::skip_interval() const throw() {
+uint32_t daterange::skip_interval() const throw() {
   return (_skip_interval);
 }
 
@@ -279,7 +279,7 @@ daterange::type_range daterange::type() const throw() {
  *
  *  @param[in] value The new week_day_end value.
  */
-void daterange::week_day_end(unsigned int value) {
+void daterange::week_day_end(uint32_t value) {
   _week_day_end = value;
 }
 
@@ -288,7 +288,7 @@ void daterange::week_day_end(unsigned int value) {
  *
  *  @return The week_day_end value.
  */
-unsigned int daterange::week_day_end() const throw() {
+uint32_t daterange::week_day_end() const throw() {
   return (_week_day_end);
 }
 
@@ -297,7 +297,7 @@ unsigned int daterange::week_day_end() const throw() {
  *
  *  @param[in] value The new week_day_start value.
  */
-void daterange::week_day_start(unsigned int value) {
+void daterange::week_day_start(uint32_t value) {
   _week_day_start = value;
 }
 
@@ -306,7 +306,7 @@ void daterange::week_day_start(unsigned int value) {
  *
  *  @return The week_day_start value.
  */
-unsigned int daterange::week_day_start() const throw() {
+uint32_t daterange::week_day_start() const throw() {
   return (_week_day_start);
 }
 
@@ -351,7 +351,7 @@ int daterange::week_day_start_offset() const throw() {
  *
  *  @param[in] value The new year_end value.
  */
-void daterange::year_end(unsigned int value) {
+void daterange::year_end(uint32_t value) {
   _year_end = value;
 }
 
@@ -360,7 +360,7 @@ void daterange::year_end(unsigned int value) {
  *
  *  @return The year_end value.
  */
-unsigned int daterange::year_end() const throw() {
+uint32_t daterange::year_end() const throw() {
   return (_year_end);
 }
 
@@ -369,7 +369,7 @@ unsigned int daterange::year_end() const throw() {
  *
  *  @param[in] value The new year_start value.
  */
-void daterange::year_start(unsigned int value) {
+void daterange::year_start(uint32_t value) {
   _year_start = value;
 }
 
@@ -378,7 +378,7 @@ void daterange::year_start(unsigned int value) {
  *
  *  @return The year_start value.
  */
-unsigned int daterange::year_start() const throw() {
+uint32_t daterange::year_start() const throw() {
   return (_year_start);
 }
 
@@ -925,7 +925,7 @@ bool daterange::to_time_t(time_t const preferred_time,
 /*bool _add_week_day(
        std::string const& key,
        std::string const& value) {
-  unsigned int day_id;
+  uint32_t day_id;
   if (!_get_day_id(key, day_id))
     return (false);
 
@@ -943,7 +943,7 @@ bool daterange::to_time_t(time_t const preferred_time,
  *
  *  @return True on success, otherwise false.
  */
-static bool _get_month_id(std::string const& name, unsigned int& id) {
+static bool _get_month_id(std::string const& name, uint32_t& id) {
   static std::string const months[] = {
       "january", "february", "march",     "april",   "may",      "june",
       "july",    "august",   "september", "october", "november", "december"};
@@ -961,7 +961,7 @@ static bool _get_month_id(std::string const& name, unsigned int& id) {
  *
  *  @return True on success, otherwise false.
  */
-static bool _get_day_id(std::string const& name, unsigned int& id) {
+static bool _get_day_id(std::string const& name, uint32_t& id) {
   static std::string const days[] = {"sunday",    "monday",   "tuesday",
                                      "wednesday", "thursday", "friday",
                                      "saturday"};
@@ -983,13 +983,13 @@ bool daterange::build_calendar_date(std::string const& line,
                                     std::vector<std::list<daterange> >& list) {
   int ret(0);
   int pos(0);
-  unsigned int month_start(0);
-  unsigned int month_end(0);
-  unsigned int month_day_start(0);
-  unsigned int month_day_end(0);
-  unsigned int year_start(0);
-  unsigned int year_end(0);
-  unsigned int skip_interval(0);
+  uint32_t month_start(0);
+  uint32_t month_end(0);
+  uint32_t month_day_start(0);
+  uint32_t month_day_end(0);
+  uint32_t year_start(0);
+  uint32_t year_end(0);
+  uint32_t skip_interval(0);
 
   if ((ret = sscanf(line.c_str(), "%4u-%2u-%2u - %4u-%2u-%2u / %u %n",
                     &year_start, &month_start, &month_day_start, &year_end,
@@ -1045,13 +1045,13 @@ bool daterange::build_other_date(std::string const& line,
                                  std::vector<std::list<daterange> >& list) {
   int pos(0);
   daterange::type_range type(daterange::none);
-  unsigned int month_start(0);
-  unsigned int month_end(0);
+  uint32_t month_start(0);
+  uint32_t month_end(0);
   int month_day_start(0);
   int month_day_end(0);
-  unsigned int skip_interval(0);
-  unsigned int week_day_start(0);
-  unsigned int week_day_end(0);
+  uint32_t skip_interval(0);
+  uint32_t week_day_start(0);
+  uint32_t week_day_end(0);
   int week_day_start_offset(0);
   int week_day_end_offset(0);
   char buffer[4][4096];

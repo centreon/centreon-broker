@@ -122,7 +122,7 @@ void reader::_load(state::kpis& kpis) {
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
       // KPI object.
-      unsigned int kpi_id(res.value_as_u32(0));
+      uint32_t kpi_id(res.value_as_u32(0));
       kpis[kpi_id] = kpi(kpi_id,                 // ID.
                          res.value_as_i32(1),    // State type.
                          res.value_as_u32(2),    // Host ID.
@@ -216,7 +216,7 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
         database::mysql_result res(promise.get_future().get());
         while (_mysql.fetch_row(res)) {
           // BA object.
-          unsigned int ba_id(res.value_as_u32(0));
+          uint32_t ba_id(res.value_as_u32(0));
           bas[ba_id] = ba(ba_id,                  // ID.
                           res.value_as_str(1),    // Name.
                           res.value_as_f32(2),    // Warning level.
@@ -239,7 +239,7 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
     }
 
     // Get organization ID.
-    unsigned int organization_id;
+    uint32_t organization_id;
     {
       std::ostringstream query;
       query << "SELECT o.organization_id"
@@ -274,7 +274,7 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
     _poller_organization_id = organization_id;
 
     // Get host ID.
-    unsigned int host_id;
+    uint32_t host_id;
     while (true) {
       {
         std::ostringstream query;
@@ -303,7 +303,7 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
     // Load service ID for each BA.
     for (state::bas::iterator it(bas.begin()), end(bas.end()); it != end;
          ++it) {
-      unsigned int service_id;
+      uint32_t service_id;
       while (true) {
         {
           std::ostringstream query;
@@ -359,14 +359,14 @@ void reader::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
         &promise);
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
-      unsigned int host_id = res.value_as_u32(2);
-      unsigned int service_id = res.value_as_u32(3);
+      uint32_t host_id = res.value_as_u32(2);
+      uint32_t service_id = res.value_as_u32(3);
       std::string service_description = res.value_as_str(1);
       service_description.erase(0, strlen("ba_"));
 
       if (!service_description.empty()) {
         try {
-          unsigned int ba_id = std::stoul(service_description);
+          uint32_t ba_id = std::stoul(service_description);
           state::bas::iterator found = bas.find(ba_id);
           if (found == bas.end()) {
             logging::info(logging::medium)
@@ -449,7 +449,7 @@ void reader::_load(state::meta_services& meta_services) {
         &promise);
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
-      unsigned int meta_id(res.value_as_u32(0));
+      uint32_t meta_id(res.value_as_u32(0));
       meta_services[meta_id] = meta_service(
           res.value_as_u32(0), res.value_as_str(1), res.value_as_str(2),
           res.value_as_f64(3), res.value_as_f64(4),
@@ -481,11 +481,11 @@ void reader::_load(state::meta_services& meta_services) {
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
       std::string service_description(res.value_as_str(1));
-      unsigned int host_id(res.value_as_u32(2));
-      unsigned int service_id(res.value_as_u32(3));
+      uint32_t host_id(res.value_as_u32(2));
+      uint32_t service_id(res.value_as_u32(3));
       service_description.erase(0, strlen("meta_"));
       try {
-        unsigned int meta_id(std::stoul(service_description));
+        uint32_t meta_id(std::stoul(service_description));
         state::meta_services::iterator found(meta_services.find(meta_id));
         if (found == meta_services.end()) {
           logging::info(logging::medium)
@@ -514,7 +514,7 @@ void reader::_load(state::meta_services& meta_services) {
   }
 
   // Check for the virtual host existence.
-  unsigned int meta_virtual_host_id;
+  uint32_t meta_virtual_host_id;
   try {
     while (true) {
       std::stringstream query;
@@ -698,8 +698,8 @@ void reader::_load_dimensions() {
   datas.push_back(dtts);
 
   // Load the dimensions.
-  std::map<unsigned int, time::timeperiod::ptr> timeperiods;
-  std::map<unsigned int, std::shared_ptr<dimension_ba_event> > bas;
+  std::map<uint32_t, time::timeperiod::ptr> timeperiods;
+  std::map<uint32_t, std::shared_ptr<dimension_ba_event> > bas;
   try {
     // Load the timeperiods themselves.
     std::promise<database::mysql_result> promise;
@@ -745,8 +745,8 @@ void reader::_load_dimensions() {
     //   "  FROM cfg_timeperiods_exceptions",
     //   "could not retrieve timeperiod exceptions from the database");
     // while (q.next()) {
-    //   unsigned int timeperiod_id = q.value(0).toUInt();
-    //   std::map<unsigned int, time::timeperiod::ptr>::iterator found
+    //   uint32_t timeperiod_id = q.value(0).toUInt();
+    //   std::map<uint32_t, time::timeperiod::ptr>::iterator found
     //       = timeperiods.find(timeperiod_id);
     //   if (found == timeperiods.end())
     //     throw (reader_exception()
@@ -770,15 +770,15 @@ void reader::_load_dimensions() {
     //   "  FROM cfg_timeperiods_exclude_relations",
     //   "could not retrieve timeperiod exclusions from the database");
     // while (q.next()) {
-    //   unsigned int timeperiod_id = q.value(0).toUInt();
-    //   unsigned int timeperiod_exclude_id = q.value(1).toUInt();
-    //   std::map<unsigned int, time::timeperiod::ptr>::iterator found
+    //   uint32_t timeperiod_id = q.value(0).toUInt();
+    //   uint32_t timeperiod_exclude_id = q.value(1).toUInt();
+    //   std::map<uint32_t, time::timeperiod::ptr>::iterator found
     //       = timeperiods.find(timeperiod_id);
     //   if (found == timeperiods.end())
     //     throw (reader_exception()
     //            << "BAM: found a timeperiod exclude pointing to an inexisting
     //            " "timeperiod (timeperiod has ID " << timeperiod_id << ")");
-    //   std::map<unsigned int, time::timeperiod::ptr>::iterator found_excluded
+    //   std::map<uint32_t, time::timeperiod::ptr>::iterator found_excluded
     //   =
     //     timeperiods.find(timeperiod_exclude_id);
     //   if (found_excluded == timeperiods.end())
@@ -956,7 +956,7 @@ void reader::_load_dimensions() {
 
         // Resolve the id_indicator_ba.
         if (k->kpi_ba_id) {
-          std::map<unsigned int,
+          std::map<uint32_t,
                    std::shared_ptr<dimension_ba_event> >::const_iterator found =
               bas.find(k->kpi_ba_id);
           if (found == bas.end()) {

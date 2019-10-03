@@ -56,7 +56,7 @@ plaintext_command_parser::~plaintext_command_parser() {}
  *
  * @return  The number of characters parsed succesfully, 0 for none.
  */
-unsigned int plaintext_command_parser::parse(
+uint32_t plaintext_command_parser::parse(
     std::string const& buffer,
     command_result& res,
     std::shared_ptr<command_request>& request) {

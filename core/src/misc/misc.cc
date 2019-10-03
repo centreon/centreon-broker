@@ -61,7 +61,7 @@ static const uint16_t crc_tbl[16] = {
  *
  * @return The checksum
  */
-uint16_t misc::crc16_ccitt(char const* data, unsigned int data_len) {
+uint16_t misc::crc16_ccitt(char const* data, uint32_t data_len) {
   uint16_t crc = 0xffff;
   uint8_t c;
   const uint8_t* p = reinterpret_cast<const uint8_t*>(data);

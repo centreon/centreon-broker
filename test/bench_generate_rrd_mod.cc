@@ -30,7 +30,7 @@ static benchmark* thread(NULL);
  *
  *  @return The value.
  */
-static unsigned int _get_param(std::string const& param) {
+static uint32_t _get_param(std::string const& param) {
   // Parse XML.
   QDomDocument d;
   if (d.setContent(static_cast<QString>(param.c_str()))) {
@@ -62,8 +62,8 @@ void broker_module_init(config::state const* cfg) {
   it1 = cfg->params().find("bench_services");
   it2 = cfg->params().find("bench_requests_per_service");
   if (it1 != cfg->params().end() && it2 != cfg->params().end()) {
-    unsigned int services(_get_param(it1->second));
-    unsigned int requests_per_service(_get_param(it2->second));
+    uint32_t services(_get_param(it1->second));
+    uint32_t requests_per_service(_get_param(it2->second));
     thread = new benchmark(services, requests_per_service);
     thread->start();
   }

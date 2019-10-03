@@ -64,7 +64,7 @@ raw& raw::operator=(raw const& r) {
  *
  *  @return Raw data.
  */
-unsigned int raw::type() const {
+uint32_t raw::type() const {
   return raw::static_type();
 }
 
@@ -73,7 +73,7 @@ unsigned int raw::type() const {
  *
  *  @return Raw data.
  */
-unsigned int raw::static_type() {
+uint32_t raw::static_type() {
   return events::data_type<events::internal, events::de_raw>::value;
 }
 

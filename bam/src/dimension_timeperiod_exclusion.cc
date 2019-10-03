@@ -66,7 +66,7 @@ dimension_timeperiod_exclusion& dimension_timeperiod_exclusion::operator=(
  *
  *  @return Event type.
  */
-unsigned int dimension_timeperiod_exclusion::type() const {
+uint32_t dimension_timeperiod_exclusion::type() const {
   return (dimension_timeperiod_exclusion::static_type());
 }
 
@@ -75,7 +75,7 @@ unsigned int dimension_timeperiod_exclusion::type() const {
  *
  *  @return Event type.
  */
-unsigned int dimension_timeperiod_exclusion::static_type() {
+uint32_t dimension_timeperiod_exclusion::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_dimension_timeperiod_exclusion>::value);
 }

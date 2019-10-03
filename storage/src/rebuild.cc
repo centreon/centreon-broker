@@ -68,7 +68,7 @@ rebuild& rebuild::operator=(rebuild const& right) {
  *
  *  @return The event type.
  */
-unsigned int rebuild::type() const {
+uint32_t rebuild::type() const {
   return (rebuild::static_type());
 }
 
@@ -77,7 +77,7 @@ unsigned int rebuild::type() const {
  *
  *  @return  The event type.
  */
-unsigned int rebuild::static_type() {
+uint32_t rebuild::static_type() {
   return (
       io::events::data_type<io::events::storage, storage::de_rebuild>::value);
 }

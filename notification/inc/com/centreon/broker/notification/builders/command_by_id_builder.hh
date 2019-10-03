@@ -38,12 +38,12 @@ namespace notification {
  */
 class command_by_id_builder : public command_builder {
  public:
-  command_by_id_builder(QHash<unsigned int, objects::command::ptr>& table);
+  command_by_id_builder(QHash<uint32_t, objects::command::ptr>& table);
 
-  virtual void add_command(unsigned int id, objects::command::ptr com);
+  virtual void add_command(uint32_t id, objects::command::ptr com);
 
  private:
-  QHash<unsigned int, objects::command::ptr>& _table;
+  QHash<uint32_t, objects::command::ptr>& _table;
 };
 
 }  // namespace notification

@@ -100,7 +100,7 @@ bool state::operator!=(state const& s) const {
  *
  *  @return The event type.
  */
-unsigned int state::type() const {
+uint32_t state::type() const {
   return (state::static_type());
 }
 
@@ -109,7 +109,7 @@ unsigned int state::type() const {
  *
  *  @return  The event type.
  */
-unsigned int state::static_type() {
+uint32_t state::static_type() {
   return (io::events::data_type<io::events::correlation,
                                 correlation::de_state>::value);
 }

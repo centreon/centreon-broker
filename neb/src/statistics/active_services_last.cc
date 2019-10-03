@@ -65,10 +65,10 @@ active_services_last& active_services_last::operator=(
  *  @param[out] perfdata The perf data return by the plugin.
  */
 void active_services_last::run(std::string& output, std::string& perfdata) {
-  unsigned int last_checked_1(0);
-  unsigned int last_checked_5(0);
-  unsigned int last_checked_15(0);
-  unsigned int last_checked_60(0);
+  uint32_t last_checked_1(0);
+  uint32_t last_checked_5(0);
+  uint32_t last_checked_15(0);
+  uint32_t last_checked_60(0);
   time_t now(time(nullptr));
   for (service_map::const_iterator it{service::services.begin()},
        end{service::services.end()};

@@ -40,10 +40,10 @@ class kpi_status : public io::data {
   kpi_status(kpi_status const& other);
   ~kpi_status();
   kpi_status& operator=(kpi_status const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int kpi_id;
+  uint32_t kpi_id;
   bool in_downtime;
   double level_acknowledgement_hard;
   double level_acknowledgement_soft;

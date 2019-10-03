@@ -40,7 +40,7 @@ class composed_notification_rule_builder
  public:
   composed_notification_rule_builder();
 
-  virtual void add_rule(unsigned int rule_id,
+  virtual void add_rule(uint32_t rule_id,
                         objects::notification_rule::ptr rule);
 };
 

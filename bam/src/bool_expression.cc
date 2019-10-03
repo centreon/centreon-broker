@@ -132,7 +132,7 @@ void bool_expression::set_expression(
  *
  *  @param[in] id  Boolean expression ID.
  */
-void bool_expression::set_id(unsigned int id) {
+void bool_expression::set_id(uint32_t id) {
   _id = id;
   return;
 }

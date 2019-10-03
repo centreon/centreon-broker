@@ -37,14 +37,14 @@ using namespace com::centreon::broker;
  *
  *  @param[in] count Number of lines to write.
  */
-static int read_some(file::stream& f, unsigned int count) {
+static int read_some(file::stream& f, uint32_t count) {
   // Static data.
-  static unsigned int already_read(0);
+  static uint32_t already_read(0);
   static QByteArray buffer;
 
   // Find all numbers.
   int retval(0);
-  for (unsigned int i(0); i < count; ++i) {
+  for (uint32_t i(0); i < count; ++i) {
     // Find carriage return.
     int index(buffer.indexOf('\n'));
     while (-1 == index) {
@@ -78,9 +78,9 @@ static int read_some(file::stream& f, unsigned int count) {
  *
  *  @param[in] count Number of lines to write.
  */
-static int write_some(file::stream& f, unsigned int count) {
-  static unsigned int written(0);
-  for (unsigned int i = 0; i < count; ++i) {
+static int write_some(file::stream& f, uint32_t count) {
+  static uint32_t written(0);
+  for (uint32_t i = 0; i < count; ++i) {
     char buffer[32];
     ++written;
     snprintf(buffer, sizeof(buffer) - 1, "%u\n", written);

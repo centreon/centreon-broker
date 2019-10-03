@@ -41,14 +41,14 @@ class module : public io::data {
   module(module const& other);
   ~module();
   module& operator=(module const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   std::string args;
   bool enabled;
   std::string filename;
   bool loaded;
-  unsigned int poller_id;
+  uint32_t poller_id;
   bool should_be_loaded;
 
   static mapping::entry const entries[];

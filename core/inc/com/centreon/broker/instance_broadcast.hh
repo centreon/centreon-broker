@@ -39,22 +39,22 @@ class instance_broadcast : public io::data {
   instance_broadcast(instance_broadcast const& other);
   ~instance_broadcast();
   instance_broadcast& operator=(instance_broadcast const& other);
-  unsigned int type() const;
+  uint32_t type() const;
 
   /**
    *  Get the event type.
    *
    *  @return The event type.
    */
-  static unsigned int static_type() {
+  static uint32_t static_type() {
     return (io::events::data_type<io::events::internal,
                                   io::events::de_instance_broadcast>::value);
   }
 
-  unsigned int broker_id;
+  uint32_t broker_id;
   std::string broker_name;
   bool enabled;
-  unsigned int poller_id;
+  uint32_t poller_id;
   std::string poller_name;
 
   static mapping::entry const entries[];

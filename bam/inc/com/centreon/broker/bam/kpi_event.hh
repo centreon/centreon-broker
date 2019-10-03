@@ -42,11 +42,11 @@ class kpi_event : public io::data {
   ~kpi_event();
   kpi_event& operator=(kpi_event const& other);
   bool operator==(kpi_event const& other) const;
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   timestamp end_time;
-  unsigned int kpi_id;
+  uint32_t kpi_id;
   int impact_level;
   bool in_downtime;
   std::string output;

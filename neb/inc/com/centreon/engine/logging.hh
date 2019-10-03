@@ -45,9 +45,9 @@ CCE_END()
 extern "C" {
 #endif  // C++
 
-void log_host_state(unsigned int type, com::centreon::engine::host* hst);
+void log_host_state(uint32_t type, com::centreon::engine::host* hst);
 // logs initial/current service states
-void log_service_state(unsigned int type, com::centreon::engine::service* svc);
+void log_service_state(uint32_t type, com::centreon::engine::service* svc);
 
 #ifdef __cplusplus
 }

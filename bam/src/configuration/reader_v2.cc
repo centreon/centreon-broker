@@ -122,7 +122,7 @@ void reader_v2::_load(state::kpis& kpis) {
       database::mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res)) {
         // KPI object.
-        unsigned int kpi_id(res.value_as_u32(0));
+        uint32_t kpi_id(res.value_as_u32(0));
         kpis[kpi_id] = kpi(kpi_id,                 // ID.
                            res.value_as_i32(1),    // State type.
                            res.value_as_u32(2),    // Host ID.
@@ -221,7 +221,7 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
         database::mysql_result res(promise.get_future().get());
         while (_mysql.fetch_row(res)) {
           // BA object.
-          unsigned int ba_id(res.value_as_u32(0));
+          uint32_t ba_id(res.value_as_u32(0));
           bas[ba_id] = ba(ba_id,                  // ID.
                           res.value_as_str(1),    // Name.
                           res.value_as_f32(2),    // Warning level.
@@ -266,14 +266,14 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
         &promise);
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
-      unsigned int host_id = res.value_as_u32(2);
-      unsigned int service_id = res.value_as_u32(3);
+      uint32_t host_id = res.value_as_u32(2);
+      uint32_t service_id = res.value_as_u32(3);
       std::string service_description = res.value_as_str(1);
       service_description.erase(0, strlen("ba_"));
 
       if (!service_description.empty()) {
         try {
-          unsigned int ba_id = std::stoul(service_description);
+          uint32_t ba_id = std::stoul(service_description);
           state::bas::iterator found = bas.find(ba_id);
           if (found == bas.end()) {
             logging::info(logging::medium)
@@ -365,7 +365,7 @@ void reader_v2::_load(state::meta_services& meta_services) {
         &promise);
     database::mysql_result res(promise.get_future().get());
     while (_mysql.fetch_row(res)) {
-      unsigned int meta_id(res.value_as_u32(0));
+      uint32_t meta_id(res.value_as_u32(0));
       meta_services[meta_id] = meta_service(
           res.value_as_u32(0), res.value_as_str(1), res.value_as_str(2),
           res.value_as_f64(3), res.value_as_f64(4),
@@ -398,7 +398,7 @@ void reader_v2::_load(state::meta_services& meta_services) {
       std::string service_description(res.value_as_str(1));
       service_description.erase(0, strlen("meta_"));
       try {
-        unsigned int meta_id(std::stoul(service_description));
+        uint32_t meta_id(std::stoul(service_description));
         state::meta_services::iterator found(meta_services.find(meta_id));
         if (found == meta_services.end()) {
           logging::info(logging::medium)
@@ -570,8 +570,8 @@ void reader_v2::_load_dimensions() {
   datas.push_back(dtts);
 
   // Load the dimensions.
-  std::map<unsigned int, time::timeperiod::ptr> timeperiods;
-  std::map<unsigned int, std::shared_ptr<dimension_ba_event> > bas;
+  std::map<uint32_t, time::timeperiod::ptr> timeperiods;
+  std::map<uint32_t, std::shared_ptr<dimension_ba_event> > bas;
   try {
     // Load the timeperiods themselves.
     std::promise<database::mysql_result> promise;
@@ -771,7 +771,7 @@ void reader_v2::_load_dimensions() {
 
           // Resolve the id_indicator_ba.
           if (k->kpi_ba_id) {
-            std::map<unsigned int,
+            std::map<uint32_t,
                      std::shared_ptr<dimension_ba_event> >::const_iterator
                 found = bas.find(k->kpi_ba_id);
             if (found == bas.end()) {

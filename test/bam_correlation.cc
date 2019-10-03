@@ -301,7 +301,7 @@ int main() {
     // Check issues.
     {
       struct {
-        unsigned int service_id;
+        uint32_t service_id;
         time_t start_time_low;
         time_t start_time_high;
       } expected[] = {
@@ -347,8 +347,8 @@ int main() {
       struct {
         time_t start_time_low;
         time_t start_time_high;
-        unsigned int child_service_id;
-        unsigned int parent_service_id;
+        uint32_t child_service_id;
+        uint32_t parent_service_id;
       } expected[] = {
           {t3, t4, 1001, 1002}, {t6, t7, 1002, 1003}, {t6, t7, 1002, 1004}};
       QString query;

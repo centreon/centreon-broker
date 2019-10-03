@@ -76,7 +76,7 @@ metric_mapping& metric_mapping::operator=(metric_mapping const& m) {
  *
  *  @return The event type.
  */
-unsigned int metric_mapping::type() const {
+uint32_t metric_mapping::type() const {
   return (metric_mapping::static_type());
 }
 
@@ -85,7 +85,7 @@ unsigned int metric_mapping::type() const {
  *
  *  @return  The event type.
  */
-unsigned int metric_mapping::static_type() {
+uint32_t metric_mapping::static_type() {
   return (io::events::data_type<io::events::storage,
                                 storage::de_metric_mapping>::value);
 }

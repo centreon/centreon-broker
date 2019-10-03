@@ -80,7 +80,7 @@ class node_cache : public multiplexing::hooker {
   service_node_state const& get_service(objects::node_id id) const;
 
   bool node_in_downtime(objects::node_id node) const;
-  unsigned int node_downtimes(objects::node_id node) const;
+  uint32_t node_downtimes(objects::node_id node) const;
   bool node_acknowledged(objects::node_id node) const;
 
  private:
@@ -89,8 +89,8 @@ class node_cache : public multiplexing::hooker {
   QHash<objects::node_id, host_node_state> _host_node_states;
   QHash<objects::node_id, service_node_state> _service_node_states;
   QHash<objects::node_id, neb::acknowledgement> _acknowledgements;
-  QHash<unsigned int, neb::downtime> _downtimes;
-  QMultiHash<objects::node_id, unsigned int> _downtime_id_by_nodes;
+  QHash<uint32_t, neb::downtime> _downtimes;
+  QMultiHash<objects::node_id, uint32_t> _downtime_id_by_nodes;
   QMutex _mutex;
 
   std::shared_ptr<persistent_cache> _cache;

@@ -432,10 +432,10 @@ void macro_generator::_fill_x_macro_map(x_macro_map& map) {
                                  &objects::contact::get_description, 0>);
   map.insert(
       "HOSTNOTIFICATIONNUMBER",
-      &get_action_member<unsigned int, &action::get_notification_number, 0>);
+      &get_action_member<uint32_t, &action::get_notification_number, 0>);
   map.insert(
       "SERVICENOTIFICATIONNUMBER",
-      &get_action_member<unsigned int, &action::get_notification_number, 0>);
+      &get_action_member<uint32_t, &action::get_notification_number, 0>);
   // We will manage notification escalation/downtime macros
   // when we will manage escalations and downtimes.
   map.insert("NOTIFICATIONISESCALATED", &null_getter);

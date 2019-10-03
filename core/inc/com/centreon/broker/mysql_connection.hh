@@ -95,7 +95,7 @@ class mysql_connection {
   void _fetch_row_sync(database::mysql_task* task);
   void _finish(database::mysql_task* task);
   void _push(std::shared_ptr<database::mysql_task> const& q);
-  void _debug(MYSQL_BIND* bind, unsigned int size);
+  void _debug(MYSQL_BIND* bind, uint32_t size);
 
   static void (mysql_connection::*const _task_processing_table[])(
       database::mysql_task* task);
@@ -110,10 +110,10 @@ class mysql_connection {
   std::list<std::shared_ptr<database::mysql_task> > _tasks_list;
   std::atomic_int _tasks_count;
 
-  std::unordered_map<unsigned int, MYSQL_STMT*> _stmt;
+  std::unordered_map<uint32_t, MYSQL_STMT*> _stmt;
 
   // FIXME DBR: to debug: Logs must be well implemented
-  std::unordered_map<unsigned int, std::string> _stmt_query;
+  std::unordered_map<uint32_t, std::string> _stmt_query;
 
   // Mutex and condition working on result and error_msg.
   std::mutex _result_mutex;

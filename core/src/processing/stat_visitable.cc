@@ -47,7 +47,7 @@ stat_visitable::~stat_visitable() {}
 static std::string dump_filters(std::unordered_set<uint32_t> const& filters) {
   io::events::events_container all_event_container =
       io::events::instance().get_events_by_category_name("all");
-  std::map<unsigned int, std::string> name_by_id;
+  std::map<uint32_t, std::string> name_by_id;
 
   std::unordered_set<uint32_t> all_events;
   for (io::events::events_container::const_iterator
@@ -65,7 +65,7 @@ static std::string dump_filters(std::unordered_set<uint32_t> const& filters) {
   for (std::unordered_set<uint32_t>::const_iterator it = filters.begin(),
                                                     end = filters.end();
        it != end; ++it) {
-    std::map<unsigned int, std::string>::const_iterator found =
+    std::map<uint32_t, std::string>::const_iterator found =
         name_by_id.find(*it);
     if (found != name_by_id.end())
       ret.append(",  ").append(found->second);
@@ -137,7 +137,7 @@ void stat_visitable::set_last_connection_success(
 /**
  *  Tick the event processing computation.
  */
-void stat_visitable::tick(unsigned int events) {
+void stat_visitable::tick(uint32_t events) {
   std::lock_guard<std::mutex> lock(_stat_mutex);
   _event_processing_speed.tick(events);
 }

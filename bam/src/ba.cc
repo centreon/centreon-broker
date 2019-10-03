@@ -226,7 +226,7 @@ double ba::get_downtime_impact_soft() {
  *
  *  @return ID of this BA.
  */
-unsigned int ba::get_id() {
+uint32_t ba::get_id() {
   return (_id);
 }
 
@@ -235,7 +235,7 @@ unsigned int ba::get_id() {
  *
  *  @return  An integer representing the value of this id.
  */
-unsigned int ba::get_host_id() const {
+uint32_t ba::get_host_id() const {
   return (_host_id);
 }
 
@@ -244,7 +244,7 @@ unsigned int ba::get_host_id() const {
  *
  *  @return  An integer representing the value of this id.
  */
-unsigned int ba::get_service_id() const {
+uint32_t ba::get_service_id() const {
   return (_service_id);
 }
 
@@ -360,7 +360,7 @@ void ba::remove_impact(std::shared_ptr<kpi> const& impact) {
  *
  *  @param[in] id BA ID.
  */
-void ba::set_id(unsigned int id) {
+void ba::set_id(uint32_t id) {
   _id = id;
   return;
 }
@@ -370,7 +370,7 @@ void ba::set_id(unsigned int id) {
  *
  *  @param[in] service_id  Set the service id.
  */
-void ba::set_service_id(unsigned int service_id) {
+void ba::set_service_id(uint32_t service_id) {
   _service_id = service_id;
 }
 
@@ -379,7 +379,7 @@ void ba::set_service_id(unsigned int service_id) {
  *
  *  @param[in] host_id  Set the service id.
  */
-void ba::set_host_id(unsigned int host_id) {
+void ba::set_host_id(uint32_t host_id) {
   _host_id = host_id;
 }
 

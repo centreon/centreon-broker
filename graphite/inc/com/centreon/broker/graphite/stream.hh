@@ -61,7 +61,7 @@ class stream : public io::stream {
          std::string const& db_password,
          std::string const& db_host,
          unsigned short db_port,
-         unsigned int queries_per_transaction,
+         uint32_t queries_per_transaction,
          std::shared_ptr<persistent_cache> const& cache);
   ~stream();
   int flush();
@@ -78,11 +78,11 @@ class stream : public io::stream {
   std::string _db_password;
   std::string _db_host;
   unsigned short _db_port;
-  unsigned int _queries_per_transaction;
+  uint32_t _queries_per_transaction;
 
   // Internal working members
   int _pending_queries;
-  unsigned int _actual_query;
+  uint32_t _actual_query;
   bool _commit_flag;
 
   // Status members

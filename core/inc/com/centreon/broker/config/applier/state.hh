@@ -40,7 +40,7 @@ class state {
   std::string const& cache_dir() const throw();
   static state& instance();
   static void load();
-  unsigned int poller_id() const throw();
+  uint32_t poller_id() const throw();
   std::string const& poller_name() const throw();
   static void unload();
 
@@ -50,7 +50,7 @@ class state {
   state& operator=(state const& other);
 
   std::string _cache_dir;
-  unsigned int _poller_id;
+  uint32_t _poller_id;
   std::string _poller_name;
 };
 }  // namespace applier

@@ -57,7 +57,7 @@ using namespace com::centreon::broker::rrd;
  */
 output::output(std::string const& metrics_path,
                std::string const& status_path,
-               unsigned int cache_size,
+               uint32_t cache_size,
                bool ignore_update_errors,
                bool write_metrics,
                bool write_status)
@@ -84,7 +84,7 @@ output::output(std::string const& metrics_path,
  */
 output::output(std::string const& metrics_path,
                std::string const& status_path,
-               unsigned int cache_size,
+               uint32_t cache_size,
                bool ignore_update_errors,
                std::string const& local,
                bool write_metrics,
@@ -114,7 +114,7 @@ output::output(std::string const& metrics_path,
  */
 output::output(std::string const& metrics_path,
                std::string const& status_path,
-               unsigned int cache_size,
+               uint32_t cache_size,
                bool ignore_update_errors,
                unsigned short port,
                bool write_metrics,

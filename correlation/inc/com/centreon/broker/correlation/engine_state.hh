@@ -40,10 +40,10 @@ class engine_state : public io::data {
   engine_state(engine_state const& es);
   virtual ~engine_state();
   engine_state& operator=(engine_state const& es);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int poller_id;
+  uint32_t poller_id;
   bool started;
 
   static mapping::entry const entries[];

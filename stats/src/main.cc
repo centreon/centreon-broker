@@ -27,7 +27,7 @@
 using namespace com::centreon::broker;
 
 // Load count.
-static unsigned int instances(0);
+static uint32_t instances(0);
 
 // Worker.
 //static std::vector<std::shared_ptr<stats::worker> > workers_fifo;

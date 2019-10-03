@@ -93,12 +93,12 @@ class reporting_stream : public io::stream {
   void _compute_event_durations(std::shared_ptr<ba_event> const& ev,
                                 io::stream* visitor);
 
-  unsigned int _ack_events;
-  unsigned int _pending_events;
-  unsigned int _queries_per_transaction;
+  uint32_t _ack_events;
+  uint32_t _pending_events;
+  uint32_t _queries_per_transaction;
   std::string _status;
   mutable std::mutex _statusm;
-  unsigned int _transaction_queries;
+  uint32_t _transaction_queries;
   mysql _mysql;
   database::mysql_stmt _ba_full_event_insert;
   database::mysql_stmt _ba_event_update;

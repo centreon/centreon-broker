@@ -47,7 +47,7 @@ class check : public io::data {
   bool active_checks_enabled;
   short check_type;
   std::string command_line;
-  unsigned int host_id;
+  uint32_t host_id;
   timestamp next_check;
 
  private:

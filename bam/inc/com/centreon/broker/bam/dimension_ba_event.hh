@@ -42,16 +42,16 @@ class dimension_ba_event : public io::data {
   ~dimension_ba_event();
   dimension_ba_event& operator=(dimension_ba_event const& other);
   bool operator==(dimension_ba_event const& other) const;
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int ba_id;
+  uint32_t ba_id;
   std::string ba_name;
   std::string ba_description;
   double sla_month_percent_crit;
   double sla_month_percent_warn;
-  unsigned int sla_duration_crit;
-  unsigned int sla_duration_warn;
+  uint32_t sla_duration_crit;
+  uint32_t sla_duration_warn;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

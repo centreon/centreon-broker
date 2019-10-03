@@ -162,8 +162,8 @@ int main() {
     // Insert entries in index_data.
     {
       QSqlQuery q(*db.centreon_db());
-      for (unsigned int i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
-        unsigned int host_id((i - 1) / SERVICES_BY_HOST + 1);
+      for (uint32_t i(1); i <= HOST_COUNT * SERVICES_BY_HOST; ++i) {
+        uint32_t host_id((i - 1) / SERVICES_BY_HOST + 1);
         std::ostringstream query;
         query << "INSERT INTO rt_index_data (host_id, service_id)"
               << "  VALUES(" << host_id << ", " << i << ")";

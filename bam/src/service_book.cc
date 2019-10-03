@@ -61,8 +61,8 @@ service_book& service_book::operator=(service_book const& other) {
  *  @param[in]     service_id  Service ID.
  *  @param[in,out] listnr      Service listener.
  */
-void service_book::listen(unsigned int host_id,
-                          unsigned int service_id,
+void service_book::listen(uint32_t host_id,
+                          uint32_t service_id,
                           service_listener* listnr) {
   _book.insert(std::make_pair(std::make_pair(host_id, service_id), listnr));
   return;
@@ -75,8 +75,8 @@ void service_book::listen(unsigned int host_id,
  *  @param[in] service_id  Service ID.
  *  @param[in] listnr      Service listener.
  */
-void service_book::unlisten(unsigned int host_id,
-                            unsigned int service_id,
+void service_book::unlisten(uint32_t host_id,
+                            uint32_t service_id,
                             service_listener* listnr) {
   std::pair<multimap::iterator, multimap::iterator> range(
       _book.equal_range(std::make_pair(host_id, service_id)));

@@ -56,7 +56,7 @@ json_command_parser::~json_command_parser() {}
  *
  * @return  The number of characters parsed succesfully, 0 for none.
  */
-unsigned int json_command_parser::parse(
+uint32_t json_command_parser::parse(
     std::string const& buffer,
     command_result& res,
     std::shared_ptr<command_request>& request) {

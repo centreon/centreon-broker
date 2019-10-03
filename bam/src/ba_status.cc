@@ -69,7 +69,7 @@ ba_status& ba_status::operator=(ba_status const& other) {
  *
  *  @return Event type.
  */
-unsigned int ba_status::type() const {
+uint32_t ba_status::type() const {
   return (ba_status::static_type());
 }
 
@@ -78,7 +78,7 @@ unsigned int ba_status::type() const {
  *
  *  @return  The event type.
  */
-unsigned int ba_status::static_type() {
+uint32_t ba_status::static_type() {
   return (io::events::data_type<io::events::bam, bam::de_ba_status>::value);
 }
 

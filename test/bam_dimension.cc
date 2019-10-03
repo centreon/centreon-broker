@@ -44,7 +44,7 @@ static bool double_equals(double d1, double d2) {
 }
 
 struct ba_dimension {
-  unsigned int id;
+  uint32_t id;
   const char* name;
   const char* description;
   double month_percent_warn;
@@ -98,7 +98,7 @@ static void check_bas(QSqlDatabase& db, ba_dimension const* bas, size_t count) {
 }
 
 struct bv_dimension {
-  unsigned int id;
+  uint32_t id;
   const char* name;
   const char* description;
 };
@@ -135,8 +135,8 @@ static void check_bvs(QSqlDatabase& db, bv_dimension const* bvs, size_t count) {
 }
 
 struct ba_bv_dimension {
-  unsigned int ba_id;
-  unsigned int bv_id;
+  uint32_t ba_id;
+  uint32_t bv_id;
 };
 
 static void check_ba_bv_links(QSqlDatabase& db,
@@ -172,22 +172,22 @@ static void check_ba_bv_links(QSqlDatabase& db,
 }
 
 struct kpi_dimension {
-  unsigned int kpi_id;
+  uint32_t kpi_id;
   const char* kpi_name;
-  unsigned int ba_id;
+  uint32_t ba_id;
   const char* ba_name;
-  unsigned int host_id;
+  uint32_t host_id;
   const char* host_name;
-  unsigned int service_id;
+  uint32_t service_id;
   const char* service_description;
-  unsigned int kpi_ba_id;
+  uint32_t kpi_ba_id;
   const char* kpi_ba_name;
-  unsigned int meta_service_id;
+  uint32_t meta_service_id;
   const char* meta_service_name;
   double impact_warning;
   double impact_critical;
   double impact_unknown;
-  unsigned int boolean_id;
+  uint32_t boolean_id;
   const char* boolean_name;
 };
 

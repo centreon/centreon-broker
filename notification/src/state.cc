@@ -228,7 +228,7 @@ QList<notification_rule::ptr> state::get_notification_rules_by_node(
  * ptr.
  */
 notification_rule::ptr state::get_notification_rule_by_id(
-    unsigned int id) const {
+    uint32_t id) const {
   return (_notification_rule_by_id.value(id));
 }
 
@@ -241,7 +241,7 @@ notification_rule::ptr state::get_notification_rule_by_id(
  * notification_method::ptr.
  */
 notification_method::ptr state::get_notification_method_by_id(
-    unsigned int id) const {
+    uint32_t id) const {
   return (_notification_methods.value(id));
 }
 
@@ -254,7 +254,7 @@ notification_method::ptr state::get_notification_method_by_id(
  * timeperiod::ptr.
  */
 ::com::centreon::broker::time::timeperiod::ptr state::get_timeperiod_by_id(
-    unsigned int id) const {
+    uint32_t id) const {
   return (_timeperiod_by_id.value(id));
 }
 
@@ -265,7 +265,7 @@ notification_method::ptr state::get_notification_method_by_id(
  *
  *  @return         A contact::ptr to the contact, or a null contact::ptr.
  */
-objects::contact::ptr state::get_contact_by_id(unsigned int id) const {
+objects::contact::ptr state::get_contact_by_id(uint32_t id) const {
   return (_contacts.value(id));
 }
 
@@ -277,7 +277,7 @@ objects::contact::ptr state::get_contact_by_id(unsigned int id) const {
  *  @return        A map of the contact infos.
  */
 QHash<std::string, std::string> state::get_contact_infos(
-    unsigned int id) const {
+    uint32_t id) const {
   return (_contact_infos.value(id));
 }
 
@@ -288,7 +288,7 @@ QHash<std::string, std::string> state::get_contact_infos(
  *
  *  @return         A command::ptr to the command, or a null command::ptr.
  */
-objects::command::ptr state::get_command_by_id(unsigned int id) const {
+objects::command::ptr state::get_command_by_id(uint32_t id) const {
   return (_commands.value(id));
 }
 

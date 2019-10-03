@@ -46,27 +46,27 @@ class dependency_builder {
    *  @param[in] id The id of the dependency.
    *  @param[in] d The dependency.
    */
-  virtual void add_dependency(unsigned int id, objects::dependency::ptr d) {
+  virtual void add_dependency(uint32_t id, objects::dependency::ptr d) {
     (void)id;
     (void)d;
   }
-  virtual void dependency_node_id_parent_relation(unsigned int dep_id,
+  virtual void dependency_node_id_parent_relation(uint32_t dep_id,
                                                   objects::node_id id) {
     (void)dep_id;
     (void)id;
   }
-  virtual void dependency_node_id_child_relation(unsigned int dep_id,
+  virtual void dependency_node_id_child_relation(uint32_t dep_id,
                                                  objects::node_id id) {
     (void)dep_id;
     (void)id;
   }
 
-  virtual void set_notification_failure_options(unsigned int dep_id,
+  virtual void set_notification_failure_options(uint32_t dep_id,
                                                 std::string const& line) {
     (void)dep_id;
     (void)line;
   }
-  virtual void set_execution_failure_options(unsigned int dep_id,
+  virtual void set_execution_failure_options(uint32_t dep_id,
                                              std::string const& line) {
     (void)dep_id;
     (void)line;

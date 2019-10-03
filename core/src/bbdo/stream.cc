@@ -215,7 +215,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
  *
  *  @param limit  The limit of events received before an ack should be sent.
  */
-void stream::set_ack_limit(unsigned int limit) {
+void stream::set_ack_limit(uint32_t limit) {
   _ack_limit = limit;
 }
 
@@ -282,7 +282,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
  *
  *  @param[in] events  The amount of event.
  */
-void stream::acknowledge_events(unsigned int events) {
+void stream::acknowledge_events(uint32_t events) {
   _acknowledged_events += events;
 }
 

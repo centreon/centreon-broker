@@ -54,7 +54,7 @@ class meta_service {
   meta_service& operator=(meta_service const& other);
   void apply(configuration::state::meta_services const& my_meta,
              metric_book& book);
-  std::shared_ptr<bam::meta_service> find_meta(unsigned int id);
+  std::shared_ptr<bam::meta_service> find_meta(uint32_t id);
 
  private:
   struct applied {
@@ -63,10 +63,10 @@ class meta_service {
   };
 
   void _internal_copy(meta_service const& other);
-  std::shared_ptr<neb::host> _meta_host(unsigned int host_id);
-  std::shared_ptr<neb::service> _meta_service(unsigned int meta_id,
-                                              unsigned int host_id,
-                                              unsigned int service_id);
+  std::shared_ptr<neb::host> _meta_host(uint32_t host_id);
+  std::shared_ptr<neb::service> _meta_service(uint32_t meta_id,
+                                              uint32_t host_id,
+                                              uint32_t service_id);
   void _modify_meta(bam::meta_service& obj,
                     metric_book& book,
                     configuration::meta_service const& old_cfg,
@@ -75,7 +75,7 @@ class meta_service {
       configuration::meta_service const& cfg,
       metric_book& book);
 
-  std::map<unsigned int, applied> _applied;
+  std::map<uint32_t, applied> _applied;
 };
 }  // namespace applier
 }  // namespace configuration

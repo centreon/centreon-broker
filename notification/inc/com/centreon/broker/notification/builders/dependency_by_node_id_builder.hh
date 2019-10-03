@@ -41,16 +41,16 @@ class dependency_by_node_id_builder : public dependency_builder {
       QMultiHash<objects::node_id, objects::dependency::ptr>& by_child_id,
       QMultiHash<objects::node_id, objects::dependency::ptr>& by_parent_id);
 
-  virtual void add_dependency(unsigned int id, objects::dependency::ptr d);
-  virtual void dependency_node_id_parent_relation(unsigned int dep_id,
+  virtual void add_dependency(uint32_t id, objects::dependency::ptr d);
+  virtual void dependency_node_id_parent_relation(uint32_t dep_id,
                                                   objects::node_id id);
-  virtual void dependency_node_id_child_relation(unsigned int dep_id,
+  virtual void dependency_node_id_child_relation(uint32_t dep_id,
                                                  objects::node_id id);
 
  private:
   dependency_by_node_id_builder();
 
-  QHash<unsigned int, objects::dependency::ptr> _cache;
+  QHash<uint32_t, objects::dependency::ptr> _cache;
   QMultiHash<objects::node_id, objects::dependency::ptr>& _table_child_id;
   QMultiHash<objects::node_id, objects::dependency::ptr>& _table_parent_id;
 };
