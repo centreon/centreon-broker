@@ -54,7 +54,7 @@ class servicegroup : public object {
   set_pair_string const& members() const throw();
   std::string const& notes() const throw();
   std::string const& notes_url() const throw();
-  unsigned int servicegroup_id() const throw();
+  uint32_t servicegroup_id() const throw();
   set_string& servicegroup_members() throw();
   set_string const& servicegroup_members() const throw();
   std::string const& servicegroup_name() const throw();
@@ -67,7 +67,7 @@ class servicegroup : public object {
   bool _set_members(std::string const& value);
   bool _set_notes(std::string const& value);
   bool _set_notes_url(std::string const& value);
-  bool _set_servicegroup_id(unsigned int value);
+  bool _set_servicegroup_id(uint32_t value);
   bool _set_servicegroup_members(std::string const& value);
   bool _set_servicegroup_name(std::string const& value);
 
@@ -76,7 +76,7 @@ class servicegroup : public object {
   group<set_pair_string> _members;
   std::string _notes;
   std::string _notes_url;
-  unsigned int _servicegroup_id;
+  uint32_t _servicegroup_id;
   group<set_string> _servicegroup_members;
   std::string _servicegroup_name;
   static std::unordered_map<std::string, setter_func> const _setters;

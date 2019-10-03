@@ -20,7 +20,7 @@
 
 using namespace com::centreon::broker::io;
 
-unsigned int data::broker_id(0);
+uint32_t data::broker_id(0);
 
 /**************************************
  *                                     *

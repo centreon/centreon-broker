@@ -53,7 +53,7 @@ int main() {
     correlation::stream c("", std::shared_ptr<persistent_cache>(), false);
     {
       // Create state.
-      QMap<QPair<unsigned int, unsigned int>, node> state;
+      QMap<QPair<uint32_t, uint32_t>, node> state;
       node& n1(state[qMakePair(42u, 24u)]);
       n1.host_id = 42;
       n1.service_id = 24;

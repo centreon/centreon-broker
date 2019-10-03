@@ -97,7 +97,7 @@ int main() {
     // Check database.
     {
       struct {
-        unsigned int ba_id;
+        uint32_t ba_id;
         long long start_time;
         long long end_time;
         long long variance_max;
@@ -132,7 +132,7 @@ int main() {
     }
     {
       struct {
-        unsigned int kpi_id;
+        uint32_t kpi_id;
         long long start_time;
         long long end_time;
         long long variance_max;

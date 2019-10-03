@@ -50,7 +50,7 @@ class acceptor : public io::endpoint {
            time_t timeout,
            bool one_peer_retention_mode = false,
            bool coarse = false,
-           unsigned int ack_limit = 1000);
+           uint32_t ack_limit = 1000);
   acceptor(acceptor const& other);
   ~acceptor();
   acceptor& operator=(acceptor const& other);
@@ -58,7 +58,7 @@ class acceptor : public io::endpoint {
   void stats(json11::Json::object& tree) override;
 
  private:
-  unsigned int _negotiate_features(std::shared_ptr<io::stream> stream,
+  uint32_t _negotiate_features(std::shared_ptr<io::stream> stream,
                                    std::shared_ptr<bbdo::stream> my_bbdo);
   void _open(std::shared_ptr<io::stream> stream);
 
@@ -68,7 +68,7 @@ class acceptor : public io::endpoint {
   bool _negotiate;
   bool _one_peer_retention_mode;
   time_t _timeout;
-  unsigned int _ack_limit;
+  uint32_t _ack_limit;
 };
 }  // namespace bbdo
 

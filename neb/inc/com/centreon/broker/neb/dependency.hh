@@ -43,10 +43,10 @@ class dependency : public io::data {
   dependency& operator=(dependency const& dep);
 
   std::string dependency_period;
-  unsigned int dependent_host_id;
+  uint32_t dependent_host_id;
   bool enabled;
   std::string execution_failure_options;
-  unsigned int host_id;
+  uint32_t host_id;
   bool inherits_parent;
   std::string notification_failure_options;
 

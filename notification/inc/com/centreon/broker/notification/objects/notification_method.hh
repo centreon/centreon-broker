@@ -46,11 +46,11 @@ class notification_method {
   std::string const& get_name() const throw();
   void set_name(std::string const& val);
 
-  unsigned int get_command_id() const throw();
-  void set_command_id(unsigned int id) throw();
+  uint32_t get_command_id() const throw();
+  void set_command_id(uint32_t id) throw();
 
-  unsigned int get_interval() const throw();
-  void set_interval(unsigned int val) throw();
+  uint32_t get_interval() const throw();
+  void set_interval(uint32_t val) throw();
 
   std::string const& get_status() const throw();
   void set_status(std::string const& val);
@@ -58,11 +58,11 @@ class notification_method {
   std::string const& get_types() const throw();
   void set_types(std::string const& val);
 
-  unsigned int get_start() const throw();
-  void set_start(unsigned int val) throw();
+  uint32_t get_start() const throw();
+  void set_start(uint32_t val) throw();
 
-  unsigned int get_end() const throw();
-  void set_end(unsigned int val) throw();
+  uint32_t get_end() const throw();
+  void set_end(uint32_t val) throw();
 
   bool should_be_notified_for(node_state state, bool is_service) const;
   bool should_be_notified_for(action::action_type type) const;
@@ -70,12 +70,12 @@ class notification_method {
 
  private:
   std::string _name;
-  unsigned int _command_id;
-  unsigned int _interval;
+  uint32_t _command_id;
+  uint32_t _interval;
   std::string _status;
   std::string _types;
-  unsigned int _start;
-  unsigned int _end;
+  uint32_t _start;
+  uint32_t _end;
 };
 }  // namespace objects
 }  // namespace notification

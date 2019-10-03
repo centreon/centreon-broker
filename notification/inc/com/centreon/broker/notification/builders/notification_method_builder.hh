@@ -40,7 +40,7 @@ class notification_method_builder {
    *  @param[in] method     The method.
    */
   virtual void add_notification_method(
-      unsigned int method_id,
+      uint32_t method_id,
       objects::notification_method::ptr method) {
     (void)method_id;
     (void)method;

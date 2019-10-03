@@ -381,7 +381,7 @@ TEST_F(StorageParserParsePerfdata, Loop) {
   storage::parser p;
 
   // Loop.
-  for (unsigned int i(0); i < 10000; ++i) {
+  for (uint32_t i(0); i < 10000; ++i) {
     // Parse perfdata string.
     list.clear();
     p.parse_perfdata("c[time]=2.45698s;2.000000;5.000000;0.000000;10.000000",

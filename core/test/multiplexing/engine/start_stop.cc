@@ -64,7 +64,7 @@ TEST_F(StartStop, MultiplexingWorks) {
 
     // Send events through engine.
     char const* messages[] = {MSG1, MSG2, nullptr};
-    for (unsigned int i = 0; messages[i]; ++i) {
+    for (uint32_t i = 0; messages[i]; ++i) {
       std::shared_ptr<io::raw> data(new io::raw);
       data->append(messages[i]);
       multiplexing::engine::instance().publish(
@@ -83,7 +83,7 @@ TEST_F(StartStop, MultiplexingWorks) {
     multiplexing::engine::instance().start();
 
     // Read retained events.
-    for (unsigned int i(0); messages[i]; ++i) {
+    for (uint32_t i(0); messages[i]; ++i) {
       std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
       if (!data || data->type() != io::raw::static_type())

@@ -72,7 +72,7 @@ version_response& version_response::operator=(version_response const& other) {
  *
  *  @return The event type.
  */
-unsigned int version_response::type() const {
+uint32_t version_response::type() const {
   return (version_response::static_type());
 }
 

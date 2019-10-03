@@ -50,7 +50,7 @@ int main() {
   std::list<host> hosts[ENGINE_COUNT];
   std::list<service> services[ENGINE_COUNT];
   std::string engine_config_path[ENGINE_COUNT];
-  for (unsigned int i(0); i < ENGINE_COUNT; ++i)
+  for (uint32_t i(0); i < ENGINE_COUNT; ++i)
     engine_config_path[i] = tmpnam(NULL);
   engine daemon[ENGINE_COUNT];
   cbd broker;
@@ -61,7 +61,7 @@ int main() {
     db.open(DB_NAME);
 
     // Prepare monitoring engine configuration parameters.
-    for (unsigned int i(0); i < 3; ++i) {
+    for (uint32_t i(0); i < 3; ++i) {
       generate_hosts(hosts[i], 1);
       generate_services(services[i], hosts[i], i + 1);
       std::string cbmod_loading;
@@ -85,7 +85,7 @@ int main() {
     broker.update();
 
     // Start engines.
-    for (unsigned int i(0); i < ENGINE_COUNT; ++i) {
+    for (uint32_t i(0); i < ENGINE_COUNT; ++i) {
       std::string engine_config_file(engine_config_path[i]);
       engine_config_file.append("/nagios.cfg");
       daemon[i].set_config_file(engine_config_file);
@@ -139,9 +139,9 @@ int main() {
   for (int i(ENGINE_COUNT - 1); i >= 0; --i)
     daemon[i].stop();
   broker.stop();
-  for (unsigned int i(0); i < ENGINE_COUNT; ++i)
+  for (uint32_t i(0); i < ENGINE_COUNT; ++i)
     config_remove(engine_config_path[i].c_str());
-  for (unsigned int i(0); i < ENGINE_COUNT; ++i) {
+  for (uint32_t i(0); i < ENGINE_COUNT; ++i) {
     free_hosts(hosts[i]);
     free_services(services[i]);
   }

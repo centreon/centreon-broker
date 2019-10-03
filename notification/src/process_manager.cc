@@ -60,7 +60,7 @@ void process_manager::release() {
  *  @param[in] timeout  The timeout of the command.
  */
 void process_manager::create_process(std::string const& command,
-                                     unsigned int timeout) {
+                                     uint32_t timeout) {
   // No memory leak possible because we set the parent of the process as us.
   process* pr(new process(timeout));
 

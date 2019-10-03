@@ -92,7 +92,7 @@ service& service::operator=(service const& other) {
  *
  *  @return The event_type.
  */
-unsigned int service::type() const {
+uint32_t service::type() const {
   return (service::static_type());
 }
 
@@ -101,7 +101,7 @@ unsigned int service::type() const {
  *
  *  @return  The event type.
  */
-unsigned int service::static_type() {
+uint32_t service::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_service>::value);
 }
 

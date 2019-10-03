@@ -62,7 +62,7 @@ kpi& kpi::operator=(kpi const& right) {
  *
  *  @return KPI ID.
  */
-unsigned int kpi::get_id() const {
+uint32_t kpi::get_id() const {
   return (_id);
 }
 
@@ -80,7 +80,7 @@ timestamp kpi::get_last_state_change() const {
  *
  *  @param[in] id KPI ID.
  */
-void kpi::set_id(unsigned int id) {
+void kpi::set_id(uint32_t id) {
   _id = id;
   return;
 }

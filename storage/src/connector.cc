@@ -42,7 +42,7 @@ connector::connector() : io::endpoint(false) {}
  */
 bool connector::operator==(const connector& other) {
   if (this != &other) {
-    return _db_cfg == other._db_cfg && _rrd_len == other._rrd_len &&
+    return _rrd_len == other._rrd_len &&
            _rebuild_check_interval == other._rebuild_check_interval &&
            _store_in_data_bin == other._store_in_data_bin;
   }
@@ -52,7 +52,6 @@ bool connector::operator==(const connector& other) {
 /**
  *  Set connection parameters.
  *
- *  @param[in] db_cfg                  Database configuration.
  *  @param[in] rrd_len                 RRD storage length.
  *  @param[in] interval_length         Length of a time unit.
  *  @param[in] rebuild_check_interval  How often the storage endpoint
@@ -60,12 +59,10 @@ bool connector::operator==(const connector& other) {
  *  @param[in] store_in_data_bin       True to store performance data in
  *                                     the data_bin table.
  */
-void connector::connect_to(database_config const& db_cfg,
-                           uint32_t rrd_len,
+void connector::connect_to(uint32_t rrd_len,
                            uint32_t interval_length,
                            uint32_t rebuild_check_interval,
                            bool store_in_data_bin) {
-  _db_cfg = db_cfg;
   _rrd_len = rrd_len;
   _interval_length = interval_length;
   _rebuild_check_interval = rebuild_check_interval;

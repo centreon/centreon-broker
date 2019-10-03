@@ -36,15 +36,15 @@ namespace rrd {
  */
 class creator {
  public:
-  creator(std::string const& tmpl_path, unsigned int cache_size);
+  creator(std::string const& tmpl_path, uint32_t cache_size);
   creator(creator const& right);
   ~creator();
   creator& operator=(creator const& right);
   void clear();
   void create(std::string const& filename,
-              unsigned int length,
+              uint32_t length,
               time_t from,
-              unsigned int step,
+              uint32_t step,
               short value_type);
 
  private:
@@ -56,8 +56,8 @@ class creator {
         return (step < right.step);
       return (value_type < right.value_type);
     }
-    unsigned int length;
-    unsigned int step;
+    uint32_t length;
+    uint32_t step;
     short value_type;
   };
 
@@ -68,9 +68,9 @@ class creator {
 
   void _duplicate(std::string const& filename, fd_info const& in_fd);
   void _open(std::string const& filename,
-             unsigned int length,
+             uint32_t length,
              time_t from,
-             unsigned int step,
+             uint32_t step,
              short value_type);
   void _read_write(int out_fd,
                    int in_fd,
@@ -84,7 +84,7 @@ class creator {
                  std::string const& filename);
 #endif  // Linux
 
-  unsigned int _cache_size;
+  uint32_t _cache_size;
   std::map<tmpl_info, fd_info> _fds;
   std::string _tmpl_path;
 };

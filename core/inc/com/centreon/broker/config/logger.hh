@@ -64,8 +64,8 @@ class logger {
   std::string const& name() const throw();
   void type(logger_type lt) throw();
   logger_type type() const throw();
-  void types(unsigned int t) throw();
-  unsigned int types() const throw();
+  void types(uint32_t t) throw();
+  uint32_t types() const throw();
 
  private:
   void _internal_copy(logger const& l);
@@ -75,7 +75,7 @@ class logger {
   unsigned long long _max_size;
   std::string _name;
   logger_type _type;
-  unsigned int _types;
+  uint32_t _types;
 };
 }  // namespace config
 

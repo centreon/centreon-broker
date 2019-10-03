@@ -40,7 +40,7 @@ process::process(int timeout /* = 0 */)
  *
  *  @return   The timeout of this process.
  */
-unsigned int process::get_timeout() const throw() {
+uint32_t process::get_timeout() const throw() {
   return (_timeout);
 }
 

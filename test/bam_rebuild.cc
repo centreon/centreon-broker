@@ -41,12 +41,12 @@ using namespace com::centreon::broker;
 #define SERVICES_BY_HOST 10
 
 struct ba_event_duration {
-  unsigned int ba_event_id;
-  unsigned int timeperiod_id;
+  uint32_t ba_event_id;
+  uint32_t timeperiod_id;
   time_t start_time;
   time_t end_time;
-  unsigned int duration;
-  unsigned int sla_duration;
+  uint32_t duration;
+  uint32_t sla_duration;
   bool timeperiod_is_default;
 };
 
@@ -98,18 +98,18 @@ static void check_ba_event_durations(QSqlDatabase& db,
 }
 
 struct ba_availability {
-  unsigned int ba_id;
+  uint32_t ba_id;
   time_t time_id;
-  unsigned int timeperiod_id;
-  unsigned int available;
-  unsigned int unavailable;
-  unsigned int degraded;
-  unsigned int unknown;
-  unsigned int downtime;
-  unsigned int alert_unavailable_opened;
-  unsigned int alert_degraded_opened;
-  unsigned int alert_unknown_opened;
-  unsigned int nb_downtime;
+  uint32_t timeperiod_id;
+  uint32_t available;
+  uint32_t unavailable;
+  uint32_t degraded;
+  uint32_t unknown;
+  uint32_t downtime;
+  uint32_t alert_unavailable_opened;
+  uint32_t alert_degraded_opened;
+  uint32_t alert_unknown_opened;
+  uint32_t nb_downtime;
   bool timeperiod_is_default;
 };
 

@@ -58,7 +58,7 @@ notification_rule& notification_rule::operator=(notification_rule const& obj) {
  *
  *  @return  This rule id.
  */
-unsigned int notification_rule::get_id() {
+uint32_t notification_rule::get_id() {
   return (_id);
 }
 
@@ -67,7 +67,7 @@ unsigned int notification_rule::get_id() {
  *
  *  @param[in] id  The new id of this rule.
  */
-void notification_rule::set_id(unsigned int id) {
+void notification_rule::set_id(uint32_t id) {
   _id = id;
 }
 
@@ -76,7 +76,7 @@ void notification_rule::set_id(unsigned int id) {
  *
  *  @return  The id of the method associated with this rule.
  */
-unsigned int notification_rule::get_method_id() const throw() {
+uint32_t notification_rule::get_method_id() const throw() {
   return (_method_id);
 }
 
@@ -85,7 +85,7 @@ unsigned int notification_rule::get_method_id() const throw() {
  *
  *  @param[in] val  The new id the method associated with this rule.
  */
-void notification_rule::set_method_id(unsigned int val) throw() {
+void notification_rule::set_method_id(uint32_t val) throw() {
   _method_id = val;
 }
 
@@ -94,7 +94,7 @@ void notification_rule::set_method_id(unsigned int val) throw() {
  *
  *  @return  The id of the timeperiod associated with this rule.
  */
-unsigned int notification_rule::get_timeperiod_id() const throw() {
+uint32_t notification_rule::get_timeperiod_id() const throw() {
   return (_timeperiod_id);
 }
 
@@ -103,7 +103,7 @@ unsigned int notification_rule::get_timeperiod_id() const throw() {
  *
  *  @param[in] val  The new id of the timeperiod associated with this rule.
  */
-void notification_rule::set_timeperiod_id(unsigned int val) throw() {
+void notification_rule::set_timeperiod_id(uint32_t val) throw() {
   _timeperiod_id = val;
 }
 
@@ -112,7 +112,7 @@ void notification_rule::set_timeperiod_id(unsigned int val) throw() {
  *
  *  @return  The id of the contact associated with this rule.
  */
-unsigned int notification_rule::get_contact_id() const throw() {
+uint32_t notification_rule::get_contact_id() const throw() {
   return (_contact_id);
 }
 /**
@@ -120,7 +120,7 @@ unsigned int notification_rule::get_contact_id() const throw() {
  *
  *  @param[in] val  The new id of the contact associated with this rule.
  */
-void notification_rule::set_contact_id(unsigned int val) throw() {
+void notification_rule::set_contact_id(uint32_t val) throw() {
   _contact_id = val;
 }
 

@@ -34,16 +34,16 @@ namespace notification {
 class notification_method_by_id_builder : public notification_method_builder {
  public:
   notification_method_by_id_builder(
-      QHash<unsigned int, objects::notification_method::ptr>& map);
+      QHash<uint32_t, objects::notification_method::ptr>& map);
 
   virtual void add_notification_method(
-      unsigned int method_id,
+      uint32_t method_id,
       objects::notification_method::ptr method);
 
  private:
   notification_method_by_id_builder();
 
-  QHash<unsigned int, objects::notification_method::ptr>& _map;
+  QHash<uint32_t, objects::notification_method::ptr>& _map;
 };
 
 }  // namespace notification

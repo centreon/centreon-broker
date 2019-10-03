@@ -43,11 +43,11 @@ class dimension_ba_timeperiod_relation : public io::data {
   dimension_ba_timeperiod_relation& operator=(
       dimension_ba_timeperiod_relation const&);
   bool operator==(dimension_ba_timeperiod_relation const& other) const;
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int ba_id;
-  unsigned int timeperiod_id;
+  uint32_t ba_id;
+  uint32_t timeperiod_id;
   bool is_default;
 
   static mapping::entry const entries[];

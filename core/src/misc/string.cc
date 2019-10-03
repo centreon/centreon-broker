@@ -36,7 +36,7 @@ static char const* whitespaces(" \t\r\n");
  */
 bool string::get_next_line(std::ifstream& stream,
                            std::string& line,
-                           unsigned int& pos) {
+                           uint32_t& pos) {
   while (std::getline(stream, line, '\n')) {
     ++pos;
     string::trim(line);

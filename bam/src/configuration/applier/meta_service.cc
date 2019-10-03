@@ -75,7 +75,7 @@ void applier::meta_service::apply(state::meta_services const& my_meta,
 
   // Objects to delete are items remaining in the
   // set at the end of the iteration.
-  std::map<unsigned int, applied> to_delete(_applied);
+  std::map<uint32_t, applied> to_delete(_applied);
 
   // Objects to create are items remaining in the
   // set at the end of the iteration.
@@ -89,7 +89,7 @@ void applier::meta_service::apply(state::meta_services const& my_meta,
   for (state::meta_services::iterator it(to_create.begin()),
        end(to_create.end());
        it != end;) {
-    std::map<unsigned int, applied>::iterator cfg_it(to_delete.find(it->first));
+    std::map<uint32_t, applied>::iterator cfg_it(to_delete.find(it->first));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
       // Configuration mismatch, modify object.
@@ -110,7 +110,7 @@ void applier::meta_service::apply(state::meta_services const& my_meta,
   //
 
   // Delete objects.
-  for (std::map<unsigned int, applied>::iterator it(to_delete.begin()),
+  for (std::map<uint32_t, applied>::iterator it(to_delete.begin()),
        end(to_delete.end());
        it != end; ++it) {
     logging::config(logging::medium)
@@ -146,7 +146,7 @@ void applier::meta_service::apply(state::meta_services const& my_meta,
   for (std::list<configuration::meta_service>::iterator it(to_modify.begin()),
        end(to_modify.end());
        it != end; ++it) {
-    std::map<unsigned int, applied>::iterator pos(_applied.find(it->get_id()));
+    std::map<uint32_t, applied>::iterator pos(_applied.find(it->get_id()));
     if (pos != _applied.end()) {
       logging::config(logging::medium)
           << "BAM: modifying meta-service " << it->get_id();
@@ -171,8 +171,8 @@ void applier::meta_service::apply(state::meta_services const& my_meta,
  *  @return Shared pointer to the applied meta-service object.
  */
 std::shared_ptr<bam::meta_service> applier::meta_service::find_meta(
-    unsigned int id) {
-  std::map<unsigned int, applied>::iterator it(_applied.find(id));
+    uint32_t id) {
+  std::map<uint32_t, applied>::iterator it(_applied.find(id));
   return ((it != _applied.end()) ? it->second.obj
                                  : std::shared_ptr<bam::meta_service>());
 }
@@ -195,7 +195,7 @@ void applier::meta_service::_internal_copy(applier::meta_service const& other) {
  *  @return Virtual meta-service host.
  */
 std::shared_ptr<neb::host> applier::meta_service::_meta_host(
-    unsigned int host_id) {
+    uint32_t host_id) {
   std::shared_ptr<neb::host> h(new neb::host);
   h->host_id = host_id;
   h->host_name = "_Module_Meta";
@@ -215,9 +215,9 @@ std::shared_ptr<neb::host> applier::meta_service::_meta_host(
  *  @return Virtual BA service.
  */
 std::shared_ptr<neb::service> applier::meta_service::_meta_service(
-    unsigned int meta_id,
-    unsigned int host_id,
-    unsigned int service_id) {
+    uint32_t meta_id,
+    uint32_t host_id,
+    uint32_t service_id) {
   std::shared_ptr<neb::service> s(new neb::service);
   s->host_id = host_id;
   s->service_id = service_id;

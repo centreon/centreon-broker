@@ -44,8 +44,8 @@ class host : public host_service, public host_status {
   host(host const& other);
   ~host();
   host& operator=(host const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   std::string address;
   std::string alias;
@@ -55,7 +55,7 @@ class host : public host_service, public host_status {
   std::string host_name;
   bool notify_on_down;
   bool notify_on_unreachable;
-  unsigned int poller_id;
+  uint32_t poller_id;
   bool stalk_on_down;
   bool stalk_on_unreachable;
   bool stalk_on_up;

@@ -63,7 +63,7 @@ total_hosts& total_hosts::operator=(total_hosts const& right) {
  */
 void total_hosts::run(std::string& output, std::string& perfdata) {
   // Count hosts.
-  unsigned int total(com::centreon::engine::host::hosts.size());
+  uint32_t total(com::centreon::engine::host::hosts.size());
 
   // Output.
   std::ostringstream oss;

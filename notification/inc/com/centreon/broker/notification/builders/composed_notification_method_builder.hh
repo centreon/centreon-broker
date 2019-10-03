@@ -42,7 +42,7 @@ class composed_notification_method_builder
   composed_notification_method_builder();
 
   virtual void add_notification_method(
-      unsigned int method_id,
+      uint32_t method_id,
       objects::notification_method::ptr method);
 };
 

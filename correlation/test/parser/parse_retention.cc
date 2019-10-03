@@ -75,8 +75,8 @@ int main() {
   bool error(true);
   try {
     // Initial state.
-    QMap<QPair<unsigned int, unsigned int>, node> parsed1;
-    QMap<QPair<unsigned int, unsigned int>, node> parsed2;
+    QMap<QPair<uint32_t, uint32_t>, node> parsed1;
+    QMap<QPair<uint32_t, uint32_t>, node> parsed2;
     {
       node& h1(parsed2[qMakePair(13u, 0u)]);
       h1.host_id = 13;
@@ -101,7 +101,7 @@ int main() {
     ::remove(file_path.toStdString().c_str());
 
     // Expected result.
-    QMap<QPair<unsigned int, unsigned int>, node> expected;
+    QMap<QPair<uint32_t, uint32_t>, node> expected;
     node& h1(expected[qMakePair(13u, 0u)]);
     h1.host_id = 13;
     h1.current_state = 42;

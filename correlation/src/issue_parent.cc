@@ -74,7 +74,7 @@ issue_parent& issue_parent::operator=(issue_parent const& ip) {
  *
  *  @return The event type.
  */
-unsigned int issue_parent::type() const {
+uint32_t issue_parent::type() const {
   return (issue_parent::static_type());
 }
 
@@ -83,7 +83,7 @@ unsigned int issue_parent::type() const {
  *
  *  @return  The event type.
  */
-unsigned int issue_parent::static_type() {
+uint32_t issue_parent::static_type() {
   return (io::events::data_type<io::events::correlation,
                                 correlation::de_issue_parent>::value);
 }

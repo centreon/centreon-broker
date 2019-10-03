@@ -44,7 +44,7 @@ inline std::string& replace(std::string& str,
   return (str);
 }
 
-bool get_next_line(std::ifstream& stream, std::string& line, unsigned int& pos);
+bool get_next_line(std::ifstream& stream, std::string& line, uint32_t& pos);
 bool split(std::string& line, char const** key, char const** value, char delim);
 bool split(std::string const& line,
            std::string& key,
@@ -188,11 +188,11 @@ inline bool to(char const* str, long long& data) {
 }
 
 template <>
-inline bool to(char const* str, unsigned int& data) {
+inline bool to(char const* str, uint32_t& data) {
   unsigned long tmp;
-  if (!to(str, tmp) || tmp > std::numeric_limits<unsigned int>::max())
+  if (!to(str, tmp) || tmp > std::numeric_limits<uint32_t>::max())
     return (false);
-  data = static_cast<unsigned int>(tmp);
+  data = static_cast<uint32_t>(tmp);
   return (true);
 }
 

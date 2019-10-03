@@ -68,7 +68,7 @@ engine_state& engine_state::operator=(engine_state const& es) {
  *
  *  @return The event type.
  */
-unsigned int engine_state::type() const {
+uint32_t engine_state::type() const {
   return (engine_state::static_type());
 }
 
@@ -77,7 +77,7 @@ unsigned int engine_state::type() const {
  *
  *  @return  The event type.
  */
-unsigned int engine_state::static_type() {
+uint32_t engine_state::static_type() {
   return (io::events::data_type<io::events::correlation,
                                 correlation::de_engine_state>::value);
 }

@@ -52,7 +52,7 @@ void contact_loader::load(mysql* ms, contact_builder* output) {
     database::mysql_result res(promise.get_future().get());
     while (ms->fetch_row(res)) {
       contact::ptr cont(new contact);
-      unsigned int id = res.value_as_u32(0);
+      uint32_t id = res.value_as_u32(0);
       cont->set_id(id);
       cont->set_description(res.value_as_str(1));
       output->add_contact(id, cont);

@@ -35,7 +35,7 @@ class benchmark : public QThread {
   Q_OBJECT
 
  public:
-  benchmark(unsigned int services, unsigned int requests_per_service)
+  benchmark(uint32_t services, uint32_t requests_per_service)
       : _services(services), _requests_per_service(requests_per_service) {}
   ~benchmark() {}
   void run() {
@@ -49,9 +49,9 @@ class benchmark : public QThread {
 
     // Send requests.
     time_t now(time(NULL));
-    for (unsigned int i(0); i < _requests_per_service; ++i) {
+    for (uint32_t i(0); i < _requests_per_service; ++i) {
       now += 300;
-      for (unsigned int j(0); j < _services; ++j) {
+      for (uint32_t j(0); j < _services; ++j) {
         std::shared_ptr<storage::metric> m(new storage::metric);
         m->ctime = now;
         m->interval = 300;
@@ -71,8 +71,8 @@ class benchmark : public QThread {
   }
 
  private:
-  unsigned int _services;
-  unsigned int _requests_per_service;
+  uint32_t _services;
+  uint32_t _requests_per_service;
 };
 
 #endif  // !TEST_BENCH_GENERATE_RRD_MOD_HH

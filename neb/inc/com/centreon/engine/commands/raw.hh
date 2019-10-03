@@ -50,10 +50,10 @@ class raw : public command, public process_listener {
   command* clone() const override;
   unsigned long run(std::string const& process_cmd,
                     nagios_macros& macros,
-                    unsigned int timeout) override;
+                    uint32_t timeout) override;
   void run(std::string const& process_cmd,
            nagios_macros& macros,
-           unsigned int timeout,
+           uint32_t timeout,
            result& res) override;
 
  private:

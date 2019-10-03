@@ -79,7 +79,7 @@ event_handler& event_handler::operator=(event_handler const& other) {
  *
  *  @return The event type.
  */
-unsigned int event_handler::type() const {
+uint32_t event_handler::type() const {
   return (event_handler::static_type());
 }
 
@@ -88,7 +88,7 @@ unsigned int event_handler::type() const {
  *
  *  @return  The event type.
  */
-unsigned int event_handler::static_type() {
+uint32_t event_handler::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_event_handler>::value);
 }
 

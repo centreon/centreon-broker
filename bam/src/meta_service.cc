@@ -78,7 +78,7 @@ meta_service& meta_service::operator=(meta_service const& other) {
  *
  *  @param[in] metric_id  Metric ID.
  */
-void meta_service::add_metric(unsigned int metric_id) {
+void meta_service::add_metric(uint32_t metric_id) {
   _metrics[metric_id] = 0.0;
   _recompute_count = _recompute_limit;
 }
@@ -102,7 +102,7 @@ bool meta_service::child_has_update(computable* child, io::stream* visitor) {
  *
  *  @return Meta-service ID.
  */
-unsigned int meta_service::get_id() const {
+uint32_t meta_service::get_id() const {
   return (_id);
 }
 
@@ -111,7 +111,7 @@ unsigned int meta_service::get_id() const {
  *
  *  @return Virtual host ID.
  */
-unsigned int meta_service::get_host_id() const {
+uint32_t meta_service::get_host_id() const {
   return (_host_id);
 }
 
@@ -120,7 +120,7 @@ unsigned int meta_service::get_host_id() const {
  *
  *  @return Virtual service ID.
  */
-unsigned int meta_service::get_service_id() const {
+uint32_t meta_service::get_service_id() const {
   return (_service_id);
 }
 
@@ -177,7 +177,7 @@ void meta_service::metric_update(std::shared_ptr<storage::metric> const& m,
                                  io::stream* visitor) {
   if (m) {
     bool state_has_changed = false;
-    std::unordered_map<unsigned int, double>::iterator it(
+    std::unordered_map<uint32_t, double>::iterator it(
         _metrics.find(m->metric_id));
     if (it != _metrics.end()) {
       if (it->second != m->value) {
@@ -209,7 +209,7 @@ void meta_service::recompute() {
     if (_metrics.empty())
       _value = NAN;
     else {
-      std::unordered_map<unsigned int, double>::const_iterator it(
+      std::unordered_map<uint32_t, double>::const_iterator it(
           _metrics.begin()),
           end(_metrics.end());
       _value = it->second;
@@ -223,7 +223,7 @@ void meta_service::recompute() {
     if (_metrics.empty())
       _value = NAN;
     else {
-      std::unordered_map<unsigned int, double>::const_iterator it(
+      std::unordered_map<uint32_t, double>::const_iterator it(
           _metrics.begin()),
           end(_metrics.end());
       _value = it->second;
@@ -235,7 +235,7 @@ void meta_service::recompute() {
   // SUM/AVERAGE.
   else {
     _value = 0.0;
-    for (std::unordered_map<unsigned int, double>::const_iterator
+    for (std::unordered_map<uint32_t, double>::const_iterator
              it(_metrics.begin()),
          end(_metrics.end());
          it != end; ++it)
@@ -251,7 +251,7 @@ void meta_service::recompute() {
  *
  *  @param[in] metric_id  Metric ID.
  */
-void meta_service::remove_metric(unsigned int metric_id) {
+void meta_service::remove_metric(uint32_t metric_id) {
   _metrics.erase(metric_id);
   _recompute_count = _recompute_limit;
 }
@@ -271,7 +271,7 @@ void meta_service::set_computation(meta_service::computation_type type) {
  *
  *  @param[in] id  Meta-service ID.
  */
-void meta_service::set_id(unsigned int id) {
+void meta_service::set_id(uint32_t id) {
   _id = id;
 }
 
@@ -280,7 +280,7 @@ void meta_service::set_id(unsigned int id) {
  *
  *  @param[in] host_id  Virtual host ID.
  */
-void meta_service::set_host_id(unsigned int host_id) {
+void meta_service::set_host_id(uint32_t host_id) {
   _host_id = host_id;
 }
 
@@ -289,7 +289,7 @@ void meta_service::set_host_id(unsigned int host_id) {
  *
  *  @param[in] service_id  Virtual service ID.
  */
-void meta_service::set_service_id(unsigned int service_id) {
+void meta_service::set_service_id(uint32_t service_id) {
   _service_id = service_id;
 }
 

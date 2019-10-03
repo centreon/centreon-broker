@@ -84,7 +84,7 @@ acknowledgement& acknowledgement::operator=(acknowledgement const& other) {
  *
  *  @return The event type.
  */
-unsigned int acknowledgement::type() const {
+uint32_t acknowledgement::type() const {
   return (acknowledgement::static_type());
 }
 

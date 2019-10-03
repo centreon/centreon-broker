@@ -56,8 +56,8 @@ void add_engine_state(QList<std::shared_ptr<io::data> >& content,
 void add_issue(QList<std::shared_ptr<io::data> >& content,
                time_t ack_time,
                time_t end_time,
-               unsigned int host_id,
-               unsigned int service_id,
+               uint32_t host_id,
+               uint32_t service_id,
                time_t start_time) {
   std::shared_ptr<correlation::issue> i(new correlation::issue);
   i->ack_time = ack_time;
@@ -83,12 +83,12 @@ void add_issue(QList<std::shared_ptr<io::data> >& content,
  *  @param[in]  start_time         Parenting start time.
  */
 void add_issue_parent(QList<std::shared_ptr<io::data> >& content,
-                      unsigned int child_host_id,
-                      unsigned int child_service_id,
+                      uint32_t child_host_id,
+                      uint32_t child_service_id,
                       time_t child_start_time,
                       time_t end_time,
-                      unsigned int parent_host_id,
-                      unsigned int parent_service_id,
+                      uint32_t parent_host_id,
+                      uint32_t parent_service_id,
                       time_t parent_start_time,
                       time_t start_time) {
   std::shared_ptr<correlation::issue_parent> ip(new correlation::issue_parent);
@@ -119,9 +119,9 @@ void add_state(QList<std::shared_ptr<io::data> >& content,
                time_t ack_time,
                int current_state,
                time_t end_time,
-               unsigned int host_id,
+               uint32_t host_id,
                bool in_downtime,
-               unsigned int service_id,
+               uint32_t service_id,
                time_t start_time) {
   std::shared_ptr<correlation::state> s(new correlation::state);
   s->ack_time = ack_time;
@@ -145,7 +145,7 @@ void add_state(QList<std::shared_ptr<io::data> >& content,
  */
 void check_content(io::stream& s,
                    QList<std::shared_ptr<io::data> > const& content) {
-  unsigned int i(0);
+  uint32_t i(0);
   for (QList<std::shared_ptr<io::data> >::const_iterator it(content.begin()),
        end(content.end());
        it != end;) {

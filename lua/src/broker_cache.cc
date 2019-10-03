@@ -107,20 +107,16 @@ static int l_broker_cache_get_bv(lua_State* L) {
 static int l_broker_cache_get_bvs(lua_State* L) {
   macro_cache const* cache(
       *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
-  unsigned int ba_id(luaL_checkinteger(L, 2));
+  uint32_t ba_id(luaL_checkinteger(L, 2));
 
-  std::unordered_multimap<uint64_t, bam::dimension_ba_bv_relation_event> const&
-      relations(cache->get_dimension_ba_bv_relation_events());
-  std::unordered_multimap<uint64_t,
-                          bam::dimension_ba_bv_relation_event>::const_iterator
-      it(relations.find(ba_id));
+  auto const& relations(cache->get_dimension_ba_bv_relation_events());
+  auto it = relations.find(ba_id);
 
   lua_newtable(L);
 
   int i = 1;
   while (it != relations.end() && it->first == ba_id) {
-    bam::dimension_ba_bv_relation_event const& rel(it->second);
-    lua_pushinteger(L, rel.bv_id);
+    lua_pushinteger(L, it->second->bv_id);
     lua_rawseti(L, -2, i);
     ++i;
     ++it;
@@ -320,9 +316,7 @@ static int l_broker_cache_get_servicegroups(lua_State* L) {
   uint64_t host_id(luaL_checkinteger(L, 2));
   uint64_t service_id(luaL_checkinteger(L, 3));
 
-  std::map<std::tuple<uint64_t, uint64_t, uint64_t>,
-           neb::service_group_member> const& members{
-      cache->get_service_group_members()};
+  auto const& members = cache->get_service_group_members();
 
   auto first(members.lower_bound(std::make_tuple(host_id, service_id, 0)));
   auto second(members.upper_bound(std::make_tuple(host_id, service_id + 1, 0)));
@@ -332,12 +326,11 @@ static int l_broker_cache_get_servicegroups(lua_State* L) {
   if (first != members.end()) {
     int i{1};
     for (auto it(first), end(second); it != end; ++it) {
-      neb::service_group_member const& sgm{it->second};
       lua_createtable(L, 0, 2);
-      lua_pushinteger(L, sgm.group_id);
+      lua_pushinteger(L, it->second->group_id);
       lua_setfield(L, -2, "group_id");
 
-      lua_pushstring(L, sgm.group_name.c_str());
+      lua_pushstring(L, it->second->group_name.c_str());
       lua_setfield(L, -2, "group_name");
 
       lua_rawseti(L, -2, i);
@@ -360,26 +353,20 @@ static int l_broker_cache_get_hostgroups(lua_State* L) {
       *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache"))};
   uint64_t id{static_cast<uint64_t>(luaL_checkinteger(L, 2))};
 
-  std::map<std::pair<uint64_t, uint64_t>, neb::host_group_member> const&
-      members{cache->get_host_group_members()};
+  auto const& members = cache->get_host_group_members();
 
-  std::map<std::pair<uint64_t, uint64_t>,
-           neb::host_group_member>::const_iterator first{
-      members.lower_bound({id, 0})};
-  std::map<std::pair<uint64_t, uint64_t>,
-           neb::host_group_member>::const_iterator second{
-      members.upper_bound({id + 1, 0})};
+  auto const first = members.lower_bound({id, 0});
+  auto const second = members.upper_bound({id + 1, 0});
 
   lua_newtable(L);
   if (first != members.end()) {
-    int i{1};
+    int i = 1;
     for (auto it(first); it != second; ++it) {
-      neb::host_group_member const& hgm(it->second);
       lua_createtable(L, 0, 2);
-      lua_pushinteger(L, hgm.group_id);
+      lua_pushinteger(L, it->second->group_id);
       lua_setfield(L, -2, "group_id");
 
-      lua_pushstring(L, hgm.group_name.c_str());
+      lua_pushstring(L, it->second->group_name.c_str());
       lua_setfield(L, -2, "group_name");
 
       lua_rawseti(L, -2, i);

@@ -32,20 +32,20 @@ dependency_by_node_id_builder::dependency_by_node_id_builder(
     QMultiHash<node_id, dependency::ptr>& by_parent_id)
     : _table_child_id(by_child_id), _table_parent_id(by_parent_id) {}
 
-void dependency_by_node_id_builder::add_dependency(unsigned int id,
+void dependency_by_node_id_builder::add_dependency(uint32_t id,
                                                    dependency::ptr d) {
   _cache[id] = d;
 }
 
 void dependency_by_node_id_builder::dependency_node_id_parent_relation(
-    unsigned int dep_id,
+    uint32_t dep_id,
     node_id id) {
   if (_cache.contains(dep_id))
     _table_parent_id.insert(id, _cache[dep_id]);
 }
 
 void dependency_by_node_id_builder::dependency_node_id_child_relation(
-    unsigned int dep_id,
+    uint32_t dep_id,
     node_id id) {
   if (_cache.contains(dep_id))
     _table_child_id.insert(id, _cache[dep_id]);

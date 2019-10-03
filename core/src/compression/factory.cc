@@ -124,7 +124,7 @@ io::endpoint* factory::new_endpoint(
     level = std::stol(it->second);
 
   // Get buffer size.
-  unsigned int size(0);
+  uint32_t size(0);
   it = cfg.params.find("compression_buffer");
   if (it != cfg.params.end())
     size = std::stoul(it->second);

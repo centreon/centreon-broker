@@ -49,9 +49,9 @@ using namespace com::centreon::broker::storage;
  *  @param[in] interval_length         Length in seconds of a time unit.
  */
 rebuilder::rebuilder(database_config const& db_cfg,
-                     unsigned int rebuild_check_interval,
-                     unsigned int rrd_length,
-                     unsigned int interval_length)
+                     uint32_t rebuild_check_interval,
+                     uint32_t rrd_length,
+                     uint32_t interval_length)
     : _db_cfg(db_cfg),
       _interval_length(interval_length),
       _rebuild_check_interval(rebuild_check_interval),
@@ -78,7 +78,7 @@ rebuilder::~rebuilder() {
  *
  *  @return Rebuild check interval in seconds.
  */
-unsigned int rebuilder::get_rebuild_check_interval() const throw() {
+uint32_t rebuilder::get_rebuild_check_interval() const throw() {
   return (_rebuild_check_interval);
 }
 
@@ -87,7 +87,7 @@ unsigned int rebuilder::get_rebuild_check_interval() const throw() {
  *
  *  @return RRD length in seconds.
  */
-unsigned int rebuilder::get_rrd_length() const throw() {
+uint32_t rebuilder::get_rrd_length() const throw() {
   return (_rrd_len);
 }
 
@@ -117,11 +117,11 @@ void rebuilder::_run() {
       _next_index_to_rebuild(info, *ms);
       while (!_should_exit && info.index_id) {
         // Get check interval of host/service.
-        unsigned int index_id;
-        unsigned int host_id;
-        unsigned int service_id;
-        unsigned int check_interval(0);
-        unsigned int rrd_len;
+        uint32_t index_id;
+        uint32_t host_id;
+        uint32_t service_id;
+        uint32_t check_interval(0);
+        uint32_t rrd_len;
         {
           index_id = info.index_id;
           host_id = info.host_id;
@@ -273,13 +273,13 @@ void rebuilder::_next_index_to_rebuild(index_info& info, mysql& ms) {
  *  @param[in] length       Metric RRD length in seconds.
  */
 void rebuilder::_rebuild_metric(mysql& ms,
-                                unsigned int metric_id,
-                                unsigned int host_id,
-                                unsigned int service_id,
+                                uint32_t metric_id,
+                                uint32_t host_id,
+                                uint32_t service_id,
                                 std::string const& metric_name,
                                 short metric_type,
-                                unsigned int interval,
-                                unsigned int length) {
+                                uint32_t interval,
+                                uint32_t length) {
   // Log.
   logging::info(logging::low)
       << "storage: rebuilder: rebuilding metric " << metric_id << " (name "
@@ -349,8 +349,8 @@ void rebuilder::_rebuild_metric(mysql& ms,
  *  @param[in] interval  Host/service check interval.
  */
 void rebuilder::_rebuild_status(mysql& ms,
-                                unsigned int index_id,
-                                unsigned int interval) {
+                                uint32_t index_id,
+                                uint32_t interval) {
   // Log.
   logging::info(logging::low) << "storage: rebuilder: rebuilding status "
                               << index_id << " (interval " << interval << ")";
@@ -407,7 +407,7 @@ void rebuilder::_rebuild_status(mysql& ms,
  *  @param[in] id       Index or metric ID.
  *  @param[in] is_index true for an index ID, false for a metric ID.
  */
-void rebuilder::_send_rebuild_event(bool end, unsigned int id, bool is_index) {
+void rebuilder::_send_rebuild_event(bool end, uint32_t id, bool is_index) {
   std::shared_ptr<storage::rebuild> rb(new storage::rebuild);
   rb->end = end;
   rb->id = id;
@@ -424,7 +424,7 @@ void rebuilder::_send_rebuild_event(bool end, unsigned int id, bool is_index) {
  *  @param[in] state     Rebuild state (0, 1 or 2).
  */
 void rebuilder::_set_index_rebuild(mysql& ms,
-                                   unsigned int index_id,
+                                   uint32_t index_id,
                                    short state) {
   bool db_v2(ms.schema_version() == mysql::v2);
   std::ostringstream oss;

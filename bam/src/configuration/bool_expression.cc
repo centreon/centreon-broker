@@ -30,7 +30,7 @@ using namespace com::centreon::broker;
  *  @param[in] expression     BA expression.
  *  @param[in] impact_if      BA impact_if
  */
-bool_expression::bool_expression(unsigned int id,
+bool_expression::bool_expression(uint32_t id,
                                  std::string const& name,
                                  std::string const& expression,
                                  bool impact_if)
@@ -98,7 +98,7 @@ bool bool_expression::operator!=(bool_expression const& other) const {
  *
  *  @return The id.
  */
-unsigned int bool_expression::get_id() const {
+uint32_t bool_expression::get_id() const {
   return (_id);
 }
 
@@ -153,7 +153,7 @@ void bool_expression::set_expression(std::string const& exp) {
  *
  *  @param[in] id  Boolean expression ID.
  */
-void bool_expression::set_id(unsigned int id) {
+void bool_expression::set_id(uint32_t id) {
   _id = id;
   return;
 }

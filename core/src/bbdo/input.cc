@@ -45,10 +45,10 @@ using namespace com::centreon::broker::bbdo;
 /**
  *  Set a boolean within an object.
  */
-static unsigned int set_boolean(io::data& t,
+static uint32_t set_boolean(io::data& t,
                                 mapping::entry const& member,
                                 void const* data,
-                                unsigned int size) {
+                                uint32_t size) {
   if (!size)
     throw(exceptions::msg() << "BBDO: cannot extract boolean value: "
                             << "0 bytes left in packet");
@@ -59,12 +59,12 @@ static unsigned int set_boolean(io::data& t,
 /**
  *  Set a double within an object.
  */
-static unsigned int set_double(io::data& t,
+static uint32_t set_double(io::data& t,
                                mapping::entry const& member,
                                void const* data,
-                               unsigned int size) {
+                               uint32_t size) {
   char const* str(static_cast<char const*>(data));
-  unsigned int len(strlen(str));
+  uint32_t len(strlen(str));
   if (len >= size)
     throw(exceptions::msg() << "BBDO: cannot extract double value: "
                             << "not terminating '\0' in remaining " << size
@@ -76,10 +76,10 @@ static unsigned int set_double(io::data& t,
 /**
  *  Set an integer within an object.
  */
-static unsigned int set_integer(io::data& t,
+static uint32_t set_integer(io::data& t,
                                 mapping::entry const& member,
                                 void const* data,
-                                unsigned int size) {
+                                uint32_t size) {
   if (size < sizeof(uint32_t))
     throw(exceptions::msg() << "BBDO: cannot extract integer value: " << size
                             << " bytes left in packet");
@@ -90,10 +90,10 @@ static unsigned int set_integer(io::data& t,
 /**
  *  Set a short within an object.
  */
-static unsigned int set_short(io::data& t,
+static uint32_t set_short(io::data& t,
                               mapping::entry const& member,
                               void const* data,
-                              unsigned int size) {
+                              uint32_t size) {
   if (size < sizeof(uint16_t))
     throw(exceptions::msg() << "BBDO: cannot extract short value: " << size
                             << " bytes left in packet");
@@ -104,12 +104,12 @@ static unsigned int set_short(io::data& t,
 /**
  *  Set a string within an object.
  */
-static unsigned int set_string(io::data& t,
+static uint32_t set_string(io::data& t,
                                mapping::entry const& member,
                                void const* data,
-                               unsigned int size) {
+                               uint32_t size) {
   char const* str(static_cast<char const*>(data));
-  unsigned int len(strlen(str));
+  uint32_t len(strlen(str));
   if (len >= size)
     throw(exceptions::msg() << "BBDO: cannot extract string value: "
                             << "no terminating '\\0' in remaining " << size
@@ -121,10 +121,10 @@ static unsigned int set_string(io::data& t,
 /**
  *  Set a timestamp within an object.
  */
-static unsigned int set_timestamp(io::data& t,
+static uint32_t set_timestamp(io::data& t,
                                   mapping::entry const& member,
                                   void const* data,
-                                  unsigned int size) {
+                                  uint32_t size) {
   if (size < 2 * sizeof(uint32_t))
     throw(exceptions::msg() << "BBDO: cannot extract timestamp value: " << size
                             << " bytes left in packet");
@@ -138,14 +138,14 @@ static unsigned int set_timestamp(io::data& t,
 }
 
 /**
- *  Set an unsigned integer within an object.
+ *  Set an uint32_teger within an object.
  */
-static unsigned int set_uint(io::data& t,
+static uint32_t set_uint(io::data& t,
                              mapping::entry const& member,
                              void const* data,
-                             unsigned int size) {
+                             uint32_t size) {
   if (size < sizeof(uint32_t))
-    throw(exceptions::msg() << "BBDO: cannot extract unsigned integer value: "
+    throw(exceptions::msg() << "BBDO: cannot extract uint32_teger value: "
                             << size << " bytes left in packet");
   member.set_uint(t, ntohl(*static_cast<uint32_t const*>(data)));
   return (sizeof(uint32_t));
@@ -162,11 +162,11 @@ static unsigned int set_uint(io::data& t,
  *
  *  @return Event.
  */
-static io::data* unserialize(unsigned int event_type,
-                             unsigned int source_id,
-                             unsigned int destination_id,
+static io::data* unserialize(uint32_t event_type,
+                             uint32_t source_id,
+                             uint32_t destination_id,
                              char const* buffer,
-                             unsigned int size) {
+                             uint32_t size) {
   // Get event info (operations and mapping).
   io::event_info const* info(io::events::instance().get_event_info(event_type));
   if (info) {
@@ -180,7 +180,7 @@ static io::data* unserialize(unsigned int event_type,
            !current_entry->is_null(); ++current_entry)
         // Skip entries that should not be serialized.
         if (current_entry->get_serialize()) {
-          unsigned int rb;
+          uint32_t rb;
           switch (current_entry->get_type()) {
             case mapping::source::BOOL:
               rb = set_boolean(*t, *current_entry, buffer, size);
@@ -279,7 +279,7 @@ bool input::read(std::shared_ptr<io::data>& d, time_t deadline) {
   // Read event.
   d.reset();
   bool timed_out(!read_any(d, deadline));
-  unsigned int event_id(!d ? 0 : d->type());
+  uint32_t event_id(!d ? 0 : d->type());
   while (!timed_out && ((event_id >> 16) == io::events::bbdo)) {
     // Version response.
     if ((event_id & 0xFFFF) == 1) {
@@ -333,10 +333,10 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
     d.reset();
 
     // Get header informations.
-    unsigned int event_id(0);
+    uint32_t event_id(0);
     int packet_size;
-    unsigned int source_id;
-    unsigned int destination_id;
+    uint32_t source_id;
+    uint32_t destination_id;
     std::string packet;
     int raw_size(0);
     do {

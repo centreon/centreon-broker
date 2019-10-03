@@ -45,7 +45,7 @@ class backend : public std::mutex {
   virtual ~backend() = default;
   backend& operator=(backend const& b) = delete;
   virtual void log_msg(char const* msg,
-                       unsigned int len,
+                       uint32_t len,
                        type log_type,
                        level l) throw() = 0;
 };

@@ -35,12 +35,12 @@ namespace notification {
 class notification_rule_by_id_builder : public notification_rule_builder {
  public:
   notification_rule_by_id_builder(
-      QHash<unsigned int, objects::notification_rule::ptr>& table);
+      QHash<uint32_t, objects::notification_rule::ptr>& table);
 
-  void add_rule(unsigned int id, objects::notification_rule::ptr con);
+  void add_rule(uint32_t id, objects::notification_rule::ptr con);
 
  private:
-  QHash<unsigned int, objects::notification_rule::ptr>& _table;
+  QHash<uint32_t, objects::notification_rule::ptr>& _table;
 };
 
 }  // namespace notification

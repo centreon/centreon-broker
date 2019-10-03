@@ -38,10 +38,10 @@ namespace configuration {
  */
 class meta_service {
  public:
-  typedef std::list<unsigned int> metric_container;
-  typedef std::set<std::pair<unsigned int, unsigned int> > service_container;
+  typedef std::list<uint32_t> metric_container;
+  typedef std::set<std::pair<uint32_t, uint32_t> > service_container;
 
-  meta_service(unsigned int id = 0,
+  meta_service(uint32_t id = 0,
                std::string const& name = "",
                std::string const& computation = "",
                double warning_level = 0.0,
@@ -55,9 +55,9 @@ class meta_service {
   bool operator!=(meta_service const& other) const;
 
   std::string const& get_computation() const;
-  unsigned int get_id() const;
-  unsigned int get_host_id() const;
-  unsigned int get_service_id() const;
+  uint32_t get_id() const;
+  uint32_t get_host_id() const;
+  uint32_t get_service_id() const;
   double get_level_critical() const;
   double get_level_warning() const;
   std::string const& get_metric_name() const;
@@ -66,12 +66,12 @@ class meta_service {
   std::string const& get_service_filter() const;
   service_container const& get_services() const;
 
-  void add_metric(unsigned int metric_id);
-  void add_service(unsigned int host_id, unsigned int service_id);
+  void add_metric(uint32_t metric_id);
+  void add_service(uint32_t host_id, uint32_t service_id);
   void set_computation(std::string const& function);
-  void set_id(unsigned int id);
-  void set_host_id(unsigned int host_id);
-  void set_service_id(unsigned int service_id);
+  void set_id(uint32_t id);
+  void set_host_id(uint32_t host_id);
+  void set_service_id(uint32_t service_id);
   void set_level_critical(double level);
   void set_level_warning(double level);
   void set_metric_name(std::string const& metric);
@@ -82,9 +82,9 @@ class meta_service {
   void _internal_copy(meta_service const& other);
 
   std::string _computation;
-  unsigned int _id;
-  unsigned int _host_id;
-  unsigned int _service_id;
+  uint32_t _id;
+  uint32_t _host_id;
+  uint32_t _service_id;
   double _level_critical;
   double _level_warning;
   std::string _metric_name;

@@ -41,7 +41,7 @@ class broker_extcmd {
  private:
   void _internal_copy(broker_extcmd const& other);
   void _read(QLocalSocket& sockt,
-             unsigned int& id,
+             uint32_t& id,
              bool& pending,
              std::string& msg,
              std::string const& query = std::string());

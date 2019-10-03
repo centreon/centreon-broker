@@ -318,7 +318,7 @@ logger::logger_type logger::type() const throw() {
  *
  *  @param[in] t New value.
  */
-void logger::types(unsigned int t) throw() {
+void logger::types(uint32_t t) throw() {
   _types = t;
 }
 
@@ -327,7 +327,7 @@ void logger::types(unsigned int t) throw() {
  *
  *  @return Current value.
  */
-unsigned int logger::types() const throw() {
+uint32_t logger::types() const throw() {
   return _types;
 }
 

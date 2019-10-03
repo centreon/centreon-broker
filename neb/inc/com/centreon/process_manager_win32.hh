@@ -56,8 +56,8 @@ class process_manager : public concurrency::thread {
   void _wait_processes() throw();
 
   HANDLE* _fds;
-  unsigned int _fds_capacity;
-  unsigned int _fds_size;
+  uint32_t _fds_capacity;
+  uint32_t _fds_size;
   concurrency::mutex _lock_processes;
   htable<HANDLE, process*> _processes_fd;
   // htable<pid_t, process*>  _processes_pid;

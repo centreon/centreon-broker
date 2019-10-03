@@ -41,10 +41,10 @@ class dimension_timeperiod : public io::data {
   dimension_timeperiod(dimension_timeperiod const&);
   dimension_timeperiod& operator=(dimension_timeperiod const&);
   bool operator==(dimension_timeperiod const& other) const;
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int id;
+  uint32_t id;
   std::string name;
   std::string monday;
   std::string tuesday;

@@ -41,11 +41,11 @@ class dimension_timeperiod_exclusion : public io::data {
   ~dimension_timeperiod_exclusion();
   dimension_timeperiod_exclusion& operator=(
       dimension_timeperiod_exclusion const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int excluded_timeperiod_id;
-  unsigned int timeperiod_id;
+  uint32_t excluded_timeperiod_id;
+  uint32_t timeperiod_id;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

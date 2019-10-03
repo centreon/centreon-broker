@@ -67,8 +67,8 @@ class timeperiod : public object {
   static bool _build_time_t(std::string const& time_str, unsigned long& ret);
   static bool _has_similar_daterange(std::list<daterange> const& lst,
                                      daterange const& range) throw();
-  static bool _get_month_id(std::string const& name, unsigned int& id);
-  static bool _get_day_id(std::string const& name, unsigned int& id);
+  static bool _get_month_id(std::string const& name, uint32_t& id);
+  static bool _get_day_id(std::string const& name, uint32_t& id);
   bool _set_alias(std::string const& value);
   bool _set_exclude(std::string const& value);
   bool _set_timeperiod_name(std::string const& value);

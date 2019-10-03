@@ -46,7 +46,7 @@ class dependency_loader {
   //             std::string const& relation_id_name,
   //             std::string const& table,
   //             void (dependency_builder::*register_method)
-  //                    (unsigned int, unsigned int));
+  //                    (uint32_t, uint32_t));
 };
 
 }  // namespace notification

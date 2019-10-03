@@ -85,7 +85,7 @@ bool ba_duration_event::operator==(ba_duration_event const& other) const {
  *
  *  @return Event type.
  */
-unsigned int ba_duration_event::type() const {
+uint32_t ba_duration_event::type() const {
   return (ba_duration_event::static_type());
 }
 
@@ -94,7 +94,7 @@ unsigned int ba_duration_event::type() const {
  *
  *  @return Event type.
  */
-unsigned int ba_duration_event::static_type() {
+uint32_t ba_duration_event::static_type() {
   return (
       io::events::data_type<io::events::bam, bam::de_ba_duration_event>::value);
 }

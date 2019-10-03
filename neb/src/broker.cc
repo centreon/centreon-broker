@@ -25,7 +25,7 @@
 
 using namespace com::centreon::broker;
 
-static unsigned int neb_instances(0);
+static uint32_t neb_instances(0);
 
 extern "C" {
 /**

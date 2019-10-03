@@ -44,7 +44,7 @@ class input : virtual public io::stream {
   input& operator=(input const& other);
   virtual bool read(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
   bool read_any(std::shared_ptr<io::data>& d, time_t deadline = (time_t)-1);
-  virtual void acknowledge_events(unsigned int events) = 0;
+  virtual void acknowledge_events(uint32_t events) = 0;
 
  private:
   void _buffer_must_have_unprocessed(int bytes, time_t deadline = (time_t)-1);

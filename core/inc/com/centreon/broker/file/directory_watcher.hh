@@ -45,14 +45,14 @@ class directory_watcher {
   bool is_watched(std::string const& directory);
 
   std::vector<directory_event> get_events();
-  void set_timeout(unsigned int msecs);
+  void set_timeout(uint32_t msecs);
 
  private:
   directory_watcher(directory_watcher const& o);
   directory_watcher& operator=(directory_watcher const& o);
 
   int _inotify_instance_id;
-  unsigned int _timeout;
+  uint32_t _timeout;
   std::map<std::string, int> _path_to_id;
   std::map<int, std::string> _id_to_path;
 };

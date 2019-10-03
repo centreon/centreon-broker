@@ -58,7 +58,7 @@ acceptor::acceptor(std::string const& name,
                    time_t timeout,
                    bool one_peer_retention_mode,
                    bool coarse,
-                   unsigned int ack_limit)
+                   uint32_t ack_limit)
     : io::endpoint(!one_peer_retention_mode),
       _coarse(coarse),
       _extensions(extensions),

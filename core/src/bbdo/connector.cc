@@ -50,7 +50,7 @@ connector::connector(bool negotiate,
                      std::string const& extensions,
                      time_t timeout,
                      bool coarse,
-                     unsigned int ack_limit)
+                     uint32_t ack_limit)
     : io::endpoint{false},
       _coarse{coarse},
       _extensions{extensions},

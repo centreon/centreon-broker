@@ -45,7 +45,7 @@ class mysql_result {
   double value_as_f64(int idx);
   int value_as_i32(int idx);
   std::string value_as_str(int idx);
-  unsigned int value_as_u32(int idx);
+  uint32_t value_as_u32(int idx);
   unsigned long long value_as_u64(int idx);
   bool value_is_null(int idx);
   bool is_empty() const;

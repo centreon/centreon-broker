@@ -43,8 +43,8 @@ class host_group_member : public group_member {
   host_group_member(host_group_member const& other);
   virtual ~host_group_member();
   host_group_member& operator=(host_group_member const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

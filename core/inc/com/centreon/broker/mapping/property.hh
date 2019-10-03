@@ -41,7 +41,7 @@ class property : public source {
     short T::*s;
     std::string T::*q;
     timestamp T::*t;
-    unsigned int T::*I;
+    uint32_t T::*I;
     unsigned short T::*S;
     uint64_t T::*l;
   } _prop;
@@ -125,7 +125,7 @@ class property : public source {
    *  @param[in]  I Unsigned integer property.
    *  @param[out] t If not NULL, set to UINT.
    */
-  property(unsigned int(T::*I), source_type* t) {
+  property(uint32_t(T::*I), source_type* t) {
     _prop.I = I;
     if (t)
       *t = UINT;
@@ -234,13 +234,13 @@ class property : public source {
   }
 
   /**
-   *  Get an unsigned integer property.
+   *  Get an uint32_teger property.
    *
    *  @param[in] d Object to get from.
    *
    *  @return Unsigned integer property.
    */
-  unsigned int get_uint(io::data const& d) {
+  uint32_t get_uint(io::data const& d) {
     return (static_cast<T const*>(&d)->*(_prop.I));
   }
 
@@ -322,12 +322,12 @@ class property : public source {
   }
 
   /**
-   *  Set an unsigned integer property.
+   *  Set an uint32_teger property.
    *
    *  @param[out] d     Object to set.
    *  @param[in]  value New value.
    */
-  void set_uint(io::data& d, unsigned int value) {
+  void set_uint(io::data& d, uint32_t value) {
     static_cast<T*>(&d)->*(_prop.I) = value;
     return;
   }

@@ -74,7 +74,7 @@ extern multiplexing::publisher gl_publisher;
 extern std::list<std::shared_ptr<neb::callback> > gl_registered_callbacks;
 
 // Acknowledgement list.
-extern std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
+extern std::map<std::pair<uint32_t, uint32_t>, neb::acknowledgement>
     gl_acknowledgements;
 }  // namespace neb
 

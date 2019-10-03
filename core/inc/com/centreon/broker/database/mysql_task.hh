@@ -77,9 +77,9 @@ class mysql_task_finish : public mysql_task {
 
 class mysql_task_prepare : public mysql_task {
  public:
-  mysql_task_prepare(unsigned int id, std::string const& q)
+  mysql_task_prepare(uint32_t id, std::string const& q)
       : mysql_task(mysql_task::PREPARE), id(id), query(q) {}
-  unsigned int id;
+  uint32_t id;
   std::string query;
 };
 

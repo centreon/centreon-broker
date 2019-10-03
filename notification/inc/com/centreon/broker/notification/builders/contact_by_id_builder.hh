@@ -35,18 +35,18 @@ namespace notification {
 class contact_by_id_builder : public contact_builder {
  public:
   contact_by_id_builder(
-      QHash<unsigned int, objects::contact::ptr>& table,
-      QHash<unsigned int, QHash<std::string, std::string> >& contact_infos);
+      QHash<uint32_t, objects::contact::ptr>& table,
+      QHash<uint32_t, QHash<std::string, std::string> >& contact_infos);
 
-  void add_contact(unsigned int id, objects::contact::ptr con);
+  void add_contact(uint32_t id, objects::contact::ptr con);
 
-  void add_contact_info(unsigned int contact_id,
+  void add_contact_info(uint32_t contact_id,
                         std::string const& key,
                         std::string const& value);
 
  private:
-  QHash<unsigned int, objects::contact::ptr>& _table;
-  QHash<unsigned int, QHash<std::string, std::string> >& _contact_infos;
+  QHash<uint32_t, objects::contact::ptr>& _table;
+  QHash<uint32_t, QHash<std::string, std::string> >& _contact_infos;
 };
 
 }  // namespace notification

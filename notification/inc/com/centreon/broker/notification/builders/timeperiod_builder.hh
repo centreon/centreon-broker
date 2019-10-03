@@ -45,7 +45,7 @@ class timeperiod_builder {
    *  @param[in] id The id of the timeperiod.
    *  @param[in] tperiod The timeperiod.
    */
-  virtual void add_timeperiod(unsigned int id, time::timeperiod::ptr tperiod) {
+  virtual void add_timeperiod(uint32_t id, time::timeperiod::ptr tperiod) {
     (void)id;
     (void)tperiod;
   }
@@ -56,7 +56,7 @@ class timeperiod_builder {
    *  @param[in] days           The days in the exception.
    *  @param[in] timerange      The timerange of the exception.
    */
-  virtual void add_timeperiod_exception(unsigned int timeperiod_id,
+  virtual void add_timeperiod_exception(uint32_t timeperiod_id,
                                         std::string const& days,
                                         std::string const& timerange) {
     (void)timeperiod_id;
@@ -70,8 +70,8 @@ class timeperiod_builder {
    *  @param[in] timeperiod_id  The id of the timeperiod.
    *  @param[in] exclude_id     The id of the timeperiod excluded.
    */
-  virtual void add_timeperiod_exclude_relation(unsigned int timeperiod_id,
-                                               unsigned int exclude_id) {
+  virtual void add_timeperiod_exclude_relation(uint32_t timeperiod_id,
+                                               uint32_t exclude_id) {
     (void)timeperiod_id;
     (void)exclude_id;
   }
@@ -82,8 +82,8 @@ class timeperiod_builder {
    *  @param[in] timeperiod_id  The id of the timeperiod.
    *  @param[in] include_id     The id of the timeperiod included.
    */
-  virtual void add_timeperiod_include_relation(unsigned int timeperiod_id,
-                                               unsigned int include_id) {
+  virtual void add_timeperiod_include_relation(uint32_t timeperiod_id,
+                                               uint32_t include_id) {
     (void)timeperiod_id;
     (void)include_id;
   }

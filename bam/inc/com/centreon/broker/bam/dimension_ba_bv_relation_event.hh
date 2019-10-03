@@ -42,11 +42,11 @@ class dimension_ba_bv_relation_event : public io::data {
   dimension_ba_bv_relation_event& operator=(
       dimension_ba_bv_relation_event const& other);
   bool operator==(dimension_ba_bv_relation_event const& other) const;
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int ba_id;
-  unsigned int bv_id;
+  uint32_t ba_id;
+  uint32_t bv_id;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

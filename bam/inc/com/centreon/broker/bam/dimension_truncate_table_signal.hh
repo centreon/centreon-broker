@@ -44,8 +44,8 @@ class dimension_truncate_table_signal : public io::data {
   dimension_truncate_table_signal& operator=(
       dimension_truncate_table_signal const& other);
   bool operator==(dimension_truncate_table_signal const& other) const;
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   bool update_started;
 

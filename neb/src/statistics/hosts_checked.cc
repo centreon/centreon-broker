@@ -63,7 +63,7 @@ hosts_checked& hosts_checked::operator=(hosts_checked const& right) {
  */
 void hosts_checked::run(std::string& output, std::string& perfdata) {
   // Count hosts checked.
-  unsigned int total{0};
+  uint32_t total{0};
   for (host_map::const_iterator it{com::centreon::engine::host::hosts.begin()},
        end{com::centreon::engine::host::hosts.end()};
        it != end; ++it)

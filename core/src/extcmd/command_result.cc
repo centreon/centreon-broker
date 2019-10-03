@@ -68,7 +68,7 @@ command_result& command_result::operator=(command_result const& other) {
  *
  *  @return The event type.
  */
-unsigned int command_result::type() const {
+uint32_t command_result::type() const {
   return (command_result::static_type());
 }
 
@@ -77,7 +77,7 @@ unsigned int command_result::type() const {
  *
  *  @return The event type.
  */
-unsigned int command_result::static_type() {
+uint32_t command_result::static_type() {
   return (io::events::data_type<io::events::extcmd,
                                 io::events::de_command_result>::value);
 }

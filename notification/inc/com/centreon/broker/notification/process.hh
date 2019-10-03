@@ -41,7 +41,7 @@ class process : public QObject {
  public:
   process(int timeout = 0);
 
-  unsigned int get_timeout() const throw();
+  uint32_t get_timeout() const throw();
   bool is_running() const;
   void kill();
 
@@ -65,7 +65,7 @@ class process : public QObject {
   process(process const&);
   process& operator=(process const&);
 
-  unsigned int _timeout;
+  uint32_t _timeout;
   time_t _start_time;
   std::unique_ptr<QProcess> _process;
 

@@ -46,7 +46,7 @@ class contact_builder {
    *  @param[in] id The id of the contact.
    *  @param[in] con The contact.
    */
-  virtual void add_contact(unsigned int id, objects::contact::ptr con) {
+  virtual void add_contact(uint32_t id, objects::contact::ptr con) {
     (void)id;
     (void)con;
   }
@@ -58,7 +58,7 @@ class contact_builder {
    *  @param[in] key         The key of the contact info.
    *  @param[in] value       The value of the contact info.
    */
-  virtual void add_contact_info(unsigned int contact_id,
+  virtual void add_contact_info(uint32_t contact_id,
                                 std::string const& key,
                                 std::string const& value) {
     (void)contact_id;

@@ -41,16 +41,16 @@ class ba_duration_event : public io::data {
   ~ba_duration_event();
   ba_duration_event& operator=(ba_duration_event const& other);
   bool operator==(ba_duration_event const& other) const;
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int ba_id;
+  uint32_t ba_id;
   timestamp real_start_time;
   timestamp end_time;
   timestamp start_time;
-  unsigned int duration;
-  unsigned int sla_duration;
-  unsigned int timeperiod_id;
+  uint32_t duration;
+  uint32_t sla_duration;
+  uint32_t timeperiod_id;
   bool timeperiod_is_default;
 
   static mapping::entry const entries[];

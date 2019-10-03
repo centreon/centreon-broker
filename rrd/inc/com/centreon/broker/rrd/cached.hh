@@ -43,7 +43,7 @@ namespace rrd {
 class cached : public backend {
  public:
   enum cached_type { uninitialized, local, tcp };
-  cached(std::string const& tmpl_path, unsigned int cache_size);
+  cached(std::string const& tmpl_path, uint32_t cache_size);
   ~cached();
   void begin();
   void clean();
@@ -53,9 +53,9 @@ class cached : public backend {
   void connect_remote(std::string const& address, unsigned short port);
   void open(std::string const& filename);
   void open(std::string const& filename,
-            unsigned int length,
+            uint32_t length,
             time_t from,
-            unsigned int step,
+            uint32_t step,
             short value_type = 0);
   void remove(std::string const& filename);
   void update(time_t t, std::string const& value);

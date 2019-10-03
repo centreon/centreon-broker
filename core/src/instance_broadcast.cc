@@ -69,7 +69,7 @@ instance_broadcast& instance_broadcast::operator=(
  *
  *  @return The event type.
  */
-unsigned int instance_broadcast::type() const {
+uint32_t instance_broadcast::type() const {
   return (instance_broadcast::static_type());
 }
 

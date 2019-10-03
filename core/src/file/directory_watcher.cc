@@ -203,6 +203,6 @@ std::vector<directory_event> directory_watcher::get_events() {
  *
  *  @param[in] msecs  The timeout, in milliseconds. 0 for none.
  */
-void directory_watcher::set_timeout(unsigned int msecs) {
+void directory_watcher::set_timeout(uint32_t msecs) {
   _timeout = msecs;
 }

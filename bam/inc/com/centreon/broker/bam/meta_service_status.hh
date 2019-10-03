@@ -41,10 +41,10 @@ class meta_service_status : public io::data {
   meta_service_status(meta_service_status const& other);
   ~meta_service_status();
   meta_service_status& operator=(meta_service_status const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int meta_service_id;
+  uint32_t meta_service_id;
   bool state_changed;
   double value;
 

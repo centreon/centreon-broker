@@ -68,7 +68,7 @@ ack& ack::operator=(ack const& other) {
  *
  *  @return The event type.
  */
-unsigned int ack::type() const {
+uint32_t ack::type() const {
   return (ack::static_type());
 }
 

@@ -74,8 +74,8 @@ bool timeperiod_map::operator==(timeperiod_map const& other) const {
  *  @return  A timeperiod ptr toward the timeperiod, or a null ptr.
  */
 com::centreon::broker::time::timeperiod::ptr timeperiod_map::get_timeperiod(
-    unsigned int id) const {
-  std::map<unsigned int,
+    uint32_t id) const {
+  std::map<uint32_t,
            com::centreon::broker::time::timeperiod::ptr>::const_iterator found =
       _map.find(id);
   if (found == _map.end())
@@ -90,7 +90,7 @@ com::centreon::broker::time::timeperiod::ptr timeperiod_map::get_timeperiod(
  *  @param[in] id   The id of the timeperiod.
  *  @param[in] ptr  A ptr to the timeperiod to add.
  */
-void timeperiod_map::add_timeperiod(unsigned int id,
+void timeperiod_map::add_timeperiod(uint32_t id,
                                     time::timeperiod::ptr ptr) {
   _map[id] = ptr;
 }
@@ -110,8 +110,8 @@ void timeperiod_map::clear() {
  *  @param[in] timeperiod_id  The id of the timeperiod.
  *  @param[in] is_default     True if the timeperiod is the default timeperiod.
  */
-void timeperiod_map::add_relation(unsigned int ba_id,
-                                  unsigned int timeperiod_id,
+void timeperiod_map::add_relation(uint32_t ba_id,
+                                  uint32_t timeperiod_id,
                                   bool is_default) {
   _timeperiod_relations.insert(
       std::make_pair(ba_id, std::make_pair(timeperiod_id, is_default)));
@@ -126,7 +126,7 @@ void timeperiod_map::add_relation(unsigned int ba_id,
  * true if the timeperiod is default.
  */
 std::vector<std::pair<com::centreon::broker::time::timeperiod::ptr, bool> >
-timeperiod_map::get_timeperiods_by_ba_id(unsigned int ba_id) const {
+timeperiod_map::get_timeperiods_by_ba_id(uint32_t ba_id) const {
   std::vector<std::pair<com::centreon::broker::time::timeperiod::ptr, bool> >
       res;
   std::pair<timeperiod_relation_map::const_iterator,
@@ -134,7 +134,7 @@ timeperiod_map::get_timeperiods_by_ba_id(unsigned int ba_id) const {
       found = _timeperiod_relations.equal_range(ba_id);
 
   for (; found.first != found.second; ++found.first) {
-    unsigned int tp_id = found.first->second.first;
+    uint32_t tp_id = found.first->second.first;
     bool is_default = found.first->second.second;
     time::timeperiod::ptr tp = get_timeperiod(tp_id);
     if (!tp)

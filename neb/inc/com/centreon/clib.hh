@@ -36,12 +36,12 @@ class clib {
     with_process_manager = 1 << 1
   };
 
-  static void load(unsigned int flags = with_logging_engine |
+  static void load(uint32_t flags = with_logging_engine |
                                         with_process_manager);
   static void unload();
 
  private:
-  clib(unsigned int flags);
+  clib(uint32_t flags);
   clib(clib const& right);
   ~clib() throw();
   clib& operator=(clib const& right);

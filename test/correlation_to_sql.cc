@@ -139,16 +139,16 @@ int main() {
     // Step 1.
     {
       // Set hosts as OK.
-      for (unsigned int i(1); i <= HOST_COUNT; ++i) {
+      for (uint32_t i(1); i <= HOST_COUNT; ++i) {
         std::ostringstream cmd;
         cmd << "PROCESS_HOST_CHECK_RESULT;" << i << ";0;output1-" << i;
         engine_commander.execute(cmd.str());
       }
 
       // Set services as OK.
-      for (unsigned int i(0); i < HOST_COUNT * SERVICES_BY_HOST; ++i) {
-        unsigned int host_id((i / SERVICES_BY_HOST) + 1);
-        unsigned int service_id(i + 1);
+      for (uint32_t i(0); i < HOST_COUNT * SERVICES_BY_HOST; ++i) {
+        uint32_t host_id((i / SERVICES_BY_HOST) + 1);
+        uint32_t service_id(i + 1);
         std::ostringstream cmd;
         cmd << "PROCESS_SERVICE_CHECK_RESULT;" << host_id << ";" << service_id
             << ";0;output1-" << host_id << ";" << service_id;
@@ -235,7 +235,7 @@ int main() {
     // Check host state events.
     {
       struct {
-        unsigned int host_id;
+        uint32_t host_id;
         time_t start_time_low;
         time_t start_time_high;
         bool end_time_is_null;
@@ -322,7 +322,7 @@ int main() {
               << "cannot get host state events: " << q.lastError().text());
 
       // Compare DB with expected content.
-      for (unsigned int i(0); i < sizeof(entries) / sizeof(*entries); ++i) {
+      for (uint32_t i(0); i < sizeof(entries) / sizeof(*entries); ++i) {
         // Get next entry.
         if (!q.next())
           throw(exceptions::msg()
@@ -381,8 +381,8 @@ int main() {
     // Check service state events.
     {
       struct {
-        unsigned int host_id;
-        unsigned int service_id;
+        uint32_t host_id;
+        uint32_t service_id;
         time_t start_time_low;
         time_t start_time_high;
         bool end_time_is_null;
@@ -538,7 +538,7 @@ int main() {
               << "cannot get service state events: " << q.lastError().text());
 
       // Compare DB with expected content.
-      for (unsigned int i(0); i < sizeof(entries) / sizeof(*entries); ++i) {
+      for (uint32_t i(0); i < sizeof(entries) / sizeof(*entries); ++i) {
         // Get next entry.
         if (!q.next())
           throw(exceptions::msg()

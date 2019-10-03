@@ -283,7 +283,7 @@ void stream::_flush() {
 
     // Add compressed data size.
     unsigned char buffer[4];
-    unsigned int size(compressed->size());
+    uint32_t size(compressed->size());
     buffer[0] = (size >> 24) & 0xFF;
     buffer[1] = (size >> 16) & 0xFF;
     buffer[2] = (size >> 8) & 0xFF;

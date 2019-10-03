@@ -39,7 +39,7 @@ class query_preparator {
   typedef std::set<std::string> doubled_fields;
   typedef std::set<std::string> event_unique;
 
-  query_preparator(unsigned int event_id,
+  query_preparator(uint32_t event_id,
                    event_unique const& unique = event_unique(),
                    excluded_fields const& excluded = excluded_fields());
   query_preparator(query_preparator const& other);
@@ -51,7 +51,7 @@ class query_preparator {
   database::mysql_stmt prepare_delete(mysql& q);
 
  private:
-  unsigned int _event_id;
+  uint32_t _event_id;
   excluded_fields _excluded;
   event_unique _unique;
 };

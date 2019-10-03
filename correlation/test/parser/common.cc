@@ -28,13 +28,13 @@ using namespace com::centreon::broker;
  *  @param[in] n2 Second state.
  */
 void compare_states(
-    QMap<QPair<unsigned int, unsigned int>, correlation::node> const& n1,
-    QMap<QPair<unsigned int, unsigned int>, correlation::node> const& n2) {
+    QMap<QPair<uint32_t, uint32_t>, correlation::node> const& n1,
+    QMap<QPair<uint32_t, uint32_t>, correlation::node> const& n2) {
   if (n1.size() != n2.size())
     throw(exceptions::msg() << "state #1 has " << n1.size()
                             << " elements, state #2 has " << n2.size());
   else {
-    for (QMap<QPair<unsigned int, unsigned int>,
+    for (QMap<QPair<uint32_t, uint32_t>,
               correlation::node>::const_iterator it1(n1.begin()),
          end1(n1.end()), it2(n2.begin());
          it1 != end1; ++it1, ++it2)

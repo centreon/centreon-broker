@@ -45,8 +45,8 @@ class mysql_stmt {
   void bind_value_as_i32(int range, int value);
   void bind_value_as_i32(std::string const& key, int value);
 
-  void bind_value_as_u32(int range, unsigned int value);
-  void bind_value_as_u32(std::string const& key, unsigned int value);
+  void bind_value_as_u32(int range, uint32_t value);
+  void bind_value_as_u32(std::string const& key, uint32_t value);
 
   void bind_value_as_u64(int range, unsigned long long value);
   void bind_value_as_u64(std::string const& key, unsigned long long value);

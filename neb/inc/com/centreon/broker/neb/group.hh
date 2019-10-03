@@ -44,9 +44,9 @@ class group : public io::data {
   group& operator=(group const& other);
 
   bool enabled;
-  unsigned int id;
+  uint32_t id;
   std::string name;
-  unsigned int poller_id;
+  uint32_t poller_id;
 
  private:
   void _internal_copy(group const& other);

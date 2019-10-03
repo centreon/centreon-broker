@@ -63,7 +63,7 @@ hosts_flapping& hosts_flapping::operator=(hosts_flapping const& right) {
  */
 void hosts_flapping::run(std::string& output, std::string& perfdata) {
   // Count hosts are flapping.
-  unsigned int total{0};
+  uint32_t total{0};
   for (host_map::const_iterator it{com::centreon::engine::host::hosts.begin()},
        end{com::centreon::engine::host::hosts.end()};
        it != end; ++it)

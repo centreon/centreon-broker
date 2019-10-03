@@ -46,8 +46,8 @@ class service : public host_service, public service_status {
   service(service const& other);
   ~service();
   service& operator=(service const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   bool flap_detection_on_critical;
   bool flap_detection_on_ok;

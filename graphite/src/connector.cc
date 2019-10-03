@@ -73,7 +73,7 @@ void connector::connect_to(std::string const& metric_naming,
                            std::string const& db_passwd,
                            std::string const& db_addr,
                            unsigned short db_port,
-                           unsigned int queries_per_transaction,
+                           uint32_t queries_per_transaction,
                            std::shared_ptr<persistent_cache> const& cache) {
   _escape_string = escape_string;
   _metric_naming = metric_naming;

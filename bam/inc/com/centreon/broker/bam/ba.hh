@@ -59,9 +59,9 @@ class ba : public computable, public service_listener {
   ba_event* get_ba_event();
   double get_downtime_impact_hard();
   double get_downtime_impact_soft();
-  unsigned int get_id();
-  unsigned int get_host_id() const;
-  unsigned int get_service_id() const;
+  uint32_t get_id();
+  uint32_t get_host_id() const;
+  uint32_t get_service_id() const;
   bool get_in_downtime() const;
   timestamp get_last_kpi_update() const;
   std::string const& get_name() const;
@@ -70,9 +70,9 @@ class ba : public computable, public service_listener {
   short get_state_hard();
   short get_state_soft();
   void remove_impact(std::shared_ptr<kpi> const& impact);
-  void set_id(unsigned int id);
-  void set_host_id(unsigned int host_id);
-  void set_service_id(unsigned int service_id);
+  void set_id(uint32_t id);
+  void set_host_id(uint32_t host_id);
+  void set_service_id(uint32_t service_id);
   void set_level_critical(double level);
   void set_level_warning(double level);
   void set_initial_event(ba_event const& event);
@@ -108,8 +108,8 @@ class ba : public computable, public service_listener {
   double _downtime_soft;
   std::shared_ptr<ba_event> _event;
   bool _generate_virtual_status;
-  unsigned int _host_id;
-  unsigned int _id;
+  uint32_t _host_id;
+  uint32_t _id;
   std::unordered_map<kpi*, impact_info> _impacts;
   bool _in_downtime;
   timestamp _last_kpi_update;
@@ -119,7 +119,7 @@ class ba : public computable, public service_listener {
   double _level_warning;
   std::string _name;
   int _recompute_count;
-  unsigned int _service_id;
+  uint32_t _service_id;
   bool _valid;
   bool _inherit_kpi_downtime;
   std::unique_ptr<inherited_downtime> _inherited_downtime;

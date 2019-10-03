@@ -39,8 +39,8 @@ class status : public io::data {
 
  public:
   timestamp ctime;
-  unsigned int index_id;
-  unsigned int interval;
+  uint32_t index_id;
+  uint32_t interval;
   bool is_for_rebuild;
   timestamp rrd_len;
   short state;
@@ -58,8 +58,8 @@ class status : public io::data {
   status(status const& s);
   ~status();
   status& operator=(status const& s);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 };
 }  // namespace storage
 

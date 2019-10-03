@@ -45,7 +45,7 @@ class connector : public io::endpoint {
                   std::string const& db_passwd,
                   std::string const& db_host,
                   unsigned short db_port,
-                  unsigned int queries_per_transaction,
+                  uint32_t queries_per_transaction,
                   std::shared_ptr<persistent_cache> const& cache);
   std::shared_ptr<io::stream> open();
 
@@ -57,7 +57,7 @@ class connector : public io::endpoint {
   std::string _password;
   std::string _addr;
   unsigned short _port;
-  unsigned int _queries_per_transaction;
+  uint32_t _queries_per_transaction;
   std::shared_ptr<persistent_cache> _persistent_cache;
 
   void _internal_copy(connector const& other);

@@ -44,7 +44,7 @@ class processing_speed_computer {
   static int const window_length = 30;
 
  private:
-  unsigned int _event_by_seconds[window_length];
+  uint32_t _event_by_seconds[window_length];
   timestamp _last_tick;
 };
 }  // namespace misc

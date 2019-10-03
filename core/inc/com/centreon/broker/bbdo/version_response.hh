@@ -43,14 +43,14 @@ class version_response : public io::data {
   version_response(version_response const& other);
   ~version_response();
   version_response& operator=(version_response const& other);
-  unsigned int type() const;
+  uint32_t type() const;
 
   /**
    *  Get the event type.
    *
    *  @return The event type.
    */
-  static unsigned int static_type() {
+  static uint32_t static_type() {
     return io::events::data_type<io::events::bbdo,
                                  bbdo::de_version_response>::value;
   }

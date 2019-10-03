@@ -164,7 +164,7 @@ void action::set_node_id(objects::node_id id) throw() {
  *
  *  @return Notification rule ID.
  */
-unsigned int action::get_notification_rule_id() const throw() {
+uint32_t action::get_notification_rule_id() const throw() {
   return (_notification_rule_id);
 }
 
@@ -173,7 +173,7 @@ unsigned int action::get_notification_rule_id() const throw() {
  *
  *  @param[in] id  Notification rule ID.
  */
-void action::set_notification_rule_id(unsigned int id) throw() {
+void action::set_notification_rule_id(uint32_t id) throw() {
   _notification_rule_id = id;
   return;
 }
@@ -183,7 +183,7 @@ void action::set_notification_rule_id(unsigned int id) throw() {
  *
  *  @return Current notification number.
  */
-unsigned int action::get_notification_number() const throw() {
+uint32_t action::get_notification_number() const throw() {
   return (_notification_number);
 }
 
@@ -192,7 +192,7 @@ unsigned int action::get_notification_number() const throw() {
  *
  *  @param[in] num  Notification number.
  */
-void action::set_notification_number(unsigned int num) throw() {
+void action::set_notification_number(uint32_t num) throw() {
   _notification_number = num;
   return;
 }

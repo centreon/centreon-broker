@@ -47,30 +47,30 @@ class stringifier {
   stringifier& operator<<(long l) throw();
   stringifier& operator<<(std::string const& str) throw();
   stringifier& operator<<(stringifier const& str) throw();
-  stringifier& operator<<(unsigned int u) throw();
+  stringifier& operator<<(uint32_t u) throw();
   stringifier& operator<<(unsigned long long ull) throw();
   stringifier& operator<<(unsigned long ul) throw();
   stringifier& operator<<(void const* p) throw();
-  stringifier& append(char const* str, unsigned int size) throw();
+  stringifier& append(char const* str, uint32_t size) throw();
   char const* data() const throw();
   int precision() const throw();
   void precision(int val) throw();
   void reset() throw();
-  unsigned int size() const throw();
+  uint32_t size() const throw();
 
  private:
   template <typename T>
   stringifier& _insert(char const* format, T t) throw();
   template <typename T>
-  stringifier& _insert(char const* format, unsigned int limit, T t) throw();
+  stringifier& _insert(char const* format, uint32_t limit, T t) throw();
   stringifier& _internal_copy(stringifier const& right);
-  bool _realloc(unsigned int new_size) throw();
+  bool _realloc(uint32_t new_size) throw();
 
   char* _buffer;
-  unsigned int _current;
+  uint32_t _current;
   int _precision;
-  unsigned int _size;
-  static unsigned int const _static_buffer_size = 1024;
+  uint32_t _size;
+  static uint32_t const _static_buffer_size = 1024;
   char _static_buffer[_static_buffer_size];
 };
 }  // namespace misc

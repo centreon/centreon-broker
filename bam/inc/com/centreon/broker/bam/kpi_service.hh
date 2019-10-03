@@ -42,11 +42,11 @@ class kpi_service : public service_listener, public kpi {
   ~kpi_service();
   kpi_service& operator=(kpi_service const& right);
   bool child_has_update(computable* child, io::stream* visitor = NULL);
-  unsigned int get_host_id() const;
+  uint32_t get_host_id() const;
   double get_impact_critical() const;
   double get_impact_unknown() const;
   double get_impact_warning() const;
-  unsigned int get_service_id() const;
+  uint32_t get_service_id() const;
   short get_state_hard() const;
   short get_state_soft() const;
   short get_state_type() const;
@@ -62,11 +62,11 @@ class kpi_service : public service_listener, public kpi {
                       io::stream* visitor = NULL);
   void set_acknowledged(bool acknowledged);
   void set_downtimed(bool downtimed);
-  void set_host_id(unsigned int host_id);
+  void set_host_id(uint32_t host_id);
   void set_impact_critical(double impact);
   void set_impact_unknown(double impact);
   void set_impact_warning(double impact);
-  void set_service_id(unsigned int service_id);
+  void set_service_id(uint32_t service_id);
   void set_state_hard(short state);
   void set_state_soft(short state);
   void set_state_type(short type);
@@ -81,12 +81,12 @@ class kpi_service : public service_listener, public kpi {
 
   bool _acknowledged;
   bool _downtimed;
-  unsigned int _host_id;
+  uint32_t _host_id;
   double _impacts[5];
   timestamp _last_check;
   std::string _output;
   std::string _perfdata;
-  unsigned int _service_id;
+  uint32_t _service_id;
   short _state_hard;
   short _state_soft;
   short _state_type;
