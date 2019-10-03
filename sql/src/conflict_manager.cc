@@ -435,11 +435,18 @@ void conflict_manager::_callback() {
               << "conflict_manager: acknowledgement - still "
               << _pending_queries << " not acknowledged";
 
+        /* Several checks on the database,  no need to keep the loop mutex */
+        lk.unlock();
         /* Are there unresonsive instances? */
         _update_hosts_and_services_of_unresponsive_instances();
+
+        /* Are there index_data to remove? */
+        _check_deleted_index();
+        lk.lock();
+        /* Checks are finished */
+
         std::chrono::system_clock::time_point now2 =
             std::chrono::system_clock::now();
-
         /* Get some stats */
         {
           std::lock_guard<std::mutex> lk(_stat_m);

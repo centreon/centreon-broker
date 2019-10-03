@@ -40,23 +40,33 @@ namespace storage {
 class metric : public io::data {
  public:
   metric();
-  metric(metric const& m);
-  ~metric();
-  metric& operator=(metric const& m);
-  unsigned int type() const;
+  metric(uint32_t host_id,
+         uint32_t service_id,
+         std::string const& name,
+         timestamp ctime,
+         uint32_t interval,
+         bool is_for_rebuild,
+         uint32_t metric_id,
+         int32_t rrd_len,
+         double value,
+         short value_type);
+  metric(metric const& m) = delete;
+  ~metric() = default;
+  metric& operator=(metric const& m) = delete;
+  uint32_t type() const;
 
   /**
    *  Get the type of this event.
    *
    *  @return  The event type.
    */
-  static unsigned int static_type() {
-    return (
-        io::events::data_type<io::events::storage, storage::de_metric>::value);
+  static uint32_t static_type() {
+    return io::events::data_type<io::events::storage,
+                                 storage::de_metric>::value;
   }
 
   timestamp ctime;
-  unsigned int interval;
+  uint32_t interval;
   bool is_for_rebuild;
   uint32_t metric_id;
   std::string name;
@@ -69,8 +79,8 @@ class metric : public io::data {
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
 
- private:
-  void _internal_copy(metric const& m);
+  // private:
+  // void _internal_copy(metric const& m);
 };
 }  // namespace storage
 

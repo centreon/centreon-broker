@@ -30,46 +30,21 @@ using namespace com::centreon::broker::storage;
  **************************************/
 
 /**
- *  Default constructor.
- */
-remove_graph::remove_graph() : id(0), is_index(0) {}
-
-/**
- *  Copy constructor.
+ *  Constructor
  *
- *  @param[in] right Object to copy.
+ * @param index_id an index id
+ * @param is_index a boolean telling if it is an index
  */
-remove_graph::remove_graph(remove_graph const& right) : io::data(right) {
-  _internal_copy(right);
-}
-
-/**
- *  Destructor.
- */
-remove_graph::~remove_graph() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-remove_graph& remove_graph::operator=(remove_graph const& right) {
-  if (this != &right) {
-    io::data::operator=(right);
-    _internal_copy(right);
-  }
-  return (*this);
-}
+remove_graph::remove_graph(uint32_t index_id, bool is_index)
+    : id{index_id}, is_index{is_index} {}
 
 /**
  *  Get the event type.
  *
  *  @return The event type.
  */
-unsigned int remove_graph::type() const {
-  return (remove_graph::static_type());
+uint32_t remove_graph::type() const {
+  return remove_graph::static_type();
 }
 
 /**
@@ -77,26 +52,9 @@ unsigned int remove_graph::type() const {
  *
  *  @return  The event type.
  */
-unsigned int remove_graph::static_type() {
-  return (io::events::data_type<io::events::storage,
-                                storage::de_remove_graph>::value);
-}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] right Object to copy.
- */
-void remove_graph::_internal_copy(remove_graph const& right) {
-  id = right.id;
-  is_index = right.is_index;
-  return;
+uint32_t remove_graph::static_type() {
+  return io::events::data_type<io::events::storage,
+                                storage::de_remove_graph>::value;
 }
 
 /**************************************
@@ -111,8 +69,6 @@ mapping::entry const remove_graph::entries[] = {
     mapping::entry(&remove_graph::is_index, "is_end"), mapping::entry()};
 
 // Operations.
-static io::data* new_remove_graph() {
-  return (new remove_graph);
-}
+static io::data* new_remove_graph() { return new remove_graph; }
 io::event_info::event_operations const remove_graph::operations = {
     &new_remove_graph};
