@@ -38,7 +38,7 @@ class connector : public io::endpoint {
             std::string const& extensions,
             time_t timeout,
             bool coarse = false,
-            unsigned int ack_limit = 1000);
+            uint32_t ack_limit = 1000);
   connector(connector const& other);
   ~connector();
   connector& operator=(connector const& other);
@@ -51,7 +51,7 @@ class connector : public io::endpoint {
   std::string _extensions;
   bool _negotiate;
   time_t _timeout;
-  unsigned int _ack_limit;
+  uint32_t _ack_limit;
 };
 }  // namespace bbdo
 

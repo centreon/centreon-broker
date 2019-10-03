@@ -47,7 +47,7 @@ class hostgroup : public object {
 
   std::string const& action_url() const throw();
   std::string const& alias() const throw();
-  unsigned int hostgroup_id() const throw();
+  uint32_t hostgroup_id() const throw();
   std::string const& hostgroup_name() const throw();
   set_string& members() throw();
   set_string const& members() const throw();
@@ -59,7 +59,7 @@ class hostgroup : public object {
 
   bool _set_action_url(std::string const& value);
   bool _set_alias(std::string const& value);
-  bool _set_hostgroup_id(unsigned int value);
+  bool _set_hostgroup_id(uint32_t value);
   bool _set_hostgroup_name(std::string const& value);
   bool _set_members(std::string const& value);
   bool _set_notes(std::string const& value);
@@ -67,7 +67,7 @@ class hostgroup : public object {
 
   std::string _action_url;
   std::string _alias;
-  unsigned int _hostgroup_id;
+  uint32_t _hostgroup_id;
   std::string _hostgroup_name;
   group<set_string> _members;
   std::string _notes;

@@ -38,7 +38,7 @@ CC_BEGIN()
  */
 class task_manager {
  public:
-  task_manager(unsigned int max_thread_count = 0);
+  task_manager(uint32_t max_thread_count = 0);
   virtual ~task_manager() throw();
   unsigned long add(task* t,
                     timestamp const& when,
@@ -46,12 +46,12 @@ class task_manager {
                     bool should_delete = false);
   unsigned long add(task* t,
                     timestamp const& when,
-                    unsigned int interval,
+                    uint32_t interval,
                     bool is_runnable = false,
                     bool should_delete = false);
-  unsigned int execute(timestamp const& now = timestamp::now());
+  uint32_t execute(timestamp const& now = timestamp::now());
   timestamp next_execution_time() const;
-  unsigned int remove(task* t);
+  uint32_t remove(task* t);
   bool remove(unsigned long id);
 
  private:
@@ -59,7 +59,7 @@ class task_manager {
     internal_task(unsigned long id = 0,
                   task* t = NULL,
                   timestamp const& when = 0,
-                  unsigned int interval = 0,
+                  uint32_t interval = 0,
                   bool is_runnable = false,
                   bool should_delete = false);
     internal_task(internal_task const& right);
@@ -68,7 +68,7 @@ class task_manager {
     void run();
 
     unsigned long id;
-    unsigned int interval;
+    uint32_t interval;
     bool is_runnable;
     bool should_delete;
     task* t;

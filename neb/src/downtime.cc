@@ -85,7 +85,7 @@ downtime& downtime::operator=(downtime const& other) {
  *
  *  @return The event type.
  */
-unsigned int downtime::type() const {
+uint32_t downtime::type() const {
   return (downtime::static_type());
 }
 

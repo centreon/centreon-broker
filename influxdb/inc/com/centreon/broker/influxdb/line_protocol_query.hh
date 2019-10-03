@@ -74,7 +74,7 @@ class line_protocol_query {
   void _get_string(io::data const& d, std::ostream& is);
   void _get_null(io::data const& d, std::ostream& is);
   void _get_dollar_sign(io::data const& d, std::ostream& is);
-  unsigned int _get_index_id(io::data const& d);
+  uint32_t _get_index_id(io::data const& d);
   void _get_index_id(io::data const& d, std::ostream& is);
   void _get_host(io::data const& d, std::ostream& is);
   void _get_host_id(io::data const& d, std::ostream& is);

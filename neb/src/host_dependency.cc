@@ -64,7 +64,7 @@ host_dependency& host_dependency::operator=(host_dependency const& other) {
  *
  *  @return The event type.
  */
-unsigned int host_dependency::type() const {
+uint32_t host_dependency::type() const {
   return (host_dependency::static_type());
 }
 
@@ -73,7 +73,7 @@ unsigned int host_dependency::type() const {
  *
  *  @return  The event type.
  */
-unsigned int host_dependency::static_type() {
+uint32_t host_dependency::static_type() {
   return (
       io::events::data_type<io::events::neb, neb::de_host_dependency>::value);
 }

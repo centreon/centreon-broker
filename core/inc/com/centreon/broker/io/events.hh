@@ -33,7 +33,7 @@ namespace io {
  */
 class events {
  public:
-  typedef std::unordered_map<unsigned int, event_info> events_container;
+  typedef std::unordered_map<uint32_t, event_info> events_container;
   struct category_info {
     std::string name;
     events_container events;
@@ -62,7 +62,7 @@ class events {
 
   template <unsigned short category, unsigned short element>
   struct data_type {
-    enum { value = static_cast<unsigned int>(category << 16 | element) };
+    enum { value = static_cast<uint32_t>(category << 16 | element) };
   };
 
   // Singleton.
@@ -76,28 +76,28 @@ class events {
   void unregister_category(unsigned short category_id);
 
   // Events.
-  unsigned int register_event(unsigned short category_id,
+  uint32_t register_event(unsigned short category_id,
                               unsigned short event_id,
                               event_info const& info);
-  void unregister_event(unsigned int type_id);
+  void unregister_event(uint32_t type_id);
 
   // ID manipulations.
-  static unsigned short category_of_type(unsigned int type) throw() {
+  static unsigned short category_of_type(uint32_t type) throw() {
     return (static_cast<unsigned short>(type >> 16));
   }
-  static unsigned short element_of_type(unsigned int type) throw() {
+  static unsigned short element_of_type(uint32_t type) throw() {
     return (static_cast<unsigned short>(type));
   }
-  static unsigned int make_type(unsigned short category_id,
+  static uint32_t make_type(unsigned short category_id,
                                 unsigned short element_id) throw() {
-    return ((static_cast<unsigned int>(category_id) << 16) | element_id);
+    return ((static_cast<uint32_t>(category_id) << 16) | element_id);
   }
 
   // Event browsing.
   categories_container::const_iterator begin() const;
   categories_container::const_iterator end() const;
   events_container get_events_by_category_name(std::string const& name) const;
-  event_info const* get_event_info(unsigned int type);
+  event_info const* get_event_info(uint32_t type);
   events_container get_matching_events(std::string const& name) const;
 
  private:

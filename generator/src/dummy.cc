@@ -28,7 +28,7 @@ using namespace com::centreon::broker::generator;
  *
  *  @param[in] n  Number value.
  */
-dummy::dummy(unsigned int n) : number(n) {}
+dummy::dummy(uint32_t n) : number(n) {}
 
 /**
  *  Copy constructor.
@@ -65,7 +65,7 @@ dummy& dummy::operator=(dummy const& other) {
  *
  *  @return The event type.
  */
-unsigned int dummy::type() const {
+uint32_t dummy::type() const {
   return (dummy::static_type());
 }
 

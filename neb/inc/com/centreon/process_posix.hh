@@ -48,8 +48,8 @@ class process {
   virtual ~process() throw();
   void enable_stream(stream s, bool enable);
   timestamp const& end_time() const throw();
-  void exec(char const* cmd, char** env = NULL, unsigned int timeout = 0);
-  void exec(std::string const& cmd, unsigned int timeout = 0);
+  void exec(char const* cmd, char** env = NULL, uint32_t timeout = 0);
+  void exec(std::string const& cmd, uint32_t timeout = 0);
   int exit_code() const throw();
   status exit_status() const throw();
   void kill();
@@ -61,8 +61,8 @@ class process {
   void terminate();
   void wait() const;
   bool wait(unsigned long timeout) const;
-  unsigned int write(std::string const& data);
-  unsigned int write(void const* data, unsigned int size);
+  uint32_t write(std::string const& data);
+  uint32_t write(void const* data, uint32_t size);
 
  private:
   process(process const& p);
@@ -76,7 +76,7 @@ class process {
   bool _is_running() const throw();
   void _kill(int sig);
   static void _pipe(int fds[2]);
-  unsigned int _read(int fd, void* data, unsigned int size);
+  uint32_t _read(int fd, void* data, uint32_t size);
   static void _set_cloexec(int fd);
 
   std::string _buffer_err;
@@ -94,7 +94,7 @@ class process {
   timestamp _start_time;
   int _status;
   int _stream[3];
-  unsigned int _timeout;
+  uint32_t _timeout;
 };
 
 CC_END()

@@ -41,18 +41,18 @@ class timeperiod_map {
   timeperiod_map& operator=(timeperiod_map const&);
   bool operator==(timeperiod_map const& other) const;
 
-  time::timeperiod::ptr get_timeperiod(unsigned int id) const;
-  void add_timeperiod(unsigned int id, time::timeperiod::ptr ptr);
+  time::timeperiod::ptr get_timeperiod(uint32_t id) const;
+  void add_timeperiod(uint32_t id, time::timeperiod::ptr ptr);
   void clear();
-  void add_relation(unsigned int ba_id,
-                    unsigned int timeperiod_id,
+  void add_relation(uint32_t ba_id,
+                    uint32_t timeperiod_id,
                     bool is_default);
   std::vector<std::pair<time::timeperiod::ptr, bool> > get_timeperiods_by_ba_id(
-      unsigned int ba_id) const;
+      uint32_t ba_id) const;
 
  private:
-  std::map<unsigned int, time::timeperiod::ptr> _map;
-  typedef std::multimap<unsigned int, std::pair<unsigned int, bool> >
+  std::map<uint32_t, time::timeperiod::ptr> _map;
+  typedef std::multimap<uint32_t, std::pair<uint32_t, bool> >
       timeperiod_relation_map;
   timeperiod_relation_map _timeperiod_relations;
 };

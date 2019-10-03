@@ -89,7 +89,7 @@ predicate::predicate(time_t val) : _range(false), _type(type_timet) {
  *
  *  @param[in] val  Unsigned integer value.
  */
-predicate::predicate(unsigned int val) : _range(false), _type(type_uint) {
+predicate::predicate(uint32_t val) : _range(false), _type(type_uint) {
   _val1.uival = val;
 }
 
@@ -177,7 +177,7 @@ bool predicate::operator==(QVariant const& other) const {
       time_t t(other.toLongLong());
       retval = (t >= _val1.tval) && (t <= _val2.tval);
     } else if (_type == type_uint) {
-      unsigned int u(other.toUInt());
+      uint32_t u(other.toUInt());
       retval = (u >= _val1.uival) && (u <= _val2.uival);
     } else
       retval = false;

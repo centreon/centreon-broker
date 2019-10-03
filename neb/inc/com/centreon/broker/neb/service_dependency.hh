@@ -40,11 +40,11 @@ class service_dependency : public dependency {
   service_dependency(service_dependency const& other);
   ~service_dependency();
   service_dependency& operator=(service_dependency const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
-  unsigned int dependent_service_id;
-  unsigned int service_id;
+  uint32_t dependent_service_id;
+  uint32_t service_id;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

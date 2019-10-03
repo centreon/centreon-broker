@@ -34,12 +34,12 @@ namespace notification {
  */
 class timeperiod_by_id_builder : public timeperiod_builder {
  public:
-  timeperiod_by_id_builder(QHash<unsigned int, time::timeperiod::ptr>& table);
+  timeperiod_by_id_builder(QHash<uint32_t, time::timeperiod::ptr>& table);
 
-  void add_timeperiod(unsigned int id, time::timeperiod::ptr con);
+  void add_timeperiod(uint32_t id, time::timeperiod::ptr con);
 
  private:
-  QHash<unsigned int, time::timeperiod::ptr>& _table;
+  QHash<uint32_t, time::timeperiod::ptr>& _table;
 };
 
 }  // namespace notification

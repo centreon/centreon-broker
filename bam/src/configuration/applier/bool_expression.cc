@@ -84,7 +84,7 @@ void applier::bool_expression::apply(
 
   // Objects to delete are items remaining in the
   // set at the end of the iteration.
-  std::map<unsigned int, applied> to_delete(_applied);
+  std::map<uint32_t, applied> to_delete(_applied);
 
   // Objects to create are items remaining in the
   // set at the end of the iteration.
@@ -94,7 +94,7 @@ void applier::bool_expression::apply(
   for (bam::configuration::state::bool_exps::iterator it(to_create.begin()),
        end(to_create.end());
        it != end;) {
-    std::map<unsigned int, applied>::iterator cfg_it(to_delete.find(it->first));
+    std::map<uint32_t, applied>::iterator cfg_it(to_delete.find(it->first));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
       // Configuration mismatch, modify object
@@ -118,7 +118,7 @@ void applier::bool_expression::apply(
   //
 
   // Delete objects.
-  for (std::map<unsigned int, applied>::iterator it(to_delete.begin()),
+  for (std::map<uint32_t, applied>::iterator it(to_delete.begin()),
        end(to_delete.end());
        it != end; ++it) {
     logging::config(logging::medium)
@@ -168,8 +168,8 @@ void applier::bool_expression::apply(
                end2 = content.mtrc.end();
            it2 != end2; ++it2) {
         (*it2)->resolve_metrics(mapping);
-        std::set<unsigned int> const& ids = (*it2)->get_resolved_metrics();
-        for (std::set<unsigned int>::const_iterator metrics_it = ids.begin(),
+        std::set<uint32_t> const& ids = (*it2)->get_resolved_metrics();
+        for (std::set<uint32_t>::const_iterator metrics_it = ids.begin(),
                                                     metrics_end = ids.end();
              metrics_it != metrics_end; ++metrics_it)
           metric_book.listen(*metrics_it, it2->get());
@@ -195,8 +195,8 @@ void applier::bool_expression::apply(
  *  @return Shared pointer to the applied boolean expression object.
  */
 std::shared_ptr<bam::bool_expression> applier::bool_expression::find_boolexp(
-    unsigned int id) {
-  std::map<unsigned int, applied>::iterator it(_applied.find(id));
+    uint32_t id) {
+  std::map<uint32_t, applied>::iterator it(_applied.find(id));
   return ((it != _applied.end()) ? it->second.obj
                                  : std::shared_ptr<bam::bool_expression>());
 }
@@ -216,13 +216,13 @@ void applier::bool_expression::_internal_copy(
  *  Resolve the cross
  */
 void applier::bool_expression::_resolve_expression_calls() {
-  std::map<std::string, unsigned int> _name_to_ids;
-  for (std::map<unsigned int, applied>::const_iterator it = _applied.begin(),
+  std::map<std::string, uint32_t> _name_to_ids;
+  for (std::map<uint32_t, applied>::const_iterator it = _applied.begin(),
                                                        end = _applied.end();
        it != end; ++it)
     _name_to_ids[it->second.cfg.get_name()] = it->first;
 
-  for (std::map<unsigned int, applied>::iterator it = _applied.begin(),
+  for (std::map<uint32_t, applied>::iterator it = _applied.begin(),
                                                  tmp = it, end = _applied.end();
        it != end; it = tmp) {
     ++tmp;
@@ -230,7 +230,7 @@ void applier::bool_expression::_resolve_expression_calls() {
              call_it = it->second.call.begin(),
              call_end = it->second.call.end();
          call_it != call_end; ++call_it) {
-      std::map<std::string, unsigned int>::const_iterator found =
+      std::map<std::string, uint32_t>::const_iterator found =
           _name_to_ids.find((*call_it)->get_name());
       if (found == _name_to_ids.end()) {
         logging::error(logging::high)

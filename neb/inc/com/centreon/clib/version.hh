@@ -32,15 +32,15 @@ CC_BEGIN()
 namespace clib {
 namespace version {
 // Compile-time values.
-unsigned int const major = 1;
-unsigned int const minor = 4;
-unsigned int const patch = 2;
+uint32_t const major = 1;
+uint32_t const minor = 4;
+uint32_t const patch = 2;
 char const* const string = "1.4.2";
 
 // Run-time values.
-unsigned int get_major() throw();
-unsigned int get_minor() throw();
-unsigned int get_patch() throw();
+uint32_t get_major() throw();
+uint32_t get_minor() throw();
+uint32_t get_patch() throw();
 char const* get_string() throw();
 }  // namespace version
 }  // namespace clib

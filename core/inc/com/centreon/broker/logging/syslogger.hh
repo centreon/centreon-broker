@@ -39,7 +39,7 @@ class syslogger : public backend {
   ~syslogger();
   syslogger& operator=(syslogger const& s) = delete;
   void log_msg(char const* msg,
-               unsigned int len,
+               uint32_t len,
                type log_type,
                level l) throw();
 };

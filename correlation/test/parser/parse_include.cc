@@ -40,13 +40,13 @@ int main() {
   bool error(true);
   try {
     // Parse file.
-    QMap<QPair<unsigned int, unsigned int>, node> parsed;
+    QMap<QPair<uint32_t, uint32_t>, node> parsed;
     correlation::parser p;
     p.parse(PROJECT_SOURCE_DIR "/correlation/test/parser/parse_include.xml",
             parsed);
 
     // Expected result.
-    QMap<QPair<unsigned int, unsigned int>, node> expected;
+    QMap<QPair<uint32_t, uint32_t>, node> expected;
     node& h1(expected[qMakePair(13u, 0u)]);
     h1.host_id = 13;
     h1.current_state = 1;

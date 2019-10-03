@@ -53,7 +53,7 @@ using namespace com::centreon::broker;
 extern nebmodule* neb_module_list;
 
 // Acknowledgement list.
-std::map<std::pair<unsigned int, unsigned int>, neb::acknowledgement>
+std::map<std::pair<uint32_t, uint32_t>, neb::acknowledgement>
     neb::gl_acknowledgements;
 
 // Downtime list.
@@ -65,7 +65,7 @@ struct private_downtime_params {
   time_t start_time;
 };
 // Unstarted downtimes.
-static std::unordered_map<unsigned int, private_downtime_params> downtimes;
+static std::unordered_map<uint32_t, private_downtime_params> downtimes;
 
 // Load flags.
 int neb::gl_mod_flags(0);
@@ -75,7 +75,7 @@ void* neb::gl_mod_handle(nullptr);
 
 // List of common callbacks.
 static struct {
-  unsigned int macro;
+  uint32_t macro;
   int (*callback)(int, void*);
 } const gl_callbacks[] = {
     {NEBCALLBACK_ACKNOWLEDGEMENT_DATA, &neb::callback_acknowledgement},
@@ -92,7 +92,7 @@ static struct {
 
 // List of Engine-specific callbacks.
 static struct {
-  unsigned int macro;
+  uint32_t macro;
   int (*callback)(int, void*);
 } const gl_engine_callbacks[] = {
     {NEBCALLBACK_ADAPTIVE_DEPENDENCY_DATA, &neb::callback_dependency},
@@ -164,7 +164,7 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
     if (!ack_data->host_name)
       throw(exceptions::msg() << "unnamed host");
     if (ack_data->service_description) {
-      std::pair<unsigned int, unsigned int> p;
+      std::pair<uint32_t, uint32_t> p;
       p = engine::get_host_and_service_id(ack_data->host_name,
                                           ack_data->service_description);
       ack->host_id = p.first;
@@ -236,7 +236,7 @@ int neb::callback_comment(int callback_type, void* data) {
     if (!comment_data->host_name)
       throw(exceptions::msg() << "unnamed host");
     if (comment_data->service_description) {
-      std::pair<unsigned int, unsigned int> p;
+      std::pair<uint32_t, uint32_t> p;
       p = engine::get_host_and_service_id(comment_data->host_name,
                                           comment_data->service_description);
       comment->host_id = p.first;
@@ -320,7 +320,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
       } else if (NEBTYPE_HOSTCUSTOMVARIABLE_DELETE == cvar->type) {
         engine::host* hst(static_cast<engine::host*>(cvar->object_ptr));
         if (hst && !hst->get_name().empty()) {
-          unsigned int host_id = engine::get_host_id(hst->get_name());
+          uint32_t host_id = engine::get_host_id(hst->get_name());
           if (host_id != 0) {
             std::shared_ptr<custom_variable> old_cvar(new custom_variable);
             old_cvar->enabled = false;
@@ -343,7 +343,7 @@ int neb::callback_custom_variable(int callback_type, void* data) {
         if (svc && !svc->get_description().empty() &&
             !svc->get_hostname().empty()) {
           // Fill custom variable event.
-          std::pair<unsigned int, unsigned int> p;
+          std::pair<uint32_t, uint32_t> p;
           p = engine::get_host_and_service_id(svc->get_hostname(),
                                               svc->get_description());
           if (p.first && p.second) {
@@ -587,7 +587,7 @@ int neb::callback_downtime(int callback_type, void* data) {
     if (!downtime_data->host_name)
       throw(exceptions::msg() << "unnamed host");
     if (downtime_data->service_description) {
-      std::pair<unsigned int, unsigned int> p;
+      std::pair<uint32_t, uint32_t> p;
       p = engine::get_host_and_service_id(downtime_data->host_name,
                                           downtime_data->service_description);
       downtime->host_id = p.first;
@@ -682,7 +682,7 @@ int neb::callback_event_handler(int callback_type, void* data) {
     if (!event_handler_data->host_name)
       throw(exceptions::msg() << "unnamed host");
     if (event_handler_data->service_description) {
-      std::pair<unsigned int, unsigned int> p;
+      std::pair<uint32_t, uint32_t> p;
       p = engine::get_host_and_service_id(
           event_handler_data->host_name,
           event_handler_data->service_description);
@@ -857,7 +857,7 @@ int neb::callback_flapping_status(int callback_type, void* data) {
     if (!flapping_data->host_name)
       throw(exceptions::msg() << "unnamed host");
     if (flapping_data->service_description) {
-      std::pair<unsigned int, unsigned int> p;
+      std::pair<uint32_t, uint32_t> p;
       p = engine::get_host_and_service_id(flapping_data->host_name,
                                           flapping_data->service_description);
       flapping_status->host_id = p.first;
@@ -1001,7 +1001,7 @@ int neb::callback_group_member(int callback_type, void* data) {
         hgm->group_id = hg->get_id();
         hgm->group_name = hg->get_group_name();
         hgm->poller_id = config::applier::state::instance().poller_id();
-        unsigned int host_id = engine::get_host_id(hst->get_name());
+        uint32_t host_id = engine::get_host_id(hst->get_name());
         if (host_id != 0 && hgm->group_id != 0) {
           hgm->host_id = host_id;
           if (member_data->type == NEBTYPE_HOSTGROUPMEMBER_DELETE) {
@@ -1039,7 +1039,7 @@ int neb::callback_group_member(int callback_type, void* data) {
         sgm->group_id = sg->get_id();
         sgm->group_name = sg->get_group_name();
         sgm->poller_id = config::applier::state::instance().poller_id();
-        std::pair<unsigned int, unsigned int> p;
+        std::pair<uint32_t, uint32_t> p;
         p = engine::get_host_and_service_id(svc->get_hostname(),
                                             svc->get_description());
         sgm->host_id = p.first;
@@ -1388,7 +1388,7 @@ int neb::callback_host_status(int callback_type, void* data) {
     gl_publisher.write(host_status);
 
     // Acknowledgement event.
-    std::map<std::pair<unsigned int, unsigned int>,
+    std::map<std::pair<uint32_t, uint32_t>,
              neb::acknowledgement>::iterator
         it(gl_acknowledgements.find(std::make_pair(host_status->host_id, 0u)));
     if ((it != gl_acknowledgements.end()) && !host_status->acknowledged) {
@@ -1525,7 +1525,7 @@ int neb::callback_process(int callback_type, void* data) {
 
       // Register callbacks.
       logging::debug(logging::high) << "callbacks: registering callbacks";
-      for (unsigned int i(0); i < sizeof(gl_callbacks) / sizeof(*gl_callbacks);
+      for (uint32_t i(0); i < sizeof(gl_callbacks) / sizeof(*gl_callbacks);
            ++i)
         gl_registered_callbacks.push_back(std::shared_ptr<callback>(
             new neb::callback(gl_callbacks[i].macro, gl_mod_handle,
@@ -1533,7 +1533,7 @@ int neb::callback_process(int callback_type, void* data) {
 
       // Register Engine-specific callbacks.
       if (gl_mod_flags & NEBMODULE_ENGINE) {
-        for (unsigned int i(0);
+        for (uint32_t i(0);
              i < sizeof(gl_engine_callbacks) / sizeof(*gl_engine_callbacks);
              ++i)
           gl_registered_callbacks.push_back(std::shared_ptr<callback>(
@@ -1542,7 +1542,7 @@ int neb::callback_process(int callback_type, void* data) {
       }
 
       // Parse configuration file.
-      unsigned int statistics_interval(0);
+      uint32_t statistics_interval(0);
       try {
         config::parser parsr;
         config::state conf{parsr.parse(gl_configuration_file)};
@@ -1950,7 +1950,7 @@ int neb::callback_service_check(int callback_type, void* data) {
         throw(exceptions::msg() << "unnamed host");
       if (!scdata->service_description)
         throw(exceptions::msg() << "unnamed service");
-      std::pair<unsigned int, unsigned int> p;
+      std::pair<uint32_t, uint32_t> p;
       p = engine::get_host_and_service_id(scdata->host_name,
                                           scdata->service_description);
       service_check->host_id = p.first;
@@ -2077,7 +2077,7 @@ int neb::callback_service_status(int callback_type, void* data) {
     gl_publisher.write(service_status);
 
     // Acknowledgement event.
-    std::map<std::pair<unsigned int, unsigned int>,
+    std::map<std::pair<uint32_t, uint32_t>,
              neb::acknowledgement>::iterator
         it(gl_acknowledgements.find(std::make_pair(
             service_status->host_id, service_status->service_id)));

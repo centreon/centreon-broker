@@ -43,20 +43,20 @@ class output : public io::stream {
 
   output(std::string const& metrics_path,
          std::string const& status_path,
-         unsigned int cache_size,
+         uint32_t cache_size,
          bool ignore_update_errors,
          bool write_metrics = true,
          bool write_status = true);
   output(std::string const& metrics_path,
          std::string const& status_path,
-         unsigned int cache_size,
+         uint32_t cache_size,
          bool ignore_update_errors,
          std::string const& local,
          bool write_metrics = true,
          bool write_status = true);
   output(std::string const& metrics_path,
          std::string const& status_path,
-         unsigned int cache_size,
+         uint32_t cache_size,
          bool ignore_update_errors,
          unsigned short port,
          bool write_metrics = true,

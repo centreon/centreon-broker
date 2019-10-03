@@ -54,7 +54,7 @@ int main() {
 
   try {
     // Create state.
-    QMap<QPair<unsigned int, unsigned int>, node> state;
+    QMap<QPair<uint32_t, uint32_t>, node> state;
     node& n(state[qMakePair(42u, 24u)]);
     n.host_id = 42;
     n.service_id = 24;

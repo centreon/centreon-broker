@@ -62,7 +62,7 @@ int receiver::write(std::shared_ptr<io::data> const& d) {
     dummy const& e(*(static_cast<dummy*>(d.get())));
 
     // Find last number of the Broker instance.
-    std::unordered_map<unsigned int, unsigned int>::iterator it(
+    std::unordered_map<uint32_t, uint32_t>::iterator it(
         _last_numbers.find(e.source_id));
     if (it == _last_numbers.end()) {
       _last_numbers[e.source_id] = 0;

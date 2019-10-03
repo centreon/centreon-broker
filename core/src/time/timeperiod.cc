@@ -55,7 +55,7 @@ timeperiod::timeperiod(timeperiod const& obj) {
  *  @param[in] friday      A string describing the friday timerange.
  *  @param[in] saturday    A string describing the saturday timerange.
  */
-timeperiod::timeperiod(unsigned int id,
+timeperiod::timeperiod(uint32_t id,
                        std::string const& name,
                        std::string const& alias,
                        std::string const& sunday,
@@ -111,7 +111,7 @@ timeperiod timeperiod::operator=(timeperiod const& obj) {
  *
  *  @return  The id of the timeperiod.
  */
-unsigned int timeperiod::get_id() const throw() {
+uint32_t timeperiod::get_id() const throw() {
   return (_id);
 }
 
@@ -120,7 +120,7 @@ unsigned int timeperiod::get_id() const throw() {
  *
  *  @param[in] id  The id of the timeperiod.
  */
-void timeperiod::set_id(unsigned int id) throw() {
+void timeperiod::set_id(uint32_t id) throw() {
   _id = id;
 }
 
@@ -455,9 +455,9 @@ time_t timeperiod::get_next_invalid(time_t preferred_time) const {
  *  @return                   The duration intersected from the tp and the
  * range.
  */
-unsigned int timeperiod::duration_intersect(time_t start_time,
+uint32_t timeperiod::duration_intersect(time_t start_time,
                                             time_t end_time) const {
-  unsigned int duration(0);
+  uint32_t duration(0);
   time_t current_start_time(start_time);
   time_t current_end_time(current_start_time);
 

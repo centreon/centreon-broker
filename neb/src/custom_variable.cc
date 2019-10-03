@@ -71,7 +71,7 @@ custom_variable& custom_variable::operator=(custom_variable const& other) {
  *
  *  @return The event type.
  */
-unsigned int custom_variable::type() const {
+uint32_t custom_variable::type() const {
   return (custom_variable::static_type());
 }
 
@@ -80,7 +80,7 @@ unsigned int custom_variable::type() const {
  *
  *  @return  The event type.
  */
-unsigned int custom_variable::static_type() {
+uint32_t custom_variable::static_type() {
   return (
       io::events::data_type<io::events::neb, neb::de_custom_variable>::value);
 }

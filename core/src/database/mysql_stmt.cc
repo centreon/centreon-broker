@@ -234,7 +234,7 @@ void mysql_stmt::operator<<(io::data const& d) {
             }
           } break;
           case mapping::source::UINT: {
-            unsigned int v(current_entry->get_uint(d));
+            uint32_t v(current_entry->get_uint(d));
             switch (current_entry->get_attribute()) {
               case mapping::entry::invalid_on_zero:
                 //              if (v == 0)
@@ -243,7 +243,7 @@ void mysql_stmt::operator<<(io::data const& d) {
                 bind_value_as_u32(field, v);
                 break;
               case mapping::entry::invalid_on_minus_one:
-                if (v == (unsigned int)-1)
+                if (v == (uint32_t)-1)
                   bind_value_as_null(field);
                 else
                   bind_value_as_u32(field, v);
@@ -293,14 +293,14 @@ void mysql_stmt::bind_value_as_i32(std::string const& name, int value) {
   }
 }
 
-void mysql_stmt::bind_value_as_u32(int range, unsigned int value) {
+void mysql_stmt::bind_value_as_u32(int range, uint32_t value) {
   if (!_bind)
     _bind.reset(new database::mysql_bind(_param_count));
   _bind->set_value_as_u32(range, value);
 }
 
 void mysql_stmt::bind_value_as_u32(std::string const& name,
-                                   unsigned int value) {
+                                   uint32_t value) {
   mysql_bind_mapping::iterator it(_bind_mapping.find(name));
   if (it != _bind_mapping.end()) {
     bind_value_as_u32(it->second, value);

@@ -94,7 +94,7 @@ class tokenizer {
  private:
   char* _line;
   char _separator;
-  unsigned int _pos;
+  uint32_t _pos;
   char* _index;
 
   tokenizer();

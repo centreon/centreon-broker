@@ -46,14 +46,14 @@ class acknowledgement : public io::data {
   acknowledgement(acknowledgement const& other);
   ~acknowledgement();
   acknowledgement& operator=(acknowledgement const& other);
-  unsigned int type() const;
+  uint32_t type() const;
 
   /**
    *  Get the type of this event.
    *
    *  @return  The event type.
    */
-  static unsigned int static_type() {
+  static uint32_t static_type() {
     return (
         io::events::data_type<io::events::neb, neb::de_acknowledgement>::value);
   }
@@ -63,13 +63,13 @@ class acknowledgement : public io::data {
   std::string comment;
   timestamp deletion_time;
   timestamp entry_time;
-  unsigned int host_id;
+  uint32_t host_id;
   bool is_sticky;
   bool notify_contacts;
   bool notify_only_if_not_already_acknowledged;
   bool persistent_comment;
-  unsigned int poller_id;
-  unsigned int service_id;
+  uint32_t poller_id;
+  uint32_t service_id;
   short state;
 
   static mapping::entry const entries[];

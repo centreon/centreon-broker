@@ -66,7 +66,7 @@ class timeperiod {
   friend class exclusion_backup;
 
   timeperiod();
-  timeperiod(unsigned int id,
+  timeperiod(uint32_t id,
              std::string const& name,
              std::string const& alias,
              std::string const& sunday,
@@ -79,8 +79,8 @@ class timeperiod {
   timeperiod(timeperiod const& obj);
   timeperiod operator=(timeperiod const& obj);
 
-  unsigned int get_id() const throw();
-  void set_id(unsigned int id) throw();
+  uint32_t get_id() const throw();
+  void set_id(uint32_t id) throw();
 
   std::string const& get_alias() const throw();
   void set_alias(std::string const& value);
@@ -109,12 +109,12 @@ class timeperiod {
   time_t get_next_valid(time_t preferred_time) const;
   time_t get_next_invalid(time_t preferred_time) const;
 
-  unsigned int duration_intersect(time_t start_time, time_t end_time) const;
+  uint32_t duration_intersect(time_t start_time, time_t end_time) const;
 
   static time_t add_round_days_to_midnight(time_t midnight, long long skip);
 
  private:
-  unsigned int _id;
+  uint32_t _id;
   std::string _alias;
   std::vector<std::list<daterange> > _exceptions;
   std::vector<ptr> _exclude;

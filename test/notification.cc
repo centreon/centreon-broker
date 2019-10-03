@@ -234,14 +234,14 @@ bool validate_durations(std::string const& str) {
  */
 void validate_macros(std::string const& macros_string,
                      macros_struct* macros,
-                     unsigned int num_macros) {
+                     uint32_t num_macros) {
   // Validate that all macros were correctly processed.
   if (macros_string.find_first_of('$') != std::string::npos)
     throw(exceptions::msg() << "a macro wasn't replaced");
 
   // Validate each macro manually.
-  unsigned int index = 0;
-  unsigned int i = 0;
+  uint32_t index = 0;
+  uint32_t i = 0;
   try {
     for (; i < num_macros; ++i) {
       size_t next = macros_string.find_first_of('\n', index);

@@ -66,16 +66,16 @@ class hostdependency : public object {
   set_string const& dependent_hostgroups() const throw();
   set_string& dependent_hosts() throw();
   set_string const& dependent_hosts() const throw();
-  void execution_failure_options(unsigned int options) throw();
-  unsigned int execution_failure_options() const throw();
+  void execution_failure_options(uint32_t options) throw();
+  uint32_t execution_failure_options() const throw();
   set_string& hostgroups() throw();
   set_string const& hostgroups() const throw();
   set_string& hosts() throw();
   set_string const& hosts() const throw();
   void inherits_parent(bool inherit) throw();
   bool inherits_parent() const throw();
-  void notification_failure_options(unsigned int options) throw();
-  unsigned int notification_failure_options() const throw();
+  void notification_failure_options(uint32_t options) throw();
+  uint32_t notification_failure_options() const throw();
 
  private:
   typedef bool (*setter_func)(hostdependency&, char const*);
@@ -93,11 +93,11 @@ class hostdependency : public object {
   dependency_kind _dependency_type;
   group<set_string> _dependent_hostgroups;
   group<set_string> _dependent_hosts;
-  opt<unsigned int> _execution_failure_options;
+  opt<uint32_t> _execution_failure_options;
   group<set_string> _hostgroups;
   group<set_string> _hosts;
   opt<bool> _inherits_parent;
-  opt<unsigned int> _notification_failure_options;
+  opt<uint32_t> _notification_failure_options;
   static std::unordered_map<std::string, setter_func> const _setters;
 };
 

@@ -59,7 +59,7 @@ class instance {
   timestamp _since_last_start;
   pid_t _pid;
 
-  static const unsigned int _exit_timeout = 10000;
+  static const uint32_t _exit_timeout = 10000;
 };
 }  // namespace watchdog
 }  // namespace broker

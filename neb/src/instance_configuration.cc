@@ -75,7 +75,7 @@ instance_configuration& instance_configuration::operator=(
  *
  *  @return The event_type.
  */
-unsigned int instance_configuration::type() const {
+uint32_t instance_configuration::type() const {
   return (io::events::data_type<io::events::neb,
                                 neb::de_instance_configuration>::value);
 }

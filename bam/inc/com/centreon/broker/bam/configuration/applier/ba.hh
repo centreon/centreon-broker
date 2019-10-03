@@ -53,7 +53,7 @@ class ba {
   ~ba();
   ba& operator=(ba const& other);
   void apply(configuration::state::bas const& my_bas, service_book& book);
-  std::shared_ptr<bam::ba> find_ba(unsigned int id);
+  std::shared_ptr<bam::ba> find_ba(uint32_t id);
   void visit(io::stream* visitor);
   void save_to_cache(persistent_cache& cache);
   void load_from_cache(persistent_cache& cache);
@@ -64,15 +64,15 @@ class ba {
     std::shared_ptr<bam::ba> obj;
   };
 
-  std::shared_ptr<neb::host> _ba_host(unsigned int host_id);
-  std::shared_ptr<neb::service> _ba_service(unsigned int ba_id,
-                                            unsigned int host_id,
-                                            unsigned int service_id);
+  std::shared_ptr<neb::host> _ba_host(uint32_t host_id);
+  std::shared_ptr<neb::service> _ba_service(uint32_t ba_id,
+                                            uint32_t host_id,
+                                            uint32_t service_id);
   void _internal_copy(ba const& other);
   std::shared_ptr<bam::ba> _new_ba(configuration::ba const& cfg,
                                    service_book& book);
 
-  std::map<unsigned int, applied> _applied;
+  std::map<uint32_t, applied> _applied;
 };
 }  // namespace applier
 }  // namespace configuration

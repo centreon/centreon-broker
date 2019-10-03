@@ -36,7 +36,7 @@ class notification_rule_by_node_builder : public notification_rule_builder {
   notification_rule_by_node_builder(
       QMultiHash<objects::node_id, objects::notification_rule::ptr>& map);
 
-  virtual void add_rule(unsigned int rule_id,
+  virtual void add_rule(uint32_t rule_id,
                         objects::notification_rule::ptr rule);
 
  private:

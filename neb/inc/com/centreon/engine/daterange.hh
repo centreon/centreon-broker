@@ -78,8 +78,8 @@ class daterange {
 
   timerange_list times;
 
-  static std::string const& get_month_name(unsigned int index);
-  static std::string const& get_weekday_name(unsigned int index);
+  static std::string const& get_month_name(uint32_t index);
+  static std::string const& get_weekday_name(uint32_t index);
 
  private:
   int _type;

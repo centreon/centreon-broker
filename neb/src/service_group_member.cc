@@ -68,7 +68,7 @@ service_group_member& service_group_member::operator=(
  *
  *  @return This object type.
  */
-unsigned int service_group_member::type() const {
+uint32_t service_group_member::type() const {
   return (static_type());
 }
 
@@ -77,7 +77,7 @@ unsigned int service_group_member::type() const {
  *
  *  @return The class type.
  */
-unsigned int service_group_member::static_type() {
+uint32_t service_group_member::static_type() {
   return (io::events::data_type<io::events::neb,
                                 neb::de_service_group_member>::value);
 }

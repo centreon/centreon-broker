@@ -47,13 +47,13 @@ class metric_book {
   metric_book(metric_book const& other);
   ~metric_book();
   metric_book& operator=(metric_book const& other);
-  void listen(unsigned int metric_id, metric_listener* listnr);
-  void unlisten(unsigned int metric_id, metric_listener* listnr);
+  void listen(uint32_t metric_id, metric_listener* listnr);
+  void unlisten(uint32_t metric_id, metric_listener* listnr);
   void update(std::shared_ptr<storage::metric> const& m,
               io::stream* visitor = NULL);
 
  private:
-  typedef std::multimap<unsigned int, metric_listener*> multimap;
+  typedef std::multimap<uint32_t, metric_listener*> multimap;
 
   multimap _book;
 };

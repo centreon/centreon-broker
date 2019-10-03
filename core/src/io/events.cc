@@ -99,7 +99,7 @@ void events::unregister_category(unsigned short category_id) {
  *
  *  @return Event type ID.
  */
-unsigned int events::register_event(unsigned short category_id,
+uint32_t events::register_event(unsigned short category_id,
                                     unsigned short event_id,
                                     event_info const& info) {
   categories_container::iterator it(_elements.find(category_id));
@@ -117,7 +117,7 @@ unsigned int events::register_event(unsigned short category_id,
  *
  *  @param[in] type_id  Type ID.
  */
-void events::unregister_event(unsigned int type_id) {
+void events::unregister_event(uint32_t type_id) {
   unsigned short category_id(category_of_type(type_id));
   categories_container::iterator itc(_elements.find(category_id));
   if (itc != _elements.end()) {
@@ -186,7 +186,7 @@ events::events_container events::get_events_by_category_name(
  *
  *  @return Event information structure if found, NULL otherwise.
  */
-event_info const* events::get_event_info(unsigned int type) {
+event_info const* events::get_event_info(uint32_t type) {
   std::unordered_map<unsigned short, category_info>::const_iterator itc(
       _elements.find(category_of_type(type)));
   if (itc != _elements.end()) {

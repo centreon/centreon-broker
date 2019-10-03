@@ -35,20 +35,20 @@
 using namespace com::centreon::broker;
 
 struct ba_entry {
-  unsigned int ba_id;
+  uint32_t ba_id;
   std::string name;
   int warning;
   int critical;
 };
 struct kpi_entry {
-  unsigned int kpi_id;
+  uint32_t kpi_id;
   int kpi_type;
-  unsigned int host_id;
-  unsigned int service_id;
-  unsigned int id_indicator_ba;
-  unsigned int id_ba;
-  unsigned int meta_id;
-  unsigned int boolean_id;
+  uint32_t host_id;
+  uint32_t service_id;
+  uint32_t id_indicator_ba;
+  uint32_t id_ba;
+  uint32_t meta_id;
+  uint32_t boolean_id;
   int drop_warning;
   int drop_critical;
   int drop_unknown;

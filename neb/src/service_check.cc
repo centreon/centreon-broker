@@ -65,7 +65,7 @@ service_check& service_check::operator=(service_check const& sc) {
  *
  *  @return The event_type.
  */
-unsigned int service_check::type() const {
+uint32_t service_check::type() const {
   return (service_check::static_type());
 }
 
@@ -74,7 +74,7 @@ unsigned int service_check::type() const {
  *
  *  @return  The event type.
  */
-unsigned int service_check::static_type() {
+uint32_t service_check::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_service_check>::value);
 }
 

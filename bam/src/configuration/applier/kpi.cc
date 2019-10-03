@@ -98,7 +98,7 @@ void applier::kpi::apply(bam::configuration::state::kpis const& my_kpis,
 
   // Objects to delete are items remaining in the
   // set at the end of the iteration.
-  std::map<unsigned int, applied> to_delete(_applied);
+  std::map<uint32_t, applied> to_delete(_applied);
 
   // Objects to create are items remaining in the
   // set at the end of the iteration.
@@ -108,7 +108,7 @@ void applier::kpi::apply(bam::configuration::state::kpis const& my_kpis,
   for (bam::configuration::state::kpis::iterator it(to_create.begin()),
        end(to_create.end());
        it != end;) {
-    std::map<unsigned int, applied>::iterator cfg_it(to_delete.find(it->first));
+    std::map<uint32_t, applied>::iterator cfg_it(to_delete.find(it->first));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
       // Configuration mismatch, modify object
@@ -132,7 +132,7 @@ void applier::kpi::apply(bam::configuration::state::kpis const& my_kpis,
   //
 
   // Delete objects.
-  for (std::map<unsigned int, applied>::iterator it(to_delete.begin()),
+  for (std::map<uint32_t, applied>::iterator it(to_delete.begin()),
        end(to_delete.end());
        it != end; ++it) {
     logging::config(logging::medium)
@@ -168,7 +168,7 @@ void applier::kpi::apply(bam::configuration::state::kpis const& my_kpis,
   //
   // OBJECT RESOLUTION
   //
-  for (std::map<unsigned int, applied>::const_iterator kpi_it(_applied.begin()),
+  for (std::map<uint32_t, applied>::const_iterator kpi_it(_applied.begin()),
        next_kpi_it(_applied.begin()), kpi_end(_applied.end());
        kpi_it != kpi_end; kpi_it = next_kpi_it) {
     ++next_kpi_it;
@@ -219,11 +219,11 @@ void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
   // applied.
 
   // Remove KPIs linked to BA of this KPI.
-  for (std::map<unsigned int, applied>::const_iterator kpi_it(_applied.begin()),
+  for (std::map<uint32_t, applied>::const_iterator kpi_it(_applied.begin()),
        kpi_end(_applied.end());
        kpi_it != kpi_end;) {
     if (kpi_it->second.cfg.get_ba_id() == kpi.get_ba_id()) {
-      unsigned int kpi_id(kpi_it->first);
+      uint32_t kpi_id(kpi_it->first);
       ++kpi_it;
       _remove_kpi(kpi_id);
     } else
@@ -244,7 +244,7 @@ void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
  *  @param[out] visitor  Object that will receive status.
  */
 void applier::kpi::visit(io::stream* visitor) {
-  for (std::map<unsigned int, applied>::iterator it(_applied.begin()),
+  for (std::map<uint32_t, applied>::iterator it(_applied.begin()),
        end(_applied.end());
        it != end; ++it)
     it->second.obj->visit(visitor);
@@ -393,8 +393,8 @@ void applier::kpi::_resolve_kpi(configuration::kpi const& cfg,
  *
  *  @param[in] kpi_id  KPI ID.
  */
-void applier::kpi::_remove_kpi(unsigned int kpi_id) {
-  std::map<unsigned int, applied>::iterator it(_applied.find(kpi_id));
+void applier::kpi::_remove_kpi(uint32_t kpi_id) {
+  std::map<uint32_t, applied>::iterator it(_applied.find(kpi_id));
   if (it != _applied.end()) {
     if (it->second.cfg.is_service())
       _book->unlisten(it->second.cfg.get_host_id(),

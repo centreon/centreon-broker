@@ -42,8 +42,8 @@ class command_result : public io::data {
   command_result(command_result const& other);
   ~command_result();
   command_result& operator=(command_result const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   int code;
   std::string uuid;

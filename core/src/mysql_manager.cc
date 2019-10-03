@@ -59,7 +59,7 @@ mysql_manager::~mysql_manager() {
 std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
     database_config const& db_cfg) {
   std::vector<std::shared_ptr<mysql_connection>> retval;
-  unsigned int connection_count(db_cfg.get_connections_count());
+  uint32_t connection_count(db_cfg.get_connections_count());
 
   if (_connection.size() == 0) {
     if (mysql_library_init(0, nullptr, nullptr))
@@ -68,7 +68,7 @@ std::vector<std::shared_ptr<mysql_connection>> mysql_manager::get_connections(
   }
 
   {
-    unsigned int current_connection(0);
+    uint32_t current_connection(0);
     std::lock_guard<std::mutex> lock(_cfg_mutex);
     for (std::shared_ptr<mysql_connection>& c : _connection) {
       // Is this thread matching what the configuration needs?

@@ -41,7 +41,7 @@ kpi_service::kpi_service()
       _state_hard(0),
       _state_soft(0),
       _state_type(0) {
-  for (unsigned int i(0); i < sizeof(_impacts) / sizeof(*_impacts); ++i)
+  for (uint32_t i(0); i < sizeof(_impacts) / sizeof(*_impacts); ++i)
     _impacts[i] = 0.0;
 }
 
@@ -95,7 +95,7 @@ bool kpi_service::child_has_update(computable* child, io::stream* visitor) {
  *
  *  @return Host ID.
  */
-unsigned int kpi_service::get_host_id() const {
+uint32_t kpi_service::get_host_id() const {
   return _host_id;
 }
 
@@ -131,7 +131,7 @@ double kpi_service::get_impact_warning() const {
  *
  *  @return Service ID.
  */
-unsigned int kpi_service::get_service_id() const {
+uint32_t kpi_service::get_service_id() const {
   return _service_id;
 }
 
@@ -310,7 +310,7 @@ void kpi_service::set_downtimed(bool downtimed) {
  *
  *  @param[in] host_id Host ID.
  */
-void kpi_service::set_host_id(unsigned int host_id) {
+void kpi_service::set_host_id(uint32_t host_id) {
   _host_id = host_id;
 }
 
@@ -346,7 +346,7 @@ void kpi_service::set_impact_warning(double impact) {
  *
  *  @param[in] service_id Service ID.
  */
-void kpi_service::set_service_id(unsigned int service_id) {
+void kpi_service::set_service_id(uint32_t service_id) {
   _service_id = service_id;
 }
 

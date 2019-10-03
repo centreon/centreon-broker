@@ -60,7 +60,7 @@ class process_manager : public concurrency::thread {
   void _close_stream(int fd) throw();
   void _erase_timeout(process* p);
   void _kill_processes_timeout() throw();
-  unsigned int _read_stream(int fd) throw();
+  uint32_t _read_stream(int fd) throw();
   void _run();
   void _update_ending_process(process* p, int status) throw();
   void _update_list();
@@ -68,14 +68,14 @@ class process_manager : public concurrency::thread {
   void _wait_processes() throw();
 
   pollfd* _fds;
-  unsigned int _fds_capacity;
+  uint32_t _fds_capacity;
   int _fds_exit[2];
-  unsigned int _fds_size;
+  uint32_t _fds_size;
   concurrency::mutex _lock_processes;
   std::list<orphan> _orphans_pid;
   umap<int, process*> _processes_fd;
   umap<pid_t, process*> _processes_pid;
-  std::multimap<unsigned int, process*> _processes_timeout;
+  std::multimap<uint32_t, process*> _processes_timeout;
   bool _update;
 };
 

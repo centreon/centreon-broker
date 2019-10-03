@@ -43,26 +43,26 @@ class notification_rule {
   notification_rule(notification_rule const& obj);
   notification_rule& operator=(notification_rule const& obj);
 
-  unsigned int get_id();
-  void set_id(unsigned int id);
+  uint32_t get_id();
+  void set_id(uint32_t id);
 
-  unsigned int get_method_id() const throw();
-  void set_method_id(unsigned int) throw();
+  uint32_t get_method_id() const throw();
+  void set_method_id(uint32_t) throw();
 
-  unsigned int get_timeperiod_id() const throw();
-  void set_timeperiod_id(unsigned int val) throw();
+  uint32_t get_timeperiod_id() const throw();
+  void set_timeperiod_id(uint32_t val) throw();
 
-  unsigned int get_contact_id() const throw();
-  void set_contact_id(unsigned int val) throw();
+  uint32_t get_contact_id() const throw();
+  void set_contact_id(uint32_t val) throw();
 
   node_id get_node_id() const throw();
   void set_node_id(node_id val) throw();
 
  private:
-  unsigned int _id;
-  unsigned int _method_id;
-  unsigned int _timeperiod_id;
-  unsigned int _contact_id;
+  uint32_t _id;
+  uint32_t _method_id;
+  uint32_t _timeperiod_id;
+  uint32_t _contact_id;
   node_id _node_id;
 };
 }  // namespace objects

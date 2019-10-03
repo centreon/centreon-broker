@@ -42,14 +42,14 @@ class instance : public io::data {
   instance(instance const& other);
   ~instance();
   instance& operator=(instance const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   std::string engine;
   bool is_running;
   std::string name;
-  unsigned int pid;
-  unsigned int poller_id;
+  uint32_t pid;
+  uint32_t poller_id;
   timestamp program_end;
   timestamp program_start;
   std::string version;

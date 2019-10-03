@@ -47,7 +47,7 @@ class downtime_scheduler {
   void add_downtime(timestamp start_time,
                     timestamp end_time,
                     downtime const& dwn);
-  void remove_downtime(unsigned int internal_id);
+  void remove_downtime(uint32_t internal_id);
   void wait();
 
  protected:
@@ -58,15 +58,15 @@ class downtime_scheduler {
   std::mutex _general_mutex;
   std::condition_variable _general_condition;
 
-  std::multimap<timestamp, unsigned int> _downtime_starts;
-  std::multimap<timestamp, unsigned int> _downtime_ends;
-  std::map<unsigned int, downtime> _downtimes;
+  std::multimap<timestamp, uint32_t> _downtime_starts;
+  std::multimap<timestamp, uint32_t> _downtime_ends;
+  std::map<uint32_t, downtime> _downtimes;
 
   downtime_scheduler(downtime_scheduler const& obj);
   downtime_scheduler& operator=(downtime_scheduler const& obj);
 
   static timestamp _get_first_timestamp(
-      std::multimap<timestamp, unsigned int> const& list);
+      std::multimap<timestamp, uint32_t> const& list);
   void _process_downtimes();
   static void _start_downtime(downtime& dwn, io::stream* stream);
   static void _end_downtime(downtime& dwn, io::stream* stream);

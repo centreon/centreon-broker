@@ -45,7 +45,7 @@ class connector : public io::endpoint {
                   std::string const& addr,
                   unsigned short _port,
                   std::string const& db,
-                  unsigned int queries_per_transaction,
+                  uint32_t queries_per_transaction,
                   std::string const& status_ts,
                   std::vector<column> const& status_cols,
                   std::string const& metric_ts,
@@ -59,7 +59,7 @@ class connector : public io::endpoint {
   std::string _addr;
   unsigned short _port;
   std::string _db;
-  unsigned int _queries_per_transaction;
+  uint32_t _queries_per_transaction;
   std::string _status_ts;
   std::vector<column> _status_cols;
   std::string _metric_ts;

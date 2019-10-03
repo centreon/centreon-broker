@@ -40,7 +40,7 @@ class notification_rule_builder {
    *  @param[in] rule_id  The id of the notification rule.
    *  @param[in] rule     The rule.
    */
-  virtual void add_rule(unsigned int rule_id,
+  virtual void add_rule(uint32_t rule_id,
                         objects::notification_rule::ptr rule) {
     (void)rule_id;
     (void)rule;

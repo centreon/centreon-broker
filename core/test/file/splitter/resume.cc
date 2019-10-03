@@ -79,7 +79,7 @@ TEST_F(FileSplitterResume, ResumeRead) {
 
   // Then
   ASSERT_EQ(bytes_read, 10000);
-  for (unsigned int i(0); i < sizeof(buffer); ++i)
+  for (uint32_t i(0); i < sizeof(buffer); ++i)
     ASSERT_EQ(buffer[i], 2);
 }
 

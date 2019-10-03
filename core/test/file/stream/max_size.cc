@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
 
   // Generate file name.
   QString filename[4];
-  for (unsigned int i(0); i < 4; ++i)
+  for (uint32_t i(0); i < 4; ++i)
     filename[i] = QDir::tempPath();
   filename[0].append("/" TEMP_FILE_NAME);
   filename[1].append("/" TEMP_FILE_NAME "1");
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
   filename[3].append("/" TEMP_FILE_NAME "3");
 
   // Remove old file.
-  for (unsigned int i(0); i < 4; ++i)
+  for (uint32_t i(0); i < 4; ++i)
     ::remove(qPrintable(filename[i]));
 
   // Generate data packet.
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
     file::stream fs(filename[0].toStdString(), 100000);
 
     // Write data in files.
-    for (unsigned int i(0); i < 10000; ++i)
+    for (uint32_t i(0); i < 10000; ++i)
       fs.write(data);
   }
 
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
             (QFile(filename[3]).size() != (60000 + 4 * 8)));
 
   // Remove temporary file.
-  for (unsigned int i(0); i < 4; ++i)
+  for (uint32_t i(0); i < 4; ++i)
     ::remove(qPrintable(filename[i]));
 
   // Check max file size #1.

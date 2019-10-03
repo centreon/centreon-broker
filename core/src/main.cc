@@ -112,21 +112,8 @@ static void term_handler(int signum, siginfo_t* info, void* data) {
       << "main: termination request received by process id " << info->si_pid
       << " with real user id " << info->si_uid;
 
-  // Ask event loop to quit.
-  // FIXME DBR
-  exit(0);
-  // QCoreApplication::exit(0);
-}
-
-#ifdef COVERAGE
-void __gcov_flush(void);
-
-void dump_coverage(int signum __attribute__((unused))) {
-  /* dump coverage data on receiving SIGUSR1 */
-  __gcov_flush();
   exit(0);
 }
-#endif
 
 /**************************************
  *                                     *
@@ -151,16 +138,6 @@ int main(int argc, char* argv[]) {
 
   // Return value.
   int retval(0);
-
-  // Qt application object.
-  // QCoreApplication app(argc, argv);
-  // QTextCodec* utf8_codec(QTextCodec::codecForName("UTF-8"));
-  // if (utf8_codec)
-  //  QTextCodec::setCodecForCStrings(utf8_codec);
-  // else
-  //  logging::error(logging::high)
-  //    << "core: could not find UTF-8 codec, strings will be "
-  //       "interpreted using the current locale";
 
   try {
     // Check the command line.
@@ -245,31 +222,12 @@ int main(int argc, char* argv[]) {
           << "USAGE: " << argv[0] << " [-c] [-d] [-D] [-h] [-v] [<configfile>]";
       retval = 1;
     } else {
-      //      app.setApplicationName("Centreon Broker");
-      //#if QT_VERSION >= 0x040400
-      //      app.setApplicationVersion(CENTREON_BROKER_VERSION);
-      //#endif // Qt >= 4.4.0
-      //      app.setOrganizationDomain("centreon.com");
-      //      app.setOrganizationName("Centreon");
       logging::info(logging::medium)
           << "Centreon Broker " << CENTREON_BROKER_VERSION;
       logging::info(logging::medium) << "Copyright 2009-2018 Centreon";
       logging::info(logging::medium)
           << "License ASL 2.0 "
              "<http://www.apache.org/licenses/LICENSE-2.0>";
-      //#if QT_VERSION >= 0x040400
-      //      logging::info(logging::low) << "PID: " << app.applicationPid();
-      //#endif // Qt >= 4.4.0
-      //      logging::info(logging::medium)
-      //        << "Qt compilation version " << QT_VERSION_STR;
-      //      logging::info(logging::medium)
-      //        << "Qt runtime version " << qVersion();
-      //      logging::info(logging::medium) << "  Build Key: "
-      //        << QLibraryInfo::buildKey();
-      //      logging::info(logging::medium) << "  Licensee: "
-      //        << QLibraryInfo::licensee();
-      //      logging::info(logging::medium) << "  Licensed Products: "
-      //        << QLibraryInfo::licensedProducts();
 
       // Reset locale.
       setlocale(LC_NUMERIC, "C");
@@ -300,18 +258,6 @@ int main(int argc, char* argv[]) {
         gl_state = conf;
       }
 
-#ifdef COVERAGE
-      struct sigaction new_action, old_action;
-
-      new_action.sa_handler = dump_coverage;
-      sigemptyset(&new_action.sa_mask);
-      new_action.sa_flags = 0;
-
-      sigaction(SIGUSR1, nullptr, &old_action);
-      if (old_action.sa_handler != SIG_IGN)
-        sigaction(SIGUSR1, &new_action, nullptr);
-#endif
-
       // Set configuration update handler.
       if (signal(SIGHUP, hup_handler) == SIG_ERR) {
         char const* err(strerror(errno));
@@ -335,7 +281,6 @@ int main(int argc, char* argv[]) {
         while (true) {
           std::this_thread::sleep_for(std::chrono::seconds(1));
         }
-      // retval = app.exec();
       else
         retval = EXIT_SUCCESS;
     }

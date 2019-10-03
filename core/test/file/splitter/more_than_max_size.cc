@@ -100,7 +100,7 @@ TEST_F(FileSplitterMoreThanMaxSize, ReadBeforeMoreThanMaxSize) {
 TEST_F(FileSplitterMoreThanMaxSize, ReadMoreThanMaxSize) {
   // Given
   char buffer[10010];
-  for (unsigned int i(0); i < sizeof(buffer); ++i)
+  for (uint32_t i(0); i < sizeof(buffer); ++i)
     buffer[i] = i % 128;
   _file->write(buffer, 1);
   _file->write(buffer, 10001);

@@ -78,9 +78,9 @@ static std::string get_string_param(config::endpoint const& cfg,
  *
  *  @return Property value.
  */
-static unsigned int get_uint_param(config::endpoint const& cfg,
+static uint32_t get_uint_param(config::endpoint const& cfg,
                                    std::string const& key,
-                                   unsigned int def) {
+                                   uint32_t def) {
   std::map<std::string, std::string>::const_iterator it(cfg.params.find(key));
   if (cfg.params.end() == it)
     return (def);
@@ -165,7 +165,7 @@ io::endpoint* factory::new_endpoint(
   unsigned short db_port(get_uint_param(cfg, "db_port", 2003));
   std::string db_user(get_string_param(cfg, "db_user", ""));
   std::string db_password(get_string_param(cfg, "db_password", ""));
-  unsigned int queries_per_transaction(
+  uint32_t queries_per_transaction(
       get_uint_param(cfg, "queries_per_transaction", 1));
   std::string metric_naming(
       get_string_param(cfg, "metric_naming", "centreon.metrics.$METRICID$"));

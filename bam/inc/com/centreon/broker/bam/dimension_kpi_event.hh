@@ -42,21 +42,21 @@ class dimension_kpi_event : public io::data {
   ~dimension_kpi_event();
   dimension_kpi_event& operator=(dimension_kpi_event const& other);
   bool operator==(dimension_kpi_event const& other) const;
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   unsigned kpi_id;
-  unsigned int ba_id;
+  uint32_t ba_id;
   std::string ba_name;
   uint32_t host_id;
   std::string host_name;
   uint32_t service_id;
   std::string service_description;
-  unsigned int kpi_ba_id;
+  uint32_t kpi_ba_id;
   std::string kpi_ba_name;
-  unsigned int meta_service_id;
+  uint32_t meta_service_id;
   std::string meta_service_name;
-  unsigned int boolean_id;
+  uint32_t boolean_id;
   std::string boolean_name;
   double impact_warning;
   double impact_critical;

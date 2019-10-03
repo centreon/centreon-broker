@@ -78,7 +78,7 @@ TEST_F(PublisherWrite, Write) {
 
     // Check data.
     char const* messages[] = {MSG1, MSG2, nullptr};
-    for (unsigned int i = 0; messages[i]; ++i) {
+    for (uint32_t i = 0; messages[i]; ++i) {
       std::shared_ptr<io::data> data;
       s.get_muxer().read(data, 0);
       if (!data || data->type() != io::raw::static_type())

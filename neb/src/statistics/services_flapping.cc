@@ -65,7 +65,7 @@ services_flapping& services_flapping::operator=(
  */
 void services_flapping::run(std::string& output, std::string& perfdata) {
   // Count services are flapping.
-  unsigned int total{0};
+  uint32_t total{0};
   for (service_map::const_iterator
            it{com::centreon::engine::service::services.begin()},
        end{com::centreon::engine::service::services.end()};

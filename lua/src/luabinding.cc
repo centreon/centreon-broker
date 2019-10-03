@@ -203,7 +203,7 @@ int luabinding::write(std::shared_ptr<io::data> const& data) {
   logging::debug(logging::medium) << "lua: luabinding::write call";
 
   // Process event.
-  unsigned int type(data->type());
+  uint32_t type(data->type());
   unsigned short cat(io::events::category_of_type(type));
   unsigned short elem(io::events::element_of_type(type));
 
@@ -352,15 +352,15 @@ void luabinding::_parse_entries(io::data const& d) {
           case mapping::source::UINT:
             switch (current_entry->get_attribute()) {
               case mapping::entry::invalid_on_zero: {
-                unsigned int val = current_entry->get_uint(d);
+                uint32_t val = current_entry->get_uint(d);
                 if (val == 0)
                   lua_pushnil(_L);
                 else
                   lua_pushinteger(_L, val);
               } break;
               case mapping::entry::invalid_on_minus_one: {
-                unsigned int val = current_entry->get_uint(d);
-                if (val == static_cast<unsigned int>(-1))
+                uint32_t val = current_entry->get_uint(d);
+                if (val == static_cast<uint32_t>(-1))
                   lua_pushnil(_L);
                 else
                   lua_pushinteger(_L, val);

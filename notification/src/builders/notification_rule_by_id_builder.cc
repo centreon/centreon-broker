@@ -27,7 +27,7 @@ using namespace com::centreon::broker::notification::objects;
  *  @param[in] table  The table to fill.
  */
 notification_rule_by_id_builder::notification_rule_by_id_builder(
-    QHash<unsigned int, objects::notification_rule::ptr>& table)
+    QHash<uint32_t, objects::notification_rule::ptr>& table)
     : _table(table) {}
 
 /**
@@ -37,7 +37,7 @@ notification_rule_by_id_builder::notification_rule_by_id_builder(
  *  @param[in] con  The rule to add.
  */
 void notification_rule_by_id_builder::add_rule(
-    unsigned int id,
+    uint32_t id,
     objects::notification_rule::ptr con) {
   _table[id] = con;
 }

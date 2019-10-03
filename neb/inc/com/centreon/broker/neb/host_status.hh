@@ -41,8 +41,8 @@ class host_status : public host_service_status {
   host_status(host_status const& other);
   virtual ~host_status();
   host_status& operator=(host_status const& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   timestamp last_time_down;
   timestamp last_time_unreachable;

@@ -97,7 +97,7 @@ bool dimension_kpi_event::operator==(dimension_kpi_event const& other) const {
  *
  *  @return Event type.
  */
-unsigned int dimension_kpi_event::type() const {
+uint32_t dimension_kpi_event::type() const {
   return (dimension_kpi_event::static_type());
 }
 
@@ -106,7 +106,7 @@ unsigned int dimension_kpi_event::type() const {
  *
  *  @return Event type.
  */
-unsigned int dimension_kpi_event::static_type() {
+uint32_t dimension_kpi_event::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_dimension_kpi_event>::value);
 }

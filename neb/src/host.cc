@@ -90,7 +90,7 @@ host& host::operator=(host const& other) {
  *
  *  @return The event type.
  */
-unsigned int host::type() const {
+uint32_t host::type() const {
   return (host::static_type());
 }
 
@@ -99,7 +99,7 @@ unsigned int host::type() const {
  *
  *  @return  The event type.
  */
-unsigned int host::static_type() {
+uint32_t host::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_host>::value);
 }
 

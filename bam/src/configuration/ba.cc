@@ -30,7 +30,7 @@ using namespace com::centreon::broker::bam::configuration;
  *  @param[in] critical_level BA critical_level.
  *  @param[in] inherit_kpi_downtime  Should the BA inherit kpi's downtimes?
  */
-ba::ba(unsigned int id,
+ba::ba(uint32_t id,
        std::string const& name,
        double warning_level,
        double critical_level,
@@ -116,7 +116,7 @@ bool ba::operator!=(ba const& right) const {
  *
  *  @return An integer representing the value of a business activity.
  */
-unsigned int ba::get_id() const {
+uint32_t ba::get_id() const {
   return (_id);
 }
 
@@ -125,7 +125,7 @@ unsigned int ba::get_id() const {
  *
  *  @return BA host ID.
  */
-unsigned int ba::get_host_id() const {
+uint32_t ba::get_host_id() const {
   return (_host_id);
 }
 
@@ -134,7 +134,7 @@ unsigned int ba::get_host_id() const {
  *
  *  @return  An integer representing the value of this id.
  */
-unsigned int ba::get_service_id() const {
+uint32_t ba::get_service_id() const {
   return (_service_id);
 }
 
@@ -188,7 +188,7 @@ bool ba::get_inherit_kpi_downtime() const {
  *
  *  @param[in] id Set business activity id key.
  */
-void ba::set_id(unsigned int id) {
+void ba::set_id(uint32_t id) {
   _id = id;
 }
 
@@ -197,7 +197,7 @@ void ba::set_id(unsigned int id) {
  *
  *  @param[in] service_id  Set the service id.
  */
-void ba::set_host_id(unsigned int host_id) {
+void ba::set_host_id(uint32_t host_id) {
   _host_id = host_id;
 }
 
@@ -206,7 +206,7 @@ void ba::set_host_id(unsigned int host_id) {
  *
  *  @param[in] service_id  Set the service id.
  */
-void ba::set_service_id(unsigned int service_id) {
+void ba::set_service_id(uint32_t service_id) {
   _service_id = service_id;
 }
 

@@ -49,7 +49,7 @@ class predicate {
     int ival;
     char const* sval;
     time_t tval;
-    unsigned int uival;
+    uint32_t uival;
   };
 
   predicate();
@@ -59,7 +59,7 @@ class predicate {
   predicate(int val);
   predicate(char const* val);
   predicate(time_t val);
-  predicate(unsigned int val);
+  predicate(uint32_t val);
   predicate(time_t val1, time_t val2);
   predicate(predicate const& other);
   ~predicate();

@@ -66,11 +66,11 @@ class action {
   objects::node_id get_node_id() const throw();
   void set_node_id(objects::node_id id) throw();
 
-  unsigned int get_notification_rule_id() const throw();
-  void set_notification_rule_id(unsigned int id) throw();
+  uint32_t get_notification_rule_id() const throw();
+  void set_notification_rule_id(uint32_t id) throw();
 
-  unsigned int get_notification_number() const throw();
-  void set_notification_number(unsigned int num) throw();
+  uint32_t get_notification_number() const throw();
+  void set_notification_number(uint32_t num) throw();
 
   time_t get_at() const throw();
   void set_at(time_t at) throw();
@@ -87,8 +87,8 @@ class action {
   action_type _act;
   action_type _forwarded_action;
   objects::node_id _id;
-  unsigned int _notification_rule_id;
-  unsigned int _notification_number;
+  uint32_t _notification_rule_id;
+  uint32_t _notification_number;
   time_t _at;
   time_t _first_time_of_notification;
 

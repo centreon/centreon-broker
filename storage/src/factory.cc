@@ -22,6 +22,7 @@
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/storage/connector.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
@@ -101,16 +102,34 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   // Find RRD length.
-  uint32_t rrd_length{
-      static_cast<uint32_t>(std::stoul(find_param(cfg, "length")))};
+  uint32_t rrd_length;
+  try {
+      rrd_length = static_cast<uint32_t>(std::stoul(find_param(cfg, "length")));
+  }
+  catch (std::exception const& e) {
+    rrd_length = 15552000;
+    logging::error(logging::high) << "storage: the length field should contain "
+                                     "a string containing a number. We use the "
+                                     "default value in replacement 15552000.";
+  }
 
   // Find interval length if set.
   uint32_t interval_length{0};
   {
     std::map<std::string, std::string>::const_iterator it{
         cfg.params.find("interval")};
-    if (it != cfg.params.end())
-      interval_length = std::stoul(it->second);
+    if (it != cfg.params.end()) {
+      try {
+        interval_length = std::stoul(it->second);
+      }
+      catch (std::exception const& e) {
+        interval_length = 60;
+        logging::error(logging::high) << "storage: the interval field should "
+                                         "contain a string containing a "
+                                         "number. We use the default value in "
+                                         "replacement 60.";
+      }
+    }
     if (!interval_length)
       interval_length = 60;
   }
@@ -123,8 +142,19 @@ io::endpoint* factory::new_endpoint(
   {
     std::map<std::string, std::string>::const_iterator it{
         cfg.params.find("rebuild_check_interval")};
-    if (it != cfg.params.end())
+    if (it != cfg.params.end()) {
+      try {
       rebuild_check_interval = std::stoul(it->second);
+      }
+      catch (std::exception const& e) {
+      rebuild_check_interval = 300;
+      logging::error(logging::high)
+          << "storage: the rebuild_check_interval field should "
+             "contain a string containing a number. We use the default value "
+             "in "
+             "replacement 300.";
+      }
+    }
     else
       rebuild_check_interval = 300;
   }
@@ -140,7 +170,7 @@ io::endpoint* factory::new_endpoint(
 
   // Connector.
   std::unique_ptr<storage::connector> c(new storage::connector);
-  c->connect_to(db_cfg, rrd_length, interval_length, rebuild_check_interval,
+  c->connect_to(rrd_length, interval_length, rebuild_check_interval,
                 store_in_data_bin);
   is_acceptor = false;
   return c.release();

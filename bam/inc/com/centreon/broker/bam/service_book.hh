@@ -50,11 +50,11 @@ class service_book {
   service_book(service_book const& other);
   ~service_book();
   service_book& operator=(service_book const& other);
-  void listen(unsigned int host_id,
-              unsigned int service_id,
+  void listen(uint32_t host_id,
+              uint32_t service_id,
               service_listener* listnr);
-  void unlisten(unsigned int host_id,
-                unsigned int service_id,
+  void unlisten(uint32_t host_id,
+                uint32_t service_id,
                 service_listener* listnr);
   void update(std::shared_ptr<neb::service_status> const& ss,
               io::stream* visitor = NULL);
@@ -64,7 +64,7 @@ class service_book {
               io::stream* visitor = NULL);
 
  private:
-  typedef std::multimap<std::pair<unsigned int, unsigned int>,
+  typedef std::multimap<std::pair<uint32_t, uint32_t>,
                         service_listener*>
       multimap;
 

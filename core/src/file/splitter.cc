@@ -383,7 +383,7 @@ void splitter::_open_write_file() {
     } header;
     header.integers[0] = 0;
     header.integers[1] = htonl(2 * sizeof(uint32_t));
-    unsigned int size(0);
+    uint32_t size(0);
     while (size < sizeof(header))
       size += _wfile->write(header.bytes + size, sizeof(header) - size);
     _woffset = 2 * sizeof(uint32_t);

@@ -40,7 +40,7 @@ struct setprecision {
  */
 class temp_logger {
  public:
-  temp_logger(unsigned long long types, unsigned int verbose) throw();
+  temp_logger(unsigned long long types, uint32_t verbose) throw();
   temp_logger(temp_logger const& right);
   virtual ~temp_logger() throw();
   temp_logger& operator=(temp_logger const& right);
@@ -57,7 +57,7 @@ class temp_logger {
   misc::stringifier _buffer;
   engine& _engine;
   unsigned long long _type;
-  unsigned int _verbose;
+  uint32_t _verbose;
 };
 }  // namespace logging
 

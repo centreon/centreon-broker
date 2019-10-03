@@ -129,7 +129,7 @@ long long stream::read_encrypted(void* buffer, long long size) {
   }
 
   // Transfer data.
-  unsigned int rb(_buffer.size());
+  uint32_t rb(_buffer.size());
   if (!rb) {
     if (timed_out) {
       gnutls_transport_set_errno(*_session, EAGAIN);

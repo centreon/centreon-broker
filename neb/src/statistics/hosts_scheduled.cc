@@ -64,7 +64,7 @@ hosts_scheduled& hosts_scheduled::operator=(hosts_scheduled const& right) {
  */
 void hosts_scheduled::run(std::string& output, std::string& perfdata) {
   // Count hosts scheduled.
-  unsigned int total(0);
+  uint32_t total(0);
   for (host_map::const_iterator it{com::centreon::engine::host::hosts.begin()},
        end{com::centreon::engine::host::hosts.end()};
        it != end; ++it)

@@ -44,11 +44,11 @@ class log_entry : public io::data {
   log_entry(log_entry const& other);
   ~log_entry();
   log_entry& operator=(const log_entry& other);
-  unsigned int type() const;
-  static unsigned int static_type();
+  uint32_t type() const;
+  static uint32_t static_type();
 
   timestamp c_time;
-  unsigned int host_id;
+  uint32_t host_id;
   std::string host_name;
   timestamp issue_start_time;
   short log_type;
@@ -59,7 +59,7 @@ class log_entry : public io::data {
   std::string poller_name;
   int retry;
   std::string service_description;
-  unsigned int service_id;
+  uint32_t service_id;
   short status;
 
   static mapping::entry const entries[];

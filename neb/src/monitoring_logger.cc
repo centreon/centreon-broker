@@ -51,7 +51,7 @@ monitoring_logger::~monitoring_logger() {}
  *  @param[in] l        Verbosity level.
  */
 void monitoring_logger::log_msg(char const* msg,
-                                unsigned int len,
+                                uint32_t len,
                                 logging::type log_type,
                                 logging::level l) throw() {
   (void)len;

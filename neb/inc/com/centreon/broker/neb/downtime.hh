@@ -46,7 +46,7 @@ class downtime : public io::data {
   downtime(downtime const& other);
   ~downtime();
   downtime& operator=(downtime const& other);
-  unsigned int type() const;
+  uint32_t type() const;
   bool operator==(downtime const& other) const;
 
   /**
@@ -54,7 +54,7 @@ class downtime : public io::data {
    *
    *  @return  The event type.
    */
-  static unsigned int static_type() {
+  static uint32_t static_type() {
     return (io::events::data_type<io::events::neb, neb::de_downtime>::value);
   }
 
@@ -68,12 +68,12 @@ class downtime : public io::data {
   timestamp end_time;
   timestamp entry_time;
   bool fixed;
-  unsigned int host_id;
-  unsigned int internal_id;
-  unsigned int poller_id;
-  unsigned int service_id;
+  uint32_t host_id;
+  uint32_t internal_id;
+  uint32_t poller_id;
+  uint32_t service_id;
   timestamp start_time;
-  unsigned int triggered_by;
+  uint32_t triggered_by;
   bool was_cancelled;
   bool was_started;
   bool is_recurring;

@@ -28,11 +28,11 @@ namespace notification {
 namespace objects {
 
 struct record {
-  record(const char* name, unsigned int index) : name(name), index(index) {}
+  record(const char* name, uint32_t index) : name(name), index(index) {}
   record() : name(NULL), index(0) {}
 
   const char* name;
-  unsigned int index;
+  uint32_t index;
 };
 }  // namespace objects
 }  // namespace notification

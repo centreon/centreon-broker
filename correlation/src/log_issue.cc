@@ -91,7 +91,7 @@ bool log_issue::operator!=(log_issue const& i) const {
  *
  *  @return The event type.
  */
-unsigned int log_issue::type() const {
+uint32_t log_issue::type() const {
   return (log_issue::static_type());
 }
 
@@ -100,7 +100,7 @@ unsigned int log_issue::type() const {
  *
  *  @return  The event type.
  */
-unsigned int log_issue::static_type() {
+uint32_t log_issue::static_type() {
   return (io::events::data_type<io::events::correlation,
                                 correlation::de_log_issue>::value);
 }

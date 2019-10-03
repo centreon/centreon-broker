@@ -190,7 +190,7 @@ int32_t variant::as_int() const {
 }
 
 /**
- *  Returns the variant as an unsigned int32. This method only works if the
+ *  Returns the variant as an uint32_t32. This method only works if the
  * variant content is an int32, an uint32 or none.
  *
  * @return the value or 0 in the case of none.
@@ -218,7 +218,7 @@ int64_t variant::as_long() const {
 }
 
 /**
- *  Returns the variant as an unsigned int64. This method only works if the
+ *  Returns the variant as an uint32_t64. This method only works if the
  * variant content is an int64, an uint64 or none.
  *
  * @return the value or 0 in the case of none.

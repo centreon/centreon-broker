@@ -199,7 +199,7 @@ void query::_compile_naming_scheme(std::string const& naming_scheme,
       _compiled_getters.push_back(&query::_get_instance);
     else if (macro == "$INSTANCEID$")
       _compiled_getters.push_back(
-          &query::_get_member<unsigned int, io::data, &io::data::source_id>);
+          &query::_get_member<uint32_t, io::data, &io::data::source_id>);
     else if (macro == "$HOST$")
       _compiled_getters.push_back(&query::_get_host);
     else if (macro == "$HOSTID$")

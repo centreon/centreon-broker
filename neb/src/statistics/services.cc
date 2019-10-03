@@ -64,14 +64,14 @@ services& services::operator=(services const& right) {
  */
 void services::run(std::string& output, std::string& perfdata) {
   // Count services ok / warning / unknown / critical.
-  unsigned int total[4] = {0, 0, 0, 0};
+  uint32_t total[4] = {0, 0, 0, 0};
   for (service_map::const_iterator
            it{com::centreon::engine::service::services.begin()},
        end{com::centreon::engine::service::services.end()};
        it != end; ++it)
     ++total[it->second->get_current_state()];
 
-  unsigned int not_ok{total[com::centreon::engine::service::state_warning] +
+  uint32_t not_ok{total[com::centreon::engine::service::state_warning] +
                       total[com::centreon::engine::service::state_critical] +
                       total[com::centreon::engine::service::state_unknown]};
 

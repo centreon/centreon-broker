@@ -288,7 +288,7 @@ int main(int argc, char* argv[]) {
     // Insert entries in index_data.
     {
       QSqlQuery q(*db.centreon_db());
-      for (unsigned int i(1); i <= 33; ++i) {
+      for (uint32_t i(1); i <= 33; ++i) {
         std::ostringstream query;
         query << "INSERT INTO rt_index_data (host_id, service_id)"
               << "  VALUES (" << 1 << ", " << i << ")";
@@ -299,7 +299,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Get index list.
-    std::list<unsigned int> indexes;
+    std::list<uint32_t> indexes;
     {
       QSqlQuery q(*db.centreon_db());
       if (!q.exec("SELECT index_id FROM rt_index_data ORDER BY service_id ASC"))
@@ -320,7 +320,7 @@ int main(int argc, char* argv[]) {
     sleep_for(15);
 
     // Check metrics table.
-    std::list<unsigned int> metrics;
+    std::list<uint32_t> metrics;
     {
       std::ostringstream query;
       query << "SELECT metric_id"
@@ -339,7 +339,7 @@ int main(int argc, char* argv[]) {
 
     // Check data_bin table.
     {
-      for (std::list<unsigned int>::const_iterator it(metrics.begin()),
+      for (std::list<uint32_t>::const_iterator it(metrics.begin()),
            end(metrics.end());
            it != end; ++it) {
         std::ostringstream query;
@@ -354,7 +354,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Check that metrics RRD files exist.
-    for (std::list<unsigned int>::const_iterator it(metrics.begin()),
+    for (std::list<uint32_t>::const_iterator it(metrics.begin()),
          end(metrics.end());
          it != end; ++it) {
       std::ostringstream path;

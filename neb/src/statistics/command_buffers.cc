@@ -66,9 +66,9 @@ command_buffers& command_buffers::operator=(command_buffers const& right) {
 void command_buffers::run(std::string& output __attribute__((unused)),
                           std::string& perfdata __attribute__((unused))) {
   // XXX
-  // unsigned int high(0);
-  // unsigned int total(::external_command_buffer_slots);
-  // unsigned int used(0);
+  // uint32_t high(0);
+  // uint32_t total(::external_command_buffer_slots);
+  // uint32_t used(0);
 
   // // get number of items in the command buffer
   // if (::check_external_commands) {

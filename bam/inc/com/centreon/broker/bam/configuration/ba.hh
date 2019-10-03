@@ -37,7 +37,7 @@ namespace configuration {
  */
 class ba {
  public:
-  ba(unsigned int id = 0,
+  ba(uint32_t id = 0,
      std::string const& name = "",
      double warning_level = 0.0,
      double critical_level = 0.0,
@@ -48,20 +48,20 @@ class ba {
   bool operator==(ba const& right) const;
   bool operator!=(ba const& right) const;
 
-  unsigned int get_id() const;
-  unsigned int get_host_id() const;
-  unsigned int get_service_id() const;
+  uint32_t get_id() const;
+  uint32_t get_host_id() const;
+  uint32_t get_service_id() const;
   std::string const& get_name() const;
   double get_warning_level() const;
   double get_critical_level() const;
   bam::ba_event const& get_opened_event() const;
-  unsigned int get_default_timeperiod() const;
-  std::vector<unsigned int> const& get_timeperiods() const;
+  uint32_t get_default_timeperiod() const;
+  std::vector<uint32_t> const& get_timeperiods() const;
   bool get_inherit_kpi_downtime() const;
 
-  void set_id(unsigned int id);
-  void set_host_id(unsigned int host_id);
-  void set_service_id(unsigned int service_id);
+  void set_id(uint32_t id);
+  void set_host_id(uint32_t host_id);
+  void set_service_id(uint32_t service_id);
   void set_name(std::string const& name);
   void set_warning_level(double warning_level);
   void set_critical_level(double critical_level);
@@ -69,9 +69,9 @@ class ba {
   void set_inherit_kpi_downtime(bool value);
 
  private:
-  unsigned int _id;
-  unsigned int _host_id;
-  unsigned int _service_id;
+  uint32_t _id;
+  uint32_t _host_id;
+  uint32_t _service_id;
   std::string _name;
   double _warning_level;
   double _critical_level;

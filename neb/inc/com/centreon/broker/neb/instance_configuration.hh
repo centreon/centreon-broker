@@ -43,10 +43,10 @@ class instance_configuration : public io::data {
   instance_configuration(instance_configuration const& i);
   ~instance_configuration();
   instance_configuration& operator=(instance_configuration const& i);
-  unsigned int type() const;
+  uint32_t type() const;
 
   bool loaded;
-  unsigned int poller_id;
+  uint32_t poller_id;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

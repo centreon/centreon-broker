@@ -80,7 +80,7 @@ log_entry& log_entry::operator=(log_entry const& le) {
  *
  *  @return The event_type.
  */
-unsigned int log_entry::type() const {
+uint32_t log_entry::type() const {
   return (log_entry::static_type());
 }
 
@@ -89,7 +89,7 @@ unsigned int log_entry::type() const {
  *
  *  @return  The event type.
  */
-unsigned int log_entry::static_type() {
+uint32_t log_entry::static_type() {
   return (io::events::data_type<io::events::neb, neb::de_log_entry>::value);
 }
 

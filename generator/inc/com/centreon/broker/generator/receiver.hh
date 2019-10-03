@@ -44,7 +44,7 @@ class receiver : public io::stream {
   receiver(receiver const& other);
   receiver& operator=(receiver const& other);
 
-  std::unordered_map<unsigned int, unsigned int> _last_numbers;
+  std::unordered_map<uint32_t, uint32_t> _last_numbers;
 };
 }  // namespace generator
 

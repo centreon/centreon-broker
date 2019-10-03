@@ -35,8 +35,8 @@ using namespace com::centreon::broker;
  *  Generate a configuration file with.
  */
 static void generate_cbd_conf(std::string const& cbd_config_path,
-                              unsigned int services,
-                              unsigned int requests_per_service,
+                              uint32_t services,
+                              uint32_t requests_per_service,
                               std::string const& metrics_path,
                               std::string const& status_path) {
   std::ofstream ofs;

@@ -52,7 +52,7 @@ class entry {
   template <typename T, typename U>
   entry(U(T::*prop),
         char const* name,
-        unsigned int attr = always_valid,
+        uint32_t attr = always_valid,
         bool serialize = true,
         char const* name_v2 = NULL) {
     _name = name;
@@ -69,7 +69,7 @@ class entry {
   entry(entry const& other);
   ~entry();
   entry& operator=(entry const& other);
-  unsigned int get_attribute() const;
+  uint32_t get_attribute() const;
   bool get_bool(io::data const& d) const;
   double get_double(io::data const& d) const;
   int get_int(io::data const& d) const;
@@ -79,8 +79,8 @@ class entry {
   short get_short(io::data const& d) const;
   std::string const& get_string(io::data const& d) const;
   timestamp const& get_time(io::data const& d) const;
-  unsigned int get_type() const;
-  unsigned int get_uint(io::data const& d) const;
+  uint32_t get_type() const;
+  uint32_t get_uint(io::data const& d) const;
   unsigned short get_ushort(io::data const& d) const;
   bool is_null() const;
   void set_bool(io::data& d, bool value) const;
@@ -89,11 +89,11 @@ class entry {
   void set_short(io::data& d, short value) const;
   void set_string(io::data& d, std::string const& value) const;
   void set_time(io::data& d, timestamp const& value) const;
-  void set_uint(io::data& d, unsigned int value) const;
+  void set_uint(io::data& d, uint32_t value) const;
   void set_ushort(io::data& d, unsigned short value) const;
 
  private:
-  unsigned int _attribute;
+  uint32_t _attribute;
   char const* _name;
   char const* _name_v2;
   source* _ptr;

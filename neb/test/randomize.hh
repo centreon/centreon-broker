@@ -43,7 +43,7 @@ union randval {
   short s;
   char* S;
   time_t t;
-  unsigned int u;
+  uint32_t u;
 };
 
 void randomize(io::data& t, std::vector<randval>* values = NULL);
@@ -59,7 +59,7 @@ bool operator==(T const& t,
   mapping::entry const* entries = T::entries;
   std::vector<randval>::const_iterator it(randvals.begin());
   bool retval(true);
-  for (unsigned int i(0); retval && entries[i].is_null(); ++i, ++it) {
+  for (uint32_t i(0); retval && entries[i].is_null(); ++i, ++it) {
     switch (entries[i].get_type()) {
       case mapping::source::BOOL:
         retval = (entries[i].get_bool(t) == it->b);

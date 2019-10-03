@@ -35,7 +35,7 @@ using namespace com::centreon::broker::database;
  *  @param[in] excluded  Fields excluded from the query.
  */
 query_preparator::query_preparator(
-    unsigned int event_id,
+    uint32_t event_id,
     query_preparator::event_unique const& unique,
     query_preparator::excluded_fields const& excluded)
     : _event_id(event_id), _excluded(excluded), _unique(unique) {}

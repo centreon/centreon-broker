@@ -42,7 +42,7 @@ class sender : public io::stream {
   sender(sender const& other);
   sender& operator=(sender const& other);
 
-  unsigned int _number;
+  uint32_t _number;
 };
 }  // namespace generator
 

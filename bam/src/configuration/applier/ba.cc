@@ -74,7 +74,7 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
 
   // Objects to delete are items remaining in the
   // set at the end of the iteration.
-  std::map<unsigned int, applied> to_delete(_applied);
+  std::map<uint32_t, applied> to_delete(_applied);
 
   // Objects to create are items remaining in the
   // set at the end of the iteration.
@@ -88,7 +88,7 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
   for (bam::configuration::state::bas::iterator it(to_create.begin()),
        end(to_create.end());
        it != end;) {
-    std::map<unsigned int, applied>::iterator cfg_it(to_delete.find(it->first));
+    std::map<uint32_t, applied>::iterator cfg_it(to_delete.find(it->first));
     // Found = modify (or not).
     if (cfg_it != to_delete.end()) {
       // Configuration mismatch, modify object.
@@ -109,7 +109,7 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
   //
 
   // Delete objects.
-  for (std::map<unsigned int, applied>::iterator it(to_delete.begin()),
+  for (std::map<uint32_t, applied>::iterator it(to_delete.begin()),
        end(to_delete.end());
        it != end; ++it) {
     logging::config(logging::medium) << "BAM: removing BA " << it->first;
@@ -145,7 +145,7 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
   for (std::list<bam::configuration::ba>::iterator it(to_modify.begin()),
        end(to_modify.end());
        it != end; ++it) {
-    std::map<unsigned int, applied>::iterator pos(_applied.find(it->get_id()));
+    std::map<uint32_t, applied>::iterator pos(_applied.find(it->get_id()));
     if (pos != _applied.end()) {
       logging::config(logging::medium) << "BAM: modifying BA " << it->get_id();
       pos->second.obj->set_name(it->get_name());
@@ -162,7 +162,7 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
 
   // Set all BA objects as valid. Invalid BAs will be reset as invalid
   // on KPI application.
-  for (std::map<unsigned int, applied>::iterator it(_applied.begin()),
+  for (std::map<uint32_t, applied>::iterator it(_applied.begin()),
        end(_applied.end());
        it != end; ++it)
     it->second.obj->set_valid(true);
@@ -177,8 +177,8 @@ void applier::ba::apply(bam::configuration::state::bas const& my_bas,
  *
  *  @return Shared pointer to the applied BA object.
  */
-std::shared_ptr<bam::ba> applier::ba::find_ba(unsigned int id) {
-  std::map<unsigned int, applied>::iterator it(_applied.find(id));
+std::shared_ptr<bam::ba> applier::ba::find_ba(uint32_t id) {
+  std::map<uint32_t, applied>::iterator it(_applied.find(id));
   return ((it != _applied.end()) ? it->second.obj : std::shared_ptr<bam::ba>());
 }
 
@@ -188,7 +188,7 @@ std::shared_ptr<bam::ba> applier::ba::find_ba(unsigned int id) {
  *  @param[out] visitor  Visitor that will receive status.
  */
 void applier::ba::visit(io::stream* visitor) {
-  for (std::map<unsigned int, applied>::iterator it(_applied.begin()),
+  for (std::map<uint32_t, applied>::iterator it(_applied.begin()),
        end(_applied.end());
        it != end; ++it)
     it->second.obj->visit(visitor);
@@ -202,7 +202,7 @@ void applier::ba::visit(io::stream* visitor) {
  *
  *  @return Virtual BA host.
  */
-std::shared_ptr<neb::host> applier::ba::_ba_host(unsigned int host_id) {
+std::shared_ptr<neb::host> applier::ba::_ba_host(uint32_t host_id) {
   std::shared_ptr<neb::host> h(new neb::host);
   h->poller_id =
       com::centreon::broker::config::applier::state::instance().poller_id();
@@ -226,9 +226,9 @@ std::shared_ptr<neb::host> applier::ba::_ba_host(unsigned int host_id) {
  *  @return Virtual BA service.
  */
 std::shared_ptr<neb::service> applier::ba::_ba_service(
-    unsigned int ba_id,
-    unsigned int host_id,
-    unsigned int service_id) {
+    uint32_t ba_id,
+    uint32_t host_id,
+    uint32_t service_id) {
   std::shared_ptr<neb::service> s(new neb::service);
   s->host_id = host_id;
   s->service_id = service_id;
@@ -281,7 +281,7 @@ std::shared_ptr<bam::ba> applier::ba::_new_ba(configuration::ba const& cfg,
  */
 void applier::ba::save_to_cache(persistent_cache& cache) {
   cache.transaction();
-  for (std::map<unsigned int, applied>::const_iterator it = _applied.begin(),
+  for (std::map<uint32_t, applied>::const_iterator it = _applied.begin(),
                                                        end = _applied.end();
        it != end; ++it) {
     it->second.obj->save_inherited_downtime(cache);
@@ -302,7 +302,7 @@ void applier::ba::load_from_cache(persistent_cache& cache) {
       continue;
     inherited_downtime const& dwn =
         *std::static_pointer_cast<inherited_downtime const>(d);
-    std::map<unsigned int, applied>::iterator found = _applied.find(dwn.ba_id);
+    std::map<uint32_t, applied>::iterator found = _applied.find(dwn.ba_id);
     if (found != _applied.end()) {
       logging::debug(logging::medium)
           << "BAM: found an inherited downtime for BA " << found->first;

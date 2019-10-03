@@ -66,7 +66,7 @@ meta_service_status& meta_service_status::operator=(
  *
  *  @return Event type.
  */
-unsigned int meta_service_status::type() const {
+uint32_t meta_service_status::type() const {
   return (meta_service_status::static_type());
 }
 
@@ -75,7 +75,7 @@ unsigned int meta_service_status::type() const {
  *
  *  @return Event type.
  */
-unsigned int meta_service_status::static_type() {
+uint32_t meta_service_status::static_type() {
   return (io::events::data_type<io::events::bam,
                                 bam::de_meta_service_status>::value);
 }

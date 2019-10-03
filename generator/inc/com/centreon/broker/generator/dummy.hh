@@ -39,23 +39,23 @@ namespace generator {
  */
 class dummy : public io::data {
  public:
-  dummy(unsigned int number = 0);
+  dummy(uint32_t number = 0);
   dummy(dummy const& other);
   ~dummy();
   dummy& operator=(dummy const& other);
-  unsigned int type() const;
+  uint32_t type() const;
 
   /**
    *  Get the type of this event.
    *
    *  @return  The event type.
    */
-  static unsigned int static_type() {
+  static uint32_t static_type() {
     return (io::events::data_type<io::events::generator,
                                   generator::de_dummy>::value);
   }
 
-  unsigned int number;
+  uint32_t number;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

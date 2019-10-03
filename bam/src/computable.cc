@@ -74,7 +74,7 @@ void computable::add_parent(std::shared_ptr<computable> const& parent) {
 void computable::propagate_update(io::stream* visitor) {
   std::vector<bool> filter;
   filter.resize(_parents.size());
-  unsigned int i = 0;
+  uint32_t i = 0;
   for (std::list<std::weak_ptr<computable> >::iterator it(_parents.begin()),
        end(_parents.end());
        it != end; ++it) {

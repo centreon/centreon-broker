@@ -65,14 +65,14 @@ int main(int argc, char* argv[]) {
       char header[8];
       memset(header, 0, sizeof(header));
       header[7] = 8;
-      unsigned int size(0);
+      uint32_t size(0);
       while (size != sizeof(header)) {
         size += f.write(header + size, sizeof(header) - size);
         f.waitForBytesWritten(-1);
       }
     }
-    for (unsigned int i(0); i < 10000; ++i) {
-      unsigned int current(0);
+    for (uint32_t i(0); i < 10000; ++i) {
+      uint32_t current(0);
       while (!retval && (current < sizeof(buffer) - 1)) {
         qint64 wb(f.write(buffer + current, sizeof(buffer) - 1 - current));
         if (wb <= 0)
@@ -90,10 +90,10 @@ int main(int argc, char* argv[]) {
   file::stream fs(filename.toStdString());
 
   // Read data.
-  unsigned int bufferc(0);
+  uint32_t bufferc(0);
   std::shared_ptr<io::raw> raw;
-  unsigned int rawc(0);
-  for (unsigned int count = 0; !retval && (count < 10000);) {
+  uint32_t rawc(0);
+  for (uint32_t count = 0; !retval && (count < 10000);) {
     // Read data.
     if (raw.isNull()) {
       std::shared_ptr<io::data> d;
@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
 
     if (!retval) {
       // Compare data.
-      unsigned int cb(((raw->size() - rawc) < (sizeof(buffer) - 1 - bufferc))
+      uint32_t cb(((raw->size() - rawc) < (sizeof(buffer) - 1 - bufferc))
                           ? (raw->size() - rawc)
                           : (sizeof(buffer) - 1 - bufferc));
       retval |= memcmp(raw->QByteArray::data() + rawc, buffer + bufferc, cb);

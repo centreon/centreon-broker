@@ -78,7 +78,7 @@ flapping_status& flapping_status::operator=(flapping_status const& other) {
  *
  *  @return The event type.
  */
-unsigned int flapping_status::type() const {
+uint32_t flapping_status::type() const {
   return (flapping_status::static_type());
 }
 
@@ -87,7 +87,7 @@ unsigned int flapping_status::type() const {
  *
  *  @return  The event type.
  */
-unsigned int flapping_status::static_type() {
+uint32_t flapping_status::static_type() {
   return (
       io::events::data_type<io::events::neb, neb::de_flapping_status>::value);
 }

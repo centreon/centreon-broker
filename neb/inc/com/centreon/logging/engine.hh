@@ -40,7 +40,7 @@ class engine {
  public:
   unsigned long add(backend* obj,
                     unsigned long long types,
-                    unsigned int verbose);
+                    uint32_t verbose);
   /**
    *  Get the logger engine singleton.
    *
@@ -57,18 +57,18 @@ class engine {
    *  @return True if at least one backend can log with this
    *          parameter, otherwise false.
    */
-  bool is_log(unsigned long long types, unsigned int verbose) const throw() {
-    if (verbose >= sizeof(unsigned int) * CHAR_BIT)
+  bool is_log(unsigned long long types, uint32_t verbose) const throw() {
+    if (verbose >= sizeof(uint32_t) * CHAR_BIT)
       return (false);
     return (_list_types[verbose] & types);
   }
   static void load();
   void log(unsigned long long types,
-           unsigned int verbose,
+           uint32_t verbose,
            char const* msg,
-           unsigned int size);
+           uint32_t size);
   bool remove(unsigned long id);
-  unsigned int remove(backend* obj);
+  uint32_t remove(backend* obj);
   void reopen();
   static void unload();
 
@@ -77,7 +77,7 @@ class engine {
     unsigned long id;
     backend* obj;
     unsigned long long types;
-    unsigned int verbose;
+    uint32_t verbose;
   };
 
   engine();
@@ -89,7 +89,7 @@ class engine {
   std::vector<backend_info*> _backends;
   unsigned long _id;
   static engine* _instance;
-  unsigned long long _list_types[sizeof(unsigned int) * CHAR_BIT];
+  unsigned long long _list_types[sizeof(uint32_t) * CHAR_BIT];
   mutable concurrency::mutex _mtx;
 };
 }  // namespace logging
