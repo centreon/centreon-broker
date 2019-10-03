@@ -46,5 +46,5 @@ logger::~logger() {}
  *  @return Temporary logging object.
  */
 temp_logger logger::operator()(level l) throw() {
-  return (manager::instance().get_temp_logger(_type, l));
+  return manager::instance().get_temp_logger(_type, l);
 }

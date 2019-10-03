@@ -103,8 +103,6 @@ void logger::apply(std::list<config::logger> const& loggers) {
     _backends[*it] = backend;
     logging::manager::instance().log_on(backend, it->types(), it->level());
   }
-
-  return;
 }
 
 /**
@@ -178,22 +176,20 @@ std::shared_ptr<logging::backend> logger::_new_backend(
 #endif  // CBMOD
     } break;
     case config::logger::standard: {
-      if ((cfg.name() == "stderr") || (cfg.name() == "cerr"))
+      if (cfg.name() == "stderr" || cfg.name() == "cerr")
         back.reset(new logging::file(std::cerr, "cerr"));
-      else if ((cfg.name() == "stdout") || (cfg.name() == "cout"))
+      else if (cfg.name() == "stdout" || cfg.name() == "cout")
         back.reset(new logging::file(std::cout, "cout"));
       else
-        throw(exceptions::msg() << "log applier: attempt to log on "
-                                   "an undefined output object");
-
+        throw exceptions::msg() << "log applier: attempt to log on "
+                                   "an undefined output object";
     } break;
     case config::logger::syslog:
       back.reset(new logging::syslogger(cfg.facility()));
       break;
     default:
-      throw(exceptions::msg() << "log applier: attempt to create a "
-                                 "logging object of unknown type");
+      throw exceptions::msg() << "log applier: attempt to create a "
+                                 "logging object of unknown type";
   }
-
   return back;
 }
