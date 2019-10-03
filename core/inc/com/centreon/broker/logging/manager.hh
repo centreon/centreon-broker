@@ -19,15 +19,14 @@
 #ifndef CCB_LOGGING_MANAGER_HH
 #define CCB_LOGGING_MANAGER_HH
 
+#include <memory>
 #include <mutex>
 #include <vector>
 #include "com/centreon/broker/logging/backend.hh"
 #include "com/centreon/broker/logging/defines.hh"
 #include "com/centreon/broker/logging/temp_logger.hh"
 
-namespace com {
-namespace centreon {
-namespace broker {
+CCB_BEGIN()
 namespace logging {
 /**
  *  @class manager manager.hh "com/centreon/broker/logging/manager.hh"
@@ -37,36 +36,31 @@ namespace logging {
  *  to the logging system.
  */
 class manager : public backend {
- private:
   struct manager_backend {
-    backend* b;
+    std::shared_ptr<backend> b;
     level l;
     uint32_t types;
   };
   std::vector<manager_backend> _backends;
   std::mutex _backendsm;
-  static manager* _instance;
   uint32_t _limits[4];
+
   manager();
-  manager(manager const& m);
-  manager& operator=(manager const& m);
   void _compute_optimizations();
 
  public:
-  ~manager();
+  manager(manager const& m) = delete;
+  manager& operator=(manager const& m) = delete;
+  ~manager() = default;
   temp_logger get_temp_logger(type t, level l) throw();
   static manager& instance();
-  static void load();
-  void log_msg(char const* msg, uint32_t len, type t, level l) throw();
-  void log_on(backend& b,
+  void log_msg(char const* msg, uint32_t len, type t, level l) noexcept;
+  void log_on(std::shared_ptr<backend> b,
               uint32_t types = config_type | debug_type | error_type |
                                    info_type | perf_type,
               level min_priority = medium);
-  static void unload();
 };
 }  // namespace logging
-}  // namespace broker
-}  // namespace centreon
-}  // namespace com
+CCB_END()
 
 #endif  // !CCB_LOGGING_MANAGER_HH

@@ -28,7 +28,6 @@ using namespace com::centreon::broker;
 class FileSplitterDefault : public ::testing::Test {
  public:
   void SetUp() override {
-    logging::manager::load();
     _path = "/tmp/queue";
     {
       std::list<std::string> parts{misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
@@ -41,7 +40,6 @@ class FileSplitterDefault : public ::testing::Test {
 
   void TearDown() override {
     delete _file;
-    logging::manager::unload();
   }
 
  protected:

@@ -39,7 +39,7 @@ using namespace com::centreon::broker::watchdog;
 static char const* help_msg = "USAGE: cbwd configuration_file";
 static char const* config_filename = nullptr;
 static bool should_exit{false};
-static std::unique_ptr<logging::file> log;
+static std::shared_ptr<logging::file> log;
 static configuration config;
 static std::unordered_map<std::string, instance*> instances;
 static bool sighup{false};
@@ -59,7 +59,7 @@ static void print_help() {
 static void apply_new_configuration(configuration const& cfg) {
   if (config.get_log_filename() != cfg.get_log_filename()) {
     log.reset(new logging::file(cfg.get_log_filename()));
-    logging::manager::instance().log_on(*log);
+    logging::manager::instance().log_on(log);
   }
 
   std::set<std::string> to_update;
@@ -182,9 +182,6 @@ int main(int argc, char** argv) {
 
   config_filename = argv[1];
 
-  // Load the log manager.
-  logging::manager::load();
-
   configuration config;
   try {
     configuration_parser parser;
@@ -268,8 +265,5 @@ int main(int argc, char** argv) {
        it != end; ++it) {
     it->second->stop();
   }
-  // Load the log manager.
-  logging::manager::unload();
-
   return retval;
 }

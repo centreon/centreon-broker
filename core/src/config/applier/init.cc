@@ -59,7 +59,6 @@ void config::applier::deinit() {
   io::protocols::unload();
   io::events::unload();
   time::timezone_manager::unload();
-  logging::manager::unload();
 }
 
 /**
@@ -67,7 +66,6 @@ void config::applier::deinit() {
  */
 void config::applier::init() {
   // Load singletons.
-  logging::manager::load();
   time::timezone_manager::load();
   multiplexing::engine::load();
   io::events::load();

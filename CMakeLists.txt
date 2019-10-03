@@ -24,6 +24,7 @@
 cmake_minimum_required(VERSION 2.8)
 project("Centreon Broker" C CXX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc")
 include_directories("${INC_DIR}")
 set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc/com/centreon/broker")
@@ -625,7 +626,7 @@ add_dependencies(${DAEMON} Asio)
 #  )
 #endif ()
 
-if (CMAKE_COMPILER_IS_GNUCXX)
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # Flags needed to include all symbols in binary.
   target_link_libraries("${DAEMON}"
     "-Wl,--whole-archive" "rokerbase" "roker" "-Wl,--no-whole-archive")

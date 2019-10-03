@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include "com/centreon/broker/config/applier/logger.hh"
 #include <cstdlib>
 #include <fstream>
@@ -87,7 +88,7 @@ void logger::apply(std::list<config::logger> const& loggers) {
            it(to_delete.begin()),
        end(to_delete.end());
        it != end; ++it)
-    logging::manager::instance().log_on(*it->second, 0, logging::none);
+    logging::manager::instance().log_on(it->second, 0, logging::none);
 
   // Free some memory.
   to_delete.clear();
@@ -100,7 +101,7 @@ void logger::apply(std::list<config::logger> const& loggers) {
     logging::config(logging::medium) << "log applier: creating new logger";
     std::shared_ptr<logging::backend> backend(_new_backend(*it));
     _backends[*it] = backend;
-    logging::manager::instance().log_on(*backend, it->types(), it->level());
+    logging::manager::instance().log_on(backend, it->types(), it->level());
   }
 
   return;
@@ -112,6 +113,7 @@ void logger::apply(std::list<config::logger> const& loggers) {
  *  @return logger instance.
  */
 logger& logger::instance() {
+  assert(gl_logger);
   return (*gl_logger);
 }
 
@@ -130,7 +132,6 @@ void logger::load() {
 void logger::unload() {
   delete gl_logger;
   gl_logger = nullptr;
-  return;
 }
 
 /**************************************

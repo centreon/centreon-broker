@@ -135,7 +135,7 @@ add_library("${NEB}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/downtime_serializable.hh"
   "${INC_DIR}/com/centreon/broker/neb/downtime_map.hh"
 )
-if (CMAKE_COMPILER_IS_GNUCXX)
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # Flags needed to include all symbols in binary.
   target_link_libraries("${NEB}"
     "-Wl,--whole-archive" "nebbase" "-Wl,--no-whole-archive")
@@ -244,7 +244,7 @@ get_property(CBMOD_DEFINES
 list(APPEND CBMOD_DEFINES CBMOD)
 set_property(TARGET "${CBMOD}"
   PROPERTY COMPILE_DEFINITIONS "${CBMOD_DEFINES}")
-if (CMAKE_COMPILER_IS_GNUCXX)
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # Flags needed to include all symbols in shared library.
   target_link_libraries("${CBMOD}"
     "-Wl,--whole-archive" "nebbase" "rokerbase" "-Wl,--no-whole-archive")

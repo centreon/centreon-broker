@@ -90,7 +90,7 @@ class timeperiod {
   void add_exceptions(std::list<daterange> const& val);
   bool add_exception(std::string const& days, std::string const& range);
 
-  std::vector<ptr> const& get_included() const throw();
+  std::vector<timeperiod::ptr> const& get_included() const noexcept;
   void add_included(ptr val);
   std::vector<ptr> const& get_excluded() const throw();
   void add_excluded(ptr val);

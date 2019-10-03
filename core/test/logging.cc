@@ -41,14 +41,6 @@ using namespace com::centreon::broker;
 
 class LoggingManager : public ::testing::Test {
  public:
-  void SetUp() override {
-    logging::manager::load();
-  }
-
-  void TearDown() override {
-    logging::manager::unload();
-  }
-
   bool check_line(std::string const& line, std::string const& reg) {
     regex_t r;
     int status;
@@ -123,9 +115,9 @@ TEST_F(LoggingManager, Simple) {
   std::remove(file_path.c_str());
 
   // Open log file object.
-  logging::file f(file_path);
-  f.with_thread_id(false);
-  f.with_timestamp(logging::no_timestamp);
+  std::shared_ptr<logging::file> f{std::make_shared<logging::file>(file_path)};
+  f->with_thread_id(false);
+  f->with_timestamp(logging::no_timestamp);
 
   // Add logging file.
   logging::manager::instance().log_on(
@@ -135,7 +127,7 @@ TEST_F(LoggingManager, Simple) {
       logging::low);
 
   // Write log messages.
-  write_log_messages(&f, 4);
+  write_log_messages(f.get(), 4);
 
   // Check file content.
   std::ifstream infile(file_path);
@@ -164,12 +156,12 @@ TEST_F(LoggingManager, Multiple) {
   std::remove(file_path2.c_str());
 
   // Open log file objects.
-  logging::file f1(file_path1);
-  f1.with_thread_id(false);
-  f1.with_timestamp(logging::no_timestamp);
-  logging::file f2(file_path2);
-  f2.with_thread_id(false);
-  f2.with_timestamp(logging::no_timestamp);
+  std::shared_ptr<logging::file> f1{std::make_shared<logging::file>(file_path1)};
+  f1->with_thread_id(false);
+  f1->with_timestamp(logging::no_timestamp);
+  std::shared_ptr<logging::file> f2{std::make_shared<logging::file>(file_path2)};
+  f2->with_thread_id(false);
+  f2->with_timestamp(logging::no_timestamp);
 
   // Add logging files.
   logging::manager::instance().log_on(
@@ -230,15 +222,15 @@ TEST_F(LoggingManager, Cross) {
   std::remove(file_path3.c_str());
 
   // Open log file objects.
-  logging::file f1(file_path1);
-  f1.with_thread_id(false);
-  f1.with_timestamp(logging::no_timestamp);
-  logging::file f2(file_path2);
-  f2.with_thread_id(false);
-  f2.with_timestamp(logging::no_timestamp);
-  logging::file f3(file_path3);
-  f3.with_thread_id(false);
-  f3.with_timestamp(logging::no_timestamp);
+  std::shared_ptr<logging::file> f1{std::make_shared<logging::file>(file_path1)};
+  f1->with_thread_id(false);
+  f1->with_timestamp(logging::no_timestamp);
+  std::shared_ptr<logging::file> f2{std::make_shared<logging::file>(file_path2)};
+  f2->with_thread_id(false);
+  f2->with_timestamp(logging::no_timestamp);
+  std::shared_ptr<logging::file> f3{std::make_shared<logging::file>(file_path3)};
+  f3->with_thread_id(false);
+  f3->with_timestamp(logging::no_timestamp);
 
   // Add logging files.
   logging::manager::instance().log_on(
@@ -298,12 +290,12 @@ TEST_F(LoggingManager, BacklogUnlog) {
   std::remove(file_path2.c_str());
 
   // Open log file objects.
-  logging::file f1(file_path1);
-  f1.with_thread_id(false);
-  f1.with_timestamp(logging::no_timestamp);
-  logging::file f2(file_path2);
-  f2.with_thread_id(false);
-  f2.with_timestamp(logging::no_timestamp);
+  std::shared_ptr<logging::file> f1{std::make_shared<logging::file>(file_path1)};
+  f1->with_thread_id(false);
+  f1->with_timestamp(logging::no_timestamp);
+  std::shared_ptr<logging::file> f2{std::make_shared<logging::file>(file_path2)};
+  f2->with_thread_id(false);
+  f2->with_timestamp(logging::no_timestamp);
 
   // Add logging files.
   logging::manager::instance().log_on(
@@ -555,9 +547,9 @@ TEST_F(LoggingManager, Copied) {
   std::remove(file_path.c_str());
 
   // Open log file object.
-  logging::file f(file_path);
-  f.with_thread_id(false);
-  f.with_timestamp(logging::no_timestamp);
+  std::shared_ptr<logging::file> f{std::make_shared<logging::file>(file_path)};
+  f->with_thread_id(false);
+  f->with_timestamp(logging::no_timestamp);
 
   // Add logging object.
   logging::manager::instance().log_on(
@@ -590,9 +582,9 @@ TEST_F(LoggingManager, Disabled) {
   std::remove(file_path.c_str());
 
   // Open log file object.
-  logging::file f(file_path);
-  f.with_thread_id(false);
-  f.with_timestamp(logging::no_timestamp);
+  std::shared_ptr<logging::file> f{std::make_shared<logging::file>(file_path)};
+  f->with_thread_id(false);
+  f->with_timestamp(logging::no_timestamp);
 
   // Add logging object.
   logging::manager::instance().log_on(
@@ -622,9 +614,9 @@ TEST_F(LoggingManager, Enabled) {
   std::remove(file_path.c_str());
 
   // Open log file object.
-  logging::file f(file_path);
-  f.with_thread_id(false);
-  f.with_timestamp(logging::no_timestamp);
+  std::shared_ptr<logging::file> f{std::make_shared<logging::file>(file_path)};
+  f->with_thread_id(false);
+  f->with_timestamp(logging::no_timestamp);
 
   // Add logging object.
   logging::manager::instance().log_on(
@@ -654,9 +646,9 @@ TEST_F(LoggingManager, Insertion) {
   std::remove(file_path.c_str());
 
   // Open log file object.
-  logging::file f(file_path);
-  f.with_thread_id(false);
-  f.with_timestamp(logging::no_timestamp);
+  std::shared_ptr<logging::file> f{std::make_shared<logging::file>(file_path)};
+  f->with_thread_id(false);
+  f->with_timestamp(logging::no_timestamp);
 
   // Add logging object.
   logging::manager::instance().log_on(
@@ -713,7 +705,8 @@ TEST_F(LoggingManager, Concurrent) {
 
   // Initialize file backend.
   logging::file::with_timestamp(logging::second_timestamp);
-  logging::file backend(filename);
+  std::shared_ptr<logging::file> backend{
+      std::make_shared<logging::file>(filename)};
 
   // Add backend to logging list.
   logging::manager::instance().log_on(backend);
