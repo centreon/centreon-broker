@@ -61,7 +61,7 @@ class macro_cache {
   void _process_instance(neb::instance const& in);
   void _process_host(neb::host const& h);
   void _process_service(neb::service const& s);
-  void _process_index_mapping(storage::index_mapping const& im);
+  void _process_index_mapping(std::shared_ptr<io::data> const& im);
   void _process_metric_mapping(storage::metric_mapping const& mm);
   void _save_to_disk();
 
@@ -69,7 +69,8 @@ class macro_cache {
   std::unordered_map<uint64_t, neb::instance> _instances;
   std::unordered_map<uint64_t, neb::host> _hosts;
   std::unordered_map<std::pair<uint64_t, uint64_t>, neb::service> _services;
-  std::unordered_map<uint64_t, storage::index_mapping> _index_mappings;
+  std::unordered_map<uint64_t, std::shared_ptr<storage::index_mapping> >
+      _index_mappings;
   std::unordered_map<uint64_t, storage::metric_mapping> _metric_mappings;
 };
 }  // namespace influxdb

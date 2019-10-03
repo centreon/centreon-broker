@@ -63,12 +63,11 @@ macro_cache::~macro_cache() {
  */
 storage::index_mapping const& macro_cache::get_index_mapping(
     uint64_t index_id) const {
-  std::unordered_map<uint64_t, storage::index_mapping>::const_iterator found{
-      _index_mappings.find(index_id)};
+  auto found = _index_mappings.find(index_id);
   if (found == _index_mappings.end())
     throw exceptions::msg()
         << "influxdb: could not find host/service of index " << index_id;
-  return found->second;
+  return *found->second.get();
 }
 
 /**
@@ -157,8 +156,7 @@ void macro_cache::write(std::shared_ptr<io::data> const& data) {
   else if (data->type() == neb::service::static_type())
     _process_service(*std::static_pointer_cast<neb::service const>(data));
   else if (data->type() == storage::index_mapping::static_type())
-    _process_index_mapping(
-        *std::static_pointer_cast<storage::index_mapping const>(data));
+    _process_index_mapping(data);
   else if (data->type() == storage::metric_mapping::static_type())
     _process_metric_mapping(
         *std::static_pointer_cast<storage::metric_mapping const>(data));
@@ -196,8 +194,10 @@ void macro_cache::_process_service(neb::service const& s) {
  *
  *  @param im  The event.
  */
-void macro_cache::_process_index_mapping(storage::index_mapping const& im) {
-  _index_mappings[im.index_id] = im;
+void macro_cache::_process_index_mapping(std::shared_ptr<io::data> const& data) {
+  std::shared_ptr<storage::index_mapping> const& im =
+      std::static_pointer_cast<storage::index_mapping>(data);
+  _index_mappings[im->index_id] = im;
 }
 
 /**
@@ -233,11 +233,9 @@ void macro_cache::_save_to_disk() {
        it != end; ++it)
     _cache->add(std::make_shared<neb::service>(it->second));
 
-  for (std::unordered_map<uint64_t, storage::index_mapping>::const_iterator
-           it(_index_mappings.begin()),
-       end(_index_mappings.end());
-       it != end; ++it)
-    _cache->add(std::make_shared<storage::index_mapping>(it->second));
+  for (auto it(_index_mappings.begin()), end(_index_mappings.end()); it != end;
+       ++it)
+    _cache->add(it->second);
 
   for (std::unordered_map<uint64_t, storage::metric_mapping>::const_iterator
            it(_metric_mappings.begin()),

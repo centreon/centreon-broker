@@ -38,11 +38,11 @@ namespace storage {
  */
 class index_mapping : public io::data {
  public:
-  index_mapping();
+  index_mapping() = default;
   index_mapping(uint32_t index_id, uint32_t host_id, uint32_t service_id);
-  index_mapping(index_mapping const& other);
-  ~index_mapping();
-  index_mapping& operator=(index_mapping const& other);
+  index_mapping(index_mapping const& other) = delete;
+  ~index_mapping() = default;
+  index_mapping& operator=(index_mapping const& other) = delete;
   unsigned int type() const;
   static unsigned int static_type();
 
@@ -54,7 +54,7 @@ class index_mapping : public io::data {
   static io::event_info::event_operations const operations;
 
  private:
-  void _internal_copy(index_mapping const& other);
+  //void _internal_copy(index_mapping const& other);
 };
 }  // namespace storage
 
