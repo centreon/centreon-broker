@@ -29,7 +29,6 @@ using namespace com::centreon::broker;
 class InfluxDBStream : public testing::Test {
  public:
   void SetUp() override {
-    logging::manager::load();
     std::thread t{[&] {
       _server.init();
       _server.run();
@@ -43,8 +42,6 @@ class InfluxDBStream : public testing::Test {
     if (_server.get_init_done())
       _server.stop();
     _thread.join();
-
-    logging::manager::unload();
   }
 
   test_server _server;

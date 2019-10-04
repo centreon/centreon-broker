@@ -22,9 +22,7 @@
 #include <mutex>
 #include "com/centreon/broker/logging/defines.hh"
 
-namespace com {
-namespace centreon {
-namespace broker {
+CCB_BEGIN()
 namespace logging {
 /**
  *  @class backend backend.hh "com/centreon/broker/logging/backend.hh"
@@ -38,20 +36,19 @@ namespace logging {
  *  @see file
  *  @see syslog
  */
-class backend : public std::mutex {
+class backend {
  public:
-  backend();
+  backend() = default;
   backend(backend const& b) = delete;
   virtual ~backend() = default;
   backend& operator=(backend const& b) = delete;
   virtual void log_msg(char const* msg,
                        uint32_t len,
                        type log_type,
-                       level l) throw() = 0;
+                       level l) noexcept = 0;
 };
 }  // namespace logging
-}  // namespace broker
-}  // namespace centreon
-}  // namespace com
+
+CCB_END()
 
 #endif /* !CCB_LOGGING_BACKEND_HH_ */

@@ -20,13 +20,3 @@
 
 using namespace com::centreon::broker::logging;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
-/**
- *  Default constructor.
- */
-backend::backend() : std::mutex{} {}

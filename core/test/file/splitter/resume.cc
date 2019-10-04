@@ -28,7 +28,6 @@ using namespace com::centreon::broker;
 class FileSplitterResume : public ::testing::Test {
  public:
   void SetUp() override {
-    logging::manager::load();
 
     std::list<std::string> lst{
         misc::filesystem::dir_content_with_filter("/tmp/", "queue*")};
@@ -60,8 +59,6 @@ class FileSplitterResume : public ::testing::Test {
                                    file::fs_file::open_read_write_truncate,
                                    10000, true));
   }
-
-  void TearDown() override { logging::manager::unload(); };
 
  protected:
   std::unique_ptr<file::splitter> _file;
