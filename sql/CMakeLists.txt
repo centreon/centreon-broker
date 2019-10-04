@@ -67,7 +67,6 @@ set_target_properties("${SQL}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
 
-
 # Testing.
 if (WITH_TESTING)
   if (WITH_SQL_TESTS)

@@ -41,8 +41,8 @@ class fs_file {
   };
   enum seek_whence { seek_start = 1, seek_current, seek_end };
 
-  fs_file();
-  virtual ~fs_file();
+  fs_file() = default;
+  virtual ~fs_file() = default;
   virtual void close() = 0;
   virtual long read(void* buffer, long max_size) = 0;
   virtual void seek(long offset, seek_whence whence = seek_start) = 0;
