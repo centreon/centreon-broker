@@ -16,12 +16,13 @@
 ** For more information : contact@centreon.com
 */
 #include <cassert>
+#include "com/centreon/broker/sql/conflict_manager.hh"
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/neb/events.hh"
-#include "com/centreon/broker/sql/conflict_manager.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
 
 using namespace com::centreon::broker;
@@ -99,7 +100,7 @@ bool conflict_manager::init_storage(bool store_in_db,
 
   std::unique_lock<std::mutex> lk(_init_m);
 
-  while (count < 10) {
+  while (count < 5) {
     /* The loop is waiting for 1s or for _mysql to be initialized */
     if (_init_cv.wait_for(lk, std::chrono::seconds(1), [&]() {
           return _singleton != nullptr;
@@ -122,6 +123,14 @@ void conflict_manager::init_sql(database_config const& dbcfg,
   _singleton = new conflict_manager(dbcfg, loop_timeout, instance_timeout);
   _singleton->_action.resize(_singleton->_mysql.connections_count());
   _init_cv.notify_all();
+}
+
+void conflict_manager::close() {
+  conflict_manager::instance().exit();
+  std::lock_guard<std::mutex> lk(_init_m);
+  delete _singleton;
+  std::cout << "conflict_manager is destroyed REALLY!\n";
+  _singleton = nullptr;
 }
 
 void conflict_manager::_load_deleted_instances() {
@@ -574,8 +583,10 @@ void conflict_manager::_add_action(int32_t conn, actions action) {
 }
 
 void conflict_manager::exit() {
-  std::lock_guard<std::mutex> lock(_loop_m);
-  _exit = true;
+  {
+    std::lock_guard<std::mutex> lock(_loop_m);
+    _exit = true;
+  }
   _thread.join();
 }
 

@@ -38,14 +38,19 @@ class ConflictManagerTest : public ::testing::Test {
     }
   }
   void TearDown() override {
+    conflict_manager::close();
     config::applier::deinit();
   }
 };
 
 TEST_F(ConflictManagerTest, Bidon) {
-  database_config dbcfg;
+  database_config dbcfg("MySQL", "127.0.0.1", 3306, "root", "root",
+                        "centreon_storage", 5, true, 5);
   uint32_t loop_timeout = 5;
   uint32_t instance_timeout = 5;
 
-  conflict_manager::init_sql(dbcfg, loop_timeout, instance_timeout);
+  ASSERT_FALSE(conflict_manager::init_storage(true, 100000, 18));
+  ASSERT_NO_THROW(
+      conflict_manager::init_sql(dbcfg, loop_timeout, instance_timeout));
+  ASSERT_TRUE(conflict_manager::init_storage(true, 100000, 18));
 }
