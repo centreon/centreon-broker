@@ -54,7 +54,7 @@ if (WITH_WATCHDOG_TESTS)
     "${STORAGE}"
     PARENT_SCOPE
   )
-endif (WITH_SQL_TESTS)
+endif (WITH_WATCHDOG_TESTS)
 
 # Install rule.
 install(TARGETS "${WATCHDOG}"

@@ -27,7 +27,6 @@ using namespace com::centreon::broker;
 class FileSplitterSplit : public ::testing::Test {
  public:
   void SetUp() override {
-    logging::manager::load();
 
     _path = "/tmp/queue";
     {
@@ -44,8 +43,6 @@ class FileSplitterSplit : public ::testing::Test {
       _file->write(buffer, sizeof(buffer));
     _file->flush();
   }
-
-  void TearDown() override { logging::manager::unload(); }
 
  protected:
   std::unique_ptr<file::splitter> _file;

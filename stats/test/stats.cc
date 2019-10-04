@@ -52,7 +52,6 @@ class StatsTest : public ::testing::Test {
     config::applier::endpoint::load();
     io::events::load();
     io::protocols::load();
-    logging::manager::load();
   }
 
   void TearDown() override {
@@ -62,7 +61,6 @@ class StatsTest : public ::testing::Test {
     io::protocols::unload();
     io::events::unload();
     multiplexing::engine::unload();
-    logging::manager::unload();
   }
 };
 

@@ -27,7 +27,6 @@ using namespace com::centreon::broker;
 class FileSplitterMoreThanMaxSize : public ::testing::Test {
  public:
   void SetUp() override {
-    logging::manager::load();
     _path = "/tmp/queue";
     {
       std::list<std::string> parts{
@@ -38,8 +37,6 @@ class FileSplitterMoreThanMaxSize : public ::testing::Test {
     _file.reset(new file::splitter(
         _path, file::fs_file::open_read_write_truncate, 10000, true));
   }
-
-  void TearDown() override { logging::manager::unload(); };
 
  protected:
   std::unique_ptr<file::splitter> _file;

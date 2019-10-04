@@ -199,7 +199,7 @@ bool timeperiod::add_exception(std::string const& days,
  *
  *  @return The included timeperiods.
  */
-std::vector<timeperiod::ptr> const& timeperiod::get_included() const throw() {
+std::vector<timeperiod::ptr> const& timeperiod::get_included() const noexcept {
   return (_include);
 }
 

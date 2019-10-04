@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include "com/centreon/broker/config/applier/logger.hh"
 #include <cstdlib>
 #include <fstream>
@@ -87,7 +88,7 @@ void logger::apply(std::list<config::logger> const& loggers) {
            it(to_delete.begin()),
        end(to_delete.end());
        it != end; ++it)
-    logging::manager::instance().log_on(*it->second, 0, logging::none);
+    logging::manager::instance().log_on(it->second, 0, logging::none);
 
   // Free some memory.
   to_delete.clear();
@@ -100,10 +101,8 @@ void logger::apply(std::list<config::logger> const& loggers) {
     logging::config(logging::medium) << "log applier: creating new logger";
     std::shared_ptr<logging::backend> backend(_new_backend(*it));
     _backends[*it] = backend;
-    logging::manager::instance().log_on(*backend, it->types(), it->level());
+    logging::manager::instance().log_on(backend, it->types(), it->level());
   }
-
-  return;
 }
 
 /**
@@ -112,6 +111,7 @@ void logger::apply(std::list<config::logger> const& loggers) {
  *  @return logger instance.
  */
 logger& logger::instance() {
+  assert(gl_logger);
   return (*gl_logger);
 }
 
@@ -130,7 +130,6 @@ void logger::load() {
 void logger::unload() {
   delete gl_logger;
   gl_logger = nullptr;
-  return;
 }
 
 /**************************************
@@ -177,22 +176,20 @@ std::shared_ptr<logging::backend> logger::_new_backend(
 #endif  // CBMOD
     } break;
     case config::logger::standard: {
-      if ((cfg.name() == "stderr") || (cfg.name() == "cerr"))
+      if (cfg.name() == "stderr" || cfg.name() == "cerr")
         back.reset(new logging::file(std::cerr, "cerr"));
-      else if ((cfg.name() == "stdout") || (cfg.name() == "cout"))
+      else if (cfg.name() == "stdout" || cfg.name() == "cout")
         back.reset(new logging::file(std::cout, "cout"));
       else
-        throw(exceptions::msg() << "log applier: attempt to log on "
-                                   "an undefined output object");
-
+        throw exceptions::msg() << "log applier: attempt to log on "
+                                   "an undefined output object";
     } break;
     case config::logger::syslog:
       back.reset(new logging::syslogger(cfg.facility()));
       break;
     default:
-      throw(exceptions::msg() << "log applier: attempt to create a "
-                                 "logging object of unknown type");
+      throw exceptions::msg() << "log applier: attempt to create a "
+                                 "logging object of unknown type";
   }
-
   return back;
 }

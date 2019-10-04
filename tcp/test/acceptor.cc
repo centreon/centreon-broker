@@ -26,21 +26,14 @@
 
 using namespace com::centreon::broker;
 
-class TcpAcceptor : public testing::Test {
- public:
-  void SetUp(void) override { logging::manager::load(); }
-
-  void TearDown(void) override { logging::manager::unload(); }
-};
-
-TEST_F(TcpAcceptor, BadPort) {
+TEST(TcpAcceptor, BadPort) {
   tcp::acceptor acc;
 
   acc.listen_on(2);
   ASSERT_THROW(acc.open(), exceptions::msg);
 }
 
-TEST_F(TcpAcceptor, Simple) {
+TEST(TcpAcceptor, Simple) {
   tcp::acceptor acc;
 
   acc.listen_on(4242);
@@ -71,7 +64,7 @@ TEST_F(TcpAcceptor, Simple) {
   t.join();
 }
 
-TEST_F(TcpAcceptor, Multiple) {
+TEST(TcpAcceptor, Multiple) {
   tcp::acceptor acc;
   acc.set_read_timeout(-1);
   acc.set_write_timeout(-1);
@@ -131,7 +124,7 @@ TEST_F(TcpAcceptor, Multiple) {
   }
 }
 
-TEST_F(TcpAcceptor, BigSend) {
+TEST(TcpAcceptor, BigSend) {
   tcp::acceptor acc;
 
   acc.listen_on(4242);
