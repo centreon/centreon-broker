@@ -39,10 +39,10 @@ class cfile : public fs_file {
   cfile(std::string const& path, fs_file::open_mode mode);
   cfile& operator=(cfile const& other) = delete;
   ~cfile();
-  void close();
-  long read(void* buffer, long max_size);
-  void seek(long offset, fs_file::seek_whence = fs_file::seek_start);
-  long tell();
+  void close() override;
+  long read(void* buffer, long max_size) override;
+  void seek(long offset, fs_file::seek_whence = fs_file::seek_start) override;
+  long tell() override;
   long write(void const* buffer, long size) override;
   void flush() override;
 
