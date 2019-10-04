@@ -23,15 +23,11 @@
 class CentreonBrokerEnvironment : public testing::Environment {
  public:
   void SetUp() override {
-    com::centreon::broker::logging::manager::load();
     com::centreon::broker::config::applier::state::load();
-    return;
   }
 
   void TearDown() override {
     com::centreon::broker::config::applier::state::unload();
-    com::centreon::broker::logging::manager::unload();
-    return;
   }
 };
 

@@ -82,7 +82,7 @@ bool event_cache_visitor::read(std::shared_ptr<io::data>& d, time_t deadline) {
  */
 int event_cache_visitor::write(std::shared_ptr<io::data> const& d) {
   if (!validate(d, "event_cache_visitor"))
-    return (1);
+    return 1;
 
   if (d->type() ==
       io::events::data_type<io::events::bam, bam::de_ba_event>::value)
@@ -93,5 +93,5 @@ int event_cache_visitor::write(std::shared_ptr<io::data> const& d) {
   else
     _others.push_back(d);
 
-  return (1);
+  return 1;
 }

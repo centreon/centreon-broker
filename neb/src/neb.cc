@@ -175,7 +175,7 @@ int nebmodule_init(int flags, char const* args, void* handle) {
     setlocale(LC_NUMERIC, "C");
 
     // Default logging object.
-    neb::monitoring_logger monlog;
+    std::shared_ptr<neb::monitoring_logger> monlog{std::make_shared<neb::monitoring_logger>()};
 
     try {
       // Default logging object.

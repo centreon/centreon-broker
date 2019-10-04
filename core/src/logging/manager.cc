@@ -24,15 +24,6 @@ using namespace com::centreon::broker::logging;
 
 /**************************************
  *                                     *
- *           Private Objects           *
- *                                     *
- **************************************/
-
-// Class instance.
-manager* manager::_instance(nullptr);
-
-/**************************************
- *                                     *
  *           Private Methods           *
  *                                     *
  **************************************/
@@ -40,9 +31,7 @@ manager* manager::_instance(nullptr);
 /**
  *  Default constructor.
  */
-manager::manager() {
-  memset(_limits, 0, sizeof(_limits));
-}
+manager::manager() : backend(), _limits{} {}
 
 /**
  *  Compute optimizations to avoid as much log message generation as
@@ -55,7 +44,6 @@ void manager::_compute_optimizations() {
        it != end; ++it)
     for (uint32_t i = 1; i <= static_cast<uint32_t>(it->l); ++i)
       _limits[i] |= it->types;
-  return;
 }
 
 /**************************************
@@ -63,11 +51,6 @@ void manager::_compute_optimizations() {
  *           Public Methods            *
  *                                     *
  **************************************/
-
-/**
- *  Destructor.
- */
-manager::~manager() {}
 
 /**
  *  Get temporary logging object.
@@ -78,7 +61,7 @@ manager::~manager() {}
  *  @return Temporary logging object.
  */
 temp_logger manager::get_temp_logger(type t, level l) throw() {
-  return (temp_logger(t, l, (_limits[l] & t)));
+  return temp_logger(t, l, (_limits[l] & t));
 }
 
 /**
@@ -87,16 +70,8 @@ temp_logger manager::get_temp_logger(type t, level l) throw() {
  *  @return Class instance.
  */
 manager& manager::instance() {
-  return (*_instance);
-}
-
-/**
- *  Load the manager singleton.
- */
-void manager::load() {
-  if (!_instance)
-    _instance = new manager;
-  return;
+  static manager instance;
+  return instance;
 }
 
 /**
@@ -115,11 +90,8 @@ void manager::log_msg(char const* msg,
   for (std::vector<manager_backend>::iterator it = _backends.begin(),
                                               end = _backends.end();
        it != end; ++it)
-    if (msg && (it->types & t) && (it->l >= l)) {
-      std::lock_guard<backend> lock(*it->b);
+    if (msg && (it->types & t) && (it->l >= l))
       it->b->log_msg(msg, len, t, l);
-    }
-  return;
 }
 
 /**
@@ -132,13 +104,15 @@ void manager::log_msg(char const* msg,
  *                          OR of multiple logging::type.
  *  @param[in] min_priority Minimal priority of messages to be logged.
  */
-void manager::log_on(backend& b, uint32_t types, level min_priority) {
+void manager::log_on(std::shared_ptr<backend> b,
+                     uint32_t types,
+                     level min_priority) {
   std::lock_guard<std::mutex> lock(_backendsm);
 
   // Either add backend to list.
   if (types && min_priority) {
     manager_backend p;
-    p.b = &b;
+    p.b = b;
     p.l = min_priority;
     p.types = types;
     _backends.push_back(p);
@@ -149,21 +123,10 @@ void manager::log_on(backend& b, uint32_t types, level min_priority) {
   else {
     for (std::vector<manager_backend>::iterator it = _backends.begin();
          it != _backends.end();)
-      if (it->b == &b)
+      if (it->b == b)
         it = _backends.erase(it);
       else
         ++it;
     _compute_optimizations();
   }
-
-  return;
-}
-
-/**
- *  Unload the logging manager.
- */
-void manager::unload() {
-  delete _instance;
-  _instance = nullptr;
-  return;
 }

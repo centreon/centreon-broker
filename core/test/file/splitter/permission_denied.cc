@@ -31,12 +31,9 @@ using namespace com::centreon::broker::file;
 class FileSplitterPermissionDenied : public ::testing::Test {
  public:
   void SetUp() override {
-    logging::manager::load();
 
     _path = FILE_WITH_BAD_PERMISSION;
   }
-
-  void TearDown() override { logging::manager::unload(); }
 
  protected:
   std::string _path;
