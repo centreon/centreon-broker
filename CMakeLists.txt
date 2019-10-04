@@ -23,6 +23,10 @@
 # Set necessary settings.
 cmake_minimum_required(VERSION 2.8)
 project("Centreon Broker" C CXX)
+if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  message(FATAL_ERROR "You can build broker with g++ or clang++. CMake will exit.")
+endif ()
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc")
@@ -616,23 +620,9 @@ set(DAEMON cbd)
 add_executable(${DAEMON} ${SRC_DIR}/main.cc)
 add_dependencies(${DAEMON} Asio)
 
-#if (WITH_COVERAGE AND WITH_MODULE_SIMU)
-#  add_definitions("-DCOVERAGE")
-#  set(COVERAGE_EXCLUDES '*/test/*' '/usr/include/*' '${CMAKE_BINARY_DIR}/*')
-#  SETUP_TARGET_FOR_COVERAGE(
-#    NAME simu-coverage
-#    EXECUTABLE cbd /etc/centreon-broker/central-broker.json
-#    DEPENDENCIES cbd
-#  )
-#endif ()
-
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  # Flags needed to include all symbols in binary.
-  target_link_libraries("${DAEMON}"
-    "-Wl,--whole-archive" "rokerbase" "roker" "-Wl,--no-whole-archive")
-else ()
-  target_link_libraries("${DAEMON}" "roker")
-endif ()
+#Flags needed to include all symbols in binary.
+target_link_libraries("${DAEMON}"
+  "-Wl,--whole-archive" "rokerbase" "roker" "-Wl,--no-whole-archive")
 
 # Centreon Broker Watchdog
 option(WITH_CBWD "Build centreon broker watchdong." ON)
