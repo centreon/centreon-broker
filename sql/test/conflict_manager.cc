@@ -19,10 +19,11 @@
 #include <gtest/gtest.h>
 #include <cstdio>
 #include <fstream>
-#include <list>
-#include <memory>
 #include "../../core/test/test_server.hh"
 #include "com/centreon/broker/config/applier/init.hh"
+#include "com/centreon/broker/modules/loader.hh"
+#include "com/centreon/broker/neb/instance.hh"
+#include "com/centreon/broker/neb/module.hh"
 #include "com/centreon/broker/sql/conflict_manager.hh"
 
 using namespace com::centreon::broker;
@@ -38,12 +39,11 @@ class ConflictManagerTest : public ::testing::Test {
     }
   }
   void TearDown() override {
-    conflict_manager::close();
     config::applier::deinit();
   }
 };
 
-TEST_F(ConflictManagerTest, Bidon) {
+TEST_F(ConflictManagerTest, OpenClose) {
   database_config dbcfg("MySQL", "127.0.0.1", 3306, "root", "root",
                         "centreon_storage", 5, true, 5);
   uint32_t loop_timeout = 5;
@@ -53,4 +53,36 @@ TEST_F(ConflictManagerTest, Bidon) {
   ASSERT_NO_THROW(
       conflict_manager::init_sql(dbcfg, loop_timeout, instance_timeout));
   ASSERT_TRUE(conflict_manager::init_storage(true, 100000, 18));
+  conflict_manager::close();
+}
+
+TEST_F(ConflictManagerTest, InstanceStatement) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+  uint32_t loop_timeout = 5;
+  uint32_t instance_timeout = 5;
+  database_config dbcfg("MySQL", "127.0.0.1", 3306, "root", "root",
+                         "centreon_storage", 5, true, 5);
+  ASSERT_NO_THROW(
+      conflict_manager::init_sql(dbcfg, loop_timeout, instance_timeout));
+
+  std::shared_ptr<neb::instance> inst{std::make_shared<neb::instance>()};
+  inst->poller_id = 1;
+  inst->name = "Central";
+  inst->program_start = time(nullptr) - 100;
+  inst->program_end = time(nullptr) - 1;
+  inst->version = "1.8.1";
+
+  conflict_manager::instance().send_event(conflict_manager::sql, inst);
+
+  std::shared_ptr<neb::instance> inst2{std::make_shared<neb::instance>()};
+  inst2->poller_id = 2;
+  inst2->name = "Central2";
+  inst2->program_start = time(nullptr) - 100;
+  inst2->program_end = time(nullptr) - 1;
+  inst2->version = "1.8.1";
+
+  conflict_manager::instance().send_event(conflict_manager::sql, inst2);
+
+  conflict_manager::close();
 }

@@ -129,7 +129,6 @@ void conflict_manager::close() {
   conflict_manager::instance().exit();
   std::lock_guard<std::mutex> lk(_init_m);
   delete _singleton;
-  std::cout << "conflict_manager is destroyed REALLY!\n";
   _singleton = nullptr;
 }
 
@@ -400,13 +399,13 @@ void conflict_manager::_callback() {
           timeout = std::chrono::duration_cast<std::chrono::milliseconds>(
               now1 - now0).count();
           lk.lock();
-          if (_events.empty()) {
+          if (!_exit && _events.empty()) {
             logging::debug(logging::low) << "conflict_manager: no more events "
                                             "in the loop, let's wait for them";
             /* There is no more events to send to the DB, let's wait for new
              * ones. */
             if (_loop_cv.wait_for(lk, std::chrono::milliseconds(timeout_limit - timeout), [this]() {
-                  return !_events.empty();
+                  return _exit || !_events.empty();
                 }))
               logging::info(logging::low) << "conflict_manager: new events to "
                                              "send to the database received.";
