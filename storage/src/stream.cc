@@ -557,20 +557,19 @@ unsigned int stream::_find_index_id(
         << service_desc << ", special: " << special << ")";
       // Update index_data table.
       if (!_index_data_update.prepared()) {
-        std::ostringstream query;
-        query << "UPDATE index_data"
-                 " SET host_name=:host_name,"
-                 " service_description=:service_description,"
-                 " special=:special"
-                 " WHERE host_id=:host_id"
-                 " AND service_id=:service_id";
-        _index_data_update.prepare(query.str());
+        _index_data_update.prepare(
+          "UPDATE index_data"
+          " SET host_name=:host_name,"
+          " service_description=:service_description,"
+          " special=:special"
+          " WHERE host_id=:host_id"
+          " AND service_id=:service_id"
+        );
       }
       try {
         _index_data_update.bind_value(":host_name", host_name);
         _index_data_update.bind_value(":service_description", service_desc);
-        QString sp(QString::number(special));
-        _index_data_update.bind_value(":special", sp);
+        _index_data_update.bind_value(":special", special == 0 ? "0" : "1");
         _index_data_update.bind_value(":host_id", host_id);
         _index_data_update.bind_value(":service_id", service_id);
 
