@@ -475,13 +475,18 @@ void conflict_manager::_callback() {
 }
 
 /**
- *  Accessor to the boolean telling if the loop should stop.
+ *  Tell if the main loop can exit. Two conditions are needed:
+ *    * _exit = true
+ *    * _events is empty.
  *
- * @return True if the loop must be interrupted, false otherwise.
+ * This methods takes the lock on _loop_m, so don't call it if you already have
+ * it.
+ *
+ * @return True if the loop can be interrupted, false otherwise.
  */
 bool conflict_manager::_should_exit() const {
   std::lock_guard<std::mutex> lock(_loop_m);
-  return _exit;
+  return _exit && _events.empty();
 }
 
 /**
