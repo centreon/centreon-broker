@@ -1297,10 +1297,8 @@ int32_t conflict_manager::_process_instance() {
                                  << ", name: " << i.name << ", running: "
                                  << (i.is_running ? "yes" : "no") << ")";
 
-  if (i.is_running) {
-    // Clean tables.
-    _clean_tables(i.poller_id);
-  }
+  // Clean tables.
+  _clean_tables(i.poller_id);
 
   // Processing.
   if (_is_valid_poller(i.poller_id)) {
