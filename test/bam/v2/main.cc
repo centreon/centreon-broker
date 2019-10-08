@@ -107,7 +107,7 @@ static void postcheck(
   std::cout << "  KPI events\n";
   static std::string kpi_event_check(
     "SELECT kpi_id, start_time, end_time, status, in_downtime,"
-    "       impact_level, first_output, first_perfdata"
+    "       impact_level"
     "  FROM mod_bam_reporting_kpi_events"
     "  ORDER BY kpi_id ASC, start_time ASC");
   db.check_content(kpi_event_check, expected_kpi_events);

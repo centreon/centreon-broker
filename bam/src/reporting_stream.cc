@@ -549,12 +549,10 @@ void reporting_stream::_prepare() {
 
   // KPI full event insertion.
   {
-    std::string query;
-    query = "INSERT INTO mod_bam_reporting_kpi_events (kpi_id,"
-            "            start_time, end_time, status, in_downtime,"
-            "            impact_level, first_output, first_perfdata)"
-            "  VALUES (:kpi_id, :start_time, :end_time, :status,"
-            "          :in_downtime, :impact_level, :output, :perfdata)";
+    std::string query{"INSERT INTO mod_bam_reporting_kpi_events (kpi_id,"
+            " start_time, end_time, status, in_downtime, impact_level)"
+            " VALUES (:kpi_id, :start_time, :end_time, :status,"
+            " :in_downtime, :impact_level)"};
     _kpi_full_event_insert.prepare(
       query,
       "BAM-BI: could not prepare KPI full event insertion query");
@@ -562,12 +560,10 @@ void reporting_stream::_prepare() {
 
   // KPI event update.
   {
-    std::string query;
-    query = "UPDATE mod_bam_reporting_kpi_events"
-            "  SET end_time=:end_time, status=:status,"
-            "      in_downtime=:in_downtime, impact_level=:impact_level,"
-            "      first_output=:output, first_perfdata=:perfdata"
-            "  WHERE kpi_id=:kpi_id AND start_time=:start_time";
+    std::string query{"UPDATE mod_bam_reporting_kpi_events"
+            " SET end_time=:end_time, status=:status,"
+            " in_downtime=:in_downtime, impact_level=:impact_level"
+            " WHERE kpi_id=:kpi_id AND start_time=:start_time"};
     _kpi_event_update.prepare(
       query,
       "BAM-BI: could not prepare KPI event update query");
@@ -886,8 +882,6 @@ void reporting_stream::_process_kpi_event(
   _kpi_event_update.bind_value(":status", ke.status);
   _kpi_event_update.bind_value(":in_downtime", ke.in_downtime);
   _kpi_event_update.bind_value(":impact_level", ke.impact_level);
-  _kpi_event_update.bind_value(":output", ke.output);
-  _kpi_event_update.bind_value(":perfdata", ke.perfdata);
   try { _kpi_event_update.run_statement(); }
   catch (std::exception const& e) {
     throw (exceptions::msg() << "BAM-BI: could not update KPI "
@@ -909,8 +903,6 @@ void reporting_stream::_process_kpi_event(
     _kpi_full_event_insert.bind_value(":status", ke.status);
     _kpi_full_event_insert.bind_value(":in_downtime", ke.in_downtime);
     _kpi_full_event_insert.bind_value(":impact_level", ke.impact_level);
-    _kpi_full_event_insert.bind_value(":output", ke.output);
-    _kpi_full_event_insert.bind_value(":perfdata", ke.perfdata);
     try { _kpi_full_event_insert.run_statement(); }
     catch (std::exception const& e) {
       throw (exceptions::msg()
