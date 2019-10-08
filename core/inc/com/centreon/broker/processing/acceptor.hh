@@ -48,7 +48,7 @@ class acceptor : public bthread {
   acceptor(std::shared_ptr<io::endpoint> endp, std::string const& name);
   ~acceptor();
   void accept();
-  void exit();
+  void exit() override;
   void run() override;
   void set_read_filters(std::unordered_set<uint32_t> const& filters);
   void set_retry_interval(time_t retry_interval);
@@ -57,10 +57,10 @@ class acceptor : public bthread {
  protected:
   // From stat_visitable
   char const* _get_state() const override;
-  virtual uint32_t _get_queued_events();
+  virtual uint32_t _get_queued_events() override;
   std::unordered_set<uint32_t> const& _get_read_filters() const override;
   std::unordered_set<uint32_t> const& _get_write_filters() const override;
-  virtual void _forward_statistic(json11::Json::object& tree);
+  virtual void _forward_statistic(json11::Json::object& tree) override;
 
  private:
   acceptor(acceptor const& other);

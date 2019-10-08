@@ -16,12 +16,13 @@
 ** For more information : contact@centreon.com
 */
 #include <cassert>
+#include "com/centreon/broker/sql/conflict_manager.hh"
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
+#include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/neb/events.hh"
-#include "com/centreon/broker/sql/conflict_manager.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
 
 using namespace com::centreon::broker;
@@ -99,7 +100,7 @@ bool conflict_manager::init_storage(bool store_in_db,
 
   std::unique_lock<std::mutex> lk(_init_m);
 
-  while (count < 10) {
+  while (count < 5) {
     /* The loop is waiting for 1s or for _mysql to be initialized */
     if (_init_cv.wait_for(lk, std::chrono::seconds(1), [&]() {
           return _singleton != nullptr;
@@ -122,6 +123,13 @@ void conflict_manager::init_sql(database_config const& dbcfg,
   _singleton = new conflict_manager(dbcfg, loop_timeout, instance_timeout);
   _singleton->_action.resize(_singleton->_mysql.connections_count());
   _init_cv.notify_all();
+}
+
+void conflict_manager::close() {
+  conflict_manager::instance().exit();
+  std::lock_guard<std::mutex> lk(_init_m);
+  delete _singleton;
+  _singleton = nullptr;
 }
 
 void conflict_manager::_load_deleted_instances() {
@@ -391,13 +399,13 @@ void conflict_manager::_callback() {
           timeout = std::chrono::duration_cast<std::chrono::milliseconds>(
               now1 - now0).count();
           lk.lock();
-          if (_events.empty()) {
+          if (!_exit && _events.empty()) {
             logging::debug(logging::low) << "conflict_manager: no more events "
                                             "in the loop, let's wait for them";
             /* There is no more events to send to the DB, let's wait for new
              * ones. */
             if (_loop_cv.wait_for(lk, std::chrono::milliseconds(timeout_limit - timeout), [this]() {
-                  return !_events.empty();
+                  return _exit || !_events.empty();
                 }))
               logging::info(logging::low) << "conflict_manager: new events to "
                                              "send to the database received.";
@@ -467,13 +475,18 @@ void conflict_manager::_callback() {
 }
 
 /**
- *  Accessor to the boolean telling if the loop should stop.
+ *  Tell if the main loop can exit. Two conditions are needed:
+ *    * _exit = true
+ *    * _events is empty.
  *
- * @return True if the loop must be interrupted, false otherwise.
+ * This methods takes the lock on _loop_m, so don't call it if you already have
+ * it.
+ *
+ * @return True if the loop can be interrupted, false otherwise.
  */
 bool conflict_manager::_should_exit() const {
   std::lock_guard<std::mutex> lock(_loop_m);
-  return _exit;
+  return _exit && _events.empty();
 }
 
 /**
@@ -574,8 +587,10 @@ void conflict_manager::_add_action(int32_t conn, actions action) {
 }
 
 void conflict_manager::exit() {
-  std::lock_guard<std::mutex> lock(_loop_m);
-  _exit = true;
+  {
+    std::lock_guard<std::mutex> lock(_loop_m);
+    _exit = true;
+  }
   _thread.join();
 }
 

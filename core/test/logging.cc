@@ -51,7 +51,7 @@ class LoggingManager : public ::testing::Test {
       char* err = new char[128];
       regerror(status, &r, err, 128);
       std::cout << "cannot compile regex :" << err << std::endl;
-      delete err;
+      delete[] err;
       return false;
     }
 

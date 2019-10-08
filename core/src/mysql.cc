@@ -42,6 +42,7 @@ mysql::mysql(database_config const& db_cfg)
  *  Destructor
  */
 mysql::~mysql() {
+  commit();
   _connection.clear();
   mysql_manager::instance().update_connections();
   logging::info(logging::low) << "mysql: mysql library closed.";

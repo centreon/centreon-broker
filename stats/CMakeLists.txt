@@ -41,7 +41,7 @@ add_library("${STATS}" SHARED
   ${INC_DIR}/worker_pool.hh
 
 )
-add_dependencies("${STATS}" Asio)
+add_dependencies("${STATS}" Asio json11_lib)
 set_target_properties("${STATS}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS}")

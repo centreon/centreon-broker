@@ -415,7 +415,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/io/protocols.cc
   ${SRC_DIR}/io/raw.cc
   ${SRC_DIR}/io/stream.cc
-  ${SRC_DIR}/logging/backend.cc
   ${SRC_DIR}/logging/file.cc
   ${SRC_DIR}/logging/logger.cc
   ${SRC_DIR}/logging/logging.cc

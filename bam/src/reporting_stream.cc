@@ -479,18 +479,15 @@ void reporting_stream::_prepare() {
 
   query =
       "INSERT INTO mod_bam_reporting_kpi_events (kpi_id,"
-      "            start_time, end_time, status, in_downtime,"
-      "            impact_level, first_output, first_perfdata)"
-      "  VALUES (?, ?, ?, ?,"
-      "          ?, ?, ?, ?)";
+      " start_time, end_time, status, in_downtime,"
+      " impact_level) VALUES (?, ?, ?, ?, ?, ?)";
   _kpi_full_event_insert = _mysql.prepare_query(query);
 
   query =
       "UPDATE mod_bam_reporting_kpi_events"
-      "  SET end_time=?, status=?,"
-      "      in_downtime=?, impact_level=?,"
-      "      first_output=?, first_perfdata=?"
-      "  WHERE kpi_id=? AND start_time=?";
+      " SET end_time=?, status=?,"
+      " in_downtime=?, impact_level=?"
+      " WHERE kpi_id=? AND start_time=?";
   _kpi_event_update = _mysql.prepare_query(query);
 
   query =
@@ -722,11 +719,9 @@ void reporting_stream::_process_kpi_event(std::shared_ptr<io::data> const& e) {
   _kpi_event_update.bind_value_as_tiny(1, ke.status);
   _kpi_event_update.bind_value_as_i32(2, ke.in_downtime);
   _kpi_event_update.bind_value_as_i32(3, ke.impact_level);
-  _kpi_event_update.bind_value_as_str(4, ke.output);
-  _kpi_event_update.bind_value_as_str(5, ke.perfdata);
-  _kpi_event_update.bind_value_as_i32(6, ke.kpi_id);
+  _kpi_event_update.bind_value_as_i32(4, ke.kpi_id);
   _kpi_event_update.bind_value_as_u64(
-      7, static_cast<uint64_t>(ke.start_time.get_time_t()));
+      5, static_cast<uint64_t>(ke.start_time.get_time_t()));
 
   std::promise<int> promise;
   int thread_id(_mysql.run_statement_and_get_int(
@@ -745,8 +740,6 @@ void reporting_stream::_process_kpi_event(std::shared_ptr<io::data> const& e) {
       _kpi_full_event_insert.bind_value_as_tiny(3, ke.status);
       _kpi_full_event_insert.bind_value_as_bool(4, ke.in_downtime);
       _kpi_full_event_insert.bind_value_as_i32(5, ke.impact_level);
-      _kpi_full_event_insert.bind_value_as_str(6, ke.output);
-      _kpi_full_event_insert.bind_value_as_str(7, ke.perfdata);
 
       std::ostringstream oss_err;
       oss_err << "BAM-BI: could not insert event of KPI " << ke.kpi_id

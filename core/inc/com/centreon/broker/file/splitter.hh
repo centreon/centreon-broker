@@ -41,11 +41,12 @@ class splitter : public fs_file {
            long max_file_size = 100000000,
            bool auto_delete = false);
   ~splitter();
-  void close();
-  long read(void* buffer, long max_size);
+  void close() override;
+  long read(void* buffer, long max_size) override;
   void remove_all_files();
-  void seek(long offset, fs_file::seek_whence whence = fs_file::seek_start);
-  long tell();
+  void seek(long offset,
+            fs_file::seek_whence whence = fs_file::seek_start) override;
+  long tell() override;
   long write(void const* buffer, long size) override;
   void flush() override;
 
