@@ -126,7 +126,8 @@ stream::stream(
     _db(db_cfg),
     _data_bin_insert(_db),
     _update_metrics(_db),
-    _index_data_insert(_db) {
+    _index_data_insert(_db),
+    _index_data_update(_db) {
   // Prepare queries.
   _prepare();
 
@@ -555,26 +556,28 @@ unsigned int stream::_find_index_id(
         << service_id << ") (host: " << host_name << ", service: "
         << service_desc << ", special: " << special << ")";
       // Update index_data table.
-      std::ostringstream query;
-      query << "UPDATE " << (db_v2 ? "index_data" : "rt_index_data")
-            << "  SET host_name=:host_name,"
-               "     service_description=:service_description,"
-               "     special=:special"
-               "  WHERE host_id=:host_id"
-               "    AND service_id=:service_id";
+      if (!_index_data_update.prepared()) {
+        _index_data_update.prepare(
+          "UPDATE index_data"
+          " SET host_name=:host_name,"
+          " service_description=:service_description,"
+          " special=:special"
+          " WHERE host_id=:host_id"
+          " AND service_id=:service_id"
+        );
+      }
       try {
-        database_query q(_db);
-        q.prepare(query.str());
-        q.bind_value(":host_name", host_name);
-        q.bind_value(":service_description", service_desc);
-        q.bind_value(":special", special);
-        q.bind_value(":host_id", host_id);
-        q.bind_value(":service_id", service_id);
-        q.run_statement();
+        _index_data_update.bind_value(":host_name", host_name);
+        _index_data_update.bind_value(":service_description", service_desc);
+        _index_data_update.bind_value(":special", special == 0 ? "0" : "1");
+        _index_data_update.bind_value(":host_id", host_id);
+        _index_data_update.bind_value(":service_id", service_id);
+
+        _index_data_update.run_statement();
       }
       catch (std::exception const& e) {
         throw (broker::exceptions::msg() << "storage: could not update "
-                  "service information in rt_index_data (host_id "
+                  "service information in index_data (host_id "
                << host_id << ", service_id " << service_id
                << ", host_name " << host_name
                << ", service_description " << service_desc
