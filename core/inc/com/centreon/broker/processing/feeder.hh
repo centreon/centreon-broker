@@ -47,12 +47,12 @@ class feeder : public bthread {
          std::unordered_set<uint32_t> const& read_filters,
          std::unordered_set<uint32_t> const& write_filters);
   ~feeder();
-  void run();
+  void run() override;
 
  protected:
   // From stat_visitable
   char const* _get_state() const override;
-  virtual uint32_t _get_queued_events();
+  virtual uint32_t _get_queued_events() override;
   std::unordered_set<uint32_t> const& _get_read_filters() const override;
   std::unordered_set<uint32_t> const& _get_write_filters() const override;
   void _forward_statistic(json11::Json::object& tree);

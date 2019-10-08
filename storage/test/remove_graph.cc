@@ -35,18 +35,6 @@ TEST(StorageRemoveGraph, Constructor) {
 }
 
 /**
- *  Check that the remove_graph object properly default constructs.
- */
-TEST(StorageRemoveGraph, DefaultCtor) {
-  // Build object.
-  storage::remove_graph r;
-
-  // Check properties values.
-  ASSERT_FALSE(r.id != 0);
-  ASSERT_FALSE(r.is_index);
-}
-
-/**
  *  Check that the remove_graph object properly return is type
  */
 TEST(StorageRemoveGraph, ReturnType) {

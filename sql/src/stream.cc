@@ -27,7 +27,6 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
-#include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/neb/downtime.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
@@ -461,7 +460,6 @@ stream::~stream() {
   //_cleanup_thread.exit();
   logging::debug(logging::low) << "SQL: sql stream is closed.";
   conflict_manager::instance().exit();
-  mysql_manager::instance().clear();
 }
 
 /**

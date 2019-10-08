@@ -262,6 +262,7 @@ class conflict_manager {
   static bool init_storage(bool store_in_db,
                            uint32_t rrd_len,
                            uint32_t interval_length);
+  static void close();
   static conflict_manager& instance();
   void exit();
   json11::Json::object get_statistics();
