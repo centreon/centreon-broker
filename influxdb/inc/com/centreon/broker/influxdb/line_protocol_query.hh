@@ -51,8 +51,8 @@ class line_protocol_query {
                       std::vector<column> const& columns,
                       data_type type,
                       macro_cache const& cache);
-  line_protocol_query(line_protocol_query const& other);
-  ~line_protocol_query();
+  line_protocol_query(line_protocol_query const& other) = delete;
+  ~line_protocol_query() = default;
   line_protocol_query& operator=(line_protocol_query const& other);
 
   std::string escape_key(std::string const& str);
@@ -72,7 +72,6 @@ class line_protocol_query {
   template <typename T, typename U, T(U::*member)>
   void _get_member(io::data const& d, std::ostream& is);
   void _get_string(io::data const& d, std::ostream& is);
-  void _get_null(io::data const& d, std::ostream& is);
   void _get_dollar_sign(io::data const& d, std::ostream& is);
   uint32_t _get_index_id(io::data const& d);
   void _get_index_id(io::data const& d, std::ostream& is);

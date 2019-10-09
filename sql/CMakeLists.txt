@@ -67,20 +67,23 @@ set_target_properties("${SQL}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
 
+
 # Testing.
 if (WITH_TESTING)
-  set(
-    TESTS_SOURCES
-    ${TESTS_SOURCES}
-    "${TEST_DIR}/conflict_manager.cc"
-    PARENT_SCOPE
-  )
-  set(
-    TESTS_LIBRARIES
-    ${TESTS_LIBRARIES}
-    "${SQL}"
-    PARENT_SCOPE
-  )
+  if (WITH_SQL_TESTS)
+    set(
+      TESTS_SOURCES
+      ${TESTS_SOURCES}
+      "${TEST_DIR}/conflict_manager.cc"
+      PARENT_SCOPE
+    )
+    set(
+      TESTS_LIBRARIES
+      ${TESTS_LIBRARIES}
+      "${SQL}"
+      PARENT_SCOPE
+    )
+  endif()
 endif()
 
 # Install rule.
