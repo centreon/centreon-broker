@@ -55,8 +55,8 @@ worker::~worker() throw() {}
  *  Set the exit flag.
  */
 void worker::exit() {
-  _should_exit = true;
-  return;
+  std::lock_guard<std::mutex> lk(_worker_m);
+  _exit = true;
 }
 
 /**
@@ -73,7 +73,7 @@ void worker::run(std::string const& fifo_file) {
   _fifo = fifo_file;
 
   // Set exit flag.
-  _should_exit = false;
+  _exit = false;
 
   // Launch thread.
   _thread = std::thread(&worker::_run, this);
@@ -115,12 +115,17 @@ bool worker::_open() {
   return (retval);
 }
 
+bool worker::_should_exit() const {
+  std::lock_guard<std::mutex> lk(_worker_m);
+  return _exit;
+}
+
 /**
  *  Thread entry point.
  */
 void worker::_run() {
   try {
-    while (!_should_exit) {
+    while (!_should_exit()) {
       // Check file opening.
       if (_buffer.empty()) {
         _close();

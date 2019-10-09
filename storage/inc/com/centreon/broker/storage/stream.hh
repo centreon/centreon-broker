@@ -44,20 +44,6 @@ namespace storage {
  *  metrics table of a centstorage DB.
  */
 class stream : public io::stream {
- public:
-  stream(uint32_t rrd_len,
-         uint32_t interval_length,
-         uint32_t rebuild_check_interval,
-         bool store_in_db = true);
-  stream(stream const&) = delete;
-  stream& operator=(stream const&) = delete;
-  ~stream();
-  int32_t flush();
-  bool read(std::shared_ptr<io::data>& d, time_t deadline);
-  void statistics(json11::Json::object& tree) const;
-  int32_t write(std::shared_ptr<io::data> const& d);
-
- private:
   struct index_info {
     std::string host_name;
     uint32_t index_id;
@@ -88,11 +74,24 @@ class stream : public io::stream {
     double value;
   };
 
-  void _update_status(std::string const& status);
   int32_t _pending_events;
   //rebuilder _rebuilder;
   std::string _status;
   mutable std::mutex _statusm;
+
+  void _update_status(std::string const& status);
+ public:
+  stream(uint32_t rrd_len,
+         uint32_t interval_length,
+         uint32_t rebuild_check_interval,
+         bool store_in_db = true);
+  stream(stream const&) = delete;
+  stream& operator=(stream const&) = delete;
+  ~stream() = default;
+  int32_t flush();
+  bool read(std::shared_ptr<io::data>& d, time_t deadline);
+  void statistics(json11::Json::object& tree) const;
+  int32_t write(std::shared_ptr<io::data> const& d);
 };
 }  // namespace storage
 

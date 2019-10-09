@@ -27,7 +27,6 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
-#include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/neb/internal.hh"
@@ -73,16 +72,10 @@ stream::stream(uint32_t rrd_len,
   if (!rrd_len)
     rrd_len = 15552000;
 
+  logging::error(logging::high) << "INIT_STORAGE";
       //_rebuilder(db_cfg, rebuild_check_interval, rrd_len, interval_length),
   sql::conflict_manager::init_storage(store_in_db, rrd_len, interval_length);
-}
-
-/**
- *  Destructor.
- */
-stream::~stream() {
-  mysql_manager::instance().clear();
-  logging::debug(logging::low) << "storage: stream closed.";
+  logging::error(logging::high) << "INIT_STORAGE DONE";
 }
 
 /**

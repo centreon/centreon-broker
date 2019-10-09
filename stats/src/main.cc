@@ -44,10 +44,8 @@ char const* broker_module_version = CENTREON_BROKER_VERSION;
  */
 void broker_module_deinit() {
   // Decrement instance number.
-  if (!--instances) {
+  if (!--instances)
     pool.cleanup();
-  }
-  return;
 }
 
 /**
@@ -100,6 +98,5 @@ void broker_module_init(void const* arg) {
              "configuration, stats engine is NOT loaded";
     }
   }
-  return;
 }
 }

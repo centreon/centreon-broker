@@ -60,7 +60,7 @@ void manager::_compute_optimizations() {
  *
  *  @return Temporary logging object.
  */
-temp_logger manager::get_temp_logger(type t, level l) throw() {
+temp_logger manager::get_temp_logger(type t, level l) noexcept {
   return temp_logger(t, l, (_limits[l] & t));
 }
 
@@ -85,7 +85,7 @@ manager& manager::instance() {
 void manager::log_msg(char const* msg,
                       uint32_t len,
                       type t,
-                      level l) throw() {
+                      level l) noexcept {
   std::lock_guard<std::mutex> lock(_backendsm);
   for (std::vector<manager_backend>::iterator it = _backends.begin(),
                                               end = _backends.end();

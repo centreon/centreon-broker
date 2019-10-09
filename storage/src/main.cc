@@ -52,7 +52,6 @@ void broker_module_deinit() {
     io::events::instance().unregister_category(io::events::storage);
     io::protocols::instance().unreg("storage");
   }
-  return;
 }
 
 /**
@@ -109,6 +108,5 @@ void broker_module_init(void const* arg) {
     // Register storage layer.
     io::protocols::instance().reg("storage", storage::factory(), 1, 7);
   }
-  return;
 }
 }
