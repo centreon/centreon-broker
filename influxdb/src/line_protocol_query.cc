@@ -104,23 +104,6 @@ line_protocol_query::line_protocol_query(std::string const& timeseries,
 }
 
 /**
- *  Copy operator.
- *
- *  @param[in] other  The object to copy.
- */
-line_protocol_query::line_protocol_query(line_protocol_query const& other)
-    : _compiled_getters(other._compiled_getters),
-      _compiled_strings(other._compiled_strings),
-      _string_index(0),
-      _type(other._type),
-      _cache(other._cache) {}
-
-/**
- *  Destructor
- */
-line_protocol_query::~line_protocol_query() {}
-
-/**
  *  Assignment operator.
  *
  *  @param[in] other  The object to copy.
@@ -136,7 +119,7 @@ line_protocol_query& line_protocol_query::operator=(
     _type = other._type;
     _cache = other._cache;
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -151,7 +134,7 @@ std::string line_protocol_query::escape_key(std::string const& str) {
   ::com::centreon::broker::misc::string::replace(ret, ",", "\\,");
   ::com::centreon::broker::misc::string::replace(ret, "=", "\\=");
   ::com::centreon::broker::misc::string::replace(ret, " ", "\\ ");
-  return (ret);
+  return ret;
 }
 
 /**
@@ -165,7 +148,7 @@ std::string line_protocol_query::escape_measurement(std::string const& str) {
   std::string ret(str);
   ::com::centreon::broker::misc::string::replace(ret, ",", "\\,");
   ::com::centreon::broker::misc::string::replace(ret, " ", "\\ ");
-  return (ret);
+  return ret;
 }
 
 /**
@@ -180,7 +163,7 @@ std::string line_protocol_query::escape_value(std::string const& str) {
   ::com::centreon::broker::misc::string::replace(ret, "\"", "\\\"");
   ret.insert(0, "\"");
   ret.append("\"");
-  return (ret);
+  return ret;
 }
 
 /**
@@ -213,9 +196,9 @@ std::string line_protocol_query::generate_metric(storage::metric const& me) {
     logging::error(logging::medium)
         << "influxdb: could not generate query for metric " << me.metric_id
         << ": " << e.what();
-    return ("");
+    return "";
   }
-  return (iss.str());
+  return iss.str();
 }
 
 /**
@@ -248,10 +231,10 @@ std::string line_protocol_query::generate_status(storage::status const& st) {
     logging::error(logging::medium)
         << "influxdb: could not generate query for status " << st.index_id
         << ": " << e.what();
-    return ("");
+    return "";
   }
 
-  return (iss.str());
+  return iss.str();
 }
 
 /**
@@ -264,7 +247,6 @@ void line_protocol_query::_append_compiled_getter(
     line_protocol_query::data_getter getter,
     line_protocol_query::data_escaper escaper) {
   _compiled_getters.push_back(std::make_pair(getter, escaper));
-  return;
 }
 
 /**
@@ -279,7 +261,6 @@ void line_protocol_query::_append_compiled_string(
   _compiled_strings.push_back(str);
   _compiled_getters.push_back(
       std::make_pair(&line_protocol_query::_get_string, escaper));
-  return;
 }
 
 /**
@@ -307,7 +288,7 @@ void line_protocol_query::_compile_scheme(
             << scheme.substr(found_macro) << "'");
 
     std::string macro(scheme.substr(found_macro, end_macro + 1 - found_macro));
-    if (macro == "")
+    if (macro == "$$")
       _append_compiled_getter(&line_protocol_query::_get_dollar_sign, escaper);
     if (macro == "$METRICID$") {
       _throw_on_invalid(metric);
@@ -368,7 +349,6 @@ void line_protocol_query::_compile_scheme(
   std::string substr(scheme.substr(end_macro, found_macro - end_macro));
   if (!substr.empty())
     _append_compiled_string(substr, escaper);
-  return;
 }
 
 /**
@@ -379,7 +359,6 @@ void line_protocol_query::_compile_scheme(
 void line_protocol_query::_throw_on_invalid(data_type macro_type) {
   if (macro_type != _type)
     throw(exceptions::msg() << "influxdb: macro of invalid type");
-  return;
 }
 
 /**
@@ -391,7 +370,6 @@ void line_protocol_query::_throw_on_invalid(data_type macro_type) {
 template <typename T, typename U, T(U::*member)>
 void line_protocol_query::_get_member(io::data const& d, std::ostream& is) {
   is << static_cast<U const&>(d).*member;
-  return;
 }
 
 /**
@@ -403,19 +381,6 @@ void line_protocol_query::_get_member(io::data const& d, std::ostream& is) {
 void line_protocol_query::_get_string(io::data const& d, std::ostream& is) {
   (void)d;
   is << _compiled_strings[_string_index++];
-  return;
-}
-
-/**
- *  Null getter.
- *
- *  @param[in] d    The data, unused.
- *  @param[out] is  The stream, unused;
- */
-void line_protocol_query::_get_null(io::data const& d, std::ostream& is) {
-  (void)d;
-  (void)is;
-  return;
 }
 
 /**
@@ -428,7 +393,6 @@ void line_protocol_query::_get_dollar_sign(io::data const& d,
                                            std::ostream& is) {
   (void)d;
   is << "$";
-  return;
 }
 /**
  *  Get the status index id of a data, be it either metric or status.
@@ -439,13 +403,12 @@ void line_protocol_query::_get_dollar_sign(io::data const& d,
  */
 uint32_t line_protocol_query::_get_index_id(io::data const& d) {
   if (_type == status)
-    return (static_cast<storage::status const&>(d).index_id);
-  else if (_type == metric)
-    return (_cache
+    return static_cast<storage::status const&>(d).index_id;
+  else
+    return _cache
                 ->get_metric_mapping(
                     static_cast<storage::metric const&>(d).metric_id)
-                .index_id);
-  return (0);
+                .index_id;
 }
 
 /**
@@ -456,7 +419,6 @@ uint32_t line_protocol_query::_get_index_id(io::data const& d) {
  */
 void line_protocol_query::_get_index_id(io::data const& d, std::ostream& is) {
   is << _get_index_id(d);
-  return;
 }
 
 /**
@@ -466,9 +428,10 @@ void line_protocol_query::_get_index_id(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void line_protocol_query::_get_host(io::data const& d, std::ostream& is) {
-  uint32_t index_id = _get_index_id(d);
-  is << _cache->get_host_name(_cache->get_index_mapping(index_id).host_id);
-  return;
+  if (_type == status)
+    is << _cache->get_host_name(_cache->get_index_mapping(_get_index_id(d)).host_id);
+  else
+    is << _cache->get_host_name(static_cast<storage::metric const&>(d).host_id);
 }
 
 /**
@@ -478,9 +441,10 @@ void line_protocol_query::_get_host(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void line_protocol_query::_get_host_id(io::data const& d, std::ostream& is) {
-  uint32_t index_id = _get_index_id(d);
-  is << _cache->get_index_mapping(index_id).host_id;
-  return;
+  if (_type == status)
+    is << _cache->get_index_mapping(_get_index_id(d)).host_id;
+  else
+    is << static_cast<storage::metric const&>(d).host_id;
 }
 
 /**
@@ -490,10 +454,14 @@ void line_protocol_query::_get_host_id(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void line_protocol_query::_get_service(io::data const& d, std::ostream& is) {
-  uint32_t index_id = _get_index_id(d);
-  storage::index_mapping const& stm(_cache->get_index_mapping(index_id));
-  is << _cache->get_service_description(stm.host_id, stm.service_id);
-  return;
+  if (_type == status) {
+    storage::index_mapping const& stm(
+        _cache->get_index_mapping(_get_index_id(d)));
+    is << _cache->get_service_description(stm.host_id, stm.service_id);
+  } else {
+    is << _cache->get_service_description(static_cast<storage::metric const&>(d).host_id,
+                                          static_cast<storage::metric const&>(d).service_id);
+  }
 }
 
 /**
@@ -503,9 +471,10 @@ void line_protocol_query::_get_service(io::data const& d, std::ostream& is) {
  *  @param is     The stream.
  */
 void line_protocol_query::_get_service_id(io::data const& d, std::ostream& is) {
-  uint32_t index_id = _get_index_id(d);
-  is << _cache->get_index_mapping(index_id).service_id;
-  return;
+  if (_type == status)
+    is << _cache->get_index_mapping(_get_index_id(d)).service_id;
+  else
+    is << static_cast<storage::metric const&>(d).service_id;
 }
 
 /**
@@ -516,5 +485,4 @@ void line_protocol_query::_get_service_id(io::data const& d, std::ostream& is) {
  */
 void line_protocol_query::_get_instance(io::data const& d, std::ostream& is) {
   is << _cache->get_instance(d.source_id);
-  return;
 }
