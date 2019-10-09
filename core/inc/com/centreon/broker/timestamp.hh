@@ -140,7 +140,7 @@ public:
    *  @return A timestamp set in a very far future (Tue Jan 19 04:14:07 CET 2038).
    */
   static timestamp max() {
-    return (timestamp(INT_MAX));
+    return (timestamp(std::numeric_limits<std::int32_t>::max()));
   }
 
   // Data.
