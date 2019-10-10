@@ -140,7 +140,7 @@ public:
    *  @return A timestamp set in a very far future.
    */
   static timestamp max() {
-    return (timestamp(std::numeric_limits<std::time_t>::max()));
+    return (timestamp(std::numeric_limits<time_t>::max()));
   }
 
   // Data.
