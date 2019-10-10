@@ -373,18 +373,17 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
   else if (data->type() == inherited_downtime::static_type()) {
     std::ostringstream oss;
     timestamp now = timestamp::now();
-    timestamp max_timestamp = std::numeric_limits<int32_t>::max();
     inherited_downtime const& dwn = *std::static_pointer_cast<inherited_downtime const>(data);
     if (dwn.in_downtime)
       oss << "[" << now << "] SCHEDULE_SVC_DOWNTIME;_Module_BAM_"
           << config::applier::state::instance().poller_id() << ";ba_"
-          << dwn.ba_id << ";" << now << ";" << max_timestamp
+          << dwn.ba_id << ";" << now << ";" << std::numeric_limits<int32_t>::max()
           << ";1;0;0;Centreon Broker BAM Module;"
              "Automatic downtime triggered by BA downtime inheritance";
     else
       oss << "[" << now << "] DEL_SVC_DOWNTIME_FULL;_Module_BAM_"
           << config::applier::state::instance().poller_id() << ";ba_"
-          << dwn.ba_id << ";;" << max_timestamp
+          << dwn.ba_id << ";;" << std::numeric_limits<int32_t>::max()
           << ";1;0;;Centreon Broker BAM Module;"
              "Automatic downtime triggered by BA downtime inheritance";
     _write_external_command(oss.str());
