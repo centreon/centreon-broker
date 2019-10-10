@@ -20,8 +20,8 @@
 #ifndef CCB_STATS_WORKER_HH
 #define CCB_STATS_WORKER_HH
 
-#include <string>
 #include <mutex>
+#include <string>
 #include <thread>
 
 namespace com {

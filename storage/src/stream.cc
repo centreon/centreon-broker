@@ -72,10 +72,8 @@ stream::stream(uint32_t rrd_len,
   if (!rrd_len)
     rrd_len = 15552000;
 
-  logging::error(logging::high) << "INIT_STORAGE";
       //_rebuilder(db_cfg, rebuild_check_interval, rrd_len, interval_length),
   sql::conflict_manager::init_storage(store_in_db, rrd_len, interval_length);
-  logging::error(logging::high) << "INIT_STORAGE DONE";
 }
 
 /**

@@ -120,14 +120,3 @@ void modules::unload() {
   delete gl_modules;
   gl_modules = nullptr;
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Default constructor.
- */
-//modules::modules() {}

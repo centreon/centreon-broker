@@ -32,35 +32,11 @@ using namespace com::centreon::broker::modules;
  **************************************/
 
 /**
- *  Default constructor.
- */
-//loader::loader() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] l Object to copy.
- */
-//loader::loader(loader const& l) : _handles(l._handles) {}
-
-/**
  *  Destructor.
  */
 loader::~loader() {
   unload();
 }
-
-/**
- *  Assignment operator.
- *
- *  @param[in] l Object to copy.
- *
- *  @return This object.
- */
-//loader& loader::operator=(loader const& l) {
-//  _handles = l._handles;
-//  return (*this);
-//}
 
 /**
  *  Get iterator to the first module.
