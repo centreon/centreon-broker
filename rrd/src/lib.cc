@@ -54,13 +54,13 @@ lib::lib(std::string const& tmpl_path, uint32_t cache_size)
  *
  *  @param[in] l Object to copy.
  */
-lib::lib(lib const& l)
-    : backend(l), _creator(l._creator), _filename(l._filename) {}
+//lib::lib(lib const& l)
+//    : backend(l), _creator(l._creator), _filename(l._filename) {}
 
 /**
  *  Destructor.
  */
-lib::~lib() {}
+//lib::~lib() {}
 
 /**
  *  Assignment operator.
@@ -69,12 +69,12 @@ lib::~lib() {}
  *
  *  @return This object.
  */
-lib& lib::operator=(lib const& l) {
-  backend::operator=(l);
-  _creator = l._creator;
-  _filename = l._filename;
-  return (*this);
-}
+//lib& lib::operator=(lib const& l) {
+//  backend::operator=(l);
+//  _creator = l._creator;
+//  _filename = l._filename;
+//  return (*this);
+//}
 
 /**
  *  @brief Initiates the bulk load of multiple commands.

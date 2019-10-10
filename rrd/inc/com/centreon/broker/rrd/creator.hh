@@ -37,9 +37,9 @@ namespace rrd {
 class creator {
  public:
   creator(std::string const& tmpl_path, uint32_t cache_size);
-  creator(creator const& right);
+  creator(creator const&) = delete;
   ~creator();
-  creator& operator=(creator const& right);
+  creator& operator=(creator const&) = delete;
   void clear();
   void create(std::string const& filename,
               uint32_t length,

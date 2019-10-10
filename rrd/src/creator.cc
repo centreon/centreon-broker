@@ -50,14 +50,14 @@ creator::creator(std::string const& tmpl_path, uint32_t cache_size)
       << " templates in '" << _tmpl_path << "'";
 }
 
-/**
- *  Copy constructor.
- *
- *  @param[in] right The object to copy.
- */
-creator::creator(creator const& right) {
-  operator=(right);
-}
+///**
+// *  Copy constructor.
+// *
+// *  @param[in] right The object to copy.
+// */
+//creator::creator(creator const& right) {
+//  operator=(right);
+//}
 
 /**
  *  Destructor.
@@ -66,21 +66,21 @@ creator::~creator() {
   clear();
 }
 
-/**
- *  Copy operator.
- *
- *  @param[in] right The object to copy.
- *
- *  @return This object.
- */
-creator& creator::operator=(creator const& right) {
-  if (this != &right) {
-    _cache_size = right._cache_size;
-    _fds = right._fds;
-    _tmpl_path = right._tmpl_path;
-  }
-  return (*this);
-}
+///**
+// *  Copy operator.
+// *
+// *  @param[in] right The object to copy.
+// *
+// *  @return This object.
+// */
+//creator& creator::operator=(creator const& right) {
+//  if (this != &right) {
+//    _cache_size = right._cache_size;
+//    _fds = right._fds;
+//    _tmpl_path = right._tmpl_path;
+//  }
+//  return (*this);
+//}
 
 /**
  *  Clear cache and remove template file.

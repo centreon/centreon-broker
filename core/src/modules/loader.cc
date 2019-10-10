@@ -34,14 +34,14 @@ using namespace com::centreon::broker::modules;
 /**
  *  Default constructor.
  */
-loader::loader() {}
+//loader::loader() {}
 
 /**
  *  Copy constructor.
  *
  *  @param[in] l Object to copy.
  */
-loader::loader(loader const& l) : _handles(l._handles) {}
+//loader::loader(loader const& l) : _handles(l._handles) {}
 
 /**
  *  Destructor.
@@ -57,10 +57,10 @@ loader::~loader() {
  *
  *  @return This object.
  */
-loader& loader::operator=(loader const& l) {
-  _handles = l._handles;
-  return (*this);
-}
+//loader& loader::operator=(loader const& l) {
+//  _handles = l._handles;
+//  return (*this);
+//}
 
 /**
  *  Get iterator to the first module.
@@ -117,8 +117,7 @@ void loader::load_dir(std::string const& dirname, void const* arg) {
  *  @param[in] arg      Module argument.
  */
 void loader::load_file(std::string const& filename, void const* arg) {
-  std::unordered_map<std::string, std::shared_ptr<handle> >::iterator it(
-      _handles.find(filename));
+  auto it = _handles.find(filename);
   if (it == _handles.end()) {
     std::shared_ptr<handle> handl(new handle);
     handl->open(filename, arg);
@@ -134,16 +133,9 @@ void loader::load_file(std::string const& filename, void const* arg) {
  *  Unload modules.
  */
 void loader::unload() {
-  std::string key;
-  while (!_handles.empty()) {
-    std::unordered_map<std::string, std::shared_ptr<handle> >::iterator it(
-        _handles.begin());
-    key = it->first;
-    std::unordered_map<std::string, std::shared_ptr<handle> >::iterator end(
-        _handles.end());
-    while (++it != end)
-      if (it->first > key)
-        key = it->first;
-    _handles.erase(key);
+  auto rit = _handles.rbegin();
+  while (rit != _handles.rend()) {
+    _handles.erase(rit->first);
+    rit = _handles.rbegin();
   }
 }

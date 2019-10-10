@@ -19,9 +19,9 @@
 #ifndef CCB_MODULES_LOADER_HH
 #define CCB_MODULES_LOADER_HH
 
+#include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include "com/centreon/broker/modules/handle.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -36,22 +36,21 @@ namespace modules {
  *  reference to them as long as they exist.
  */
 class loader {
+  std::map<std::string, std::shared_ptr<handle> > _handles;
+
  public:
-  typedef std::unordered_map<std::string, std::shared_ptr<handle>>::iterator
+  typedef std::map<std::string, std::shared_ptr<handle> >::iterator
       iterator;
 
-  loader();
-  loader(loader const& l);
+  loader() = default;
+  loader(loader const& l) = delete;
   ~loader();
-  loader& operator=(loader const& l);
+  loader& operator=(loader const& l) = delete;
   iterator begin();
   iterator end();
-  void load_dir(std::string const& dirname, void const* arg = NULL);
-  void load_file(std::string const& filename, void const* arg = NULL);
+  void load_dir(std::string const& dirname, void const* arg = nullptr);
+  void load_file(std::string const& filename, void const* arg = nullptr);
   void unload();
-
- private:
-  std::unordered_map<std::string, std::shared_ptr<handle>> _handles;
 };
 }  // namespace modules
 
