@@ -137,10 +137,10 @@ public:
   /**
    *  Return the upper time limit.
    *
-   *  @return A timestamp set in a very far future (Tue Jan 19 04:14:07 CET 2038).
+   *  @return A timestamp set in a very far future.
    */
   static timestamp max() {
-    return (timestamp(std::numeric_limits<std::int32_t>::max()));
+    return (timestamp(std::numeric_limits<std::time_t>::max()));
   }
 
   // Data.
