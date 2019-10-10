@@ -34,7 +34,7 @@
 #include "com/centreon/engine/common.hh"
 #include "com/centreon/engine/host.hh"
 #include "com/centreon/engine/service.hh"
-#include "com/centreon/broker/sql/conflict_manager.hh"
+#include "com/centreon/broker/storage/conflict_manager.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;

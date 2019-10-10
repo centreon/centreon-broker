@@ -16,7 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/sql/conflict_manager.hh"
+#include "com/centreon/broker/storage/conflict_manager.hh"
 #include <gtest/gtest.h>
 #include <cstdio>
 #include <fstream>

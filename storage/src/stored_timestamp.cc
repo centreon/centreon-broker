@@ -16,8 +16,8 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/sql/stored_timestamp.hh"
 #include <ctime>
+#include "com/centreon/broker/storage/stored_timestamp.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::sql;

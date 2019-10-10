@@ -114,8 +114,6 @@ int nebmodule_deinit(int flags, int reason) {
     }
     if (te)
       remove_event(te, com::centreon::engine::timed_event::high);
-    // delete QCoreApplication::instance();
-    //}
   }
   // Avoid exception propagation in C code.
   catch (...) {

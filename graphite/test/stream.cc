@@ -175,9 +175,16 @@ TEST_F(graphiteStream, Flush) {
 
 TEST_F(graphiteStream, NullData) {
   std::shared_ptr<persistent_cache> cache;
-  storage::metric *m1, *m2, *m3;
   std::shared_ptr<io::data> data;
-  graphite::stream st("metric_name", "status_name", "a", "user", "pass", "localhost", 4242, 9, cache);
+  graphite::stream st("metric_name",
+                      "status_name",
+                      "a",
+                      "user",
+                      "pass",
+                      "localhost",
+                      4242,
+                      9,
+                      cache);
 
   std::shared_ptr<io::data> d1{nullptr};
   ASSERT_FALSE(st.write(d1));

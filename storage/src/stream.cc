@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/storage/stream.hh"
 #include <cfloat>
 #include <cmath>
 #include <cstdlib>
@@ -31,6 +30,7 @@
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_status.hh"
+#include "com/centreon/broker/storage/conflict_manager.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
 #include "com/centreon/broker/storage/metric.hh"
@@ -39,7 +39,7 @@
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
-#include "com/centreon/broker/sql/conflict_manager.hh"
+#include "com/centreon/broker/storage/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;

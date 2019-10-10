@@ -16,7 +16,7 @@
 ** For more information : contact@centreon.com
 */
 #include <cassert>
-#include "com/centreon/broker/sql/conflict_manager.hh"
+#include "com/centreon/broker/storage/conflict_manager.hh"
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
