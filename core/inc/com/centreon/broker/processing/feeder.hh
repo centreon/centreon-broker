@@ -55,7 +55,7 @@ class feeder : public bthread {
   virtual uint32_t _get_queued_events() override;
   std::unordered_set<uint32_t> const& _get_read_filters() const override;
   std::unordered_set<uint32_t> const& _get_write_filters() const override;
-  void _forward_statistic(json11::Json::object& tree);
+  void _forward_statistic(json11::Json::object& tree) override;
 
  private:
   feeder(feeder const& other);
