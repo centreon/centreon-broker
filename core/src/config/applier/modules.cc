@@ -58,12 +58,10 @@ void modules::apply(std::list<std::string> const& module_list,
 //      com::centreon::broker::multiplexing::engine::instance());
 
   // Load modules.
-  for (std::list<std::string>::const_iterator it(module_list.begin()),
-       end(module_list.end());
-       it != end; ++it) {
+  for (std::string const& m : module_list) {
     logging::config(logging::high)
-        << "module applier: loading module '" << *it << "'";
-    _loader.load_file(*it, arg);
+        << "module applier: loading module '" << m << "'";
+    _loader.load_file(m, arg);
   }
   if (!module_dir.empty()) {
     logging::config(logging::high)
@@ -79,7 +77,7 @@ void modules::apply(std::list<std::string> const& module_list,
  *  @return Iterator to the first module.
  */
 modules::iterator modules::begin() {
-  return (_loader.begin());
+  return _loader.begin();
 }
 
 /**
@@ -87,7 +85,6 @@ modules::iterator modules::begin() {
  */
 void modules::discard() {
   _loader.unload();
-  return;
 }
 
 /**
@@ -96,7 +93,7 @@ void modules::discard() {
  *  @return Last iterator of the module list.
  */
 modules::iterator modules::end() {
-  return (_loader.end());
+  return _loader.end();
 }
 
 /**
@@ -105,7 +102,7 @@ modules::iterator modules::end() {
  *  @return Class instance.
  */
 modules& modules::instance() {
-  return (*gl_modules);
+  return *gl_modules;
 }
 
 /**
@@ -114,7 +111,6 @@ modules& modules::instance() {
 void modules::load() {
   if (!gl_modules)
     gl_modules = new modules;
-  return;
 }
 
 /**
@@ -123,16 +119,4 @@ void modules::load() {
 void modules::unload() {
   delete gl_modules;
   gl_modules = nullptr;
-  return;
 }
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Default constructor.
- */
-modules::modules() {}

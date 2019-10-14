@@ -60,7 +60,6 @@ class instance_configuration {
   std::string _config_file;
   bool _run;
   bool _reload;
-  uint32_t _seconds_per_tentative;
 };
 }  // namespace watchdog
 

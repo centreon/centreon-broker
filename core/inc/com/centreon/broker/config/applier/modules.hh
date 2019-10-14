@@ -35,9 +35,14 @@ namespace applier {
  *  Load modules as per the configuration.
  */
 class modules {
+  broker::modules::loader _loader;
+
  public:
   typedef broker::modules::loader::iterator iterator;
 
+  modules() = default;
+  modules(modules const& m) = delete;
+  modules& operator=(modules const& m) = delete;
   ~modules();
   void apply(std::list<std::string> const& module_list,
              std::string const& module_dir,
@@ -48,13 +53,6 @@ class modules {
   static modules& instance();
   static void load();
   static void unload();
-
- private:
-  modules();
-  modules(modules const& m);
-  modules& operator=(modules const& m);
-
-  broker::modules::loader _loader;
 };
 }  // namespace applier
 }  // namespace config

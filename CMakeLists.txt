@@ -401,7 +401,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/file/directory_watcher.cc
   ${SRC_DIR}/file/factory.cc
   ${SRC_DIR}/file/fifo.cc
-  ${SRC_DIR}/file/fs_file.cc
   ${SRC_DIR}/file/internal.cc
   ${SRC_DIR}/file/opener.cc
   ${SRC_DIR}/file/splitter.cc

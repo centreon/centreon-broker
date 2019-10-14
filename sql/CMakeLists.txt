@@ -26,65 +26,44 @@ include_directories("${PROJECT_SOURCE_DIR}/correlation/inc")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/storage/inc")
 
-# conflict_manager library.
-add_library("conflictmgr" STATIC
-  # Sources.
-  "${SRC_DIR}/conflict_manager.cc"
-  "${SRC_DIR}/conflict_manager_sql.cc"
-  "${SRC_DIR}/conflict_manager_storage.cc"
-  "${SRC_DIR}/stored_timestamp.cc"
-
-  # Headers.
-  "${INC_DIR}/com/centreon/broker/sql/conflict_manager.hh"
-  "${INC_DIR}/com/centreon/broker/sql/stored_timestamp.hh"
-)
-set(CONFLICTMGR "conflictmgr" PARENT_SCOPE)
-set_target_properties(conflictmgr PROPERTIES
-    COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
-add_dependencies(conflictmgr json11_lib)
-
 # SQL module.
 set(SQL "80-sql")
 set(SQL "${SQL}" PARENT_SCOPE)
 add_library("${SQL}" SHARED
   # Sources.
   "${SRC_DIR}/cleanup.cc"
-  "${SRC_DIR}/conflict_manager.cc"
   "${SRC_DIR}/connector.cc"
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/stream.cc"
-  "${SRC_DIR}/stored_timestamp.cc"
   # Headers.
   "${INC_DIR}/com/centreon/broker/sql/cleanup.hh"
   "${INC_DIR}/com/centreon/broker/sql/connector.hh"
   "${INC_DIR}/com/centreon/broker/sql/factory.hh"
   "${INC_DIR}/com/centreon/broker/sql/stream.hh"
-  "${INC_DIR}/com/centreon/broker/sql/stored_timestamp.hh"
 )
 add_dependencies("${SQL}" json11_lib)
 set_target_properties("${SQL}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
 
-
-# Testing.
-if (WITH_TESTING)
-  if (WITH_SQL_TESTS)
-    set(
-      TESTS_SOURCES
-      ${TESTS_SOURCES}
-      "${TEST_DIR}/conflict_manager.cc"
-      PARENT_SCOPE
-    )
-    set(
-      TESTS_LIBRARIES
-      ${TESTS_LIBRARIES}
-      "${SQL}"
-      PARENT_SCOPE
-    )
-  endif()
-endif()
+## Testing.
+#if (WITH_TESTING)
+#  if (WITH_SQL_TESTS)
+#    set(
+#      TESTS_SOURCES
+#      ${TESTS_SOURCES}
+#      "${TEST_DIR}/conflict_manager.cc"
+#      PARENT_SCOPE
+#    )
+#    set(
+#      TESTS_LIBRARIES
+#      ${TESTS_LIBRARIES}
+#      "${SQL}"
+#      PARENT_SCOPE
+#    )
+#  endif()
+#endif()
 
 # Install rule.
 install(TARGETS "${SQL}"

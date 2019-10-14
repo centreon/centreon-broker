@@ -22,7 +22,7 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/query_preparator.hh"
-#include "com/centreon/broker/sql/conflict_manager.hh"
+#include "com/centreon/broker/storage/conflict_manager.hh"
 #include "com/centreon/engine/host.hh"
 #include "com/centreon/engine/service.hh"
 

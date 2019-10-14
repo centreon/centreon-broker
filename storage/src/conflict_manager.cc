@@ -16,13 +16,13 @@
 ** For more information : contact@centreon.com
 */
 #include <cassert>
-#include "com/centreon/broker/sql/conflict_manager.hh"
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/neb/events.hh"
+#include "com/centreon/broker/storage/conflict_manager.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
 
 using namespace com::centreon::broker;

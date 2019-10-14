@@ -23,8 +23,24 @@ set(TEST_DIR "${PROJECT_SOURCE_DIR}/storage/test")
 include_directories("${INC_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/neb/inc")
 include_directories("${PROJECT_SOURCE_DIR}/rrd/inc")
-include_directories("${PROJECT_SOURCE_DIR}/sql/inc")
 set(INC_DIR "${INC_DIR}/com/centreon/broker/storage")
+
+# conflict_manager library.
+add_library("conflictmgr" STATIC
+  # Sources.
+  "${SRC_DIR}/conflict_manager.cc"
+  "${SRC_DIR}/conflict_manager_sql.cc"
+  "${SRC_DIR}/conflict_manager_storage.cc"
+  "${SRC_DIR}/stored_timestamp.cc"
+
+  # Headers.
+  "${INC_DIR}/conflict_manager.hh"
+  "${INC_DIR}/stored_timestamp.hh"
+)
+set(CONFLICTMGR "conflictmgr" PARENT_SCOPE)
+set_target_properties(conflictmgr PROPERTIES
+    COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
+add_dependencies(conflictmgr json11_lib)
 
 # Storage module.
 set(STORAGE "20-storage")
@@ -72,6 +88,7 @@ target_link_libraries("${STORAGE}" conflictmgr)
 set(
   TESTS_SOURCES
   ${TESTS_SOURCES}
+  ${TEST_DIR}/conflict_manager.cc
   ${TEST_DIR}/connector.cc
   ${TEST_DIR}/metric.cc
   ${TEST_DIR}/perfdata.cc
