@@ -193,6 +193,7 @@ class conflict_manager {
   database::mysql_stmt _service_status_update;
 
   database::mysql_stmt _index_data_insert;
+  database::mysql_stmt _index_data_update;
   database::mysql_stmt _metrics_insert;
   database::mysql_stmt _metrics_update;
 

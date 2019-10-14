@@ -136,6 +136,39 @@ int32_t conflict_manager::_storage_process_service_status() {
                                       << ") failed: " << e.what();
     }
   } else {
+    if (it_index_cache->second.host_name != ss.host_name ||
+        it_index_cache->second.service_description != ss.service_description ||
+        it_index_cache->second.special != special) {
+      logging::info(logging::medium) << "storage: updating index "
+                                     << it_index_cache->second.index_id
+                                     << " of (" << host_id << ", " << service_id
+                                     << ") host: " << ss.host_name
+                                     << ", service: " << ss.service_description
+                                     << ", special: " << special << ")";
+
+      // Update index_data table.
+      if (!_index_data_update.prepared()) {
+        _index_data_update = _mysql.prepare_query(
+            "UPDATE index_data SET host_name=?, service_description=?, "
+            "special=? WHERE host_id=? AND service_id=?");
+      }
+      _index_data_update.bind_value_as_str(0, ss.host_name);
+      _index_data_update.bind_value_as_str(1, ss.service_description);
+      _index_data_update.bind_value_as_str(2, special == 0 ? "0" : "1");
+      _index_data_update.bind_value_as_u32(3, host_id);
+      _index_data_update.bind_value_as_u32(4, service_id);
+      std::ostringstream oss;
+      oss << "storage: could not update service information in index_data "
+             "(host_id " << host_id << ", service_id " << service_id
+          << ", host_name " << ss.host_name << ", service_description "
+          << ss.service_description << "): ";
+      _mysql.run_statement(_index_data_update, oss.str(), false);
+
+      // Update cache entry.
+      it_index_cache->second.host_name = ss.host_name;
+      it_index_cache->second.service_description = ss.service_description;
+      it_index_cache->second.special = special;
+    }
     index_id = it_index_cache->second.index_id;
     rrd_len = it_index_cache->second.rrd_retention;
     index_locked = it_index_cache->second.locked;
