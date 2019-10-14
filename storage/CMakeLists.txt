@@ -85,24 +85,30 @@ set_target_properties("${STORAGE}" PROPERTIES
 target_link_libraries("${STORAGE}" conflictmgr)
 
 # Testing.
-set(
-  TESTS_SOURCES
-  ${TESTS_SOURCES}
-  ${TEST_DIR}/conflict_manager.cc
-  ${TEST_DIR}/connector.cc
-  ${TEST_DIR}/metric.cc
-  ${TEST_DIR}/perfdata.cc
-  ${TEST_DIR}/rebuild.cc
-  ${TEST_DIR}/remove_graph.cc
-  ${TEST_DIR}/status.cc
-  PARENT_SCOPE
-)
-set(
-  TESTS_LIBRARIES
-  ${TESTS_LIBRARIES}
-  ${STORAGE}
-  PARENT_SCOPE
-)
+if (WITH_TESTING)
+  if (WITH_SQL_TESTS)
+    set(TEST_SOURCES ${TESTS_SOURCES} ${TEST_DIR}/conflict_manager.cc)
+  endif (WITH_SQL_TESTS)
+
+  # Testing.
+  set(
+    TESTS_SOURCES
+    ${TESTS_SOURCES}
+    ${TEST_DIR}/connector.cc
+    ${TEST_DIR}/metric.cc
+    ${TEST_DIR}/perfdata.cc
+    ${TEST_DIR}/rebuild.cc
+    ${TEST_DIR}/remove_graph.cc
+    ${TEST_DIR}/status.cc
+    PARENT_SCOPE
+  )
+  set(
+    TESTS_LIBRARIES
+    ${TESTS_LIBRARIES}
+    ${STORAGE}
+    PARENT_SCOPE
+  )
+endif()
 
 # Install rule.
 install(TARGETS "${STORAGE}"
