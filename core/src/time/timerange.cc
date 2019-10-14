@@ -193,14 +193,19 @@ bool timerange::to_time_t(struct tm const& midnight,
 }
 
 static bool _build_time_t(std::string const& time_str, unsigned long& ret) {
+  auto f = [](std::string const& str, uint64_t & data) -> bool {
+      std::istringstream iss(str);
+      return ((iss >> data) && iss.eof());
+  };
+
   std::size_t pos(time_str.find(':'));
   if (pos == std::string::npos)
     return (false);
   unsigned long hours;
-  if (!misc::string::to(time_str.substr(0, pos).c_str(), hours))
+  if (!f(time_str.substr(0, pos), hours))
     return (false);
   unsigned long minutes;
-  if (!misc::string::to(time_str.substr(pos + 1).c_str(), minutes))
+  if (!f(time_str.substr(pos + 1), minutes))
     return (false);
   ret = hours * 3600 + minutes * 60;
   return (true);
@@ -209,7 +214,7 @@ static bool _build_time_t(std::string const& time_str, unsigned long& ret) {
 bool timerange::build_timeranges_from_string(std::string const& line,
                                              std::list<timerange>& timeranges) {
   std::list<std::string> timeranges_str;
-  misc::string::split(line, timeranges_str, ',');
+  timeranges_str = misc::string::split(line, ',');
   for (std::list<std::string>::const_iterator it(timeranges_str.begin()),
        end(timeranges_str.end());
        it != end; ++it) {

@@ -74,7 +74,7 @@ TEST_F(StatsTest, Builder) {
 
   ASSERT_TRUE(err.empty());
   ASSERT_TRUE(result.is_object());
-  ASSERT_EQ(result["version"], misc::string::get(CENTREON_BROKER_VERSION));
+  ASSERT_EQ(result["version"], CENTREON_BROKER_VERSION);
   ASSERT_EQ(result["pid"], getpid());
   ASSERT_TRUE(result["now"].is_string());
   ASSERT_TRUE(result["asio_version"].is_string());
@@ -98,7 +98,7 @@ TEST_F(StatsTest, BuilderWithModules) {
 
   ASSERT_TRUE(err.empty());
   ASSERT_TRUE(result.is_object());
-  ASSERT_EQ(result["version"],CENTREON_BROKER_VERSION);
+  ASSERT_EQ(result["version"], CENTREON_BROKER_VERSION);
   ASSERT_EQ(result["pid"], getpid());
   ASSERT_TRUE(result["now"].is_string());
   ASSERT_TRUE(result["asio_version"].is_string());
