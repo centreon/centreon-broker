@@ -20,6 +20,7 @@
 #ifndef CCB_STATS_WORKER_HH
 #define CCB_STATS_WORKER_HH
 
+#include <mutex>
 #include <string>
 #include <thread>
 
@@ -35,6 +36,19 @@ namespace stats {
  *  and write to it statistics when available.
  */
 class worker {
+  std::string _buffer;
+  int _fd;
+  std::string _fifo;
+
+  std::thread _thread;
+  mutable std::mutex _worker_m;
+  bool _exit;
+
+  void _close();
+  bool _open();
+  void _run();
+  bool _should_exit() const;
+
  public:
   worker();
   ~worker() throw();
@@ -45,18 +59,6 @@ class worker {
   void exit();
   void run(std::string const& fifo_file);
   void wait();
-
- private:
-  void _close();
-  bool _open();
-  void _run();
-
-  std::string _buffer;
-  int _fd;
-  std::string _fifo;
-  volatile bool _should_exit;
-
-  std::thread _thread;
 };
 }  // namespace stats
 }  // namespace broker

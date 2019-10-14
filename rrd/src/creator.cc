@@ -51,35 +51,10 @@ creator::creator(std::string const& tmpl_path, uint32_t cache_size)
 }
 
 /**
- *  Copy constructor.
- *
- *  @param[in] right The object to copy.
- */
-creator::creator(creator const& right) {
-  operator=(right);
-}
-
-/**
  *  Destructor.
  */
 creator::~creator() {
   clear();
-}
-
-/**
- *  Copy operator.
- *
- *  @param[in] right The object to copy.
- *
- *  @return This object.
- */
-creator& creator::operator=(creator const& right) {
-  if (this != &right) {
-    _cache_size = right._cache_size;
-    _fds = right._fds;
-    _tmpl_path = right._tmpl_path;
-  }
-  return (*this);
 }
 
 /**
@@ -97,7 +72,6 @@ void creator::clear() {
     ::remove(oss.str().c_str());
   }
   _fds.clear();
-  return;
 }
 
 /**
@@ -300,8 +274,6 @@ void creator::_open(std::string const& filename,
   if (rrd_create_r(filename.c_str(), 1, from, argc, argv))
     throw(exceptions::open() << "RRD: could not create file '" << filename
                              << "': " << rrd_get_error());
-
-  return;
 }
 
 /**
@@ -354,7 +326,6 @@ void creator::_read_write(int out_fd,
     // Update total transfered bytes.
     transfered += wb;
   }
-  return;
 }
 
 #ifdef __linux__
@@ -384,6 +355,5 @@ void creator::_sendfile(int out_fd,
     } else if (ret > 0)
       total += ret;
   }
-  return;
 }
 #endif  // Linux

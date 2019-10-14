@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/sql/conflict_manager.hh"
 #include <gtest/gtest.h>
 #include <cstdio>
 #include <fstream>
@@ -28,6 +27,7 @@
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/neb/module.hh"
 #include "com/centreon/broker/neb/service.hh"
+#include "com/centreon/broker/storage/conflict_manager.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::sql;

@@ -172,8 +172,6 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
       endp.release()->start();
     }
   }
-
-  return;
 }
 
 /**
@@ -268,7 +266,6 @@ endpoint& endpoint::instance() {
 void endpoint::load() {
   if (!gl_endpoint)
     gl_endpoint = new endpoint;
-  return;
 }
 
 /**
@@ -277,7 +274,6 @@ void endpoint::load() {
 void endpoint::unload() {
   delete gl_endpoint;
   gl_endpoint = nullptr;
-  return;
 }
 
 /**************************************

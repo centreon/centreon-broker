@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/storage/stream.hh"
 #include <cfloat>
 #include <cmath>
 #include <cstdlib>
@@ -27,11 +26,11 @@
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
-#include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/instance.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_status.hh"
+#include "com/centreon/broker/storage/conflict_manager.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
 #include "com/centreon/broker/storage/metric.hh"
@@ -40,7 +39,7 @@
 #include "com/centreon/broker/storage/perfdata.hh"
 #include "com/centreon/broker/storage/remove_graph.hh"
 #include "com/centreon/broker/storage/status.hh"
-#include "com/centreon/broker/sql/conflict_manager.hh"
+#include "com/centreon/broker/storage/stream.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -75,14 +74,6 @@ stream::stream(uint32_t rrd_len,
 
       //_rebuilder(db_cfg, rebuild_check_interval, rrd_len, interval_length),
   sql::conflict_manager::init_storage(store_in_db, rrd_len, interval_length);
-}
-
-/**
- *  Destructor.
- */
-stream::~stream() {
-  mysql_manager::instance().clear();
-  logging::debug(logging::low) << "storage: stream closed.";
 }
 
 /**

@@ -30,7 +30,7 @@
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/misc/pair.hh"
 #include "com/centreon/broker/mysql.hh"
-#include "com/centreon/broker/sql/stored_timestamp.hh"
+#include "com/centreon/broker/storage/stored_timestamp.hh"
 
 CCB_BEGIN()
 /* Forward declarations */

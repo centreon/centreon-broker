@@ -52,7 +52,7 @@ class manager : public backend {
   manager(manager const& m) = delete;
   manager& operator=(manager const& m) = delete;
   ~manager() = default;
-  temp_logger get_temp_logger(type t, level l) throw();
+  temp_logger get_temp_logger(type t, level l) noexcept;
   static manager& instance();
   void log_msg(char const* msg, uint32_t len, type t, level l) noexcept;
   void log_on(std::shared_ptr<backend> b,

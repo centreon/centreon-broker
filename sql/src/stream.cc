@@ -34,7 +34,7 @@
 #include "com/centreon/engine/common.hh"
 #include "com/centreon/engine/host.hh"
 #include "com/centreon/engine/service.hh"
-#include "com/centreon/broker/sql/conflict_manager.hh"
+#include "com/centreon/broker/storage/conflict_manager.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -147,6 +147,7 @@ void stream::_process_host_state(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted issue.
  */
 void stream::_process_issue(std::shared_ptr<io::data> const& e) {
+  (void) e;
 //  // Issue object.
 //  correlation::issue const& i(*static_cast<correlation::issue const*>(e.get()));
 //
@@ -184,6 +185,7 @@ void stream::_process_issue(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted issue parent.
  */
 void stream::_process_issue_parent(std::shared_ptr<io::data> const& e) {
+  (void) e;
 //  // Issue parent object.
 //  correlation::issue_parent const& ip(
 //      *static_cast<correlation::issue_parent const*>(e.get()));
@@ -360,38 +362,39 @@ void stream::_process_notification(std::shared_ptr<io::data> const& e
  *
  *  @param[in] e Uncasted service state.
  */
-void stream::_process_service_state(std::shared_ptr<io::data> const& e) {
-//  // Log message.
-//  correlation::state const& s(*static_cast<correlation::state const*>(e.get()));
-//  logging::info(logging::medium)
-//      << "SQL: processing service state event (host: " << s.host_id
-//      << ", service: " << s.service_id << ", state: " << s.current_state
-//      << ", start time: " << s.start_time << ", end time: " << s.end_time
-//      << ")";
-//
-//  // Processing.
-//  if (_with_state_events) {
-//    // Prepare queries.
-//    if (!_service_state_insupdate.prepared()) {
-//      query_preparator::event_unique unique;
-//      unique.insert("host_id");
-//      unique.insert("service_id");
-//      unique.insert("start_time");
-//      query_preparator qp(correlation::state::static_type(), unique);
-//      _service_state_insupdate = qp.prepare_insert_or_update(_mysql);
-//    }
-//
-//    // Process object.
-//    std::ostringstream oss;
-//    oss << "SQL: could not store service state event (host: " << s.host_id
-//        << ", service: " << s.service_id << ", start time: " << s.start_time
-//        << "): ";
-//
-//    _service_state_insupdate << s;
-//    _mysql.run_statement(
-//        _service_state_insupdate, oss.str(), true,
-//        _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]));
-//  }
+void stream::_process_service_state(std::shared_ptr<io::data> const& e
+                                    __attribute__((unused))) {
+  //  // Log message.
+  //  correlation::state const& s(*static_cast<correlation::state
+  //  const*>(e.get())); logging::info(logging::medium)
+  //      << "SQL: processing service state event (host: " << s.host_id
+  //      << ", service: " << s.service_id << ", state: " << s.current_state
+  //      << ", start time: " << s.start_time << ", end time: " << s.end_time
+  //      << ")";
+  //
+  //  // Processing.
+  //  if (_with_state_events) {
+  //    // Prepare queries.
+  //    if (!_service_state_insupdate.prepared()) {
+  //      query_preparator::event_unique unique;
+  //      unique.insert("host_id");
+  //      unique.insert("service_id");
+  //      unique.insert("start_time");
+  //      query_preparator qp(correlation::state::static_type(), unique);
+  //      _service_state_insupdate = qp.prepare_insert_or_update(_mysql);
+  //    }
+  //
+  //    // Process object.
+  //    std::ostringstream oss;
+  //    oss << "SQL: could not store service state event (host: " << s.host_id
+  //        << ", service: " << s.service_id << ", start time: " << s.start_time
+  //        << "): ";
+  //
+  //    _service_state_insupdate << s;
+  //    _mysql.run_statement(
+  //        _service_state_insupdate, oss.str(), true,
+  //        _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]));
+  //  }
 }
 
 /**
@@ -444,6 +447,8 @@ stream::stream(database_config const& dbcfg,
 //                      cleanup_check_interval),
       _pending_events{0},
       _with_state_events(with_state_events) {
+  //FIXME DBR
+  (void) cleanup_check_interval;
 //  // Get oudated instances.
 //
 //  // Run cleanup thread.

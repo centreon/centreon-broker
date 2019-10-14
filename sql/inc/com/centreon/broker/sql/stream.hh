@@ -26,7 +26,6 @@
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/sql/cleanup.hh"
-#include "com/centreon/broker/sql/stored_timestamp.hh"
 
 CCB_BEGIN()
 

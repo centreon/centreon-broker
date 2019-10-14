@@ -50,47 +50,17 @@ lib::lib(std::string const& tmpl_path, uint32_t cache_size)
     : _creator(tmpl_path, cache_size) {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] l Object to copy.
- */
-lib::lib(lib const& l)
-    : backend(l), _creator(l._creator), _filename(l._filename) {}
-
-/**
- *  Destructor.
- */
-lib::~lib() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] l Object to copy.
- *
- *  @return This object.
- */
-lib& lib::operator=(lib const& l) {
-  backend::operator=(l);
-  _creator = l._creator;
-  _filename = l._filename;
-  return (*this);
-}
-
-/**
  *  @brief Initiates the bulk load of multiple commands.
  *
  *  With the librrd backend, this method does nothing.
  */
-void lib::begin() {
-  return;
-}
+void lib::begin() {}
 
 /**
  *  Clean the template cache.
  */
 void lib::clean() {
   _creator.clear();
-  return;
 }
 
 /**
@@ -98,7 +68,6 @@ void lib::clean() {
  */
 void lib::close() {
   _filename.clear();
-  return;
 }
 
 /**
@@ -106,9 +75,7 @@ void lib::close() {
  *
  *  With the librrd backend, the method does nothing.
  */
-void lib::commit() {
-  return;
-}
+void lib::commit() {}
 
 /**
  *  Open a RRD file which already exists.
@@ -126,8 +93,6 @@ void lib::open(std::string const& filename) {
 
   // Remember information for further operations.
   _filename = filename;
-
-  return;
 }
 
 /**
@@ -151,8 +116,6 @@ void lib::open(std::string const& filename,
   // Remember informations for further operations.
   _filename = filename;
   _creator.create(filename, length, from, step, value_type);
-
-  return;
 }
 
 /**
@@ -166,7 +129,6 @@ void lib::remove(std::string const& filename) {
     logging::error(logging::high)
         << "RRD: could not remove file '" << filename << "': " << msg;
   }
-  return;
 }
 
 /**
@@ -216,6 +178,4 @@ void lib::update(time_t t, std::string const& value) {
       logging::error(logging::low)
           << "RRD: ignored update error in file '" << _filename << "': " << msg;
   }
-
-  return;
 }
