@@ -306,10 +306,10 @@ void timeperiod_serializable::set_exceptions(std::string const& val) {
  *  @param[in] val  The excluded timeperiods.
  */
 void timeperiod_serializable::set_excluded(std::string const& val) {
-  std::vector<std::string> excluded;
-  misc::string::split(val, excluded, ',');
-  for (std::vector<std::string>::const_iterator it = excluded.begin(),
-                                                end = excluded.end();
+  std::list<std::string> excluded;
+  excluded = misc::string::split(val, ',');
+  for (std::list<std::string>::const_iterator it = excluded.begin(),
+                                              end = excluded.end();
        it != end; ++it) {
     time::timeperiod::ptr tp = _tps->at(*it);
     if (!tp)
@@ -325,10 +325,10 @@ void timeperiod_serializable::set_excluded(std::string const& val) {
  *  @param[in] val  The included timeperiods.
  */
 void timeperiod_serializable::set_included(std::string const& val) {
-  std::vector<std::string> included;
-  misc::string::split(val, included, ',');
-  for (std::vector<std::string>::const_iterator it = included.begin(),
-                                                end = included.end();
+  std::list<std::string> included;
+  included = misc::string::split(val, ',');
+  for (std::list<std::string>::const_iterator it = included.begin(),
+                                              end = included.end();
        it != end; ++it) {
     time::timeperiod::ptr tp = _tps->at(*it);
     if (!tp)
