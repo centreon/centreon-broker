@@ -18,6 +18,7 @@
  */
 
 #include "com/centreon/broker/tcp/acceptor.hh"
+#include <json11.hpp>
 #include <gtest/gtest.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -156,4 +157,18 @@ TEST(TcpAcceptor, BigSend) {
   ASSERT_TRUE(str.length() == 10245);
 
   t.join();
+}
+
+TEST(TcpAcceptor, ChildsAndStats) {
+  tcp::acceptor acc;
+
+  acc.add_child("child1");
+  acc.add_child("child2");
+  acc.add_child("child3");
+  acc.remove_child("child2");
+
+  json11::Json::object obj;
+  acc.stats(obj);
+  json11::Json js{obj};
+  ASSERT_EQ(js.dump(), "{\"peers\": \"2: child1, child3\"}");
 }

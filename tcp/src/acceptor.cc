@@ -143,6 +143,9 @@ void acceptor::stats(json11::Json::object& tree) {
   for (std::list<std::string>::const_iterator it(_children.begin()),
        end(_children.end());
        it != end; ++it)
-    oss << ", " << *it;
+    if(it == _children.begin())
+      oss << *it;
+    else
+      oss << ", " << *it;
   tree["peers"] = oss.str();
 }
