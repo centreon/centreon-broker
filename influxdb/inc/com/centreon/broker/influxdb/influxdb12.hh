@@ -50,7 +50,7 @@ class influxdb12 : public influxdb::influxdb {
   influxdb12(std::string const& user,
              std::string const& passwd,
              std::string const& addr,
-             unsigned short port,
+             uint16_t port,
              std::string const& db,
              std::string const& status_ts,
              std::vector<column> const& status_cols,
@@ -69,16 +69,15 @@ class influxdb12 : public influxdb::influxdb {
 
  private:
   std::string _post_header;
-  std::string _url;
   std::string _query;
   line_protocol_query _status_query;
   line_protocol_query _metric_query;
 
-  std::unique_ptr<asio::ip::tcp::socket> _socket;
   asio::io_context _io_context;
+  asio::ip::tcp::socket _socket;
 
   std::string _host;
-  unsigned short _port;
+  uint16_t _port;
 
   macro_cache const& _cache;
 

@@ -96,8 +96,8 @@ class stream : public io::stream {
   query _status_query;
   std::string _query;
   std::string _auth_query;
-  std::unique_ptr<asio::ip::tcp::socket> _socket;
   asio::io_context _io_context;
+  asio::ip::tcp::socket _socket;
 
   // Process metric/status and generate query.
   bool _process_metric(storage::metric const& me);
