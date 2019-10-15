@@ -94,7 +94,6 @@ std::shared_ptr<io::stream> connector::open() {
       broker::exceptions::msg e;
       e << "TCP: could not connect to remote server '" << _host << ":" << _port
         << "': " << err.message();
-      sock.reset();
       throw e;
     }
 
@@ -104,7 +103,6 @@ std::shared_ptr<io::stream> connector::open() {
     broker::exceptions::msg e;
     e << "TCP: could not resolve remote server '" << _host << ":" << _port
       << "': " << se.what();
-    sock.reset();
     throw(e);
   }
 
@@ -112,7 +110,8 @@ std::shared_ptr<io::stream> connector::open() {
       << "TCP: successfully connected to " << connection_name;
 
   // Return stream.
-  std::shared_ptr<stream> s(new stream(_io_context, sock.get(), connection_name));
+  std::shared_ptr<stream> s(
+      new stream(_io_context, sock.get(), connection_name));
   sock.release();
   s->set_read_timeout(_read_timeout);
   s->set_write_timeout(_write_timeout);
