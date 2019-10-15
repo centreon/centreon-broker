@@ -86,10 +86,10 @@ TEST_F(StatsTest, BuilderWithModules) {
   stats::builder build;
   config::applier::modules::instance().apply(std::list<std::string>{},
                                              "./storage/", nullptr);
-  config::applier::modules::instance().apply(std::list<std::string>{},
-                                             "./neb/", nullptr);
-  config::applier::modules::instance().apply(std::list<std::string>{},
-                                             "./lua/", nullptr);
+  config::applier::modules::instance().apply(std::list<std::string>{}, "./neb/",
+                                             nullptr);
+  config::applier::modules::instance().apply(std::list<std::string>{}, "./lua/",
+                                             nullptr);
 
   build.build();
 
@@ -105,12 +105,10 @@ TEST_F(StatsTest, BuilderWithModules) {
   ASSERT_TRUE(result["mysql manager"].is_object());
   ASSERT_TRUE(result["mysql manager"]["delay since last check"].is_string());
 
-  ASSERT_EQ(result["module./neb/10-neb.so"]["state"].string_value(),
-  "loaded");
+  ASSERT_EQ(result["module./neb/10-neb.so"]["state"].string_value(), "loaded");
   ASSERT_EQ(result["module./storage/20-storage.so"]["state"].string_value(),
-    "loaded");
-  ASSERT_EQ(result["module./lua/70-lua.so"]["state"].string_value(),
-  "loaded");
+            "loaded");
+  ASSERT_EQ(result["module./lua/70-lua.so"]["state"].string_value(), "loaded");
 }
 
 class st : public io::stream {
@@ -261,8 +259,10 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
   ASSERT_TRUE(result["asio_version"].is_string());
   ASSERT_TRUE(result["mysql manager"].is_object());
   ASSERT_TRUE(result["mysql manager"]["delay since last check"].is_string());
-  ASSERT_TRUE(result["endpoint CentreonDatabase"]["state"].string_value() == "connected");
-  ASSERT_TRUE(result["endpoint CentreonDatabase"]["state"].string_value() == "connected");
+  ASSERT_TRUE(result["endpoint CentreonDatabase"]["state"].string_value() ==
+                  "connected" ||
+              result["endpoint CentreonDatabase"]["state"].string_value() ==
+                  "connecting");
 }
 
 TEST_F(StatsTest, CopyCtor) {
