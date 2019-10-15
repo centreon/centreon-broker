@@ -71,6 +71,5 @@ TEST_F(TestThread, Wait) {
   std::this_thread::sleep_for(std::chrono::seconds(1));
   ASSERT_TRUE(_thread->isRunning());
   _thread->exit();
-  std::cout << "COUCOU" << std::endl;
   ASSERT_TRUE(_thread->wait(1500));
 }

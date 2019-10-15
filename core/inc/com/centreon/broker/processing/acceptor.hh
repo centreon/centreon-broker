@@ -46,6 +46,8 @@ class feeder;
 class acceptor : public bthread {
  public:
   acceptor(std::shared_ptr<io::endpoint> endp, std::string const& name);
+  acceptor(acceptor const&) = delete;
+  acceptor& operator=(acceptor const&) = delete;
   ~acceptor();
   void accept();
   void exit() override;
@@ -63,8 +65,6 @@ class acceptor : public bthread {
   virtual void _forward_statistic(json11::Json::object& tree) override;
 
  private:
-  acceptor(acceptor const& other);
-  acceptor& operator=(acceptor const& other);
   void _wait_feeders();
   void _set_listening(bool val);
   bool _get_listening() const throw();

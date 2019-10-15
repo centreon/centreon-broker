@@ -55,9 +55,20 @@ TEST_F(ProcessingTest, NotStarted) {
   ASSERT_NO_THROW(_acceptor->exit());
 }
 
-TEST_F(ProcessingTest, StartStop) {
+TEST_F(ProcessingTest, StartStop1) {
+  _acceptor->start();
+  ASSERT_NO_THROW(_acceptor->exit());
+}
+
+TEST_F(ProcessingTest, StartStop2) {
   _acceptor->start();
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  ASSERT_NO_THROW(_acceptor->exit());
+}
+
+TEST_F(ProcessingTest, StartStop3) {
+  _acceptor->start();
+  std::this_thread::sleep_for(std::chrono::seconds(1));
   ASSERT_NO_THROW(_acceptor->exit());
 }
 
