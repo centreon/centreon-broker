@@ -65,7 +65,8 @@ stream::stream(std::string const& metric_naming,
       _commit_flag{false},
       _cache{cache},
       _metric_query{_metric_naming, escape_string, query::metric, _cache},
-      _status_query{_status_naming, escape_string, query::status, _cache} {
+      _status_query{_status_naming, escape_string, query::status, _cache},
+      _socket{_io_context} {
   // Create the basic HTTP authentification header.
   if (!_db_user.empty() && !_db_password.empty()) {
     std::string auth{_db_user};
@@ -76,7 +77,6 @@ stream::stream(std::string const& metric_naming,
         .append("\n");
     _query.append(_auth_query);
   }
-  _socket = std::unique_ptr<ip::tcp::socket>{new ip::tcp::socket{_io_context}};
 
   ip::tcp::resolver resolver{_io_context};
   ip::tcp::resolver::query query{_db_host, std::to_string(_db_port)};
@@ -90,10 +90,10 @@ stream::stream(std::string const& metric_naming,
     // it can resolve to multiple addresses like ipv4 and ipv6
     // we need to try all to find the first available socket
     while (err && it != end) {
-      _socket->connect(*it, err);
+      _socket.connect(*it, err);
 
       if (err)
-        _socket->close();
+        _socket.close();
 
       ++it;
     }
@@ -114,9 +114,6 @@ stream::stream(std::string const& metric_naming,
  *  Destructor.
  */
 stream::~stream() {
-  if (_socket) {
-    _socket->close();
-  }
 }
 
 /**
@@ -233,7 +230,7 @@ void stream::_commit() {
   if (!_query.empty()) {
     std::error_code err;
 
-    asio::write(*_socket, buffer(_query), asio::transfer_all(), err);
+    asio::write(_socket, buffer(_query), asio::transfer_all(), err);
     if (err)
       throw exceptions::msg()
           << "graphite: can't send data to graphite on host '" << _db_host

@@ -41,12 +41,11 @@ influxdb12::influxdb12(std::string const& user,
                        std::string const& metric_ts,
                        std::vector<column> const& metric_cols,
                        macro_cache const& cache)
-    : _host(addr), _port(port), _cache(cache) {
+    : _host(addr), _port(port), _cache(cache), _socket{_io_context} {
   // Try to connect to the server.
   logging::debug(logging::medium)
       << "influxdb: connecting using 1.2 Line Protocol";
   _connect_socket();
-  _socket->close();
   _create_queries(user, passwd, db, status_ts, status_cols, metric_ts,
                   metric_cols);
 }
@@ -108,12 +107,12 @@ void influxdb12::commit() {
 
   std::error_code err;
 
-  asio::write(*_socket, buffer(final_query), asio::transfer_all(), err);
+  asio::write(_socket, buffer(final_query), asio::transfer_all(), err);
   if (err)
     throw exceptions::msg()
         << "influxdb: couldn't commit data to InfluxDB with address '"
-        << _socket->remote_endpoint().address().to_string() << "' and port '"
-        << _socket->remote_endpoint().port() << "': " << err.message();
+        << _socket.remote_endpoint().address().to_string() << "' and port '"
+        << _socket.remote_endpoint().port() << "': " << err.message();
   // Receive the server answer.
 
   std::string answer;
@@ -122,7 +121,7 @@ void influxdb12::commit() {
   do {
     answer.resize(read_size);
 
-    total_read += _socket->read_some(asio::buffer(&answer[total_read], read_size - total_read), err);
+    total_read += _socket.read_some(asio::buffer(&answer[total_read], read_size - total_read), err);
     if (total_read == read_size)
       total_read += 2048;
 
@@ -131,12 +130,13 @@ void influxdb12::commit() {
     if (err)
       throw exceptions::msg()
           << "influxdb: couldn't receive InfluxDB answer with address '"
-          << _socket->remote_endpoint().address().to_string() << "' and port '"
-          << _socket->remote_endpoint().port() << "': " << err.message();
+          << _socket.remote_endpoint().address().to_string() << "' and port '"
+          << _socket.remote_endpoint().port() << "': " << err.message();
 
 
   } while (!_check_answer_string(answer));
-  _socket->close();
+  _socket.shutdown(ip::tcp::socket::shutdown_both);
+  _socket.close();
   _query.clear();
 }
 
@@ -144,7 +144,10 @@ void influxdb12::commit() {
  *  Connect the socket to the endpoint.
  */
 void influxdb12::_connect_socket() {
-  _socket.reset(new ip::tcp::socket{_io_context});
+  if (_socket.is_open()) {
+    _socket.shutdown(ip::tcp::socket::shutdown_both);
+    _socket.close();
+  }
   ip::tcp::resolver resolver{_io_context};
   ip::tcp::resolver::query query{_host, std::to_string(_port)};
 
@@ -157,10 +160,10 @@ void influxdb12::_connect_socket() {
     // it can resolve to multiple addresses like ipv4 and ipv6
     // we need to try all to find the first available socket
     while (err && it != end) {
-      _socket->connect(*it, err);
+      _socket.connect(*it, err);
 
       if (err)
-        _socket->close();
+        _socket.close();
 
       ++it;
     }
@@ -192,8 +195,8 @@ bool influxdb12::_check_answer_string(std::string const& ans) {
 
   logging::debug(logging::medium)
       << "influxdb: received an answer from "
-      << _socket->remote_endpoint().address().to_string() << "' and port '"
-      << _socket->remote_endpoint().port() << "': '" << ans << "'";
+      << _socket.remote_endpoint().address().to_string() << "' and port '"
+      << _socket.remote_endpoint().port() << "': '" << ans << "'";
 
   // Split the first line using the power of std.
   std::istringstream iss(first_line_str);
@@ -204,8 +207,8 @@ bool influxdb12::_check_answer_string(std::string const& ans) {
   if (split.size() < 3)
     throw(exceptions::msg()
           << "influxdb: unrecognizable HTTP header for '"
-          << _socket->remote_endpoint().address().to_string() << "' and port '"
-          << _socket->remote_endpoint().port() << "': got '" << first_line_str
+          << _socket.remote_endpoint().address().to_string() << "' and port '"
+          << _socket.remote_endpoint().port() << "': got '" << first_line_str
           << "'");
 
   if ((split[0] == "HTTP/1.0") && (split[1] == "204") && (split[2] == "No") &&
@@ -214,8 +217,8 @@ bool influxdb12::_check_answer_string(std::string const& ans) {
   else
     throw(exceptions::msg()
           << "influxdb: got an error from '"
-          << _socket->remote_endpoint().address().to_string() << "' and port '"
-          << _socket->remote_endpoint().port() << "': '" << ans << "'");
+          << _socket.remote_endpoint().address().to_string() << "' and port '"
+          << _socket.remote_endpoint().port() << "': '" << ans << "'");
 }
 
 /**
