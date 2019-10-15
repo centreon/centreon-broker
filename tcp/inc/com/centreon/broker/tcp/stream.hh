@@ -57,7 +57,6 @@ class stream : public io::stream {
 
  private:
   stream(stream const& other);
-  void _initialize_socket();
   void _set_socket_options();
 
   std::string _name;

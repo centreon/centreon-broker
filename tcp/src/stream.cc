@@ -49,10 +49,22 @@ stream::stream(asio::io_context& ctx,
     : _name(name),
       _parent(nullptr),
       _io_context(ctx),
-      _socket(sock),
       _read_timeout(-1),
       _write_timeout(-1) {
-  _set_socket_options();
+  _socket.reset(sock);
+
+  // Set the SO_KEEPALIVE option.
+  asio::socket_base::keep_alive option{true};
+  _socket->set_option(option);
+
+  // Set the write timeout option.
+  if (_write_timeout >= 0) {
+    struct timeval t;
+    t.tv_sec = _write_timeout;
+    t.tv_usec = 0;
+    ::setsockopt(_socket->native_handle(), SOL_SOCKET, SO_SNDTIMEO, &t,
+                 sizeof(t));
+  }
 }
 
 /**
@@ -61,8 +73,10 @@ stream::stream(asio::io_context& ctx,
 stream::~stream() {
   try {
     // Close the socket.
-    if (_socket)
+    if (_socket) {
+      _socket->shutdown(asio::ip::tcp::socket::shutdown_both);
       _socket->close();
+    }
     // Remove from parent.
     if (_parent)
       _parent->remove_child(_name);
@@ -100,10 +114,6 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
     std::size_t bytes_readable = command.get();
     return bytes_readable;
   };
-
-  // Check that socket exist.
-  if (!_socket)
-    _initialize_socket();
 
   // Set deadline.
   {
@@ -190,10 +200,6 @@ void stream::set_write_timeout(int secs) {
  *  @return Number of events acknowledged.
  */
 int stream::write(std::shared_ptr<io::data> const& d) {
-  // Check that socket exist.
-  if (!_socket)
-    _initialize_socket();
-
   // Check that data exists and should be processed.
   if (!validate(d, "TCP"))
     return 1;
@@ -212,44 +218,4 @@ int stream::write(std::shared_ptr<io::data> const& d) {
                               << "': " << err.message();
   }
   return 1;
-}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Initialize socket if it was not already initialized.
- */
-void stream::_initialize_socket() {
-  _socket.reset(new asio::ip::tcp::socket{_io_context});
-  {
-    std::ostringstream oss;
-    oss << _socket->remote_endpoint().address().to_string() << ":"
-        << _socket->remote_endpoint().port();
-    _name = oss.str();
-  }
-  if (_parent)
-    _parent->add_child(_name);
-  _set_socket_options();
-}
-
-/**
- *  Set various socket options.
- */
-void stream::_set_socket_options() {
-  // Set the SO_KEEPALIVE option.
-  asio::socket_base::keep_alive option{true};
-  _socket->set_option(option);
-
-  // Set the write timeout option.
-  if (_write_timeout >= 0) {
-    struct timeval t;
-    t.tv_sec = _write_timeout;
-    t.tv_usec = 0;
-    ::setsockopt(_socket->native_handle(), SOL_SOCKET, SO_SNDTIMEO, &t,
-                 sizeof(t));
-  }
 }

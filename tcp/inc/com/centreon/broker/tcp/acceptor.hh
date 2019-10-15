@@ -65,7 +65,6 @@ class acceptor : public io::endpoint {
   int _read_timeout;
   int _write_timeout;
   asio::io_context _io_context;
-  std::unique_ptr<asio::ip::tcp::socket> _socket;
 };
 }  // namespace tcp
 
