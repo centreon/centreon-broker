@@ -30,8 +30,10 @@ using namespace com::centreon::broker;
 TEST(TcpAcceptor, BadPort) {
   tcp::acceptor acc;
 
-  acc.listen_on(2);
-  ASSERT_THROW(acc.open(), exceptions::msg);
+  if (getuid() != 0) {
+    acc.listen_on(2);
+    ASSERT_THROW(acc.open(), exceptions::msg);
+  }
 }
 
 TEST(TcpAcceptor, Simple) {

@@ -36,7 +36,7 @@ using namespace com::centreon::broker::tcp;
  *  Default constructor.
  */
 acceptor::acceptor()
-    : io::endpoint(true), _port(0), _read_timeout(-1), _write_timeout(-1), _io_context{}, _socket{new asio::ip::tcp::socket{_io_context}} {}
+    : io::endpoint(true), _port(0), _read_timeout(-1), _write_timeout(-1) {}
 
 /**
  *  Destructor.
@@ -70,22 +70,21 @@ std::shared_ptr<io::stream> acceptor::open() {
   // Listen on port.
   std::lock_guard<std::mutex> lock(_mutex);
 
-  if (!_socket)
-    _socket.reset(new asio::ip::tcp::socket(_io_context));
-
+  std::unique_ptr<asio::ip::tcp::socket> socket{
+      new asio::ip::tcp::socket{_io_context}};
   try {
     asio::ip::tcp::acceptor acceptor(
         _io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), _port));
-    acceptor.accept(*_socket);
-  } catch (std::system_error const& se ){
+    acceptor.accept(*socket);
+  } catch (std::system_error const& se) {
     throw exceptions::msg()
-        << "TCP: error while waiting client on port: " << _port
-        << " " << se.what();
+        << "TCP: error while waiting client on port: " << _port << " "
+        << se.what();
   }
 
   // Accept client.
-  std::shared_ptr<stream> incoming{new stream{_io_context, _socket.get(), ""}};
-  _socket.release();
+  std::shared_ptr<stream> incoming{new stream{_io_context, socket.get(), ""}};
+  socket.release();
 
   logging::info(logging::medium) << "TCP: new client connected";
   incoming->set_parent(this);
@@ -143,7 +142,7 @@ void acceptor::stats(json11::Json::object& tree) {
   for (std::list<std::string>::const_iterator it(_children.begin()),
        end(_children.end());
        it != end; ++it)
-    if(it == _children.begin())
+    if (it == _children.begin())
       oss << *it;
     else
       oss << ", " << *it;
