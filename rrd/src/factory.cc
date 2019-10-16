@@ -63,33 +63,11 @@ static std::string find_param(config::endpoint const& cfg,
  **************************************/
 
 /**
- *  Default constructor.
- */
-factory::factory() {}
-
-/**
  *  Copy constructor.
  *
  *  @param[in] other  Object to copy.
  */
 factory::factory(factory const& other) : io::factory(other) {}
-
-/**
- *  Destructor.
- */
-factory::~factory() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-factory& factory::operator=(factory const& other) {
-  io::factory::operator=(other);
-  return (*this);
-}
 
 /**
  *  Clone this object.
@@ -130,8 +108,18 @@ io::endpoint* factory::new_endpoint(
   std::string path{find_param(cfg, "path", false)};
 
   // Network connection.
-  unsigned short port{static_cast<unsigned short>(
-      std::stoul(find_param(cfg, "port", false, "0")))};
+  unsigned short port{0};
+  {
+    try {
+      port = static_cast<uint16_t>(
+          std::stoul(find_param(cfg, "port", false, "0")));
+    } catch (...) {
+      throw exceptions::msg() << "RRD: bad port"
+                              << " defined "
+                                 " for endpoint '"
+                              << cfg.name << "'";
+    }
+  }
 
   // Get rrd creator cache size.
   uint32_t cache_size(16);
@@ -139,7 +127,14 @@ io::endpoint* factory::new_endpoint(
     std::map<std::string, std::string>::const_iterator it{
         cfg.params.find("cache_size")};
     if (it != cfg.params.end())
-      cache_size = std::stoul(it->second);
+      try {
+        cache_size = std::stoul(it->second);
+      } catch (std::exception const& e) {
+        throw exceptions::msg() << "RRD: bad port"
+                                << " defined "
+                                   " for endpoint '"
+                                << cfg.name << "'";
+      }
   }
 
   // Should metrics be written ?

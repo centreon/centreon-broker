@@ -73,7 +73,7 @@ add_library("${RRD}" SHARED
   "${INC_DIR}/com/centreon/broker/rrd/factory.hh"
   "${INC_DIR}/com/centreon/broker/rrd/lib.hh"
   "${INC_DIR}/com/centreon/broker/rrd/output.hh"
-)
+  )
 add_dependencies("${RRD}" Asio)
 set_target_properties("${RRD}" PROPERTIES PREFIX "")
 
@@ -91,21 +91,26 @@ endif ()
 target_link_libraries("${RRD}" ${LIBRRD_LDFLAGS})
 
 # Testing.
-set(
-        TESTS_SOURCES
-        ${TESTS_SOURCES}
-        "${TEST_DIR}/exceptions.cc"
-        "${TEST_DIR}/rrd.cc"
-        PARENT_SCOPE
-)
-set(
-        TESTS_LIBRARIES
-        ${TESTS_LIBRARIES}
-        "${RRD}"
-        PARENT_SCOPE
-)
+if (WITH_TESTING)
+  set(
+    TESTS_SOURCES
+    ${TESTS_SOURCES}
+    "${TEST_DIR}/cached.cc"
+    "${TEST_DIR}/exceptions.cc"
+    "${TEST_DIR}/factory.cc"
+    "${TEST_DIR}/lib.cc"
+    "${TEST_DIR}/rrd.cc"
+    PARENT_SCOPE
+  )
+  set(
+    TESTS_LIBRARIES
+    ${TESTS_LIBRARIES}
+    "${RRD}"
+    PARENT_SCOPE
+  )
+endif ()
 
 # Install rule.
 install(TARGETS "${RRD}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"
-)
+  )

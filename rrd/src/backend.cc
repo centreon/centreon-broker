@@ -32,27 +32,6 @@ using namespace com::centreon::broker::rrd;
 backend::backend() {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] b Object to copy.
- */
-backend::backend(backend const& b) {
-  (void)b;
-}
-
-/**
  *  Destructor.
  */
 backend::~backend() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] b Object to copy.
- *
- *  @return This object.
- */
-backend& backend::operator=(backend const& b) {
-  (void)b;
-  return (*this);
-}
