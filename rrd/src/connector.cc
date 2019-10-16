@@ -43,34 +43,12 @@ connector::connector()
       _write_metrics(true),
       _write_status(true) {}
 
-/**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-connector::connector(connector const& right) : io::endpoint(right) {
-  _internal_copy(right);
-}
 
 /**
  *  Destructor.
  */
 connector::~connector() {}
 
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-connector& connector::operator=(connector const& right) {
-  if (this != &right) {
-    io::endpoint::operator=(right);
-    _internal_copy(right);
-  }
-  return (*this);
-}
 
 /**
  *  Connect.
@@ -117,7 +95,7 @@ void connector::set_cached_local(std::string const& local_socket) {
  *
  *  @param[in] port rrdcached port.
  */
-void connector::set_cached_net(unsigned short port) throw() {
+void connector::set_cached_net(uint16_t port) throw() {
   _cached_port = port;
 }
 
@@ -172,22 +150,6 @@ void connector::set_write_status(bool write_status) throw() {
  *           Private Methods           *
  *                                     *
  **************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] right Object to copy.
- */
-void connector::_internal_copy(connector const& right) {
-  _cache_size = right._cache_size;
-  _cached_local = right._cached_local;
-  _cached_port = right._cached_port;
-  _ignore_update_errors = right._ignore_update_errors;
-  _metrics_path = right._metrics_path;
-  _status_path = right._status_path;
-  _write_metrics = right._write_metrics;
-  _write_status = right._write_status;
-}
 
 /**
  *  Get the real path (absolute, expanded) of a path.

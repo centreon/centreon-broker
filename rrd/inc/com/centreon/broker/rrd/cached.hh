@@ -43,8 +43,10 @@ namespace rrd {
 class cached : public backend {
  public:
   enum cached_type { uninitialized, local, tcp };
-  cached(std::string const& tmpl_path, uint32_t cache_size);
-  ~cached();
+  cached(std::string const& tmpl_path, uint32_t cache_size, cached_type type);
+  cached(cached const& c) = delete;
+  cached& operator=(cached const& c) = delete;
+  ~cached() = default;
   void begin();
   void clean();
   void close();
@@ -61,8 +63,6 @@ class cached : public backend {
   void update(time_t t, std::string const& value);
 
  private:
-  cached(cached const& c);
-  cached& operator=(cached const& c);
   template <typename T>
   void _send_to_cached(std::string const& command, T const& socket);
 
@@ -71,8 +71,8 @@ class cached : public backend {
   lib _lib;
   cached_type _type;
   asio::io_context _io_context;
-  std::shared_ptr<asio::ip::tcp::socket> _tcp_socket;
-  std::shared_ptr<asio::local::stream_protocol::socket> _local_socket;
+  std::unique_ptr<asio::ip::tcp::socket> _tcp_socket;
+  std::unique_ptr<asio::local::stream_protocol::socket> _local_socket;
 };
 }  // namespace rrd
 

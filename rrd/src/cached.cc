@@ -44,13 +44,8 @@ using namespace com::centreon::broker::rrd;
  *  @param[in] tmpl_path  The template path.
  *  @param[in] cache_size The maximum number of cache element.
  */
-cached::cached(std::string const& tmpl_path, uint32_t cache_size)
-    : _batch(false), _lib(tmpl_path, cache_size) {}
-
-/**
- *  Destructor.
- */
-cached::~cached() {}
+cached::cached(std::string const& tmpl_path, uint32_t cache_size, cached_type type)
+    : _batch(false), _lib(tmpl_path, cache_size), _type{type} {}
 
 /**
  *  Initiates the bulk load of multiple commands.
@@ -60,9 +55,9 @@ void cached::begin() {
   _batch = true;
   std::string buffer{"BATCH\n"};
   if (_type == cached::tcp)
-    _send_to_cached<std::shared_ptr<ip::tcp::socket>&>(buffer, _tcp_socket);
+    _send_to_cached<std::unique_ptr<ip::tcp::socket>&>(buffer, _tcp_socket);
   else
-    _send_to_cached<std::shared_ptr<local::stream_protocol::socket>&>(
+    _send_to_cached<std::unique_ptr<local::stream_protocol::socket>&>(
         buffer, _local_socket);
 
   return;
@@ -92,9 +87,9 @@ void cached::commit() {
     _batch = false;
     std::string buffer{".\n"};
     if (_type == cached::tcp)
-      _send_to_cached<std::shared_ptr<ip::tcp::socket>&>(buffer, _tcp_socket);
+      _send_to_cached<std::unique_ptr<ip::tcp::socket>&>(buffer, _tcp_socket);
     else
-      _send_to_cached<std::shared_ptr<local::stream_protocol::socket>&>(
+      _send_to_cached<std::unique_ptr<local::stream_protocol::socket>&>(
           buffer, _local_socket);
   }
 }
@@ -106,8 +101,7 @@ void cached::commit() {
  */
 void cached::connect_local(std::string const& name) {
   // Create socket object.
-
-  local::stream_protocol::endpoint ep("/tmp/foobar");
+  local::stream_protocol::endpoint ep(name);
   local::stream_protocol::socket* ls(
       new local::stream_protocol::socket{_io_context});
   _local_socket.reset(ls);
@@ -160,6 +154,7 @@ void cached::connect_remote(std::string const& address, unsigned short port) {
       broker::exceptions::msg e;
       e << "RRD: could not connect to remote server '" << address << ":" << port
         << "': " << err.message();
+      _tcp_socket.release();
       _tcp_socket.reset();
       throw e;
     }
@@ -233,10 +228,10 @@ void cached::remove(std::string const& filename) {
 
   try {
     if (_type == cached::tcp)
-      _send_to_cached<std::shared_ptr<ip::tcp::socket>&>(oss.str(),
+      _send_to_cached<std::unique_ptr<ip::tcp::socket>&>(oss.str(),
                                                          _tcp_socket);
     else
-      _send_to_cached<std::shared_ptr<local::stream_protocol::socket>&>(
+      _send_to_cached<std::unique_ptr<local::stream_protocol::socket>&>(
           oss.str(), _local_socket);
   } catch (broker::exceptions::msg const& e) {
     logging::error(logging::medium) << e.what();
@@ -265,10 +260,10 @@ void cached::update(time_t t, std::string const& value) {
       << "RRD: updating file '" << _filename << "' (" << oss.str() << ")";
   try {
     if (_type == cached::tcp)
-      _send_to_cached<std::shared_ptr<ip::tcp::socket>&>(oss.str(),
+      _send_to_cached<std::unique_ptr<ip::tcp::socket>&>(oss.str(),
                                                          _tcp_socket);
     else
-      _send_to_cached<std::shared_ptr<local::stream_protocol::socket>&>(
+      _send_to_cached<std::unique_ptr<local::stream_protocol::socket>&>(
           oss.str(), _local_socket);
   } catch (broker::exceptions::msg const& e) {
     if (!strstr(e.what(), "illegal attempt to update using time"))
@@ -296,7 +291,7 @@ void cached::_send_to_cached(std::string const& command, T const& socket) {
   std::error_code err;
 
   // Check socket.
-  if (!socket.get())
+  if (!socket)
     throw(broker::exceptions::msg()
           << "RRD: attempt to communicate "
              "with rrdcached without connecting first");
@@ -323,7 +318,12 @@ void cached::_send_to_cached(std::string const& command, T const& socket) {
     std::istream is(&stream);
     std::getline(is, line);
 
-    int lines = std::stoi(line);
+    int lines;
+    try{
+      lines = std::stoi(line);
+    } catch (...) {
+      lines = -1;
+    }
 
     if (lines < 0)
       throw(broker::exceptions::msg()

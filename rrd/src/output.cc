@@ -94,7 +94,7 @@ output::output(std::string const& metrics_path,
       _status_path(status_path),
       _write_metrics(write_metrics),
       _write_status(write_status) {
-  std::unique_ptr<cached> rrdcached(new cached(metrics_path, cache_size));
+  std::unique_ptr<cached> rrdcached(new cached(metrics_path, cache_size, cached::local));
   rrdcached->connect_local(local);
   _backend.reset(rrdcached.release());
 }
@@ -124,7 +124,7 @@ output::output(std::string const& metrics_path,
       _status_path(status_path),
       _write_metrics(write_metrics),
       _write_status(write_status) {
-  std::unique_ptr<cached> rrdcached(new cached(metrics_path, cache_size));
+  std::unique_ptr<cached> rrdcached(new cached(metrics_path, cache_size, cached::tcp));
   rrdcached->connect_remote("localhost", port);
   _backend.reset(rrdcached.release());
 }

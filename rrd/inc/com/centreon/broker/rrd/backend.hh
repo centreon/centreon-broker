@@ -39,9 +39,9 @@ namespace rrd {
 class backend {
  public:
   backend();
-  backend(backend const& b);
+  backend(backend const& b) = delete;
   virtual ~backend();
-  backend& operator=(backend const& b);
+  backend& operator=(backend const& b) = delete;
   virtual void begin() = 0;
   virtual void clean() = 0;
   virtual void close() = 0;
