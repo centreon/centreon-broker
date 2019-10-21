@@ -69,13 +69,12 @@ This paragraph is only a quickstart guide for the compilation of
 Centreon Broker. For a more in-depth guide with build options you should
 refer to the [online documentation](https://documentation.centreon.com/docs/centreon-broker/en/latest/installation/index.html#using-sources).
 
-Once the sources of Centreon Broker extracted, got to the *./build/*
-directory and launch the CMake command. This will look for required
-dependencies and print a summary of the compilation parameters if
-everything went fine.
+Once the sources of Centreon Broker extracted, execute the following commands:
 
-    $> cd centreon-broker/build
-    $> cmake .
+    $> cd centreon-broker
+    $> mkdir build
+    $> cd build
+    $> cmake ..
     ...
 
 Now launch the compilation using the *make* command and then install the

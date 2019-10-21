@@ -78,6 +78,8 @@ dependencies:
 * the Qt **(>= 4.7.4)** framework with QtCore, QtSql and QtXml modules.
 * RRDTool development files (for the RRD module).
 * GnuTLS **(>= 2.8)**, a secure communications library.
+* Lua library **(>= 5.1)**, a powerful, light-weight programming language.
+* Git, a popular version control system.
 
 This program is compatible only with Unix-like platforms (Linux,
 FreeBSD, Solaris, ...).
@@ -123,6 +125,10 @@ Qt **(>= 4.7.4)**           qt4-devel                  Centreon Broker require Q
 RRDTool                     rrdtool-devel              Development files for RRD file
                                                        (graph) creation and update.
 GnuTLS **(>= 2.8)**         gnutls-devel               Development files for gnutls.
+Lua library **(>= 5.1)**    lua-devel                  A powerful, light-weight
+                                                       programming language.
+Git                         git                        A popular version control
+                                                       system.
 =========================== ========================== ================================
 
 #. Install basic compilation tools ::
@@ -191,6 +197,9 @@ Qt **(>= 4.7.4)**           libqt4-dev       Centreon Broker require Qt
 RRDTool                     librrd-dev       Development files for RRD file
                                              (graph) creation and update.
 GnuTLS **(>= 2.8)**         libgnutls28-dev  Development files for gnutls.
+Lua library **(>= 5.1)**    liblua5.3-dev /  A powerful, light-weight
+                            liblua5.2-dev    programming language.
+Git                         git              A popular version control system.
 =========================== ================ ================================
 
 #. Install compilation tools ::
@@ -223,6 +232,10 @@ GnuTLS **(>= 2.8)**         libgnutls28-dev  Development files for gnutls.
 
    $ apt-get install libgnutls28-dev
 
+#. Install git ::
+
+   $ apt-get install git
+
 OpenSUSE
 --------
 
@@ -247,6 +260,10 @@ Qt **(>= 4.7.4)**           libqt4-devel      Centreon Broker require Qt
 RRDTool                     rrdtool-devel     Development files for RRD file
                                               (graph) creation and update.
 GnuTLS **(>= 2.8)**         libgnutls-devel   Development files for gnutls.
+Lua library **(>= 5.1)**    lua-devel         A powerful, light-weight
+                                              programming language.
+Git                         git               A popular version control
+                                              system.
 =========================== ================= ================================
 
 #. Install compilation tools ::
@@ -265,6 +282,13 @@ GnuTLS **(>= 2.8)**         libgnutls-devel   Development files for gnutls.
 
    $ zypper install libgnutls-devel
 
+#. Install Lua ::
+
+   $ zypper install lua-devel
+
+#. Install Git ::
+
+   $ zypper install git
 
 Raspberry Pi (Raspbian)
 -----------------------
@@ -298,17 +322,10 @@ At the root of the project directory you'll find a build directory
 which holds build scripts. Generate the Makefile by running the
 following commands ::
 
-  $ cd /path_to_centreon_broker/build
-  $ cmake .
-
-.. note::
-    If you are using Debian Stretch or Ubuntu Xenial, you need set some flags to
-    build source compatible with the new compile tools. For this, set the variable
-    `CXXFLAGS` and compile as show bellow ::
-
-      $ cd /path_to_centreon_broker/build
-      $ export CXXFLAGS="-std=c++98 -Wno-long-long"
-      $ cmake .
+  $ cd /path_to_centreon_broker
+  $ mkdir build
+  $ cd build
+  $ cmake ..
 
 Your Centreon Broker can be tweaked to your particular needs using
 CMake's variable system. Variables can be set like this ::
@@ -383,7 +400,8 @@ be printed. Otherwise an installation summary will be printed.
 Compilation
 -----------
 
-Once properly configured, the compilation process is really simple::
+Once properly configured, the compilation process is really simple, from the
+*build* directory, launch the command::
 
   $ make
 
