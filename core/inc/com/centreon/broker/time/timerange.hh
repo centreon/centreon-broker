@@ -35,21 +35,21 @@ namespace time {
  */
 class timerange {
  public:
-  timerange(unsigned long start = 0, unsigned long end = 0);
+  timerange(uint64_t start = 0, uint64_t end = 0);
   timerange(timerange const& right);
   ~timerange() throw();
   timerange& operator=(timerange const& right);
   bool operator==(timerange const& right) const throw();
   bool operator!=(timerange const& right) const throw();
   bool operator<(timerange const& right) const throw();
-  unsigned long end() const throw();
-  void end(unsigned long value);
-  unsigned long start() const throw();
-  void start(unsigned long value);
-  unsigned long start_hour() const throw();
-  unsigned long start_minute() const throw();
-  unsigned long end_hour() const throw();
-  unsigned long end_minute() const throw();
+  uint64_t end() const throw();
+  void end(uint64_t value);
+  uint64_t start() const throw();
+  void start(uint64_t value);
+  uint64_t start_hour() const throw();
+  uint64_t start_minute() const throw();
+  uint64_t end_hour() const throw();
+  uint64_t end_minute() const throw();
 
   bool to_time_t(struct tm const& midnight,
                  time_t& range_start,
@@ -63,8 +63,8 @@ class timerange {
       std::list<timerange> const& timeranges);
 
  private:
-  unsigned long _end;
-  unsigned long _start;
+  uint64_t _end;
+  uint64_t _start;
 };
 }  // namespace time
 

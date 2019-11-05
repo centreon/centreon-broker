@@ -30,7 +30,7 @@ using namespace com::centreon::broker::time;
  *  @param[in] start The start time.
  *  @param[in] end   The end time.
  */
-timerange::timerange(unsigned long start, unsigned long end)
+timerange::timerange(uint64_t start, uint64_t end)
     : _end(end), _start(start) {}
 
 /**
@@ -102,7 +102,7 @@ bool timerange::operator<(timerange const& right) const throw() {
  *
  *  @return The end time.
  */
-unsigned long timerange::end() const throw() {
+uint64_t timerange::end() const throw() {
   return (_end);
 }
 
@@ -111,7 +111,7 @@ unsigned long timerange::end() const throw() {
  *
  *  @param[in] value The end time.
  */
-void timerange::end(unsigned long value) {
+void timerange::end(uint64_t value) {
   _end = value;
 }
 
@@ -120,7 +120,7 @@ void timerange::end(unsigned long value) {
  *
  *  @return The start time.
  */
-unsigned long timerange::start() const throw() {
+uint64_t timerange::start() const throw() {
   return (_start);
 }
 
@@ -129,7 +129,7 @@ unsigned long timerange::start() const throw() {
  *
  *  @param[in] value The strart time.
  */
-void timerange::start(unsigned long value) {
+void timerange::start(uint64_t value) {
   _start = value;
 }
 
@@ -138,7 +138,7 @@ void timerange::start(unsigned long value) {
  *
  *  @return The hour when the timerange starts.
  */
-unsigned long timerange::start_hour() const throw() {
+uint64_t timerange::start_hour() const throw() {
   return (_start / (60 * 60));
 }
 
@@ -147,7 +147,7 @@ unsigned long timerange::start_hour() const throw() {
  *
  *  @return The minute when the timerange starts.
  */
-unsigned long timerange::start_minute() const throw() {
+uint64_t timerange::start_minute() const throw() {
   return ((_start / 60) % 60);
 }
 
@@ -156,7 +156,7 @@ unsigned long timerange::start_minute() const throw() {
  *
  *  @return The hour when the timerange ends.
  */
-unsigned long timerange::end_hour() const throw() {
+uint64_t timerange::end_hour() const throw() {
   return (_end / (60 * 60));
 }
 
@@ -165,7 +165,7 @@ unsigned long timerange::end_hour() const throw() {
  *
  *  @return The minute when the timerange ends.
  */
-unsigned long timerange::end_minute() const throw() {
+uint64_t timerange::end_minute() const throw() {
   return ((_end / 60) % 60);
 }
 
@@ -192,7 +192,7 @@ bool timerange::to_time_t(struct tm const& midnight,
   return (true);
 }
 
-static bool _build_time_t(std::string const& time_str, unsigned long& ret) {
+static bool _build_time_t(std::string const& time_str, uint64_t& ret) {
   auto f = [](std::string const& str, uint64_t & data) -> bool {
       std::istringstream iss(str);
       return ((iss >> data) && iss.eof());
@@ -201,10 +201,10 @@ static bool _build_time_t(std::string const& time_str, unsigned long& ret) {
   std::size_t pos(time_str.find(':'));
   if (pos == std::string::npos)
     return (false);
-  unsigned long hours;
+  uint64_t hours;
   if (!f(time_str.substr(0, pos), hours))
     return (false);
-  unsigned long minutes;
+  uint64_t minutes;
   if (!f(time_str.substr(pos + 1), minutes))
     return (false);
   ret = hours * 3600 + minutes * 60;
@@ -221,10 +221,10 @@ bool timerange::build_timeranges_from_string(std::string const& line,
     std::size_t pos(it->find('-'));
     if (pos == std::string::npos)
       return (false);
-    unsigned long start_time;
+    uint64_t start_time;
     if (!_build_time_t(it->substr(0, pos), start_time))
       return (false);
-    unsigned long end_time;
+    uint64_t end_time;
     if (!_build_time_t(it->substr(pos + 1), end_time))
       return (false);
     timeranges.push_front(timerange(start_time, end_time));
