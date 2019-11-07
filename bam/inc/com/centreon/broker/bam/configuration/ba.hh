@@ -41,8 +41,8 @@ class ba {
     state_source_impact,
     state_source_best,
     state_source_worst,
-    state_source_ratio_number,
-    state_source_ratio_percent
+    state_source_ratio_percent,
+    state_source_ratio_number
   }state_source;
 
  private:

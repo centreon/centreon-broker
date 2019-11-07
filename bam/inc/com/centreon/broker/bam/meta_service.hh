@@ -50,10 +50,29 @@ class meta_service : public computable, public metric_listener {
   typedef impact_values::state state;
   enum computation_type { average = 1, min, max, sum };
 
+ private:
+  static int const _recompute_limit = 100;
+
+  void _recompute_partial(double new_value, double old_value);
+  void _send_service_status(io::stream* visitor, bool state_has_changed);
+
+  computation_type _computation;
+  uint32_t _id;
+  uint32_t _host_id;
+  uint32_t _service_id;
+  meta_service::state _last_state;
+  double _level_critical;
+  double _level_warning;
+  std::unordered_map<uint32_t, double> _metrics;
+  int _recompute_count;
+  double _value;
+  timestamp _last_service_status_sent;
+
+ public:
   meta_service();
-  meta_service(meta_service const& other);
   ~meta_service();
-  meta_service& operator=(meta_service const& other);
+  meta_service(meta_service const& other) = delete;
+  meta_service& operator=(meta_service const& other) = delete;
   void add_metric(uint32_t metric_id);
   bool child_has_update(computable* child, io::stream* visitor = NULL);
   uint32_t get_id() const;
@@ -73,26 +92,6 @@ class meta_service : public computable, public metric_listener {
   void set_level_critical(double level);
   void set_level_warning(double level);
   void visit(io::stream* visitor, bool& changed_state);
-
- private:
-  static int const _recompute_limit = 100;
-
-  void _internal_copy(meta_service const& other);
-  void _recompute_partial(double new_value, double old_value);
-  void _send_initial_event(io::stream* visitor);
-  void _send_service_status(io::stream* visitor, bool state_has_changed);
-
-  computation_type _computation;
-  uint32_t _id;
-  uint32_t _host_id;
-  uint32_t _service_id;
-  meta_service::state _last_state;
-  double _level_critical;
-  double _level_warning;
-  std::unordered_map<uint32_t, double> _metrics;
-  int _recompute_count;
-  double _value;
-  timestamp _last_service_status_sent;
 };
 }  // namespace bam
 

@@ -41,10 +41,17 @@ class bool_value;
 class bool_expression : public computable {
  public:
   typedef impact_values::state state;
+
+ private:
+  std::shared_ptr<bool_value> _expression;
+  uint32_t _id;
+  bool _impact_if;
+
+ public:
   bool_expression();
-  bool_expression(bool_expression const& other);
+  bool_expression(bool_expression const& other) = delete;
   ~bool_expression();
-  bool_expression& operator=(bool_expression const& other);
+  bool_expression& operator=(bool_expression const& other) = delete;
   bool child_has_update(computable* child, io::stream* visitor = NULL);
   impact_values::state get_state() const;
   bool state_known() const;
@@ -53,13 +60,6 @@ class bool_expression : public computable {
   void set_id(uint32_t id);
   void set_impact_if(bool impact_if);
   bool in_downtime() const;
-
- private:
-  void _internal_copy(bool_expression const& right);
-
-  std::shared_ptr<bool_value> _expression;
-  uint32_t _id;
-  bool _impact_if;
 };
 }  // namespace bam
 

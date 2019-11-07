@@ -38,15 +38,6 @@ impact_values::impact_values(double nominal,
       _state(state) {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-impact_values::impact_values(impact_values const& other) {
-  _internal_copy(other);
-}
-
-/**
  *  Destructor.
  */
 impact_values::~impact_values() {}
@@ -59,8 +50,12 @@ impact_values::~impact_values() {}
  *  @return This object.
  */
 impact_values& impact_values::operator=(impact_values const& other) {
-  if (this != &other)
-    _internal_copy(other);
+  if (this != &other) {
+    _acknowledgement = other._acknowledgement;
+    _downtime = other._downtime;
+    _nominal = other._nominal;
+    _state = other._state;
+  }
   return (*this);
 }
 
@@ -152,18 +147,5 @@ void impact_values::set_nominal(double nominal) {
  */
 void impact_values::set_state(impact_values::state state) {
   _state = state;
-  return;
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void impact_values::_internal_copy(impact_values const& other) {
-  _acknowledgement = other._acknowledgement;
-  _downtime = other._downtime;
-  _nominal = other._nominal;
-  _state = other._state;
   return;
 }

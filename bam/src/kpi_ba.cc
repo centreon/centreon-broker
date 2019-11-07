@@ -30,33 +30,9 @@ using namespace com::centreon::broker::bam;
 kpi_ba::kpi_ba() {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-kpi_ba::kpi_ba(kpi_ba const& right) : kpi(right) {
-  _internal_copy(right);
-}
-
-/**
  *  Destructor.
  */
 kpi_ba::~kpi_ba() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-kpi_ba& kpi_ba::operator=(kpi_ba const& right) {
-  if (this != &right) {
-    kpi::operator=(right);
-    _internal_copy(right);
-  }
-  return (*this);
-}
 
 /**
  *  Base BA got updated.
@@ -256,19 +232,6 @@ void kpi_ba::_fill_impact(impact_values& impact,
   impact.set_downtime(downtime * nominal / 100.0);
   impact.set_state(state);
   return ;
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] right Object to copy.
- */
-void kpi_ba::_internal_copy(kpi_ba const& right) {
-  _ba = right._ba;
-  _event = right._event;
-  _impact_critical = right._impact_critical;
-  _impact_warning = right._impact_warning;
-  return;
 }
 
 /**

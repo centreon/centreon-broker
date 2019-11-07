@@ -37,6 +37,9 @@ namespace bam {
  *  This is the base KPI event that will fill the kpi_events table.
  */
 class kpi_event : public io::data {
+ private:
+  void _internal_copy(kpi_event const& other);
+
  public:
   typedef impact_values::state state;
   kpi_event();
@@ -58,9 +61,6 @@ class kpi_event : public io::data {
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
-
- private:
-  void _internal_copy(kpi_event const& other);
 };
 }  // namespace bam
 

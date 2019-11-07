@@ -29,33 +29,9 @@ using namespace com::centreon::broker::bam;
 kpi::kpi() : _id(0) {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-kpi::kpi(kpi const& right)
-    : computable(right), _id(right._id), _event(right._event) {}
-
-/**
  *  Destructor.
  */
 kpi::~kpi() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-kpi& kpi::operator=(kpi const& right) {
-  if (this != &right) {
-    computable::operator=(right);
-    _id = right._id;
-    _event = right._event;
-  }
-  return (*this);
-}
 
 /**
  *  Get KPI ID.

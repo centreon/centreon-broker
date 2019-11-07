@@ -41,11 +41,18 @@ class impact_values {
     state_unknown,
   } state;
 
+ private:
+  double _acknowledgement;
+  double _downtime;
+  double _nominal;
+  impact_values::state _state;
+
+ public:
   impact_values(double nominal = 0.0,
                 double acknowledgement = 0.0,
                 double downtime = 0.0,
                 impact_values::state state = impact_values::state_ok);
-  impact_values(impact_values const& other);
+  impact_values(impact_values const& other) = delete;
   ~impact_values();
   impact_values& operator=(impact_values const& other);
   bool operator==(impact_values const& other) const throw();
@@ -57,14 +64,6 @@ class impact_values {
   void set_downtime(double downtime);
   void set_nominal(double nominal);
   void set_state(impact_values::state state);
-
- private:
-  void _internal_copy(impact_values const& other);
-
-  double _acknowledgement;
-  double _downtime;
-  double _nominal;
-  impact_values::state _state;
 };
 }  // namespace bam
 

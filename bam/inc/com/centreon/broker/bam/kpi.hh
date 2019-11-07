@@ -41,11 +41,16 @@ class impact_values;
  *  can either be a boolean rule or a service or a BA itself.
  */
 class kpi : public computable {
+ protected:
+  uint32_t _id;
+  std::shared_ptr<kpi_event> _event;
+  std::vector<std::shared_ptr<kpi_event> > _initial_events;
+
  public:
   kpi();
-  kpi(kpi const& right);
   virtual ~kpi();
-  kpi& operator=(kpi const& right);
+  kpi& operator=(kpi const& right) = delete;
+  kpi(kpi const& right) = delete;
   uint32_t get_id() const;
   timestamp get_last_state_change() const;
   virtual void impact_hard(impact_values& hard_impact) = 0;
@@ -57,11 +62,6 @@ class kpi : public computable {
   virtual bool ok_state() const = 0;
 
   void commit_initial_events(io::stream* visitor);
-
- protected:
-  uint32_t _id;
-  std::shared_ptr<kpi_event> _event;
-  std::vector<std::shared_ptr<kpi_event> > _initial_events;
 };
 }  // namespace bam
 

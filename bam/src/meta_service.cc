@@ -44,35 +44,9 @@ meta_service::meta_service()
       _value(NAN) {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-meta_service::meta_service(meta_service const& other)
-    : computable(other), metric_listener(other) {
-  _internal_copy(other);
-}
-
-/**
  *  Destructor.
  */
 meta_service::~meta_service() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-meta_service& meta_service::operator=(meta_service const& other) {
-  if (this != &other) {
-    computable::operator=(other);
-    metric_listener::operator=(other);
-    _internal_copy(other);
-  }
-  return (*this);
-}
 
 /**
  *  Add some metric that will impact this meta-service.
@@ -341,24 +315,6 @@ void meta_service::visit(io::stream* visitor, bool& changed_state) {
       visitor->write(std::static_pointer_cast<io::data>(status));
     }
   }
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void meta_service::_internal_copy(meta_service const& other) {
-  _computation = other._computation;
-  _id = other._id;
-  _host_id = other._host_id;
-  _service_id = other._service_id;
-  _last_state = other._last_state;
-  _level_critical = other._level_critical;
-  _level_warning = other._level_warning;
-  _metrics = other._metrics;
-  _recompute_count = _recompute_limit;
-  _value = other._value;
 }
 
 /**

@@ -31,34 +31,9 @@ using namespace com::centreon::broker;
 bool_expression::bool_expression() : _id(0), _impact_if(true) {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-bool_expression::bool_expression(bool_expression const& other)
-    : computable(other) {
-  _internal_copy(other);
-}
-
-/**
  *  Destructor.
  */
 bool_expression::~bool_expression() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-bool_expression& bool_expression::operator=(bool_expression const& other) {
-  if (this != &other) {
-    computable::operator=(other);
-    _internal_copy(other);
-  }
-  return (*this);
-}
 
 /**
  *  Base boolean expression got updated.
@@ -147,17 +122,5 @@ void bool_expression::set_id(uint32_t id) {
  */
 void bool_expression::set_impact_if(bool impact_if) {
   _impact_if = impact_if;
-  return;
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] right Object to copy.
- */
-void bool_expression::_internal_copy(bool_expression const& right) {
-  _expression = right._expression;
-  _id = right._id;
-  _impact_if = right._impact_if;
   return;
 }

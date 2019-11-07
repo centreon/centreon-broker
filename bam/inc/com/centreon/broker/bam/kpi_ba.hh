@@ -42,10 +42,26 @@ class computable;
 class kpi_ba : public kpi {
  public:
   typedef impact_values::state state;
+
+ private:
+  std::shared_ptr<ba> _ba;
+  double _impact_critical;
+  double _impact_warning;
+
+  void _fill_impact(impact_values& impact,
+                    kpi_ba::state state,
+                    double acknowledgement,
+                    double downtime);
+  void _open_new_event(io::stream* visitor,
+                       int impact,
+                       kpi_ba::state ba_state,
+                       timestamp event_start_time);
+
+ public:
   kpi_ba();
-  kpi_ba(kpi_ba const& right);
   ~kpi_ba();
-  kpi_ba& operator=(kpi_ba const& right);
+  kpi_ba(kpi_ba const& right) = delete;
+  kpi_ba& operator=(kpi_ba const& right) = delete;
   bool child_has_update(computable* child, io::stream* visitor = NULL);
   double get_impact_critical() const;
   double get_impact_warning() const;
@@ -58,21 +74,6 @@ class kpi_ba : public kpi {
   void visit(io::stream* visitor);
   bool ok_state() const;
   bool in_downtime() const;
-
- private:
-  void _fill_impact(impact_values& impact,
-                    kpi_ba::state state,
-                    double acknowledgement,
-                    double downtime);
-  void _internal_copy(kpi_ba const& right);
-  void _open_new_event(io::stream* visitor,
-                       int impact,
-                       kpi_ba::state ba_state,
-                       timestamp event_start_time);
-
-  std::shared_ptr<ba> _ba;
-  double _impact_critical;
-  double _impact_warning;
 };
 }  // namespace bam
 

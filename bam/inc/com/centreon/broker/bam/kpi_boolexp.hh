@@ -42,10 +42,22 @@ class computable;
 class kpi_boolexp : public kpi {
  public:
   typedef impact_values::state state;
+
+ private:
+  kpi_boolexp::state _get_state() const;
+  std::shared_ptr<bool_expression> _boolexp;
+  double _impact;
+
+  void _fill_impact(impact_values& impact);
+  void _open_new_event(io::stream* visitor,
+                       int impact,
+                       kpi_boolexp::state state);
+
+ public:
   kpi_boolexp();
-  kpi_boolexp(kpi_boolexp const& other);
   ~kpi_boolexp();
-  kpi_boolexp& operator=(kpi_boolexp const& other);
+  kpi_boolexp(kpi_boolexp const& other) = delete;
+  kpi_boolexp& operator=(kpi_boolexp const& other) = delete;
   bool child_has_update(computable* child, io::stream* visitor = NULL);
   bool in_downtime() const;
   double get_impact() const;
@@ -56,15 +68,6 @@ class kpi_boolexp : public kpi {
   void unlink_boolexp();
   void visit(io::stream* visitor);
   bool ok_state() const;
-
- private:
-  void _fill_impact(impact_values& impact);
-  void _internal_copy(kpi_boolexp const& other);
-  void _open_new_event(io::stream* visitor, int impact, kpi_boolexp::state state);
-  kpi_boolexp::state _get_state() const;
-
-  std::shared_ptr<bool_expression> _boolexp;
-  double _impact;
 };
 }  // namespace bam
 

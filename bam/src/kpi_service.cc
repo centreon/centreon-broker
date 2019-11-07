@@ -46,35 +46,9 @@ kpi_service::kpi_service()
 }
 
 /**
- *  Copy constructor.
- *
- *  @param[in] right Object to copy.
- */
-kpi_service::kpi_service(kpi_service const& right)
-    : service_listener(right), kpi(right) {
-  _internal_copy(right);
-}
-
-/**
  *  Destructor.
  */
 kpi_service::~kpi_service() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right Object to copy.
- *
- *  @return This object.
- */
-kpi_service& kpi_service::operator=(kpi_service const& right) {
-  if (this != &right) {
-    service_listener::operator=(right);
-    kpi::operator=(right);
-    _internal_copy(right);
-  }
-  return *this;
-}
 
 /**
  *  Unused callback.
@@ -451,27 +425,6 @@ void kpi_service::_fill_impact(impact_values& impact, kpi_service::state state) 
   impact.set_state(state);
   return ;
 }
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] right Object to copy.
- */
-void kpi_service::_internal_copy(kpi_service const& right) {
-  _acknowledged = right._acknowledged;
-  _downtimed = right._downtimed;
-  _event = right._event;
-  _host_id = right._host_id;
-  memcpy(_impacts, right._impacts, sizeof(_impacts));
-  _last_check = right._last_check;
-  _output = right._output;
-  _perfdata = right._perfdata;
-  _service_id = right._service_id;
-  _state_hard = right._state_hard;
-  _state_soft = right._state_soft;
-  _state_type = right._state_type;
-}
-
 /**
  *  Open a new event for this KPI.
  *

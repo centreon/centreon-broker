@@ -31,33 +31,9 @@ using namespace com::centreon::broker::bam;
 kpi_boolexp::kpi_boolexp() {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-kpi_boolexp::kpi_boolexp(kpi_boolexp const& other) : kpi(other) {
-  _internal_copy(other);
-}
-
-/**
  *  Destructor.
  */
 kpi_boolexp::~kpi_boolexp() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-kpi_boolexp& kpi_boolexp::operator=(kpi_boolexp const& other) {
-  if (this != &other) {
-    kpi::operator=(other);
-    _internal_copy(other);
-  }
-  return (*this);
-}
 
 /**
  *  Base boolean expression got updated.
@@ -216,18 +192,6 @@ void kpi_boolexp::_fill_impact(impact_values& impact) {
   impact.set_downtime(0.0);
   impact.set_state(state);
   return ;
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void kpi_boolexp::_internal_copy(kpi_boolexp const& other) {
-  _boolexp = other._boolexp;
-  _event = other._event;
-  _impact = other._impact;
-  return;
 }
 
 /**

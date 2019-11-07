@@ -31,33 +31,9 @@ using namespace com::centreon::broker::bam;
 kpi_meta::kpi_meta() {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-kpi_meta::kpi_meta(kpi_meta const& other) : kpi(other) {
-  _internal_copy(other);
-}
-
-/**
  *  Destructor.
  */
 kpi_meta::~kpi_meta() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-kpi_meta& kpi_meta::operator=(kpi_meta const& other) {
-  if (this != &other) {
-    kpi::operator=(other);
-    _internal_copy(other);
-  }
-  return (*this);
-}
 
 /**
  *  Base meta-service got updated.
@@ -224,19 +200,6 @@ void kpi_meta::_fill_impact(impact_values& impact) {
   impact.set_downtime(0.0);
   impact.set_state(state);
   return ;
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void kpi_meta::_internal_copy(kpi_meta const& other) {
-  _meta = other._meta;
-  _event = other._event;
-  _impact_critical = other._impact_critical;
-  _impact_warning = other._impact_warning;
-  return;
 }
 
 /**

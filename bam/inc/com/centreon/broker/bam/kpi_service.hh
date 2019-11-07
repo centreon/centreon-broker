@@ -38,10 +38,29 @@ namespace bam {
 class kpi_service : public service_listener, public kpi {
  public:
   typedef impact_values::state state;
+
+ private:
+  void _fill_impact(impact_values& impact, kpi_service::state state);
+  void _internal_copy(kpi_service const& right);
+  void _open_new_event(io::stream* visitor, impact_values const& impacts);
+
+  bool _acknowledged;
+  bool _downtimed;
+  uint32_t _host_id;
+  double _impacts[5];
+  timestamp _last_check;
+  std::string _output;
+  std::string _perfdata;
+  uint32_t _service_id;
+  kpi_service::state _state_hard;
+  kpi_service::state _state_soft;
+  short _state_type;
+
+ public:
   kpi_service();
-  kpi_service(kpi_service const& right);
   ~kpi_service();
-  kpi_service& operator=(kpi_service const& right);
+  kpi_service(kpi_service const& right) = delete;
+  kpi_service& operator=(kpi_service const& right) = delete;
   bool child_has_update(computable* child, io::stream* visitor = NULL);
   uint32_t get_host_id() const;
   double get_impact_critical() const;
@@ -74,23 +93,6 @@ class kpi_service : public service_listener, public kpi {
   void visit(io::stream* visitor);
   virtual void set_initial_event(kpi_event const& e);
   bool ok_state() const;
-
- private:
-  void _fill_impact(impact_values& impact, kpi_service::state state);
-  void _internal_copy(kpi_service const& right);
-  void _open_new_event(io::stream* visitor, impact_values const& impacts);
-
-  bool _acknowledged;
-  bool _downtimed;
-  uint32_t _host_id;
-  double _impacts[5];
-  timestamp _last_check;
-  std::string _output;
-  std::string _perfdata;
-  uint32_t _service_id;
-  kpi_service::state _state_hard;
-  kpi_service::state _state_soft;
-  short _state_type;
 };
 }  // namespace bam
 
