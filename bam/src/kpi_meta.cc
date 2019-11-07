@@ -211,7 +211,7 @@ void kpi_meta::visit(io::stream* visitor) {
  */
 void kpi_meta::_fill_impact(impact_values& impact) {
   // Get nominal impact from state.
-  short state(_meta->get_state());
+  kpi_meta::state state(_meta->get_state());
   double nominal;
   if (0 == state)
     nominal = 0.0;

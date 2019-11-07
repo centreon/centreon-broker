@@ -22,6 +22,7 @@
 #include "com/centreon/broker/bam/computable.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "impact_values.hh"
 
 CCB_BEGIN()
 
@@ -39,12 +40,13 @@ class bool_value;
  */
 class bool_expression : public computable {
  public:
+  typedef impact_values::state state;
   bool_expression();
   bool_expression(bool_expression const& other);
   ~bool_expression();
   bool_expression& operator=(bool_expression const& other);
   bool child_has_update(computable* child, io::stream* visitor = NULL);
-  short get_state() const;
+  impact_values::state get_state() const;
   bool state_known() const;
   void set_expression(std::shared_ptr<bool_value> const& expression);
   std::shared_ptr<bool_value> get_expression() const;

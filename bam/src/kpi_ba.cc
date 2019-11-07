@@ -177,7 +177,7 @@ void kpi_ba::visit(io::stream* visitor) {
     {
       // BA event state.
       ba_event* bae(_ba->get_ba_event());
-      short ba_state(bae ? bae->status : 0);
+      kpi_ba::state ba_state(bae ? static_cast<kpi_ba::state>(bae->status) : kpi_ba::state::state_ok);
       timestamp last_ba_update(bae ? bae->start_time : timestamp(time(nullptr)));
 
       // If no event was cached, create one.
@@ -227,7 +227,7 @@ void kpi_ba::visit(io::stream* visitor) {
  *  @param[in]  downtime        Downtime impact of the BA.
  */
 void kpi_ba::_fill_impact(impact_values& impact,
-                          short state,
+                          kpi_ba::state state,
                           double acknowledgement,
                           double downtime) {
   // Get nominal impact from state.
@@ -281,7 +281,7 @@ void kpi_ba::_internal_copy(kpi_ba const& right) {
  */
 void kpi_ba::_open_new_event(io::stream* visitor,
                              int impact,
-                             short ba_state,
+                             kpi_ba::state ba_state,
                              timestamp event_start_time) {
   _event.reset(new kpi_event);
   _event->kpi_id = _id;

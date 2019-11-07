@@ -53,10 +53,12 @@ static double normalize(double d) {
  */
 ba::ba(bool generate_virtual_status)
     : _state_source(configuration::ba::state_source_impact),
-      _computed_soft_state(0),
-      _computed_hard_state(0),
+      _computed_soft_state(ba::state::state_ok),
+      _computed_hard_state(ba::state::state_ok),
       _acknowledgement_hard(0.0),
       _acknowledgement_soft(0.0),
+      _num_soft_critical_childs{0.f},
+      _num_hard_critical_childs{0.f},
       _downtime_hard(0.0),
       _downtime_soft(0.0),
       _generate_virtual_status(generate_virtual_status),
@@ -71,36 +73,6 @@ ba::ba(bool generate_virtual_status)
       _recompute_count(0),
       _service_id(0),
       _valid(true) {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-ba::ba(ba const& other) : computable(other), service_listener(other) {
-  _internal_copy(other);
-}
-
-/**
- *  Destructor.
- */
-ba::~ba() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-ba& ba::operator=(ba const& other) {
-  if (this != &other) {
-    computable::operator=(other);
-    service_listener::operator=(other);
-    _internal_copy(other);
-  }
-  return (*this);
-}
 
 /**
  *  Add impact.
@@ -312,23 +284,39 @@ std::string ba::get_perfdata() const {
  *
  *  @return BA hard state.
  */
-short ba::get_state_hard() {
-  short state;
+ba::state ba::get_state_hard() {
+  ba::state state;
+
+  auto update_state = [&](float num_critical, float level_crit,
+                          float level_warning) -> ba::state {
+    if (num_critical >= level_crit)
+      return ba::state::state_critical;
+    else if (num_critical >= level_warning)
+      return ba::state::state_warning;
+    return ba::state::state_ok;
+  };
 
   if (_state_source == configuration::ba::state_source_impact)
     if (!_valid)
-      state = 3;
+      state = ba::state::state_unknown;
     else if (_level_hard <= _level_critical)
-      state = 2;
+      state = ba::state::state_critical;
     else if (_level_hard <= _level_warning)
-      state = 1;
+      state = ba::state::state_warning;
     else
-      state = 0;
+      state = ba::state::state_ok;
   else if (_state_source == configuration::ba::state_source_best ||
            _state_source == configuration::ba::state_source_worst)
     state = _computed_hard_state;
+  else if (_state_source == configuration::ba::state_source_ratio_number)
+    state = update_state(_num_hard_critical_childs, _level_critical,
+                         _level_warning);
+  else if (_state_source == configuration::ba::state_source_ratio_percent)
+    state = update_state((_num_hard_critical_childs / _impacts.size()) * 100,
+                         _level_critical, _level_warning);
   else
-    state = 3;  // unknown _state_source so unknown state...
+    state =
+        ba::state::state_unknown;  // unknown _state_source so unknown state...
   return (state);
 }
 
@@ -337,22 +325,39 @@ short ba::get_state_hard() {
  *
  *  @return BA soft state.
  */
-short ba::get_state_soft() {
-  short state;
+ba::state ba::get_state_soft() {
+  ba::state state;
+
+  auto update_state = [&](float num_critical, float level_crit,
+                          float level_warning) -> ba::state {
+    if (num_critical >= level_crit)
+      return ba::state::state_critical;
+    else if (num_critical >= level_warning)
+      return ba::state::state_warning;
+    return ba::state::state_ok;
+  };
+
   if (_state_source == configuration::ba::state_source_impact)
     if (!_valid)
-      state = 3;
+      state = ba::state::state_unknown;
     else if (_level_soft <= _level_critical)
-      state = 2;
+      state = ba::state::state_critical;
     else if (_level_soft <= _level_warning)
-      state = 1;
+      state = ba::state::state_warning;
     else
-      state = 0;
+      state = ba::state::state_ok;
   else if (_state_source == configuration::ba::state_source_best ||
            _state_source == configuration::ba::state_source_worst)
     state = _computed_soft_state;
+  else if (_state_source == configuration::ba::state_source_ratio_number)
+    state = update_state(_num_soft_critical_childs, _level_critical,
+                         _level_warning);
+  else if (_state_source == configuration::ba::state_source_ratio_percent)
+    state = update_state((_num_soft_critical_childs / _impacts.size()) * 100,
+                         _level_critical, _level_warning);
   else
-    state = 3;  // unknown _state_source so unknown state...*/
+    state = ba::state::state_unknown;  // unknown _state_source so unknown
+                                       // state...*/
   return (state);
 }
 
@@ -656,23 +661,30 @@ void ba::set_inherited_downtime(inherited_downtime const& dwn) {
  */
 void ba::_apply_impact(kpi* kpi_ptr, ba::impact_info& impact) {
   auto is_state_worse = [&](short current_state, short new_state) -> bool {
-    if (current_state == 0 && new_state != 0)  // OK => something elses
+    if (current_state == ba::state::state_ok &&
+        new_state != ba::state::state_ok)  // OK => something elses
       return true;
-    if (current_state == 1 && new_state == 2)  // WARNING => CRITICAL
+    if (current_state == ba::state::state_warning &&
+        new_state == ba::state::state_critical)  // WARNING => CRITICAL
       return true;
-    if (current_state == 3 &&
-        (new_state == 1 || new_state == 2))  // UNKNOWN => WARNING or CRITICAL
+    if (current_state == ba::state::state_unknown &&
+        (new_state == ba::state::state_warning ||
+         new_state ==
+             ba::state::state_critical))  // UNKNOWN => WARNING or CRITICAL
       return true;
     return false;
   };
 
   auto is_state_better = [&](short current_state, short new_state) -> bool {
-    if (current_state == 2 && new_state != 2)  // CRITICAL => something else
+    if (current_state == ba::state::state_critical &&
+        new_state != ba::state::state_critical)  // CRITICAL => something else
       return true;
-    if (current_state == 3 && new_state == 0)  // UNKNOWN => OK
+    if (current_state == ba::state::state_unknown &&
+        new_state == ba::state::state_ok)  // UNKNOWN => OK
       return true;
-    if (current_state == 1 &&
-        (new_state == 0 || new_state == 3))  // WARNING => UNKNOW or OK
+    if (current_state == ba::state::state_warning &&
+        (new_state == ba::state::state_ok ||
+         new_state == ba::state::state_unknown))  // WARNING => UNKNOW or OK
       return true;
     return false;
   };
@@ -687,47 +699,26 @@ void ba::_apply_impact(kpi* kpi_ptr, ba::impact_info& impact) {
 
   if (_state_source == configuration::ba::state_source_best) {
     if (is_state_better(_computed_soft_state, impact.soft_impact.get_state()))
-      _computed_soft_state = impact.soft_impact.get_state();
+      _computed_soft_state =
+          static_cast<ba::state>(impact.soft_impact.get_state());
     if (is_state_better(_computed_hard_state, impact.hard_impact.get_state()))
-      _computed_hard_state = impact.hard_impact.get_state();
+      _computed_hard_state =
+          static_cast<ba::state>(impact.hard_impact.get_state());
 
   } else if (_state_source == configuration::ba::state_source_worst) {
     if (is_state_worse(_computed_soft_state, impact.soft_impact.get_state()))
-      _computed_soft_state = impact.soft_impact.get_state();
+      _computed_soft_state =
+          static_cast<ba::state>(impact.soft_impact.get_state());
     if (is_state_worse(_computed_hard_state, impact.hard_impact.get_state()))
-      _computed_hard_state = impact.hard_impact.get_state();
+      _computed_hard_state =
+          static_cast<ba::state>(impact.hard_impact.get_state());
+  } else if (_state_source == configuration::ba::state_source_ratio_number ||
+             _state_source == configuration::ba::state_source_ratio_percent) {
+    if (impact.soft_impact.get_state() == ba::state::state_critical)
+      _num_soft_critical_childs++;
+    if (impact.hard_impact.get_state() == ba::state::state_critical)
+      _num_hard_critical_childs++;
   }
-  return;
-}
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void ba::_internal_copy(ba const& other) {
-  _acknowledgement_hard = other._acknowledgement_hard;
-  _acknowledgement_soft = other._acknowledgement_soft;
-  _downtime_hard = other._downtime_hard;
-  _downtime_soft = other._downtime_soft;
-  _event = other._event;
-  _generate_virtual_status = other._generate_virtual_status;
-  _id = other._id;
-  _name = other._name;
-  _service_id = other._service_id;
-  _state_source = other._state_source;
-  _computed_soft_state = other._computed_soft_state;
-  _computed_hard_state = other._computed_hard_state;
-  _host_id = other._host_id;
-  _impacts = other._impacts;
-  _in_downtime = other._in_downtime;
-  _last_kpi_update = other._last_kpi_update;
-  _level_critical = other._level_critical;
-  _level_hard = other._level_hard;
-  _level_soft = other._level_soft;
-  _level_warning = other._level_warning;
-  _name = other._name;
-  _valid = other._valid;
   return;
 }
 
@@ -794,9 +785,14 @@ void ba::_unapply_impact(kpi* kpi_ptr, ba::impact_info& impact) {
   } else if (_computed_soft_state == impact.soft_impact.get_state() ||
              _computed_hard_state == impact.hard_impact.get_state()) {
     if (_state_source == configuration::ba::state_source_best)
-      _computed_soft_state = _computed_hard_state = 2;
+      _computed_soft_state = _computed_hard_state = ba::state::state_critical;
     else if (_state_source == configuration::ba::state_source_worst)
-      _computed_soft_state = _computed_hard_state = 0;
+      _computed_soft_state = _computed_hard_state = ba::state::state_ok;
+    else if (_state_source == configuration::ba::state_source_ratio_number ||
+        _state_source == configuration::ba::state_source_ratio_percent) {
+      _num_soft_critical_childs = 0;
+      _num_hard_critical_childs = 0;
+    }
 
     // We recompute all impact, except the one to unapply...
     for (std::unordered_map<kpi*, impact_info>::iterator it(_impacts.begin()),
@@ -805,6 +801,7 @@ void ba::_unapply_impact(kpi* kpi_ptr, ba::impact_info& impact) {
       if (it->first != kpi_ptr)
         _apply_impact(it->first, it->second);
   }
+
   return;
 }
 

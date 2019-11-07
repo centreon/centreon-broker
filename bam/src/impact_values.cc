@@ -31,7 +31,7 @@ using namespace com::centreon::broker::bam;
 impact_values::impact_values(double nominal,
                              double acknowledgement,
                              double downtime,
-                             short state)
+                             impact_values::state state)
     : _acknowledgement(acknowledgement),
       _downtime(downtime),
       _nominal(nominal),
@@ -111,7 +111,7 @@ double impact_values::get_nominal() const {
  *
  *  @return State impact.
  */
-short impact_values::get_state() const {
+impact_values::state impact_values::get_state() const {
   return (_state);
 }
 
@@ -150,7 +150,7 @@ void impact_values::set_nominal(double nominal) {
  *
  *  @param[in] state  State impact.
  */
-void impact_values::set_state(short state) {
+void impact_values::set_state(impact_values::state state) {
   _state = state;
   return;
 }

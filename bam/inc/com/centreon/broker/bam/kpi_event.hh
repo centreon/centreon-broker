@@ -25,6 +25,7 @@
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
+#include "impact_values.hh"
 
 CCB_BEGIN()
 
@@ -37,6 +38,7 @@ namespace bam {
  */
 class kpi_event : public io::data {
  public:
+  typedef impact_values::state state;
   kpi_event();
   kpi_event(kpi_event const& other);
   ~kpi_event();

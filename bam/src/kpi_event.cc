@@ -27,7 +27,10 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 kpi_event::kpi_event()
-    : kpi_id(0), impact_level(0), in_downtime(false), status(3) {}
+    : kpi_id(0),
+      impact_level(0),
+      in_downtime(false),
+      status(kpi_event::state::state_unknown) {}
 
 /**
  *  Copy constructor.

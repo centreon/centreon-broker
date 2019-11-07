@@ -26,6 +26,7 @@
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
+#include "kpi_meta.hh"
 
 CCB_BEGIN()
 
@@ -46,6 +47,7 @@ namespace bam {
  */
 class meta_service : public computable, public metric_listener {
  public:
+  typedef impact_values::state state;
   enum computation_type { average = 1, min, max, sum };
 
   meta_service();
@@ -59,7 +61,7 @@ class meta_service : public computable, public metric_listener {
   uint32_t get_service_id() const;
   std::string get_output() const;
   std::string get_perfdata() const;
-  short get_state() const;
+  meta_service::state get_state() const;
   void metric_update(std::shared_ptr<storage::metric> const& m,
                      io::stream* visitor = NULL);
   void remove_metric(uint32_t metric_id);
@@ -84,7 +86,7 @@ class meta_service : public computable, public metric_listener {
   uint32_t _id;
   uint32_t _host_id;
   uint32_t _service_id;
-  short _last_state;
+  meta_service::state _last_state;
   double _level_critical;
   double _level_warning;
   std::unordered_map<uint32_t, double> _metrics;

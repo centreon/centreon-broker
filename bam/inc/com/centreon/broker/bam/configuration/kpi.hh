@@ -36,6 +36,7 @@ namespace configuration {
  */
 class kpi {
  public:
+  typedef impact_values::state state;
   kpi(uint32_t id = 0,
       short state_type = 0,
       uint32_t host_id = 0,

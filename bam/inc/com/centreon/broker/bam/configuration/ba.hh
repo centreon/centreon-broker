@@ -40,9 +40,23 @@ class ba {
   typedef enum {
     state_source_impact,
     state_source_best,
-    state_source_worst
+    state_source_worst,
+    state_source_ratio_number,
+    state_source_ratio_percent
   }state_source;
 
+ private:
+  uint32_t _id;
+  uint32_t _host_id;
+  uint32_t _service_id;
+  std::string _name;
+  ba::state_source _state_source;
+  double _warning_level;
+  double _critical_level;
+  bam::ba_event _event;
+  bool _inherit_kpi_downtime;
+
+ public:
   ba(uint32_t id = 0,
      std::string const& name = "",
      ba::state_source source = state_source_impact,
@@ -76,17 +90,6 @@ class ba {
   void set_critical_level(double critical_level);
   void set_opened_event(bam::ba_event const& e);
   void set_inherit_kpi_downtime(bool value);
-
- private:
-  uint32_t _id;
-  uint32_t _host_id;
-  uint32_t _service_id;
-  std::string _name;
-  ba::state_source _state_source;
-  double _warning_level;
-  double _critical_level;
-  bam::ba_event _event;
-  bool _inherit_kpi_downtime;
 };
 }  // namespace configuration
 }  // namespace bam

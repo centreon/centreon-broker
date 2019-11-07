@@ -41,6 +41,7 @@ class computable;
  */
 class kpi_ba : public kpi {
  public:
+  typedef impact_values::state state;
   kpi_ba();
   kpi_ba(kpi_ba const& right);
   ~kpi_ba();
@@ -60,13 +61,13 @@ class kpi_ba : public kpi {
 
  private:
   void _fill_impact(impact_values& impact,
-                    short state,
+                    kpi_ba::state state,
                     double acknowledgement,
                     double downtime);
   void _internal_copy(kpi_ba const& right);
   void _open_new_event(io::stream* visitor,
                        int impact,
-                       short ba_state,
+                       kpi_ba::state ba_state,
                        timestamp event_start_time);
 
   std::shared_ptr<ba> _ba;

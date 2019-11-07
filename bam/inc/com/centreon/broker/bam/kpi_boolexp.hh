@@ -23,6 +23,7 @@
 #include "com/centreon/broker/bam/kpi.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "impact_values.hh"
 
 CCB_BEGIN()
 
@@ -40,6 +41,7 @@ class computable;
  */
 class kpi_boolexp : public kpi {
  public:
+  typedef impact_values::state state;
   kpi_boolexp();
   kpi_boolexp(kpi_boolexp const& other);
   ~kpi_boolexp();
@@ -58,8 +60,8 @@ class kpi_boolexp : public kpi {
  private:
   void _fill_impact(impact_values& impact);
   void _internal_copy(kpi_boolexp const& other);
-  void _open_new_event(io::stream* visitor, int impact, short state);
-  short _get_state() const;
+  void _open_new_event(io::stream* visitor, int impact, kpi_boolexp::state state);
+  kpi_boolexp::state _get_state() const;
 
   std::shared_ptr<bool_expression> _boolexp;
   double _impact;

@@ -162,7 +162,7 @@ void kpi_boolexp::visit(io::stream* visitor) {
     // Get information (HARD and SOFT values are the same).
     impact_values values;
     impact_hard(values);
-    short state(_get_state());
+    kpi_boolexp::state state(_get_state());
 
     // Generate BI events.
     {
@@ -205,7 +205,7 @@ void kpi_boolexp::visit(io::stream* visitor) {
  */
 void kpi_boolexp::_fill_impact(impact_values& impact) {
   // Get nominal impact from state.
-  short state(_get_state());
+  kpi_boolexp::state state(_get_state());
   double nominal;
   if (0 == state)
     nominal = 0.0;
@@ -239,7 +239,7 @@ void kpi_boolexp::_internal_copy(kpi_boolexp const& other) {
  */
 void kpi_boolexp::_open_new_event(io::stream* visitor,
                                   int impact,
-                                  short state) {
+                                  kpi_boolexp::state state) {
   _event.reset(new kpi_event);
   _event->kpi_id = _id;
   _event->impact_level = impact;
@@ -264,12 +264,12 @@ void kpi_boolexp::_open_new_event(io::stream* visitor,
  *
  *  @return  The current state of the boolexp.
  */
-short kpi_boolexp::_get_state() const {
+kpi_boolexp::state kpi_boolexp::_get_state() const {
   if (_boolexp->state_known())
     return (_boolexp->get_state());
   else {
     if (_event)
-      return (_event->status);
+      return (static_cast<kpi_boolexp::state>(_event->status));
     else
       return (_boolexp->get_state());
   }

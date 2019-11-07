@@ -18,6 +18,7 @@
 
 #include "com/centreon/broker/bam/meta_service.hh"
 #include <cmath>
+#include <com/centreon/broker/bam/kpi_meta.hh>
 #include <ctime>
 #include <sstream>
 #include "com/centreon/broker/bam/meta_service_status.hh"
@@ -36,7 +37,7 @@ meta_service::meta_service()
       _id(0),
       _host_id(0),
       _service_id(0),
-      _last_state(-1),
+      _last_state(meta_service::state::state_unknown),
       _level_critical(0.0),
       _level_warning(0.0),
       _recompute_count(0),
@@ -151,19 +152,19 @@ std::string meta_service::get_perfdata() const {
  *
  *  @return Current meta-service state.
  */
-short meta_service::get_state() const {
-  short state;
+kpi_meta::state meta_service::get_state() const {
+  kpi_meta::state state;
   bool less_than(_level_warning < _level_critical);
   if ((less_than && (_value >= _level_critical)) ||
       (!less_than && (_value <= _level_critical)))
-    state = 2;
+    state = kpi_meta::state::state_critical;
   else if ((less_than && (_value >= _level_warning)) ||
            (!less_than && (_value <= _level_warning)))
-    state = 1;
+    state = kpi_meta::state::state_warning;
   else if (std::isnan(_value))
-    state = 3;
+    state = kpi_meta::state::state_unknown;
   else
-    state = 0;
+    state = kpi_meta::state::state_ok;
   return (state);
 }
 
@@ -324,7 +325,7 @@ void meta_service::visit(io::stream* visitor, bool& changed_state) {
       recompute();
 
     // New state.
-    short new_state(get_state());
+    kpi_meta::state new_state(get_state());
     changed_state = (_last_state != new_state);
 
     // Send meta-service status.

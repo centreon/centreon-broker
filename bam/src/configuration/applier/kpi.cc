@@ -290,7 +290,7 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     obj->set_impact_unknown(cfg.get_impact_unknown());
     obj->set_impact_warning(cfg.get_impact_warning());
     obj->set_service_id(cfg.get_service_id());
-    obj->set_state_hard(cfg.get_status());
+    obj->set_state_hard(static_cast<bam::kpi_service::state>(cfg.get_status()));
     obj->set_state_type(cfg.get_state_type());
     _book->listen(cfg.get_host_id(), cfg.get_service_id(), obj.get());
     my_kpi = std::static_pointer_cast<bam::kpi>(obj);

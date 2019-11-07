@@ -40,6 +40,7 @@ class computable;
  */
 class kpi_meta : public kpi {
  public:
+  typedef impact_values::state state;
   kpi_meta();
   kpi_meta(kpi_meta const& other);
   ~kpi_meta();

@@ -38,8 +38,8 @@ kpi_service::kpi_service()
       _host_id(0),
       _last_check(0),
       _service_id(0),
-      _state_hard(0),
-      _state_soft(0),
+      _state_hard(kpi_service::state::state_ok),
+      _state_soft(kpi_service::state::state_ok),
       _state_type(0) {
   for (uint32_t i(0); i < sizeof(_impacts) / sizeof(*_impacts); ++i)
     _impacts[i] = 0.0;
@@ -140,7 +140,7 @@ uint32_t kpi_service::get_service_id() const {
  *
  *  @return Hard state of the service.
  */
-short kpi_service::get_state_hard() const {
+kpi_service::state kpi_service::get_state_hard() const {
   return _state_hard;
 }
 
@@ -149,7 +149,7 @@ short kpi_service::get_state_hard() const {
  *
  *  @return Soft state of the service.
  */
-short kpi_service::get_state_soft() const {
+kpi_service::state kpi_service::get_state_soft() const {
   return _state_soft;
 }
 
@@ -223,8 +223,8 @@ void kpi_service::service_update(
       _last_check = status->last_check;
     _output = status->output;
     _perfdata = status->perf_data;
-    _state_hard = status->last_hard_state;
-    _state_soft = status->current_state;
+    _state_hard = static_cast<kpi_service::state>(status->last_hard_state);
+    _state_soft = static_cast<kpi_service::state>(status->current_state);
     _state_type = status->state_type;
 
     // Generate status event.
@@ -355,7 +355,7 @@ void kpi_service::set_service_id(uint32_t service_id) {
  *
  *  @param[in] state Service hard state.
  */
-void kpi_service::set_state_hard(short state) {
+void kpi_service::set_state_hard(kpi_service::state state) {
   _state_hard = state;
 }
 
@@ -364,7 +364,7 @@ void kpi_service::set_state_hard(short state) {
  *
  *  @param[in] state Service soft state.
  */
-void kpi_service::set_state_soft(short state) {
+void kpi_service::set_state_soft(kpi_service::state state) {
   _state_soft = state;
 }
 
@@ -439,7 +439,7 @@ void kpi_service::visit(io::stream* visitor) {
  *  @param[out] impact Impacts of the state.
  *  @param[in]  state  Service state.
  */
-void kpi_service::_fill_impact(impact_values& impact, short state) {
+void kpi_service::_fill_impact(impact_values& impact, kpi_service::state state) {
   if ((state < 0) ||
       (static_cast<size_t>(state) >= (sizeof(_impacts) / sizeof(*_impacts))))
     throw(exceptions::msg()

@@ -37,6 +37,7 @@ namespace bam {
  */
 class kpi_service : public service_listener, public kpi {
  public:
+  typedef impact_values::state state;
   kpi_service();
   kpi_service(kpi_service const& right);
   ~kpi_service();
@@ -47,8 +48,8 @@ class kpi_service : public service_listener, public kpi {
   double get_impact_unknown() const;
   double get_impact_warning() const;
   uint32_t get_service_id() const;
-  short get_state_hard() const;
-  short get_state_soft() const;
+  kpi_service::state get_state_hard() const;
+  kpi_service::state get_state_soft() const;
   short get_state_type() const;
   void impact_hard(impact_values& impact);
   void impact_soft(impact_values& impact);
@@ -67,15 +68,15 @@ class kpi_service : public service_listener, public kpi {
   void set_impact_unknown(double impact);
   void set_impact_warning(double impact);
   void set_service_id(uint32_t service_id);
-  void set_state_hard(short state);
-  void set_state_soft(short state);
+  void set_state_hard(kpi_service::state state);
+  void set_state_soft(kpi_service::state state);
   void set_state_type(short type);
   void visit(io::stream* visitor);
   virtual void set_initial_event(kpi_event const& e);
   bool ok_state() const;
 
  private:
-  void _fill_impact(impact_values& impact, short state);
+  void _fill_impact(impact_values& impact, kpi_service::state state);
   void _internal_copy(kpi_service const& right);
   void _open_new_event(io::stream* visitor, impact_values const& impacts);
 
@@ -87,8 +88,8 @@ class kpi_service : public service_listener, public kpi {
   std::string _output;
   std::string _perfdata;
   uint32_t _service_id;
-  short _state_hard;
-  short _state_soft;
+  kpi_service::state _state_hard;
+  kpi_service::state _state_soft;
   short _state_type;
 };
 }  // namespace bam
