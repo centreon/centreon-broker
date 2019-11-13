@@ -40,15 +40,6 @@ else ()
       CMAKE_ARGS -DCMAKE_CXX_FLAGS=${GOOGLE_CXX_FLAGS} -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
 endif ()
 
-#ExternalProject_Add(googletest
-#  GIT_REPOSITORY https://github.com/google/googletest/
-#  TIMEOUT 10
-#  INSTALL_COMMAND ""
-#  LOG_DOWNLOAD ON
-#  LOG_CONFIGURE ON
-#  LOG_BUILD ON
-#  CMAKE_ARGS -DCMAKE_CXX_FLAGS=${GOOGLE_CXX_FLAGS} -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
-
 ExternalProject_Get_Property(googletest source_dir)
 ExternalProject_Get_Property(googletest binary_dir)
 

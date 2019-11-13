@@ -109,18 +109,29 @@ find_package(ZLIB REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 # Find MySQL/Mariadb devel package
-find_program(MYSQL_CONFIG mysql_config)
-if (${MYSQL_CONFIG} STREQUAL "MYSQL_CONFIG-NOTFOUND")
-  find_program(MYSQL_CONFIG mariadb_config)
-  if (${MYSQL_CONFIG} STREQUAL "MYSQL_CONFIG-NOTFOUND")
-    message(SEND_ERROR "MariaDB devel package is not installed")
+pkg_check_modules(_libmariadb libmariadb)
+if (_libmariadb_FOUND)
+  set(MYSQL_CFLAGS ${_libmariadb_CFLAGS})
+  set(MYSQL_LIBS ${_libmariadb_LDFLAGS})
+else ()
+  pkg_check_modules(_mariadb mariadb)
+  if (_mariadb_FOUND)
+    set(MYSQL_CFLAGS ${_mariadb_CFLAGS})
+    set(MYSQL_LIBS ${_mariadb_LDFLAGS})
+  else ()
+    pkg_check_modules(_mysql mysql)
+    if (_mysql_FOUND)
+      set(MYSQL_CFLAGS ${_mysql_CFLAGS})
+      set(MYSQL_LIBS ${_mysql_LDFLAGS})
+    else ()
+      message(SEND_ERROR "MariaDB devel package is not installed")
+    endif ()
   endif ()
 endif ()
 
-execute_process(COMMAND ${MYSQL_CONFIG} --cflags
-  OUTPUT_VARIABLE MYSQL_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ${MYSQL_CONFIG} --libs
-  OUTPUT_VARIABLE MYSQL_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
+string(REPLACE "-" " -" MYSQL_CFLAGS ${MYSQL_CFLAGS})
+message(STATUS ${MYSQL_CFLAGS})
+message(STATUS ${MYSQL_LIBS})
 
 #
 # Get distributions name
