@@ -87,22 +87,6 @@ else ()
       INSTALL_COMMAND ""
       LOG_DOWNLOAD ON)
 endif ()
-#  set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY EP_UPDATE_DISCONNECTED 1)
-
-#ExternalProject_Add(json11_lib
-#  GIT_REPOSITORY https://github.com/dropbox/json11/
-#  TIMEOUT 10
-#  INSTALL_COMMAND ""
-#  LOG_DOWNLOAD ON
-#  LOG_CONFIGURE ON
-#  LOG_BUILD ON)
-#ExternalProject_Add(Asio
-#  GIT_REPOSITORY https://github.com/chriskohlhoff/asio/
-#  TIMEOUT 10
-#  CONFIGURE_COMMAND ""
-#  BUILD_COMMAND ""
-#  INSTALL_COMMAND ""
-#  LOG_DOWNLOAD ON)
 
 ExternalProject_Get_Property(json11_lib source_dir)
 ExternalProject_Get_Property(json11_lib binary_dir)
