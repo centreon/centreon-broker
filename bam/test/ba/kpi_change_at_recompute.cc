@@ -120,7 +120,7 @@ TEST_F(BamBA, ImpactState) {
   std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
   kpis.push_back(s3);
 
-  for (int i = 0; i < kpis.size(); i++) {
+  for (uint32_t i = 0; i < kpis.size(); i++) {
     kpis[i]->set_host_id(i + 1);
     kpis[i]->set_service_id(1);
     kpis[i]->set_impact_warning(10);
@@ -143,7 +143,7 @@ TEST_F(BamBA, ImpactState) {
   ss->service_id = 1;
 
   for (int i = 0; i < 2; i++) {
-    for (int j = 0; j < kpis.size(); j++) {
+    for (uint32_t j = 0; j < kpis.size(); j++) {
       ss->last_check = now + 1;
       ss->host_id = j + 1;
       ss->last_hard_state = i + 1;
@@ -194,7 +194,7 @@ TEST_F(BamBA, BestState) {
   std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
   kpis.push_back(s3);
 
-  for (int i = 0; i < kpis.size(); i++) {
+  for (uint32_t i = 0; i < kpis.size(); i++) {
     kpis[i]->set_host_id(i + 1);
     kpis[i]->set_service_id(1);
     kpis[i]->set_state_hard(bam::kpi_service::state::state_ok);
@@ -212,7 +212,7 @@ TEST_F(BamBA, BestState) {
   ss->service_id = 1;
 
   for (int i = 0; i < 2; i++) {
-    for (int j = 0; j < kpis.size(); j++) {
+    for (uint32_t j = 0; j < kpis.size(); j++) {
       ss->last_check = now + 1;
       ss->host_id = j + 1;
       ss->last_hard_state = i + 1;
@@ -263,7 +263,7 @@ TEST_F(BamBA, WorstState) {
   std::shared_ptr<bam::kpi_service> s3{new bam::kpi_service};
   kpis.push_back(s3);
 
-  for (int i = 0; i < kpis.size(); i++) {
+  for (uint32_t i = 0; i < kpis.size(); i++) {
     kpis[i]->set_host_id(i + 1);
     kpis[i]->set_service_id(1);
     kpis[i]->set_state_hard(bam::kpi_service::state::state_ok);
@@ -281,7 +281,7 @@ TEST_F(BamBA, WorstState) {
   ss->service_id = 1;
 
   for (int i = 0; i < 2; i++) {
-    for (int j = 0; j < kpis.size(); j++) {
+    for (uint32_t j = 0; j < kpis.size(); j++) {
       ss->last_check = now + 1;
       ss->host_id = j + 1;
       ss->last_hard_state = i + 1;
@@ -334,7 +334,7 @@ TEST_F(BamBA, RatioNum) {
   std::shared_ptr<bam::kpi_service> s4{new bam::kpi_service};
   kpis.push_back(s4);
 
-  for (int i = 0; i < kpis.size(); i++) {
+  for (uint32_t i = 0; i < kpis.size(); i++) {
     kpis[i]->set_host_id(i + 1);
     kpis[i]->set_service_id(1);
     kpis[i]->set_state_hard(bam::kpi_service::state::state_ok);
@@ -351,7 +351,7 @@ TEST_F(BamBA, RatioNum) {
   std::shared_ptr<neb::service_status> ss(new neb::service_status);
   ss->service_id = 1;
 
-  for (int j = 0; j < kpis.size(); j++) {
+  for (uint32_t j = 0; j < kpis.size(); j++) {
     ss->last_check = now + 1;
     ss->host_id = j + 1;
     ss->last_hard_state = 2;
@@ -403,7 +403,7 @@ TEST_F(BamBA, RatioPercent) {
   std::shared_ptr<bam::kpi_service> s4{new bam::kpi_service};
   kpis.push_back(s4);
 
-  for (int i = 0; i < kpis.size(); i++) {
+  for (uint32_t i = 0; i < kpis.size(); i++) {
     kpis[i]->set_host_id(i + 1);
     kpis[i]->set_service_id(1);
     kpis[i]->set_state_hard(bam::kpi_service::state::state_ok);
@@ -420,7 +420,7 @@ TEST_F(BamBA, RatioPercent) {
   std::shared_ptr<neb::service_status> ss(new neb::service_status);
   ss->service_id = 1;
 
-  for (int j = 0; j < kpis.size(); j++) {
+  for (uint32_t j = 0; j < kpis.size(); j++) {
     ss->last_check = now + 1;
     ss->host_id = j + 1;
     ss->last_hard_state = 2;

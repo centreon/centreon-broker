@@ -19,6 +19,7 @@
 #include "com/centreon/broker/lua/broker_utils.hh"
 #include <cstdlib>
 #include <cstring>
+#include <iomanip>
 #include <json11.hpp>
 #include <sstream>
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
@@ -318,6 +319,38 @@ static int l_broker_parse_perfdata(lua_State* L) {
 }
 
 /**
+ *  The Lua url_encode function
+ *
+ * @param L The Lua interpreter
+ *
+ * @return 1
+ */
+static int l_broker_url_encode(lua_State* L) {
+  char const* str = lua_tostring(L, -1);
+
+  std::ostringstream escaped;
+  escaped.fill('0');
+  escaped << std::hex;
+
+  for (char const* cc = str; *cc; ++cc) {
+    char c = *cc;
+    // Keep alphanumeric and other accepted characters intact
+    if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
+      escaped << c;
+      continue;
+    }
+
+    // Any other characters are percent-encoded
+    escaped << std::uppercase;
+    escaped << '%' << std::setw(2) << int((unsigned char)c);
+    escaped << std::nouppercase;
+  }
+
+  lua_pushstring(L, escaped.str().c_str());
+  return 1;
+}
+
+/**
  *  Load the Lua interpreter with the standard libraries
  *  and the broker lua sdk.
  *
@@ -327,6 +360,7 @@ void broker_utils::broker_utils_reg(lua_State* L) {
   luaL_Reg s_broker_regs[] = {{"json_encode", l_broker_json_encode},
                               {"json_decode", l_broker_json_decode},
                               {"parse_perfdata", l_broker_parse_perfdata},
+                              {"url_encode", l_broker_url_encode},
                               {nullptr, nullptr}};
 
 #ifdef LUA51

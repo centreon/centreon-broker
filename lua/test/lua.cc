@@ -1299,3 +1299,39 @@ TEST_F(LuaTest, CheckPath) {
   RemoveFile(filename);
   RemoveFile("/tmp/log");
 }
+
+// Given a string
+// Then a call to broker.url_encode with this string URL encodes it.
+TEST_F(LuaTest, UrlEncode) {
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/url_encode.lua");
+  CreateScript(
+      filename,
+      "function init(conf)\n"
+      "  broker_log:set_parameters(3, '/tmp/log')\n"
+      "  local res1 = broker.url_encode('This is a simple line')\n"
+      "  if res1 == 'This%20is%20a%20simple%20line' then\n"
+      "    broker_log:info(1, 'RES1 GOOD')\n"
+      "  end\n"
+      "  local res2 = broker.url_encode('La leçon du château de "
+      "l\\'araignée')\n"
+      "  if res2 == "
+      "'La%20le%C3%A7on%20du%20ch%C3%A2teau%20de%20l%27araign%C3%A9e' then\n"
+      "    broker_log:info(1, 'RES2 GOOD')\n"
+      "  end\n"
+      "  local res3 = broker.url_encode('A.a-b_B:c/C?d=D&e~')\n"
+      "  if res3 == 'A.a-b_B%3Ac%2FC%3Fd%3DD%26e~' then\n"
+      "    broker_log:info(1, 'RES3 GOOD')\n"
+      "  end\n"
+      "end\n\n"
+      "function write(d)\n"
+      "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string result(ReadFile("/tmp/log"));
+
+  ASSERT_NE(result.find("INFO: RES1 GOOD"), std::string::npos);
+  ASSERT_NE(result.find("INFO: RES2 GOOD"), std::string::npos);
+  ASSERT_NE(result.find("INFO: RES3 GOOD"), std::string::npos);
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
