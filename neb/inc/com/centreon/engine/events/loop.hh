@@ -52,7 +52,7 @@ class loop {
 
   time_t _last_status_update;
   time_t _last_time;
-  uint32_t _need_reload;
+  unsigned int _need_reload;
 
   bool _reload_running;
   timed_event _sleep_event;

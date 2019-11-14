@@ -74,8 +74,9 @@
 #define NEBTYPE_PROCESS_DAEMONIZE 101
 #define NEBTYPE_PROCESS_RESTART 102
 #define NEBTYPE_PROCESS_SHUTDOWN 103
-#define NEBTYPE_PROCESS_PRELAUNCH 104 /* Before objects are read or verified. \
-                                       */
+#define NEBTYPE_PROCESS_PRELAUNCH             \
+  104 /* Before objects are read or verified. \
+       */
 #define NEBTYPE_PROCESS_EVENTLOOPSTART 105
 #define NEBTYPE_PROCESS_EVENTLOOPEND 106
 
@@ -281,9 +282,10 @@
 ** Event flags.
 */
 #define NEBFLAG_NONE 0
-#define NEBFLAG_PROCESS_INITIATED 1 /* Event was initiated by Engine process. \
-                                     */
-#define NEBFLAG_USER_INITIATED 2    /* Event was initiated by a user request. */
+#define NEBFLAG_PROCESS_INITIATED                                          \
+  1                              /* Event was initiated by Engine process. \
+                                  */
+#define NEBFLAG_USER_INITIATED 2 /* Event was initiated by a user request. */
 #define NEBFLAG_MODULE_INITIATED \
   3 /* Event was initiated by an event broker module. */
 
@@ -401,7 +403,7 @@ void broker_comment_data(int type,
 int broker_contact_notification_data(int type,
                                      int flags,
                                      int attr,
-                                     uint32_t notification_type,
+                                     unsigned int notification_type,
                                      int reason_type,
                                      struct timeval start_time,
                                      struct timeval end_time,
@@ -415,7 +417,7 @@ int broker_contact_notification_method_data(
     int type,
     int flags,
     int attr,
-    uint32_t notification_type,
+    unsigned int notification_type,
     int reason_type,
     struct timeval start_time,
     struct timeval end_time,
@@ -457,7 +459,7 @@ void broker_downtime_data(int type,
 int broker_event_handler(int type,
                          int flags,
                          int attr,
-                         uint32_t eventhandler_type,
+                         unsigned int eventhandler_type,
                          void* data,
                          int state,
                          int state_type,
@@ -482,7 +484,7 @@ void broker_external_command(int type,
 void broker_flapping_data(int type,
                           int flags,
                           int attr,
-                          uint32_t flapping_type,
+                          unsigned int flapping_type,
                           void* data,
                           double percent_change,
                           double high_threshold,
@@ -540,7 +542,7 @@ void broker_module_data(int type,
 int broker_notification_data(int type,
                              int flags,
                              int attr,
-                             uint32_t notification_type,
+                             unsigned int notification_type,
                              int reason_type,
                              struct timeval start_time,
                              struct timeval end_time,

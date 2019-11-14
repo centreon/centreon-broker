@@ -20,8 +20,8 @@
 #ifndef CCE_CHECKS_CHECKER_HH
 #define CCE_CHECKS_CHECKER_HH
 
+#include <mutex>
 #include <queue>
-#include "com/centreon/concurrency/mutex.hh"
 #include "com/centreon/engine/checks.hh"
 #include "com/centreon/engine/commands/command.hh"
 #include "com/centreon/engine/commands/command_listener.hh"
@@ -78,7 +78,7 @@ class checker : public commands::command_listener {
   host::host_state _execute_sync(host* hst);
 
   std::unordered_map<uint64_t, check_result> _list_id;
-  concurrency::mutex _mut_reap;
+  std::mutex _mut_reap;
   std::queue<check_result> _to_reap;
   std::unordered_map<uint64_t, check_result> _to_reap_partial;
 };

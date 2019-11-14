@@ -20,7 +20,7 @@
 #ifndef CCE_LOGGING_BROKER_HH
 #define CCE_LOGGING_BROKER_HH
 
-#include "com/centreon/concurrency/thread.hh"
+#include <thread>
 #include "com/centreon/engine/namespace.hh"
 #include "com/centreon/logging/backend.hh"
 
@@ -34,22 +34,21 @@ namespace logging {
  *  Call broker for all logging message without debug.
  */
 class broker : public com::centreon::logging::backend {
+  bool _enable;
+  std::thread::id _thread;
+
  public:
   broker();
   broker(broker const& right);
-  ~broker() throw() override;
+  ~broker() noexcept override;
   broker& operator=(broker const& right);
-  void close() throw() override;
-  void log(unsigned long long types,
+  void close() noexcept override;
+  void log(uint64_t types,
            uint32_t verbose,
            char const* msg,
-           uint32_t size) throw() override;
+           uint32_t size) noexcept override;
   void open() override;
   void reopen() override;
-
- private:
-  bool _enable;
-  concurrency::thread_id _thread;
 };
 }  // namespace logging
 

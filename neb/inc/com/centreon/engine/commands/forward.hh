@@ -43,9 +43,9 @@ class forward : public command {
   ~forward() throw() override;
   forward& operator=(forward const& right);
   commands::command* clone() const override;
-  unsigned long run(std::string const& processed_cmd,
-                    nagios_macros& macros,
-                    uint32_t timeout) override;
+  uint64_t run(std::string const& processed_cmd,
+               nagios_macros& macros,
+               uint32_t timeout) override;
   void run(std::string const& processed_cmd,
            nagios_macros& macros,
            uint32_t timeout,

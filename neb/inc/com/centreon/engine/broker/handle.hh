@@ -36,6 +36,18 @@ namespace broker {
  *  about module, start and stop module.
  */
 class handle {
+  std::string _args;
+  std::string _author;
+  std::string _copyright;
+  std::string _description;
+  std::string _filename;
+  std::shared_ptr<library> _handle;
+  std::string _license;
+  std::string _name;
+  std::string _version;
+
+  void _internal_copy(handle const& right);
+
  public:
   handle(std::string const& filename = "", std::string const& args = "");
   handle(handle const& right);
@@ -63,19 +75,6 @@ class handle {
   void set_license(std::string const& license);
   void set_name(std::string const& name);
   void set_version(std::string const& version);
-
- private:
-  void _internal_copy(handle const& right);
-
-  std::string _args;
-  std::string _author;
-  std::string _copyright;
-  std::string _description;
-  std::string _filename;
-  std::shared_ptr<library> _handle;
-  std::string _license;
-  std::string _name;
-  std::string _version;
 };
 }  // namespace broker
 

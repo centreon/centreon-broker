@@ -39,7 +39,7 @@ namespace macros {
  *
  *  @return Newly allocated string with value as a fixed point string.
  */
-template <typename T, double (T::*member)() const, uint32_t precision>
+template <typename T, double (T::*member)() const, unsigned int precision>
 std::string get_double(T& t, nagios_macros* mac) {
   (void)mac;
   std::ostringstream oss;
@@ -50,7 +50,7 @@ std::string get_double(T& t, nagios_macros* mac) {
 template <typename T,
           typename V,
           double (V::*member)() const,
-          uint32_t precision>
+          unsigned int precision>
 std::string get_double(T& t, nagios_macros* mac) {
   (void)mac;
 
@@ -69,7 +69,7 @@ std::string get_double(T& t, nagios_macros* mac) {
  *  @return Newly allocated string with value as a fixed point string.
  */
 // TODO SGA to remove after service rework
-template <typename T, double(T::*member), uint32_t precision>
+template <typename T, double(T::*member), unsigned int precision>
 std::string get_double(T& t, nagios_macros* mac) {
   (void)mac;
   std::ostringstream oss;
@@ -94,11 +94,11 @@ std::string get_duration(T& t, nagios_macros* mac) {
   unsigned long duration(now - t.get_last_state_change());
 
   // Break down duration.
-  uint32_t days(duration / (24 * 60 * 60));
+  unsigned int days(duration / (24 * 60 * 60));
   duration %= (24 * 60 * 60);
-  uint32_t hours(duration / (60 * 60));
+  unsigned int hours(duration / (60 * 60));
   duration %= (60 * 60);
-  uint32_t minutes(duration / 60);
+  unsigned int minutes(duration / 60);
   duration %= 60;
 
   // Stringify duration.
@@ -133,7 +133,7 @@ std::string get_duration_sec(T& t, nagios_macros* mac) {
  *
  *  @return Copy of the requested macro.
  */
-template <typename T, uint32_t macro_id>
+template <typename T, unsigned int macro_id>
 std::string get_macro_copy(T& t, nagios_macros* mac) {
   (void)t;
   return mac->x[macro_id];
@@ -199,7 +199,7 @@ std::string get_member_as_string(T& t, nagios_macros* mac) {
  */
 template <typename T,
           std::string const& (T::*member)() const,
-          uint32_t options>
+          unsigned int options>
 std::string get_recursive(T& t, nagios_macros* mac) {
   (void)mac;
 
@@ -219,7 +219,7 @@ std::string get_recursive(T& t, nagios_macros* mac) {
 template <typename T,
           typename V,
           std::string const& (V::*member)() const,
-          uint32_t options>
+          unsigned int options>
 std::string get_recursive(T& t, nagios_macros* mac) {
   (void)mac;
 

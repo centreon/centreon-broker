@@ -45,7 +45,7 @@ class error : public std::exception {
   error& operator<<(char const* str) throw();
   error& operator<<(int i) throw();
   error& operator<<(unsigned long u) throw();
-  error& operator<<(uint32_t u) throw();
+  error& operator<<(unsigned int u) throw();
   error& operator<<(long l) throw();
   error& operator<<(long long ll) throw();
   error& operator<<(unsigned long long ull) throw();
@@ -58,7 +58,7 @@ class error : public std::exception {
   void _insert_with_snprintf(T& t, char const* format);
 
   mutable char _buffer[4096];
-  uint32_t _current;
+  unsigned int _current;
 };
 
 CCE_END()

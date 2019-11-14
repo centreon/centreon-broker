@@ -40,7 +40,7 @@ namespace applier {
  */
 class scheduler {
  public:
-  void apply(state& config,
+  void apply(configuration::state& config,
              difference<set_host> const& diff_hosts,
              difference<set_service> const& diff_services);
   static scheduler& instance();
@@ -82,7 +82,7 @@ class scheduler {
   void _unschedule_service_events(
       std::vector<engine::service*> const& services);
 
-  state* _config;
+  configuration::state* _config;
   timed_event* _evt_check_reaper;
   timed_event* _evt_command_check;
   timed_event* _evt_hfreshness_check;
@@ -93,17 +93,17 @@ class scheduler {
   timed_event* _evt_sfreshness_check;
   timed_event* _evt_service_perfdata;
   timed_event* _evt_status_save;
-  uint32_t _old_auto_rescheduling_interval;
-  uint32_t _old_check_reaper_interval;
+  unsigned int _old_auto_rescheduling_interval;
+  unsigned int _old_check_reaper_interval;
   int _old_command_check_interval;
-  uint32_t _old_host_freshness_check_interval;
+  unsigned int _old_host_freshness_check_interval;
   std::string _old_host_perfdata_file_processing_command;
-  uint32_t _old_host_perfdata_file_processing_interval;
-  uint32_t _old_retention_update_interval;
-  uint32_t _old_service_freshness_check_interval;
+  unsigned int _old_host_perfdata_file_processing_interval;
+  unsigned int _old_retention_update_interval;
+  unsigned int _old_service_freshness_check_interval;
   std::string _old_service_perfdata_file_processing_command;
-  uint32_t _old_service_perfdata_file_processing_interval;
-  uint32_t _old_status_update_interval;
+  unsigned int _old_service_perfdata_file_processing_interval;
+  unsigned int _old_status_update_interval;
 };
 }  // namespace applier
 }  // namespace configuration

@@ -29,7 +29,7 @@ CCE_BEGIN()
 namespace configuration {
 class file_info {
  public:
-  file_info(std::string const& path = "", uint32_t line = 0)
+  file_info(std::string const& path = "", unsigned int line = 0)
       : _line(line), _path(path) {}
   file_info(file_info const& right) { operator=(right); }
   ~file_info() throw() {}
@@ -50,13 +50,13 @@ class file_info {
     err << "in file '" << info.path() << "' on line " << info.line();
     return (err);
   }
-  uint32_t line() const throw() { return (_line); }
-  void line(uint32_t line) throw() { _line = line; }
+  unsigned int line() const throw() { return (_line); }
+  void line(unsigned int line) throw() { _line = line; }
   std::string const& path() const throw() { return (_path); }
   void path(std::string const& path) { _path = path; }
 
  private:
-  uint32_t _line;
+  unsigned int _line;
   std::string _path;
 };
 }  // namespace configuration

@@ -134,6 +134,8 @@ class notifier : public checkable {
            bool retain_nonstatus_information);
   ~notifier() {}
 
+  void set_notification(int32_t idx, std::string const& value);
+
   bool get_notify_on(notification_flag type) const;
   uint32_t get_notify_on() const;
   void set_notify_on(uint32_t type);
@@ -216,7 +218,6 @@ class notifier : public checkable {
   void set_retain_nonstatus_information(bool retain_non_status_informations);
   bool get_is_being_freshened(void) const;
   void set_is_being_freshened(bool freshened);
-  bool should_notification_be_escalated() const;
   std::list<escalation*>& get_escalations();
   std::list<escalation*> const& get_escalations() const;
   virtual bool is_valid_escalation_for_notification(escalation const* e,
@@ -254,6 +255,8 @@ class notifier : public checkable {
   void resolve(int& w, int& e);
   std::array<int, MAX_STATE_HISTORY_ENTRIES> const& get_state_history() const;
   std::array<int, MAX_STATE_HISTORY_ENTRIES>& get_state_history();
+  std::array<std::shared_ptr<notification>, 6> const&
+  get_current_notifications() const;
   int get_pending_flex_downtime() const;
   void set_pending_flex_downtime(int pending_flex_downtime);
   virtual bool get_is_volatile() const = 0;

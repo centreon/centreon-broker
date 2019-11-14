@@ -20,7 +20,6 @@
 #ifndef CCE_COMMANDS_COMMAND_HH
 #define CCE_COMMANDS_COMMAND_HH
 
-#include "com/centreon/concurrency/mutex.hh"
 #include "com/centreon/engine/commands/command_listener.hh"
 #include "com/centreon/engine/commands/result.hh"
 #include "com/centreon/engine/macros/defines.hh"
@@ -33,7 +32,7 @@ CCE_END()
 
 typedef std::unordered_map<
     std::string,
-    std::shared_ptr<com::centreon::engine::commands::command>>
+    std::shared_ptr<com::centreon::engine::commands::command> >
     command_map;
 
 CCE_BEGIN()
@@ -51,28 +50,28 @@ class command {
   command(std::string const& name,
           std::string const& command_line,
           command_listener* listener = NULL);
-  virtual ~command() throw();
-  bool operator==(command const& right) const throw();
-  bool operator!=(command const& right) const throw();
+  virtual ~command() noexcept;
+  bool operator==(command const& right) const noexcept;
+  bool operator!=(command const& right) const noexcept;
   virtual command* clone() const = 0;
-  virtual std::string const& get_command_line() const throw();
-  virtual std::string const& get_name() const throw();
+  virtual std::string const& get_command_line() const noexcept;
+  virtual std::string const& get_name() const noexcept;
   virtual std::string process_cmd(nagios_macros* macros) const;
-  virtual unsigned long run(std::string const& processed_cmd,
-                            nagios_macros& macors,
-                            uint32_t timeout) = 0;
+  virtual uint64_t run(std::string const& processed_cmd,
+                       nagios_macros& macors,
+                       uint32_t timeout) = 0;
   virtual void run(std::string const& process_cmd,
                    nagios_macros& macros,
                    uint32_t timeout,
                    result& res) = 0;
   virtual void set_command_line(std::string const& command_line);
-  void set_listener(command_listener* listener) throw();
+  void set_listener(command_listener* listener) noexcept;
   static command_map commands;
 
  protected:
   command(command const& right);
   command& operator=(command const& right);
-  static unsigned long get_uniq_id();
+  static uint64_t get_uniq_id();
 
   std::string _command_line;
   command_listener* _listener;

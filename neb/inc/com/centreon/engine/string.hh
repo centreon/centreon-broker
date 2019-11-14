@@ -34,7 +34,7 @@
 CCE_BEGIN()
 
 namespace string {
-bool get_next_line(std::ifstream& stream, std::string& line, uint32_t& pos);
+bool get_next_line(std::ifstream& stream, std::string& line, unsigned int& pos);
 
 inline char const* chkstr(char const* str) throw() {
   return (str ? str : "\"NULL\"");
@@ -173,11 +173,11 @@ inline bool to(char const* str, long long& data) {
 }
 
 template <>
-inline bool to(char const* str, uint32_t& data) {
+inline bool to(char const* str, unsigned int& data) {
   unsigned long tmp;
-  if (!to(str, tmp) || tmp > std::numeric_limits<uint32_t>::max())
+  if (!to(str, tmp) || tmp > std::numeric_limits<unsigned int>::max())
     return (false);
-  data = static_cast<uint32_t>(tmp);
+  data = static_cast<unsigned int>(tmp);
   return (true);
 }
 
