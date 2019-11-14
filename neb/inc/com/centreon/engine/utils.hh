@@ -39,7 +39,7 @@ int my_system_r(nagios_macros* mac,
                 int* early_timeout,
                 double* exectime,
                 std::string& output,
-                uint32_t max_output_length);
+                unsigned int max_output_length);
 // same like unix ctime without the '\n' at the end of the string.
 char const* my_ctime(time_t const* t);
 
@@ -48,7 +48,7 @@ char const* my_ctime(time_t const* t);
 // thread-safe version of get_raw_command_line_r()
 int get_raw_command_line_r(nagios_macros* mac,
                            com::centreon::engine::commands::command* cmd_ptr,
-                           char const* cmd,
+                           std::string const& cmd,
                            std::string& full_command,
                            int macro_options);
 // trap signals

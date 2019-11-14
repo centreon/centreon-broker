@@ -45,7 +45,7 @@ class comment : public object {
   unsigned long comment_id() const throw();
   type_id comment_type() const throw();
   time_t entry_time() const throw();
-  uint32_t entry_type() const throw();
+  unsigned int entry_type() const throw();
   time_t expire_time() const throw();
   bool expires() const throw();
   std::string const& host_name() const throw();
@@ -63,7 +63,7 @@ class comment : public object {
   bool _set_comment_data(std::string const& value);
   bool _set_comment_id(unsigned long value);
   bool _set_entry_time(time_t value);
-  bool _set_entry_type(uint32_t value);
+  bool _set_entry_type(unsigned int value);
   bool _set_expire_time(time_t value);
   bool _set_expires(bool value);
   bool _set_host_name(std::string const& value);
@@ -76,7 +76,7 @@ class comment : public object {
   unsigned long _comment_id;
   type_id _comment_type;
   time_t _entry_time;
-  uint32_t _entry_type;
+  unsigned int _entry_type;
   time_t _expire_time;
   bool _expires;
   std::string _host_name;

@@ -64,7 +64,7 @@ class parser {
     read_all = (~0)
   };
 
-  parser(uint32_t read_options = read_all);
+  parser(unsigned int read_options = read_all);
   ~parser() throw();
   void parse(std::string const& path, state& config);
 
@@ -103,12 +103,12 @@ class parser {
   void _store_into_map(object_ptr obj);
 
   state* _config;
-  uint32_t _current_line;
+  unsigned int _current_line;
   std::string _current_path;
   list_object _lst_objects[15];
   map_object _map_objects[15];
   std::unordered_map<object*, file_info> _objects_info;
-  uint32_t _read_options;
+  unsigned int _read_options;
   static store _store[];
   map_object _templates[15];
 };

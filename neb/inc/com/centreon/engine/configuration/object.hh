@@ -118,7 +118,7 @@ CCE_END()
 
 #define MRG_TAB(prop)                                       \
   do {                                                      \
-    for (uint32_t i(0), end(prop.size()); i < end; ++i) \
+    for (unsigned int i(0), end(prop.size()); i < end; ++i) \
       if (prop[i].empty())                                  \
         prop[i] = tmpl.prop[i];                             \
   } while (false)
