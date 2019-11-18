@@ -1,4 +1,18 @@
 =======================
+Centreon Broker 19.10.1
+=======================
+
+************
+Enhancements
+************
+
+Stream connector
+================
+
+A new function broker.url_encode(string) has been added to the stream connector
+that URL encodes strings.
+
+=======================
 Centreon Broker 19.10
 =======================
 
