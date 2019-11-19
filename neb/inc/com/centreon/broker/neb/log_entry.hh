@@ -40,6 +40,23 @@ namespace neb {
  */
 class log_entry : public io::data {
  public:
+  typedef enum {
+    service_alert = 0,
+    host_alert = 1,
+    service_notification = 2,
+    host_notification = 3,
+    warning = 4,
+    other = 5,
+    service_initial_state = 8,
+    host_initial_state = 9,
+    service_acknowledge_problem = 10,
+    host_acknowledge_problem = 11,
+    service_event_handler = 12,
+    host_event_handler = 13,
+    global_service_event_handler = 14,
+    global_host_event_handler = 15,
+  } log_msg_type;
+
   log_entry();
   log_entry(log_entry const& other);
   ~log_entry();

@@ -1439,8 +1439,7 @@ int neb::callback_log(int callback_type, void* data) {
     le->c_time = log_data->entry_time;
     le->poller_name = config::applier::state::instance().poller_name();
     if (log_data->data) {
-      if (log_data->data)
-        le->output = log_data->data;
+      le->output = log_data->data;
       set_log_data(*le, log_data->data);
     }
 
