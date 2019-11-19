@@ -155,3 +155,84 @@ TEST(SetLogData, ServiceALert) {
   ASSERT_FALSE(le.service_description != "myservice");
   ASSERT_FALSE(le.status != 1);
 }
+
+/**
+ *  Check that a service alert log is properly parsed.
+ */
+TEST(SetLogData, HostEventHandler) {
+  // Log entry.
+  neb::log_entry le;
+
+  // Parse a service alert line.
+  neb::set_log_data(le, "HOST EVENT HANDLER: myserver;WARNING;SOFT;3;coucou");
+
+  // Check that it was properly parsed.
+  ASSERT_FALSE(le.host_name != "myserver");
+  ASSERT_FALSE(le.log_type != 0);
+  ASSERT_FALSE(le.msg_type != neb::log_entry::host_event_handler);
+  ASSERT_FALSE(le.output != "coucou");
+  ASSERT_FALSE(le.retry != 3);
+  ASSERT_FALSE(le.status != 1);
+}
+
+/**
+ *  Check that a service alert log is properly parsed.
+ */
+TEST(SetLogData, ServiceEventHandler) {
+  // Log entry.
+  neb::log_entry le;
+
+  // Parse a service alert line.
+  neb::set_log_data(
+      le, "SERVICE EVENT HANDLER: myserver;myservice;WARNING;SOFT;3;coucou");
+
+  // Check that it was properly parsed.
+  ASSERT_FALSE(le.host_name != "myserver");
+  ASSERT_FALSE(le.log_type != 0);
+  ASSERT_FALSE(le.msg_type != neb::log_entry::service_event_handler);
+  ASSERT_FALSE(le.output != "coucou");
+  ASSERT_FALSE(le.retry != 3);
+  ASSERT_FALSE(le.service_description != "myservice");
+  ASSERT_FALSE(le.status != 1);
+}
+
+/**
+ *  Check that a service alert log is properly parsed.
+ */
+TEST(SetLogData, GlobalHostEventHandler) {
+  // Log entry.
+  neb::log_entry le;
+
+  // Parse a service alert line.
+  neb::set_log_data(
+      le, "GLOBAL HOST EVENT HANDLER: myserver;WARNING;SOFT;3;coucou");
+
+  // Check that it was properly parsed.
+  ASSERT_FALSE(le.host_name != "myserver");
+  ASSERT_FALSE(le.log_type != 0);
+  ASSERT_FALSE(le.msg_type != neb::log_entry::global_host_event_handler);
+  ASSERT_FALSE(le.output != "coucou");
+  ASSERT_FALSE(le.retry != 3);
+  ASSERT_FALSE(le.status != 1);
+}
+
+/**
+ *  Check that a service alert log is properly parsed.
+ */
+TEST(SetLogData, GlobalServiceEventHandler) {
+  // Log entry.
+  neb::log_entry le;
+
+  // Parse a service alert line.
+  neb::set_log_data(
+      le, "GLOBAL SERVICE EVENT HANDLER: myserver;myservice;WARNING;SOFT;3;coucou");
+
+  // Check that it was properly parsed.
+  ASSERT_FALSE(le.host_name != "myserver");
+  ASSERT_FALSE(le.log_type != 0);
+  ASSERT_FALSE(le.msg_type != neb::log_entry::global_service_event_handler);
+  ASSERT_FALSE(le.output != "coucou");
+  ASSERT_FALSE(le.retry != 3);
+  ASSERT_FALSE(le.service_description != "myservice");
+  ASSERT_FALSE(le.status != 1);
+}
