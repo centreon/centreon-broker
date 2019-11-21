@@ -246,8 +246,11 @@ int nebmodule_init(int flags, char const* args, void* handle) {
       void* data;
     } val;
     val.code = &process_qcore;
-    schedule_new_event(EVENT_USER_FUNCTION, 1, time(nullptr) + 1, 1, 1, nullptr, 1,
-                       val.data, nullptr, 0);
+    com::centreon::engine::timed_event* evt =
+        new com::centreon::engine::timed_event(EVENT_USER_FUNCTION,
+                                               time(nullptr) + 1, 1, 1, nullptr,
+                                               1, val.data, nullptr, 0);
+    evt->schedule(true);
   } catch (std::exception const& e) {
     logging::error(logging::high) << "main: cbmod loading failed: " << e.what();
     nebmodule_deinit(0, 0);
