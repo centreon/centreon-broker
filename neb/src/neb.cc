@@ -311,9 +311,8 @@ extern "C" {
           void*   data;
         } val;
         val.code = &process_qcore;
-        schedule_new_event(
+        com::centreon::engine::timed_event* evt = new com::centreon::engine::timed_event(
           EVENT_USER_FUNCTION,
-          1,
           time(NULL) + 1,
           1,
           1,
@@ -322,6 +321,7 @@ extern "C" {
           val.data,
           NULL,
           0);
+        evt->schedule(true);
       }
     }
     catch (std::exception const& e) {
