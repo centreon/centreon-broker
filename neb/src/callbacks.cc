@@ -1637,9 +1637,8 @@ int neb::callback_process(int callback_type, void *data) {
           void* data;
         } val;
         val.code = &event_statistics;
-        schedule_new_event(
+        com::centreon::engine::timed_event* evt = new com::centreon::engine::timed_event(
           EVENT_USER_FUNCTION,
-          0,
           time(nullptr) + statistics_interval,
           1,
           statistics_interval,
@@ -1648,6 +1647,7 @@ int neb::callback_process(int callback_type, void *data) {
           val.data,
           nullptr,
           0);
+        evt->schedule(false);
       }
     }
     else if (NEBTYPE_PROCESS_EVENTLOOPEND == process_data->type) {
