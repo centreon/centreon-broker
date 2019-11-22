@@ -1,4 +1,19 @@
 =======================
+Centreon Broker 19.10.2
+=======================
+
+*********
+Bug fixes
+*********
+
+Fixed downtimes and notifications
+=================================
+
+When two contiguous downtimes are parametrized. It was possible to have
+notifications of critical devices between them. This version of broker is
+needed because of changes in the Engine timed_event class.
+
+=======================
 Centreon Broker 19.10.1
 =======================
 
