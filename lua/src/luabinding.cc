@@ -25,6 +25,7 @@
 #include "com/centreon/broker/lua/broker_log.hh"
 #include "com/centreon/broker/lua/broker_socket.hh"
 #include "com/centreon/broker/lua/broker_utils.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
@@ -39,7 +40,11 @@ using namespace com::centreon::broker::lua;
 luabinding::luabinding(std::string const& lua_script,
                        std::map<std::string, misc::variant> const& conf_params,
                        macro_cache const& cache)
-    : _lua_script(lua_script), _cache(cache), _total(0) {
+    : _L{nullptr},
+      _filter{false},
+      _lua_script(lua_script),
+      _cache(cache),
+      _total(0) {
   size_t pos(lua_script.find_last_of('/'));
   std::string path(lua_script.substr(0, pos));
   _L = _load_interpreter();
@@ -138,8 +143,32 @@ void luabinding::_load_script() {
         << "lua: filter() global function is missing, "
         << "the write() function will be called for each event";
     _filter = false;
-  } else
+  } else {
     _filter = true;
+    std::function<bool(uint32_t)> filter = [this](uint32_t type) -> bool {
+      uint16_t cat(io::events::category_of_type(type));
+      uint16_t elem(io::events::element_of_type(type));
+
+      // Let's get the function to call
+      lua_getglobal(_L, "filter");
+      lua_pushinteger(_L, cat);
+      lua_pushinteger(_L, elem);
+
+      if (lua_pcall(_L, 2, 1, 0) != 0)
+        throw exceptions::msg()
+            << "lua: error while running function `filter()': "
+            << lua_tostring(_L, -1);
+
+      if (!lua_isboolean(_L, -1))
+        throw exceptions::msg() << "lua: `filter' must return a boolean";
+      bool execute_write = lua_toboolean(_L, -1);
+      logging::debug(logging::medium)
+          << "lua: `filter' returned " << ((execute_write) ? "true" : "false");
+      lua_pop(_L, -1);
+      return execute_write;
+    };
+    multiplexing::muxer::register_read_filter(filter);
+  }
 }
 
 /**
@@ -207,32 +236,8 @@ int luabinding::write(std::shared_ptr<io::data> const& data) {
   unsigned short cat(io::events::category_of_type(type));
   unsigned short elem(io::events::element_of_type(type));
 
-  bool execute_write(true);
-
   // Total to acknowledge incremented
   ++_total;
-
-  if (has_filter()) {
-    // Let's get the function to call
-    lua_getglobal(_L, "filter");
-    lua_pushinteger(_L, cat);
-    lua_pushinteger(_L, elem);
-
-    if (lua_pcall(_L, 2, 1, 0) != 0)
-      throw exceptions::msg()
-          << "lua: error while running function `filter()': "
-          << lua_tostring(_L, -1);
-
-    if (!lua_isboolean(_L, -1))
-      throw exceptions::msg() << "lua: `filter' must return a boolean";
-    execute_write = lua_toboolean(_L, -1);
-    logging::debug(logging::medium)
-        << "lua: `filter' returned " << ((execute_write) ? "true" : "false");
-    lua_pop(_L, -1);
-  }
-
-  if (!execute_write)
-    return 0;
 
   // Let's get the function to call
   lua_getglobal(_L, "write");

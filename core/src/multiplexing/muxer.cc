@@ -34,6 +34,8 @@ using namespace com::centreon::broker::multiplexing;
 uint32_t muxer::_event_queue_max_size =
     std::numeric_limits<uint32_t>::max();
 
+std::function<bool(uint32_t)> muxer::_hook_read_filter{};
+
 /**************************************
  *                                     *
  *           Public Methods            *
@@ -49,7 +51,9 @@ uint32_t muxer::_event_queue_max_size =
  *                         unprocessed events in a persistent storage.
  */
 muxer::muxer(std::string const& name, bool persistent)
-    : _events_size(0), _name(name), _persistent(persistent) {
+    : _events_size(0),
+      _name(name),
+      _persistent(persistent) {
   // Load head queue file back in memory.
   if (_persistent) {
     try {
@@ -325,7 +329,8 @@ void muxer::wake() {
  */
 int muxer::write(std::shared_ptr<io::data> const& d) {
   if (d && _read_filters.find(d->type()) != _read_filters.end())
-    engine::instance().publish(d);
+    if (muxer::_hook_read_filter && muxer::_hook_read_filter(d->type()))
+      engine::instance().publish(d);
   return 1;
 }
 
@@ -453,4 +458,8 @@ void muxer::remove_queue_files() {
   /* Here _file is already destroyed */
   persistent_file file(_queue_file());
   file.remove_all_files();
+}
+
+void muxer::register_read_filter(std::function<bool(uint32_t)>& func) noexcept {
+  _hook_read_filter = func;
 }
