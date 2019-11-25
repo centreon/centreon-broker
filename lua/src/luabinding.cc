@@ -39,12 +39,12 @@ using namespace com::centreon::broker::lua;
  */
 luabinding::luabinding(std::string const& lua_script,
                        std::map<std::string, misc::variant> const& conf_params,
-                       macro_cache const& cache)
+                       macro_cache& cache)
     : _L{nullptr},
       _filter{false},
       _lua_script(lua_script),
       _cache(cache),
-      _total(0) {
+      _total{0} {
   size_t pos(lua_script.find_last_of('/'));
   std::string path(lua_script.substr(0, pos));
   _L = _load_interpreter();
@@ -98,7 +98,7 @@ void luabinding::_update_lua_path(std::string const& path) {
 /**
  *  Returns true if a filter was configured in the Lua script.
  */
-bool luabinding::has_filter() const {
+bool luabinding::has_filter() const noexcept {
   return _filter;
 }
 
@@ -145,30 +145,29 @@ void luabinding::_load_script() {
     _filter = false;
   } else {
     _filter = true;
-    std::function<bool(uint32_t)> filter = [this](uint32_t type) -> bool {
-      uint16_t cat(io::events::category_of_type(type));
-      uint16_t elem(io::events::element_of_type(type));
-
-      // Let's get the function to call
-      lua_getglobal(_L, "filter");
-      lua_pushinteger(_L, cat);
-      lua_pushinteger(_L, elem);
-
-      if (lua_pcall(_L, 2, 1, 0) != 0)
-        throw exceptions::msg()
-            << "lua: error while running function `filter()': "
-            << lua_tostring(_L, -1);
-
-      if (!lua_isboolean(_L, -1))
-        throw exceptions::msg() << "lua: `filter' must return a boolean";
-      bool execute_write = lua_toboolean(_L, -1);
-      logging::debug(logging::medium)
-          << "lua: `filter' returned " << ((execute_write) ? "true" : "false");
-      lua_pop(_L, -1);
-      return execute_write;
-    };
-    multiplexing::muxer::register_read_filter(filter);
   }
+}
+
+bool luabinding::filter(uint32_t type) {
+  uint16_t cat(io::events::category_of_type(type));
+  uint16_t elem(io::events::element_of_type(type));
+
+  // Let's get the function to call
+  lua_getglobal(_L, "filter");
+  lua_pushinteger(_L, cat);
+  lua_pushinteger(_L, elem);
+
+  if (lua_pcall(_L, 2, 1, 0) != 0)
+    throw exceptions::msg() << "lua: error while running function `filter()': "
+                            << lua_tostring(_L, -1);
+
+  if (!lua_isboolean(_L, -1))
+    throw exceptions::msg() << "lua: `filter' must return a boolean";
+  bool execute_write = lua_toboolean(_L, -1);
+  logging::debug(logging::medium) << "lua: `filter' returned "
+                                  << ((execute_write) ? "true" : "false");
+  lua_pop(_L, -1);
+  return execute_write;
 }
 
 /**
@@ -230,6 +229,9 @@ void luabinding::_init_script(
 int luabinding::write(std::shared_ptr<io::data> const& data) {
   int retval(0);
   logging::debug(logging::medium) << "lua: luabinding::write call";
+
+  // Give data to cache.
+  _cache.write(data);
 
   // Process event.
   uint32_t type(data->type());

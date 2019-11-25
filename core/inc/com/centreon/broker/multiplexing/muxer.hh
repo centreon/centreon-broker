@@ -27,6 +27,7 @@
 #include <queue>
 #include <string>
 #include <unordered_set>
+#include "com/centreon/broker/misc/shared_mutex.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/persistent_file.hh"
 
@@ -68,7 +69,8 @@ class muxer : public io::stream {
   void wake();
   int write(std::shared_ptr<io::data> const& d);
 
-  static void register_read_filter(std::function<bool(uint32_t)>& func) noexcept;
+//  static void register_read_filter(std::function<bool(uint32_t)>& func) noexcept;
+//  static void unregister_read_filter() noexcept;
   static std::string memory_file(std::string const& name);
   static std::string queue_file(std::string const& name);
 
@@ -90,7 +92,8 @@ class muxer : public io::stream {
   std::list<std::shared_ptr<io::data>>::iterator _pos;
   filters _read_filters;
   filters _write_filters;
-  static std::function<bool(uint32_t)> _hook_read_filter;
+  std::function<bool(uint32_t)> _hook_read_filter;
+  misc::shared_mutex _read_filter_m;
 };
 }  // namespace multiplexing
 
