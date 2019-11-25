@@ -20,8 +20,8 @@ Centreon Broker Configuration
 In this setup, Centreon Broker only needs to be configured on the single
 central poller.
 
-In Centreon Web, go to *Configuration -> Centreon ->
-Centreon Broker -> Configuration*.
+In Centreon Web, go to *Configuration -> Pollers ->
+Broker configuration*.
 Click the add button and enter the following informations:
 
 ==================== ==================
@@ -49,7 +49,7 @@ the following characteristics:
 Engine Configuration
 --------------------
 
-In Centreon Web, go to *Configuration -> Nagios -> main.cfg* and enter
+In Centreon Web, go to *Configuration -> Pollers -> Engine configuration* and enter
 the main configuration file. In the *Data* tab, change the
 *Multiple Broker Module* line to
 ``/path/to/your/cbmod.so /path/to/your/central-module.xml``.
@@ -115,8 +115,8 @@ the following characteristics (leave default when unspecified):
 On Central
 ^^^^^^^^^^
 
-In Centreon Web, go to Configuration *Centreon -> Centreon Broker
--> Configuration*.
+In Centreon Web, go to Configuration *Centreon -> Pollers -> Broker
+configuration*.
 Click the add button and enter the following information:
 
 ==================== ==================
@@ -161,7 +161,7 @@ Add an output object with the following characteristics:
 Engine Configuration
 --------------------
 
-In Centreon Web, go to *Configuration -> Nagios -> nagios.cfg* and
+In Centreon Web, go to *Configuration -> Pollers -> Engine configuration* and
 enter the main configuration file. In the *Data* tab, change the
 *Multiple Broker Module* line to ``/path/to/your/cbmod.so
 /path/to/your/central-module.xml``.
