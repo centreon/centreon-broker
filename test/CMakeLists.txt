@@ -100,6 +100,7 @@ add_executable(ut
   ${TESTS_DIR}/file/splitter/split.cc
   ${TESTS_DIR}/misc/exec.cc
   ${TESTS_DIR}/misc/filesystem.cc
+  ${TESTS_DIR}/misc/math.cc
   ${TESTS_DIR}/misc/misc.cc
   ${TESTS_DIR}/misc/string.cc
   ${TESTS_DIR}/misc/stringifier.cc

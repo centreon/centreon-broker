@@ -15,13 +15,15 @@
 **
 ** For more information : contact@centreon.com
 */
+#include <algorithm>
 #include <sstream>
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/lua/luabinding.hh"
 #include "com/centreon/broker/lua/stream.hh"
-//#include "com/centreon/broker/multiplexing/muxer.hh"
+#include "com/centreon/broker/misc/math.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
@@ -42,8 +44,15 @@ using namespace com::centreon::broker::lua;
 stream::stream(std::string const& lua_script,
                std::map<std::string, misc::variant> const& conf_params,
                std::shared_ptr<persistent_cache> const& cache)
-    : _cache{cache}, _acks_count{0}, _filter{0}, _exit{false} {
-
+    : _cache{cache},
+      _acks_count{0},
+      _filter{0},
+      _stats{{}},
+      _stats_it{_stats.begin()},
+      _next_stat{time(nullptr)},
+      _nb_stats{0},
+      _a_min{1},
+      _exit{false} {
 
   /* The lua interpreter does not support exchanges with several threads from
    * the outside. By design, the filter is called from another thread than the
@@ -145,6 +154,31 @@ int stream::write(std::shared_ptr<io::data> const& data) {
   {
     std::lock_guard<std::mutex> lock(_loop_m);
     _events.push_back(data);
+
+    time_t now = time(nullptr);
+    if (now > _next_stat || std::isnan(_a)) {
+      *_stats_it = {now, _events.size()};
+      ++_nb_stats;
+      ++_stats_it;
+      if (_stats_it == _stats.end())
+        _stats_it = _stats.begin();
+
+      // We take a point at least every 30s.
+      bool res = misc::least_squares(_stats, _nb_stats, _a, _b);
+      if (!res) {
+        _a = NAN;
+        _b = NAN;
+      }
+      else {
+        _next_stat += 30;
+        if (_a > _a_min) {
+          _a_min = _a;
+          logging::debug(logging::high) << "LUA: The streamconnector looks "
+            "quite slow, waiting events are increasing at the speed of "
+            << _a << "events/s";
+        }
+      }
+    }
   }
   _loop_cv.notify_one();
 
@@ -181,4 +215,11 @@ int stream::flush() {
   int retval = _acks_count;
   _acks_count = 0;
   return retval;
+}
+
+void stream::statistics(json11::Json::object& tree) const {
+  std::lock_guard<std::mutex> lock(_loop_m);
+  tree["waiting_events"] =
+      json11::Json::object{{"lm", json11::Json::object{{"a", _a}, {"b", _b}}},
+                           {"total", static_cast<double>(_events.size())}};
 }
