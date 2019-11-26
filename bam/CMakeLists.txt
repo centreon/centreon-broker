@@ -185,6 +185,10 @@ set_target_properties("${BAM}" PROPERTIES
     COMPILE_FLAGS "${MYSQL_CFLAGS}")
 
 # Testing.
+if (WITH_SQL_TESTS)
+    set(TEST_SOURCES ${TESTS_SOURCES} ${TEST_DIR}/monitoring_stream.cc PARENT_SCOPE)
+endif (WITH_SQL_TESTS)
+
 if (WITH_TESTING )
     set(
       TESTS_SOURCES
@@ -195,7 +199,6 @@ if (WITH_TESTING )
       ${TEST_DIR}/exp_parser/get_postfix.cc
       ${TEST_DIR}/exp_tokenizer/next.cc
       ${TEST_DIR}/time/check_timeperiod.cc
-      ${TEST_DIR}/monitoring_stream.cc
       PARENT_SCOPE
     )
     set(
