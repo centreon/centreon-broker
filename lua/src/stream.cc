@@ -168,3 +168,17 @@ bool stream::filter(uint32_t type) {
   _filter_cv.wait(ans_lock, [this] { return _filter == 0; });
   return _filter_ok;
 }
+
+/**
+ *  Events have been transmitted to the Lua connector, several of them have
+ *  been treated and can now be acknowledged by broker. This function returns
+ *  how many are in that case.
+ *
+ * @return The number of events to ack.
+ */
+int stream::flush() {
+  std::lock_guard<std::mutex> lock(_acks_count_m);
+  int retval = _acks_count;
+  _acks_count = 0;
+  return retval;
+}
