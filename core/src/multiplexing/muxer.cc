@@ -325,13 +325,8 @@ void muxer::wake() {
  *  @param[in] d  Event to multiplex.
  */
 int muxer::write(std::shared_ptr<io::data> const& d) {
-  if (d && _read_filters.find(d->type()) != _read_filters.end()) {
-    _read_filter_m.lock_shared();
-    bool write = !muxer::_hook_read_filter || muxer::_hook_read_filter(d->type());
-    _read_filter_m.unlock();
-    if (write)
-      engine::instance().publish(d);
-  }
+  if (d && _read_filters.find(d->type()) != _read_filters.end())
+    engine::instance().publish(d);
   return 1;
 }
 
@@ -460,15 +455,3 @@ void muxer::remove_queue_files() {
   persistent_file file(_queue_file());
   file.remove_all_files();
 }
-
-//void muxer::register_read_filter(std::function<bool(uint32_t)>& func) noexcept {
-//  _read_filter_m.lock();
-//  _hook_read_filter = func;
-//  _read_filter_m.unlock();
-//}
-//
-//void muxer::unregister_read_filter() noexcept {
-//  _read_filter_m.lock();
-//  _hook_read_filter = nullptr;
-//  _read_filter_m.unlock();
-//}

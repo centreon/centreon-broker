@@ -143,31 +143,8 @@ void luabinding::_load_script() {
         << "lua: filter() global function is missing, "
         << "the write() function will be called for each event";
     _filter = false;
-  } else {
+  } else
     _filter = true;
-  }
-}
-
-bool luabinding::filter(uint32_t type) {
-  uint16_t cat(io::events::category_of_type(type));
-  uint16_t elem(io::events::element_of_type(type));
-
-  // Let's get the function to call
-  lua_getglobal(_L, "filter");
-  lua_pushinteger(_L, cat);
-  lua_pushinteger(_L, elem);
-
-  if (lua_pcall(_L, 2, 1, 0) != 0)
-    throw exceptions::msg() << "lua: error while running function `filter()': "
-                            << lua_tostring(_L, -1);
-
-  if (!lua_isboolean(_L, -1))
-    throw exceptions::msg() << "lua: `filter' must return a boolean";
-  bool execute_write = lua_toboolean(_L, -1);
-  logging::debug(logging::medium) << "lua: `filter' returned "
-                                  << ((execute_write) ? "true" : "false");
-  lua_pop(_L, -1);
-  return execute_write;
 }
 
 /**
@@ -238,8 +215,32 @@ int luabinding::write(std::shared_ptr<io::data> const& data) {
   unsigned short cat(io::events::category_of_type(type));
   unsigned short elem(io::events::element_of_type(type));
 
+  bool execute_write = true;
+
   // Total to acknowledge incremented
   ++_total;
+
+  if (has_filter()) {
+    // Let's get the function to call
+    lua_getglobal(_L, "filter");
+    lua_pushinteger(_L, cat);
+    lua_pushinteger(_L, elem);
+
+    if (lua_pcall(_L, 2, 1, 0) != 0)
+      throw exceptions::msg()
+          << "lua: error while running function `filter()': "
+          << lua_tostring(_L, -1);
+
+    if (!lua_isboolean(_L, -1))
+      throw exceptions::msg() << "lua: `filter' must return a boolean";
+    execute_write = lua_toboolean(_L, -1);
+    logging::debug(logging::medium) << "lua: `filter' returned "
+                                    << ((execute_write) ? "true" : "false");
+    lua_pop(_L, -1);
+  }
+
+  if (!execute_write)
+    return 0;
 
   // Let's get the function to call
   lua_getglobal(_L, "write");

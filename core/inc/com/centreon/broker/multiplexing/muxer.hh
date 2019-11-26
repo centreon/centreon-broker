@@ -19,7 +19,6 @@
 #ifndef CCB_MULTIPLEXING_MUXER_HH
 #define CCB_MULTIPLEXING_MUXER_HH
 
-#include <functional>
 #include <condition_variable>
 #include <list>
 #include <memory>
@@ -69,8 +68,6 @@ class muxer : public io::stream {
   void wake();
   int write(std::shared_ptr<io::data> const& d);
 
-//  static void register_read_filter(std::function<bool(uint32_t)>& func) noexcept;
-//  static void unregister_read_filter() noexcept;
   static std::string memory_file(std::string const& name);
   static std::string queue_file(std::string const& name);
 
@@ -92,8 +89,6 @@ class muxer : public io::stream {
   std::list<std::shared_ptr<io::data>>::iterator _pos;
   filters _read_filters;
   filters _write_filters;
-  std::function<bool(uint32_t)> _hook_read_filter;
-  misc::shared_mutex _read_filter_m;
 };
 }  // namespace multiplexing
 

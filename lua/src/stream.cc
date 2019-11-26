@@ -82,16 +82,16 @@ stream::stream(std::string const& lua_script,
         break;
 
       // Before working on events, we consider filter in priority.
-      if (_filter) {
-        lock.unlock();
-        {
-          std::lock_guard<std::mutex> ans_lock(_filter_m);
-          _filter_ok = lb->filter(_filter);
-          _filter = 0;
-          _filter_cv.notify_one();
-        }
-        lock.lock();
-      }
+//      if (_filter) {
+//        lock.unlock();
+//        {
+//          std::lock_guard<std::mutex> ans_lock(_filter_m);
+//          _filter_ok = lb->filter(_filter);
+//          _filter = 0;
+//          _filter_cv.notify_one();
+//        }
+//        lock.lock();
+//      }
 
       if (!_events.empty()) {
         std::shared_ptr<io::data>& d = _events.front();

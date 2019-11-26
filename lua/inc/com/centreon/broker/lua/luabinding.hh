@@ -72,7 +72,6 @@ class luabinding {
   ~luabinding();
   bool has_filter() const noexcept;
   int write(std::shared_ptr<io::data> const& data);
-  bool filter(uint32_t type);
 };
 }  // namespace lua
 
