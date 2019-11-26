@@ -213,6 +213,10 @@ static bool _build_time_t(std::string const& time_str, uint64_t& ret) {
 
 bool timerange::build_timeranges_from_string(std::string const& line,
                                              std::list<timerange>& timeranges) {
+
+  if (line.empty())
+    return true;
+
   std::list<std::string> timeranges_str;
   timeranges_str = misc::string::split(line, ',');
   for (std::list<std::string>::const_iterator it(timeranges_str.begin()),

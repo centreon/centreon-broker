@@ -17,7 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/configuration/reader_v2.hh"
-#include <cstdlib>
 #include <cstring>
 #include <memory>
 #include <sstream>
@@ -29,8 +28,6 @@
 #include "com/centreon/broker/bam/dimension_bv_event.hh"
 #include "com/centreon/broker/bam/dimension_kpi_event.hh"
 #include "com/centreon/broker/bam/dimension_timeperiod.hh"
-#include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
-#include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
 #include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/io/stream.hh"

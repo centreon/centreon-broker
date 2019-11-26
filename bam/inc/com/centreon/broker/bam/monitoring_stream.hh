@@ -72,7 +72,6 @@ class monitoring_stream : public io::stream {
   ba_svc_mapping _meta_mapping;
   mutable std::mutex _statusm;
   mysql _mysql;
-  bool _db_v2;
   database::mysql_stmt _ba_update;
   database::mysql_stmt _kpi_update;
   database::mysql_stmt _meta_service_update;

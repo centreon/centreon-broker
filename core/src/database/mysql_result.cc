@@ -126,7 +126,7 @@ std::string mysql_result::value_as_str(int idx) {
   if (_bind)
     retval = _bind->value_as_str(idx);
   else if (_row)
-    retval = _row[idx];
+    retval = (_row[idx]) ? _row[idx] : "";
   else
     throw exceptions::msg() << "mysql: No row fetched in result";
   return retval;

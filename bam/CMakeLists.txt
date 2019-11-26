@@ -64,7 +64,6 @@ add_library("${BAM}" SHARED
   "${SRC_DIR}/configuration/bool_expression.cc"
   "${SRC_DIR}/configuration/kpi.cc"
   "${SRC_DIR}/configuration/meta_service.cc"
-  "${SRC_DIR}/configuration/reader.cc"
   "${SRC_DIR}/configuration/reader_exception.cc"
   "${SRC_DIR}/configuration/reader_v2.cc"
   "${SRC_DIR}/configuration/state.cc"
@@ -196,6 +195,7 @@ if (WITH_TESTING )
       ${TEST_DIR}/exp_parser/get_postfix.cc
       ${TEST_DIR}/exp_tokenizer/next.cc
       ${TEST_DIR}/time/check_timeperiod.cc
+      ${TEST_DIR}/monitoring_stream.cc
       PARENT_SCOPE
     )
     set(

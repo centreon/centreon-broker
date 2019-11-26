@@ -75,21 +75,6 @@ monitoring_stream::monitoring_stream(std::string const& ext_cmd_file,
       _pending_events(0),
       _storage_db_cfg(storage_db_cfg),
       _cache(cache) {
-  // Detect schema version. We cannot rely on _db.schema_version() here
-  // because it is connected to the centreon DB (not centreon_storage)
-  // and therefore auto-detection does not work.
-  {
-    try {
-      std::promise<mysql_result> promise;
-      _mysql.run_query_and_get_result("SELECT ba_id FROM mod_bam LIMIT 1",
-                                      &promise);
-      promise.get_future().get();
-      _db_v2 = true;
-    } catch (...) {
-      _db_v2 = false;
-    }
-  }
-
   // Prepare queries.
   _prepare();
 
@@ -167,13 +152,8 @@ void monitoring_stream::statistics(json11::Json::object& tree) const {
 void monitoring_stream::update() {
   try {
     configuration::state s;
-    if (_db_v2) {
-      configuration::reader_v2 r(_mysql, _storage_db_cfg);
-      r.read(s);
-    } else {
-      configuration::reader r(_mysql);
-      r.read(s);
-    }
+    configuration::reader_v2 r(_mysql, _storage_db_cfg);
+    r.read(s);
     _applier.apply(s);
     _ba_mapping = s.get_ba_svc_mapping();
     _meta_mapping = s.get_meta_svc_mapping();
@@ -315,7 +295,8 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
     if (dwn.in_downtime)
       oss << "[" << now << "] SCHEDULE_SVC_DOWNTIME;_Module_BAM_"
           << config::applier::state::instance().poller_id() << ";ba_"
-          << dwn.ba_id << ";" << now << ";" << std::numeric_limits<int32_t>::max()
+          << dwn.ba_id << ";" << now << ";"
+          << std::numeric_limits<int32_t>::max()
           << ";1;0;0;Centreon Broker BAM Module;"
              "Automatic downtime triggered by BA downtime inheritance";
     else
@@ -346,8 +327,8 @@ void monitoring_stream::_prepare() {
   // BA status.
   {
     std::ostringstream query;
-    query << "UPDATE " << (_db_v2 ? "mod_bam" : "cfg_bam")
-          << "  SET current_level=?,"
+    query << "UPDATE mod_bam"
+             "  SET current_level=?,"
              "      acknowledged=?,"
              "      downtime=?,"
              "      last_state_change=?,"
@@ -360,8 +341,8 @@ void monitoring_stream::_prepare() {
   // KPI status.
   {
     std::ostringstream query;
-    query << "UPDATE " << (_db_v2 ? "mod_bam_kpi" : "cfg_bam_kpi")
-          << "  SET acknowledged=?,"
+    query << "UPDATE mod_bam_kpi"
+             "  SET acknowledged=?,"
              "      current_status=?,"
              "      downtime=?, last_level=?,"
              "      state_type=?,"
@@ -382,8 +363,8 @@ void monitoring_stream::_rebuild() {
   {
     std::ostringstream query;
     query << "SELECT ba_id"
-          << "  FROM " << (_db_v2 ? "mod_bam" : "cfg_bam")
-          << "  WHERE must_be_rebuild='1'";
+             "  FROM mod_bam"
+             "  WHERE must_be_rebuild='1'";
     std::promise<mysql_result> promise;
     _mysql.run_query_and_get_result(query.str(), &promise);
     try {
@@ -419,8 +400,7 @@ void monitoring_stream::_rebuild() {
   // Set all the BAs to should not be rebuild.
   {
     std::ostringstream query;
-    query << "UPDATE " << (_db_v2 ? "mod_bam" : "cfg_bam")
-          << "  SET must_be_rebuild='0'";
+    query << "UPDATE mod_bam SET must_be_rebuild='0'";
     _mysql.run_query(query.str(),
                      "BAM: could not update the list of BAs to rebuild");
   }
