@@ -218,18 +218,18 @@ int stream::write(std::shared_ptr<io::data> const& data) {
   }
 }
 
-bool stream::filter(uint32_t type) {
-  // Ask for a type
-  std::unique_lock<std::mutex> loop_lock(_loop_m);
-  _filter = type;
-  _loop_cv.notify_one();
-  loop_lock.unlock();
-
-  // Wait for the answer
-  std::unique_lock<std::mutex> ans_lock(_filter_m);
-  _filter_cv.wait(ans_lock, [this] { return _filter == 0; });
-  return _filter_ok;
-}
+//bool stream::filter(uint32_t type) {
+//  // Ask for a type
+//  std::unique_lock<std::mutex> loop_lock(_loop_m);
+//  _filter = type;
+//  _loop_cv.notify_one();
+//  loop_lock.unlock();
+//
+//  // Wait for the answer
+//  std::unique_lock<std::mutex> ans_lock(_filter_m);
+//  _filter_cv.wait(ans_lock, [this] { return _filter == 0; });
+//  return _filter_ok;
+//}
 
 /**
  *  Events have been transmitted to the Lua connector, several of them have

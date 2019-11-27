@@ -25,7 +25,6 @@
 #include "com/centreon/broker/lua/broker_log.hh"
 #include "com/centreon/broker/lua/broker_socket.hh"
 #include "com/centreon/broker/lua/broker_utils.hh"
-#include "com/centreon/broker/multiplexing/muxer.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
@@ -203,7 +202,7 @@ void luabinding::_init_script(
  *
  *  @return The number of events written.
  */
-int luabinding::write(std::shared_ptr<io::data> const& data) {
+int luabinding::write(std::shared_ptr<io::data> const& data) noexcept {
   int retval = 0;
   logging::debug(logging::medium) << "lua: luabinding::write call";
 

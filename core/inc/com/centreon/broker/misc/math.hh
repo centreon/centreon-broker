@@ -25,6 +25,18 @@
 CCB_BEGIN()
 
 namespace misc {
+/**
+ *  Compute a and b such that y=ax+b is a linear regression of the pts array
+ *  given in parameter. The method used is least squares.
+ *
+ * @param pts An array of pairs (x, y)
+ * @param size If shorter than the array size, only the first size pairs of
+ *             the array are taken for the regression regression.
+ * @param a The computed value for the linear coefficient a (output)
+ * @param b The computed  value for the constant term b (output)
+ *
+ * @return true if no error are seen, false otherwise.
+ */
 template <typename T, typename U, size_t N>
 bool least_squares(std::array<std::pair<T, U>, N> const& pts,
                    size_t size,
