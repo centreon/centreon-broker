@@ -36,6 +36,5 @@ The stream connector is now asynchronous. If it has to execute a script that
 is too slow, it won't slow down Broker. Broker will just return messages
 complaining about the slowness of the script.
 
-Another change, is when the script crashes, Broker does not finish with an
-exception, it writes an error containing the Lua interpreter error but it will
-try to execute the script next time.
+Another change, now when a stream connector crashes, Broker does not terminate
+but just returns an error message containing the Lua interpreter error.
