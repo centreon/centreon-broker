@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013,2015-2017 Centreon
+** Copyright 2009-2013,2015-2017,2019 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/multiplexing/muxer.hh"
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -26,13 +25,13 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/persistent_file.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::multiplexing;
 
-uint32_t muxer::_event_queue_max_size =
-    std::numeric_limits<uint32_t>::max();
+uint32_t muxer::_event_queue_max_size = std::numeric_limits<uint32_t>::max();
 
 /**************************************
  *                                     *
@@ -49,7 +48,9 @@ uint32_t muxer::_event_queue_max_size =
  *                         unprocessed events in a persistent storage.
  */
 muxer::muxer(std::string const& name, bool persistent)
-    : _events_size(0), _name(name), _persistent(persistent) {
+    : _events_size(0),
+      _name(name),
+      _persistent(persistent) {
   // Load head queue file back in memory.
   if (_persistent) {
     try {

@@ -41,7 +41,7 @@ influxdb12::influxdb12(std::string const& user,
                        std::string const& metric_ts,
                        std::vector<column> const& metric_cols,
                        macro_cache const& cache)
-    : _host(addr), _port(port), _cache(cache), _socket{_io_context} {
+    : _socket{_io_context}, _host(addr), _port(port), _cache(cache) {
   // Try to connect to the server.
   logging::debug(logging::medium)
       << "influxdb: connecting using 1.2 Line Protocol";

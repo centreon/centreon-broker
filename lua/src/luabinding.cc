@@ -38,8 +38,12 @@ using namespace com::centreon::broker::lua;
  */
 luabinding::luabinding(std::string const& lua_script,
                        std::map<std::string, misc::variant> const& conf_params,
-                       macro_cache const& cache)
-    : _lua_script(lua_script), _cache(cache), _total(0) {
+                       macro_cache& cache)
+    : _L{nullptr},
+      _filter{false},
+      _lua_script(lua_script),
+      _cache(cache),
+      _total{0} {
   size_t pos(lua_script.find_last_of('/'));
   std::string path(lua_script.substr(0, pos));
   _L = _load_interpreter();
@@ -93,7 +97,7 @@ void luabinding::_update_lua_path(std::string const& path) {
 /**
  *  Returns true if a filter was configured in the Lua script.
  */
-bool luabinding::has_filter() const {
+bool luabinding::has_filter() const noexcept {
   return _filter;
 }
 
@@ -198,16 +202,19 @@ void luabinding::_init_script(
  *
  *  @return The number of events written.
  */
-int luabinding::write(std::shared_ptr<io::data> const& data) {
-  int retval(0);
+int luabinding::write(std::shared_ptr<io::data> const& data) noexcept {
+  int retval = 0;
   logging::debug(logging::medium) << "lua: luabinding::write call";
+
+  // Give data to cache.
+  _cache.write(data);
 
   // Process event.
   uint32_t type(data->type());
   unsigned short cat(io::events::category_of_type(type));
   unsigned short elem(io::events::element_of_type(type));
 
-  bool execute_write(true);
+  bool execute_write = true;
 
   // Total to acknowledge incremented
   ++_total;
@@ -218,16 +225,21 @@ int luabinding::write(std::shared_ptr<io::data> const& data) {
     lua_pushinteger(_L, cat);
     lua_pushinteger(_L, elem);
 
-    if (lua_pcall(_L, 2, 1, 0) != 0)
-      throw exceptions::msg()
+    if (lua_pcall(_L, 2, 1, 0) != 0) {
+      logging::error(logging::high)
           << "lua: error while running function `filter()': "
           << lua_tostring(_L, -1);
+      return 0;
+    }
 
-    if (!lua_isboolean(_L, -1))
-      throw exceptions::msg() << "lua: `filter' must return a boolean";
+    if (!lua_isboolean(_L, -1)) {
+      logging::error(logging::high) << "lua: `filter' must return a boolean";
+      return 0;
+    }
+
     execute_write = lua_toboolean(_L, -1);
-    logging::debug(logging::medium)
-        << "lua: `filter' returned " << ((execute_write) ? "true" : "false");
+    logging::debug(logging::medium) << "lua: `filter' returned "
+                                    << (execute_write ? "true" : "false");
     lua_pop(_L, -1);
   }
 
@@ -254,12 +266,17 @@ int luabinding::write(std::shared_ptr<io::data> const& data) {
   io::data const& d(*data);
   _parse_entries(d);
 
-  if (lua_pcall(_L, 1, 1, 0) != 0)
-    throw exceptions::msg()
+  if (lua_pcall(_L, 1, 1, 0) != 0) {
+    logging::error(logging::high)
         << "lua: error running function `write'" << lua_tostring(_L, -1);
+    return 0;
+  }
 
-  if (!lua_isboolean(_L, -1))
-    throw exceptions::msg() << "lua: `write' must return a boolean";
+  if (!lua_isboolean(_L, -1)) {
+    logging::error(logging::high)
+     << "lua: `write' must return a boolean";
+    return 0;
+  }
   int acknowledge = lua_toboolean(_L, -1);
   lua_pop(_L, -1);
 
@@ -370,17 +387,17 @@ void luabinding::_parse_entries(io::data const& d) {
             }
             break;
           default:  // Error in one of the mappings.
-            throw(exceptions::msg() << "invalid mapping for object "
+            throw exceptions::msg() << "invalid mapping for object "
                                     << "of type '" << info->get_name()
                                     << "': " << current_entry->get_type()
-                                    << " is not a known type ID");
+                                    << " is not a known type ID";
         }
         lua_rawset(_L, -3);
       }
     }
   } else
-    throw(exceptions::msg() << "cannot bind object of type " << d.type()
-                            << " to database query: mapping does not exist");
+    throw exceptions::msg() << "cannot bind object of type " << d.type()
+                            << " to database query: mapping does not exist";
 }
 
 /**

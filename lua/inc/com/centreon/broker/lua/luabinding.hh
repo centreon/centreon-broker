@@ -40,25 +40,6 @@ namespace lua {
  *  Expose an api to simplify exchanges with the Lua interpreter.
  */
 class luabinding {
- public:
-  luabinding(std::string const& lua_script,
-             std::map<std::string, misc::variant> const& conf_params,
-             macro_cache const& cache);
-  ~luabinding();
-  bool has_filter() const;
-  int write(std::shared_ptr<io::data> const& data);
-
- private:
-  luabinding(luabinding const& other);
-  luabinding& operator=(luabinding const& other);
-  lua_State* _load_interpreter();
-  void _load_script();
-  void _init_script(std::map<std::string, misc::variant> const& conf_params);
-  void _update_lua_path(std::string const& path);
-
-  // Event conversion to Lua table.
-  void _parse_entries(io::data const& d);
-
   // The Lua state machine.
   lua_State* _L;
 
@@ -69,10 +50,28 @@ class luabinding {
   std::string const& _lua_script;
 
   // The cache.
-  macro_cache const& _cache;
+  macro_cache& _cache;
 
   // Count on events
   int _total;
+
+  lua_State* _load_interpreter();
+  void _load_script();
+  void _init_script(std::map<std::string, misc::variant> const& conf_params);
+  void _update_lua_path(std::string const& path);
+
+  // Event conversion to Lua table.
+  void _parse_entries(io::data const& d);
+
+ public:
+  luabinding(std::string const& lua_script,
+             std::map<std::string, misc::variant> const& conf_params,
+             macro_cache& cache);
+  luabinding(luabinding const& other) = delete;
+  luabinding& operator=(luabinding const& other) = delete;
+  ~luabinding();
+  bool has_filter() const noexcept;
+  int write(std::shared_ptr<io::data> const& data) noexcept;
 };
 }  // namespace lua
 

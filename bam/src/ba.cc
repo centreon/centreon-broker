@@ -55,10 +55,10 @@ ba::ba(bool generate_virtual_status)
     : _state_source(configuration::ba::state_source_impact),
       _computed_soft_state(ba::state::state_ok),
       _computed_hard_state(ba::state::state_ok),
-      _acknowledgement_hard(0.0),
-      _acknowledgement_soft(0.0),
       _num_soft_critical_childs{0.f},
       _num_hard_critical_childs{0.f},
+      _acknowledgement_hard(0.0),
+      _acknowledgement_soft(0.0),
       _downtime_hard(0.0),
       _downtime_soft(0.0),
       _generate_virtual_status(generate_virtual_status),
@@ -659,7 +659,7 @@ void ba::set_inherited_downtime(inherited_downtime const& dwn) {
  *
  *  @param[in] impact Impact information.
  */
-void ba::_apply_impact(kpi* kpi_ptr, ba::impact_info& impact) {
+void ba::_apply_impact(kpi* kpi_ptr __attribute__((unused)), ba::impact_info& impact) {
   auto is_state_worse = [&](short current_state, short new_state) -> bool {
     if (current_state == ba::state::state_ok &&
         new_state != ba::state::state_ok)  // OK => something elses
