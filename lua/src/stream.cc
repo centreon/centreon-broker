@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 #include <algorithm>
+#include <cmath>
 #include <sstream>
 #include <sstream>
 #include "com/centreon/broker/exceptions/shutdown.hh"
