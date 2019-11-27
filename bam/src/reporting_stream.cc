@@ -1024,22 +1024,22 @@ void reporting_stream::_process_dimension_kpi(
   _dimension_kpi_insert.bind_value_as_str(1, kpi_name);
   _dimension_kpi_insert.bind_value_as_i32(2, dk.ba_id);
   _dimension_kpi_insert.bind_value_as_str(3, dk.ba_name);
-  _dimension_kpi_insert.bind_value_as_i32(5, dk.host_id);
-  _dimension_kpi_insert.bind_value_as_str(6, dk.host_name);
-  _dimension_kpi_insert.bind_value_as_i32(7, dk.service_id);
-  _dimension_kpi_insert.bind_value_as_str(8, dk.service_description);
+  _dimension_kpi_insert.bind_value_as_i32(4, dk.host_id);
+  _dimension_kpi_insert.bind_value_as_str(5, dk.host_name);
+  _dimension_kpi_insert.bind_value_as_i32(6, dk.service_id);
+  _dimension_kpi_insert.bind_value_as_str(7, dk.service_description);
   if (dk.kpi_ba_id)
-    _dimension_kpi_insert.bind_value_as_i32(9, dk.kpi_ba_id);
+    _dimension_kpi_insert.bind_value_as_i32(8, dk.kpi_ba_id);
   else
-    _dimension_kpi_insert.bind_value_as_null(10);
-  _dimension_kpi_insert.bind_value_as_str(11, dk.kpi_ba_name);
-  _dimension_kpi_insert.bind_value_as_i32(12, dk.meta_service_id);
-  _dimension_kpi_insert.bind_value_as_str(13, dk.meta_service_name);
-  _dimension_kpi_insert.bind_value_as_f64(14, dk.impact_warning);
-  _dimension_kpi_insert.bind_value_as_f64(15, dk.impact_critical);
-  _dimension_kpi_insert.bind_value_as_f64(16, dk.impact_unknown);
-  _dimension_kpi_insert.bind_value_as_i32(17, dk.boolean_id);
-  _dimension_kpi_insert.bind_value_as_str(18, dk.boolean_name);
+    _dimension_kpi_insert.bind_value_as_null(8);
+  _dimension_kpi_insert.bind_value_as_str(9, dk.kpi_ba_name);
+  _dimension_kpi_insert.bind_value_as_i32(10, dk.meta_service_id);
+  _dimension_kpi_insert.bind_value_as_str(11, dk.meta_service_name);
+  _dimension_kpi_insert.bind_value_as_f64(12, dk.impact_warning);
+  _dimension_kpi_insert.bind_value_as_f64(13, dk.impact_critical);
+  _dimension_kpi_insert.bind_value_as_f64(14, dk.impact_unknown);
+  _dimension_kpi_insert.bind_value_as_i32(15, dk.boolean_id);
+  _dimension_kpi_insert.bind_value_as_str(16, dk.boolean_name);
 
   std::ostringstream oss;
   oss << "BAM-BI: could not insert dimension of KPI " << dk.kpi_id << ": ";
