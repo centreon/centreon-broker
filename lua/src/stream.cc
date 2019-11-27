@@ -17,6 +17,7 @@
 */
 #include <algorithm>
 #include <sstream>
+#include <sstream>
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -54,6 +55,9 @@ stream::stream(std::string const& lua_script,
       _a_min{1},
       _exit{false} {
 
+  bool fail = false;
+  std::string fail_msg;
+
   /* The lua interpreter does not support exchanges with several threads from
    * the outside. By design, the filter is called from another thread than the
    * one used for the write function.
@@ -61,9 +65,11 @@ stream::stream(std::string const& lua_script,
    * with their arguments. The filter waits for an answer whereas the write
    * function just increases an _acks_count to inform broker on treated events.
    */
+  std::unique_lock<std::mutex> lock(_loop_m);
+
   _thread = std::thread([&] {
     // Access to the Lua interpreter
-    luabinding* lb = new luabinding(lua_script, conf_params, _cache);
+    luabinding* lb = nullptr;
 
     // If there is a filter, register it.
 //    if (lb->has_filter()) {
@@ -71,6 +77,21 @@ stream::stream(std::string const& lua_script,
 //          std::bind(&stream::filter, this, std::placeholders::_1);
 //      multiplexing::muxer::register_read_filter(func);
 //    }
+
+    {
+      std::lock_guard<std::mutex> lock(_loop_m);
+      try {
+        lb = new luabinding(lua_script, conf_params, _cache);
+      }
+      catch (std::exception const& e) {
+        fail_msg = e.what();
+        fail = true;
+        _exit = true;
+        _loop_cv.notify_one();
+        return;
+      }
+      _loop_cv.notify_one();
+    }
 
     std::unique_lock<std::mutex> lock(_loop_m);
     for (;;) {
@@ -112,6 +133,12 @@ stream::stream(std::string const& lua_script,
     // No more need of the Lua interpreter
     delete lb;
   });
+
+  _loop_cv.wait(lock);
+  if (fail) {
+    _thread.join();
+    throw exceptions::msg() << fail_msg;
+  }
 }
 
 /**
@@ -123,7 +150,8 @@ stream::~stream() {
     _exit = true;
     _loop_cv.notify_one();
   }
-  _thread.join();
+  if (_thread.joinable())
+    _thread.join();
 }
 
 /**
@@ -137,7 +165,7 @@ stream::~stream() {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw(exceptions::shutdown() << "cannot read from lua generic connector");
+  throw exceptions::shutdown() << "cannot read from lua generic connector";
 }
 
 /**
