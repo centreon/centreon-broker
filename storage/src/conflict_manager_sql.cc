@@ -1838,7 +1838,7 @@ int32_t conflict_manager::_process_service() {
                                  << ")";
 
   // Processing.
-  if (s.host_id && s.service_id) {
+  if (s.host_id && s.service_id && !s.display_name.empty()) {
     // Prepare queries.
     if (!_service_insupdate.prepared()) {
       query_preparator::event_unique unique;
