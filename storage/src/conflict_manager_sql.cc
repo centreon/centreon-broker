@@ -1106,7 +1106,10 @@ int32_t conflict_manager::_process_host() {
 
   // Processing
   if (_is_valid_poller(h.poller_id)) {
-    if (h.host_id) {
+    // FixMe BAM Generate fake host, this host
+    // does not contains a display_name
+    // We should not store them in db
+    if (h.host_id && !h.display_name.empty()) {
       int32_t conn = _mysql.choose_connection_by_instance(h.poller_id);
 
       // Prepare queries.
@@ -1838,6 +1841,9 @@ int32_t conflict_manager::_process_service() {
                                  << ")";
 
   // Processing.
+  // FixMe BAM Generate fake services, this service
+  // does not contains a display_name
+  // We should not store them in db
   if (s.host_id && s.service_id && !s.display_name.empty()) {
     // Prepare queries.
     if (!_service_insupdate.prepared()) {
