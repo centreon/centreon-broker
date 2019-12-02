@@ -35,22 +35,14 @@ For the RPM based systems
 $ rpm -qa | grep centreon
 ```
 
-For the deb based systems
-
--- Copy/Paste the result of the following command --
-```
-$ dpkg -l | grep centreon
-```
 ***Operating System***
 
 *CentOS, Debian ...*
 
-***Browser used***
+***How the the component has been installed and versions***
 
-- [ ] Google Chrome
-- [ ] Firefox
-- [ ] Internet Explorer IE11
-- [ ] Safari
+- [ ] *From sources, from packages*
+- [ ] *components versions*
 
 Version: --
 
@@ -77,7 +69,7 @@ Please describe precisely the steps to reproduce the encountered issue.
 **PHP error logs**
 
 ```
-tail -f /var/opt/rh/rh-php71/log/php-fpm/centreon-error.log
+tail -f /var/opt/rh/rh-php72/log/php-fpm/centreon-error.log
 ```
 **centreon-engine logs (*if needed*)**
 
