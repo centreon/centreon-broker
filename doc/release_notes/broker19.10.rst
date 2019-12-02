@@ -13,6 +13,12 @@ When two contiguous downtimes are parametrized. It was possible to have
 notifications of critical devices between them. This version of broker is
 needed because of changes in the Engine timed_event class.
 
+Connection lost when One peer retention is active
+=================================================
+
+When a central and a poller are using One peer retention and the poller get
+disconnected then reconnection will never occur.
+
 =======================
 Centreon Broker 19.10.1
 =======================
