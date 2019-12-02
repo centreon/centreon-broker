@@ -1109,7 +1109,7 @@ int32_t conflict_manager::_process_host() {
     // FixMe BAM Generate fake host, this host
     // does not contains a display_name
     // We should not store them in db
-    if (h.host_id && !h.host_name.empty()) {
+    if (h.host_id && !h.alias.empty()) {
       int32_t conn = _mysql.choose_connection_by_instance(h.poller_id);
 
       // Prepare queries.
@@ -1137,7 +1137,7 @@ int32_t conflict_manager::_process_host() {
     } else
       logging::error(logging::high) << "SQL: host '" << h.host_name
                                     << "' of poller " << h.poller_id
-                                    << " has no ID nor hostname";
+                                    << " has no ID nor alias";
   }
   _pop_event(p);
   return 1;
@@ -1844,7 +1844,7 @@ int32_t conflict_manager::_process_service() {
   // FixMe BAM Generate fake services, this service
   // does not contains a display_name
   // We should not store them in db
-  if (s.host_id && s.service_id && !s.service_description.empty()) {
+  if (s.host_id && s.service_id && !s.host_name.empty()) {
     // Prepare queries.
     if (!_service_insupdate.prepared()) {
       query_preparator::event_unique unique;
@@ -1862,7 +1862,7 @@ int32_t conflict_manager::_process_service() {
     _mysql.run_statement(_service_insupdate, oss.str(), true, conn);
   } else
     logging::error(logging::high) << "SQL: service '" << s.service_description
-                                  << "' has no host ID, service ID nor service_description";
+                                  << "' has no host ID, service ID nor hostname";
   }
   else
     logging::error(logging::medium)
