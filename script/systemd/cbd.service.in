@@ -21,6 +21,7 @@ Description=Centreon Broker watchdog
 PartOf=centreon.service
 After=centreon.service
 ReloadPropagatedFrom=centreon.service
+After=mariadb.service
 
 [Service]
 ExecStart=@PREFIX_BIN@/cbwd @PREFIX_CONF@/watchdog.json
