@@ -24,7 +24,7 @@ Optimization
 ============
 Migration of the code to C++11.
 
-Better testis Coverage
+Better tests Coverage
 ======================
 We now have 370+ tests (+280%). It allow us to have a better code coverage
 of the code base.
