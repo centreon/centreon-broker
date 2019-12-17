@@ -49,25 +49,6 @@ NEB_API_VERSION(CURRENT_NEB_API_VERSION)
 
 /**************************************
  *                                     *
- *          Static Functions           *
- *                                     *
- **************************************/
-
-/**
- *  Process Qt events.
- *
- *  @param[in] arg Unused.
- */
-static void process_qcore(void* arg) {
-  (void)arg;
-  // FIXME DBR
-  // QCoreApplication* app(QCoreApplication::instance());
-  // QTimer::singleShot(0, app, SLOT(quit()));
-  // app->exec();
-}
-
-/**************************************
- *                                     *
  *         Exported Functions          *
  *                                     *
  **************************************/
@@ -95,25 +76,6 @@ int nebmodule_deinit(int flags, int reason) {
 
     // Unload singletons.
     com::centreon::broker::config::applier::deinit();
-
-    // Deregister Qt application object.
-    com::centreon::engine::timed_event* te(nullptr);
-    for (timed_event_list::iterator
-             it{com::centreon::engine::timed_event::event_list_high.begin()},
-         end{com::centreon::engine::timed_event::event_list_high.end()};
-         it != end; ++it) {
-      union {
-        void (*code)(void*);
-        void* data;
-      } val;
-      val.code = &process_qcore;
-      if ((*it)->event_data == val.data) {
-        te = (*it);
-        break;
-      }
-    }
-    if (te)
-      remove_event(te, com::centreon::engine::timed_event::high);
   }
   // Avoid exception propagation in C code.
   catch (...) {
@@ -240,17 +202,6 @@ int nebmodule_init(int flags, char const* args, void* handle) {
         std::shared_ptr<neb::callback>(new neb::callback(
             NEBCALLBACK_LOG_DATA, neb::gl_mod_handle, &neb::callback_log)));
 
-    // Process Qt events if necessary.
-    union {
-      void (*code)(void*);
-      void* data;
-    } val;
-    val.code = &process_qcore;
-    com::centreon::engine::timed_event* evt =
-        new com::centreon::engine::timed_event(EVENT_USER_FUNCTION,
-                                               time(nullptr) + 1, 1, 1, nullptr,
-                                               1, val.data, nullptr, 0);
-    evt->schedule(true);
   } catch (std::exception const& e) {
     logging::error(logging::high) << "main: cbmod loading failed: " << e.what();
     nebmodule_deinit(0, 0);
