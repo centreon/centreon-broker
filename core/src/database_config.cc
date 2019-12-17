@@ -143,8 +143,18 @@ database_config::database_config(config::endpoint const& cfg) {
 
   // connections_count
   it = cfg.params.find("connections_count");
-  if (it != end)
-    _connections_count = std::stoul(it->second);
+  if (it != end) {
+    try {
+      _connections_count = std::stoul(it->second);
+    }
+    catch (std::exception const& e) {
+      logging::error(logging::high) << "connections_count is a string "
+                                       "containing an integer. If not "
+                                       "specified, it will be considered as "
+                                       "\"1\".";
+      _connections_count = 1;
+    }
+  }
   else
     _connections_count = 1;
 }

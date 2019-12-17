@@ -73,7 +73,9 @@ stream::stream(uint32_t rrd_len,
     rrd_len = 15552000;
 
       //_rebuilder(db_cfg, rebuild_check_interval, rrd_len, interval_length),
-  sql::conflict_manager::init_storage(store_in_db, rrd_len, interval_length);
+  if (!sql::conflict_manager::init_storage(store_in_db, rrd_len, interval_length))
+    throw broker::exceptions::shutdown()
+        << "Unable to initialize the storage connection to the database";
 }
 
 /**

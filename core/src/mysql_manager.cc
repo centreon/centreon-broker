@@ -34,7 +34,6 @@ mysql_manager& mysql_manager::instance() {
  */
 mysql_manager::mysql_manager()
     : _current_thread(0),
-      _version(mysql::v2),
       _stats_connections_timestamp(time(nullptr)) {}
 
 /**
