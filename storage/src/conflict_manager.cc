@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 #include <cassert>
+#include <cstring>
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -100,7 +101,7 @@ bool conflict_manager::init_storage(bool store_in_db,
 
   std::unique_lock<std::mutex> lk(_init_m);
 
-  while (count < 5) {
+  for (;;) {
     /* The loop is waiting for 1s or for _mysql to be initialized */
     if (_init_cv.wait_for(lk, std::chrono::seconds(1), [&]() {
           return _singleton != nullptr;
@@ -112,6 +113,8 @@ bool conflict_manager::init_storage(bool store_in_db,
       return true;
     }
     count++;
+    logging::error(logging::high) << "storage: Waiting for the sql connector to be started for "
+      << count << " seconds.";
   }
   return false;
 }
@@ -470,6 +473,10 @@ void conflict_manager::_callback() {
     catch (std::exception const& e) {
       logging::error(logging::high)
           << "conflict_manager: error in the main loop: " << e.what();
+      if (strstr(e.what(), "server has gone away")) {
+        // The case where we must restart the connector.
+        throw;
+      }
     }
   } while (!_should_exit());
 }

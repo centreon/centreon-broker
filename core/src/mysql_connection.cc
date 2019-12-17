@@ -101,8 +101,12 @@ void mysql_connection::_commit(mysql_task* t) {
   if (_need_commit) {
     while (attempts++ < MAX_ATTEMPTS && (res = mysql_commit(_conn))) {
       char const* err(::mysql_error(_conn));
-      if (strcmp(err, "MySQL server has gone away") == 0)
+      if (strcmp(err, "MySQL server has gone away") == 0) {
+        logging::error(logging::high)
+            << "mysql_connection: The mysql/mariadb database seems not "
+               "started. Unable to reconnect: " << ::mysql_error(_conn);
         attempts = MAX_ATTEMPTS;
+      }
       logging::error(logging::medium)
           << "could not commit queries: " << ::mysql_error(_conn);
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -421,10 +425,15 @@ void mysql_connection::_run() {
   _conn = mysql_init(nullptr);
   if (!_conn) {
     mysql_manager::instance().set_error(::mysql_error(_conn));
-  } else if (!mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
+  } else {
+    while (!mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
                                  _pwd.c_str(), _name.c_str(), _port, nullptr,
                                  CLIENT_FOUND_ROWS)) {
-    mysql_manager::instance().set_error(::mysql_error(_conn));
+      logging::error(logging::high)
+        << "mysql_connection: The mysql/mariadb database seems not started. Waiting before attempt to connect again: "
+        << ::mysql_error(_conn);
+      std::this_thread::sleep_for(std::chrono::seconds(5));
+    }
   }
 
   if (_qps > 1)
@@ -454,7 +463,6 @@ void mysql_connection::_run() {
       _tasks_condition.wait(locker);
     }
   }
-  logging::debug(logging::low) << "mysql_connection::_run finished";
   for (std::unordered_map<uint32_t, MYSQL_STMT*>::iterator
            it(_stmt.begin()),
        end(_stmt.end());

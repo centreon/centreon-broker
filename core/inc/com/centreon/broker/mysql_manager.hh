@@ -57,7 +57,6 @@ class mysql_manager {
   std::vector<std::shared_ptr<mysql_connection>> _connection;
 
   int _current_thread;
-  std::atomic<mysql::version> _version;
 
   mutable std::mutex _err_mutex;
   database::mysql_error _error;
