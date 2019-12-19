@@ -38,7 +38,7 @@
 #include "com/centreon/engine/broker.hh"
 #include "com/centreon/engine/comment.hh"
 #include "com/centreon/engine/events/defines.hh"
-#include "com/centreon/engine/events/timed_event.hh"
+#include "com/centreon/engine/events/loop.hh"
 #include "com/centreon/engine/globals.hh"
 #include "com/centreon/engine/hostdependency.hh"
 #include "com/centreon/engine/hostgroup.hh"
@@ -1585,7 +1585,7 @@ int neb::callback_process(int callback_type, void* data) {
         com::centreon::engine::timed_event* evt = new com::centreon::engine::timed_event(
             EVENT_USER_FUNCTION, time(nullptr) + statistics_interval, 1,
             statistics_interval, nullptr, 1, val.data, nullptr, 0);
-        evt->schedule(false);
+        com::centreon::engine::events::loop::instance().schedule(evt, false);
       }
     } else if (NEBTYPE_PROCESS_EVENTLOOPEND == process_data->type) {
       logging::info(logging::medium)
