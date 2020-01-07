@@ -39,10 +39,8 @@ class state {
   void apply(config::state const& s, bool run_mux = true);
   std::string const& cache_dir() const throw();
   static state& instance();
-  static void load();
   uint32_t poller_id() const throw();
   std::string const& poller_name() const throw();
-  static void unload();
 
  private:
   state();

@@ -23,9 +23,6 @@
 
 using namespace com::centreon::broker::io;
 
-// Class instance.
-static protocols* gl_protocols = nullptr;
-
 /**************************************
  *                                     *
  *           Public Methods            *
@@ -66,15 +63,8 @@ std::map<std::string, protocols::protocol>::const_iterator protocols::end()
  *  @return Class instance.
  */
 protocols& protocols::instance() {
-  return *gl_protocols;
-}
-
-/**
- *  Load singleton.
- */
-void protocols::load() {
-  if (!gl_protocols)
-    gl_protocols = new protocols;
+  static protocols instance;
+  return instance;
 }
 
 /**
@@ -101,14 +91,6 @@ void protocols::reg(std::string const& name,
       << "protocols: registering protocol '" << name << "' (layers " << osi_from
       << "-" << osi_to << ")";
   _protocols[name] = p;
-}
-
-/**
- *  Unload the singleton.
- */
-void protocols::unload() {
-  delete gl_protocols;
-  gl_protocols = nullptr;
 }
 
 /**

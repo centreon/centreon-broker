@@ -45,22 +45,9 @@ using namespace com::centreon::broker;
 
 class StatsTest : public ::testing::Test {
  public:
-  void SetUp() override {
-    multiplexing::engine::load();
-    config::applier::state::load();
-    config::applier::modules::load();
-    config::applier::endpoint::load();
-    io::events::load();
-    io::protocols::load();
-  }
 
   void TearDown() override {
-    config::applier::endpoint::unload();
-    config::applier::modules::unload();
-    config::applier::state::load();
-    io::protocols::unload();
-    io::events::unload();
-    multiplexing::engine::unload();
+    config::applier::endpoint::instance().clear();
   }
 };
 
