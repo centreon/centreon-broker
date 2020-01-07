@@ -51,8 +51,6 @@ class modules {
   iterator end();
   void discard();
   static modules& instance();
-  static void load();
-  static void unload();
 };
 }  // namespace applier
 }  // namespace config
