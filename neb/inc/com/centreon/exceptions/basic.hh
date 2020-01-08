@@ -21,8 +21,8 @@
 
 #include <exception>
 #include <string>
-#include "com/centreon/misc/stringifier.hh"
 #include "com/centreon/namespace.hh"
+#include "com/centreon/misc/stringifier.hh"
 
 CC_BEGIN()
 
@@ -52,7 +52,7 @@ class basic : public std::exception {
 
   misc::stringifier _buffer;
 };
-}  // namespace exceptions
+}
 
 CC_END()
 

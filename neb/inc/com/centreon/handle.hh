@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2013,2019 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,20 +19,12 @@
 #ifndef CC_HANDLE_HH
 #define CC_HANDLE_HH
 
-#ifdef _WIN32
-#include <windows.h>
-#endif  // _WIN32
 #include "com/centreon/namespace.hh"
 
 CC_BEGIN()
 
-#ifdef _WIN32
-typedef HANDLE native_handle;
-native_handle const native_handle_null = NULL;
-#else
 typedef int native_handle;
 native_handle const native_handle_null = -1;
-#endif  // _WIN32
 
 /**
  *  @class handle handle.hh "com/centreon/handle.hh"
@@ -44,7 +36,7 @@ class handle {
  public:
   handle();
   handle(handle const& right);
-  virtual ~handle() throw();
+  virtual ~handle() noexcept;
   handle& operator=(handle const& right);
   virtual void close() = 0;
   virtual native_handle get_native_handle() = 0;

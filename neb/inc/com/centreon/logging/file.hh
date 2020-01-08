@@ -38,20 +38,20 @@ class file : public backend {
        bool show_pid = true,
        time_precision show_timestamp = second,
        bool show_thread_id = false,
-       long long max_size = 0);
+       uint64_t max_size = 0);
   file(std::string const& path,
        bool is_sync = true,
        bool show_pid = true,
        time_precision show_timestamp = second,
        bool show_thread_id = false,
-       long long max_size = 0);
-  virtual ~file() throw();
-  void close() throw();
-  std::string const& filename() const throw();
-  void log(unsigned long long types,
+       uint64_t max_size = 0);
+  virtual ~file() noexcept;
+  void close() noexcept;
+  std::string const& filename() const noexcept;
+  void log(uint64_t types,
            uint32_t verbose,
            char const* msg,
-           uint32_t size) throw();
+           uint32_t size) noexcept;
   void open();
   void reopen();
 
@@ -61,14 +61,14 @@ class file : public backend {
  private:
   file(file const& right);
   file& operator=(file const& right);
-  void _flush() throw();
+  void _flush() noexcept;
 
-  long long _max_size;
+  uint64_t _max_size;
   std::string _path;
   FILE* _out;
-  long long _size;
+  uint64_t _size;
 };
-}  // namespace logging
+}
 
 CC_END()
 

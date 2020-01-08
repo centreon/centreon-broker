@@ -40,7 +40,7 @@ class syslogger : public backend {
             bool show_thread_id = false);
   ~syslogger() throw();
   void close() throw();
-  void log(unsigned long long types,
+  void log(uint64_t types,
            uint32_t verbose,
            char const* msg,
            uint32_t size) throw();
@@ -54,7 +54,7 @@ class syslogger : public backend {
   int _facility;
   std::string _id;
 };
-}  // namespace logging
+}
 
 CC_END()
 

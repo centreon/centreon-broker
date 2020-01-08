@@ -1,5 +1,5 @@
 /*
-** Copyright 2011-2013 Centreon
+** Copyright 2011-2019 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -19,74 +19,76 @@
 #ifndef CC_TASK_MANAGER_HH
 #define CC_TASK_MANAGER_HH
 
-#include <ctime>
+#include <condition_variable>
 #include <map>
-#include "com/centreon/concurrency/mutex.hh"
-#include "com/centreon/concurrency/thread_pool.hh"
+#include <deque>
+#include <mutex>
+#include <thread>
+#include <vector>
 #include "com/centreon/namespace.hh"
 #include "com/centreon/task.hh"
 #include "com/centreon/timestamp.hh"
 
+#include <iostream>
+
 CC_BEGIN()
 
-/**
- *  @class task_manager task_manager.hh "com/centreon/task_manager.hh"
- *  @brief Provide task manager.
- *
- *  Allow to manage task, run tasks on time and run them if possible
- *  in multiple threads.
- */
 class task_manager {
- public:
-  task_manager(uint32_t max_thread_count = 0);
-  virtual ~task_manager() throw();
-  unsigned long add(task* t,
-                    timestamp const& when,
-                    bool is_runnable = false,
-                    bool should_delete = false);
-  unsigned long add(task* t,
-                    timestamp const& when,
-                    uint32_t interval,
-                    bool is_runnable = false,
-                    bool should_delete = false);
-  uint32_t execute(timestamp const& now = timestamp::now());
-  timestamp next_execution_time() const;
-  uint32_t remove(task* t);
-  bool remove(unsigned long id);
-
- private:
-  struct internal_task : public concurrency::runnable {
-    internal_task(unsigned long id = 0,
-                  task* t = NULL,
-                  timestamp const& when = 0,
-                  uint32_t interval = 0,
-                  bool is_runnable = false,
-                  bool should_delete = false);
-    internal_task(internal_task const& right);
-    ~internal_task() throw();
-    internal_task& operator=(internal_task const& right);
-    void run();
-
-    unsigned long id;
-    uint32_t interval;
+  struct internal_task {
+    uint64_t id;
     bool is_runnable;
     bool should_delete;
-    task* t;
-    timestamp when;
+    uint32_t interval;    // When 0, this task is in auto_delete
+    task* tsk;
 
-   private:
-    internal_task& _internal_copy(internal_task const& right);
+    internal_task(task* tsk,
+                  uint64_t id,
+                  uint32_t interval,
+                  bool is_runnable,
+                  bool should_delete)
+        : id{id},
+          is_runnable{is_runnable},
+          should_delete{should_delete},
+          interval{interval},
+          tsk{tsk} {}
+    internal_task() = delete;
   };
 
-  task_manager(task_manager const& right);
-  task_manager& operator=(task_manager const& right);
+  uint64_t _current_id;
+  bool _exit;
 
-  unsigned long _current_id;
-  mutable concurrency::mutex _mtx;
+  std::vector<std::thread> _workers;
+
+  mutable std::mutex _tasks_m;
   std::multimap<timestamp, internal_task*> _tasks;
-  concurrency::thread_pool _th_pool;
+
+  mutable std::mutex _queue_m;
+  mutable std::condition_variable _queue_cv;
+  std::deque<internal_task*> _queue;
+
+  void _enqueue(internal_task* t);
+  void _wait_for_queue_empty() const;
+
+ public:
+  task_manager(uint32_t max_thread_count = 0);
+  ~task_manager();
+
+  uint64_t add(task* t,
+               timestamp const& when,
+               bool is_runnable = false,
+               bool should_delete = false);
+
+  uint64_t add(task* t,
+               timestamp const& when,
+               uint32_t interval,
+               bool is_runnable = false,
+               bool should_delete = false);
+  timestamp next_execution_time() const;
+  uint32_t remove(task* t);
+  bool remove(uint64_t id);
+  uint32_t execute(timestamp const& now = timestamp::now());
 };
 
 CC_END()
 
-#endif  // !CC_TASK_MANAGER_HH
+#endif  // ! CC_TASK_MANAGER_HH

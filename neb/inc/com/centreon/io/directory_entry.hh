@@ -21,8 +21,8 @@
 
 #include <list>
 #include <string>
-#include "com/centreon/handle.hh"
 #include "com/centreon/io/file_entry.hh"
+#include "com/centreon/handle.hh"
 #include "com/centreon/namespace.hh"
 
 CC_BEGIN()
@@ -30,7 +30,7 @@ CC_BEGIN()
 namespace io {
 /**
  *  @class directory_entry directory_entry.hh
- * "com/centreon/io/directory_entry.hh"
+ *"com/centreon/io/directory_entry.hh"
  *  @brief Wrapper of libc's directory_entryectory.
  *
  *  Wrap standard directory_entryectory objects.
@@ -55,7 +55,7 @@ class directory_entry {
   file_entry _entry;
   std::list<file_entry> _entry_lst;
 };
-}  // namespace io
+}
 
 CC_END()
 
