@@ -40,13 +40,13 @@ class handle_action : public task {
 
   handle_action(handle* h, handle_listener* hl, bool is_threadable = false);
   handle_action(handle_action const& right);
-  ~handle_action() throw();
+  ~handle_action() noexcept;
   handle_action& operator=(handle_action const& right);
-  bool is_threadable() const throw();
-  handle* get_handle() const throw();
-  handle_listener* get_handle_listener() const throw();
+  bool is_threadable() const noexcept;
+  handle* get_handle() const noexcept;
+  handle_listener* get_handle_listener() const noexcept;
   void run();
-  void set_action(action a) throw();
+  void set_action(action a) noexcept;
 
  private:
   void _internal_copy(handle_action const& right);

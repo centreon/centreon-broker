@@ -20,33 +20,7 @@
 #define CC_CLIB_HH
 
 #include "com/centreon/namespace.hh"
-
-CC_BEGIN()
-
-/**
- *  @class clib clib.hh "com/centreon/clib.hh"
- *  @brief Initialize all clib manager.
- *
- *  Initialize all clib manager and make base configuration.
- */
-class clib {
- public:
-  enum load_flags {
-    with_logging_engine = 1 << 0,
-    with_process_manager = 1 << 1
-  };
-
-  static void load(uint32_t flags = with_logging_engine |
-                                        with_process_manager);
-  static void unload();
-
- private:
-  clib(uint32_t flags);
-  clib(clib const& right);
-  ~clib() throw();
-  clib& operator=(clib const& right);
-};
-
-CC_END()
+#include "com/centreon/logging/engine.hh"
+#include "com/centreon/process_manager.hh"
 
 #endif  // !CC_CLIB_HH

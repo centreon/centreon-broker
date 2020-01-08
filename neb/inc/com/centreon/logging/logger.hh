@@ -32,36 +32,40 @@ enum type_value {
   type_error = (1ull << 63)
 };
 
-enum verbosity_level { low = 0, medium = 1, high = 2 };
-}  // namespace logging
+enum verbosity_level {
+  low = 0,
+  medium = 1,
+  high = 2
+};
+}
 
 CC_END()
 
 #define log_info(verbose)                                                \
-  for (uint32_t __com_centreon_logging_define_ui(0);                 \
+  for (unsigned int __com_centreon_logging_define_ui(0);                 \
        !__com_centreon_logging_define_ui &&                              \
-       com::centreon::logging::engine::instance().is_log(                \
-           com::centreon::logging::type_info, verbose);                  \
+           com::centreon::logging::engine::instance().is_log(            \
+               com::centreon::logging::type_info, verbose);              \
        ++__com_centreon_logging_define_ui)                               \
   com::centreon::logging::temp_logger(com::centreon::logging::type_info, \
                                       verbose)                           \
       << "[info] "
 
 #define log_debug(verbose)                                                \
-  for (uint32_t __com_centreon_logging_define_ui(0);                  \
+  for (unsigned int __com_centreon_logging_define_ui(0);                  \
        !__com_centreon_logging_define_ui &&                               \
-       com::centreon::logging::engine::instance().is_log(                 \
-           com::centreon::logging::type_debug, verbose);                  \
+           com::centreon::logging::engine::instance().is_log(             \
+               com::centreon::logging::type_debug, verbose);              \
        ++__com_centreon_logging_define_ui)                                \
   com::centreon::logging::temp_logger(com::centreon::logging::type_debug, \
                                       verbose)                            \
       << "[debug] "
 
 #define log_error(verbose)                                                \
-  for (uint32_t __com_centreon_logging_define_ui(0);                  \
+  for (unsigned int __com_centreon_logging_define_ui(0);                  \
        !__com_centreon_logging_define_ui &&                               \
-       com::centreon::logging::engine::instance().is_log(                 \
-           com::centreon::logging::type_error, verbose);                  \
+           com::centreon::logging::engine::instance().is_log(             \
+               com::centreon::logging::type_error, verbose);              \
        ++__com_centreon_logging_define_ui)                                \
   com::centreon::logging::temp_logger(com::centreon::logging::type_error, \
                                       verbose)                            \

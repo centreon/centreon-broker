@@ -111,7 +111,7 @@ inline std::size_t hash<unsigned char>(unsigned char val) {
 }
 
 template <>
-inline std::size_t hash<uint32_t>(uint32_t val) {
+inline std::size_t hash<unsigned int>(unsigned int val) {
   return (static_cast<std::size_t>(val));
 }
 

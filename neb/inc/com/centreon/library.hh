@@ -16,13 +16,42 @@
 ** For more information : contact@centreon.com
 */
 
-#ifndef CC_LIBRARY_HH
-#define CC_LIBRARY_HH
+#ifndef CC_LIBRARY_POSIX_HH
+#define CC_LIBRARY_POSIX_HH
 
-#ifdef _WIN32
-#include "com/centreon/library_win32.hh"
-#else
-#include "com/centreon/library_posix.hh"
-#endif  // Windows or POSIX implementation.
+#include <dlfcn.h>
+#include <string>
+#include "com/centreon/namespace.hh"
 
-#endif  // !CC_LIBRARY_HH
+CC_BEGIN()
+
+/**
+ *  @class library library.hh "com/centreon/library.hh"
+ *  @brief Wrapper of libc's library loader.
+ *
+ *  Wrap standard library loader objects.
+ */
+class library {
+ public:
+  library(std::string const& filename);
+  ~library() throw();
+  std::string const& filename() const throw();
+  bool is_loaded() const throw();
+  void load();
+  void* resolve(char const* symbol);
+  void* resolve(std::string const& symbol);
+  void (*resolve_proc(char const* symbol))();
+  void (*resolve_proc(std::string const& symbol))();
+  void unload();
+
+ private:
+  library(library const& right);
+  library& operator=(library const& right);
+
+  std::string _filename;
+  void* _handle;
+};
+
+CC_END()
+
+#endif  // !CC_LIBRARY_POSIX_HH

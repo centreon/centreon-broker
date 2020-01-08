@@ -51,7 +51,7 @@ struct hash<std::pair<T, U> > {
     return (h1(p.first) ^ h2(p.second));
   }
 };
-}  // namespace std
+}
 
 // Used tr1 implementation.
 #elif defined(TR1_UNORDERED)
@@ -76,8 +76,8 @@ struct hash<std::pair<T, U> > {
     return (h1(p.first) ^ h2(p.second));
   }
 };
-}  // namespace tr1
-}  // namespace std
+}
+}
 
 namespace std {
 // Missing equal operator for unrodered map on tr1.
@@ -88,7 +88,8 @@ bool operator==(umap<Key, T, Hash, Pred, Alloc> const& lhs,
     return (false);
   for (typename umap<Key, T, Hash, Pred, Alloc>::const_iterator it(lhs.begin()),
        end(lhs.end());
-       it != end; ++it) {
+       it != end;
+       ++it) {
     typename umap<Key, T, Hash, Pred, Alloc>::const_iterator it_find(
         rhs.find(it->first));
     if (it_find == rhs.end() || it_find->second != it->second)
@@ -111,12 +112,14 @@ bool operator==(umultimap<Key, T, Hash, Pred, Alloc> const& lhs,
     return (false);
   for (typename umap<Key, T, Hash, Pred, Alloc>::const_iterator it(lhs.begin()),
        end(lhs.end());
-       it != end; ++it) {
+       it != end;
+       ++it) {
     bool find(false);
     for (typename umap<Key, T, Hash, Pred, Alloc>::const_iterator
              it_find(rhs.find(it->first)),
          end(rhs.end());
-         it_find != end && it_find->first == it->first; ++it_find) {
+         it_find != end && it_find->first == it->first;
+         ++it_find) {
       if (it_find->second == it->second) {
         find = true;
         break;
@@ -133,7 +136,7 @@ bool operator!=(umultimap<Key, T, Hash, Pred, Alloc> const& lhs,
                 umultimap<Key, T, Hash, Pred, Alloc> const& rhs) {
   return (!operator==(lhs, rhs));
 }
-}  // namespace std
+}
 
 // Used std implementation.
 #else

@@ -37,6 +37,16 @@ CC_BEGIN()
  */
 template <typename T>
 class delayed_delete : public task {
+  T* _ptr;
+  /**
+   *  Copy internal data members.
+   *
+   *  @param[in] dd Object to copy.
+   */
+  void _internal_copy(delayed_delete const& dd) {
+    _ptr = dd._ptr;
+  }
+
  public:
   /**
    *  Default constructor.
@@ -55,7 +65,7 @@ class delayed_delete : public task {
   /**
    *  Destructor.
    */
-  ~delayed_delete() throw() {}
+  ~delayed_delete() noexcept {}
 
   /**
    *  Assignment operator.
@@ -69,7 +79,7 @@ class delayed_delete : public task {
       task::operator=(dd);
       _internal_copy(dd);
     }
-    return (*this);
+    return *this;
   }
 
   /**
@@ -78,21 +88,7 @@ class delayed_delete : public task {
   void run() {
     delete _ptr;
     _ptr = NULL;
-    return;
   }
-
- private:
-  /**
-   *  Copy internal data members.
-   *
-   *  @param[in] dd Object to copy.
-   */
-  void _internal_copy(delayed_delete const& dd) {
-    _ptr = dd._ptr;
-    return;
-  }
-
-  T* _ptr;
 };
 
 CC_END()

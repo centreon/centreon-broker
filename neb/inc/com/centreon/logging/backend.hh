@@ -19,7 +19,7 @@
 #ifndef CC_LOGGING_BACKEND_HH
 #define CC_LOGGING_BACKEND_HH
 
-#include "com/centreon/concurrency/mutex.hh"
+#include <mutex>
 #include "com/centreon/namespace.hh"
 
 CC_BEGIN()
@@ -29,7 +29,12 @@ class stringifier;
 }
 
 namespace logging {
-enum time_precision { none = 0, microsecond = 1, millisecond = 2, second = 3 };
+enum time_precision {
+  none = 0,
+  microsecond = 1,
+  millisecond = 2,
+  second = 3
+};
 
 /**
  *  @class backend backend.hh "com/centreon/logging/backend.hh"
@@ -45,18 +50,16 @@ class backend {
           time_precision show_timestamp = second,
           bool show_thread_id = false);
   backend(backend const& right);
-  virtual ~backend() throw();
+  virtual ~backend() noexcept;
   backend& operator=(backend const& right);
-  virtual void close() throw() = 0;
+  virtual void close() noexcept = 0;
   virtual bool enable_sync() const;
   virtual void enable_sync(bool enable);
-  virtual void log(unsigned long long types,
-                   uint32_t verbose,
-                   char const* msg) throw();
-  virtual void log(unsigned long long types,
+  virtual void log(uint64_t types, uint32_t verbose, char const* msg) noexcept;
+  virtual void log(uint64_t types,
                    uint32_t verbose,
                    char const* msg,
-                   uint32_t size) throw() = 0;
+                   uint32_t size) noexcept = 0;
   virtual void open() = 0;
   virtual void reopen() = 0;
   virtual bool show_pid() const;
@@ -70,7 +73,7 @@ class backend {
   void _build_header(misc::stringifier& buffer);
 
   bool _is_sync;
-  mutable concurrency::mutex _lock;
+  mutable std::mutex _lock;
   bool _show_pid;
   time_precision _show_timestamp;
   bool _show_thread_id;
@@ -78,7 +81,7 @@ class backend {
  protected:
   void _internal_copy(backend const& right);
 };
-}  // namespace logging
+}
 
 CC_END()
 

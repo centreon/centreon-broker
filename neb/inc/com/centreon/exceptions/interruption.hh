@@ -27,7 +27,7 @@ CC_BEGIN()
 namespace exceptions {
 /**
  *  @class interruption interruption.hh
- * "com/centreon/exceptions/interruption.hh"
+ *"com/centreon/exceptions/interruption.hh"
  *  @brief Exception signaling an interruption in processing.
  *
  *  Some operation that was in progress was interrupted but did not
@@ -47,7 +47,7 @@ class interruption : public basic {
     return (*this);
   }
 };
-}  // namespace exceptions
+}
 
 CC_END()
 

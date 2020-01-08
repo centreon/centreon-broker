@@ -21,8 +21,8 @@
 
 #include <string>
 #include "com/centreon/logging/engine.hh"
-#include "com/centreon/misc/stringifier.hh"
 #include "com/centreon/namespace.hh"
+#include "com/centreon/misc/stringifier.hh"
 
 CC_BEGIN()
 
@@ -40,7 +40,7 @@ struct setprecision {
  */
 class temp_logger {
  public:
-  temp_logger(unsigned long long types, uint32_t verbose) throw();
+  temp_logger(unsigned long long types, unsigned int verbose) throw();
   temp_logger(temp_logger const& right);
   virtual ~temp_logger() throw();
   temp_logger& operator=(temp_logger const& right);
@@ -57,9 +57,9 @@ class temp_logger {
   misc::stringifier _buffer;
   engine& _engine;
   unsigned long long _type;
-  uint32_t _verbose;
+  unsigned int _verbose;
 };
-}  // namespace logging
+}
 
 CC_END()
 

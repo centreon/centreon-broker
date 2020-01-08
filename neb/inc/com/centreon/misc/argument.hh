@@ -67,7 +67,7 @@ class argument {
   char _name;
   std::string _value;
 };
-}  // namespace misc
+}
 
 CC_END()
 
