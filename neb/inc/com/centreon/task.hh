@@ -32,11 +32,11 @@ CC_BEGIN()
  */
 class task {
  public:
-  task();
-  task(task const& t);
-  virtual ~task() throw();
-  task& operator=(task const& t);
-  virtual void run();
+  task() = default;
+  task(task const& t) = delete;
+  virtual ~task() = default;
+  task& operator=(task const& t) = delete;
+  virtual void run() = 0;
 };
 
 CC_END()

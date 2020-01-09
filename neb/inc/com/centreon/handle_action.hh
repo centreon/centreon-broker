@@ -19,6 +19,7 @@
 #ifndef CC_HANDLE_ACTION_HH
 #define CC_HANDLE_ACTION_HH
 
+#include <atomic>
 #include "com/centreon/namespace.hh"
 #include "com/centreon/task.hh"
 
@@ -39,9 +40,9 @@ class handle_action : public task {
   enum action { none = 0, read, write, error };
 
   handle_action(handle* h, handle_listener* hl, bool is_threadable = false);
-  handle_action(handle_action const& right);
+  handle_action(handle_action const& right) = delete;
   ~handle_action() noexcept;
-  handle_action& operator=(handle_action const& right);
+  handle_action& operator=(handle_action const& right) = delete;
   bool is_threadable() const noexcept;
   handle* get_handle() const noexcept;
   handle_listener* get_handle_listener() const noexcept;
@@ -51,7 +52,7 @@ class handle_action : public task {
  private:
   void _internal_copy(handle_action const& right);
 
-  action _action;
+  std::atomic<action> _action;
   handle* _h;
   handle_listener* _hl;
   bool _is_threadable;
