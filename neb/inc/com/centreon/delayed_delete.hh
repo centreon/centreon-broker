@@ -56,38 +56,25 @@ class delayed_delete : public task {
   delayed_delete(T* ptr) : _ptr(ptr) {}
 
   /**
-   *  Copy constructor.
-   *
-   *  @param[in] dd Object to copy.
-   */
-  delayed_delete(delayed_delete const& dd) : task(dd) { _internal_copy(dd); }
-
-  /**
    *  Destructor.
    */
   ~delayed_delete() noexcept {}
 
   /**
-   *  Assignment operator.
+   *  Copy constructor.
    *
-   *  @param[in] ptr Pointer to delete.
-   *
-   *  @return This object.
+   *  @param[in] dd Object to copy.
    */
-  delayed_delete& operator=(delayed_delete const& dd) {
-    if (this != &dd) {
-      task::operator=(dd);
-      _internal_copy(dd);
-    }
-    return *this;
-  }
+  delayed_delete(delayed_delete const& dd) = delete;
+
+  delayed_delete& operator=(delayed_delete const& dd) = delete;
 
   /**
    *  Delete pointer.
    */
   void run() {
     delete _ptr;
-    _ptr = NULL;
+    _ptr = nullptr;
   }
 };
 

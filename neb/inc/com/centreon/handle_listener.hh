@@ -33,13 +33,19 @@ CC_BEGIN()
  */
 class handle_listener {
  public:
-  handle_listener();
-  virtual ~handle_listener() noexcept;
+  handle_listener() = default;
+  virtual ~handle_listener() noexcept {}
+  handle_listener(handle_listener const&) = delete;
+  handle_listener& operator=(handle_listener const&) = delete;
+
   virtual void error(handle& h) = 0;
-  virtual void read(handle& h);
-  virtual bool want_read(handle& h);
-  virtual bool want_write(handle& h);
-  virtual void write(handle& h);
+  virtual void read(handle& h) {
+    char buf[4096];
+    h.read(buf, sizeof(buf));
+  }
+  virtual bool want_read(handle&) { return false; }
+  virtual bool want_write(handle&) { return false; }
+  virtual void write(handle&) {}
 };
 
 CC_END()

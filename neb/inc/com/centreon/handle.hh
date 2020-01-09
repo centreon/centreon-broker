@@ -34,10 +34,11 @@ native_handle const native_handle_null = -1;
  */
 class handle {
  public:
-  handle();
-  handle(handle const& right);
-  virtual ~handle() noexcept;
-  handle& operator=(handle const& right);
+  handle() = default;
+  virtual ~handle() = default;
+  handle(handle const& right) = delete;
+  handle& operator=(handle const& right) = delete;
+
   virtual void close() = 0;
   virtual native_handle get_native_handle() = 0;
   virtual unsigned long read(void* data, unsigned long size) = 0;
