@@ -244,6 +244,7 @@ int main(int argc, char** argv) {
               << e.what();
         }
         sighup = false;
+        continue;
       }
 
       /* Let's wait a little */
