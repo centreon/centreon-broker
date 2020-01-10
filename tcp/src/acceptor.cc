@@ -32,6 +32,8 @@ using namespace com::centreon::broker::tcp;
  *                                     *
  **************************************/
 
+constexpr std::size_t max_pending_connection = 30;
+
 /**
  *  Default constructor.
  */
@@ -60,6 +62,19 @@ void acceptor::add_child(std::string const& child) {
  */
 void acceptor::listen_on(unsigned short port) {
   _port = port;
+  _acceptor.reset();
+
+  // Step 3. Instantiating and opening an acceptor socket.
+  try {
+    asio::ip::tcp::endpoint ep(asio::ip::address_v4::any(), _port);
+    _acceptor.reset(new asio::ip::tcp::acceptor(tcp_async::instance().get_io_ctx(), ep.protocol()));
+    _acceptor->bind(ep);
+    _acceptor->listen(max_pending_connection);
+  } catch (std::system_error const& se) {
+    throw exceptions::msg()
+        << "TCP: error while waiting client on port: " << _port << " "
+        << se.what();
+  }
 }
 
 /**
@@ -70,21 +85,22 @@ std::shared_ptr<io::stream> acceptor::open() {
   // Listen on port.
   std::lock_guard<std::mutex> lock(_mutex);
 
-  std::unique_ptr<asio::ip::tcp::socket> socket{
-      new asio::ip::tcp::socket{_io_context}};
+  if (!_acceptor)
+    listen_on(_port);
+
+  std::shared_ptr<asio::ip::tcp::socket> socket{
+      new asio::ip::tcp::socket{tcp_async::instance().get_io_ctx()}};
   try {
-    asio::ip::tcp::acceptor acceptor(
-        _io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), _port));
-    acceptor.accept(*socket);
+    _acceptor->accept(*socket);
   } catch (std::system_error const& se) {
     throw exceptions::msg()
         << "TCP: error while waiting client on port: " << _port << " "
         << se.what();
   }
+  tcp_async::instance().register_socket(*socket);
 
   // Accept client.
-  std::shared_ptr<stream> incoming{new stream{_io_context, socket.get(), ""}};
-  socket.release();
+  std::shared_ptr<stream> incoming{new stream{socket, ""}};
 
   logging::info(logging::medium) << "TCP: new client connected";
   incoming->set_parent(this);

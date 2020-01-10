@@ -26,12 +26,6 @@
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/namespace.hh"
 
-#if ASIO_VERSION < 101200
-namespace asio {
-typedef io_service io_context;
-}
-#endif
-
 CCB_BEGIN()
 
 namespace tcp {
@@ -64,7 +58,7 @@ class acceptor : public io::endpoint {
   unsigned short _port;
   int _read_timeout;
   int _write_timeout;
-  asio::io_context _io_context;
+  std::unique_ptr<asio::ip::tcp::acceptor> _acceptor;
 };
 }  // namespace tcp
 

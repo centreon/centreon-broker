@@ -57,7 +57,6 @@ class connector : public io::endpoint {
  private:
   int _read_timeout;
   int _write_timeout;
-  asio::io_context _io_context;
 };
 }  // namespace tcp
 
