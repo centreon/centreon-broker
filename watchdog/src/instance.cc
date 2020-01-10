@@ -136,13 +136,19 @@ void instance::stop() {
           << _config.get_name() << "' (PID " << _pid << "):" << strerror(errno)
           << '\n';
     int status;
-    int timeout = 10;
+    int timeout = 30;
     while ((res = waitpid(_pid, &status, WNOHANG))) {
       if (--timeout < 0) {
         logging::error(logging::medium)
             << "watchdog: could not gracefully terminate process '"
             << _config.get_name() << "' (PID " << _pid << "): killing it";
         kill(_pid, SIGKILL);
+        res = waitpid(_pid, &status, 0);
+        if (res < 0) {
+          logging::error(logging::medium)
+              << "watchdog: Unable to kill the process '"
+              << _config.get_name() << "' (PID " << _pid << ")";
+        }
         return;
       }
       sleep(1);
