@@ -1,0 +1,9 @@
+[requires]
+gtest/1.8.1@bincrafters/stable
+asio/1.13.0@bincrafters/stable
+spdlog/1.4.2@bincrafters/stable
+json11/e2e3a11@centreon/stable
+
+[generators]
+cmake_paths
+cmake_find_package

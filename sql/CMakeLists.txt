@@ -42,28 +42,10 @@ add_library("${SQL}" SHARED
   "${INC_DIR}/com/centreon/broker/sql/factory.hh"
   "${INC_DIR}/com/centreon/broker/sql/stream.hh"
 )
-add_dependencies("${SQL}" json11_lib spdlog_lib)
+
 set_target_properties("${SQL}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
-
-## Testing.
-#if (WITH_TESTING)
-#  if (WITH_SQL_TESTS)
-#    set(
-#      TESTS_SOURCES
-#      ${TESTS_SOURCES}
-#      "${TEST_DIR}/conflict_manager.cc"
-#      PARENT_SCOPE
-#    )
-#    set(
-#      TESTS_LIBRARIES
-#      ${TESTS_LIBRARIES}
-#      "${SQL}"
-#      PARENT_SCOPE
-#    )
-#  endif()
-#endif()
 
 # Install rule.
 install(TARGETS "${SQL}"

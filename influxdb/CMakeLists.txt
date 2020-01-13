@@ -48,8 +48,6 @@ add_library("${INFLUXDB}" SHARED
   "${INC_DIR}/macro_cache.hh"
   "${INC_DIR}/stream.hh"
 )
-add_dependencies("${INFLUXDB}" Asio)
-target_link_libraries("${INFLUXDB}")
 set_target_properties("${INFLUXDB}" PROPERTIES PREFIX "")
 
 # Testing.

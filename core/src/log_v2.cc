@@ -21,7 +21,7 @@
 
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/null_sink.h>
-#include <spdlog/sinks/stdout_sinks.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 #include <fstream>
 #include <json11.hpp>
@@ -85,7 +85,7 @@ bool log_v2::load(std::string const& file, config::state const& state) {
       std::vector<sink_ptr> sinks{std::make_shared<sinks::null_sink_mt>()};
 
       if (js["console"].bool_value())
-        sinks.push_back(std::make_shared<sinks::ansicolor_stdout_sink_mt>());
+        sinks.push_back(std::make_shared<sinks::stdout_color_sink_mt>());
 
       if (js["log_path"].is_string()) {
         std::string log_name =

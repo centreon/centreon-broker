@@ -18,34 +18,9 @@
 
 include(ExternalProject)
 
-set(GOOGLE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-
-if (${BUILD_OFFLINE})
-  ExternalProject_Add(googletest
-      SOURCE_DIR ${CMAKE_BINARY_DIR}/test/googletest-prefix/src/googletest
-      TIMEOUT 10
-      INSTALL_COMMAND ""
-      LOG_DOWNLOAD ON
-      LOG_CONFIGURE ON
-      LOG_BUILD ON
-      CMAKE_ARGS -DCMAKE_CXX_FLAGS=${GOOGLE_CXX_FLAGS} -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
-else ()
-  ExternalProject_Add(googletest
-      GIT_REPOSITORY https://github.com/google/googletest/
-      GIT_TAG release-1.10.0
-      TIMEOUT 10
-      INSTALL_COMMAND ""
-      LOG_DOWNLOAD ON
-      LOG_CONFIGURE ON
-      LOG_BUILD ON
-      CMAKE_ARGS -DCMAKE_CXX_FLAGS=${GOOGLE_CXX_FLAGS} -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
-endif ()
-
-ExternalProject_Get_Property(googletest source_dir)
-ExternalProject_Get_Property(googletest binary_dir)
-
-link_directories(${binary_dir}/lib)
-include_directories(${source_dir}/googletest/include)
+find_package(gtest REQUIRED)
+include_directories(${gtest_INCLUDE_DIRS})
+link_directories(${gtest_LIB_DIRS})
 
 # Tests directory.
 set(TESTS_DIR ${PROJECT_SOURCE_DIR}/core/test)
@@ -130,9 +105,8 @@ add_executable(ut
 
 set_target_properties("ut" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 
-add_dependencies(ut googletest)
-target_link_libraries(ut gtest rokerbase roker ${TESTS_LIBRARIES}
-    conflictmgr)
+target_link_libraries(ut rokerbase roker ${TESTS_LIBRARIES} conflictmgr
+  ${json11_LIBS} ${asio_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${gtest_LIBS})
 
 add_test(NAME tests COMMAND ut)
 

@@ -28,6 +28,7 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_CXX_COMPILER_ID STREQ
 endif ()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+add_definitions("-D_GLIBCXX_USE_CXX11_ABI=0")
 
 # With libasan
 option(WITH_ASAN "Add the libasan to check memory leaks and other memory issues." OFF)
@@ -42,6 +43,24 @@ include_directories("${INC_DIR}")
 set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc/com/centreon/broker")
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/core/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
+include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
+
+find_package(json11 REQUIRED)
+find_package(fmt REQUIRED)
+find_package(spdlog REQUIRED)
+find_package(asio REQUIRED)
+
+add_definitions(${spdlog_DEFINITIONS})
+
+include_directories(${json11_INCLUDE_DIRS})
+include_directories(${fmt_INCLUDE_DIRS})
+include_directories(${spdlog_INCLUDE_DIRS})
+include_directories(${asio_INCLUDE_DIRS})
+
+link_directories(${json11_LIB_DIRS})
+link_directories(${fmt_LIB_DIRS})
+link_directories(${spdlog_LIB_DIRS})
+
 
 # Version.
 set(CENTREON_BROKER_MAJOR 20)
@@ -59,72 +78,8 @@ configure_file(
   @ONLY
 )
 
-include(ExternalProject)
 include(cmake/tool.cmake)
-
-option(BUILD_OFFLINE "Build offline" OFF)
-
-if (${BUILD_OFFLINE})
-  ExternalProject_Add(json11_lib
-      SOURCE_DIR ${CMAKE_BINARY_DIR}/json11_lib-prefix/src/json11_lib
-      TIMEOUT 10
-      INSTALL_COMMAND ""
-      LOG_DOWNLOAD ON
-      LOG_CONFIGURE ON
-      LOG_BUILD ON)
-  ExternalProject_Add(Asio
-      SOURCE_DIR ${CMAKE_BINARY_DIR}/Asio-prefix/src/Asio
-      TIMEOUT 10
-      CONFIGURE_COMMAND ""
-      BUILD_COMMAND ""
-      INSTALL_COMMAND ""
-      LOG_DOWNLOAD ON)
-  ExternalProject_Add(spdlog_lib
-      SOURCE_DIR ${CMAKE_BINARY_DIR}/spdlog_lib-prefix/src/spdlog_lib
-      TIMEOUT 10
-      CONFIGURE_COMMAND ""
-      BUILD_COMMAND ""
-      INSTALL_COMMAND ""
-      LOG_DOWNLOAD ON)
-else ()
-  ExternalProject_Add(json11_lib
-      GIT_REPOSITORY https://github.com/dropbox/json11/
-      TIMEOUT 10
-      INSTALL_COMMAND ""
-      LOG_DOWNLOAD ON
-      LOG_CONFIGURE ON
-      LOG_BUILD ON)
-  ExternalProject_Add(Asio
-      GIT_REPOSITORY https://github.com/chriskohlhoff/asio/
-      TIMEOUT 10
-      CONFIGURE_COMMAND ""
-      BUILD_COMMAND ""
-      INSTALL_COMMAND ""
-      LOG_DOWNLOAD ON)
-  ExternalProject_Add(spdlog_lib
-     GIT_REPOSITORY https://github.com/gabime/spdlog/
-     GIT_TAG tags/v1.5.0
-     TIMEOUT 10
-     CONFIGURE_COMMAND ""
-     BUILD_COMMAND ""
-     INSTALL_COMMAND ""
-     LOG_DOWNLOAD ON)
-endif ()
-
-add_definitions("-DSPDLOG_ENABLE_SYSLOG")
-
-ExternalProject_Get_Property(json11_lib source_dir)
-ExternalProject_Get_Property(json11_lib binary_dir)
-
-link_directories(${binary_dir})
-include_directories(${source_dir})
-
-ExternalProject_Get_Property(spdlog_lib source_dir)
-
-include_directories(${source_dir}/include)
-
-ExternalProject_Get_Property(Asio source_dir)
-include_directories(${source_dir}/asio/include)
+include(ExternalProject)
 
 #
 # Check and/or find required components.
@@ -588,38 +543,21 @@ set(LIBROKER_SOURCES
 
 # Static libraries.
 add_library(rokerbase STATIC ${LIBROKER_SOURCES})
-add_dependencies(rokerbase json11_lib Asio spdlog_lib)
-set_target_properties(rokerbase PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-fPIC" COMPILER_HAS_FPIC)
-if (COMPILER_HAS_FPIC)
-  get_property(ROKER_CXXFLAGS
-    TARGET "rokerbase"
-    PROPERTY COMPILE_FLAGS)
-  if (ROKER_CXXFLAGS)
-    set(ROKER_CXXFLAGS "${ROKER_CXXFLAGS} -fPIC")
-  else ()
-    set(ROKER_CXXFLAGS "-fPIC")
-  endif ()
-  set_property(TARGET "rokerbase"
-    PROPERTY COMPILE_FLAGS "${ROKER_CXXFLAGS}")
-endif ()
-target_link_libraries(rokerbase json11 ${ZLIB_LIBRARIES} ${MYSQL_LIBS} pthread dl)
+set_target_properties(rokerbase PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
+target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${MYSQL_LIBS} pthread dl)
 
 add_library(roker STATIC
   ${SRC_DIR}/config/applier/init.cc
   ${SRC_DIR}/config/applier/logger.cc)
-add_dependencies("roker" Asio)
-target_link_libraries("roker" "rokerbase")
+target_link_libraries(roker rokerbase)
 
 # Standalone binary.
 set(DAEMON cbd)
 add_executable(${DAEMON} ${SRC_DIR}/main.cc)
-add_dependencies(${DAEMON} Asio)
 
 #Flags needed to include all symbols in binary.
 target_link_libraries("${DAEMON}"
-  "-Wl,--whole-archive" "rokerbase" "roker" "-Wl,--no-whole-archive")
+  "-Wl,--whole-archive" "rokerbase" "roker" "-Wl,--no-whole-archive" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS})
 
 # Centreon Broker Watchdog
 option(WITH_CBWD "Build centreon broker watchdong." ON)
