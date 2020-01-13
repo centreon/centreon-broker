@@ -210,8 +210,6 @@ if (WITH_TESTING )
     )
 endif (WITH_TESTING)
 
-add_dependencies("${BAM}" json11_lib)
-
 # Install rule.
 install(TARGETS "${BAM}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"

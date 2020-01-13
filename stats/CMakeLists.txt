@@ -1,4 +1,3 @@
-##
 ## Copyright 2012-2013 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,11 +40,9 @@ add_library("${STATS}" SHARED
   ${INC_DIR}/worker_pool.hh
 
 )
-add_dependencies("${STATS}" Asio json11_lib)
 set_target_properties("${STATS}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS}")
-target_link_libraries("${STATS}")
 
 # Testing.
 if (WITH_TESTING)

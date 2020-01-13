@@ -43,7 +43,6 @@ add_library("${GRAPHITE}" SHARED
   "${INC_DIR}/query.hh"
   "${INC_DIR}/macro_cache.hh"
 )
-add_dependencies("${GRAPHITE}" Asio)
 set_target_properties("${GRAPHITE}" PROPERTIES PREFIX "")
 
 # Testing.

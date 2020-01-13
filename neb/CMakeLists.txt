@@ -98,21 +98,8 @@ set(NEB_SOURCES
 
 # Static library.
 add_library(nebbase STATIC ${NEB_SOURCES})
-add_dependencies(nebbase json11_lib)
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-fPIC" COMPILER_HAS_FPIC)
-if (COMPILER_HAS_FPIC)
-  get_property(NEBBASE_CXXFLAGS
-    TARGET nebbase
-    PROPERTY COMPILE_FLAGS)
-  if (NEBBASE_CXXFLAGS)
-    set(NEBBASE_CXXFLAGS "${NEBBASE_CXXFLAGS} -fPIC")
-  else ()
-    set(NEBBASE_CXXFLAGS "-fPIC")
-  endif ()
-  set_property(TARGET nebbase
-    PROPERTY COMPILE_FLAGS "${NEBBASE_CXXFLAGS}")
-endif ()
+set(NEBBASE_CXXFLAGS "${NEBBASE_CXXFLAGS} -fPIC")
+set_property(TARGET nebbase PROPERTY COMPILE_FLAGS ${NEBBASE_CXXFLAGS})
 
 # Centreon Broker module.
 set(NEB "10-neb")
@@ -135,6 +122,7 @@ add_library("${NEB}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/downtime_serializable.hh"
   "${INC_DIR}/com/centreon/broker/neb/downtime_map.hh"
 )
+
 # Flags needed to include all symbols in binary.
 target_link_libraries(${NEB} nebbase)
 #  "-Wl,--whole-archive" nebbase "-Wl,--no-whole-archive")
@@ -236,9 +224,9 @@ set_property(TARGET "${CBMOD}"
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # Flags needed to include all symbols in shared library.
   target_link_libraries("${CBMOD}"
-    "-Wl,--whole-archive" "nebbase" "rokerbase" "-Wl,--no-whole-archive")
+    "-Wl,--whole-archive" "nebbase" "rokerbase" "-Wl,--no-whole-archive" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${asio_LIBS})
 else ()
-  target_link_libraries("${CBMOD}" "nebbase" "rokerbase")
+  target_link_libraries("${CBMOD}" "nebbase" "rokerbase" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${asio_LIBS})
 endif ()
 set_target_properties("${CBMOD}" PROPERTIES PREFIX "")
 
