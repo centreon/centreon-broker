@@ -95,6 +95,7 @@ void randomize(io::data& t, std::vector<randval>* values) {
  *  Initialize randomization engine.
  */
 void randomize_init() {
+  io::events::load();
   io::events& e(io::events::instance());
   e.register_category("neb", io::events::neb);
   e.register_event(
@@ -174,6 +175,7 @@ void randomize_cleanup() {
        it != end; ++it)
     delete[] * it;
   generated.clear();
+  io::events::unload();
 }
 
 }  // Namespace broker

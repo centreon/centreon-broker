@@ -49,6 +49,8 @@ class logger {
   ~logger();
   void apply(std::list<config::logger> const& loggers);
   static logger& instance();
+  static void load();
+  static void unload();
 };
 }  // namespace applier
 }  // namespace config

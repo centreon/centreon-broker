@@ -34,6 +34,9 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
 
+// Class instance.
+static config::applier::logger* gl_logger = nullptr;
+
 /**************************************
  *                                     *
  *           Public Methods            *
@@ -108,8 +111,25 @@ void logger::apply(std::list<config::logger> const& loggers) {
  *  @return logger instance.
  */
 logger& logger::instance() {
-  static logger instance;
-  return instance;
+  assert(gl_logger);
+  return (*gl_logger);
+}
+
+/**
+ *  Load the singleton.
+ */
+void logger::load() {
+  if (!gl_logger)
+    gl_logger = new logger;
+  return;
+}
+
+/**
+ *  Unload the singleton.
+ */
+void logger::unload() {
+  delete gl_logger;
+  gl_logger = nullptr;
 }
 
 /**************************************

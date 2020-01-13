@@ -145,9 +145,11 @@ class BamTime : public ::testing::Test {
  public:
   void SetUp() override {
     config::applier::init();
+    time::timezone_manager::load();
   }
 
   void TearDown() override {
+    time::timezone_manager::unload();
     config::applier::deinit();
   }
 };
