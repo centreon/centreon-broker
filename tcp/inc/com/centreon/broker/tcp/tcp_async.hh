@@ -55,7 +55,7 @@ class tcp_async {
 
   //shared_ptr is needed to keep a ref on the socket if it was destroy
   //by the stream, because we need to async strand it.
-  void unregister_socket(std::shared_ptr<asio::ip::tcp::socket> socket);
+  void unregister_socket(asio::ip::tcp::socket& socket);
 
   bool disconnected(asio::ip::tcp::socket &socket);
   bool empty(asio::ip::tcp::socket &socket);

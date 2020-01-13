@@ -71,7 +71,7 @@ stream::stream(std::shared_ptr<asio::ip::tcp::socket> sock,
  */
 stream::~stream() {
   try {
-    tcp_async::instance().unregister_socket(_socket);
+    tcp_async::instance().unregister_socket(*_socket);
 
     // Remove from parent.
     if (_parent)
@@ -121,7 +121,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
         return (false);
 
       check_disco();
-      std::this_thread::sleep_for(std::chrono::milliseconds{5});
+      std::this_thread::sleep_for(std::chrono::milliseconds{2});
     }
   }
 
