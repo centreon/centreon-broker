@@ -55,7 +55,7 @@ TEST(TcpFactory, Acceptor) {
   bool is_acceptor;
   std::shared_ptr<persistent_cache> cache;
 
-  cfg.params["port"] = "4343";
+  cfg.params["port"] = "4242";
   cfg.params["socket_write_timeout"] = "10";
   cfg.params["socket_read_timeout"] = "10";
   io::endpoint* endp = fact.new_endpoint(cfg, is_acceptor, cache);
@@ -73,7 +73,7 @@ TEST(TcpFactory, Connector) {
   std::shared_ptr<persistent_cache> cache;
 
   cfg.type = "tcp";
-  cfg.params["port"] = "4545";
+  cfg.params["port"] = "4242";
   cfg.params["host"] = "127.0.0.1";
   std::unique_ptr<io::factory> f{fact.clone()};
   ASSERT_TRUE(f->has_endpoint(cfg));

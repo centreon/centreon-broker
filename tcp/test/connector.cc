@@ -20,13 +20,14 @@
 #include "com/centreon/broker/tcp/connector.hh"
 #include <gtest/gtest.h>
 #include <chrono>
+#include <com/centreon/broker/tcp/stream.hh>
 #include <thread>
 #include "../../core/test/test_server.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker;
-
 
 class TcpConnector : public testing::Test {
  public:

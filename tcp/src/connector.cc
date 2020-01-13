@@ -62,12 +62,16 @@ std::shared_ptr<io::stream> connector::open() {
   // Launch connection process.
   logging::info(logging::medium)
       << "TCP: connecting to " << _host << ":" << _port;
-  std::string connection_name{_host + ":" + std::to_string(_port)};
+  std::string connection_name;
+  {
+    std::ostringstream oss;
+    oss << _host << ":" << _port;
+    connection_name = oss.str();
+  }
 
-  std::shared_ptr<asio::ip::tcp::socket> sock =
-      std::make_shared<asio::ip::tcp::socket>(
-          tcp_async::instance().get_io_ctx());
-  asio::ip::tcp::resolver resolver{tcp_async::instance().get_io_ctx()};
+  std::unique_ptr<asio::ip::tcp::socket> sock{
+      new asio::ip::tcp::socket{_io_context}};
+  asio::ip::tcp::resolver resolver{_io_context};
   asio::ip::tcp::resolver::query query{_host, std::to_string(_port)};
   try {
     asio::ip::tcp::resolver::iterator it{resolver.resolve(query)};
@@ -101,13 +105,14 @@ std::shared_ptr<io::stream> connector::open() {
       << "': " << se.what();
     throw(e);
   }
-  tcp_async::instance().register_socket(*sock);
 
   logging::info(logging::medium)
       << "TCP: successfully connected to " << connection_name;
 
   // Return stream.
-  std::shared_ptr<stream> s(new stream(sock, connection_name));
+  std::shared_ptr<stream> s(
+      new stream(_io_context, sock.get(), connection_name));
+  sock.release();
   s->set_read_timeout(_read_timeout);
   s->set_write_timeout(_write_timeout);
   return (s);

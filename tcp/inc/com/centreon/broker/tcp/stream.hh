@@ -24,7 +24,12 @@
 #include <string>
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/namespace.hh"
-#include "com/centreon/broker/tcp/tcp_async.hh"
+
+#if ASIO_VERSION < 101200
+namespace asio {
+typedef io_service io_context;
+}
+#endif
 
 CCB_BEGIN()
 
@@ -41,7 +46,7 @@ class acceptor;
 class stream : public io::stream {
  public:
   stream& operator=(stream const& other) = delete;
-  stream(std::shared_ptr<asio::ip::tcp::socket>, std::string const& name);
+  stream(asio::io_context& ctx, asio::ip::tcp::socket* sock, std::string const& name);
   ~stream();
   std::string peer() const;
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
@@ -56,7 +61,8 @@ class stream : public io::stream {
 
   std::string _name;
   acceptor* _parent;
-  std::shared_ptr<asio::ip::tcp::socket> _socket;
+  asio::io_context& _io_context;
+  std::unique_ptr<asio::ip::tcp::socket> _socket;
   int _read_timeout;
   int _write_timeout;
 };
