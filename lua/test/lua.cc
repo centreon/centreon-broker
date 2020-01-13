@@ -88,20 +88,14 @@ class LuaAsioTest : public LuaTest {
  public:
   void SetUp() override {
     LuaTest::SetUp();
-    std::thread t{[&] {
-      _server.init();
-      _server.run();
-    }};
+    _server.init();
+    _thread = std::thread(&test_server::run, &_server);
 
-    _thread = std::move(t);
-
-    while (!_server.get_init_done())
-      ;
+    _server.wait_for_init();
   }
   void TearDown() override {
     LuaTest::TearDown();
-    if (_server.get_init_done())
-      _server.stop();
+    _server.stop();
     _thread.join();
   }
 

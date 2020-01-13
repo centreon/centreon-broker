@@ -22,21 +22,17 @@
 #include <chrono>
 #include <functional>
 #include <iostream>
+#include <thread>
 
 static uint32_t const timeout_ms = 5;
 static uint32_t const buff_size = 1024;
 
-#if ASIO_VERSION < 101200
-namespace asio {
-typedef io_service io_context;
-}
-#endif
 test_server::test_server()
   : _ctx{nullptr},
     _acceptor{nullptr},
     _connections{},
     _num_connections{0},
-    _init_done{false},
+    _initialised{false},
     _bind_ok{false} {
   _answer_reply.insert({"PING\n", "PONG\n"});
   _answer_reply.insert(
@@ -76,13 +72,20 @@ void test_server::run() {
   } catch (std::system_error const& se) {
     std::cout << "bind error: " << se.what() << std::endl;
     _bind_ok = false;
-    _init_done = true;
+    std::unique_lock<std::mutex> lock(_m_init);
+    _initialised = true;
+    _m_init.unlock();
+    _cond_init.notify_all();
     return;
   }
   _acceptor->listen();
   start_accept();
 
-  _init_done = true;
+  std::unique_lock<std::mutex> lock(_m_init);
+  _initialised = true;
+  _m_init.unlock();
+  _cond_init.notify_all();
+
   _ctx->run();
 }
 
@@ -160,6 +163,11 @@ void test_server::handle_read(
   }
 }
 
+void test_server::wait_for_init() {
+  std::unique_lock<std::mutex> lock{_m_init};
+  _cond_init.wait(lock, [&]() { return _initialised;});
+}
+
 bool test_server::add_client(asio::ip::tcp::socket& sock,
                              asio::io_context& io) {
   asio::ip::tcp::resolver resolver{io};
@@ -202,11 +210,10 @@ class AsioTest : public ::testing::Test {
 
     _thread = std::move(t);
 
-    while (!_server.get_init_done());
+    _server.wait_for_init();
   }
   void TearDown() override {
-    if (_server.get_init_done())
-      _server.stop();
+    _server.stop();
     _thread.join();
 
     delete[] buf;

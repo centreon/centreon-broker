@@ -20,31 +20,26 @@
 #include "com/centreon/broker/tcp/connector.hh"
 #include <gtest/gtest.h>
 #include <chrono>
-#include <com/centreon/broker/tcp/stream.hh>
 #include <thread>
 #include "../../core/test/test_server.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
-#include "com/centreon/broker/logging/manager.hh"
 
 using namespace com::centreon::broker;
+
+constexpr static char test_addr[] = "127.0.0.1";
+constexpr static uint16_t test_port(4242);
 
 class TcpConnector : public testing::Test {
  public:
   void SetUp() override {
-    std::thread t{[&] {
-      _server.init();
-      _server.run();
-    }};
+    _server.init();
+    _thread = std::thread(&test_server::run, &_server);
 
-    _thread = std::move(t);
-
-    while (!_server.get_init_done())
-      ;
+    _server.wait_for_init();
   }
   void TearDown() override {
-    if (_server.get_init_done())
-      _server.stop();
+    _server.stop();
     _thread.join();
   }
 
@@ -55,21 +50,21 @@ class TcpConnector : public testing::Test {
 TEST_F(TcpConnector, InvalidHost) {
   tcp::connector connector;
 
-  connector.connect_to("htrekf';kfdsa'", 4242);
+  connector.connect_to("htrekf';kfdsa'", test_port);
   ASSERT_THROW(connector.open(), exceptions::msg);
 }
 
 TEST_F(TcpConnector, NoConnection) {
   tcp::connector connector;
 
-  connector.connect_to("127.0.0.1", 2);
+  connector.connect_to(test_addr, 2);
   ASSERT_THROW(connector.open(), exceptions::msg);
 }
 
 TEST_F(TcpConnector, Timeout) {
   tcp::connector connector;
 
-  connector.connect_to("127.0.0.1", 4242);
+  connector.connect_to(test_addr, test_port);
   connector.set_read_timeout(1);
   std::shared_ptr<io::stream> io{connector.open()};
 
@@ -81,7 +76,7 @@ TEST_F(TcpConnector, Timeout) {
 TEST_F(TcpConnector, Simple) {
   tcp::connector connector;
 
-  connector.connect_to("127.0.0.1", 4242);
+  connector.connect_to(test_addr, test_port);
   connector.set_read_timeout(-1);
   std::shared_ptr<io::stream> io{connector.open()};
 
@@ -102,7 +97,7 @@ TEST_F(TcpConnector, Simple) {
 TEST_F(TcpConnector, ReadAfterTimeout) {
   tcp::connector connector;
 
-  connector.connect_to("127.0.0.1", 4242);
+  connector.connect_to(test_addr, test_port);
   connector.set_read_timeout(-1);
   std::shared_ptr<io::stream> io{connector.open()};
 
@@ -124,7 +119,7 @@ TEST_F(TcpConnector, ReadAfterTimeout) {
 TEST_F(TcpConnector, MultipleSimple) {
   tcp::connector connector;
 
-  connector.connect_to("127.0.0.1", 4242);
+  connector.connect_to(test_addr, test_port);
   connector.set_read_timeout(-1);
   std::shared_ptr<io::stream> io{connector.open()};
 

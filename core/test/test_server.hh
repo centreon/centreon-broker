@@ -42,9 +42,9 @@ class test_server {
 
   void init();
   void run();
-  void stop() { _ctx->stop(); };
+  void stop() { std::unique_lock<std::mutex> lock(_m_init); if (_initialised) _ctx->stop(); };
   std::atomic_size_t const& get_num_connections() { return _num_connections; };
-  std::atomic_bool const& get_init_done() { return _init_done; };
+  void wait_for_init();
   std::atomic_bool const& get_bind_ok() { return _bind_ok; };
 
   bool add_client(asio::ip::tcp::socket& sock, asio::io_context& io);
@@ -61,6 +61,9 @@ class test_server {
                    std::error_code const& err,
                    size_t bytes_transfered);
 
+  std::mutex _m_init;
+  std::condition_variable _cond_init;
+  bool _initialised;
   std::unique_ptr<asio::io_context> _ctx;
   std::unique_ptr<asio::ip::tcp::acceptor> _acceptor;
   std::list<test_server_connection> _connections;
