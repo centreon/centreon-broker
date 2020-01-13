@@ -20,7 +20,9 @@
 #include "com/centreon/broker/tcp/stream.hh"
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <algorithm>
 #include <atomic>
+#include <functional>
 #include <sstream>
 #include <system_error>
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -43,16 +45,13 @@ using namespace com::centreon::broker::tcp;
  *  @param[in] sock  Socket used by this stream.
  *  @param[in] name  Name of this connection.
  */
-stream::stream(asio::io_context& ctx,
-               asio::ip::tcp::socket* sock,
+stream::stream(std::shared_ptr<asio::ip::tcp::socket> sock,
                std::string const& name)
     : _name(name),
       _parent(nullptr),
-      _io_context(ctx),
+      _socket(sock),
       _read_timeout(-1),
       _write_timeout(-1) {
-  _socket.reset(sock);
-
   // Set the SO_KEEPALIVE option.
   asio::socket_base::keep_alive option{true};
   _socket->set_option(option);
@@ -72,11 +71,8 @@ stream::stream(asio::io_context& ctx,
  */
 stream::~stream() {
   try {
-    // Close the socket.
-    if (_socket) {
-      _socket->shutdown(asio::ip::tcp::socket::shutdown_both);
-      _socket->close();
-    }
+    tcp_async::instance().unregister_socket(*_socket);
+
     // Remove from parent.
     if (_parent)
       _parent->remove_child(_name);
@@ -108,55 +104,32 @@ std::string stream::peer() const {
  */
 
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
-  auto bytes_available = [](asio::ip::tcp::socket& socket) -> std::size_t {
-    asio::socket_base::bytes_readable command(true);
-    socket.io_control(command);
-    std::size_t bytes_readable = command.get();
-    return bytes_readable;
+  d.reset();
+
+  auto check_disco = [&]() {
+    if (tcp_async::instance().disconnected(*_socket)) {
+      throw exceptions::msg() << "TCP peer '" << _name << "' err ";
+    }
   };
 
-  // Set deadline.
-  {
-    time_t now = ::time(nullptr);
-    if (_read_timeout != -1 &&
-        (deadline == (time_t)-1 || now + _read_timeout < deadline))
-      deadline = now + _read_timeout;
-  }
+  check_disco();
 
-  d.reset();
-  // check for timeout
-  if (bytes_available(*_socket) <= 0) {
-    while (bytes_available(*_socket) <= 0) {
+  if (tcp_async::instance().empty(*_socket)) {
+    while (tcp_async::instance().empty(*_socket)) {
       // Disconnected socket with no data.
       if ((deadline != (time_t)-1) && (time(nullptr) >= deadline))
         return (false);
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      check_disco();
+      std::this_thread::sleep_for(std::chrono::milliseconds{2});
     }
   }
 
   d.reset(new io::raw());
-  std::size_t len{bytes_available(*_socket)};
-
-  std::error_code read_err;
-
   std::shared_ptr<io::raw> data{std::static_pointer_cast<io::raw>(d)};
+  data->get_buffer() = std::move(tcp_async::instance().get_packet(*_socket));
 
-  std::vector<char>& buffer = data->get_buffer();
-  buffer.resize(len);
-
-  _socket->read_some(asio::buffer(buffer, len), read_err);
-
-  if (read_err)
-    throw exceptions::msg()
-        << "TCP peer '" << _name << "' err: " << read_err.message();
-
-  if (len) {
-    buffer.resize(len);
-    return true;
-  }
-
-  return false;
+  return true;
 }
 
 /**
@@ -217,5 +190,6 @@ int stream::write(std::shared_ptr<io::data> const& d) {
       throw exceptions::msg() << "TCP: error while writing to peer '" << _name
                               << "': " << err.message();
   }
+
   return 1;
 }
