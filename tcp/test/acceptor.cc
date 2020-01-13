@@ -22,22 +22,12 @@
 #include <gtest/gtest.h>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
-#include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/tcp/connector.hh"
 
 using namespace com::centreon::broker;
 
-//socket deletion are asynchronous,  it takes some ms to close a bind....
-auto try_listen = [](tcp::acceptor &acc) {
-  while (true) {
-    try {
-      acc.listen_on(4444);
-      break;
-    } catch(...) {
-      std::cout << "Error" << std::endl;
-    }
-  }
-};
+constexpr static char test_addr[] = "127.0.0.1";
+constexpr static uint16_t test_port(4444);
 
 TEST(TcpAcceptor, BadPort) {
   tcp::acceptor acc;
@@ -50,11 +40,11 @@ TEST(TcpAcceptor, BadPort) {
 
 TEST(TcpAcceptor, Simple) {
   tcp::acceptor acc;
-  try_listen(acc);
+  acc.listen_on(test_port);
 
   std::thread t{[&] {
     tcp::connector con;
-    con.connect_to("127.0.0.1", 4444);
+    con.connect_to(test_addr, test_port);
     std::shared_ptr<io::stream> str{con.open()};
     std::shared_ptr<io::raw> data{new io::raw()};
     std::shared_ptr<io::data> data_read;
@@ -83,11 +73,11 @@ TEST(TcpAcceptor, Multiple) {
   acc.set_read_timeout(-1);
   acc.set_write_timeout(-1);
 
-  try_listen(acc);
+  acc.listen_on(test_port);
   {
     std::thread t{[] {
       tcp::connector con;
-      con.connect_to("127.0.0.1", 4444);
+      con.connect_to(test_addr, test_port);
       std::shared_ptr<io::stream> str{con.open()};
       std::shared_ptr<io::raw> data{new io::raw()};
       std::shared_ptr<io::data> data_read;
@@ -113,7 +103,7 @@ TEST(TcpAcceptor, Multiple) {
   {
     std::thread t{[] {
       tcp::connector con;
-      con.connect_to("127.0.0.1", 4444);
+      con.connect_to(test_addr, test_port);
       std::shared_ptr<io::stream> str{con.open()};
       std::shared_ptr<io::raw> data{new io::raw()};
       std::shared_ptr<io::data> data_read;
@@ -141,11 +131,11 @@ TEST(TcpAcceptor, Multiple) {
 TEST(TcpAcceptor, BigSend) {
   tcp::acceptor acc;
 
-  try_listen(acc);
+  acc.listen_on(test_port);
 
   std::thread t{[] {
     tcp::connector con;
-    con.connect_to("localhost", 4444);
+    con.connect_to("localhost", test_port);
     std::shared_ptr<io::stream> str{con.open()};
     std::shared_ptr<io::raw> data{new io::raw()};
     std::shared_ptr<io::data> data_read;
@@ -176,12 +166,12 @@ TEST(TcpAcceptor, BigSend) {
 TEST(TcpAcceptor, CloseRead) {
   tcp::acceptor acc;
 
-  try_listen(acc);
+  acc.listen_on(test_port);
 
   std::thread t{[&] {
     {
       tcp::connector con;
-      con.connect_to("127.0.0.1", 4444);
+      con.connect_to(test_addr, test_port);
       std::shared_ptr<io::stream> str{con.open()};
       std::shared_ptr<io::raw> data{new io::raw()};
       std::shared_ptr<io::data> data_read;
@@ -194,8 +184,13 @@ TEST(TcpAcceptor, CloseRead) {
   std::shared_ptr<io::data> data_read;
 
   t.join();
-  std::this_thread::sleep_for(std::chrono::milliseconds{50});
-  ASSERT_THROW(io->read(data_read, -1), exceptions::msg);
+  while (true) {
+    try {
+      io->read(data_read, -1);
+    } catch (exceptions::msg const& ex) {
+      break;
+    }
+  }
 }
 
 TEST(TcpAcceptor, ChildsAndStats) {

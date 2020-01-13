@@ -97,24 +97,32 @@ void tcp_async::register_socket(asio::ip::tcp::socket& socket) {
                   std::placeholders::_2));
   }
 }
-
-void tcp_async::unregister_socket(
-    std::shared_ptr<asio::ip::tcp::socket> socket) {
-  ;
+void tcp_async::unregister_socket(asio::ip::tcp::socket &socket) {
   async_queue empty;
   {
     std::lock_guard<misc::shared_mutex> lock(_rwlock);
-    auto it = _read_data.find(socket->native_handle());
+    auto it = _read_data.find(socket.native_handle());
     if (it != _read_data.end()) {
       it->second.second.swap(empty);
       _read_data.erase(it);
     }
   }
 
-  _strand.post(std::move([socket] {
-    socket->shutdown(asio::ip::tcp::socket::shutdown_both);
-    socket->close();
-  }));
+  std::condition_variable cond;
+  std::mutex mut;
+  bool done{false};
+
+  _strand.post([&] {
+    socket.shutdown(asio::ip::tcp::socket::shutdown_both);
+    socket.close();
+    std::unique_lock<std::mutex> m(mut);
+    done = true;
+    m.unlock();
+    cond.notify_all();
+  });
+
+  std::unique_lock<std::mutex> m(mut);
+  cond.wait(m, [&done]() -> bool {return done;});
 }
 
 bool tcp_async::empty(asio::ip::tcp::socket& socket) {

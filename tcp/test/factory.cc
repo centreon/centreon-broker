@@ -73,7 +73,7 @@ TEST(TcpFactory, Connector) {
   std::shared_ptr<persistent_cache> cache;
 
   cfg.type = "tcp";
-  cfg.params["port"] = "4545";
+  cfg.params["port"] = "4444";
   cfg.params["host"] = "127.0.0.1";
   std::unique_ptr<io::factory> f{fact.clone()};
   ASSERT_TRUE(f->has_endpoint(cfg));
