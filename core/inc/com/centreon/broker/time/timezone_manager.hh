@@ -37,17 +37,19 @@ namespace time {
  */
 class timezone_manager {
  public:
+  static void load();
   void lock();
   void pop_timezone();
   void push_timezone(char const* tz);
   void unlock();
+  static void unload();
 
   /**
    *  Get class instance.
    *
    *  @return Class instance.
    */
-  static timezone_manager& instance() { static timezone_manager instance; return instance; }
+  static timezone_manager& instance() { return (*_instance); }
 
  private:
   struct tz_info {
@@ -63,6 +65,7 @@ class timezone_manager {
   void _set_timezone(tz_info const& from, tz_info const& to);
 
   tz_info _base;
+  static timezone_manager* _instance;
   std::stack<tz_info> _tz;
   std::recursive_mutex _timezone_manager_mutex;
 };

@@ -67,6 +67,8 @@ class events {
 
   // Singleton.
   static events& instance();
+  static void load();
+  static void unload();
 
   // Category.
   unsigned short register_category(std::string const& name,

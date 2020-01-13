@@ -23,6 +23,9 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::io;
 
+// Class instance.
+static events* _instance(nullptr);
+
 /**************************************
  *                                     *
  *           Public Methods            *
@@ -35,8 +38,24 @@ using namespace com::centreon::broker::io;
  *  @return Class instance.
  */
 events& events::instance() {
-  static events instance;
-  return instance;
+  return *_instance;
+}
+
+/**
+ *  Load singleton.
+ */
+void events::load() {
+  if (!_instance)
+    _instance = new events;
+}
+
+/**
+ *  Unload singleton.
+ */
+void events::unload() {
+  // Delete operator is NULL-aware.
+  delete _instance;
+  _instance = nullptr;
 }
 
 /**

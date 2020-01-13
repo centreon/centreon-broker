@@ -46,13 +46,19 @@ using namespace com::centreon::broker;
  *  Unload necessary structures.
  */
 void config::applier::deinit() {
-  config::applier::endpoint::instance().clear();
+  config::applier::endpoint::unload();
+  config::applier::logger::unload();
+  config::applier::state::unload();
   bbdo::unload();
   compression::unload();
   extcmd::unload();
   file::unload();
   multiplexing::engine::instance().clear();
-  modules::instance().discard();
+  config::applier::modules::unload();
+  multiplexing::engine::unload();
+  io::protocols::unload();
+  io::events::unload();
+  time::timezone_manager::unload();
 }
 
 /**
@@ -60,9 +66,17 @@ void config::applier::deinit() {
  */
 void config::applier::init() {
   // Load singletons.
+  time::timezone_manager::load();
+  multiplexing::engine::load();
+  io::events::load();
+  io::protocols::load();
+  config::applier::modules::load();
   file::load();
   extcmd::load();
   instance_broadcast::load();
   compression::load();
   bbdo::load();
+  config::applier::logger::load();
+  config::applier::endpoint::load();
+  config::applier::state::load();
 }
