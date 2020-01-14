@@ -81,11 +81,11 @@ void acceptor::run() {
   // Run as long as no exit request was made.
   while (!should_exit()) {
     try {
-      _set_listening(true);
+      _listening = true;
       // Try to accept connection.
       accept();
     } catch (std::exception const& e) {
-      _set_listening(false);
+      _listening = false;
       // Log error.
       logging::error(logging::high)
           << "acceptor: endpoint '" << _name
@@ -111,7 +111,7 @@ void acceptor::run() {
           ++it;
     }
   }
-  _set_listening(false);
+  _listening = false;
 }
 
 /**
@@ -207,24 +207,4 @@ void acceptor::_forward_statistic(json11::Json::object& tree) {
     (*it)->stats(subtree);
     tree[(*it)->get_name()] = subtree;
   }
-}
-
-/**
- *  Set listening value.
- *
- *  @param[in] val  The new value.
- */
-void acceptor::_set_listening(bool val) {
-  std::lock_guard<std::mutex> lock(_stat_mutex);
-  _listening = val;
-}
-
-/**
- *  Get listening value.
- *
- *  @return  The listening value.
- */
-bool acceptor::_get_listening() const throw() {
-  std::lock_guard<std::mutex> lock(_stat_mutex);
-  return _listening;
 }
