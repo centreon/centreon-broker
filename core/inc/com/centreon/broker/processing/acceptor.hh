@@ -65,7 +65,6 @@ class acceptor : public bthread {
   virtual void _forward_statistic(json11::Json::object& tree) override;
 
  private:
-  void _wait_feeders();
   void _set_listening(bool val);
   bool _get_listening() const throw();
 

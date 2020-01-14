@@ -51,11 +51,8 @@ command_server::command_server(protocol prot,
  *  Destructor.
  */
 command_server::~command_server() {
-  if (_listener_thread) {
-    _listener_thread->exit();
-    _listener_thread->wait();
+  if (_listener_thread)
     delete _listener_thread;
-  }
 }
 
 /**
@@ -84,7 +81,6 @@ std::shared_ptr<io::stream> command_server::open() {
     _listener_thread =
         new processing::feeder("(external commands)", _listener,
                                std::unordered_set<uint32_t>(), write_filters);
-    _listener_thread->start();
   }
 
   // Wait for incoming connections.

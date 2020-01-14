@@ -39,9 +39,7 @@ acceptor::acceptor(std::shared_ptr<io::endpoint> endp, std::string const& name)
 /**
  *  Destructor.
  */
-acceptor::~acceptor() {
-  _wait_feeders();
-}
+acceptor::~acceptor() {}
 
 /**
  *  Accept a new incoming connection.
@@ -59,11 +57,9 @@ void acceptor::accept() {
       oss << _name << "-" << ++connection_id;
       name = oss.str();
     }
-    std::shared_ptr<processing::feeder> f(
-        new processing::feeder(name, s, _read_filters, _write_filters));
+    std::shared_ptr<processing::feeder> f(std::make_shared<processing::feeder>(
+        name, s, _read_filters, _write_filters));
 
-    // Run feeder thread.
-    f->start();
     std::lock_guard<std::mutex> lock(_stat_mutex);
     _feeders.push_back(f);
   }
@@ -108,20 +104,14 @@ void acceptor::run() {
     // Check for terminated feeders.
     {
       std::lock_guard<std::mutex> lock(_stat_mutex);
-      for (std::list<std::shared_ptr<processing::feeder> >::iterator
-               it(_feeders.begin()),
-           end(_feeders.end());
-           it != end;)
-        if ((*it)->wait(0))
+      for (auto it = _feeders.begin(), end = _feeders.end(); it != end;)
+        if ((*it)->is_finished())
           it = _feeders.erase(it);
         else
           ++it;
     }
   }
   _set_listening(false);
-
-  // Cleanup.
-  _wait_feeders();
 }
 
 /**
@@ -217,24 +207,6 @@ void acceptor::_forward_statistic(json11::Json::object& tree) {
     (*it)->stats(subtree);
     tree[(*it)->get_name()] = subtree;
   }
-}
-
-/**
- *  Wait for launched feeders.
- */
-void acceptor::_wait_feeders() {
-  // Wait for all launched feeders.
-  for (std::list<std::shared_ptr<processing::feeder> >::iterator
-           it(_feeders.begin()),
-       end(_feeders.end());
-       it != end; ++it)
-    (*it)->exit();
-  for (std::list<std::shared_ptr<processing::feeder> >::iterator
-           it(_feeders.begin()),
-       end(_feeders.end());
-       it != end; ++it)
-    (*it)->wait();
-  _feeders.clear();
 }
 
 /**

@@ -46,23 +46,95 @@ feeder::feeder(std::string const& name,
                std::shared_ptr<io::stream> client,
                std::unordered_set<uint32_t> const& read_filters,
                std::unordered_set<uint32_t> const& write_filters)
-    : bthread(name), _client(client), _subscriber(name, false) {
+    : stat_visitable(name), _client(client), _subscriber(name, false) {
   _subscriber.get_muxer().set_read_filters(read_filters);
   _subscriber.get_muxer().set_write_filters(write_filters);
   // By default, we assume the feeder is already connected.
   set_last_connection_attempt(timestamp::now());
   set_last_connection_success(timestamp::now());
+
+  _should_exit = false;
+  _thread = std::thread(&feeder::_callback, this);
 }
 
 /**
  *  Destructor.
  */
-feeder::~feeder() {}
+feeder::~feeder() {
+  if (!_should_exit) {
+    _should_exit = true;
+    if (_thread.joinable())
+      _thread.join();
+  }
+}
+
+bool feeder::is_finished() const noexcept {
+  if (_should_exit && !_thread.joinable())
+      return true;
+
+  return false;
+}
 
 /**
- *  Thread main routine.
+ *  Get the state of the feeder.
+ *
+ *  @return  The state of the feeder.
  */
-void feeder::run() {
+const char* feeder::_get_state() const {
+  char const* ret;
+  if (_client_mutex.try_lock_shared_for(300)) {
+    if (!_client)
+      ret = "disconnected";
+    else
+      ret = "connected";
+    _client_mutex.unlock();
+  } else
+    ret = "blocked";
+  return ret;
+}
+
+/**
+ *  Get the number of queued events.
+ *
+ *  @return  The number of queued events.
+ */
+uint32_t feeder::_get_queued_events() {
+  return _subscriber.get_muxer().get_event_queue_size();
+}
+
+/**
+ *  Get the read filters used by the feeder.
+ *
+ *  @return  The read filters used by the feeder.
+ */
+std::unordered_set<uint32_t> const& feeder::_get_read_filters() const {
+  return _subscriber.get_muxer().get_read_filters();
+}
+
+/**
+ *  Get the write filters used by the feeder.
+ *
+ *  @return  The write filters used by the feeder.
+ */
+std::unordered_set<uint32_t> const& feeder::_get_write_filters() const {
+  return _subscriber.get_muxer().get_write_filters();
+}
+
+/**
+ *  Forward to stream.
+ *
+ *  @param[in] tree  The statistic tree.
+ */
+void feeder::_forward_statistic(json11::Json::object& tree) {
+  if (_client_mutex.try_lock_shared_for(300)) {
+    if (_client)
+      _client->statistics(tree);
+    _client_mutex.unlock();
+  }
+  _subscriber.get_muxer().statistics(tree);
+}
+
+void feeder::_callback() {
   logging::info(logging::medium)
       << "feeder: thread of client '" << _name << "' is starting";
   try {
@@ -72,7 +144,7 @@ void feeder::run() {
     bool stream_can_read(true);
     bool muxer_can_read(true);
     std::shared_ptr<io::data> d;
-    while (!should_exit()) {
+    while (!_should_exit) {
       // Read from stream.
       bool timed_out_stream(true);
       if (stream_can_read) {
@@ -135,63 +207,5 @@ void feeder::run() {
   }
   logging::info(logging::medium)
       << "feeder: thread of client '" << _name << "' will exit";
-}
 
-/**
- *  Get the state of the feeder.
- *
- *  @return  The state of the feeder.
- */
-const char* feeder::_get_state() const {
-  char const* ret;
-  if (_client_mutex.try_lock_shared_for(300)) {
-    if (!_client)
-      ret = "disconnected";
-    else
-      ret = "connected";
-    _client_mutex.unlock();
-  } else
-    ret = "blocked";
-  return ret;
-}
-
-/**
- *  Get the number of queued events.
- *
- *  @return  The number of queued events.
- */
-uint32_t feeder::_get_queued_events() {
-  return _subscriber.get_muxer().get_event_queue_size();
-}
-
-/**
- *  Get the read filters used by the feeder.
- *
- *  @return  The read filters used by the feeder.
- */
-std::unordered_set<uint32_t> const& feeder::_get_read_filters() const {
-  return _subscriber.get_muxer().get_read_filters();
-}
-
-/**
- *  Get the write filters used by the feeder.
- *
- *  @return  The write filters used by the feeder.
- */
-std::unordered_set<uint32_t> const& feeder::_get_write_filters() const {
-  return _subscriber.get_muxer().get_write_filters();
-}
-
-/**
- *  Forward to stream.
- *
- *  @param[in] tree  The statistic tree.
- */
-void feeder::_forward_statistic(json11::Json::object& tree) {
-  if (_client_mutex.try_lock_shared_for(300)) {
-    if (_client)
-      _client->statistics(tree);
-    _client_mutex.unlock();
-  }
-  _subscriber.get_muxer().statistics(tree);
 }

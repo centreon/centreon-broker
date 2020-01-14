@@ -37,7 +37,7 @@ namespace processing {
 class stat_visitable {
  public:
   stat_visitable(std::string const& name = std::string());
-  ~stat_visitable();
+  virtual ~stat_visitable();
 
   std::string const& get_name() const;
   void set_last_error(std::string const& last_error);

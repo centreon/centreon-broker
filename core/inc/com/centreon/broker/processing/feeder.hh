@@ -19,12 +19,15 @@
 #ifndef CCB_PROCESSING_FEEDER_HH
 #define CCB_PROCESSING_FEEDER_HH
 
+#include <atomic>
+#include <thread>
+#include <climits>
 #include <memory>
 #include <string>
 #include "com/centreon/broker/misc/shared_mutex.hh"
 #include "com/centreon/broker/multiplexing/subscriber.hh"
 #include "com/centreon/broker/namespace.hh"
-#include "com/centreon/broker/processing/thread.hh"
+#include "com/centreon/broker/processing/stat_visitable.hh"
 
 CCB_BEGIN()
 
@@ -40,14 +43,18 @@ namespace processing {
  *
  *  Take events from a source and send them to a destination.
  */
-class feeder : public bthread {
- public:
-  feeder(std::string const& name,
-         std::shared_ptr<io::stream> client,
-         std::unordered_set<uint32_t> const& read_filters,
-         std::unordered_set<uint32_t> const& write_filters);
-  ~feeder();
-  void run() override;
+class feeder : public stat_visitable {
+  // Condition variable used when waiting for the thread to finish
+  std::thread _thread;
+  std::atomic_bool _should_exit;
+
+  std::shared_ptr<io::stream> _client;
+  multiplexing::subscriber _subscriber;
+
+  // This mutex is used for the stat thread.
+  mutable misc::shared_mutex _client_mutex;
+
+  void _callback();
 
  protected:
   // From stat_visitable
@@ -57,14 +64,15 @@ class feeder : public bthread {
   std::unordered_set<uint32_t> const& _get_write_filters() const override;
   void _forward_statistic(json11::Json::object& tree) override;
 
- private:
-  feeder(feeder const& other);
-  feeder& operator=(feeder const& other);
-
-  std::shared_ptr<io::stream> _client;
-  multiplexing::subscriber _subscriber;
-  // This mutex is used for the stat thread.
-  mutable misc::shared_mutex _client_mutex;
+ public:
+  feeder(std::string const& name,
+         std::shared_ptr<io::stream> client,
+         std::unordered_set<uint32_t> const& read_filters,
+         std::unordered_set<uint32_t> const& write_filters);
+  ~feeder();
+  feeder(feeder const&) = delete;
+  feeder& operator=(feeder const&) = delete;
+  bool is_finished() const noexcept;
 };
 }  // namespace processing
 
