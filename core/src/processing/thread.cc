@@ -29,24 +29,17 @@ bthread::bthread(std::string const& name)
 /**
  *  Destructor.
  */
-bthread::~bthread() {}
+bthread::~bthread() { exit(); }
 
 /**
  *  Notify bthread to exit.
  */
 void bthread::exit() {
-  if (is_running()) {
-    bool to_join = false;
-    {
-      std::lock_guard<std::mutex> lock(_should_exitm);
+  std::unique_lock<std::mutex> lock(_started_m);
+  if (_started) {
+    if (!_should_exit) {
       _should_exit = true;
-      if (_started) {
-        _started = false;
-        to_join = true;
-      }
-    }
-    if (to_join) {
-      _cv.notify_all();
+      _started_cv.wait(lock, [this] { return !_started; });
       _thread.join();
     }
   }
@@ -58,7 +51,6 @@ void bthread::exit() {
  *  @return True if bthread should exit.
  */
 bool bthread::should_exit() const {
-  std::lock_guard<std::mutex> lock(_should_exitm);
   return _should_exit;
 }
 
@@ -66,14 +58,12 @@ bool bthread::should_exit() const {
  *  Start bthread.
  */
 void bthread::start() {
-  {
-    std::lock_guard<std::mutex> lock(_should_exitm);
-    if (_started)
-      return;
+  std::unique_lock<std::mutex> lock(_started_m);
+  if (!_started) {
     _should_exit = false;
-    _started = true;
+    _thread = std::thread(&bthread::_callback, this);
+    _started_cv.wait(lock, [this] { return _started; });
   }
-  _thread = std::thread(&bthread::_callback, this);
 }
 
 /**
@@ -114,14 +104,16 @@ bool bthread::wait(unsigned long timeout_ms) {
 }
 
 void bthread::_callback() {
+  _started = true;
+  _started_cv.notify_one();
   run();
 
-  // Let's wait for the exit() method.
-  std::unique_lock<std::mutex> lock(_cv_m);
-  _cv.wait(lock, [this] { return !is_running(); });
+  std::unique_lock<std::mutex> lock(_started_m);
+  _started = false;
+  _started_cv.notify_all();
 }
 
 bool bthread::is_running() const {
-  std::lock_guard<std::mutex> lk(_should_exitm);
+  std::lock_guard<std::mutex> lock(_started_m);
   return _started;
 }

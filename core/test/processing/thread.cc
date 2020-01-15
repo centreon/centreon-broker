@@ -26,14 +26,13 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
 
 class DummyThread : public bthread {
+  std::unordered_set<uint32_t> _filters;
+
+ public:
   void run() override {
-    std::cout << "Wait loop" << std::endl;
     while (!should_exit()) {
-      std::cout << "loop" << std::endl;
-      std::this_thread::sleep_for(std::chrono::seconds(1));
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    return;
-    std::cout << "Thread finished" << std::endl;
   }
 
   const char* _get_state() const override { return "test"; }
@@ -45,11 +44,7 @@ class DummyThread : public bthread {
     return _filters;
   }
 
- public:
   bool isRunning() { return is_running(); }
-
- private:
-  std::unordered_set<uint32_t> _filters;
 };
 
 class TestThread : public ::testing::Test {
@@ -72,4 +67,8 @@ TEST_F(TestThread, Wait) {
   ASSERT_TRUE(_thread->isRunning());
   _thread->exit();
   ASSERT_TRUE(_thread->wait(1500));
+}
+
+TEST_F(TestThread, NoExit) {
+  _thread->start();
 }
