@@ -70,7 +70,7 @@ TEST_F(TcpConnector, Timeout) {
 
   std::shared_ptr<io::data> data{new io::raw()};
 
-  ASSERT_FALSE(io->read(data, time(NULL) + 10));
+  ASSERT_FALSE(io->read(data, time(NULL) + 1));
 }
 
 TEST_F(TcpConnector, Simple) {
