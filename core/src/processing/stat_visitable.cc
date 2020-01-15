@@ -30,7 +30,8 @@ using namespace com::centreon::broker::processing;
  *
  *  @param[in] name  The name of the thread.
  */
-stat_visitable::stat_visitable(std::string const& name) : _name(name) {}
+stat_visitable::stat_visitable(std::string const& name)
+    : _state{""}, _name(name) {}
 
 /**
  *  Destructor.
@@ -80,7 +81,7 @@ static std::string dump_filters(std::unordered_set<uint32_t> const& filters) {
  */
 void stat_visitable::stats(json11::Json::object& tree) {
   std::lock_guard<std::mutex> lock(_stat_mutex);
-  tree["state"] = _get_state();
+  tree["state"] = std::string(_state);
   tree["read_filters"] = dump_filters(_get_read_filters());
   tree["write_filters"]  = dump_filters(_get_write_filters());
   tree["event_processing_speed"] = _event_processing_speed.get_processing_speed();
@@ -151,4 +152,8 @@ void stat_visitable::tick(uint32_t events) {
  */
 void stat_visitable::_forward_statistic(json11::Json::object& tree) {
   (void)tree;
+}
+
+void stat_visitable::set_state(char const* state) {
+  _state = state;
 }

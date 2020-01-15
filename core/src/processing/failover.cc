@@ -133,6 +133,7 @@ void failover::run() {
         {
           std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
           _stream = s;
+          set_state(s ? "connected" : "connecting");
         }
         _initialized = true;
         set_last_connection_success(timestamp::now());
@@ -323,6 +324,7 @@ void failover::run() {
       {
         std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
         _stream.reset();
+        set_state("connecting");
       }
       _launch_failover();
       _initialized = true;
@@ -335,6 +337,7 @@ void failover::run() {
       {
         std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
         _stream.reset();
+        set_state("connecting");
       }
       _launch_failover();
       _initialized = true;
@@ -344,6 +347,7 @@ void failover::run() {
     {
       std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
       _stream.reset();
+      set_state("connecting");
     }
 
     // Sleep a while before attempting a reconnection.
@@ -368,6 +372,7 @@ void failover::run() {
   {
     std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
     _stream.reset();
+    set_state("connecting");
   }
 
   // Exit failover thread if necessary.
@@ -442,24 +447,6 @@ void failover::update() {
 //    finished = false;
 //  return finished;
 //}
-
-/**
- *  Get the state of the failover.
- *
- *  @return  The state of the failover.
- */
-const char* failover::_get_state() const {
-  char const* ret = nullptr;
-  if (_stream_m.try_lock_for(std::chrono::milliseconds(10))) {
-    if (!_stream)
-      ret = "connecting";
-    else
-      ret = "connected";
-    _stream_m.unlock();
-  } else
-    ret = "blocked";
-  return ret;
-}
 
 /**
  *  Get the number of queued events.

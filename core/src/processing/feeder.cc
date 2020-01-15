@@ -55,6 +55,7 @@ feeder::feeder(std::string const& name,
 
   _should_exit = false;
   _thread = std::thread(&feeder::_callback, this);
+  set_state(_client ? "connected" : "disconnected");
 }
 
 /**
@@ -73,24 +74,6 @@ bool feeder::is_finished() const noexcept {
       return true;
 
   return false;
-}
-
-/**
- *  Get the state of the feeder.
- *
- *  @return  The state of the feeder.
- */
-const char* feeder::_get_state() const {
-  char const* ret;
-  if (_client_mutex.try_lock_shared_for(300)) {
-    if (!_client)
-      ret = "disconnected";
-    else
-      ret = "connected";
-    _client_mutex.unlock();
-  } else
-    ret = "blocked";
-  return ret;
 }
 
 /**
@@ -126,10 +109,10 @@ std::unordered_set<uint32_t> const& feeder::_get_write_filters() const {
  *  @param[in] tree  The statistic tree.
  */
 void feeder::_forward_statistic(json11::Json::object& tree) {
-  if (_client_mutex.try_lock_shared_for(300)) {
+  if (_client_m.try_lock_shared_for(300)) {
     if (_client)
       _client->statistics(tree);
-    _client_mutex.unlock();
+    _client_m.unlock();
   }
   _subscriber.get_muxer().statistics(tree);
 }
@@ -139,8 +122,8 @@ void feeder::_callback() {
       << "feeder: thread of client '" << _name << "' is starting";
   try {
     if (!_client)
-      throw(exceptions::msg()
-            << "could not process '" << _name << "' with no client stream");
+      throw exceptions::msg()
+            << "could not process '" << _name << "' with no client stream";
     bool stream_can_read(true);
     bool muxer_can_read(true);
     std::shared_ptr<io::data> d;
@@ -149,14 +132,14 @@ void feeder::_callback() {
       bool timed_out_stream(true);
       if (stream_can_read) {
         try {
-          misc::read_lock lock(_client_mutex);
+          misc::read_lock lock(_client_m);
           timed_out_stream = !_client->read(d, 0);
         } catch (exceptions::shutdown const& e) {
           stream_can_read = false;
         }
         if (d) {
           {
-            misc::read_lock lock(_client_mutex);
+            misc::read_lock lock(_client_m);
             _subscriber.get_muxer().write(d);
           }
           tick();
@@ -175,7 +158,7 @@ void feeder::_callback() {
         }
       if (d) {
         {
-          misc::read_lock lock(_client_mutex);
+          misc::read_lock lock(_client_m);
           _client->write(d);
         }
         _subscriber.get_muxer().ack_events(1);
@@ -201,11 +184,11 @@ void feeder::_callback() {
         << "'";
   }
   {
-    misc::read_lock lock(_client_mutex);
+    misc::read_lock lock(_client_m);
     _client.reset();
+    set_state("disconnected");
     _subscriber.get_muxer().remove_queue_files();
   }
   logging::info(logging::medium)
       << "feeder: thread of client '" << _name << "' will exit";
-
 }

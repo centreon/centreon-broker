@@ -53,7 +53,6 @@ void broker_module_deinit() {
     // Remove events.
     io::events::instance().unregister_category(io::events::correlation);
   }
-  return;
 }
 
 /**
@@ -71,7 +70,8 @@ void broker_module_init(void const* arg) {
                                  << CENTREON_BROKER_VERSION;
 
     // Register correlation layer.
-    io::protocols::instance().reg("correlation", correlation::factory(), 1, 7);
+    io::protocols::instance().reg(
+        "correlation", std::make_shared<correlation::factory>(), 1, 7);
 
     // Register category.
     io::events& e(io::events::instance());
@@ -111,6 +111,5 @@ void broker_module_init(void const* arg) {
                          correlation::log_issue::entries, "log_logs", "logs"));
     }
   }
-  return;
 }
 }

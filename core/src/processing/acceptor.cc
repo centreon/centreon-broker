@@ -81,11 +81,11 @@ void acceptor::run() {
   // Run as long as no exit request was made.
   while (!should_exit()) {
     try {
-      _listening = true;
+      _set_listening(true);
       // Try to accept connection.
       accept();
     } catch (std::exception const& e) {
-      _listening = false;
+      _set_listening(false);
       // Log error.
       logging::error(logging::high)
           << "acceptor: endpoint '" << _name
@@ -111,7 +111,7 @@ void acceptor::run() {
           ++it;
     }
   }
-  _listening = false;
+  _set_listening(false);
 }
 
 /**
@@ -149,18 +149,6 @@ void acceptor::set_retry_interval(time_t retry_interval) {
 void acceptor::set_write_filters(std::unordered_set<uint32_t> const& filters) {
   std::lock_guard<std::mutex> lock(_stat_mutex);
   _write_filters = filters;
-}
-
-/**
- *  Get the state of the acceptor.
- *
- *  @return  The state of the acceptor.
- */
-char const* acceptor::_get_state() const {
-  if (_listening)
-    return "listening";
-  else
-    return "disconnected";
 }
 
 /**
@@ -207,4 +195,9 @@ void acceptor::_forward_statistic(json11::Json::object& tree) {
     (*it)->stats(subtree);
     tree[(*it)->get_name()] = subtree;
   }
+}
+
+void acceptor::_set_listening(bool listening) noexcept {
+  _listening = listening;
+  set_state(listening ? "listening" : "disconnected");
 }

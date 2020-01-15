@@ -104,11 +104,14 @@ void bthread::update() {
 //}
 
 void bthread::_callback() {
+  std::unique_lock<std::mutex> lock(_started_m);
   _started = true;
   _started_cv.notify_one();
+  lock.unlock();
+
   run();
 
-  std::unique_lock<std::mutex> lock(_started_m);
+  lock.lock();
   _started = false;
   _started_cv.notify_all();
 }

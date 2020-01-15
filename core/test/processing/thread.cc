@@ -29,13 +29,16 @@ class DummyThread : public bthread {
   std::unordered_set<uint32_t> _filters;
 
  public:
+  DummyThread() : bthread() {
+    set_state("test");
+  }
+
   void run() override {
     while (!should_exit()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
   }
 
-  const char* _get_state() const override { return "test"; }
   uint32_t _get_queued_events() override { return 0; }
   std::unordered_set<uint32_t> const& _get_write_filters() const override {
     return _filters;

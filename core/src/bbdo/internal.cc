@@ -59,9 +59,8 @@ void bbdo::load() {
                    io::event_info("ack", &ack::operations, ack::entries));
 
   // Register BBDO protocol.
-  io::protocols::instance().reg("BBDO", bbdo::factory(), 7, 7);
-
-  return;
+  io::protocols::instance().reg("BBDO", std::make_shared<bbdo::factory>(), 7,
+                                7);
 }
 
 /**
@@ -76,5 +75,4 @@ void bbdo::unload() {
   // Unregister category.
   io::events::instance().unregister_category(io::events::bbdo);
 
-  return;
 }

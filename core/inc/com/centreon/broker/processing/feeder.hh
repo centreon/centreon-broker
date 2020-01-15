@@ -52,13 +52,11 @@ class feeder : public stat_visitable {
   multiplexing::subscriber _subscriber;
 
   // This mutex is used for the stat thread.
-  mutable misc::shared_mutex _client_mutex;
+  mutable misc::shared_mutex _client_m;
 
   void _callback();
 
  protected:
-  // From stat_visitable
-  char const* _get_state() const override;
   virtual uint32_t _get_queued_events() override;
   std::unordered_set<uint32_t> const& _get_read_filters() const override;
   std::unordered_set<uint32_t> const& _get_write_filters() const override;

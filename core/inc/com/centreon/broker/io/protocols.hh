@@ -42,19 +42,19 @@ class protocols {
   };
 
   ~protocols();
+  protocols(protocols const& p) = delete;
+  protocols& operator=(protocols const& p) = delete;
   std::map<std::string, protocol>::const_iterator begin() const;
   std::map<std::string, protocol>::const_iterator end() const;
   static protocols& instance();
   void reg(std::string const& name,
-           factory const& fac,
+           std::shared_ptr<factory> fac,
            unsigned short osi_from,
            unsigned short osi_to);
   void unreg(std::string const& name);
 
  private:
   protocols();
-  protocols(protocols const& p);
-  protocols& operator=(protocols const& p);
 
   std::map<std::string, protocol> _protocols;
 };

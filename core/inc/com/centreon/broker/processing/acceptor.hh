@@ -59,7 +59,6 @@ class acceptor : public bthread {
 
  protected:
   // From stat_visitable
-  char const* _get_state() const override;
   virtual uint32_t _get_queued_events() override;
   std::unordered_set<uint32_t> const& _get_read_filters() const override;
   std::unordered_set<uint32_t> const& _get_write_filters() const override;
@@ -72,6 +71,8 @@ class acceptor : public bthread {
   time_t _retry_interval;
   std::unordered_set<uint32_t> _write_filters;
   std::atomic_bool _listening;
+
+  void _set_listening(bool listening) noexcept;
 };
 }  // namespace processing
 

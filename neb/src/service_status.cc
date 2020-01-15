@@ -239,7 +239,7 @@ mapping::entry const service_status::entries[] = {
 
 // Operations.
 static io::data* new_service_status() {
-  return (new service_status);
+  return new service_status;
 }
 io::event_info::event_operations const service_status::operations = {
     &new_service_status};

@@ -58,7 +58,8 @@ void broker_module_init(void const* arg) {
         << "simu: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
     // Register simu layer.
-    io::protocols::instance().reg("simu", simu::factory(), 1, 7);
+    io::protocols::instance().reg("simu", std::make_shared<simu::factory>(), 1,
+                                  7);
   }
 }
 }

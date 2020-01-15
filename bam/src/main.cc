@@ -88,7 +88,8 @@ void broker_module_init(void const* arg) {
         << "BAM: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
     // Register storage layer.
-    io::protocols::instance().reg(bam_module, bam::factory(), 1, 7);
+    io::protocols::instance().reg(bam_module, std::make_shared<bam::factory>(),
+                                  1, 7);
 
     io::events& e(io::events::instance());
 

@@ -60,7 +60,8 @@ void broker_module_init(void const* arg) {
         << "influxdb: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
     // Register storage layer.
-    io::protocols::instance().reg("influxdb", influxdb::factory(), 1, 7);
+    io::protocols::instance().reg("influxdb",
+                                  std::make_shared<influxdb::factory>(), 1, 7);
   }
   return;
 }

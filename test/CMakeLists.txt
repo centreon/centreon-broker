@@ -116,6 +116,7 @@ add_executable(ut
   ${TESTS_DIR}/processing/acceptor.cc
   ${TESTS_DIR}/processing/temporary_endpoint.cc
   ${TESTS_DIR}/processing/temporary_stream.cc
+  ${TESTS_DIR}/processing/feeder.cc
   ${TESTS_DIR}/processing/thread.cc
   ${TESTS_DIR}/exceptions.cc
   ${TESTS_DIR}/io.cc
