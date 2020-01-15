@@ -35,7 +35,7 @@ async_buf tcp_async::wait_for_packet(asio::ip::tcp::socket& socket,
                                      time_t deadline,
                                      bool& disconnected,
                                      bool& timeout) {
-  std::unique_lock<std::mutex> lock(_m);
+  std::unique_lock<std::mutex> lock(_m_read_data);
   async_buf buf;
   {
     auto it = _read_data.find(socket.native_handle());
@@ -55,7 +55,7 @@ async_buf tcp_async::wait_for_packet(asio::ip::tcp::socket& socket,
                                                   std::placeholders::_1));
         }
 
-        it->second._wait.wait(lock, [&]() -> bool {
+        it->second._wait_socket_event.wait(lock, [&]() -> bool {
           if (it->second._closing) {
             disconnected = true;
           }
@@ -88,14 +88,14 @@ async_buf tcp_async::wait_for_packet(asio::ip::tcp::socket& socket,
 
 void tcp_async::_async_timeout_cb(int fd, std::error_code const& ec) {
   if (!ec) {
-    std::unique_lock<std::mutex> lock(_m);
+    std::unique_lock<std::mutex> lock(_m_read_data);
     std::unordered_map<int, tcp_con>::iterator it;
     it = _read_data.find(fd);
     if (it == _read_data.end())
       return;
 
     it->second._timeout = true;
-    it->second._wait.notify_all();
+    it->second._wait_socket_event.notify_all();
   }
 }
 
@@ -103,7 +103,7 @@ void tcp_async::_async_read_cb(asio::ip::tcp::socket& socket,
                                int fd,
                                std::error_code const& ec,
                                std::size_t bytes) {
-  std::unique_lock<std::mutex> lock(_m);
+  std::unique_lock<std::mutex> lock(_m_read_data);
   std::unordered_map<int, tcp_con>::iterator it;
   {
     it = _read_data.find(fd);
@@ -117,7 +117,7 @@ void tcp_async::_async_read_cb(asio::ip::tcp::socket& socket,
           << "async_buf::async_read_cb incoming packet size: " << bytes;
       it->second._work_buffer.resize(bytes);
       it->second._buffer_queue.push(std::move(it->second._work_buffer));
-      it->second._wait.notify_all();
+      it->second._wait_socket_event.notify_all();
 
       // refit buffer for next read
       it->second._work_buffer.resize(async_buf_size);
@@ -133,14 +133,14 @@ void tcp_async::_async_read_cb(asio::ip::tcp::socket& socket,
         << socket.remote_endpoint().port();
 
     it->second._closing = true;
-    it->second._wait.notify_all();
+    it->second._wait_socket_event.notify_all();
   }
 }
 
 void tcp_async::register_socket(asio::ip::tcp::socket& socket) {
   int fd{socket.native_handle()};
   {
-    std::unique_lock<std::mutex> lock(_m);
+    std::unique_lock<std::mutex> lock(_m_read_data);
     auto& data = _read_data[fd];
 
     data._work_buffer.resize(async_buf_size);
@@ -170,7 +170,7 @@ void tcp_async::unregister_socket(asio::ip::tcp::socket& socket) {
   std::unique_lock<std::mutex> m(mut);
   cond.wait(m, [&done]() -> bool { return done; });
 
-  std::unique_lock<std::mutex> lock(_m);
+  std::unique_lock<std::mutex> lock(_m_read_data);
   auto it = _read_data.find(fd);
   if (it != _read_data.end()) {
     _read_data.erase(it);
