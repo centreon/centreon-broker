@@ -29,11 +29,22 @@ using namespace com::centreon::broker;
 constexpr static char test_addr[] = "127.0.0.1";
 constexpr static uint16_t test_port(4444);
 
+static auto try_connect = [](tcp::connector &con) -> std::shared_ptr<io::stream> {
+  con.connect_to(test_addr, test_port);
+  while(true) {
+    try {
+      return con.open();
+    } catch (...) {
+
+    }
+  }
+};
+
 TEST(TcpAcceptor, BadPort) {
   tcp::acceptor acc;
 
   if (getuid() != 0) {
-    ASSERT_THROW(acc.listen_on(2), exceptions::msg);;
+    acc.listen_on(2);
     ASSERT_THROW(acc.open(), exceptions::msg);
   }
 }
@@ -44,8 +55,7 @@ TEST(TcpAcceptor, Simple) {
 
   std::thread t{[&] {
     tcp::connector con;
-    con.connect_to(test_addr, test_port);
-    std::shared_ptr<io::stream> str{con.open()};
+    std::shared_ptr<io::stream> str{try_connect(con)};
     std::shared_ptr<io::raw> data{new io::raw()};
     std::shared_ptr<io::data> data_read;
     data->append("TEST\n");
@@ -77,8 +87,7 @@ TEST(TcpAcceptor, Multiple) {
   {
     std::thread t{[] {
       tcp::connector con;
-      con.connect_to(test_addr, test_port);
-      std::shared_ptr<io::stream> str{con.open()};
+      std::shared_ptr<io::stream> str{try_connect(con)};
       std::shared_ptr<io::raw> data{new io::raw()};
       std::shared_ptr<io::data> data_read;
       data->append("TEST\n");
@@ -103,8 +112,7 @@ TEST(TcpAcceptor, Multiple) {
   {
     std::thread t{[] {
       tcp::connector con;
-      con.connect_to(test_addr, test_port);
-      std::shared_ptr<io::stream> str{con.open()};
+      std::shared_ptr<io::stream> str{try_connect(con)};
       std::shared_ptr<io::raw> data{new io::raw()};
       std::shared_ptr<io::data> data_read;
       data->append("TEST\n");
@@ -135,8 +143,7 @@ TEST(TcpAcceptor, BigSend) {
 
   std::thread t{[] {
     tcp::connector con;
-    con.connect_to("localhost", test_port);
-    std::shared_ptr<io::stream> str{con.open()};
+    std::shared_ptr<io::stream> str{try_connect(con)};
     std::shared_ptr<io::raw> data{new io::raw()};
     std::shared_ptr<io::data> data_read;
     for (int i = 0; i < 1024; i++) {
@@ -171,8 +178,7 @@ TEST(TcpAcceptor, CloseRead) {
   std::thread t{[&] {
     {
       tcp::connector con;
-      con.connect_to(test_addr, test_port);
-      std::shared_ptr<io::stream> str{con.open()};
+      std::shared_ptr<io::stream> str{try_connect(con)};
       std::shared_ptr<io::raw> data{new io::raw()};
       std::shared_ptr<io::data> data_read;
       data->append("0");

@@ -64,12 +64,11 @@ std::shared_ptr<io::stream> connector::open() {
       << "TCP: connecting to " << _host << ":" << _port;
   std::string connection_name{_host + ":" + std::to_string(_port)};
 
-  std::shared_ptr<asio::ip::tcp::socket> sock =
-      std::make_shared<asio::ip::tcp::socket>(
-          tcp_async::instance().get_io_ctx());
-  asio::ip::tcp::resolver resolver{tcp_async::instance().get_io_ctx()};
-  asio::ip::tcp::resolver::query query{_host, std::to_string(_port)};
+  std::shared_ptr<asio::ip::tcp::socket> sock;
   try {
+    sock.reset(new asio::ip::tcp::socket(tcp_async::instance().get_io_ctx()));
+    asio::ip::tcp::resolver resolver{tcp_async::instance().get_io_ctx()};
+    asio::ip::tcp::resolver::query query{_host, std::to_string(_port)};
     asio::ip::tcp::resolver::iterator it{resolver.resolve(query)};
     asio::ip::tcp::resolver::iterator end;
 

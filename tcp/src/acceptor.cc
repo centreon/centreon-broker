@@ -38,7 +38,7 @@ constexpr std::size_t max_pending_connection = 30;
  *  Default constructor.
  */
 acceptor::acceptor()
-    : io::endpoint(true), _port(0), _read_timeout(-1), _write_timeout(-1) {}
+    : io::endpoint(true), _port(0), _binding{false}, _read_timeout(-1), _write_timeout(-1) {}
 
 /**
  *  Destructor.
@@ -62,19 +62,11 @@ void acceptor::add_child(std::string const& child) {
  */
 void acceptor::listen_on(unsigned short port) {
   _port = port;
-  _acceptor.reset();
+  _binding = false;
 
+  _ep = asio::ip::tcp::endpoint (asio::ip::address_v4::any(), _port);
   // Step 3. Instantiating and opening an acceptor socket.
-  try {
-    asio::ip::tcp::endpoint ep(asio::ip::address_v4::any(), _port);
-    _acceptor.reset(new asio::ip::tcp::acceptor(tcp_async::instance().get_io_ctx(), ep.protocol()));
-    _acceptor->bind(ep);
-    _acceptor->listen(max_pending_connection);
-  } catch (std::system_error const& se) {
-    throw exceptions::msg()
-        << "TCP: error while waiting client on port: " << _port << " "
-        << se.what();
-  }
+  _acceptor.reset(new asio::ip::tcp::acceptor(tcp_async::instance().get_io_ctx(), _ep.protocol()));
 }
 
 /**
@@ -91,6 +83,11 @@ std::shared_ptr<io::stream> acceptor::open() {
   std::shared_ptr<asio::ip::tcp::socket> socket{
       new asio::ip::tcp::socket{tcp_async::instance().get_io_ctx()}};
   try {
+    if (!_binding) {
+      _acceptor->bind(_ep);
+      _acceptor->listen(max_pending_connection);
+      _binding = true;
+    }
     _acceptor->accept(*socket);
   } catch (std::system_error const& se) {
     throw exceptions::msg()
