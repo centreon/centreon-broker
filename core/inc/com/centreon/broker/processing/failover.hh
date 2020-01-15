@@ -70,7 +70,7 @@ class failover : public bthread {
   void set_failover(std::shared_ptr<processing::failover> fo);
   void set_retry_interval(time_t retry_interval);
   void update() override;
-  bool wait(unsigned long time = ULONG_MAX);
+  //bool wait(unsigned long time = ULONG_MAX);
 
  protected:
   // From stat_visitable

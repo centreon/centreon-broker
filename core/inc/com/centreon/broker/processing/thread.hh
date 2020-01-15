@@ -56,7 +56,7 @@ class bthread : public stat_visitable {
   bool should_exit() const;
   void start();
   virtual void update();
-  bool wait(unsigned long timeout_ms = ULONG_MAX);
+  //bool wait(unsigned long timeout_ms = ULONG_MAX);
   virtual void run() = 0;
   bool is_running() const;
 

@@ -59,16 +59,6 @@ TEST_F(TestThread, TimerBeforeExit) {
   ASSERT_FALSE(_thread->isRunning());
 }
 
-TEST_F(TestThread, Wait) {
-  ASSERT_TRUE(_thread->wait(100));
-  _thread->start();
-  ASSERT_FALSE(_thread->wait(100));
-  std::this_thread::sleep_for(std::chrono::seconds(1));
-  ASSERT_TRUE(_thread->isRunning());
-  _thread->exit();
-  ASSERT_TRUE(_thread->wait(1500));
-}
-
 TEST_F(TestThread, NoExit) {
-  _thread->start();
+  ASSERT_NO_THROW(_thread->start());
 }

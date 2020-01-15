@@ -83,25 +83,25 @@ void bthread::update() {
  *
  *  @return True if bthread exited in less than timeout_ms.
  */
-bool bthread::wait(unsigned long timeout_ms) {
-  if (timeout_ms == ULONG_MAX && _thread.joinable()) {
-    _thread.join();
-    return true;
-  }
-
-  if (!_thread.joinable())
-    return true;
-
-  struct timespec tt {
-    .tv_sec = static_cast<long int>(timeout_ms / 1000),
-    .tv_nsec = static_cast<long int>(timeout_ms % 1000) * 1000000
-  };
-  int res = pthread_timedjoin_np(_thread.native_handle(), nullptr, &tt);
-  if (res == ETIMEDOUT)
-    return false;
-
-  return true;
-}
+//bool bthread::wait(unsigned long timeout_ms) {
+//  if (timeout_ms == ULONG_MAX && _thread.joinable()) {
+//    _thread.join();
+//    return true;
+//  }
+//
+//  if (!_thread.joinable())
+//    return true;
+//
+//  struct timespec tt {
+//    .tv_sec = static_cast<long int>(timeout_ms / 1000),
+//    .tv_nsec = static_cast<long int>(timeout_ms % 1000) * 1000000
+//  };
+//  int res = pthread_timedjoin_np(_thread.native_handle(), nullptr, &tt);
+//  if (res == ETIMEDOUT)
+//    return false;
+//
+//  return true;
+//}
 
 void bthread::_callback() {
   _started = true;

@@ -193,7 +193,6 @@ void failover::run() {
             << "failover: shutting down failover of endpoint '" << _name << "'";
         _update_status("shutting down failover");
         _failover->exit();
-        _failover->wait();
         _failover_launched = false;
         _update_status("");
       }
@@ -426,23 +425,23 @@ void failover::update() {
  *
  *  @return True if thread exited.
  */
-bool failover::wait(unsigned long time) {
-  // Check that failover finished.
-  bool finished;
-  if (_failover)
-    finished = _failover->wait(time);
-  else
-    finished = true;
-
-  // If there was no failover or failover finished we
-  // can safely wait for ourselves.
-  if (finished)
-    finished = bthread::wait(time);
-  // Otherwise we're not finished yet.
-  else
-    finished = false;
-  return finished;
-}
+//bool failover::wait(unsigned long time) {
+//  // Check that failover finished.
+//  bool finished;
+//  if (_failover)
+//    finished = _failover->wait(time);
+//  else
+//    finished = true;
+//
+//  // If there was no failover or failover finished we
+//  // can safely wait for ourselves.
+//  if (finished)
+//    finished = bthread::wait(time);
+//  // Otherwise we're not finished yet.
+//  else
+//    finished = false;
+//  return finished;
+//}
 
 /**
  *  Get the state of the failover.
