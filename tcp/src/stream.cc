@@ -18,13 +18,16 @@
  */
 
 #include "com/centreon/broker/tcp/stream.hh"
+
 #include <sys/socket.h>
 #include <sys/time.h>
+
 #include <algorithm>
 #include <atomic>
 #include <functional>
 #include <sstream>
 #include <system_error>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -106,28 +109,19 @@ std::string stream::peer() const {
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   d.reset();
 
-  auto check_disco = [&]() {
-    if (tcp_async::instance().disconnected(*_socket)) {
-      throw exceptions::msg() << "TCP peer '" << _name << "' err ";
-    }
-  };
-
-  check_disco();
-
-  if (tcp_async::instance().empty(*_socket)) {
-    while (tcp_async::instance().empty(*_socket)) {
-      // Disconnected socket with no data.
-      if ((deadline != (time_t)-1) && (time(nullptr) >= deadline))
-        return (false);
-
-      check_disco();
-      std::this_thread::sleep_for(std::chrono::milliseconds{2});
-    }
-  }
-
   d.reset(new io::raw());
   std::shared_ptr<io::raw> data{std::static_pointer_cast<io::raw>(d)};
-  data->get_buffer() = std::move(tcp_async::instance().get_packet(*_socket));
+
+  bool socket_closed{false};
+  bool timeout{false};
+  data->get_buffer() = std::move(tcp_async::instance().wait_for_packet(
+      *_socket, deadline, socket_closed, timeout));
+
+  if (socket_closed)
+    throw exceptions::msg() << "TCP peer '" << _name << "'connection reset ";
+
+  if (timeout)
+      return false;
 
   return true;
 }
