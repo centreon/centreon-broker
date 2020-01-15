@@ -16,7 +16,9 @@
 ** For more information : contact@centreon.com
 */
 #include "com/centreon/broker/tcp/tcp_async.hh"
+
 #include <functional>
+
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -29,28 +31,80 @@ tcp_async& tcp_async::instance() {
   return instance;
 }
 
-async_buf tcp_async::get_packet(asio::ip::tcp::socket& socket) {
+async_buf tcp_async::wait_for_packet(asio::ip::tcp::socket& socket,
+                                     time_t deadline,
+                                     bool& disconnected,
+                                     bool& timeout) {
+  std::unique_lock<std::mutex> lock(_m);
   async_buf buf;
   {
-    std::lock_guard<misc::shared_mutex> lock(_rwlock);
     auto it = _read_data.find(socket.native_handle());
     if (it != _read_data.end()) {
-      buf = std::move(it->second.second.front());
-      it->second.second.pop();
+      // No data present we need to wait for deadline...
+      if (it->second._buffer_queue.empty()) {
+        // deadline passed
+        time_t t{time(nullptr)};
+        if (deadline != -1 && t > deadline) {
+          timeout = true;
+          return buf;
+        } else if (deadline != -1) {
+          it->second._timer.reset(new asio::steady_timer{
+              _io_context, std::chrono::seconds(deadline - t)});
+          it->second._timer->async_wait(std::bind(&tcp_async::_async_timeout_cb,
+                                                  this, socket.native_handle(),
+                                                  std::placeholders::_1));
+        }
+
+        it->second._wait.wait(lock, [&]() -> bool {
+          if (it->second._closing) {
+            disconnected = true;
+          }
+
+          if (it->second._timeout)
+            timeout = true;
+
+          if (!it->second._buffer_queue.empty() || disconnected || timeout) {
+            if (it->second._timer) {
+              it->second._timer->cancel();
+              it->second._timer.reset(nullptr);
+            }
+            return true;
+          }
+
+          return false;
+        });
+      }
+
+      if (!it->second._buffer_queue.empty()) {
+        buf = std::move(it->second._buffer_queue.front());
+        it->second._buffer_queue.pop();
+      }
     } else {
-      logging::error(logging::medium)
-          << "async_buf::get_packet called with unexisting socket...";
+      disconnected = true;
     }
   }
   return buf;
+}
+
+void tcp_async::_async_timeout_cb(int fd, std::error_code const& ec) {
+  if (!ec) {
+    std::unique_lock<std::mutex> lock(_m);
+    std::unordered_map<int, tcp_con>::iterator it;
+    it = _read_data.find(fd);
+    if (it == _read_data.end())
+      return;
+
+    it->second._timeout = true;
+    it->second._wait.notify_all();
+  }
 }
 
 void tcp_async::_async_read_cb(asio::ip::tcp::socket& socket,
                                int fd,
                                std::error_code const& ec,
                                std::size_t bytes) {
-  std::lock_guard<misc::shared_mutex> lock(_rwlock);
-  std::unordered_map<int, std::pair<async_buf, async_queue>>::iterator it;
+  std::unique_lock<std::mutex> lock(_m);
+  std::unordered_map<int, tcp_con>::iterator it;
   {
     it = _read_data.find(fd);
     if (it == _read_data.end())
@@ -61,13 +115,15 @@ void tcp_async::_async_read_cb(asio::ip::tcp::socket& socket,
     if (bytes != 0) {
       logging::error(logging::low)
           << "async_buf::async_read_cb incoming packet size: " << bytes;
-      it->second.first.resize(bytes);
-      it->second.second.push(std::move(it->second.first));
+      it->second._work_buffer.resize(bytes);
+      it->second._buffer_queue.push(std::move(it->second._work_buffer));
+      it->second._wait.notify_all();
 
-      it->second.first.resize(async_buf_size);
+      // refit buffer for next read
+      it->second._work_buffer.resize(async_buf_size);
     }
     socket.async_read_some(
-        asio::buffer(it->second.first, async_buf_size),
+        asio::buffer(it->second._work_buffer, async_buf_size),
         std::bind(&tcp_async::_async_read_cb, this, std::ref(socket), fd,
                   std::placeholders::_1, std::placeholders::_2));
   } else {
@@ -76,41 +132,31 @@ void tcp_async::_async_read_cb(asio::ip::tcp::socket& socket,
         << socket.remote_endpoint().address().to_string() << ":"
         << socket.remote_endpoint().port();
 
-    async_queue empty;
-    it->second.second.swap(empty);
-    _read_data.erase(fd);
+    it->second._closing = true;
+    it->second._wait.notify_all();
   }
 }
 
 void tcp_async::register_socket(asio::ip::tcp::socket& socket) {
   int fd{socket.native_handle()};
   {
-    std::lock_guard<misc::shared_mutex> lock(_rwlock);
+    std::unique_lock<std::mutex> lock(_m);
     auto& data = _read_data[fd];
 
-    data.first.resize(async_buf_size);
+    data._work_buffer.resize(async_buf_size);
 
     socket.async_read_some(
-        asio::buffer(data.first, async_buf_size),
+        asio::buffer(data._work_buffer, async_buf_size),
         std::bind(&tcp_async::_async_read_cb, this, std::ref(socket),
                   socket.native_handle(), std::placeholders::_1,
                   std::placeholders::_2));
   }
 }
-void tcp_async::unregister_socket(asio::ip::tcp::socket &socket) {
-  async_queue empty;
-  {
-    std::lock_guard<misc::shared_mutex> lock(_rwlock);
-    auto it = _read_data.find(socket.native_handle());
-    if (it != _read_data.end()) {
-      it->second.second.swap(empty);
-      _read_data.erase(it);
-    }
-  }
-
+void tcp_async::unregister_socket(asio::ip::tcp::socket& socket) {
+  bool done{false};
+  int fd{socket.native_handle()};
   std::condition_variable cond;
   std::mutex mut;
-  bool done{false};
 
   _strand.post([&] {
     socket.shutdown(asio::ip::tcp::socket::shutdown_both);
@@ -122,22 +168,13 @@ void tcp_async::unregister_socket(asio::ip::tcp::socket &socket) {
   });
 
   std::unique_lock<std::mutex> m(mut);
-  cond.wait(m, [&done]() -> bool {return done;});
-}
+  cond.wait(m, [&done]() -> bool { return done; });
 
-bool tcp_async::empty(asio::ip::tcp::socket& socket) {
-  misc::read_lock lock(_rwlock);
-  auto it = _read_data.find(socket.native_handle());
-
-  if (it == _read_data.end())
-    return true;
-
-  return it->second.second.empty();
-}
-
-bool tcp_async::disconnected(asio::ip::tcp::socket& socket) {
-  misc::read_lock lock(_rwlock);
-  return (_read_data.find(socket.native_handle()) == _read_data.end());
+  std::unique_lock<std::mutex> lock(_m);
+  auto it = _read_data.find(fd);
+  if (it != _read_data.end()) {
+    _read_data.erase(it);
+  }
 }
 
 asio::io_context& tcp_async::get_io_ctx() {
@@ -145,8 +182,9 @@ asio::io_context& tcp_async::get_io_ctx() {
 }
 
 void tcp_async::_async_job() {
-  //Work is needed because we run io_context in a separated thread
-  //cf : https://www.boost.org/doc/libs/1_65_0/doc/html/boost_asio/reference/io_service__work.html
+  // Work is needed because we run io_context in a separated thread
+  // cf :
+  // https://www.boost.org/doc/libs/1_65_0/doc/html/boost_asio/reference/io_service__work.html
   asio::io_service::work work(_io_context);
 
   while (!_closed) {

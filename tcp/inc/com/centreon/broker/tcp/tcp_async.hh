@@ -22,7 +22,6 @@
 #include <queue>
 #include <thread>
 #include <unordered_map>
-#include "com/centreon/broker/misc/shared_mutex.hh"
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -31,41 +30,53 @@ namespace tcp {
 typedef std::vector<char> async_buf;
 typedef std::queue<async_buf> async_queue;
 
+struct tcp_con {
+  async_buf _work_buffer;
+  async_queue _buffer_queue;
+  std::unique_ptr<asio::steady_timer> _timer;
+
+  bool _closing;
+  bool _timeout;
+
+  // waiting for data
+  std::condition_variable _wait;
+
+  tcp_con() : _closing{false}, _timeout{false}, _timer{nullptr} {};
+};
+
 class tcp_async {
   asio::io_context _io_context;
   asio::io_context::strand _strand;
   std::thread _async_thread;
-  mutable misc::shared_mutex _rwlock;
+  std::mutex _m;
   std::atomic_bool _closed;
 
-  std::unordered_map<int, std::pair<async_buf, async_queue>> _read_data;
-
-
+  std::unordered_map<int, tcp_con> _read_data;
 
   tcp_async();
   ~tcp_async();
   void _async_job();
-  void _async_read_cb(asio::ip::tcp::socket &socket,
+  void _async_read_cb(asio::ip::tcp::socket& socket,
                       int fd,
                       std::error_code const& ec,
                       std::size_t bytes);
+  void _async_timeout_cb(int fd,
+                      std::error_code const& ec);
 
  public:
-  void register_socket(asio::ip::tcp::socket &socket);
-
-  //shared_ptr is needed to keep a ref on the socket if it was destroy
-  //by the stream, because we need to async strand it.
+  void register_socket(asio::ip::tcp::socket& socket);
   void unregister_socket(asio::ip::tcp::socket& socket);
 
-  bool disconnected(asio::ip::tcp::socket &socket);
-  bool empty(asio::ip::tcp::socket &socket);
-  async_buf get_packet(asio::ip::tcp::socket &socket);
+  async_buf wait_for_packet(asio::ip::tcp::socket& socket,
+                            time_t deadline,
+                            bool& disconnected,
+                            bool& timeout);
 
   asio::io_context& get_io_ctx();
 
   static tcp_async& instance();
 };
-}
+}  // namespace tcp
 
 CCB_END()
 #endif  // CENTREON_BROKER_TCP_INC_COM_CENTREON_BROKER_TCP_TCP_ASYNC_HH_
