@@ -42,7 +42,11 @@ class test_server {
 
   void init();
   void run();
-  void stop() { std::unique_lock<std::mutex> lock(_m_init); if (_initialised) _ctx->stop(); };
+  void stop() {
+    std::unique_lock<std::mutex> lock(_m_init);
+    if (_initialised)
+      _ctx->stop();
+  };
   std::atomic_size_t const& get_num_connections() { return _num_connections; };
   void wait_for_init();
   std::atomic_bool const& get_bind_ok() { return _bind_ok; };
