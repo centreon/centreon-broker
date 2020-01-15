@@ -56,8 +56,10 @@ class acceptor : public io::endpoint {
   std::mutex _childrenm;
   std::mutex _mutex;
   unsigned short _port;
+  bool _binding;
   int _read_timeout;
   int _write_timeout;
+  asio::ip::tcp::endpoint _ep;
   std::unique_ptr<asio::ip::tcp::acceptor> _acceptor;
 };
 }  // namespace tcp
