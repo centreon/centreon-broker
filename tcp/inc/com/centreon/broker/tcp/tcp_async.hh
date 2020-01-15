@@ -39,7 +39,7 @@ struct tcp_con {
   bool _timeout;
 
   // waiting for data
-  std::condition_variable _wait;
+  std::condition_variable _wait_socket_event;
 
   tcp_con() : _closing{false}, _timeout{false}, _timer{nullptr} {};
 };
@@ -48,7 +48,7 @@ class tcp_async {
   asio::io_context _io_context;
   asio::io_context::strand _strand;
   std::thread _async_thread;
-  std::mutex _m;
+  std::mutex _m_read_data;
   std::atomic_bool _closed;
 
   std::unordered_map<int, tcp_con> _read_data;
