@@ -30,11 +30,11 @@ static uint32_t const timeout_ms = 5;
 static uint32_t const buff_size = 1024;
 
 test_server::test_server()
-    : _ctx{nullptr},
+    : _initialised{false},
+      _ctx{nullptr},
       _acceptor{nullptr},
       _connections{},
       _num_connections{0},
-      _initialised{false},
       _bind_ok{false} {
   _answer_reply.insert({"PING\n", "PONG\n"});
   _answer_reply.insert(

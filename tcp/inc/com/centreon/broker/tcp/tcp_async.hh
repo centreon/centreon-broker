@@ -41,7 +41,7 @@ struct tcp_con {
   // waiting for data
   std::condition_variable _wait_socket_event;
 
-  tcp_con() : _closing{false}, _timeout{false}, _timer{nullptr} {};
+  tcp_con() : _timer{nullptr}, _closing{false}, _timeout{false} {};
 };
 
 class tcp_async {

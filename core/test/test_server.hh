@@ -72,7 +72,6 @@ class test_server {
   std::unique_ptr<asio::ip::tcp::acceptor> _acceptor;
   std::list<test_server_connection> _connections;
   std::atomic_size_t _num_connections;
-  std::atomic_bool _init_done;
   std::atomic_bool _bind_ok;
   std::unordered_map<std::string, std::string> _answer_reply;
 };

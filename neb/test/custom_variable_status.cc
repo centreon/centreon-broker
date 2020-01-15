@@ -79,7 +79,7 @@ TEST_F(CVarStatusTest, CopyConstructor) {
 TEST_F(CVarStatusTest, DefaultConstructor) {
   // Object.
   neb::custom_variable_status cvar_status;
-
+  io::data::broker_id = 0;
   // Check.
   ASSERT_EQ(cvar_status.source_id, 0u);
   ASSERT_EQ(cvar_status.destination_id, 0u);
