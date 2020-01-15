@@ -80,7 +80,7 @@ TEST_F(FlappingStatus, CopyConstructor) {
 TEST_F(FlappingStatus, DefaultConstructor) {
   // Object.
   neb::flapping_status flappy;
-
+  io::data::broker_id = 0;
   // Check.
   ASSERT_EQ(flappy.source_id, 0u);
   ASSERT_EQ(flappy.destination_id, 0u);

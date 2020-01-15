@@ -195,7 +195,7 @@ void tcp_async::_async_job() {
   }
 }
 
-tcp_async::tcp_async() : _closed{false}, _strand{_io_context} {
+tcp_async::tcp_async() : _strand{_io_context}, _closed{false} {
   _async_thread = std::thread(&tcp_async::_async_job, this);
 }
 

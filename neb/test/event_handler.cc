@@ -80,7 +80,7 @@ TEST_F(EventHandlerTest, CopyConstructor) {
 TEST_F(EventHandlerTest, DefaultConstructor) {
   // Object.
   neb::event_handler evnt_hndlr;
-
+  io::data::broker_id = 0;
   // Check.
   ASSERT_EQ(evnt_hndlr.source_id, 0u);
   ASSERT_EQ(evnt_hndlr.destination_id, 0u);

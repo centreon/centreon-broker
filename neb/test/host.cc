@@ -79,6 +79,7 @@ TEST_F(HostTest, CopyConstructor) {
 
 TEST_F(HostTest, DefaultConstructor) {
   // Object.
+  io::data::broker_id = 0;
   neb::host h;
 
   // Check.
