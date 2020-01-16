@@ -35,13 +35,17 @@ async_buf tcp_async::wait_for_packet(asio::ip::tcp::socket& socket,
                                      time_t deadline,
                                      bool& disconnected,
                                      bool& timeout) {
+  timeout = false;
+  disconnected = false;
+
   std::unique_lock<std::mutex> lock(_m_read_data);
   async_buf buf;
   {
     auto it = _read_data.find(socket.native_handle());
     if (it != _read_data.end()) {
+      disconnected = it->second._closing;
       // No data present we need to wait for deadline...
-      if (it->second._buffer_queue.empty()) {
+      if (it->second._buffer_queue.empty() && !disconnected) {
         // deadline passed
         time_t t{time(nullptr)};
         if (deadline != -1 && t > deadline) {
@@ -127,6 +131,12 @@ void tcp_async::_async_read_cb(asio::ip::tcp::socket& socket,
         std::bind(&tcp_async::_async_read_cb, this, std::ref(socket), fd,
                   std::placeholders::_1, std::placeholders::_2));
   } else {
+    if (bytes != 0) {
+      it->second._work_buffer.resize(bytes);
+      it->second._buffer_queue.push(std::move(it->second._work_buffer));;
+
+      it->second._work_buffer.resize(0);
+    }
     logging::info(logging::high)
         << "connection lost for: "
         << socket.remote_endpoint().address().to_string() << ":"
