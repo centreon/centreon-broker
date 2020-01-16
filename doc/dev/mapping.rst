@@ -223,7 +223,7 @@ default_event_handler_enabled  boolean
 default_flap_detection_enabled boolean
 default_notifications_enabled  boolean
 default_passive_checks_enabled boolean
-scheduled_downtime_depth       short integer
+downtime_depth                 short integer
 display_name                   string
 enabled                        boolean
 event_handler                  string
@@ -273,7 +273,6 @@ obsess_over                    boolean
 passive_checks_enabled         boolean
 percent_state_change           real
 retry_interval                 real
-scheduled_downtime_depth       short integer
 should_be_scheduled            boolean
 stalk_on_down                  boolean
 stalk_on_unreachable           boolean
