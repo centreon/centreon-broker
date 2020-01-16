@@ -21,6 +21,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
+#include "com/centreon/broker/multiplexing/engine.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
@@ -28,11 +29,16 @@ using namespace com::centreon::broker::processing;
 class TestFeeder : public ::testing::Test {
  public:
   void SetUp() override {
+    multiplexing::engine::load();
     std::shared_ptr<io::stream> client;
     std::unordered_set<uint32_t> read_filters;
     std::unordered_set<uint32_t> write_filters;
     _feeder.reset(
         new feeder("test-feeder", client, read_filters, write_filters));
+  }
+
+  void TearDown() override {
+    multiplexing::engine::unload();
   }
 
  protected:

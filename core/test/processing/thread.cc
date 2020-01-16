@@ -52,7 +52,9 @@ class DummyThread : public bthread {
 
 class TestThread : public ::testing::Test {
  public:
-  void SetUp() override { _thread.reset(new DummyThread); }
+  void SetUp() override { 
+    
+    _thread.reset(new DummyThread); }
 
  protected:
   std::unique_ptr<DummyThread> _thread;

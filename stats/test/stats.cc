@@ -222,7 +222,7 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
   config::parser p;
   config::state s{p.parse(config_file)};
 
-  fact const test;
+  auto test = std::make_shared<fact>();
   io::protocols::instance().reg("CentreonInput", test, 1, 7);
   io::protocols::instance().reg("CentreonDatabase", test, 1, 7);
   io::protocols::instance().reg("CentreonRetention", test, 1, 7);
