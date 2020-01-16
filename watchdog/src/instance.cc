@@ -149,7 +149,7 @@ void instance::stop() {
               << "watchdog: Unable to kill the process '" << _config.get_name()
               << "' (PID " << _pid << "): " << strerror(errno);
         } else {
-          logging::error(logging::medium)
+          logging::info(logging::medium)
               << "watchdog: Process '" << _config.get_name() << "' (PID "
               << _pid << ") killed.";
         }
@@ -162,7 +162,7 @@ void instance::stop() {
           << "watchdog: Unable to stop '" << _config.get_name() << "' (PID "
           << _pid << "): " << strerror(errno);
     } else {
-      logging::error(logging::medium)
+      logging::info(logging::medium)
           << "watchdog: process '" << _config.get_name() << "' (PID " << _pid
           << ") stopped gracefully";
     }
