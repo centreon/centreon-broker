@@ -137,7 +137,7 @@ add_library("${NEB}" SHARED
 )
 # Flags needed to include all symbols in binary.
 target_link_libraries("${NEB}"
-  "-Wl,--whole-archive" "nebbase" "-Wl,--no-whole-archive")
+  "-Wl,--whole-archive" nebbase "-Wl,--no-whole-archive")
 set_target_properties("${NEB}" PROPERTIES PREFIX "")
 install(TARGETS "${NEB}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"

@@ -21,7 +21,9 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
+#include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
+#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
@@ -29,6 +31,8 @@ using namespace com::centreon::broker::processing;
 class TestFeeder : public ::testing::Test {
  public:
   void SetUp() override {
+    config::applier::state::load();
+    io::events::load();
     multiplexing::engine::load();
     std::shared_ptr<io::stream> client;
     std::unordered_set<uint32_t> read_filters;
@@ -38,7 +42,7 @@ class TestFeeder : public ::testing::Test {
   }
 
   void TearDown() override {
-    multiplexing::engine::unload();
+    io::events::unload();
   }
 
  protected:

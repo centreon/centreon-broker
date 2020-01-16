@@ -263,7 +263,6 @@ class property : public source {
    */
   void set_bool(io::data& d, bool value) {
     static_cast<T*>(&d)->*(_prop.b) = value;
-    return;
   }
 
   /**
@@ -274,7 +273,6 @@ class property : public source {
    */
   void set_double(io::data& d, double value) {
     static_cast<T*>(&d)->*(_prop.d) = value;
-    return;
   }
 
   /**
@@ -285,7 +283,6 @@ class property : public source {
    */
   void set_int(io::data& d, int value) {
     static_cast<T*>(&d)->*(_prop.i) = value;
-    return;
   }
 
   /**
@@ -296,7 +293,6 @@ class property : public source {
    */
   void set_short(io::data& d, short value) {
     static_cast<T*>(&d)->*(_prop.s) = value;
-    return;
   }
 
   /**
@@ -307,7 +303,6 @@ class property : public source {
    */
   void set_string(io::data& d, std::string const& value) {
     static_cast<T*>(&d)->*(_prop.q) = value;
-    return;
   }
 
   /**
@@ -318,7 +313,6 @@ class property : public source {
    */
   void set_time(io::data& d, timestamp const& value) {
     static_cast<T*>(&d)->*(_prop.t) = value;
-    return;
   }
 
   /**
@@ -329,7 +323,6 @@ class property : public source {
    */
   void set_uint(io::data& d, uint32_t value) {
     static_cast<T*>(&d)->*(_prop.I) = value;
-    return;
   }
 
   /**
@@ -340,7 +333,6 @@ class property : public source {
    */
   void set_ushort(io::data& d, unsigned short value) {
     static_cast<T*>(&d)->*(_prop.S) = value;
-    return;
   }
 };
 }  // namespace mapping
