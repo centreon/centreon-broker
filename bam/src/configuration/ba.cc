@@ -35,7 +35,7 @@ ba::ba(uint32_t id,
        ba::state_source source,
        double warning_level,
        double critical_level,
-       bool inherit_kpi_downtime)
+       downtime_behaviour dt_behaviour)
     : _id(id),
       _host_id(0),
       _service_id(0),
@@ -43,7 +43,7 @@ ba::ba(uint32_t id,
       _state_source(source),
       _warning_level(warning_level),
       _critical_level(critical_level),
-      _inherit_kpi_downtime(inherit_kpi_downtime) {}
+      _dt_behaviour(dt_behaviour) {}
 
 /**
  *  Copy constructor.
@@ -59,7 +59,7 @@ ba::ba(ba const& other)
       _warning_level(other._warning_level),
       _critical_level(other._critical_level),
       _event(other._event),
-      _inherit_kpi_downtime(other._inherit_kpi_downtime) {}
+      _dt_behaviour(other._dt_behaviour) {}
 
 /**
  *  Destructor.
@@ -83,7 +83,7 @@ ba& ba::operator=(ba const& other) {
     _warning_level = other._warning_level;
     _critical_level = other._critical_level;
     _event = other._event;
-    _inherit_kpi_downtime = other._inherit_kpi_downtime;
+    _dt_behaviour = other._dt_behaviour;
   }
   return (*this);
 }
@@ -102,7 +102,7 @@ bool ba::operator==(ba const& right) const {
           (_warning_level == right._warning_level) &&
           (_critical_level == right._critical_level) &&
           (_event == right._event) &&
-          (_inherit_kpi_downtime == right._inherit_kpi_downtime));
+          (_dt_behaviour == right._dt_behaviour));
 }
 
 /**
@@ -193,8 +193,8 @@ com::centreon::broker::bam::ba_event const& ba::get_opened_event() const {
  *
  *  @return  True if the BA should inherit the downtime of its kpis.
  */
-bool ba::get_inherit_kpi_downtime() const {
-  return (_inherit_kpi_downtime);
+ba::downtime_behaviour ba::get_downtime_behaviour() const {
+  return (_dt_behaviour);
 }
 
 /**
@@ -274,6 +274,6 @@ void ba::set_opened_event(bam::ba_event const& e) {
  *
  *  @param[in] value The value of the inherit kpi downtime flag.
  */
-void ba::set_inherit_kpi_downtime(bool value) {
-  _inherit_kpi_downtime = value;
+void ba::set_downtime_behaviour(ba::downtime_behaviour value) {
+  _dt_behaviour = value;
 }

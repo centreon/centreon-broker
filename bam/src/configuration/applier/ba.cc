@@ -269,7 +269,7 @@ std::shared_ptr<bam::ba> applier::ba::_new_ba(configuration::ba const& cfg,
   obj->set_state_source(cfg.get_state_source());
   obj->set_level_warning(cfg.get_warning_level());
   obj->set_level_critical(cfg.get_critical_level());
-  obj->set_inherit_kpi_downtime(cfg.get_inherit_kpi_downtime());
+  obj->set_downtime_behaviour(cfg.get_downtime_behaviour());
   if (cfg.get_opened_event().ba_id)
     obj->set_initial_event(cfg.get_opened_event());
   book.listen(cfg.get_host_id(), cfg.get_service_id(), obj.get());
