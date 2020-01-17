@@ -39,7 +39,11 @@ using namespace com::centreon::broker::bam::configuration;
  *  Default constructor.
  */
 applier::kpi::kpi()
-    : _bas(nullptr), _book(nullptr), _boolexps(nullptr), _mapping(nullptr), _metas(nullptr) {}
+    : _bas(nullptr),
+      _book(nullptr),
+      _boolexps(nullptr),
+      _mapping(nullptr),
+      _metas(nullptr) {}
 
 /**
  *  Copy constructor.
@@ -184,8 +188,6 @@ void applier::kpi::apply(bam::configuration::state::kpis const& my_kpis,
       _invalidate_ba(cfg);
     }
   }
-
-  return;
 }
 
 /**
@@ -234,8 +236,6 @@ void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
   std::shared_ptr<bam::ba> my_ba(_bas->find_ba(kpi.get_ba_id()));
   if (my_ba)
     my_ba->set_valid(false);
-
-  return;
 }
 
 /**
@@ -248,7 +248,6 @@ void applier::kpi::visit(io::stream* visitor) {
        end(_applied.end());
        it != end; ++it)
     it->second.obj->visit(visitor);
-  return;
 }
 
 /**
@@ -263,7 +262,6 @@ void applier::kpi::_internal_copy(applier::kpi const& other) {
   _boolexps = other._boolexps;
   _mapping = other._mapping;
   _metas = other._metas;
-  return;
 }
 
 /**
@@ -337,10 +335,11 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
 void applier::kpi::_resolve_kpi(configuration::kpi const& cfg,
                                 std::shared_ptr<bam::kpi> kpi) {
   // Find target BA.
-  std::shared_ptr<bam::ba> my_ba(_bas->find_ba(cfg.get_ba_id()));
+  uint32_t ba_id = cfg.get_ba_id();
+  std::shared_ptr<bam::ba> my_ba(_bas->find_ba(ba_id));
   if (!my_ba)
-    throw(exceptions::config()
-          << "target BA " << cfg.get_ba_id() << " does not exist");
+    throw exceptions::config()
+          << "target BA " << ba_id << " does not exist";
 
   if (cfg.is_ba()) {
     std::shared_ptr<bam::kpi_ba> obj(
@@ -405,5 +404,4 @@ void applier::kpi::_remove_kpi(uint32_t kpi_id) {
       my_ba->remove_impact(it->second.obj);
     _applied.erase(it);
   }
-  return;
 }
