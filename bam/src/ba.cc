@@ -17,7 +17,9 @@
 */
 
 #include "com/centreon/broker/bam/ba.hh"
+
 #include <sstream>
+
 #include "com/centreon/broker/bam/ba_status.hh"
 #include "com/centreon/broker/bam/impact_values.hh"
 #include "com/centreon/broker/bam/kpi.hh"
@@ -28,21 +30,46 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
 
-/**
- *  Normalize the value of a double to be in the range [0,100].
- *
- *  @param[in] d  Value.
- *
- *  @return The provided value if in the range [0,100], the closest
- *          limit otherwise.
- */
-static double normalize(double d) {
+auto normalize = [](double d) -> double {
   if (d > 100.0)
     d = 100.0;
   else if (d < 0.0)
     d = 0.0;
   return (d);
-}
+};
+
+auto _num_kpi_in_dt =
+    [](std::unordered_map<kpi*, bam::ba::impact_info>& imp) -> bool {
+  std::size_t num{0};
+
+  for (std::unordered_map<kpi*, ba::impact_info>::const_iterator
+           it = imp.begin(),
+           end = imp.end();
+       it != end; ++it) {
+    if (!it->first->ok_state() && !it->first->in_downtime()) {
+      num++;
+    }
+  }
+
+  return num;
+};
+
+auto _every_kpi_in_dt =
+    [](std::unordered_map<kpi*, bam::ba::impact_info>& imp) -> bool {
+  if (imp.empty())
+    return false;
+
+  for (std::unordered_map<kpi*, ba::impact_info>::const_iterator
+           it = imp.begin(),
+           end = imp.end();
+       it != end; ++it) {
+    if (!it->first->ok_state() && !it->first->in_downtime()) {
+      return false;
+    }
+  }
+
+  return true;
+};
 
 /**
  *  Constructor.
@@ -306,9 +333,13 @@ ba::state ba::get_state_hard() {
     else
       state = ba::state::state_ok;
   else if (_state_source == configuration::ba::state_source_best ||
-           _state_source == configuration::ba::state_source_worst)
-    state = _computed_hard_state;
-  else if (_state_source == configuration::ba::state_source_ratio_number)
+           _state_source == configuration::ba::state_source_worst) {
+    if (_dt_behaviour == configuration::ba::dt_ignore_kpi &&
+        _every_kpi_in_dt(_impacts))
+      state = impact_values::state_ok;
+    else
+      state = _computed_hard_state;
+  } else if (_state_source == configuration::ba::state_source_ratio_number)
     state = update_state(_num_hard_critical_childs, _level_critical,
                          _level_warning);
   else if (_state_source == configuration::ba::state_source_ratio_percent)
@@ -476,8 +507,8 @@ void ba::set_valid(bool valid) {
  *
  *  @param[in] value  The value to set.
  */
-void ba::set_inherit_kpi_downtime(bool value) {
-  _inherit_kpi_downtime = value;
+void ba::set_downtime_behaviour(configuration::ba::downtime_behaviour value) {
+  _dt_behaviour = value;
 }
 
 /**
@@ -659,7 +690,8 @@ void ba::set_inherited_downtime(inherited_downtime const& dwn) {
  *
  *  @param[in] impact Impact information.
  */
-void ba::_apply_impact(kpi* kpi_ptr __attribute__((unused)), ba::impact_info& impact) {
+void ba::_apply_impact(kpi* kpi_ptr __attribute__((unused)),
+                       ba::impact_info& impact) {
   auto is_state_worse = [&](short current_state, short new_state) -> bool {
     if (current_state == ba::state::state_ok &&
         new_state != ba::state::state_ok)  // OK => something elses
@@ -694,6 +726,9 @@ void ba::_apply_impact(kpi* kpi_ptr __attribute__((unused)), ba::impact_info& im
   _acknowledgement_soft += impact.soft_impact.get_acknowledgement();
   _downtime_hard += impact.hard_impact.get_downtime();
   _downtime_soft += impact.soft_impact.get_downtime();
+
+  if (_dt_behaviour == configuration::ba::dt_ignore_kpi && impact.in_downtime)
+    return;
   _level_hard -= impact.hard_impact.get_nominal();
   _level_soft -= impact.soft_impact.get_nominal();
 
@@ -755,6 +790,8 @@ void ba::_recompute() {
   _downtime_soft = 0.0;
   _level_hard = 100.0;
   _level_soft = 100.0;
+  _num_hard_critical_childs = 0;
+  _num_soft_critical_childs = 0;
   for (std::unordered_map<kpi*, impact_info>::iterator it(_impacts.begin()),
        end(_impacts.end());
        it != end; ++it)
@@ -780,16 +817,17 @@ void ba::_unapply_impact(kpi* kpi_ptr, ba::impact_info& impact) {
     _acknowledgement_soft -= impact.soft_impact.get_acknowledgement();
     _downtime_hard -= impact.hard_impact.get_downtime();
     _downtime_soft -= impact.soft_impact.get_downtime();
+    if (_dt_behaviour == configuration::ba::dt_ignore_kpi && impact.in_downtime)
+      return;
     _level_hard += impact.hard_impact.get_nominal();
     _level_soft += impact.soft_impact.get_nominal();
-  } else if (_computed_soft_state == impact.soft_impact.get_state() ||
-             _computed_hard_state == impact.hard_impact.get_state()) {
+  } else {
     if (_state_source == configuration::ba::state_source_best)
       _computed_soft_state = _computed_hard_state = ba::state::state_critical;
     else if (_state_source == configuration::ba::state_source_worst)
       _computed_soft_state = _computed_hard_state = ba::state::state_ok;
     else if (_state_source == configuration::ba::state_source_ratio_number ||
-        _state_source == configuration::ba::state_source_ratio_percent) {
+             _state_source == configuration::ba::state_source_ratio_percent) {
       _num_soft_critical_childs = 0;
       _num_hard_critical_childs = 0;
     }
@@ -829,25 +867,17 @@ void ba::_commit_initial_events(io::stream* visitor) {
  */
 void ba::_compute_inherited_downtime(io::stream* visitor) {
   // kpi downtime heritance deactived. Do nothing.
-  if (!_inherit_kpi_downtime)
+  if (_dt_behaviour != configuration::ba::dt_inherit)
     return;
 
   // Check if every impacting child KPIs are in downtime.
   bool every_kpi_in_downtime(!_impacts.empty());
-  for (std::unordered_map<kpi*, impact_info>::const_iterator
-           it = _impacts.begin(),
-           end = _impacts.end();
-       it != end; ++it) {
-    if (!it->first->ok_state() && !it->first->in_downtime()) {
-      every_kpi_in_downtime = false;
-      break;
-    }
-  }
 
   // Case 1: state not ok, every child in downtime, no actual downtime.
   //         Put the BA in downtime.
+  bool dt{_every_kpi_in_dt(_impacts)};
   bool state_ok(!get_state_hard());
-  if (!state_ok && every_kpi_in_downtime && !_inherited_downtime) {
+  if (!state_ok && dt && !_inherited_downtime) {
     _inherited_downtime.reset(new inherited_downtime);
     _inherited_downtime->ba_id = _id;
     _inherited_downtime->in_downtime = true;

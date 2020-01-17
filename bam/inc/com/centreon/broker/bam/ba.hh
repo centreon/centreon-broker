@@ -51,15 +51,15 @@ class ba : public computable, public service_listener {
  public:
   typedef impact_values::state state;
 
- private:
-  static int const _recompute_limit = 100;
-
   struct impact_info {
     std::shared_ptr<kpi> kpi_ptr;
     impact_values hard_impact;
     impact_values soft_impact;
     bool in_downtime;
   };
+
+ private:
+  static int const _recompute_limit = 100;
 
   void _apply_impact(kpi* kpi_ptr, impact_info& impact);
   void _open_new_event(io::stream* visitor, short service_hard_state);
@@ -91,7 +91,7 @@ class ba : public computable, public service_listener {
   int _recompute_count;
   uint32_t _service_id;
   bool _valid;
-  bool _inherit_kpi_downtime;
+  configuration::ba::downtime_behaviour _dt_behaviour;
   std::unique_ptr<inherited_downtime> _inherited_downtime;
 
   void _commit_initial_events(io::stream* visitor);
@@ -130,7 +130,7 @@ class ba : public computable, public service_listener {
   void set_initial_event(ba_event const& event);
   void set_name(std::string const& name);
   void set_valid(bool valid);
-  void set_inherit_kpi_downtime(bool value);
+  void set_downtime_behaviour(configuration::ba::downtime_behaviour value);
   void set_state_source(configuration::ba::state_source source);
   void visit(io::stream* visitor);
   void service_update(std::shared_ptr<neb::downtime> const& dt,

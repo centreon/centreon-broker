@@ -21,6 +21,7 @@
 
 #include <string>
 #include <vector>
+
 #include "com/centreon/broker/bam/ba_event.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -43,7 +44,9 @@ class ba {
     state_source_worst,
     state_source_ratio_percent,
     state_source_ratio_number
-  }state_source;
+  } state_source;
+
+  typedef enum { dt_ignore = 0, dt_inherit, dt_ignore_kpi } downtime_behaviour;
 
  private:
   uint32_t _id;
@@ -54,7 +57,7 @@ class ba {
   double _warning_level;
   double _critical_level;
   bam::ba_event _event;
-  bool _inherit_kpi_downtime;
+  downtime_behaviour _dt_behaviour;
 
  public:
   ba(uint32_t id = 0,
@@ -62,7 +65,7 @@ class ba {
      ba::state_source source = state_source_impact,
      double warning_level = 0.0,
      double critical_level = 0.0,
-     bool inherit_kpi_downtime = false);
+     downtime_behaviour dt_behaviour = dt_ignore);
   ba(ba const& right);
   ~ba();
   ba& operator=(ba const& right);
@@ -79,7 +82,7 @@ class ba {
   bam::ba_event const& get_opened_event() const;
   uint32_t get_default_timeperiod() const;
   std::vector<uint32_t> const& get_timeperiods() const;
-  bool get_inherit_kpi_downtime() const;
+  downtime_behaviour get_downtime_behaviour() const;
 
   void set_id(uint32_t id);
   void set_host_id(uint32_t host_id);
@@ -89,7 +92,7 @@ class ba {
   void set_warning_level(double warning_level);
   void set_critical_level(double critical_level);
   void set_opened_event(bam::ba_event const& e);
-  void set_inherit_kpi_downtime(bool value);
+  void set_downtime_behaviour(downtime_behaviour value);
 };
 }  // namespace configuration
 }  // namespace bam

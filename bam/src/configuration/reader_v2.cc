@@ -17,9 +17,11 @@
 */
 
 #include "com/centreon/broker/bam/configuration/reader_v2.hh"
+
 #include <cstring>
 #include <memory>
 #include <sstream>
+
 #include "com/centreon/broker/bam/configuration/reader_exception.hh"
 #include "com/centreon/broker/bam/configuration/state.hh"
 #include "com/centreon/broker/bam/dimension_ba_bv_relation_event.hh"
@@ -225,7 +227,8 @@ void reader_v2::_load(state::bas& bas, bam::ba_svc_mapping& mapping) {
                               res.value_as_u32(2)),  // State source.
                           res.value_as_f32(3),       // Warning level.
                           res.value_as_f32(4),       // Critical level.
-                          res.value_as_bool(8));     // Downtime inheritance.
+                          static_cast<configuration::ba::downtime_behaviour>(
+                              res.value_as_u32(8)));  // Downtime inheritance.
 
           // BA state.
           if (!res.value_is_null(5)) {
