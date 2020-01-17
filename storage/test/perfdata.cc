@@ -32,13 +32,9 @@ TEST(StoragePerfdataException, All) {
   try {
     throw storage::exceptions::perfdata() << "test exception";
   } catch (storage::exceptions::perfdata const& e) {
-    storage::exceptions::perfdata ex1;
-    storage::exceptions::perfdata ex2;
-
-    ex1 = e;
 
     try {
-      ex1.rethrow();
+      e.rethrow();
     }
     catch (storage::exceptions::perfdata const& e) {
       exceptions::msg *msg{e.clone()};

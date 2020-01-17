@@ -45,18 +45,6 @@ perfdata::perfdata(perfdata const& pd) throw() : broker::exceptions::msg(pd) {}
 perfdata::~perfdata() throw() {}
 
 /**
- *  Assignment operator.
- *
- *  @param[in] pd Object to copy.
- *
- *  @return This object.
- */
-perfdata& perfdata::operator=(perfdata const& pd) throw() {
-  broker::exceptions::msg::operator=(pd);
-  return (*this);
-}
-
-/**
  *  Clone the exception object.
  *
  *  @return Copy of this exception object.

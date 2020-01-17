@@ -38,7 +38,6 @@ class perfdata : public broker::exceptions::msg {
   perfdata() throw();
   perfdata(perfdata const& pd) throw();
   ~perfdata() throw();
-  perfdata& operator=(perfdata const& pdf) throw();
   virtual broker::exceptions::msg* clone() const;
   virtual void rethrow() const;
 

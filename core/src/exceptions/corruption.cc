@@ -51,7 +51,3 @@ corruption::~corruption() throw() {}
  *
  *  @return This instance.
  */
-corruption& corruption::operator=(corruption const& other) {
-  com::centreon::broker::exceptions::msg::operator=(other);
-  return (*this);
-}

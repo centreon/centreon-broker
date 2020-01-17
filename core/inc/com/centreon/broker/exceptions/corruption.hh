@@ -38,7 +38,6 @@ class corruption : public msg {
   corruption();
   corruption(corruption const& other);
   ~corruption() throw();
-  corruption& operator=(corruption const& other);
 
   /**
    *  Insert data in message.

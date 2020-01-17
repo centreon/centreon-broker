@@ -37,7 +37,6 @@ class shutdown : public msg {
   shutdown();
   shutdown(shutdown const& other);
   ~shutdown() throw();
-  shutdown& operator=(shutdown const& other);
 
   /**
    *  Insert data in message.

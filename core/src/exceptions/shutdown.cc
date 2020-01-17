@@ -51,7 +51,3 @@ shutdown::~shutdown() throw() {}
  *
  *  @return This object.
  */
-shutdown& shutdown::operator=(shutdown const& other) {
-  com::centreon::broker::exceptions::msg::operator=(other);
-  return (*this);
-}

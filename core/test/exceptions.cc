@@ -40,22 +40,6 @@ TEST(Exceptions, CopyConstructor) {
   ASSERT_STREQ(e1.what(), e2.what());
 }
 
-// Given an exceptions::msg object with an error message
-// And another exceptions::msg object with another error message
-// When the first object is assigned the second
-// Then the error messages of the two objects are the second error message
-TEST(Exceptions, AssignmentOperator) {
-  char const* m1("This is the first error message !");
-  exceptions::msg e1;
-  e1 << m1;
-  char const* m2("This is the second error messages !");
-  exceptions::msg e2;
-  e2 << m2;
-  e1 = e2;
-  ASSERT_STREQ(e1.what(), m2);
-  ASSERT_STREQ(e2.what(), m2);
-}
-
 TEST(Exceptions, Throw) {
   // First throw.
   try {

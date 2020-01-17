@@ -384,10 +384,8 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/config/parser.cc
   ${SRC_DIR}/config/state.cc
   ${SRC_DIR}/database_config.cc
-  ${SRC_DIR}/exceptions/config.cc
   ${SRC_DIR}/exceptions/corruption.cc
   ${SRC_DIR}/exceptions/interrupt.cc
-  ${SRC_DIR}/exceptions/msg.cc
   ${SRC_DIR}/exceptions/shutdown.cc
   ${SRC_DIR}/exceptions/timeout.cc
   ${SRC_DIR}/extcmd/command_client.cc

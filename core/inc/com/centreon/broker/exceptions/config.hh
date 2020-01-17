@@ -33,10 +33,10 @@ namespace exceptions {
  */
 class config : public msg {
  public:
-  config();
-  config(config const& other);
-  ~config() throw();
-  config& operator=(config const& other);
+  config() = default;
+  config(config const& other) : msg(other) {}
+  ~config() noexcept {}
+  config& operator=(config const& other) = delete;
 
   /**
    *  Insert data in message.
@@ -45,11 +45,11 @@ class config : public msg {
    *
    *  @return This object.
    */
-  template <typename T>
-  config& operator<<(T t) {
-    msg::operator<<(t);
-    return (*this);
-  }
+//  template <typename T>
+//  config& operator<<(T t) {
+//    msg::operator<<(t);
+//    return *this;
+//  }
 };
 }  // namespace exceptions
 

@@ -37,7 +37,6 @@ class update : public broker::exceptions::msg {
   update() throw();
   update(update const& u) throw();
   ~update() throw();
-  update& operator=(update const& u) throw();
   virtual broker::exceptions::msg* clone() const;
   virtual void rethrow() const;
 
