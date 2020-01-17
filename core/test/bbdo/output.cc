@@ -146,7 +146,8 @@ TEST_F(OutputTest, WriteLongService) {
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 12;
   svc->service_id = 18;
-  svc->output = std::string("", 70000);
+  svc->output = std::string();
+  svc->output.reserve(70000);
   char c = 'A';
   for (std::string::iterator i = svc->output.begin(); i != svc->output.end();
        i++) {
