@@ -130,9 +130,8 @@ add_executable(ut
 set_target_properties("ut" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 
 add_dependencies(ut googletest)
-#target_link_libraries(ut gtest ${TESTS_LIBRARIES} ${NEB} rokerbase roker
-target_link_libraries(ut gtest ${TESTS_LIBRARIES} rokerbase roker
-  pthread conflictmgr)
+target_link_libraries(ut gtest rokerbase roker ${TESTS_LIBRARIES}
+    conflictmgr)
 
 add_test(NAME tests COMMAND ut)
 
