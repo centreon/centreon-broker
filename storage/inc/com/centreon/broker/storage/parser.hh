@@ -40,7 +40,7 @@ class parser {
   parser(parser const& p) = delete;
   ~parser();
   parser& operator=(parser const& p) = delete;
-  void parse_perfdata(std::string const& str, std::list<perfdata>& pd);
+  void parse_perfdata(const char* str, std::list<perfdata>& pd);
 };
 }  // namespace storage
 

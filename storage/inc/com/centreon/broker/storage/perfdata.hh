@@ -49,9 +49,10 @@ class perfdata {
   void max(double m) throw();
   double min() const throw();
   void min(double m) throw();
-  std::string const& name() const throw();
+  std::string const& name() const noexcept;
   void name(std::string const& n);
-  std::string const& unit() const throw();
+  void name(std::string&& n);
+  std::string const& unit() const noexcept;
   void unit(std::string const& u);
   double value() const throw();
   void value(double v) throw();
@@ -63,6 +64,7 @@ class perfdata {
   void warning_low(double w) throw();
   bool warning_mode() const throw();
   void warning_mode(bool m) throw();
+  void unit(std::string&& u);
 
  private:
   double _critical;

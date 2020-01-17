@@ -194,7 +194,10 @@ std::string const& perfdata::name() const throw() {
  */
 void perfdata::name(std::string const& n) {
   _name = n;
-  return;
+}
+
+void perfdata::name(std::string&& n) {
+  _name = n;
 }
 
 /**
@@ -213,7 +216,10 @@ std::string const& perfdata::unit() const throw() {
  */
 void perfdata::unit(std::string const& u) {
   _unit = u;
-  return;
+}
+
+void perfdata::unit(std::string&& u) {
+  _unit = u;
 }
 
 /**
