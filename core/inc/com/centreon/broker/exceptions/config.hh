@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 Centreon
+** Copyright 2015,2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,9 +34,9 @@ namespace exceptions {
 class config : public msg {
  public:
   config() = default;
-  config(config const& other) : msg(other) {}
+  config(const config&) = default;
   ~config() noexcept {}
-  config& operator=(config const& other) = delete;
+  config& operator=(const config&) = delete;
 
   /**
    *  Insert data in message.
@@ -45,11 +45,11 @@ class config : public msg {
    *
    *  @return This object.
    */
-//  template <typename T>
-//  config& operator<<(T t) {
-//    msg::operator<<(t);
-//    return *this;
-//  }
+  template <typename T>
+  config& operator<<(T t) noexcept {
+    *(misc::stringifier*)this << t;
+    return *this;
+  }
 };
 }  // namespace exceptions
 

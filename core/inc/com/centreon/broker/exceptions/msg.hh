@@ -32,7 +32,7 @@ namespace exceptions {
  *  msg is a simple exception class that is only associated with a
  *  message. msg accepts multiple types on input.
  */
-class msg : private misc::stringifier, public std::exception {
+class msg : protected misc::stringifier, public std::exception {
  public:
   msg() = default;
   msg(msg const& other) : misc::stringifier(other), std::exception(other) {}
