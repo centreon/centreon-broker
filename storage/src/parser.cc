@@ -263,7 +263,7 @@ void parser::parse_perfdata(const char* str, std::list<perfdata>& pd) {
         << ", min=" << p.min() << ", max=" << p.max() << ")";
 
     // Append to list.
-    pd.push_back(p);
+    pd.emplace_back(std::move(p));
 
     // Skip whitespaces.
     while (isblank(*tmp))

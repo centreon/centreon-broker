@@ -47,17 +47,6 @@ perfdata::perfdata()
  *
  *  @param[in] other Object to copy.
  */
-perfdata::perfdata(perfdata const& other)
-    : _critical(other._critical),
-      _critical_low(other._critical_low),
-      _critical_mode(other._critical_mode),
-      _max(other._max),
-      _min(other._min),
-      _value(other._value),
-      _value_type(other._value_type),
-      _warning(other._warning),
-      _warning_low(other._warning_low),
-      _warning_mode(other._warning_mode) {}
 
 /**
  *  Destructor.
@@ -323,11 +312,11 @@ void perfdata::warning_mode(bool m) noexcept {
  *  @return true if a and b are equal.
  */
 static inline bool double_equal(double a, double b) {
-  return std::isnan(a) && std::isnan(b) ||
+  return (std::isnan(a) && std::isnan(b)) ||
          (std::isinf(a) && std::isinf(b) &&
           std::signbit(a) == std::signbit(b)) ||
          (std::isfinite(a) && std::isfinite(b) &&
-          fabs(a - b) < 0.01 * fabs(a));
+          fabs(a - b) <= 0.01 * fabs(a));
 }
 
 /**
