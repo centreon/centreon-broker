@@ -81,7 +81,8 @@ TEST(InfluxDBFactory, StatusException) {
   json11::Json::object conf;
   conf["status_column"] = nullptr;
   cfg.cfg = json11::Json{conf};
-  ASSERT_NO_THROW(fact.new_endpoint(cfg, is_acceptor, cache));
+  std::unique_ptr<io::endpoint> ep;
+  ASSERT_NO_THROW(ep.reset(fact.new_endpoint(cfg, is_acceptor, cache)));
 
   json11::Json js1 {
       json11::Json::object{
@@ -197,7 +198,8 @@ TEST(InfluxDBFactory, MetricException) {
   json11::Json::object conf;
   conf["metric_column"] = nullptr;
   cfg.cfg = json11::Json{conf};
-  ASSERT_NO_THROW(fact.new_endpoint(cfg, is_acceptor, cache));
+  std::unique_ptr<io::endpoint> ep;
+  ASSERT_NO_THROW(ep.reset(fact.new_endpoint(cfg, is_acceptor, cache)));
 
   json11::Json js1 {
       json11::Json::object{

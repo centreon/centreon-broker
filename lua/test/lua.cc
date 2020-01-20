@@ -301,7 +301,8 @@ TEST_F(LuaAsioTest, SocketConnectionOk) {
                "end\n\n"
                "function write(d)\n"
                "end\n\n");
-  ASSERT_NO_THROW(new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding;
+  ASSERT_NO_THROW(binding.reset(new luabinding(filename, conf, *_cache)));
   RemoveFile(filename);
 }
 
@@ -368,7 +369,8 @@ TEST_F(LuaAsioTest, SocketWrite) {
 
   ASSERT_TRUE(_server.get_bind_ok());
 
-  ASSERT_NO_THROW(new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding;
+  ASSERT_NO_THROW(binding.reset(new luabinding(filename, conf, *_cache)));
   std::string lst(ReadFile("/tmp/log"));
   ASSERT_TRUE(lst.size() > 0);
   RemoveFile("/tmp/log");
