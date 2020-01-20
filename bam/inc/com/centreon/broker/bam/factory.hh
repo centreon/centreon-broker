@@ -33,11 +33,10 @@ namespace bam {
  */
 class factory : public io::factory {
  public:
-  factory();
-  factory(factory const& other);
-  ~factory();
-  factory& operator=(factory const& other);
-  io::factory* clone() const;
+  factory() = default;
+  ~factory() = default;
+  factory(factory const& other) = delete;
+  factory& operator=(factory const& other) = delete;
   bool has_endpoint(config::endpoint& cfg) const;
   io::endpoint* new_endpoint(config::endpoint& cfg,
                              bool& is_acceptor,

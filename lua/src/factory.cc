@@ -45,44 +45,6 @@ static std::string find_param(config::endpoint const& cfg,
 }
 
 /**
- *  Default constructor.
- */
-factory::factory() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-factory::factory(factory const& other) : io::factory(other) {}
-
-/**
- *  Destructor.
- */
-factory::~factory() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-factory& factory::operator=(factory const& other) {
-  io::factory::operator=(other);
-  return *this;
-}
-
-/**
- *  Clone the factory.
- *
- *  @return Copy of the factory.
- */
-io::factory* factory::clone() const {
-  return new factory(*this);
-}
-
-/**
  *  Check if an endpoint match a configuration.
  *
  *  @param[in] cfg  Endpoint configuration.

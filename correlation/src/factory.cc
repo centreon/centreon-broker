@@ -26,44 +26,6 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
 
 /**
- *  Default constructor.
- */
-factory::factory() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-factory::factory(factory const& other) : io::factory(other) {}
-
-/**
- *  Destructor.
- */
-factory::~factory() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-factory& factory::operator=(factory const& other) {
-  io::factory::operator=(other);
-  return *this;
-}
-
-/**
- *  Clone a factory.
- *
- *  @return A new exact copy of this factory.
- */
-io::factory* factory::clone() const {
-  return new factory(*this);
-}
-
-/**
  *  Check if an endpoint configuration matches streams build by this
  *  factory.
  *

@@ -183,7 +183,6 @@ TEST(InfluxDBFactory, MetricException) {
   config::endpoint cfg;
   std::shared_ptr<persistent_cache> cache;
   bool is_acceptor;
-  delete fact.clone();
 
   cfg.type = "influxdb";
   cfg.params["db_user"] = "admin";

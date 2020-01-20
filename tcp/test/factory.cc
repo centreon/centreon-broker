@@ -75,7 +75,7 @@ TEST(TcpFactory, Connector) {
   cfg.type = "tcp";
   cfg.params["port"] = "4444";
   cfg.params["host"] = "127.0.0.1";
-  std::unique_ptr<io::factory> f{fact.clone()};
+  std::unique_ptr<io::factory> f{new tcp::factory};
   ASSERT_TRUE(f->has_endpoint(cfg));
   std::unique_ptr<io::endpoint> endp{fact.new_endpoint(cfg, is_acceptor, cache)};
 

@@ -124,8 +124,6 @@ class fact : public io::factory {
  public:
   fact() {}
 
-  factory* clone() const override { return new fact(*this); }
-
   bool has_endpoint(config::endpoint& cfg
                     __attribute__((__unused__))) const override {
     return true;
@@ -156,8 +154,7 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
   ASSERT_TRUE(file_stream);
 
   // Data.
-  std::string data;
-  data =
+  std::string data(
       "\n{"
       "  \"centreonBroker\": {\n"
       "    \"input\": {\n"
@@ -206,7 +203,7 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
       "      }\n"
       "    ]\n"
       "  }\n"
-      "}\n";
+      "}\n");
 
   // Write data.
   ASSERT_TRUE(fwrite(data.c_str(), data.size(), 1, file_stream) == 1);
