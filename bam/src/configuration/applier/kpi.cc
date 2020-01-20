@@ -198,7 +198,7 @@ void applier::kpi::apply(bam::configuration::state::kpis const& my_kpis,
 void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
   // Set KPI as invalid.
   {
-    std::shared_ptr<kpi_status> ks(new kpi_status);
+    auto ks(std::make_shared<kpi_status>());
     ks->kpi_id = kpi.get_id();
     ks->state_hard = 3;
     ks->state_soft = 3;
