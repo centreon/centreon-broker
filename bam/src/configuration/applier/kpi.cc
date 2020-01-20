@@ -141,7 +141,9 @@ void applier::kpi::apply(bam::configuration::state::kpis const& my_kpis,
        it != end; ++it) {
     logging::config(logging::medium)
         << "BAM: removing KPI " << it->second.cfg.get_id();
-    _remove_kpi(it->first);
+    std::map<uint32_t, applied>::iterator kpi_it = _applied.find(it->first);
+    if (kpi_it != _applied.end())
+      _remove_kpi(kpi_it);
   }
   to_delete.clear();
 
@@ -221,19 +223,19 @@ void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
   // applied.
 
   // Remove KPIs linked to BA of this KPI.
-  for (std::map<uint32_t, applied>::const_iterator kpi_it(_applied.begin()),
+
+  uint32_t kpi_ba_id = kpi.get_ba_id();
+  for (std::map<uint32_t, applied>::iterator kpi_it(_applied.begin()),
        kpi_end(_applied.end());
        kpi_it != kpi_end;) {
-    if (kpi_it->second.cfg.get_ba_id() == kpi.get_ba_id()) {
-      uint32_t kpi_id(kpi_it->first);
-      ++kpi_it;
-      _remove_kpi(kpi_id);
-    } else
+    if (kpi_it->second.cfg.get_ba_id() == kpi_ba_id)
+      kpi_it = _remove_kpi(kpi_it);
+    else
       ++kpi_it;
   }
 
   // Set BA as invalid.
-  std::shared_ptr<bam::ba> my_ba(_bas->find_ba(kpi.get_ba_id()));
+  std::shared_ptr<bam::ba> my_ba(_bas->find_ba(kpi_ba_id));
   if (my_ba)
     my_ba->set_valid(false);
 }
@@ -392,16 +394,16 @@ void applier::kpi::_resolve_kpi(configuration::kpi const& cfg,
  *
  *  @param[in] kpi_id  KPI ID.
  */
-void applier::kpi::_remove_kpi(uint32_t kpi_id) {
-  std::map<uint32_t, applied>::iterator it(_applied.find(kpi_id));
-  if (it != _applied.end()) {
-    if (it->second.cfg.is_service())
-      _book->unlisten(it->second.cfg.get_host_id(),
-                      it->second.cfg.get_service_id(),
-                      static_cast<kpi_service*>(it->second.obj.get()));
-    std::shared_ptr<bam::ba> my_ba(_bas->find_ba(it->second.cfg.get_ba_id()));
-    if (my_ba)
-      my_ba->remove_impact(it->second.obj);
-    _applied.erase(it);
-  }
+std::map<uint32_t, applier::kpi::applied>::iterator applier::kpi::_remove_kpi(
+    std::map<uint32_t, applied>::iterator kpi_it) {
+  if (kpi_it->second.cfg.is_service())
+    _book->unlisten(kpi_it->second.cfg.get_host_id(),
+                    kpi_it->second.cfg.get_service_id(),
+                    static_cast<kpi_service*>(kpi_it->second.obj.get()));
+  std::shared_ptr<bam::ba> my_ba(_bas->find_ba(kpi_it->second.cfg.get_ba_id()));
+  if (my_ba)
+    my_ba->remove_impact(kpi_it->second.obj);
+  kpi_it = _applied.erase(kpi_it);
+
+  return kpi_it;
 }
