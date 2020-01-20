@@ -152,15 +152,6 @@ void acceptor::set_write_filters(std::unordered_set<uint32_t> const& filters) {
 }
 
 /**
- *  Get the number of queued events.
- *
- *  @return  The number of queued events.
- */
-uint32_t acceptor::_get_queued_events() {
-  return 0;
-}
-
-/**
  *  Get the read filters used by the feeder.
  *
  *  @return  The read filters used by the feeder.

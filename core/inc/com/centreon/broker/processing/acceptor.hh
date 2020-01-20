@@ -59,7 +59,6 @@ class acceptor : public bthread {
 
  protected:
   // From stat_visitable
-  virtual uint32_t _get_queued_events() override;
   std::unordered_set<uint32_t> const& _get_read_filters() const override;
   std::unordered_set<uint32_t> const& _get_write_filters() const override;
   virtual void _forward_statistic(json11::Json::object& tree) override;

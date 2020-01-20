@@ -77,15 +77,6 @@ bool feeder::is_finished() const noexcept {
 }
 
 /**
- *  Get the number of queued events.
- *
- *  @return  The number of queued events.
- */
-uint32_t feeder::_get_queued_events() {
-  return _subscriber.get_muxer().get_event_queue_size();
-}
-
-/**
  *  Get the read filters used by the feeder.
  *
  *  @return  The read filters used by the feeder.
@@ -120,6 +111,8 @@ void feeder::_forward_statistic(json11::Json::object& tree) {
 void feeder::_callback() {
   logging::info(logging::medium)
       << "feeder: thread of client '" << _name << "' is starting";
+  time_t fill_stats_time = time(nullptr);
+
   try {
     if (!_client)
       throw exceptions::msg()
@@ -130,6 +123,13 @@ void feeder::_callback() {
     while (!_should_exit) {
       // Read from stream.
       bool timed_out_stream(true);
+
+      // Filling stats
+      if (time(nullptr) >= fill_stats_time) {
+        fill_stats_time += 5;
+        set_queued_events(_subscriber.get_muxer().get_event_queue_size());
+      }
+
       if (stream_can_read) {
         try {
           misc::read_lock lock(_client_m);

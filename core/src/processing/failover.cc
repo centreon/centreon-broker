@@ -206,6 +206,9 @@ void failover::run() {
       bool muxer_can_read(true);
       bool should_commit(false);
       std::shared_ptr<io::data> d;
+
+      time_t fill_stats_time = time(nullptr);
+
       while (!should_exit()) {
 
         // Check for update.
@@ -213,6 +216,12 @@ void failover::run() {
           std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
           _stream->update();
           _update = false;
+        }
+
+        // Filling stats
+        if (time(nullptr) >= fill_stats_time) {
+          fill_stats_time += 5;
+          set_queued_events(_subscriber->get_muxer().get_event_queue_size());
         }
 
         // Read from endpoint stream.
@@ -447,15 +456,6 @@ void failover::update() {
 //    finished = false;
 //  return finished;
 //}
-
-/**
- *  Get the number of queued events.
- *
- *  @return  The number of queued events.
- */
-uint32_t failover::_get_queued_events() {
-  return _subscriber->get_muxer().get_event_queue_size();
-}
 
 /**
  *  Get the read filters used by the failover.

@@ -41,25 +41,27 @@ class stat_visitable {
   timestamp _last_connection_success;
   misc::processing_speed_computer _event_processing_speed;
   std::atomic<char const*> _state;
+  std::atomic<uint32_t> _queued_events;
 
  protected:
   std::string _name;
   mutable std::mutex _stat_mutex;
 
-  virtual uint32_t _get_queued_events() = 0;
+  //virtual uint32_t _get_queued_events() = 0;
   virtual std::unordered_set<uint32_t> const& _get_read_filters() const = 0;
   virtual std::unordered_set<uint32_t> const& _get_write_filters() const = 0;
   virtual void _forward_statistic(json11::Json::object& tree);
 
  public:
   stat_visitable(std::string const& name = std::string());
-  virtual ~stat_visitable();
+  virtual ~stat_visitable() = default;
   stat_visitable(stat_visitable const& other) = delete;
   stat_visitable& operator=(stat_visitable const& other) = delete;
 
   std::string const& get_name() const;
   void set_last_error(std::string const& last_error);
   void set_state(char const* state);
+  void set_queued_events(uint32_t);
   virtual void stats(json11::Json::object& tree);
   void set_last_connection_attempt(timestamp last_connection_attempt);
   void set_last_connection_success(timestamp last_connection_success);

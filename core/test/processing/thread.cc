@@ -39,7 +39,6 @@ class DummyThread : public bthread {
     }
   }
 
-  uint32_t _get_queued_events() override { return 0; }
   std::unordered_set<uint32_t> const& _get_write_filters() const override {
     return _filters;
   }
@@ -52,8 +51,8 @@ class DummyThread : public bthread {
 
 class TestThread : public ::testing::Test {
  public:
-  void SetUp() override { 
-    
+  void SetUp() override {
+
     _thread.reset(new DummyThread); }
 
  protected:

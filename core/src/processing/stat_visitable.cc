@@ -31,12 +31,7 @@ using namespace com::centreon::broker::processing;
  *  @param[in] name  The name of the thread.
  */
 stat_visitable::stat_visitable(std::string const& name)
-    : _state{""}, _name(name) {}
-
-/**
- *  Destructor.
- */
-stat_visitable::~stat_visitable() {}
+    : _state{""}, _name(name), _queued_events{0} {}
 
 /**
  *  Dump all the filters in a string.
@@ -60,7 +55,7 @@ static std::string dump_filters(std::unordered_set<uint32_t> const& filters) {
   }
 
   if (filters.size() == all_events.size())
-    return ("all");
+    return "all";
 
   std::string ret;
   for (std::unordered_set<uint32_t>::const_iterator it = filters.begin(),
@@ -71,7 +66,7 @@ static std::string dump_filters(std::unordered_set<uint32_t> const& filters) {
     if (found != name_by_id.end())
       ret.append(",  ").append(found->second);
   }
-  return (ret);
+  return ret;
 }
 
 /**
@@ -88,7 +83,7 @@ void stat_visitable::stats(json11::Json::object& tree) {
   tree["last_connection_attempt"] = static_cast<double>(_last_connection_attempt);
   tree["last_connection_success"] = static_cast<double>(_last_connection_success);
   tree["last_event_at"] = static_cast<double>(_event_processing_speed.get_last_event_time());
-  tree["queued_events"] = static_cast<int>(_get_queued_events());
+  tree["queued_events"] = static_cast<int>(_queued_events);
 
   // Forward the stats.
   _forward_statistic(tree);
@@ -156,4 +151,8 @@ void stat_visitable::_forward_statistic(json11::Json::object& tree) {
 
 void stat_visitable::set_state(char const* state) {
   _state = state;
+}
+
+void stat_visitable::set_queued_events(uint32_t queued_events) {
+  _queued_events = queued_events;
 }
