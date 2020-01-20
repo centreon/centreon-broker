@@ -153,9 +153,7 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
 
   // Open file.
   FILE* file_stream(fopen(config_file.c_str(), "w"));
-  if (!file_stream)
-    throw(exceptions::msg()
-          << "could not open '" << config_file.c_str() << "'");
+  ASSERT_TRUE(file_stream);
 
   // Data.
   std::string data;
@@ -211,9 +209,7 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
       "}\n";
 
   // Write data.
-  if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
-    throw(exceptions::msg()
-          << "could not write content of '" << config_file.c_str() << "'");
+  ASSERT_TRUE(fwrite(data.c_str(), data.size(), 1, file_stream) == 1);
 
   // Close file.
   fclose(file_stream);
