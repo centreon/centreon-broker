@@ -65,6 +65,7 @@ class into_memory : public io::stream {
 class OutputTest : public ::testing::Test {
  public:
   void SetUp() override {
+    io::data::broker_id = 0;
     try {
       config::applier::init();
     } catch (std::exception const& e) {
