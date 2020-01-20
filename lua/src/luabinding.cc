@@ -52,8 +52,14 @@ luabinding::luabinding(std::string const& lua_script,
   logging::debug(logging::medium)
       << "lua: initializing the Lua virtual machine";
 
+  try {
   _load_script();
   _init_script(conf_params);
+  }
+  catch (std::exception const& e) {
+    lua_close(_L);
+    throw;
+  }
 }
 
 /**
