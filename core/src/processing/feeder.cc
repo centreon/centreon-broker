@@ -42,6 +42,7 @@ using namespace com::centreon::broker::processing;
  *  @param[in] read_filters   Read filters.
  *  @param[in] write_filters  Write filters.
  */
+#include <iostream>
 feeder::feeder(std::string const& name,
                std::shared_ptr<io::stream> client,
                std::unordered_set<uint32_t> const& read_filters,
@@ -56,12 +57,14 @@ feeder::feeder(std::string const& name,
   _should_exit = false;
   _thread = std::thread(&feeder::_callback, this);
   set_state(_client ? "connected" : "disconnected");
+  std::cout << "FEEDER...\n";
 }
 
 /**
  *  Destructor.
  */
 feeder::~feeder() {
+  std::cout << std::this_thread::get_id() << " callbackEND\n";
   if (!_should_exit) {
     _should_exit = true;
     if (_thread.joinable())
@@ -121,6 +124,7 @@ void feeder::_callback() {
     bool muxer_can_read(true);
     std::shared_ptr<io::data> d;
     while (!_should_exit) {
+      std::cout << std::this_thread::get_id() << " callback1\n";
       // Read from stream.
       bool timed_out_stream(true);
 
@@ -147,6 +151,7 @@ void feeder::_callback() {
         }
       }
 
+      std::cout << std::this_thread::get_id() << " callback2\n";
       // Read from muxer.
       d.reset();
       bool timed_out_muxer(true);
@@ -164,25 +169,34 @@ void feeder::_callback() {
         _subscriber.get_muxer().ack_events(1);
         tick();
       }
+      std::cout << std::this_thread::get_id() << " callback3\n";
 
       // If both timed out, sleep a while.
       d.reset();
-      if (timed_out_stream && timed_out_muxer)
+      std::cout << std::this_thread::get_id() << " callback3.1\n";
+      if (timed_out_stream && timed_out_muxer) {
+        std::cout << std::this_thread::get_id() << " callback3.2\n";
         ::usleep(100000);
+      }
+      std::cout << std::this_thread::get_id() << " callback4\n";
     }
   } catch (exceptions::shutdown const& e) {
+    std::cout << std::this_thread::get_id() << " callback5\n";
     // Normal termination.
     (void)e;
   } catch (std::exception const& e) {
+    std::cout << std::this_thread::get_id() << " callback6\n";
     logging::error(logging::medium)
         << "feeder: error occured while processing client '" << _name
         << "': " << e.what();
     set_last_error(e.what());
   } catch (...) {
+    std::cout << std::this_thread::get_id() << " callback7\n";
     logging::error(logging::high)
         << "feeder: unknown error occured while processing client '" << _name
         << "'";
   }
+  std::cout << std::this_thread::get_id() << " callback8\n";
   {
     misc::read_lock lock(_client_m);
     _client.reset();

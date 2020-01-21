@@ -23,8 +23,11 @@ using namespace com::centreon::broker::processing;
 /**
  *  Default constructor.
  */
+#include <iostream>
 bthread::bthread(std::string const& name)
-    : stat_visitable{name}, _should_exit{false}, _started{false} {}
+    : stat_visitable{name}, _should_exit{false}, _started{false} {
+      std::cout << "FIXME DBR BTHREAD...\n";
+    }
 
 /**
  *  Destructor.

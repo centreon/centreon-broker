@@ -38,7 +38,9 @@ stat_visitable::stat_visitable(std::string const& name)
  *
  *  @param[in] tree  Tree of information.
  */
+#include <iostream>
 void stat_visitable::stats(json11::Json::object& tree) {
+  std::cout << "STAT VISITABLE STATS 1\n";
   std::lock_guard<std::mutex> lock(_stat_mutex);
   tree["state"] = std::string(_state);
   tree["read_filters"] = _get_read_filters();

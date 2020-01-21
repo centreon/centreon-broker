@@ -40,6 +40,7 @@ using namespace com::centreon::broker::processing;
  *  @param[in] sbscrbr   Multiplexing agent.
  *  @param[in] name      The failover name.
  */
+#include <iostream>
 failover::failover(std::shared_ptr<io::endpoint> endp,
                    std::shared_ptr<multiplexing::subscriber> sbscrbr,
                    std::string const& name)
@@ -51,7 +52,11 @@ failover::failover(std::shared_ptr<io::endpoint> endp,
       _next_timeout(0),
       _retry_interval(30),
       _subscriber(sbscrbr),
-      _update(false) {}
+      _update(false) {
+
+//FIXME DBR
+        std::cout << "FIXME DBR FAILOVER...\n";
+      }
 
 /**
  *  Destructor.
