@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ * Copyright 2019 - 2020 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,10 +136,11 @@ class fact : public io::factory {
 
   io::endpoint* new_endpoint(
       config::endpoint& cfg __attribute__((__unused__)),
-      bool& is_acceptor __attribute__((__unused__)),
+      bool& is_acceptor,
       __attribute__((__unused__)) std::shared_ptr<persistent_cache> cache =
           std::shared_ptr<persistent_cache>()) const override {
     endp* p{new endp()};
+    is_acceptor = true;
     return p;
   }
 };

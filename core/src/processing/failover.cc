@@ -153,16 +153,7 @@ void failover::run() {
         // FIXME DBR: attempt to replace the Qt code below.
         if (!should_exit())
           std::this_thread::sleep_for(std::chrono::seconds(_buffering_timeout));
-        //        return;
 
-        //        time_t valid_time(time(NULL) + _buffering_timeout);
-        //        do {
-        //          QTimer::singleShot(1000, this, SLOT(quit()));
-        //          exec();
-        //        } while (!should_exit() && (time(NULL) < valid_time));
-
-        // FIXME DBR: I don't see how this method could be called... even
-        // in the Qt version.
         _update_status("");
       }
 
@@ -362,17 +353,9 @@ void failover::run() {
     // Sleep a while before attempting a reconnection.
     _update_status("sleeping before reconnection");
 
-    // FIXME DBR: attempt to replace the Qt code below.
     if (!should_exit())
       std::this_thread::sleep_for(std::chrono::seconds(_retry_interval));
 
-    //    time_t valid_time(time(NULL) + _retry_interval);
-    //    while (!should_exit() && (time(NULL) < valid_time)) {
-    //      QTimer::singleShot(1000, this, SLOT(quit()));
-    //      exec();
-    //    }
-    // FIXME DBR: I don't see how this method could be called... even
-    // in the Qt version.
     _update_status("");
 
   } while (!should_exit());
