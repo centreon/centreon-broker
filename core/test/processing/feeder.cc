@@ -21,6 +21,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
+#include <thread>
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -28,13 +29,24 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
 
+class TestStream : public io::stream {
+ public:
+  bool read(std::shared_ptr<io::data>& d, time_t deadline) {
+    return true;
+  }
+
+  int write(std::shared_ptr<io::data> const& d) {
+    return 1;
+  }
+};
+
 class TestFeeder : public ::testing::Test {
  public:
   void SetUp() override {
     config::applier::state::load();
     io::events::load();
     multiplexing::engine::load();
-    std::shared_ptr<io::stream> client;
+    std::shared_ptr<io::stream> client = std::make_shared<TestStream>();
     std::unordered_set<uint32_t> read_filters;
     std::unordered_set<uint32_t> write_filters;
     _feeder.reset(
@@ -53,9 +65,19 @@ TEST_F(TestFeeder, ImmediateExit) {
   ASSERT_NO_THROW(_feeder.reset());
 }
 
+TEST_F(TestFeeder, ImmediateStartExit) {
+  _feeder->start();
+  ASSERT_NO_THROW(_feeder.reset());
+}
+
 TEST_F(TestFeeder, isFinished) {
+  // It never began.
+  ASSERT_FALSE(_feeder->is_finished());
+  _feeder->start();
+
+  // It began
   ASSERT_FALSE(_feeder->is_finished());
   json11::Json::object tree;
   _feeder->stats(tree);
-  ASSERT_EQ(tree["state"].string_value(), "disconnected");
+  ASSERT_EQ(tree["state"].string_value(), "connected");
 }

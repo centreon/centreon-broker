@@ -20,6 +20,7 @@
 #define CCB_PROCESSING_FEEDER_HH
 
 #include <atomic>
+#include <condition_variable>
 #include <thread>
 #include <climits>
 #include <memory>
@@ -46,6 +47,10 @@ namespace processing {
 class feeder : public stat_visitable {
   // Condition variable used when waiting for the thread to finish
   std::thread _thread;
+  bool _started;
+  mutable std::mutex _started_m;
+  std::condition_variable _started_cv;
+
   std::atomic_bool _should_exit;
 
   std::shared_ptr<io::stream> _client;
@@ -54,7 +59,7 @@ class feeder : public stat_visitable {
   // This mutex is used for the stat thread.
   mutable misc::shared_mutex _client_m;
 
-  void _callback();
+  void _callback() noexcept;
 
  protected:
   std::string const& _get_read_filters() const override;
@@ -70,6 +75,7 @@ class feeder : public stat_visitable {
   feeder(feeder const&) = delete;
   feeder& operator=(feeder const&) = delete;
   bool is_finished() const noexcept;
+  void start();
 };
 }  // namespace processing
 

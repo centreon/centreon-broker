@@ -241,9 +241,7 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
   ASSERT_TRUE(result["mysql manager"].is_object());
   ASSERT_TRUE(result["mysql manager"]["delay since last check"].is_string());
   ASSERT_TRUE(result["endpoint CentreonDatabase"]["state"].string_value() ==
-                  "connected" ||
-              result["endpoint CentreonDatabase"]["state"].string_value() ==
-                  "connecting");
+                  "listening");
 }
 
 TEST_F(StatsTest, CopyCtor) {

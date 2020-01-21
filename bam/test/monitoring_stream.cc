@@ -34,7 +34,7 @@ TEST_F(BamMonitoringStream, WriteKpi) {
                       "centreon");
   database_config storage("MySQL", "127.0.0.1", 3306, "admin", "centreon",
                           "centreon_storage");
-  ;
+
   std::shared_ptr<persistent_cache> cache;
   std::unique_ptr<monitoring_stream> ms;
 

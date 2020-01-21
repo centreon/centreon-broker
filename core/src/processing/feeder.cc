@@ -18,6 +18,7 @@
 
 #include "com/centreon/broker/processing/feeder.hh"
 #include <unistd.h>
+#include <cassert>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -42,29 +43,27 @@ using namespace com::centreon::broker::processing;
  *  @param[in] read_filters   Read filters.
  *  @param[in] write_filters  Write filters.
  */
-#include <iostream>
 feeder::feeder(std::string const& name,
                std::shared_ptr<io::stream> client,
                std::unordered_set<uint32_t> const& read_filters,
                std::unordered_set<uint32_t> const& write_filters)
-    : stat_visitable(name), _client(client), _subscriber(name, false) {
+    : stat_visitable(name),
+      _client(client),
+      _subscriber(name, false),
+      _started{false},
+      _should_exit{false} {
   _subscriber.get_muxer().set_read_filters(read_filters);
   _subscriber.get_muxer().set_write_filters(write_filters);
   // By default, we assume the feeder is already connected.
   set_last_connection_attempt(timestamp::now());
   set_last_connection_success(timestamp::now());
-
-  _should_exit = false;
-  _thread = std::thread(&feeder::_callback, this);
-  set_state(_client ? "connected" : "disconnected");
-  std::cout << "FEEDER...\n";
+  set_state("connecting");
 }
 
 /**
  *  Destructor.
  */
 feeder::~feeder() {
-  std::cout << std::this_thread::get_id() << " callbackEND\n";
   if (!_should_exit) {
     _should_exit = true;
     if (_thread.joinable())
@@ -73,10 +72,8 @@ feeder::~feeder() {
 }
 
 bool feeder::is_finished() const noexcept {
-  if (_should_exit && !_thread.joinable())
-      return true;
-
-  return false;
+  std::lock_guard<std::mutex> lock(_started_m);
+  return !_started && _should_exit;
 }
 
 /**
@@ -111,20 +108,33 @@ void feeder::_forward_statistic(json11::Json::object& tree) {
   _subscriber.get_muxer().statistics(tree);
 }
 
-void feeder::_callback() {
+void feeder::start() {
+  std::unique_lock<std::mutex> lock(_started_m);
+  if (!_client)
+      throw exceptions::msg()
+            << "could not process '" << _name << "' with no client stream";
+
+  if (!_started) {
+    _should_exit = false;
+    _thread = std::thread(&feeder::_callback, this);
+    _started_cv.wait(lock, [this] {return _started; });
+  }
+}
+
+void feeder::_callback() noexcept {
+  assert(_client);
   logging::info(logging::medium)
       << "feeder: thread of client '" << _name << "' is starting";
   time_t fill_stats_time = time(nullptr);
 
   try {
-    if (!_client)
-      throw exceptions::msg()
-            << "could not process '" << _name << "' with no client stream";
+    set_state("connected");
     bool stream_can_read(true);
     bool muxer_can_read(true);
     std::shared_ptr<io::data> d;
+    _started = true;
+    _started_cv.notify_one();
     while (!_should_exit) {
-      std::cout << std::this_thread::get_id() << " callback1\n";
       // Read from stream.
       bool timed_out_stream(true);
 
@@ -151,7 +161,6 @@ void feeder::_callback() {
         }
       }
 
-      std::cout << std::this_thread::get_id() << " callback2\n";
       // Read from muxer.
       d.reset();
       bool timed_out_muxer(true);
@@ -169,34 +178,30 @@ void feeder::_callback() {
         _subscriber.get_muxer().ack_events(1);
         tick();
       }
-      std::cout << std::this_thread::get_id() << " callback3\n";
 
       // If both timed out, sleep a while.
       d.reset();
-      std::cout << std::this_thread::get_id() << " callback3.1\n";
       if (timed_out_stream && timed_out_muxer) {
-        std::cout << std::this_thread::get_id() << " callback3.2\n";
         ::usleep(100000);
       }
-      std::cout << std::this_thread::get_id() << " callback4\n";
     }
   } catch (exceptions::shutdown const& e) {
-    std::cout << std::this_thread::get_id() << " callback5\n";
     // Normal termination.
     (void)e;
   } catch (std::exception const& e) {
-    std::cout << std::this_thread::get_id() << " callback6\n";
     logging::error(logging::medium)
         << "feeder: error occured while processing client '" << _name
         << "': " << e.what();
     set_last_error(e.what());
   } catch (...) {
-    std::cout << std::this_thread::get_id() << " callback7\n";
     logging::error(logging::high)
         << "feeder: unknown error occured while processing client '" << _name
         << "'";
   }
-  std::cout << std::this_thread::get_id() << " callback8\n";
+  {
+    std::lock_guard<std::mutex> lock(_started_m);
+    _started = false;
+  }
   {
     misc::read_lock lock(_client_m);
     _client.reset();
