@@ -25,10 +25,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <map>
 #include <memory>
 #include <random>
 #include <thread>
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 
@@ -157,3 +159,40 @@ std::vector<char> misc::from_hex(std::string const& str) {
   }
   return retval;
 }
+
+/**
+ *  Dump all the filters in a string.
+ *
+ *  @param[in] filters  The filters.
+ *
+ *  @return             A string containing all the filters.
+ */
+std::string misc::dump_filters(std::unordered_set<uint32_t> const& filters) {
+  io::events::events_container all_event_container =
+      io::events::instance().get_events_by_category_name("all");
+  std::map<uint32_t, std::string> name_by_id;
+
+  std::unordered_set<uint32_t> all_events;
+  for (io::events::events_container::const_iterator
+           it = all_event_container.begin(),
+           end = all_event_container.end();
+       it != end; ++it) {
+    all_events.insert(it->first);
+    name_by_id[it->first] = it->second.get_name();
+  }
+
+  if (filters.size() == all_events.size())
+    return "all";
+
+  std::string ret;
+  for (std::unordered_set<uint32_t>::const_iterator it = filters.begin(),
+                                                    end = filters.end();
+       it != end; ++it) {
+    std::map<uint32_t, std::string>::const_iterator found =
+        name_by_id.find(*it);
+    if (found != name_by_id.end())
+      ret.append(",  ").append(found->second);
+  }
+  return ret;
+}
+

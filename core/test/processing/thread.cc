@@ -26,12 +26,10 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::processing;
 
 class DummyThread : public bthread {
-  std::unordered_set<uint32_t> _filters;
+  std::string _filters;
 
  public:
-  DummyThread() : bthread() {
-    set_state("test");
-  }
+  DummyThread() : bthread(), _filters("fake_filter") { set_state("test"); }
 
   void run() override {
     while (!should_exit()) {
@@ -39,10 +37,10 @@ class DummyThread : public bthread {
     }
   }
 
-  std::unordered_set<uint32_t> const& _get_write_filters() const override {
+  std::string const& _get_write_filters() const override {
     return _filters;
   }
-  std::unordered_set<uint32_t> const& _get_read_filters() const override {
+  std::string const& _get_read_filters() const override {
     return _filters;
   }
 

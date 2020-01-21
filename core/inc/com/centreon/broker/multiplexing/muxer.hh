@@ -60,6 +60,8 @@ class muxer : public io::stream {
   void set_write_filters(filters const& fltrs);
   filters const& get_read_filters() const;
   filters const& get_write_filters() const;
+  const std::string& get_read_filters_str() const;
+  const std::string& get_write_filters_str() const;
   uint32_t get_event_queue_size() const;
   void nack_events();
   void remove_queue_files();
@@ -88,6 +90,8 @@ class muxer : public io::stream {
   std::list<std::shared_ptr<io::data>>::iterator _pos;
   filters _read_filters;
   filters _write_filters;
+  std::string _read_filters_str;
+  std::string _write_filters_str;
 };
 }  // namespace multiplexing
 

@@ -19,6 +19,7 @@
 #include "com/centreon/broker/processing/acceptor.hh"
 #include <unistd.h>
 #include <sstream>
+#include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
@@ -124,6 +125,7 @@ void acceptor::run() {
 void acceptor::set_read_filters(std::unordered_set<uint32_t> const& filters) {
   std::lock_guard<std::mutex> lock(_stat_mutex);
   _read_filters = filters;
+  _read_filters_str = misc::dump_filters(_read_filters);
 }
 
 /**
@@ -149,6 +151,7 @@ void acceptor::set_retry_interval(time_t retry_interval) {
 void acceptor::set_write_filters(std::unordered_set<uint32_t> const& filters) {
   std::lock_guard<std::mutex> lock(_stat_mutex);
   _write_filters = filters;
+  _write_filters_str = misc::dump_filters(_write_filters);
 }
 
 /**
@@ -156,8 +159,8 @@ void acceptor::set_write_filters(std::unordered_set<uint32_t> const& filters) {
  *
  *  @return  The read filters used by the feeder.
  */
-std::unordered_set<uint32_t> const& acceptor::_get_read_filters() const {
-  return _read_filters;
+std::string const& acceptor::_get_read_filters() const {
+  return _read_filters_str;
 }
 
 /**
@@ -165,8 +168,8 @@ std::unordered_set<uint32_t> const& acceptor::_get_read_filters() const {
  *
  *  @return  The write filters used by the feeder.
  */
-std::unordered_set<uint32_t> const& acceptor::_get_write_filters() const {
-  return _write_filters;
+std::string const& acceptor::_get_write_filters() const {
+  return _write_filters_str;
 }
 
 /**

@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/multiplexing/muxer.hh"
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -23,9 +24,9 @@
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/broker/misc/string.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
-#include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/persistent_file.hh"
 
 using namespace com::centreon::broker;
@@ -232,6 +233,7 @@ bool muxer::read(std::shared_ptr<io::data>& event, time_t deadline) {
  */
 void muxer::set_read_filters(muxer::filters const& fltrs) {
   _read_filters = fltrs;
+  _read_filters_str = misc::dump_filters(_read_filters);
 }
 
 /**
@@ -243,6 +245,7 @@ void muxer::set_read_filters(muxer::filters const& fltrs) {
  */
 void muxer::set_write_filters(muxer::filters const& fltrs) {
   _write_filters = fltrs;
+  _write_filters_str = misc::dump_filters(_write_filters);
 }
 
 /**
@@ -261,6 +264,24 @@ muxer::filters const& muxer::get_read_filters() const {
  */
 muxer::filters const& muxer::get_write_filters() const {
   return _write_filters;
+}
+
+/**
+ *  Get the read filters as a string.
+ *
+ *  @return  The read filters formatted into a string.
+ */
+const std::string& muxer::get_read_filters_str() const {
+  return _read_filters_str;
+}
+
+/**
+ *  Get the write filters as a string.
+ *
+ *  @return  The write filters formatted into a string.
+ */
+const std::string& muxer::get_write_filters_str() const {
+  return _write_filters_str;
 }
 
 /**

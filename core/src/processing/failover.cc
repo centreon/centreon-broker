@@ -462,8 +462,8 @@ void failover::update() {
  *
  *  @return  The read filters used by the failover.
  */
-std::unordered_set<uint32_t> const& failover::_get_read_filters() const {
-  return _subscriber->get_muxer().get_read_filters();
+std::string const& failover::_get_read_filters() const {
+  return _subscriber->get_muxer().get_read_filters_str();
 }
 
 /**
@@ -471,8 +471,8 @@ std::unordered_set<uint32_t> const& failover::_get_read_filters() const {
  *
  *  @return  The write filters used by the failover.
  */
-std::unordered_set<uint32_t> const& failover::_get_write_filters() const {
-  return _subscriber->get_muxer().get_write_filters();
+std::string const& failover::_get_write_filters() const {
+  return _subscriber->get_muxer().get_write_filters_str();
 }
 
 /**

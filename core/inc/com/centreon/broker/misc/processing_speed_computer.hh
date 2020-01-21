@@ -19,6 +19,7 @@
 #ifndef CCB_MISC_PROCESSING_SPEED_COMPUTER_HH
 #define CCB_MISC_PROCESSING_SPEED_COMPUTER_HH
 
+#include <array>
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
 
@@ -33,18 +34,18 @@ namespace misc {
 class processing_speed_computer {
  public:
   processing_speed_computer();
-  processing_speed_computer(processing_speed_computer const& right);
-  ~processing_speed_computer() throw();
-  processing_speed_computer& operator=(processing_speed_computer const& right);
+  processing_speed_computer(processing_speed_computer const&) = delete;
+  ~processing_speed_computer() noexcept {}
+  processing_speed_computer& operator=(processing_speed_computer const&) = delete;
 
   double get_processing_speed() const;
-  void tick(int events = 1);
+  void tick(int events = 1) noexcept;
   timestamp get_last_event_time() const;
 
   static int const window_length = 30;
 
  private:
-  uint32_t _event_by_seconds[window_length];
+  std::array<uint32_t, window_length> _event_by_seconds;
   timestamp _last_tick;
 };
 }  // namespace misc

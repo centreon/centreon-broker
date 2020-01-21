@@ -57,8 +57,8 @@ class feeder : public stat_visitable {
   void _callback();
 
  protected:
-  std::unordered_set<uint32_t> const& _get_read_filters() const override;
-  std::unordered_set<uint32_t> const& _get_write_filters() const override;
+  std::string const& _get_read_filters() const override;
+  std::string const& _get_write_filters() const override;
   void _forward_statistic(json11::Json::object& tree) override;
 
  public:

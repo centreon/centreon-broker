@@ -34,42 +34,6 @@ stat_visitable::stat_visitable(std::string const& name)
     : _state{""}, _name(name), _queued_events{0} {}
 
 /**
- *  Dump all the filters in a string.
- *
- *  @param[in] filters  The filters.
- *
- *  @return             A string containing all the filters.
- */
-static std::string dump_filters(std::unordered_set<uint32_t> const& filters) {
-  io::events::events_container all_event_container =
-      io::events::instance().get_events_by_category_name("all");
-  std::map<uint32_t, std::string> name_by_id;
-
-  std::unordered_set<uint32_t> all_events;
-  for (io::events::events_container::const_iterator
-           it = all_event_container.begin(),
-           end = all_event_container.end();
-       it != end; ++it) {
-    all_events.insert(it->first);
-    name_by_id[it->first] = it->second.get_name();
-  }
-
-  if (filters.size() == all_events.size())
-    return "all";
-
-  std::string ret;
-  for (std::unordered_set<uint32_t>::const_iterator it = filters.begin(),
-                                                    end = filters.end();
-       it != end; ++it) {
-    std::map<uint32_t, std::string>::const_iterator found =
-        name_by_id.find(*it);
-    if (found != name_by_id.end())
-      ret.append(",  ").append(found->second);
-  }
-  return ret;
-}
-
-/**
  *  Gather statistics on this thread.
  *
  *  @param[in] tree  Tree of information.
@@ -77,8 +41,8 @@ static std::string dump_filters(std::unordered_set<uint32_t> const& filters) {
 void stat_visitable::stats(json11::Json::object& tree) {
   std::lock_guard<std::mutex> lock(_stat_mutex);
   tree["state"] = std::string(_state);
-  tree["read_filters"] = dump_filters(_get_read_filters());
-  tree["write_filters"]  = dump_filters(_get_write_filters());
+  tree["read_filters"] = _get_read_filters();
+  tree["write_filters"]  = _get_write_filters();
   tree["event_processing_speed"] = _event_processing_speed.get_processing_speed();
   tree["last_connection_attempt"] = static_cast<double>(_last_connection_attempt);
   tree["last_connection_success"] = static_cast<double>(_last_connection_success);
