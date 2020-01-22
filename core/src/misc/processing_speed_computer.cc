@@ -26,7 +26,7 @@ using namespace com::centreon::broker::misc;
  *  Default constructor.
  */
 processing_speed_computer::processing_speed_computer()
-    : _last_tick(timestamp::now()), _event_by_seconds{} {}
+    : _event_by_seconds(), _last_tick(timestamp::now()) {}
 
 /**
  *  Get the event processing speed.

@@ -181,9 +181,8 @@ void feeder::_callback() noexcept {
 
       // If both timed out, sleep a while.
       d.reset();
-      if (timed_out_stream && timed_out_muxer) {
+      if (timed_out_stream && timed_out_muxer)
         ::usleep(100000);
-      }
     }
   } catch (exceptions::shutdown const& e) {
     // Normal termination.

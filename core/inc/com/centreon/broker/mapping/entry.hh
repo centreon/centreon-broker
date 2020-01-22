@@ -55,9 +55,9 @@ class entry {
         uint32_t attr = always_valid,
         bool serialize = true,
         char const* name_v2 = NULL)
-      : _name(name),
+      : _attribute(serialize),
+        _name(name),
         _name_v2(name_v2),
-        _attribute(attr),
         _serialize(serialize) {
     if (!_name_v2 && !(attr & invalid_on_v2))
       _name_v2 = _name;

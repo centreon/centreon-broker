@@ -36,8 +36,8 @@ class perfdata {
   enum data_type { gauge = 0, counter, derive, absolute, automatic };
 
   perfdata();
-  perfdata(const perfdata& pd) = default;
-  perfdata(perfdata&& pd) = default;
+  perfdata(const perfdata&) = default;
+  perfdata(perfdata&&) = default;
   ~perfdata() noexcept;
   perfdata& operator=(perfdata const& pd);
   double critical() const noexcept;

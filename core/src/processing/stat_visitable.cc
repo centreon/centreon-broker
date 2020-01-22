@@ -31,16 +31,14 @@ using namespace com::centreon::broker::processing;
  *  @param[in] name  The name of the thread.
  */
 stat_visitable::stat_visitable(std::string const& name)
-    : _state{""}, _name(name), _queued_events{0} {}
+    : _state{""}, _queued_events{0}, _name(name) {}
 
 /**
  *  Gather statistics on this thread.
  *
  *  @param[in] tree  Tree of information.
  */
-#include <iostream>
 void stat_visitable::stats(json11::Json::object& tree) {
-  std::cout << "STAT VISITABLE STATS 1\n";
   std::lock_guard<std::mutex> lock(_stat_mutex);
   tree["state"] = std::string(_state);
   tree["read_filters"] = _get_read_filters();
