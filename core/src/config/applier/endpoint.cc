@@ -195,23 +195,6 @@ void endpoint::discard() {
       delete it->second;
     }
 
-//    // Wait for threads.
-//    while (!_endpoints.empty()) {
-//      // Print remaining thread count.
-//      logging::debug(logging::low) << "endpoint applier: " << _endpoints.size()
-//                                   << " endpoint threads remaining";
-//
-//      // Expect threads to terminate.
-//      // With a map valid iterator are not invalidated by erase().
-//      for (iterator it(_endpoints.begin()), end(_endpoints.end()); it != end;)
-//        if (it->second->wait(0)) {
-//          delete it->second;
-//          iterator to_delete(it);
-//          ++it;
-//          _endpoints.erase(to_delete);
-//        } else
-//          ++it;
-//    }
     logging::debug(logging::medium)
         << "endpoint applier: all threads are terminated";
     _endpoints.clear();
