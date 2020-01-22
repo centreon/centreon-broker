@@ -1614,6 +1614,7 @@ DROP TABLE IF EXISTS `mod_bam`;
 CREATE TABLE `mod_bam` (
   `ba_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(254) DEFAULT NULL,
+  `state_source` int NOT NULL DEFAULT '0',
   `description` varchar(254) DEFAULT NULL,
   `level_w` float DEFAULT NULL,
   `level_c` float DEFAULT NULL,
