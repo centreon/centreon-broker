@@ -39,9 +39,8 @@ using namespace com::centreon::broker::neb;
  */
 void engcmd::load() {
   // Register extcmd protocol.
-  io::protocols::instance().reg("engcmd", engcmd::factory(), 1, 7);
-
-  return;
+  io::protocols::instance().reg("engcmd", std::make_shared<engcmd::factory>(),
+                                1, 7);
 }
 
 /**

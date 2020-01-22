@@ -51,10 +51,6 @@ update::~update() throw() {}
  *
  *  @return This object.
  */
-update& update::operator=(update const& u) throw() {
-  broker::exceptions::msg::operator=(u);
-  return (*this);
-}
 
 /**
  *  Clone the exception object.

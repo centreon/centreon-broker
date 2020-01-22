@@ -60,8 +60,8 @@ void broker_module_init(void const* arg) {
         << "graphite: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
     // Register storage layer.
-    io::protocols::instance().reg("graphite", graphite::factory(), 1, 7);
+    io::protocols::instance().reg("graphite",
+                                  std::make_shared<graphite::factory>(), 1, 7);
   }
-  return;
 }
 }

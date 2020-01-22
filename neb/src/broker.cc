@@ -196,7 +196,5 @@ void broker_module_init(void const* arg) {
     //                                  1,
     //                                  7);
   }
-
-  return;
 }
 }

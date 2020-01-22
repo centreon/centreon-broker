@@ -1,5 +1,5 @@
 /*
-** Copyright 2011,2017 Centreon
+** Copyright 2011,2017,2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -34,10 +34,10 @@ namespace exceptions {
  */
 class shutdown : public msg {
  public:
-  shutdown();
-  shutdown(shutdown const& other);
-  ~shutdown() throw();
-  shutdown& operator=(shutdown const& other);
+  shutdown() = default;
+  shutdown(const shutdown&) = default;
+  ~shutdown() noexcept {}
+  shutdown& operator=(const shutdown&) = delete;
 
   /**
    *  Insert data in message.
@@ -45,9 +45,9 @@ class shutdown : public msg {
    *  @param[in] t Data to insert.
    */
   template <typename T>
-  shutdown& operator<<(T t) throw() {
-    msg::operator<<(t);
-    return (*this);
+  shutdown& operator<<(T t) noexcept {
+    *(misc::stringifier*)this << t;
+    return *this;
   }
 };
 }  // namespace exceptions

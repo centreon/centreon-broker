@@ -19,6 +19,7 @@
 #ifndef CCB_PROCESSING_ACCEPTOR_HH
 #define CCB_PROCESSING_ACCEPTOR_HH
 
+#include <atomic>
 #include <ctime>
 #include <list>
 #include <memory>
@@ -58,23 +59,21 @@ class acceptor : public bthread {
 
  protected:
   // From stat_visitable
-  char const* _get_state() const override;
-  virtual uint32_t _get_queued_events() override;
-  std::unordered_set<uint32_t> const& _get_read_filters() const override;
-  std::unordered_set<uint32_t> const& _get_write_filters() const override;
+  std::string const& _get_read_filters() const override;
+  std::string const& _get_write_filters() const override;
   virtual void _forward_statistic(json11::Json::object& tree) override;
 
  private:
-  void _wait_feeders();
-  void _set_listening(bool val);
-  bool _get_listening() const throw();
-
   std::shared_ptr<io::endpoint> _endp;
   std::list<std::shared_ptr<processing::feeder> > _feeders;
   std::unordered_set<uint32_t> _read_filters;
+  std::string _read_filters_str;
   time_t _retry_interval;
   std::unordered_set<uint32_t> _write_filters;
-  bool _listening;
+  std::string _write_filters_str;
+  std::atomic_bool _listening;
+
+  void _set_listening(bool listening) noexcept;
 };
 }  // namespace processing
 

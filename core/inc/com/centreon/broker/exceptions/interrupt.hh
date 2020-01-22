@@ -1,5 +1,5 @@
 /*
-** Copyright 2017 Centreon
+** Copyright 2017 - 2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -32,13 +32,14 @@ namespace exceptions {
  *
  *  Exception that is thrown upon interrupted action.
  */
-class interrupt : private misc::stringifier, public std::exception {
+class interrupt : protected misc::stringifier, public std::exception {
  public:
-  interrupt();
-  interrupt(interrupt const& other);
-  virtual ~interrupt() throw();
-  interrupt& operator=(interrupt const& other);
-  virtual char const* what() const throw();
+  interrupt() = default;
+  interrupt(interrupt const& other)
+      : misc::stringifier(other), std::exception(other) {}
+  virtual ~interrupt() noexcept {}
+  interrupt& operator=(const interrupt&) = delete;
+  virtual char const* what() const noexcept { return misc::stringifier::data(); }
 
   /**
    *  Insert data in message.
@@ -46,9 +47,9 @@ class interrupt : private misc::stringifier, public std::exception {
    *  @param[in] t  Data to insert.
    */
   template <typename T>
-  interrupt& operator<<(T t) {
-    misc::stringifier::operator<<(t);
-    return (*this);
+  interrupt& operator<<(T t) noexcept {
+    *(misc::stringifier*)this << t;
+    return *this;
   }
 };
 }  // namespace exceptions

@@ -1,5 +1,5 @@
 /*
-** Copyright 2015,2017 Centreon
+** Copyright 2015,2017,2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -32,13 +32,13 @@ namespace exceptions {
  *
  *  Exception that is thrown upon timeout.
  */
-class timeout : private misc::stringifier, public std::exception {
+class timeout : protected misc::stringifier, public std::exception {
  public:
-  timeout();
-  timeout(timeout const& other);
-  virtual ~timeout() throw();
-  timeout& operator=(timeout const& other);
-  virtual char const* what() const throw();
+  timeout() = default;
+  timeout(timeout const& other) : misc::stringifier(other), std::exception(other) {}
+  virtual ~timeout() noexcept {}
+  timeout& operator=(const timeout&) = delete;
+  virtual char const* what() const noexcept { return misc::stringifier::data(); }
 
   /**
    *  Insert data in message.
@@ -47,8 +47,8 @@ class timeout : private misc::stringifier, public std::exception {
    */
   template <typename T>
   timeout& operator<<(T t) {
-    misc::stringifier::operator<<(t);
-    return (*this);
+    *(misc::stringifier*)this << t;
+    return *this;
   }
 };
 }  // namespace exceptions

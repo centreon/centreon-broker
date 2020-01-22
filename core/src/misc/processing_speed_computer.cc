@@ -26,41 +26,7 @@ using namespace com::centreon::broker::misc;
  *  Default constructor.
  */
 processing_speed_computer::processing_speed_computer()
-    : _last_tick(timestamp::now()) {
-  ::memset(_event_by_seconds, 0, window_length * sizeof(*_event_by_seconds));
-}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] right  The object to copy.
- */
-processing_speed_computer::processing_speed_computer(
-    processing_speed_computer const& right) {
-  ::memcpy(_event_by_seconds, right._event_by_seconds,
-           window_length * sizeof(*_event_by_seconds));
-}
-
-/**
- *  Destructor.
- */
-processing_speed_computer::~processing_speed_computer() throw() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] right  The object to copy.
- *
- *  @return           Reference to this object.
- */
-processing_speed_computer& processing_speed_computer::operator=(
-    processing_speed_computer const& right) {
-  if (this != &right) {
-    ::memcpy(_event_by_seconds, right._event_by_seconds,
-             window_length * sizeof(*_event_by_seconds));
-  }
-  return (*this);
-}
+    : _event_by_seconds(), _last_tick(timestamp::now()) {}
 
 /**
  *  Get the event processing speed.
@@ -70,7 +36,7 @@ processing_speed_computer& processing_speed_computer::operator=(
 double processing_speed_computer::get_processing_speed() const {
   // If tick() was never called then no event was processed.
   if (_last_tick.is_null())
-    return (0.0);
+    return 0.0;
 
   // Compute event processing speed from the number of events processed
   // in /event_window_length/ seconds in the past. The most recent time
@@ -80,7 +46,7 @@ double processing_speed_computer::get_processing_speed() const {
   int events(0);
   for (int i(0); i < window_length; ++i)
     events += _event_by_seconds[i];
-  return (static_cast<double>(events) / (window_length + now - _last_tick));
+  return static_cast<double>(events) / (window_length + now - _last_tick);
 }
 
 /**
@@ -88,17 +54,17 @@ double processing_speed_computer::get_processing_speed() const {
  *
  *  @param[in] events  The number of events to register.
  */
-void processing_speed_computer::tick(int events) {
+void processing_speed_computer::tick(int events) noexcept {
   // New second(s)
   timestamp now(timestamp::now());
-  if (!_last_tick.is_null() && (now > _last_tick)) {
+  if (!_last_tick.is_null() && now > _last_tick) {
     int step(now - _last_tick);
-    if ((step < window_length) && (step > 0))
-      ::memmove(_event_by_seconds + step, _event_by_seconds,
-                (window_length - step) * sizeof(*_event_by_seconds));
+    if (step < window_length && step > 0)
+      ::memmove(_event_by_seconds.data() + step, _event_by_seconds.data(),
+                (window_length - step) * sizeof(uint32_t));
     else
       step = window_length;
-    ::memset(_event_by_seconds, 0, step * sizeof(*_event_by_seconds));
+    ::memset(_event_by_seconds.data(), 0, step * sizeof(uint32_t));
   }
 
   // Update the data of this second.
@@ -106,13 +72,11 @@ void processing_speed_computer::tick(int events) {
 
   // Update the last tick.
   _last_tick = now;
-
-  return;
 }
 
 /**
  *  Get the time of the last event.
  */
 timestamp processing_speed_computer::get_last_event_time() const {
-  return (_last_tick);
+  return _last_tick;
 }

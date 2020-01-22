@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ * Copyright 2019 - 2020 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,8 +137,6 @@ class fact : public io::factory {
  public:
   fact() {}
 
-  factory* clone() const override { return new fact(*this); }
-
   bool has_endpoint(config::endpoint& cfg
                     __attribute__((__unused__))) const override {
     return true;
@@ -151,10 +149,11 @@ class fact : public io::factory {
 
   io::endpoint* new_endpoint(
       config::endpoint& cfg __attribute__((__unused__)),
-      bool& is_acceptor __attribute__((__unused__)),
+      bool& is_acceptor,
       __attribute__((__unused__)) std::shared_ptr<persistent_cache> cache =
           std::shared_ptr<persistent_cache>()) const override {
     endp* p{new endp()};
+    is_acceptor = true;
     return p;
   }
 };
@@ -166,13 +165,10 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
 
   // Open file.
   FILE* file_stream(fopen(config_file.c_str(), "w"));
-  if (!file_stream)
-    throw(exceptions::msg()
-          << "could not open '" << config_file.c_str() << "'");
+  ASSERT_TRUE(file_stream);
 
   // Data.
-  std::string data;
-  data =
+  std::string data(
       "\n{"
       "  \"centreonBroker\": {\n"
       "    \"input\": {\n"
@@ -221,12 +217,10 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
       "      }\n"
       "    ]\n"
       "  }\n"
-      "}\n";
+      "}\n");
 
   // Write data.
-  if (fwrite(data.c_str(), data.size(), 1, file_stream) != 1)
-    throw(exceptions::msg()
-          << "could not write content of '" << config_file.c_str() << "'");
+  ASSERT_TRUE(fwrite(data.c_str(), data.size(), 1, file_stream) == 1);
 
   // Close file.
   fclose(file_stream);
@@ -235,7 +229,7 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
   config::parser p;
   config::state s{p.parse(config_file)};
 
-  fact const test;
+  auto test = std::make_shared<fact>();
   io::protocols::instance().reg("CentreonInput", test, 1, 7);
   io::protocols::instance().reg("CentreonDatabase", test, 1, 7);
   io::protocols::instance().reg("CentreonRetention", test, 1, 7);
@@ -260,9 +254,7 @@ TEST_F(StatsTest, BuilderWithEndpoints) {
   ASSERT_TRUE(result["mysql manager"].is_object());
   ASSERT_TRUE(result["mysql manager"]["delay since last check"].is_string());
   ASSERT_TRUE(result["endpoint CentreonDatabase"]["state"].string_value() ==
-                  "connected" ||
-              result["endpoint CentreonDatabase"]["state"].string_value() ==
-                  "connecting");
+                  "listening");
 }
 
 TEST_F(StatsTest, CopyCtor) {

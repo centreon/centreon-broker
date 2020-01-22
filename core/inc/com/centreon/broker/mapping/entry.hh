@@ -54,15 +54,15 @@ class entry {
         char const* name,
         uint32_t attr = always_valid,
         bool serialize = true,
-        char const* name_v2 = NULL) {
-    _name = name;
-    _name_v2 = name_v2;
+        char const* name_v2 = NULL)
+      : _attribute(attr),
+        _name(name),
+        _name_v2(name_v2),
+        _serialize(serialize) {
     if (!_name_v2 && !(attr & invalid_on_v2))
       _name_v2 = _name;
-    _source.reset(new property<T>(prop, &_type));
+    _source = std::make_shared<property<T>>(prop, &_type);
     _ptr = _source.get();
-    _serialize = serialize;
-    _attribute = attr;
   }
 
   entry();

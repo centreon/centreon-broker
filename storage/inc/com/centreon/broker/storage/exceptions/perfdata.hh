@@ -35,10 +35,9 @@ namespace exceptions {
  */
 class perfdata : public broker::exceptions::msg {
  public:
-  perfdata() throw();
-  perfdata(perfdata const& pd) throw();
-  ~perfdata() throw();
-  perfdata& operator=(perfdata const& pdf) throw();
+  perfdata() noexcept {}
+  perfdata(perfdata const& pd) noexcept : broker::exceptions::msg(pd) {}
+  ~perfdata() noexcept {}
   virtual broker::exceptions::msg* clone() const;
   virtual void rethrow() const;
 
@@ -48,9 +47,9 @@ class perfdata : public broker::exceptions::msg {
    *  @param[in] t Data to insert.
    */
   template <typename T>
-  perfdata& operator<<(T t) throw() {
+  perfdata& operator<<(T t) noexcept {
     broker::exceptions::msg::operator<<(t);
-    return (*this);
+    return *this;
   }
 };
 }  // namespace exceptions

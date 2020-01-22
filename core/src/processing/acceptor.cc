@@ -19,6 +19,7 @@
 #include "com/centreon/broker/processing/acceptor.hh"
 #include <unistd.h>
 #include <sstream>
+#include "com/centreon/broker/misc/misc.hh"
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
@@ -39,9 +40,7 @@ acceptor::acceptor(std::shared_ptr<io::endpoint> endp, std::string const& name)
 /**
  *  Destructor.
  */
-acceptor::~acceptor() {
-  _wait_feeders();
-}
+acceptor::~acceptor() {}
 
 /**
  *  Accept a new incoming connection.
@@ -59,11 +58,9 @@ void acceptor::accept() {
       oss << _name << "-" << ++connection_id;
       name = oss.str();
     }
-    std::shared_ptr<processing::feeder> f(
-        new processing::feeder(name, s, _read_filters, _write_filters));
+    std::shared_ptr<processing::feeder> f(std::make_shared<processing::feeder>(
+        name, s, _read_filters, _write_filters));
 
-    // Run feeder thread.
-    f->start();
     std::lock_guard<std::mutex> lock(_stat_mutex);
     _feeders.push_back(f);
   }
@@ -108,20 +105,14 @@ void acceptor::run() {
     // Check for terminated feeders.
     {
       std::lock_guard<std::mutex> lock(_stat_mutex);
-      for (std::list<std::shared_ptr<processing::feeder> >::iterator
-               it(_feeders.begin()),
-           end(_feeders.end());
-           it != end;)
-        if ((*it)->wait(0))
+      for (auto it = _feeders.begin(), end = _feeders.end(); it != end;)
+        if ((*it)->is_finished())
           it = _feeders.erase(it);
         else
           ++it;
     }
   }
   _set_listening(false);
-
-  // Cleanup.
-  _wait_feeders();
 }
 
 /**
@@ -134,6 +125,7 @@ void acceptor::run() {
 void acceptor::set_read_filters(std::unordered_set<uint32_t> const& filters) {
   std::lock_guard<std::mutex> lock(_stat_mutex);
   _read_filters = filters;
+  _read_filters_str = misc::dump_filters(_read_filters);
 }
 
 /**
@@ -159,27 +151,7 @@ void acceptor::set_retry_interval(time_t retry_interval) {
 void acceptor::set_write_filters(std::unordered_set<uint32_t> const& filters) {
   std::lock_guard<std::mutex> lock(_stat_mutex);
   _write_filters = filters;
-}
-
-/**
- *  Get the state of the acceptor.
- *
- *  @return  The state of the acceptor.
- */
-char const* acceptor::_get_state() const {
-  if (_listening)
-    return "listening";
-  else
-    return "disconnected";
-}
-
-/**
- *  Get the number of queued events.
- *
- *  @return  The number of queued events.
- */
-uint32_t acceptor::_get_queued_events() {
-  return 0;
+  _write_filters_str = misc::dump_filters(_write_filters);
 }
 
 /**
@@ -187,8 +159,8 @@ uint32_t acceptor::_get_queued_events() {
  *
  *  @return  The read filters used by the feeder.
  */
-std::unordered_set<uint32_t> const& acceptor::_get_read_filters() const {
-  return _read_filters;
+std::string const& acceptor::_get_read_filters() const {
+  return _read_filters_str;
 }
 
 /**
@@ -196,8 +168,8 @@ std::unordered_set<uint32_t> const& acceptor::_get_read_filters() const {
  *
  *  @return  The write filters used by the feeder.
  */
-std::unordered_set<uint32_t> const& acceptor::_get_write_filters() const {
-  return _write_filters;
+std::string const& acceptor::_get_write_filters() const {
+  return _write_filters_str;
 }
 
 /**
@@ -219,40 +191,7 @@ void acceptor::_forward_statistic(json11::Json::object& tree) {
   }
 }
 
-/**
- *  Wait for launched feeders.
- */
-void acceptor::_wait_feeders() {
-  // Wait for all launched feeders.
-  for (std::list<std::shared_ptr<processing::feeder> >::iterator
-           it(_feeders.begin()),
-       end(_feeders.end());
-       it != end; ++it)
-    (*it)->exit();
-  for (std::list<std::shared_ptr<processing::feeder> >::iterator
-           it(_feeders.begin()),
-       end(_feeders.end());
-       it != end; ++it)
-    (*it)->wait();
-  _feeders.clear();
-}
-
-/**
- *  Set listening value.
- *
- *  @param[in] val  The new value.
- */
-void acceptor::_set_listening(bool val) {
-  std::lock_guard<std::mutex> lock(_stat_mutex);
-  _listening = val;
-}
-
-/**
- *  Get listening value.
- *
- *  @return  The listening value.
- */
-bool acceptor::_get_listening() const throw() {
-  std::lock_guard<std::mutex> lock(_stat_mutex);
-  return _listening;
+void acceptor::_set_listening(bool listening) noexcept {
+  _listening = listening;
+  set_state(listening ? "listening" : "disconnected");
 }

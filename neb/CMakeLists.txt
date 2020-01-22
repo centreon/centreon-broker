@@ -97,20 +97,20 @@ set(NEB_SOURCES
 )
 
 # Static library.
-add_library("nebbase" STATIC ${NEB_SOURCES})
-add_dependencies("nebbase" json11_lib)
+add_library(nebbase STATIC ${NEB_SOURCES})
+add_dependencies(nebbase json11_lib)
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-fPIC" COMPILER_HAS_FPIC)
 if (COMPILER_HAS_FPIC)
   get_property(NEBBASE_CXXFLAGS
-    TARGET "nebbase"
+    TARGET nebbase
     PROPERTY COMPILE_FLAGS)
   if (NEBBASE_CXXFLAGS)
     set(NEBBASE_CXXFLAGS "${NEBBASE_CXXFLAGS} -fPIC")
   else ()
     set(NEBBASE_CXXFLAGS "-fPIC")
   endif ()
-  set_property(TARGET "nebbase"
+  set_property(TARGET nebbase
     PROPERTY COMPILE_FLAGS "${NEBBASE_CXXFLAGS}")
 endif ()
 
@@ -136,8 +136,8 @@ add_library("${NEB}" SHARED
   "${INC_DIR}/com/centreon/broker/neb/downtime_map.hh"
 )
 # Flags needed to include all symbols in binary.
-target_link_libraries("${NEB}"
-  "-Wl,--whole-archive" "nebbase" "-Wl,--no-whole-archive")
+target_link_libraries(${NEB} nebbase)
+#  "-Wl,--whole-archive" nebbase "-Wl,--no-whole-archive")
 set_target_properties("${NEB}" PROPERTIES PREFIX "")
 install(TARGETS "${NEB}"
   LIBRARY DESTINATION "${PREFIX_MODULES}"

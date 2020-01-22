@@ -45,40 +45,37 @@ perfdata::perfdata()
 /**
  *  Copy constructor.
  *
- *  @param[in] pd Object to copy.
+ *  @param[in] other Object to copy.
  */
-perfdata::perfdata(perfdata const& pd) {
-  operator=(pd);
-}
 
 /**
  *  Destructor.
  */
-perfdata::~perfdata() throw() {}
+perfdata::~perfdata() noexcept {}
 
 /**
  *  Assignment operator.
  *
- *  @param[in] pd Object to copy.
+ *  @param[in] other Object to copy.
  *
  *  @return This object.
  */
-perfdata& perfdata::operator=(perfdata const& pd) {
-  if (this != &pd) {
-    _critical = pd._critical;
-    _critical_low = pd._critical_low;
-    _critical_mode = pd._critical_mode;
-    _max = pd._max;
-    _min = pd._min;
-    _name = pd._name;
-    _unit = pd._unit;
-    _value = pd._value;
-    _value_type = pd._value_type;
-    _warning = pd._warning;
-    _warning_low = pd._warning_low;
-    _warning_mode = pd._warning_mode;
+perfdata& perfdata::operator=(perfdata const& other) {
+  if (this != &other) {
+    _critical = other._critical;
+    _critical_low = other._critical_low;
+    _critical_mode = other._critical_mode;
+    _max = other._max;
+    _min = other._min;
+    _name = other._name;
+    _unit = other._unit;
+    _value = other._value;
+    _value_type = other._value_type;
+    _warning = other._warning;
+    _warning_low = other._warning_low;
+    _warning_mode = other._warning_mode;
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -86,8 +83,8 @@ perfdata& perfdata::operator=(perfdata const& pd) {
  *
  *  @return Critical value.
  */
-double perfdata::critical() const throw() {
-  return (_critical);
+double perfdata::critical() const noexcept {
+  return _critical;
 }
 
 /**
@@ -95,9 +92,8 @@ double perfdata::critical() const throw() {
  *
  *  @param[in] c New critical value.
  */
-void perfdata::critical(double c) throw() {
+void perfdata::critical(double c) noexcept {
   _critical = c;
-  return;
 }
 
 /**
@@ -105,8 +101,8 @@ void perfdata::critical(double c) throw() {
  *
  *  @return Low critical value.
  */
-double perfdata::critical_low() const throw() {
-  return (_critical_low);
+double perfdata::critical_low() const noexcept {
+  return _critical_low;
 }
 
 /**
@@ -114,9 +110,8 @@ double perfdata::critical_low() const throw() {
  *
  *  @param[in] c Low critical value.
  */
-void perfdata::critical_low(double c) throw() {
+void perfdata::critical_low(double c) noexcept {
   _critical_low = c;
-  return;
 }
 
 /**
@@ -125,8 +120,8 @@ void perfdata::critical_low(double c) throw() {
  *  @return false if an alert is generated if the value is outside the
  *          range, true otherwise.
  */
-bool perfdata::critical_mode() const throw() {
-  return (_critical_mode);
+bool perfdata::critical_mode() const noexcept {
+  return _critical_mode;
 }
 
 /**
@@ -135,9 +130,8 @@ bool perfdata::critical_mode() const throw() {
  *  @param[in] m false if an alert is generated if the value is outside
  *               the range, true otherwise.
  */
-void perfdata::critical_mode(bool m) throw() {
+void perfdata::critical_mode(bool m) noexcept {
   _critical_mode = m;
-  return;
 }
 
 /**
@@ -145,8 +139,8 @@ void perfdata::critical_mode(bool m) throw() {
  *
  *  @return Maximum value.
  */
-double perfdata::max() const throw() {
-  return (_max);
+double perfdata::max() const noexcept {
+  return _max;
 }
 
 /**
@@ -154,9 +148,8 @@ double perfdata::max() const throw() {
  *
  *  @param[in] m New maximum value.
  */
-void perfdata::max(double m) throw() {
+void perfdata::max(double m) noexcept {
   _max = m;
-  return;
 }
 
 /**
@@ -164,8 +157,8 @@ void perfdata::max(double m) throw() {
  *
  *  @return Minimum value.
  */
-double perfdata::min() const throw() {
-  return (_min);
+double perfdata::min() const noexcept {
+  return _min;
 }
 
 /**
@@ -173,9 +166,8 @@ double perfdata::min() const throw() {
  *
  *  @param[in] m New minimum value.
  */
-void perfdata::min(double m) throw() {
+void perfdata::min(double m) noexcept {
   _min = m;
-  return;
 }
 
 /**
@@ -183,8 +175,8 @@ void perfdata::min(double m) throw() {
  *
  *  @return Name of the metric.
  */
-std::string const& perfdata::name() const throw() {
-  return (_name);
+std::string const& perfdata::name() const noexcept {
+  return _name;
 }
 
 /**
@@ -194,7 +186,10 @@ std::string const& perfdata::name() const throw() {
  */
 void perfdata::name(std::string const& n) {
   _name = n;
-  return;
+}
+
+void perfdata::name(std::string&& n) {
+  _name = n;
 }
 
 /**
@@ -202,8 +197,8 @@ void perfdata::name(std::string const& n) {
  *
  *  @return Unit.
  */
-std::string const& perfdata::unit() const throw() {
-  return (_unit);
+std::string const& perfdata::unit() const noexcept {
+  return _unit;
 }
 
 /**
@@ -213,7 +208,10 @@ std::string const& perfdata::unit() const throw() {
  */
 void perfdata::unit(std::string const& u) {
   _unit = u;
-  return;
+}
+
+void perfdata::unit(std::string&& u) {
+  _unit = u;
 }
 
 /**
@@ -221,9 +219,8 @@ void perfdata::unit(std::string const& u) {
  *
  *  @param[in] v New value.
  */
-void perfdata::value(double v) throw() {
+void perfdata::value(double v) noexcept {
   _value = v;
-  return;
 }
 
 /**
@@ -231,8 +228,8 @@ void perfdata::value(double v) throw() {
  *
  *  @return Type of the value.
  */
-perfdata::data_type perfdata::value_type() const throw() {
-  return (_value_type);
+perfdata::data_type perfdata::value_type() const noexcept {
+  return _value_type;
 }
 
 /**
@@ -240,9 +237,8 @@ perfdata::data_type perfdata::value_type() const throw() {
  *
  *  @param[in] t New type.
  */
-void perfdata::value_type(perfdata::data_type t) throw() {
+void perfdata::value_type(perfdata::data_type t) noexcept {
   _value_type = t;
-  return;
 }
 
 /**
@@ -250,8 +246,8 @@ void perfdata::value_type(perfdata::data_type t) throw() {
  *
  *  @return Warning value.
  */
-double perfdata::warning() const throw() {
-  return (_warning);
+double perfdata::warning() const noexcept {
+  return _warning;
 }
 
 /**
@@ -259,9 +255,8 @@ double perfdata::warning() const throw() {
  *
  *  @param[in] v New warning value.
  */
-void perfdata::warning(double w) throw() {
+void perfdata::warning(double w) noexcept {
   _warning = w;
-  return;
 }
 
 /**
@@ -269,8 +264,8 @@ void perfdata::warning(double w) throw() {
  *
  *  @return Low warning value.
  */
-double perfdata::warning_low() const throw() {
-  return (_warning_low);
+double perfdata::warning_low() const noexcept {
+  return _warning_low;
 }
 
 /**
@@ -278,9 +273,8 @@ double perfdata::warning_low() const throw() {
  *
  *  @param[in] w Low warning value.
  */
-void perfdata::warning_low(double w) throw() {
+void perfdata::warning_low(double w) noexcept {
   _warning_low = w;
-  return;
 }
 
 /**
@@ -289,8 +283,8 @@ void perfdata::warning_low(double w) throw() {
  *  @return false if an alert is generated if the value is outside the
  *          range, true otherwise.
  */
-bool perfdata::warning_mode() const throw() {
-  return (_warning_mode);
+bool perfdata::warning_mode() const noexcept {
+  return _warning_mode;
 }
 
 /**
@@ -299,9 +293,8 @@ bool perfdata::warning_mode() const throw() {
  *  @param[in] m false if an alert is generated if the value it outside
  *               the range, true otherwise.
  */
-void perfdata::warning_mode(bool m) throw() {
+void perfdata::warning_mode(bool m) noexcept {
   _warning_mode = m;
-  return;
 }
 
 /**************************************
@@ -319,11 +312,11 @@ void perfdata::warning_mode(bool m) throw() {
  *  @return true if a and b are equal.
  */
 static inline bool double_equal(double a, double b) {
-  return ((std::isnan(a) && std::isnan(b)) ||
-          (std::isinf(a) && std::isinf(b) &&
-           (std::signbit(a) == std::signbit(b))) ||
-          (std::isfinite(a) && std::isfinite(b) &&
-           !(fabs((a) - (b)) > (0.01 * fabs(a)))));
+  return (std::isnan(a) && std::isnan(b)) ||
+         (std::isinf(a) && std::isinf(b) &&
+          std::signbit(a) == std::signbit(b)) ||
+         (std::isfinite(a) && std::isfinite(b) &&
+          fabs(a - b) <= 0.01 * fabs(a));
 }
 
 /**
@@ -335,17 +328,17 @@ static inline bool double_equal(double a, double b) {
  *  @return true if both objects are equal.
  */
 bool operator==(perfdata const& left, perfdata const& right) {
-  return (double_equal(left.critical(), right.critical()) &&
-          double_equal(left.critical_low(), right.critical_low()) &&
-          (left.critical_mode() == right.critical_mode()) &&
-          double_equal(left.max(), right.max()) &&
-          double_equal(left.min(), right.min()) &&
-          (left.name() == right.name()) && (left.unit() == right.unit()) &&
-          double_equal(left.value(), right.value()) &&
-          (left.value_type() == right.value_type()) &&
-          double_equal(left.warning(), right.warning()) &&
-          double_equal(left.warning_low(), right.warning_low()) &&
-          (left.warning_mode() == right.warning_mode()));
+  return double_equal(left.critical(), right.critical()) &&
+         double_equal(left.critical_low(), right.critical_low()) &&
+         left.critical_mode() == right.critical_mode() &&
+         double_equal(left.max(), right.max()) &&
+         double_equal(left.min(), right.min()) && left.name() == right.name() &&
+         left.unit() == right.unit() &&
+         double_equal(left.value(), right.value()) &&
+         left.value_type() == right.value_type() &&
+         double_equal(left.warning(), right.warning()) &&
+         double_equal(left.warning_low(), right.warning_low()) &&
+         left.warning_mode() == right.warning_mode();
 }
 
 /**
@@ -357,5 +350,5 @@ bool operator==(perfdata const& left, perfdata const& right) {
  *  @return true if both objects are inequal.
  */
 bool operator!=(perfdata const& left, perfdata const& right) {
-  return (!(left == right));
+  return !(left == right);
 }

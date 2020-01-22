@@ -245,7 +245,9 @@ TEST_F(LuaTest, SocketCreation) {
                "end\n\n"
                "function write(d)\n"
                "end\n\n");
-  ASSERT_NO_THROW(new luabinding(filename, conf, *_cache));
+  luabinding* bind;
+  ASSERT_NO_THROW(bind = new luabinding(filename, conf, *_cache));
+  delete bind;
   RemoveFile(filename);
 }
 
@@ -299,7 +301,8 @@ TEST_F(LuaAsioTest, SocketConnectionOk) {
                "end\n\n"
                "function write(d)\n"
                "end\n\n");
-  ASSERT_NO_THROW(new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding;
+  ASSERT_NO_THROW(binding.reset(new luabinding(filename, conf, *_cache)));
   RemoveFile(filename);
 }
 
@@ -366,7 +369,8 @@ TEST_F(LuaAsioTest, SocketWrite) {
 
   ASSERT_TRUE(_server.get_bind_ok());
 
-  ASSERT_NO_THROW(new luabinding(filename, conf, *_cache));
+  std::unique_ptr<luabinding> binding;
+  ASSERT_NO_THROW(binding.reset(new luabinding(filename, conf, *_cache)));
   std::string lst(ReadFile("/tmp/log"));
   ASSERT_TRUE(lst.size() > 0);
   RemoveFile("/tmp/log");
@@ -521,7 +525,7 @@ TEST_F(LuaTest, HostCacheTest) {
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::host> hst(new neb::host);
   hst->host_id = 1;
-  hst->host_name = strdup("centreon");
+  hst->host_name = "centreon";
   _cache->write(hst);
 
   CreateScript(filename,
@@ -549,7 +553,7 @@ TEST_F(LuaTest, ServiceCacheTest) {
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 1;
   svc->service_id = 14;
-  svc->service_description = strdup("description");
+  svc->service_description = "description";
   _cache->write(svc);
 
   CreateScript(
@@ -578,11 +582,11 @@ TEST_F(LuaTest, IndexMetricCacheTest) {
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->host_id = 1;
   svc->service_id = 14;
-  svc->service_description = strdup("MyDescription");
+  svc->service_description = "MyDescription";
   _cache->write(svc);
   std::shared_ptr<neb::host> hst(new neb::host);
   hst->host_id = 1;
-  hst->host_name = strdup("host1");
+  hst->host_name = "host1";
   _cache->write(hst);
   std::shared_ptr<storage::index_mapping> im(new storage::index_mapping);
   im->index_id = 7;
@@ -702,7 +706,7 @@ TEST_F(LuaTest, HostGroupCacheTestName) {
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::host_group> hg(new neb::host_group);
   hg->id = 28;
-  hg->name = strdup("centreon");
+  hg->name = "centreon";
   _cache->write(hg);
 
   CreateScript(filename,
@@ -753,15 +757,15 @@ TEST_F(LuaTest, HostGroupCacheTest) {
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::host_group> hg(new neb::host_group);
   hg->id = 16;
-  hg->name = strdup("centreon1");
+  hg->name = "centreon1";
   _cache->write(hg);
   hg.reset(new neb::host_group);
   hg->id = 17;
-  hg->name = strdup("centreon2");
+  hg->name = "centreon2";
   _cache->write(hg);
   std::shared_ptr<neb::host> hst(new neb::host);
   hst->host_id = 22;
-  hst->host_name = strdup("host_centreon");
+  hst->host_name = "host_centreon";
   _cache->write(hst);
   std::shared_ptr<neb::host_group_member> member(new neb::host_group_member);
   member->host_id = 22;
@@ -829,7 +833,7 @@ TEST_F(LuaTest, ServiceGroupCacheTestName) {
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::service_group> sg(new neb::service_group);
   sg->id = 28;
-  sg->name = strdup("centreon");
+  sg->name = "centreon";
   _cache->write(sg);
 
   CreateScript(filename,
@@ -880,17 +884,17 @@ TEST_F(LuaTest, ServiceGroupCacheTest) {
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::service_group> sg(new neb::service_group);
   sg->id = 16;
-  sg->name = strdup("centreon1");
+  sg->name = "centreon1";
   _cache->write(sg);
   sg.reset(new neb::service_group);
   sg->id = 17;
-  sg->name = strdup("centreon2");
+  sg->name = "centreon2";
   _cache->write(sg);
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->service_id = 17;
   svc->host_id = 22;
-  svc->host_name = strdup("host_centreon");
-  svc->service_description = strdup("service_description");
+  svc->host_name = "host_centreon";
+  svc->service_description = "service_description";
   _cache->write(svc);
   std::shared_ptr<neb::service_group_member> member(
       new neb::service_group_member);
@@ -938,26 +942,26 @@ TEST_F(LuaTest, SetNewInstance) {
   std::string filename("/tmp/cache_test.lua");
   std::shared_ptr<neb::service_group> sg(new neb::service_group);
   sg->id = 16;
-  sg->name = strdup("centreon1");
+  sg->name = "centreon1";
   _cache->write(sg);
   sg.reset(new neb::service_group);
   sg->id = 17;
-  sg->name = strdup("centreon2");
+  sg->name = "centreon2";
   _cache->write(sg);
   std::shared_ptr<neb::host> hst(new neb::host);
   hst->host_id = 22;
-  hst->host_name = strdup("host_centreon");
+  hst->host_name = "host_centreon";
   hst->poller_id = 3;
   _cache->write(hst);
   std::shared_ptr<neb::host_group> hg(new neb::host_group);
   hg->id = 19;
-  hg->name = strdup("hg1");
+  hg->name = "hg1";
   _cache->write(hg);
   std::shared_ptr<neb::service> svc(new neb::service);
   svc->service_id = 17;
   svc->host_id = 22;
-  svc->host_name = strdup("host_centreon");
-  svc->service_description = strdup("service_description");
+  svc->host_name = "host_centreon";
+  svc->service_description = "service_description";
   _cache->write(svc);
   std::shared_ptr<neb::host_group_member> hmember(new neb::host_group_member);
   hmember->host_id = 22;

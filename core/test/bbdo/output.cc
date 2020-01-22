@@ -65,6 +65,7 @@ class into_memory : public io::stream {
 class OutputTest : public ::testing::Test {
  public:
   void SetUp() override {
+    io::data::broker_id = 0;
     try {
       config::applier::init();
     } catch (std::exception const& e) {
@@ -143,10 +144,10 @@ TEST_F(OutputTest, WriteLongService) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");
 
-  std::shared_ptr<neb::service> svc(new neb::service);
+  auto svc = std::make_shared<neb::service>();
   svc->host_id = 12;
   svc->service_id = 18;
-  svc->output = std::string("", 70000);
+  svc->output = std::string(70000, 'A');
   char c = 'A';
   for (std::string::iterator i = svc->output.begin(); i != svc->output.end();
        i++) {

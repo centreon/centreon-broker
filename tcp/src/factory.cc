@@ -35,32 +35,6 @@ using namespace com::centreon::broker::tcp;
  **************************************/
 
 /**
- *  Default constructor.
- */
-factory::factory() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-factory::factory(factory const& other) : io::factory(other) {}
-
-/**
- *  Destructor.
- */
-factory::~factory() {}
-
-/**
- *  Clone the factory object.
- *
- *  @return Clone of this factory.
- */
-io::factory* factory::clone() const {
-  return new factory(*this);
-}
-
-/**
  *  Check if a configuration supports this protocol.
  *
  *  @param[in] cfg  Object configuration.

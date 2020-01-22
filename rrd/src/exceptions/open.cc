@@ -51,10 +51,6 @@ open::~open() throw() {}
  *
  *  @return This object.
  */
-open& open::operator=(open const& o) throw() {
-  broker::exceptions::msg::operator=(o);
-  return (*this);
-}
 
 /**
  *  Clone the exception object.

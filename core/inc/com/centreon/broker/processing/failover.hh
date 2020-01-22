@@ -70,14 +70,12 @@ class failover : public bthread {
   void set_failover(std::shared_ptr<processing::failover> fo);
   void set_retry_interval(time_t retry_interval);
   void update() override;
-  bool wait(unsigned long time = ULONG_MAX);
+  //bool wait(unsigned long time = ULONG_MAX);
 
  protected:
   // From stat_visitable
-  const char* _get_state() const override;
-  virtual uint32_t _get_queued_events() override;
-  std::unordered_set<uint32_t> const& _get_read_filters() const override;
-  std::unordered_set<uint32_t> const& _get_write_filters() const override;
+  std::string const& _get_read_filters() const override;
+  std::string const& _get_write_filters() const override;
   virtual void _forward_statistic(json11::Json::object& tree) override;
 
  private:

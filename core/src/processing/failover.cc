@@ -133,6 +133,7 @@ void failover::run() {
         {
           std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
           _stream = s;
+          set_state(s ? "connected" : "connecting");
         }
         _initialized = true;
         set_last_connection_success(timestamp::now());
@@ -152,16 +153,7 @@ void failover::run() {
         // FIXME DBR: attempt to replace the Qt code below.
         if (!should_exit())
           std::this_thread::sleep_for(std::chrono::seconds(_buffering_timeout));
-        //        return;
 
-        //        time_t valid_time(time(NULL) + _buffering_timeout);
-        //        do {
-        //          QTimer::singleShot(1000, this, SLOT(quit()));
-        //          exec();
-        //        } while (!should_exit() && (time(NULL) < valid_time));
-
-        // FIXME DBR: I don't see how this method could be called... even
-        // in the Qt version.
         _update_status("");
       }
 
@@ -193,7 +185,6 @@ void failover::run() {
             << "failover: shutting down failover of endpoint '" << _name << "'";
         _update_status("shutting down failover");
         _failover->exit();
-        _failover->wait();
         _failover_launched = false;
         _update_status("");
       }
@@ -206,6 +197,9 @@ void failover::run() {
       bool muxer_can_read(true);
       bool should_commit(false);
       std::shared_ptr<io::data> d;
+
+      time_t fill_stats_time = time(nullptr);
+
       while (!should_exit()) {
 
         // Check for update.
@@ -213,6 +207,12 @@ void failover::run() {
           std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
           _stream->update();
           _update = false;
+        }
+
+        // Filling stats
+        if (time(nullptr) >= fill_stats_time) {
+          fill_stats_time += 5;
+          set_queued_events(_subscriber->get_muxer().get_event_queue_size());
         }
 
         // Read from endpoint stream.
@@ -324,6 +324,7 @@ void failover::run() {
       {
         std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
         _stream.reset();
+        set_state("connecting");
       }
       _launch_failover();
       _initialized = true;
@@ -336,6 +337,7 @@ void failover::run() {
       {
         std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
         _stream.reset();
+        set_state("connecting");
       }
       _launch_failover();
       _initialized = true;
@@ -345,22 +347,15 @@ void failover::run() {
     {
       std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
       _stream.reset();
+      set_state("connecting");
     }
 
     // Sleep a while before attempting a reconnection.
     _update_status("sleeping before reconnection");
 
-    // FIXME DBR: attempt to replace the Qt code below.
     if (!should_exit())
       std::this_thread::sleep_for(std::chrono::seconds(_retry_interval));
 
-    //    time_t valid_time(time(NULL) + _retry_interval);
-    //    while (!should_exit() && (time(NULL) < valid_time)) {
-    //      QTimer::singleShot(1000, this, SLOT(quit()));
-    //      exec();
-    //    }
-    // FIXME DBR: I don't see how this method could be called... even
-    // in the Qt version.
     _update_status("");
 
   } while (!should_exit());
@@ -369,6 +364,7 @@ void failover::run() {
   {
     std::lock_guard<std::timed_mutex> stream_lock(_stream_m);
     _stream.reset();
+    set_state("connecting");
   }
 
   // Exit failover thread if necessary.
@@ -426,58 +422,31 @@ void failover::update() {
  *
  *  @return True if thread exited.
  */
-bool failover::wait(unsigned long time) {
-  // Check that failover finished.
-  bool finished;
-  if (_failover)
-    finished = _failover->wait(time);
-  else
-    finished = true;
-
-  // If there was no failover or failover finished we
-  // can safely wait for ourselves.
-  if (finished)
-    finished = bthread::wait(time);
-  // Otherwise we're not finished yet.
-  else
-    finished = false;
-  return finished;
-}
-
-/**
- *  Get the state of the failover.
- *
- *  @return  The state of the failover.
- */
-const char* failover::_get_state() const {
-  char const* ret = nullptr;
-  if (_stream_m.try_lock_for(std::chrono::milliseconds(10))) {
-    if (!_stream)
-      ret = "connecting";
-    else
-      ret = "connected";
-    _stream_m.unlock();
-  } else
-    ret = "blocked";
-  return ret;
-}
-
-/**
- *  Get the number of queued events.
- *
- *  @return  The number of queued events.
- */
-uint32_t failover::_get_queued_events() {
-  return _subscriber->get_muxer().get_event_queue_size();
-}
+//bool failover::wait(unsigned long time) {
+//  // Check that failover finished.
+//  bool finished;
+//  if (_failover)
+//    finished = _failover->wait(time);
+//  else
+//    finished = true;
+//
+//  // If there was no failover or failover finished we
+//  // can safely wait for ourselves.
+//  if (finished)
+//    finished = bthread::wait(time);
+//  // Otherwise we're not finished yet.
+//  else
+//    finished = false;
+//  return finished;
+//}
 
 /**
  *  Get the read filters used by the failover.
  *
  *  @return  The read filters used by the failover.
  */
-std::unordered_set<uint32_t> const& failover::_get_read_filters() const {
-  return _subscriber->get_muxer().get_read_filters();
+std::string const& failover::_get_read_filters() const {
+  return _subscriber->get_muxer().get_read_filters_str();
 }
 
 /**
@@ -485,8 +454,8 @@ std::unordered_set<uint32_t> const& failover::_get_read_filters() const {
  *
  *  @return  The write filters used by the failover.
  */
-std::unordered_set<uint32_t> const& failover::_get_write_filters() const {
-  return _subscriber->get_muxer().get_write_filters();
+std::string const& failover::_get_write_filters() const {
+  return _subscriber->get_muxer().get_write_filters_str();
 }
 
 /**

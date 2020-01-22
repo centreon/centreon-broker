@@ -40,7 +40,6 @@ void broker_module_deinit() {
   if (!--instances)
     // Deregister RRD layer.
     io::protocols::instance().unreg("RRD");
-  return;
 }
 
 /**
@@ -63,9 +62,8 @@ void broker_module_init(void const* arg) {
         << "RRD: using rrdtool " << (rrdversion ? rrdversion : "(unknown)");
 
     // Register RRD layer.
-    io::protocols::instance().reg("RRD", rrd::factory(), 1, 7);
+    io::protocols::instance().reg("RRD", std::make_shared<rrd::factory>(), 1,
+                                  7);
   }
-
-  return;
 }
 }

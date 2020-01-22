@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include <cstdio>
 #include "com/centreon/broker/config/applier/state.hh"
 #include <cstdlib>

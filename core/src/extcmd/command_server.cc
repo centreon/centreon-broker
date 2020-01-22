@@ -51,11 +51,8 @@ command_server::command_server(protocol prot,
  *  Destructor.
  */
 command_server::~command_server() {
-  if (_listener_thread) {
-    _listener_thread->exit();
-    _listener_thread->wait();
+  if (_listener_thread)
     delete _listener_thread;
-  }
 }
 
 /**

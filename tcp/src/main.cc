@@ -57,9 +57,8 @@ void broker_module_init(void const* arg) {
         << "TCP: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
     // Register TCP protocol.
-    io::protocols::instance().reg("TCP", tcp::factory(), 1, 4);
+    io::protocols::instance().reg("TCP", std::make_shared<tcp::factory>(), 1,
+                                  4);
   }
-
-  return;
 }
 }

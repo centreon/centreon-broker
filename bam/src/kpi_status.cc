@@ -37,6 +37,7 @@ kpi_status::kpi_status()
       level_nominal_soft(100.0),
       state_hard(0),
       state_soft(0),
+      last_state_change(0),
       last_impact(0),
       valid(true) {}
 

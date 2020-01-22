@@ -36,11 +36,10 @@ namespace io {
  */
 class factory {
  public:
-  factory();
-  factory(factory const& other);
-  virtual ~factory();
-  factory& operator=(factory const& other);
-  virtual factory* clone() const = 0;
+  factory() = default;
+  virtual ~factory() = default;
+  factory(factory const& other) = delete;
+  factory& operator=(factory const& other) = delete;
   virtual bool has_endpoint(
       com::centreon::broker::config::endpoint& cfg) const = 0;
   virtual bool has_not_endpoint(

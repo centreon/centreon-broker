@@ -29,6 +29,14 @@ endif ()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+# With libasan
+option(WITH_ASAN "Add the libasan to check memory leaks and other memory issues." OFF)
+if (WITH_ASAN)
+  set(CMAKE_BUILD_TYPE Debug)
+  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+  set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+endif ()
+
 set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc")
 include_directories("${INC_DIR}")
 set(INC_DIR "${PROJECT_SOURCE_DIR}/core/inc/com/centreon/broker")
@@ -376,12 +384,6 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/config/parser.cc
   ${SRC_DIR}/config/state.cc
   ${SRC_DIR}/database_config.cc
-  ${SRC_DIR}/exceptions/config.cc
-  ${SRC_DIR}/exceptions/corruption.cc
-  ${SRC_DIR}/exceptions/interrupt.cc
-  ${SRC_DIR}/exceptions/msg.cc
-  ${SRC_DIR}/exceptions/shutdown.cc
-  ${SRC_DIR}/exceptions/timeout.cc
   ${SRC_DIR}/extcmd/command_client.cc
   ${SRC_DIR}/extcmd/command_listener.cc
   ${SRC_DIR}/extcmd/command_parser.cc
@@ -739,6 +741,8 @@ option(WITH_TESTING "Generate unit tests." OFF)
 if (WITH_TESTING)
   add_subdirectory(test)
 endif ()
+
+option(WITH_SQL_TESTS "Sql unit tests are enabled." OFF)
 
 #
 # Print summary.

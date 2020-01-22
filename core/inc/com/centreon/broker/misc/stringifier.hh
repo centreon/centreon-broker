@@ -34,35 +34,35 @@ namespace misc {
  */
 class stringifier {
  public:
-  stringifier(char const* buffer = NULL) throw();
+  stringifier(char const* buffer = nullptr) noexcept;
   stringifier(stringifier const& right);
   virtual ~stringifier();
   stringifier& operator=(stringifier const& right);
-  stringifier& operator<<(bool b) throw();
-  stringifier& operator<<(char const* str) throw();
-  stringifier& operator<<(char c) throw();
-  stringifier& operator<<(double d) throw();
-  stringifier& operator<<(int i) throw();
-  stringifier& operator<<(long long ll) throw();
-  stringifier& operator<<(long l) throw();
-  stringifier& operator<<(std::string const& str) throw();
-  stringifier& operator<<(stringifier const& str) throw();
-  stringifier& operator<<(uint32_t u) throw();
-  stringifier& operator<<(unsigned long long ull) throw();
-  stringifier& operator<<(unsigned long ul) throw();
-  stringifier& operator<<(void const* p) throw();
-  stringifier& append(char const* str, uint32_t size) throw();
-  char const* data() const throw();
-  int precision() const throw();
-  void precision(int val) throw();
-  void reset() throw();
-  uint32_t size() const throw();
+  stringifier& operator<<(bool b) noexcept;
+  stringifier& operator<<(char const* str) noexcept;
+  stringifier& operator<<(char c) noexcept;
+  stringifier& operator<<(double d) noexcept;
+  stringifier& operator<<(int i) noexcept;
+  stringifier& operator<<(long long ll) noexcept;
+  stringifier& operator<<(long l) noexcept;
+  stringifier& operator<<(std::string const& str) noexcept;
+  stringifier& operator<<(stringifier const& str) noexcept;
+  stringifier& operator<<(uint32_t u) noexcept;
+  stringifier& operator<<(unsigned long long ull) noexcept;
+  stringifier& operator<<(unsigned long ul) noexcept;
+  stringifier& operator<<(void const* p) noexcept;
+  stringifier& append(char const* str, uint32_t size) noexcept;
+  char const* data() const noexcept;
+  int precision() const noexcept;
+  void precision(int val) noexcept;
+  void reset() noexcept;
+  uint32_t size() const noexcept;
 
  protected:
   template <typename T>
-  stringifier& _insert(char const* format, T t) throw();
+  stringifier& _insert(char const* format, T t) noexcept;
   template <typename T>
-  stringifier& _insert(char const* format, uint32_t limit, T t) throw();
+  stringifier& _insert(char const* format, uint32_t limit, T t) noexcept;
   stringifier& _internal_copy(stringifier const& right);
   bool _realloc(uint32_t new_size);
 
