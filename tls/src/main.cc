@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <memory>
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tls/factory.hh"
@@ -44,7 +45,6 @@ void broker_module_deinit() {
     // Cleanup.
     tls::destroy();
   }
-  return;
 }
 
 /**
@@ -65,8 +65,8 @@ void broker_module_init(void const* arg) {
     tls::initialize();
 
     // Register TLS layer.
-    io::protocols::instance().reg("TLS", tls::factory(), 5, 5);
+    io::protocols::instance().reg("TLS", std::make_shared<tls::factory>(), 5,
+                                  5);
   }
-  return;
 }
 }

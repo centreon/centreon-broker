@@ -28,47 +28,17 @@ using namespace com::centreon::broker::storage::exceptions;
  **************************************/
 
 /**
- *  Default constructor.
- */
-perfdata::perfdata() throw() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] pd Object to copy.
- */
-perfdata::perfdata(perfdata const& pd) throw() : broker::exceptions::msg(pd) {}
-
-/**
- *  Destructor.
- */
-perfdata::~perfdata() throw() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] pd Object to copy.
- *
- *  @return This object.
- */
-perfdata& perfdata::operator=(perfdata const& pd) throw() {
-  broker::exceptions::msg::operator=(pd);
-  return (*this);
-}
-
-/**
  *  Clone the exception object.
  *
  *  @return Copy of this exception object.
  */
 exceptions::msg* perfdata::clone() const {
-  return (new perfdata(*this));
+  return new perfdata(*this);
 }
 
 /**
  *  Rethrow the exception.
  */
 void perfdata::rethrow() const {
-  throw(*this);
-  return;
+  throw *this;
 }

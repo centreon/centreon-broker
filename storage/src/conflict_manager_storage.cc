@@ -249,7 +249,7 @@ int32_t conflict_manager::_storage_process_service_status() {
       storage::parser p;
       try {
         _finish_action(-1, actions::metrics);
-        p.parse_perfdata(ss.perf_data, pds);
+        p.parse_perfdata(ss.perf_data.c_str(), pds);
 
         for (storage::perfdata& pd : pds) {
           auto it_index_cache = _metric_cache.find({index_id, pd.name()});

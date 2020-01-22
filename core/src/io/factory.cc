@@ -29,37 +29,6 @@ using namespace com::centreon::broker::io;
  **************************************/
 
 /**
- *  Default constructor.
- */
-factory::factory() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-factory::factory(factory const& other) {
-  (void)other;
-}
-
-/**
- *  Destructor.
- */
-factory::~factory() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-factory& factory::operator=(factory const& other) {
-  (void)other;
-  return (*this);
-}
-
-/**
  *  Check if configuration do not have endpoint.
  *
  *  @param[in] cfg       Configuration object.
@@ -67,7 +36,7 @@ factory& factory::operator=(factory const& other) {
  *  @return True if configuration do not have endpoint.
  */
 bool factory::has_not_endpoint(config::endpoint& cfg) const {
-  return (!has_endpoint(cfg));
+  return !has_endpoint(cfg);
 }
 
 /**

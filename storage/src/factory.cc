@@ -21,8 +21,8 @@
 #include <memory>
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/storage/connector.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/storage/connector.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
@@ -55,20 +55,6 @@ static std::string const& find_param(config::endpoint const& cfg,
  *           Public Methods            *
  *                                     *
  **************************************/
-
-/**
- *  Default constructor.
- */
-factory::factory() {}
-
-/**
- *  Clone this object.
- *
- *  @return Exact copy of this factory.
- */
-io::factory* factory::clone() const {
-  return new factory(*this);
-}
 
 /**
  *  Check if a configuration match the storage layer.
@@ -104,9 +90,8 @@ io::endpoint* factory::new_endpoint(
   // Find RRD length.
   uint32_t rrd_length;
   try {
-      rrd_length = static_cast<uint32_t>(std::stoul(find_param(cfg, "length")));
-  }
-  catch (std::exception const& e) {
+    rrd_length = static_cast<uint32_t>(std::stoul(find_param(cfg, "length")));
+  } catch (std::exception const& e) {
     rrd_length = 15552000;
     logging::error(logging::high) << "storage: the length field should contain "
                                      "a string containing a number. We use the "
@@ -121,8 +106,7 @@ io::endpoint* factory::new_endpoint(
     if (it != cfg.params.end()) {
       try {
         interval_length = std::stoul(it->second);
-      }
-      catch (std::exception const& e) {
+      } catch (std::exception const& e) {
         interval_length = 60;
         logging::error(logging::high) << "storage: the interval field should "
                                          "contain a string containing a "
@@ -144,18 +128,16 @@ io::endpoint* factory::new_endpoint(
         cfg.params.find("rebuild_check_interval")};
     if (it != cfg.params.end()) {
       try {
-      rebuild_check_interval = std::stoul(it->second);
+        rebuild_check_interval = std::stoul(it->second);
+      } catch (std::exception const& e) {
+        rebuild_check_interval = 300;
+        logging::error(logging::high)
+            << "storage: the rebuild_check_interval field should "
+               "contain a string containing a number. We use the default value "
+               "in "
+               "replacement 300.";
       }
-      catch (std::exception const& e) {
-      rebuild_check_interval = 300;
-      logging::error(logging::high)
-          << "storage: the rebuild_check_interval field should "
-             "contain a string containing a number. We use the default value "
-             "in "
-             "replacement 300.";
-      }
-    }
-    else
+    } else
       rebuild_check_interval = 300;
   }
 

@@ -132,7 +132,6 @@ void service::_internal_copy(service const& other) {
   stalk_on_ok = other.stalk_on_ok;
   stalk_on_unknown = other.stalk_on_unknown;
   stalk_on_warning = other.stalk_on_warning;
-  return;
 }
 
 /**
@@ -154,7 +153,6 @@ void service::_zero_initialize() {
   stalk_on_ok = false;
   stalk_on_unknown = false;
   stalk_on_warning = false;
-  return;
 }
 
 /**************************************

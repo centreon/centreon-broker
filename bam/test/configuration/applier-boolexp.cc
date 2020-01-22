@@ -53,8 +53,8 @@ TEST_F(ApplierBoolexp, Simple) {
   bam::configuration::kpi kpi_boolexp;
   kpi_boolexp.set_id(17);
   kpi_boolexp.set_boolexp_id(23);
-  _state->get_bool_exps().insert(std::make_pair(boolexp.get_id(), boolexp));
-  _state->get_kpis().insert(std::make_pair(kpi_boolexp.get_id(), kpi_boolexp));
+  _state->get_bool_exps().insert({boolexp.get_id(), boolexp});
+  _state->get_kpis().insert({kpi_boolexp.get_id(), kpi_boolexp});
 
   ASSERT_NO_THROW(_aply_state->apply(*_state));
 }

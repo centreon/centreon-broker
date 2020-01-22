@@ -33,44 +33,6 @@ using namespace com::centreon::broker::tls;
  **************************************/
 
 /**
- *  Default constructor.
- */
-factory::factory() {}
-
-/**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-factory::factory(factory const& other) : io::factory(other) {}
-
-/**
- *  Destructor.
- */
-factory::~factory() {}
-
-/**
- *  Assignment operator.
- *
- *  @param[in] other  Object to copy.
- *
- *  @return This object.
- */
-factory& factory::operator=(factory const& other) {
-  io::factory::operator=(other);
-  return *this;
-}
-
-/**
- *  Clone this object.
- *
- *  @return A Copy of this object.
- */
-io::factory* factory::clone() const {
-  return new factory(*this);
-}
-
-/**
  *  Check if endpoint configuration match the TLS layer.
  *
  *  @param[in] cfg  Configuration object.

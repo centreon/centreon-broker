@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include "com/centreon/broker/io/events.hh"
 #include <algorithm>
 #include "com/centreon/broker/exceptions/msg.hh"

@@ -32,13 +32,13 @@ namespace exceptions {
  *  msg is a simple exception class that is only associated with a
  *  message. msg accepts multiple types on input.
  */
-class msg : private misc::stringifier, public std::exception {
+class msg : protected misc::stringifier, public std::exception {
  public:
-  msg();
-  msg(msg const& other);
-  virtual ~msg() throw();
-  msg& operator=(msg const& other);
-  virtual char const* what() const throw();
+  msg() = default;
+  msg(msg const& other) : misc::stringifier(other), std::exception(other) {}
+  virtual ~msg() noexcept {}
+  msg& operator=(msg const&) = delete;
+  virtual char const* what() const noexcept { return misc::stringifier::data(); }
 
   /**
    *  Insert data in message.
@@ -48,7 +48,7 @@ class msg : private misc::stringifier, public std::exception {
   template <typename T>
   msg& operator<<(T t) {
     *(misc::stringifier*)this << t;
-    return (*this);
+    return *this;
   }
 };
 }  // namespace exceptions

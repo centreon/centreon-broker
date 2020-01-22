@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2011,2017 Centreon
+** Copyright 2009-2011,2017,2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -35,10 +35,10 @@ namespace exceptions {
  */
 class corruption : public msg {
  public:
-  corruption();
-  corruption(corruption const& other);
-  ~corruption() throw();
-  corruption& operator=(corruption const& other);
+  corruption() = default;
+  corruption(corruption const&) = default;
+  ~corruption() noexcept {}
+  corruption& operator=(const corruption&) = delete;
 
   /**
    *  Insert data in message.
@@ -46,9 +46,9 @@ class corruption : public msg {
    *  @param[in] t Data to insert.
    */
   template <typename T>
-  corruption& operator<<(T t) throw() {
-    msg::operator<<(t);
-    return (*this);
+  corruption& operator<<(T t) noexcept {
+    *(misc::stringifier*)this << t;
+    return *this;
   }
 };
 }  // namespace exceptions

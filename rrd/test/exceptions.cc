@@ -81,20 +81,6 @@ TEST(RrdExceptions, OpenThrow) {
   // Return value.
   int retval(0);
 
-  // First throw.
-  try {
-    try {
-      throw(rrd::exceptions::open() << "foobar" << 42 << -789654ll);
-      retval |= 1;
-    } catch (rrd::exceptions::open const& e) {
-      rrd::exceptions::open oe;
-      oe = e;
-      retval |= strcmp(oe.what(), "foobar42-789654");
-    }
-  } catch (...) {
-    retval |= 1;
-  }
-
   // Second throw.
   try {
     try {
@@ -189,9 +175,6 @@ TEST(RrdExceptions, UpdateThrow) {
       throw(rrd::exceptions::update() << "foobar" << 42 << -789654ll);
       retval |= 1;
     } catch (rrd::exceptions::update const& e) {
-      rrd::exceptions::update ue;
-
-      ue = e;
       std::cout << "here"  << std::endl;
       retval |= strcmp(e.what(), "foobar42-789654");
     }

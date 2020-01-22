@@ -116,6 +116,7 @@ add_executable(ut
   ${TESTS_DIR}/processing/acceptor.cc
   ${TESTS_DIR}/processing/temporary_endpoint.cc
   ${TESTS_DIR}/processing/temporary_stream.cc
+  ${TESTS_DIR}/processing/feeder.cc
   ${TESTS_DIR}/processing/thread.cc
   ${TESTS_DIR}/exceptions.cc
   ${TESTS_DIR}/io.cc
@@ -129,8 +130,8 @@ add_executable(ut
 set_target_properties("ut" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 
 add_dependencies(ut googletest)
-target_link_libraries(ut gtest ${TESTS_LIBRARIES} ${NEB} rokerbase roker
-  pthread conflictmgr)
+target_link_libraries(ut gtest rokerbase roker ${TESTS_LIBRARIES}
+    conflictmgr)
 
 add_test(NAME tests COMMAND ut)
 

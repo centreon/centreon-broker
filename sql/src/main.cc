@@ -41,7 +41,6 @@ void broker_module_deinit() {
     // Deregister SQL layer.
     io::protocols::instance().unreg("SQL");
   }
-  return;
 }
 
 /**
@@ -59,9 +58,8 @@ void broker_module_init(void const* arg) {
         << "SQL: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
     // Register SQL layer.
-    io::protocols::instance().reg("SQL", sql::factory(), 1, 7);
+    io::protocols::instance().reg("SQL", std::make_shared<sql::factory>(), 1,
+                                  7);
   }
-
-  return;
 }
 }

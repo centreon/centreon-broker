@@ -63,22 +63,6 @@ static std::string find_param(config::endpoint const& cfg,
  **************************************/
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-factory::factory(factory const& other) : io::factory(other) {}
-
-/**
- *  Clone this object.
- *
- *  @return Exact copy of this factory.
- */
-io::factory* factory::clone() const {
-  return (new factory(*this));
-}
-
-/**
  *  Check if a configuration match the RRD layer.
  *
  *  @param[in] cfg  Endpoint configuration.

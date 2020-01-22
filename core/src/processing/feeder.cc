@@ -18,6 +18,7 @@
 
 #include "com/centreon/broker/processing/feeder.hh"
 #include <unistd.h>
+#include <cassert>
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/exceptions/shutdown.hh"
 #include "com/centreon/broker/io/raw.hh"
@@ -46,45 +47,113 @@ feeder::feeder(std::string const& name,
                std::shared_ptr<io::stream> client,
                std::unordered_set<uint32_t> const& read_filters,
                std::unordered_set<uint32_t> const& write_filters)
-    : bthread(name), _client(client), _subscriber(name, false) {
+    : stat_visitable(name),
+      _client(client),
+      _subscriber(name, false),
+      _started{false},
+      _should_exit{false} {
   _subscriber.get_muxer().set_read_filters(read_filters);
   _subscriber.get_muxer().set_write_filters(write_filters);
   // By default, we assume the feeder is already connected.
   set_last_connection_attempt(timestamp::now());
   set_last_connection_success(timestamp::now());
+  set_state("connecting");
 }
 
 /**
  *  Destructor.
  */
-feeder::~feeder() {}
+feeder::~feeder() {
+  if (!_should_exit) {
+    _should_exit = true;
+    if (_thread.joinable())
+      _thread.join();
+  }
+}
+
+bool feeder::is_finished() const noexcept {
+  std::lock_guard<std::mutex> lock(_started_m);
+  return !_started && _should_exit;
+}
 
 /**
- *  Thread main routine.
+ *  Get the read filters used by the feeder.
+ *
+ *  @return  The read filters used by the feeder.
  */
-void feeder::run() {
+std::string const& feeder::_get_read_filters() const {
+  return _subscriber.get_muxer().get_read_filters_str();
+}
+
+/**
+ *  Get the write filters used by the feeder.
+ *
+ *  @return  The write filters used by the feeder.
+ */
+std::string const& feeder::_get_write_filters() const {
+  return _subscriber.get_muxer().get_write_filters_str();
+}
+
+/**
+ *  Forward to stream.
+ *
+ *  @param[in] tree  The statistic tree.
+ */
+void feeder::_forward_statistic(json11::Json::object& tree) {
+  if (_client_m.try_lock_shared_for(300)) {
+    if (_client)
+      _client->statistics(tree);
+    _client_m.unlock();
+  }
+  _subscriber.get_muxer().statistics(tree);
+}
+
+void feeder::start() {
+  std::unique_lock<std::mutex> lock(_started_m);
+  if (!_client)
+      throw exceptions::msg()
+            << "could not process '" << _name << "' with no client stream";
+
+  if (!_started) {
+    _should_exit = false;
+    _thread = std::thread(&feeder::_callback, this);
+    _started_cv.wait(lock, [this] {return _started; });
+  }
+}
+
+void feeder::_callback() noexcept {
+  assert(_client);
   logging::info(logging::medium)
       << "feeder: thread of client '" << _name << "' is starting";
+  time_t fill_stats_time = time(nullptr);
+
   try {
-    if (!_client)
-      throw(exceptions::msg()
-            << "could not process '" << _name << "' with no client stream");
+    set_state("connected");
     bool stream_can_read(true);
     bool muxer_can_read(true);
     std::shared_ptr<io::data> d;
-    while (!should_exit()) {
+    _started = true;
+    _started_cv.notify_one();
+    while (!_should_exit) {
       // Read from stream.
       bool timed_out_stream(true);
+
+      // Filling stats
+      if (time(nullptr) >= fill_stats_time) {
+        fill_stats_time += 5;
+        set_queued_events(_subscriber.get_muxer().get_event_queue_size());
+      }
+
       if (stream_can_read) {
         try {
-          misc::read_lock lock(_client_mutex);
+          misc::read_lock lock(_client_m);
           timed_out_stream = !_client->read(d, 0);
         } catch (exceptions::shutdown const& e) {
           stream_can_read = false;
         }
         if (d) {
           {
-            misc::read_lock lock(_client_mutex);
+            misc::read_lock lock(_client_m);
             _subscriber.get_muxer().write(d);
           }
           tick();
@@ -103,7 +172,7 @@ void feeder::run() {
         }
       if (d) {
         {
-          misc::read_lock lock(_client_mutex);
+          misc::read_lock lock(_client_m);
           _client->write(d);
         }
         _subscriber.get_muxer().ack_events(1);
@@ -129,69 +198,15 @@ void feeder::run() {
         << "'";
   }
   {
-    misc::read_lock lock(_client_mutex);
+    std::lock_guard<std::mutex> lock(_started_m);
+    _started = false;
+  }
+  {
+    misc::read_lock lock(_client_m);
     _client.reset();
+    set_state("disconnected");
     _subscriber.get_muxer().remove_queue_files();
   }
   logging::info(logging::medium)
       << "feeder: thread of client '" << _name << "' will exit";
-}
-
-/**
- *  Get the state of the feeder.
- *
- *  @return  The state of the feeder.
- */
-const char* feeder::_get_state() const {
-  char const* ret;
-  if (_client_mutex.try_lock_shared_for(300)) {
-    if (!_client)
-      ret = "disconnected";
-    else
-      ret = "connected";
-    _client_mutex.unlock();
-  } else
-    ret = "blocked";
-  return ret;
-}
-
-/**
- *  Get the number of queued events.
- *
- *  @return  The number of queued events.
- */
-uint32_t feeder::_get_queued_events() {
-  return _subscriber.get_muxer().get_event_queue_size();
-}
-
-/**
- *  Get the read filters used by the feeder.
- *
- *  @return  The read filters used by the feeder.
- */
-std::unordered_set<uint32_t> const& feeder::_get_read_filters() const {
-  return _subscriber.get_muxer().get_read_filters();
-}
-
-/**
- *  Get the write filters used by the feeder.
- *
- *  @return  The write filters used by the feeder.
- */
-std::unordered_set<uint32_t> const& feeder::_get_write_filters() const {
-  return _subscriber.get_muxer().get_write_filters();
-}
-
-/**
- *  Forward to stream.
- *
- *  @param[in] tree  The statistic tree.
- */
-void feeder::_forward_statistic(json11::Json::object& tree) {
-  if (_client_mutex.try_lock_shared_for(300)) {
-    if (_client)
-      _client->statistics(tree);
-    _client_mutex.unlock();
-  }
-  _subscriber.get_muxer().statistics(tree);
 }

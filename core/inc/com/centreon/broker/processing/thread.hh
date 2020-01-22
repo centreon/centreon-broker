@@ -19,6 +19,7 @@
 #ifndef CCB_PROCESSING_THREAD_HH
 #define CCB_PROCESSING_THREAD_HH
 
+#include <atomic>
 #include <climits>
 #include <condition_variable>
 #include <mutex>
@@ -55,21 +56,19 @@ class bthread : public stat_visitable {
   bool should_exit() const;
   void start();
   virtual void update();
-  bool wait(unsigned long timeout_ms = ULONG_MAX);
   virtual void run() = 0;
   bool is_running() const;
 
  protected:
-  bool _should_exit;
+  std::atomic_bool _should_exit;
   mutable std::mutex _should_exitm;
 
  private:
-  bool _started;
-
-  // Condition variable used when waiting for the thread to finish
-  mutable std::mutex _cv_m;
-  std::condition_variable _cv;
   std::thread _thread;
+  bool _started;
+  mutable std::mutex _started_m;
+  std::condition_variable _started_cv;
+
   void _callback();
 };
 }  // namespace processing

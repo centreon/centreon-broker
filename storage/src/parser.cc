@@ -142,10 +142,9 @@ parser::~parser() {}
  *  @param[in]  str Raw perfdata string.
  *  @param[out] pd  List of parsed metrics.
  */
-void parser::parse_perfdata(std::string const& str, std::list<perfdata>& pd) {
-  size_t start{str.find_first_not_of(" \n\r\t")};
-
-  char const* buf{str.c_str() + start};
+void parser::parse_perfdata(const char* str, std::list<perfdata>& pd) {
+  size_t start = strspn(str, " \n\r\t");
+  const char* buf = str + start;
 
   // Debug message.
   logging::debug(logging::medium)
@@ -201,7 +200,7 @@ void parser::parse_perfdata(std::string const& str, std::list<perfdata>& pd) {
       }
     }
 
-    p.name(std::string(s, end - s + 1));
+    p.name(std::move(std::string(s, end - s + 1)));
 
     // Check format.
     if (*tmp != '=') {
@@ -221,7 +220,7 @@ void parser::parse_perfdata(std::string const& str, std::list<perfdata>& pd) {
 
     // Extract unit.
     size_t t = strcspn(tmp, " \t\n\r;");
-    p.unit(std::string(tmp, t));
+    p.unit(std::move(std::string(tmp, t)));
     tmp += t;
     if (*tmp == ';')
       ++tmp;
@@ -264,7 +263,7 @@ void parser::parse_perfdata(std::string const& str, std::list<perfdata>& pd) {
         << ", min=" << p.min() << ", max=" << p.max() << ")";
 
     // Append to list.
-    pd.push_back(p);
+    pd.emplace_back(std::move(p));
 
     // Skip whitespaces.
     while (isblank(*tmp))

@@ -106,7 +106,8 @@ void broker_module_init(void const* arg) {
     }
 
     // Register storage layer.
-    io::protocols::instance().reg("storage", storage::factory(), 1, 7);
+    io::protocols::instance().reg("storage",
+                                  std::make_shared<storage::factory>(), 1, 7);
   }
 }
 }

@@ -27,6 +27,7 @@ class CVarTest : public ::testing::Test {
  public:
   void SetUp() override {
     // Initialization.
+    io::data::broker_id = 0;
     randomize_init();
   }
 

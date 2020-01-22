@@ -43,7 +43,8 @@ void extcmd::load() {
   io::events& e(io::events::instance());
 
   // Register extcmd protocol.
-  io::protocols::instance().reg("extcmd", extcmd::factory(), 1, 7);
+  io::protocols::instance().reg("extcmd", std::make_shared<extcmd::factory>(),
+                                1, 7);
 
   // Register extcmd category.
   e.register_category("extcmd", io::events::extcmd);

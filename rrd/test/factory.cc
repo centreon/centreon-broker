@@ -46,12 +46,10 @@ TEST(RRDFactory, Exception) {
 
 TEST(RRDFactory, Simple) {
   rrd::factory fact2;
-  rrd::factory* fact;
+  rrd::factory* fact = &fact2;
   config::endpoint cfg;
   bool is_acceptor;
   std::shared_ptr<persistent_cache> cache;
-
-  fact = static_cast<rrd::factory*>(fact2.clone());
 
   ASSERT_THROW(fact->new_endpoint(cfg, is_acceptor, cache), exceptions::msg);
   cfg.params["path"] = "/tmp/";

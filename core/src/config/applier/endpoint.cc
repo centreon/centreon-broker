@@ -190,34 +190,14 @@ void endpoint::discard() {
     std::unique_lock<std::timed_mutex> lock(_endpointsm);
 
     // Send termination requests.
-    for (iterator it(_endpoints.begin()), end(_endpoints.end()); it != end;
-         ++it)
+    for (auto it = _endpoints.begin(), end = _endpoints.end(); it != end; ++it) {
+      logging::debug(logging::medium)
+          << "endpoint applier: send exit signal on endpoint '"
+          << it->second->get_name() << "'";
       it->second->exit();
-
-    // Wait for threads.
-    while (!_endpoints.empty()) {
-      // Print remaining thread count.
-      logging::debug(logging::low) << "endpoint applier: " << _endpoints.size()
-                                   << " endpoint threads remaining";
-      lock.unlock();
-
-      // FIXME DBR: no more events without qt
-      // do {
-      //  QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-      //} while (time(NULL) <= now); // Maximum one second delay.
-
-      // Expect threads to terminate.
-      lock.lock();
-      // With a map valid iterator are not invalidated by erase().
-      for (iterator it(_endpoints.begin()), end(_endpoints.end()); it != end;)
-        if (it->second->wait(0)) {
-          delete it->second;
-          iterator to_delete(it);
-          ++it;
-          _endpoints.erase(to_delete);
-        } else
-          ++it;
+      delete it->second;
     }
+
     logging::debug(logging::medium)
         << "endpoint applier: all threads are terminated";
     _endpoints.clear();
@@ -510,12 +490,11 @@ void endpoint::_diff_endpoints(
   }
 
   // Remove old endpoints.
-  for (auto it(to_delete.begin()), end(to_delete.end()); it != end; ++it) {
+  for (auto it = to_delete.begin(), end = to_delete.end(); it != end; ++it) {
     // Send only termination request, object will be destroyed by event
     // loop on termination. But wait for threads because they hold
     // resources that might be used by other endpoints.
     it->second->exit();
-    it->second->wait();
     delete it->second;
   }
 }

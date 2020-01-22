@@ -261,6 +261,32 @@ static int l_broker_json_decode(lua_State* L) {
 }
 
 /**
+ * @brief This function is useful for debug purposes. It shows the stack
+ * of the Lua state machine.
+ *
+ * @param L The Lua state machine
+ */
+static void l_stacktrace(lua_State* L) {
+  int n = lua_gettop(L);  // number of arguments
+  for (int i = 1; i <= n; i++) {
+    int t = lua_type(L, i);
+    switch (t) {
+      case LUA_TSTRING:
+        printf("%d: '%s'\n", i, lua_tostring(L, i));
+        break;
+      case LUA_TBOOLEAN:
+        printf("%d: %s\n", i, lua_toboolean(L, i) ? "true" : "false");
+        break;
+      case LUA_TNUMBER:
+        printf("%d: %g\n", i, lua_tonumber(L, i));
+        break;
+      default:
+        printf("%d: %s\n", i, lua_typename(L, t));
+    }
+  }
+}
+
+/**
  *  The Lua parse_perfdata function
  *
  * @param L The Lua interpreter
@@ -280,10 +306,7 @@ static int l_broker_parse_perfdata(lua_State* L) {
     return 2;
   }
   lua_createtable(L, 0, pds.size());
-  for (std::list<storage::perfdata>::const_iterator it(pds.begin()),
-       end(pds.end());
-       it != end; ++it) {
-    storage::perfdata const& pd(*it);
+  for (auto const& pd : pds) {
     lua_pushstring(L, pd.name().c_str());
     if (full) {
       lua_createtable(L, 0, 3);

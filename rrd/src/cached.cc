@@ -154,7 +154,6 @@ void cached::connect_remote(std::string const& address, unsigned short port) {
       broker::exceptions::msg e;
       e << "RRD: could not connect to remote server '" << address << ":" << port
         << "': " << err.message();
-      _tcp_socket.release();
       _tcp_socket.reset();
       throw e;
     }
@@ -166,9 +165,8 @@ void cached::connect_remote(std::string const& address, unsigned short port) {
     e << "RRD: could not resolve remote server '" << address << ":" << port
       << "': " << se.what();
     _tcp_socket.reset();
-    throw(e);
+    throw e;
   }
-  return;
 }
 
 /**

@@ -58,7 +58,7 @@ void broker_module_init(void const* arg) {
         << "lua: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
     // Register lua layer.
-    io::protocols::instance().reg("lua", lua::factory(), 1, 7);
+    io::protocols::instance().reg("lua", std::make_shared<lua::factory>(), 1, 7);
   }
 }
 }

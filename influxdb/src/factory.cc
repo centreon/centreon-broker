@@ -61,21 +61,6 @@ static std::string find_param(config::endpoint const& cfg,
  **************************************/
 
 /**
- *  Default constructor.
- */
-factory::factory() {}
-
-
-/**
- *  Clone this object.
- *
- *  @return Exact copy of this factory.
- */
-io::factory* factory::clone() const {
-  return new factory(*this);
-}
-
-/**
  *  Check if a configuration match the storage layer.
  *
  *  @param[in] cfg  Endpoint configuration.

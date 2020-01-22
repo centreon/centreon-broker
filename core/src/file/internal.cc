@@ -35,5 +35,6 @@ void file::load() {
       << "file: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 
   // Register file layer.
-  io::protocols::instance().reg("file", file::factory(), 1, 3);
+  io::protocols::instance().reg("file", std::make_shared<file::factory>(), 1,
+                                3);
 }

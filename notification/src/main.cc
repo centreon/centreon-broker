@@ -41,7 +41,6 @@ void broker_module_deinit() {
     // Deregister notification layer.
     io::protocols::instance().unreg("notification");
   }
-  return;
 }
 
 /**
@@ -59,10 +58,8 @@ void broker_module_init(void const* arg) {
                                  << CENTREON_BROKER_VERSION;
 
     // Register Notification layer.
-    io::protocols::instance().reg("notification", notification::factory(), 1,
-                                  7);
+    io::protocols::instance().reg(
+        "notification", std::make_shared<notification::factory>(), 1, 7);
   }
-
-  return;
 }
 }

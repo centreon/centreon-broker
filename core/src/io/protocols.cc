@@ -87,12 +87,12 @@ void protocols::load() {
  *  @param[in] osi_to       OSI layer this protocol supports.
  */
 void protocols::reg(std::string const& name,
-                    factory const& fac,
+                    std::shared_ptr<factory> fac,
                     unsigned short osi_from,
                     unsigned short osi_to) {
   // Set protocol structure.
   protocol p;
-  p.endpntfactry = std::shared_ptr<factory>(fac.clone());
+  p.endpntfactry = fac;
   p.osi_from = osi_from;
   p.osi_to = osi_to;
 

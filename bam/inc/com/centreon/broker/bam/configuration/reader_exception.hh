@@ -37,7 +37,6 @@ class reader_exception : public exceptions::msg {
   reader_exception();
   reader_exception(const reader_exception&);
   ~reader_exception() throw();
-  reader_exception& operator=(reader_exception const& other);
 };
 }  // namespace configuration
 }  // namespace bam

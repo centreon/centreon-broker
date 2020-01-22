@@ -35,10 +35,9 @@ class factory : public io::factory {
  public:
   factory() = default;
   ~factory() = default;
-  factory(factory const&) = default;
+  factory(factory const&) = delete;
   factory& operator=(factory const&) = delete;
 
-  io::factory* clone() const;
   bool has_endpoint(config::endpoint& cfg) const;
   io::endpoint* new_endpoint(config::endpoint& cfg,
                              bool& is_acceptor,

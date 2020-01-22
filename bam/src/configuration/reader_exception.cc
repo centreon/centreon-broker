@@ -45,7 +45,3 @@ reader_exception::~reader_exception() throw() {}
  *
  *  @return This object.
  */
-reader_exception& reader_exception::operator=(reader_exception const& other) {
-  msg::operator=(other);
-  return (*this);
-}

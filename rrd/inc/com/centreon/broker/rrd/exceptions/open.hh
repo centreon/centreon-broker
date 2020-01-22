@@ -37,7 +37,6 @@ class open : public broker::exceptions::msg {
   open() throw();
   open(open const& o) throw();
   ~open() throw();
-  open& operator=(open const& o) throw();
   virtual broker::exceptions::msg* clone() const;
   virtual void rethrow() const;
 

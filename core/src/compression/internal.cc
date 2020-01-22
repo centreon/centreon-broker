@@ -27,8 +27,8 @@ using namespace com::centreon::broker;
  */
 void compression::load() {
   // Register compression layer.
-  io::protocols::instance().reg("compression", compression::factory(), 6, 6);
-  return;
+  io::protocols::instance().reg("compression",
+                                std::make_shared<compression::factory>(), 6, 6);
 }
 
 /**
@@ -37,5 +37,4 @@ void compression::load() {
 void compression::unload() {
   // Unregister compression layer.
   io::protocols::instance().unreg("compression");
-  return;
 }

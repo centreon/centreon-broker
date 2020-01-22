@@ -41,7 +41,6 @@ TEST(graphiteFactory, MissingParams) {
   std::shared_ptr<persistent_cache> cache;
   bool is_acceptor;
 
-  fact.clone();
   ASSERT_THROW(fact.new_endpoint(cfg, is_acceptor, cache), exceptions::msg);
   cfg.params["db_host"] = "host";
   ASSERT_NO_THROW(delete fact.new_endpoint(cfg, is_acceptor, cache));
