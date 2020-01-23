@@ -24,9 +24,6 @@
 
 using namespace com::centreon::broker::config::applier;
 
-// Class instance.
-static modules* gl_modules = nullptr;
-
 /**************************************
  *                                     *
  *           Public Methods            *
@@ -102,21 +99,7 @@ modules::iterator modules::end() {
  *  @return Class instance.
  */
 modules& modules::instance() {
-  return *gl_modules;
+  static modules instance;
+  return instance;
 }
 
-/**
- *  Load the singleton.
- */
-void modules::load() {
-  if (!gl_modules)
-    gl_modules = new modules;
-}
-
-/**
- *  Unload the singleton.
- */
-void modules::unload() {
-  delete gl_modules;
-  gl_modules = nullptr;
-}

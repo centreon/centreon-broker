@@ -32,6 +32,7 @@
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
+#include "com/centreon/broker/tcp/tcp_async.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;
