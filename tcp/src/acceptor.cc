@@ -22,6 +22,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/stream.hh"
+#include "com/centreon/broker/tcp/tcp_async.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::tcp;

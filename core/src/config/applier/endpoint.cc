@@ -40,9 +40,6 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
 
-// Class instance.
-static config::applier::endpoint* gl_endpoint = nullptr;
-
 /**************************************
  *                                     *
  *            Local Objects            *
@@ -237,25 +234,14 @@ std::timed_mutex& endpoint::endpoints_mutex() {
  *  @return Class instance.
  */
 endpoint& endpoint::instance() {
-  return *gl_endpoint;
+  static endpoint instance;
+  return instance;
 }
 
-/**
- *  Load singleton.
- */
-void endpoint::load() {
-  if (!gl_endpoint)
-    gl_endpoint = new endpoint;
+void endpoint::clear() {
+  discard();
+  _endpoints.clear();
 }
-
-/**
- *  Unload singleton.
- */
-void endpoint::unload() {
-  delete gl_endpoint;
-  gl_endpoint = nullptr;
-}
-
 /**************************************
  *                                     *
  *           Private Methods           *

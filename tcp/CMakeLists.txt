@@ -29,6 +29,7 @@ set(SOURCES
   "${SRC_DIR}/factory.cc"
   "${SRC_DIR}/main.cc"
   "${SRC_DIR}/stream.cc"
+  "${SRC_DIR}/tcp_async.cc"
 )
 # Headers.
 set(HEADERS
@@ -36,6 +37,7 @@ set(HEADERS
   "${INC_DIR}/connector.hh"
   "${INC_DIR}/factory.hh"
   "${INC_DIR}/stream.hh"
+  "${INC_DIR}/tcp_async.hh"
 )
 
 # TCP module.

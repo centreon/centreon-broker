@@ -42,7 +42,6 @@ class muxer;
  *  @see muxer
  */
 class engine {
-  static engine* _instance;
   std::unique_ptr<persistent_cache> _cache_file;
 
   // Data queue.
@@ -77,14 +76,12 @@ class engine {
   void clear();
   void hook(hooker& h, bool with_data = true);
   static engine& instance();
-  static void load();
   static std::mutex _load_m;
   void publish(std::shared_ptr<io::data> const& d);
   void start();
   void stop();
   void subscribe(muxer* subscriber);
   void unhook(hooker& h);
-  static void unload();
   void unsubscribe(muxer* subscriber);
 };
 }  // namespace multiplexing
