@@ -69,11 +69,11 @@ feeder::~feeder() {
 }
 
 void feeder::exit() {
-  std::unique_lock<std::mutex> lock(_started_m);
+  std::unique_lock<std::mutex> lock(_stopped_m);
   if (_started) {
     if (!_should_exit) {
       _should_exit = true;
-      _started_cv.wait(lock, [this] { return _stopped; });
+      _stopped_cv.wait(lock, [this] { return _stopped; });
       _thread.join();
       _started = false;
     }
@@ -209,10 +209,11 @@ void feeder::_callback() noexcept {
         << "feeder: unknown error occured while processing client '" << _name
         << "'";
   }
-  lock.lock();
+
+  std::unique_lock<std::mutex> lock_stop(_stopped_m);
   _stopped = true;
-  _started_cv.notify_all();
-  lock.unlock();
+  _stopped_cv.notify_all();
+  lock_stop.unlock();
 
   {
     misc::read_lock lock(_client_m);

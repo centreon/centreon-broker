@@ -56,7 +56,7 @@ class bthread : public stat_visitable {
   bool should_exit() const;
   void start();
   virtual void update();
-  virtual void run() = 0;
+  virtual void run() {};
   bool is_running() const;
 
  protected:
@@ -65,9 +65,12 @@ class bthread : public stat_visitable {
 
  private:
   std::thread _thread;
-  bool _started, _stopped;
+  bool _started;
   mutable std::mutex _started_m;
   std::condition_variable _started_cv;
+  bool _stopped;
+  mutable std::mutex _stopped_m;
+  std::condition_variable _stopped_cv;
 
   void _callback();
 };
