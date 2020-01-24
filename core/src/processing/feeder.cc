@@ -51,6 +51,7 @@ feeder::feeder(std::string const& name,
       _client(client),
       _subscriber(name, false),
       _started{false},
+      _stopped{false},
       _should_exit{false} {
   _subscriber.get_muxer().set_read_filters(read_filters);
   _subscriber.get_muxer().set_write_filters(write_filters);
@@ -64,10 +65,18 @@ feeder::feeder(std::string const& name,
  *  Destructor.
  */
 feeder::~feeder() {
-  if (!_should_exit) {
-    _should_exit = true;
-    if (_thread.joinable())
+  exit();
+}
+
+void feeder::exit() {
+  std::unique_lock<std::mutex> lock(_started_m);
+  if (_started) {
+    if (!_should_exit) {
+      _should_exit = true;
+      _started_cv.wait(lock, [this] { return _stopped; });
       _thread.join();
+      _started = false;
+    }
   }
 }
 
@@ -110,6 +119,7 @@ void feeder::_forward_statistic(json11::Json::object& tree) {
 
 void feeder::start() {
   std::unique_lock<std::mutex> lock(_started_m);
+  _stopped = false;
   if (!_client)
       throw exceptions::msg()
             << "could not process '" << _name << "' with no client stream";
@@ -117,7 +127,7 @@ void feeder::start() {
   if (!_started) {
     _should_exit = false;
     _thread = std::thread(&feeder::_callback, this);
-    _started_cv.wait(lock, [this] {return _started; });
+    _started_cv.wait(lock, [this] { return _started; });
   }
 }
 
@@ -126,6 +136,7 @@ void feeder::_callback() noexcept {
   logging::info(logging::medium)
       << "feeder: thread of client '" << _name << "' is starting";
   time_t fill_stats_time = time(nullptr);
+  std::unique_lock<std::mutex> lock(_started_m);
 
   try {
     set_state("connected");
@@ -133,7 +144,8 @@ void feeder::_callback() noexcept {
     bool muxer_can_read(true);
     std::shared_ptr<io::data> d;
     _started = true;
-    _started_cv.notify_one();
+    _started_cv.notify_all();
+    lock.unlock();
     while (!_should_exit) {
       // Read from stream.
       bool timed_out_stream(true);
@@ -197,10 +209,11 @@ void feeder::_callback() noexcept {
         << "feeder: unknown error occured while processing client '" << _name
         << "'";
   }
-  {
-    std::lock_guard<std::mutex> lock(_started_m);
-    _started = false;
-  }
+  lock.lock();
+  _stopped = true;
+  _started_cv.notify_all();
+  lock.unlock();
+
   {
     misc::read_lock lock(_client_m);
     _client.reset();

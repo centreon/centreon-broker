@@ -116,7 +116,11 @@ class endp : public io::endpoint {
  public:
   endp() : io::endpoint{false} {}
   std::shared_ptr<io::stream> open() override {
-    return std::shared_ptr<st>(new st);
+    static int count = 0;
+    std::shared_ptr<st> retval;
+    if (++count < 2)
+      retval = std::make_shared<st>();
+    return retval;
   };
 };
 
