@@ -40,11 +40,11 @@ bthread::~bthread() {
  *  Notify bthread to exit.
  */
 void bthread::exit() {
-  std::unique_lock<std::mutex> lock(_started_m);
+  std::unique_lock<std::mutex> lock(_stopped_m);
   if (_started) {
     if (!_should_exit) {
       _should_exit = true;
-      _started_cv.wait(lock, [this] { return _stopped; });
+      _stopped_cv.wait(lock, [this] { return _stopped; });
       _thread.join();
       _started = false;
     }
@@ -80,47 +80,17 @@ void bthread::update() {
   // Do nothing.
 }
 
-/**
- *  Wait for bthread termination. The idea is to add a timeout to the join
- *  function. If the main loop is over, then join() is called, otherwise,
- *  if the timeout is reached, the main loop continues to run and no join()
- *  is called.
- *
- *  @param[in] timeout_ms  Maximum wait time in ms.
- *
- *  @return True if bthread exited in less than timeout_ms.
- */
-//bool bthread::wait(unsigned long timeout_ms) {
-//  if (timeout_ms == ULONG_MAX && _thread.joinable()) {
-//    _thread.join();
-//    return true;
-//  }
-//
-//  if (!_thread.joinable())
-//    return true;
-//
-//  struct timespec tt {
-//    .tv_sec = static_cast<long int>(timeout_ms / 1000),
-//    .tv_nsec = static_cast<long int>(timeout_ms % 1000) * 1000000
-//  };
-//  int res = pthread_timedjoin_np(_thread.native_handle(), nullptr, &tt);
-//  if (res == ETIMEDOUT)
-//    return false;
-//
-//  return true;
-//}
-
 void bthread::_callback() {
-  std::unique_lock<std::mutex> lock(_started_m);
+  std::unique_lock<std::mutex> lock_start(_started_m);
   _started = true;
   _started_cv.notify_all();
-  lock.unlock();
+  lock_start.unlock();
 
   run();
 
-  lock.lock();
+  std::unique_lock<std::mutex> lock_stop(_stopped_m);
   _stopped = true;
-  _started_cv.notify_all();
+  _stopped_cv.notify_all();
 }
 
 bool bthread::is_running() const {
