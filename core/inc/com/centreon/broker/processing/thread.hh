@@ -65,7 +65,7 @@ class bthread : public stat_visitable {
 
  private:
   std::thread _thread;
-  bool _started;
+  bool _started, _stopped;
   mutable std::mutex _started_m;
   std::condition_variable _started_cv;
 
