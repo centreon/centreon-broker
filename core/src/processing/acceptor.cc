@@ -61,6 +61,9 @@ void acceptor::accept() {
     std::shared_ptr<processing::feeder> f(std::make_shared<processing::feeder>(
         name, s, _read_filters, _write_filters));
 
+    // Start feeder thread.
+    f->start();
+
     std::lock_guard<std::mutex> lock(_stat_mutex);
     _feeders.push_back(f);
   }

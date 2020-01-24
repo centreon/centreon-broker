@@ -24,12 +24,17 @@ using namespace com::centreon::broker::processing;
  *  Default constructor.
  */
 bthread::bthread(std::string const& name)
-    : stat_visitable{name}, _should_exit{false}, _started{false} {}
+    : stat_visitable{name},
+      _should_exit{false},
+      _started{false},
+      _stopped{false} {}
 
 /**
  *  Destructor.
  */
-bthread::~bthread() { exit(); }
+bthread::~bthread() {
+  exit();
+}
 
 /**
  *  Notify bthread to exit.
@@ -39,8 +44,9 @@ void bthread::exit() {
   if (_started) {
     if (!_should_exit) {
       _should_exit = true;
-      _started_cv.wait(lock, [this] { return !_started; });
+      _started_cv.wait(lock, [this] { return _stopped; });
       _thread.join();
+      _started = false;
     }
   }
 }
@@ -59,6 +65,7 @@ bool bthread::should_exit() const {
  */
 void bthread::start() {
   std::unique_lock<std::mutex> lock(_started_m);
+  _stopped = false;
   if (!_started) {
     _should_exit = false;
     _thread = std::thread(&bthread::_callback, this);
@@ -106,13 +113,13 @@ void bthread::update() {
 void bthread::_callback() {
   std::unique_lock<std::mutex> lock(_started_m);
   _started = true;
-  _started_cv.notify_one();
+  _started_cv.notify_all();
   lock.unlock();
 
   run();
 
   lock.lock();
-  _started = false;
+  _stopped = true;
   _started_cv.notify_all();
 }
 

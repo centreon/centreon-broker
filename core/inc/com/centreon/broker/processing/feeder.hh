@@ -47,7 +47,7 @@ namespace processing {
 class feeder : public stat_visitable {
   // Condition variable used when waiting for the thread to finish
   std::thread _thread;
-  bool _started;
+  bool _started, _stopped;
   mutable std::mutex _started_m;
   std::condition_variable _started_cv;
 
@@ -76,6 +76,7 @@ class feeder : public stat_visitable {
   feeder& operator=(feeder const&) = delete;
   bool is_finished() const noexcept;
   void start();
+  void exit();
 };
 }  // namespace processing
 
