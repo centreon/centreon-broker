@@ -867,26 +867,40 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   if (_dt_behaviour != configuration::ba::dt_inherit)
     return;
 
+  // Check if every impacting child KPIs are in downtime.
+  bool every_kpi_in_downtime(!_impacts.empty());
+  for (std::unordered_map<kpi*, impact_info>::const_iterator
+         it = _impacts.begin(),
+         end = _impacts.end();
+       it != end;
+       ++it) {
+    if (!it->first->ok_state() && !it->first->in_downtime()) {
+      every_kpi_in_downtime = false;
+      break;
+    }
+  }
+
   // Case 1: state not ok, every child in downtime, no actual downtime.
   //         Put the BA in downtime.
-  bool dt{_every_kpi_in_dt(_impacts)};
   bool state_ok(!get_state_hard());
-  if (!state_ok && dt && !_inherited_downtime) {
+  if (!state_ok && every_kpi_in_downtime && !_inherited_downtime) {
     _inherited_downtime.reset(new inherited_downtime);
     _inherited_downtime->ba_id = _id;
     _inherited_downtime->in_downtime = true;
     _in_downtime = true;
 
     if (visitor)
-      visitor->write(std::shared_ptr<inherited_downtime>(
-          new inherited_downtime(*_inherited_downtime)));
+      visitor->write(
+        std::shared_ptr<inherited_downtime>(
+                std::make_shared<inherited_downtime>(*_inherited_downtime)));
   }
   // Case 2: state ok or not every kpi in downtime, actual downtime.
   //         Remove the downtime.
-  else if ((state_ok || !dt) && _inherited_downtime.get()) {
+  else if ((state_ok || !every_kpi_in_downtime)
+           && _inherited_downtime) {
     _inherited_downtime.reset();
     if (visitor) {
-      std::shared_ptr<inherited_downtime> dwn(new inherited_downtime);
+      std::shared_ptr<inherited_downtime> dwn(std::make_shared<inherited_downtime>());
       dwn->ba_id = _id;
       dwn->in_downtime = false;
       visitor->write(dwn);
