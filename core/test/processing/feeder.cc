@@ -43,11 +43,22 @@ class TestStream : public io::stream {
 class TestFeeder : public ::testing::Test {
  public:
   void SetUp() override {
+    config::applier::state::load();
+    multiplexing::engine::load();
+    io::events::load();
+
     std::shared_ptr<io::stream> client = std::make_shared<TestStream>();
     std::unordered_set<uint32_t> read_filters;
     std::unordered_set<uint32_t> write_filters;
     _feeder.reset(
         new feeder("test-feeder", client, read_filters, write_filters));
+  }
+
+  void TearDown() override {
+    _feeder.reset(nullptr);
+    io::events::unload();
+    multiplexing::engine::unload();
+    config::applier::state::unload();
   }
 
  protected:

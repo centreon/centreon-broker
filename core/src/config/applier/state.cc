@@ -37,6 +37,9 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::config::applier;
 
+// Class instance.
+static state* gl_state = nullptr;
+
 /**************************************
  *                                     *
  *           Public Methods            *
@@ -186,8 +189,15 @@ std::string const& state::cache_dir() const throw() {
  *  @return Class instance.
  */
 state& state::instance() {
-  static state instance;
-  return instance;
+  return *gl_state;
+}
+
+/**
+ *  Load singleton.
+ */
+void state::load() {
+  if (!gl_state)
+    gl_state = new state;
 }
 
 /**
@@ -206,6 +216,14 @@ uint32_t state::poller_id() const throw() {
  */
 std::string const& state::poller_name() const throw() {
   return _poller_name;
+}
+
+/**
+ *  Unload singleton.
+ */
+void state::unload() {
+  delete gl_state;
+  gl_state = nullptr;
 }
 
 /**************************************

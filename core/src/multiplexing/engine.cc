@@ -39,6 +39,7 @@ using namespace com::centreon::broker::multiplexing;
  **************************************/
 
 // Class instance.
+engine* engine::_instance(nullptr);
 std::mutex engine::_load_m;
 
 /**************************************
@@ -50,13 +51,7 @@ std::mutex engine::_load_m;
 /**
  *  Destructor.
  */
-engine::~engine() {
-  std::lock_guard<std::mutex> lk(_load_m);
-
-  // Commit the cache file, if needed.
-  if (_cache_file)
-    _cache_file->commit();
-}
+engine::~engine() {}
 
 /**
  *  Clear events stored in the multiplexing engine.
@@ -86,8 +81,17 @@ void engine::hook(hooker& h, bool with_data) {
  *  @return Class instance.
  */
 engine& engine::instance() {
-  static engine instance;
-  return instance;
+  assert(_instance);
+  return *_instance;
+}
+
+/**
+ *  Load engine instance.
+ */
+void engine::load() {
+  std::lock_guard<std::mutex> lk(_load_m);
+  if (!_instance)
+    _instance = new engine;
 }
 
 /**
@@ -262,6 +266,19 @@ void engine::unhook(hooker& h) {
       ++it;
   _hooks_begin = _hooks.begin();
   _hooks_end = _hooks.end();
+}
+
+/**
+ *  Unload class instance.
+ */
+void engine::unload() {
+  std::lock_guard<std::mutex> lk(_load_m);
+  // Commit the cache file, if needed.
+  if (_instance && _instance->_cache_file.get())
+    _instance->_cache_file->commit();
+
+  delete _instance;
+  _instance = nullptr;
 }
 
 /**
