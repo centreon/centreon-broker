@@ -70,6 +70,7 @@ static void hup_handler(int signum) {
     try {
       // Apply resulting configuration.
       config::applier::state::instance().apply(conf);
+
       gl_state = conf;
     } catch (std::exception const& e) {
       logging::error(logging::high)

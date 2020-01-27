@@ -64,7 +64,8 @@ class endpoint {
   iterator endpoints_end();
   std::timed_mutex& endpoints_mutex();
   static endpoint& instance();
-  void clear();
+  static void load();
+  static void unload();
 
  private:
   endpoint();

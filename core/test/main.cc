@@ -21,6 +21,14 @@
 #include "com/centreon/broker/logging/manager.hh"
 
 class CentreonBrokerEnvironment : public testing::Environment {
+ public:
+  void SetUp() override {
+    com::centreon::broker::config::applier::state::load();
+  }
+
+  void TearDown() override {
+    com::centreon::broker::config::applier::state::unload();
+  }
 };
 
 /**
