@@ -55,15 +55,12 @@ auto _num_kpi_in_dt =
 };
 
 auto _every_kpi_in_dt =
-    [](std::unordered_map<kpi*, bam::ba::impact_info>& imp) -> bool {
+    [](std::unordered_map<kpi*, bam::ba::impact_info>& imp, bool look_for_state = true) -> bool {
   if (imp.empty())
     return false;
 
-  for (std::unordered_map<kpi*, ba::impact_info>::const_iterator
-           it = imp.begin(),
-           end = imp.end();
-       it != end; ++it) {
-    if (!it->first->ok_state() && !it->first->in_downtime()) {
+  for (auto it = imp.begin(), end = imp.end(); it != end; ++it) {
+    if ((look_for_state && it->first->ok_state()) || !it->first->in_downtime()) {
       return false;
     }
   }
@@ -335,7 +332,7 @@ ba::state ba::get_state_hard() {
   else if (_state_source == configuration::ba::state_source_best ||
            _state_source == configuration::ba::state_source_worst) {
     if (_dt_behaviour == configuration::ba::dt_ignore_kpi &&
-        _every_kpi_in_dt(_impacts))
+        _every_kpi_in_dt(_impacts, false))
       state = impact_values::state_ok;
     else
       state = _computed_hard_state;
@@ -870,9 +867,6 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   if (_dt_behaviour != configuration::ba::dt_inherit)
     return;
 
-  // Check if every impacting child KPIs are in downtime.
-  bool every_kpi_in_downtime(!_impacts.empty());
-
   // Case 1: state not ok, every child in downtime, no actual downtime.
   //         Put the BA in downtime.
   bool dt{_every_kpi_in_dt(_impacts)};
@@ -889,7 +883,7 @@ void ba::_compute_inherited_downtime(io::stream* visitor) {
   }
   // Case 2: state ok or not every kpi in downtime, actual downtime.
   //         Remove the downtime.
-  else if ((state_ok || !every_kpi_in_downtime) && _inherited_downtime.get()) {
+  else if ((state_ok || !dt) && _inherited_downtime.get()) {
     _inherited_downtime.reset();
     if (visitor) {
       std::shared_ptr<inherited_downtime> dwn(new inherited_downtime);

@@ -543,6 +543,7 @@ TEST_F(BamBA, DtInheritOneOK) {
   for (size_t j = 0; j < kpis.size(); j++) {
     ss->last_check = now + 1;
     ss->host_id = j + 1;
+    ss->service_id = 1;
     if (j == 0)
       ss->last_hard_state = 0;
     else
