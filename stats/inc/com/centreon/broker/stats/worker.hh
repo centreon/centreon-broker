@@ -20,7 +20,7 @@
 #ifndef CCB_STATS_WORKER_HH
 #define CCB_STATS_WORKER_HH
 
-#include <mutex>
+#include <atomic>
 #include <string>
 #include <thread>
 
@@ -41,24 +41,19 @@ class worker {
   std::string _fifo;
 
   std::thread _thread;
-  mutable std::mutex _worker_m;
-  bool _exit;
+  std::atomic_bool _exit;
 
   void _close();
   bool _open();
   void _run();
-  bool _should_exit() const;
 
  public:
   worker();
-  ~worker() throw();
-
+  ~worker() noexcept;
   worker(worker const& right) = delete;
   worker& operator=(worker const& right) = delete;
 
-  void exit();
   void run(std::string const& fifo_file);
-  void wait();
 };
 }  // namespace stats
 }  // namespace broker
