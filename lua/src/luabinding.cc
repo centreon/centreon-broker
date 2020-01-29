@@ -53,8 +53,8 @@ luabinding::luabinding(std::string const& lua_script,
       << "lua: initializing the Lua virtual machine";
 
   try {
-  _load_script();
-  _init_script(conf_params);
+    _load_script();
+    _init_script(conf_params);
   }
   catch (std::exception const& e) {
     lua_close(_L);
@@ -103,9 +103,7 @@ void luabinding::_update_lua_path(std::string const& path) {
 /**
  *  Returns true if a filter was configured in the Lua script.
  */
-bool luabinding::has_filter() const noexcept {
-  return _filter;
-}
+bool luabinding::has_filter() const noexcept { return _filter; }
 
 /**
  *  Reads the Lua script, checks its syntax and checks if
@@ -119,27 +117,27 @@ void luabinding::_load_script() {
   // script loading
   if (luaL_loadfile(_L, _lua_script.c_str()) != 0) {
     char const* error_msg(lua_tostring(_L, -1));
-    throw exceptions::msg()
-        << "lua: '" << _lua_script << "' could not be loaded: " << error_msg;
+    throw exceptions::msg() << "lua: '" << _lua_script
+                            << "' could not be loaded: " << error_msg;
   }
 
   // Script compilation
   if (lua_pcall(_L, 0, 0, 0) != 0) {
-    throw exceptions::msg()
-        << "lua: '" << _lua_script << "' could not be compiled";
+    throw exceptions::msg() << "lua: '" << _lua_script
+                            << "' could not be compiled";
   }
 
   // Checking for init() availability: this function is mandatory
   lua_getglobal(_L, "init");
   if (!lua_isfunction(_L, lua_gettop(_L)))
-    throw exceptions::msg()
-        << "lua: '" << _lua_script << "' init() global function is missing";
+    throw exceptions::msg() << "lua: '" << _lua_script
+                            << "' init() global function is missing";
 
   // Checking for write() availability: this function is mandatory
   lua_getglobal(_L, "write");
   if (!lua_isfunction(_L, lua_gettop(_L)))
-    throw exceptions::msg()
-        << "lua: '" << _lua_script << "' write() global function is missing";
+    throw exceptions::msg() << "lua: '" << _lua_script
+                            << "' write() global function is missing";
 
   // Checking for filter() availability: this function is optional
   lua_getglobal(_L, "filter");
@@ -167,7 +165,8 @@ void luabinding::_init_script(
   for (std::map<std::string, misc::variant>::const_iterator
            it(conf_params.begin()),
        end(conf_params.end());
-       it != end; ++it) {
+       it != end;
+       ++it) {
     switch (it->second.user_type()) {
       case misc::variant::type_int:
       case misc::variant::type_uint:
@@ -197,8 +196,8 @@ void luabinding::_init_script(
     }
   }
   if (lua_pcall(_L, 1, 0, 0) != 0)
-    throw exceptions::msg()
-        << "lua: error running function `init'" << lua_tostring(_L, -1);
+    throw exceptions::msg() << "lua: error running function `init'"
+                            << lua_tostring(_L, -1);
 }
 
 /**
@@ -273,14 +272,13 @@ int luabinding::write(std::shared_ptr<io::data> const& data) noexcept {
   _parse_entries(d);
 
   if (lua_pcall(_L, 1, 1, 0) != 0) {
-    logging::error(logging::high)
-        << "lua: error running function `write'" << lua_tostring(_L, -1);
+    logging::error(logging::high) << "lua: error running function `write'"
+                                  << lua_tostring(_L, -1);
     return 0;
   }
 
   if (!lua_isboolean(_L, -1)) {
-    logging::error(logging::high)
-     << "lua: `write' must return a boolean";
+    logging::error(logging::high) << "lua: `write' must return a boolean";
     return 0;
   }
   int acknowledge = lua_toboolean(_L, -1);
@@ -290,8 +288,8 @@ int luabinding::write(std::shared_ptr<io::data> const& data) noexcept {
   // when an acknowledgement is sent by the write function.
   if (acknowledge) {
     retval = _total;
-    logging::debug(logging::medium)
-        << "lua: " << _total << " events acknowledged.";
+    logging::debug(logging::medium) << "lua: " << _total
+                                    << " events acknowledged.";
     _total = 0;
   }
   return retval;
@@ -307,7 +305,8 @@ void luabinding::_parse_entries(io::data const& d) {
   io::event_info const* info(io::events::instance().get_event_info(d.type()));
   if (info) {
     for (mapping::entry const* current_entry(info->get_mapping());
-         !current_entry->is_null(); ++current_entry) {
+         !current_entry->is_null();
+         ++current_entry) {
       char const* entry_name(current_entry->get_name_v2());
       if (entry_name && entry_name[0]) {
         lua_pushstring(_L, entry_name);
