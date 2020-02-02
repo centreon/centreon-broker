@@ -40,7 +40,9 @@ acceptor::acceptor(std::shared_ptr<io::endpoint> endp, std::string const& name)
 /**
  *  Destructor.
  */
-acceptor::~acceptor() {}
+acceptor::~acceptor() {
+  exit();
+}
 
 /**
  *  Accept a new incoming connection.

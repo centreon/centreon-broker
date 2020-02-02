@@ -56,7 +56,9 @@ failover::failover(std::shared_ptr<io::endpoint> endp,
 /**
  *  Destructor.
  */
-failover::~failover() {}
+failover::~failover() {
+  exit();
+}
 
 /**
  *  Add secondary endpoint to this failover thread.

@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include "com/centreon/broker/processing/thread.hh"
 
 using namespace com::centreon::broker::processing;
@@ -33,7 +34,8 @@ bthread::bthread(std::string const& name)
  *  Destructor.
  */
 bthread::~bthread() {
-  exit();
+  // We must call exit before this destructor
+  assert(!_started);
 }
 
 /**

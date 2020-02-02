@@ -31,6 +31,7 @@ class DummyThread : public bthread {
  public:
   DummyThread() : bthread(), _filters("fake_filter") { set_state("test"); }
 
+  ~DummyThread() { exit(); }
   void run() override {
     while (!should_exit()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
