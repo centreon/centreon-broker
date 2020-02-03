@@ -40,6 +40,11 @@ namespace io {
  *  (that initiate connections).
  */
 class endpoint {
+ protected:
+  std::shared_ptr<endpoint> _from;
+  bool _is_acceptor;
+  std::set<uint32_t> _filter;
+
  public:
   endpoint(bool is_accptr);
   endpoint(endpoint const& other);
@@ -51,13 +56,6 @@ class endpoint {
   virtual std::shared_ptr<stream> open() = 0;
   virtual void stats(json11::Json::object& tree);
   void set_filter(std::set<uint32_t> const& filter);
-
- protected:
-  void _internal_copy(endpoint const& other);
-
-  std::shared_ptr<endpoint> _from;
-  bool _is_acceptor;
-  std::set<uint32_t> _filter;
 };
 }  // namespace io
 

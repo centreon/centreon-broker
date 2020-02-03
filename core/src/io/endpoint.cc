@@ -39,9 +39,8 @@ endpoint::endpoint(bool is_accptr) : _is_acceptor(is_accptr) {}
  *
  *  @param[in] other  Object to copy.
  */
-endpoint::endpoint(endpoint const& other) {
-  _internal_copy(other);
-}
+endpoint::endpoint(endpoint const& other)
+    : _from(other._from), _is_acceptor(other._is_acceptor) {}
 
 /**
  *  Destructor.
@@ -56,8 +55,10 @@ endpoint::~endpoint() {}
  *  @return This object.
  */
 endpoint& endpoint::operator=(endpoint const& other) {
-  if (this != &other)
-    _internal_copy(other);
+  if (this != &other) {
+  _from = other._from;
+  _is_acceptor = other._is_acceptor;
+  }
   return *this;
 }
 
@@ -113,21 +114,4 @@ void endpoint::set_filter(std::set<uint32_t> const& filter) {
   _filter = filter;
   if (_from)
     _from->set_filter(filter);
-}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Copy internal data members.
- *
- *  @param[in] other  Object to copy.
- */
-void endpoint::_internal_copy(endpoint const& other) {
-  _from = other._from;
-  _is_acceptor = other._is_acceptor;
-  return;
 }

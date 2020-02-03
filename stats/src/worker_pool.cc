@@ -45,12 +45,12 @@ void worker_pool::add_worker(std::string const& fifo) {
     if (mkfifo(fifo_path.c_str(),
                S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH) != 0) {
       char const* msg(strerror(errno));
-      throw(exceptions::msg()
-            << "cannot create FIFO '" << fifo_path << "': " << msg);
+      throw exceptions::msg()
+            << "cannot create FIFO '" << fifo_path << "': " << msg;
     }
   } else if (!S_ISFIFO(s.st_mode))
-    throw(exceptions::msg()
-          << "file '" << fifo_path << "' exists but is not a FIFO");
+    throw exceptions::msg()
+          << "file '" << fifo_path << "' exists but is not a FIFO";
 
   // Create thread.
   _workers_fifo.push_back(std::make_shared<stats::worker>());
@@ -58,12 +58,5 @@ void worker_pool::add_worker(std::string const& fifo) {
 }
 
 void worker_pool::cleanup() {
-  for (std::vector<std::shared_ptr<stats::worker> >::iterator
-           it = _workers_fifo.begin(),
-           end = _workers_fifo.end();
-       it != end; ++it) {
-    (*it)->exit();
-    (*it)->wait();
-    it->reset();
-  }
+  _workers_fifo.clear();
 }

@@ -298,12 +298,12 @@ TEST_F(StatsTest, Parser) {
 }
 
 TEST_F(StatsTest, Worker) {
-  stats::worker work;
+  std::unique_ptr<stats::worker> work(new stats::worker);
 
   std::string fifo{misc::temp_path()};
   ::mkfifo(fifo.c_str(), 0777);
 
-  work.run(fifo);
+  work->run(fifo);
   std::ifstream f;
   f.open(fifo, std::fstream::in);
 
@@ -313,8 +313,7 @@ TEST_F(StatsTest, Worker) {
   std::string err;
 
   f.close();
-  work.exit();
-  work.wait();
+  work.reset();
 
   json11::Json const& result{json11::Json::parse(js, err)};
 
@@ -343,12 +342,12 @@ TEST_F(StatsTest, WorkerPoolExistingDir) {
 }
 
 TEST_F(StatsTest, WorkerPool) {
-  stats::worker_pool work;
+  std::unique_ptr<stats::worker_pool> work(new stats::worker_pool);
 
   std::string fifo{misc::temp_path()};
   ::mkfifo(fifo.c_str(), 0777);
 
-  work.add_worker(fifo);
+  work->add_worker(fifo);
   std::ifstream f;
   f.open(fifo, std::fstream::in);
 
@@ -358,7 +357,7 @@ TEST_F(StatsTest, WorkerPool) {
   std::string err;
 
   f.close();
-  work.cleanup();
+  work.reset();
 
   json11::Json const& result{json11::Json::parse(js, err)};
 

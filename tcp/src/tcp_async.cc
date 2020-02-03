@@ -163,6 +163,9 @@ void tcp_async::register_socket(asio::ip::tcp::socket& socket) {
   }
 }
 void tcp_async::unregister_socket(asio::ip::tcp::socket& socket) {
+  logging::error(logging::high)
+    << "tcp_async: unregister_socket";
+
   bool done{false};
   int fd{socket.native_handle()};
   std::condition_variable cond;
@@ -173,8 +176,8 @@ void tcp_async::unregister_socket(asio::ip::tcp::socket& socket) {
     socket.close();
     std::unique_lock<std::mutex> m(mut);
     done = true;
-    m.unlock();
     cond.notify_all();
+    m.unlock();
   });
 
   std::unique_lock<std::mutex> m(mut);

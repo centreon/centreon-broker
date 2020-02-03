@@ -384,16 +384,16 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/config/parser.cc
   ${SRC_DIR}/config/state.cc
   ${SRC_DIR}/database_config.cc
-  ${SRC_DIR}/extcmd/command_client.cc
-  ${SRC_DIR}/extcmd/command_listener.cc
-  ${SRC_DIR}/extcmd/command_parser.cc
-  ${SRC_DIR}/extcmd/command_request.cc
-  ${SRC_DIR}/extcmd/command_result.cc
-  ${SRC_DIR}/extcmd/command_server.cc
-  ${SRC_DIR}/extcmd/factory.cc
-  ${SRC_DIR}/extcmd/internal.cc
-  ${SRC_DIR}/extcmd/json_command_parser.cc
-  ${SRC_DIR}/extcmd/plaintext_command_parser.cc
+#  ${SRC_DIR}/extcmd/command_client.cc
+#  ${SRC_DIR}/extcmd/command_listener.cc
+#  ${SRC_DIR}/extcmd/command_parser.cc
+#  ${SRC_DIR}/extcmd/command_request.cc
+#  ${SRC_DIR}/extcmd/command_result.cc
+#  ${SRC_DIR}/extcmd/command_server.cc
+#  ${SRC_DIR}/extcmd/factory.cc
+#  ${SRC_DIR}/extcmd/internal.cc
+#  ${SRC_DIR}/extcmd/json_command_parser.cc
+#  ${SRC_DIR}/extcmd/plaintext_command_parser.cc
   ${SRC_DIR}/file/cfile.cc
   ${SRC_DIR}/file/directory_event.cc
   ${SRC_DIR}/file/directory_watcher.cc
@@ -497,16 +497,16 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/exceptions/msg.hh
   ${INC_DIR}/exceptions/shutdown.hh
   ${INC_DIR}/exceptions/timeout.hh
-  ${INC_DIR}/extcmd/command_client.hh
-  ${INC_DIR}/extcmd/command_listener.hh
-  ${INC_DIR}/extcmd/command_parser.hh
-  ${INC_DIR}/extcmd/command_request.hh
-  ${INC_DIR}/extcmd/command_result.hh
-  ${INC_DIR}/extcmd/command_server.hh
-  ${INC_DIR}/extcmd/factory.hh
-  ${INC_DIR}/extcmd/internal.hh
-  ${INC_DIR}/extcmd/json_command_parser.hh
-  ${INC_DIR}/extcmd/plaintext_command_parser.hh
+#  ${INC_DIR}/extcmd/command_client.hh
+#  ${INC_DIR}/extcmd/command_listener.hh
+#  ${INC_DIR}/extcmd/command_parser.hh
+#  ${INC_DIR}/extcmd/command_request.hh
+#  ${INC_DIR}/extcmd/command_result.hh
+#  ${INC_DIR}/extcmd/command_server.hh
+#  ${INC_DIR}/extcmd/factory.hh
+#  ${INC_DIR}/extcmd/internal.hh
+#  ${INC_DIR}/extcmd/json_command_parser.hh
+#  ${INC_DIR}/extcmd/plaintext_command_parser.hh
   ${INC_DIR}/file/cfile.hh
   ${INC_DIR}/file/directory_event.hh
   ${INC_DIR}/file/directory_watcher.hh

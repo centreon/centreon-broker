@@ -49,14 +49,9 @@ worker::worker() : _fd(-1) {}
 /**
  *  Destructor.
  */
-worker::~worker() throw() {}
-
-/**
- *  Set the exit flag.
- */
-void worker::exit() {
-  std::lock_guard<std::mutex> lk(_worker_m);
+worker::~worker() noexcept {
   _exit = true;
+  _thread.join();
 }
 
 /**
@@ -115,17 +110,12 @@ bool worker::_open() {
   return (retval);
 }
 
-bool worker::_should_exit() const {
-  std::lock_guard<std::mutex> lk(_worker_m);
-  return _exit;
-}
-
 /**
  *  Thread entry point.
  */
 void worker::_run() {
   try {
-    while (!_should_exit()) {
+    while (!_exit) {
       // Check file opening.
       if (_buffer.empty()) {
         _close();
@@ -148,12 +138,12 @@ void worker::_run() {
         // Unrecoverable.
         if (errno != EINTR) {
           char const* msg(strerror(errno));
-          throw(exceptions::msg() << "multiplexing failure: " << msg);
+          throw exceptions::msg() << "multiplexing failure: " << msg;
         }
       } else if (flagged > 0) {
         // FD error.
         if ((fds.revents & (POLLERR | POLLNVAL | POLLHUP)))
-          throw(exceptions::msg() << "FIFO fd has pending error");
+          throw exceptions::msg() << "FIFO fd has pending error";
         // Readable.
         else if ((fds.revents & POLLOUT)) {
           if (_buffer.empty()) {
@@ -181,8 +171,4 @@ void worker::_run() {
         << "stats: FIFO thread will exit due to an unknown error";
   }
   ::unlink(_fifo.c_str());
-}
-
-void worker::wait() {
-  _thread.join();
 }

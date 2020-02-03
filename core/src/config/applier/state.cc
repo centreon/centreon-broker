@@ -147,16 +147,16 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
 
   com::centreon::broker::config::state st = s;
 
-  // Create command file input.
-  if (!s.command_file().empty()) {
-    config::endpoint ept;
-    ept.name = "(external commands)";
-    ept.type = "extcmd";
-    ept.params.insert({"extcmd", s.command_file()});
-    ept.params.insert({"command_protocol", s.command_protocol()});
-    ept.read_filters.insert("all");
-    st.endpoints().push_back(ept);
-  }
+//  // Create command file input.
+//  if (!s.command_file().empty()) {
+//    config::endpoint ept;
+//    ept.name = "(external commands)";
+//    ept.type = "extcmd";
+//    ept.params.insert({"extcmd", s.command_file()});
+//    ept.params.insert({"command_protocol", s.command_protocol()});
+//    ept.read_filters.insert("all");
+//    st.endpoints().push_back(ept);
+//  }
 
   // Apply input and output configuration.
   endpoint::instance().apply(st.endpoints());
