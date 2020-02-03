@@ -10,6 +10,11 @@ Removal of Qt
 =============
 Broker does not need Qt anymore.
 
+Lua
+===
+
+New function to decode a Json string into a Lua table.
+
 Json
 =====
 Switch from Xml config to Json. We used json11 toolkit, and remove
