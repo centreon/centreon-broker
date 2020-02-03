@@ -1,4 +1,53 @@
 =======================
+Centreon Broker 19.10.3
+=======================
+
+*********
+Bug fixes
+*********
+
+Downtimes deletion
+==================
+
+When downtimes were deleted, they were badly deleted and this could create
+memory issues. The change on the Broker side is due to NEB headers changes.
+
+=======================
+Centreon Broker 19.10.2
+=======================
+
+*********
+Bug fixes
+*********
+
+Fixed downtimes and notifications
+=================================
+
+When two contiguous downtimes are parametrized. It was possible to have
+notifications of critical devices between them. This version of broker is
+needed because of changes in the Engine timed_event class.
+
+Connction lost when One peer retention is active
+================================================
+
+When a central and a poller are using One peer retention and the poller get
+disconnected then reconnection will never occur.
+
+=======================
+Centreon Broker 19.10.1
+=======================
+
+************
+Enhancements
+************
+
+Stream connector
+================
+
+A new function broker.url_encode(string) has been added to the stream connector
+that URL encodes strings.
+
+=======================
 Centreon Broker 19.10
 =======================
 
