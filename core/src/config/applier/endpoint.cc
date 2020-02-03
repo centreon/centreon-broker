@@ -194,7 +194,6 @@ void endpoint::discard() {
       logging::debug(logging::medium)
           << "endpoint applier: send exit signal on endpoint '"
           << it->second->get_name() << "'";
-      it->second->exit();
       delete it->second;
     }
 
