@@ -29,6 +29,7 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::lua;
 
 static void broker_json_encode(lua_State* L, std::ostringstream& oss);
+static void broker_json_decode(lua_State* L, json11::Json const& it);
 
 /**
  *  The json_encode function for Lua tables
@@ -153,8 +154,6 @@ static int l_broker_json_encode(lua_State* L) {
   lua_pushstring(L, oss.str().c_str());
   return 1;
 }
-
-static void broker_json_decode(lua_State* L, json11::Json const& it);
 
 /**
  *  The Lua json_decode function for arrays.
