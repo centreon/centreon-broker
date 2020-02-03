@@ -1,4 +1,18 @@
 =======================
+Centreon Broker 19.10.3
+=======================
+
+*********
+Bug fixes
+*********
+
+Downtimes deletion
+==================
+
+When downtimes were deleted, they were badly deleted and this could create
+memory issues. The change on the Broker side is due to NEB headers changes.
+
+=======================
 Centreon Broker 19.10.2
 =======================
 
