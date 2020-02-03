@@ -139,7 +139,8 @@ static void send_downtimes_list() {
     nsdd.downtime_type = p.second->get_type();
     nsdd.host_name = p.second->get_hostname().c_str();
     nsdd.service_description =
-        p.second->get_type() == SERVICE_DOWNTIME
+        p.second->get_type() ==
+                com::centreon::engine::downtimes::downtime::service_downtime
             ? std::static_pointer_cast<
                   com::centreon::engine::downtimes::service_downtime>(p.second)
                   ->get_service_description()
