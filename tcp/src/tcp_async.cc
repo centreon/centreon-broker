@@ -223,8 +223,6 @@ void tcp_async::register_socket(asio::ip::tcp::socket& socket) {
   }
 }
 void tcp_async::unregister_socket(asio::ip::tcp::socket& socket) {
-  logging::error(logging::high) << "tcp_async: unregister_socket";
-
   bool done{false};
   int fd{socket.native_handle()};
   std::condition_variable cond;

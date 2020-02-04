@@ -61,7 +61,7 @@ void connector::connect_to(std::string const& host, unsigned short port) {
  */
 std::shared_ptr<io::stream> connector::open() {
   // Launch connection process.
-  logging::info(logging::medium)
+  logging::info(logging::high)
       << "TCP: connecting to " << _host << ":" << _port;
   std::string connection_name{_host + ":" + std::to_string(_port)};
 
@@ -103,7 +103,7 @@ std::shared_ptr<io::stream> connector::open() {
   }
   tcp_async::instance().register_socket(*sock);
 
-  logging::info(logging::medium)
+  logging::info(logging::high)
       << "TCP: successfully connected to " << connection_name;
 
   // Return stream.
