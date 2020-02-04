@@ -256,8 +256,15 @@ static int l_broker_json_decode(lua_State* L) {
   std::string err;
 
   json11::Json const& it{json11::Json::parse(content, err)};
-  broker_json_decode(L, it);
-  return 1;
+  if (err.empty()) {
+    broker_json_decode(L, it);
+    return 1;
+  }
+  else {
+    lua_pushnil(L);
+    lua_pushlstring(L, err.c_str(), err.size());
+    return 2;
+  }
 }
 
 /**

@@ -1443,3 +1443,35 @@ TEST_F(LuaTest, JsonDecodeFull) {
   RemoveFile(filename);
   RemoveFile("/tmp/log");
 }
+
+TEST_F(LuaTest, JsonDecodeError) {
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/json_decode_error.lua");
+  CreateScript(
+      filename,
+      "function init(conf)\n"
+      "  broker_log:set_parameters(3, '/tmp/log')\n"
+      "  local test_json = [[{\n"
+      "    \"quiz\": {\n"
+      "        \"sport\": {\n"
+      "            \"q1\": {\n"
+      "                \"question\": \"Which one is correct team name in NBA?\",\n"
+      "                \"options\": [\n"
+      "                    \"New York Bulls\",\n"
+      "}]]\n"
+      "  local dec, err = broker.json_decode(test_json)\n"
+      "  broker_log:info(1, \"dec=\" .. tostring(dec))\n"
+      "  broker_log:info(1, \"err=\" .. tostring(err))\n"
+      "end\n\n"
+      "function write(d)\n"
+      "  return true\n"
+      "end");
+
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string result(ReadFile("/tmp/log"));
+
+  ASSERT_NE(result.find("dec=nil"), std::string::npos);
+  ASSERT_NE(result.find("err=expected value, got '}' (125)"), std::string::npos);
+  RemoveFile(filename);
+  //RemoveFile("/tmp/log");
+}
