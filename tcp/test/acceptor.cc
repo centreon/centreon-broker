@@ -29,9 +29,11 @@ using namespace com::centreon::broker;
 constexpr static char test_addr[] = "127.0.0.1";
 constexpr static uint16_t test_port(4444);
 
-static auto try_connect = [](tcp::connector &con) -> std::shared_ptr<io::stream> {
-  con.connect_to(test_addr, test_port);
-  while(true) {
+static auto try_connect = [](tcp::connector& con,
+                             uint32_t port =
+                                 test_port) -> std::shared_ptr<io::stream> {
+  con.connect_to(test_addr, port);
+  while (true) {
     try {
       return con.open();
     } catch (...) {
@@ -47,6 +49,38 @@ TEST(TcpAcceptor, BadPort) {
     acc.listen_on(2);
     ASSERT_THROW(acc.open(), exceptions::msg);
   }
+}
+
+TEST(TcpAcceptor, NoConnector) {
+  tcp::acceptor acc;
+
+  acc.listen_on(test_port);
+  ASSERT_EQ(acc.open(), std::shared_ptr<io::stream>());
+}
+
+TEST(TcpAcceptor, Wait2Connect) {
+  tcp::acceptor acc;
+  int i = 0;
+  std::shared_ptr<io::stream> st;
+
+  acc.listen_on(4141);
+  std::thread t{[&] {
+    std::this_thread::sleep_for(std::chrono::milliseconds {2120});
+    tcp::connector con;
+    std::shared_ptr<io::stream> str{try_connect(con, 4141)};
+
+    std::cout << "connected" << std::endl;
+  }};
+
+  st == std::shared_ptr<io::stream>();
+  while (st == std::shared_ptr<io::stream>()) {
+    i++;
+    std::cout << "before accept" << std::endl;
+    st = acc.open();
+  }
+
+  t.join();
+  ASSERT_GT(i, 1);
 }
 
 TEST(TcpAcceptor, Simple) {

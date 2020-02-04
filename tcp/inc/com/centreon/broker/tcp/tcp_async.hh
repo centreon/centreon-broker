@@ -44,6 +44,20 @@ struct tcp_con {
   tcp_con() : _timer{nullptr}, _closing{false}, _timeout{false} {};
 };
 
+struct tcp_accept {
+  // waiting for data
+  std::condition_variable _wait_bind_event;
+  std::unique_ptr<asio::steady_timer> _timer;
+  std::system_error _ec;
+
+  std::mutex _acc_lock;
+
+  bool _timeout;
+  bool _accept_ok;
+
+  tcp_accept() : _timer{nullptr}, _timeout{false}, _accept_ok{false} {}
+};
+
 class tcp_async {
   asio::io_context _io_context;
   asio::io_context::strand _strand;
@@ -55,13 +69,15 @@ class tcp_async {
 
   tcp_async();
   ~tcp_async();
+
   void _async_job();
   void _async_read_cb(asio::ip::tcp::socket& socket,
                       int fd,
                       std::error_code const& ec,
                       std::size_t bytes);
-  void _async_timeout_cb(int fd,
-                      std::error_code const& ec);
+  void _async_timeout_cb(int fd, std::error_code const& ec);
+  void _async_accept_cb(std::error_code const& err, std::shared_ptr<tcp_accept> acc_data);
+  void _async_acc_timeout_cb(std::error_code const& ec, std::shared_ptr<tcp_accept> acc_data, asio::ip::tcp::acceptor &acc);
 
  public:
   void register_socket(asio::ip::tcp::socket& socket);
@@ -71,6 +87,9 @@ class tcp_async {
                             time_t deadline,
                             bool& disconnected,
                             bool& timeout);
+
+  bool wait_for_accept(asio::ip::tcp::socket& socket, asio::ip::tcp::acceptor& acc,
+                       std::chrono::seconds timeout);
 
   asio::io_context& get_io_ctx();
 
