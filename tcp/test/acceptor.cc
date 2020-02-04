@@ -65,7 +65,7 @@ TEST(TcpAcceptor, Wait2Connect) {
 
   acc.listen_on(4141);
   std::thread t{[&] {
-    std::this_thread::sleep_for(std::chrono::milliseconds {2120});
+    std::this_thread::sleep_for(std::chrono::seconds {2});
     tcp::connector con;
     std::shared_ptr<io::stream> str{try_connect(con, 4141)};
 
