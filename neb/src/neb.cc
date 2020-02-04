@@ -19,7 +19,6 @@
 #include <clocale>
 #include <csignal>
 #include <cstring>
-#include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
@@ -27,18 +26,13 @@
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/logging/file.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/callbacks.hh"
-#include "com/centreon/broker/neb/engcmd/internal.hh"
 #include "com/centreon/broker/neb/instance_configuration.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/monitoring_logger.hh"
-#include "com/centreon/engine/common.hh"
-#include "com/centreon/engine/events/timed_event.hh"
-#include "com/centreon/engine/globals.hh"
 #include "com/centreon/engine/nebcallbacks.hh"
 
 using namespace com::centreon::broker;
@@ -102,9 +96,6 @@ int nebmodule_init(int flags, char const* args, void* handle) {
   try {
     // Initialization.
     com::centreon::broker::config::applier::init();
-
-    // Initialize the engcmd module.
-    ::com::centreon::broker::neb::engcmd::load();
 
     // Save module handle and flags for future use.
     neb::gl_mod_flags = flags;

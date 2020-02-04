@@ -86,6 +86,7 @@ std::shared_ptr<io::stream> acceptor::open() {
   if (!_acceptor)
     listen_on(_port);
 
+  logging::info(logging::high) << "try to bind";
   std::shared_ptr<asio::ip::tcp::socket> socket{
       new asio::ip::tcp::socket{tcp_async::instance().get_io_ctx()}};
   try {
@@ -114,7 +115,7 @@ std::shared_ptr<io::stream> acceptor::open() {
   // Accept client.
   std::shared_ptr<stream> incoming{new stream{socket, ""}};
 
-  logging::info(logging::medium) << "TCP: new client connected";
+  logging::info(logging::high) << "TCP: new client connected";
   incoming->set_parent(this);
   incoming->set_read_timeout(_read_timeout);
   incoming->set_write_timeout(_write_timeout);
