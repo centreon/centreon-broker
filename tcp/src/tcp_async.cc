@@ -107,7 +107,7 @@ void tcp_async::_async_acc_timeout_cb(std::error_code const& ec,
   std::unique_lock<std::mutex> lock(acc_data->_acc_lock);
 
   if (!ec) {
-    acc.close();
+    acc.cancel();
     acc_data->_timeout = true;
   }
   acc_data->_wait_bind_event.notify_all();

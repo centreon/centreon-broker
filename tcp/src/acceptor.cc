@@ -97,15 +97,9 @@ std::shared_ptr<io::stream> acceptor::open() {
     }
     if (!tcp_async::instance().wait_for_accept(*socket, *_acceptor,
                                                std::chrono::seconds{1})) {
-      _binding = false;
-      _acceptor.reset(new asio::ip::tcp::acceptor(
-          tcp_async::instance().get_io_ctx(), _ep.protocol()));
       return std::shared_ptr<stream>();
     }
   } catch (std::system_error const& se) {
-    _acceptor.reset(new asio::ip::tcp::acceptor(
-        tcp_async::instance().get_io_ctx(), _ep.protocol()));
-    _binding = false;
     throw exceptions::msg()
         << "TCP: error while waiting client on port: " << _port << " "
         << se.what();
