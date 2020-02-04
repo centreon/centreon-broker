@@ -90,6 +90,66 @@ async_buf tcp_async::wait_for_packet(asio::ip::tcp::socket& socket,
   return buf;
 }
 
+void tcp_async::_async_accept_cb(std::error_code const& ec,
+                                 std::shared_ptr<tcp_accept> acc_data) {
+  std::unique_lock<std::mutex> lock(acc_data->_acc_lock);
+  acc_data->_timer->cancel();
+  if (!ec)
+    acc_data->_accept_ok = true;
+  else
+    acc_data->_ec = std::system_error(ec);
+  acc_data->_wait_bind_event.notify_all();
+}
+
+void tcp_async::_async_acc_timeout_cb(std::error_code const& ec,
+                                      std::shared_ptr<tcp_accept> acc_data,
+                                      asio::ip::tcp::acceptor& acc) {
+  std::unique_lock<std::mutex> lock(acc_data->_acc_lock);
+
+  if (!ec) {
+    acc.close();
+    acc_data->_timeout = true;
+  }
+  acc_data->_wait_bind_event.notify_all();
+}
+
+bool tcp_async::wait_for_accept(asio::ip::tcp::socket& socket,
+                                asio::ip::tcp::acceptor& acc,
+                                std::chrono::seconds timeout) {
+  std::shared_ptr<tcp_accept> acc_data{std::make_shared<tcp_accept>()};
+
+  acc_data->_timer.reset(new asio::steady_timer{_io_context, timeout});
+  acc_data->_timer->async_wait(std::bind(&tcp_async::_async_acc_timeout_cb,
+                                         this, std::placeholders::_1,
+                                         acc_data, std::ref(acc)));
+
+  acc.async_accept(socket,
+                   std::bind(&tcp_async::_async_accept_cb, this,
+                             std::placeholders::_1, acc_data));
+
+  std::unique_lock<std::mutex> m(acc_data->_acc_lock);
+  acc_data->_wait_bind_event.wait(m, [&acc_data]() -> bool {
+    if (acc_data->_accept_ok)
+      return true;
+    if (acc_data->_ec.code())
+      return true;
+    if (acc_data->_timeout)
+      return true;
+    return false;
+  });
+
+  if (acc_data->_accept_ok || socket.is_open())
+    return true;
+
+  if (acc_data->_ec.code()) {
+    if (acc_data->_ec.code().value() == ECANCELED)
+      return false;
+    throw acc_data->_ec;
+  }
+
+  return false;
+}
+
 void tcp_async::_async_timeout_cb(int fd, std::error_code const& ec) {
   if (!ec) {
     std::unique_lock<std::mutex> lock(_m_read_data);
@@ -133,7 +193,7 @@ void tcp_async::_async_read_cb(asio::ip::tcp::socket& socket,
   } else {
     if (bytes != 0) {
       it->second._work_buffer.resize(bytes);
-      it->second._buffer_queue.push(std::move(it->second._work_buffer));;
+      it->second._buffer_queue.push(std::move(it->second._work_buffer));
 
       it->second._work_buffer.resize(0);
     }
@@ -163,8 +223,7 @@ void tcp_async::register_socket(asio::ip::tcp::socket& socket) {
   }
 }
 void tcp_async::unregister_socket(asio::ip::tcp::socket& socket) {
-  logging::error(logging::high)
-    << "tcp_async: unregister_socket";
+  logging::error(logging::high) << "tcp_async: unregister_socket";
 
   bool done{false};
   int fd{socket.native_handle()};
