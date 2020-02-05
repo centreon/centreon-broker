@@ -68,14 +68,11 @@ TEST(TcpAcceptor, Wait2Connect) {
     std::this_thread::sleep_for(std::chrono::seconds {2});
     tcp::connector con;
     std::shared_ptr<io::stream> str{try_connect(con, 4141)};
-
-    std::cout << "connected" << std::endl;
   }};
 
   st == std::shared_ptr<io::stream>();
   while (st == std::shared_ptr<io::stream>()) {
     i++;
-    std::cout << "before accept" << std::endl;
     st = acc.open();
   }
 

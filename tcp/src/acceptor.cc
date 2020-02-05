@@ -73,6 +73,8 @@ void acceptor::listen_on(unsigned short port) {
   // Step 3. Instantiating and opening an acceptor socket.
   _acceptor.reset(new asio::ip::tcp::acceptor(
       tcp_async::instance().get_io_ctx(), _ep.protocol()));
+  asio::socket_base::reuse_address option(true);
+  _acceptor->set_option(option);
 }
 
 /**
