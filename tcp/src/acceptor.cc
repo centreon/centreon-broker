@@ -43,12 +43,18 @@ acceptor::acceptor()
       _port(0),
       _binding{false},
       _read_timeout(-1),
-      _write_timeout(-1) {}
+      _write_timeout(-1),
+      _acceptor(nullptr){}
 
 /**
  *  Destructor.
  */
-acceptor::~acceptor() {}
+acceptor::~acceptor() {
+  if (_acceptor) {
+    _acceptor->close();
+    _acceptor.reset(nullptr);
+  }
+}
 
 /**
  *  Add a child to this acceptor.
