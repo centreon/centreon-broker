@@ -212,6 +212,7 @@ void kpi_meta::_fill_impact(impact_values& impact) {
 void kpi_meta::_open_new_event(io::stream* visitor, int impact, short state) {
   _event.reset(new kpi_event);
   _event->kpi_id = _id;
+  _event->ba_id = _ba_id;
   _event->impact_level = impact;
   _event->in_downtime = false;
   _event->output = _meta->get_output();

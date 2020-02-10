@@ -61,10 +61,19 @@ class mysql {
       std::promise<database::mysql_result>* promise,
       int thread_id = -1);
 
+  template <typename T>
   int run_statement_and_get_int(database::mysql_stmt& stmt,
-                                std::promise<int>* promise,
+                                std::promise<T>* promise,
                                 database::mysql_task::int_type type,
-                                int thread_id = -1);
+                                int thread_id = -1) {
+    _check_errors();
+    if (thread_id < 0)
+      // Here, we use _current_thread
+      thread_id = choose_best_connection();
+
+    _connection[thread_id]->run_statement_and_get_int<T>(stmt, promise, type);
+    return thread_id;
+  }
 
   bool fetch_row(database::mysql_result& res);
   int get_last_insert_id(int thread_id);

@@ -64,9 +64,13 @@ class mysql_connection {
   void run_statement_and_get_result(
       database::mysql_stmt& stmt,
       std::promise<database::mysql_result>* promise);
+
+  template <typename T>
   void run_statement_and_get_int(database::mysql_stmt& stmt,
-                                 std::promise<int>* promise,
-                                 database::mysql_task::int_type type);
+                                 std::promise<T>* promise,
+                                 database::mysql_task::int_type type) {
+    _push(std::make_shared<database::mysql_task_statement_int<T>>(stmt, promise, type));
+  }
 
   void finish();
   bool fetch_row(database::mysql_result& result);
@@ -90,6 +94,7 @@ class mysql_connection {
   void _prepare(database::mysql_task* t);
   void _statement(database::mysql_task* t);
   void _statement_res(database::mysql_task* t);
+  template <typename T>
   void _statement_int(database::mysql_task* t);
   void _get_result_sync(database::mysql_task* task);
   void _fetch_row_sync(database::mysql_task* task);

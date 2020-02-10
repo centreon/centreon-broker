@@ -324,6 +324,7 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
           << " nor a meta-service, nor a boolean expression");
 
   my_kpi->set_id(cfg.get_id());
+  my_kpi->set_ba_id(cfg.get_ba_id());
 
   return (my_kpi);
 }

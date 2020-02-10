@@ -58,6 +58,7 @@ class kpi_event : public io::data {
   std::string perfdata;
   timestamp start_time;
   short status;
+  uint32_t ba_id;
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

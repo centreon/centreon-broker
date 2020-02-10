@@ -30,7 +30,7 @@ kpi_event::kpi_event()
     : kpi_id(0),
       impact_level(0),
       in_downtime(false),
-      status(kpi_event::state::state_unknown) {}
+      status(kpi_event::state::state_unknown), ba_id(0) {}
 
 /**
  *  Copy constructor.
@@ -73,7 +73,7 @@ bool kpi_event::operator==(kpi_event const& other) const {
           (impact_level == other.impact_level) &&
           (in_downtime == other.in_downtime) && (output == other.output) &&
           (perfdata == other.perfdata) && (start_time == other.start_time) &&
-          (status == other.status));
+          (status == other.status) && (ba_id == other.ba_id));
 }
 
 /**
@@ -108,7 +108,7 @@ void kpi_event::_internal_copy(kpi_event const& other) {
   perfdata = other.perfdata;
   start_time = other.start_time;
   status = other.status;
-  return;
+  ba_id = other.ba_id;
 }
 
 /**************************************

@@ -134,7 +134,7 @@ int32_t conflict_manager::_storage_process_service_status() {
     _index_data_insert.bind_value_as_str(4, "0");
     _index_data_insert.bind_value_as_str(5, special ? "1" : "0");
     std::promise<int> promise;
-    _mysql.run_statement_and_get_int(_index_data_insert,
+    _mysql.run_statement_and_get_int<int>(_index_data_insert,
                                      &promise,
                                      database::mysql_task::LAST_INSERT_ID,
                                      conn);
@@ -280,7 +280,7 @@ int32_t conflict_manager::_storage_process_service_status() {
 
             // Execute query.
             std::promise<int> promise;
-            _mysql.run_statement_and_get_int(
+            _mysql.run_statement_and_get_int<int>(
               _metrics_insert,
               &promise,
               database::mysql_task::LAST_INSERT_ID,

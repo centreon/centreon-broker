@@ -144,6 +144,7 @@ void reader_v2::_load(state::kpis& kpis) {
         if (!res.value_is_null(17)) {
           kpi_event e;
           e.kpi_id = kpi_id;
+          e.ba_id = res.value_as_u32(4);
           e.status = res.value_as_i32(8);
           e.start_time = res.value_as_u64(17);
           e.in_downtime = res.value_as_bool(18);

@@ -248,6 +248,7 @@ void kpi_ba::_open_new_event(io::stream* visitor,
                              timestamp event_start_time) {
   _event.reset(new kpi_event);
   _event->kpi_id = _id;
+  _event->ba_id = _ba_id;
   _event->impact_level = impact;
   _event->in_downtime = _ba->get_in_downtime();
   _event->output = _ba->get_output();

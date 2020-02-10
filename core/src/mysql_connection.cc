@@ -17,6 +17,7 @@
 */
 #include <cstring>
 #include <sstream>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mysql_manager.hh"
@@ -29,11 +30,19 @@ const int MAX_ATTEMPTS = 10;
 
 void (mysql_connection::*const mysql_connection::_task_processing_table[])(
     mysql_task* task) = {
-    &mysql_connection::_query,          &mysql_connection::_query_res,
-    &mysql_connection::_query_int,      &mysql_connection::_commit,
-    &mysql_connection::_prepare,        &mysql_connection::_statement,
-    &mysql_connection::_statement_res,  &mysql_connection::_statement_int,
-    &mysql_connection::_fetch_row_sync, &mysql_connection::_finish,
+    &mysql_connection::_query,
+    &mysql_connection::_query_res,
+    &mysql_connection::_query_int,
+    &mysql_connection::_commit,
+    &mysql_connection::_prepare,
+    &mysql_connection::_statement,
+    &mysql_connection::_statement_res,
+    &mysql_connection::_statement_int<int>,
+    &mysql_connection::_statement_int<int64_t>,
+    &mysql_connection::_statement_int<uint32_t>,
+    &mysql_connection::_statement_int<uint64_t>,
+    &mysql_connection::_fetch_row_sync,
+    &mysql_connection::_finish,
 };
 
 /******************************************************************************/
@@ -104,7 +113,8 @@ void mysql_connection::_commit(mysql_task* t) {
       if (strcmp(err, "MySQL server has gone away") == 0) {
         logging::error(logging::high)
             << "mysql_connection: The mysql/mariadb database seems not "
-               "started. Unable to reconnect: " << ::mysql_error(_conn);
+               "started. Unable to reconnect: "
+            << ::mysql_error(_conn);
         attempts = MAX_ATTEMPTS;
       }
       logging::error(logging::medium)
@@ -296,8 +306,10 @@ void mysql_connection::_statement_res(mysql_task* t) {
   }
 }
 
+template <typename T>
 void mysql_connection::_statement_int(mysql_task* t) {
-  mysql_task_statement_int* task(static_cast<mysql_task_statement_int*>(t));
+  mysql_task_statement_int<T>* task(
+      static_cast<mysql_task_statement_int<T>*>(t));
   logging::debug(logging::low)
       << "mysql: execute statement: " << task->statement_id;
   MYSQL_STMT* stmt(_stmt[task->statement_id]);
@@ -409,6 +421,15 @@ std::string mysql_connection::_get_stack() {
       case mysql_task::STATEMENT_INT:
         retval += "STATEMENT with int return; ";
         break;
+      case mysql_task::STATEMENT_UINT:
+        retval += "STATEMENT with uint return; ";
+        break;
+      case mysql_task::STATEMENT_INT64:
+        retval += "STATEMENT with int64 return; ";
+        break;
+      case mysql_task::STATEMENT_UINT64:
+        retval += "STATEMENT with uint64 return; ";
+        break;
       case mysql_task::FETCH_ROW:
         retval += "FETCH_ROW ; ";
         break;
@@ -427,11 +448,12 @@ void mysql_connection::_run() {
     mysql_manager::instance().set_error(::mysql_error(_conn));
   } else {
     while (!mysql_real_connect(_conn, _host.c_str(), _user.c_str(),
-                                 _pwd.c_str(), _name.c_str(), _port, nullptr,
-                                 CLIENT_FOUND_ROWS)) {
+                               _pwd.c_str(), _name.c_str(), _port, nullptr,
+                               CLIENT_FOUND_ROWS)) {
       logging::error(logging::high)
-        << "mysql_connection: The mysql/mariadb database seems not started. Waiting before attempt to connect again: "
-        << ::mysql_error(_conn);
+          << "mysql_connection: The mysql/mariadb database seems not started. "
+             "Waiting before attempt to connect again: "
+          << ::mysql_error(_conn);
       std::this_thread::sleep_for(std::chrono::seconds(5));
     }
   }
@@ -463,8 +485,7 @@ void mysql_connection::_run() {
       _tasks_condition.wait(locker);
     }
   }
-  for (std::unordered_map<uint32_t, MYSQL_STMT*>::iterator
-           it(_stmt.begin()),
+  for (std::unordered_map<uint32_t, MYSQL_STMT*>::iterator it(_stmt.begin()),
        end(_stmt.end());
        it != end; ++it)
     mysql_stmt_close(it->second);
@@ -573,12 +594,6 @@ void mysql_connection::run_statement_and_get_result(
     database::mysql_stmt& stmt,
     std::promise<mysql_result>* promise) {
   _push(std::make_shared<mysql_task_statement_res>(stmt, promise));
-}
-
-void mysql_connection::run_statement_and_get_int(database::mysql_stmt& stmt,
-                                                 std::promise<int>* promise,
-                                                 mysql_task::int_type type) {
-  _push(std::make_shared<mysql_task_statement_int>(stmt, promise, type));
 }
 
 void mysql_connection::finish() {

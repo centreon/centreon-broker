@@ -206,6 +206,7 @@ void kpi_boolexp::_open_new_event(io::stream* visitor,
                                   kpi_boolexp::state state) {
   _event.reset(new kpi_event);
   _event->kpi_id = _id;
+  _event->ba_id = _ba_id;
   _event->impact_level = impact;
   _event->in_downtime = false;
   _event->output = "BAM boolean expression computed by Centreon Broker";
