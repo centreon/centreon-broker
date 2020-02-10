@@ -264,35 +264,6 @@ int mysql::run_statement_and_get_result(database::mysql_stmt& stmt,
 }
 
 /**
- * This method looks like run_query_and_get_int but it is used to execute a
- * prepared statement.
- *
- * @param stmt The statement to execute.
- * @param promise A promise that will contain the result when it will be
- *                available.
- * @param error_msg An error message to complete the error message returned
- *                  by the mysql connector.
- * @param thread_id A thread id or 0 to keep the library choosing which one.
- *
- * With this function, the query is done. The promise will provide the result
- * if available and it will contain an exception if the query failed.
- *
- * @return The thread id that executed the query.
- */
-int mysql::run_statement_and_get_int(database::mysql_stmt& stmt,
-                                     std::promise<int>* promise,
-                                     mysql_task::int_type type,
-                                     int thread_id) {
-  _check_errors();
-  if (thread_id < 0)
-    // Here, we use _current_thread
-    thread_id = choose_best_connection();
-
-  _connection[thread_id]->run_statement_and_get_int(stmt, promise, type);
-  return thread_id;
-}
-
-/**
  *  This method prepares a statement.
  *
  * @param stmt The statement to prepare.

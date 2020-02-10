@@ -17,8 +17,10 @@
 */
 
 #include "com/centreon/broker/bam/reporting_stream.hh"
+
 #include <cstdlib>
 #include <sstream>
+
 #include "com/centreon/broker/bam/ba_duration_event.hh"
 #include "com/centreon/broker/bam/ba_event.hh"
 #include "com/centreon/broker/bam/dimension_ba_bv_relation_event.hh"
@@ -107,7 +109,7 @@ bool reporting_stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
 void reporting_stream::statistics(json11::Json::object& tree) const {
   std::lock_guard<std::mutex> lock(_statusm);
   if (!_status.empty())
-    tree["status"] =  _status;
+    tree["status"] = _status;
 }
 
 /**
@@ -327,6 +329,7 @@ void reporting_stream::_close_all_events() {
   query << "UPDATE mod_bam_reporting_kpi_events"
            "  SET end_time="
         << now << "  WHERE end_time IS NULL";
+
   _mysql.run_query(query.str(), "BAM-BI, could not close all kpi events");
 }
 
@@ -492,16 +495,20 @@ void reporting_stream::_prepare() {
 
   query =
       "INSERT INTO mod_bam_reporting_relations_ba_kpi_events"
-      "           (ba_event_id, kpi_event_id)"
-      "  SELECT be.ba_event_id, ke.kpi_event_id"
-      "    FROM mod_bam_reporting_kpi_events AS ke"
-      "    INNER JOIN mod_bam_reporting_ba_events AS be"
-      "    ON ((ke.start_time >= be.start_time)"
-      "       AND (be.end_time IS NULL OR ke.start_time < be.end_time))"
-      "    INNER JOIN mod_bam_reporting_kpi AS rki"
-      "     ON (rki.ba_id = be.ba_id AND rki.kpi_id = ke.kpi_id)"
-      "    WHERE ke.kpi_id=? AND ke.start_time=?";
+      " (ba_event_id, kpi_event_id)"
+      " SELECT be.ba_event_id, ke.kpi_event_id"
+      " FROM mod_bam_reporting_kpi_events AS ke"
+      " LEFT JOIN mod_bam_reporting_ba_events AS be"
+      " ON (ke.start_time >= be.start_time"
+      " AND (be.end_time IS NULL OR ke.start_time < be.end_time))"
+      " WHERE ke.kpi_id=? AND ke.start_time=? AND be.ba_id=?";
   _kpi_event_link = _mysql.prepare_query(query);
+
+  query =
+      "UPDATE mod_bam_reporting_relations_ba_kpi_events"
+      " SET ba_event_id=?"
+      " WHERE relation_id=?";
+  _kpi_event_link_update = _mysql.prepare_query(query);
 
   query =
       "INSERT INTO mod_bam_reporting_ba (ba_id, ba_name, ba_description,"
@@ -605,8 +612,8 @@ void reporting_stream::_process_ba_event(std::shared_ptr<io::data> const& e) {
       5, static_cast<uint64_t>(be.start_time.get_time_t()));
 
   std::promise<int> promise;
-  _mysql.run_statement_and_get_int(_ba_event_update, &promise,
-                                   mysql_task::int_type::AFFECTED_ROWS);
+  _mysql.run_statement_and_get_int<int>(_ba_event_update, &promise,
+                                        mysql_task::int_type::AFFECTED_ROWS);
 
   // Event was not found, insert one.
   try {
@@ -627,7 +634,31 @@ void reporting_stream::_process_ba_event(std::shared_ptr<io::data> const& e) {
       std::ostringstream oss_err;
       oss_err << "BAM-BI: could not insert event of BA " << be.ba_id
               << " starting at " << be.start_time << ": ";
-      _mysql.run_statement(_ba_full_event_insert, oss_err.str(), true);
+      std::promise<uint32_t> result;
+      _mysql.run_statement_and_get_int<uint32_t>(
+          _ba_full_event_insert, &result, mysql_task::LAST_INSERT_ID, -1);
+      uint32_t newba = result.get_future().get();
+      // check events for BA
+      if (_last_inserted_kpi.find(be.ba_id) != _last_inserted_kpi.end()) {
+        std::map<std::time_t, uint64_t>& m_events =
+            _last_inserted_kpi[be.ba_id];
+        if (m_events.find(be.start_time.get_time_t()) != m_events.end()) {
+          // Insert kpi event link.
+          _kpi_event_link_update.bind_value_as_i32(0, newba);
+          _kpi_event_link_update.bind_value_as_u64(1, m_events[be.start_time.get_time_t()]);
+          oss_err << "BAM-BI: could not update kpi event link "
+                  << m_events[be.start_time.get_time_t()] << " event of BA "
+                  << be.ba_id << " starting at " << be.start_time << ": ";
+          _mysql.run_statement(_kpi_event_link_update, oss_err.str(), true);
+        }
+        // remove older events for BA
+        for (auto it = m_events.begin(); it != m_events.end();) {
+          if (it->first < be.start_time.get_time_t())
+            it = m_events.erase(it);
+          else
+            break;
+        }
+      }
     }
   } catch (std::exception const& e) {
     throw exceptions::msg()
@@ -670,9 +701,9 @@ void reporting_stream::_process_ba_duration_event(
   _ba_duration_event_update.bind_value_as_i32(7, bde.timeperiod_id);
 
   std::promise<int> promise;
-  int thread_id(
-      _mysql.run_statement_and_get_int(_ba_duration_event_update, &promise,
-                                       mysql_task::int_type::AFFECTED_ROWS));
+  int thread_id(_mysql.run_statement_and_get_int<int>(
+      _ba_duration_event_update, &promise,
+      mysql_task::int_type::AFFECTED_ROWS));
   try {
     // Insert if no rows was updated.
     if (promise.get_future().get() == 0) {
@@ -724,7 +755,7 @@ void reporting_stream::_process_kpi_event(std::shared_ptr<io::data> const& e) {
       5, static_cast<uint64_t>(ke.start_time.get_time_t()));
 
   std::promise<int> promise;
-  int thread_id(_mysql.run_statement_and_get_int(
+  int thread_id(_mysql.run_statement_and_get_int<int>(
       _kpi_event_update, &promise, mysql_task::int_type::AFFECTED_ROWS));
   // No kpis were updated, insert one.
   try {
@@ -752,11 +783,18 @@ void reporting_stream::_process_kpi_event(std::shared_ptr<io::data> const& e) {
       _kpi_event_link.bind_value_as_i32(0, ke.kpi_id);
       _kpi_event_link.bind_value_as_u64(
           1, static_cast<uint64_t>(ke.start_time.get_time_t()));
+      _kpi_event_link.bind_value_as_u32(2, ke.ba_id);
       oss_err.str("");
       oss_err << "BAM-BI: could not create link from event of KPI " << ke.kpi_id
               << " starting at " << ke.start_time
               << " to its associated BA event: ";
-      _mysql.run_statement(_kpi_event_link, oss_err.str(), true, thread_id);
+
+      std::promise<uint64_t> result;
+      _mysql.run_statement_and_get_int<uint64_t>(
+          _kpi_event_link, &result, mysql_task::LAST_INSERT_ID, thread_id);
+
+      uint64_t evt_id{result.get_future().get()};  //_kpi_event_link.last_insert_id().toUInt()};
+      _last_inserted_kpi[ke.ba_id].insert({ke.start_time.get_time_t(), evt_id});
     }
   } catch (std::exception const& e) {
     throw exceptions::msg()
@@ -1154,7 +1192,8 @@ void reporting_stream::_process_dimension_ba_timeperiod_relation(
 /**
  *  @brief Compute and write the duration events associated with a ba event.
  *
- *  The event durations are computed from the associated timeperiods of the BA.
+ *  The event durations are computed from the associated timeperiods of the
+ * BA.
  *
  *  @param[in] ev       The ba_event generating the durations.
  *  @param[in] visitor  A visitor stream.

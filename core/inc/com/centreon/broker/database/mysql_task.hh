@@ -20,7 +20,9 @@
 #define CCB_MYSQL_TASK_HH
 
 #include <mysql.h>
+
 #include <atomic>
+
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
@@ -39,6 +41,9 @@ class mysql_task {
     STATEMENT,
     STATEMENT_RES,
     STATEMENT_INT,
+    STATEMENT_INT64,
+    STATEMENT_UINT,
+    STATEMENT_UINT64,
     FETCH_ROW,
     FINISH,
   };
@@ -150,18 +155,25 @@ class mysql_task_statement_res : public mysql_task {
   std::unique_ptr<database::mysql_bind> bind;
 };
 
+template <typename T>
 class mysql_task_statement_int : public mysql_task {
  public:
   mysql_task_statement_int(database::mysql_stmt& stmt,
-                           std::promise<int>* promise,
+                           std::promise<T>* promise,
                            int_type type)
-      : mysql_task(mysql_task::STATEMENT_INT),
+      : mysql_task((std::is_same<T, int>::value)
+                       ? mysql_task::STATEMENT_INT
+                       : (std::is_same<T, int64_t>::value)
+                             ? mysql_task::STATEMENT_INT64
+                             : (std::is_same<T, uint32_t>::value)
+                                   ? mysql_task::STATEMENT_UINT
+                                   : mysql_task::STATEMENT_UINT64),
         promise(promise),
         return_type(type),
         statement_id(stmt.get_id()),
         param_count(stmt.get_param_count()),
         bind(stmt.get_bind()) {}
-  std::promise<int>* promise;
+  std::promise<T>* promise;
   int_type return_type;
   int statement_id;
   int param_count;

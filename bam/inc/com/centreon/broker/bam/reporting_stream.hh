@@ -22,7 +22,9 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <unordered_map>
 #include <vector>
+
 #include "com/centreon/broker/bam/availability_thread.hh"
 #include "com/centreon/broker/bam/ba_event.hh"
 #include "com/centreon/broker/bam/timeperiod_map.hh"
@@ -107,6 +109,7 @@ class reporting_stream : public io::stream {
   database::mysql_stmt _kpi_full_event_insert;
   database::mysql_stmt _kpi_event_update;
   database::mysql_stmt _kpi_event_link;
+  database::mysql_stmt _kpi_event_link_update;
   database::mysql_stmt _dimension_ba_insert;
   database::mysql_stmt _dimension_bv_insert;
   database::mysql_stmt _dimension_ba_bv_relation_insert;
@@ -121,7 +124,9 @@ class reporting_stream : public io::stream {
   // Timeperiods by BAs, with an option is default timeperiod.
   timeperiod_map _timeperiods;
 
-  std::vector<std::shared_ptr<io::data> > _dimension_data_cache;
+  std::vector<std::shared_ptr<io::data>> _dimension_data_cache;
+  std::unordered_map<uint32_t, std::map<std::time_t, uint64_t>>
+      _last_inserted_kpi;  // ba_id => <time, row>
 };
 }  // namespace bam
 
