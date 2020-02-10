@@ -510,6 +510,7 @@ void kpi_service::_open_new_event(
                     impact_values const& impacts) {
   _event.reset(new kpi_event);
   _event->kpi_id = _id;
+  _event->ba_id = _ba_id;
   _event->impact_level = _event->in_downtime
                          ? impacts.get_downtime()
                          : impacts.get_nominal();

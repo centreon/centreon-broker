@@ -145,6 +145,7 @@ void reader::_load(state::kpis& kpis) {
       if (!query.value(17).isNull()) {
         kpi_event e;
         e.kpi_id = kpi_id;
+        e.ba_id = query.value(4).toUInt();
         e.status = query.value(8).toInt();
         e.start_time = query.value(17).toLongLong();
         e.in_downtime = query.value(18).toBool();

@@ -69,6 +69,16 @@ unsigned int kpi::get_id() const {
 }
 
 /**
+ *  Get BA ID impacted by KPI.
+ *
+ *  @return BA ID.
+ */
+unsigned int kpi::get_ba_id() const {
+  return (_ba_id);
+}
+
+
+/**
  *  Get the last state change.
  *
  *  @return Last state change.
@@ -86,6 +96,17 @@ void kpi::set_id(unsigned int id) {
   _id = id;
   return ;
 }
+
+/**
+ *  Set BA id impacted by KPI.
+ *
+ *  @param[in] id KPI ID.
+ */
+void kpi::set_ba_id(unsigned int id) {
+  _ba_id = id;
+  return ;
+}
+
 
 /**
  *  Set the initial event of the kpi.
