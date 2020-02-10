@@ -247,6 +247,7 @@ void kpi_boolexp::_open_new_event(
                     short state) {
   _event = new kpi_event;
   _event->kpi_id = _id;
+  _event->ba_id = _ba_id;
   _event->impact_level = impact;
   _event->in_downtime = false;
   _event->output = "BAM boolean expression computed by Centreon Broker";

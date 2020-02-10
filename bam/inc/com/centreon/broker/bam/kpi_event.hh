@@ -54,6 +54,7 @@ namespace        bam {
     QString      perfdata;
     timestamp    start_time;
     short        status;
+    unsigned int ba_id;
 
     static mapping::entry const
                    entries[];

@@ -47,10 +47,12 @@ namespace        bam {
     virtual      ~kpi();
     kpi&         operator=(kpi const& right);
     unsigned int get_id() const;
+    unsigned int get_ba_id() const;
     timestamp    get_last_state_change() const;
     virtual void impact_hard(impact_values& hard_impact) = 0;
     virtual void impact_soft(impact_values& soft_impact) = 0;
     void         set_id(unsigned int id);
+    void         set_ba_id(unsigned int id);
     virtual void set_initial_event(kpi_event const& e);
     virtual void visit(io::stream* visitor) = 0;
     virtual bool in_downtime() const;
@@ -60,6 +62,7 @@ namespace        bam {
 
   protected:
     unsigned int _id;
+    unsigned int _ba_id;
     misc::shared_ptr<kpi_event>
                  _event;
     std::vector<misc::shared_ptr<kpi_event> >

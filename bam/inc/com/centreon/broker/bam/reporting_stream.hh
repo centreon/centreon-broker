@@ -19,17 +19,21 @@
 #ifndef CCB_BAM_REPORTING_STREAM_HH
 #  define CCB_BAM_REPORTING_STREAM_HH
 
+#  include <stdint.h>
 #  include <map>
 #  include <memory>
 #  include <vector>
 #  include <QMutexLocker>
+#  include <set>
 #  include "com/centreon/broker/database.hh"
 #  include "com/centreon/broker/database_query.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/namespace.hh"
 #  include "com/centreon/broker/misc/shared_ptr.hh"
+#  include "com/centreon/broker/misc/unordered_hash.hh"
 #  include "com/centreon/broker/io/stream.hh"
 #  include "com/centreon/broker/bam/availability_thread.hh"
+#  include "com/centreon/broker/bam/ba_event.hh"
 #  include "com/centreon/broker/bam/timeperiod_map.hh"
 #  include "com/centreon/broker/time/timeperiod.hh"
 
@@ -109,6 +113,7 @@ namespace          bam {
     database_query _kpi_full_event_insert;
     database_query _kpi_event_update;
     database_query _kpi_event_link;
+    database_query _kpi_event_link_update;
     database_query _dimension_ba_insert;
     database_query _dimension_bv_insert;
     database_query _dimension_ba_bv_relation_insert;
@@ -127,6 +132,8 @@ namespace          bam {
 
     std::vector<misc::shared_ptr<io::data> >
                    _dimension_data_cache;
+
+    umap<uint32_t , std::map<std::time_t, quint64> > _last_inserted_kpi;// ba_id => <time, row>
   };
 }
 
