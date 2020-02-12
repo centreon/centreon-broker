@@ -1,4 +1,18 @@
 =======================
+Centreon Broker 19.10.4
+=======================
+
+*********
+Bug fixes
+*********
+
+Bad mod bam kpi relations
+=========================
+
+Some BA / KPI relation were wrong in BAM reporting. The kpi event was not
+linked to the good BA.
+
+=======================
 Centreon Broker 19.10.3
 =======================
 
