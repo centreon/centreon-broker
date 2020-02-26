@@ -32,6 +32,7 @@ if (${BUILD_OFFLINE})
 else ()
   ExternalProject_Add(googletest
       GIT_REPOSITORY https://github.com/google/googletest/
+      GIT_TAG release-1.10.0
       TIMEOUT 10
       INSTALL_COMMAND ""
       LOG_DOWNLOAD ON
