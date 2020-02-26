@@ -23,6 +23,7 @@ set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/3rdparty)
 set(GOOGLE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 ExternalProject_Add( googletest
                      GIT_REPOSITORY https://github.com/google/googletest/
+                     GIT_TAG release-1.10.0
                      TIMEOUT 10
                      INSTALL_COMMAND ""
                      LOG_DOWNLOAD ON
