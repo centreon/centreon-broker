@@ -43,6 +43,7 @@ mysql_manager::~mysql_manager() {
   // If connections are still active but unique here, we can remove them
   std::lock_guard<std::mutex> cfg_lock(_cfg_mutex);
   std::lock_guard<std::mutex> err_lock(_err_mutex);
+
   for (std::vector<std::shared_ptr<mysql_connection>>::const_iterator
            it(_connection.begin()),
        end(_connection.end());

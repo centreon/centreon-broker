@@ -282,7 +282,7 @@ int main(int argc, char* argv[]) {
 
       // Launch event loop.
       if (!check)
-        while (true) {
+        for (;;) {
           std::this_thread::sleep_for(std::chrono::seconds(1));
         }
       else

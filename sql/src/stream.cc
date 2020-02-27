@@ -75,24 +75,18 @@ void stream::_process_engine(std::shared_ptr<io::data> const& e) {
   correlation::engine_state const& es(
       *static_cast<correlation::engine_state const*>(e.get()));
 
-  // Database schema version.
-  bool db_v2(_mysql.schema_version() == mysql::v2);
-
   // Close issues.
   if (es.started) {
     time_t now(time(nullptr));
     {
       std::ostringstream ss;
-      ss << "UPDATE " << (db_v2 ? "issues" : "rt_issues")
-         << "  SET end_time=" << now
+      ss << "UPDATE issues SET end_time=" << now
          << "  WHERE end_time=0 OR end_time IS NULL";
       _mysql.run_query(ss.str());
     }
     {
       std::ostringstream ss;
-      ss << "UPDATE "
-         << (db_v2 ? "issues_issues_parents" : "rt_issues_issues_parents")
-         << "  SET end_time=" << now
+      ss << "UPDATE issues_issues_parents SET end_time=" << now
          << "  WHERE end_time=0 OR end_time IS NULL";
       _mysql.run_query(ss.str());
     }
@@ -105,7 +99,6 @@ void stream::_process_engine(std::shared_ptr<io::data> const& e) {
  *  @param[in] e Uncasted host state.
  */
 void stream::_process_host_state(std::shared_ptr<io::data> const& e) {
-  bool db_v2(_mysql.schema_version() == mysql::v2);
   // Log message.
   correlation::state const& s(*static_cast<correlation::state const*>(e.get()));
   logging::info(logging::medium)
@@ -116,7 +109,7 @@ void stream::_process_host_state(std::shared_ptr<io::data> const& e) {
   // Prepare queries.
   if (!_host_state_insupdate.prepared()) {
     std::ostringstream ss;
-    ss << "INSERT INTO " << (db_v2 ? "hoststateevents" : "rt_hoststateevents")
+    ss << "INSERT INTO hoststateevents"
        << " (host_id, start_time, ack_time,"
           "            end_time, in_downtime, state)"
           "  VALUES (:host_id, :start_time, :ack_time, :end_time,"
@@ -465,6 +458,7 @@ stream::~stream() {
   //_cleanup_thread.exit();
   logging::debug(logging::low) << "SQL: sql stream is closed.";
   conflict_manager::instance().exit();
+  conflict_manager::unload();
 }
 
 /**
