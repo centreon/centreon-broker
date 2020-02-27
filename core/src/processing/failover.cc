@@ -153,8 +153,10 @@ void failover::run() {
 
         // Wait loop.
         // FIXME DBR: attempt to replace the Qt code below.
-        if (!should_exit())
-          std::this_thread::sleep_for(std::chrono::seconds(_buffering_timeout));
+        // FIXME SGA: condvar should be more elegant...
+        for (size_t i = 0; !should_exit() && i < (_buffering_timeout * 10); i++) {
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
 
         _update_status("");
       }
@@ -355,8 +357,9 @@ void failover::run() {
     // Sleep a while before attempting a reconnection.
     _update_status("sleeping before reconnection");
 
-    if (!should_exit())
-      std::this_thread::sleep_for(std::chrono::seconds(_retry_interval));
+    for (size_t i = 0; !should_exit() && i < (_retry_interval * 10); i++) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 
     _update_status("");
 
