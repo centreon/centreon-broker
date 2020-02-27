@@ -267,6 +267,7 @@ class conflict_manager {
   static void close();
   static conflict_manager& instance();
   void exit();
+  static void unload();
   json11::Json::object get_statistics();
 
   void send_event(stream_type c, std::shared_ptr<io::data> const& e);

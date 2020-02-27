@@ -616,3 +616,11 @@ void conflict_manager::_pop_event(
   *std::get<2>(p) = true;
   _events.pop_front();
 }
+
+/**
+ * @brief Delete the conflict_manager singleton.
+ */
+void conflict_manager::unload() {
+  delete _singleton;
+  _singleton = nullptr;
+}
