@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bbdo/connector.hh"
+#include <cassert>
 #include <algorithm>
 #include <memory>
 #include "com/centreon/broker/bbdo/internal.hh"
@@ -128,6 +129,7 @@ std::shared_ptr<io::stream> connector::open() {
  */
 std::shared_ptr<io::stream> connector::_open(
     std::shared_ptr<io::stream> stream) {
+  assert(!_coarse);
   std::shared_ptr<bbdo::stream> bbdo_stream;
   if (stream) {
     bbdo_stream = std::make_shared<bbdo::stream>();

@@ -102,21 +102,36 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Create object.
+  std::string host;
+  {
+    std::map<std::string, std::string>::const_iterator it{
+        cfg.params.find("host")};
+    if (it != cfg.params.end())
+      host = it->second;
+  }
+
+  is_acceptor = host.empty();
+
   if (is_acceptor) {
     // One peer retention mode ?
-    bool one_peer_retention_mode{false};
-    std::map<std::string, std::string>::const_iterator it(
-        cfg.params.find("one_peer_retention_mode"));
-    if (it != cfg.params.end())
-      one_peer_retention_mode = config::parser::parse_boolean(it->second);
-    if (one_peer_retention_mode)
-      is_acceptor = false;
+//    bool one_peer_retention_mode{false};
+//    std::map<std::string, std::string>::const_iterator it(
+//        cfg.params.find("one_peer_retention_mode"));
+//    if (it != cfg.params.end())
+//      one_peer_retention_mode = config::parser::parse_boolean(it->second);
+//    if (one_peer_retention_mode)
+//      is_acceptor = false;
     retval =
         new bbdo::acceptor(cfg.name, negotiate, extensions, cfg.read_timeout,
-                           one_peer_retention_mode, coarse, ack_limit);
-  } else
+                           false, coarse, ack_limit);
+    logging::debug(logging::high)
+      << "BBDO: new acceptor " << cfg.name;
+  } else {
     retval = new bbdo::connector(negotiate, extensions, cfg.read_timeout,
                                  coarse, ack_limit);
+    logging::debug(logging::high)
+      << "BBDO: new connector " << cfg.name;
+  }
   return retval;
 }
 

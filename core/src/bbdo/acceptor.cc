@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/bbdo/acceptor.hh"
+#include <cassert>
 #include <algorithm>
 #include <memory>
 #include <sstream>
@@ -130,14 +131,14 @@ std::shared_ptr<io::stream> acceptor::open() {
 
     // Add BBDO layer.
     if (s) {
+      assert(!_coarse);
       std::shared_ptr<bbdo::stream> my_bbdo(std::make_shared<bbdo::stream>());
       my_bbdo->set_substream(s);
       my_bbdo->set_coarse(_coarse);
       my_bbdo->set_negotiate(_negotiate, _extensions);
       my_bbdo->set_timeout(_timeout);
       my_bbdo->set_ack_limit(_ack_limit);
-      if (_one_peer_retention_mode)
-        my_bbdo->negotiate(bbdo::stream::negotiate_second);
+      my_bbdo->negotiate(bbdo::stream::negotiate_second);
 
       return my_bbdo;
     }
