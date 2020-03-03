@@ -204,7 +204,6 @@ void failover::run() {
       time_t fill_stats_time = time(nullptr);
 
       while (!should_exit()) {
-
         // Check for update.
         if (_update) {
           std::lock_guard<std::timed_mutex> stream_lock(_stream_m);

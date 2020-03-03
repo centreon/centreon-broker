@@ -19,6 +19,7 @@
 #include "com/centreon/broker/bbdo/stream.hh"
 
 #include <algorithm>
+#include <cassert>
 
 #include "com/centreon/broker/bbdo/ack.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
@@ -73,12 +74,7 @@ int stream::flush() {
  *  @param[in] neg  Negotiation type.
  */
 void stream::negotiate(stream::negotiation_type neg) {
-  // Coarse peer don't expect any salutation either.
-  if (_coarse) {
-    _negotiated = true;
-    return;
-  } else if (_negotiated)
-    return;
+  assert(!_negotiated && !_coarse);
 
   // Send our own packet if we should be first.
   if (neg == negotiate_first) {
@@ -208,8 +204,6 @@ void stream::negotiate(stream::negotiation_type neg) {
  */
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   d.reset();
-  if (!_negotiated)
-    negotiate(negotiate_second);
   bool retval = input::read(d, deadline);
   if (retval && d)
     ++_events_received_since_last_ack;
@@ -277,9 +271,9 @@ void stream::statistics(json11::Json::object& tree) const {
  *  @return Number of events acknowledged.
  */
 int stream::write(std::shared_ptr<io::data> const& d) {
-  if (!_negotiated)
-    negotiate(negotiate_second);
+  assert(_coarse || _negotiated);
   output::write(d);
+
   int retval(_acknowledged_events);
   _acknowledged_events = 0;
   return retval;
