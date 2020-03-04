@@ -34,6 +34,7 @@
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/diagnostic.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 
@@ -137,6 +138,9 @@ static void term_handler(int signum, siginfo_t* info, void* data) {
  *  @return 0 on normal termination, any other value on failure.
  */
 int main(int argc, char* argv[]) {
+  // Log init
+  log_v2::instance().load("/etc/centreon-broker/log-config.json");
+
   // Initialization.
   config::applier::init();
 
