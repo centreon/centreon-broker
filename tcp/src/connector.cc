@@ -111,7 +111,7 @@ std::shared_ptr<io::stream> connector::open() {
   }
   tcp_async::instance().register_socket(*sock);
 
-  log_v2::instance().tcp()->error("TCP: successfully connected to {}",
+  log_v2::instance().tcp()->info("TCP: successfully connected to {}",
                                   connection_name);
   logging::info(logging::high)
       << "TCP: successfully connected to " << connection_name;

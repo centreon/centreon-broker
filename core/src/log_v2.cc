@@ -108,7 +108,7 @@ bool log_v2::load(std::string const& file, config::state const& state) {
         else
           continue;
 
-        *l = std::make_shared<logger>("tls", sinks.begin(), sinks.end());
+        *l = std::make_shared<logger>(entry["name"].string_value(), sinks.begin(), sinks.end());
         (*l)->set_level(dbg_lvls[entry["level"].string_value()]);
         (*l)->flush_on(dbg_lvls[entry["level"].string_value()]);
       }
