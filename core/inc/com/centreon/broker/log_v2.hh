@@ -22,6 +22,7 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/common.h>
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/config/state.hh"
 
 CCB_BEGIN()
 
@@ -34,7 +35,7 @@ class log_v2 {
 
  public:
   static log_v2& instance();
-  bool load(std::string const& file);
+  bool load(std::string const& file, config::state const& state);
 
   std::shared_ptr<spdlog::logger> tls();
   std::shared_ptr<spdlog::logger> bbdo();
