@@ -17,7 +17,9 @@
 */
 
 #include <memory>
+
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tls/factory.hh"
 #include "com/centreon/broker/tls/internal.hh"
@@ -60,6 +62,8 @@ void broker_module_init(void const* arg) {
     // TLS module.
     logging::info(logging::high)
         << "TLS: module for Centreon Broker " << CENTREON_BROKER_VERSION;
+    log_v2::instance().tls()->info("TLS: module for Centreon Broker {}",
+                                   CENTREON_BROKER_VERSION);
 
     // Initialization.
     tls::initialize();
