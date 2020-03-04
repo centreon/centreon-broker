@@ -17,17 +17,20 @@
 */
 
 #include "com/centreon/broker/bbdo/output.hh"
+
 #include <arpa/inet.h>
 #include <stdint.h>
+
 #include <cstdio>
-#include <cstdlib>
 #include <cstring>
 #include <memory>
+
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/event_info.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/misc/misc.hh"
@@ -172,6 +175,10 @@ static io::raw* serialize(io::data const& e) {
             get_uint(e, *current_entry, data);
             break;
           default:
+            log_v2::instance().bbdo()->error(
+                "BBDO: invalid mapping for object of type '{0}': {1} is not a "
+                "known type ID",
+                info->get_name(), current_entry->get_type());
             throw exceptions::msg() << "BBDO: invalid mapping for object"
                                     << " of type '" << info->get_name()
                                     << "': " << current_entry->get_type()
@@ -226,10 +233,15 @@ static io::raw* serialize(io::data const& e) {
         htons(chksum);
 
     return buffer.release();
-  } else
+  } else {
+    log_v2::instance().bbdo()->info(
+        "BBDO: cannot serialize event of ID {}: event was not registered and "
+        "will therefore be ignored",
+        e.type());
     logging::info(logging::high)
         << "BBDO: cannot serialize event of ID " << e.type()
         << ": event was not registered and will therefore be ignored";
+  }
 
   return nullptr;
 }
@@ -284,6 +296,9 @@ int output::write(std::shared_ptr<io::data> const& e) {
   // Check if data exists.
   std::shared_ptr<io::raw> serialized(serialize(*e));
   if (serialized) {
+    log_v2::instance().bbdo()->debug(
+        "BBDO: serialized event of type {0} to {1} bytes", e->type(),
+        serialized->size());
     logging::debug(logging::medium)
         << "BBDO: serialized event of type " << e->type() << " to "
         << serialized->size() << " bytes";

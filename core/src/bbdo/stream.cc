@@ -17,15 +17,17 @@
 */
 
 #include "com/centreon/broker/bbdo/stream.hh"
+
 #include <algorithm>
+
 #include "com/centreon/broker/bbdo/ack.hh"
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/string.hh"
-#include "com/centreon/broker/namespace.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -99,6 +101,9 @@ void stream::negotiate(stream::negotiation_type neg) {
 
   // Send our own packet if we should be first.
   if (neg == negotiate_first) {
+    log_v2::instance().bbdo()->debug(
+        "BBDO: sending welcome packet (available extensions: {})",
+        (_negotiate ? _extensions : ""));
     logging::debug(logging::medium)
         << "BBDO: sending welcome packet (available extensions: "
         << (_negotiate ? _extensions : "") << ")";
@@ -111,6 +116,7 @@ void stream::negotiate(stream::negotiation_type neg) {
   }
 
   // Read peer packet.
+  log_v2::instance().bbdo()->debug("BBDO: retrieving welcome packet of peer");
   logging::debug(logging::medium) << "BBDO: retrieving welcome packet of peer";
   std::shared_ptr<io::data> d;
   time_t deadline;
@@ -119,19 +125,33 @@ void stream::negotiate(stream::negotiation_type neg) {
   else
     deadline = time(nullptr) + _timeout;
   read_any(d, deadline);
-  if (!d || (d->type() != version_response::static_type()))
+  if (!d || (d->type() != version_response::static_type())) {
+    log_v2::instance().bbdo()->error(
+        "BBDO: invalid protocol header, aborting connection");
     throw(exceptions::msg()
           << "BBDO: invalid protocol header, aborting connection");
+  }
 
   // Handle protocol version.
   std::shared_ptr<version_response> v(
       std::static_pointer_cast<version_response>(d));
-  if (v->bbdo_major != BBDO_VERSION_MAJOR)
+  if (v->bbdo_major != BBDO_VERSION_MAJOR) {
+    log_v2::instance().bbdo()->error(
+        "BBDO: peer is using protocol version {0}.{1}.{2} whereas we're using "
+        "protocol version {3}.{4}.{5}",
+        v->bbdo_major, v->bbdo_minor, v->bbdo_patch, BBDO_VERSION_MAJOR,
+        BBDO_VERSION_MINOR, BBDO_VERSION_PATCH);
     throw(exceptions::msg()
           << "BBDO: peer is using protocol version " << v->bbdo_major << "."
           << v->bbdo_minor << "." << v->bbdo_patch
           << " whereas we're using protocol version " << BBDO_VERSION_MAJOR
           << "." << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH);
+  }
+  log_v2::instance().bbdo()->info(
+      "BBDO: peer is using protocol version {0}.{1}.{2}, we're using version "
+      "{3}.{4}.{5}",
+      v->bbdo_major, v->bbdo_minor, v->bbdo_patch, BBDO_VERSION_MAJOR,
+      BBDO_VERSION_MINOR, BBDO_VERSION_PATCH);
   logging::info(logging::medium)
       << "BBDO: peer is using protocol version " << v->bbdo_major << "."
       << v->bbdo_minor << "." << v->bbdo_patch << ", we're using version "
@@ -140,6 +160,9 @@ void stream::negotiate(stream::negotiation_type neg) {
 
   // Send our own packet if we should be second.
   if (neg == negotiate_second) {
+    log_v2::instance().bbdo()->debug(
+        "BBDO: sending welcome packet (available extensions: {})",
+        (_negotiate ? _extensions : ""));
     logging::debug(logging::medium)
         << "BBDO: sending welcome packet (available extensions: "
         << (_negotiate ? _extensions : "") << ")";
@@ -154,6 +177,9 @@ void stream::negotiate(stream::negotiation_type neg) {
   // Negotiation.
   if (_negotiate) {
     // Apply negotiated extensions.
+    log_v2::instance().bbdo()->info(
+        "BBDO: we have extensions '{0}' and peer has '{1}'", _extensions,
+        v->extensions);
     logging::info(logging::medium)
         << "BBDO: we have extensions '" << _extensions << "' and peer has '"
         << v->extensions << "'";
@@ -167,6 +193,7 @@ void stream::negotiate(stream::negotiation_type neg) {
           std::find(peer_ext.begin(), peer_ext.end(), *it)};
       // Apply extension if found.
       if (peer_it != peer_ext.end()) {
+        log_v2::instance().bbdo()->info("BBDO: applying extension '{}'", *it);
         logging::info(logging::medium)
             << "BBDO: applying extension '" << *it << "'";
         for (std::map<std::string, io::protocols::protocol>::const_iterator
@@ -256,7 +283,7 @@ void stream::set_timeout(int timeout) {
 void stream::statistics(json11::Json::object& tree) const {
   tree["bbdo_input_ack_limit"] = static_cast<double>(_ack_limit);
   tree["bbdo_unacknowledged_events"] =
-    static_cast<double>(_events_received_since_last_ack);
+      static_cast<double>(_events_received_since_last_ack);
 
   output::statistics(tree);
 }
