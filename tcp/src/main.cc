@@ -17,6 +17,7 @@
  *
  */
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/factory.hh"
 
@@ -53,6 +54,8 @@ void broker_module_init(void const* arg) {
   // Increment instance number.
   if (!instances++) {
     // TCP module.
+    log_v2::instance().tcp()->info("TCP: module for Centreon Broker {}",
+                                   CENTREON_BROKER_VERSION);
     logging::info(logging::high)
         << "TCP: module for Centreon Broker " << CENTREON_BROKER_VERSION;
 

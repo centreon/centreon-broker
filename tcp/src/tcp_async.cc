@@ -19,6 +19,7 @@
 
 #include <functional>
 
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -120,12 +121,11 @@ bool tcp_async::wait_for_accept(asio::ip::tcp::socket& socket,
 
   acc_data->_timer.reset(new asio::steady_timer{_io_context, timeout});
   acc_data->_timer->async_wait(std::bind(&tcp_async::_async_acc_timeout_cb,
-                                         this, std::placeholders::_1,
-                                         acc_data, std::ref(acc)));
+                                         this, std::placeholders::_1, acc_data,
+                                         std::ref(acc)));
 
-  acc.async_accept(socket,
-                   std::bind(&tcp_async::_async_accept_cb, this,
-                             std::placeholders::_1, acc_data));
+  acc.async_accept(socket, std::bind(&tcp_async::_async_accept_cb, this,
+                                     std::placeholders::_1, acc_data));
 
   std::unique_lock<std::mutex> m(acc_data->_acc_lock);
   acc_data->_wait_bind_event.wait(m, [&acc_data]() -> bool {
@@ -177,6 +177,8 @@ void tcp_async::_async_read_cb(asio::ip::tcp::socket& socket,
 
   if (!ec) {
     if (bytes != 0) {
+      log_v2::instance().tcp()->trace(
+          "async_buf::async_read_cb incoming packet size: {}", bytes);
       logging::error(logging::low)
           << "async_buf::async_read_cb incoming packet size: " << bytes;
       it->second._work_buffer.resize(bytes);
@@ -197,6 +199,10 @@ void tcp_async::_async_read_cb(asio::ip::tcp::socket& socket,
 
       it->second._work_buffer.resize(0);
     }
+    log_v2::instance().tcp()->warn(
+        "connection lost for: {0}:{1}",
+        socket.remote_endpoint().address().to_string(),
+        socket.remote_endpoint().port());
     logging::info(logging::high)
         << "connection lost for: "
         << socket.remote_endpoint().address().to_string() << ":"

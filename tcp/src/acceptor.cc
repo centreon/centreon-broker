@@ -18,8 +18,11 @@
  */
 
 #include "com/centreon/broker/tcp/acceptor.hh"
+
 #include <sstream>
+
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tcp/stream.hh"
 #include "com/centreon/broker/tcp/tcp_async.hh"
@@ -44,7 +47,7 @@ acceptor::acceptor()
       _binding{false},
       _read_timeout(-1),
       _write_timeout(-1),
-      _acceptor(nullptr){}
+      _acceptor(nullptr) {}
 
 /**
  *  Destructor.
@@ -94,7 +97,6 @@ std::shared_ptr<io::stream> acceptor::open() {
   if (!_acceptor)
     listen_on(_port);
 
-  logging::info(logging::high) << "try to bind";
   std::shared_ptr<asio::ip::tcp::socket> socket{
       new asio::ip::tcp::socket{tcp_async::instance().get_io_ctx()}};
   try {
@@ -102,12 +104,16 @@ std::shared_ptr<io::stream> acceptor::open() {
       _acceptor->bind(_ep);
       _acceptor->listen(max_pending_connection);
       _binding = true;
+      log_v2::instance().tcp()->info("binding on 0.0.0.0:{}", _port);
     }
     if (!tcp_async::instance().wait_for_accept(*socket, *_acceptor,
                                                std::chrono::seconds{1})) {
       return std::shared_ptr<stream>();
     }
   } catch (std::system_error const& se) {
+    log_v2::instance().tcp()->error(
+        "TCP: error while waiting client on port: {0} err: {1}", _port,
+        se.what());
     throw exceptions::msg()
         << "TCP: error while waiting client on port: " << _port << " "
         << se.what();
@@ -117,6 +123,7 @@ std::shared_ptr<io::stream> acceptor::open() {
   // Accept client.
   std::shared_ptr<stream> incoming{new stream{socket, ""}};
 
+  log_v2::instance().tcp()->info("TCP: new client connected");
   logging::info(logging::high) << "TCP: new client connected";
   incoming->set_parent(this);
   incoming->set_read_timeout(_read_timeout);
