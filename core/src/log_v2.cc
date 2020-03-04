@@ -46,6 +46,11 @@ log_v2::log_v2() {
   _tls_log = std::make_shared<logger>("tls", null_sink);
   _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
   _tcp_log = std::make_shared<logger>("tcp", null_sink);
+  _core_log = std::make_shared<logger>("core", null_sink);
+}
+
+log_v2::~log_v2() {
+  _core_log->info("log finished");
 }
 
 static auto json_validate = [](Json const& js) -> bool {
@@ -107,6 +112,11 @@ bool log_v2::load(std::string const& file, config::state const& state) {
         (*l)->set_level(dbg_lvls[entry["level"].string_value()]);
         (*l)->flush_on(dbg_lvls[entry["level"].string_value()]);
       }
+
+      _core_log = std::make_shared<logger>("core", sinks.begin(), sinks.end());
+      _core_log->set_level(level::trace);
+      _core_log->flush_on(level::trace);
+      _core_log->info("{} : log started", state.broker_name());
 
       return true;
     }
