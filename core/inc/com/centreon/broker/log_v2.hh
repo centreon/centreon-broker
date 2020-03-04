@@ -28,15 +28,18 @@ CCB_BEGIN()
 
 class log_v2 {
  private:
+  std::shared_ptr<spdlog::logger> _core_log;
   std::shared_ptr<spdlog::logger> _tcp_log;
   std::shared_ptr<spdlog::logger> _bbdo_log;
   std::shared_ptr<spdlog::logger> _tls_log;
   log_v2();
+  ~log_v2();
 
  public:
   static log_v2& instance();
   bool load(std::string const& file, config::state const& state);
 
+  std::shared_ptr<spdlog::logger> core();
   std::shared_ptr<spdlog::logger> tls();
   std::shared_ptr<spdlog::logger> bbdo();
   std::shared_ptr<spdlog::logger> tcp();
