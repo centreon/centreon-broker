@@ -26,6 +26,7 @@
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/logging/manager.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
@@ -95,6 +96,7 @@ int nebmodule_deinit(int flags, int reason) {
 int nebmodule_init(int flags, char const* args, void* handle) {
   try {
     // Initialization.
+    log_v2::instance().load("/etc/centreon-broker/log-config.json");
     com::centreon::broker::config::applier::init();
 
     // Save module handle and flags for future use.
