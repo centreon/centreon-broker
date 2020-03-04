@@ -96,7 +96,6 @@ int nebmodule_deinit(int flags, int reason) {
 int nebmodule_init(int flags, char const* args, void* handle) {
   try {
     // Initialization.
-    log_v2::instance().load("/etc/centreon-broker/log-config.json");
     com::centreon::broker::config::applier::init();
 
     // Save module handle and flags for future use.
@@ -169,6 +168,8 @@ int nebmodule_init(int flags, char const* args, void* handle) {
       // Apply loggers.
       com::centreon::broker::config::applier::logger::instance().apply(
           s.loggers());
+
+      log_v2::instance().load("/etc/centreon-broker/log-config.json", s);
 
       // Remove monitoring log.
       logging::manager::instance().log_on(monlog, 0);

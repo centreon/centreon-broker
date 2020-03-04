@@ -103,6 +103,7 @@ else ()
       LOG_DOWNLOAD ON)
   ExternalProject_Add(spdlog_lib
      GIT_REPOSITORY https://github.com/gabime/spdlog/
+     GIT_TAG tags/v1.5.0
      TIMEOUT 10
      CONFIGURE_COMMAND ""
      BUILD_COMMAND ""

@@ -17,8 +17,9 @@
 */
 
 #include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
-#include <spdlog/sinks/file_sinks.h>
+#include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/null_sink.h>
 #include <spdlog/sinks/stdout_sinks.h>
 
@@ -52,10 +53,11 @@ static auto json_validate = [](Json const& js) -> bool {
     return false;
 
   for (auto& log : js["loggers"].array_items()) {
-    if (!log["name"].is_string() || !log["level"].is_string())
+    if (!log.is_object() || !log["name"].is_string() ||
+        !log["level"].is_string())
       return false;
 
-    std::string lvl{log["level"].is_string()};
+    std::string lvl{log["level"].string_value()};
 
     if (dbg_lvls.find(lvl) == dbg_lvls.end())
       return false;
@@ -64,7 +66,7 @@ static auto json_validate = [](Json const& js) -> bool {
   return true;
 };
 
-bool log_v2::load(std::string const& file) {
+bool log_v2::load(std::string const& file, config::state const& state) {
   std::ifstream my_file(file);
   if (my_file.good()) {
     std::string const& json_to_parse{std::istreambuf_iterator<char>(my_file),
@@ -74,18 +76,21 @@ bool log_v2::load(std::string const& file) {
     Json const& js{Json::parse(json_to_parse, err)};
     if (json_validate(js)) {
       // reset loggers to null sink
-      auto null_sink = std::make_shared<sinks::null_sink_mt>();
-      _tls_log = std::make_shared<logger>("tls", null_sink);
-      _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
-      _tcp_log = std::make_shared<logger>("tcp", null_sink);
+      std::vector<sink_ptr> sinks{std::make_shared<sinks::null_sink_mt>()};
 
-      level::off;
+      if (js["console"].bool_value())
+        sinks.push_back(std::make_shared<sinks::ansicolor_stdout_sink_mt>());
 
-      std::vector<sink_ptr> sinks;
-      sinks.push_back(std::make_shared<sinks::ansicolor_stdout_sink_mt>());
-      if (js["log_file"].is_string())
-        sinks.push_back(std::make_shared<sinks::simple_file_sink_mt>(
-            js["log_file"].string_value()));
+      if (js["log_path"].is_string()) {
+        std::string log_name =
+            js["log_path"].string_value() + "/" + state.broker_name() + ".log";
+        try {
+          sinks.push_back(
+              std::make_shared<sinks::basic_file_sink_mt>(log_name));
+        } catch (...) {
+          logging::error(logging::high) << "log_v2 cannot log on: " << log_name;
+        }
+      }
 
       for (auto& entry : js["loggers"].array_items()) {
         std::shared_ptr<logger>* l;
@@ -100,10 +105,12 @@ bool log_v2::load(std::string const& file) {
 
         *l = std::make_shared<logger>("tls", sinks.begin(), sinks.end());
         (*l)->set_level(dbg_lvls[entry["level"].string_value()]);
+        (*l)->flush_on(dbg_lvls[entry["level"].string_value()]);
       }
 
       return true;
     }
+    logging::error(logging::high) << "bad format for config file: " << file;
   }
   return false;
 }
