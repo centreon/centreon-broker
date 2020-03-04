@@ -17,7 +17,9 @@
 */
 
 #include "com/centreon/broker/tls/connector.hh"
+
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tls/internal.hh"
 #include "com/centreon/broker/tls/params.hh"
@@ -107,15 +109,19 @@ std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
     gnutls_session_t* session(new gnutls_session_t);
     try {
       // Initialize the TLS session
+      log_v2::instance().tls()->debug("TLS: initializing session");
       logging::debug(logging::low) << "TLS: initializing session";
 #ifdef GNUTLS_NONBLOCK
       ret = gnutls_init(session, GNUTLS_CLIENT | GNUTLS_NONBLOCK);
 #else
       ret = gnutls_init(session, GNUTLS_CLIENT);
 #endif  // GNUTLS_NONBLOCK
-      if (ret != GNUTLS_E_SUCCESS)
+      if (ret != GNUTLS_E_SUCCESS) {
+        log_v2::instance().tls()->error("TLS: cannot initialize session: {}",
+                                        gnutls_strerror(ret));
         throw(exceptions::msg()
               << "TLS: cannot initialize session: " << gnutls_strerror(ret));
+      }
 
       // Apply TLS parameters to the current session.
       p.apply(*session);
@@ -139,12 +145,18 @@ std::shared_ptr<io::stream> connector::open(std::shared_ptr<io::stream> lower) {
 
     // Perform the TLS handshake.
     logging::debug(logging::medium) << "TLS: performing handshake";
+    log_v2::instance().tls()->debug("TLS: performing handshake");
     do {
       ret = gnutls_handshake(*session);
     } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
-    if (ret != GNUTLS_E_SUCCESS)
+    if (ret != GNUTLS_E_SUCCESS) {
+      log_v2::instance().tls()->error("TLS: handshake failed: {}",
+                                      gnutls_strerror(ret));
       throw(exceptions::msg()
             << "TLS: handshake failed: " << gnutls_strerror(ret));
+    }
+
+    log_v2::instance().tls()->debug("TLS: successful handshake");
     logging::debug(logging::medium) << "TLS: successful handshake";
 
     // Check certificate if necessary.

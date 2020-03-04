@@ -79,6 +79,13 @@ if (${BUILD_OFFLINE})
       BUILD_COMMAND ""
       INSTALL_COMMAND ""
       LOG_DOWNLOAD ON)
+  ExternalProject_Add(spdlog_lib
+      SOURCE_DIR ${CMAKE_BINARY_DIR}/spdlog_lib-prefix/src/spdlog_lib
+      TIMEOUT 10
+      CONFIGURE_COMMAND ""
+      BUILD_COMMAND ""
+      INSTALL_COMMAND ""
+      LOG_DOWNLOAD ON)
 else ()
   ExternalProject_Add(json11_lib
       GIT_REPOSITORY https://github.com/dropbox/json11/
@@ -94,13 +101,26 @@ else ()
       BUILD_COMMAND ""
       INSTALL_COMMAND ""
       LOG_DOWNLOAD ON)
+  ExternalProject_Add(spdlog_lib
+     GIT_REPOSITORY https://github.com/gabime/spdlog/
+     TIMEOUT 10
+     CONFIGURE_COMMAND ""
+     BUILD_COMMAND ""
+     INSTALL_COMMAND ""
+     LOG_DOWNLOAD ON)
 endif ()
+
+add_definitions("-DSPDLOG_ENABLE_SYSLOG")
 
 ExternalProject_Get_Property(json11_lib source_dir)
 ExternalProject_Get_Property(json11_lib binary_dir)
 
 link_directories(${binary_dir})
 include_directories(${source_dir})
+
+ExternalProject_Get_Property(spdlog_lib source_dir)
+
+include_directories(${source_dir}/include)
 
 ExternalProject_Get_Property(Asio source_dir)
 include_directories(${source_dir}/asio/include)
@@ -402,6 +422,7 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/io/protocols.cc
   ${SRC_DIR}/io/raw.cc
   ${SRC_DIR}/io/stream.cc
+  ${SRC_DIR}/log_v2.cc
   ${SRC_DIR}/logging/file.cc
   ${SRC_DIR}/logging/logger.cc
   ${SRC_DIR}/logging/logging.cc

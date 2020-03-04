@@ -17,13 +17,16 @@
 */
 
 #include "com/centreon/broker/tls/stream.hh"
+
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/raw.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -91,17 +94,21 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
   buffer->resize(BUFSIZ);
   int ret(gnutls_record_recv(*_session, buffer->data(), buffer->size()));
   if (ret < 0) {
-    if ((ret != GNUTLS_E_INTERRUPTED) && (ret != GNUTLS_E_AGAIN))
+    if ((ret != GNUTLS_E_INTERRUPTED) && (ret != GNUTLS_E_AGAIN)) {
+      log_v2::instance().tls()->error("TLS: could not receive data: {}",
+                                      gnutls_strerror(ret));
       throw(exceptions::msg()
             << "TLS: could not receive data: " << gnutls_strerror(ret));
-    else
+    } else
       return false;
   } else if (ret) {
     buffer->resize(ret);
     d = buffer;
     return true;
-  } else
+  } else {
+    log_v2::instance().tls()->error("TLS session is terminated");
     throw(exceptions::msg() << "TLS session is terminated");
+  }
   return false;
 }
 
@@ -169,9 +176,12 @@ int stream::write(std::shared_ptr<io::data> const& d) {
     int size(packet->size());
     while (size > 0) {
       int ret(gnutls_record_send(*_session, ptr, size));
-      if (ret < 0)
+      if (ret < 0) {
+        log_v2::instance().tls()->error("TLS: could not send data: {}",
+                                        gnutls_strerror(ret));
         throw(exceptions::msg()
               << "TLS: could not send data: " << gnutls_strerror(ret));
+      }
       ptr += ret;
       size -= ret;
     }

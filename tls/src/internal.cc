@@ -17,15 +17,18 @@
 */
 
 #include <gnutls/gnutls.h>
+
 #include <cstring>
 #if GNUTLS_VERSION_NUMBER < 0x030000
 #include <gcrypt.h>
 #include <pthread.h>
+
 #include <cerrno>
 #endif  // GNU TLS < 3.0.0
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/raw.hh"
 #include "com/centreon/broker/io/stream.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/tls/internal.hh"
 #include "com/centreon/broker/tls/stream.hh"
@@ -109,19 +112,30 @@ void tls::initialize() {
 #endif  // GNU TLS < 3.0.0
 
   // Initialize GNU TLS library.
-  if (gnutls_global_init() != GNUTLS_E_SUCCESS)
+  if (gnutls_global_init() != GNUTLS_E_SUCCESS) {
+    log_v2::instance().tls()->error(
+        "TLS: GNU TLS library initialization failed");
     throw(exceptions::msg() << "TLS: GNU TLS library initialization failed");
+  }
 
   // Log GNU TLS version.
   {
     logging::info(logging::medium)
         << "TLS: compiled with GNU TLS version " << GNUTLS_VERSION;
+    log_v2::instance().tls()->info("TLS: compiled with GNU TLS version {}",
+                                   GNUTLS_VERSION);
     char const* v(gnutls_check_version(GNUTLS_VERSION));
-    if (!v)
+    if (!v) {
+      log_v2::instance().tls()->error(
+          "TLS: GNU TLS run-time version is incompatible with the compile-time "
+          "version ({}): please update your GNU TLS library",
+          GNUTLS_VERSION);
       throw(exceptions::msg()
             << "TLS: GNU TLS run-time version is "
             << "incompatible with the compile-time version (" << GNUTLS_VERSION
             << "): please update your GNU TLS library");
+    }
+    log_v2::instance().tls()->info("TLS: loading GNU TLS version {}", v);
     logging::info(logging::high) << "TLS: loading GNU TLS version " << v;
     // gnutls_global_set_log_function(log_gnutls_message);
     // gnutls_global_set_log_level(11);
@@ -129,14 +143,21 @@ void tls::initialize() {
 
   // Load Diffie-Hellman parameters.
   ret = gnutls_dh_params_init(&dh_params);
-  if (ret != GNUTLS_E_SUCCESS)
+  if (ret != GNUTLS_E_SUCCESS) {
+    log_v2::instance().tls()->error(
+        "TLS: could not load TLS Diffie-Hellman parameters: {}",
+        gnutls_strerror(ret));
     throw(exceptions::msg()
           << "TLS: could not load TLS Diffie-Hellman parameters: "
           << gnutls_strerror(ret));
+  }
   ret = gnutls_dh_params_import_pkcs3(dh_params, &dhp, GNUTLS_X509_FMT_PEM);
-  if (ret != GNUTLS_E_SUCCESS)
+  if (ret != GNUTLS_E_SUCCESS) {
+    log_v2::instance().tls()->error(
+        "TLS: could not import PKCS #3 parameters: ", gnutls_strerror(ret));
     throw(exceptions::msg() << "TLS: could not import PKCS #3 parameters: "
                             << gnutls_strerror(ret));
+  }
 
   return;
 }
