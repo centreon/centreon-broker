@@ -17,7 +17,9 @@
 */
 
 #include "com/centreon/broker/bbdo/input_buffer.hh"
+
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -129,12 +131,18 @@ void input_buffer::extract(std::string& output, int offset, int size) {
   }
 
   // Check that extraction was successful.
-  if (remaining)
+  if (remaining) {
+    log_v2::instance().bbdo()->error(
+        "BBDO: cannot extract {0} bytes at offset {1} from input buffer, only "
+        "{2} bytes available: this is likely a software bug that you should "
+        "report to Centreon Broker developers",
+        size, offset, _size);
     throw exceptions::msg()
         << "BBDO: cannot extract " << size << " bytes at offset " << offset
         << " from input buffer, only " << _size
         << " bytes available: this is likely a software bug"
         << " that you should report to Centreon Broker developers";
+  }
 }
 
 /**
