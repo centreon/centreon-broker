@@ -18,10 +18,13 @@
  */
 
 #include "com/centreon/broker/tcp/factory.hh"
+
 #include <memory>
 #include <string>
+
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/tcp/acceptor.hh"
 #include "com/centreon/broker/tcp/connector.hh"
 
@@ -75,10 +78,13 @@ io::endpoint* factory::new_endpoint(
   {
     std::map<std::string, std::string>::const_iterator it{
         cfg.params.find("port")};
-    if (it == cfg.params.end())
+    if (it == cfg.params.end()) {
+      log_v2::instance().tcp()->error(
+          "TCP: no 'port' defined for endpoint '{}'", cfg.name);
       throw exceptions::msg() << "TCP: no 'port' defined for "
                                  "endpoint '"
                               << cfg.name << "'";
+    }
     port = static_cast<unsigned short>(std::stol(it->second));
   }
 
