@@ -28,7 +28,7 @@
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
-using namespace com::centreon::broker::sql;
+using namespace com::centreon::broker::storage;
 
 /**
  *  @brief Clean tables with data associated to the instance.

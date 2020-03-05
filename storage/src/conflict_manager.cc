@@ -15,23 +15,21 @@
 **
 ** For more information : contact@centreon.com
 */
-#include "com/centreon/broker/storage/conflict_manager.hh"
-
 #include <cassert>
 #include <cstring>
-
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/neb/events.hh"
+#include "com/centreon/broker/log_v2.hh"
+#include "com/centreon/broker/storage/conflict_manager.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
-using namespace com::centreon::broker::sql;
+using namespace com::centreon::broker::storage;
 
 conflict_manager* conflict_manager::_singleton = nullptr;
 std::mutex conflict_manager::_init_m;
@@ -83,7 +81,9 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
       _still_pending_events{},
       _loop_duration{},
       _speed{},
+      _ref_count{0},
       _oldest_timestamp{std::numeric_limits<time_t>::max()} {
+  log_v2::sql()->debug("conflict_manager: class instanciation");
   _thread = std::move(std::thread(&conflict_manager::_callback, this));
 }
 
@@ -115,15 +115,18 @@ bool conflict_manager::init_storage(bool store_in_db,
     if (_init_cv.wait_for(lk, std::chrono::seconds(1), [&]() {
           return _singleton != nullptr;
         })) {
-      std::lock_guard<std::mutex> lk(conflict_manager::instance()._loop_m);
-      conflict_manager::instance()._store_in_db = store_in_db;
-      conflict_manager::instance()._rrd_len = rrd_len;
-      conflict_manager::instance()._interval_length = interval_length;
+      std::lock_guard<std::mutex> lk(_singleton->_loop_m);
+      _singleton->_store_in_db = store_in_db;
+      _singleton->_rrd_len = rrd_len;
+      _singleton->_interval_length = interval_length;
+      _singleton->_ref_count++;
       return true;
     }
     count++;
-    logging::error(logging::high) << "storage: Waiting for the sql connector to be started for "
-      << count << " seconds.";
+    log_v2::sql()->info(
+        "conflict_manager: Waiting for the sql stream initialization for {} "
+        "seconds",
+        count);
   }
   return false;
 }
@@ -136,6 +139,7 @@ void conflict_manager::init_sql(database_config const& dbcfg,
   _singleton = new conflict_manager(dbcfg, loop_timeout, instance_timeout);
   _singleton->_action.resize(_singleton->_mysql.connections_count());
   _init_cv.notify_all();
+  _singleton->_ref_count++;
 }
 
 void conflict_manager::close() {
@@ -639,6 +643,21 @@ void conflict_manager::_pop_event(
  * @brief Delete the conflict_manager singleton.
  */
 void conflict_manager::unload() {
-  delete _singleton;
-  _singleton = nullptr;
+  if (!_singleton)
+    log_v2::sql()->info("conflict_manager: already unloaded.");
+  else {
+    uint32_t count = --_singleton->_ref_count;
+    if (count == 0) {
+      _singleton->exit();
+      delete _singleton;
+      _singleton = nullptr;
+      log_v2::sql()->info(
+          "conflict_manager: no more user of the conflict manager.");
+    } else {
+      log_v2::sql()->info(
+          "conflict_manager: still {} stream{} using the conflict manager.",
+          count,
+          count > 1 ? "s" : "");
+    }
+  }
 }

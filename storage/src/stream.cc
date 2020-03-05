@@ -70,11 +70,12 @@ stream::stream(uint32_t rrd_len,
                uint32_t rebuild_check_interval __attribute__((unused)),
                bool store_in_db)
     : _pending_events(0) {
+  log_v2::sql()->debug("storage stream instanciation");
   if (!rrd_len)
     rrd_len = 15552000;
 
       //_rebuilder(db_cfg, rebuild_check_interval, rrd_len, interval_length),
-  if (!sql::conflict_manager::init_storage(store_in_db, rrd_len, interval_length))
+  if (!conflict_manager::init_storage(store_in_db, rrd_len, interval_length))
     throw broker::exceptions::shutdown()
         << "Unable to initialize the storage connection to the database";
 }
@@ -84,7 +85,8 @@ stream::stream(uint32_t rrd_len,
  */
 stream::~stream() {
   // Stop cleanup thread.
-  log_v2::sql()->info("storage: stream destruction");
+  log_v2::sql()->debug("storage: stream destruction");
+  conflict_manager::unload();
 }
 
 /**
@@ -93,8 +95,8 @@ stream::~stream() {
  *  @return Number of events acknowledged.
  */
 int32_t stream::flush() {
-  int32_t retval = sql::conflict_manager::instance().get_acks(
-      sql::conflict_manager::storage);
+  int32_t retval = conflict_manager::instance().get_acks(
+      conflict_manager::storage);
   _pending_events -= retval;
 
   // Event acknowledgement.
@@ -140,8 +142,7 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
   if (!validate(data, "storage"))
     return 0;
   ++_pending_events;
-  sql::conflict_manager::instance().send_event(sql::conflict_manager::storage,
-                                               data);
+  conflict_manager::instance().send_event(conflict_manager::storage, data);
   return 0;
 }
 

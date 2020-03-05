@@ -28,6 +28,7 @@
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/global_lock.hh"
 #include "com/centreon/broker/neb/downtime.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/query_preparator.hh"
@@ -446,8 +447,8 @@ stream::stream(database_config const& dbcfg,
 //
 //  // Run cleanup thread.
 //  _cleanup_thread.start();
-
-  conflict_manager::init_sql(dbcfg, loop_timeout, instance_timeout);
+  log_v2::sql()->debug("sql stream instanciation");
+  storage::conflict_manager::init_sql(dbcfg, loop_timeout, instance_timeout);
 }
 
 /**
@@ -456,9 +457,8 @@ stream::stream(database_config const& dbcfg,
 stream::~stream() {
   // Stop cleanup thread.
   //_cleanup_thread.exit();
-  logging::debug(logging::low) << "SQL: sql stream is closed.";
-  conflict_manager::instance().exit();
-  conflict_manager::unload();
+  log_v2::sql()->debug("sql: stream destruction");
+  storage::conflict_manager::unload();
 }
 
 /**
@@ -467,7 +467,7 @@ stream::~stream() {
  *  @return Number of events acknowledged.
  */
 int stream::flush() {
-  int32_t retval = conflict_manager::instance().get_acks(conflict_manager::sql);
+  int32_t retval = storage::conflict_manager::instance().get_acks(storage::conflict_manager::sql);
   _pending_events -= retval;
 
   // Event acknowledgement.
@@ -510,7 +510,7 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
   // Take this event into account.
   ++_pending_events;
   // Process event.
-  conflict_manager::instance().send_event(conflict_manager::sql, data);
+  storage::conflict_manager::instance().send_event(storage::conflict_manager::sql, data);
   return 0;
 }
 
@@ -520,6 +520,6 @@ int32_t stream::write(std::shared_ptr<io::data> const& data) {
  *  @param[out] tree Output tree.
  */
 void stream::statistics(json11::Json::object& tree) const {
-  json11::Json::object obj{conflict_manager::instance().get_statistics()};
+  json11::Json::object obj{storage::conflict_manager::instance().get_statistics()};
   tree["conflict_manager"] = obj;
 }

@@ -23,7 +23,7 @@
 
 CCB_BEGIN()
 
-namespace sql {
+namespace storage {
 /**
  *  @class stored_timestamp stored_timestamp.hh
  * "com/centreon/broker/sql/stored_timestamp.hh"

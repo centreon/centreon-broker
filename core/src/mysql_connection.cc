@@ -387,6 +387,7 @@ void mysql_connection::_fetch_row_sync(mysql_task* t) {
 
 void mysql_connection::_finish(mysql_task* t __attribute__((unused))) {
   _finished = true;
+  _tasks_condition.notify_all();
 }
 
 bool mysql_connection::is_finished() const {
