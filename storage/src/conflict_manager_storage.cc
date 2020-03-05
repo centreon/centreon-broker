@@ -33,7 +33,7 @@
 #include "com/centreon/broker/storage/status.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::sql;
+using namespace com::centreon::broker::storage;
 
 #define BAM_NAME "_Module_"
 
@@ -493,7 +493,7 @@ void conflict_manager::_check_deleted_index() {
       }
     }
     catch (std::exception const& e) {
-      throw exceptions::msg()
+      throw broker::exceptions::msg()
         << "storage: could not query index table to get index to delete: "
         << e.what();
     }

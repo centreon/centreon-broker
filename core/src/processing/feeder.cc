@@ -48,11 +48,11 @@ feeder::feeder(std::string const& name,
                std::unordered_set<uint32_t> const& read_filters,
                std::unordered_set<uint32_t> const& write_filters)
     : stat_visitable(name),
-      _client(client),
-      _subscriber(name, false),
       _started{false},
       _stopped{false},
-      _should_exit{false} {
+      _should_exit{false},
+      _client(client),
+      _subscriber(name, false) {
   _subscriber.get_muxer().set_read_filters(read_filters);
   _subscriber.get_muxer().set_write_filters(write_filters);
   // By default, we assume the feeder is already connected.

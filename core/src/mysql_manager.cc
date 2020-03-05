@@ -120,7 +120,7 @@ void mysql_manager::update_connections() {
   while (it != _connection.end()) {
     if (it->unique() || (*it)->is_finished()) {
       it = _connection.erase(it);
-      log_v2::sql()->info("mysql_manager: one connection removed");
+      log_v2::sql()->debug("mysql_manager: one connection removed");
     } else
       ++it;
   }

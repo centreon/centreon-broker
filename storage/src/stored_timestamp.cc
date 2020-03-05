@@ -20,7 +20,7 @@
 #include "com/centreon/broker/storage/stored_timestamp.hh"
 
 using namespace com::centreon::broker;
-using namespace com::centreon::broker::sql;
+using namespace com::centreon::broker::storage;
 
 /**
  *  Default constructor. Create a stored timestamp updated to now.
