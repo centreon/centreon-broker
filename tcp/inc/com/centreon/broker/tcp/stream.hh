@@ -46,6 +46,7 @@ class acceptor;
 class stream : public io::stream {
  public:
   stream& operator=(stream const& other) = delete;
+  stream(stream const& other) = delete;
   stream(std::shared_ptr<asio::ip::tcp::socket> sock, std::string const& name);
   ~stream();
   std::string peer() const;
@@ -56,7 +57,6 @@ class stream : public io::stream {
   int write(std::shared_ptr<io::data> const& d);
 
  private:
-  stream(stream const& other);
   void _set_socket_options();
 
   std::string _name;
@@ -64,6 +64,7 @@ class stream : public io::stream {
   std::shared_ptr<asio::ip::tcp::socket> _socket;
   int _read_timeout;
   int _write_timeout;
+  bool _socket_gone;
 };
 }  // namespace tcp
 
