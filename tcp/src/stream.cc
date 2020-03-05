@@ -108,8 +108,6 @@ std::string stream::peer() const {
  */
 
 bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
-  d.reset();
-
   d.reset(new io::raw());
   std::shared_ptr<io::raw> data{std::static_pointer_cast<io::raw>(d)};
 
@@ -125,6 +123,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
 
   if (timeout) {
     log_v2::instance().tcp()->trace("TCP Read timeout");
+    d.reset();
     return false;
   }
 

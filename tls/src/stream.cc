@@ -126,10 +126,10 @@ long long stream::read_encrypted(void* buffer, long long size) {
   while (_buffer.empty()) {
     std::shared_ptr<io::data> d;
     timed_out = !_substream->read(d, _deadline);
-    if (d && d->type() == io::raw::static_type()) {
+    if (!timed_out && d && d->type() == io::raw::static_type()) {
       io::raw* r(static_cast<io::raw*>(d.get()));
-      std::copy(r->data(), r->data() + r->size() - 1,
-                std::back_inserter(_buffer));
+      _buffer.reserve(_buffer.size() + r->get_buffer().size());
+      _buffer.insert(_buffer.end(), r->get_buffer().begin(), r->get_buffer().end());
       //_buffer.append(r->data(), r->size());
     } else if (timed_out)
       break;
@@ -150,7 +150,7 @@ long long stream::read_encrypted(void* buffer, long long size) {
     return rb;
   } else {
     memcpy(buffer, _buffer.data(), size);
-    _buffer.erase(_buffer.begin(), _buffer.begin() + (size - 1));
+    _buffer.erase(_buffer.begin(), _buffer.begin() + size);
     //_buffer.remove(0, size);
     return size;
   }
@@ -200,9 +200,9 @@ int stream::write(std::shared_ptr<io::data> const& d) {
  */
 long long stream::write_encrypted(void const* buffer, long long size) {
   std::shared_ptr<io::raw> r(new io::raw);
-  std::copy(static_cast<char const*>(buffer),
-            static_cast<char const*>(buffer) + size,
-            std::back_inserter(r->get_buffer()));
+  std::vector<char> tmp(const_cast<char *>(static_cast<char const *>(buffer)), const_cast<char *>(static_cast<char const*>(buffer)) + static_cast<std::size_t>(size));
+  logging::error(logging::low) << "tls write enc: " << size;
+  r->get_buffer() = std::move(tmp);
   _substream->write(r);
   _substream->flush();
   return size;
