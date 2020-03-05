@@ -124,7 +124,7 @@ std::shared_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
     gnutls_session_t* session(new gnutls_session_t);
     try {
       // Initialize the TLS session
-      log_v2::instance().tcp()->debug("TLS: initializing session");
+      log_v2::tcp()->debug("TLS: initializing session");
       logging::debug(logging::low) << "TLS: initializing session";
       // GNUTLS_NONBLOCK was introduced in gnutls 2.99.3.
 #ifdef GNUTLS_NONBLOCK
@@ -133,7 +133,7 @@ std::shared_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
       ret = gnutls_init(session, GNUTLS_SERVER);
 #endif  // GNUTLS_NONBLOCK
       if (ret != GNUTLS_E_SUCCESS) {
-        log_v2::instance().tcp()->error("TLS: cannot initialize session: {}",
+        log_v2::tcp()->error("TLS: cannot initialize session: {}",
                                         gnutls_strerror(ret));
         throw(exceptions::msg()
               << "TLS: cannot initialize session: " << gnutls_strerror(ret));
@@ -160,18 +160,18 @@ std::shared_ptr<io::stream> acceptor::open(std::shared_ptr<io::stream> lower) {
     gnutls_transport_set_ptr(*session, s.get());
 
     // Perform the TLS handshake.
-    log_v2::instance().tcp()->debug("TLS: performing handshake");
+    log_v2::tcp()->debug("TLS: performing handshake");
     logging::debug(logging::medium) << "TLS: performing handshake";
     do {
       ret = gnutls_handshake(*session);
     } while (GNUTLS_E_AGAIN == ret || GNUTLS_E_INTERRUPTED == ret);
     if (ret != GNUTLS_E_SUCCESS) {
-      log_v2::instance().tcp()->error("TLS: handshake failed: {}",
+      log_v2::tcp()->error("TLS: handshake failed: {}",
                                       gnutls_strerror(ret));
       throw(exceptions::msg()
             << "TLS: handshake failed: " << gnutls_strerror(ret));
     }
-    log_v2::instance().tcp()->debug("TLS: successful handshake");
+    log_v2::tcp()->debug("TLS: successful handshake");
     logging::debug(logging::medium) << "TLS: successful handshake";
 
     // Check certificate.

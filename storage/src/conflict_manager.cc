@@ -15,15 +15,18 @@
 **
 ** For more information : contact@centreon.com
 */
+#include "com/centreon/broker/storage/conflict_manager.hh"
+
 #include <cassert>
 #include <cstring>
+
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/neb/events.hh"
-#include "com/centreon/broker/storage/conflict_manager.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
 
 using namespace com::centreon::broker;
@@ -84,6 +87,10 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
   _thread = std::move(std::thread(&conflict_manager::_callback, this));
 }
 
+conflict_manager::~conflict_manager() {
+  log_v2::sql()->debug("conflict_manager: destruction");
+}
+
 /**
  * For the connector that does not initialize the conflict_manager, this
  * function is useful to wait.
@@ -97,6 +104,8 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
 bool conflict_manager::init_storage(bool store_in_db,
                                     uint32_t rrd_len,
                                     uint32_t interval_length) {
+  log_v2::sql()->debug(
+      "conflict_manager: storage stream initialization");
   int count = 0;
 
   std::unique_lock<std::mutex> lk(_init_m);
@@ -122,6 +131,7 @@ bool conflict_manager::init_storage(bool store_in_db,
 void conflict_manager::init_sql(database_config const& dbcfg,
                                 uint32_t loop_timeout,
                                 uint32_t instance_timeout) {
+  log_v2::sql()->debug("conflict_manager: sql stream initialization");
   std::lock_guard<std::mutex> lk(_init_m);
   _singleton = new conflict_manager(dbcfg, loop_timeout, instance_timeout);
   _singleton->_action.resize(_singleton->_mysql.connections_count());
@@ -129,6 +139,7 @@ void conflict_manager::init_sql(database_config const& dbcfg,
 }
 
 void conflict_manager::close() {
+  log_v2::sql()->debug("conflict_manager: closing the manager");
   conflict_manager::instance().exit();
   std::lock_guard<std::mutex> lk(_init_m);
   delete _singleton;
@@ -506,10 +517,16 @@ bool conflict_manager::_should_exit() const {
  */
 void conflict_manager::send_event(conflict_manager::stream_type c,
                                   std::shared_ptr<io::data> const& e) {
+  assert(e);
+  log_v2::sql()->trace(
+      "conflict_manager: send_event category:{}, element:{} from {}",
+      e->type() >> 16,
+      e->type() & 0xffff,
+      c == 0 ? "sql" : "storage");
   std::lock_guard<std::mutex> lk(_loop_m);
   _pending_queries++;
   _timeline[c].push_back(false);
-  _events.push_back(std::make_tuple(e, c, &_timeline[c].back()));
+  _events.emplace_back(std::make_tuple(e, c, &_timeline[c].back()));
   _loop_cv.notify_all();
 }
 
@@ -598,7 +615,8 @@ void conflict_manager::exit() {
     std::lock_guard<std::mutex> lock(_loop_m);
     _exit = true;
   }
-  _thread.join();
+  if (_thread.joinable())
+    _thread.join();
 }
 
 json11::Json::object conflict_manager::get_statistics() {

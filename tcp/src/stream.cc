@@ -117,17 +117,17 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
       *_socket, deadline, socket_closed, timeout));
 
   if (socket_closed) {
-    log_v2::instance().tcp()->error("TCP peer '{}'connection reset ", _name);
+    log_v2::tcp()->error("TCP peer '{}'connection reset ", _name);
     throw exceptions::msg() << "TCP peer '" << _name << "'connection reset ";
   }
 
   if (timeout) {
-    log_v2::instance().tcp()->trace("TCP Read timeout");
+    log_v2::tcp()->trace("TCP Read timeout");
     d.reset();
     return false;
   }
 
-  log_v2::instance().tcp()->debug("TCP Read done : {} bytes",
+  log_v2::tcp()->debug("TCP Read done : {} bytes",
                                   data->get_buffer().size());
   return true;
 }
@@ -179,7 +179,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
 
   if (d->type() == io::raw::static_type()) {
     std::shared_ptr<io::raw> r(std::static_pointer_cast<io::raw>(d));
-    log_v2::instance().tcp()->debug("TCP: write request of {0} bytes to peer '{1}'",
+    log_v2::tcp()->debug("TCP: write request of {0} bytes to peer '{1}'",
                                     r->size(), _name);
     logging::debug(logging::low) << "TCP: write request of " << r->size()
                                  << " bytes to peer '" << _name << "'";
@@ -189,7 +189,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
     _socket->write_some(asio::buffer(r->data(), r->size()), err);
 
     if (err) {
-      log_v2::instance().tcp()->error(
+      log_v2::tcp()->error(
           "TCP: error while writing to peer '{0}' : {1}", _name, err.message());
       throw exceptions::msg() << "TCP: error while writing to peer '" << _name
                               << "': " << err.message();

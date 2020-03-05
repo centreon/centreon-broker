@@ -47,7 +47,7 @@ add_library("${TCP}" SHARED
   ${SOURCES}
   ${HEADERS}
 )
-add_dependencies("${TCP}" Asio)
+add_dependencies("${TCP}" Asio spdlog_lib)
 set_target_properties("${TCP}" PROPERTIES PREFIX "")
 
 # Testing.

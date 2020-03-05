@@ -42,7 +42,7 @@ add_library("${SQL}" SHARED
   "${INC_DIR}/com/centreon/broker/sql/factory.hh"
   "${INC_DIR}/com/centreon/broker/sql/stream.hh"
 )
-add_dependencies("${SQL}" json11_lib)
+add_dependencies("${SQL}" json11_lib spdlog_lib)
 set_target_properties("${SQL}" PROPERTIES
     PREFIX ""
     COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")

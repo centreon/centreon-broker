@@ -61,7 +61,7 @@ add_library("${TLS}" SHARED
   "${INC_DIR}/params.hh"
   "${INC_DIR}/stream.hh"
 )
-add_dependencies("${TLS}" json11_lib)
+add_dependencies("${TLS}" json11_lib spdlog_lib)
 target_link_libraries("${TLS}" ${GNUTLS_LIBRARIES})
 set_target_properties("${TLS}" PROPERTIES PREFIX "")
 

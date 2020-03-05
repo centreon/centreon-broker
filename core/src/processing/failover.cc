@@ -152,7 +152,6 @@ void failover::run() {
         _update_status("buffering data");
 
         // Wait loop.
-        // FIXME DBR: attempt to replace the Qt code below.
         // FIXME SGA: condvar should be more elegant...
         for (size_t i = 0; !should_exit() && i < (_buffering_timeout * 10); i++) {
           std::this_thread::sleep_for(std::chrono::milliseconds(100));

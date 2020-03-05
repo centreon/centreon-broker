@@ -104,14 +104,14 @@ std::shared_ptr<io::stream> acceptor::open() {
       _acceptor->bind(_ep);
       _acceptor->listen(max_pending_connection);
       _binding = true;
-      log_v2::instance().tcp()->info("binding on 0.0.0.0:{}", _port);
+      log_v2::tcp()->info("binding on 0.0.0.0:{}", _port);
     }
     if (!tcp_async::instance().wait_for_accept(*socket, *_acceptor,
                                                std::chrono::seconds{1})) {
       return std::shared_ptr<stream>();
     }
   } catch (std::system_error const& se) {
-    log_v2::instance().tcp()->error(
+    log_v2::tcp()->error(
         "TCP: error while waiting client on port: {0} err: {1}", _port,
         se.what());
     throw exceptions::msg()
@@ -123,7 +123,7 @@ std::shared_ptr<io::stream> acceptor::open() {
   // Accept client.
   std::shared_ptr<stream> incoming{new stream{socket, ""}};
 
-  log_v2::instance().tcp()->info("TCP: new client connected");
+  log_v2::tcp()->info("TCP: new client connected");
   logging::info(logging::high) << "TCP: new client connected";
   incoming->set_parent(this);
   incoming->set_read_timeout(_read_timeout);

@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/bbdo/factory.hh"
 #include "com/centreon/broker/bbdo/acceptor.hh"
 #include "com/centreon/broker/bbdo/connector.hh"
@@ -79,9 +80,7 @@ io::endpoint* factory::new_endpoint(
   if (!coarse) {
     std::map<std::string, std::string>::const_iterator it(
         cfg.params.find("negotiation"));
-    if ((it != cfg.params.end()) && (it->second == "no"))
-      negotiate = false;
-    else {
+    if (it == cfg.params.end() || it->second != "no") {
       negotiate = true;
       extensions = _extensions(cfg);
     }
@@ -93,7 +92,13 @@ io::endpoint* factory::new_endpoint(
     std::map<std::string, std::string>::const_iterator it(
         cfg.params.find("ack_limit"));
     if (it != cfg.params.end())
-      ack_limit = std::stoul(it->second);
+      try {
+        ack_limit = std::stoul(it->second);
+      }
+      catch (const std::exception& e) {
+        logging::config(logging::high)
+          << "BBDO: Bad value for ack_limit, it must be an integer.";
+      }
   }
 
   // Create object.

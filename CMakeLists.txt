@@ -588,7 +588,7 @@ set(LIBROKER_SOURCES
 
 # Static libraries.
 add_library(rokerbase STATIC ${LIBROKER_SOURCES})
-add_dependencies(rokerbase json11_lib Asio)
+add_dependencies(rokerbase json11_lib Asio spdlog_lib)
 set_target_properties(rokerbase PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-fPIC" COMPILER_HAS_FPIC)

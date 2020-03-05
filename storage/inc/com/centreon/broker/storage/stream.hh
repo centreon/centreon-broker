@@ -87,7 +87,7 @@ class stream : public io::stream {
          bool store_in_db = true);
   stream(stream const&) = delete;
   stream& operator=(stream const&) = delete;
-  ~stream() = default;
+  ~stream();
   int32_t flush();
   bool read(std::shared_ptr<io::data>& d, time_t deadline);
   void statistics(json11::Json::object& tree) const;

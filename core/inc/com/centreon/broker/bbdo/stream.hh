@@ -37,9 +37,9 @@ class stream : public input, public output {
   enum negotiation_type { negotiate_first = 1, negotiate_second, negotiated };
 
   stream();
-  stream(stream const& other) = delete;
+  stream(stream const&) = delete;
   ~stream();
-  stream& operator=(stream const& other) = delete;
+  stream& operator=(stream const&) = delete;
   int flush() override;
   void negotiate(negotiation_type neg);
   bool read(std::shared_ptr<io::data>& d,

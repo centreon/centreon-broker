@@ -132,7 +132,7 @@ void input_buffer::extract(std::string& output, int offset, int size) {
 
   // Check that extraction was successful.
   if (remaining) {
-    log_v2::instance().bbdo()->error(
+    log_v2::bbdo()->error(
         "BBDO: cannot extract {0} bytes at offset {1} from input buffer, only "
         "{2} bytes available: this is likely a software bug that you should "
         "report to Centreon Broker developers",

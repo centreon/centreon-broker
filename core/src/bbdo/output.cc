@@ -175,7 +175,7 @@ static io::raw* serialize(io::data const& e) {
             get_uint(e, *current_entry, data);
             break;
           default:
-            log_v2::instance().bbdo()->error(
+            log_v2::bbdo()->error(
                 "BBDO: invalid mapping for object of type '{0}': {1} is not a "
                 "known type ID",
                 info->get_name(), current_entry->get_type());
@@ -234,7 +234,7 @@ static io::raw* serialize(io::data const& e) {
 
     return buffer.release();
   } else {
-    log_v2::instance().bbdo()->info(
+    log_v2::bbdo()->info(
         "BBDO: cannot serialize event of ID {}: event was not registered and "
         "will therefore be ignored",
         e.type());
@@ -296,7 +296,7 @@ int output::write(std::shared_ptr<io::data> const& e) {
   // Check if data exists.
   std::shared_ptr<io::raw> serialized(serialize(*e));
   if (serialized) {
-    log_v2::instance().bbdo()->debug(
+    log_v2::bbdo()->debug(
         "BBDO: serialized event of type {0} to {1} bytes", e->type(),
         serialized->size());
     logging::debug(logging::medium)

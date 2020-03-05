@@ -79,7 +79,7 @@ io::endpoint* factory::new_endpoint(
     std::map<std::string, std::string>::const_iterator it{
         cfg.params.find("port")};
     if (it == cfg.params.end()) {
-      log_v2::instance().tcp()->error(
+      log_v2::tcp()->error(
           "TCP: no 'port' defined for endpoint '{}'", cfg.name);
       throw exceptions::msg() << "TCP: no 'port' defined for "
                                  "endpoint '"

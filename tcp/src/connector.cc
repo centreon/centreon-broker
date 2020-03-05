@@ -64,7 +64,7 @@ void connector::connect_to(std::string const& host, unsigned short port) {
  */
 std::shared_ptr<io::stream> connector::open() {
   // Launch connection process.
-  log_v2::instance().tcp()->info("TCP: connecting to {0}:{1}", _host, _port);
+  log_v2::tcp()->info("TCP: connecting to {0}:{1}", _host, _port);
   logging::info(logging::high)
       << "TCP: connecting to " << _host << ":" << _port;
   std::string connection_name{_host + ":" + std::to_string(_port)};
@@ -92,7 +92,7 @@ std::shared_ptr<io::stream> connector::open() {
 
     if (err) {
       broker::exceptions::msg e;
-      log_v2::instance().tcp()->error("TCP: could not connect to {0}:{1}",
+      log_v2::tcp()->error("TCP: could not connect to {0}:{1}",
                                       _host, _port);
       e << "TCP: could not connect to remote server '" << _host << ":" << _port
         << "': " << err.message();
@@ -103,24 +103,24 @@ std::shared_ptr<io::stream> connector::open() {
     sock->set_option(option);
   } catch (std::system_error const& se) {
     broker::exceptions::msg e;
-    log_v2::instance().tcp()->error("TCP: could not resolve {0}:{1}", _host,
+    log_v2::tcp()->error("TCP: could not resolve {0}:{1}", _host,
                                     _port);
     e << "TCP: could not resolve remote server '" << _host << ":" << _port
       << "': " << se.what();
-    throw(e);
+    throw e;
   }
   tcp_async::instance().register_socket(*sock);
 
-  log_v2::instance().tcp()->info("TCP: successfully connected to {}",
+  log_v2::tcp()->info("TCP: successfully connected to {}",
                                   connection_name);
   logging::info(logging::high)
       << "TCP: successfully connected to " << connection_name;
 
   // Return stream.
-  std::shared_ptr<stream> s(new stream(sock, connection_name));
+  std::shared_ptr<stream> s(std::make_shared<stream>(sock, connection_name));
   s->set_read_timeout(_read_timeout);
   s->set_write_timeout(_write_timeout);
-  return (s);
+  return s;
 }
 
 /**
