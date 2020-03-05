@@ -51,25 +51,6 @@ stream::stream()
       _events_received_since_last_ack(0) {}
 
 /**
- *  Copy constructor.
- *
- *  @param[in] other  Object to copy.
- */
-// stream::stream(stream const& other)
-//    : io::stream(other),
-//      input(other),
-//      output(other),
-//      _coarse(other._coarse),
-//      _extensions(other._extensions),
-//      _negotiate(other._negotiate),
-//      _negotiated(other._negotiated),
-//      _timeout(other._timeout),
-//      _acknowledged_events(other._acknowledged_events),
-//      _ack_limit(other._ack_limit),
-//      _events_received_since_last_ack(other._events_received_since_last_ack)
-//      {}
-
-/**
  *  Destructor.
  */
 stream::~stream() {}
@@ -83,7 +64,7 @@ int stream::flush() {
   output::flush();
   int retval(_acknowledged_events);
   _acknowledged_events = 0;
-  return (retval);
+  return retval;
 }
 
 /**
@@ -101,7 +82,7 @@ void stream::negotiate(stream::negotiation_type neg) {
 
   // Send our own packet if we should be first.
   if (neg == negotiate_first) {
-    log_v2::instance().bbdo()->debug(
+    log_v2::bbdo()->debug(
         "BBDO: sending welcome packet (available extensions: {})",
         (_negotiate ? _extensions : ""));
     logging::debug(logging::medium)
@@ -116,7 +97,7 @@ void stream::negotiate(stream::negotiation_type neg) {
   }
 
   // Read peer packet.
-  log_v2::instance().bbdo()->debug("BBDO: retrieving welcome packet of peer");
+  log_v2::bbdo()->debug("BBDO: retrieving welcome packet of peer");
   logging::debug(logging::medium) << "BBDO: retrieving welcome packet of peer";
   std::shared_ptr<io::data> d;
   time_t deadline;
@@ -125,18 +106,18 @@ void stream::negotiate(stream::negotiation_type neg) {
   else
     deadline = time(nullptr) + _timeout;
   read_any(d, deadline);
-  if (!d || (d->type() != version_response::static_type())) {
-    log_v2::instance().bbdo()->error(
+  if (!d || d->type() != version_response::static_type()) {
+    log_v2::bbdo()->error(
         "BBDO: invalid protocol header, aborting connection");
-    throw(exceptions::msg()
-          << "BBDO: invalid protocol header, aborting connection");
+    throw exceptions::msg()
+          << "BBDO: invalid protocol header, aborting connection";
   }
 
   // Handle protocol version.
   std::shared_ptr<version_response> v(
       std::static_pointer_cast<version_response>(d));
   if (v->bbdo_major != BBDO_VERSION_MAJOR) {
-    log_v2::instance().bbdo()->error(
+    log_v2::bbdo()->error(
         "BBDO: peer is using protocol version {0}.{1}.{2} whereas we're using "
         "protocol version {3}.{4}.{5}",
         v->bbdo_major, v->bbdo_minor, v->bbdo_patch, BBDO_VERSION_MAJOR,
@@ -147,7 +128,7 @@ void stream::negotiate(stream::negotiation_type neg) {
           << " whereas we're using protocol version " << BBDO_VERSION_MAJOR
           << "." << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH);
   }
-  log_v2::instance().bbdo()->info(
+  log_v2::bbdo()->info(
       "BBDO: peer is using protocol version {0}.{1}.{2}, we're using version "
       "{3}.{4}.{5}",
       v->bbdo_major, v->bbdo_minor, v->bbdo_patch, BBDO_VERSION_MAJOR,
@@ -160,7 +141,7 @@ void stream::negotiate(stream::negotiation_type neg) {
 
   // Send our own packet if we should be second.
   if (neg == negotiate_second) {
-    log_v2::instance().bbdo()->debug(
+    log_v2::bbdo()->debug(
         "BBDO: sending welcome packet (available extensions: {})",
         (_negotiate ? _extensions : ""));
     logging::debug(logging::medium)
@@ -177,7 +158,7 @@ void stream::negotiate(stream::negotiation_type neg) {
   // Negotiation.
   if (_negotiate) {
     // Apply negotiated extensions.
-    log_v2::instance().bbdo()->info(
+    log_v2::bbdo()->info(
         "BBDO: we have extensions '{0}' and peer has '{1}'", _extensions,
         v->extensions);
     logging::info(logging::medium)
@@ -193,7 +174,7 @@ void stream::negotiate(stream::negotiation_type neg) {
           std::find(peer_ext.begin(), peer_ext.end(), *it)};
       // Apply extension if found.
       if (peer_it != peer_ext.end()) {
-        log_v2::instance().bbdo()->info("BBDO: applying extension '{}'", *it);
+        log_v2::bbdo()->info("BBDO: applying extension '{}'", *it);
         logging::info(logging::medium)
             << "BBDO: applying extension '" << *it << "'";
         for (std::map<std::string, io::protocols::protocol>::const_iterator
@@ -234,7 +215,7 @@ bool stream::read(std::shared_ptr<io::data>& d, time_t deadline) {
     ++_events_received_since_last_ack;
   if (_events_received_since_last_ack >= _ack_limit)
     send_event_acknowledgement();
-  return (retval);
+  return retval;
 }
 
 /**
@@ -301,7 +282,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
   output::write(d);
   int retval(_acknowledged_events);
   _acknowledged_events = 0;
-  return (retval);
+  return retval;
 }
 
 /**

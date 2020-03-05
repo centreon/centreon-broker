@@ -28,6 +28,7 @@
 #include "com/centreon/broker/multiplexing/publisher.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/instance.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 #include "com/centreon/broker/storage/conflict_manager.hh"
@@ -76,6 +77,14 @@ stream::stream(uint32_t rrd_len,
   if (!sql::conflict_manager::init_storage(store_in_db, rrd_len, interval_length))
     throw broker::exceptions::shutdown()
         << "Unable to initialize the storage connection to the database";
+}
+
+/**
+ *  Destructor.
+ */
+stream::~stream() {
+  // Stop cleanup thread.
+  log_v2::sql()->info("storage: stream destruction");
 }
 
 /**

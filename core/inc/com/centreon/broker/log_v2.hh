@@ -32,6 +32,7 @@ class log_v2 {
   std::shared_ptr<spdlog::logger> _tcp_log;
   std::shared_ptr<spdlog::logger> _bbdo_log;
   std::shared_ptr<spdlog::logger> _tls_log;
+  std::shared_ptr<spdlog::logger> _sql_log;
   log_v2();
   ~log_v2();
 
@@ -39,10 +40,11 @@ class log_v2 {
   static log_v2& instance();
   bool load(std::string const& file, config::state const& state);
 
-  std::shared_ptr<spdlog::logger> core();
-  std::shared_ptr<spdlog::logger> tls();
-  std::shared_ptr<spdlog::logger> bbdo();
-  std::shared_ptr<spdlog::logger> tcp();
+  static std::shared_ptr<spdlog::logger> core();
+  static std::shared_ptr<spdlog::logger> tls();
+  static std::shared_ptr<spdlog::logger> bbdo();
+  static std::shared_ptr<spdlog::logger> tcp();
+  static std::shared_ptr<spdlog::logger> sql();
 };
 
 CCB_END();

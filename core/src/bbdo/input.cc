@@ -54,14 +54,14 @@ static uint32_t set_boolean(io::data& t,
                             void const* data,
                             uint32_t size) {
   if (!size) {
-    log_v2::instance().bbdo()->error(
+    log_v2::bbdo()->error(
         "BBDO: cannot extract boolean value: 0 bytes left in "
         "packet");
-    throw(exceptions::msg() << "BBDO: cannot extract boolean value: "
-                            << "0 bytes left in packet");
+    throw exceptions::msg() << "BBDO: cannot extract boolean value: "
+                            << "0 bytes left in packet";
   }
   member.set_bool(t, *static_cast<char const*>(data));
-  return (1);
+  return 1;
 }
 
 /**
@@ -74,16 +74,16 @@ static uint32_t set_double(io::data& t,
   char const* str(static_cast<char const*>(data));
   uint32_t len(strlen(str));
   if (len >= size) {
-    log_v2::instance().bbdo()->error(
+    log_v2::bbdo()->error(
         "BBDO: cannot extract double value: not terminating '\0' in remaining "
         "{} bytes of packet",
         size);
-    throw(exceptions::msg() << "BBDO: cannot extract double value: "
+    throw exceptions::msg() << "BBDO: cannot extract double value: "
                             << "not terminating '\0' in remaining " << size
-                            << " bytes of packet");
+                            << " bytes of packet";
   }
   member.set_double(t, strtod(str, nullptr));
-  return (len + 1);
+  return len + 1;
 }
 
 /**
@@ -94,13 +94,13 @@ static uint32_t set_integer(io::data& t,
                             void const* data,
                             uint32_t size) {
   if (size < sizeof(uint32_t)) {
-    log_v2::instance().bbdo()->error(
+    log_v2::bbdo()->error(
         "BBDO: cannot extract integer value: {} bytes left in packet", size);
-    throw(exceptions::msg() << "BBDO: cannot extract integer value: " << size
-                            << " bytes left in packet");
+    throw exceptions::msg() << "BBDO: cannot extract integer value: " << size
+                            << " bytes left in packet";
   }
   member.set_int(t, ntohl(*static_cast<uint32_t const*>(data)));
-  return (sizeof(uint32_t));
+  return sizeof(uint32_t);
 }
 
 /**
@@ -111,13 +111,13 @@ static uint32_t set_short(io::data& t,
                           void const* data,
                           uint32_t size) {
   if (size < sizeof(uint16_t)) {
-    log_v2::instance().bbdo()->error(
+    log_v2::bbdo()->error(
         "BBDO: cannot extract short value: {} bytes left in packet", size);
-    throw(exceptions::msg() << "BBDO: cannot extract short value: " << size
-                            << " bytes left in packet");
+    throw exceptions::msg() << "BBDO: cannot extract short value: " << size
+                            << " bytes left in packet";
   }
   member.set_short(t, ntohs(*static_cast<uint16_t const*>(data)));
-  return (sizeof(uint16_t));
+  return sizeof(uint16_t);
 }
 
 /**
@@ -130,17 +130,17 @@ static uint32_t set_string(io::data& t,
   char const* str(static_cast<char const*>(data));
   uint32_t len(strlen(str));
   if (len >= size) {
-    log_v2::instance().bbdo()->error(
+    log_v2::bbdo()->error(
         "BBDO: cannot extract string value: no terminating '\\0' in remaining "
         "{} bytes left in packet",
         size);
 
-    throw(exceptions::msg() << "BBDO: cannot extract string value: "
+    throw exceptions::msg() << "BBDO: cannot extract string value: "
                             << "no terminating '\\0' in remaining " << size
-                            << " bytes of packet");
+                            << " bytes of packet";
   }
   member.set_string(t, str);
-  return (len + 1);
+  return len + 1;
 }
 
 /**
@@ -151,10 +151,10 @@ static uint32_t set_timestamp(io::data& t,
                               void const* data,
                               uint32_t size) {
   if (size < 2 * sizeof(uint32_t)) {
-    log_v2::instance().bbdo()->error(
+    log_v2::bbdo()->error(
         "BBDO: cannot extract timestamp value: {} bytes left in packet", size);
-    throw(exceptions::msg() << "BBDO: cannot extract timestamp value: " << size
-                            << " bytes left in packet");
+    throw exceptions::msg() << "BBDO: cannot extract timestamp value: " << size
+                            << " bytes left in packet";
   }
   uint32_t const* ptr(static_cast<uint32_t const*>(data));
   uint64_t val(ntohl(*ptr));
@@ -162,7 +162,7 @@ static uint32_t set_timestamp(io::data& t,
   val <<= 32;
   val |= ntohl(*ptr);
   member.set_time(t, val);
-  return (2 * sizeof(uint32_t));
+  return 2 * sizeof(uint32_t);
 }
 
 /**
@@ -173,14 +173,14 @@ static uint32_t set_uint(io::data& t,
                          void const* data,
                          uint32_t size) {
   if (size < sizeof(uint32_t)) {
-    log_v2::instance().bbdo()->error(
+    log_v2::bbdo()->error(
         "BBDO: cannot extract uint32_t integer value: {} bytes left in packet",
         size);
-    throw(exceptions::msg() << "BBDO: cannot extract uint32_teger value: "
-                            << size << " bytes left in packet");
+    throw exceptions::msg() << "BBDO: cannot extract uint32_teger value: "
+                            << size << " bytes left in packet";
   }
   member.set_uint(t, ntohl(*static_cast<uint32_t const*>(data)));
-  return (sizeof(uint32_t));
+  return sizeof(uint32_t);
 }
 
 /**
@@ -236,29 +236,29 @@ static io::data* unserialize(uint32_t event_type,
               rb = set_uint(*t, *current_entry, buffer, size);
               break;
             default:
-              log_v2::instance().bbdo()->error(
+              log_v2::bbdo()->error(
                   "BBDO: invalid mapping for object of type '{0}': {1} is not "
                   "a known type ID",
                   info->get_name(), current_entry->get_type());
-              throw(exceptions::msg() << "BBDO: invalid mapping for "
+              throw exceptions::msg() << "BBDO: invalid mapping for "
                                       << "object of type '" << info->get_name()
                                       << "': " << current_entry->get_type()
-                                      << " is not a known type ID");
+                                      << " is not a known type ID";
           }
           buffer += rb;
           size -= rb;
         }
-      return (t.release());
+      return t.release();
     } else {
-      log_v2::instance().bbdo()->error(
+      log_v2::bbdo()->error(
           "BBDO: cannot create object of ID {} whereas it has been registered",
           event_type);
-      throw(exceptions::msg()
+      throw exceptions::msg()
             << "BBDO: cannot create object of ID " << event_type
-            << " whereas it has been registered");
+            << " whereas it has been registered";
     }
   } else {
-    log_v2::instance().bbdo()->info(
+    log_v2::bbdo()->info(
         "BBDO: cannot unserialize event of ID {}: event was not registered and "
         "will therefore be ignored",
         event_type);
@@ -267,7 +267,7 @@ static io::data* unserialize(uint32_t event_type,
         << ": event was not registered and will therefore be ignored";
   }
 
-  return (nullptr);
+  return nullptr;
 }
 
 /**************************************
@@ -306,7 +306,7 @@ input& input::operator=(input const& other) {
     _buffer = other._buffer;
     _skipped = other._skipped;
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -331,19 +331,19 @@ bool input::read(std::shared_ptr<io::data>& d, time_t deadline) {
       std::shared_ptr<version_response> version(
           std::static_pointer_cast<version_response>(d));
       if (version->bbdo_major != BBDO_VERSION_MAJOR) {
-        log_v2::instance().bbdo()->error(
+        log_v2::bbdo()->error(
             "BBDO: peer is using protocol version {0}.{1}.{2} , whereas we're "
             "using protocol version "
             "{3}.{4}.{5}",
             version->bbdo_major, version->bbdo_minor, version->bbdo_patch,
             BBDO_VERSION_MAJOR, BBDO_VERSION_MINOR, BBDO_VERSION_PATCH);
-        throw(exceptions::msg()
+        throw exceptions::msg()
               << "BBDO: peer is using protocol version " << version->bbdo_major
               << "." << version->bbdo_minor << "." << version->bbdo_patch
               << " whereas we're using protocol version " << BBDO_VERSION_MAJOR
-              << "." << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH);
+              << "." << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
       }
-      log_v2::instance().bbdo()->info(
+      log_v2::bbdo()->info(
           "BBDO: peer is using protocol version {0}.{1}.{2} , we're using version "
           "{3}.{4}.{5}",
           version->bbdo_major, version->bbdo_minor, version->bbdo_patch,
@@ -354,7 +354,7 @@ bool input::read(std::shared_ptr<io::data>& d, time_t deadline) {
           << ", we're using version " << BBDO_VERSION_MAJOR << "."
           << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
     } else if ((event_id & 0xFFFF) == 2) {
-      log_v2::instance().bbdo()->info(
+      log_v2::bbdo()->info(
           "BBDO: received acknowledgement for {} events",
           std::static_pointer_cast<ack const>(d)->acknowledged_events);
       logging::info(logging::medium)
@@ -366,7 +366,7 @@ bool input::read(std::shared_ptr<io::data>& d, time_t deadline) {
     }
 
     // Control messages.
-    log_v2::instance().bbdo()->debug(
+    log_v2::bbdo()->debug(
         "BBDO: event with ID {} was a control message, launching recursive "
         "read",
         event_id);
@@ -376,7 +376,7 @@ bool input::read(std::shared_ptr<io::data>& d, time_t deadline) {
     timed_out = !read_any(d, deadline);
     event_id = !d ? 0 : d->type();
   }
-  return (!timed_out);
+  return !timed_out;
 }
 
 /**
@@ -433,7 +433,7 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
       if (chksum != expected || event_id != current_event_id ||
           source_id != current_source_id || destination_id != current_dest_id) {
         if (!_skipped) {  // First corrupted byte.
-          log_v2::instance().bbdo()->error(
+          log_v2::bbdo()->error(
               "BBDO: peer {0} is sending corrupted data: {1}", peer(),
               ((chksum != expected) ? "invalid CRC"
                                     : "invalid multi-packet event"));
@@ -460,7 +460,7 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
 
     // We now have a complete packet, print summary of corruption.
     if (_skipped) {
-      log_v2::instance().bbdo()->info(
+      log_v2::bbdo()->info(
           "BBDO: peer {0} sent {1} corrupted payload bytes, resuming "
           "processing",
           peer(), _skipped);
@@ -474,16 +474,16 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
     d.reset(unserialize(event_id, source_id, destination_id, packet.data(),
                         packet.size()));
     if (d) {
-      log_v2::instance().bbdo()->debug(
+      log_v2::bbdo()->debug(
           "BBDO: unserialized {0} bytes for event of type {1}", raw_size,
           event_id);
       logging::debug(logging::medium)
           << "BBDO: unserialized " << raw_size << " bytes for event of type "
           << event_id;
     } else {
-      log_v2::instance().bbdo()->error(
+      log_v2::bbdo()->error(
           "BBDO: unknown event type {} event cannot be decoded", event_id);
-      log_v2::instance().bbdo()->debug("BBDO: discarded {} bytes", raw_size);
+      log_v2::bbdo()->debug("BBDO: discarded {} bytes", raw_size);
 
       logging::error(logging::medium) << "BBDO: unknown event type " << event_id
                                       << ": event cannot be decoded";
@@ -494,10 +494,10 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
     // Mark data as processed.
     _buffer.erase(raw_size);
 
-    return (true);
+    return true;
   } catch (exceptions::timeout const& e) {
     (void)e;
-    return (false);
+    return false;
   }
 }
 
@@ -515,14 +515,13 @@ bool input::read_any(std::shared_ptr<io::data>& d, time_t deadline) {
  */
 void input::_buffer_must_have_unprocessed(int bytes, time_t deadline) {
   // Read as much data as requested.
-  bool timed_out(false);
-  while (!timed_out && (_buffer.size() < bytes)) {
+  bool timed_out{false};
+  while (!timed_out && _buffer.size() < bytes) {
     std::shared_ptr<io::data> d;
     timed_out = !_substream->read(d, deadline);
     if (d && d->type() == io::raw::static_type())
       _buffer.append(std::static_pointer_cast<io::raw>(d));
   }
   if (timed_out)
-    throw(exceptions::timeout());
-  return;
+    throw exceptions::timeout();
 }

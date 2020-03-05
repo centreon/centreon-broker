@@ -177,7 +177,7 @@ void tcp_async::_async_read_cb(asio::ip::tcp::socket& socket,
 
   if (!ec) {
     if (bytes != 0) {
-      log_v2::instance().tcp()->trace(
+      log_v2::tcp()->trace(
           "async_buf::async_read_cb incoming packet size: {}", bytes);
       logging::error(logging::low)
           << "async_buf::async_read_cb incoming packet size: " << bytes;
@@ -199,14 +199,10 @@ void tcp_async::_async_read_cb(asio::ip::tcp::socket& socket,
 
       it->second._work_buffer.resize(0);
     }
-    log_v2::instance().tcp()->warn(
+    log_v2::tcp()->warn(
         "connection lost for: {0}:{1}",
         socket.remote_endpoint().address().to_string(),
         socket.remote_endpoint().port());
-    logging::info(logging::high)
-        << "connection lost for: "
-        << socket.remote_endpoint().address().to_string() << ":"
-        << socket.remote_endpoint().port();
 
     it->second._closing = true;
     it->second._wait_socket_event.notify_all();
@@ -234,6 +230,8 @@ void tcp_async::unregister_socket(asio::ip::tcp::socket& socket) {
   std::condition_variable cond;
   std::mutex mut;
 
+  std::unique_lock<std::mutex> m(mut);
+
   _strand.post([&] {
     socket.shutdown(asio::ip::tcp::socket::shutdown_both);
     socket.close();
@@ -243,7 +241,6 @@ void tcp_async::unregister_socket(asio::ip::tcp::socket& socket) {
     m.unlock();
   });
 
-  std::unique_lock<std::mutex> m(mut);
   cond.wait(m, [&done]() -> bool { return done; });
 
   std::unique_lock<std::mutex> lock(_m_read_data);

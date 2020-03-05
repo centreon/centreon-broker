@@ -204,6 +204,7 @@ class conflict_manager {
   conflict_manager() = delete;
   conflict_manager& operator=(conflict_manager const& other) = delete;
   conflict_manager(conflict_manager const& other) = delete;
+  ~conflict_manager();
   bool _should_exit() const;
   void _callback();
 

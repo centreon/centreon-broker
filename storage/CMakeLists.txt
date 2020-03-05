@@ -40,7 +40,7 @@ add_library("conflictmgr" STATIC
 set(CONFLICTMGR "conflictmgr" PARENT_SCOPE)
 set_target_properties(conflictmgr PROPERTIES
     COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
-add_dependencies(conflictmgr json11_lib)
+add_dependencies(conflictmgr json11_lib spdlog_lib)
 
 # Storage module.
 set(STORAGE "20-storage")

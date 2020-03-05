@@ -111,7 +111,7 @@ acceptor& acceptor::operator=(acceptor const& other) {
     _timeout = other._timeout;
     _ack_limit = other._ack_limit;
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -139,11 +139,11 @@ std::shared_ptr<io::stream> acceptor::open() {
       if (_one_peer_retention_mode)
         my_bbdo->negotiate(bbdo::stream::negotiate_second);
 
-      return (my_bbdo);
+      return my_bbdo;
     }
   }
 
-  return (std::shared_ptr<io::stream>());
+  return std::shared_ptr<io::stream>();
 }
 
 /**
@@ -155,5 +155,4 @@ void acceptor::stats(json11::Json::object& tree) {
   tree["one_peer_retention_mode"] = _one_peer_retention_mode == true;
   if (_from)
     _from->stats(tree);
-  return;
 }

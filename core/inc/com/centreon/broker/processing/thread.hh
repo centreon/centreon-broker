@@ -59,11 +59,9 @@ class bthread : public stat_visitable {
   virtual void run() {};
   bool is_running() const;
 
- protected:
-  std::atomic_bool _should_exit;
-  mutable std::mutex _should_exitm;
-
  private:
+  std::atomic_bool _should_exit;
+
   std::thread _thread;
   bool _started;
   mutable std::mutex _started_m;

@@ -47,6 +47,7 @@ log_v2::log_v2() {
   _bbdo_log = std::make_shared<logger>("bbdo", null_sink);
   _tcp_log = std::make_shared<logger>("tcp", null_sink);
   _core_log = std::make_shared<logger>("core", null_sink);
+  _sql_log = std::make_shared<logger>("sql", null_sink);
 }
 
 log_v2::~log_v2() {
@@ -105,6 +106,8 @@ bool log_v2::load(std::string const& file, config::state const& state) {
           l = &_tcp_log;
         else if (entry["name"].string_value() == "bbdo")
           l = &_bbdo_log;
+        else if (entry["name"].string_value() == "sql")
+          l = &_sql_log;
         else
           continue;
 
@@ -126,13 +129,17 @@ bool log_v2::load(std::string const& file, config::state const& state) {
 }
 
 std::shared_ptr<spdlog::logger> log_v2::tls() {
-  return _tls_log;
+  return instance()._tls_log;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::bbdo() {
-  return _bbdo_log;
+  return instance()._bbdo_log;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::tcp() {
-  return _tcp_log;
+  return instance()._tcp_log;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::sql() {
+  return instance()._sql_log;
 }

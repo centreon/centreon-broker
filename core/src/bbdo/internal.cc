@@ -46,7 +46,7 @@ void bbdo::load() {
   int bbdo_category(e.register_category("bbdo", io::events::bbdo));
   if (bbdo_category != io::events::bbdo) {
     e.unregister_category(bbdo_category);
-    log_v2::instance().bbdo()->error(
+    log_v2::bbdo()->error(
         "BBDO: category {} is already registered whereas it should be reserved "
         "for the BBDO core",
         io::events::bbdo);
