@@ -81,7 +81,7 @@ class tcp_async {
 
  public:
   void register_socket(asio::ip::tcp::socket& socket);
-  void unregister_socket(asio::ip::tcp::socket& socket);
+  void unregister_socket(asio::ip::tcp::socket& socket, bool sync);
 
   async_buf wait_for_packet(asio::ip::tcp::socket& socket,
                             time_t deadline,
