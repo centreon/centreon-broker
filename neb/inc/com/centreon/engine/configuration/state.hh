@@ -25,6 +25,7 @@
 #include <string>
 #include <cstdint>
 #include <vector>
+#include "com/centreon/engine/configuration/anomalydetection.hh"
 #include "com/centreon/engine/configuration/command.hh"
 #include "com/centreon/engine/configuration/connector.hh"
 #include "com/centreon/engine/configuration/contact.hh"
@@ -137,8 +138,6 @@ class state {
   bool check_orphaned_services() const noexcept;
   unsigned int check_reaper_interval() const noexcept;
   void check_reaper_interval(unsigned int value);
-  std::string const& check_result_path() const noexcept;
-  void check_result_path(std::string const& value);
   bool check_service_freshness() const noexcept;
   void check_service_freshness(bool value);
   set_command const& commands() const noexcept;
@@ -268,8 +267,6 @@ class state {
   std::set<std::string> const& macros_filter() const;
   unsigned int max_check_reaper_time() const noexcept;
   void max_check_reaper_time(unsigned int value);
-  unsigned long max_check_result_file_age() const noexcept;
-  void max_check_result_file_age(unsigned long value);
   unsigned long max_debug_file_size() const noexcept;
   void max_debug_file_size(unsigned long value);
   unsigned int max_host_check_spread() const noexcept;
@@ -330,8 +327,12 @@ class state {
       servicegroup::key_type const& k) const;
   set_servicegroup::iterator servicegroups_find(
       servicegroup::key_type const& k);
+  //const set_anomalydetection& anomalydetections() const noexcept;
+  set_anomalydetection& anomalydetections() noexcept;
   set_service const& services() const noexcept;
   set_service& services() noexcept;
+  set_anomalydetection::iterator anomalydetections_find(
+      anomalydetection::key_type const& k);
   set_service::iterator services_find(service::key_type const& k);
   set_service::const_iterator services_find(
       std::string const& host_name,
@@ -382,8 +383,6 @@ class state {
   void user(unsigned int key, std::string const& value);
   bool use_aggressive_host_checking() const noexcept;
   void use_aggressive_host_checking(bool value);
-  bool use_check_result_path() const noexcept;
-  void use_check_result_path(bool value);
   bool use_large_installation_tweaks() const noexcept;
   void use_large_installation_tweaks(bool value);
   bool use_regexp_matches() const noexcept;
@@ -411,7 +410,6 @@ class state {
   void _set_cfg_dir(std::string const& value);
   void _set_cfg_file(std::string const& value);
   void _set_check_for_updates(std::string const& value);
-  void _set_check_result_path(std::string const& value);
   void _set_child_processes_fork_twice(std::string const& value);
   void _set_command_check_interval(std::string const& value);
   void _set_comment_file(std::string const& value);
@@ -493,7 +491,6 @@ class state {
   bool _check_orphaned_hosts;
   bool _check_orphaned_services;
   unsigned int _check_reaper_interval;
-  std::string _check_result_path;
   bool _check_service_freshness;
   set_command _commands;
   int _command_check_interval;
@@ -550,7 +547,6 @@ class state {
   float _low_service_flap_threshold;
   std::set<std::string> _macros_filter;
   unsigned int _max_check_reaper_time;
-  unsigned long _max_check_result_file_age;
   unsigned long _max_debug_file_size;
   unsigned int _max_host_check_spread;
   unsigned long _max_log_file_size;
@@ -579,6 +575,7 @@ class state {
   set_servicedependency _servicedependencies;
   set_serviceescalation _serviceescalations;
   set_servicegroup _servicegroups;
+  set_anomalydetection _anomalydetections;
   set_service _services;
   unsigned int _service_check_timeout;
   unsigned int _service_freshness_check_interval;
@@ -601,7 +598,6 @@ class state {
   bool _translate_passive_host_checks;
   std::unordered_map<std::string, std::string> _users;
   bool _use_aggressive_host_checking;
-  bool _use_check_result_path;
   bool _use_large_installation_tweaks;
   bool _use_regexp_matches;
   bool _use_retained_program_state;
