@@ -45,10 +45,17 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/core/src")
 set(TEST_DIR "${PROJECT_SOURCE_DIR}/core/test")
 include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 
+
+set(protobuf_MODULE_COMPATIBLE True)
 find_package(json11 REQUIRED)
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(asio REQUIRED)
+find_package(protobuf REQUIRED)
+find_package(protoc_installer REQUIRED)
+find_package(grpc REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_package(c-ares REQUIRED)
 
 add_definitions(${spdlog_DEFINITIONS})
 
@@ -56,11 +63,48 @@ include_directories(${json11_INCLUDE_DIRS})
 include_directories(${fmt_INCLUDE_DIRS})
 include_directories(${spdlog_INCLUDE_DIRS})
 include_directories(${asio_INCLUDE_DIRS})
+include_directories(${protobuf_INCLUDE_DIRS})
+include_directories(${grpc_INCLUDE_DIRS})
 
 link_directories(${json11_LIB_DIRS})
 link_directories(${fmt_LIB_DIRS})
 link_directories(${spdlog_LIB_DIRS})
+link_directories(${protobuf_LIB_DIRS})
+link_directories(${grpc_LIB_DIRS})
+link_directories(${c-ares_LIB_DIRS})
+link_directories(${OpenSSL_LIB_DIRS})
 
+message(STATUS "Using protobuf ${grpc_VERSION}")
+set(PROTOBUF_PREFIX "${protoc_installer_LIB_DIRS}/..")
+message(STATUS "${PROTOBUF_PREFIX}/bin/protoc")
+set(GRPC_PREFIX "${grpc_LIB_DIRS}/..")
+
+add_custom_command(
+  DEPENDS ${SRC_DIR}/broker.proto
+  COMMENT "Generating interface files of the proto file (grpc)"
+  OUTPUT ${SRC_DIR}/broker.grpc.pb.cc ${SRC_DIR}/broker.grpc.pb.h
+  COMMAND ${PROTOBUF_PREFIX}/bin/protoc
+  ARGS --plugin=protoc-gen-grpc=${GRPC_PREFIX}/bin/grpc_cpp_plugin --proto_path=${SRC_DIR} --grpc_out="${SRC_DIR}" ${SRC_DIR}/broker.proto
+
+  DEPENDS ${SRC_DIR}/broker.proto
+  COMMENT "Generating interface files of the proto file (protobuf)"
+  OUTPUT ${SRC_DIR}/broker.pb.cc ${SRC_DIR}/broker.pb.h
+  COMMAND ${PROTOBUF_PREFIX}/bin/protoc
+  ARGS --cpp_out="${SRC_DIR}" --proto_path=${SRC_DIR} ${SRC_DIR}/broker.proto
+)
+
+include_directories(${SRC_DIR})
+
+add_library(
+  berpc
+  STATIC
+
+  ${SRC_DIR}/broker.grpc.pb.cc
+  ${SRC_DIR}/broker.pb.cc
+  ${SRC_DIR}/broker.grpc.pb.h
+  ${SRC_DIR}/broker.pb.h)
+target_link_libraries(berpc ${protobuf_LIBS})
+set_target_properties(berpc PROPERTIES COMPILE_FLAGS "-fPIC")
 
 # Version.
 set(CENTREON_BROKER_MAJOR 20)
@@ -339,6 +383,8 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/bbdo/output.cc
   ${SRC_DIR}/bbdo/stream.cc
   ${SRC_DIR}/bbdo/version_response.cc
+  ${SRC_DIR}/broker_impl.cc
+  ${SRC_DIR}/brokerrpc.cc
   ${SRC_DIR}/ceof/ceof_deserializer.cc
   ${SRC_DIR}/ceof/ceof_iterator.cc
   ${SRC_DIR}/ceof/ceof_parser.cc
@@ -435,6 +481,8 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/bbdo/output.hh
   ${INC_DIR}/bbdo/stream.hh
   ${INC_DIR}/bbdo/version_response.hh
+  ${INC_DIR}/broker_impl.hh
+  ${INC_DIR}/brokerrpc.hh
   ${INC_DIR}/ceof/ceof_deserializer.hh
   ${INC_DIR}/ceof/ceof_iterator.hh
   ${INC_DIR}/ceof/ceof_parser.hh
@@ -543,12 +591,12 @@ set(LIBROKER_SOURCES
 # Static libraries.
 add_library(rokerbase STATIC ${LIBROKER_SOURCES})
 set_target_properties(rokerbase PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS} -fPIC")
-target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${MYSQL_LIBS} pthread dl)
+target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${MYSQL_LIBS}  pthread dl berpc)
 
 add_library(roker STATIC
   ${SRC_DIR}/config/applier/init.cc
   ${SRC_DIR}/config/applier/logger.cc)
-target_link_libraries(roker rokerbase)
+target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${OpenSSL_LIBS} ${grpc_LIBS})
 
 # Standalone binary.
 set(DAEMON cbd)
@@ -556,7 +604,7 @@ add_executable(${DAEMON} ${SRC_DIR}/main.cc)
 
 #Flags needed to include all symbols in binary.
 target_link_libraries("${DAEMON}"
-  "-Wl,--whole-archive" "rokerbase" "roker" "-Wl,--no-whole-archive" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS})
+  "-Wl,--whole-archive" "rokerbase" "roker" "-Wl,--no-whole-archive" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${OpenSSL_LIBS} ${grpc_LIBS})
 
 # Centreon Broker Watchdog
 option(WITH_CBWD "Build centreon broker watchdong." ON)

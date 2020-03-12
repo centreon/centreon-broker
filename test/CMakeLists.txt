@@ -52,6 +52,11 @@ if (WITH_SQL_TESTS)
   set(TEST_SOURCES ${TESTS_SOURCES} ${TESTS_DIR}/mysql/mysql.cc)
 endif (WITH_SQL_TESTS)
 
+add_definitions(-DBROKERRPC_TESTS_PATH="${TESTS_DIR}/rpc")
+
+add_executable(rpc_client ${TESTS_DIR}/rpc/client.cc)
+target_link_libraries(rpc_client berpc ${grpc_LIBS} ${OpenSSL_LIBS} ${c-ares_LIBS} ${ZLIB_LIBS} dl)
+
 add_executable(ut
   # Core sources.
   ${TESTS_DIR}/bbdo/input_buffer/erase.cc
@@ -92,6 +97,7 @@ add_executable(ut
   ${TESTS_DIR}/processing/temporary_stream.cc
   ${TESTS_DIR}/processing/feeder.cc
   ${TESTS_DIR}/processing/thread.cc
+  ${TESTS_DIR}/rpc/brokerrpc.cc
   ${TESTS_DIR}/exceptions.cc
   ${TESTS_DIR}/io.cc
   ${TESTS_DIR}/logging.cc
@@ -104,7 +110,7 @@ add_executable(ut
 set_target_properties("ut" PROPERTIES COMPILE_FLAGS "${MYSQL_CFLAGS}")
 
 target_link_libraries(ut rokerbase roker ${TESTS_LIBRARIES} conflictmgr
-  ${json11_LIBS} ${asio_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${gtest_LIBS})
+  ${json11_LIBS} ${asio_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${gtest_LIBS} ${OpenSSL_LIBS} ${grpc_LIBS} )
 
 add_test(NAME tests COMMAND ut)
 
