@@ -77,19 +77,37 @@ For the projet compilation you need to have conan installed. To install conan yo
 All the dependencies pulled by conan are located in conanfile.txt. If you want to use a dependency
 from your package manager instead of conan, you need to remove it from conanfile.txt.
 
+You have to add a remote conan repository, for that enter the command:
+
+    $> conan remote add centreon https://api.bintray.com/conan/centreon/centreon
+
+Now, the *command conan remote list* should list two repositories:
+
+    conan-center: https://conan.bintray.com [Verify SSL: True]
+    centreon: https://api.bintray.com/conan/centreon/centreon [Verify SSL: True]
+
 Once the sources of Centreon Broker extracted, execute the following commands:
 
     $> cd centreon-broker
     $> mkdir build
     $> cd build
-    $> conan install ..
+    $> conan install --remote centreon ..
+
+You may have Conan complaining about missing binaries like *fmt* or *spdlog*.
+To solve this, you have to follow what Conan suggests at the end of the error
+message, instead of the previous line enter this one:
+
+    $> conan install --build missing ..
+
+Once those libraries built, always from the *build* directory, enter:
+
     $> cmake ..
     ...
 
 Now launch the compilation using the *make* command and then install the
 software by running *make install* as priviledged user.
 
-    $> make -j 4
+    $> make -j4
     ...
     $# make install
 
