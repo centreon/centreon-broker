@@ -20,6 +20,7 @@
 
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/mysql_manager.hh"
 
 using namespace com::centreon::broker;
@@ -51,8 +52,7 @@ void (mysql_connection::*const mysql_connection::_task_processing_table[])(
 
 void mysql_connection::_query(mysql_task* t) {
   mysql_task_run* task(static_cast<mysql_task_run*>(t));
-  logging::debug(logging::low)
-      << "mysql_connection: run query: " << task->query;
+  log_v2::sql()->debug("mysql_connection: run query: {}", task->query);
   if (mysql_query(_conn, task->query.c_str())) {
     logging::error(logging::medium)
         << task->error_msg
@@ -66,8 +66,7 @@ void mysql_connection::_query(mysql_task* t) {
 
 void mysql_connection::_query_res(mysql_task* t) {
   mysql_task_run_res* task(static_cast<mysql_task_run_res*>(t));
-  logging::debug(logging::low)
-      << "mysql_connection: run query: " << task->query;
+  log_v2::sql()->debug("mysql_connection: run query: {}", task->query);
   if (mysql_query(_conn, task->query.c_str())) {
     logging::error(logging::medium)
         << "mysql_connection: run query failed: " << ::mysql_error(_conn)
@@ -84,8 +83,7 @@ void mysql_connection::_query_res(mysql_task* t) {
 
 void mysql_connection::_query_int(mysql_task* t) {
   mysql_task_run_int* task(static_cast<mysql_task_run_int*>(t));
-  logging::debug(logging::low)
-      << "mysql_connection: run query: " << task->query;
+  log_v2::sql()->debug("mysql_connection: run query: {}", task->query);
   if (mysql_query(_conn, task->query.c_str())) {
     logging::error(logging::medium)
         << "mysql_connection: run query failed: " << ::mysql_error(_conn)
@@ -108,6 +106,7 @@ void mysql_connection::_commit(mysql_task* t) {
   int attempts(0);
   int res;
   if (_need_commit) {
+    log_v2::sql()->debug("mysql_connection: commit");
     while (attempts++ < MAX_ATTEMPTS && (res = mysql_commit(_conn))) {
       char const* err(::mysql_error(_conn));
       if (strcmp(err, "MySQL server has gone away") == 0) {
@@ -147,17 +146,17 @@ void mysql_connection::_prepare(mysql_task* t) {
   // FIXME DBR: to debug: Interesting to keep to see the query
   _stmt_query[task->id] = task->query;
 
-  logging::debug(logging::low)
-      << "mysql: prepare query: " << task->id << " (" << task->query << ")";
+  log_v2::sql()->debug(
+      "mysql_connection: prepare statement {}: {}", task->id, task->query);
   MYSQL_STMT* stmt(mysql_stmt_init(_conn));
   if (!stmt) {
     mysql_manager::instance().set_error(
         "statement initialization failed: insuffisant memory");
   } else {
     if (mysql_stmt_prepare(stmt, task->query.c_str(), task->query.size())) {
-      logging::debug(logging::low)
-          << "mysql_connection: prepare failed: " << ::mysql_stmt_error(stmt)
-          << " (" << task->query << ")";
+      log_v2::sql()->debug("mysql_connection: prepare failed: {} on query {}",
+                             ::mysql_stmt_error(stmt),
+                             task->query);
       std::ostringstream oss;
       oss << "statement preparation failed (" << mysql_stmt_error(stmt) << ")";
       mysql_manager::instance().set_error(oss.str());
@@ -168,11 +167,11 @@ void mysql_connection::_prepare(mysql_task* t) {
 
 void mysql_connection::_statement(mysql_task* t) {
   mysql_task_statement* task(static_cast<mysql_task_statement*>(t));
-  logging::debug(logging::low)
-      << "mysql: execute statement: " << task->statement_id;
+  log_v2::sql()->debug("mysql_connection: execute statement {}",
+                         task->statement_id);
   MYSQL_STMT* stmt(_stmt[task->statement_id]);
   if (!stmt) {
-    logging::debug(logging::low) << "mysql: no statement to execute";
+    log_v2::sql()->error("mysql_connection: no statement to execute");
     mysql_manager::instance().set_error("statement not prepared");
     return;
   }
@@ -181,8 +180,7 @@ void mysql_connection::_statement(mysql_task* t) {
     bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
 
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
-    logging::debug(logging::low)
-        << "mysql: statement binding failed (" << mysql_stmt_error(stmt) << ")";
+    log_v2::sql()->error("mysql_connection: statement binding failed: {}", mysql_stmt_error(stmt));
     if (task->fatal)
       mysql_manager::instance().set_error(mysql_stmt_error(stmt));
     else {
@@ -219,12 +217,10 @@ void mysql_connection::_statement(mysql_task* t) {
 
 void mysql_connection::_statement_res(mysql_task* t) {
   mysql_task_statement_res* task(static_cast<mysql_task_statement_res*>(t));
-  logging::debug(logging::low)
-      << "mysql: execute statement: " << task->statement_id;
+  log_v2::sql()->debug("mysql_connection: execute statement {}", task->statement_id);
   MYSQL_STMT* stmt(_stmt[task->statement_id]);
   if (!stmt) {
-    logging::debug(logging::low)
-        << "mysql: no statement to execute (" << task->statement_id << ")";
+    log_v2::sql()->debug("mysql_connection: no statement {} to execute", task->statement_id);
     exceptions::msg e;
     e << "statement not prepared";
     task->promise->set_exception(std::make_exception_ptr<exceptions::msg>(e));
@@ -235,9 +231,10 @@ void mysql_connection::_statement_res(mysql_task* t) {
     bb = const_cast<MYSQL_BIND*>(task->bind->get_bind());
 
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
-    logging::debug(logging::low)
-        << "mysql: statement <<" << _stmt_query[task->statement_id]
-        << ">> binding failed: " << mysql_stmt_error(stmt);
+    log_v2::sql()->error(
+        "mysql_connection: statement query <<{}>> binding failed: {}",
+        _stmt_query[task->statement_id],
+        mysql_stmt_error(stmt));
     exceptions::msg e;
     e << mysql_stmt_error(stmt);
     task->promise->set_exception(std::make_exception_ptr<exceptions::msg>(e));
