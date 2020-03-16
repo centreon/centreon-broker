@@ -74,6 +74,9 @@ For the projet compilation you need to have conan installed. To install conan yo
 
     $> pip install conan
 
+All the dependencies pulled by conan are located in conanfile.txt. If you want to use a dependency
+from your package manager instead of conan, you need to remove it from conanfile.txt.
+
 Once the sources of Centreon Broker extracted, execute the following commands:
 
     $> cd centreon-broker
