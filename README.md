@@ -69,11 +69,17 @@ This paragraph is only a quickstart guide for the compilation of
 Centreon Broker. For a more in-depth guide with build options you should
 refer to the [online documentation](https://documentation.centreon.com/docs/centreon-broker/en/latest/installation/index.html#using-sources).
 
+For the projet compilation you need to have conan installed. To install conan you need pip 
+(python package manager). You can install conan like that.
+
+    $> pip install conan
+
 Once the sources of Centreon Broker extracted, execute the following commands:
 
     $> cd centreon-broker
     $> mkdir build
     $> cd build
+    $> conan install ..
     $> cmake ..
     ...
 
