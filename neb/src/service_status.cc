@@ -98,7 +98,6 @@ void service_status::_internal_copy(service_status const& ss) {
   last_time_warning = ss.last_time_warning;
   service_description = ss.service_description;
   service_id = ss.service_id;
-  return;
 }
 
 /**************************************

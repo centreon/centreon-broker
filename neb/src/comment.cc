@@ -115,7 +115,6 @@ void comment::_internal_copy(comment const& other) {
   poller_id = other.poller_id;
   service_id = other.service_id;
   source = other.source;
-  return;
 }
 
 /**************************************

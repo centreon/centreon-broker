@@ -27,6 +27,8 @@
 //#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/timestamp.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/storage/internal.hh"
 
 CCB_BEGIN()
 

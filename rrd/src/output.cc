@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include "com/centreon/broker/rrd/output.hh"
 #include <cstdlib>
 #include <iomanip>
@@ -27,6 +28,7 @@
 #include "com/centreon/broker/rrd/cached.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
 #include "com/centreon/broker/rrd/exceptions/update.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/rrd/lib.hh"
 #include "com/centreon/broker/storage/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
@@ -94,7 +96,8 @@ output::output(std::string const& metrics_path,
       _status_path(status_path),
       _write_metrics(write_metrics),
       _write_status(write_status) {
-  std::unique_ptr<cached> rrdcached(new cached(metrics_path, cache_size, cached::local));
+  std::unique_ptr<cached> rrdcached(
+      new cached(metrics_path, cache_size, cached::local));
   rrdcached->connect_local(local);
   _backend.reset(rrdcached.release());
 }
@@ -124,7 +127,8 @@ output::output(std::string const& metrics_path,
       _status_path(status_path),
       _write_metrics(write_metrics),
       _write_status(write_status) {
-  std::unique_ptr<cached> rrdcached(new cached(metrics_path, cache_size, cached::tcp));
+  std::unique_ptr<cached> rrdcached(
+      new cached(metrics_path, cache_size, cached::tcp));
   rrdcached->connect_remote("localhost", port);
   _backend.reset(rrdcached.release());
 }
@@ -166,164 +170,178 @@ void output::update() {
  *  @return Number of events acknowledged.
  */
 int output::write(std::shared_ptr<io::data> const& d) {
+  log_v2::perfdata()->debug("RRD: output::write.");
   // Check that data exists.
   if (!validate(d, "RRD"))
     return 1;
 
-  if (d->type() == storage::metric::static_type()) {
-    if (_write_metrics) {
-      // Debug message.
-      std::shared_ptr<storage::metric> e(
-          std::static_pointer_cast<storage::metric>(d));
-      logging::debug(logging::medium)
-          << "RRD: new data for metric " << e->metric_id << " (time "
-          << e->ctime << ") " << (e->is_for_rebuild ? " for rebuild" : "");
+  switch (d->type()) {
+    case storage::metric::static_type() :
+      if (_write_metrics) {
+        // Debug message.
+        std::shared_ptr<storage::metric> e(
+            std::static_pointer_cast<storage::metric>(d));
+        log_v2::perfdata()->debug("RRD: new data for metric {} (time {}) {}",
+                                  e->metric_id,
+                                  e->ctime,
+                                  e->is_for_rebuild ? "for rebuild" : "");
 
-      // Metric path.
-      std::string metric_path;
+        // Metric path.
+        std::string metric_path;
+        {
+          std::ostringstream oss;
+          oss << _metrics_path << e->metric_id << ".rrd";
+          metric_path = oss.str();
+        }
+
+        // Check that metric is not being rebuild.
+        rebuild_cache::iterator it(_metrics_rebuild.find(metric_path));
+        if (e->is_for_rebuild || it == _metrics_rebuild.end()) {
+          // Write metrics RRD.
+          try {
+            _backend->open(metric_path);
+          }
+          catch (exceptions::open const& b) {
+            time_t interval(e->interval ? e->interval : 60);
+            assert(e->rrd_len);
+            _backend->open(
+                metric_path, e->rrd_len, e->ctime - 1, interval, e->value_type);
+          }
+          std::ostringstream oss;
+          if (e->value_type == storage::perfdata::counter)
+            oss << static_cast<unsigned long long>(e->value);
+          else if (e->value_type == storage::perfdata::derive)
+            oss << static_cast<long long>(e->value);
+          else
+            oss << std::fixed << e->value;
+          _backend->update(e->ctime, oss.str());
+        } else
+          // Cache value.
+          it->second.push_back(d);
+      }
+      break;
+    case storage::status::static_type() :
+      if (_write_status) {
+        // Debug message.
+        std::shared_ptr<storage::status> e(
+            std::static_pointer_cast<storage::status>(d));
+        log_v2::perfdata()->debug(
+            "RRD: new status data for index {} (state {}) {}",
+            e->index_id,
+            e->state,
+            e->is_for_rebuild ? "for rebuild" : "");
+
+        // Status path.
+        std::string status_path;
+        {
+          std::ostringstream oss;
+          oss << _status_path << e->index_id << ".rrd";
+          status_path = oss.str();
+        }
+
+        // Check that status is not begin rebuild.
+        rebuild_cache::iterator it(_status_rebuild.find(status_path));
+        if (e->is_for_rebuild || it == _status_rebuild.end()) {
+          // Write status RRD.
+          try {
+            _backend->open(status_path);
+          }
+          catch (exceptions::open const& b) {
+            time_t interval(e->interval ? e->interval : 60);
+            assert(e->rrd_len);
+            _backend->open(status_path, e->rrd_len, e->ctime - 1, interval);
+          }
+          std::ostringstream oss;
+          if (e->state == 0)
+            oss << 100;
+          else if (e->state == 1)
+            oss << 75;
+          else if (e->state == 2)
+            oss << 0;
+          _backend->update(e->ctime, oss.str());
+        } else
+          // Cache value.
+          it->second.push_back(d);
+      }
+      break;
+    case storage::rebuild::static_type() : {
+      // Debug message.
+      std::shared_ptr<storage::rebuild> e(
+          std::static_pointer_cast<storage::rebuild>(d));
+      log_v2::perfdata()->debug("RRD: rebuild request for {} {} {}",
+                                e->is_index ? "index" : "metric",
+                                e->id,
+                                e->end ? "(end)" : "(start)");
+
+      // Generate path.
+      std::string path;
       {
         std::ostringstream oss;
-        oss << _metrics_path << e->metric_id << ".rrd";
-        metric_path = oss.str();
+        oss << (e->is_index ? _status_path : _metrics_path) << e->id << ".rrd";
+        path = oss.str();
       }
 
-      // Check that metric is not being rebuild.
-      rebuild_cache::iterator it(_metrics_rebuild.find(metric_path));
-      if (e->is_for_rebuild || it == _metrics_rebuild.end()) {
-        // Write metrics RRD.
-        try {
-          _backend->open(metric_path);
-        } catch (exceptions::open const& b) {
-          time_t interval(e->interval ? e->interval : 60);
-          _backend->open(metric_path, e->rrd_len, e->ctime - 1, interval,
-                         e->value_type);
-        }
-        std::ostringstream oss;
-        if (e->value_type == storage::perfdata::counter)
-          oss << static_cast<unsigned long long>(e->value);
-        else if (e->value_type == storage::perfdata::derive)
-          oss << static_cast<long long>(e->value);
+      // Rebuild is starting.
+      if (!e->end) {
+        if (e->is_index)
+          _status_rebuild[path];
         else
-          oss << std::fixed << e->value;
-        _backend->update(e->ctime, oss.str());
-      } else
-        // Cache value.
-        it->second.push_back(d);
-    }
-  } else if (d->type() == storage::status::static_type()) {
-    if (_write_status) {
+          _metrics_rebuild[path];
+        _backend->remove(path);
+      }
+      // Rebuild is ending.
+      else {
+        // Find cache.
+        std::list<std::shared_ptr<io::data> > l;
+        {
+          rebuild_cache::iterator it;
+          if (e->is_index) {
+            it = _status_rebuild.find(path);
+            if (it != _status_rebuild.end()) {
+              l = it->second;
+              _status_rebuild.erase(it);
+            }
+          } else {
+            it = _metrics_rebuild.find(path);
+            if (it != _metrics_rebuild.end()) {
+              l = it->second;
+              _metrics_rebuild.erase(it);
+            }
+          }
+        }
+
+        // Resend cache data.
+        while (!l.empty()) {
+          write(l.front());
+          l.pop_front();
+        }
+      }
+    } break;
+    case storage::remove_graph::static_type() : {
       // Debug message.
-      std::shared_ptr<storage::status> e(
-          std::static_pointer_cast<storage::status>(d));
-      logging::debug(logging::medium)
-          << "RRD: new status data for index " << e->index_id << " ("
-          << e->state << ") " << (e->is_for_rebuild ? "for rebuild" : "");
+      std::shared_ptr<storage::remove_graph> e(
+          std::static_pointer_cast<storage::remove_graph>(d));
+      log_v2::perfdata()->debug("RRD: remove graph request for {} {}",
+                                e->is_index ? "index" : "metric",
+                                e->id);
 
-      // Status path.
-      std::string status_path;
+      // Generate path.
+      std::string path;
       {
         std::ostringstream oss;
-        oss << _status_path << e->index_id << ".rrd";
-        status_path = oss.str();
+        oss << (e->is_index ? _status_path : _metrics_path) << e->id << ".rrd";
+        path = oss.str();
       }
 
-      // Check that status is not begin rebuild.
-      rebuild_cache::iterator it(_status_rebuild.find(status_path));
-      if (e->is_for_rebuild || it == _status_rebuild.end()) {
-        // Write status RRD.
-        try {
-          _backend->open(status_path);
-        } catch (exceptions::open const& b) {
-          time_t interval(e->interval ? e->interval : 60);
-          _backend->open(status_path, e->rrd_len, e->ctime - 1, interval);
-        }
-        std::ostringstream oss;
-        if (e->state == 0)
-          oss << 100;
-        else if (e->state == 1)
-          oss << 75;
-        else if (e->state == 2)
-          oss << 0;
-        _backend->update(e->ctime, oss.str());
-      } else
-        // Cache value.
-        it->second.push_back(d);
-    }
-  } else if (d->type() == storage::rebuild::static_type()) {
-    // Debug message.
-    std::shared_ptr<storage::rebuild> e(
-        std::static_pointer_cast<storage::rebuild>(d));
-    logging::debug(logging::medium)
-        << "RRD: rebuild request for " << (e->is_index ? "index " : "metric ")
-        << e->id << (e->end ? "(end)" : "(start)");
+      // Remove data from cache.
+      rebuild_cache& cache(e->is_index ? _status_rebuild : _metrics_rebuild);
+      rebuild_cache::iterator it(cache.find(path));
+      if (it != cache.end())
+        cache.erase(it);
 
-    // Generate path.
-    std::string path;
-    {
-      std::ostringstream oss;
-      oss << (e->is_index ? _status_path : _metrics_path) << e->id << ".rrd";
-      path = oss.str();
-    }
-
-    // Rebuild is starting.
-    if (!e->end) {
-      if (e->is_index)
-        _status_rebuild[path];
-      else
-        _metrics_rebuild[path];
+      // Remove file.
       _backend->remove(path);
-    }
-    // Rebuild is ending.
-    else {
-      // Find cache.
-      std::list<std::shared_ptr<io::data> > l;
-      {
-        rebuild_cache::iterator it;
-        if (e->is_index) {
-          it = _status_rebuild.find(path);
-          if (it != _status_rebuild.end()) {
-            l = it->second;
-            _status_rebuild.erase(it);
-          }
-        } else {
-          it = _metrics_rebuild.find(path);
-          if (it != _metrics_rebuild.end()) {
-            l = it->second;
-            _metrics_rebuild.erase(it);
-          }
-        }
-      }
-
-      // Resend cache data.
-      while (!l.empty()) {
-        write(l.front());
-        l.pop_front();
-      }
-    }
-  } else if (d->type() == storage::remove_graph::static_type()) {
-    // Debug message.
-    std::shared_ptr<storage::remove_graph> e(
-        std::static_pointer_cast<storage::remove_graph>(d));
-    logging::debug(logging::medium)
-        << "RRD: remove graph request for "
-        << (e->is_index ? "index " : "metric ") << e->id;
-
-    // Generate path.
-    std::string path;
-    {
-      std::ostringstream oss;
-      oss << (e->is_index ? _status_path : _metrics_path) << e->id << ".rrd";
-      path = oss.str();
-    }
-
-    // Remove data from cache.
-    rebuild_cache& cache(e->is_index ? _status_rebuild : _metrics_rebuild);
-    rebuild_cache::iterator it(cache.find(path));
-    if (it != cache.end())
-      cache.erase(it);
-
-    // Remove file.
-    _backend->remove(path);
+    } break;
   }
 
   return 1;
