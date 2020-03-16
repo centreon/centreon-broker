@@ -35,7 +35,9 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 instance_configuration::instance_configuration()
-    : loaded(false), poller_id(0) {}
+    : io::data(instance_configuration::static_type()),
+      loaded(false),
+      poller_id(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -68,16 +70,6 @@ instance_configuration& instance_configuration::operator=(
     _internal_copy(i);
   }
   return (*this);
-}
-
-/**
- *  Get the type of the event.
- *
- *  @return The event_type.
- */
-uint32_t instance_configuration::type() const {
-  return (io::events::data_type<io::events::neb,
-                                neb::de_instance_configuration>::value);
 }
 
 /**************************************

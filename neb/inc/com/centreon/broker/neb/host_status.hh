@@ -39,11 +39,10 @@ namespace neb {
  */
 class host_status : public host_service_status {
  public:
-  host_status();
+  host_status(uint32_t type = static_type());
   host_status(host_status const& other);
   virtual ~host_status();
   host_status& operator=(host_status const& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::neb, neb::de_host_status>::value;
   }

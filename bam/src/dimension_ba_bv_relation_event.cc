@@ -25,7 +25,9 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 dimension_ba_bv_relation_event::dimension_ba_bv_relation_event()
-    : ba_id(0), bv_id(0) {}
+    : io::data(dimension_ba_bv_relation_event::static_type()),
+      ba_id(0),
+      bv_id(0) {}
 
 /**
  *  Copy constructor.
@@ -68,16 +70,7 @@ dimension_ba_bv_relation_event& dimension_ba_bv_relation_event::operator=(
  */
 bool dimension_ba_bv_relation_event::operator==(
     dimension_ba_bv_relation_event const& other) const {
-  return (ba_id == other.ba_id) && (bv_id == other.bv_id);
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_ba_bv_relation_event::type() const {
-  return dimension_ba_bv_relation_event::static_type();
+  return ba_id == other.ba_id && bv_id == other.bv_id;
 }
 
 /**

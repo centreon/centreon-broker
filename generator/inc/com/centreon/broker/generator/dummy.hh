@@ -43,7 +43,6 @@ class dummy : public io::data {
   dummy(dummy const& other);
   ~dummy();
   dummy& operator=(dummy const& other);
-  uint32_t type() const;
 
   /**
    *  Get the type of this event.

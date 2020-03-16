@@ -25,7 +25,9 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 dimension_timeperiod_exclusion::dimension_timeperiod_exclusion()
-    : excluded_timeperiod_id(0), timeperiod_id(0) {}
+    : io::data(dimension_timeperiod_exclusion::static_type()),
+      excluded_timeperiod_id(0),
+      timeperiod_id(0) {}
 
 /**
  *  Copy constructor.
@@ -56,16 +58,7 @@ dimension_timeperiod_exclusion& dimension_timeperiod_exclusion::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_timeperiod_exclusion::type() const {
-  return (dimension_timeperiod_exclusion::static_type());
+  return *this;
 }
 
 /**
@@ -77,7 +70,6 @@ void dimension_timeperiod_exclusion::_internal_copy(
     dimension_timeperiod_exclusion const& other) {
   excluded_timeperiod_id = other.excluded_timeperiod_id;
   timeperiod_id = other.timeperiod_id;
-  return;
 }
 
 /**************************************
@@ -98,7 +90,7 @@ mapping::entry const dimension_timeperiod_exclusion::entries[] = {
 
 // Operations.
 static io::data* new_dimension_timeperiod_exclusion() {
-  return (new dimension_timeperiod_exclusion);
+  return new dimension_timeperiod_exclusion;
 }
 io::event_info::event_operations const
     dimension_timeperiod_exclusion::operations = {

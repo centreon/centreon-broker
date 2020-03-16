@@ -43,7 +43,6 @@ class dimension_timeperiod_exclusion : public io::data {
   ~dimension_timeperiod_exclusion();
   dimension_timeperiod_exclusion& operator=(
       dimension_timeperiod_exclusion const& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::bam,
                                  bam::de_dimension_timeperiod_exclusion>::value;

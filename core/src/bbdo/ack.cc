@@ -30,7 +30,7 @@ using namespace com::centreon::broker::bbdo;
 /**
  *  Default constructor.
  */
-ack::ack() : acknowledged_events(0) {}
+ack::ack() : io::data(ack::static_type()), acknowledged_events(0) {}
 
 /**
  *  Copy constructor.
@@ -59,15 +59,6 @@ ack& ack::operator=(ack const& other) {
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-uint32_t ack::type() const {
-  return ack::static_type();
 }
 
 /**************************************

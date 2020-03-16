@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/neb/responsive_instance.hh"
+
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/neb/internal.hh"
 
@@ -34,7 +35,10 @@ using namespace com::centreon::broker::neb;
  *
  *  Initialize members to 0, NULL or equivalent.
  */
-responsive_instance::responsive_instance() : poller_id(0), responsive(true) {}
+responsive_instance::responsive_instance()
+    : io::data(responsive_instance::static_type()),
+      poller_id(0),
+      responsive(true) {}
 
 /**
  *  @brief Copy constructor.
@@ -66,17 +70,7 @@ responsive_instance& responsive_instance::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
-}
-
-/**
- *  Get the type of the event.
- *
- *  @return The event_type.
- */
-uint32_t responsive_instance::type() const {
-  return (io::events::data_type<io::events::neb,
-                                neb::de_responsive_instance>::value);
+  return *this;
 }
 
 /**************************************
@@ -93,7 +87,7 @@ mapping::entry const responsive_instance::entries[] = {
 
 // Operations.
 static io::data* new_im() {
-  return (new responsive_instance);
+  return new responsive_instance;
 }
 io::event_info::event_operations const responsive_instance::operations = {
     &new_im};

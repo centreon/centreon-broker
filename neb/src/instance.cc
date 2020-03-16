@@ -33,7 +33,8 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 instance::instance()
-    : is_running(true),
+    : io::data(instance::static_type()),
+      is_running(true),
       pid(0),
       poller_id(0),
       program_end((time_t)-1),
@@ -68,15 +69,6 @@ instance& instance::operator=(instance const& other) {
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the type of the event.
- *
- *  @return The event_type.
- */
-uint32_t instance::type() const {
-  return instance::static_type();
 }
 
 /**************************************

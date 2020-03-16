@@ -25,7 +25,7 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 ba_status::ba_status()
-    : ba_id(0),
+    : io::data(ba_status::static_type()), ba_id(0),
       in_downtime(false),
       level_acknowledgement(0.0),
       level_downtime(0.0),
@@ -60,15 +60,6 @@ ba_status& ba_status::operator=(ba_status const& other) {
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t ba_status::type() const {
-  return ba_status::static_type();
 }
 
 /**

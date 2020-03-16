@@ -41,11 +41,10 @@ namespace neb {
  */
 class custom_variable_status : public io::data {
  public:
-  custom_variable_status();
+  custom_variable_status(uint32_t type = static_type());
   custom_variable_status(custom_variable_status const& other);
   virtual ~custom_variable_status();
   custom_variable_status& operator=(custom_variable_status const& other);
-  virtual uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::neb,
                                  neb::de_custom_variable_status>::value;

@@ -31,7 +31,11 @@ using namespace com::centreon::broker::neb;
  *  Default constructor.
  */
 module::module()
-    : enabled(true), loaded(false), poller_id(0), should_be_loaded(false) {}
+    : io::data(module::static_type()),
+      enabled(true),
+      loaded(false),
+      poller_id(0),
+      should_be_loaded(false) {}
 
 /**
  *  Copy constructor.
@@ -60,15 +64,6 @@ module& module::operator=(module const& other) {
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The event_type.
- */
-uint32_t module::type() const {
-  return module::static_type();
 }
 
 /**************************************

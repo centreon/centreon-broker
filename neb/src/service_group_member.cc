@@ -30,7 +30,8 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-service_group_member::service_group_member() : service_id(0) {}
+service_group_member::service_group_member()
+    : group_member(service_group_member::static_type()), service_id(0) {}
 
 /**
  *  Copy constructor.
@@ -60,13 +61,6 @@ service_group_member& service_group_member::operator=(
   }
   return *this;
 }
-
-/**
- *  Get the type of this object.
- *
- *  @return This object type.
- */
-uint32_t service_group_member::type() const { return static_type(); }
 
 /**************************************
  *                                     *

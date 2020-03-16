@@ -31,8 +31,9 @@ using namespace com::centreon::broker::neb;
  *
  *  Initialize members to 0, NULL or equivalent.
  */
-status::status()
-    : event_handler_enabled(false),
+status::status(uint32_t type)
+    : io::data(type),
+      event_handler_enabled(false),
       flap_detection_enabled(false),
       notifications_enabled(false) {}
 

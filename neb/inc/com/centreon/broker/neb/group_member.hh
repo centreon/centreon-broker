@@ -37,7 +37,8 @@ namespace neb {
  */
 class group_member : public io::data {
  public:
-  group_member();
+  group_member() = delete;
+  group_member(uint32_t type);
   group_member(group_member const& other);
   virtual ~group_member();
   group_member& operator=(group_member const& other);

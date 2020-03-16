@@ -32,7 +32,7 @@ using namespace com::centreon::broker::neb;
  *
  *  Initialize members to 0, NULL or equivalent.
  */
-service::service() {
+service::service() : service_status(service::static_type()) {
   _zero_initialize();
 }
 
@@ -83,15 +83,6 @@ service& service::operator=(service const& other) {
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the type of the event.
- *
- *  @return The event_type.
- */
-uint32_t service::type() const {
-  return service::static_type();
 }
 
 /**************************************

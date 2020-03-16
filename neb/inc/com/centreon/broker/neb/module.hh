@@ -44,7 +44,6 @@ class module : public io::data {
   module(module const& other);
   ~module();
   module& operator=(module const& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::neb, neb::de_module>::value;
   }

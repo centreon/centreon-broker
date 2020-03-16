@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/correlation/issue_parent.hh"
-#include "com/centreon/broker/correlation/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
@@ -33,7 +31,8 @@ using namespace com::centreon::broker::correlation;
  *  Constructor.
  */
 issue_parent::issue_parent()
-    : child_host_id(0),
+    : io::data(issue_parent::static_type()),
+      child_host_id(0),
       child_service_id(0),
       child_start_time(0),
       end_time(-1),
@@ -66,26 +65,7 @@ issue_parent::~issue_parent() {}
 issue_parent& issue_parent::operator=(issue_parent const& ip) {
   io::data::operator=(ip);
   _internal_copy(ip);
-  return (*this);
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The event type.
- */
-uint32_t issue_parent::type() const {
-  return (issue_parent::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t issue_parent::static_type() {
-  return (io::events::data_type<io::events::correlation,
-                                correlation::de_issue_parent>::value);
+  return *this;
 }
 
 /**************************************
@@ -108,7 +88,6 @@ void issue_parent::_internal_copy(issue_parent const& ip) {
   parent_service_id = ip.parent_service_id;
   parent_start_time = ip.parent_start_time;
   start_time = ip.start_time;
-  return;
 }
 
 /**************************************
@@ -147,7 +126,7 @@ mapping::entry const issue_parent::entries[] = {
 
 // Operations.
 static io::data* new_issue_parent() {
-  return (new issue_parent);
+  return new issue_parent;
 }
 io::event_info::event_operations const issue_parent::operations = {
     &new_issue_parent};

@@ -72,15 +72,21 @@ void node_cache::write(std::shared_ptr<io::data> const& d) {
   if (!d)
     return;
 
-  if (d->type() == neb::host::static_type()) {
-    _process_host(*std::static_pointer_cast<neb::host const>(d));
-  } else if (d->type() == neb::service::static_type()) {
-    _process_service(*std::static_pointer_cast<neb::service const>(d));
-  } else if (d->type() == neb::host_status::static_type()) {
-    _process_host_status(*std::static_pointer_cast<neb::host_status const>(d));
-  } else if (d->type() == neb::service_status::static_type()) {
-    _process_service_status(
-        *std::static_pointer_cast<neb::service_status const>(d));
+  switch (d->type()) {
+    case neb::host::static_type():
+      _process_host(*std::static_pointer_cast<neb::host const>(d));
+      break;
+    case neb::service::static_type():
+      _process_service(*std::static_pointer_cast<neb::service const>(d));
+      break;
+    case neb::host_status::static_type():
+      _process_host_status(
+          *std::static_pointer_cast<neb::host_status const>(d));
+      break;
+    case neb::service_status::static_type():
+      _process_service_status(
+          *std::static_pointer_cast<neb::service_status const>(d));
+      break;
   }
 }
 

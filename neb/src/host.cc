@@ -32,7 +32,7 @@ using namespace com::centreon::broker::neb;
  *
  *  Initialize internal data to 0, NULL or equivalent.
  */
-host::host() {
+host::host() : host_status(host::static_type()) {
   _zero_initialize();
 }
 
@@ -81,15 +81,6 @@ host& host::operator=(host const& other) {
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The event type.
- */
-uint32_t host::type() const {
-  return host::static_type();
 }
 
 /**************************************

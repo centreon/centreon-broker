@@ -31,7 +31,8 @@ using namespace com::centreon::broker::neb;
  *  Default constructor.
  */
 flapping_status::flapping_status()
-    : event_time(0),
+    : io::data(flapping_status::static_type()),
+      event_time(0),
       event_type(0),
       flapping_type(0),
       high_threshold(0),
@@ -69,15 +70,6 @@ flapping_status& flapping_status::operator=(flapping_status const& other) {
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The event type.
- */
-uint32_t flapping_status::type() const {
-  return flapping_status::static_type();
 }
 
 /**************************************

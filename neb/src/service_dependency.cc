@@ -31,7 +31,9 @@ using namespace com::centreon::broker::neb;
  *  Default constructor.
  */
 service_dependency::service_dependency()
-    : dependent_service_id(0), service_id(0) {}
+    : dependency(service_dependency::static_type()),
+      dependent_service_id(0),
+      service_id(0) {}
 
 /**
  *  Copy constructor.
@@ -62,15 +64,6 @@ service_dependency& service_dependency::operator=(
     _internal_copy(sd);
   }
   return *this;
-}
-
-/**
- *  Get the type of this object.
- *
- *  @return The event_type.
- */
-uint32_t service_dependency::type() const {
-  return service_dependency::static_type();
 }
 
 /**************************************

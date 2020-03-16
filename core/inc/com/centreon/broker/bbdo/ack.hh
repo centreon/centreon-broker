@@ -41,7 +41,6 @@ class ack : public io::data {
   ack(ack const& other);
   ~ack();
   ack& operator=(ack const& other);
-  uint32_t type() const;
 
   /**
    *  Get the event type.

@@ -43,7 +43,6 @@ class service_check : public check {
   service_check(service_check const& other);
   virtual ~service_check();
   service_check& operator=(service_check const& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::neb, neb::de_service_check>::value;
   }

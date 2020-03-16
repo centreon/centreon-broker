@@ -25,7 +25,8 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 dimension_ba_event::dimension_ba_event()
-    : ba_id(0),
+    : io::data(dimension_ba_event::static_type()),
+      ba_id(0),
       sla_month_percent_crit(0),
       sla_month_percent_warn(0),
       sla_duration_crit(0),
@@ -70,16 +71,7 @@ dimension_ba_event& dimension_ba_event::operator=(
  *  @return  True if the two objects are equal.
  */
 bool dimension_ba_event::operator==(dimension_ba_event const& other) const {
-  return (ba_id == other.ba_id);
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_ba_event::type() const {
-  return dimension_ba_event::static_type();
+  return ba_id == other.ba_id;
 }
 
 /**

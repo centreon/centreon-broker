@@ -20,7 +20,9 @@
 #define CCB_NEB_RESPONSIVE_INSTANCE_HH
 
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 CCB_BEGIN()
 
@@ -39,7 +41,10 @@ class responsive_instance : public io::data {
   responsive_instance(responsive_instance const& i);
   ~responsive_instance();
   responsive_instance& operator=(responsive_instance const& i);
-  uint32_t type() const;
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb,
+                                 neb::de_responsive_instance>::value;
+  }
 
   uint32_t poller_id;
   bool responsive;

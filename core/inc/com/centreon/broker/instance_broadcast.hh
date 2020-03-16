@@ -40,7 +40,6 @@ class instance_broadcast : public io::data {
   instance_broadcast(instance_broadcast const& other);
   ~instance_broadcast();
   instance_broadcast& operator=(instance_broadcast const& other);
-  uint32_t type() const;
 
   /**
    *  Get the event type.

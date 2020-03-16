@@ -28,7 +28,7 @@ using namespace com::centreon::broker::generator;
  *
  *  @param[in] n  Number value.
  */
-dummy::dummy(uint32_t n) : number(n) {}
+dummy::dummy(uint32_t n) : io::data(dummy::static_type()), number(n) {}
 
 /**
  *  Copy constructor.
@@ -54,19 +54,7 @@ dummy& dummy::operator=(dummy const& other) {
     io::data::operator=(other);
     number = other.number;
   }
-  return (*this);
-}
-
-/**
- *  @brief Get the type of the event.
- *
- *  Return the type of this event. This can be useful for runtime data
- *  type determination.
- *
- *  @return The event type.
- */
-uint32_t dummy::type() const {
-  return (dummy::static_type());
+  return *this;
 }
 
 // Mapping.
@@ -75,6 +63,6 @@ mapping::entry const dummy::entries[] = {
 
 // Operations.
 static io::data* new_dummy() {
-  return (new dummy());
+  return new dummy();
 }
 io::event_info::event_operations const dummy::operations = {&new_dummy};

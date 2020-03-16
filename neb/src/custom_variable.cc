@@ -30,7 +30,10 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-custom_variable::custom_variable() : enabled(true), var_type(0) {
+custom_variable::custom_variable()
+    : custom_variable_status(custom_variable::static_type()),
+      enabled(true),
+      var_type(0) {
   modified = false;
 }
 
@@ -62,15 +65,6 @@ custom_variable& custom_variable::operator=(custom_variable const& other) {
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The event type.
- */
-uint32_t custom_variable::type() const {
-  return custom_variable::static_type();
 }
 
 /**************************************

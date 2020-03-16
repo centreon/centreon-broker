@@ -25,7 +25,8 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 dimension_kpi_event::dimension_kpi_event()
-    : kpi_id(0),
+    : io::data(dimension_kpi_event::static_type()),
+      kpi_id(0),
       ba_id(0),
       host_id(0),
       service_id(0),
@@ -88,15 +89,6 @@ bool dimension_kpi_event::operator==(dimension_kpi_event const& other) const {
           (impact_warning == other.impact_warning) &&
           (impact_critical == other.impact_critical) &&
           (impact_unknown == other.impact_unknown));
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_kpi_event::type() const {
-  return dimension_kpi_event::static_type();
 }
 
 /**

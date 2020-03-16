@@ -31,7 +31,8 @@ using namespace com::centreon::broker::neb;
  *
  *  Set all members to their default value (0, NULL or equivalent).
  */
-group::group() : enabled(true), id(0), poller_id(0) {}
+group::group(uint32_t type)
+    : io::data(type), enabled(true), id(0), poller_id(0) {}
 
 /**
  *  @brief Copy constructor.

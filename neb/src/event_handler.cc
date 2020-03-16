@@ -31,7 +31,8 @@ using namespace com::centreon::broker::neb;
  *  Default constructor.
  */
 event_handler::event_handler()
-    : early_timeout(false),
+    : io::data(event_handler::static_type()),
+      early_timeout(false),
       end_time(0),
       execution_time(0),
       handler_type(0),
@@ -71,13 +72,6 @@ event_handler& event_handler::operator=(event_handler const& other) {
   }
   return *this;
 }
-
-/**
- *  Get the type of this event.
- *
- *  @return The event type.
- */
-uint32_t event_handler::type() const { return event_handler::static_type(); }
 
 /**************************************
  *                                     *

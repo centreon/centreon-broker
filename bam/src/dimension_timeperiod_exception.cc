@@ -25,7 +25,8 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 dimension_timeperiod_exception::dimension_timeperiod_exception()
-    : timeperiod_id(0) {}
+    : io::data(dimension_timeperiod_exception::static_type()),
+      timeperiod_id(0) {}
 
 /**
  *  Copy constructor.
@@ -57,15 +58,6 @@ dimension_timeperiod_exception& dimension_timeperiod_exception::operator=(
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_timeperiod_exception::type() const {
-  return dimension_timeperiod_exception::static_type();
 }
 
 /**

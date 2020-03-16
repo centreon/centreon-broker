@@ -32,8 +32,9 @@ using namespace com::centreon::broker::neb;
  *
  *  Initialize members to 0, NULL or equivalent.
  */
-service_status::service_status()
-    : last_time_critical(0),
+service_status::service_status(uint32_t type)
+    : host_service_status(type),
+      last_time_critical(0),
       last_time_ok(0),
       last_time_unknown(0),
       last_time_warning(0),
@@ -71,15 +72,6 @@ service_status& service_status::operator=(service_status const& ss) {
   host_service_status::operator=(ss);
   _internal_copy(ss);
   return *this;
-}
-
-/**
- *  Returns the type of the event.
- *
- *  @return The event_type.
- */
-uint32_t service_status::type() const {
-  return service_status::static_type();
 }
 
 /**************************************

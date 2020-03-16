@@ -24,7 +24,7 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-rebuild::rebuild() {}
+rebuild::rebuild() : io::data(rebuild::static_type()) {}
 
 /**
  *  Copy constructor.
@@ -64,15 +64,6 @@ rebuild& rebuild::operator=(rebuild const& other) {
  */
 bool rebuild::operator==(rebuild const& other) const {
   return bas_to_rebuild == other.bas_to_rebuild;
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t rebuild::type() const {
-  return rebuild::static_type();
 }
 
 /**

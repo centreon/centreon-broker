@@ -44,7 +44,6 @@ class version_response : public io::data {
   version_response(version_response const& other);
   ~version_response();
   version_response& operator=(version_response const& other);
-  uint32_t type() const;
 
   /**
    *  Get the event type.

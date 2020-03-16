@@ -41,7 +41,6 @@ class host_parent : public io::data {
   host_parent(host_parent const& other);
   ~host_parent();
   host_parent& operator=(host_parent const& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::neb, neb::de_host_parent>::value;
   }

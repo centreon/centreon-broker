@@ -33,7 +33,8 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 instance_status::instance_status()
-    : active_host_checks_enabled(false),
+    : status(instance_status::static_type()),
+      active_host_checks_enabled(false),
       active_service_checks_enabled(false),
       check_hosts_freshness(false),
       check_services_freshness(false),
@@ -74,15 +75,6 @@ instance_status& instance_status::operator=(instance_status const& other) {
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the type of the event.
- *
- *  @return The event_type.
- */
-uint32_t instance_status::type() const {
-  return instance_status::static_type();
 }
 
 /**************************************

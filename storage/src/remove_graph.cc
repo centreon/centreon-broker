@@ -28,22 +28,19 @@ using namespace com::centreon::broker::storage;
  **************************************/
 
 /**
+ *  Defaut constructor
+ */
+remove_graph::remove_graph()
+    : io::data(remove_graph::static_type()), id{0}, is_index{0} {}
+
+/**
  *  Constructor
  *
  * @param index_id an index id
  * @param is_index a boolean telling if it is an index
  */
 remove_graph::remove_graph(uint32_t index_id, bool is_index)
-    : id{index_id}, is_index{is_index} {}
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-uint32_t remove_graph::type() const {
-  return remove_graph::static_type();
-}
+    : io::data(remove_graph::static_type()), id{index_id}, is_index{is_index} {}
 
 /**************************************
  *                                     *

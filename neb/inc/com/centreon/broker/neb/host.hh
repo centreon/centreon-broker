@@ -47,7 +47,6 @@ class host : public host_service, public host_status {
   host(host const& other);
   ~host();
   host& operator=(host const& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::neb, neb::de_host>::value;
   }

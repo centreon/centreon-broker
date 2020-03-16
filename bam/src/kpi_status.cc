@@ -25,7 +25,7 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 kpi_status::kpi_status()
-    : kpi_id(0),
+    : io::data(kpi_status::static_type()), kpi_id(0),
       in_downtime(false),
       level_acknowledgement_hard(0.0),
       level_acknowledgement_soft(0.0),
@@ -66,15 +66,6 @@ kpi_status& kpi_status::operator=(kpi_status const& other) {
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t kpi_status::type() const {
-  return kpi_status::static_type();
 }
 
 /**

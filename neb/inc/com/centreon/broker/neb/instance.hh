@@ -45,7 +45,6 @@ class instance : public io::data {
   instance(instance const& other);
   ~instance();
   instance& operator=(instance const& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::neb, neb::de_instance>::value;
   }

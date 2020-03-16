@@ -43,7 +43,6 @@ class comment : public io::data {
   comment(comment const& other);
   ~comment();
   comment& operator=(comment const& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::neb, neb::de_comment>::value;
   }

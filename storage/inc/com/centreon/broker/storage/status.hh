@@ -60,7 +60,6 @@ class status : public io::data {
   status(status const& s);
   ~status();
   status& operator=(status const& s);
-  uint32_t type() const { return status::static_type(); }
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::storage,
                                  storage::de_status>::value;

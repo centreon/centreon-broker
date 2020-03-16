@@ -33,7 +33,8 @@ using namespace com::centreon::broker::neb;
  *  Set all members to their default value (0, NULL or equivalent).
  */
 comment::comment()
-    : comment_type(0),
+    : io::data(comment::static_type()),
+      comment_type(0),
       deletion_time(0),
       entry_time(0),
       entry_type(0),
@@ -78,13 +79,6 @@ comment& comment::operator=(comment const& other) {
   }
   return *this;
 }
-
-/**
- *  Returns the type of this object.
- *
- *  @return This object type.
- */
-uint32_t comment::type() const { return static_type(); }
 
 /**************************************
  *                                     *

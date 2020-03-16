@@ -24,7 +24,10 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-inherited_downtime::inherited_downtime() : ba_id(0), in_downtime(false) {}
+inherited_downtime::inherited_downtime()
+    : io::data(inherited_downtime::static_type()),
+      ba_id(0),
+      in_downtime(false) {}
 
 /**
  *  Copy constructor.
@@ -55,15 +58,6 @@ inherited_downtime& inherited_downtime::operator=(
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t inherited_downtime::type() const {
-  return inherited_downtime::static_type();
 }
 
 /**

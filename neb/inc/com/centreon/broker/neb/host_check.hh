@@ -42,7 +42,6 @@ class host_check : public check {
   host_check(host_check const& other);
   virtual ~host_check();
   host_check& operator=(host_check const& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::neb, neb::de_host_check>::value;
   }

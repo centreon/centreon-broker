@@ -50,7 +50,6 @@ class kpi_event : public io::data {
   ~kpi_event();
   kpi_event& operator=(kpi_event const& other);
   bool operator==(kpi_event const& other) const;
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::bam, bam::de_kpi_event>::value;
   }

@@ -31,7 +31,8 @@ using namespace com::centreon::broker::storage;
  *  Default constructor.
  */
 status::status()
-    : ctime(0),
+    : io::data(status::static_type()),
+      ctime(0),
       index_id(0),
       interval(0),
       is_for_rebuild(false),
@@ -55,7 +56,8 @@ status::status(timestamp const& ctime,
                bool is_for_rebuild,
                timestamp const& rrd_len,
                int16_t state)
-    : ctime{ctime},
+    : io::data(status::static_type()),
+      ctime{ctime},
       index_id{index_id},
       interval{interval},
       is_for_rebuild{is_for_rebuild},

@@ -29,7 +29,7 @@ using namespace com::centreon::broker::io;
 /**
  *  Default constructor.
  */
-raw::raw() {}
+raw::raw() : io::data(raw::static_type()) {}
 
 /**
  *  Copy constructor.
@@ -56,15 +56,6 @@ raw& raw::operator=(raw const& r) {
     _buffer = r._buffer;
   }
   return *this;
-}
-
-/**
- *  Get the data type.
- *
- *  @return Raw data.
- */
-uint32_t raw::type() const {
-  return raw::static_type();
 }
 
 void raw::resize(size_t s) {

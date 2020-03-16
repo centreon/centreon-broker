@@ -33,7 +33,8 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 log_entry::log_entry()
-    : c_time(0),
+    : io::data(log_entry::static_type()),
+      c_time(0),
       host_id(0),
       issue_start_time(0),
       log_type(0),
@@ -71,15 +72,6 @@ log_entry& log_entry::operator=(log_entry const& le) {
   io::data::operator=(le);
   _internal_copy(le);
   return *this;
-}
-
-/**
- *  Returns the type of the event.
- *
- *  @return The event_type.
- */
-uint32_t log_entry::type() const {
-  return log_entry::static_type();
 }
 
 /**************************************

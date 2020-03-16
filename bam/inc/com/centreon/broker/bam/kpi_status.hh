@@ -42,7 +42,6 @@ class kpi_status : public io::data {
   kpi_status(kpi_status const& other);
   ~kpi_status();
   kpi_status& operator=(kpi_status const& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::bam, bam::de_kpi_status>::value;
   }

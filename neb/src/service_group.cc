@@ -32,7 +32,7 @@ using namespace com::centreon::broker::neb;
  *
  *  Set all members to their default value (0, NULL or equivalent).
  */
-service_group::service_group() {}
+service_group::service_group() : group(service_group::static_type()) {}
 
 /**
  *  @brief Copy constructor.
@@ -62,15 +62,6 @@ service_group::~service_group() {}
 service_group& service_group::operator=(service_group const& other) {
   group::operator=(other);
   return *this;
-}
-
-/**
- *  Get this object type.
- *
- *  @return This object type.
- */
-uint32_t service_group::type() const {
-  return static_type();
 }
 
 /**************************************

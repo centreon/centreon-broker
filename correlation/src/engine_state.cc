@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/correlation/engine_state.hh"
-#include "com/centreon/broker/correlation/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
@@ -32,7 +30,8 @@ using namespace com::centreon::broker::correlation;
 /**
  *  Default constructor.
  */
-engine_state::engine_state() : started(false) {}
+engine_state::engine_state()
+    : io::data(engine_state::static_type()), started(false) {}
 
 /**
  *  Copy constructor.
@@ -61,25 +60,6 @@ engine_state& engine_state::operator=(engine_state const& es) {
     started = es.started;
   }
   return (*this);
-}
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-uint32_t engine_state::type() const {
-  return (engine_state::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t engine_state::static_type() {
-  return (io::events::data_type<io::events::correlation,
-                                correlation::de_engine_state>::value);
 }
 
 /**************************************

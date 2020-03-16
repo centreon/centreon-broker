@@ -24,6 +24,8 @@
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
+#include "com/centreon/broker/correlation/internal.hh"
+#include "com/centreon/broker/io/events.hh"
 
 CCB_BEGIN()
 
@@ -42,8 +44,10 @@ class log_issue : public io::data {
   log_issue& operator=(log_issue const& i);
   bool operator==(log_issue const& i) const;
   bool operator!=(log_issue const& i) const;
-  uint32_t type() const;
-  static uint32_t static_type();
+  static uint32_t static_type() {
+  return io::events::data_type<io::events::correlation,
+                                correlation::de_log_issue>::value;
+}
 
   timestamp log_ctime;
   uint32_t host_id;

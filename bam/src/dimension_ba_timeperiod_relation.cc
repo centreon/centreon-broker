@@ -25,7 +25,10 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 dimension_ba_timeperiod_relation::dimension_ba_timeperiod_relation()
-    : ba_id(0), timeperiod_id(0), is_default(false) {}
+    : io::data(dimension_ba_timeperiod_relation::static_type()),
+      ba_id(0),
+      timeperiod_id(0),
+      is_default(false) {}
 
 /**
  *  Copy constructor.
@@ -70,15 +73,6 @@ bool dimension_ba_timeperiod_relation::operator==(
     dimension_ba_timeperiod_relation const& other) const {
   return ((ba_id == other.ba_id) && (timeperiod_id == other.timeperiod_id) &&
           (is_default == other.is_default));
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_ba_timeperiod_relation::type() const {
-  return dimension_ba_timeperiod_relation::static_type();
 }
 
 /**

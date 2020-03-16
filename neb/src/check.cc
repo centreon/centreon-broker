@@ -29,8 +29,12 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-check::check()
-    : active_checks_enabled(false), check_type(0), host_id(0), next_check(0) {}
+check::check(uint32_t type)
+    : io::data(type),
+      active_checks_enabled(false),
+      check_type(0),
+      host_id(0),
+      next_check(0) {}
 
 /**
  *  Copy constructor.

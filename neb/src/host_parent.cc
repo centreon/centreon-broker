@@ -30,7 +30,11 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-host_parent::host_parent() : enabled(true), host_id(0), parent_id(0) {}
+host_parent::host_parent()
+    : io::data(host_parent::static_type()),
+      enabled(true),
+      host_id(0),
+      parent_id(0) {}
 
 /**
  *  Copy constructor.
@@ -63,15 +67,6 @@ host_parent& host_parent::operator=(host_parent const& other) {
     parent_id = other.parent_id;
   }
   return *this;
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The event_type.
- */
-uint32_t host_parent::type() const {
-  return host_parent::static_type();
 }
 
 /**************************************

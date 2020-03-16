@@ -49,7 +49,6 @@ class service : public host_service, public service_status {
   service(service const& other);
   ~service();
   service& operator=(service const& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::neb, neb::de_service>::value;
   }

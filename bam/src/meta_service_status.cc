@@ -27,7 +27,10 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 meta_service_status::meta_service_status()
-    : meta_service_id(0), state_changed(false), value(NAN) {}
+    : io::data(meta_service_status::static_type()),
+      meta_service_id(0),
+      state_changed(false),
+      value(NAN) {}
 
 /**
  *  Copy constructor.
@@ -58,15 +61,6 @@ meta_service_status& meta_service_status::operator=(
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get event type.
- *
- *  @return Event type.
- */
-uint32_t meta_service_status::type() const {
-  return meta_service_status::static_type();
 }
 
 /**

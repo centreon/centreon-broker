@@ -31,8 +31,9 @@ using namespace com::centreon::broker::neb;
  *
  *  Initialize members to 0, NULL or equivalent.
  */
-host_service_status::host_service_status()
-    : acknowledged(false),
+host_service_status::host_service_status(uint32_t type)
+    : status(type),
+      acknowledged(false),
       acknowledgement_type(0),
       active_checks_enabled(false),
       check_interval(0.0),

@@ -22,11 +22,11 @@
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
+index_mapping::index_mapping()
+    : io::data(index_mapping::static_type()),
+      index_id(0),
+      host_id(0),
+      service_id(0) {}
 
 /**
  *  Constructor
@@ -38,16 +38,10 @@ using namespace com::centreon::broker::storage;
 index_mapping::index_mapping(uint32_t index_id,
                              uint32_t host_id,
                              uint32_t service_id)
-    : index_id{index_id}, host_id{host_id}, service_id{service_id} {}
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-uint32_t index_mapping::type() const {
-  return index_mapping::static_type();
-}
+    : io::data(index_mapping::static_type()),
+      index_id{index_id},
+      host_id{host_id},
+      service_id{service_id} {}
 
 /**************************************
  *                                     *

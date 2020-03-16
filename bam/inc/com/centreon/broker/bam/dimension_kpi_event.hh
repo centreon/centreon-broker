@@ -44,7 +44,6 @@ class dimension_kpi_event : public io::data {
   ~dimension_kpi_event();
   dimension_kpi_event& operator=(dimension_kpi_event const& other);
   bool operator==(dimension_kpi_event const& other) const;
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::bam,
                                  bam::de_dimension_kpi_event>::value;

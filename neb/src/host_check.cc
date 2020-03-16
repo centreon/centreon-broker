@@ -30,7 +30,7 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-host_check::host_check() {}
+host_check::host_check() : check(host_check::static_type()) {}
 
 /**
  *  Copy constructor.
@@ -54,15 +54,6 @@ host_check::~host_check() {}
 host_check& host_check::operator=(host_check const& other) {
   check::operator=(other);
   return *this;
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The event type.
- */
-uint32_t host_check::type() const {
-  return host_check::static_type();
 }
 
 /**************************************

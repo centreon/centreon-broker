@@ -47,7 +47,6 @@ class instance_status : public status {
   instance_status(instance_status const& other);
   ~instance_status();
   instance_status& operator=(instance_status const& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::neb,
                                  neb::de_instance_status>::value;

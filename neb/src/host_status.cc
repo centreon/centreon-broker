@@ -32,8 +32,11 @@ using namespace com::centreon::broker::neb;
  *
  *  Initialize all members to 0, NULL or equivalent.
  */
-host_status::host_status()
-    : last_time_down(0), last_time_unreachable(0), last_time_up(0) {}
+host_status::host_status(uint32_t type)
+    : host_service_status(type),
+      last_time_down(0),
+      last_time_unreachable(0),
+      last_time_up(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -67,15 +70,6 @@ host_status& host_status::operator=(host_status const& other) {
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Returns the type of the event.
- *
- *  @return The event_type.
- */
-uint32_t host_status::type() const {
-  return host_status::static_type();
 }
 
 /**************************************

@@ -29,8 +29,8 @@ using namespace com::centreon::broker;
 /**
  *  Default constructor.
  */
-neb::group_member::group_member()
-    : enabled(true), group_id(0), host_id(0), poller_id(0) {}
+neb::group_member::group_member(uint32_t type)
+    : io::data(type), enabled(true), group_id(0), host_id(0), poller_id(0) {}
 
 /**
  *  Copy constructor.

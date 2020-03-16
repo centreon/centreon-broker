@@ -32,7 +32,7 @@ using namespace com::centreon::broker::neb;
  *
  *  Set all members to their default value (0, NULL or equivalent).
  */
-host_group::host_group() {}
+host_group::host_group() : group(host_group::static_type()) {}
 
 /**
  *  @brief Copy constructor.
@@ -60,15 +60,6 @@ host_group::~host_group() {}
 host_group& host_group::operator=(host_group const& other) {
   group::operator=(other);
   return *this;
-}
-
-/**
- *  Get this object type.
- *
- *  @return This object type.
- */
-uint32_t host_group::type() const {
-  return static_type();
 }
 
 /**************************************

@@ -42,7 +42,6 @@ class inherited_downtime : public io::data {
   inherited_downtime(inherited_downtime const& other);
   ~inherited_downtime();
   inherited_downtime& operator=(inherited_downtime const& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::bam,
                                  bam::de_inherited_downtime>::value;

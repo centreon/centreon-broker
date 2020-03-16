@@ -38,7 +38,8 @@ namespace neb {
  */
 class status : public io::data {
  public:
-  status();
+  status() = delete;
+  status(uint32_t type);
   status(status const& s);
   virtual ~status();
   status& operator=(status const& s);

@@ -46,7 +46,6 @@ class dimension_truncate_table_signal : public io::data {
   dimension_truncate_table_signal& operator=(
       dimension_truncate_table_signal const& other);
   bool operator==(dimension_truncate_table_signal const& other) const;
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<
         io::events::bam, bam::de_dimension_truncate_table_signal>::value;

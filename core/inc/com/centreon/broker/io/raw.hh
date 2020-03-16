@@ -42,7 +42,6 @@ class raw : public data {
   raw(raw const& r);
   ~raw();
   raw& operator=(raw const& r);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return events::data_type<events::internal, events::de_raw>::value;
   }

@@ -43,7 +43,6 @@ class meta_service_status : public io::data {
   meta_service_status(meta_service_status const& other);
   ~meta_service_status();
   meta_service_status& operator=(meta_service_status const& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::bam,
                                  bam::de_meta_service_status>::value;

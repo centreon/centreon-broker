@@ -46,7 +46,6 @@ class downtime : public io::data {
   downtime(downtime const& other);
   ~downtime();
   downtime& operator=(downtime const& other);
-  uint32_t type() const;
   bool operator==(downtime const& other) const;
 
   /**

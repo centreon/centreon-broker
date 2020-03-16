@@ -31,7 +31,8 @@ using namespace com::centreon::broker::bbdo;
  *  Default constructor.
  */
 version_response::version_response()
-    : bbdo_major(BBDO_VERSION_MAJOR),
+    : io::data(version_response::static_type()),
+      bbdo_major(BBDO_VERSION_MAJOR),
       bbdo_minor(BBDO_VERSION_MINOR),
       bbdo_patch(BBDO_VERSION_PATCH) {}
 
@@ -63,15 +64,6 @@ version_response& version_response::operator=(version_response const& other) {
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-uint32_t version_response::type() const {
-  return version_response::static_type();
 }
 
 /**************************************

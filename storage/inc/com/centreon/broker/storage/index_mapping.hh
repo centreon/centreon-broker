@@ -40,12 +40,11 @@ namespace storage {
  */
 class index_mapping : public io::data {
  public:
-  index_mapping() = default;
+  index_mapping();
   index_mapping(uint32_t index_id, uint32_t host_id, uint32_t service_id);
   index_mapping(index_mapping const& other) = delete;
   ~index_mapping() = default;
   index_mapping& operator=(index_mapping const& other) = delete;
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::storage,
                                  storage::de_index_mapping>::value;

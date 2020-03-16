@@ -30,7 +30,8 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-service_check::service_check() : service_id(0) {}
+service_check::service_check()
+    : check(service_check::static_type()), service_id(0) {}
 
 /**
  *  Copy constructor.
@@ -56,15 +57,6 @@ service_check& service_check::operator=(service_check const& sc) {
   check::operator=(sc);
   service_id = sc.service_id;
   return *this;
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The event_type.
- */
-uint32_t service_check::type() const {
-  return service_check::static_type();
 }
 
 /**************************************

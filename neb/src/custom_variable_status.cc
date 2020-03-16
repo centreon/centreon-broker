@@ -30,8 +30,12 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-custom_variable_status::custom_variable_status()
-    : host_id(0), modified(true), service_id(0), update_time(0) {}
+custom_variable_status::custom_variable_status(uint32_t type)
+    : io::data(type),
+      host_id(0),
+      modified(true),
+      service_id(0),
+      update_time(0) {}
 
 /**
  *  Copy constructor.
@@ -63,15 +67,6 @@ custom_variable_status& custom_variable_status::operator=(
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The event type.
- */
-uint32_t custom_variable_status::type() const {
-  return custom_variable_status::static_type();
 }
 
 /**************************************

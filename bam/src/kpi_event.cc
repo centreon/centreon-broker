@@ -25,7 +25,8 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 kpi_event::kpi_event()
-    : kpi_id(0),
+    : io::data(kpi_event::static_type()),
+      kpi_id(0),
       impact_level(0),
       in_downtime(false),
       status(kpi_event::state::state_unknown),
@@ -73,15 +74,6 @@ bool kpi_event::operator==(kpi_event const& other) const {
           (in_downtime == other.in_downtime) && (output == other.output) &&
           (perfdata == other.perfdata) && (start_time == other.start_time) &&
           (status == other.status) && (ba_id == other.ba_id));
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t kpi_event::type() const {
-  return kpi_event::static_type();
 }
 
 /**

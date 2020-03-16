@@ -25,7 +25,8 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 ba_duration_event::ba_duration_event()
-    : ba_id(0),
+    : io::data(ba_duration_event::static_type()),
+      ba_id(0),
       duration(0),
       sla_duration(0),
       timeperiod_id(0),
@@ -76,15 +77,6 @@ bool ba_duration_event::operator==(ba_duration_event const& other) const {
       (duration == other.duration) && (sla_duration == other.sla_duration) &&
       (timeperiod_id == other.timeperiod_id) &&
       (timeperiod_is_default == other.timeperiod_is_default));
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t ba_duration_event::type() const {
-  return ba_duration_event::static_type();
 }
 
 /**

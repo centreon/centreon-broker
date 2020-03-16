@@ -30,7 +30,8 @@ using namespace com::centreon::broker::storage;
 /**
  *  Default constructor.
  */
-rebuild::rebuild() : end(true), id(0), is_index(false) {}
+rebuild::rebuild()
+    : io::data(rebuild::static_type()), end(true), id(0), is_index(false) {}
 
 /**
  *  Copy constructor.
@@ -59,15 +60,6 @@ rebuild& rebuild::operator=(rebuild const& right) {
     _internal_copy(right);
   }
   return *this;
-}
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-uint32_t rebuild::type() const {
-  return rebuild::static_type();
 }
 
 /**************************************

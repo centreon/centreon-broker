@@ -25,7 +25,8 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 dimension_truncate_table_signal::dimension_truncate_table_signal()
-    : update_started(true) {}
+    : io::data(dimension_truncate_table_signal::static_type()),
+      update_started(true) {}
 
 /**
  *  Copy constructor.
@@ -69,15 +70,6 @@ dimension_truncate_table_signal& dimension_truncate_table_signal::operator=(
 bool dimension_truncate_table_signal::operator==(
     dimension_truncate_table_signal const& other) const {
   return update_started == other.update_started;
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_truncate_table_signal::type() const {
-  return dimension_truncate_table_signal::static_type();
 }
 
 /**

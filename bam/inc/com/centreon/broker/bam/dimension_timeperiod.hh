@@ -44,7 +44,6 @@ class dimension_timeperiod : public io::data {
   dimension_timeperiod(dimension_timeperiod const&);
   dimension_timeperiod& operator=(dimension_timeperiod const&);
   bool operator==(dimension_timeperiod const& other) const;
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::bam,
                                  bam::de_dimension_timeperiod>::value;

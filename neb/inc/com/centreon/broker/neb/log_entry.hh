@@ -64,7 +64,6 @@ class log_entry : public io::data {
   log_entry(log_entry const& other);
   ~log_entry();
   log_entry& operator=(const log_entry& other);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::neb, neb::de_log_entry>::value;
   }

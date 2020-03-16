@@ -24,7 +24,8 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-dimension_timeperiod::dimension_timeperiod() {}
+dimension_timeperiod::dimension_timeperiod()
+    : io::data(dimension_timeperiod::static_type()) {}
 
 /**
  *  Copy constructor.
@@ -70,15 +71,6 @@ bool dimension_timeperiod::operator==(dimension_timeperiod const& other) const {
           (wednesday == other.wednesday) && (thursday == other.thursday) &&
           (friday == other.friday) && (saturday == other.saturday) &&
           (sunday == other.sunday));
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_timeperiod::type() const {
-  return dimension_timeperiod::static_type();
 }
 
 /**

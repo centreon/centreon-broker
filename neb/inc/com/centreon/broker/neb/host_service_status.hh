@@ -40,7 +40,8 @@ namespace neb {
  */
 class host_service_status : public status {
  public:
-  host_service_status();
+  host_service_status() = delete;
+  host_service_status(uint32_t type);
   host_service_status(host_service_status const& hss);
   virtual ~host_service_status();
   host_service_status& operator=(host_service_status const& hss);

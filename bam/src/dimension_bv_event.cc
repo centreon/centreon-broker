@@ -24,7 +24,8 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-dimension_bv_event::dimension_bv_event() : bv_id(0) {}
+dimension_bv_event::dimension_bv_event()
+    : io::data(dimension_bv_event::static_type()), bv_id(0) {}
 
 /**
  *  Copy constructor.
@@ -67,15 +68,6 @@ dimension_bv_event& dimension_bv_event::operator=(
 bool dimension_bv_event::operator==(dimension_bv_event const& other) const {
   return ((bv_id == other.bv_id) && (bv_name == other.bv_name) &&
           (bv_description == other.bv_description));
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_bv_event::type() const {
-  return dimension_bv_event::static_type();
 }
 
 /**

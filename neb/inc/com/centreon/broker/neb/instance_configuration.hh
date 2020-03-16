@@ -20,10 +20,13 @@
 #define CCB_NEB_INSTANCE_CONFIGURATION_HH
 
 #include <string>
+
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
@@ -43,7 +46,10 @@ class instance_configuration : public io::data {
   instance_configuration(instance_configuration const& i);
   ~instance_configuration();
   instance_configuration& operator=(instance_configuration const& i);
-  uint32_t type() const;
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb,
+                                 neb::de_instance_configuration>::value;
+  }
 
   bool loaded;
   uint32_t poller_id;

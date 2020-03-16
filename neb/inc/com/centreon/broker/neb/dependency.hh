@@ -37,7 +37,8 @@ namespace neb {
  */
 class dependency : public io::data {
  public:
-  dependency();
+   dependency() = delete;
+  dependency(uint32_t type);
   dependency(dependency const& dep);
   virtual ~dependency();
   dependency& operator=(dependency const& dep);

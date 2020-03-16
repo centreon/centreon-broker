@@ -41,7 +41,6 @@ class rebuild : public io::data {
   rebuild(rebuild const& right);
   ~rebuild();
   rebuild& operator=(rebuild const& right);
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::storage,
                                  storage::de_rebuild>::value;

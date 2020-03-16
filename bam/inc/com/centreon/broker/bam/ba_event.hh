@@ -42,7 +42,6 @@ class ba_event : public io::data {
   ~ba_event();
   ba_event& operator=(ba_event const& other);
   bool operator==(ba_event const& other) const;
-  uint32_t type() const;
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::bam, bam::de_ba_event>::value;
   }

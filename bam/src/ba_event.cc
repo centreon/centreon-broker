@@ -25,7 +25,11 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 ba_event::ba_event()
-    : ba_id(0), first_level(0), in_downtime(false), status(3) {}
+    : io::data(ba_event::static_type()),
+      ba_id(0),
+      first_level(0),
+      in_downtime(false),
+      status(3) {}
 
 /**
  *  Copy constructor.
@@ -67,15 +71,6 @@ bool ba_event::operator==(ba_event const& other) const {
   return ((ba_id == other.ba_id) && (first_level == other.first_level) &&
           (end_time == other.end_time) && (in_downtime == other.in_downtime) &&
           (start_time == other.start_time) && (status == other.status));
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t ba_event::type() const {
-  return ba_event::static_type();
 }
 
 /**

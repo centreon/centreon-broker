@@ -30,7 +30,10 @@ using namespace com::centreon::broker;
  *  Default constructor.
  */
 instance_broadcast::instance_broadcast()
-    : broker_id(0), enabled(true), poller_id(0) {}
+    : io::data(instance_broadcast::static_type()),
+      broker_id(0),
+      enabled(true),
+      poller_id(0) {}
 
 /**
  *  Copy constructor.
@@ -61,15 +64,6 @@ instance_broadcast& instance_broadcast::operator=(
     _internal_copy(other);
   }
   return *this;
-}
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-uint32_t instance_broadcast::type() const {
-  return instance_broadcast::static_type();
 }
 
 /**

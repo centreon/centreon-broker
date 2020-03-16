@@ -35,7 +35,8 @@ using namespace com::centreon::broker::storage;
  *  Default constructor.
  */
 metric::metric()
-    : ctime(0),
+    : io::data(metric::static_type()),
+      ctime(0),
       interval(0),
       is_for_rebuild(false),
       metric_id(0),
@@ -55,7 +56,8 @@ metric::metric(uint32_t host_id,
                int32_t rrd_len,
                double value,
                short value_type)
-    : ctime{ctime},
+    : io::data(metric::static_type()),
+      ctime{ctime},
       interval{interval},
       is_for_rebuild{is_for_rebuild},
       metric_id{metric_id},
@@ -65,15 +67,6 @@ metric::metric(uint32_t host_id,
       value_type{value_type},
       host_id{host_id},
       service_id{service_id} {}
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-uint32_t metric::type() const {
-  return metric::static_type();
-}
 
 /**************************************
  *                                     *
