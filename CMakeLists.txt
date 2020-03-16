@@ -79,7 +79,6 @@ configure_file(
 )
 
 include(cmake/tool.cmake)
-include(ExternalProject)
 
 #
 # Check and/or find required components.

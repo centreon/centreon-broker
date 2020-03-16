@@ -16,8 +16,6 @@
 ## For more information : contact@centreon.com
 ##
 
-include(ExternalProject)
-
 find_package(gtest REQUIRED)
 include_directories(${gtest_INCLUDE_DIRS})
 link_directories(${gtest_LIB_DIRS})

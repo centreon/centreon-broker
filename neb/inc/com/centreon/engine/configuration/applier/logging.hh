@@ -40,8 +40,6 @@ class logging {
  public:
   void apply(configuration::state& config);
   static logging& instance();
-  static void load();
-  static void unload();
 
  private:
   logging();
