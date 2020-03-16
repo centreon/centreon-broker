@@ -594,8 +594,8 @@ void conflict_manager::_finish_actions() {
     _pending_queries -= retval;
     _ack[c] = retval;
   }
-  logging::debug(logging::high) << "conflict_manager: still " << _pending_queries
-    << " not acknowledged";
+  log_v2::sql()->debug("conflict_manager: still {} not acknowledged",
+                       _pending_queries);
 }
 
 /**
