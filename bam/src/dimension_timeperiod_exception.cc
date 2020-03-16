@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/dimension_timeperiod_exception.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -58,7 +56,7 @@ dimension_timeperiod_exception& dimension_timeperiod_exception::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -67,17 +65,7 @@ dimension_timeperiod_exception& dimension_timeperiod_exception::operator=(
  *  @return Event type.
  */
 uint32_t dimension_timeperiod_exception::type() const {
-  return (dimension_timeperiod_exception::static_type());
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_timeperiod_exception::static_type() {
-  return (io::events::data_type<io::events::bam,
-                                bam::de_dimension_timeperiod_exception>::value);
+  return dimension_timeperiod_exception::static_type();
 }
 
 /**
@@ -90,7 +78,6 @@ void dimension_timeperiod_exception::_internal_copy(
   daterange = other.daterange;
   timerange = other.timerange;
   timeperiod_id = other.timeperiod_id;
-  return;
 }
 
 /**************************************
@@ -112,7 +99,7 @@ mapping::entry const dimension_timeperiod_exception::entries[] = {
 
 // Operations.
 static io::data* new_dimension_timeperiod_exception() {
-  return (new dimension_timeperiod_exception);
+  return new dimension_timeperiod_exception;
 }
 io::event_info::event_operations const
     dimension_timeperiod_exception::operations = {

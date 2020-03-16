@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/storage/status.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/storage/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
@@ -88,26 +86,7 @@ status::~status() {}
 status& status::operator=(status const& s) {
   io::data::operator=(s);
   _internal_copy(s);
-  return (*this);
-}
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-uint32_t status::type() const {
-  return (status::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t status::static_type() {
-  return (
-      io::events::data_type<io::events::storage, storage::de_status>::value);
+  return *this;
 }
 
 /**************************************
@@ -128,7 +107,6 @@ void status::_internal_copy(status const& s) {
   is_for_rebuild = s.is_for_rebuild;
   rrd_len = s.rrd_len;
   state = s.state;
-  return;
 }
 
 /**************************************
@@ -153,6 +131,6 @@ mapping::entry const status::entries[] = {
 
 // Operations.
 static io::data* new_status() {
-  return (new status);
+  return new status;
 }
 io::event_info::event_operations const status::operations = {&new_status};

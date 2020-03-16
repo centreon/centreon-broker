@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/flapping_status.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -70,7 +68,7 @@ flapping_status& flapping_status::operator=(flapping_status const& other) {
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -79,17 +77,7 @@ flapping_status& flapping_status::operator=(flapping_status const& other) {
  *  @return The event type.
  */
 uint32_t flapping_status::type() const {
-  return (flapping_status::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t flapping_status::static_type() {
-  return (
-      io::events::data_type<io::events::neb, neb::de_flapping_status>::value);
+  return flapping_status::static_type();
 }
 
 /**************************************
@@ -113,7 +101,6 @@ void flapping_status::_internal_copy(flapping_status const& other) {
   percent_state_change = other.percent_state_change;
   reason_type = other.reason_type;
   service_id = other.service_id;
-  return;
 }
 
 /**************************************
@@ -142,7 +129,7 @@ mapping::entry const flapping_status::entries[] = {
 
 // Operations.
 static io::data* new_flapping() {
-  return (new flapping_status);
+  return new flapping_status;
 }
 io::event_info::event_operations const flapping_status::operations = {
     &new_flapping};

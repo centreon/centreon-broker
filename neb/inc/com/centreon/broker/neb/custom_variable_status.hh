@@ -20,10 +20,13 @@
 #define CCB_NEB_CUSTOM_VARIABLE_STATUS_HH
 
 #include <string>
+
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
@@ -43,7 +46,10 @@ class custom_variable_status : public io::data {
   virtual ~custom_variable_status();
   custom_variable_status& operator=(custom_variable_status const& other);
   virtual uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb,
+                                 neb::de_custom_variable_status>::value;
+  }
 
   uint32_t host_id;
   bool modified;

@@ -20,9 +20,11 @@
 #define CCB_NEB_HOST_CHECK_HH
 
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/check.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 CCB_BEGIN()
 
@@ -41,11 +43,13 @@ class host_check : public check {
   virtual ~host_check();
   host_check& operator=(host_check const& other);
   uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb, neb::de_host_check>::value;
+  }
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;
-};
+};  // namespace neb
 }  // namespace neb
 
 CCB_END()

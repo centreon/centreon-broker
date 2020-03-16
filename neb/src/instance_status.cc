@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/instance_status.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -75,7 +73,7 @@ instance_status& instance_status::operator=(instance_status const& other) {
     status::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -84,17 +82,7 @@ instance_status& instance_status::operator=(instance_status const& other) {
  *  @return The event_type.
  */
 uint32_t instance_status::type() const {
-  return (instance_status::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t instance_status::static_type() {
-  return (
-      io::events::data_type<io::events::neb, neb::de_instance_status>::value);
+  return instance_status::static_type();
 }
 
 /**************************************
@@ -126,7 +114,6 @@ void instance_status::_internal_copy(instance_status const& other) {
   passive_host_checks_enabled = other.passive_host_checks_enabled;
   passive_service_checks_enabled = other.passive_service_checks_enabled;
   poller_id = other.poller_id;
-  return;
 }
 
 /**************************************
@@ -188,6 +175,6 @@ mapping::entry const instance_status::entries[] = {
 
 // Operations.
 static io::data* new_is() {
-  return (new instance_status);
+  return new instance_status;
 }
 io::event_info::event_operations const instance_status::operations = {&new_is};

@@ -77,7 +77,7 @@ downtime::~downtime() {}
 downtime& downtime::operator=(downtime const& other) {
   io::data::operator=(other);
   _internal_copy(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -86,7 +86,7 @@ downtime& downtime::operator=(downtime const& other) {
  *  @return The event type.
  */
 uint32_t downtime::type() const {
-  return (downtime::static_type());
+  return downtime::static_type();
 }
 
 /**
@@ -213,6 +213,6 @@ mapping::entry const downtime::entries[] = {
 
 // Operations.
 static io::data* new_downtime() {
-  return (new downtime);
+  return new downtime;
 }
 io::event_info::event_operations const downtime::operations = {&new_downtime};

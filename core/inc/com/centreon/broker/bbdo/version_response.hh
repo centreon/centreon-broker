@@ -20,6 +20,7 @@
 #define CCB_BBDO_VERSION_RESPONSE_HH
 
 #include <string>
+
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
@@ -50,7 +51,7 @@ class version_response : public io::data {
    *
    *  @return The event type.
    */
-  static uint32_t static_type() {
+  constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::bbdo,
                                  bbdo::de_version_response>::value;
   }

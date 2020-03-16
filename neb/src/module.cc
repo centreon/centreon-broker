@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/module.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -61,7 +59,7 @@ module& module::operator=(module const& other) {
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -70,16 +68,7 @@ module& module::operator=(module const& other) {
  *  @return The event_type.
  */
 uint32_t module::type() const {
-  return (module::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t module::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_module>::value);
+  return module::static_type();
 }
 
 /**************************************
@@ -100,7 +89,6 @@ void module::_internal_copy(module const& other) {
   loaded = other.loaded;
   poller_id = other.poller_id;
   should_be_loaded = other.should_be_loaded;
-  return;
 }
 
 /**************************************
@@ -123,6 +111,6 @@ mapping::entry const module::entries[] = {
 
 // Operations.
 static io::data* new_module() {
-  return (new module);
+  return new module;
 }
 io::event_info::event_operations const module::operations = {&new_module};

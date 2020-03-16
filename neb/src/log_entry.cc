@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/log_entry.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -72,7 +70,7 @@ log_entry::~log_entry() {}
 log_entry& log_entry::operator=(log_entry const& le) {
   io::data::operator=(le);
   _internal_copy(le);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -81,16 +79,7 @@ log_entry& log_entry::operator=(log_entry const& le) {
  *  @return The event_type.
  */
 uint32_t log_entry::type() const {
-  return (log_entry::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t log_entry::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_log_entry>::value);
+  return log_entry::static_type();
 }
 
 /**************************************
@@ -123,7 +112,6 @@ void log_entry::_internal_copy(log_entry const& le) {
   service_description = le.service_description;
   service_id = le.service_id;
   status = le.status;
-  return;
 }
 
 /**************************************
@@ -168,6 +156,6 @@ mapping::entry const log_entry::entries[] = {
 
 // Operations.
 static io::data* new_log_entry() {
-  return (new log_entry);
+  return new log_entry;
 }
 io::event_info::event_operations const log_entry::operations = {&new_log_entry};

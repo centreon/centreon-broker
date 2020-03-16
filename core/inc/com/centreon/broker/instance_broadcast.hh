@@ -20,6 +20,7 @@
 #define CCB_INSTANCE_BROADCAST_HH
 
 #include <string>
+
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
 #include "com/centreon/broker/io/events.hh"
@@ -46,9 +47,9 @@ class instance_broadcast : public io::data {
    *
    *  @return The event type.
    */
-  static uint32_t static_type() {
-    return (io::events::data_type<io::events::internal,
-                                  io::events::de_instance_broadcast>::value);
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::internal,
+                                 io::events::de_instance_broadcast>::value;
   }
 
   uint32_t broker_id;

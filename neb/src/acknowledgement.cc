@@ -73,7 +73,7 @@ acknowledgement::~acknowledgement() {}
 acknowledgement& acknowledgement::operator=(acknowledgement const& other) {
   io::data::operator=(other);
   _internal_copy(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -85,7 +85,7 @@ acknowledgement& acknowledgement::operator=(acknowledgement const& other) {
  *  @return The event type.
  */
 uint32_t acknowledgement::type() const {
-  return (acknowledgement::static_type());
+  return acknowledgement::static_type();
 }
 
 /**************************************
@@ -162,6 +162,6 @@ mapping::entry const acknowledgement::entries[] = {
 
 // Operations.
 static io::data* new_ack() {
-  return (new acknowledgement);
+  return new acknowledgement;
 }
 io::event_info::event_operations const acknowledgement::operations = {&new_ack};

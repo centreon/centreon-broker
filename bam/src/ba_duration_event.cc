@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/ba_duration_event.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -61,7 +59,7 @@ ba_duration_event& ba_duration_event::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -86,17 +84,7 @@ bool ba_duration_event::operator==(ba_duration_event const& other) const {
  *  @return Event type.
  */
 uint32_t ba_duration_event::type() const {
-  return (ba_duration_event::static_type());
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t ba_duration_event::static_type() {
-  return (
-      io::events::data_type<io::events::bam, bam::de_ba_duration_event>::value);
+  return ba_duration_event::static_type();
 }
 
 /**
@@ -113,7 +101,6 @@ void ba_duration_event::_internal_copy(ba_duration_event const& other) {
   sla_duration = other.sla_duration;
   timeperiod_id = other.timeperiod_id;
   timeperiod_is_default = other.timeperiod_is_default;
-  return;
 }
 
 /**************************************
@@ -141,7 +128,7 @@ mapping::entry const ba_duration_event::entries[] = {
 
 // Operations.
 static io::data* new_ba_duration_event() {
-  return (new ba_duration_event);
+  return new ba_duration_event;
 }
 io::event_info::event_operations const ba_duration_event::operations = {
     &new_ba_duration_event};

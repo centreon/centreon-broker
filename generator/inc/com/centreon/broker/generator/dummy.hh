@@ -50,9 +50,9 @@ class dummy : public io::data {
    *
    *  @return  The event type.
    */
-  static uint32_t static_type() {
-    return (io::events::data_type<io::events::generator,
-                                  generator::de_dummy>::value);
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::generator,
+                                 generator::de_dummy>::value;
   }
 
   uint32_t number;

@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bbdo/version_response.hh"
-#include "com/centreon/broker/bbdo/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -64,7 +62,7 @@ version_response& version_response::operator=(version_response const& other) {
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -73,7 +71,7 @@ version_response& version_response::operator=(version_response const& other) {
  *  @return The event type.
  */
 uint32_t version_response::type() const {
-  return (version_response::static_type());
+  return version_response::static_type();
 }
 
 /**************************************
@@ -92,7 +90,6 @@ void version_response::_internal_copy(version_response const& other) {
   bbdo_minor = other.bbdo_minor;
   bbdo_patch = other.bbdo_patch;
   extensions = other.extensions;
-  return;
 }
 
 /**************************************
@@ -111,7 +108,7 @@ mapping::entry const version_response::entries[] = {
 
 // Operations.
 static io::data* new_version_response() {
-  return (new version_response);
+  return new version_response;
 }
 io::event_info::event_operations const version_response::operations = {
     &new_version_response};

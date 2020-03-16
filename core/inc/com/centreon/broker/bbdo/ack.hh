@@ -48,8 +48,8 @@ class ack : public io::data {
    *
    *  @return The event type.
    */
-  static uint32_t static_type() {
-    return (io::events::data_type<io::events::bbdo, bbdo::de_ack>::value);
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::bbdo, bbdo::de_ack>::value;
   }
 
   uint32_t acknowledged_events;

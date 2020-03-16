@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/custom_variable_status.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -64,7 +62,7 @@ custom_variable_status& custom_variable_status::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -73,17 +71,7 @@ custom_variable_status& custom_variable_status::operator=(
  *  @return The event type.
  */
 uint32_t custom_variable_status::type() const {
-  return (custom_variable_status::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t custom_variable_status::static_type() {
-  return (io::events::data_type<io::events::neb,
-                                neb::de_custom_variable_status>::value);
+  return custom_variable_status::static_type();
 }
 
 /**************************************
@@ -105,7 +93,6 @@ void custom_variable_status::_internal_copy(
   service_id = other.service_id;
   update_time = other.update_time;
   value = other.value;
-  return;
 }
 
 /**************************************
@@ -132,7 +119,7 @@ mapping::entry const custom_variable_status::entries[] = {
 
 // Operations.
 static io::data* new_custom_var_status() {
-  return (new custom_variable_status);
+  return new custom_variable_status;
 }
 io::event_info::event_operations const custom_variable_status::operations = {
     &new_custom_var_status};

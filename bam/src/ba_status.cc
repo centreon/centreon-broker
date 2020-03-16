@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/ba_status.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -61,7 +59,7 @@ ba_status& ba_status::operator=(ba_status const& other) {
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -70,16 +68,7 @@ ba_status& ba_status::operator=(ba_status const& other) {
  *  @return Event type.
  */
 uint32_t ba_status::type() const {
-  return (ba_status::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t ba_status::static_type() {
-  return (io::events::data_type<io::events::bam, bam::de_ba_status>::value);
+  return ba_status::static_type();
 }
 
 /**
@@ -96,7 +85,6 @@ void ba_status::_internal_copy(ba_status const& other) {
   level_nominal = other.level_nominal;
   state = other.state;
   state_changed = other.state_changed;
-  return;
 }
 
 /**************************************
@@ -122,6 +110,6 @@ mapping::entry const ba_status::entries[] = {
 
 // Operations.
 static io::data* new_ba_status() {
-  return (new ba_status);
+  return new ba_status;
 }
 io::event_info::event_operations const ba_status::operations = {&new_ba_status};

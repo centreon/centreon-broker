@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/service_check.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -57,7 +55,7 @@ service_check::~service_check() {}
 service_check& service_check::operator=(service_check const& sc) {
   check::operator=(sc);
   service_id = sc.service_id;
-  return (*this);
+  return *this;
 }
 
 /**
@@ -66,16 +64,7 @@ service_check& service_check::operator=(service_check const& sc) {
  *  @return The event_type.
  */
 uint32_t service_check::type() const {
-  return (service_check::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t service_check::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_service_check>::value);
+  return service_check::static_type();
 }
 
 /**************************************
@@ -100,7 +89,7 @@ mapping::entry const service_check::entries[] = {
 
 // Operations.
 static io::data* new_service_check() {
-  return (new service_check);
+  return new service_check;
 }
 io::event_info::event_operations const service_check::operations = {
     &new_service_check};

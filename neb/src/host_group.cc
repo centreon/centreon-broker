@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/host_group.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -61,7 +59,7 @@ host_group::~host_group() {}
  */
 host_group& host_group::operator=(host_group const& other) {
   group::operator=(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -70,16 +68,7 @@ host_group& host_group::operator=(host_group const& other) {
  *  @return This object type.
  */
 uint32_t host_group::type() const {
-  return (static_type());
-}
-
-/**
- *  Get the class type.
- *
- *  @return Class type.
- */
-uint32_t host_group::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_host_group>::value);
+  return static_type();
 }
 
 /**************************************
@@ -102,7 +91,7 @@ mapping::entry const host_group::entries[] = {
 
 // Operations.
 static io::data* new_host_group() {
-  return (new host_group);
+  return new host_group;
 }
 io::event_info::event_operations const host_group::operations = {
     &new_host_group};

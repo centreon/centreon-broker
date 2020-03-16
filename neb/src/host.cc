@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/host.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -82,7 +80,7 @@ host& host::operator=(host const& other) {
     host_status::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -91,16 +89,7 @@ host& host::operator=(host const& other) {
  *  @return The event type.
  */
 uint32_t host::type() const {
-  return (host::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t host::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_host>::value);
+  return host::static_type();
 }
 
 /**************************************
@@ -407,6 +396,6 @@ mapping::entry const host::entries[] = {
 
 // Operations.
 static io::data* new_host() {
-  return (new host);
+  return new host;
 }
 io::event_info::event_operations const host::operations = {&new_host};

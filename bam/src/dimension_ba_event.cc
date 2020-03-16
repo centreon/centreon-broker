@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/dimension_ba_event.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -61,7 +59,7 @@ dimension_ba_event& dimension_ba_event::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -72,7 +70,7 @@ dimension_ba_event& dimension_ba_event::operator=(
  *  @return  True if the two objects are equal.
  */
 bool dimension_ba_event::operator==(dimension_ba_event const& other) const {
-  return ((ba_id == other.ba_id));
+  return (ba_id == other.ba_id);
 }
 
 /**
@@ -81,17 +79,7 @@ bool dimension_ba_event::operator==(dimension_ba_event const& other) const {
  *  @return Event type.
  */
 uint32_t dimension_ba_event::type() const {
-  return (dimension_ba_event::static_type());
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_ba_event::static_type() {
-  return (io::events::data_type<io::events::bam,
-                                bam::de_dimension_ba_event>::value);
+  return dimension_ba_event::static_type();
 }
 
 /**
@@ -107,7 +95,6 @@ void dimension_ba_event::_internal_copy(dimension_ba_event const& other) {
   sla_month_percent_warn = other.sla_month_percent_warn;
   sla_duration_crit = other.sla_duration_crit;
   sla_duration_warn = other.sla_duration_warn;
-  return;
 }
 
 /**************************************
@@ -135,7 +122,7 @@ mapping::entry const dimension_ba_event::entries[] = {
 
 // Operations.
 static io::data* new_dimension_ba_event() {
-  return (new dimension_ba_event);
+  return new dimension_ba_event;
 }
 io::event_info::event_operations const dimension_ba_event::operations = {
     &new_dimension_ba_event};

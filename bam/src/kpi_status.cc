@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/kpi_status.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -67,7 +65,7 @@ kpi_status& kpi_status::operator=(kpi_status const& other) {
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -76,17 +74,9 @@ kpi_status& kpi_status::operator=(kpi_status const& other) {
  *  @return Event type.
  */
 uint32_t kpi_status::type() const {
-  return (kpi_status::static_type());
+  return kpi_status::static_type();
 }
 
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t kpi_status::static_type() {
-  return (io::events::data_type<io::events::bam, bam::de_kpi_status>::value);
-}
 /**
  *  Copy internal data members.
  *
@@ -106,7 +96,6 @@ void kpi_status::_internal_copy(kpi_status const& other) {
   last_state_change = other.last_state_change;
   last_impact = other.last_impact;
   valid = other.valid;
-  return;
 }
 
 /**************************************
@@ -140,7 +129,7 @@ mapping::entry const kpi_status::entries[] = {
 
 // Operations.
 static io::data* new_kpi_status() {
-  return (new kpi_status);
+  return new kpi_status;
 }
 io::event_info::event_operations const kpi_status::operations = {
     &new_kpi_status};

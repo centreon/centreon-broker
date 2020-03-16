@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/dimension_timeperiod_exclusion.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -68,16 +66,6 @@ dimension_timeperiod_exclusion& dimension_timeperiod_exclusion::operator=(
  */
 uint32_t dimension_timeperiod_exclusion::type() const {
   return (dimension_timeperiod_exclusion::static_type());
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_timeperiod_exclusion::static_type() {
-  return (io::events::data_type<io::events::bam,
-                                bam::de_dimension_timeperiod_exclusion>::value);
 }
 
 /**

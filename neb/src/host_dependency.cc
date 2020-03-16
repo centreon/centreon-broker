@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/host_dependency.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -66,16 +64,6 @@ host_dependency& host_dependency::operator=(host_dependency const& other) {
  */
 uint32_t host_dependency::type() const {
   return (host_dependency::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t host_dependency::static_type() {
-  return (
-      io::events::data_type<io::events::neb, neb::de_host_dependency>::value);
 }
 
 /**************************************

@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/host_check.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -55,7 +53,7 @@ host_check::~host_check() {}
  */
 host_check& host_check::operator=(host_check const& other) {
   check::operator=(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -64,16 +62,7 @@ host_check& host_check::operator=(host_check const& other) {
  *  @return The event type.
  */
 uint32_t host_check::type() const {
-  return (host_check::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t host_check::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_host_check>::value);
+  return host_check::static_type();
 }
 
 /**************************************
@@ -95,7 +84,7 @@ mapping::entry const host_check::entries[] = {
 
 // Operations.
 static io::data* new_host_check() {
-  return (new host_check);
+  return new host_check;
 }
 io::event_info::event_operations const host_check::operations = {
     &new_host_check};

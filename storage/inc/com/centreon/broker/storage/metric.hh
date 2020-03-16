@@ -60,7 +60,7 @@ class metric : public io::data {
    *
    *  @return  The event type.
    */
-  static uint32_t static_type() {
+  constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::storage,
                                  storage::de_metric>::value;
   }

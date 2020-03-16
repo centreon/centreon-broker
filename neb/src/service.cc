@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/service.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -84,7 +82,7 @@ service& service::operator=(service const& other) {
     service_status::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -93,16 +91,7 @@ service& service::operator=(service const& other) {
  *  @return The event_type.
  */
 uint32_t service::type() const {
-  return (service::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t service::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_service>::value);
+  return service::static_type();
 }
 
 /**************************************
@@ -428,6 +417,6 @@ mapping::entry const service::entries[] = {
 
 // Operations.
 static io::data* new_service() {
-  return (new service);
+  return new service;
 }
 io::event_info::event_operations const service::operations = {&new_service};
