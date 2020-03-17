@@ -24,6 +24,8 @@
 #include "com/centreon/broker/io/event_info.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/bam/internal.hh"
+#include "com/centreon/broker/io/events.hh"
 
 CCB_BEGIN()
 
@@ -42,8 +44,10 @@ class dimension_timeperiod_exception : public io::data {
   ~dimension_timeperiod_exception();
   dimension_timeperiod_exception& operator=(
       dimension_timeperiod_exception const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::bam,
+                                 bam::de_dimension_timeperiod_exception>::value;
+  }
 
   std::string daterange;
   std::string timerange;

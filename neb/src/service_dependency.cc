@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/service_dependency.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -33,7 +31,9 @@ using namespace com::centreon::broker::neb;
  *  Default constructor.
  */
 service_dependency::service_dependency()
-    : dependent_service_id(0), service_id(0) {}
+    : dependency(service_dependency::static_type()),
+      dependent_service_id(0),
+      service_id(0) {}
 
 /**
  *  Copy constructor.
@@ -63,26 +63,7 @@ service_dependency& service_dependency::operator=(
     dependency::operator=(sd);
     _internal_copy(sd);
   }
-  return (*this);
-}
-
-/**
- *  Get the type of this object.
- *
- *  @return The event_type.
- */
-uint32_t service_dependency::type() const {
-  return (service_dependency::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t service_dependency::static_type() {
-  return (io::events::data_type<io::events::neb,
-                                neb::de_service_dependency>::value);
+  return *this;
 }
 
 /**************************************
@@ -99,7 +80,6 @@ uint32_t service_dependency::static_type() {
 void service_dependency::_internal_copy(service_dependency const& sd) {
   dependent_service_id = sd.dependent_service_id;
   service_id = sd.service_id;
-  return;
 }
 
 /**************************************
@@ -136,7 +116,7 @@ mapping::entry const service_dependency::entries[] = {
 
 // Operations.
 static io::data* new_service_dependency() {
-  return (new service_dependency);
+  return new service_dependency;
 }
 io::event_info::event_operations const service_dependency::operations = {
     &new_service_dependency};

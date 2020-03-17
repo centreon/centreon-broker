@@ -34,7 +34,8 @@ using namespace com::centreon::broker::neb;
  *  Set all members to their default value (0, NULL or equivalent).
  */
 downtime::downtime()
-    : actual_end_time(-1),
+    : io::data(downtime::static_type()),
+      actual_end_time(-1),
       actual_start_time(-1),
       deletion_time(-1),
       downtime_type(0),
@@ -77,16 +78,7 @@ downtime::~downtime() {}
 downtime& downtime::operator=(downtime const& other) {
   io::data::operator=(other);
   _internal_copy(other);
-  return (*this);
-}
-
-/**
- *  Get the event's type.
- *
- *  @return The event type.
- */
-uint32_t downtime::type() const {
-  return (downtime::static_type());
+  return *this;
 }
 
 /**
@@ -213,6 +205,6 @@ mapping::entry const downtime::entries[] = {
 
 // Operations.
 static io::data* new_downtime() {
-  return (new downtime);
+  return new downtime;
 }
 io::event_info::event_operations const downtime::operations = {&new_downtime};

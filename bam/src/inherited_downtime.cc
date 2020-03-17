@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/inherited_downtime.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -26,7 +24,10 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-inherited_downtime::inherited_downtime() : ba_id(0), in_downtime(false) {}
+inherited_downtime::inherited_downtime()
+    : io::data(inherited_downtime::static_type()),
+      ba_id(0),
+      in_downtime(false) {}
 
 /**
  *  Copy constructor.
@@ -56,26 +57,7 @@ inherited_downtime& inherited_downtime::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t inherited_downtime::type() const {
-  return (inherited_downtime::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t inherited_downtime::static_type() {
-  return (io::events::data_type<io::events::bam,
-                                bam::de_inherited_downtime>::value);
+  return *this;
 }
 
 /**
@@ -86,7 +68,6 @@ uint32_t inherited_downtime::static_type() {
 void inherited_downtime::_internal_copy(inherited_downtime const& other) {
   ba_id = other.ba_id;
   in_downtime = other.in_downtime;
-  return;
 }
 
 /**************************************
@@ -105,7 +86,7 @@ mapping::entry const inherited_downtime::entries[] = {
 
 // Operations.
 static io::data* new_inherited_downtime() {
-  return (new inherited_downtime);
+  return new inherited_downtime;
 }
 io::event_info::event_operations const inherited_downtime::operations = {
     &new_inherited_downtime};

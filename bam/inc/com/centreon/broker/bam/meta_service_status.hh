@@ -19,8 +19,10 @@
 #ifndef CCB_BAM_META_SERVICE_STATUS_HH
 #define CCB_BAM_META_SERVICE_STATUS_HH
 
+#include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -41,8 +43,10 @@ class meta_service_status : public io::data {
   meta_service_status(meta_service_status const& other);
   ~meta_service_status();
   meta_service_status& operator=(meta_service_status const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::bam,
+                                 bam::de_meta_service_status>::value;
+  }
 
   uint32_t meta_service_id;
   bool state_changed;

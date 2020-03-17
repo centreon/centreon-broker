@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/dimension_bv_event.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -26,7 +24,8 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-dimension_bv_event::dimension_bv_event() : bv_id(0) {}
+dimension_bv_event::dimension_bv_event()
+    : io::data(dimension_bv_event::static_type()), bv_id(0) {}
 
 /**
  *  Copy constructor.
@@ -56,7 +55,7 @@ dimension_bv_event& dimension_bv_event::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -72,25 +71,6 @@ bool dimension_bv_event::operator==(dimension_bv_event const& other) const {
 }
 
 /**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_bv_event::type() const {
-  return (dimension_bv_event::static_type());
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_bv_event::static_type() {
-  return (io::events::data_type<io::events::bam,
-                                bam::de_dimension_bv_event>::value);
-}
-
-/**
  *  Copy internal data members.
  *
  *  @param[in] other Object to copy.
@@ -99,7 +79,6 @@ void dimension_bv_event::_internal_copy(dimension_bv_event const& other) {
   bv_id = other.bv_id;
   bv_name = other.bv_name;
   bv_description = other.bv_description;
-  return;
 }
 
 /**************************************
@@ -118,8 +97,6 @@ mapping::entry const dimension_bv_event::entries[] = {
     mapping::entry()};
 
 // Operations.
-static io::data* new_dimension_bv_event() {
-  return (new dimension_bv_event);
-}
+static io::data* new_dimension_bv_event() { return new dimension_bv_event; }
 io::event_info::event_operations const dimension_bv_event::operations = {
     &new_dimension_bv_event};

@@ -24,6 +24,8 @@
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
+#include "com/centreon/broker/bam/internal.hh"
+#include "com/centreon/broker/io/events.hh"
 
 CCB_BEGIN()
 
@@ -40,9 +42,9 @@ class ba_event : public io::data {
   ~ba_event();
   ba_event& operator=(ba_event const& other);
   bool operator==(ba_event const& other) const;
-  uint32_t type() const;
-  static uint32_t static_type();
-
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::bam, bam::de_ba_event>::value;
+  }
   uint32_t ba_id;
   double first_level;
   timestamp end_time;

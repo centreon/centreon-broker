@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bbdo/ack.hh"
-#include "com/centreon/broker/bbdo/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -32,7 +30,7 @@ using namespace com::centreon::broker::bbdo;
 /**
  *  Default constructor.
  */
-ack::ack() : acknowledged_events(0) {}
+ack::ack() : io::data(ack::static_type()), acknowledged_events(0) {}
 
 /**
  *  Copy constructor.
@@ -60,16 +58,7 @@ ack& ack::operator=(ack const& other) {
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
-}
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-uint32_t ack::type() const {
-  return (ack::static_type());
+  return *this;
 }
 
 /**************************************
@@ -85,7 +74,6 @@ uint32_t ack::type() const {
  */
 void ack::_internal_copy(ack const& other) {
   acknowledged_events = other.acknowledged_events;
-  return;
 }
 
 /**************************************
@@ -101,6 +89,6 @@ mapping::entry const ack::entries[] = {
 
 // Operations.
 static io::data* new_ack() {
-  return (new ack);
+  return new ack;
 }
 io::event_info::event_operations const ack::operations = {&new_ack};

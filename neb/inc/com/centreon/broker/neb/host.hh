@@ -20,11 +20,14 @@
 #define CCB_NEB_HOST_HH
 
 #include <string>
+
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/host_service.hh"
 #include "com/centreon/broker/neb/host_status.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 CCB_BEGIN()
 
@@ -44,8 +47,9 @@ class host : public host_service, public host_status {
   host(host const& other);
   ~host();
   host& operator=(host const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb, neb::de_host>::value;
+  }
 
   std::string address;
   std::string alias;

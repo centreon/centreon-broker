@@ -145,9 +145,9 @@ output::~output() {}
 bool output::read(std::shared_ptr<io::data>& d, time_t deadline) {
   (void)deadline;
   d.reset();
-  throw(com::centreon::broker::exceptions::shutdown()
-        << "cannot read from RRD stream");
-  return (true);
+  throw com::centreon::broker::exceptions::shutdown()
+      << "cannot read from RRD stream";
+  return true;
 }
 
 /**
@@ -156,7 +156,6 @@ bool output::read(std::shared_ptr<io::data>& d, time_t deadline) {
 void output::update() {
   if (_backend)
     _backend->clean();
-  return;
 }
 
 /**
@@ -169,7 +168,7 @@ void output::update() {
 int output::write(std::shared_ptr<io::data> const& d) {
   // Check that data exists.
   if (!validate(d, "RRD"))
-    return (1);
+    return 1;
 
   if (d->type() == storage::metric::static_type()) {
     if (_write_metrics) {
@@ -327,5 +326,5 @@ int output::write(std::shared_ptr<io::data> const& d) {
     _backend->remove(path);
   }
 
-  return (1);
+  return 1;
 }

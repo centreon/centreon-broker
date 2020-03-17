@@ -29,8 +29,12 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-dependency::dependency()
-    : dependent_host_id(0), enabled(true), host_id(0), inherits_parent(false) {}
+dependency::dependency(uint32_t type)
+    : io::data(type),
+      dependent_host_id(0),
+      enabled(true),
+      host_id(0),
+      inherits_parent(false) {}
 
 /**
  *  Copy constructor.

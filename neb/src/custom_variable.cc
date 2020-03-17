@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/custom_variable.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -32,7 +30,10 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-custom_variable::custom_variable() : enabled(true), var_type(0) {
+custom_variable::custom_variable()
+    : custom_variable_status(custom_variable::static_type()),
+      enabled(true),
+      var_type(0) {
   modified = false;
 }
 
@@ -63,26 +64,7 @@ custom_variable& custom_variable::operator=(custom_variable const& other) {
     custom_variable_status::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The event type.
- */
-uint32_t custom_variable::type() const {
-  return (custom_variable::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t custom_variable::static_type() {
-  return (
-      io::events::data_type<io::events::neb, neb::de_custom_variable>::value);
+  return *this;
 }
 
 /**************************************
@@ -100,7 +82,6 @@ void custom_variable::_internal_copy(custom_variable const& other) {
   default_value = other.default_value;
   enabled = other.enabled;
   var_type = other.var_type;
-  return;
 }
 
 /**************************************
@@ -130,7 +111,7 @@ mapping::entry const custom_variable::entries[] = {
 
 // Operations.
 static io::data* new_custom_var() {
-  return (new custom_variable);
+  return new custom_variable;
 }
 io::event_info::event_operations const custom_variable::operations = {
     &new_custom_var};

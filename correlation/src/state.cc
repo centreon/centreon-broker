@@ -33,7 +33,8 @@ using namespace com::centreon::broker::correlation;
  *  Constructor.
  */
 state::state()
-    : ack_time(-1),
+    : io::data(state::static_type()),
+      ack_time(-1),
       current_state(3),
       end_time(-1),
       host_id(0),
@@ -93,15 +94,6 @@ bool state::operator==(state const& s) const {
  */
 bool state::operator!=(state const& s) const {
   return (!(*this == s));
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The event type.
- */
-uint32_t state::type() const {
-  return (state::static_type());
 }
 
 /**

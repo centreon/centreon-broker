@@ -1,5 +1,5 @@
 /*
-** Copyright 2014 Centreon
+** Copyright 2014,2019-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
+#include "com/centreon/broker/bam/internal.hh"
+#include "com/centreon/broker/io/events.hh"
 
 CCB_BEGIN()
 
@@ -42,8 +44,10 @@ class dimension_kpi_event : public io::data {
   ~dimension_kpi_event();
   dimension_kpi_event& operator=(dimension_kpi_event const& other);
   bool operator==(dimension_kpi_event const& other) const;
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::bam,
+                                 bam::de_dimension_kpi_event>::value;
+  }
 
   unsigned kpi_id;
   uint32_t ba_id;

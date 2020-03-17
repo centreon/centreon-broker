@@ -20,9 +20,11 @@
 #define CCB_NEB_SERVICE_GROUP_HH
 
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/group.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 CCB_BEGIN()
 
@@ -40,8 +42,9 @@ class service_group : public group {
   service_group(service_group const& other);
   ~service_group();
   service_group& operator=(service_group const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb, neb::de_service_group>::value;
+  }
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

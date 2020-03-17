@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -27,7 +25,8 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 dimension_truncate_table_signal::dimension_truncate_table_signal()
-    : update_started(true) {}
+    : io::data(dimension_truncate_table_signal::static_type()),
+      update_started(true) {}
 
 /**
  *  Copy constructor.
@@ -58,7 +57,7 @@ dimension_truncate_table_signal& dimension_truncate_table_signal::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -70,27 +69,7 @@ dimension_truncate_table_signal& dimension_truncate_table_signal::operator=(
  */
 bool dimension_truncate_table_signal::operator==(
     dimension_truncate_table_signal const& other) const {
-  return (update_started == other.update_started);
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_truncate_table_signal::type() const {
-  return (dimension_truncate_table_signal::static_type());
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_truncate_table_signal::static_type() {
-  return (
-      io::events::data_type<io::events::bam,
-                            bam::de_dimension_truncate_table_signal>::value);
+  return update_started == other.update_started;
 }
 
 /**
@@ -101,7 +80,6 @@ uint32_t dimension_truncate_table_signal::static_type() {
 void dimension_truncate_table_signal::_internal_copy(
     dimension_truncate_table_signal const& other) {
   update_started = other.update_started;
-  return;
 }
 
 /**************************************
@@ -118,7 +96,7 @@ mapping::entry const dimension_truncate_table_signal::entries[] = {
 
 // Operations.
 static io::data* new_dimension_truncate_table_signal() {
-  return (new dimension_truncate_table_signal);
+  return new dimension_truncate_table_signal;
 }
 io::event_info::event_operations const
     dimension_truncate_table_signal::operations = {

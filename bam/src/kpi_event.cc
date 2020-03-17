@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/kpi_event.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -27,10 +25,12 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 kpi_event::kpi_event()
-    : kpi_id(0),
+    : io::data(kpi_event::static_type()),
+      kpi_id(0),
       impact_level(0),
       in_downtime(false),
-      status(kpi_event::state::state_unknown), ba_id(0) {}
+      status(kpi_event::state::state_unknown),
+      ba_id(0) {}
 
 /**
  *  Copy constructor.
@@ -58,7 +58,7 @@ kpi_event& kpi_event::operator=(kpi_event const& other) {
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -74,24 +74,6 @@ bool kpi_event::operator==(kpi_event const& other) const {
           (in_downtime == other.in_downtime) && (output == other.output) &&
           (perfdata == other.perfdata) && (start_time == other.start_time) &&
           (status == other.status) && (ba_id == other.ba_id));
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t kpi_event::type() const {
-  return (kpi_event::static_type());
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t kpi_event::static_type() {
-  return (io::events::data_type<io::events::bam, bam::de_kpi_event>::value);
 }
 
 /**
@@ -133,6 +115,6 @@ mapping::entry const kpi_event::entries[] = {
 
 // Operations.
 static io::data* new_kpi_event() {
-  return (new kpi_event);
+  return new kpi_event;
 }
 io::event_info::event_operations const kpi_event::operations = {&new_kpi_event};

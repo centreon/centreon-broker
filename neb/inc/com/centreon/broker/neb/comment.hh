@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2012,2015 Centreon
+** Copyright 2009-2012,2015,2019-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 CCB_BEGIN()
 
@@ -41,8 +43,9 @@ class comment : public io::data {
   comment(comment const& other);
   ~comment();
   comment& operator=(comment const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb, neb::de_comment>::value;
+  }
 
   std::string author;
   short comment_type;

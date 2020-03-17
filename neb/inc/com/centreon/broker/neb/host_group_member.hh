@@ -20,9 +20,11 @@
 #define CCB_NEB_HOST_GROUP_MEMBER_HH
 
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/group_member.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 CCB_BEGIN()
 
@@ -43,8 +45,10 @@ class host_group_member : public group_member {
   host_group_member(host_group_member const& other);
   virtual ~host_group_member();
   host_group_member& operator=(host_group_member const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb,
+                                 neb::de_host_group_member>::value;
+  }
 
   static mapping::entry const entries[];
   static io::event_info::event_operations const operations;

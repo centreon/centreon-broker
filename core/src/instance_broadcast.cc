@@ -17,7 +17,6 @@
 */
 
 #include "com/centreon/broker/instance_broadcast.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 
@@ -31,7 +30,10 @@ using namespace com::centreon::broker;
  *  Default constructor.
  */
 instance_broadcast::instance_broadcast()
-    : broker_id(0), enabled(true), poller_id(0) {}
+    : io::data(instance_broadcast::static_type()),
+      broker_id(0),
+      enabled(true),
+      poller_id(0) {}
 
 /**
  *  Copy constructor.
@@ -61,16 +63,7 @@ instance_broadcast& instance_broadcast::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
-}
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-uint32_t instance_broadcast::type() const {
-  return (instance_broadcast::static_type());
+  return *this;
 }
 
 /**
@@ -101,7 +94,6 @@ void instance_broadcast::_internal_copy(instance_broadcast const& other) {
   enabled = other.enabled;
   poller_id = other.poller_id;
   poller_name = other.poller_name;
-  return;
 }
 
 /**************************************
@@ -125,7 +117,7 @@ mapping::entry const instance_broadcast::entries[] = {
 
 // Operations.
 static io::data* new_instance_broadcast() {
-  return (new instance_broadcast);
+  return new instance_broadcast;
 }
 io::event_info::event_operations const instance_broadcast::operations = {
     &new_instance_broadcast};

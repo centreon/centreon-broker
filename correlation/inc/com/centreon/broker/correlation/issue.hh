@@ -19,8 +19,10 @@
 #ifndef CCB_CORRELATION_ISSUE_HH
 #define CCB_CORRELATION_ISSUE_HH
 
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
@@ -42,8 +44,10 @@ class issue : public io::data {
   issue& operator=(issue const& i);
   bool operator==(issue const& i) const;
   bool operator!=(issue const& i) const;
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::correlation,
+                                 correlation::de_issue>::value;
+  }
 
   timestamp ack_time;
   timestamp end_time;

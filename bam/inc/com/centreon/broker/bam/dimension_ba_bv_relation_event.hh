@@ -24,6 +24,8 @@
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
+#include "com/centreon/broker/bam/internal.hh"
+#include "com/centreon/broker/io/events.hh"
 
 CCB_BEGIN()
 
@@ -42,8 +44,10 @@ class dimension_ba_bv_relation_event : public io::data {
   dimension_ba_bv_relation_event& operator=(
       dimension_ba_bv_relation_event const& other);
   bool operator==(dimension_ba_bv_relation_event const& other) const;
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::bam,
+                                 bam::de_dimension_ba_bv_relation_event>::value;
+  }
 
   uint32_t ba_id;
   uint32_t bv_id;

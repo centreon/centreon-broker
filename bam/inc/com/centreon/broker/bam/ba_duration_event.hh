@@ -19,8 +19,10 @@
 #ifndef CCB_BAM_BA_DURATION_EVENT_HH
 #define CCB_BAM_BA_DURATION_EVENT_HH
 
+#include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
@@ -41,8 +43,10 @@ class ba_duration_event : public io::data {
   ~ba_duration_event();
   ba_duration_event& operator=(ba_duration_event const& other);
   bool operator==(ba_duration_event const& other) const;
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::bam,
+                                 bam::de_ba_duration_event>::value;
+  }
 
   uint32_t ba_id;
   timestamp real_start_time;

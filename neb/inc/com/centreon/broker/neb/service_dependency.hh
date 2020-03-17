@@ -20,9 +20,11 @@
 #define CCB_NEB_SERVICE_DEPENDENCY_HH
 
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/dependency.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 CCB_BEGIN()
 
@@ -40,8 +42,10 @@ class service_dependency : public dependency {
   service_dependency(service_dependency const& other);
   ~service_dependency();
   service_dependency& operator=(service_dependency const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb,
+                                 neb::de_service_dependency>::value;
+  }
 
   uint32_t dependent_service_id;
   uint32_t service_id;

@@ -24,6 +24,8 @@
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
+#include "com/centreon/broker/bam/internal.hh"
+#include "com/centreon/broker/io/events.hh"
 
 CCB_BEGIN()
 
@@ -40,8 +42,10 @@ class inherited_downtime : public io::data {
   inherited_downtime(inherited_downtime const& other);
   ~inherited_downtime();
   inherited_downtime& operator=(inherited_downtime const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::bam,
+                                 bam::de_inherited_downtime>::value;
+  }
 
   uint32_t ba_id;
   bool in_downtime;

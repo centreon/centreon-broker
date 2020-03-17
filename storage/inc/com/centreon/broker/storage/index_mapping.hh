@@ -1,5 +1,5 @@
 /*
-** Copyright 2015 - 2019 Centreon
+** Copyright 2015 - 2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/storage/internal.hh"
 
 CCB_BEGIN()
 
@@ -38,13 +40,15 @@ namespace storage {
  */
 class index_mapping : public io::data {
  public:
-  index_mapping() = default;
+  index_mapping();
   index_mapping(uint32_t index_id, uint32_t host_id, uint32_t service_id);
   index_mapping(index_mapping const& other) = delete;
   ~index_mapping() = default;
   index_mapping& operator=(index_mapping const& other) = delete;
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::storage,
+                                 storage::de_index_mapping>::value;
+  }
 
   uint32_t index_id;
   uint32_t host_id;

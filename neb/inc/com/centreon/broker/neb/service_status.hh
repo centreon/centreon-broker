@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013 Centreon
+** Copyright 2009-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/host_service_status.hh"
 #include "com/centreon/broker/timestamp.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 CCB_BEGIN()
 
@@ -38,12 +40,14 @@ namespace neb {
  */
 class service_status : public host_service_status {
  public:
-  service_status();
+  service_status(uint32_t type = static_type());
   service_status(service_status const& other);
   virtual ~service_status();
   service_status& operator=(service_status const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb,
+                                 neb::de_service_status>::value;
+  }
 
   std::string host_name;
   timestamp last_time_critical;

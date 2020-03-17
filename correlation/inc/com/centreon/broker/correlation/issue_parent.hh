@@ -19,8 +19,10 @@
 #ifndef CCB_CORRELATION_ISSUE_PARENT_HH
 #define CCB_CORRELATION_ISSUE_PARENT_HH
 
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
@@ -41,8 +43,10 @@ class issue_parent : public io::data {
   issue_parent(issue_parent const& ip);
   ~issue_parent();
   issue_parent& operator=(issue_parent const& ip);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::correlation,
+                                 correlation::de_issue_parent>::value;
+  }
 
   uint32_t child_host_id;
   uint32_t child_service_id;

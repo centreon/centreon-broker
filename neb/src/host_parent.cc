@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/host_parent.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -32,7 +30,11 @@ using namespace com::centreon::broker::neb;
 /**
  *  Default constructor.
  */
-host_parent::host_parent() : enabled(true), host_id(0), parent_id(0) {}
+host_parent::host_parent()
+    : io::data(host_parent::static_type()),
+      enabled(true),
+      host_id(0),
+      parent_id(0) {}
 
 /**
  *  Copy constructor.
@@ -64,25 +66,7 @@ host_parent& host_parent::operator=(host_parent const& other) {
     host_id = other.host_id;
     parent_id = other.parent_id;
   }
-  return (*this);
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The event_type.
- */
-uint32_t host_parent::type() const {
-  return (host_parent::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t host_parent::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_host_parent>::value);
+  return *this;
 }
 
 /**************************************
@@ -104,7 +88,7 @@ mapping::entry const host_parent::entries[] = {
 
 // Operations.
 static io::data* new_host_parent() {
-  return (new host_parent);
+  return new host_parent;
 }
 io::event_info::event_operations const host_parent::operations = {
     &new_host_parent};

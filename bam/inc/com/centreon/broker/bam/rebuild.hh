@@ -20,8 +20,11 @@
 #define CCB_BAM_REBUILD_HH
 
 #include <string>
+
+#include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -41,8 +44,9 @@ class rebuild : public io::data {
   rebuild(rebuild const&);
   rebuild& operator=(rebuild const&);
   bool operator==(rebuild const& other) const;
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::bam, bam::de_rebuild>::value;
+  }
 
   std::string bas_to_rebuild;
 

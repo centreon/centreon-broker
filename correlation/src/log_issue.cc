@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/correlation/log_issue.hh"
-#include "com/centreon/broker/correlation/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::correlation;
@@ -32,7 +30,8 @@ using namespace com::centreon::broker::correlation;
 /**
  *  Constructor.
  */
-log_issue::log_issue() : host_id(0), service_id(0) {}
+log_issue::log_issue()
+    : io::data(log_issue::static_type()), host_id(0), service_id(0) {}
 
 /**
  *  Copy constructor.
@@ -84,25 +83,6 @@ bool log_issue::operator==(log_issue const& i) const {
  */
 bool log_issue::operator!=(log_issue const& i) const {
   return (!this->operator==(i));
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The event type.
- */
-uint32_t log_issue::type() const {
-  return (log_issue::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t log_issue::static_type() {
-  return (io::events::data_type<io::events::correlation,
-                                correlation::de_log_issue>::value);
 }
 
 /**************************************

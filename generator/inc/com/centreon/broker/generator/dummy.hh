@@ -43,16 +43,15 @@ class dummy : public io::data {
   dummy(dummy const& other);
   ~dummy();
   dummy& operator=(dummy const& other);
-  uint32_t type() const;
 
   /**
    *  Get the type of this event.
    *
    *  @return  The event type.
    */
-  static uint32_t static_type() {
-    return (io::events::data_type<io::events::generator,
-                                  generator::de_dummy>::value);
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::generator,
+                                 generator::de_dummy>::value;
   }
 
   uint32_t number;

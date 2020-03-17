@@ -20,10 +20,13 @@
 #define CCB_NEB_MODULE_HH
 
 #include <string>
+
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 CCB_BEGIN()
 
@@ -41,8 +44,9 @@ class module : public io::data {
   module(module const& other);
   ~module();
   module& operator=(module const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb, neb::de_module>::value;
+  }
 
   std::string args;
   bool enabled;

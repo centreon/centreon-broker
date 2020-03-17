@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/event_handler.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -33,7 +31,8 @@ using namespace com::centreon::broker::neb;
  *  Default constructor.
  */
 event_handler::event_handler()
-    : early_timeout(false),
+    : io::data(event_handler::static_type()),
+      early_timeout(false),
       end_time(0),
       execution_time(0),
       handler_type(0),
@@ -71,25 +70,7 @@ event_handler& event_handler::operator=(event_handler const& other) {
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return The event type.
- */
-uint32_t event_handler::type() const {
-  return (event_handler::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t event_handler::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_event_handler>::value);
+  return *this;
 }
 
 /**************************************
@@ -150,12 +131,9 @@ mapping::entry const event_handler::entries[] = {
     mapping::entry(&event_handler::timeout, "timeout"),
     mapping::entry(&event_handler::command_args, "command_args"),
     mapping::entry(&event_handler::command_line, "command_line"),
-    mapping::entry(&event_handler::output, "output"),
-    mapping::entry()};
+    mapping::entry(&event_handler::output, "output"), mapping::entry()};
 
 // Operations.
-static io::data* new_event_handler() {
-  return (new event_handler);
-}
+static io::data* new_event_handler() { return new event_handler; }
 io::event_info::event_operations const event_handler::operations = {
     &new_event_handler};

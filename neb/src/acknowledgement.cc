@@ -36,7 +36,8 @@ using namespace com::centreon::broker::neb;
  *  default value (0, NULL or equivalent).
  */
 acknowledgement::acknowledgement()
-    : acknowledgement_type(0),
+    : io::data(acknowledgement::static_type()),
+      acknowledgement_type(0),
       host_id(0),
       is_sticky(false),
       notify_contacts(false),
@@ -73,19 +74,7 @@ acknowledgement::~acknowledgement() {}
 acknowledgement& acknowledgement::operator=(acknowledgement const& other) {
   io::data::operator=(other);
   _internal_copy(other);
-  return (*this);
-}
-
-/**
- *  @brief Get the type of the event.
- *
- *  Return the type of this event. This can be useful for runtime data
- *  type determination.
- *
- *  @return The event type.
- */
-uint32_t acknowledgement::type() const {
-  return (acknowledgement::static_type());
+  return *this;
 }
 
 /**************************************
@@ -162,6 +151,6 @@ mapping::entry const acknowledgement::entries[] = {
 
 // Operations.
 static io::data* new_ack() {
-  return (new acknowledgement);
+  return new acknowledgement;
 }
 io::event_info::event_operations const acknowledgement::operations = {&new_ack};

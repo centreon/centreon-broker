@@ -24,6 +24,8 @@
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/storage/internal.hh"
 
 CCB_BEGIN()
 
@@ -58,8 +60,10 @@ class status : public io::data {
   status(status const& s);
   ~status();
   status& operator=(status const& s);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::storage,
+                                 storage::de_status>::value;
+  }
 };
 }  // namespace storage
 

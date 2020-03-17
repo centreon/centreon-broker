@@ -46,7 +46,6 @@ class downtime : public io::data {
   downtime(downtime const& other);
   ~downtime();
   downtime& operator=(downtime const& other);
-  uint32_t type() const;
   bool operator==(downtime const& other) const;
 
   /**
@@ -54,8 +53,8 @@ class downtime : public io::data {
    *
    *  @return  The event type.
    */
-  static uint32_t static_type() {
-    return (io::events::data_type<io::events::neb, neb::de_downtime>::value);
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb, neb::de_downtime>::value;
   }
 
   timestamp actual_end_time;

@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/dimension_timeperiod.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -26,7 +24,8 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-dimension_timeperiod::dimension_timeperiod() {}
+dimension_timeperiod::dimension_timeperiod()
+    : io::data(dimension_timeperiod::static_type()) {}
 
 /**
  *  Copy constructor.
@@ -56,7 +55,7 @@ dimension_timeperiod& dimension_timeperiod::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -75,25 +74,6 @@ bool dimension_timeperiod::operator==(dimension_timeperiod const& other) const {
 }
 
 /**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_timeperiod::type() const {
-  return (dimension_timeperiod::static_type());
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_timeperiod::static_type() {
-  return (io::events::data_type<io::events::bam,
-                                bam::de_dimension_timeperiod>::value);
-}
-
-/**
  *  Copy internal data members.
  *
  *  @param[in] other Object to copy.
@@ -108,7 +88,6 @@ void dimension_timeperiod::_internal_copy(dimension_timeperiod const& other) {
   friday = other.friday;
   saturday = other.saturday;
   sunday = other.sunday;
-  return;
 }
 
 /**************************************
@@ -134,7 +113,7 @@ mapping::entry const dimension_timeperiod::entries[] = {
 
 // Operations.
 static io::data* new_dimension_timeperiod() {
-  return (new dimension_timeperiod);
+  return new dimension_timeperiod;
 }
 io::event_info::event_operations const dimension_timeperiod::operations = {
     &new_dimension_timeperiod};

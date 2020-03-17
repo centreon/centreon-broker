@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/host_status.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -34,8 +32,11 @@ using namespace com::centreon::broker::neb;
  *
  *  Initialize all members to 0, NULL or equivalent.
  */
-host_status::host_status()
-    : last_time_down(0), last_time_unreachable(0), last_time_up(0) {}
+host_status::host_status(uint32_t type)
+    : host_service_status(type),
+      last_time_down(0),
+      last_time_unreachable(0),
+      last_time_up(0) {}
 
 /**
  *  @brief Copy constructor.
@@ -68,25 +69,7 @@ host_status& host_status::operator=(host_status const& other) {
     host_service_status::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
-}
-
-/**
- *  Returns the type of the event.
- *
- *  @return The event_type.
- */
-uint32_t host_status::type() const {
-  return (host_status::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t host_status::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_host_status>::value);
+  return *this;
 }
 
 /**************************************
@@ -109,7 +92,6 @@ void host_status::_internal_copy(host_status const& other) {
   last_time_down = other.last_time_down;
   last_time_unreachable = other.last_time_unreachable;
   last_time_up = other.last_time_up;
-  return;
 }
 
 /**************************************
@@ -221,7 +203,7 @@ mapping::entry const host_status::entries[] = {
 
 // Operations.
 static io::data* new_host_status() {
-  return (new host_status);
+  return new host_status;
 }
 io::event_info::event_operations const host_status::operations = {
     &new_host_status};

@@ -44,7 +44,6 @@ class state : public io::data {
   bool operator==(state const& s) const;
   bool operator!=(state const& s) const;
 
-  uint32_t type() const;
   static uint32_t static_type();
 
   timestamp ack_time;

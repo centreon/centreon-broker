@@ -20,8 +20,11 @@
 #define CCB_NEB_CHECK_HH
 
 #include <string>
+
 #include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
@@ -39,7 +42,8 @@ namespace neb {
  */
 class check : public io::data {
  public:
-  check();
+  check() = delete;
+  check(uint32_t type);
   check(check const& c);
   virtual ~check();
   check& operator=(check const& c);

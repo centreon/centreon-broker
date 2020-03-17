@@ -35,12 +35,14 @@ namespace io {
  *  engine.
  */
 class data {
+  const uint32_t _type;
  public:
-  data();
+  data() = delete;
+  data(uint32_t type = 0);
   data(data const& other);
   virtual ~data();
   data& operator=(data const& other);
-  virtual uint32_t type() const = 0;
+  uint32_t type() const noexcept;
 
   uint32_t source_id;
   uint32_t destination_id;

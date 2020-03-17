@@ -21,8 +21,11 @@
 
 #include <memory>
 #include <vector>
+
+#include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -43,8 +46,10 @@ class dimension_ba_timeperiod_relation : public io::data {
   dimension_ba_timeperiod_relation& operator=(
       dimension_ba_timeperiod_relation const&);
   bool operator==(dimension_ba_timeperiod_relation const& other) const;
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<
+        io::events::bam, bam::de_dimension_ba_timeperiod_relation>::value;
+  }
 
   uint32_t ba_id;
   uint32_t timeperiod_id;

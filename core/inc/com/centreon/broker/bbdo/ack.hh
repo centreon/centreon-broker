@@ -41,15 +41,14 @@ class ack : public io::data {
   ack(ack const& other);
   ~ack();
   ack& operator=(ack const& other);
-  uint32_t type() const;
 
   /**
    *  Get the event type.
    *
    *  @return The event type.
    */
-  static uint32_t static_type() {
-    return (io::events::data_type<io::events::bbdo, bbdo::de_ack>::value);
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::bbdo, bbdo::de_ack>::value;
   }
 
   uint32_t acknowledged_events;

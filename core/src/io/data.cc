@@ -16,6 +16,7 @@
 ** For more information : contact@centreon.com
 */
 
+#include <cassert>
 #include "com/centreon/broker/io/data.hh"
 
 using namespace com::centreon::broker::io;
@@ -31,7 +32,10 @@ uint32_t data::broker_id(0);
 /**
  *  Constructor.
  */
-data::data() : source_id(broker_id), destination_id(0) {}
+data::data(uint32_t type)
+    : _type(type), source_id(broker_id), destination_id(0) {
+  assert(type);
+}
 
 /**
  *  Copy constructor.
@@ -39,7 +43,9 @@ data::data() : source_id(broker_id), destination_id(0) {}
  *  @param[in] other  Object to copy.
  */
 data::data(data const& other)
-    : source_id(other.source_id), destination_id(other.destination_id) {}
+    : _type(other._type),
+      source_id(other.source_id),
+      destination_id(other.destination_id) {}
 
 /**
  *  Destructor.
@@ -59,4 +65,13 @@ data& data::operator=(data const& other) {
     destination_id = other.destination_id;
   }
   return (*this);
+}
+
+/**
+ *  Get the type of this event.
+ *
+ *  @return The event type.
+ */
+uint32_t data::type() const noexcept {
+  return _type;
 }

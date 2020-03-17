@@ -20,9 +20,12 @@
 #define CCB_EVENTS_INSTANCE_STATUS_HH
 
 #include <string>
+
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/status.hh"
 #include "com/centreon/broker/timestamp.hh"
 
@@ -44,8 +47,10 @@ class instance_status : public status {
   instance_status(instance_status const& other);
   ~instance_status();
   instance_status& operator=(instance_status const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb,
+                                 neb::de_instance_status>::value;
+  }
 
   bool active_host_checks_enabled;
   bool active_service_checks_enabled;

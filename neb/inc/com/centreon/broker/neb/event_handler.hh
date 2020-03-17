@@ -25,6 +25,8 @@
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 CCB_BEGIN()
 
@@ -43,8 +45,9 @@ class event_handler : public io::data {
   event_handler(event_handler const& other);
   ~event_handler();
   event_handler& operator=(event_handler const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb, neb::de_event_handler>::value;
+  }
 
   std::string command_args;
   std::string command_line;

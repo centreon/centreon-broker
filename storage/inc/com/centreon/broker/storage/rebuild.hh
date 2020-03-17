@@ -20,7 +20,9 @@
 #define CCB_STORAGE_REBUILD_HH
 
 #include "com/centreon/broker/io/data.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -39,8 +41,10 @@ class rebuild : public io::data {
   rebuild(rebuild const& right);
   ~rebuild();
   rebuild& operator=(rebuild const& right);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::storage,
+                                 storage::de_rebuild>::value;
+  }
 
   bool end;
   uint32_t id;

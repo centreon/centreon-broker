@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/storage/status.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/storage/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
@@ -33,7 +31,8 @@ using namespace com::centreon::broker::storage;
  *  Default constructor.
  */
 status::status()
-    : ctime(0),
+    : io::data(status::static_type()),
+      ctime(0),
       index_id(0),
       interval(0),
       is_for_rebuild(false),
@@ -57,7 +56,8 @@ status::status(timestamp const& ctime,
                bool is_for_rebuild,
                timestamp const& rrd_len,
                int16_t state)
-    : ctime{ctime},
+    : io::data(status::static_type()),
+      ctime{ctime},
       index_id{index_id},
       interval{interval},
       is_for_rebuild{is_for_rebuild},
@@ -88,26 +88,7 @@ status::~status() {}
 status& status::operator=(status const& s) {
   io::data::operator=(s);
   _internal_copy(s);
-  return (*this);
-}
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-uint32_t status::type() const {
-  return (status::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t status::static_type() {
-  return (
-      io::events::data_type<io::events::storage, storage::de_status>::value);
+  return *this;
 }
 
 /**************************************
@@ -128,7 +109,6 @@ void status::_internal_copy(status const& s) {
   is_for_rebuild = s.is_for_rebuild;
   rrd_len = s.rrd_len;
   state = s.state;
-  return;
 }
 
 /**************************************
@@ -153,6 +133,6 @@ mapping::entry const status::entries[] = {
 
 // Operations.
 static io::data* new_status() {
-  return (new status);
+  return new status;
 }
 io::event_info::event_operations const status::operations = {&new_status};

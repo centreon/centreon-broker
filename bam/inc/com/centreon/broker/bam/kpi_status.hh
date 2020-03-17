@@ -19,8 +19,10 @@
 #ifndef CCB_BAM_KPI_STATUS_HH
 #define CCB_BAM_KPI_STATUS_HH
 
+#include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/timestamp.hh"
@@ -40,8 +42,9 @@ class kpi_status : public io::data {
   kpi_status(kpi_status const& other);
   ~kpi_status();
   kpi_status& operator=(kpi_status const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::bam, bam::de_kpi_status>::value;
+  }
 
   uint32_t kpi_id;
   bool in_downtime;

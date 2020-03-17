@@ -20,10 +20,13 @@
 #define CCB_NEB_INSTANCE_HH
 
 #include <string>
+
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
@@ -42,8 +45,9 @@ class instance : public io::data {
   instance(instance const& other);
   ~instance();
   instance& operator=(instance const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb, neb::de_instance>::value;
+  }
 
   std::string engine;
   bool is_running;

@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/instance.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -35,7 +33,8 @@ using namespace com::centreon::broker::neb;
  *  Initialize members to 0, NULL or equivalent.
  */
 instance::instance()
-    : is_running(true),
+    : io::data(instance::static_type()),
+      is_running(true),
       pid(0),
       poller_id(0),
       program_end((time_t)-1),
@@ -69,25 +68,7 @@ instance& instance::operator=(instance const& other) {
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
-}
-
-/**
- *  Get the type of the event.
- *
- *  @return The event_type.
- */
-uint32_t instance::type() const {
-  return (instance::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t instance::static_type() {
-  return io::events::data_type<io::events::neb, neb::de_instance>::value;
+  return *this;
 }
 
 /**************************************
@@ -114,7 +95,6 @@ void instance::_internal_copy(instance const& other) {
   program_end = other.program_end;
   program_start = other.program_start;
   version = other.version;
-  return;
 }
 
 /**************************************
@@ -143,6 +123,6 @@ mapping::entry const instance::entries[] = {
 
 // Operations.
 static io::data* new_instance() {
-  return (new instance);
+  return new instance;
 }
 io::event_info::event_operations const instance::operations = {&new_instance};

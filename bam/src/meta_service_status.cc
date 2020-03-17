@@ -17,9 +17,8 @@
 */
 
 #include "com/centreon/broker/bam/meta_service_status.hh"
+
 #include <cmath>
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -28,7 +27,10 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 meta_service_status::meta_service_status()
-    : meta_service_id(0), state_changed(false), value(NAN) {}
+    : io::data(meta_service_status::static_type()),
+      meta_service_id(0),
+      state_changed(false),
+      value(NAN) {}
 
 /**
  *  Copy constructor.
@@ -58,26 +60,7 @@ meta_service_status& meta_service_status::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
-}
-
-/**
- *  Get event type.
- *
- *  @return Event type.
- */
-uint32_t meta_service_status::type() const {
-  return (meta_service_status::static_type());
-}
-
-/**
- *  Get event type.
- *
- *  @return Event type.
- */
-uint32_t meta_service_status::static_type() {
-  return (io::events::data_type<io::events::bam,
-                                bam::de_meta_service_status>::value);
+  return *this;
 }
 
 /**
@@ -89,7 +72,6 @@ void meta_service_status::_internal_copy(meta_service_status const& other) {
   meta_service_id = other.meta_service_id;
   state_changed = other.state_changed;
   value = other.value;
-  return;
 }
 
 /**************************************
@@ -109,7 +91,7 @@ mapping::entry const meta_service_status::entries[] = {
 
 // Operations.
 static io::data* new_meta_service_status() {
-  return (new meta_service_status);
+  return new meta_service_status;
 }
 io::event_info::event_operations const meta_service_status::operations = {
     &new_meta_service_status};

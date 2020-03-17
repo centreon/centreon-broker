@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013,2015 Centreon
+** Copyright 2009-2013,2015,2019-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/service_status.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -34,8 +32,9 @@ using namespace com::centreon::broker::neb;
  *
  *  Initialize members to 0, NULL or equivalent.
  */
-service_status::service_status()
-    : last_time_critical(0),
+service_status::service_status(uint32_t type)
+    : host_service_status(type),
+      last_time_critical(0),
       last_time_ok(0),
       last_time_unknown(0),
       last_time_warning(0),
@@ -72,26 +71,7 @@ service_status::~service_status() {}
 service_status& service_status::operator=(service_status const& ss) {
   host_service_status::operator=(ss);
   _internal_copy(ss);
-  return (*this);
-}
-
-/**
- *  Returns the type of the event.
- *
- *  @return The event_type.
- */
-uint32_t service_status::type() const {
-  return (service_status::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t service_status::static_type() {
-  return (
-      io::events::data_type<io::events::neb, neb::de_service_status>::value);
+  return *this;
 }
 
 /**************************************

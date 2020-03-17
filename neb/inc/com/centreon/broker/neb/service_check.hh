@@ -20,9 +20,11 @@
 #define CCB_NEB_SERVICE_CHECK_HH
 
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/check.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 CCB_BEGIN()
 
@@ -41,8 +43,9 @@ class service_check : public check {
   service_check(service_check const& other);
   virtual ~service_check();
   service_check& operator=(service_check const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb, neb::de_service_check>::value;
+  }
 
   uint32_t service_id;
 

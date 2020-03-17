@@ -20,8 +20,11 @@
 #define CCB_BAM_DIMENSION_TIMEPERIOD_HH
 
 #include <string>
+
+#include "com/centreon/broker/bam/internal.hh"
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -41,8 +44,10 @@ class dimension_timeperiod : public io::data {
   dimension_timeperiod(dimension_timeperiod const&);
   dimension_timeperiod& operator=(dimension_timeperiod const&);
   bool operator==(dimension_timeperiod const& other) const;
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::bam,
+                                 bam::de_dimension_timeperiod>::value;
+  }
 
   uint32_t id;
   std::string name;

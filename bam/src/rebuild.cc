@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/rebuild.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -26,7 +24,7 @@ using namespace com::centreon::broker::bam;
 /**
  *  Default constructor.
  */
-rebuild::rebuild() {}
+rebuild::rebuild() : io::data(rebuild::static_type()) {}
 
 /**
  *  Copy constructor.
@@ -54,7 +52,7 @@ rebuild& rebuild::operator=(rebuild const& other) {
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -65,25 +63,7 @@ rebuild& rebuild::operator=(rebuild const& other) {
  *  @return  True if the two objects are equal.
  */
 bool rebuild::operator==(rebuild const& other) const {
-  return (bas_to_rebuild == other.bas_to_rebuild);
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t rebuild::type() const {
-  return (rebuild::static_type());
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t rebuild::static_type() {
-  return (io::events::data_type<io::events::bam, bam::de_rebuild>::value);
+  return bas_to_rebuild == other.bas_to_rebuild;
 }
 
 /**
@@ -93,7 +73,6 @@ uint32_t rebuild::static_type() {
  */
 void rebuild::_internal_copy(rebuild const& other) {
   bas_to_rebuild = other.bas_to_rebuild;
-  return;
 }
 
 /**************************************
@@ -109,6 +88,6 @@ mapping::entry const rebuild::entries[] = {
 
 // Operations.
 static io::data* new_rebuild() {
-  return (new rebuild);
+  return new rebuild;
 }
 io::event_info::event_operations const rebuild::operations = {&new_rebuild};

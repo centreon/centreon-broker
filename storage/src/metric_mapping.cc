@@ -17,9 +17,8 @@
 */
 
 #include "com/centreon/broker/storage/metric_mapping.hh"
+
 #include <cmath>
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/storage/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
@@ -33,7 +32,8 @@ using namespace com::centreon::broker::storage;
 /**
  *  Default constructor.
  */
-metric_mapping::metric_mapping() : index_id(0), metric_id(0) {}
+metric_mapping::metric_mapping()
+    : io::data(metric_mapping::static_type()), index_id(0), metric_id(0) {}
 
 /**
  *  Constructor
@@ -42,7 +42,9 @@ metric_mapping::metric_mapping() : index_id(0), metric_id(0) {}
  * @param metric_id
  */
 metric_mapping::metric_mapping(uint32_t index_id, uint32_t metric_id)
-    : index_id{index_id}, metric_id{metric_id} {}
+    : io::data(metric_mapping::static_type()),
+      index_id{index_id},
+      metric_id{metric_id} {}
 
 /**
  *  Copy constructor.
@@ -68,26 +70,7 @@ metric_mapping::~metric_mapping() {}
 metric_mapping& metric_mapping::operator=(metric_mapping const& m) {
   io::data::operator=(m);
   _internal_copy(m);
-  return (*this);
-}
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-uint32_t metric_mapping::type() const {
-  return (metric_mapping::static_type());
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t metric_mapping::static_type() {
-  return (io::events::data_type<io::events::storage,
-                                storage::de_metric_mapping>::value);
+  return *this;
 }
 
 /**************************************
@@ -104,7 +87,6 @@ uint32_t metric_mapping::static_type() {
 void metric_mapping::_internal_copy(metric_mapping const& m) {
   index_id = m.index_id;
   metric_id = m.metric_id;
-  return;
 }
 
 /**************************************
@@ -124,6 +106,8 @@ mapping::entry const metric_mapping::entries[] = {
     mapping::entry()};
 
 // Operations.
-static io::data* new_metric_mapping() { return (new metric_mapping); }
+static io::data* new_metric_mapping() {
+  return new metric_mapping;
+}
 io::event_info::event_operations const metric_mapping::operations = {
     &new_metric_mapping};

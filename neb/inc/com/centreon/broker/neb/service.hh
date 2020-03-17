@@ -21,10 +21,13 @@
 
 #include <ctime>
 #include <string>
+
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/host_service.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/neb/service_status.hh"
 
 CCB_BEGIN()
@@ -46,8 +49,9 @@ class service : public host_service, public service_status {
   service(service const& other);
   ~service();
   service& operator=(service const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb, neb::de_service>::value;
+  }
 
   bool flap_detection_on_critical;
   bool flap_detection_on_ok;

@@ -21,6 +21,8 @@
 
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
+#include "com/centreon/broker/correlation/internal.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -40,8 +42,10 @@ class engine_state : public io::data {
   engine_state(engine_state const& es);
   virtual ~engine_state();
   engine_state& operator=(engine_state const& es);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::correlation,
+                                 correlation::de_engine_state>::value;
+  }
 
   uint32_t poller_id;
   bool started;

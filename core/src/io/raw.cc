@@ -17,7 +17,6 @@
 */
 
 #include "com/centreon/broker/io/raw.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker::io;
 
@@ -30,7 +29,7 @@ using namespace com::centreon::broker::io;
 /**
  *  Default constructor.
  */
-raw::raw() {}
+raw::raw() : io::data(raw::static_type()) {}
 
 /**
  *  Copy constructor.
@@ -57,24 +56,6 @@ raw& raw::operator=(raw const& r) {
     _buffer = r._buffer;
   }
   return *this;
-}
-
-/**
- *  Get the data type.
- *
- *  @return Raw data.
- */
-uint32_t raw::type() const {
-  return raw::static_type();
-}
-
-/**
- *  Get the data type.
- *
- *  @return Raw data.
- */
-uint32_t raw::static_type() {
-  return events::data_type<events::internal, events::de_raw>::value;
 }
 
 void raw::resize(size_t s) {

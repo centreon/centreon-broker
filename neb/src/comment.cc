@@ -1,5 +1,5 @@
 /*
-** Copyright 2009-2013,2015 Centreon
+** Copyright 2009-2013,2015,2019-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/neb/comment.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/neb/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::neb;
@@ -35,7 +33,8 @@ using namespace com::centreon::broker::neb;
  *  Set all members to their default value (0, NULL or equivalent).
  */
 comment::comment()
-    : comment_type(0),
+    : io::data(comment::static_type()),
+      comment_type(0),
       deletion_time(0),
       entry_time(0),
       entry_type(0),
@@ -78,25 +77,7 @@ comment& comment::operator=(comment const& other) {
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
-}
-
-/**
- *  Returns the type of this object.
- *
- *  @return This object type.
- */
-uint32_t comment::type() const {
-  return (static_type());
-}
-
-/**
- *  Return the type of this class.
- *
- *  @return The type of this class.
- */
-uint32_t comment::static_type() {
-  return (io::events::data_type<io::events::neb, neb::de_comment>::value);
+  return *this;
 }
 
 /**************************************
@@ -170,11 +151,8 @@ mapping::entry const comment::entries[] = {
     mapping::entry(&comment::service_id,
                    "service_id",
                    mapping::entry::invalid_on_zero),
-    mapping::entry(&comment::source, "source"),
-    mapping::entry()};
+    mapping::entry(&comment::source, "source"), mapping::entry()};
 
 // Operations.
-static io::data* new_comment() {
-  return (new comment);
-}
+static io::data* new_comment() { return new comment; }
 io::event_info::event_operations const comment::operations = {&new_comment};

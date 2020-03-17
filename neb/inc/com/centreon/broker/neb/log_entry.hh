@@ -20,10 +20,13 @@
 #define CCB_NEB_LOG_ENTRY_HH
 
 #include <string>
+
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/neb/internal.hh"
 #include "com/centreon/broker/timestamp.hh"
 
 CCB_BEGIN()
@@ -61,8 +64,9 @@ class log_entry : public io::data {
   log_entry(log_entry const& other);
   ~log_entry();
   log_entry& operator=(const log_entry& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb, neb::de_log_entry>::value;
+  }
 
   timestamp c_time;
   uint32_t host_id;

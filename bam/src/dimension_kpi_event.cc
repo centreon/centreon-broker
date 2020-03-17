@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 Centreon
+** Copyright 2014-2015,2019-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/dimension_kpi_event.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -27,7 +25,8 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 dimension_kpi_event::dimension_kpi_event()
-    : kpi_id(0),
+    : io::data(dimension_kpi_event::static_type()),
+      kpi_id(0),
       ba_id(0),
       host_id(0),
       service_id(0),
@@ -66,7 +65,7 @@ dimension_kpi_event& dimension_kpi_event::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -90,25 +89,6 @@ bool dimension_kpi_event::operator==(dimension_kpi_event const& other) const {
           (impact_warning == other.impact_warning) &&
           (impact_critical == other.impact_critical) &&
           (impact_unknown == other.impact_unknown));
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_kpi_event::type() const {
-  return (dimension_kpi_event::static_type());
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_kpi_event::static_type() {
-  return (io::events::data_type<io::events::bam,
-                                bam::de_dimension_kpi_event>::value);
 }
 
 /**
@@ -183,8 +163,6 @@ mapping::entry const dimension_kpi_event::entries[] = {
     mapping::entry()};
 
 // Operations.
-static io::data* new_dimension_kpi_event() {
-  return (new dimension_kpi_event);
-}
+static io::data* new_dimension_kpi_event() { return new dimension_kpi_event; }
 io::event_info::event_operations const dimension_kpi_event::operations = {
     &new_dimension_kpi_event};

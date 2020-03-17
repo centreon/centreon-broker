@@ -20,9 +20,11 @@
 #define CCB_NEB_CUSTOM_VARIABLE_HH
 
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/neb/custom_variable_status.hh"
+#include "com/centreon/broker/neb/internal.hh"
 
 CCB_BEGIN()
 
@@ -41,8 +43,10 @@ class custom_variable : public custom_variable_status {
   custom_variable(custom_variable const& other);
   ~custom_variable();
   custom_variable& operator=(custom_variable const& other);
-  uint32_t type() const;
-  static uint32_t static_type();
+  constexpr static uint32_t static_type() {
+    return io::events::data_type<io::events::neb,
+                                 neb::de_custom_variable>::value;
+  }
 
   std::string default_value;
   bool enabled;

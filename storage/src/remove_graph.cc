@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/storage/remove_graph.hh"
-#include "com/centreon/broker/io/events.hh"
-#include "com/centreon/broker/storage/internal.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
@@ -30,32 +28,19 @@ using namespace com::centreon::broker::storage;
  **************************************/
 
 /**
+ *  Defaut constructor
+ */
+remove_graph::remove_graph()
+    : io::data(remove_graph::static_type()), id{0}, is_index{0} {}
+
+/**
  *  Constructor
  *
  * @param index_id an index id
  * @param is_index a boolean telling if it is an index
  */
 remove_graph::remove_graph(uint32_t index_id, bool is_index)
-    : id{index_id}, is_index{is_index} {}
-
-/**
- *  Get the event type.
- *
- *  @return The event type.
- */
-uint32_t remove_graph::type() const {
-  return remove_graph::static_type();
-}
-
-/**
- *  Get the type of this event.
- *
- *  @return  The event type.
- */
-uint32_t remove_graph::static_type() {
-  return io::events::data_type<io::events::storage,
-                                storage::de_remove_graph>::value;
-}
+    : io::data(remove_graph::static_type()), id{index_id}, is_index{is_index} {}
 
 /**************************************
  *                                     *

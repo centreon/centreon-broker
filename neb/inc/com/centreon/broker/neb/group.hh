@@ -20,6 +20,7 @@
 #define CCB_NEB_GROUP_HH
 
 #include <string>
+
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/namespace.hh"
 
@@ -38,7 +39,8 @@ namespace neb {
  */
 class group : public io::data {
  public:
-  group();
+  group() = delete;
+  group(uint32_t type);
   group(group const& other);
   virtual ~group();
   group& operator=(group const& other);

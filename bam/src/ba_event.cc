@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/ba_event.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -27,7 +25,11 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 ba_event::ba_event()
-    : ba_id(0), first_level(0), in_downtime(false), status(3) {}
+    : io::data(ba_event::static_type()),
+      ba_id(0),
+      first_level(0),
+      in_downtime(false),
+      status(3) {}
 
 /**
  *  Copy constructor.
@@ -55,7 +57,7 @@ ba_event& ba_event::operator=(ba_event const& other) {
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -72,24 +74,6 @@ bool ba_event::operator==(ba_event const& other) const {
 }
 
 /**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t ba_event::type() const {
-  return (ba_event::static_type());
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t ba_event::static_type() {
-  return (io::events::data_type<io::events::bam, bam::de_ba_event>::value);
-}
-
-/**
  *  Copy internal data members.
  *
  *  @param[in] other Object to copy.
@@ -101,7 +85,6 @@ void ba_event::_internal_copy(ba_event const& other) {
   in_downtime = other.in_downtime;
   start_time = other.start_time;
   status = other.status;
-  return;
 }
 
 /**************************************
@@ -124,6 +107,6 @@ mapping::entry const ba_event::entries[] = {
 
 // Operations.
 static io::data* new_ba_event() {
-  return (new ba_event);
+  return new ba_event;
 }
 io::event_info::event_operations const ba_event::operations = {&new_ba_event};

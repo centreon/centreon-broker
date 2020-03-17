@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/dimension_ba_timeperiod_relation.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -27,7 +25,10 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 dimension_ba_timeperiod_relation::dimension_ba_timeperiod_relation()
-    : ba_id(0), timeperiod_id(0), is_default(false) {}
+    : io::data(dimension_ba_timeperiod_relation::static_type()),
+      ba_id(0),
+      timeperiod_id(0),
+      is_default(false) {}
 
 /**
  *  Copy constructor.
@@ -58,7 +59,7 @@ dimension_ba_timeperiod_relation& dimension_ba_timeperiod_relation::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -75,26 +76,6 @@ bool dimension_ba_timeperiod_relation::operator==(
 }
 
 /**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_ba_timeperiod_relation::type() const {
-  return (dimension_ba_timeperiod_relation::static_type());
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_ba_timeperiod_relation::static_type() {
-  return (
-      io::events::data_type<io::events::bam,
-                            bam::de_dimension_ba_timeperiod_relation>::value);
-}
-
-/**
  *  Copy internal data members.
  *
  *  @param[in] other Object to copy.
@@ -104,7 +85,6 @@ void dimension_ba_timeperiod_relation::_internal_copy(
   ba_id = other.ba_id;
   timeperiod_id = other.timeperiod_id;
   is_default = other.is_default;
-  return;
 }
 
 /**************************************
@@ -127,7 +107,7 @@ mapping::entry const dimension_ba_timeperiod_relation::entries[] = {
 
 // Operations.
 static io::data* new_dimension_ba_timeperiod_relation() {
-  return (new dimension_ba_timeperiod_relation);
+  return new dimension_ba_timeperiod_relation;
 }
 io::event_info::event_operations const
     dimension_ba_timeperiod_relation::operations = {

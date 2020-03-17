@@ -17,8 +17,6 @@
 */
 
 #include "com/centreon/broker/bam/dimension_ba_bv_relation_event.hh"
-#include "com/centreon/broker/bam/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bam;
@@ -27,7 +25,9 @@ using namespace com::centreon::broker::bam;
  *  Default constructor.
  */
 dimension_ba_bv_relation_event::dimension_ba_bv_relation_event()
-    : ba_id(0), bv_id(0) {}
+    : io::data(dimension_ba_bv_relation_event::static_type()),
+      ba_id(0),
+      bv_id(0) {}
 
 /**
  *  Copy constructor.
@@ -58,7 +58,7 @@ dimension_ba_bv_relation_event& dimension_ba_bv_relation_event::operator=(
     io::data::operator=(other);
     _internal_copy(other);
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -70,26 +70,7 @@ dimension_ba_bv_relation_event& dimension_ba_bv_relation_event::operator=(
  */
 bool dimension_ba_bv_relation_event::operator==(
     dimension_ba_bv_relation_event const& other) const {
-  return ((ba_id == other.ba_id) && (bv_id == other.bv_id));
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_ba_bv_relation_event::type() const {
-  return (dimension_ba_bv_relation_event::static_type());
-}
-
-/**
- *  Get the event type.
- *
- *  @return Event type.
- */
-uint32_t dimension_ba_bv_relation_event::static_type() {
-  return (io::events::data_type<io::events::bam,
-                                bam::de_dimension_ba_bv_relation_event>::value);
+  return ba_id == other.ba_id && bv_id == other.bv_id;
 }
 
 /**
@@ -101,7 +82,6 @@ void dimension_ba_bv_relation_event::_internal_copy(
     dimension_ba_bv_relation_event const& other) {
   ba_id = other.ba_id;
   bv_id = other.bv_id;
-  return;
 }
 
 /**************************************
@@ -122,7 +102,7 @@ mapping::entry const dimension_ba_bv_relation_event::entries[] = {
 
 // Operations.
 static io::data* new_dimension_ba_bv_relation_event() {
-  return (new dimension_ba_bv_relation_event);
+  return new dimension_ba_bv_relation_event;
 }
 io::event_info::event_operations const
     dimension_ba_bv_relation_event::operations = {
