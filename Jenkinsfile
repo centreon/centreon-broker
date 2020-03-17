@@ -100,12 +100,14 @@ try {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10"
       }
+/*
     },
     'debian10-armhf': {
       node {
         sh 'setup_centreon_build.sh'
         sh "./centreon-build/jobs/broker/${serie}/mon-broker-package.sh debian10-armhf"
       }
+*/
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
       error('Package stage failure.');
