@@ -565,7 +565,7 @@ void conflict_manager::_check_deleted_index() {
     // Delete index from DB.
     for (int64_t i : index_to_delete) {
       std::ostringstream oss;
-      oss << "DELETE FROM index_data WHERE index_id=" << i;
+      oss << "DELETE FROM index_data WHERE id=" << i;
       std::ostringstream oss_error;
       oss_error << "storage: cannot delete index " << i << ": ";
       _mysql.run_query(oss.str(), oss_error.str(), false, conn);

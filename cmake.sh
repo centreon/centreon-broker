@@ -12,6 +12,21 @@ else
   fi
 fi
 
+if [[ ! -x /usr/bin/python3 ]] ; then
+  yum -y install python3
+else
+  echo "python3 already installed"
+fi
+
+if ! rpm -qa | grep "python3-pip" ; then
+  yum -y install python3-pip
+else
+  echo "pip3 already installed"
+fi
+
+pip3 install conan
+conan remote add centreon https://api.bintray.com/conan/centreon/centreon
+
 if [ ! -d build ] ; then
   mkdir build
 else
