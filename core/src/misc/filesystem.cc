@@ -54,10 +54,12 @@ std::list<std::string> filesystem::dir_content(std::string const& path,
       if (add_slash)
         fullname.append("/");
       fullname.append(ent->d_name);
-      if (recursive && ent->d_type == DT_DIR) {
+      struct stat st;
+      stat(fullname.c_str(), &st);
+      if (recursive && S_ISDIR(st.st_mode)) {
         std::list<std::string> res{filesystem::dir_content(fullname, true)};
         retval.splice(retval.end(), res);
-      } else if (ent->d_type == DT_REG)
+      } else if (S_ISREG(st.st_mode))
         retval.push_back(std::move(fullname));
     }
     closedir(dir);
