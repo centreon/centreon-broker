@@ -53,14 +53,14 @@ using namespace com::centreon::broker;
 };
 
 TEST_F(BrokerRpc, StartStop) {
-  brokerrpc brpc("0.0.0.0", 50051);
+  brokerrpc brpc("0.0.0.0", 50052);
   ASSERT_NO_THROW(brpc.shutdown());
 }
 
 TEST_F(BrokerRpc, GetVersion) {
   std::ostringstream oss;
   oss << "GetVersion: major: " << version::major;
-  brokerrpc brpc("0.0.0.0", 50051);
+  brokerrpc brpc("0.0.0.0", 50052);
   auto output = execute("GetVersion");
   ASSERT_EQ(output.size(), 2);
   ASSERT_EQ(output.front(), oss.str());

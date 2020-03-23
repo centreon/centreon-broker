@@ -24,7 +24,8 @@
 #include <cstring>
 #include <exception>
 #include <thread>
-#include "com/centreon/broker/config/applier/endpoint.hh"
+
+#include "com/centreon/broker/brokerrpc.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
@@ -32,9 +33,9 @@
 #include "com/centreon/broker/config/logger.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/diagnostic.hh"
-#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 
@@ -281,6 +282,10 @@ int main(int argc, char* argv[]) {
       if (sigaction(SIGTERM, &sigterm_act, nullptr) < 0)
         logging::info(logging::high)
             << "main: could not register termination handler";
+
+      std::unique_ptr<brokerrpc, std::function<void(brokerrpc*)>> rpc(
+          new brokerrpc("0.0.0.0", 50052),
+          [](brokerrpc* rpc) { rpc->shutdown(); });
 
       // Launch event loop.
       if (!check)
