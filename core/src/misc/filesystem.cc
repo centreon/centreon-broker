@@ -57,9 +57,9 @@ std::list<std::string> filesystem::dir_content(std::string const& path,
       if (recursive && ent->d_type & DT_DIR) {
         std::list<std::string> res{filesystem::dir_content(fullname, true)};
         retval.splice(retval.end(), res);
-      } else if (ent->d_type & DT_REG) {
+      } else if (ent->d_type == DT_REG) {
         retval.push_back(std::move(fullname));
-      } else if (ent->d_type & DT_UNKNOWN) {
+      } else if (ent->d_type == DT_UNKNOWN) {
         struct stat st;
         stat(fullname.c_str(), &st);
 
