@@ -5,21 +5,21 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
 service Broker {
-  rpc GetVersion(google.protobuf.Empty) returns (Version) {}
-  rpc DebugConfReload(GenericString) returns (GenericResponse) {}
+  rpc GetVersion(google.protobuf.Empty) returns (BrokerVersion) {}
+  rpc DebugConfReload(BrokerGenericString) returns (BrokerGenericResponse) {}
 }
 
-message Version {
+message BrokerVersion {
   int32 major = 1;
   int32 minor = 2;
   int32 patch = 3;
 }
 
-message GenericString {
+message BrokerGenericString {
   string str_arg = 1;
 }
 
-message GenericResponse {
+message BrokerGenericResponse {
     bool ok = 1;
     string err_msg = 2;
 }
