@@ -22,7 +22,7 @@ grpc::Status broker_impl::GetVersion(grpc::ServerContext* context,
   response->set_patch(patch);
   return grpc::Status::OK;
 }
-grpc::Status broker_impl::ConfReload(grpc::ServerContext* context,
+grpc::Status broker_impl::DebugConfReload(grpc::ServerContext* context,
                                      const GenericString* request,
                                      GenericResponse* response) {
   std::string err;

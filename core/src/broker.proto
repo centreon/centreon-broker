@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 
 service Broker {
   rpc GetVersion(google.protobuf.Empty) returns (Version) {}
-  rpc ConfReload(GenericString) returns (GenericResponse) {}
+  rpc DebugConfReload(GenericString) returns (GenericResponse) {}
 }
 
 message Version {

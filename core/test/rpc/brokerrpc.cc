@@ -75,10 +75,10 @@ TEST_F(BrokerRpc, GetVersion) {
 
 TEST_F(BrokerRpc, ConfReloadBad) {
   brokerrpc brpc("0.0.0.0", 50052, "test");
-  auto output = execute("ConfReload /root/testfail.json");
+  auto output = execute("DebugConfReload /root/testfail.json");
   ASSERT_EQ(output.size(), 1);
   ASSERT_EQ(output.back(),
-            "ConfReload failed for file /root/testfail.json : file '/root/testfail.json' does not exist");
+            "DebugConfReload failed for file /root/testfail.json : file '/root/testfail.json' does not exist");
   brpc.shutdown();
 }
 
@@ -96,9 +96,9 @@ TEST_F(BrokerRpc, ConfReloadOK) {
   testing::internal::CaptureStdout();
 
   brokerrpc brpc("0.0.0.0", 50052, "broker");
-  auto output = execute("ConfReload /tmp/testok.json");
+  auto output = execute("DebugConfReload /tmp/testok.json");
   ASSERT_EQ(output.size(), 1);
-  ASSERT_EQ(output.back(), "ConfReload OK");
+  ASSERT_EQ(output.back(), "DebugConfReload OK");
   log_v2::core()->info("test");
   brpc.shutdown();
 
