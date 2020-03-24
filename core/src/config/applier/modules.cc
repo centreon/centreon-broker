@@ -120,3 +120,7 @@ void modules::unload() {
   delete gl_modules;
   gl_modules = nullptr;
 }
+
+std::mutex& modules::module_mutex() {
+  return _m_modules;
+}

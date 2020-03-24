@@ -7,6 +7,16 @@ package com.centreon.broker;
 service Broker {
   rpc GetVersion(google.protobuf.Empty) returns (Version) {}
   rpc DebugConfReload(GenericString) returns (GenericResponse) {}
+
+  //stats
+  rpc GetGenericStats(google.protobuf.Empty) returns (GenericString) {}
+  rpc GetSqlStats(google.protobuf.Empty) returns (GenericString) {}
+
+  rpc GetNumModules(google.protobuf.Empty) returns (GenericSize) {}
+  rpc GetModulesStats(GenericNameOrIndex) returns (GenericString) {}
+
+  rpc GetNumEndpoint(google.protobuf.Empty) returns (GenericSize) {}
+  rpc GetEndpointStats(GenericNameOrIndex) returns (GenericString) {}
 }
 
 message Version {
@@ -17,6 +27,20 @@ message Version {
 
 message GenericString {
   string str_arg = 1;
+}
+
+message GenericSize {
+  uint32 size = 1;
+}
+
+// 1 => access by name
+// 2 => access by index
+// not set => all elems
+message GenericNameOrIndex {
+    oneof nameOrIndex {
+        string str = 1;
+        uint32 idx = 2;
+    }
 }
 
 message GenericResponse {
