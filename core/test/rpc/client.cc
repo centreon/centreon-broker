@@ -32,7 +32,7 @@ class BrokerRPCClient {
   BrokerRPCClient(std::shared_ptr<grpc::Channel> channel)
       : _stub(Broker::NewStub(channel)) {}
 
-  bool GetVersion(Version* version) {
+  bool GetVersion(BrokerVersion* version) {
     const ::google::protobuf::Empty e;
     grpc::ClientContext context;
     grpc::Status status = _stub->GetVersion(&context, e, version);
@@ -43,8 +43,8 @@ class BrokerRPCClient {
     return true;
   }
 
-  bool DebugConfReload(GenericResponse* response, std::string const& file) {
-    GenericString request;
+  bool DebugConfReload(BrokerGenericResponse* response, std::string const& file) {
+    BrokerGenericString request;
     request.set_allocated_str_arg(new std::string(file));
 
     grpc::ClientContext context;
@@ -73,12 +73,12 @@ int main(int argc, char** argv) {
   }
 
   if (strcmp(argv[1], "GetVersion") == 0) {
-    Version version;
+    BrokerVersion version;
     status = client.GetVersion(&version) ? 0 : 1;
     std::cout << "GetVersion: " << version.DebugString();
   }
   else if (strcmp(argv[1], "DebugConfReload") == 0) {
-    GenericResponse response;
+    BrokerGenericResponse response;
     status = client.DebugConfReload(&response, argv[2]) ? 0 : 1;
     if (!response.ok())
       std::cout << "DebugConfReload failed for file " << argv[2] << " : " << response.err_msg() << std::endl;
