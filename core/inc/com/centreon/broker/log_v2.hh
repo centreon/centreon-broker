@@ -33,12 +33,13 @@ class log_v2 {
   std::shared_ptr<spdlog::logger> _bbdo_log;
   std::shared_ptr<spdlog::logger> _tls_log;
   std::shared_ptr<spdlog::logger> _sql_log;
+  std::mutex _load_m;
   log_v2();
   ~log_v2();
 
  public:
   static log_v2& instance();
-  bool load(std::string const& file, config::state const& state);
+  bool load(std::string const& file, std::string const& broker_name, std::string& err);
 
   static std::shared_ptr<spdlog::logger> core();
   static std::shared_ptr<spdlog::logger> tls();

@@ -72,14 +72,18 @@ static auto json_validate = [](Json const& js) -> bool {
   return true;
 };
 
-bool log_v2::load(std::string const& file, config::state const& state) {
+bool log_v2::load(std::string const& file, std::string const& broker_name, std::string & err) {
+  std::lock_guard<std::mutex> lock(_load_m);
+
   std::ifstream my_file(file);
   if (my_file.good()) {
     std::string const& json_to_parse{std::istreambuf_iterator<char>(my_file),
                                      std::istreambuf_iterator<char>()};
-    std::string err;
 
     Json const& js{Json::parse(json_to_parse, err)};
+    if (!err.empty())
+      return false;
+
     if (json_validate(js)) {
       // reset loggers to null sink
       std::vector<sink_ptr> sinks{std::make_shared<sinks::null_sink_mt>()};
@@ -89,12 +93,13 @@ bool log_v2::load(std::string const& file, config::state const& state) {
 
       if (js["log_path"].is_string()) {
         std::string log_name =
-            js["log_path"].string_value() + "/" + state.broker_name() + ".log";
+            js["log_path"].string_value() + "/" + broker_name + ".log";
         try {
           sinks.push_back(
               std::make_shared<sinks::basic_file_sink_mt>(log_name));
         } catch (...) {
-          logging::error(logging::high) << "log_v2 cannot log on: " << log_name;
+          err = "log_v2 cannot log on '" + log_name + "'";
+          return false;
         }
       }
 
@@ -119,13 +124,21 @@ bool log_v2::load(std::string const& file, config::state const& state) {
       _core_log = std::make_shared<logger>("core", sinks.begin(), sinks.end());
       _core_log->set_level(level::trace);
       _core_log->flush_on(level::trace);
-      _core_log->info("{} : log started", state.broker_name());
+      _core_log->info("{} : log started", broker_name);
 
       return true;
     }
-    logging::error(logging::high) << "bad format for config file: " << file;
+
+    err = "bad format for config file '" + file + "'";
+    return false;
   }
+
+  err = "file '" + file + "' does not exist";
   return false;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::core() {
+  return instance()._core_log;
 }
 
 std::shared_ptr<spdlog::logger> log_v2::tls() {

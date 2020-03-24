@@ -16,7 +16,7 @@ CCB_BEGIN()
 class brokerrpc final {
   std::unique_ptr<grpc::Server> _server;
  public:
-  brokerrpc(const std::string& address, uint16_t port);
+  brokerrpc(const std::string& address, uint16_t port, std::string const& broker_name);
   brokerrpc() = delete;
   brokerrpc(const brokerrpc&) = delete;
   ~brokerrpc() = default;

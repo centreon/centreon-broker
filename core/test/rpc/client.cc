@@ -42,6 +42,23 @@ class BrokerRPCClient {
     }
     return true;
   }
+
+  bool ConfReload(GenericResponse* response, std::string const& file) {
+    GenericString request;
+    request.set_allocated_str_arg(new std::string(file));
+
+    grpc::ClientContext context;
+    grpc::Status status = _stub->ConfReload(&context, request, response);
+    if (!status.ok()) {
+      std::cout << "ConfReload rpc failed." << std::endl;
+      return false;
+    }
+
+    if (response->ok())
+      return true;
+
+    return false;
+  }
 };
 
 int main(int argc, char** argv) {
@@ -60,5 +77,14 @@ int main(int argc, char** argv) {
     status = client.GetVersion(&version) ? 0 : 1;
     std::cout << "GetVersion: " << version.DebugString();
   }
+  else if (strcmp(argv[1], "ConfReload") == 0) {
+    GenericResponse response;
+    status = client.ConfReload(&response, argv[2]) ? 0 : 1;
+    if (!response.ok())
+      std::cout << "ConfReload failed for file " << argv[2] << " : " << response.err_msg() << std::endl;
+    else
+      std::cout << "ConfReload OK" << std::endl;
+  }
+
   exit(status);
 }

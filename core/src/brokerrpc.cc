@@ -23,8 +23,9 @@
 
 using namespace com::centreon::broker;
 
-brokerrpc::brokerrpc(const std::string& address, uint16_t port) {
+brokerrpc::brokerrpc(const std::string& address, uint16_t port, std::string const& broker_name) {
   broker_impl* service = new broker_impl;
+  service->set_broker_name(broker_name);
   std::ostringstream oss;
   oss << address << ":" << port;
   std::string server_address{oss.str()};

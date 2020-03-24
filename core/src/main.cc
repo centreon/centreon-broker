@@ -141,6 +141,7 @@ static void term_handler(int signum, siginfo_t* info, void* data) {
 int main(int argc, char* argv[]) {
   // Initialization.
   config::applier::init();
+  std::string broker_name = "unknown";
 
   // Return value.
   int retval(0);
@@ -261,7 +262,11 @@ int main(int argc, char* argv[]) {
 
         // Apply resulting configuration totally or partially.
         config::applier::state::instance().apply(conf, !check);
-        log_v2::instance().load("/etc/centreon-broker/log-config.json", conf);
+        std::string err;
+        broker_name = conf.broker_name();
+        if (!log_v2::instance().load("/etc/centreon-broker/log-config.json",
+                                broker_name, err));
+          logging::error(logging::low) << err;
         gl_state = conf;
       }
 
@@ -284,7 +289,7 @@ int main(int argc, char* argv[]) {
             << "main: could not register termination handler";
 
       std::unique_ptr<brokerrpc, std::function<void(brokerrpc*)>> rpc(
-          new brokerrpc("0.0.0.0", 50052),
+          new brokerrpc("0.0.0.0", 50052, broker_name),
           [](brokerrpc* rpc) { rpc->shutdown(); });
 
       // Launch event loop.

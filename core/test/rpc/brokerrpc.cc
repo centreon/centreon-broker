@@ -17,28 +17,31 @@
  *
  */
 
-#include <gtest/gtest.h>
-#include <cstdio>
 #include "com/centreon/broker/brokerrpc.hh"
+
+#include <gtest/gtest.h>
+
+#include <cstdio>
+#include <fstream>
+#include <json11.hpp>
+
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/version.hh"
 
 using namespace com::centreon;
 using namespace com::centreon::broker;
 
- class BrokerRpc : public ::testing::Test {
+class BrokerRpc : public ::testing::Test {
  public:
-  void SetUp() override {
-  }
+  void SetUp() override {}
 
-  void TearDown() override {
-  }
+  void TearDown() override {}
 
   std::list<std::string> execute(const std::string& command) {
     std::list<std::string> retval;
     char path[1024];
     std::ostringstream oss;
-    oss << "test/rpc_client "
-        << command;
+    oss << "test/rpc_client " << command;
 
     FILE* fp = popen(oss.str().c_str(), "r");
     while (fgets(path, sizeof(path), fp) != nullptr) {
@@ -53,14 +56,14 @@ using namespace com::centreon::broker;
 };
 
 TEST_F(BrokerRpc, StartStop) {
-  brokerrpc brpc("0.0.0.0", 50052);
+  brokerrpc brpc("0.0.0.0", 50052, "test");
   ASSERT_NO_THROW(brpc.shutdown());
 }
 
 TEST_F(BrokerRpc, GetVersion) {
   std::ostringstream oss;
   oss << "GetVersion: major: " << version::major;
-  brokerrpc brpc("0.0.0.0", 50052);
+  brokerrpc brpc("0.0.0.0", 50052, "test");
   auto output = execute("GetVersion");
   ASSERT_EQ(output.size(), 2);
   ASSERT_EQ(output.front(), oss.str());
@@ -68,4 +71,41 @@ TEST_F(BrokerRpc, GetVersion) {
   oss << "minor: " << version::minor;
   ASSERT_EQ(output.back(), oss.str());
   brpc.shutdown();
+}
+
+TEST_F(BrokerRpc, ConfReloadBad) {
+  brokerrpc brpc("0.0.0.0", 50052, "test");
+  auto output = execute("ConfReload /root/testfail.json");
+  ASSERT_EQ(output.size(), 1);
+  ASSERT_EQ(output.back(),
+            "ConfReload failed for file /root/testfail.json : file '/root/testfail.json' does not exist");
+  brpc.shutdown();
+}
+
+TEST_F(BrokerRpc, ConfReloadOK) {
+  json11::Json my_json = json11::Json::object{
+      {"console", true}, {"loggers", json11::Json::array{}}};
+  std::string output_str;
+  my_json.dump(output_str);
+
+  std::remove("/tmp/testok.json");
+  std::ofstream conf("/tmp/testok.json");
+  conf << output_str;
+  conf.close();
+
+  testing::internal::CaptureStdout();
+
+  brokerrpc brpc("0.0.0.0", 50052, "broker");
+  auto output = execute("ConfReload /tmp/testok.json");
+  ASSERT_EQ(output.size(), 1);
+  ASSERT_EQ(output.back(), "ConfReload OK");
+  log_v2::core()->info("test");
+  brpc.shutdown();
+
+  std::string log_output = testing::internal::GetCapturedStdout();
+
+  ASSERT_NE(log_output.find("] broker :"), std::string::npos);
+  ASSERT_NE(log_output.find("] test"), std::string::npos);
+
+  std::remove("/tmp/testok.json");
 }
