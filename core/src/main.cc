@@ -290,7 +290,7 @@ int main(int argc, char* argv[]) {
 
       std::unique_ptr<brokerrpc, std::function<void(brokerrpc*)>> rpc(
           new brokerrpc("0.0.0.0", 50052, broker_name),
-          [](brokerrpc* rpc) { rpc->shutdown(); });
+          [](brokerrpc* rpc) { rpc->shutdown(); delete rpc;});
 
       // Launch event loop.
       if (!check)

@@ -17,7 +17,7 @@ class broker_impl final : public Broker::Service {
                           const ::google::protobuf::Empty* /*request*/,
                           Version* response) override;
 
-  grpc::Status ConfReload(grpc::ServerContext* context,
+  grpc::Status DebugConfReload(grpc::ServerContext* context,
                           const GenericString* /*request*/,
                           GenericResponse* response) override;
 
