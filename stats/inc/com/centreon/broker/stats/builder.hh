@@ -21,6 +21,7 @@
 #define CCB_STATS_BUILDER_HH
 
 #include <json11.hpp>
+#include <mutex>
 #include <string>
 #include "com/centreon/broker/namespace.hh"
 
@@ -43,8 +44,9 @@ class builder {
   ~builder() throw();
   builder& operator=(builder const& right);
   void build();
-  std::string const& data() const throw();
-  json11::Json const& root() const throw();
+  std::string const& data() const noexcept;
+  json11::Json const& root() const noexcept;
+
 
  private:
   static std::string _generate_stats_for_endpoint(processing::bthread* fo,

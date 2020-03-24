@@ -18,9 +18,12 @@
  */
 
 #include "com/centreon/broker/stats/builder.hh"
+
 #include <time.h>
 #include <unistd.h>
+
 #include <asio.hpp>
+
 #include "com/centreon/broker/config/applier/endpoint.hh"
 #include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/endpoint.hh"
@@ -82,74 +85,19 @@ void builder::build() {
   // Cleanup.
   _data.clear();
   json11::Json::object object;
+  get_generic_stats(object);
 
-  // General.
+  json11::Json::object mysql_object;
+  get_mysql_stats(mysql_object);
+  object["mysql manager"] = mysql_object;
+
+  std::vector<json11::Json::object> modules_objects;
+  get_loaded_module_stats(modules_objects);
+  for (auto& obj : modules_objects)
   {
-    object["version"] = CENTREON_BROKER_VERSION;
-    object["pid"] = getpid();
-    object["now"] = std::to_string(::time(nullptr));
-
-    std::string asio_version{std::to_string(ASIO_VERSION / 100000)};
-    asio_version.append(".")
-        .append(std::to_string(ASIO_VERSION / 100 % 1000))
-        .append(".")
-        .append(std::to_string(ASIO_VERSION % 100));
-    object["asio_version"] = asio_version;
+    object["module" + obj["name"].string_value()] = obj;
   }
 
-  // Mysql manager.
-  {
-    std::map<std::string, std::string> stats(
-        mysql_manager::instance().get_stats());
-    json11::Json::object subtree;
-    for (std::pair<std::string, std::string> const& p : stats)
-      subtree[p.first] = p.second;
-    object["mysql manager"] = subtree;
-  }
-
-  // Modules.
-  config::applier::modules& mod_applier(config::applier::modules::instance());
-  for (config::applier::modules::iterator it(mod_applier.begin()),
-       end(mod_applier.end());
-       it != end; ++it) {
-    json11::Json::object subtree;
-    subtree["state"] = "loaded";
-    subtree["size"] =
-        std::to_string(misc::filesystem::file_size(it->first)) + "B";
-    object["module" + it->first] = subtree;
-  }
-
-  // Endpoint applier.
-  config::applier::endpoint& endp_applier(
-      config::applier::endpoint::instance());
-
-  // Print endpoints.
-  {
-    bool locked(endp_applier.endpoints_mutex().try_lock_for(
-        std::chrono::milliseconds(100)));
-    try {
-      if (locked)
-        for (config::applier::endpoint::iterator
-                 it(endp_applier.endpoints_begin()),
-             end(endp_applier.endpoints_end());
-             it != end; ++it) {
-          json11::Json::object p;
-          std::string endpoint_name =
-              _generate_stats_for_endpoint(it->second, p);
-          object[endpoint_name] = p;
-        }
-      else
-        _data.append(
-            "inputs=could not fetch list, configuration update in progress "
-            "?\n");
-    } catch (...) {
-      if (locked)
-        endp_applier.endpoints_mutex().unlock();
-      throw;
-    }
-    if (locked)
-      endp_applier.endpoints_mutex().unlock();
-  }
 
   _root = object;
   std::string buffer;
@@ -190,7 +138,7 @@ json11::Json const& builder::root() const throw() {
  *  @return            Name of the endpoint.
  */
 std::string builder::_generate_stats_for_endpoint(processing::bthread* fo,
-    json11::Json::object& tree) {
+                                                  json11::Json::object& tree) {
   // Header.
   std::string endpoint = std::string("endpoint ") + fo->get_name();
 

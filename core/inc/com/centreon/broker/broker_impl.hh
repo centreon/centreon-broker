@@ -34,6 +34,24 @@ class broker_impl final : public Broker::Service {
                           const GenericString* /*request*/,
                           GenericResponse* response) override;
 
+  grpc::Status GetNumModules(grpc::ServerContext* context,
+                          const ::google::protobuf::Empty* /*request*/,
+                          GenericSize* response) override;
+
+  grpc::Status GetModulesStats(grpc::ServerContext* context,
+                               const GenericNameOrIndex* request,
+                               GenericString* response) override;
+
+
+  grpc::Status GetNumEndpoint(grpc::ServerContext* context,
+                             const ::google::protobuf::Empty* /*request*/,
+                             GenericSize* response) override;
+
+
+  grpc::Status GetEndpointStats(grpc::ServerContext* context,
+                               const GenericNameOrIndex* request,
+                               GenericString* response) override;
+
  public:
   void set_broker_name(std::string const& s) {_broker_name = s;};
 };

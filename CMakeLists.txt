@@ -465,6 +465,7 @@ set(LIBROKER_SOURCES
   ${SRC_DIR}/processing/feeder.cc
   ${SRC_DIR}/processing/stat_visitable.cc
   ${SRC_DIR}/processing/thread.cc
+  ${SRC_DIR}/stats/helper.cc
   ${SRC_DIR}/time/daterange.cc
   ${SRC_DIR}/time/timeperiod.cc
   ${SRC_DIR}/time/timerange.cc
@@ -576,6 +577,7 @@ set(LIBROKER_SOURCES
   ${INC_DIR}/processing/feeder.hh
   ${INC_DIR}/processing/stat_visitable.hh
   ${INC_DIR}/processing/thread.hh
+  ${INC_DIR}/stats/helper.hh
   ${INC_DIR}/time/daterange.hh
   ${INC_DIR}/time/ptr_typedef.hh
   ${INC_DIR}/time/time_info.hh
