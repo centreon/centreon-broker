@@ -25,6 +25,8 @@
 #include <grpcpp/create_channel.h>
 #include "../src/broker.grpc.pb.h"
 
+using namespace com::centreon::broker;
+
 class BrokerRPCClient {
   std::unique_ptr<Broker::Stub> _stub;
 
@@ -32,7 +34,7 @@ class BrokerRPCClient {
   BrokerRPCClient(std::shared_ptr<grpc::Channel> channel)
       : _stub(Broker::NewStub(channel)) {}
 
-  bool GetVersion(BrokerVersion* version) {
+  bool GetVersion(Version* version) {
     const ::google::protobuf::Empty e;
     grpc::ClientContext context;
     grpc::Status status = _stub->GetVersion(&context, e, version);
@@ -43,8 +45,8 @@ class BrokerRPCClient {
     return true;
   }
 
-  bool DebugConfReload(BrokerGenericResponse* response, std::string const& file) {
-    BrokerGenericString request;
+  bool DebugConfReload(GenericResponse* response, std::string const& file) {
+    GenericString request;
     request.set_allocated_str_arg(new std::string(file));
 
     grpc::ClientContext context;
@@ -73,12 +75,12 @@ int main(int argc, char** argv) {
   }
 
   if (strcmp(argv[1], "GetVersion") == 0) {
-    BrokerVersion version;
+    Version version;
     status = client.GetVersion(&version) ? 0 : 1;
     std::cout << "GetVersion: " << version.DebugString();
   }
   else if (strcmp(argv[1], "DebugConfReload") == 0) {
-    BrokerGenericResponse response;
+    GenericResponse response;
     status = client.DebugConfReload(&response, argv[2]) ? 0 : 1;
     if (!response.ok())
       std::cout << "DebugConfReload failed for file " << argv[2] << " : " << response.err_msg() << std::endl;
