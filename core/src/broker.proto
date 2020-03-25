@@ -1,25 +1,25 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
-import "google/protobuf/duration.proto";
-import "google/protobuf/timestamp.proto";
+
+package com.centreon.broker;
 
 service Broker {
-  rpc GetVersion(google.protobuf.Empty) returns (BrokerVersion) {}
-  rpc DebugConfReload(BrokerGenericString) returns (BrokerGenericResponse) {}
+  rpc GetVersion(google.protobuf.Empty) returns (Version) {}
+  rpc DebugConfReload(GenericString) returns (GenericResponse) {}
 }
 
-message BrokerVersion {
+message Version {
   int32 major = 1;
   int32 minor = 2;
   int32 patch = 3;
 }
 
-message BrokerGenericString {
+message GenericString {
   string str_arg = 1;
 }
 
-message BrokerGenericResponse {
+message GenericResponse {
     bool ok = 1;
     string err_msg = 2;
 }

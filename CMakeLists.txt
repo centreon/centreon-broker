@@ -596,7 +596,7 @@ target_link_libraries(rokerbase ${ZLIB_LIBRARIES} ${MYSQL_LIBS}  pthread dl berp
 add_library(roker STATIC
   ${SRC_DIR}/config/applier/init.cc
   ${SRC_DIR}/config/applier/logger.cc)
-target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${OpenSSL_LIBS} ${grpc_LIBS})
+target_link_libraries(roker rokerbase dl ${c-ares_LIBS} ${OpenSSL_LIBS} ${grpc_LIBS} grpc++_reflection)
 
 # Standalone binary.
 set(DAEMON cbd)
@@ -604,7 +604,7 @@ add_executable(${DAEMON} ${SRC_DIR}/main.cc)
 
 #Flags needed to include all symbols in binary.
 target_link_libraries("${DAEMON}"
-  "-Wl,--whole-archive" "rokerbase" "roker" "-Wl,--no-whole-archive" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${OpenSSL_LIBS} ${grpc_LIBS})
+  "-Wl,--whole-archive" grpc++_reflection rokerbase roker "-Wl,--no-whole-archive" ${json11_LIBS} ${fmt_LIBS} ${spdlog_LIBS} ${OpenSSL_LIBS} ${grpc_LIBS} )
 
 # Centreon Broker Watchdog
 option(WITH_CBWD "Build centreon broker watchdong." ON)

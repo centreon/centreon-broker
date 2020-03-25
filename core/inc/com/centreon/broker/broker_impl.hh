@@ -28,11 +28,11 @@ class broker_impl final : public Broker::Service {
 
   grpc::Status GetVersion(grpc::ServerContext* context,
                           const ::google::protobuf::Empty* /*request*/,
-                          BrokerVersion* response) override;
+                          Version* response) override;
 
   grpc::Status DebugConfReload(grpc::ServerContext* context,
-                          const BrokerGenericString* /*request*/,
-                          BrokerGenericResponse* response) override;
+                          const GenericString* /*request*/,
+                          GenericResponse* response) override;
 
  public:
   void set_broker_name(std::string const& s) {_broker_name = s;};

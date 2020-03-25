@@ -35,15 +35,15 @@ using namespace com::centreon::broker::version;
  */
 grpc::Status broker_impl::GetVersion(grpc::ServerContext* context,
                                const ::google::protobuf::Empty* request,
-                               BrokerVersion* response) {
+                               Version* response) {
   response->set_major(major);
   response->set_minor(minor);
   response->set_patch(patch);
   return grpc::Status::OK;
 }
 grpc::Status broker_impl::DebugConfReload(grpc::ServerContext* context,
-                                     const BrokerGenericString* request,
-                                     BrokerGenericResponse* response) {
+                                     const GenericString* request,
+                                     GenericResponse* response) {
   std::string err;
   if(log_v2::instance().load(request->str_arg(), _broker_name, err)) {
     response->set_ok(true);
