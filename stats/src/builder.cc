@@ -32,6 +32,7 @@
 #include "com/centreon/broker/multiplexing/muxer.hh"
 #include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/processing/thread.hh"
+#include "com/centreon/broker/stats/helper.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::stats;
@@ -85,19 +86,25 @@ void builder::build() {
   // Cleanup.
   _data.clear();
   json11::Json::object object;
-  get_generic_stats(object);
+  stats::get_generic_stats(object);
 
   json11::Json::object mysql_object;
-  get_mysql_stats(mysql_object);
+  stats::get_mysql_stats(mysql_object);
   object["mysql manager"] = mysql_object;
 
   std::vector<json11::Json::object> modules_objects;
-  get_loaded_module_stats(modules_objects);
+  stats::get_loaded_module_stats(modules_objects);
   for (auto& obj : modules_objects)
   {
     object["module" + obj["name"].string_value()] = obj;
   }
 
+  std::vector<json11::Json::object> endpoint_objects;
+  stats::get_endpoint_stats(endpoint_objects);
+  for (auto& obj : endpoint_objects)
+  {
+    object["endpoint " + obj["name"].string_value()] = obj;
+  }
 
   _root = object;
   std::string buffer;
@@ -121,35 +128,4 @@ std::string const& builder::data() const throw() {
  */
 json11::Json const& builder::root() const throw() {
   return (_root);
-}
-
-/**************************************
- *                                     *
- *           Private Methods           *
- *                                     *
- **************************************/
-
-/**
- *  Generate statistics for an endpoint.
- *
- *  @param[in]  fo     Failover thread of the endpoint.
- *  @param[out] tree   Properties for this tree.
- *
- *  @return            Name of the endpoint.
- */
-std::string builder::_generate_stats_for_endpoint(processing::bthread* fo,
-                                                  json11::Json::object& tree) {
-  // Header.
-  std::string endpoint = std::string("endpoint ") + fo->get_name();
-
-  // Add memory and queue file.
-  tree["queue_file_path"] =
-      com::centreon::broker::multiplexing::muxer::queue_file(fo->get_name());
-  tree["memory_file_path"] =
-      com::centreon::broker::multiplexing::muxer::memory_file(fo->get_name());
-
-  // Gather statistic.
-  fo->stats(tree);
-
-  return endpoint;
 }
