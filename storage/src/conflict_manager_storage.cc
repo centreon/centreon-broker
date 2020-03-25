@@ -24,6 +24,7 @@
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/conflict_manager.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/metric_mapping.hh"
@@ -65,12 +66,15 @@ static inline bool check_equality(double a, double b) {
  * @return the number of events sent to the database.
  */
 int32_t conflict_manager::_storage_process_service_status() {
-  logging::debug(logging::low) << "storage: process_service_status...";
-
   auto& p = _events.front();
   std::shared_ptr<io::data> d{std::get<0>(p)};
   neb::service_status const& ss{*static_cast<neb::service_status *>(d.get())};
   uint64_t host_id = ss.host_id, service_id = ss.service_id;
+  log_v2::perfdata()->debug(
+      "conflict_manager::_storage_process_service_status(): host_id:{}, "
+      "service_id:{}",
+      host_id,
+      service_id);
   auto it_index_cache = _index_cache.find({host_id, service_id});
   uint32_t index_id, rrd_len;
   int32_t conn =
@@ -78,39 +82,38 @@ int32_t conflict_manager::_storage_process_service_status() {
   bool index_locked{false};
   bool special{!strncmp(ss.host_name.c_str(), BAM_NAME, sizeof(BAM_NAME) - 1)};
 
-  auto add_metric_in_cache = [this](
-    uint32_t index_id,
-    uint64_t host_id,
-    uint64_t service_id,
-    neb::service_status const& ss,
-    bool index_locked,
-    bool special,
-    uint32_t& rrd_len) -> void {
+  auto add_metric_in_cache = [this](uint32_t index_id,
+                                    uint64_t host_id,
+                                    uint64_t service_id,
+                                    neb::service_status const & ss,
+                                    bool index_locked,
+                                    bool special,
+                                    uint32_t & rrd_len)->void {
     if (index_id == 0) {
       throw broker::exceptions::msg()
-        << "storage: could not fetch index_id of newly inserted index ("
-        << host_id << ", " << service_id << ")";
+          << "storage: could not fetch index_id of newly inserted index ("
+          << host_id << ", " << service_id << ")";
     }
 
     /* Insert index in cache. */
-    logging::info(logging::medium) << "storage: new index " << index_id
-                                   << " for (" << host_id << ", "
-                                   << service_id << ")";
+    log_v2::perfdata()->info("conflict_manager: add_metric_in_cache: index {}, for host_id {} and service_id {}",
+        index_id, host_id, service_id);
     index_info info{.host_name = ss.host_name,
-      .index_id = index_id,
-      .locked = index_locked,
-      .rrd_retention = _rrd_len,
-      .service_description = ss.service_description,
-      .special = special
-    };
+                    .index_id = index_id,
+                    .locked = index_locked,
+                    .rrd_retention = _rrd_len,
+                    .service_description = ss.service_description,
+                    .special = special};
 
     _index_cache[{host_id, service_id}] = std::move(info);
     rrd_len = _rrd_len;
+    log_v2::perfdata()->debug(
+        "conflict_manager:: add_metric_in_cache: returned rrd_len {}", rrd_len);
 
     /* Create the metric mapping. */
     std::shared_ptr<storage::index_mapping> im{
-      std::make_shared<storage::index_mapping>(
-        index_id, host_id, service_id)};
+        std::make_shared<storage::index_mapping>(
+            index_id, host_id, service_id)};
     multiplexing::publisher pblshr;
     pblshr.write(im);
   };
@@ -118,8 +121,11 @@ int32_t conflict_manager::_storage_process_service_status() {
   /* Index does not exist */
   if (it_index_cache == _index_cache.end()) {
     _finish_action(-1, actions::index_data);
-    logging::debug(logging::low) << "storage: index of (" << host_id << ", "
-                                 << service_id << ") not found in cache";
+    log_v2::perfdata()->debug(
+        "conflict_manager::_storage_process_service_status(): host_id:{}, "
+        "service_id:{} - index not found in cache",
+        host_id,
+        service_id);
 
     if (!_index_data_insert.prepared())
       _index_data_insert = _mysql.prepare_query(
@@ -211,20 +217,31 @@ int32_t conflict_manager::_storage_process_service_status() {
     index_id = it_index_cache->second.index_id;
     rrd_len = it_index_cache->second.rrd_retention;
     index_locked = it_index_cache->second.locked;
+    log_v2::perfdata()->debug(
+        "conflict_manager: host_id:{}, service_id:{} - index already in cache "
+        "- index_id {}, rrd_len {}",
+        host_id,
+        service_id,
+        index_id,
+        rrd_len);
   }
 
   if (index_id) {
     /* Generate status event */
-    logging::debug(logging::low) << "storage: generating status event for ("
-                                 << host_id << ", " << service_id
-                                 << ") of index " << index_id;
-    std::shared_ptr<storage::status> status{std::make_shared<storage::status>(
+    log_v2::perfdata()->debug(
+        "conflict_manager: host_id:{}, service_id:{} - generating status event "
+        "with index_id {}, rrd_len: {}",
+        host_id,
+        service_id,
+        index_id,
+        rrd_len);
+    std::shared_ptr<storage::status> status(std::make_shared<storage::status>(
       ss.last_check,
       index_id,
       static_cast<uint32_t>(ss.check_interval * _interval_length),
       false,
       rrd_len,
-      ss.last_hard_state)};
+      ss.last_hard_state));
     multiplexing::publisher().write(status);
 
     if (!ss.perf_data.empty()) {
@@ -257,6 +274,11 @@ int32_t conflict_manager::_storage_process_service_status() {
           /* The cache does not contain this metric */
           uint32_t metric_id;
           if (it_index_cache == _metric_cache.end()) {
+            log_v2::perfdata()->debug(
+                "conflict_manager: no metrics corresponding to index {} and "
+                "perfdata '{}' found in cache",
+                index_id,
+                pd.name());
             /* Let's insert it */
             _metrics_insert.bind_value_as_i32(0, index_id);
             _metrics_insert.bind_value_as_str(1, pd.name());
@@ -289,26 +311,45 @@ int32_t conflict_manager::_storage_process_service_status() {
               metric_id = promise.get_future().get();
 
               // Insert metric in cache.
-              logging::info(logging::medium)
-                << "storage: new metric " << metric_id << " for (" << index_id
-                << ", " << pd.name() << ")";
+              log_v2::perfdata()->info(
+                  "conflict_manager: new metric {} for index {} and perfdata "
+                  "'{}'",
+                  metric_id,
+                  index_id,
+                  pd.name());
               metric_info info{.locked = false,
-                .metric_id = metric_id,
-                .type = type,
-                .value = pd.value(),
-                .unit_name = pd.unit(),
-                .warn = pd.warning(),
-                .warn_low = pd.warning_low(),
-                .warn_mode = pd.warning_mode(),
-                .crit = pd.critical(),
-                .crit_low = pd.critical_low(),
-                .crit_mode = pd.critical_mode(),
-                .min = pd.min(),
-                .max = pd.max()};
+                               .metric_id = metric_id,
+                               .type = type,
+                               .value = pd.value(),
+                               .unit_name = pd.unit(),
+                               .warn = pd.warning(),
+                               .warn_low = pd.warning_low(),
+                               .warn_mode = pd.warning_mode(),
+                               .crit = pd.critical(),
+                               .crit_low = pd.critical_low(),
+                               .crit_mode = pd.critical_mode(),
+                               .min = pd.min(),
+                               .max = pd.max()};
 
               _metric_cache[{index_id, pd.name()}] = info;
             }
             catch (std::exception const& e) {
+              log_v2::perfdata()->error(
+                  "conflict_manager: failed to create metric {} with type {}, "
+                  "value {}, unit_name {}, warn {}, warn_low {}, warn_mode {}, "
+                  "crit {}, crit_low {}, crit_mode {}, min {} and max {}",
+                  metric_id,
+                  type,
+                  pd.value(),
+                  pd.unit(),
+                  pd.warning(),
+                  pd.warning_low(),
+                  pd.warning_mode(),
+                  pd.critical(),
+                  pd.critical_low(),
+                  pd.critical_mode(),
+                  pd.min(),
+                  pd.max());
               throw broker::exceptions::msg()
                 << "storage: insertion of metric '" << pd.name()
                 << "' of index " << index_id << " failed: " << e.what();
@@ -317,10 +358,12 @@ int32_t conflict_manager::_storage_process_service_status() {
             /* We have the metric in the cache */
             metric_id = it_index_cache->second.metric_id;
 
-            logging::debug(logging::low) << "storage: found metric "
-                                         << it_index_cache->second.metric_id
-                                         << " of (" << index_id << ", "
-                                         << pd.name() << ") in cache";
+            log_v2::perfdata()->debug(
+                "conflict_manager: metric {} concerning index {}, perfdata "
+                "'{}' found in cache",
+                it_index_cache->second.metric_id,
+                index_id,
+                pd.name());
             // Should we update metrics ?
             if (!check_equality(it_index_cache->second.value, pd.value()) ||
               it_index_cache->second.unit_name != pd.unit() ||
@@ -334,13 +377,20 @@ int32_t conflict_manager::_storage_process_service_status() {
               it_index_cache->second.crit_mode != pd.critical_mode() ||
               !check_equality(it_index_cache->second.min, pd.min()) ||
               !check_equality(it_index_cache->second.max, pd.max())) {
-              logging::info(logging::medium)
-                << "storage: updating metric "
-                << it_index_cache->second.metric_id << " of (" << index_id
-                << ", " << pd.name() << ") (unit: " << pd.unit()
-                << ", warning: " << pd.warning_low() << ":" << pd.warning()
-                << ", critical: " << pd.critical_low() << ":" << pd.critical()
-                << ", min: " << pd.min() << ", max: " << pd.max() << ")";
+              log_v2::perfdata()->info(
+                  "conflict_manager: updating metric {} of index {}, perfdata "
+                  "'{}' with unit: {}, warning: {}:{}, critical: {}:{}, min: "
+                  "{}, max: {}",
+                  it_index_cache->second.metric_id,
+                  index_id,
+                  pd.name(),
+                  pd.unit(),
+                  pd.warning_low(),
+                  pd.warning(),
+                  pd.critical_low(),
+                  pd.critical(),
+                  pd.min(),
+                  pd.max());
               // Update metrics table.
               _metrics_update.bind_value_as_str(0, pd.unit());
               _metrics_update.bind_value_as_f32(1, pd.warning());
@@ -389,10 +439,13 @@ int32_t conflict_manager::_storage_process_service_status() {
                 rrd_len,
                 pd.value(),
                 pd.value_type())};
-            logging::debug(logging::high)
-              << "storage: generating perfdata event for metric "
-              << perf->metric_id << " (name " << perf->name << ", ctime "
-              << perf->ctime << ", value " << perf->value << ")";
+            log_v2::perfdata()->debug(
+                "conflict_manager: generating perfdata event for metric {} "
+                "(name '{}', ctime {}, value {})",
+                perf->metric_id,
+                perf->name,
+                perf->ctime,
+                perf->value);
             multiplexing::publisher().write(perf);
           }
         }
@@ -512,7 +565,7 @@ void conflict_manager::_check_deleted_index() {
     // Delete index from DB.
     for (int64_t i : index_to_delete) {
       std::ostringstream oss;
-      oss << "DELETE FROM index_data WHERE index_id=" << i;
+      oss << "DELETE FROM index_data WHERE id=" << i;
       std::ostringstream oss_error;
       oss_error << "storage: cannot delete index " << i << ": ";
       _mysql.run_query(oss.str(), oss_error.str(), false, conn);

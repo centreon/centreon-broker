@@ -41,6 +41,7 @@ luabinding::luabinding(std::string const& lua_script,
                        macro_cache& cache)
     : _L{nullptr},
       _filter{false},
+      _flush{false},
       _lua_script(lua_script),
       _cache(cache),
       _total{0} {
@@ -106,6 +107,11 @@ void luabinding::_update_lua_path(std::string const& path) {
 bool luabinding::has_filter() const noexcept { return _filter; }
 
 /**
+ *  Returns true if a flush was configured in the Lua script.
+ */
+bool luabinding::has_flush() const noexcept { return _flush; }
+
+/**
  *  Reads the Lua script, checks its syntax and checks if
  *   - init()
  *   - write()
@@ -148,6 +154,15 @@ void luabinding::_load_script() {
     _filter = false;
   } else
     _filter = true;
+
+  // Checking for flush() availability: this function is optional
+  lua_getglobal(_L, "flush");
+  if (!lua_isfunction(_L, lua_gettop(_L))) {
+    logging::debug(logging::medium)
+        << "lua: flush() global function is not defined";
+    _flush = false;
+  } else
+    _flush = true;
 }
 
 /**
@@ -288,8 +303,6 @@ int luabinding::write(std::shared_ptr<io::data> const& data) noexcept {
   // when an acknowledgement is sent by the write function.
   if (acknowledge) {
     retval = _total;
-    logging::debug(logging::medium) << "lua: " << _total
-                                    << " events acknowledged.";
     _total = 0;
   }
   return retval;
@@ -429,4 +442,29 @@ lua_State* luabinding::_load_interpreter() {
   broker_cache::broker_cache_reg(L, _cache);
 
   return L;
+}
+
+int32_t luabinding::flush() noexcept {
+  if (!_flush)
+    return 0;
+  // Let's get the function to call
+  lua_getglobal(_L, "flush");
+  if (lua_pcall(_L, 0, 1, 0) != 0) {
+    logging::error(logging::high) << "lua: error running function `flush'"
+                                  << lua_tostring(_L, -1);
+    return 0;
+  }
+  if (!lua_isboolean(_L, -1)) {
+    logging::error(logging::high) << "lua: `flush' must return a boolean";
+    return 0;
+  }
+  bool acknowledge = lua_toboolean(_L, -1);
+  lua_pop(_L, -1);
+
+  int32_t retval = 0;
+  if (acknowledge) {
+    retval = _total;
+    _total = 0;
+  }
+  return retval;
 }

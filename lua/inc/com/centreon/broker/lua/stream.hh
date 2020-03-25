@@ -56,12 +56,6 @@ class stream : public io::stream {
   mutable std::mutex _acks_count_m;
   uint32_t _acks_count;
 
-  /* The filter stuff */
-  uint32_t _filter;                   // input
-  bool _filter_ok;                    // output
-  mutable std::mutex _filter_m;       // mutex used to wait for output
-  std::condition_variable _filter_cv; // cv to wait for output
-
   /* Every 30s, we store in this array the number of events not treated by the
    * connector. We can then have an idea of the evolution and send warnings if
    * this value continue to increase.
@@ -77,6 +71,9 @@ class stream : public io::stream {
 
   /* The exit flag */
   bool _exit;
+
+  /* The flush flag */
+  bool _flush;
 
  public:
   stream(std::string const& lua_script,

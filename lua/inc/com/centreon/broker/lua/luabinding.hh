@@ -46,6 +46,9 @@ class luabinding {
   // True if there is a filter() function in the Lua script.
   bool _filter;
 
+  // True if there is a flush() function in the Lua script.
+  bool _flush;
+
   // The Lua script name.
   std::string const& _lua_script;
 
@@ -53,7 +56,7 @@ class luabinding {
   macro_cache& _cache;
 
   // Count on events
-  int _total;
+  int32_t _total;
 
   lua_State* _load_interpreter();
   void _load_script();
@@ -71,7 +74,9 @@ class luabinding {
   luabinding& operator=(luabinding const& other) = delete;
   ~luabinding();
   bool has_filter() const noexcept;
-  int write(std::shared_ptr<io::data> const& data) noexcept;
+  int32_t write(std::shared_ptr<io::data> const& data) noexcept;
+  bool has_flush() const noexcept;
+  int32_t flush() noexcept;
 };
 }  // namespace lua
 

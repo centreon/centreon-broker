@@ -89,19 +89,18 @@ downtime& downtime::operator=(downtime const& other) {
  *  @return           True if both objects are equal.
  */
 bool downtime::operator==(downtime const& o) const {
-  return ((actual_end_time == o.actual_end_time) &&
-          (actual_start_time == o.actual_start_time) && (author == o.author) &&
-          (comment == o.comment) && (deletion_time == o.deletion_time) &&
-          (downtime_type == o.downtime_type) && (duration == o.duration) &&
-          (end_time == o.end_time) && (entry_time == o.entry_time) &&
-          (fixed == o.fixed) && (host_id == o.host_id) &&
-          (internal_id == o.internal_id) && (poller_id == o.poller_id) &&
-          (service_id == o.service_id) && (start_time == o.start_time) &&
-          (triggered_by == o.triggered_by) &&
-          (was_cancelled == o.was_cancelled) &&
-          (was_started == o.was_started) && (is_recurring == o.is_recurring) &&
-          (recurring_timeperiod == o.recurring_timeperiod) &&
-          (come_from == o.come_from));
+  return actual_end_time == o.actual_end_time &&
+         actual_start_time == o.actual_start_time && author == o.author &&
+         comment == o.comment && deletion_time == o.deletion_time &&
+         downtime_type == o.downtime_type && duration == o.duration &&
+         end_time == o.end_time && entry_time == o.entry_time &&
+         fixed == o.fixed && host_id == o.host_id &&
+         internal_id == o.internal_id && poller_id == o.poller_id &&
+         service_id == o.service_id && start_time == o.start_time &&
+         triggered_by == o.triggered_by && was_cancelled == o.was_cancelled &&
+         was_started == o.was_started && is_recurring == o.is_recurring &&
+         recurring_timeperiod == o.recurring_timeperiod &&
+         come_from == o.come_from;
 }
 
 /**************************************
@@ -145,7 +144,6 @@ void downtime::_internal_copy(downtime const& other) {
   is_recurring = other.is_recurring;
   recurring_timeperiod = other.recurring_timeperiod;
   come_from = other.come_from;
-  return;
 }
 
 /**************************************

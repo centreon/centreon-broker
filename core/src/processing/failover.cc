@@ -153,7 +153,7 @@ void failover::run() {
 
         // Wait loop.
         // FIXME SGA: condvar should be more elegant...
-        for (size_t i = 0; !should_exit() && i < (_buffering_timeout * 10); i++) {
+        for (ssize_t i = 0; !should_exit() && i < (_buffering_timeout * 10); i++) {
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
@@ -355,7 +355,7 @@ void failover::run() {
     // Sleep a while before attempting a reconnection.
     _update_status("sleeping before reconnection");
 
-    for (size_t i = 0; !should_exit() && i < (_retry_interval * 10); i++) {
+    for (ssize_t i = 0; !should_exit() && i < (_retry_interval * 10); i++) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 

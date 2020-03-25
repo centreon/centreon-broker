@@ -99,7 +99,6 @@ void event_handler::_internal_copy(event_handler const& other) {
   state = other.state;
   state_type = other.state_type;
   timeout = other.timeout;
-  return;
 }
 
 /**************************************

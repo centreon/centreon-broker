@@ -48,6 +48,8 @@ log_v2::log_v2() {
   _tcp_log = std::make_shared<logger>("tcp", null_sink);
   _core_log = std::make_shared<logger>("core", null_sink);
   _sql_log = std::make_shared<logger>("sql", null_sink);
+  _perfdata_log = std::make_shared<logger>("perfdata", null_sink);
+  _lua_log = std::make_shared<logger>("lua", null_sink);
 }
 
 log_v2::~log_v2() {
@@ -113,6 +115,10 @@ bool log_v2::load(std::string const& file, std::string const& broker_name, std::
           l = &_bbdo_log;
         else if (entry["name"].string_value() == "sql")
           l = &_sql_log;
+        else if (entry["name"].string_value() == "perfdata")
+          l = &_perfdata_log;
+        else if (entry["name"].string_value() == "lua")
+          l = &_lua_log;
         else
           continue;
 
@@ -155,4 +161,12 @@ std::shared_ptr<spdlog::logger> log_v2::tcp() {
 
 std::shared_ptr<spdlog::logger> log_v2::sql() {
   return instance()._sql_log;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::perfdata() {
+  return instance()._perfdata_log;
+}
+
+std::shared_ptr<spdlog::logger> log_v2::lua() {
+  return instance()._lua_log;
 }

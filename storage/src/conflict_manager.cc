@@ -109,6 +109,7 @@ bool conflict_manager::init_storage(bool store_in_db,
   int count = 0;
 
   std::unique_lock<std::mutex> lk(_init_m);
+  assert(rrd_len);
 
   for (;;) {
     /* The loop is waiting for 1s or for _mysql to be initialized */
@@ -347,6 +348,8 @@ void conflict_manager::_callback() {
   _load_caches();
 
   do {
+    /* Are there index_data to remove? */
+    _check_deleted_index();
     try {
       while (!_should_exit()) {
         /* Time to send perfdatas to rrd ; no lock needed, it is this thread
@@ -464,8 +467,6 @@ void conflict_manager::_callback() {
         /* Are there unresonsive instances? */
         _update_hosts_and_services_of_unresponsive_instances();
 
-        /* Are there index_data to remove? */
-        _check_deleted_index();
         lk.lock();
         /* Checks are finished */
 

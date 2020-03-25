@@ -265,7 +265,7 @@ int main(int argc, char* argv[]) {
         std::string err;
         broker_name = conf.broker_name();
         if (!log_v2::instance().load("/etc/centreon-broker/log-config.json",
-                                broker_name, err));
+                                broker_name, err))
           logging::error(logging::low) << err;
         gl_state = conf;
       }
