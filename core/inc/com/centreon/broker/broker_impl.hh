@@ -19,8 +19,8 @@
 #ifndef CENTREON_BROKER_CORE_SRC_BROKERIMPL_HH_
 #define CENTREON_BROKER_CORE_SRC_BROKERIMPL_HH_
 
-#include "com/centreon/broker/namespace.hh"
 #include "broker.grpc.pb.h"
+#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 class broker_impl final : public Broker::Service {
@@ -31,29 +31,35 @@ class broker_impl final : public Broker::Service {
                           Version* response) override;
 
   grpc::Status DebugConfReload(grpc::ServerContext* context,
-                          const GenericString* /*request*/,
-                          GenericResponse* response) override;
+                               const GenericString* /*request*/,
+                               GenericResponse* response) override;
+
+  grpc::Status GetGenericStats(grpc::ServerContext* context,
+                               const ::google::protobuf::Empty* request,
+                               GenericString* response) override;
+
+  grpc::Status GetSqlStats(grpc::ServerContext* context,
+                           const ::google::protobuf::Empty* request,
+                           GenericString* response) override;
 
   grpc::Status GetNumModules(grpc::ServerContext* context,
-                          const ::google::protobuf::Empty* /*request*/,
-                          GenericSize* response) override;
+                             const ::google::protobuf::Empty* /*request*/,
+                             GenericSize* response) override;
 
   grpc::Status GetModulesStats(grpc::ServerContext* context,
                                const GenericNameOrIndex* request,
                                GenericString* response) override;
 
-
   grpc::Status GetNumEndpoint(grpc::ServerContext* context,
-                             const ::google::protobuf::Empty* /*request*/,
-                             GenericSize* response) override;
-
+                              const ::google::protobuf::Empty* /*request*/,
+                              GenericSize* response) override;
 
   grpc::Status GetEndpointStats(grpc::ServerContext* context,
-                               const GenericNameOrIndex* request,
-                               GenericString* response) override;
+                                const GenericNameOrIndex* request,
+                                GenericString* response) override;
 
  public:
-  void set_broker_name(std::string const& s) {_broker_name = s;};
+  void set_broker_name(std::string const& s) { _broker_name = s; };
 };
 CCB_END()
 
