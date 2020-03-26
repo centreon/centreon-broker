@@ -164,6 +164,7 @@ int32_t conflict_manager::_storage_process_service_status() {
         _index_data_query.bind_value_as_i32(1, service_id);
         {
           std::promise<database::mysql_result> promise;
+          log_v2::sql()->debug("Query for index_data for host_id={} and service_id={}", host_id, service_id);
           _mysql.run_statement_and_get_result(_index_data_query,
                                               &promise,
                                               conn);
@@ -186,6 +187,7 @@ int32_t conflict_manager::_storage_process_service_status() {
             "SET host_name=?, service_description=?, must_be_rebuild=?, special=? "
             "WHERE id=?");
 
+        log_v2::sql()->debug("Updating index_data for host_id={} and service_id={}", host_id, service_id);
         _index_data_update.bind_value_as_str(0, ss.host_name);
         _index_data_update.bind_value_as_str(1, ss.service_description);
         _index_data_update.bind_value_as_str(2, "0");
@@ -206,6 +208,7 @@ int32_t conflict_manager::_storage_process_service_status() {
                             index_locked,
                             special,
                             rrd_len);
+        log_v2::sql()->debug("Index {} stored in cache for host_id={} and service_id={}", index_id, host_id, service_id);
       }
       catch (std::exception const& e) {
         throw broker::exceptions::msg() << "storage: insertion of index ("
