@@ -17,12 +17,15 @@
 */
 
 #include "com/centreon/broker/config/parser.hh"
+
 #include <syslog.h>
+
 #include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <json11.hpp>
 #include <streambuf>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/defines.hh"
 #include "com/centreon/broker/misc/string.hh"
@@ -69,28 +72,6 @@ static bool get_conf(std::pair<std::string const, Json> const& obj,
   return false;
 }
 
-template <typename T=uint16_t, typename U>
-static bool get_conf(std::pair<std::string const, Json> const& obj,
-                     std::string key,
-                     U& s,
-                     void (U::*set_state)(uint16_t),
-                     bool (Json::*is_goodtype)() const,
-                     int (Json::*get_value)() const) {
-  if (obj.first == key) {
-    Json const& value{obj.second};
-    if ((value.*is_goodtype)())
-      (s.*set_state)(static_cast<uint16_t>((value.*get_value)()));
-    else
-      throw exceptions::msg()
-          << "config parser: cannot parse key '" << key << "': "
-          << "value type is invalid";
-    ;
-    return true;
-  }
-
-  return false;
-}
-
 /**
  *  Parse a configuration file.
  *
@@ -117,15 +98,17 @@ state parser::parse(std::string const& file) {
          js["centreonBroker"].object_items()) {
       if (object.first == "command_file" && object.second.is_object())
         ;
-      else if (get_conf<int, state>(object, "broker_id", retval, &state::broker_id,
-                               &Json::is_number, &Json::int_value))
+      else if (get_conf<int, state>(object, "broker_id", retval,
+                                    &state::broker_id, &Json::is_number,
+                                    &Json::int_value))
         ;
-      else if (get_conf<uint16_t, state>(object, "rpc_port", retval, &state::rpc_port,
-                                    &Json::is_number, &Json::int_value))
-        ;
-      else if (get_conf<std::string const&, state>(
-                   object, "broker_name", retval, &state::broker_name,
-                   &Json::is_string, &Json::string_value))
+      else if (object.first == "grpc" && object.second.is_object()) {
+        if (js["centreonBroker"]["grpc"]["rpc_port"].is_number())
+          retval.rpc_port(static_cast<uint16_t>(
+              js["centreonBroker"]["grpc"]["rpc_port"].int_value()));
+      } else if (get_conf<std::string const&, state>(
+                     object, "broker_name", retval, &state::broker_name,
+                     &Json::is_string, &Json::string_value))
         ;
       else if (get_conf<int, state>(object, "poller_id", retval,
                                     &state::poller_id, &Json::is_number,
@@ -276,9 +259,11 @@ void parser::_parse_endpoint(Json const& elem, endpoint& e) {
       if (object.second.is_object() && object.second["category"].is_array())
         for (auto& cat : object.second["category"].array_items())
           (e.*member).insert(cat.string_value());
-      else if (object.second.is_object() && object.second["category"].is_string())
+      else if (object.second.is_object() &&
+               object.second["category"].is_string())
         (e.*member).insert(object.second["category"].string_value());
-      else if (object.second.is_string() && object.second.string_value() == "all")
+      else if (object.second.is_string() &&
+               object.second.string_value() == "all")
         (e.*member).insert("all");
       else
         throw exceptions::msg() << "config parser: cannot parse key "
@@ -300,7 +285,6 @@ void parser::_parse_endpoint(Json const& elem, endpoint& e) {
 void parser::_parse_logger(Json const& elem, logger& l) {
   for (std::pair<std::string const, Json> const& object : elem.object_items()) {
     if (object.first == "config" && object.second.is_string()) {
-
     } else if (object.first == "debug" && object.second.is_string()) {
       if (object.second.string_value() == "yes")
         l.config(true);
@@ -311,7 +295,7 @@ void parser::_parse_logger(Json const& elem, logger& l) {
         l.config(true);
       else
         l.config(false);
-    }  else if (object.first == "info" && object.second.is_string()) {
+    } else if (object.first == "info" && object.second.is_string()) {
       if (object.second.string_value() == "yes")
         l.config(true);
       else
@@ -322,7 +306,7 @@ void parser::_parse_logger(Json const& elem, logger& l) {
       else
         l.config(false);
     } else if (get_conf<bool, logger>(object, "config", l, &logger::config,
-                               &Json::is_bool, &Json::bool_value))
+                                      &Json::is_bool, &Json::bool_value))
       ;
     else if (get_conf<bool, logger>(object, "debug", l, &logger::debug,
                                     &Json::is_bool, &Json::bool_value))
