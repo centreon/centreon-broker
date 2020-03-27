@@ -28,7 +28,6 @@
 #include "com/centreon/broker/brokerrpc.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/config/applier/logger.hh"
-#include "com/centreon/broker/config/applier/modules.hh"
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/logger.hh"
 #include "com/centreon/broker/config/parser.hh"
@@ -142,6 +141,7 @@ int main(int argc, char* argv[]) {
   // Initialization.
   config::applier::init();
   std::string broker_name = "unknown";
+  uint16_t default_port{50060};
 
   // Return value.
   int retval(0);
@@ -265,7 +265,7 @@ int main(int argc, char* argv[]) {
         std::string err;
         broker_name = conf.broker_name();
         if (!log_v2::instance().load("/etc/centreon-broker/log-config.json",
-                                broker_name, err))
+                                     broker_name, err))
           logging::error(logging::low) << err;
         gl_state = conf;
       }
@@ -288,9 +288,16 @@ int main(int argc, char* argv[]) {
         logging::info(logging::high)
             << "main: could not register termination handler";
 
+      if (gl_state.rpc_port() == 0)
+        default_port += gl_state.broker_id();
+      else
+        default_port = gl_state.rpc_port();
       std::unique_ptr<brokerrpc, std::function<void(brokerrpc*)>> rpc(
-          new brokerrpc("0.0.0.0", 50052, broker_name),
-          [](brokerrpc* rpc) { rpc->shutdown(); delete rpc;});
+          new brokerrpc("0.0.0.0", default_port, broker_name),
+          [](brokerrpc* rpc) {
+            rpc->shutdown();
+            delete rpc;
+          });
 
       // Launch event loop.
       if (!check)

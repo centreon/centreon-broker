@@ -69,6 +69,28 @@ static bool get_conf(std::pair<std::string const, Json> const& obj,
   return false;
 }
 
+template <typename T=uint16_t, typename U>
+static bool get_conf(std::pair<std::string const, Json> const& obj,
+                     std::string key,
+                     U& s,
+                     void (U::*set_state)(uint16_t),
+                     bool (Json::*is_goodtype)() const,
+                     int (Json::*get_value)() const) {
+  if (obj.first == key) {
+    Json const& value{obj.second};
+    if ((value.*is_goodtype)())
+      (s.*set_state)(static_cast<uint16_t>((value.*get_value)()));
+    else
+      throw exceptions::msg()
+          << "config parser: cannot parse key '" << key << "': "
+          << "value type is invalid";
+    ;
+    return true;
+  }
+
+  return false;
+}
+
 /**
  *  Parse a configuration file.
  *
@@ -97,6 +119,9 @@ state parser::parse(std::string const& file) {
         ;
       else if (get_conf<int, state>(object, "broker_id", retval, &state::broker_id,
                                &Json::is_number, &Json::int_value))
+        ;
+      else if (get_conf<uint16_t, state>(object, "rpc_port", retval, &state::rpc_port,
+                                    &Json::is_number, &Json::int_value))
         ;
       else if (get_conf<std::string const&, state>(
                    object, "broker_name", retval, &state::broker_name,

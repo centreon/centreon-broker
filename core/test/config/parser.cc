@@ -296,6 +296,7 @@ TEST(parser, global) {
   ::remove(config_file.c_str());
 
   // Check global params
+  ASSERT_EQ(s.rpc_port(), 0);
   ASSERT_EQ(s.broker_id(), 1);
   ASSERT_EQ(s.broker_name(), "central-broker-master");
   ASSERT_EQ(s.poller_id(), 1);
