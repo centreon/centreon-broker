@@ -97,6 +97,7 @@ void state::apply(com::centreon::broker::config::state const& s, bool run_mux) {
   // Set poller instance.
   _poller_id = s.poller_id();
   _poller_name = s.poller_name();
+  _rpc_port = s.rpc_port();
 
   // Set cache directory.
   _cache_dir = s.cache_directory();
@@ -235,4 +236,4 @@ void state::unload() {
 /**
  *  Default constructor.
  */
-state::state() : _poller_id(0) {}
+state::state() : _poller_id(0), _rpc_port(0) {}

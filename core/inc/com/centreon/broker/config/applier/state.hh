@@ -37,11 +37,12 @@ class state {
  public:
   ~state();
   void apply(config::state const& s, bool run_mux = true);
-  std::string const& cache_dir() const throw();
+  std::string const& cache_dir() const noexcept;
   static state& instance();
   static void load();
-  uint32_t poller_id() const throw();
-  std::string const& poller_name() const throw();
+  uint32_t rpc_port() const noexcept;
+  uint32_t poller_id() const noexcept;
+  std::string const& poller_name() const noexcept;
   static void unload();
 
  private:
@@ -51,6 +52,7 @@ class state {
 
   std::string _cache_dir;
   uint32_t _poller_id;
+  uint32_t _rpc_port;
   std::string _poller_name;
 };
 }  // namespace applier

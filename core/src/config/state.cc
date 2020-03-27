@@ -66,6 +66,7 @@ state& state::operator=(state const& other) {
  */
 void state::clear() {
   _broker_id = 0;
+  _rpc_port = 0;
   _broker_name.clear();
   _cache_directory.clear();
   _command_file.clear();
@@ -420,6 +421,7 @@ std::string const& state::poller_name() const throw() {
  */
 void state::_internal_copy(state const& other) {
   _broker_id = other._broker_id;
+  _rpc_port = other._rpc_port;
   _broker_name = other._broker_name;
   _cache_directory = other._cache_directory;
   _command_file = other._command_file;
@@ -436,4 +438,11 @@ void state::_internal_copy(state const& other) {
   _poller_id = other._poller_id;
   _poller_name = other._poller_name;
   return;
+}
+
+void state::rpc_port(uint16_t port) noexcept {
+  _rpc_port = port;
+}
+uint16_t state::rpc_port(void) const noexcept {
+  return _rpc_port;
 }
