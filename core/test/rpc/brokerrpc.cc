@@ -56,14 +56,14 @@ class BrokerRpc : public ::testing::Test {
 };
 
 TEST_F(BrokerRpc, StartStop) {
-  brokerrpc brpc("0.0.0.0", 50052, "test");
+  brokerrpc brpc("0.0.0.0", 40000, "test");
   ASSERT_NO_THROW(brpc.shutdown());
 }
 
 TEST_F(BrokerRpc, GetVersion) {
   std::ostringstream oss;
   oss << "GetVersion: major: " << version::major;
-  brokerrpc brpc("0.0.0.0", 50052, "test");
+  brokerrpc brpc("0.0.0.0", 40000, "test");
   auto output = execute("GetVersion");
   ASSERT_EQ(output.size(), 2);
   ASSERT_EQ(output.front(), oss.str());
@@ -74,7 +74,7 @@ TEST_F(BrokerRpc, GetVersion) {
 }
 
 TEST_F(BrokerRpc, ConfReloadBad) {
-  brokerrpc brpc("0.0.0.0", 50052, "test");
+  brokerrpc brpc("0.0.0.0", 40000, "test");
   auto output = execute("DebugConfReload /root/testfail.json");
   ASSERT_EQ(output.size(), 1);
   ASSERT_EQ(output.back(),
@@ -95,7 +95,7 @@ TEST_F(BrokerRpc, ConfReloadOK) {
 
   testing::internal::CaptureStdout();
 
-  brokerrpc brpc("0.0.0.0", 50052, "broker");
+  brokerrpc brpc("0.0.0.0", 40000, "broker");
   auto output = execute("DebugConfReload /tmp/testok.json");
   ASSERT_EQ(output.size(), 1);
   ASSERT_EQ(output.back(), "DebugConfReload OK");
