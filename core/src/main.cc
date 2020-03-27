@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
   // Initialization.
   config::applier::init();
   std::string broker_name = "unknown";
-  uint16_t default_port{50060};
+  uint16_t default_port{51000};
 
   // Return value.
   int retval(0);
