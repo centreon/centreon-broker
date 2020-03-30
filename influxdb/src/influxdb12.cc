@@ -73,7 +73,6 @@ influxdb12::~influxdb12() {}
  */
 void influxdb12::clear() {
   _query.clear();
-  return ;
 }
 
 /**
@@ -83,7 +82,6 @@ void influxdb12::clear() {
  */
 void influxdb12::write(storage::metric const& m) {
   _query.append(_metric_query.generate_metric(m));
-  return ;
 }
 
 /**
@@ -93,7 +91,6 @@ void influxdb12::write(storage::metric const& m) {
  */
 void influxdb12::write(storage::status const& s) {
   _query.append(_status_query.generate_status(s));
-  return ;
 }
 
 /**
@@ -175,7 +172,7 @@ void influxdb12::_connect_socket() {
 bool influxdb12::_check_answer_string(std::string const& ans) {
   size_t first_line = ans.find_first_of('\n');
   if (first_line == std::string::npos)
-    return (false);
+    return false;
   std::string first_line_str = ans.substr(0, first_line);
 
   logging::debug(logging::medium)
@@ -192,11 +189,11 @@ bool influxdb12::_check_answer_string(std::string const& ans) {
          std::back_inserter(split));
 
   if (split.size() < 3)
-    throw (exceptions::msg()
+    throw exceptions::msg()
       << "influxdb: unrecognizable HTTP header for '"
       << _socket->peerAddress().toString()
       << "' and port '" << _socket->peerPort() << "': got '"
-      << first_line_str << "'");
+      << first_line_str << "'";
 
   if ((split[0] == "HTTP/1.0")
       && (split[1] == "204")
@@ -237,15 +234,8 @@ void influxdb12::_create_queries(
   _post_header.append("POST ").append(base_url).append(" HTTP/1.0\n");
 
   // Create protocol objects.
-  _status_query = line_protocol_query(
-                    status_ts,
-                    status_cols,
-                    line_protocol_query::status,
-                    _cache);
-  _metric_query = line_protocol_query(
-                    metric_ts,
-                    metric_cols,
-                    line_protocol_query::metric,
-                    _cache);
-  return ;
+  _status_query = line_protocol_query(status_ts, status_cols,
+                                      line_protocol_query::status, _cache);
+  _metric_query = line_protocol_query(metric_ts, metric_cols,
+                                      line_protocol_query::metric, _cache);
 }
