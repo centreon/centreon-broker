@@ -1,5 +1,5 @@
 =======================
-Centreon Broker 19.10.5
+Centreon Broker 19.10.4
 =======================
 
 *********
@@ -13,14 +13,6 @@ If a retention is configured on the influxdb server and centreon-broker sends
 too old data compared to this retention, the connector ends with an error and
 centreon-broker pushes data in retention instead of throwing them away.
 This patch fixes that.
-
-=======================
-Centreon Broker 19.10.4
-=======================
-
-*********
-Bug fixes
-*********
 
 Bad mod bam kpi relations
 =========================
