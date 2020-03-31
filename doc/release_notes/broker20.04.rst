@@ -43,3 +43,16 @@ complaining about the slowness of the script.
 
 Another change, now when a stream connector crashes, Broker does not terminate
 but just returns an error message containing the Lua interpreter error.
+
+*********
+Bug fixes
+*********
+
+Influxdb connector and retention
+================================
+
+If a retention is configured on the influxdb server and centreon-broker sends
+too old data compared to this retention, the connector ends with an error and
+centreon-broker pushes data in retention instead of throwing them away.
+This patch fixes that.
+
