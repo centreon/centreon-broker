@@ -32,10 +32,8 @@ void com::centreon::broker::stats::get_mysql_stats(
     json11::Json::object& object) noexcept {
   std::map<std::string, std::string> stats(
       mysql_manager::instance().get_stats());
-  json11::Json::object subtree;
   for (std::pair<std::string, std::string> const& p : stats)
-    subtree[p.first] = p.second;
-  object["mysql manager"] = subtree;
+    object[p.first] = p.second;
 }
 
 void com::centreon::broker::stats::get_loaded_module_stats(
