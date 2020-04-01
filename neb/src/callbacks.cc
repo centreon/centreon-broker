@@ -160,23 +160,19 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
     if (ack_data->comment_data)
       ack->comment = ack_data->comment_data;
     ack->entry_time = time(nullptr);
-    if (!ack_data->host_name)
-      throw(exceptions::msg() << "unnamed host");
-    if (ack_data->service_description) {
-      std::pair<uint32_t, uint32_t> p;
-      p = engine::get_host_and_service_id(ack_data->host_name,
-                                          ack_data->service_description);
-      ack->host_id = p.first;
-      ack->service_id = p.second;
+    if (!ack_data->host_id)
+      throw exceptions::msg() << "unnamed host";
+    if (ack_data->service_id) {
+      ack->host_id = ack_data->host_id;
+      ack->service_id = ack_data->service_id;
       if (!ack->host_id || !ack->service_id)
-        throw(exceptions::msg()
-              << "could not find ID of service ('" << ack_data->host_name
-              << "', '" << ack_data->service_description << "')");
+        throw exceptions::msg()
+              << "acknowledgement on service with host_id or service_id 0";
     } else {
-      ack->host_id = engine::get_host_id(ack_data->host_name);
+      ack->host_id = ack_data->host_id;
       if (ack->host_id == 0)
-        throw(exceptions::msg()
-              << "could not find ID of host '" << ack_data->host_name << "'");
+        throw exceptions::msg()
+              << "acknowledgement on host with id 0";
     }
     ack->poller_id = config::applier::state::instance().poller_id();
     ack->is_sticky = ack_data->is_sticky;
@@ -232,23 +228,16 @@ int neb::callback_comment(int callback_type, void* data) {
     comment->entry_type = comment_data->entry_type;
     comment->expire_time = comment_data->expire_time;
     comment->expires = comment_data->expires;
-    if (!comment_data->host_name)
-      throw(exceptions::msg() << "unnamed host");
-    if (comment_data->service_description) {
-      std::pair<uint32_t, uint32_t> p;
-      p = engine::get_host_and_service_id(comment_data->host_name,
-                                          comment_data->service_description);
-      comment->host_id = p.first;
-      comment->service_id = p.second;
+    if (comment_data->service_id) {
+      comment->host_id = comment_data->host_id;
+      comment->service_id = comment_data->service_id;
       if (!comment->host_id || !comment->service_id)
-        throw(exceptions::msg()
-              << "could not find ID of service ('" << comment_data->host_name
-              << "', '" << comment_data->service_description << "')");
+        throw exceptions::msg()
+              << "comment created from a service with host_id/service_id 0";
     } else {
-      comment->host_id = engine::get_host_id(comment_data->host_name);
+      comment->host_id = comment_data->host_id;
       if (comment->host_id == 0)
-        throw(exceptions::msg() << "could not find ID of host '"
-                                << comment_data->host_name << "'");
+        throw exceptions::msg() << "comment created from a host with host_id 0";
     }
     comment->poller_id = config::applier::state::instance().poller_id();
     comment->internal_id = comment_data->comment_id;
@@ -1953,19 +1942,12 @@ int neb::callback_service_check(int callback_type, void* data) {
       service_check->active_checks_enabled = s->get_checks_enabled();
       service_check->check_type = scdata->check_type;
       service_check->command_line = scdata->command_line;
-      if (!scdata->host_name)
-        throw(exceptions::msg() << "unnamed host");
-      if (!scdata->service_description)
-        throw(exceptions::msg() << "unnamed service");
-      std::pair<uint32_t, uint32_t> p;
-      p = engine::get_host_and_service_id(scdata->host_name,
-                                          scdata->service_description);
-      service_check->host_id = p.first;
-      service_check->service_id = p.second;
-      if (!service_check->host_id || !service_check->service_id)
-        throw(exceptions::msg()
-              << "could not find ID of service ('" << scdata->host_name
-              << "', '" << scdata->service_description << "')");
+      if (!scdata->host_id)
+        throw exceptions::msg() << "host without id";
+      if (!scdata->service_id)
+        throw exceptions::msg() << "service without id";
+      service_check->host_id = scdata->host_id;
+      service_check->service_id = scdata->service_id;
       service_check->next_check = s->get_next_check();
 
       // Send event.
