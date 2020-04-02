@@ -32,7 +32,7 @@
 . /etc/init.d/functions
 
 # Configuration parameters.
-watchdog_file="@PREFIX_CONF@/watchdog.xml"
+watchdog_file="@PREFIX_CONF@/watchdog.json"
 config_dir="@PREFIX_CONF@"
 cbwd="@PREFIX_BIN@/cbwd"
 pid_path=/var/run

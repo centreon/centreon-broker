@@ -5,12 +5,12 @@
         "poller_id": 1,
         "poller_name": "Central",
 
-        "module_directory": @PREFIX_MODULES@,
+        "module_directory": "@PREFIX_MODULES@",
         "log_timestamp": false,
         "log_thread_id": false,
         "event_queue_max_size": 100000,
-        "command_file": @PREFIX_VAR@/poller-module.cmd,
-        "cache_directory": @PREFIX_VAR@,
+        "command_file": "@PREFIX_VAR@/poller-module.cmd",
+        "cache_directory": "@PREFIX_VAR@",
         "logger": [
             {
                 "name": "/var/log/centreon-broker/poller-module.log",
@@ -41,7 +41,7 @@
             {
                 "type": "stats",
                 "name": "poller-module-stats",
-                "json_fifo": @PREFIX_VAR@/poller-module-stats.json
+                "json_fifo": "@PREFIX_VAR@/poller-module-stats.json"
             }
         ]
     }

@@ -1,3 +1,3 @@
 # This file was automatically installed by Centreon Broker.
 
-broker_module=@PREFIX_LIB@/cbmod.so /etc/centreon-broker/poller-module.xml
+broker_module=@PREFIX_LIB@/cbmod.so /etc/centreon-broker/poller-module.json

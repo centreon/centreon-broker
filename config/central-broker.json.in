@@ -4,12 +4,12 @@
         "broker_name": "central-broker",
         "poller_id": 1,
         "poller_name": "Central",
-        "module_directory": @PREFIX_MODULES@,
+        "module_directory": "@PREFIX_MODULES@",
         "log_timestamp": true,
         "log_thread_id": false,
         "event_queue_max_size": 100000,
-        "command_file": @PREFIX_VAR@/central-broker.cmd,
-        "cache_directory": @PREFIX_VAR@,
+        "command_file": "@PREFIX_VAR@/central-broker.cmd",
+        "cache_directory": "@PREFIX_VAR@",
         "input": [
             {
                 "name": "central-broker-input",

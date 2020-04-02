@@ -35,7 +35,7 @@ PKGNAME=cbd
 DESC="Centreon Broker"
 DAEMON="@PREFIX_BIN@/cbwd"
 PID_PATH="/var/run"
-WATCHDOG_FILE="@PREFIX_CONF@/watchdog.xml"
+WATCHDOG_FILE="@PREFIX_CONF@/watchdog.json"
 CONFIG_DIR="@PREFIX_CONF@"
 pidfile="${PID_PATH}/cbwd.pid"
 

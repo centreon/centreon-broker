@@ -1,0 +1,6 @@
+{
+    "centreonBroker": {
+        @DAEMONS_CONFIGURATION@
+        "log": "/var/log/centreon-broker/watchdog.log"
+    }
+}
