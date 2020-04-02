@@ -1,77 +1,48 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<conf>
+{
+    "centreonBroker": {
+        "broker_id": 3,
+        "broker_name": "central-module",
+        "poller_id": 1,
+        "poller_name": "Central",
 
- <!-- Global configuration options. -->
- <broker_id>XXX</broker_id>
- <broker_name>XXX</broker_name>
- <poller_id>XXX</poller_id>
- <poller_name>XXX</poller_name>
- <module_directory>@PREFIX_MODULES@</module_directory>
- <event_queue_max_size>10000</event_queue_max_size>
- <flush_logs>no</flush_logs>
- <log_thread_id>no</log_thread_id>
- <log_timestamp>yes</log_timestamp>
- <cache_directory>@PREFIX_VAR@</cache_directory>
- <command_file>@PREFIX_VAR@/poller-module.cmd</command_file>
-
- <!-- Send monitoring information to central-broker.
-      Get external commands and configuration files from central-broker. -->
- <output>
-  <retry_interval>60</retry_interval>
-  <type>tcp</type>
-  <name>poller-module-output</name>
-  <port>5668</port>
-  <host>localhost</host>
-  <protocol>bbdo</protocol>
-  <filters>
-   <category>neb</category>
-   <category>extcmd:command_result</category>
-  </filters>
- </output>
-
- <!-- Write Engine external commands issued by central-broker. -->
- <output>
-  <retry_interval>60</retry_interval>
-  <type>dumper</type>
-  <tagname>extcommands-engine-$POLLERID$</tagname>
-  <path>/var/lib/centreon-engine/rw/centengine.cmd</path>
-  <name>poller-module-extcommands-engine</name>
- </output>
-
- <!-- Write Broker configuration files issued by central-broker. -->
- <output>
-  <retry_interval>60</retry_interval>
-  <type>dumper</type>
-  <tagname>cfg-broker-$POLLERID$</tagname>
-  <path>/etc/centreon-broker/$FILENAME$</path>
-  <name>poller-module-cfg-broker</name>
- </output>
-
- <!-- Write Engine configuration files issued by central-broker. -->
- <output>
-  <retry_interval>60</retry_interval>
-  <type>dumper</type>
-  <tagname>cfg-engine-$POLLERID$</tagname>
-  <path>/etc/centreon-engine/$FILENAME$</path>
-  <name>poller-module-cfg-engine</name>
- </output>
-
- <!-- Log file. -->
- <logger>
-  <config>yes</config>
-  <debug>no</debug>
-  <error>yes</error>
-  <info>yes</info>
-  <level>low</level>
-  <type>file</type>
-  <name>/var/log/centreon-broker/poller-module.log</name>
- </logger>
-
- <!-- Statistics. -->
- <stats>
-  <type>stats</type>
-  <name>poller-module-stats</name>
-  <fifo>@PREFIX_VAR@/poller-module.stats</fifo>
- </stats>
-
-</conf>
+        "module_directory": @PREFIX_MODULES@,
+        "log_timestamp": false,
+        "log_thread_id": false,
+        "event_queue_max_size": 100000,
+        "command_file": @PREFIX_VAR@/poller-module.cmd,
+        "cache_directory": @PREFIX_VAR@,
+        "logger": [
+            {
+                "name": "/var/log/centreon-broker/poller-module.log",
+                "config": "yes",
+                "debug": "no",
+                "error": "yes",
+                "info": "no",
+                "level": "low",
+                "type": "file"
+            }
+        ],
+        "output": [
+            {
+                "name": "central-module-output",
+                "port": "5669",
+                "host": "localhost",
+                "retry_interval": "60",
+                "buffering_timeout": "0",
+                "protocol": "bbdo",
+                "tls": "no",
+                "negotiation": "yes",
+                "one_peer_retention_mode": "no",
+                "compression": "no",
+                "type": "ipv4"
+            }
+        ],
+        "stats": [
+            {
+                "type": "stats",
+                "name": "poller-module-stats",
+                "json_fifo": @PREFIX_VAR@/poller-module-stats.json
+            }
+        ]
+    }
+}
