@@ -116,7 +116,7 @@ stream::stream(std::string const& lua_script,
 
       if (!_events.empty()) {
         log_v2::lua()->debug("stream: there are events to send to lua");
-        std::shared_ptr<io::data>& d = _events.front();
+        std::shared_ptr<io::data> d = _events.front();
         _events.pop_front();
         lock.unlock();
         uint32_t res = lb->write(d);
