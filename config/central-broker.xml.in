@@ -1,202 +1,90 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<conf>
-
- <!-- Global configuration options. -->
- <broker_id>1</broker_id>
- <broker_name>central-broker</broker_name>
- <poller_id>1</poller_id>
- <poller_name>Central</poller_name>
- <module_directory>@PREFIX_MODULES@</module_directory>
- <event_queue_max_size>10000</event_queue_max_size>
- <flush_logs>no</flush_logs>
- <log_thread_id>no</log_thread_id>
- <log_timestamp>yes</log_timestamp>
- <cache_directory>@PREFIX_VAR@</cache_directory>
- <command_file>@PREFIX_VAR@/central-broker.cmd</command_file>
-
- <!-- Receive monitoring information from pollers.
-      Send files and external commands back to pollers. -->
- <input>
-  <retry_interval>60</retry_interval>
-  <one_peer_retention_mode>no</one_peer_retention_mode>
-  <protocol>bbdo</protocol>
-  <negociation>yes</negociation>
-  <type>tcp</type>
-  <name>central-broker-input</name>
-  <port>5668</port>
-  <read_filters>
-    <category>neb</category>
-    <category>extcmd:command_result</category>
-  </read_filters>
-  <write_filters>
-    <category>dumper</category>
-    <category>extcmd:command_request</category>
-  </write_filters>
- </input>
-
- <!-- Read Engine external commands and send them to central-module. -->
- <input>
-  <name>central-broker-extcommands-engine-poller-module-1</name>
-  <type>dump_fifo</type>
-  <path>@PREFIX_VAR@/central-broker-extcommands-engine-poller-module-1.cmd</path>
-  <tagname>extcommands-engine-1</tagname>
- </input>
-
- <!-- Read Broker configuration files and send them to central-module. -->
- <output>
-  <name>central-broker-cfg-broker-poller-module-1</name>
-  <type>dump_dir</type>
-  <path>/tmp/broker/apply/1</path>
-  <tagname>cfg-broker-1</tagname>
-  <write_filters>
-   <category>extcmd</category>
-  </write_filters>
- </output>
-
- <!-- Read Engine configuration files and send them to central-module. -->
- <output>
-  <name>central-broker-cfg-engine-poller-module-1</name>
-  <type>dump_dir</type>
-  <path>/tmp/engine/apply/1</path>
-  <tagname>cfg-engine-1</tagname>
-  <write_filters>
-   <category>extcmd</category>
-  </write_filters>
- </output>
-
- <!-- Read configuration database and send them to pollers. -->
- <output>
-   <name>central-broker-db-cfg-reader</name>
-   <type>db_cfg_reader</type>
-   <db_type>mysql</db_type>
-   <db_host>localhost</db_host>
-   <db_port>3306</db_port>
-   <db_user>centreon</db_user>
-   <db_password>centreon</db_password>
-   <db_name>centreon</db_name>
- </output>
-
- <!-- Handle acknowledgements and downtimes (uses external command file). -->
- <output>
-  <type>node_events</type>
-  <name>central-broker-nodeevents</name>
- </output>
-
- <!-- Write real-time monitoring information to database. -->
- <output>
-  <retry_interval>60</retry_interval>
-  <db_type>mysql</db_type>
-  <db_host>localhost</db_host>
-  <db_port>3306</db_port>
-  <db_name>centreon</db_name>
-  <db_user>centreon</db_user>
-  <db_password>centreon</db_password>
-  <with_state_events>yes</with_state_events>
-  <queries_per_transaction>1000</queries_per_transaction>
-  <check_replication>0</check_replication>
-  <type>sql</type>
-  <name>central-broker-sql</name>
- </output>
-
- <!-- Write performance data to database. -->
- <output>
-  <retry_interval>60</retry_interval>
-  <db_type>mysql</db_type>
-  <db_host>localhost</db_host>
-  <db_port>3306</db_port>
-  <db_name>centreon</db_name>
-  <db_user>centreon</db_user>
-  <db_password>centreon</db_password>
-  <queries_per_transaction>1000</queries_per_transaction>
-  <check_replication>0</check_replication>
-  <store_in_data_bin>yes</store_in_data_bin>
-  <insert_in_index_data>no</insert_in_index_data>
-  <interval>60</interval>
-  <length>15552000</length>
-  <type>storage</type>
-  <name>central-broker-storage</name>
- </output>
-
- <!-- Write graph information to central-rrd. -->
- <output>
-  <retry_interval>60</retry_interval>
-  <type>tcp</type>
-  <name>central-broker-rrd</name>
-  <port>5670</port>
-  <host>localhost</host>
-  <protocol>bbdo</protocol>
-  <tls>no</tls>
-  <negociation>yes</negociation>
-  <compression>no</compression>
- </output>
-
- <!-- Perform correlation on monitoring information. -->
- <output>
-  <retry_interval>60</retry_interval>
-  <name>central-broker-correlation</name>
-  <type>correlation</type>
-  <file>/etc/centreon-broker/correlation.xml</file>
- </output>
-
- <!-- Compute and store BAs and KPIs. -->
- <output>
-  <retry_interval>60</retry_interval>
-  <db_type>mysql</db_type>
-  <db_host>localhost</db_host>
-  <db_port>3306</db_port>
-  <db_name>centreon</db_name>
-  <db_user>centreon</db_user>
-  <db_password>centreon</db_password>
-  <type>bam</type>
-  <name>central-broker-bam-monitoring</name>
-  <queries_per_transaction>1000</queries_per_transaction>
- </output>
-
- <!-- Compute and store reporting information on BAs and KPIs. -->
- <output>
-  <retry_interval>60</retry_interval>
-  <db_type>mysql</db_type>
-  <db_host>localhost</db_host>
-  <db_port>3306</db_port>
-  <db_name>centreon</db_name>
-  <db_user>centreon</db_user>
-  <db_password>centreon</db_password>
-  <type>bam_bi</type>
-  <name>central-broker-bam-reporting</name>
-  <queries_per_transaction>1000</queries_per_transaction>
-  <write_filters>
-   <category>bam</category>
-  </write_filters>
- </output>
-
- <!-- Notifications. -->
- <output>
-   <name>central-broker-notification</name>
-   <type>notification</type>
-   <db_type>mysql</db_type>
-   <db_host>localhost</db_host>
-   <db_port>3306</db_port>
-   <db_user>centreon</db_user>
-   <db_password>centreon</db_password>
-   <db_name>centreon</db_name>
- </output>
-
- <!-- Log file. -->
- <logger>
-  <config>yes</config>
-  <debug>no</debug>
-  <error>yes</error>
-  <info>yes</info>
-  <level>low</level>
-  <type>file</type>
-  <name>/var/log/centreon-broker/central-broker.log</name>
- </logger>
-
- <!-- Statistics. -->
- <stats>
-  <type>stats</type>
-  <name>central-broker-stats</name>
-  <fifo>@PREFIX_VAR@/central-broker.stats</fifo>
- </stats>
-
-</conf>
+{
+    "centreonBroker": {
+        "broker_id": 1,
+        "broker_name": "central-broker",
+        "poller_id": 1,
+        "poller_name": "Central",
+        "module_directory": @PREFIX_MODULES@,
+        "log_timestamp": true,
+        "log_thread_id": false,
+        "event_queue_max_size": 100000,
+        "command_file": @PREFIX_VAR@/central-broker.cmd,
+        "cache_directory": @PREFIX_VAR@,
+        "input": [
+            {
+                "name": "central-broker-input",
+                "port": "5669",
+                "buffering_timeout": "0",
+                "retry_interval": "10",
+                "protocol": "bbdo",
+                "tls": "auto",
+                "negotiation": "yes",
+                "one_peer_retention_mode": "no",
+                "compression": "auto",
+                "type": "ipv4"
+            }
+        ],
+        "logger": [
+            {
+                "name": "/var/log/centreon-broker/central-broker.log",
+                "config": "yes",
+                "debug": "no",
+                "error": "yes",
+                "info": "yes",
+                "level": "low",
+                "type": "file"
+            }
+        ],
+        "output": [
+            {
+                "name": "central-broker-sql",
+                "db_type": "mysql",
+                "retry_interval": "60",
+                "buffering_timeout": "0",
+                "db_host": "localhost",
+                "db_port": "3306",
+                "db_user": "centreon",
+                "db_password": "centreon",
+                "db_name": "centreon",
+                "type": "sql"
+            },
+            {
+                "name": "centreon-broker-rrd",
+                "port": "5670",
+                "buffering_timeout": "0",
+                "host": "localhost",
+                "retry_interval": "60",
+                "protocol": "bbdo",
+                "tls": "no",
+                "negotiation": "yes",
+                "one_peer_retention_mode": "no",
+                "compression": "no",
+                "type": "ipv4"
+            },
+            {
+                "name": "central-broker-perfdata",
+                "interval": "60",
+                "retry_interval": "60",
+                "buffering_timeout": "0",
+                "length": "15552000",
+                "db_type": "mysql",
+                "db_host": "localhost",
+                "db_port": "3306",
+                "db_user": "centreon",
+                "db_password": "centreon",
+                "db_name": "centreon_storage",
+                "check_replication": "no",
+                "store_in_data_bin": "yes",
+                "insert_in_index_data": "1",
+                "type": "storage"
+            }
+        ],
+        "stats": [
+            {
+                "type": "stats",
+                "name": "central-broker-stats",
+                "json_fifo": "@PREFIX_VAR@/central-broker-stats.json"
+            }
+        ]
+    }
+}

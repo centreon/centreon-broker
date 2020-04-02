@@ -12,6 +12,13 @@
   </cbd>
   <name> and <configuration_file> are mandatory.
   -->
-@DAEMONS_CONFIGURATION@
+
   <log>/var/log/centreon-broker/watchdog.log</log>
 </centreonbroker>
+
+{
+    "centreonBroker": {
+        @DAEMONS_CONFIGURATION@
+        "log": "/var/log/centreon-broker/watchdog.log"
+    }
+}
