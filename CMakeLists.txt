@@ -309,13 +309,13 @@ if (WITH_DAEMONS)
 
   foreach (DAEMON_NAME IN LISTS WITH_DAEMONS)
     set(DAEMONS_CONFIGURATION
-      "${DAEMONS_CONFIGURATION}  <cbd>\n  <name>${DAEMON_NAME}</name>\n    <configuration_file>${PREFIX_CONF}/${DAEMON_NAME}.xml</configuration_file>\n    <run>1</run>\n    <reload>1</reload>\n  </cbd>\n")
+      "${DAEMONS_CONFIGURATION}  \"cbd\": [ { \"name\": \"${DAEMON_NAME}\", \"configuration_file\": \"${PREFIX_CONF}/${DAEMON_NAME}.json\", \"run\": true, \"reload\": true } ],\n")
   endforeach ()
 
-  configure_file("${PROJECT_SOURCE_DIR}/script/watchdog.xml.in"
-    "${PROJECT_SOURCE_DIR}/script/watchdog.xml"
+  configure_file("${PROJECT_SOURCE_DIR}/script/watchdog.json.in"
+    "${PROJECT_SOURCE_DIR}/script/watchdog.json"
     @ONLY)
-  install(FILES "${PROJECT_SOURCE_DIR}/script/watchdog.xml"
+  install(FILES "${PROJECT_SOURCE_DIR}/script/watchdog.json"
     DESTINATION "${PREFIX_CONF}")
   if (WITH_STARTUP_SCRIPT STREQUAL "sysv")
     install(PROGRAMS "${PROJECT_SOURCE_DIR}/script/cbd.init"
@@ -325,24 +325,21 @@ if (WITH_DAEMONS)
 endif ()
 
 if (WITH_CONFIG_FILES)
-  configure_file("${PROJECT_SOURCE_DIR}/config/poller-module.xml.in"
-    "${PROJECT_SOURCE_DIR}/config/poller-module.xml"
+  configure_file("${PROJECT_SOURCE_DIR}/config/poller-module.json.in"
+    "${PROJECT_SOURCE_DIR}/config/poller-module.json"
     @ONLY)
-  configure_file("${PROJECT_SOURCE_DIR}/config/central-broker.xml.in"
-    "${PROJECT_SOURCE_DIR}/config/central-broker.xml"
+  configure_file("${PROJECT_SOURCE_DIR}/config/central-broker.json.in"
+    "${PROJECT_SOURCE_DIR}/config/central-broker.json"
     @ONLY)
-  configure_file("${PROJECT_SOURCE_DIR}/config/central-rrd.xml.in"
-    "${PROJECT_SOURCE_DIR}/config/central-rrd.xml"
-    @ONLY)
-  configure_file("${PROJECT_SOURCE_DIR}/config/cbmod.cfg.in"
-    "${PROJECT_SOURCE_DIR}/config/cbmod.cfg"
+  configure_file("${PROJECT_SOURCE_DIR}/config/central-rrd.json.in"
+    "${PROJECT_SOURCE_DIR}/config/central-rrd.json"
     @ONLY)
 
-  install(FILES "${PROJECT_SOURCE_DIR}/config/poller-module.xml"
+  install(FILES "${PROJECT_SOURCE_DIR}/config/poller-module.json"
     DESTINATION "${PREFIX_CONF}")
-  install(FILES "${PROJECT_SOURCE_DIR}/config/central-rrd.xml"
+  install(FILES "${PROJECT_SOURCE_DIR}/config/central-rrd.json"
     DESTINATION "${PREFIX_CONF}")
-  install(FILES "${PROJECT_SOURCE_DIR}/config/central-broker.xml"
+  install(FILES "${PROJECT_SOURCE_DIR}/config/central-broker.json"
     DESTINATION "${PREFIX_CONF}")
 endif ()
 
