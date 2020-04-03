@@ -62,7 +62,7 @@ void connector::connect_to(database_config const& dbcfg,
  *  @return SQL connection object.
  */
 std::shared_ptr<io::stream> connector::open() {
-  return std::shared_ptr<io::stream>(new stream(_dbcfg,
+  return std::shared_ptr<io::stream>(std::make_shared<stream>(_dbcfg,
                                                 _cleanup_check_interval,
                                                 _loop_timeout,
                                                 _instance_timeout,

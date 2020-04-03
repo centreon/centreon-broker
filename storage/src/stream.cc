@@ -45,12 +45,6 @@ using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 using namespace com::centreon::broker::storage;
 
-/**************************************
- *                                     *
- *           Public Methods            *
- *                                     *
- **************************************/
-
 /**
  *  Constructor.
  *
@@ -64,16 +58,20 @@ using namespace com::centreon::broker::storage;
  *  @param[in] insert_in_index_data    Create entries in index_data or
  *                                     not.
  */
-stream::stream(uint32_t rrd_len,
+stream::stream(database_config const& dbcfg,
+               uint32_t rrd_len,
                uint32_t interval_length,
-               uint32_t rebuild_check_interval __attribute__((unused)),
+               uint32_t rebuild_check_interval,
                bool store_in_db)
-    : _pending_events(0) {
+    : _pending_events(0),
+      _rebuilder(dbcfg,
+                 rebuild_check_interval,
+                 rrd_len ? rrd_len : 15552000,
+                 interval_length) {
   log_v2::sql()->debug("storage stream instanciation");
   if (!rrd_len)
     rrd_len = 15552000;
 
-      //_rebuilder(db_cfg, rebuild_check_interval, rrd_len, interval_length),
   if (!conflict_manager::init_storage(store_in_db, rrd_len, interval_length))
     throw broker::exceptions::shutdown()
         << "Unable to initialize the storage connection to the database";
@@ -94,8 +92,8 @@ stream::~stream() {
  *  @return Number of events acknowledged.
  */
 int32_t stream::flush() {
-  int32_t retval = conflict_manager::instance().get_acks(
-      conflict_manager::storage);
+  int32_t retval =
+      conflict_manager::instance().get_acks(conflict_manager::storage);
   _pending_events -= retval;
 
   // Event acknowledgement.

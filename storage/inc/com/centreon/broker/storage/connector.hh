@@ -33,7 +33,7 @@ namespace storage {
  *  Send perfdata in a Centreon Storage database.
  */
 class connector : public io::endpoint {
-  database_config _db_cfg;
+  database_config _dbcfg;
   uint32_t _interval_length;
   uint32_t _rebuild_check_interval;
   uint32_t _rrd_len;
@@ -44,8 +44,9 @@ class connector : public io::endpoint {
   connector(connector const& other) = delete;
   ~connector() = default;
   connector& operator=(connector const& other) = delete;
-  bool operator==(connector const& other);
-  void connect_to(uint32_t rrd_len,
+  bool operator==(connector const& other) = delete;
+  void connect_to(database_config const& dbcfg,
+                  uint32_t rrd_len,
                   uint32_t interval_length,
                   uint32_t rebuild_check_interval,
                   bool store_in_data_bin = true);

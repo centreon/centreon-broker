@@ -38,8 +38,9 @@ namespace storage {
 class rebuild : public io::data {
  public:
   rebuild();
+  rebuild(bool ending, uint32_t id, bool is_index);
   rebuild(rebuild const& right);
-  ~rebuild();
+  ~rebuild() = default;
   rebuild& operator=(rebuild const& right);
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::storage,
