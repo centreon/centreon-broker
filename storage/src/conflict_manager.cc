@@ -84,7 +84,6 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
       _ref_count{0},
       _oldest_timestamp{std::numeric_limits<time_t>::max()} {
   log_v2::sql()->debug("conflict_manager: class instanciation");
-  _thread = std::move(std::thread(&conflict_manager::_callback, this));
 }
 
 conflict_manager::~conflict_manager() {
@@ -109,7 +108,6 @@ bool conflict_manager::init_storage(bool store_in_db,
   int count = 0;
 
   std::unique_lock<std::mutex> lk(_init_m);
-  assert(rrd_len);
 
   for (;;) {
     /* The loop is waiting for 1s or for _mysql to be initialized */
@@ -121,6 +119,7 @@ bool conflict_manager::init_storage(bool store_in_db,
       _singleton->_rrd_len = rrd_len;
       _singleton->_interval_length = interval_length;
       _singleton->_ref_count++;
+      _singleton->_thread = std::move(std::thread(&conflict_manager::_callback, _singleton));
       return true;
     }
     count++;
@@ -212,21 +211,17 @@ void conflict_manager::_load_caches() {
 
       // Loop through result set.
       while (_mysql.fetch_row(res)) {
-        index_info info;
-        info.index_id = res.value_as_u32(0);
+        index_info info{
+          .host_name = res.value_as_str(3),
+          .index_id = res.value_as_u32(0),
+          .locked = res.value_as_bool(7),
+          .rrd_retention = res.value_as_u32(4) ? res.value_as_u32(4) : _rrd_len,
+          .service_description = res.value_as_str(5),
+          .special = res.value_as_u32(6) == 2};
         uint32_t host_id(res.value_as_u32(1));
         uint32_t service_id(res.value_as_u32(2));
-        info.host_name = res.value_as_str(3);
-        info.rrd_retention = res.value_as_u32(4);
-        if (!info.rrd_retention)
-          info.rrd_retention = _rrd_len;
-        info.service_description = res.value_as_str(5);
-        info.special = (res.value_as_u32(6) == 2);
-        info.locked = res.value_as_bool(7);
-        logging::debug(logging::high) << "storage: loaded index "
-                                      << info.index_id << " of (" << host_id
-                                      << ", " << service_id << ")";
-        _index_cache[{host_id, service_id}] = info;
+        log_v2::perfdata()->debug("storage: loaded index {} of ({}, {}) with rrd_len={}", info.index_id, host_id, service_id, info.rrd_retention);
+        _index_cache[{host_id, service_id}] = std::move(info);
 
         // Create the metric mapping.
         std::shared_ptr<storage::index_mapping> im{

@@ -444,11 +444,12 @@ int32_t conflict_manager::_storage_process_service_status() {
                 pd.value_type())};
             log_v2::perfdata()->debug(
                 "conflict_manager: generating perfdata event for metric {} "
-                "(name '{}', ctime {}, value {})",
+                "(name '{}', ctime {}, value {}, rrd_len {})",
                 perf->metric_id,
                 perf->name,
                 perf->ctime,
-                perf->value);
+                perf->value,
+                rrd_len);
             multiplexing::publisher().write(perf);
           }
         }
