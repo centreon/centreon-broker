@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/namespace.hh"
@@ -80,6 +81,7 @@ class stream : public io::stream {
   mutable std::mutex _statusm;
 
   void _update_status(std::string const& status);
+
  public:
   stream(database_config const& dbcfg,
          uint32_t rrd_len,

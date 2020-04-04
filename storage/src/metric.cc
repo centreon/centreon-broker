@@ -17,8 +17,10 @@
 */
 
 #include "com/centreon/broker/storage/metric.hh"
+
 #include <cassert>
 #include <cmath>
+
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/perfdata.hh"

@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/storage/connector.hh"
+
 #include "com/centreon/broker/storage/stream.hh"
 
 using namespace com::centreon::broker;
@@ -65,9 +66,6 @@ void connector::connect_to(database_config const& dbcfg,
  */
 std::shared_ptr<io::stream> connector::open() {
   return std::shared_ptr<io::stream>(
-      std::make_shared<stream>(_dbcfg,
-                               _rrd_len,
-                               _interval_length,
-                               _rebuild_check_interval,
-                               _store_in_data_bin));
+      std::make_shared<stream>(_dbcfg, _rrd_len, _interval_length,
+                               _rebuild_check_interval, _store_in_data_bin));
 }

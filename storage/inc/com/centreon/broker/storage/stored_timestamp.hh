@@ -34,10 +34,7 @@ namespace storage {
  */
 class stored_timestamp {
  public:
-  enum state_type {
-    responsive,
-    unresponsive
-  };
+  enum state_type { responsive, unresponsive };
 
  private:
   uint32_t _instance_id;
@@ -60,7 +57,7 @@ class stored_timestamp {
   void set_timestamp(timestamp ts) noexcept;
   bool timestamp_outdated(uint32_t timeout) const noexcept;
 };
-}  // namespace sql
+}  // namespace storage
 
 CCB_END()
 

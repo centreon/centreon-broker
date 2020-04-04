@@ -20,6 +20,7 @@
 #define CCB_STORAGE_REBUILDER_HH
 
 #include <memory>
+
 #include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/namespace.hh"

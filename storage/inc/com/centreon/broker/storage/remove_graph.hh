@@ -21,10 +21,10 @@
 
 #include "com/centreon/broker/io/data.hh"
 #include "com/centreon/broker/io/event_info.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/storage/internal.hh"
-#include "com/centreon/broker/io/events.hh"
 
 CCB_BEGIN()
 

@@ -41,7 +41,10 @@ rebuild::rebuild()
  *  @param[in] is_index true for an index ID, false for a metric ID.
  */
 rebuild::rebuild(bool ending, uint32_t id, bool is_index)
-    : io::data(rebuild::static_type()), end(ending), id(id), is_index(is_index) {}
+    : io::data(rebuild::static_type()),
+      end(ending),
+      id(id),
+      is_index(is_index) {}
 
 /**
  *  Copy constructor.

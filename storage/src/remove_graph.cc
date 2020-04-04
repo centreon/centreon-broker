@@ -54,6 +54,8 @@ mapping::entry const remove_graph::entries[] = {
     mapping::entry(&remove_graph::is_index, "is_end"), mapping::entry()};
 
 // Operations.
-static io::data* new_remove_graph() { return new remove_graph; }
+static io::data* new_remove_graph() {
+  return new remove_graph;
+}
 io::event_info::event_operations const remove_graph::operations = {
     &new_remove_graph};

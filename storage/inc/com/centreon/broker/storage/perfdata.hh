@@ -20,6 +20,7 @@
 #define CCB_STORAGE_PERFDATA_HH
 
 #include <string>
+
 #include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()

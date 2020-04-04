@@ -21,6 +21,7 @@
 
 #include <list>
 #include <string>
+
 #include "com/centreon/broker/namespace.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 

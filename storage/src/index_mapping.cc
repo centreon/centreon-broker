@@ -16,8 +16,9 @@
 ** For more information : contact@centreon.com
 */
 
-#include <cmath>
 #include "com/centreon/broker/storage/index_mapping.hh"
+
+#include <cmath>
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
