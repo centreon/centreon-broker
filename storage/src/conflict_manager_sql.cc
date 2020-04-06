@@ -17,14 +17,15 @@
 */
 #include <cassert>
 #include <sstream>
+
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/query_preparator.hh"
 #include "com/centreon/broker/storage/conflict_manager.hh"
 #include "com/centreon/engine/host.hh"
-#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/engine/service.hh"
 
 using namespace com::centreon::broker;
@@ -49,11 +50,11 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   /* Disable hosts and services. */
   std::ostringstream oss;
   oss << "UPDATE hosts AS h LEFT JOIN services AS s ON h.host_id = s.host_id "
-         "SET h.enabled=0, s.enabled=0 WHERE h.instance_id=" << instance_id;
+         "SET h.enabled=0, s.enabled=0 WHERE h.instance_id="
+      << instance_id;
   _mysql.run_query(
       oss.str(),
-      "conflict_manager: could not clean hosts and services tables: ",
-      false,
+      "conflict_manager: could not clean hosts and services tables: ", false,
       conn);
   _add_action(conn, actions::hosts);
 
@@ -67,7 +68,8 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       << instance_id;
   _mysql.run_query(
       oss.str(),
-      "conflict_manager: could not clean host groups memberships table: ", false, conn);
+      "conflict_manager: could not clean host groups memberships table: ",
+      false, conn);
   _add_action(conn, actions::hostgroups);
 
   /* Remove service group memberships */
@@ -77,11 +79,11 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   oss.str("");
   oss << "DELETE services_servicegroups FROM services_servicegroups LEFT JOIN "
          "hosts ON services_servicegroups.host_id=hosts.host_id WHERE "
-         "hosts.instance_id=" << instance_id;
-  _mysql.run_query(oss.str(),
-                   "SQL: could not clean service groups memberships table: ",
-                   false,
-                   conn);
+         "hosts.instance_id="
+      << instance_id;
+  _mysql.run_query(
+      oss.str(),
+      "SQL: could not clean service groups memberships table: ", false, conn);
   _add_action(conn, actions::servicegroups);
 
   /* Remove host groups. */
@@ -91,9 +93,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   _mysql.run_query(
       "DELETE hg FROM hostgroups AS hg LEFT JOIN hosts_hostgroups AS hhg ON "
       "hg.hostgroup_id=hhg.hostgroup_id WHERE hhg.hostgroup_id IS NULL",
-      "conflict_manager: could not remove empty host groups",
-      false,
-      conn);
+      "conflict_manager: could not remove empty host groups", false, conn);
   _add_action(conn, actions::hostgroups);
 
   /* Remove service groups. */
@@ -105,9 +105,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       "DELETE sg FROM servicegroups AS sg LEFT JOIN services_servicegroups as "
       "ssg ON sg.servicegroup_id=ssg.servicegroup_id WHERE ssg.servicegroup_id "
       "IS NULL",
-      "conflict_manager: could not remove empty service groups",
-      false,
-      conn);
+      "conflict_manager: could not remove empty service groups", false, conn);
   _add_action(conn, actions::servicegroups);
 
   /* Remove host dependencies. */
@@ -117,9 +115,12 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   oss.str("");
   oss << "DELETE hhd FROM hosts_hosts_dependencies AS hhd INNER JOIN hosts as "
          "h ON hhd.host_id=h.host_id OR hhd.dependent_host_id=h.host_id WHERE "
-         "h.instance_id=" << instance_id;
+         "h.instance_id="
+      << instance_id;
   _mysql.run_query(
-      oss.str(), "conflict_manager: could not clean host dependencies table: ", false, conn);
+      oss.str(),
+      "conflict_manager: could not clean host dependencies table: ", false,
+      conn);
   _add_action(conn, actions::host_dependencies);
 
   /* Remove host parents. */
@@ -129,11 +130,11 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   oss.str("");
   oss << "DELETE hhp FROM hosts_hosts_parents AS hhp INNER JOIN hosts as h ON "
          "hhp.child_id=h.host_id OR hhp.parent_id=h.host_id WHERE "
-         "h.instance_id=" << instance_id;
-  _mysql.run_query(oss.str(),
-                   "conflict_manager: could not clean host parents table: ",
-                   false,
-                   conn);
+         "h.instance_id="
+      << instance_id;
+  _mysql.run_query(
+      oss.str(),
+      "conflict_manager: could not clean host parents table: ", false, conn);
   _add_action(conn, actions::host_parents);
 
   /* Remove service dependencies. */
@@ -149,8 +150,9 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
          " ON s.host_id=h.host_id"
          " WHERE h.instance_id="
       << instance_id;
-  _mysql.run_query(
-      oss.str(), "SQL: could not clean service dependencies table: ", false, conn);
+  _mysql.run_query(oss.str(),
+                   "SQL: could not clean service dependencies table: ", false,
+                   conn);
   _add_action(conn, actions::service_dependencies);
 
   /* Remove list of modules. */
@@ -159,8 +161,7 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   oss.str("");
   oss << "DELETE FROM modules WHERE instance_id=" << instance_id;
   _mysql.run_query(oss.str(),
-                   "conflict_manager: could not clean modules table: ",
-                   false,
+                   "conflict_manager: could not clean modules table: ", false,
                    conn);
   _add_action(conn, actions::modules);
 
@@ -170,10 +171,10 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
   oss.str("");
   oss << "UPDATE downtimes AS d INNER JOIN hosts AS h ON d.host_id=h.host_id "
          "SET d.cancelled=1 WHERE d.actual_end_time IS NULL AND d.cancelled=0 "
-         "AND h.instance_id=" << instance_id;
+         "AND h.instance_id="
+      << instance_id;
   _mysql.run_query(oss.str(),
-                   "conflict_manager: could not clean downtimes table: ",
-                   false,
+                   "conflict_manager: could not clean downtimes table: ", false,
                    conn);
   _add_action(conn, actions::downtimes);
 
@@ -183,13 +184,12 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
       << ")";
   oss.str("");
   oss << "UPDATE comments AS c JOIN hosts AS h ON c.host_id=h.host_id SET "
-         "c.deletion_time=" << time(nullptr)
-      << " WHERE h.instance_id=" << instance_id
+         "c.deletion_time="
+      << time(nullptr) << " WHERE h.instance_id=" << instance_id
       << " AND c.persistent=0 AND (c.deletion_time IS NULL OR "
          "c.deletion_time=0)";
   _mysql.run_query(oss.str(),
-                   "conflict_manager: could not clean comments table: ",
-                   false,
+                   "conflict_manager: could not clean comments table: ", false,
                    conn);
   _add_action(conn, actions::comments);
 
@@ -199,12 +199,12 @@ void conflict_manager::_clean_tables(uint32_t instance_id) {
                        instance_id);
   oss.str("");
   oss << "DELETE cv FROM customvariables AS cv INNER JOIN hosts AS h ON "
-         "cv.host_id = h.host_id WHERE h.instance_id=" << instance_id;
+         "cv.host_id = h.host_id WHERE h.instance_id="
+      << instance_id;
 
   _mysql.run_query(oss.str(),
                    "conflict_manager: could not clean custom variables table: ",
-                   false,
-                   conn);
+                   false, conn);
   _add_action(conn, actions::custom_variables);
 }
 
@@ -257,22 +257,21 @@ void conflict_manager::_update_hosts_and_services_of_instance(uint32_t id,
                                                               bool responsive) {
   int32_t conn = _mysql.choose_connection_by_instance(id);
   _finish_action(conn, actions::hosts);
-  _finish_action(-1,
-                 actions::acknowledgements | actions::modules |
-                     actions::downtimes | actions::comments);
+  _finish_action(-1, actions::acknowledgements | actions::modules |
+                         actions::downtimes | actions::comments);
 
   std::ostringstream ss;
   if (responsive) {
     ss << "UPDATE instances SET outdated=FALSE WHERE instance_id=" << id;
-    _mysql.run_query(
-        ss.str(), "SQL: could not restore outdated instance", false, conn);
+    _mysql.run_query(ss.str(), "SQL: could not restore outdated instance",
+                     false, conn);
     _add_action(conn, actions::instances);
     ss.str("");
     ss << "UPDATE hosts AS h LEFT JOIN services AS s ON h.host_id=s.host_id "
           "SET h.state=h.real_state,s.state=s.real_state WHERE h.instance_id = "
        << id;
-    _mysql.run_query(
-        ss.str(), "SQL: could not restore outdated instance", false, conn);
+    _mysql.run_query(ss.str(), "SQL: could not restore outdated instance",
+                     false, conn);
     _add_action(conn, actions::hosts);
   } else {
     ss << "UPDATE instances SET outdated=TRUE WHERE instance_id=" << id;
@@ -372,7 +371,10 @@ int32_t conflict_manager::_process_acknowledgement() {
       *static_cast<neb::acknowledgement const*>(d.get());
 
   // Log message.
-  log_v2::sql()->info("processing acknowledgement event (poller: {}, host: {}, service: {}, entry time: {}, deletion time: {})", ack.poller_id, ack.service_id, ack.entry_time, ack.deletion_time);
+  log_v2::sql()->info(
+      "processing acknowledgement event (poller: {}, host: {}, service: {}, "
+      "entry time: {}, deletion time: {})",
+      ack.poller_id, ack.service_id, ack.entry_time, ack.deletion_time);
 
   // Processing.
   if (_is_valid_poller(ack.poller_id)) {
@@ -394,9 +396,7 @@ int32_t conflict_manager::_process_acknowledgement() {
         << ", entry time: " << ack.entry_time << "): ";
 
     _acknowledgement_insupdate << ack;
-    _mysql.run_statement(_acknowledgement_insupdate,
-                         oss.str(),
-                         true, conn);
+    _mysql.run_statement(_acknowledgement_insupdate, oss.str(), true, conn);
   }
   _pop_event(p);
   return 1;
@@ -410,10 +410,9 @@ int32_t conflict_manager::_process_acknowledgement() {
  * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_comment() {
-  _finish_action(-1,
-                 actions::hosts | actions::instances | actions::host_parents |
-                 actions::host_dependencies |
-                 actions::service_dependencies);
+  _finish_action(-1, actions::hosts | actions::instances |
+                         actions::host_parents | actions::host_dependencies |
+                         actions::service_dependencies);
   auto& p = _events.front();
   std::shared_ptr<io::data> d{std::get<0>(p)};
 
@@ -423,9 +422,9 @@ int32_t conflict_manager::_process_comment() {
   int32_t conn = _mysql.choose_connection_by_instance(cmmnt.poller_id);
 
   // Log message.
-  logging::info(logging::medium) << "SQL: processing comment of poller "
-                                 << cmmnt.poller_id << " on (" << cmmnt.host_id
-                                 << ", " << cmmnt.service_id << ")";
+  logging::info(logging::medium)
+      << "SQL: processing comment of poller " << cmmnt.poller_id << " on ("
+      << cmmnt.host_id << ", " << cmmnt.service_id << ")";
 
   // Prepare queries.
   if (!_comment_insupdate.prepared()) {
@@ -493,9 +492,9 @@ int32_t conflict_manager::_process_custom_variable() {
 
     // Processing.
     if (cv.enabled) {
-      logging::info(logging::medium) << "SQL: enabling custom variable '"
-                                     << cv.name << "' of (" << cv.host_id
-                                     << ", " << cv.service_id << ")";
+      logging::info(logging::medium)
+          << "SQL: enabling custom variable '" << cv.name << "' of ("
+          << cv.host_id << ", " << cv.service_id << ")";
       std::ostringstream oss;
       oss << "SQL: could not store custom variable (name: " << cv.name
           << ", host: " << cv.host_id << ", service: " << cv.service_id
@@ -505,9 +504,9 @@ int32_t conflict_manager::_process_custom_variable() {
       _mysql.run_statement(_custom_variable_insupdate, oss.str(), true, conn);
       _add_action(conn, actions::custom_variables);
     } else {
-      logging::info(logging::medium) << "SQL: disabling custom variable '"
-                                     << cv.name << "' of (" << cv.host_id
-                                     << ", " << cv.service_id << ")";
+      logging::info(logging::medium)
+          << "SQL: disabling custom variable '" << cv.name << "' of ("
+          << cv.host_id << ", " << cv.service_id << ")";
       _custom_variable_delete.bind_value_as_i32(":host_id", cv.host_id);
       _custom_variable_delete.bind_value_as_i32(":service_id", cv.service_id);
       _custom_variable_delete.bind_value_as_str(":name", cv.name);
@@ -561,16 +560,16 @@ int32_t conflict_manager::_process_custom_variable_status() {
       _custom_variable_status_insupdate = qp.prepare_insert_or_update(_mysql);
     }
 
-    logging::info(logging::medium) << "SQL: enabling custom variable '"
-                                   << cv.name << "' of (" << cv.host_id << ", "
-                                   << cv.service_id << ")";
+    logging::info(logging::medium)
+        << "SQL: enabling custom variable '" << cv.name << "' of ("
+        << cv.host_id << ", " << cv.service_id << ")";
     std::ostringstream oss;
     oss << "SQL: could not store custom variable (name: " << cv.name
         << ", host: " << cv.host_id << ", service: " << cv.service_id << "): ";
 
     _custom_variable_status_insupdate << cv;
-    _mysql.run_statement(
-        _custom_variable_status_insupdate, oss.str(), true, conn);
+    _mysql.run_statement(_custom_variable_status_insupdate, oss.str(), true,
+                         conn);
     _add_action(conn, actions::custom_variables);
     _pop_event(p);
     retval++;
@@ -588,11 +587,9 @@ int32_t conflict_manager::_process_custom_variable_status() {
 int32_t conflict_manager::_process_downtime() {
   int32_t retval = 0;
   int conn = _mysql.choose_best_connection();
-  _finish_action(-1,
-                 actions::hosts | actions::instances |
-                 actions::host_parents |
-                 actions::host_dependencies |
-                 actions::service_dependencies);
+  _finish_action(-1, actions::hosts | actions::instances |
+                         actions::host_parents | actions::host_dependencies |
+                         actions::service_dependencies);
 
   int32_t count = _get_events_size();
   while (count-- > 0) {
@@ -698,9 +695,7 @@ int32_t conflict_manager::_process_event_handler() {
 
   _event_handler_insupdate << eh;
   _mysql.run_statement(
-      _event_handler_insupdate,
-      oss.str(),
-      true,
+      _event_handler_insupdate, oss.str(), true,
       _mysql.choose_connection_by_instance(_cache_host_instance[eh.host_id]));
   _pop_event(p);
   return 1;
@@ -760,11 +755,9 @@ int32_t conflict_manager::_process_flapping_status() {
  */
 int32_t conflict_manager::_process_host_check() {
   int32_t retval = 0;
-  _finish_action(-1,
-                 actions::instances |
-                 actions::downtimes | actions::comments |
-                     actions::host_dependencies | actions::host_parents |
-                     actions::service_dependencies);
+  _finish_action(-1, actions::instances | actions::downtimes |
+                         actions::comments | actions::host_dependencies |
+                         actions::host_parents | actions::service_dependencies);
   int32_t count = _get_events_size();
   while (count-- > 0) {
     auto& p = _events.front();
@@ -787,9 +780,9 @@ int32_t conflict_manager::_process_host_check() {
         hc.next_check >= now - 5 * 60 ||  // - normal case
         !hc.next_check) {                 // - initial state
       // Apply to DB.
-      log_v2::sql()->info("SQL: processing host check event (host: {}, command: {}",
-                          hc.host_id,
-                          hc.command_line);
+      log_v2::sql()->info(
+          "SQL: processing host check event (host: {}, command: {}", hc.host_id,
+          hc.command_line);
 
       // Prepare queries.
       if (!_host_check_update.prepared()) {
@@ -801,8 +794,7 @@ int32_t conflict_manager::_process_host_check() {
 
       // Processing.
       bool store;
-      size_t str_hash = std::hash<std::string> {}
-      (hc.command_line);
+      size_t str_hash = std::hash<std::string>{}(hc.command_line);
       // Did the command changed since last time?
       if (_cache_hst_cmd[hc.host_id] != str_hash) {
         store = true;
@@ -844,10 +836,10 @@ int32_t conflict_manager::_process_host_check() {
 int32_t conflict_manager::_process_host_dependency() {
   int32_t retval = 0;
   int32_t conn = _mysql.choose_best_connection();
-  _finish_action(-1,
-                 actions::hosts | actions::host_parents | actions::comments |
-                     actions::downtimes | actions::host_dependencies |
-                     actions::service_dependencies);
+  _finish_action(-1, actions::hosts | actions::host_parents |
+                         actions::comments | actions::downtimes |
+                         actions::host_dependencies |
+                         actions::service_dependencies);
 
   int32_t count = _get_events_size();
   while (count-- > 0) {
@@ -867,9 +859,9 @@ int32_t conflict_manager::_process_host_dependency() {
 
     // Insert/Update.
     if (hd.enabled) {
-      logging::info(logging::medium) << "SQL: enabling host dependency of "
-                                     << hd.dependent_host_id << " on "
-                                     << hd.host_id;
+      logging::info(logging::medium)
+          << "SQL: enabling host dependency of " << hd.dependent_host_id
+          << " on " << hd.host_id;
 
       // Prepare queries.
       if (!_host_dependency_insupdate.prepared()) {
@@ -891,9 +883,9 @@ int32_t conflict_manager::_process_host_dependency() {
     }
     // Delete.
     else {
-      logging::info(logging::medium) << "SQL: removing host dependency of "
-                                     << hd.dependent_host_id << " on "
-                                     << hd.host_id;
+      logging::info(logging::medium)
+          << "SQL: removing host dependency of " << hd.dependent_host_id
+          << " on " << hd.host_id;
       std::ostringstream oss;
       oss << "DELETE FROM hosts_hosts_dependencies"
           << "  WHERE dependent_host_id=" << hd.dependent_host_id
@@ -935,9 +927,9 @@ int32_t conflict_manager::_process_host_group() {
     neb::host_group const& hg{*static_cast<neb::host_group const*>(d.get())};
 
     if (hg.enabled) {
-      logging::info(logging::medium) << "SQL: enabling host group " << hg.id
-                                     << " ('" << hg.name << "') on instance "
-                                     << hg.poller_id;
+      logging::info(logging::medium)
+          << "SQL: enabling host group " << hg.id << " ('" << hg.name
+          << "') on instance " << hg.poller_id;
       _prepare_hg_insupdate_statement();
 
       std::ostringstream oss;
@@ -951,9 +943,9 @@ int32_t conflict_manager::_process_host_group() {
     }
     // Delete group.
     else {
-      logging::info(logging::medium) << "SQL: disabling host group " << hg.id
-                                     << " ('" << hg.name << "' on instance "
-                                     << hg.poller_id;
+      logging::info(logging::medium)
+          << "SQL: disabling host group " << hg.id << " ('" << hg.name
+          << "' on instance " << hg.poller_id;
 
       // Delete group members.
       {
@@ -1004,10 +996,10 @@ int32_t conflict_manager::_process_host_group_member() {
 
     if (hgm.enabled) {
       // Log message.
-      logging::info(logging::medium) << "SQL: enabling membership of host "
-                                     << hgm.host_id << " to host group "
-                                     << hgm.group_id << " on instance "
-                                     << hgm.poller_id;
+      logging::info(logging::medium)
+          << "SQL: enabling membership of host " << hgm.host_id
+          << " to host group " << hgm.group_id << " on instance "
+          << hgm.poller_id;
 
       // We only need to try to insert in this table as the
       // host_id/hostgroup_id should be UNIQUE.
@@ -1048,7 +1040,7 @@ int32_t conflict_manager::_process_host_group_member() {
             << hgm.poller_id << ", host: " << hgm.host_id
             << ", group: " << hgm.group_id << "): ";
         _mysql.run_statement(_host_group_member_insert, oss.str(), false, conn);
-	_add_action(conn, actions::hostgroups);
+        _add_action(conn, actions::hostgroups);
       } else
         logging::error(logging::medium)
             << "SQL: host with host_id = " << hgm.host_id
@@ -1058,10 +1050,10 @@ int32_t conflict_manager::_process_host_group_member() {
     // Delete.
     else {
       // Log message.
-      logging::info(logging::medium) << "SQL: disabling membership of host "
-                                     << hgm.host_id << " to host group "
-                                     << hgm.group_id << " on instance "
-                                     << hgm.poller_id;
+      logging::info(logging::medium)
+          << "SQL: disabling membership of host " << hgm.host_id
+          << " to host group " << hgm.group_id << " on instance "
+          << hgm.poller_id;
 
       if (!_host_group_member_delete.prepared()) {
         query_preparator::event_unique unique;
@@ -1093,17 +1085,17 @@ int32_t conflict_manager::_process_host_group_member() {
  * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_host() {
-  _finish_action(-1,
-                 actions::instances | actions::hostgroups |
-                 actions::host_dependencies | actions::host_parents | actions::custom_variables |
-                     actions::downtimes | actions::comments |
-                     actions::service_dependencies);
+  _finish_action(-1, actions::instances | actions::hostgroups |
+                         actions::host_dependencies | actions::host_parents |
+                         actions::custom_variables | actions::downtimes |
+                         actions::comments | actions::service_dependencies);
   auto& p = _events.front();
   neb::host& h = *static_cast<neb::host*>(std::get<0>(p).get());
 
   // Log message.
-  log_v2::sql()->debug("SQL: processing host event (poller: {}, id: {}, name: {})", h.poller_id,
-                                 h.host_id, h.host_name);
+  log_v2::sql()->debug(
+      "SQL: processing host event (poller: {}, id: {}, name: {})", h.poller_id,
+      h.host_id, h.host_name);
 
   // Processing
   if (_is_valid_poller(h.poller_id)) {
@@ -1137,9 +1129,9 @@ int32_t conflict_manager::_process_host() {
       else
         _cache_host_instance.erase(h.host_id);
     } else
-      logging::error(logging::high) << "SQL: host '" << h.host_name
-                                    << "' of poller " << h.poller_id
-                                    << " has no ID nor alias";
+      logging::error(logging::high)
+          << "SQL: host '" << h.host_name << "' of poller " << h.poller_id
+          << " has no ID nor alias";
   }
   _pop_event(p);
   return 1;
@@ -1155,9 +1147,8 @@ int32_t conflict_manager::_process_host() {
 int32_t conflict_manager::_process_host_parent() {
   int32_t retval = 0;
   int32_t conn = _mysql.choose_best_connection();
-  _finish_action(-1,
-                 actions::hosts | actions::host_dependencies |
-                     actions::comments | actions::downtimes);
+  _finish_action(-1, actions::hosts | actions::host_dependencies |
+                         actions::comments | actions::downtimes);
 
   int32_t count = _get_events_size();
   while (count-- > 0) {
@@ -1196,9 +1187,9 @@ int32_t conflict_manager::_process_host_parent() {
     }
     // Disable parenting.
     else {
-      logging::info(logging::medium) << "SQL: host " << hp.parent_id
-                                     << " is not parent of host " << hp.host_id
-                                     << " anymore";
+      logging::info(logging::medium)
+          << "SQL: host " << hp.parent_id << " is not parent of host "
+          << hp.host_id << " anymore";
 
       // Prepare queries.
       if (!_host_parent_delete.prepared()) {
@@ -1228,10 +1219,10 @@ int32_t conflict_manager::_process_host_parent() {
  * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_host_status() {
-  _finish_action(-1,
-                 actions::instances |
-                 actions::downtimes | actions::comments | actions::custom_variables | actions::hostgroups |
-                     actions::host_dependencies | actions::host_parents);
+  _finish_action(-1, actions::instances | actions::downtimes |
+                         actions::comments | actions::custom_variables |
+                         actions::hostgroups | actions::host_dependencies |
+                         actions::host_parents);
   auto& p = _events.front();
 
   // Processed object.
@@ -1245,11 +1236,9 @@ int32_t conflict_manager::_process_host_status() {
       hs.next_check >= now - 5 * 60 ||  // - normal case
       !hs.next_check) {                 // - initial state
     // Apply to DB.
-    log_v2::sql()->info("processing host status event (id: {}, last check: {}, state ({}, {}))",
-                        hs.host_id,
-                        hs.last_check,
-                        hs.current_state,
-                        hs.state_type);
+    log_v2::sql()->info(
+        "processing host status event (id: {}, last check: {}, state ({}, {}))",
+        hs.host_id, hs.last_check, hs.current_state, hs.state_type);
 
     // Prepare queries.
     if (!_host_status_update.prepared()) {
@@ -1291,17 +1280,17 @@ int32_t conflict_manager::_process_instance() {
   auto& p = _events.front();
   neb::instance& i(*static_cast<neb::instance*>(std::get<0>(p).get()));
   int32_t conn = _mysql.choose_connection_by_instance(i.poller_id);
-  _finish_action(-1,
-                 actions::hosts |
-                 actions::acknowledgements | actions::modules |
-                     actions::downtimes | actions::comments |
-                     actions::servicegroups | actions::hostgroups | actions::service_dependencies | actions::host_dependencies);
+  _finish_action(-1, actions::hosts | actions::acknowledgements |
+                         actions::modules | actions::downtimes |
+                         actions::comments | actions::servicegroups |
+                         actions::hostgroups | actions::service_dependencies |
+                         actions::host_dependencies);
 
   // Log message.
-  logging::info(logging::medium) << "SQL: processing poller event "
-                                 << "(id: " << i.poller_id
-                                 << ", name: " << i.name << ", running: "
-                                 << (i.is_running ? "yes" : "no") << ")";
+  logging::info(logging::medium)
+      << "SQL: processing poller event "
+      << "(id: " << i.poller_id << ", name: " << i.name
+      << ", running: " << (i.is_running ? "yes" : "no") << ")";
 
   // Clean tables.
   _clean_tables(i.poller_id);
@@ -1346,14 +1335,14 @@ int32_t conflict_manager::_process_instance_status() {
       *static_cast<neb::instance_status*>(std::get<0>(p).get());
   int32_t conn = _mysql.choose_connection_by_instance(is.poller_id);
 
-  _finish_action(-1, actions::hosts |
-                 actions::acknowledgements | actions::modules |
-                     actions::downtimes | actions::comments);
+  _finish_action(-1, actions::hosts | actions::acknowledgements |
+                         actions::modules | actions::downtimes |
+                         actions::comments);
 
   // Log message.
-  logging::info(logging::medium) << "SQL: processing poller status event (id: "
-                                 << is.poller_id
-                                 << ", last alive: " << is.last_alive << ")";
+  logging::info(logging::medium)
+      << "SQL: processing poller status event (id: " << is.poller_id
+      << ", last alive: " << is.last_alive << ")";
 
   // Processing.
   if (_is_valid_poller(is.poller_id)) {
@@ -1403,10 +1392,9 @@ int32_t conflict_manager::_process_log() {
     neb::log_entry const& le(*static_cast<neb::log_entry const*>(d.get()));
 
     // Log message.
-    logging::info(logging::medium) << "SQL: processing log of poller '"
-                                   << le.poller_name << "' generated at "
-                                   << le.c_time << " (type " << le.msg_type
-                                   << ")";
+    logging::info(logging::medium)
+        << "SQL: processing log of poller '" << le.poller_name
+        << "' generated at " << le.c_time << " (type " << le.msg_type << ")";
 
     // Prepare query.
     if (!_log_insert.prepared()) {
@@ -1441,10 +1429,10 @@ int32_t conflict_manager::_process_module() {
   int32_t conn = _mysql.choose_connection_by_instance(m.poller_id);
 
   // Log message.
-  logging::info(logging::medium) << "SQL: processing module event (poller: "
-                                 << m.poller_id << ", filename: " << m.filename
-                                 << ", loaded: " << (m.loaded ? "yes" : "no")
-                                 << ")";
+  logging::info(logging::medium)
+      << "SQL: processing module event (poller: " << m.poller_id
+      << ", filename: " << m.filename
+      << ", loaded: " << (m.loaded ? "yes" : "no") << ")";
 
   // Processing.
   if (_is_valid_poller(m.poller_id)) {
@@ -1482,10 +1470,9 @@ int32_t conflict_manager::_process_module() {
  * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_service_check() {
-  _finish_action(-1,
-                 actions::downtimes | actions::comments |
-                     actions::host_dependencies | actions::host_parents |
-                     actions::service_dependencies);
+  _finish_action(-1, actions::downtimes | actions::comments |
+                         actions::host_dependencies | actions::host_parents |
+                         actions::service_dependencies);
   auto& p = _events.front();
   std::shared_ptr<io::data> d{std::get<0>(p)};
 
@@ -1494,13 +1481,12 @@ int32_t conflict_manager::_process_service_check() {
       *static_cast<neb::service_check const*>(d.get()));
 
   time_t now{time(nullptr)};
-  if (sc.check_type  // - passive result
-      ||
-      !sc.active_checks_enabled  // - active checks are disabled,
-                                 //   status might not be updated
-                                 // - normal case
-      ||
-      (sc.next_check >= now - 5 * 60) || !sc.next_check) {  // - initial state
+  if (sc.check_type                 // - passive result
+      || !sc.active_checks_enabled  // - active checks are disabled,
+                                    //   status might not be updated
+                                    // - normal case
+      || (sc.next_check >= now - 5 * 60) ||
+      !sc.next_check) {  // - initial state
     // Apply to DB.
     logging::info(logging::medium)
         << "SQL: processing service check event (host: " << sc.host_id
@@ -1518,8 +1504,7 @@ int32_t conflict_manager::_process_service_check() {
 
     // Processing.
     bool store = true;
-    size_t str_hash = std::hash<std::string> {}
-    (sc.command_line);
+    size_t str_hash = std::hash<std::string>{}(sc.command_line);
     // Did the command changed since last time?
     if (_cache_svc_cmd[{sc.host_id, sc.service_id}] != str_hash)
       _cache_svc_cmd[std::make_pair(sc.host_id, sc.service_id)] = str_hash;
@@ -1528,22 +1513,21 @@ int32_t conflict_manager::_process_service_check() {
 
     if (store) {
       if (_cache_host_instance[sc.host_id]) {
-      _service_check_update << sc;
-      std::promise<int> promise;
-      std::stringstream oss;
-      oss << "SQL: could not store service check command (host: " << sc.host_id
-          << ", service: " << sc.service_id << "): ";
-      int32_t conn = _mysql.choose_connection_by_instance(
-          _cache_host_instance[sc.host_id]);
-      _mysql.run_statement(_service_check_update, oss.str(), true, conn);
-      }
-      else
-        logging::error(logging::medium) << "SQL: host with host_id = "
-                                        << sc.host_id
-                                        << " does not exist - unable to store "
-                                           "service command check of that "
-                                           "host. You should restart "
-                                           "centengine";
+        _service_check_update << sc;
+        std::promise<int> promise;
+        std::stringstream oss;
+        oss << "SQL: could not store service check command (host: "
+            << sc.host_id << ", service: " << sc.service_id << "): ";
+        int32_t conn = _mysql.choose_connection_by_instance(
+            _cache_host_instance[sc.host_id]);
+        _mysql.run_statement(_service_check_update, oss.str(), true, conn);
+      } else
+        logging::error(logging::medium)
+            << "SQL: host with host_id = " << sc.host_id
+            << " does not exist - unable to store "
+               "service command check of that "
+               "host. You should restart "
+               "centengine";
     }
   } else
     // Do nothing.
@@ -1566,10 +1550,10 @@ int32_t conflict_manager::_process_service_check() {
 int32_t conflict_manager::_process_service_dependency() {
   int32_t retval = 0;
   int32_t conn = _mysql.choose_best_connection();
-  _finish_action(-1,
-                 actions::hosts | actions::host_parents | actions::downtimes |
-                     actions::comments | actions::host_dependencies |
-                     actions::service_dependencies);
+  _finish_action(-1, actions::hosts | actions::host_parents |
+                         actions::downtimes | actions::comments |
+                         actions::host_dependencies |
+                         actions::service_dependencies);
 
   int32_t count = _get_events_size();
   while (count-- > 0) {
@@ -1589,11 +1573,10 @@ int32_t conflict_manager::_process_service_dependency() {
 
     // Insert/Update.
     if (sd.enabled) {
-      logging::info(logging::medium) << "SQL: enabling service dependency of ("
-                                     << sd.dependent_host_id << ", "
-                                     << sd.dependent_service_id << ") on ("
-                                     << sd.host_id << ", " << sd.service_id
-                                     << ")";
+      logging::info(logging::medium)
+          << "SQL: enabling service dependency of (" << sd.dependent_host_id
+          << ", " << sd.dependent_service_id << ") on (" << sd.host_id << ", "
+          << sd.service_id << ")";
 
       // Prepare queries.
       if (!_service_dependency_insupdate.prepared()) {
@@ -1613,20 +1596,20 @@ int32_t conflict_manager::_process_service_dependency() {
           << ", dependent host: " << sd.dependent_host_id
           << ", dependent service: " << sd.dependent_service_id << "): ";
       _service_dependency_insupdate << sd;
-      _mysql.run_statement(
-          _service_dependency_insupdate, oss.str(), true, conn);
+      _mysql.run_statement(_service_dependency_insupdate, oss.str(), true,
+                           conn);
       _add_action(conn, actions::service_dependencies);
     }
     // Delete.
     else {
-      logging::info(logging::medium) << "SQL: removing service dependency of ("
-                                     << sd.dependent_host_id << ", "
-                                     << sd.dependent_service_id << ") on ("
-                                     << sd.host_id << ", " << sd.service_id
-                                     << ")";
+      logging::info(logging::medium)
+          << "SQL: removing service dependency of (" << sd.dependent_host_id
+          << ", " << sd.dependent_service_id << ") on (" << sd.host_id << ", "
+          << sd.service_id << ")";
       std::ostringstream oss;
       oss << "DELETE FROM services_services_dependencies"
-             " WHERE dependent_host_id=" << sd.dependent_host_id
+             " WHERE dependent_host_id="
+          << sd.dependent_host_id
           << " AND dependent_service_id=" << sd.dependent_service_id
           << " AND host_id=" << sd.host_id
           << " AND service_id=" << sd.service_id;
@@ -1669,9 +1652,9 @@ int32_t conflict_manager::_process_service_group() {
 
     // Insert/update group.
     if (sg.enabled) {
-      logging::info(logging::medium) << "SQL: enabling service group " << sg.id
-                                     << " ('" << sg.name << "') on instance "
-                                     << sg.poller_id;
+      logging::info(logging::medium)
+          << "SQL: enabling service group " << sg.id << " ('" << sg.name
+          << "') on instance " << sg.poller_id;
       _prepare_sg_insupdate_statement();
 
       std::stringstream oss;
@@ -1685,9 +1668,9 @@ int32_t conflict_manager::_process_service_group() {
     }
     // Delete group.
     else {
-      logging::info(logging::medium) << "SQL: disabling service group " << sg.id
-                                     << " ('" << sg.name << "') on instance "
-                                     << sg.poller_id;
+      logging::info(logging::medium)
+          << "SQL: disabling service group " << sg.id << " ('" << sg.name
+          << "') on instance " << sg.poller_id;
 
       // Delete group members.
       {
@@ -1699,7 +1682,7 @@ int32_t conflict_manager::_process_service_group() {
             << "  WHERE services_servicegroups.servicegroup_id=" << sg.id
             << "    AND hosts.instance_id=" << sg.poller_id;
         _mysql.run_query(oss.str(), "SQL: ", false, conn);
-	_add_action(conn, actions::servicegroups);
+        _add_action(conn, actions::servicegroups);
         _servicegroup_cache.erase(sg.id);
       }
     }
@@ -1719,7 +1702,8 @@ int32_t conflict_manager::_process_service_group() {
 int32_t conflict_manager::_process_service_group_member() {
   int32_t retval = 0;
   int32_t conn = _mysql.choose_best_connection();
-  _finish_action(-1, actions::hosts | actions::servicegroups | actions::services);
+  _finish_action(-1,
+                 actions::hosts | actions::servicegroups | actions::services);
 
   int32_t count = _get_events_size();
   while (count-- > 0) {
@@ -1739,10 +1723,10 @@ int32_t conflict_manager::_process_service_group_member() {
 
     if (sgm.enabled) {
       // Log message.
-      logging::info(logging::medium) << "SQL: enabling membership of service ("
-                                     << sgm.host_id << ", " << sgm.service_id
-                                     << ") to service group " << sgm.group_id
-                                     << " on instance " << sgm.poller_id;
+      logging::info(logging::medium)
+          << "SQL: enabling membership of service (" << sgm.host_id << ", "
+          << sgm.service_id << ") to service group " << sgm.group_id
+          << " on instance " << sgm.poller_id;
 
       // We only need to try to insert in this table as the
       // host_id/service_id/servicegroup_id combo should be UNIQUE.
@@ -1783,17 +1767,17 @@ int32_t conflict_manager::_process_service_group_member() {
           << sgm.poller_id << ", host: " << sgm.host_id
           << ", service: " << sgm.service_id << ", group: " << sgm.group_id
           << "): ";
-      _mysql.run_statement(
-          _service_group_member_insert, oss.str(), false, conn);
+      _mysql.run_statement(_service_group_member_insert, oss.str(), false,
+                           conn);
       _add_action(conn, actions::servicegroups);
     }
     // Delete.
     else {
       // Log message.
-      logging::info(logging::medium) << "SQL: disabling membership of service ("
-                                     << sgm.host_id << ", " << sgm.service_id
-                                     << ") to service group " << sgm.group_id
-                                     << " on instance " << sgm.poller_id;
+      logging::info(logging::medium)
+          << "SQL: disabling membership of service (" << sgm.host_id << ", "
+          << sgm.service_id << ") to service group " << sgm.group_id
+          << " on instance " << sgm.poller_id;
 
       if (!_service_group_member_delete.prepared()) {
         query_preparator::event_unique unique;
@@ -1809,8 +1793,8 @@ int32_t conflict_manager::_process_service_group_member() {
           << " on instance " << sgm.poller_id << ": ";
 
       _service_group_member_delete << sgm;
-      _mysql.run_statement(
-          _service_group_member_delete, oss.str(), false, conn);
+      _mysql.run_statement(_service_group_member_delete, oss.str(), false,
+                           conn);
       _add_action(conn, actions::servicegroups);
     }
     _pop_event(p);
@@ -1827,52 +1811,51 @@ int32_t conflict_manager::_process_service_group_member() {
  * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_service() {
-  _finish_action(-1,
-                 actions::host_parents | actions::comments |
-                     actions::downtimes | actions::host_dependencies |
-                     actions::service_dependencies);
+  _finish_action(-1, actions::host_parents | actions::comments |
+                         actions::downtimes | actions::host_dependencies |
+                         actions::service_dependencies);
   auto& p = _events.front();
   std::shared_ptr<io::data> d{std::get<0>(p)};
 
   // Processed object.
   neb::service const& s(*static_cast<neb::service const*>(d.get()));
   if (_cache_host_instance[s.host_id]) {
-  int32_t conn =
-      _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]);
+    int32_t conn =
+        _mysql.choose_connection_by_instance(_cache_host_instance[s.host_id]);
 
-  // Log message.
-  logging::info(logging::medium) << "SQL: processing service event "
-                                    "(host id: " << s.host_id
-                                 << ", service_id: " << s.service_id
-                                 << ", description: " << s.service_description
-                                 << ")";
+    // Log message.
+    logging::info(logging::medium)
+        << "SQL: processing service event "
+           "(host id: "
+        << s.host_id << ", service_id: " << s.service_id
+        << ", description: " << s.service_description << ")";
 
-  // Processing.
-  // FixMe BAM Generate fake services, this service
-  // does not contains a display_name
-  // We should not store them in db
-  if (s.host_id && s.service_id && !s.host_name.empty()) {
-    // Prepare queries.
-    if (!_service_insupdate.prepared()) {
-      query_preparator::event_unique unique;
-      unique.insert("host_id");
-      unique.insert("service_id");
-      query_preparator qp(neb::service::static_type(), unique);
-      logging::debug(logging::medium) << "mysql: PREPARE INSERT ON SERVICES";
-      _service_insupdate = qp.prepare_insert_or_update(_mysql);
-    }
+    // Processing.
+    // FixMe BAM Generate fake services, this service
+    // does not contains a display_name
+    // We should not store them in db
+    if (s.host_id && s.service_id && !s.host_name.empty()) {
+      // Prepare queries.
+      if (!_service_insupdate.prepared()) {
+        query_preparator::event_unique unique;
+        unique.insert("host_id");
+        unique.insert("service_id");
+        query_preparator qp(neb::service::static_type(), unique);
+        logging::debug(logging::medium) << "mysql: PREPARE INSERT ON SERVICES";
+        _service_insupdate = qp.prepare_insert_or_update(_mysql);
+      }
 
-    std::ostringstream oss;
-    oss << "SQL: could not store service (host: " << s.host_id
-        << ", service: " << s.service_id << "): ";
-    _service_insupdate << s;
-    _mysql.run_statement(_service_insupdate, oss.str(), true, conn);
-    _add_action(conn, actions::services);
+      std::ostringstream oss;
+      oss << "SQL: could not store service (host: " << s.host_id
+          << ", service: " << s.service_id << "): ";
+      _service_insupdate << s;
+      _mysql.run_statement(_service_insupdate, oss.str(), true, conn);
+      _add_action(conn, actions::services);
+    } else
+      logging::error(logging::high)
+          << "SQL: service '" << s.service_description
+          << "' has no host ID, service ID nor hostname";
   } else
-    logging::error(logging::high) << "SQL: service '" << s.service_description
-                                  << "' has no host ID, service ID nor hostname";
-  }
-  else
     logging::error(logging::medium)
         << "SQL: host with host_id = " << s.host_id
         << " does not exist - unable to store "
@@ -1889,10 +1872,9 @@ int32_t conflict_manager::_process_service() {
  * @return The number of events that can be acknowledged.
  */
 int32_t conflict_manager::_process_service_status() {
-  _finish_action(-1,
-                 actions::host_parents | actions::comments |
-                     actions::downtimes | actions::host_dependencies |
-                     actions::service_dependencies);
+  _finish_action(-1, actions::host_parents | actions::comments |
+                         actions::downtimes | actions::host_dependencies |
+                         actions::service_dependencies);
   auto& p = _events.front();
   std::shared_ptr<io::data> d{std::get<0>(p)};
   // Processed object.
@@ -1904,8 +1886,7 @@ int32_t conflict_manager::_process_service_status() {
       !ss.active_checks_enabled  // - active checks are disabled,
                                  //   status might not be updated
       ||                         // - normal case
-      ss.next_check >= now - 5 * 60 ||
-      !ss.next_check) {  // - initial state
+      ss.next_check >= now - 5 * 60 || !ss.next_check) {  // - initial state
     // Apply to DB.
     logging::info(logging::medium)
         << "SQL: processing service status event (host: " << ss.host_id

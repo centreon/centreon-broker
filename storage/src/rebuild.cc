@@ -34,6 +34,19 @@ rebuild::rebuild()
     : io::data(rebuild::static_type()), end(true), id(0), is_index(false) {}
 
 /**
+ *  Constructor.
+ *
+ *  @param[in] ending   false if rebuild is starting, true if it is ending.
+ *  @param[in] id       Index or metric ID.
+ *  @param[in] is_index true for an index ID, false for a metric ID.
+ */
+rebuild::rebuild(bool ending, uint32_t id, bool is_index)
+    : io::data(rebuild::static_type()),
+      end(ending),
+      id(id),
+      is_index(is_index) {}
+
+/**
  *  Copy constructor.
  *
  *  @param[in] right Object to copy.
@@ -41,11 +54,6 @@ rebuild::rebuild()
 rebuild::rebuild(rebuild const& right) : io::data(right) {
   _internal_copy(right);
 }
-
-/**
- *  Destructor.
- */
-rebuild::~rebuild() {}
 
 /**
  *  Assignment operator.

@@ -20,6 +20,7 @@
 #define CCB_STORAGE_REBUILDER_HH
 
 #include <memory>
+
 #include "com/centreon/broker/database_config.hh"
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/namespace.hh"
@@ -69,7 +70,10 @@ class rebuilder {
                        short metric_type,
                        uint32_t interval,
                        unsigned length);
-  void _rebuild_status(mysql& ms, uint32_t index_id, uint32_t interval);
+  void _rebuild_status(mysql& ms,
+                       uint32_t index_id,
+                       uint32_t interval,
+                       uint32_t length);
   void _send_rebuild_event(bool end, uint32_t id, bool is_index);
   void _set_index_rebuild(mysql& db, uint32_t index_id, short state);
   void _run();

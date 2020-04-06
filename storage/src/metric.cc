@@ -17,7 +17,10 @@
 */
 
 #include "com/centreon/broker/storage/metric.hh"
+
+#include <cassert>
 #include <cmath>
+
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/storage/internal.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
@@ -66,7 +69,9 @@ metric::metric(uint32_t host_id,
       value{value},
       value_type{value_type},
       host_id{host_id},
-      service_id{service_id} {}
+      service_id{service_id} {
+  assert(rrd_len != 0);
+}
 
 /**************************************
  *                                     *

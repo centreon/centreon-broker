@@ -17,12 +17,14 @@
 */
 
 #include "com/centreon/broker/storage/parser.hh"
+
 #include <algorithm>
 #include <cctype>
 #include <cfloat>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/perfdata.hh"

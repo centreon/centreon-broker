@@ -26,6 +26,7 @@
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
+
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/misc/pair.hh"
@@ -42,10 +43,7 @@ namespace storage {
 class conflict_manager {
   /* Forward declarations */
  public:
-  enum stream_type {
-    sql,
-    storage
-  };
+  enum stream_type { sql, storage };
 
  private:
   enum actions {
@@ -277,7 +275,7 @@ class conflict_manager {
   void send_event(stream_type c, std::shared_ptr<io::data> const& e);
   int32_t get_acks(stream_type c);
 };
-}  // namespace sql
+}  // namespace storage
 CCB_END()
 
 #endif /* !CCB_SQL_CONFLICT_MANAGER_HH */

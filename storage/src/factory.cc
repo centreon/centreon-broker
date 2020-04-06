@@ -17,8 +17,10 @@
 */
 
 #include "com/centreon/broker/storage/factory.hh"
+
 #include <cstring>
 #include <memory>
+
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -119,7 +121,7 @@ io::endpoint* factory::new_endpoint(
   }
 
   // Find storage DB parameters.
-  database_config db_cfg(cfg);
+  database_config dbcfg(cfg);
 
   // Rebuild check interval.
   uint32_t rebuild_check_interval(0);
@@ -152,7 +154,7 @@ io::endpoint* factory::new_endpoint(
 
   // Connector.
   std::unique_ptr<storage::connector> c(new storage::connector);
-  c->connect_to(rrd_length, interval_length, rebuild_check_interval,
+  c->connect_to(dbcfg, rrd_length, interval_length, rebuild_check_interval,
                 store_in_data_bin);
   is_acceptor = false;
   return c.release();

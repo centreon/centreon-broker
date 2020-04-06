@@ -20,11 +20,11 @@
 #define CCB_STORAGE_REBUILD_HH
 
 #include "com/centreon/broker/io/data.hh"
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/event_info.hh"
-#include "com/centreon/broker/storage/internal.hh"
+#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/mapping/entry.hh"
 #include "com/centreon/broker/namespace.hh"
+#include "com/centreon/broker/storage/internal.hh"
 
 CCB_BEGIN()
 
@@ -38,8 +38,9 @@ namespace storage {
 class rebuild : public io::data {
  public:
   rebuild();
+  rebuild(bool ending, uint32_t id, bool is_index);
   rebuild(rebuild const& right);
-  ~rebuild();
+  ~rebuild() = default;
   rebuild& operator=(rebuild const& right);
   constexpr static uint32_t static_type() {
     return io::events::data_type<io::events::storage,

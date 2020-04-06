@@ -25,10 +25,11 @@
 #include <memory>
 #include <string>
 #include <utility>
+
 #include "com/centreon/broker/io/stream.hh"
 #include "com/centreon/broker/mysql.hh"
 #include "com/centreon/broker/namespace.hh"
-//#include "com/centreon/broker/storage/rebuilder.hh"
+#include "com/centreon/broker/storage/rebuilder.hh"
 
 CCB_BEGIN()
 
@@ -75,13 +76,15 @@ class stream : public io::stream {
   };
 
   int32_t _pending_events;
-  //rebuilder _rebuilder;
+  rebuilder _rebuilder;
   std::string _status;
   mutable std::mutex _statusm;
 
   void _update_status(std::string const& status);
+
  public:
-  stream(uint32_t rrd_len,
+  stream(database_config const& dbcfg,
+         uint32_t rrd_len,
          uint32_t interval_length,
          uint32_t rebuild_check_interval,
          bool store_in_db = true);

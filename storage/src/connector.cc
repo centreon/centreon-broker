@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/storage/connector.hh"
+
 #include "com/centreon/broker/storage/stream.hh"
 
 using namespace com::centreon::broker;
@@ -34,22 +35,6 @@ using namespace com::centreon::broker::storage;
 connector::connector() : io::endpoint(false) {}
 
 /**
- *  Comparaison operator for test purpose.
- *
- *  @param[in] other  Object to compare
- *
- *  @return This object.
- */
-bool connector::operator==(const connector& other) {
-  if (this != &other) {
-    return _rrd_len == other._rrd_len &&
-           _rebuild_check_interval == other._rebuild_check_interval &&
-           _store_in_data_bin == other._store_in_data_bin;
-  }
-  return true;
-}
-
-/**
  *  Set connection parameters.
  *
  *  @param[in] rrd_len                 RRD storage length.
@@ -59,10 +44,12 @@ bool connector::operator==(const connector& other) {
  *  @param[in] store_in_data_bin       True to store performance data in
  *                                     the data_bin table.
  */
-void connector::connect_to(uint32_t rrd_len,
+void connector::connect_to(database_config const& dbcfg,
+                           uint32_t rrd_len,
                            uint32_t interval_length,
                            uint32_t rebuild_check_interval,
                            bool store_in_data_bin) {
+  _dbcfg = dbcfg;
   _rrd_len = rrd_len;
   _interval_length = interval_length;
   _rebuild_check_interval = rebuild_check_interval;
@@ -79,8 +66,6 @@ void connector::connect_to(uint32_t rrd_len,
  */
 std::shared_ptr<io::stream> connector::open() {
   return std::shared_ptr<io::stream>(
-      std::make_shared<stream>(_rrd_len,
-                               _interval_length,
-                               _rebuild_check_interval,
-                               _store_in_data_bin));
+      std::make_shared<stream>(_dbcfg, _rrd_len, _interval_length,
+                               _rebuild_check_interval, _store_in_data_bin));
 }

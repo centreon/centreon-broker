@@ -27,6 +27,8 @@
 using namespace com::centreon::broker;
 
 TEST(StorageFactory, Factory) {
+  database_config dbcfg("MySQL", "127.0.0.1", 3306, "root", "root",
+                        "centreon_storage", 5, true, 5);
   std::shared_ptr<persistent_cache> cache;
   config::endpoint cfg;
   bool is_acceptor;
@@ -40,12 +42,10 @@ TEST(StorageFactory, Factory) {
   cfg.params["db_name"] = "centreon";
   ASSERT_FALSE(factory.has_endpoint(cfg));
   cfg.type = "storage";
-  storage::connector *endp = static_cast<storage::connector *>(factory.new_endpoint(cfg, is_acceptor, cache));
+  storage::connector* endp = static_cast<storage::connector*>(factory.new_endpoint(cfg, is_acceptor, cache));
 
   storage::connector con;
-  con.connect_to(42, 60, 300, true);
-
-  ASSERT_TRUE(*endp == con);
+  con.connect_to(dbcfg, 42, 60, 300, true);
 
   ASSERT_TRUE(factory.has_endpoint(cfg));
   ASSERT_TRUE(cfg.read_timeout == 1);
@@ -55,6 +55,8 @@ TEST(StorageFactory, Factory) {
 }
 
 TEST(StorageFactory, FactoryWithFullConf) {
+  database_config dbcfg("MySQL", "127.0.0.1", 3306, "root", "root",
+                        "centreon_storage", 5, true, 5);
   std::shared_ptr<persistent_cache> cache;
   config::endpoint cfg;
   bool is_acceptor;
@@ -74,9 +76,7 @@ TEST(StorageFactory, FactoryWithFullConf) {
   storage::connector *endp = static_cast<storage::connector *>(factory.new_endpoint(cfg, is_acceptor, cache));
 
   storage::connector con;
-  con.connect_to(42, 43, 44, false);
-
-  ASSERT_TRUE(*endp == con);
+  con.connect_to(dbcfg, 42, 43, 44, false);
 
   ASSERT_TRUE(factory.has_endpoint(cfg));
   ASSERT_TRUE(cfg.read_timeout == 1);
