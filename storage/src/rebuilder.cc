@@ -292,25 +292,42 @@ void rebuilder::_rebuild_metric(mysql& ms,
         << " AND ctime>=" << start << " ORDER BY ctime ASC";
     std::promise<database::mysql_result> promise;
     ms.run_query_and_get_result(oss.str(), &promise);
+    log_v2::sql()->debug("storage(rebuilder): rebuild of metric {}: SQL query: \"{}\"",
+        metric_id, oss.str());
 
     try {
       database::mysql_result res(promise.get_future().get());
       while (!_should_exit && ms.fetch_row(res)) {
-        std::shared_ptr<storage::metric> entry(new storage::metric);
-        entry->ctime = res.value_as_u32(0);
-        entry->interval = interval;
-        entry->is_for_rebuild = true;
-        entry->metric_id = metric_id;
-        entry->name = metric_name;
-        entry->rrd_len = length;
-        entry->value_type = metric_type;
-        entry->value = res.value_as_f64(1);
-        entry->host_id = host_id;
-        entry->service_id = service_id;
+        std::shared_ptr<storage::metric> entry =
+            std::make_shared<storage::metric>(host_id,
+                                              service_id,
+                                              metric_name,
+                                              res.value_as_u32(0),
+                                              interval,
+                                              true,
+                                              metric_id,
+                                              length,
+                                              res.value_as_f64(1),
+                                              metric_type);
         if (entry->value > FLT_MAX * 0.999)
           entry->value = INFINITY;
         else if (entry->value < -FLT_MAX * 0.999)
           entry->value = -INFINITY;
+        log_v2::perfdata()->trace(
+            "storage(rebuilder): Sending metric with host_id {}, service_id "
+            "{}, metric_name {}, ctime {}, interval {}, is_for_rebuild {}, "
+            "metric_id {}, rrd_len {}, value {}, value_type{}",
+            host_id,
+            service_id,
+            metric_name,
+            res.value_as_u32(0),
+            interval,
+            true,
+            metric_id,
+            length,
+            res.value_as_f64(1),
+            metric_type);
+
         multiplexing::publisher().write(entry);
       }
     } catch (std::exception const& e) {

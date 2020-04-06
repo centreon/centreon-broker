@@ -208,12 +208,44 @@ int output::write(std::shared_ptr<io::data> const& d) {
                 metric_path, e->rrd_len, e->ctime - 1, interval, e->value_type);
           }
           std::ostringstream oss;
-          if (e->value_type == storage::perfdata::counter)
-            oss << static_cast<unsigned long long>(e->value);
-          else if (e->value_type == storage::perfdata::derive)
-            oss << static_cast<long long>(e->value);
-          else
-            oss << std::fixed << e->value;
+          switch (e->value_type) {
+            case storage::perfdata::gauge:
+              oss << std::fixed << e->value;
+              log_v2::perfdata()->trace(
+                  "RRD: update metric {} of type GAUGE with {}",
+                  e->metric_id,
+                  oss.str());
+              break;
+            case storage::perfdata::counter:
+              oss << static_cast<uint64_t>(e->value);
+              log_v2::perfdata()->trace(
+                  "RRD: update metric {} of type COUNTER with {}",
+                  e->metric_id,
+                  oss.str());
+              break;
+            case storage::perfdata::derive:
+              oss << static_cast<int64_t>(e->value);
+              log_v2::perfdata()->trace(
+                  "RRD: update metric {} of type DERIVE with {}",
+                  e->metric_id,
+                  oss.str());
+              break;
+            case storage::perfdata::absolute:
+              oss << static_cast<uint64_t>(e->value);
+              log_v2::perfdata()->trace(
+                  "RRD: update metric {} of type ABSOLUTE with {}",
+                  e->metric_id,
+                  oss.str());
+              break;
+            default:
+              oss << std::fixed << e->value;
+              log_v2::perfdata()->trace(
+                  "RRD: update metric {} of type {} with {}",
+                  e->metric_id,
+                  e->value_type,
+                  oss.str());
+              break;
+          }
           _backend->update(e->ctime, oss.str());
         } else
           // Cache value.
@@ -251,14 +283,16 @@ int output::write(std::shared_ptr<io::data> const& d) {
             assert(e->rrd_len);
             _backend->open(status_path, e->rrd_len, e->ctime - 1, interval);
           }
-          std::ostringstream oss;
+          std::string value;
           if (e->state == 0)
-            oss << 100;
+            value = "100";
           else if (e->state == 1)
-            oss << 75;
+            value = "75";
           else if (e->state == 2)
-            oss << 0;
-          _backend->update(e->ctime, oss.str());
+            value = "0";
+          else
+            value = "";
+          _backend->update(e->ctime, value);
         } else
           // Cache value.
           it->second.push_back(d);
