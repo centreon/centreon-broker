@@ -276,8 +276,7 @@ int32_t conflict_manager::_storage_process_service_status() {
             _metrics_insert.bind_value_as_f32(10, pd.max());
             _metrics_insert.bind_value_as_f32(11, pd.value());
 
-            uint32_t type = 0;  // FIXME DBR: can be one of the data_type
-            // proposed in perfdata.hh
+            uint32_t type = pd.value_type();
             char t[2];
             t[0] = '1' + type;
             t[1] = 0;
@@ -326,6 +325,8 @@ int32_t conflict_manager::_storage_process_service_status() {
           } else {
             /* We have the metric in the cache */
             metric_id = it_index_cache->second.metric_id;
+            pd.value_type(
+                static_cast<perfdata::data_type>(it_index_cache->second.type));
 
             log_v2::perfdata()->debug(
                 "conflict_manager: metric {} concerning index {}, perfdata "
@@ -394,8 +395,13 @@ int32_t conflict_manager::_storage_process_service_status() {
                     false, metric_id, rrd_len, pd.value(), pd.value_type())};
             log_v2::perfdata()->debug(
                 "conflict_manager: generating perfdata event for metric {} "
-                "(name '{}', ctime {}, value {}, rrd_len {})",
-                perf->metric_id, perf->name, perf->ctime, perf->value, rrd_len);
+                "(name '{}', ctime {}, value {}, rrd_len {}, data_type {})",
+                perf->metric_id,
+                perf->name,
+                perf->ctime,
+                perf->value,
+                rrd_len,
+                perf->value_type);
             multiplexing::publisher().write(perf);
           }
         }

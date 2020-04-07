@@ -28,6 +28,7 @@
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/rrd/exceptions/update.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 
@@ -88,8 +89,8 @@ void lib::open(std::string const& filename) {
 
   // Check that the file exists.
   if (access(filename.c_str(), F_OK))
-    throw(exceptions::open()
-          << "RRD: file '" << filename << "' does not exist");
+    throw exceptions::open()
+          << "RRD: file '" << filename << "' does not exist";
 
   // Remember information for further operations.
   _filename = filename;
@@ -139,23 +140,15 @@ void lib::remove(std::string const& filename) {
  */
 void lib::update(time_t t, std::string const& value) {
   // Build argument string.
-  std::string arg;
-  {
-    std::istringstream iss{value};
-    std::ostringstream oss;
-    float f;
-
-    iss >> std::noskipws >> f;
-
-    if (iss.eof() && !iss.fail())
-      oss << t << ":" << value;
-    else {
-      logging::error(logging::low) << "RRD: ignored update non-float value '"
-                                   << value << "' in file '" << _filename;
-      return;
-    }
-    arg = oss.str();
+  if (value == "") {
+    logging::error(logging::low) << "RRD: ignored update non-float value '"
+                                 << value << "' in file '" << _filename;
+    return;
   }
+
+  std::ostringstream oss;
+  oss << t << ':' << value;
+  std::string arg(oss.str());
 
   // Set argument table.
   char const* argv[2];
@@ -163,8 +156,7 @@ void lib::update(time_t t, std::string const& value) {
   argv[1] = nullptr;
 
   // Debug message.
-  logging::debug(logging::high)
-      << "RRD: updating file '" << _filename << "' (" << argv[0] << ")";
+  log_v2::perfdata()->debug("RRD: updating file '{}' ({})", _filename, argv[0]);
 
   // Update RRD file.
   rrd_clear_error();
@@ -172,8 +164,8 @@ void lib::update(time_t t, std::string const& value) {
                    argv)) {
     char const* msg(rrd_get_error());
     if (!strstr(msg, "illegal attempt to update using time"))
-      throw(exceptions::update() << "RRD: failed to update value in file '"
-                                 << _filename << "': " << msg);
+      throw exceptions::update() << "RRD: failed to update value in file '"
+                                 << _filename << "': " << msg;
     else
       logging::error(logging::low)
           << "RRD: ignored update error in file '" << _filename << "': " << msg;

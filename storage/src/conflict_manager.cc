@@ -304,9 +304,9 @@ void conflict_manager::_load_caches() {
     std::promise<mysql_result> promise;
     _mysql.run_query_and_get_result(
         "SELECT "
-        "metric_id,index_id,metric_name,unit_name,warn,warn_low,warn_threshold_"
-        "mode,crit,crit_low,crit_threshold_mode,min,max,current_value,data_"
-        "source_type FROM metrics",
+        "metric_id,index_id,metric_name,unit_name,warn,warn_low,"
+        "warn_threshold_mode,crit,crit_low,crit_threshold_mode,min,max,"
+        "current_value,data_source_type FROM metrics",
         &promise);
 
     try {
