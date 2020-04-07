@@ -299,6 +299,7 @@ void conflict_manager::_load_caches() {
 
   /* metrics => _metric_cache */
   {
+    std::lock_guard<std::mutex> lock(_metric_cache_m);
     _metric_cache.clear();
 
     std::promise<mysql_result> promise;
@@ -333,6 +334,18 @@ void conflict_manager::_load_caches() {
           << "conflict_manager: could not get the list of metrics: "
           << e.what();
     }
+  }
+}
+
+void conflict_manager::update_metric_info_cache(uint32_t index_id,
+                                                uint32_t metric_id,
+                                                std::string const& metric_name,
+                                                short metric_type) {
+  auto it = _metric_cache.find({index_id, metric_name});
+  if (it != _metric_cache.end()) {
+    std::lock_guard<std::mutex> lock(_metric_cache_m);
+    it->second.type = metric_type;
+    it->second.metric_id = metric_id;
   }
 }
 

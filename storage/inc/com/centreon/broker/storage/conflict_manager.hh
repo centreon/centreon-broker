@@ -158,6 +158,8 @@ class conflict_manager {
   std::unordered_map<std::pair<uint64_t, uint64_t>, index_info> _index_cache;
   std::unordered_map<std::pair<uint32_t, std::string>, metric_info>
       _metric_cache;
+  std::mutex _metric_cache_m;
+
   std::unordered_set<uint32_t> _hostgroup_cache;
   std::unordered_set<uint32_t> _servicegroup_cache;
   std::deque<metric_value> _perfdata_queue;
@@ -274,6 +276,10 @@ class conflict_manager {
 
   void send_event(stream_type c, std::shared_ptr<io::data> const& e);
   int32_t get_acks(stream_type c);
+  void update_metric_info_cache(uint32_t index_id,
+                                uint32_t metric_id,
+                                std::string const& metric_name,
+                                short metric_type);
 };
 }  // namespace storage
 CCB_END()

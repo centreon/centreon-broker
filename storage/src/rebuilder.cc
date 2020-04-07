@@ -32,6 +32,7 @@
 #include "com/centreon/broker/storage/metric.hh"
 #include "com/centreon/broker/storage/rebuild.hh"
 #include "com/centreon/broker/storage/status.hh"
+#include "com/centreon/broker/storage/conflict_manager.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::storage;
@@ -169,7 +170,7 @@ void rebuilder::_run() {
                 metric_info info;
                 info.metric_id = res.value_as_u32(0);
                 info.metric_name = res.value_as_str(1);
-                info.metric_type = res.value_as_i32(2);
+                info.metric_type = res.value_as_str(2)[0] - '0';
                 metrics_to_rebuild.push_back(info);
               }
             } catch (std::exception const& e) {
@@ -181,11 +182,15 @@ void rebuilder::_run() {
 
           // Browse metrics to rebuild.
           while (!_should_exit && !metrics_to_rebuild.empty()) {
-            metric_info info(metrics_to_rebuild.front());
-            metrics_to_rebuild.pop_front();
+            metric_info& info(metrics_to_rebuild.front());
             _rebuild_metric(*ms, info.metric_id, host_id, service_id,
                             info.metric_name, info.metric_type, check_interval,
                             rrd_len);
+            // We need to update the conflict_manager for metrics that could
+            // change of type.
+            conflict_manager::instance().update_metric_info_cache(
+                index_id, info.metric_id, info.metric_name, info.metric_type);
+            metrics_to_rebuild.pop_front();
           }
 
           // Rebuild status.
