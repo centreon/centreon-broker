@@ -28,6 +28,7 @@
 #include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
+#include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
@@ -343,6 +344,8 @@ void conflict_manager::update_metric_info_cache(uint32_t index_id,
                                                 short metric_type) {
   auto it = _metric_cache.find({index_id, metric_name});
   if (it != _metric_cache.end()) {
+    log_v2::perfdata()->info("conflict_manager: updating metric '{}' of id {} at index {} to metric_type {}",
+                             metric_name, metric_id, index_id, perfdata::data_type_name[metric_type]);
     std::lock_guard<std::mutex> lock(_metric_cache_m);
     it->second.type = metric_type;
     it->second.metric_id = metric_id;

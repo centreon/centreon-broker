@@ -19,6 +19,7 @@
 #ifndef CCB_STORAGE_PERFDATA_HH
 #define CCB_STORAGE_PERFDATA_HH
 
+#include <array>
 #include <string>
 
 #include "com/centreon/broker/namespace.hh"
@@ -35,6 +36,7 @@ namespace storage {
 class perfdata {
  public:
   enum data_type { gauge = 0, counter, derive, absolute, automatic };
+  static const std::array<std::string, 5> data_type_name;
 
   perfdata();
   perfdata(const perfdata&) = default;
