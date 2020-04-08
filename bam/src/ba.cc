@@ -118,7 +118,6 @@ void ba::add_impact(std::shared_ptr<kpi> const& impact) {
       _last_kpi_update = std::max(_last_kpi_update.get_time_t(),
                                   last_state_change.get_time_t());
   }
-  return;
 }
 
 /**
@@ -410,7 +409,6 @@ void ba::remove_impact(std::shared_ptr<kpi> const& impact) {
     _unapply_impact(it->first, it->second);
     _impacts.erase(it);
   }
-  return;
 }
 
 /**
@@ -420,7 +418,6 @@ void ba::remove_impact(std::shared_ptr<kpi> const& impact) {
  */
 void ba::set_id(uint32_t id) {
   _id = id;
-  return;
 }
 
 /**
@@ -448,7 +445,6 @@ void ba::set_host_id(uint32_t host_id) {
  */
 void ba::set_level_critical(double level) {
   _level_critical = level;
-  return;
 }
 
 /**
@@ -458,7 +454,6 @@ void ba::set_level_critical(double level) {
  */
 void ba::set_level_warning(double level) {
   _level_warning = level;
-  return;
 }
 
 /**
@@ -484,7 +479,6 @@ void ba::set_initial_event(ba_event const& event) {
  */
 void ba::set_name(std::string const& name) {
   _name = name;
-  return;
 }
 
 /**
@@ -496,7 +490,6 @@ void ba::set_name(std::string const& name) {
  */
 void ba::set_valid(bool valid) {
   _valid = valid;
-  return;
 }
 
 /**
@@ -620,7 +613,6 @@ void ba::visit(io::stream* visitor) {
       visitor->write(status);
     }
   }
-  return;
 }
 
 /**
@@ -751,7 +743,6 @@ void ba::_apply_impact(kpi* kpi_ptr __attribute__((unused)),
     if (impact.hard_impact.get_state() == ba::state::state_critical)
       _num_hard_critical_childs++;
   }
-  return;
 }
 
 /**
@@ -771,7 +762,6 @@ void ba::_open_new_event(io::stream* visitor, short service_hard_state) {
     std::shared_ptr<io::data> be(new ba_event(*_event));
     visitor->write(be);
   }
-  return;
 }
 
 /**
@@ -794,7 +784,6 @@ void ba::_recompute() {
        it != end; ++it)
     _apply_impact(it->first, it->second);
   _recompute_count = 0;
-  return;
 }
 
 /**
@@ -837,7 +826,6 @@ void ba::_unapply_impact(kpi* kpi_ptr, ba::impact_info& impact) {
         _apply_impact(it->first, it->second);
   }
 
-  return;
 }
 
 /**
