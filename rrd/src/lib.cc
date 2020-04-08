@@ -17,18 +17,21 @@
 */
 
 #include "com/centreon/broker/rrd/lib.hh"
+
 #include <fcntl.h>
 #include <rrd.h>
 #include <unistd.h>
+
 #include <cctype>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
 #include <sstream>
+
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/exceptions/open.hh"
-#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/rrd/exceptions/update.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
 
@@ -89,8 +92,7 @@ void lib::open(std::string const& filename) {
 
   // Check that the file exists.
   if (access(filename.c_str(), F_OK))
-    throw exceptions::open()
-          << "RRD: file '" << filename << "' does not exist";
+    throw exceptions::open() << "RRD: file '" << filename << "' does not exist";
 
   // Remember information for further operations.
   _filename = filename;
@@ -164,8 +166,8 @@ void lib::update(time_t t, std::string const& value) {
                    argv)) {
     char const* msg(rrd_get_error());
     if (!strstr(msg, "illegal attempt to update using time"))
-      throw exceptions::update() << "RRD: failed to update value in file '"
-                                 << _filename << "': " << msg;
+      logging::error(logging::high) << "RRD: failed to update value in file '"
+                                    << _filename << "': " << msg;
     else
       logging::error(logging::low)
           << "RRD: ignored update error in file '" << _filename << "': " << msg;

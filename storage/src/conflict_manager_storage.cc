@@ -278,7 +278,7 @@ int32_t conflict_manager::_storage_process_service_status() {
 
             uint32_t type = pd.value_type();
             char t[2];
-            t[0] = '1' + type;
+            t[0] = '0' + type;
             t[1] = 0;
             _metrics_insert.bind_value_as_str(12, t);
 
@@ -309,6 +309,7 @@ int32_t conflict_manager::_storage_process_service_status() {
                                .min = pd.min(),
                                .max = pd.max()};
 
+              std::lock_guard<std::mutex> lock(_metric_cache_m);
               _metric_cache[{index_id, pd.name()}] = info;
             } catch (std::exception const& e) {
               log_v2::perfdata()->error(
@@ -323,6 +324,7 @@ int32_t conflict_manager::_storage_process_service_status() {
                   << "' of index " << index_id << " failed: " << e.what();
             }
           } else {
+            std::lock_guard<std::mutex> lock(_metric_cache_m);
             /* We have the metric in the cache */
             metric_id = it_index_cache->second.metric_id;
             pd.value_type(
@@ -396,11 +398,7 @@ int32_t conflict_manager::_storage_process_service_status() {
             log_v2::perfdata()->debug(
                 "conflict_manager: generating perfdata event for metric {} "
                 "(name '{}', ctime {}, value {}, rrd_len {}, data_type {})",
-                perf->metric_id,
-                perf->name,
-                perf->ctime,
-                perf->value,
-                rrd_len,
+                perf->metric_id, perf->name, perf->ctime, perf->value, rrd_len,
                 perf->value_type);
             multiplexing::publisher().write(perf);
           }

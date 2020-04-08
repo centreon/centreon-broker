@@ -28,6 +28,7 @@
 #include "com/centreon/broker/mysql_manager.hh"
 #include "com/centreon/broker/neb/events.hh"
 #include "com/centreon/broker/storage/index_mapping.hh"
+#include "com/centreon/broker/storage/perfdata.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
@@ -299,6 +300,7 @@ void conflict_manager::_load_caches() {
 
   /* metrics => _metric_cache */
   {
+    std::lock_guard<std::mutex> lock(_metric_cache_m);
     _metric_cache.clear();
 
     std::promise<mysql_result> promise;
@@ -333,6 +335,23 @@ void conflict_manager::_load_caches() {
           << "conflict_manager: could not get the list of metrics: "
           << e.what();
     }
+  }
+}
+
+void conflict_manager::update_metric_info_cache(uint32_t index_id,
+                                                uint32_t metric_id,
+                                                std::string const& metric_name,
+                                                short metric_type) {
+  auto it = _metric_cache.find({index_id, metric_name});
+  if (it != _metric_cache.end()) {
+    log_v2::perfdata()->info(
+        "conflict_manager: updating metric '{}' of id {} at index {} to "
+        "metric_type {}",
+        metric_name, metric_id, index_id,
+        perfdata::data_type_name[metric_type]);
+    std::lock_guard<std::mutex> lock(_metric_cache_m);
+    it->second.type = metric_type;
+    it->second.metric_id = metric_id;
   }
 }
 
