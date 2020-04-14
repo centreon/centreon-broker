@@ -69,7 +69,7 @@ applier::kpi::~kpi() {}
 applier::kpi& applier::kpi::operator=(applier::kpi const& other) {
   if (this != &other)
     _internal_copy(other);
-  return (*this);
+  return *this;
 }
 
 /**
@@ -175,8 +175,8 @@ void applier::kpi::apply(bam::configuration::state::kpis const& my_kpis,
   // OBJECT RESOLUTION
   //
   for (std::map<uint32_t, applied>::const_iterator kpi_it(_applied.begin()),
-       next_kpi_it(_applied.begin()), kpi_end(_applied.end());
-       kpi_it != kpi_end; kpi_it = next_kpi_it) {
+       next_kpi_it(_applied.begin());
+       kpi_it != _applied.end(); kpi_it = next_kpi_it) {
     ++next_kpi_it;
     configuration::kpi const& cfg(kpi_it->second.cfg);
     std::shared_ptr<bam::kpi> my_kpi(kpi_it->second.obj);
@@ -188,6 +188,7 @@ void applier::kpi::apply(bam::configuration::state::kpis const& my_kpis,
           << "BAM: could not resolve KPI " << cfg.get_id() << ": " << e.what();
 
       _invalidate_ba(cfg);
+      next_kpi_it = _applied.begin();
     }
   }
 }
@@ -236,8 +237,11 @@ void applier::kpi::_invalidate_ba(configuration::kpi const& kpi) {
 
   // Set BA as invalid.
   std::shared_ptr<bam::ba> my_ba(_bas->find_ba(kpi_ba_id));
-  if (my_ba)
+  if (my_ba) {
+    logging::error(logging::high)
+      << "BAM: BA '" << my_ba->get_name() << "' with id " << my_ba->get_id() << " is set as invalid";
     my_ba->set_valid(false);
+  }
 }
 
 /**
@@ -318,15 +322,15 @@ std::shared_ptr<bam::kpi> applier::kpi::_new_kpi(
     obj->set_impact(cfg.get_impact_critical());
     my_kpi = std::static_pointer_cast<bam::kpi>(obj);
   } else
-    throw(exceptions::config()
-          << "create KPI " << cfg.get_id()
+    throw exceptions::config()
+          << "created KPI " << cfg.get_id()
           << " is neither related to a service, nor a BA,"
-          << " nor a meta-service, nor a boolean expression");
+          << " nor a meta-service, nor a boolean expression";
 
   my_kpi->set_id(cfg.get_id());
   my_kpi->set_ba_id(cfg.get_ba_id());
 
-  return (my_kpi);
+  return my_kpi;
 }
 
 /**
@@ -396,7 +400,7 @@ void applier::kpi::_resolve_kpi(configuration::kpi const& cfg,
  *  @param[in] kpi_id  KPI ID.
  */
 std::map<uint32_t, applier::kpi::applied>::iterator applier::kpi::_remove_kpi(
-    std::map<uint32_t, applied>::iterator kpi_it) {
+    std::map<uint32_t, applied>::iterator& kpi_it) {
   if (kpi_it->second.cfg.is_service())
     _book->unlisten(kpi_it->second.cfg.get_host_id(),
                     kpi_it->second.cfg.get_service_id(),

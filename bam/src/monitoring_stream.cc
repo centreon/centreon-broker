@@ -326,31 +326,17 @@ int monitoring_stream::write(std::shared_ptr<io::data> const& data) {
 void monitoring_stream::_prepare() {
   // BA status.
   {
-    std::ostringstream query;
-    query << "UPDATE mod_bam"
-             "  SET current_level=?,"
-             "      acknowledged=?,"
-             "      downtime=?,"
-             "      last_state_change=?,"
-             "      in_downtime=?,"
-             "      current_status=?"
-             "  WHERE ba_id=?";
-    _ba_update = _mysql.prepare_query(query.str());
+std::string query("UPDATE mod_bam SET current_level=?,acknowledged=?,downtime=?,"
+             "last_state_change=?,in_downtime=?,current_status=? WHERE ba_id=?");
+    _ba_update = _mysql.prepare_query(query);
   }
 
   // KPI status.
   {
-    std::ostringstream query;
-    query << "UPDATE mod_bam_kpi"
-             "  SET acknowledged=?,"
-             "      current_status=?,"
-             "      downtime=?, last_level=?,"
-             "      state_type=?,"
-             "      last_state_change=?,"
-             "      last_impact=?, valid=?,"
-             "      in_downtime=?"
-             "  WHERE kpi_id=?";
-    _kpi_update = _mysql.prepare_query(query.str());
+    std::string query("UPDATE mod_bam_kpi SET acknowledged=?,current_status=?,"
+             "downtime=?, last_level=?,state_type=?,last_state_change=?,"
+             "last_impact=?, valid=?,in_downtime=? WHERE kpi_id=?");
+    _kpi_update = _mysql.prepare_query(query);
   }
 }
 
@@ -361,12 +347,9 @@ void monitoring_stream::_rebuild() {
   // Get the list of the BAs that should be rebuild.
   std::vector<uint32_t> bas_to_rebuild;
   {
-    std::ostringstream query;
-    query << "SELECT ba_id"
-             "  FROM mod_bam"
-             "  WHERE must_be_rebuild='1'";
+    std::string query("SELECT ba_id FROM mod_bam WHERE must_be_rebuild='1'");
     std::promise<mysql_result> promise;
-    _mysql.run_query_and_get_result(query.str(), &promise);
+    _mysql.run_query_and_get_result(query, &promise);
     try {
       mysql_result res(promise.get_future().get());
       while (_mysql.fetch_row(res))

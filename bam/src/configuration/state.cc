@@ -62,7 +62,7 @@ state& state::operator=(state const& other) {
     _meta_svc_mapping = other._meta_svc_mapping;
     _meta_services = other._meta_services;
   }
-  return (*this);
+  return *this;
 }
 
 /**
@@ -73,7 +73,6 @@ void state::clear() {
   _kpis.clear();
   _bool_expressions.clear();
   _meta_services.clear();
-  return;
 }
 
 /**
@@ -82,7 +81,7 @@ void state::clear() {
  *  @return  A const list of all the business activities.
  */
 state::bas const& state::get_bas() const {
-  return (_bas);
+  return _bas;
 }
 
 /**
@@ -91,7 +90,7 @@ state::bas const& state::get_bas() const {
  *  @return  A const list of kpis.
  */
 state::kpis const& state::get_kpis() const {
-  return (_kpis);
+  return _kpis;
 }
 
 /**
@@ -100,7 +99,7 @@ state::kpis const& state::get_kpis() const {
  *  @return  A list of constant expressions.
  */
 state::bool_exps const& state::get_bool_exps() const {
-  return (_bool_expressions);
+  return _bool_expressions;
 }
 
 /**
@@ -109,7 +108,7 @@ state::bool_exps const& state::get_bool_exps() const {
  *  @return  A list of meta-services.
  */
 state::meta_services const& state::get_meta_services() const {
-  return (_meta_services);
+  return _meta_services;
 }
 
 /**
@@ -118,7 +117,7 @@ state::meta_services const& state::get_meta_services() const {
  *  @return Mapping.
  */
 bam::hst_svc_mapping const& state::get_hst_svc_mapping() const {
-  return (_hst_svc_mapping);
+  return _hst_svc_mapping;
 }
 
 /**
@@ -127,7 +126,7 @@ bam::hst_svc_mapping const& state::get_hst_svc_mapping() const {
  *  @return Mapping.
  */
 bam::ba_svc_mapping const& state::get_ba_svc_mapping() const {
-  return (_ba_svc_mapping);
+  return _ba_svc_mapping;
 }
 
 /**
@@ -136,7 +135,7 @@ bam::ba_svc_mapping const& state::get_ba_svc_mapping() const {
  *  @return Mapping.
  */
 bam::ba_svc_mapping const& state::get_meta_svc_mapping() const {
-  return (_meta_svc_mapping);
+  return _meta_svc_mapping;
 }
 
 /**
@@ -145,7 +144,7 @@ bam::ba_svc_mapping const& state::get_meta_svc_mapping() const {
  *  @return  The list of all the business activities.
  */
 state::bas& state::get_bas() {
-  return (_bas);
+  return _bas;
 }
 
 /**
@@ -154,7 +153,7 @@ state::bas& state::get_bas() {
  *  @return  A list of kpis.
  */
 state::kpis& state::get_kpis() {
-  return (_kpis);
+  return _kpis;
 }
 
 /**
@@ -163,7 +162,7 @@ state::kpis& state::get_kpis() {
  *  @return  A list of expressions.
  */
 state::bool_exps& state::get_bool_exps() {
-  return (_bool_expressions);
+  return _bool_expressions;
 }
 
 /**
@@ -172,7 +171,7 @@ state::bool_exps& state::get_bool_exps() {
  *  @return  A list of meta-services.
  */
 state::meta_services& state::get_meta_services() {
-  return (_meta_services);
+  return _meta_services;
 }
 
 /**
@@ -181,7 +180,7 @@ state::meta_services& state::get_meta_services() {
  *  @return Mapping.
  */
 bam::hst_svc_mapping& state::get_hst_svc_mapping() {
-  return (_hst_svc_mapping);
+  return _hst_svc_mapping;
 }
 
 /**
@@ -190,7 +189,7 @@ bam::hst_svc_mapping& state::get_hst_svc_mapping() {
  *  @return Mapping.
  */
 bam::ba_svc_mapping& state::get_ba_svc_mapping() {
-  return (_ba_svc_mapping);
+  return _ba_svc_mapping;
 }
 
 /**
@@ -199,5 +198,5 @@ bam::ba_svc_mapping& state::get_ba_svc_mapping() {
  *  @return Mapping.
  */
 bam::ba_svc_mapping& state::get_meta_svc_mapping() {
-  return (_meta_svc_mapping);
+  return _meta_svc_mapping;
 }

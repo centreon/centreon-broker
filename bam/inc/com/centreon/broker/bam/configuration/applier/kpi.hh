@@ -70,7 +70,7 @@ class kpi {
   std::shared_ptr<bam::kpi> _new_kpi(configuration::kpi const& cfg);
   void _invalidate_ba(configuration::kpi const& cfg);
   std::map<uint32_t, applied>::iterator _remove_kpi(
-      std::map<uint32_t, applied>::iterator kpi_it);
+      std::map<uint32_t, applied>::iterator& kpi_it);
   void _resolve_kpi(configuration::kpi const& cfg, std::shared_ptr<bam::kpi>);
 
   std::map<uint32_t, applied> _applied;
