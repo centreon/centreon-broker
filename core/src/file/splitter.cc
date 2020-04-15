@@ -342,8 +342,15 @@ void splitter::_open_read_file() {
   // Otherwise open next file.
   else {
     std::string file_path{get_file_path(_rid)};
-    std::shared_ptr<fs_file> new_file{std::make_shared<cfile>(file_path, fs_file::open_read_write_no_create)};
-    _rfile = new_file;
+    try {
+      std::shared_ptr<fs_file> new_file{std::make_shared<cfile>(
+          file_path, fs_file::open_read_write_no_create)};
+      _rfile = new_file;
+    } catch (exceptions::msg const& e) {
+      std::shared_ptr<fs_file> new_file{std::make_shared<cfile>(
+          file_path, fs_file::open_read_write_truncate)};
+      _rfile = new_file;
+    }
   }
   _roffset = 2 * sizeof(uint32_t);
   _rfile->seek(_roffset);
