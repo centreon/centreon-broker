@@ -1129,9 +1129,10 @@ int32_t conflict_manager::_process_host() {
       else
         _cache_host_instance.erase(h.host_id);
     } else
-      logging::error(logging::high)
-          << "SQL: host '" << h.host_name << "' of poller " << h.poller_id
-          << " has no ID nor alias";
+      log_v2::sql()->trace(
+          "SQL: host '{0}' of poller {1} has no ID nor alias, probably bam fake "
+          "host",
+          h.host_name, h.poller_id);
   }
   _pop_event(p);
   return 1;
@@ -1852,9 +1853,10 @@ int32_t conflict_manager::_process_service() {
       _mysql.run_statement(_service_insupdate, oss.str(), true, conn);
       _add_action(conn, actions::services);
     } else
-      logging::error(logging::high)
-          << "SQL: service '" << s.service_description
-          << "' has no host ID, service ID nor hostname";
+      log_v2::sql()->trace(
+          "SQL: service '{}' has no host ID, service ID nor hostname, probably "
+          "bam fake service",
+          s.service_description);
   } else
     logging::error(logging::medium)
         << "SQL: host with host_id = " << s.host_id
