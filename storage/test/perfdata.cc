@@ -574,9 +574,9 @@ TEST_F(StorageParserParsePerfdata, SimpleWithR) {
   expected.value(5);
   expected.unit("");
   expected.warning(NAN);
-  expected.warning_low(0.0);
+  expected.warning_low(NAN);
   expected.critical(NAN);
-  expected.critical_low(0.0);
+  expected.critical_low(NAN);
   expected.min(0.0);
   expected.max(NAN);
   ASSERT_TRUE(expected == *it);
