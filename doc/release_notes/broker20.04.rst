@@ -1,5 +1,18 @@
 =======================
-Centreon Broker 20.04
+Centreon Broker 20.04.1
+=======================
+
+************
+Enhancements
+************
+
+New Lua function in the streamconnector
+=======================================
+There is a new function broker.stat(filename) to get informations about the
+filename.
+
+=======================
+Centreon Broker 20.04.0
 =======================
 
 ************

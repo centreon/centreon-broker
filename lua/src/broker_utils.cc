@@ -17,11 +17,15 @@
 */
 
 #include "com/centreon/broker/lua/broker_utils.hh"
+
+#include <sys/stat.h>
+
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
 #include <json11.hpp>
 #include <sstream>
+
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/parser.hh"
 
@@ -259,8 +263,7 @@ static int l_broker_json_decode(lua_State* L) {
   if (err.empty()) {
     broker_json_decode(L, it);
     return 1;
-  }
-  else {
+  } else {
     lua_pushnil(L);
     lua_pushlstring(L, err.c_str(), err.size());
     return 2;
@@ -380,6 +383,41 @@ static int l_broker_url_encode(lua_State* L) {
 }
 
 /**
+ * @brief The Lua stat function that is just a binding to the C stat().
+ * The Lua function will return the asked object or nil followed by an
+ * error message.
+ *
+ * @param L The Lua interpreter
+ *
+ * @return 1 if the call is ok, 2 otherwise.
+ */
+static int l_broker_stat(lua_State* L) {
+  char const* filename = lua_tostring(L, -1);
+
+  struct stat s;
+  if (stat(filename, &s) == -1) {
+    lua_pushnil(L);
+    lua_pushstring(L, strerror(errno));
+    return 2;
+  } else {
+    lua_createtable(L, 0, 7);
+    lua_pushinteger(L, s.st_uid);
+    lua_setfield(L, -2, "uid");
+    lua_pushinteger(L, s.st_gid);
+    lua_setfield(L, -2, "gid");
+    lua_pushinteger(L, s.st_size);
+    lua_setfield(L, -2, "size");
+    lua_pushinteger(L, s.st_atime);
+    lua_setfield(L, -2, "atime");
+    lua_pushinteger(L, s.st_mtime);
+    lua_setfield(L, -2, "mtime");
+    lua_pushinteger(L, s.st_ctime);
+    lua_setfield(L, -2, "ctime");
+    return 1;
+  }
+}
+
+/**
  *  Load the Lua interpreter with the standard libraries
  *  and the broker lua sdk.
  *
@@ -390,6 +428,7 @@ void broker_utils::broker_utils_reg(lua_State* L) {
                               {"json_decode", l_broker_json_decode},
                               {"parse_perfdata", l_broker_parse_perfdata},
                               {"url_encode", l_broker_url_encode},
+                              {"stat", l_broker_stat},
                               {nullptr, nullptr}};
 
 #ifdef LUA51
