@@ -16,11 +16,14 @@
 ** For more information : contact@centreon.com
 */
 
+#include <fmt/format.h>
 #include <gtest/gtest.h>
+
 #include <cstdio>
 #include <fstream>
 #include <list>
 #include <memory>
+
 #include "../../core/test/test_server.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -1337,18 +1340,17 @@ TEST_F(LuaTest, UrlEncode) {
 TEST_F(LuaTest, JsonDecodeArray) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/json_decode_array.lua");
-  CreateScript(
-      filename,
-      "function init(conf)\n"
-      "  broker_log:set_parameters(3, '/tmp/log')\n"
-      "  local test_json = \"[ 2, 3, 5 ]\"\n"
-      "  local dec = broker.json_decode(test_json)\n"
-      "  broker_log:info(1, \"dec[1]=\" .. tostring(dec[1]))\n"
-      "  broker_log:info(1, \"dec[2]=\" .. tostring(dec[2]))\n"
-      "  broker_log:info(1, \"dec[3]=\" .. tostring(dec[3]))\n"
-      "end\n\n"
-      "function write(d)\n"
-      "end\n");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local test_json = \"[ 2, 3, 5 ]\"\n"
+               "  local dec = broker.json_decode(test_json)\n"
+               "  broker_log:info(1, \"dec[1]=\" .. tostring(dec[1]))\n"
+               "  broker_log:info(1, \"dec[2]=\" .. tostring(dec[2]))\n"
+               "  broker_log:info(1, \"dec[3]=\" .. tostring(dec[3]))\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
   std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string result(ReadFile("/tmp/log"));
 
@@ -1362,17 +1364,16 @@ TEST_F(LuaTest, JsonDecodeArray) {
 TEST_F(LuaTest, JsonDecodeObject) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/json_decode_object.lua");
-  CreateScript(
-      filename,
-      "function init(conf)\n"
-      "  broker_log:set_parameters(3, '/tmp/log')\n"
-      "  local test_json = '{ \"foo\": 12, \"bar\": \"test\" }'\n"
-      "  local dec = broker.json_decode(test_json)\n"
-      "  broker_log:info(1, \"dec.foo=\" .. tostring(dec.foo))\n"
-      "  broker_log:info(1, \"dec.bar=\" .. tostring(dec.bar))\n"
-      "end\n\n"
-      "function write(d)\n"
-      "end\n");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local test_json = '{ \"foo\": 12, \"bar\": \"test\" }'\n"
+               "  local dec = broker.json_decode(test_json)\n"
+               "  broker_log:info(1, \"dec.foo=\" .. tostring(dec.foo))\n"
+               "  broker_log:info(1, \"dec.bar=\" .. tostring(dec.bar))\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
   std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string result(ReadFile("/tmp/log"));
 
@@ -1385,60 +1386,63 @@ TEST_F(LuaTest, JsonDecodeObject) {
 TEST_F(LuaTest, JsonDecodeFull) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/json_decode_full.lua");
-  CreateScript(
-      filename,
-      "function init(conf)\n"
-      "  broker_log:set_parameters(3, '/tmp/log')\n"
-      "  local test_json = [[{\n"
-      "    \"quiz\": {\n"
-      "        \"sport\": {\n"
-      "            \"q1\": {\n"
-      "                \"question\": \"Which one is correct team name in NBA?\",\n"
-      "                \"options\": [\n"
-      "                    \"New York Bulls\",\n"
-      "                    \"Los Angeles Kings\",\n"
-      "                    \"Golden State Warriros\",\n"
-      "                    \"Huston Rocket\"\n"
-      "                ],\n"
-      "                \"answer\": \"Huston Rocket\"\n"
-      "            }\n"
-      "        },\n"
-      "        \"maths\": {\n"
-      "            \"q1\": {\n"
-      "                \"question\": \"5 + 7 = ?\",\n"
-      "                \"options\": [\n"
-      "                    \"10\",\n"
-      "                    \"11\",\n"
-      "                    \"12\",\n"
-      "                    \"13\"\n"
-      "                ],\n"
-      "                \"answer\": \"12\"\n"
-      "            },\n"
-      "            \"q2\": {\n"
-      "                \"question\": \"12 - 8 = ?\",\n"
-      "                \"options\": [\n"
-      "                    \"1\",\n"
-      "                    \"2\",\n"
-      "                    \"3\",\n"
-      "                    \"4\"\n"
-      "                ],\n"
-      "                \"answer\": \"4\"\n"
-      "            }\n"
-      "        }\n"
-      "    }\n"
-      "}]]\n"
-      "  local dec = broker.json_decode(test_json)\n"
-      "  broker_log:info(1, \"dec.quiz.maths.q1.question=\" .. tostring(dec.quiz.maths.q1.question))\n"
-      "  broker_log:info(1, \"dec.quiz.maths.q2.options[2]=\" .. tostring(dec.quiz.maths.q2.options[2]))\n"
-      "end\n\n"
-      "function write(d)\n"
-      "  return true\n"
-      "end");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local test_json = [[{\n"
+               "    \"quiz\": {\n"
+               "        \"sport\": {\n"
+               "            \"q1\": {\n"
+               "                \"question\": \"Which one is correct team name "
+               "in NBA?\",\n"
+               "                \"options\": [\n"
+               "                    \"New York Bulls\",\n"
+               "                    \"Los Angeles Kings\",\n"
+               "                    \"Golden State Warriros\",\n"
+               "                    \"Huston Rocket\"\n"
+               "                ],\n"
+               "                \"answer\": \"Huston Rocket\"\n"
+               "            }\n"
+               "        },\n"
+               "        \"maths\": {\n"
+               "            \"q1\": {\n"
+               "                \"question\": \"5 + 7 = ?\",\n"
+               "                \"options\": [\n"
+               "                    \"10\",\n"
+               "                    \"11\",\n"
+               "                    \"12\",\n"
+               "                    \"13\"\n"
+               "                ],\n"
+               "                \"answer\": \"12\"\n"
+               "            },\n"
+               "            \"q2\": {\n"
+               "                \"question\": \"12 - 8 = ?\",\n"
+               "                \"options\": [\n"
+               "                    \"1\",\n"
+               "                    \"2\",\n"
+               "                    \"3\",\n"
+               "                    \"4\"\n"
+               "                ],\n"
+               "                \"answer\": \"4\"\n"
+               "            }\n"
+               "        }\n"
+               "    }\n"
+               "}]]\n"
+               "  local dec = broker.json_decode(test_json)\n"
+               "  broker_log:info(1, \"dec.quiz.maths.q1.question=\" .. "
+               "tostring(dec.quiz.maths.q1.question))\n"
+               "  broker_log:info(1, \"dec.quiz.maths.q2.options[2]=\" .. "
+               "tostring(dec.quiz.maths.q2.options[2]))\n"
+               "end\n\n"
+               "function write(d)\n"
+               "  return true\n"
+               "end");
 
   std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string result(ReadFile("/tmp/log"));
 
-  ASSERT_NE(result.find("dec.quiz.maths.q1.question=5 + 7 = ?"), std::string::npos);
+  ASSERT_NE(result.find("dec.quiz.maths.q1.question=5 + 7 = ?"),
+            std::string::npos);
   ASSERT_NE(result.find("dec.quiz.maths.q2.options[2]=2"), std::string::npos);
   RemoveFile(filename);
   RemoveFile("/tmp/log");
@@ -1447,31 +1451,83 @@ TEST_F(LuaTest, JsonDecodeFull) {
 TEST_F(LuaTest, JsonDecodeError) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/json_decode_error.lua");
-  CreateScript(
-      filename,
-      "function init(conf)\n"
-      "  broker_log:set_parameters(3, '/tmp/log')\n"
-      "  local test_json = [[{\n"
-      "    \"quiz\": {\n"
-      "        \"sport\": {\n"
-      "            \"q1\": {\n"
-      "                \"question\": \"Which one is correct team name in NBA?\",\n"
-      "                \"options\": [\n"
-      "                    \"New York Bulls\",\n"
-      "}]]\n"
-      "  local dec, err = broker.json_decode(test_json)\n"
-      "  broker_log:info(1, \"dec=\" .. tostring(dec))\n"
-      "  broker_log:info(1, \"err=\" .. tostring(err))\n"
-      "end\n\n"
-      "function write(d)\n"
-      "  return true\n"
-      "end");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local test_json = [[{\n"
+               "    \"quiz\": {\n"
+               "        \"sport\": {\n"
+               "            \"q1\": {\n"
+               "                \"question\": \"Which one is correct team name "
+               "in NBA?\",\n"
+               "                \"options\": [\n"
+               "                    \"New York Bulls\",\n"
+               "}]]\n"
+               "  local dec, err = broker.json_decode(test_json)\n"
+               "  broker_log:info(1, \"dec=\" .. tostring(dec))\n"
+               "  broker_log:info(1, \"err=\" .. tostring(err))\n"
+               "end\n\n"
+               "function write(d)\n"
+               "  return true\n"
+               "end");
 
   std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string result(ReadFile("/tmp/log"));
 
   ASSERT_NE(result.find("dec=nil"), std::string::npos);
-  ASSERT_NE(result.find("err=expected value, got '}' (125)"), std::string::npos);
+  ASSERT_NE(result.find("err=expected value, got '}' (125)"),
+            std::string::npos);
   RemoveFile(filename);
-  //RemoveFile("/tmp/log");
+  // RemoveFile("/tmp/log");
+}
+
+// When the user needs information on a file, he can use the stat function
+// that gives several informations about it. On success, the function returns
+// an array containing desired information, otherwise, this table is nil but
+// a second value is returned: a string with the error message.
+TEST_F(LuaTest, Stat) {
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/stat.lua");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local info = broker.stat('/tmp/stat.lua')\n"
+               "  local json = broker.json_encode(info)\n"
+               "  broker_log:info(1, json)\n"
+               "end\n"
+               "function write(d)\n"
+               "  return true\n"
+               "end");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string result(ReadFile("/tmp/log"));
+  uid_t uid = geteuid();
+  std::string str(fmt::format("\"uid\":{}", uid));
+  ASSERT_NE(result.find(str), std::string::npos);
+  str = fmt::format("\"uid\":{}", uid);
+  ASSERT_NE(result.find(str), std::string::npos);
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+TEST_F(LuaTest, StatError) {
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/stat.lua");
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local info,err = broker.stat('/tmp/statthatdoesnotexist.lua')\n"
+               "  broker_log:info(1, \"info=\"..tostring(info))\n"
+               "  broker_log:info(1, \"err=\"..tostring(err))\n"
+               "end\n"
+               "function write(d)\n"
+               "  return true\n"
+               "end");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string result(ReadFile("/tmp/log"));
+  ASSERT_NE(result.find("info=nil"), std::string::npos);
+  ASSERT_NE(result.find("err=No such file or directory"), std::string::npos);
+
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
 }
