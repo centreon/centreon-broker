@@ -554,3 +554,30 @@ TEST_F(StorageParserParsePerfdata, Complex2) {
   ASSERT_FALSE(expected != *it);
   ++it;
 }
+
+// Given a storage::parser object
+// When parse_perfdata() is called with a valid perfdata string
+// Then perfdata are returned in a list
+TEST_F(StorageParserParsePerfdata, SimpleWithR) {
+  // Parse perfdata.
+  std::list<storage::perfdata> lst;
+  storage::parser p;
+  //ASSERT_NO_THROW(p.parse_perfdata("'total'=5;;;0;\r", lst));
+  ASSERT_NO_THROW(p.parse_perfdata("'total'=5;;;0;\r", lst));
+
+  // Assertions.
+  ASSERT_EQ(lst.size(), 1u);
+  std::list<storage::perfdata>::const_iterator it(lst.begin());
+  storage::perfdata expected;
+  expected.name("total");
+  expected.value_type(storage::perfdata::gauge);
+  expected.value(5);
+  expected.unit("");
+  expected.warning(NAN);
+  expected.warning_low(0.0);
+  expected.critical(NAN);
+  expected.critical_low(0.0);
+  expected.min(0.0);
+  expected.max(NAN);
+  ASSERT_TRUE(expected == *it);
+}

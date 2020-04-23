@@ -11,6 +11,14 @@ New Lua function in the streamconnector
 There is a new function broker.stat(filename) to get informations about the
 filename.
 
+*********
+Bug fixes
+*********
+
+Perfdata parsing
+================
+Special characters like '\\r' were not parsed correctly.
+
 =======================
 Centreon Broker 20.04.0
 =======================

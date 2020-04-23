@@ -268,7 +268,7 @@ void parser::parse_perfdata(const char* str, std::list<perfdata>& pd) {
     pd.emplace_back(std::move(p));
 
     // Skip whitespaces.
-    while (isblank(*tmp))
+    while (isspace(*tmp))
       ++tmp;
   }
 }
