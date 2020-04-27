@@ -2036,6 +2036,7 @@ int neb::callback_service_status(int callback_type, void* data) {
     }
     if (!s->get_long_plugin_output().empty())
       service_status->output.append(s->get_long_plugin_output());
+
     service_status->passive_checks_enabled = s->get_accept_passive_checks();
     service_status->percent_state_change = s->get_percent_state_change();
     if (!s->get_perf_data().empty())

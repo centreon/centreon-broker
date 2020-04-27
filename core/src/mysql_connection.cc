@@ -59,7 +59,8 @@ void mysql_connection::_query(mysql_task* t) {
         << "could not execute query: " << ::mysql_error(_conn) << " ("
         << task->query << ")";
     if (task->fatal)
-      mysql_manager::instance().set_error(::mysql_error(_conn));
+      mysql_manager::instance().set_error(
+          fmt::format("{} ({})", ::mysql_error(_conn), task->query));
   } else
     _need_commit = true;
 }
@@ -182,7 +183,10 @@ void mysql_connection::_statement(mysql_task* t) {
   if (bb && mysql_stmt_bind_param(stmt, bb)) {
     log_v2::sql()->error("mysql_connection: statement binding failed: {}", mysql_stmt_error(stmt));
     if (task->fatal)
-      mysql_manager::instance().set_error(mysql_stmt_error(stmt));
+      mysql_manager::instance().set_error(
+          fmt::format("{} (while executing statement {})",
+                      mysql_stmt_error(stmt),
+                      task->statement_id));
     else {
       logging::error(logging::medium)
           << "mysql: Error while binding values in statement: "
@@ -203,7 +207,7 @@ void mysql_connection::_statement(mysql_task* t) {
             << mysql_stmt_error(stmt) << " (" << task->error_msg << ")";
         if (++attempts >= MAX_ATTEMPTS) {
           if (task->fatal)
-            mysql_manager::instance().set_error(mysql_stmt_error(stmt));
+            mysql_manager::instance().set_error(fmt::format("{} (while executing statement {})", mysql_stmt_error(stmt), task->statement_id));
           break;
         }
       } else {
