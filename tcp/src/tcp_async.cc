@@ -179,8 +179,6 @@ void tcp_async::_async_read_cb(asio::ip::tcp::socket& socket,
     if (bytes != 0) {
       log_v2::tcp()->trace(
           "async_buf::async_read_cb incoming packet size: {}", bytes);
-      logging::error(logging::low)
-          << "async_buf::async_read_cb incoming packet size: " << bytes;
       it->second._work_buffer.resize(bytes);
       it->second._buffer_queue.push(std::move(it->second._work_buffer));
       it->second._wait_socket_event.notify_all();
