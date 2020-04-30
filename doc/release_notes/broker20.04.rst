@@ -6,6 +6,10 @@ Centreon Broker 20.04.1
 Enhancements
 ************
 
+Perfdata parser
+===============
+The parser is less strict. It tries to keep good metrics among bad ones.
+
 New Lua function in the streamconnector
 =======================================
 There is a new function broker.stat(filename) to get informations about the
@@ -14,6 +18,12 @@ filename.
 *********
 Bug fixes
 *********
+
+Strict mode of the database
+===========================
+Too long strings to insert in database are cut so that cbd continues to work.
+This will be improved in a future Broker version. A warning is logged so that
+the user can change his configuration to avoid that.
 
 Perfdata parsing
 ================

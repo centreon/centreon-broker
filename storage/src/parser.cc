@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
@@ -153,7 +154,18 @@ void parser::parse_perfdata(const char* str, std::list<perfdata>& pd) {
       << "storage: parsing perfdata string '" << buf << "'";
 
   char const* tmp = buf;
+
+  auto skip = [](char const* tmp) -> char const* {
+    while (*tmp && !isspace(*tmp))
+      ++tmp;
+    while (isspace(*tmp))
+      ++tmp;
+    return tmp;
+  };
+
   while (*tmp) {
+    bool error = false;
+
     // Perfdata object.
     perfdata p;
 
@@ -202,22 +214,38 @@ void parser::parse_perfdata(const char* str, std::list<perfdata>& pd) {
       }
     }
 
-    p.name(std::move(std::string(s, end - s + 1)));
+    if (end - s + 1 > 0)
+      p.name(std::move(std::string(s, end - s + 1)));
+    else {
+      log_v2::perfdata()->error("metric name empty before '{}...'",
+                                std::string(s, 10));
+      error = true;
+    }
 
     // Check format.
     if (*tmp != '=') {
-      throw exceptions::perfdata()
-          << "storage: invalid perfdata "
-             "format: equal sign not present or misplaced";
+      log_v2::perfdata()->error(
+          "invalid perfdata format: equal sign not present or misplaced '{}'",
+          std::string(s, tmp + 10 - s));
+      error = true;
+    } else
+      ++tmp;
+
+    if (error) {
+      tmp = skip(tmp);
+      continue;
     }
-    ++tmp;
 
     // Extract value.
     p.value(extract_double(const_cast<char const**>(&tmp), false));
     if (std::isnan(p.value())) {
-      throw exceptions::perfdata()
-          << "storage: invalid perfdata "
-          << "format: no numeric value after equal sign";
+      log_v2::perfdata()->error(
+          "storage: invalid perfdata format: no numeric value after equal sign "
+          "'{}'",
+          std::string(s, tmp + 10 - s));
+      error = true;
+      tmp = skip(tmp);
+      continue;
     }
 
     // Extract unit.

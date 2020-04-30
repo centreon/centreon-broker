@@ -18,9 +18,13 @@
  */
 
 #include "com/centreon/broker/storage/exceptions/perfdata.hh"
+
+#include <fmt/format.h>
 #include <gtest/gtest.h>
+
 #include <cmath>
 #include <list>
+
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/storage/parser.hh"
 #include "com/centreon/broker/storage/perfdata.hh"
@@ -32,12 +36,10 @@ TEST(StoragePerfdataException, All) {
   try {
     throw storage::exceptions::perfdata() << "test exception";
   } catch (storage::exceptions::perfdata const& e) {
-
     try {
       e.rethrow();
-    }
-    catch (storage::exceptions::perfdata const& e) {
-      exceptions::msg *msg{e.clone()};
+    } catch (storage::exceptions::perfdata const& e) {
+      exceptions::msg* msg{e.clone()};
       if (std::string{msg->what()} == "test exception")
         success = true;
       delete msg;
@@ -214,12 +216,8 @@ TEST(StoragePerfdata, DefaultCtor) {
 
 class StorageParserParsePerfdata : public testing::Test {
  public:
-  void SetUp() override {
-    config::applier::init();
-  }
-  void TearDown() override {
-    config::applier::deinit();
-  };
+  void SetUp() override { config::applier::init(); }
+  void TearDown() override { config::applier::deinit(); };
 };
 
 // Given a storage::parser object
@@ -411,10 +409,11 @@ TEST_F(StorageParserParsePerfdata, Incorrect1) {
   storage::parser p;
 
   // Attempt to parse perfdata.
-  ASSERT_THROW({ p.parse_perfdata("metric1= 10 metric2=42", list); },
-               com::centreon::broker::storage::exceptions::perfdata);
+  p.parse_perfdata("metric1= 10 metric2=42", list);
+  ASSERT_EQ(list.size(), 1);
+  ASSERT_EQ(list.back().name(), "metric2");
+  ASSERT_EQ(list.back().value(), 42);
 }
-
 
 // Given a storage::parser object
 // When parse_perfdata() is called with a metric without value but with unit
@@ -425,8 +424,8 @@ TEST_F(StorageParserParsePerfdata, Incorrect2) {
   storage::parser p;
 
   // Then
-  ASSERT_THROW({ p.parse_perfdata("metric=kb/s", list); },
-               com::centreon::broker::storage::exceptions::perfdata);
+  p.parse_perfdata("metric=kb/s", list);
+  ASSERT_TRUE(list.empty());
 }
 
 TEST_F(StorageParserParsePerfdata, LabelWithSpaces) {
@@ -476,7 +475,8 @@ TEST_F(StorageParserParsePerfdata, Complex2) {
   std::list<storage::perfdata> list;
   storage::parser p;
   p.parse_perfdata(
-      "'  \n time'=2,45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; g[test]=8x;;;;"
+      "'  \n time'=2,45698s;;nan;;inf d[metric]=239765B/s;5;;-inf; "
+      "g[test]=8x;;;;"
       " infotraffic=18,6x;;;; a[foo]=1234,17;10;11: c[bar]=1234,147;~:10;20:30",
       list);
 
@@ -562,7 +562,7 @@ TEST_F(StorageParserParsePerfdata, SimpleWithR) {
   // Parse perfdata.
   std::list<storage::perfdata> lst;
   storage::parser p;
-  //ASSERT_NO_THROW(p.parse_perfdata("'total'=5;;;0;\r", lst));
+  // ASSERT_NO_THROW(p.parse_perfdata("'total'=5;;;0;\r", lst));
   ASSERT_NO_THROW(p.parse_perfdata("'total'=5;;;0;\r", lst));
 
   // Assertions.
@@ -580,4 +580,39 @@ TEST_F(StorageParserParsePerfdata, SimpleWithR) {
   expected.min(0.0);
   expected.max(NAN);
   ASSERT_TRUE(expected == *it);
+}
+
+// Given a storage::parser object
+// When parse_perfdata() is called with a valid perfdata string
+// Then perfdata are returned in a list
+TEST_F(StorageParserParsePerfdata, BadMetric) {
+  // Parse perfdata.
+  std::list<storage::perfdata> lst;
+  storage::parser p;
+  ASSERT_NO_THROW(p.parse_perfdata("user1=1 user2=2 =1 user3=3", lst));
+
+  // Assertions.
+  ASSERT_EQ(lst.size(), 3u);
+  int i = 1;
+  for (auto& p : lst) {
+    ASSERT_EQ(p.name(), fmt::format("user{}", i));
+    ASSERT_EQ(p.value(), static_cast<double>(i));
+    ++i;
+  }
+}
+
+TEST_F(StorageParserParsePerfdata, BadMetric1) {
+  // Parse perfdata.
+  std::list<storage::perfdata> lst;
+  storage::parser p;
+  ASSERT_NO_THROW(p.parse_perfdata("user1=1 user2=2 user4= user3=3", lst));
+
+  // Assertions.
+  ASSERT_EQ(lst.size(), 3u);
+  int i = 1;
+  for (auto& p : lst) {
+    ASSERT_EQ(p.name(), fmt::format("user{}", i));
+    ASSERT_EQ(p.value(), static_cast<double>(i));
+    ++i;
+  }
 }
