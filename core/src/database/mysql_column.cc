@@ -17,11 +17,13 @@
 */
 
 #include "com/centreon/broker/database/mysql_column.hh"
+
 #include <cassert>
 #include <cstring>
-#include "com/centreon/broker/log_v2.hh"
 #include <iostream>
+
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
@@ -150,7 +152,10 @@ void mysql_column::set_value(std::string const& str) {
   std::string tmp;
   if (size > 65534) {
     tmp = str.substr(0, 65534);
-    log_v2::sql()->warn("mysql_column: Text column too short to contain a string of {} characters starting with '{}...'", size, str.substr(0, 30));
+    log_v2::sql()->warn(
+        "mysql_column: Text column too short to contain a string of {} "
+        "characters starting with '{}...'",
+        size, str.substr(0, 30));
     size = tmp.size();
     content = tmp.c_str();
   }

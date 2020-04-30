@@ -19,9 +19,11 @@
 
 #include <arpa/inet.h>
 #include <gtest/gtest.h>
+
 #include <fstream>
 #include <list>
 #include <memory>
+
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -222,7 +224,8 @@ TEST_F(OutputTest, WriteReadService) {
 
   std::shared_ptr<io::data> e;
   stm.read(e, time(nullptr) + 1000);
-  std::shared_ptr<neb::service> new_svc = std::static_pointer_cast<neb::service>(e);
+  std::shared_ptr<neb::service> new_svc =
+      std::static_pointer_cast<neb::service>(e);
   ASSERT_EQ(svc->output, new_svc->output);
   ASSERT_EQ(svc->perf_data, new_svc->perf_data);
   l.unload();
