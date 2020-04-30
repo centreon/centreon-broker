@@ -17,12 +17,15 @@
 */
 
 #include "com/centreon/broker/neb/callbacks.hh"
+
 #include <unistd.h>
+
 #include <cstdlib>
 #include <ctime>
 #include <memory>
 #include <set>
 #include <string>
+
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/config/state.hh"
@@ -167,12 +170,11 @@ int neb::callback_acknowledgement(int callback_type, void* data) {
       ack->service_id = ack_data->service_id;
       if (!ack->host_id || !ack->service_id)
         throw exceptions::msg()
-              << "acknowledgement on service with host_id or service_id 0";
+            << "acknowledgement on service with host_id or service_id 0";
     } else {
       ack->host_id = ack_data->host_id;
       if (ack->host_id == 0)
-        throw exceptions::msg()
-              << "acknowledgement on host with id 0";
+        throw exceptions::msg() << "acknowledgement on host with id 0";
     }
     ack->poller_id = config::applier::state::instance().poller_id();
     ack->is_sticky = ack_data->is_sticky;
@@ -233,7 +235,7 @@ int neb::callback_comment(int callback_type, void* data) {
       comment->service_id = comment_data->service_id;
       if (!comment->host_id || !comment->service_id)
         throw exceptions::msg()
-              << "comment created from a service with host_id/service_id 0";
+            << "comment created from a service with host_id/service_id 0";
     } else {
       comment->host_id = comment_data->host_id;
       if (comment->host_id == 0)
@@ -1376,9 +1378,8 @@ int neb::callback_host_status(int callback_type, void* data) {
     gl_publisher.write(host_status);
 
     // Acknowledgement event.
-    std::map<std::pair<uint32_t, uint32_t>,
-             neb::acknowledgement>::iterator
-        it(gl_acknowledgements.find(std::make_pair(host_status->host_id, 0u)));
+    std::map<std::pair<uint32_t, uint32_t>, neb::acknowledgement>::iterator it(
+        gl_acknowledgements.find(std::make_pair(host_status->host_id, 0u)));
     if ((it != gl_acknowledgements.end()) && !host_status->acknowledged) {
       if (!(!host_status->current_state  // !(OK or (normal ack and NOK))
             || (!it->second.is_sticky &&
@@ -1512,8 +1513,7 @@ int neb::callback_process(int callback_type, void* data) {
 
       // Register callbacks.
       logging::debug(logging::high) << "callbacks: registering callbacks";
-      for (uint32_t i(0); i < sizeof(gl_callbacks) / sizeof(*gl_callbacks);
-           ++i)
+      for (uint32_t i(0); i < sizeof(gl_callbacks) / sizeof(*gl_callbacks); ++i)
         gl_registered_callbacks.push_back(std::shared_ptr<callback>(
             new neb::callback(gl_callbacks[i].macro, gl_mod_handle,
                               gl_callbacks[i].callback)));
@@ -1573,14 +1573,8 @@ int neb::callback_process(int callback_type, void* data) {
         com::centreon::engine::timed_event* evt =
             new com::centreon::engine::timed_event(
                 com::centreon::engine::timed_event::EVENT_USER_FUNCTION,
-                time(nullptr) + statistics_interval,
-                1,
-                statistics_interval,
-                nullptr,
-                1,
-                val.data,
-                nullptr,
-                0);
+                time(nullptr) + statistics_interval, 1, statistics_interval,
+                nullptr, 1, val.data, nullptr, 0);
         com::centreon::engine::events::loop::instance().schedule(evt, false);
       }
     } else if (NEBTYPE_PROCESS_EVENTLOOPEND == process_data->type) {
@@ -2036,6 +2030,7 @@ int neb::callback_service_status(int callback_type, void* data) {
     }
     if (!s->get_long_plugin_output().empty())
       service_status->output.append(s->get_long_plugin_output());
+
     service_status->passive_checks_enabled = s->get_accept_passive_checks();
     service_status->percent_state_change = s->get_percent_state_change();
     if (!s->get_perf_data().empty())
@@ -2066,10 +2061,9 @@ int neb::callback_service_status(int callback_type, void* data) {
     gl_publisher.write(service_status);
 
     // Acknowledgement event.
-    std::map<std::pair<uint32_t, uint32_t>,
-             neb::acknowledgement>::iterator
-        it(gl_acknowledgements.find(std::make_pair(
-            service_status->host_id, service_status->service_id)));
+    std::map<std::pair<uint32_t, uint32_t>, neb::acknowledgement>::iterator it(
+        gl_acknowledgements.find(std::make_pair(service_status->host_id,
+                                                service_status->service_id)));
     if ((it != gl_acknowledgements.end()) && !service_status->acknowledged) {
       if (!(!service_status->current_state  // !(OK or (normal ack and NOK))
             || (!it->second.is_sticky &&

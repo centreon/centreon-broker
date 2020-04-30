@@ -1,5 +1,5 @@
 /*
-** Copyright 2018 Centreon
+** Copyright 2018-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,10 +17,13 @@
 */
 
 #include "com/centreon/broker/database/mysql_column.hh"
+
 #include <cassert>
 #include <cstring>
 #include <iostream>
+
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/log_v2.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::database;
@@ -144,11 +147,23 @@ void mysql_column::set_length(int len) {
 
 void mysql_column::set_value(std::string const& str) {
   assert(_type == MYSQL_TYPE_STRING);
-  if (str.size() >= _str_size)
-    set_length(str.size());
-  _length[0] = str.size();
+  size_t size = str.size();
+  const char* content = str.c_str();
+  std::string tmp;
+  if (size > 65534) {
+    tmp = str.substr(0, 65534);
+    log_v2::sql()->warn(
+        "mysql_column: Text column too short to contain a string of {} "
+        "characters starting with '{}...'",
+        size, str.substr(0, 30));
+    size = tmp.size();
+    content = tmp.c_str();
+  }
+  if (size >= _str_size)
+    set_length(size);
+  _length[0] = size;
   char** vector = static_cast<char**>(_vector);
-  strncpy(vector[0], str.c_str(), _length[0] + 1);
+  strncpy(vector[0], content, _length[0] + 1);
 }
 
 bool mysql_column::is_null() const {

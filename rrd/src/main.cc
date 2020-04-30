@@ -17,6 +17,7 @@
 */
 
 #include <rrd.h>
+
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/rrd/factory.hh"

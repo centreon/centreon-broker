@@ -367,8 +367,7 @@ void conflict_manager::_callback() {
     try {
       while (!_should_exit()) {
         /* Time to send perfdatas to rrd ; no lock needed, it is this thread
-         * that
-         * fill this queue. */
+         * that fill this queue. */
         _insert_perfdatas();
 
         logging::info(logging::low)
@@ -541,6 +540,7 @@ void conflict_manager::send_event(conflict_manager::stream_type c,
   log_v2::sql()->trace(
       "conflict_manager: send_event category:{}, element:{} from {}",
       e->type() >> 16, e->type() & 0xffff, c == 0 ? "sql" : "storage");
+
   std::lock_guard<std::mutex> lk(_loop_m);
   _pending_queries++;
   _timeline[c].push_back(false);

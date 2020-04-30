@@ -17,9 +17,11 @@
 */
 
 #include "com/centreon/broker/database/mysql_stmt.hh"
+
 #include <cfloat>
 #include <cmath>
 #include <functional>
+
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/logging/logging.hh"
@@ -162,15 +164,9 @@ void mysql_stmt::operator<<(io::data const& d) {
   // Get event info.
   io::event_info const* info(io::events::instance().get_event_info(d.type()));
   if (info) {
-    // FIXME DBR...
-    bool db_v2(true);  //_db.schema_version() == database::v2);
     for (mapping::entry const* current_entry(info->get_mapping());
          !current_entry->is_null(); ++current_entry) {
-      char const* entry_name;
-      if (db_v2)
-        entry_name = current_entry->get_name_v2();
-      else
-        entry_name = current_entry->get_name();
+      char const* entry_name = current_entry->get_name_v2();
       if (entry_name && entry_name[0]) {
         std::string field(":");
         field.append(entry_name);
@@ -299,8 +295,7 @@ void mysql_stmt::bind_value_as_u32(int range, uint32_t value) {
   _bind->set_value_as_u32(range, value);
 }
 
-void mysql_stmt::bind_value_as_u32(std::string const& name,
-                                   uint32_t value) {
+void mysql_stmt::bind_value_as_u32(std::string const& name, uint32_t value) {
   mysql_bind_mapping::iterator it(_bind_mapping.find(name));
   if (it != _bind_mapping.end()) {
     bind_value_as_u32(it->second, value);

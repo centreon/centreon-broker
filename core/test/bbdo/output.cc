@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 - 2019 Centreon (https://www.centreon.com/)
+ * Copyright 2011 - 2020 Centreon (https://www.centreon.com/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,14 @@
  * For more information : contact@centreon.com
  *
  */
+
 #include <arpa/inet.h>
 #include <gtest/gtest.h>
+
 #include <fstream>
 #include <list>
 #include <memory>
+
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/config/applier/init.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
@@ -29,24 +32,22 @@
 #include "com/centreon/broker/misc/variant.hh"
 #include "com/centreon/broker/modules/loader.hh"
 #include "com/centreon/broker/neb/instance.hh"
+#include "com/centreon/broker/persistent_file.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::misc;
 
 class into_memory : public io::stream {
  public:
-  into_memory() : sent_data(false), _memory() {}
+  into_memory() : _memory() {}
   ~into_memory() override {}
 
   bool read(std::shared_ptr<io::data>& d,
             time_t deadline = (time_t)-1) override {
     (void)deadline;
-    if (sent_data)
-      throw exceptions::msg() << "shutdown";
     std::shared_ptr<io::raw> raw(new io::raw);
     raw->get_buffer() = _memory;
     d = raw;
-    sent_data = true;
     return true;
   }
 
@@ -58,7 +59,6 @@ class into_memory : public io::stream {
   std::vector<char> const& get_memory() const { return _memory; }
 
  private:
-  bool sent_data;
   std::vector<char> _memory;
 };
 
@@ -137,9 +137,6 @@ TEST_F(OutputTest, WriteService) {
   l.unload();
 }
 
-// When a script is correctly loaded and a neb event has to be sent
-// Then this event is translated into a Lua table and sent to the lua write()
-// function.
 TEST_F(OutputTest, WriteLongService) {
   modules::loader l;
   l.load_file("./neb/10-neb.so");
@@ -189,4 +186,88 @@ TEST_F(OutputTest, WriteLongService) {
   // Check checksum
   ASSERT_EQ(htons(*reinterpret_cast<uint16_t const*>(&mem1[0] + 16 + 65535)),
             10510u);
+}
+
+TEST_F(OutputTest, WriteReadService) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+
+  std::shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 12345;
+  svc->service_id = 18;
+
+  svc->output.reserve(100000);
+  char c = 'a';
+  for (auto it = svc->output.begin(); it != svc->output.end(); ++it) {
+    *it = c++;
+    if (c > 'z')
+      c = 'a';
+  }
+
+  svc->perf_data.reserve(100000);
+  c = '0';
+  for (auto it = svc->perf_data.begin(); it != svc->perf_data.end(); ++it) {
+    *it = c++;
+    if (c > '9')
+      c = '0';
+  }
+  svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
+
+  std::shared_ptr<io::stream> stream;
+  std::shared_ptr<into_memory> memory_stream(new into_memory());
+  bbdo::stream stm;
+  stm.set_substream(memory_stream);
+  stm.set_coarse(false);
+  stm.set_negotiate(false);
+  stm.negotiate(bbdo::stream::negotiate_first);
+  stm.write(svc);
+
+  std::shared_ptr<io::data> e;
+  stm.read(e, time(nullptr) + 1000);
+  std::shared_ptr<neb::service> new_svc =
+      std::static_pointer_cast<neb::service>(e);
+  ASSERT_EQ(svc->output, new_svc->output);
+  ASSERT_EQ(svc->perf_data, new_svc->perf_data);
+  l.unload();
+}
+
+TEST_F(OutputTest, ShortPersistentFile) {
+  modules::loader l;
+  l.load_file("./neb/10-neb.so");
+
+  std::shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 12345;
+  svc->service_id = 18;
+
+  svc->output.reserve(1000);
+  char c = 'a';
+  for (auto it = svc->output.begin(); it != svc->output.end(); ++it) {
+    *it = c++;
+    if (c > 'z')
+      c = 'a';
+  }
+
+  svc->perf_data.reserve(100);
+  c = '0';
+  for (auto it = svc->perf_data.begin(); it != svc->perf_data.end(); ++it) {
+    *it = c++;
+    if (c > '9')
+      c = '0';
+  }
+  svc->last_time_ok = timestamp(0x1122334455667788);  // 0x1cbe991a83
+
+  std::unique_ptr<io::stream> mf(new persistent_file("/tmp/test_output"));
+  mf->write(svc);
+
+  std::shared_ptr<io::data> e;
+  mf->read(e, 0);
+  mf.reset();
+  mf.reset(new persistent_file("/tmp/test_output"));
+
+  std::shared_ptr<neb::service> new_svc =
+      std::static_pointer_cast<neb::service>(e);
+  ASSERT_EQ(svc->output, new_svc->output);
+  ASSERT_EQ(svc->perf_data, new_svc->perf_data);
+
+  l.unload();
 }
