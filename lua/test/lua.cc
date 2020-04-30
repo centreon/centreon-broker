@@ -1221,12 +1221,8 @@ TEST_F(LuaTest, ParsePerfdata) {
   size_t pos16 = lst.find("\"warning_high\":80", pos13 + 1);
   size_t pos17 = lst.find("\"critical_low\":81", pos13 + 1);
   size_t pos18 = lst.find("\"critical_high\":95", pos13 + 1);
-  size_t pos19 = lst.find(
-      "storage: invalid perfdata format: equal sign not present or misplaced",
-      pos18 + 1);
-  size_t pos20 = lst.find(
-      "storage: invalid perfdata format: no numeric value after equal sign",
-      pos19 + 1);
+  size_t pos19 = lst.find("[]", pos18 + 1);
+  size_t pos20 = lst.find("[]", pos19 + 1);
 
   ASSERT_LE(pos1, pos3);
   ASSERT_LE(pos3, pos5);
@@ -1513,16 +1509,17 @@ TEST_F(LuaTest, Stat) {
 TEST_F(LuaTest, StatError) {
   std::map<std::string, misc::variant> conf;
   std::string filename("/tmp/stat.lua");
-  CreateScript(filename,
-               "function init(conf)\n"
-               "  broker_log:set_parameters(3, '/tmp/log')\n"
-               "  local info,err = broker.stat('/tmp/statthatdoesnotexist.lua')\n"
-               "  broker_log:info(1, \"info=\"..tostring(info))\n"
-               "  broker_log:info(1, \"err=\"..tostring(err))\n"
-               "end\n"
-               "function write(d)\n"
-               "  return true\n"
-               "end");
+  CreateScript(
+      filename,
+      "function init(conf)\n"
+      "  broker_log:set_parameters(3, '/tmp/log')\n"
+      "  local info,err = broker.stat('/tmp/statthatdoesnotexist.lua')\n"
+      "  broker_log:info(1, \"info=\"..tostring(info))\n"
+      "  broker_log:info(1, \"err=\"..tostring(err))\n"
+      "end\n"
+      "function write(d)\n"
+      "  return true\n"
+      "end");
   std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
   std::string result(ReadFile("/tmp/log"));
   ASSERT_NE(result.find("info=nil"), std::string::npos);

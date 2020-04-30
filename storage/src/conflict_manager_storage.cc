@@ -288,6 +288,7 @@ int32_t conflict_manager::_storage_process_service_status() {
                 _metrics_insert, &promise, database::mysql_task::LAST_INSERT_ID,
                 conn);
             try {
+              assert(pd.name().size() < 255);
               metric_id = promise.get_future().get();
 
               // Insert metric in cache.
@@ -506,22 +507,20 @@ void conflict_manager::_check_deleted_index() {
 
     // Delete metrics.
 
+    std::string query;
+    std::string err_msg;
     for (int64_t i : metrics_to_delete) {
-      std::ostringstream oss;
-      oss << "DELETE FROM metrics WHERE metric_id=" << i;
-      std::ostringstream oss_error;
-      oss_error << "storage: cannot delete metric " << i << ": ";
-      _mysql.run_query(oss.str(), oss_error.str(), false, conn);
+      query = fmt::format("DELETE FROM metrics WHERE metric_id={}", i);
+      err_msg = fmt::format("storage: cannot delete metric {}: ", i);
+      _mysql.run_query(query, err_msg, false, conn);
       _add_action(conn, actions::metrics);
     }
 
     // Delete index from DB.
     for (int64_t i : index_to_delete) {
-      std::ostringstream oss;
-      oss << "DELETE FROM index_data WHERE id=" << i;
-      std::ostringstream oss_error;
-      oss_error << "storage: cannot delete index " << i << ": ";
-      _mysql.run_query(oss.str(), oss_error.str(), false, conn);
+      query = fmt::format("DELETE FROM index_data WHERE id={}", i);
+      err_msg = fmt::format("storage: cannot delete index {}: ", i);
+      _mysql.run_query(query, err_msg, false, conn);
       _add_action(conn, actions::index_data);
 
       // Remove associated graph.

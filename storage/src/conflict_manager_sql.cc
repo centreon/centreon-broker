@@ -17,9 +17,6 @@
 */
 #include <fmt/format.h>
 
-#include <cassert>
-#include <sstream>
-
 #include "com/centreon/broker/database/mysql_result.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/log_v2.hh"
@@ -1031,21 +1028,21 @@ int32_t conflict_manager::_process_host_group_member() {
           hg.enabled = true;
           hg.poller_id = _cache_host_instance[hgm.host_id];
 
-          std::ostringstream oss;
-          oss << "SQL: could not store host group (poller: " << hg.poller_id
-              << ", group: " << hg.id << "): ";
+          std::string err_msg(fmt::format(
+              "SQL: could not store host group (poller: {}, group: {}): ",
+              hg.poller_id, hg.id));
 
           _host_group_insupdate << hg;
-          _mysql.run_statement(_host_group_insupdate, oss.str(), false, conn);
+          _mysql.run_statement(_host_group_insupdate, err_msg, false, conn);
           _add_action(conn, actions::hostgroups);
         }
 
         _host_group_member_insert << hgm;
-        std::ostringstream oss;
-        oss << "SQL: could not store host group membership (poller: "
-            << hgm.poller_id << ", host: " << hgm.host_id
-            << ", group: " << hgm.group_id << "): ";
-        _mysql.run_statement(_host_group_member_insert, oss.str(), false, conn);
+        std::string err_msg(
+            fmt::format("SQL: could not store host group membership (poller: "
+                        "{}, host: {}, group: {}): ",
+                        hgm.poller_id, hgm.host_id, hgm.group_id));
+        _mysql.run_statement(_host_group_member_insert, err_msg, false, conn);
         _add_action(conn, actions::hostgroups);
       } else
         logging::error(logging::medium)
@@ -1068,13 +1065,13 @@ int32_t conflict_manager::_process_host_group_member() {
         query_preparator qp(neb::host_group_member::static_type(), unique);
         _host_group_member_delete = qp.prepare_delete(_mysql);
       }
-      std::ostringstream oss;
-      oss << "SQL: cannot delete membership of host " << hgm.host_id
-          << " to host group " << hgm.group_id << " on instance "
-          << hgm.poller_id << ": ";
+      std::string err_msg(
+          fmt::format("SQL: cannot delete membership of host {} to host group "
+                      "{} on instance {}: ",
+                      hgm.host_id, hgm.group_id, hgm.poller_id));
 
       _host_group_member_delete << hgm;
-      _mysql.run_statement(_host_group_member_delete, oss.str(), true, conn);
+      _mysql.run_statement(_host_group_member_delete, err_msg, true, conn);
       _add_action(conn, actions::hostgroups);
     }
     _pop_event(p);
@@ -1120,13 +1117,13 @@ int32_t conflict_manager::_process_host() {
       }
 
       // Process object.
-      std::ostringstream oss;
-      oss << "SQL: could not store host (poller: " << h.poller_id
-          << ", host: " << h.host_id << "): ";
+      std::string err_msg(fmt::format(
+          "SQL: could not store host (poller: {}, host: {}): ", h.poller_id,
+          h.host_id));
 
       _host_insupdate << h;
       log_v2::sql()->debug("insert or update host...");
-      _mysql.run_statement(_host_insupdate, oss.str(), true, conn);
+      _mysql.run_statement(_host_insupdate, err_msg, true, conn);
       _add_action(conn, actions::hosts);
 
       // Fill the cache...
@@ -1185,12 +1182,13 @@ int32_t conflict_manager::_process_host_parent() {
       }
 
       // Insert.
-      std::ostringstream oss;
-      oss << "SQL: could not store host parentship (child host: " << hp.host_id
-          << ", parent host: " << hp.parent_id << "): ";
+      std::string err_msg(
+          fmt::format("SQL: could not store host parentship (child host: {}, "
+                      "parent host: {}): ",
+                      hp.host_id, hp.parent_id));
 
       _host_parent_insert << hp;
-      _mysql.run_statement(_host_parent_insert, oss.str(), false, conn);
+      _mysql.run_statement(_host_parent_insert, err_msg, false, conn);
       _add_action(conn, actions::host_parents);
     }
     // Disable parenting.
@@ -1258,11 +1256,11 @@ int32_t conflict_manager::_process_host_status() {
 
     // Processing.
     _host_status_update << hs;
-    std::ostringstream oss;
-    oss << "SQL: could not store host status (host: " << hs.host_id << "): ";
+    std::string err_msg(fmt::format(
+        "SQL: could not store host status (host: {}): ", hs.host_id));
     int32_t conn =
         _mysql.choose_connection_by_instance(_cache_host_instance[hs.host_id]);
-    _mysql.run_statement(_host_status_update, oss.str(), true, conn);
+    _mysql.run_statement(_host_status_update, err_msg, true, conn);
     _add_action(conn, actions::hosts);
   } else
     // Do nothing.
@@ -1314,11 +1312,11 @@ int32_t conflict_manager::_process_instance() {
     }
 
     // Process object.
-    std::ostringstream oss;
-    oss << "SQL: could not store poller (poller: " << i.poller_id << "): ";
+    std::string err_msg(
+        fmt::format("SQL: could not store poller (poller: {}): ", i.poller_id));
     _instance_insupdate << i;
 
-    _mysql.run_statement(_instance_insupdate, oss.str(), true, conn);
+    _mysql.run_statement(_instance_insupdate, err_msg, true, conn);
     _add_action(conn, actions::instances);
   }
 
@@ -1364,9 +1362,9 @@ int32_t conflict_manager::_process_instance_status() {
 
     // Process object.
     _instance_status_insupdate << is;
-    std::ostringstream oss;
-    oss << "SQL: could not update poller (poller: " << is.poller_id << "): ";
-    _mysql.run_statement(_instance_status_insupdate, oss.str(), true, conn);
+    std::string err_msg(fmt::format(
+        "SQL: could not update poller (poller: {}): ", is.poller_id));
+    _mysql.run_statement(_instance_status_insupdate, err_msg, true, conn);
     _add_action(conn, actions::instances);
   }
   _pop_event(p);
@@ -1450,19 +1448,18 @@ int32_t conflict_manager::_process_module() {
       _module_insert = qp.prepare_insert(_mysql);
     }
 
-    std::ostringstream oss;
     // Process object.
     if (m.enabled) {
-      oss << "SQL: could not store module (poller: " << m.poller_id << "): ";
+      std::string err_msg(fmt::format(
+          "SQL: could not store module (poller: {}): ", m.poller_id));
       _module_insert << m;
-      _mysql.run_statement(_module_insert, oss.str(), true, conn);
+      _mysql.run_statement(_module_insert, err_msg, true, conn);
       _add_action(conn, actions::modules);
     } else {
-      oss << "DELETE FROM "
-          << ((_mysql.schema_version() == mysql::v2) ? "modules" : "rt_modules")
-          << "  WHERE instance_id=" << m.poller_id << "    AND filename='"
-          << m.filename << "'";
-      _mysql.run_query(oss.str(), "SQL: ", false, conn);
+      std::string query(fmt::format(
+          "DELETE FROM modules WHERE instance_id={} AND filename='{}'",
+          m.poller_id, m.filename));
+      _mysql.run_query(query, "SQL: ", false, conn);
       _add_action(conn, actions::modules);
     }
   }
@@ -1599,14 +1596,13 @@ int32_t conflict_manager::_process_service_dependency() {
       }
 
       // Process object.
-      std::ostringstream oss;
-      oss << "SQL: could not store service dependency (host: " << sd.host_id
-          << ", service: " << sd.service_id
-          << ", dependent host: " << sd.dependent_host_id
-          << ", dependent service: " << sd.dependent_service_id << "): ";
+      std::string err_msg(fmt::format(
+          "SQL: could not store service dependency (host: {}, service: {}, "
+          "dependent host: {}, dependent service: {}): ",
+          sd.host_id, sd.service_id, sd.dependent_host_id,
+          sd.dependent_service_id));
       _service_dependency_insupdate << sd;
-      _mysql.run_statement(_service_dependency_insupdate, oss.str(), true,
-                           conn);
+      _mysql.run_statement(_service_dependency_insupdate, err_msg, true, conn);
       _add_action(conn, actions::service_dependencies);
     }
     // Delete.
@@ -1615,14 +1611,13 @@ int32_t conflict_manager::_process_service_dependency() {
           << "SQL: removing service dependency of (" << sd.dependent_host_id
           << ", " << sd.dependent_service_id << ") on (" << sd.host_id << ", "
           << sd.service_id << ")";
-      std::ostringstream oss;
-      oss << "DELETE FROM services_services_dependencies"
-             " WHERE dependent_host_id="
-          << sd.dependent_host_id
-          << " AND dependent_service_id=" << sd.dependent_service_id
-          << " AND host_id=" << sd.host_id
-          << " AND service_id=" << sd.service_id;
-      _mysql.run_query(oss.str(), "SQL: ", false, conn);
+      std::string query(
+          fmt::format("DELETE FROM serivces_services_dependencies WHERE "
+                      "dependent_host_id={} AND dependent_service_id={} AND "
+                      "host_id={} AND service_id={}",
+                      sd.dependent_host_id, sd.dependent_service_id, sd.host_id,
+                      sd.service_id));
+      _mysql.run_query(query, "SQL: ", false, conn);
       _add_action(conn, actions::service_dependencies);
     }
     _pop_event(p);
@@ -1666,12 +1661,12 @@ int32_t conflict_manager::_process_service_group() {
           << "') on instance " << sg.poller_id;
       _prepare_sg_insupdate_statement();
 
-      std::stringstream oss;
-      oss << "SQL: could not store service group (poller: " << sg.poller_id
-          << ", group: " << sg.id << "): ";
+      std::string err_msg(fmt::format(
+          "SQL: could not store service group (poller: {}, group: {}): ",
+          sg.poller_id, sg.id));
 
       _service_group_insupdate << sg;
-      _mysql.run_statement(_service_group_insupdate, oss.str(), true, conn);
+      _mysql.run_statement(_service_group_insupdate, err_msg, true, conn);
       _add_action(conn, actions::servicegroups);
       _servicegroup_cache.insert(sg.id);
     }
@@ -1683,14 +1678,13 @@ int32_t conflict_manager::_process_service_group() {
 
       // Delete group members.
       {
-        std::ostringstream oss;
-        oss << "DELETE services_servicegroups"
-            << "  FROM services_servicegroups"
-            << "  LEFT JOIN hosts"
-            << "    ON services_servicegroups.host_id=hosts.host_id"
-            << "  WHERE services_servicegroups.servicegroup_id=" << sg.id
-            << "    AND hosts.instance_id=" << sg.poller_id;
-        _mysql.run_query(oss.str(), "SQL: ", false, conn);
+        std::string query(fmt::format(
+            "DELETE services_servicegroups FROM services_servicegroups LEFT "
+            "JOIN hosts ON services_servicegroups.host_id=hosts.host_id WHERE "
+            "services_servicegroups.servicegroup_id={} AND "
+            "hosts.instance_id={}",
+            sg.id, sg.poller_id));
+        _mysql.run_query(query, "SQL: ", false, conn);
         _add_action(conn, actions::servicegroups);
         _servicegroup_cache.erase(sg.id);
       }
@@ -1761,23 +1755,21 @@ int32_t conflict_manager::_process_service_group_member() {
         sg.enabled = true;
         sg.poller_id = sgm.poller_id;
 
-        std::ostringstream oss;
-        oss << "SQL: could not store service group (poller: " << sg.poller_id
-            << ", group: " << sg.id << "): ";
+        std::string err_msg(fmt::format(
+            "SQL: could not store service group (poller: {}, group: {}): ",
+            sg.poller_id, sg.id));
 
         _service_group_insupdate << sg;
-        _mysql.run_statement(_service_group_insupdate, oss.str(), false, conn);
+        _mysql.run_statement(_service_group_insupdate, err_msg, false, conn);
         _add_action(conn, actions::servicegroups);
       }
 
       _service_group_member_insert << sgm;
-      std::ostringstream oss;
-      oss << "SQL: could not store service group membership (poller: "
-          << sgm.poller_id << ", host: " << sgm.host_id
-          << ", service: " << sgm.service_id << ", group: " << sgm.group_id
-          << "): ";
-      _mysql.run_statement(_service_group_member_insert, oss.str(), false,
-                           conn);
+      std::string err_msg(fmt::format(
+          "SQL: could not store service group membership (poller: {}, host: "
+          "{}, service: {}, group: {}): ",
+          sgm.poller_id, sgm.host_id, sgm.service_id, sgm.group_id));
+      _mysql.run_statement(_service_group_member_insert, err_msg, false, conn);
       _add_action(conn, actions::servicegroups);
     }
     // Delete.
@@ -1796,14 +1788,13 @@ int32_t conflict_manager::_process_service_group_member() {
         query_preparator qp(neb::service_group_member::static_type(), unique);
         _service_group_member_delete = qp.prepare_delete(_mysql);
       }
-      std::ostringstream oss;
-      oss << "SQL: cannot delete membership of service (" << sgm.host_id << ", "
-          << sgm.service_id << ") to service group " << sgm.group_id
-          << " on instance " << sgm.poller_id << ": ";
+      std::string err_msg(fmt::format(
+          "SQL: cannot delete membership of service (host: {}, service: {}) to "
+          "service group {} on instance {}: ",
+          sgm.host_id, sgm.service_id, sgm.group_id, sgm.poller_id));
 
       _service_group_member_delete << sgm;
-      _mysql.run_statement(_service_group_member_delete, oss.str(), false,
-                           conn);
+      _mysql.run_statement(_service_group_member_delete, err_msg, false, conn);
       _add_action(conn, actions::servicegroups);
     }
     _pop_event(p);
@@ -1854,11 +1845,11 @@ int32_t conflict_manager::_process_service() {
         _service_insupdate = qp.prepare_insert_or_update(_mysql);
       }
 
-      std::ostringstream oss;
-      oss << "SQL: could not store service (host: " << s.host_id
-          << ", service: " << s.service_id << "): ";
+      std::string err_msg(fmt::format(
+          "SQL: could not store service (host: {}, service: {}): ", s.host_id,
+          s.service_id));
       _service_insupdate << s;
-      _mysql.run_statement(_service_insupdate, oss.str(), true, conn);
+      _mysql.run_statement(_service_insupdate, err_msg, true, conn);
       _add_action(conn, actions::services);
     } else
       log_v2::sql()->trace(

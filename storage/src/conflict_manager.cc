@@ -1,5 +1,5 @@
 /*
-** Copyright 2019 Centreon
+** Copyright 2019-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -386,11 +386,11 @@ void conflict_manager::_callback() {
         /* Let's wait for some events before entering in the loop */
         if (_loop_cv.wait_for(lk, std::chrono::seconds(1),
                               [this]() { return !_events.empty(); }))
-          logging::info(logging::low)
-              << "conflict_manager: events to send to the database received.";
+          log_v2::sql()->trace(
+              "conflict_manager: new events to send to the database.");
         else
-          logging::info(logging::low)
-              << "conflict_manager: timeout reached while waiting for events.";
+          log_v2::sql()->trace(
+              "conflict_manager: timeout reached while waiting for events.");
 
         /* During this loop, connectors still fill the queue when they receive
          * new events. To allow that, we have to release the mutex. We have the
