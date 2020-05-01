@@ -78,6 +78,7 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
                                    uint32_t loop_timeout,
                                    uint32_t instance_timeout)
     : _exit{false},
+      _broken{false},
       _loop_timeout{loop_timeout},
       _max_pending_queries{dbcfg.get_queries_per_transaction()},
       _pending_queries{0},
@@ -360,23 +361,24 @@ void conflict_manager::update_metric_info_cache(uint32_t index_id,
  */
 void conflict_manager::_callback() {
   try {
-  _load_caches();
+    _load_caches();
   }
   catch (std::exception const& e) {
     logging::error(logging::high)
       << "conflict_manager: error while loading the cache: " << e.what();
-    throw;
+    _broken = true;
   }
 
-  do {
+  while (!_broken) {
     /* Are there index_data to remove? */
     try {
-    _check_deleted_index();
+      _check_deleted_index();
     }
     catch (std::exception const& e) {
       logging::error(logging::high)
         << "conflict_manager: error while checking deleted indexes: " << e.what();
-      throw;
+      _broken = true;
+      break;
     }
     try {
       while (!_should_exit()) {
@@ -519,11 +521,14 @@ void conflict_manager::_callback() {
           << "conflict_manager: error in the main loop: " << e.what();
       if (strstr(e.what(), "server has gone away")) {
         // The case where we must restart the connector.
-        logging::error(logging::high) << "conflict_manager: Throwing";
-        throw;
+        _broken = true;
       }
     }
-  } while (!_should_exit());
+  }
+  if (_broken) {
+    logging::error(logging::high) << "conflict_manager: Throwing";
+    throw exceptions::msg() << "Failing... badly";
+  }
 }
 
 /**
