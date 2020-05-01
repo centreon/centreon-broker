@@ -359,11 +359,25 @@ void conflict_manager::update_metric_info_cache(uint32_t index_id,
  *  The main loop of the conflict_manager
  */
 void conflict_manager::_callback() {
+  try {
   _load_caches();
+  }
+  catch (std::exception const& e) {
+    logging::error(logging::high)
+      << "conflict_manager: error while loading the cache: " << e.what();
+    throw;
+  }
 
   do {
     /* Are there index_data to remove? */
+    try {
     _check_deleted_index();
+    }
+    catch (std::exception const& e) {
+      logging::error(logging:high)
+        << "conflict_manager: error while checking deleted indexes: " << e.what();
+      throw;
+    }
     try {
       while (!_should_exit()) {
         /* Time to send perfdatas to rrd ; no lock needed, it is this thread
@@ -505,6 +519,7 @@ void conflict_manager::_callback() {
           << "conflict_manager: error in the main loop: " << e.what();
       if (strstr(e.what(), "server has gone away")) {
         // The case where we must restart the connector.
+        logging::error(logging::high) << "conflict_manager: Throwing";
         throw;
       }
     }
