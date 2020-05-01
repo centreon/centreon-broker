@@ -369,7 +369,7 @@ void conflict_manager::_callback() {
     _broken = true;
   }
 
-  while (!_broken) {
+  do {
     /* Are there index_data to remove? */
     try {
       _check_deleted_index();
@@ -524,7 +524,8 @@ void conflict_manager::_callback() {
         _broken = true;
       }
     }
-  }
+  } while (!_should_exit());
+
   if (_broken) {
     logging::error(logging::high) << "conflict_manager: Throwing";
     throw exceptions::msg() << "Failing... badly";
@@ -543,7 +544,7 @@ void conflict_manager::_callback() {
  */
 bool conflict_manager::_should_exit() const {
   std::lock_guard<std::mutex> lock(_loop_m);
-  return _exit && _events.empty();
+  return _broken || (_exit && _events.empty());
 }
 
 /**
