@@ -374,7 +374,7 @@ void conflict_manager::_callback() {
     _check_deleted_index();
     }
     catch (std::exception const& e) {
-      logging::error(logging:high)
+      logging::error(logging::high)
         << "conflict_manager: error while checking deleted indexes: " << e.what();
       throw;
     }
