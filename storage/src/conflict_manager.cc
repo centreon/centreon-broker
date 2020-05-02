@@ -166,8 +166,7 @@ void conflict_manager::_load_deleted_instances() {
       _cache_deleted_instance_id.insert(res.value_as_u32(0));
   } catch (std::exception const& e) {
     throw exceptions::msg()
-        << "could not get list of deleted instances: "
-        << e.what();
+        << "could not get list of deleted instances: " << e.what();
   }
 }
 
@@ -362,10 +361,8 @@ void conflict_manager::update_metric_info_cache(uint32_t index_id,
 void conflict_manager::_callback() {
   try {
     _load_caches();
-  }
-  catch (std::exception const& e) {
-    logging::error(logging::high)
-      << "error while loading caches: " << e.what();
+  } catch (std::exception const& e) {
+    logging::error(logging::high) << "error while loading caches: " << e.what();
     _broken = true;
   }
 
@@ -373,8 +370,7 @@ void conflict_manager::_callback() {
     /* Are there index_data to remove? */
     try {
       _check_deleted_index();
-    }
-    catch (std::exception const& e) {
+    } catch (std::exception const& e) {
       logging::error(logging::high)
           << "conflict_manager: error while checking deleted indexes: "
           << e.what();
@@ -534,13 +530,11 @@ void conflict_manager::_callback() {
   if (_broken) {
     std::unique_lock<std::mutex> lk(_loop_m);
     /* Let's wait for the end */
-    log_v2::sql()->info("conflict_manager: waiting for the end of the conflict manager main loop.");
+    log_v2::sql()->info(
+        "conflict_manager: waiting for the end of the conflict manager main "
+        "loop.");
     _loop_cv.wait(lk, [this]() { return !_exit; });
   }
-//  if (_broken) {
-//    logging::error(logging::high) << "conflict_manager: Throwing";
-//    throw exceptions::msg() << "Failing... badly";
-//  }
 }
 
 /**
@@ -570,8 +564,7 @@ void conflict_manager::send_event(conflict_manager::stream_type c,
                                   std::shared_ptr<io::data> const& e) {
   assert(e);
   if (_broken)
-    throw exceptions::msg()
-      << "conflict_manager: events loop interrupted";
+    throw exceptions::msg() << "conflict_manager: events loop interrupted";
 
   log_v2::sql()->trace(
       "conflict_manager: send_event category:{}, element:{} from {}",

@@ -61,6 +61,7 @@ static void hup_handler(int signum) {
   signal(SIGHUP, SIG_IGN);
 
   // Log message.
+  log_v2::core()->info("main: configuration update requested");
   logging::config(logging::high) << "main: configuration update requested";
 
   try {
