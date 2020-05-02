@@ -64,7 +64,6 @@ void connector::connect_to(std::string const& user,
   _metric_ts = metric_ts;
   _metric_cols = metric_cols;
   _cache = cache;
-  return;
 }
 
 /**

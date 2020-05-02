@@ -17,6 +17,7 @@
 */
 #ifndef CCB_SQL_CONFLICT_MANAGER_HH
 #define CCB_SQL_CONFLICT_MANAGER_HH
+#include <atomic>
 #include <array>
 #include <condition_variable>
 #include <deque>
@@ -131,6 +132,7 @@ class conflict_manager {
   mutable std::mutex _loop_m;
   std::condition_variable _loop_cv;
   bool _exit;
+  std::atomic<bool> _broken;
   uint32_t _loop_timeout;
   uint32_t _max_pending_queries;
   uint32_t _pending_queries;

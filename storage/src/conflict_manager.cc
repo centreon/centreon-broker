@@ -78,6 +78,7 @@ conflict_manager::conflict_manager(database_config const& dbcfg,
                                    uint32_t loop_timeout,
                                    uint32_t instance_timeout)
     : _exit{false},
+      _broken{false},
       _loop_timeout{loop_timeout},
       _max_pending_queries{dbcfg.get_queries_per_transaction()},
       _pending_queries{0},
@@ -165,8 +166,7 @@ void conflict_manager::_load_deleted_instances() {
       _cache_deleted_instance_id.insert(res.value_as_u32(0));
   } catch (std::exception const& e) {
     throw exceptions::msg()
-        << "conflict_manager: could not get list of deleted instances: "
-        << e.what();
+        << "could not get list of deleted instances: " << e.what();
   }
 }
 
@@ -359,20 +359,34 @@ void conflict_manager::update_metric_info_cache(uint32_t index_id,
  *  The main loop of the conflict_manager
  */
 void conflict_manager::_callback() {
-  _load_caches();
+  try {
+    _load_caches();
+  } catch (std::exception const& e) {
+    logging::error(logging::high) << "error while loading caches: " << e.what();
+    _broken = true;
+  }
 
   do {
     /* Are there index_data to remove? */
-    _check_deleted_index();
+    try {
+      _check_deleted_index();
+    } catch (std::exception const& e) {
+      logging::error(logging::high)
+          << "conflict_manager: error while checking deleted indexes: "
+          << e.what();
+      _broken = true;
+      break;
+    }
     try {
       while (!_should_exit()) {
         /* Time to send perfdatas to rrd ; no lock needed, it is this thread
          * that fill this queue. */
         _insert_perfdatas();
 
-        logging::info(logging::low)
-            << "conflict_manager: main loop initialized with a timeout of "
-            << _loop_timeout << " seconds.";
+        log_v2::sql()->trace(
+            "conflict_manager: main loop initialized with a timeout of {} "
+            "seconds.",
+            _loop_timeout);
 
         std::chrono::system_clock::time_point now0 =
             std::chrono::system_clock::now();
@@ -420,8 +434,10 @@ void conflict_manager::_callback() {
                    type == neb::service_status::static_type())
             count += _storage_process_service_status();
           else {
-            logging::info(logging::low)
-                << "conflict_manager: event of type " << type << " throw away";
+            log_v2::sql()->trace(
+                "conflict_manager: event of type {} thrown away ; no need to "
+                "store it in the database.",
+                type);
             *std::get<2>(_events.front()) = true;
             _events.pop_front();
             count++;
@@ -434,19 +450,20 @@ void conflict_manager::_callback() {
                   .count();
           lk.lock();
           if (!_exit && _events.empty()) {
-            logging::debug(logging::low) << "conflict_manager: no more events "
-                                            "in the loop, let's wait for them";
+            log_v2::sql()->debug(
+                "conflict_manager: no more events in the loop, let's wait for "
+                "them");
             /* There is no more events to send to the DB, let's wait for new
              * ones. */
             if (_loop_cv.wait_for(
                     lk, std::chrono::milliseconds(timeout_limit - timeout),
                     [this]() { return _exit || !_events.empty(); }))
-              logging::info(logging::low) << "conflict_manager: new events to "
-                                             "send to the database received.";
+              log_v2::sql()->trace(
+                  "conflict_manager: new events to send to the database.");
             else
-              logging::info(logging::low) << "conflict_manager: timeout "
-                                             "reached while waiting for "
-                                             "new events.";
+              log_v2::sql()->trace(
+                  "conflict_manager: timeout reached while waiting for new "
+                  "events.");
           }
 
           /* Get some stats every seconds */
@@ -470,12 +487,12 @@ void conflict_manager::_callback() {
         /* Here, just before looping, we commit. */
         _finish_actions();
         if (_pending_queries == 0)
-          logging::debug(logging::high)
-              << "conflict_manager: acknowledgement - no pending events";
+          log_v2::sql()->debug(
+              "conflict_manager: acknowledgement - no pending events");
         else
-          logging::debug(logging::high)
-              << "conflict_manager: acknowledgement - still "
-              << _pending_queries << " not acknowledged";
+          log_v2::sql()->debug(
+              "conflict_manager: acknowledgement - still {} not acknowledged",
+              _pending_queries);
 
         /* Several checks on the database,  no need to keep the loop mutex */
         lk.unlock();
@@ -505,10 +522,19 @@ void conflict_manager::_callback() {
           << "conflict_manager: error in the main loop: " << e.what();
       if (strstr(e.what(), "server has gone away")) {
         // The case where we must restart the connector.
-        throw;
+        _broken = true;
       }
     }
   } while (!_should_exit());
+
+  if (_broken) {
+    std::unique_lock<std::mutex> lk(_loop_m);
+    /* Let's wait for the end */
+    log_v2::sql()->info(
+        "conflict_manager: waiting for the end of the conflict manager main "
+        "loop.");
+    _loop_cv.wait(lk, [this]() { return !_exit; });
+  }
 }
 
 /**
@@ -523,7 +549,7 @@ void conflict_manager::_callback() {
  */
 bool conflict_manager::_should_exit() const {
   std::lock_guard<std::mutex> lock(_loop_m);
-  return _exit && _events.empty();
+  return _broken || (_exit && _events.empty());
 }
 
 /**
@@ -537,6 +563,9 @@ bool conflict_manager::_should_exit() const {
 void conflict_manager::send_event(conflict_manager::stream_type c,
                                   std::shared_ptr<io::data> const& e) {
   assert(e);
+  if (_broken)
+    throw exceptions::msg() << "conflict_manager: events loop interrupted";
+
   log_v2::sql()->trace(
       "conflict_manager: send_event category:{}, element:{} from {}",
       e->type() >> 16, e->type() & 0xffff, c == 0 ? "sql" : "storage");
