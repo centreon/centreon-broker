@@ -29,6 +29,11 @@ Perfdata parsing
 ================
 Special characters like '\\r' were not parsed correctly.
 
+conflict manager
+================
+In case of bad configurations concerning the database, cbd can crash. This is
+fixed with with new version.
+
 =======================
 Centreon Broker 20.04.0
 =======================
