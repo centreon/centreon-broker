@@ -501,8 +501,7 @@ void conflict_manager::_check_deleted_index() {
       }
     } catch (std::exception const& e) {
       throw broker::exceptions::msg()
-          << "storage: could not query index table to get index to delete: "
-          << e.what();
+          << "could not query index table to get index to delete: " << e.what();
     }
 
     // Delete metrics.
