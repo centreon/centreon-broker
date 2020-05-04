@@ -187,7 +187,7 @@ int stream::write(std::shared_ptr<io::data> const& d) {
 
     std::error_code err;
 
-    _socket->write_some(asio::buffer(r->data(), r->size()), err);
+    asio::write(*_socket, asio::buffer(r->data(), r->size()), err);
 
     if (err) {
       _socket_gone = true;
