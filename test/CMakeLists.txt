@@ -62,6 +62,7 @@ add_executable(ut
   ${TESTS_DIR}/bbdo/input_buffer/erase.cc
   ${TESTS_DIR}/bbdo/input_buffer/extract.cc
   ${TESTS_DIR}/bbdo/output.cc
+  ${TESTS_DIR}/bbdo/output_compression.cc
   ${TESTS_DIR}/bbdo/read.cc
   ${TESTS_DIR}/ceof/ceof_parser/parse.cc
   ${TESTS_DIR}/compression/stream/memory_stream.hh
