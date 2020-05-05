@@ -19,6 +19,10 @@ filename.
 Bug fixes
 *********
 
+BBDO is sending corrupted data
+==============================
+Data could be badly sent. Now it is fixed.
+
 Strict mode of the database
 ===========================
 Too long strings to insert in database are cut so that cbd continues to work.
