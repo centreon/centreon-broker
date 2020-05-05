@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/influxdb/column.hh"
+
 #include "com/centreon/broker/exceptions/msg.hh"
 
 using namespace com::centreon::broker;
