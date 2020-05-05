@@ -17,8 +17,9 @@
 */
 
 #include "com/centreon/broker/compression/factory.hh"
+
 #include <cstring>
-#include <memory>
+
 #include "com/centreon/broker/compression/opener.hh"
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/config/parser.hh"
@@ -33,17 +34,25 @@ using namespace com::centreon::broker::compression;
  **************************************/
 
 /**
- *  Check if an endpoint configuration match the compression layer.
+ *  Check if endpoint configuration match the compression layer.
  *
  *  @param[in] cfg  Configuration object.
  *
+ *  The configuration may contain 'no', 'yes', 'auto' or nothing.
+ *
+ *  The normal behaviour
+ *  - 'no' => false
+ *  - 'yes' => true
+ *  - 'auto' => false
+ *  - nothing => false
+ *
+ *  For the compression, we want that 'yes' works as 'auto' to avoid
+ *  compression when the stream is built and also during authentication.
+ *
  *  @return True if the configuration matches the compression layer.
  */
-bool factory::has_endpoint(config::endpoint& cfg) const {
-  std::map<std::string, std::string>::const_iterator it{
-      cfg.params.find("compression")};
-  return cfg.params.end() != it && strcasecmp(it->second.c_str(), "auto") &&
-         config::parser::parse_boolean(it->second);
+bool factory::has_endpoint(config::endpoint& /*cfg*/) const {
+  return false;
 }
 
 /**
@@ -57,8 +66,8 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
 bool factory::has_not_endpoint(config::endpoint& cfg) const {
   std::map<std::string, std::string>::const_iterator it{
       cfg.params.find("compression")};
-  return (it != cfg.params.end() && strcasecmp(it->second.c_str(), "auto"))
-             ? !has_endpoint(cfg)
+  return (it != cfg.params.end() && strncasecmp(it->second.c_str(), "auto", 5))
+             ? !config::parser::parse_boolean(it->second)
              : false;
 }
 

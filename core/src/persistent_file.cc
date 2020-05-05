@@ -17,11 +17,10 @@
 */
 
 #include "com/centreon/broker/persistent_file.hh"
-#include <memory>
+
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/compression/stream.hh"
 #include "com/centreon/broker/file/opener.hh"
-#include "com/centreon/broker/file/stream.hh"
 
 using namespace com::centreon::broker;
 
@@ -42,7 +41,7 @@ persistent_file::persistent_file(std::string const& path) {
   cs->set_substream(fs);
 
   // BBDO layer.
-  std::shared_ptr<bbdo::stream> bs(new bbdo::stream);
+  std::shared_ptr<bbdo::stream> bs = std::make_shared<bbdo::stream>();
   bs->set_coarse(true);
   bs->set_negotiate(false);
   bs->set_substream(cs);

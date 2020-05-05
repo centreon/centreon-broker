@@ -17,8 +17,9 @@
 */
 
 #include "com/centreon/broker/tls/factory.hh"
+
 #include <cstring>
-#include <memory>
+
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/tls/acceptor.hh"
 #include "com/centreon/broker/tls/connector.hh"
@@ -37,12 +38,21 @@ using namespace com::centreon::broker::tls;
  *
  *  @param[in] cfg  Configuration object.
  *
+ *  The configuration may contain 'no', 'yes', 'auto' or nothing.
+ *
+ *  The normal behaviour
+ *  - 'no' => false
+ *  - 'yes' => true
+ *  - 'auto' => false
+ *  - nothing => false
+ *
+ *  For the TLS, we want that 'yes' works as 'auto' to avoid
+ *  TLS when the stream is built and also during authentication.
+ *
  *  @return True if the configuration matches the TLS layer.
  */
 bool factory::has_endpoint(config::endpoint& cfg) const {
-  std::map<std::string, std::string>::const_iterator it{cfg.params.find("tls")};
-  return cfg.params.end() != it && strncasecmp(it->second.c_str(), "auto", 5) &&
-         config::parser::parse_boolean(it->second);
+  return false;
 }
 
 /**
@@ -50,12 +60,21 @@ bool factory::has_endpoint(config::endpoint& cfg) const {
  *
  *  @param[in] cfg  Configuration object.
  *
+ *  The configuration may contain 'no', 'yes', 'auto' or nothing.
+ *  For the TLS, we want that 'yes' works as 'auto' to avoid a
+ *  TLS when the stream is built.
+ *
+ *  - 'no' => true
+ *  - 'yes' => false
+ *  - 'auto' => false
+ *  - nothing => false
+ *
  *  @return True if the configuration does not match the TLS layer.
  */
 bool factory::has_not_endpoint(config::endpoint& cfg) const {
   std::map<std::string, std::string>::const_iterator it{cfg.params.find("tls")};
-  return (it != cfg.params.end() && strcasecmp(it->second.c_str(), "auto"))
-             ? !has_endpoint(cfg)
+  return (it != cfg.params.end() && strncasecmp(it->second.c_str(), "auto", 5))
+             ? !config::parser::parse_boolean(it->second)
              : false;
 }
 
@@ -76,7 +95,7 @@ io::endpoint* factory::new_endpoint(
   (void)cache;
 
   // Find TLS parameters (optional).
-  bool tls(false);
+  bool tls = false;
   std::string ca_cert;
   std::string private_key;
   std::string public_cert;

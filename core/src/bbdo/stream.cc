@@ -158,22 +158,6 @@ void stream::negotiate(stream::negotiation_type neg) {
         << v->extensions << "'";
     std::list<std::string> own_ext(misc::string::split(_extensions, ' '));
     std::list<std::string> peer_ext(misc::string::split(v->extensions, ' '));
-//    for (std::list<std::string>::const_iterator it{own_ext.begin()},
-//         end{own_ext.end()};
-//         it != end; ++it) {
-//      // Find matching extension in peer extension list.
-//      std::list<std::string>::const_iterator peer_it{
-//          std::find(peer_ext.begin(), peer_ext.end(), *it)};
-//      // Apply extension if found.
-//      if (peer_it != peer_ext.end()) {
-//        log_v2::bbdo()->info("BBDO: applying extension '{}'", *it);
-//        logging::info(logging::medium)
-//            << "BBDO: applying extension '" << *it << "'";
-//        for (std::map<std::string, io::protocols::protocol>::const_iterator
-//                 proto_it{io::protocols::instance().begin()},
-//             proto_end{io::protocols::instance().end()};
-//             proto_it != proto_end; ++proto_it)
-//          if (proto_it->first == *it) {
     own_ext.sort();
     peer_ext.sort();
     auto own_it = own_ext.begin();
@@ -194,7 +178,7 @@ void stream::negotiate(stream::negotiation_type neg) {
           if (proto_it->first == *own_it) {
             std::shared_ptr<io::stream> s{
                 proto_it->second.endpntfactry->new_stream(
-                    _substream, neg == negotiate_second, *it)};
+                    _substream, neg == negotiate_second, *own_it)};
             set_substream(s);
             done.push_back(*own_it);
             break;
@@ -204,7 +188,7 @@ void stream::negotiate(stream::negotiation_type neg) {
         ++own_it;
       }
     }
-    if (_want_compression && done.find("compression") == done.end()) {
+    if (_want_compression && std::find(done.begin(), done.end(), "compression") == done.end()) {
       logging::error(logging::high)
           << "BBDO: we want compression but peer does not. You have to fix "
              "your configuration";
@@ -212,7 +196,7 @@ void stream::negotiate(stream::negotiation_type neg) {
           "BBDO: we want compression but peer does not. You have to fix your "
           "configuration");
     }
-    if (_want_tls && done.find("tls") == done.end()) {
+    if (_want_tls && std::find(done.begin(), done.end(), "tls") == done.end()) {
       logging::error(logging::high)
           << "BBDO: we want TLS but peer does not. You have to fix "
              "your configuration";
@@ -220,6 +204,7 @@ void stream::negotiate(stream::negotiation_type neg) {
           "BBDO: we want TLS but peer does not. You have to fix your "
           "configuration");
     }
+  }
 
   // Stream has now negotiated.
   _negotiated = true;

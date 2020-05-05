@@ -17,22 +17,20 @@
 */
 
 #include "com/centreon/broker/config/applier/endpoint.hh"
+
 #include <algorithm>
 #include <cstdlib>
-#include <list>
-#include <memory>
-#include <vector>
+
 #include "com/centreon/broker/config/applier/state.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/endpoint.hh"
 #include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/misc/stringifier.hh"
 #include "com/centreon/broker/multiplexing/engine.hh"
 #include "com/centreon/broker/multiplexing/muxer.hh"
-#include "com/centreon/broker/multiplexing/subscriber.hh"
-#include "com/centreon/broker/persistent_cache.hh"
 #include "com/centreon/broker/processing/acceptor.hh"
 #include "com/centreon/broker/processing/failover.hh"
 #include "com/centreon/broker/processing/thread.hh"
@@ -108,20 +106,11 @@ endpoint::~endpoint() {
 void endpoint::apply(std::list<config::endpoint> const& endpoints) {
   // Log messages.
   logging::config(logging::medium) << "endpoint applier: loading configuration";
-  logging::debug(logging::high)
-      << "endpoint applier: " << endpoints.size() << " endpoints to apply";
+  log_v2::core()->debug("endpoint applier: {} endpoints to apply",
+                        endpoints.size());
 
   // Copy endpoint configurations and apply eventual modifications.
   std::list<config::endpoint> tmp_endpoints(endpoints);
-  for (std::map<std::string, io::protocols::protocol>::const_iterator
-           it1(io::protocols::instance().begin()),
-       end1(io::protocols::instance().end());
-       it1 != end1; ++it1) {
-    for (std::list<config::endpoint>::iterator it2(tmp_endpoints.begin()),
-         end2(tmp_endpoints.end());
-         it2 != end2; ++it2)
-      it1->second.endpntfactry->has_endpoint(*it2);
-  }
 
   // Remove old inputs and generate inputs to create.
   std::list<config::endpoint> endp_to_create;
@@ -131,17 +120,16 @@ void endpoint::apply(std::list<config::endpoint> const& endpoints) {
   }
 
   // Update existing endpoints.
-  for (iterator it(_endpoints.begin()), end(_endpoints.end()); it != end; ++it)
+  for (auto it = _endpoints.begin(), end = _endpoints.end(); it != end; ++it)
     it->second->update();
 
   // Debug message.
-  logging::debug(logging::high) << "endpoint applier: " << endp_to_create.size()
-                                << " endpoints to create";
+  log_v2::core()->debug("endpoint applier: {} endpoints to create",
+                        endp_to_create.size());
 
   // Create new endpoints.
-  for (std::list<config::endpoint>::iterator it(endp_to_create.begin()),
-       end(endp_to_create.end());
-       it != end; ++it) {
+  for (auto it = endp_to_create.begin(), end = endp_to_create.end(); it != end;
+       ++it) {
     // Check that output is not a failover.
     if (it->name.empty() ||
         (std::find_if(endp_to_create.begin(), endp_to_create.end(),
@@ -190,7 +178,8 @@ void endpoint::discard() {
     std::unique_lock<std::timed_mutex> lock(_endpointsm);
 
     // Send termination requests.
-    for (auto it = _endpoints.begin(), end = _endpoints.end(); it != end; ++it) {
+    for (auto it = _endpoints.begin(), end = _endpoints.end(); it != end;
+         ++it) {
       logging::debug(logging::medium)
           << "endpoint applier: send exit signal on endpoint '"
           << it->second->get_name() << "'";
