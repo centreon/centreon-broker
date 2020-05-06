@@ -1,4 +1,19 @@
 =======================
+Centreon Broker 20.04.2
+=======================
+
+*********
+Bug fixes
+*********
+
+negotiation in case of compression or tls extension
+===================================================
+If they are set to 'yes' on one peer, they had to also be set to 'yes' on the
+other one. Otherwise, there were CRC errors. Now the negotiation is made without
+TLS and without compression. So each peer can propose a configuration. And a
+good one is configured.
+
+=======================
 Centreon Broker 20.04.1
 =======================
 

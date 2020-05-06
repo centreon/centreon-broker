@@ -138,11 +138,8 @@ void stream::negotiate(stream::negotiation_type neg) {
   // Send our own packet if we should be second.
   if (neg == negotiate_second) {
     log_v2::bbdo()->debug(
-        "BBDO: sending welcome packet (available extensions: {})",
+        "BBDO: sending second welcome packet (available extensions: {})",
         (_negotiate ? _extensions : ""));
-    logging::debug(logging::medium)
-        << "BBDO: sending welcome packet (available extensions: "
-        << (_negotiate ? _extensions : "") << ")";
     std::shared_ptr<version_response> welcome_packet(
         std::make_shared<version_response>());
     if (_negotiate)
@@ -154,39 +151,75 @@ void stream::negotiate(stream::negotiation_type neg) {
   // Negotiation.
   if (_negotiate) {
     // Apply negotiated extensions.
-    log_v2::bbdo()->info(
-        "BBDO: we have extensions '{0}' and peer has '{1}'", _extensions,
-        v->extensions);
+    log_v2::bbdo()->info("BBDO: we have extensions '{0}' and peer has '{1}'",
+                         _extensions, v->extensions);
     logging::info(logging::medium)
         << "BBDO: we have extensions '" << _extensions << "' and peer has '"
         << v->extensions << "'";
     std::list<std::string> own_ext(misc::string::split(_extensions, ' '));
     std::list<std::string> peer_ext(misc::string::split(v->extensions, ' '));
-    for (std::list<std::string>::const_iterator it{own_ext.begin()},
-         end{own_ext.end()};
-         it != end; ++it) {
-      // Find matching extension in peer extension list.
-      std::list<std::string>::const_iterator peer_it{
-          std::find(peer_ext.begin(), peer_ext.end(), *it)};
-      // Apply extension if found.
-      if (peer_it != peer_ext.end()) {
-        log_v2::bbdo()->info("BBDO: applying extension '{}'", *it);
-        logging::info(logging::medium)
-            << "BBDO: applying extension '" << *it << "'";
-        for (std::map<std::string, io::protocols::protocol>::const_iterator
-                 proto_it{io::protocols::instance().begin()},
-             proto_end{io::protocols::instance().end()};
-             proto_it != proto_end; ++proto_it)
-          if (proto_it->first == *it) {
+//    for (std::list<std::string>::const_iterator it{own_ext.begin()},
+//         end{own_ext.end()};
+//         it != end; ++it) {
+//      // Find matching extension in peer extension list.
+//      std::list<std::string>::const_iterator peer_it{
+//          std::find(peer_ext.begin(), peer_ext.end(), *it)};
+//      // Apply extension if found.
+//      if (peer_it != peer_ext.end()) {
+//        log_v2::bbdo()->info("BBDO: applying extension '{}'", *it);
+//        logging::info(logging::medium)
+//            << "BBDO: applying extension '" << *it << "'";
+//        for (std::map<std::string, io::protocols::protocol>::const_iterator
+//                 proto_it{io::protocols::instance().begin()},
+//             proto_end{io::protocols::instance().end()};
+//             proto_it != proto_end; ++proto_it)
+//          if (proto_it->first == *it) {
+    own_ext.sort();
+    peer_ext.sort();
+    auto own_it = own_ext.begin();
+    auto peer_it = peer_ext.begin();
+    std::list<std::string> done;
+    while (own_it != own_ext.end() && peer_it != peer_ext.end()) {
+      if (*own_it < *peer_it)
+        ++own_it;
+      else if (*peer_it < *own_it)
+        ++peer_it;
+
+      if (*peer_it == *own_it) {
+        log_v2::bbdo()->info("BBDO: applying extension '{}'", *own_it);
+
+        for (auto proto_it = io::protocols::instance().begin(),
+                  proto_end = io::protocols::instance().end();
+             proto_it != proto_end; ++proto_it) {
+          if (proto_it->first == *own_it) {
             std::shared_ptr<io::stream> s{
                 proto_it->second.endpntfactry->new_stream(
                     _substream, neg == negotiate_second, *it)};
             set_substream(s);
+            done.push_back(*own_it);
             break;
           }
+        }
+        ++peer_it;
+        ++own_it;
       }
     }
-  }
+    if (_want_compression && done.find("compression") == done.end()) {
+      logging::error(logging::high)
+          << "BBDO: we want compression but peer does not. You have to fix "
+             "your configuration";
+      log_v2::bbdo()->error(
+          "BBDO: we want compression but peer does not. You have to fix your "
+          "configuration");
+    }
+    if (_want_tls && done.find("tls") == done.end()) {
+      logging::error(logging::high)
+          << "BBDO: we want TLS but peer does not. You have to fix "
+             "your configuration";
+      log_v2::bbdo()->error(
+          "BBDO: we want TLS but peer does not. You have to fix your "
+          "configuration");
+    }
 
   // Stream has now negotiated.
   _negotiated = true;
@@ -237,6 +270,8 @@ void stream::set_coarse(bool coarse) {
  *  @param[in] extensions  Extensions supported by this stream.
  */
 void stream::set_negotiate(bool negotiate, std::string const& extensions) {
+  log_v2::bbdo()->trace("set negotiate '{}', extensions='{}'", negotiate,
+                        extensions);
   _negotiate = negotiate;
   _extensions = extensions;
 }
