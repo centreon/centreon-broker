@@ -33,6 +33,7 @@ namespace bbdo {
 class connector : public io::endpoint {
   const bool _want_compression;
   const bool _want_tls;
+
  public:
   connector(bool want_compression,
             bool want_tls,

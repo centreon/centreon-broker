@@ -1,5 +1,5 @@
 /*
-** Copyright 2013,2015,2017 Centreon
+** Copyright 2013,2015,2017-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 ** For more information : contact@centreon.com
 */
 
-#include "com/centreon/broker/logging/logging.hh"
 #include "com/centreon/broker/bbdo/factory.hh"
+
 #include "com/centreon/broker/bbdo/acceptor.hh"
 #include "com/centreon/broker/bbdo/connector.hh"
 #include "com/centreon/broker/config/parser.hh"
 #include "com/centreon/broker/io/protocols.hh"
+#include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
 using namespace com::centreon::broker::bbdo;
@@ -110,10 +111,9 @@ io::endpoint* factory::new_endpoint(
     if (it != cfg.params.end())
       try {
         ack_limit = std::stoul(it->second);
-      }
-      catch (const std::exception& e) {
+      } catch (const std::exception& e) {
         logging::config(logging::high)
-          << "BBDO: Bad value for ack_limit, it must be an integer.";
+            << "BBDO: Bad value for ack_limit, it must be an integer.";
       }
   }
 
@@ -132,14 +132,12 @@ io::endpoint* factory::new_endpoint(
     retval = new bbdo::acceptor(cfg.name, want_compression, want_tls, negotiate,
                                 extensions, cfg.read_timeout, false, coarse,
                                 ack_limit);
-    logging::debug(logging::high)
-      << "BBDO: new acceptor " << cfg.name;
+    logging::debug(logging::high) << "BBDO: new acceptor " << cfg.name;
   } else {
     retval =
         new bbdo::connector(want_compression, want_tls, negotiate, extensions,
                             cfg.read_timeout, coarse, ack_limit);
-    logging::debug(logging::high)
-      << "BBDO: new connector " << cfg.name;
+    logging::debug(logging::high) << "BBDO: new connector " << cfg.name;
   }
   return retval;
 }

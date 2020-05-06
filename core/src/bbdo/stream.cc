@@ -22,7 +22,6 @@
 #include <cassert>
 
 #include "com/centreon/broker/bbdo/ack.hh"
-#include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
 #include "com/centreon/broker/io/protocols.hh"
@@ -71,7 +70,9 @@ int stream::flush() {
 }
 
 /**
- *  Negotiate features with peer.
+ *  Negotiate features with peer. The stream should not be compressed during
+ *  this step. If we realize the compression must be set, it will be added
+ *  later.
  *
  *  @param[in] neg  Negotiation type.
  */
@@ -81,22 +82,19 @@ void stream::negotiate(stream::negotiation_type neg) {
   // Send our own packet if we should be first.
   if (neg == negotiate_first) {
     log_v2::bbdo()->debug(
-        "BBDO: sending welcome packet (available extensions: {})",
+        "BBDO: sending first welcome packet (available extensions: {})",
         (_negotiate ? _extensions : ""));
-    logging::debug(logging::medium)
-        << "BBDO: sending welcome packet (available extensions: "
-        << (_negotiate ? _extensions : "") << ")";
     std::shared_ptr<version_response> welcome_packet(
         std::make_shared<version_response>());
     if (_negotiate)
       welcome_packet->extensions = _extensions;
+
     output::write(welcome_packet);
     output::flush();
   }
 
   // Read peer packet.
   log_v2::bbdo()->debug("BBDO: retrieving welcome packet of peer");
-  logging::debug(logging::medium) << "BBDO: retrieving welcome packet of peer";
   std::shared_ptr<io::data> d;
   time_t deadline;
   if (_timeout == (time_t)-1)
@@ -120,11 +118,11 @@ void stream::negotiate(stream::negotiation_type neg) {
         "protocol version {3}.{4}.{5}",
         v->bbdo_major, v->bbdo_minor, v->bbdo_patch, BBDO_VERSION_MAJOR,
         BBDO_VERSION_MINOR, BBDO_VERSION_PATCH);
-    throw(exceptions::msg()
+    throw exceptions::msg()
           << "BBDO: peer is using protocol version " << v->bbdo_major << "."
           << v->bbdo_minor << "." << v->bbdo_patch
           << " whereas we're using protocol version " << BBDO_VERSION_MAJOR
-          << "." << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH);
+          << "." << BBDO_VERSION_MINOR << "." << BBDO_VERSION_PATCH;
   }
   log_v2::bbdo()->info(
       "BBDO: peer is using protocol version {0}.{1}.{2}, we're using version "
