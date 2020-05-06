@@ -22,11 +22,13 @@
 #include <map>
 #include <memory>
 #include <unordered_map>
+
 #include "com/centreon/broker/bam/dimension_ba_bv_relation_event.hh"
 #include "com/centreon/broker/bam/dimension_ba_event.hh"
 #include "com/centreon/broker/bam/dimension_bv_event.hh"
 #include "com/centreon/broker/bam/dimension_truncate_table_signal.hh"
 #include "com/centreon/broker/misc/pair.hh"
+#include "com/centreon/broker/neb/custom_variable.hh"
 #include "com/centreon/broker/neb/host.hh"
 #include "com/centreon/broker/neb/host_group.hh"
 #include "com/centreon/broker/neb/host_group_member.hh"
@@ -53,29 +55,29 @@ class macro_cache {
   void write(std::shared_ptr<io::data> const& data);
 
   storage::index_mapping const& get_index_mapping(uint32_t index_id) const;
-  storage::metric_mapping const& get_metric_mapping(uint32_t metric_id)
-      const;
+  storage::metric_mapping const& get_metric_mapping(uint32_t metric_id) const;
   std::string const& get_host_name(uint64_t host_id) const;
   std::string const& get_notes_url(uint64_t host_id, uint64_t service_id) const;
   std::string const& get_notes(uint64_t host_id, uint64_t service_id) const;
   std::string const& get_action_url(uint64_t host_id,
                                     uint64_t service_id) const;
+  int32_t get_severity(uint64_t host_id, uint64_t service_id) const;
   std::string const& get_host_group_name(uint64_t id) const;
   std::map<std::pair<uint64_t, uint64_t>,
            std::shared_ptr<neb::host_group_member> > const&
-      get_host_group_members() const;
+  get_host_group_members() const;
   std::string const& get_service_description(uint64_t host_id,
                                              uint64_t service_id) const;
   std::string const& get_service_group_name(uint64_t id) const;
   std::map<std::tuple<uint64_t, uint64_t, uint64_t>,
            std::shared_ptr<neb::service_group_member> > const&
-      get_service_group_members() const;
+  get_service_group_members() const;
   std::string const& get_instance(uint64_t instance_id) const;
 
   std::unordered_multimap<
       uint64_t,
       std::shared_ptr<bam::dimension_ba_bv_relation_event> > const&
-      get_dimension_ba_bv_relation_events() const;
+  get_dimension_ba_bv_relation_events() const;
   bam::dimension_ba_event const& get_dimension_ba_event(uint64_t id) const;
   bam::dimension_bv_event const& get_dimension_bv_event(uint64_t id) const;
 
@@ -87,6 +89,7 @@ class macro_cache {
   void _process_host(std::shared_ptr<io::data> const& data);
   void _process_host_group(std::shared_ptr<io::data> const& data);
   void _process_host_group_member(std::shared_ptr<io::data> const& data);
+  void _process_custom_variable(std::shared_ptr<io::data> const& data);
   void _process_service(std::shared_ptr<io::data> const& data);
   void _process_service_group(std::shared_ptr<io::data> const& data);
   void _process_service_group_member(std::shared_ptr<io::data> const& data);
@@ -106,13 +109,19 @@ class macro_cache {
   std::unordered_map<uint64_t, std::shared_ptr<neb::host> > _hosts;
   std::unordered_map<uint64_t, std::shared_ptr<neb::host_group> > _host_groups;
   std::map<std::pair<uint64_t, uint64_t>,
-           std::shared_ptr<neb::host_group_member> > _host_group_members;
+           std::shared_ptr<neb::host_group_member> >
+      _host_group_members;
+  std::map<std::pair<uint64_t, uint64_t>,
+           std::shared_ptr<neb::custom_variable> >
+      _custom_vars;
   std::unordered_map<std::pair<uint64_t, uint64_t>,
-                     std::shared_ptr<neb::service> > _services;
+                     std::shared_ptr<neb::service> >
+      _services;
   std::unordered_map<uint64_t, std::shared_ptr<neb::service_group> >
       _service_groups;
   std::map<std::tuple<uint64_t, uint64_t, uint64_t>,
-           std::shared_ptr<neb::service_group_member> > _service_group_members;
+           std::shared_ptr<neb::service_group_member> >
+      _service_group_members;
   std::unordered_map<uint64_t, std::shared_ptr<storage::index_mapping> >
       _index_mappings;
   std::unordered_map<uint64_t, std::shared_ptr<storage::metric_mapping> >

@@ -14,6 +14,10 @@ To use them on hosts, you just have to give the host id as parameter. To use
 them on services, you just have to give the host id and the service id as
 parameters. All this is detailed in the Broker documentation.
 
+It is also possible to get the severity of a host or a service. We provide now
+the function broker_cache:get_severity(host_id, service_id). If you just give
+the host_id, we suppose you want a host severity.
+
 =======================
 Centreon Broker 20.04.1
 =======================

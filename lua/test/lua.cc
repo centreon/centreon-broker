@@ -1600,3 +1600,37 @@ TEST_F(LuaTest, CacheSvcGetNotesUrlTest) {
   RemoveFile(filename);
   RemoveFile("/tmp/log");
 }
+
+TEST_F(LuaTest, CacheSeverity) {
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  std::shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 1;
+  svc->service_id = 2;
+  svc->notes = "svc notes";
+  svc->notes_url = "svc notes url";
+  svc->action_url = "svc action url";
+  _cache->write(svc);
+  std::shared_ptr<neb::custom_variable> cv =
+      std::make_shared<neb::custom_variable>();
+  cv->name = "CRITICALITY_LEVEL";
+  cv->value = std::to_string(3);
+  cv->host_id = 1;
+  cv->service_id = 2;
+  _cache->write(cv);
+
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local severity = broker_cache:get_severity(1, 2)\n"
+               "  broker_log:info(1, \"severity=\" .. severity)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string lst(ReadFile("/tmp/log"));
+
+  ASSERT_NE(lst.find("severity=3"), std::string::npos);
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
