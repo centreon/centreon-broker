@@ -1528,3 +1528,75 @@ TEST_F(LuaTest, StatError) {
   RemoveFile(filename);
   RemoveFile("/tmp/log");
 }
+
+// When a query for a hostname is made
+// And the cache does not know about it
+// Then nil is returned from the lua method.
+TEST_F(LuaTest, CacheGetNotesUrlTest) {
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  std::shared_ptr<neb::host> hst(new neb::host);
+  hst->host_id = 1;
+  hst->notes = "host notes";
+  hst->notes_url = "host notes url";
+  hst->action_url = "host action url";
+  hst->host_name = "centreon";
+  _cache->write(hst);
+
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local notes_url = broker_cache:get_notes_url(1)\n"
+               "  local action_url = broker_cache:get_action_url(1)\n"
+               "  local notes = broker_cache:get_notes(1)\n"
+               "  broker_log:info(1, \"notes_url=\" .. notes_url)\n"
+               "  broker_log:info(1, \"action_url=\" .. action_url)\n"
+               "  broker_log:info(1, \"notes=\" .. notes)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string lst(ReadFile("/tmp/log"));
+
+  ASSERT_NE(lst.find("notes_url=host notes url"), std::string::npos);
+  ASSERT_NE(lst.find("action_url=host action url"), std::string::npos);
+  ASSERT_NE(lst.find("notes=host notes"), std::string::npos);
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}
+
+// When a query for a hostname is made
+// And the cache does not know about it
+// Then nil is returned from the lua method.
+TEST_F(LuaTest, CacheSvcGetNotesUrlTest) {
+  std::map<std::string, misc::variant> conf;
+  std::string filename("/tmp/cache_test.lua");
+  std::shared_ptr<neb::service> svc(new neb::service);
+  svc->host_id = 1;
+  svc->service_id = 2;
+  svc->notes = "svc notes";
+  svc->notes_url = "svc notes url";
+  svc->action_url = "svc action url";
+  _cache->write(svc);
+
+  CreateScript(filename,
+               "function init(conf)\n"
+               "  broker_log:set_parameters(3, '/tmp/log')\n"
+               "  local notes_url = broker_cache:get_notes_url(1, 2)\n"
+               "  local action_url = broker_cache:get_action_url(1, 2)\n"
+               "  local notes = broker_cache:get_notes(1, 2)\n"
+               "  broker_log:info(1, \"notes_url=\" .. notes_url)\n"
+               "  broker_log:info(1, \"action_url=\" .. action_url)\n"
+               "  broker_log:info(1, \"notes=\" .. notes)\n"
+               "end\n\n"
+               "function write(d)\n"
+               "end\n");
+  std::unique_ptr<luabinding> binding(new luabinding(filename, conf, *_cache));
+  std::string lst(ReadFile("/tmp/log"));
+
+  ASSERT_NE(lst.find("notes_url=svc notes url"), std::string::npos);
+  ASSERT_NE(lst.find("action_url=svc action url"), std::string::npos);
+  ASSERT_NE(lst.find("notes=svc notes"), std::string::npos);
+  RemoveFile(filename);
+  RemoveFile("/tmp/log");
+}

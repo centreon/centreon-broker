@@ -56,6 +56,10 @@ class macro_cache {
   storage::metric_mapping const& get_metric_mapping(uint32_t metric_id)
       const;
   std::string const& get_host_name(uint64_t host_id) const;
+  std::string const& get_notes_url(uint64_t host_id, uint64_t service_id) const;
+  std::string const& get_notes(uint64_t host_id, uint64_t service_id) const;
+  std::string const& get_action_url(uint64_t host_id,
+                                    uint64_t service_id) const;
   std::string const& get_host_group_name(uint64_t id) const;
   std::map<std::pair<uint64_t, uint64_t>,
            std::shared_ptr<neb::host_group_member> > const&
