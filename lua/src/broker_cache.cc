@@ -17,6 +17,7 @@
 */
 
 #include "com/centreon/broker/lua/broker_cache.hh"
+
 #include "com/centreon/broker/misc/pair.hh"
 
 using namespace com::centreon::broker;
@@ -463,6 +464,34 @@ static int l_broker_cache_get_notes_url(lua_State* L) {
 }
 
 /**
+ *  The get_severity() method available in the Lua interpreter
+ *  This function works on hosts or services.
+ *  It needs a host_id as parameter for a host and an additional service_id for
+ *  a service. It returns a string with the severity value or nil if not found.
+ *
+ *  @param L The Lua interpreter
+ *
+ *  @return 1
+ */
+static int32_t l_broker_cache_get_severity(lua_State* L) {
+  macro_cache const* cache(
+      *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
+  int host_id = luaL_checkinteger(L, 2);
+  int service_id = 0;
+  if (lua_gettop(L) >= 3)
+    service_id = luaL_checkinteger(L, 3);
+
+  try {
+    int32_t severity = cache->get_severity(host_id, service_id);
+    lua_pushinteger(L, severity);
+  } catch (std::exception const& e) {
+    (void)e;
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+/**
  *  Load the Lua interpreter with the standard libraries
  *  and the broker lua sdk.
  *
@@ -493,6 +522,7 @@ void broker_cache::broker_cache_reg(lua_State* L, macro_cache const& cache) {
       {"get_notes_url", l_broker_cache_get_notes_url},
       {"get_notes", l_broker_cache_get_notes},
       {"get_action_url", l_broker_cache_get_action_url},
+      {"get_severity", l_broker_cache_get_severity},
       {nullptr, nullptr}};
 
   // Create a metatable. It is not exposed to Lua.

@@ -21,6 +21,7 @@
 #include <unordered_set>
 
 #include "com/centreon/broker/exceptions/msg.hh"
+#include "com/centreon/broker/log_v2.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
 using namespace com::centreon::broker;
@@ -104,6 +105,23 @@ std::string const& macro_cache::get_host_name(uint64_t host_id) const {
     throw exceptions::msg()
         << "lua: could not find information on host " << host_id;
   return found->second->host_name;
+}
+
+/**
+ * Get the severity about a service or a host.
+ *
+ * @param host_id
+ * @param service_id The service id or 0 in case of a host.
+ *
+ * @return a severity (int32_t).
+ */
+int32_t macro_cache::get_severity(uint64_t host_id, uint64_t service_id) const {
+  auto found = _custom_vars.find({host_id, service_id});
+  if (found == _custom_vars.end())
+    throw exceptions::msg()
+        << "lua: could not find the severity of the object (host_id: "
+        << host_id << ", " << service_id << ")";
+  return atoi(found->second->value.c_str());
 }
 
 /**
@@ -332,32 +350,52 @@ void macro_cache::write(std::shared_ptr<io::data> const& data) {
   if (!data)
     return;
 
-  if (data->type() == neb::instance::static_type())
-    _process_instance(data);
-  else if (data->type() == neb::host::static_type())
-    _process_host(data);
-  else if (data->type() == neb::host_group::static_type())
-    _process_host_group(data);
-  else if (data->type() == neb::host_group_member::static_type())
-    _process_host_group_member(data);
-  else if (data->type() == neb::service::static_type())
-    _process_service(data);
-  else if (data->type() == neb::service_group::static_type())
-    _process_service_group(data);
-  else if (data->type() == neb::service_group_member::static_type())
-    _process_service_group_member(data);
-  else if (data->type() == storage::index_mapping::static_type())
-    _process_index_mapping(data);
-  else if (data->type() == storage::metric_mapping::static_type())
-    _process_metric_mapping(data);
-  else if (data->type() == bam::dimension_ba_event::static_type())
-    _process_dimension_ba_event(data);
-  else if (data->type() == bam::dimension_ba_bv_relation_event::static_type())
-    _process_dimension_ba_bv_relation_event(data);
-  else if (data->type() == bam::dimension_bv_event::static_type())
-    _process_dimension_bv_event(data);
-  else if (data->type() == bam::dimension_truncate_table_signal::static_type())
-    _process_dimension_truncate_table_signal(data);
+  switch (data->type()) {
+    case neb::instance::static_type():
+      _process_instance(data);
+      break;
+    case neb::host::static_type():
+      _process_host(data);
+      break;
+    case neb::host_group::static_type():
+      _process_host_group(data);
+      break;
+    case neb::host_group_member::static_type():
+      _process_host_group_member(data);
+      break;
+    case neb::service::static_type():
+      _process_service(data);
+      break;
+    case neb::service_group::static_type():
+      _process_service_group(data);
+      break;
+    case neb::service_group_member::static_type():
+      _process_service_group_member(data);
+      break;
+    case neb::custom_variable::static_type():
+      _process_custom_variable(data);
+      break;
+    case storage::index_mapping::static_type():
+      _process_index_mapping(data);
+      break;
+    case storage::metric_mapping::static_type():
+      _process_metric_mapping(data);
+      break;
+    case bam::dimension_ba_event::static_type():
+      _process_dimension_ba_event(data);
+      break;
+    case bam::dimension_ba_bv_relation_event::static_type():
+      _process_dimension_ba_bv_relation_event(data);
+      break;
+    case bam::dimension_bv_event::static_type():
+      _process_dimension_bv_event(data);
+      break;
+    case bam::dimension_truncate_table_signal::static_type():
+      _process_dimension_truncate_table_signal(data);
+      break;
+    default:
+      break;
+  }
 }
 
 /**
@@ -585,6 +623,27 @@ void macro_cache::_process_dimension_truncate_table_signal(
 }
 
 /**
+ *  Process a custom variable event.
+ *  The goal is to keep in cache only custom variables concerning severity on
+ *  hosts and services.
+ *
+ *  @param data  The event.
+ */
+void macro_cache::_process_custom_variable(
+    std::shared_ptr<io::data> const& data) {
+  auto const& cv = std::static_pointer_cast<neb::custom_variable>(data);
+  if (cv->name == "CRITICALITY_LEVEL") {
+    log_v2::lua()->debug(
+        "lua: processing custom variable representing a criticality level for "
+        "host_id {} and service_id {} and level {}",
+        cv->host_id, cv->service_id, cv->value);
+    int32_t value = std::atoi(cv->value.c_str());
+    if (value)
+      _custom_vars[{cv->host_id, cv->service_id}] = cv;
+  }
+}
+
+/**
  *  Save all data to disk.
  */
 void macro_cache::_save_to_disk() {
@@ -636,5 +695,8 @@ void macro_cache::_save_to_disk() {
        it != end; ++it)
     _cache->add(it->second);
 
+  for (auto it = _custom_vars.begin(), end = _custom_vars.end(); it != end;
+       ++it)
+    _cache->add(it->second);
   _cache->commit();
 }
