@@ -378,7 +378,11 @@ static int l_broker_cache_get_hostgroups(lua_State* L) {
 
 /**
  *  The get_action_url() method available in the Lua interpreter
- *  It needs a host_id as parameter and returns a string with the action url.
+ *  This function works on hosts or services.
+ *  For a host, it needs a host_id as parameter and returns a string with the
+ *  action url.
+ *  For a service, it needs a host_id and a service_id as parameter and
+ *  returns a string with the action url.
  *
  *  @param L The Lua interpreter
  *
@@ -388,9 +392,12 @@ static int l_broker_cache_get_action_url(lua_State* L) {
   macro_cache const* cache(
       *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
   int host_id = luaL_checkinteger(L, 2);
+  int service_id = 0;
+  if (lua_gettop(L) >= 3)
+    service_id = luaL_checkinteger(L, 3);
 
   try {
-    std::string const& action_url(cache->get_action_url(host_id));
+    std::string const& action_url(cache->get_action_url(host_id, service_id));
     lua_pushstring(L, action_url.c_str());
   } catch (std::exception const& e) {
     (void)e;
@@ -401,7 +408,9 @@ static int l_broker_cache_get_action_url(lua_State* L) {
 
 /**
  *  The get_notes() method available in the Lua interpreter
- *  It needs a host_id as parameter and returns a string with the notes.
+ *  This function works on hosts or services.
+ *  It needs a host_id as parameter for a host and an additional service_id for
+ *  a service. It returns a string with the notes.
  *
  *  @param L The Lua interpreter
  *
@@ -411,9 +420,12 @@ static int l_broker_cache_get_notes(lua_State* L) {
   macro_cache const* cache(
       *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
   int host_id = luaL_checkinteger(L, 2);
+  int service_id = 0;
+  if (lua_gettop(L) >= 3)
+    service_id = luaL_checkinteger(L, 3);
 
   try {
-    std::string const& notes(cache->get_notes(host_id));
+    std::string const& notes(cache->get_notes(host_id, service_id));
     lua_pushstring(L, notes.c_str());
   } catch (std::exception const& e) {
     (void)e;
@@ -424,7 +436,9 @@ static int l_broker_cache_get_notes(lua_State* L) {
 
 /**
  *  The get_notes_url() method available in the Lua interpreter
- *  It needs a host_id as parameter and returns a string with the notes url.
+ *  This function works on hosts or services.
+ *  It needs a host_id as parameter for a host and an additional service_id for
+ *  a service. It returns a string with the notes url.
  *
  *  @param L The Lua interpreter
  *
@@ -434,9 +448,12 @@ static int l_broker_cache_get_notes_url(lua_State* L) {
   macro_cache const* cache(
       *static_cast<macro_cache**>(luaL_checkudata(L, 1, "lua_broker_cache")));
   int host_id = luaL_checkinteger(L, 2);
+  int service_id = 0;
+  if (lua_gettop(L) >= 3)
+    service_id = luaL_checkinteger(L, 3);
 
   try {
-    std::string const& notes_url(cache->get_notes_url(host_id));
+    std::string const& notes_url(cache->get_notes_url(host_id, service_id));
     lua_pushstring(L, notes_url.c_str());
   } catch (std::exception const& e) {
     (void)e;
