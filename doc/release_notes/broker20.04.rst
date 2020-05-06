@@ -1,4 +1,20 @@
 =======================
+Centreon Broker 20.04.2
+=======================
+
+************
+Enhancements
+************
+
+Stream connector
+================
+The Stream connector cache has three new functions that are get_notes(),
+get_notes_url() and get_action_url(). They can be used on hosts or on services.
+To use them on hosts, you just have to give the host id as parameter. To use
+them on services, you just have to give the host id and the service id as
+parameters. All this is detailed in the Broker documentation.
+
+=======================
 Centreon Broker 20.04.1
 =======================
 
