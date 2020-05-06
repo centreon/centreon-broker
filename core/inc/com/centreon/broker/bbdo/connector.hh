@@ -19,9 +19,7 @@
 #ifndef CCB_BBDO_CONNECTOR_HH
 #define CCB_BBDO_CONNECTOR_HH
 
-#include <ctime>
 #include "com/centreon/broker/io/endpoint.hh"
-#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -33,13 +31,17 @@ namespace bbdo {
  *  Initiate direct BBDO protocol connections.
  */
 class connector : public io::endpoint {
+  const bool _want_compression;
+  const bool _want_tls;
  public:
-  connector(bool negotiate,
+  connector(bool want_compression,
+            bool want_tls,
+            bool negotiate,
             std::string const& extensions,
             time_t timeout,
             bool coarse = false,
             uint32_t ack_limit = 1000);
-  connector(connector const& other);
+  connector(connector const& other) = delete;
   ~connector();
   connector& operator=(connector const& other);
   std::shared_ptr<io::stream> open();

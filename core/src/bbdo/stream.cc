@@ -42,8 +42,10 @@ using namespace com::centreon::broker::bbdo;
 /**
  *  Default constructor.
  */
-stream::stream()
-    : _coarse(false),
+stream::stream(bool want_compression, bool want_tls)
+    : _want_compression(want_compression),
+      _want_tls(want_tls),
+      _coarse(false),
       _negotiate(true),
       _negotiated(false),
       _timeout(5),

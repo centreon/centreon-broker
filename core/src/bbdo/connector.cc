@@ -17,14 +17,14 @@
 */
 
 #include "com/centreon/broker/bbdo/connector.hh"
-#include <cassert>
+
 #include <algorithm>
-#include <memory>
+#include <cassert>
+
 #include "com/centreon/broker/bbdo/internal.hh"
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -47,12 +47,16 @@ using namespace com::centreon::broker::bbdo;
  *  @param[in] ack_limit  The number of event received before an ack needs to be
  * sent.
  */
-connector::connector(bool negotiate,
+connector::connector(bool want_compression,
+                     bool want_tls,
+                     bool negotiate,
                      std::string const& extensions,
                      time_t timeout,
                      bool coarse,
                      uint32_t ack_limit)
     : io::endpoint{false},
+      _want_compression{want_compression},
+      _want_tls{want_tls},
       _coarse{coarse},
       _extensions{extensions},
       _negotiate{negotiate},
@@ -67,13 +71,15 @@ connector::connector(bool negotiate,
  *
  *  @param[in] other Object to copy.
  */
-connector::connector(connector const& other)
-    : io::endpoint{other},
-      _coarse{other._coarse},
-      _extensions{other._extensions},
-      _negotiate{other._negotiate},
-      _timeout{other._timeout},
-      _ack_limit{other._ack_limit} {}
+// connector::connector(connector const& other)
+//    : io::endpoint{other},
+//      _want_compression{other._want_compression},
+//      _want_tls{other._want_tls},
+//      _coarse{other._coarse},
+//      _extensions{other._extensions},
+//      _negotiate{other._negotiate},
+//      _timeout{other._timeout},
+//      _ack_limit{other._ack_limit} {}
 
 /**
  *  Destructor.
@@ -132,7 +138,7 @@ std::shared_ptr<io::stream> connector::_open(
   assert(!_coarse);
   std::shared_ptr<bbdo::stream> bbdo_stream;
   if (stream) {
-    bbdo_stream = std::make_shared<bbdo::stream>();
+    bbdo_stream = std::make_shared<bbdo::stream>(_want_compression, _want_tls);
     bbdo_stream->set_substream(stream);
     bbdo_stream->set_coarse(_coarse);
     bbdo_stream->set_negotiate(_negotiate, _extensions);

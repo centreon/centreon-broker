@@ -74,6 +74,22 @@ io::endpoint* factory::new_endpoint(
       coarse = config::parser::parse_boolean(it->second);
   }
 
+  // Want compression? We check if compression is set to 'yes'.
+  bool want_compression{false};
+  {
+    auto it = cfg.params.find("compression");
+    if (it != cfg.params.end())
+      want_compression = config::parser::parse_boolean(it->second);
+  }
+
+  // Want tls? We check if tls is set to 'yes'.
+  bool want_tls{false};
+  {
+    auto it = cfg.params.find("tls");
+    if (it != cfg.params.end())
+      want_tls = config::parser::parse_boolean(it->second);
+  }
+
   // Negotiation allowed ?
   bool negotiate{false};
   std::string extensions;
@@ -113,22 +129,15 @@ io::endpoint* factory::new_endpoint(
   is_acceptor = host.empty();
 
   if (is_acceptor) {
-    // One peer retention mode ?
-//    bool one_peer_retention_mode{false};
-//    std::map<std::string, std::string>::const_iterator it(
-//        cfg.params.find("one_peer_retention_mode"));
-//    if (it != cfg.params.end())
-//      one_peer_retention_mode = config::parser::parse_boolean(it->second);
-//    if (one_peer_retention_mode)
-//      is_acceptor = false;
-    retval =
-        new bbdo::acceptor(cfg.name, negotiate, extensions, cfg.read_timeout,
-                           false, coarse, ack_limit);
+    retval = new bbdo::acceptor(cfg.name, want_compression, want_tls, negotiate,
+                                extensions, cfg.read_timeout, false, coarse,
+                                ack_limit);
     logging::debug(logging::high)
       << "BBDO: new acceptor " << cfg.name;
   } else {
-    retval = new bbdo::connector(negotiate, extensions, cfg.read_timeout,
-                                 coarse, ack_limit);
+    retval =
+        new bbdo::connector(want_compression, want_tls, negotiate, extensions,
+                            cfg.read_timeout, coarse, ack_limit);
     logging::debug(logging::high)
       << "BBDO: new connector " << cfg.name;
   }

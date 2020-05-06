@@ -1,5 +1,5 @@
 /*
-** Copyright 2013-2015,2017 Centreon
+** Copyright 2013-2015,2017-2020 Centreon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,15 +17,13 @@
 */
 
 #include "com/centreon/broker/bbdo/acceptor.hh"
-#include <cassert>
+
 #include <algorithm>
-#include <memory>
-#include <sstream>
-#include "com/centreon/broker/bbdo/internal.hh"
+#include <cassert>
+
 #include "com/centreon/broker/bbdo/stream.hh"
 #include "com/centreon/broker/bbdo/version_response.hh"
 #include "com/centreon/broker/exceptions/msg.hh"
-#include "com/centreon/broker/io/events.hh"
 #include "com/centreon/broker/io/protocols.hh"
 #include "com/centreon/broker/logging/logging.hh"
 
@@ -54,6 +52,8 @@ using namespace com::centreon::broker::bbdo;
  *                                     an ack needs to be sent.
  */
 acceptor::acceptor(std::string const& name,
+                   bool want_compression,
+                   bool want_tls,
                    bool negotiate,
                    std::string const& extensions,
                    time_t timeout,
@@ -61,6 +61,8 @@ acceptor::acceptor(std::string const& name,
                    bool coarse,
                    uint32_t ack_limit)
     : io::endpoint(!one_peer_retention_mode),
+      _want_compression(want_compression),
+      _want_tls(want_tls),
       _coarse(coarse),
       _extensions(extensions),
       _name(name),
@@ -68,7 +70,7 @@ acceptor::acceptor(std::string const& name,
       _one_peer_retention_mode(one_peer_retention_mode),
       _timeout(timeout),
       _ack_limit(ack_limit) {
-  if ((_timeout == (time_t)-1) || (_timeout == 0))
+  if (_timeout == (time_t)-1 || _timeout == 0)
     _timeout = 3;
 }
 
@@ -77,15 +79,17 @@ acceptor::acceptor(std::string const& name,
  *
  *  @param[in] other  Object to copy.
  */
-acceptor::acceptor(acceptor const& other)
-    : io::endpoint(other),
-      _coarse(other._coarse),
-      _extensions(other._extensions),
-      _name(other._name),
-      _negotiate(other._negotiate),
-      _one_peer_retention_mode(other._one_peer_retention_mode),
-      _timeout(other._timeout),
-      _ack_limit(other._ack_limit) {}
+//acceptor::acceptor(acceptor const& other)
+//    : io::endpoint(other),
+//      _want_compression(other._want_compression),
+//      _want_tls(other._want_tls),
+//      _coarse(other._coarse),
+//      _extensions(other._extensions),
+//      _name(other._name),
+//      _negotiate(other._negotiate),
+//      _one_peer_retention_mode(other._one_peer_retention_mode),
+//      _timeout(other._timeout),
+//      _ack_limit(other._ack_limit) {}
 
 /**
  *  Destructor.
@@ -132,7 +136,8 @@ std::shared_ptr<io::stream> acceptor::open() {
     // Add BBDO layer.
     if (s) {
       assert(!_coarse);
-      std::shared_ptr<bbdo::stream> my_bbdo(std::make_shared<bbdo::stream>());
+      std::shared_ptr<bbdo::stream> my_bbdo(
+          std::make_shared<bbdo::stream>(_want_compression, _want_tls));
       my_bbdo->set_substream(s);
       my_bbdo->set_coarse(_coarse);
       my_bbdo->set_negotiate(_negotiate, _extensions);

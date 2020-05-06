@@ -19,11 +19,7 @@
 #ifndef CCB_BBDO_ACCEPTOR_HH
 #define CCB_BBDO_ACCEPTOR_HH
 
-#include <ctime>
-#include <list>
-#include <string>
 #include "com/centreon/broker/io/endpoint.hh"
-#include "com/centreon/broker/namespace.hh"
 
 CCB_BEGIN()
 
@@ -43,15 +39,20 @@ class stream;
  *  Accept incoming BBDO connections.
  */
 class acceptor : public io::endpoint {
+  const bool _want_compression;
+  const bool _want_tls;
+
  public:
   acceptor(std::string const& name,
+           bool want_compression,
+           bool want_tls,
            bool negotiate,
            std::string const& extensions,
            time_t timeout,
            bool one_peer_retention_mode = false,
            bool coarse = false,
            uint32_t ack_limit = 1000);
-  acceptor(acceptor const& other);
+  acceptor(acceptor const& other) = delete;
   ~acceptor();
   acceptor& operator=(acceptor const& other);
   std::shared_ptr<io::stream> open() override;
@@ -59,7 +60,7 @@ class acceptor : public io::endpoint {
 
  private:
   uint32_t _negotiate_features(std::shared_ptr<io::stream> stream,
-                                   std::shared_ptr<bbdo::stream> my_bbdo);
+                               std::shared_ptr<bbdo::stream> my_bbdo);
   void _open(std::shared_ptr<io::stream> stream);
 
   bool _coarse;
