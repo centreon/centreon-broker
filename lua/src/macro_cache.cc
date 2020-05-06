@@ -106,6 +106,54 @@ std::string const& macro_cache::get_host_name(uint64_t host_id) const {
 }
 
 /**
+ *  Get the notes url of a host.
+ *
+ *  @param[in] host_id  The id of the host.
+ *
+ *  @return             The notes url.
+ */
+std::string const& macro_cache::get_notes_url(uint64_t host_id) const {
+  auto found = _hosts.find(host_id);
+
+  if (found == _hosts.end())
+    throw exceptions::msg() << "lua: could not find information on host "
+                            << host_id;
+  return found->second->notes_url;
+}
+
+/**
+ *  Get the action url of a host.
+ *
+ *  @param[in] host_id  The id of the host.
+ *
+ *  @return             The action url.
+ */
+std::string const& macro_cache::get_action_url(uint64_t host_id) const {
+  auto found = _hosts.find(host_id);
+
+  if (found == _hosts.end())
+    throw exceptions::msg() << "lua: could not find information on host "
+                            << host_id;
+  return found->second->action_url;
+}
+
+/**
+ *  Get the notes of a host.
+ *
+ *  @param[in] host_id  The id of the host.
+ *
+ *  @return             The notes.
+ */
+std::string const& macro_cache::get_notes(uint64_t host_id) const {
+  auto found = _hosts.find(host_id);
+
+  if (found == _hosts.end())
+    throw exceptions::msg() << "lua: could not find information on host "
+                            << host_id;
+  return found->second->notes;
+}
+
+/**
  *  Get a map of the host groups members index by host_id and host_group.
  *
  *  @return             A std::map
