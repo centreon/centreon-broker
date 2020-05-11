@@ -53,7 +53,7 @@ Centreon Broker.
 
 ## Fetching sources ##
 
-The reference repository is hosted at [GitHub](https://github.com/centreon/centreon-broker).
+
 Beware that the repository hosts in-development sources and that it
 might not work at all.
 
@@ -69,10 +69,25 @@ This paragraph is only a quickstart guide for the compilation of
 Centreon Broker. For a more in-depth guide with build options you should
 refer to the [online documentation](https://documentation.centreon.com/docs/centreon-broker/en/latest/installation/index.html#using-sources).
 
-For the projet compilation you need to have conan installed. To install conan you need pip 
+First of all, check if you have these packages installed (Note that packages names come from Centos 7 distribution, so if some packages names don't match on your distribution try to find their equivalent names) :
+
+    git, make, cmake3, python3, python3-pip3, lua-devel, gnutls-devel, rrdtool-devel, openssl-devel, ninja-build.
+
+If they are not installed, please install them.
+
+If you are on a Centos 7 distribution, follow these steps : 
+    
+    $> git clone https://github.com/centreon/centreon-broker
+    $> cd centreon-broker && ./cmake.sh
+    $> cd build
+    $> make && make install
+
+If you are on an other distribution, then follow the steps below. 
+
+For the projet compilation you need to have conan installed. To install conan you need pip3 if you are using python3 
 (python package manager). You can install conan like that.
 
-    $> pip install conan
+    $> pip3 install conan
 
 All the dependencies pulled by conan are located in conanfile.txt. If you want to use a dependency
 from your package manager instead of conan, you need to remove it from conanfile.txt.
@@ -87,7 +102,8 @@ Now, the *command conan remote list* should list two repositories:
     centreon: https://api.bintray.com/conan/centreon/centreon [Verify SSL: True]
 
 Once the sources of Centreon Broker extracted, execute the following commands:
-
+    
+    $> git clone https://github.com/centreon/centreon-broker 
     $> cd centreon-broker
     $> mkdir build
     $> cd build
@@ -99,17 +115,23 @@ message, instead of the previous line enter this one:
 
     $> conan install --build missing ..
 
-Once those libraries built, always from the *build* directory, enter:
+Once those libraries built, always from the *build* directory, enter this command (Note that cmake parameters are strongly recommended but you can choose your own) :
 
-    $> cmake ..
+    $> cmake -DCMAKE_BUILD_TYPE=Release -DWITH_PREFIX=/usr -DWITH_PREFIX_BIN=/usr/sbin -DWITH_USER=centreon-broker -DWITH_GROUP=centreon-broker -DWITH_CONFIG_PREFIX=/etc/centreon-broker  \ 
+	     -DWITH_TESTING=On -DWITH_PREFIX_MODULES=/usr/share/centreon/lib/centreon-broker -DWITH_PREFIX_CONF=/etc/centreon-broker -DWITH_PREFIX_LIB=/usr/lib64/nagios -DWITH_MODULE_SIMU=On $* .. 
+    
     ...
 
 Now launch the compilation using the *make* command and then install the
 software by running *make install* as priviledged user.
-
+    
     $> make -j4
     ...
     $# make install
+    
+    or:    
+ 
+    $> make && make install
 
 You're done !
 
