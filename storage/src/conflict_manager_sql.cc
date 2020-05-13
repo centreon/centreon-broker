@@ -393,7 +393,22 @@ int32_t conflict_manager::_process_acknowledgement() {
         ", entry time: {}): ",
         ack.poller_id, ack.host_id, ack.service_id, ack.entry_time));
 
-    _acknowledgement_insupdate << ack;
+    if (ack.author.size() >
+            get_acknowledgements_col_size(acknowledgements_author) ||
+        ack.comment.size() >
+            get_acknowledgements_col_size(acknowledgements_comment_data)) {
+      neb::acknowledgement trunc_ack(ack);
+      if (trunc_ack.author.size() >
+          get_acknowledgements_col_size(acknowledgements_author))
+        trunc_ack.author.resize(
+            get_acknowledgements_col_size(acknowledgements_author));
+      if (trunc_ack.comment.size() >
+          get_acknowledgements_col_size(acknowledgements_comment_data))
+        trunc_ack.comment.resize(
+            get_acknowledgements_col_size(acknowledgements_comment_data));
+      _acknowledgement_insupdate << trunc_ack;
+    } else
+      _acknowledgement_insupdate << ack;
     _mysql.run_statement(_acknowledgement_insupdate, msg_error, true, conn);
   }
   _pop_event(p);
@@ -444,6 +459,17 @@ int32_t conflict_manager::_process_comment() {
                   ", internal ID: {}): ",
                   cmmnt.poller_id, cmmnt.host_id, cmmnt.service_id,
                   cmmnt.entry_time, cmmnt.internal_id));
+
+  if (cmmnt.author.size() > get_comments_col_size(comments_author) ||
+      cmmnt.data.size() > get_comments_col_size(comments_data)) {
+    neb::comment trunc_cmnt(cmmnt);
+    if (trunc_cmnt.author.size() > get_comments_col_size(comments_author))
+      trunc_cmnt.author.resize(get_comments_col_size(comments_author));
+    if (trunc_cmnt.data.size() > get_comments_col_size(comments_data))
+      trunc_cmnt.data.resize(get_comments_col_size(comments_data));
+    _comment_insupdate << trunc_cmnt;
+  } else
+    _comment_insupdate << cmmnt;
 
   _comment_insupdate << cmmnt;
   _mysql.run_statement(_comment_insupdate, err_msg, true, conn);
@@ -501,7 +527,28 @@ int32_t conflict_manager::_process_custom_variable() {
                       cv.name, cv.host_id, cv.service_id));
       ;
 
-      _custom_variable_insupdate << cv;
+      if (cv.default_value.size() >
+              get_customvariables_col_size(customvariables_default_value) ||
+          cv.value.size() >
+              get_customvariables_col_size(customvariables_value) ||
+          cv.name.size() > get_customvariables_col_size(customvariables_name)) {
+        neb::custom_variable trunc_cv(cv);
+        if (trunc_cv.default_value.size() >
+            get_customvariables_col_size(customvariables_default_value))
+          trunc_cv.default_value.resize(
+              get_customvariables_col_size(customvariables_default_value));
+        if (trunc_cv.value.size() >
+            get_customvariables_col_size(customvariables_value))
+          trunc_cv.value.resize(
+              get_customvariables_col_size(customvariables_value));
+        if (trunc_cv.name.size() >
+            get_customvariables_col_size(customvariables_name))
+          trunc_cv.name.resize(
+              get_customvariables_col_size(customvariables_name));
+        _custom_variable_insupdate << trunc_cv;
+      } else
+        _custom_variable_insupdate << cv;
+
       _mysql.run_statement(_custom_variable_insupdate, err_msg, true, conn);
       _add_action(conn, actions::custom_variables);
     } else {
