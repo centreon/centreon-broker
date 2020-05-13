@@ -17,16 +17,25 @@
 ** For more information : contact@centreon.com
 """
 
+import sys
 import re
 
-sql_file = "../../simu/docker/installBroker.sql"
-header_file = "../inc/com/centreon/broker/storage/table_max_size.hh"
+#sql_file = "../../simu/docker/installBroker.sql"
+sql_file = sys.argv[1]
+header_file = sys.argv[2]
+#header_file = "../inc/com/centreon/broker/storage/table_max_size.hh"
 
 dico = {}
 
 pattern_ct = re.compile('CREATE TABLE `(.*)`')
 column_ct = re.compile('\s*`(.*)` (varchar\(([0-9]*)\)|text)')
 end_ct = re.compile('^\)')
+
+debug = False
+
+def print_dbg(s):
+    if debug:
+        print(s)
 
 with open(sql_file) as fp:
     line = fp.readline()
@@ -36,7 +45,7 @@ with open(sql_file) as fp:
         if not in_block:
             m = pattern_ct.match(line)
             if m:
-                print("New table {}".format(m.group(1)))
+                print_dbg("New table {}".format(m.group(1)))
                 current_table = m.group(1)
                 in_block = True
         else:
@@ -46,11 +55,11 @@ with open(sql_file) as fp:
                 m = column_ct.match(line)
                 if m:
                     if m.group(3):
-                        print("New text column {} of size {}".format(m.group(1), m.group(3)))
+                        print_dbg("New text column {} of size {}".format(m.group(1), m.group(3)))
                         dico.setdefault(current_table, []).append((m.group(1), m.group(3)))
                     else:
-                        print("New text column {} of 65534".format(m.group(1), m.group(2)))
-                        dico.setdefault(current_table, []).append((m.group(1), m.group(2)))
+                        print_dbg("New text column {} of 65534".format(m.group(1), m.group(2)))
+                        dico.setdefault(current_table, []).append((m.group(1), 65534))
 
         line = fp.readline()
 
@@ -59,25 +68,24 @@ with open(sql_file) as fp:
 
 
 
-enum = """namespace storage {
-enum storage_tables {
-"""
-
 cols = ""
 
 for t,content in dico.items():
-    enum += "  {},\n".format(t)
-
     cols += "enum {}_cols {{\n".format(t)
     sizes = "constexpr static uint32_t {}_size[] {{\n".format(t)
     for c in content:
         cols += "  {}_{},\n".format(t, c[0])
-        sizes += "  {},\n".format(c[1])
+        sizes += "    {},\n".format(c[1])
     cols += "};\n"
-    sizes += "};\n\n"
+    sizes += "};\n"
     cols += sizes
 
-enum += "};\n"
+    cols += """constexpr uint32_t get_{}_col_size(
+    {}_cols const& col) {{
+  return {}_size[col];
+}}
+
+""".format(t, t, t)
 
 with open(header_file, 'w') as fp:
     fp.write("""/*
@@ -105,8 +113,9 @@ with open(header_file, 'w') as fp:
 
 CCB_BEGIN()
 
+namespace storage {
 """)
 
-    fp.write(enum)
+    #fp.write(enum)
     fp.write(cols)
-    fp.write("\n}\n\n#CCB_END()\n\n#endif /* __TABLE_MAX_SIZE_HH__ */")
+    fp.write("\n}\n\nCCB_END()\n\n#endif /* __TABLE_MAX_SIZE_HH__ */")
